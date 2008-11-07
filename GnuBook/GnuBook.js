@@ -16,7 +16,7 @@ This file is part of GnuBook.
     You should have received a copy of the GNU Affero General Public License
     along with GnuBook.  If not, see <http://www.gnu.org/licenses/>.
     
-archive.org cvs $Revision: 1.57 $ $Date: 2008-10-27 05:47:40 $
+archive.org cvs $Revision: 1.58 $ $Date: 2008-11-03 22:25:40 $
 */
 
 // GnuBook()
@@ -1348,7 +1348,7 @@ GnuBook.prototype.showEmbedCode = function() {
         padding:  "20px",
         border:   "3px double #999999",
         zIndex:   3,
-        backgroundColor: "#fff",
+        backgroundColor: "#fff"
     }).appendTo('#GnuBook');
 
     htmlStr =  '<p style="text-align:center;"><b>Embed Bookreader in your blog!</b></p>';
