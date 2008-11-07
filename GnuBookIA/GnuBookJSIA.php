@@ -90,7 +90,19 @@ gb.getPageURI = function(index) {
     if (1==this.mode) {
         var url = 'http://'+this.server+'/GnuBook/GnuBookJP2.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&scale='+this.reduce;
     } else {
-        var url = 'http://'+this.server+'/GnuBook/GnuBookJP2.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&height='+this.twoPageH+'&origHeight='+this.getPageHeight(index);
+        var ratio = this.getPageHeight(index) / this.twoPageH;
+        var scale;
+        if (ratio <= 2) {
+            scale = 1;
+        } else if (ratio <= 4) {
+            scale = 2;
+        } else {
+            scale = 4;
+        }        
+    
+        //var url = 'http://'+this.server+'/GnuBook/GnuBookJP2.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&height='+this.twoPageH+'&origHeight='+this.getPageHeight(index);
+        var url = 'http://'+this.server+'/GnuBook/GnuBookJP2.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&scale='+scale;
+        
     }
     return url;
 }
@@ -167,7 +179,7 @@ gb.pageNums = [
                 if ("true" == $page->addToAccessFormats) {
                     if(0 != $i) echo ",";   //stupid IE                
                     if (array_key_exists('pageNumber', $page) && ('' != $page->pageNumber)) {
-                        echo "{$page->pageNumber}";
+                        echo "'{$page->pageNumber}'";
                     } else {
                         echo "null";
                     }
