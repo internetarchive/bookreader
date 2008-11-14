@@ -133,10 +133,12 @@ GnuBook.prototype.setupKeyListeners = function() {
             case KEY_LEFT:
                 if (2 == self.mode)
                     self.prev();
+                break;
             case KEY_DOWN:
             case KEY_RIGHT:
                 if (2 == self.mode)
                     self.next();
+                break;
         }
     });
 }
