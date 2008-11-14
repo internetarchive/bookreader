@@ -71,6 +71,8 @@ GnuBook.prototype.init = function() {
         e.data.loadLeafs();
     });
 
+    this.setupKeyListeners();
+
     $(window).bind('resize', this, function(e) {
         //console.log('resize!');
         if (1 == e.data.mode) {
@@ -98,6 +100,45 @@ GnuBook.prototype.init = function() {
         this.prepareTwoPageView();
         //if (this.auto) this.nextPage();
     }
+}
+
+GnuBook.prototype.setupKeyListeners = function() {
+    var self = this;
+
+    var KEY_PGUP = 33;
+    var KEY_PGDOWN = 34;
+    var KEY_END = 35;
+    var KEY_HOME = 36;
+
+    var KEY_LEFT = 37;
+    var KEY_UP = 38;
+    var KEY_RIGHT = 39;
+    var KEY_DOWN = 40;
+
+    $(window).keypress(function(e) {
+        switch(e.keyCode) {
+            case KEY_PGUP:
+                self.prev();
+                break;
+            case KEY_PGDOWN:
+                self.next();
+                break;
+            case KEY_END:
+                self.end();
+                break;
+            case KEY_HOME:
+                self.home();
+                break;
+            case KEY_UP:
+            case KEY_LEFT:
+                if (2 == self.mode)
+                    self.prev();
+            case KEY_DOWN:
+            case KEY_RIGHT:
+                if (2 == self.mode)
+                    self.next();
+        }
+    });
 }
 
 // drawLeafs()
@@ -754,6 +795,23 @@ GnuBook.prototype.prev = function() {
     }
 }
 
+GnuBook.prototype.home = function() {
+    if (2 == this.mode) {
+        this.jumpToIndex(2);
+    }
+    else {
+        this.jumpToIndex(0);
+    }
+}
+
+GnuBook.prototype.end = function() {
+    if (2 == this.mode) {
+        this.jumpToIndex(this.numLeafs-5);
+    }
+    else {
+        this.jumpToIndex(this.numLeafs-1);
+    }
+}
 
 // flipBackToIndex()
 //______________________________________________________________________________
