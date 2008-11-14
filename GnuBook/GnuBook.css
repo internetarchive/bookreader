@@ -66,7 +66,9 @@
 .GBicon {
     width: 24px;
     height: 24px;
+    padding: 0px;
     vertical-align: middle;
+    border: none;
 }
 
 /* footer stuff, from Rebecca's demo */
@@ -126,3 +128,14 @@ a.GBwhite:visited		{ color: #fff }
     font-size: 10px; 
     float: left; 
 }
+
+.GBicon#zoom_out { background: url(images/zoom_out.png) no-repeat; }
+.GBicon#zoom_in { background: url(images/zoom_in.png) no-repeat; }
+.GBicon#script { background: url(images/script.png) no-repeat; }
+.GBicon#book_open { background: url(images/book_open.png) no-repeat; }
+.GBicon#page_code { background: url(images/page_code.png) no-repeat; }
+.GBicon#book_previous { background: url(images/book_previous.png) no-repeat; }
+.GBicon#book_next { background: url(images/book_next.png) no-repeat; }
+
+.GBicon.play { background: url(images/control_play_blue.png) no-repeat; }
+.GBicon.pause { background: url(images/control_pause_blue.png) no-repeat; }

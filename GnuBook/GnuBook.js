@@ -62,8 +62,8 @@ GnuBook.prototype.init = function() {
     if (this.bookTitle.length>50) title += '...';
     
     $("#GnuBook").empty();
-    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><img class='GBicon' src='http://www.us.archive.org/GnuBook/images/zoom_out.png' onclick='gb.zoom1up(-1); return false;'> <img class='GBicon' src='http://www.us.archive.org/GnuBook/images/zoom_in.png' onclick='gb.zoom1up(1); return false;'> zoom: <span id='GBzoom'>25</span>% <img class='GBicon' src='http://www.us.archive.org/GnuBook/images/script.png' onclick='gb.switchMode(1); return false;'> <img class='GBicon' src='http://www.us.archive.org/GnuBook/images/book_open.png' onclick='gb.switchMode(2); return false;'>  &nbsp;&nbsp; <a href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
-    $("#GBtoolbar").append("<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'><img class='GBicon' src='http://www.us.archive.org/GnuBook/images/page_code.png' onclick='gb.showEmbedCode(); return false;'> page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input> <img class='GBicon' src='http://www.us.archive.org/GnuBook/images/book_previous.png' onclick='gb.prev(); return false;'> <img class='GBicon' src='http://www.us.archive.org/GnuBook/images/book_next.png' onclick='gb.next(); return false;'> <img class='GBicon' id='autoImg' src='http://www.us.archive.org/GnuBook/images/control_play_blue.png' onclick='gb.autoToggle(); return false;'></form>");
+    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon' id='zoom_out' onclick='gb.zoom1up(-1); return false;'/> <button class='GBicon' id='zoom_in' onclick='gb.zoom1up(1); return false;'/> zoom: <span id='GBzoom'>25</span>% <button class='GBicon' id='script' onclick='gb.switchMode(1); return false;'/> <button class='GBicon' id='book_open' onclick='gb.switchMode(2); return false;'/>  &nbsp;&nbsp; <a href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
+    $("#GBtoolbar").append("<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'><button class='GBicon' id='page_code' onclick='gb.showEmbedCode(); return false;'/> page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input> <button class='GBicon' id='book_previous' onclick='gb.prev(); return false;'/> <button class='GBicon' id='book_next' onclick='gb.next(); return false;'/> <button class='GBicon play' id='autoImg' onclick='gb.autoToggle(); return false;'/></form>");
     $("#GnuBook").append("<div id='GBcontainer'></div>");
     $("#GBcontainer").append("<div id='GBpageview'></div>");
 
@@ -1432,7 +1432,7 @@ GnuBook.prototype.autoToggle = function() {
         this.flipSpeed = 2000;
         this.flipFwdToIndex();
 
-        $('#autoImg').attr('src', 'http://www.us.archive.org/GnuBook/images/control_pause_blue.png');
+        $('#autoImg').removeClass('play').addClass('pause');
         this.autoTimer=setInterval(function(){
             if (self.animating) {return;}
 
@@ -1453,7 +1453,7 @@ GnuBook.prototype.autoStop = function() {
     if (null != this.autoTimer) {
         clearInterval(this.autoTimer);
         this.flipSpeed = 'fast';
-        $('#autoImg').attr('src', 'http://www.us.archive.org/GnuBook/images/control_play_blue.png');
+        $('#autoImg').removeClass('pause').addClass('play');
         this.autoTimer = null;
     }
 }
