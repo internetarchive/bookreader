@@ -16,7 +16,9 @@ This file is part of GnuBook.
     You should have received a copy of the GNU Affero General Public License
     along with GnuBook.  If not, see <http://www.gnu.org/licenses/>.
     
-archive.org cvs $Revision: 1.58 $ $Date: 2008-11-03 22:25:40 $
+    The GnuBook source is hosted at http://github.com/openlibrary/bookreader/
+
+    archive.org cvs $Revision: 1.58 $ $Date: 2008-11-03 22:25:40 $
 */
 
 // GnuBook()
