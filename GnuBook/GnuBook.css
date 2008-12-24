@@ -60,7 +60,7 @@
 }
 
 .GBpageform {
-    float: right; 
+    display: inline; 
 }
 
 .GBicon {

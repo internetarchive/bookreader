@@ -188,7 +188,22 @@ gb.pageNums = [
             }
             ?>    
             ];
-        
+            
+<?
+/* Output title leaf if marked */
+$titleLeaf = '';
+foreach ($scanData->pageData->page as $page) {
+    if (("Title Page" == $page->pageType) || ("Title" == $page->pageType)) {
+        $titleLeaf = "{$page['leafNum']}";
+        break;
+    }
+}
+    
+if ('' != $titleLeaf) {
+    printf("gb.titleLeaf = %d;\n", $titleLeaf);
+}
+?>
+      
 gb.numLeafs = gb.pageW.length;
 
 gb.bookId   = '<?echo $id;?>';
@@ -203,6 +218,16 @@ if ('bandersnatchhsye00scarrich' == $id) {
     echo "gb.auto     = true;\n";
 }
 ?>
+
+// Check for config object
+if (typeof(gbConfig) != 'undefined') {
+    if (gbConfig['mode'] == 1) {
+      gb.mode = 1;
+    } else if (gbConfig['mode'] == 2) {
+      gb.mode = 2;
+    }
+}
+
 gb.init();
 
 <?

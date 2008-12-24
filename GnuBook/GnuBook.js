@@ -18,7 +18,7 @@ This file is part of GnuBook.
     
     The GnuBook source is hosted at http://github.com/openlibrary/bookreader/
 
-    archive.org cvs $Revision: 1.58 $ $Date: 2008-11-03 22:25:40 $
+    archive.org cvs $Revision: 1.62 $ $Date: 2008-12-18 01:08:01 $
 */
 
 // GnuBook()
@@ -48,6 +48,7 @@ function GnuBook() {
 
     this.twoPagePopUp = null;
     this.leafEdgeTmp  = null;
+    this.embedPopup = null;
     
     this.searchResults = {};
     
@@ -58,14 +59,19 @@ function GnuBook() {
 // init()
 //______________________________________________________________________________
 GnuBook.prototype.init = function() {
-
     var startLeaf = window.location.hash;
+    //console.log("startLeaf from location.hash: %s", startLeaf);
+    if ('' == startLeaf) {
+        if (this.titleLeaf) {
+            startLeaf = "#" + this.leafNumToIndex(this.titleLeaf);
+        }
+    }
     var title = this.bookTitle.substr(0,50);
     if (this.bookTitle.length>50) title += '...';
     
     $("#GnuBook").empty();
     $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon' id='zoom_out' onclick='gb.zoom1up(-1); return false;'/> <button class='GBicon' id='zoom_in' onclick='gb.zoom1up(1); return false;'/> zoom: <span id='GBzoom'>25</span>% <button class='GBicon' id='script' onclick='gb.switchMode(1); return false;'/> <button class='GBicon' id='book_open' onclick='gb.switchMode(2); return false;'/>  &nbsp;&nbsp; <a href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
-    $("#GBtoolbar").append("<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'><button class='GBicon' id='page_code' onclick='gb.showEmbedCode(); return false;'/> page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input> <button class='GBicon' id='book_previous' onclick='gb.prev(); return false;'/> <button class='GBicon' id='book_next' onclick='gb.next(); return false;'/> <button class='GBicon play' id='autoImg' onclick='gb.autoToggle(); return false;'/></form>");
+    $("#GBtoolbar").append("<span id='GBtoolbarbuttons' style='float: right'><button class='GBicon' id='page_code' onclick='gb.showEmbedCode(); return false;'/><form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></form> <button class='GBicon' id='book_previous' onclick='gb.prev(); return false;'/> <button class='GBicon' id='book_next' onclick='gb.next(); return false;'/> <button class='GBicon play' id='autoImg' onclick='gb.autoToggle(); return false;'/></span>");
     $("#GnuBook").append("<div id='GBcontainer'></div>");
     $("#GBcontainer").append("<div id='GBpageview'></div>");
 
@@ -93,12 +99,19 @@ GnuBook.prototype.init = function() {
     if (1 == this.mode) {
         this.resizePageView();
     
-        if ('' != startLeaf) {
+        if ('' != startLeaf) { // Jump to the leaf specified in the URL
             this.jumpToIndex(parseInt(startLeaf.substr(1)));
-            //alert('jump to ' + startLeaf);
+            //console.log('jump to ' + parseInt(startLeaf.substr(1)));
         }
     } else {
+        //this.resizePageView();
+        
         this.displayedLeafs=[0];
+        if ('' != startLeaf) {
+            this.displayedLeafs = [parseInt(startLeaf.substr(1))];
+        }
+        //console.log('titleLeaf: %d', this.titleLeaf);
+        //console.log('displayedLeafs: %s', this.displayedLeafs);
         this.prepareTwoPageView();
         //if (this.auto) this.nextPage();
     }
@@ -1400,9 +1413,12 @@ GnuBook.prototype.removeSearchHilites = function() {
 // showEmbedCode()
 //______________________________________________________________________________
 GnuBook.prototype.showEmbedCode = function() {
+    if (null != this.embedPopup) { // check if already showing
+        return;
+    }
     this.autoStop();
-    var overlay = document.createElement("div");
-    $(overlay).css({
+    this.embedPopup = document.createElement("div");
+    $(this.embedPopup).css({
         position: 'absolute',
         top:      '20px',
         left:     ($('#GBcontainer').width()-400)/2 + 'px',
@@ -1417,9 +1433,9 @@ GnuBook.prototype.showEmbedCode = function() {
     htmlStr += '<p><b>Note:</b> The bookreader is still in beta testing. URLs may change in the future, breaking embedded books. This feature is just for testing!</b></p>';
     htmlStr += '<p>The bookreader uses iframes for embedding. It will not work on web hosts that block iframes. The embed feature has been tested on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>';
     htmlStr += '<p>Embed Code: <input type="text" size="40" value="<iframe src=\'http://www.us.archive.org/GnuBook/GnuBookEmbed.php?id='+this.bookId+'\' width=\'430px\' height=\'430px\'></iframe>"></p>';
-    htmlStr += '<p style="text-align:center;"><a href="" onclick="$(this.parentNode.parentNode).remove(); return false;">Close popup</a></p>';    
+    htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.embedPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
 
-    overlay.innerHTML = htmlStr;    
+    this.embedPopup.innerHTML = htmlStr;    
 }
 
 // autoToggle()
