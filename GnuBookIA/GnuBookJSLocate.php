@@ -29,9 +29,16 @@ if ("" == $id) {
 
 $locator      = new Locator();
 
-$results = $locator->locateUDP($id, 1, true);
+$results = $locator->locateUDP($id, 1, false);
 
-$url = "http://{$results[0][0]}/GnuBook/GnuBookJSIA.php?id={$id}&itemPath={$results[0][1]}&server={$results[0][0]}";
+$serverBaseURL = $results[0][0];
+
+// When accessing via development host redirect to version served out of home directory
+if (strpos($_SERVER["SERVER_NAME"], "www-mang") === 0) {
+  $serverBaseURL = $serverBaseURL . ":81/~mang";
+}
+
+$url = "http://{$serverBaseURL}/GnuBook/GnuBookJSIA.php?id={$id}&itemPath={$results[0][1]}&server={$results[0][0]}";
 
 
 if (("" != $results[0][0]) && ("" != $results[0][1])) {
