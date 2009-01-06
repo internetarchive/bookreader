@@ -209,7 +209,7 @@ gb.numLeafs = gb.pageW.length;
 gb.bookId   = '<?echo $id;?>';
 gb.zip      = '<?echo $zipFile;?>';
 gb.server   = '<?echo $server;?>';
-gb.bookTitle= '<?echo preg_replace("/\'/", "&#039;", $metaData->title);?>';
+gb.bookTitle= '<?echo preg_replace("/\'/", "\\'", $metaData->title);?>';
 gb.bookPath = '<?echo $itemPath;?>';
 gb.bookUrl  = '<?echo "http://www.archive.org/details/$id";?>';
 <?

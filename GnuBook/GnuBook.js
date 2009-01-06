@@ -69,6 +69,10 @@ GnuBook.prototype.init = function() {
     var title = this.bookTitle.substr(0,50);
     if (this.bookTitle.length>50) title += '...';
     
+    // Ideally this would be set in the HTML/PHP for better search engine visibility but
+    // it takes some time to locate the item and retrieve the metadata
+    document.title = title;
+    
     $("#GnuBook").empty();
     $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon' id='zoom_out' onclick='gb.zoom1up(-1); return false;'/> <button class='GBicon' id='zoom_in' onclick='gb.zoom1up(1); return false;'/> zoom: <span id='GBzoom'>25</span>% <button class='GBicon' id='script' onclick='gb.switchMode(1); return false;'/> <button class='GBicon' id='book_open' onclick='gb.switchMode(2); return false;'/>  &nbsp;&nbsp; <a href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
     $("#GBtoolbar").append("<span id='GBtoolbarbuttons' style='float: right'><button class='GBicon' id='page_code' onclick='gb.showEmbedCode(); return false;'/><form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></form> <button class='GBicon' id='book_previous' onclick='gb.prev(); return false;'/> <button class='GBicon' id='book_next' onclick='gb.next(); return false;'/> <button class='GBicon play' id='autoImg' onclick='gb.autoToggle(); return false;'/></span>");
@@ -130,13 +134,21 @@ GnuBook.prototype.setupKeyListeners = function() {
     var KEY_RIGHT = 39;
     var KEY_DOWN = 40;
 
-    $(window).keypress(function(e) {
+    // We use document here instead of window to avoid a bug in jQuery on IE7
+    $(document).keydown(function(e) {
+        
+        // Keyboard navigation        
         switch(e.keyCode) {
             case KEY_PGUP:
-                self.prev();
+                // In 1up mode page scrolling is handled by browser
+                if (2 == self.mode) {
+                    self.prev();
+                }
                 break;
             case KEY_PGDOWN:
-                self.next();
+                if (2 == self.mode) {
+                    self.next();
+                }
                 break;
             case KEY_END:
                 self.end();
@@ -146,13 +158,21 @@ GnuBook.prototype.setupKeyListeners = function() {
                 break;
             case KEY_UP:
             case KEY_LEFT:
-                if (2 == self.mode)
+                if (self.keyboardNavigationIsDisabled(e)) {
+                    break;
+                }
+                if (2 == self.mode) {
                     self.prev();
+                }
                 break;
             case KEY_DOWN:
             case KEY_RIGHT:
-                if (2 == self.mode)
+                if (self.keyboardNavigationIsDisabled(e)) {
+                    break;
+                }
+                if (2 == self.mode) {
                     self.next();
+                }
                 break;
         }
     });
@@ -503,7 +523,7 @@ GnuBook.prototype.jumpToIndex = function(index) {
             leafTop += h + this.padding;
         }
         //$('#GBcontainer').attr('scrollTop', leafTop);
-        $('#GBcontainer').animate({scrollTop: leafTop}, 'fast');    
+        $('#GBcontainer').animate({scrollTop: leafTop },'fast');    
     }
 }
 
@@ -1474,4 +1494,15 @@ GnuBook.prototype.autoStop = function() {
         $('#autoImg').removeClass('pause').addClass('play');
         this.autoTimer = null;
     }
+}
+
+// keyboardNavigationIsDisabled(event)
+//   - returns true if keyboard navigation should be disabled for the event
+//______________________________________________________________________________
+
+GnuBook.prototype.keyboardNavigationIsDisabled = function(event) {
+    if (event.target.tagName == "INPUT") {
+        return true;
+    }   
+    return false;
 }
