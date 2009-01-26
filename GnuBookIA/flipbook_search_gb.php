@@ -30,8 +30,16 @@ This file is part of GnuBook.
 // ported from perl to php by tracey, Oct 2005
 
 //fixxx require_once '/petabox/setup.inc';
-$_SERVER['DOCUMENT_ROOT']='/petabox/www/sf'; 
-require_once '/petabox/setup.inc';
+//I think this fixxx refers to the need to set DOCUMENT_ROOT below -- mang
+
+if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
+    $_SERVER['DOCUMENT_ROOT']='/home/mang/petabox/www/sf';
+    require_once '/home/mang/petabox/setup.inc';
+} else {
+    $_SERVER['DOCUMENT_ROOT']='/petabox/www/sf';
+    require_once '/petabox/setup.inc';
+}
+
 ini_set("memory_limit","200M"); // XML can be big, esp. brittanica (100MB)
 
 /////// SETUP /////////////////////////////////////////////////////////////
@@ -40,7 +48,6 @@ $debug_level = 0; // 0=least, 3=most debugging info
 
 $num_pre  = 3; // context words before search term
 $num_post = 9; // context words after  search term
-
 
 // defaults for testing (when no args given)
 $url ='http://ia300202.us.archive.org/0/items/englishbookbindings00davenuoft/englishbookbindings00davenuoft_djvuxml.xml';
@@ -127,7 +134,7 @@ else
 }
  
 
-
+// This looks like where we load the djvu.xml
 if (!($document = file_get_contents($url)))
   fatal("could not load $url");
 
@@ -136,7 +143,7 @@ if (!($document = file_get_contents($url)))
 $time1 = microtime(true) - $time0;
 
 
-//// Pass 1
+//// Pass 1 - build up page* arrays with xml fragments corresponding to matches
 $pagenumber=0;
 foreach (explode('</OBJECT>', $document) as $page)
 {
@@ -201,7 +208,7 @@ foreach (explode('</OBJECT>', $document) as $page)
 
 $time2 =  microtime(true) - $time1;
 
-//// Pass 2 
+//// Pass 2 - generate output from previously built arrays
 
 
 if ($format == "HTML")
@@ -239,15 +246,22 @@ else if ($format == "XML")
     $xml .= "</PAGE>\n";
   }
   $xml .= "</SEARCH>\n";
-  $fsm = FlipSearchMap::buildSearchMap($url);
+  
+  // The XML contains the page numbers from the DJVU XML.  We must remap them to flipbook indices
+  // since the flipbook indices are monotonically increasing generated from the pages with
+  // addToAccessFormats true (maybe)
+  $fsm = FlipSearchMap::buildSearchMap($url, false); // XXXmang
   if (false === $callback) {
       echo $fsm->remapSearch($xml);
   } else {
       $patterns[0] = '/\n/';
-      $patterns[1] = "/\'/";
+      $patterns[1] = "/\'/"; 
       $replac[0]   = '';
       $replac[1]   = '&#39;';
-      echo "$callback('". preg_replace($patterns, $replac, $fsm->remapSearch($xml))."');";
+      
+      // We don't have FlipSearchMap remap since we have our own mapping between
+      // scandata.xml leaf numbers and GB indices that happens in GBSearchCallback
+      echo "$callback('". preg_replace($patterns, $replac, $xml)."');";
   }
   //echo $xml;
 }

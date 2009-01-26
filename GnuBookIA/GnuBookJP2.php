@@ -19,6 +19,7 @@ This file is part of GnuBook.
 */
 
 header('Content-type: image/jpeg');
+header('Cache-Control: max-age=15552000');
 
 $zipPath  = $_REQUEST['zip'];
 $file     = $_REQUEST['file'];
@@ -26,7 +27,6 @@ $file     = $_REQUEST['file'];
 
 if (isset($_REQUEST['height'])) {
     $ratio = floatval($_REQUEST['origHeight']) / floatval($_REQUEST['height']);
-
     if ($ratio <= 2) {
         $reduce = 1;    
     } else if ($ratio <= 4) {

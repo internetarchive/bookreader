@@ -39,9 +39,19 @@ if (!preg_match("|^/[0-3]/items/{$id}$|", $itemPath)) {
     GBFatal("Bad id!");
 }
 
+$imageFormat = 'unknown';
 $zipFile = "$itemPath/{$id}_jp2.zip";
-if (!file_exists($zipFile)) {
-    GBFatal("JP2 zip file not found!");
+if (file_exists($zipFile)) {
+    $imageFormat = 'jp2';
+} else {
+  $zipFile = "$itemPath/${id}_tif.zip";
+  if (file_exists($zipFile)) {
+    $imageFormat = 'tif';
+  }
+}
+
+if ("unknown" == $imageFormat) {
+  GBfatal("Unknown image format");
 }
 
 $scanDataFile = "$itemPath/{$id}_scandata.xml";
@@ -88,10 +98,11 @@ gb.getPageURI = function(index) {
     var re = new RegExp("0{"+imgStr.length+"}$");
 
     if (1==this.mode) {
-        var url = 'http://'+this.server+'/GnuBook/GnuBookJP2.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&scale='+this.reduce;
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+this.bookId+'_'+this.imageFormat+'/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.'+this.imageFormat+'&scale='+this.reduce;
     } else {
         var ratio = this.getPageHeight(index) / this.twoPageH;
         var scale;
+        // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
         if (ratio <= 2) {
             scale = 1;
         } else if (ratio <= 4) {
@@ -100,8 +111,8 @@ gb.getPageURI = function(index) {
             scale = 4;
         }        
     
-        //var url = 'http://'+this.server+'/GnuBook/GnuBookJP2.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&height='+this.twoPageH+'&origHeight='+this.getPageHeight(index);
-        var url = 'http://'+this.server+'/GnuBook/GnuBookJP2.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&scale='+scale;
+        //var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&height='+this.twoPageH+'&origHeight='+this.getPageHeight(index);
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+this.bookId+'_'+this.imageFormat+'/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.'+this.imageFormat+'&scale='+scale;
         
     }
     return url;
@@ -212,12 +223,22 @@ gb.server   = '<?echo $server;?>';
 gb.bookTitle= '<?echo preg_replace("/\'/", "\\'", $metaData->title);?>';
 gb.bookPath = '<?echo $itemPath;?>';
 gb.bookUrl  = '<?echo "http://www.archive.org/details/$id";?>';
+gb.imageFormat = '<?echo $imageFormat;?>';
 <?
+
+# Load some values from meta.xml
+if ('' != $metaData->{'page-progression'}) {
+  echo "gb.pageProgression = '" . $metaData->{"page-progression"} . "';";
+}
+
+# Special cases
 if ('bandersnatchhsye00scarrich' == $id) {
     echo "gb.mode     = 2;\n";
     echo "gb.auto     = true;\n";
 }
+
 ?>
+
 
 // Check for config object
 if (typeof(gbConfig) != 'undefined') {
@@ -225,6 +246,13 @@ if (typeof(gbConfig) != 'undefined') {
       gb.mode = 1;
     } else if (gbConfig['mode'] == 2) {
       gb.mode = 2;
+      
+      //$$$mang hack to override request for 2up for RTL until we have full RTL support
+      //        we need a better way to determine the mode and pass config options
+      if ((typeof(gb.pageProgression) != 'undefined') && (gb.pageProgression == 'rl')) {
+        gb.mode = 1;
+      }
+  
     }
 }
 

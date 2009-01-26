@@ -18,7 +18,7 @@ This file is part of GnuBook.
     
     The GnuBook source is hosted at http://github.com/openlibrary/bookreader/
 
-    archive.org cvs $Revision: 1.62 $ $Date: 2008-12-18 01:08:01 $
+    archive.org cvs $Revision: 1.63 $ $Date: 2009-01-07 00:21:01 $
 */
 
 // GnuBook()
