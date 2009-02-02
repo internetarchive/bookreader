@@ -18,7 +18,7 @@ This file is part of GnuBook.
     
     The GnuBook source is hosted at http://github.com/openlibrary/bookreader/
 
-    archive.org cvs $Revision: 1.63 $ $Date: 2009-01-07 00:21:01 $
+    archive.org cvs $Revision: 1.64 $ $Date: 2009-01-27 22:31:56 $
 */
 
 // GnuBook()
@@ -632,7 +632,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
         borderStyle: 'solid solid solid none',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 1px 1px 0px',
-        background: 'transparent url(http://www.us.archive.org/GnuBook/images/right-edges.png) repeat scroll 0% 0%',
+        background: 'transparent url(images/right-edges.png) repeat scroll 0% 0%',
         width: leafEdgeWidthR + 'px',
         height: this.twoPageH-1 + 'px',
         /*right: '10px',*/
@@ -646,7 +646,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
         borderStyle: 'solid none solid solid',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 0px 1px 1px',
-        background: 'transparent url(http://www.us.archive.org/GnuBook/images/left-edges.png) repeat scroll 0% 0%',
+        background: 'transparent url(images/left-edges.png) repeat scroll 0% 0%',
         width: leafEdgeWidthL + 'px',
         height: this.twoPageH-1 + 'px',
         left: divLeft+10+'px',
@@ -692,6 +692,10 @@ GnuBook.prototype.prepareTwoPageView = function() {
 }
 
 // prepareTwoPagePopUp()
+//
+// This function prepares the "View leaf n" popup that shows while the mouse is
+// over the left/right "stack of sheets" edges.  It also binds the mouse
+// events for these divs.
 //______________________________________________________________________________
 GnuBook.prototype.prepareTwoPagePopUp = function() {
     this.twoPagePopUp = document.createElement('div');
@@ -897,7 +901,7 @@ GnuBook.prototype.flipBackToIndex = function(index) {
         borderStyle: 'solid none solid solid',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 0px 1px 1px',
-        background: 'transparent url(http://www.us.archive.org/GnuBook/images/left-edges.png) repeat scroll 0% 0%',
+        background: 'transparent url(images/left-edges.png) repeat scroll 0% 0%',
         width: leafEdgeTmpW + 'px',
         height: this.twoPageH-1 + 'px',
         left: gutter-scaledWL+10+newLeafEdgeWidthL+'px',
@@ -1018,7 +1022,7 @@ GnuBook.prototype.flipFwdToIndex = function(index) {
         borderStyle: 'solid none solid solid',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 0px 1px 1px',
-        background: 'transparent url(http://www.us.archive.org/GnuBook/images/left-edges.png) repeat scroll 0% 0%',
+        background: 'transparent url(images/left-edges.png) repeat scroll 0% 0%',
         width: leafEdgeTmpW + 'px',
         height: this.twoPageH-1 + 'px',
         left: currGutter+scaledW+'px',
@@ -1238,6 +1242,7 @@ GnuBook.prototype.pruneUnusedImgs = function() {
 // prefetch()
 //______________________________________________________________________________
 GnuBook.prototype.prefetch = function() {
+
     var lim = this.currentLeafL-4;
     var i;
     lim = Math.max(lim, 0);
@@ -1296,38 +1301,44 @@ GnuBook.prototype.GBSearchCallback = function(txt) {
     }
     
     var pages = dom.getElementsByTagName('PAGE');
-    for (var i = 0; i < pages.length; i++){
-        //console.log(pages[i].getAttribute('file').substr(1) +'-'+ parseInt(pages[i].getAttribute('file').substr(1), 10));
-
-        
-        var re = new RegExp (/_(\d{4})/);
-        var reMatch = re.exec(pages[i].getAttribute('file'));
-        var leafNum = parseInt(reMatch[1], 10);
-        //var leafNum = parseInt(pages[i].getAttribute('file').substr(1), 10);
-        
-        var children = pages[i].childNodes;
-        var context = '';
-        for (var j=0; j<children.length; j++) {
-            //console.log(j + ' - ' + children[j].nodeName);
-            //console.log(children[j].firstChild.nodeValue);
-            if ('CONTEXT' == children[j].nodeName) {
-                context += children[j].firstChild.nodeValue;
-            } else if ('WORD' == children[j].nodeName) {
-                context += '<b>'+children[j].firstChild.nodeValue+'</b>';
-                
-                var index = this.leafNumToIndex(leafNum);
-                if (null != index) {
-                    //coordinates are [left, bottom, right, top, [baseline]]
-                    //we'll skip baseline for now...
-                    var coords = children[j].getAttribute('coords').split(',',4);
-                    if (4 == coords.length) {
-                        this.searchResults[index] = {'l':coords[0], 'b':coords[1], 'r':coords[2], 't':coords[3], 'div':null};
+    
+    if (0 == pages.length) {
+        // $$$ it would be nice to echo the (sanitized) search result here
+        $('#GnuBookSearchResults').append('<li>No search results found</li>');
+    } else {    
+        for (var i = 0; i < pages.length; i++){
+            //console.log(pages[i].getAttribute('file').substr(1) +'-'+ parseInt(pages[i].getAttribute('file').substr(1), 10));
+    
+            
+            var re = new RegExp (/_(\d{4})/);
+            var reMatch = re.exec(pages[i].getAttribute('file'));
+            var leafNum = parseInt(reMatch[1], 10);
+            //var leafNum = parseInt(pages[i].getAttribute('file').substr(1), 10);
+            
+            var children = pages[i].childNodes;
+            var context = '';
+            for (var j=0; j<children.length; j++) {
+                //console.log(j + ' - ' + children[j].nodeName);
+                //console.log(children[j].firstChild.nodeValue);
+                if ('CONTEXT' == children[j].nodeName) {
+                    context += children[j].firstChild.nodeValue;
+                } else if ('WORD' == children[j].nodeName) {
+                    context += '<b>'+children[j].firstChild.nodeValue+'</b>';
+                    
+                    var index = this.leafNumToIndex(leafNum);
+                    if (null != index) {
+                        //coordinates are [left, bottom, right, top, [baseline]]
+                        //we'll skip baseline for now...
+                        var coords = children[j].getAttribute('coords').split(',',4);
+                        if (4 == coords.length) {
+                            this.searchResults[index] = {'l':coords[0], 'b':coords[1], 'r':coords[2], 't':coords[3], 'div':null};
+                        }
                     }
                 }
             }
+            //TODO: remove hardcoded instance name
+            $('#GnuBookSearchResults').append('<li><b><a href="javascript:gb.jumpToIndex('+index+');">Leaf ' + leafNum + '</a></b> - ' + context+'</li>');
         }
-        //TODO: remove hardcoded instance name
-        $('#GnuBookSearchResults').append('<li><b><a href="javascript:gb.jumpToIndex('+index+');">Leaf ' + leafNum + '</a></b> - ' + context+'</li>');
     }
     $('#GnuBookSearchResults').append('</ul>');
 

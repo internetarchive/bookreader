@@ -45,7 +45,7 @@ if ("" == $id) {
 <script type="text/javascript">
   // Set some config variables -- $$$ NB: Config object format has not been finalized
   var gbConfig = {};
-  gbConfig["mode"] = 2;
+  gbConfig.mode = 2;
 </script>
 <script type="text/javascript" src="/GnuBook/GnuBookJSLocate.php?id=<?echo $id;?>"></script>
 
@@ -54,7 +54,7 @@ if ("" == $id) {
 <input id="GnuBookSearchBox" type="text" size="20" value="search..." onfocus="if('search...'==this.value)this.value='';"/><input type="submit" value="go"/>
 </form>
     <div id="GnuBookSearchResults">
-        search results
+        Search results
     </div>
 </div>
 

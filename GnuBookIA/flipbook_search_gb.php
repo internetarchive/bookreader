@@ -250,7 +250,7 @@ else if ($format == "XML")
   // The XML contains the page numbers from the DJVU XML.  We must remap them to flipbook indices
   // since the flipbook indices are monotonically increasing generated from the pages with
   // addToAccessFormats true (maybe)
-  $fsm = FlipSearchMap::buildSearchMap($url, false); // XXXmang
+  $fsm = FlipSearchMap::buildSearchMap($url);
   if (false === $callback) {
       echo $fsm->remapSearch($xml);
   } else {
