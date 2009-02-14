@@ -222,7 +222,7 @@ GnuBook.prototype.drawLeafsOnePage = function() {
     }
 
     var firstLeafToDraw  = leafsToDisplay[0];
-    window.location.hash = firstLeafToDraw;    
+    window.location.replace('#' + firstLeafToDraw);
     this.firstIndex      = firstLeafToDraw;
 
     if ((0 != firstLeafToDraw) && (1 < this.reduce)) {
@@ -381,7 +381,7 @@ GnuBook.prototype.updatePageNumBox2UP = function() {
     } else {
         $("#GBpagenum").val('');
     }
-    window.location.hash = this.currentLeafL; 
+    window.location.replace('#' + this.currentLeafL); 
 }
 
 // loadLeafs()
