@@ -20,7 +20,7 @@ This file is part of GnuBook.
 
 $id = $_REQUEST['id'];
 $itemPath = $_REQUEST['itemPath'];
-$server = $_REQUEST['server'];
+$server = $_REQUEST['server']; 
 
 if ("" == $id) {
     GBFatal("No identifier specified!");
@@ -57,14 +57,17 @@ if ("unknown" == $imageFormat) {
 $scanDataFile = "$itemPath/{$id}_scandata.xml";
 $scanDataZip  = "$itemPath/scandata.zip";
 if (file_exists($scanDataFile)) {
-    $scanData = simplexml_load_file($scanDataFile);    
+    $scanData = simplexml_load_file($scanDataFile);
 } else if (file_exists($scanDataZip)) {
     $cmd  = 'unzip -p ' . escapeshellarg($scanDataZip) . ' scandata.xml';
     exec($cmd, $output, $retval);
     if ($retval != 0) GBFatal("Could not unzip ScanData!");
     
     $dump = join("\n", $output);
-    $scanData = simplexml_load_string($dump);    
+    $scanData = simplexml_load_string($dump);
+} else if (file_exists("$itemPath/scandata.xml")) {
+    // For e.g. Scribe v.0 books!
+    $scanData = simplexml_load_file("$itemPath/scandata.xml");
 } else {
     GBFatal("ScanData file not found!");
 }
@@ -121,10 +124,25 @@ gb.getPageURI = function(index) {
 gb.getPageSide = function(index) {
     //assume the book starts with a cover (right-hand leaf)
     //we should really get handside from scandata.xml
-    if (0 == (index & 0x1)) {
-        return 'R';
+    
+    // $$$ we should get this from scandata instead of assuming the accessible
+    //     leafs are contiguous
+    if ('rl' != this.pageProgression) {
+        // If pageProgression is not set RTL we assume it is LTR
+        if (0 == (index & 0x1)) {
+            // Even-numbered page
+            return 'R';
+        } else {
+            // Odd-numbered page
+            return 'L';
+        }
     } else {
-        return 'L';
+        // RTL
+        if (0 == (index & 0x1)) {
+            return 'L';
+        } else {
+            return 'R';
+        }
     }
 }
 
@@ -141,13 +159,47 @@ gb.leafNumToIndex = function(leafNum) {
     }
 }
 
-
+// This function returns the left and right indices for the user-visible
+// spread that contains the given index.  The return values may be
+// null if there is no facing page or the index is invalid.
+gb.getSpreadIndices = function(pindex) {
+    // $$$ we could make a separate function for the RTL case and
+    //      only bind it if necessary instead of always checking
+    // $$$ we currently assume there are no gaps
+    
+    var spreadIndices = [null, null]; 
+    if ('rl' == this.pageProgression) {
+        // Right to Left
+        if (this.getPageSide(pindex) == 'R') {
+            spreadIndices[1] = pindex;
+            spreadIndices[0] = pindex + 1;
+        } else {
+            // Given index was LHS
+            spreadIndices[0] = pindex;
+            spreadIndices[1] = pindex - 1;
+        }
+    } else {
+        // Left to right
+        if (this.getPageSide(pindex) == 'L') {
+            spreadIndices[0] = pindex;
+            spreadIndices[1] = pindex + 1;
+        } else {
+            // Given index was RHS
+            spreadIndices[1] = pindex;
+            spreadIndices[0] = pindex - 1;
+        }
+    }
+    
+    //console.log("   index %d mapped to spread %d,%d", pindex, spreadIndices[0], spreadIndices[1]);
+    
+    return spreadIndices;
+}
 
 gb.pageW =		[
             <?
             $i=0;
             foreach ($scanData->pageData->page as $page) {
-                if ("true" == $page->addToAccessFormats) {
+                if (shouldAddPage($page)) {
                     if(0 != $i) echo ",";   //stupid IE
                     echo "{$page->cropBox->w}";
                     $i++;
@@ -161,7 +213,7 @@ gb.pageH =		[
             $totalHeight = 0;
             $i=0;            
             foreach ($scanData->pageData->page as $page) {
-                if ("true" == $page->addToAccessFormats) {
+                if (shouldAddPage($page)) {
                     if(0 != $i) echo ",";   //stupid IE                
                     echo "{$page->cropBox->h}";
                     $totalHeight += intval($page->cropBox->h/4) + 10;
@@ -174,7 +226,7 @@ gb.leafMap = [
             <?
             $i=0;
             foreach ($scanData->pageData->page as $page) {
-                if ("true" == $page->addToAccessFormats) {
+                if (shouldAddPage($page)) {
                     if(0 != $i) echo ",";   //stupid IE
                     echo "{$page['leafNum']}";
                     $i++;
@@ -187,7 +239,7 @@ gb.pageNums = [
             <?
             $i=0;
             foreach ($scanData->pageData->page as $page) {
-                if ("true" == $page->addToAccessFormats) {
+                if (shouldAddPage($page)) {
                     if(0 != $i) echo ",";   //stupid IE                
                     if (array_key_exists('pageNumber', $page) && ('' != $page->pageNumber)) {
                         echo "'{$page->pageNumber}'";
@@ -229,6 +281,9 @@ gb.imageFormat = '<?echo $imageFormat;?>';
 # Load some values from meta.xml
 if ('' != $metaData->{'page-progression'}) {
   echo "gb.pageProgression = '" . $metaData->{"page-progression"} . "';";
+} else {
+  // Assume page progression is Left To Right
+  echo "gb.pageProgression = 'lr';";
 }
 
 # Special cases
@@ -249,9 +304,9 @@ if (typeof(gbConfig) != 'undefined') {
       
       //$$$mang hack to override request for 2up for RTL until we have full RTL support
       //        we need a better way to determine the mode and pass config options
-      if ((typeof(gb.pageProgression) != 'undefined') && (gb.pageProgression == 'rl')) {
-        gb.mode = 1;
-      }
+      //if ((typeof(gb.pageProgression) != 'undefined') && (gb.pageProgression == 'rl')) {
+      //  gb.mode = 1;
+      //}
   
     }
 }
@@ -265,4 +320,19 @@ function GBFatal($string) {
     echo "alert('$string')\n";
     die(-1);
 }
+
+// Returns true if a page should be added based on it's information in
+// the metadata
+function shouldAddPage($page) {
+    // Return false only if the page is marked addToAccessFormats false.
+    // If there is no assertion we assume it should be added.
+    if (isset($page->addToAccessFormats)) {
+        if ("false" == strtolower(trim($page->addToAccessFormats))) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 ?>

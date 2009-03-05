@@ -109,7 +109,7 @@ a.GBwhite:visited		{ color: #fff }
     vertical-align: middle;
 }
 
-/* thumnail view, from Rebecca's demo */
+/* thumnbail view, from Rebecca's demo */
 .GBpdstatus-footer {
     position:absolute;
     height: 65px;
@@ -129,13 +129,15 @@ a.GBwhite:visited		{ color: #fff }
     float: left; 
 }
 
-.GBicon#zoom_out { background: url(images/zoom_out.png) no-repeat; }
-.GBicon#zoom_in { background: url(images/zoom_in.png) no-repeat; }
-.GBicon#script { background: url(images/script.png) no-repeat; }
-.GBicon#book_open { background: url(images/book_open.png) no-repeat; }
-.GBicon#page_code { background: url(images/page_code.png) no-repeat; }
-.GBicon#book_previous { background: url(images/book_previous.png) no-repeat; }
-.GBicon#book_next { background: url(images/book_next.png) no-repeat; }
+.GBicon.zoom_out { background: url(images/zoom_out.png) no-repeat; }
+.GBicon.zoom_in { background: url(images/zoom_in.png) no-repeat; }
+.GBicon.script { background: url(images/script.png) no-repeat; }
+.GBicon.book_open { background: url(images/book_open.png) no-repeat; }
+.GBicon.page_code { background: url(images/page_code.png) no-repeat; }
+.GBicon.book_left { background: url(images/book_left.png) no-repeat; }
+.GBicon.book_right { background: url(images/book_right.png) no-repeat; }
+.GBicon.book_up { background: url(images/page_white_get.png) no-repeat; }
+.GBicon.book_down { background: url(images/page_white_put.png) no-repeat; }
 
 .GBicon.play { background: url(images/control_play_blue.png) no-repeat; }
 .GBicon.pause { background: url(images/control_pause_blue.png) no-repeat; }

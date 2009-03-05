@@ -20,6 +20,11 @@ This file is part of GnuBook.
 
 $id = $_REQUEST['id'];
 
+// manually update with output of 'date "+%Y%m%d%H%M"' at each checkin so that browsers
+// do not use old cached version
+// see https://bugs.launchpad.net/gnubook/+bug/330748
+$version = "200903042157";
+
 if ("" == $id) {
     echo "No identifier specified!";
     die(-1);
@@ -32,10 +37,10 @@ if ("" == $id) {
 <!-- $$$ we should have IE6 support RSN and move browser support detection inside GnuBook proper -->    
 <!--[if lte IE 6]>
     <meta http-equiv="refresh" content="2; URL=browserunsupported.php?id=<? echo($id); ?>">
-<![endif]-->    
-    <link rel="stylesheet" type="text/css" href="/GnuBook/GnuBook.css">    
+<![endif]-->
+    <link rel="stylesheet" type="text/css" href="/GnuBook/GnuBook.css?v=<? echo($version); ?>">    
     <script src="http://www.archive.org/includes/jquery-1.2.6.min.js" type="text/javascript"></script>
-    <script type="text/javascript" src="/GnuBook/GnuBook.js"></script>
+        <script type="text/javascript" src="/GnuBook/GnuBook.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/GnuBook/jquery.easing.1.3.js"></script>
 </head>
 <body style="background-color: rgb(249, 248, 208);">

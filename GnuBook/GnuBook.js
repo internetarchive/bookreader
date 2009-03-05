@@ -18,7 +18,7 @@ This file is part of GnuBook.
     
     The GnuBook source is hosted at http://github.com/openlibrary/bookreader/
 
-    archive.org cvs $Revision: 1.64 $ $Date: 2009-01-27 22:31:56 $
+    archive.org cvs $Revision: 1.68 $ $Date: 2009-03-04 22:00:31 $
 */
 
 // GnuBook()
@@ -54,6 +54,8 @@ function GnuBook() {
     
     this.firstIndex = null;
     
+    this.lastDisplayableIndex2up = null;
+    
 };
 
 // init()
@@ -74,8 +76,8 @@ GnuBook.prototype.init = function() {
     document.title = title;
     
     $("#GnuBook").empty();
-    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon' id='zoom_out' onclick='gb.zoom1up(-1); return false;'/> <button class='GBicon' id='zoom_in' onclick='gb.zoom1up(1); return false;'/> zoom: <span id='GBzoom'>25</span>% <button class='GBicon' id='script' onclick='gb.switchMode(1); return false;'/> <button class='GBicon' id='book_open' onclick='gb.switchMode(2); return false;'/>  &nbsp;&nbsp; <a href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
-    $("#GBtoolbar").append("<span id='GBtoolbarbuttons' style='float: right'><button class='GBicon' id='page_code' onclick='gb.showEmbedCode(); return false;'/><form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></form> <button class='GBicon' id='book_previous' onclick='gb.prev(); return false;'/> <button class='GBicon' id='book_next' onclick='gb.next(); return false;'/> <button class='GBicon play' id='autoImg' onclick='gb.autoToggle(); return false;'/></span>");
+    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon zoom_out' onclick='gb.zoom1up(-1); return false;'/> <button class='GBicon zoom_in' onclick='gb.zoom1up(1); return false;'/> zoom: <span id='GBzoom'>25</span>% <button class='GBicon script' onclick='gb.switchMode(1); return false;'/> <button class='GBicon book_open' onclick='gb.switchMode(2); return false;'/>  &nbsp;&nbsp; <a href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
+    this.initToolbar(this.mode); // Build inside of toolbar div
     $("#GnuBook").append("<div id='GBcontainer'></div>");
     $("#GBcontainer").append("<div id='GBpageview'></div>");
 
@@ -140,11 +142,13 @@ GnuBook.prototype.setupKeyListeners = function() {
         // Keyboard navigation        
         switch(e.keyCode) {
             case KEY_PGUP:
+            case KEY_UP:            
                 // In 1up mode page scrolling is handled by browser
                 if (2 == self.mode) {
                     self.prev();
                 }
                 break;
+            case KEY_DOWN:
             case KEY_PGDOWN:
                 if (2 == self.mode) {
                     self.next();
@@ -156,22 +160,20 @@ GnuBook.prototype.setupKeyListeners = function() {
             case KEY_HOME:
                 self.home();
                 break;
-            case KEY_UP:
             case KEY_LEFT:
                 if (self.keyboardNavigationIsDisabled(e)) {
                     break;
                 }
                 if (2 == self.mode) {
-                    self.prev();
+                    self.left();
                 }
                 break;
-            case KEY_DOWN:
             case KEY_RIGHT:
                 if (self.keyboardNavigationIsDisabled(e)) {
                     break;
                 }
                 if (2 == self.mode) {
-                    self.next();
+                    self.right();
                 }
                 break;
         }
@@ -308,15 +310,18 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
 
     var scrollTop = $('#GBcontainer').attr('scrollTop');
     var scrollBottom = scrollTop + $('#GBcontainer').height();
+    
+    //console.log('drawLeafsTwoPage: this.currrentLeafL ' + this.currentLeafL);
+    
     var leafNum = this.currentLeafL;
     var height  = this.getPageHeight(leafNum); 
     var width   = this.getPageWidth(leafNum);
     var handSide= this.getPageSide(leafNum);
 
-    var leafEdgeWidthL = parseInt( (leafNum/this.numLeafs)*this.twoPageEdgeW );
+    var leafEdgeWidthL = this.leafEdgeWidth(leafNum);
     var leafEdgeWidthR = this.twoPageEdgeW - leafEdgeWidthL;
-    var divWidth = this.twoPageW*2+20 + this.twoPageEdgeW;
-    var divLeft = ($('#GBcontainer').width() - divWidth) >> 1;
+    var bookCoverDivWidth = this.twoPageW*2+20 + this.twoPageEdgeW;
+    var bookCoverDivLeft = ($('#GBcontainer').width() - bookCoverDivWidth) >> 1;
     //console.log(leafEdgeWidthL);
 
     var middle = ($('#GBcontainer').width() >> 1);            
@@ -328,14 +333,14 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     //var right = left+scaledW;
     var right = $(this.twoPageDiv).width()-11-$(this.leafEdgeL).width()-scaledW;
 
-    var gutter = middle+parseInt((2*this.currentLeafL - this.numLeafs)*this.twoPageEdgeW/this.numLeafs/2);
-    
+    var gutter = middle + this.gutterOffsetForIndex(this.currentLeafL);
     
     this.prefetchImg(leafNum);
     $(this.prefetchedImgs[leafNum]).css({
         position: 'absolute',
         /*right:   gutter+'px',*/
         left: gutter-scaledW+'px',
+        right: '',
         top:    top+'px',
         backgroundColor: 'rgb(234, 226, 205)',
         height: this.twoPageH +'px',
@@ -357,6 +362,7 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     $(this.prefetchedImgs[leafNum]).css({
         position: 'absolute',
         left:   gutter+'px',
+        right: '',
         top:    top+'px',
         backgroundColor: 'rgb(234, 226, 205)',
         height: this.twoPageH + 'px',
@@ -472,8 +478,7 @@ GnuBook.prototype.centerPageView = function() {
 // jumpToPage()
 //______________________________________________________________________________
 GnuBook.prototype.jumpToPage = function(pageNum) {
-    //if (2 == this.mode) return;
-    
+
     var i;
     var foundPage = false;
     var foundLeaf = null;
@@ -498,20 +503,16 @@ GnuBook.prototype.jumpToPage = function(pageNum) {
 // jumpToIndex()
 //______________________________________________________________________________
 GnuBook.prototype.jumpToIndex = function(index) {
+
     if (2 == this.mode) {
         this.autoStop();
-        if (index<this.currentLeafL) {
-            if ('L' == this.getPageSide(index)) {
-                this.flipBackToIndex(index);
-            } else {
-                this.flipBackToIndex(index-1);
-            }
-        } else if (index>this.currentLeafR) {
-            if ('R' == this.getPageSide(index)) {
-                this.flipFwdToIndex(index);
-            } else {
-                this.flipFwdToIndex(index+1);
-            }        
+        
+        // By checking against min/max we do nothing if requested index
+        // is current
+        if (index < Math.min(this.currentLeafL, this.currentLeafR)) {
+            this.flipBackToIndex(index);
+        } else if (index > Math.max(this.currentLeafL, this.currentLeafR)) {
+            this.flipFwdToIndex(index);
         }
 
     } else {        
@@ -532,12 +533,18 @@ GnuBook.prototype.jumpToIndex = function(index) {
 // switchMode()
 //______________________________________________________________________________
 GnuBook.prototype.switchMode = function(mode) {
+
+    //console.log('  asked to switch to mode ' + mode + ' from ' + this.mode);
+    
     if (mode == this.mode) return;
 
     this.autoStop();
     this.removeSearchHilites();
 
     this.mode = mode;
+    
+    this.switchToolbarMode(mode);
+    
     if (1 == mode) {
         this.prepareOnePageView();
     } else {
@@ -571,56 +578,76 @@ GnuBook.prototype.prepareOnePageView = function() {
 GnuBook.prototype.prepareTwoPageView = function() {
     $('#GBcontainer').empty();
 
-    var firstLeaf = this.displayedLeafs[0];
-    if ('R' == this.getPageSide(firstLeaf)) {
-        if (0 == firstLeaf) {
-            firstLeaf++;
-        } else {
-            firstLeaf--;
-        }
-    }
+    // We want to display two facing pages.  We may be missing
+    // one side of the spread because it is the first/last leaf,
+    // foldouts, missing pages, etc
 
+    var targetLeaf = this.displayedLeafs[0];
+    
+    if (targetLeaf < this.firstDisplayableIndex()) {
+        targetLeaf = this.firstDisplayableIndex();
+    }
+    
+    if (targetLeaf > this.lastDisplayableIndex()) {
+        targetLeaf = this.lastDisplayableIndex();
+    }
+    
     this.currentLeafL = null;
     this.currentLeafR = null;
     this.pruneUnusedImgs();
     
-    this.currentLeafL = firstLeaf;
-    this.currentLeafR = firstLeaf + 1;
+    var currentSpreadIndices = this.getSpreadIndices(targetLeaf);
+    this.currentLeafL = currentSpreadIndices[0];
+    this.currentLeafR = currentSpreadIndices[1];
     
     this.calculateSpreadSize(); //sets this.twoPageW, twoPageH, and twoPageRatio
 
-    var middle = ($('#GBcontainer').width() >> 1);
-    var gutter = middle+parseInt((2*this.currentLeafL - this.numLeafs)*this.twoPageEdgeW/this.numLeafs/2);
+    // We want to minimize the unused space in two-up mode (maximize the amount of page
+    // shown).  We give width to the leaf edges and these widths change (though the sum
+    // of the two remains constant) as we flip through the book.  With the book
+    // cover centered and fixed in the GBcontainer div the page images will meet
+    // at the "gutter" which is generally offset from the center.
+    var middle = ($('#GBcontainer').width() >> 1); // Middle of the GBcontainer div
+    //var gutter = middle+parseInt((2*this.currentLeafL - this.numLeafs)*this.twoPageEdgeW/this.numLeafs/2);
+    
+    var gutter = middle + this.gutterOffsetForIndex(this.currentLeafL);
+    
     var scaledWL = this.getPageWidth2UP(this.currentLeafL);
     var scaledWR = this.getPageWidth2UP(this.currentLeafR);
-    var leafEdgeWidthL = parseInt( (firstLeaf/this.numLeafs)*this.twoPageEdgeW );
+    var leafEdgeWidthL = this.leafEdgeWidth(this.currentLeafL);
     var leafEdgeWidthR = this.twoPageEdgeW - leafEdgeWidthL;
 
     //console.log('idealWidth='+idealWidth+' idealHeight='+idealHeight);
-    //var divWidth = this.twoPageW*2+20 + this.twoPageEdgeW;
-    var divWidth = scaledWL + scaledWR + 20 + this.twoPageEdgeW;
-    var divHeight = this.twoPageH+20;
-    //var divLeft = ($('#GBcontainer').width() - divWidth) >> 1;
-    var divLeft = gutter-scaledWL-leafEdgeWidthL-10;
-    var divTop = ($('#GBcontainer').height() - divHeight) >> 1;
-    //console.log('divWidth='+divWidth+' divHeight='+divHeight+ ' divLeft='+divLeft+' divTop='+divTop);
+    //var bookCoverDivWidth = this.twoPageW*2+20 + this.twoPageEdgeW;
+    
+    // The width of the book cover div.  The combined width of both pages, twice the width
+    // of the book cover internal padding (2*10) and the page edges
+    var bookCoverDivWidth = scaledWL + scaledWR + 20 + this.twoPageEdgeW;
+    
+    // The height of the book cover div
+    var bookCoverDivHeight = this.twoPageH+20;
+    
+    //var bookCoverDivLeft = ($('#GBcontainer').width() - bookCoverDivWidth) >> 1;
+    var bookCoverDivLeft = gutter-scaledWL-leafEdgeWidthL-10;
+    var bookCoverDivTop = ($('#GBcontainer').height() - bookCoverDivHeight) >> 1;
+    //console.log('bookCoverDivWidth='+bookCoverDivWidth+' bookCoverDivHeight='+bookCoverDivHeight+ ' bookCoverDivLeft='+bookCoverDivLeft+' bookCoverDivTop='+bookCoverDivTop);
 
     this.twoPageDiv = document.createElement('div');
     $(this.twoPageDiv).attr('id', 'book_div_1').css({
         border: '1px solid rgb(68, 25, 17)',
-        width:  divWidth + 'px',
-        height: divHeight+'px',
+        width:  bookCoverDivWidth + 'px',
+        height: bookCoverDivHeight+'px',
         visibility: 'visible',
         position: 'absolute',
         backgroundColor: 'rgb(136, 51, 34)',
-        left: divLeft + 'px',
-        top: divTop+'px',
+        left: bookCoverDivLeft + 'px',
+        top: bookCoverDivTop+'px',
         MozBorderRadiusTopleft: '7px',
         MozBorderRadiusTopright: '7px',
         MozBorderRadiusBottomright: '7px',
         MozBorderRadiusBottomleft: '7px'
     }).appendTo('#GBcontainer');
-    //$('#GBcontainer').append('<div id="book_div_1" style="border: 1px solid rgb(68, 25, 17); width: ' + divWidth + 'px; height: '+divHeight+'px; visibility: visible; position: absolute; background-color: rgb(136, 51, 34); left: ' + divLeft + 'px; top: '+divTop+'px; -moz-border-radius-topleft: 7px; -moz-border-radius-topright: 7px; -moz-border-radius-bottomright: 7px; -moz-border-radius-bottomleft: 7px;"/>');
+    //$('#GBcontainer').append('<div id="book_div_1" style="border: 1px solid rgb(68, 25, 17); width: ' + bookCoverDivWidth + 'px; height: '+bookCoverDivHeight+'px; visibility: visible; position: absolute; background-color: rgb(136, 51, 34); left: ' + bookCoverDivLeft + 'px; top: '+bookCoverDivTop+'px; -moz-border-radius-topleft: 7px; -moz-border-radius-topright: 7px; -moz-border-radius-bottomright: 7px; -moz-border-radius-bottomleft: 7px;"/>');
 
 
     var height  = this.getPageHeight(this.currentLeafR); 
@@ -628,6 +655,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
     var scaledW = this.twoPageH*width/height;
     
     this.leafEdgeR = document.createElement('div');
+    this.leafEdgeR.className = 'leafEdgeR';
     $(this.leafEdgeR).css({
         borderStyle: 'solid solid solid none',
         borderColor: 'rgb(51, 51, 34)',
@@ -637,11 +665,12 @@ GnuBook.prototype.prepareTwoPageView = function() {
         height: this.twoPageH-1 + 'px',
         /*right: '10px',*/
         left: gutter+scaledW+'px',
-        top: divTop+10+'px',
+        top: bookCoverDivTop+10+'px',
         position: 'absolute'
     }).appendTo('#GBcontainer');
     
     this.leafEdgeL = document.createElement('div');
+    this.leafEdgeL.className = 'leafEdgeL';
     $(this.leafEdgeL).css({
         borderStyle: 'solid none solid solid',
         borderColor: 'rgb(51, 51, 34)',
@@ -649,46 +678,48 @@ GnuBook.prototype.prepareTwoPageView = function() {
         background: 'transparent url(images/left-edges.png) repeat scroll 0% 0%',
         width: leafEdgeWidthL + 'px',
         height: this.twoPageH-1 + 'px',
-        left: divLeft+10+'px',
-        top: divTop+10+'px',    
+        left: bookCoverDivLeft+10+'px',
+        top: bookCoverDivTop+10+'px',    
         position: 'absolute'
     }).appendTo('#GBcontainer');
 
 
 
-    divWidth = 30;
-    divHeight = this.twoPageH+20;
-    divLeft = ($('#GBcontainer').width() - divWidth) >> 1;
-    divTop = ($('#GBcontainer').height() - divHeight) >> 1;
+    bookCoverDivWidth = 30;
+    bookCoverDivHeight = this.twoPageH+20;
+    bookCoverDivLeft = ($('#GBcontainer').width() - bookCoverDivWidth) >> 1;
+    bookCoverDivTop = ($('#GBcontainer').height() - bookCoverDivHeight) >> 1;
 
     div = document.createElement('div');
     $(div).attr('id', 'book_div_2').css({
         border:          '1px solid rgb(68, 25, 17)',
-        width:           divWidth+'px',
-        height:          divHeight+'px',
+        width:           bookCoverDivWidth+'px',
+        height:          bookCoverDivHeight+'px',
         position:        'absolute',
         backgroundColor: 'rgb(68, 25, 17)',
-        left:            divLeft+'px',
-        top:             divTop+'px'
+        left:            bookCoverDivLeft+'px',
+        top:             bookCoverDivTop+'px'
     }).appendTo('#GBcontainer');
-    //$('#GBcontainer').append('<div id="book_div_2" style="border: 1px solid rgb(68, 25, 17); width: '+divWidth+'px; height: '+divHeight+'px; visibility: visible; position: absolute; background-color: rgb(68, 25, 17); left: '+divLeft+'px; top: '+divTop+'px;"/>');
+    //$('#GBcontainer').append('<div id="book_div_2" style="border: 1px solid rgb(68, 25, 17); width: '+bookCoverDivWidth+'px; height: '+bookCoverDivHeight+'px; visibility: visible; position: absolute; background-color: rgb(68, 25, 17); left: '+bookCoverDivLeft+'px; top: '+bookCoverDivTop+'px;"/>');
 
-    divWidth = this.twoPageW*2;
-    divHeight = this.twoPageH;
-    divLeft = ($('#GBcontainer').width() - divWidth) >> 1;
-    divTop = ($('#GBcontainer').height() - divHeight) >> 1;
+    bookCoverDivWidth = this.twoPageW*2;
+    bookCoverDivHeight = this.twoPageH;
+    bookCoverDivLeft = ($('#GBcontainer').width() - bookCoverDivWidth) >> 1;
+    bookCoverDivTop = ($('#GBcontainer').height() - bookCoverDivHeight) >> 1;
 
 
     this.prepareTwoPagePopUp();
 
     this.displayedLeafs = [];
+    
     //this.leafsToDisplay=[firstLeaf, firstLeaf+1];
     //console.log('leafsToDisplay: ' + this.leafsToDisplay[0] + ' ' + this.leafsToDisplay[1]);
+    
     this.drawLeafsTwoPage();
     this.updateSearchHilites2UP();
     
     this.prefetch();
-    $('#GBzoom').text((100*this.twoPageH/this.getPageHeight(firstLeaf)).toString().substr(0,4));
+    $('#GBzoom').text((100*this.twoPageH/this.getPageHeight(this.currentLeafL)).toString().substr(0,4));
 }
 
 // prepareTwoPagePopUp()
@@ -721,24 +752,19 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
 
     $(this.leafEdgeL).bind('click', this, function(e) { 
         e.data.autoStop();
-        var jumpIndex = e.data.currentLeafL - ($(e.data.leafEdgeL).offset().left + $(e.data.leafEdgeL).width() - e.pageX) * 10;
-        jumpIndex = Math.max(jumpIndex, 0);
-        e.data.flipBackToIndex(jumpIndex);
-    
+        var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
+        e.data.jumpToIndex(jumpIndex);
     });
 
     $(this.leafEdgeR).bind('click', this, function(e) { 
         e.data.autoStop();
-        var jumpIndex = e.data.currentLeafR + (e.pageX - $(e.data.leafEdgeR).offset().left) * 10;
-        jumpIndex = Math.max(jumpIndex, 0);
-        e.data.flipFwdToIndex(jumpIndex);
-    
+        var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
+        e.data.jumpToIndex(jumpIndex);    
     });
 
     $(this.leafEdgeR).bind('mousemove', this, function(e) {
 
-        var jumpLeaf = e.data.currentLeafR + (e.pageX - $(e.data.leafEdgeR).offset().left) * 10;
-        jumpLeaf = Math.min(jumpLeaf, e.data.numLeafs-1);        
+        var jumpLeaf = e.data.jumpIndexForRightEdgePageX(e.pageX);
         $(e.data.twoPagePopUp).text('View Leaf '+jumpLeaf);
         
         $(e.data.twoPagePopUp).css({
@@ -748,8 +774,8 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
     });
 
     $(this.leafEdgeL).bind('mousemove', this, function(e) {
-        var jumpLeaf = e.data.currentLeafL - ($(e.data.leafEdgeL).offset().left + $(e.data.leafEdgeL).width() - e.pageX) * 10;
-        jumpLeaf = Math.max(jumpLeaf, 0);
+    
+        var jumpLeaf = e.data.jumpIndexForLeftEdgePageX(e.pageX);
         $(e.data.twoPagePopUp).text('View Leaf '+jumpLeaf);
         
         $(e.data.twoPagePopUp).css({
@@ -806,8 +832,34 @@ GnuBook.prototype.calculateSpreadSize = function() {
     this.twoPageH     = idealHeight;
     this.twoPageW     = idealWidth;
     this.twoPageRatio = ratio;
-    this.twoPageEdgeW = totalLeafEdgeWidth;    
+    this.twoPageEdgeW = totalLeafEdgeWidth; // The combined width of both edges
 
+}
+
+// right()
+//______________________________________________________________________________
+// Flip the right page over onto the left
+GnuBook.prototype.right = function() {
+    if ('rl' != this.pageProgression) {
+        // LTR
+        gb.next();
+    } else {
+        // RTL
+        gb.prev();
+    }
+}
+
+// left()
+//______________________________________________________________________________
+// Flip the left page over onto the right.
+GnuBook.prototype.left = function() {
+    if ('rl' != this.pageProgression) {
+        // LTR
+        gb.prev();
+    } else {
+        // RTL
+        gb.next();
+    }
 }
 
 // next()
@@ -817,7 +869,7 @@ GnuBook.prototype.next = function() {
         this.autoStop();
         this.flipFwdToIndex(null);
     } else {
-        if (this.firstIndex <= (this.numLeafs - 2)) {
+        if (this.firstIndex < this.lastDisplayableIndex()) {
             this.jumpToIndex(this.firstIndex+1);
         }
     }
@@ -847,10 +899,10 @@ GnuBook.prototype.home = function() {
 
 GnuBook.prototype.end = function() {
     if (2 == this.mode) {
-        this.jumpToIndex(this.numLeafs-5);
+        this.jumpToIndex(this.lastDisplayableIndex());
     }
     else {
-        this.jumpToIndex(this.numLeafs-1);
+        this.jumpToIndex(this.lastDisplayableIndex());
     }
 }
 
@@ -861,6 +913,9 @@ GnuBook.prototype.flipBackToIndex = function(index) {
     if (1 == this.mode) return;
 
     var leftIndex = this.currentLeafL;
+    
+    // $$$ Need to change this to be able to see first spread.
+    //     See https://bugs.launchpad.net/gnubook/+bug/296788
     if (leftIndex <= 2) return;
     if (this.animating) return;
 
@@ -872,29 +927,78 @@ GnuBook.prototype.flipBackToIndex = function(index) {
     if (null == index) {
         index = leftIndex-2;
     }
-    if (index<0) return;
-
-    if ('L' !=  this.getPageSide(index)) {
-        alert('img with index ' + index + ' is not a left-hand page');
+    //if (index<0) return;
+    
+    var previousIndices = this.getSpreadIndices(index);
+    
+    if (previousIndices[0] < 0 || previousIndices[1] < 0) {
         return;
     }
+    
+    //console.log("flipping back to " + previousIndices[0] + ',' + previousIndices[1]);
 
     this.animating = true;
     
-    var prevL = index;
-    var prevR = index+1;
+    if ('rl' != this.pageProgression) {
+        // Assume LTR and we are going backward    
+        var gutter = this.prepareFlipLeftToRight(previousIndices[0], previousIndices[1]);        
+        this.flipLeftToRight(previousIndices[0], previousIndices[1], gutter);
+        
+    } else {
+        // RTL and going backward
+        var gutter = this.prepareFlipRightToLeft(previousIndices[0], previousIndices[1]);
+        this.flipRightToLeft(previousIndices[0], previousIndices[1], gutter);
+    }
+}
 
-    var gutter= this.prepareFlipBack(prevL, prevR);
+// flipLeftToRight()
+//______________________________________________________________________________
+// Flips the page on the left towards the page on the right
+GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
 
     var leftLeaf = this.currentLeafL;
-
-    var oldLeafEdgeWidthL = parseInt( (this.currentLeafL/this.numLeafs)*this.twoPageEdgeW );
-    var newLeafEdgeWidthL = parseInt( (index            /this.numLeafs)*this.twoPageEdgeW );    
+    
+    var oldLeafEdgeWidthL = this.leafEdgeWidth(this.currentLeafL);
+    var newLeafEdgeWidthL = this.leafEdgeWidth(newIndexL);    
     var leafEdgeTmpW = oldLeafEdgeWidthL - newLeafEdgeWidthL;
-
-    var scaledWL = this.getPageWidth2UP(prevL);
+    
+    var currWidthL   = this.getPageWidth2UP(leftLeaf);
+    var newWidthL    = this.getPageWidth2UP(newIndexL);
+    var newWidthR    = this.getPageWidth2UP(newIndexR);
 
     var top  = ($('#GBcontainer').height() - this.twoPageH) >> 1;                
+
+    //console.log('leftEdgeTmpW ' + leafEdgeTmpW);
+    //console.log('  gutter ' + gutter + ', scaledWL ' + scaledWL + ', newLeafEdgeWL ' + newLeafEdgeWidthL);
+    
+    //animation strategy:
+    // 0. remove search highlight, if any.
+    // 1. create a new div, called leafEdgeTmp to represent the leaf edge between the leftmost edge 
+    //    of the left leaf and where the user clicked in the leaf edge.
+    //    Note that if this function was triggered by left() and not a
+    //    mouse click, the width of leafEdgeTmp is very small (zero px).
+    // 2. animate both leafEdgeTmp to the gutter (without changing its width) and animate
+    //    leftLeaf to width=0.
+    // 3. When step 2 is finished, animate leafEdgeTmp to right-hand side of new right leaf
+    //    (left=gutter+newWidthR) while also animating the new right leaf from width=0 to
+    //    its new full width.
+    // 4. After step 3 is finished, do the following:
+    //      - remove leafEdgeTmp from the dom.
+    //      - resize and move the right leaf edge (leafEdgeR) to left=gutter+newWidthR
+    //          and width=twoPageEdgeW-newLeafEdgeWidthL.
+    //      - resize and move the left leaf edge (leafEdgeL) to left=gutter-newWidthL-newLeafEdgeWidthL
+    //          and width=newLeafEdgeWidthL.
+    //      - resize the back cover (twoPageDiv) to left=gutter-newWidthL-newLeafEdgeWidthL-10
+    //          and width=newWidthL+newWidthR+twoPageEdgeW+20
+    //      - move new left leaf (newIndexL) forward to zindex=2 so it can receive clicks.
+    //      - remove old left and right leafs from the dom [pruneUnusedImgs()].
+    //      - prefetch new adjacent leafs.
+    //      - set up click handlers for both new left and right leafs.
+    //      - redraw the search highlight.
+    //      - update the pagenum box and the url.
+    
+    
+    var leftEdgeTmpLeft = gutter - currWidthL - leafEdgeTmpW;
 
     this.leafEdgeTmp = document.createElement('div');
     $(this.leafEdgeTmp).css({
@@ -904,7 +1008,7 @@ GnuBook.prototype.flipBackToIndex = function(index) {
         background: 'transparent url(images/left-edges.png) repeat scroll 0% 0%',
         width: leafEdgeTmpW + 'px',
         height: this.twoPageH-1 + 'px',
-        left: gutter-scaledWL+10+newLeafEdgeWidthL+'px',
+        left: leftEdgeTmpLeft + 'px',
         top: top+'px',    
         position: 'absolute',
         zIndex:1000
@@ -913,49 +1017,65 @@ GnuBook.prototype.flipBackToIndex = function(index) {
     //$(this.leafEdgeL).css('width', newLeafEdgeWidthL+'px');
     $(this.leafEdgeL).css({
         width: newLeafEdgeWidthL+'px', 
-        left: gutter-scaledWL-newLeafEdgeWidthL+'px'
+        left: gutter-currWidthL-newLeafEdgeWidthL+'px'
     });   
 
+    // Left gets the offset of the current left leaf from the document
     var left = $(this.prefetchedImgs[leftLeaf]).offset().left;
+    // $$$ This seems very similar to the gutter.  May be able to consolidate the logic.
     var right = $('#GBcontainer').width()-left-$(this.prefetchedImgs[leftLeaf]).width()+$('#GBcontainer').offset().left-2+'px';
+    // We change the left leaf to right positioning
     $(this.prefetchedImgs[leftLeaf]).css({
         right: right,
-        left: null
+        left: ''
     });
 
      left = $(this.prefetchedImgs[leftLeaf]).offset().left - $('#book_div_1').offset().left;
+     
      right = left+$(this.prefetchedImgs[leftLeaf]).width()+'px';
 
     $(this.leafEdgeTmp).animate({left: gutter}, this.flipSpeed, 'easeInSine');    
     //$(this.prefetchedImgs[leftLeaf]).animate({width: '0px'}, 'slow', 'easeInSine');
-
-    var scaledWR = this.getPageWidth2UP(prevR);
     
     var self = this;
 
     this.removeSearchHilites();
 
+    //console.log('animating leafLeaf ' + leftLeaf + ' to 0px');
     $(this.prefetchedImgs[leftLeaf]).animate({width: '0px'}, self.flipSpeed, 'easeInSine', function() {
-        $(self.leafEdgeTmp).animate({left: gutter+scaledWR+'px'}, self.flipSpeed, 'easeOutSine');    
-        $(self.prefetchedImgs[prevR]).animate({width: scaledWR+'px'}, self.flipSpeed, 'easeOutSine', function() {
-            $(self.prefetchedImgs[prevL]).css('zIndex', 2);
+    
+        //console.log('     and now leafEdgeTmp to left: gutter+newWidthR ' + (gutter + newWidthR));
+        $(self.leafEdgeTmp).animate({left: gutter+newWidthR+'px'}, self.flipSpeed, 'easeOutSine');
+
+        //console.log('  animating newIndexR ' + newIndexR + ' to ' + newWidthR + ' from ' + $(self.prefetchedImgs[newIndexR]).width());
+        $(self.prefetchedImgs[newIndexR]).animate({width: newWidthR+'px'}, self.flipSpeed, 'easeOutSine', function() {
+            $(self.prefetchedImgs[newIndexL]).css('zIndex', 2);
 
             $(self.leafEdgeR).css({
+                // Moves the right leaf edge
                 width: self.twoPageEdgeW-newLeafEdgeWidthL+'px',
-                left:  gutter+scaledWR+'px'
+                left:  gutter+newWidthR+'px'
             });
+
+            $(self.leafEdgeL).css({
+                // Moves and resizes the left leaf edge
+                width: newLeafEdgeWidthL+'px',
+                left:  gutter-newWidthL-newLeafEdgeWidthL+'px'
+            });
+
             
             $(self.twoPageDiv).css({
-                width: scaledWL+scaledWR+self.twoPageEdgeW+20+'px',
-                left: gutter-scaledWL-newLeafEdgeWidthL-10+'px'
+                // Resizes the brown border div
+                width: newWidthL+newWidthR+self.twoPageEdgeW+20+'px',
+                left: gutter-newWidthL-newLeafEdgeWidthL-10+'px'
             });
             
             $(self.leafEdgeTmp).remove();
             self.leafEdgeTmp = null;
             
-            self.currentLeafL = prevL;
-            self.currentLeafR = prevR;
-            self.displayedLeafs = [prevL, prevR];
+            self.currentLeafL = newIndexL;
+            self.currentLeafR = newIndexR;
+            self.displayedLeafs = [newIndexL, newIndexR];
             self.setClickHandlers();
             self.pruneUnusedImgs();
             self.prefetch();
@@ -963,7 +1083,7 @@ GnuBook.prototype.flipBackToIndex = function(index) {
             
             self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
-            //$('#GBzoom').text((self.twoPageH/self.getPageHeight(prevL)).toString().substr(0,4));            
+            //$('#GBzoom').text((self.twoPageH/self.getPageHeight(newIndexL)).toString().substr(0,4));            
         });
     });        
     
@@ -971,10 +1091,9 @@ GnuBook.prototype.flipBackToIndex = function(index) {
 
 // flipFwdToIndex()
 //______________________________________________________________________________
+// Whether we flip left or right is dependent on the page progression
 // to flip forward one spread, pass index=null
 GnuBook.prototype.flipFwdToIndex = function(index) {
-    var rightLeaf = this.currentLeafR;
-    if (rightLeaf >= this.numLeafs-3) return;
 
     if (this.animating) return;
 
@@ -983,39 +1102,46 @@ GnuBook.prototype.flipFwdToIndex = function(index) {
         return;
     }
 
-    
     if (null == index) {
-        index = rightLeaf+2;
+        index = this.currentLeafR+2; // $$$ assumes indices are continuous
     }
-    if (index>=this.numLeafs-3) return;
-
-    if ('R' !=  this.getPageSide(index)) {
-        alert('img with index ' + index + ' is not a right-hand page');
-        return;
-    }
+    if (index > this.lastDisplayableIndex()) return;
 
     this.animating = true;
+    
+    var nextIndices = this.getSpreadIndices(index);
+    
+    //console.log('flipfwd to indices ' + nextIndices[0] + ',' + nextIndices[1]);
 
-    var nextL = index-1;
-    var nextR = index;
+    if ('rl' != this.pageProgression) {
+        // We did not specify RTL
+        var gutter = this.prepareFlipRightToLeft(nextIndices[0], nextIndices[1]);
+        this.flipRightToLeft(nextIndices[0], nextIndices[1], gutter);
+    } else {
+        // RTL
+        var gutter = this.prepareFlipLeftToRight(nextIndices[0], nextIndices[1]);
+        this.flipLeftToRight(nextIndices[0], nextIndices[1], gutter);
+    }
+}
 
-    var gutter= this.prepareFlipFwd(nextL, nextR);
-
-    var oldLeafEdgeWidthL = parseInt( (this.currentLeafL/this.numLeafs)*this.twoPageEdgeW );
+// flipRightToLeft(nextL, nextR, gutter)
+// $$$ better not to have to pass gutter in
+//______________________________________________________________________________
+// Flip from left to right and show the nextL and nextR indices on those sides
+GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR, gutter) {
+    var oldLeafEdgeWidthL = this.leafEdgeWidth(this.currentLeafL);
     var oldLeafEdgeWidthR = this.twoPageEdgeW-oldLeafEdgeWidthL;
-    var newLeafEdgeWidthL = parseInt( (nextL            /this.numLeafs)*this.twoPageEdgeW );    
+    var newLeafEdgeWidthL = this.leafEdgeWidth(newIndexL);  
     var newLeafEdgeWidthR = this.twoPageEdgeW-newLeafEdgeWidthL;
 
     var leafEdgeTmpW = oldLeafEdgeWidthR - newLeafEdgeWidthR;
 
     var top  = ($('#GBcontainer').height() - this.twoPageH) >> 1;                
 
-    var height  = this.getPageHeight(rightLeaf); 
-    var width   = this.getPageWidth(rightLeaf);    
-    var scaledW = this.twoPageH*width/height;
+    var scaledW = this.getPageWidth2UP(this.currentLeafR);
 
     var middle     = ($('#GBcontainer').width() >> 1);
-    var currGutter = middle+parseInt((2*this.currentLeafL - this.numLeafs)*this.twoPageEdgeW/this.numLeafs/2);    
+    var currGutter = middle + this.gutterOffsetForIndex(this.currentLeafL);
 
     this.leafEdgeTmp = document.createElement('div');
     $(this.leafEdgeTmp).css({
@@ -1031,39 +1157,44 @@ GnuBook.prototype.flipFwdToIndex = function(index) {
         zIndex:1000
     }).appendTo('#GBcontainer');
 
-    var scaledWR = this.getPageWidth2UP(nextR);
-    $(this.leafEdgeR).css({width: newLeafEdgeWidthR+'px', left: gutter+scaledWR+'px' });
-
-    var scaledWL = this.getPageWidth2UP(nextL);
+    //var scaledWR = this.getPageWidth2UP(newIndexR); // $$$ should be current instead?
+    //var scaledWL = this.getPageWidth2UP(newIndexL); // $$$ should be current instead?
     
-    var self = this;
+    var currWidthL = this.getPageWidth2UP(this.currentLeafL);
+    var currWidthR = this.getPageWidth2UP(this.currentLeafR);
+    var newWidthL = this.getPageWidth2UP(newIndexL);
+    var newWidthR = this.getPageWidth2UP(newIndexR);
+
+    $(this.leafEdgeR).css({width: newLeafEdgeWidthR+'px', left: gutter+newWidthR+'px' });
+
+    var self = this; // closure-tastic!
 
     var speed = this.flipSpeed;
 
     this.removeSearchHilites();
     
     $(this.leafEdgeTmp).animate({left: gutter}, speed, 'easeInSine');    
-    $(this.prefetchedImgs[rightLeaf]).animate({width: '0px'}, speed, 'easeInSine', function() {
-        $(self.leafEdgeTmp).animate({left: gutter-scaledWL-leafEdgeTmpW+'px'}, speed, 'easeOutSine');    
-        $(self.prefetchedImgs[nextL]).animate({width: scaledWL+'px'}, speed, 'easeOutSine', function() {
-            $(self.prefetchedImgs[nextR]).css('zIndex', 2);
+    $(this.prefetchedImgs[this.currentLeafR]).animate({width: '0px'}, speed, 'easeInSine', function() {
+        $(self.leafEdgeTmp).animate({left: gutter-newWidthL-leafEdgeTmpW+'px'}, speed, 'easeOutSine');    
+        $(self.prefetchedImgs[newIndexL]).animate({width: newWidthL+'px'}, speed, 'easeOutSine', function() {
+            $(self.prefetchedImgs[newIndexR]).css('zIndex', 2);
 
             $(self.leafEdgeL).css({
                 width: newLeafEdgeWidthL+'px', 
-                left: gutter-scaledWL-newLeafEdgeWidthL+'px'
+                left: gutter-newWidthL-newLeafEdgeWidthL+'px'
             });
             
             $(self.twoPageDiv).css({
-                width: scaledWL+scaledWR+self.twoPageEdgeW+20+'px',
-                left: gutter-scaledWL-newLeafEdgeWidthL-10+'px'
+                width: newWidthL+newWidthR+self.twoPageEdgeW+20+'px',
+                left: gutter-newWidthL-newLeafEdgeWidthL-10+'px'
             });
             
             $(self.leafEdgeTmp).remove();
             self.leafEdgeTmp = null;
             
-            self.currentLeafL = nextL;
-            self.currentLeafR = nextR;
-            self.displayedLeafs = [nextL, nextR];
+            self.currentLeafL = newIndexL;
+            self.currentLeafR = newIndexR;
+            self.displayedLeafs = [newIndexL, newIndexR];
             self.setClickHandlers();            
             self.pruneUnusedImgs();
             self.prefetch();
@@ -1071,10 +1202,9 @@ GnuBook.prototype.flipFwdToIndex = function(index) {
 
             self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
-            //$('#GBzoom').text((self.twoPageH/self.getPageHeight(nextL)).toString().substr(0,4));
+            //$('#GBzoom').text((self.twoPageH/self.getPageHeight(newIndexL)).toString().substr(0,4));
         });
-    });
-    
+    });    
 }
 
 // setClickHandlers
@@ -1084,19 +1214,20 @@ GnuBook.prototype.setClickHandlers = function() {
     $(this.prefetchedImgs[this.currentLeafL]).click(function() {
         //self.prevPage();
         self.autoStop();
-        self.flipBackToIndex(null);
+        self.left();
     });
     $(this.prefetchedImgs[this.currentLeafR]).click(function() {
         //self.nextPage();'
         self.autoStop();
-        self.flipFwdToIndex(null);        
+        self.right();        
     });
 }
 
 // prefetchImg()
 //______________________________________________________________________________
 GnuBook.prototype.prefetchImg = function(leafNum) {
-    if (undefined == this.prefetchedImgs[leafNum]) {        
+    if (undefined == this.prefetchedImgs[leafNum]) {    
+        //console.log('prefetching ' + leafNum);
         var img = document.createElement("img");
         img.src = this.getPageURI(leafNum);
         this.prefetchedImgs[leafNum] = img;
@@ -1104,9 +1235,15 @@ GnuBook.prototype.prefetchImg = function(leafNum) {
 }
 
 
-// prepareFlipBack()
+// prepareFlipLeftToRight()
+//
 //______________________________________________________________________________
-GnuBook.prototype.prepareFlipBack = function(prevL, prevR) {
+//
+// Prepare to flip the left page towards the right.  This corresponds to moving
+// backward when the page progression is left to right.
+GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
+
+    //console.log('  preparing left->right for ' + prevL + ',' + prevR);
 
     this.prefetchImg(prevL);
     this.prefetchImg(prevR);
@@ -1117,12 +1254,19 @@ GnuBook.prototype.prepareFlipBack = function(prevL, prevR) {
     var top  = ($('#GBcontainer').height() - this.twoPageH) >> 1;                
     var scaledW = this.twoPageH*width/height;
 
-    var gutter = middle+parseInt((2*prevL - this.numLeafs)*this.twoPageEdgeW/this.numLeafs/2);    
-
+    // The gutter is the dividing line between the left and right pages.
+    // It is offset from the middle to create the illusion of thickness to the pages
+    var gutter = middle + this.gutterOffsetForIndex(prevL);
+    
+    //console.log('    gutter for ' + prevL + ' is ' + gutter);
+    //console.log('    prevL.left: ' + (gutter - scaledW) + 'px');
+    //console.log('    changing prevL ' + prevL + ' to left: ' + (gutter-scaledW) + ' width: ' + scaledW);
+    
     $(this.prefetchedImgs[prevL]).css({
         position: 'absolute',
         /*right:   middle+'px',*/
         left: gutter-scaledW+'px',
+        right: '',
         top:    top+'px',
         backgroundColor: 'rgb(234, 226, 205)',
         height: this.twoPageH,
@@ -1133,9 +1277,12 @@ GnuBook.prototype.prepareFlipBack = function(prevL, prevR) {
 
     $('#GBcontainer').append(this.prefetchedImgs[prevL]);
 
+    //console.log('    changing prevR ' + prevR + ' to left: ' + gutter + ' width: 0');
+
     $(this.prefetchedImgs[prevR]).css({
         position: 'absolute',
         left:   gutter+'px',
+        right: '',
         top:    top+'px',
         backgroundColor: 'rgb(234, 226, 205)',
         height: this.twoPageH,
@@ -1151,9 +1298,11 @@ GnuBook.prototype.prepareFlipBack = function(prevL, prevR) {
             
 }
 
-// prepareFlipFwd()
+// prepareFlipRightToLeft()
 //______________________________________________________________________________
-GnuBook.prototype.prepareFlipFwd = function(nextL, nextR) {
+GnuBook.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
+
+    //console.log('  preparing left<-right for ' + nextL + ',' + nextR);
 
     this.prefetchImg(nextL);
     this.prefetchImg(nextR);
@@ -1164,8 +1313,11 @@ GnuBook.prototype.prepareFlipFwd = function(nextL, nextR) {
     var top  = ($('#GBcontainer').height() - this.twoPageH) >> 1;                
     var scaledW = this.twoPageH*width/height;
 
-    var gutter = middle+parseInt((2*nextL - this.numLeafs)*this.twoPageEdgeW/this.numLeafs/2);    
+    var gutter = middle + this.gutterOffsetForIndex(nextL);
     
+    //console.log('right to left to %d gutter is %d', nextL, gutter);
+    
+    //console.log(' prepareRTL changing nextR ' + nextR + ' to left: ' + gutter);
     $(this.prefetchedImgs[nextR]).css({
         position: 'absolute',
         left:   gutter+'px',
@@ -1183,6 +1335,7 @@ GnuBook.prototype.prepareFlipFwd = function(nextL, nextR) {
     width   = this.getPageWidth(nextL);      
     scaledW = this.twoPageH*width/height;
 
+    //console.log(' prepareRTL changing nextL ' + nextL + ' to right: ' + $('#GBcontainer').width()-gutter);
     $(this.prefetchedImgs[nextL]).css({
         position: 'absolute',
         right:   $('#GBcontainer').width()-gutter+'px',
@@ -1200,27 +1353,27 @@ GnuBook.prototype.prepareFlipFwd = function(nextL, nextR) {
             
 }
 
-// getNextLeafs()
+// getNextLeafs() -- NOT RTL AWARE
 //______________________________________________________________________________
-GnuBook.prototype.getNextLeafs = function(o) {
-    //TODO: we might have two left or two right leafs in a row (damaged book)
-    //For now, assume that leafs are contiguous.
-    
-    //return [this.currentLeafL+2, this.currentLeafL+3];
-    o.L = this.currentLeafL+2;
-    o.R = this.currentLeafL+3;
-}
+// GnuBook.prototype.getNextLeafs = function(o) {
+//     //TODO: we might have two left or two right leafs in a row (damaged book)
+//     //For now, assume that leafs are contiguous.
+//     
+//     //return [this.currentLeafL+2, this.currentLeafL+3];
+//     o.L = this.currentLeafL+2;
+//     o.R = this.currentLeafL+3;
+// }
 
-// getprevLeafs()
+// getprevLeafs() -- NOT RTL AWARE
 //______________________________________________________________________________
-GnuBook.prototype.getPrevLeafs = function(o) {
-    //TODO: we might have two left or two right leafs in a row (damaged book)
-    //For now, assume that leafs are contiguous.
-    
-    //return [this.currentLeafL-2, this.currentLeafL-1];
-    o.L = this.currentLeafL-2;
-    o.R = this.currentLeafL-1;
-}
+// GnuBook.prototype.getPrevLeafs = function(o) {
+//     //TODO: we might have two left or two right leafs in a row (damaged book)
+//     //For now, assume that leafs are contiguous.
+//     
+//     //return [this.currentLeafL-2, this.currentLeafL-1];
+//     o.L = this.currentLeafL-2;
+//     o.R = this.currentLeafL-1;
+// }
 
 // pruneUnusedImgs()
 //______________________________________________________________________________
@@ -1403,7 +1556,7 @@ GnuBook.prototype.updateSearchHilites2UP = function() {
             var reduce = this.twoPageH/height;
             var scaledW = parseInt(width*reduce);
             
-            var gutter = middle+parseInt((2*this.currentLeafL - this.numLeafs)*this.twoPageEdgeW/this.numLeafs/2);
+            var gutter = middle + this.gutterOffsetForIndex(this.currentLeafL);
             
             if ('L' == this.getPageSide(key)) {
                 var pageL = gutter-scaledW;
@@ -1472,22 +1625,35 @@ GnuBook.prototype.showEmbedCode = function() {
 // autoToggle()
 //______________________________________________________________________________
 GnuBook.prototype.autoToggle = function() {
+
+    var bComingFrom1up = false;
     if (2 != this.mode) {
+        bComingFrom1up = true;
         this.switchMode(2);
     }
 
     var self = this;
     if (null == this.autoTimer) {
         this.flipSpeed = 2000;
-        this.flipFwdToIndex();
+        
+        // $$$ Draw events currently cause layout problems when they occur during animation.
+        //     There is a specific problem when changing from 1-up immediately to autoplay in RTL so
+        //     we workaround for now by not triggering immediate animation in that case.
+        //     See https://bugs.launchpad.net/gnubook/+bug/328327
+        if (('rl' == this.pageProgression) && bComingFrom1up) {
+            // don't flip immediately -- wait until timer fires
+        } else {
+            // flip immediately
+            this.flipFwdToIndex();        
+        }
 
         $('#autoImg').removeClass('play').addClass('pause');
         this.autoTimer=setInterval(function(){
             if (self.animating) {return;}
-
-            if (self.currentLeafR >= self.numLeafs-5) {
-                self.flipBackToIndex(1);
-            } else {
+            
+            if (Math.max(self.currentLeafL, self.currentLeafR) >= self.lastDisplayableIndex()) {
+                self.flipBackToIndex(1); // $$$ really what we want?
+            } else {            
                 self.flipFwdToIndex();
             }
         },5000);
@@ -1510,10 +1676,192 @@ GnuBook.prototype.autoStop = function() {
 // keyboardNavigationIsDisabled(event)
 //   - returns true if keyboard navigation should be disabled for the event
 //______________________________________________________________________________
-
 GnuBook.prototype.keyboardNavigationIsDisabled = function(event) {
     if (event.target.tagName == "INPUT") {
         return true;
     }   
     return false;
+}
+
+// gutterOffsetForIndex
+//______________________________________________________________________________
+//
+// Returns the gutter offset for the spread containing the given index.
+// This function supports RTL
+GnuBook.prototype.gutterOffsetForIndex = function(pindex) {
+
+    // To find the offset of the gutter from the middle we calculate our percentage distance
+    // through the book (0..1), remap to (-0.5..0.5) and multiply by the total page edge width
+    var offset = parseInt(((pindex / this.numLeafs) - 0.5) * this.twoPageEdgeW);
+    
+    // But then again for RTL it's the opposite
+    if ('rl' == this.pageProgression) {
+        offset = -offset;
+    }
+    
+    return offset;
+}
+
+// leafEdgeWidth
+//______________________________________________________________________________
+// Returns the width of the leaf edge div for the page with index given
+GnuBook.prototype.leafEdgeWidth = function(pindex) {
+    // $$$ could there be single pixel rounding errors for L vs R?
+    if ((this.getPageSide(pindex) == 'L') && (this.pageProgression != 'rl')) {
+        return parseInt( (pindex/this.numLeafs) * this.twoPageEdgeW + 0.5);
+    } else {
+        return parseInt( (1 - pindex/this.numLeafs) * this.twoPageEdgeW + 0.5);
+    }
+}
+
+// jumpIndexForLeftEdgePageX
+//______________________________________________________________________________
+// Returns the target jump leaf given a page coordinate (inside the left page edge div)
+GnuBook.prototype.jumpIndexForLeftEdgePageX = function(pageX) {
+    if ('rl' != this.pageProgression) {
+        // LTR - flipping backward
+        var jumpLeaf = this.currentLeafL - ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
+        // browser may have resized the div due to font size change -- see https://bugs.launchpad.net/gnubook/+bug/333570
+        jumpLeaf = Math.min(jumpLeaf, this.currentLeafL - 2);
+        jumpLeaf = Math.max(jumpLeaf, this.firstDisplayableIndex());
+        return jumpLeaf;
+    } else {
+        var jumpLeaf = this.currentLeafL + ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
+        jumpLeaf = Math.max(jumpLeaf, this.currentLeafL + 2);
+        jumpLeaf = Math.min(jumpLeaf, this.lastDisplayableIndex());
+        return jumpLeaf;
+    }
+}
+
+// jumpIndexForRightEdgePageX
+//______________________________________________________________________________
+// Returns the target jump leaf given a page coordinate (inside the right page edge div)
+GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
+    if ('rl' != this.pageProgression) {
+        // LTR
+        var jumpLeaf = this.currentLeafR + (pageX - $(this.leafEdgeR).offset().left) * 10;
+        jumpLeaf = Math.max(jumpLeaf, this.currentLeafR + 2);
+        jumpLeaf = Math.min(jumpLeaf, this.lastDisplayableIndex());
+        return jumpLeaf;
+    } else {
+        var jumpLeaf = this.currentLeafR - (pageX - $(this.leafEdgeR).offset().left) * 10;
+        jumpLeaf = Math.min(jumpLeaf, this.currentLeafR - 2);
+        jumpLeaf = Math.max(jumpLeaf, this.firstDisplayableIndex());
+        return jumpLeaf;
+    }
+}
+
+GnuBook.prototype.initToolbar = function(mode) {
+    // $$$ turn this into a member variable
+    var jToolbar = $('#GBtoolbar'); // j prefix indicates jQuery object
+    
+    // We build in mode 2
+    jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'><button class='GBicon page_code' /><form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></form> <button class='GBicon book_left'/> <button class='GBicon book_right' /> <button class='GBicon play' id='autoImg' /></span>");
+
+    // Bind the non-changing click handlers
+    jToolbar.find('.page_code').bind('click', function(e) {
+        gb.showEmbedCode();
+        return false;
+    });
+    jToolbar.find('.play').bind('click', function(e) {
+        gb.autoToggle();
+        return false;
+    });
+
+    // Switch to requested mode -- binds other click handlers
+    this.switchToolbarMode(mode);
+
+}
+
+
+// switchToolbarMode
+//______________________________________________________________________________
+// Update the toolbar for the given mode (changes navigation buttons)
+// $$$ we should soon split the toolbar out into its own module
+GnuBook.prototype.switchToolbarMode = function(mode) {
+    if (1 == mode) {
+        // 1-up        
+      $('#GBtoolbar .GBicon.book_left').removeClass('book_left').addClass('book_up');
+        $('#GBtoolbar .GBicon.book_right').removeClass('book_right').addClass('book_down');
+    } else {
+        // 2-up
+        $('#GBtoolbar .GBicon.book_up').removeClass('book_up').addClass('book_left');
+        $('#GBtoolbar .GBicon.book_down').removeClass('book_down').addClass('book_right');
+    }
+    
+    this.bindToolbarNavHandlers($('#GBtoolbar'));
+}
+
+GnuBook.prototype.bindToolbarHandlers = function(jToolbar) {
+
+}
+
+// bindToolbarNavHandlers
+//______________________________________________________________________________
+// Binds the toolbar handlers
+GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
+
+    // $$$ TODO understand why an anonymous function is required instead of just
+    //          setting handler to e.g. gb.prev
+
+    jToolbar.find('.book_left').unbind('click')
+        .bind('click', function(e) {
+            gb.left();
+            return false;
+         });
+         
+    jToolbar.find('.book_right').unbind('click')
+        .bind('click', function(e) {
+            gb.right();
+            return false;
+        });
+        
+    jToolbar.find('.book_up').unbind('click')
+        .bind('click', function(e) {
+            gb.prev();
+            return false;
+        });        
+        
+    jToolbar.find('.book_down').unbind('click')
+        .bind('click', function(e) {
+            gb.next();
+            return false;
+        });      
+}
+
+// firstDisplayableIndex
+//______________________________________________________________________________
+// Returns the index of the first visible page, dependent on the mode.
+// $$$ Currently we cannot display the front/back cover in 2-up and will need to update
+// this function when we can as part of https://bugs.launchpad.net/gnubook/+bug/296788
+GnuBook.prototype.firstDisplayableIndex = function() {
+    if (this.mode == 0) {
+        return 0;
+    } else {
+        return 1; // $$$ we assume there are enough pages... we need logic for very short books
+    }
+}
+
+// lastDisplayableIndex
+//______________________________________________________________________________
+// Returns the index of the last visible page, dependent on the mode.
+// $$$ Currently we cannot display the front/back cover in 2-up and will need to update
+// this function when we can as pa  rt of https://bugs.launchpad.net/gnubook/+bug/296788
+GnuBook.prototype.lastDisplayableIndex = function() {
+    if (this.mode == 2) {
+        if (this.lastDisplayableIndex2up === null) {
+            // Calculate and cache
+            var candidate = this.numLeafs - 1;
+            for ( ; candidate >= 0; candidate--) {
+                var spreadIndices = this.getSpreadIndices(candidate);
+                if (Math.max(spreadIndices[0], spreadIndices[1]) < (this.numLeafs - 1)) {
+                    break;
+                }
+            }
+            this.lastDisplayableIndex2up = candidate;
+        }
+        return this.lastDisplayableIndex2up;
+    } else {
+        return this.numLeafs - 1;
+    }
 }
