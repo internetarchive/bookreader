@@ -76,7 +76,8 @@ GnuBook.prototype.init = function() {
     document.title = title;
     
     $("#GnuBook").empty();
-    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon zoom_out' onclick='gb.zoom1up(-1); return false;'/> <button class='GBicon zoom_in' onclick='gb.zoom1up(1); return false;'/> zoom: <span id='GBzoom'>25</span>% <button class='GBicon script' onclick='gb.switchMode(1); return false;'/> <button class='GBicon book_open' onclick='gb.switchMode(2); return false;'/>  &nbsp;&nbsp; <a href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
+    // XXXmang hook up logo to url action
+    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon logo' /> <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/><button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/> Zoom: <span id='GBzoom'>25</span>% <button class='GBicon rollover script' onclick='gb.switchMode(1); return false;'/> <button class='GBicon rollover book_open' onclick='gb.switchMode(2); return false;'/>  &nbsp;&nbsp; <a class='GBblack' href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
     this.initToolbar(this.mode); // Build inside of toolbar div
     $("#GnuBook").append("<div id='GBcontainer'></div>");
     $("#GBcontainer").append("<div id='GBpageview'></div>");
@@ -86,6 +87,7 @@ GnuBook.prototype.init = function() {
     });
 
     this.setupKeyListeners();
+    this.setupRollovers();
 
     $(window).bind('resize', this, function(e) {
         //console.log('resize!');
@@ -639,7 +641,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
         height: bookCoverDivHeight+'px',
         visibility: 'visible',
         position: 'absolute',
-        backgroundColor: 'rgb(136, 51, 34)',
+        backgroundColor: '#663929',
         left: bookCoverDivLeft + 'px',
         top: bookCoverDivTop+'px',
         MozBorderRadiusTopleft: '7px',
@@ -1756,7 +1758,7 @@ GnuBook.prototype.initToolbar = function(mode) {
     var jToolbar = $('#GBtoolbar'); // j prefix indicates jQuery object
     
     // We build in mode 2
-    jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'><button class='GBicon page_code' /><form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></form> <button class='GBicon book_left'/> <button class='GBicon book_right' /> <button class='GBicon play' id='autoImg' /></span>");
+    jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'><button class='GBicon rollover page_code' /><form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></form> <button class='GBicon rollover book_left'/><button class='GBicon rollover book_right' /> <button class='GBicon rollover play' id='autoImg' /></span>");
 
     // Bind the non-changing click handlers
     jToolbar.find('.page_code').bind('click', function(e) {
@@ -1864,4 +1866,21 @@ GnuBook.prototype.lastDisplayableIndex = function() {
     } else {
         return this.numLeafs - 1;
     }
+}
+
+// setupRollovers
+//______________________________________________________________________________
+// Set up rollover behaviour for icons
+GnuBook.prototype.setupRollovers = function() {
+
+    // TODO precache
+    
+    // XXXmang this doesn't quite work because when we change classes the explicitly set
+    //         url stays with the element
+    // On hover we change the base to rollover.  We switch back on off-hover.
+    $('#GnuBook .rollover').hover( function() {
+        $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_base', '_rollover'));
+    }, function () {
+        $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_rollover', '_base'));
+    });
 }

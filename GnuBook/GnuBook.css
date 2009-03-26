@@ -1,12 +1,13 @@
 #GnuBook {
  border:1px solid black;
  position:absolute;
+ font-family: arial, sans-serif;
 }
 
 #GBtoolbar {
     height:25px;
     width:100%;
-    background-color: rgb(241, 239, 237);    
+    background-color: rgb(241, 239, 237);
 }
 
 #GBcontainer {
@@ -17,15 +18,15 @@
     overflow-x:auto;
     overflow-y:scroll;    
     /*text-align: center;*/
-    background-color: #625E25;
+    background-color: #FFFFFF;
     position:absolute;
 }
 
 .GBpagediv1up {
     background-color: #ccc;
     overflow:hidden;
-    border-right:3px solid #333;
-    border-bottom:3px solid #333;    
+    border-right: 2px solid #444444;
+    border-bottom: 2px solid #444444; 
 }
 
 .GBpagediv2up {
@@ -37,7 +38,8 @@
 #GnuBookSearch {
     border:1px solid black;
     position:absolute;
-    background-color: #625E25;    
+    background-color: #CCCCCC;
+    font-family: arial, sans-serif;
 }
 
 #GnuBookSearchResults {
@@ -48,6 +50,7 @@
     position: absolute;
     left: 0px;
     right: 0px;    
+    font-family: arial, san-serif;
     font-size: 0.85em; 
     padding: 2px;
 }
@@ -79,13 +82,14 @@
     /*width: 100%;*/    /* this causes horizontal scroll bar in FF */
     right: 0px;
     clear: both; 
-    color: #FFF; 
+    color: #000000; 
     padding: 0px 0px 0px 10px; 
-    background: #625E25; 
+    background: #CCCCCC; 
     height: 2em; 
     line-height: 25px; 
     vertical-align: middle; 
-    font-size: 12px; 
+    font-family: arial, sans-serif;
+    font-size: 12px;
 }
 
 .GBlogotype {
@@ -99,6 +103,10 @@
 a.GBwhite 			{ color: #fff }
 a.GBwhite:hover 		{ text-decoration: none; }
 a.GBwhite:visited		{ color: #fff }
+
+a.GBblack           { color: #000000 }
+a.GBblack:hover     { text-decoration: none; }
+a.GBblack:visited   { color: #000000 }
 
 .GBnavlinks {
     float:right; 
@@ -129,15 +137,16 @@ a.GBwhite:visited		{ color: #fff }
     float: left; 
 }
 
-.GBicon.zoom_out { background: url(images/zoom_out.png) no-repeat; }
-.GBicon.zoom_in { background: url(images/zoom_in.png) no-repeat; }
-.GBicon.script { background: url(images/script.png) no-repeat; }
-.GBicon.book_open { background: url(images/book_open.png) no-repeat; }
-.GBicon.page_code { background: url(images/page_code.png) no-repeat; }
-.GBicon.book_left { background: url(images/book_left.png) no-repeat; }
-.GBicon.book_right { background: url(images/book_right.png) no-repeat; }
-.GBicon.book_up { background: url(images/page_white_get.png) no-repeat; }
-.GBicon.book_down { background: url(images/page_white_put.png) no-repeat; }
+.GBicon.logo { background: url(images/logo_base.png) no-repeat; }
+.GBicon.zoom_out { background: url(images/zoom_out_base.png) no-repeat; }
+.GBicon.zoom_in { background: url(images/zoom_in_base.png) no-repeat; }
+.GBicon.script { background: url(images/one_page_mode_base.png) no-repeat; }
+.GBicon.book_open { background: url(images/two_page_mode_base.png) no-repeat; }
+.GBicon.page_code { background: url(images/embed_base.png) no-repeat; }
+.GBicon.book_left { background: url(images/book_left_base.png) no-repeat; }
+.GBicon.book_right { background: url(images/book_right_base.png) no-repeat; }
+.GBicon.book_up { background: url(images/book_up_base.png) no-repeat; }
+.GBicon.book_down { background: url(images/book_down_base.png) no-repeat; }
 
-.GBicon.play { background: url(images/control_play_blue.png) no-repeat; }
-.GBicon.pause { background: url(images/control_pause_blue.png) no-repeat; }
+.GBicon.play { background: url(images/control_play_base.png) no-repeat; }
+.GBicon.pause { background: url(images/control_pause_base.png) no-repeat; }

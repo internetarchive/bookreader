@@ -23,7 +23,7 @@ $id = $_REQUEST['id'];
 // manually update with output of 'date "+%Y%m%d%H%M"' at each checkin so that browsers
 // do not use old cached version
 // see https://bugs.launchpad.net/gnubook/+bug/330748
-$version = "200903042157";
+$version = "200903192301";
 
 if ("" == $id) {
     echo "No identifier specified!";
@@ -43,7 +43,7 @@ if ("" == $id) {
         <script type="text/javascript" src="/GnuBook/GnuBook.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/GnuBook/jquery.easing.1.3.js"></script>
 </head>
-<body style="background-color: rgb(249, 248, 208);">
+<body style="background-color: #FFFFFF;">
 
 <div id="GnuBook" style="left:10px; right:200px; top:10px; bottom:2em;">x</div>
 
@@ -55,9 +55,11 @@ if ("" == $id) {
 <script type="text/javascript" src="/GnuBook/GnuBookJSLocate.php?id=<?echo $id;?>"></script>
 
 <div id="GnuBookSearch" style="width:190px; right:0px; top:10px; bottom:2em;">
-<form action='javascript:' onsubmit="gb.search($('#GnuBookSearchBox').val());">
-<input id="GnuBookSearchBox" type="text" size="20" value="search..." onfocus="if('search...'==this.value)this.value='';"/><input type="submit" value="go"/>
-</form>
+    <form action='javascript:' onsubmit="gb.search($('#GnuBookSearchBox').val());">
+        <p style="display: inline">
+            <input id="GnuBookSearchBox" type="text" size="20" value="search..." onfocus="if('search...'==this.value)this.value='';" /><input type="submit" value="go" />
+        </p>
+    </form>
     <div id="GnuBookSearchResults">
         Search results
     </div>
@@ -66,18 +68,13 @@ if ("" == $id) {
 
 <div id="GBfooter">
     <div class="GBlogotype">
-        <a href="http://openlibrary.org/" class="GBwhite">Open Library</a>
-        <a href="http://openlibrary.org/beta" class="GBwhite" style="font-size: 0.8em; text-decoration: underline;">beta</a>
+        <a href="http://archive.org/" class="GBblack">Internet Archive</a>
     </div>
     <div class="GBnavlinks">
-        <a class="GBwhite" href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a> |
-        <a class="GBwhite" href="https://bugs.launchpad.net/gnubook/+filebug-advanced">Report Errors</a> |
-        <a class="GBwhite" href="http://openlibrary.org/about">About Us</a> |
-        <a class="GBwhite" href="http://openlibrary.org/index/index.html">Index</a> |
-        <a class="GBwhite" href="http://www.archive.org/">IA</a> |
-        <a class="GBwhite" href="http://www.opencontentalliance.org/">OCA</a> |
-        <a class="GBwhite" href="http://wikimediafoundation.org/">WMF</a> |
-        <a class="GBwhite" href="http://openlibrary.org/about/contact">Contact Us</a>
+        <a class="GBblack" href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a> |
+        <a class="GBblack" href="https://bugs.launchpad.net/gnubook/+filebug-advanced">Report Errors</a> |
+        <a class="GBblack" href="http://www.archive.org/details/texts">Texts Collection</a> |
+        <a class="GBblack" href="http://www.archive.org/about/contact.php">Contact Us</a>
     </div>
 </div>
 
