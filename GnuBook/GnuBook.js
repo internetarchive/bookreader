@@ -1758,7 +1758,12 @@ GnuBook.prototype.initToolbar = function(mode) {
     var jToolbar = $('#GBtoolbar'); // j prefix indicates jQuery object
     
     // We build in mode 2
-    jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'><button class='GBicon rollover page_code' /><form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></form> <button class='GBicon rollover book_left'/><button class='GBicon rollover book_right' /> <button class='GBicon rollover play' id='autoImg' /></span>");
+    jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'>"
+        + "<button class='GBicon rollover page_code' />"
+        + "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></form>"
+        + "<button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' />"
+        + "<button class='GBicon rollover book_up' style='display: hidden' /><button class='GBicon rollover book_down' style='display: hidden' />"
+        + "<button class='GBicon rollover play' id='autoImg' /></span>");
 
     // Bind the non-changing click handlers
     jToolbar.find('.page_code').bind('click', function(e) {
@@ -1783,12 +1788,16 @@ GnuBook.prototype.initToolbar = function(mode) {
 GnuBook.prototype.switchToolbarMode = function(mode) {
     if (1 == mode) {
         // 1-up        
-      $('#GBtoolbar .GBicon.book_left').removeClass('book_left').addClass('book_up');
-        $('#GBtoolbar .GBicon.book_right').removeClass('book_right').addClass('book_down');
+        $('#GBtoolbar .GBicon.book_left').hide();
+        $('#GBtoolbar .GBicon.book_right').hide();
+        $('#GBtoolbar .GBicon.book_up').show();
+        $('#GBtoolbar .GBicon.book_down').show();
     } else {
         // 2-up
-        $('#GBtoolbar .GBicon.book_up').removeClass('book_up').addClass('book_left');
-        $('#GBtoolbar .GBicon.book_down').removeClass('book_down').addClass('book_right');
+        $('#GBtoolbar .GBicon.book_up').hide();
+        $('#GBtoolbar .GBicon.book_down').hide();
+        $('#GBtoolbar .GBicon.book_left').show();
+        $('#GBtoolbar .GBicon.book_right').show();
     }
     
     this.bindToolbarNavHandlers($('#GBtoolbar'));
