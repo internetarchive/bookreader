@@ -1645,7 +1645,8 @@ GnuBook.prototype.autoToggle = function() {
             this.flipFwdToIndex();        
         }
 
-        $('#autoImg').removeClass('play').addClass('pause');
+        $('#GBtoolbar .play').hide();
+        $('#GBtoolbar .pause').show();
         this.autoTimer=setInterval(function(){
             if (self.animating) {return;}
             
@@ -1666,7 +1667,8 @@ GnuBook.prototype.autoStop = function() {
     if (null != this.autoTimer) {
         clearInterval(this.autoTimer);
         this.flipSpeed = 'fast';
-        $('#autoImg').removeClass('pause').addClass('play');
+        $('#GBtoolbar .pause').hide();
+        $('#GBtoolbar .play').show();
         this.autoTimer = null;
     }
 }
@@ -1750,8 +1752,8 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 }
 
 GnuBook.prototype.initToolbar = function(mode) {
-    // XXXmang hook up logo to url action
-    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon logo' />"
+    // XXXmang hook up logo to url action -- change buttons to image links? -- don't hardcode URL
+    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon logo' onclick='window.location = \"http://www.archive.org\";' />"
         + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
         + "<button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/>"
         + " <span class='label'>Zoom: <span id='GBzoom'>25</span>%</span>"
@@ -1769,7 +1771,7 @@ GnuBook.prototype.initToolbar = function(mode) {
         + "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
         + "<div class='GBtoolbarmode2' style='display: inline'><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /></div>"
         + "<div class='GBtoolbarmode1' style='display: hidden'><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /></div>"
-        + "<button class='GBicon rollover play' id='autoImg' /></span>");
+        + "<button class='GBicon rollover play' /><button class='GBicon rollover pause' style='display: none' /></span>");
 
     // Bind the non-changing click handlers
     jToolbar.find('.page_code').bind('click', function(e) {
@@ -1777,6 +1779,10 @@ GnuBook.prototype.initToolbar = function(mode) {
         return false;
     });
     jToolbar.find('.play').bind('click', function(e) {
+        gb.autoToggle();
+        return false;
+    });
+    jToolbar.find('.pause').bind('click', function(e) {
         gb.autoToggle();
         return false;
     });
@@ -1879,14 +1885,10 @@ GnuBook.prototype.setupRollovers = function() {
 
     // TODO precache
     
-    // XXXmang this doesn't quite work because when we change classes the explicitly set
-    //         url stays with the element
     // On hover we change the base to rollover.  We switch back on off-hover.
     $('#GnuBook .rollover').hover( function() {
-        console.log('hover in ' + this); //XXX
         $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_base', '_rollover'));
     }, function () {
-        console.log('hover out ' + this); //XXX
         $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_rollover', '_base'));
     });
 }
