@@ -68,23 +68,12 @@ GnuBook.prototype.init = function() {
             startLeaf = "#" + this.leafNumToIndex(this.titleLeaf);
         }
     }
-    var title = this.bookTitle.substr(0,50);
-    if (this.bookTitle.length>50) title += '...';
     
     // Ideally this would be set in the HTML/PHP for better search engine visibility but
     // it takes some time to locate the item and retrieve the metadata
-    document.title = title;
+    document.title = this.shortTitle(50);
     
     $("#GnuBook").empty();
-    // XXXmang hook up logo to url action
-    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon logo' />"
-        + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
-        + "<button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/>"
-        + " <span class='label'>Zoom: <span id='GBzoom'>25</span>%</span>"
-        + " <button class='GBicon rollover script' onclick='gb.switchMode(1); return false;'/>"
-        + " <button class='GBicon rollover book_open' onclick='gb.switchMode(2); return false;'/>"
-        + "&nbsp;&nbsp; <a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+title+"</a>"
-        + "</span></div>");
     this.initToolbar(this.mode); // Build inside of toolbar div
     $("#GnuBook").append("<div id='GBcontainer'></div>");
     $("#GBcontainer").append("<div id='GBpageview'></div>");
@@ -1761,6 +1750,16 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 }
 
 GnuBook.prototype.initToolbar = function(mode) {
+    // XXXmang hook up logo to url action
+    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon logo' />"
+        + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
+        + "<button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/>"
+        + " <span class='label'>Zoom: <span id='GBzoom'>25</span>%</span>"
+        + " <button class='GBicon rollover script' onclick='gb.switchMode(1); return false;'/>"
+        + " <button class='GBicon rollover book_open' onclick='gb.switchMode(2); return false;'/>"
+        + "&nbsp;&nbsp; <a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
+        + "</span></div>");
+
     // $$$ turn this into a member variable
     var jToolbar = $('#GBtoolbar'); // j prefix indicates jQuery object
     
@@ -1890,4 +1889,17 @@ GnuBook.prototype.setupRollovers = function() {
         console.log('hover out ' + this); //XXX
         $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_rollover', '_base'));
     });
+}
+
+// shortTitle(maximumCharacters)
+//________
+// Returns a shortened version of the title with the maximum number of characters
+GnuBook.prototype.shortTitle = function(maximumCharacters) {
+    if (this.bookTitle.length < maximumCharacters) {
+        return this.bookTitle;
+    }
+    
+    var title = this.bookTitle.substr(0, maximumCharacters - 3);
+    title += '...';
+    return title;
 }
