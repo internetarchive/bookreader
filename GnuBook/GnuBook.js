@@ -1753,7 +1753,8 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 
 GnuBook.prototype.initToolbar = function(mode) {
     // XXXmang hook up logo to url action -- change buttons to image links? -- don't hardcode URL
-    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon logo' onclick='window.location = \"http://www.archive.org\";' />"
+    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'>"
+        + "<button class='GBicon logo rollover' onclick='window.location = \"http://www.archive.org\";' />"
         + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
         + "<button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/>"
         + " <span class='label'>Zoom: <span id='GBzoom'>25</span>%</span>"
