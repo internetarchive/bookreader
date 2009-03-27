@@ -7,7 +7,7 @@
 #GBtoolbar {
     height:25px;
     width:100%;
-    background-color: rgb(241, 239, 237);
+    background-color: #E6E4E1;
 }
 
 #GBtoolbar .label {
@@ -31,13 +31,12 @@
 }
 
 .GBpagediv1up {
-    background-color: #ccc;
+    background-color: #FFFFEE;
     overflow:hidden;
     border-right: 2px solid #717171;
     border-bottom: 2px solid #717171;
     border-left: 1px solid #909090;
     border-top: 1px solid #909090;
-
 }
 
 .GBpagediv2up {
@@ -49,12 +48,12 @@
 #GnuBookSearch {
     border:1px solid black;
     position:absolute;
-    background-color: #CCCCCC;
+    background-color: #E6E4E1;
     font-family: arial, sans-serif;
 }
 
 #GnuBookSearchResults {
-    background-color: #f8f8f8;  
+    background-color: #FCFCFC;
     top: 25px;
     bottom: 0px;
     overflow:auto;    
