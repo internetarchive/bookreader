@@ -22,15 +22,22 @@
     overflow-x:auto;
     overflow-y:scroll;    
     /*text-align: center;*/
-    background-color: #FFFFFF;
+    background-color: #FCFCFC;
     position:absolute;
+}
+
+#GBpageview {
+    background-color: #FCFCFC;
 }
 
 .GBpagediv1up {
     background-color: #ccc;
     overflow:hidden;
-    border-right: 2px solid #444444;
-    border-bottom: 2px solid #444444; 
+    border-right: 2px solid #717171;
+    border-bottom: 2px solid #717171;
+    border-left: 1px solid #909090;
+    border-top: 1px solid #909090;
+
 }
 
 .GBpagediv2up {
