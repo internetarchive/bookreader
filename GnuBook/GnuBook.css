@@ -10,6 +10,10 @@
     background-color: rgb(241, 239, 237);
 }
 
+#GBtoolbar .label {
+    font-size: 0.9em;
+}
+
 #GBcontainer {
     /*height:95%;*/
     top:25px;

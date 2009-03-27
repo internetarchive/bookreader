@@ -77,7 +77,14 @@ GnuBook.prototype.init = function() {
     
     $("#GnuBook").empty();
     // XXXmang hook up logo to url action
-    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon logo' /> <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/><button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/> Zoom: <span id='GBzoom'>25</span>% <button class='GBicon rollover script' onclick='gb.switchMode(1); return false;'/> <button class='GBicon rollover book_open' onclick='gb.switchMode(2); return false;'/>  &nbsp;&nbsp; <a class='GBblack' href='"+this.bookUrl+"' target='_blank'>"+title+"</a></span></div>");
+    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'><button class='GBicon logo' />"
+        + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
+        + "<button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/>"
+        + " <span class='label'>Zoom: <span id='GBzoom'>25</span>%</span>"
+        + " <button class='GBicon rollover script' onclick='gb.switchMode(1); return false;'/>"
+        + " <button class='GBicon rollover book_open' onclick='gb.switchMode(2); return false;'/>"
+        + "&nbsp;&nbsp; <a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+title+"</a>"
+        + "</span></div>");
     this.initToolbar(this.mode); // Build inside of toolbar div
     $("#GnuBook").append("<div id='GBcontainer'></div>");
     $("#GBcontainer").append("<div id='GBpageview'></div>");
@@ -1760,9 +1767,9 @@ GnuBook.prototype.initToolbar = function(mode) {
     // We build in mode 2
     jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'>"
         + "<button class='GBicon rollover page_code' />"
-        + "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></form>"
-        + "<button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' />"
-        + "<button class='GBicon rollover book_up' style='display: hidden' /><button class='GBicon rollover book_down' style='display: hidden' />"
+        + "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
+        + "<div class='GBtoolbarmode2' style='display: inline'><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /></div>"
+        + "<div class='GBtoolbarmode1' style='display: hidden'><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /></div>"
         + "<button class='GBicon rollover play' id='autoImg' /></span>");
 
     // Bind the non-changing click handlers
@@ -1787,33 +1794,22 @@ GnuBook.prototype.initToolbar = function(mode) {
 // $$$ we should soon split the toolbar out into its own module
 GnuBook.prototype.switchToolbarMode = function(mode) {
     if (1 == mode) {
-        // 1-up        
-        $('#GBtoolbar .GBicon.book_left').hide();
-        $('#GBtoolbar .GBicon.book_right').hide();
-        $('#GBtoolbar .GBicon.book_up').show();
-        $('#GBtoolbar .GBicon.book_down').show();
+        // 1-up     
+        $('#GBtoolbar .GBtoolbarmode2').hide();
+        $('#GBtoolbar .GBtoolbarmode1').css('display', 'inline').show();
     } else {
         // 2-up
-        $('#GBtoolbar .GBicon.book_up').hide();
-        $('#GBtoolbar .GBicon.book_down').hide();
-        $('#GBtoolbar .GBicon.book_left').show();
-        $('#GBtoolbar .GBicon.book_right').show();
+        $('#GBtoolbar .GBtoolbarmode1').hide();
+        $('#GBtoolbar .GBtoolbarmode2').css('display', 'inline').show();
     }
     
     this.bindToolbarNavHandlers($('#GBtoolbar'));
-}
-
-GnuBook.prototype.bindToolbarHandlers = function(jToolbar) {
-
 }
 
 // bindToolbarNavHandlers
 //______________________________________________________________________________
 // Binds the toolbar handlers
 GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
-
-    // $$$ TODO understand why an anonymous function is required instead of just
-    //          setting handler to e.g. gb.prev
 
     jToolbar.find('.book_left').unbind('click')
         .bind('click', function(e) {
@@ -1888,8 +1884,10 @@ GnuBook.prototype.setupRollovers = function() {
     //         url stays with the element
     // On hover we change the base to rollover.  We switch back on off-hover.
     $('#GnuBook .rollover').hover( function() {
+        console.log('hover in ' + this); //XXX
         $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_base', '_rollover'));
     }, function () {
+        console.log('hover out ' + this); //XXX
         $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_rollover', '_base'));
     });
 }
