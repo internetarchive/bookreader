@@ -20,10 +20,10 @@ This file is part of GnuBook.
 
 $id = $_REQUEST['id'];
 
-// manually update with output of 'date "+%Y%m%d%H%M"' at each checkin so that browsers
+// manually update with Launchpad version number at each checkin so that browsers
 // do not use old cached version
 // see https://bugs.launchpad.net/gnubook/+bug/330748
-$version = "200903192301";
+$version = "0.9.1";
 
 if ("" == $id) {
     echo "No identifier specified!";
