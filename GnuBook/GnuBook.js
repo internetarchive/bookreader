@@ -83,7 +83,6 @@ GnuBook.prototype.init = function() {
     });
 
     this.setupKeyListeners();
-    this.setupRollovers();
 
     $(window).bind('resize', this, function(e) {
         //console.log('resize!');
@@ -1754,12 +1753,12 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 GnuBook.prototype.initToolbar = function(mode) {
     // XXXmang hook up logo to url action -- change buttons to image links? -- don't hardcode URL
     $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'>"
-        + "<button class='GBicon logo rollover' onclick='window.location = \"http://www.archive.org\";' />"
+        + "<a class='GBicon logo rollover' href='http://www.archive.org/index.php'>&nbsp;</a>"
         + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
         + "<button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/>"
         + " <span class='label'>Zoom: <span id='GBzoom'>25</span>%</span>"
-        + " <button class='GBicon rollover script' onclick='gb.switchMode(1); return false;'/>"
-        + " <button class='GBicon rollover book_open' onclick='gb.switchMode(2); return false;'/>"
+        + " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
+        + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
         + "&nbsp;&nbsp; <a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
         + "</span></div>");
 
@@ -1768,14 +1767,14 @@ GnuBook.prototype.initToolbar = function(mode) {
     
     // We build in mode 2
     jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'>"
-        + "<button class='GBicon rollover page_code' />"
+        + "<button class='GBicon rollover embed' />"
         + "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
         + "<div class='GBtoolbarmode2' style='display: inline'><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /></div>"
         + "<div class='GBtoolbarmode1' style='display: hidden'><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /></div>"
         + "<button class='GBicon rollover play' /><button class='GBicon rollover pause' style='display: none' /></span>");
 
     // Bind the non-changing click handlers
-    jToolbar.find('.page_code').bind('click', function(e) {
+    jToolbar.find('.embed').bind('click', function(e) {
         gb.showEmbedCode();
         return false;
     });
@@ -1787,6 +1786,24 @@ GnuBook.prototype.initToolbar = function(mode) {
         gb.autoToggle();
         return false;
     });
+    
+    // Setup tooltips -- later we could load these from a file for i18n
+    var titles = { '.logo': 'Go to Archive.org',
+                   '.zoom_in': 'Zoom in',
+                   '.zoom_out': 'Zoom out',
+                   '.one_page_mode': 'One-page view',
+                   '.two_page_mode': 'Two-page view',
+                   '.embed': 'Embed bookreader',
+                   '.book_left': 'Flip left',
+                   '.book_right': 'Flip right',
+                   '.book_up': 'Page up',
+                   '.book_down': 'Page down',
+                   '.play': 'Play',
+                   '.pause': 'Pause',
+                  };                  
+    for (var icon in titles) {
+        jToolbar.find(icon).attr('title', titles[icon]);
+    }
 
     // Switch to requested mode -- binds other click handlers
     this.switchToolbarMode(mode);
@@ -1877,25 +1894,6 @@ GnuBook.prototype.lastDisplayableIndex = function() {
     } else {
         return this.numLeafs - 1;
     }
-}
-
-// setupRollovers
-//______________________________________________________________________________
-// Set up rollover behaviour for icons
-GnuBook.prototype.setupRollovers = function() {
-
-    // TODO precache
-    
-    
-    // On hover we change the base to rollover.  We switch back on off-hover.
-    /*
-    $('#GnuBook .rollover').hover( function() {
-        $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_base', '_rollover'));
-    }, function () {
-        $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_rollover', '_base'));
-    });
-    */
-
 }
 
 // shortTitle(maximumCharacters)
