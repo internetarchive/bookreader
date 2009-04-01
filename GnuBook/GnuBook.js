@@ -56,6 +56,9 @@ function GnuBook() {
     
     this.lastDisplayableIndex2up = null;
     
+    // We link to index.php to avoid redirect which breaks back button
+    this.logoURL = 'http://www.archive.org/index.php';
+    
 };
 
 // init()
@@ -1751,9 +1754,8 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 }
 
 GnuBook.prototype.initToolbar = function(mode) {
-    // XXXmang hook up logo to url action -- change buttons to image links? -- don't hardcode URL
     $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'>"
-        + "<a class='GBicon logo rollover' href='http://www.archive.org/index.php'>&nbsp;</a>"
+        + "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
         + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
         + "<button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/>"
         + " <span class='label'>Zoom: <span id='GBzoom'>25</span>%</span>"
