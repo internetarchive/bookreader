@@ -1886,12 +1886,16 @@ GnuBook.prototype.setupRollovers = function() {
 
     // TODO precache
     
+    
     // On hover we change the base to rollover.  We switch back on off-hover.
+    /*
     $('#GnuBook .rollover').hover( function() {
         $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_base', '_rollover'));
     }, function () {
         $(this).css('backgroundImage', $(this).css('backgroundImage').replace('_rollover', '_base'));
     });
+    */
+
 }
 
 // shortTitle(maximumCharacters)
