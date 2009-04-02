@@ -18,7 +18,7 @@ This file is part of GnuBook.
     
     The GnuBook source is hosted at http://github.com/openlibrary/bookreader/
 
-    archive.org cvs $Revision: 1.68 $ $Date: 2009-03-04 22:00:31 $
+    archive.org cvs $Revision: 1.69 $ $Date: 2009-04-01 22:00:51 $
 */
 
 // GnuBook()
@@ -1801,7 +1801,7 @@ GnuBook.prototype.initToolbar = function(mode) {
                    '.book_up': 'Page up',
                    '.book_down': 'Page down',
                    '.play': 'Play',
-                   '.pause': 'Pause',
+                   '.pause': 'Pause'
                   };                  
     for (var icon in titles) {
         jToolbar.find(icon).attr('title', titles[icon]);
