@@ -623,12 +623,20 @@ GnuBook.prototype.prepareOnePageView = function() {
         overflowX: 'auto'
     });
     
-    $("#GBcontainer").append("<div id='GBpageview'></div>");
+    var gbPageView = $("#GBcontainer").append("<div id='GBpageview'></div>");
     this.resizePageView();
     this.jumpToIndex(startLeaf);
     this.displayedLeafs = [];    
     this.drawLeafsOnePage();
     $('#GBzoom').text(100/this.reduce);
+    
+    // Bind mouse handlers
+    // Disable mouse click to avoid selected/highlighted page images - bug 354239
+    gbPageView.bind('mousedown', function(e) {
+        return false;
+    })
+    // Special hack for IE7
+    gbPageView[0].onselectstart = function(e) { return false; };
 }
 
 // prepareTwoPageView()
