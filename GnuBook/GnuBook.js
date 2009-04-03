@@ -101,6 +101,10 @@ GnuBook.prototype.init = function() {
             e.data.prepareTwoPageView();
         }
     });
+    
+    $('.GBpagediv1up').bind('mousedown', this, function(e) {
+        //console.log('mousedown!');
+    });
 
     if (1 == this.mode) {
         this.resizePageView();
@@ -190,6 +194,36 @@ GnuBook.prototype.drawLeafs = function() {
     }
 }
 
+// setDragHandler1up()
+//______________________________________________________________________________
+GnuBook.prototype.setDragHandler1up = function(div) {
+
+    $(div).bind('mousedown', function(e) {
+        var startX    = e.pageX;
+        var startY    = e.pageY;
+        var startTop  = $('#GBcontainer').attr('scrollTop');
+        var startLeft =  $('#GBcontainer').attr('scrollLeft');
+        //console.log('mousedown at ' + e.pageY);
+        
+        $(this).bind('mousemove', function(ee) {
+            //console.log('mousemove ' + startY);
+            $('#GBcontainer').attr('scrollTop',  startTop  + (startY - ee.pageY));
+            $('#GBcontainer').attr('scrollLeft', startLeft + (startX - ee.pageX));
+        });
+        
+        $(this).bind('mouseup', function(ee) {
+            //console.log('mouseup');
+            $(this).unbind('mousemove mouseup');                    
+        });
+        
+        return false; //stops the image from being dragged off
+    });
+    
+    $(div).bind('mouseout', function(e) {
+        $(this).unbind('mousemove mouseup');
+        //console.log('mouseout');
+    });
+}
 
 // drawLeafsOnePage()
 //______________________________________________________________________________
@@ -265,6 +299,8 @@ GnuBook.prototype.drawLeafsOnePage = function() {
             $(div).css('width', width+'px');
             $(div).css('height', height+'px');
             //$(div).text('loading...');
+            
+            this.setDragHandler1up(div);
             
             $('#GBpageview').append(div);
 
