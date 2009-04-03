@@ -197,31 +197,53 @@ GnuBook.prototype.drawLeafs = function() {
 // setDragHandler1up()
 //______________________________________________________________________________
 GnuBook.prototype.setDragHandler1up = function(div) {
+    div.dragging = false;
 
     $(div).bind('mousedown', function(e) {
+        //console.log('mousedown at ' + e.pageY);
+
+        this.dragging = true;
+        this.prevMouseX = e.pageX;
+        this.prevMouseY = e.pageY;
+    
         var startX    = e.pageX;
         var startY    = e.pageY;
         var startTop  = $('#GBcontainer').attr('scrollTop');
         var startLeft =  $('#GBcontainer').attr('scrollLeft');
-        //console.log('mousedown at ' + e.pageY);
+
+        return false;
+    });
         
-        $(this).bind('mousemove', function(ee) {
-            //console.log('mousemove ' + startY);
-            $('#GBcontainer').attr('scrollTop',  startTop  + (startY - ee.pageY));
-            $('#GBcontainer').attr('scrollLeft', startLeft + (startX - ee.pageX));
-        });
+    $(div).bind('mousemove', function(ee) {
+        //console.log('mousemove ' + startY);
         
-        $(this).bind('mouseup', function(ee) {
-            //console.log('mouseup');
-            $(this).unbind('mousemove mouseup');                    
-        });
+        var offsetX = ee.pageX - this.prevMouseX;
+        var offsetY = ee.pageY - this.prevMouseY;
         
-        return false; //stops the image from being dragged off
+        if (this.dragging) {
+            $('#GBcontainer').attr('scrollTop', $('#GBcontainer').attr('scrollTop') - offsetY);
+            $('#GBcontainer').attr('scrollLeft', $('#GBcontainer').attr('scrollLeft') - offsetX);
+        }
+        
+        this.prevMouseX = ee.pageX;
+        this.prevMouseY = ee.pageY;
+        
+        return false;
     });
     
-    $(div).bind('mouseout', function(e) {
-        $(this).unbind('mousemove mouseup');
-        //console.log('mouseout');
+    $(div).bind('mouseup', function(ee) {
+        //console.log('mouseup');
+
+        this.dragging = false;
+        return false;
+    });
+    
+    $(div).bind('mouseleave', function(e) {
+        //console.log('mouseleave');
+
+        //$(this).unbind('mousemove mouseup');
+        this.dragging = false;
+        
     });
 }
 
@@ -606,7 +628,7 @@ GnuBook.prototype.prepareOnePageView = function() {
     this.jumpToIndex(startLeaf);
     this.displayedLeafs = [];    
     this.drawLeafsOnePage();
-    $('#GBzoom').text(100/this.reduce);    
+    $('#GBzoom').text(100/this.reduce);
 }
 
 // prepareTwoPageView()
