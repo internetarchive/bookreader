@@ -29,7 +29,9 @@ if ("" == $id) {
 <html>
 <head>
     <title>bookreader demo</title>
-    <link rel="stylesheet" type="text/css" href="/GnuBook/GnuBook.css">    
+    <link rel="stylesheet" type="text/css" href="/GnuBook/GnuBook.css">
+    <!-- Set minimal style by overriding with embed-specific styles -->
+    <link rel="stylesheet" type="text/css" href="/GnuBook/GnuBookEmbed.css">
     <script src="http://www.archive.org/includes/jquery-1.2.6.min.js" type="text/javascript"></script>
     <script type="text/javascript" src="/GnuBook/GnuBook.js"></script>
     <script type="text/javascript" src="/GnuBook/jquery.easing.1.3.js"></script>
@@ -46,9 +48,7 @@ if ("" == $id) {
 
 <script type="text/javascript" src="/GnuBook/GnuBookJSLocate.php?id=<?echo $id;?>"></script>
 <script type="text/javascript">
-    gb.zoom1up(-1);
-    $('#GBcontainer').css('backgroundColor', '#F9F8D0');
-    $('.GBicon').css({width: '16px', height: '16px'});
+  gb.zoom1up(-1);
 </script>
 </body>
 </html>

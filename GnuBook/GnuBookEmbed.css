@@ -1,0 +1,11 @@
+/*
+ * Custom overrides for embedded bookreader.
+ */
+
+#GBtoolbar .label,.pageform,.play,.embed,.two_page_mode,.one_page_mode {
+    display: none;
+}
+
+#GBtoolbar .title {
+    font-size: 0.9em;
+}

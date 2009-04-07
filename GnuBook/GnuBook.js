@@ -1827,7 +1827,7 @@ GnuBook.prototype.initToolbar = function(mode) {
         + " <span class='label'>Zoom: <span id='GBzoom'>25</span>%</span>"
         + " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
         + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
-        + "&nbsp;&nbsp; <a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
+        + "&nbsp;&nbsp;<a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
         + "</span></div>");
 
     // $$$ turn this into a member variable
