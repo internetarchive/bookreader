@@ -35,6 +35,36 @@ gb.getPageSide = function(index) {
     }
 }
 
+// This function returns the left and right indices for the user-visible
+// spread that contains the given index.  The return values may be
+// null if there is no facing page or the index is invalid.
+gb.getSpreadIndices = function(pindex) {   
+    var spreadIndices = [null, null]; 
+    if ('rl' == this.pageProgression) {
+        // Right to Left
+        if (this.getPageSide(pindex) == 'R') {
+            spreadIndices[1] = pindex;
+            spreadIndices[0] = pindex + 1;
+        } else {
+            // Given index was LHS
+            spreadIndices[0] = pindex;
+            spreadIndices[1] = pindex - 1;
+        }
+    } else {
+        // Left to right
+        if (this.getPageSide(pindex) == 'L') {
+            spreadIndices[0] = pindex;
+            spreadIndices[1] = pindex + 1;
+        } else {
+            // Given index was RHS
+            spreadIndices[1] = pindex;
+            spreadIndices[0] = pindex - 1;
+        }
+    }
+    
+    return spreadIndices;
+}
+
 // For a given "accessible page index" return the page number in the book.
 //
 // For example, index 5 might correspond to "Page 1" if there is front matter such
