@@ -18,7 +18,7 @@ This file is part of GnuBook.
     
     The GnuBook source is hosted at http://github.com/openlibrary/bookreader/
 
-    archive.org cvs $Revision: 1.69 $ $Date: 2009-04-01 22:00:51 $
+    archive.org cvs $Revision: 1.72 $ $Date: 2009-04-20 22:05:02 $
 */
 
 // GnuBook()
@@ -159,10 +159,10 @@ GnuBook.prototype.setupKeyListeners = function() {
                 }
                 break;
             case KEY_END:
-                self.end();
+                self.last();
                 break;
             case KEY_HOME:
-                self.home();
+                self.first();
                 break;
             case KEY_LEFT:
                 if (self.keyboardNavigationIsDisabled(e)) {
@@ -915,6 +915,17 @@ GnuBook.prototype.right = function() {
     }
 }
 
+// rightmost()
+//______________________________________________________________________________
+// Flip to the rightmost page
+GnuBook.prototype.rightmost = function() {
+    if ('rl' != this.pageProgression) {
+        gb.last();
+    } else {
+        gb.first();
+    }
+}
+
 // left()
 //______________________________________________________________________________
 // Flip the left page over onto the right.
@@ -925,6 +936,17 @@ GnuBook.prototype.left = function() {
     } else {
         // RTL
         gb.next();
+    }
+}
+
+// leftmost()
+//______________________________________________________________________________
+// Flip to the leftmost page
+GnuBook.prototype.leftmost = function() {
+    if ('rl' != this.pageProgression) {
+        gb.first();
+    } else {
+        gb.last();
     }
 }
 
@@ -954,7 +976,7 @@ GnuBook.prototype.prev = function() {
     }
 }
 
-GnuBook.prototype.home = function() {
+GnuBook.prototype.first = function() {
     if (2 == this.mode) {
         this.jumpToIndex(2);
     }
@@ -963,7 +985,7 @@ GnuBook.prototype.home = function() {
     }
 }
 
-GnuBook.prototype.end = function() {
+GnuBook.prototype.last = function() {
     if (2 == this.mode) {
         this.jumpToIndex(this.lastDisplayableIndex());
     }
@@ -1837,23 +1859,11 @@ GnuBook.prototype.initToolbar = function(mode) {
     jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'>"
         + "<button class='GBicon rollover embed' />"
         + "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
-        + "<div class='GBtoolbarmode2' style='display: inline'><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /></div>"
-        + "<div class='GBtoolbarmode1' style='display: hidden'><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /></div>"
+        + "<div class='GBtoolbarmode2' style='display: inline'><button class='GBicon rollover book_leftmost' /><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /><button class='GBicon rollover book_rightmost' /></div>"
+        + "<div class='GBtoolbarmode1' style='display: hidden'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /><button class='GBicon rollover book_bottom' /></div>"
         + "<button class='GBicon rollover play' /><button class='GBicon rollover pause' style='display: none' /></span>");
 
-    // Bind the non-changing click handlers
-    jToolbar.find('.embed').bind('click', function(e) {
-        gb.showEmbedCode();
-        return false;
-    });
-    jToolbar.find('.play').bind('click', function(e) {
-        gb.autoToggle();
-        return false;
-    });
-    jToolbar.find('.pause').bind('click', function(e) {
-        gb.autoToggle();
-        return false;
-    });
+    this.bindToolbarNavHandlers(jToolbar);
     
     // Setup tooltips -- later we could load these from a file for i18n
     var titles = { '.logo': 'Go to Archive.org',
@@ -1867,8 +1877,18 @@ GnuBook.prototype.initToolbar = function(mode) {
                    '.book_up': 'Page up',
                    '.book_down': 'Page down',
                    '.play': 'Play',
-                   '.pause': 'Pause'
-                  };                  
+                   '.pause': 'Pause',
+                   '.book_top': 'First page',
+                   '.book_bottom': 'Last page'
+                  };
+    if ('rl' == this.pageProgression) {
+        titles['.book_leftmost'] = 'Last page';
+        titles['.book_rightmost'] = 'First page';
+    } else { // LTR
+        titles['.book_leftmost'] = 'First page';
+        titles['.book_rightmost'] = 'Last page';
+    }
+                  
     for (var icon in titles) {
         jToolbar.find(icon).attr('title', titles[icon]);
     }
@@ -1893,8 +1913,6 @@ GnuBook.prototype.switchToolbarMode = function(mode) {
         $('#GBtoolbar .GBtoolbarmode1').hide();
         $('#GBtoolbar .GBtoolbarmode2').css('display', 'inline').show();
     }
-    
-    this.bindToolbarNavHandlers($('#GBtoolbar'));
 }
 
 // bindToolbarNavHandlers
@@ -1902,29 +1920,60 @@ GnuBook.prototype.switchToolbarMode = function(mode) {
 // Binds the toolbar handlers
 GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
 
-    jToolbar.find('.book_left').unbind('click')
-        .bind('click', function(e) {
-            gb.left();
-            return false;
-         });
+    jToolbar.find('.book_left').bind('click', function(e) {
+        gb.left();
+        return false;
+    });
          
-    jToolbar.find('.book_right').unbind('click')
-        .bind('click', function(e) {
-            gb.right();
-            return false;
-        });
+    jToolbar.find('.book_right').bind('click', function(e) {
+        gb.right();
+        return false;
+    });
         
-    jToolbar.find('.book_up').unbind('click')
-        .bind('click', function(e) {
-            gb.prev();
-            return false;
-        });        
+    jToolbar.find('.book_up').bind('click', function(e) {
+        gb.prev();
+        return false;
+    });        
         
-    jToolbar.find('.book_down').unbind('click')
-        .bind('click', function(e) {
-            gb.next();
-            return false;
-        });      
+    jToolbar.find('.book_down').bind('click', function(e) {
+        gb.next();
+        return false;
+    });
+        
+    jToolbar.find('.embed').bind('click', function(e) {
+        gb.showEmbedCode();
+        return false;
+    });
+
+    jToolbar.find('.play').bind('click', function(e) {
+        gb.autoToggle();
+        return false;
+    });
+
+    jToolbar.find('.pause').bind('click', function(e) {
+        gb.autoToggle();
+        return false;
+    });
+    
+    jToolbar.find('.book_top').bind('click', function(e) {
+        gb.first();
+        return false;
+    });
+
+    jToolbar.find('.book_bottom').bind('click', function(e) {
+        gb.last();
+        return false;
+    });
+    
+    jToolbar.find('.book_leftmost').bind('click', function(e) {
+        gb.leftmost();
+        return false;
+    });
+  
+    jToolbar.find('.book_rightmost').bind('click', function(e) {
+        gb.rightmost();
+        return false;
+    });
 }
 
 // firstDisplayableIndex
