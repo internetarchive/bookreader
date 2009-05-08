@@ -18,7 +18,7 @@ This file is part of GnuBook.
     
     The GnuBook source is hosted at http://github.com/openlibrary/bookreader/
 
-    archive.org cvs $Revision: 1.72 $ $Date: 2009-04-20 22:05:02 $
+    archive.org cvs $Revision: 1.73 $ $Date: 2009-05-01 22:37:11 $
 */
 
 // GnuBook()
@@ -952,6 +952,7 @@ GnuBook.prototype.leftmost = function() {
 
 // next()
 //______________________________________________________________________________
+// Navigate to next page
 GnuBook.prototype.next = function() {
     if (2 == this.mode) {
         this.autoStop();
@@ -965,6 +966,7 @@ GnuBook.prototype.next = function() {
 
 // prev()
 //______________________________________________________________________________
+// Navigate to previous page
 GnuBook.prototype.prev = function() {
     if (2 == this.mode) {
         this.autoStop();
@@ -976,15 +978,16 @@ GnuBook.prototype.prev = function() {
     }
 }
 
+// first()
+//______________________________________________________________________________
+// Navigate to first displayable page
 GnuBook.prototype.first = function() {
-    if (2 == this.mode) {
-        this.jumpToIndex(2);
-    }
-    else {
-        this.jumpToIndex(0);
-    }
+    this.jumpToIndex(this.firstDisplayableIndex());
 }
 
+// last()
+//______________________________________________________________________________
+// Navigate to last displayable page
 GnuBook.prototype.last = function() {
     if (2 == this.mode) {
         this.jumpToIndex(this.lastDisplayableIndex());
@@ -1004,7 +1007,7 @@ GnuBook.prototype.flipBackToIndex = function(index) {
     
     // $$$ Need to change this to be able to see first spread.
     //     See https://bugs.launchpad.net/gnubook/+bug/296788
-    if (leftIndex <= 2) return;
+    if (leftIndex <= 1) return;
     if (this.animating) return;
 
     if (null != this.leafEdgeTmp) {
@@ -1984,8 +1987,12 @@ GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
 GnuBook.prototype.firstDisplayableIndex = function() {
     if (this.mode == 0) {
         return 0;
-    } else {
-        return 1; // $$$ we assume there are enough pages... we need logic for very short books
+    } else { // two page mode
+        if (this.getPageSide(0) == 'L') {
+            return 0;
+        } else {
+            return 1; // $$$ we assume there are enough pages... we need logic for very short books
+        }
     }
 }
 
