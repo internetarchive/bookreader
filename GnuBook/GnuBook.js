@@ -49,6 +49,7 @@ function GnuBook() {
     this.twoPagePopUp = null;
     this.leafEdgeTmp  = null;
     this.embedPopup = null;
+    this.printPopup = null;
     
     this.searchResults = {};
     
@@ -1685,6 +1686,38 @@ GnuBook.prototype.removeSearchHilites = function() {
     }
 }
 
+// printPage
+//______________________________________________________________________________
+GnuBook.prototype.printPage = function() {
+    if (null != this.printPopup) { // check if already showing
+        return;
+    }
+    this.printPopup = document.createElement("div");
+    $(this.printPopup).css({
+        position: 'absolute',
+        top:      '20px',
+        left:     ($('#GBcontainer').width()-400)/2 + 'px',
+        width:    '500px',
+        padding:  "20px",
+        border:   "3px double #999999",
+        zIndex:   3,
+        backgroundColor: "#fff"
+    }).appendTo('#GnuBook');
+
+    var indexToPrint;
+    if (1 == this.mode) {
+        indexToPrint = this.firstIndex;
+    } else {
+        indexToPrint = this.currentLeafL;
+    }
+
+    htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
+    htmlStr += '<iframe name ="printFrame" id="printFrame" src="GnuBookPrint.php?id='+this.bookId+'&server='+this.server+'&zip='+this.zip+'&index='+this.leafMap[indexToPrint]+'&format='+this.imageFormat+'" width="500px" height="400px"></iframe>';
+    htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
+
+    this.printPopup.innerHTML = htmlStr;    
+}
+
 // showEmbedCode()
 //______________________________________________________________________________
 GnuBook.prototype.showEmbedCode = function() {
@@ -1860,7 +1893,7 @@ GnuBook.prototype.initToolbar = function(mode) {
     
     // We build in mode 2
     jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'>"
-        + "<button class='GBicon rollover embed' />"
+        + "<button class='GBicon print' /> <button class='GBicon rollover embed' />"
         + "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
         + "<div class='GBtoolbarmode2' style='display: inline'><button class='GBicon rollover book_leftmost' /><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /><button class='GBicon rollover book_rightmost' /></div>"
         + "<div class='GBtoolbarmode1' style='display: hidden'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /><button class='GBicon rollover book_bottom' /></div>"
@@ -1874,6 +1907,7 @@ GnuBook.prototype.initToolbar = function(mode) {
                    '.zoom_out': 'Zoom out',
                    '.one_page_mode': 'One-page view',
                    '.two_page_mode': 'Two-page view',
+                   '.print': 'Print this page',
                    '.embed': 'Embed bookreader',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
@@ -1940,6 +1974,11 @@ GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
         
     jToolbar.find('.book_down').bind('click', function(e) {
         gb.next();
+        return false;
+    });
+
+    jToolbar.find('.print').bind('click', function(e) {
+        gb.printPage();
         return false;
     });
         

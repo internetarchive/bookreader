@@ -91,6 +91,7 @@
 .GBicon.one_page_mode { background: url(images/one_page_mode_icon.png) no-repeat; }
 .GBicon.two_page_mode { background: url(images/two_page_mode_icon.png) no-repeat; }
 .GBicon.embed { background: url(images/embed_icon.png) no-repeat; }
+.GBicon.print { background: url(images/print_icon.png) no-repeat; }
 .GBicon.book_left { background: url(images/book_left_icon.png) no-repeat; }
 .GBicon.book_right { background: url(images/book_right_icon.png) no-repeat; }
 .GBicon.book_up { background: url(images/book_up_icon.png) no-repeat; }
