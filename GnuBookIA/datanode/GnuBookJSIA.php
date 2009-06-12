@@ -41,6 +41,7 @@ if (!preg_match("|^/[0-3]/items/{$id}$|", $itemPath)) {
 
 $imageFormat = 'unknown';
 $zipFile = "$itemPath/{$id}_jp2.zip";
+
 if (file_exists($zipFile)) {
     $imageFormat = 'jp2';
 } else {
@@ -85,6 +86,21 @@ $metaData = simplexml_load_file($metaDataFile);
 
 gb = new GnuBook();
 
+<?
+/* Output title leaf if marked */
+$titleLeaf = '';
+foreach ($scanData->pageData->page as $page) {
+    if (("Title Page" == $page->pageType) || ("Title" == $page->pageType)) {
+        $titleLeaf = "{$page['leafNum']}";
+        break;
+    }
+}
+    
+if ('' != $titleLeaf) {
+    printf("gb.titleLeaf = %d;\n", $titleLeaf);
+}
+?>
+
 gb.getPageWidth = function(index) {
     //return parseInt(this.pageW[index]/this.reduce);
     return this.pageW[index];
@@ -124,6 +140,23 @@ gb.getPageURI = function(index) {
 gb.getPageSide = function(index) {
     //assume the book starts with a cover (right-hand leaf)
     //we should really get handside from scandata.xml
+    
+    <? // Use special function if we should infer the page sides based off the title page index
+    if (preg_match('/goog$/', $id) && ('' != $titleLeaf)) {
+    ?>
+    // assume page side based on title page
+    var titleIndex = gb.leafNumToIndex(gb.titleLeaf);
+    // assume title page is RHS
+    var delta = titleIndex - index;
+    if (0 == (delta & 0x1)) {
+        // even delta
+        return 'R';
+    } else {
+        return 'L';
+    }
+    <?
+    }
+    ?>
     
     // $$$ we should get this from scandata instead of assuming the accessible
     //     leafs are contiguous
@@ -252,20 +285,6 @@ gb.pageNums = [
             ?>    
             ];
             
-<?
-/* Output title leaf if marked */
-$titleLeaf = '';
-foreach ($scanData->pageData->page as $page) {
-    if (("Title Page" == $page->pageType) || ("Title" == $page->pageType)) {
-        $titleLeaf = "{$page['leafNum']}";
-        break;
-    }
-}
-    
-if ('' != $titleLeaf) {
-    printf("gb.titleLeaf = %d;\n", $titleLeaf);
-}
-?>
       
 gb.numLeafs = gb.pageW.length;
 
@@ -296,17 +315,26 @@ if ('bandersnatchhsye00scarrich' == $id) {
 
 
 // Check for config object
+// $$$ change this to use the newer params object
 if (typeof(gbConfig) != 'undefined') {
     if (gbConfig['mode'] == 1) {
       gb.mode = 1;
+      if (typeof(gbConfig['reduce'] != 'undefined')) {
+        gb.reduce = gbConfig['reduce'];
+      }
     } else if (gbConfig['mode'] == 2) {
       gb.mode = 2;
       
-      //$$$mang hack to override request for 2up for RTL until we have full RTL support
-      //        we need a better way to determine the mode and pass config options
-      //if ((typeof(gb.pageProgression) != 'undefined') && (gb.pageProgression == 'rl')) {
-      //  gb.mode = 1;
-      //}
+<?
+      //$$$mang hack to override request for 2up for books with attribution page
+      //   as first page until we can display that page in 2up
+      $needle = 'goog';
+      if (strrpos($id, $needle) === strlen($id)-strlen($needle)) {
+        print "// override for books with attribution page\n";
+        print "gb.mode = 1;\n";
+      }
+?>
+
   
     }
 }

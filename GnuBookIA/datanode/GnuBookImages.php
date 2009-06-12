@@ -1,8 +1,4 @@
 <?php
-/* This file is deprecated -- image stack processing has been 
- * combined into GnuBookImages.php.  This file will eventually
- * be removed.
- */
 
 /*
 Copyright(c)2008 Internet Archive. Software license AGPL version 3.
@@ -61,29 +57,29 @@ if (isset($_REQUEST['height'])) {
     $ratio = floatval($_REQUEST['origHeight']) / floatval($_REQUEST['height']);
     if ($ratio <= 2) {
         $scale = 2;
-        $reduce = 1;    
+        $powReduce = 1;    
     } else if ($ratio <= 4) {
         $scale = 4;
-        $reduce = 2;
+        $powReduce = 2;
     } else {
-        //$reduce = 3; //too blurry!
+        //$powReduce = 3; //too blurry!
         $scale = 2;
-        $reduce = 1;
+        $powReduce = 1;
     }
 
 } else {
     $scale = $_REQUEST['scale'];
     if (1 >= $scale) {
         $scale = 1;
-        $reduce = 0;
+        $powReduce = 0;
     } else if (2 == $scale) {
-        $reduce = 1;
+        $powReduce = 1;
     } else if (4 == $scale) {
-        $reduce = 2;
+        $powReduce = 2;
     } else {
         // $$$ why do we default to such a small scale?
         $scale = 8;
-        $reduce = 3;
+        $powReduce = 3;
     }
 }
 
@@ -101,7 +97,7 @@ $unzipCmd  = 'unzip -p ' .
         
 if ('jp2' == $fileExt) {
     $decompressCmd = 
-        " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $reduce -i /dev/stdin -o " . $stdoutLink;
+        " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $powReduce -i /dev/stdin -o " . $stdoutLink;
     if ($decompressToBmp) {
         $decompressCmd .= ' | bmptopnm ';
     }
@@ -113,7 +109,11 @@ if ('jp2' == $fileExt) {
     $tempFile = tempnam("/tmp", "GnuBookTiff");
     
     if (1 != $scale) {
-        $pbmReduce = ' | pbmreduce -threshold ' . $scale;
+        if (onPowerNode()) {
+            $pbmReduce = ' | pnmscale -reduce ' . $scale;
+        } else {
+            $pbmReduce = ' | pnmscale -nomix -reduce ' . $scale;
+        }
     } else {
         $pbmReduce = '';
     }
@@ -153,6 +153,21 @@ function GBFatal($string) {
     echo "alert('$string')\n";
     die(-1);
 }
+
+// Returns true if using a power node
+function onPowerNode() {
+    exec("lspci | fgrep -c Realtek", $output, $return);
+    if ("0" != $output[0]) {
+        return true;
+    } else {
+        exec("egrep -q AMD /proc/cpuinfo", $output, $return);
+        if ($return == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 ?>
 

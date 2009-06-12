@@ -20,6 +20,11 @@ This file is part of GnuBook.
 
 $id = $_REQUEST['id'];
 
+// manually update with Launchpad version number at each release so that browsers
+// do not use old cached version
+// see https://bugs.launchpad.net/gnubook/+bug/330748
+$version = "0.9.7";
+
 if ("" == $id) {
     echo "No identifier specified!";
     die(-1);
@@ -29,26 +34,25 @@ if ("" == $id) {
 <html>
 <head>
     <title>bookreader demo</title>
-    <link rel="stylesheet" type="text/css" href="/GnuBook/GnuBook.css">
+    <link rel="stylesheet" type="text/css" href="/bookreader/GnuBook.css?v=<? echo($version); ?>">
     <!-- Set minimal style by overriding with embed-specific styles -->
-    <link rel="stylesheet" type="text/css" href="/GnuBook/GnuBookEmbed.css">
-    <script src="http://www.archive.org/includes/jquery-1.2.6.min.js" type="text/javascript"></script>
-    <script type="text/javascript" src="/GnuBook/GnuBook.js"></script>
-    <script type="text/javascript" src="/GnuBook/jquery.easing.1.3.js"></script>
+    <link rel="stylesheet" type="text/css" href="/bookreader/GnuBookEmbed.css?v=<? echo($version); ?>">
+    <script src="/includes/jquery-1.2.6.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/bookreader/GnuBook.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/jquery.easing.1.3.js"></script>
 </head>
 <body style="background-color: rgb(249, 248, 208);margin:0px;">
 
 <div id="GnuBook" style="width:100%;height:100%;border:0px;">x</div>
 
 <script type="text/javascript">
-  // Set some config variables -- $$$ NB: The configuration object format is not final
+// Set some config variables -- $$$ NB: The configuration object format is not final
   var gbConfig = {};
   gbConfig["mode"] = 1;
+  gbConfig["reduce"] = 8;
 </script>
 
-<script type="text/javascript" src="/GnuBook/GnuBookJSLocate.php?id=<?echo $id;?>"></script>
-<script type="text/javascript">
-  gb.zoom1up(-1);
-</script>
+
+<script type="text/javascript" src="/bookreader/id/<?echo $id . '.js';?>"></script>
 </body>
 </html>

@@ -24,12 +24,14 @@ $id = $_REQUEST['id'];
 // Sanitize since we put this value in the page
 $id = urlencode($id);
 
+$flippyURL = "http://" . $_SERVER['SERVER_NAME'] . "/texts/flipbook/flippy.php?id=" . $id;
+
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
     <title>Unsupported browser</title>
-    <meta http-equiv="refresh" content="10;url=http://www.archive.org/stream/<? echo($id); ?>">
+    <meta http-equiv="refresh" content="10;url=<? echo($flippyURL); ?>">
     <link rel="stylesheet" href="http://www.archive.org/stylesheets/archive.css?v=1.99" type="text/css">
 </head>
 <body>
@@ -87,9 +89,9 @@ Sorry, but our new viewer does not work in this browser yet.
 </p>
 
 <p>
-Either go to our <a href="http://www.archive.org/stream/<? echo($id) ?>">old viewer</a>,
+Either go to our <a href="<? echo($flippyURL); ?>">old viewer</a>,
 or download <a href="http://www.mozilla.com/en-US/firefox/">Firefox</a> or
-<a href="http://www.microsoft.com/windows/internet-explorer/download-ie.aspx">IE7</a>.
+<a href="http://www.microsoft.com/windows/internet-explorer/download-ie.aspx">IE7 (or higher)</a>.
 </p>
 
 <p>
