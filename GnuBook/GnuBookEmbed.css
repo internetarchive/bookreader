@@ -2,10 +2,13 @@
  * Custom overrides for embedded bookreader.
  */
 
-#GBtoolbar .label,.pageform,.play,.embed,.two_page_mode,.one_page_mode {
+/* Hide some navigation buttons */
+#GBtoolbar .label,.pageform,.play,.embed,.two_page_mode,.one_page_mode,
+    .book_leftmost,.book_rightmost,.book_top,.book_bottom {
     display: none;
 }
 
 #GBtoolbar .title {
     font-size: 0.9em;
 }
+

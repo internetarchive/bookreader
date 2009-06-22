@@ -317,27 +317,29 @@ if ('bandersnatchhsye00scarrich' == $id) {
 // Check for config object
 // $$$ change this to use the newer params object
 if (typeof(gbConfig) != 'undefined') {
+    if (typeof(gbConfig["ui"]) != 'undefined') {
+        gb.ui = gbConfig["ui"];
+    }
+
     if (gbConfig['mode'] == 1) {
-      gb.mode = 1;
-      if (typeof(gbConfig['reduce'] != 'undefined')) {
-        gb.reduce = gbConfig['reduce'];
-      }
+        gb.mode = 1;
+        if (typeof(gbConfig['reduce'] != 'undefined')) {
+            gb.reduce = gbConfig['reduce'];
+        }
     } else if (gbConfig['mode'] == 2) {
-      gb.mode = 2;
+        gb.mode = 2;
       
 <?
-      //$$$mang hack to override request for 2up for books with attribution page
-      //   as first page until we can display that page in 2up
-      $needle = 'goog';
-      if (strrpos($id, $needle) === strlen($id)-strlen($needle)) {
-        print "// override for books with attribution page\n";
-        print "gb.mode = 1;\n";
-      }
+        //$$$mang hack to override request for 2up for books with attribution page
+        //   as first page until we can display that page in 2up
+        $needle = 'goog';
+        if (strrpos($id, $needle) === strlen($id)-strlen($needle)) {
+            print "// override for books with attribution page\n";
+            print "gb.mode = 1;\n";
+        }
 ?>
-
-  
     }
-}
+} // gbConfig
 
 gb.init();
 
