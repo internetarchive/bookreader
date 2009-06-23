@@ -2228,16 +2228,30 @@ GnuBook.prototype.fragmentFromParams = function(params) {
 
 // getPageIndex(pageNum)
 //________
-// Returns the index of the given page number, or undefined
+// Returns the *highest* index the given page number, or undefined
 GnuBook.prototype.getPageIndex = function(pageNum) {
-    var pageIndex = undefined;
+    var pageIndices = this.getPageIndices(pageNum);
     
+    if (pageIndices.length > 0) {
+        return pageIndices[pageIndices.length - 1];
+    }
+
+    return undefined;
+}
+
+// getPageIndices(pageNum)
+//________
+// Returns an array (possibly empty) of the indices with the given page number
+GnuBook.prototype.getPageIndices = function(pageNum) {
+    var indices = [];
+
     // Check for special "nXX" page number
     if (pageNum.slice(0,1) == 'n') {
         try {
             var pageIntStr = pageNum.slice(1, pageNum.length);
             pageIndex = parseInt(pageIntStr);
-            return pageIndex;
+            indices.append(pageIndex);
+            return indices;
         } catch(err) {
             // Do nothing... will run through page names and see if one matches
         }
@@ -2246,12 +2260,11 @@ GnuBook.prototype.getPageIndex = function(pageNum) {
     var i;
     for (i=0; i<this.numLeafs; i++) {
         if (this.getPageNum(i) == pageNum) {
-            pageIndex = i;
-            return pageIndex;
+            indices.push(i);
         }
     }
-
-    return pageIndex;
+    
+    return indices;
 }
 
 // updateLocationHash
