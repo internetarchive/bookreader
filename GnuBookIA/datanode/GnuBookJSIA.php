@@ -180,7 +180,12 @@ gb.getPageSide = function(index) {
 }
 
 gb.getPageNum = function(index) {
-    return this.pageNums[index];
+    var pageNum = this.pageNums[index];
+    if (pageNum) {
+        return pageNum;
+    } else {
+        return 'n' + index;
+    }
 }
 
 gb.leafNumToIndex = function(leafNum) {

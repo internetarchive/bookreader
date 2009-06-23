@@ -818,7 +818,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
 
 // prepareTwoPagePopUp()
 //
-// This function prepares the "View leaf n" popup that shows while the mouse is
+// This function prepares the "View Page n" popup that shows while the mouse is
 // over the left/right "stack of sheets" edges.  It also binds the mouse
 // events for these divs.
 //______________________________________________________________________________
@@ -859,7 +859,7 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
     $(this.leafEdgeR).bind('mousemove', this, function(e) {
 
         var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
-        $(e.data.twoPagePopUp).text('View Leaf '+jumpIndex);
+        $(e.data.twoPagePopUp).text('View Page '+ e.data.getPageNum(jumpIndex));
         
         $(e.data.twoPagePopUp).css({
             left: e.pageX +5+ 'px',
@@ -870,7 +870,7 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
     $(this.leafEdgeL).bind('mousemove', this, function(e) {
     
         var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
-        $(e.data.twoPagePopUp).text('View Leaf '+jumpIndex);
+        $(e.data.twoPagePopUp).text('View Page '+ e.data.getPageNum(jumpIndex));
         
         $(e.data.twoPagePopUp).css({
             left: e.pageX - $(e.data.twoPagePopUp).width() - 30 + 'px',
@@ -2108,6 +2108,7 @@ GnuBook.prototype.updateFromParams = function(params) {
             this.jumpToIndex(params.index);
         }
     } else if ('undefined' != typeof(params.page)) {
+        // $$$ this assumes page numbers are unique
         if (params.page != this.getPageNum(this.currentIndex())) {
             this.jumpToPage(params.page);
         }
