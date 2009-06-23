@@ -251,7 +251,7 @@ gb.uniquifyPageNums = function() {
 }
 
 gb.cleanupMetadata = function() {
-    gb.uniquifyPages();
+    gb.uniquifyPageNums();
 }
 
 gb.pageW =		[
