@@ -1,5 +1,5 @@
 /*
-Copyright(c)2008 Internet Archive. Software license AGPL version 3.
+Copyright(c)2008-2009 Internet Archive. Software license AGPL version 3.
 
 This file is part of GnuBook.
 
@@ -84,8 +84,10 @@ GnuBook.prototype.init = function() {
         startIndex = this.getPageIndex(params.page);
     }
     
-    if ('undefined' == typeof(startIndex)) {    
-        startIndex = this.leafNumToIndex(this.titleLeaf);
+    if ('undefined' == typeof(startIndex)) {
+        if ('undefined' != typeof(this.titleLeaf)) {
+            startIndex = this.leafNumToIndex(this.titleLeaf);
+        }
     }
     
     if ('undefined' == typeof(startIndex)) {
@@ -1918,8 +1920,8 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
     jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'>"
         + "<button class='GBicon rollover embed' />"
         + "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
-        + "<div class='GBtoolbarmode2' style='display: inline'><button class='GBicon rollover book_leftmost' /><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /><button class='GBicon rollover book_rightmost' /></div>"
-        + "<div class='GBtoolbarmode1' style='display: hidden'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /><button class='GBicon rollover book_bottom' /></div>"
+        + "<div class='GBtoolbarmode2' style='display: none'><button class='GBicon rollover book_leftmost' /><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /><button class='GBicon rollover book_rightmost' /></div>"
+        + "<div class='GBtoolbarmode1' style='display: none'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /><button class='GBicon rollover book_bottom' /></div>"
         + "<button class='GBicon rollover play' /><button class='GBicon rollover pause' style='display: none' /></span>");
 
     this.bindToolbarNavHandlers(jToolbar);
@@ -1966,11 +1968,11 @@ GnuBook.prototype.switchToolbarMode = function(mode) {
     if (1 == mode) {
         // 1-up     
         $('#GBtoolbar .GBtoolbarmode2').hide();
-        $('#GBtoolbar .GBtoolbarmode1').css('display', 'inline').show();
+        $('#GBtoolbar .GBtoolbarmode1').show().css('display', 'inline');
     } else {
         // 2-up
         $('#GBtoolbar .GBtoolbarmode1').hide();
-        $('#GBtoolbar .GBtoolbarmode2').css('display', 'inline').show();
+        $('#GBtoolbar .GBtoolbarmode2').show().css('display', 'inline');
     }
 }
 

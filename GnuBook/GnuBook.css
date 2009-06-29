@@ -86,24 +86,24 @@
 }
 
 /* Absolute path used since the html might be generated at /stream/id or elsewhere */
-.GBicon.logo { background: url(/bookreader/images/logo_icon.png) no-repeat; }
-.GBicon.zoom_out { background: url(/bookreader/images/zoom_out_icon.png) no-repeat; }
-.GBicon.zoom_in { background: url(/bookreader/images/zoom_in_icon.png) no-repeat; }
-.GBicon.one_page_mode { background: url(/bookreader/images/one_page_mode_icon.png) no-repeat; }
-.GBicon.two_page_mode { background: url(/bookreader/images/two_page_mode_icon.png) no-repeat; }
-.GBicon.embed { background: url(/bookreader/images/embed_icon.png) no-repeat; }
-.GBicon.book_left { background: url(/bookreader/images/book_left_icon.png) no-repeat; }
-.GBicon.book_right { background: url(/bookreader/images/book_right_icon.png) no-repeat; }
-.GBicon.book_up { background: url(/bookreader/images/book_up_icon.png) no-repeat; }
-.GBicon.book_down { background: url(/bookreader/images/book_down_icon.png) no-repeat; }
-.GBicon.book_leftmost { background: url(/bookreader/images/book_leftmost_icon.png) no-repeat; }
-.GBicon.book_rightmost { background: url(/bookreader/images/book_rightmost_icon.png) no-repeat; }
-.GBicon.book_top { background: url(/bookreader/images/book_top_icon.png) no-repeat; }
-.GBicon.book_bottom { background: url(/bookreader/images/book_bottom_icon.png) no-repeat; }
+.GBicon.logo { background: url(images/logo_icon.png) no-repeat; }
+.GBicon.zoom_out { background: url(images/zoom_out_icon.png) no-repeat; }
+.GBicon.zoom_in { background: url(images/zoom_in_icon.png) no-repeat; }
+.GBicon.one_page_mode { background: url(images/one_page_mode_icon.png) no-repeat; }
+.GBicon.two_page_mode { background: url(images/two_page_mode_icon.png) no-repeat; }
+.GBicon.embed { background: url(images/embed_icon.png) no-repeat; }
+.GBicon.book_left { background: url(images/book_left_icon.png) no-repeat; }
+.GBicon.book_right { background: url(images/book_right_icon.png) no-repeat; }
+.GBicon.book_up { background: url(images/book_up_icon.png) no-repeat; }
+.GBicon.book_down { background: url(images/book_down_icon.png) no-repeat; }
+.GBicon.book_leftmost { background: url(images/book_leftmost_icon.png) no-repeat; }
+.GBicon.book_rightmost { background: url(images/book_rightmost_icon.png) no-repeat; }
+.GBicon.book_top { background: url(images/book_top_icon.png) no-repeat; }
+.GBicon.book_bottom { background: url(images/book_bottom_icon.png) no-repeat; }
 
 
-.GBicon.play { background: url(/bookreader/images/control_play_icon.png) no-repeat; }
-.GBicon.pause { background: url(/bookreader/images/control_pause_icon.png) no-repeat; }
+.GBicon.play { background: url(images/control_play_icon.png) no-repeat; }
+.GBicon.pause { background: url(images/control_pause_icon.png) no-repeat; }
 
 /* Icons with this class should have a 48x24 image which contains
    the regular and hover images side-by-side */
