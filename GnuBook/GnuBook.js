@@ -84,8 +84,10 @@ GnuBook.prototype.init = function() {
         startIndex = this.getPageIndex(params.page);
     }
     
-    if ('undefined' == typeof(startIndex)) {    
-        startIndex = this.leafNumToIndex(this.titleLeaf);
+    if ('undefined' == typeof(startIndex)) {
+        if ('undefined' != typeof(this.titleLeaf)) {
+            startIndex = this.leafNumToIndex(this.titleLeaf);
+        }
     }
     
     if ('undefined' == typeof(startIndex)) {
