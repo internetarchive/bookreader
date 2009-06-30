@@ -861,7 +861,7 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
     $(this.leafEdgeR).bind('mousemove', this, function(e) {
 
         var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
-        $(e.data.twoPagePopUp).text('View Page '+ e.data.getPageNum(jumpIndex));
+        $(e.data.twoPagePopUp).text('View ' + e.data.getPageNa,e(jumpIndex));
         
         $(e.data.twoPagePopUp).css({
             left: e.pageX +5+ 'px',
@@ -872,7 +872,7 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
     $(this.leafEdgeL).bind('mousemove', this, function(e) {
     
         var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
-        $(e.data.twoPagePopUp).text('View Page '+ e.data.getPageNum(jumpIndex));
+        $(e.data.twoPagePopUp).text('View '+ e.data.getPageName(jumpIndex));
         
         $(e.data.twoPagePopUp).css({
             left: e.pageX - $(e.data.twoPagePopUp).width() - 30 + 'px',
@@ -1571,6 +1571,7 @@ GnuBook.prototype.search = function(term) {
 	script.setAttribute("type", "text/javascript");
 	script.setAttribute("src", 'http://'+this.server+'/GnuBook/flipbook_search_gb.php?url='+escape(this.bookPath+'/'+this.bookId+'_djvu.xml')+'&term='+term+'&format=XML&callback=gb.GBSearchCallback');
 	document.getElementsByTagName('head')[0].appendChild(script);
+	$('#GnuBookSearchResults').html('Searching...');
 }
 
 // GBSearchCallback()
@@ -1632,8 +1633,9 @@ GnuBook.prototype.GBSearchCallback = function(txt) {
                     }
                 }
             }
+            var pageName = this.getPageName(index);
             //TODO: remove hardcoded instance name
-            $('#GnuBookSearchResults').append('<li><b><a href="javascript:gb.jumpToIndex('+index+');">Leaf ' + index + '</a></b> - ' + context+'</li>');
+            $('#GnuBookSearchResults').append('<li><b><a href="javascript:gb.jumpToIndex('+index+');">' + pageName + '</a></b> - ' + context + '</li>');
         }
     }
     $('#GnuBookSearchResults').append('</ul>');
@@ -2265,6 +2267,13 @@ GnuBook.prototype.getPageIndices = function(pageNum) {
     }
     
     return indices;
+}
+
+// getPageName(index)
+//________
+// Returns the name of the page as it should be displayed in the user interface
+GnuBook.prototype.getPageName = function(index) {
+    return 'Page ' + this.getPageNum(index);
 }
 
 // updateLocationHash
