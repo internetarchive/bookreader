@@ -861,7 +861,7 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
     $(this.leafEdgeR).bind('mousemove', this, function(e) {
 
         var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
-        $(e.data.twoPagePopUp).text('View ' + e.data.getPageNa,e(jumpIndex));
+        $(e.data.twoPagePopUp).text('View ' + e.data.getPageName(jumpIndex));
         
         $(e.data.twoPagePopUp).css({
             left: e.pageX +5+ 'px',
