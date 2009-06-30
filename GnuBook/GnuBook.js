@@ -1893,7 +1893,7 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
         return jumpIndex;
     } else {
         var jumpIndex = this.currentIndexR - (pageX - $(this.leafEdgeR).offset().left) * 10;
-        jumpIndex = GnuBook.util.clamp(Math.round(jumpIndex), this.firstDisplayableIndex, this.currentIndexR - 2);
+        jumpIndex = GnuBook.util.clamp(Math.round(jumpIndex), this.firstDisplayableIndex(), this.currentIndexR - 2);
         return jumpIndex;
     }
 }
