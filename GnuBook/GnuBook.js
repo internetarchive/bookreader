@@ -2251,7 +2251,7 @@ GnuBook.prototype.getPageIndices = function(pageNum) {
     if (pageNum.slice(0,1) == 'n') {
         try {
             var pageIntStr = pageNum.slice(1, pageNum.length);
-            pageIndex = parseInt(pageIntStr);
+            var pageIndex = parseInt(pageIntStr);
             indices.append(pageIndex);
             return indices;
         } catch(err) {
