@@ -1868,14 +1868,14 @@ GnuBook.prototype.jumpIndexForLeftEdgePageX = function(pageX) {
     if ('rl' != this.pageProgression) {
         // LTR - flipping backward
         var jumpIndex = this.currentIndexL - ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
-        // browser may have resized the div due to font size change -- see https://bugs.launchpad.net/gnubook/+bug/333570
-        jumpIndex = Math.min(jumpIndex, this.currentIndexL - 2);
-        jumpIndex = Math.max(jumpIndex, this.firstDisplayableIndex());
+
+        // browser may have resized the div due to font size change -- see https://bugs.launchpad.net/gnubook/+bug/333570        
+        jumpIndex = GnuBook.util.clamp(Math.round(jumpIndex), this.firstDisplayableIndex(), this.currentIndexL - 2);
         return jumpIndex;
+
     } else {
         var jumpIndex = this.currentIndexL + ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
-        jumpIndex = Math.max(jumpIndex, this.currentIndexL + 2);
-        jumpIndex = Math.min(jumpIndex, this.lastDisplayableIndex());
+        jumpIndex = GnuBook.util.clamp(Math.round(jumpIndex), this.currentIndexL + 2, this.lastDisplayableIndex());
         return jumpIndex;
     }
 }
@@ -1887,13 +1887,11 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
     if ('rl' != this.pageProgression) {
         // LTR
         var jumpIndex = this.currentIndexR + (pageX - $(this.leafEdgeR).offset().left) * 10;
-        jumpIndex = Math.max(jumpIndex, this.currentIndexR + 2);
-        jumpIndex = Math.min(jumpIndex, this.lastDisplayableIndex());
+        jumpIndex = GnuBook.util.clamp(Math.round(jumpIndex), this.currentIndexR + 2, this.lastDisplayableIndex());
         return jumpIndex;
     } else {
         var jumpIndex = this.currentIndexR - (pageX - $(this.leafEdgeR).offset().left) * 10;
-        jumpIndex = Math.min(jumpIndex, this.currentIndexR - 2);
-        jumpIndex = Math.max(jumpIndex, this.firstDisplayableIndex());
+        jumpIndex = GnuBook.util.clamp(Math.round(jumpIndex), this.firstDisplayableIndex, this.currentIndexR - 2);
         return jumpIndex;
     }
 }
@@ -2328,4 +2326,12 @@ GnuBook.prototype.getEmbedURL = function() {
 // Returns the embed code HTML fragment suitable for copy and paste
 GnuBook.prototype.getEmbedCode = function() {
     return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
+}
+
+
+// Library functions
+GnuBook.util = {
+    clamp: function(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
 }
