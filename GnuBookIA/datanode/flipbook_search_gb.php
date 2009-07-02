@@ -35,6 +35,9 @@ This file is part of GnuBook.
 if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
     $_SERVER['DOCUMENT_ROOT']='/home/mang/petabox/www/sf';
     require_once '/home/mang/petabox/setup.inc';
+} else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
+    $_SERVER['DOCUMENT_ROOT']='/home/testflip/petabox/www/sf';
+    require_once '/home/testflip/petabox/setup.inc';
 } else {
     $_SERVER['DOCUMENT_ROOT']='/petabox/www/sf';
     require_once '/petabox/setup.inc';

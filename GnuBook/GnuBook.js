@@ -1569,7 +1569,7 @@ GnuBook.prototype.search = function(term) {
  	var script  = document.createElement("script");
  	script.setAttribute('id', 'GnuBookSearchScript');
 	script.setAttribute("type", "text/javascript");
-	script.setAttribute("src", 'http://'+this.server+'/GnuBook/flipbook_search_gb.php?url='+escape(this.bookPath+'/'+this.bookId+'_djvu.xml')+'&term='+term+'&format=XML&callback=gb.GBSearchCallback');
+	script.setAttribute("src", 'http://'+this.server+'/GnuBook/flipbook_search_gb.php?url='+escape(this.bookPath + '_djvu.xml')+'&term='+term+'&format=XML&callback=gb.GBSearchCallback');
 	document.getElementsByTagName('head')[0].appendChild(script);
 	$('#GnuBookSearchResults').html('Searching...');
 }
