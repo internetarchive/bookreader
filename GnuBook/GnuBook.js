@@ -18,7 +18,7 @@ This file is part of GnuBook.
     
     The GnuBook source is hosted at http://github.com/openlibrary/bookreader/
 
-    archive.org cvs $Revision: 1.73 $ $Date: 2009-05-01 22:37:11 $
+    archive.org cvs $Revision: 1.2 $ $Date: 2009-06-22 18:42:51 $
 */
 
 // GnuBook()
@@ -34,6 +34,7 @@ function GnuBook() {
     this.reduce  = 4;
     this.padding = 10;
     this.mode    = 1; //1 or 2
+    this.ui = 'full'; // UI mode
     
     this.displayedLeafs = [];	
     //this.leafsToDisplay = [];
@@ -59,25 +60,48 @@ function GnuBook() {
     // We link to index.php to avoid redirect which breaks back button
     this.logoURL = 'http://www.archive.org/index.php';
     
+    // Base URL for images
+    this.imagesBaseURL = '/bookreader/images/';
+    
+    // Mode constants
+    this.constMode1up = 1;
+    this.constMode2up = 2;
+    
 };
 
 // init()
 //______________________________________________________________________________
 GnuBook.prototype.init = function() {
-    var startLeaf = window.location.hash;
-    //console.log("startLeaf from location.hash: %s", startLeaf);
-    if ('' == startLeaf) {
-        if (this.titleLeaf) {
-            startLeaf = "#" + this.leafNumToIndex(this.titleLeaf);
-        }
+
+    var startIndex = undefined;
+    
+    // Find start index and mode if set in location hash
+    var params = this.paramsFromFragment(window.location.hash);
+        
+    if ('undefined' != typeof(params.index)) {
+        startIndex = params.index;
+    } else if ('undefined' != typeof(params.page)) {
+        startIndex = this.getPageIndex(params.page);
     }
     
-    // Ideally this would be set in the HTML/PHP for better search engine visibility but
-    // it takes some time to locate the item and retrieve the metadata
+    if ('undefined' == typeof(startIndex)) {    
+        startIndex = this.leafNumToIndex(this.titleLeaf);
+    }
+    
+    if ('undefined' == typeof(startIndex)) {
+        startIndex = 0;
+    }
+    
+    if ('undefined' != typeof(params.mode)) {
+        this.mode = params.mode;
+    }
+    
+    // Set document title -- may have already been set in enclosing html for
+    // search engine visibility
     document.title = this.shortTitle(50);
     
     $("#GnuBook").empty();
-    this.initToolbar(this.mode); // Build inside of toolbar div
+    this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
     $("#GnuBook").append("<div id='GBcontainer'></div>");
     $("#GBcontainer").append("<div id='GBpageview'></div>");
 
@@ -86,6 +110,7 @@ GnuBook.prototype.init = function() {
     });
 
     this.setupKeyListeners();
+    this.startLocationPolling();
 
     $(window).bind('resize', this, function(e) {
         //console.log('resize!');
@@ -108,23 +133,22 @@ GnuBook.prototype.init = function() {
 
     if (1 == this.mode) {
         this.resizePageView();
-    
-        if ('' != startLeaf) { // Jump to the leaf specified in the URL
-            this.jumpToIndex(parseInt(startLeaf.substr(1)));
-            //console.log('jump to ' + parseInt(startLeaf.substr(1)));
-        }
+        this.firstIndex = startIndex;
+        this.jumpToIndex(startIndex);
     } else {
         //this.resizePageView();
         
         this.displayedLeafs=[0];
-        if ('' != startLeaf) {
-            this.displayedLeafs = [parseInt(startLeaf.substr(1))];
-        }
+        this.firstIndex = startIndex;
+        this.displayedLeafs = [this.firstIndex];
         //console.log('titleLeaf: %d', this.titleLeaf);
         //console.log('displayedLeafs: %s', this.displayedLeafs);
         this.prepareTwoPageView();
         //if (this.auto) this.nextPage();
     }
+    
+    // Enact other parts of initial params
+    this.updateFromParams(params);
 }
 
 GnuBook.prototype.setupKeyListeners = function() {
@@ -272,6 +296,7 @@ GnuBook.prototype.drawLeafsOnePage = function() {
         var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
         var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
         if (topInView | bottomInView | middleInView) {
+            //console.log('displayed: ' + this.displayedLeafs);
             //console.log('to display: ' + i);
             leafsToDisplay.push(i);
         }
@@ -280,8 +305,13 @@ GnuBook.prototype.drawLeafsOnePage = function() {
     }
 
     var firstLeafToDraw  = leafsToDisplay[0];
-    window.location.replace('#' + firstLeafToDraw);
     this.firstIndex      = firstLeafToDraw;
+    
+    // Update hash, but only if we're currently displaying a leaf
+    // Hack that fixes #365790
+    if (this.displayedLeafs.length > 0) {
+        this.updateLocationHash();
+    }
 
     if ((0 != firstLeafToDraw) && (1 < this.reduce)) {
         firstLeafToDraw--;
@@ -355,7 +385,7 @@ GnuBook.prototype.drawLeafsOnePage = function() {
     this.updateSearchHilites();
     
     if (null != this.getPageNum(firstLeafToDraw))  {
-        $("#GBpagenum").val(this.getPageNum(firstLeafToDraw));
+        $("#GBpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
         $("#GBpagenum").val('');
     }
@@ -445,7 +475,7 @@ GnuBook.prototype.updatePageNumBox2UP = function() {
     } else {
         $("#GBpagenum").val('');
     }
-    window.location.replace('#' + this.currentLeafL); 
+    this.updateLocationHash();
 }
 
 // loadLeafs()
@@ -487,7 +517,6 @@ GnuBook.prototype.zoom1up = function(dir) {
     
     $('#GBzoom').text(100/this.reduce);
 }
-
 
 // resizePageView()
 //______________________________________________________________________________
@@ -535,27 +564,21 @@ GnuBook.prototype.centerPageView = function() {
 
 // jumpToPage()
 //______________________________________________________________________________
+// Attempts to jump to page.  Returns true if page could be found, false otherwise.
 GnuBook.prototype.jumpToPage = function(pageNum) {
 
-    var i;
-    var foundPage = false;
-    var foundLeaf = null;
-    for (i=0; i<this.numLeafs; i++) {
-        if (this.getPageNum(i) == pageNum) {
-            foundPage = true;
-            foundLeaf = i;
-            break;
-        }
-    }
-    
-    if (foundPage) {
+    var pageIndex = this.getPageIndex(pageNum);
+
+    if ('undefined' != typeof(pageIndex)) {
         var leafTop = 0;
         var h;
-        this.jumpToIndex(foundLeaf);
+        this.jumpToIndex(pageIndex);
         $('#GBcontainer').attr('scrollTop', leafTop);
-    } else {
-        alert('Page not found. This book might not have pageNumbers in scandata.');
+        return true;
     }
+    
+    // Page not found
+    return false;
 }
 
 // jumpToIndex()
@@ -582,7 +605,7 @@ GnuBook.prototype.jumpToIndex = function(index) {
             leafTop += h + this.padding;
         }
         //$('#GBcontainer').attr('scrollTop', leafTop);
-        $('#GBcontainer').animate({scrollTop: leafTop },'fast');    
+        $('#GBcontainer').animate({scrollTop: leafTop },'fast');
     }
 }
 
@@ -615,7 +638,8 @@ GnuBook.prototype.switchMode = function(mode) {
 //______________________________________________________________________________
 GnuBook.prototype.prepareOnePageView = function() {
 
-    var startLeaf = this.displayedLeafs[0];
+    // var startLeaf = this.displayedLeafs[0];
+    var startLeaf = this.currentIndex();
     
     $('#GBcontainer').empty();
     $('#GBcontainer').css({
@@ -625,11 +649,13 @@ GnuBook.prototype.prepareOnePageView = function() {
     
     var gbPageView = $("#GBcontainer").append("<div id='GBpageview'></div>");
     this.resizePageView();
+    
     this.jumpToIndex(startLeaf);
-    this.displayedLeafs = [];    
+    this.displayedLeafs = [];
+    
     this.drawLeafsOnePage();
     $('#GBzoom').text(100/this.reduce);
-    
+        
     // Bind mouse handlers
     // Disable mouse click to avoid selected/highlighted page images - bug 354239
     gbPageView.bind('mousedown', function(e) {
@@ -648,8 +674,9 @@ GnuBook.prototype.prepareTwoPageView = function() {
     // one side of the spread because it is the first/last leaf,
     // foldouts, missing pages, etc
 
-    var targetLeaf = this.displayedLeafs[0];
-    
+    //var targetLeaf = this.displayedLeafs[0];
+    var targetLeaf = this.firstIndex;
+
     if (targetLeaf < this.firstDisplayableIndex()) {
         targetLeaf = this.firstDisplayableIndex();
     }
@@ -665,6 +692,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
     var currentSpreadIndices = this.getSpreadIndices(targetLeaf);
     this.currentLeafL = currentSpreadIndices[0];
     this.currentLeafR = currentSpreadIndices[1];
+    this.firstIndex = this.currentLeafL;
     
     this.calculateSpreadSize(); //sets this.twoPageW, twoPageH, and twoPageRatio
 
@@ -726,7 +754,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
         borderStyle: 'solid solid solid none',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 1px 1px 0px',
-        background: 'transparent url(images/right_edges.png) repeat scroll 0% 0%',
+        background: 'transparent url(' + this.imagesBaseURL + 'right_edges.png) repeat scroll 0% 0%',
         width: leafEdgeWidthR + 'px',
         height: this.twoPageH-1 + 'px',
         /*right: '10px',*/
@@ -741,7 +769,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
         borderStyle: 'solid none solid solid',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 0px 1px 1px',
-        background: 'transparent url(images/left_edges.png) repeat scroll 0% 0%',
+        background: 'transparent url(' + this.imagesBaseURL + 'left_edges.png) repeat scroll 0% 0%',
         width: leafEdgeWidthL + 'px',
         height: this.twoPageH-1 + 'px',
         left: bookCoverDivLeft+10+'px',
@@ -902,6 +930,18 @@ GnuBook.prototype.calculateSpreadSize = function() {
 
 }
 
+// currentIndex()
+//______________________________________________________________________________
+// Returns the currently active index.
+GnuBook.prototype.currentIndex = function() {
+    // $$$ we should be cleaner with our idea of which index is active in 1up/2up
+    if (this.mode == this.constMode1up || this.mode == this.constMode2up) {
+        return this.firstIndex;
+    } else {
+        throw 'currentIndex called for unimplemented mode ' + this.mode;
+    }
+}
+
 // right()
 //______________________________________________________________________________
 // Flip the right page over onto the left
@@ -952,7 +992,6 @@ GnuBook.prototype.leftmost = function() {
 
 // next()
 //______________________________________________________________________________
-// Navigate to next page
 GnuBook.prototype.next = function() {
     if (2 == this.mode) {
         this.autoStop();
@@ -966,7 +1005,6 @@ GnuBook.prototype.next = function() {
 
 // prev()
 //______________________________________________________________________________
-// Navigate to previous page
 GnuBook.prototype.prev = function() {
     if (2 == this.mode) {
         this.autoStop();
@@ -978,16 +1016,15 @@ GnuBook.prototype.prev = function() {
     }
 }
 
-// first()
-//______________________________________________________________________________
-// Navigate to first displayable page
 GnuBook.prototype.first = function() {
-    this.jumpToIndex(this.firstDisplayableIndex());
+    if (2 == this.mode) {
+        this.jumpToIndex(2);
+    }
+    else {
+        this.jumpToIndex(0);
+    }
 }
 
-// last()
-//______________________________________________________________________________
-// Navigate to last displayable page
 GnuBook.prototype.last = function() {
     if (2 == this.mode) {
         this.jumpToIndex(this.lastDisplayableIndex());
@@ -1007,7 +1044,7 @@ GnuBook.prototype.flipBackToIndex = function(index) {
     
     // $$$ Need to change this to be able to see first spread.
     //     See https://bugs.launchpad.net/gnubook/+bug/296788
-    if (leftIndex <= 1) return;
+    if (leftIndex <= 2) return;
     if (this.animating) return;
 
     if (null != this.leafEdgeTmp) {
@@ -1096,7 +1133,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
         borderStyle: 'solid none solid solid',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 0px 1px 1px',
-        background: 'transparent url(images/left_edges.png) repeat scroll 0% 0%',
+        background: 'transparent url(' + this.imagesBaseURL + 'left_edges.png) repeat scroll 0% 0%',
         width: leafEdgeTmpW + 'px',
         height: this.twoPageH-1 + 'px',
         left: leftEdgeTmpLeft + 'px',
@@ -1166,15 +1203,21 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
             
             self.currentLeafL = newIndexL;
             self.currentLeafR = newIndexR;
+            self.firstIndex = self.currentLeafL;
             self.displayedLeafs = [newIndexL, newIndexR];
             self.setClickHandlers();
             self.pruneUnusedImgs();
-            self.prefetch();
+            self.prefetch();            
             self.animating = false;
             
             self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
             //$('#GBzoom').text((self.twoPageH/self.getPageHeight(newIndexL)).toString().substr(0,4));            
+            
+            if (self.animationFinishedCallback) {
+                self.animationFinishedCallback();
+                self.animationFinishedCallback = null;
+            }
         });
     });        
     
@@ -1239,7 +1282,7 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR, gutter) {
         borderStyle: 'solid none solid solid',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 0px 1px 1px',
-        background: 'transparent url(images/left_edges.png) repeat scroll 0% 0%',
+        background: 'transparent url(' + this.imagesBaseURL + 'left_edges.png) repeat scroll 0% 0%',
         width: leafEdgeTmpW + 'px',
         height: this.twoPageH-1 + 'px',
         left: currGutter+scaledW+'px',
@@ -1285,15 +1328,22 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR, gutter) {
             
             self.currentLeafL = newIndexL;
             self.currentLeafR = newIndexR;
+            self.firstIndex = self.currentLeafL;
             self.displayedLeafs = [newIndexL, newIndexR];
             self.setClickHandlers();            
             self.pruneUnusedImgs();
             self.prefetch();
             self.animating = false;
 
+
             self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
             //$('#GBzoom').text((self.twoPageH/self.getPageHeight(newIndexL)).toString().substr(0,4));
+            
+            if (self.animationFinishedCallback) {
+                self.animationFinishedCallback();
+                self.animationFinishedCallback = null;
+            }
         });
     });    
 }
@@ -1705,12 +1755,14 @@ GnuBook.prototype.showEmbedCode = function() {
     }).appendTo('#GnuBook');
 
     htmlStr =  '<p style="text-align:center;"><b>Embed Bookreader in your blog!</b></p>';
-    htmlStr += '<p><b>Note:</b> The bookreader is still in beta testing. URLs may change in the future, breaking embedded books. This feature is just for testing!</b></p>';
     htmlStr += '<p>The bookreader uses iframes for embedding. It will not work on web hosts that block iframes. The embed feature has been tested on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>';
-    htmlStr += '<p>Embed Code: <input type="text" size="40" value="<iframe src=\'http://www.us.archive.org/GnuBook/GnuBookEmbed.php?id='+this.bookId+'\' width=\'430px\' height=\'430px\'></iframe>"></p>';
+    htmlStr += '<p>Embed Code: <input type="text" size="40" value="' + this.getEmbedCode() + '"></p>';
     htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.embedPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
 
-    this.embedPopup.innerHTML = htmlStr;    
+    this.embedPopup.innerHTML = htmlStr;
+    $(this.embedPopup).find('input').bind('click', function() {
+        this.select();
+    })
 }
 
 // autoToggle()
@@ -1844,7 +1896,7 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
     }
 }
 
-GnuBook.prototype.initToolbar = function(mode) {
+GnuBook.prototype.initToolbar = function(mode, ui) {
     $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'>"
         + "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
         + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
@@ -1854,6 +1906,10 @@ GnuBook.prototype.initToolbar = function(mode) {
         + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
         + "&nbsp;&nbsp;<a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
         + "</span></div>");
+        
+    if (ui == "embed") {
+        $("#GnuBook a.logo").attr("target","_blank");
+    }
 
     // $$$ turn this into a member variable
     var jToolbar = $('#GBtoolbar'); // j prefix indicates jQuery object
@@ -1987,12 +2043,8 @@ GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
 GnuBook.prototype.firstDisplayableIndex = function() {
     if (this.mode == 0) {
         return 0;
-    } else { // two page mode
-        if (this.getPageSide(0) == 'L') {
-            return 0;
-        } else {
-            return 1; // $$$ we assume there are enough pages... we need logic for very short books
-        }
+    } else {
+        return 1; // $$$ we assume there are enough pages... we need logic for very short books
     }
 }
 
@@ -2031,4 +2083,233 @@ GnuBook.prototype.shortTitle = function(maximumCharacters) {
     var title = this.bookTitle.substr(0, maximumCharacters - 3);
     title += '...';
     return title;
+}
+
+
+
+// Parameter related functions
+
+// updateFromParams(params)
+//________
+// Update ourselves from the params object.
+//
+// e.g. this.updateFromParams(this.paramsFromFragment(window.location.hash))
+GnuBook.prototype.updateFromParams = function(params) {
+    if ('undefined' != typeof(params.mode)) {
+        this.switchMode(params.mode);
+    }
+
+    // $$$ process /search
+    // $$$ process /zoom
+    
+    // We only respect page if index is not set
+    if ('undefined' != typeof(params.index)) {
+        if (params.index != this.currentIndex()) {
+            this.jumpToIndex(params.index);
+        }
+    } else if ('undefined' != typeof(params.page)) {
+        if (params.page != this.getPageNum(this.currentIndex())) {
+            this.jumpToPage(params.page);
+        }
+    }
+    
+    // $$$ process /region
+    // $$$ process /highlight
+}
+
+// paramsFromFragment(urlFragment)
+//________
+// Returns a object with configuration parametes from a URL fragment.
+//
+// E.g paramsFromFragment(window.location.hash)
+GnuBook.prototype.paramsFromFragment = function(urlFragment) {
+    // URL fragment syntax specification: http://openlibrary.org/dev/docs/bookurls
+    
+    var params = {};
+    
+    // For convenience we allow an initial # character (as from window.location.hash)
+    // but don't require it
+    if (urlFragment.substr(0,1) == '#') {
+        urlFragment = urlFragment.substr(1);
+    }
+    
+    // Simple #nn syntax
+    var oldStyleLeafNum = parseInt( /^\d+$/.exec(urlFragment) );
+    if ( !isNaN(oldStyleLeafNum) ) {
+        params.index = oldStyleLeafNum;
+        
+        // Done processing if using old-style syntax
+        return params;
+    }
+    
+    // Split into key-value pairs
+    var urlArray = urlFragment.split('/');
+    var urlHash = {};
+    for (var i = 0; i < urlArray.length; i += 2) {
+        urlHash[urlArray[i]] = urlArray[i+1];
+    }
+    
+    // Mode
+    if ('1up' == urlHash['mode']) {
+        params.mode = this.constMode1up;
+    } else if ('2up' == urlHash['mode']) {
+        params.mode = this.constMode2up;
+    }
+    
+    // Index and page
+    if ('undefined' != typeof(urlHash['page'])) {
+        // page was set -- may not be int
+        params.page = urlHash['page'];
+    }
+    
+    // $$$ process /region
+    // $$$ process /search
+    // $$$ process /highlight
+        
+    return params;
+}
+
+// paramsFromCurrent()
+//________
+// Create a params object from the current parameters.
+GnuBook.prototype.paramsFromCurrent = function() {
+
+    var params = {};
+
+    var pageNum = this.getPageNum(this.currentIndex());
+    if ((pageNum === 0) || pageNum) {
+        params.page = pageNum;
+    }
+    
+    params.index = this.currentIndex();
+    params.mode = this.mode;
+    
+    // $$$ highlight
+    // $$$ region
+    // $$$ search
+    
+    return params;
+}
+
+// fragmentFromParams(params)
+//________
+// Create a fragment string from the params object.
+// See http://openlibrary.org/dev/docs/bookurls for an explanation of the fragment syntax.
+GnuBook.prototype.fragmentFromParams = function(params) {
+    var separator = '/';
+    
+    var fragments = [];
+    
+    if ('undefined' != typeof(params.page)) {
+        fragments.push('page', params.page);
+    } else {
+        // Don't have page numbering -- use index instead
+        fragments.push('page', 'n' + params.index);
+    }
+    
+    // $$$ highlight
+    // $$$ region
+    // $$$ search
+    
+    // mode
+    if ('undefined' != typeof(params.mode)) {    
+        if (params.mode == this.constMode1up) {
+            fragments.push('mode', '1up');
+        } else if (params.mode == this.constMode2up) {
+            fragments.push('mode', '2up');
+        } else {
+            throw 'fragmentFromParams called with unknown mode ' + params.mode;
+        }
+    }
+    
+    return fragments.join(separator);
+}
+
+// getPageIndex(pageNum)
+//________
+// Returns the index of the given page number, or undefined
+GnuBook.prototype.getPageIndex = function(pageNum) {
+    var pageIndex = undefined;
+    
+    // Check for special "nXX" page number
+    if (pageNum.slice(0,1) == 'n') {
+        try {
+            var pageIntStr = pageNum.slice(1, pageNum.length);
+            pageIndex = parseInt(pageIntStr);
+            return pageIndex;
+        } catch(err) {
+            // Do nothing... will run through page names and see if one matches
+        }
+    }
+
+    var i;
+    for (i=0; i<this.numLeafs; i++) {
+        if (this.getPageNum(i) == pageNum) {
+            pageIndex = i;
+            return pageIndex;
+        }
+    }
+
+    return pageIndex;
+}
+
+// updateLocationHash
+//________
+// Update the location hash from the current parameters.  Call this instead of manually
+// using window.location.replace
+GnuBook.prototype.updateLocationHash = function() {
+    var newHash = '#' + this.fragmentFromParams(this.paramsFromCurrent());
+    window.location.replace(newHash);
+    
+    // This is the variable checked in the timer.  Only user-generated changes
+    // to the URL will trigger the event.
+    this.oldLocationHash = newHash;
+}
+
+// startLocationPolling
+//________
+// Starts polling of window.location to see hash fragment changes
+GnuBook.prototype.startLocationPolling = function() {
+    var self = this; // remember who I am
+    self.oldLocationHash = window.location.hash;
+    
+    if (this.locationPollId) {
+        clearInterval(this.locationPollID);
+        this.locationPollId = null;
+    }
+    
+    this.locationPollId = setInterval(function() {
+        var newHash = window.location.hash;
+        if (newHash != self.oldLocationHash) {
+            if (newHash != self.oldUserHash) { // Only process new user hash once
+                //console.log('url change detected ' + self.oldLocationHash + " -> " + newHash);
+                
+                // Queue change if animating
+                if (self.animating) {
+                    self.autoStop();
+                    self.animationFinishedCallback = function() {
+                        self.updateFromParams(self.paramsFromFragment(newHash));
+                    }                        
+                } else { // update immediately
+                    self.updateFromParams(self.paramsFromFragment(newHash));
+                }
+                self.oldUserHash = newHash;
+            }
+        }
+    }, 500);
+}
+
+// getEmbedURL
+//________
+// Returns a URL for an embedded version of the current book
+GnuBook.prototype.getEmbedURL = function() {
+    // We could generate a URL hash fragment here but for now we just leave at defaults
+    return 'http://' + window.location.host + '/stream/'+this.bookId + '?ui=embed';
+}
+
+// getEmbedCode
+//________
+// Returns the embed code HTML fragment suitable for copy and paste
+GnuBook.prototype.getEmbedCode = function() {
+    return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
 }
