@@ -47,9 +47,11 @@ class GnuBook
     return false;
   }
 
-  // $$$ would be cleaner to use different templates instead of the uimode param
-  public static function draw($server, $mainDir, $identifier, $title,
-                              $coverleaf=null, $titlestart='Internet Archive', $uimode='full')
+  // $$$ would be cleaner to use different templates instead of the uiMode param
+  // 
+  // @param subprefix Optional prefix to display a book inside an item (e.g. if does not match identifier)
+  public static function draw($server, $mainDir, $identifier, $subPrefix, $title,
+                              $coverLeaf=null, $titleStart='Internet Archive', $uiMode='full')
   {
     // Set title to default if not set
     if (!$title) {
@@ -61,14 +63,14 @@ class GnuBook
     // manually update with Launchpad version number at each checkin so that browsers
     // do not use old cached version
     // see https://bugs.launchpad.net/gnubook/+bug/330748
-    $version = "0.9.10";
+    $version = "0.9.11";
     
     if ("" == $id) {
         echo "No identifier specified!";
         die(-1);
     }
     
-    $metaURL = GnuBook::jsMetadataURL($server, $identifier, $mainDir);
+    $metaURL = GnuBook::jsMetadataURL($server, $identifier, $mainDir, $subPrefix);
     
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -79,25 +81,25 @@ class GnuBook
     <meta http-equiv="refresh" content="2; URL=/bookreader/browserunsupported.php?id=<? echo($id); ?>">
 <![endif]-->
     <link rel="stylesheet" type="text/css" href="/bookreader/GnuBook.css?v=<? echo($version); ?>">
-<? if ($uimode == "embed") { ?>
+<? if ($uiMode == "embed") { ?>
     <link rel="stylesheet" type="text/css" href="/bookreader/GnuBookEmbed.css?v=<? echo($version); ?>">
-<? } /* uimode */ ?>
+<? } /* uiMode */ ?>
     <script src="/includes/jquery-1.3.2.min.js" type="text/javascript"></script>
         <script type="text/javascript" src="/bookreader/GnuBook.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/jquery.easing.1.3.js"></script>
 </head>
 <body style="background-color: #FFFFFF;">
 
-<? if ($uimode == 'full') { ?>
+<? if ($uiMode == 'full') { ?>
 <div id="GnuBook" style="left:10px; right:200px; top:10px; bottom:2em;">x</div>
 <? } else { ?>
 <div id="GnuBook" style="left:0; right:0; top:0; bottom:0; border:0">x</div>
-<? } /* uimode*/ ?>
+<? } /* uiMode*/ ?>
 
 <script type="text/javascript">
   // Set some config variables -- $$$ NB: Config object format has not been finalized
   var gbConfig = {};
-<? if ($uimode == 'embed') { ?>
+<? if ($uiMode == 'embed') { ?>
   gbConfig["mode"] = 1;
   gbConfig["reduce"] = 8;
   gbConfig["ui"] = "embed";
@@ -107,7 +109,7 @@ class GnuBook
 </script>
 <script type="text/javascript" src="<? echo($metaURL); ?>"></script>
 
-<? if ($uimode == 'full') { ?>
+<? if ($uiMode == 'full') { ?>
 <div id="GnuBookSearch" style="width:190px; right:0px; top:10px; bottom:2em;">
     <form action='javascript:' onsubmit="gb.search($('#GnuBookSearchBox').val());">
         <p style="display: inline">
@@ -132,7 +134,7 @@ class GnuBook
         <a class="GBblack" href="http://www.archive.org/about/contact.php">Contact Us</a>
     </div>
 </div>
-<? } /* uimode */ ?>
+<? } /* uiMode */ ?>
 
 <script type="text/javascript">
     // $$$ hack to workaround sizing bug when starting in two-up mode
@@ -144,7 +146,7 @@ class GnuBook
     exit;
   }
   
-  public static function jsMetadataURL($server, $identifier, $mainDir)
+  public static function jsMetadataURL($server, $identifier, $mainDir, $subPrefix = '')
   {
     $serverBaseURL = $server;
     
@@ -158,8 +160,22 @@ class GnuBook
         $serverBaseURL = $serverBaseURL . ":81/~" . $match[1];
       }
     }
-
-    $url = "http://{$serverBaseURL}/GnuBook/GnuBookJSIA.php?id={$identifier}&itemPath={$mainDir}&server={$serverBaseURL}";
+    
+    $params = array( 'id' => $identifier, 'itemPath' => $mainDir, 'server' => $server );
+    if ($subPrefix) {
+        $params['subPrefix'] = $subPrefix;
+    }
+    
+    $keys = array_keys($params);
+    $lastParam = end($keys);
+    $url = "http://{$serverBaseURL}/GnuBook/GnuBookJSIA.php?";
+    foreach($params as $param=>$value) {
+        $url .= $param . '=' . $value;
+        if ($param != $lastParam) {
+            $url .= '&';
+        }
+    }
+    
     return $url;
   }
   
