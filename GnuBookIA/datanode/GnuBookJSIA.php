@@ -23,6 +23,14 @@ $itemPath = $_REQUEST['itemPath'];
 $subPrefix = $_REQUEST['subPrefix'];
 $server = $_REQUEST['server'];
 
+// Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
+// $$$ TODO consolidate this logic
+if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
+    $server .= ':80/~mang';
+} else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
+    $server .= ':80/~testflip';
+}
+
 if ($subPrefix) {
     $subItemPath = $itemPath . '/' . $subPrefix;
 } else {
