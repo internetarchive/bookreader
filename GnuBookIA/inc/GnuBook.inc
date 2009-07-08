@@ -15,7 +15,7 @@ class GnuBook
     $foundImageStack = false;
     
     $targetScandata = $prefix . "_scandata.xml";
-    
+        
     // $$$ TODO add support for jpg and tar stacks
     // https://bugs.edge.launchpad.net/gnubook/+bug/323003
     // https://bugs.edge.launchpad.net/gnubook/+bug/385397
@@ -45,6 +45,24 @@ class GnuBook
     }
     
     return false;
+  }
+  
+  // Finds the prefix to use for the book given the part of the URL trailing after /stream/
+  public static function findPrefix($urlPortion)
+  {
+    if (!preg_match('#[^/&?]+#', $urlPortion, $matches)) {
+        return false;
+    }
+    
+    $prefix = $matches[0]; // identifier
+    
+    // $$$ Currently swallows the rest of the URL.
+    //     If we want to support e.g. /stream/itemid/subdir/prefix/page/23 will need to adjust.
+    if (preg_match('#[^/&?]+/([^&?]+)#', $urlPortion, $matches)) {
+        $prefix = $matches[1]; // sub prefix
+    }
+    
+    return $prefix;
   }
 
   // $$$ would be cleaner to use different templates instead of the uiMode param
