@@ -61,7 +61,7 @@ class GnuBook
     // manually update with Launchpad version number at each checkin so that browsers
     // do not use old cached version
     // see https://bugs.launchpad.net/gnubook/+bug/330748
-    $version = "0.9.9";
+    $version = "0.9.10";
     
     if ("" == $id) {
         echo "No identifier specified!";
@@ -82,7 +82,7 @@ class GnuBook
 <? if ($uimode == "embed") { ?>
     <link rel="stylesheet" type="text/css" href="/bookreader/GnuBookEmbed.css?v=<? echo($version); ?>">
 <? } /* uimode */ ?>
-    <script src="http://www.archive.org/includes/jquery-1.2.6.min.js" type="text/javascript"></script>
+    <script src="/includes/jquery-1.3.2.min.js" type="text/javascript"></script>
         <script type="text/javascript" src="/bookreader/GnuBook.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/jquery.easing.1.3.js"></script>
 </head>

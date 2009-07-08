@@ -180,7 +180,12 @@ gb.getPageSide = function(index) {
 }
 
 gb.getPageNum = function(index) {
-    return this.pageNums[index];
+    var pageNum = this.pageNums[index];
+    if (pageNum) {
+        return pageNum;
+    } else {
+        return 'n' + index;
+    }
 }
 
 gb.leafNumToIndex = function(leafNum) {
@@ -226,6 +231,27 @@ gb.getSpreadIndices = function(pindex) {
     //console.log("   index %d mapped to spread %d,%d", pindex, spreadIndices[0], spreadIndices[1]);
     
     return spreadIndices;
+}
+
+// Remove the page number assertions for all but the highest index page with
+// a given assertion.  Ensures there is only a single page "{pagenum}"
+// e.g. the last page asserted as page 5 retains that assertion.
+gb.uniquifyPageNums = function() {
+    var seen = {};
+    
+    for (var i = gb.pageNums.length - 1; i--; i >= 0) {
+        var pageNum = gb.pageNums[i];
+        if ( !seen[pageNum] ) {
+            seen[pageNum] = true;
+        } else {
+            gb.pageNums[i] = null;
+        }
+    }
+
+}
+
+gb.cleanupMetadata = function() {
+    gb.uniquifyPageNums();
 }
 
 gb.pageW =		[
@@ -295,6 +321,7 @@ gb.bookTitle= '<?echo preg_replace("/\'/", "\\'", $metaData->title);?>';
 gb.bookPath = '<?echo $itemPath;?>';
 gb.bookUrl  = '<?echo "http://www.archive.org/details/$id";?>';
 gb.imageFormat = '<?echo $imageFormat;?>';
+
 <?
 
 # Load some values from meta.xml
@@ -312,7 +339,6 @@ if ('bandersnatchhsye00scarrich' == $id) {
 }
 
 ?>
-
 
 // Check for config object
 // $$$ change this to use the newer params object
@@ -341,6 +367,7 @@ if (typeof(gbConfig) != 'undefined') {
     }
 } // gbConfig
 
+gb.cleanupMetadata();
 gb.init();
 
 <?
