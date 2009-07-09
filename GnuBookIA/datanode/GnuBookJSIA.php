@@ -131,10 +131,13 @@ gb.getPageURI = function(index) {
     var leafStr = '0000';            
     var imgStr = this.leafMap[index].toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
-
+    
+    var insideZipPrefix = this.subPrefix.match('[^/]+$');
+    var file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
+    
     // $$$ add more image stack formats here
     if (1==this.mode) {
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+this.subPrefix+'_'+this.imageFormat+'/'+this.subPrefix+'_'+leafStr.replace(re, imgStr) + '.'+this.imageFormat+'&scale='+this.reduce;
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+this.reduce;
     } else {
         var ratio = this.getPageHeight(index) / this.twoPageH;
         var scale;
@@ -147,8 +150,7 @@ gb.getPageURI = function(index) {
             scale = 4;
         }        
     
-        //var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&height='+this.twoPageH+'&origHeight='+this.getPageHeight(index);
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+this.subPrefix+'_'+this.imageFormat+'/'+this.subPrefix+'_'+leafStr.replace(re, imgStr) + '.'+this.imageFormat+'&scale='+scale;
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+scale;
         
     }
     return url;
