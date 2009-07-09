@@ -102,6 +102,11 @@ GnuBook.prototype.init = function() {
     // search engine visibility
     document.title = this.shortTitle(50);
     
+    // Sanitize parameters
+    if ( !this.canSwitchToMode( this.mode ) ) {
+        this.mode = this.constMode1up;
+    }
+    
     $("#GnuBook").empty();
     this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
     $("#GnuBook").append("<div id='GBcontainer'></div>");
@@ -148,7 +153,7 @@ GnuBook.prototype.init = function() {
         this.prepareTwoPageView();
         //if (this.auto) this.nextPage();
     }
-    
+        
     // Enact other parts of initial params
     this.updateFromParams(params);
 }
@@ -620,6 +625,10 @@ GnuBook.prototype.switchMode = function(mode) {
     //console.log('  asked to switch to mode ' + mode + ' from ' + this.mode);
     
     if (mode == this.mode) return;
+    
+    if (!this.canSwitchToMode(mode)) {
+        return;
+    }
 
     this.autoStop();
     this.removeSearchHilites();
@@ -1899,13 +1908,20 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 }
 
 GnuBook.prototype.initToolbar = function(mode, ui) {
+    var modeButtons = '';
+    
+    // $$$ workaround for not displaying short books in 2up
+    if (this.canSwitchToMode(this.constMode1up) && this.canSwitchToMode(this.constMode2up)) {
+        modeButtons = " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
+                      + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>";
+    }
+
     $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'>"
         + "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
         + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
         + "<button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/>"
         + " <span class='label'>Zoom: <span id='GBzoom'>25</span>%</span>"
-        + " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
-        + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
+        + modeButtons
         + "&nbsp;&nbsp;<a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
         + "</span></div>");
         
@@ -2337,6 +2353,18 @@ GnuBook.prototype.getEmbedCode = function() {
     return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
 }
 
+GnuBook.prototype.canSwitchToMode = function(mode) {
+    if (mode == this.constMode2up) {
+        // check there are enough pages to display
+        // $$$ this is a workaround for the mis-feature that we can't display
+        //     short books in 2up mode
+        if (this.numLeafs < 6) {
+            return false;
+        }
+    }
+    
+    return true;
+}
 
 // Library functions
 GnuBook.util = {
