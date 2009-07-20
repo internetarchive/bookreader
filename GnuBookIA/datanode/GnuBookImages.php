@@ -47,8 +47,9 @@ if (isset($_REQUEST['ext'])) {
 
 $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
-// Png conversion options
+// Image conversion options
 $pngOptions = '';
+$jpegOptions = '-quality 65';
 
 // The pbmreduce reduction factor produces an image with dimension 1/n
 // The kakadu reduction factor produceds an image with dimension 1/(2^n)
@@ -131,9 +132,9 @@ if ('jp2' == $fileExt) {
 // }
 
 if ('jpg' == $ext) {
-    $compressCmd = ' | pnmtojpeg -quality 90';
+    $compressCmd = ' | pnmtojpeg ' . $jpegOptions;
 } else if ('png' == $ext) {
-    $compressCmd = ' | pnmtopng $pngOptions';
+    $compressCmd = ' | pnmtopng ' . $pngOptions;
 }
 
 $cmd = $unzipCmd . $decompressCmd . $compressCmd;
