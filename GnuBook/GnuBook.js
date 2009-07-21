@@ -508,6 +508,8 @@ GnuBook.prototype.zoom1up = function(dir) {
         return;
     }
     
+    // $$$ with flexible zoom we could "snap" to /2 page reductions
+    //     for better scaling
     if (1 == dir) {
         if (this.reduce <= 0.5) return;
         this.reduce*=0.5;           //zoom in
@@ -528,6 +530,7 @@ GnuBook.prototype.zoom1up = function(dir) {
 // resizePageView()
 //______________________________________________________________________________
 GnuBook.prototype.resizePageView = function() {
+    // $$$ TODO preserve viewport center through resize
     var i;
     var viewHeight = 0;
     //var viewWidth  = $('#GBcontainer').width(); //includes scrollBar
