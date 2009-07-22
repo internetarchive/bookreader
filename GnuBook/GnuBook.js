@@ -396,6 +396,12 @@ GnuBook.prototype.drawLeafsOnePage = function() {
     } else {
         $("#GBpagenum").val('');
     }
+    
+    //var centerY = this.centerY1up();
+    //var centerX = this.centerX1up();
+    //console.log('draw center ' + centerY + ',' + centerX);
+    //console.log('scroll left ' + $('#GBcontainer').attr('scrollLeft'));
+    
 }
 
 // drawLeafsTwoPage()
@@ -537,9 +543,15 @@ GnuBook.prototype.resizePageView = function() {
     var viewWidth  = $('#GBcontainer').attr('clientWidth');   
 
     var oldScrollTop  = $('#GBcontainer').attr('scrollTop');
-    var oldViewHeight = $('#GBpageview').height();
-    if (0 != oldViewHeight) {
-        var scrollRatio = oldScrollTop / oldViewHeight;
+    var oldScrollLeft = $('#GBcontainer').attr('scrollLeft');
+    var oldPageViewHeight = $('#GBpageview').height();
+    var oldPageViewWidth = $('#GBpageview').width();
+    
+    var oldCenterY = this.centerY1up();
+    var oldCenterX = this.centerX1up();
+    
+    if (0 != oldPageViewHeight) {
+        var scrollRatio = oldCenterY / oldPageViewHeight;
     } else {
         var scrollRatio = 0;
     }
@@ -552,11 +564,42 @@ GnuBook.prototype.resizePageView = function() {
     $('#GBpageview').height(viewHeight);
     $('#GBpageview').width(viewWidth);    
 
-    $('#GBcontainer').attr('scrollTop', Math.floor(scrollRatio*viewHeight));
+    var newCenterY = scrollRatio*viewHeight;
+    var newTop = Math.max(0, Math.floor( newCenterY - $('#GBcontainer').height()/2 ));
+    $('#GBcontainer').attr('scrollTop', newTop);
     
-    this.centerPageView();
+    // We use clientWidth here to avoid miscalculating due to scroll bar
+    var newCenterX = oldCenterX * (viewWidth / oldPageViewWidth);
+    var newLeft = newCenterX - $('#GBcontainer').attr('clientWidth') / 2;
+    newLeft = Math.min(newLeft, 0);
+    $('#GBcontainer').attr('scrollLeft', newLeft);
+    //console.log('oldCenterX ' + oldCenterX + ' newCenterX ' + newCenterX + ' newLeft ' + newLeft);
+    
+    //this.centerPageView();
     this.loadLeafs();
     
+}
+
+// centerX1up()
+//______________________________________________________________________________
+// Returns the current offset of the viewport center in scaled document coordinates.
+GnuBook.prototype.centerX1up = function() {
+    var centerX;
+    if ($('#GBpageview').width() < $('#GBcontainer').attr('clientWidth')) { // fully shown
+        centerX = $('#GBpageview').width();
+    } else {
+        centerX = $('#GBcontainer').attr('scrollLeft') + $('#GBcontainer').attr('clientWidth') / 2;
+    }
+    centerX = Math.floor(centerX);
+    return centerX;
+}
+
+// centerY1up()
+//______________________________________________________________________________
+// Returns the current offset of the viewport center in scaled document coordinates.
+GnuBook.prototype.centerY1up = function() {
+    var centerY = $('#GBcontainer').attr('scrollTop') + $('#GBcontainer').height() / 2;
+    return Math.floor(centerY);
 }
 
 // centerPageView()
@@ -662,6 +705,7 @@ GnuBook.prototype.prepareOnePageView = function() {
     });
     
     var gbPageView = $("#GBcontainer").append("<div id='GBpageview'></div>");
+    
     this.resizePageView();
     
     this.jumpToIndex(startLeaf);
