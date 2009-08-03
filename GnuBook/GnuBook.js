@@ -536,7 +536,6 @@ GnuBook.prototype.zoom1up = function(dir) {
 // resizePageView()
 //______________________________________________________________________________
 GnuBook.prototype.resizePageView = function() {
-    // $$$ TODO preserve viewport center through resize
     var i;
     var viewHeight = 0;
     //var viewWidth  = $('#GBcontainer').width(); //includes scrollBar
