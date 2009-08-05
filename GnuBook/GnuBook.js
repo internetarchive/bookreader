@@ -933,8 +933,10 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
         var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
         $(e.data.twoPagePopUp).text('View ' + e.data.getPageName(jumpIndex));
         
+        // $$$ TODO: Make sure popup is positioned so that it is in view
+        // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)        
         $(e.data.twoPagePopUp).css({
-            left: e.pageX- $('#GBcontainer').offset().left + $('#GBcontainer').scrollLeft() + 20 + 'px', // XXX use offset
+            left: e.pageX- $('#GBcontainer').offset().left + $('#GBcontainer').scrollLeft() + 20 + 'px',
             top: e.pageY - $('#GBcontainer').offset().top + $('#GBcontainer').scrollTop() + 'px'
         });
     });
@@ -943,9 +945,11 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
     
         var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
         $(e.data.twoPagePopUp).text('View '+ e.data.getPageName(jumpIndex));
-        
+
+        // $$$ TODO: Make sure popup is positioned so that it is in view
+        //           (https://bugs.edge.launchpad.net/gnubook/+bug/327456)        
         $(e.data.twoPagePopUp).css({
-            left: e.pageX - $('#GBcontainer').offset().left + $('#GBcontainer').scrollLeft() - $(e.data.twoPagePopUp).width() - 25 + 'px', // XXX use offset
+            left: e.pageX - $('#GBcontainer').offset().left + $('#GBcontainer').scrollLeft() - $(e.data.twoPagePopUp).width() - 25 + 'px',
             top: e.pageY-$('#GBcontainer').offset().top + $('#GBcontainer').scrollTop() + 'px'
         });
     });
