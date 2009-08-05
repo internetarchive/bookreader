@@ -1952,9 +1952,6 @@ GnuBook.prototype.leafEdgeWidth = function(pindex) {
 //______________________________________________________________________________
 // Returns the target jump leaf given a page coordinate (inside the left page edge div)
 GnuBook.prototype.jumpIndexForLeftEdgePageX = function(pageX) {
-
-    // XXX needs to be reworked for two page zoom
-
     if ('rl' != this.pageProgression) {
         // LTR - flipping backward
         var jumpIndex = this.currentIndexL - ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
@@ -1974,9 +1971,6 @@ GnuBook.prototype.jumpIndexForLeftEdgePageX = function(pageX) {
 //______________________________________________________________________________
 // Returns the target jump leaf given a page coordinate (inside the right page edge div)
 GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
-
-    // XXX needs to be reworked for two page zoom
-
     if ('rl' != this.pageProgression) {
         // LTR
         var jumpIndex = this.currentIndexR + (pageX - $(this.leafEdgeR).offset().left) * 10;
