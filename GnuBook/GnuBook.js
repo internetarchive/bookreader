@@ -934,7 +934,7 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
         $(e.data.twoPagePopUp).text('View ' + e.data.getPageName(jumpIndex));
         
         $(e.data.twoPagePopUp).css({
-            left: e.pageX +5+ 'px',
+            left: e.pageX- $('#GBcontainer').offset().left + $('#GBcontainer').scrollLeft() + 20 + 'px', // XXX use offset
             top: e.pageY - $('#GBcontainer').offset().top + $('#GBcontainer').scrollTop() + 'px'
         });
     });
@@ -945,7 +945,7 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
         $(e.data.twoPagePopUp).text('View '+ e.data.getPageName(jumpIndex));
         
         $(e.data.twoPagePopUp).css({
-            left: e.pageX - $(e.data.twoPagePopUp).width() - 30 + 'px',
+            left: e.pageX - $('#GBcontainer').offset().left + $('#GBcontainer').scrollLeft() - $(e.data.twoPagePopUp).width() - 25 + 'px', // XXX use offset
             top: e.pageY-$('#GBcontainer').offset().top + $('#GBcontainer').scrollTop() + 'px'
         });
     });
