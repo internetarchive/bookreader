@@ -430,9 +430,9 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     var bookCoverDivLeft = ($('#GBcontainer').attr('clientWidth') - bookCoverDivWidth) >> 1;
     //console.log(leafEdgeWidthL);
 
-    var middle = ($('#GBcontainer').attr('clientWidth') >> 1);            
+    var middle = ($('#GBtwopageview').attr('clientWidth') >> 1);            
     var left = middle - this.twoPageW;
-    var top  = ($('#GBcontainer').height() - this.twoPageH) >> 1;                
+    var top  = ($('#GBtwopageview').height() - this.twoPageH) >> 1;                
 
     var scaledW = parseInt(this.twoPageH*width/height);
     left = 10+leafEdgeWidthL;
@@ -894,6 +894,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
 // events for these divs.
 //______________________________________________________________________________
 GnuBook.prototype.prepareTwoPagePopUp = function() {
+
     this.twoPagePopUp = document.createElement('div');
     $(this.twoPagePopUp).css({
         border: '1px solid black',
@@ -904,7 +905,7 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
         zIndex: '1000',
         backgroundColor: 'rgb(255, 255, 238)',
         opacity: 0.85
-    }).appendTo('#GBtwopageview');
+    }).appendTo('#GBcontainer');
     $(this.twoPagePopUp).hide();
     
     $(this.leafEdgeL).add(this.leafEdgeR).bind('mouseenter', this, function(e) {
@@ -1173,7 +1174,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
     var newWidthL    = this.getPageWidth2UP(newIndexL);
     var newWidthR    = this.getPageWidth2UP(newIndexR);
 
-    var top  = ($('#GBcontainer').height() - this.twoPageH) >> 1;                
+    var top  = ($('#GBtwopageview').height() - this.twoPageH) >> 1;                
 
     //console.log('leftEdgeTmpW ' + leafEdgeTmpW);
     //console.log('  gutter ' + gutter + ', scaledWL ' + scaledWL + ', newLeafEdgeWL ' + newLeafEdgeWidthL);
@@ -1219,7 +1220,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
         top: top+'px',    
         position: 'absolute',
         zIndex:1000
-    }).appendTo('#GBcontainer');
+    }).appendTo('#GBtwopageview');
     
     //$(this.leafEdgeL).css('width', newLeafEdgeWidthL+'px');
     $(this.leafEdgeL).css({
@@ -1230,7 +1231,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
     // Left gets the offset of the current left leaf from the document
     var left = $(this.prefetchedImgs[leftLeaf]).offset().left;
     // $$$ This seems very similar to the gutter.  May be able to consolidate the logic.
-    var right = $('#GBcontainer').attr('clientWidth')-left-$(this.prefetchedImgs[leftLeaf]).width()+$('#GBcontainer').offset().left-2+'px';
+    var right = $('#GBtwopageview').attr('clientWidth')-left-$(this.prefetchedImgs[leftLeaf]).width()+$('#GBtwopageview').offset().left-2+'px';
     // We change the left leaf to right positioning
     $(this.prefetchedImgs[leftLeaf]).css({
         right: right,
@@ -1921,6 +1922,8 @@ GnuBook.prototype.keyboardNavigationIsDisabled = function(event) {
 // This function supports RTL
 GnuBook.prototype.gutterOffsetForIndex = function(pindex) {
 
+    // $$$ incorporate zooming
+
     // To find the offset of the gutter from the middle we calculate our percentage distance
     // through the book (0..1), remap to (-0.5..0.5) and multiply by the total page edge width
     var offset = parseInt(((pindex / this.numLeafs) - 0.5) * this.twoPageEdgeW);
@@ -1949,6 +1952,9 @@ GnuBook.prototype.leafEdgeWidth = function(pindex) {
 //______________________________________________________________________________
 // Returns the target jump leaf given a page coordinate (inside the left page edge div)
 GnuBook.prototype.jumpIndexForLeftEdgePageX = function(pageX) {
+
+    // XXX needs to be reworked for two page zoom
+
     if ('rl' != this.pageProgression) {
         // LTR - flipping backward
         var jumpIndex = this.currentIndexL - ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
@@ -1968,6 +1974,9 @@ GnuBook.prototype.jumpIndexForLeftEdgePageX = function(pageX) {
 //______________________________________________________________________________
 // Returns the target jump leaf given a page coordinate (inside the right page edge div)
 GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
+
+    // XXX needs to be reworked for two page zoom
+
     if ('rl' != this.pageProgression) {
         // LTR
         var jumpIndex = this.currentIndexR + (pageX - $(this.leafEdgeR).offset().left) * 10;
