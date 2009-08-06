@@ -570,7 +570,7 @@ GnuBook.prototype.resizePageView = function() {
     // We use clientWidth here to avoid miscalculating due to scroll bar
     var newCenterX = oldCenterX * (viewWidth / oldPageViewWidth);
     var newLeft = newCenterX - $('#GBcontainer').attr('clientWidth') / 2;
-    newLeft = Math.min(newLeft, 0);
+    newLeft = Math.max(newLeft, 0);
     $('#GBcontainer').attr('scrollLeft', newLeft);
     //console.log('oldCenterX ' + oldCenterX + ' newCenterX ' + newCenterX + ' newLeft ' + newLeft);
     
