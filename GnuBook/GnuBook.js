@@ -855,7 +855,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
     var scaledW = this.twoPageH*width/height;
     
     this.leafEdgeR = document.createElement('div');
-    this.leafEdgeR.className = 'leafEdgeR';
+    this.leafEdgeR.className = 'leafEdgeR'; // $$$ the static CSS should be moved into the .css file
     $(this.leafEdgeR).css({
         borderStyle: 'solid solid solid none',
         borderColor: 'rgb(51, 51, 34)',
@@ -871,7 +871,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
     
     this.leafEdgeL = document.createElement('div');
     this.leafEdgeL.className = 'leafEdgeL';
-    $(this.leafEdgeL).css({
+    $(this.leafEdgeL).css({ // $$$ static CSS should be moved to file
         borderStyle: 'solid none solid solid',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 0px 1px 1px',
