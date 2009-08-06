@@ -510,8 +510,20 @@ GnuBook.prototype.loadLeafs = function() {
     }
 }
 
+// zoom(direction)
+//
+// Pass 1 to zoom in, anything else to zoom out
+//______________________________________________________________________________
+GnuBook.prototype.zoom = function(direction) {
+    switch (this.mode) {
+        case this.constMode1up:
+            return this.zoom1up(direction);
+        case this.constMode2up:
+            return this.zoom2up(direction);
+    }
+}
 
-// zoom1up()
+// zoom1up(dir)
 //______________________________________________________________________________
 GnuBook.prototype.zoom1up = function(dir) {
     if (2 == this.mode) {     //can only zoom in 1-page mode
@@ -618,6 +630,29 @@ GnuBook.prototype.centerPageView = function() {
     }
 
 }
+
+// zoom2up(direction)
+//______________________________________________________________________________
+GnuBook.prototype.zoom2up = function(direction) {
+    // $$$ this is where we can e.g. snap to %2 sizes
+    
+    if (1 == direction) {
+        if (this.reduce <= 0.5) return;
+        return this.zoom2upPercentage( 1 / (this.reduce*=0.5) );           //zoom in
+    } else {
+        if (this.reduce >= 8) return;
+        return this.zoom2upPercentage( 1 / (this.reduce*2) ); // zoom out
+    }
+
+}
+
+// zoom2upPercentage(percentage)
+//______________________________________________________________________________
+GnuBook.prototype.zoom2upPercentage = function(percentage) {
+    this.reduce = 1/percentage;
+    this.prepareTwoPageView();
+}
+
 
 // jumpToPage()
 //______________________________________________________________________________
@@ -1991,8 +2026,8 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
 
     $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'>"
         + "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
-        + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
-        + "<button class='GBicon rollover zoom_in' onclick='gb.zoom1up(1); return false;'/>"
+        + " <button class='GBicon rollover zoom_out' onclick='gb.zoom(-1); return false;'/>" 
+        + "<button class='GBicon rollover zoom_in' onclick='gb.zoom(1); return false;'/>"
         + " <span class='label'>Zoom: <span id='GBzoom'>"+100/this.reduce+"</span>%</span>"
         + " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
         + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
