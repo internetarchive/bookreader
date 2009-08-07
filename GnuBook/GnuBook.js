@@ -435,12 +435,9 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     //console.log(leafEdgeWidthL);
 
     var middle = ($('#GBtwopageview').attr('clientWidth') >> 1);            
-    var left = middle - this.twoPage.width;
     var top  = ($('#GBtwopageview').height() - this.twoPage.height) >> 1;                
 
     var scaledW = parseInt(this.twoPage.height*width/height);
-    left = 10+leafEdgeWidthL;
-    //var right = left+scaledW;
     var right = $(this.twoPageDiv).width()-11-$(this.leafEdgeL).width()-scaledW;
 
     var gutter = middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
@@ -465,7 +462,6 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     var height  = this.getPageHeight(index); 
     var width   = this.getPageWidth(index);
     //    var left = ($('#GBcontainer').width() >> 1);
-    left += scaledW;
 
     var scaledW = this.twoPage.height*width/height;
     this.prefetchImg(index);
