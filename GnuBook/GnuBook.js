@@ -1002,10 +1002,28 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
 
 GnuBook.prototype.calculateSpreadSize = function() {
     console.log('calculateSpreadSize ' + this.twoPage.currentIndexL); // XXX
+
+    // $$$ TODO Calculate the spread size based on the reduction factor.  If we are using
+    // fit mode we recalculate the reduction factor based on the current page sizes
+    // and display size first.
     
     var firstIndex  = this.twoPage.currentIndexL;
     var secondIndex = this.twoPage.currentIndexR;
     //console.log('first page is ' + firstIndex);
+
+    // $$$ Right now we just use the ideal size
+    var ideal = this.getIdealSpreadSize(firstIndex, secondIndex);
+
+    this.twoPage.height = ideal.height;
+    this.twoPage.width = ideal.width;
+    this.twoPage.ratio = ideal.ratio;
+    this.twoPage.edgeWidth = ideal.totalLeafEdgeWidth; // The combined width of both edges
+    // $$$ set reduction factor here(?)
+
+}
+
+GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
+    var ideal = {};
 
     var canon5Dratio = 1.5;
     
@@ -1013,48 +1031,33 @@ GnuBook.prototype.calculateSpreadSize = function() {
     var secondIndexRatio = this.getPageHeight(secondIndex) / this.getPageWidth(secondIndex);
     //console.log('firstIndexRatio = ' + firstIndexRatio + ' secondIndexRatio = ' + secondIndexRatio);
 
-    var ratio;
     if (Math.abs(firstIndexRatio - canon5Dratio) < Math.abs(secondIndexRatio - canon5Dratio)) {
-        ratio = firstIndexRatio;
+        ideal.ratio = firstIndexRatio;
         //console.log('using firstIndexRatio ' + ratio);
     } else {
-        ratio = secondIndexRatio;
+        ideal.ratio = secondIndexRatio;
         //console.log('using secondIndexRatio ' + ratio);
     }
 
     var totalLeafEdgeWidth = parseInt(this.numLeafs * 0.1);
     var maxLeafEdgeWidth   = parseInt($('#GBcontainer').attr('clientWidth') * 0.1);
-    totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
+    ideal.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
     
-    var idealWidth  = ($('#GBcontainer').attr('clientWidth') - 30 - totalLeafEdgeWidth)>>1;
-    var idealHeight = $('#GBcontainer').height() - 30;  // $$$ why - 30?  book edge width?
+    ideal.width  = ($('#GBcontainer').attr('clientWidth') - 30 - ideal.totalLeafEdgeWidth)>>1;
+    ideal.height = $('#GBcontainer').height() - 30;  // $$$ why - 30?  book edge width?
     //console.log('init idealWidth='+idealWidth+' idealHeight='+idealHeight + ' ratio='+ratio);
 
-    if (idealHeight/ratio <= idealWidth) {
+    if (ideal.height/ideal.ratio <= ideal.width) {
         //use height
-        idealWidth = parseInt(idealHeight/ratio);
+        ideal.width = parseInt(ideal.height/ideal.ratio);
     } else {
         //use width
-        idealHeight = parseInt(idealWidth*ratio);
+        ideal.height = parseInt(ideal.width*ideal.ratio);
     }
-
-    this.twoPage.height = idealHeight;
-    this.twoPage.width = idealWidth;
-    this.twoPage.ratio = ratio;
-    this.twoPage.edgeWidth = totalLeafEdgeWidth; // The combined width of both edges
-
-}
-
-GnuBook.prototype.calculateSpreadSizeFromReduce = function() {
-
-    // XXX
-    this.twoPage.totalLeafEdgeWidth = parseInt(this.numLeafs * 0.1 * this.reduce);
     
-    // $$$ We clip to the smallest leaf since we can't currently display different sized pages
-    //     Affects https://bugs.edge.launchpad.net/gnubook/+bug/320712
-    var smallestHeight = Math.min( this.getPageHeight(this.twoPage.currentIndexL), this.getPageHeight(this.twoPage.currentIndexR) );
-    this.twoPage.height = smallestHeight * this.reduce - this.bookCoverPadding;
+    // $$$ we should return the reduction factor here
     
+    return ideal;
 }
 
 
