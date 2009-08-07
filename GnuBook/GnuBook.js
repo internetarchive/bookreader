@@ -73,7 +73,9 @@ function GnuBook() {
     this.constMode2up = 2;
     
     // Object to hold parameters related to 2up mode
-    this.twoPage = {};
+    this.twoPage = {
+        autofit: true
+    };
 };
 
 // init()
@@ -637,24 +639,20 @@ GnuBook.prototype.centerPageView = function() {
 //______________________________________________________________________________
 GnuBook.prototype.zoom2up = function(direction) {
     // $$$ this is where we can e.g. snap to %2 sizes
-    
-    if (1 == direction) {
+    if (0 == direction) { // autofit mode
+        this.twoPage.autofit = true;;
+    } else if (1 == direction) {
         if (this.reduce <= 0.5) return;
-        return this.zoom2upPercentage( 1 / (this.reduce*=0.5) );           //zoom in
+        this.reduce*=0.5;           //zoom in
+        this.twoPage.autofit = false;
     } else {
         if (this.reduce >= 8) return;
-        return this.zoom2upPercentage( 1 / (this.reduce*2) ); // zoom out
+        this.reduce *= 2; // zoom out
+        this.twoPage.autofit = false;
     }
-
-}
-
-// zoom2upPercentage(percentage)
-//______________________________________________________________________________
-GnuBook.prototype.zoom2upPercentage = function(percentage) {
-    this.reduce = 1/percentage;
+    
     this.prepareTwoPageView();
 }
-
 
 // jumpToPage()
 //______________________________________________________________________________
@@ -1012,14 +1010,19 @@ GnuBook.prototype.calculateSpreadSize = function() {
     //console.log('first page is ' + firstIndex);
 
     // $$$ Right now we just use the ideal size
-    var ideal = this.getIdealSpreadSize(firstIndex, secondIndex);
-
-    this.twoPage.height = ideal.height;
-    this.twoPage.width = ideal.width;
-    this.twoPage.ratio = ideal.ratio;
-    this.twoPage.edgeWidth = ideal.totalLeafEdgeWidth; // The combined width of both edges
-    // $$$ set reduction factor here(?)
-
+    var spreadSize;
+    if ( this.twoPage.autofit) {    
+        spreadSize = this.getIdealSpreadSize(firstIndex, secondIndex);
+    } else {
+        // set based on reduction factor
+        spreadSize = this.getSpreadSizeFromReduce(firstIndex, secondIndex, this.reduce);
+    }
+    
+    this.twoPage.height = spreadSize.height;
+    this.twoPage.width = spreadSize.width;
+    this.twoPage.ratio = spreadSize.ratio;
+    this.twoPage.edgeWidth = spreadSize.totalLeafEdgeWidth; // The combined width of both edges
+    this.reduce = spreadSize.reduce;
 }
 
 GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
@@ -1027,8 +1030,18 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
 
     var canon5Dratio = 1.5;
     
-    var firstIndexRatio  = this.getPageHeight(firstIndex) / this.getPageWidth(firstIndex);
-    var secondIndexRatio = this.getPageHeight(secondIndex) / this.getPageWidth(secondIndex);
+    var first = {
+        height: this.getPageHeight(firstIndex),
+        width: this.getPageWidth(firstIndex)
+    }
+    
+    var second = {
+        height: this.getPageHeight(secondIndex),
+        width: this.getPageWidth(secondIndex)
+    }
+    
+    var firstIndexRatio  = first.height / first.width;
+    var secondIndexRatio = second.height / second.width;
     //console.log('firstIndexRatio = ' + firstIndexRatio + ' secondIndexRatio = ' + secondIndexRatio);
 
     if (Math.abs(firstIndexRatio - canon5Dratio) < Math.abs(secondIndexRatio - canon5Dratio)) {
@@ -1055,11 +1068,25 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
         ideal.height = parseInt(ideal.width*ideal.ratio);
     }
     
-    // $$$ we should return the reduction factor here
+    ideal.reduce = (first.width + second.width) / ideal.width;
     
     return ideal;
 }
 
+GnuBook.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex, reduce) {
+    var spreadSize = {};
+    // $$$ Scale this based on reduce?
+    var totalLeafEdgeWidth = parseInt(this.numLeafs * 0.1);
+    var maxLeafEdgeWidth   = parseInt($('#GBcontainer').attr('clientWidth') * 0.1);
+    spreadSize.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
+
+    var nativeWidth = this.getPageWidth(firstIndex) + this.getPageWidth(secondIndex);
+    spreadSize.height = parseInt( nativeWidth * this.reduce );
+    spreadSize.width = parseInt( (this.getPageHeight(firstIndex) + this.getPageHeight(secondIndex)) * this.reduce );
+    spreadSize.reduce = nativeWidth / spreadSize.width;
+
+    return spreadSize;
+}
 
 // currentIndex()
 //______________________________________________________________________________
@@ -1972,8 +1999,6 @@ GnuBook.prototype.keyboardNavigationIsDisabled = function(event) {
 // Returns the gutter offset for the spread containing the given index.
 // This function supports RTL
 GnuBook.prototype.gutterOffsetForIndex = function(pindex) {
-
-    // $$$ incorporate zooming
 
     // To find the offset of the gutter from the middle we calculate our percentage distance
     // through the book (0..1), remap to (-0.5..0.5) and multiply by the total page edge width
