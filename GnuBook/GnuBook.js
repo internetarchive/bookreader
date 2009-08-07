@@ -461,7 +461,6 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     var index = this.twoPage.currentIndexR;
     var height  = this.getPageHeight(index); 
     var width   = this.getPageWidth(index);
-    //    var left = ($('#GBcontainer').width() >> 1);
 
     var scaledW = this.twoPage.height*width/height;
     this.prefetchImg(index);
