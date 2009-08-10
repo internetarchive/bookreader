@@ -440,16 +440,14 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
         bookCoverDivLeft = ($('#GBcontainer').attr('clientWidth') - bookCoverDivWidth) >> 1;
     } else {
         // $$$ add external padding
-        middle = this.twoPage.width / 2;
-        top = 0;
-        bookCoverDivLeft = 0;
-        
-        // XXX add in padding
-        $('#GBtwopageview').width(this.twoPage.width + this.twoPage.totalLeafEdgeWidth);
-        $('#GBtwopageview').height(this.twoPage.height + 20);
+        middle = $('#GBtwopageview').width() >> 1;
+        top = this.twoPage.coverInternalPadding; // $$$ TODO getter for top
+        bookCoverDivLeft = 0; // $$$ TODO getter for left
     }
 
-    var scaledWL = parseInt(this.twoPage.height*widthL/heightL);
+    // $$$ should get getwidth2up?
+    //var scaledWL = parseInt(this.twoPage.height*widthL/heightL);
+    var scaledWL = this.getPageWidth2UP(indexL);
     var gutter = middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
     
     this.prefetchImg(indexL);
@@ -470,7 +468,9 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     var heightR  = this.getPageHeight(indexR); 
     var widthR   = this.getPageWidth(indexR);
 
-    var scaledWR = this.twoPage.height*widthR/heightR;
+    // $$$ should use getwidth2up?
+    //var scaledWR = this.twoPage.height*widthR/heightR;
+    var scaledWR = this.getPageWidth2UP(indexR);
     this.prefetchImg(indexR);
     $(this.prefetchedImgs[indexR]).css({
         position: 'absolute',
@@ -805,20 +805,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
     this.firstIndex = this.twoPage.currentIndexL;
     
     this.calculateSpreadSize(); //sets twoPage.width, twoPage.height, and twoPage.ratio
-    
-    // XXX explicitly set size of GBtwopageview here then use that when calculating positions
-    //     GBtwopageview should have autoscroll turned off
-
-    // We want to minimize the unused space in two-up mode (maximize the amount of page
-    // shown).  We give width to the leaf edges and these widths change (though the sum
-    // of the two remains constant) as we flip through the book.  With the book
-    // cover centered and fixed in the GBcontainer div the page images will meet
-    // at the "gutter" which is generally offset from the center.
-    var middle = ($('#GBcontainer').attr('clientWidth') >> 1); // Middle of the GBcontainer div
-    //var gutter = middle+parseInt((2*this.twoPage.currentIndexL - this.numLeafs)*this.twoPage.edgeWidth/this.numLeafs/2);
-    
-    var gutter = middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
-    
+        
     var scaledWL = this.getPageWidth2UP(this.twoPage.currentIndexL);
     var scaledWR = this.getPageWidth2UP(this.twoPage.currentIndexR);
     var leafEdgeWidthL = this.leafEdgeWidth(this.twoPage.currentIndexL);
@@ -834,9 +821,22 @@ GnuBook.prototype.prepareTwoPageView = function() {
     // The height of the book cover div
     var bookCoverDivHeight = this.twoPage.height + 2 * this.twoPage.coverInternalPadding;
     
+    
+    // XXX explicitly set size of GBtwopageview here then use that when calculating positions
+    //     GBtwopageview should have autoscroll turned off
+    $('#GBtwopageview').width(bookCoverDivWidth).height(bookCoverDivHeight);
+
+    // We want to minimize the unused space in two-up mode (maximize the amount of page
+    // shown).  We give width to the leaf edges and these widths change (though the sum
+    // of the two remains constant) as we flip through the book.  With the book
+    // cover centered and fixed in the GBcontainer div the page images will meet
+    // at the "gutter" which is generally offset from the center.
+    var middle = ($('#GBtwopageview').width() >> 1); // Middle of the page view    
+    var gutter = middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
+    
     //var bookCoverDivLeft = ($('#GBcontainer').width() - bookCoverDivWidth) >> 1;
     var bookCoverDivLeft = gutter-scaledWL-leafEdgeWidthL-this.twoPage.coverInternalPadding;
-    var bookCoverDivTop = ($('#GBcontainer').height() - bookCoverDivHeight) >> 1;
+    var bookCoverDivTop = ($('#GBtwopageview').height() - bookCoverDivHeight) >> 1;
     //console.log('bookCoverDivWidth='+bookCoverDivWidth+' bookCoverDivHeight='+bookCoverDivHeight+ ' bookCoverDivLeft='+bookCoverDivLeft+' bookCoverDivTop='+bookCoverDivTop);
 
     this.twoPageDiv = document.createElement('div');
@@ -854,7 +854,6 @@ GnuBook.prototype.prepareTwoPageView = function() {
         MozBorderRadiusBottomright: '7px',
         MozBorderRadiusBottomleft: '7px'
     }).appendTo('#GBtwopageview');
-    //$('#GBcontainer').append('<div id="book_div_1" style="border: 1px solid rgb(68, 25, 17); width: ' + bookCoverDivWidth + 'px; height: '+bookCoverDivHeight+'px; visibility: visible; position: absolute; background-color: rgb(136, 51, 34); left: ' + bookCoverDivLeft + 'px; top: '+bookCoverDivTop+'px; -moz-border-radius-topleft: 7px; -moz-border-radius-topright: 7px; -moz-border-radius-bottomright: 7px; -moz-border-radius-bottomleft: 7px;"/>');
 
 
     var height  = this.getPageHeight(this.twoPage.currentIndexR); 
@@ -894,8 +893,8 @@ GnuBook.prototype.prepareTwoPageView = function() {
 
     var bookSpineDivWidth = 30;
     bookSpineDivHeight = this.twoPage.height+20;
-    bookSpineDivLeft = ($('#GBcontainer').attr('clientWidth') - bookSpineDivWidth) >> 1;
-    bookSpineDivTop = ($('#GBcontainer').height() - bookSpineDivHeight) >> 1;
+    bookSpineDivLeft = ($('#GBtwopageview').width() - bookSpineDivWidth) >> 1;
+    bookSpineDivTop = ($('#GBtwopageview').height() - bookSpineDivHeight) >> 1;
 
     div = document.createElement('div');
     $(div).attr('id', 'GBbookspine').css({
