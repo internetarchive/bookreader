@@ -423,59 +423,65 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     
     console.log('drawLeafsTwoPage: this.currrentLeafL ' + this.twoPage.currentIndexL); // XXX
     
-    var index = this.twoPage.currentIndexL;
-    var height  = this.getPageHeight(index); 
-    var width   = this.getPageWidth(index);
-    var handSide= this.getPageSide(index);
+    var indexL = this.twoPage.currentIndexL;
+    var heightL  = this.getPageHeight(indexL); 
+    var widthL   = this.getPageWidth(indexL);
 
-    var leafEdgeWidthL = this.leafEdgeWidth(index);
+    var leafEdgeWidthL = this.leafEdgeWidth(indexL);
     var leafEdgeWidthR = this.twoPage.edgeWidth - leafEdgeWidthL;
-    var bookCoverDivWidth = this.twoPage.width*2+20 + this.twoPage.edgeWidth;
-    var bookCoverDivLeft = ($('#GBcontainer').attr('clientWidth') - bookCoverDivWidth) >> 1;
+    var bookCoverDivWidth = this.twoPage.width*2+20 + this.twoPage.edgeWidth; // $$$ hardcoded cover width
     //console.log(leafEdgeWidthL);
 
-    var middle = ($('#GBtwopageview').attr('clientWidth') >> 1);            
-    var top  = ($('#GBtwopageview').height() - this.twoPage.height) >> 1;                
+    var middle, top, bookCoverDivLeft;
+    if (this.twoPage.autofit) {    
+        middle = ($('#GBtwopageview').attr('clientWidth') >> 1);            
+        top  = ($('#GBtwopageview').attr('clientHeight') - this.twoPage.height) >> 1;
+        bookCoverDivLeft = ($('#GBcontainer').attr('clientWidth') - bookCoverDivWidth) >> 1;
+    } else {
+        // $$$ add external padding
+        middle = this.twoPage.width / 2;
+        top = 0;
+        bookCoverDivLeft = 0;
+        
+        // XXX add in padding
+        $('#GBtwopageview').width(this.twoPage.width + this.twoPage.totalLeafEdgeWidth);
+        $('#GBtwopageview').height(this.twoPage.height + 20);
+    }
 
-    var scaledW = parseInt(this.twoPage.height*width/height);
-    var right = $(this.twoPageDiv).width()-11-$(this.leafEdgeL).width()-scaledW;
-
+    var scaledWL = parseInt(this.twoPage.height*widthL/heightL);
     var gutter = middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
     
-    this.prefetchImg(index);
-    $(this.prefetchedImgs[index]).css({
+    this.prefetchImg(indexL);
+    $(this.prefetchedImgs[indexL]).css({
         position: 'absolute',
-        /*right:   gutter+'px',*/
-        left: gutter-scaledW+'px',
+        left: gutter-scaledWL+'px',
         right: '',
         top:    top+'px',
         backgroundColor: 'rgb(234, 226, 205)',
-        height: this.twoPage.height +'px',
-        width:  scaledW + 'px',
+        height: this.twoPage.height +'px', // $$$ height forced the same for both pages
+        width:  scaledWL + 'px',
         borderRight: '1px solid black',
         zIndex: 2
     }).appendTo('#GBtwopageview');
-    //$('#GBcontainer').append(this.prefetchedImgs[index]);
 
 
-    var index = this.twoPage.currentIndexR;
-    var height  = this.getPageHeight(index); 
-    var width   = this.getPageWidth(index);
+    var indexR = this.twoPage.currentIndexR;
+    var heightR  = this.getPageHeight(indexR); 
+    var widthR   = this.getPageWidth(indexR);
 
-    var scaledW = this.twoPage.height*width/height;
-    this.prefetchImg(index);
-    $(this.prefetchedImgs[index]).css({
+    var scaledWR = this.twoPage.height*widthR/heightR;
+    this.prefetchImg(indexR);
+    $(this.prefetchedImgs[indexR]).css({
         position: 'absolute',
         left:   gutter+'px',
         right: '',
         top:    top+'px',
         backgroundColor: 'rgb(234, 226, 205)',
-        height: this.twoPage.height + 'px',
-        width:  scaledW + 'px',
+        height: this.twoPage.height + 'px', // $$$ height forced the same for both pages
+        width:  scaledWR + 'px',
         borderLeft: '1px solid black',
         zIndex: 2
     }).appendTo('#GBtwopageview');
-    //$('#GBcontainer').append(this.prefetchedImgs[index]);
         
 
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
@@ -1011,6 +1017,8 @@ GnuBook.prototype.calculateSpreadSize = function() {
     } else {
         // set based on reduction factor
         spreadSize = this.getSpreadSizeFromReduce(firstIndex, secondIndex, this.reduce);
+        // XXX
+        console.dir(spreadSize);
     }
     
     this.twoPage.height = spreadSize.height;
@@ -1063,7 +1071,8 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
         ideal.height = parseInt(ideal.width*ideal.ratio);
     }
     
-    ideal.reduce = (first.width + second.width) / ideal.width;
+    // XXX check this logic with large spreads
+    ideal.reduce = ((first.width + second.width) / 2) / ideal.width;
     
     return ideal;
 }
@@ -1075,10 +1084,15 @@ GnuBook.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex, re
     var maxLeafEdgeWidth   = parseInt($('#GBcontainer').attr('clientWidth') * 0.1);
     spreadSize.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
 
+    // $$$ this isn't quite right when the pages are different sizes
     var nativeWidth = this.getPageWidth(firstIndex) + this.getPageWidth(secondIndex);
-    spreadSize.height = parseInt( nativeWidth * this.reduce );
-    spreadSize.width = parseInt( (this.getPageHeight(firstIndex) + this.getPageHeight(secondIndex)) * this.reduce );
-    spreadSize.reduce = nativeWidth / spreadSize.width;
+    var nativeHeight = this.getPageHeight(firstIndex) + this.getPageHeight(secondIndex);
+    spreadSize.height = parseInt( (nativeHeight / 2) / this.reduce );
+    spreadSize.width = parseInt( (nativeWidth / 2) / this.reduce );
+    spreadSize.reduce = reduce;
+    
+    // XXX
+    console.log('spread size: ' + firstIndex + ',' + secondIndex + ',' + reduce);
 
     return spreadSize;
 }
@@ -1508,6 +1522,7 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR, gutter) {
 //______________________________________________________________________________
 GnuBook.prototype.setClickHandlers = function() {
     var self = this;
+    // $$$ TODO don't set again if already set
     $(this.prefetchedImgs[this.twoPage.currentIndexL]).click(function() {
         //self.prevPage();
         self.autoStop();
