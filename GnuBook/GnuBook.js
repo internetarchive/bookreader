@@ -74,6 +74,7 @@ function GnuBook() {
     
     // Object to hold parameters related to 2up mode
     this.twoPage = {
+        coverInternalPadding: 10, // Width of cover
         autofit: true
     };
 };
@@ -804,6 +805,9 @@ GnuBook.prototype.prepareTwoPageView = function() {
     this.firstIndex = this.twoPage.currentIndexL;
     
     this.calculateSpreadSize(); //sets twoPage.width, twoPage.height, and twoPage.ratio
+    
+    // XXX explicitly set size of GBtwopageview here then use that when calculating positions
+    //     GBtwopageview should have autoscroll turned off
 
     // We want to minimize the unused space in two-up mode (maximize the amount of page
     // shown).  We give width to the leaf edges and these widths change (though the sum
@@ -825,13 +829,13 @@ GnuBook.prototype.prepareTwoPageView = function() {
     
     // The width of the book cover div.  The combined width of both pages, twice the width
     // of the book cover internal padding (2*10) and the page edges
-    var bookCoverDivWidth = scaledWL + scaledWR + 20 + this.twoPage.edgeWidth;
+    var bookCoverDivWidth = scaledWL + scaledWR + 2 * this.twoPage.coverInternalPadding + this.twoPage.edgeWidth;
     
     // The height of the book cover div
-    var bookCoverDivHeight = this.twoPage.height+20;
+    var bookCoverDivHeight = this.twoPage.height + 2 * this.twoPage.coverInternalPadding;
     
     //var bookCoverDivLeft = ($('#GBcontainer').width() - bookCoverDivWidth) >> 1;
-    var bookCoverDivLeft = gutter-scaledWL-leafEdgeWidthL-10;
+    var bookCoverDivLeft = gutter-scaledWL-leafEdgeWidthL-this.twoPage.coverInternalPadding;
     var bookCoverDivTop = ($('#GBcontainer').height() - bookCoverDivHeight) >> 1;
     //console.log('bookCoverDivWidth='+bookCoverDivWidth+' bookCoverDivHeight='+bookCoverDivHeight+ ' bookCoverDivLeft='+bookCoverDivLeft+' bookCoverDivTop='+bookCoverDivTop);
 
@@ -868,7 +872,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
         height: this.twoPage.height-1 + 'px',
         /*right: '10px',*/
         left: gutter+scaledW+'px',
-        top: bookCoverDivTop+10+'px',
+        top: bookCoverDivTop+this.twoPage.coverInternalPadding+'px',
         position: 'absolute'
     }).appendTo('#GBtwopageview');
     
@@ -881,35 +885,35 @@ GnuBook.prototype.prepareTwoPageView = function() {
         background: 'transparent url(' + this.imagesBaseURL + 'left_edges.png) repeat scroll 0% 0%',
         width: leafEdgeWidthL + 'px',
         height: this.twoPage.height-1 + 'px',
-        left: bookCoverDivLeft+10+'px',
-        top: bookCoverDivTop+10+'px',    
+        left: bookCoverDivLeft+this.twoPage.coverInternalPadding+'px',
+        top: bookCoverDivTop+this.twoPage.coverInternalPadding+'px',    
         position: 'absolute'
     }).appendTo('#GBtwopageview');
 
 
 
-    bookCoverDivWidth = 30;
-    bookCoverDivHeight = this.twoPage.height+20;
-    bookCoverDivLeft = ($('#GBcontainer').attr('clientWidth') - bookCoverDivWidth) >> 1;
-    bookCoverDivTop = ($('#GBcontainer').height() - bookCoverDivHeight) >> 1;
+    var bookSpineDivWidth = 30;
+    bookSpineDivHeight = this.twoPage.height+20;
+    bookSpineDivLeft = ($('#GBcontainer').attr('clientWidth') - bookSpineDivWidth) >> 1;
+    bookSpineDivTop = ($('#GBcontainer').height() - bookSpineDivHeight) >> 1;
 
     div = document.createElement('div');
     $(div).attr('id', 'GBbookspine').css({
         border:          '1px solid rgb(68, 25, 17)',
-        width:           bookCoverDivWidth+'px',
-        height:          bookCoverDivHeight+'px',
+        width:           bookSpineDivWidth+'px',
+        height:          bookSpineDivHeight+'px',
         position:        'absolute',
         backgroundColor: 'rgb(68, 25, 17)',
-        left:            bookCoverDivLeft+'px',
-        top:             bookCoverDivTop+'px'
+        left:            bookSpineDivLeft+'px',
+        top:             bookSpineDivTop+'px'
     }).appendTo('#GBtwopageview');
-    //$('#GBcontainer').append('<div id="book_div_2" style="border: 1px solid rgb(68, 25, 17); width: '+bookCoverDivWidth+'px; height: '+bookCoverDivHeight+'px; visibility: visible; position: absolute; background-color: rgb(68, 25, 17); left: '+bookCoverDivLeft+'px; top: '+bookCoverDivTop+'px;"/>');
 
+    /*
     bookCoverDivWidth = this.twoPage.width*2;
     bookCoverDivHeight = this.twoPage.height;
     bookCoverDivLeft = ($('#GBcontainer').attr('clientWidth') - bookCoverDivWidth) >> 1;
     bookCoverDivTop = ($('#GBcontainer').height() - bookCoverDivHeight) >> 1;
-
+    */
 
     this.prepareTwoPagePopUp();
 
@@ -922,6 +926,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
     this.updateSearchHilites2UP();
     
     this.prefetch();
+    // $$$ Zoom text formatting could be cleaner - see https://bugs.edge.launchpad.net/gnubook/+bug/411581
     $('#GBzoom').text((100*this.twoPage.height/this.getPageHeight(this.twoPage.currentIndexL)).toString().substr(0,4));
 }
 
