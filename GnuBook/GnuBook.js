@@ -808,6 +808,8 @@ GnuBook.prototype.prepareTwoPageView = function() {
     
     this.calculateSpreadSize(); //sets twoPage.width, twoPage.height, and twoPage.ratio
         
+    console.dir(this.twoPage); // XXX
+        
     $('#GBtwopageview').width(this.twoPage.totalWidth).height(this.twoPage.totalHeight);
 
     this.twoPageDiv = document.createElement('div');
@@ -1004,7 +1006,7 @@ GnuBook.prototype.calculateSpreadSize = function() {
     this.twoPage.middle = this.twoPage.totalWidth >> 1;
     this.twoPage.gutter = this.twoPage.middle + this.gutterOffsetForIndex(firstIndex);
     
-    this.twoPage.bookCoverDivLeft = this.twoPage.coverExternalPadding; // $$$ Account for border?
+    this.twoPage.bookCoverDivLeft = this.twoPage.middle - this.twoPage.scaledWL - this.twoPage.coverInternalPadding; // $$$ Account for border?
     this.twoPage.bookCoverDivTop = this.twoPage.coverExternalPadding; // $$$ Account for border?
 
     this.twoPage.bookSpineDivHeight = this.twoPage.height + 2*this.twoPage.coverInternalPadding;
@@ -1844,8 +1846,7 @@ GnuBook.prototype.updateSearchHilites1UP = function() {
 
 // XXX move, clean up, use everywhere
 GnuBook.prototype.twoPageGutter = function() {
-    var middle = ($('#GBtwopageview').width() >> 1);
-    return middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
+    return this.twoPage.middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
 }
 
 // XXX move, clean up, use everywhere
