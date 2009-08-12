@@ -1314,6 +1314,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
     // XXX need to recalc
     var right = $('#GBtwopageview').attr('clientWidth')-left-$(this.prefetchedImgs[leftLeaf]).width()+$('#GBtwopageview').offset().left-2+'px';
     // We change the left leaf to right positioning
+    // $$$ This causes animation glitches during resize.  See https://bugs.edge.launchpad.net/gnubook/+bug/328327
     $(this.prefetchedImgs[leftLeaf]).css({
         right: right,
         left: ''
