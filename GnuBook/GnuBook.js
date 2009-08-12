@@ -406,11 +406,8 @@ GnuBook.prototype.drawLeafsOnePage = function() {
     } else {
         $("#GBpagenum").val('');
     }
-    
-    //var centerY = this.centerY1up();
-    //var centerX = this.centerX1up();
-    //console.log('draw center ' + centerY + ',' + centerX);
-    //console.log('scroll left ' + $('#GBcontainer').attr('scrollLeft'));
+            
+    this.updateToolbarZoom(this.reduce);
     
 }
 
@@ -489,6 +486,7 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     this.setClickHandlers();
 
     this.updatePageNumBox2UP();
+    this.updateToolbarZoom(this.reduce);
 }
 
 // updatePageNumBox2UP
@@ -553,7 +551,7 @@ GnuBook.prototype.zoom1up = function(dir) {
     this.displayedIndices = [];
     this.loadLeafs();
     
-    $('#GBzoom').text(100/this.reduce);
+    this.updateToolbarZoom(this.reduce);
 }
 
 // resizePageView()
@@ -753,7 +751,6 @@ GnuBook.prototype.prepareOnePageView = function() {
     this.displayedIndices = [];
     
     this.drawLeafsOnePage();
-    $('#GBzoom').text(100/this.reduce);
         
     // Bind mouse handlers
     // Disable mouse click to avoid selected/highlighted page images - bug 354239
@@ -923,10 +920,9 @@ GnuBook.prototype.prepareTwoPageView = function() {
     
     this.drawLeafsTwoPage();
     this.updateSearchHilites2UP();
+    this.updateToolbarZoom(this.reduce);
     
     this.prefetch();
-    // $$$ Zoom text formatting could be cleaner - see https://bugs.edge.launchpad.net/gnubook/+bug/411581
-    $('#GBzoom').text((100*this.twoPage.height/this.getPageHeight(this.twoPage.currentIndexL)).toString().substr(0,4));
 }
 
 // prepareTwoPagePopUp()
@@ -1383,7 +1379,6 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
             
             self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
-            //$('#GBzoom').text((self.twoPage.height/self.getPageHeight(newIndexL)).toString().substr(0,4));            
             
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -1512,7 +1507,6 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR, gutter) {
 
             self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
-            //$('#GBzoom').text((self.twoPage.height/self.getPageHeight(newIndexL)).toString().substr(0,4));
             
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -2079,7 +2073,7 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
         + "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
         + " <button class='GBicon rollover zoom_out' onclick='gb.zoom(-1); return false;'/>" 
         + "<button class='GBicon rollover zoom_in' onclick='gb.zoom(1); return false;'/>"
-        + " <span class='label'>Zoom: <span id='GBzoom'>"+100/this.reduce+"</span>%</span>"
+        + " <span class='label'>Zoom: <span id='GBzoom'>"+parseInt(100/this.reduce)+"</span>%</span>"
         + " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
         + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
         + "&nbsp;&nbsp;<a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
@@ -2217,6 +2211,14 @@ GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
         gb.rightmost();
         return false;
     });
+}
+
+// updateToolbarZoom(reduce)
+//______________________________________________________________________________
+// Update the displayed zoom factor based on reduction factor
+GnuBook.prototype.updateToolbarZoom = function(reduce) {
+    // $$$ TODO: Move toolbar to it's own object/plugin
+    $('#GBzoom').text(parseInt(100/reduce));
 }
 
 // firstDisplayableIndex
