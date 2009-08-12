@@ -427,11 +427,11 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
 
     var leafEdgeWidthL = this.leafEdgeWidth(indexL);
     var leafEdgeWidthR = this.twoPage.edgeWidth - leafEdgeWidthL;
-    var bookCoverDivWidth = this.twoPage.width*2+20 + this.twoPage.edgeWidth; // $$$ hardcoded cover width
+    var bookCoverDivWidth = this.twoPage.width*2 + 20 + this.twoPage.edgeWidth; // $$$ hardcoded cover width
     //console.log(leafEdgeWidthL);
 
     var middle, top, bookCoverDivLeft;
-    if (this.twoPage.autofit) {    
+    if (this.twoPage.autofit) {
         middle = ($('#GBtwopageview').attr('clientWidth') >> 1);            
         top  = ($('#GBtwopageview').attr('clientHeight') - this.twoPage.height) >> 1;
         bookCoverDivLeft = ($('#GBcontainer').attr('clientWidth') - bookCoverDivWidth) >> 1;
@@ -445,7 +445,7 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     // $$$ should get getwidth2up?
     //var scaledWL = parseInt(this.twoPage.height*widthL/heightL);
     var scaledWL = this.getPageWidth2UP(indexL);
-    var gutter = middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
+    var gutter = this.twoPageGutter();
     
     this.prefetchImg(indexL);
     $(this.prefetchedImgs[indexL]).css({
@@ -763,14 +763,24 @@ GnuBook.prototype.prepareOnePageView = function() {
 
 // prepareTwoPageView()
 //______________________________________________________________________________
+// Some decisions about two page view:
+//
+// Both pages will be displayed at the same height, even if they were different physical/scanned
+// sizes.  This simplifies the animation (from a design as well as technical standpoint).  We
+// examine the page aspect ratios (in calculateSpreadSize) and use the page with the most "normal"
+// aspect ratio to determine the height.
+//
+// The two page view div is resized to keep the middle of the book in the middle of the div
+// even as the page sizes change.  To e.g. keep the middle of the book in the middle of the GBcontent
+// div requires adjusting the offset of GBtwpageview and/or scrolling in GBcontent.
 GnuBook.prototype.prepareTwoPageView = function() {
     $('#GBcontainer').empty();
     $('#GBcontainer').css('overflow', 'auto');
 
-    
     // Add the two page view
     $('#GBcontainer').append('<div id="GBtwopageview"></div>');
     // Explicitly set sizes the same
+    // $$$ calculate first then set
     $('#GBtwopageview').css( {
         height: $('#GBcontainer').height(),
         width: $('#GBcontainer').width(),
@@ -1010,15 +1020,12 @@ GnuBook.prototype.calculateSpreadSize = function() {
     var secondIndex = this.twoPage.currentIndexR;
     //console.log('first page is ' + firstIndex);
 
-    // $$$ Right now we just use the ideal size
     var spreadSize;
     if ( this.twoPage.autofit) {    
         spreadSize = this.getIdealSpreadSize(firstIndex, secondIndex);
     } else {
         // set based on reduction factor
         spreadSize = this.getSpreadSizeFromReduce(firstIndex, secondIndex, this.reduce);
-        // XXX
-        console.dir(spreadSize);
     }
     
     this.twoPage.height = spreadSize.height;
@@ -1031,6 +1038,9 @@ GnuBook.prototype.calculateSpreadSize = function() {
 GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     var ideal = {};
 
+    // We check which page is closest to a "normal" page and use that to set the height
+    // for both pages.  This means that foldouts and other odd size pages will be displayed
+    // smaller than the nominal zoom amount.
     var canon5Dratio = 1.5;
     
     var first = {
@@ -1072,7 +1082,7 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     }
     
     // XXX check this logic with large spreads
-    ideal.reduce = ((first.width + second.width) / 2) / ideal.width;
+    ideal.reduce = ((first.height + second.height) / 2) / ideal.height;
     
     return ideal;
 }
@@ -1726,9 +1736,10 @@ GnuBook.prototype.prefetch = function() {
 // getPageWidth2UP()
 //______________________________________________________________________________
 GnuBook.prototype.getPageWidth2UP = function(index) {
+    // We return the width based on the dominant height
     var height  = this.getPageHeight(index); 
     var width   = this.getPageWidth(index);    
-    return Math.floor(this.twoPage.height*width/height);
+    return Math.floor(this.twoPage.height*width/height); // $$$ we assume width is relative to current spread
 }    
 
 // search()
@@ -1849,11 +1860,21 @@ GnuBook.prototype.updateSearchHilites1UP = function() {
     }
 }
 
+// XXX move, clean up, use everywhere
+GnuBook.prototype.twoPageGutter = function() {
+    var middle = ($('#GBtwopageview').width() >> 1);
+    return middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
+}
+
+// XXX move, clean up, use everywhere
+GnuBook.prototype.twoPageTop = function() {
+    // XXX this assumes centered... should be dependent on autofit or not
+    return ($('#GBtwopagview').height() - this.twoPage.height) >> 1;
+}
+                        
 // showSearchHilites2UP()
 //______________________________________________________________________________
 GnuBook.prototype.updateSearchHilites2UP = function() {
-
-    var middle = ($('#GBtwopageview').attr('clientWidth') >> 1);
 
     for (var key in this.searchResults) {
         key = parseInt(key, 10);
@@ -1865,20 +1886,22 @@ GnuBook.prototype.updateSearchHilites2UP = function() {
                 //console.log('appending ' + key);
             }
 
+            // We calculate the reduction factor for the specific page because it can be different
+            // for each page in the spread
             var height = this.getPageHeight(key);
             var width  = this.getPageWidth(key)
             var reduce = this.twoPage.height/height;
             var scaledW = parseInt(width*reduce);
             
-            var gutter = middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
-            
+            var gutter = this.twoPageGutter();
+            var pageL;
             if ('L' == this.getPageSide(key)) {
-                var pageL = gutter-scaledW;
+                pageL = gutter-scaledW;
             } else {
-                var pageL = gutter;
+                pageL = gutter;
             }
-            var pageT  = ($('#GBtwopagview').height() - this.twoPage.height) >> 1;                
-                        
+            var pageT  = this.twoPageTop();
+            
             $(result.div).css({
                 width:  (result.r-result.l)*reduce + 'px',
                 height: (result.b-result.t)*reduce + 'px',
