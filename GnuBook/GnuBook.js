@@ -1020,7 +1020,7 @@ GnuBook.prototype.calculateSpreadSize = function() {
     
     // The left edge of the book cover moves depending on the width of the pages
     // $$$ change to getter
-    this.twoPage.bookCoverDivLeft = this.twoPage.middle - this.twoPage.scaledWL - this.twoPage.coverInternalPadding;
+    this.twoPage.bookCoverDivLeft = this.twoPage.gutter - this.twoPage.scaledWL - this.twoPage.leafEdgeWidthL - this.twoPage.coverInternalPadding;
     // The top edge of the book cover stays a fixed distance from the top
     this.twoPage.bookCoverDivTop = this.twoPage.coverExternalPadding;
 
@@ -1369,11 +1369,11 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
                 left:  gutter-newWidthL-newLeafEdgeWidthL+'px'
             });
 
-            
+            // XXX set values in this.twoPage here(?)
             $(self.twoPage.coverDiv).css({
                 // Resizes the brown border div
                 width: newWidthL+newWidthR+self.twoPage.edgeWidth+20+'px',
-                left: gutter-newWidthL-newLeafEdgeWidthL-10+'px'
+                left: gutter-newWidthL-newLeafEdgeWidthL-self.twoPage.coverInternalPadding+'px'
             });
             
             $(self.leafEdgeTmp).remove();
