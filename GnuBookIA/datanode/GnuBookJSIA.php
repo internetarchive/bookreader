@@ -20,7 +20,22 @@ This file is part of GnuBook.
 
 $id = $_REQUEST['id'];
 $itemPath = $_REQUEST['itemPath'];
-$server = $_REQUEST['server']; 
+$subPrefix = $_REQUEST['subPrefix'];
+$server = $_REQUEST['server'];
+
+// Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
+// $$$ TODO consolidate this logic
+if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
+    $server .= ':80/~mang';
+} else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
+    $server .= ':80/~testflip';
+}
+
+if ($subPrefix) {
+    $subItemPath = $itemPath . '/' . $subPrefix;
+} else {
+    $subItemPath = $itemPath . '/' . $id;
+}
 
 if ("" == $id) {
     GBFatal("No identifier specified!");
@@ -34,18 +49,19 @@ if ("" == $server) {
     GBFatal("No server specified!");
 }
 
-
 if (!preg_match("|^/[0-3]/items/{$id}$|", $itemPath)) {
     GBFatal("Bad id!");
 }
 
+// XXX check here that subitem is okay
+
 $imageFormat = 'unknown';
-$zipFile = "$itemPath/{$id}_jp2.zip";
+$zipFile = "${subItemPath}_jp2.zip";
 
 if (file_exists($zipFile)) {
     $imageFormat = 'jp2';
 } else {
-  $zipFile = "$itemPath/${id}_tif.zip";
+  $zipFile = "${subItemPath}_tif.zip";
   if (file_exists($zipFile)) {
     $imageFormat = 'tif';
   }
@@ -55,7 +71,7 @@ if ("unknown" == $imageFormat) {
   GBfatal("Unknown image format");
 }
 
-$scanDataFile = "$itemPath/{$id}_scandata.xml";
+$scanDataFile = "${subItemPath}_scandata.xml";
 $scanDataZip  = "$itemPath/scandata.zip";
 if (file_exists($scanDataFile)) {
     $scanData = simplexml_load_file($scanDataFile);
@@ -115,9 +131,13 @@ gb.getPageURI = function(index) {
     var leafStr = '0000';            
     var imgStr = this.leafMap[index].toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
-
+    
+    var insideZipPrefix = this.subPrefix.match('[^/]+$');
+    var file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
+    
+    // $$$ add more image stack formats here
     if (1==this.mode) {
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+this.bookId+'_'+this.imageFormat+'/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.'+this.imageFormat+'&scale='+this.reduce;
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+this.reduce;
     } else {
         var ratio = this.getPageHeight(index) / this.twoPageH;
         var scale;
@@ -130,8 +150,7 @@ gb.getPageURI = function(index) {
             scale = 4;
         }        
     
-        //var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+this.bookId+'_jp2/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.jp2&height='+this.twoPageH+'&origHeight='+this.getPageHeight(index);
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+this.bookId+'_'+this.imageFormat+'/'+this.bookId+'_'+leafStr.replace(re, imgStr) + '.'+this.imageFormat+'&scale='+scale;
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+scale;
         
     }
     return url;
@@ -316,9 +335,10 @@ gb.numLeafs = gb.pageW.length;
 
 gb.bookId   = '<?echo $id;?>';
 gb.zip      = '<?echo $zipFile;?>';
+gb.subPrefix = '<?echo $subPrefix;?>';
 gb.server   = '<?echo $server;?>';
 gb.bookTitle= '<?echo preg_replace("/\'/", "\\'", $metaData->title);?>';
-gb.bookPath = '<?echo $itemPath;?>';
+gb.bookPath = '<?echo $subItemPath;?>';
 gb.bookUrl  = '<?echo "http://www.archive.org/details/$id";?>';
 gb.imageFormat = '<?echo $imageFormat;?>';
 

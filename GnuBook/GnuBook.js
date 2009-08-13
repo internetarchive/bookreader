@@ -102,6 +102,11 @@ GnuBook.prototype.init = function() {
     // search engine visibility
     document.title = this.shortTitle(50);
     
+    // Sanitize parameters
+    if ( !this.canSwitchToMode( this.mode ) ) {
+        this.mode = this.constMode1up;
+    }
+    
     $("#GnuBook").empty();
     this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
     $("#GnuBook").append("<div id='GBcontainer'></div>");
@@ -148,7 +153,7 @@ GnuBook.prototype.init = function() {
         this.prepareTwoPageView();
         //if (this.auto) this.nextPage();
     }
-    
+        
     // Enact other parts of initial params
     this.updateFromParams(params);
 }
@@ -620,6 +625,10 @@ GnuBook.prototype.switchMode = function(mode) {
     //console.log('  asked to switch to mode ' + mode + ' from ' + this.mode);
     
     if (mode == this.mode) return;
+    
+    if (!this.canSwitchToMode(mode)) {
+        return;
+    }
 
     this.autoStop();
     this.removeSearchHilites();
@@ -1569,7 +1578,7 @@ GnuBook.prototype.search = function(term) {
  	var script  = document.createElement("script");
  	script.setAttribute('id', 'GnuBookSearchScript');
 	script.setAttribute("type", "text/javascript");
-	script.setAttribute("src", 'http://'+this.server+'/GnuBook/flipbook_search_gb.php?url='+escape(this.bookPath+'/'+this.bookId+'_djvu.xml')+'&term='+term+'&format=XML&callback=gb.GBSearchCallback');
+	script.setAttribute("src", 'http://'+this.server+'/GnuBook/flipbook_search_gb.php?url='+escape(this.bookPath + '_djvu.xml')+'&term='+term+'&format=XML&callback=gb.GBSearchCallback');
 	document.getElementsByTagName('head')[0].appendChild(script);
 	$('#GnuBookSearchResults').html('Searching...');
 }
@@ -1899,6 +1908,7 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 }
 
 GnuBook.prototype.initToolbar = function(mode, ui) {
+
     $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'>"
         + "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
         + " <button class='GBicon rollover zoom_out' onclick='gb.zoom1up(-1); return false;'/>" 
@@ -1952,6 +1962,12 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
                   
     for (var icon in titles) {
         jToolbar.find(icon).attr('title', titles[icon]);
+    }
+    
+    // Hide mode buttons and autoplay if 2up is not available
+    // $$$ if we end up with more than two modes we should show the applicable buttons
+    if ( !this.canSwitchToMode(this.constMode2up) ) {
+        jToolbar.find('.one_page_mode, .two_page_mode, .play, .pause').hide();
     }
 
     // Switch to requested mode -- binds other click handlers
@@ -2337,6 +2353,21 @@ GnuBook.prototype.getEmbedCode = function() {
     return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
 }
 
+// canSwitchToMode
+//________
+// Returns true if we can switch to the requested mode
+GnuBook.prototype.canSwitchToMode = function(mode) {
+    if (mode == this.constMode2up) {
+        // check there are enough pages to display
+        // $$$ this is a workaround for the mis-feature that we can't display
+        //     short books in 2up mode
+        if (this.numLeafs < 6) {
+            return false;
+        }
+    }
+    
+    return true;
+}
 
 // Library functions
 GnuBook.util = {
