@@ -417,11 +417,13 @@ GnuBook.prototype.drawLeafsOnePage = function() {
 //______________________________________________________________________________
 GnuBook.prototype.drawLeafsTwoPage = function() {
     console.log('drawing two leafs!'); // XXX
-
+    
     var scrollTop = $('#GBtwopageview').attr('scrollTop');
     var scrollBottom = scrollTop + $('#GBtwopageview').height();
     
     console.log('drawLeafsTwoPage: this.currrentLeafL ' + this.twoPage.currentIndexL); // XXX
+    
+    // XXX we should use calculated values in this.twoPage (recalc if necessary)
     
     var indexL = this.twoPage.currentIndexL;
     var heightL  = this.getPageHeight(indexL); 
@@ -968,6 +970,7 @@ GnuBook.prototype.calculateSpreadSize = function() {
     var secondIndex = this.twoPage.currentIndexR;
     //console.log('first page is ' + firstIndex);
 
+    // Calculate page sizes and total leaf width
     var spreadSize;
     if ( this.twoPage.autofit) {    
         spreadSize = this.getIdealSpreadSize(firstIndex, secondIndex);
@@ -976,25 +979,34 @@ GnuBook.prototype.calculateSpreadSize = function() {
         spreadSize = this.getSpreadSizeFromReduce(firstIndex, secondIndex, this.reduce);
     }
     
+    // Both pages together
     this.twoPage.height = spreadSize.height;
     this.twoPage.width = spreadSize.width;
-    this.twoPage.edgeWidth = spreadSize.totalLeafEdgeWidth; // The combined width of both edges
     
+    // Individual pages
     this.twoPage.scaledWL = this.getPageWidth2UP(firstIndex);
     this.twoPage.scaledWR = this.getPageWidth2UP(secondIndex);
+    
+    // Leaf edges
     this.twoPage.leafEdgeWidthL = this.leafEdgeWidth(this.twoPage.currentIndexL);
     this.twoPage.leafEdgeWidthR = this.twoPage.edgeWidth - this.twoPage.leafEdgeWidthL;
+    this.twoPage.edgeWidth = spreadSize.totalLeafEdgeWidth; // The combined width of both edges
     
+    
+    // Book cover
     // The width of the book cover div.  The combined width of both pages, twice the width
     // of the book cover internal padding (2*10) and the page edges
     this.twoPage.bookCoverDivWidth = this.twoPage.scaledWL + this.twoPage.scaledWR + 2 * this.twoPage.coverInternalPadding + this.twoPage.edgeWidth;
-    
     // The height of the book cover div
     this.twoPage.bookCoverDivHeight = this.twoPage.height + 2 * this.twoPage.coverInternalPadding;
-        
-    // Total height and width -- makes the spine middle centered
+    
+    
+    // We calculate the total width and height for the div so that we can make the book
+    // spine centered
     var leftGutterOffset = this.gutterOffsetForIndex(firstIndex);
-    var largestWidthFromCenter = Math.max( (this.twoPage.scaledWL + leftGutterOffset), (this.twoPage.scaledWR - leftGutterOffset));
+    var leftWidthFromCenter = this.twoPage.scaledWL + leftGutterOffset + this.twoPage.leafEdgeWidthL;
+    var rightWidthFromCenter = this.twoPage.scaledWR - leftGutterOffset + this.twoPage.leafEdgeWidthR;
+    var largestWidthFromCenter = Math.max( leftWidthFromCenter, rightWidthFromCenter );
     this.twoPage.totalWidth = 2 * (largestWidthFromCenter + this.twoPage.coverInternalPadding + this.twoPage.coverExternalPadding);
     this.twoPage.totalHeight = this.twoPage.height + 2 * (this.twoPage.coverInternalPadding + this.twoPage.coverExternalPadding);
         
@@ -1006,9 +1018,13 @@ GnuBook.prototype.calculateSpreadSize = function() {
     this.twoPage.middle = this.twoPage.totalWidth >> 1;
     this.twoPage.gutter = this.twoPage.middle + this.gutterOffsetForIndex(firstIndex);
     
-    this.twoPage.bookCoverDivLeft = this.twoPage.coverExternalPadding;
-    this.twoPage.bookCoverDivTop = this.twoPage.coverExternalPadding; // $$$ Account for border?
+    // The left edge of the book cover moves depending on the width of the pages
+    // $$$ change to getter
+    this.twoPage.bookCoverDivLeft = this.twoPage.middle - this.twoPage.scaledWL - this.twoPage.coverInternalPadding;
+    // The top edge of the book cover stays a fixed distance from the top
+    this.twoPage.bookCoverDivTop = this.twoPage.coverExternalPadding;
 
+    // Book spine
     this.twoPage.bookSpineDivHeight = this.twoPage.height + 2*this.twoPage.coverInternalPadding;
     this.twoPage.bookSpineDivLeft = this.twoPage.middle - (this.twoPage.bookSpineDivWidth >> 1);
     this.twoPage.bookSpineDivTop = this.twoPage.bookCoverDivTop;
