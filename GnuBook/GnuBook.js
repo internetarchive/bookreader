@@ -783,7 +783,7 @@ GnuBook.prototype.prepareTwoPageView = function() {
         width: $('#GBcontainer').width(),
         position: 'absolute'
         });
-
+        
     // We want to display two facing pages.  We may be missing
     // one side of the spread because it is the first/last leaf,
     // foldouts, missing pages, etc
@@ -810,11 +810,14 @@ GnuBook.prototype.prepareTwoPageView = function() {
     
     this.calculateSpreadSize(); //sets twoPage.width, twoPage.height
         
-    console.dir(this.twoPage); // XXX
+    //console.dir(this.twoPage);
     
     // $$$ May need to account for scroll bars here
     $('#GBtwopageview').width(this.twoPage.totalWidth).height(this.twoPage.totalHeight);
-
+    
+    // XXX shouldn't always center
+    this.twoPageCenterView();
+    
     this.twoPage.coverDiv = document.createElement('div');
     $(this.twoPage.coverDiv).attr('id', 'GBbookcover').css({
         border: '1px solid rgb(68, 25, 17)',
@@ -1865,6 +1868,31 @@ GnuBook.prototype.twoPageTop = function() {
     
 GnuBook.prototype.twoPageCoverWidth = function(totalPageWidth) {
     return totalPageWidth + this.twoPage.edgeWidth + 2*this.twoPage.coverInternalPadding;
+}
+
+GnuBook.prototype.twoPageCenterView = function() {
+    var viewWidth = $('#GBtwopageview').width();
+    var containerClientWidth = $('#GBcontainer').attr('clientWidth');
+    
+    var viewHeight = $('#GBtwopageview').height();
+    var containerClientHeight = $('#GBcontainer').attr('clientHeight');
+    
+    if (viewWidth < containerClientWidth) {
+        // Can fit width without scrollbars - center by adjusting offset
+        $('#GBtwopageview').css('left', ((containerClientWidth - viewWidth) >> 1) + 'px');    
+    } else {
+        // Need to scroll to center
+        $('#GBtwopageview').css('left', 0);
+        $('#GBcontainer').scrollLeft((viewWidth - containerClientWidth) >> 1);
+    }
+    
+    if (viewHeight < containerClientHeight) {
+        // Fits with scrollbars - add offset
+        $('#GBtwopageview').css('top', ((containerClientHeight - viewHeight) >> 1) + 'px');
+    } else {
+        $('#GBtwopageview').css('top', 0);
+        $('#GBcontainer').scrollTop((viewHeight - containerClientHeight) >> 1);
+    }
 }
     
 // showSearchHilites2UP()
