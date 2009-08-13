@@ -806,10 +806,11 @@ GnuBook.prototype.prepareTwoPageView = function() {
     this.twoPage.currentIndexR = currentSpreadIndices[1];
     this.firstIndex = this.twoPage.currentIndexL;
     
-    this.calculateSpreadSize(); //sets twoPage.width, twoPage.height, and twoPage.ratio
+    this.calculateSpreadSize(); //sets twoPage.width, twoPage.height
         
     console.dir(this.twoPage); // XXX
-        
+    
+    // $$$ May need to account for scroll bars here
     $('#GBtwopageview').width(this.twoPage.totalWidth).height(this.twoPage.totalHeight);
 
     this.twoPage.coverDiv = document.createElement('div');
@@ -954,7 +955,7 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
 //______________________________________________________________________________
 // Calculates 2-page spread dimensions based on this.twoPage.currentIndexL and
 // this.twoPage.currentIndexR
-// This function sets this.twoPage.height, twoPage.width, and twoPage.ratio
+// This function sets this.twoPage.height, twoPage.width
 
 GnuBook.prototype.calculateSpreadSize = function() {
     console.log('calculateSpreadSize ' + this.twoPage.currentIndexL); // XXX
@@ -977,7 +978,6 @@ GnuBook.prototype.calculateSpreadSize = function() {
     
     this.twoPage.height = spreadSize.height;
     this.twoPage.width = spreadSize.width;
-    this.twoPage.ratio = spreadSize.ratio;
     this.twoPage.edgeWidth = spreadSize.totalLeafEdgeWidth; // The combined width of both edges
     
     this.twoPage.scaledWL = this.getPageWidth2UP(firstIndex);
@@ -1006,7 +1006,7 @@ GnuBook.prototype.calculateSpreadSize = function() {
     this.twoPage.middle = this.twoPage.totalWidth >> 1;
     this.twoPage.gutter = this.twoPage.middle + this.gutterOffsetForIndex(firstIndex);
     
-    this.twoPage.bookCoverDivLeft = this.twoPage.middle - this.twoPage.scaledWL - this.twoPage.coverInternalPadding; // $$$ Account for border?
+    this.twoPage.bookCoverDivLeft = this.twoPage.coverExternalPadding;
     this.twoPage.bookCoverDivTop = this.twoPage.coverExternalPadding; // $$$ Account for border?
 
     this.twoPage.bookSpineDivHeight = this.twoPage.height + 2*this.twoPage.coverInternalPadding;
@@ -1039,11 +1039,12 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     var secondIndexRatio = second.height / second.width;
     //console.log('firstIndexRatio = ' + firstIndexRatio + ' secondIndexRatio = ' + secondIndexRatio);
 
+    var ratio;
     if (Math.abs(firstIndexRatio - canon5Dratio) < Math.abs(secondIndexRatio - canon5Dratio)) {
-        ideal.ratio = firstIndexRatio;
+        ratio = firstIndexRatio;
         //console.log('using firstIndexRatio ' + ratio);
     } else {
-        ideal.ratio = secondIndexRatio;
+        ratio = secondIndexRatio;
         //console.log('using secondIndexRatio ' + ratio);
     }
 
@@ -1055,12 +1056,12 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     ideal.height = $('#GBcontainer').height() - 30;  // $$$ why - 30?  book edge width?
     //console.log('init idealWidth='+idealWidth+' idealHeight='+idealHeight + ' ratio='+ratio);
 
-    if (ideal.height/ideal.ratio <= ideal.width) {
+    if (ideal.height/ratio <= ideal.width) {
         //use height
-        ideal.width = parseInt(ideal.height/ideal.ratio);
+        ideal.width = parseInt(ideal.height/ratio);
     } else {
         //use width
-        ideal.height = parseInt(ideal.width*ideal.ratio);
+        ideal.height = parseInt(ideal.width*ratio);
     }
     
     // XXX check this logic with large spreads
@@ -1073,10 +1074,10 @@ GnuBook.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex, re
     var spreadSize = {};
     // $$$ Scale this based on reduce?
     var totalLeafEdgeWidth = parseInt(this.numLeafs * 0.1);
-    var maxLeafEdgeWidth   = parseInt($('#GBcontainer').attr('clientWidth') * 0.1);
+    var maxLeafEdgeWidth   = parseInt($('#GBcontainer').attr('clientWidth') * 0.1); // XXX update
     spreadSize.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
 
-    // $$$ this isn't quite right when the pages are different sizes
+    // XXX incorrect -- we should make height "dominant"
     var nativeWidth = this.getPageWidth(firstIndex) + this.getPageWidth(secondIndex);
     var nativeHeight = this.getPageHeight(firstIndex) + this.getPageHeight(secondIndex);
     spreadSize.height = parseInt( (nativeHeight / 2) / this.reduce );
