@@ -812,8 +812,8 @@ GnuBook.prototype.prepareTwoPageView = function() {
         
     $('#GBtwopageview').width(this.twoPage.totalWidth).height(this.twoPage.totalHeight);
 
-    this.twoPageDiv = document.createElement('div');
-    $(this.twoPageDiv).attr('id', 'GBbookcover').css({
+    this.twoPage.coverDiv = document.createElement('div');
+    $(this.twoPage.coverDiv).attr('id', 'GBbookcover').css({
         border: '1px solid rgb(68, 25, 17)',
         width:  this.twoPage.bookCoverDivWidth + 'px',
         height: this.twoPage.bookCoverDivHeight+'px',
@@ -1228,9 +1228,8 @@ GnuBook.prototype.flipBackToIndex = function(index) {
     
     if ('rl' != this.pageProgression) {
         // Assume LTR and we are going backward    
-        var gutter = this.prepareFlipLeftToRight(previousIndices[0], previousIndices[1]);        
-        this.flipLeftToRight(previousIndices[0], previousIndices[1], gutter);
-        
+        this.prepareFlipLeftToRight(previousIndices[0], previousIndices[1]);        
+        this.flipLeftToRight(previousIndices[0], previousIndices[1]);
     } else {
         // RTL and going backward
         var gutter = this.prepareFlipRightToLeft(previousIndices[0], previousIndices[1]);
@@ -1241,7 +1240,7 @@ GnuBook.prototype.flipBackToIndex = function(index) {
 // flipLeftToRight()
 //______________________________________________________________________________
 // Flips the page on the left towards the page on the right
-GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
+GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
 
     var leftLeaf = this.twoPage.currentIndexL;
     
@@ -1254,7 +1253,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
     var newWidthR    = this.getPageWidth2UP(newIndexR);
 
     var top  = this.twoPageTop();
-    var gutter = this.twoPageGutter();
+    var gutter = this.twoPage.middle + this.gutterOffsetForIndex(newIndexL);
     
     //console.log('leftEdgeTmpW ' + leafEdgeTmpW);
     //console.log('  gutter ' + gutter + ', scaledWL ' + scaledWL + ', newLeafEdgeWL ' + newLeafEdgeWidthL);
@@ -1276,7 +1275,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
     //          and width=twoPage.edgeWidth-newLeafEdgeWidthL.
     //      - resize and move the left leaf edge (leafEdgeL) to left=gutter-newWidthL-newLeafEdgeWidthL
     //          and width=newLeafEdgeWidthL.
-    //      - resize the back cover (twoPageDiv) to left=gutter-newWidthL-newLeafEdgeWidthL-10
+    //      - resize the back cover (twoPage.coverDiv) to left=gutter-newWidthL-newLeafEdgeWidthL-10
     //          and width=newWidthL+newWidthR+twoPage.edgeWidth+20
     //      - move new left leaf (newIndexL) forward to zindex=2 so it can receive clicks.
     //      - remove old left and right leafs from the dom [pruneUnusedImgs()].
@@ -1354,7 +1353,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR, gutter) {
             });
 
             
-            $(self.twoPageDiv).css({
+            $(self.twoPage.coverDiv).css({
                 // Resizes the brown border div
                 width: newWidthL+newWidthR+self.twoPage.edgeWidth+20+'px',
                 left: gutter-newWidthL-newLeafEdgeWidthL-10+'px'
@@ -1415,7 +1414,7 @@ GnuBook.prototype.flipFwdToIndex = function(index) {
     } else {
         // RTL
         var gutter = this.prepareFlipLeftToRight(nextIndices[0], nextIndices[1]);
-        this.flipLeftToRight(nextIndices[0], nextIndices[1], gutter);
+        this.flipLeftToRight(nextIndices[0], nextIndices[1]);
     }
 }
 
@@ -1423,7 +1422,7 @@ GnuBook.prototype.flipFwdToIndex = function(index) {
 // $$$ better not to have to pass gutter in
 //______________________________________________________________________________
 // Flip from left to right and show the nextL and nextR indices on those sides
-GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR, gutter) {
+GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
     var oldLeafEdgeWidthL = this.leafEdgeWidth(this.twoPage.currentIndexL);
     var oldLeafEdgeWidthR = this.twoPage.edgeWidth-oldLeafEdgeWidthL;
     var newLeafEdgeWidthL = this.leafEdgeWidth(newIndexL);  
@@ -1431,16 +1430,12 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR, gutter) {
 
     var leafEdgeTmpW = oldLeafEdgeWidthR - newLeafEdgeWidthR;
 
-    var top  = ($('#GBtwopageview').height() - this.twoPage.height) >> 1;                
-
+    var top = this.twoPageTop();
     var scaledW = this.getPageWidth2UP(this.twoPage.currentIndexR);
 
-    var middle     = ($('#GBtwopageview').attr('clientWidth') >> 1);
-    var currGutter = middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
+    var middle = this.twoPage.middle;
+    var gutter = middle + this.gutterOffsetForIndex(newIndexL);
     
-    // XXX
-    console.log('R->L middle(' + middle +') currGutter(' + currGutter + ') gutter(' + gutter + ')');
-
     this.leafEdgeTmp = document.createElement('div');
     $(this.leafEdgeTmp).css({
         borderStyle: 'solid none solid solid',
@@ -1449,7 +1444,7 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR, gutter) {
         background: 'transparent url(' + this.imagesBaseURL + 'left_edges.png) repeat scroll 0% 0%',
         width: leafEdgeTmpW + 'px',
         height: this.twoPage.height-1 + 'px',
-        left: currGutter+scaledW+'px',
+        left: gutter+scaledW+'px',
         top: top+'px',    
         position: 'absolute',
         zIndex:1000
@@ -1482,9 +1477,10 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR, gutter) {
                 left: gutter-newWidthL-newLeafEdgeWidthL+'px'
             });
             
-            $(self.twoPageDiv).css({
-                width: newWidthL+newWidthR+self.twoPage.edgeWidth+20+'px',
-                left: gutter-newWidthL-newLeafEdgeWidthL-10+'px'
+            // Resizes the book cover
+            $(self.twoPage.coverDiv).css({
+                width: self.twoPageCoverWidth(newWidthL+newWidthR)+'px',
+                left: self.coverExternalPadding+'px'
             });
             
             $(self.leafEdgeTmp).remove();
@@ -1555,9 +1551,9 @@ GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
     
     var height  = this.getPageHeight(prevL); 
     var width   = this.getPageWidth(prevL);    
-    var middle = ($('#GBtwopageview').attr('clientWidth') >> 1);
-    var top  = ($('#GBtwopageview').height() - this.twoPage.height) >> 1;                
-    var scaledW = this.twoPage.height*width/height;
+    var middle = this.twoPage.middle;
+    var top  = this.twoPageTop();                
+    var scaledW = this.twoPage.height*width/height; // $$$ assumes height of page is dominant
 
     // The gutter is the dividing line between the left and right pages.
     // It is offset from the middle to create the illusion of thickness to the pages
@@ -1570,9 +1566,8 @@ GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
     
     $(this.prefetchedImgs[prevL]).css({
         position: 'absolute',
-        /*right:   middle+'px',*/
         left: gutter-scaledW+'px',
-        right: '',
+        right: '', // clear right property
         top:    top+'px',
         backgroundColor: 'rgb(234, 226, 205)',
         height: this.twoPage.height,
@@ -1598,9 +1593,6 @@ GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
     });
 
     $('#GBtwopageview').append(this.prefetchedImgs[prevR]);
-
-
-    return gutter;
             
 }
 
@@ -1611,13 +1603,14 @@ GnuBook.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
 
     //console.log('  preparing left<-right for ' + nextL + ',' + nextR);
 
+    // Prefetch images
     this.prefetchImg(nextL);
     this.prefetchImg(nextR);
 
     var height  = this.getPageHeight(nextR); 
     var width   = this.getPageWidth(nextR);    
-    var middle = ($('#GBtwopageview').attr('clientWidth') >> 1);
-    var top  = ($('#GBtwopageview').height() - this.twoPage.height) >> 1;                
+    var middle = this.twoPage.middle;
+    var top  = this.twoPageTop();               
     var scaledW = this.twoPage.height*width/height;
 
     var gutter = middle + this.gutterOffsetForIndex(nextL);
@@ -1649,14 +1642,12 @@ GnuBook.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
         top:    top+'px',
         backgroundColor: 'rgb(234, 226, 205)',
         height: this.twoPage.height,
-        width:  0+'px',
+        width:  0+'px', // Start at 0 width, then grow to the left
         borderRight: '1px solid black',
         zIndex: 2
     });
 
     $('#GBtwopageview').append(this.prefetchedImgs[nextL]);    
-
-    return gutter;
             
 }
 
@@ -1854,7 +1845,11 @@ GnuBook.prototype.twoPageGutter = function() {
 GnuBook.prototype.twoPageTop = function() {
     return this.twoPage.coverExternalPadding + this.twoPage.coverInternalPadding; // $$$ + border?
 }
-                        
+    
+GnuBook.prototype.twoPageCoverWidth = function(totalPageWidth) {
+    return totalPageWidth + this.twoPage.edgeWidth + 2*this.twoPage.coverInternalPadding;
+}
+    
 // showSearchHilites2UP()
 //______________________________________________________________________________
 GnuBook.prototype.updateSearchHilites2UP = function() {
