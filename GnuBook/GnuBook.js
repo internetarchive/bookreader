@@ -146,7 +146,6 @@ GnuBook.prototype.init = function() {
             // We only need to prepare again in autofit (size of spread changes)
             if (e.data.twoPage.autofit) {
                 e.data.prepareTwoPageView();
-                e.data.twoPageCenterView();
             } else {
                 // Re-center if the scrollbars have disappeared
                 var center = e.data.twoPageGetViewCenter();
@@ -183,7 +182,6 @@ GnuBook.prototype.init = function() {
         //console.log('titleLeaf: %d', this.titleLeaf);
         //console.log('displayedIndices: %s', this.displayedIndices);
         this.prepareTwoPageView();
-        this.twoPageCenterView(); // $$$ when we accept region in URL adapt this
     }
         
     // Enact other parts of initial params
@@ -672,10 +670,6 @@ GnuBook.prototype.zoom2up = function(direction) {
 
     // Preserve view center position
     var oldCenter = this.twoPageGetViewCenter();
-            
-    this.prepareTwoPageView();
-    
-    // Re-center
     // If there will not be scrollbars (e.g. when zooming out) we center the book
     // since otherwise the book will be stuck off-center
     if (this.twoPage.totalWidth < $('#GBcontainer').attr('clientWidth')) {
@@ -684,7 +678,9 @@ GnuBook.prototype.zoom2up = function(direction) {
     if (this.twoPage.totalHeight < $('#GBcontainer').attr('clientHeight')) {
         oldCenter.percentageY = 0.5;
     }
-    this.twoPageCenterView(oldCenter.percentageX, oldCenter.percentageY);
+    
+    // Prepare view with new center to minimize visual glitches
+    this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
 }
 
 
@@ -826,19 +822,9 @@ GnuBook.prototype.prepareOnePageView = function() {
 // The two page view div is resized to keep the middle of the book in the middle of the div
 // even as the page sizes change.  To e.g. keep the middle of the book in the middle of the GBcontent
 // div requires adjusting the offset of GBtwpageview and/or scrolling in GBcontent.
-GnuBook.prototype.prepareTwoPageView = function() {
+GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercentageY) {
     $('#GBcontainer').empty();
     $('#GBcontainer').css('overflow', 'auto');
-
-    // Add the two page view
-    $('#GBcontainer').append('<div id="GBtwopageview"></div>');
-    // Explicitly set sizes the same
-    // $$$ calculate first then set
-    $('#GBtwopageview').css( {
-        height: $('#GBcontainer').height(),
-        width: $('#GBcontainer').width(),
-        position: 'absolute'
-        });
         
     // We want to display two facing pages.  We may be missing
     // one side of the spread because it is the first/last leaf,
@@ -868,8 +854,18 @@ GnuBook.prototype.prepareTwoPageView = function() {
         
     //console.dir(this.twoPage);
     
-    // $$$ May need to account for scroll bars here
-    $('#GBtwopageview').width(this.twoPage.totalWidth).height(this.twoPage.totalHeight);
+    // Add the two page view
+    // $$$ Can we get everything set up and then append?
+    $('#GBcontainer').append('<div id="GBtwopageview"></div>');
+
+    // $$$ calculate first then set
+    $('#GBtwopageview').css( {
+        height: this.twoPage.totalHeight + 'px',
+        width: this.twoPage.totalWidth + 'px',
+        position: 'absolute'
+        });
+        
+    this.twoPageCenterView(centerPercentageX, centerPercentageY);
     
     this.twoPage.coverDiv = document.createElement('div');
     $(this.twoPage.coverDiv).attr('id', 'GBbookcover').css({
