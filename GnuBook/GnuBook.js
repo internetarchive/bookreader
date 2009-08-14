@@ -662,10 +662,10 @@ GnuBook.prototype.zoom2up = function(direction) {
     // If there will not be scrollbars (e.g. when zooming out) we center the book
     // since otherwise the book will be stuck off-center
     if (this.twoPage.totalWidth < $('#GBcontainer').attr('clientWidth')) {
-        percentageX = 0.5;
+        oldCenter.percentageX = 0.5;
     }
     if (this.twoPage.totalHeight < $('#GBcontainer').attr('clientHeight')) {
-        percentageY = 0.5;
+        oldCenter.percentageY = 0.5;
     }
     this.twoPageCenterView(oldCenter.percentageX, oldCenter.percentageY);
 }
