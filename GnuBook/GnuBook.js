@@ -142,7 +142,12 @@ GnuBook.prototype.init = function() {
             e.data.loadLeafs();
         } else {
             //console.log('drawing 2 page view');
-            e.data.prepareTwoPageView();
+            
+            // We only need to recalculate and center if in autofit
+            if (e.data.twoPage.autofit) {
+                e.data.prepareTwoPageView();
+                e.data.twoPageCenterView();
+            }            
         }
     });
     
@@ -163,7 +168,7 @@ GnuBook.prototype.init = function() {
         //console.log('titleLeaf: %d', this.titleLeaf);
         //console.log('displayedIndices: %s', this.displayedIndices);
         this.prepareTwoPageView();
-        //if (this.auto) this.nextPage();
+        this.twoPageCenterView(); // $$$ when we accept region in URL adapt this
     }
         
     // Enact other parts of initial params
@@ -649,15 +654,20 @@ GnuBook.prototype.zoom2up = function(direction) {
     }
 
     // Preserve view center position
-    var containerOffset = $('#GBcontainer').offset();
-    var viewOffset = $('#GBtwopageview').offset();
-    var percentageX = (containerOffset.left - viewOffset.left + ($('#GBcontainer').attr('clientWidth') >> 1)) / this.twoPage.totalWidth;
-    var percentageY = (containerOffset.top - viewOffset.top + ($('#GBcontainer').attr('clientHeight') >> 1)) / this.twoPage.totalHeight;
-        
+    var oldCenter = this.twoPageGetViewCenter();
+            
     this.prepareTwoPageView();
     
     // Re-center
-    this.twoPageCenterViewPercentage(percentageX, percentageY);
+    // If there will not be scrollbars (e.g. when zooming out) we center the book
+    // since otherwise the book will be stuck off-center
+    if (this.twoPage.totalWidth < $('#GBcontainer').attr('clientWidth')) {
+        percentageX = 0.5;
+    }
+    if (this.twoPage.totalHeight < $('#GBcontainer').attr('clientHeight')) {
+        percentageY = 0.5;
+    }
+    this.twoPageCenterView(oldCenter.percentageX, oldCenter.percentageY);
 }
 
 // jumpToPage()
@@ -732,6 +742,7 @@ GnuBook.prototype.switchMode = function(mode) {
         this.prepareOnePageView();
     } else {
         this.prepareTwoPageView();
+        this.twoPageCenterView(0.5, 0.5);
     }
 
 }
@@ -823,9 +834,6 @@ GnuBook.prototype.prepareTwoPageView = function() {
     
     // $$$ May need to account for scroll bars here
     $('#GBtwopageview').width(this.twoPage.totalWidth).height(this.twoPage.totalHeight);
-    
-    // XXX shouldn't always center
-    this.twoPageCenterView();
     
     this.twoPage.coverDiv = document.createElement('div');
     $(this.twoPage.coverDiv).attr('id', 'GBbookcover').css({
@@ -1879,27 +1887,34 @@ GnuBook.prototype.twoPageCoverWidth = function(totalPageWidth) {
     return totalPageWidth + this.twoPage.edgeWidth + 2*this.twoPage.coverInternalPadding;
 }
 
-GnuBook.prototype.twoPageCenterView = function() {
-    this.twoPageCenterViewPercentage(0.5, 0.5);
+GnuBook.prototype.twoPageGetViewCenter = function() {
+    var center = {};
+
+    var containerOffset = $('#GBcontainer').offset();
+    var viewOffset = $('#GBtwopageview').offset();
+    center.percentageX = (containerOffset.left - viewOffset.left + ($('#GBcontainer').attr('clientWidth') >> 1)) / this.twoPage.totalWidth;
+    center.percentageY = (containerOffset.top - viewOffset.top + ($('#GBcontainer').attr('clientHeight') >> 1)) / this.twoPage.totalHeight;
+    
+    return center;
 }
 
-GnuBook.prototype.twoPageCenterViewPercentage = function(percentageX, percentageY) {
-
-    // If there will not be scrollbars (e.g. when zooming out) we center the book
-    // since otherwise the book will be stuck off-center
+// twoPageCenterView(percentageX, percentageY)
+//______________________________________________________________________________
+// Centers the point given by percentage from left,top of twopageview
+GnuBook.prototype.twoPageCenterView = function(percentageX, percentageY) {
+    if ('undefined' == typeof(percentageX)) {
+        percentageX = 0.5;
+    }
+    if ('undefined' == typeof(percentageY)) {
+        percentageY = 0.5;
+    }
 
     var viewWidth = $('#GBtwopageview').width();
     var containerClientWidth = $('#GBcontainer').attr('clientWidth');
-    if (viewWidth < containerClientWidth) {
-        percentageX = 0.5;
-    }
     var intoViewX = percentageX * viewWidth;
     
     var viewHeight = $('#GBtwopageview').height();
     var containerClientHeight = $('#GBcontainer').attr('clientHeight');
-    if (viewHeight < containerClientHeight) {
-        percentageY = 0.5;
-    }
     var intoViewY = percentageY * viewHeight;
     
     if (viewWidth < containerClientWidth) {
