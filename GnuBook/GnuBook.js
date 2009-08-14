@@ -647,8 +647,17 @@ GnuBook.prototype.zoom2up = function(direction) {
         this.reduce *= 2; // zoom out
         this.twoPage.autofit = false;
     }
-    
+
+    // Preserve view center position
+    var containerOffset = $('#GBcontainer').offset();
+    var viewOffset = $('#GBtwopageview').offset();
+    var percentageX = (containerOffset.left - viewOffset.left + ($('#GBcontainer').attr('clientWidth') >> 1)) / this.twoPage.totalWidth;
+    var percentageY = (containerOffset.top - viewOffset.top + ($('#GBcontainer').attr('clientHeight') >> 1)) / this.twoPage.totalHeight;
+        
     this.prepareTwoPageView();
+    
+    // Re-center
+    this.twoPageCenterViewPercentage(percentageX, percentageY);
 }
 
 // jumpToPage()
@@ -1871,27 +1880,43 @@ GnuBook.prototype.twoPageCoverWidth = function(totalPageWidth) {
 }
 
 GnuBook.prototype.twoPageCenterView = function() {
+    this.twoPageCenterViewPercentage(0.5, 0.5);
+}
+
+GnuBook.prototype.twoPageCenterViewPercentage = function(percentageX, percentageY) {
+
+    // If there will not be scrollbars (e.g. when zooming out) we center the book
+    // since otherwise the book will be stuck off-center
+
     var viewWidth = $('#GBtwopageview').width();
     var containerClientWidth = $('#GBcontainer').attr('clientWidth');
+    if (viewWidth < containerClientWidth) {
+        percentageX = 0.5;
+    }
+    var intoViewX = percentageX * viewWidth;
     
     var viewHeight = $('#GBtwopageview').height();
     var containerClientHeight = $('#GBcontainer').attr('clientHeight');
+    if (viewHeight < containerClientHeight) {
+        percentageY = 0.5;
+    }
+    var intoViewY = percentageY * viewHeight;
     
     if (viewWidth < containerClientWidth) {
         // Can fit width without scrollbars - center by adjusting offset
-        $('#GBtwopageview').css('left', ((containerClientWidth - viewWidth) >> 1) + 'px');    
+        $('#GBtwopageview').css('left', (containerClientWidth >> 1) - intoViewX + 'px');    
     } else {
         // Need to scroll to center
         $('#GBtwopageview').css('left', 0);
-        $('#GBcontainer').scrollLeft((viewWidth - containerClientWidth) >> 1);
+        $('#GBcontainer').scrollLeft(intoViewX - (containerClientWidth >> 1));
     }
     
     if (viewHeight < containerClientHeight) {
         // Fits with scrollbars - add offset
-        $('#GBtwopageview').css('top', ((containerClientHeight - viewHeight) >> 1) + 'px');
+        $('#GBtwopageview').css('top', (containerClientHeight >> 1) - intoViewY + 'px');
     } else {
         $('#GBtwopageview').css('top', 0);
-        $('#GBcontainer').scrollTop((viewHeight - containerClientHeight) >> 1);
+        $('#GBcontainer').scrollTop(intoViewY - (containerClientHeight >> 1));
     }
 }
     
