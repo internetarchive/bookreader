@@ -661,10 +661,12 @@ GnuBook.prototype.zoom2up = function(direction) {
     } else if (1 == direction) {
         if (this.reduce <= 0.5) return;
         this.reduce*=0.5;           //zoom in
+        this.reduce = this.quantizeReductionFactor(this.reduce);        
         this.twoPage.autofit = false;
     } else {
         if (this.reduce >= 8) return;
         this.reduce *= 2; // zoom out
+        this.reduce = this.quantizeReductionFactor(this.reduce);
         this.twoPage.autofit = false;
     }
 
@@ -683,6 +685,25 @@ GnuBook.prototype.zoom2up = function(direction) {
         oldCenter.percentageY = 0.5;
     }
     this.twoPageCenterView(oldCenter.percentageX, oldCenter.percentageY);
+}
+
+
+// quantizeReductionFactor(reduce)
+//______________________________________________________________________________
+// Quantizes the given reduction factor to closest power of two from set from 12.5% to 200%
+GnuBook.prototype.quantizeReductionFactor = function(reduce) {
+    var reductionFactors = [0.5, 1, 2, 4, 8, 16];
+    var quantized = reductionFactors[0];
+    var distance = Math.abs(reduce - quantized);
+    for (var i = 1; i < reductionFactors.length; i++) {
+        newDistance = Math.abs(reduce - reductionFactors[i]);
+        if (newDistance < distance) {
+            distance = newDistance;
+            quantized = reductionFactors[i];
+        }
+    }
+    
+    return quantized;
 }
 
 // jumpToPage()
