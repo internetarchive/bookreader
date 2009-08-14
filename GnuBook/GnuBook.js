@@ -143,11 +143,26 @@ GnuBook.prototype.init = function() {
         } else {
             //console.log('drawing 2 page view');
             
-            // We only need to recalculate and center if in autofit
+            // We only need to prepare again in autofit (size of spread changes)
             if (e.data.twoPage.autofit) {
                 e.data.prepareTwoPageView();
                 e.data.twoPageCenterView();
-            }            
+            } else {
+                // Re-center if the scrollbars have disappeared
+                var center = e.data.twoPageGetViewCenter();
+                var doRecenter = false;
+                if (e.data.twoPage.totalWidth < $('#GBcontainer').attr('clientWidth')) {
+                    center.percentageX = 0.5;
+                    doRecenter = true;
+                }
+                if (e.data.twoPage.totalHeight < $('#GBcontainer').attr('clientHeight')) {
+                    center.percentageY = 0.5;
+                    doRecenter = true;
+                }
+                if (doRecenter) {
+                    e.data.twoPageCenterView(center.percentageX, center.percentageY);
+                }
+            }
         }
     });
     
