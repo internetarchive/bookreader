@@ -30,11 +30,6 @@ This file is part of GnuBook.
 //  - getPageURI()
 // You must also add a numLeafs property before calling init().
 
-//XXX
-if (typeof(console) == 'undefined') {
-    console = { log: function(msg) { } };
-}
-
 function GnuBook() {
     this.reduce  = 4;
     this.padding = 10;
@@ -437,14 +432,10 @@ GnuBook.prototype.drawLeafsOnePage = function() {
 // drawLeafsTwoPage()
 //______________________________________________________________________________
 GnuBook.prototype.drawLeafsTwoPage = function() {
-    console.log('drawing two leafs!'); // XXX
-    
     var scrollTop = $('#GBtwopageview').attr('scrollTop');
     var scrollBottom = scrollTop + $('#GBtwopageview').height();
     
-    console.log('drawLeafsTwoPage: this.currrentLeafL ' + this.twoPage.currentIndexL); // XXX
-    
-    // XXX we should use calculated values in this.twoPage (recalc if necessary)
+    // $$$ we should use calculated values in this.twoPage (recalc if necessary)
     
     var indexL = this.twoPage.currentIndexL;
     var heightL  = this.getPageHeight(indexL); 
@@ -655,9 +646,8 @@ GnuBook.prototype.centerPageView = function() {
 //______________________________________________________________________________
 GnuBook.prototype.zoom2up = function(direction) {
 
-    // Stop autoplay
-    this.autoStop();
-    this.stopFlipAnimations(); // hard stop animations
+    // Hard stop autoplay
+    this.stopFlipAnimations();
     
     // Get new zoom state    
     var newZoom = this.twoPageNextReduce(this.reduce, direction);
@@ -1064,7 +1054,6 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
 // This function sets this.twoPage.height, twoPage.width
 
 GnuBook.prototype.calculateSpreadSize = function() {
-    console.log('calculateSpreadSize ' + this.twoPage.currentIndexL); // XXX
 
     // $$$ TODO Calculate the spread size based on the reduction factor.  If we are using
     // fit mode we recalculate the reduction factor based on the current page sizes
@@ -1184,7 +1173,7 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
         ideal.height = parseInt(ideal.width*ratio);
     }
     
-    // XXX check this logic with large spreads
+    // $$$ check this logic with large spreads
     ideal.reduce = ((first.height + second.height) / 2) / ideal.height;
     
     return ideal;
@@ -1197,7 +1186,7 @@ GnuBook.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex, re
     var spreadSize = {};
     // $$$ Scale this based on reduce?
     var totalLeafEdgeWidth = parseInt(this.numLeafs * 0.1);
-    var maxLeafEdgeWidth   = parseInt($('#GBcontainer').attr('clientWidth') * 0.1); // XXX update
+    var maxLeafEdgeWidth   = parseInt($('#GBcontainer').attr('clientWidth') * 0.1); // $$$ Assumes leaf edge width constant at all zoom levels
     spreadSize.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
 
     // $$$ Possibly incorrect -- we should make height "dominant"
@@ -1683,8 +1672,7 @@ GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
     // It is offset from the middle to create the illusion of thickness to the pages
     var gutter = middle + this.gutterOffsetForIndex(prevL);
     
-    // XXX
-    console.log('    gutter for ' + prevL + ' is ' + gutter);
+    //console.log('    gutter for ' + prevL + ' is ' + gutter);
     //console.log('    prevL.left: ' + (gutter - scaledW) + 'px');
     //console.log('    changing prevL ' + prevL + ' to left: ' + (gutter-scaledW) + ' width: ' + scaledW);
     
@@ -1720,7 +1708,7 @@ GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
             
 }
 
-// XXXmang we're adding an extra pixel in the middle
+// $$$ mang we're adding an extra pixel in the middle.  See https://bugs.edge.launchpad.net/gnubook/+bug/411667
 // prepareFlipRightToLeft()
 //______________________________________________________________________________
 GnuBook.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
@@ -1738,9 +1726,7 @@ GnuBook.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
     var scaledW = this.twoPage.height*width/height;
 
     var gutter = middle + this.gutterOffsetForIndex(nextL);
-    
-    console.log('right to left to %d gutter is %d', nextL, gutter); // XXX
-    
+        
     //console.log(' prepareRTL changing nextR ' + nextR + ' to left: ' + gutter);
     $(this.prefetchedImgs[nextR]).css({
         position: 'absolute',
@@ -1960,20 +1946,31 @@ GnuBook.prototype.updateSearchHilites1UP = function() {
     }
 }
 
-// XXX move, clean up, use everywhere
+// twoPageGutter()
+//______________________________________________________________________________
+// Returns the position of the gutter (line between the page images)
 GnuBook.prototype.twoPageGutter = function() {
     return this.twoPage.middle + this.gutterOffsetForIndex(this.twoPage.currentIndexL);
 }
 
-// XXX move, clean up, use everywhere
+// twoPageTop()
+//______________________________________________________________________________
+// Returns the offset for the top of the page images
 GnuBook.prototype.twoPageTop = function() {
     return this.twoPage.coverExternalPadding + this.twoPage.coverInternalPadding; // $$$ + border?
 }
-    
+
+// twoPageCoverWidth()
+//______________________________________________________________________________
+// Returns the width of the cover div given the total page width
 GnuBook.prototype.twoPageCoverWidth = function(totalPageWidth) {
     return totalPageWidth + this.twoPage.edgeWidth + 2*this.twoPage.coverInternalPadding;
 }
 
+// twoPageGetViewCenter()
+//______________________________________________________________________________
+// Returns the percentage offset into twopageview div at the center of container div
+// { percentageX: float, percentageY: float }
 GnuBook.prototype.twoPageGetViewCenter = function() {
     var center = {};
 
@@ -2159,6 +2156,7 @@ GnuBook.prototype.autoToggle = function() {
 
 // autoStop()
 //______________________________________________________________________________
+// Stop autoplay mode, allowing animations to finish
 GnuBook.prototype.autoStop = function() {
     if (null != this.autoTimer) {
         clearInterval(this.autoTimer);
@@ -2169,14 +2167,17 @@ GnuBook.prototype.autoStop = function() {
     }
 }
 
-// $$$ document
+// stopFlipAnimations
+//______________________________________________________________________________
+// Immediately stop flip animations.  Callbacks are triggered.
 GnuBook.prototype.stopFlipAnimations = function() {
+
+    this.autoStop(); // Clear timers
 
     // Stop animation, clear queue, trigger callbacks
     if (this.leafEdgeTmp) {
         $(this.leafEdgeTmp).stop(false, true);
     }
-    console.log(this.leafEdgeTmp);
     jQuery.each(this.prefetchedImgs, function() {
         $(this).stop(false, true);
         });
@@ -2185,7 +2186,6 @@ GnuBook.prototype.stopFlipAnimations = function() {
     if (this.leafEdgeTmp) {
         $(this.leafEdgeTmp).stop(false, true);
     }
-    console.log(this.leafEdgeTmp);
     jQuery.each(this.prefetchedImgs, function() {
         $(this).stop(false, true);
         });
