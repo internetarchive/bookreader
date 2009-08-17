@@ -1481,10 +1481,9 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
                 left:  gutter-newWidthL-newLeafEdgeWidthL+'px'
             });
 
-            // XXX set values in this.twoPage here(?)
+            // Resizes the brown border div
             $(self.twoPage.coverDiv).css({
-                // Resizes the brown border div
-                width: newWidthL+newWidthR+self.twoPage.edgeWidth+20+'px',
+                width: self.twoPageCoverWidth(newWidthL+newWidthR)+'px',
                 left: gutter-newWidthL-newLeafEdgeWidthL-self.twoPage.coverInternalPadding+'px'
             });
             
@@ -1609,7 +1608,7 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             // Resizes the book cover
             $(self.twoPage.coverDiv).css({
                 width: self.twoPageCoverWidth(newWidthL+newWidthR)+'px',
-                left: self.coverExternalPadding+'px'
+                left: gutter - newWidthL - newLeafEdgeWidthL - self.coverInternalPadding + 'px'
             });
             
             $(self.leafEdgeTmp).remove();
