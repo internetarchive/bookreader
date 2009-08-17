@@ -1439,18 +1439,14 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
     // Left gets the offset of the current left leaf from the document
     var left = $(this.prefetchedImgs[leftLeaf]).offset().left;
     // $$$ This seems very similar to the gutter.  May be able to consolidate the logic.
-    // XXX need to recalc
     var right = $('#GBtwopageview').attr('clientWidth')-left-$(this.prefetchedImgs[leftLeaf]).width()+$('#GBtwopageview').offset().left-2+'px';
+    
     // We change the left leaf to right positioning
     // $$$ This causes animation glitches during resize.  See https://bugs.edge.launchpad.net/gnubook/+bug/328327
     $(this.prefetchedImgs[leftLeaf]).css({
         right: right,
         left: ''
     });
-
-     left = $(this.prefetchedImgs[leftLeaf]).offset().left - $('#book_div_1').offset().left; // $$$ update div name
-     
-     right = left+$(this.prefetchedImgs[leftLeaf]).width()+'px';
 
     $(this.leafEdgeTmp).animate({left: gutter}, this.flipSpeed, 'easeInSine');    
     //$(this.prefetchedImgs[leftLeaf]).animate({width: '0px'}, 'slow', 'easeInSine');
