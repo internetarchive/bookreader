@@ -77,7 +77,8 @@ function GnuBook() {
         coverInternalPadding: 10, // Width of cover
         coverExternalPadding: 10, // Padding outside of cover
         bookSpineDivWidth: 30,    // Width of book spine  $$$ consider sizing based on book length
-        autofit: true
+        autofit: true,
+        reductionFactors: [0.5, 1, 2, 4, 8, 16]
     };
 };
 
@@ -651,31 +652,14 @@ GnuBook.prototype.centerPageView = function() {
 // zoom2up(direction)
 //______________________________________________________________________________
 GnuBook.prototype.zoom2up = function(direction) {
-    // $$$ this is where we can e.g. snap to %2 sizes
-    if (0 == direction) { // autofit mode
-        this.twoPage.autofit = true;
-    } else if (1 == direction) {
-        if (this.reduce <= 0.5) return; // $$$ should set minimum based on displayed size
-        this.reduce*=0.5;           //zoom in
-        this.reduce = this.quantizeReductionFactor(this.reduce);        
-        this.twoPage.autofit = false;
-    } else {
-        if (this.reduce >= 8) return;
-        this.reduce *= 2; // zoom out
-        this.reduce = this.quantizeReductionFactor(this.reduce);
-        this.twoPage.autofit = false;
-    }
+
+    // Get new zoom state    
+    var newZoom = this.twoPageNextReduce(this.reduce, direction);
+    this.twoPage.autofit = newZoom.autofit;
+    this.reduce = newZoom.reduce;
 
     // Preserve view center position
     var oldCenter = this.twoPageGetViewCenter();
-    // If there will not be scrollbars (e.g. when zooming out) we center the book
-    // since otherwise the book will be stuck off-center
-    if (this.twoPage.totalWidth < $('#GBcontainer').attr('clientWidth')) {
-        oldCenter.percentageX = 0.5;
-    }
-    if (this.twoPage.totalHeight < $('#GBcontainer').attr('clientHeight')) {
-        oldCenter.percentageY = 0.5;
-    }
     
     // Prepare view with new center to minimize visual glitches
     this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
@@ -698,6 +682,58 @@ GnuBook.prototype.quantizeReductionFactor = function(reduce) {
     }
     
     return quantized;
+}
+
+// twoPageNextReduce()
+//______________________________________________________________________________
+// Returns the next reduction level
+GnuBook.prototype.twoPageNextReduce = function(reduce, direction) {
+    var result = {};
+    var autofitReduce = this.twoPageGetAutofitReduce();
+
+    if (0 == direction) { // autofit
+        result.autofit = true;
+        result.reduce = autofitReduce;
+        
+    } else if (1 == direction) { // zoom in
+        var newReduce = this.twoPage.reductionFactors[0];
+    
+        for (var i = 1; i < this.twoPage.reductionFactors.length; i++) {
+            if (this.twoPage.reductionFactors[i] < reduce) {
+                newReduce = this.twoPage.reductionFactors[i];
+            }
+        }
+        
+        if (!this.twoPage.autofit && (autofitReduce < reduce && autofitReduce > newReduce)) {
+            // use autofit
+            result.autofit = true;
+            result.reduce = autofitReduce;
+        } else {        
+            result.autofit = false;
+            result.reduce = newReduce;
+        }
+        
+    } else { // zoom out
+        var lastIndex = this.twoPage.reductionFactors.length - 1;
+        var newReduce = this.twoPage.reductionFactors[lastIndex];
+        
+        for (var i = lastIndex; i >= 0; i--) {
+            if (this.twoPage.reductionFactors[i] > reduce) {
+                newReduce = this.twoPage.reductionFactors[i];
+            }
+        }
+         
+        if (!this.twoPage.autofit && (autofitReduce > reduce && autofitReduce < newReduce)) {
+            // use autofit
+            result.autofit = true;
+            result.reduce = autofitReduce;
+        } else {
+            result.autofit = false;
+            result.reduce = newReduce;
+        }
+    }
+    
+    return result;
 }
 
 // jumpToPage()
@@ -862,6 +898,15 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
         width: this.twoPage.totalWidth + 'px',
         position: 'absolute'
         });
+        
+    // If there will not be scrollbars (e.g. when zooming out) we center the book
+    // since otherwise the book will be stuck off-center
+    if (this.twoPage.totalWidth < $('#GBcontainer').attr('clientWidth')) {
+        centerPercentageX = 0.5;
+    }
+    if (this.twoPage.totalHeight < $('#GBcontainer').attr('clientHeight')) {
+        centerPercentageY = 0.5;
+    }
         
     this.twoPageCenterView(centerPercentageX, centerPercentageY);
     
@@ -1120,7 +1165,7 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     
     ideal.width  = ($('#GBcontainer').attr('clientWidth') - 30 - ideal.totalLeafEdgeWidth)>>1;
     ideal.height = $('#GBcontainer').height() - 30;  // $$$ why - 30?  book edge width?
-    //console.log('init idealWidth='+idealWidth+' idealHeight='+idealHeight + ' ratio='+ratio);
+    //console.log('init idealWidth='+ideal.width+' idealHeight='+ideal.height + ' ratio='+ratio);
 
     if (ideal.height/ratio <= ideal.width) {
         //use height
@@ -1136,6 +1181,9 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     return ideal;
 }
 
+// getSpreadSizeFromReduce()
+//______________________________________________________________________________
+// Returns the spread size calculated from the reduction factor for the given pages
 GnuBook.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex, reduce) {
     var spreadSize = {};
     // $$$ Scale this based on reduce?
@@ -1143,17 +1191,22 @@ GnuBook.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex, re
     var maxLeafEdgeWidth   = parseInt($('#GBcontainer').attr('clientWidth') * 0.1); // XXX update
     spreadSize.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
 
-    // XXX incorrect -- we should make height "dominant"
+    // $$$ Possibly incorrect -- we should make height "dominant"
     var nativeWidth = this.getPageWidth(firstIndex) + this.getPageWidth(secondIndex);
     var nativeHeight = this.getPageHeight(firstIndex) + this.getPageHeight(secondIndex);
     spreadSize.height = parseInt( (nativeHeight / 2) / this.reduce );
     spreadSize.width = parseInt( (nativeWidth / 2) / this.reduce );
     spreadSize.reduce = reduce;
     
-    // XXX
-    console.log('spread size: ' + firstIndex + ',' + secondIndex + ',' + reduce);
-
     return spreadSize;
+}
+
+// twoPageGetAutofitReduce()
+//______________________________________________________________________________
+// Returns the current ideal reduction factor
+GnuBook.prototype.twoPageGetAutofitReduce = function() {
+    var spreadSize = this.getIdealSpreadSize(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
+    return spreadSize.reduce;
 }
 
 // currentIndex()
