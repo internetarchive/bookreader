@@ -672,10 +672,10 @@ GnuBook.prototype.quantizeReduce = function(reduce) {
     var quantized = this.reductionFactors[0];
     var distance = Math.abs(reduce - quantized);
     for (var i = 1; i < this.reductionFactors.length; i++) {
-        newDistance = Math.abs(reduce - reductionFactors[i]);
+        newDistance = Math.abs(reduce - this.reductionFactors[i]);
         if (newDistance < distance) {
             distance = newDistance;
-            quantized = reductionFactors[i];
+            quantized = this.reductionFactors[i];
         }
     }
     
@@ -803,7 +803,7 @@ GnuBook.prototype.switchMode = function(mode) {
     this.switchToolbarMode(mode);
     
     if (1 == mode) {
-        this.reduce = this.twoPageQuantizeReduce(this.reduce);
+        this.reduce = this.quantizeReduce(this.reduce);
         this.prepareOnePageView();
     } else {
         this.prepareTwoPageView();
