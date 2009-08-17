@@ -457,8 +457,6 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     var top = this.twoPageTop();
     var bookCoverDivLeft = this.twoPage.bookCoverDivLeft;
 
-    // $$$ should get getwidth2up?
-    //var scaledWL = parseInt(this.twoPage.height*widthL/heightL);
     var scaledWL = this.getPageWidth2UP(indexL);
     var gutter = this.twoPageGutter();
     
@@ -655,9 +653,9 @@ GnuBook.prototype.centerPageView = function() {
 GnuBook.prototype.zoom2up = function(direction) {
     // $$$ this is where we can e.g. snap to %2 sizes
     if (0 == direction) { // autofit mode
-        this.twoPage.autofit = true;;
+        this.twoPage.autofit = true;
     } else if (1 == direction) {
-        if (this.reduce <= 0.5) return;
+        if (this.reduce <= 0.5) return; // $$$ should set minimum based on displayed size
         this.reduce*=0.5;           //zoom in
         this.reduce = this.quantizeReductionFactor(this.reduce);        
         this.twoPage.autofit = false;
@@ -2064,6 +2062,11 @@ GnuBook.prototype.autoToggle = function() {
     if (2 != this.mode) {
         bComingFrom1up = true;
         this.switchMode(2);
+    }
+    
+    // Change to autofit if not already in that mode
+    if (!this.twoPage.autofit) {
+        this.zoom2up(0);
     }
 
     var self = this;
