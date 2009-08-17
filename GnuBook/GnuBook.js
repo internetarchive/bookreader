@@ -72,13 +72,15 @@ function GnuBook() {
     this.constMode1up = 1;
     this.constMode2up = 2;
     
+    // Zoom levels
+    this.reductionFactors = [0.5, 1, 2, 4, 8, 16];
+
     // Object to hold parameters related to 2up mode
     this.twoPage = {
         coverInternalPadding: 10, // Width of cover
         coverExternalPadding: 10, // Padding outside of cover
         bookSpineDivWidth: 30,    // Width of book spine  $$$ consider sizing based on book length
-        autofit: true,
-        reductionFactors: [0.5, 1, 2, 4, 8, 16]
+        autofit: true
     };
 };
 
@@ -653,8 +655,15 @@ GnuBook.prototype.centerPageView = function() {
 //______________________________________________________________________________
 GnuBook.prototype.zoom2up = function(direction) {
 
+    // Stop autoplay
+    this.autoStop();
+    this.stopFlipAnimations(); // hard stop animations
+    
     // Get new zoom state    
     var newZoom = this.twoPageNextReduce(this.reduce, direction);
+    if ((this.reduce == newZoom.reduce) && (this.twoPage.autofit == newZoom.autofit)) {
+        return;
+    }
     this.twoPage.autofit = newZoom.autofit;
     this.reduce = newZoom.reduce;
 
@@ -666,14 +675,13 @@ GnuBook.prototype.zoom2up = function(direction) {
 }
 
 
-// quantizeReductionFactor(reduce)
+// quantizeReduce(reduce)
 //______________________________________________________________________________
 // Quantizes the given reduction factor to closest power of two from set from 12.5% to 200%
-GnuBook.prototype.quantizeReductionFactor = function(reduce) {
-    var reductionFactors = [0.5, 1, 2, 4, 8, 16];
-    var quantized = reductionFactors[0];
+GnuBook.prototype.quantizeReduce = function(reduce) {
+    var quantized = this.reductionFactors[0];
     var distance = Math.abs(reduce - quantized);
-    for (var i = 1; i < reductionFactors.length; i++) {
+    for (var i = 1; i < this.reductionFactors.length; i++) {
         newDistance = Math.abs(reduce - reductionFactors[i]);
         if (newDistance < distance) {
             distance = newDistance;
@@ -696,11 +704,11 @@ GnuBook.prototype.twoPageNextReduce = function(reduce, direction) {
         result.reduce = autofitReduce;
         
     } else if (1 == direction) { // zoom in
-        var newReduce = this.twoPage.reductionFactors[0];
+        var newReduce = this.reductionFactors[0];
     
-        for (var i = 1; i < this.twoPage.reductionFactors.length; i++) {
-            if (this.twoPage.reductionFactors[i] < reduce) {
-                newReduce = this.twoPage.reductionFactors[i];
+        for (var i = 1; i < this.reductionFactors.length; i++) {
+            if (this.reductionFactors[i] < reduce) {
+                newReduce = this.reductionFactors[i];
             }
         }
         
@@ -714,12 +722,12 @@ GnuBook.prototype.twoPageNextReduce = function(reduce, direction) {
         }
         
     } else { // zoom out
-        var lastIndex = this.twoPage.reductionFactors.length - 1;
-        var newReduce = this.twoPage.reductionFactors[lastIndex];
+        var lastIndex = this.reductionFactors.length - 1;
+        var newReduce = this.reductionFactors[lastIndex];
         
         for (var i = lastIndex; i >= 0; i--) {
-            if (this.twoPage.reductionFactors[i] > reduce) {
-                newReduce = this.twoPage.reductionFactors[i];
+            if (this.reductionFactors[i] > reduce) {
+                newReduce = this.reductionFactors[i];
             }
         }
          
@@ -805,6 +813,7 @@ GnuBook.prototype.switchMode = function(mode) {
     this.switchToolbarMode(mode);
     
     if (1 == mode) {
+        this.reduce = this.twoPageQuantizeReduce(this.reduce);
         this.prepareOnePageView();
     } else {
         this.prepareTwoPageView();
@@ -1439,7 +1448,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
         left: ''
     });
 
-     left = $(this.prefetchedImgs[leftLeaf]).offset().left - $('#book_div_1').offset().left;
+     left = $(this.prefetchedImgs[leftLeaf]).offset().left - $('#book_div_1').offset().left; // $$$ update div name
      
      right = left+$(this.prefetchedImgs[leftLeaf]).width()+'px';
 
@@ -1459,7 +1468,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
         //console.log('  animating newIndexR ' + newIndexR + ' to ' + newWidthR + ' from ' + $(self.prefetchedImgs[newIndexR]).width());
         $(self.prefetchedImgs[newIndexR]).animate({width: newWidthR+'px'}, self.flipSpeed, 'easeOutSine', function() {
             $(self.prefetchedImgs[newIndexL]).css('zIndex', 2);
-
+            
             $(self.leafEdgeR).css({
                 // Moves the right leaf edge
                 width: self.twoPage.edgeWidth-newLeafEdgeWidthL+'px',
@@ -1591,7 +1600,7 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
         $(self.leafEdgeTmp).animate({left: gutter-newWidthL-leafEdgeTmpW+'px'}, speed, 'easeOutSine');    
         $(self.prefetchedImgs[newIndexL]).animate({width: newWidthL+'px'}, speed, 'easeOutSine', function() {
             $(self.prefetchedImgs[newIndexR]).css('zIndex', 2);
-
+            
             $(self.leafEdgeL).css({
                 width: newLeafEdgeWidthL+'px', 
                 left: gutter-newWidthL-newLeafEdgeWidthL+'px'
@@ -2117,8 +2126,8 @@ GnuBook.prototype.autoToggle = function() {
         this.switchMode(2);
     }
     
-    // Change to autofit if not already in that mode
-    if (!this.twoPage.autofit) {
+    // Change to autofit if book is too large
+    if (this.reduce < this.twoPageGetAutofitReduce()) {
         this.zoom2up(0);
     }
 
@@ -2163,6 +2172,29 @@ GnuBook.prototype.autoStop = function() {
         $('#GBtoolbar .play').show();
         this.autoTimer = null;
     }
+}
+
+// $$$ document
+GnuBook.prototype.stopFlipAnimations = function() {
+
+    // Stop animation, clear queue, trigger callbacks
+    if (this.leafEdgeTmp) {
+        $(this.leafEdgeTmp).stop(false, true);
+    }
+    console.log(this.leafEdgeTmp);
+    jQuery.each(this.prefetchedImgs, function() {
+        $(this).stop(false, true);
+        });
+
+    // And again since animations also queued in callbacks
+    if (this.leafEdgeTmp) {
+        $(this.leafEdgeTmp).stop(false, true);
+    }
+    console.log(this.leafEdgeTmp);
+    jQuery.each(this.prefetchedImgs, function() {
+        $(this).stop(false, true);
+        });
+   
 }
 
 // keyboardNavigationIsDisabled(event)
