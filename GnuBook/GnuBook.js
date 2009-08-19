@@ -164,7 +164,8 @@ GnuBook.prototype.init = function() {
     });
     
     $('.GBpagediv1up').bind('mousedown', this, function(e) {
-        //console.log('mousedown!');
+        // $$$ the purpose of this is to disable selection of the image (makes it turn blue)
+        //     but this also interferes with right-click.  See https://bugs.edge.launchpad.net/gnubook/+bug/362626
     });
 
     if (1 == this.mode) {
@@ -253,9 +254,9 @@ GnuBook.prototype.drawLeafs = function() {
     }
 }
 
-// setDragHandler1up()
+// setDragHandler()
 //______________________________________________________________________________
-GnuBook.prototype.setDragHandler1up = function(div) {
+GnuBook.prototype.setDragHandler = function(div) {
     div.dragging = false;
 
     $(div).bind('mousedown', function(e) {
@@ -303,6 +304,11 @@ GnuBook.prototype.setDragHandler1up = function(div) {
         //$(this).unbind('mousemove mouseup');
         this.dragging = false;
         
+    });
+    
+    $(div).bind('mouseenter', function(e) {
+        // On FF/OSX we don't always receive the mouseleave event
+        this.dragging = false;
     });
 }
 
@@ -387,7 +393,7 @@ GnuBook.prototype.drawLeafsOnePage = function() {
             $(div).css('height', height+'px');
             //$(div).text('loading...');
             
-            this.setDragHandler1up(div);
+            this.setDragHandler(div);
             
             $('#GBpageview').append(div);
 
@@ -491,6 +497,7 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
 
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
     this.setClickHandlers();
+    this.twoPageSetCursor();
 
     this.updatePageNumBox2UP();
     this.updateToolbarZoom(this.reduce);
@@ -837,6 +844,8 @@ GnuBook.prototype.prepareOnePageView = function() {
     // Bind mouse handlers
     // Disable mouse click to avoid selected/highlighted page images - bug 354239
     gbPageView.bind('mousedown', function(e) {
+        // $$$ check here for right-click and don't disable.  Also use jQuery style
+        //     for stopping propagation. See https://bugs.edge.launchpad.net/gnubook/+bug/362626
         return false;
     })
     // Special hack for IE7
@@ -1207,6 +1216,21 @@ GnuBook.prototype.twoPageGetAutofitReduce = function() {
     return spreadSize.reduce;
 }
 
+// twoPageSetCursor()
+//______________________________________________________________________________
+// Set the cursor for two page view
+GnuBook.prototype.twoPageSetCursor = function() {
+    // console.log('setting cursor');
+    if ( ($('#GBtwopageview').width() > $('#GBcontainer').attr('clientWidth')) ||
+         ($('#GBtwopageview').height() > $('#GBcontainer').attr('clientHeight')) ) {
+        $(this.prefetchedImgs[this.twoPage.currentIndexL]).css('cursor','move');
+        $(this.prefetchedImgs[this.twoPage.currentIndexR]).css('cursor','move');
+    } else {
+        $(this.prefetchedImgs[this.twoPage.currentIndexL]).css('cursor','');
+        $(this.prefetchedImgs[this.twoPage.currentIndexR]).css('cursor','');
+    }
+}
+
 // currentIndex()
 //______________________________________________________________________________
 // Returns the currently active index.
@@ -1480,6 +1504,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.firstIndex = self.twoPage.currentIndexL;
             self.displayedIndices = [newIndexL, newIndexR];
             self.setClickHandlers();
+            self.twoPageSetCursor();
             self.pruneUnusedImgs();
             self.prefetch();            
             self.animating = false;
@@ -1603,7 +1628,8 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             self.twoPage.currentIndexR = newIndexR;
             self.firstIndex = self.twoPage.currentIndexL;
             self.displayedIndices = [newIndexL, newIndexR];
-            self.setClickHandlers();            
+            self.setClickHandlers();     
+            self.twoPageSetCursor();
             self.pruneUnusedImgs();
             self.prefetch();
             self.animating = false;
@@ -1625,16 +1651,19 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 GnuBook.prototype.setClickHandlers = function() {
     var self = this;
     // $$$ TODO don't set again if already set
-    $(this.prefetchedImgs[this.twoPage.currentIndexL]).click(function() {
+    $(this.prefetchedImgs[this.twoPage.currentIndexL]).bind('dblclick', function() {
         //self.prevPage();
         self.autoStop();
         self.left();
     });
-    $(this.prefetchedImgs[this.twoPage.currentIndexR]).click(function() {
+    $(this.prefetchedImgs[this.twoPage.currentIndexR]).bind('dblclick', function() {
         //self.nextPage();'
         self.autoStop();
         self.right();        
     });
+    
+    this.setDragHandler( $(this.prefetchedImgs[this.twoPage.currentIndexL]) );
+    this.setDragHandler( $(this.prefetchedImgs[this.twoPage.currentIndexR]) );
 }
 
 // prefetchImg()
