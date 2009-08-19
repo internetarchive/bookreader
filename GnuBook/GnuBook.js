@@ -1064,10 +1064,6 @@ GnuBook.prototype.prepareTwoPagePopUp = function() {
 
 GnuBook.prototype.calculateSpreadSize = function() {
 
-    // $$$ TODO Calculate the spread size based on the reduction factor.  If we are using
-    // fit mode we recalculate the reduction factor based on the current page sizes
-    // and display size first.
-    
     var firstIndex  = this.twoPage.currentIndexL;
     var secondIndex = this.twoPage.currentIndexR;
     //console.log('first page is ' + firstIndex);
@@ -1106,8 +1102,8 @@ GnuBook.prototype.calculateSpreadSize = function() {
     // We calculate the total width and height for the div so that we can make the book
     // spine centered
     var leftGutterOffset = this.gutterOffsetForIndex(firstIndex);
-    var leftWidthFromCenter = this.twoPage.scaledWL + leftGutterOffset + this.twoPage.leafEdgeWidthL;
-    var rightWidthFromCenter = this.twoPage.scaledWR - leftGutterOffset + this.twoPage.leafEdgeWidthR;
+    var leftWidthFromCenter = this.twoPage.scaledWL - leftGutterOffset + this.twoPage.leafEdgeWidthL;
+    var rightWidthFromCenter = this.twoPage.scaledWR + leftGutterOffset + this.twoPage.leafEdgeWidthR;
     var largestWidthFromCenter = Math.max( leftWidthFromCenter, rightWidthFromCenter );
     this.twoPage.totalWidth = 2 * (largestWidthFromCenter + this.twoPage.coverInternalPadding + this.twoPage.coverExternalPadding);
     this.twoPage.totalHeight = this.twoPage.height + 2 * (this.twoPage.coverInternalPadding + this.twoPage.coverExternalPadding);
@@ -1170,8 +1166,13 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     var maxLeafEdgeWidth   = parseInt($('#GBcontainer').attr('clientWidth') * 0.1);
     ideal.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
     
-    ideal.width  = ($('#GBcontainer').attr('clientWidth') - 30 - ideal.totalLeafEdgeWidth)>>1;
-    ideal.height = $('#GBcontainer').height() - 30;  // $$$ why - 30?  book edge width?
+    var widthOutsidePages = 2 * (this.twoPage.coverInternalPadding + this.twoPage.coverExternalPadding) + ideal.totalLeafEdgeWidth;
+    var heightOutsidePages = 2* (this.twoPage.coverInternalPadding + this.twoPage.coverExternalPadding);
+    
+    ideal.width = ($('#GBcontainer').attr('clientWidth') - widthOutsidePages) >> 1;
+    ideal.width -= 10; // $$$ fudge factor
+    ideal.height = $('#GBcontainer').attr('clientHeight') - heightOutsidePages;
+    ideal.height -= 20; // fudge factor
     //console.log('init idealWidth='+ideal.width+' idealHeight='+ideal.height + ' ratio='+ratio);
 
     if (ideal.height/ratio <= ideal.width) {
