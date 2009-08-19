@@ -1090,9 +1090,9 @@ GnuBook.prototype.calculateSpreadSize = function() {
     this.twoPage.scaledWR = this.getPageWidth2UP(secondIndex);
     
     // Leaf edges
+    this.twoPage.edgeWidth = spreadSize.totalLeafEdgeWidth; // The combined width of both edges
     this.twoPage.leafEdgeWidthL = this.leafEdgeWidth(this.twoPage.currentIndexL);
     this.twoPage.leafEdgeWidthR = this.twoPage.edgeWidth - this.twoPage.leafEdgeWidthL;
-    this.twoPage.edgeWidth = spreadSize.totalLeafEdgeWidth; // The combined width of both edges
     
     
     // Book cover
