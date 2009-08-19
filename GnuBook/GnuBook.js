@@ -2304,11 +2304,13 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
         + "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
         + " <button class='GBicon rollover zoom_out' onclick='gb.zoom(-1); return false;'/>" 
         + "<button class='GBicon rollover zoom_in' onclick='gb.zoom(1); return false;'/>"
-        + " <span class='label'>Zoom: <span id='GBzoom'>"+parseInt(100/this.reduce)+"</span>%</span>"
+        + " <span class='label'>Zoom: <span id='GBzoom'>"+parseInt(100/this.reduce)+"</span></span>"
         + " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
         + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
         + "&nbsp;&nbsp;<a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
         + "</span></div>");
+    
+    this.updateToolbarZoom(); // Pretty format
         
     if (ui == "embed") {
         $("#GnuBook a.logo").attr("target","_blank");
@@ -2448,8 +2450,17 @@ GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
 //______________________________________________________________________________
 // Update the displayed zoom factor based on reduction factor
 GnuBook.prototype.updateToolbarZoom = function(reduce) {
-    // $$$ TODO: Move toolbar to it's own object/plugin
-    $('#GBzoom').text(parseInt(100/reduce));
+    var value;
+    if (this.twoPage.autofit) {
+        value = 'Auto';
+    } else {
+        value = (100 / reduce).toFixed(2);
+        // Strip trailing zeroes and decimal if all zeroes
+        value = value.replace(/0+$/,'');
+        value = value.replace(/\.$/,'');
+        value += '%';
+    }
+    $('#GBzoom').text(value);
 }
 
 // firstDisplayableIndex
