@@ -809,12 +809,17 @@ GnuBook.prototype.switchMode = function(mode) {
     
     this.switchToolbarMode(mode);
     
+    // $$$ TODO preserve center of view when switching between mode
+    //     See https://bugs.edge.launchpad.net/gnubook/+bug/416682
+    
     if (1 == mode) {
         this.reduce = this.quantizeReduce(this.reduce);
         this.prepareOnePageView();
     } else {
+        this.twoPage.autofit = false; // Take zoom level from other mode
+        this.reduce = this.quantizeReduce(this.reduce);
         this.prepareTwoPageView();
-        this.twoPageCenterView(0.5, 0.5);
+        this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
 
 }
@@ -2310,7 +2315,7 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
         + "&nbsp;&nbsp;<a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
         + "</span></div>");
     
-    this.updateToolbarZoom(); // Pretty format
+    this.updateToolbarZoom(this.reduce); // Pretty format
         
     if (ui == "embed") {
         $("#GnuBook a.logo").attr("target","_blank");
@@ -2451,7 +2456,7 @@ GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
 // Update the displayed zoom factor based on reduction factor
 GnuBook.prototype.updateToolbarZoom = function(reduce) {
     var value;
-    if (this.twoPage.autofit) {
+    if (this.constMode2up == this.mode && this.twoPage.autofit) {
         value = 'Auto';
     } else {
         value = (100 / reduce).toFixed(2);
