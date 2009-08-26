@@ -259,7 +259,7 @@ GnuBook.prototype.drawLeafs = function() {
 GnuBook.prototype.setDragHandler = function(div) {
     div.dragging = false;
 
-    $(div).bind('mousedown', function(e) {
+    $(div).unbind('mousedown').bind('mousedown', function(e) {
         //console.log('mousedown at ' + e.pageY);
 
         this.dragging = true;
@@ -274,7 +274,7 @@ GnuBook.prototype.setDragHandler = function(div) {
         return false;
     });
         
-    $(div).bind('mousemove', function(ee) {
+    $(div).unbind('mousemove').bind('mousemove', function(ee) {
         //console.log('mousemove ' + startY);
         
         var offsetX = ee.pageX - this.prevMouseX;
@@ -291,14 +291,14 @@ GnuBook.prototype.setDragHandler = function(div) {
         return false;
     });
     
-    $(div).bind('mouseup', function(ee) {
+    $(div).unbind('mouseup').bind('mouseup', function(ee) {
         //console.log('mouseup');
 
         this.dragging = false;
         return false;
     });
     
-    $(div).bind('mouseleave', function(e) {
+    $(div).unbind('mouseleave').bind('mouseleave', function(e) {
         //console.log('mouseleave');
 
         //$(this).unbind('mousemove mouseup');
@@ -306,8 +306,7 @@ GnuBook.prototype.setDragHandler = function(div) {
         
     });
     
-    $(div).bind('mouseenter', function(e) {
-        // On FF/OSX we don't always receive the mouseleave event
+    $(div).unbind('mouseenter').bind('mouseenter', function(e) {
         this.dragging = false;
     });
 }
