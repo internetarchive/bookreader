@@ -298,7 +298,6 @@ GnuBook.prototype.setDragHandler = function(div) {
         //console.log('mouseup');
 
         this.dragging = false;
-        ee.stopPropagation();
     });
     
     $(div).unbind('mouseleave').bind('mouseleave', function(e) {
