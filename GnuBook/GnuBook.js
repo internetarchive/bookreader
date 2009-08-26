@@ -260,6 +260,8 @@ GnuBook.prototype.setDragHandler = function(div) {
     div.dragging = false;
 
     $(div).unbind('mousedown').bind('mousedown', function(e) {
+        e.preventDefault();
+        
         //console.log('mousedown at ' + e.pageY);
 
         this.dragging = true;
@@ -271,10 +273,11 @@ GnuBook.prototype.setDragHandler = function(div) {
         var startTop  = $('#GBcontainer').attr('scrollTop');
         var startLeft =  $('#GBcontainer').attr('scrollLeft');
 
-        return false;
     });
         
     $(div).unbind('mousemove').bind('mousemove', function(ee) {
+        ee.preventDefault();
+
         //console.log('mousemove ' + startY);
         
         var offsetX = ee.pageX - this.prevMouseX;
@@ -288,25 +291,27 @@ GnuBook.prototype.setDragHandler = function(div) {
         this.prevMouseX = ee.pageX;
         this.prevMouseY = ee.pageY;
         
-        return false;
     });
     
     $(div).unbind('mouseup').bind('mouseup', function(ee) {
+        ee.preventDefault();
         //console.log('mouseup');
 
         this.dragging = false;
-        return false;
+        ee.stopPropagation();
     });
     
     $(div).unbind('mouseleave').bind('mouseleave', function(e) {
+        e.preventDefault();
         //console.log('mouseleave');
 
-        //$(this).unbind('mousemove mouseup');
-        this.dragging = false;
-        
+        this.dragging = false;        
     });
     
     $(div).unbind('mouseenter').bind('mouseenter', function(e) {
+        e.preventDefault();
+        //console.log('mouseenter');
+        
         this.dragging = false;
     });
 }
