@@ -210,19 +210,23 @@ GnuBook.prototype.setupKeyListeners = function() {
                 // In 1up mode page scrolling is handled by browser
                 if (2 == self.mode) {
                     self.prev();
+                    e.preventDefault();
                 }
                 break;
             case KEY_DOWN:
             case KEY_PGDOWN:
                 if (2 == self.mode) {
                     self.next();
+                    e.preventDefault();
                 }
                 break;
             case KEY_END:
                 self.last();
+                e.preventDefault();
                 break;
             case KEY_HOME:
                 self.first();
+                e.preventDefault();
                 break;
             case KEY_LEFT:
                 if (self.keyboardNavigationIsDisabled(e)) {
@@ -230,6 +234,7 @@ GnuBook.prototype.setupKeyListeners = function() {
                 }
                 if (2 == self.mode) {
                     self.left();
+                    e.preventDefault();
                 }
                 break;
             case KEY_RIGHT:
@@ -238,6 +243,7 @@ GnuBook.prototype.setupKeyListeners = function() {
                 }
                 if (2 == self.mode) {
                     self.right();
+                    e.preventDefault();
                 }
                 break;
         }
