@@ -907,13 +907,15 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
         targetLeaf = this.lastDisplayableIndex();
     }
     
-    this.twoPage.currentIndexL = null;
-    this.twoPage.currentIndexR = null;
-    this.pruneUnusedImgs();
+    //this.twoPage.currentIndexL = null;
+    //this.twoPage.currentIndexR = null;
+    //this.pruneUnusedImgs();
     
     var currentSpreadIndices = this.getSpreadIndices(targetLeaf);
     this.twoPage.currentIndexL = currentSpreadIndices[0];
     this.twoPage.currentIndexR = currentSpreadIndices[1];
+    this.pruneUnusedImgs();
+    this.prefetch(); // Reloads images if scaling has changed
     this.firstIndex = this.twoPage.currentIndexL;
     
     this.calculateSpreadSize(); //sets twoPage.width, twoPage.height and others
@@ -1739,10 +1741,22 @@ GnuBook.prototype.setClickHandlers = function() {
 // prefetchImg()
 //______________________________________________________________________________
 GnuBook.prototype.prefetchImg = function(index) {
-    if (undefined == this.prefetchedImgs[index]) {    
+    var pageURI = this.getPageURI(index);
+
+    // Load image if not loaded or URI has changed (e.g. due to scaling)
+    var loadImage = false;
+    if (undefined == this.prefetchedImgs[index]) {
+        //console.log('no image for ' + index);
+        loadImage = true;
+    } else if (pageURI != this.prefetchedImgs[index].uri) {
+        loadImage = true;
+    }
+    
+    if (loadImage) {
         //console.log('prefetching ' + index);
         var img = document.createElement("img");
-        img.src = this.getPageURI(index);
+        img.src = pageURI;
+        img.uri = pageURI; // browser may rewrite src so we stash raw URI here
         this.prefetchedImgs[index] = img;
     }
 }
@@ -1902,6 +1916,8 @@ GnuBook.prototype.pruneUnusedImgs = function() {
 // prefetch()
 //______________________________________________________________________________
 GnuBook.prototype.prefetch = function() {
+
+    // $$$ TODO prefetch visible pages first
 
     var lim = this.twoPage.currentIndexL-4;
     var i;
