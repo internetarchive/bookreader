@@ -678,6 +678,14 @@ GnuBook.prototype.zoom2up = function(direction) {
     // Preserve view center position
     var oldCenter = this.twoPageGetViewCenter();
     
+    // If zooming in, reload imgs.  DOM elements will be removed by prepareTwoPageView
+    // $$$ An improvement would be to use the low res image until the larger one is loaded.
+    if (1 == direction) {
+        for (var img in this.prefetchedImgs) {
+            delete this.prefetchedImgs[img];
+        }
+    }
+    
     // Prepare view with new center to minimize visual glitches
     this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
 }
