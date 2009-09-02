@@ -142,15 +142,15 @@ gb.getPageURI = function(index) {
         var ratio = this.getPageHeight(index) / this.twoPage.height;
         var scale;
         // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-        if (ratio <= 2) {
+        if (ratio < 2) {
             scale = 1;
-        } else if (ratio <= 4) {
+        } else if (ratio < 4) {
             scale = 2;
-        } else if (ratio <= 8) {
+        } else if (ratio < 8) {
             scale = 4;
-        } else if (ratio <= 16) {
+        } else if (ratio < 16) {
             scale = 8;
-        } else  if (ratio <= 32) {
+        } else  if (ratio < 32) {
             scale = 16;
         } else {
             scale = 32;
