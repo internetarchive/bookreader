@@ -1749,6 +1749,7 @@ GnuBook.prototype.prefetchImg = function(index) {
         //console.log('no image for ' + index);
         loadImage = true;
     } else if (pageURI != this.prefetchedImgs[index].uri) {
+        //console.log('uri changed for ' + index);
         loadImage = true;
     }
     
@@ -1917,8 +1918,31 @@ GnuBook.prototype.pruneUnusedImgs = function() {
 //______________________________________________________________________________
 GnuBook.prototype.prefetch = function() {
 
-    // $$$ TODO prefetch visible pages first
+    // prefetch visible pages first
+    this.prefetchImg(this.twoPage.currentIndexL);
+    this.prefetchImg(this.twoPage.currentIndexR);
+    
+    var adjacentPagesToLoad = 3;
+    
+    var lowCurrent = Math.min(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
+    var highCurrent = Math.max(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
+        
+    var start = Math.max(lowCurrent - adjacentPagesToLoad, 0);
+    var end = Math.min(highCurrent + adjacentPagesToLoad, this.numLeafs - 1);
+    
+    // Load images spreading out from current
+    for (var i = 1; i <= adjacentPagesToLoad; i++) {
+        var goingDown = lowCurrent - i;
+        if (goingDown >= start) {
+            this.prefetchImg(goingDown);
+        }
+        var goingUp = highCurrent + i;
+        if (goingUp <= end) {
+            this.prefetchImg(goingUp);
+        }
+    }
 
+    /*
     var lim = this.twoPage.currentIndexL-4;
     var i;
     lim = Math.max(lim, 0);
@@ -1932,6 +1956,7 @@ GnuBook.prototype.prefetch = function() {
             this.prefetchImg(i);
         }
     }
+    */
 }
 
 // getPageWidth2UP()
