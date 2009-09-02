@@ -1566,6 +1566,7 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.twoPage.currentIndexR = newIndexR;
             self.twoPage.scaledWL = newWidthL;
             self.twoPage.scaledWR = newWidthR;
+            self.twoPage.gutter = gutter;
             self.firstIndex = self.twoPage.currentIndexL;
             self.displayedIndices = [newIndexL, newIndexR];
             self.setClickHandlers();
@@ -1695,6 +1696,7 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             self.twoPage.currentIndexR = newIndexR;
             self.twoPage.scaledWL = newWidthL;
             self.twoPage.scaledWR = newWidthR;
+            self.twoPage.gutter = gutter;
 
             self.firstIndex = self.twoPage.currentIndexL;
             self.displayedIndices = [newIndexL, newIndexR];
