@@ -914,12 +914,13 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
     var currentSpreadIndices = this.getSpreadIndices(targetLeaf);
     this.twoPage.currentIndexL = currentSpreadIndices[0];
     this.twoPage.currentIndexR = currentSpreadIndices[1];
-    this.pruneUnusedImgs();
-    this.prefetch(); // Reloads images if scaling has changed
     this.firstIndex = this.twoPage.currentIndexL;
     
     this.calculateSpreadSize(); //sets twoPage.width, twoPage.height and others
-        
+
+    this.pruneUnusedImgs();
+    this.prefetch(); // Preload images or reload if scaling has changed
+
     //console.dir(this.twoPage);
     
     // Add the two page view
