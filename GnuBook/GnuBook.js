@@ -1230,9 +1230,9 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     var widthOutsidePages = 2 * (this.twoPage.coverInternalPadding + this.twoPage.coverExternalPadding) + ideal.totalLeafEdgeWidth;
     var heightOutsidePages = 2* (this.twoPage.coverInternalPadding + this.twoPage.coverExternalPadding);
     
-    ideal.width = ($('#GBcontainer').attr('clientWidth') - widthOutsidePages) >> 1;
+    ideal.width = ($('#GBcontainer').width() - widthOutsidePages) >> 1;
     ideal.width -= 10; // $$$ fudge factor
-    ideal.height = $('#GBcontainer').attr('clientHeight') - heightOutsidePages;
+    ideal.height = $('#GBcontainer').width() - heightOutsidePages;
     ideal.height -= 20; // fudge factor
     //console.log('init idealWidth='+ideal.width+' idealHeight='+ideal.height + ' ratio='+ratio);
 
@@ -1562,15 +1562,15 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.leafEdgeTmp = null;
 
             // $$$ TODO refactor with opposite direction flip
+            
             self.twoPage.currentIndexL = newIndexL;
             self.twoPage.currentIndexR = newIndexR;
             self.twoPage.scaledWL = newWidthL;
             self.twoPage.scaledWR = newWidthR;
             self.twoPage.gutter = gutter;
+            
             self.firstIndex = self.twoPage.currentIndexL;
             self.displayedIndices = [newIndexL, newIndexR];
-            self.setClickHandlers();
-            self.twoPageSetCursor();
             self.pruneUnusedImgs();
             self.prefetch();            
             self.animating = false;
@@ -1579,6 +1579,8 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.updatePageNumBox2UP();
             
             self.twoPagePlaceFlipAreas();
+            self.setClickHandlers();
+            self.twoPageSetCursor();
             
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -1700,8 +1702,6 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 
             self.firstIndex = self.twoPage.currentIndexL;
             self.displayedIndices = [newIndexL, newIndexR];
-            self.setClickHandlers();     
-            self.twoPageSetCursor();
             self.pruneUnusedImgs();
             self.prefetch();
             self.animating = false;
@@ -1711,6 +1711,8 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             self.updatePageNumBox2UP();
             
             self.twoPagePlaceFlipAreas();
+            self.setClickHandlers();     
+            self.twoPageSetCursor();
             
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -2207,10 +2209,12 @@ GnuBook.prototype.twoPageRightFlipAreaLeft = function() {
 GnuBook.prototype.twoPagePlaceFlipAreas = function() {
     // We don't set top since it shouldn't change relative to view
     $(this.twoPage.leftFlipArea).css({
-        left: this.twoPageLeftFlipAreaLeft() + 'px'
+        left: this.twoPageLeftFlipAreaLeft() + 'px',
+        width: this.twoPageFlipAreaWidth() + 'px'
     });
     $(this.twoPage.rightFlipArea).css({
-        left: this.twoPageRightFlipAreaLeft() + 'px'
+        left: this.twoPageRightFlipAreaLeft() + 'px',
+        width: this.twoPageFlipAreaWidth() + 'px'
     });
 }
     
