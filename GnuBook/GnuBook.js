@@ -1233,7 +1233,7 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     
     ideal.width = ($('#GBcontainer').width() - widthOutsidePages) >> 1;
     ideal.width -= 10; // $$$ fudge factor
-    ideal.height = $('#GBcontainer').width() - heightOutsidePages;
+    ideal.height = $('#GBcontainer').height() - heightOutsidePages;
     ideal.height -= 20; // fudge factor
     //console.log('init idealWidth='+ideal.width+' idealHeight='+ideal.height + ' ratio='+ratio);
 
