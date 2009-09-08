@@ -1005,6 +1005,7 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
     var self = this; // for closure
     
     this.twoPage.leftFlipArea = document.createElement('div');
+    this.twoPage.leftFlipArea.className = 'GBfliparea';
     $(this.twoPage.leftFlipArea).attr('id', 'GBleftflip').css({
         border: '0',
         width:  this.twoPageFlipAreaWidth() + 'px',
@@ -1021,6 +1022,7 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
     }).appendTo('#GBtwopageview');
     
     this.twoPage.rightFlipArea = document.createElement('div');
+    this.twoPage.rightFlipArea.className = 'GBfliparea';
     $(this.twoPage.rightFlipArea).attr('id', 'GBrightflip').css({
         border: '0',
         width:  this.twoPageFlipAreaWidth() + 'px',
@@ -1035,9 +1037,9 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
     }).bind('mousedown', function(e) {
         e.preventDefault();
     }).appendTo('#GBtwopageview');
-
+    
     this.prepareTwoPagePopUp();
-
+    
     this.displayedIndices = [];
     
     //this.indicesToDisplay=[firstLeaf, firstLeaf+1];
