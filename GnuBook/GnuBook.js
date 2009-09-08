@@ -189,7 +189,7 @@ GnuBook.prototype.init = function() {
 
 GnuBook.prototype.setupKeyListeners = function() {
     var self = this;
-
+    
     var KEY_PGUP = 33;
     var KEY_PGDOWN = 34;
     var KEY_END = 35;
@@ -202,48 +202,49 @@ GnuBook.prototype.setupKeyListeners = function() {
 
     // We use document here instead of window to avoid a bug in jQuery on IE7
     $(document).keydown(function(e) {
-        
         // Keyboard navigation        
         switch(e.keyCode) {
             case KEY_PGUP:
             case KEY_UP:            
                 // In 1up mode page scrolling is handled by browser
                 if (2 == self.mode) {
-                    self.prev();
                     e.preventDefault();
+                    self.prev();
                 }
                 break;
             case KEY_DOWN:
             case KEY_PGDOWN:
                 if (2 == self.mode) {
-                    self.next();
                     e.preventDefault();
+                    self.next();
                 }
                 break;
             case KEY_END:
-                self.last();
                 e.preventDefault();
+                self.last();
                 break;
             case KEY_HOME:
-                self.first();
                 e.preventDefault();
+                self.first();
                 break;
             case KEY_LEFT:
                 if (self.keyboardNavigationIsDisabled(e)) {
+                    e.preventDefault();
                     break;
                 }
                 if (2 == self.mode) {
-                    self.left();
                     e.preventDefault();
+                    self.left();
                 }
                 break;
             case KEY_RIGHT:
                 if (self.keyboardNavigationIsDisabled(e)) {
+                    e.preventDefault();
                     break;
                 }
                 if (2 == self.mode) {
-                    self.right();
                     e.preventDefault();
+                    self.right();
                 }
                 break;
         }
