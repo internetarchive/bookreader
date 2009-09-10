@@ -322,6 +322,104 @@ GnuBook.prototype.setDragHandler = function(div) {
     });
 }
 
+// setDragHandler2up()
+//______________________________________________________________________________
+GnuBook.prototype.setDragHandler2up = function(div) {
+    div.dragging = false;
+    
+    $(div).unbind('mousedown').bind('mousedown', function(e) {
+        e.preventDefault();
+        
+        //console.log('mousedown at ' + e.pageY);
+
+        this.dragStart = {x: e.pageX, y: e.pageY };
+        this.mouseDown = true;
+        this.dragging = false; // wait until drag distance
+        this.prevMouseX = e.pageX;
+        this.prevMouseY = e.pageY;
+    
+        var startX    = e.pageX;
+        var startY    = e.pageY;
+        var startTop  = $('#GBcontainer').attr('scrollTop');
+        var startLeft =  $('#GBcontainer').attr('scrollLeft');
+
+    });
+        
+    $(div).unbind('mousemove').bind('mousemove', function(ee) {
+        ee.preventDefault();
+
+        // console.log('mousemove ' + ee.pageX + ',' + ee.pageY);
+        
+        var offsetX = ee.pageX - this.prevMouseX;
+        var offsetY = ee.pageY - this.prevMouseY;
+        
+        var minDragDistance = 5; // $$$ constant
+
+        var distance = Math.max(Math.abs(offsetX), Math.abs(offsetY));
+                
+        if (this.mouseDown && (distance > minDragDistance)) {
+            //console.log('drag start!');
+            
+            this.dragging = true;
+        }
+        
+        if (this.dragging) {        
+            $('#GBcontainer').attr('scrollTop', $('#GBcontainer').attr('scrollTop') - offsetY);
+            $('#GBcontainer').attr('scrollLeft', $('#GBcontainer').attr('scrollLeft') - offsetX);
+            this.prevMouseX = ee.pageX;
+            this.prevMouseY = ee.pageY;
+        }
+        
+        
+    });
+    
+    /*
+    $(div).unbind('mouseup').bind('mouseup', function(ee) {
+        ee.preventDefault();
+        //console.log('mouseup');
+
+        this.dragging = false;
+        this.mouseDown = false;
+    });
+    */
+    
+    
+    $(div).unbind('mouseleave').bind('mouseleave', function(e) {
+        e.preventDefault();
+        //console.log('mouseleave');
+
+        this.dragging = false;  
+        this.mouseDown = false;
+    });
+    
+    $(div).unbind('mouseenter').bind('mouseenter', function(e) {
+        e.preventDefault();
+        //console.log('mouseenter');
+        
+        this.dragging = false;
+        this.mouseDown = false;
+    });
+}
+
+GnuBook.prototype.setClickHandler2up = function( element, data, handler) {
+    //console.log('setting handler');
+    //console.log(element.tagName);
+    
+    $(element).unbind('click').bind('click', data, function(e) {
+        e.preventDefault();
+        
+        //console.log('click!');
+        
+        if (this.mouseDown && (!this.dragging)) {
+            //console.log('click not dragging!');
+            handler(e);
+        }
+        
+        this.dragging = false;
+        this.mouseDown = false;
+    });
+}
+
 // drawLeafsOnePage()
 //______________________________________________________________________________
 GnuBook.prototype.drawLeafsOnePage = function() {
@@ -1004,6 +1102,7 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
     
     var self = this; // for closure
     
+    /*
     this.twoPage.leftFlipArea = document.createElement('div');
     this.twoPage.leftFlipArea.className = 'GBfliparea';
     $(this.twoPage.leftFlipArea).attr('id', 'GBleftflip').css({
@@ -1037,6 +1136,7 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
     }).bind('mousedown', function(e) {
         e.preventDefault();
     }).appendTo('#GBtwopageview');
+    */
     
     this.prepareTwoPagePopUp();
     
@@ -1728,7 +1828,6 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 // setClickHandlers
 //______________________________________________________________________________
 GnuBook.prototype.setClickHandlers = function() {
-    var self = this;
     /*
     $(this.prefetchedImgs[this.twoPage.currentIndexL]).bind('dblclick', function() {
         //self.prevPage();
@@ -1742,8 +1841,21 @@ GnuBook.prototype.setClickHandlers = function() {
     });
     */
     
-    this.setDragHandler( $(this.prefetchedImgs[this.twoPage.currentIndexL]) );
-    this.setDragHandler( $(this.prefetchedImgs[this.twoPage.currentIndexR]) );
+    this.setDragHandler2up( this.prefetchedImgs[this.twoPage.currentIndexL] );
+    this.setClickHandler2up( this.prefetchedImgs[this.twoPage.currentIndexL],
+        { self: this },
+        function(e) {
+            e.data.self.left();
+        }
+    );
+        
+    this.setDragHandler2up( this.prefetchedImgs[this.twoPage.currentIndexR] );
+    this.setClickHandler2up( this.prefetchedImgs[this.twoPage.currentIndexR],
+        { self: this },
+        function(e) {
+            e.data.self.right();
+        }
+    );
 }
 
 // prefetchImg()
