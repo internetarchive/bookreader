@@ -49,7 +49,7 @@ $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
 // Image conversion options
 $pngOptions = '';
-$jpegOptions = '-quality 65';
+$jpegOptions = '-quality 75';
 
 // The pbmreduce reduction factor produces an image with dimension 1/n
 // The kakadu reduction factor produceds an image with dimension 1/(2^n)
