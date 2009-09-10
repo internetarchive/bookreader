@@ -2957,19 +2957,17 @@ GnuBook.prototype.getPageIndex = function(pageNum) {
 GnuBook.prototype.getPageIndices = function(pageNum) {
     var indices = [];
 
-    /* Special page numbers are now generated and added so special check not needed
     // Check for special "nXX" page number
     if (pageNum.slice(0,1) == 'n') {
         try {
             var pageIntStr = pageNum.slice(1, pageNum.length);
             var pageIndex = parseInt(pageIntStr);
-            indices.push(pageIndex);
+            indices.append(pageIndex);
             return indices;
         } catch(err) {
             // Do nothing... will run through page names and see if one matches
         }
     }
-    */
 
     var i;
     for (i=0; i<this.numLeafs; i++) {
