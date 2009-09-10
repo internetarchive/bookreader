@@ -322,9 +322,9 @@ GnuBook.prototype.setDragHandler = function(div) {
     });
 }
 
-// setDragHandler2up()
+// setDragHandler2UP()
 //______________________________________________________________________________
-GnuBook.prototype.setDragHandler2up = function(div) {
+GnuBook.prototype.setDragHandler2UP = function(div) {
     div.dragging = false;
     
     $(div).unbind('mousedown').bind('mousedown', function(e) {
@@ -401,7 +401,7 @@ GnuBook.prototype.setDragHandler2up = function(div) {
     });
 }
 
-GnuBook.prototype.setClickHandler2up = function( element, data, handler) {
+GnuBook.prototype.setClickHandler2UP = function( element, data, handler) {
     //console.log('setting handler');
     //console.log(element.tagName);
     
@@ -603,13 +603,13 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
         
 
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
-    this.setClickHandlers();
+    this.setMouseHandlers2UP();
     this.twoPageSetCursor();
 
     this.updatePageNumBox2UP();
     this.updateToolbarZoom(this.reduce);
     
-    this.twoPagePlaceFlipAreas();
+    // this.twoPagePlaceFlipAreas();  // No longer used
 
 }
 
@@ -1102,7 +1102,7 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
     
     var self = this; // for closure
     
-    /*
+    /* Flip areas no longer used
     this.twoPage.leftFlipArea = document.createElement('div');
     this.twoPage.leftFlipArea.className = 'GBfliparea';
     $(this.twoPage.leftFlipArea).attr('id', 'GBleftflip').css({
@@ -1681,8 +1681,8 @@ GnuBook.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
             
-            self.twoPagePlaceFlipAreas();
-            self.setClickHandlers();
+            // self.twoPagePlaceFlipAreas(); // No longer used
+            self.setMouseHandlers2UP();
             self.twoPageSetCursor();
             
             if (self.animationFinishedCallback) {
@@ -1813,8 +1813,8 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
             
-            self.twoPagePlaceFlipAreas();
-            self.setClickHandlers();     
+            // self.twoPagePlaceFlipAreas(); // No longer used
+            self.setMouseHandlers2UP();     
             self.twoPageSetCursor();
             
             if (self.animationFinishedCallback) {
@@ -1825,9 +1825,9 @@ GnuBook.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
     });    
 }
 
-// setClickHandlers
+// setMouseHandlers2UP
 //______________________________________________________________________________
-GnuBook.prototype.setClickHandlers = function() {
+GnuBook.prototype.setMouseHandlers2UP = function() {
     /*
     $(this.prefetchedImgs[this.twoPage.currentIndexL]).bind('dblclick', function() {
         //self.prevPage();
@@ -1841,16 +1841,16 @@ GnuBook.prototype.setClickHandlers = function() {
     });
     */
     
-    this.setDragHandler2up( this.prefetchedImgs[this.twoPage.currentIndexL] );
-    this.setClickHandler2up( this.prefetchedImgs[this.twoPage.currentIndexL],
+    this.setDragHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL] );
+    this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
             e.data.self.left();
         }
     );
         
-    this.setDragHandler2up( this.prefetchedImgs[this.twoPage.currentIndexR] );
-    this.setClickHandler2up( this.prefetchedImgs[this.twoPage.currentIndexR],
+    this.setDragHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR] );
+    this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR],
         { self: this },
         function(e) {
             e.data.self.right();
