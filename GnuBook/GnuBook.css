@@ -85,6 +85,7 @@
     border: none;
 }
 
+/* Absolute path used since the html might be generated at /stream/id or elsewhere */
 .GBicon.logo { background: url(images/logo_icon.png) no-repeat; }
 .GBicon.zoom_out { background: url(images/zoom_out_icon.png) no-repeat; }
 .GBicon.zoom_in { background: url(images/zoom_in_icon.png) no-repeat; }
@@ -100,6 +101,7 @@
 .GBicon.book_rightmost { background: url(images/book_rightmost_icon.png) no-repeat; }
 .GBicon.book_top { background: url(images/book_top_icon.png) no-repeat; }
 .GBicon.book_bottom { background: url(images/book_bottom_icon.png) no-repeat; }
+
 
 .GBicon.play { background: url(images/control_play_icon.png) no-repeat; }
 .GBicon.pause { background: url(images/control_pause_icon.png) no-repeat; }
@@ -177,4 +179,8 @@ a.GBblack:visited   { color: #000000 }
     font-family: verdana, arial, helvetica, sans-serif; 
     font-size: 10px; 
     float: left; 
+}
+
+.GBfliparea {
+    background-image: url(images/transparent.png); # Required to capture mouse on IE
 }
