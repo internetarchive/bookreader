@@ -47,8 +47,9 @@ if (isset($_REQUEST['ext'])) {
 
 $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
-// Png conversion options
+// Image conversion options
 $pngOptions = '';
+$jpegOptions = '-quality 75';
 
 // The pbmreduce reduction factor produces an image with dimension 1/n
 // The kakadu reduction factor produceds an image with dimension 1/(2^n)
@@ -76,8 +77,14 @@ if (isset($_REQUEST['height'])) {
         $powReduce = 1;
     } else if (4 == $scale) {
         $powReduce = 2;
+    } else if (8 == $scale) {
+        $powReduce = 3;
+    } else if (16 == $scale) {
+        $powReduce = 4;
+    } else if (32 == $scale) {
+        $powReduce = 5;
     } else {
-        // $$$ why do we default to such a small scale?
+        // $$$ Leaving this in as default though I'm not sure why it is...
         $scale = 8;
         $powReduce = 3;
     }
@@ -131,9 +138,9 @@ if ('jp2' == $fileExt) {
 // }
 
 if ('jpg' == $ext) {
-    $compressCmd = ' | pnmtojpeg -quality 90';
+    $compressCmd = ' | pnmtojpeg ' . $jpegOptions;
 } else if ('png' == $ext) {
-    $compressCmd = ' | pnmtopng $pngOptions';
+    $compressCmd = ' | pnmtopng ' . $pngOptions;
 }
 
 $cmd = $unzipCmd . $decompressCmd . $compressCmd;

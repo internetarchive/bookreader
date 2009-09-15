@@ -139,16 +139,22 @@ gb.getPageURI = function(index) {
     if (1==this.mode) {
         var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+this.reduce;
     } else {
-        var ratio = this.getPageHeight(index) / this.twoPageH;
+        var ratio = this.getPageHeight(index) / this.twoPage.height;
         var scale;
         // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-        if (ratio <= 2) {
+        if (ratio < 2) {
             scale = 1;
-        } else if (ratio <= 4) {
+        } else if (ratio < 4) {
             scale = 2;
-        } else {
+        } else if (ratio < 8) {
             scale = 4;
-        }        
+        } else if (ratio < 16) {
+            scale = 8;
+        } else  if (ratio < 32) {
+            scale = 16;
+        } else {
+            scale = 32;
+        }
     
         var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+scale;
         
