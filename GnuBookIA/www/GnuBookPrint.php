@@ -26,10 +26,32 @@ $server = $_REQUEST['server'];
 $zip    = $_REQUEST['zip'];
 $index  = $_REQUEST['index'];
 $format = $_REQUEST['format'];
+$imgAspect = $_REQUEST['aspect'];
+
+/* We assume that the print aspect ratio is somewhat close to US Letter in portrait orientation */
+$paperAspect = 8.5/11;
+
+$rotate = "0";
+if ('jp2' == $format) {
+    // Rotation is possible
+    if ($imgAspect > $paperAspect) {
+        $rotate = "90";
+        $imgAspect = 1 / $imgAspect;
+    }
+}
 
 $file = sprintf("%s_%s/%s_%04d.%s", $id, $format, $id, $index, $format);
+
+if ($imgAspect > $paperAspect) {
+    // wider than paper, fit width
+    $imgAttrs = "width='100%'";
+} else {
+    // taller than paper, fit height
+    $imgAttrs = "height='100%'";
+}
+
 echo "<p style='text-align:center;'>";
-echo "<img src='http://{$server}/GnuBook/GnuBookImages.php?zip={$zip}&file={$file}&scale=1' height='100%'/>";
+echo "<img src='http://{$server}/GnuBook/GnuBookImages.php?zip={$zip}&file={$file}&scale=1&rotate=$rotate' " . $imgAttrs . " />";
 echo "</p>";
 
 ?>

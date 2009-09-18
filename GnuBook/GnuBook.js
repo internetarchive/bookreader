@@ -2418,8 +2418,10 @@ GnuBook.prototype.printPage = function() {
         indexToPrint = this.twoPage.currentIndexL;
     }
     
+    var aspectRatio = this.getPageWidth(indexToPrint) / this.getPageHeight(indexToPrint);
+    
     htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
-    htmlStr += '<iframe name ="printFrame" id="printFrame" src="/bookreader/GnuBookPrint.php?id='+this.bookId+'&server='+this.server+'&zip='+this.zip+'&index='+this.leafMap[indexToPrint]+'&format='+this.imageFormat+'" width="500px" height="400px"></iframe>';
+    htmlStr += '<iframe name ="printFrame" id="printFrame" src="/bookreader/GnuBookPrint.php?id='+this.bookId+'&server='+this.server+'&zip='+this.zip+'&index='+this.leafMap[indexToPrint]+'&format='+this.imageFormat+'&aspect=' + aspectRatio + '" width="500px" height="400px"></iframe>';
     htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
 
     this.printPopup.innerHTML = htmlStr;    
