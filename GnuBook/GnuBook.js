@@ -3076,7 +3076,12 @@ GnuBook.prototype.startLocationPolling = function() {
 // Returns a URL for an embedded version of the current book
 GnuBook.prototype.getEmbedURL = function() {
     // We could generate a URL hash fragment here but for now we just leave at defaults
-    return 'http://' + window.location.host + '/stream/'+this.bookId + '?ui=embed';
+    var url = 'http://' + window.location.host + '/stream/'+this.bookId;
+    if (this.subPrefix != this.bookId) { // IA specific logic -- $$$ move to JSIA
+        url += '/' + this.subPrefix;
+    }
+    url += '?ui=embed';
+    return url;
 }
 
 // getEmbedCode
