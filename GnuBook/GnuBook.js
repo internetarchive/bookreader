@@ -3071,26 +3071,6 @@ GnuBook.prototype.startLocationPolling = function() {
     }, 500);
 }
 
-// getEmbedURL
-//________
-// Returns a URL for an embedded version of the current book
-GnuBook.prototype.getEmbedURL = function() {
-    // We could generate a URL hash fragment here but for now we just leave at defaults
-    var url = 'http://' + window.location.host + '/stream/'+this.bookId;
-    if (this.subPrefix != this.bookId) { // IA specific logic -- $$$ move to JSIA
-        url += '/' + this.subPrefix;
-    }
-    url += '?ui=embed';
-    return url;
-}
-
-// getEmbedCode
-//________
-// Returns the embed code HTML fragment suitable for copy and paste
-GnuBook.prototype.getEmbedCode = function() {
-    return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
-}
-
 // canSwitchToMode
 //________
 // Returns true if we can switch to the requested mode

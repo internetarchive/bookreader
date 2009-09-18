@@ -128,7 +128,7 @@ gb.getPageHeight = function(index) {
 }
 
 gb.getPageURI = function(index) {
-    var leafStr = '0000';            
+    var leafStr = '0000';
     var imgStr = this.leafMap[index].toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
     
@@ -277,6 +277,26 @@ gb.uniquifyPageNums = function() {
 
 gb.cleanupMetadata = function() {
     gb.uniquifyPageNums();
+}
+
+// getEmbedURL
+//________
+// Returns a URL for an embedded version of the current book
+gb.getEmbedURL = function() {
+    // We could generate a URL hash fragment here but for now we just leave at defaults
+    var url = 'http://' + window.location.host + '/stream/'+this.bookId;
+    if (this.subPrefix != this.bookId) { // Only include if needed
+        url += '/' + this.subPrefix;
+    }
+    url += '?ui=embed';
+    return url;
+}
+
+// getEmbedCode
+//________
+// Returns the embed code HTML fragment suitable for copy and paste
+gb.getEmbedCode = function() {
+    return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
 }
 
 gb.pageW =		[
