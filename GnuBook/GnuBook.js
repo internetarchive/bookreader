@@ -3001,7 +3001,7 @@ GnuBook.prototype.getPageIndices = function(pageNum) {
         try {
             var pageIntStr = pageNum.slice(1, pageNum.length);
             var pageIndex = parseInt(pageIntStr);
-            indices.append(pageIndex);
+            indices.push(pageIndex);
             return indices;
         } catch(err) {
             // Do nothing... will run through page names and see if one matches
