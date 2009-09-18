@@ -507,7 +507,7 @@ GnuBook.prototype.drawLeafsOnePage = function() {
             $('#GBpageview').append(div);
 
             var img = document.createElement("img");
-            img.src = this.getPageURI(index);
+            img.src = this.getPageURI(index, this.reduce, 0);
             $(img).css('width', width+'px');
             $(img).css('height', height+'px');
             $(div).append(img);
@@ -2418,13 +2418,45 @@ GnuBook.prototype.printPage = function() {
         indexToPrint = this.twoPage.currentIndexL;
     }
     
-    var aspectRatio = this.getPageWidth(indexToPrint) / this.getPageHeight(indexToPrint);
+    var imageAspect = this.getPageWidth(indexToPrint) / this.getPageHeight(indexToPrint);    
+    var paperAspect = 8.5 / 11; // Use US Letter in portrait as guesstimate
+    var rotate = 0;
+    
+    // Rotate if possible and appropriate, to get larger image size on printed page
+    if (this.canRotatePage(indexToPrint)) {
+        if (imageAspect > 1 && imageAspect > paperAspect) {
+            // more wide than square, and more wide than paper
+            rotate = 90;
+            imageAspect = 1/imageAspect;
+        }
+    }
+    
+    var fitAttrs;
+    if (imageAspect > paperAspect) {
+        // wider than paper, fit width
+        fitAttrs = 'width="95%"';
+    } else {
+        // taller than paper, fit height
+        fitAttrs = 'height="95%"';
+    }
+    
+    var imageURL = this.getPageURI(indexToPrint, 1, rotate);
+    
+    var iframeStr = '<html><head><title>' + this.bookTitle + '</title></head><body>';
+    iframeStr += '<p style="text-align:center;"><img src="' + imageURL + '" ' + fitAttrs + ' /></p>';
+    iframeStr += '</body></html>';
     
     htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
-    htmlStr += '<iframe name ="printFrame" id="printFrame" src="/bookreader/GnuBookPrint.php?id='+this.bookId+'&server='+this.server+'&zip='+this.zip+'&index='+this.leafMap[indexToPrint]+'&format='+this.imageFormat+'&aspect=' + aspectRatio + '" width="500px" height="400px"></iframe>';
+    htmlStr += '<iframe name ="printFrame" id="printFrame" width="500px" height="400px"></iframe>';
     htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
-
+    
     this.printPopup.innerHTML = htmlStr;    
+    
+    $('#printFrame').load(function() {
+        // $$$ Not firing in Safari
+        var doc = GnuBook.util.getIFrameDocument(this);
+        $('body', doc).html(iframeStr)
+    });
 }
 
 // showEmbedCode()
@@ -3091,5 +3123,11 @@ GnuBook.prototype.canSwitchToMode = function(mode) {
 GnuBook.util = {
     clamp: function(value, min, max) {
         return Math.min(Math.max(value, min), max);
+    },
+
+    getIFrameDocument: function(iframe) {
+        // Adapted from http://xkr.us/articles/dom/iframe-document/
+        var outer = (iframe.contentWindow || iframe.contentDocument);
+        return (outer.document || outer);
     }
 }

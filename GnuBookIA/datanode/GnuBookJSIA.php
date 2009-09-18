@@ -127,7 +127,24 @@ gb.getPageHeight = function(index) {
     return this.pageH[index];
 }
 
-gb.getPageURI = function(index) {
+// Returns true if page image is available rotated
+gb.canRotatePage = function(index) {
+    return 'jp2' == this.imageFormat; // Assume single format for now
+}
+
+// reduce defaults to 1 (no reduction)
+// rotate defaults to 0 (no rotation)
+gb.getPageURI = function(index, reduce, rotate) {
+
+    var _reduce;
+    var _rotate;
+
+    if ('undefined' == typeof(reduce)) {
+        _reduce = 1;
+    }
+    if ('undefined' == typeof(rotate)) {
+        _rotate = 0;
+    }
     var leafStr = '0000';
     var imgStr = this.leafMap[index].toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
@@ -137,26 +154,30 @@ gb.getPageURI = function(index) {
     
     // $$$ add more image stack formats here
     if (1==this.mode) {
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+this.reduce;
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
     } else {
-        var ratio = this.getPageHeight(index) / this.twoPage.height;
-        var scale;
-        // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-        if (ratio < 2) {
-            scale = 1;
-        } else if (ratio < 4) {
-            scale = 2;
-        } else if (ratio < 8) {
-            scale = 4;
-        } else if (ratio < 16) {
-            scale = 8;
-        } else  if (ratio < 32) {
-            scale = 16;
-        } else {
-            scale = 32;
+        if ('undefined' == typeof(reduce)) {
+            // reduce not passed in
+            var ratio = this.getPageHeight(index) / this.twoPage.height;
+            var scale;
+            // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
+            if (ratio < 2) {
+                scale = 1;
+            } else if (ratio < 4) {
+                scale = 2;
+            } else if (ratio < 8) {
+                scale = 4;
+            } else if (ratio < 16) {
+                scale = 8;
+            } else  if (ratio < 32) {
+                scale = 16;
+            } else {
+                scale = 32;
+            }
+            _reduce = scale;
         }
     
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+scale;
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
         
     }
     return url;
