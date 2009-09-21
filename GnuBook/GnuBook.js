@@ -2420,10 +2420,17 @@ GnuBook.prototype.printPage = function() {
     
     this.indexToPrint = indexToPrint;
     
-    var htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print</a></b></p>';
-    htmlStr += '<p align="right"><a href="#" onclick="gb.updatePrintFrame(-1); return false;">Prev</a> <a href="#" onclick="gb.updatePrintFrame(1); return false;">Next</a></p>';
-    htmlStr += '<div id="printDiv" name="printDiv" style="text-align: center;"></div>';
-    htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
+    var htmlStr = '<div style="text-align: center;">';
+    htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print</a></b></p>';
+    htmlStr += '<div id="printDiv" name="printDiv" style="text-align: center; width: 233px; margin: auto">'
+    htmlStr +=   '<p style="text-align:right; font-size: -1;">';
+    //htmlStr +=     '<button class="GBicon rollover book_up" onclick="gb.updatePrintFrame(-1); return false;"></button> ';
+    //htmlStr +=     '<button class="GBicon rollover book_down" onclick="gb.updatePrintFrame(1); return false;"></button>';
+    htmlStr += '<a href="#" onclick="gb.updatePrintFrame(-1); return false;">Prev</a> <a href="#" onclick="gb.updatePrintFrame(1); return false;">Next</a>';
+    htmlStr +=   '</p>';
+    htmlStr += '</div>';
+    htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';
+    htmlStr += '</div>';
     
     this.printPopup.innerHTML = htmlStr;
     
