@@ -2404,7 +2404,7 @@ GnuBook.prototype.printPage = function() {
         position: 'absolute',
         top:      '20px',
         left:     ($('#GBcontainer').width()-400)/2 + 'px',
-        width:    '500px',
+        width:    '400px',
         padding:  "20px",
         border:   "3px double #999999",
         zIndex:   3,
@@ -2420,9 +2420,9 @@ GnuBook.prototype.printPage = function() {
     
     this.indexToPrint = indexToPrint;
     
-    var htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
+    var htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print</a></b></p>';
     htmlStr += '<p align="right"><a href="#" onclick="gb.updatePrintFrame(-1); return false;">Prev</a> <a href="#" onclick="gb.updatePrintFrame(1); return false;">Next</a></p>';
-    htmlStr += '<div id="printDiv" name="printDiv"></div>';
+    htmlStr += '<div id="printDiv" name="printDiv" style="text-align: center;"></div>';
     htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
     
     this.printPopup.innerHTML = htmlStr;
@@ -2430,8 +2430,8 @@ GnuBook.prototype.printPage = function() {
     var iframe = document.createElement('iframe');
     iframe.id = 'printFrame';
     iframe.name = 'printFrame';
-    iframe.width = '500px';
-    iframe.height = '400px';
+    iframe.width = '233px'; // 8.5 x 11 aspect
+    iframe.height = '300px';
     
     var self = this; // closure
         
@@ -2467,8 +2467,10 @@ GnuBook.prototype.getPrintFrameContent = function(index) {
     }
 
     var imageURL = this.getPageURI(index, 1, rotate);
-    var iframeStr = '<html><head><title>' + this.bookTitle + '</title></head><body>';
+    var iframeStr = '<html><head><title>' + this.bookTitle + '</title></head><body style="padding: 0; border:0">';
+    iframeStr += '<div style="width: 100%; height: 100%; overflow: hidden;">';
     iframeStr += '<p style="text-align:center;"><img src="' + imageURL + '" ' + fitAttrs + ' /></p>';
+    iframeStr += '</div>';
     iframeStr += '</body></html>';
     
     return iframeStr;
