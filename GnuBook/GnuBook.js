@@ -2421,9 +2421,9 @@ GnuBook.prototype.printPage = function() {
     this.indexToPrint = indexToPrint;
     
     var htmlStr = '<div style="text-align: center;">';
-    htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print</a></b></p>';
+    htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
     htmlStr += '<div id="printDiv" name="printDiv" style="text-align: center; width: 233px; margin: auto">'
-    htmlStr +=   '<p style="text-align:right; font-size: -1;">';
+    htmlStr +=   '<p style="text-align:right; margin: 0; font-size: 0.85em">';
     //htmlStr +=     '<button class="GBicon rollover book_up" onclick="gb.updatePrintFrame(-1); return false;"></button> ';
     //htmlStr +=     '<button class="GBicon rollover book_down" onclick="gb.updatePrintFrame(1); return false;"></button>';
     htmlStr += '<a href="#" onclick="gb.updatePrintFrame(-1); return false;">Prev</a> <a href="#" onclick="gb.updatePrintFrame(1); return false;">Next</a>';
@@ -2447,12 +2447,14 @@ GnuBook.prototype.printPage = function() {
         $('body', doc).html(self.getPrintFrameContent(self.indexToPrint));
     });
     
-    $('#printDiv').append(iframe);
+    $('#printDiv').prepend(iframe);
 }
 
-GnuBook.prototype.getPrintFrameContent = function(index) {
-    var imageAspect = this.getPageWidth(index) / this.getPageHeight(index);    
-    var paperAspect = 8.5 / 11; // Use US Letter in portrait as guesstimate
+GnuBook.prototype.getPrintFrameContent = function(index) {    
+    // We fit the image based on an assumed US Letter aspect ratio.
+    var paperAspect = 8.5 / 11;
+    var imageAspect = this.getPageWidth(index) / this.getPageHeight(index);
+    
     var rotate = 0;
     
     // Rotate if possible and appropriate, to get larger image size on printed page
@@ -2467,16 +2469,16 @@ GnuBook.prototype.getPrintFrameContent = function(index) {
     var fitAttrs;
     if (imageAspect > paperAspect) {
         // wider than paper, fit width
-        fitAttrs = 'width="95%"';
+        fitAttrs = 'width="100%"';
     } else {
         // taller than paper, fit height
-        fitAttrs = 'height="95%"';
+        fitAttrs = 'height="100%"';
     }
 
     var imageURL = this.getPageURI(index, 1, rotate);
-    var iframeStr = '<html><head><title>' + this.bookTitle + '</title></head><body style="padding: 0; border:0">';
-    iframeStr += '<div style="width: 100%; height: 100%; overflow: hidden;">';
-    iframeStr += '<p style="text-align:center;"><img src="' + imageURL + '" ' + fitAttrs + ' /></p>';
+    var iframeStr = '<html style="padding: 0; border: 0; margin: 0"><head><title>' + this.bookTitle + '</title></head><body style="padding: 0; border:0; margin: 0">';
+    iframeStr += '<div style="width: 100%; height: 100%; overflow: hidden; text-align: center;">';
+    iframeStr +=   '<img src="' + imageURL + '" ' + fitAttrs + ' />';
     iframeStr += '</div>';
     iframeStr += '</body></html>';
     
