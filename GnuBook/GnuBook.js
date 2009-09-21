@@ -2447,16 +2447,23 @@ GnuBook.prototype.printPage = function() {
     iframeStr += '</body></html>';
     
     htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
-    htmlStr += '<iframe name ="printFrame" id="printFrame" width="500px" height="400px"></iframe>';
+    htmlStr += '<div id="printDiv" name="printDiv"></div>';
     htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
     
-    this.printPopup.innerHTML = htmlStr;    
+    this.printPopup.innerHTML = htmlStr;
     
-    $('#printFrame').load(function() {
-        // $$$ Not firing in Safari
+    var iframe = document.createElement('iframe');
+    iframe.id = 'printFrame';
+    iframe.name = 'printFrame';
+    iframe.width = '500px';
+    iframe.height = '400px';
+        
+    $(iframe).load(function() {
         var doc = GnuBook.util.getIFrameDocument(this);
         $('body', doc).html(iframeStr)
     });
+    
+    $('#printDiv').append(iframe);
 }
 
 // showEmbedCode()
