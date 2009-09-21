@@ -2418,12 +2418,35 @@ GnuBook.prototype.printPage = function() {
         indexToPrint = this.twoPage.currentIndexL;
     }
     
-    var imageAspect = this.getPageWidth(indexToPrint) / this.getPageHeight(indexToPrint);    
+    var htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
+    htmlStr += '<div id="printDiv" name="printDiv"></div>';
+    htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
+    
+    this.printPopup.innerHTML = htmlStr;
+    
+    var iframe = document.createElement('iframe');
+    iframe.id = 'printFrame';
+    iframe.name = 'printFrame';
+    iframe.width = '500px';
+    iframe.height = '400px';
+    
+    var self = this; // closure
+        
+    $(iframe).load(function() {
+        var doc = GnuBook.util.getIFrameDocument(this);
+        $('body', doc).html(self.getPrintFrameContent(indexToPrint));
+    });
+    
+    $('#printDiv').append(iframe);
+}
+
+GnuBook.prototype.getPrintFrameContent = function(index) {
+    var imageAspect = this.getPageWidth(index) / this.getPageHeight(index);    
     var paperAspect = 8.5 / 11; // Use US Letter in portrait as guesstimate
     var rotate = 0;
     
     // Rotate if possible and appropriate, to get larger image size on printed page
-    if (this.canRotatePage(indexToPrint)) {
+    if (this.canRotatePage(index)) {
         if (imageAspect > 1 && imageAspect > paperAspect) {
             // more wide than square, and more wide than paper
             rotate = 90;
@@ -2439,31 +2462,13 @@ GnuBook.prototype.printPage = function() {
         // taller than paper, fit height
         fitAttrs = 'height="95%"';
     }
-    
-    var imageURL = this.getPageURI(indexToPrint, 1, rotate);
-    
+
+    var imageURL = this.getPageURI(index, 1, rotate);
     var iframeStr = '<html><head><title>' + this.bookTitle + '</title></head><body>';
     iframeStr += '<p style="text-align:center;"><img src="' + imageURL + '" ' + fitAttrs + ' /></p>';
     iframeStr += '</body></html>';
     
-    htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
-    htmlStr += '<div id="printDiv" name="printDiv"></div>';
-    htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
-    
-    this.printPopup.innerHTML = htmlStr;
-    
-    var iframe = document.createElement('iframe');
-    iframe.id = 'printFrame';
-    iframe.name = 'printFrame';
-    iframe.width = '500px';
-    iframe.height = '400px';
-        
-    $(iframe).load(function() {
-        var doc = GnuBook.util.getIFrameDocument(this);
-        $('body', doc).html(iframeStr)
-    });
-    
-    $('#printDiv').append(iframe);
+    return iframeStr;
 }
 
 // showEmbedCode()
