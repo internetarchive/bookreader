@@ -2418,7 +2418,10 @@ GnuBook.prototype.printPage = function() {
         indexToPrint = this.twoPage.currentIndexL;
     }
     
+    this.indexToPrint = indexToPrint;
+    
     var htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
+    htmlStr += '<p align="right"><a href="#" onclick="gb.updatePrintFrame(-1); return false;">Prev</a> <a href="#" onclick="gb.updatePrintFrame(1); return false;">Next</a></p>';
     htmlStr += '<div id="printDiv" name="printDiv"></div>';
     htmlStr += '<p style="text-align:center;"><a href="" onclick="gb.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
     
@@ -2434,7 +2437,7 @@ GnuBook.prototype.printPage = function() {
         
     $(iframe).load(function() {
         var doc = GnuBook.util.getIFrameDocument(this);
-        $('body', doc).html(self.getPrintFrameContent(indexToPrint));
+        $('body', doc).html(self.getPrintFrameContent(self.indexToPrint));
     });
     
     $('#printDiv').append(iframe);
@@ -2469,6 +2472,17 @@ GnuBook.prototype.getPrintFrameContent = function(index) {
     iframeStr += '</body></html>';
     
     return iframeStr;
+}
+
+GnuBook.prototype.updatePrintFrame = function(delta) {
+    var newIndex = this.indexToPrint + delta;
+    newIndex = GnuBook.util.clamp(newIndex, 0, this.numLeafs - 1);
+    if (newIndex == this.indexToPrint) {
+        return;
+    }
+    this.indexToPrint = newIndex;
+    var doc = GnuBook.util.getIFrameDocument($('#printFrame')[0]);
+    $('body', doc).html(this.getPrintFrameContent(this.indexToPrint));
 }
 
 // showEmbedCode()
