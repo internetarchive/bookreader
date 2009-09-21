@@ -141,10 +141,15 @@ gb.getPageURI = function(index, reduce, rotate) {
 
     if ('undefined' == typeof(reduce)) {
         _reduce = 1;
+    } else {
+        _reduce = reduce;
     }
     if ('undefined' == typeof(rotate)) {
         _rotate = 0;
+    } else {
+        _rotate = rotate;
     }
+    
     var leafStr = '0000';
     var imgStr = this.leafMap[index].toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
