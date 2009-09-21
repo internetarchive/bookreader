@@ -2451,7 +2451,8 @@ GnuBook.prototype.printPage = function() {
 }
 
 GnuBook.prototype.getPrintFrameContent = function(index) {    
-    // We fit the image based on an assumed US Letter aspect ratio.
+    // We fit the image based on an assumed A4 aspect ratio.  A4 is a bit taller aspect than
+    // 8.5x11 so we should end up not overflowing on either paper size.
     var paperAspect = 8.5 / 11;
     var imageAspect = this.getPageWidth(index) / this.getPageHeight(index);
     
@@ -2469,15 +2470,15 @@ GnuBook.prototype.getPrintFrameContent = function(index) {
     var fitAttrs;
     if (imageAspect > paperAspect) {
         // wider than paper, fit width
-        fitAttrs = 'width="100%"';
+        fitAttrs = 'width="95%"';
     } else {
         // taller than paper, fit height
-        fitAttrs = 'height="100%"';
+        fitAttrs = 'height="95%"';
     }
 
     var imageURL = this.getPageURI(index, 1, rotate);
     var iframeStr = '<html style="padding: 0; border: 0; margin: 0"><head><title>' + this.bookTitle + '</title></head><body style="padding: 0; border:0; margin: 0">';
-    iframeStr += '<div style="width: 100%; height: 100%; overflow: hidden; text-align: center;">';
+    iframeStr += '<div style="text-align: center; width: 99%; height: 99%; overflow: hidden;">';
     iframeStr +=   '<img src="' + imageURL + '" ' + fitAttrs + ' />';
     iframeStr += '</div>';
     iframeStr += '</body></html>';
