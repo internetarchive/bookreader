@@ -4,7 +4,7 @@
 
 /* Hide some navigation buttons */
 #GBtoolbar .label,.pageform,.play,.embed,.two_page_mode,.one_page_mode,
-    .book_leftmost,.book_rightmost,.book_top,.book_bottom {
+    .book_leftmost,.book_rightmost,.book_top,.book_bottom,.print {
     display: none;
 }
 
