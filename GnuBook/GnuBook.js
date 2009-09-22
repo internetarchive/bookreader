@@ -2689,15 +2689,28 @@ GnuBook.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 
 GnuBook.prototype.initToolbar = function(mode, ui) {
 
-    $("#GnuBook").append("<div id='GBtoolbar'><span style='float:left;'>"
-        + "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
-        + " <button class='GBicon rollover zoom_out' onclick='gb.zoom(-1); return false;'/>" 
-        + "<button class='GBicon rollover zoom_in' onclick='gb.zoom(1); return false;'/>"
-        + " <span class='label'>Zoom: <span id='GBzoom'>"+parseInt(100/this.reduce)+"</span></span>"
-        + " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
-        + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
-        + "&nbsp;&nbsp;<a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
-        + "</span></div>");
+    $("#GnuBook").append("<div id='GBtoolbar'>"
+        + "<span id='GBtoolbarbuttons' style='float: right'>"
+        +   "<button class='GBicon print rollover' /> <button class='GBicon rollover embed' />"
+        +   "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
+        +   "<div class='GBtoolbarmode2' style='display: none'><button class='GBicon rollover book_leftmost' /><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /><button class='GBicon rollover book_rightmost' /></div>"
+        +   "<div class='GBtoolbarmode1' style='display: none'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /><button class='GBicon rollover book_bottom' /></div>"
+        +   "<button class='GBicon rollover play' /><button class='GBicon rollover pause' style='display: none' />"
+        + "</span>"
+        
+        + "<span>"
+        +   "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
+        +   " <button class='GBicon rollover zoom_out' onclick='gb.zoom(-1); return false;'/>" 
+        +   "<button class='GBicon rollover zoom_in' onclick='gb.zoom(1); return false;'/>"
+        +   " <span class='label'>Zoom: <span id='GBzoom'>"+parseInt(100/this.reduce)+"</span></span>"
+        +   " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
+        +   " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
+        + "</span>"
+        
+        + "<span id='#GBbooktitle'>"
+        +   "&nbsp;&nbsp;<a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.bookTitle+"</a>"
+        + "</span>"
+        + "</div>");
     
     this.updateToolbarZoom(this.reduce); // Pretty format
         
@@ -2709,12 +2722,7 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
     var jToolbar = $('#GBtoolbar'); // j prefix indicates jQuery object
     
     // We build in mode 2
-    jToolbar.append("<span id='GBtoolbarbuttons' style='float: right'>"
-        + "<button class='GBicon print rollover' /> <button class='GBicon rollover embed' />"
-        + "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
-        + "<div class='GBtoolbarmode2' style='display: none'><button class='GBicon rollover book_leftmost' /><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /><button class='GBicon rollover book_rightmost' /></div>"
-        + "<div class='GBtoolbarmode1' style='display: none'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /><button class='GBicon rollover book_bottom' /></div>"
-        + "<button class='GBicon rollover play' /><button class='GBicon rollover pause' style='display: none' /></span>");
+    jToolbar.append();
 
     this.bindToolbarNavHandlers(jToolbar);
     
