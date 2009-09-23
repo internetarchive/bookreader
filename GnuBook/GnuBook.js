@@ -2396,6 +2396,10 @@ GnuBook.prototype.removeSearchHilites = function() {
 // printPage
 //______________________________________________________________________________
 GnuBook.prototype.printPage = function() {
+    window.open(this.getPrintURI(), 'printpage', 'width=400, height=500, resizable=yes, scrollbars=no, toolbar=no, location=no');
+
+    /* iframe implementation
+
     if (null != this.printPopup) { // check if already showing
         return;
     }
@@ -2448,6 +2452,28 @@ GnuBook.prototype.printPage = function() {
     });
     
     $('#printDiv').prepend(iframe);
+    */
+}
+
+// Get print URI from current indices and mode
+GnuBook.prototype.getPrintURI = function() {
+    var indexToPrint;
+    if (this.constMode2up == this.mode) {
+        indexToPrint = this.twoPage.currentIndexL;        
+    } else {
+        indexToPrint = this.firstIndex; // $$$ the index in the middle of the viewport would make more sense
+    }
+    
+    var options = 'id=' + this.bookId + '&server=' + this.server + '&zip=' + this.zip
+        + '&format=' + this.imageFormat + '&index=' + this.leafMap[indexToPrint]
+        + '&width=' + this.getPageWidth(indexToPrint) + '&height=' + this.getPageHeight(indexToPrint);
+   
+    if (this.constMode2up == this.mode) {
+        options += '&index2=' + this.leafMap[this.twoPage.currentIndexR] + '&width2=' + this.getPageWidth(this.twoPage.currentIndexR);
+        options += '&height2=' + this.getPageHeight(this.twoPage.currentIndexR);
+    }
+
+    return '/bookreader/print.php?' + options;
 }
 
 GnuBook.prototype.getPrintFrameContent = function(index) {    
