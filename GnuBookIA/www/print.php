@@ -27,26 +27,26 @@ $zip    = $_REQUEST['zip'];
 $index  = $_REQUEST['index'];
 $format = $_REQUEST['format'];
 //$imgAspect = $_REQUEST['aspect'];
-$width = $_REQUEST['width'];
-$height = $_REQUEST['height'];
+$width = floatval($_REQUEST['width']);
+$height = floatval($_REQUEST['height']);
 $title = $_REQUEST['title'];
-
-// $$$ escape the values
 
 /* We assume that the print aspect ratio is somewhat close to US Letter in portrait orientation */
 $paperAspect = 8.5/11;
-$imgAspect = $width / $height;
+
+// $$$ may want to adjust this if two page with foldout looks strange
+$allowRotate = true;
 
 // Returns (url, attrs)
-function imageURL($paperAspect, $index, $format, $width, $height) {
+function imageURL($paperAspect, $index, $format, $width, $height, $allowRotate) {
     global $server, $id, $zip;
     
     $rotate = "0";
     $imgAspect = $width / $height;
     
-    if ('jp2' == $format) {
+    if ('jp2' == $format && $allowRotate) {
         // Rotation is possible
-        if ($imgAspect > $paperAspect) {
+        if ($imgAspect > $paperAspect && $imgAspect > 1) {
             $rotate = "90";
             $imgAspect = 1 / $imgAspect;
         }
@@ -92,17 +92,17 @@ echo "<title>" . htmlspecialchars($title) . "</title><body onload='conditionalPr
 echo   "<p class='noprint' style='text-align: right'>";
 echo     "<button class='GBicon rollover print' title='Print' onclick='print(); return false;'></button> <a href='#' onclick='print(); return false;'>Print</a></p>";
 echo   "<p style='text-align:center;'>";
-echo     imageURL($paperAspect, $index, $format, $width, $height);
+echo     imageURL($paperAspect, $index, $format, $width, $height, $allowRotate);
 echo   "</p>";
 
 if (isset($_REQUEST['index2'])) {    
     $index2 = $_REQUEST['index2'];
-    $width2 = $_REQUEST['width2'];
-    $height2 = $_REQUST['height2'];
+    $width2 = floatval($_REQUEST['width2']);
+    $height2 = floatval($_REQUEST['height2']);
     
     
     echo "<p style='text-align: center;'>";
-    echo imageURL($paperAspect, $index2, $format, $width2, $height2);
+    echo imageURL($paperAspect, $index2, $format, $width2, $height2, $allowRotate);
     echo "</p>";
 }
 echo  "</body></html>";
