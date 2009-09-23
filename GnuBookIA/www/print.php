@@ -53,10 +53,10 @@ function imageURL($paperAspect, $index, $format, $width, $height) {
     
     if ($imgAspect > $paperAspect) {
         // wider than paper, fit width
-        $htmlAttrs = "width='100%'";
+        $htmlAttrs = "width='95%'";
     } else {
         // taller than paper, fit height
-        $htmlAttrs = "height='100%'";
+        $htmlAttrs = "height='95%'";
     }
 
     $file = sprintf("%s_%s/%s_%04d.%s", $id, $format, $id, $index, $format);
@@ -74,7 +74,13 @@ function imageURL($paperAspect, $index, $format, $width, $height) {
     return "<img src='http://{$server}/GnuBook/GnuBookImages.php?" . http_build_query($queryParams) . "' " . $htmlAttrs . " />";
 }
 
-echo "<html><head><title>" . $id . "</title><body onload='print(); return false;'>";
+echo "<html><head>";
+echo '<link rel="stylesheet" type="text/css" href="GnuBook.css" />';
+echo "<style type='text/css'>";
+echo "  @media print { .noprint { font-size: 40pt; display: none; } }";
+echo "</style>";
+echo "<title>" . $id . "</title><body onload='print(); return false;'>";
+echo   "<p class='noprint' style='text-align: right'><button class='GBicon rollover print' title='Print' onclick='print(); return false;'></button> <a href='#' onclick='print(); return false;'>Print</a></p>";
 echo   "<p style='text-align:center;'>";
 echo     imageURL($paperAspect, $index, $format, $width, $height);
 echo   "</p>";
