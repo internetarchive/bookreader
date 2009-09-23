@@ -29,6 +29,7 @@ $format = $_REQUEST['format'];
 //$imgAspect = $_REQUEST['aspect'];
 $width = $_REQUEST['width'];
 $height = $_REQUEST['height'];
+$title = $_REQUEST['title'];
 
 // $$$ escape the values
 
@@ -86,7 +87,7 @@ echo "    if (agent.indexOf('safari') != -1) { doPrint = false; }";
 echo "    if (doPrint) { print(); }";
 echo "  }";
 echo "</script>";
-echo "<title>" . $id . "</title><body onload='print(); return false;'>";
+echo "<title>" . $title . "</title><body onload='print(); return false;'>";
 echo   "<p class='noprint' style='text-align: right'>";
 echo     "<button class='GBicon rollover print' title='Print' onclick='conditionalPrint(); return false;'></button> <a href='#' onclick='print(); return false;'>Print</a></p>";
 echo   "<p style='text-align:center;'>";

@@ -2471,6 +2471,9 @@ GnuBook.prototype.getPrintURI = function() {
     if (this.constMode2up == this.mode) {
         options += '&index2=' + this.leafMap[this.twoPage.currentIndexR] + '&width2=' + this.getPageWidth(this.twoPage.currentIndexR);
         options += '&height2=' + this.getPageHeight(this.twoPage.currentIndexR);
+        options += '&title=' + escape(this.shortTitle(30) + ' - Pages ' + this.getPageNum(this.twoPage.currentIndexL) + ', ' + this.getPageNum(this.twoPage.currentIndexR));
+    } else {
+        options += '&title=' + escape(this.shortTitle(30) + ' - Page ' + this.getPageNum(indexToPrint));
     }
 
     return '/bookreader/print.php?' + options;
