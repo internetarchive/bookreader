@@ -72,7 +72,8 @@ function imageURL($paperAspect, $index, $format, $width, $height) {
         'scale' => 1
     );
 
-    return "<img src='http://{$server}/GnuBook/GnuBookImages.php?" . http_build_query($queryParams) . "' " . $htmlAttrs . " />";
+    $_server = htmlspecialchars($server);
+    return "<img src='http://{$_server}/GnuBook/GnuBookImages.php?" . http_build_query($queryParams) . "' " . $htmlAttrs . " />";
 }
 
 echo "<html><head>";
@@ -87,9 +88,9 @@ echo "    if (agent.indexOf('safari') != -1) { doPrint = false; }";
 echo "    if (doPrint) { print(); }";
 echo "  }";
 echo "</script>";
-echo "<title>" . $title . "</title><body onload='print(); return false;'>";
+echo "<title>" . htmlspecialchars($title) . "</title><body onload='conditionalPrint(); return false;'>";
 echo   "<p class='noprint' style='text-align: right'>";
-echo     "<button class='GBicon rollover print' title='Print' onclick='conditionalPrint(); return false;'></button> <a href='#' onclick='print(); return false;'>Print</a></p>";
+echo     "<button class='GBicon rollover print' title='Print' onclick='print(); return false;'></button> <a href='#' onclick='print(); return false;'>Print</a></p>";
 echo   "<p style='text-align:center;'>";
 echo     imageURL($paperAspect, $index, $format, $width, $height);
 echo   "</p>";
