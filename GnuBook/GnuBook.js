@@ -2479,6 +2479,7 @@ GnuBook.prototype.getPrintURI = function() {
     return '/bookreader/print.php?' + options;
 }
 
+/* iframe implementation
 GnuBook.prototype.getPrintFrameContent = function(index) {    
     // We fit the image based on an assumed A4 aspect ratio.  A4 is a bit taller aspect than
     // 8.5x11 so we should end up not overflowing on either paper size.
@@ -2525,6 +2526,7 @@ GnuBook.prototype.updatePrintFrame = function(delta) {
     var doc = GnuBook.util.getIFrameDocument($('#printFrame')[0]);
     $('body', doc).html(this.getPrintFrameContent(this.indexToPrint));
 }
+*/
 
 // showEmbedCode()
 //______________________________________________________________________________
