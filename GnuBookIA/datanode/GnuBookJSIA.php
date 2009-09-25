@@ -150,13 +150,8 @@ gb.getPageURI = function(index, reduce, rotate) {
         _rotate = rotate;
     }
     
-    var leafStr = '0000';
-    var imgStr = this.leafMap[index].toString();
-    var re = new RegExp("0{"+imgStr.length+"}$");
-    
-    var insideZipPrefix = this.subPrefix.match('[^/]+$');
-    var file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
-    
+    var file = this._getPageFile(index);
+        
     // $$$ add more image stack formats here
     if (1==this.mode) {
         var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
@@ -188,6 +183,17 @@ gb.getPageURI = function(index, reduce, rotate) {
     return url;
 }
 
+gb._getPageFile = function(index) {
+    var leafStr = '0000';
+    var imgStr = this.leafMap[index].toString();
+    var re = new RegExp("0{"+imgStr.length+"}$");
+    
+    var insideZipPrefix = this.subPrefix.match('[^/]+$');
+    var file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
+    
+    return file;
+}
+
 gb.getPageSide = function(index) {
     //assume the book starts with a cover (right-hand leaf)
     //we should really get handside from scandata.xml
@@ -195,7 +201,7 @@ gb.getPageSide = function(index) {
     <? // Use special function if we should infer the page sides based off the title page index
     if (preg_match('/goog$/', $id) && ('' != $titleLeaf)) {
     ?>
-    // assume page side based on title page
+    // assume page side based on title pagex
     var titleIndex = gb.leafNumToIndex(gb.titleLeaf);
     // assume title page is RHS
     var delta = titleIndex - index;

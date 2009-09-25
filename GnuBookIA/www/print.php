@@ -24,7 +24,7 @@ us from calling print() on an iframe that comes from a cluster datanode.
 $id     = $_REQUEST['id'];
 $server = $_REQUEST['server'];
 $zip    = $_REQUEST['zip'];
-$index  = $_REQUEST['index'];
+$file  = $_REQUEST['file'];
 $format = $_REQUEST['format'];
 //$imgAspect = $_REQUEST['aspect'];
 $width = floatval($_REQUEST['width']);
@@ -38,7 +38,7 @@ $paperAspect = 8.5/11;
 $allowRotate = true;
 
 // Returns (url, attrs)
-function imageURL($paperAspect, $index, $format, $width, $height, $allowRotate) {
+function imageURL($paperAspect, $file, $format, $width, $height, $allowRotate) {
     global $server, $id, $zip;
     
     $rotate = "0";
@@ -59,8 +59,6 @@ function imageURL($paperAspect, $index, $format, $width, $height, $allowRotate) 
         // taller than paper, fit height
         $htmlAttrs = "height='95%'";
     }
-
-    $file = sprintf("%s_%s/%s_%04d.%s", $id, $format, $id, $index, $format);
     
     $queryParams = array(
         'id' => $id, // global
@@ -92,17 +90,17 @@ echo "<title>" . htmlspecialchars($title) . "</title><body onload='conditionalPr
 echo   "<p class='noprint' style='text-align: right'>";
 echo     "<button class='GBicon rollover print' title='Print' onclick='print(); return false;'></button> <a href='#' onclick='print(); return false;'>Print</a></p>";
 echo   "<p style='text-align:center;'>";
-echo     imageURL($paperAspect, $index, $format, $width, $height, $allowRotate);
+echo     imageURL($paperAspect, $file, $format, $width, $height, $allowRotate);
 echo   "</p>";
 
-if (isset($_REQUEST['index2'])) {    
-    $index2 = $_REQUEST['index2'];
+if (isset($_REQUEST['file2'])) {    
+    $file2 = $_REQUEST['file2'];
     $width2 = floatval($_REQUEST['width2']);
     $height2 = floatval($_REQUEST['height2']);
     
     
     echo "<p style='text-align: center;'>";
-    echo imageURL($paperAspect, $index2, $format, $width2, $height2, $allowRotate);
+    echo imageURL($paperAspect, $file2, $format, $width2, $height2, $allowRotate);
     echo "</p>";
 }
 echo  "</body></html>";

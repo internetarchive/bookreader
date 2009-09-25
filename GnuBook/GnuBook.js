@@ -2465,11 +2465,11 @@ GnuBook.prototype.getPrintURI = function() {
     }
     
     var options = 'id=' + this.bookId + '&server=' + this.server + '&zip=' + this.zip
-        + '&format=' + this.imageFormat + '&index=' + this.leafMap[indexToPrint]
+        + '&format=' + this.imageFormat + '&file=' + this._getPageFile(indexToPrint)
         + '&width=' + this.getPageWidth(indexToPrint) + '&height=' + this.getPageHeight(indexToPrint);
    
     if (this.constMode2up == this.mode) {
-        options += '&index2=' + this.leafMap[this.twoPage.currentIndexR] + '&width2=' + this.getPageWidth(this.twoPage.currentIndexR);
+        options += '&file2=' + this._getPageFile(this.twoPage.currentIndexR) + '&width2=' + this.getPageWidth(this.twoPage.currentIndexR);
         options += '&height2=' + this.getPageHeight(this.twoPage.currentIndexR);
         options += '&title=' + escape(this.shortTitle(30) + ' - Pages ' + this.getPageNum(this.twoPage.currentIndexL) + ', ' + this.getPageNum(this.twoPage.currentIndexR));
     } else {
