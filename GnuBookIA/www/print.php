@@ -21,12 +21,6 @@ GnuBookPrint.php exists to get around the same-origin policy that prevents
 us from calling print() on an iframe that comes from a cluster datanode.
 */
 
-// From http://us2.php.net/manual/en/function.urldecode.php
-function utf8_urldecode($str) {
-    $str = preg_replace("/%u([0-9a-f]{3,4})/i","&#x\\1;", urldecode($str));
-    return html_entity_decode($str,null,'UTF-8');;
-}
-
 $id     = $_REQUEST['id'];
 $server = $_REQUEST['server'];
 $zip    = $_REQUEST['zip'];
@@ -35,7 +29,7 @@ $format = $_REQUEST['format'];
 //$imgAspect = $_REQUEST['aspect'];
 $width = floatval($_REQUEST['width']);
 $height = floatval($_REQUEST['height']);
-$title = utf8_urldecode($_REQUEST['title']);
+$title = $_REQUEST['title'];
 
 /* We assume that the print aspect ratio is somewhat close to US Letter in portrait orientation */
 $paperAspect = 8.5/11;
