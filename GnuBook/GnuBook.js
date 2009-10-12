@@ -66,6 +66,7 @@ function GnuBook() {
     // Mode constants
     this.constMode1up = 1;
     this.constMode2up = 2;
+    this.constModeThumb = 3;
     
     // Zoom levels
     this.reductionFactors = [0.5, 1, 2, 4, 8, 16];
@@ -138,6 +139,8 @@ GnuBook.prototype.init = function() {
             e.data.displayedIndices = [];
             e.data.updateSearchHilites(); //deletes hilights but does not call remove()            
             e.data.loadLeafs();
+		} else if (3 == e.data.mode){
+			e.data.prepareThumbnailView;
         } else {
             //console.log('drawing 2 page view');
             
@@ -172,7 +175,11 @@ GnuBook.prototype.init = function() {
         this.resizePageView();
         this.firstIndex = startIndex;
         this.jumpToIndex(startIndex);
-    } else {
+    } else if (3 == this.mode) {
+		this.firstIndex = startIndex;
+		this.jumpToIndex(startIndex);
+		this.prepareThumbnailView();
+	} else {
         //this.resizePageView();
         
         this.displayedIndices=[0];
@@ -256,6 +263,8 @@ GnuBook.prototype.setupKeyListeners = function() {
 GnuBook.prototype.drawLeafs = function() {
     if (1 == this.mode) {
         this.drawLeafsOnePage();
+	} else if(3 == this.mode) {
+		this.drawLeafsThumbnail();
     } else {
         this.drawLeafsTwoPage();
     }
@@ -543,6 +552,139 @@ GnuBook.prototype.drawLeafsOnePage = function() {
     
 }
 
+// drawLeafsThumbnail()
+//______________________________________________________________________________
+GnuBook.prototype.drawLeafsThumbnail = function() {
+    //alert('drawing leafs!');
+    this.timer = null;
+
+
+    var scrollTop = $('#GBcontainer').attr('scrollTop');
+    var scrollBottom = scrollTop + $('#GBcontainer').height();
+    //console.log('top=' + scrollTop + ' bottom='+scrollBottom);
+    
+    var indicesToDisplay = [];
+    
+    var i;
+    var leafTop = 0;
+    var leafBottom = 0;
+	var viewHeight = 0;
+	var width = 0;
+    for (i=0; i<this.numLeafs; i++) {
+        var height  = parseInt(this.getPageHeight(i)/this.thumbScale); 
+    
+        leafBottom += height;
+        //console.log('leafTop = '+leafTop+ ' pageH = ' + this.pageH[i] + 'leafTop>=scrollTop=' + (leafTop>=scrollTop));
+        var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
+        var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
+        var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
+        if (topInView | bottomInView | middleInView) {
+            //console.log('displayed: ' + this.displayedIndices);
+            //console.log('to display: ' + i);
+            indicesToDisplay.push(i);
+        }
+        leafTop += height +10;      
+        leafBottom += 10;
+    }
+
+    var firstIndexToDraw  = indicesToDisplay[0];
+    this.firstIndex      = firstIndexToDraw;
+    
+    // Update hash, but only if we're currently displaying a leaf
+    // Hack that fixes #365790
+    if (this.displayedIndices.length > 0) {
+        this.updateLocationHash();
+    }
+
+    if ((0 != firstIndexToDraw) && (1 < this.reduce)) {
+        firstIndexToDraw--;
+        indicesToDisplay.unshift(firstIndexToDraw);
+    }
+    
+    var lastIndexToDraw = indicesToDisplay[indicesToDisplay.length-1];
+    if ( ((this.numLeafs-1) != lastIndexToDraw) && (1 < this.reduce) ) {
+        indicesToDisplay.push(lastIndexToDraw+1);
+    }
+    
+    leafTop = 0;
+    var i;
+    for (i=0; i<firstIndexToDraw; i++) {
+        leafTop += parseInt(this.getPageHeight(i)/this.thumbScale) +10;
+    }
+
+    //var viewWidth = $('#GBpageview').width(); //includes scroll bar width
+    var viewWidth = $('#GBcontainer').attr('scrollWidth');
+
+
+    for (i=0; i<indicesToDisplay.length; i++) {
+        var index = indicesToDisplay[i];    
+        var height  = parseInt(this.getPageHeight(index)/this.thumbScale); 
+
+        if(-1 == jQuery.inArray(indicesToDisplay[i], this.displayedIndices)) {            
+            var width   = parseInt(this.getPageWidth(index)/this.thumbScale); 
+            //console.log("displaying leaf " + indicesToDisplay[i] + ' leafTop=' +leafTop);
+            var div = document.createElement("div");
+            div.className = 'GBpagediv1up';
+            div.id = 'pagediv'+index;
+            div.style.position = "absolute";
+            $(div).css('top', leafTop + 'px');
+            var left = (viewWidth-width)>>1;
+            if (left<0) left = 0;
+            $(div).css('left', left+'px');
+            $(div).css('width', width+'px');
+            $(div).css('height', height+'px');
+            //$(div).text('loading...');
+
+			// thumbnails are hyperlinked, do not need drag handler
+            //this.setDragHandler(div);
+            
+			// link to page in single page mode
+			var link = document.createElement("a");
+			link.href = '#page/' + (this.getPageNum(index)) +'/mode/1up' ;
+            $(div).append(link);
+
+            $('#GBpageview').append(div);
+
+            var img = document.createElement("img");
+            img.src = this.getPageURI(index);
+            $(img).css('width', width+'px');
+            $(img).css('height', height+'px');
+			img.style.border = "0";
+            $(link).append(img);
+
+
+        } else {
+            //console.log("not displaying " + indicesToDisplay[i] + ' score=' + jQuery.inArray(indicesToDisplay[i], this.displayedIndices));            
+        }
+
+        leafTop += height +10;
+
+    }
+    
+    for (i=0; i<this.displayedIndices.length; i++) {
+        if (-1 == jQuery.inArray(this.displayedIndices[i], indicesToDisplay)) {
+            var index = this.displayedIndices[i];
+            //console.log('Removing leaf ' + index);
+            //console.log('id='+'#pagediv'+index+ ' top = ' +$('#pagediv'+index).css('top'));
+            $('#pagediv'+index).remove();
+        } else {
+            //console.log('NOT Removing leaf ' + this.displayedIndices[i]);
+        }
+    }
+    
+    this.displayedIndices = indicesToDisplay.slice();
+    this.updateSearchHilites();
+    
+    if (null != this.getPageNum(firstIndexToDraw))  {
+        $("#GBpagenum").val(this.getPageNum(this.currentIndex()));
+    } else {
+        $("#GBpagenum").val('');
+    }
+            
+    this.updateToolbarZoom(this.reduce);
+    
+}
+
 // drawLeafsTwoPage()
 //______________________________________________________________________________
 GnuBook.prototype.drawLeafsTwoPage = function() {
@@ -648,6 +790,8 @@ GnuBook.prototype.zoom = function(direction) {
             return this.zoom1up(direction);
         case this.constMode2up:
             return this.zoom2up(direction);
+        case this.constModeThumb:
+            return this.zoomThumb(direction);
     }
 }
 
@@ -676,6 +820,15 @@ GnuBook.prototype.zoom1up = function(dir) {
     this.loadLeafs();
     
     this.updateToolbarZoom(this.reduce);
+}
+
+// zoomThumb(dir)
+//______________________________________________________________________________
+GnuBook.prototype.zoomThumb = function(dir) {
+    if (3 == this.mode) {     //can only zoom in 1-page mode
+        this.switchMode(1);
+        return;
+    }
 }
 
 // resizePageView()
@@ -933,6 +1086,9 @@ GnuBook.prototype.switchMode = function(mode) {
     if (1 == mode) {
         this.reduce = this.quantizeReduce(this.reduce);
         this.prepareOnePageView();
+    } else if (3 == mode) {
+	    this.reduce = this.quantizeReduce(this.reduce);
+        this.prepareThumbnailView();
     } else {
         this.twoPage.autofit = false; // Take zoom level from other mode
         this.reduce = this.quantizeReduce(this.reduce);
@@ -963,6 +1119,39 @@ GnuBook.prototype.prepareOnePageView = function() {
     this.displayedIndices = [];
     
     this.drawLeafsOnePage();
+        
+    // Bind mouse handlers
+    // Disable mouse click to avoid selected/highlighted page images - bug 354239
+    gbPageView.bind('mousedown', function(e) {
+        // $$$ check here for right-click and don't disable.  Also use jQuery style
+        //     for stopping propagation. See https://bugs.edge.launchpad.net/gnubook/+bug/362626
+        return false;
+    })
+    // Special hack for IE7
+    gbPageView[0].onselectstart = function(e) { return false; };
+}
+
+//prepareThumbnailView()
+//______________________________________________________________________________
+GnuBook.prototype.prepareThumbnailView = function() {
+	
+    // var startLeaf = this.displayedIndices[0];
+    var startLeaf = this.currentIndex();
+    
+    $('#GBcontainer').empty();
+    $('#GBcontainer').css({
+        overflowY: 'scroll',
+        overflowX: 'auto'
+    });
+    
+    var gbPageView = $("#GBcontainer").append("<div id='GBpageview'></div>");
+    
+    this.resizePageView();
+    
+    this.jumpToIndex(startLeaf);
+    this.displayedIndices = [];
+    
+    this.drawLeafsThumbnail();
         
     // Bind mouse handlers
     // Disable mouse click to avoid selected/highlighted page images - bug 354239
@@ -1401,7 +1590,7 @@ GnuBook.prototype.twoPageSetCursor = function() {
 // Returns the currently active index.
 GnuBook.prototype.currentIndex = function() {
     // $$$ we should be cleaner with our idea of which index is active in 1up/2up
-    if (this.mode == this.constMode1up || this.mode == this.constMode2up) {
+    if (this.mode == this.constMode1up || this.mode == this.constMode2up || this.mode == this.constModeThumb) {
         return this.firstIndex;
     } else {
         throw 'currentIndex called for unimplemented mode ' + this.mode;
@@ -2867,6 +3056,8 @@ GnuBook.prototype.paramsFromFragment = function(urlFragment) {
         params.mode = this.constMode1up;
     } else if ('2up' == urlHash['mode']) {
         params.mode = this.constMode2up;
+    } else if ('Thumb' == urlHash['mode']) {
+        params.mode = this.constModeThumb;
     }
     
     // Index and page
@@ -2930,6 +3121,8 @@ GnuBook.prototype.fragmentFromParams = function(params) {
             fragments.push('mode', '1up');
         } else if (params.mode == this.constMode2up) {
             fragments.push('mode', '2up');
+        } else if (params.mode == this.constModeThumb) {
+            fragments.push('mode', 'thumb');
         } else {
             throw 'fragmentFromParams called with unknown mode ' + params.mode;
         }
