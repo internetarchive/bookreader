@@ -2780,6 +2780,7 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
         + " <span class='label'>Zoom: <span id='GBzoom'>"+parseInt(100/this.reduce)+"</span></span>"
         + " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
         + " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
+		+ " <button class='GBicon rollover thumbnail_mode' onclick='gb.switchMode(3); return false;'/>"
         + "&nbsp;&nbsp;<a class='GBblack title' href='"+this.bookUrl+"' target='_blank'>"+this.shortTitle(50)+"</a>"
         + "</span></div>");
     
@@ -2808,6 +2809,7 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
                    '.zoom_out': 'Zoom out',
                    '.one_page_mode': 'One-page view',
                    '.two_page_mode': 'Two-page view',
+				   '.thumbnail_mode': 'Thumbnail view',
                    '.embed': 'Embed bookreader',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
