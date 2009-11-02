@@ -2098,6 +2098,7 @@ GnuBook.prototype.search = function(term) {
 	script.setAttribute("type", "text/javascript");
 	script.setAttribute("src", 'http://'+this.server+'/GnuBook/flipbook_search_gb.php?url='+escape(this.bookPath + '_djvu.xml')+'&term='+term+'&format=XML&callback=gb.GBSearchCallback');
 	document.getElementsByTagName('head')[0].appendChild(script);
+	$('#GnuBookSearchBox').val(term);
 	$('#GnuBookSearchResults').html('Searching...');
 }
 
@@ -2959,7 +2960,11 @@ GnuBook.prototype.updateFromParams = function(params) {
         this.switchMode(params.mode);
     }
 
-    // $$$ process /search
+    // process /search
+    if ('undefined' != typeof(params.searchTerm)) {
+        this.search(params.searchTerm);
+    }
+    
     // $$$ process /zoom
     
     // We only respect page if index is not set
@@ -3025,6 +3030,11 @@ GnuBook.prototype.paramsFromFragment = function(urlFragment) {
     
     // $$$ process /region
     // $$$ process /search
+    
+    if (urlHash['search'] != undefined) {
+        params.searchTerm = GnuBook.util.decodeURIComponentPlus(urlHash['search']);
+    }
+    
     // $$$ process /highlight
         
     return params;
@@ -3070,7 +3080,6 @@ GnuBook.prototype.fragmentFromParams = function(params) {
     
     // $$$ highlight
     // $$$ region
-    // $$$ search
     
     // mode
     if ('undefined' != typeof(params.mode)) {    
@@ -3081,6 +3090,11 @@ GnuBook.prototype.fragmentFromParams = function(params) {
         } else {
             throw 'fragmentFromParams called with unknown mode ' + params.mode;
         }
+    }
+    
+    // search
+    if ('undefined' != typeof(params.searchTerm)) {
+        fragments.push('search', encodeURIComponent(params.searchTerm))
     }
     
     return fragments.join(separator);
@@ -3206,5 +3220,10 @@ GnuBook.util = {
         // Adapted from http://xkr.us/articles/dom/iframe-document/
         var outer = (iframe.contentWindow || iframe.contentDocument);
         return (outer.document || outer);
-    }
+    },
+    
+    decodeURIComponentPlus: function(value) {
+        // Decodes a URI component and converts '+' to ' '
+        return decodeURIComponent(value).replace(/\+/g, ' ');
+    },
 }
