@@ -2093,6 +2093,7 @@ GnuBook.prototype.getPageWidth2UP = function(index) {
 // search()
 //______________________________________________________________________________
 GnuBook.prototype.search = function(term) {
+    term = term.replace(/\//g, ' '); // strip slashes
     this.searchTerm = term;
     $('#GnuBookSearchScript').remove();
  	var script  = document.createElement("script");
