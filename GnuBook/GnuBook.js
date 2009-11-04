@@ -2960,7 +2960,9 @@ GnuBook.prototype.updateFromParams = function(params) {
 
     // process /search
     if ('undefined' != typeof(params.searchTerm)) {
-        this.search(params.searchTerm);
+        if (this.searchTerm != params.searchTerm) {
+            this.search(params.searchTerm);
+        }
     }
     
     // $$$ process /zoom
