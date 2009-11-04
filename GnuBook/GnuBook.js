@@ -52,6 +52,7 @@ function GnuBook() {
     this.embedPopup = null;
     this.printPopup = null;
     
+    this.searchTerm = '';
     this.searchResults = {};
     
     this.firstIndex = null;
@@ -2092,6 +2093,7 @@ GnuBook.prototype.getPageWidth2UP = function(index) {
 // search()
 //______________________________________________________________________________
 GnuBook.prototype.search = function(term) {
+    this.searchTerm = term;
     $('#GnuBookSearchScript').remove();
  	var script  = document.createElement("script");
  	script.setAttribute('id', 'GnuBookSearchScript');
@@ -3057,7 +3059,11 @@ GnuBook.prototype.paramsFromCurrent = function() {
     
     // $$$ highlight
     // $$$ region
-    // $$$ search
+
+    // search    
+    if (this.searchHighlightVisible()) {
+        params.searchTerm = this.searchTerm;
+    }
     
     return params;
 }
@@ -3093,11 +3099,11 @@ GnuBook.prototype.fragmentFromParams = function(params) {
     }
     
     // search
-    if ('undefined' != typeof(params.searchTerm)) {
-        fragments.push('search', encodeURIComponent(params.searchTerm))
+    if (params.searchTerm) {
+        fragments.push('search', params.searchTerm);
     }
     
-    return fragments.join(separator);
+    return GnuBook.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
 }
 
 // getPageIndex(pageNum)
@@ -3210,6 +3216,23 @@ GnuBook.prototype.canSwitchToMode = function(mode) {
     return true;
 }
 
+// searchHighlightVisible
+//________
+// Returns true if a search highlight is currently being displayed
+GnuBook.prototype.searchHighlightVisible = function() {
+    if (this.constMode2up == this.mode) {
+        if (this.searchResults[this.twoPage.currentIndexL]
+                || this.searchResults[this.twoPage.currentIndexR]) {
+            return true;
+        }
+    } else { // 1up
+        if (this.searchResults[this.currentIndex()]) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Library functions
 GnuBook.util = {
     clamp: function(value, min, max) {
@@ -3225,5 +3248,10 @@ GnuBook.util = {
     decodeURIComponentPlus: function(value) {
         // Decodes a URI component and converts '+' to ' '
         return decodeURIComponent(value).replace(/\+/g, ' ');
+    },
+    
+    encodeURIComponentPlus: function(value) {
+        // Encodes a URI component and converts ' ' to '+'
+        return encodeURIComponent(value).replace(/%20/g, '+');
     },
 }
