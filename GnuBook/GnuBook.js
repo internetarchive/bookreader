@@ -2166,6 +2166,9 @@ GnuBook.prototype.GBSearchCallback = function(txt) {
     }
     $('#GnuBookSearchResults').append('</ul>');
 
+    // $$$ update again for case of loading search URL in new browser window (search box may not have been ready yet)
+	$('#GnuBookSearchBox').val(this.searchTerm);
+
     this.updateSearchHilites();
 }
 
