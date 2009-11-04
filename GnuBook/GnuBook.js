@@ -204,51 +204,46 @@ GnuBook.prototype.setupKeyListeners = function() {
 
     // We use document here instead of window to avoid a bug in jQuery on IE7
     $(document).keydown(function(e) {
+    
         // Keyboard navigation        
-        switch(e.keyCode) {
-            case KEY_PGUP:
-            case KEY_UP:            
-                // In 1up mode page scrolling is handled by browser
-                if (2 == self.mode) {
-                    e.preventDefault();
-                    self.prev();
-                }
-                break;
-            case KEY_DOWN:
-            case KEY_PGDOWN:
-                if (2 == self.mode) {
-                    e.preventDefault();
-                    self.next();
-                }
-                break;
-            case KEY_END:
-                e.preventDefault();
-                self.last();
-                break;
-            case KEY_HOME:
-                e.preventDefault();
-                self.first();
-                break;
-            case KEY_LEFT:
-                if (self.keyboardNavigationIsDisabled(e)) {
-                    e.preventDefault();
+        if (!self.keyboardNavigationIsDisabled(e)) {
+            switch(e.keyCode) {
+                case KEY_PGUP:
+                case KEY_UP:            
+                    // In 1up mode page scrolling is handled by browser
+                    if (2 == self.mode) {
+                        e.preventDefault();
+                        self.prev();
+                    }
                     break;
-                }
-                if (2 == self.mode) {
-                    e.preventDefault();
-                    self.left();
-                }
-                break;
-            case KEY_RIGHT:
-                if (self.keyboardNavigationIsDisabled(e)) {
-                    e.preventDefault();
+                case KEY_DOWN:
+                case KEY_PGDOWN:
+                    if (2 == self.mode) {
+                        e.preventDefault();
+                        self.next();
+                    }
                     break;
-                }
-                if (2 == self.mode) {
+                case KEY_END:
                     e.preventDefault();
-                    self.right();
-                }
-                break;
+                    self.last();
+                    break;
+                case KEY_HOME:
+                    e.preventDefault();
+                    self.first();
+                    break;
+                case KEY_LEFT:
+                    if (2 == self.mode) {
+                        e.preventDefault();
+                        self.left();
+                    }
+                    break;
+                case KEY_RIGHT:
+                    if (2 == self.mode) {
+                        e.preventDefault();
+                        self.right();
+                    }
+                    break;
+            }
         }
     });
 }
@@ -2798,7 +2793,7 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
 
     // Switch to requested mode -- binds other click handlers
     this.switchToolbarMode(mode);
-
+    
 }
 
 
