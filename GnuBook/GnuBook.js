@@ -3254,5 +3254,6 @@ GnuBook.util = {
     encodeURIComponentPlus: function(value) {
         // Encodes a URI component and converts ' ' to '+'
         return encodeURIComponent(value).replace(/%20/g, '+');
-    },
+    }
+    // The final property here must NOT have a comma after it - IE7
 }
