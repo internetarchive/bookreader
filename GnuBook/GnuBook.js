@@ -656,6 +656,7 @@ GnuBook.prototype.zoom = function(direction) {
 // zoom1up(dir)
 //______________________________________________________________________________
 GnuBook.prototype.zoom1up = function(dir) {
+
     if (2 == this.mode) {     //can only zoom in 1-page mode
         this.switchMode(1);
         return;
@@ -678,6 +679,11 @@ GnuBook.prototype.zoom1up = function(dir) {
     this.loadLeafs();
     
     this.updateToolbarZoom(this.reduce);
+    
+    // Recalculate search hilites
+    this.removeSearchHilites(); 
+    this.updateSearchHilites();
+
 }
 
 // resizePageView()
@@ -1148,10 +1154,13 @@ GnuBook.prototype.prepareTwoPageView = function(centerPercentageX, centerPercent
     //console.log('indicesToDisplay: ' + this.indicesToDisplay[0] + ' ' + this.indicesToDisplay[1]);
     
     this.drawLeafsTwoPage();
-    this.updateSearchHilites2UP();
     this.updateToolbarZoom(this.reduce);
     
     this.prefetch();
+
+    this.removeSearchHilites();
+    this.updateSearchHilites();
+
 }
 
 // prepareTwoPagePopUp()
