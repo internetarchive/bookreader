@@ -1496,16 +1496,11 @@ GnuBook.prototype.last = function() {
 //______________________________________________________________________________
 // to flip back one spread, pass index=null
 GnuBook.prototype.flipBackToIndex = function(index) {
-    // XXX
-    console.log('flipBackToIndex ' + index);
     
     if (1 == this.mode) return;
 
     var leftIndex = this.twoPage.currentIndexL;
     
-    // $$$ Need to change this to be able to see first spread.
-    //     See https://bugs.launchpad.net/gnubook/+bug/296788
-    //if (leftIndex <= self.firstDisplayableIndex()) return; // XXX
     if (this.animating) return;
 
     if (null != this.leafEdgeTmp) {
@@ -1524,9 +1519,6 @@ GnuBook.prototype.flipBackToIndex = function(index) {
         return;
     }
     
-    // XXX
-    console.log("flipping back to " + previousIndices[0] + ',' + previousIndices[1]);
-
     this.animating = true;
     
     if ('rl' != this.pageProgression) {
