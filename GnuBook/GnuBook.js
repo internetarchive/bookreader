@@ -2937,10 +2937,21 @@ GnuBook.prototype.firstDisplayableIndex = function() {
     if (this.mode == 0) {
         return 0;
     } else {
-        // XXX
-        return -1; // determine based on hand-side
-        
-        return 1; // $$$ we assume there are enough pages... we need logic for very short books
+        if ('rl' != this.pageProgression) {
+            // LTR
+            if (this.getPageSide(0) == 'L') {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else {
+            // RTL
+            if (this.getPageSide(0) == 'R') {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
     }
 }
 
@@ -2951,24 +2962,22 @@ GnuBook.prototype.firstDisplayableIndex = function() {
 // this function when we can as pa  rt of https://bugs.launchpad.net/gnubook/+bug/296788
 GnuBook.prototype.lastDisplayableIndex = function() {
 
-    // XXX
-    return this.numLeafs; // XXX should depend on handside
+    var lastIndex = this.numLeafs - 1;
 
-    if (this.mode == 2) {
-        if (this.lastDisplayableIndex2up === null) {
-            // Calculate and cache
-            var candidate = this.numLeafs - 1;
-            for ( ; candidate >= 0; candidate--) {
-                var spreadIndices = this.getSpreadIndices(candidate);
-                if (Math.max(spreadIndices[0], spreadIndices[1]) < (this.numLeafs - 1)) {
-                    break;
-                }
-            }
-            this.lastDisplayableIndex2up = candidate;
+    if ('rl' != this.pageProgression) {
+        // LTR
+        if (this.getPageSide(lastIndex) == 'R') {
+            return lastIndex;
+        } else {
+            return lastIndex + 1;
         }
-        return this.lastDisplayableIndex2up;
     } else {
-        return this.numLeafs - 1;
+        // RTL
+        if (this.getPageSide(lastIndex) == 'L') {
+            return lastIndex;
+        } else {
+            return lastIndex + 1;
+        }
     }
 }
 
