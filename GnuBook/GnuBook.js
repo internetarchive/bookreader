@@ -730,6 +730,9 @@ GnuBook.prototype.resizePageView = function() {
     //this.centerPageView();
     this.loadLeafs();
     
+    // Not really needed until there is 1up autofit
+    this.removeSearchHilites();
+    this.updateSearchHilites();
 }
 
 // centerX1up()
