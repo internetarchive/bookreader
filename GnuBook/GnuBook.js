@@ -553,12 +553,7 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     // $$$ we should use calculated values in this.twoPage (recalc if necessary)
     
     var indexL = this.twoPage.currentIndexL;
-    
-    // XXX
-    if (indexL < 0) { // off end of book
-        indexL = this.twoPage.currentIndexR;
-    }
-    
+        
     var heightL  = this.getPageHeight(indexL); 
     var widthL   = this.getPageWidth(indexL);
 
@@ -1490,31 +1485,11 @@ GnuBook.prototype.prev = function() {
 }
 
 GnuBook.prototype.first = function() {
-    // XXX
     this.jumpToIndex(this.firstDisplayableIndex());
-    return;
-    
-    // XXX cut out
-    if (2 == this.mode) {
-        this.jumpToIndex(2);
-    }
-    else {
-        this.jumpToIndex(0);
-    }
 }
 
 GnuBook.prototype.last = function() {
-    // XXX
     this.jumpToIndex(this.lastDisplayableIndex());
-    return;
-    
-    // XXX cut out
-    if (2 == this.mode) {
-        this.jumpToIndex(this.lastDisplayableIndex());
-    }
-    else {
-        this.jumpToIndex(this.lastDisplayableIndex());
-    }
 }
 
 // flipBackToIndex()
@@ -1914,7 +1889,6 @@ GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
 
     //console.log('  preparing left->right for ' + prevL + ',' + prevR);
 
-    // XXX
     this.prefetchImg(prevL);
     this.prefetchImg(prevR);
     
@@ -2934,23 +2908,23 @@ GnuBook.prototype.updateToolbarZoom = function(reduce) {
 // $$$ Currently we cannot display the front/back cover in 2-up and will need to update
 // this function when we can as part of https://bugs.launchpad.net/gnubook/+bug/296788
 GnuBook.prototype.firstDisplayableIndex = function() {
-    if (this.mode == 0) {
+    if (this.mode != this.constMode2up) {
         return 0;
-    } else {
-        if ('rl' != this.pageProgression) {
-            // LTR
-            if (this.getPageSide(0) == 'L') {
-                return 0;
-            } else {
-                return -1;
-            }
+    }
+    
+    if ('rl' != this.pageProgression) {
+        // LTR
+        if (this.getPageSide(0) == 'L') {
+            return 0;
         } else {
-            // RTL
-            if (this.getPageSide(0) == 'R') {
-                return 0;
-            } else {
-                return -1;
-            }
+            return -1;
+        }
+    } else {
+        // RTL
+        if (this.getPageSide(0) == 'R') {
+            return 0;
+        } else {
+            return -1;
         }
     }
 }
@@ -2963,6 +2937,10 @@ GnuBook.prototype.firstDisplayableIndex = function() {
 GnuBook.prototype.lastDisplayableIndex = function() {
 
     var lastIndex = this.numLeafs - 1;
+    
+    if (this.mode != this.constMode2up) {
+        return lastIndex;
+    }
 
     if ('rl' != this.pageProgression) {
         // LTR
