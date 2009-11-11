@@ -576,7 +576,7 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
         left: this.twoPage.gutter-this.twoPage.scaledWL+'px',
         right: '',
         top:    top+'px',
-        backgroundColor: 'rgb(234, 226, 205)',
+        backgroundColor: this.getPageBackgroundColor(indexL),
         height: this.twoPage.height +'px', // $$$ height forced the same for both pages
         width:  this.twoPage.scaledWL + 'px',
         borderRight: '1px solid black',
@@ -596,7 +596,7 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
         left:   this.twoPage.gutter+'px',
         right: '',
         top:    top+'px',
-        backgroundColor: 'rgb(234, 226, 205)',
+        backgroundColor: this.getPageBackgroundColor(indexR),
         height: this.twoPage.height + 'px', // $$$ height forced the same for both pages
         width:  this.twoPage.scaledWR + 'px',
         borderLeft: '1px solid black',
