@@ -119,11 +119,27 @@ if ('' != $titleLeaf) {
 
 gb.getPageWidth = function(index) {
     //return parseInt(this.pageW[index]/this.reduce);
+    
+    // XXX
+    if (index < 0) { // Synthesize
+        return this.pageW[0];
+    } else if (index >= this.numLeafs) {
+        return this.pageW[this.numLeafs - 1];
+    }
+    
     return this.pageW[index];
 }
 
 gb.getPageHeight = function(index) {
     //return parseInt(this.pageH[index]/this.reduce);
+
+    // XXX
+    if (index < 0) { // Synthesize
+        return this.pageH[0];
+    } else if (index >= gb.numLeafs) {
+        return this.pageH[gb.numLeafs - 1];
+    }
+    
     return this.pageH[index];
 }
 
@@ -135,6 +151,11 @@ gb.canRotatePage = function(index) {
 // reduce defaults to 1 (no reduction)
 // rotate defaults to 0 (no rotation)
 gb.getPageURI = function(index, reduce, rotate) {
+
+    // XXX
+    if (index < 0 || index >= this.numLeafs) { // Synthesize page
+        return "/bookreader/images/transparent.png";
+    }
 
     var _reduce;
     var _rotate;

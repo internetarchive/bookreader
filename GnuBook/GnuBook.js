@@ -79,6 +79,10 @@ function GnuBook() {
         bookSpineDivWidth: 30,    // Width of book spine  $$$ consider sizing based on book length
         autofit: true
     };
+    
+    // Background color for pages (e.g. when loading page image)
+    // $$$ TODO dynamically calculate based on page images
+    this.pageDefaultBackgroundColor = 'rgb(234, 226, 205)';
 };
 
 // init()
@@ -549,6 +553,12 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     // $$$ we should use calculated values in this.twoPage (recalc if necessary)
     
     var indexL = this.twoPage.currentIndexL;
+    
+    // XXX
+    if (indexL < 0) { // off end of book
+        indexL = this.twoPage.currentIndexR;
+    }
+    
     var heightL  = this.getPageHeight(indexL); 
     var widthL   = this.getPageWidth(indexL);
 
@@ -1480,6 +1490,11 @@ GnuBook.prototype.prev = function() {
 }
 
 GnuBook.prototype.first = function() {
+    // XXX
+    this.jumpToIndex(this.firstDisplayableIndex());
+    return;
+    
+    // XXX cut out
     if (2 == this.mode) {
         this.jumpToIndex(2);
     }
@@ -1489,6 +1504,11 @@ GnuBook.prototype.first = function() {
 }
 
 GnuBook.prototype.last = function() {
+    // XXX
+    this.jumpToIndex(this.lastDisplayableIndex());
+    return;
+    
+    // XXX cut out
     if (2 == this.mode) {
         this.jumpToIndex(this.lastDisplayableIndex());
     }
@@ -1501,13 +1521,16 @@ GnuBook.prototype.last = function() {
 //______________________________________________________________________________
 // to flip back one spread, pass index=null
 GnuBook.prototype.flipBackToIndex = function(index) {
+    // XXX
+    console.log('flipBackToIndex ' + index);
+    
     if (1 == this.mode) return;
 
     var leftIndex = this.twoPage.currentIndexL;
     
     // $$$ Need to change this to be able to see first spread.
     //     See https://bugs.launchpad.net/gnubook/+bug/296788
-    if (leftIndex <= 2) return;
+    //if (leftIndex <= self.firstDisplayableIndex()) return; // XXX
     if (this.animating) return;
 
     if (null != this.leafEdgeTmp) {
@@ -1522,11 +1545,12 @@ GnuBook.prototype.flipBackToIndex = function(index) {
     
     var previousIndices = this.getSpreadIndices(index);
     
-    if (previousIndices[0] < 0 || previousIndices[1] < 0) {
+    if (previousIndices[0] < this.firstDisplayableIndex() || previousIndices[1] < this.firstDisplayableIndex()) {
         return;
     }
     
-    //console.log("flipping back to " + previousIndices[0] + ',' + previousIndices[1]);
+    // XXX
+    console.log("flipping back to " + previousIndices[0] + ',' + previousIndices[1]);
 
     this.animating = true;
     
@@ -1890,6 +1914,7 @@ GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
 
     //console.log('  preparing left->right for ' + prevL + ',' + prevR);
 
+    // XXX
     this.prefetchImg(prevL);
     this.prefetchImg(prevR);
     
@@ -1907,33 +1932,37 @@ GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
     //console.log('    prevL.left: ' + (gutter - scaledW) + 'px');
     //console.log('    changing prevL ' + prevL + ' to left: ' + (gutter-scaledW) + ' width: ' + scaledW);
     
-    $(this.prefetchedImgs[prevL]).css({
+    leftCSS = {
         position: 'absolute',
         left: gutter-scaledW+'px',
         right: '', // clear right property
         top:    top+'px',
-        backgroundColor: 'rgb(234, 226, 205)',
         height: this.twoPage.height,
         width:  scaledW+'px',
+        backgroundColor: this.getPageBackgroundColor(prevL),
         borderRight: '1px solid black',
         zIndex: 1
-    });
+    }
+    
+    $(this.prefetchedImgs[prevL]).css(leftCSS);
 
     $('#GBtwopageview').append(this.prefetchedImgs[prevL]);
 
     //console.log('    changing prevR ' + prevR + ' to left: ' + gutter + ' width: 0');
 
-    $(this.prefetchedImgs[prevR]).css({
+    rightCSS = {
         position: 'absolute',
         left:   gutter+'px',
         right: '',
         top:    top+'px',
-        backgroundColor: 'rgb(234, 226, 205)',
         height: this.twoPage.height,
         width:  '0px',
+        backgroundColor: this.getPageBackgroundColor(prevR),
         borderLeft: '1px solid black',
         zIndex: 2
-    });
+    }
+    
+    $(this.prefetchedImgs[prevR]).css(rightCSS);
 
     $('#GBtwopageview').append(this.prefetchedImgs[prevR]);
             
@@ -1963,7 +1992,7 @@ GnuBook.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
         position: 'absolute',
         left:   gutter+'px',
         top:    top+'px',
-        backgroundColor: 'rgb(234, 226, 205)',
+        backgroundColor: this.getPageBackgroundColor(nextR),
         height: this.twoPage.height,
         width:  scaledW+'px',
         borderLeft: '1px solid black',
@@ -1981,7 +2010,7 @@ GnuBook.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
         position: 'absolute',
         right:   $('#GBtwopageview').attr('clientWidth')-gutter+'px',
         top:    top+'px',
-        backgroundColor: 'rgb(234, 226, 205)',
+        backgroundColor: this.getPageBackgroundColor(nextL),
         height: this.twoPage.height,
         width:  0+'px', // Start at 0 width, then grow to the left
         borderRight: '1px solid black',
@@ -2908,6 +2937,9 @@ GnuBook.prototype.firstDisplayableIndex = function() {
     if (this.mode == 0) {
         return 0;
     } else {
+        // XXX
+        return -1; // determine based on hand-side
+        
         return 1; // $$$ we assume there are enough pages... we need logic for very short books
     }
 }
@@ -2918,6 +2950,10 @@ GnuBook.prototype.firstDisplayableIndex = function() {
 // $$$ Currently we cannot display the front/back cover in 2-up and will need to update
 // this function when we can as pa  rt of https://bugs.launchpad.net/gnubook/+bug/296788
 GnuBook.prototype.lastDisplayableIndex = function() {
+
+    // XXX
+    return this.numLeafs; // XXX should depend on handside
+
     if (this.mode == 2) {
         if (this.lastDisplayableIndex2up === null) {
             // Calculate and cache
@@ -3049,13 +3085,15 @@ GnuBook.prototype.paramsFromFragment = function(urlFragment) {
 GnuBook.prototype.paramsFromCurrent = function() {
 
     var params = {};
+    
+    var index = GnuBook.util.clamp(this.currentIndex(), 0, this.numLeafs - 1);
 
-    var pageNum = this.getPageNum(this.currentIndex());
+    var pageNum = this.getPageNum(index);
     if ((pageNum === 0) || pageNum) {
         params.page = pageNum;
     }
     
-    params.index = this.currentIndex();
+    params.index = index;
     params.mode = this.mode;
     
     // $$$ highlight
@@ -3232,6 +3270,19 @@ GnuBook.prototype.searchHighlightVisible = function() {
         }
     }
     return false;
+}
+
+// getPageBackgroundColor
+//--------
+// Returns a CSS property string for the background color for the given page
+// $$$ turn into regular CSS?
+GnuBook.prototype.getPageBackgroundColor = function(index) {
+    if (index >= 0 && index < this.numLeafs) {
+        // normal page
+        return this.pageDefaultBackgroundColor;
+    }
+    
+    return '';
 }
 
 // Library functions
