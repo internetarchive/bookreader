@@ -619,7 +619,7 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
 //______________________________________________________________________________
 GnuBook.prototype.updatePageNumBox2UP = function() {
     if (null != this.getPageNum(this.twoPage.currentIndexL))  {
-        $("#GBpagenum").val(this.getPageNum(this.twoPage.currentIndexL));
+        $("#GBpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
         $("#GBpagenum").val('');
     }
@@ -1403,8 +1403,11 @@ GnuBook.prototype.twoPageSetCursor = function() {
 // Returns the currently active index.
 GnuBook.prototype.currentIndex = function() {
     // $$$ we should be cleaner with our idea of which index is active in 1up/2up
-    if (this.mode == this.constMode1up || this.mode == this.constMode2up) {
-        return this.firstIndex;
+    if (this.mode == this.constMode1up) {
+        return this.firstIndex; // $$$ TODO page in center of view would be better
+    } else if (this.mode == this.constMode2up) {
+        // Only allow indices that are actually present in book
+        return GnuBook.util.clamp(this.firstIndex, 0, this.numLeafs - 1);    
     } else {
         throw 'currentIndex called for unimplemented mode ' + this.mode;
     }
@@ -3065,8 +3068,7 @@ GnuBook.prototype.paramsFromCurrent = function() {
 
     var params = {};
     
-    var index = GnuBook.util.clamp(this.currentIndex(), 0, this.numLeafs - 1);
-
+    var index = this.currentIndex();
     var pageNum = this.getPageNum(index);
     if ((pageNum === 0) || pageNum) {
         params.page = pageNum;
