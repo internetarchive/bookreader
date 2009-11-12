@@ -891,7 +891,7 @@ GnuBook.prototype.jumpToPage = function(pageNum) {
 
 // jumpToIndex()
 //______________________________________________________________________________
-GnuBook.prototype.jumpToIndex = function(index) {
+GnuBook.prototype.jumpToIndex = function(index, pageX, pageY) {
 
     if (2 == this.mode) {
         this.autoStop();
@@ -907,16 +907,31 @@ GnuBook.prototype.jumpToIndex = function(index) {
     } else {        
         var i;
         var leafTop = 0;
+        var leafLeft = 0;
         var h;
         for (i=0; i<index; i++) {
             h = parseInt(this.getPageHeight(i)/this.reduce); 
             leafTop += h + this.padding;
         }
+        
+        if (pageY) {
+            //console.log('pageY ' + pageY);
+            var offset = parseInt( (pageY) / this.reduce);
+            offset -= $('#GBcontainer').attr('clientHeight') >> 1;
+            //console.log( 'jumping to ' + leafTop + ' ' + offset);
+            leafTop += offset;
+        }
+        
+        if (pageX) {
+            var offset = parseInt( (pageX) / this.reduce);
+            offset -= $('#GBcontainer').attr('clientWidth') >> 1;
+            leafLeft += offset;
+        }   
+
         //$('#GBcontainer').attr('scrollTop', leafTop);
-        $('#GBcontainer').animate({scrollTop: leafTop },'fast');
+        $('#GBcontainer').animate({scrollTop: leafTop, scrollLeft: leafLeft },'fast');
     }
 }
-
 
 
 // switchMode()
@@ -2164,14 +2179,16 @@ GnuBook.prototype.GBSearchCallback = function(txt) {
                         //we'll skip baseline for now...
                         var coords = children[j].getAttribute('coords').split(',',4);
                         if (4 == coords.length) {
-                            this.searchResults[index] = {'l':coords[0], 'b':coords[1], 'r':coords[2], 't':coords[3], 'div':null};
+                            this.searchResults[index] = {'l':parseInt(coords[0]), 'b':parseInt(coords[1]), 'r':parseInt(coords[2]), 't':parseInt(coords[3]), 'div':null};
                         }
                     }
                 }
             }
             var pageName = this.getPageName(index);
+            var middleX = (this.searchResults[index].l + this.searchResults[index].r) >> 1;
+            var middleY = (this.searchResults[index].t + this.searchResults[index].b) >> 1;
             //TODO: remove hardcoded instance name
-            $('#GnuBookSearchResults').append('<li><b><a href="javascript:gb.jumpToIndex('+index+');">' + pageName + '</a></b> - ' + context + '</li>');
+            $('#GnuBookSearchResults').append('<li><b><a href="javascript:gb.jumpToIndex('+index+','+middleX+','+middleY+');">' + pageName + '</a></b> - ' + context + '</li>');
         }
     }
     $('#GnuBookSearchResults').append('</ul>');
