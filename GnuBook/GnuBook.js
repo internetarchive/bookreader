@@ -24,10 +24,15 @@ This file is part of GnuBook.
 // GnuBook()
 //______________________________________________________________________________
 // After you instantiate this object, you must supply the following
-// book-specific functions, before calling init():
+// book-specific functions, before calling init().  Some of these functions
+// can just be stubs for simple books.
 //  - getPageWidth()
 //  - getPageHeight()
 //  - getPageURI()
+//  - getPageSide()
+//  - canRotatePage()
+//  - getPageNum()
+//  - getSpreadIndices()
 // You must also add a numLeafs property before calling init().
 
 function GnuBook() {
@@ -438,7 +443,7 @@ GnuBook.prototype.drawLeafsOnePage = function() {
     var leafTop = 0;
     var leafBottom = 0;
     for (i=0; i<this.numLeafs; i++) {
-        var height  = parseInt(this.getPageHeight(i)/this.reduce); 
+        var height  = parseInt(this._getPageHeight(i)/this.reduce); 
     
         leafBottom += height;
         //console.log('leafTop = '+leafTop+ ' pageH = ' + this.pageH[i] + 'leafTop>=scrollTop=' + (leafTop>=scrollTop));
@@ -476,7 +481,7 @@ GnuBook.prototype.drawLeafsOnePage = function() {
     leafTop = 0;
     var i;
     for (i=0; i<firstIndexToDraw; i++) {
-        leafTop += parseInt(this.getPageHeight(i)/this.reduce) +10;
+        leafTop += parseInt(this._getPageHeight(i)/this.reduce) +10;
     }
 
     //var viewWidth = $('#GBpageview').width(); //includes scroll bar width
@@ -485,10 +490,10 @@ GnuBook.prototype.drawLeafsOnePage = function() {
 
     for (i=0; i<indicesToDisplay.length; i++) {
         var index = indicesToDisplay[i];    
-        var height  = parseInt(this.getPageHeight(index)/this.reduce); 
+        var height  = parseInt(this._getPageHeight(index)/this.reduce); 
 
         if(-1 == jQuery.inArray(indicesToDisplay[i], this.displayedIndices)) {            
-            var width   = parseInt(this.getPageWidth(index)/this.reduce); 
+            var width   = parseInt(this._getPageWidth(index)/this.reduce); 
             //console.log("displaying leaf " + indicesToDisplay[i] + ' leafTop=' +leafTop);
             var div = document.createElement("div");
             div.className = 'GBpagediv1up';
@@ -507,7 +512,7 @@ GnuBook.prototype.drawLeafsOnePage = function() {
             $('#GBpageview').append(div);
 
             var img = document.createElement("img");
-            img.src = this.getPageURI(index, this.reduce, 0);
+            img.src = this._getPageURI(index, this.reduce, 0);
             $(img).css('width', width+'px');
             $(img).css('height', height+'px');
             $(div).append(img);
@@ -554,8 +559,8 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     
     var indexL = this.twoPage.currentIndexL;
         
-    var heightL  = this.getPageHeight(indexL); 
-    var widthL   = this.getPageWidth(indexL);
+    var heightL  = this._getPageHeight(indexL); 
+    var widthL   = this._getPageWidth(indexL);
 
     var leafEdgeWidthL = this.leafEdgeWidth(indexL);
     var leafEdgeWidthR = this.twoPage.edgeWidth - leafEdgeWidthL;
@@ -584,8 +589,8 @@ GnuBook.prototype.drawLeafsTwoPage = function() {
     }).appendTo('#GBtwopageview');
     
     var indexR = this.twoPage.currentIndexR;
-    var heightR  = this.getPageHeight(indexR); 
-    var widthR   = this.getPageWidth(indexR);
+    var heightR  = this._getPageHeight(indexR); 
+    var widthR   = this._getPageWidth(indexR);
 
     // $$$ should use getwidth2up?
     //var scaledWR = this.twoPage.height*widthR/heightR;
@@ -709,8 +714,8 @@ GnuBook.prototype.resizePageView = function() {
     }
     
     for (i=0; i<this.numLeafs; i++) {
-        viewHeight += parseInt(this.getPageHeight(i)/this.reduce) + this.padding; 
-        var width = parseInt(this.getPageWidth(i)/this.reduce);
+        viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
+        var width = parseInt(this._getPageWidth(i)/this.reduce);
         if (width>viewWidth) viewWidth=width;
     }
     $('#GBpageview').height(viewHeight);
@@ -910,7 +915,7 @@ GnuBook.prototype.jumpToIndex = function(index, pageX, pageY) {
         var leafLeft = 0;
         var h;
         for (i=0; i<index; i++) {
-            h = parseInt(this.getPageHeight(i)/this.reduce); 
+            h = parseInt(this._getPageHeight(i)/this.reduce); 
             leafTop += h + this.padding;
         }
         
@@ -1333,13 +1338,13 @@ GnuBook.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     var canon5Dratio = 1.5;
     
     var first = {
-        height: this.getPageHeight(firstIndex),
-        width: this.getPageWidth(firstIndex)
+        height: this._getPageHeight(firstIndex),
+        width: this._getPageWidth(firstIndex)
     }
     
     var second = {
-        height: this.getPageHeight(secondIndex),
-        width: this.getPageWidth(secondIndex)
+        height: this._getPageHeight(secondIndex),
+        width: this._getPageWidth(secondIndex)
     }
     
     var firstIndexRatio  = first.height / first.width;
@@ -1393,8 +1398,8 @@ GnuBook.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex, re
     spreadSize.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
 
     // $$$ Possibly incorrect -- we should make height "dominant"
-    var nativeWidth = this.getPageWidth(firstIndex) + this.getPageWidth(secondIndex);
-    var nativeHeight = this.getPageHeight(firstIndex) + this.getPageHeight(secondIndex);
+    var nativeWidth = this._getPageWidth(firstIndex) + this._getPageWidth(secondIndex);
+    var nativeHeight = this._getPageHeight(firstIndex) + this._getPageHeight(secondIndex);
     spreadSize.height = parseInt( (nativeHeight / 2) / this.reduce );
     spreadSize.width = parseInt( (nativeWidth / 2) / this.reduce );
     spreadSize.reduce = reduce;
@@ -1879,7 +1884,7 @@ GnuBook.prototype.setMouseHandlers2UP = function() {
 // prefetchImg()
 //______________________________________________________________________________
 GnuBook.prototype.prefetchImg = function(index) {
-    var pageURI = this.getPageURI(index);
+    var pageURI = this._getPageURI(index);
 
     // Load image if not loaded or URI has changed (e.g. due to scaling)
     var loadImage = false;
@@ -1914,8 +1919,8 @@ GnuBook.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
     this.prefetchImg(prevL);
     this.prefetchImg(prevR);
     
-    var height  = this.getPageHeight(prevL); 
-    var width   = this.getPageWidth(prevL);    
+    var height  = this._getPageHeight(prevL); 
+    var width   = this._getPageWidth(prevL);    
     var middle = this.twoPage.middle;
     var top  = this.twoPageTop();                
     var scaledW = this.twoPage.height*width/height; // $$$ assumes height of page is dominant
@@ -1975,8 +1980,8 @@ GnuBook.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
     this.prefetchImg(nextL);
     this.prefetchImg(nextR);
 
-    var height  = this.getPageHeight(nextR); 
-    var width   = this.getPageWidth(nextR);    
+    var height  = this._getPageHeight(nextR); 
+    var width   = this._getPageWidth(nextR);    
     var middle = this.twoPage.middle;
     var top  = this.twoPageTop();               
     var scaledW = this.twoPage.height*width/height;
@@ -1997,8 +2002,8 @@ GnuBook.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
 
     $('#GBtwopageview').append(this.prefetchedImgs[nextR]);
 
-    height  = this.getPageHeight(nextL); 
-    width   = this.getPageWidth(nextL);      
+    height  = this._getPageHeight(nextL); 
+    width   = this._getPageWidth(nextL);      
     scaledW = this.twoPage.height*width/height;
 
     //console.log(' prepareRTL changing nextL ' + nextL + ' to right: ' + $('#GBcontainer').width()-gutter);
@@ -2105,8 +2110,8 @@ GnuBook.prototype.prefetch = function() {
 //______________________________________________________________________________
 GnuBook.prototype.getPageWidth2UP = function(index) {
     // We return the width based on the dominant height
-    var height  = this.getPageHeight(index); 
-    var width   = this.getPageWidth(index);    
+    var height  = this._getPageHeight(index); 
+    var width   = this._getPageWidth(index);    
     return Math.floor(this.twoPage.height*width/height); // $$$ we assume width is relative to current spread
 }    
 
@@ -2379,8 +2384,8 @@ GnuBook.prototype.updateSearchHilites2UP = function() {
 
             // We calculate the reduction factor for the specific page because it can be different
             // for each page in the spread
-            var height = this.getPageHeight(key);
-            var width  = this.getPageWidth(key)
+            var height = this._getPageHeight(key);
+            var width  = this._getPageWidth(key)
             var reduce = this.twoPage.height/height;
             var scaledW = parseInt(width*reduce);
             
@@ -2495,11 +2500,11 @@ GnuBook.prototype.getPrintURI = function() {
     
     var options = 'id=' + this.bookId + '&server=' + this.server + '&zip=' + this.zip
         + '&format=' + this.imageFormat + '&file=' + this._getPageFile(indexToPrint)
-        + '&width=' + this.getPageWidth(indexToPrint) + '&height=' + this.getPageHeight(indexToPrint);
+        + '&width=' + this._getPageWidth(indexToPrint) + '&height=' + this._getPageHeight(indexToPrint);
    
     if (this.constMode2up == this.mode) {
-        options += '&file2=' + this._getPageFile(this.twoPage.currentIndexR) + '&width2=' + this.getPageWidth(this.twoPage.currentIndexR);
-        options += '&height2=' + this.getPageHeight(this.twoPage.currentIndexR);
+        options += '&file2=' + this._getPageFile(this.twoPage.currentIndexR) + '&width2=' + this._getPageWidth(this.twoPage.currentIndexR);
+        options += '&height2=' + this._getPageHeight(this.twoPage.currentIndexR);
         options += '&title=' + encodeURIComponent(this.shortTitle(50) + ' - Pages ' + this.getPageNum(this.twoPage.currentIndexL) + ', ' + this.getPageNum(this.twoPage.currentIndexR));
     } else {
         options += '&title=' + encodeURIComponent(this.shortTitle(50) + ' - Page ' + this.getPageNum(indexToPrint));
@@ -2513,7 +2518,7 @@ GnuBook.prototype.getPrintFrameContent = function(index) {
     // We fit the image based on an assumed A4 aspect ratio.  A4 is a bit taller aspect than
     // 8.5x11 so we should end up not overflowing on either paper size.
     var paperAspect = 8.5 / 11;
-    var imageAspect = this.getPageWidth(index) / this.getPageHeight(index);
+    var imageAspect = this._getPageWidth(index) / this._getPageHeight(index);
     
     var rotate = 0;
     
@@ -2535,7 +2540,7 @@ GnuBook.prototype.getPrintFrameContent = function(index) {
         fitAttrs = 'height="95%"';
     }
 
-    var imageURL = this.getPageURI(index, 1, rotate);
+    var imageURL = this._getPageURI(index, 1, rotate);
     var iframeStr = '<html style="padding: 0; border: 0; margin: 0"><head><title>' + this.bookTitle + '</title></head><body style="padding: 0; border:0; margin: 0">';
     iframeStr += '<div style="text-align: center; width: 99%; height: 99%; overflow: hidden;">';
     iframeStr +=   '<img src="' + imageURL + '" ' + fitAttrs + ' />';
@@ -3293,6 +3298,36 @@ GnuBook.prototype.getPageBackgroundColor = function(index) {
     }
     
     return '';
+}
+
+// _getPageWidth
+//--------
+// Returns the page width for the given index, or first or last page if out of range
+GnuBook.prototype._getPageWidth = function(index) {
+    // Synthesize a page width for pages not actually present in book.
+    // May or may not be the best approach.
+    // If index is out of range we return the width of first or last page
+    index = GnuBook.util.clamp(index, 0, this.numLeafs - 1);
+    return this.getPageWidth(index);
+}
+
+// _getPageHeight
+//--------
+// Returns the page height for the given index, or first or last page if out of range
+GnuBook.prototype._getPageHeight= function(index) {
+    index = GnuBook.util.clamp(index, 0, this.numLeafs - 1);
+    return this.getPageHeight(index);
+}
+
+// _getPageURI
+//--------
+// Returns the page URI or transparent image if out of range
+GnuBook.prototype._getPageURI = function(index, reduce, rotate) {
+    if (index < 0 || index >= this.numLeafs) { // Synthesize page
+        return this.imagesBaseURL + "/transparent.png";
+    }
+    
+    return this.getPageURI(index, reduce, rotate);
 }
 
 // Library functions
