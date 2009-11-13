@@ -33,10 +33,12 @@ This file is part of GnuBook.
 function GnuBook() {
     this.reduce  = 4;
     this.padding = 10;
-    this.mode    = 1; //1 or 2
+    this.mode    = 1; //1, 2, 3
     this.ui = 'full'; // UI mode
-    
+    this.thumbScale = 10; // thumbnail default
+
     this.displayedIndices = [];	
+	this.displayedRows=[];
     //this.indicesToDisplay = [];
     this.imgs = {};
     this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index
@@ -50,7 +52,7 @@ function GnuBook() {
     this.twoPagePopUp = null;
     this.leafEdgeTmp  = null;
     this.embedPopup = null;
-    
+
     this.searchResults = {};
     
     this.firstIndex = null;
@@ -85,6 +87,7 @@ function GnuBook() {
 GnuBook.prototype.init = function() {
 
     var startIndex = undefined;
+	this.pageScale = this.reduce; // preserve current reduce
     
     // Find start index and mode if set in location hash
     var params = this.paramsFromFragment(window.location.hash);
@@ -140,7 +143,7 @@ GnuBook.prototype.init = function() {
             e.data.updateSearchHilites(); //deletes hilights but does not call remove()            
             e.data.loadLeafs();
 		} else if (3 == e.data.mode){
-			e.data.prepareThumbnailView;
+			e.data.prepareThumbnailView();
         } else {
             //console.log('drawing 2 page view');
             
@@ -177,8 +180,8 @@ GnuBook.prototype.init = function() {
         this.jumpToIndex(startIndex);
     } else if (3 == this.mode) {
 		this.firstIndex = startIndex;
-		this.jumpToIndex(startIndex);
 		this.prepareThumbnailView();
+		this.jumpToIndex(startIndex);
 	} else {
         //this.resizePageView();
         
@@ -558,131 +561,167 @@ GnuBook.prototype.drawLeafsThumbnail = function() {
     //alert('drawing leafs!');
     this.timer = null;
 
-
-    var scrollTop = $('#GBcontainer').attr('scrollTop');
-    var scrollBottom = scrollTop + $('#GBcontainer').height();
+	var viewWidth = $('#GBcontainer').attr('scrollWidth') - 20; // width minus buffer
+	
     //console.log('top=' + scrollTop + ' bottom='+scrollBottom);
-    
-    var indicesToDisplay = [];
-    
-    var i;
-    var leafTop = 0;
-    var leafBottom = 0;
-	var viewHeight = 0;
-	var width = 0;
-    for (i=0; i<this.numLeafs; i++) {
-        var height  = parseInt(this.getPageHeight(i)/this.thumbScale); 
-    
-        leafBottom += height;
-        //console.log('leafTop = '+leafTop+ ' pageH = ' + this.pageH[i] + 'leafTop>=scrollTop=' + (leafTop>=scrollTop));
+
+	var i;
+	var leafWidth;
+	var leafHeight;
+	var rightPos = 0;
+	var bottomPos = 0;
+	var maxRight = 0;
+	var currentRow = 0;
+	var leafIndex = 0;
+	var leafMap = [];
+	
+	for (i=0; i<this.numLeafs; i++) {
+		leafWidth = parseInt(this.getPageWidth(i)/this.reduce, 10);
+		if (rightPos + (leafWidth + this.padding) > viewWidth){
+			currentRow++;
+			rightPos = 0;
+			leafIndex = 0;
+		}
+	
+		if (leafMap[currentRow]===undefined) { leafMap[currentRow] = {}; }
+		if (leafMap[currentRow].leafs===undefined) {
+			leafMap[currentRow].leafs = [];
+			leafMap[currentRow].height = 0;
+			leafMap[currentRow].top = 0;
+		}
+		leafMap[currentRow].leafs[leafIndex] = {};
+		leafMap[currentRow].leafs[leafIndex].num = i;
+		leafMap[currentRow].leafs[leafIndex].left = rightPos;
+
+		leafHeight = parseInt(this.getPageHeight(leafMap[currentRow].leafs[leafIndex].num)/this.reduce, 10);
+		if (leafHeight > leafMap[currentRow].height) { leafMap[currentRow].height = leafHeight; }
+		if (leafIndex===0) { bottomPos += this.padding + leafMap[currentRow].height; }
+		rightPos += leafWidth + this.padding;
+		if (rightPos > maxRight) { maxRight = rightPos; }
+		leafIndex++;
+	}
+	
+	// reset the bottom position based on thumbnails
+	$('#GBpageview').height(bottomPos);
+	
+	var pageViewBuffer = Math.floor(($('#GBcontainer').attr('scrollWidth') - maxRight) / 2) - 14;	
+	var scrollTop = $('#GBcontainer').attr('scrollTop');
+    var scrollBottom = scrollTop + $('#GBcontainer').height();
+
+	var leafTop = 0;
+	var leafBottom = 0;
+	var rowsToDisplay = [];
+
+    for (i=0; i<leafMap.length; i++) {
+		leafBottom += this.padding + leafMap[i].height;
         var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
         var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
         var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
         if (topInView | bottomInView | middleInView) {
-            //console.log('displayed: ' + this.displayedIndices);
-            //console.log('to display: ' + i);
-            indicesToDisplay.push(i);
+            //console.log('row to display: ' + j);
+			rowsToDisplay.push(i);
         }
-        leafTop += height +10;      
-        leafBottom += 10;
+		if(leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
+		leafTop = leafBottom;
     }
+	
+	var firstRow = rowsToDisplay[0];
+	var lastRow = rowsToDisplay[rowsToDisplay.length-1];
+	var rowBuffer = 4;
+	for (i=1; i<rowBuffer+1; i++) {
+		if (firstRow-i >= 0) { rowsToDisplay.unshift(firstRow-i); }
+		if (lastRow+i < leafMap.length) { rowsToDisplay.push(lastRow+i); }
+	}
 
-    var firstIndexToDraw  = indicesToDisplay[0];
-    this.firstIndex      = firstIndexToDraw;
-    
     // Update hash, but only if we're currently displaying a leaf
     // Hack that fixes #365790
-    if (this.displayedIndices.length > 0) {
+    if (this.displayedRows.length > 0) {
         this.updateLocationHash();
     }
 
-    if ((0 != firstIndexToDraw) && (1 < this.reduce)) {
-        firstIndexToDraw--;
-        indicesToDisplay.unshift(firstIndexToDraw);
+	var j;
+	var row;
+	var left;
+	var index;
+	var div;
+	var link;
+	var img;
+    for (i=0; i<rowsToDisplay.length; i++) {
+		if (-1 == jQuery.inArray(rowsToDisplay[i], this.displayedRows)) {    
+			row = rowsToDisplay[i];
+
+
+			for (j=0; j<leafMap[row].leafs.length; j++) {
+				index = leafMap[row].leafs[j].num;
+				
+				leafWidth = parseInt(this.getPageWidth(index)/this.reduce, 10);
+				leafHeight = parseInt(this.getPageHeight(index)/this.reduce, 10);
+				leafTop = leafMap[row].top;
+				left = leafMap[row].leafs[j].left + pageViewBuffer;
+			
+	            div = document.createElement("div");
+	            div.id = 'pagediv'+index;
+	            div.style.position = "absolute";
+			    div.className = "GBpagedivthumb";				
+
+				left += this.padding;
+				$(div).css('top', leafTop + 'px');
+	            $(div).css('left', left+'px');
+	            $(div).css('width', leafWidth+'px');
+	            $(div).css('height', leafHeight+'px');
+	            //$(div).text('loading...');
+
+				// link to page in single page mode
+				link = document.createElement("a");
+				link.href = '#page/' + (this.getPageNum(index)) +'/mode/1up' ;
+	            $(div).append(link);
+
+	            $('#GBpageview').append(div);
+
+	            img = document.createElement("img");
+	            img.src = this.getPageURI(index);
+	            $(img).css('width', leafWidth+'px');
+	            $(img).css('height', leafHeight+'px');
+				img.style.border = "0";
+	            $(link).append(img);
+				//console.log('displaying thumbnail: ' + leafMap[j]);
+			} 
+		}
     }
-    
-    var lastIndexToDraw = indicesToDisplay[indicesToDisplay.length-1];
-    if ( ((this.numLeafs-1) != lastIndexToDraw) && (1 < this.reduce) ) {
-        indicesToDisplay.push(lastIndexToDraw+1);
-    }
-    
-    leafTop = 0;
-    var i;
-    for (i=0; i<firstIndexToDraw; i++) {
-        leafTop += parseInt(this.getPageHeight(i)/this.thumbScale) +10;
-    }
-
-    //var viewWidth = $('#GBpageview').width(); //includes scroll bar width
-    var viewWidth = $('#GBcontainer').attr('scrollWidth');
 
 
-    for (i=0; i<indicesToDisplay.length; i++) {
-        var index = indicesToDisplay[i];    
-        var height  = parseInt(this.getPageHeight(index)/this.thumbScale); 
+	// remove previous highlights
+	if ($('.GBpagedivthumb_highlight').length>0) {
+		div = $('.GBpagedivthumb_highlight')
+		div.attr({className: 'GBpagedivthumb' });
+	}
+	// highlight current page
+	$('#pagediv'+this.currentIndex()).attr({className: 'GBpagedivthumb_highlight' });
+	
+	var k;
+	for (i=0; i<this.displayedRows.length; i++) {
+		if (-1 == jQuery.inArray(this.displayedRows[i], rowsToDisplay)) {
+			row = this.displayedRows[i];
+			for (k=0; k<leafMap[row].leafs.length; k++) {
+				index = leafMap[row].leafs[k].num;
+				//console.log('Removing leaf ' + index);
+			    $('#pagediv'+index).remove();
+			}
+		} else {
+			
+			//console.log('NOT Removing leaf ' + this.displayedIndices[i]);
+		}
+	}
 
-        if(-1 == jQuery.inArray(indicesToDisplay[i], this.displayedIndices)) {            
-            var width   = parseInt(this.getPageWidth(index)/this.thumbScale); 
-            //console.log("displaying leaf " + indicesToDisplay[i] + ' leafTop=' +leafTop);
-            var div = document.createElement("div");
-            div.className = 'GBpagediv1up';
-            div.id = 'pagediv'+index;
-            div.style.position = "absolute";
-            $(div).css('top', leafTop + 'px');
-            var left = (viewWidth-width)>>1;
-            if (left<0) left = 0;
-            $(div).css('left', left+'px');
-            $(div).css('width', width+'px');
-            $(div).css('height', height+'px');
-            //$(div).text('loading...');
+    this.displayedRows = rowsToDisplay.slice();
 
-			// thumbnails are hyperlinked, do not need drag handler
-            //this.setDragHandler(div);
-            
-			// link to page in single page mode
-			var link = document.createElement("a");
-			link.href = '#page/' + (this.getPageNum(index)) +'/mode/1up' ;
-            $(div).append(link);
-
-            $('#GBpageview').append(div);
-
-            var img = document.createElement("img");
-            img.src = this.getPageURI(index);
-            $(img).css('width', width+'px');
-            $(img).css('height', height+'px');
-			img.style.border = "0";
-            $(link).append(img);
-
-
-        } else {
-            //console.log("not displaying " + indicesToDisplay[i] + ' score=' + jQuery.inArray(indicesToDisplay[i], this.displayedIndices));            
-        }
-
-        leafTop += height +10;
-
-    }
-    
-    for (i=0; i<this.displayedIndices.length; i++) {
-        if (-1 == jQuery.inArray(this.displayedIndices[i], indicesToDisplay)) {
-            var index = this.displayedIndices[i];
-            //console.log('Removing leaf ' + index);
-            //console.log('id='+'#pagediv'+index+ ' top = ' +$('#pagediv'+index).css('top'));
-            $('#pagediv'+index).remove();
-        } else {
-            //console.log('NOT Removing leaf ' + this.displayedIndices[i]);
-        }
-    }
-    
-    this.displayedIndices = indicesToDisplay.slice();
-    this.updateSearchHilites();
-    
-    if (null != this.getPageNum(firstIndexToDraw))  {
+    if (null !== this.getPageNum(this.currentIndex()))  {
         $("#GBpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
         $("#GBpagenum").val('');
     }
             
-    this.updateToolbarZoom(this.reduce);
-    
+    this.updateToolbarZoom(this.reduce);  
 }
 
 // drawLeafsTwoPage()
@@ -790,8 +829,6 @@ GnuBook.prototype.zoom = function(direction) {
             return this.zoom1up(direction);
         case this.constMode2up:
             return this.zoom2up(direction);
-        case this.constModeThumb:
-            return this.zoomThumb(direction);
     }
 }
 
@@ -812,7 +849,8 @@ GnuBook.prototype.zoom1up = function(dir) {
         if (this.reduce >= 8) return;
         this.reduce*=2;             //zoom out
     }
-    
+
+    this.pageScale = this.reduce; // preserve current reduce
     this.resizePageView();
 
     $('#GBpageview').empty()
@@ -820,15 +858,6 @@ GnuBook.prototype.zoom1up = function(dir) {
     this.loadLeafs();
     
     this.updateToolbarZoom(this.reduce);
-}
-
-// zoomThumb(dir)
-//______________________________________________________________________________
-GnuBook.prototype.zoomThumb = function(dir) {
-    if (3 == this.mode) {     //can only zoom in 1-page mode
-        this.switchMode(1);
-        return;
-    }
 }
 
 // resizePageView()
@@ -926,7 +955,8 @@ GnuBook.prototype.zoom2up = function(direction) {
     }
     this.twoPage.autofit = newZoom.autofit;
     this.reduce = newZoom.reduce;
-
+	this.pageScale = this.reduce; // preserve current reduce
+	
     // Preserve view center position
     var oldCenter = this.twoPageGetViewCenter();
     
@@ -1046,7 +1076,38 @@ GnuBook.prototype.jumpToIndex = function(index) {
             this.flipFwdToIndex(index);
         }
 
-    } else {        
+    } else if (3 == this.mode){	
+		var viewWidth = $('#GBcontainer').attr('scrollWidth') - 20; // width minus buffer
+		var i;
+		var leafWidth = 0;
+		var leafHeight = 0;
+		var rightPos = 0;
+		var bottomPos = 0;
+		var rowHeight = 0;
+		var leafTop = 0;
+		var leafIndex = 0;
+
+		for (i=0; i<(index+1); i++) {
+			leafWidth = parseInt(this.getPageWidth(i)/this.reduce, 10);
+			if (rightPos + (leafWidth + this.padding) > viewWidth){
+				rightPos = 0;
+				rowHeight = 0;
+				leafIndex = 0;
+			}
+			leafHeight = parseInt(this.getPageHeight(i)/this.reduce, 10);
+			if(leafHeight > rowHeight) { rowHeight = leafHeight; }
+			if (leafIndex==0) { leafTop = bottomPos; }
+			if (leafIndex==0) { bottomPos += this.padding + rowHeight; }
+			rightPos += leafWidth + this.padding;
+			leafIndex++;
+		}
+		this.firstIndex=index;
+		if ($('#GBcontainer').attr('scrollTop') == leafTop) {
+			this.loadLeafs();
+		} else {
+	        $('#GBcontainer').animate({scrollTop: leafTop },'fast');	
+		}
+	} else {        
         var i;
         var leafTop = 0;
         var h;
@@ -1077,18 +1138,21 @@ GnuBook.prototype.switchMode = function(mode) {
     this.removeSearchHilites();
 
     this.mode = mode;
-    
     this.switchToolbarMode(mode);
+
+	// reinstate scale if moving from thumbnail view
+	if (this.pageScale != this.reduce) this.reduce = this.pageScale;
     
     // $$$ TODO preserve center of view when switching between mode
     //     See https://bugs.edge.launchpad.net/gnubook/+bug/416682
-    
+
     if (1 == mode) {
         this.reduce = this.quantizeReduce(this.reduce);
         this.prepareOnePageView();
     } else if (3 == mode) {
 	    this.reduce = this.quantizeReduce(this.reduce);
         this.prepareThumbnailView();
+		this.jumpToIndex(this.currentIndex());
     } else {
         this.twoPage.autofit = false; // Take zoom level from other mode
         this.reduce = this.quantizeReduce(this.reduce);
@@ -1134,10 +1198,11 @@ GnuBook.prototype.prepareOnePageView = function() {
 //prepareThumbnailView()
 //______________________________________________________________________________
 GnuBook.prototype.prepareThumbnailView = function() {
-	
+
     // var startLeaf = this.displayedIndices[0];
     var startLeaf = this.currentIndex();
-    
+    this.reduce = this.thumbScale;
+
     $('#GBcontainer').empty();
     $('#GBcontainer').css({
         overflowY: 'scroll',
@@ -1148,9 +1213,7 @@ GnuBook.prototype.prepareThumbnailView = function() {
     
     this.resizePageView();
     
-    this.jumpToIndex(startLeaf);
-    this.displayedIndices = [];
-    
+	this.displayedRows = [];
     this.drawLeafsThumbnail();
         
     // Bind mouse handlers
@@ -3028,7 +3091,7 @@ GnuBook.prototype.updateFromParams = function(params) {
 // E.g paramsFromFragment(window.location.hash)
 GnuBook.prototype.paramsFromFragment = function(urlFragment) {
     // URL fragment syntax specification: http://openlibrary.org/dev/docs/bookurls
-    
+
     var params = {};
     
     // For convenience we allow an initial # character (as from window.location.hash)
@@ -3058,7 +3121,7 @@ GnuBook.prototype.paramsFromFragment = function(urlFragment) {
         params.mode = this.constMode1up;
     } else if ('2up' == urlHash['mode']) {
         params.mode = this.constMode2up;
-    } else if ('Thumb' == urlHash['mode']) {
+    } else if ('thumb' == urlHash['mode']) {
         params.mode = this.constModeThumb;
     }
     
@@ -3103,7 +3166,7 @@ GnuBook.prototype.paramsFromCurrent = function() {
 // See http://openlibrary.org/dev/docs/bookurls for an explanation of the fragment syntax.
 GnuBook.prototype.fragmentFromParams = function(params) {
     var separator = '/';
-    
+
     var fragments = [];
     
     if ('undefined' != typeof(params.page)) {

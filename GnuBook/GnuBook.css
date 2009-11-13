@@ -40,6 +40,18 @@
     cursor: move;
 }
 
+.GBpagedivthumb {
+    background-color: #FFFFEE;
+    overflow:hidden;
+    border: 1px solid #909090;
+}
+
+.GBpagedivthumb_highlight {
+    background-color: #FFFFEE;
+    overflow:hidden;
+    border: 1px solid #000000;
+}
+
 .GBpagediv2up {
     background-color: rgb(234, 226, 205);
     overflow:hidden;
