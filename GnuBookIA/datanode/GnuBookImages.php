@@ -47,6 +47,13 @@ if (isset($_REQUEST['ext'])) {
 
 $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
+// Rotate is currently only supported for jp2 since it does not add server load
+$allowedRotations = array("0", "90", "180", "270");
+$rotate = $_REQUEST['rotate'];
+if ( !in_array($rotate, $allowedRotations) ) {
+    $rotate = "0";
+}
+
 // Image conversion options
 $pngOptions = '';
 $jpegOptions = '-quality 75';
@@ -104,10 +111,11 @@ $unzipCmd  = 'unzip -p ' .
         
 if ('jp2' == $fileExt) {
     $decompressCmd = 
-        " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $powReduce -i /dev/stdin -o " . $stdoutLink;
+        " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
     if ($decompressToBmp) {
         $decompressCmd .= ' | bmptopnm ';
     }
+    
 } else if ('tif' == $fileExt) {
     // We need to create a temporary file for tifftopnm since it cannot
     // work on a pipe (the file must be seekable).

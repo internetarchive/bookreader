@@ -118,48 +118,77 @@ if ('' != $titleLeaf) {
 ?>
 
 gb.getPageWidth = function(index) {
-    //return parseInt(this.pageW[index]/this.reduce);
     return this.pageW[index];
 }
 
 gb.getPageHeight = function(index) {
-    //return parseInt(this.pageH[index]/this.reduce);
     return this.pageH[index];
 }
 
-gb.getPageURI = function(index) {
-    var leafStr = '0000';            
+// Returns true if page image is available rotated
+gb.canRotatePage = function(index) {
+    return 'jp2' == this.imageFormat; // Assume single format for now
+}
+
+// reduce defaults to 1 (no reduction)
+// rotate defaults to 0 (no rotation)
+gb.getPageURI = function(index, reduce, rotate) {
+    var _reduce;
+    var _rotate;
+
+    if ('undefined' == typeof(reduce)) {
+        _reduce = 1;
+    } else {
+        _reduce = reduce;
+    }
+    if ('undefined' == typeof(rotate)) {
+        _rotate = 0;
+    } else {
+        _rotate = rotate;
+    }
+    
+    var file = this._getPageFile(index);
+        
+    // $$$ add more image stack formats here
+    if (1==this.mode) {
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
+    } else {
+        if ('undefined' == typeof(reduce)) {
+            // reduce not passed in
+            var ratio = this.getPageHeight(index) / this.twoPage.height;
+            var scale;
+            // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
+            if (ratio < 2) {
+                scale = 1;
+            } else if (ratio < 4) {
+                scale = 2;
+            } else if (ratio < 8) {
+                scale = 4;
+            } else if (ratio < 16) {
+                scale = 8;
+            } else  if (ratio < 32) {
+                scale = 16;
+            } else {
+                scale = 32;
+            }
+            _reduce = scale;
+        }
+    
+        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
+        
+    }
+    return url;
+}
+
+gb._getPageFile = function(index) {
+    var leafStr = '0000';
     var imgStr = this.leafMap[index].toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
     
     var insideZipPrefix = this.subPrefix.match('[^/]+$');
     var file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
     
-    // $$$ add more image stack formats here
-    if (1==this.mode) {
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+this.reduce;
-    } else {
-        var ratio = this.getPageHeight(index) / this.twoPage.height;
-        var scale;
-        // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-        if (ratio < 2) {
-            scale = 1;
-        } else if (ratio < 4) {
-            scale = 2;
-        } else if (ratio < 8) {
-            scale = 4;
-        } else if (ratio < 16) {
-            scale = 8;
-        } else  if (ratio < 32) {
-            scale = 16;
-        } else {
-            scale = 32;
-        }
-    
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+scale;
-        
-    }
-    return url;
+    return file;
 }
 
 gb.getPageSide = function(index) {
@@ -169,7 +198,7 @@ gb.getPageSide = function(index) {
     <? // Use special function if we should infer the page sides based off the title page index
     if (preg_match('/goog$/', $id) && ('' != $titleLeaf)) {
     ?>
-    // assume page side based on title page
+    // assume page side based on title pagex
     var titleIndex = gb.leafNumToIndex(gb.titleLeaf);
     // assume title page is RHS
     var delta = titleIndex - index;
@@ -277,6 +306,26 @@ gb.uniquifyPageNums = function() {
 
 gb.cleanupMetadata = function() {
     gb.uniquifyPageNums();
+}
+
+// getEmbedURL
+//________
+// Returns a URL for an embedded version of the current book
+gb.getEmbedURL = function() {
+    // We could generate a URL hash fragment here but for now we just leave at defaults
+    var url = 'http://' + window.location.host + '/stream/'+this.bookId;
+    if (this.subPrefix != this.bookId) { // Only include if needed
+        url += '/' + this.subPrefix;
+    }
+    url += '?ui=embed';
+    return url;
+}
+
+// getEmbedCode
+//________
+// Returns the embed code HTML fragment suitable for copy and paste
+gb.getEmbedCode = function() {
+    return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
 }
 
 gb.pageW =		[
