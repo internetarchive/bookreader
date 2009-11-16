@@ -38,7 +38,7 @@ if (preg_match("/^www-(\w+)/", $_SERVER["SERVER_NAME"], $match)) {
     // $$$ the remapping isn't totally automatic yet and requires user to
     //     ln -s ~/petabox/www/datanode/GnuBook ~/public_html/GnuBook
     //     so we enable it only for known hosts
-    $devhosts = array('mang', 'testflip');
+    $devhosts = array('mang', 'testflip', 'rkumar');
     if (in_array($match[1], $devhosts)) {
         $serverBaseURL = $serverBaseURL . ":81/~" . $match[1];
     }
