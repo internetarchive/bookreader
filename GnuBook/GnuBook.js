@@ -3012,17 +3012,18 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
         +   "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
         +   "<div class='GBtoolbarmode2' style='display: none'><button class='GBicon rollover book_leftmost' /><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /><button class='GBicon rollover book_rightmost' /></div>"
         +   "<div class='GBtoolbarmode1' style='display: none'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /><button class='GBicon rollover book_bottom' /></div>"
-		+ 	"<button class='GBicon rollover thumbnail_mode' onclick='gb.switchMode(3); return false;'/>"
+        +   "<div class='GBtoolbarmode3' style='display: none'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_thumb_prev' /> <button class='GBicon rollover book_thumb_next' /><button class='GBicon rollover book_bottom' /></div>"
         +   "<button class='GBicon rollover play' /><button class='GBicon rollover pause' style='display: none' />"
         + "</span>"
         
         + "<span>"
         +   "<a class='GBicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
-        +   " <button class='GBicon rollover zoom_out' onclick='gb.zoom(-1); return false;'/>" 
+        +   "<div class='GBtoolbarzoom' style='display: none'><button class='GBicon rollover zoom_out' onclick='gb.zoom(-1); return false;'/>" 
         +   "<button class='GBicon rollover zoom_in' onclick='gb.zoom(1); return false;'/>"
-        +   " <span class='label'>Zoom: <span id='GBzoom'>"+parseInt(100/this.reduce)+"</span></span>"
+        +   " <span class='label'>Zoom: <span id='GBzoom'>"+parseInt(100/this.reduce)+"</span></span></div>"
         +   " <button class='GBicon rollover one_page_mode' onclick='gb.switchMode(1); return false;'/>"
         +   " <button class='GBicon rollover two_page_mode' onclick='gb.switchMode(2); return false;'/>"
+		+ 	" <button class='GBicon rollover thumbnail_mode' onclick='gb.switchMode(3); return false;'/>"
         + "</span>"
         
         + "<span id='#GBbooktitle'>"
@@ -3060,7 +3061,9 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
                    '.play': 'Play',
                    '.pause': 'Pause',
                    '.book_top': 'First page',
-                   '.book_bottom': 'Last page'
+                   '.book_bottom': 'Last page',
+                   '.book_thumb_next': 'Next',
+                   '.book_thumb_prev': 'Previous'
                   };
     if ('rl' == this.pageProgression) {
         titles['.book_leftmost'] = 'Last page';
@@ -3091,14 +3094,25 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
 // Update the toolbar for the given mode (changes navigation buttons)
 // $$$ we should soon split the toolbar out into its own module
 GnuBook.prototype.switchToolbarMode = function(mode) {
+	       
     if (1 == mode) {
-        // 1-up     
+        // 1-up
+     	$('#GBtoolbar .GBtoolbarzoom').show().css('display', 'inline');
         $('#GBtoolbar .GBtoolbarmode2').hide();
+        $('#GBtoolbar .GBtoolbarmode3').hide();
         $('#GBtoolbar .GBtoolbarmode1').show().css('display', 'inline');
-    } else {
+    } else if (2 == mode) {
         // 2-up
+     	$('#GBtoolbar .GBtoolbarzoom').show().css('display', 'inline');
         $('#GBtoolbar .GBtoolbarmode1').hide();
+        $('#GBtoolbar .GBtoolbarmode3').hide();
         $('#GBtoolbar .GBtoolbarmode2').show().css('display', 'inline');
+	} else {
+	    // 3-up    
+	    $('#GBtoolbar .GBtoolbarzoom').hide();
+        $('#GBtoolbar .GBtoolbarmode2').hide();
+        $('#GBtoolbar .GBtoolbarmode1').hide();
+        $('#GBtoolbar .GBtoolbarmode3').show().css('display', 'inline');
     }
 }
 
@@ -3164,6 +3178,16 @@ GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
   
     jToolbar.find('.book_rightmost').bind('click', function(e) {
         gb.rightmost();
+        return false;
+    });
+
+    jToolbar.find('.book_thumb_prev').bind('click', function(e) {
+        gb.prev();
+        return false;
+    });        
+        
+    jToolbar.find('.book_thumb_next').bind('click', function(e) {
+        gb.next();
         return false;
     });
 }
