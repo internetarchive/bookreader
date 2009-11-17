@@ -41,6 +41,7 @@ function GnuBook() {
     this.mode    = 1; //1, 2, 3
     this.ui = 'full'; // UI mode
     this.thumbScale = 10; // thumbnail default
+	this.thumbRowBuffer = 4; // number of rows to pre-cache out a view
 
     this.displayedIndices = [];	
 	this.displayedRows=[];
@@ -633,8 +634,7 @@ GnuBook.prototype.drawLeafsThumbnail = function() {
 	
 	var firstRow = rowsToDisplay[0];
 	var lastRow = rowsToDisplay[rowsToDisplay.length-1];
-	var rowBuffer = 4;
-	for (i=1; i<rowBuffer+1; i++) {
+	for (i=1; i<this.thumbRowBuffer+1; i++) {
 		if (firstRow-i >= 0) { rowsToDisplay.unshift(firstRow-i); }
 		if (lastRow+i < leafMap.length) { rowsToDisplay.push(lastRow+i); }
 	}
