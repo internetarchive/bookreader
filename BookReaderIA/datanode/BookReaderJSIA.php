@@ -2,20 +2,20 @@
 /*
 Copyright(c)2008 Internet Archive. Software license AGPL version 3.
 
-This file is part of GnuBook.
+This file is part of BookReader.
 
-    GnuBook is free software: you can redistribute it and/or modify
+    BookReader is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    GnuBook is distributed in the hope that it will be useful,
+    BookReader is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
 
     You should have received a copy of the GNU Affero General Public License
-    along with GnuBook.  If not, see <http://www.gnu.org/licenses/>.
+    along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 $id = $_REQUEST['id'];
@@ -38,19 +38,19 @@ if ($subPrefix) {
 }
 
 if ("" == $id) {
-    GBFatal("No identifier specified!");
+    BRFatal("No identifier specified!");
 }
 
 if ("" == $itemPath) {
-    GBFatal("No itemPath specified!");
+    BRFatal("No itemPath specified!");
 }
 
 if ("" == $server) {
-    GBFatal("No server specified!");
+    BRFatal("No server specified!");
 }
 
 if (!preg_match("|^/[0-3]/items/{$id}$|", $itemPath)) {
-    GBFatal("Bad id!");
+    BRFatal("Bad id!");
 }
 
 // XXX check here that subitem is okay
@@ -68,7 +68,7 @@ if (file_exists($zipFile)) {
 }
 
 if ("unknown" == $imageFormat) {
-  GBfatal("Unknown image format");
+  BRfatal("Unknown image format");
 }
 
 $scanDataFile = "${subItemPath}_scandata.xml";
@@ -78,7 +78,7 @@ if (file_exists($scanDataFile)) {
 } else if (file_exists($scanDataZip)) {
     $cmd  = 'unzip -p ' . escapeshellarg($scanDataZip) . ' scandata.xml';
     exec($cmd, $output, $retval);
-    if ($retval != 0) GBFatal("Could not unzip ScanData!");
+    if ($retval != 0) BRFatal("Could not unzip ScanData!");
     
     $dump = join("\n", $output);
     $scanData = simplexml_load_string($dump);
@@ -86,12 +86,12 @@ if (file_exists($scanDataFile)) {
     // For e.g. Scribe v.0 books!
     $scanData = simplexml_load_file("$itemPath/scandata.xml");
 } else {
-    GBFatal("ScanData file not found!");
+    BRFatal("ScanData file not found!");
 }
 
 $metaDataFile = "$itemPath/{$id}_meta.xml";
 if (!file_exists($metaDataFile)) {
-    GBFatal("MetaData file not found!");
+    BRFatal("MetaData file not found!");
 }
 
 
@@ -100,7 +100,7 @@ $metaData = simplexml_load_file($metaDataFile);
 //$firstLeaf = $scanData->pageData->page[0]['leafNum'];
 ?>
 
-gb = new GnuBook();
+br = new BookReader();
 
 <?
 /* Output title leaf if marked */
@@ -113,26 +113,26 @@ foreach ($scanData->pageData->page as $page) {
 }
     
 if ('' != $titleLeaf) {
-    printf("gb.titleLeaf = %d;\n", $titleLeaf);
+    printf("br.titleLeaf = %d;\n", $titleLeaf);
 }
 ?>
 
-gb.getPageWidth = function(index) {
+br.getPageWidth = function(index) {
     return this.pageW[index];
 }
 
-gb.getPageHeight = function(index) {
+br.getPageHeight = function(index) {
     return this.pageH[index];
 }
 
 // Returns true if page image is available rotated
-gb.canRotatePage = function(index) {
+br.canRotatePage = function(index) {
     return 'jp2' == this.imageFormat; // Assume single format for now
 }
 
 // reduce defaults to 1 (no reduction)
 // rotate defaults to 0 (no rotation)
-gb.getPageURI = function(index, reduce, rotate) {
+br.getPageURI = function(index, reduce, rotate) {
     var _reduce;
     var _rotate;
 
@@ -151,7 +151,7 @@ gb.getPageURI = function(index, reduce, rotate) {
         
     // $$$ add more image stack formats here
     if (1==this.mode) {
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
+        var url = 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
     } else {
         if ('undefined' == typeof(reduce)) {
             // reduce not passed in
@@ -174,13 +174,13 @@ gb.getPageURI = function(index, reduce, rotate) {
             _reduce = scale;
         }
     
-        var url = 'http://'+this.server+'/GnuBook/GnuBookImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
+        var url = 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
         
     }
     return url;
 }
 
-gb._getPageFile = function(index) {
+br._getPageFile = function(index) {
     var leafStr = '0000';
     var imgStr = this.leafMap[index].toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
@@ -191,7 +191,7 @@ gb._getPageFile = function(index) {
     return file;
 }
 
-gb.getPageSide = function(index) {
+br.getPageSide = function(index) {
     //assume the book starts with a cover (right-hand leaf)
     //we should really get handside from scandata.xml
     
@@ -199,7 +199,7 @@ gb.getPageSide = function(index) {
     if (preg_match('/goog$/', $id) && ('' != $titleLeaf)) {
     ?>
     // assume page side based on title pagex
-    var titleIndex = gb.leafNumToIndex(gb.titleLeaf);
+    var titleIndex = br.leafNumToIndex(br.titleLeaf);
     // assume title page is RHS
     var delta = titleIndex - index;
     if (0 == (delta & 0x1)) {
@@ -233,7 +233,7 @@ gb.getPageSide = function(index) {
     }
 }
 
-gb.getPageNum = function(index) {
+br.getPageNum = function(index) {
     var pageNum = this.pageNums[index];
     if (pageNum) {
         return pageNum;
@@ -242,7 +242,7 @@ gb.getPageNum = function(index) {
     }
 }
 
-gb.leafNumToIndex = function(leafNum) {
+br.leafNumToIndex = function(leafNum) {
     var index = jQuery.inArray(leafNum, this.leafMap);
     if (-1 == index) {
         return null;
@@ -254,7 +254,7 @@ gb.leafNumToIndex = function(leafNum) {
 // This function returns the left and right indices for the user-visible
 // spread that contains the given index.  The return values may be
 // null if there is no facing page or the index is invalid.
-gb.getSpreadIndices = function(pindex) {
+br.getSpreadIndices = function(pindex) {
     // $$$ we could make a separate function for the RTL case and
     //      only bind it if necessary instead of always checking
     // $$$ we currently assume there are no gaps
@@ -290,28 +290,28 @@ gb.getSpreadIndices = function(pindex) {
 // Remove the page number assertions for all but the highest index page with
 // a given assertion.  Ensures there is only a single page "{pagenum}"
 // e.g. the last page asserted as page 5 retains that assertion.
-gb.uniquifyPageNums = function() {
+br.uniquifyPageNums = function() {
     var seen = {};
     
-    for (var i = gb.pageNums.length - 1; i--; i >= 0) {
-        var pageNum = gb.pageNums[i];
+    for (var i = br.pageNums.length - 1; i--; i >= 0) {
+        var pageNum = br.pageNums[i];
         if ( !seen[pageNum] ) {
             seen[pageNum] = true;
         } else {
-            gb.pageNums[i] = null;
+            br.pageNums[i] = null;
         }
     }
 
 }
 
-gb.cleanupMetadata = function() {
-    gb.uniquifyPageNums();
+br.cleanupMetadata = function() {
+    br.uniquifyPageNums();
 }
 
 // getEmbedURL
 //________
 // Returns a URL for an embedded version of the current book
-gb.getEmbedURL = function() {
+br.getEmbedURL = function() {
     // We could generate a URL hash fragment here but for now we just leave at defaults
     var url = 'http://' + window.location.host + '/stream/'+this.bookId;
     if (this.subPrefix != this.bookId) { // Only include if needed
@@ -324,11 +324,11 @@ gb.getEmbedURL = function() {
 // getEmbedCode
 //________
 // Returns the embed code HTML fragment suitable for copy and paste
-gb.getEmbedCode = function() {
+br.getEmbedCode = function() {
     return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
 }
 
-gb.pageW =		[
+br.pageW =		[
             <?
             $i=0;
             foreach ($scanData->pageData->page as $page) {
@@ -341,7 +341,7 @@ gb.pageW =		[
             ?>
             ];
 
-gb.pageH =		[
+br.pageH =		[
             <?
             $totalHeight = 0;
             $i=0;            
@@ -355,7 +355,7 @@ gb.pageH =		[
             }
             ?>
             ];
-gb.leafMap = [
+br.leafMap = [
             <?
             $i=0;
             foreach ($scanData->pageData->page as $page) {
@@ -368,7 +368,7 @@ gb.leafMap = [
             ?>    
             ];
 
-gb.pageNums = [
+br.pageNums = [
             <?
             $i=0;
             foreach ($scanData->pageData->page as $page) {
@@ -386,49 +386,49 @@ gb.pageNums = [
             ];
             
       
-gb.numLeafs = gb.pageW.length;
+br.numLeafs = br.pageW.length;
 
-gb.bookId   = '<?echo $id;?>';
-gb.zip      = '<?echo $zipFile;?>';
-gb.subPrefix = '<?echo $subPrefix;?>';
-gb.server   = '<?echo $server;?>';
-gb.bookTitle= '<?echo preg_replace("/\'/", "\\'", $metaData->title);?>';
-gb.bookPath = '<?echo $subItemPath;?>';
-gb.bookUrl  = '<?echo "http://www.archive.org/details/$id";?>';
-gb.imageFormat = '<?echo $imageFormat;?>';
+br.bookId   = '<?echo $id;?>';
+br.zip      = '<?echo $zipFile;?>';
+br.subPrefix = '<?echo $subPrefix;?>';
+br.server   = '<?echo $server;?>';
+br.bookTitle= '<?echo preg_replace("/\'/", "\\'", $metaData->title);?>';
+br.bookPath = '<?echo $subItemPath;?>';
+br.bookUrl  = '<?echo "http://www.archive.org/details/$id";?>';
+br.imageFormat = '<?echo $imageFormat;?>';
 
 <?
 
 # Load some values from meta.xml
 if ('' != $metaData->{'page-progression'}) {
-  echo "gb.pageProgression = '" . $metaData->{"page-progression"} . "';";
+  echo "br.pageProgression = '" . $metaData->{"page-progression"} . "';";
 } else {
   // Assume page progression is Left To Right
-  echo "gb.pageProgression = 'lr';";
+  echo "br.pageProgression = 'lr';";
 }
 
 # Special cases
 if ('bandersnatchhsye00scarrich' == $id) {
-    echo "gb.mode     = 2;\n";
-    echo "gb.auto     = true;\n";
+    echo "br.mode     = 2;\n";
+    echo "br.auto     = true;\n";
 }
 
 ?>
 
 // Check for config object
 // $$$ change this to use the newer params object
-if (typeof(gbConfig) != 'undefined') {
-    if (typeof(gbConfig["ui"]) != 'undefined') {
-        gb.ui = gbConfig["ui"];
+if (typeof(brConfig) != 'undefined') {
+    if (typeof(brConfig["ui"]) != 'undefined') {
+        br.ui = brConfig["ui"];
     }
 
-    if (gbConfig['mode'] == 1) {
-        gb.mode = 1;
-        if (typeof(gbConfig['reduce'] != 'undefined')) {
-            gb.reduce = gbConfig['reduce'];
+    if (brConfig['mode'] == 1) {
+        br.mode = 1;
+        if (typeof(brConfig['reduce'] != 'undefined')) {
+            br.reduce = brConfig['reduce'];
         }
-    } else if (gbConfig['mode'] == 2) {
-        gb.mode = 2;
+    } else if (brConfig['mode'] == 2) {
+        br.mode = 2;
       
 <?
         //$$$mang hack to override request for 2up for books with attribution page
@@ -436,19 +436,19 @@ if (typeof(gbConfig) != 'undefined') {
         $needle = 'goog';
         if (strrpos($id, $needle) === strlen($id)-strlen($needle)) {
             print "// override for books with attribution page\n";
-            print "gb.mode = 1;\n";
+            print "br.mode = 1;\n";
         }
 ?>
     }
-} // gbConfig
+} // brConfig
 
-gb.cleanupMetadata();
-gb.init();
+br.cleanupMetadata();
+br.init();
 
 <?
 
 
-function GBFatal($string) {
+function BRFatal($string) {
     echo "alert('$string')\n";
     die(-1);
 }
