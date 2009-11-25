@@ -147,7 +147,7 @@ class BookReader
     <div class="BRnavlinks">
         <!-- <a class="BRblack" href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a> | -->
         <a class="BRblack" href="http://www.archive.org/about/faqs.php#Report_Item">Content Problems</a> |
-        <a class="BRblack" href="https://bugs.launchpad.net/bookserver/+filebug-advanced">Report Bugs</a> |
+        <a class="BRblack" href="https://bugs.launchpad.net/bookreader/+filebug-advanced">Report Bugs</a> |
         <a class="BRblack" href="http://www.archive.org/details/texts">Texts Collection</a> |
         <a class="BRblack" href="http://www.archive.org/about/contact.php">Contact Us</a>
     </div>
