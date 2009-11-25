@@ -1451,10 +1451,10 @@ BookReader.prototype.currentIndex = function() {
 BookReader.prototype.right = function() {
     if ('rl' != this.pageProgression) {
         // LTR
-        br.next();
+        this.next();
     } else {
         // RTL
-        br.prev();
+        this.prev();
     }
 }
 
@@ -1463,9 +1463,9 @@ BookReader.prototype.right = function() {
 // Flip to the rightmost page
 BookReader.prototype.rightmost = function() {
     if ('rl' != this.pageProgression) {
-        br.last();
+        this.last();
     } else {
-        br.first();
+        this.first();
     }
 }
 
@@ -1475,10 +1475,10 @@ BookReader.prototype.rightmost = function() {
 BookReader.prototype.left = function() {
     if ('rl' != this.pageProgression) {
         // LTR
-        br.prev();
+        this.prev();
     } else {
         // RTL
-        br.next();
+        this.next();
     }
 }
 
@@ -1487,9 +1487,9 @@ BookReader.prototype.left = function() {
 // Flip to the leftmost page
 BookReader.prototype.leftmost = function() {
     if ('rl' != this.pageProgression) {
-        br.first();
+        this.first();
     } else {
-        br.last();
+        this.last();
     }
 }
 
@@ -2853,63 +2853,65 @@ BookReader.prototype.switchToolbarMode = function(mode) {
 // Binds the toolbar handlers
 BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
 
+    var self = this; // closure
+
     jToolbar.find('.book_left').bind('click', function(e) {
-        br.left();
+        self.left();
         return false;
     });
          
     jToolbar.find('.book_right').bind('click', function(e) {
-        br.right();
+        self.right();
         return false;
     });
         
     jToolbar.find('.book_up').bind('click', function(e) {
-        br.prev();
+        self.prev();
         return false;
     });        
         
     jToolbar.find('.book_down').bind('click', function(e) {
-        br.next();
+        self.next();
         return false;
     });
 
     jToolbar.find('.print').bind('click', function(e) {
-        br.printPage();
+        self.printPage();
         return false;
     });
         
     jToolbar.find('.embed').bind('click', function(e) {
-        br.showEmbedCode();
+        self.showEmbedCode();
         return false;
     });
 
     jToolbar.find('.play').bind('click', function(e) {
-        br.autoToggle();
+        self.autoToggle();
         return false;
     });
 
     jToolbar.find('.pause').bind('click', function(e) {
-        br.autoToggle();
+        self.autoToggle();
         return false;
     });
     
     jToolbar.find('.book_top').bind('click', function(e) {
-        br.first();
+        self.first();
         return false;
     });
 
     jToolbar.find('.book_bottom').bind('click', function(e) {
-        br.last();
+        self.last();
         return false;
     });
     
     jToolbar.find('.book_leftmost').bind('click', function(e) {
-        br.leftmost();
+        self.leftmost();
         return false;
     });
   
     jToolbar.find('.book_rightmost').bind('click', function(e) {
-        br.rightmost();
+        self.rightmost();
         return false;
     });
 }
