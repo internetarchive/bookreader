@@ -3010,7 +3010,6 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
         +   "<form class='GBpageform' action='javascript:' onsubmit='gb.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='GBpagenum' type='text' size='3' onfocus='gb.autoStop();'></input></span></form>"
         +   "<div class='GBtoolbarmode2' style='display: none'><button class='GBicon rollover book_leftmost' /><button class='GBicon rollover book_left' /><button class='GBicon rollover book_right' /><button class='GBicon rollover book_rightmost' /></div>"
         +   "<div class='GBtoolbarmode1' style='display: none'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_up' /> <button class='GBicon rollover book_down' /><button class='GBicon rollover book_bottom' /></div>"
-        +   "<div class='GBtoolbarmode3' style='display: none'><button class='GBicon rollover book_top' /><button class='GBicon rollover book_thumb_prev' /> <button class='GBicon rollover book_thumb_next' /><button class='GBicon rollover book_bottom' /></div>"
         +   "<button class='GBicon rollover play' /><button class='GBicon rollover pause' style='display: none' />"
         + "</span>"
         
@@ -3059,9 +3058,7 @@ GnuBook.prototype.initToolbar = function(mode, ui) {
                    '.play': 'Play',
                    '.pause': 'Pause',
                    '.book_top': 'First page',
-                   '.book_bottom': 'Last page',
-                   '.book_thumb_next': 'Next',
-                   '.book_thumb_prev': 'Previous'
+                   '.book_bottom': 'Last page'
                   };
     if ('rl' == this.pageProgression) {
         titles['.book_leftmost'] = 'Last page';
@@ -3176,16 +3173,6 @@ GnuBook.prototype.bindToolbarNavHandlers = function(jToolbar) {
   
     jToolbar.find('.book_rightmost').bind('click', function(e) {
         gb.rightmost();
-        return false;
-    });
-
-    jToolbar.find('.book_thumb_prev').bind('click', function(e) {
-        gb.prev();
-        return false;
-    });        
-        
-    jToolbar.find('.book_thumb_next').bind('click', function(e) {
-        gb.next();
         return false;
     });
 }
