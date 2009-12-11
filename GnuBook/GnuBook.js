@@ -652,20 +652,25 @@ GnuBook.prototype.drawLeafsThumbnail = function() {
     var div;
     var link;
     var img;
+    var page;
     for (i=0; i<rowsToDisplay.length; i++) {
         if (-1 == jQuery.inArray(rowsToDisplay[i], this.displayedRows)) {    
             row = rowsToDisplay[i];
 
             for (j=0; j<leafMap[row].leafs.length; j++) {
-                index = leafMap[row].leafs[j].num;
+                index = j;
+                leaf = leafMap[row].leafs[j].num;
 
-                leafWidth = parseInt(this.getPageWidth(index)/this.reduce, 10);
-                leafHeight = parseInt(this.getPageHeight(index)/this.reduce, 10);
+                leafWidth = parseInt(this.getPageWidth(leaf)/this.reduce, 10);
+                leafHeight = parseInt(this.getPageHeight(leaf)/this.reduce, 10);
                 leafTop = leafMap[row].top;
-                left = leafMap[row].leafs[j].left + pageViewBuffer;
+                left = leafMap[row].leafs[index].left + pageViewBuffer;
+                if ('rl' == this.pageProgression){
+                    left = viewWidth - leafWidth - left;
+                }
 
                 div = document.createElement("div");
-                div.id = 'pagediv'+index;
+                div.id = 'pagediv'+leaf;
                 div.style.position = "absolute";
                 div.className = "GBpagedivthumb";				
 
@@ -678,13 +683,13 @@ GnuBook.prototype.drawLeafsThumbnail = function() {
 
                 // link to page in single page mode
                 link = document.createElement("a");
-                link.href = '#page/' + (this.getPageNum(index)) +'/mode/1up' ;
+                link.href = '#page/' + (this.getPageNum(leaf)) +'/mode/1up' ;
                 $(div).append(link);
 
                 $('#GBpageview').append(div);
 
                 img = document.createElement("img");
-                img.src = this.getPageURI(index);
+                img.src = this.getPageURI(leaf);
                 $(img).css('width', leafWidth+'px');
                 $(img).css('height', leafHeight+'px');
                 img.style.border = "0";
