@@ -114,9 +114,6 @@
 .GBicon.book_rightmost { background: url(images/book_rightmost_icon.png) no-repeat; }
 .GBicon.book_top { background: url(images/book_top_icon.png) no-repeat; }
 .GBicon.book_bottom { background: url(images/book_bottom_icon.png) no-repeat; }
-.GBicon.book_thumb_next { background: url(images/book_thumb_next_icon.png) no-repeat; }
-.GBicon.book_thumb_prev { background: url(images/book_thumb_prev_icon.png) no-repeat; }
-
 
 .GBicon.play { background: url(images/control_play_icon.png) no-repeat; }
 .GBicon.pause { background: url(images/control_pause_icon.png) no-repeat; }
