@@ -1,33 +1,33 @@
 // 
-// This file shows the minimum you need to provide to GnuBook to display a book
+// This file shows the minimum you need to provide to BookReader to display a book
 //
 // Copyright(c)2008-2009 Internet Archive. Software license AGPL version 3.
 
-// Create the GnuBook object
-gb = new GnuBook();
+// Create the BookReader object
+br = new BookReader();
 
 // Return the width of a given page.  Here we assume all images are 800 pixels wide
-gb.getPageWidth = function(index) {
+br.getPageWidth = function(index) {
     return 800;
 }
 
 // Return the height of a given page.  Here we assume all images are 1200 pixels high
-gb.getPageHeight = function(index) {
+br.getPageHeight = function(index) {
     return 1200;
 }
 
 // We load the images from archive.org -- you can modify this function to retrieve images
 // using a different URL structure
-gb.getPageURI = function(index) {
+br.getPageURI = function(index) {
     var leafStr = '000';            
     var imgStr = (index+1).toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
-    var url = 'http://www.archive.org/download/GnuBook/img/page'+leafStr.replace(re, imgStr) + '.jpg';
+    var url = 'http://www.archive.org/download/BookReader/img/page'+leafStr.replace(re, imgStr) + '.jpg';
     return url;
 }
 
 // Return which side, left or right, that a given page should be displayed on
-gb.getPageSide = function(index) {
+br.getPageSide = function(index) {
     if (0 == (index & 0x1)) {
         return 'R';
     } else {
@@ -38,7 +38,7 @@ gb.getPageSide = function(index) {
 // This function returns the left and right indices for the user-visible
 // spread that contains the given index.  The return values may be
 // null if there is no facing page or the index is invalid.
-gb.getSpreadIndices = function(pindex) {   
+br.getSpreadIndices = function(pindex) {   
     var spreadIndices = [null, null]; 
     if ('rl' == this.pageProgression) {
         // Right to Left
@@ -69,16 +69,16 @@ gb.getSpreadIndices = function(pindex) {
 //
 // For example, index 5 might correspond to "Page 1" if there is front matter such
 // as a title page and table of contents.
-gb.getPageNum = function(index) {
+br.getPageNum = function(index) {
     return index+1;
 }
 
 // Total number of leafs
-gb.numLeafs = 15;
+br.numLeafs = 15;
 
 // Book title and the URL used for the book title link
-gb.bookTitle= 'Open Library Bookreader Presentation';
-gb.bookUrl  = 'http://openlibrary.org';
+br.bookTitle= 'Open Library Bookreader Presentation';
+br.bookUrl  = 'http://openlibrary.org';
 
 // Let's go!
-gb.init();
+br.init();

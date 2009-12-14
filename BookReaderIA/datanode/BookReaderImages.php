@@ -3,20 +3,20 @@
 /*
 Copyright(c)2008 Internet Archive. Software license AGPL version 3.
 
-This file is part of GnuBook.
+This file is part of BookReader.
 
-    GnuBook is free software: you can redistribute it and/or modify
+    BookReader is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    GnuBook is distributed in the hope that it will be useful,
+    BookReader is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
 
     You should have received a copy of the GNU Affero General Public License
-    along with GnuBook.  If not, see <http://www.gnu.org/licenses/>.
+    along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 $MIMES = array('jpg' => 'image/jpeg',
@@ -119,9 +119,9 @@ if ('jp2' == $fileExt) {
 } else if ('tif' == $fileExt) {
     // We need to create a temporary file for tifftopnm since it cannot
     // work on a pipe (the file must be seekable).
-    // We use the GnuBookTiff prefix to give a hint in case things don't
+    // We use the BookReaderTiff prefix to give a hint in case things don't
     // get cleaned up.
-    $tempFile = tempnam("/tmp", "GnuBookTiff");
+    $tempFile = tempnam("/tmp", "BookReaderTiff");
     
     if (1 != $scale) {
         if (onPowerNode()) {
@@ -137,7 +137,7 @@ if ('jp2' == $fileExt) {
         ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . $pbmReduce;
 
 } else {
-    GBfatal('Unknown source file extension: ' . $fileExt);
+    BRfatal('Unknown source file extension: ' . $fileExt);
 }
        
 // Non-integer scaling is currently disabled on the cluster
@@ -164,7 +164,7 @@ if (isset($tempFile)) {
   unlink($tempFile);
 }
 
-function GBFatal($string) {
+function BRFatal($string) {
     echo "alert('$string')\n";
     die(-1);
 }

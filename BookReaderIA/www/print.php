@@ -2,22 +2,22 @@
 /*
 Copyright(c)2008 Internet Archive. Software license AGPL version 3.
 
-This file is part of GnuBook.
+This file is part of BookReader.
 
-    GnuBook is free software: you can redistribute it and/or modify
+    BookReader is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    GnuBook is distributed in the hope that it will be useful,
+    BookReader is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
 
     You should have received a copy of the GNU Affero General Public License
-    along with GnuBook.  If not, see <http://www.gnu.org/licenses/>.
+    along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 
-GnuBookPrint.php exists to get around the same-origin policy that prevents
+BookReaderPrint.php exists to get around the same-origin policy that prevents
 us from calling print() on an iframe that comes from a cluster datanode.
 */
 
@@ -71,11 +71,11 @@ function imageURL($paperAspect, $file, $format, $width, $height, $allowRotate) {
     );
 
     $_server = htmlspecialchars($server);
-    return "<img src='http://{$_server}/GnuBook/GnuBookImages.php?" . http_build_query($queryParams) . "' " . $htmlAttrs . " />";
+    return "<img src='http://{$_server}/BookReader/BookReaderImages.php?" . http_build_query($queryParams) . "' " . $htmlAttrs . " />";
 }
 
 echo "<html><head>";
-echo '<link rel="stylesheet" type="text/css" href="GnuBook.css" />';
+echo '<link rel="stylesheet" type="text/css" href="BookReader.css" />';
 echo "<style type='text/css'>";
 echo "  @media print { .noprint { font-size: 40pt; display: none; } }";
 echo "</style>";
@@ -88,7 +88,7 @@ echo "  }";
 echo "</script>";
 echo "<title>" . htmlspecialchars($title) . "</title><body onload='conditionalPrint(); return false;'>";
 echo   "<p class='noprint' style='text-align: right'>";
-echo     "<button class='GBicon rollover print' title='Print' onclick='print(); return false;'></button> <a href='#' onclick='print(); return false;'>Print</a></p>";
+echo     "<button class='BRicon rollover print' title='Print' onclick='print(); return false;'></button> <a href='#' onclick='print(); return false;'>Print</a></p>";
 echo   "<p style='text-align:center;'>";
 echo     imageURL($paperAspect, $file, $format, $width, $height, $allowRotate);
 echo   "</p>";
