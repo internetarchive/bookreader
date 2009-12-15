@@ -40,7 +40,7 @@ function BookReader() {
     this.padding = 10;
     this.mode    = 1; //1, 2, 3
     this.ui = 'full'; // UI mode
-    this.thumbScale = 10; // thumbnail default
+    this.thumbWidth = 100;
     this.thumbRowBuffer = 4; // number of rows to pre-cache out a view
 
     this.displayedIndices = [];	
@@ -583,7 +583,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     var leafMap = [];
 
     for (i=0; i<this.numLeafs; i++) {
-        leafWidth = parseInt(this.getPageWidth(i)/this.reduce, 10);
+        leafWidth = this.thumbWidth;
         if (rightPos + (leafWidth + this.padding) > viewWidth){
             currentRow++;
             rightPos = 0;
@@ -600,7 +600,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
         leafMap[currentRow].leafs[leafIndex].num = i;
         leafMap[currentRow].leafs[leafIndex].left = rightPos;
 
-        leafHeight = parseInt(this.getPageHeight(leafMap[currentRow].leafs[leafIndex].num)/this.reduce, 10);
+        leafHeight = parseInt((this.getPageHeight(leafMap[currentRow].leafs[leafIndex].num)*this.thumbWidth)/this.getPageWidth(leafMap[currentRow].leafs[leafIndex].num), 10);
         if (leafHeight > leafMap[currentRow].height) { leafMap[currentRow].height = leafHeight; }
         if (leafIndex===0) { bottomPos += this.padding + leafMap[currentRow].height; }
         rightPos += leafWidth + this.padding;
@@ -661,8 +661,8 @@ BookReader.prototype.drawLeafsThumbnail = function() {
                 index = j;
                 leaf = leafMap[row].leafs[j].num;
 
-                leafWidth = parseInt(this.getPageWidth(leaf)/this.reduce, 10);
-                leafHeight = parseInt(this.getPageHeight(leaf)/this.reduce, 10);
+                leafWidth = this.thumbWidth;
+                leafHeight = parseInt((this.getPageHeight(leaf)*this.thumbWidth)/this.getPageWidth(leaf), 10);
                 leafTop = leafMap[row].top;
                 left = leafMap[row].leafs[index].left + pageViewBuffer;
                 if ('rl' == this.pageProgression){
@@ -1107,13 +1107,13 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
         var leafIndex = 0;
 
         for (i=0; i<(index+1); i++) {
-            leafWidth = parseInt(this.getPageWidth(i)/this.reduce, 10);
+            leafWidth = this.thumbWidth;
             if (rightPos + (leafWidth + this.padding) > viewWidth){
                 rightPos = 0;
                 rowHeight = 0;
                 leafIndex = 0;
             }
-            leafHeight = parseInt(this.getPageHeight(i)/this.reduce, 10);
+            leafHeight = parseInt((this.getPageHeight(leaf)*this.thumbWidth)/this.getPageWidth(leaf), 10);
             if(leafHeight > rowHeight) { rowHeight = leafHeight; }
             if (leafIndex==0) { leafTop = bottomPos; }
             if (leafIndex==0) { bottomPos += this.padding + rowHeight; }
@@ -1235,8 +1235,8 @@ BookReader.prototype.prepareThumbnailView = function() {
 
     // var startLeaf = this.displayedIndices[0];
     var startLeaf = this.currentIndex();
-    this.reduce = this.thumbScale;
-
+    this.reduce = this.getPageWidth(0)/this.thumbWidth;
+    
     $('#BRcontainer').empty();
     $('#BRcontainer').css({
         overflowY: 'scroll',
