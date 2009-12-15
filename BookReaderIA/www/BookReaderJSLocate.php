@@ -21,6 +21,7 @@ This file is part of BookReader.
 require_once '/petabox/setup.inc';
 
 $id = $_REQUEST['id'];
+$book = $_REQUEST['book']; // support multiple books within an item
 
 if ("" == $id) {
     echo "No identifier specified!";
@@ -44,7 +45,10 @@ if (preg_match("/^www-(\w+)/", $_SERVER["SERVER_NAME"], $match)) {
     }
 }
 
-$url = "http://{$serverBaseURL}/BookReader/BookReaderJSIA.php?id={$id}&itemPath={$results[0][1]}&server={$serverBaseURL}";
+$url = "http://{$serverBaseURL}/BookReader/BookReaderJSIA.php?id=" . urlencode($id) . "&itemPath={$results[0][1]}&server={$serverBaseURL}";
+if ($book) {
+    $url .= "&subPrefix=" . urlencode($book);
+}
 
 
 if (("" != $results[0][0]) && ("" != $results[0][1])) {
