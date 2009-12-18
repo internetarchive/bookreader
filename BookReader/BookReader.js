@@ -3329,6 +3329,27 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
         return this.imagesBaseURL + "/transparent.png";
     }
     
+    if ('undefined' == typeof(reduce)) {
+        // reduce not passed in
+        var ratio = this.getPageHeight(index) / this.twoPage.height;
+        var scale;
+        // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
+        if (ratio < 2) {
+            scale = 1;
+        } else if (ratio < 4) {
+            scale = 2;
+        } else if (ratio < 8) {
+            scale = 4;
+        } else if (ratio < 16) {
+            scale = 8;
+        } else  if (ratio < 32) {
+            scale = 16;
+        } else {
+            scale = 32;
+        }
+        reduce = scale;
+    }
+    
     return this.getPageURI(index, reduce, rotate);
 }
 

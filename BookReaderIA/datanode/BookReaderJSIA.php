@@ -31,11 +31,10 @@ if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home di
     $server .= ':80/~testflip';
 }
 
-if ($subPrefix) {
-    $subItemPath = $itemPath . '/' . $subPrefix;
-} else {
-    $subItemPath = $itemPath . '/' . $id;
+if (! $subPrefix) {
+    $subPrefix = $id;
 }
+$subItemPath = $itemPath . '/' . $subPrefix;
 
 if ("" == $id) {
     BRFatal("No identifier specified!");
@@ -65,7 +64,7 @@ if (file_exists($zipFile)) {
   if (file_exists($zipFile)) {
     $imageFormat = 'tif';
   }
-}
+} // $$$ check here for tar image stack
 
 if ("unknown" == $imageFormat) {
   BRfatal("Unknown image format");
@@ -150,34 +149,7 @@ br.getPageURI = function(index, reduce, rotate) {
     var file = this._getPageFile(index);
         
     // $$$ add more image stack formats here
-    if (1==this.mode) {
-        var url = 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
-    } else {
-        if ('undefined' == typeof(reduce)) {
-            // reduce not passed in
-            var ratio = this.getPageHeight(index) / this.twoPage.height;
-            var scale;
-            // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-            if (ratio < 2) {
-                scale = 1;
-            } else if (ratio < 4) {
-                scale = 2;
-            } else if (ratio < 8) {
-                scale = 4;
-            } else if (ratio < 16) {
-                scale = 8;
-            } else  if (ratio < 32) {
-                scale = 16;
-            } else {
-                scale = 32;
-            }
-            _reduce = scale;
-        }
-    
-        var url = 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
-        
-    }
-    return url;
+    return 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
 }
 
 br._getPageFile = function(index) {
@@ -243,12 +215,13 @@ br.getPageNum = function(index) {
 }
 
 br.leafNumToIndex = function(leafNum) {
-    var index = jQuery.inArray(leafNum, this.leafMap);
-    if (-1 == index) {
-        return null;
-    } else {
-        return index;
+    for (var index = 0; index < this.leafMap.length; index++) {
+        if (this.leafMap[index] == leafNum) {
+            return index;
+        }
     }
+    
+    return null;
 }
 
 // This function returns the left and right indices for the user-visible

@@ -21,9 +21,50 @@ This file is part of BookReader.
 
 $MIMES = array('jpg' => 'image/jpeg',
                'png' => 'image/png');
+               
+$exiftool = '/petabox/sw/books/exiftool/exiftool';
 
 $zipPath  = $_REQUEST['zip'];
 $file     = $_REQUEST['file'];
+
+/*
+ * Approach:
+ * 
+ * Get info about requested image (input)
+ * Get info about requested output format
+ * Determine processing parameters
+ * Process image
+ * Return image data
+ * Clean up temporary files
+ */
+ 
+function getUnzipCommand($zipPath, $file)
+{
+    return 'unzip -p ' . 
+        escapeshellarg($zipPath) .
+        ' ' . escapeshellarg($file);
+}
+ 
+/*
+ * Get the image width, height and depth from a jp2 file in zip.
+ */
+function getImageSizeAndDepth($zipPath, $file)
+{
+    global $exiftool;
+    
+    $cmd = getUnzipCommand($zipPath, $file)
+        . ' | '. $exiftool . ' -s -s -s -ImageWidth -ImageHeight -BitsPerComponent -';
+    exec($cmd, $output);
+    
+    preg_match('/^(\d+)/', $output[2], $groups);
+    $bits = intval($groups[1]);
+    
+    $retval = Array('width' => intval($output[0]), 'height' => intval($output[1]),
+        'bits' => $bits);    
+    return $retval;
+}
+
+getImageSizeAndDepth($zipPath, $file); // XXX
 
 // Unfortunately kakadu requires us to know a priori if the
 // output file should be .ppm or .pgm.  By decompressing to
@@ -105,9 +146,7 @@ if (!file_exists($stdoutLink))
 
 putenv('LD_LIBRARY_PATH=/petabox/sw/lib/kakadu');
 
-$unzipCmd  = 'unzip -p ' . 
-        escapeshellarg($zipPath) .
-        ' ' . escapeshellarg($file);
+$unzipCmd  = getUnzipCommand($zipPath, $file);
         
 if ('jp2' == $fileExt) {
     $decompressCmd = 
