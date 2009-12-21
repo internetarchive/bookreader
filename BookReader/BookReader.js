@@ -41,7 +41,7 @@ function BookReader() {
     this.mode    = 1; //1, 2, 3
     this.ui = 'full'; // UI mode
     this.thumbWidth = 100;
-    this.thumbRowBuffer = 4; // number of rows to pre-cache out a view
+    this.thumbRowBuffer = 3; // number of rows to pre-cache out a view
 
     this.displayedIndices = [];	
     this.displayedRows=[];
@@ -632,12 +632,15 @@ BookReader.prototype.drawLeafsThumbnail = function() {
         leafTop = leafBottom;
     }
 
+    // create a buffer of preloaded rows before and after the visible rows
     var firstRow = rowsToDisplay[0];
     var lastRow = rowsToDisplay[rowsToDisplay.length-1];
     for (i=1; i<this.thumbRowBuffer+1; i++) {
-        if (firstRow-i >= 0) { rowsToDisplay.unshift(firstRow-i); }
         if (lastRow+i < leafMap.length) { rowsToDisplay.push(lastRow+i); }
-}
+    }
+    for (i=1; i<this.thumbRowBuffer+1; i++) {
+        if (firstRow-i >= 0) { rowsToDisplay.push(firstRow-i); }
+    }
 
     // Update hash, but only if we're currently displaying a leaf
     // Hack that fixes #365790
