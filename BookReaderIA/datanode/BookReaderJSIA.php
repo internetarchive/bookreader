@@ -54,21 +54,31 @@ if (!preg_match("|^/[0-3]/items/{$id}$|", $itemPath)) {
 
 // XXX check here that subitem is okay
 
-$imageFormat = 'unknown';
-$zipFile = "${subItemPath}_jp2.zip";
+$filesDataFile = "$itemPath/${id}_files.xml";
 
-if (file_exists($zipFile)) {
-    $imageFormat = 'jp2';
+if (file_exists($filesDataFile)) {
+    $filesData = simplexml_load_file("$itemPath/${id}_files.xml");
 } else {
-  $zipFile = "${subItemPath}_tif.zip";
-  if (file_exists($zipFile)) {
-    $imageFormat = 'tif';
-  }
-} // $$$ check here for tar image stack
+    BRfatal("File metadata not found!");
+}
+
+$imageStackInfo = findImageStack($subPrefix, $filesData);
+if ($imageStackInfo['imageFormat'] == 'unknown') {
+    BRfatal('Couldn\'t find image stack');
+}
+
+$imageFormat = $imageStackInfo['imageFormat'];
+$archiveFormat = $imageStackInfo['archiveFormat'];
+$imageStackFile = $itemPath . "/" . $imageStackInfo['imageStackFile'];
 
 if ("unknown" == $imageFormat) {
   BRfatal("Unknown image format");
 }
+
+if ("unknown" == $archiveFormat) {
+  BRfatal("Unknown archive format");
+}
+
 
 $scanDataFile = "${subItemPath}_scandata.xml";
 $scanDataZip  = "$itemPath/scandata.zip";
@@ -362,13 +372,14 @@ br.pageNums = [
 br.numLeafs = br.pageW.length;
 
 br.bookId   = '<?echo $id;?>';
-br.zip      = '<?echo $zipFile;?>';
+br.zip      = '<?echo $imageStackFile;?>';
 br.subPrefix = '<?echo $subPrefix;?>';
 br.server   = '<?echo $server;?>';
 br.bookTitle= '<?echo preg_replace("/\'/", "\\'", $metaData->title);?>';
 br.bookPath = '<?echo $subItemPath;?>';
 br.bookUrl  = '<?echo "http://www.archive.org/details/$id";?>';
 br.imageFormat = '<?echo $imageFormat;?>';
+br.archiveFormat = '<?echo $archiveFormat;?>';
 
 <?
 
@@ -422,6 +433,7 @@ br.init();
 
 
 function BRFatal($string) {
+    // $$$ TODO log error
     echo "alert('$string')\n";
     die(-1);
 }
@@ -438,6 +450,30 @@ function shouldAddPage($page) {
     }
     
     return true;
+}
+
+// Returns { 'imageFormat' => , 'archiveFormat' => '} given a sub-item prefix and loaded xml data
+function findImageStack($subPrefix, $filesData) {
+
+    // $$$ Add jpeg here
+    $imageFormats = array('TIFF' => 'tif', 'JP2' => 'jp2');
+    $archiveFormats = array('ZIP' => 'zip', 'Tar' => 'tar');
+    $imageGroup = implode('|', array_keys($imageFormats));
+    $archiveGroup = implode('|', array_keys($archiveFormats));
+    $imageStackRegex = "/Single Page (Processed|Original) (${imageGroup}) (${archiveGroup})/";
+        
+    foreach ($filesData->file as $file) {        
+        if (strpos($file['name'], $subPrefix) === 0) { // subprefix matches beginning    
+            if (preg_match($imageStackRegex, $file->format, $matches)) {
+                return array('imageFormat' => $imageFormats[$matches[2]],
+                             'archiveFormat' => $archiveFormats[$matches[3]],
+                             'imageStackFile' => $file['name']);
+            }
+        }
+    }
+    
+    return array('imageFormat' => 'unknown', 'archiveFormat' => 'unknown', 'imageStackFile' => 'unknown');
+        
 }
 
 ?>

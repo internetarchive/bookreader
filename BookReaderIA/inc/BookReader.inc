@@ -19,12 +19,12 @@ class BookReader
     // $$$ TODO add support for jpg and tar stacks
     // https://bugs.edge.launchpad.net/gnubook/+bug/323003
     // https://bugs.edge.launchpad.net/gnubook/+bug/385397
-    $imageFormatRegex = '@' . preg_quote($prefix, '@') . '_(jp2|tif)\.zip$@';
+    $imageFormatRegex = '@' . preg_quote($prefix, '@') . '_(jp2|tif)\.(zip|tar)$@';
     
     $baseLength = strlen($item->metadataGrabber->mainDir . '/');
     foreach ($item->getFiles() as $location => $fileInfo) {
         $filename = substr($location, $baseLength);
-
+        
         if ($checkOldScandata) {
             if ($filename == 'scandata.xml' || $filename == 'scandata.zip') {
                 $foundScandata = $filename;
@@ -39,7 +39,7 @@ class BookReader
             $foundImageStack = $filename;
         }
     }
-        
+    
     if ($foundScandata && $foundImageStack) {
         return true;
     }

@@ -52,6 +52,7 @@ function getImageSizeAndDepth($zipPath, $file)
 {
     global $exiftool;
     
+    # $$$ will exiftool work for *all* of our images?
     $cmd = getUnzipCommand($zipPath, $file)
         . ' | '. $exiftool . ' -s -s -s -ImageWidth -ImageHeight -BitsPerComponent -';
     exec($cmd, $output);
@@ -63,8 +64,6 @@ function getImageSizeAndDepth($zipPath, $file)
         'bits' => $bits);    
     return $retval;
 }
-
-getImageSizeAndDepth($zipPath, $file); // XXX
 
 // Unfortunately kakadu requires us to know a priori if the
 // output file should be .ppm or .pgm.  By decompressing to
@@ -194,10 +193,10 @@ $cmd = $unzipCmd . $decompressCmd . $compressCmd;
 
 //print $cmd;
 
+
 header('Content-type: ' . $MIMES[$ext]);
 header('Cache-Control: max-age=15552000');
-
-passthru ($cmd);
+passthru ($cmd); # cmd returns image data
 
 if (isset($tempFile)) {
   unlink($tempFile);
