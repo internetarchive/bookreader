@@ -175,7 +175,7 @@ class BookReader
       //     so we enable it only for known hosts
       $devhosts = array('mang', 'testflip');
       if (in_array($match[1], $devhosts)) {
-        $serverBaseURL = $serverBaseURL . ":81/~" . $match[1];
+        $serverBaseURL = $serverBaseURL . "/~" . $match[1];
       }
     }
     
