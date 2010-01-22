@@ -460,7 +460,7 @@ function findImageStack($subPrefix, $filesData) {
     $archiveFormats = array('ZIP' => 'zip', 'Tar' => 'tar');
     $imageGroup = implode('|', array_keys($imageFormats));
     $archiveGroup = implode('|', array_keys($archiveFormats));
-    $imageStackRegex = "/Single Page (Processed|Original) (${imageGroup}) (${archiveGroup})/";
+    $imageStackRegex = "/Single Page (Processed) (${imageGroup}) (${archiveGroup})/";
         
     foreach ($filesData->file as $file) {        
         if (strpos($file['name'], $subPrefix) === 0) { // subprefix matches beginning    

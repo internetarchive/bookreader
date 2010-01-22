@@ -38,11 +38,26 @@ $file     = $_REQUEST['file'];
  * Clean up temporary files
  */
  
-function getUnzipCommand($zipPath, $file)
+function getUnarchiveCommand($archivePath, $file)
 {
-    return 'unzip -p ' . 
-        escapeshellarg($zipPath) .
-        ' ' . escapeshellarg($file);
+    $lowerPath = strtolower($archivePath);
+    if (preg_match('/\.([^\.]+)$/', $lowerPath, $matches)) {
+        $suffix = $matches[1];
+        
+        if ($suffix == 'zip') {
+            return 'unzip -p '
+                . escapeshellarg($archivePath)
+                . ' ' . escapeshellarg($file);
+        } else if ($suffix == 'tar') {
+            return '7z e -so '
+                . escapeshellarg($archivePath)
+                . ' ' . escapeshellarg($file);
+        }
+
+    }
+    
+    BRfatal('Incompatible image stack path');
+    
 }
  
 /*
@@ -53,7 +68,7 @@ function getImageSizeAndDepth($zipPath, $file)
     global $exiftool;
     
     # $$$ will exiftool work for *all* of our images?
-    $cmd = getUnzipCommand($zipPath, $file)
+    $cmd = getUnarchiveCommand($zipPath, $file)
         . ' | '. $exiftool . ' -s -s -s -ImageWidth -ImageHeight -BitsPerComponent -';
     exec($cmd, $output);
     
@@ -145,7 +160,7 @@ if (!file_exists($stdoutLink))
 
 putenv('LD_LIBRARY_PATH=/petabox/sw/lib/kakadu');
 
-$unzipCmd  = getUnzipCommand($zipPath, $file);
+$unzipCmd  = getUnarchiveCommand($zipPath, $file);
         
 if ('jp2' == $fileExt) {
     $decompressCmd = 
@@ -191,7 +206,7 @@ if ('jpg' == $ext) {
 
 $cmd = $unzipCmd . $decompressCmd . $compressCmd;
 
-//print $cmd;
+# print $cmd;
 
 
 header('Content-type: ' . $MIMES[$ext]);
