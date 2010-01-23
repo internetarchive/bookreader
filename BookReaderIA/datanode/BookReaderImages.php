@@ -175,20 +175,15 @@ if ('jp2' == $fileExt) {
     // We use the BookReaderTiff prefix to give a hint in case things don't
     // get cleaned up.
     $tempFile = tempnam("/tmp", "BookReaderTiff");
-    
-    if (1 != $scale) {
-        if (onPowerNode()) {
-            $pbmReduce = ' | pnmscale -reduce ' . $scale;
-        } else {
-            $pbmReduce = ' | pnmscale -nomix -reduce ' . $scale;
-        }
-    } else {
-        $pbmReduce = '';
-    }
+
+    $pbmReduce = reduceCommand($scale);
     
     $decompressCmd = 
         ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . $pbmReduce;
-
+        
+} else if ('jpg' == $fileExt) {
+    $decompressCmd = ' | jpegtopnm ' . reduceCommand($scale);
+    
 } else {
     BRfatal('Unknown source file extension: ' . $fileExt);
 }
@@ -204,7 +199,12 @@ if ('jpg' == $ext) {
     $compressCmd = ' | pnmtopng ' . $pngOptions;
 }
 
-$cmd = $unzipCmd . $decompressCmd . $compressCmd;
+if (($ext == $fileExt) && ($scale == 1) && ($rotate === "0")) {
+    // Just pass through original data if same format and size
+    $cmd = $unzipCmd;
+} else {
+    $cmd = $unzipCmd . $decompressCmd . $compressCmd;
+}
 
 # print $cmd;
 
@@ -234,6 +234,18 @@ function onPowerNode() {
         }
     }
     return false;
+}
+
+function reduceCommand($scale) {
+    if (1 != $scale) {
+        if (onPowerNode()) {
+            return ' | pnmscale -reduce ' . $scale;
+        } else {
+            return ' | pnmscale -nomix -reduce ' . $scale;
+        }
+    } else {
+        return '';
+    }
 }
 
 

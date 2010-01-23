@@ -456,7 +456,7 @@ function shouldAddPage($page) {
 function findImageStack($subPrefix, $filesData) {
 
     // $$$ Add jpeg here
-    $imageFormats = array('TIFF' => 'tif', 'JP2' => 'jp2');
+    $imageFormats = array('TIFF' => 'tif', 'JP2' => 'jp2', 'JPEG' => 'jpg');
     $archiveFormats = array('ZIP' => 'zip', 'Tar' => 'tar');
     $imageGroup = implode('|', array_keys($imageFormats));
     $archiveGroup = implode('|', array_keys($archiveFormats));
