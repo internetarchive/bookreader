@@ -464,11 +464,16 @@ function findImageStack($subPrefix, $filesData) {
     $imageStackRegex = "/Single Page (Processed) (${imageGroup}) (${archiveGroup})/";
         
     foreach ($filesData->file as $file) {        
-        if (strpos($file['name'], $subPrefix) === 0) { // subprefix matches beginning    
+        if (strpos($file['name'], $subPrefix) === 0) { // subprefix matches beginning
             if (preg_match($imageStackRegex, $file->format, $matches)) {
-                return array('imageFormat' => $imageFormats[$matches[2]],
-                             'archiveFormat' => $archiveFormats[$matches[3]],
-                             'imageStackFile' => $file['name']);
+            
+                // Make sure we have a regular image stack
+                $imageFormat = $imageFormats[$matches[2]];
+                if (strpos($file['name'], $subPrefix . '_' . $imageFormat) === 0) {            
+                    return array('imageFormat' => $imageFormat,
+                                 'archiveFormat' => $archiveFormats[$matches[3]],
+                                 'imageStackFile' => $file['name']);
+                }
             }
         }
     }
