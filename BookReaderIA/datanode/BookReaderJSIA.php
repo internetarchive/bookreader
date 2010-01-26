@@ -455,11 +455,12 @@ function shouldAddPage($page) {
 // Returns { 'imageFormat' => , 'archiveFormat' => '} given a sub-item prefix and loaded xml data
 function findImageStack($subPrefix, $filesData) {
 
-    // $$$ Add jpeg here
-    $imageFormats = array('TIFF' => 'tif', 'JP2' => 'jp2', 'JPEG' => 'jpg');
+    // $$$ The order of the image formats determines which will be returned first
+    $imageFormats = array('JP2' => 'jp2', 'TIFF' => 'tif', 'JPEG' => 'jpg');
     $archiveFormats = array('ZIP' => 'zip', 'Tar' => 'tar');
     $imageGroup = implode('|', array_keys($imageFormats));
     $archiveGroup = implode('|', array_keys($archiveFormats));
+    // $$$ Currently only return processed images
     $imageStackRegex = "/Single Page (Processed) (${imageGroup}) (${archiveGroup})/";
         
     foreach ($filesData->file as $file) {        
