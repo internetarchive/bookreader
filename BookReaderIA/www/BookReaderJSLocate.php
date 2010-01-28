@@ -32,19 +32,7 @@ $locator      = new Locator();
 
 $results = $locator->locateUDP($id, 1, false);
 
-$server = $results[0][0];
-$vhost = $server;
-
-// Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
-if (preg_match("/^www-(\w+)/", $_SERVER["SERVER_NAME"], $match)) {
-    // $$$ the remapping isn't totally automatic yet and requires user to
-    //     ln -s ~/petabox/www/datanode/BookReader ~/public_html/BookReader
-    //     so we enable it only for known hosts
-    $devhosts = array('mang', 'testflip', 'rkumar');
-    if (in_array($match[1], $devhosts)) {
-        $vhost = $server . ":81/~" . $match[1];
-    }
-}
+$serverBaseURL = BookReader::adjustToHome($results[0][0]);
 
 $url = "http://{$vhost}/BookReader/BookReaderJSIA.php?id=" . urlencode($id) . "&itemPath={$results[0][1]}&server={$server}";
 if ($book) {

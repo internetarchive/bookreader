@@ -48,7 +48,7 @@ if ("" == $server) {
     BRFatal("No server specified!");
 }
 
-if (!preg_match("|^/[0-3]/items/{$id}$|", $itemPath)) {
+if (!preg_match("|^/\d+/items/{$id}$|", $itemPath)) {
     BRFatal("Bad id!");
 }
 
