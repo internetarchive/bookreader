@@ -138,9 +138,9 @@ class FlipSearchMap {
     $url = urldecode($searchUrl);
     //Another way is for the javascript code to pass in server, itemdir, and identifier directly
     //For now we'll parse the $url passed us.
-    #if (!preg_match('|http://\w+.archive.org(/[0-9]/items/\w+)/(\w+)_djvu.xml$|', $url, $match))
+    #if (!preg_match('|http://\w+.archive.org(/[0-9]+/items/\w+)/(\w+)_djvu.xml$|', $url, $match))
     #if (!preg_match('|(\w+)/(\w+)_djvu.xml$|', $url, $match))      
-    if (!preg_match('|(/[0-9]/items/[\w-]+)/([\w-]+)_djvu.xml$|', $url, $match))
+    if (!preg_match('|(/[0-9]+/items/[\w-]+)/([\w-]+)_djvu.xml$|', $url, $match))
       fatal("Can't get server and identifier from url $url");
     $bookDir = $match[1];
     $identifier = $match[2];

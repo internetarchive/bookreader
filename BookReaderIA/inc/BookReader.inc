@@ -163,22 +163,29 @@ class BookReader
   <?
     exit;
   }
+
   
-  public static function jsMetadataURL($server, $identifier, $mainDir, $subPrefix = '')
+  public static function adjustToHome($server)
   {
-    $serverBaseURL = $server;
-    
-    // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
+    // Check if we're on a dev vhost and point to JSIA in the user's public_html
+    // on the datanode
     if (preg_match("/^www-(\w+)/", $_SERVER["SERVER_NAME"], $match)) {
       // $$$ the remapping isn't totally automatic yet and requires user to
       //     ln -s ~/petabox/www/datanode/BookReader ~/public_html/BookReader
       //     so we enable it only for known hosts
-      $devhosts = array('mang', 'testflip');
+      $devhosts = array('mang', 'testflip', 'rkumar');
       if (in_array($match[1], $devhosts)) {
-        $serverBaseURL = $serverBaseURL . ":81/~" . $match[1];
+        return $server . ":81/~" . $match[1]; //xxxx
       }
     }
-    
+    return $server;
+  }
+  
+  
+  public static function jsMetadataURL($server, $identifier, $mainDir, $subPrefix = '')
+  {
+    $serverBaseURL = BookReader::adjustToHome($server);
+
     $params = array( 'id' => $identifier, 'itemPath' => $mainDir, 'server' => $server );
     if ($subPrefix) {
         $params['subPrefix'] = $subPrefix;
