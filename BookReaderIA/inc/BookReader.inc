@@ -165,7 +165,7 @@ class BookReader
   }
 
   
-  public static function adjustToHome($server)
+  public static function serverBaseURL($server)
   {
     // Check if we're on a dev vhost and point to JSIA in the user's public_html
     // on the datanode
@@ -175,7 +175,7 @@ class BookReader
       //     so we enable it only for known hosts
       $devhosts = array('mang', 'testflip', 'rkumar');
       if (in_array($match[1], $devhosts)) {
-        $serverBaseURL = $serverBaseURL . "/~" . $match[1];
+        $server = $server . "/~" . $match[1];
       }
     }
     return $server;
@@ -184,7 +184,7 @@ class BookReader
   
   public static function jsMetadataURL($server, $identifier, $mainDir, $subPrefix = '')
   {
-    $serverBaseURL = BookReader::adjustToHome($server);
+    $serverBaseURL = BookReader::serverBaseURL($server);
 
     $params = array( 'id' => $identifier, 'itemPath' => $mainDir, 'server' => $server );
     if ($subPrefix) {

@@ -32,9 +32,10 @@ $locator      = new Locator();
 
 $results = $locator->locateUDP($id, 1, false);
 
-$serverBaseURL = BookReader::adjustToHome($results[0][0]);
+$server = $results[0][0];
+$serverBaseURL = BookReader::serverBaseURL($server);
 
-$url = "http://{$vhost}/BookReader/BookReaderJSIA.php?id=" . urlencode($id) . "&itemPath={$results[0][1]}&server={$server}";
+$url = "http://{$serverBaseURL}/BookReader/BookReaderJSIA.php?id=" . urlencode($id) . "&itemPath={$results[0][1]}&server={$server}";
 if ($book) {
     $url .= "&subPrefix=" . urlencode($book);
 }
