@@ -311,7 +311,7 @@ br.getEmbedCode = function() {
     return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
 }
 
-br.pageW =		[
+br.pageW =  [
             <?
             $i=0;
             foreach ($scanData->pageData->page as $page) {
@@ -324,7 +324,7 @@ br.pageW =		[
             ?>
             ];
 
-br.pageH =		[
+br.pageH =  [
             <?
             $totalHeight = 0;
             $i=0;            

@@ -41,7 +41,7 @@ function BookReader() {
     this.mode    = 1; //1 or 2
     this.ui = 'full'; // UI mode
     
-    this.displayedIndices = [];	
+    this.displayedIndices = [];
     //this.indicesToDisplay = [];
     this.imgs = {};
     this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index
@@ -2121,13 +2121,13 @@ BookReader.prototype.search = function(term) {
     term = term.replace(/\//g, ' '); // strip slashes
     this.searchTerm = term;
     $('#BookReaderSearchScript').remove();
- 	var script  = document.createElement("script");
- 	script.setAttribute('id', 'BookReaderSearchScript');
-	script.setAttribute("type", "text/javascript");
-	script.setAttribute("src", 'http://'+this.server+'/BookReader/flipbook_search_br.php?url='+escape(this.bookPath + '_djvu.xml')+'&term='+term+'&format=XML&callback=br.BRSearchCallback');
-	document.getElementsByTagName('head')[0].appendChild(script);
-	$('#BookReaderSearchBox').val(term);
-	$('#BookReaderSearchResults').html('Searching...');
+    var script  = document.createElement("script");
+    script.setAttribute('id', 'BookReaderSearchScript');
+    script.setAttribute("type", "text/javascript");
+    script.setAttribute("src", 'http://'+this.server+'/BookReader/flipbook_search_br.php?url='+escape(this.bookPath + '_djvu.xml')+'&term='+term+'&format=XML&callback=br.BRSearchCallback');
+    document.getElementsByTagName('head')[0].appendChild(script);
+    $('#BookReaderSearchBox').val(term);
+    $('#BookReaderSearchResults').html('Searching...');
 }
 
 // BRSearchCallback()
@@ -2199,7 +2199,7 @@ BookReader.prototype.BRSearchCallback = function(txt) {
     $('#BookReaderSearchResults').append('</ul>');
 
     // $$$ update again for case of loading search URL in new browser window (search box may not have been ready yet)
-	$('#BookReaderSearchBox').val(this.searchTerm);
+    $('#BookReaderSearchBox').val(this.searchTerm);
 
     this.updateSearchHilites();
 }

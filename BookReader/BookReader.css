@@ -144,9 +144,9 @@ a.BRicon {
     vertical-align: middle; 
 }
 
-a.BRwhite 			{ color: #fff }
-a.BRwhite:hover 		{ text-decoration: none; }
-a.BRwhite:visited		{ color: #fff }
+a.BRwhite               { color: #fff }
+a.BRwhite:hover         { text-decoration: none; }
+a.BRwhite:visited       { color: #fff }
 
 a.BRblack           { color: #000000 }
 a.BRblack:hover     { text-decoration: none; }
