@@ -1,6 +1,2 @@
 test:
 	@ echo Made tests
-
-
-
-
