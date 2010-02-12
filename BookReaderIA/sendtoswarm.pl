@@ -175,17 +175,13 @@ if ( ! $rev ) {
 		          "&urls[]=" . clean($SUITES{$suite});
 	}
 
-	# XXX hacking in host header for now
-	#print "curl -d \"$query\" $SWARM\n" if ( $DEBUG );
-	#my $results = `curl -d "$query" $SWARM`;
-	my $cmd = 'curl  -H "Host: test.archive.org" -d "' . $query . '" ' . $SWARM;
-	print $cmd . '\n' if ( $DEBUG );
-	my $results = `$cmd`;
+	print "curl -d \"$query\" $SWARM\n" if ( $DEBUG );
+	my $results = `curl -d "$query" $SWARM`;
 
 	print "Results: $results\n" if ( $DEBUG );
 
 	if ( $results ) {
-		open( my $fh, '>', "$rev/results.txt" ) or die "$rev/results.txt : $!";
+		open( my $fh, '>', "results.txt" ) or die "$rev/results.txt : $!";
 		print $fh "$SWARM$results";
 		close( $fh );
 
