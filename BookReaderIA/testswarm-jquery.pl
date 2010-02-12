@@ -29,7 +29,7 @@ my $RCS_TYPE = "git";
 
 # The URL from which a copy will be checked out.
 
-my $RCS_URL = "/home/testflip/testswarm/tests/.git";
+my $RCS_URL = "/home/testflip/bookreader/.git";
 
 # The directory in which the checkouts will occur.
 
