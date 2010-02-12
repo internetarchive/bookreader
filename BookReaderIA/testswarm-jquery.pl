@@ -38,7 +38,7 @@ my $BASE_DIR = "/home/testflip/public_html/changeset";
 # A script tag loading in the TestSwarm injection script will
 # be added at the bottom of the <head> in the following file.
 
-my $INJECT_FILE = "test/index.html";
+my $INJECT_FILE = "BookReaderIA/test/index.html";
 
 # Any build commands that need to happen.
 
