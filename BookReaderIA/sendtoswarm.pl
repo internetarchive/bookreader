@@ -16,7 +16,10 @@ my $USER = "testflip";
 
 # Your authorization token.
 
-my $AUTH_TOKEN = ""; # $$$ Fill this in
+# my $AUTH_TOKEN = "";
+open(AUTHFILE, "/home/testflip/.testswarm");
+my $AUTH_TOKEN = <AUTHFILE>;
+chomp($AUTH_TOKEN);
 
 # The maximum number of times you want the tests to be run.
 
@@ -70,9 +73,9 @@ my %SUITES = ();
 
 # Comment these out if you wish to define a custom set of SUITES above
 #my $SUITE = "http://dev.jquery.com/~john/changeset/{REV}";
-my $SUITE = "http://home.us.archive.org/~testflip/changeset/{REV}";
+my $SUITE = "http://home.us.archive.org/~testflip/changeset/{REV}/BookReaderIA";
 sub BUILD_SUITES {
-	%SUITES = map { /(\w+).js$/; $1 => "$SUITE/test/?$1%20module"; } glob("test/unit/*.js");
+	%SUITES = map { /(\w+).js$/; $1 => "$SUITE/test/?$1%20module"; } glob("BookReaderIA/test/unit/*.js");
 }
 
 ########### NO NEED TO CONFIGURE BELOW HERE ############
