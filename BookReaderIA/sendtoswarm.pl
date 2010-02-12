@@ -53,7 +53,7 @@ my $BUILD = "(cd BookReaderIA; make test)";
 # Note: The string {REV} will be replaced with the current
 #       commit number/hash.
 
-my $JOB_NAME = "BookReader Commit #{REV}";
+my $JOB_NAME = "BookReader www-testflip Commit #{REV}";
 
 # The browsers you wish to run against. Options include:
 #  - "all" all available browsers.
