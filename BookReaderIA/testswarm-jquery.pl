@@ -42,7 +42,7 @@ my $INJECT_FILE = "test/index.html";
 
 # Any build commands that need to happen.
 
-my $BUILD = "make test";
+my $BUILD = "(cd BookReaderIA; make test)";
 
 # The name of the job that will be submitted
 # (pick a descriptive, but short, name to make it easy to search)
