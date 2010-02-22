@@ -22,12 +22,10 @@ BookReader.prototype.init = function() {
 
 asyncTest("JSLocate for windwavesatseabr00bige", function() {
     expect(1);
-    $.getScript( jsLocateURL('windwavesatseabr00bige'),
-        function(data, textStatus) {
-            equals(br.numLeafs, 224, 'JSLocate successful. numLeafs');
-            start();
-        }
-    );
+    $.getScript( jsLocateURL('windwavesatseabr00bige'), function(data, textStatus) {
+        equals(br.numLeafs, 224, 'JSLocate successful. numLeafs');
+        start();
+    });
 });
     
 test("Image URI for windwavesatseabr00bige page index 5", function() {
@@ -42,8 +40,8 @@ test("Image URI for windwavesatseabr00bige page index 5", function() {
 
 asyncTest("Load windwavesatseabr00bige image 5", function() {
     var pageURI = br.getPageURI(5);
-    var image = new Image();
-    $(image).bind( 'load', 'load handler', function(eventObj) {
+    var img = new Image();
+    $(img).bind( 'load', 'load handler', function(eventObj) {
         equals(eventObj.data, 'load handler', 'Load image (' + pageURI + '). Event handler called');
         start();
     })
@@ -55,5 +53,32 @@ asyncTest("Load windwavesatseabr00bige image 5", function() {
     })
     
     // Actually load the image
-    .attr('src', br.getPageURI(5));
+    .attr('src', pageURI);
+});
+
+asyncTest("JSLocate for asamoandictiona00pragoog - tiff book", function() {
+    expect(1);
+    $.getScript( jsLocateURL('asamoandictiona00pragoog'), function() {
+        equals(br.bookTitle,
+               'A Samoan dictionary: English and Samoan, and Samoan and English;',
+               'Book title');
+        start();
+    });
+});
+
+asyncTest("Load tiff image", function() {
+    expect(2);
+    var pageURI = br.getPageURI(23, 8);
+    var img = new Image();
+    $(img).bind( 'load', 'load handler', function(eventObj) {
+        equals(eventObj.data, 'load handler', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 351, 'Image width');
+        start();
+    })
+    .bind( 'error', 'error handler', function(eventObj) {
+        equals(eventObj.data, 'load handler', 'Load image (' + pageURI + '). Event handler called') ;
+        equals(this.width, 351, 'Image width');
+        start();
+    })
+    .attr('src', pageURI);
 });
