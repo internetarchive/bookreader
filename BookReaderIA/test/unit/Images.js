@@ -41,17 +41,10 @@ test("Image URI for windwavesatseabr00bige page index 5", function() {
 asyncTest("Load windwavesatseabr00bige image 5", function() {
     var pageURI = br.getPageURI(5);
     var img = new Image();
-    $(img).bind( 'load', 'load handler', function(eventObj) {
-        equals(eventObj.data, 'load handler', 'Load image (' + pageURI + '). Event handler called');
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
         start();
     })
-    
-    // Make sure tests are started in case of error loading image
-    .bind('error', 'error handler', function(eventObj) {
-        equals(eventObj.data, 'load handler', 'Load image (' + pageURI + '). Event handler called');
-        start();
-    })
-    
     // Actually load the image
     .attr('src', pageURI);
 });
@@ -70,13 +63,8 @@ asyncTest("Load tiff image", function() {
     expect(2);
     var pageURI = br.getPageURI(23, 8);
     var img = new Image();
-    $(img).bind( 'load', 'load handler', function(eventObj) {
-        equals(eventObj.data, 'load handler', 'Load image (' + pageURI + '). Event handler called');
-        equals(this.width, 351, 'Image width');
-        start();
-    })
-    .bind( 'error', 'error handler', function(eventObj) {
-        equals(eventObj.data, 'load handler', 'Load image (' + pageURI + '). Event handler called') ;
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
         equals(this.width, 351, 'Image width');
         start();
     })
