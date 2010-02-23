@@ -20,7 +20,9 @@ BookReader.prototype.init = function() {
     return true;
 };
 
-asyncTest("JSLocate for windwavesatseabr00bige", function() {
+
+/// windwavesatseabr00bige - jp2 zip
+asyncTest("JSLocate for windwavesatseabr00bige - Scribe jp2.zip book", function() {
     expect(1);
     $.getScript( jsLocateURL('windwavesatseabr00bige'), function(data, textStatus) {
         equals(br.numLeafs, 224, 'JSLocate successful. numLeafs');
@@ -49,7 +51,9 @@ asyncTest("Load windwavesatseabr00bige image 5", function() {
     .attr('src', pageURI);
 });
 
-asyncTest("JSLocate for asamoandictiona00pragoog - tiff book", function() {
+
+/// asamoandictiona00pragoog - tiff zip
+asyncTest("JSLocate for asamoandictiona00pragoog - tiff.zip book", function() {
     expect(1);
     $.getScript( jsLocateURL('asamoandictiona00pragoog'), function() {
         equals(br.bookTitle,
@@ -59,7 +63,7 @@ asyncTest("JSLocate for asamoandictiona00pragoog - tiff book", function() {
     });
 });
 
-asyncTest("Load tiff image", function() {
+asyncTest("Load tiff image from zip", function() {
     expect(2);
     var pageURI = br.getPageURI(23, 8);
     var img = new Image();
@@ -70,3 +74,26 @@ asyncTest("Load tiff image", function() {
     })
     .attr('src', pageURI);
 });
+
+
+/// hccapp56191900uoft - jpeg tar
+asyncTest("JSLocate for hccapp56191900uoft - jpg.tar", function() {
+    expect(1);
+    $.getScript( jsLocateURL('hccapp56191900uoft'), function() {
+        equals(br.numLeafs, 1101, 'Number of pages');
+        start();
+    });
+});
+
+asyncTest('Load jpg image from tar file', function() {
+    expect(2);
+    var pageURI = br.getPageURI(6, 8);
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 244, 'Image width');
+        start();
+    })
+    .attr('src', pageURI);
+});
+
