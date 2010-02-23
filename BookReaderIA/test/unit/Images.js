@@ -85,7 +85,7 @@ asyncTest("JSLocate for hccapp56191900uoft - jpg.tar", function() {
     });
 });
 
-asyncTest('Load jpg image from tar file', function() {
+asyncTest('Load jpg image from tar file - https://bugs.launchpad.net/bookreader/+bug/323003', function() {
     expect(2);
     var pageURI = br.getPageURI(6, 8);
     var img = new Image();
