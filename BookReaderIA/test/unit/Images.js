@@ -8,8 +8,12 @@ module("Images");
 var testHost = 'http://www-mang.archive.org';
 
 // Returns locator URL for the given id
-function jsLocateURL(bookId) {
-    return testHost + '/bookreader/BookReaderJSLocate.php?id=' + bookId;
+function jsLocateURL(identifier, book) {
+    var bookURL = testHost + '/bookreader/BookReaderJSLocate.php?id=' + identifier;
+    if (book) {
+        bookURL += '&book=' + book;
+    }
+    return bookURL;
 }
 
 // Set up dummy BookReader class for JSLocate
@@ -20,6 +24,30 @@ BookReader.prototype.init = function() {
     return true;
 };
 
+
+// Test image info
+asyncTest("JSLocate for zc-f-c-b-4 - 1-bit jp2", function() {
+    expect(1);
+    $.getScript( jsLocateURL('zc-f-c-b-4', 'concept-of-infection'), function() {
+        equals(br.numLeafs, 13, 'numLeafs');
+        start();
+    });
+});
+
+asyncTest("Image info for 1-bit jp2", function() {
+    expect(3);
+    var expected = {"width":3295,"height":2561,"bits":1};
+    var imageInfoURL = br.getPageURI(0) + '&ext=json&callback=?';
+    
+    $.getJSON(imageInfoURL, function(data) {
+        equals(data != null, true, 'data is not null');
+        if (data != null) {
+            equals(data.width, expected.width, 'Image width');
+            same(data, expected, 'Image info object');
+        }
+        start();
+    });
+});
 
 /// windwavesatseabr00bige - jp2 zip
 asyncTest("JSLocate for windwavesatseabr00bige - Scribe jp2.zip book", function() {

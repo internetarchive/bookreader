@@ -24,7 +24,7 @@ $MIMES = array('jpg' => 'image/jpeg',
                
 $exiftool = '/petabox/sw/books/exiftool/exiftool';
 
-// Process request parameters
+// Process some of the request parameters
 $zipPath  = $_REQUEST['zip'];
 $file     = $_REQUEST['file'];
 if (isset($_REQUEST['ext'])) {
@@ -32,6 +32,12 @@ if (isset($_REQUEST['ext'])) {
 } else {
   // Default to jpg
   $ext = 'jpg';
+}
+if (isset($_REQUEST['callback'])) {
+  // XXX sanitize
+  $callback = $_REQUEST['callback'];
+} else {
+  $callback = null;
 }
 
 /*
@@ -59,22 +65,27 @@ function getUnarchiveCommand($archivePath, $file)
             return '7z e -so '
                 . escapeshellarg($archivePath)
                 . ' ' . escapeshellarg($file);
+        } else {
+            BRfatal('Incompatible archive format');
         }
 
+    } else {
+        BRfatal('Bad image stack path');
     }
     
-    BRfatal('Incompatible image stack path');
+    BRfatal('Bad image stack path or archive format');
     
 }
  
 /*
  * Get the image width, height and depth from a jp2 file in zip.
  */
-function getImageSizeAndDepth($zipPath, $file)
+function getImageInfo($zipPath, $file)
 {
     global $exiftool;
     
-    # $$$ will exiftool work for *all* of our images?
+    // $$$ will exiftool work for *all* of our images?
+    // BitsPerComponent present in jp2. Not present in jpeg.
     $cmd = getUnarchiveCommand($zipPath, $file)
         . ' | '. $exiftool . ' -s -s -s -ImageWidth -ImageHeight -BitsPerComponent -';
     exec($cmd, $output);
@@ -83,8 +94,31 @@ function getImageSizeAndDepth($zipPath, $file)
     $bits = intval($groups[1]);
     
     $retval = Array('width' => intval($output[0]), 'height' => intval($output[1]),
-        'bits' => $bits);    
+        'bits' => $bits);
+    
     return $retval;
+}
+
+/*
+ * Output JSON given the imageInfo associative array
+ */
+function outputJSON($imageInfo, $callback)
+{
+    header('Content-type: text/plain');
+    $jsonOutput = json_encode($imageInfo);
+    if ($callback) {
+        $jsonOutput = $callback . '(' . $jsonOutput . ');';
+    }
+    echo $jsonOutput;
+}
+
+// Get the image size and depth
+$imageInfo = getImageInfo($zipPath, $file);
+
+// Output json if requested
+if ('json' == $ext) {
+    outputJSON($imageInfo, $callback);
+    exit;
 }
 
 // Unfortunately kakadu requires us to know a priori if the
@@ -218,7 +252,7 @@ if (isset($tempFile)) {
 }
 
 function BRFatal($string) {
-    echo "alert('$string')\n";
+    echo "alert('$string');\n";
     die(-1);
 }
 
