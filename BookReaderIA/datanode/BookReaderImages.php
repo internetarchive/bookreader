@@ -24,8 +24,15 @@ $MIMES = array('jpg' => 'image/jpeg',
                
 $exiftool = '/petabox/sw/books/exiftool/exiftool';
 
+// Process request parameters
 $zipPath  = $_REQUEST['zip'];
 $file     = $_REQUEST['file'];
+if (isset($_REQUEST['ext'])) {
+  $ext = $_REQUEST['ext'];
+} else {
+  // Default to jpg
+  $ext = 'jpg';
+}
 
 /*
  * Approach:
@@ -91,13 +98,6 @@ if ($decompressToBmp) {
   $stdoutLink = '/tmp/stdout.bmp';
 } else {
   $stdoutLink = '/tmp/stdout.ppm';
-}
-
-if (isset($_REQUEST['ext'])) {
-  $ext = $_REQUEST['ext'];
-} else {
-  // Default to jpg
-  $ext = 'jpg';
 }
 
 $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
