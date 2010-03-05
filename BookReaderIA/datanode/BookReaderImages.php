@@ -5,6 +5,10 @@ Copyright(c)2008 Internet Archive. Software license AGPL version 3.
 
 This file is part of BookReader.
 
+The canonical short name of an image type is the same as in the MIME type.
+For example both .jpeg and .jpg are considered to have type "jpeg" since
+the MIME type is "image/jpeg".
+
     BookReader is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -19,8 +23,21 @@ This file is part of BookReader.
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-$MIMES = array('jpg' => 'image/jpeg',
-               'png' => 'image/png');
+$MIMES = array('gif' => 'image/gif',
+               'jp2' => 'image/jp2',
+               'jpg' => 'image/jpeg',
+               'jpeg' => 'image/jpeg',
+               'png' => 'image/png',
+               'tif' => 'image/tiff',
+               'tiff' => 'image/tiff');
+               
+$EXTENSIONS = array('gif' => 'gif',
+                    'jp2' => 'jp2',
+                    'jpeg' => 'jpeg',
+                    'jpg' => 'jpeg',
+                    'png' => 'png',
+                    'tif' => 'tiff',
+                    'tiff' => 'tiff');
                
 $exiftool = '/petabox/sw/books/exiftool/exiftool';
 
@@ -76,7 +93,21 @@ function getUnarchiveCommand($archivePath, $file)
     BRfatal('Bad image stack path or archive format');
     
 }
- 
+
+/*
+ * Returns the image type associated with the file extension.
+ */
+function imageExtensionToType($extension)
+{
+    global $EXTENSIONS;
+    
+    if (array_key_exists($extension, $EXTENSIONS)) {
+        return $EXTENSIONS[$extension];
+    } else {
+        BRfatal('Unknown image extension');
+    }            
+}
+
 /*
  * Get the image width, height and depth from a jp2 file in zip.
  */
@@ -84,17 +115,29 @@ function getImageInfo($zipPath, $file)
 {
     global $exiftool;
     
+    $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+    $type = imageExtensionToType($fileExt);
+     
     // $$$ will exiftool work for *all* of our images?
     // BitsPerComponent present in jp2. Not present in jpeg.
     $cmd = getUnarchiveCommand($zipPath, $file)
-        . ' | '. $exiftool . ' -s -s -s -ImageWidth -ImageHeight -BitsPerComponent -';
+        . ' | '. $exiftool . ' -s -s -s -ImageWidth -ImageHeight -BitsPerComponent -Colorspace -';
     exec($cmd, $output);
     
+    $width = intval($output[0]);
+    $height = intval($output[1]);
     preg_match('/^(\d+)/', $output[2], $groups);
     $bits = intval($groups[1]);
+    $colorspace = intval($output[3]);
     
-    $retval = Array('width' => intval($output[0]), 'height' => intval($output[1]),
-        'bits' => $bits);
+    // Format-specific overrides
+    if ('jpeg' == $type) {
+        // Note: JPEG may be single channel grayscale. jpegtopnm will create PGM in this case.
+        $bits = 8;
+    }
+    
+    $retval = Array('width' => $width, 'height' => $height,
+        'bits' => $bits, 'type' => $type);
     
     return $retval;
 }

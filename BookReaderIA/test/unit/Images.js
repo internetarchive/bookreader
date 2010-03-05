@@ -25,6 +25,32 @@ BookReader.prototype.init = function() {
 };
 
 
+// Test image info - jpeg
+asyncTest("JSLocate for armageddonafter00couruoft - jpeg", function() {
+    expect(1);
+    $.getScript( jsLocateURL('armageddonafter00couruoft'), function() {
+        equals(br.bookTitle, 'Armageddon and after', 'Title');
+        start();
+    });
+});
+
+asyncTest("Image info for jpeg", function() {
+    expect(3);
+    var expected = {"width":1349,"height":2105,"bits":8,"type":"jpeg"};
+    var imageInfoURL = br.getPageURI(8) + '&ext=json&callback=?';
+    
+    $.getJSON(imageInfoURL, function(data) {
+        equals(data != null, true, 'data is not null');
+        if (data != null) {
+            equals(data.width, expected.width, 'Image width');
+            same(data, expected, 'Image info object');
+        }
+        start();
+    });
+});
+
+
+
 // Test image info
 asyncTest("JSLocate for zc-f-c-b-4 - 1-bit jp2", function() {
     expect(1);
@@ -36,7 +62,7 @@ asyncTest("JSLocate for zc-f-c-b-4 - 1-bit jp2", function() {
 
 asyncTest("Image info for 1-bit jp2", function() {
     expect(3);
-    var expected = {"width":3295,"height":2561,"bits":1};
+    var expected = {"width":3295,"height":2561,"bits":1,"type":"jp2"};
     var imageInfoURL = br.getPageURI(0) + '&ext=json&callback=?';
     
     $.getJSON(imageInfoURL, function(data) {
