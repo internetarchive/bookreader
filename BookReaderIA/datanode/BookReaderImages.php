@@ -118,24 +118,46 @@ function getImageInfo($zipPath, $file)
     $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
     $type = imageExtensionToType($fileExt);
      
-    // $$$ will exiftool work for *all* of our images?
-    // BitsPerComponent present in jp2. Not present in jpeg.
+    // We look for all the possible tags of interest then act on the
+    // ones presumed present based on the file type
+    $tagsToGet = ' -ImageWidth -ImageHeight -FileType'        // all formats
+                 . ' -BitsPerComponent -ColorSpace'          // jp2
+                 . ' -BitDepth'                              // png
+                 . ' -BitsPerSample';                        // tiff
+                        
     $cmd = getUnarchiveCommand($zipPath, $file)
-        . ' | '. $exiftool . ' -s -s -s -ImageWidth -ImageHeight -BitsPerComponent -Colorspace -';
+        . ' | '. $exiftool . ' -S -fast' . $tagsToGet . ' -';
     exec($cmd, $output);
     
-    $width = intval($output[0]);
-    $height = intval($output[1]);
-    preg_match('/^(\d+)/', $output[2], $groups);
-    $bits = intval($groups[1]);
-    $colorspace = intval($output[3]);
-    
-    // Format-specific overrides
-    if ('jpeg' == $type) {
-        // Note: JPEG may be single channel grayscale. jpegtopnm will create PGM in this case.
-        $bits = 8;
+    $tags = Array();
+    foreach ($output as $line) {
+        $keyValue = explode(": ", $line);
+        $tags[$keyValue[0]] = $keyValue[1];
     }
     
+    $width = intval($tags["ImageWidth"]);
+    $height = intval($tags["ImageHeight"]);
+    $type = strtolower($tags["FileType"]);
+    
+    switch ($tags["FileType"]) {
+        case "JP2":
+            $bits = intval($tags["BitsPerComponent"]);
+            break;
+        case "TIFF":
+            $bits = intval($tags["BitsPerSample"]);
+            break;
+        case "JPEG":
+            $bits = 8;
+            break;
+        case "PNG":
+            $bits = intval($tags["BitDepth"]);
+            break;
+        default:
+            BRfatal("Unsupported image type");
+            break;
+    }
+   
+   
     $retval = Array('width' => $width, 'height' => $height,
         'bits' => $bits, 'type' => $type);
     
@@ -260,6 +282,9 @@ if ('jp2' == $fileExt) {
         
 } else if ('jpg' == $fileExt) {
     $decompressCmd = ' | jpegtopnm ' . reduceCommand($scale);
+
+} else if ('png' == $fileExt) {
+    $decompressCmd = ' | pngtopnm ' . reduceCommand($scale);
     
 } else {
     BRfatal('Unknown source file extension: ' . $fileExt);

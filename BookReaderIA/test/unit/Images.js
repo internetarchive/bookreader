@@ -106,6 +106,46 @@ asyncTest("Load windwavesatseabr00bige image 5", function() {
 });
 
 
+/// nybc200109 - 1-bit tiff zip
+asyncTest("JSLocate for nybc200109 - 1-bit tiff.zip book", function() {
+    expect(1);
+    $.getScript( jsLocateURL('nybc200109'), function() {
+        equals(br.numLeafs,
+               694,
+               'Number of pages');
+        start();
+    });
+});
+
+asyncTest("Image info for 1-bit tiff", function() {
+    expect(3);
+    var expected = {"width":5081,"height":6592,"bits":1,"type":"tiff"};
+    var imageInfoURL = br.getPageURI(0) + '&ext=json&callback=?';
+    
+    $.getJSON(imageInfoURL, function(data) {
+        equals(data != null, true, 'data is not null');
+        if (data != null) {
+            equals(data.width, expected.width, 'Image width');
+            same(data, expected, 'Image info object');
+        }
+        start();
+    });
+});
+
+asyncTest("Load 1-bit tiff image from zip", function() {
+    expect(2);
+    var pageURI = br.getPageURI(6, 16);
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 318, 'Image width');
+        start();
+    })
+    .attr('src', pageURI);
+});
+
+
+
 /// asamoandictiona00pragoog - tiff zip
 asyncTest("JSLocate for asamoandictiona00pragoog - tiff.zip book", function() {
     expect(1);
@@ -113,6 +153,21 @@ asyncTest("JSLocate for asamoandictiona00pragoog - tiff.zip book", function() {
         equals(br.bookTitle,
                'A Samoan dictionary: English and Samoan, and Samoan and English;',
                'Book title');
+        start();
+    });
+});
+
+asyncTest("Image info for 8-bit tiff", function() {
+    expect(3);
+    var expected = {"width":1275,"height":1650,"bits":8,"type":"tiff"};
+    var imageInfoURL = br.getPageURI(0) + '&ext=json&callback=?';
+    
+    $.getJSON(imageInfoURL, function(data) {
+        equals(data != null, true, 'data is not null');
+        if (data != null) {
+            equals(data.width, expected.width, 'Image width');
+            same(data, expected, 'Image info object');
+        }
         start();
     });
 });
