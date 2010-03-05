@@ -277,34 +277,39 @@ if (!file_exists($stdoutLink))
 putenv('LD_LIBRARY_PATH=/petabox/sw/lib/kakadu');
 
 $unzipCmd  = getUnarchiveCommand($zipPath, $file);
-        
-// XXX look at normalized type in imageinfo
-if ('jp2' == $fileExt) {
-    $decompressCmd = 
-        " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
-    if ($decompressToBmp) {
-        $decompressCmd .= ' | bmptopnm ';
-    }
-    
-} else if ('tif' == $fileExt) {
-    // We need to create a temporary file for tifftopnm since it cannot
-    // work on a pipe (the file must be seekable).
-    // We use the BookReaderTiff prefix to give a hint in case things don't
-    // get cleaned up.
-    $tempFile = tempnam("/tmp", "BookReaderTiff");
 
-    // $$$ look at bit depth when reducing
-    $decompressCmd = 
-        ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . reduceCommand($scale);
-        
-} else if ('jpg' == $fileExt) {
-    $decompressCmd = ' | jpegtopnm ' . reduceCommand($scale);
+switch ($imageInfo['type']) {
+    case 'jp2':
+        $decompressCmd = 
+            " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
+        if ($decompressToBmp) {
+            $decompressCmd .= ' | bmptopnm ';
+        }
+        break;
 
-} else if ('png' == $fileExt) {
-    $decompressCmd = ' | pngtopnm ' . reduceCommand($scale);
+    case 'tiff':
+        // We need to create a temporary file for tifftopnm since it cannot
+        // work on a pipe (the file must be seekable).
+        // We use the BookReaderTiff prefix to give a hint in case things don't
+        // get cleaned up.
+        $tempFile = tempnam("/tmp", "BookReaderTiff");
     
-} else {
-    BRfatal('Unknown source file extension: ' . $fileExt);
+        // $$$ look at bit depth when reducing
+        $decompressCmd = 
+            ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . reduceCommand($scale);
+        break;
+ 
+    case 'jpeg':
+        $decompressCmd = ' | jpegtopnm ' . reduceCommand($scale);
+        break;
+
+    case 'png':
+        $decompressCmd = ' | pngtopnm ' . reduceCommand($scale);
+        break;
+        
+    default:
+        BRfatal('Unknown source file extension: ' . $fileExt);
+        break;
 }
        
 // Non-integer scaling is currently disabled on the cluster
@@ -312,10 +317,18 @@ if ('jp2' == $fileExt) {
 //     $cmd .= " | pnmscale -height {$_REQUEST['height']} ";
 // }
 
-if ('jpg' == $ext) {
-    $compressCmd = ' | pnmtojpeg ' . $jpegOptions;
-} else if ('png' == $ext) {
-    $compressCmd = ' | pnmtopng ' . $pngOptions;
+switch ($ext) {
+    case 'png':
+        $compressCmd = ' | pnmtopng ' . $pngOptions;
+        break;
+        
+    case 'jpeg':
+    case 'jpg':
+    default:
+        $compressCmd = ' | pnmtojpeg ' . $jpegOptions;
+        $ext = 'jpeg'; // for matching below
+        break;
+
 }
 
 if (($ext == $fileExt) && ($scale == 1) && ($rotate === "0")) {
