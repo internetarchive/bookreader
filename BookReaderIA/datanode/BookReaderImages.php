@@ -1,9 +1,10 @@
 <?php
 
 /*
-Copyright(c)2008 Internet Archive. Software license AGPL version 3.
+Copyright(c) 2008-2010 Internet Archive. Software license AGPL version 3.
 
-This file is part of BookReader.
+This file is part of BookReader.  The full source code can be found at GitHub:
+http://github.com/openlibrary/bookreader
 
 The canonical short name of an image type is the same as in the MIME type.
 For example both .jpeg and .jpg are considered to have type "jpeg" since
