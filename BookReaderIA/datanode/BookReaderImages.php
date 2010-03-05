@@ -48,11 +48,15 @@ if (isset($_REQUEST['ext'])) {
   $ext = $_REQUEST['ext'];
 } else {
   // Default to jpg
-  $ext = 'jpg';
+  $ext = 'jpeg';
 }
 if (isset($_REQUEST['callback'])) {
-  // XXX sanitize
+  // validate callback is valid JS identifier (only)
   $callback = $_REQUEST['callback'];
+  $identifierPatt = '/^[[:alpha:]$_]([[:alnum:]$_])*$/';
+  if (! preg_match($identifierPatt, $callback)) {
+    BRfatal('Invalid callback');
+  }
 } else {
   $callback = null;
 }
