@@ -45,20 +45,20 @@ $exiftool = '/petabox/sw/books/exiftool/exiftool';
 $zipPath  = $_REQUEST['zip'];
 $file     = $_REQUEST['file'];
 if (isset($_REQUEST['ext'])) {
-  $ext = $_REQUEST['ext'];
+    $ext = $_REQUEST['ext'];
 } else {
-  // Default to jpg
-  $ext = 'jpeg';
+    // Default to jpg
+    $ext = 'jpeg';
 }
 if (isset($_REQUEST['callback'])) {
-  // validate callback is valid JS identifier (only)
-  $callback = $_REQUEST['callback'];
-  $identifierPatt = '/^[[:alpha:]$_]([[:alnum:]$_])*$/';
-  if (! preg_match($identifierPatt, $callback)) {
-    BRfatal('Invalid callback');
-  }
+    // validate callback is valid JS identifier (only)
+    $callback = $_REQUEST['callback'];
+    $identifierPatt = '/^[[:alpha:]$_]([[:alnum:]$_])*$/';
+    if (! preg_match($identifierPatt, $callback)) {
+        BRfatal('Invalid callback');
+    }
 } else {
-  $callback = null;
+    $callback = null;
 }
 
 /*
@@ -351,7 +351,7 @@ header('Cache-Control: max-age=15552000');
 passthru ($cmd); # cmd returns image data
 
 if (isset($tempFile)) {
-  unlink($tempFile);
+    unlink($tempFile);
 }
 
 function BRFatal($string) {
