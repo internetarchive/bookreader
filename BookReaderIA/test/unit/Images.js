@@ -138,7 +138,7 @@ asyncTest("Load 1-bit tiff image from zip", function() {
     var img = new Image();
     $(img).bind( 'load error', function(eventObj) {
         equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
-        equals(this.width, 318, 'Image width');
+        equals(this.width, 1272, 'Image width');
         start();
     })
     .attr('src', pageURI);
@@ -178,7 +178,7 @@ asyncTest("Load tiff image from zip", function() {
     var img = new Image();
     $(img).bind( 'load error', function(eventObj) {
         equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
-        equals(this.width, 351, 'Image width');
+        equals(this.width, 702, 'Image width');
         start();
     })
     .attr('src', pageURI);
