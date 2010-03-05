@@ -139,17 +139,17 @@ function getImageInfo($zipPath, $file)
     $height = intval($tags["ImageHeight"]);
     $type = strtolower($tags["FileType"]);
     
-    switch ($tags["FileType"]) {
-        case "JP2":
+    switch ($type) {
+        case "jp2":
             $bits = intval($tags["BitsPerComponent"]);
             break;
-        case "TIFF":
+        case "tiff":
             $bits = intval($tags["BitsPerSample"]);
             break;
-        case "JPEG":
+        case "jpeg":
             $bits = 8;
             break;
-        case "PNG":
+        case "png":
             $bits = intval($tags["BitDepth"]);
             break;
         default:
@@ -182,6 +182,7 @@ $imageInfo = getImageInfo($zipPath, $file);
 
 // Output json if requested
 if ('json' == $ext) {
+    // $$$ we should determine the output size first based on requested scale
     outputJSON($imageInfo, $callback);
     exit;
 }
@@ -214,7 +215,7 @@ $jpegOptions = '-quality 75';
 
 // The pbmreduce reduction factor produces an image with dimension 1/n
 // The kakadu reduction factor produceds an image with dimension 1/(2^n)
-
+// $$$ handle continuous values for scale
 if (isset($_REQUEST['height'])) {
     $ratio = floatval($_REQUEST['origHeight']) / floatval($_REQUEST['height']);
     if ($ratio <= 2) {
@@ -251,6 +252,22 @@ if (isset($_REQUEST['height'])) {
     }
 }
 
+// Override depending on source image format
+// $$$ consider doing a 302 here instead, to make better use of the browser cache
+// Limit scaling for 1-bit images.  See https://bugs.edge.launchpad.net/bookreader/+bug/486011
+if (1 == $imageInfo['bits']) {
+    if ($scale > 1) {
+        $scale /= 2;
+        $powReduce -= 1;
+        
+        // Hard limit so there are some black pixels to use!
+        if ($scale > 4) {
+            $scale = 4;
+            $powReduce = 2;
+        }
+    }
+}
+
 if (!file_exists($stdoutLink)) 
 {  
   system('ln -s /dev/stdout ' . $stdoutLink);  
@@ -261,6 +278,7 @@ putenv('LD_LIBRARY_PATH=/petabox/sw/lib/kakadu');
 
 $unzipCmd  = getUnarchiveCommand($zipPath, $file);
         
+// XXX look at normalized type in imageinfo
 if ('jp2' == $fileExt) {
     $decompressCmd = 
         " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
@@ -275,10 +293,9 @@ if ('jp2' == $fileExt) {
     // get cleaned up.
     $tempFile = tempnam("/tmp", "BookReaderTiff");
 
-    $pbmReduce = reduceCommand($scale);
-    
+    // $$$ look at bit depth when reducing
     $decompressCmd = 
-        ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . $pbmReduce;
+        ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . reduceCommand($scale);
         
 } else if ('jpg' == $fileExt) {
     $decompressCmd = ' | jpegtopnm ' . reduceCommand($scale);
@@ -311,6 +328,7 @@ if (($ext == $fileExt) && ($scale == 1) && ($rotate === "0")) {
 # print $cmd;
 
 
+// $$$ investigate how to flush cache when this file is changed
 header('Content-type: ' . $MIMES[$ext]);
 header('Cache-Control: max-age=15552000');
 passthru ($cmd); # cmd returns image data
