@@ -613,7 +613,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     // reset the bottom position based on thumbnails
     $('#BRpageview').height(bottomPos);
 
-    var pageViewBuffer = Math.floor(($('#BRcontainer').attr('scrollWidth') - maxRight) / 2) - 14;	
+    var pageViewBuffer = Math.floor(($('#BRcontainer').attr('scrollWidth') - maxRight) / 2) - 14;
     var scrollTop = $('#BRcontainer').attr('scrollTop');
     var scrollBottom = scrollTop + $('#BRcontainer').height();
 
@@ -677,7 +677,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
                 div = document.createElement("div");
                 div.id = 'pagediv'+leaf;
                 div.style.position = "absolute";
-                div.className = "BRpagedivthumb";				
+                div.className = "BRpagedivthumb";
 
                 left += this.padding;
                 $(div).css('top', leafTop + 'px');
@@ -1100,7 +1100,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
             this.flipFwdToIndex(index);
         }
 
-    } else if (3 == this.mode){	
+    } else if (3 == this.mode) {
         var viewWidth = $('#BRcontainer').attr('scrollWidth') - 20; // width minus buffer
         var i;
         var leafWidth = 0;
@@ -1252,7 +1252,7 @@ BookReader.prototype.prepareThumbnailView = function() {
     
     this.resizePageView();
     
-	this.displayedRows = [];
+    this.displayedRows = [];
     this.drawLeafsThumbnail();
         
     // Bind mouse handlers
