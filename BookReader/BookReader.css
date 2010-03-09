@@ -40,6 +40,18 @@
     cursor: move;
 }
 
+.BRpagedivthumb {
+    background-color: #FFFFEE;
+    overflow:hidden;
+    border: 1px solid #909090;
+}
+
+.BRpagedivthumb_highlight {
+    background-color: #FFFFEE;
+    overflow:hidden;
+    border: 1px solid #000000;
+}
+
 .BRpagediv2up {
     background-color: rgb(234, 226, 205);
     overflow:hidden;
@@ -91,6 +103,7 @@
 .BRicon.zoom_in { background: url(images/zoom_in_icon.png) no-repeat; }
 .BRicon.one_page_mode { background: url(images/one_page_mode_icon.png) no-repeat; }
 .BRicon.two_page_mode { background: url(images/two_page_mode_icon.png) no-repeat; }
+.BRicon.thumbnail_mode { background: url(images/thumbnail_mode_icon.png) no-repeat; }
 .BRicon.embed { background: url(images/embed_icon.png) no-repeat; }
 .BRicon.print { background: url(images/print_icon.png) no-repeat; }
 .BRicon.book_left { background: url(images/book_left_icon.png) no-repeat; }
