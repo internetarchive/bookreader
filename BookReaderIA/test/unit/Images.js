@@ -5,7 +5,7 @@
 module("Images");
 
 // $$$ set to test host
-var testHost = 'http://www-mang.archive.org';
+var testHost = 'http://www-testflip.archive.org';
 
 // Returns locator URL for the given id
 function jsLocateURL(identifier, book) {
