@@ -19,12 +19,12 @@ class BookReader
     // $$$ TODO add support for jpg and tar stacks
     // https://bugs.edge.launchpad.net/gnubook/+bug/323003
     // https://bugs.edge.launchpad.net/gnubook/+bug/385397
-    $imageFormatRegex = '@' . preg_quote($prefix, '@') . '_(jp2|tif)\.zip$@';
+    $imageFormatRegex = '@' . preg_quote($prefix, '@') . '_(jp2|tif|jpg)\.(zip|tar)$@';
     
     $baseLength = strlen($item->metadataGrabber->mainDir . '/');
     foreach ($item->getFiles() as $location => $fileInfo) {
         $filename = substr($location, $baseLength);
-
+        
         if ($checkOldScandata) {
             if ($filename == 'scandata.xml' || $filename == 'scandata.zip') {
                 $foundScandata = $filename;
@@ -39,7 +39,7 @@ class BookReader
             $foundImageStack = $filename;
         }
     }
-        
+    
     if ($foundScandata && $foundImageStack) {
         return true;
     }
@@ -81,7 +81,7 @@ class BookReader
     // manually update with Launchpad version number at each checkin so that browsers
     // do not use old cached version
     // see https://bugs.launchpad.net/gnubook/+bug/330748
-    $version = "0.9.18";
+    $version = "0.9.21";
     
     if ("" == $id) {
         echo "No identifier specified!";
@@ -163,22 +163,29 @@ class BookReader
   <?
     exit;
   }
+
   
-  public static function jsMetadataURL($server, $identifier, $mainDir, $subPrefix = '')
+  public static function serverBaseURL($server)
   {
-    $serverBaseURL = $server;
-    
-    // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
+    // Check if we're on a dev vhost and point to JSIA in the user's public_html
+    // on the datanode
     if (preg_match("/^www-(\w+)/", $_SERVER["SERVER_NAME"], $match)) {
       // $$$ the remapping isn't totally automatic yet and requires user to
       //     ln -s ~/petabox/www/datanode/BookReader ~/public_html/BookReader
       //     so we enable it only for known hosts
-      $devhosts = array('mang', 'testflip');
+      $devhosts = array('mang', 'testflip', 'rkumar');
       if (in_array($match[1], $devhosts)) {
-        $serverBaseURL = $serverBaseURL . ":81/~" . $match[1];
+        $server = $server . "/~" . $match[1];
       }
     }
-    
+    return $server;
+  }
+  
+  
+  public static function jsMetadataURL($server, $identifier, $mainDir, $subPrefix = '')
+  {
+    $serverBaseURL = BookReader::serverBaseURL($server);
+
     $params = array( 'id' => $identifier, 'itemPath' => $mainDir, 'server' => $server );
     if ($subPrefix) {
         $params['subPrefix'] = $subPrefix;

@@ -42,9 +42,8 @@ function BookReader() {
     this.ui = 'full'; // UI mode
     this.thumbWidth = 100;
     this.thumbRowBuffer = 3; // number of rows to pre-cache out a view
-
-    this.displayedIndices = [];	
     this.displayedRows=[];
+    this.displayedIndices = [];	
     //this.indicesToDisplay = [];
     this.imgs = {};
     this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index
@@ -2379,13 +2378,13 @@ BookReader.prototype.search = function(term) {
     term = term.replace(/\//g, ' '); // strip slashes
     this.searchTerm = term;
     $('#BookReaderSearchScript').remove();
- 	var script  = document.createElement("script");
- 	script.setAttribute('id', 'BookReaderSearchScript');
-	script.setAttribute("type", "text/javascript");
-	script.setAttribute("src", 'http://'+this.server+'/BookReader/flipbook_search_br.php?url='+escape(this.bookPath + '_djvu.xml')+'&term='+term+'&format=XML&callback=br.BRSearchCallback');
-	document.getElementsByTagName('head')[0].appendChild(script);
-	$('#BookReaderSearchBox').val(term);
-	$('#BookReaderSearchResults').html('Searching...');
+    var script  = document.createElement("script");
+    script.setAttribute('id', 'BookReaderSearchScript');
+    script.setAttribute("type", "text/javascript");
+    script.setAttribute("src", 'http://'+this.server+'/BookReader/flipbook_search_br.php?url='+escape(this.bookPath + '_djvu.xml')+'&term='+term+'&format=XML&callback=br.BRSearchCallback');
+    document.getElementsByTagName('head')[0].appendChild(script);
+    $('#BookReaderSearchBox').val(term);
+    $('#BookReaderSearchResults').html('Searching...');
 }
 
 // BRSearchCallback()
@@ -2457,7 +2456,7 @@ BookReader.prototype.BRSearchCallback = function(txt) {
     $('#BookReaderSearchResults').append('</ul>');
 
     // $$$ update again for case of loading search URL in new browser window (search box may not have been ready yet)
-	$('#BookReaderSearchBox').val(this.searchTerm);
+    $('#BookReaderSearchBox').val(this.searchTerm);
 
     this.updateSearchHilites();
 }
@@ -3601,6 +3600,27 @@ BookReader.prototype._getPageHeight= function(index) {
 BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     if (index < 0 || index >= this.numLeafs) { // Synthesize page
         return this.imagesBaseURL + "/transparent.png";
+    }
+    
+    if ('undefined' == typeof(reduce)) {
+        // reduce not passed in
+        var ratio = this.getPageHeight(index) / this.twoPage.height;
+        var scale;
+        // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
+        if (ratio < 2) {
+            scale = 1;
+        } else if (ratio < 4) {
+            scale = 2;
+        } else if (ratio < 8) {
+            scale = 4;
+        } else if (ratio < 16) {
+            scale = 8;
+        } else  if (ratio < 32) {
+            scale = 16;
+        } else {
+            scale = 32;
+        }
+        reduce = scale;
     }
     
     return this.getPageURI(index, reduce, rotate);

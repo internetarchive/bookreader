@@ -31,11 +31,10 @@ if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home di
     $server .= ':80/~testflip';
 }
 
-if ($subPrefix) {
-    $subItemPath = $itemPath . '/' . $subPrefix;
-} else {
-    $subItemPath = $itemPath . '/' . $id;
+if (! $subPrefix) {
+    $subPrefix = $id;
 }
+$subItemPath = $itemPath . '/' . $subPrefix;
 
 if ("" == $id) {
     BRFatal("No identifier specified!");
@@ -49,27 +48,37 @@ if ("" == $server) {
     BRFatal("No server specified!");
 }
 
-if (!preg_match("|^/[0-3]/items/{$id}$|", $itemPath)) {
+if (!preg_match("|^/\d+/items/{$id}$|", $itemPath)) {
     BRFatal("Bad id!");
 }
 
 // XXX check here that subitem is okay
 
-$imageFormat = 'unknown';
-$zipFile = "${subItemPath}_jp2.zip";
+$filesDataFile = "$itemPath/${id}_files.xml";
 
-if (file_exists($zipFile)) {
-    $imageFormat = 'jp2';
+if (file_exists($filesDataFile)) {
+    $filesData = simplexml_load_file("$itemPath/${id}_files.xml");
 } else {
-  $zipFile = "${subItemPath}_tif.zip";
-  if (file_exists($zipFile)) {
-    $imageFormat = 'tif';
-  }
+    BRfatal("File metadata not found!");
 }
+
+$imageStackInfo = findImageStack($subPrefix, $filesData);
+if ($imageStackInfo['imageFormat'] == 'unknown') {
+    BRfatal('Couldn\'t find image stack');
+}
+
+$imageFormat = $imageStackInfo['imageFormat'];
+$archiveFormat = $imageStackInfo['archiveFormat'];
+$imageStackFile = $itemPath . "/" . $imageStackInfo['imageStackFile'];
 
 if ("unknown" == $imageFormat) {
   BRfatal("Unknown image format");
 }
+
+if ("unknown" == $archiveFormat) {
+  BRfatal("Unknown archive format");
+}
+
 
 $scanDataFile = "${subItemPath}_scandata.xml";
 $scanDataZip  = "$itemPath/scandata.zip";
@@ -150,34 +159,7 @@ br.getPageURI = function(index, reduce, rotate) {
     var file = this._getPageFile(index);
         
     // $$$ add more image stack formats here
-    if (1==this.mode) {
-        var url = 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
-    } else {
-        if ('undefined' == typeof(reduce)) {
-            // reduce not passed in
-            var ratio = this.getPageHeight(index) / this.twoPage.height;
-            var scale;
-            // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-            if (ratio < 2) {
-                scale = 1;
-            } else if (ratio < 4) {
-                scale = 2;
-            } else if (ratio < 8) {
-                scale = 4;
-            } else if (ratio < 16) {
-                scale = 8;
-            } else  if (ratio < 32) {
-                scale = 16;
-            } else {
-                scale = 32;
-            }
-            _reduce = scale;
-        }
-    
-        var url = 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
-        
-    }
-    return url;
+    return 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
 }
 
 br._getPageFile = function(index) {
@@ -243,12 +225,13 @@ br.getPageNum = function(index) {
 }
 
 br.leafNumToIndex = function(leafNum) {
-    var index = jQuery.inArray(leafNum, this.leafMap);
-    if (-1 == index) {
-        return null;
-    } else {
-        return index;
+    for (var index = 0; index < this.leafMap.length; index++) {
+        if (this.leafMap[index] == leafNum) {
+            return index;
+        }
     }
+    
+    return null;
 }
 
 // This function returns the left and right indices for the user-visible
@@ -328,7 +311,7 @@ br.getEmbedCode = function() {
     return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
 }
 
-br.pageW =		[
+br.pageW =  [
             <?
             $i=0;
             foreach ($scanData->pageData->page as $page) {
@@ -341,7 +324,7 @@ br.pageW =		[
             ?>
             ];
 
-br.pageH =		[
+br.pageH =  [
             <?
             $totalHeight = 0;
             $i=0;            
@@ -389,13 +372,14 @@ br.pageNums = [
 br.numLeafs = br.pageW.length;
 
 br.bookId   = '<?echo $id;?>';
-br.zip      = '<?echo $zipFile;?>';
+br.zip      = '<?echo $imageStackFile;?>';
 br.subPrefix = '<?echo $subPrefix;?>';
 br.server   = '<?echo $server;?>';
 br.bookTitle= '<?echo preg_replace("/\'/", "\\'", $metaData->title);?>';
 br.bookPath = '<?echo $subItemPath;?>';
 br.bookUrl  = '<?echo "http://www.archive.org/details/$id";?>';
 br.imageFormat = '<?echo $imageFormat;?>';
+br.archiveFormat = '<?echo $archiveFormat;?>';
 
 <?
 
@@ -449,6 +433,7 @@ br.init();
 
 
 function BRFatal($string) {
+    // $$$ TODO log error
     echo "alert('$string')\n";
     die(-1);
 }
@@ -465,6 +450,36 @@ function shouldAddPage($page) {
     }
     
     return true;
+}
+
+// Returns { 'imageFormat' => , 'archiveFormat' => '} given a sub-item prefix and loaded xml data
+function findImageStack($subPrefix, $filesData) {
+
+    // $$$ The order of the image formats determines which will be returned first
+    $imageFormats = array('JP2' => 'jp2', 'TIFF' => 'tif', 'JPEG' => 'jpg');
+    $archiveFormats = array('ZIP' => 'zip', 'Tar' => 'tar');
+    $imageGroup = implode('|', array_keys($imageFormats));
+    $archiveGroup = implode('|', array_keys($archiveFormats));
+    // $$$ Currently only return processed images
+    $imageStackRegex = "/Single Page (Processed) (${imageGroup}) (${archiveGroup})/";
+        
+    foreach ($filesData->file as $file) {        
+        if (strpos($file['name'], $subPrefix) === 0) { // subprefix matches beginning
+            if (preg_match($imageStackRegex, $file->format, $matches)) {
+            
+                // Make sure we have a regular image stack
+                $imageFormat = $imageFormats[$matches[2]];
+                if (strpos($file['name'], $subPrefix . '_' . $imageFormat) === 0) {            
+                    return array('imageFormat' => $imageFormat,
+                                 'archiveFormat' => $archiveFormats[$matches[3]],
+                                 'imageStackFile' => $file['name']);
+                }
+            }
+        }
+    }
+    
+    return array('imageFormat' => 'unknown', 'archiveFormat' => 'unknown', 'imageStackFile' => 'unknown');
+        
 }
 
 ?>

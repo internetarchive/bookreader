@@ -1,9 +1,14 @@
 <?php
 
 /*
-Copyright(c)2008 Internet Archive. Software license AGPL version 3.
+Copyright(c) 2008-2010 Internet Archive. Software license AGPL version 3.
 
-This file is part of BookReader.
+This file is part of BookReader.  The full source code can be found at GitHub:
+http://github.com/openlibrary/bookreader
+
+The canonical short name of an image type is the same as in the MIME type.
+For example both .jpeg and .jpg are considered to have type "jpeg" since
+the MIME type is "image/jpeg".
 
     BookReader is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -19,11 +24,173 @@ This file is part of BookReader.
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-$MIMES = array('jpg' => 'image/jpeg',
-               'png' => 'image/png');
+$MIMES = array('gif' => 'image/gif',
+               'jp2' => 'image/jp2',
+               'jpg' => 'image/jpeg',
+               'jpeg' => 'image/jpeg',
+               'png' => 'image/png',
+               'tif' => 'image/tiff',
+               'tiff' => 'image/tiff');
+               
+$EXTENSIONS = array('gif' => 'gif',
+                    'jp2' => 'jp2',
+                    'jpeg' => 'jpeg',
+                    'jpg' => 'jpeg',
+                    'png' => 'png',
+                    'tif' => 'tiff',
+                    'tiff' => 'tiff');
+               
+$exiftool = '/petabox/sw/books/exiftool/exiftool';
 
+// Process some of the request parameters
 $zipPath  = $_REQUEST['zip'];
 $file     = $_REQUEST['file'];
+if (isset($_REQUEST['ext'])) {
+    $ext = $_REQUEST['ext'];
+} else {
+    // Default to jpg
+    $ext = 'jpeg';
+}
+if (isset($_REQUEST['callback'])) {
+    // validate callback is valid JS identifier (only)
+    $callback = $_REQUEST['callback'];
+    $identifierPatt = '/^[[:alpha:]$_]([[:alnum:]$_])*$/';
+    if (! preg_match($identifierPatt, $callback)) {
+        BRfatal('Invalid callback');
+    }
+} else {
+    $callback = null;
+}
+
+/*
+ * Approach:
+ * 
+ * Get info about requested image (input)
+ * Get info about requested output format
+ * Determine processing parameters
+ * Process image
+ * Return image data
+ * Clean up temporary files
+ */
+ 
+function getUnarchiveCommand($archivePath, $file)
+{
+    $lowerPath = strtolower($archivePath);
+    if (preg_match('/\.([^\.]+)$/', $lowerPath, $matches)) {
+        $suffix = $matches[1];
+        
+        if ($suffix == 'zip') {
+            return 'unzip -p '
+                . escapeshellarg($archivePath)
+                . ' ' . escapeshellarg($file);
+        } else if ($suffix == 'tar') {
+            return '7z e -so '
+                . escapeshellarg($archivePath)
+                . ' ' . escapeshellarg($file);
+        } else {
+            BRfatal('Incompatible archive format');
+        }
+
+    } else {
+        BRfatal('Bad image stack path');
+    }
+    
+    BRfatal('Bad image stack path or archive format');
+    
+}
+
+/*
+ * Returns the image type associated with the file extension.
+ */
+function imageExtensionToType($extension)
+{
+    global $EXTENSIONS;
+    
+    if (array_key_exists($extension, $EXTENSIONS)) {
+        return $EXTENSIONS[$extension];
+    } else {
+        BRfatal('Unknown image extension');
+    }            
+}
+
+/*
+ * Get the image width, height and depth from a jp2 file in zip.
+ */
+function getImageInfo($zipPath, $file)
+{
+    global $exiftool;
+    
+    $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+    $type = imageExtensionToType($fileExt);
+     
+    // We look for all the possible tags of interest then act on the
+    // ones presumed present based on the file type
+    $tagsToGet = ' -ImageWidth -ImageHeight -FileType'        // all formats
+                 . ' -BitsPerComponent -ColorSpace'          // jp2
+                 . ' -BitDepth'                              // png
+                 . ' -BitsPerSample';                        // tiff
+                        
+    $cmd = getUnarchiveCommand($zipPath, $file)
+        . ' | '. $exiftool . ' -S -fast' . $tagsToGet . ' -';
+    exec($cmd, $output);
+    
+    $tags = Array();
+    foreach ($output as $line) {
+        $keyValue = explode(": ", $line);
+        $tags[$keyValue[0]] = $keyValue[1];
+    }
+    
+    $width = intval($tags["ImageWidth"]);
+    $height = intval($tags["ImageHeight"]);
+    $type = strtolower($tags["FileType"]);
+    
+    switch ($type) {
+        case "jp2":
+            $bits = intval($tags["BitsPerComponent"]);
+            break;
+        case "tiff":
+            $bits = intval($tags["BitsPerSample"]);
+            break;
+        case "jpeg":
+            $bits = 8;
+            break;
+        case "png":
+            $bits = intval($tags["BitDepth"]);
+            break;
+        default:
+            BRfatal("Unsupported image type");
+            break;
+    }
+   
+   
+    $retval = Array('width' => $width, 'height' => $height,
+        'bits' => $bits, 'type' => $type);
+    
+    return $retval;
+}
+
+/*
+ * Output JSON given the imageInfo associative array
+ */
+function outputJSON($imageInfo, $callback)
+{
+    header('Content-type: text/plain');
+    $jsonOutput = json_encode($imageInfo);
+    if ($callback) {
+        $jsonOutput = $callback . '(' . $jsonOutput . ');';
+    }
+    echo $jsonOutput;
+}
+
+// Get the image size and depth
+$imageInfo = getImageInfo($zipPath, $file);
+
+// Output json if requested
+if ('json' == $ext) {
+    // $$$ we should determine the output size first based on requested scale
+    outputJSON($imageInfo, $callback);
+    exit;
+}
 
 // Unfortunately kakadu requires us to know a priori if the
 // output file should be .ppm or .pgm.  By decompressing to
@@ -36,13 +203,6 @@ if ($decompressToBmp) {
   $stdoutLink = '/tmp/stdout.bmp';
 } else {
   $stdoutLink = '/tmp/stdout.ppm';
-}
-
-if (isset($_REQUEST['ext'])) {
-  $ext = $_REQUEST['ext'];
-} else {
-  // Default to jpg
-  $ext = 'jpg';
 }
 
 $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -60,7 +220,7 @@ $jpegOptions = '-quality 75';
 
 // The pbmreduce reduction factor produces an image with dimension 1/n
 // The kakadu reduction factor produceds an image with dimension 1/(2^n)
-
+// $$$ handle continuous values for scale
 if (isset($_REQUEST['height'])) {
     $ratio = floatval($_REQUEST['origHeight']) / floatval($_REQUEST['height']);
     if ($ratio <= 2) {
@@ -97,6 +257,22 @@ if (isset($_REQUEST['height'])) {
     }
 }
 
+// Override depending on source image format
+// $$$ consider doing a 302 here instead, to make better use of the browser cache
+// Limit scaling for 1-bit images.  See https://bugs.edge.launchpad.net/bookreader/+bug/486011
+if (1 == $imageInfo['bits']) {
+    if ($scale > 1) {
+        $scale /= 2;
+        $powReduce -= 1;
+        
+        // Hard limit so there are some black pixels to use!
+        if ($scale > 4) {
+            $scale = 4;
+            $powReduce = 2;
+        }
+    }
+}
+
 if (!file_exists($stdoutLink)) 
 {  
   system('ln -s /dev/stdout ' . $stdoutLink);  
@@ -105,39 +281,40 @@ if (!file_exists($stdoutLink))
 
 putenv('LD_LIBRARY_PATH=/petabox/sw/lib/kakadu');
 
-$unzipCmd  = 'unzip -p ' . 
-        escapeshellarg($zipPath) .
-        ' ' . escapeshellarg($file);
-        
-if ('jp2' == $fileExt) {
-    $decompressCmd = 
-        " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
-    if ($decompressToBmp) {
-        $decompressCmd .= ' | bmptopnm ';
-    }
-    
-} else if ('tif' == $fileExt) {
-    // We need to create a temporary file for tifftopnm since it cannot
-    // work on a pipe (the file must be seekable).
-    // We use the BookReaderTiff prefix to give a hint in case things don't
-    // get cleaned up.
-    $tempFile = tempnam("/tmp", "BookReaderTiff");
-    
-    if (1 != $scale) {
-        if (onPowerNode()) {
-            $pbmReduce = ' | pnmscale -reduce ' . $scale;
-        } else {
-            $pbmReduce = ' | pnmscale -nomix -reduce ' . $scale;
-        }
-    } else {
-        $pbmReduce = '';
-    }
-    
-    $decompressCmd = 
-        ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . $pbmReduce;
+$unzipCmd  = getUnarchiveCommand($zipPath, $file);
 
-} else {
-    BRfatal('Unknown source file extension: ' . $fileExt);
+switch ($imageInfo['type']) {
+    case 'jp2':
+        $decompressCmd = 
+            " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
+        if ($decompressToBmp) {
+            $decompressCmd .= ' | bmptopnm ';
+        }
+        break;
+
+    case 'tiff':
+        // We need to create a temporary file for tifftopnm since it cannot
+        // work on a pipe (the file must be seekable).
+        // We use the BookReaderTiff prefix to give a hint in case things don't
+        // get cleaned up.
+        $tempFile = tempnam("/tmp", "BookReaderTiff");
+    
+        // $$$ look at bit depth when reducing
+        $decompressCmd = 
+            ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . reduceCommand($scale);
+        break;
+ 
+    case 'jpeg':
+        $decompressCmd = ' | jpegtopnm ' . reduceCommand($scale);
+        break;
+
+    case 'png':
+        $decompressCmd = ' | pngtopnm ' . reduceCommand($scale);
+        break;
+        
+    default:
+        BRfatal('Unknown source file extension: ' . $fileExt);
+        break;
 }
        
 // Non-integer scaling is currently disabled on the cluster
@@ -145,27 +322,41 @@ if ('jp2' == $fileExt) {
 //     $cmd .= " | pnmscale -height {$_REQUEST['height']} ";
 // }
 
-if ('jpg' == $ext) {
-    $compressCmd = ' | pnmtojpeg ' . $jpegOptions;
-} else if ('png' == $ext) {
-    $compressCmd = ' | pnmtopng ' . $pngOptions;
+switch ($ext) {
+    case 'png':
+        $compressCmd = ' | pnmtopng ' . $pngOptions;
+        break;
+        
+    case 'jpeg':
+    case 'jpg':
+    default:
+        $compressCmd = ' | pnmtojpeg ' . $jpegOptions;
+        $ext = 'jpeg'; // for matching below
+        break;
+
 }
 
-$cmd = $unzipCmd . $decompressCmd . $compressCmd;
+if (($ext == $fileExt) && ($scale == 1) && ($rotate === "0")) {
+    // Just pass through original data if same format and size
+    $cmd = $unzipCmd;
+} else {
+    $cmd = $unzipCmd . $decompressCmd . $compressCmd;
+}
 
-//print $cmd;
+# print $cmd;
 
+
+// $$$ investigate how to flush cache when this file is changed
 header('Content-type: ' . $MIMES[$ext]);
 header('Cache-Control: max-age=15552000');
-
-passthru ($cmd);
+passthru ($cmd); # cmd returns image data
 
 if (isset($tempFile)) {
-  unlink($tempFile);
+    unlink($tempFile);
 }
 
 function BRFatal($string) {
-    echo "alert('$string')\n";
+    echo "alert('$string');\n";
     die(-1);
 }
 
@@ -181,6 +372,18 @@ function onPowerNode() {
         }
     }
     return false;
+}
+
+function reduceCommand($scale) {
+    if (1 != $scale) {
+        if (onPowerNode()) {
+            return ' | pnmscale -reduce ' . $scale;
+        } else {
+            return ' | pnmscale -nomix -reduce ' . $scale;
+        }
+    } else {
+        return '';
+    }
 }
 
 

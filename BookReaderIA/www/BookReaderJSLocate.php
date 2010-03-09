@@ -21,6 +21,7 @@ This file is part of BookReader.
 require_once '/petabox/setup.inc';
 
 $id = $_REQUEST['id'];
+$book = $_REQUEST['book']; // support multiple books within an item
 
 if ("" == $id) {
     echo "No identifier specified!";
@@ -31,20 +32,13 @@ $locator      = new Locator();
 
 $results = $locator->locateUDP($id, 1, false);
 
-$serverBaseURL = $results[0][0];
+$server = $results[0][0];
+$serverBaseURL = BookReader::serverBaseURL($server);
 
-// Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
-if (preg_match("/^www-(\w+)/", $_SERVER["SERVER_NAME"], $match)) {
-    // $$$ the remapping isn't totally automatic yet and requires user to
-    //     ln -s ~/petabox/www/datanode/BookReader ~/public_html/BookReader
-    //     so we enable it only for known hosts
-    $devhosts = array('mang', 'testflip', 'rkumar');
-    if (in_array($match[1], $devhosts)) {
-        $serverBaseURL = $serverBaseURL . ":81/~" . $match[1];
-    }
+$url = "http://{$serverBaseURL}/BookReader/BookReaderJSIA.php?id=" . urlencode($id) . "&itemPath={$results[0][1]}&server={$server}";
+if ($book) {
+    $url .= "&subPrefix=" . urlencode($book);
 }
-
-$url = "http://{$serverBaseURL}/BookReader/BookReaderJSIA.php?id={$id}&itemPath={$results[0][1]}&server={$serverBaseURL}";
 
 
 if (("" != $results[0][0]) && ("" != $results[0][1])) {
