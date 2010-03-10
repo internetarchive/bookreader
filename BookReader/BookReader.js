@@ -687,6 +687,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
                 //$(div).text('loading...');
 
                 // link to page in single page mode
+                // $$$ direct JS calls instead should reduce visual disruption
                 link = document.createElement("a");
                 link.href = '#page/' + (this.getPageNum(leaf)) +'/mode/1up' ;
                 $(div).append(link);
@@ -694,7 +695,8 @@ BookReader.prototype.drawLeafsThumbnail = function() {
                 $('#BRpageview').append(div);
 
                 img = document.createElement("img");
-                img.src = this.getPageURI(leaf);
+                var thumbReduce = Math.floor(this.getPageWidth(leaf) / this.thumbWidth);
+                img.src = this._getPageURI(leaf, thumbReduce);
                 $(img).css('width', leafWidth+'px');
                 $(img).css('height', leafHeight+'px');
                 img.style.border = "0";
@@ -3607,6 +3609,7 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     
     if ('undefined' == typeof(reduce)) {
         // reduce not passed in
+        // $$$ this probably won't work for thumbnail mode
         var ratio = this.getPageHeight(index) / this.twoPage.height;
         var scale;
         // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
