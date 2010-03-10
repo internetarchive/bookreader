@@ -236,20 +236,29 @@ if (isset($_REQUEST['height'])) {
     }
 
 } else {
-    $scale = $_REQUEST['scale'];
+    // $$$ could be cleaner
+    $scale = intval($_REQUEST['scale']);
     if (1 >= $scale) {
         $scale = 1;
         $powReduce = 0;
-    } else if (2 == $scale) {
+    } else if (2 > $scale) {
+        $powReduce = 0;
+        $scale = 1;
+    } else if (4 > $scale) {
         $powReduce = 1;
-    } else if (4 == $scale) {
+        $scale = 2;
+    } else if (8 > $scale) {
         $powReduce = 2;
-    } else if (8 == $scale) {
+        $scale = 4;
+    } else if (16 > $scale) {
         $powReduce = 3;
-    } else if (16 == $scale) {
+        $scale = 8;
+    } else if (32 > $scale) {
         $powReduce = 4;
-    } else if (32 == $scale) {
+        $scale = 16;
+    } else if (64 > $scale) {
         $powReduce = 5;
+        $scale = 32;
     } else {
         // $$$ Leaving this in as default though I'm not sure why it is...
         $scale = 8;
