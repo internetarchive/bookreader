@@ -40,7 +40,9 @@ $EXTENSIONS = array('gif' => 'gif',
                     'tif' => 'tiff',
                     'tiff' => 'tiff');
                
+// Paths to command-line tools
 $exiftool = '/petabox/sw/books/exiftool/exiftool';
+$kduExpand = '/petabox/sw/bin/kdu_expand';
 
 // Process some of the request parameters
 $zipPath  = $_REQUEST['zip'];
@@ -295,7 +297,7 @@ $unzipCmd  = getUnarchiveCommand($zipPath, $file);
 switch ($imageInfo['type']) {
     case 'jp2':
         $decompressCmd = 
-            " | /petabox/sw/bin/kdu_expand -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
+            " | " . $kduExpand . " -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
         if ($decompressToBmp) {
             $decompressCmd .= ' | bmptopnm ';
         }
