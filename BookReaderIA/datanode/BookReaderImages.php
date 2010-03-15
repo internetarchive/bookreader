@@ -342,7 +342,8 @@ switch ($imageInfo['type']) {
         $decompressCmd = 
             " | " . $kduExpand . " -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
         if ($decompressToBmp) {
-            $decompressCmd .= ' | bmptopnm ';
+            // We suppress output since bmptopnm always outputs on stderr
+            $decompressCmd .= ' | (bmptopnm 2>/dev/null)';
         }
         break;
 
@@ -399,11 +400,95 @@ if (($ext == $fileExt) && ($scale == 1) && ($rotate === "0")) {
 
 # print $cmd;
 
+// If the command has its initial output on stdout the headers will be emitted followed
+// by the stdout output.  If initial output is on stderr an error message will be
+// returned.
+// 
+// Returns:
+//   true - if command emits stdout and has zero exit code
+//   false - command has initial output on stderr or non-zero exit code
+//   &$errorMessage - error string if there was an error
+//
+// $$$ Tested with our command-line image processing.  May be deadlocks for
+//     other cases.
+function passthruIfSuccessful($headers, $cmd, &$errorMessage)
+{
+    $retVal = false;
+    $errorMessage = '';
+    
+    $descriptorspec = array(
+       0 => array("pipe", "r"),  // stdin is a pipe that the child will read from
+       1 => array("pipe", "w"),  // stdout is a pipe that the child will write to
+       2 => array("pipe", "w"),   // stderr is a pipe to write to
+    );
+    
+    $cwd = NULL;
+    $env = NULL;
+    
+    $process = proc_open($cmd, $descriptorspec, $pipes, $cwd, $env);
+    
+    if (is_resource($process)) {
+        // $pipes now looks like this:
+        // 0 => writeable handle connected to child stdin
+        // 1 => readable handle connected to child stdout
+        // 2 => readable handle connected to child stderr
+    
+        $stdin = $pipes[0];        
+        $stdout = $pipes[1];
+        $stderr = $pipes[2];
+        
+        // check whether we get input first on stdout or stderr
+        $read = array($stdout, $stderr);
+        $write = NULL;
+        $except = NULL;
+        $numChanged = stream_select($read, $write, $except, NULL); // $$$ no timeout
+        if (false === $numChanged) {
+            // select failed
+            $errorMessage = 'Select failed';
+            $retVal = false;
+        }
+        if ($read[0] == $stdout && (1 == $numChanged)) {
+            // Got output first on stdout (only)
+            $output = fopen('php://output', 'w');
+            foreach($headers as $header) {
+                header($header);
+            }
+            stream_copy_to_stream($pipes[1], $output);
+            fclose($output); // okay since tied to special php://output
+            $retVal = true;
+        } else {
+            // Got output on stderr
+            $errorMessage = stream_get_contents($stderr);
+            $retVal = false;
+        }
 
-// $$$ investigate how to flush cache when this file is changed
-header('Content-type: ' . $MIMES[$ext]);
-header('Cache-Control: max-age=15552000');
-passthru ($cmd); # cmd returns image data
+        fclose($stderr);
+        fclose($stdout);
+        fclose($stdin);
+
+        
+        // It is important that you close any pipes before calling
+        // proc_close in order to avoid a deadlock
+        $cmdRet = proc_close($process);
+        if (0 != $cmdRet) {
+            $retVal = false;
+            $errorMessage .= "Command failed with result code " . $cmdRet;
+        }
+    }
+    return $retVal;
+}
+
+$headers = array('Content-type: '. $MIMES[$ext],
+                  'Cache-Control: max-age=15552000');
+
+$errorMessage = '';
+if (! passthruIfSuccessful($headers, $cmd, $errorMessage)) {
+    // $$$ automated reporting
+    trigger_error('BookReader Processing Error: ' . $errorMessage, E_USER_WARNING);
+    BRfatal('Problem processing image - command failed');
+}
+
+// passthru ($cmd); # cmd returns image data
 
 if (isset($tempFile)) {
     unlink($tempFile);
