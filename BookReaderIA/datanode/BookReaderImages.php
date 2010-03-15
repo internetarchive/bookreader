@@ -116,15 +116,58 @@ function imageExtensionToType($extension)
 }
 
 /*
- * Get the image width, height and depth from a jp2 file in zip.
+ * Get the image information.  The returned associative array fields will
+ * vary depending on the image type.  The basic keys are width, height, type
+ * and bits.
  */
 function getImageInfo($zipPath, $file)
 {
-    global $exiftool;
+    return getImageInfoFromExif($zipPath, $file); // this is fast
     
+    /*
     $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
     $type = imageExtensionToType($fileExt);
-     
+    
+    switch ($type) {
+        case "jp2":
+            return getImageInfoFromJp2($zipPath, $file);
+            
+        default:
+            return getImageInfoFromExif($zipPath, $file);
+    }
+    */
+}
+
+// Get the records of of JP2 as returned by kdu_expand
+function getJp2Records($zipPath, $file)
+{
+    global $kduExpand;
+    
+    $cmd = getUnarchiveCommand($zipPath, $file)
+             . ' | ' . $kduExpand
+             . ' -no_seek -quiet -i /dev/stdin -record /dev/stdout';
+    exec($cmd, $output);
+    
+    $records = Array();
+    foreach ($output as $line) {
+        $elems = explode("=", $line, 2);
+        if (1 == count($elems)) {
+            // delimiter not found
+            continue;
+        }
+        $records[$elems[0]] = $elems[1];
+    }
+    
+    return $records;
+}
+
+/*
+ * Get the image width, height and depth using the EXIF information.
+ */
+function getImageInfoFromExif($zipPath, $file)
+{
+    global $exiftool;
+    
     // We look for all the possible tags of interest then act on the
     // ones presumed present based on the file type
     $tagsToGet = ' -ImageWidth -ImageHeight -FileType'        // all formats
