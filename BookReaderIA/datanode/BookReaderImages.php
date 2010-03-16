@@ -337,40 +337,50 @@ putenv('LD_LIBRARY_PATH=/petabox/sw/lib/kakadu');
 
 $unzipCmd  = getUnarchiveCommand($zipPath, $file);
 
-switch ($imageInfo['type']) {
-    case 'jp2':
-        $decompressCmd = 
-            " | " . $kduExpand . " -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
-        if ($decompressToBmp) {
-            // We suppress output since bmptopnm always outputs on stderr
-            $decompressCmd .= ' | (bmptopnm 2>/dev/null)';
-        }
-        break;
-
-    case 'tiff':
-        // We need to create a temporary file for tifftopnm since it cannot
-        // work on a pipe (the file must be seekable).
-        // We use the BookReaderTiff prefix to give a hint in case things don't
-        // get cleaned up.
-        $tempFile = tempnam("/tmp", "BookReaderTiff");
+function getDecompressCmd($imageType) {
+    global $kduExpand;
+    global $powReduce, $rotate, $scale; // $$$ clean up
+    global $decompressToBmp; // $$$ TODO remove now that we have bit depth info
+    global $stdoutLink;
     
-        // $$$ look at bit depth when reducing
-        $decompressCmd = 
-            ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . reduceCommand($scale);
-        break;
- 
-    case 'jpeg':
-        $decompressCmd = ' | jpegtopnm ' . reduceCommand($scale);
-        break;
-
-    case 'png':
-        $decompressCmd = ' | pngtopnm ' . reduceCommand($scale);
-        break;
+    switch ($imageType) {
+        case 'jp2':
+            $decompressCmd = 
+                " | " . $kduExpand . " -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
+            if ($decompressToBmp) {
+                // We suppress output since bmptopnm always outputs on stderr
+                $decompressCmd .= ' | (bmptopnm 2>/dev/null)';
+            }
+            break;
+    
+        case 'tiff':
+            // We need to create a temporary file for tifftopnm since it cannot
+            // work on a pipe (the file must be seekable).
+            // We use the BookReaderTiff prefix to give a hint in case things don't
+            // get cleaned up.
+            $tempFile = tempnam("/tmp", "BookReaderTiff");
         
-    default:
-        BRfatal('Unknown source file extension: ' . $fileExt);
-        break;
+            // $$$ look at bit depth when reducing
+            $decompressCmd = 
+                ' > ' . $tempFile . ' ; tifftopnm ' . $tempFile . ' 2>/dev/null' . reduceCommand($scale);
+            break;
+     
+        case 'jpeg':
+            $decompressCmd = ' | jpegtopnm ' . reduceCommand($scale);
+            break;
+    
+        case 'png':
+            $decompressCmd = ' | pngtopnm ' . reduceCommand($scale);
+            break;
+            
+        default:
+            BRfatal('Unknown image type: ' . $imageType);
+            break;
+    }
+    return $decompressCmd;
 }
+
+$decompressCmd = getDecompressCmd($imageInfo['type']);
        
 // Non-integer scaling is currently disabled on the cluster
 // if (isset($_REQUEST['height'])) {
@@ -398,7 +408,7 @@ if (($ext == $fileExt) && ($scale == 1) && ($rotate === "0")) {
     $cmd = $unzipCmd . $decompressCmd . $compressCmd;
 }
 
-# print $cmd;
+// print $cmd;
 
 // If the command has its initial output on stdout the headers will be emitted followed
 // by the stdout output.  If initial output is on stderr an error message will be
@@ -449,6 +459,7 @@ function passthruIfSuccessful($headers, $cmd, &$errorMessage)
         }
         if ($read[0] == $stdout && (1 == $numChanged)) {
             // Got output first on stdout (only)
+            // $$$ make sure we get all stdout
             $output = fopen('php://output', 'w');
             foreach($headers as $header) {
                 header($header);
@@ -458,6 +469,7 @@ function passthruIfSuccessful($headers, $cmd, &$errorMessage)
             $retVal = true;
         } else {
             // Got output on stderr
+            // $$$ make sure we get all stderr
             $errorMessage = stream_get_contents($stderr);
             $retVal = false;
         }
@@ -484,8 +496,31 @@ $headers = array('Content-type: '. $MIMES[$ext],
 $errorMessage = '';
 if (! passthruIfSuccessful($headers, $cmd, $errorMessage)) {
     // $$$ automated reporting
-    trigger_error('BookReader Processing Error: ' . $errorMessage, E_USER_WARNING);
-    BRfatal('Problem processing image - command failed');
+    trigger_error('BookReader Processing Error: ' . $cmd . ' -- ' . $errorMessage, E_USER_WARNING);
+    
+    // Try some content-specific recovery
+    $recovered = false;    
+    if ($imageInfo['type'] == 'jp2') {
+        $records = getJp2Records($zipPath, $file);
+        if ($powReduce > intval($records['Clevels'])) {
+            $powReduce = $records['Clevels'];
+            $reduce = pow(2, $powReduce);
+        } else {
+            $reduce = 1;
+            $powReduce = 0;
+        }
+         
+        $cmd = $unzipCmd . getDecompressCmd($imageInfo['type']) . $compressCmd;
+        if (passthruIfSuccessful($headers, $cmd, $errorMessage)) {
+            $recovered = true;
+        } else {
+            trigger_error('BookReader fallback image processing also failed: ' . $errorMessage, E_USER_WARNING);
+        }
+    }
+    
+    if (! $recovered) {
+        BRfatal('Problem processing image - command failed');
+    }
 }
 
 // passthru ($cmd); # cmd returns image data
