@@ -2163,7 +2163,7 @@ BookReader.prototype.BRSearchCallback = function(txt) {
             //console.log(pages[i].getAttribute('file').substr(1) +'-'+ parseInt(pages[i].getAttribute('file').substr(1), 10));
     
             
-            var re = new RegExp (/_(\d{4})/);
+            var re = new RegExp (/_(\d{4})\.djvu/);
             var reMatch = re.exec(pages[i].getAttribute('file'));
             var index = parseInt(reMatch[1], 10);
             //var index = parseInt(pages[i].getAttribute('file').substr(1), 10);
