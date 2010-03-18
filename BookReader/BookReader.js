@@ -1250,7 +1250,8 @@ BookReader.prototype.prepareThumbnailView = function() {
         overflowX: 'auto'
     });
     
-    var brPageView = $("#BRcontainer").append("<div id='BRpageview'></div>");
+    $("#BRcontainer").append("<div id='BRpageview'></div>");
+    var brPageView = $('#BRpageview'); // append call above returns $('#BRcontainer')
     
     this.resizePageView();
     
