@@ -1789,6 +1789,37 @@ BookReader.prototype.last = function() {
     this.jumpToIndex(this.lastDisplayableIndex());
 }
 
+// scrollDown()
+//______________________________________________________________________________
+// Scrolls down one screen view
+BookReader.prototype.scrollDown = function() {
+    if ($.inArray(this.mode, [this.constMode2up, this.constModeThumb])) {
+        $('#BRcontainer').animate(
+            { scrollTop: '+=' + $('#BRcontainer').height() * 0.95 + 'px'},
+            450, 'easeInOutQuint'
+        );
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// scrollUp()
+//______________________________________________________________________________
+// Scrolls up one screen view
+BookReader.prototype.scrollUp = function() {
+    if ($.inArray(this.mode, [this.constMode2up, this.constModeThumb])) {
+        $('#BRcontainer').animate(
+            { scrollTop: '-=' + $('#BRcontainer').height() * 0.95 + 'px'},
+            450, 'easeInOutQuint'
+        );
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
 // flipBackToIndex()
 //______________________________________________________________________________
 // to flip back one spread, pass index=null
@@ -3022,6 +3053,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +   "<form class='BRpageform' action='javascript:' onsubmit='br.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='BRpagenum' type='text' size='3' onfocus='br.autoStop();'></input></span></form>"
         +   "<div class='BRtoolbarmode2' style='display: none'><button class='BRicon rollover book_leftmost' /><button class='BRicon rollover book_left' /><button class='BRicon rollover book_right' /><button class='BRicon rollover book_rightmost' /></div>"
         +   "<div class='BRtoolbarmode1' style='display: none'><button class='BRicon rollover book_top' /><button class='BRicon rollover book_up' /> <button class='BRicon rollover book_down' /><button class='BRicon rollover book_bottom' /></div>"
+        +   "<div class='BRtoolbarmode3' style='display: none'><button class='BRicon rollover book_top' /><button class='BRicon rollover book_up' /> <button class='BRicon rollover book_down' /><button class='BRicon rollover book_bottom' /></div>"
         +   "<button class='BRicon rollover play' /><button class='BRicon rollover pause' style='display: none' />"
         + "</span>"
         
@@ -3140,12 +3172,20 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
     });
         
     jToolbar.find('.book_up').bind('click', function(e) {
-        self.prev();
+        if ($.inArray(self.mode, [self.constMode2up, self.constModeThumb])) {
+            self.scrollUp();
+        } else {
+            self.prev();
+        }
         return false;
     });        
         
     jToolbar.find('.book_down').bind('click', function(e) {
-        self.next();
+        if ($.inArray(self.mode, [self.constMode2up, self.constModeThumb])) {
+            self.scrollDown();
+        } else {
+            self.next();
+        }
         return false;
     });
 
