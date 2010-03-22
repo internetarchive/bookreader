@@ -42,8 +42,9 @@ function BookReader() {
     this.ui = 'full'; // UI mode
 
     // thumbnail mode
-    this.thumbWidth = 100;
+    this.thumbWidth = 100; // will be overridden during prepareThumbnailView
     this.thumbRowBuffer = 3; // number of rows to pre-cache out a view
+    this.thumbColumns = 6; // default
     this.displayedRows=[];
     
     this.displayedIndices = [];
@@ -846,6 +847,8 @@ BookReader.prototype.zoom = function(direction) {
             return this.zoom1up(direction);
         case this.constMode2up:
             return this.zoom2up(direction);
+        case this.constModeThumb:
+            return this.zoomThumb(direction);
     }
 }
 
@@ -998,6 +1001,36 @@ BookReader.prototype.zoom2up = function(direction) {
     this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
 }
 
+BookReader.prototype.zoomThumb = function(direction) {
+    var oldColumns = this.thumbColumns;
+    switch (direction) {
+        case -1:
+            this.thumbColumns += 1;
+            break;
+        case 1:
+            this.thumbColumns -= 1;
+            break;
+    }
+    
+    // clamp
+    if (this.thumbColumns < 2) {
+        this.thumbColumns = 2;
+    } else if (this.thumbColumns > 8) {
+        this.thumbColumns = 8;
+    }
+    
+    if (this.thumbColumns != oldColumns) {
+        this.prepareThumbnailView();
+        this.jumpToIndex(this.currentIndex());
+    }
+}
+
+// Returns the width per thumbnail to display the requested number of columns
+BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
+    var padding = (thumbnailColumns + 1) * this.padding;
+    var width = ($('#BRpageview').width() - padding) / (thumbnailColumns + 0.5); // extra 0.5 is for some space at sides
+    return parseInt(width);
+}
 
 // quantizeReduce(reduce)
 //______________________________________________________________________________
@@ -1169,7 +1202,9 @@ BookReader.prototype.switchMode = function(mode) {
 
     //console.log('  asked to switch to mode ' + mode + ' from ' + this.mode);
     
-    if (mode == this.mode) return;
+    if (mode == this.mode) {
+        return;
+    }
     
     if (!this.canSwitchToMode(mode)) {
         return;
@@ -1182,7 +1217,9 @@ BookReader.prototype.switchMode = function(mode) {
     this.switchToolbarMode(mode);
 
     // reinstate scale if moving from thumbnail view
-    if (this.pageScale != this.reduce) this.reduce = this.pageScale;
+    if (this.pageScale != this.reduce) {
+        this.reduce = this.pageScale;
+    }
     
     // $$$ TODO preserve center of view when switching between mode
     //     See https://bugs.edge.launchpad.net/gnubook/+bug/416682
@@ -1195,6 +1232,7 @@ BookReader.prototype.switchMode = function(mode) {
         this.prepareThumbnailView();
         this.jumpToIndex(this.currentIndex());
     } else {
+        // $$$ why don't we save autofit?
         this.twoPage.autofit = false; // Take zoom level from other mode
         this.reduce = this.quantizeReduce(this.reduce);
         this.prepareTwoPageView();
@@ -1242,6 +1280,7 @@ BookReader.prototype.prepareThumbnailView = function() {
 
     // var startLeaf = this.displayedIndices[0];
     var startLeaf = this.currentIndex();
+    this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
     this.reduce = this.getPageWidth(0)/this.thumbWidth;
     
     $('#BRcontainer').empty();
