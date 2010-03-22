@@ -187,6 +187,7 @@ BookReader.prototype.init = function() {
     $('.BRpagediv1up').bind('mousedown', this, function(e) {
         // $$$ the purpose of this is to disable selection of the image (makes it turn blue)
         //     but this also interferes with right-click.  See https://bugs.edge.launchpad.net/gnubook/+bug/362626
+        return false;
     });
 
     if (1 == this.mode) {
@@ -1254,7 +1255,8 @@ BookReader.prototype.prepareOnePageView = function() {
         overflowX: 'auto'
     });
     
-    var brPageView = $("#BRcontainer").append("<div id='BRpageview'></div>");
+    $("#BRcontainer").append("<div id='BRpageview'></div>");
+    BookReader.util.disableSelect($('#BRpageview'));
     
     this.resizePageView();
     
@@ -1262,16 +1264,6 @@ BookReader.prototype.prepareOnePageView = function() {
     this.displayedIndices = [];
     
     this.drawLeafsOnePage();
-        
-    // Bind mouse handlers
-    // Disable mouse click to avoid selected/highlighted page images - bug 354239
-    brPageView.bind('mousedown', function(e) {
-        // $$$ check here for right-click and don't disable.  Also use jQuery style
-        //     for stopping propagation. See https://bugs.edge.launchpad.net/gnubook/+bug/362626
-        return false;
-    })
-    // Special hack for IE7
-    brPageView[0].onselectstart = function(e) { return false; };
 }
 
 //prepareThumbnailView()
@@ -1290,22 +1282,12 @@ BookReader.prototype.prepareThumbnailView = function() {
     });
     
     $("#BRcontainer").append("<div id='BRpageview'></div>");
-    var brPageView = $('#BRpageview'); // append call above returns $('#BRcontainer')
+    BookReader.util.disableSelect($('#BRpageview'));
     
     this.resizePageView();
     
     this.displayedRows = [];
     this.drawLeafsThumbnail();
-        
-    // Bind mouse handlers
-    // Disable mouse click to avoid selected/highlighted page images - bug 354239
-    brPageView.bind('mousedown', function(e) {
-        // $$$ check here for right-click and don't disable.  Also use jQuery style
-        //     for stopping propagation. See https://bugs.edge.launchpad.net/gnubook/+bug/362626
-        return false;
-    })
-    // Special hack for IE7
-    brPageView[0].onselectstart = function(e) { return false; };
 }
 
 // prepareTwoPageView()
@@ -3714,6 +3696,18 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 
 // Library functions
 BookReader.util = {
+    disableSelect: function(jObject) {        
+        // Bind mouse handlers
+        // Disable mouse click to avoid selected/highlighted page images - bug 354239
+        jObject.bind('mousedown', function(e) {
+            // $$$ check here for right-click and don't disable.  Also use jQuery style
+            //     for stopping propagation. See https://bugs.edge.launchpad.net/gnubook/+bug/362626
+            return false;
+        });
+        // Special hack for IE7
+        jObject[0].onselectstart = function(e) { return false; };
+    },
+    
     clamp: function(value, min, max) {
         return Math.min(Math.max(value, min), max);
     },
