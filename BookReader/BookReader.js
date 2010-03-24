@@ -1256,7 +1256,9 @@ BookReader.prototype.prepareOnePageView = function() {
     });
     
     $("#BRcontainer").append("<div id='BRpageview'></div>");
-    BookReader.util.disableSelect($('#BRpageview'));
+    // $$$ keep select enabled for now since disabling it breaks keyboard
+    //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
+    // BookReader.util.disableSelect($('#BRpageview'));
     
     this.resizePageView();
     
@@ -1282,7 +1284,10 @@ BookReader.prototype.prepareThumbnailView = function() {
     });
     
     $("#BRcontainer").append("<div id='BRpageview'></div>");
-    BookReader.util.disableSelect($('#BRpageview'));
+
+    // $$$ keep select enabled for now since disabling it breaks keyboard
+    //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
+    // BookReader.util.disableSelect($('#BRpageview'));
     
     this.resizePageView();
     
