@@ -1027,6 +1027,8 @@ BookReader.prototype.zoomThumb = function(direction) {
 }
 
 // Returns the width per thumbnail to display the requested number of columns
+// Note: #BRpageview must already exist since its width is used to calculate the
+//       thumbnail width
 BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
     var padding = (thumbnailColumns + 1) * this.padding;
     var width = ($('#BRpageview').width() - padding) / (thumbnailColumns + 0.5); // extra 0.5 is for some space at sides
@@ -1271,11 +1273,6 @@ BookReader.prototype.prepareOnePageView = function() {
 //prepareThumbnailView()
 //______________________________________________________________________________
 BookReader.prototype.prepareThumbnailView = function() {
-
-    // var startLeaf = this.displayedIndices[0];
-    var startLeaf = this.currentIndex();
-    this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
-    this.reduce = this.getPageWidth(0)/this.thumbWidth;
     
     $('#BRcontainer').empty();
     $('#BRcontainer').css({
@@ -1289,6 +1286,10 @@ BookReader.prototype.prepareThumbnailView = function() {
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
     // BookReader.util.disableSelect($('#BRpageview'));
     
+    var startLeaf = this.currentIndex();
+    this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
+    this.reduce = this.getPageWidth(0)/this.thumbWidth;
+
     this.resizePageView();
     
     this.displayedRows = [];
