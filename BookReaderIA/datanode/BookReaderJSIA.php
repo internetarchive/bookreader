@@ -224,6 +224,16 @@ br.getPageNum = function(index) {
     }
 }
 
+// Single images in the Internet Archive scandata.xml metadata are (somewhat incorrectly)
+// given a "leaf" number.  Some of these images from the scanning process should not
+// be displayed in the BookReader (for example colour calibration cards).  Since some
+// of the scanned images will not be displayed in the BookReader (those marked with
+// addToAccessFormats false in the scandata.xml) leaf numbers and BookReader page
+// indexes are generally not the same.  This function returns the BookReader page
+// index given a scanned leaf number.
+//
+// This function is used, for example, to map between search results (that use the
+// leaf numbers) and the displayed pages in the BookReader.
 br.leafNumToIndex = function(leafNum) {
     for (var index = 0; index < this.leafMap.length; index++) {
         if (this.leafMap[index] == leafNum) {
