@@ -43,8 +43,9 @@ function BookReader() {
 
     // thumbnail mode
     this.thumbWidth = 100; // will be overridden during prepareThumbnailView
-    this.thumbRowBuffer = 3; // number of rows to pre-cache out a view
+    this.thumbRowBuffer = 2; // number of rows to pre-cache out a view
     this.thumbColumns = 6; // default
+    this.thumbMaxLoading = 4; // number of thumbnails to load at once
     this.displayedRows=[];
     
     this.displayedIndices = [];
@@ -95,6 +96,8 @@ function BookReader() {
     // Background color for pages (e.g. when loading page image)
     // $$$ TODO dynamically calculate based on page images
     this.pageDefaultBackgroundColor = 'rgb(234, 226, 205)';
+    
+    return this;
 };
 
 // init()
@@ -698,40 +701,50 @@ BookReader.prototype.drawLeafsThumbnail = function() {
 
                 img = document.createElement("img");
                 var thumbReduce = Math.floor(this.getPageWidth(leaf) / this.thumbWidth);
-                img.src = this._getPageURI(leaf, thumbReduce);
-                $(img).css('width', leafWidth+'px');
-                $(img).css('height', leafHeight+'px');
-                img.style.border = "0";
+                
+                $(img).attr('src', this.imagesBaseURL + 'transparent.png')
+                    .css({'width': leafWidth+'px', 'height': leafHeight+'px' })
+                    .addClass('BRlazyload')
+                    // Store the URL of the image that will replace this one
+                    .data('srcURL',  this._getPageURI(leaf, thumbReduce));
                 $(link).append(img);
-                //console.log('displaying thumbnail: ' + leafMap[j]);
+                //console.log('displaying thumbnail: ' + leaf);
             }   
         }
     }
 
     // remove previous highlights
-    if ($('.BRpagedivthumb_highlight').length>0) {
-        div = $('.BRpagedivthumb_highlight')
-        div.attr({className: 'BRpagedivthumb' });
-    }
+    $('.BRpagedivthumb_highlight').removeClass('BRpagedivthumb_highlight');
+    
     // highlight current page
-    $('#pagediv'+this.currentIndex()).attr({className: 'BRpagedivthumb_highlight' });
-
+    $('#pagediv'+this.currentIndex()).addClass('BRpagedivthumb_highlight');
+    
     var k;
     for (i=0; i<this.displayedRows.length; i++) {
         if (-1 == jQuery.inArray(this.displayedRows[i], rowsToDisplay)) {
             row = this.displayedRows[i];
+            
+            // $$$ Safari doesn't like the comprehension
+            //var rowLeafs =  [leaf.num for each (leaf in leafMap[row].leafs)];
+            //console.log('Removing row ' + row + ' ' + rowLeafs);
+            
             for (k=0; k<leafMap[row].leafs.length; k++) {
                 index = leafMap[row].leafs[k].num;
                 //console.log('Removing leaf ' + index);
                 $('#pagediv'+index).remove();
             }
         } else {
-
-            //console.log('NOT Removing leaf ' + this.displayedIndices[i]);
+            /*
+            var mRow = this.displayedRows[i];
+            var mLeafs = '[' +  [leaf.num for each (leaf in leafMap[mRow].leafs)] + ']';
+            console.log('NOT Removing row ' + mRow + ' ' + mLeafs);
+            */
         }
     }
-
+    
     this.displayedRows = rowsToDisplay.slice();
+    
+    this.lazyLoadThumbnails();
 
     if (null !== this.getPageNum(this.currentIndex()))  {
         $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
@@ -741,6 +754,62 @@ BookReader.prototype.drawLeafsThumbnail = function() {
 
     this.updateToolbarZoom(this.reduce); 
 }
+
+BookReader.prototype.lazyLoadThumbnails = function() {
+
+    // console.log('lazy load');
+
+    // We check the complete property since load may not be fired if loading from the cache
+    $('.BRlazyloading').filter('[complete=true]').removeClass('BRlazyloading');
+
+    var loading = $('.BRlazyloading').length;
+    var toLoad = this.thumbMaxLoading - loading;
+
+    // console.log('  ' + loading + ' thumbnails loading');
+    // console.log('  this.thumbMaxLoading ' + this.thumbMaxLoading);
+    
+    var self = this;
+        
+    if (toLoad > 0) {
+        // $$$ TODO load those near top (but not beyond) page view first
+        $('#BRpageview img.BRlazyload').filter(':lt(' + toLoad + ')').each( function() {
+            self.lazyLoadImage(this);
+        });
+    }
+}
+
+BookReader.prototype.lazyLoadImage = function (dummyImage) {
+    //console.log(' lazy load started for ' + $(dummyImage).data('srcURL').match('([0-9]{4}).jp2')[1] );
+        
+    var img = new Image();
+    var self = this;
+    
+    $(img)
+        .addClass('BRlazyloading')
+        .one('load', function() {
+            //if (console) { console.log(' onload ' + $(this).attr('src').match('([0-9]{4}).jp2')[1]); };
+            
+            $(this).removeClass('BRlazyloading');
+            
+            // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
+            //     we call the function after a slight delay.  Also the img.complete property
+            setTimeout(function() { self.lazyLoadThumbnails(); }, 100);
+        })
+        .one('error', function() {
+            // Remove class so we no longer count as loading
+            $(this).removeClass('BRlazyloading');
+        })
+        .attr( { width: $(dummyImage).width(),
+                   height: $(dummyImage).height(),
+                   src: $(dummyImage).data('srcURL')
+        });
+                 
+    // replace with the new img
+    $(dummyImage).before(img).remove();
+    
+    img = null; // tidy up closure
+}
+
 
 // drawLeafsTwoPage()
 //______________________________________________________________________________
@@ -2386,10 +2455,14 @@ BookReader.prototype.pruneUnusedImgs = function() {
 //______________________________________________________________________________
 BookReader.prototype.prefetch = function() {
 
+    // $$$ We should check here if the current indices have finished
+    //     loading (with some timeout) before loading more page images
+    //     See https://bugs.edge.launchpad.net/bookreader/+bug/511391
+
     // prefetch visible pages first
     this.prefetchImg(this.twoPage.currentIndexL);
     this.prefetchImg(this.twoPage.currentIndexR);
-    
+        
     var adjacentPagesToLoad = 3;
     
     var lowCurrent = Math.min(this.twoPage.currentIndexL, this.twoPage.currentIndexR);

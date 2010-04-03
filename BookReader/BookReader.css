@@ -46,6 +46,15 @@
     border: 1px solid #909090;
 }
 
+.BRpagedivthumb a {
+    border: 0;
+}
+
+.BRpagedivthumb img {
+    border: 0;
+}
+
+/* Must come after .BRpagedivthumb rules in order to override them */
 .BRpagedivthumb_highlight {
     background-color: #FFFFEE;
     overflow:hidden;
