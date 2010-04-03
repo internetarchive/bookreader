@@ -793,6 +793,7 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
             
             // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
             //     we call the function after a slight delay.  Also the img.complete property
+            //     is not yet set in IE8 inside this onload handler
             setTimeout(function() { self.lazyLoadThumbnails(); }, 100);
         })
         .one('error', function() {
