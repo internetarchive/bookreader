@@ -193,6 +193,8 @@ BookReader.prototype.init = function() {
         return false;
     });
 
+    // $$$ refactor this so it's enough to set the first index and call preparePageView
+    //     (get rid of mode-specific logic at this point)
     if (1 == this.mode) {
         this.resizePageView();
         this.firstIndex = startIndex;
@@ -285,6 +287,7 @@ BookReader.prototype.drawLeafs = function() {
     } else {
         this.drawLeafsTwoPage();
     }
+    
 }
 
 // setDragHandler()
@@ -588,7 +591,10 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     var currentRow = 0;
     var leafIndex = 0;
     var leafMap = [];
+    
+    var self = this;
 
+    // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
     for (i=0; i<this.numLeafs; i++) {
         leafWidth = this.thumbWidth;
         if (rightPos + (leafWidth + this.padding) > viewWidth){
@@ -608,7 +614,9 @@ BookReader.prototype.drawLeafsThumbnail = function() {
         leafMap[currentRow].leafs[leafIndex].left = rightPos;
 
         leafHeight = parseInt((this.getPageHeight(leafMap[currentRow].leafs[leafIndex].num)*this.thumbWidth)/this.getPageWidth(leafMap[currentRow].leafs[leafIndex].num), 10);
-        if (leafHeight > leafMap[currentRow].height) { leafMap[currentRow].height = leafHeight; }
+        if (leafHeight > leafMap[currentRow].height) {
+            leafMap[currentRow].height = leafHeight;
+        }
         if (leafIndex===0) { bottomPos += this.padding + leafMap[currentRow].height; }
         rightPos += leafWidth + this.padding;
         if (rightPos > maxRight) { maxRight = rightPos; }
@@ -626,6 +634,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     var leafBottom = 0;
     var rowsToDisplay = [];
 
+    // Determine the thumbnails in view
     for (i=0; i<leafMap.length; i++) {
         leafBottom += this.padding + leafMap[i].height;
         var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
@@ -655,6 +664,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
         this.updateLocationHash();
     }
 
+    // Create the thumbnail divs and images (lazy loaded)
     var j;
     var row;
     var left;
@@ -692,11 +702,18 @@ BookReader.prototype.drawLeafsThumbnail = function() {
                 //$(div).text('loading...');
 
                 // link to page in single page mode
-                // $$$ direct JS calls instead should reduce visual disruption
                 link = document.createElement("a");
+                $(link).data('leaf', leaf);
+                $(link).bind('click', function(event) {
+                    self.firstIndex = $(this).data('leaf');
+                    self.switchMode(self.constMode1up);
+                    event.preventDefault();
+                });
+                
+                // $$$ we don't actually go to this URL (click is handled in handler above)
                 link.href = '#page/' + (this.getPageNum(leaf)) +'/mode/1up' ;
                 $(div).append(link);
-
+                
                 $('#BRpageview').append(div);
 
                 img = document.createElement("img");
@@ -719,6 +736,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     // highlight current page
     $('#pagediv'+this.currentIndex()).addClass('BRpagedivthumb_highlight');
     
+    // Remove thumbnails that are not to be displayed
     var k;
     for (i=0; i<this.displayedRows.length; i++) {
         if (-1 == jQuery.inArray(this.displayedRows[i], rowsToDisplay)) {
@@ -746,6 +764,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     
     this.lazyLoadThumbnails();
 
+    // Update page number box.  $$$ refactor to function
     if (null !== this.getPageNum(this.currentIndex()))  {
         $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
     } else {
@@ -1000,6 +1019,8 @@ BookReader.prototype.resizePageView = function() {
     
     //this.centerPageView();
     this.loadLeafs();
+    
+    // $$$ jump to index here? index is not preserved when resizing in thumb mode
     
     // Not really needed until there is 1up autofit
     this.removeSearchHilites();
@@ -1363,6 +1384,8 @@ BookReader.prototype.prepareThumbnailView = function() {
     this.resizePageView();
     
     this.displayedRows = [];
+    
+    // $$$ resizePageView will do a delayed load -- this will make it happen faster
     this.drawLeafsThumbnail();
 }
 
