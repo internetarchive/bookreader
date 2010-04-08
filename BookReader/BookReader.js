@@ -979,6 +979,11 @@ BookReader.prototype.zoom1up = function(dir) {
 // resizePageView()
 //______________________________________________________________________________
 BookReader.prototype.resizePageView = function() {
+
+    // $$$ This code assumes 1up mode
+    //     e.g. does not preserve position in thumbnail mode
+    //     See http://bugs.launchpad.net/bookreader/+bug/552972
+    
     var i;
     var viewHeight = 0;
     //var viewWidth  = $('#BRcontainer').width(); //includes scrollBar
