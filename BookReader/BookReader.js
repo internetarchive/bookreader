@@ -1044,9 +1044,7 @@ BookReader.prototype.resizePageView = function() {
     
     //this.centerPageView();
     this.loadLeafs();
-    
-    // $$$ jump to index here? index is not preserved when resizing in thumb mode
-    
+        
     // Not really needed until there is 1up autofit
     this.removeSearchHilites();
     this.updateSearchHilites();
@@ -1138,7 +1136,6 @@ BookReader.prototype.zoomThumb = function(direction) {
     
     if (this.thumbColumns != oldColumns) {
         this.prepareThumbnailView();
-        this.jumpToIndex(this.currentIndex());
     }
 }
 
@@ -1273,8 +1270,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
                 leafIndex = 0;
             }
 
-            // $$$ leaf is not defined in this function -- leaking in from somewhere else            
-            leafHeight = parseInt((this.getPageHeight(leaf)*this.thumbWidth)/this.getPageWidth(leaf), 10);
+            leafHeight = parseInt((this.getPageHeight(leafIndex)*this.thumbWidth)/this.getPageWidth(leafIndex), 10);
             if (leafHeight > rowHeight) { rowHeight = leafHeight; }
             if (leafIndex==0) { leafTop = bottomPos; }
             if (leafIndex==0) { bottomPos += this.padding + rowHeight; }
@@ -1351,7 +1347,6 @@ BookReader.prototype.switchMode = function(mode) {
     } else if (3 == mode) {
         this.reduce = this.quantizeReduce(this.reduce);
         this.prepareThumbnailView();
-        this.jumpToIndex(this.currentIndex());
     } else {
         // $$$ why don't we save autofit?
         this.twoPage.autofit = false; // Take zoom level from other mode
@@ -1404,7 +1399,7 @@ BookReader.prototype.prepareThumbnailView = function() {
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
     // BookReader.util.disableSelect($('#BRpageview'));
     
-    var startLeaf = this.currentIndex();
+    var oldIndex = this.currentIndex();
     this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
     this.reduce = this.getPageWidth(0)/this.thumbWidth;
 
@@ -1412,8 +1407,13 @@ BookReader.prototype.prepareThumbnailView = function() {
     
     this.displayedRows = [];
     
-    // $$$ resizePageView will do a delayed load -- this will make it happen faster
+    // resizePageView will do a delayed load -- this will make it happen faster
     this.drawLeafsThumbnail();
+    
+    // $$$ Jump to old place in book.  Wouldn't be necessary if place was properly
+    //     preserved through resize and draw
+    this.jumpToIndex(oldIndex);
+    
 }
 
 // prepareTwoPageView()
