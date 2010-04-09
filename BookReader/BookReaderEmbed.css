@@ -3,7 +3,8 @@
  */
 
 /* Hide some navigation buttons */
-#BRtoolbar .label,.pageform,.play,.embed,.two_page_mode,.one_page_mode,
+#BRtoolbar .label,.pageform,.play,.embed,
+    .two_page_mode,.one_page_mode,.thumbnail_mode,
     .book_leftmost,.book_rightmost,.book_top,.book_bottom,.print {
     display: none;
 }
