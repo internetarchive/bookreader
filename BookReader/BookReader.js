@@ -282,7 +282,7 @@ BookReader.prototype.setupKeyListeners = function() {
 BookReader.prototype.drawLeafs = function() {
     if (1 == this.mode) {
         this.drawLeafsOnePage();
-    } else if(3 == this.mode) {
+    } else if (3 == this.mode) {
         this.drawLeafsThumbnail();
     } else {
         this.drawLeafsTwoPage();
@@ -515,7 +515,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
         var index = indicesToDisplay[i];    
         var height  = parseInt(this._getPageHeight(index)/this.reduce); 
 
-        if(-1 == jQuery.inArray(indicesToDisplay[i], this.displayedIndices)) {            
+        if (BookReader.util.notInArray(indicesToDisplay[i], this.displayedIndices)) {            
             var width   = parseInt(this._getPageWidth(index)/this.reduce); 
             //console.log("displaying leaf " + indicesToDisplay[i] + ' leafTop=' +leafTop);
             var div = document.createElement("div");
@@ -549,7 +549,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
     }
     
     for (i=0; i<this.displayedIndices.length; i++) {
-        if (-1 == jQuery.inArray(this.displayedIndices[i], indicesToDisplay)) {
+        if (BookReader.util.notInArray(this.displayedIndices[i], indicesToDisplay)) {
             var index = this.displayedIndices[i];
             //console.log('Removing leaf ' + index);
             //console.log('id='+'#pagediv'+index+ ' top = ' +$('#pagediv'+index).css('top'));
@@ -644,7 +644,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
             //console.log('row to display: ' + j);
             rowsToDisplay.push(i);
         }
-        if(leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
+        if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
         leafTop = leafBottom;
     }
 
@@ -674,7 +674,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     var img;
     var page;
     for (i=0; i<rowsToDisplay.length; i++) {
-        if (-1 == jQuery.inArray(rowsToDisplay[i], this.displayedRows)) {    
+        if (BookReader.util.notInArray(rowsToDisplay[i], this.displayedRows)) {    
             row = rowsToDisplay[i];
 
             for (j=0; j<leafMap[row].leafs.length; j++) {
@@ -739,7 +739,7 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     // Remove thumbnails that are not to be displayed
     var k;
     for (i=0; i<this.displayedRows.length; i++) {
-        if (-1 == jQuery.inArray(this.displayedRows[i], rowsToDisplay)) {
+        if (BookReader.util.notInArray(this.displayedRows[i], rowsToDisplay)) {
             row = this.displayedRows[i];
             
             // $$$ Safari doesn't like the comprehension
@@ -1253,7 +1253,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
                 leafIndex = 0;
             }
             leafHeight = parseInt((this.getPageHeight(leaf)*this.thumbWidth)/this.getPageWidth(leaf), 10);
-            if(leafHeight > rowHeight) { rowHeight = leafHeight; }
+            if (leafHeight > rowHeight) { rowHeight = leafHeight; }
             if (leafIndex==0) { leafTop = bottomPos; }
             if (leafIndex==0) { bottomPos += this.padding + rowHeight; }
             rightPos += leafWidth + this.padding;
@@ -1833,6 +1833,28 @@ BookReader.prototype.currentIndex = function() {
     }
 }
 
+/*
+// Returns the current index if visible, or the logically current visible
+// thumbnail
+BookReader.prototype.currentIndexOrVisibleThumb = function() {
+    // XXX finish implementation
+    var index = this.currentIndex();
+    if (!this.indexIsVisbleThumb(this.currentIndex()) {
+        // XXX search for visible
+    }
+    return index;
+}
+
+// Returns true if the given index is visible
+BookReader.prototype.indexIsVisibleThumb = function(index, onlyCompletelyVisible = true) {
+    // XXX implement
+    // $$$ I'd prefer to go through a stored leaf map instead of DOM
+    
+    
+}
+*/
+
+
 // right()
 //______________________________________________________________________________
 // Flip the right page over onto the left
@@ -1919,7 +1941,7 @@ BookReader.prototype.last = function() {
 //______________________________________________________________________________
 // Scrolls down one screen view
 BookReader.prototype.scrollDown = function() {
-    if ($.inArray(this.mode, [this.constMode2up, this.constModeThumb])) {
+    if ($.inArray(this.mode, [this.constMode2up, this.constModeThumb]) >= 0) {
         $('#BRcontainer').animate(
             { scrollTop: '+=' + $('#BRcontainer').height() * 0.95 + 'px'},
             450, 'easeInOutQuint'
@@ -1934,7 +1956,7 @@ BookReader.prototype.scrollDown = function() {
 //______________________________________________________________________________
 // Scrolls up one screen view
 BookReader.prototype.scrollUp = function() {
-    if ($.inArray(this.mode, [this.constMode2up, this.constModeThumb])) {
+    if ($.inArray(this.mode, [this.constMode2up, this.constModeThumb]) >= 0) {
         $('#BRcontainer').animate(
             { scrollTop: '-=' + $('#BRcontainer').height() * 0.95 + 'px'},
             450, 'easeInOutQuint'
@@ -2643,9 +2665,9 @@ BookReader.prototype.updateSearchHilites1UP = function() {
 
     for (var key in this.searchResults) {
         
-        if (-1 != jQuery.inArray(parseInt(key), this.displayedIndices)) {
+        if (jQuery.inArray(parseInt(key), this.displayedIndices) >= 0) {
             var result = this.searchResults[key];
-            if(null == result.div) {
+            if (null == result.div) {
                 result.div = document.createElement('div');
                 $(result.div).attr('className', 'BookReaderSearchHilite').appendTo('#pagediv'+key);
                 //console.log('appending ' + key);
@@ -2797,9 +2819,9 @@ BookReader.prototype.updateSearchHilites2UP = function() {
 
     for (var key in this.searchResults) {
         key = parseInt(key, 10);
-        if (-1 != jQuery.inArray(key, this.displayedIndices)) {
+        if (jQuery.inArray(key, this.displayedIndices) >= 0) {
             var result = this.searchResults[key];
-            if(null == result.div) {
+            if (null == result.div) {
                 result.div = document.createElement('div');
                 $(result.div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
                 //console.log('appending ' + key);
@@ -3302,7 +3324,7 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
     });
         
     jToolbar.find('.book_up').bind('click', function(e) {
-        if ($.inArray(self.mode, [self.constMode2up, self.constModeThumb])) {
+        if ($.inArray(self.mode, [self.constMode2up, self.constModeThumb]) >= 0) {
             self.scrollUp();
         } else {
             self.prev();
@@ -3311,7 +3333,7 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
     });        
         
     jToolbar.find('.book_down').bind('click', function(e) {
-        if ($.inArray(self.mode, [self.constMode2up, self.constModeThumb])) {
+        if ($.inArray(self.mode, [self.constMode2up, self.constModeThumb]) >= 0) {
             self.scrollDown();
         } else {
             self.next();
@@ -3818,6 +3840,11 @@ BookReader.util = {
     
     clamp: function(value, min, max) {
         return Math.min(Math.max(value, min), max);
+    },
+    
+    notInArray: function(value, array) {
+        // inArray returns -1 or undefined if value not in array
+        return ! (jQuery.inArray(value, array) >= 0);
     },
 
     getIFrameDocument: function(iframe) {
