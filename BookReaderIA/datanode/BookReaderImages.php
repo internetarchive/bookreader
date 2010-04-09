@@ -545,9 +545,9 @@ function onPowerNode() {
 function reduceCommand($scale) {
     if (1 != $scale) {
         if (onPowerNode()) {
-            return ' | pnmscale -reduce ' . $scale;
+            return ' | pnmscale -reduce ' . $scale . ' 2>/dev/null ';
         } else {
-            return ' | pnmscale -nomix -reduce ' . $scale;
+            return ' | pnmscale -nomix -reduce ' . $scale . ' 2>/dev/null ';
         }
     } else {
         return '';
