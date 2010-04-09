@@ -481,7 +481,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
         leafTop += height +10;      
         leafBottom += 10;
     }
-
+    
     var firstIndexToDraw  = indicesToDisplay[0];
     this.firstIndex      = firstIndexToDraw;
     
@@ -634,6 +634,10 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     var leafBottom = 0;
     var rowsToDisplay = [];
 
+    // Visible leafs with least/greatest index
+    var leastVisible = this.numLeafs - 1;
+    var mostVisible = 0;
+    
     // Determine the thumbnails in view
     for (i=0; i<leafMap.length; i++) {
         leafBottom += this.padding + leafMap[i].height;
@@ -643,6 +647,12 @@ BookReader.prototype.drawLeafsThumbnail = function() {
         if (topInView | bottomInView | middleInView) {
             //console.log('row to display: ' + j);
             rowsToDisplay.push(i);
+            if (leafMap[i].leafs[0].num < leastVisible) {
+                leastVisible = leafMap[i].leafs[0].num;
+            }
+            if (leafMap[i].leafs[leafMap[i].leafs.length - 1].num > mostVisible) {
+                mostVisible = leafMap[i].leafs[leafMap[i].leafs.length - 1].num;
+            }
         }
         if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
         leafTop = leafBottom;
@@ -656,12 +666,6 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     }
     for (i=1; i<this.thumbRowBuffer+1; i++) {
         if (firstRow-i >= 0) { rowsToDisplay.push(firstRow-i); }
-    }
-
-    // Update hash, but only if we're currently displaying a leaf
-    // Hack that fixes #365790
-    if (this.displayedRows.length > 0) {
-        this.updateLocationHash();
     }
 
     // Create the thumbnail divs and images (lazy loaded)
@@ -729,12 +733,6 @@ BookReader.prototype.drawLeafsThumbnail = function() {
             }   
         }
     }
-
-    // remove previous highlights
-    $('.BRpagedivthumb_highlight').removeClass('BRpagedivthumb_highlight');
-    
-    // highlight current page
-    $('#pagediv'+this.currentIndex()).addClass('BRpagedivthumb_highlight');
     
     // Remove thumbnails that are not to be displayed
     var k;
@@ -760,7 +758,29 @@ BookReader.prototype.drawLeafsThumbnail = function() {
         }
     }
     
+    // Update which page is considered current to make sure a visible page is the current one
+    var currentIndex = this.currentIndex();
+    // console.log('current ' + currentIndex);
+    // console.log('least visible ' + leastVisible + ' most visible ' + mostVisible);
+    if (currentIndex < leastVisible) {
+        this.setCurrentIndex(leastVisible);
+    } else if (currentIndex > mostVisible) {
+        this.setCurrentIndex(mostVisible);
+    }
+
     this.displayedRows = rowsToDisplay.slice();
+    
+    // Update hash, but only if we're currently displaying a leaf
+    // Hack that fixes #365790
+    if (this.displayedRows.length > 0) {
+        this.updateLocationHash();
+    }
+
+    // remove previous highlights
+    $('.BRpagedivthumb_highlight').removeClass('BRpagedivthumb_highlight');
+    
+    // highlight current page
+    $('#pagediv'+this.currentIndex()).addClass('BRpagedivthumb_highlight');
     
     this.lazyLoadThumbnails();
 
@@ -1252,6 +1272,8 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
                 rowHeight = 0;
                 leafIndex = 0;
             }
+
+            // $$$ leaf is not defined in this function -- leaking in from somewhere else            
             leafHeight = parseInt((this.getPageHeight(leaf)*this.thumbWidth)/this.getPageWidth(leaf), 10);
             if (leafHeight > rowHeight) { rowHeight = leafHeight; }
             if (leafIndex==0) { leafTop = bottomPos; }
@@ -1831,6 +1853,14 @@ BookReader.prototype.currentIndex = function() {
     } else {
         throw 'currentIndex called for unimplemented mode ' + this.mode;
     }
+}
+
+// setCurrentIndex(index)
+//______________________________________________________________________________
+// Sets the idea of current index without triggering other actions such as animation.
+// Compare to jumpToIndex which animates to that index
+BookReader.prototype.setCurrentIndex = function(index) {
+    this.firstIndex = index;
 }
 
 /*
