@@ -86,9 +86,9 @@ function getUnarchiveCommand($archivePath, $file)
                 . escapeshellarg($archivePath)
                 . ' ' . escapeshellarg($file);
         } else if ($suffix == 'tar') {
-            return '7z e -so '
+            return ' ( 7z e -so '
                 . escapeshellarg($archivePath)
-                . ' ' . escapeshellarg($file);
+                . ' ' . escapeshellarg($file) . ' 2>/dev/null ) ';
         } else {
             BRfatal('Incompatible archive format');
         }
@@ -360,11 +360,11 @@ function getDecompressCmd($imageType) {
             break;
      
         case 'jpeg':
-            $decompressCmd = ' | jpegtopnm ' . reduceCommand($scale);
+            $decompressCmd = ' | ( jpegtopnm 2>/dev/null ) ' . reduceCommand($scale);
             break;
     
         case 'png':
-            $decompressCmd = ' | pngtopnm ' . reduceCommand($scale);
+            $decompressCmd = ' | ( pngtopnm 2>/dev/null ) ' . reduceCommand($scale);
             break;
             
         default:
