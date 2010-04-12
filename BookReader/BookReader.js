@@ -574,10 +574,12 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
 // drawLeafsThumbnail()
 //______________________________________________________________________________
-BookReader.prototype.drawLeafsThumbnail = function() {
+// If seekIndex is defined, the view will be drawn with that page visible (without any
+// animated scrolling)
+BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     //alert('drawing leafs!');
     this.timer = null;
-
+    
     var viewWidth = $('#BRcontainer').attr('scrollWidth') - 20; // width minus buffer
 
     //console.log('top=' + scrollTop + ' bottom='+scrollBottom);
@@ -593,6 +595,9 @@ BookReader.prototype.drawLeafsThumbnail = function() {
     var leafMap = [];
     
     var self = this;
+    
+    // Will be set to top of requested seek index, if set
+    var seekTop;
 
     // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
     for (i=0; i<this.numLeafs; i++) {
@@ -621,12 +626,22 @@ BookReader.prototype.drawLeafsThumbnail = function() {
         rightPos += leafWidth + this.padding;
         if (rightPos > maxRight) { maxRight = rightPos; }
         leafIndex++;
+        
+        if (i == seekIndex) {
+            seekTop = bottomPos - this.padding - leafMap[currentRow].height;
+        }
     }
 
     // reset the bottom position based on thumbnails
     $('#BRpageview').height(bottomPos);
 
     var pageViewBuffer = Math.floor(($('#BRcontainer').attr('scrollWidth') - maxRight) / 2) - 14;
+
+    // If seekTop is defined, seeking was requested and target found
+    if (typeof(seekTop) != 'undefined') {
+        $('#BRcontainer').scrollTop( seekTop );
+    }
+        
     var scrollTop = $('#BRcontainer').attr('scrollTop');
     var scrollBottom = scrollTop + $('#BRcontainer').height();
 
@@ -1004,6 +1019,20 @@ BookReader.prototype.resizePageView = function() {
     //     e.g. does not preserve position in thumbnail mode
     //     See http://bugs.launchpad.net/bookreader/+bug/552972
     
+    switch (this.mode) {
+        case this.constMode1up:
+        case this.constMode2up:
+            this.resizePageView1up();
+            break;
+        case this.constModeThumb:
+            this.prepareThumbnailView( this.currentIndex() );
+            break;
+        default:
+            alert('Resize not implemented for this mode');
+    }
+}
+
+BookReader.prototype.resizePageView1up = function() {
     var i;
     var viewHeight = 0;
     //var viewWidth  = $('#BRcontainer').width(); //includes scrollBar
@@ -1029,7 +1058,7 @@ BookReader.prototype.resizePageView = function() {
         if (width>viewWidth) viewWidth=width;
     }
     $('#BRpageview').height(viewHeight);
-    $('#BRpageview').width(viewWidth);    
+    $('#BRpageview').width(viewWidth);
 
     var newCenterY = scrollRatio*viewHeight;
     var newTop = Math.max(0, Math.floor( newCenterY - $('#BRcontainer').height()/2 ));
@@ -1045,10 +1074,10 @@ BookReader.prototype.resizePageView = function() {
     //this.centerPageView();
     this.loadLeafs();
         
-    // Not really needed until there is 1up autofit
     this.removeSearchHilites();
     this.updateSearchHilites();
 }
+
 
 // centerX1up()
 //______________________________________________________________________________
@@ -1392,27 +1421,20 @@ BookReader.prototype.prepareThumbnailView = function() {
         overflowY: 'scroll',
         overflowX: 'auto'
     });
-    
+        
     $("#BRcontainer").append("<div id='BRpageview'></div>");
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
     // BookReader.util.disableSelect($('#BRpageview'));
     
-    var oldIndex = this.currentIndex();
     this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
     this.reduce = this.getPageWidth(0)/this.thumbWidth;
 
-    this.resizePageView();
-    
     this.displayedRows = [];
-    
-    // resizePageView will do a delayed load -- this will make it happen faster
-    this.drawLeafsThumbnail();
-    
-    // $$$ Jump to old place in book.  Wouldn't be necessary if place was properly
-    //     preserved through resize and draw
-    this.jumpToIndex(oldIndex);
+
+    // Draw leafs with current index directly in view (no animating to the index)
+    this.drawLeafsThumbnail( this.currentIndex() );
     
 }
 
@@ -1862,27 +1884,6 @@ BookReader.prototype.currentIndex = function() {
 BookReader.prototype.setCurrentIndex = function(index) {
     this.firstIndex = index;
 }
-
-/*
-// Returns the current index if visible, or the logically current visible
-// thumbnail
-BookReader.prototype.currentIndexOrVisibleThumb = function() {
-    // XXX finish implementation
-    var index = this.currentIndex();
-    if (!this.indexIsVisbleThumb(this.currentIndex()) {
-        // XXX search for visible
-    }
-    return index;
-}
-
-// Returns true if the given index is visible
-BookReader.prototype.indexIsVisibleThumb = function(index, onlyCompletelyVisible = true) {
-    // XXX implement
-    // $$$ I'd prefer to go through a stored leaf map instead of DOM
-    
-    
-}
-*/
 
 
 // right()
