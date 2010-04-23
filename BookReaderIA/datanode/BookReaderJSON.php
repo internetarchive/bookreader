@@ -116,12 +116,19 @@ function buildMetadata() {
     
     $metaData = simplexml_load_file($metaDataFile);
     
-    /* Find title leaf if marked */
+    /* Find pages by type */
     $titleLeaf = '';
+    $coverLeafs = array();
     foreach ($scanData->pageData->page as $page) {
         if (("Title Page" == $page->pageType) || ("Title" == $page->pageType)) {
-            $titleLeaf = "{$page['leafNum']}";
-            break;
+            if ('' != $titleLeaf) {
+                // not already set
+                $titleLeaf = "{$page['leafNum']}";
+            }
+        }
+        
+        if (('Cover' == $page->pageType) || ('Cover Page' == $page->pageType)) {
+            array_push($coverLeafs, $page['leafNum']);
         }
     }
     
@@ -177,6 +184,18 @@ function buildMetadata() {
     // URL to title image
     if ('' != $titleLeaf) {
         $response['titleImage'] = imageURL($titleLeaf, $response);
+    }
+    
+    if (count($coverLeafs) > 0) {
+        $coverIndices = array();
+        $coverImages = array();
+        foreach ($coverLeafs as $key => $leafNum) {
+            array_push($coverIndices, indexForLeaf($leafNum, $leafNums));
+            array_push($coverImages, imageUrl($leafNum, $response));
+        }
+        
+        $response['coverIndices'] = $coverIndices;
+        $response['coverImages'] = $coverImages;
     }
     
     return $response;
