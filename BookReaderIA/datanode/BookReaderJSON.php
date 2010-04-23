@@ -154,6 +154,10 @@ function buildMetadata() {
     $response['numPages'] = count($pageNums); // XXX renamed    
     if ('' != $titleLeaf) {
         $response['titleLeaf'] = $titleLeaf; // XXX change to titleIndex - do leaf mapping here
+        $titleIndex = indexForLeaf($titleLeaf, $leafNums);
+        if ($titleIndex !== NULL) {
+            $response['titleIndex'] = intval($titleIndex);
+        }
     }
     $response['url'] = "http://www.archive.org/details/$id";
     $response['pageProgression'] = $pageProgression . '';
@@ -169,7 +173,12 @@ function buildMetadata() {
     $response['imageFormat'] = $imageFormat;
     $response['archiveFormat'] = $archiveFormat;
     $response['leafNums'] = $leafNums;
-        
+    
+    // URL to title image
+    if ('' != $titleLeaf) {
+        $response['titleImage'] = imageURL($titleLeaf, $response);
+    }
+    
     return $response;
 }
 
@@ -248,6 +257,38 @@ function findImageStack($subPrefix, $filesData) {
 function isValidCallback($identifier) {
     $pattern = '/^[a-zA-Z_$][a-zA-Z0-9_$]*$/';
     return preg_match($pattern, $identifier) == 1;
+}
+
+function indexForLeaf($leafNum, $leafNums) {
+    $key = array_search($leafNum, $leafNums);
+    if ($key === FALSE) {
+        return NULL;
+    } else {
+        return $key;
+    }
+}
+
+function imageURL($leafNum, $metadata, $scale, $rotate) {
+    // "Under the hood", non-public, dynamically changing (achtung!) image URLs currently look like:
+    // http://{server}/BookReader/BookReaderImages.php?zip={zipPath}&file={filePath}&scale={scale}&rotate={rotate}
+    // e.g. http://ia311213.us.archive.org/BookReader/BookReaderImages.php?zip=/0/items/coloritsapplicat00andriala/coloritsapplicat00andriala_jp2.zip&file=coloritsapplicat00andriala_jp2/coloritsapplicat00andriala_0009.jp2&scale=8&rotate=0
+    
+
+    $filePath = imageFilePath($leafNum, $metadata['bookId'], $metadata['imageFormat']);
+    $url = 'http://' . $metadata['server'] . '/BookReader/BookReaderImages.php?zip=' . $metadata['zip'] . '&file=' . $filePath;
+    
+    if (defined($scale)) {
+        $url .= '&scale=' . $scale;
+    }
+    if (defined($rotate)) {
+        $url .= '&rotate=' . $rotate;
+    }
+    
+    return $url;
+}
+
+function imageFilePath($leafNum, $bookId, $format) {
+    return sprintf("%s_%s/%s_%04d.%s", $bookId, $format, $bookId, intval($leafNum), $format);
 }
 
 // Here we go
