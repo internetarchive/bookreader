@@ -26,9 +26,9 @@ This file is part of BookReader.
 
 // Builds metadata object (to be encoded as JSON)
 function buildMetadata() {
-    $id = $_REQUEST['id'];
+    $id = $_REQUEST['itemId']; // XXX renamed
     $itemPath = $_REQUEST['itemPath'];
-    $subPrefix = $_REQUEST['subPrefix'];
+    $subPrefix = $_REQUEST['bookId']; // XXX renamed
     $server = $_REQUEST['server'];
     
     // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
@@ -121,7 +121,7 @@ function buildMetadata() {
     $coverLeafs = array();
     foreach ($scanData->pageData->page as $page) {
         if (("Title Page" == $page->pageType) || ("Title" == $page->pageType)) {
-            if ('' != $titleLeaf) {
+            if ('' == $titleLeaf) {
                 // not already set
                 $titleLeaf = "{$page['leafNum']}";
             }
@@ -142,7 +142,7 @@ function buildMetadata() {
     foreach ($scanData->pageData->page as $page) {
         if (shouldAddPage($page)) {
             $pageWidths[$i] = intval($page->cropBox->w);
-            $pageHeight[$i] = intval($page->cropBox->h);
+            $pageHeights[$i] = intval($page->cropBox->h);
             $totalHeight += intval($page->cropBox->h/4) + 10;
             $leafNums[$i] = intval($page['leafNum']);
             $pageNums[$i] = $page->pageNumber . '';
