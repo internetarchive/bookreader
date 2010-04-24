@@ -64,6 +64,9 @@ if (isset($_REQUEST['callback'])) {
     $callback = null;
 }
 
+// Make sure the image stack is readable - return 403 if not
+checkPrivs($zipPath);
+
 /*
  * Approach:
  * 
@@ -554,6 +557,12 @@ function reduceCommand($scale) {
     }
 }
 
+function checkPrivs($filename) {
+    if (!is_readable($filename)) {
+        header('HTTP/1.1 403 Forbidden');
+        exit(0);
+    }
+}
 
 ?>
 
