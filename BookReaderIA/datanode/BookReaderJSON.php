@@ -25,19 +25,7 @@ This file is part of BookReader.
 */
 
 // Builds metadata object (to be encoded as JSON)
-function buildMetadata() {
-    $id = $_REQUEST['itemId']; // XXX renamed
-    $itemPath = $_REQUEST['itemPath'];
-    $subPrefix = $_REQUEST['bookId']; // XXX renamed
-    $server = $_REQUEST['server'];
-    
-    // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
-    // $$$ TODO consolidate this logic
-    if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
-        $server .= ':80/~mang';
-    } else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
-        $server .= ':80/~testflip';
-    }
+function buildMetadata($id, $itemPath, $bookId, $server) {
 
     $response = array();
     
@@ -198,6 +186,19 @@ function buildMetadata() {
         $response['coverImages'] = $coverImages;
     }
     
+    // Determine "preview" image, which may be the cover, title, or first page
+    if (array_key_exists('titleImage', $response)) {
+        // Use title image if was assert
+        $previewImage = $response['titleImage'];
+    } else if (array_key_exists('coverImages', $response)) {
+        // Try for the cover page
+        $previewImage = $response['coverImages'][0];
+    } else {
+        // Neither title nor cover asserted, use first page
+        $previewImage = imageURL(0, $response);
+    }
+    $response['previewImage'] = $previewImage;
+    
     return $response;
 }
 
@@ -310,7 +311,24 @@ function imageFilePath($leafNum, $bookId, $format) {
     return sprintf("%s_%s/%s_%04d.%s", $bookId, $format, $bookId, intval($leafNum), $format);
 }
 
+function processRequest($requestEnv) {
+    $id = $requestEnv['itemId']; // XXX renamed
+    $itemPath = $requestEnv['itemPath'];
+    $bookId = $requestEnv['bookId']; // XXX renamed
+    $server = $requestEnv['server'];
+    
+    // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
+    // $$$ TODO consolidate this logic
+    if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
+        $server .= ':80/~mang';
+    } else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
+        $server .= ':80/~testflip';
+    }
+    
+    emitResponse(buildMetadata($id, $itemPath, $bookId, $server));
+}
+
 // Here we go
-emitResponse(buildMetadata());
+processRequest($_REQUEST);
 
 ?>
