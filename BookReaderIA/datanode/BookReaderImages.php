@@ -44,6 +44,18 @@ $EXTENSIONS = array('gif' => 'gif',
 $exiftool = '/petabox/sw/books/exiftool/exiftool';
 $kduExpand = '/petabox/sw/bin/kdu_expand';
 
+/*
+ * Approach:
+ * 
+ * Get info about requested image (input)
+ * Get info about requested output format
+ * Determine processing parameters
+ * Process image
+ * Return image data
+ * Clean up temporary files
+ */
+ 
+
 // Process some of the request parameters
 $zipPath  = $_REQUEST['zip'];
 $file     = $_REQUEST['file'];
@@ -67,17 +79,184 @@ if (isset($_REQUEST['callback'])) {
 // Make sure the image stack is readable - return 403 if not
 checkPrivs($zipPath);
 
-/*
- * Approach:
- * 
- * Get info about requested image (input)
- * Get info about requested output format
- * Determine processing parameters
- * Process image
- * Return image data
- * Clean up temporary files
- */
- 
+
+
+// Get the image size and depth
+$imageInfo = getImageInfo($zipPath, $file);
+
+// Output json if requested
+if ('json' == $ext) {
+    // $$$ we should determine the output size first based on requested scale
+    outputJSON($imageInfo, $callback);
+    exit;
+}
+
+// Unfortunately kakadu requires us to know a priori if the
+// output file should be .ppm or .pgm.  By decompressing to
+// .bmp kakadu will write a file we can consistently turn into
+// .pnm.  Really kakadu should support .pnm as the file output
+// extension and automatically write ppm or pgm format as
+// appropriate.
+$decompressToBmp = true;
+if ($decompressToBmp) {
+  $stdoutLink = '/tmp/stdout.bmp';
+} else {
+  $stdoutLink = '/tmp/stdout.ppm';
+}
+
+$fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+
+// Rotate is currently only supported for jp2 since it does not add server load
+$allowedRotations = array("0", "90", "180", "270");
+$rotate = $_REQUEST['rotate'];
+if ( !in_array($rotate, $allowedRotations) ) {
+    $rotate = "0";
+}
+
+// Image conversion options
+$pngOptions = '';
+$jpegOptions = '-quality 75';
+
+// The pbmreduce reduction factor produces an image with dimension 1/n
+// The kakadu reduction factor produceds an image with dimension 1/(2^n)
+// $$$ handle continuous values for scale
+if (isset($_REQUEST['height'])) {
+    $ratio = floatval($_REQUEST['origHeight']) / floatval($_REQUEST['height']);
+    if ($ratio <= 2) {
+        $scale = 2;
+        $powReduce = 1;    
+    } else if ($ratio <= 4) {
+        $scale = 4;
+        $powReduce = 2;
+    } else {
+        //$powReduce = 3; //too blurry!
+        $scale = 2;
+        $powReduce = 1;
+    }
+
+} else {
+    // $$$ could be cleaner
+    // Provide next smaller power of two reduction
+    $scale = intval($_REQUEST['scale']);
+    if (1 >= $scale) {
+        $powReduce = 0;
+    } else if (2 > $scale) {
+        $powReduce = 0;
+    } else if (4 > $scale) {
+        $powReduce = 1;
+    } else if (8 > $scale) {
+        $powReduce = 2;
+    } else if (16 > $scale) {
+        $powReduce = 3;
+    } else if (32 > $scale) {
+        $powReduce = 4;
+    } else if (64 > $scale) {
+        $powReduce = 5;
+    } else {
+        // $$$ Leaving this in as default though I'm not sure why it is...
+        $powReduce = 3;
+    }
+    $scale = pow(2, $powReduce);
+}
+
+// Override depending on source image format
+// $$$ consider doing a 302 here instead, to make better use of the browser cache
+// Limit scaling for 1-bit images.  See https://bugs.edge.launchpad.net/bookreader/+bug/486011
+if (1 == $imageInfo['bits']) {
+    if ($scale > 1) {
+        $scale /= 2;
+        $powReduce -= 1;
+        
+        // Hard limit so there are some black pixels to use!
+        if ($scale > 4) {
+            $scale = 4;
+            $powReduce = 2;
+        }
+    }
+}
+
+if (!file_exists($stdoutLink)) 
+{  
+  system('ln -s /dev/stdout ' . $stdoutLink);  
+}
+
+
+putenv('LD_LIBRARY_PATH=/petabox/sw/lib/kakadu');
+
+$unzipCmd  = getUnarchiveCommand($zipPath, $file);
+
+$decompressCmd = getDecompressCmd($imageInfo['type']);
+       
+// Non-integer scaling is currently disabled on the cluster
+// if (isset($_REQUEST['height'])) {
+//     $cmd .= " | pnmscale -height {$_REQUEST['height']} ";
+// }
+
+switch ($ext) {
+    case 'png':
+        $compressCmd = ' | pnmtopng ' . $pngOptions;
+        break;
+        
+    case 'jpeg':
+    case 'jpg':
+    default:
+        $compressCmd = ' | pnmtojpeg ' . $jpegOptions;
+        $ext = 'jpeg'; // for matching below
+        break;
+
+}
+
+if (($ext == $fileExt) && ($scale == 1) && ($rotate === "0")) {
+    // Just pass through original data if same format and size
+    $cmd = $unzipCmd;
+} else {
+    $cmd = $unzipCmd . $decompressCmd . $compressCmd;
+}
+
+// print $cmd;
+
+$headers = array('Content-type: '. $MIMES[$ext],
+                  'Cache-Control: max-age=15552000');
+
+$errorMessage = '';
+if (! passthruIfSuccessful($headers, $cmd, $errorMessage)) {
+    // $$$ automated reporting
+    trigger_error('BookReader Processing Error: ' . $cmd . ' -- ' . $errorMessage, E_USER_WARNING);
+    
+    // Try some content-specific recovery
+    $recovered = false;    
+    if ($imageInfo['type'] == 'jp2') {
+        $records = getJp2Records($zipPath, $file);
+        if ($powReduce > intval($records['Clevels'])) {
+            $powReduce = $records['Clevels'];
+            $reduce = pow(2, $powReduce);
+        } else {
+            $reduce = 1;
+            $powReduce = 0;
+        }
+         
+        $cmd = $unzipCmd . getDecompressCmd($imageInfo['type']) . $compressCmd;
+        if (passthruIfSuccessful($headers, $cmd, $errorMessage)) {
+            $recovered = true;
+        } else {
+            trigger_error('BookReader fallback image processing also failed: ' . $errorMessage, E_USER_WARNING);
+        }
+    }
+    
+    if (! $recovered) {
+        BRfatal('Problem processing image - command failed');
+    }
+}
+
+if (isset($tempFile)) {
+    unlink($tempFile);
+}
+
+
+
+////////////////////////////////////////////////
+
+
 function getUnarchiveCommand($archivePath, $file)
 {
     $lowerPath = strtolower($archivePath);
@@ -230,110 +409,6 @@ function outputJSON($imageInfo, $callback)
     echo $jsonOutput;
 }
 
-// Get the image size and depth
-$imageInfo = getImageInfo($zipPath, $file);
-
-// Output json if requested
-if ('json' == $ext) {
-    // $$$ we should determine the output size first based on requested scale
-    outputJSON($imageInfo, $callback);
-    exit;
-}
-
-// Unfortunately kakadu requires us to know a priori if the
-// output file should be .ppm or .pgm.  By decompressing to
-// .bmp kakadu will write a file we can consistently turn into
-// .pnm.  Really kakadu should support .pnm as the file output
-// extension and automatically write ppm or pgm format as
-// appropriate.
-$decompressToBmp = true;
-if ($decompressToBmp) {
-  $stdoutLink = '/tmp/stdout.bmp';
-} else {
-  $stdoutLink = '/tmp/stdout.ppm';
-}
-
-$fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-
-// Rotate is currently only supported for jp2 since it does not add server load
-$allowedRotations = array("0", "90", "180", "270");
-$rotate = $_REQUEST['rotate'];
-if ( !in_array($rotate, $allowedRotations) ) {
-    $rotate = "0";
-}
-
-// Image conversion options
-$pngOptions = '';
-$jpegOptions = '-quality 75';
-
-// The pbmreduce reduction factor produces an image with dimension 1/n
-// The kakadu reduction factor produceds an image with dimension 1/(2^n)
-// $$$ handle continuous values for scale
-if (isset($_REQUEST['height'])) {
-    $ratio = floatval($_REQUEST['origHeight']) / floatval($_REQUEST['height']);
-    if ($ratio <= 2) {
-        $scale = 2;
-        $powReduce = 1;    
-    } else if ($ratio <= 4) {
-        $scale = 4;
-        $powReduce = 2;
-    } else {
-        //$powReduce = 3; //too blurry!
-        $scale = 2;
-        $powReduce = 1;
-    }
-
-} else {
-    // $$$ could be cleaner
-    // Provide next smaller power of two reduction
-    $scale = intval($_REQUEST['scale']);
-    if (1 >= $scale) {
-        $powReduce = 0;
-    } else if (2 > $scale) {
-        $powReduce = 0;
-    } else if (4 > $scale) {
-        $powReduce = 1;
-    } else if (8 > $scale) {
-        $powReduce = 2;
-    } else if (16 > $scale) {
-        $powReduce = 3;
-    } else if (32 > $scale) {
-        $powReduce = 4;
-    } else if (64 > $scale) {
-        $powReduce = 5;
-    } else {
-        // $$$ Leaving this in as default though I'm not sure why it is...
-        $powReduce = 3;
-    }
-    $scale = pow(2, $powReduce);
-}
-
-// Override depending on source image format
-// $$$ consider doing a 302 here instead, to make better use of the browser cache
-// Limit scaling for 1-bit images.  See https://bugs.edge.launchpad.net/bookreader/+bug/486011
-if (1 == $imageInfo['bits']) {
-    if ($scale > 1) {
-        $scale /= 2;
-        $powReduce -= 1;
-        
-        // Hard limit so there are some black pixels to use!
-        if ($scale > 4) {
-            $scale = 4;
-            $powReduce = 2;
-        }
-    }
-}
-
-if (!file_exists($stdoutLink)) 
-{  
-  system('ln -s /dev/stdout ' . $stdoutLink);  
-}
-
-
-putenv('LD_LIBRARY_PATH=/petabox/sw/lib/kakadu');
-
-$unzipCmd  = getUnarchiveCommand($zipPath, $file);
-
 function getDecompressCmd($imageType) {
     global $kduExpand;
     global $powReduce, $rotate, $scale; // $$$ clean up
@@ -376,36 +451,6 @@ function getDecompressCmd($imageType) {
     }
     return $decompressCmd;
 }
-
-$decompressCmd = getDecompressCmd($imageInfo['type']);
-       
-// Non-integer scaling is currently disabled on the cluster
-// if (isset($_REQUEST['height'])) {
-//     $cmd .= " | pnmscale -height {$_REQUEST['height']} ";
-// }
-
-switch ($ext) {
-    case 'png':
-        $compressCmd = ' | pnmtopng ' . $pngOptions;
-        break;
-        
-    case 'jpeg':
-    case 'jpg':
-    default:
-        $compressCmd = ' | pnmtojpeg ' . $jpegOptions;
-        $ext = 'jpeg'; // for matching below
-        break;
-
-}
-
-if (($ext == $fileExt) && ($scale == 1) && ($rotate === "0")) {
-    // Just pass through original data if same format and size
-    $cmd = $unzipCmd;
-} else {
-    $cmd = $unzipCmd . $decompressCmd . $compressCmd;
-}
-
-// print $cmd;
 
 // If the command has its initial output on stdout the headers will be emitted followed
 // by the stdout output.  If initial output is on stderr an error message will be
@@ -485,45 +530,6 @@ function passthruIfSuccessful($headers, $cmd, &$errorMessage)
         }
     }
     return $retVal;
-}
-
-$headers = array('Content-type: '. $MIMES[$ext],
-                  'Cache-Control: max-age=15552000');
-
-$errorMessage = '';
-if (! passthruIfSuccessful($headers, $cmd, $errorMessage)) {
-    // $$$ automated reporting
-    trigger_error('BookReader Processing Error: ' . $cmd . ' -- ' . $errorMessage, E_USER_WARNING);
-    
-    // Try some content-specific recovery
-    $recovered = false;    
-    if ($imageInfo['type'] == 'jp2') {
-        $records = getJp2Records($zipPath, $file);
-        if ($powReduce > intval($records['Clevels'])) {
-            $powReduce = $records['Clevels'];
-            $reduce = pow(2, $powReduce);
-        } else {
-            $reduce = 1;
-            $powReduce = 0;
-        }
-         
-        $cmd = $unzipCmd . getDecompressCmd($imageInfo['type']) . $compressCmd;
-        if (passthruIfSuccessful($headers, $cmd, $errorMessage)) {
-            $recovered = true;
-        } else {
-            trigger_error('BookReader fallback image processing also failed: ' . $errorMessage, E_USER_WARNING);
-        }
-    }
-    
-    if (! $recovered) {
-        BRfatal('Problem processing image - command failed');
-    }
-}
-
-// passthru ($cmd); # cmd returns image data
-
-if (isset($tempFile)) {
-    unlink($tempFile);
 }
 
 function BRFatal($string) {
