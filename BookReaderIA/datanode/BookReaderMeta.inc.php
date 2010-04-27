@@ -31,10 +31,10 @@ class BookReaderMeta {
     
         $response = array();
         
-        if (! $subPrefix) {
-            $subPrefix = $id;
+        if (! $bookId) {
+            $bookId = $id;
         }
-        $subItemPath = $itemPath . '/' . $subPrefix;
+        $subItemPath = $itemPath . '/' . $bookId;
         
         if ("" == $id) {
             $this->BRFatal("No identifier specified!");
@@ -62,7 +62,7 @@ class BookReaderMeta {
             $this->BRfatal("File metadata not found!");
         }
         
-        $imageStackInfo = $this->findImageStack($subPrefix, $filesData);
+        $imageStackInfo = $this->findImageStack($bookId, $filesData);
         if ($imageStackInfo['imageFormat'] == 'unknown') {
             $this->BRfatal('Couldn\'t find image stack');
         }
@@ -166,7 +166,7 @@ class BookReaderMeta {
         
         // Internet Archive specific
         $response['itemId'] = $id; // XXX renamed
-        $response['bookId'] = $subPrefix;  // XXX renamed
+        $response['bookId'] = $bookId;  // XXX renamed
         $response['zip'] = $imageStackFile;
         $response['server'] = $server;
         $response['imageFormat'] = $imageFormat;
@@ -290,6 +290,10 @@ class BookReaderMeta {
         } else {
             return $key;
         }
+    }
+    
+    function leafForIndex($index, $leafNums) {
+        return $leafNums[$index]; // $$$ todo change to instance variables
     }
     
     function imageURL($leafNum, $metadata, $scale, $rotate) {

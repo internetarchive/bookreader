@@ -205,5 +205,48 @@ class BookReader
     return $url;
   }
   
+  // Return the URL for the requested /download/$path, or null
+  public static function getURL($path, $item) {
+    // $path should look like {itemId}/{operator}/{filename}
+    // Other operators may be added
+    
+    $parts = preg_split('#/#', $path, 3);
+    if (count($parts) != 3) {
+        return null;
+    }
+    $identifier = $parts[0];
+    $operator = $parts[1];
+    $filename = $parts[2];
+    
+    $serverBaseURL = BookReader::serverBaseURL($item->getServer());
+            
+    switch ($operator) {
+        case 'page':
+            // Find bookId and which page was requested
+            $pathParts = pathinfo($filename);
+            
+            // Look for preview request
+            if (preg_match('/^(.*)_(cover|title|preview)$/', $pathParts['filename'], $matches) === 0) {
+                return null;
+            }
+            $bookId = $matches[1];
+            $page = $matches[2];
+            $query = array(
+                'id' => $identifier,
+                'bookId' => $bookId,
+                'itemPath' => $item->getMainDir(),
+                'server' => $serverBaseURL,
+                'page' => $page,
+            );
+            return 'http://' . $serverBaseURL . '/BookReader/BookReaderPreview.php?' . http_build_query($query, '', '&');
+        
+        default:
+            return null;            
+    }
+      
+    return null; // was not handled
+  }
+  
 }
-  ?>
+
+?>
