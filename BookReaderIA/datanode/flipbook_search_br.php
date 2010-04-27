@@ -137,7 +137,7 @@ else
 }
  
 
-// This looks like where we load the djvu.xml
+// This looks like where we load the djvu.xml - $$$ and rapidly exhaust memory for large books such as OED
 if (!($document = file_get_contents($url)))
   fatal("could not load $url");
 
