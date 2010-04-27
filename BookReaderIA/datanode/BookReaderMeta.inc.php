@@ -231,7 +231,7 @@ class BookReaderMeta {
     
     function BRFatal($string) {
         // $$$ TODO log error
-        echo "alert('$string')\n";
+        echo "alert('$string');\n";
         die(-1);
     }
     
