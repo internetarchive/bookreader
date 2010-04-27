@@ -216,8 +216,12 @@ class BookReaderImages
         
         // print $cmd;
         
+        $filenameForClient = $this->filenameForClient($file, $ext);
+        
         $headers = array('Content-type: '. $MIMES[$ext],
-                          'Cache-Control: max-age=15552000');
+                         'Cache-Control: max-age=15552000',
+                         'Content-disposition: inline; filename=' . $filenameForClient);
+                          
         
         $errorMessage = '';
         if (! $this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
@@ -559,10 +563,16 @@ class BookReaderImages
             exit(0);
         }
     }
+    
+    // Given file path (inside archive) and output file extension, return a filename
+    // suitable for Content-disposition header
+    function filenameForClient($filePath, $ext) {
+        $pathParts = pathinfo($filePath);
+        if ('jpeg' == $ext) {
+            $ext = 'jpg';
+        }
+        return $pathParts['filename'] . '.' . $ext;
+    }
 }
 
-$bri = new BookReaderImages();
-$bri->serveRequest($_REQUEST);
-
 ?>
-
