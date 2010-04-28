@@ -530,8 +530,9 @@ class BookReaderImages
     }
     
     function BRfatal($string) {
-        echo "alert('$string');\n";
-        die(-1);
+        throw new Exception("Image error: $string");
+        //echo "alert('$string');\n";
+        //die(-1);
     }
     
     // Returns true if using a power node

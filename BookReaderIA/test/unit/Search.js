@@ -1,31 +1,11 @@
 // Tests for Search
 
-// $$$ TODO -- make the test host configurable/automagic
-// $$$ Refactor common code across tests
+// Depends on common.js
 
 module("Search");
 
-// $$$ set to test host
-var gTestAccount = 'testflip';
-//var gTestAccount = 'mang';
-var gTestHost = 'http://www-' + gTestAccount + '.archive.org';
-
 // Holds search text
 var gSearchText = '';
-
-test("Hello test", function() {
-    expect(1);
-    equals("Hello world", "Hello world", "Hi there");
-});
-
-// Returns locator URL for the given id
-function jsLocateURL(identifier, book) {
-    var bookURL = gTestHost + '/bookreader/BookReaderJSLocate.php?id=' + identifier;
-    if (book) {
-        bookURL += '&book=' + book;
-    }
-    return bookURL;
-}
 
 // Build search URL
 function searchURL(bookReader, term, callback) {
@@ -49,14 +29,6 @@ function search(searchURL, xmlCallback, errorCallback) {
 function setSearchText(txtData) {
     gSearchText = txtData;
 }
-
-// Set up dummy BookReader class for JSLocate
-function BookReader() {
-};
-
-BookReader.prototype.init = function() {
-    return true;
-};
 
 function locateTest(title, identifier, book) {
     asyncTest("JSLocate for " + identifier, function() {

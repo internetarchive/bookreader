@@ -28,12 +28,17 @@ require_once('BookReaderImages.inc.php');
 
 function BRfatal($message) {
     header("HTTP/1.0 404 Not Found");
+    header("Content-type: text/plain");
     print $message;
-    exit();
+    die(-1);
 }
 
 $brm = new BookReaderMeta();
-$metadata = $brm->buildMetadata($_REQUEST['id'], $_REQUEST['itemPath'], $_REQUEST['bookId'], $_REQUEST['server']);
+try {
+    $metadata = $brm->buildMetadata($_REQUEST['id'], $_REQUEST['itemPath'], $_REQUEST['bookId'], $_REQUEST['server']);
+} catch (Exception $e) {
+    BRfatal($e->getMessage);
+}
 
 $knownPages = array('title','cover','preview');
 $page = $_REQUEST['page'];
@@ -85,11 +90,20 @@ $requestEnv = array(
     'zip' => $metadata['zip'],
     'file' => $brm->imageFilePath($leaf, $metadata['bookId'], $metadata['imageFormat']),
     'ext' => 'jpg',
-    'reduce' => 2, // XXX
 );
 
 // Return image data - will check privs
 $bri = new BookReaderImages();
-$bri->serveRequest($requestEnv);
+try {
+    $bri->serveRequest($requestEnv);
+} catch (Exception $e) {
+    header("HTTP/1.0 404 Not Found");
+    header("Content-type: text/plain");
+    print "Error serving request:";
+    print "  " . $e->getMessage();
+    print "Debugging information:";
+    echo $e->getTraceAsString();
+    die(-1);
+}
 
 ?>

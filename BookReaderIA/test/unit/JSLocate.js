@@ -1,23 +1,8 @@
 // Tests for BookReaderJSLocate.php
 
-// $$$ TODO -- make the test host configurable/automagic
+// Depends on common.js
 
 module("JSLocate");
-
-testHost = 'http://www-testflip.archive.org';
-
-// Returns locator URL for the given id
-function jsLocateURL(bookId) {
-    return testHost + '/bookreader/BookReaderJSLocate.php?id=' + bookId;
-}
-
-// Set up dummy BookReader class for JSLocate
-function BookReader() {
-};
-
-BookReader.prototype.init = function() {
-    return true;
-};
 
 asyncTest("JSLocate for notesonsubmarine00grea", function() {
     expect(1);

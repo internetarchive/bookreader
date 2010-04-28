@@ -1,30 +1,10 @@
 // Tests for BookReaderImages.php
 
-// $$$ TODO -- make the test host configurable/automagic
+// Depends on common.js
 
 module("Images");
 
-// $$$ set to test host
-var testHost = 'http://www-testflip.archive.org';
-
-// Returns locator URL for the given id
-function jsLocateURL(identifier, book) {
-    var bookURL = testHost + '/bookreader/BookReaderJSLocate.php?id=' + identifier;
-    if (book) {
-        bookURL += '&book=' + book;
-    }
-    return bookURL;
-}
-
-// Set up dummy BookReader class for JSLocate
-function BookReader() {
-};
-
-BookReader.prototype.init = function() {
-    return true;
-};
-
-
+/* Item no longer available
 // Test image info - jpeg
 asyncTest("JSLocate for armageddonafter00couruoft - jpeg", function() {
     expect(1);
@@ -48,8 +28,7 @@ asyncTest("Image info for jpeg", function() {
         start();
     });
 });
-
-
+*/
 
 // Test image info
 asyncTest("JSLocate for zc-f-c-b-4 - 1-bit jp2", function() {

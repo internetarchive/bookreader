@@ -29,7 +29,17 @@ require_once('BookReaderImages.inc.php');
 
 // Serve request
 $bri = new BookReaderImages();
-$bri->serveRequest($_REQUEST);
+try {
+    $bri->serveRequest($_REQUEST);
+} catch (Exception $e) {
+    header("HTTP/1.0 404 Not Found");
+    header("Content-type: text/plain");
+    
+    print "Error serving request:\n";
+    print "  " . $e->getMessage() . "\n\n";
+    print "Debugging information:\n";
+    echo $e->getTraceAsString();
+}
 
 ?>
 

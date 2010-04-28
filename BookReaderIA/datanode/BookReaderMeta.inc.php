@@ -221,8 +221,9 @@ class BookReaderMeta {
     
     function BRFatal($string) {
         // $$$ TODO log error
-        echo "alert('$string');\n";
-        die(-1);
+        throw new Exception("Metadata error: $string");
+        //echo "alert('$string');\n";
+        //die(-1);
     }
     
     // Returns true if a page should be added based on it's information in
