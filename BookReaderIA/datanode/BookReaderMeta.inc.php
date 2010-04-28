@@ -167,15 +167,17 @@ class BookReaderMeta {
         // Internet Archive specific
         $response['itemId'] = $id; // XXX renamed
         $response['bookId'] = $bookId;  // XXX renamed
+        $response['itemPath'] = $itemPath;
         $response['zip'] = $imageStackFile;
         $response['server'] = $server;
         $response['imageFormat'] = $imageFormat;
         $response['archiveFormat'] = $archiveFormat;
         $response['leafNums'] = $leafNums;
+        $response['previewImage'] = $this->previewURL('preview', $response);
         
         // URL to title image
         if ('' != $titleLeaf) {
-            $response['titleImage'] = $this->imageURL($titleLeaf, $response);
+            $response['titleImage'] = $this->previewURL('title', $response);
         }
         
         if (count($coverLeafs) > 0) {
@@ -183,26 +185,14 @@ class BookReaderMeta {
             $coverImages = array();
             foreach ($coverLeafs as $key => $leafNum) {
                 array_push($coverIndices, $this->indexForLeaf($leafNum, $leafNums));
+                // $$$ TODO use preview API once it supports multiple covers
                 array_push($coverImages, $this->imageUrl($leafNum, $response));
             }
             
             $response['coverIndices'] = $coverIndices;
             $response['coverImages'] = $coverImages;
         }
-        
-        // Determine "preview" image, which may be the cover, title, or first page
-        if (array_key_exists('titleImage', $response)) {
-            // Use title image if was assert
-            $previewImage = $response['titleImage'];
-        } else if (array_key_exists('coverImages', $response)) {
-            // Try for the cover page
-            $previewImage = $response['coverImages'][0];
-        } else {
-            // Neither title nor cover asserted, use first page
-            $previewImage = $this->imageURL(0, $response);
-        }
-        $response['previewImage'] = $previewImage;
-        
+                
         return $response;
     }
     
@@ -313,6 +303,19 @@ class BookReaderMeta {
         }
         
         return $url;
+    }
+    
+    // $$$ move inside BookReaderPreview
+    function previewURL($page, $metadata) {
+        $query = array(
+            'id' => $metadata['itemId'],
+            'bookId' => $metadata['bookId'],
+            'itemPath' => $metadata['itemPath'],
+            'server' => $metadata['server'],
+            'page' => $page,
+        );
+        
+        return 'http://' . $metadata['server'] . '/BookReader/BookReaderPreview.php?' . http_build_query($query, '', '&');
     }
     
     function imageFilePath($leafNum, $bookId, $format) {

@@ -77,7 +77,10 @@ class BookReaderImages
         } else {
             $callback = null;
         }
-        
+
+        if ( !file_exists($zipPath) ) {
+            $this->BRfatal('Image stack does not exist');
+        }
         // Make sure the image stack is readable - return 403 if not
         $this->checkPrivs($zipPath);
         
@@ -218,7 +221,7 @@ class BookReaderImages
         
         $filenameForClient = $this->filenameForClient($file, $ext);
         
-        $headers = array('Content-type: '. $MIMES[$ext],
+        $headers = array('Content-type: '. $MIMES[$ext], // XXX is nginx swallowing this?
                          'Cache-Control: max-age=15552000',
                          'Content-disposition: inline; filename=' . $filenameForClient);
                           
