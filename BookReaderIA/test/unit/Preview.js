@@ -4,11 +4,15 @@
 
 module("Preview");
 
-function Book(identifier, previewWidth, coverWidth, titleWidth) {
+function Book(identifier, previewWidth, coverWidth, titleWidth, bookId = undefined) {
     this.identifier = identifier;
     this.previewWidth = previewWidth;
     this.coverWidth = coverWidth;
     this.titleWidth = titleWidth;
+    if (bookId === undefined) {
+        bookId = identifier;
+    }
+    this.bookId = bookId;
 }
 
 var books = [
@@ -27,7 +31,7 @@ for (index in books) {
             var book = books[i];    
             var identifier = book.identifier;            
             
-            var pageURI = previewURL(identifier, identifier, 'preview');
+            var pageURI = previewURL(identifier, book.bookId, 'preview');
             var img = new Image();
             $(img).bind( 'load error', function(eventObj) {
                 equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
@@ -45,7 +49,7 @@ for (index in books) {
             var book = books[i];    
             var identifier = book.identifier;
             
-            var pageURI = previewURL(identifier, identifier, 'cover');
+            var pageURI = previewURL(identifier, book.bookId, 'cover');
             var img = new Image();
             $(img).bind( 'load error', function(eventObj) {
                 equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
@@ -63,7 +67,7 @@ for (index in books) {
             var book = books[i];    
             var identifier = book.identifier;
             
-            var pageURI = previewURL(identifier, identifier, 'title');
+            var pageURI = previewURL(identifier, book.bookId, 'title');
             var img = new Image();
             $(img).bind( 'load error', function(eventObj) {
                 equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
@@ -76,3 +80,33 @@ for (index in books) {
         });
     })();
 }
+
+// Multi-book item
+var identifier = 'SubBookTest';
+asyncTest("Load title for " + identifier, function() {
+    expect(1);
+        
+    var pageURI = previewURL(identifier, identifier, 'title');
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'error', 'Load image (' + pageURI + '). Event handler called');
+        start();
+    })
+    .attr('src', pageURI);
+    
+    img = null;
+});
+
+asyncTest("Load title for " + identifier, function() {
+    expect(1);
+        
+    var pageURI = previewURL(identifier, identifier, 'title');
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'error', 'Load image (' + pageURI + '). Event handler called');
+        start();
+    })
+    .attr('src', pageURI);
+    
+    img = null;
+});

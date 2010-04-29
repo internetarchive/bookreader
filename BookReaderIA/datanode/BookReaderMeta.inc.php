@@ -83,8 +83,10 @@ class BookReaderMeta {
         $scanDataFile = "${subItemPath}_scandata.xml";
         $scanDataZip  = "$itemPath/scandata.zip";
         if (file_exists($scanDataFile)) {
+            $this->checkPrivs($scanDataFile);
             $scanData = simplexml_load_file($scanDataFile);
         } else if (file_exists($scanDataZip)) {
+            $this->checkPrivs($scanDataZip);
             $cmd  = 'unzip -p ' . escapeshellarg($scanDataZip) . ' scandata.xml';
             exec($cmd, $output, $retval);
             if ($retval != 0) {
@@ -149,10 +151,10 @@ class BookReaderMeta {
         }
         
         // General metadata
-        $response['title'] = $metaData->title . ''; // XXX renamed
-        $response['numPages'] = count($pageNums); // XXX renamed    
+        $response['title'] = $metaData->title . ''; // $$$ renamed
+        $response['numPages'] = count($pageNums); // $$$ renamed    
         if ('' != $titleLeaf) {
-            $response['titleLeaf'] = $titleLeaf; // XXX change to titleIndex - do leaf mapping here
+            $response['titleLeaf'] = $titleLeaf; // $$$ change to titleIndex - do leaf mapping here
             $titleIndex = $this->indexForLeaf($titleLeaf, $leafNums);
             if ($titleIndex !== NULL) {
                 $response['titleIndex'] = intval($titleIndex);
@@ -165,8 +167,8 @@ class BookReaderMeta {
         $response['pageNums'] = $pageNums;
         
         // Internet Archive specific
-        $response['itemId'] = $id; // XXX renamed
-        $response['bookId'] = $bookId;  // XXX renamed
+        $response['itemId'] = $id; // $$$ renamed
+        $response['bookId'] = $bookId;  // $$$ renamed
         $response['itemPath'] = $itemPath;
         $response['zip'] = $imageStackFile;
         $response['server'] = $server;
@@ -324,9 +326,9 @@ class BookReaderMeta {
     }
     
     function processRequest($requestEnv) {
-        $id = $requestEnv['itemId']; // XXX renamed
+        $id = $requestEnv['itemId']; // $$$ renamed
         $itemPath = $requestEnv['itemPath'];
-        $bookId = $requestEnv['bookId']; // XXX renamed
+        $bookId = $requestEnv['bookId']; // $$$ renamed
         $server = $requestEnv['server'];
         
         // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
@@ -339,6 +341,14 @@ class BookReaderMeta {
         
         $this->emitResponse( $this->buildMetadata($id, $itemPath, $bookId, $server) );
     }
+    
+    function checkPrivs($filename) {
+        if (!is_readable($filename)) {
+            header('HTTP/1.1 403 Forbidden');
+            exit(0);
+        }
+    }
+
 }
 
 ?>
