@@ -4,7 +4,7 @@
 
 module("Preview");
 
-function Book(identifier, previewWidth, coverWidth, titleWidth, bookId = undefined) {
+function Book(identifier, previewWidth, coverWidth, titleWidth, bookId) {
     this.identifier = identifier;
     this.previewWidth = previewWidth;
     this.coverWidth = coverWidth;

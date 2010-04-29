@@ -2,8 +2,8 @@
 
 // $$$ TODO make test host auto-magic
 common = {
-    // testHost: 'http://www-testflip.archive.org'
-    testHost: 'http://www-mang.archive.org'    
+    testHost: 'http://www-testflip.archive.org'
+    //testHost: 'http://www-mang.archive.org'    
 }
 
 // Set up dummy BookReader class for JSLocate
