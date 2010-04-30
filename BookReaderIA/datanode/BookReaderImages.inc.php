@@ -41,7 +41,15 @@ class BookReaderImages
                         'png' => 'png',
                         'tif' => 'tiff',
                         'tiff' => 'tiff');
-                   
+    
+    // Width when generating thumbnails
+    public $imageSizes = array(
+        'thumb' => 100,
+        'small' => 240,
+        'medium' => 500,
+        'large' => 1024,
+    );
+    
     // Paths to command-line tools
     var $exiftool = '/petabox/sw/books/exiftool/exiftool';
     var $kduExpand = '/petabox/sw/bin/kdu_expand';
@@ -123,42 +131,31 @@ class BookReaderImages
         
         // The pbmreduce reduction factor produces an image with dimension 1/n
         // The kakadu reduction factor produceds an image with dimension 1/(2^n)
-        // $$$ handle continuous values for scale
         if (isset($requestEnv['height'])) {
-            $ratio = floatval($requestEnv['origHeight']) / floatval($requestEnv['height']);
-            if ($ratio <= 2) {
-                $scale = 2;
-                $powReduce = 1;    
-            } else if ($ratio <= 4) {
-                $scale = 4;
-                $powReduce = 2;
-            } else {
-                //$powReduce = 3; //too blurry!
-                $scale = 2;
-                $powReduce = 1;
-            }
-        
+            $powReduce = $this->nearestPow2Reduce($requestEnv['height'], $imageInfo['height']);
+            $scale = pow(2, $powReduce);
+        } else if (isset($requestEnv['width'])) {
+            $powReduce = $this->nearestPow2Reduce($requestEnv['width'], $imageInfo['width']);
+            $scale = pow(2, $powReduce);
+
         } else {
             // $$$ could be cleaner
             // Provide next smaller power of two reduction
-            $scale = intval($requestEnv['scale']);
-            if (1 >= $scale) {
-                $powReduce = 0;
-            } else if (2 > $scale) {
-                $powReduce = 0;
-            } else if (4 > $scale) {
-                $powReduce = 1;
-            } else if (8 > $scale) {
-                $powReduce = 2;
-            } else if (16 > $scale) {
-                $powReduce = 3;
-            } else if (32 > $scale) {
-                $powReduce = 4;
-            } else if (64 > $scale) {
-                $powReduce = 5;
+            $scale = $requestEnv['scale'];
+            if (!$scale) {
+                $scale = 1;
+            }
+            if (array_key_exists($scale, $this->imageSizes)) {
+                $srcRatio = floatval($imageInfo['width']) / floatval($imageInfo['height']);
+                if ($srcRatio > 1) {
+                    // wide
+                    $dimension = 'width';
+                } else {
+                    $dimension = 'height';
+                }
+                $powReduce = $this->nearestPow2Reduce($this->imageSizes[$scale], $imageInfo[$dimension]);
             } else {
-                // $$$ Leaving this in as default though I'm not sure why it is...
-                $powReduce = 3;
+                $powReduce = $this->nearestPow2ForScale($scale);
             }
             $scale = pow(2, $powReduce);
         }
@@ -183,7 +180,6 @@ class BookReaderImages
         {  
           system('ln -s /dev/stdout ' . $stdoutLink);  
         }
-        
         
         putenv('LD_LIBRARY_PATH=/petabox/sw/lib/kakadu');
         
@@ -577,6 +573,23 @@ class BookReaderImages
         }
         return $pathParts['filename'] . '.' . $ext;
     }
+    
+    // Returns the nearest power of 2 reduction factor that results in a larger image
+    function nearestPow2Reduce($desiredDimension, $sourceDimension) {
+        $ratio = floatval($sourceDimension) / floatval($desiredDimension);
+        return $this->nearestPow2ForScale($ratio);
+    }
+    
+    // Returns nearest power of 2 reduction factor that results in a larger image
+    function nearestPow2ForScale($scale) {
+        $scale = intval($scale);
+        if ($scale <= 1) {
+            return 0;
+        }
+        $binStr = decbin($scale); // convert to binary string. e.g. 5 -> '101'
+        return strlen($binStr) - 1;
+    }
+    
 }
 
 ?>
