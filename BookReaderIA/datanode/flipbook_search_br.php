@@ -136,6 +136,8 @@ else
   fatal("Unknown format request. ");
 }
  
+// Ensure file is readable
+checkPrivs($url);
 
 // This looks like where we load the djvu.xml - $$$ and rapidly exhaust memory for large books such as OED
 if (!($document = file_get_contents($url)))
@@ -307,6 +309,13 @@ function debug_msg($msg, $level)
     else
       echo "FILL  ($pid):$level: $msg<br/>\n";
   }
+}
+
+function checkPrivs($filename) {
+    if (!is_readable($filename)) {
+        header('HTTP/1.1 403 Forbidden');
+        exit(0);
+    }
 }
 
 
