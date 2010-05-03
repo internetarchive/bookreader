@@ -66,22 +66,41 @@ switch ($page) {
         
     case 'preview':
         // Preference is:
+        //   Cover page if book was published >= 1950
         //   Title page
         //   Cover page
         //   Page 0
+        
+        /*
+        header('Content-type: text/plain');
+        print 'Date ' . $metadata['date'];
+        print 'Year ' . $brm->parseYear($metadata['date']);
+        */
+ 
+        if ( array_key_exists('date', $metadata) && array_key_exists('coverIndices', $metadata) ) {
+            if ($brm->parseYear($metadata['date']) >= 1950) {
+                $imageIndex = $metadata['coverIndices'][0];                
+                break;
+            }
+        }
         if (array_key_exists('titleIndex', $metadata)) {
             $imageIndex = $metadata['titleIndex'];
-        } else if (array_key_exists('coverIndices', $metadata)) {
-            $imageIndex = $metadata['coverIndices'][0];
-        } else {
-            $imageIndex = 0;
+            break;
         }
+        if (array_key_exists('coverIndices', $metadata)) {
+            $imageIndex = $metadata['coverIndices'][0];
+            break;
+        }
+        
+        // First page
+        $imageIndex = 0;
         break;
         
     default:
         // Shouldn't be possible
         BRfatal("Couldn't find page");
         break;
+        
 }
 
 $leaf = $brm->leafForIndex($imageIndex, $metadata['leafNums']);

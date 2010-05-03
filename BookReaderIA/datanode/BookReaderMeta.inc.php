@@ -26,6 +26,22 @@ This file is part of BookReader.
 
 class BookReaderMeta {
 
+    // Fields from _meta.xml to add to response (if present)
+    var $metaFields = array(
+        'title' => 'title',
+        'author' => 'author',
+        'publisher' => 'publisher',
+        'date' => 'date',
+        'language' => 'language',
+        'contributor' => 'contributor',
+        'collection' => 'collection',
+        'page-progression' => 'pageProgression',
+    );
+    
+    var $metaDefaults = array(
+        'pageProgression' => 'lr',
+    );
+
     // Builds metadata object (to be encoded as JSON)
     function buildMetadata($id, $itemPath, $bookId, $server) {
     
@@ -145,13 +161,17 @@ class BookReaderMeta {
         }
                 
         # Load some values from meta.xml
-        $pageProgression = 'lr'; // default
-        if ('' != $metaData->{'page-progression'}) {
-          $pageProgression = $metaData->{"page-progression"};
+        foreach ($this->metaFields as $srcName => $destName) {
+            if ($metaData->{$srcName}) {
+                $response[$destName] = $metaData->{$srcName} . '';
+            } else {
+                if (array_key_exists($destName, $this->metaDefaults)) {
+                    $response[$destName] = $this->metaDefaults[$destName];
+                }
+            }
         }
         
         // General metadata
-        $response['title'] = $metaData->title . ''; // $$$ renamed
         $response['numPages'] = count($pageNums); // $$$ renamed    
         if ('' != $titleLeaf) {
             $response['titleLeaf'] = $titleLeaf; // $$$ change to titleIndex - do leaf mapping here
@@ -161,7 +181,6 @@ class BookReaderMeta {
             }
         }
         $response['url'] = "http://www.archive.org/details/$id";
-        $response['pageProgression'] = $pageProgression . '';
         $response['pageWidths'] = $pageWidths;
         $response['pageHeights'] = $pageHeights;
         $response['pageNums'] = $pageNums;
@@ -289,7 +308,7 @@ class BookReaderMeta {
         return $leafNums[$index]; // $$$ todo change to instance variables
     }
     
-    function imageURL($leafNum, $metadata, $scale, $rotate) {
+    function imageURL($leafNum, $metadata, $scale = null, $rotate = null) {
         // "Under the hood", non-public, dynamically changing (achtung!) image URLs currently look like:
         // http://{server}/BookReader/BookReaderImages.php?zip={zipPath}&file={filePath}&scale={scale}&rotate={rotate}
         // e.g. http://ia311213.us.archive.org/BookReader/BookReaderImages.php?zip=/0/items/coloritsapplicat00andriala/coloritsapplicat00andriala_jp2.zip&file=coloritsapplicat00andriala_jp2/coloritsapplicat00andriala_0009.jp2&scale=8&rotate=0
@@ -298,10 +317,10 @@ class BookReaderMeta {
         $filePath = $this->imageFilePath($leafNum, $metadata['bookId'], $metadata['imageFormat']);
         $url = 'http://' . $metadata['server'] . '/BookReader/BookReaderImages.php?zip=' . $metadata['zip'] . '&file=' . $filePath;
         
-        if (defined($scale)) {
+        if ($scale !== null) {
             $url .= '&scale=' . $scale;
         }
-        if (defined($rotate)) {
+        if ($rotate !== null) {
             $url .= '&rotate=' . $rotate;
         }
         
@@ -323,6 +342,15 @@ class BookReaderMeta {
     
     function imageFilePath($leafNum, $bookId, $format) {
         return sprintf("%s_%s/%s_%04d.%s", $bookId, $format, $bookId, intval($leafNum), $format);
+    }
+    
+    // Parse date from _meta.xml to integer
+    function parseYear($dateFromMetaXML) {
+        // grab the first run of digits
+        if (preg_match('|(\d+)|', $dateFromMetaXML, $matches)) {
+            return (int)$matches[1];
+        }
+        return null;
     }
     
     function processRequest($requestEnv) {
