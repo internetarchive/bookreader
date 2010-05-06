@@ -94,6 +94,7 @@ class BookReader
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
     <title><? echo $title; ?></title>
 <!--[if lte IE 6]>
     <meta http-equiv="refresh" content="2; URL=/bookreader/browserunsupported.php?id=<? echo($id); ?>">
