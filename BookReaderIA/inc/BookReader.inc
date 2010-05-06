@@ -83,6 +83,11 @@ class BookReader
     // see https://bugs.launchpad.net/gnubook/+bug/330748
     $version = "r25";
     
+    if (BookReader::getDevHost($server)) {
+        // on dev host - add time to force reload
+        $version .= '_' . time();
+    }
+    
     if ("" == $id) {
         echo "No identifier specified!";
         die(-1);
@@ -165,22 +170,31 @@ class BookReader
   <?
     exit;
   }
+  
+  // Returns the user part of dev host from URL, or null
+  public static function getDevHost($server)
+  {
+      if (preg_match("/^www-(\w+)/", $_SERVER["SERVER_NAME"], $match)) {
+        return $match[1];
+      }
+      
+      return null;
+  }
 
   
   public static function serverBaseURL($server)
   {
-    // Check if we're on a dev vhost and point to JSIA in the user's public_html
-    // on the datanode
-    if (preg_match("/^www-(\w+)/", $_SERVER["SERVER_NAME"], $match)) {
+      // Check if we're on a dev vhost and point to JSIA in the user's public_html
+      // on the datanode
       // $$$ the remapping isn't totally automatic yet and requires user to
       //     ln -s ~/petabox/www/datanode/BookReader ~/public_html/BookReader
       //     so we enable it only for known hosts
+      $devhost = BookReader::getDevHost($server);
       $devhosts = array('mang', 'testflip', 'rkumar');
-      if (in_array($match[1], $devhosts)) {
-        $server = $server . "/~" . $match[1];
+      if (in_array($devhost, $devhosts)) {
+        $server = $server . "/~" . $devhost;
       }
-    }
-    return $server;
+      return $server;
   }
   
   
