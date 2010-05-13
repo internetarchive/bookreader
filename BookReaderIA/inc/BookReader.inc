@@ -108,7 +108,7 @@ class BookReader
 <? if ($uiMode == "embed") { ?>
     <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderEmbed.css?v=<? echo($version); ?>">
 <? } elseif ($uiMode == "touch") { ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderTouch.css?v=<? echo($version); ?>">
+    <link rel="stylesheet" type="text/css" href="/bookreader/touch/BookReaderTouch.css?v=<? echo($version); ?>">
 <? } /* uiMode */ ?>
     <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
     <script type="text/javascript" src="/bookreader/jquery-ui-1.8.1.custom.min.js"></script>
