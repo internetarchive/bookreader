@@ -4,6 +4,7 @@
  
 #BRtoolbar {
     height: 43px; /* 1px for bottom border */
+    border-bottom: 1px solid grey;
 }
 
 #BRcontainer {
@@ -12,10 +13,6 @@
 
 #BookReaderSearchResults {
     top: 44px;
-}
-
-#BRtoolbar {
-    border-bottom: 1px solid grey;
 }
 
 /* $$$ Page display could be better */
