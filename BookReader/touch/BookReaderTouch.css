@@ -54,4 +54,5 @@
 .BRicon.play { background: url(images/control_play_icon.png) no-repeat; }
 .BRicon.pause { background: url(images/control_pause_icon.png) no-repeat; }
 
-.BRicon.rollover:hover { background-position: -26px 0; }
+/* Disable hover */
+.BRicon.rollover:hover { background-position: 0 0; }

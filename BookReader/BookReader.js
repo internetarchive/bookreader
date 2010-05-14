@@ -83,6 +83,7 @@ function BookReader() {
     this.constModeThumb = 3;
     
     // Zoom levels
+    // $$$ provide finer grained zooming
     this.reductionFactors = [0.5, 1, 2, 4, 8, 16];
 
     // Object to hold parameters related to 2up mode
@@ -140,6 +141,7 @@ BookReader.prototype.init = function() {
     }
     
     $("#BookReader").empty();
+        
     this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
     $("#BookReader").append("<div id='BRcontainer'></div>");
     $("#BRcontainer").append("<div id='BRpageview'></div>");
@@ -147,7 +149,7 @@ BookReader.prototype.init = function() {
     $("#BRcontainer").bind('scroll', this, function(e) {
         e.data.loadLeafs();
     });
-
+    
     this.setupKeyListeners();
     this.startLocationPolling();
 
@@ -196,8 +198,8 @@ BookReader.prototype.init = function() {
     // $$$ refactor this so it's enough to set the first index and call preparePageView
     //     (get rid of mode-specific logic at this point)
     if (1 == this.mode) {
-        this.resizePageView();
         this.firstIndex = startIndex;
+        this.prepareOnePageView();
         this.jumpToIndex(startIndex);
     } else if (3 == this.mode) {
         this.firstIndex = startIndex;
@@ -290,162 +292,27 @@ BookReader.prototype.drawLeafs = function() {
     
 }
 
-// setDragHandler()
+// bindGestures(jElement)
 //______________________________________________________________________________
-BookReader.prototype.setDragHandler = function(div) {
-    div.dragging = false;
+BookReader.prototype.bindGestures = function(jElement) {
 
-    $(div).unbind('mousedown').bind('mousedown', function(e) {
+    jElement.unbind('gesturechange').bind('gesturechange', function(e) {
         e.preventDefault();
-        
-        //console.log('mousedown at ' + e.pageY);
-
-        this.dragging = true;
-        this.prevMouseX = e.pageX;
-        this.prevMouseY = e.pageY;
-    
-        var startX    = e.pageX;
-        var startY    = e.pageY;
-        var startTop  = $('#BRcontainer').attr('scrollTop');
-        var startLeft =  $('#BRcontainer').attr('scrollLeft');
-
-    });
-        
-    $(div).unbind('mousemove').bind('mousemove', function(ee) {
-        ee.preventDefault();
-
-        // console.log('mousemove ' + ee.pageX + ',' + ee.pageY);
-        
-        var offsetX = ee.pageX - this.prevMouseX;
-        var offsetY = ee.pageY - this.prevMouseY;
-        
-        if (this.dragging) {
-            $('#BRcontainer').attr('scrollTop', $('#BRcontainer').attr('scrollTop') - offsetY);
-            $('#BRcontainer').attr('scrollLeft', $('#BRcontainer').attr('scrollLeft') - offsetX);
+        if (e.originalEvent.scale > 1.5) {
+            br.zoom(1);
+        } else if (e.originalEvent.scale < 0.6) {
+            br.zoom(-1);
         }
-        
-        this.prevMouseX = ee.pageX;
-        this.prevMouseY = ee.pageY;
-        
-    });
-    
-    $(div).unbind('mouseup').bind('mouseup', function(ee) {
-        ee.preventDefault();
-        //console.log('mouseup');
-
-        this.dragging = false;
-    });
-    
-    $(div).unbind('mouseleave').bind('mouseleave', function(e) {
-        e.preventDefault();
-        //console.log('mouseleave');
-
-        this.dragging = false;        
-    });
-    
-    $(div).unbind('mouseenter').bind('mouseenter', function(e) {
-        e.preventDefault();
-        //console.log('mouseenter');
-        
-        this.dragging = false;
-    });
-}
-
-// setDragHandler2UP()
-//______________________________________________________________________________
-BookReader.prototype.setDragHandler2UP = function(div) {
-    div.dragging = false;
-    
-    $(div).unbind('mousedown').bind('mousedown', function(e) {
-        e.preventDefault();
-        
-        //console.log('mousedown at ' + e.pageY);
-
-        this.dragStart = {x: e.pageX, y: e.pageY };
-        this.mouseDown = true;
-        this.dragging = false; // wait until drag distance
-        this.prevMouseX = e.pageX;
-        this.prevMouseY = e.pageY;
-    
-        var startX    = e.pageX;
-        var startY    = e.pageY;
-        var startTop  = $('#BRcontainer').attr('scrollTop');
-        var startLeft =  $('#BRcontainer').attr('scrollLeft');
-
     });
         
-    $(div).unbind('mousemove').bind('mousemove', function(ee) {
-        ee.preventDefault();
-
-        // console.log('mousemove ' + ee.pageX + ',' + ee.pageY);
-        
-        var offsetX = ee.pageX - this.prevMouseX;
-        var offsetY = ee.pageY - this.prevMouseY;
-        
-        var minDragDistance = 5; // $$$ constant
-
-        var distance = Math.max(Math.abs(offsetX), Math.abs(offsetY));
-                
-        if (this.mouseDown && (distance > minDragDistance)) {
-            //console.log('drag start!');
-            
-            this.dragging = true;
-        }
-        
-        if (this.dragging) {        
-            $('#BRcontainer').attr('scrollTop', $('#BRcontainer').attr('scrollTop') - offsetY);
-            $('#BRcontainer').attr('scrollLeft', $('#BRcontainer').attr('scrollLeft') - offsetX);
-            this.prevMouseX = ee.pageX;
-            this.prevMouseY = ee.pageY;
-        }
-        
-        
-    });
-    
-    /*
-    $(div).unbind('mouseup').bind('mouseup', function(ee) {
-        ee.preventDefault();
-        //console.log('mouseup');
-
-        this.dragging = false;
-        this.mouseDown = false;
-    });
-    */
-    
-    
-    $(div).unbind('mouseleave').bind('mouseleave', function(e) {
-        e.preventDefault();
-        //console.log('mouseleave');
-
-        this.dragging = false;  
-        this.mouseDown = false;
-    });
-    
-    $(div).unbind('mouseenter').bind('mouseenter', function(e) {
-        e.preventDefault();
-        //console.log('mouseenter');
-        
-        this.dragging = false;
-        this.mouseDown = false;
-    });
 }
 
 BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
     //console.log('setting handler');
     //console.log(element.tagName);
     
-    $(element).unbind('click').bind('click', data, function(e) {
-        e.preventDefault();
-        
-        //console.log('click!');
-        
-        if (this.mouseDown && (!this.dragging)) {
-            //console.log('click not dragging!');
-            handler(e);
-        }
-        
-        this.dragging = false;
-        this.mouseDown = false;
+    $(element).unbind('tap').bind('tap', data, function(e) {
+        handler(e);
     });
 }
 
@@ -529,8 +396,6 @@ BookReader.prototype.drawLeafsOnePage = function() {
             $(div).css('width', width+'px');
             $(div).css('height', height+'px');
             //$(div).text('loading...');
-            
-            this.setDragHandler(div);
             
             $('#BRpageview').append(div);
 
@@ -723,7 +588,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                 // link to page in single page mode
                 link = document.createElement("a");
                 $(link).data('leaf', leaf);
-                $(link).bind('click', function(event) {
+                $(link).bind('tap', function(event) {
                     self.firstIndex = $(this).data('leaf');
                     self.switchMode(self.constMode1up);
                     event.preventDefault();
@@ -1392,19 +1257,24 @@ BookReader.prototype.prepareOnePageView = function() {
 
     // var startLeaf = this.displayedIndices[0];
     var startLeaf = this.currentIndex();
-    
+        
     $('#BRcontainer').empty();
     $('#BRcontainer').css({
         overflowY: 'scroll',
         overflowX: 'auto'
     });
-    
+        
     $("#BRcontainer").append("<div id='BRpageview'></div>");
+
+    // Attaches to first child - child must be present
+    $('#BRcontainer').dragscrollable();
+    this.bindGestures($('#BRcontainer'));
+
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
     // BookReader.util.disableSelect($('#BRpageview'));
     
-    this.resizePageView();
+    this.resizePageView();    
     
     this.jumpToIndex(startLeaf);
     this.displayedIndices = [];
@@ -1423,6 +1293,9 @@ BookReader.prototype.prepareThumbnailView = function() {
     });
         
     $("#BRcontainer").append("<div id='BRpageview'></div>");
+    
+    $('#BRcontainer').dragscrollable();
+    this.bindGestures($('#BRcontainer'));
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
@@ -1488,6 +1361,10 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     // Add the two page view
     // $$$ Can we get everything set up and then append?
     $('#BRcontainer').append('<div id="BRtwopageview"></div>');
+    
+    // Attaches to first child, so must come after we add the page view
+    $('#BRcontainer').dragscrollable();
+    this.bindGestures($('#BRcontainer'));
 
     // $$$ calculate first then set
     $('#BRtwopageview').css( {
@@ -2323,32 +2200,19 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 // setMouseHandlers2UP
 //______________________________________________________________________________
 BookReader.prototype.setMouseHandlers2UP = function() {
-    /*
-    $(this.prefetchedImgs[this.twoPage.currentIndexL]).bind('dblclick', function() {
-        //self.prevPage();
-        self.autoStop();
-        self.left();
-    });
-    $(this.prefetchedImgs[this.twoPage.currentIndexR]).bind('dblclick', function() {
-        //self.nextPage();'
-        self.autoStop();
-        self.right();        
-    });
-    */
-    
-    this.setDragHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL] );
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
             e.data.self.left();
+            e.preventDefault();
         }
     );
         
-    this.setDragHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR] );
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR],
         { self: this },
         function(e) {
             e.data.self.right();
+            e.preventDefault();
         }
     );
 }
@@ -3257,7 +3121,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     
     this.updateToolbarZoom(this.reduce); // Pretty format
         
-    if (ui == "embed") {
+    if (ui == "embed" || ui == "touch") {
         $("#BookReader a.logo").attr("target","_blank");
     }
 
