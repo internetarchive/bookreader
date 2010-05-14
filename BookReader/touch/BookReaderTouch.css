@@ -3,16 +3,19 @@
  */
  
 #BRtoolbar {
-    height: 43px; /* 1px for bottom border */
-    border-bottom: 1px solid grey;
+    position: absolute;
+    height: 43px;
+    border-top: 1px solid grey;
+    bottom: 0;
 }
 
 #BRcontainer {
-    top: 44px;
+    top: 0;
+    bottom: 44px;
 }
 
 #BookReaderSearchResults {
-    top: 44px;
+    bottom: 44px;
 }
 
 /* $$$ Page display could be better */
