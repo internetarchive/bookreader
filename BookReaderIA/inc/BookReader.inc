@@ -100,6 +100,7 @@ class BookReader
 <html>
 <head>
     <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <title><? echo $title; ?></title>
 <!--[if lte IE 6]>
     <meta http-equiv="refresh" content="2; URL=/bookreader/browserunsupported.php?id=<? echo($id); ?>">
