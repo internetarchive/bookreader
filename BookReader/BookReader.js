@@ -1395,33 +1395,27 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     }).appendTo('#BRtwopageview');
     
     this.leafEdgeR = document.createElement('div');
-    this.leafEdgeR.className = 'leafEdgeR'; // $$$ the static CSS should be moved into the .css file
+    this.leafEdgeR.className = 'BRleafEdgeR';
     $(this.leafEdgeR).css({
-        background: 'transparent url(' + this.imagesBaseURL + 'right_edges.png) repeat scroll 0% 0%',
         width: this.twoPage.leafEdgeWidthR + 'px',
         height: this.twoPage.height-1 + 'px',
-        /*right: '10px',*/
         left: this.twoPage.gutter+this.twoPage.scaledWR+'px',
         top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px',
-        position: 'absolute'
     }).appendTo('#BRtwopageview');
     
     this.leafEdgeL = document.createElement('div');
-    this.leafEdgeL.className = 'leafEdgeL';
+    this.leafEdgeL.className = 'BRleafEdgeL';
     $(this.leafEdgeL).css({
-        background: 'transparent url(' + this.imagesBaseURL + 'left_edges.png) repeat scroll 0% 0%',
         width: this.twoPage.leafEdgeWidthL + 'px',
         height: this.twoPage.height-1 + 'px',
         left: this.twoPage.bookCoverDivLeft+this.twoPage.coverInternalPadding+'px',
         top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px',    
-        position: 'absolute'
     }).appendTo('#BRtwopageview');
 
     div = document.createElement('div');
     $(div).attr('id', 'BRbookspine').css({
         width:           this.twoPage.bookSpineDivWidth+'px',
         height:          this.twoPage.bookSpineDivHeight+'px',
-        position:        'absolute',
         left:            this.twoPage.bookSpineDivLeft+'px',
         top:             this.twoPage.bookSpineDivTop+'px'
     }).appendTo('#BRtwopageview');
@@ -1490,15 +1484,9 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
 BookReader.prototype.prepareTwoPagePopUp = function() {
 
     this.twoPagePopUp = document.createElement('div');
+    this.twoPagePopUp.className = 'BRtwoPagePopUp';
     $(this.twoPagePopUp).css({
-        border: '1px solid black',
-        padding: '2px 6px',
-        position: 'absolute',
-        fontFamily: 'sans-serif',
-        fontSize: '14px',
         zIndex: '1000',
-        backgroundColor: 'rgb(255, 255, 238)',
-        opacity: 0.85
     }).appendTo('#BRcontainer');
     $(this.twoPagePopUp).hide();
     
@@ -1953,16 +1941,12 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
     var leftEdgeTmpLeft = gutter - currWidthL - leafEdgeTmpW;
 
     this.leafEdgeTmp = document.createElement('div');
+    this.leafEdgeTmp.className = 'BRleafEdgeTmp';
     $(this.leafEdgeTmp).css({
-        borderStyle: 'solid none solid solid',
-        borderColor: 'rgb(51, 51, 34)',
-        borderWidth: '1px 0px 1px 1px',
-        background: 'transparent url(' + this.imagesBaseURL + 'left_edges.png) repeat scroll 0% 0%',
         width: leafEdgeTmpW + 'px',
         height: this.twoPage.height-1 + 'px',
         left: leftEdgeTmpLeft + 'px',
-        top: top+'px',    
-        position: 'absolute',
+        top: top+'px',
         zIndex:1000
     }).appendTo('#BRtwopageview');
     
@@ -2110,12 +2094,10 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
         borderStyle: 'solid none solid solid',
         borderColor: 'rgb(51, 51, 34)',
         borderWidth: '1px 0px 1px 1px',
-        background: 'transparent url(' + this.imagesBaseURL + 'left_edges.png) repeat scroll 0% 0%',
         width: leafEdgeTmpW + 'px',
         height: this.twoPage.height-1 + 'px',
         left: gutter+scaledW+'px',
         top: top+'px',    
-        position: 'absolute',
         zIndex:1000
     }).appendTo('#BRtwopageview');
 

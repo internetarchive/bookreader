@@ -75,21 +75,34 @@
     -webkit-box-shadow: 2px 2px 8px #222;
 }
 
-.leafEdgeR {
+.BRleafEdgeR {
     border-style: solid solid solid none;
     border-color: rgb(51, 51, 34);
     border-width: 1px 1px 1px 0px;
+    background: transparent url(images/right_edges.png) repeat scroll 0% 0%;
+    position: absolute;
 }
 
-.leafEdgeL {
+.BRleafEdgeL {
     border-style: solid none solid solid;
     border-color: rgb(51, 51, 34);
     border-width: 1px 0px 1px 1px;
+    background: transparent url(images/left_edges.png) repeat scroll 0% 0%;
+    position: absolute;
+}
+
+.BRleafEdgeTmp {
+    border-style: solid none solid solid;
+    border-color: rgb(51, 51, 34);
+    border-width: 1px 0px 1px 1px;
+    background: transparent url(images/left_edges.png) repeat scroll 0% 0%;
+    position: absolute;
 }
 
 #BRbookspine {
     border: 1px solid rgb(68, 25, 17);
     background-color: rgb(68, 25, 17);
+    position: absolute;
 }
 
 /* search sidebar */
@@ -231,4 +244,14 @@ a.BRblack:visited   { color: #000000 }
 
 .BRfliparea {
     background-image: url(images/transparent.png); # Required to capture mouse on IE
+}
+
+.BRtwoPagePopUp {
+    border: 1px solid black;
+    padding: 2px 6px;
+    position: absolute;
+    font-family: sans-serif;
+    font-size: 14px;
+    background-color: rgb(255, 255, 238);
+    opacity: 0.85;
 }
