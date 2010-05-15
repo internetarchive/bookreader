@@ -1386,26 +1386,17 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     
     this.twoPage.coverDiv = document.createElement('div');
     $(this.twoPage.coverDiv).attr('id', 'BRbookcover').css({
-        border: '1px solid rgb(68, 25, 17)',
         width:  this.twoPage.bookCoverDivWidth + 'px',
         height: this.twoPage.bookCoverDivHeight+'px',
         visibility: 'visible',
         position: 'absolute',
-        backgroundColor: '#663929',
         left: this.twoPage.bookCoverDivLeft + 'px',
         top: this.twoPage.bookCoverDivTop+'px',
-        MozBorderRadiusTopleft: '7px',
-        MozBorderRadiusTopright: '7px',
-        MozBorderRadiusBottomright: '7px',
-        MozBorderRadiusBottomleft: '7px'
     }).appendTo('#BRtwopageview');
     
     this.leafEdgeR = document.createElement('div');
     this.leafEdgeR.className = 'leafEdgeR'; // $$$ the static CSS should be moved into the .css file
     $(this.leafEdgeR).css({
-        borderStyle: 'solid solid solid none',
-        borderColor: 'rgb(51, 51, 34)',
-        borderWidth: '1px 1px 1px 0px',
         background: 'transparent url(' + this.imagesBaseURL + 'right_edges.png) repeat scroll 0% 0%',
         width: this.twoPage.leafEdgeWidthR + 'px',
         height: this.twoPage.height-1 + 'px',
@@ -1417,10 +1408,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     
     this.leafEdgeL = document.createElement('div');
     this.leafEdgeL.className = 'leafEdgeL';
-    $(this.leafEdgeL).css({ // $$$ static CSS should be moved to file
-        borderStyle: 'solid none solid solid',
-        borderColor: 'rgb(51, 51, 34)',
-        borderWidth: '1px 0px 1px 1px',
+    $(this.leafEdgeL).css({
         background: 'transparent url(' + this.imagesBaseURL + 'left_edges.png) repeat scroll 0% 0%',
         width: this.twoPage.leafEdgeWidthL + 'px',
         height: this.twoPage.height-1 + 'px',
@@ -1431,11 +1419,9 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
 
     div = document.createElement('div');
     $(div).attr('id', 'BRbookspine').css({
-        border:          '1px solid rgb(68, 25, 17)',
         width:           this.twoPage.bookSpineDivWidth+'px',
         height:          this.twoPage.bookSpineDivHeight+'px',
         position:        'absolute',
-        backgroundColor: 'rgb(68, 25, 17)',
         left:            this.twoPage.bookSpineDivLeft+'px',
         top:             this.twoPage.bookSpineDivTop+'px'
     }).appendTo('#BRtwopageview');
