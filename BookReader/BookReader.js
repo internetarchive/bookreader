@@ -2090,10 +2090,8 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
     var gutter = middle + this.gutterOffsetForIndex(newIndexL);
     
     this.leafEdgeTmp = document.createElement('div');
+    this.leafEdgeTmp.className = 'BRleafEdgeTmp';
     $(this.leafEdgeTmp).css({
-        borderStyle: 'solid none solid solid',
-        borderColor: 'rgb(51, 51, 34)',
-        borderWidth: '1px 0px 1px 1px',
         width: leafEdgeTmpW + 'px',
         height: this.twoPage.height-1 + 'px',
         left: gutter+scaledW+'px',
