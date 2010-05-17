@@ -84,8 +84,18 @@ function BookReader() {
     
     // Zoom levels
     // $$$ provide finer grained zooming
-    this.reductionFactors = [0.5, 1, 2, 4, 8, 16];
+    this.reductionFactors = [ {reduce: 0.5, autofit: null},
+                              {reduce: 1, autofit: null},
+                              {reduce: 2, autofit: null},
+                              {reduce: 4, autofit: null},
+                              {reduce: 8, autofit: null},
+                              {reduce: 16, autofit: null} ];
 
+    // Object to hold parameters related to 1up mode
+    this.onePage = {
+        autofit: 'height'                                     // valid values are height, width, none
+    },
+    
     // Object to hold parameters related to 2up mode
     this.twoPage = {
         coverInternalPadding: 10, // Width of cover
@@ -834,33 +844,35 @@ BookReader.prototype.loadLeafs = function() {
 BookReader.prototype.zoom = function(direction) {
     switch (this.mode) {
         case this.constMode1up:
-            return this.zoom1up(direction);
+            if (direction == 1) {
+                // XXX other cases
+                return this.zoom1up('bigger');
+            } else {
+                return this.zoom1up('smaller');
+            }
+            
         case this.constMode2up:
             return this.zoom2up(direction);
+            
         case this.constModeThumb:
             return this.zoomThumb(direction);
+            
     }
 }
 
 // zoom1up(dir)
 //______________________________________________________________________________
-BookReader.prototype.zoom1up = function(dir) {
+BookReader.prototype.zoom1up = function(direction) {
 
     if (2 == this.mode) {     //can only zoom in 1-page mode
         this.switchMode(1);
         return;
     }
     
-    // $$$ with flexible zoom we could "snap" to /2 page reductions
-    //     for better scaling
-    if (1 == dir) {
-        if (this.reduce <= 0.5) return;
-        this.reduce*=0.5;           //zoom in
-    } else {
-        if (this.reduce >= 8) return;
-        this.reduce*=2;             //zoom out
-    }
-
+    var reduceFactor = this.nextReduce(this.reduce, direction, this.onePage.reductionFactors);
+    this.reduce = reduceFactor.reduce; // $$$ incorporate into function
+    this.autofit = reduceFactor.autofit;
+        
     this.pageScale = this.reduce; // preserve current reduce
     this.resizePageView();
 
@@ -916,6 +928,12 @@ BookReader.prototype.resizePageView1up = function() {
     } else {
         var scrollRatio = 0;
     }
+    
+    // Recalculate 1up reduction factors
+    this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'),
+                                           $('#BRcontainer').attr('clientHeight') );                                        
+    // Update current reduce (if in autofit)
+    // this.onePageUpdateReduce(); // XXX
     
     for (i=0; i<this.numLeafs; i++) {
         viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
@@ -1046,17 +1064,61 @@ BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
 //______________________________________________________________________________
 // Quantizes the given reduction factor to closest power of two from set from 12.5% to 200%
 BookReader.prototype.quantizeReduce = function(reduce) {
-    var quantized = this.reductionFactors[0];
+    var quantized = this.reductionFactors[0].reduce;
     var distance = Math.abs(reduce - quantized);
     for (var i = 1; i < this.reductionFactors.length; i++) {
-        newDistance = Math.abs(reduce - this.reductionFactors[i]);
+        newDistance = Math.abs(reduce - this.reductionFactors[i].reduce);
         if (newDistance < distance) {
             distance = newDistance;
-            quantized = this.reductionFactors[i];
+            quantized = this.reductionFactors[i].reduce;
         }
     }
     
     return quantized;
+}
+
+// reductionFactors should be array of sorted reduction factors
+// e.g. [ {reduce: 0.25, autofit: null}, {reduce: 0.3, autofit: 'width'}, {reduce: 1, autofit: null} ]
+BookReader.prototype.nextReduce = function( currentReduce, direction, reductionFactors ) {
+
+    // XXX add 'closest', to replace quantize function
+    
+    if (direction == 'bigger') {
+        var newReduceIndex = 0;
+    
+        for (var i = 1; i < reductionFactors.length; i++) {
+            if (reductionFactors[i].reduce < currentReduce) {
+                newReduceIndex = i;
+            }
+        }
+        return reductionFactors[newReduceIndex];
+        
+    } else if (direction == 'smaller') { // zoom out
+        var lastIndex = reductionFactors.length - 1;
+        var newReduceIndex = lastIndex;
+        
+        for (var i = lastIndex; i >= 0; i--) {
+            if (reductionFactors[i].reduce > currentReduce) {
+                newReduceIndex = i;
+            }
+        }
+        return reductionFactors[newReduceIndex];
+    }
+    
+    // Asked for specific autofit mode
+    for (var i = 0; i < reductionFactors.length; i++) {
+        if (reductionFactors[i].autofit == direction) {
+            return reductionFactors[i];
+        }
+    }
+    
+    alert('Could not find reduction factor for direction ' + direction);
+    return reductionFactors[0];
+
+}
+
+BookReader.prototype._reduceSort = function(a, b) {
+    return a.reduce - b.reduce;
 }
 
 // twoPageNextReduce()
@@ -1696,6 +1758,47 @@ BookReader.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex,
 BookReader.prototype.twoPageGetAutofitReduce = function() {
     var spreadSize = this.getIdealSpreadSize(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
     return spreadSize.reduce;
+}
+
+BookReader.prototype.onePageGetAutofitWidth = function() {
+    var widthPadding = 50;
+    return (this.getMedianPageSize().width + 0.0) / ($('#BRcontainer').attr('clientWidth') - widthPadding * 2);
+}
+
+BookReader.prototype.onePageGetAutofitHeight = function() {
+    var heightPadding = 10;
+    return (this.getMedianPageSize().height + 0.0) / ($('#BRcontainer').attr('clientHeight') - heightPadding * 2);
+}
+
+BookReader.prototype.getMedianPageSize = function() {
+    if (this._medianPageSize) {
+        return this._medianPageSize;
+    }
+    
+    // A little expensive but we just do it once
+    var widths = [];
+    var heights = [];
+    for (var i = 0; i < this.numLeafs; i++) {
+        widths.push(this.getPageWidth(i));
+        heights.push(this.getPageHeight(i));
+    }
+    
+    widths.sort();
+    heights.sort();
+    
+    this._medianPageSize = { width: widths[parseInt(widths.length / 2)], height: heights[parseInt(heights.length / 2)] };
+    return this._medianPageSize; 
+}
+
+// Update the reduction factors for 1up mode given the available width and height.  Recalculates
+// the autofit reduction factors.
+BookReader.prototype.onePageCalculateReductionFactors = function( width, height ) {
+    this.onePage.reductionFactors = this.reductionFactors.concat(
+        [ 
+            { reduce: this.onePageGetAutofitWidth(), autofit: 'width' },
+            { reduce: this.onePageGetAutofitHeight(), autofit: 'height'}
+        ]);
+    this.onePage.reductionFactors.sort(this._reduceSort);
 }
 
 // twoPageSetCursor()
