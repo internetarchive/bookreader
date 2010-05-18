@@ -846,15 +846,21 @@ BookReader.prototype.zoom = function(direction) {
         case this.constMode1up:
             if (direction == 1) {
                 // XXX other cases
-                return this.zoom1up('bigger');
+                return this.zoom1up('in');
             } else {
-                return this.zoom1up('smaller');
+                return this.zoom1up('out');
             }
             
         case this.constMode2up:
-            return this.zoom2up(direction);
+            if (direction == 1) {
+                // XXX other cases
+                return this.zoom2up('in');
+            } else { 
+                return this.zoom2up('out');
+            }
             
         case this.constModeThumb:
+            // XXX update zoomThumb for named directions
             return this.zoomThumb(direction);
             
     }
@@ -1004,13 +1010,17 @@ BookReader.prototype.zoom2up = function(direction) {
     // Hard stop autoplay
     this.stopFlipAnimations();
     
-    // Get new zoom state    
-    var newZoom = this.twoPageNextReduce(this.reduce, direction);
-    if ((this.reduce == newZoom.reduce) && (this.twoPage.autofit == newZoom.autofit)) {
+    // Recalculate autofit factors
+    this.twoPageCalculateReductionFactors();
+    
+    // Get new zoom state
+    var reductionFactor = this.nextReduce(this.reduce, direction, this.twoPage.reductionFactors);
+    if ((this.reduce == reductionFactor.reduce) && (this.twoPage.autofit == reductionFactor.autofit)) {
+        // Same zoom
         return;
     }
-    this.twoPage.autofit = newZoom.autofit;
-    this.reduce = newZoom.reduce;
+    this.twoPage.autofit = reductionFactor.autofit;
+    this.reduce = reductionFactor.reduce;
     this.pageScale = this.reduce; // preserve current reduce
 
     // Preserve view center position
@@ -1083,7 +1093,7 @@ BookReader.prototype.nextReduce = function( currentReduce, direction, reductionF
 
     // XXX add 'closest', to replace quantize function
     
-    if (direction == 'bigger') {
+    if (direction == 'in') {
         var newReduceIndex = 0;
     
         for (var i = 1; i < reductionFactors.length; i++) {
@@ -1093,7 +1103,7 @@ BookReader.prototype.nextReduce = function( currentReduce, direction, reductionF
         }
         return reductionFactors[newReduceIndex];
         
-    } else if (direction == 'smaller') { // zoom out
+    } else if (direction == 'out') { // zoom out
         var lastIndex = reductionFactors.length - 1;
         var newReduceIndex = lastIndex;
         
@@ -1119,58 +1129,6 @@ BookReader.prototype.nextReduce = function( currentReduce, direction, reductionF
 
 BookReader.prototype._reduceSort = function(a, b) {
     return a.reduce - b.reduce;
-}
-
-// twoPageNextReduce()
-//______________________________________________________________________________
-// Returns the next reduction level
-BookReader.prototype.twoPageNextReduce = function(reduce, direction) {
-    var result = {};
-    var autofitReduce = this.twoPageGetAutofitReduce();
-
-    if (0 == direction) { // autofit
-        result.autofit = true;
-        result.reduce = autofitReduce;
-        
-    } else if (1 == direction) { // zoom in
-        var newReduce = this.reductionFactors[0];
-    
-        for (var i = 1; i < this.reductionFactors.length; i++) {
-            if (this.reductionFactors[i] < reduce) {
-                newReduce = this.reductionFactors[i];
-            }
-        }
-        
-        if (!this.twoPage.autofit && (autofitReduce < reduce && autofitReduce > newReduce)) {
-            // use autofit
-            result.autofit = true;
-            result.reduce = autofitReduce;
-        } else {        
-            result.autofit = false;
-            result.reduce = newReduce;
-        }
-        
-    } else { // zoom out
-        var lastIndex = this.reductionFactors.length - 1;
-        var newReduce = this.reductionFactors[lastIndex];
-        
-        for (var i = lastIndex; i >= 0; i--) {
-            if (this.reductionFactors[i] > reduce) {
-                newReduce = this.reductionFactors[i];
-            }
-        }
-         
-        if (!this.twoPage.autofit && (autofitReduce > reduce && autofitReduce < newReduce)) {
-            // use autofit
-            result.autofit = true;
-            result.reduce = autofitReduce;
-        } else {
-            result.autofit = false;
-            result.reduce = newReduce;
-        }
-    }
-    
-    return result;
 }
 
 // jumpToPage()
@@ -1799,6 +1757,15 @@ BookReader.prototype.onePageCalculateReductionFactors = function( width, height 
             { reduce: this.onePageGetAutofitHeight(), autofit: 'height'}
         ]);
     this.onePage.reductionFactors.sort(this._reduceSort);
+}
+
+BookReader.prototype.twoPageCalculateReductionFactors = function() {    
+    this.twoPage.reductionFactors = this.reductionFactors.concat(
+        [
+            { reduce: this.getIdealSpreadSize( this.twoPage.currentIndexL, this.twoPage.currentIndexR ).reduce,
+              autofit: 'auto' }
+        ]);
+    this.twoPage.reductionFactors.sort(this._reduceSort);
 }
 
 // twoPageSetCursor()
@@ -3013,7 +2980,7 @@ BookReader.prototype.autoToggle = function() {
     
     // Change to autofit if book is too large
     if (this.reduce < this.twoPageGetAutofitReduce()) {
-        this.zoom2up(0);
+        this.zoom2up('auto');
     }
 
     var self = this;
