@@ -101,7 +101,7 @@ function BookReader() {
         coverInternalPadding: 10, // Width of cover
         coverExternalPadding: 10, // Padding outside of cover
         bookSpineDivWidth: 30,    // Width of book spine  $$$ consider sizing based on book length
-        autofit: true
+        autofit: 'auto',
     };
     
     // Background color for pages (e.g. when loading page image)
@@ -159,7 +159,7 @@ BookReader.prototype.init = function() {
     $("#BRcontainer").bind('scroll', this, function(e) {
         e.data.loadLeafs();
     });
-    
+        
     this.setupKeyListeners();
     this.startLocationPolling();
 
@@ -167,6 +167,9 @@ BookReader.prototype.init = function() {
         //console.log('resize!');
         if (1 == e.data.mode) {
             //console.log('centering 1page view');
+            if (e.data.autofit) {
+                e.data.resizePageView();
+            }
             e.data.centerPageView();
             $('#BRpageview').empty()
             e.data.displayedIndices = [];
@@ -876,6 +879,12 @@ BookReader.prototype.zoom1up = function(direction) {
     }
     
     var reduceFactor = this.nextReduce(this.reduce, direction, this.onePage.reductionFactors);
+    
+    if (this.reduce == reduceFactor.reduce) {
+        // Already at this level
+        return;
+    }
+    
     this.reduce = reduceFactor.reduce; // $$$ incorporate into function
     this.autofit = reduceFactor.autofit;
         
@@ -939,7 +948,10 @@ BookReader.prototype.resizePageView1up = function() {
     this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'),
                                            $('#BRcontainer').attr('clientHeight') );                                        
     // Update current reduce (if in autofit)
-    // this.onePageUpdateReduce(); // XXX
+    if (this.autofit) {
+        var reductionFactor = this.nextReduce(this.reduce, this.autofit, this.onePage.reductionFactors);
+        this.reduce = reductionFactor.reduce;
+    }
     
     for (i=0; i<this.numLeafs; i++) {
         viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
@@ -1073,14 +1085,14 @@ BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
 // quantizeReduce(reduce)
 //______________________________________________________________________________
 // Quantizes the given reduction factor to closest power of two from set from 12.5% to 200%
-BookReader.prototype.quantizeReduce = function(reduce) {
-    var quantized = this.reductionFactors[0].reduce;
+BookReader.prototype.quantizeReduce = function(reduce, reductionFactors) {
+    var quantized = reductionFactors[0].reduce;
     var distance = Math.abs(reduce - quantized);
-    for (var i = 1; i < this.reductionFactors.length; i++) {
-        newDistance = Math.abs(reduce - this.reductionFactors[i].reduce);
+    for (var i = 1; i < reductionFactors.length; i++) {
+        newDistance = Math.abs(reduce - reductionFactors[i].reduce);
         if (newDistance < distance) {
             distance = newDistance;
-            quantized = this.reductionFactors[i].reduce;
+            quantized = reductionFactors[i].reduce;
         }
     }
     
@@ -1255,16 +1267,19 @@ BookReader.prototype.switchMode = function(mode) {
     // $$$ TODO preserve center of view when switching between mode
     //     See https://bugs.edge.launchpad.net/gnubook/+bug/416682
 
+    // XXX maybe better to preserve zoom in each mode
     if (1 == mode) {
-        this.reduce = this.quantizeReduce(this.reduce);
+        this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'), $('#BRcontainer').attr('clientHeight'));
+        this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
         this.prepareOnePageView();
     } else if (3 == mode) {
-        this.reduce = this.quantizeReduce(this.reduce);
+        this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
         this.prepareThumbnailView();
     } else {
         // $$$ why don't we save autofit?
-        this.twoPage.autofit = false; // Take zoom level from other mode
-        this.reduce = this.quantizeReduce(this.reduce);
+        this.twoPage.autofit = null; // Take zoom level from other mode
+        this.twoPageCalculateReductionFactors();
+        this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
@@ -3318,8 +3333,17 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
 // Update the displayed zoom factor based on reduction factor
 BookReader.prototype.updateToolbarZoom = function(reduce) {
     var value;
-    if (this.constMode2up == this.mode && this.twoPage.autofit) {
-        value = 'Auto';
+    var autofit = null;
+
+    // $$$ TODO preserve zoom/fit for each mode
+    if (this.mode == this.constMode2up) {
+        autofit = this.twoPage.autofit;
+    } else {
+        autofit = this.autofit;
+    }
+    
+    if (autofit) {
+        value = autofit[0].toUpperCase() + autofit.slice(1);
     } else {
         value = (100 / reduce).toFixed(2);
         // Strip trailing zeroes and decimal if all zeroes
