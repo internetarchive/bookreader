@@ -266,24 +266,11 @@ class BookReader
     return null; // was not handled
   }
   
-  // $$$ Ideally we will not rely on user agent, but for the moment we do
-  public static function paramsFromUserAgent($userAgent) {
-      $browserParams = array(
-          'ipad' => array( 'ui' => 'touch' ),
-          'iphone' => array( 'ui' => 'embed', 'mode' => '1up'),
-      );
-  
-      $browser = BookReader::browserFromUserAgent($userAgent);
-      if ($browser) {
-          return $browserParams[$browser];
-      }
-      return array();
-  }
-  
   public static function browserFromUserAgent($userAgent) {
       $browserPatterns = array(
           'ipad' => '/iPad/',
           'iphone' => '/iPhone/', // Also cover iPod Touch
+          'android' => '/Android/',
       );
       
       foreach ($browserPatterns as $browser => $pattern) {
@@ -293,7 +280,24 @@ class BookReader
       }
       return null;
   }
+
   
+  // $$$ Ideally we will not rely on user agent, but for the moment we do
+  public static function paramsFromUserAgent($userAgent) {
+      // $$$ using 'embed' here for devices with assumed small screens -- really should just use CSS3 media queries
+      $browserParams = array(
+          'ipad' => array( 'ui' => 'touch' ),
+          'iphone' => array( 'ui' => 'embed', 'mode' => '1up' ),
+          'android' => array( 'ui' => 'embed', 'mode' => '1up' ),
+      );
+  
+      $browser = BookReader::browserFromUserAgent($userAgent);
+      if ($browser) {
+          return $browserParams[$browser];
+      }
+      return array();
+  }
+    
 }
 
 ?>
