@@ -266,6 +266,34 @@ class BookReader
     return null; // was not handled
   }
   
+  // $$$ Ideally we will not rely on user agent, but for the moment we do
+  public static function paramsFromUserAgent($userAgent) {
+      $browserParams = array(
+          'ipad' => array( 'ui' => 'touch' ),
+          'iphone' => array( 'ui' => 'embed', 'mode' => '1up'),
+      );
+  
+      $browser = BookReader::browserFromUserAgent($userAgent);
+      if ($browser) {
+          return $browserParams[$browser];
+      }
+      return array();
+  }
+  
+  public static function browserFromUserAgent($userAgent) {
+      $browserPatterns = array(
+          'ipad' => '/iPad/',
+          'iphone' => '/iPhone/', // Also cover iPod Touch
+      );
+      
+      foreach ($browserPatterns as $browser => $pattern) {
+          if (preg_match($pattern, $userAgent)) {
+              return $browser;
+          }
+      }
+      return null;
+  }
+  
 }
 
 ?>
