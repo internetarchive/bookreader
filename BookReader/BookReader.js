@@ -886,7 +886,7 @@ BookReader.prototype.zoom1up = function(direction) {
     }
     
     this.reduce = reduceFactor.reduce; // $$$ incorporate into function
-    this.autofit = reduceFactor.autofit;
+    this.onePage.autofit = reduceFactor.autofit;
         
     this.pageScale = this.reduce; // preserve current reduce
     this.resizePageView();
@@ -948,8 +948,8 @@ BookReader.prototype.resizePageView1up = function() {
     this.onePageCalculateReductionFactors( $('#BRcontainer').attr('clientWidth'),
                                            $('#BRcontainer').attr('clientHeight') );                                        
     // Update current reduce (if in autofit)
-    if (this.autofit) {
-        var reductionFactor = this.nextReduce(this.reduce, this.autofit, this.onePage.reductionFactors);
+    if (this.onePage.autofit) {
+        var reductionFactor = this.nextReduce(this.reduce, this.onePage.autofit, this.onePage.reductionFactors);
         this.reduce = reductionFactor.reduce;
     }
     
@@ -1166,7 +1166,7 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 //______________________________________________________________________________
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
-    if (2 == this.mode) {
+    if (this.constMode2up == this.mode) {
         this.autoStop();
         
         // By checking against min/max we do nothing if requested index
@@ -1177,7 +1177,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
             this.flipFwdToIndex(index);
         }
 
-    } else if (3 == this.mode) {
+    } else if (this.constModeThumb == this.mode) {
         var viewWidth = $('#BRcontainer').attr('scrollWidth') - 20; // width minus buffer
         var i;
         var leafWidth = 0;
@@ -1210,6 +1210,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
             $('#BRcontainer').animate({scrollTop: leafTop },'fast');
         }
     } else {
+        // 1up
         var i;
         var leafTop = 0;
         var leafLeft = 0;
@@ -1225,6 +1226,9 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
             offset -= $('#BRcontainer').attr('clientHeight') >> 1;
             //console.log( 'jumping to ' + leafTop + ' ' + offset);
             leafTop += offset;
+        } else {
+            // Show page just a little below the top
+            leafTop -= this.padding / 2;
         }
 
         if (pageX) {
@@ -1734,13 +1738,12 @@ BookReader.prototype.twoPageGetAutofitReduce = function() {
 }
 
 BookReader.prototype.onePageGetAutofitWidth = function() {
-    var widthPadding = 50;
+    var widthPadding = 20;
     return (this.getMedianPageSize().width + 0.0) / ($('#BRcontainer').attr('clientWidth') - widthPadding * 2);
 }
 
 BookReader.prototype.onePageGetAutofitHeight = function() {
-    var heightPadding = 10;
-    return (this.getMedianPageSize().height + 0.0) / ($('#BRcontainer').attr('clientHeight') - heightPadding * 2);
+    return (this.getMedianPageSize().height + 0.0) / ($('#BRcontainer').attr('clientHeight') - this.padding * 2); // make sure a little of adjacent pages show
 }
 
 BookReader.prototype.getMedianPageSize = function() {
@@ -1908,10 +1911,15 @@ BookReader.prototype.last = function() {
 //______________________________________________________________________________
 // Scrolls down one screen view
 BookReader.prototype.scrollDown = function() {
-    if ($.inArray(this.mode, [this.constMode2up, this.constModeThumb]) >= 0) {
+    if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
+        if ( this.mode == this.constMode1up && (this.reduce >= this.onePageGetAutofitHeight()) ) {
+            // Whole pages are visible, scroll whole page only
+            return this.next();
+        }
+    
         $('#BRcontainer').animate(
-            { scrollTop: '+=' + $('#BRcontainer').height() * 0.95 + 'px'},
-            450, 'easeInOutQuint'
+            { scrollTop: '+=' + this._scrollAmount() + 'px'},
+            400, 'easeInOutExpo'
         );
         return true;
     } else {
@@ -1923,15 +1931,32 @@ BookReader.prototype.scrollDown = function() {
 //______________________________________________________________________________
 // Scrolls up one screen view
 BookReader.prototype.scrollUp = function() {
-    if ($.inArray(this.mode, [this.constMode2up, this.constModeThumb]) >= 0) {
+    if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
+        if ( this.mode == this.constMode1up && (this.reduce >= this.onePageGetAutofitHeight()) ) {
+            // Whole pages are visible, scroll whole page only
+            return this.prev();
+        }
+
         $('#BRcontainer').animate(
-            { scrollTop: '-=' + $('#BRcontainer').height() * 0.95 + 'px'},
-            450, 'easeInOutQuint'
+            { scrollTop: '-=' + this._scrollAmount() + 'px'},
+            400, 'easeInOutExpo'
         );
         return true;
     } else {
         return false;
     }
+}
+
+// _scrollAmount()
+//______________________________________________________________________________
+// The amount to scroll vertically in integer pixels
+BookReader.prototype._scrollAmount = function() {
+    if (this.constMode1up == this.mode) {
+        // Overlap by % of page size
+        return parseInt($('#BRcontainer').attr('clientHeight') - this.getPageHeight(this.currentIndex()) / this.reduce * 0.03);
+    }
+    
+    return parseInt(0.9 * $('#BRcontainer').attr('clientHeight'));
 }
 
 
@@ -3270,7 +3295,7 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
     });
         
     jToolbar.find('.book_up').bind('click', function(e) {
-        if ($.inArray(self.mode, [self.constMode2up, self.constModeThumb]) >= 0) {
+        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
             self.scrollUp();
         } else {
             self.prev();
@@ -3279,7 +3304,7 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
     });        
         
     jToolbar.find('.book_down').bind('click', function(e) {
-        if ($.inArray(self.mode, [self.constMode2up, self.constModeThumb]) >= 0) {
+        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
             self.scrollDown();
         } else {
             self.next();
@@ -3339,7 +3364,7 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
     if (this.mode == this.constMode2up) {
         autofit = this.twoPage.autofit;
     } else {
-        autofit = this.autofit;
+        autofit = this.onePage.autofit;
     }
     
     if (autofit) {
