@@ -1235,6 +1235,9 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
             var offset = parseInt( (pageX) / this.reduce);
             offset -= $('#BRcontainer').attr('clientWidth') >> 1;
             leafLeft += offset;
+        } else {
+            // Preserve left position
+            leafLeft = $('#BRcontainer').scrollLeft();
         }
 
         //$('#BRcontainer').attr('scrollTop', leafTop);
