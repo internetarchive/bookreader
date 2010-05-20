@@ -8,6 +8,7 @@
     height:25px;
     width:100%;
     background-color: #E6E4E1;
+    overflow: hidden;
 }
 
 #BRtoolbar .label {
