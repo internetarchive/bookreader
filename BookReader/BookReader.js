@@ -2309,6 +2309,12 @@ BookReader.prototype.prefetchImg = function(index) {
         //console.log('prefetching ' + index);
         var img = document.createElement("img");
         img.className = 'BRpageimage';
+        if (index < 0 || index > (this.numLeafs - 1) ) {
+            // Facing page at beginning or end, or beyond
+            $(img).css({
+                'background-color': 'transparent'
+            });
+        }
         img.src = pageURI;
         img.uri = pageURI; // browser may rewrite src so we stash raw URI here
         this.prefetchedImgs[index] = img;
