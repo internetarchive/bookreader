@@ -104,10 +104,6 @@ function BookReader() {
         autofit: 'auto',
     };
     
-    // Background color for pages (e.g. when loading page image)
-    // $$$ TODO dynamically calculate based on page images
-    this.pageDefaultBackgroundColor = 'rgb(234, 226, 205)';
-    
     return this;
 };
 
@@ -776,7 +772,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
         left: this.twoPage.gutter-this.twoPage.scaledWL+'px',
         right: '',
         top:    top+'px',
-        backgroundColor: this.getPageBackgroundColor(indexL),
         height: this.twoPage.height +'px', // $$$ height forced the same for both pages
         width:  this.twoPage.scaledWL + 'px',
         borderRight: '1px solid black',
@@ -796,7 +791,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
         left:   this.twoPage.gutter+'px',
         right: '',
         top:    top+'px',
-        backgroundColor: this.getPageBackgroundColor(indexR),
         height: this.twoPage.height + 'px', // $$$ height forced the same for both pages
         width:  this.twoPage.scaledWR + 'px',
         borderLeft: '1px solid black',
@@ -2314,6 +2308,7 @@ BookReader.prototype.prefetchImg = function(index) {
     if (loadImage) {
         //console.log('prefetching ' + index);
         var img = document.createElement("img");
+        img.className = 'BRpageimage';
         img.src = pageURI;
         img.uri = pageURI; // browser may rewrite src so we stash raw URI here
         this.prefetchedImgs[index] = img;
@@ -2355,7 +2350,6 @@ BookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
         top:    top+'px',
         height: this.twoPage.height,
         width:  scaledW+'px',
-        backgroundColor: this.getPageBackgroundColor(prevL),
         borderRight: '1px solid black',
         zIndex: 1
     }
@@ -2373,7 +2367,6 @@ BookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
         top:    top+'px',
         height: this.twoPage.height,
         width:  '0px',
-        backgroundColor: this.getPageBackgroundColor(prevR),
         borderLeft: '1px solid black',
         zIndex: 2
     }
@@ -2408,7 +2401,6 @@ BookReader.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
         position: 'absolute',
         left:   gutter+'px',
         top:    top+'px',
-        backgroundColor: this.getPageBackgroundColor(nextR),
         height: this.twoPage.height,
         width:  scaledW+'px',
         borderLeft: '1px solid black',
@@ -2426,7 +2418,6 @@ BookReader.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
         position: 'absolute',
         right:   $('#BRtwopageview').attr('clientWidth')-gutter+'px',
         top:    top+'px',
-        backgroundColor: this.getPageBackgroundColor(nextL),
         height: this.twoPage.height,
         width:  0+'px', // Start at 0 width, then grow to the left
         borderRight: '1px solid black',
@@ -2850,62 +2841,6 @@ BookReader.prototype.removeSearchHilites = function() {
 //______________________________________________________________________________
 BookReader.prototype.printPage = function() {
     window.open(this.getPrintURI(), 'printpage', 'width=400, height=500, resizable=yes, scrollbars=no, toolbar=no, location=no');
-
-    /* iframe implementation
-
-    if (null != this.printPopup) { // check if already showing
-        return;
-    }
-    this.printPopup = document.createElement("div");
-    $(this.printPopup).css({
-        position: 'absolute',
-        top:      '20px',
-        left:     ($('#BRcontainer').width()-400)/2 + 'px',
-        width:    '400px',
-        padding:  "20px",
-        border:   "3px double #999999",
-        zIndex:   3,
-        backgroundColor: "#fff"
-    }).appendTo('#BookReader');
-
-    var indexToPrint;
-    if (this.constMode1up == this.mode) {
-        indexToPrint = this.firstIndex;
-    } else {
-        indexToPrint = this.twoPage.currentIndexL;
-    }
-    
-    this.indexToPrint = indexToPrint;
-    
-    var htmlStr = '<div style="text-align: center;">';
-    htmlStr =  '<p style="text-align:center;"><b><a href="javascript:void(0);" onclick="window.frames[0].focus(); window.frames[0].print(); return false;">Click here to print this page</a></b></p>';
-    htmlStr += '<div id="printDiv" name="printDiv" style="text-align: center; width: 233px; margin: auto">'
-    htmlStr +=   '<p style="text-align:right; margin: 0; font-size: 0.85em">';
-    //htmlStr +=     '<button class="BRicon rollover book_up" onclick="br.updatePrintFrame(-1); return false;"></button> ';
-    //htmlStr +=     '<button class="BRicon rollover book_down" onclick="br.updatePrintFrame(1); return false;"></button>';
-    htmlStr += '<a href="#" onclick="br.updatePrintFrame(-1); return false;">Prev</a> <a href="#" onclick="br.updatePrintFrame(1); return false;">Next</a>';
-    htmlStr +=   '</p>';
-    htmlStr += '</div>';
-    htmlStr += '<p style="text-align:center;"><a href="" onclick="br.printPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';
-    htmlStr += '</div>';
-    
-    this.printPopup.innerHTML = htmlStr;
-    
-    var iframe = document.createElement('iframe');
-    iframe.id = 'printFrame';
-    iframe.name = 'printFrame';
-    iframe.width = '233px'; // 8.5 x 11 aspect
-    iframe.height = '300px';
-    
-    var self = this; // closure
-        
-    $(iframe).load(function() {
-        var doc = BookReader.util.getIFrameDocument(this);
-        $('body', doc).html(self.getPrintFrameContent(self.indexToPrint));
-    });
-    
-    $('#printDiv').prepend(iframe);
-    */
 }
 
 // Get print URI from current indices and mode
@@ -3740,19 +3675,6 @@ BookReader.prototype.searchHighlightVisible = function() {
         }
     }
     return false;
-}
-
-// getPageBackgroundColor
-//--------
-// Returns a CSS property string for the background color for the given page
-// $$$ turn into regular CSS?
-BookReader.prototype.getPageBackgroundColor = function(index) {
-    if (index >= 0 && index < this.numLeafs) {
-        // normal page
-        return this.pageDefaultBackgroundColor;
-    }
-    
-    return '';
 }
 
 // _getPageWidth
