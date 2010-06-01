@@ -52,12 +52,21 @@
  *  would not interfere as acceptPropagatedEvent is set to false.
  *		
  */
-
+ 
 var append_namespace = function (string_of_events, ns) {
+    
+    /* IE doesn't have map
 	return string_of_events
 		.split(' ')
 			.map(function (name) { return name + ns; })
 				.join(' ');
+    */
+    var pieces = string_of_events.split(' ');
+    var ret = new Array();
+    for (var i = 0; i < pieces.length; i++) {
+        ret.push(pieces[i] + ns);
+    }
+    return ret.join(' ');
 };
 
 var left_top = function(event) {
@@ -165,6 +174,7 @@ $.fn.dragscrollable = function( options ) {
 
 		},
 		dragEndHandler : function(event) { // Stop scrolling
+		
 			handling_element
 				.unbind(settings.dragcontinue)
 				.unbind(settings.dragend);
@@ -173,11 +183,12 @@ $.fn.dragscrollable = function( options ) {
 			var delta = {left: Math.abs(event.data.lastCoord.left - event.data.firstCoord.left),
 						 top: Math.abs(event.data.lastCoord.top - event.data.firstCoord.top)};
 			var distance = Math.max(delta.left, delta.top);
-			
+						
 			// Trigger 'tap' if did not meet drag distance
 			// $$$ does not differentiate single vs multi-touch
 			if (distance < settings.dragMinDistance) {
-			    $(event.originalEvent.target).trigger('tap');
+			    //$(event.originalEvent.target).trigger('tap');
+			    $(event.target).trigger('tap'); // $$$ always the right target?
 			}
 			
 			// Allow event to propage if min distance was not achieved

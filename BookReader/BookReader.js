@@ -3312,7 +3312,7 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
     }
     
     if (autofit) {
-        value = autofit[0].toUpperCase() + autofit.slice(1);
+        value = autofit.slice(0,1).toUpperCase() + autofit.slice(1);
     } else {
         value = (100 / reduce).toFixed(2);
         // Strip trailing zeroes and decimal if all zeroes
