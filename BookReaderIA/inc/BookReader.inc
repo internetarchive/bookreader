@@ -301,4 +301,3 @@ class BookReader
 }
 
 ?>
-
