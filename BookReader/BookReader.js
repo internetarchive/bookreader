@@ -94,14 +94,14 @@ function BookReader() {
     // Object to hold parameters related to 1up mode
     this.onePage = {
         autofit: 'height'                                     // valid values are height, width, none
-    },
+    };
     
     // Object to hold parameters related to 2up mode
     this.twoPage = {
         coverInternalPadding: 10, // Width of cover
         coverExternalPadding: 10, // Padding outside of cover
         bookSpineDivWidth: 30,    // Width of book spine  $$$ consider sizing based on book length
-        autofit: 'auto',
+        autofit: 'auto'
     };
     
     return this;
@@ -1427,7 +1427,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
         visibility: 'visible',
         position: 'absolute',
         left: this.twoPage.bookCoverDivLeft + 'px',
-        top: this.twoPage.bookCoverDivTop+'px',
+        top: this.twoPage.bookCoverDivTop+'px'
     }).appendTo('#BRtwopageview');
     
     this.leafEdgeR = document.createElement('div');
@@ -1436,7 +1436,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
         width: this.twoPage.leafEdgeWidthR + 'px',
         height: this.twoPage.height-1 + 'px',
         left: this.twoPage.gutter+this.twoPage.scaledWR+'px',
-        top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px',
+        top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px'
     }).appendTo('#BRtwopageview');
     
     this.leafEdgeL = document.createElement('div');
@@ -1445,7 +1445,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
         width: this.twoPage.leafEdgeWidthL + 'px',
         height: this.twoPage.height-1 + 'px',
         left: this.twoPage.bookCoverDivLeft+this.twoPage.coverInternalPadding+'px',
-        top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px',    
+        top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px'
     }).appendTo('#BRtwopageview');
 
     div = document.createElement('div');
@@ -1522,7 +1522,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
     this.twoPagePopUp = document.createElement('div');
     this.twoPagePopUp.className = 'BRtwoPagePopUp';
     $(this.twoPagePopUp).css({
-        zIndex: '1000',
+        zIndex: '1000'
     }).appendTo('#BRcontainer');
     $(this.twoPagePopUp).hide();
     
