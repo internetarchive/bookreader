@@ -1,7 +1,8 @@
 <?
 /*
 
-Provides access to preview images of book.
+Provides access to preview images of book.  It is run with privileges and provides a reduced
+access wrapper around BookReaderImages.
 
 Michael Ang <http://github.com/mangtronix>
 

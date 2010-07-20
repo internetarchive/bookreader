@@ -55,6 +55,9 @@ class BookReaderImages
     var $kduExpand = '/petabox/sw/bin/kdu_expand';
     
     /*
+     * Returns a page image when all parameters such as the image stack location are
+     * passed in.
+     * 
      * Approach:
      * 
      * Get info about requested image (input)
@@ -64,7 +67,6 @@ class BookReaderImages
      * Return image data
      * Clean up temporary files
      */
-     
      function serveRequest($requestEnv) {
         // Process some of the request parameters
         $zipPath  = $requestEnv['zip'];

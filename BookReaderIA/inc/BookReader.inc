@@ -51,15 +51,18 @@ class BookReader
   public static function findPrefix($urlPortion)
   {
     if (!preg_match('#[^/&?]+#', $urlPortion, $matches)) {
+        // URL portion was empty or started with /, &, or ? -- no item identifier
         return false;
     }
     
-    $prefix = $matches[0]; // identifier
+    $prefix = $matches[0]; // item identifier
     
     // $$$ Currently swallows the rest of the URL.
     //     If we want to support e.g. /stream/itemid/subdir/prefix/page/23 will need to adjust.
     if (preg_match('#[^/&?]+/([^&?]+)#', $urlPortion, $matches)) {
-        $prefix = $matches[1]; // sub prefix
+        // Match is everything after item identifier and slash, up to end or ? or &
+        // e.g. itemid/{match/these/parts}?foo=bar
+        $prefix = $matches[1]; // sub prefix -- 
     }
     
     return $prefix;
