@@ -89,7 +89,7 @@ class BookReaderImages
         }
 
         if ( !file_exists($zipPath) ) {
-            $this->BRfatal('Image stack does not exist');
+            $this->BRfatal('Image stack does not exist at ' . $zipPath);
         }
         // Make sure the image stack is readable - return 403 if not
         $this->checkPrivs($zipPath);
@@ -384,7 +384,7 @@ class BookReaderImages
                 $bits = intval($tags["BitDepth"]);
                 break;
             default:
-                $this->BRfatal("Unsupported image type");
+                $this->BRfatal("Unsupported image type $type for file $file in $zipPath");
                 break;
         }
        
@@ -529,8 +529,6 @@ class BookReaderImages
     
     function BRfatal($string) {
         throw new Exception("Image error: $string");
-        //echo "alert('$string');\n";
-        //die(-1);
     }
     
     // Returns true if using a power node

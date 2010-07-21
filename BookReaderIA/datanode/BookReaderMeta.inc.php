@@ -43,14 +43,14 @@ class BookReaderMeta {
     );
 
     // Builds metadata object (to be encoded as JSON)
-    function buildMetadata($id, $itemPath, $bookId, $server) {
+    function buildMetadata($id, $itemPath, $subPrefix, $server) {
     
         $response = array();
         
-        if (! $bookId) {
-            $bookId = $id;
+        if (! $subPrefix) {
+            $subPrefix = $id;
         }
-        $subItemPath = $itemPath . '/' . $bookId;
+        $subItemPath = $itemPath . '/' . $subPrefix;
         
         if ("" == $id) {
             $this->BRFatal("No identifier specified!");
@@ -78,7 +78,7 @@ class BookReaderMeta {
             $this->BRfatal("File metadata not found!");
         }
         
-        $imageStackInfo = $this->findImageStack($bookId, $filesData);
+        $imageStackInfo = $this->findImageStack($subPrefix, $filesData);
         if ($imageStackInfo['imageFormat'] == 'unknown') {
             $this->BRfatal('Couldn\'t find image stack');
         }
@@ -187,7 +187,7 @@ class BookReaderMeta {
         
         // Internet Archive specific
         $response['itemId'] = $id; // $$$ renamed
-        $response['bookId'] = $bookId;  // $$$ renamed
+        $response['subPrefix'] = $subPrefix;  // $$$ renamed
         $response['itemPath'] = $itemPath;
         $response['zip'] = $imageStackFile;
         $response['server'] = $server;
@@ -286,7 +286,7 @@ class BookReaderMeta {
                 }
             }
         }
-        
+                
         return array('imageFormat' => 'unknown', 'archiveFormat' => 'unknown', 'imageStackFile' => 'unknown');    
     }
     
@@ -314,7 +314,7 @@ class BookReaderMeta {
         // e.g. http://ia311213.us.archive.org/BookReader/BookReaderImages.php?zip=/0/items/coloritsapplicat00andriala/coloritsapplicat00andriala_jp2.zip&file=coloritsapplicat00andriala_jp2/coloritsapplicat00andriala_0009.jp2&scale=8&rotate=0
         
     
-        $filePath = $this->imageFilePath($leafNum, $metadata['bookId'], $metadata['imageFormat']);
+        $filePath = $this->imageFilePath($leafNum, $metadata['subPrefix'], $metadata['imageFormat']);
         $url = 'http://' . $metadata['server'] . '/BookReader/BookReaderImages.php?zip=' . $metadata['zip'] . '&file=' . $filePath;
         
         if ($scale !== null) {
@@ -331,7 +331,7 @@ class BookReaderMeta {
     function previewURL($page, $metadata) {
         $query = array(
             'id' => $metadata['itemId'],
-            'bookId' => $metadata['bookId'],
+            'subPrefix' => $metadata['subPrefix'],
             'itemPath' => $metadata['itemPath'],
             'server' => $metadata['server'],
             'page' => $page,
@@ -340,8 +340,10 @@ class BookReaderMeta {
         return 'http://' . $metadata['server'] . '/BookReader/BookReaderPreview.php?' . http_build_query($query, '', '&');
     }
     
-    function imageFilePath($leafNum, $bookId, $format) {
-        return sprintf("%s_%s/%s_%04d.%s", $bookId, $format, $bookId, intval($leafNum), $format);
+    function imageFilePath($leafNum, $subPrefix, $format) {
+        $pathParts = pathinfo($subPrefix);
+        $almostIdentifier = $pathParts['filename'];
+        return sprintf("%s_%s/%s_%04d.%s", $almostIdentifier, $format, $almostIdentifier, intval($leafNum), $format);
     }
     
     // Parse date from _meta.xml to integer
@@ -356,7 +358,7 @@ class BookReaderMeta {
     function processRequest($requestEnv) {
         $id = $requestEnv['itemId']; // $$$ renamed
         $itemPath = $requestEnv['itemPath'];
-        $bookId = $requestEnv['bookId']; // $$$ renamed
+        $subPrefix = $requestEnv['subPrefix']; // $$$ renamed
         $server = $requestEnv['server'];
         
         // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
@@ -367,7 +369,7 @@ class BookReaderMeta {
             $server .= ':80/~testflip';
         }
         
-        $this->emitResponse( $this->buildMetadata($id, $itemPath, $bookId, $server) );
+        $this->emitResponse( $this->buildMetadata($id, $itemPath, $subPrefix, $server) );
     }
     
     function checkPrivs($filename) {

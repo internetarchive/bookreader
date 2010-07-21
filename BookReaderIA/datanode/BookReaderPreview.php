@@ -36,7 +36,7 @@ function BRfatal($message) {
 
 $brm = new BookReaderMeta();
 try {
-    $metadata = $brm->buildMetadata($_REQUEST['id'], $_REQUEST['itemPath'], $_REQUEST['bookId'], $_REQUEST['server']);
+    $metadata = $brm->buildMetadata($_REQUEST['id'], $_REQUEST['itemPath'], $_REQUEST['subPrefix'], $_REQUEST['server']);
 } catch (Exception $e) {
     BRfatal($e->getMessage);
 }
@@ -108,7 +108,7 @@ $leaf = $brm->leafForIndex($imageIndex, $metadata['leafNums']);
 
 $requestEnv = array(
     'zip' => $metadata['zip'],
-    'file' => $brm->imageFilePath($leaf, $metadata['bookId'], $metadata['imageFormat']),
+    'file' => $brm->imageFilePath($leaf, $metadata['subPrefix'], $metadata['imageFormat']),
     'ext' => 'jpg',
 );
 

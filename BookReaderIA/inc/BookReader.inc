@@ -3,6 +3,9 @@
 class BookReader
 {
 
+  // Operators recognized in BookReader download URLs
+  public static $downloadOperators = array('page');
+
   // Returns true if can display the book in item with a given prefix (typically the item identifier)
   public static function canDisplay($item, $prefix, $checkOldScandata = false)
   {
@@ -232,37 +235,51 @@ class BookReader
     // $path should look like {itemId}/{operator}/{filename}
     // Other operators may be added
     
-    $parts = preg_split('#/#', $path, 3);
-    if (count($parts) != 3) {
-        return null;
+    $urlParts = BookReader::parsePath($path);
+    
+    // Check for non-handled cases
+    $required = array('identifier', 'operator', 'operand');
+    foreach ($required as $key) {
+        if (!array_key_exists($key, $urlParts)) {
+            return null;
+        }
     }
-    $identifier = $parts[0];
-    $operator = $parts[1];
-    $filename = $parts[2];
+    
+    $identifier = $urlParts['identifier'];
+    $operator = $urlParts['operator'];
+    $filename = $urlParts['operand'];
+    $subPrefix = $urlParts['subPrefix'];
     
     $serverBaseURL = BookReader::serverBaseURL($item->getServer());
-            
+    
+    // Baseline query params
+    $query = array(
+        'id' => $identifier,
+        'itemPath' => $item->getMainDir(),
+        'server' => $serverBaseURL
+    );
+    if ($subPrefix) {
+        $query['subPrefix'] = $subPrefix;
+    }
+    
     switch ($operator) {
         case 'page':
             // Find bookId and which page was requested
             $pathParts = pathinfo($filename);
             
-            // Look for preview request
-            if (preg_match('/^(.*)_(cover|title|preview)$/', $pathParts['filename'], $matches) === 0) {
+            // Look for old-style preview request
+            // $$$ currently ignoring file extension
+            if (preg_match('/^(.*)_(cover|title|preview)/', $filename, $matches) === 0) {
                 return null;
             }
-            $bookId = $matches[1];
             $page = $matches[2];
-            $query = array(
-                'id' => $identifier,
-                'bookId' => $bookId,
-                'itemPath' => $item->getMainDir(),
-                'server' => $serverBaseURL,
-                'page' => $page,
-            );
+            
+            $query['page'] = $page;
+            
             return 'http://' . $serverBaseURL . '/BookReader/BookReaderPreview.php?' . http_build_query($query, '', '&');
         
         default:
+            // Unknown operator
             return null;            
     }
       
@@ -299,6 +316,42 @@ class BookReader
           return $browserParams[$browser];
       }
       return array();
+  }
+  
+  public static function parsePath($path) {
+    // Parse the BookReader path and return the parts
+    // e.g. itemid/some/sub/dir/page/cover.jpg -> array( 'identifier' => 'itemid', 'subPrefix' => 'some/sub/dir',
+    //            'operator' => 'page', 'filename' => 'cover.jpg')
+    
+    $parts = array();
+    
+    // Pull off query
+    if (preg_match('#(.*?)(\?.*)#', $path, $matches) === 1) {
+        $parts['query'] = $matches[2];
+        $path = $matches[1];
+    }
+    
+    // Pull off identifier
+    if (preg_match('#[^/&?]+#', $path, $matches) === 0) {
+        // no match
+        return $parts;
+    }
+    $parts['identifier'] = $matches[0];
+    $path = substr($path, strlen($matches[0]));
+    
+    // Look for operators
+    // The sub-prefix can be arbitrary, so we match up until the first operator
+    $operators = '(' . join('|', self::$downloadOperators) . ')';
+    $pattern = '#/(?P<subPrefix>.*?)/(?P<operator>' . $operators . ')/(?P<operand>.*)#';
+    if (preg_match($pattern, $path, $matches) === 1) {
+        $parts['subPrefix'] = $matches['subPrefix'];
+        $parts['operator'] = $matches['operator'];
+        $parts['operand'] = $matches['operand'];
+    } else {
+        $parts['subPrefix'] = $path;
+    }
+    
+    return $parts;
   }
     
 }

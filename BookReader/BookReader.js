@@ -2858,7 +2858,7 @@ BookReader.prototype.getPrintURI = function() {
         indexToPrint = this.firstIndex; // $$$ the index in the middle of the viewport would make more sense
     }
     
-    var options = 'id=' + this.bookId + '&server=' + this.server + '&zip=' + this.zip
+    var options = 'id=' + this.subPrefix + '&server=' + this.server + '&zip=' + this.zip
         + '&format=' + this.imageFormat + '&file=' + this._getPageFile(indexToPrint)
         + '&width=' + this._getPageWidth(indexToPrint) + '&height=' + this._getPageHeight(indexToPrint);
    
