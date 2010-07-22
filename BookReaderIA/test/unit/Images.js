@@ -184,4 +184,3 @@ asyncTest('Load jpg image from tar file - https://bugs.launchpad.net/bookreader/
     })
     .attr('src', pageURI);
 });
-

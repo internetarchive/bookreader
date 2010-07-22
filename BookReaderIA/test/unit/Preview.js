@@ -18,7 +18,7 @@ function Book(identifier, previewWidth, coverWidth, titleWidth, bookId) {
 var books = [
     new Book('coloritsapplicat00andriala', 1974, 2346, 1974),
     new Book('lietuvostsrmoksl50liet', 1887, 1747, 1887),
-    new Book('oldtestamentrevi02slsn', 2019, 2371, 2019)
+    new Book('oldtestamentrevi02slsn', 2019, 2371, 2019),
 ];
 
 for (index in books) {
@@ -83,7 +83,7 @@ for (index in books) {
 
 // Multi-book item
 var identifier = 'SubBookTest';
-asyncTest("Load title for " + identifier, function() {
+asyncTest("Load title for book without title specified " + identifier, function() {
     expect(1);
         
     var pageURI = previewURL(identifier, identifier, 'title');
@@ -97,13 +97,15 @@ asyncTest("Load title for " + identifier, function() {
     img = null;
 });
 
-asyncTest("Load title for " + identifier, function() {
-    expect(1);
+var subPrefix = 'subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume';
+asyncTest("Load preview for book in sub-dir " + identifier + '/' + subPrefix, function() {
+    expect(2);
         
-    var pageURI = previewURL(identifier, identifier, 'title');
+    var pageURI = previewURL(identifier, subPrefix, 'title');
     var img = new Image();
     $(img).bind( 'load error', function(eventObj) {
-        equals(eventObj.type, 'error', 'Load image (' + pageURI + '). Event handler called');
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 5100, 'Preview image width');
         start();
     })
     .attr('src', pageURI);

@@ -24,6 +24,14 @@ function jsLocateURL(identifier, book) {
     return bookURL;
 }
 
-function previewURL(identifier, bookId, page) {
-    return common.testHost + '/download/' + identifier + '/page/' + bookId + '_' + page + '.jpg';
+function previewURL(identifier, subPrefix, page) {
+    var imageURL = common.testHost + '/download/' + identifier;
+    var bookPrefix = identifier;
+    if (subPrefix) {
+        imageURL += '/' + subPrefix;
+        var subPrefixParts = subPrefix.split('/')
+        bookPrefix = subPrefixParts[subPrefixParts.length - 1];
+    }
+    imageURL += '/page/' + bookPrefix + '_' + page + '.jpg';
+    return imageURL;
 }
