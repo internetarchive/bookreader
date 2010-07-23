@@ -264,19 +264,19 @@ class BookReader
     
     switch ($operator) {
         case 'page':
-            // Find bookId and which page was requested
-            $pathParts = pathinfo($filename);
             
             // Look for old-style preview request
             // $$$ currently ignoring file extension
-            if (preg_match('/^(.*)_(cover|title|preview)/', $filename, $matches) === 0) {
-                return null;
+            if (preg_match('/^(.*)_(cover|title|preview)/', $filename, $matches) === 1) {
+                // Serve preview image
+                $page = $matches[2];
+                $query['page'] = $page;
+                return 'http://' . $serverBaseURL . '/BookReader/BookReaderPreview.php?' . http_build_query($query, '', '&');
             }
-            $page = $matches[2];
             
-            $query['page'] = $page;
-            
-            return 'http://' . $serverBaseURL . '/BookReader/BookReaderPreview.php?' . http_build_query($query, '', '&');
+            // Asking for a non-preview page
+            $query['page'] = $filename;
+            return 'http://' . $serverBaseURL . '/BookReader/BookReaderImages.php?' . http_build_query($query, '', '&');
         
         default:
             // Unknown operator

@@ -55,6 +55,102 @@ class BookReaderImages
     var $kduExpand = '/petabox/sw/bin/kdu_expand';
     
     /*
+     * Serve an image request that requires looking up the book metadata
+     *
+     * Code path:
+     *   - Get book metadata
+     *   - Parse the requested page (e.g. cover_t.jpg, n5_r4.jpg) to determine which page type,
+     *       size and format (etc) is being requested
+     *   - Determine the leaf number corresponding to the page
+     *   - Determine scaling values
+     *   - Serve image request now that all information has been gathered
+     */
+
+    function serveLookupRequest($requestEnv) {
+        $brm = new BookReaderMeta();
+        try {
+            $metadata = $brm->buildMetadata($_REQUEST['id'], $_REQUEST['itemPath'], $_REQUEST['subPrefix'], $_REQUEST['server']);
+        } catch (Exception $e) {
+            $this->BRfatal($e->getMessage);
+        }
+        
+        $page = $_REQUEST['page'];
+
+        // Index of image to return
+        $imageIndex = null;
+
+        // XXX deal with subPrefix
+        $pageInfo = $this->parsePageRequest($page);
+
+        // Parse requested page for page type, size and format options
+        if (preg_match('#^([^_]+)#', $page, $matches) === 0) {
+            // Unrecognized page specifier
+            $this->BRfatal('Unrecognized page specifier');
+        }
+        $basePage = $matches[1];
+        
+        switch ($basePage) {
+            case 'title':
+                if (! array_key_exists('titleIndex', $metadata)) {
+                    $this->BRfatal("No title page asserted in book");
+                }
+                $imageIndex = $metadata['titleIndex'];
+                break;
+                
+            case 'cover':
+                if (! array_key_exists('coverIndices', $metadata)) {
+                    $this->BRfatal("No cover asserted in book");
+                }
+                $imageIndex = $metadata['coverIndices'][0]; // $$$ TODO add support for other covers
+                break;
+                
+            case 'preview':
+                // Preference is:
+                //   Cover page if book was published >= 1950
+                //   Title page
+                //   Cover page
+                //   Page 0
+                         
+                if ( array_key_exists('date', $metadata) && array_key_exists('coverIndices', $metadata) ) {
+                    if ($brm->parseYear($metadata['date']) >= 1950) {
+                        $imageIndex = $metadata['coverIndices'][0];                
+                        break;
+                    }
+                }
+                if (array_key_exists('titleIndex', $metadata)) {
+                    $imageIndex = $metadata['titleIndex'];
+                    break;
+                }
+                if (array_key_exists('coverIndices', $metadata)) {
+                    $imageIndex = $metadata['coverIndices'][0];
+                    break;
+                }
+                
+                // First page
+                $imageIndex = 0;
+                break;
+                
+            default:
+                // Shouldn't be possible
+                $this->BRfatal("Couldn't find page");
+                break;
+                
+        }
+        
+        $leaf = $brm->leafForIndex($imageIndex, $metadata['leafNums']);
+        
+        $requestEnv = array(
+            'zip' => $metadata['zip'],
+            'file' => $brm->imageFilePath($leaf, $metadata['subPrefix'], $metadata['imageFormat']),
+            'ext' => 'jpg',
+        );
+
+        // Return image data - will check privs        
+        $this->serveRequest($requestEnv);
+    
+    }
+    
+    /*
      * Returns a page image when all parameters such as the image stack location are
      * passed in.
      * 
@@ -588,6 +684,88 @@ class BookReaderImages
         }
         $binStr = decbin($scale); // convert to binary string. e.g. 5 -> '101'
         return strlen($binStr) - 1;
+    }
+    
+    /*
+     * Parses a page request like "page5_r2.jpg" or "cover_t.jpg" to corresponding
+     * page type, size, reduce, and format
+     */
+    function parsePageRequest($pageRequest, $bookPrefix) {
+    
+        $pageInfo = array();
+        
+        // Pull off extension
+        if (preg_match('#(.*)\.([^.]+)$#', $pageRequest, $matches) === 1) {
+            $pageRequest = $matches[1];
+            $extension = $matches[2];
+            if ($extension == 'jpeg') {
+                $extension = 'jpg';
+            }
+        } else {
+            $extension = 'jpg';
+        }
+        $pageInfo['extension'] = $extension;
+        
+        // Split parts out
+        $parts = explode('_', $pageRequest);
+
+        // Remove book prefix if it was included (historical)
+        if ($parts[0] == $bookPrefix) {
+            array_shift($parts);
+        }
+        
+        if (count($parts) === 0) {
+            $this->BRfatal('No page type specified');
+        }
+        $page = array_shift($parts);
+        
+        $pageTypes = array(
+            'page' => 'str',
+            'n' => 'num',
+            'cover' => 'single',
+            'preview' => 'single',
+            'title' => 'single'
+        );
+        
+        // Look for known page types
+        foreach ( $pageTypes as $pageName => $kind ) {
+            if ( preg_match('#^(' . $pageName . ')(.*)#', $page, $matches) === 1 ) {
+                $pageInfo['type'] = $matches[1];
+                switch ($kind) {
+                    case 'str':
+                        $pageInfo['value'] = $matches[2];
+                        break;
+                    case 'num':
+                        $pageInfo['value'] = intval($matches[2]);
+                        break;
+                    case 'single':
+                        break;
+                }
+            }
+        }
+        
+        if ( !array_key_exists('type', $pageInfo) ) {
+            $this->BRfatal('Unrecognized page type');
+        }
+        
+        // Look for other known parts
+        foreach ($parts as $part) {
+            $start = substr($part, 0, 1);
+            
+            switch ($start) {
+                case 't':
+                    $pageInfo['size'] = $start;
+                    break;
+                case 'r':
+                    $pageInfo['reduce'] = substr($part, 0);
+                    break;
+                default:
+                    // Unrecognized... just let it pass
+                    break;
+            }
+        }
+        
+        return $pageInfo;
     }
     
 }

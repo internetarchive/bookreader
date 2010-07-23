@@ -41,6 +41,7 @@ try {
     BRfatal($e->getMessage);
 }
 
+// $$$ allow size information
 $knownPages = array('title','cover','preview');
 $page = $_REQUEST['page'];
 if (! in_array($page, $knownPages) ) {
