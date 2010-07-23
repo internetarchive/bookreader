@@ -30,7 +30,13 @@ require_once('BookReaderImages.inc.php');
 // Serve request
 $bri = new BookReaderImages();
 try {
-    $bri->serveRequest($_REQUEST);
+    if ($_REQUEST['page']) {
+        // Need to lookup metadata
+        $bri->serveLookupRequest($_REQUEST);
+    } else {
+        // Request should be fully qualified - no lookup needed
+        $bri->serveRequest($_REQUEST);
+    }
 } catch (Exception $e) {
     header("HTTP/1.0 404 Not Found");
     header("Content-type: text/plain");

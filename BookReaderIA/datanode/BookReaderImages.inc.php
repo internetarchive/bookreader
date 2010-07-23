@@ -24,6 +24,8 @@ the MIME type is "image/jpeg".
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+require_once("BookReaderMeta.inc.php");
+
 class BookReaderImages
 {
     public $MIMES = array('gif' => 'image/gif',
@@ -79,15 +81,17 @@ class BookReaderImages
         // Index of image to return
         $imageIndex = null;
 
-        // XXX deal with subPrefix
-        $pageInfo = $this->parsePageRequest($page);
-
-        // Parse requested page for page type, size and format options
-        if (preg_match('#^([^_]+)#', $page, $matches) === 0) {
-            // Unrecognized page specifier
-            $this->BRfatal('Unrecognized page specifier');
+        // deal with subPrefix
+        if ($_REQUEST['subPrefix']) {
+            $parts = split('/', $_REQUEST['subPrefix']);
+            $bookId = $parts[count($parts) - 1 ];
+        } else {
+            $bookId = $_REQUEST['id'];
         }
-        $basePage = $matches[1];
+        
+        $pageInfo = $this->parsePageRequest($page, $bookId);
+
+        $basePage = $pageInfo['type'];
         
         switch ($basePage) {
             case 'title':
@@ -130,9 +134,26 @@ class BookReaderImages
                 $imageIndex = 0;
                 break;
                 
+            case 'n':
+                // Accessible index page
+                $imageIndex = intval($pageInfo['value']);
+                break;
+                
+            case 'page':
+                // Named page
+                $index = array_search($pageInfo['value'], $metadata['pageNums']);
+                if ($index === FALSE) {
+                    // Not found
+                    $this->BRfatal("Page not found");
+                    break;
+                }
+                
+                $imageIndex = $index;
+                break;
+                
             default:
                 // Shouldn't be possible
-                $this->BRfatal("Couldn't find page");
+                $this->BRfatal("Unrecognized page type requested");
                 break;
                 
         }

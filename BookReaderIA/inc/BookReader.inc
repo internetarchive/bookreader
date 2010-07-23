@@ -325,7 +325,7 @@ class BookReader
     
     $parts = array();
     
-    // Pull off query
+    // Pull off query, e.g. ?foo=bar
     if (preg_match('#(.*?)(\?.*)#', $path, $matches) === 1) {
         $parts['query'] = $matches[2];
         $path = $matches[1];
@@ -342,9 +342,9 @@ class BookReader
     // Look for operators
     // The sub-prefix can be arbitrary, so we match up until the first operator
     $operators = '(' . join('|', self::$downloadOperators) . ')';
-    $pattern = '#/(?P<subPrefix>.*?)/(?P<operator>' . $operators . ')/(?P<operand>.*)#';
+    $pattern = '#(?P<subPrefix>.*?)/(?P<operator>' . $operators . ')/(?P<operand>.*)#';
     if (preg_match($pattern, $path, $matches) === 1) {
-        $parts['subPrefix'] = $matches['subPrefix'];
+        $parts['subPrefix'] = substr($matches['subPrefix'], 1); // remove leading '/'
         $parts['operator'] = $matches['operator'];
         $parts['operand'] = $matches['operand'];
     } else {
