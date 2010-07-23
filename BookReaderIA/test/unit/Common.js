@@ -24,14 +24,19 @@ function jsLocateURL(identifier, book) {
     return bookURL;
 }
 
+// Page should be in ['cover','title','preview']
 function previewURL(identifier, subPrefix, page) {
+    var bookPrefix = subPrefix || identifier;
+    var previewPage = bookPrefix + '_' + page;
+    return imagePermalink(identifier, subPrefix, previewPage);
+}
+
+// Page should be e.g. page5.jpg, n4.jpg, cover_t.jpg, n4_r3.jpg
+function imagePermalink(identifier, subPrefix, page) {
     var imageURL = common.testHost + '/download/' + identifier;
-    var bookPrefix = identifier;
     if (subPrefix) {
         imageURL += '/' + subPrefix;
-        var subPrefixParts = subPrefix.split('/')
-        bookPrefix = subPrefixParts[subPrefixParts.length - 1];
     }
-    imageURL += '/page/' + bookPrefix + '_' + page + '.jpg';
+    imageURL += '/page/' + page;
     return imageURL;
 }

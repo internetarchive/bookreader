@@ -165,6 +165,11 @@ class BookReaderImages
             'file' => $brm->imageFilePath($leaf, $metadata['subPrefix'], $metadata['imageFormat']),
             'ext' => 'jpg',
         );
+        
+        if ($pageInfo['reduce']) {
+            $requestEnv['reduce'] = $pageInfo['reduce'];
+        }
+        // $$$ handle scale, other sizes, rotation, etc
 
         // Return image data - will check privs        
         $this->serveRequest($requestEnv);
