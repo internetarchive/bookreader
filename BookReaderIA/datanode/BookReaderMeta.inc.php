@@ -41,16 +41,14 @@ class BookReaderMeta {
     var $metaDefaults = array(
         'pageProgression' => 'lr',
     );
+    
+    // Stash spot for callback data... where are closures when we need them?
+    static $cbData = NULL;
 
     // Builds metadata object (to be encoded as JSON)
     function buildMetadata($id, $itemPath, $subPrefix, $server) {
     
         $response = array();
-        
-        if (! $subPrefix) {
-            $subPrefix = $id;
-        }
-        $subItemPath = $itemPath . '/' . $subPrefix;
         
         if ("" == $id) {
             $this->BRFatal("No identifier specified!");
@@ -68,8 +66,6 @@ class BookReaderMeta {
             $this->BRFatal("Bad id!");
         }
         
-        // XXX check here that subitem is okay
-        
         $filesDataFile = "$itemPath/${id}_files.xml";
         
         if (file_exists($filesDataFile)) {
@@ -82,6 +78,10 @@ class BookReaderMeta {
         if ($imageStackInfo['imageFormat'] == 'unknown') {
             $this->BRfatal('Couldn\'t find image stack');
         }
+        // Update subPrefix -> may have been autodetected
+        $subPrefix = $imageStackInfo['subPrefix'];
+        $subItemPath = $itemPath . '/' . $subPrefix;
+
         
         $imageFormat = $imageStackInfo['imageFormat'];
         $archiveFormat = $imageStackInfo['archiveFormat'];
@@ -264,30 +264,91 @@ class BookReaderMeta {
     // Returns { 'imageFormat' => , 'archiveFormat' => '} given a sub-item prefix and loaded xml data
     function findImageStack($subPrefix, $filesData) {
     
-        // $$$ The order of the image formats determines which will be returned first
+        static $cbPrefix = NULL;
+    
+        // The order of the image formats determines which will be returned first
         $imageFormats = array('JP2' => 'jp2', 'TIFF' => 'tif', 'JPEG' => 'jpg');
+        $imageFormatOrder = array_values($imageFormats);
         $archiveFormats = array('ZIP' => 'zip', 'Tar' => 'tar');
         $imageGroup = implode('|', array_keys($imageFormats));
         $archiveGroup = implode('|', array_keys($archiveFormats));
         // $$$ Currently only return processed images
         $imageStackRegex = "/Single Page (Processed) (${imageGroup}) (${archiveGroup})/";
-            
-        foreach ($filesData->file as $file) {        
-            if (strpos($file['name'], $subPrefix) === 0) { // subprefix matches beginning
-                if (preg_match($imageStackRegex, $file->format, $matches)) {
+
+        // Strategy:
+        //   - Find potential image stacks, regardless of subPrefix
+        //   - If not given subPrefix sort based on potential subPrefix and assign based on asciibetical first
+        //   - Filter results by subPrefix
+        //   - Sort based on image format
+        //   - Take best match
+
+        $imageStacks = array();
+        foreach ($filesData->file as $file) {
+            if ( preg_match($imageStackRegex, $file->format, $matches) === 1 ) {
+                $imageFormat = $imageFormats[$matches[2]];
+                $archiveFormat = $archiveFormats[$matches[3]];
+                $imageStackFile = $file['name'] . '';
                 
-                    // Make sure we have a regular image stack
-                    $imageFormat = $imageFormats[$matches[2]];
-                    if (strpos($file['name'], $subPrefix . '_' . $imageFormat) === 0) {            
-                        return array('imageFormat' => $imageFormat,
-                                     'archiveFormat' => $archiveFormats[$matches[3]],
-                                     'imageStackFile' => $file['name']);
-                    }
+                if ( preg_match("#(.*)_${imageFormat}\.${archiveFormat}#", $imageStackFile, $matches) === 0) {
+                    // stack filename not regular
+                    continue;
+                } else {
+                    array_push($imageStacks, array(
+                                                'imageFormat' => $imageFormat,
+                                                'archiveFormat' => $archiveFormat,
+                                                'imageStackFile' => $imageStackFile,
+                                                'subPrefix' => $matches[1])
+                    );
                 }
+
             }
         }
+
+        /*
+        print("<pre>");
+        print("found subPrefix $subPrefix\n");
+        print_r($imageStacks);
+        */
+        
+        function subPrefixSort($imageStackA, $imageStackB) {
+            if ($imageStackA['subPrefix'] == $imageStackB['subPrefix']) {
+                return 0;
+            }
+            return ($imageStackA['subPrefix'] < $imageStackB['subPrefix']) ? -1 : 1;
+        }
+        if (! $subPrefix) {
+            usort($imageStacks, 'subPrefixSort');
+            $subPrefix = $imageStacks[0]['subPrefix'];
+        }
+        
+        self::$cbData = $subPrefix;
+        function subPrefixFilter($imageStack) {
+            return $imageStack['subPrefix'] == BookReaderMeta::$cbData;
+        }
+        $imageStacks = array_filter($imageStacks, 'subPrefixFilter');
                 
-        return array('imageFormat' => 'unknown', 'archiveFormat' => 'unknown', 'imageStackFile' => 'unknown');    
+        function formatSort($imageStackA, $imageStackB) {
+            $formatA = $imageStackA['imageFormat'];
+            $formatB = $imageStackB['imageFormat'];
+            if ($formatA == $formatB) {
+                return 0;
+            }
+            
+            $indexA = array_search($formatA, $imageFormatOrder);
+            $indexB = array_search($formatB, $imageFormatOrder);
+            // We already matched base on format, so both indices should be set
+            if ($indexA == $indexB) {
+                return 0;
+            }
+            return ($indexA < $indexB) ? 1 : -1;
+        }
+        usort($imageStacks, 'formatSort'); // necessary to remap keys
+        
+        if ( count($imageStacks) > 0 ) {
+            return $imageStacks[0];
+        } else {
+            return array('imageFormat' => 'unknown', 'archiveFormat' => 'unknown', 'imageStackFile' => 'unknown');
+        }
     }
     
     function isValidCallback($identifier) {
