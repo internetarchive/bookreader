@@ -54,12 +54,13 @@ class BookReaderImages
 
     // Keys in the image permalink urls, e.g. http://www.archive.org/download/itemid/page/cover_{keyval}_{keyval}.jpg
     public static $imageUrlKeys = array(
-        'r' => 'reduce',
+        //'r' => 'reduce',
         's' => 'scale',
         'region' => 'region',
         'tile' => 'tile',
         'w' => 'width',
-        'h' => 'height'
+        'h' => 'height',
+        'rotate' => 'rotate'
     );
     
     // Paths to command-line tools
