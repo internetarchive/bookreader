@@ -62,7 +62,6 @@ class BookReaderImages
         'h' => 'height'
     );
     
-    
     // Paths to command-line tools
     var $exiftool = '/petabox/sw/books/exiftool/exiftool';
     var $kduExpand = '/petabox/sw/bin/kdu_expand';
@@ -177,10 +176,12 @@ class BookReaderImages
             'ext' => 'jpg',
         );
         
-        if ($pageInfo['reduce']) {
-            $requestEnv['reduce'] = $pageInfo['reduce'];
-        }
-        // $$$ handle scale, other sizes, rotation, etc
+        // remove non-passthrough keys from pageInfo
+        unset($pageInfo['type']);
+        unset($pageInfo['value']);
+        
+        // add pageinfo to request
+        $requestEnv = array_merge($pageInfo, $requestEnv);
 
         // Return image data - will check privs        
         $this->serveRequest($requestEnv);
@@ -280,7 +281,7 @@ class BookReaderImages
             if (!$scale) {
                 $scale = 1;
             }
-            if (array_key_exists($scale, $this->imageSizes)) {
+            if (array_key_exists($scale, self::$imageSizes)) {
                 $srcRatio = floatval($imageInfo['width']) / floatval($imageInfo['height']);
                 if ($srcRatio > 1) {
                     // wide
@@ -791,7 +792,7 @@ class BookReaderImages
         
         // Look for other known parts
         foreach ($parts as $part) {
-            if ( in_array($part, $imageSizes) ) {
+            if ( in_array($part, self::$imageSizes) ) {
                 $pageInfo['size'] = $part;
                 continue;
             }
