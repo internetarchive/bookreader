@@ -28,7 +28,7 @@ require_once("BookReaderMeta.inc.php");
 
 class BookReaderImages
 {
-    public $MIMES = array('gif' => 'image/gif',
+    public static $MIMES = array('gif' => 'image/gif',
                    'jp2' => 'image/jp2',
                    'jpg' => 'image/jpeg',
                    'jpeg' => 'image/jpeg',
@@ -36,7 +36,7 @@ class BookReaderImages
                    'tif' => 'image/tiff',
                    'tiff' => 'image/tiff');
                    
-    public $EXTENSIONS = array('gif' => 'gif',
+    public static $EXTENSIONS = array('gif' => 'gif',
                         'jp2' => 'jp2',
                         'jpeg' => 'jpeg',
                         'jpg' => 'jpeg',
@@ -45,12 +45,23 @@ class BookReaderImages
                         'tiff' => 'tiff');
     
     // Width when generating thumbnails
-    public $imageSizes = array(
+    public static $imageSizes = array(
         'thumb' => 100,
-        'small' => 240,
-        'medium' => 500,
-        'large' => 1024,
+        'small' => 256,
+        'medium' => 512,
+        'large' => 2048,
     );
+
+    // Keys in the image permalink urls, e.g. http://www.archive.org/download/itemid/page/cover_{keyval}_{keyval}.jpg
+    public static $imageUrlKeys = array(
+        'r' => 'reduce',
+        's' => 'scale',
+        'region' => 'region',
+        'tile' => 'tile',
+        'w' => 'width',
+        'h' => 'height'
+    );
+    
     
     // Paths to command-line tools
     var $exiftool = '/petabox/sw/books/exiftool/exiftool';
@@ -341,7 +352,7 @@ class BookReaderImages
         
         $filenameForClient = $this->filenameForClient($file, $ext);
         
-        $headers = array('Content-type: '. $MIMES[$ext], // XXX is nginx swallowing this?
+        $headers = array('Content-type: '. self::$MIMES[$ext],
                          'Cache-Control: max-age=15552000',
                          'Content-disposition: inline; filename=' . $filenameForClient);
                           
@@ -413,8 +424,8 @@ class BookReaderImages
     function imageExtensionToType($extension)
     {
         
-        if (array_key_exists($extension, $this->EXTENSIONS)) {
-            return $this->EXTENSIONS[$extension];
+        if (array_key_exists($extension, self::$EXTENSIONS)) {
+            return self::$EXTENSIONS[$extension];
         } else {
             $this->BRfatal('Unknown image extension');
         }            
@@ -757,19 +768,6 @@ class BookReaderImages
             'title' => 'single'
         );
         
-        $sizes = array(
-            'large', 'thumb', 'medium', 'small', 'orig'
-        );
-        
-        $keys = array(
-            'r' => 'reduce',
-            's' => 'scale',
-            'region' => 'region',
-            'tile' => 'tile',
-            'w' => 'width',
-            'h' => 'height'
-        );
-        
         // Look for known page types
         foreach ( $pageTypes as $pageName => $kind ) {
             if ( preg_match('#^(' . $pageName . ')(.*)#', $page, $matches) === 1 ) {
@@ -793,7 +791,7 @@ class BookReaderImages
         
         // Look for other known parts
         foreach ($parts as $part) {
-            if ( in_array($part, $sizes) ) {
+            if ( in_array($part, $imageSizes) ) {
                 $pageInfo['size'] = $part;
                 continue;
             }
@@ -808,8 +806,8 @@ class BookReaderImages
             $key = $matches[1];
             $value = $matches[2];
             
-            if ( array_key_exists($key, $keys) ) {
-                $pageInfo[$keys[$key]] = $value;
+            if ( array_key_exists($key, self::$imageUrlKeys) ) {
+                $pageInfo[self::$imageUrlKeys[$key]] = $value;
                 continue;
             }
             
