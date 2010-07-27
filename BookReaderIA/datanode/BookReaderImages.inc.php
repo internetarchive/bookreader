@@ -268,6 +268,8 @@ class BookReaderImages
         
         // The pbmreduce reduction factor produces an image with dimension 1/n
         // The kakadu reduction factor produceds an image with dimension 1/(2^n)
+        
+        // Set scale from height or width if set
         if (isset($requestEnv['height'])) {
             $powReduce = $this->nearestPow2Reduce($requestEnv['height'], $imageInfo['height']);
             $scale = pow(2, $powReduce);
@@ -278,11 +280,16 @@ class BookReaderImages
         } else {
             // $$$ could be cleaner
             // Provide next smaller power of two reduction
+            
+            // Set scale from 'scale' if set
             $scale = $requestEnv['scale'];
             if (!$scale) {
                 $scale = 1;
             }
-            if (array_key_exists($scale, self::$imageSizes)) {
+            
+            // Set scale from named size (e.g. 'large') if set
+            $size = $requestEnv['size'];
+            if ( $size && array_key_exists($size, self::$imageSizes)) {
                 $srcRatio = floatval($imageInfo['width']) / floatval($imageInfo['height']);
                 if ($srcRatio > 1) {
                     // wide
@@ -290,10 +297,13 @@ class BookReaderImages
                 } else {
                     $dimension = 'height';
                 }
-                $powReduce = $this->nearestPow2Reduce($this->imageSizes[$scale], $imageInfo[$dimension]);
+                $powReduce = $this->nearestPow2Reduce(self::$imageSizes[$size], $imageInfo[$dimension]);
             } else {
-                $powReduce = $this->nearestPow2ForScale($scale);
+                // No named size - update powReduce from scale
+                $powReduce = $this->nearestPow2ForScale($sale);
             }
+            
+            // Make sure scale matches powReduce
             $scale = pow(2, $powReduce);
         }
         
@@ -793,7 +803,7 @@ class BookReaderImages
         
         // Look for other known parts
         foreach ($parts as $part) {
-            if ( in_array($part, self::$imageSizes) ) {
+            if ( array_key_exists($part, self::$imageSizes) ) {
                 $pageInfo['size'] = $part;
                 continue;
             }
