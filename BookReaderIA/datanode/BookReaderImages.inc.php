@@ -718,7 +718,11 @@ class BookReaderImages
      */
     function parsePageRequest($pageRequest, $bookPrefix) {
     
+        // Will hold parsed results
         $pageInfo = array();
+        
+        // Normalize
+        $pageRequest = strtolower($pageRequest);
         
         // Pull off extension
         if (preg_match('#(.*)\.([^.]+)$#', $pageRequest, $matches) === 1) {
@@ -753,6 +757,19 @@ class BookReaderImages
             'title' => 'single'
         );
         
+        $sizes = array(
+            'large', 'thumb', 'medium', 'small', 'orig'
+        );
+        
+        $keys = array(
+            'r' => 'reduce',
+            's' => 'scale',
+            'region' => 'region',
+            'tile' => 'tile',
+            'w' => 'width',
+            'h' => 'height'
+        );
+        
         // Look for known page types
         foreach ( $pageTypes as $pageName => $kind ) {
             if ( preg_match('#^(' . $pageName . ')(.*)#', $page, $matches) === 1 ) {
@@ -776,19 +793,27 @@ class BookReaderImages
         
         // Look for other known parts
         foreach ($parts as $part) {
-            $start = substr($part, 0, 1);
-            
-            switch ($start) {
-                case 't':
-                    $pageInfo['size'] = $start;
-                    break;
-                case 'r':
-                    $pageInfo['reduce'] = substr($part, 0);
-                    break;
-                default:
-                    // Unrecognized... just let it pass
-                    break;
+            if ( in_array($part, $sizes) ) {
+                $pageInfo['size'] = $part;
+                continue;
             }
+        
+            // Key must be alpha, value must start with digit and contain digits, alpha, ',' or '.'
+            // Should prevent injection of strange values into the redirect to datanode
+            if ( preg_match('#^([a-z]+)(\d[a-z0-9,.]*)#', $part, $matches) === 0) {
+                // Not recognized
+                continue;
+            }
+            
+            $key = $matches[1];
+            $value = $matches[2];
+            
+            if ( array_key_exists($key, $keys) ) {
+                $pageInfo[$keys[$key]] = $value;
+                continue;
+            }
+            
+            // If we hit here, was unrecognized (no action)
         }
         
         return $pageInfo;
