@@ -67,6 +67,9 @@ class BookReaderImages
     var $exiftool = '/petabox/sw/books/exiftool/exiftool';
     var $kduExpand = '/petabox/sw/bin/kdu_expand';
     
+    // Name of temporary files, to be cleaned at exit
+    var $tempFiles = array();
+    
     /*
      * Serve an image request that requires looking up the book metadata
      *
@@ -390,6 +393,7 @@ class BookReaderImages
                 if ($this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
                     $recovered = true;
                 } else {
+                    $this->cleanup();
                     trigger_error('BookReader fallback image processing also failed: ' . $errorMessage, E_USER_WARNING);
                 }
             }
@@ -399,9 +403,7 @@ class BookReaderImages
             }
         }
         
-        if (isset($tempFile)) {
-            unlink($tempFile);
-        }
+        $this->cleanup();
     }    
     
     function getUnarchiveCommand($archivePath, $file)
@@ -571,6 +573,7 @@ class BookReaderImages
                 // We use the BookReaderTiff prefix to give a hint in case things don't
                 // get cleaned up.
                 $tempFile = tempnam("/tmp", "BookReaderTiff");
+                array_push($this->tempFiles, $tempFile);
             
                 // $$$ look at bit depth when reducing
                 $decompressCmd = 
@@ -673,6 +676,7 @@ class BookReaderImages
     }
     
     function BRfatal($string) {
+        $this->cleanup();
         throw new Exception("Image error: $string");
     }
     
@@ -827,6 +831,14 @@ class BookReaderImages
         }
         
         return $pageInfo;
+    }
+    
+    // Clean up temporary files and resources
+    function cleanup() {
+        foreach($this->tempFiles as $tempFile) {
+            unlink($tempFile);
+        }
+        $this->tempFiles = array();
     }
     
 }
