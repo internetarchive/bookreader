@@ -270,7 +270,13 @@ class BookReaderImages
         $jpegOptions = '-quality 75';
         
         // The pbmreduce reduction factor produces an image with dimension 1/n
-        // The kakadu reduction factor produceds an image with dimension 1/(2^n)
+        // The kakadu reduction factor produces an image with dimension 1/(2^n)
+        
+        // We interpret the requested size and scale, look at image format, and determine the
+        // actual scaling to be returned to the client.  We generally return the largest
+        // power of 2 reduction that is larger than the requested size in order to reduce
+        // image processing load on our cluster.  The client should then scale to their final
+        // needed size.
         
         // Set scale from height or width if set
         if (isset($requestEnv['height'])) {
@@ -281,15 +287,6 @@ class BookReaderImages
             $scale = pow(2, $powReduce);
 
         } else {
-            // $$$ could be cleaner
-            // Provide next smaller power of two reduction
-            
-            // Set scale from 'scale' if set
-            $scale = $requestEnv['scale'];
-            if (!$scale) {
-                $scale = 1;
-            }
-            
             // Set scale from named size (e.g. 'large') if set
             $size = $requestEnv['size'];
             if ( $size && array_key_exists($size, self::$imageSizes)) {
@@ -301,13 +298,18 @@ class BookReaderImages
                     $dimension = 'height';
                 }
                 $powReduce = $this->nearestPow2Reduce(self::$imageSizes[$size], $imageInfo[$dimension]);
+                $scale = pow(2, $powReduce);
+                
             } else {
-                // No named size - update powReduce from scale
-                $powReduce = $this->nearestPow2ForScale($sale);
-            }
-            
-            // Make sure scale matches powReduce
-            $scale = pow(2, $powReduce);
+                // No named size - use explicit scale, if given
+                $scale = $requestEnv['scale'];
+                if (!$scale) {
+                    $scale = 1;
+                }
+                $powReduce = $this->nearestPow2ForScale($scale);
+                // ensure integer scale
+                $scale = pow(2, $powReduce);
+            }            
         }
         
         // Override depending on source image format
