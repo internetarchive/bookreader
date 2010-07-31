@@ -263,9 +263,7 @@ class BookReaderMeta {
     
     // Returns { 'imageFormat' => , 'archiveFormat' => '} given a sub-item prefix and loaded xml data
     function findImageStack($subPrefix, $filesData) {
-    
-        static $cbPrefix = NULL;
-    
+        
         // The order of the image formats determines which will be returned first
         $imageFormats = array('JP2' => 'jp2', 'TIFF' => 'tif', 'JPEG' => 'jpg');
         $imageFormatOrder = array_values($imageFormats);
@@ -304,17 +302,13 @@ class BookReaderMeta {
             }
         }
 
-        /*
-        print("<pre>");
-        print("found subPrefix $subPrefix\n");
-        print_r($imageStacks);
-        */
+        // print("<pre>");
+        // print("found subPrefix $subPrefix\n");
+        // print_r($imageStacks);
+        // die(0);
         
         function subPrefixSort($imageStackA, $imageStackB) {
-            if ($imageStackA['subPrefix'] == $imageStackB['subPrefix']) {
-                return 0;
-            }
-            return ($imageStackA['subPrefix'] < $imageStackB['subPrefix']) ? -1 : 1;
+            return strcmp($imageStackA['subPrefix'], $imageStackB['subPrefix']);
         }
         if (! $subPrefix) {
             usort($imageStacks, 'subPrefixSort');
