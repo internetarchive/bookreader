@@ -54,8 +54,8 @@ class BookReaderImages
 
     // Keys in the image permalink urls, e.g. http://www.archive.org/download/itemid/page/cover_{keyval}_{keyval}.jpg
     public static $imageUrlKeys = array(
-        //'r' => 'reduce',
-        's' => 'scale',
+        //'r' => 'reduce', // pow of 2 reduction
+        's' => 'scale', // $$$ scale is downscaling factor in BookReaderImages but most people call this "reduce"
         'region' => 'region',
         'tile' => 'tile',
         'w' => 'width',
