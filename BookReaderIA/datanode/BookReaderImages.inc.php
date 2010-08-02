@@ -109,6 +109,7 @@ class BookReaderImages
         
         $leaf = null;
         switch ($basePage) {
+        
             case 'title':
                 if (! array_key_exists('titleIndex', $metadata)) {
                     $this->BRfatal("No title page asserted in book");
@@ -722,6 +723,9 @@ class BookReaderImages
     }
     
     function checkPrivs($filename) {
+        // $$$ we assume here that requests for the title, cover or preview
+        //     come in via BookReaderPreview.php which will be re-run with
+        //     privileges after we return the 403
         if (!is_readable($filename)) {
             header('HTTP/1.1 403 Forbidden');
             exit(0);

@@ -1,5 +1,15 @@
 <?
 
+/*
+ * 
+
+/*
+ * Note: Edits to this file must pass through github.  To submit a patch to this
+ *       file please contact mang at archive dot org or http://github.com/mangtronix
+ *       Direct changes to this file may get clobbered when the code is synchronized
+ *       from github.
+ */
+
 class BookReader
 {
 
@@ -265,12 +275,17 @@ class BookReader
     switch ($operator) {
         case 'page':
             
-            // Look for old-style preview request
-            // $$$ currently ignoring file extension
-            if (preg_match('/^(.*)_(cover|title|preview)/', $filename, $matches) === 1) {
+            // Look for old-style preview request - e.g. {identifier}_cover.jpg
+            if (preg_match('/^(.*)_((cover|title|preview).*)/', $filename, $matches) === 1) {
                 // Serve preview image
                 $page = $matches[2];
                 $query['page'] = $page;
+                return 'http://' . $serverBaseURL . '/BookReader/BookReaderPreview.php?' . http_build_query($query, '', '&');
+            }
+            
+            // New-style preview request - e.g. cover_thumb.jpg
+            if (preg_match('/^(cover|title|preview)/', $filename, $matches) === 1) {
+                $query['page'] = $filename;
                 return 'http://' . $serverBaseURL . '/BookReader/BookReaderPreview.php?' . http_build_query($query, '', '&');
             }
             

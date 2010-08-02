@@ -24,7 +24,6 @@ This file is part of BookReader.
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-require_once('BookReaderMeta.inc.php');
 require_once('BookReaderImages.inc.php');
 
 function BRfatal($message) {
@@ -34,97 +33,18 @@ function BRfatal($message) {
     die(-1);
 }
 
-$brm = new BookReaderMeta();
-try {
-    $metadata = $brm->buildMetadata($_REQUEST['id'], $_REQUEST['itemPath'], $_REQUEST['subPrefix'], $_REQUEST['server']);
-} catch (Exception $e) {
-    BRfatal($e->getMessage);
-}
+$allowedPages = array('title','cover','preview');
+$allowedPattern = '#^(' . join('|', $allowedPages) . ')#';
 
-// $$$ allow size information
-$knownPages = array('title','cover','preview');
 $page = $_REQUEST['page'];
-if (! in_array($page, $knownPages) ) {
-    BRfatal("Bad or no page specified");
+
+if (preg_match($allowedPattern, $page)) { 
+    // Return image data
+    $bri = new BookReaderImages();
+    $bri->serveLookupRequest($_REQUEST);
 }
 
-// Index of image to return
-$imageIndex = null;
+BRfatal("Bad or no page specified");
 
-switch ($page) {
-    case 'title':
-        if (! array_key_exists('titleIndex', $metadata)) {
-            BRfatal("No title page asserted in book");
-        }
-        $imageIndex = $metadata['titleIndex'];
-        break;
-        
-    case 'cover':
-        if (! array_key_exists('coverIndices', $metadata)) {
-            BRfatal("No cover asserted in book");
-        }
-        $imageIndex = $metadata['coverIndices'][0]; // $$$ TODO add support for other covers
-        break;
-        
-    case 'preview':
-        // Preference is:
-        //   Cover page if book was published >= 1950
-        //   Title page
-        //   Cover page
-        //   Page 0
-        
-        /*
-        header('Content-type: text/plain');
-        print 'Date ' . $metadata['date'];
-        print 'Year ' . $brm->parseYear($metadata['date']);
-        */
- 
-        if ( array_key_exists('date', $metadata) && array_key_exists('coverIndices', $metadata) ) {
-            if ($brm->parseYear($metadata['date']) >= 1950) {
-                $imageIndex = $metadata['coverIndices'][0];                
-                break;
-            }
-        }
-        if (array_key_exists('titleIndex', $metadata)) {
-            $imageIndex = $metadata['titleIndex'];
-            break;
-        }
-        if (array_key_exists('coverIndices', $metadata)) {
-            $imageIndex = $metadata['coverIndices'][0];
-            break;
-        }
-        
-        // First page
-        $imageIndex = 0;
-        break;
-        
-    default:
-        // Shouldn't be possible
-        BRfatal("Couldn't find page");
-        break;
-        
-}
-
-$leaf = $brm->leafForIndex($imageIndex, $metadata['leafNums']);
-
-$requestEnv = array(
-    'zip' => $metadata['zip'],
-    'file' => $brm->imageFilePath($leaf, $metadata['subPrefix'], $metadata['imageFormat']),
-    'ext' => 'jpg',
-);
-
-// Return image data - will check privs
-$bri = new BookReaderImages();
-try {
-    $bri->serveRequest($requestEnv);
-} catch (Exception $e) {
-    header("HTTP/1.0 404 Not Found");
-    header("Content-type: text/plain");
-    print "Error serving request:";
-    print "  " . $e->getMessage();
-    print "Debugging information:";
-    echo $e->getTraceAsString();
-    die(-1);
-}
 
 ?>
