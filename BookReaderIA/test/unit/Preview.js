@@ -16,9 +16,13 @@ function Book(identifier, previewWidth, coverWidth, titleWidth, bookId) {
 }
 
 var books = [
-    new Book('coloritsapplicat00andriala', 1974, 2346, 1974),
-    new Book('lietuvostsrmoksl50liet', 1887, 1747, 1887),
-    new Book('oldtestamentrevi02slsn', 2019, 2371, 2019),
+    // Old books using title page as cover (ignoring marked cover)
+    new Book('coloritsapplicat00andriala', 1974, 1974, 1974),
+    new Book('lietuvostsrmoksl50liet', 1887, 1887, 1887),
+    new Book('oldtestamentrevi02slsn', 2019, 2019, 2019),
+    
+    // Protected book with marked cover returned as cover
+    new Book('joyofsoaringtrai00conw', 2571, 2571, 2419)
 ];
 
 for (index in books) {
