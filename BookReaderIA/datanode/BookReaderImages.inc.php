@@ -107,6 +107,7 @@ class BookReaderImages
 
         $basePage = $pageInfo['type'];
         
+        $leaf = null;
         switch ($basePage) {
             case 'title':
                 if (! array_key_exists('titleIndex', $metadata)) {
@@ -114,15 +115,19 @@ class BookReaderImages
                 }
                 $imageIndex = $metadata['titleIndex'];
                 break;
-                
+            
+            /* Old 'cover' behaviour where it would show cover 0 if it exists or return 404.
+               Could be re-added as cover0, cover1, etc
             case 'cover':
                 if (! array_key_exists('coverIndices', $metadata)) {
                     $this->BRfatal("No cover asserted in book");
                 }
                 $imageIndex = $metadata['coverIndices'][0]; // $$$ TODO add support for other covers
                 break;
-                
+            */
+            
             case 'preview':
+            case 'cover': // Show our best guess if cover is requested
                 // Preference is:
                 //   Cover page if book was published >= 1950
                 //   Title page
@@ -165,6 +170,11 @@ class BookReaderImages
                 $imageIndex = $index;
                 break;
                 
+            case 'leaf':
+                // Leaf explicitly specified
+                $leaf = $pageInfo['value'];
+                break;
+                
             default:
                 // Shouldn't be possible
                 $this->BRfatal("Unrecognized page type requested");
@@ -172,7 +182,10 @@ class BookReaderImages
                 
         }
         
-        $leaf = $brm->leafForIndex($imageIndex, $metadata['leafNums']);
+        if (is_null($leaf)) {
+            // Leaf was not explicitly set -- look it up
+            $leaf = $brm->leafForIndex($imageIndex, $metadata['leafNums']);
+        }
         
         $requestEnv = array(
             'zip' => $metadata['zip'],
@@ -783,7 +796,8 @@ class BookReaderImages
             'n' => 'num',
             'cover' => 'single',
             'preview' => 'single',
-            'title' => 'single'
+            'title' => 'single',
+            'leaf' => 'num'
         );
         
         // Look for known page types
