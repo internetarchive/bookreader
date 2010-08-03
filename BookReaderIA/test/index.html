@@ -11,6 +11,13 @@
   <script type="text/javascript" src="unit/Search.js"></script>
   <script type="text/javascript" src="unit/Preview.js"></script>
   <script type="text/javascript" src="unit/Permalinks.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+        var header = $('#qunit-header');
+        header.html( header.html() + ' - ' + common.testHost );
+        header = null;
+    });
+  </script>
   
 
 </head>

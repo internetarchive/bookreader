@@ -4,6 +4,9 @@
 
 module("JSLocate");
 
+// $$$ locate will fail when called from the same domain since the browser will not honour the
+//     redirect to the datanode
+
 asyncTest("JSLocate for notesonsubmarine00grea", function() {
     expect(1);
     $.getScript( jsLocateURL('notesonsubmarine00grea'),
