@@ -41,7 +41,17 @@ $page = $_REQUEST['page'];
 if (preg_match($allowedPattern, $page)) { 
     // Return image data
     $bri = new BookReaderImages();
-    $bri->serveLookupRequest($_REQUEST);
+    try {
+        $bri->serveLookupRequest($_REQUEST);
+    } catch (Exception $e) {
+        header("HTTP/1.0 404 Not Found");
+        header("Content-type: text/plain");
+        
+        print "Error serving request:\n";
+        print "  " . $e->getMessage() . "\n\n";
+        print "Debugging information:\n";
+        echo $e->getTraceAsString();
+    }
 }
 
 BRfatal("Bad or no page specified");
