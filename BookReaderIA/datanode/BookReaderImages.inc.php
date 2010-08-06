@@ -87,7 +87,7 @@ class BookReaderImages
         try {
             $metadata = $brm->buildMetadata($_REQUEST['id'], $_REQUEST['itemPath'], $_REQUEST['subPrefix'], $_REQUEST['server']);
         } catch (Exception $e) {
-            $this->BRfatal($e->getMessage);
+            $this->BRfatal($e->getMessage());
         }
         
         $page = $_REQUEST['page'];
@@ -191,7 +191,7 @@ class BookReaderImages
         $requestEnv = array(
             'zip' => $metadata['zip'],
             'file' => $brm->imageFilePath($leaf, $metadata['subPrefix'], $metadata['imageFormat']),
-            'ext' => 'jpg',
+            'ext' => 'jpg', // XXX should pass through ext
         );
         
         // remove non-passthrough keys from pageInfo
@@ -220,6 +220,7 @@ class BookReaderImages
      * Clean up temporary files
      */
      function serveRequest($requestEnv) {
+     
         // Process some of the request parameters
         $zipPath  = $requestEnv['zip'];
         $file     = $requestEnv['file'];
@@ -330,6 +331,7 @@ class BookReaderImages
         // $$$ consider doing a 302 here instead, to make better use of the browser cache
         // Limit scaling for 1-bit images.  See https://bugs.edge.launchpad.net/bookreader/+bug/486011
         if (1 == $imageInfo['bits']) {
+            
             if ($scale > 1) {
                 $scale /= 2;
                 $powReduce -= 1;
@@ -389,23 +391,27 @@ class BookReaderImages
                           
         
         $errorMessage = '';
+        
         if (! $this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
             // $$$ automated reporting
             trigger_error('BookReader Processing Error: ' . $cmd . ' -- ' . $errorMessage, E_USER_WARNING);
             
             // Try some content-specific recovery
-            $recovered = false;    
+            $recovered = false;
             if ($imageInfo['type'] == 'jp2') {
                 $records = $this->getJp2Records($zipPath, $file);
-                if ($powReduce > intval($records['Clevels'])) {
-                    $powReduce = $records['Clevels'];
-                    $reduce = pow(2, $powReduce);
+                if (array_key_exists('Clevels', $records)) {
+                    $maxReduce = intval($records['Clevels']);
+                    trigger_error("BookReader using max reduce $maxReduce from jp2 records");
                 } else {
-                    $reduce = 1;
-                    $powReduce = 0;
+                    $maxReduce = 0;
                 }
-                 
+                
+                $powReduce = min($powReduce, $maxReduce);
+                $reduce = pow(2, $powReduce);
+                
                 $cmd = $unzipCmd . $this->getDecompressCmd($imageInfo['type'], $powReduce, $rotate, $scale, $stdoutLink) . $compressCmd;
+                trigger_error('BookReader rerunning with new cmd: ' . $cmd, E_USER_WARNING);
                 if ($this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
                     $recovered = true;
                 } else {
@@ -652,15 +658,34 @@ class BookReaderImages
             $read = array($stdout, $stderr);
             $write = NULL;
             $except = NULL;
+            
             $numChanged = stream_select($read, $write, $except, NULL); // $$$ no timeout
             if (false === $numChanged) {
                 // select failed
                 $errorMessage = 'Select failed';
                 $retVal = false;
-            }
-            if ($read[0] == $stdout && (1 == $numChanged)) {
-                // Got output first on stdout (only)
-                // $$$ make sure we get all stdout
+                error_log('BookReader select failed!');
+            } else {            
+                if (in_array($stderr, $read)) {
+                    // Either content in stderr, or stderr is closed (could read 0 bytes)
+                    $error = stream_get_contents($stderr);
+                    if ($error) {
+                    
+                        $errorMessage = $error;
+                        $retVal = false;
+                        
+                        fclose($stderr);
+                        fclose($stdout);
+                        fclose($stdin);
+                        
+                        // It is important that you close any pipes before calling
+                        // proc_close in order to avoid a deadlock
+                        proc_close($process);
+                        return $retVal;             
+ 
+                    }
+                }
+                
                 $output = fopen('php://output', 'w');
                 foreach($headers as $header) {
                     header($header);
@@ -668,11 +693,6 @@ class BookReaderImages
                 stream_copy_to_stream($pipes[1], $output);
                 fclose($output); // okay since tied to special php://output
                 $retVal = true;
-            } else {
-                // Got output on stderr
-                // $$$ make sure we get all stderr
-                $errorMessage = stream_get_contents($stderr);
-                $retVal = false;
             }
     
             fclose($stderr);
@@ -697,6 +717,7 @@ class BookReaderImages
     }
     
     // Returns true if using a power node
+    // XXX change to "on red box" - not working for new Xeon
     function onPowerNode() {
         exec("lspci | fgrep -c Realtek", $output, $return);
         if ("0" != $output[0]) {

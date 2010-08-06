@@ -41,6 +41,7 @@ $page = $_REQUEST['page'];
 if (preg_match($allowedPattern, $page)) { 
     // Return image data
     $bri = new BookReaderImages();
+    
     try {
         $bri->serveLookupRequest($_REQUEST);
     } catch (Exception $e) {
@@ -52,9 +53,9 @@ if (preg_match($allowedPattern, $page)) {
         print "Debugging information:\n";
         echo $e->getTraceAsString();
     }
+} else {
+    BRfatal("Bad or no page specified");
 }
-
-BRfatal("Bad or no page specified");
 
 
 ?>
