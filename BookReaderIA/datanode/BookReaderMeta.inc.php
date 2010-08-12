@@ -418,10 +418,11 @@ class BookReaderMeta {
         
         // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
         // $$$ TODO consolidate this logic
-        if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
-            $server .= ':80/~mang';
-        } else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
-            $server .= ':80/~testflip';
+        $devHosts = array('testflip', 'rkumar', 'mang');
+        foreach ($devHosts as $host) {
+            if (strpos($_SERVER["REQUEST_URI"], '/~' . $host) === 0) { // Serving out of home dir
+                $server .= ':80/' . $host;
+            }
         }
         
         $this->emitResponse( $this->buildMetadata($id, $itemPath, $subPrefix, $server) );

@@ -23,10 +23,17 @@ $itemPath = $_REQUEST['itemPath'];
 $subPrefix = $_REQUEST['subPrefix'];
 $server = $_REQUEST['server'];
 
+// $$$mang this code has been refactored into BookReaderMeta.inc.php for use e.g. by
+//         BookReaderPreview.php and BookReaderImages.php.  The code below should be
+//         taken out and replaced by calls into BookReaderMeta
+
 // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
+
 // $$$ TODO consolidate this logic
 if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
     $server .= ':80/~mang';
+} else if (strpos($_SERVER["REQUEST_URI"], "/~rkumar") === 0) { // Serving out of home dir
+    $server .= ':80/~rkumar';
 } else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
     $server .= ':80/~testflip';
 }
