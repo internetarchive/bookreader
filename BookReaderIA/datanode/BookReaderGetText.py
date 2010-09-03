@@ -26,8 +26,8 @@ from lxml import etree
 import sys
 import json
 
-minWordsInBlock = 50
-maxWordsInBlock = 100
+minWordsInBlock = 25
+maxWordsInBlock = 50
 
 path = sys.argv[1]
 pageNum = int(sys.argv[2])
@@ -127,4 +127,4 @@ if '' != block:
     rects.insert(0, block.strip())            
     textBlocks.append(rects)
 
-print json.dumps(textBlocks)
+print 'br.ttsGetTextCB(' + json.dumps(textBlocks) + ');'

@@ -104,6 +104,9 @@ function BookReader() {
         autofit: 'auto'
     };
     
+    // Text-to-Speech params
+    this.ttsPosition = -1;
+    
     return this;
 };
 
@@ -3116,6 +3119,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     $("#BookReader").append("<div id='BRtoolbar'>"
         + "<span id='BRtoolbarbuttons' style='float: right'>"
+        +   "<button class='BRicon rollover read_aloud' onclick='br.ttsStart(); return false;'/>"
         +   "<button class='BRicon print rollover' /> <button class='BRicon rollover embed' />"
         +   "<form class='BRpageform' action='javascript:' onsubmit='br.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='BRpagenum' type='text' size='3' onfocus='br.autoStop();'></input></span></form>"
         +   "<div class='BRtoolbarmode2' style='display: none'><button class='BRicon rollover book_leftmost' /><button class='BRicon rollover book_left' /><button class='BRicon rollover book_right' /><button class='BRicon rollover book_rightmost' /></div>"
@@ -3774,4 +3778,118 @@ BookReader.util = {
         return encodeURIComponent(value).replace(/%20/g, '+');
     }
     // The final property here must NOT have a comma after it - IE7
+}
+
+
+// text-to-speech (readAloud) functions:
+//______________________________________________________________________________
+
+BookReader.prototype.ttsStart = function () {
+    console.log('starting readAloud');
+    var url = 'http://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+this.currentIndex();
+    console.log('url is ' + url);
+    $.ajax({url:url, dataType:'jsonp'});
+}
+
+BookReader.prototype.ttsGetTextCB = function (data) {
+    console.log('ttsGetTextCB got data:');
+    console.log(data);
+    this.ttsChunks = data;
+    this.ttsHilites = [];
+    //$.ajax({url:'http://'+this.ttsServer+'/renderAudio.py', data:{string:data[0][0], format:'ogg'}, dataType:'json'});
+    
+    this.ttsPosition = -1;
+    var snd = soundManager.createSound({
+     id: 'chunk0',
+     //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',     
+     url: 'http://home.us.archive.org/~rkumar/getOgg.php?string=' + escape(data[0][0]) + '&f=.ogg', //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+     autoLoad: true
+    });    
+    snd.br = this;
+    snd.load();
+    this.ttsNextChunk();
+}
+
+BookReader.prototype.ttsNextChunk = function () {
+    console.log(this);
+    console.log(this.ttsPosition);
+    this.ttsPosition++;
+    console.log('next chunk is ');
+    console.log(this.ttsPosition);
+    
+    if (this.ttsPosition >= this.ttsChunks.length) {
+        console.log('tts stop');
+        return;
+    }
+    
+    var chunk = this.ttsChunks[this.ttsPosition];
+
+    //remove old hilights
+    $(this.ttsHilites).remove();
+    this.ttsHilites = [];
+
+    if (2 == this.mode) {
+        this.ttsHilite2UP(chunk);
+    } else {
+        alert('only 2 page mode supported for TTS..');
+    }
+    
+    //preload next chunk
+    var nextPos = this.ttsPosition+1;
+    if (nextPos < this.ttsChunks.length) {       
+        var snd = soundManager.createSound({
+         id: 'chunk'+nextPos,
+         url: 'http://home.us.archive.org/~rkumar/getOgg.php?string=' + escape(this.ttsChunks[nextPos][0]) + '&f=.ogg', //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+         //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',
+         autoload: true
+        });
+        snd.br = this;
+        snd.load()
+    }       
+    
+    //play current chunk
+    var self = this;
+    var foo = function() {console.log(this.br); br.ttsNextChunk();}    
+    soundManager.play('chunk'+this.ttsPosition,{onfinish:foo});
+}
+
+BookReader.prototype.ttsHilite2UP = function (chunk) {
+    var i;
+    for (i=0; i<chunk.length; i++) {
+        //each rect is an array of l,b,r,t coords (djvu.xml ordering...)       
+        var l = chunk[i][0];
+        var b = chunk[i][1];
+        var r = chunk[i][2];
+        var t = chunk[i][3];
+        
+        //TODO: refactor.. position calculation is also in updateSearchHilites2UP
+        var div = document.createElement('div');
+        this.ttsHilites.push(div);
+        $(div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
+
+        // We calculate the reduction factor for the specific page because it can be different
+        // for each page in the spread
+        var key = this.currentIndex();
+        var height = this._getPageHeight(key);
+        var width  = this._getPageWidth(key)
+        var reduce = this.twoPage.height/height;
+        var scaledW = parseInt(width*reduce);
+            
+        var gutter = this.twoPageGutter();
+        var pageL;
+        if ('L' == this.getPageSide(key)) {
+            pageL = gutter-scaledW;
+        } else {
+            pageL = gutter;
+        }
+        var pageT  = this.twoPageTop();
+            
+        $(div).css({
+            width:  (r-l)*reduce + 'px',
+            height: (b-t)*reduce + 'px',
+            left:   pageL+(l)*reduce + 'px',
+            top:    pageT+(t)*reduce +'px'
+        });
+        
+    }
 }

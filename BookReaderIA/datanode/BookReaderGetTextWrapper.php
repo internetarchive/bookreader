@@ -21,9 +21,8 @@ This file is part of BookReader.
     The BookReader source is hosted at http://github.com/openlibrary/bookreader/
 */
 
-$env = 'LD_LIBRARY_PATH=/petabox/sw/lib/lxml/lib PYTHONPATH=/petabox/sw/lib/lxml/lib/python2.5/site-packages:$PYTHONPATH';
+//$env = 'LD_LIBRARY_PATH=/petabox/sw/lib/lxml/lib PYTHONPATH=/petabox/sw/lib/lxml/lib/python2.5/site-packages:$PYTHONPATH';
 $path=$_GET['path'];
 $page=$_GET['page'];
-passthru("$env python BookReaderGetText.py $path $page");
-
+passthru("python BookReaderGetText.py $path $page");
 ?>
