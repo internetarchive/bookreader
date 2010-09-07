@@ -2801,28 +2801,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
                 //console.log('appending ' + key);
             }
 
-            // We calculate the reduction factor for the specific page because it can be different
-            // for each page in the spread
-            var height = this._getPageHeight(key);
-            var width  = this._getPageWidth(key)
-            var reduce = this.twoPage.height/height;
-            var scaledW = parseInt(width*reduce);
-            
-            var gutter = this.twoPageGutter();
-            var pageL;
-            if ('L' == this.getPageSide(key)) {
-                pageL = gutter-scaledW;
-            } else {
-                pageL = gutter;
-            }
-            var pageT  = this.twoPageTop();
-            
-            $(result.div).css({
-                width:  (result.r-result.l)*reduce + 'px',
-                height: (result.b-result.t)*reduce + 'px',
-                left:   pageL+(result.l)*reduce + 'px',
-                top:    pageT+(result.t)*reduce +'px'
-            });
+            this.setHilightCss2UP(result.div, key, result.l, result.r, result.t, result.b);
 
         } else {
             //console.log(key + ' not displayed');
@@ -2833,6 +2812,35 @@ BookReader.prototype.updateSearchHilites2UP = function() {
             this.searchResults[key].div=null;
         }
     }
+}
+
+// setHilightCss2UP()
+//______________________________________________________________________________
+//position calculation shared between search and text-to-speech functions
+BookReader.prototype.setHilightCss2UP = function(div, index, left, right, top, bottom) {
+
+    // We calculate the reduction factor for the specific page because it can be different
+    // for each page in the spread
+    var height = this._getPageHeight(index);
+    var width  = this._getPageWidth(index)
+    var reduce = this.twoPage.height/height;
+    var scaledW = parseInt(width*reduce);
+    
+    var gutter = this.twoPageGutter();
+    var pageL;
+    if ('L' == this.getPageSide(index)) {
+        pageL = gutter-scaledW;
+    } else {
+        pageL = gutter;
+    }
+    var pageT  = this.twoPageTop();
+    
+    $(div).css({
+        width:  (right-left)*reduce + 'px',
+        height: (bottom-top)*reduce + 'px',
+        left:   pageL+left*reduce + 'px',
+        top:    pageT+top*reduce +'px'
+    });
 }
 
 // removeSearchHilites()
@@ -3781,9 +3789,8 @@ BookReader.util = {
 }
 
 
-// text-to-speech (readAloud) functions:
+// ttsStart()
 //______________________________________________________________________________
-
 BookReader.prototype.ttsStart = function () {
     console.log('starting readAloud');
     var url = 'http://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+this.currentIndex();
@@ -3791,6 +3798,8 @@ BookReader.prototype.ttsStart = function () {
     $.ajax({url:url, dataType:'jsonp'});
 }
 
+// ttsGetTextCB(): text-to-speech callback
+//______________________________________________________________________________
 BookReader.prototype.ttsGetTextCB = function (data) {
     console.log('ttsGetTextCB got data:');
     console.log(data);
@@ -3810,6 +3819,8 @@ BookReader.prototype.ttsGetTextCB = function (data) {
     this.ttsNextChunk();
 }
 
+// ttsNextChunk()
+//______________________________________________________________________________
 BookReader.prototype.ttsNextChunk = function () {
     console.log(this);
     console.log(this.ttsPosition);
@@ -3853,6 +3864,9 @@ BookReader.prototype.ttsNextChunk = function () {
     soundManager.play('chunk'+this.ttsPosition,{onfinish:foo});
 }
 
+
+// ttsHilite2UP()
+//______________________________________________________________________________
 BookReader.prototype.ttsHilite2UP = function (chunk) {
     var i;
     for (i=0; i<chunk.length; i++) {
@@ -3862,34 +3876,9 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
         var r = chunk[i][2];
         var t = chunk[i][3];
         
-        //TODO: refactor.. position calculation is also in updateSearchHilites2UP
         var div = document.createElement('div');
-        this.ttsHilites.push(div);
+        this.ttsHilites.push(div);        
         $(div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
-
-        // We calculate the reduction factor for the specific page because it can be different
-        // for each page in the spread
-        var key = this.currentIndex();
-        var height = this._getPageHeight(key);
-        var width  = this._getPageWidth(key)
-        var reduce = this.twoPage.height/height;
-        var scaledW = parseInt(width*reduce);
-            
-        var gutter = this.twoPageGutter();
-        var pageL;
-        if ('L' == this.getPageSide(key)) {
-            pageL = gutter-scaledW;
-        } else {
-            pageL = gutter;
-        }
-        var pageT  = this.twoPageTop();
-            
-        $(div).css({
-            width:  (r-l)*reduce + 'px',
-            height: (b-t)*reduce + 'px',
-            left:   pageL+(l)*reduce + 'px',
-            top:    pageT+(t)*reduce +'px'
-        });
-        
+        this.setHilightCss2UP(div, this.currentIndex(), l, r, t, b);        
     }
 }
