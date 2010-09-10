@@ -31,6 +31,7 @@ maxWordsInBlock = 50
 
 path = sys.argv[1]
 pageNum = int(sys.argv[2])
+callback = sys.argv[3]
 
 tree = etree.parse(path)
 
@@ -127,4 +128,4 @@ if '' != block:
     rects.insert(0, block.strip())            
     textBlocks.append(rects)
 
-print 'br.ttsGetTextCB(' + json.dumps(textBlocks) + ');'
+print 'br.%s(%s);' % (callback, json.dumps(textBlocks))

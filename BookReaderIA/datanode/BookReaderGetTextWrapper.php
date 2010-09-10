@@ -24,5 +24,6 @@ This file is part of BookReader.
 //$env = 'LD_LIBRARY_PATH=/petabox/sw/lib/lxml/lib PYTHONPATH=/petabox/sw/lib/lxml/lib/python2.5/site-packages:$PYTHONPATH';
 $path=$_GET['path'];
 $page=$_GET['page'];
-passthru("python BookReaderGetText.py $path $page");
+$callback=$_GET['callback'];
+passthru("python BookReaderGetText.py $path $page $callback");
 ?>
