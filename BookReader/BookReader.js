@@ -3658,7 +3658,7 @@ BookReader.prototype.canSwitchToMode = function(mode) {
         // check there are enough pages to display
         // $$$ this is a workaround for the mis-feature that we can't display
         //     short books in 2up mode
-        if (this.numLeafs < 6) {
+        if (this.numLeafs < 2) {
             return false;
         }
     }
