@@ -72,9 +72,13 @@ function BookReader() {
     this.lastDisplayableIndex2up = null;
     
     // We link to index.php to avoid redirect which breaks back button
+    // Should be overriden (before init) by custom implmentations.
     this.logoURL = 'http://www.archive.org/index.php';
     
-    // Base URL for images
+    // Base URL for UI images - should be overriden (before init) by
+    // custom implementations.
+    // $$$ This is the same directory as the images referenced by relative
+    //     path in the CSS.  Would be better to automagically find that path.
     this.imagesBaseURL = '/bookreader/images/';
     
     // Mode constants
