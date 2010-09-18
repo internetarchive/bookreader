@@ -107,7 +107,8 @@ function BookReader() {
     // Text-to-Speech params
     this.ttsIndex = null;  //leaf index
     this.ttsPosition = -1; //chunk (paragraph) number
-
+    this.ttsBuffering = false;
+    this.ttsPoller = null;
     
     return this;
 };
@@ -3803,7 +3804,7 @@ BookReader.prototype.ttsStart = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsGetText = function(index, callback) {
     var url = 'http://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+index;
-    $.ajax({url:url, dataType:'jsonp', jsonpCallback:callback});
+    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:callback});
 }
 
 // ttsStartCB(): text-to-speech callback
@@ -3813,7 +3814,18 @@ BookReader.prototype.ttsStartCB = function (data) {
     console.log(data);
     this.ttsChunks = data;
     this.ttsHilites = [];
-    //$.ajax({url:'http://'+this.ttsServer+'/renderAudio.py', data:{string:data[0][0], format:'ogg'}, dataType:'json'});
+    
+    //deal with first page being blank
+    if (0 == data.length) {
+        console.log('first page is blank!');
+        if(this.ttsAdvance(true)) {
+            this.ttsGetText(this.ttsIndex, 'ttsStartCB');            
+        }
+        return;
+    } else {
+        console.log('length = ' + data.length);
+        console.log((0 == data.length));
+    }
     
     this.ttsShowPopup();
     
@@ -3859,6 +3871,11 @@ BookReader.prototype.ttsNextPageCB = function (data) {
     this.ttsNextChunks = data;
     console.log('preloaded next chunks.. data is');
     console.log(data);
+    
+    if (true == this.ttsBuffering) {
+        console.log('ttsNextPageCB: ttsBuffering is true');
+        this.ttsBuffering = false;
+    }
 }
 
 // ttsLoadChunk
@@ -3884,12 +3901,24 @@ BookReader.prototype.ttsNextChunk = function () {
     }
     
     
-    if (this.ttsAdvance()) {
-        console.log('next chunk is ');
-        console.log(this.ttsPosition);    
+    var moreToPlay = this.ttsAdvance();
+    
+    if (!moreToPlay) return;
+    
+    console.log('next chunk is ');
+    console.log(this.ttsPosition);    
 
-        this.ttsPlayAndPrefetch();
+    //prefetch next page of text
+    if (0 == this.ttsPosition) {
+        if (this.ttsIndex<(this.numLeafs-1)) {
+            this.ttsGetText(this.ttsIndex+1, 'ttsNextPageCB');
+        }
     }
+    
+    this.ttsPrefetchAudio();
+    
+    this.ttsPlay();
+    
 }
 
 // ttsAdvance()
@@ -3900,7 +3929,7 @@ BookReader.prototype.ttsNextChunk = function () {
 // 4. do something smart is ttsNextChunks has not yet finished preloading (TODO)
 // 5. stop playing at end of book
 
-BookReader.prototype.ttsAdvance = function () {
+BookReader.prototype.ttsAdvance = function (starting) {
     this.ttsPosition++;
 
     if (this.ttsPosition >= this.ttsChunks.length) {
@@ -3909,7 +3938,7 @@ BookReader.prototype.ttsAdvance = function () {
             console.log('tts stop');
             return false;
         } else {
-            if (null != this.ttsNextChunks) {
+            if ((null != this.ttsNextChunks) || (starting)) {
                 console.log('moving to next page!');
                 this.ttsIndex++;
                 this.ttsPosition = 0;
@@ -3929,15 +3958,38 @@ BookReader.prototype.ttsAdvance = function () {
     return true;
 }
 
-// ttsPlayAndPrefetch()
+// ttsPrefetchAudio()
 //______________________________________________________________________________
-BookReader.prototype.ttsPlayAndPrefetch = function () {
-    //prefetch next page of text
-    if (0 == this.ttsPosition) {
-        if (this.ttsIndex<(this.numLeafs-1)) {
-            this.ttsGetText(this.ttsIndex+1, 'ttsNextPageCB');
+BookReader.prototype.ttsPrefetchAudio = function () {
+
+    if(false != this.ttsBuffering) {
+        alert('TTS Error: prefetch() called while content still buffering!');
+        return;
+    }
+    
+
+
+    //preload next chunk
+    var nextPos = this.ttsPosition+1;
+    if (nextPos < this.ttsChunks.length) {     
+        this.ttsLoadChunk(this.ttsIndex, nextPos, this.ttsChunks[nextPos][0]);
+    } else {
+        //for a short page, preload might nt have yet returned..
+        console.log('preloading chunk 0 from next page, index='+(this.ttsIndex+1))
+        if (null != this.ttsNextChunks) {
+            console.log(this.ttsNextChunks);
+            this.ttsLoadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);        
+        } else {
+            console.log('ttsNextChunks is null, not preloading next page');
+            this.ttsBuffering = true;
         }
     }
+
+}
+
+// ttsPlay()
+//______________________________________________________________________________
+BookReader.prototype.ttsPlay = function () {
         
     var chunk = this.ttsChunks[this.ttsPosition];
     console.log('position = ' + this.ttsPosition);
@@ -3954,19 +4006,14 @@ BookReader.prototype.ttsPlayAndPrefetch = function () {
     } else {
         alert('only 2 page mode supported for TTS..');
     }
-    
-    //preload next chunk
-    var nextPos = this.ttsPosition+1;
-    if (nextPos < this.ttsChunks.length) {     
-        this.ttsLoadChunk(this.ttsIndex, nextPos, this.ttsChunks[nextPos][0]);
-    } else {
-        console.log('preloading chunk 0 from next page, index='+(this.ttsIndex+1))
-        console.log(this.ttsNextChunks);
-        this.ttsLoadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);        
-    }
-    
+        
     //play current chunk
-    soundManager.play('chunk'+this.ttsIndex+'-'+this.ttsPosition,{onfinish:function(){br.ttsNextChunk();}});
+    if (false == this.ttsBuffering) {
+        soundManager.play('chunk'+this.ttsIndex+'-'+this.ttsPosition,{onfinish:function(){br.ttsNextChunk();}});
+    } else {
+        console.log('playing current chunk, but next chunk is not buffered yet!');
+        soundManager.play('chunk'+this.ttsIndex+'-'+this.ttsPosition,{onfinish:function(){br.ttsStartPolling();}});
+    }
 }
 
 // ttsHilite2UP()
@@ -3985,4 +4032,23 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
         $(div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
         this.setHilightCss2UP(div, this.ttsIndex, l, r, t, b);        
     }
+}
+
+// ttsStartPolling()
+//______________________________________________________________________________
+// Play of the current chunk has ended, but the next chunk has not yet been loaded.
+// We need to wait for the text for the next page to be loaded, so we can
+// load the next audio chunk
+BookReader.prototype.ttsStartPolling = function () {
+    console.log('Starting the TTS poller...');
+    var self = this;
+    this.ttsPoller=setInterval(function(){
+        if (self.ttsBuffering) {return;}
+        
+        console.log('TTS buffering finished!');
+        clearInterval(self.ttsPoller);
+        self.ttsPoller = null;
+        self.ttsPrefetchAudio();
+        self.ttsNextChunk();
+    },500);    
 }

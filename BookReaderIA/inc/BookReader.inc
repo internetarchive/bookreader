@@ -133,7 +133,7 @@ class BookReader
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2.js?v=<? echo($version); ?>"></script>
     <script>
-        soundManager.debugMode = true;
+        soundManager.debugMode = false;
         soundManager.url = '/bookreader/soundmanager/swf/';       
         soundManager.useHTML5Audio = true;
     </script>
