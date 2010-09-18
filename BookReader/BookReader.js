@@ -3905,6 +3905,14 @@ BookReader.prototype.ttsNextChunk = function () {
     
     if (!moreToPlay) return;
     
+    if (0 == this.ttsChunks.length) {
+        console.log('ttsNextChunk: ttsChunks.length is zero.. hacking...');
+        $(this.ttsHilites).remove();
+        this.ttsHilites = [];
+        this.ttsStartCB(this.ttsChunks);
+        return;
+    }
+    
     console.log('next chunk is ');
     console.log(this.ttsPosition);    
 
@@ -3949,7 +3957,7 @@ BookReader.prototype.ttsAdvance = function (starting) {
                 }
                 return true;
             } else {
-                console.log('ttsNextChunks is null');
+                console.log('ttsAdvance: ttsNextChunks is null');
                 return false; 
             }
         }
@@ -3978,7 +3986,11 @@ BookReader.prototype.ttsPrefetchAudio = function () {
         console.log('preloading chunk 0 from next page, index='+(this.ttsIndex+1))
         if (null != this.ttsNextChunks) {
             console.log(this.ttsNextChunks);
-            this.ttsLoadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);        
+            if (0 != this.ttsNextChunks.length) {
+                this.ttsLoadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);        
+            } else {
+                console.log('prefetchAudio(): ttsNextChunks is zero length!');
+            }
         } else {
             console.log('ttsNextChunks is null, not preloading next page');
             this.ttsBuffering = true;
