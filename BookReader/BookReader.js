@@ -3815,7 +3815,7 @@ BookReader.prototype.ttsStartCB = function (data) {
     this.ttsChunks = data;
     this.ttsHilites = [];
     
-    //deal with first page being blank
+    //deal with the page being blank
     if (0 == data.length) {
         console.log('first page is blank!');
         if(this.ttsAdvance(true)) {
@@ -3892,6 +3892,13 @@ BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
 
 // ttsNextChunk()
 //______________________________________________________________________________
+// I've split this function into two parts: ttsNextChunk and ttsNextChunkPhase2.
+// This is to make the 2-page flip behavior nicer, but makes the code much 
+// more complicated.
+// If a page flip is necessary, ttsAdvance() will return false so Phase2 isn't
+// called. Instead, this.animationFinishedCallback is set, so that Phase2
+// continues after animation is finished.
+
 BookReader.prototype.ttsNextChunk = function () {
     console.log(this);
     console.log(this.ttsPosition);
@@ -3899,16 +3906,28 @@ BookReader.prototype.ttsNextChunk = function () {
     if (-1 != this.ttsPosition) {
         soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);    
     }
-    
-    
+
+    //remove old hilights
+    $(this.ttsHilites).remove();
+    this.ttsHilites = [];    
+        
     var moreToPlay = this.ttsAdvance();
     
-    if (!moreToPlay) return;
+    if (moreToPlay) {
+        this.ttsNextChunkPhase2();
+    }    
     
+    //This function is called again when ttsPlay() has finished playback.
+    //If the next chunk of text has not yet finished loading, ttsPlay()
+    //will start polling until the next chunk is ready.
+}
+
+// ttsNextChunkPhase2()
+//______________________________________________________________________________
+// page flip animation has now completed
+BookReader.prototype.ttsNextChunkPhase2 = function () {
     if (0 == this.ttsChunks.length) {
-        console.log('ttsNextChunk: ttsChunks.length is zero.. hacking...');
-        $(this.ttsHilites).remove();
-        this.ttsHilites = [];
+        console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
         this.ttsStartCB(this.ttsChunks);
         return;
     }
@@ -3926,7 +3945,6 @@ BookReader.prototype.ttsNextChunk = function () {
     this.ttsPrefetchAudio();
     
     this.ttsPlay();
-    
 }
 
 // ttsAdvance()
@@ -3953,9 +3971,12 @@ BookReader.prototype.ttsAdvance = function (starting) {
                 this.ttsChunks = this.ttsNextChunks;
                 this.ttsNextChunks = null;
                 if ((this.ttsIndex != this.twoPage.currentIndexL) && (this.ttsIndex != this.twoPage.currentIndexR)) {
+                    this.animationFinishedCallback = this.ttsNextChunkPhase2;
                     this.next();
+                    return false;
+                } else {
+                    return true;
                 }
-                return true;
             } else {
                 console.log('ttsAdvance: ttsNextChunks is null');
                 return false; 
@@ -4007,10 +4028,6 @@ BookReader.prototype.ttsPlay = function () {
     console.log('position = ' + this.ttsPosition);
     console.log('chunk = ' + chunk);
     console.log(this.ttsChunks);
-
-    //remove old hilights
-    $(this.ttsHilites).remove();
-    this.ttsHilites = [];
 
     //add new hilights
     if (2 == this.mode) {
