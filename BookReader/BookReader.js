@@ -105,10 +105,11 @@ function BookReader() {
     };
     
     // Text-to-Speech params
-    this.ttsIndex = null;  //leaf index
-    this.ttsPosition = -1; //chunk (paragraph) number
-    this.ttsBuffering = false;
-    this.ttsPoller = null;
+    this.ttsPlaying     = false;
+    this.ttsIndex       = null;  //leaf index
+    this.ttsPosition    = -1;    //chunk (paragraph) number
+    this.ttsBuffering   = false;
+    this.ttsPoller      = null;
     
     return this;
 };
@@ -1879,6 +1880,8 @@ BookReader.prototype.leftmost = function() {
 // next()
 //______________________________________________________________________________
 BookReader.prototype.next = function() {
+    this.ttsStop();
+    
     if (2 == this.mode) {
         this.autoStop();
         this.flipFwdToIndex(null);
@@ -1892,6 +1895,8 @@ BookReader.prototype.next = function() {
 // prev()
 //______________________________________________________________________________
 BookReader.prototype.prev = function() {
+    this.ttsStop();
+    
     if (2 == this.mode) {
         this.autoStop();
         this.flipBackToIndex(null);
@@ -3795,9 +3800,30 @@ BookReader.util = {
 // ttsStart()
 //______________________________________________________________________________
 BookReader.prototype.ttsStart = function () {
-    console.log('starting readAloud');
-    this.ttsIndex = this.currentIndex();
-    this.ttsGetText(this.ttsIndex, 'ttsStartCB');
+    if (false == this.ttsPlaying) {        
+        console.log('starting readAloud');
+        this.ttsPlaying = true;
+        this.ttsIndex = this.currentIndex();
+        this.ttsGetText(this.ttsIndex, 'ttsStartCB');
+    } else {
+        this.ttsStop();
+    }
+}
+
+// ttsStop()
+//______________________________________________________________________________
+BookReader.prototype.ttsStop = function () {
+    if (false == this.ttsPlaying) return;
+    
+    console.log('stopping readaloud');
+    soundManager.stopAll();
+    this.ttsRemoveHilites();
+
+    this.ttsPlaying     = false;
+    this.ttsIndex       = null;  //leaf index
+    this.ttsPosition    = -1;    //chunk (paragraph) number
+    this.ttsBuffering   = false;
+    this.ttsPoller      = null;
 }
 
 // ttsGetText()
@@ -3892,9 +3918,8 @@ BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
 
 // ttsNextChunk()
 //______________________________________________________________________________
-// I've split this function into two parts: ttsNextChunk and ttsNextChunkPhase2.
-// This is to make the 2-page flip behavior nicer, but makes the code much 
-// more complicated.
+// This function into two parts: ttsNextChunk gets run before page flip animation
+// and ttsNextChunkPhase2 get run after page flip animation.
 // If a page flip is necessary, ttsAdvance() will return false so Phase2 isn't
 // called. Instead, this.animationFinishedCallback is set, so that Phase2
 // continues after animation is finished.
@@ -3907,9 +3932,7 @@ BookReader.prototype.ttsNextChunk = function () {
         soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);    
     }
 
-    //remove old hilights
-    $(this.ttsHilites).remove();
-    this.ttsHilites = [];    
+    this.ttsRemoveHilites(); //remove old hilights
         
     var moreToPlay = this.ttsAdvance();
     
@@ -4061,6 +4084,13 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
         $(div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
         this.setHilightCss2UP(div, this.ttsIndex, l, r, t, b);        
     }
+}
+
+// ttsRemoveHilights()
+//______________________________________________________________________________
+BookReader.prototype.ttsRemoveHilites = function (chunk) {
+    $(this.ttsHilites).remove();
+    this.ttsHilites = [];
 }
 
 // ttsStartPolling()
