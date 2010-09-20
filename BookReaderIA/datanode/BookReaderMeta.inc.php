@@ -418,7 +418,7 @@ class BookReaderMeta {
         
         // Check if we're on a dev vhost and point to JSIA in the user's public_html on the datanode
         // $$$ TODO consolidate this logic
-        $devHosts = array('testflip', 'rkumar', 'mang');
+        $devHosts = array('testflip', 'rkumar', 'mang', 'mccabe');
         foreach ($devHosts as $host) {
             if (strpos($_SERVER["REQUEST_URI"], '/~' . $host) === 0) { // Serving out of home dir
                 $server .= ':80/' . $host;
