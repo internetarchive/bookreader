@@ -216,7 +216,7 @@ class BookReader
       //     ln -s ~/petabox/www/datanode/BookReader ~/public_html/BookReader
       //     so we enable it only for known hosts
       $devhost = BookReader::getDevHost($server);
-      $devhosts = array('mang', 'testflip', 'rkumar');
+      $devhosts = array('mang', 'testflip', 'rkumar', 'mccabe');
       if (in_array($devhost, $devhosts)) {
         $server = $server . "/~" . $devhost;
       }
