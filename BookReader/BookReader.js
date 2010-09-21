@@ -4010,7 +4010,7 @@ BookReader.prototype.ttsAdvance = function (starting) {
         }
     }
     
-    if (this.constMode1up == this.mode) {
+    if ((this.constMode1up == this.mode) && (null != this.ttsChunks) && (0 != this.ttsChunks.length)) {
         var leafTop = 0;
         var h;
         var i;
@@ -4019,15 +4019,22 @@ BookReader.prototype.ttsAdvance = function (starting) {
             leafTop += h + this.padding;
         }
         
-        var chunkTop = this.ttsChunks[this.ttsPosition][1][3];
+        var chunk = this.ttsChunks[this.ttsPosition];
+        console.log('chunk=');
+        console.log(chunk);
+        var chunkTop = chunk[1][3]; //coords are in l,b,r,t order
+        var chunkBot = chunk[chunk.length-1][1];
+        
         var topOfFirstChunk = leafTop + chunkTop/this.reduce;
-        console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk);
+        var botOfLastChunk  = leafTop + chunkBot/this.reduce;
+        
+        console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
 
         var containerTop = $('#BRcontainer').attr('scrollTop');
         var containerBot = containerTop + $('#BRcontainer').height();
         console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
 
-        if ((topOfFirstChunk < containerTop) || (topOfFirstChunk > containerBot)) {
+        if ((topOfFirstChunk < containerTop) || (botOfLastChunk > containerBot)) {
             console.log('jumping to leafTop!');
 
             //jumpToIndex scrolls so that chunkTop is centered.. we want chunkTop at the top
