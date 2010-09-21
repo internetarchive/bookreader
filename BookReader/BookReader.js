@@ -3817,6 +3817,7 @@ BookReader.prototype.ttsStop = function () {
     
     console.log('stopping readaloud');
     soundManager.stopAll();
+    soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
     this.ttsRemoveHilites();
 
     this.ttsPlaying     = false;
@@ -3929,7 +3930,7 @@ BookReader.prototype.ttsNextChunk = function () {
     console.log(this.ttsPosition);
     
     if (-1 != this.ttsPosition) {
-        soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);    
+        soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
     }
 
     this.ttsRemoveHilites(); //remove old hilights
@@ -3993,17 +3994,45 @@ BookReader.prototype.ttsAdvance = function (starting) {
                 this.ttsPosition = 0;
                 this.ttsChunks = this.ttsNextChunks;
                 this.ttsNextChunks = null;
-                if ((this.ttsIndex != this.twoPage.currentIndexL) && (this.ttsIndex != this.twoPage.currentIndexR)) {
-                    this.animationFinishedCallback = this.ttsNextChunkPhase2;
-                    this.next();
-                    return false;
-                } else {
-                    return true;
+                if (2 == this.mode) {
+                    if ((this.ttsIndex != this.twoPage.currentIndexL) && (this.ttsIndex != this.twoPage.currentIndexR)) {
+                        this.animationFinishedCallback = this.ttsNextChunkPhase2;
+                        this.next();
+                        return false;
+                    } else {
+                        return true;
+                    }
                 }
             } else {
                 console.log('ttsAdvance: ttsNextChunks is null');
                 return false; 
             }
+        }
+    }
+    
+    if (this.constMode1up == this.mode) {
+        var leafTop = 0;
+        var h;
+        var i;
+        for (i=0; i<this.ttsIndex; i++) {
+            h = parseInt(this._getPageHeight(i)/this.reduce); 
+            leafTop += h + this.padding;
+        }
+        
+        var chunkTop = this.ttsChunks[this.ttsPosition][1][3];
+        var topOfFirstChunk = leafTop + chunkTop/this.reduce;
+        console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk);
+
+        var containerTop = $('#BRcontainer').attr('scrollTop');
+        var containerBot = containerTop + $('#BRcontainer').height();
+        console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
+
+        if ((topOfFirstChunk < containerTop) || (topOfFirstChunk > containerBot)) {
+            console.log('jumping to leafTop!');
+
+            //jumpToIndex scrolls so that chunkTop is centered.. we want chunkTop at the top
+            //this.jumpToIndex(this.ttsIndex, null, chunkTop);
+            $('#BRcontainer').animate({scrollTop: topOfFirstChunk,},'fast');            
         }
     }
     
@@ -4056,7 +4085,7 @@ BookReader.prototype.ttsPlay = function () {
     if (2 == this.mode) {
         this.ttsHilite2UP(chunk);
     } else {
-        alert('only 2 page mode supported for TTS..');
+        this.ttsHilite1UP(chunk);
     }
         
     //play current chunk
@@ -4068,11 +4097,36 @@ BookReader.prototype.ttsPlay = function () {
     }
 }
 
+// ttsHilite1UP()
+//______________________________________________________________________________
+BookReader.prototype.ttsHilite1UP = function(chunk) {
+    var i;
+    for (i=1; i<chunk.length; i++) {
+        //each rect is an array of l,b,r,t coords (djvu.xml ordering...)       
+        var l = chunk[i][0];
+        var b = chunk[i][1];
+        var r = chunk[i][2];
+        var t = chunk[i][3];
+        
+        var div = document.createElement('div');
+        this.ttsHilites.push(div);        
+        $(div).attr('className', 'BookReaderSearchHilite').appendTo('#pagediv'+this.ttsIndex);
+
+        $(div).css({
+            width:  (r-l)/this.reduce + 'px',
+            height: (b-t)/this.reduce + 'px',
+            left:   l/this.reduce + 'px',
+            top:    t/this.reduce +'px'
+        });
+    }
+
+}
+
 // ttsHilite2UP()
 //______________________________________________________________________________
 BookReader.prototype.ttsHilite2UP = function (chunk) {
     var i;
-    for (i=0; i<chunk.length; i++) {
+    for (i=1; i<chunk.length; i++) {
         //each rect is an array of l,b,r,t coords (djvu.xml ordering...)       
         var l = chunk[i][0];
         var b = chunk[i][1];
@@ -4086,7 +4140,7 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
     }
 }
 
-// ttsRemoveHilights()
+// ttsRemoveHilites()
 //______________________________________________________________________________
 BookReader.prototype.ttsRemoveHilites = function (chunk) {
     $(this.ttsHilites).remove();
