@@ -3802,9 +3802,17 @@ BookReader.util = {
 BookReader.prototype.ttsStart = function () {
     if (false == this.ttsPlaying) {        
         console.log('starting readAloud');
-        this.ttsPlaying = true;
-        this.ttsIndex = this.currentIndex();
-        this.ttsGetText(this.ttsIndex, 'ttsStartCB');
+
+        soundManager.onready(function(oStatus) {
+          if (oStatus.success) {
+            console.log('soundmanager onload success');	
+            this.ttsPlaying = true;
+            this.ttsIndex = this.currentIndex();
+            this.ttsGetText(this.ttsIndex, 'ttsStartCB');
+          } else {
+            alert('Could not load soundManger2. Audio playback is disabled');
+          }
+        }, this);        
     } else {
         this.ttsStop();
     }
