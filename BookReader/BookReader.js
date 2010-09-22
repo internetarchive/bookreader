@@ -4042,40 +4042,7 @@ BookReader.prototype.ttsAdvance = function (starting) {
             }
         }
     }
-    
-    if ((this.constMode1up == this.mode) && (null != this.ttsChunks) && (0 != this.ttsChunks.length)) {
-        var leafTop = 0;
-        var h;
-        var i;
-        for (i=0; i<this.ttsIndex; i++) {
-            h = parseInt(this._getPageHeight(i)/this.reduce); 
-            leafTop += h + this.padding;
-        }
         
-        var chunk = this.ttsChunks[this.ttsPosition];
-        console.log('chunk=');
-        console.log(chunk);
-        var chunkTop = chunk[1][3]; //coords are in l,b,r,t order
-        var chunkBot = chunk[chunk.length-1][1];
-        
-        var topOfFirstChunk = leafTop + chunkTop/this.reduce;
-        var botOfLastChunk  = leafTop + chunkBot/this.reduce;
-        
-        console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
-
-        var containerTop = $('#BRcontainer').attr('scrollTop');
-        var containerBot = containerTop + $('#BRcontainer').height();
-        console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
-
-        if ((topOfFirstChunk < containerTop) || (botOfLastChunk > containerBot)) {
-            console.log('jumping to leafTop!');
-
-            //jumpToIndex scrolls so that chunkTop is centered.. we want chunkTop at the top
-            //this.jumpToIndex(this.ttsIndex, null, chunkTop);
-            $('#BRcontainer').animate({scrollTop: topOfFirstChunk,},'fast');            
-        }
-    }
-    
     return true;
 }
 
@@ -4127,6 +4094,8 @@ BookReader.prototype.ttsPlay = function () {
     } else {
         this.ttsHilite1UP(chunk);
     }
+    
+    this.ttsScrollToChunk(chunk);
         
     //play current chunk
     if (false == this.ttsBuffering) {
@@ -4135,6 +4104,42 @@ BookReader.prototype.ttsPlay = function () {
         console.log('playing current chunk, but next chunk is not buffered yet!');
         soundManager.play('chunk'+this.ttsIndex+'-'+this.ttsPosition,{onfinish:function(){br.ttsStartPolling();}});
     }
+}
+
+// scrollToChunk()
+//______________________________________________________________________________
+BookReader.prototype.ttsScrollToChunk = function(chunk) {
+    if (this.constMode1up != this.mode) return;
+
+    var leafTop = 0;
+    var h;
+    var i;
+    for (i=0; i<this.ttsIndex; i++) {
+        h = parseInt(this._getPageHeight(i)/this.reduce); 
+        leafTop += h + this.padding;
+    }
+    
+    console.log('chunk=');
+    console.log(chunk);
+    var chunkTop = chunk[1][3]; //coords are in l,b,r,t order
+    var chunkBot = chunk[chunk.length-1][1];
+    
+    var topOfFirstChunk = leafTop + chunkTop/this.reduce;
+    var botOfLastChunk  = leafTop + chunkBot/this.reduce;
+    
+    console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
+
+    var containerTop = $('#BRcontainer').attr('scrollTop');
+    var containerBot = containerTop + $('#BRcontainer').height();
+    console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
+
+    if ((topOfFirstChunk < containerTop) || (botOfLastChunk > containerBot)) {
+        console.log('jumping to leafTop!');
+
+        //jumpToIndex scrolls so that chunkTop is centered.. we want chunkTop at the top
+        //this.jumpToIndex(this.ttsIndex, null, chunkTop);
+        $('#BRcontainer').animate({scrollTop: topOfFirstChunk,},'fast');            
+    }    
 }
 
 // ttsHilite1UP()
