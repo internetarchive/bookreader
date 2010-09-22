@@ -1880,7 +1880,7 @@ BookReader.prototype.leftmost = function() {
 // next()
 //______________________________________________________________________________
 BookReader.prototype.next = function() {
-    this.ttsStop();
+    //this.ttsStop();
     
     if (2 == this.mode) {
         this.autoStop();
@@ -1895,7 +1895,7 @@ BookReader.prototype.next = function() {
 // prev()
 //______________________________________________________________________________
 BookReader.prototype.prev = function() {
-    this.ttsStop();
+    //this.ttsStop();
     
     if (2 == this.mode) {
         this.autoStop();
@@ -3135,7 +3135,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     $("#BookReader").append("<div id='BRtoolbar'>"
         + "<span id='BRtoolbarbuttons' style='float: right'>"
-        +   "<button class='BRicon rollover read_aloud' onclick='br.ttsStart(); return false;'/>"
+        +   "<button class='BRicon rollover read_aloud' onclick='br.ttsToggle(); return false;'/>"
         +   "<button class='BRicon print rollover' /> <button class='BRicon rollover embed' />"
         +   "<form class='BRpageform' action='javascript:' onsubmit='br.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='BRpagenum' type='text' size='3' onfocus='br.autoStop();'></input></span></form>"
         +   "<div class='BRtoolbarmode2' style='display: none'><button class='BRicon rollover book_leftmost' /><button class='BRicon rollover book_left' /><button class='BRicon rollover book_right' /><button class='BRicon rollover book_rightmost' /></div>"
@@ -3797,25 +3797,34 @@ BookReader.util = {
 }
 
 
-// ttsStart()
+// ttsToggle()
 //______________________________________________________________________________
-BookReader.prototype.ttsStart = function () {
+BookReader.prototype.ttsToggle = function () {
     if (false == this.ttsPlaying) {        
-        console.log('starting readAloud');
-
-        soundManager.onready(function(oStatus) {
-          if (oStatus.success) {
-            console.log('soundmanager onload success');	
-            this.ttsPlaying = true;
-            this.ttsIndex = this.currentIndex();
-            this.ttsGetText(this.ttsIndex, 'ttsStartCB');
-          } else {
-            alert('Could not load soundManger2. Audio playback is disabled');
-          }
-        }, this);        
+        if(soundManager.supported()) {
+            this.ttsStart();            
+        } else {               
+            soundManager.onready(function(oStatus) {
+              if (oStatus.success) {
+                console.log('soundmanager onload success');	
+                this.ttsStart();
+              } else {
+                alert('Could not load soundManger2. Audio playback is disabled');
+              }
+            }, this);        
+        }
     } else {
         this.ttsStop();
     }
+}
+
+// ttsStart()
+//______________________________________________________________________________
+BookReader.prototype.ttsStart = function () {
+    console.log('starting readAloud');
+    this.ttsPlaying = true;
+    this.ttsIndex = this.currentIndex();
+    this.ttsGetText(this.ttsIndex, 'ttsStartCB');
 }
 
 // ttsStop()
@@ -3869,7 +3878,7 @@ BookReader.prototype.ttsStartCB = function (data) {
      id: 'chunk'+this.ttsIndex+'-0',
      //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',     
      url: 'http://home.us.archive.org/~rkumar/getOgg.php?string=' + escape(data[0][0]) + '&f=.ogg', //the .ogg is to trick SoundManager2 to use the HTML5 audio player
-     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) {$(br.popup).remove(); br.popup=null;}} //onload never fires...
+     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) {$(this.br.popup).remove(); this.br.popup=null;}} //onload never fires...
     });    
     snd.br = this;
     snd.load();
@@ -3880,6 +3889,8 @@ BookReader.prototype.ttsStartCB = function (data) {
 // ttsShowPopup
 //______________________________________________________________________________
 BookReader.prototype.ttsShowPopup = function() {
+    console.log('ttsShowPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
+    
     this.popup = document.createElement("div");
     $(this.popup).css({
         position: 'absolute',
@@ -3958,6 +3969,11 @@ BookReader.prototype.ttsNextChunk = function () {
 //______________________________________________________________________________
 // page flip animation has now completed
 BookReader.prototype.ttsNextChunkPhase2 = function () {
+    if (null == this.ttsChunks) {
+        alert('ttsChunks is null.. why?'); //TODO
+        return;
+    }
+    
     if (0 == this.ttsChunks.length) {
         console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
         this.ttsStartCB(this.ttsChunks);
@@ -4002,11 +4018,20 @@ BookReader.prototype.ttsAdvance = function (starting) {
                 this.ttsPosition = 0;
                 this.ttsChunks = this.ttsNextChunks;
                 this.ttsNextChunks = null;
+
+                //A page flip might be necessary. This code is confusing since
+                //ttsNextChunks might be null if we are starting on a blank page.
                 if (2 == this.mode) {
                     if ((this.ttsIndex != this.twoPage.currentIndexL) && (this.ttsIndex != this.twoPage.currentIndexR)) {
-                        this.animationFinishedCallback = this.ttsNextChunkPhase2;
-                        this.next();
-                        return false;
+                        if (!starting) {
+                            this.animationFinishedCallback = this.ttsNextChunkPhase2;
+                            this.next();
+                            return false;
+                        } else {
+                            console.log('two page flip with starting=true');
+                            this.next();
+                            return true;
+                        }
                     } else {
                         return true;
                     }
