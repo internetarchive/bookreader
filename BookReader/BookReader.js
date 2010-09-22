@@ -3190,7 +3190,15 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     // Hide mode buttons and autoplay if 2up is not available
     // $$$ if we end up with more than two modes we should show the applicable buttons
     if ( !this.canSwitchToMode(this.constMode2up) ) {
-        jToolbar.find('.one_page_mode, .two_page_mode, .play, .pause').hide();
+        jToolbar.find('.two_page_mode, .play, .pause').hide();
+    }
+    if ( !this.canSwitchToMode(this.constModeThumb) ) {
+        jToolbar.find('.thumbnail_mode').hide();
+    }
+    
+    // Hide one page button if it is the only mode available
+    if ( ! (this.canSwitchToMode(this.constMode2up) || this.canSwitchToMode(this.constModeThumb)) ) {
+        jToolbar.find('.one_page_mode').hide();
     }
 
     // Switch to requested mode -- binds other click handlers
@@ -3658,7 +3666,7 @@ BookReader.prototype.startLocationPolling = function() {
 //________
 // Returns true if we can switch to the requested mode
 BookReader.prototype.canSwitchToMode = function(mode) {
-    if (mode == this.constMode2up) {
+    if (mode == this.constMode2up || mode == this.constModeThumb) {
         // check there are enough pages to display
         // $$$ this is a workaround for the mis-feature that we can't display
         //     short books in 2up mode
