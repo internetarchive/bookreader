@@ -105,10 +105,11 @@ function BookReader() {
     };
     
     // Text-to-Speech params
-    this.ttsIndex = null;  //leaf index
-    this.ttsPosition = -1; //chunk (paragraph) number
-    this.ttsBuffering = false;
-    this.ttsPoller = null;
+    this.ttsPlaying     = false;
+    this.ttsIndex       = null;  //leaf index
+    this.ttsPosition    = -1;    //chunk (paragraph) number
+    this.ttsBuffering   = false;
+    this.ttsPoller      = null;
     
     return this;
 };
@@ -1879,6 +1880,8 @@ BookReader.prototype.leftmost = function() {
 // next()
 //______________________________________________________________________________
 BookReader.prototype.next = function() {
+    //this.ttsStop();
+    
     if (2 == this.mode) {
         this.autoStop();
         this.flipFwdToIndex(null);
@@ -1892,6 +1895,8 @@ BookReader.prototype.next = function() {
 // prev()
 //______________________________________________________________________________
 BookReader.prototype.prev = function() {
+    //this.ttsStop();
+    
     if (2 == this.mode) {
         this.autoStop();
         this.flipBackToIndex(null);
@@ -3130,7 +3135,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     $("#BookReader").append("<div id='BRtoolbar'>"
         + "<span id='BRtoolbarbuttons' style='float: right'>"
-        +   "<button class='BRicon rollover read_aloud' onclick='br.ttsStart(); return false;'/>"
+        +   "<button class='BRicon rollover read_aloud' onclick='br.ttsToggle(); return false;'/>"
         +   "<button class='BRicon print rollover' /> <button class='BRicon rollover embed' />"
         +   "<form class='BRpageform' action='javascript:' onsubmit='br.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='BRpagenum' type='text' size='3' onfocus='br.autoStop();'></input></span></form>"
         +   "<div class='BRtoolbarmode2' style='display: none'><button class='BRicon rollover book_leftmost' /><button class='BRicon rollover book_left' /><button class='BRicon rollover book_right' /><button class='BRicon rollover book_rightmost' /></div>"
@@ -3792,12 +3797,51 @@ BookReader.util = {
 }
 
 
+// ttsToggle()
+//______________________________________________________________________________
+BookReader.prototype.ttsToggle = function () {
+    if (false == this.ttsPlaying) {        
+        if(soundManager.supported()) {
+            this.ttsStart();            
+        } else {               
+            soundManager.onready(function(oStatus) {
+              if (oStatus.success) {
+                console.log('soundmanager onload success');	
+                this.ttsStart();
+              } else {
+                alert('Could not load soundManger2. Audio playback is disabled');
+              }
+            }, this);        
+        }
+    } else {
+        this.ttsStop();
+    }
+}
+
 // ttsStart()
 //______________________________________________________________________________
 BookReader.prototype.ttsStart = function () {
     console.log('starting readAloud');
+    this.ttsPlaying = true;
     this.ttsIndex = this.currentIndex();
     this.ttsGetText(this.ttsIndex, 'ttsStartCB');
+}
+
+// ttsStop()
+//______________________________________________________________________________
+BookReader.prototype.ttsStop = function () {
+    if (false == this.ttsPlaying) return;
+    
+    console.log('stopping readaloud');
+    soundManager.stopAll();
+    soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
+    this.ttsRemoveHilites();
+
+    this.ttsPlaying     = false;
+    this.ttsIndex       = null;  //leaf index
+    this.ttsPosition    = -1;    //chunk (paragraph) number
+    this.ttsBuffering   = false;
+    this.ttsPoller      = null;
 }
 
 // ttsGetText()
@@ -3834,7 +3878,7 @@ BookReader.prototype.ttsStartCB = function (data) {
      id: 'chunk'+this.ttsIndex+'-0',
      //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',     
      url: 'http://home.us.archive.org/~rkumar/getOgg.php?string=' + escape(data[0][0]) + '&f=.ogg', //the .ogg is to trick SoundManager2 to use the HTML5 audio player
-     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) {$(br.popup).remove(); br.popup=null;}} //onload never fires...
+     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) {$(this.br.popup).remove(); this.br.popup=null;}} //onload never fires...
     });    
     snd.br = this;
     snd.load();
@@ -3845,6 +3889,8 @@ BookReader.prototype.ttsStartCB = function (data) {
 // ttsShowPopup
 //______________________________________________________________________________
 BookReader.prototype.ttsShowPopup = function() {
+    console.log('ttsShowPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
+    
     this.popup = document.createElement("div");
     $(this.popup).css({
         position: 'absolute',
@@ -3892,9 +3938,8 @@ BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
 
 // ttsNextChunk()
 //______________________________________________________________________________
-// I've split this function into two parts: ttsNextChunk and ttsNextChunkPhase2.
-// This is to make the 2-page flip behavior nicer, but makes the code much 
-// more complicated.
+// This function into two parts: ttsNextChunk gets run before page flip animation
+// and ttsNextChunkPhase2 get run after page flip animation.
 // If a page flip is necessary, ttsAdvance() will return false so Phase2 isn't
 // called. Instead, this.animationFinishedCallback is set, so that Phase2
 // continues after animation is finished.
@@ -3904,12 +3949,10 @@ BookReader.prototype.ttsNextChunk = function () {
     console.log(this.ttsPosition);
     
     if (-1 != this.ttsPosition) {
-        soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);    
+        soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
     }
 
-    //remove old hilights
-    $(this.ttsHilites).remove();
-    this.ttsHilites = [];    
+    this.ttsRemoveHilites(); //remove old hilights
         
     var moreToPlay = this.ttsAdvance();
     
@@ -3926,6 +3969,11 @@ BookReader.prototype.ttsNextChunk = function () {
 //______________________________________________________________________________
 // page flip animation has now completed
 BookReader.prototype.ttsNextChunkPhase2 = function () {
+    if (null == this.ttsChunks) {
+        alert('ttsChunks is null.. why?'); //TODO
+        return;
+    }
+    
     if (0 == this.ttsChunks.length) {
         console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
         this.ttsStartCB(this.ttsChunks);
@@ -3970,17 +4018,61 @@ BookReader.prototype.ttsAdvance = function (starting) {
                 this.ttsPosition = 0;
                 this.ttsChunks = this.ttsNextChunks;
                 this.ttsNextChunks = null;
-                if ((this.ttsIndex != this.twoPage.currentIndexL) && (this.ttsIndex != this.twoPage.currentIndexR)) {
-                    this.animationFinishedCallback = this.ttsNextChunkPhase2;
-                    this.next();
-                    return false;
-                } else {
-                    return true;
+
+                //A page flip might be necessary. This code is confusing since
+                //ttsNextChunks might be null if we are starting on a blank page.
+                if (2 == this.mode) {
+                    if ((this.ttsIndex != this.twoPage.currentIndexL) && (this.ttsIndex != this.twoPage.currentIndexR)) {
+                        if (!starting) {
+                            this.animationFinishedCallback = this.ttsNextChunkPhase2;
+                            this.next();
+                            return false;
+                        } else {
+                            console.log('two page flip with starting=true');
+                            this.next();
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
                 }
             } else {
                 console.log('ttsAdvance: ttsNextChunks is null');
                 return false; 
             }
+        }
+    }
+    
+    if ((this.constMode1up == this.mode) && (null != this.ttsChunks) && (0 != this.ttsChunks.length)) {
+        var leafTop = 0;
+        var h;
+        var i;
+        for (i=0; i<this.ttsIndex; i++) {
+            h = parseInt(this._getPageHeight(i)/this.reduce); 
+            leafTop += h + this.padding;
+        }
+        
+        var chunk = this.ttsChunks[this.ttsPosition];
+        console.log('chunk=');
+        console.log(chunk);
+        var chunkTop = chunk[1][3]; //coords are in l,b,r,t order
+        var chunkBot = chunk[chunk.length-1][1];
+        
+        var topOfFirstChunk = leafTop + chunkTop/this.reduce;
+        var botOfLastChunk  = leafTop + chunkBot/this.reduce;
+        
+        console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
+
+        var containerTop = $('#BRcontainer').attr('scrollTop');
+        var containerBot = containerTop + $('#BRcontainer').height();
+        console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
+
+        if ((topOfFirstChunk < containerTop) || (botOfLastChunk > containerBot)) {
+            console.log('jumping to leafTop!');
+
+            //jumpToIndex scrolls so that chunkTop is centered.. we want chunkTop at the top
+            //this.jumpToIndex(this.ttsIndex, null, chunkTop);
+            $('#BRcontainer').animate({scrollTop: topOfFirstChunk,},'fast');            
         }
     }
     
@@ -4033,7 +4125,7 @@ BookReader.prototype.ttsPlay = function () {
     if (2 == this.mode) {
         this.ttsHilite2UP(chunk);
     } else {
-        alert('only 2 page mode supported for TTS..');
+        this.ttsHilite1UP(chunk);
     }
         
     //play current chunk
@@ -4045,11 +4137,36 @@ BookReader.prototype.ttsPlay = function () {
     }
 }
 
+// ttsHilite1UP()
+//______________________________________________________________________________
+BookReader.prototype.ttsHilite1UP = function(chunk) {
+    var i;
+    for (i=1; i<chunk.length; i++) {
+        //each rect is an array of l,b,r,t coords (djvu.xml ordering...)       
+        var l = chunk[i][0];
+        var b = chunk[i][1];
+        var r = chunk[i][2];
+        var t = chunk[i][3];
+        
+        var div = document.createElement('div');
+        this.ttsHilites.push(div);        
+        $(div).attr('className', 'BookReaderSearchHilite').appendTo('#pagediv'+this.ttsIndex);
+
+        $(div).css({
+            width:  (r-l)/this.reduce + 'px',
+            height: (b-t)/this.reduce + 'px',
+            left:   l/this.reduce + 'px',
+            top:    t/this.reduce +'px'
+        });
+    }
+
+}
+
 // ttsHilite2UP()
 //______________________________________________________________________________
 BookReader.prototype.ttsHilite2UP = function (chunk) {
     var i;
-    for (i=0; i<chunk.length; i++) {
+    for (i=1; i<chunk.length; i++) {
         //each rect is an array of l,b,r,t coords (djvu.xml ordering...)       
         var l = chunk[i][0];
         var b = chunk[i][1];
@@ -4061,6 +4178,13 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
         $(div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
         this.setHilightCss2UP(div, this.ttsIndex, l, r, t, b);        
     }
+}
+
+// ttsRemoveHilites()
+//______________________________________________________________________________
+BookReader.prototype.ttsRemoveHilites = function (chunk) {
+    $(this.ttsHilites).remove();
+    this.ttsHilites = [];
 }
 
 // ttsStartPolling()
