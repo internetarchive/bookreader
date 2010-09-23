@@ -24,108 +24,212 @@
 
 from lxml import etree
 import sys
+import re
 import json
+
+from windowed_iterator import windowed_iterator
+from diff_match_patch import diff_match_patch
 
 minWordsInBlock = 25
 maxWordsInBlock = 50
 
-path = sys.argv[1]
-pageNum = int(sys.argv[2])
-callback = sys.argv[3]
+# Header/Footer detection parameters
 
-tree = etree.parse(path)
+# 'Window' of neighboring pages to check for similar text that may
+# mark headers / footers
+windowsize = 10
 
-objects = tree.findall('//OBJECT')
+# Weights to assign to potential headers / footers.
+# len(weights) should be even.
+weights = (1.0, .75,
+           .75, 1.0)
+# weights = (1.0, .75, .5,
+#            .5, .75, 1.0)
 
-#print 'got %s objects' % len(objects)
+# allow potential headers/footers with this length difference
+max_length_difference = 4
 
-page = objects[pageNum]
+dmp = diff_match_patch()
+dmp.Match_Distance = 2 # number of prepended characters allowed before match
+dmp.Match_Threshold = .5 # 0 to 1 ... higher => more fanciful matches,
+                         # slower execution.
 
-lines = page.findall('.//LINE')
+# minimum match score for a line to be considered a header or footer.
+min_score = .9
 
-#print 'got %s .//lines' % len(lines)
 
-textBlocks = []
-block = ''
-rects = []
+def guess_hfs(page, pages):
+    """ Given a page and a 'windowed iterator' giving access to neighboring
+    pages, return a dict containing likely header/footer lines on that page.
 
-numWords = 0
-
-for line in lines:
-
-    top = sys.maxint
-    left = sys.maxint
-    right = -1
-    bottom = -1
+    A line is considered a likely header/footer if it's near the
+    start/end of the page, and if it is textually similar the same
+    line on neighboring pages.
+    """
     
-    numWordsInLine = 0
-
-    words = line.findall('.//WORD')
-
-    #print 'at start of line, rects ='
-    #print rects
+    result = {}
     
-    for word in words:
-
-        numWordsInLine += 1
-        
-        text = word.text
-        #print 'got text ' + text
-        
-        coords = word.get('coords').split(',') #l,b,r,t
-        coords = map(int, coords)
-        
-        if int(coords[0]) < left:
-            left = coords[0]
+    hf_candidates = get_hf_candidates(page)
+    neighbor_info = {}
+    for i in range(len(weights)):
+        if hf_candidates[i] is None:
+            continue
+        score = 0
+        for neighbor_page in pages.neighbors():
+            if neighbor_page in neighbor_info:
+                neighbor_candidates = neighbor_info[neighbor_page]
+            else:
+                neighbor_candidates = get_hf_candidates(neighbor_page)
+                neighbor_info[neighbor_page] = neighbor_candidates
+            if neighbor_candidates[i] is None:
+                continue
+            text = hf_candidates[i][1]
+            neighbor_text = neighbor_candidates[i][1]
+            if abs(len(text) - len(neighbor_text)) > max_length_difference:
+                continue
             
-        if coords[1] > bottom:
-            bottom = coords[1]
+            matchstart = dmp.match_main(hf_candidates[i][1],
+                                        neighbor_candidates[i][1], 0)
+            if matchstart != -1:
+                score += weights[i]
+            if score > min_score:
+                result[hf_candidates[i][0]] = True
+                break
+    return result
 
-        if coords[2] > right:
-            right = coords[2]
+        
+def simplify_line_text(line):
+    text = etree.tostring(line, method='text', encoding=unicode).lower();
+    # collape numbers (roman too) to '@' so headers will be more
+    # similar from page to page
+    text = re.sub(r'[ivx\d]', r'@', text)
+    text = re.sub(r'\s+', r' ', text)
+    return text
 
-        if coords[3] < top:
-            top = coords[3] 
-                               
-        block += word.text + ' '
-        numWords += 1
+
+def get_hf_candidates(page):
+    result = []
+    hfwin = len(weights) / 2
+    lines = [line for line in page.findall('.//LINE')]
+    for i in range(hfwin) + range(-hfwin, 0):
+        if abs(i) < len(lines):
+            result.append((lines[i], simplify_line_text(lines[i])))
+        else:
+            result.append(None)
+    return result
+
+
+def main(args):
+    path = args[0]
+    pageNum = int(args[1])
+    callback = args[2]
+
+    f = open(path)
+    context = etree.iterparse(f, tag='OBJECT')
+    def drop_event(iter):
+        for event, page in iter:
+            yield page
+    pages = drop_event(context)
+    def clear_page(page):
+        page.clear()
+    pages = windowed_iterator(pages, windowsize, clear_page)
+    for i, page in enumerate(pages):
+        if i == pageNum:
+            break
+    hfs = guess_hfs(page, pages)
+
+    lines = page.findall('.//LINE')
     
-        if text.endswith('.') and (numWords>minWordsInBlock):
-            #print 'end of block with numWords=%d' % numWords
-            #print 'block = ' + block
-            
-            rects.append([left, bottom, right, top])            
-            
-            #textBlocks.append(block.strip())
+    #print 'got %s .//lines' % len(lines)
+
+    textBlocks = []
+    block = ''
+    rects = []
+
+    numWords = 0
+
+    for line in lines:
+        # skip headers/footers
+        if line in hfs:
+            continue
+
+        top = sys.maxint
+        left = sys.maxint
+        right = -1
+        bottom = -1
+
+        numWordsInLine = 0
+
+        words = line.findall('.//WORD')
+
+        #print 'at start of line, rects ='
+        #print rects
+
+        for word in words:
+
+            numWordsInLine += 1
+
+            text = word.text
+            #print 'got text ' + text
+
+            coords = word.get('coords').split(',') #l,b,r,t
+            coords = map(int, coords)
+
+            if int(coords[0]) < left:
+                left = coords[0]
+
+            if coords[1] > bottom:
+                bottom = coords[1]
+
+            if coords[2] > right:
+                right = coords[2]
+
+            if coords[3] < top:
+                top = coords[3] 
+
+            block += word.text + ' '
+            numWords += 1
+
+            if text.endswith('.') and (numWords>minWordsInBlock):
+                #print 'end of block with numWords=%d' % numWords
+                #print 'block = ' + block
+
+                rects.append([left, bottom, right, top])            
+
+                #textBlocks.append(block.strip())
+                rects.insert(0, block.strip())            
+                textBlocks.append(rects)
+                block = ''
+                rects = []
+                numWords = 0
+                numWordsInLine = 0
+                top = sys.maxint
+                left = sys.maxint
+                right = -1
+                bottom = -1
+
+        #end of line
+        if numWordsInLine > 0:
+            rects.append([left, bottom, right, top])
+
+        if numWords>maxWordsInBlock:
+            #textBlocks.append(block.strip())        
             rects.insert(0, block.strip())            
-            textBlocks.append(rects)
+            textBlocks.append(rects)        
             block = ''
-            rects = []
             numWords = 0
-            numWordsInLine = 0
-            top = sys.maxint
-            left = sys.maxint
-            right = -1
-            bottom = -1
+            rects = []        
 
-    #end of line
-    if numWordsInLine > 0:
-        rects.append([left, bottom, right, top])
+        #print 'at end of line, rects ='
+        #print rects
 
-    if numWords>maxWordsInBlock:
-        #textBlocks.append(block.strip())        
+    if '' != block:
+        #textBlocks.append(block.strip())
         rects.insert(0, block.strip())            
-        textBlocks.append(rects)        
-        block = ''
-        numWords = 0
-        rects = []        
-     
-    #print 'at end of line, rects ='
-    #print rects
+        textBlocks.append(rects)
 
-if '' != block:
-    #textBlocks.append(block.strip())
-    rects.insert(0, block.strip())            
-    textBlocks.append(rects)
+    print 'br.%s(%s);' % (callback, json.dumps(textBlocks))
 
-print 'br.%s(%s);' % (callback, json.dumps(textBlocks))
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
