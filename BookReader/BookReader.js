@@ -120,16 +120,25 @@ BookReader.prototype.init = function() {
     
     // Find start index and mode if set in location hash
     var params = this.paramsFromFragment(window.location.hash);
+    
+    // Sanitize/process parameters
+
+    if ( !this.canSwitchToMode( this.mode ) ) {
+        this.mode = this.constMode1up;
+    }    
         
     if ('undefined' != typeof(params.index)) {
         startIndex = params.index;
     } else if ('undefined' != typeof(params.page)) {
         startIndex = this.getPageIndex(params.page);
     }
-    
+
     if ('undefined' == typeof(startIndex)) {
         if ('undefined' != typeof(this.titleLeaf)) {
-            startIndex = this.leafNumToIndex(this.titleLeaf);
+            // title leaf is known - but only use as default if book has a few pages
+            if (this.numLeafs > 2) {
+                startIndex = this.leafNumToIndex(this.titleLeaf);
+            }
         }
     }
     
@@ -144,11 +153,6 @@ BookReader.prototype.init = function() {
     // Set document title -- may have already been set in enclosing html for
     // search engine visibility
     document.title = this.shortTitle(50);
-    
-    // Sanitize parameters
-    if ( !this.canSwitchToMode( this.mode ) ) {
-        this.mode = this.constMode1up;
-    }
     
     $("#BookReader").empty();
         
