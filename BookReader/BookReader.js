@@ -62,7 +62,7 @@ function BookReader() {
     this.twoPagePopUp = null;
     this.leafEdgeTmp  = null;
     this.embedPopup = null;
-    this.popup = null;
+    this.printPopup = null;
     
     this.searchTerm = '';
     this.searchResults = {};
@@ -103,12 +103,6 @@ function BookReader() {
         bookSpineDivWidth: 30,    // Width of book spine  $$$ consider sizing based on book length
         autofit: 'auto'
     };
-    
-    // Text-to-Speech params
-    this.ttsIndex = null;  //leaf index
-    this.ttsPosition = -1; //chunk (paragraph) number
-    this.ttsBuffering = false;
-    this.ttsPoller = null;
     
     return this;
 };
@@ -2804,7 +2798,28 @@ BookReader.prototype.updateSearchHilites2UP = function() {
                 //console.log('appending ' + key);
             }
 
-            this.setHilightCss2UP(result.div, key, result.l, result.r, result.t, result.b);
+            // We calculate the reduction factor for the specific page because it can be different
+            // for each page in the spread
+            var height = this._getPageHeight(key);
+            var width  = this._getPageWidth(key)
+            var reduce = this.twoPage.height/height;
+            var scaledW = parseInt(width*reduce);
+            
+            var gutter = this.twoPageGutter();
+            var pageL;
+            if ('L' == this.getPageSide(key)) {
+                pageL = gutter-scaledW;
+            } else {
+                pageL = gutter;
+            }
+            var pageT  = this.twoPageTop();
+            
+            $(result.div).css({
+                width:  (result.r-result.l)*reduce + 'px',
+                height: (result.b-result.t)*reduce + 'px',
+                left:   pageL+(result.l)*reduce + 'px',
+                top:    pageT+(result.t)*reduce +'px'
+            });
 
         } else {
             //console.log(key + ' not displayed');
@@ -2815,35 +2830,6 @@ BookReader.prototype.updateSearchHilites2UP = function() {
             this.searchResults[key].div=null;
         }
     }
-}
-
-// setHilightCss2UP()
-//______________________________________________________________________________
-//position calculation shared between search and text-to-speech functions
-BookReader.prototype.setHilightCss2UP = function(div, index, left, right, top, bottom) {
-
-    // We calculate the reduction factor for the specific page because it can be different
-    // for each page in the spread
-    var height = this._getPageHeight(index);
-    var width  = this._getPageWidth(index)
-    var reduce = this.twoPage.height/height;
-    var scaledW = parseInt(width*reduce);
-    
-    var gutter = this.twoPageGutter();
-    var pageL;
-    if ('L' == this.getPageSide(index)) {
-        pageL = gutter-scaledW;
-    } else {
-        pageL = gutter;
-    }
-    var pageT  = this.twoPageTop();
-    
-    $(div).css({
-        width:  (right-left)*reduce + 'px',
-        height: (bottom-top)*reduce + 'px',
-        left:   pageL+left*reduce + 'px',
-        top:    pageT+top*reduce +'px'
-    });
 }
 
 // removeSearchHilites()
@@ -3130,7 +3116,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     $("#BookReader").append("<div id='BRtoolbar'>"
         + "<span id='BRtoolbarbuttons' style='float: right'>"
-        +   "<button class='BRicon rollover read_aloud' onclick='br.ttsStart(); return false;'/>"
         +   "<button class='BRicon print rollover' /> <button class='BRicon rollover embed' />"
         +   "<form class='BRpageform' action='javascript:' onsubmit='br.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='BRpagenum' type='text' size='3' onfocus='br.autoStop();'></input></span></form>"
         +   "<div class='BRtoolbarmode2' style='display: none'><button class='BRicon rollover book_leftmost' /><button class='BRicon rollover book_left' /><button class='BRicon rollover book_right' /><button class='BRicon rollover book_rightmost' /></div>"
@@ -3789,295 +3774,4 @@ BookReader.util = {
         return encodeURIComponent(value).replace(/%20/g, '+');
     }
     // The final property here must NOT have a comma after it - IE7
-}
-
-
-// ttsStart()
-//______________________________________________________________________________
-BookReader.prototype.ttsStart = function () {
-    console.log('starting readAloud');
-    this.ttsIndex = this.currentIndex();
-    this.ttsGetText(this.ttsIndex, 'ttsStartCB');
-}
-
-// ttsGetText()
-//______________________________________________________________________________
-BookReader.prototype.ttsGetText = function(index, callback) {
-    var url = 'http://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+index;
-    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:callback});
-}
-
-// ttsStartCB(): text-to-speech callback
-//______________________________________________________________________________
-BookReader.prototype.ttsStartCB = function (data) {
-    console.log('ttsStartCB got data:');
-    console.log(data);
-    this.ttsChunks = data;
-    this.ttsHilites = [];
-    
-    //deal with the page being blank
-    if (0 == data.length) {
-        console.log('first page is blank!');
-        if(this.ttsAdvance(true)) {
-            this.ttsGetText(this.ttsIndex, 'ttsStartCB');            
-        }
-        return;
-    } else {
-        console.log('length = ' + data.length);
-        console.log((0 == data.length));
-    }
-    
-    this.ttsShowPopup();
-    
-    this.ttsPosition = -1;    
-    var snd = soundManager.createSound({
-     id: 'chunk'+this.ttsIndex+'-0',
-     //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',     
-     url: 'http://home.us.archive.org/~rkumar/getOgg.php?string=' + escape(data[0][0]) + '&f=.ogg', //the .ogg is to trick SoundManager2 to use the HTML5 audio player
-     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) {$(br.popup).remove(); br.popup=null;}} //onload never fires...
-    });    
-    snd.br = this;
-    snd.load();
-
-    this.ttsNextChunk();
-}
-
-// ttsShowPopup
-//______________________________________________________________________________
-BookReader.prototype.ttsShowPopup = function() {
-    this.popup = document.createElement("div");
-    $(this.popup).css({
-        position: 'absolute',
-        top:      '20%',
-        left:     ($('#BRcontainer').attr('clientWidth')-600)/2 + 'px',
-        width:    '600px',
-        padding:  "20px",
-        border:   "3px double #999999",
-        zIndex:   3,
-        backgroundColor: "#f00",
-        color:           "#fff",
-        fontSize:       '1.875em'        
-    }).appendTo('#BookReader');
-
-    htmlStr =  '<p style="text-align:center;"><b>Ever wanted to wait while audio loads?</b><br/>';
-    htmlStr += "It's OK. We all do.</p>";
-
-    this.popup.innerHTML = htmlStr;
-}
-
-// ttsNextPageCB
-//______________________________________________________________________________
-BookReader.prototype.ttsNextPageCB = function (data) {
-    this.ttsNextChunks = data;
-    console.log('preloaded next chunks.. data is');
-    console.log(data);
-    
-    if (true == this.ttsBuffering) {
-        console.log('ttsNextPageCB: ttsBuffering is true');
-        this.ttsBuffering = false;
-    }
-}
-
-// ttsLoadChunk
-//______________________________________________________________________________
-BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
-    var snd = soundManager.createSound({
-     id: 'chunk'+page+'-'+pos,
-     url: 'http://home.us.archive.org/~rkumar/getOgg.php?string=' + escape(string) + '&f=.ogg' //the .ogg is to trick SoundManager2 to use the HTML5 audio player
-    });
-    snd.br = this;
-    snd.load()
-}
-
-
-// ttsNextChunk()
-//______________________________________________________________________________
-// I've split this function into two parts: ttsNextChunk and ttsNextChunkPhase2.
-// This is to make the 2-page flip behavior nicer, but makes the code much 
-// more complicated.
-// If a page flip is necessary, ttsAdvance() will return false so Phase2 isn't
-// called. Instead, this.animationFinishedCallback is set, so that Phase2
-// continues after animation is finished.
-
-BookReader.prototype.ttsNextChunk = function () {
-    console.log(this);
-    console.log(this.ttsPosition);
-    
-    if (-1 != this.ttsPosition) {
-        soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);    
-    }
-
-    //remove old hilights
-    $(this.ttsHilites).remove();
-    this.ttsHilites = [];    
-        
-    var moreToPlay = this.ttsAdvance();
-    
-    if (moreToPlay) {
-        this.ttsNextChunkPhase2();
-    }    
-    
-    //This function is called again when ttsPlay() has finished playback.
-    //If the next chunk of text has not yet finished loading, ttsPlay()
-    //will start polling until the next chunk is ready.
-}
-
-// ttsNextChunkPhase2()
-//______________________________________________________________________________
-// page flip animation has now completed
-BookReader.prototype.ttsNextChunkPhase2 = function () {
-    if (0 == this.ttsChunks.length) {
-        console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
-        this.ttsStartCB(this.ttsChunks);
-        return;
-    }
-    
-    console.log('next chunk is ');
-    console.log(this.ttsPosition);    
-
-    //prefetch next page of text
-    if (0 == this.ttsPosition) {
-        if (this.ttsIndex<(this.numLeafs-1)) {
-            this.ttsGetText(this.ttsIndex+1, 'ttsNextPageCB');
-        }
-    }
-    
-    this.ttsPrefetchAudio();
-    
-    this.ttsPlay();
-}
-
-// ttsAdvance()
-//______________________________________________________________________________
-// 1. advance ttsPosition
-// 2. if necessary, advance ttsIndex, and copy ttsNextChunks to ttsChunks
-// 3. if necessary, flip to current page, or scroll so chunk is visible
-// 4. do something smart is ttsNextChunks has not yet finished preloading (TODO)
-// 5. stop playing at end of book
-
-BookReader.prototype.ttsAdvance = function (starting) {
-    this.ttsPosition++;
-
-    if (this.ttsPosition >= this.ttsChunks.length) {
-        
-        if (this.ttsIndex == (this.numLeafs-1)) {
-            console.log('tts stop');
-            return false;
-        } else {
-            if ((null != this.ttsNextChunks) || (starting)) {
-                console.log('moving to next page!');
-                this.ttsIndex++;
-                this.ttsPosition = 0;
-                this.ttsChunks = this.ttsNextChunks;
-                this.ttsNextChunks = null;
-                if ((this.ttsIndex != this.twoPage.currentIndexL) && (this.ttsIndex != this.twoPage.currentIndexR)) {
-                    this.animationFinishedCallback = this.ttsNextChunkPhase2;
-                    this.next();
-                    return false;
-                } else {
-                    return true;
-                }
-            } else {
-                console.log('ttsAdvance: ttsNextChunks is null');
-                return false; 
-            }
-        }
-    }
-    
-    return true;
-}
-
-// ttsPrefetchAudio()
-//______________________________________________________________________________
-BookReader.prototype.ttsPrefetchAudio = function () {
-
-    if(false != this.ttsBuffering) {
-        alert('TTS Error: prefetch() called while content still buffering!');
-        return;
-    }
-    
-
-
-    //preload next chunk
-    var nextPos = this.ttsPosition+1;
-    if (nextPos < this.ttsChunks.length) {     
-        this.ttsLoadChunk(this.ttsIndex, nextPos, this.ttsChunks[nextPos][0]);
-    } else {
-        //for a short page, preload might nt have yet returned..
-        console.log('preloading chunk 0 from next page, index='+(this.ttsIndex+1))
-        if (null != this.ttsNextChunks) {
-            console.log(this.ttsNextChunks);
-            if (0 != this.ttsNextChunks.length) {
-                this.ttsLoadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);        
-            } else {
-                console.log('prefetchAudio(): ttsNextChunks is zero length!');
-            }
-        } else {
-            console.log('ttsNextChunks is null, not preloading next page');
-            this.ttsBuffering = true;
-        }
-    }
-
-}
-
-// ttsPlay()
-//______________________________________________________________________________
-BookReader.prototype.ttsPlay = function () {
-        
-    var chunk = this.ttsChunks[this.ttsPosition];
-    console.log('position = ' + this.ttsPosition);
-    console.log('chunk = ' + chunk);
-    console.log(this.ttsChunks);
-
-    //add new hilights
-    if (2 == this.mode) {
-        this.ttsHilite2UP(chunk);
-    } else {
-        alert('only 2 page mode supported for TTS..');
-    }
-        
-    //play current chunk
-    if (false == this.ttsBuffering) {
-        soundManager.play('chunk'+this.ttsIndex+'-'+this.ttsPosition,{onfinish:function(){br.ttsNextChunk();}});
-    } else {
-        console.log('playing current chunk, but next chunk is not buffered yet!');
-        soundManager.play('chunk'+this.ttsIndex+'-'+this.ttsPosition,{onfinish:function(){br.ttsStartPolling();}});
-    }
-}
-
-// ttsHilite2UP()
-//______________________________________________________________________________
-BookReader.prototype.ttsHilite2UP = function (chunk) {
-    var i;
-    for (i=0; i<chunk.length; i++) {
-        //each rect is an array of l,b,r,t coords (djvu.xml ordering...)       
-        var l = chunk[i][0];
-        var b = chunk[i][1];
-        var r = chunk[i][2];
-        var t = chunk[i][3];
-        
-        var div = document.createElement('div');
-        this.ttsHilites.push(div);        
-        $(div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
-        this.setHilightCss2UP(div, this.ttsIndex, l, r, t, b);        
-    }
-}
-
-// ttsStartPolling()
-//______________________________________________________________________________
-// Play of the current chunk has ended, but the next chunk has not yet been loaded.
-// We need to wait for the text for the next page to be loaded, so we can
-// load the next audio chunk
-BookReader.prototype.ttsStartPolling = function () {
-    console.log('Starting the TTS poller...');
-    var self = this;
-    this.ttsPoller=setInterval(function(){
-        if (self.ttsBuffering) {return;}
-        
-        console.log('TTS buffering finished!');
-        clearInterval(self.ttsPoller);
-        self.ttsPoller = null;
-        self.ttsPrefetchAudio();
-        self.ttsNextChunk();
-    },500);    
 }

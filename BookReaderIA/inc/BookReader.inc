@@ -131,12 +131,6 @@ class BookReader
     <script type="text/javascript" src="/bookreader/jquery-ui-1.8.1.custom.min.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
-    <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2.js?v=<? echo($version); ?>"></script>
-    <script>
-        soundManager.debugMode = false;
-        soundManager.url = '/bookreader/soundmanager/swf/';       
-        soundManager.useHTML5Audio = true;
-    </script>
 </head>
 <body style="background-color: #FFFFFF;">
 
@@ -216,7 +210,7 @@ class BookReader
       //     ln -s ~/petabox/www/datanode/BookReader ~/public_html/BookReader
       //     so we enable it only for known hosts
       $devhost = BookReader::getDevHost($server);
-      $devhosts = array('mang', 'testflip', 'rkumar', 'mccabe');
+      $devhosts = array('mang', 'testflip', 'rkumar');
       if (in_array($devhost, $devhosts)) {
         $server = $server . "/~" . $devhost;
       }

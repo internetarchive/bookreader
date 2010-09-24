@@ -167,7 +167,7 @@
 .BRicon.book_rightmost { background: url(images/book_rightmost_icon.png) no-repeat; }
 .BRicon.book_top { background: url(images/book_top_icon.png) no-repeat; }
 .BRicon.book_bottom { background: url(images/book_bottom_icon.png) no-repeat; }
-.BRicon.read_aloud { background: url(images/read_aloud.png) no-repeat; }
+
 
 .BRicon.play { background: url(images/control_play_icon.png) no-repeat; }
 .BRicon.pause { background: url(images/control_pause_icon.png) no-repeat; }

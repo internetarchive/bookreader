@@ -36,8 +36,6 @@ if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home di
     $server .= ':80/~rkumar';
 } else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
     $server .= ':80/~testflip';
-} else if (strpos($_SERVER["REQUEST_URI"], "/~mccabe") === 0) { // Serving out of home dir
-    $server .= ':80/~mccabe';
 }
 
 if (! $subPrefix) {
