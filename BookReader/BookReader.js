@@ -1263,6 +1263,7 @@ BookReader.prototype.switchMode = function(mode) {
     }
 
     this.autoStop();
+    this.ttsStop();
     this.removeSearchHilites();
 
     this.mode = mode;
@@ -1544,12 +1545,14 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
 
     $(this.leafEdgeL).bind('click', this, function(e) { 
         e.data.autoStop();
+        e.data.ttsStop();
         var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
         e.data.jumpToIndex(jumpIndex);
     });
 
     $(this.leafEdgeR).bind('click', this, function(e) { 
         e.data.autoStop();
+        e.data.ttsStop();
         var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
         e.data.jumpToIndex(jumpIndex);    
     });
@@ -1881,8 +1884,6 @@ BookReader.prototype.leftmost = function() {
 // next()
 //______________________________________________________________________________
 BookReader.prototype.next = function() {
-    //this.ttsStop();
-    
     if (2 == this.mode) {
         this.autoStop();
         this.flipFwdToIndex(null);
@@ -1896,8 +1897,6 @@ BookReader.prototype.next = function() {
 // prev()
 //______________________________________________________________________________
 BookReader.prototype.prev = function() {
-    //this.ttsStop();
-    
     if (2 == this.mode) {
         this.autoStop();
         this.flipBackToIndex(null);
@@ -2288,6 +2287,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
+            e.data.self.ttsStop();
             e.data.self.left();
             e.preventDefault();
         }
@@ -2296,6 +2296,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR],
         { self: this },
         function(e) {
+            e.data.self.ttsStop();
             e.data.self.right();
             e.preventDefault();
         }
@@ -2949,6 +2950,7 @@ BookReader.prototype.showEmbedCode = function() {
         return;
     }
     this.autoStop();
+    this.ttsStop();
     this.embedPopup = document.createElement("div");
     $(this.embedPopup).css({
         position: 'absolute',
@@ -3655,6 +3657,8 @@ BookReader.prototype.startLocationPolling = function() {
         if (newHash != self.oldLocationHash) {
             if (newHash != self.oldUserHash) { // Only process new user hash once
                 //console.log('url change detected ' + self.oldLocationHash + " -> " + newHash);
+                
+                self.ttsStop();
                 
                 // Queue change if animating
                 if (self.animating) {
