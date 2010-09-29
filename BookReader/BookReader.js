@@ -3896,15 +3896,10 @@ BookReader.prototype.ttsShowPopup = function() {
     
     this.popup = document.createElement("div");
     $(this.popup).css({
-        position: 'absolute',
         top:      $('#BRtoolbar').height() + 'px',
         left:     $('.read_aloud').position().left + 'px',
         width:    $('#BRtoolbar').width()-$('.read_aloud').position().left + 'px',
         height:   '20px',
-        zIndex:   3,
-        backgroundColor: '#E6E4E1',
-        fontSize:        '0.8em',
-        background: 'images/progressbar.gif'
     }).attr('className', 'BRttsPopUp').appendTo('#BookReader');
 
     htmlStr =  '&nbsp;';
