@@ -110,6 +110,7 @@ function BookReader() {
     this.ttsPosition    = -1;    //chunk (paragraph) number
     this.ttsBuffering   = false;
     this.ttsPoller      = null;
+    this.ttsFormat      = null;
     
     return this;
 };
@@ -3824,7 +3825,11 @@ BookReader.prototype.ttsStart = function () {
     console.log('starting readAloud');
     this.ttsPlaying = true;
     this.ttsIndex = this.currentIndex();
-    this.ttsGetText(this.ttsIndex, 'ttsStartCB');
+    this.ttsFormat = 'mp3';
+    if ($.browser.mozilla) {
+        this.ttsFormat = 'ogg';
+    }
+    this.ttsGetText(this.ttsIndex, 'ttsStartCB');    
 }
 
 // ttsStop()
@@ -3848,6 +3853,7 @@ BookReader.prototype.ttsStop = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsGetText = function(index, callback) {
     var url = 'http://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+index;
+    console.log('ttsGetText: ' + url);
     this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:callback});
 }
 
@@ -3873,12 +3879,15 @@ BookReader.prototype.ttsStartCB = function (data) {
     
     this.ttsShowPopup();
     
+    ///// whileloading: broken on safari
+    ///// onload fires on safari, but *after* the sound starts playing..
     this.ttsPosition = -1;    
     var snd = soundManager.createSound({
      id: 'chunk'+this.ttsIndex+'-0',
-     //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',     
-     url: 'http://home.us.archive.org/~rkumar/getOgg.php?string=' + escape(data[0][0]) + '&f=.ogg', //the .ogg is to trick SoundManager2 to use the HTML5 audio player
-     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) {$(this.br.popup).remove(); this.br.popup=null;}} //onload never fires...
+     //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',
+     url: 'http://'+this.server+'/getTTS.php?string=' + escape(data[0][0]) + '&format=.'+this.ttsFormat, //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) this.br.ttsRemovePopup();}, //onload never fires in FF...
+     onload: function(){this.br.ttsRemovePopup();} //whileloading never fires in safari...
     });    
     snd.br = this;
     snd.load();
@@ -3911,6 +3920,13 @@ BookReader.prototype.ttsShowPopup = function() {
     this.popup.innerHTML = htmlStr;
 }
 
+// ttsRemovePopup
+//______________________________________________________________________________
+BookReader.prototype.ttsRemovePopup = function() {
+    $(this.popup).remove(); 
+    this.popup=null;
+}
+
 // ttsNextPageCB
 //______________________________________________________________________________
 BookReader.prototype.ttsNextPageCB = function (data) {
@@ -3929,7 +3945,7 @@ BookReader.prototype.ttsNextPageCB = function (data) {
 BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
     var snd = soundManager.createSound({
      id: 'chunk'+page+'-'+pos,
-     url: 'http://home.us.archive.org/~rkumar/getOgg.php?string=' + escape(string) + '&f=.ogg' //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+     url: 'http://'+this.server+'/getTTS.php?string=' + escape(string) + '&format=.'+this.ttsFormat //the .ogg is to trick SoundManager2 to use the HTML5 audio player
     });
     snd.br = this;
     snd.load()
@@ -3945,8 +3961,7 @@ BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
 // continues after animation is finished.
 
 BookReader.prototype.ttsNextChunk = function () {
-    console.log(this);
-    console.log(this.ttsPosition);
+    console.log('nextchunk pos=' + this.ttsPosition);
     
     if (-1 != this.ttsPosition) {
         soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
@@ -4084,7 +4099,7 @@ BookReader.prototype.ttsPrefetchAudio = function () {
 BookReader.prototype.ttsPlay = function () {
         
     var chunk = this.ttsChunks[this.ttsPosition];
-    console.log('position = ' + this.ttsPosition);
+    console.log('ttsPlay position = ' + this.ttsPosition);
     console.log('chunk = ' + chunk);
     console.log(this.ttsChunks);
 
@@ -4099,6 +4114,7 @@ BookReader.prototype.ttsPlay = function () {
         
     //play current chunk
     if (false == this.ttsBuffering) {
+        console.log('calling play');
         soundManager.play('chunk'+this.ttsIndex+'-'+this.ttsPosition,{onfinish:function(){br.ttsNextChunk();}});
     } else {
         console.log('playing current chunk, but next chunk is not buffered yet!');

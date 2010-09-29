@@ -25,5 +25,6 @@ This file is part of BookReader.
 $path=$_GET['path'];
 $page=$_GET['page'];
 $callback=$_GET['callback'];
+header('Content-Type: application/javascript');
 passthru("python BookReaderGetText.py $path $page $callback");
 ?>

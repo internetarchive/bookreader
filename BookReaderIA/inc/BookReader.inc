@@ -133,9 +133,10 @@ class BookReader
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2.js?v=<? echo($version); ?>"></script>
     <script>
-        soundManager.debugMode = false;
+        soundManager.debugMode = true;
         soundManager.url = '/bookreader/soundmanager/swf/';       
         soundManager.useHTML5Audio = true;
+        soundManager.flashVersion = 9; //flash 8 version of swf is buggy when calling play() on a sound that is still loading
     </script>
 </head>
 <body style="background-color: #FFFFFF;">
