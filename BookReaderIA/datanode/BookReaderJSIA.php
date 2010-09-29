@@ -18,6 +18,8 @@ This file is part of BookReader.
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+header('Content-Type: application/javascript');
+
 $id = $_REQUEST['id'];
 $itemPath = $_REQUEST['itemPath'];
 $subPrefix = $_REQUEST['subPrefix'];

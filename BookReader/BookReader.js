@@ -3840,6 +3840,7 @@ BookReader.prototype.ttsStop = function () {
     soundManager.stopAll();
     soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
     this.ttsRemoveHilites();
+    this.ttsRemovePopup();
 
     this.ttsPlaying     = false;
     this.ttsIndex       = null;  //leaf index

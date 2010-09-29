@@ -22,9 +22,9 @@ This file is part of BookReader.
 */
 
 //$env = 'LD_LIBRARY_PATH=/petabox/sw/lib/lxml/lib PYTHONPATH=/petabox/sw/lib/lxml/lib/python2.5/site-packages:$PYTHONPATH';
-$path=$_GET['path'];
-$page=$_GET['page'];
-$callback=$_GET['callback'];
+$path     = escapeshellarg($_GET['path']);
+$page     = escapeshellarg($_GET['page']);
+$callback = escapeshellarg($_GET['callback']);
 header('Content-Type: application/javascript');
 passthru("python BookReaderGetText.py $path $page $callback");
 ?>

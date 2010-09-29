@@ -25,6 +25,7 @@
 from lxml import etree
 import sys
 import json
+import re
 
 minWordsInBlock = 25
 maxWordsInBlock = 50
@@ -33,11 +34,20 @@ path = sys.argv[1]
 pageNum = int(sys.argv[2])
 callback = sys.argv[3]
 
+if not re.match('^/\d{1,2}/items/.+_djvu.xml$', path):
+    sys.exit(-1);
+
+if ('ttsNextPageCB' != callback):
+    callback = 'ttsStartCB'
+
 tree = etree.parse(path)
 
 objects = tree.findall('//OBJECT')
 
 #print 'got %s objects' % len(objects)
+
+if pageNum > (len(objects)-1):
+    sys.exit(-1)
 
 page = objects[pageNum]
 
