@@ -3897,19 +3897,17 @@ BookReader.prototype.ttsShowPopup = function() {
     this.popup = document.createElement("div");
     $(this.popup).css({
         position: 'absolute',
-        top:      '20%',
-        left:     ($('#BRcontainer').attr('clientWidth')-600)/2 + 'px',
-        width:    '600px',
-        padding:  "20px",
-        border:   "3px double #999999",
+        top:      $('#BRtoolbar').height() + 'px',
+        left:     $('.read_aloud').position().left + 'px',
+        width:    $('#BRtoolbar').width()-$('.read_aloud').position().left + 'px',
+        height:   '20px',
         zIndex:   3,
-        backgroundColor: "#f00",
-        color:           "#fff",
-        fontSize:       '1.875em'        
-    }).appendTo('#BookReader');
+        backgroundColor: '#E6E4E1',
+        fontSize:        '0.8em',
+        background: 'images/progressbar.gif'
+    }).attr('className', 'BRttsPopUp').appendTo('#BookReader');
 
-    htmlStr =  '<p style="text-align:center;"><b>Ever wanted to wait while audio loads?</b><br/>';
-    htmlStr += "It's OK. We all do.</p>";
+    htmlStr =  '&nbsp;';
 
     this.popup.innerHTML = htmlStr;
 }

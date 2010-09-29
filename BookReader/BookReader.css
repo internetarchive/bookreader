@@ -260,3 +260,12 @@ a.BRblack:visited   { color: #000000 }
     background-color: rgb(255, 255, 238);
     opacity: 0.85;
 }
+
+.BRttsPopUp {
+    position: absolute;
+    background-color: #E6E4E1;
+    background-image: url(images/progressbar.gif);
+    background-repeat:no-repeat;
+    font-size: 0.8em; 
+    z-index: 3;    
+}
