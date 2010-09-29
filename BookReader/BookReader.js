@@ -4139,7 +4139,7 @@ BookReader.prototype.ttsScrollToChunk = function(chunk) {
     if ((topOfFirstChunk < containerTop) || (botOfLastChunk > containerBot)) {
         //jumpToIndex scrolls so that chunkTop is centered.. we want chunkTop at the top
         //this.jumpToIndex(this.ttsIndex, null, chunkTop);
-        $('#BRcontainer').animate({scrollTop: topOfFirstChunk,},'fast');            
+        $('#BRcontainer').animate({scrollTop: topOfFirstChunk},'fast');            
     }    
 }
 
