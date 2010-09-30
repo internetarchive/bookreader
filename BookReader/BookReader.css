@@ -86,7 +86,7 @@ h3 {
     /* border: 1px solid rgb(68, 25, 17); */
     /* background-color: #663929; */
     position: absolute;
-    backgroundImage: url(images/back_pages.png);
+    background-image: url(images/back_pages.png);
     -moz-box-shadow: 1px 0 3px #000;
     -webkit-box-shadow: 1px 0 3px #000;
     /* -moz-border-radius: 6px; */
