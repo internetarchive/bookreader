@@ -3826,6 +3826,8 @@ BookReader.prototype.ttsToggle = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsStart = function () {
     if (soundManager.debugMode) console.log('starting readAloud');
+    if (this.constModeThumb) this.switchMode(this.constMode1up);
+    
     this.ttsPlaying = true;
     this.ttsIndex = this.currentIndex();
     this.ttsFormat = 'mp3';
@@ -4067,7 +4069,6 @@ BookReader.prototype.ttsPrefetchAudio = function () {
         //for a short page, preload might nt have yet returned..
         if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.ttsIndex+1));
         if (null != this.ttsNextChunks) {
-            console.log(this.ttsNextChunks);
             if (0 != this.ttsNextChunks.length) {
                 this.ttsLoadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);        
             } else {
