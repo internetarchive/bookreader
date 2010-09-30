@@ -105,7 +105,7 @@ function BookReader() {
         coverInternalPadding: 0, // Width of cover
         coverExternalPadding: 0, // Padding outside of cover
         bookSpineDivWidth: 0,    // Width of book spine  $$$ consider sizing based on book length
-        autofit: true
+        autofit: 'auto'
     };
     
     return this;
@@ -1286,7 +1286,7 @@ BookReader.prototype.switchMode = function(mode) {
         this.reduce = this.quantizeReduce(this.reduce);
     } else {
         // $$$ why don't we save autofit?
-        this.twoPage.autofit = null; // Take zoom level from other mode
+        // this.twoPage.autofit = null; // Take zoom level from other mode
         this.twoPageCalculateReductionFactors();
         this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
         $('button.thumb').show();
