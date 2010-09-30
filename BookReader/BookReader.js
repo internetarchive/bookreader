@@ -3826,7 +3826,7 @@ BookReader.prototype.ttsToggle = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsStart = function () {
     if (soundManager.debugMode) console.log('starting readAloud');
-    if (this.constModeThumb) this.switchMode(this.constMode1up);
+    if (this.constModeThumb == this.mode) this.switchMode(this.constMode1up);
     
     this.ttsPlaying = true;
     this.ttsIndex = this.currentIndex();
