@@ -1282,8 +1282,8 @@ BookReader.prototype.switchMode = function(mode) {
     } else if (3 == mode) {
         $('button.thumb').hide();
         $('button.twopg').show();
+        this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
         this.prepareThumbnailView();
-        this.reduce = this.quantizeReduce(this.reduce);
     } else {
         // $$$ why don't we save autofit?
         // this.twoPage.autofit = null; // Take zoom level from other mode
@@ -1437,7 +1437,8 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
         visibility: 'visible',
         position: 'absolute',
         backgroundColor: 'transparent',
-        backgroundImage: 'url(back_pages.png)',
+        /* XXXmang move to CSS */
+        backgroundImage: 'url(images/back_pages.png)',
         left: this.twoPage.bookCoverDivLeft + 'px',
         top: this.twoPage.bookCoverDivTop+'px',
         MozBoxShadow: '0 0 2px #000',
@@ -1447,7 +1448,8 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     this.leafEdgeR = document.createElement('div');
     this.leafEdgeR.className = 'BRleafEdgeR';
     $(this.leafEdgeR).css({
-        background: 'transparent url(back_pages.png) repeat scroll 0% 0%',
+        /* XXXmang move to CSS */
+        background: 'transparent url(image/back_pages.png) repeat scroll 0% 0%',
         width: this.twoPage.leafEdgeWidthR + 'px',
         height: this.twoPage.height-1 + 'px',
         left: this.twoPage.gutter+this.twoPage.scaledWR+'px',
