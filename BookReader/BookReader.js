@@ -1448,8 +1448,6 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     this.leafEdgeR = document.createElement('div');
     this.leafEdgeR.className = 'BRleafEdgeR';
     $(this.leafEdgeR).css({
-        /* XXXmang move to CSS */
-        background: 'transparent url(image/back_pages.png) repeat scroll 0% 0%',
         width: this.twoPage.leafEdgeWidthR + 'px',
         height: this.twoPage.height-1 + 'px',
         left: this.twoPage.gutter+this.twoPage.scaledWR+'px',
