@@ -1435,14 +1435,6 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
         width:  this.twoPage.bookCoverDivWidth + 'px',
         height: this.twoPage.bookCoverDivHeight+'px',
         visibility: 'visible',
-        position: 'absolute',
-        backgroundColor: 'transparent',
-        /* XXXmang move to CSS */
-        backgroundImage: 'url(images/back_pages.png)',
-        left: this.twoPage.bookCoverDivLeft + 'px',
-        top: this.twoPage.bookCoverDivTop+'px',
-        MozBoxShadow: '0 0 2px #000',
-        WebkitBoxShadow: '0 0 2px #000'
     }).appendTo('#BRtwopageview');
     
     this.leafEdgeR = document.createElement('div');
