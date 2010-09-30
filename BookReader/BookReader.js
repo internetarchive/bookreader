@@ -3884,7 +3884,7 @@ BookReader.prototype.ttsStartCB = function (data) {
     var snd = soundManager.createSound({
      id: 'chunk'+this.ttsIndex+'-0',
      //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',
-     url: 'http://'+this.server+'/getTTS.php?string=' + escape(data[0][0]) + '&format=.'+this.ttsFormat, //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+     url: 'http://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + escape(data[0][0]) + '&format=.'+this.ttsFormat, //the .ogg is to trick SoundManager2 to use the HTML5 audio player
      whileloading: function(){if (this.bytesLoaded == this.bytesTotal) this.br.ttsRemovePopup();}, //onload never fires in FF...
      onload: function(){this.br.ttsRemovePopup();} //whileloading never fires in safari...
     });    
@@ -3936,7 +3936,7 @@ BookReader.prototype.ttsNextPageCB = function (data) {
 BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
     var snd = soundManager.createSound({
      id: 'chunk'+page+'-'+pos,
-     url: 'http://'+this.server+'/getTTS.php?string=' + escape(string) + '&format=.'+this.ttsFormat //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+     url: 'http://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + escape(string) + '&format=.'+this.ttsFormat //the .ogg is to trick SoundManager2 to use the HTML5 audio player
     });
     snd.br = this;
     snd.load()
