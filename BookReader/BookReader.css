@@ -84,13 +84,13 @@ h3 {
 
 #BRbookcover {
     /* border: 1px solid rgb(68, 25, 17); */
-    background-color: #663929;
+    /* background-color: #663929; */
     position: absolute;
     backgroundImage: url(images/back_pages.png);
+    -moz-box-shadow: 1px 0 3px #000;
+    -webkit-box-shadow: 1px 0 3px #000;
     /* -moz-border-radius: 6px; */
-    -moz-box-shadow: 0 0 2px #000;
     /* -webkit-border-radius: 6px; */
-    -webkit-box-shadow: 0 0 2px #000;
 }
 
 .BRpageimage {

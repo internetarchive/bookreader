@@ -1441,7 +1441,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     this.leafEdgeR.className = 'BRleafEdgeR';
     $(this.leafEdgeR).css({
         width: this.twoPage.leafEdgeWidthR + 'px',
-        height: this.twoPage.height-1 + 'px',
+        height: this.twoPage.height + 'px',
         left: this.twoPage.gutter+this.twoPage.scaledWR+'px',
         top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px'
     }).appendTo('#BRtwopageview');
@@ -1450,7 +1450,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     this.leafEdgeL.className = 'BRleafEdgeL';
     $(this.leafEdgeL).css({
         width: this.twoPage.leafEdgeWidthL + 'px',
-        height: this.twoPage.height-1 + 'px',
+        height: this.twoPage.height + 'px',
         left: this.twoPage.bookCoverDivLeft+this.twoPage.coverInternalPadding+'px',
         top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px'
     }).appendTo('#BRtwopageview');
@@ -1631,7 +1631,7 @@ BookReader.prototype.calculateSpreadSize = function() {
     // Book cover
     // The width of the book cover div.  The combined width of both pages, twice the width
     // of the book cover internal padding (2*10) and the page edges
-    this.twoPage.bookCoverDivWidth = this.twoPage.scaledWL + this.twoPage.scaledWR + 2 * this.twoPage.coverInternalPadding + this.twoPage.edgeWidth;
+    this.twoPage.bookCoverDivWidth = this.twoPageCoverWidth(this.twoPage.scaledWL + this.twoPage.scaledWR);
     // The height of the book cover div
     this.twoPage.bookCoverDivHeight = this.twoPage.height + 2 * this.twoPage.coverInternalPadding;
     
@@ -2071,7 +2071,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
     this.leafEdgeTmp.className = 'BRleafEdgeTmp';
     $(this.leafEdgeTmp).css({
         width: leafEdgeTmpW + 'px',
-        height: this.twoPage.height-1 + 'px',
+        height: this.twoPage.height + 'px',
         left: leftEdgeTmpLeft + 'px',
         top: top+'px',
         zIndex:1000
@@ -2220,7 +2220,7 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
     this.leafEdgeTmp.className = 'BRleafEdgeTmp';
     $(this.leafEdgeTmp).css({
         width: leafEdgeTmpW + 'px',
-        height: this.twoPage.height-1 + 'px',
+        height: this.twoPage.height + 'px',
         left: gutter+scaledW+'px',
         top: top+'px',    
         zIndex:1000
