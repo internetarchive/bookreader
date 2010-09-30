@@ -1529,20 +1529,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
     this.twoPagePopUp = document.createElement('div');
     this.twoPagePopUp.className = 'BRtwoPagePopUp';
     $(this.twoPagePopUp).css({
-        zIndex: '1000',
-        // XXXmang move to CSS
-        padding: '6px',
-        position: 'absolute',
-        fontFamily: 'Arial,sans-serif',
-        fontSize: '11px',
-        color: 'white',
-        zIndex: '1000',
-        backgroundColor: '#939598',
-        opacity: 0.85,
-        webkitBorderRadius: '4px',
-        mozBorderRadius: '4px',
-        borderRadius: '4px',
-        whiteSpace: 'nowrap'
+        zIndex: '1000'
     }).appendTo('#BRcontainer');
     $(this.twoPagePopUp).hide();
     

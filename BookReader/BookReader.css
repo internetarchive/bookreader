@@ -346,15 +346,18 @@ a.BRgrey:visited   { color: #666; }
     background-image: url(images/transparent.png); # Required to capture mouse on IE
 }
 
-/* XXXmang still needed? */
 .BRtwoPagePopUp {
-    border: 1px solid black;
-    padding: 2px 6px;
+    padding: 6px;
     position: absolute;
-    font-family: sans-serif;
-    font-size: 14px;
-    background-color: rgb(255, 255, 238);
-    opacity: 0.85;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: white;
+    background-color: #939598;
+    opacity: 0.85,
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
 /* COLORBOX POP-UP */
