@@ -37,7 +37,7 @@ This file is part of BookReader.
 
 function BookReader() {
     this.reduce  = 4;
-    this.padding = 10;
+    this.padding = 0;
     this.mode    = 1; //1, 2, 3
     this.ui = 'full'; // UI mode
 
@@ -102,10 +102,10 @@ function BookReader() {
     
     // Object to hold parameters related to 2up mode
     this.twoPage = {
-        coverInternalPadding: 10, // Width of cover
-        coverExternalPadding: 10, // Padding outside of cover
-        bookSpineDivWidth: 30,    // Width of book spine  $$$ consider sizing based on book length
-        autofit: 'auto'
+        coverInternalPadding: 0, // Width of cover
+        coverExternalPadding: 0, // Padding outside of cover
+        bookSpineDivWidth: 0,    // Width of book spine  $$$ consider sizing based on book length
+        autofit: true
     };
     
     return this;
@@ -782,7 +782,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
         top:    top+'px',
         height: this.twoPage.height +'px', // $$$ height forced the same for both pages
         width:  this.twoPage.scaledWL + 'px',
-        borderRight: '1px solid black',
         zIndex: 2
     }).appendTo('#BRtwopageview');
     
@@ -801,7 +800,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
         top:    top+'px',
         height: this.twoPage.height + 'px', // $$$ height forced the same for both pages
         width:  this.twoPage.scaledWR + 'px',
-        borderLeft: '1px solid black',
         zIndex: 2
     }).appendTo('#BRtwopageview');
         
@@ -1266,7 +1264,7 @@ BookReader.prototype.switchMode = function(mode) {
     this.removeSearchHilites();
 
     this.mode = mode;
-    this.switchToolbarMode(mode);
+    //this.switchToolbarMode(mode);
 
     // reinstate scale if moving from thumbnail view
     if (this.pageScale != this.reduce) {
@@ -1282,13 +1280,17 @@ BookReader.prototype.switchMode = function(mode) {
         this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
         this.prepareOnePageView();
     } else if (3 == mode) {
-        this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
+        $('button.thumb').hide();
+        $('button.twopg').show();
         this.prepareThumbnailView();
+        this.reduce = this.quantizeReduce(this.reduce);
     } else {
         // $$$ why don't we save autofit?
         this.twoPage.autofit = null; // Take zoom level from other mode
         this.twoPageCalculateReductionFactors();
         this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
+        $('button.thumb').show();
+        $('button.twopg').hide();
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
@@ -1434,13 +1436,18 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
         height: this.twoPage.bookCoverDivHeight+'px',
         visibility: 'visible',
         position: 'absolute',
+        backgroundColor: 'transparent',
+        backgroundImage: 'url(back_pages.png)',
         left: this.twoPage.bookCoverDivLeft + 'px',
-        top: this.twoPage.bookCoverDivTop+'px'
+        top: this.twoPage.bookCoverDivTop+'px',
+        MozBoxShadow: '0 0 2px #000',
+        WebkitBoxShadow: '0 0 2px #000'
     }).appendTo('#BRtwopageview');
     
     this.leafEdgeR = document.createElement('div');
     this.leafEdgeR.className = 'BRleafEdgeR';
     $(this.leafEdgeR).css({
+        background: 'transparent url(back_pages.png) repeat scroll 0% 0%',
         width: this.twoPage.leafEdgeWidthR + 'px',
         height: this.twoPage.height-1 + 'px',
         left: this.twoPage.gutter+this.twoPage.scaledWR+'px',
@@ -1478,7 +1485,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
         top:    this.twoPageFlipAreaTop() + 'px',
         cursor: 'w-resize',
         zIndex: 100
-    }).bind('click', function(e) {
+    }).click(function(e) {
         self.left();
     }).bind('mousedown', function(e) {
         e.preventDefault();
@@ -1495,7 +1502,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
         top:    this.twoPageFlipAreaTop() + 'px',
         cursor: 'e-resize',
         zIndex: 100
-    }).bind('click', function(e) {
+    }).click(function(e) {
         self.right();
     }).bind('mousedown', function(e) {
         e.preventDefault();
@@ -1531,6 +1538,19 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
     this.twoPagePopUp.className = 'BRtwoPagePopUp';
     $(this.twoPagePopUp).css({
         zIndex: '1000'
+        // XXXmang move to CSS
+        padding: '6px',
+        position: 'absolute',
+        fontFamily: 'Arial,sans-serif',
+        fontSize: '11px',
+        color: 'white',
+        zIndex: '1000',
+        backgroundColor: '#939598',
+        opacity: 0.85,
+        webkitBorderRadius: '4px',
+        mozBorderRadius: '4px',
+        borderRadius: '4px',
+        whiteSpace: 'nowrap'
     }).appendTo('#BRcontainer');
     $(this.twoPagePopUp).hide();
     
@@ -1562,7 +1582,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
         // $$$ TODO: Make sure popup is positioned so that it is in view
         // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)        
         $(e.data.twoPagePopUp).css({
-            left: e.pageX- $('#BRcontainer').offset().left + $('#BRcontainer').scrollLeft() + 20 + 'px',
+            left: e.pageX- $('#BRcontainer').offset().left + $('#BRcontainer').scrollLeft() - 100 + 'px',
             top: e.pageY - $('#BRcontainer').offset().top + $('#BRcontainer').scrollTop() + 'px'
         });
     });
@@ -1575,7 +1595,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
         // $$$ TODO: Make sure popup is positioned so that it is in view
         //           (https://bugs.edge.launchpad.net/gnubook/+bug/327456)        
         $(e.data.twoPagePopUp).css({
-            left: e.pageX - $('#BRcontainer').offset().left + $('#BRcontainer').scrollLeft() - $(e.data.twoPagePopUp).width() - 25 + 'px',
+            left: e.pageX - $('#BRcontainer').offset().left + $('#BRcontainer').scrollLeft() - $(e.data.twoPagePopUp).width() + 100 + 'px',
             top: e.pageY-$('#BRcontainer').offset().top + $('#BRcontainer').scrollTop() + 'px'
         });
     });
@@ -2364,7 +2384,7 @@ BookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
         top:    top+'px',
         height: this.twoPage.height,
         width:  scaledW+'px',
-        borderRight: '1px solid black',
+        borderRight: '1px solid black', // XXXmang check
         zIndex: 1
     }
     
@@ -2380,8 +2400,8 @@ BookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
         right: '',
         top:    top+'px',
         height: this.twoPage.height,
-        width:  '0px',
-        borderLeft: '1px solid black',
+        borderLeft: '1px solid black', // XXXmang check
+        width:  '0',
         zIndex: 2
     }
     
@@ -2417,7 +2437,6 @@ BookReader.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
         top:    top+'px',
         height: this.twoPage.height,
         width:  scaledW+'px',
-        borderLeft: '1px solid black',
         zIndex: 1
     });
 
@@ -2434,7 +2453,6 @@ BookReader.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
         top:    top+'px',
         height: this.twoPage.height,
         width:  0+'px', // Start at 0 width, then grow to the left
-        borderRight: '1px solid black',
         zIndex: 2
     });
 
@@ -2933,32 +2951,73 @@ BookReader.prototype.updatePrintFrame = function(delta) {
 // showEmbedCode()
 //______________________________________________________________________________
 BookReader.prototype.showEmbedCode = function() {
-    if (null != this.embedPopup) { // check if already showing
-        return;
-    }
-    this.autoStop();
     this.embedPopup = document.createElement("div");
     $(this.embedPopup).css({
         position: 'absolute',
-        top:      '20px',
+        top:      ($('#BRcontainer').attr('clientHeight')-250)/2 + 'px',
         left:     ($('#BRcontainer').attr('clientWidth')-400)/2 + 'px',
         width:    '400px',
-        padding:  "20px",
-        border:   "3px double #999999",
-        zIndex:   3,
-        backgroundColor: "#fff"
+        height:    '250px',
+        padding:  '0',
+        fontSize: '12px',
+        color:    '#333',
+        zIndex:   300,
+        border: '10px solid #615132',
+        backgroundColor: "#fff",
+        MozBorderRadius: '8px',
+        MozBoxShadow: '0 0 6px #000',
+        WebkitBorderRadius: '8px',
+        WebkitBoxShadow: '0 0 6px #000'
     }).appendTo('#BookReader');
 
-    htmlStr =  '<p style="text-align:center;"><b>Embed Bookreader in your blog!</b></p>';
-    htmlStr += '<p>The bookreader uses iframes for embedding. It will not work on web hosts that block iframes. The embed feature has been tested on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>';
-    htmlStr += '<p>Embed Code: <input type="text" size="40" value="' + this.getEmbedCode() + '"></p>';
-    htmlStr += '<p style="text-align:center;"><a href="" onclick="br.embedPopup = null; $(this.parentNode.parentNode).remove(); return false">Close popup</a></p>';    
+    htmlStr =  '<h3 style="background:#615132;padding:10px;margin:0 0 10px;color:#fff;">Embed Bookreader</h3>';
+    htmlStr += '<p style="padding:10px;line-height:18px;">The bookreader uses iframes for embedding. It will not work on web hosts that block iframes. The embed feature has been tested on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>';
+    htmlStr += '<textarea rows="2" cols="40" style="margin-left:10px;width:368px;height:40px;color:#333;font-size:12px;border:2px inset #ccc;background:#efefef;padding:2px;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;">' + this.getEmbedCode() + '</textarea>';
+    htmlStr += '<a href="javascript:;" class="popOff" onclick="$(this.parentNode).remove();$(\'.coverUp\').hide();return false" style="color:#999;"><span>Close</span></a>';
 
     this.embedPopup.innerHTML = htmlStr;
-    $(this.embedPopup).find('input').bind('click', function() {
+    $('#BookReader').append('<div class="coverUp" style="position:absolute;z-index:299;width:100%;height:100%;background:#000;opacity:.4;filter:alpha(opacity=40);" onclick="$(\'.popped\').hide();$(this).hide();"></div>');
+    $(this.embedPopup).find('textarea').click(function() {
         this.select();
     })
+    $(this.embedPopup).addClass("popped");
 }
+
+// showBookmarkCode()
+//______________________________________________________________________________
+BookReader.prototype.showBookmarkCode = function() {
+    this.bookmarkPopup = document.createElement("div");
+    $(this.bookmarkPopup).css({
+        position: 'absolute',
+        top:      ($('#BRcontainer').attr('clientHeight')-250)/2 + 'px',
+        left:     ($('#BRcontainer').attr('clientWidth')-400)/2 + 'px',
+        width:    '400px',
+        height:    '250px',
+        padding:  '0',
+        fontSize: '12px',
+        color:    '#333',
+        zIndex:   300,
+        border: '10px solid #615132',
+        backgroundColor: "#fff",
+        MozBorderRadius: '8px',
+        MozBoxShadow: '0 0 6px #000',
+        WebkitBorderRadius: '8px',
+        WebkitBoxShadow: '0 0 6px #000'
+    }).appendTo('#BookReader');
+
+    htmlStr =  '<h3 style="background:#615132;padding:10px;margin:0 0 10px;color:#fff;">Add a bookmark</h3>';
+    htmlStr += '<p style="padding:10px;line-height:18px;">You can add a bookmark to any page in any book. If you elect to make your bookmark public, other readers will be able to see it. <em>You must be logged in to your <a href="">Open Library account</a> to add bookmarks.</em></p>';
+    htmlStr += '<form name="bookmark" id="bookmark" style="line-height:20px;margin-left:10px;"><label style="padding-bottom"10px;><input type="radio" name="privacy" id="p2" disabled="disabled" checked="checked"/> Make this bookmark public.</label><br/><label style="padding-bottom:10px;"><input type="radio" name="privacy" id="p1" disabled="disabled"/> Keep this bookmark private.</label><br/><br/><button type="submit" style="font-size:20px;" disabled="disabled">Add a bookmark</button></form>';
+    htmlStr += '<a href="javascript:;" class="popOff" onclick="$(this.parentNode).remove();$(\'.coverUp\').hide();return false;" style="color:#999;"><span>Close</span></a>';
+
+    this.bookmarkPopup.innerHTML = htmlStr;
+    $('#BookReader').append('<div class="coverUp" style="position:absolute;z-index:299;width:100%;height:100%;background:#000;opacity:.4;filter:alpha(opacity=40);" onclick="$(\'.popped\').hide();$(this).hide();"></div>');
+    $(this.bookmarkPopup).find('textarea').click(function() {
+        this.select();
+    })
+    $(this.bookmarkPopup).addClass("popped");
+}
+
 
 // autoToggle()
 //______________________________________________________________________________
@@ -3122,29 +3181,28 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 
 BookReader.prototype.initToolbar = function(mode, ui) {
 
-    $("#BookReader").append("<div id='BRtoolbar'>"
-        + "<span id='BRtoolbarbuttons' style='float: right'>"
-        +   "<button class='BRicon print rollover' /> <button class='BRicon rollover embed' />"
-        +   "<form class='BRpageform' action='javascript:' onsubmit='br.jumpToPage(this.elements[0].value)'> <span class='label'>Page:<input id='BRpagenum' type='text' size='3' onfocus='br.autoStop();'></input></span></form>"
-        +   "<div class='BRtoolbarmode2' style='display: none'><button class='BRicon rollover book_leftmost' /><button class='BRicon rollover book_left' /><button class='BRicon rollover book_right' /><button class='BRicon rollover book_rightmost' /></div>"
-        +   "<div class='BRtoolbarmode1' style='display: none'><button class='BRicon rollover book_top' /><button class='BRicon rollover book_up' /> <button class='BRicon rollover book_down' /><button class='BRicon rollover book_bottom' /></div>"
-        +   "<div class='BRtoolbarmode3' style='display: none'><button class='BRicon rollover book_top' /><button class='BRicon rollover book_up' /> <button class='BRicon rollover book_down' /><button class='BRicon rollover book_bottom' /></div>"
-        +   "<button class='BRicon rollover play' /><button class='BRicon rollover pause' style='display: none' />"
+    $("body").append("<div id='BRtoolbar'>"
+        + "<span id='BRtoolbarbuttons' style='float:right;'>"
+        +   "<button class='BRicon bookmark modal'></button>"
+        +   "<button class='BRicon link modal'></button>"
+        +   "<button class='BRicon embed modal'></button>"
+        +   "<button class='BRicon read modal'></button>"
+        +   "<button class='BRicon full'></button>"
+//        +   "<div class='BRtoolbarmode2' style='display: none'><button class='BRicon book_leftmost'></button><button class='BRicon book_left'></button><button class='BRicon book_right'></button><button class='BRicon book_rightmost'></button></div>"
+//        +   "<div class='BRtoolbarmode1' style='display: none'><button class='BRicon book_top'></button><button class='BRicon book_up'></button> <button class='BRicon book_down'></button><button class='BRicon book_bottom'></button></div>"
+//        +   "<div class='BRtoolbarmode3' style='display: none'><button class='BRicon book_top'></button><button class='BRicon book_up'></button> <button class='BRicon book_down'></button><button class='BRicon book_bottom'></button></div>"
+//        +   "<button class='BRicon play'></button><button class='BRicon pause' style='display: none'></button>"
         + "</span>"
         
         + "<span>"
-        +   "<a class='BRicon logo rollover' href='" + this.logoURL + "'>&nbsp;</a>"
-        +   " <button class='BRicon rollover zoom_out' onclick='br.zoom(-1); return false;'/>" 
-        +   "<button class='BRicon rollover zoom_in' onclick='br.zoom(1); return false;'/>"
-        +   " <span class='label'>Zoom: <span id='BRzoom'>"+parseInt(100/this.reduce)+"</span></span>"
-        +   " <button class='BRicon rollover one_page_mode' onclick='br.switchMode(1); return false;'/>"
-        +   " <button class='BRicon rollover two_page_mode' onclick='br.switchMode(2); return false;'/>"
-        +   " <button class='BRicon rollover thumbnail_mode' onclick='br.switchMode(3); return false;'/>"
+        +   "<a class='logo' href='" + this.logoURL + "'></a>"
+        +   "<button class='BRicon glass'></button>"
+        +   "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +   "<button class='BRicon fit'></button>"
+        +   "<button class='BRicon thumb' onclick='br.switchMode(3); return false;'></button>"
+        +   "<button class='BRicon twopg' onclick='br.switchMode(2); return false;'></button>"
         + "</span>"
         
-        + "<span id='#BRbooktitle'>"
-        +   "&nbsp;&nbsp;<a class='BRblack title' href='"+this.bookUrl+"' target='_blank'>"+this.bookTitle+"</a>"
-        + "</span>"
         + "</div>");
     
     this.updateToolbarZoom(this.reduce); // Pretty format
@@ -3165,11 +3223,15 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     var titles = { '.logo': 'Go to Archive.org',
                    '.zoom_in': 'Zoom in',
                    '.zoom_out': 'Zoom out',
-                   '.one_page_mode': 'One-page view',
-                   '.two_page_mode': 'Two-page view',
-                   '.thumbnail_mode': 'Thumbnail view',
+                   '.onepg': 'One-page view',
+                   '.twopg': 'Two-page view',
+                   '.thumb': 'Thumbnail view',
                    '.print': 'Print this page',
-                   '.embed': 'Embed bookreader',
+                   '.embed': 'Embed BookReader',
+                   '.link': 'Link to this book (and page)',
+                   '.bookmark': 'Bookmark this page',
+                   '.read': 'Allow BookReader to read this aloud',
+                   '.full': 'Show fullscreen',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
                    '.book_up': 'Page up',
@@ -3206,7 +3268,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     }
 
     // Switch to requested mode -- binds other click handlers
-    this.switchToolbarMode(mode);
+    //this.switchToolbarMode(mode);
     
 }
 
@@ -3244,12 +3306,12 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
 
     var self = this; // closure
 
-    jToolbar.find('.book_left').bind('click', function(e) {
+    jToolbar.find('.book_left').click(function(e) {
         self.left();
         return false;
     });
          
-    jToolbar.find('.book_right').bind('click', function(e) {
+    jToolbar.find('.book_right').click(function(e) {
         self.right();
         return false;
     });
@@ -3272,42 +3334,47 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
         return false;
     });
 
-    jToolbar.find('.print').bind('click', function(e) {
+    jToolbar.find('.print').click(function(e) {
         self.printPage();
         return false;
     });
         
-    jToolbar.find('.embed').bind('click', function(e) {
+    jToolbar.find('.embed').click(function(e) {
         self.showEmbedCode();
         return false;
     });
 
-    jToolbar.find('.play').bind('click', function(e) {
+    jToolbar.find('.bookmark').click(function(e) {
+        self.showBookmarkCode();
+        return false;
+    });
+
+    jToolbar.find('.play').click(function(e) {
         self.autoToggle();
         return false;
     });
 
-    jToolbar.find('.pause').bind('click', function(e) {
+    jToolbar.find('.pause').click(function(e) {
         self.autoToggle();
         return false;
     });
     
-    jToolbar.find('.book_top').bind('click', function(e) {
+    jToolbar.find('.book_top').click(function(e) {
         self.first();
         return false;
     });
 
-    jToolbar.find('.book_bottom').bind('click', function(e) {
+    jToolbar.find('.book_bottom').click(function(e) {
         self.last();
         return false;
     });
     
-    jToolbar.find('.book_leftmost').bind('click', function(e) {
+    jToolbar.find('.book_leftmost').click(function(e) {
         self.leftmost();
         return false;
     });
   
-    jToolbar.find('.book_rightmost').bind('click', function(e) {
+    jToolbar.find('.book_rightmost').click(function(e) {
         self.rightmost();
         return false;
     });

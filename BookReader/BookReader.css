@@ -1,50 +1,65 @@
+body {
+ background-color: #939598;
+ font-size: 67.5%;
+ margin: 0;
+ padding: 0;
+}
+h3 {
+  font-size: 20px;
+  font-family:  "News Gothic MT","Trebuchet MS",Geneva,Helvetica,sans-serif;
+  font-weight: 700;
+  color: #dedede;
+}
 #BookReader {
- border:1px solid black;
  position:absolute;
  font-family: arial, sans-serif;
+ left:0;
+ right:0; 
+ top:0; 
+ bottom:0;
 }
-
 #BRtoolbar {
-    height:25px;
-    width:100%;
-    background-color: #E6E4E1;
-    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 50px;
+    padding: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: #e2dcc5;
 }
-
 #BRtoolbar .label {
-    font-size: 0.9em;
+    font-size: 1.1em;
+    color: #999;
+}
+#BRtoolbar a {
+    color: #ccc!important;
+    text-decoration: underline;
 }
 
 #BRcontainer {
-    /*height:95%;*/
-    top:25px;
-    bottom:0px;
+    top:5px;
+    bottom:5px;
     width:100%;
+    z-index: 1;
     overflow-x:auto;
     overflow-y:scroll;    
-    /*text-align: center;*/
-    background-color: #FCFCFC;
     position:absolute;
 }
 
 #BRpageview {
-    background-color: #FCFCFC;
+    background-color: #939598;
 }
 
 .BRpagediv1up {
-    background-color: #FFFFEE;
+    background-color: #939598;
     overflow:hidden;
-    border-right: 2px solid #717171;
-    border-bottom: 2px solid #717171;
-    border-left: 1px solid #909090;
-    border-top: 1px solid #909090;
     cursor: move;
 }
 
 .BRpagedivthumb {
-    background-color: #FFFFEE;
+    background-color: #939598;
     overflow:hidden;
-    border: 1px solid #909090;
 }
 
 .BRpagedivthumb a {
@@ -57,9 +72,8 @@
 
 /* Must come after .BRpagedivthumb rules in order to override them */
 .BRpagedivthumb_highlight {
-    background-color: #FFFFEE;
+    background-color: #939598;
     overflow:hidden;
-    border: 1px solid #000000;
 }
 
 .BRpagediv2up {
@@ -92,7 +106,8 @@
     border-style: solid none solid solid;
     border-color: rgb(51, 51, 34);
     border-width: 1px 0px 1px 1px;
-    background: transparent url(images/left_edges.png) repeat scroll 0% 0%;
+    /* background: transparent url(images/left_edges.png) repeat scroll 0% 0%; */
+    background: transparent url(image/back_pages.png) repeat scroll 0% 0%; /* XXXmang replace file */
     position: absolute;
 }
 
@@ -100,7 +115,8 @@
     border-style: solid none solid solid;
     border-color: rgb(51, 51, 34);
     border-width: 1px 0px 1px 1px;
-    background: transparent url(images/left_edges.png) repeat scroll 0% 0%;
+    /* background: transparent url(images/left_edges.png) repeat scroll 0% 0%; */
+    background: transparent url(images/back_pages.png) repeat scroll 0% 0%; /* XXXmang replace file */
     position: absolute;
 }
 
@@ -136,70 +152,139 @@
     filter: alpha(opacity = 20);
     background-color: #00f;
     position:absolute;
+
+.hidden {
+  display: none;
 }
 
 .BRpageform {
     display: inline; 
 }
+#BRpagenum {
+    border: none;
+    background-color: #939598;
+    color: #ccc;
+    font-family: arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+}
 
 .BRicon {
-    width: 24px;
-    height: 24px;
-    padding: 0px;
+    display: block;
+    float: left;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    margin: 0;
     vertical-align: middle;
     border: none;
+    cursor: pointer;
+    background-color: transparent;
+    background-image: url(images/BRicons.png);
+    background-repeat: no-repeat;
 }
 
 /* Absolute path used since the html might be generated at /stream/id or elsewhere */
-.BRicon.logo { background: url(images/logo_icon.png) no-repeat; }
-.BRicon.zoom_out { background: url(images/zoom_out_icon.png) no-repeat; }
-.BRicon.zoom_in { background: url(images/zoom_in_icon.png) no-repeat; }
-.BRicon.one_page_mode { background: url(images/one_page_mode_icon.png) no-repeat; }
-.BRicon.two_page_mode { background: url(images/two_page_mode_icon.png) no-repeat; }
-.BRicon.thumbnail_mode { background: url(images/thumbnail_mode_icon.png) no-repeat; }
-.BRicon.embed { background: url(images/embed_icon.png) no-repeat; }
-.BRicon.print { background: url(images/print_icon.png) no-repeat; }
-.BRicon.book_left { background: url(images/book_left_icon.png) no-repeat; }
-.BRicon.book_right { background: url(images/book_right_icon.png) no-repeat; }
-.BRicon.book_up { background: url(images/book_up_icon.png) no-repeat; }
-.BRicon.book_down { background: url(images/book_down_icon.png) no-repeat; }
-.BRicon.book_leftmost { background: url(images/book_leftmost_icon.png) no-repeat; }
-.BRicon.book_rightmost { background: url(images/book_rightmost_icon.png) no-repeat; }
-.BRicon.book_top { background: url(images/book_top_icon.png) no-repeat; }
-.BRicon.book_bottom { background: url(images/book_bottom_icon.png) no-repeat; }
+.BRicon.logo {background-position:0 0;}
+.BRicon.fit {background-position:-50px 0;}
+.BRicon.fit:hover {background-position:-100px 0;}
+.BRicon.glass {background-position:-150px 0;cursor:default;}
+/*.BRicon.glass:hover {background-position:-200px 0;}*/
+.BRicon.bookmark {background-position:-250px 0;}
+.BRicon.bookmark:hover {background-position:-300px 0;}
+.BRicon.print {background-position:-350px 0;}
+.BRicon.print:hover {background-position:-400px 0;}
+.BRicon.link {background-position:-450px 0;}
+.BRicon.link:hover {background-position:-500px 0;}
+.BRicon.embed {background-position:-550px;}
+.BRicon.embed:hover {background-position:-600px 0;}
+.BRicon.read {background-position:-650px 0;}
+.BRicon.read:hover {background-position:-700px 0;}
+.BRicon.full {background-position:-750px 0;}
+.BRicon.full:hover {background-position:-800px 0;}
+.BRicon.thumb {background-position:-850px 0;}
+.BRicon.thumb:hover {background-position:-900px 0;}
+.BRicon.twopg {background-position:-950px 0;display:none;}
+.BRicon.twopg:hover {background-position:-1000px 0;}
 
-
-.BRicon.play { background: url(images/control_play_icon.png) no-repeat; }
-.BRicon.pause { background: url(images/control_pause_icon.png) no-repeat; }
-
-/* Icons with this class should have a 48x24 image which contains
-   the regular and hover images side-by-side */
-.BRicon.rollover:hover { background-position: -24px 0; }
-
-/* Special logic for the logo, which is an actual link */
-a.BRicon {
+/* NOT CURRENTLY IN USE
+.BRicon.zoom_out {background-position:;}
+.BRicon.zoom_out:hover {background-position:;}
+.BRicon.zoom_in {background-position:;}
+.BRicon.zoom_in:hover {background-position:;}
+.BRicon.one_page_mode {background-position:;}
+.BRicon.two_page_mode {background-position:;}
+.BRicon.thumbnail_mode {background-position:;}
+.BRicon.book_left {background-position:;}
+.BRicon.book_right {background-position:;}
+.BRicon.book_up {background-position:;}
+.BRicon.book_down {background-position:;}
+.BRicon.book_leftmost {background-position:;}
+.BRicon.book_rightmost {background-position:;}
+.BRicon.book_top {background-position:;}
+.BRicon.book_bottom {background-position:;}
+.BRicon.play {background-position:;}
+.BRicon.pause {background-position:;}
+*/
+a.logo {
     display: block;
-    text-decoration: none;
-    border: none;
     float: left;
+    width: 57px;
+    height: 46px;
+    background: transparent url(images/icon_home.png) no-repeat 0 0;
+    margin: 12px 10px 0 10px;
+}
+a.popOff {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    background-image: url(images/BRicons.png);
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: -1050px 0;
+    outline: none;
+}
+a.popOff:hover {
+    background-position: -1100px 0;
+}
+a.popOff span {
+    position: absolute;
+    left: -10000px;
 }
 
-/* footer stuff, from Rebecca's demo */
-#BRfooter { 
-    position:absolute;
-    bottom: 1px;        /* ensure no vertical scroll bar in FF */
-    left: 0px;
-    /*width: 100%;*/    /* this causes horizontal scroll bar in FF */
-    right: 0px;
-    clear: both; 
-    color: #000000; 
-    padding: 0px 0px 0px 10px; 
-    background: #CCCCCC; 
-    height: 2em; 
-    line-height: 25px; 
-    vertical-align: middle; 
-    font-family: arial, sans-serif;
+form#booksearch {
+    float: left;
+    margin-right: 40px;
+}
+form#booksearch input[type=search] {
+    width: 216px;
+    height: 24px;
+    line-height: 24px;
+    font-family: "Arial", sans-serif;
     font-size: 12px;
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: field;
+    margin-top: 13px;
+}
+form#booksearch button {
+    width: 30px;
+    height: 24px;
+    line-height: 24px;
+    border: none;
+    background-color: #000;
+    text-align: center;
+    color: #fff;
+    font-family: "News Gothic MT","Trebuchet MS",Geneva,Helvetica,sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    margin: 10px 0 0 5px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 }
 
 .BRlogotype {
@@ -214,14 +299,18 @@ a.BRwhite               { color: #fff }
 a.BRwhite:hover         { text-decoration: none; }
 a.BRwhite:visited       { color: #fff }
 
-a.BRblack           { color: #000000 }
+a.BRblack           { color: #000; }
 a.BRblack:hover     { text-decoration: none; }
-a.BRblack:visited   { color: #000000 }
+a.BRblack:visited   { color: #000; }
+
+a.BRgrey           { color: #999; }
+a.BRgrey:hover     { text-decoration: none; }
+a.BRgrey:visited   { color: #666; }
 
 .BRnavlinks {
     float:right; 
-    padding: 0px 20px 0px 0px; 
-    margin: 0px; 
+    padding: 0 20px 0 0; 
+    margin: 0; 
     height: 25px; 
     line-height: 25px; 
     vertical-align: middle;
@@ -233,8 +322,7 @@ a.BRblack:visited   { color: #000000 }
     height: 65px;
     bottom: 25px;
     width: 100%;
-    background-color: #f8f8f8;
-    border-top: 1px solid #ccc; 
+    background-color: #222;
     text-align: right; 
     padding: 0px 0px 0px 0px; 
 }
@@ -251,6 +339,7 @@ a.BRblack:visited   { color: #000000 }
     background-image: url(images/transparent.png); # Required to capture mouse on IE
 }
 
+/* XXXmang still needed? */
 .BRtwoPagePopUp {
     border: 1px solid black;
     padding: 2px 6px;
@@ -259,4 +348,143 @@ a.BRblack:visited   { color: #000000 }
     font-size: 14px;
     background-color: rgb(255, 255, 238);
     opacity: 0.85;
+}
+
+/* COLORBOX POP-UP */
+
+#colorbox, #cboxOverlay, #cboxWrapper{position:absolute; top:0; left:0; z-index:9999;}
+#cboxOverlay{position:fixed; width:100%; height:100%;background:#000;opacity:0.75;filter:Alpha(Opacity=75);}
+#cboxMiddleLeft, #cboxBottomLeft{clear:left;}
+#cboxContent{position:relative;}
+#cboxLoadedContent{overflow:visible!important;}
+#cboxLoadedContent iframe{display:block;border:0;}
+#cboxTitle{margin:0;display:none!important;}
+#cboxLoadingOverlay, #cboxLoadingGraphic{position:absolute; top:25px; left:25px; width:100%;}
+#cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow{cursor:pointer;}
+#cboxClose{display:none!important;}
+
+#colorBox{}
+    #cboxContent{background:#fff;padding:0;border:10px solid #615132;-webkit-border-radius:12px;-moz-border-radius:12px;border-radius:12px;-moz-box-shadow: 1px 3px 10px #000;-webkit-box-shadow: 1px 3px 10px #000;box-shadow: 1px 3px 10px #000;}
+        #cboxLoadedContent{background:#fff;margin:0;}
+        #cboxLoadingOverlay{background:transparent;}
+        /* XXXmang where is icon_close? */
+        #cboxClose{position:absolute;top:20px;right:20px;display:block;width:32px;height:32px;background-image:url(/images/icons/icon_close-pop.png);background-position:0 0;background-repeat:no-repeat;}
+        #cboxClose:hover{background-position:0 -32px;}
+
+div#BRnav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    overflow: visible;
+    z-index: 100;
+    background-color: #e2dcc5;    
+}
+div#BRnavpos {
+    position: relative;
+    width: 100%;
+    height: 50px;
+}
+div#BRnavline {
+    position: relative;
+    margin: 0 20px;
+    height: 2px;
+    width: auto;
+    background-color: #000;
+    top: 24px;
+}
+div.chapter {
+    position: absolute;
+    top: 0;
+    width: 18px;
+    height: 27px;
+    background: transparent url(images/marker_chap.png) no-repeat;
+    cursor: pointer;
+}
+div.chapter div.title {
+    display: none;
+}
+div.title span {
+    color: #666;
+    padding: 0 5px;
+}
+div.search {
+    position: absolute;
+    top: 0;
+    width: 18px;
+    height: 27px;
+    background-color: transparent;
+    background-image: url(images/marker_srch-off.png);
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+div.search.front {
+    background: transparent url(images/marker_srch-on.png) no-repeat;
+}
+div.search div.query,div.searchChap div.query {
+    display: none;
+}
+div.query {
+    position: relative;
+}
+div.query strong {
+    color: #000;
+    font-weight: 700;
+}
+div.query span {
+    font-size: 10px;
+    color: #666;
+    font-style: italic;
+}
+div.query div.queryChap {
+    position: absolute;
+    top: -40px;
+    left: -13px;
+    width: 256px;
+    overflow: hidden;
+    text-align: center;
+    background: #000;
+    padding: 5px 10px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 11px;
+}
+div.query div.queryChap span {
+    color: #666;
+    padding: 0 5px;
+    font-style: normal;
+}
+div.search div.pointer {
+    position: absolute;
+    left: 121px;
+    bottom: -14px;
+    width: 18px;
+    height: 27px;
+    background: transparent url(images/marker_srch-on.png) no-repeat;
+}
+div.searchChap {
+    position: absolute;
+    top: 0;
+    width: 18px;
+    height: 27px;
+    background-color: transparent;
+    background-image: url(images/marker_srchchap-off.png);
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+div.searchChap.front {
+    background-image: url(images/marker_srchchap-on.png);
+}
+#BRnav .front {
+    z-index: 10001;
+}
+div#pager {
+    position: absolute;
+    top: 11px;
+    left: 5px;
+    width: 30px;
+    height: 30px;
+    background: transparent url(images/focus_chap.png) no-repeat 0 0;
+    cursor: e-resize;
 }
