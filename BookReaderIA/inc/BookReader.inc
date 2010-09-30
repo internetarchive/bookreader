@@ -140,7 +140,7 @@ class BookReader
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
 </head>
-<body style="background-color: #FFFFFF;">
+<body style="background-color: ##939598;">
 
 <?
 /*

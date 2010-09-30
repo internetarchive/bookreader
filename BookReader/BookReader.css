@@ -45,6 +45,7 @@ h3 {
     overflow-x:auto;
     overflow-y:scroll;    
     position:absolute;
+    background-color: #939598;
 }
 
 #BRpageview {

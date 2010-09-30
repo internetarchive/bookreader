@@ -3197,6 +3197,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         + "<span>"
         +   "<a class='logo' href='" + this.logoURL + "'></a>"
         +   "<button class='BRicon glass'></button>"
+        /* XXXmang integrate search */
         +   "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         +   "<button class='BRicon fit'></button>"
         +   "<button class='BRicon thumb' onclick='br.switchMode(3); return false;'></button>"
