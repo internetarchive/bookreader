@@ -1537,7 +1537,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
     this.twoPagePopUp = document.createElement('div');
     this.twoPagePopUp.className = 'BRtwoPagePopUp';
     $(this.twoPagePopUp).css({
-        zIndex: '1000'
+        zIndex: '1000',
         // XXXmang move to CSS
         padding: '6px',
         position: 'absolute',

@@ -1,11 +1,13 @@
 <?
 
 /*
- * 
-
-/*
+ * Copyright(c) 2008-2010 Internet Archive. Software license AGPL version 3.
+ *
+ * This file is part of BookReader.  The full source code can be found at GitHub:
+ * http://github.com/openlibrary/bookreader
+ *
  * Note: Edits to this file must pass through github.  To submit a patch to this
- *       file please contact mang at archive dot org or http://github.com/mangtronix
+ *       file please contact mang via http://github.com/mangtronix or mang at archive dot org
  *       Direct changes to this file may get clobbered when the code is synchronized
  *       from github.
  */
@@ -128,17 +130,212 @@ class BookReader
     <link rel="stylesheet" type="text/css" href="/bookreader/touch/BookReaderTouch.css?v=<? echo($version); ?>">
 <? } /* uiMode */ ?>
     <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
-    <script type="text/javascript" src="/bookreader/jquery-ui-1.8.1.custom.min.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/jquery-ui-1.8.5.custom.min.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/jquery.colorbox-min.js"></script>
+     <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
+        <!--[if lt IE 9]>
+        <script type="text/javascript" src="excanvas.compiled.js"></script>
+        <![endif]-->
+    <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
 </head>
 <body style="background-color: #FFFFFF;">
 
-<? if ($uiMode == 'full') { ?>
-<div id="BookReader" style="left:10px; right:200px; top:10px; bottom:2em;">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
-<? } else { ?>
-<div id="BookReader" style="left:0; right:0; top:0; bottom:0; border:0">Internet Archive Bookreader <noscript>requires JavaScript to be enabled.</noscript></div>
-<? } /* uiMode*/ ?>
+<?
+/*
+// <? if ($uiMode == 'full') { ?>
+// <div id="BookReader" style="left:10px; right:200px; top:10px; bottom:2em;">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
+// <? } else { ?>
+// <div id="BookReader" style="left:0; right:0; top:0; bottom:0; border:0">Internet Archive Bookreader <noscript>requires JavaScript to be enabled.</noscript></div>
+// <? } ?>
+*/
+?>
+
+<div id="BookReader">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
+
+<script type="text/javascript">
+// XXXmang
+$().ready(function(){
+    $('.chapter').bt({
+        contentSelector: '$(this).find(".title")',
+        trigger: 'hover',
+        closeWhenOthersOpen: true,
+        cssStyles: {
+            backgroundColor: '#000',
+            border: '2px solid #e2dcc5',
+            borderBottom: 'none',
+            padding: '5px 10px',
+            fontFamily: '"Arial", sans-serif',
+            fontSize: '11px',
+            fontWeight: '700',
+            color: '#fff',
+            whiteSpace: 'nowrap'
+        },
+        shrinkToFit: true,
+        width: '200px',
+        padding: 0,
+        spikeGirth: 0,
+        spikeLength: 0,
+        overlap: '16px',
+        overlay: false,
+        killTitle: true, 
+        textzIndex: 9999,
+        boxzIndex: 9998,
+        wrapperzIndex: 9997,
+        offsetParent: null,
+        positions: ['top'],
+        fill: 'black',
+        windowMargin: 10,
+        strokeWidth: 0,
+        cornerRadius: 0,
+        centerPointX: 0,
+        centerPointY: 0,
+        shadow: false
+    });
+    $('.search').bt({
+        contentSelector: '$(this).find(".query")',
+        trigger: 'click',
+        closeWhenOthersOpen: true,
+        cssStyles: {
+            padding: '10px 10px 15px',
+            backgroundColor: '#fff',
+            border: '3px solid #e2dcc5',
+            borderBottom: 'none',
+            fontFamily: '"Lucida Grande","Arial",sans-serif',
+            fontSize: '12px',
+            lineHeight: '18px',
+            color: '#615132'
+        },
+        shrinkToFit: false,
+        width: '230px',
+        padding: 0,
+        spikeGirth: 0,
+        spikeLength: 0,
+        overlap: '10px',
+        overlay: false,
+        killTitle: false, 
+        textzIndex: 9999,
+        boxzIndex: 9998,
+        wrapperzIndex: 9997,
+        offsetParent: null,
+        positions: ['top'],
+        fill: 'white',
+        windowMargin: 10,
+        strokeWidth: 3,
+        strokeStyle: '#e2dcc5',
+        cornerRadius: 0,
+        centerPointX: 0,
+        centerPointY: 0,
+        shadow: false
+    });
+    $('.searchChap').bt({
+        contentSelector: '$(this).find(".query")',
+        trigger: 'click',
+        closeWhenOthersOpen: true,
+        cssStyles: {
+            width: '250px',
+            padding: '10px 10px 15px',
+            backgroundColor: '#fff',
+            border: '3px solid #e2dcc5',
+            borderBottom: 'none',
+            fontFamily: '"Lucida Grande","Arial",sans-serif',
+            fontSize: '12px',
+            lineHeight: '18px',
+            color: '#615132'
+        },
+        shrinkToFit: false,
+        width: '230px',
+        padding: 0,
+        spikeGirth: 0,
+        spikeLength: 0,
+        overlap: '10px',
+        overlay: false,
+        killTitle: true, 
+        textzIndex: 9999,
+        boxzIndex: 9998,
+        wrapperzIndex: 9997,
+        offsetParent: null,
+        positions: ['top'],
+        fill: 'white',
+        windowMargin: 10,
+        strokeWidth: 3,
+        strokeStyle: '#e2dcc5',
+        cornerRadius: 0,
+        centerPointX: 0,
+        centerPointY: 0,
+        shadow: false
+    });
+    $('.chapter').each(function(){
+        $(this).hover(function(){
+            $(this).addClass('front');
+        },function(){
+            $(this).removeClass('front');
+        });
+    });
+    $('.search').each(function(){
+        $(this).hover(function(){
+            $(this).addClass('front');
+        },function(){
+            $(this).removeClass('front');
+        });
+    });
+    $('.searchChap').each(function(){
+        $(this).hover(function(){
+            $(this).addClass('front');
+        },function(){
+            $(this).removeClass('front');
+        });
+    });
+    $("#pager").draggable({axis:'x',containment:'parent'});
+});
+</script>
+<div id="BRnav">
+    <div id="BRnavpos">
+    <div id="pager"></div>
+        <div id="BRnavline"></div>
+<!-- LOAD SEARCH RESULTS FIRST SO CHAPTER INDICATORS CAN APPEAR IN FRONT -->
+        <div class="search" style="left:80%;" title="Search result">
+            <div class="query">The Kingdom of the Future, for instance, though interesting in a Caley Robinson way, with its cold, mystical colour relieved by touches of warm reddish browns, and its big draped figures, was a composition in the past, and did not stimulate the <strong><a href="">emotional</a></strong> powers of the observer with a suggestion of coming ages or a prophecy of progress. <span>Page 26</span></div>
+        </div>
+        
+        <div class="search" style="left:22%;" title="Search result">
+            <div class="query">A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 27</span></div>
+        </div>
+        
+        <div class="search" style="left:75%;" title="Search result">
+            <div class="query">A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 27</span></div>
+        </div>
+        
+        <div class="chapter" style="left:1%;">
+            <div class="title">I. The Minotaur <span>|</span> Page 1</div>
+        </div>
+        
+        <div class="chapter" style="left:17%;">
+            <div class="title">II. The Griffon <span>|</span> Page 44</div>
+        </div>
+        
+        <div class="chapter" style="left:30%;">
+            <div class="title">III. The Firedrake <span>|</span> Page 129</div>
+        </div>
+        
+        <div class="chapter" style="left:67.5%;">
+            <div class="title">V. The Pegasus <span>|</span> Page 201</div>
+        </div>
+        
+        <div class="chapter" style="left:90%;">
+            <div class="title">VI. The Goblin <span>|</span> Page 255</div>
+        </div>
+        
+        <div class="searchChap" style="left:49%;" title="Search result">
+            <div class="query">
+            A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 163</span>
+                <div class="queryChap">IV. The Witch <span>|</span> Page 163</div>
+            </div>
+        </div>
+        
+    </div>
+</div>
 
 <script type="text/javascript">
   // Set some config variables -- $$$ NB: Config object format has not been finalized
@@ -154,7 +351,7 @@ class BookReader
 <!-- The script included below is dynamically generated JavaScript that includes the book metadata and page image access functions -->
 <script type="text/javascript" src="<? echo($metaURL); ?>"></script>
 
-<? if ($uiMode == 'full') { ?>
+<? if ($uiMode == 'XXXmang was full') { ?>
 <div id="BookReaderSearch" style="width:190px; right:0px; top:10px; bottom:2em;">
     <form action='javascript:' onsubmit="br.search($('#BookReaderSearchBox').val());">
         <p style="display: inline">
@@ -186,6 +383,29 @@ class BookReader
     $(document).ready(function() {
         $(window).trigger('resize');
     });
+    
+    //XXXmang
+   function hideFace() {
+        $('#BookReader').die('mousemove').live('mousemove',function(event) {
+            var toolpos = $('#BRtoolbar').offset();
+            var tooltop = toolpos.top;
+            var navkey = $(document).height() - 75;
+            if ((event.pageY < 76) || (event.pageY > navkey)) {
+                if (tooltop == -60) {
+                    $('#BRtoolbar').animate({top:'0'});
+                    $('#BRnav').animate({bottom:'0'});
+                };
+            } else if ($('.bt-wrapper').size() == 0) {
+                if (tooltop == 0) {
+                    $('#BRtoolbar').animate({top:'-60'});
+                    $('#BRnav').animate({bottom:'-60'});
+                }
+            };
+        });
+    };
+    window.onload = function() {
+        window.setTimeout(hideFace, 3000);
+    };
 </script>
   <?
     exit;
