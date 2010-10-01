@@ -128,6 +128,7 @@ class BookReader
     <link rel="stylesheet" type="text/css" href="/bookreader/touch/BookReaderTouch.css?v=<? echo($version); ?>">
 <? } /* uiMode */ ?>
     <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="http://www.archive.org/includes/analytics.js?v=2"></script>
     <script type="text/javascript" src="/bookreader/jquery-ui-1.8.1.custom.min.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
@@ -186,6 +187,9 @@ class BookReader
     $(document).ready(function() {
         $(window).trigger('resize');
     });
+    
+    // Usage stats
+    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'}; </script>
 </script>
   <?
     exit;
