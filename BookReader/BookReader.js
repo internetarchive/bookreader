@@ -3158,6 +3158,146 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
     }
 }
 
+// initNavbar
+//______________________________________________________________________________
+// Initialize the navigation bar.
+// $$$ this could also add the base elements to the DOM, so disabling the nav bar
+//     could be as simple as not calling this function
+BookReader.prototype.initNavbar = function() {
+    // Setup nav / chapter / search results bar
+    $('.chapter').bt({
+        contentSelector: '$(this).find(".title")',
+        trigger: 'hover',
+        closeWhenOthersOpen: true,
+        cssStyles: {
+            backgroundColor: '#000',
+            border: '2px solid #e2dcc5',
+            borderBottom: 'none',
+            padding: '5px 10px',
+            fontFamily: '"Arial", sans-serif',
+            fontSize: '11px',
+            fontWeight: '700',
+            color: '#fff',
+            whiteSpace: 'nowrap'
+        },
+        shrinkToFit: true,
+        width: '200px',
+        padding: 0,
+        spikeGirth: 0,
+        spikeLength: 0,
+        overlap: '16px',
+        overlay: false,
+        killTitle: true, 
+        textzIndex: 9999,
+        boxzIndex: 9998,
+        wrapperzIndex: 9997,
+        offsetParent: null,
+        positions: ['top'],
+        fill: 'black',
+        windowMargin: 10,
+        strokeWidth: 0,
+        cornerRadius: 0,
+        centerPointX: 0,
+        centerPointY: 0,
+        shadow: false
+    });
+    $('.search').bt({
+        contentSelector: '$(this).find(".query")',
+        trigger: 'click',
+        closeWhenOthersOpen: true,
+        cssStyles: {
+            padding: '10px 10px 15px',
+            backgroundColor: '#fff',
+            border: '3px solid #e2dcc5',
+            borderBottom: 'none',
+            fontFamily: '"Lucida Grande","Arial",sans-serif',
+            fontSize: '12px',
+            lineHeight: '18px',
+            color: '#615132'
+        },
+        shrinkToFit: false,
+        width: '230px',
+        padding: 0,
+        spikeGirth: 0,
+        spikeLength: 0,
+        overlap: '10px',
+        overlay: false,
+        killTitle: false, 
+        textzIndex: 9999,
+        boxzIndex: 9998,
+        wrapperzIndex: 9997,
+        offsetParent: null,
+        positions: ['top'],
+        fill: 'white',
+        windowMargin: 10,
+        strokeWidth: 3,
+        strokeStyle: '#e2dcc5',
+        cornerRadius: 0,
+        centerPointX: 0,
+        centerPointY: 0,
+        shadow: false
+    });
+    $('.searchChap').bt({
+        contentSelector: '$(this).find(".query")',
+        trigger: 'click',
+        closeWhenOthersOpen: true,
+        cssStyles: {
+            width: '250px',
+            padding: '10px 10px 15px',
+            backgroundColor: '#fff',
+            border: '3px solid #e2dcc5',
+            borderBottom: 'none',
+            fontFamily: '"Lucida Grande","Arial",sans-serif',
+            fontSize: '12px',
+            lineHeight: '18px',
+            color: '#615132'
+        },
+        shrinkToFit: false,
+        width: '230px',
+        padding: 0,
+        spikeGirth: 0,
+        spikeLength: 0,
+        overlap: '10px',
+        overlay: false,
+        killTitle: true, 
+        textzIndex: 9999,
+        boxzIndex: 9998,
+        wrapperzIndex: 9997,
+        offsetParent: null,
+        positions: ['top'],
+        fill: 'white',
+        windowMargin: 10,
+        strokeWidth: 3,
+        strokeStyle: '#e2dcc5',
+        cornerRadius: 0,
+        centerPointX: 0,
+        centerPointY: 0,
+        shadow: false
+    });
+    $('.chapter').each(function(){
+        $(this).hover(function(){
+            $(this).addClass('front');
+        },function(){
+            $(this).removeClass('front');
+        });
+    });
+    $('.search').each(function(){
+        $(this).hover(function(){
+            $(this).addClass('front');
+        },function(){
+            $(this).removeClass('front');
+        });
+    });
+    $('.searchChap').each(function(){
+        $(this).hover(function(){
+            $(this).addClass('front');
+        },function(){
+            $(this).removeClass('front');
+        });
+    });
+    $("#pager").draggable({axis:'x',containment:'parent'});
+}
+
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     $("body").append("<div id='BRtoolbar'>"
