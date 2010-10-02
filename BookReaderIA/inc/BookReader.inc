@@ -215,61 +215,11 @@ class BookReader
 <!-- The script included below is dynamically generated JavaScript that includes the book metadata and page image access functions -->
 <script type="text/javascript" src="<? echo($metaURL); ?>"></script>
 
-<? if ($uiMode == 'XXXmang was full') { ?>
-<div id="BookReaderSearch" style="width:190px; right:0px; top:10px; bottom:2em;">
-    <form action='javascript:' onsubmit="br.search($('#BookReaderSearchBox').val());">
-        <p style="display: inline">
-            <input id="BookReaderSearchBox" type="text" size="20" value="search..." onfocus="if('search...'==this.value)this.value='';" /><input type="submit" value="go" />
-        </p>
-    </form>
-    <div id="BookReaderSearchResults">
-        Search results
-    </div>
-</div>
-
-
-<div id="BRfooter">
-    <div class="BRlogotype">
-        <a href="http://archive.org/" class="BRblack">Internet Archive</a>
-    </div>
-    <div class="BRnavlinks">
-        <!-- <a class="BRblack" href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a> | -->
-        <a class="BRblack" href="http://www.archive.org/about/faqs.php#Report_Item">Content Problems</a> |
-        <a class="BRblack" href="https://bugs.launchpad.net/bookreader/+filebug">Report Bugs</a> |
-        <a class="BRblack" href="http://www.archive.org/details/texts">Texts Collection</a> |
-        <a class="BRblack" href="http://www.archive.org/about/contact.php">Contact Us</a>
-    </div>
-</div>
-<? } /* uiMode */ ?>
-
 <script type="text/javascript">
     // $$$ hack to workaround sizing bug when starting in two-up mode
     $(document).ready(function() {
         $(window).trigger('resize');
-    });
-    
-    //XXXmang
-   function hideFace() {
-        $('#BookReader').die('mousemove').live('mousemove',function(event) {
-            var toolpos = $('#BRtoolbar').offset();
-            var tooltop = toolpos.top;
-            var navkey = $(document).height() - 75;
-            if ((event.pageY < 76) || (event.pageY > navkey)) {
-                if (tooltop == -60) {
-                    $('#BRtoolbar').animate({top:'0'});
-                    $('#BRnav').animate({bottom:'0'});
-                };
-            } else if ($('.bt-wrapper').size() == 0) {
-                if (tooltop == 0) {
-                    $('#BRtoolbar').animate({top:'-60'});
-                    $('#BRnav').animate({bottom:'-60'});
-                }
-            };
-        });
-    };
-    window.onload = function() {
-        window.setTimeout(hideFace, 3000);
-    };
+    });    
 </script>
   <?
     exit;

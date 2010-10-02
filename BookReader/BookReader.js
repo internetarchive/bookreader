@@ -157,13 +157,23 @@ BookReader.prototype.init = function() {
     $("#BookReader").empty();
         
     this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
+    
     $("#BookReader").append("<div id='BRcontainer'></div>");
     $("#BRcontainer").append("<div id='BRpageview'></div>");
+    
+    this.initNavbar();
+    this.bindNavigationHandlers();
+    
+    // Autohide nav after showing for awhile
+    var self = this;
+    $(window).bind('load', function() {
+        setTimeout(function() { self.hideNavigation(); }, 3000);
+    });
 
     $("#BRcontainer").bind('scroll', this, function(e) {
         e.data.loadLeafs();
     });
-        
+    
     this.setupKeyListeners();
     this.startLocationPolling();
 
@@ -235,6 +245,8 @@ BookReader.prototype.init = function() {
         
     // Enact other parts of initial params
     this.updateFromParams(params);
+    
+    //XXXmang window.setTimeout(self.hideNavigation, 3000);
 }
 
 BookReader.prototype.setupKeyListeners = function() {
@@ -3524,6 +3536,73 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
         value += '%';
     }
     $('#BRzoom').text(value);
+}
+
+// bindNavigationHandlers
+//______________________________________________________________________________
+// Bind navigation handlers
+BookReader.prototype.bindNavigationHandlers = function() {
+    $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
+        { 'br': this },
+        this.navigationMousemoveHandler
+    );
+}
+
+// unbindNavigationHandlers
+//______________________________________________________________________________
+// Unbind navigation handlers
+BookReader.prototype.unbindNavigationHandlers = function() {
+    $('#BookReader').die('mousemove.navigation');
+}
+
+// navigationMousemoveHandler
+//______________________________________________________________________________
+// Handle mousemove related to navigation.  Bind at #BookReader level to allow autohide.
+BookReader.prototype.navigationMousemoveHandler = function(event) {
+    // $$$ possibly not great to be calling this for every mousemove
+    var navkey = $(document).height() - 75;
+    if ((event.pageY < 76) || (event.pageY > navkey)) {
+        // inside or near navigation elements
+        event.data['br'].hideNavigation();
+    } else {
+        event.data['br'].showNavigation();
+    }
+}
+
+// navigationIsVisible
+//______________________________________________________________________________
+// Returns true if the navigation elements are currently visible
+BookReader.prototype.navigationIsVisible = function() {
+    // $$$ doesn't account for transitioning states, nav must be fully visible to return true
+    var toolpos = $('#BRtoolbar').offset();
+    var tooltop = toolpos.top;
+    if (tooltop == 0) {
+        return true;
+    }
+    return false;
+}
+
+// hideNavigation
+//______________________________________________________________________________
+// Hide navigation elements, if visible
+BookReader.prototype.hideNavigation = function() {
+    // Check if navigation is showing
+    if (this.navigationIsVisible()) {
+        // $$$ don't hardcode height
+        $('#BRtoolbar').animate({top:-60});
+        $('#BRnav').animate({bottom:-60});
+    }
+}
+
+// showNavigation
+//______________________________________________________________________________
+// Show navigation elements
+BookReader.prototype.showNavigation = function() {
+    // Check if navigation is hidden
+    if (!this.navigationIsVisible()) {
+        $('#BRtoolbar').animate({top:0});
+        $('#BRnav').animate({bottom:0});
+    }
 }
 
 // firstDisplayableIndex
