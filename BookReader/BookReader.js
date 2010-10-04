@@ -3184,18 +3184,10 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
     
+    // $$$ should make this work inside the BookReader div (self-contained), rather than after
     $('#BookReader').after(
         '<div id="BRnav"><div id="BRnavpos"><div id="pager"></div><div id="BRnavline"></div></div></div>'
     );
-  
-    // $$$mang demo
-    /*
-    $('#BRnavpos').append(
-          '<div class="search" style="left:80%;" title="Search result">'
-        + '    <div class="query">The Kingdom of the Future, for instance, though interesting in a Caley Robinson way, with its cold, mystical colour relieved by touches of warm reddish browns, and its big draped figures, was a composition in the past, and did not stimulate the <strong><a href="">emotional</a></strong> powers of the observer with a suggestion of coming ages or a prophecy of progress. <span>Page 26</span></div>'
-        + '</div>'
-    );
-    */
     
 /*
 <!-- LOAD SEARCH RESULTS FIRST SO CHAPTER INDICATORS CAN APPEAR IN FRONT -->
@@ -3242,79 +3234,7 @@ BookReader.prototype.initNavbar = function() {
 </div>
 */
     
-    
-    $('.chapter').bt({
-        contentSelector: '$(this).find(".title")',
-        trigger: 'hover',
-        closeWhenOthersOpen: true,
-        cssStyles: {
-            backgroundColor: '#000',
-            border: '2px solid #e2dcc5',
-            borderBottom: 'none',
-            padding: '5px 10px',
-            fontFamily: '"Arial", sans-serif',
-            fontSize: '11px',
-            fontWeight: '700',
-            color: '#fff',
-            whiteSpace: 'nowrap'
-        },
-        shrinkToFit: true,
-        width: '200px',
-        padding: 0,
-        spikeGirth: 0,
-        spikeLength: 0,
-        overlap: '16px',
-        overlay: false,
-        killTitle: true, 
-        textzIndex: 9999,
-        boxzIndex: 9998,
-        wrapperzIndex: 9997,
-        offsetParent: null,
-        positions: ['top'],
-        fill: 'black',
-        windowMargin: 10,
-        strokeWidth: 0,
-        cornerRadius: 0,
-        centerPointX: 0,
-        centerPointY: 0,
-        shadow: false
-    });
-    $('.search').bt({
-        contentSelector: '$(this).find(".query")',
-        trigger: 'click',
-        closeWhenOthersOpen: true,
-        cssStyles: {
-            padding: '10px 10px 15px',
-            backgroundColor: '#fff',
-            border: '3px solid #e2dcc5',
-            borderBottom: 'none',
-            fontFamily: '"Lucida Grande","Arial",sans-serif',
-            fontSize: '12px',
-            lineHeight: '18px',
-            color: '#615132'
-        },
-        shrinkToFit: false,
-        width: '230px',
-        padding: 0,
-        spikeGirth: 0,
-        spikeLength: 0,
-        overlap: '10px',
-        overlay: false,
-        killTitle: false, 
-        textzIndex: 9999,
-        boxzIndex: 9998,
-        wrapperzIndex: 9997,
-        offsetParent: null,
-        positions: ['top'],
-        fill: 'white',
-        windowMargin: 10,
-        strokeWidth: 3,
-        strokeStyle: '#e2dcc5',
-        cornerRadius: 0,
-        centerPointX: 0,
-        centerPointY: 0,
-        shadow: false
-    });
+    /* $$$mang search results and chapters should automatically coalesce
     $('.searchChap').bt({
         contentSelector: '$(this).find(".query")',
         trigger: 'click',
@@ -3352,22 +3272,6 @@ BookReader.prototype.initNavbar = function() {
         centerPointY: 0,
         shadow: false
     });
-    
-    // XXXmang needs to be done for each element when added
-    $('.chapter').each(function(){
-        $(this).hover(function(){
-            $(this).addClass('front');
-        },function(){
-            $(this).removeClass('front');
-        });
-    });
-    $('.search').each(function(){
-        $(this).hover(function(){
-            $(this).addClass('front');
-        },function(){
-            $(this).removeClass('front');
-        });
-    });
     $('.searchChap').each(function(){
         $(this).hover(function(){
             $(this).addClass('front');
@@ -3375,7 +3279,122 @@ BookReader.prototype.initNavbar = function() {
             $(this).removeClass('front');
         });
     });
+    */
+        
     $("#pager").draggable({axis:'x',containment:'parent'});
+}
+
+BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageIndex) {
+    var uiStringSearch = "Search result"; // i18n
+    var uiStringPage = "Page"; // i18n
+    
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs);
+    
+    // $$$mang add click-through to page
+    $('<div class="search" style="left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
+        + queryString + '<span>' + uiStringPage + ' ' + pageNumber + '</span></div>')
+    .appendTo('#BRnavpos').bt({
+        contentSelector: '$(this).find(".query")',
+        trigger: 'click',
+        closeWhenOthersOpen: true,
+        cssStyles: {
+            padding: '10px 10px 15px',
+            backgroundColor: '#fff',
+            border: '3px solid #e2dcc5',
+            borderBottom: 'none',
+            fontFamily: '"Lucida Grande","Arial",sans-serif',
+            fontSize: '12px',
+            lineHeight: '18px',
+            color: '#615132'
+        },
+        shrinkToFit: false,
+        width: '230px',
+        padding: 0,
+        spikeGirth: 0,
+        spikeLength: 0,
+        overlap: '10px',
+        overlay: false,
+        killTitle: false, 
+        textzIndex: 9999,
+        boxzIndex: 9998,
+        wrapperzIndex: 9997,
+        offsetParent: null,
+        positions: ['top'],
+        fill: 'white',
+        windowMargin: 10,
+        strokeWidth: 3,
+        strokeStyle: '#e2dcc5',
+        cornerRadius: 0,
+        centerPointX: 0,
+        centerPointY: 0,
+        shadow: false
+    })
+    .hover(function(){
+              $(this).addClass('front');
+          },function(){
+              $(this).removeClass('front');
+          }
+    );
+}
+
+BookReader.prototype.removeSearchResults = function() {
+    $('#BRnavpos .search').remove();
+}
+
+BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
+    var uiStringPage = 'Page'; // i18n
+
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs);
+    
+    $('<div class="chapter" style="left:' + percentThrough + ';"><div class="title">'
+        + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
+    .appendTo('#BRnavpos')
+    .bt({
+        contentSelector: '$(this).find(".title")',
+        trigger: 'hover',
+        closeWhenOthersOpen: true,
+        cssStyles: {
+            backgroundColor: '#000',
+            border: '2px solid #e2dcc5',
+            borderBottom: 'none',
+            padding: '5px 10px',
+            fontFamily: '"Arial", sans-serif',
+            fontSize: '11px',
+            fontWeight: '700',
+            color: '#fff',
+            whiteSpace: 'nowrap'
+        },
+        shrinkToFit: true,
+        width: '200px',
+        padding: 0,
+        spikeGirth: 0,
+        spikeLength: 0,
+        overlap: '16px',
+        overlay: false,
+        killTitle: true, 
+        textzIndex: 9999,
+        boxzIndex: 9998,
+        wrapperzIndex: 9997,
+        offsetParent: null,
+        positions: ['top'],
+        fill: 'black',
+        windowMargin: 10,
+        strokeWidth: 0,
+        cornerRadius: 0,
+        centerPointX: 0,
+        centerPointY: 0,
+        shadow: false
+    })
+    .hover( function() {
+                $(this).addClass('front');
+            }, function() {
+                $(this).removeClass('front');
+            }
+    );
+}
+
+BookReader.prototype.removeChapters = function() {
+    $('#BRnavpos .chapter').remove();
 }
 
 BookReader.prototype.initToolbar = function(mode, ui) {
@@ -4105,6 +4124,11 @@ BookReader.util = {
     
     clamp: function(value, min, max) {
         return Math.min(Math.max(value, min), max);
+    },
+    
+    // Given value and maximum, calculate a percentage suitable for CSS
+    cssPercentage: function(value, max) {
+        return parseInt(((value + 0.0) / max) * 100) + '%';
     },
     
     notInArray: function(value, array) {
