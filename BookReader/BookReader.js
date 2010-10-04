@@ -36,10 +36,18 @@ This file is part of BookReader.
 // You must also add a numLeafs property before calling init().
 
 function BookReader() {
+
+    // Mode constants
+    this.constMode1up = 1;
+    this.constMode2up = 2;
+    this.constModeThumb = 3;
+
     this.reduce  = 4;
     this.padding = 10;          // Padding in 1up
-    this.mode    = 1; //1, 2, 3
-    this.ui = 'full'; // UI mode
+
+    this.mode    = this.constMode1up;
+    this.ui = 'full';           // UI mode
+    this.uiAutoHide = false;    // Controls whether nav/toolbar will autohide
 
     // thumbnail mode
     this.thumbWidth = 100; // will be overridden during prepareThumbnailView
@@ -82,10 +90,6 @@ function BookReader() {
     //     path in the CSS.  Would be better to automagically find that path.
     this.imagesBaseURL = '/bookreader/images/';
     
-    // Mode constants
-    this.constMode1up = 1;
-    this.constMode2up = 2;
-    this.constModeThumb = 3;
     
     // Zoom levels
     // $$$ provide finer grained zooming
@@ -167,9 +171,11 @@ BookReader.prototype.init = function() {
     
     // Autohide nav after showing for awhile
     var self = this;
-    $(window).bind('load', function() {
-        setTimeout(function() { self.hideNavigation(); }, 3000);
-    });
+    if (this.uiAutoHide) {
+        $(window).bind('load', function() {
+            setTimeout(function() { self.hideNavigation(); }, 3000);
+        });
+    };
 
     $("#BRcontainer").bind('scroll', this, function(e) {
         e.data.loadLeafs();
@@ -3177,6 +3183,66 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 //     could be as simple as not calling this function
 BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
+    
+    $('#BookReader').after(
+        '<div id="BRnav"><div id="BRnavpos"><div id="pager"></div><div id="BRnavline"></div></div></div>'
+    );
+  
+    // $$$mang demo
+    /*
+    $('#BRnavpos').append(
+          '<div class="search" style="left:80%;" title="Search result">'
+        + '    <div class="query">The Kingdom of the Future, for instance, though interesting in a Caley Robinson way, with its cold, mystical colour relieved by touches of warm reddish browns, and its big draped figures, was a composition in the past, and did not stimulate the <strong><a href="">emotional</a></strong> powers of the observer with a suggestion of coming ages or a prophecy of progress. <span>Page 26</span></div>'
+        + '</div>'
+    );
+    */
+    
+/*
+<!-- LOAD SEARCH RESULTS FIRST SO CHAPTER INDICATORS CAN APPEAR IN FRONT -->
+        <div class="search" style="left:80%;" title="Search result">
+            <div class="query">The Kingdom of the Future, for instance, though interesting in a Caley Robinson way, with its cold, mystical colour relieved by touches of warm reddish browns, and its big draped figures, was a composition in the past, and did not stimulate the <strong><a href="">emotional</a></strong> powers of the observer with a suggestion of coming ages or a prophecy of progress. <span>Page 26</span></div>
+        </div>
+        
+        <div class="search" style="left:22%;" title="Search result">
+            <div class="query">A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 27</span></div>
+        </div>
+        
+        <div class="search" style="left:75%;" title="Search result">
+            <div class="query">A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 27</span></div>
+        </div>
+        
+        <div class="chapter" style="left:1%;">
+            <div class="title">I. The Minotaur <span>|</span> Page 1</div>
+        </div>
+        
+        <div class="chapter" style="left:17%;">
+            <div class="title">II. The Griffon <span>|</span> Page 44</div>
+        </div>
+        
+        <div class="chapter" style="left:30%;">
+            <div class="title">III. The Firedrake <span>|</span> Page 129</div>
+        </div>
+        
+        <div class="chapter" style="left:67.5%;">
+            <div class="title">V. The Pegasus <span>|</span> Page 201</div>
+        </div>
+        
+        <div class="chapter" style="left:90%;">
+            <div class="title">VI. The Goblin <span>|</span> Page 255</div>
+        </div>
+        
+        <div class="searchChap" style="left:49%;" title="Search result">
+            <div class="query">
+            A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 163</span>
+                <div class="queryChap">IV. The Witch <span>|</span> Page 163</div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+*/
+    
+    
     $('.chapter').bt({
         contentSelector: '$(this).find(".title")',
         trigger: 'hover',
@@ -3286,6 +3352,8 @@ BookReader.prototype.initNavbar = function() {
         centerPointY: 0,
         shadow: false
     });
+    
+    // XXXmang needs to be done for each element when added
     $('.chapter').each(function(){
         $(this).hover(function(){
             $(this).addClass('front');
@@ -3312,6 +3380,7 @@ BookReader.prototype.initNavbar = function() {
 
 BookReader.prototype.initToolbar = function(mode, ui) {
 
+    // $$$mang should be contained within the BookReader div instead of body
     $("body").append("<div id='BRtoolbar'>"
         + "<span id='BRtoolbarbuttons' style='float:right;'>"
         +   "<button class='BRicon bookmark modal'></button>"
@@ -3560,12 +3629,15 @@ BookReader.prototype.unbindNavigationHandlers = function() {
 // Handle mousemove related to navigation.  Bind at #BookReader level to allow autohide.
 BookReader.prototype.navigationMousemoveHandler = function(event) {
     // $$$ possibly not great to be calling this for every mousemove
-    var navkey = $(document).height() - 75;
-    if ((event.pageY < 76) || (event.pageY > navkey)) {
-        // inside or near navigation elements
-        event.data['br'].hideNavigation();
-    } else {
-        event.data['br'].showNavigation();
+    
+    if (event.data['br'].uiAutoHide) {
+        var navkey = $(document).height() - 75;
+        if ((event.pageY < 76) || (event.pageY > navkey)) {
+            // inside or near navigation elements
+            event.data['br'].hideNavigation();
+        } else {
+            event.data['br'].showNavigation();
+        }
     }
 }
 

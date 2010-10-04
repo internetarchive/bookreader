@@ -155,53 +155,6 @@ class BookReader
 
 <div id="BookReader">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
 
-<div id="BRnav">
-    <div id="BRnavpos">
-    <div id="pager"></div>
-        <div id="BRnavline"></div>
-<!-- LOAD SEARCH RESULTS FIRST SO CHAPTER INDICATORS CAN APPEAR IN FRONT -->
-        <div class="search" style="left:80%;" title="Search result">
-            <div class="query">The Kingdom of the Future, for instance, though interesting in a Caley Robinson way, with its cold, mystical colour relieved by touches of warm reddish browns, and its big draped figures, was a composition in the past, and did not stimulate the <strong><a href="">emotional</a></strong> powers of the observer with a suggestion of coming ages or a prophecy of progress. <span>Page 26</span></div>
-        </div>
-        
-        <div class="search" style="left:22%;" title="Search result">
-            <div class="query">A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 27</span></div>
-        </div>
-        
-        <div class="search" style="left:75%;" title="Search result">
-            <div class="query">A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 27</span></div>
-        </div>
-        
-        <div class="chapter" style="left:1%;">
-            <div class="title">I. The Minotaur <span>|</span> Page 1</div>
-        </div>
-        
-        <div class="chapter" style="left:17%;">
-            <div class="title">II. The Griffon <span>|</span> Page 44</div>
-        </div>
-        
-        <div class="chapter" style="left:30%;">
-            <div class="title">III. The Firedrake <span>|</span> Page 129</div>
-        </div>
-        
-        <div class="chapter" style="left:67.5%;">
-            <div class="title">V. The Pegasus <span>|</span> Page 201</div>
-        </div>
-        
-        <div class="chapter" style="left:90%;">
-            <div class="title">VI. The Goblin <span>|</span> Page 255</div>
-        </div>
-        
-        <div class="searchChap" style="left:49%;" title="Search result">
-            <div class="query">
-            A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 163</span>
-                <div class="queryChap">IV. The Witch <span>|</span> Page 163</div>
-            </div>
-        </div>
-        
-    </div>
-</div>
-
 <script type="text/javascript">
   // Set some config variables -- $$$ NB: Config object format has not been finalized
   var brConfig = {};
