@@ -37,7 +37,7 @@ This file is part of BookReader.
 
 function BookReader() {
     this.reduce  = 4;
-    this.padding = 0;
+    this.padding = 10;          // Padding in 1up
     this.mode    = 1; //1, 2, 3
     this.ui = 'full'; // UI mode
 
@@ -46,6 +46,7 @@ function BookReader() {
     this.thumbRowBuffer = 2; // number of rows to pre-cache out a view
     this.thumbColumns = 6; // default
     this.thumbMaxLoading = 4; // number of thumbnails to load at once
+    this.thumbPadding = 10; // spacing between thumbnails
     this.displayedRows=[];
     
     this.displayedIndices = [];
@@ -246,7 +247,6 @@ BookReader.prototype.init = function() {
     // Enact other parts of initial params
     this.updateFromParams(params);
     
-    //XXXmang window.setTimeout(self.hideNavigation, 3000);
 }
 
 BookReader.prototype.setupKeyListeners = function() {
@@ -496,7 +496,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
     for (i=0; i<this.numLeafs; i++) {
         leafWidth = this.thumbWidth;
-        if (rightPos + (leafWidth + this.padding) > viewWidth){
+        if (rightPos + (leafWidth + this.thumbPadding) > viewWidth){
             currentRow++;
             rightPos = 0;
             leafIndex = 0;
@@ -516,13 +516,13 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
         if (leafHeight > leafMap[currentRow].height) {
             leafMap[currentRow].height = leafHeight;
         }
-        if (leafIndex===0) { bottomPos += this.padding + leafMap[currentRow].height; }
-        rightPos += leafWidth + this.padding;
+        if (leafIndex===0) { bottomPos += this.thumbPadding + leafMap[currentRow].height; }
+        rightPos += leafWidth + this.thumbPadding;
         if (rightPos > maxRight) { maxRight = rightPos; }
         leafIndex++;
         
         if (i == seekIndex) {
-            seekTop = bottomPos - this.padding - leafMap[currentRow].height;
+            seekTop = bottomPos - this.thumbPadding - leafMap[currentRow].height;
         }
     }
 
@@ -549,7 +549,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     
     // Determine the thumbnails in view
     for (i=0; i<leafMap.length; i++) {
-        leafBottom += this.padding + leafMap[i].height;
+        leafBottom += this.thumbPadding + leafMap[i].height;
         var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
         var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
         var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
@@ -607,7 +607,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                 div.style.position = "absolute";
                 div.className = "BRpagedivthumb";
 
-                left += this.padding;
+                left += this.thumbPadding;
                 $(div).css('top', leafTop + 'px');
                 $(div).css('left', left+'px');
                 $(div).css('width', leafWidth+'px');
@@ -1089,7 +1089,7 @@ BookReader.prototype.zoomThumb = function(direction) {
 // Note: #BRpageview must already exist since its width is used to calculate the
 //       thumbnail width
 BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
-    var padding = (thumbnailColumns + 1) * this.padding;
+    var padding = (thumbnailColumns + 1) * this.thumbPadding;
     var width = ($('#BRpageview').width() - padding) / (thumbnailColumns + 0.5); // extra 0.5 is for some space at sides
     return parseInt(width);
 }
@@ -1202,7 +1202,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
         for (i=0; i<(index+1); i++) {
             leafWidth = this.thumbWidth;
-            if (rightPos + (leafWidth + this.padding) > viewWidth){
+            if (rightPos + (leafWidth + this.thumbPadding) > viewWidth){
                 rightPos = 0;
                 rowHeight = 0;
                 leafIndex = 0;
@@ -1211,8 +1211,8 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
             leafHeight = parseInt((this.getPageHeight(leafIndex)*this.thumbWidth)/this.getPageWidth(leafIndex), 10);
             if (leafHeight > rowHeight) { rowHeight = leafHeight; }
             if (leafIndex==0) { leafTop = bottomPos; }
-            if (leafIndex==0) { bottomPos += this.padding + rowHeight; }
-            rightPos += leafWidth + this.padding;
+            if (leafIndex==0) { bottomPos += this.thumbPadding + rowHeight; }
+            rightPos += leafWidth + this.thumbPadding;
             leafIndex++;
         }
         this.firstIndex=index;
