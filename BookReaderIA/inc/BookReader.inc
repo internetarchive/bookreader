@@ -131,6 +131,7 @@ class BookReader
 <? } /* uiMode */ ?>
     <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
     <script type="text/javascript" src="/bookreader/jquery-ui-1.8.5.custom.min.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="http://www.archive.org/includes/analytics.js?v=2"></script>
     <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/jquery.colorbox-min.js"></script>
      <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
@@ -219,7 +220,10 @@ class BookReader
     // $$$ hack to workaround sizing bug when starting in two-up mode
     $(document).ready(function() {
         $(window).trigger('resize');
-    });    
+    });
+    
+    // Usage stats
+    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'}; </script>
 </script>
   <?
     exit;
