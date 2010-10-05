@@ -3313,7 +3313,7 @@ BookReader.prototype.initNavbar = function() {
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     $("body").append("<div id='BRtoolbar'>"
-        + "<span id='BRtoolbarbuttons' style='float:right;'>"
+        + "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
         +   "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         +   "<button class='BRicon info' onclick='br.switchMode(3); return false;'></button>"
@@ -3324,6 +3324,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         
         + "<span>"
         +   "<a class='logo' href='" + this.logoURL + "'></a>"
+        +   "<div id='BRreturn'><span>Back to</span><a href='BOOK URL'>Book Title</a></div>"
         + "</span>"
         
         + "</div>");

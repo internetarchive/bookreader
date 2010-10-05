@@ -33,10 +33,12 @@ h3 {
     color: #999;
 }
 #BRtoolbar a {
-    color: #ccc!important;
+    color: #ccc;
     text-decoration: underline;
 }
-
+#BRtoolbarbuttons {
+    float: right;
+}
 #BRcontainer {
     top:5px;
     bottom:5px;
@@ -176,7 +178,22 @@ h3 {
     font-size: 12px;
     font-weight: 700;
 }
-
+#BRreturn {
+    display: block;
+    float: left;
+    margin: 5px 10px 0 5px;
+    font-family: "Lucida Grande","Arial",sans-serif;
+    color: #333;
+}
+#BRreturn span {
+    font-size: 10px;
+    display: block;
+}
+#BRreturn a {
+    font-size: 13px;
+    display: block;
+    color: #036daa;
+}
 .BRicon {
     display: block;
     float: left;
@@ -195,7 +212,7 @@ h3 {
 .BRicon.logo {background-position:0 0;}
 .BRicon.info {background-position:-40px 0;}
 .BRicon.info:hover {background-position:-80px 0;}
-.BRicon.share {background-position:-120px 0;cursor:default;}
+.BRicon.share {background-position:-120px 0;}
 .BRicon.share:hover {background-position:-160px 0;}
 .BRicon.read {background-position:-200px 0;}
 .BRicon.read:hover {background-position:-240px 0;}
@@ -388,6 +405,7 @@ div#BRpage {
     width: 80px;
     padding-left:12px;
     text-align: right;
+    z-index: 1000000;
 }
 div#BRnav {
     position: fixed;
@@ -401,23 +419,24 @@ div#BRnav {
 }
 div#BRnavpos {
     position: relative;
-    width: 100%;
+    margin-right: 80px;
     height: 40px;
 }
 div#BRpager {
     position: relative;
-    margin: 0 92px 0 -10px;
+    margin-left: -10px;
     height: 40px;
 }
 div#BRslider {
     position: absolute;
+    top: 13px;
     height: 27px;
 }
 div#slider {
     position: absolute;
     width: 2500px;
     height: 27px;
-    top: 13px;
+    top: 0;
     left: -2478px;
     background-color: #000;
     opacity: .1;
@@ -426,7 +445,7 @@ div#pager {
     position: absolute;
     width: 23px;
     height: 27px;
-    top: 13px;
+    top: 0;
     left: 8px;
     background: url(images/slider.png);
 }
@@ -436,7 +455,7 @@ div#BRnavline {
     width: auto;
     background-color: #000;
     top: -29px;
-    margin: 0 92px 0 10px;
+    margin: 0 10px;
 }
 .BRnavend {
     position: absolute;
