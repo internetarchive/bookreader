@@ -22,7 +22,7 @@ h3 {
     position: fixed;
     top: 0;
     left: 0;
-    height: 50px;
+    height: 40px;
     padding: 0;
     width: 100%;
     z-index: 100;
@@ -180,8 +180,8 @@ h3 {
 .BRicon {
     display: block;
     float: left;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     padding: 0;
     margin: 0;
     vertical-align: middle;
@@ -193,28 +193,33 @@ h3 {
 }
 
 .BRicon.logo {background-position:0 0;}
-.BRicon.fit {background-position:-50px 0;}
-.BRicon.fit:hover {background-position:-100px 0;}
-.BRicon.glass {background-position:-150px 0;cursor:default;}
-/*.BRicon.glass:hover {background-position:-200px 0;}*/
-.BRicon.bookmark {background-position:-250px 0;}
-.BRicon.bookmark:hover {background-position:-300px 0;}
-.BRicon.print {background-position:-350px 0;}
-.BRicon.print:hover {background-position:-400px 0;}
-.BRicon.link {background-position:-450px 0;}
-.BRicon.link:hover {background-position:-500px 0;}
-.BRicon.embed {background-position:-550px;}
-.BRicon.embed:hover {background-position:-600px 0;}
-.BRicon.read {background-position:-650px 0;}
-.BRicon.read:hover {background-position:-700px 0;}
-.BRicon.full {background-position:-750px 0;}
-.BRicon.full:hover {background-position:-800px 0;}
-.BRicon.thumb {background-position:-850px 0;}
-.BRicon.thumb:hover {background-position:-900px 0;}
-.BRicon.twopg {background-position:-950px 0;display:none;}
-.BRicon.twopg:hover {background-position:-1000px 0;}
+.BRicon.info {background-position:-40px 0;}
+.BRicon.info:hover {background-position:-80px 0;}
+.BRicon.share {background-position:-120px 0;cursor:default;}
+.BRicon.share:hover {background-position:-160px 0;}
+.BRicon.read {background-position:-200px 0;}
+.BRicon.read:hover {background-position:-240px 0;}
+.BRicon.unread {background-position:-280px 0;}
+.BRicon.unread:hover {background-position:-320px 0;}
+.BRicon.full {background-position:-360px 0;}
+.BRicon.full:hover {background-position:-400px 0;}
+.BRicon.book_left {background-position:-440px 0;}
+.BRicon.book_left:hover {background-position:-480px 0;}
+.BRicon.book_right {background-position:-520px 0;}
+.BRicon.book_right:hover {background-position:-560px 0;}
+
 
 /* NOT CURRENTLY IN USE
+.BRicon.embed {background-position:-440px;}
+.BRicon.embed:hover {background-position:-480px 0;}
+.BRicon.read {background-position:-520px 0;}
+.BRicon.read:hover {background-position:-560px 0;}
+.BRicon.full {background-position:-600px 0;}
+.BRicon.full:hover {background-position:-640px 0;}
+.BRicon.thumb {background-position:-680px 0;}
+.BRicon.thumb:hover {background-position:-720px 0;}
+.BRicon.twopg {background-position:-760px 0;display:none;}
+.BRicon.twopg:hover {background-position:-800px 0;}
 .BRicon.zoom_out {background-position:;}
 .BRicon.zoom_out:hover {background-position:;}
 .BRicon.zoom_in {background-position:;}
@@ -222,8 +227,6 @@ h3 {
 .BRicon.one_page_mode {background-position:;}
 .BRicon.two_page_mode {background-position:;}
 .BRicon.thumbnail_mode {background-position:;}
-.BRicon.book_left {background-position:;}
-.BRicon.book_right {background-position:;}
 .BRicon.book_up {background-position:;}
 .BRicon.book_down {background-position:;}
 .BRicon.book_leftmost {background-position:;}
@@ -236,10 +239,9 @@ h3 {
 a.logo {
     display: block;
     float: left;
-    width: 57px;
-    height: 46px;
+    width: 40px;
+    height: 40px;
     background: transparent url(images/icon_home.png) no-repeat 0 0;
-    margin: 12px 10px 0 10px;
 }
 a.popOff {
     position: absolute;
@@ -263,10 +265,10 @@ a.popOff span {
 
 form#booksearch {
     float: left;
-    margin-right: 40px;
+    margin-right: 10px;
 }
 form#booksearch input[type=search] {
-    width: 216px;
+    width: 280px;
     height: 24px;
     line-height: 24px;
     font-family: "Arial", sans-serif;
@@ -274,7 +276,7 @@ form#booksearch input[type=search] {
     -webkit-appearance: textfield;
     -moz-appearance: textfield;
     appearance: field;
-    margin-top: 13px;
+    margin-top: 9px;
 }
 form#booksearch button {
     width: 30px;
@@ -381,12 +383,18 @@ a.BRgrey:visited   { color: #666; }
         #cboxClose{position:absolute;top:20px;right:20px;display:block;width:32px;height:32px;background-image:url(/images/icons/icon_close-pop.png);background-position:0 0;background-repeat:no-repeat;}
         #cboxClose:hover{background-position:0 -32px;}
 
+div#BRpage {
+    float: right;
+    width: 80px;
+    padding-left:12px;
+    text-align: right;
+}
 div#BRnav {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 50px;
+    height: 40px;
     overflow: visible;
     z-index: 100;
     background-color: #e2dcc5;    
@@ -394,19 +402,58 @@ div#BRnav {
 div#BRnavpos {
     position: relative;
     width: 100%;
-    height: 50px;
+    height: 40px;
+}
+div#BRpager {
+    position: relative;
+    margin: 0 92px 0 -10px;
+    height: 40px;
+}
+div#BRslider {
+    position: absolute;
+    height: 27px;
+}
+div#slider {
+    position: absolute;
+    width: 2500px;
+    height: 27px;
+    top: 13px;
+    left: -2478px;
+    background-color: #000;
+    opacity: .1;
+}
+div#pager {
+    position: absolute;
+    width: 23px;
+    height: 27px;
+    top: 13px;
+    left: 8px;
+    background: url(images/slider.png);
 }
 div#BRnavline {
     position: relative;
-    margin: 0 20px;
     height: 2px;
     width: auto;
     background-color: #000;
-    top: 24px;
+    top: -29px;
+    margin: 0 92px 0 10px;
+}
+.BRnavend {
+    position: absolute;
+    top: -2px;
+    width: 1px;
+    height: 6px;
+    background-color: #000;
+}
+#BRnavleft {
+    left: 0;
+}
+#BRnavright {
+    right: 0;
 }
 div.chapter {
     position: absolute;
-    top: 0;
+    top: -13px;
     width: 18px;
     height: 27px;
     background: transparent url(images/marker_chap.png) no-repeat;
@@ -421,7 +468,7 @@ div.title span {
 }
 div.search {
     position: absolute;
-    top: 0;
+    top: -13px;
     width: 18px;
     height: 27px;
     background-color: transparent;
@@ -475,7 +522,7 @@ div.search div.pointer {
 }
 div.searchChap {
     position: absolute;
-    top: 0;
+    top: -13px;
     width: 18px;
     height: 27px;
     background-color: transparent;
@@ -488,13 +535,4 @@ div.searchChap.front {
 }
 #BRnav .front {
     z-index: 10001;
-}
-div#pager {
-    position: absolute;
-    top: 11px;
-    left: 5px;
-    width: 30px;
-    height: 30px;
-    background: transparent url(images/focus_chap.png) no-repeat 0 0;
-    cursor: e-resize;
 }

@@ -3307,32 +3307,23 @@ BookReader.prototype.initNavbar = function() {
             $(this).removeClass('front');
         });
     });
-    $("#pager").draggable({axis:'x',containment:'parent'});
+    $("#BRslider").draggable({axis:'x',containment:'parent'});
 }
 
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     $("body").append("<div id='BRtoolbar'>"
         + "<span id='BRtoolbarbuttons' style='float:right;'>"
-        +   "<button class='BRicon bookmark modal'></button>"
-        +   "<button class='BRicon link modal'></button>"
-        +   "<button class='BRicon embed modal'></button>"
+        /* XXXmang integrate search */
+        +   "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +   "<button class='BRicon info' onclick='br.switchMode(3); return false;'></button>"
+        +   "<button class='BRicon share' onclick='br.switchMode(2); return false;'></button>"
         +   "<button class='BRicon read modal'></button>"
         +   "<button class='BRicon full'></button>"
-//        +   "<div class='BRtoolbarmode2' style='display: none'><button class='BRicon book_leftmost'></button><button class='BRicon book_left'></button><button class='BRicon book_right'></button><button class='BRicon book_rightmost'></button></div>"
-//        +   "<div class='BRtoolbarmode1' style='display: none'><button class='BRicon book_top'></button><button class='BRicon book_up'></button> <button class='BRicon book_down'></button><button class='BRicon book_bottom'></button></div>"
-//        +   "<div class='BRtoolbarmode3' style='display: none'><button class='BRicon book_top'></button><button class='BRicon book_up'></button> <button class='BRicon book_down'></button><button class='BRicon book_bottom'></button></div>"
-//        +   "<button class='BRicon play'></button><button class='BRicon pause' style='display: none'></button>"
         + "</span>"
         
         + "<span>"
         +   "<a class='logo' href='" + this.logoURL + "'></a>"
-        +   "<button class='BRicon glass'></button>"
-        /* XXXmang integrate search */
-        +   "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
-        +   "<button class='BRicon fit'></button>"
-        +   "<button class='BRicon thumb' onclick='br.switchMode(3); return false;'></button>"
-        +   "<button class='BRicon twopg' onclick='br.switchMode(2); return false;'></button>"
         + "</span>"
         
         + "</div>");
