@@ -265,17 +265,16 @@ BookReader.prototype.init = function() {
     this.updateFromParams(params);
     
     // Start AJAX request for OL data
-    this.getOpenLibraryJSON(this.gotOpenLibraryRecord);
-    
+    if (this.getOpenLibraryRecord) {
+        this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
+    }
 }
 
-// XXXmang
-BookReader.prototype.gotOpenLibraryRecord = function(olObject) {
-    // console.log(olObject);
+BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
+    // $$$ could refactor this so that 'this' is available
     if (olObject) {
         if (olObject['table_of_contents']) {
-            console.log('xxx updating table of contents');
-            br.updateTOC(olObject['table_of_contents']); // XXX
+            self.updateTOC(olObject['table_of_contents']);
         }
     }
 }
