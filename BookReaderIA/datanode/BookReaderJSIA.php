@@ -328,6 +328,35 @@ br.getEmbedCode = function() {
     return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
 }
 
+// getOpenLibraryJSON
+br.getOpenLibraryJSON = function(callback) {
+    // Try looking up by ocaid first, then by source_record
+    
+    var jsonURL = 'http://openlibrary.org/query.json?type=/type/edition&*=&ocaid=' + br.bookId;
+    $.ajax({
+        url: jsonURL,
+        success: function(data) {
+            if (data && data.length > 0) {
+                callback(data[0]);
+            } else {
+                // try sourceid
+                console.log('XXXmang couldnt find via ocaid');
+                jsonURL = 'http://openlibrary.org/query.json?type=/type/edition&*=&source_records=ia:' + br.bookId;
+                $.ajax({
+                    url: jsonURL,
+                    success: function(data) {
+                        if (data && data.length > 0) {
+                            callback(data[0]);
+                        }
+                    },
+                    dataType: 'jsonp'
+                });
+            }
+        },
+        dataType: 'jsonp'
+    });
+}
+
 br.pageW =  [
             <?
             $i=0;

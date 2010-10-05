@@ -113,6 +113,17 @@ function BookReader() {
         autofit: 'auto'
     };
     
+    // This object/dictionary controls which optional features are enabled
+    // XXXmang in progress
+    this.features = {
+        // search
+        // read aloud
+        // open library entry
+        // table of contents
+        // embed/share ui
+        // info ui
+    };
+    
     return this;
 };
 
@@ -253,6 +264,46 @@ BookReader.prototype.init = function() {
     // Enact other parts of initial params
     this.updateFromParams(params);
     
+    // Start AJAX request for OL data
+    this.getOpenLibraryJSON(this.gotOpenLibraryRecord);
+    
+}
+
+// XXXmang
+BookReader.prototype.gotOpenLibraryRecord = function(olObject) {
+    // console.log(olObject);
+    if (olObject) {
+        if (olObject['table_of_contents']) {
+            console.log('xxx updating table of contents');
+            br.updateTOC(olObject['table_of_contents']); // XXX
+        }
+    }
+}
+
+BookReader.prototype.updateTOC = function(tocEntries) {
+    this.removeChapters();
+    for (var i = 0; i < tocEntries.length; i++) {
+        this.addChapterFromEntry(tocEntries[i]);
+    }
+}
+
+/*
+ *   Example table of contents entry - this format is defined by Open Library
+ *   {
+ *       "pagenum": "17",
+ *       "level": 1,
+ *       "label": "CHAPTER I",
+ *       "type": {"key": "/type/toc_item"},
+ *       "title": "THE COUNTRY AND THE MISSION"
+ *   }
+ */
+BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
+    console.log(tocEntryObject);
+    var pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
+    // Only add if we know where it is
+    if (pageIndex) {
+        this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
+    }
 }
 
 BookReader.prototype.setupKeyListeners = function() {
@@ -3281,6 +3332,8 @@ BookReader.prototype.initNavbar = function() {
     });
     */
         
+    // XXXmang testing
+    this.addSearchResult('hi there', '25', 22);
     $("#pager").draggable({axis:'x',containment:'parent'});
 }
 
@@ -3349,6 +3402,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
     $('<div class="chapter" style="left:' + percentThrough + ';"><div class="title">'
         + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
     .appendTo('#BRnavpos')
+    .data({'self': this, 'pageIndex': pageIndex })
     .bt({
         contentSelector: '$(this).find(".title")',
         trigger: 'hover',
@@ -3390,7 +3444,10 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
             }, function() {
                 $(this).removeClass('front');
             }
-    );
+    )
+    .bind('click', function() {
+        $(this).data('self').jumpToIndex($(this).data('pageIndex'));
+    });
 }
 
 BookReader.prototype.removeChapters = function() {
@@ -4107,6 +4164,15 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     
     return this.getPageURI(index, reduce, rotate);
 }
+
+
+/////// Functions that can/should be overriden by third-parties
+
+// If your book has a record on Open Library you get some nice things for free
+BookReader.prototype.getOpenLibraryJSON = function(callback) {
+    return null;
+}
+
 
 // Library functions
 BookReader.util = {
