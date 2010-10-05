@@ -224,6 +224,10 @@ h3 {
 .BRicon.book_left:hover {background-position:-480px 0;}
 .BRicon.book_right {background-position:-520px 0;}
 .BRicon.book_right:hover {background-position:-560px 0;}
+.BRicon.zoom_out {background-position:-606px 0;}
+.BRicon.zoom_out:hover {background-position:-646px 0;}
+.BRicon.zoom_in {background-position:-686px 0;}
+.BRicon.zoom_in:hover {background-position:-726px 0;}
 
 
 /* NOT CURRENTLY IN USE
@@ -237,10 +241,6 @@ h3 {
 .BRicon.thumb:hover {background-position:-720px 0;}
 .BRicon.twopg {background-position:-760px 0;display:none;}
 .BRicon.twopg:hover {background-position:-800px 0;}
-.BRicon.zoom_out {background-position:;}
-.BRicon.zoom_out:hover {background-position:;}
-.BRicon.zoom_in {background-position:;}
-.BRicon.zoom_in:hover {background-position:;}
 .BRicon.one_page_mode {background-position:;}
 .BRicon.two_page_mode {background-position:;}
 .BRicon.thumbnail_mode {background-position:;}
@@ -286,14 +286,16 @@ form#booksearch {
 }
 form#booksearch input[type=search] {
     width: 280px;
-    height: 24px;
-    line-height: 24px;
+    height: 22px;
+    line-height: 22px;
     font-family: "Arial", sans-serif;
-    font-size: 12px;
+    font-size: 13px;
     -webkit-appearance: textfield;
     -moz-appearance: textfield;
     appearance: field;
-    margin-top: 9px;
+    margin: 9px 0 0 0;
+    padding: 0;
+    border: 1px inset #ccc;
 }
 form#booksearch button {
     width: 30px;
@@ -405,7 +407,6 @@ div#BRpage {
     width: 80px;
     padding-left:12px;
     text-align: right;
-    z-index: 1000000;
 }
 div#BRnav {
     position: fixed;
@@ -432,6 +433,15 @@ div#BRslider {
     top: 13px;
     height: 27px;
 }
+div#BRfiller {
+    position: absolute;
+    height: 40px;
+    width: 10px;
+    background-color: #e2dcc5;
+    top: 0;
+    left: 0;
+    z-index: 102;
+}
 div#slider {
     position: absolute;
     width: 2500px;
@@ -440,6 +450,7 @@ div#slider {
     left: -2478px;
     background-color: #000;
     opacity: .1;
+    z-index: 101;
 }
 div#pager {
     position: absolute;
@@ -448,6 +459,7 @@ div#pager {
     top: 0;
     left: 8px;
     background: url(images/slider.png);
+    z-index: 103;
 }
 div#BRnavline {
     position: relative;
@@ -555,3 +567,70 @@ div.searchChap.front {
 #BRnav .front {
     z-index: 10001;
 }
+div#BRzoomer {
+    position: fixed;
+    bottom: 40px;
+    right: 0;
+    width: 26px;
+    height: 190px;
+    z-index: 100;
+}
+div#BRzoompos {
+    position: relative;
+    width: 26px;
+    height: 190px;
+    top: 0;
+    left: 0;
+}
+div#BRzoomer button {
+    position: absolute;
+    left: 0;
+    background-color: #e2dcc5;
+    width: 26px;
+}
+div#BRzoomer button:hover {
+    background-color: #000;
+}
+div#BRzoomer .zoom_out {
+    top: 0;
+    -webkit-border-top-left-radius: 6px;
+    -webkit-border-bottom-left-radius: 6px;
+    -moz-border-radius-topleft: 6px;
+    -moz-border-radius-bottomleft: 6px;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    -webkit-box-shadow: 2px 2px 2px #333;
+    -moz-box-shadow: 2px 2px 2px #333;
+    box-shadow: 2px 2px 2px #333;
+}
+div#BRzoomer .zoom_in {
+    bottom: 0;
+    -webkit-border-top-left-radius: 6px;
+    -moz-border-radius-topleft: 6px;
+    border-top-left-radius: 6px;
+}
+div#BRzoomcontrol {
+    position: relative;
+    top: 40px;
+    left:3px;
+    width: 23px;
+    height: 110px;    
+}
+div#BRzoomstrip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 23px;
+    height: 110px;
+    background-color: #000;
+    opacity: .1;
+}
+div#BRzoombtn {
+    position: absolute;
+    width: 23px;
+    height: 23px;
+    top: 0;
+    left: 0;
+    background: url("images/icon_zoomer.png");
+}
+

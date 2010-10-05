@@ -3308,6 +3308,7 @@ BookReader.prototype.initNavbar = function() {
         });
     });
     $("#BRslider").draggable({axis:'x',containment:'parent'});
+    $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
 }
 
 BookReader.prototype.initToolbar = function(mode, ui) {
@@ -3327,6 +3328,16 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +   "<div id='BRreturn'><span>Back to</span><a href='BOOK URL'>Book Title</a></div>"
         + "</span>"
         
+        + "</div>"
+        + "<div id='BRzoomer'>"
+        + "<div id='BRzoompos'>"
+        + "<button class='BRicon zoom_out'></button>"
+        + "<div id='BRzoomcontrol'>"
+        +    "<div id='BRzoomstrip'></div>"
+        +    "<div id='BRzoombtn'></div>"
+        + "</div>"
+        + "<button class='BRicon zoom_in'></button>"
+        + "</div>"
         + "</div>");
     
     this.updateToolbarZoom(this.reduce); // Pretty format
@@ -3583,6 +3594,7 @@ BookReader.prototype.hideNavigation = function() {
         // $$$ don't hardcode height
         $('#BRtoolbar').animate({top:-60});
         $('#BRnav').animate({bottom:-60});
+        $('#BRzoomer').animate({right:-26});
     }
 }
 
@@ -3594,6 +3606,7 @@ BookReader.prototype.showNavigation = function() {
     if (!this.navigationIsVisible()) {
         $('#BRtoolbar').animate({top:0});
         $('#BRnav').animate({bottom:0});
+        $('#BRzoomer').animate({right:0});
     }
 }
 
