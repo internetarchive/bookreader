@@ -3309,6 +3309,12 @@ BookReader.prototype.initNavbar = function() {
     });
     $("#BRslider").draggable({axis:'x',containment:'parent'});
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
+    $("#BRslider").hover(
+        function(){
+            $("#pagenum").show();
+        },function(){
+            $("#pagenum").hide();
+        });
 }
 
 BookReader.prototype.initToolbar = function(mode, ui) {

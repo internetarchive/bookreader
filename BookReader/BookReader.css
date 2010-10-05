@@ -461,6 +461,25 @@ div#pager {
     background: url(images/slider.png);
     z-index: 103;
 }
+div#pagenum {
+    display: none;
+    position: absolute;
+    left: 24px;
+    top: 4px;
+    color: #999;
+    font-size: 11px;
+    line-height: 19px;
+    font-weight: 700;
+    padding: 0 5px;
+    width: 80px;
+    text-align: right;
+    background-color: #000;
+    font-family: "Lucida Grande", "Arial", sans-serif;
+}
+div#pagenum span {
+    color: #ffa337;
+    font-style: italic;
+}
 div#BRnavline {
     position: relative;
     height: 2px;
