@@ -3462,33 +3462,30 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
-    $("body").append("<div id='BRtoolbar'>"
-        + "<span id='BRtoolbarbuttons'>"
+    $("body").append(
+          "<div id='BRtoolbar'>"
+        +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
-        +   "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         // XXXmang icons incorrect or handlers wrong
-        +   "<button class='BRicon info' onclick='br.switchMode(3); return false;'></button>"
-        +   "<button class='BRicon share' onclick='br.switchMode(2); return false;'></button>"
-        +   "<button class='BRicon read modal'></button>"
-        +   "<button class='BRicon full'></button>"
-        + "</span>"
-        
-        + "<span>"
-        +   "<a class='logo' href='" + this.logoURL + "'></a>"
-        // XXXmang update
-        +   "<div id='BRreturn'><span>Back to</span><a href='BOOK URL'>Book Title</a></div>"
-        + "</span>"
-        
+        +     "<button class='BRicon info' onclick='br.switchMode(3); return false;'></button>"
+        +     "<button class='BRicon share' onclick='br.switchMode(2); return false;'></button>"
+        +     "<button class='BRicon read modal'></button>"
+        +     "<button class='BRicon full'></button>"
+        +   "</span>"
+        +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
+        +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
         + "</div>"
+        
         + "<div id='BRzoomer'>"
-        + "<div id='BRzoompos'>"
-        + "<button class='BRicon zoom_out'></button>"
-        + "<div id='BRzoomcontrol'>"
-        +    "<div id='BRzoomstrip'></div>"
-        +    "<div id='BRzoombtn'></div>"
-        + "</div>"
-        + "<button class='BRicon zoom_in'></button>"
-        + "</div>"
+        +   "<div id='BRzoompos'>"
+        +     "<button class='BRicon zoom_out'></button>"
+        +     "<div id='BRzoomcontrol'>"
+        +       "<div id='BRzoomstrip'></div>"
+        +       "<div id='BRzoombtn'></div>"
+        +     "</div>"
+        +     "<button class='BRicon zoom_in'></button>"
+        +   "</div>"
         + "</div>");
     
     this.updateToolbarZoom(this.reduce); // Pretty format
