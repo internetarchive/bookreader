@@ -47,7 +47,7 @@ function BookReader() {
 
     this.mode    = this.constMode1up;
     this.ui = 'full';           // UI mode
-    this.uiAutoHide = false;    // Controls whether nav/toolbar will autohide
+    this.uiAutoHide = true;    // Controls whether nav/toolbar will autohide
 
     // thumbnail mode
     this.thumbWidth = 100; // will be overridden during prepareThumbnailView
