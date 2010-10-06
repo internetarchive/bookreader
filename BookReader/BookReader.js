@@ -270,41 +270,6 @@ BookReader.prototype.init = function() {
     }
 }
 
-BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
-    // $$$ could refactor this so that 'this' is available
-    if (olObject) {
-        if (olObject['table_of_contents']) {
-            self.updateTOC(olObject['table_of_contents']);
-        }
-    }
-}
-
-BookReader.prototype.updateTOC = function(tocEntries) {
-    this.removeChapters();
-    for (var i = 0; i < tocEntries.length; i++) {
-        this.addChapterFromEntry(tocEntries[i]);
-    }
-}
-
-/*
- *   Example table of contents entry - this format is defined by Open Library
- *   {
- *       "pagenum": "17",
- *       "level": 1,
- *       "label": "CHAPTER I",
- *       "type": {"key": "/type/toc_item"},
- *       "title": "THE COUNTRY AND THE MISSION"
- *   }
- */
-BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-    console.log(tocEntryObject);
-    var pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
-    // Only add if we know where it is
-    if (pageIndex) {
-        this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
-    }
-}
-
 BookReader.prototype.setupKeyListeners = function() {
     var self = this;
     
@@ -3449,8 +3414,40 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
     });
 }
 
+/*
+ * Remove all chapters.
+ */
 BookReader.prototype.removeChapters = function() {
     $('#BRnavpos .chapter').remove();
+}
+
+/*
+ * Update the table of contents based on array of TOC entries.
+ */
+BookReader.prototype.updateTOC = function(tocEntries) {
+    this.removeChapters();
+    for (var i = 0; i < tocEntries.length; i++) {
+        this.addChapterFromEntry(tocEntries[i]);
+    }
+}
+
+/*
+ *   Example table of contents entry - this format is defined by Open Library
+ *   {
+ *       "pagenum": "17",
+ *       "level": 1,
+ *       "label": "CHAPTER I",
+ *       "type": {"key": "/type/toc_item"},
+ *       "title": "THE COUNTRY AND THE MISSION"
+ *   }
+ */
+BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
+    console.log(tocEntryObject);
+    var pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
+    // Only add if we know where it is
+    if (pageIndex) {
+        this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
+    }
 }
 
 BookReader.prototype.initToolbar = function(mode, ui) {
@@ -4164,14 +4161,17 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     return this.getPageURI(index, reduce, rotate);
 }
 
-
-/////// Functions that can/should be overriden by third-parties
-
-// If your book has a record on Open Library you get some nice things for free
-BookReader.prototype.getOpenLibraryJSON = function(callback) {
-    return null;
+/*
+ * Update based on received record from Open Library.
+ */
+BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
+    // $$$ could refactor this so that 'this' is available
+    if (olObject) {
+        if (olObject['table_of_contents']) {
+            self.updateTOC(olObject['table_of_contents']);
+        }
+    }
 }
-
 
 // Library functions
 BookReader.util = {
