@@ -3201,7 +3201,27 @@ BookReader.prototype.initNavbar = function() {
     
     // $$$ should make this work inside the BookReader div (self-contained), rather than after
     $('#BookReader').after(
-        '<div id="BRnav"><div id="BRnavpos"><div id="pager"></div><div id="BRnavline"></div></div></div>'
+        '<div id="BRnav">'
+        +     '<div id="BRpage">'
+        +         '<button class="BRicon book_left"></button>'
+        +         '<button class="BRicon book_right"></button>'
+        +     '</div>'
+        +     '<div id="BRnavpos">'
+        +         '<div id="BRfiller"></div>'
+        +         '<div id="BRpager">'
+        +             '<div id="BRslider">'
+        +                 '<div id="slider"></div>'
+        +                 '<div id="pager"></div>'
+        // XXXmang update code to update pagenum
+        +                 '<div id="pagenum"><span>n141</span> / 325</div>'
+        +             '</div>'
+        +         '</div>'       
+        +         '<div id="BRnavline">'
+        +             '<div class="BRnavend" id="BRnavleft"></div>'
+        +             '<div class="BRnavend" id="BRnavright"></div>'
+        +         '</div>'     
+        +     '</div>'
+        + '</div>'
     );
     
 /*
@@ -3259,8 +3279,6 @@ BookReader.prototype.initNavbar = function() {
         });
     });
     */
-        
-    $("#pager").draggable({axis:'x',containment:'parent'});
 }
 
 BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageIndex) {
@@ -3410,34 +3428,67 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
     if (pageIndex) {
         this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
     }
+    $('.chapter').each(function(){
+        $(this).hover(function(){
+            $(this).addClass('front');
+        },function(){
+            $(this).removeClass('front');
+        });
+    });
+    $('.search').each(function(){
+        $(this).hover(function(){
+            $(this).addClass('front');
+        },function(){
+            $(this).removeClass('front');
+        });
+    });
+    $('.searchChap').each(function(){
+        $(this).hover(function(){
+            $(this).addClass('front');
+        },function(){
+            $(this).removeClass('front');
+        });
+    });
+    $("#BRslider").draggable({axis:'x',containment:'parent'});
+    $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
+    $("#BRslider").hover(
+        function(){
+            $("#pagenum").show();
+        },function(){
+            $("#pagenum").hide();
+        });
 }
 
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
     $("body").append("<div id='BRtoolbar'>"
-        + "<span id='BRtoolbarbuttons' style='float:right;'>"
-        +   "<button class='BRicon bookmark modal'></button>"
-        +   "<button class='BRicon link modal'></button>"
-        +   "<button class='BRicon embed modal'></button>"
+        + "<span id='BRtoolbarbuttons'>"
+        /* XXXmang integrate search */
+        +   "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        // XXXmang icons incorrect or handlers wrong
+        +   "<button class='BRicon info' onclick='br.switchMode(3); return false;'></button>"
+        +   "<button class='BRicon share' onclick='br.switchMode(2); return false;'></button>"
         +   "<button class='BRicon read modal'></button>"
         +   "<button class='BRicon full'></button>"
-//        +   "<div class='BRtoolbarmode2' style='display: none'><button class='BRicon book_leftmost'></button><button class='BRicon book_left'></button><button class='BRicon book_right'></button><button class='BRicon book_rightmost'></button></div>"
-//        +   "<div class='BRtoolbarmode1' style='display: none'><button class='BRicon book_top'></button><button class='BRicon book_up'></button> <button class='BRicon book_down'></button><button class='BRicon book_bottom'></button></div>"
-//        +   "<div class='BRtoolbarmode3' style='display: none'><button class='BRicon book_top'></button><button class='BRicon book_up'></button> <button class='BRicon book_down'></button><button class='BRicon book_bottom'></button></div>"
-//        +   "<button class='BRicon play'></button><button class='BRicon pause' style='display: none'></button>"
         + "</span>"
         
         + "<span>"
         +   "<a class='logo' href='" + this.logoURL + "'></a>"
-        +   "<button class='BRicon glass'></button>"
-        /* XXXmang integrate search */
-        +   "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
-        +   "<button class='BRicon fit'></button>"
-        +   "<button class='BRicon thumb' onclick='br.switchMode(3); return false;'></button>"
-        +   "<button class='BRicon twopg' onclick='br.switchMode(2); return false;'></button>"
+        // XXXmang update
+        +   "<div id='BRreturn'><span>Back to</span><a href='BOOK URL'>Book Title</a></div>"
         + "</span>"
         
+        + "</div>"
+        + "<div id='BRzoomer'>"
+        + "<div id='BRzoompos'>"
+        + "<button class='BRicon zoom_out'></button>"
+        + "<div id='BRzoomcontrol'>"
+        +    "<div id='BRzoomstrip'></div>"
+        +    "<div id='BRzoombtn'></div>"
+        + "</div>"
+        + "<button class='BRicon zoom_in'></button>"
+        + "</div>"
         + "</div>");
     
     this.updateToolbarZoom(this.reduce); // Pretty format
@@ -3697,6 +3748,7 @@ BookReader.prototype.hideNavigation = function() {
         // $$$ don't hardcode height
         $('#BRtoolbar').animate({top:-60});
         $('#BRnav').animate({bottom:-60});
+        $('#BRzoomer').animate({right:-26});
     }
 }
 
@@ -3708,6 +3760,7 @@ BookReader.prototype.showNavigation = function() {
     if (!this.navigationIsVisible()) {
         $('#BRtoolbar').animate({top:0});
         $('#BRnav').animate({bottom:0});
+        $('#BRzoomer').animate({right:0});
     }
 }
 
