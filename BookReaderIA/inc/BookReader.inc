@@ -1,9 +1,6 @@
 <?
 
 /*
- * 
-
-/*
  * Note: Edits to this file must pass through github.  To submit a patch to this
  *       file please contact mang at archive dot org or http://github.com/mangtronix
  *       Direct changes to this file may get clobbered when the code is synchronized
