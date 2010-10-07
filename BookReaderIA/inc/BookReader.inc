@@ -189,7 +189,7 @@ class BookReader
     });
     
     // Usage stats
-    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'}; </script>
+    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
 </script>
   <?
     exit;
