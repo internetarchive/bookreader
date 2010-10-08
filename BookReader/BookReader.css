@@ -438,6 +438,27 @@ div#BRslider {
     top: 13px;
     height: 27px;
 }
+
+/* XXXmang verify correct use of handle class */
+#BRpager .ui-slider-handle {
+    position: absolute;
+    width: 23px;
+    height: 27px;
+    top: 13px;
+    left: -11px;
+    background: url(images/slider.png);
+    z-index: 103;
+}
+ /*   
+  width: 8px;
+  height: 14px;
+  position: absolute;
+  top: -4px;
+  background: #478AFF;
+  border: solid 1px black;
+}
+*/
+
 div#BRfiller {
     position: absolute;
     height: 40px;
@@ -657,4 +678,3 @@ div#BRzoombtn {
     left: 0;
     background: url("images/icon_zoomer.png");
 }
-

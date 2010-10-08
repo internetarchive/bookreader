@@ -3208,12 +3208,15 @@ BookReader.prototype.initNavbar = function() {
         +     '<div id="BRnavpos">'
         +         '<div id="BRfiller"></div>'
         +         '<div id="BRpager">'
+
+        /* XXX
         +             '<div id="BRslider">'
         +                 '<div id="slider"></div>'
         +                 '<div id="pager"></div>'
         // XXXmang update code to update pagenum
-        +                 '<div id="pagenum"><span>n141</span> / 325</div>'
+        +                 '<div id="pagenum"><span class="currentpage">n141</span> / <span class="totalpages">325</span></div>'
         +             '</div>'
+        */
         +         '</div>'       
         +         '<div id="BRnavline">'
         +             '<div class="BRnavend" id="BRnavleft"></div>'
@@ -3278,14 +3281,37 @@ BookReader.prototype.initNavbar = function() {
         });
     });
     */
-    $("#BRslider").draggable({axis:'x',containment:'parent'});
-    $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
-    $("#BRslider").hover(
-        function(){
+    var self = this;
+    $('#BRpager').slider({    
+        animate: true,
+        min: 0,
+        max: this.numLeafs - 1
+    })
+    .bind('slide', function(event, ui){
+        $('#pagenum .currentpage').text('n' + ui.value);
+        $("#pagenum").show();
+        return true;
+    })
+    .bind('slidechange', function(event, ui) {
+        $("#pagenum").delay(400).fadeOut(400); // $$$ fadeout not working on iPad
+        self.jumpToIndex(ui.value);
+        return true;
+    })
+    .hover(function() {
+            // $$$ not working on iPad
             $("#pagenum").show();
         },function(){
             $("#pagenum").hide();
-        });    
+        }
+    );
+    
+    //append icon to handle
+    var handleHelper = $('#BRpager .ui-slider-handle')
+    // $$$mang update logic for setting the page number label -- use page numbers if available
+    .append('<div id="pagenum"><span class="currentpage">n' + this.currentIndex() + '</span> / <span class="totalpages">' + this.numLeafs + '</span></div>');
+    //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
+        
+    $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
 }
 
 BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageIndex) {
@@ -3429,7 +3455,6 @@ BookReader.prototype.updateTOC = function(tocEntries) {
  *   }
  */
 BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-    console.log(tocEntryObject);
     var pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
     // Only add if we know where it is
     if (pageIndex) {
