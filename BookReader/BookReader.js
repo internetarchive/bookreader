@@ -3293,7 +3293,7 @@ BookReader.prototype.initNavbar = function() {
         return true;
     })
     .bind('slidechange', function(event, ui) {
-        $("#pagenum").delay(400).fadeOut(400); // $$$ fadeout not working on iPad
+        $("#pagenum").hide();
         self.jumpToIndex(ui.value);
         return true;
     })
