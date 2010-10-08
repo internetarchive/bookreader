@@ -47,7 +47,7 @@ function BookReader() {
 
     this.mode    = this.constMode1up;
     this.ui = 'full';           // UI mode
-    this.uiAutoHide = true;    // Controls whether nav/toolbar will autohide
+    this.uiAutoHide = false;    // Controls whether nav/toolbar will autohide
 
     // thumbnail mode
     this.thumbWidth = 100; // will be overridden during prepareThumbnailView
@@ -354,7 +354,6 @@ BookReader.prototype.bindGestures = function(jElement) {
             br.zoom(-1);
         }
     });
-        
 }
 
 BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
@@ -3279,6 +3278,14 @@ BookReader.prototype.initNavbar = function() {
         });
     });
     */
+    $("#BRslider").draggable({axis:'x',containment:'parent'});
+    $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
+    $("#BRslider").hover(
+        function(){
+            $("#pagenum").show();
+        },function(){
+            $("#pagenum").hide();
+        });    
 }
 
 BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageIndex) {
@@ -3449,14 +3456,6 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
             $(this).removeClass('front');
         });
     });
-    $("#BRslider").draggable({axis:'x',containment:'parent'});
-    $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
-    $("#BRslider").hover(
-        function(){
-            $("#pagenum").show();
-        },function(){
-            $("#pagenum").hide();
-        });
 }
 
 BookReader.prototype.initToolbar = function(mode, ui) {
