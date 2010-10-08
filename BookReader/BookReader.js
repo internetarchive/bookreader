@@ -3288,7 +3288,7 @@ BookReader.prototype.initNavbar = function() {
         max: this.numLeafs - 1
     })
     .bind('slide', function(event, ui){
-        $('#pagenum .currentpage').text('n' + ui.value);
+        self.updateNavPageNum(ui.value);
         $("#pagenum").show();
         return true;
     })
@@ -3308,11 +3308,27 @@ BookReader.prototype.initNavbar = function() {
     //append icon to handle
     var handleHelper = $('#BRpager .ui-slider-handle')
     // $$$mang update logic for setting the page number label -- use page numbers if available
-    .append('<div id="pagenum"><span class="currentpage">n' + this.currentIndex() + '</span> / <span class="totalpages">' + this.numLeafs + '</span></div>');
+    .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
-        
+    
+    this.updateNavPageNum(this.currentIndex);
+
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
 }
+
+BookReader.prototype.updateNavPageNum = function(index) {
+    var pageNum = this.getPageNum(index);
+    var pageStr;
+    if (pageNum[0] == 'n') { // funny index
+        pageStr = index + ' / ' + this.numLeafs;
+    } else {
+        pageStr = 'Page ' + pageNum;
+    }
+    
+    $('#pagenum .currentpage').text(pageStr);
+}
+        
+
 
 BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageIndex) {
     var uiStringSearch = "Search result"; // i18n
