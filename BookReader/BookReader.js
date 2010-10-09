@@ -82,7 +82,7 @@ function BookReader() {
     
     // We link to index.php to avoid redirect which breaks back button
     // Should be overriden (before init) by custom implmentations.
-    this.logoURL = 'http://www.archive.org/index.php';
+    this.logoURL = 'http://openlibrary.org';
     
     // Base URL for UI images - should be overriden (before init) by
     // custom implementations.
