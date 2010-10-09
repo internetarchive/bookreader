@@ -3215,17 +3215,7 @@ BookReader.prototype.initNavbar = function() {
         +     '</div>'
         +     '<div id="BRnavpos">'
         +         '<div id="BRfiller"></div>'
-        +         '<div id="BRpager">'
-
-        /* XXX
-        +             '<div id="BRslider">'
-        +                 '<div id="slider"></div>'
-        +                 '<div id="pager"></div>'
-        // XXXmang update code to update pagenum
-        +                 '<div id="pagenum"><span class="currentpage">n141</span> / <span class="totalpages">325</span></div>'
-        +             '</div>'
-        */
-        +         '</div>'       
+        +         '<div id="BRpager"></div>'
         +         '<div id="BRnavline">'
         +             '<div class="BRnavend" id="BRnavleft"></div>'
         +             '<div class="BRnavend" id="BRnavright"></div>'
@@ -3325,6 +3315,13 @@ BookReader.prototype.initNavbar = function() {
     // $$$mang update logic for setting the page number label -- use page numbers if available
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
+    
+    $('.BRicon.book_left').bind('click', function() {
+        self.left();
+    });
+    $('.BRicon.book_right').bind('click', function() {
+        self.right();
+    });
     
     this.updateNavPageNum(this.currentIndex());
 
@@ -3530,8 +3527,8 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         /* XXXmang integrate search */
         +     "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         // XXXmang icons incorrect or handlers wrong
-        +     "<button class='BRicon info' onclick='br.switchMode(3); return false;'></button>"
-        +     "<button class='BRicon share' onclick='br.switchMode(2); return false;'></button>"
+        +     "<button class='BRicon info'></button>"
+        +     "<button class='BRicon share'></button>"
         +     "<button class='BRicon read modal'></button>"
         +     "<button class='BRicon full'></button>"
         +   "</span>"
@@ -3721,6 +3718,17 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
   
     jToolbar.find('.book_rightmost').click(function(e) {
         self.rightmost();
+        return false;
+    });
+    
+    // $$$mang cleanup
+    $('#BRzoomer .zoom_in').bind('click', function() {
+        self.zoom(1);
+        return false;
+    });
+    
+    $('#BRzoomer .zoom_out').bind('click', function() {
+        self.zoom(-1);
         return false;
     });
 }
