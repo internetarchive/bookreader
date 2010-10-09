@@ -176,10 +176,7 @@ BookReader.prototype.init = function() {
     
     $("#BookReader").append("<div id='BRcontainer'></div>");
     $("#BRcontainer").append("<div id='BRpageview'></div>");
-    
-    this.initNavbar();
-    this.bindNavigationHandlers();
-    
+        
     // Autohide nav after showing for awhile
     var self = this;
     if (this.uiAutoHide) {
@@ -263,6 +260,11 @@ BookReader.prototype.init = function() {
         
     // Enact other parts of initial params
     this.updateFromParams(params);
+
+    // We init the nav bar after the params processing so that the nav slider knows where
+    // it should start (doesn't jump after init)
+    this.initNavbar();
+    this.bindNavigationHandlers();
     
     // Start AJAX request for OL data
     if (this.getOpenLibraryRecord) {
@@ -2019,6 +2021,8 @@ BookReader.prototype.flipBackToIndex = function(index) {
     }
     //if (index<0) return;
     
+    this.updateNavIndex(index);
+    
     var previousIndices = this.getSpreadIndices(index);
     
     if (previousIndices[0] < this.firstDisplayableIndex() || previousIndices[1] < this.firstDisplayableIndex()) {
@@ -2191,7 +2195,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
 BookReader.prototype.flipFwdToIndex = function(index) {
 
     if (this.animating) return;
-
+    
     if (null != this.leafEdgeTmp) {
         alert('error: leafEdgeTmp should be null!');
         return;
@@ -2201,6 +2205,8 @@ BookReader.prototype.flipFwdToIndex = function(index) {
         index = this.twoPage.currentIndexR+2; // $$$ assumes indices are continuous
     }
     if (index > this.lastDisplayableIndex()) return;
+
+    this.updateNavIndex(index);
 
     this.animating = true;
     
@@ -3287,7 +3293,8 @@ BookReader.prototype.initNavbar = function() {
     $('#BRpager').slider({    
         animate: true,
         min: 0,
-        max: this.numLeafs - 1
+        max: this.numLeafs - 1,
+        value: this.currentIndex()
     })
     .bind('slide', function(event, ui){
         self.updateNavPageNum(ui.value);
@@ -3319,7 +3326,7 @@ BookReader.prototype.initNavbar = function() {
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
     
-    this.updateNavPageNum(this.currentIndex);
+    this.updateNavPageNum(this.currentIndex());
 
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
 }
