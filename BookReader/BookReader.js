@@ -1198,6 +1198,8 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 //______________________________________________________________________________
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
+    this.updateNavIndex(index);
+
     if (this.constMode2up == this.mode) {
         this.autoStop();
         
@@ -3294,7 +3296,13 @@ BookReader.prototype.initNavbar = function() {
     })
     .bind('slidechange', function(event, ui) {
         $("#pagenum").hide();
-        self.jumpToIndex(ui.value);
+        
+        // recursion prevention for jumpToIndex
+        if ( $(this).data('swallowchange') ) {
+            $(this).data('swallowchange', false);
+        } else {
+            self.jumpToIndex(ui.value);
+        }
         return true;
     })
     .hover(function() {
@@ -3327,8 +3335,15 @@ BookReader.prototype.updateNavPageNum = function(index) {
     
     $('#pagenum .currentpage').text(pageStr);
 }
-        
 
+/*
+ * Update the nav bar display - does not cause navigation.
+ */
+BookReader.prototype.updateNavIndex = function(index) {
+    // We want to update the value, but normally moving the slider
+    // triggers jumpToIndex which triggers this method
+    $('#BRpager').data('swallowchange', true).slider('value', index);
+}
 
 BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageIndex) {
     var uiStringSearch = "Search result"; // i18n
