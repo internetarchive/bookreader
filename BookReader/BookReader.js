@@ -4253,6 +4253,10 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
             self.updateTOC(olObject['table_of_contents']);
         }
     }
+    
+    // $$$mang cleanup
+    $('#BRreturn a').attr('href', 'http://openlibrary.org' + olObject.key);
+
 }
 
 // Library functions
