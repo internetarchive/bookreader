@@ -653,3 +653,11 @@ div#BRzoombtn {
     background: url("images/icon_zoomer.png");
 }
 
+.BRttsPopUp {
+    position: absolute;
+    background-color: #E6E4E1;
+    background-image: url(images/progressbar.gif);
+    background-repeat:no-repeat;
+    font-size: 0.8em; 
+    z-index: 3;    
+}
