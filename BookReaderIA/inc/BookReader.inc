@@ -134,6 +134,7 @@ class BookReader
     <script type="text/javascript" src="http://www.archive.org/includes/analytics.js?v=2"></script>
     <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/jquery.colorbox-min.js"></script>
+    <script type="text/javascript" src="/bookreader/jquery.ui.ipad.js"></script>
      <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
         <!--[if lt IE 9]>
         <script type="text/javascript" src="excanvas.compiled.js"></script>
@@ -183,7 +184,7 @@ class BookReader
     });
     
     // Usage stats
-    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'}; </script>
+    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
 </script>
   <?
     exit;
