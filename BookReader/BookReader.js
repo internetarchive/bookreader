@@ -2849,28 +2849,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
                 //console.log('appending ' + key);
             }
 
-            // We calculate the reduction factor for the specific page because it can be different
-            // for each page in the spread
-            var height = this._getPageHeight(key);
-            var width  = this._getPageWidth(key)
-            var reduce = this.twoPage.height/height;
-            var scaledW = parseInt(width*reduce);
-            
-            var gutter = this.twoPageGutter();
-            var pageL;
-            if ('L' == this.getPageSide(key)) {
-                pageL = gutter-scaledW;
-            } else {
-                pageL = gutter;
-            }
-            var pageT  = this.twoPageTop();
-            
-            $(result.div).css({
-                width:  (result.r-result.l)*reduce + 'px',
-                height: (result.b-result.t)*reduce + 'px',
-                left:   pageL+(result.l)*reduce + 'px',
-                top:    pageT+(result.t)*reduce +'px'
-            });
+            this.setHilightCss2UP(result.div, key, result.l, result.r, result.t, result.b);
 
         } else {
             //console.log(key + ' not displayed');
@@ -2881,6 +2860,35 @@ BookReader.prototype.updateSearchHilites2UP = function() {
             this.searchResults[key].div=null;
         }
     }
+}
+
+// setHilightCss2UP()
+//______________________________________________________________________________
+//position calculation shared between search and text-to-speech functions
+BookReader.prototype.setHilightCss2UP = function(div, index, left, right, top, bottom) {
+
+    // We calculate the reduction factor for the specific page because it can be different
+    // for each page in the spread
+    var height = this._getPageHeight(index);
+    var width  = this._getPageWidth(index)
+    var reduce = this.twoPage.height/height;
+    var scaledW = parseInt(width*reduce);
+    
+    var gutter = this.twoPageGutter();
+    var pageL;
+    if ('L' == this.getPageSide(index)) {
+        pageL = gutter-scaledW;
+    } else {
+        pageL = gutter;
+    }
+    var pageT  = this.twoPageTop();
+    
+    $(div).css({
+        width:  (right-left)*reduce + 'px',
+        height: (bottom-top)*reduce + 'px',
+        left:   pageL+left*reduce + 'px',
+        top:    pageT+top*reduce +'px'
+    });
 }
 
 // removeSearchHilites()
@@ -4358,8 +4366,8 @@ BookReader.prototype.ttsShowPopup = function() {
     this.popup = document.createElement("div");
     $(this.popup).css({
         top:      $('#BRtoolbar').height() + 'px',
-        left:     $('.read_aloud').position().left + 'px',
-        width:    $('#BRtoolbar').width()-$('.read_aloud').position().left + 'px',
+        left:     $('#BookReader').width()-220 + 'px',
+        width:    '220px',
         height:   '20px',
     }).attr('className', 'BRttsPopUp').appendTo('#BookReader');
 
