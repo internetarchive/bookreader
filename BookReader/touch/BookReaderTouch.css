@@ -1,58 +1,25 @@
 /*
  * Custom overrides for touch and small-screen devices.
  */
- 
-#BRtoolbar {
-    position: absolute;
-    height: 43px;
-    border-top: 1px solid grey;
-    bottom: 0;
-}
-
-#BRcontainer {
-    top: 0;
-    bottom: 44px;
-}
-
-#BookReaderSearchResults {
-    bottom: 44px;
-}
-
-/* $$$ Page display could be better */
-#BRtoolbar .pageform {
-    font-size: 1.1em;
-}
 
 /* Hide some navigation buttons */
 #BRtoolbar .play, .embed, .print {
     display: none;
 }
 
-/* Larger icons for touch */
-.BRicon {
-    width: 26px;
-    height: 26px;
-    margin: 8px;
-}
-
-.BRicon.logo { background: url(images/logo_icon.png) no-repeat; }
-.BRicon.zoom_out { background: url(images/zoom_out_icon.png) no-repeat; }
-.BRicon.zoom_in { background: url(images/zoom_in_icon.png) no-repeat; }
-.BRicon.one_page_mode { background: url(images/one_page_mode_icon.png) no-repeat; }
-.BRicon.two_page_mode { background: url(images/two_page_mode_icon.png) no-repeat; }
-.BRicon.thumbnail_mode { background: url(images/thumbnail_mode_icon.png) no-repeat; }
-.BRicon.touch { background: url(images/touch_icon.png) no-repeat; }
-.BRicon.print { background: url(images/print_icon.png) no-repeat; }
-.BRicon.book_left { background: url(images/book_left_icon.png) no-repeat; }
-.BRicon.book_right { background: url(images/book_right_icon.png) no-repeat; }
-.BRicon.book_up { background: url(images/book_up_icon.png) no-repeat; }
-.BRicon.book_down { background: url(images/book_down_icon.png) no-repeat; }
-.BRicon.book_leftmost { background: url(images/book_leftmost_icon.png) no-repeat; }
-.BRicon.book_rightmost { background: url(images/book_rightmost_icon.png) no-repeat; }
-.BRicon.book_top { background: url(images/book_top_icon.png) no-repeat; }
-.BRicon.book_bottom { background: url(images/book_bottom_icon.png) no-repeat; }
-.BRicon.play { background: url(images/control_play_icon.png) no-repeat; }
-.BRicon.pause { background: url(images/control_pause_icon.png) no-repeat; }
-
 /* Disable hover */
-.BRicon.rollover:hover { background-position: 0 0; }
+/* $$$ better would be to display the hover momentarily
+ *     to show that the button was pressed */
+.BRicon.info:hover {background-position:-40px 0;}
+.BRicon.share:hover {background-position:-120px 0;}
+.BRicon.read:hover {background-position:-200px 0;}
+.BRicon.unread:hover {background-position:-280px 0;}
+.BRicon.full:hover {background-position:-360px 0;}
+.BRicon.book_left:hover {background-position:-440px 0;}
+.BRicon.book_right:hover {background-position:-520px 0;}
+.BRicon.zoom_out:hover {background-position:-606px 0;}
+.BRicon.zoom_in:hover {background-position:-686px 0;}
+
+div#BRzoomer button:hover {
+    background-color: #e2dcc5; /* $$$ as declared in BookReader.css - find way to avoid this */
+}

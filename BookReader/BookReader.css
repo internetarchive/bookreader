@@ -27,6 +27,7 @@ h3 {
     width: 100%;
     z-index: 100;
     background-color: #e2dcc5;
+    overflow: hidden;
 }
 #BRtoolbar .label {
     font-size: 1.1em;
@@ -179,20 +180,24 @@ h3 {
     font-weight: 700;
 }
 #BRreturn {
-    display: block;
-    float: left;
-    margin: 5px 10px 0 5px;
+    /* display: block; */
+    /* float: left; */
+    /* margin: 0 10px 0 5px; */
     font-family: "Lucida Grande","Arial",sans-serif;
     color: #333;
+    height: 20px;
 }
 #BRreturn span {
-    font-size: 10px;
+    font-size: 12px;
     display: block;
+    height: 12px;
 }
 #BRreturn a {
-    font-size: 13px;
+    font-size: 14px;
     display: block;
     color: #036daa;
+    height: 18px;
+    overflow: hidden;
 }
 .BRicon {
     display: block;
@@ -433,6 +438,27 @@ div#BRslider {
     top: 13px;
     height: 27px;
 }
+
+/* XXXmang verify correct use of handle class */
+#BRpager .ui-slider-handle {
+    position: absolute;
+    width: 23px;
+    height: 27px;
+    top: 13px;
+    left: -11px;
+    background: url(images/slider.png);
+    z-index: 103;
+}
+ /*   
+  width: 8px;
+  height: 14px;
+  position: absolute;
+  top: -4px;
+  background: #478AFF;
+  border: solid 1px black;
+}
+*/
+
 div#BRfiller {
     position: absolute;
     height: 40px;
