@@ -141,7 +141,7 @@ class BookReader
         <![endif]-->
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
-    <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2-ia.js?v=<? echo($version); ?>"></script>
     <script>
         soundManager.debugMode = false;
         soundManager.url = '/bookreader/soundmanager/swf/';       

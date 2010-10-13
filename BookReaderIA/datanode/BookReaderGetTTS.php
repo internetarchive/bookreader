@@ -27,8 +27,7 @@ if ('.ogg' == $_GET['format']) {
 }
 
 $cmd = 'echo ' . escapeshellarg($_GET['string']);
-#$cmd .= ' | /home/rkumar/dev/festival/build/festival/bin/text2wave -eval "(voice_cmu_us_slt_arctic_hts)"';
-$cmd .= ' | /home/rkumar/petabox/sw/bin/text2wave';
+$cmd .= ' | /petabox/sw/bin/text2wave';
 if ($useMP3) {
     header('Content-Type: audio/mpeg');
     $cmd .= ' |ffmpeg -i - -f mp3 -';
