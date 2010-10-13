@@ -4351,7 +4351,7 @@ BookReader.prototype.ttsToggle = function () {
               if (oStatus.success) {                
                 this.ttsStart();
               } else {
-                alert('Could not load soundManger2, possibly due to FlashBlock. Audio playback is disabled');
+                alert('Could not load soundManager2, possibly due to FlashBlock. Audio playback is disabled');
               }
             }, this);        
         }
