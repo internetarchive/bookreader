@@ -4343,7 +4343,9 @@ BookReader.util = {
 // ttsToggle()
 //______________________________________________________________________________
 BookReader.prototype.ttsToggle = function () {
-    if (false == this.ttsPlaying) {        
+    if (false == this.ttsPlaying) {
+        this.ttsPlaying = true;
+        this.ttsShowPopup();    
         if(soundManager.supported()) {
             this.ttsStart();            
         } else {               
@@ -4366,7 +4368,7 @@ BookReader.prototype.ttsStart = function () {
     if (soundManager.debugMode) console.log('starting readAloud');
     if (this.constModeThumb == this.mode) this.switchMode(this.constMode1up);
     
-    this.ttsPlaying = true;
+    //this.ttsPlaying = true; //set this in ttsToggle()
     this.ttsIndex = this.currentIndex();
     this.ttsFormat = 'mp3';
     if ($.browser.mozilla) {
@@ -4438,6 +4440,7 @@ BookReader.prototype.ttsStartCB = function (data) {
 //______________________________________________________________________________
 BookReader.prototype.ttsShowPopup = function() {
     if (soundManager.debugMode) console.log('ttsShowPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
+    if (this.popup) return;
     
     this.popup = document.createElement("div");
     $(this.popup).css({
