@@ -141,6 +141,7 @@ class BookReader
         <![endif]-->
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
+<? if ( !preg_match("/mobile/i", $_SERVER['HTTP_USER_AGENT']) ) { ?>
     <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2-ia.js?v=<? echo($version); ?>"></script>
     <script>
         soundManager.debugMode = false;
@@ -148,6 +149,7 @@ class BookReader
         soundManager.useHTML5Audio = true;
         soundManager.flashVersion = 9; //flash 8 version of swf is buggy when calling play() on a sound that is still loading
     </script>
+<? } /* mobile user agent */ ?>
 </head>
 <body style="background-color: ##939598;">
 

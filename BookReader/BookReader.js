@@ -3548,6 +3548,12 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
+    var readIcon = ''
+    if (!navigator.userAgent.match(/mobile/i)) {
+        readIcon = "<button class='BRicon read modal'></button>";
+    }
+    console.log('readIcon = ' + readIcon);
+
     $("body").append(
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
@@ -3556,7 +3562,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         // XXXmang icons incorrect or handlers wrong
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
-        +     "<button class='BRicon read modal'></button>"
+        +     readIcon
         +     "<button class='BRicon full'></button>"
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
