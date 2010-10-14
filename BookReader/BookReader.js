@@ -3552,7 +3552,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     if (!navigator.userAgent.match(/mobile/i)) {
         readIcon = "<button class='BRicon read modal'></button>";
     }
-    console.log('readIcon = ' + readIcon);
 
     $("body").append(
           "<div id='BRtoolbar'>"
