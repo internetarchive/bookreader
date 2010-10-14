@@ -3236,14 +3236,14 @@ BookReader.prototype.initNavbar = function() {
     // $$$ should make this work inside the BookReader div (self-contained), rather than after
     $('#BookReader').after(
         '<div id="BRnav">'
-        +     '<div id="BRpage">'
+        +     '<div id="BRpage">'   // Page turn buttons
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
         +     '</div>'
-        +     '<div id="BRnavpos">'
-        +         '<div id="BRfiller"></div>'
-        +         '<div id="BRpager"></div>'
-        +         '<div id="BRnavline">'
+        +     '<div id="BRnavpos">' // Page slider and nav line
+        //+         '<div id="BRfiller"></div>'
+        +         '<div id="BRpager"></div>'  // Page slider
+        +         '<div id="BRnavline">'      // Nav line with e.g. chapter markers
         +             '<div class="BRnavend" id="BRnavleft"></div>'
         +             '<div class="BRnavend" id="BRnavright"></div>'
         +         '</div>'     
@@ -3436,11 +3436,11 @@ BookReader.prototype.removeSearchResults = function() {
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
     var uiStringPage = 'Page'; // i18n
 
-    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs);
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs - 1);
     
     $('<div class="chapter" style="left:' + percentThrough + ';"><div class="title">'
         + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
-    .appendTo('#BRnavpos')
+    .appendTo('#BRnavline')
     .data({'self': this, 'pageIndex': pageIndex })
     .bt({
         contentSelector: '$(this).find(".title")',
@@ -4313,7 +4313,7 @@ BookReader.util = {
     
     // Given value and maximum, calculate a percentage suitable for CSS
     cssPercentage: function(value, max) {
-        return parseInt(((value + 0.0) / max) * 100) + '%';
+        return (((value + 0.0) / max) * 100) + '%';
     },
     
     notInArray: function(value, array) {
