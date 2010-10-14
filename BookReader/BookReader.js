@@ -3330,9 +3330,9 @@ BookReader.prototype.initNavbar = function() {
         return true;
     })
     .hover(function() {
-            // $$$ not working on iPad
             $("#pagenum").show();
         },function(){
+            // XXXmang not triggering on iPad - probably due to touch event translation layer
             $("#pagenum").hide();
         }
     );
@@ -3354,8 +3354,9 @@ BookReader.prototype.initNavbar = function() {
 
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
     
-    //XXXmang testing
-    this.addSearchResult("There is a place where the <strong>sidewalk</strong> ends And before the street begins, And there the grass grows soft and white, And there the sun burns crimson bright,And there the moon-bird rests from his flight To cool in the peppermint wind.", "20", 31);
+    //XXXmang remove once done testing
+    //this.addSearchResult("There is a place where the <strong>sidewalk</strong> ends And before the street begins, And there the grass grows soft and white, And there the sun burns crimson bright,And there the moon-bird rests from his flight To cool in the peppermint wind.", "20", 31);
+    //this.addSearchResult("There is a place where the <strong>sidewalk</strong> BEGINS And there the moon-bird rests from his flight To cool in the peppermint wind.", "60", 71);
     
 }
 
@@ -3427,11 +3428,11 @@ BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageInd
         centerPointY: 0,
         shadow: false
     })
-    .hover(function(){
-              $(this).addClass('front');
-          },function(){
-              $(this).removeClass('front');
-          }
+    .hover( function() {
+                $(this).addClass('front');
+            }, function() {
+                $(this).removeClass('front');
+            }
     )
     .bind('click', function() {
         $(this).data('self').jumpToIndex($(this).data('pageIndex'));
@@ -3458,7 +3459,8 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         closeWhenOthersOpen: true,
         cssStyles: {
             padding: '12px 14px',
-            backgroundColor: '#000',
+            //backgroundColor: '#000',
+            backgroundColor: '#444', // To set it off slightly from the chapter marker
             border: '4px solid #e2dcc5',
             //borderBottom: 'none',
             fontFamily: '"Arial", sans-serif',

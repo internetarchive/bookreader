@@ -537,8 +537,11 @@ div.chapter {
     width: 18px;
     margin-left: -9px; /* Center marker triangle */
     height: 27px;
-    background: transparent url(images/marker_chap.png) no-repeat;
+    background: transparent url(images/marker_chap-off.png) no-repeat;
     cursor: pointer;
+}
+div.chapter.front {
+    background: transparent url(images/marker_chap-on.png) no-repeat;
 }
 div.chapter div.title {
     display: none;
