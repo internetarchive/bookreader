@@ -549,9 +549,10 @@ div.title span {
 }
 div.search {
     position: absolute;
-    top: -13px;
     width: 18px;
+    margin-left: -9px; /* Center icon */
     height: 27px;
+    bottom: 0;  /* Relative to nav line */
     background-color: transparent;
     background-image: url(images/marker_srch-off.png);
     background-repeat: no-repeat;

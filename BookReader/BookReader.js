@@ -3353,6 +3353,10 @@ BookReader.prototype.initNavbar = function() {
     this.updateNavPageNum(this.currentIndex());
 
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
+    
+    //XXXmang testing
+    this.addSearchResult("There is a place where the <strong>sidewalk</strong> ends And before the street begins, And there the grass grows soft and white, And there the sun burns crimson bright,And there the moon-bird rests from his flight To cool in the peppermint wind.", "20", 31);
+    
 }
 
 BookReader.prototype.updateNavPageNum = function(index) {
@@ -3380,23 +3384,26 @@ BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageInd
     var uiStringSearch = "Search result"; // i18n
     var uiStringPage = "Page"; // i18n
     
-    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs);
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs - 1);
+    var pageDisplayString = '';
+    if (pageNumber) {
+        pageDisplayString = uiStringPage + ' ' + pageNumber;
+    }
     
-    // $$$mang add click-through to page
     $('<div class="search" style="left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
         + queryString + '<span>' + uiStringPage + ' ' + pageNumber + '</span></div>')
-    .appendTo('#BRnavpos').bt({
+    .data({'self': this, 'pageIndex': pageIndex })
+    .appendTo('#BRnavline').bt({
         contentSelector: '$(this).find(".query")',
-        trigger: 'click',
+        trigger: 'hover',
         closeWhenOthersOpen: true,
         cssStyles: {
-            padding: '10px 10px 15px',
+            padding: '12px 14px',
             backgroundColor: '#fff',
-            border: '3px solid #e2dcc5',
-            borderBottom: 'none',
+            border: '4px solid #e2dcc5',
             fontFamily: '"Lucida Grande","Arial",sans-serif',
-            fontSize: '12px',
-            lineHeight: '18px',
+            fontSize: '13px',
+            //lineHeight: '18px',
             color: '#615132'
         },
         shrinkToFit: false,
@@ -3404,7 +3411,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageInd
         padding: 0,
         spikeGirth: 0,
         spikeLength: 0,
-        overlap: '10px',
+        overlap: '22px',
         overlay: false,
         killTitle: false, 
         textzIndex: 9999,
@@ -3414,8 +3421,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageInd
         positions: ['top'],
         fill: 'white',
         windowMargin: 10,
-        strokeWidth: 3,
-        strokeStyle: '#e2dcc5',
+        strokeWidth: 0,
         cornerRadius: 0,
         centerPointX: 0,
         centerPointY: 0,
@@ -3426,7 +3432,11 @@ BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageInd
           },function(){
               $(this).removeClass('front');
           }
-    );
+    )
+    .bind('click', function() {
+        $(this).data('self').jumpToIndex($(this).data('pageIndex'));
+    });
+
 }
 
 BookReader.prototype.removeSearchResults = function() {
@@ -3447,12 +3457,12 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         trigger: 'hover',
         closeWhenOthersOpen: true,
         cssStyles: {
+            padding: '12px 14px',
             backgroundColor: '#000',
-            border: '2px solid #e2dcc5',
-            borderBottom: 'none',
-            padding: '5px 10px',
+            border: '4px solid #e2dcc5',
+            //borderBottom: 'none',
             fontFamily: '"Arial", sans-serif',
-            fontSize: '11px',
+            fontSize: '12px',
             fontWeight: '700',
             color: '#fff',
             whiteSpace: 'nowrap'
@@ -3462,7 +3472,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         padding: 0,
         spikeGirth: 0,
         spikeLength: 0,
-        overlap: '25px',
+        overlap: '21px',
         overlay: false,
         killTitle: true, 
         textzIndex: 9999,
