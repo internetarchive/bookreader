@@ -3462,7 +3462,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         padding: 0,
         spikeGirth: 0,
         spikeLength: 0,
-        overlap: '16px',
+        overlap: '25px',
         overlay: false,
         killTitle: true, 
         textzIndex: 9999,
