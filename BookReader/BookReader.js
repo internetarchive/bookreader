@@ -2604,6 +2604,29 @@ BookReader.prototype.search = function(term) {
     $('#BookReaderSearchResults').html('Searching...');
 }
 
+// searchNew()
+//______________________________________________________________________________
+BookReader.prototype.searchNew = function(term) {
+    //console.log('searchNew called with term=' + term);
+    var url = 'http://'+this.server.replace(/:.+/, ''); //remove the port and userdir
+    url    += '/~edward/inside_jsonp.php?item_id='+this.bookId;
+    url    += '&doc='+this.subPrefix;   //TODO: test with subitem
+    url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
+    url    += '&q='+escape(term);
+    //console.log('search url='+url);    
+    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRsearchCallbackNew'});
+}
+
+// Unfortunately, we can't pass 'br.searchCallback' to our search service,
+// because it can't handle the '.'
+function BRsearchCallbackNew(results) {
+    //console.log('got ' + results.matches.length + ' results');
+    var i;    
+    for (i=0; i<results.matches.length; i++) {        
+        br.addSearchResult(results.matches[i].text, br.getPageNum(results.matches[i].par[0].page), results.matches[i].par[0].page);
+    }
+}
+
 // BRSearchCallback()
 //______________________________________________________________________________
 BookReader.prototype.BRSearchCallback = function(txt) {
@@ -3382,6 +3405,10 @@ BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageInd
     
     var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs);
     
+    var re = new RegExp('{{{(.+?)}}}', 'g');
+    
+    queryString = queryString.replace(re, '<a href="#" onclick="br.jumpToIndex('+pageIndex+'); return false;">$1</a>')
+    
     // $$$mang add click-through to page
     $('<div class="search" style="left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
         + queryString + '<span>' + uiStringPage + ' ' + pageNumber + '</span></div>')
@@ -3557,7 +3584,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
-        +     "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<form action='javascript:' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         // XXXmang icons incorrect or handlers wrong
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
@@ -3768,6 +3795,11 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
         self.zoom(-1);
         return false;
     });
+    
+    $('#booksearch').bind('submit', function() {
+        self.searchNew($('#textSrch').val());
+    });
+    
 }
 
 // updateToolbarZoom(reduce)
