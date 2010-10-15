@@ -47,7 +47,7 @@ function BookReader() {
 
     this.mode    = this.constMode1up;
     this.ui = 'full';           // UI mode
-    this.uiAutoHide = true;    // Controls whether nav/toolbar will autohide
+    this.uiAutoHide = false;    // Controls whether nav/toolbar will autohide
 
     // thumbnail mode
     this.thumbWidth = 100; // will be overridden during prepareThumbnailView
@@ -82,7 +82,7 @@ function BookReader() {
     
     // We link to index.php to avoid redirect which breaks back button
     // Should be overriden (before init) by custom implmentations.
-    this.logoURL = 'http://www.archive.org/index.php';
+    this.logoURL = 'http://openlibrary.org';
     
     // Base URL for UI images - should be overriden (before init) by
     // custom implementations.
@@ -123,6 +123,14 @@ function BookReader() {
         // embed/share ui
         // info ui
     };
+
+    // Text-to-Speech params
+    this.ttsPlaying     = false;
+    this.ttsIndex       = null;  //leaf index
+    this.ttsPosition    = -1;    //chunk (paragraph) number
+    this.ttsBuffering   = false;
+    this.ttsPoller      = null;
+    this.ttsFormat      = null;
     
     return this;
 };
@@ -176,10 +184,7 @@ BookReader.prototype.init = function() {
     
     $("#BookReader").append("<div id='BRcontainer'></div>");
     $("#BRcontainer").append("<div id='BRpageview'></div>");
-    
-    this.initNavbar();
-    this.bindNavigationHandlers();
-    
+        
     // Autohide nav after showing for awhile
     var self = this;
     if (this.uiAutoHide) {
@@ -263,6 +268,11 @@ BookReader.prototype.init = function() {
         
     // Enact other parts of initial params
     this.updateFromParams(params);
+
+    // We init the nav bar after the params processing so that the nav slider knows where
+    // it should start (doesn't jump after init)
+    this.initNavbar();
+    this.bindNavigationHandlers();
     
     // Start AJAX request for OL data
     if (this.getOpenLibraryRecord) {
@@ -354,7 +364,6 @@ BookReader.prototype.bindGestures = function(jElement) {
             br.zoom(-1);
         }
     });
-        
 }
 
 BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
@@ -398,9 +407,14 @@ BookReader.prototype.drawLeafsOnePage = function() {
         leafTop += height +10;      
         leafBottom += 10;
     }
-    
+
+    // Based of the pages displayed in the view we set the current index
+    // $$$ we should consider the page in the center of the view to be the current one
     var firstIndexToDraw  = indicesToDisplay[0];
-    this.firstIndex      = firstIndexToDraw;
+    if (firstIndexToDraw != this.firstIndex) {
+        this.willChangeToIndex(firstIndexToDraw);
+    }
+    this.firstIndex = firstIndexToDraw;
     
     // Update hash, but only if we're currently displaying a leaf
     // Hack that fixes #365790
@@ -693,8 +707,10 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     // console.log('current ' + currentIndex);
     // console.log('least visible ' + leastVisible + ' most visible ' + mostVisible);
     if (currentIndex < leastVisible) {
+        this.willChangeToIndex(leastVisible);
         this.setCurrentIndex(leastVisible);
     } else if (currentIndex > mostVisible) {
+        this.willChangeToIndex(mostVisible);
         this.setCurrentIndex(mostVisible);
     }
 
@@ -947,7 +963,7 @@ BookReader.prototype.resizePageView = function() {
     switch (this.mode) {
         case this.constMode1up:
         case this.constMode2up:
-            this.resizePageView1up();
+            this.resizePageView1up(); // $$$ necessary in non-1up mode?
             break;
         case this.constModeThumb:
             this.prepareThumbnailView( this.currentIndex() );
@@ -957,6 +973,7 @@ BookReader.prototype.resizePageView = function() {
     }
 }
 
+// Resize the current one page view
 BookReader.prototype.resizePageView1up = function() {
     var i;
     var viewHeight = 0;
@@ -965,16 +982,30 @@ BookReader.prototype.resizePageView1up = function() {
 
     var oldScrollTop  = $('#BRcontainer').attr('scrollTop');
     var oldScrollLeft = $('#BRcontainer').attr('scrollLeft');
+    
     var oldPageViewHeight = $('#BRpageview').height();
     var oldPageViewWidth = $('#BRpageview').width();
     
-    var oldCenterY = this.centerY1up();
-    var oldCenterX = this.centerX1up();
-    
-    if (0 != oldPageViewHeight) {
-        var scrollRatio = oldCenterY / oldPageViewHeight;
+    // May have come here after preparing the view, in which case the scrollTop and view height are not set
+
+    var scrollRatio = 0;
+    if (oldScrollTop > 0) {
+        // We have scrolled - implies view has been set up        
+        var oldCenterY = this.centerY1up();
+        var oldCenterX = this.centerX1up();    
+        scrollRatio = oldCenterY / oldPageViewHeight;
     } else {
-        var scrollRatio = 0;
+        // Have not scrolled, e.g. because in new container
+
+        // We set the scroll ratio so that the current index will still be considered the
+        // current index in drawLeafsOnePage after we create the new view container
+
+        // Make sure this will count as current page after resize
+        // console.log('fudging for index ' + this.currentIndex() + ' (page ' + this.getPageNum(this.currentIndex()) + ')');
+        var fudgeFactor = (this.getPageHeight(this.currentIndex()) / this.reduce) * 0.6;
+        var oldLeafTop = this.onePageGetPageTop(this.currentIndex()) + fudgeFactor;
+        var oldViewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
+        scrollRatio = oldLeafTop / oldViewDimensions.height;
     }
     
     // Recalculate 1up reduction factors
@@ -986,15 +1017,11 @@ BookReader.prototype.resizePageView1up = function() {
         this.reduce = reductionFactor.reduce;
     }
     
-    for (i=0; i<this.numLeafs; i++) {
-        viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
-        var width = parseInt(this._getPageWidth(i)/this.reduce);
-        if (width>viewWidth) viewWidth=width;
-    }
-    $('#BRpageview').height(viewHeight);
-    $('#BRpageview').width(viewWidth);
+    var viewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
+    $('#BRpageview').height(viewDimensions.height);
+    $('#BRpageview').width(viewDimensions.width);
 
-    var newCenterY = scrollRatio*viewHeight;
+    var newCenterY = scrollRatio*viewDimensions.height;
     var newTop = Math.max(0, Math.floor( newCenterY - $('#BRcontainer').height()/2 ));
     $('#BRcontainer').attr('scrollTop', newTop);
     
@@ -1012,6 +1039,17 @@ BookReader.prototype.resizePageView1up = function() {
     this.updateSearchHilites();
 }
 
+// Calculate the dimensions for a one page view with images at the given reduce and padding
+BookReader.prototype.onePageCalculateViewDimensions = function(reduce, padding) {
+    var viewWidth = 0;
+    var viewHeight = 0;
+    for (i=0; i<this.numLeafs; i++) {
+        viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
+        var width = parseInt(this._getPageWidth(i)/this.reduce);
+        if (width>viewWidth) viewWidth=width;
+    }
+    return { width: viewWidth, height: viewHeight }
+}
 
 // centerX1up()
 //______________________________________________________________________________
@@ -1199,6 +1237,8 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 //______________________________________________________________________________
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
+    this.willChangeToIndex(index);
+
     if (this.constMode2up == this.mode) {
         this.autoStop();
         
@@ -1244,14 +1284,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
         }
     } else {
         // 1up
-        var i;
-        var leafTop = 0;
-        var leafLeft = 0;
-        var h;
-        for (i=0; i<index; i++) {
-            h = parseInt(this._getPageHeight(i)/this.reduce); 
-            leafTop += h + this.padding;
-        }
+        var leafTop = this.onePageGetPageTop(index);
 
         if (pageY) {
             //console.log('pageY ' + pageY);
@@ -1278,13 +1311,10 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     }
 }
 
-
 // switchMode()
 //______________________________________________________________________________
 BookReader.prototype.switchMode = function(mode) {
 
-    //console.log('  asked to switch to mode ' + mode + ' from ' + this.mode);
-    
     if (mode == this.mode) {
         return;
     }
@@ -1294,6 +1324,7 @@ BookReader.prototype.switchMode = function(mode) {
     }
 
     this.autoStop();
+    this.ttsStop();
     this.removeSearchHilites();
 
     this.mode = mode;
@@ -1344,7 +1375,7 @@ BookReader.prototype.prepareOnePageView = function() {
     });
         
     $("#BRcontainer").append("<div id='BRpageview'></div>");
-
+    
     // Attaches to first child - child must be present
     $('#BRcontainer').dragscrollable();
     this.bindGestures($('#BRcontainer'));
@@ -1576,12 +1607,14 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
 
     $(this.leafEdgeL).bind('click', this, function(e) { 
         e.data.autoStop();
+        e.data.ttsStop();
         var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
         e.data.jumpToIndex(jumpIndex);
     });
 
     $(this.leafEdgeR).bind('click', this, function(e) { 
         e.data.autoStop();
+        e.data.ttsStop();
         var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
         e.data.jumpToIndex(jumpIndex);    
     });
@@ -1781,6 +1814,20 @@ BookReader.prototype.onePageGetAutofitWidth = function() {
 
 BookReader.prototype.onePageGetAutofitHeight = function() {
     return (this.getMedianPageSize().height + 0.0) / ($('#BRcontainer').attr('clientHeight') - this.padding * 2); // make sure a little of adjacent pages show
+}
+
+// Returns where the top of the page with given index should be in one page view
+BookReader.prototype.onePageGetPageTop = function(index)
+{
+    var i;
+    var leafTop = 0;
+    var leafLeft = 0;
+    var h;
+    for (i=0; i<index; i++) {
+        h = parseInt(this._getPageHeight(i)/this.reduce); 
+        leafTop += h + this.padding;
+    }
+    return leafTop;
 }
 
 BookReader.prototype.getMedianPageSize = function() {
@@ -2018,6 +2065,8 @@ BookReader.prototype.flipBackToIndex = function(index) {
     }
     //if (index<0) return;
     
+    this.willChangeToIndex(index);
+    
     var previousIndices = this.getSpreadIndices(index);
     
     if (previousIndices[0] < this.firstDisplayableIndex() || previousIndices[1] < this.firstDisplayableIndex()) {
@@ -2190,7 +2239,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
 BookReader.prototype.flipFwdToIndex = function(index) {
 
     if (this.animating) return;
-
+    
     if (null != this.leafEdgeTmp) {
         alert('error: leafEdgeTmp should be null!');
         return;
@@ -2200,6 +2249,8 @@ BookReader.prototype.flipFwdToIndex = function(index) {
         index = this.twoPage.currentIndexR+2; // $$$ assumes indices are continuous
     }
     if (index > this.lastDisplayableIndex()) return;
+
+    this.willChangeToIndex(index);
 
     this.animating = true;
     
@@ -2216,6 +2267,16 @@ BookReader.prototype.flipFwdToIndex = function(index) {
         var gutter = this.prepareFlipLeftToRight(nextIndices[0], nextIndices[1]);
         this.flipLeftToRight(nextIndices[0], nextIndices[1]);
     }
+}
+
+/*
+ * Put handlers here for when we will navigate to a new page
+ */
+BookReader.prototype.willChangeToIndex = function(index)
+{
+    // Update navbar position icon - leads page change animation
+    this.updateNavIndex(index);
+
 }
 
 // flipRightToLeft(nextL, nextR, gutter)
@@ -2316,6 +2377,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
+            e.data.self.ttsStop();
             e.data.self.left();
             e.preventDefault();
         }
@@ -2324,6 +2386,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR],
         { self: this },
         function(e) {
+            e.data.self.ttsStop();
             e.data.self.right();
             e.preventDefault();
         }
@@ -2836,28 +2899,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
                 //console.log('appending ' + key);
             }
 
-            // We calculate the reduction factor for the specific page because it can be different
-            // for each page in the spread
-            var height = this._getPageHeight(key);
-            var width  = this._getPageWidth(key)
-            var reduce = this.twoPage.height/height;
-            var scaledW = parseInt(width*reduce);
-            
-            var gutter = this.twoPageGutter();
-            var pageL;
-            if ('L' == this.getPageSide(key)) {
-                pageL = gutter-scaledW;
-            } else {
-                pageL = gutter;
-            }
-            var pageT  = this.twoPageTop();
-            
-            $(result.div).css({
-                width:  (result.r-result.l)*reduce + 'px',
-                height: (result.b-result.t)*reduce + 'px',
-                left:   pageL+(result.l)*reduce + 'px',
-                top:    pageT+(result.t)*reduce +'px'
-            });
+            this.setHilightCss2UP(result.div, key, result.l, result.r, result.t, result.b);
 
         } else {
             //console.log(key + ' not displayed');
@@ -2868,6 +2910,35 @@ BookReader.prototype.updateSearchHilites2UP = function() {
             this.searchResults[key].div=null;
         }
     }
+}
+
+// setHilightCss2UP()
+//______________________________________________________________________________
+//position calculation shared between search and text-to-speech functions
+BookReader.prototype.setHilightCss2UP = function(div, index, left, right, top, bottom) {
+
+    // We calculate the reduction factor for the specific page because it can be different
+    // for each page in the spread
+    var height = this._getPageHeight(index);
+    var width  = this._getPageWidth(index)
+    var reduce = this.twoPage.height/height;
+    var scaledW = parseInt(width*reduce);
+    
+    var gutter = this.twoPageGutter();
+    var pageL;
+    if ('L' == this.getPageSide(index)) {
+        pageL = gutter-scaledW;
+    } else {
+        pageL = gutter;
+    }
+    var pageT  = this.twoPageTop();
+    
+    $(div).css({
+        width:  (right-left)*reduce + 'px',
+        height: (bottom-top)*reduce + 'px',
+        left:   pageL+left*reduce + 'px',
+        top:    pageT+top*reduce +'px'
+    });
 }
 
 // removeSearchHilites()
@@ -2963,6 +3034,12 @@ BookReader.prototype.updatePrintFrame = function(delta) {
 // showEmbedCode()
 //______________________________________________________________________________
 BookReader.prototype.showEmbedCode = function() {
+    if (null != this.embedPopup) { // check if already showing
+        return;
+    }
+    this.autoStop();
+    this.ttsStop();
+
     this.embedPopup = document.createElement("div");
     $(this.embedPopup).css({
         position: 'absolute',
@@ -3202,21 +3279,14 @@ BookReader.prototype.initNavbar = function() {
     // $$$ should make this work inside the BookReader div (self-contained), rather than after
     $('#BookReader').after(
         '<div id="BRnav">'
-        +     '<div id="BRpage">'
+        +     '<div id="BRpage">'   // Page turn buttons
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
         +     '</div>'
-        +     '<div id="BRnavpos">'
-        +         '<div id="BRfiller"></div>'
-        +         '<div id="BRpager">'
-        +             '<div id="BRslider">'
-        +                 '<div id="slider"></div>'
-        +                 '<div id="pager"></div>'
-        // XXXmang update code to update pagenum
-        +                 '<div id="pagenum"><span>n141</span> / 325</div>'
-        +             '</div>'
-        +         '</div>'       
-        +         '<div id="BRnavline">'
+        +     '<div id="BRnavpos">' // Page slider and nav line
+        //+         '<div id="BRfiller"></div>'
+        +         '<div id="BRpager"></div>'  // Page slider
+        +         '<div id="BRnavline">'      // Nav line with e.g. chapter markers
         +             '<div class="BRnavend" id="BRnavleft"></div>'
         +             '<div class="BRnavend" id="BRnavright"></div>'
         +         '</div>'     
@@ -3279,29 +3349,105 @@ BookReader.prototype.initNavbar = function() {
         });
     });
     */
+    var self = this;
+    $('#BRpager').slider({    
+        animate: true,
+        min: 0,
+        max: this.numLeafs - 1,
+        value: this.currentIndex()
+    })
+    .bind('slide', function(event, ui){
+        self.updateNavPageNum(ui.value);
+        $("#pagenum").show();
+        return true;
+    })
+    .bind('slidechange', function(event, ui) {
+        $("#pagenum").hide();
+        
+        // recursion prevention for jumpToIndex
+        if ( $(this).data('swallowchange') ) {
+            $(this).data('swallowchange', false);
+        } else {
+            self.jumpToIndex(ui.value);
+        }
+        return true;
+    })
+    .hover(function() {
+            $("#pagenum").show();
+        },function(){
+            // XXXmang not triggering on iPad - probably due to touch event translation layer
+            $("#pagenum").hide();
+        }
+    );
+    
+    //append icon to handle
+    var handleHelper = $('#BRpager .ui-slider-handle')
+    // $$$mang update logic for setting the page number label -- use page numbers if available
+    .append('<div id="pagenum"><span class="currentpage"></span></div>');
+    //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
+    
+    $('.BRicon.book_left').bind('click', function() {
+        self.left();
+    });
+    $('.BRicon.book_right').bind('click', function() {
+        self.right();
+    });
+    
+    this.updateNavPageNum(this.currentIndex());
+
+    $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
+    
+    //XXXmang remove once done testing
+    //this.addSearchResult("There is a place where the <strong>sidewalk</strong> ends And before the street begins, And there the grass grows soft and white, And there the sun burns crimson bright,And there the moon-bird rests from his flight To cool in the peppermint wind.", "20", 31);
+    //this.addSearchResult("There is a place where the <strong>sidewalk</strong> BEGINS And there the moon-bird rests from his flight To cool in the peppermint wind.", "60", 71);
+    
+}
+
+BookReader.prototype.updateNavPageNum = function(index) {
+    var pageNum = this.getPageNum(index);
+    var pageStr;
+    if (pageNum[0] == 'n') { // funny index
+        pageStr = index + ' / ' + this.numLeafs;
+    } else {
+        pageStr = 'Page ' + pageNum;
+    }
+    
+    $('#pagenum .currentpage').text(pageStr);
+}
+
+/*
+ * Update the nav bar display - does not cause navigation.
+ */
+BookReader.prototype.updateNavIndex = function(index) {
+    // We want to update the value, but normally moving the slider
+    // triggers jumpToIndex which triggers this method
+    $('#BRpager').data('swallowchange', true).slider('value', index);
 }
 
 BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageIndex) {
     var uiStringSearch = "Search result"; // i18n
     var uiStringPage = "Page"; // i18n
     
-    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs);
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs - 1);
+    var pageDisplayString = '';
+    if (pageNumber) {
+        pageDisplayString = uiStringPage + ' ' + pageNumber;
+    }
     
-    // $$$mang add click-through to page
     $('<div class="search" style="left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
         + queryString + '<span>' + uiStringPage + ' ' + pageNumber + '</span></div>')
-    .appendTo('#BRnavpos').bt({
+    .data({'self': this, 'pageIndex': pageIndex })
+    .appendTo('#BRnavline').bt({
         contentSelector: '$(this).find(".query")',
-        trigger: 'click',
+        trigger: 'hover',
         closeWhenOthersOpen: true,
         cssStyles: {
-            padding: '10px 10px 15px',
+            padding: '12px 14px',
             backgroundColor: '#fff',
-            border: '3px solid #e2dcc5',
-            borderBottom: 'none',
+            border: '4px solid #e2dcc5',
             fontFamily: '"Lucida Grande","Arial",sans-serif',
-            fontSize: '12px',
-            lineHeight: '18px',
+            fontSize: '13px',
+            //lineHeight: '18px',
             color: '#615132'
         },
         shrinkToFit: false,
@@ -3309,7 +3455,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageInd
         padding: 0,
         spikeGirth: 0,
         spikeLength: 0,
-        overlap: '10px',
+        overlap: '22px',
         overlay: false,
         killTitle: false, 
         textzIndex: 9999,
@@ -3319,19 +3465,22 @@ BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageInd
         positions: ['top'],
         fill: 'white',
         windowMargin: 10,
-        strokeWidth: 3,
-        strokeStyle: '#e2dcc5',
+        strokeWidth: 0,
         cornerRadius: 0,
         centerPointX: 0,
         centerPointY: 0,
         shadow: false
     })
-    .hover(function(){
-              $(this).addClass('front');
-          },function(){
-              $(this).removeClass('front');
-          }
-    );
+    .hover( function() {
+                $(this).addClass('front');
+            }, function() {
+                $(this).removeClass('front');
+            }
+    )
+    .bind('click', function() {
+        $(this).data('self').jumpToIndex($(this).data('pageIndex'));
+    });
+
 }
 
 BookReader.prototype.removeSearchResults = function() {
@@ -3341,23 +3490,24 @@ BookReader.prototype.removeSearchResults = function() {
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
     var uiStringPage = 'Page'; // i18n
 
-    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs);
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs - 1);
     
     $('<div class="chapter" style="left:' + percentThrough + ';"><div class="title">'
         + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
-    .appendTo('#BRnavpos')
+    .appendTo('#BRnavline')
     .data({'self': this, 'pageIndex': pageIndex })
     .bt({
         contentSelector: '$(this).find(".title")',
         trigger: 'hover',
         closeWhenOthersOpen: true,
         cssStyles: {
-            backgroundColor: '#000',
-            border: '2px solid #e2dcc5',
-            borderBottom: 'none',
-            padding: '5px 10px',
+            padding: '12px 14px',
+            //backgroundColor: '#000',
+            backgroundColor: '#444', // To set it off slightly from the chapter marker
+            border: '4px solid #e2dcc5',
+            //borderBottom: 'none',
             fontFamily: '"Arial", sans-serif',
-            fontSize: '11px',
+            fontSize: '12px',
             fontWeight: '700',
             color: '#fff',
             whiteSpace: 'nowrap'
@@ -3367,7 +3517,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         padding: 0,
         spikeGirth: 0,
         spikeLength: 0,
-        overlap: '16px',
+        overlap: '21px',
         overlay: false,
         killTitle: true, 
         textzIndex: 9999,
@@ -3422,7 +3572,6 @@ BookReader.prototype.updateTOC = function(tocEntries) {
  *   }
  */
 BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-    console.log(tocEntryObject);
     var pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
     // Only add if we know where it is
     if (pageIndex) {
@@ -3449,46 +3598,35 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
             $(this).removeClass('front');
         });
     });
-    $("#BRslider").draggable({axis:'x',containment:'parent'});
-    $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
-    $("#BRslider").hover(
-        function(){
-            $("#pagenum").show();
-        },function(){
-            $("#pagenum").hide();
-        });
 }
 
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
-    $("body").append("<div id='BRtoolbar'>"
-        + "<span id='BRtoolbarbuttons'>"
+    $("body").append(
+          "<div id='BRtoolbar'>"
+        +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
-        +   "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<form method='get' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         // XXXmang icons incorrect or handlers wrong
-        +   "<button class='BRicon info' onclick='br.switchMode(3); return false;'></button>"
-        +   "<button class='BRicon share' onclick='br.switchMode(2); return false;'></button>"
-        +   "<button class='BRicon read modal'></button>"
-        +   "<button class='BRicon full'></button>"
-        + "</span>"
-        
-        + "<span>"
-        +   "<a class='logo' href='" + this.logoURL + "'></a>"
-        // XXXmang update
-        +   "<div id='BRreturn'><span>Back to</span><a href='BOOK URL'>Book Title</a></div>"
-        + "</span>"
-        
+        +     "<button class='BRicon info'></button>"
+        +     "<button class='BRicon share'></button>"
+        +     "<button class='BRicon read modal'></button>"
+        +     "<button class='BRicon full'></button>"
+        +   "</span>"
+        +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
+        +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
         + "</div>"
+        
         + "<div id='BRzoomer'>"
-        + "<div id='BRzoompos'>"
-        + "<button class='BRicon zoom_out'></button>"
-        + "<div id='BRzoomcontrol'>"
-        +    "<div id='BRzoomstrip'></div>"
-        +    "<div id='BRzoombtn'></div>"
-        + "</div>"
-        + "<button class='BRicon zoom_in'></button>"
-        + "</div>"
+        +   "<div id='BRzoompos'>"
+        +     "<button class='BRicon zoom_out'></button>"
+        +     "<div id='BRzoomcontrol'>"
+        +       "<div id='BRzoomstrip'></div>"
+        +       "<div id='BRzoombtn'></div>"
+        +     "</div>"
+        +     "<button class='BRicon zoom_in'></button>"
+        +   "</div>"
         + "</div>");
     
     this.updateToolbarZoom(this.reduce); // Pretty format
@@ -3662,6 +3800,22 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
   
     jToolbar.find('.book_rightmost').click(function(e) {
         self.rightmost();
+        return false;
+    });
+
+    jToolbar.find('.read').click(function(e) {
+        self.ttsToggle();
+        return false;
+    });
+    
+    // $$$mang cleanup
+    $('#BRzoomer .zoom_in').bind('click', function() {
+        self.zoom(1);
+        return false;
+    });
+    
+    $('#BRzoomer .zoom_out').bind('click', function() {
+        self.zoom(-1);
         return false;
     });
 }
@@ -4076,6 +4230,8 @@ BookReader.prototype.startLocationPolling = function() {
             if (newHash != self.oldUserHash) { // Only process new user hash once
                 //console.log('url change detected ' + self.oldLocationHash + " -> " + newHash);
                 
+                self.ttsStop();
+                
                 // Queue change if animating
                 if (self.animating) {
                     self.autoStop();
@@ -4186,6 +4342,10 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
             self.updateTOC(olObject['table_of_contents']);
         }
     }
+    
+    // $$$mang cleanup
+    $('#BRreturn a').attr('href', 'http://openlibrary.org' + olObject.key);
+
 }
 
 // Library functions
@@ -4208,7 +4368,7 @@ BookReader.util = {
     
     // Given value and maximum, calculate a percentage suitable for CSS
     cssPercentage: function(value, max) {
-        return parseInt(((value + 0.0) / max) * 100) + '%';
+        return (((value + 0.0) / max) * 100) + '%';
     },
     
     notInArray: function(value, array) {
@@ -4232,4 +4392,414 @@ BookReader.util = {
         return encodeURIComponent(value).replace(/%20/g, '+');
     }
     // The final property here must NOT have a comma after it - IE7
+}
+
+
+// ttsToggle()
+//______________________________________________________________________________
+BookReader.prototype.ttsToggle = function () {
+    if (false == this.ttsPlaying) {        
+        if(soundManager.supported()) {
+            this.ttsStart();            
+        } else {               
+            soundManager.onready(function(oStatus) {
+              if (oStatus.success) {                
+                this.ttsStart();
+              } else {
+                alert('Could not load soundManger2, possibly due to FlashBlock. Audio playback is disabled');
+              }
+            }, this);        
+        }
+    } else {
+        this.ttsStop();
+    }
+}
+
+// ttsStart()
+//______________________________________________________________________________
+BookReader.prototype.ttsStart = function () {
+    if (soundManager.debugMode) console.log('starting readAloud');
+    if (this.constModeThumb == this.mode) this.switchMode(this.constMode1up);
+    
+    this.ttsPlaying = true;
+    this.ttsIndex = this.currentIndex();
+    this.ttsFormat = 'mp3';
+    if ($.browser.mozilla) {
+        this.ttsFormat = 'ogg';
+    }
+    this.ttsGetText(this.ttsIndex, 'ttsStartCB');    
+}
+
+// ttsStop()
+//______________________________________________________________________________
+BookReader.prototype.ttsStop = function () {
+    if (false == this.ttsPlaying) return;
+    
+    if (soundManager.debugMode) console.log('stopping readaloud');
+    soundManager.stopAll();
+    soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
+    this.ttsRemoveHilites();
+    this.ttsRemovePopup();
+
+    this.ttsPlaying     = false;
+    this.ttsIndex       = null;  //leaf index
+    this.ttsPosition    = -1;    //chunk (paragraph) number
+    this.ttsBuffering   = false;
+    this.ttsPoller      = null;
+}
+
+// ttsGetText()
+//______________________________________________________________________________
+BookReader.prototype.ttsGetText = function(index, callback) {
+    var url = 'http://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+index;    
+    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:callback});
+}
+
+// ttsStartCB(): text-to-speech callback
+//______________________________________________________________________________
+BookReader.prototype.ttsStartCB = function (data) {
+    if (soundManager.debugMode)  console.log('ttsStartCB got data: ' + data);
+    this.ttsChunks = data;
+    this.ttsHilites = [];
+    
+    //deal with the page being blank
+    if (0 == data.length) {
+        if (soundManager.debugMode) console.log('first page is blank!');
+        if(this.ttsAdvance(true)) {
+            this.ttsGetText(this.ttsIndex, 'ttsStartCB');            
+        }
+        return;
+    }
+    
+    this.ttsShowPopup();
+    
+    ///// whileloading: broken on safari
+    ///// onload fires on safari, but *after* the sound starts playing..
+    this.ttsPosition = -1;    
+    var snd = soundManager.createSound({
+     id: 'chunk'+this.ttsIndex+'-0',
+     //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',
+     url: 'http://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + escape(data[0][0]) + '&format=.'+this.ttsFormat, //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) this.br.ttsRemovePopup();}, //onload never fires in FF...
+     onload: function(){this.br.ttsRemovePopup();} //whileloading never fires in safari...
+    });    
+    snd.br = this;
+    snd.load();
+
+    this.ttsNextChunk();
+}
+
+// ttsShowPopup
+//______________________________________________________________________________
+BookReader.prototype.ttsShowPopup = function() {
+    if (soundManager.debugMode) console.log('ttsShowPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
+    
+    this.popup = document.createElement("div");
+    $(this.popup).css({
+        top:      $('#BRtoolbar').height() + 'px',
+        left:     $('#BookReader').width()-220 + 'px',
+        width:    '220px',
+        height:   '20px',
+    }).attr('className', 'BRttsPopUp').appendTo('#BookReader');
+
+    htmlStr =  '&nbsp;';
+
+    this.popup.innerHTML = htmlStr;
+}
+
+// ttsRemovePopup
+//______________________________________________________________________________
+BookReader.prototype.ttsRemovePopup = function() {
+    $(this.popup).remove(); 
+    this.popup=null;
+}
+
+// ttsNextPageCB
+//______________________________________________________________________________
+BookReader.prototype.ttsNextPageCB = function (data) {
+    this.ttsNextChunks = data;
+    if (soundManager.debugMode) console.log('preloaded next chunks.. data is ' + data);
+    
+    if (true == this.ttsBuffering) {
+        if (soundManager.debugMode) console.log('ttsNextPageCB: ttsBuffering is true');
+        this.ttsBuffering = false;
+    }
+}
+
+// ttsLoadChunk
+//______________________________________________________________________________
+BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
+    var snd = soundManager.createSound({
+     id: 'chunk'+page+'-'+pos,
+     url: 'http://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + escape(string) + '&format=.'+this.ttsFormat //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+    });
+    snd.br = this;
+    snd.load()
+}
+
+
+// ttsNextChunk()
+//______________________________________________________________________________
+// This function into two parts: ttsNextChunk gets run before page flip animation
+// and ttsNextChunkPhase2 get run after page flip animation.
+// If a page flip is necessary, ttsAdvance() will return false so Phase2 isn't
+// called. Instead, this.animationFinishedCallback is set, so that Phase2
+// continues after animation is finished.
+
+BookReader.prototype.ttsNextChunk = function () {
+    if (soundManager.debugMode) console.log('nextchunk pos=' + this.ttsPosition);
+    
+    if (-1 != this.ttsPosition) {
+        soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
+    }
+
+    this.ttsRemoveHilites(); //remove old hilights
+        
+    var moreToPlay = this.ttsAdvance();
+    
+    if (moreToPlay) {
+        this.ttsNextChunkPhase2();
+    }    
+    
+    //This function is called again when ttsPlay() has finished playback.
+    //If the next chunk of text has not yet finished loading, ttsPlay()
+    //will start polling until the next chunk is ready.
+}
+
+// ttsNextChunkPhase2()
+//______________________________________________________________________________
+// page flip animation has now completed
+BookReader.prototype.ttsNextChunkPhase2 = function () {
+    if (null == this.ttsChunks) {
+        alert('error: ttsChunks is null?'); //TODO
+        return;
+    }
+    
+    if (0 == this.ttsChunks.length) {
+        if (soundManager.debugMode) console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
+        this.ttsStartCB(this.ttsChunks);
+        return;
+    }
+    
+    if (soundManager.debugMode) console.log('next chunk is ' + this.ttsPosition);  
+
+    //prefetch next page of text
+    if (0 == this.ttsPosition) {
+        if (this.ttsIndex<(this.numLeafs-1)) {
+            this.ttsGetText(this.ttsIndex+1, 'ttsNextPageCB');
+        }
+    }
+    
+    this.ttsPrefetchAudio();
+    
+    this.ttsPlay();
+}
+
+// ttsAdvance()
+//______________________________________________________________________________
+// 1. advance ttsPosition
+// 2. if necessary, advance ttsIndex, and copy ttsNextChunks to ttsChunks
+// 3. if necessary, flip to current page, or scroll so chunk is visible
+// 4. do something smart is ttsNextChunks has not yet finished preloading (TODO)
+// 5. stop playing at end of book
+
+BookReader.prototype.ttsAdvance = function (starting) {
+    this.ttsPosition++;
+
+    if (this.ttsPosition >= this.ttsChunks.length) {
+        
+        if (this.ttsIndex == (this.numLeafs-1)) {
+            if (soundManager.debugMode) console.log('tts stop');
+            return false;
+        } else {
+            if ((null != this.ttsNextChunks) || (starting)) {
+                if (soundManager.debugMode) console.log('moving to next page!');
+                this.ttsIndex++;
+                this.ttsPosition = 0;
+                this.ttsChunks = this.ttsNextChunks;
+                this.ttsNextChunks = null;
+
+                //A page flip might be necessary. This code is confusing since
+                //ttsNextChunks might be null if we are starting on a blank page.
+                if (2 == this.mode) {
+                    if ((this.ttsIndex != this.twoPage.currentIndexL) && (this.ttsIndex != this.twoPage.currentIndexR)) {
+                        if (!starting) {
+                            this.animationFinishedCallback = this.ttsNextChunkPhase2;
+                            this.next();
+                            return false;
+                        } else {
+                            this.next();
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            } else {
+                if (soundManager.debugMode) console.log('ttsAdvance: ttsNextChunks is null');
+                return false; 
+            }
+        }
+    }
+        
+    return true;
+}
+
+// ttsPrefetchAudio()
+//______________________________________________________________________________
+BookReader.prototype.ttsPrefetchAudio = function () {
+
+    if(false != this.ttsBuffering) {
+        alert('TTS Error: prefetch() called while content still buffering!');
+        return;
+    }    
+
+    //preload next chunk
+    var nextPos = this.ttsPosition+1;
+    if (nextPos < this.ttsChunks.length) {     
+        this.ttsLoadChunk(this.ttsIndex, nextPos, this.ttsChunks[nextPos][0]);
+    } else {
+        //for a short page, preload might nt have yet returned..
+        if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.ttsIndex+1));
+        if (null != this.ttsNextChunks) {
+            if (0 != this.ttsNextChunks.length) {
+                this.ttsLoadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);        
+            } else {
+                if (soundManager.debugMode) console.log('prefetchAudio(): ttsNextChunks is zero length!');
+            }
+        } else {
+            if (soundManager.debugMode) console.log('ttsNextChunks is null, not preloading next page');
+            this.ttsBuffering = true;
+        }
+    }
+
+}
+
+// ttsPlay()
+//______________________________________________________________________________
+BookReader.prototype.ttsPlay = function () {
+        
+    var chunk = this.ttsChunks[this.ttsPosition];
+    if (soundManager.debugMode) {
+        console.log('ttsPlay position = ' + this.ttsPosition);
+        console.log('chunk = ' + chunk);
+        console.log(this.ttsChunks);
+    }
+    
+    //add new hilights
+    if (2 == this.mode) {
+        this.ttsHilite2UP(chunk);
+    } else {
+        this.ttsHilite1UP(chunk);
+    }
+    
+    this.ttsScrollToChunk(chunk);
+        
+    //play current chunk
+    if (false == this.ttsBuffering) {        
+        soundManager.play('chunk'+this.ttsIndex+'-'+this.ttsPosition,{onfinish:function(){br.ttsNextChunk();}});
+    } else {
+        soundManager.play('chunk'+this.ttsIndex+'-'+this.ttsPosition,{onfinish:function(){br.ttsStartPolling();}});
+    }
+}
+
+// scrollToChunk()
+//______________________________________________________________________________
+BookReader.prototype.ttsScrollToChunk = function(chunk) {
+    if (this.constMode1up != this.mode) return;
+
+    var leafTop = 0;
+    var h;
+    var i;
+    for (i=0; i<this.ttsIndex; i++) {
+        h = parseInt(this._getPageHeight(i)/this.reduce); 
+        leafTop += h + this.padding;
+    }
+    
+    var chunkTop = chunk[1][3]; //coords are in l,b,r,t order
+    var chunkBot = chunk[chunk.length-1][1];
+    
+    var topOfFirstChunk = leafTop + chunkTop/this.reduce;
+    var botOfLastChunk  = leafTop + chunkBot/this.reduce;
+    
+    if (soundManager.debugMode) console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
+
+    var containerTop = $('#BRcontainer').attr('scrollTop');
+    var containerBot = containerTop + $('#BRcontainer').height();
+    if (soundManager.debugMode) console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
+
+    if ((topOfFirstChunk < containerTop) || (botOfLastChunk > containerBot)) {
+        //jumpToIndex scrolls so that chunkTop is centered.. we want chunkTop at the top
+        //this.jumpToIndex(this.ttsIndex, null, chunkTop);
+        $('#BRcontainer').animate({scrollTop: topOfFirstChunk},'fast');            
+    }    
+}
+
+// ttsHilite1UP()
+//______________________________________________________________________________
+BookReader.prototype.ttsHilite1UP = function(chunk) {
+    var i;
+    for (i=1; i<chunk.length; i++) {
+        //each rect is an array of l,b,r,t coords (djvu.xml ordering...)       
+        var l = chunk[i][0];
+        var b = chunk[i][1];
+        var r = chunk[i][2];
+        var t = chunk[i][3];
+        
+        var div = document.createElement('div');
+        this.ttsHilites.push(div);        
+        $(div).attr('className', 'BookReaderSearchHilite').appendTo('#pagediv'+this.ttsIndex);
+
+        $(div).css({
+            width:  (r-l)/this.reduce + 'px',
+            height: (b-t)/this.reduce + 'px',
+            left:   l/this.reduce + 'px',
+            top:    t/this.reduce +'px'
+        });
+    }
+
+}
+
+// ttsHilite2UP()
+//______________________________________________________________________________
+BookReader.prototype.ttsHilite2UP = function (chunk) {
+    var i;
+    for (i=1; i<chunk.length; i++) {
+        //each rect is an array of l,b,r,t coords (djvu.xml ordering...)       
+        var l = chunk[i][0];
+        var b = chunk[i][1];
+        var r = chunk[i][2];
+        var t = chunk[i][3];
+        
+        var div = document.createElement('div');
+        this.ttsHilites.push(div);        
+        $(div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
+        this.setHilightCss2UP(div, this.ttsIndex, l, r, t, b);        
+    }
+}
+
+// ttsRemoveHilites()
+//______________________________________________________________________________
+BookReader.prototype.ttsRemoveHilites = function (chunk) {
+    $(this.ttsHilites).remove();
+    this.ttsHilites = [];
+}
+
+// ttsStartPolling()
+//______________________________________________________________________________
+// Play of the current chunk has ended, but the next chunk has not yet been loaded.
+// We need to wait for the text for the next page to be loaded, so we can
+// load the next audio chunk
+BookReader.prototype.ttsStartPolling = function () {
+    if (soundManager.debugMode) console.log('Starting the TTS poller...');
+    var self = this;
+    this.ttsPoller=setInterval(function(){
+        if (self.ttsBuffering) {return;}
+        
+        if (soundManager.debugMode) console.log('TTS buffering finished!');
+        clearInterval(self.ttsPoller);
+        self.ttsPoller = null;
+        self.ttsPrefetchAudio();
+        self.ttsNextChunk();
+    },500);    
 }

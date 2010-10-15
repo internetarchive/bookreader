@@ -134,12 +134,20 @@ class BookReader
     <script type="text/javascript" src="http://www.archive.org/includes/analytics.js?v=2"></script>
     <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/jquery.colorbox-min.js"></script>
+    <script type="text/javascript" src="/bookreader/jquery.ui.ipad.js"></script>
      <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
         <!--[if lt IE 9]>
         <script type="text/javascript" src="excanvas.compiled.js"></script>
         <![endif]-->
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2.js?v=<? echo($version); ?>"></script>
+    <script>
+        soundManager.debugMode = false;
+        soundManager.url = '/bookreader/soundmanager/swf/';       
+        soundManager.useHTML5Audio = true;
+        soundManager.flashVersion = 9; //flash 8 version of swf is buggy when calling play() on a sound that is still loading
+    </script>
 </head>
 <body style="background-color: ##939598;">
 
@@ -176,7 +184,7 @@ class BookReader
     });
     
     // Usage stats
-    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'}; </script>
+    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
 </script>
   <?
     exit;
