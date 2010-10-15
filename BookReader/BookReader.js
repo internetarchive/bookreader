@@ -999,7 +999,8 @@ BookReader.prototype.resizePageView1up = function() {
         // current index in drawLeafsOnePage after we create the new view container
 
         // Make sure this will count as current page after resize
-        var fudgeFactor = (this.getPageHeight(this.currentIndex()) / this.reduce) * 0.5;
+        // console.log('fudging for index ' + this.currentIndex() + ' (page ' + this.getPageNum(this.currentIndex()) + ')');
+        var fudgeFactor = (this.getPageHeight(this.currentIndex()) / this.reduce) * 0.6;
         var oldLeafTop = this.onePageGetPageTop(this.currentIndex()) + fudgeFactor;
         var oldViewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
         scrollRatio = oldLeafTop / oldViewDimensions.height;
