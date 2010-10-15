@@ -407,9 +407,14 @@ BookReader.prototype.drawLeafsOnePage = function() {
         leafTop += height +10;      
         leafBottom += 10;
     }
-    
+
+    // Based of the pages displayed in the view we set the current index
+    // $$$ we should consider the page in the center of the view to be the current one
     var firstIndexToDraw  = indicesToDisplay[0];
-    this.firstIndex      = firstIndexToDraw;
+    if (firstIndexToDraw != this.firstIndex) {
+        this.willChangeToIndex(firstIndexToDraw);
+    }
+    this.firstIndex = firstIndexToDraw;
     
     // Update hash, but only if we're currently displaying a leaf
     // Hack that fixes #365790
@@ -956,7 +961,7 @@ BookReader.prototype.resizePageView = function() {
     switch (this.mode) {
         case this.constMode1up:
         case this.constMode2up:
-            this.resizePageView1up();
+            this.resizePageView1up(); // $$$ necessary in non-1up mode?
             break;
         case this.constModeThumb:
             this.prepareThumbnailView( this.currentIndex() );
@@ -966,6 +971,7 @@ BookReader.prototype.resizePageView = function() {
     }
 }
 
+// Resize the current one page view
 BookReader.prototype.resizePageView1up = function() {
     var i;
     var viewHeight = 0;
@@ -974,16 +980,29 @@ BookReader.prototype.resizePageView1up = function() {
 
     var oldScrollTop  = $('#BRcontainer').attr('scrollTop');
     var oldScrollLeft = $('#BRcontainer').attr('scrollLeft');
+    
     var oldPageViewHeight = $('#BRpageview').height();
     var oldPageViewWidth = $('#BRpageview').width();
     
-    var oldCenterY = this.centerY1up();
-    var oldCenterX = this.centerX1up();
-    
-    if (0 != oldPageViewHeight) {
-        var scrollRatio = oldCenterY / oldPageViewHeight;
+    // May have come here after preparing the view, in which case the scrollTop and view height are not set
+
+    var scrollRatio = 0;
+    if (oldScrollTop > 0) {
+        // We have scrolled - implies view has been set up        
+        var oldCenterY = this.centerY1up();
+        var oldCenterX = this.centerX1up();    
+        scrollRatio = oldCenterY / oldPageViewHeight;
     } else {
-        var scrollRatio = 0;
+        // Have not scrolled, e.g. because in new container
+
+        // We set the scroll ratio so that the current index will still be considered the
+        // current index in drawLeafsOnePage after we create the new view container
+
+        // Make sure this will count as current page after resize
+        var fudgeFactor = (this.getPageHeight(this.currentIndex()) / this.reduce) * 0.5;
+        var oldLeafTop = this.onePageGetPageTop(this.currentIndex()) + fudgeFactor;
+        var oldViewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
+        scrollRatio = oldLeafTop / oldViewDimensions.height;
     }
     
     // Recalculate 1up reduction factors
@@ -995,15 +1014,11 @@ BookReader.prototype.resizePageView1up = function() {
         this.reduce = reductionFactor.reduce;
     }
     
-    for (i=0; i<this.numLeafs; i++) {
-        viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
-        var width = parseInt(this._getPageWidth(i)/this.reduce);
-        if (width>viewWidth) viewWidth=width;
-    }
-    $('#BRpageview').height(viewHeight);
-    $('#BRpageview').width(viewWidth);
+    var viewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
+    $('#BRpageview').height(viewDimensions.height);
+    $('#BRpageview').width(viewDimensions.width);
 
-    var newCenterY = scrollRatio*viewHeight;
+    var newCenterY = scrollRatio*viewDimensions.height;
     var newTop = Math.max(0, Math.floor( newCenterY - $('#BRcontainer').height()/2 ));
     $('#BRcontainer').attr('scrollTop', newTop);
     
@@ -1021,6 +1036,17 @@ BookReader.prototype.resizePageView1up = function() {
     this.updateSearchHilites();
 }
 
+// Calculate the dimensions for a one page view with images at the given reduce and padding
+BookReader.prototype.onePageCalculateViewDimensions = function(reduce, padding) {
+    var viewWidth = 0;
+    var viewHeight = 0;
+    for (i=0; i<this.numLeafs; i++) {
+        viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
+        var width = parseInt(this._getPageWidth(i)/this.reduce);
+        if (width>viewWidth) viewWidth=width;
+    }
+    return { width: viewWidth, height: viewHeight }
+}
 
 // centerX1up()
 //______________________________________________________________________________
@@ -1208,7 +1234,7 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 //______________________________________________________________________________
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
-    this.updateNavIndex(index);
+    this.willChangeToIndex(index);
 
     if (this.constMode2up == this.mode) {
         this.autoStop();
@@ -1255,14 +1281,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
         }
     } else {
         // 1up
-        var i;
-        var leafTop = 0;
-        var leafLeft = 0;
-        var h;
-        for (i=0; i<index; i++) {
-            h = parseInt(this._getPageHeight(i)/this.reduce); 
-            leafTop += h + this.padding;
-        }
+        var leafTop = this.onePageGetPageTop(index);
 
         if (pageY) {
             //console.log('pageY ' + pageY);
@@ -1289,13 +1308,10 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     }
 }
 
-
 // switchMode()
 //______________________________________________________________________________
 BookReader.prototype.switchMode = function(mode) {
 
-    //console.log('  asked to switch to mode ' + mode + ' from ' + this.mode);
-    
     if (mode == this.mode) {
         return;
     }
@@ -1356,7 +1372,7 @@ BookReader.prototype.prepareOnePageView = function() {
     });
         
     $("#BRcontainer").append("<div id='BRpageview'></div>");
-
+    
     // Attaches to first child - child must be present
     $('#BRcontainer').dragscrollable();
     this.bindGestures($('#BRcontainer'));
@@ -1797,6 +1813,20 @@ BookReader.prototype.onePageGetAutofitHeight = function() {
     return (this.getMedianPageSize().height + 0.0) / ($('#BRcontainer').attr('clientHeight') - this.padding * 2); // make sure a little of adjacent pages show
 }
 
+// Returns where the top of the page with given index should be in one page view
+BookReader.prototype.onePageGetPageTop = function(index)
+{
+    var i;
+    var leafTop = 0;
+    var leafLeft = 0;
+    var h;
+    for (i=0; i<index; i++) {
+        h = parseInt(this._getPageHeight(i)/this.reduce); 
+        leafTop += h + this.padding;
+    }
+    return leafTop;
+}
+
 BookReader.prototype.getMedianPageSize = function() {
     if (this._medianPageSize) {
         return this._medianPageSize;
@@ -2032,7 +2062,7 @@ BookReader.prototype.flipBackToIndex = function(index) {
     }
     //if (index<0) return;
     
-    this.updateNavIndex(index);
+    this.willChangeToIndex(index);
     
     var previousIndices = this.getSpreadIndices(index);
     
@@ -2217,7 +2247,7 @@ BookReader.prototype.flipFwdToIndex = function(index) {
     }
     if (index > this.lastDisplayableIndex()) return;
 
-    this.updateNavIndex(index);
+    this.willChangeToIndex(index);
 
     this.animating = true;
     
@@ -2234,6 +2264,16 @@ BookReader.prototype.flipFwdToIndex = function(index) {
         var gutter = this.prepareFlipLeftToRight(nextIndices[0], nextIndices[1]);
         this.flipLeftToRight(nextIndices[0], nextIndices[1]);
     }
+}
+
+/*
+ * Put handlers here for when we will navigate to a new page
+ */
+BookReader.prototype.willChangeToIndex = function(index)
+{
+    // Update navbar position icon - leads page change animation
+    this.updateNavIndex(index);
+
 }
 
 // flipRightToLeft(nextL, nextR, gutter)
