@@ -233,6 +233,10 @@ h3 {
 .BRicon.zoom_out:hover {background-position:-646px 0;}
 .BRicon.zoom_in {background-position:-686px 0;}
 .BRicon.zoom_in:hover {background-position:-726px 0;}
+.BRicon.play {background-position:-760px 0;}
+.BRicon.play:hover {background-position:-800px 0;}
+.BRicon.pause {background-position:-840px 0;}
+.BRicon.pause:hover {background-position:-880px 0;}
 
 
 /* NOT CURRENTLY IN USE
@@ -255,14 +259,13 @@ h3 {
 .BRicon.book_rightmost {background-position:;}
 .BRicon.book_top {background-position:;}
 .BRicon.book_bottom {background-position:;}
-.BRicon.play {background-position:;}
-.BRicon.pause {background-position:;}
 */
 a.logo {
     display: block;
     float: left;
     width: 40px;
     height: 40px;
+    margin-right: 10px;
     background: transparent url(images/icon_home.png) no-repeat 0 0;
 }
 a.popOff {
