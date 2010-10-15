@@ -707,8 +707,10 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     // console.log('current ' + currentIndex);
     // console.log('least visible ' + leastVisible + ' most visible ' + mostVisible);
     if (currentIndex < leastVisible) {
+        this.willChangeToIndex(leastVisible);
         this.setCurrentIndex(leastVisible);
     } else if (currentIndex > mostVisible) {
+        this.willChangeToIndex(mostVisible);
         this.setCurrentIndex(mostVisible);
     }
 
