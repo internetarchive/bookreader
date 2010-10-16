@@ -2614,16 +2614,16 @@ BookReader.prototype.searchNew = function(term) {
     url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
     url    += '&q='+escape(term);
     //console.log('search url='+url);    
-    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRsearchCallbackNew'});
+    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallbackNew'});
 }
 
 // Unfortunately, we can't pass 'br.searchCallback' to our search service,
 // because it can't handle the '.'
-function BRsearchCallbackNew(results) {
+function BRSearchCallbackNew(results) {
     //console.log('got ' + results.matches.length + ' results');
     var i;    
     for (i=0; i<results.matches.length; i++) {        
-        br.addSearchResult(results.matches[i].text, br.getPageNum(results.matches[i].par[0].page), results.matches[i].par[0].page);
+        br.addSearchResult(results.matches[i].text, br.leafNumToIndex(results.matches[i].par[0].page));
     }
 }
 
@@ -3399,7 +3399,8 @@ BookReader.prototype.updateNavIndex = function(index) {
     $('#BRpager').data('swallowchange', true).slider('value', index);
 }
 
-BookReader.prototype.addSearchResult = function(queryString, pageNumber, pageIndex) {
+BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
+    var pageNumber = this.getPageNum(pageIndex);
     var uiStringSearch = "Search result"; // i18n
     var uiStringPage = "Page"; // i18n
     
