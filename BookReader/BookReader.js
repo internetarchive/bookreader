@@ -407,9 +407,14 @@ BookReader.prototype.drawLeafsOnePage = function() {
         leafTop += height +10;      
         leafBottom += 10;
     }
-    
+
+    // Based of the pages displayed in the view we set the current index
+    // $$$ we should consider the page in the center of the view to be the current one
     var firstIndexToDraw  = indicesToDisplay[0];
-    this.firstIndex      = firstIndexToDraw;
+    if (firstIndexToDraw != this.firstIndex) {
+        this.willChangeToIndex(firstIndexToDraw);
+    }
+    this.firstIndex = firstIndexToDraw;
     
     // Update hash, but only if we're currently displaying a leaf
     // Hack that fixes #365790
@@ -702,8 +707,10 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     // console.log('current ' + currentIndex);
     // console.log('least visible ' + leastVisible + ' most visible ' + mostVisible);
     if (currentIndex < leastVisible) {
+        this.willChangeToIndex(leastVisible);
         this.setCurrentIndex(leastVisible);
     } else if (currentIndex > mostVisible) {
+        this.willChangeToIndex(mostVisible);
         this.setCurrentIndex(mostVisible);
     }
 
@@ -956,7 +963,7 @@ BookReader.prototype.resizePageView = function() {
     switch (this.mode) {
         case this.constMode1up:
         case this.constMode2up:
-            this.resizePageView1up();
+            this.resizePageView1up(); // $$$ necessary in non-1up mode?
             break;
         case this.constModeThumb:
             this.prepareThumbnailView( this.currentIndex() );
@@ -966,6 +973,7 @@ BookReader.prototype.resizePageView = function() {
     }
 }
 
+// Resize the current one page view
 BookReader.prototype.resizePageView1up = function() {
     var i;
     var viewHeight = 0;
@@ -974,16 +982,30 @@ BookReader.prototype.resizePageView1up = function() {
 
     var oldScrollTop  = $('#BRcontainer').attr('scrollTop');
     var oldScrollLeft = $('#BRcontainer').attr('scrollLeft');
+    
     var oldPageViewHeight = $('#BRpageview').height();
     var oldPageViewWidth = $('#BRpageview').width();
     
-    var oldCenterY = this.centerY1up();
-    var oldCenterX = this.centerX1up();
-    
-    if (0 != oldPageViewHeight) {
-        var scrollRatio = oldCenterY / oldPageViewHeight;
+    // May have come here after preparing the view, in which case the scrollTop and view height are not set
+
+    var scrollRatio = 0;
+    if (oldScrollTop > 0) {
+        // We have scrolled - implies view has been set up        
+        var oldCenterY = this.centerY1up();
+        var oldCenterX = this.centerX1up();    
+        scrollRatio = oldCenterY / oldPageViewHeight;
     } else {
-        var scrollRatio = 0;
+        // Have not scrolled, e.g. because in new container
+
+        // We set the scroll ratio so that the current index will still be considered the
+        // current index in drawLeafsOnePage after we create the new view container
+
+        // Make sure this will count as current page after resize
+        // console.log('fudging for index ' + this.currentIndex() + ' (page ' + this.getPageNum(this.currentIndex()) + ')');
+        var fudgeFactor = (this.getPageHeight(this.currentIndex()) / this.reduce) * 0.6;
+        var oldLeafTop = this.onePageGetPageTop(this.currentIndex()) + fudgeFactor;
+        var oldViewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
+        scrollRatio = oldLeafTop / oldViewDimensions.height;
     }
     
     // Recalculate 1up reduction factors
@@ -995,15 +1017,11 @@ BookReader.prototype.resizePageView1up = function() {
         this.reduce = reductionFactor.reduce;
     }
     
-    for (i=0; i<this.numLeafs; i++) {
-        viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
-        var width = parseInt(this._getPageWidth(i)/this.reduce);
-        if (width>viewWidth) viewWidth=width;
-    }
-    $('#BRpageview').height(viewHeight);
-    $('#BRpageview').width(viewWidth);
+    var viewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
+    $('#BRpageview').height(viewDimensions.height);
+    $('#BRpageview').width(viewDimensions.width);
 
-    var newCenterY = scrollRatio*viewHeight;
+    var newCenterY = scrollRatio*viewDimensions.height;
     var newTop = Math.max(0, Math.floor( newCenterY - $('#BRcontainer').height()/2 ));
     $('#BRcontainer').attr('scrollTop', newTop);
     
@@ -1021,6 +1039,17 @@ BookReader.prototype.resizePageView1up = function() {
     this.updateSearchHilites();
 }
 
+// Calculate the dimensions for a one page view with images at the given reduce and padding
+BookReader.prototype.onePageCalculateViewDimensions = function(reduce, padding) {
+    var viewWidth = 0;
+    var viewHeight = 0;
+    for (i=0; i<this.numLeafs; i++) {
+        viewHeight += parseInt(this._getPageHeight(i)/this.reduce) + this.padding; 
+        var width = parseInt(this._getPageWidth(i)/this.reduce);
+        if (width>viewWidth) viewWidth=width;
+    }
+    return { width: viewWidth, height: viewHeight }
+}
 
 // centerX1up()
 //______________________________________________________________________________
@@ -1208,7 +1237,7 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 //______________________________________________________________________________
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
-    this.updateNavIndex(index);
+    this.willChangeToIndex(index);
 
     if (this.constMode2up == this.mode) {
         this.autoStop();
@@ -1255,14 +1284,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
         }
     } else {
         // 1up
-        var i;
-        var leafTop = 0;
-        var leafLeft = 0;
-        var h;
-        for (i=0; i<index; i++) {
-            h = parseInt(this._getPageHeight(i)/this.reduce); 
-            leafTop += h + this.padding;
-        }
+        var leafTop = this.onePageGetPageTop(index);
 
         if (pageY) {
             //console.log('pageY ' + pageY);
@@ -1289,13 +1311,10 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     }
 }
 
-
 // switchMode()
 //______________________________________________________________________________
 BookReader.prototype.switchMode = function(mode) {
 
-    //console.log('  asked to switch to mode ' + mode + ' from ' + this.mode);
-    
     if (mode == this.mode) {
         return;
     }
@@ -1356,7 +1375,7 @@ BookReader.prototype.prepareOnePageView = function() {
     });
         
     $("#BRcontainer").append("<div id='BRpageview'></div>");
-
+    
     // Attaches to first child - child must be present
     $('#BRcontainer').dragscrollable();
     this.bindGestures($('#BRcontainer'));
@@ -1797,6 +1816,20 @@ BookReader.prototype.onePageGetAutofitHeight = function() {
     return (this.getMedianPageSize().height + 0.0) / ($('#BRcontainer').attr('clientHeight') - this.padding * 2); // make sure a little of adjacent pages show
 }
 
+// Returns where the top of the page with given index should be in one page view
+BookReader.prototype.onePageGetPageTop = function(index)
+{
+    var i;
+    var leafTop = 0;
+    var leafLeft = 0;
+    var h;
+    for (i=0; i<index; i++) {
+        h = parseInt(this._getPageHeight(i)/this.reduce); 
+        leafTop += h + this.padding;
+    }
+    return leafTop;
+}
+
 BookReader.prototype.getMedianPageSize = function() {
     if (this._medianPageSize) {
         return this._medianPageSize;
@@ -2032,7 +2065,7 @@ BookReader.prototype.flipBackToIndex = function(index) {
     }
     //if (index<0) return;
     
-    this.updateNavIndex(index);
+    this.willChangeToIndex(index);
     
     var previousIndices = this.getSpreadIndices(index);
     
@@ -2217,7 +2250,7 @@ BookReader.prototype.flipFwdToIndex = function(index) {
     }
     if (index > this.lastDisplayableIndex()) return;
 
-    this.updateNavIndex(index);
+    this.willChangeToIndex(index);
 
     this.animating = true;
     
@@ -2234,6 +2267,16 @@ BookReader.prototype.flipFwdToIndex = function(index) {
         var gutter = this.prepareFlipLeftToRight(nextIndices[0], nextIndices[1]);
         this.flipLeftToRight(nextIndices[0], nextIndices[1]);
     }
+}
+
+/*
+ * Put handlers here for when we will navigate to a new page
+ */
+BookReader.prototype.willChangeToIndex = function(index)
+{
+    // Update navbar position icon - leads page change animation
+    this.updateNavIndex(index);
+
 }
 
 // flipRightToLeft(nextL, nextR, gutter)
@@ -3259,14 +3302,14 @@ BookReader.prototype.initNavbar = function() {
     // $$$ should make this work inside the BookReader div (self-contained), rather than after
     $('#BookReader').after(
         '<div id="BRnav">'
-        +     '<div id="BRpage">'
+        +     '<div id="BRpage">'   // Page turn buttons
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
         +     '</div>'
-        +     '<div id="BRnavpos">'
-        +         '<div id="BRfiller"></div>'
-        +         '<div id="BRpager"></div>'
-        +         '<div id="BRnavline">'
+        +     '<div id="BRnavpos">' // Page slider and nav line
+        //+         '<div id="BRfiller"></div>'
+        +         '<div id="BRpager"></div>'  // Page slider
+        +         '<div id="BRnavline">'      // Nav line with e.g. chapter markers
         +             '<div class="BRnavend" id="BRnavleft"></div>'
         +             '<div class="BRnavend" id="BRnavright"></div>'
         +         '</div>'     
@@ -3353,9 +3396,9 @@ BookReader.prototype.initNavbar = function() {
         return true;
     })
     .hover(function() {
-            // $$$ not working on iPad
             $("#pagenum").show();
         },function(){
+            // XXXmang not triggering on iPad - probably due to touch event translation layer
             $("#pagenum").hide();
         }
     );
@@ -3376,6 +3419,11 @@ BookReader.prototype.initNavbar = function() {
     this.updateNavPageNum(this.currentIndex());
 
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
+    
+    //XXXmang remove once done testing
+    //this.addSearchResult("There is a place where the <strong>sidewalk</strong> ends And before the street begins, And there the grass grows soft and white, And there the sun burns crimson bright,And there the moon-bird rests from his flight To cool in the peppermint wind.", "20", 31);
+    //this.addSearchResult("There is a place where the <strong>sidewalk</strong> BEGINS And there the moon-bird rests from his flight To cool in the peppermint wind.", "60", 71);
+    
 }
 
 BookReader.prototype.updateNavPageNum = function(index) {
@@ -3404,27 +3452,29 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     var uiStringSearch = "Search result"; // i18n
     var uiStringPage = "Page"; // i18n
     
-    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs);
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs - 1);
+    var pageDisplayString = '';
+    if (pageNumber) {
+        pageDisplayString = uiStringPage + ' ' + pageNumber;
+    }
     
-    var re = new RegExp('{{{(.+?)}}}', 'g');
-    
+    var re = new RegExp('{{{(.+?)}}}', 'g');    
     queryString = queryString.replace(re, '<a href="#" onclick="br.jumpToIndex('+pageIndex+'); return false;">$1</a>')
-    
-    // $$$mang add click-through to page
+
     $('<div class="search" style="left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
         + queryString + '<span>' + uiStringPage + ' ' + pageNumber + '</span></div>')
-    .appendTo('#BRnavpos').bt({
+    .data({'self': this, 'pageIndex': pageIndex })
+    .appendTo('#BRnavline').bt({
         contentSelector: '$(this).find(".query")',
-        trigger: 'click',
+        trigger: 'hover',
         closeWhenOthersOpen: true,
         cssStyles: {
-            padding: '10px 10px 15px',
+            padding: '12px 14px',
             backgroundColor: '#fff',
-            border: '3px solid #e2dcc5',
-            borderBottom: 'none',
+            border: '4px solid #e2dcc5',
             fontFamily: '"Lucida Grande","Arial",sans-serif',
-            fontSize: '12px',
-            lineHeight: '18px',
+            fontSize: '13px',
+            //lineHeight: '18px',
             color: '#615132'
         },
         shrinkToFit: false,
@@ -3432,7 +3482,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
         padding: 0,
         spikeGirth: 0,
         spikeLength: 0,
-        overlap: '10px',
+        overlap: '22px',
         overlay: false,
         killTitle: false, 
         textzIndex: 9999,
@@ -3442,19 +3492,22 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
         positions: ['top'],
         fill: 'white',
         windowMargin: 10,
-        strokeWidth: 3,
-        strokeStyle: '#e2dcc5',
+        strokeWidth: 0,
         cornerRadius: 0,
         centerPointX: 0,
         centerPointY: 0,
         shadow: false
     })
-    .hover(function(){
-              $(this).addClass('front');
-          },function(){
-              $(this).removeClass('front');
-          }
-    );
+    .hover( function() {
+                $(this).addClass('front');
+            }, function() {
+                $(this).removeClass('front');
+            }
+    )
+    .bind('click', function() {
+        $(this).data('self').jumpToIndex($(this).data('pageIndex'));
+    });
+
 }
 
 BookReader.prototype.removeSearchResults = function() {
@@ -3464,23 +3517,24 @@ BookReader.prototype.removeSearchResults = function() {
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
     var uiStringPage = 'Page'; // i18n
 
-    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs);
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs - 1);
     
     $('<div class="chapter" style="left:' + percentThrough + ';"><div class="title">'
         + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
-    .appendTo('#BRnavpos')
+    .appendTo('#BRnavline')
     .data({'self': this, 'pageIndex': pageIndex })
     .bt({
         contentSelector: '$(this).find(".title")',
         trigger: 'hover',
         closeWhenOthersOpen: true,
         cssStyles: {
-            backgroundColor: '#000',
-            border: '2px solid #e2dcc5',
-            borderBottom: 'none',
-            padding: '5px 10px',
+            padding: '12px 14px',
+            //backgroundColor: '#000',
+            backgroundColor: '#444', // To set it off slightly from the chapter marker
+            border: '4px solid #e2dcc5',
+            //borderBottom: 'none',
             fontFamily: '"Arial", sans-serif',
-            fontSize: '11px',
+            fontSize: '12px',
             fontWeight: '700',
             color: '#fff',
             whiteSpace: 'nowrap'
@@ -3490,7 +3544,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         padding: 0,
         spikeGirth: 0,
         spikeLength: 0,
-        overlap: '16px',
+        overlap: '21px',
         overlay: false,
         killTitle: true, 
         textzIndex: 9999,
@@ -4351,7 +4405,7 @@ BookReader.util = {
     
     // Given value and maximum, calculate a percentage suitable for CSS
     cssPercentage: function(value, max) {
-        return parseInt(((value + 0.0) / max) * 100) + '%';
+        return (((value + 0.0) / max) * 100) + '%';
     },
     
     notInArray: function(value, array) {

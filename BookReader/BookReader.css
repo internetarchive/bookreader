@@ -233,6 +233,10 @@ h3 {
 .BRicon.zoom_out:hover {background-position:-646px 0;}
 .BRicon.zoom_in {background-position:-686px 0;}
 .BRicon.zoom_in:hover {background-position:-726px 0;}
+.BRicon.play {background-position:-760px 0;}
+.BRicon.play:hover {background-position:-800px 0;}
+.BRicon.pause {background-position:-840px 0;}
+.BRicon.pause:hover {background-position:-880px 0;}
 
 
 /* NOT CURRENTLY IN USE
@@ -255,14 +259,13 @@ h3 {
 .BRicon.book_rightmost {background-position:;}
 .BRicon.book_top {background-position:;}
 .BRicon.book_bottom {background-position:;}
-.BRicon.play {background-position:;}
-.BRicon.pause {background-position:;}
 */
 a.logo {
     display: block;
     float: left;
     width: 40px;
     height: 40px;
+    margin-right: 10px;
     background: transparent url(images/icon_home.png) no-repeat 0 0;
 }
 a.popOff {
@@ -430,7 +433,11 @@ div#BRnavpos {
 }
 div#BRpager {
     position: relative;
-    margin-left: -10px;
+    
+    /* Account for padding around nav line */
+    margin-left: 10px;
+    margin-right: 10px;
+    
     height: 40px;
 }
 div#BRslider {
@@ -445,7 +452,7 @@ div#BRslider {
     width: 23px;
     height: 27px;
     top: 13px;
-    left: -11px;
+    margin-left: -12px; /* Center icon */
     background: url(images/slider.png);
     z-index: 103;
 }
@@ -529,11 +536,15 @@ div#BRnavline {
 }
 div.chapter {
     position: absolute;
-    top: -13px;
+    top: -24px; /* Relative to nav line */
     width: 18px;
+    margin-left: -9px; /* Center marker triangle */
     height: 27px;
-    background: transparent url(images/marker_chap.png) no-repeat;
+    background: transparent url(images/marker_chap-off.png) no-repeat;
     cursor: pointer;
+}
+div.chapter.front {
+    background: transparent url(images/marker_chap-on.png) no-repeat;
 }
 div.chapter div.title {
     display: none;
@@ -544,9 +555,10 @@ div.title span {
 }
 div.search {
     position: absolute;
-    top: -13px;
     width: 18px;
+    margin-left: -9px; /* Center icon */
     height: 27px;
+    bottom: 0;  /* Relative to nav line */
     background-color: transparent;
     background-image: url(images/marker_srch-off.png);
     background-repeat: no-repeat;
