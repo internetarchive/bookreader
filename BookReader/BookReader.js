@@ -4437,7 +4437,7 @@ BookReader.util = {
 BookReader.prototype.ttsToggle = function () {
     if (false == this.ttsPlaying) {
         this.ttsPlaying = true;
-        this.ttsShowPopup();    
+        this.showProgressPopup();    
         if(soundManager.supported()) {
             this.ttsStart();            
         } else {               
@@ -4478,7 +4478,7 @@ BookReader.prototype.ttsStop = function () {
     soundManager.stopAll();
     soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
     this.ttsRemoveHilites();
-    this.ttsRemovePopup();
+    this.removeProgressPopup();
 
     this.ttsPlaying     = false;
     this.ttsIndex       = null;  //leaf index
@@ -4510,7 +4510,7 @@ BookReader.prototype.ttsStartCB = function (data) {
         return;
     }
     
-    this.ttsShowPopup();
+    this.showProgressPopup();
     
     ///// whileloading: broken on safari
     ///// onload fires on safari, but *after* the sound starts playing..
@@ -4519,8 +4519,8 @@ BookReader.prototype.ttsStartCB = function (data) {
      id: 'chunk'+this.ttsIndex+'-0',
      //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',
      url: 'http://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + escape(data[0][0]) + '&format=.'+this.ttsFormat, //the .ogg is to trick SoundManager2 to use the HTML5 audio player
-     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) this.br.ttsRemovePopup();}, //onload never fires in FF...
-     onload: function(){this.br.ttsRemovePopup();} //whileloading never fires in safari...
+     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) this.br.removeProgressPopup();}, //onload never fires in FF...
+     onload: function(){this.br.removeProgressPopup();} //whileloading never fires in safari...
     });    
     snd.br = this;
     snd.load();
@@ -4528,10 +4528,10 @@ BookReader.prototype.ttsStartCB = function (data) {
     this.ttsNextChunk();
 }
 
-// ttsShowPopup
+// showProgressPopup
 //______________________________________________________________________________
-BookReader.prototype.ttsShowPopup = function() {
-    if (soundManager.debugMode) console.log('ttsShowPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
+BookReader.prototype.showProgressPopup = function() {
+    if (soundManager.debugMode) console.log('showProgressPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
     if (this.popup) return;
     
     this.popup = document.createElement("div");
@@ -4540,16 +4540,16 @@ BookReader.prototype.ttsShowPopup = function() {
         left:     $('#BookReader').width()-220 + 'px',
         width:    '220px',
         height:   '20px',
-    }).attr('className', 'BRttsPopUp').appendTo('#BookReader');
+    }).attr('className', 'BRprogresspopup').appendTo('#BookReader');
 
     htmlStr =  '&nbsp;';
 
     this.popup.innerHTML = htmlStr;
 }
 
-// ttsRemovePopup
+// removeProgressPopup
 //______________________________________________________________________________
-BookReader.prototype.ttsRemovePopup = function() {
+BookReader.prototype.removeProgressPopup = function() {
     $(this.popup).remove(); 
     this.popup=null;
 }

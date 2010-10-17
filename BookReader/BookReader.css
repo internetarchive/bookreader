@@ -691,7 +691,7 @@ div#BRzoombtn {
     background: url("images/icon_zoomer.png");
 }
 
-.BRttsPopUp {
+.BRprogresspopup {
     position: absolute;
     background-color: #E6E4E1;
     background-image: url(images/progressbar.gif);
