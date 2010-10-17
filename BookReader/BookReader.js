@@ -4339,6 +4339,7 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
     // $$$ could refactor this so that 'this' is available
     if (olObject) {
         if (olObject['table_of_contents']) {
+            // XXX check here that TOC is valid
             self.updateTOC(olObject['table_of_contents']);
         }
     }
