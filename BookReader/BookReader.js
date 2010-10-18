@@ -2415,7 +2415,7 @@ BookReader.prototype.prefetchImg = function(index) {
         if (index < 0 || index > (this.numLeafs - 1) ) {
             // Facing page at beginning or end, or beyond
             $(img).css({
-                'background-color': 'transparent'
+                'background-color': '#efefef'
             });
         }
         img.src = pageURI;
@@ -3280,6 +3280,12 @@ BookReader.prototype.initNavbar = function() {
     $('#BookReader').after(
         '<div id="BRnav">'
         +     '<div id="BRpage">'   // Page turn buttons
+        +         '<button class="BRicon onepg"></button>'
+        +         '<button class="BRicon twopg"></button>'
+        +         '<button class="BRicon thumb"></button>'
+        +         '<button class="BRicon fit"></button>'
+        +         '<button class="BRicon zoom_in"></button>'
+        +         '<button class="BRicon zoom_out"></button>'
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
         +     '</div>'
@@ -3291,6 +3297,7 @@ BookReader.prototype.initNavbar = function() {
         +             '<div class="BRnavend" id="BRnavright"></div>'
         +         '</div>'     
         +     '</div>'
+        +     '<div id="BRnavCntlBtm" class="BRnavCntl BRdn"></div>'
         + '</div>'
     );
     
@@ -3502,8 +3509,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         closeWhenOthersOpen: true,
         cssStyles: {
             padding: '12px 14px',
-            //backgroundColor: '#000',
-            backgroundColor: '#444', // To set it off slightly from the chapter marker
+            backgroundColor: '#000',
             border: '4px solid #e2dcc5',
             //borderBottom: 'none',
             fontFamily: '"Arial", sans-serif',
@@ -3617,7 +3623,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
         +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
         + "</div>"
-        
+        /*
         + "<div id='BRzoomer'>"
         +   "<div id='BRzoompos'>"
         +     "<button class='BRicon zoom_out'></button>"
@@ -3627,7 +3633,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +     "</div>"
         +     "<button class='BRicon zoom_in'></button>"
         +   "</div>"
-        + "</div>");
+        + "</div>"
+        */
+        );
     
     this.updateToolbarZoom(this.reduce); // Pretty format
         
@@ -3809,12 +3817,12 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
     });
     
     // $$$mang cleanup
-    $('#BRzoomer .zoom_in').bind('click', function() {
+    $('#BRpage .zoom_in').bind('click', function() {
         self.zoom(1);
         return false;
     });
     
-    $('#BRzoomer .zoom_out').bind('click', function() {
+    $('#BRpage .zoom_out').bind('click', function() {
         self.zoom(-1);
         return false;
     });
@@ -3902,7 +3910,7 @@ BookReader.prototype.hideNavigation = function() {
         // $$$ don't hardcode height
         $('#BRtoolbar').animate({top:-60});
         $('#BRnav').animate({bottom:-60});
-        $('#BRzoomer').animate({right:-26});
+        //$('#BRzoomer').animate({right:-26});
     }
 }
 
@@ -3914,7 +3922,7 @@ BookReader.prototype.showNavigation = function() {
     if (!this.navigationIsVisible()) {
         $('#BRtoolbar').animate({top:0});
         $('#BRnav').animate({bottom:0});
-        $('#BRzoomer').animate({right:0});
+        //$('#BRzoomer').animate({right:0});
     }
 }
 
@@ -4304,7 +4312,7 @@ BookReader.prototype._getPageHeight= function(index) {
 // Returns the page URI or transparent image if out of range
 BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     if (index < 0 || index >= this.numLeafs) { // Synthesize page
-        return this.imagesBaseURL + "/transparent.png";
+        return this.imagesBaseURL + "transparent.png";
     }
     
     if ('undefined' == typeof(reduce)) {
@@ -4803,3 +4811,41 @@ BookReader.prototype.ttsStartPolling = function () {
         self.ttsNextChunk();
     },500);    
 }
+//FADING, ETC.
+    function changeArrow(){
+        setTimeout(function(){
+            $('#BRnavCntlBtm').removeClass('BRdn').addClass('BRup');
+        },3000);
+    };
+    $().ready(function(){
+        $('#BRtoolbar').animate({top:0},3000).animate({top:-40});
+        $('#BRnav').animate({bottom:0},3000).animate({bottom:-40});
+        changeArrow();
+        $('.BRnavCntl').animate({opacity:1},4000).animate({opacity:.25},1000);
+        $('.BRnavCntl').click(
+            function(){
+                if ($('#BRnavCntlBtm').hasClass('BRdn')) {
+                    $('#BRtoolbar').animate({top:-40});
+                    $('#BRnav').animate({bottom:-40});
+                    $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
+                    $('.BRnavCntl').animate({opacity:1},1000).animate({opacity:.25},1000);
+                } else {
+                    $('#BRtoolbar').animate({top:0});
+                    $('#BRnav').animate({bottom:0});
+                    $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
+                    $('.BRnavCntl').animate({opacity:1});
+                };
+            }
+        );
+        $('#BRnavCntlBtm').mouseover(function(){
+            if ($(this).hasClass('BRup')) {
+                $('.BRnavCntl').animate({opacity:1},250);
+            };
+        });
+        $('#BRnavCntlBtm').mouseleave(function(){
+            if ($(this).hasClass('BRup')) {
+                $('.BRnavCntl').animate({opacity:.25},250);
+            };
+        });
+    });
+

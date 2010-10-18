@@ -10,6 +10,9 @@ h3 {
   font-weight: 700;
   color: #dedede;
 }
+a {
+    outline: none;
+}
 #BookReader {
  position:absolute;
  font-family: arial, sans-serif;
@@ -19,7 +22,7 @@ h3 {
  bottom:0;
 }
 #BRtoolbar {
-    position: fixed;
+    position: relative;
     top: 0;
     left: 0;
     height: 40px;
@@ -188,9 +191,10 @@ h3 {
     height: 20px;
 }
 #BRreturn span {
-    font-size: 12px;
+    font-size: 11px;
     display: block;
     height: 12px;
+    padding-top: 3px;
 }
 #BRreturn a {
     font-size: 14px;
@@ -229,43 +233,30 @@ h3 {
 .BRicon.book_left:hover {background-position:-480px 0;}
 .BRicon.book_right {background-position:-520px 0;}
 .BRicon.book_right:hover {background-position:-560px 0;}
-.BRicon.zoom_out {background-position:-606px 0;}
-.BRicon.zoom_out:hover {background-position:-646px 0;}
-.BRicon.zoom_in {background-position:-686px 0;}
-.BRicon.zoom_in:hover {background-position:-726px 0;}
+.BRicon.zoom_out {background-position:-600px 0;}
+.BRicon.zoom_out:hover {background-position:-640px 0;}
+.BRicon.zoom_in {background-position:-680px 0;}
+.BRicon.zoom_in:hover {background-position:-720px 0;}
 .BRicon.play {background-position:-760px 0;}
 .BRicon.play:hover {background-position:-800px 0;}
 .BRicon.pause {background-position:-840px 0;}
 .BRicon.pause:hover {background-position:-880px 0;}
+.BRicon.twopg {background-position:-920px 0;}
+.BRicon.twopg:hover {background-position:-960px 0;}
+.BRicon.onepg {background-position:-1000px 0;}
+.BRicon.onepg:hover {background-position:-1040px 0;}
+.BRicon.thumb {background-position:-1080px 0;}
+.BRicon.thumb:hover {background-position:-1120px 0;}
+.BRicon.fit {background-position:-1160px 0;}
+.BRicon.fit:hover {background-position:-1200px 0;}
 
 
-/* NOT CURRENTLY IN USE
-.BRicon.embed {background-position:-440px;}
-.BRicon.embed:hover {background-position:-480px 0;}
-.BRicon.read {background-position:-520px 0;}
-.BRicon.read:hover {background-position:-560px 0;}
-.BRicon.full {background-position:-600px 0;}
-.BRicon.full:hover {background-position:-640px 0;}
-.BRicon.thumb {background-position:-680px 0;}
-.BRicon.thumb:hover {background-position:-720px 0;}
-.BRicon.twopg {background-position:-760px 0;display:none;}
-.BRicon.twopg:hover {background-position:-800px 0;}
-.BRicon.one_page_mode {background-position:;}
-.BRicon.two_page_mode {background-position:;}
-.BRicon.thumbnail_mode {background-position:;}
-.BRicon.book_up {background-position:;}
-.BRicon.book_down {background-position:;}
-.BRicon.book_leftmost {background-position:;}
-.BRicon.book_rightmost {background-position:;}
-.BRicon.book_top {background-position:;}
-.BRicon.book_bottom {background-position:;}
-*/
 a.logo {
     display: block;
     float: left;
     width: 40px;
     height: 40px;
-    margin-right: 10px;
+    margin: 0 5px;
     background: transparent url(images/icon_home.png) no-repeat 0 0;
 }
 a.popOff {
@@ -278,7 +269,6 @@ a.popOff {
     background-color: transparent;
     background-repeat: no-repeat;
     background-position: -1050px 0;
-    outline: none;
 }
 a.popOff:hover {
     background-position: -1100px 0;
@@ -412,7 +402,7 @@ a.BRgrey:visited   { color: #666; }
 
 div#BRpage {
     float: right;
-    width: 80px;
+    width: 320px;
     padding-left:12px;
     text-align: right;
 }
@@ -428,16 +418,14 @@ div#BRnav {
 }
 div#BRnavpos {
     position: relative;
-    margin-right: 80px;
+    margin-right: 320px;
     height: 40px;
 }
 div#BRpager {
     position: relative;
-    
     /* Account for padding around nav line */
     margin-left: 10px;
     margin-right: 10px;
-    
     height: 40px;
 }
 div#BRslider {
@@ -455,6 +443,9 @@ div#BRslider {
     margin-left: -12px; /* Center icon */
     background: url(images/slider.png);
     z-index: 103;
+}
+#BRpager a {
+    text-decoration: none;
 }
  /*   
   width: 8px;
@@ -698,4 +689,29 @@ div#BRzoombtn {
     background-repeat:no-repeat;
     font-size: 0.8em; 
     z-index: 3;    
+}
+.BRnavCntl {
+    background-color: #e2dcc5;
+    position: absolute;
+    right: 20px;
+    width: 40px;
+    height: 30px;
+    cursor: pointer;
+}
+#BRnavCntlBtm {
+    bottom: 40px;
+    -moz-border-radius-topright: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -moz-border-radius-topleft: 8px;
+    -webkit-border-top-left-radius: 8px;
+}
+.BRup {
+    background-image: url("images/nav_control-up.png");
+    background-position: 8px 4px;
+    background-repeat: no-repeat;
+}
+.BRdn {
+    background-image: url("images/nav_control-dn.png");
+    background-position: 8px 4px;
+    background-repeat: no-repeat;
 }
