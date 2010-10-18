@@ -1344,8 +1344,6 @@ BookReader.prototype.switchMode = function(mode) {
         this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
         this.prepareOnePageView();
     } else if (3 == mode) {
-        $('button.thumb').hide();
-        $('button.twopg').show();
         this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
         this.prepareThumbnailView();
     } else {
@@ -3627,8 +3625,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     
     // We build in mode 2
     jToolbar.append();
-
-    this.bindToolbarNavHandlers(jToolbar);
+    
+    // Navigation handlers will be bound after all UI is in place -- makes moving icons between
+    // the toolbar and nav bar easier
     
     // Setup tooltips -- later we could load these from a file for i18n
     var titles = { '.logo': 'Go to Archive.org',
@@ -3710,108 +3709,6 @@ BookReader.prototype.switchToolbarMode = function(mode) {
     }
 }
 
-// bindToolbarNavHandlers
-//______________________________________________________________________________
-// Binds the toolbar handlers
-BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
-
-    var self = this; // closure
-
-    jToolbar.find('.book_left').click(function(e) {
-        self.left();
-        return false;
-    });
-         
-    jToolbar.find('.book_right').click(function(e) {
-        self.right();
-        return false;
-    });
-        
-    jToolbar.find('.book_up').bind('click', function(e) {
-        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
-            self.scrollUp();
-        } else {
-            self.prev();
-        }
-        return false;
-    });        
-        
-    jToolbar.find('.book_down').bind('click', function(e) {
-        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
-            self.scrollDown();
-        } else {
-            self.next();
-        }
-        return false;
-    });
-
-    jToolbar.find('.print').click(function(e) {
-        self.printPage();
-        return false;
-    });
-        
-    jToolbar.find('.embed').click(function(e) {
-        self.showEmbedCode();
-        return false;
-    });
-
-    jToolbar.find('.bookmark').click(function(e) {
-        self.showBookmarkCode();
-        return false;
-    });
-
-    jToolbar.find('.play').click(function(e) {
-        self.autoToggle();
-        return false;
-    });
-
-    jToolbar.find('.pause').click(function(e) {
-        self.autoToggle();
-        return false;
-    });
-    
-    jToolbar.find('.book_top').click(function(e) {
-        self.first();
-        return false;
-    });
-
-    jToolbar.find('.book_bottom').click(function(e) {
-        self.last();
-        return false;
-    });
-    
-    jToolbar.find('.book_leftmost').click(function(e) {
-        self.leftmost();
-        return false;
-    });
-  
-    jToolbar.find('.book_rightmost').click(function(e) {
-        self.rightmost();
-        return false;
-    });
-
-    jToolbar.find('.read').click(function(e) {
-        self.ttsToggle();
-        return false;
-    });
-    
-    // $$$mang cleanup
-    $('#BRpage .zoom_in').bind('click', function() {
-        self.zoom(1);
-        return false;
-    });
-    
-    $('#BRpage .zoom_out').bind('click', function() {
-        self.zoom(-1);
-        return false;
-    });
-    
-    $('#booksearch').bind('submit', function() {
-        self.search($('#textSrch').val());
-    });
-    
-}
-
 // updateToolbarZoom(reduce)
 //______________________________________________________________________________
 // Update the displayed zoom factor based on reduction factor
@@ -3842,6 +3739,119 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
 //______________________________________________________________________________
 // Bind navigation handlers
 BookReader.prototype.bindNavigationHandlers = function() {
+
+    var self = this; // closure
+    jIcons = $('.BRicon');
+
+    jIcons.filter('.onepg').bind('click', function(e) {
+        self.switchMode(self.constMode1up);
+    });
+    
+    jIcons.filter('.twopg').bind('click', function(e) {
+        self.switchMode(self.constMode2up);
+    });
+
+    jIcons.filter('.thumb').bind('click', function(e) {
+        self.switchMode(self.constModeThumb);
+    });
+    
+    jIcons.filter('.fit').bind('fit', function(e) {
+        // XXXmang implement autofit zoom
+    });
+
+    jIcons.filter('.book_left').click(function(e) {
+        self.left();
+        return false;
+    });
+         
+    jIcons.filter('.book_right').click(function(e) {
+        self.right();
+        return false;
+    });
+        
+    jIcons.filter('.book_up').bind('click', function(e) {
+        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
+            self.scrollUp();
+        } else {
+            self.prev();
+        }
+        return false;
+    });        
+        
+    jIcons.filter('.book_down').bind('click', function(e) {
+        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
+            self.scrollDown();
+        } else {
+            self.next();
+        }
+        return false;
+    });
+
+    jIcons.filter('.print').click(function(e) {
+        self.printPage();
+        return false;
+    });
+        
+    jIcons.filter('.embed').click(function(e) {
+        self.showEmbedCode();
+        return false;
+    });
+
+    jIcons.filter('.bookmark').click(function(e) {
+        self.showBookmarkCode();
+        return false;
+    });
+
+    jIcons.filter('.play').click(function(e) {
+        self.autoToggle();
+        return false;
+    });
+
+    jIcons.filter('.pause').click(function(e) {
+        self.autoToggle();
+        return false;
+    });
+    
+    jIcons.filter('.book_top').click(function(e) {
+        self.first();
+        return false;
+    });
+
+    jIcons.filter('.book_bottom').click(function(e) {
+        self.last();
+        return false;
+    });
+    
+    jIcons.filter('.book_leftmost').click(function(e) {
+        self.leftmost();
+        return false;
+    });
+  
+    jIcons.filter('.book_rightmost').click(function(e) {
+        self.rightmost();
+        return false;
+    });
+
+    jIcons.filter('.read').click(function(e) {
+        self.ttsToggle();
+        return false;
+    });
+    
+    jIcons.filter('.zoom_in').bind('click', function() {
+        self.zoom(1);
+        return false;
+    });
+    
+    jIcons.filter('.zoom_out').bind('click', function() {
+        self.zoom(-1);
+        return false;
+    });
+    
+    // XXX fix integration
+    $('#booksearch').bind('submit', function() {
+        self.search($('#textSrch').val());
+    });
+
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
         { 'br': this },
         this.navigationMousemoveHandler
