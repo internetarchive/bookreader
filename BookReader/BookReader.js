@@ -4257,7 +4257,8 @@ BookReader.prototype.searchHighlightVisible = function() {
     if (this.constMode2up == this.mode) {
         var visiblePages = Array(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
     } else if (this.constMode1up == this.mode) {
-        var visiblePages = Array(this.currentIndex());
+        var visiblePages = Array();
+        visiblePages[0] = this.currentIndex();
     } else {
         return false;
     }
