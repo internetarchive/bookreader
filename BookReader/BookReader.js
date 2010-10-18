@@ -2656,7 +2656,11 @@ BookReader.prototype.searchNew = function(term) {
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
     url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
     url    += '&q='+escape(term);
-    //console.log('search url='+url);    
+    //console.log('search url='+url);
+    
+    term = term.replace(/\//g, ' '); // strip slashes, since this goes in the url
+    this.searchTerm = term;
+    
     this.removeSearchResults();
     this.showProgressPopup();
     this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallbackNew'});    
@@ -4332,19 +4336,30 @@ BookReader.prototype.canSwitchToMode = function(mode) {
 // searchHighlightVisible
 //________
 // Returns true if a search highlight is currently being displayed
-BookReader.prototype.searchHighlightVisible = function() {
-    if (this.searchResults == null) return false;
+BookReader.prototype.searchHighlightVisible = function() {    
+    var results = this.searchResults;
+    if (null == results) return false;    
     
     if (this.constMode2up == this.mode) {
-        if (this.searchResults[this.twoPage.currentIndexL]
-                || this.searchResults[this.twoPage.currentIndexR]) {
-            return true;
-        }
-    } else { // 1up
-        if (this.searchResults[this.currentIndex()]) {
-            return true;
+        var visiblePages = Array(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
+    } else if (this.constMode1up == this.mode) {
+        var visiblePages = Array(this.currentIndex());
+    } else {
+        return false;
+    }
+    
+    var i, j;
+    for (i=0; i<results.matches.length; i++) {
+        //console.log(results.matches[i].par[0]);
+        for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
+            var box = results.matches[i].par[0].boxes[j];
+            var pageIndex = this.leafNumToIndex(box.page);
+            if (jQuery.inArray(pageIndex, visiblePages) >= 0) {
+                return true;
+            }
         }
     }
+    
     return false;
 }
 
