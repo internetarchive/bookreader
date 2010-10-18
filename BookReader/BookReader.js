@@ -2657,6 +2657,7 @@ BookReader.prototype.searchNew = function(term) {
     url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
     url    += '&q='+escape(term);
     //console.log('search url='+url);    
+    this.removeSearchResults();
     this.showProgressPopup();
     this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallbackNew'});    
 }
@@ -2666,7 +2667,7 @@ BookReader.prototype.searchNew = function(term) {
 function BRSearchCallbackNew(results) {    
     //console.log('got ' + results.matches.length + ' results');
     br.removeSearchResults();
-    br.searchResults = results;
+    br.searchResults = results; 
     //console.log(br.searchResults);
     var i;    
     for (i=0; i<results.matches.length; i++) {        
