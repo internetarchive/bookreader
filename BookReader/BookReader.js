@@ -3407,7 +3407,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     var re = new RegExp('{{{(.+?)}}}', 'g');    
     queryString = queryString.replace(re, '<a href="#" onclick="br.jumpToIndex('+pageIndex+'); return false;">$1</a>')
 
-    $('<div class="search" style="left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
+    var marker = $('<div class="search" style="left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
         + queryString + '<span>' + uiStringPage + ' ' + pageNumber + '</span></div>')
     .data({'self': this, 'pageIndex': pageIndex })
     .appendTo('#BRnavline').bt({
@@ -3453,6 +3453,8 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     .bind('click', function() {
         $(this).data('self').jumpToIndex($(this).data('pageIndex'));
     });
+    
+    $(marker).css('top', -$('#BRcontainer').height()+'px').animate({top:'-25px'}, 'slow');
 
 }
 
