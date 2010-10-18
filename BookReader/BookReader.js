@@ -4831,21 +4831,21 @@ BookReader.prototype.ttsStartPolling = function () {
     };
     $().ready(function(){
         $('#BRtoolbar').animate({top:0},3000).animate({top:-40});
-        $('#BRnav').animate({bottom:0},3000).animate({bottom:-40});
+        $('#BRnav').animate({bottom:0},3000).animate({bottom:-53});
         changeArrow();
-        $('.BRnavCntl').animate({opacity:1},4000).animate({opacity:.25},1000);
+        $('.BRnavCntl').animate({opacity:1},3000).animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
         $('.BRnavCntl').click(
             function(){
                 if ($('#BRnavCntlBtm').hasClass('BRdn')) {
                     $('#BRtoolbar').animate({top:-40});
-                    $('#BRnav').animate({bottom:-40});
+                    $('#BRnav').animate({bottom:-53});
                     $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
-                    $('.BRnavCntl').animate({opacity:1},1000).animate({opacity:.25},1000);
+                    $('.BRnavCntl').animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
                 } else {
                     $('#BRtoolbar').animate({top:0});
                     $('#BRnav').animate({bottom:0});
                     $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
-                    $('.BRnavCntl').animate({opacity:1});
+                    $('.BRnavCntl').animate({opacity:1,height:'30px'});
                 };
             }
         );
