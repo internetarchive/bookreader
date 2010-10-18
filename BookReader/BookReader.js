@@ -2635,22 +2635,7 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 // search()
 //______________________________________________________________________________
 BookReader.prototype.search = function(term) {
-    term = term.replace(/\//g, ' '); // strip slashes
-    this.searchTerm = term;
-    $('#BookReaderSearchScript').remove();
-    var script  = document.createElement("script");
-    script.setAttribute('id', 'BookReaderSearchScript');
-    script.setAttribute("type", "text/javascript");
-    script.setAttribute("src", 'http://'+this.server+'/BookReader/flipbook_search_br.php?url='+escape(this.bookPath + '_djvu.xml')+'&term='+term+'&format=XML&callback=br.BRSearchCallback');
-    document.getElementsByTagName('head')[0].appendChild(script);
-    $('#BookReaderSearchBox').val(term);
-    $('#BookReaderSearchResults').html('Searching...');
-}
-
-// searchNew()
-//______________________________________________________________________________
-BookReader.prototype.searchNew = function(term) {
-    //console.log('searchNew called with term=' + term);
+    //console.log('search called with term=' + term);
     var url = 'http://'+this.server.replace(/:.+/, ''); //remove the port and userdir
     url    += '/~edward/inside_jsonp.php?item_id='+this.bookId;
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
@@ -2663,12 +2648,14 @@ BookReader.prototype.searchNew = function(term) {
     
     this.removeSearchResults();
     this.showProgressPopup();
-    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallbackNew'});    
+    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallback'});    
 }
 
+// BRSearchCallback()
+//______________________________________________________________________________
 // Unfortunately, we can't pass 'br.searchCallback' to our search service,
 // because it can't handle the '.'
-function BRSearchCallbackNew(results) {    
+function BRSearchCallback(results) {    
     //console.log('got ' + results.matches.length + ' results');
     br.removeSearchResults();
     br.searchResults = results; 
@@ -2681,79 +2668,6 @@ function BRSearchCallbackNew(results) {
     br.removeProgressPopup();
 }
 
-// BRSearchCallback()
-//______________________________________________________________________________
-BookReader.prototype.BRSearchCallback = function(txt) {
-    //alert(txt);
-    if (jQuery.browser.msie) {
-        var dom=new ActiveXObject("Microsoft.XMLDOM");
-        dom.async="false";
-        dom.loadXML(txt);    
-    } else {
-        var parser = new DOMParser();
-        var dom = parser.parseFromString(txt, "text/xml");    
-    }
-    
-    $('#BookReaderSearchResults').empty();    
-    $('#BookReaderSearchResults').append('<ul>');
-    
-    for (var key in this.searchResults) {
-        if (null != this.searchResults[key].div) {
-            $(this.searchResults[key].div).remove();
-        }
-        delete this.searchResults[key];
-    }
-    
-    var pages = dom.getElementsByTagName('PAGE');
-    
-    if (0 == pages.length) {
-        // $$$ it would be nice to echo the (sanitized) search result here
-        $('#BookReaderSearchResults').append('<li>No search results found</li>');
-    } else {    
-        for (var i = 0; i < pages.length; i++){
-            //console.log(pages[i].getAttribute('file').substr(1) +'-'+ parseInt(pages[i].getAttribute('file').substr(1), 10));
-    
-            
-            var re = new RegExp (/_(\d{4})\.djvu/);
-            var reMatch = re.exec(pages[i].getAttribute('file'));
-            var index = parseInt(reMatch[1], 10);
-            //var index = parseInt(pages[i].getAttribute('file').substr(1), 10);
-            
-            var children = pages[i].childNodes;
-            var context = '';
-            for (var j=0; j<children.length; j++) {
-                //console.log(j + ' - ' + children[j].nodeName);
-                //console.log(children[j].firstChild.nodeValue);
-                if ('CONTEXT' == children[j].nodeName) {
-                    context += children[j].firstChild.nodeValue;
-                } else if ('WORD' == children[j].nodeName) {
-                    context += '<b>'+children[j].firstChild.nodeValue+'</b>';
-                    
-                    var index = this.leafNumToIndex(index);
-                    if (null != index) {
-                        //coordinates are [left, bottom, right, top, [baseline]]
-                        //we'll skip baseline for now...
-                        var coords = children[j].getAttribute('coords').split(',',4);
-                        if (4 == coords.length) {
-                            this.searchResults[index] = {'l':parseInt(coords[0]), 'b':parseInt(coords[1]), 'r':parseInt(coords[2]), 't':parseInt(coords[3]), 'div':null};
-                        }
-                    }
-                }
-            }
-            var pageName = this.getPageName(index);
-            var middleX = (this.searchResults[index].l + this.searchResults[index].r) >> 1;
-            var middleY = (this.searchResults[index].t + this.searchResults[index].b) >> 1;
-            //TODO: remove hardcoded instance name
-            $('#BookReaderSearchResults').append('<li><b><a href="javascript:br.jumpToIndex('+index+','+middleX+','+middleY+');">' + pageName + '</a></b> - ' + context + '</li>');
-        }
-    }
-    $('#BookReaderSearchResults').append('</ul>');
-
-    // $$$ update again for case of loading search URL in new browser window (search box may not have been ready yet)
-    $('#BookReaderSearchBox').val(this.searchTerm);
-
-    this.updateSearchHilites();
-}
 
 // updateSearchHilites()
 //______________________________________________________________________________
@@ -3885,7 +3799,7 @@ BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
     });
     
     $('#booksearch').bind('submit', function() {
-        self.searchNew($('#textSrch').val());
+        self.search($('#textSrch').val());
     });
     
 }
