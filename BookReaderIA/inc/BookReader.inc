@@ -137,17 +137,19 @@ class BookReader
     <script type="text/javascript" src="/bookreader/jquery.ui.ipad.js"></script>
      <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
         <!--[if lt IE 9]>
-        <script type="text/javascript" src="excanvas.compiled.js"></script>
+        <script type="text/javascript" src="/includes/excanvas.compiled.js"></script>
         <![endif]-->
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
-    <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2.js?v=<? echo($version); ?>"></script>
+<? if ( !preg_match("/mobile/i", $_SERVER['HTTP_USER_AGENT']) ) { ?>
+    <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2-ia.js?v=<? echo($version); ?>"></script>
     <script>
         soundManager.debugMode = false;
         soundManager.url = '/bookreader/soundmanager/swf/';       
         soundManager.useHTML5Audio = true;
         soundManager.flashVersion = 9; //flash 8 version of swf is buggy when calling play() on a sound that is still loading
     </script>
+<? } /* mobile user agent */ ?>
 </head>
 <body style="background-color: ##939598;">
 

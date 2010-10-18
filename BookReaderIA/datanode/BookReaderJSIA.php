@@ -432,10 +432,16 @@ br.archiveFormat = '<?echo $archiveFormat;?>';
 
 # Load some values from meta.xml
 if ('' != $metaData->{'page-progression'}) {
-  echo "br.pageProgression = '" . $metaData->{"page-progression"} . "';";
+  echo "br.pageProgression = '" . $metaData->{"page-progression"} . "';\n";
 } else {
   // Assume page progression is Left To Right
-  echo "br.pageProgression = 'lr';";
+  echo "br.pageProgression = 'lr';\n";
+}
+
+if ('browserlending' == $metaData->{'collection'}) {
+    echo "br.olAuth = true;\n";
+} else {
+    echo "br.olAuth = false; //" . $metaData->{'collection'} ."\n";
 }
 
 # Special cases
@@ -473,9 +479,92 @@ if (typeof(brConfig) != 'undefined') {
     }
 } // brConfig
 
-br.cleanupMetadata();
-br.init();
 
+function OLAuth() {
+    //this.authUrl = 'http://home.us.archive.org/~rkumar/olauth.php?id=' + br.bookId;
+    // XXXmang update to production
+    this.authUrl = 'http://ol-mang:8080/ia_auth/' + br.bookId;
+    //this.authUrl = 'http://openlibrary.org/ia_auth/' + br.bookId;
+    return this;
+}
+
+OLAuth.prototype.init = function() {
+    var htmlStr =  '<p style="text-align:center;"><b>Authenticating in-browser loan with openlibrary.org!</b></p>';
+    htmlStr    +=  '<p>Please wait...</p>';
+
+    this.showPopup("#ddd", "#000", htmlStr);
+    $.ajax({url:this.authUrl, dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
+}
+
+OLAuth.prototype.showPopup = function(bgColor, textColor, msg) {
+    this.popup = document.createElement("div");
+    $(this.popup).css({
+        position: 'absolute',
+        top:      '20px',
+        left:     ($('#BookReader').attr('clientWidth')-400)/2 + 'px',
+        width:    '400px',
+        padding:  "20px",
+        border:   "3px double #999999",
+        zIndex:   3,
+        backgroundColor: bgColor,
+        color: textColor
+    }).appendTo('#BookReader');
+
+    this.popup.innerHTML = msg;
+
+}
+
+OLAuth.prototype.initCallback = function(obj) {
+    if (false == obj.success) {
+        $(this.popup).css({
+            backgroundColor: "#f00",
+            color: "#fff"
+        });
+
+        this.popup.innerHTML = obj.msg;
+        return;
+    }
+    
+    //user is authenticated
+    this.setCookie(obj.token);
+    this.startPolling();    
+    br.init();
+}
+
+OLAuth.prototype.callback = function(obj) {
+    if (false == obj.success) {
+        this.showPopup("#f00", "#fff", obj.msg);
+        clearInterval(this.poller);
+        this.ttsPoller = null;
+    } else {
+        this.setCookie(obj.token);
+    }
+}
+
+OLAuth.prototype.setCookie = function(value) {
+    var date = new Date();
+    date.setTime(date.getTime()+(24*60*60*1000));  //one day expiry
+    var expiry = date.toGMTString();
+    var cookie = 'loan-'+br.bookId+'='+value;
+    cookie    += '; expires='+expiry;
+    cookie    += '; path=/; domain=.archive.org;';
+    document.cookie = cookie; 
+}
+
+OLAuth.prototype.startPolling = function () {    
+    var self = this;
+    this.poller=setInterval(function(){
+        $.ajax({url:self.authUrl, dataType:'jsonp', jsonpCallback:'olAuth.callback'});
+    },300000);   
+}
+
+br.cleanupMetadata();
+if (br.olAuth) {
+    var olAuth = new OLAuth();
+    olAuth.init();
+} else {
+    br.init();
+}
 <?
 
 
@@ -530,3 +619,4 @@ function findImageStack($subPrefix, $filesData) {
 }
 
 ?>
+
