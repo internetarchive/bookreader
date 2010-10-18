@@ -381,6 +381,20 @@ a.BRgrey:visited   { color: #666; }
     font-family: "Lucida Grande", "Verdana", "Arial", sans-serif;
     color: #000;
 }
+.BRfloat a {
+    color: #036daa;
+}
+.BRfloat a:hover {
+    color: #35672e;
+}
+.BRfloat a.title {
+    color: #000;
+    text-decoration: none;
+}
+.BRfloat a.title:hover {
+    color: #036daa;
+    text-decoration: underline;
+}
 .BRfloatHead {
     background-color: #615132;
     height: 32px;
@@ -452,6 +466,71 @@ a.BRgrey:visited   { color: #666; }
 .shift{
     position:absolute!important;
     left:-10000px!important;
+}
+.BRfloatBody {
+    float: left;
+    width: 570px;
+    padding: 30px;
+    color: #333;
+}
+.BRfloatCover {
+    float: left;
+    padding: 0 20px 80px 0;
+}
+.BRfloatTitle {
+    font-size: 1.2em;
+}
+.BRfloatTitle h2 {
+    display: inline;
+    font-size: 1.3em;
+}
+.BRfloatMeta p {
+    margin: 0;
+    padding: 0;
+    font-size: 1.1em;
+    line-height: 1.5em;
+}
+.BRfloatMeta p.moreInfo {
+    line-height: 15px;
+    margin-top: 30px;
+}
+.BRfloatMeta p.moreInfo span {
+    background: url("images/icon_OL-logo-xs.png") no-repeat;
+    display: block;
+    float: left;
+    width: 26px;
+    height: 15px;
+}
+.BRfloatMeta h3 {
+    font-size: 1.1em;
+    font-weight: 700;
+    line-height: 1.5em;
+    margin-top: 30px;
+    color: #333;
+}
+.BRfloatMeta ul.links {
+    float: left;
+    clear: right;
+}
+.BRfloatMeta ul.links li {
+    list-style-type: none;
+    display: block;
+    float: left;
+    font-size: 1.1em;
+    line-height: 1.5em;
+}
+.BRfloatMeta ul.links li span {
+    padding: 0 10px;
+}
+.BRfloatFoot a, .BRfloatFoot span {
+    display: block;
+    float: left;
+    line-height: 16px;
+    margin: 0 0 10px 10px;
+}
+.BRfloatFoot a.problem {
+    background: url("images/icon_alert-xs.png") no-repeat;
+    padding-left: 20px;
 }
 div#BRpage {
     float: right;

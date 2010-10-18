@@ -45,8 +45,7 @@ $().ready(function(){
     $("#infoBtn").colorbox({inline: true, opacity: "0.5", href: "#aboutThis"});
 });
 </script>
-<style type="text/css">
-</style>
+
 <div class="hidden">
     <div class="BRfloat" id="shareThis"> 
         <div class="BRfloatHead"> 
@@ -92,15 +91,37 @@ $().ready(function(){
             <a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a> 
         </div>
         <div class="BRfloatBody">
-            <div class="BRfloatCover"></div>
-            <div class="BRfloatMeta">
-                <h2><a href="Open Library Book Page">Book Title</a></h2>
-                by
-                <a href="Open Library Author Page">Book Author</a>
+            <div class="BRfloatCover">
+                <a href="Open Library Book Page"><img src="Open Library Book Cover" alt="Book Title" height="140"/></a>
             </div>
+            <div class="BRfloatMeta">
+                <div class="BRfloatTitle">
+                    <h2><a href="Open Library Book Page" class="title">Book Title</a></h2>
+                    by
+                    <a href="Open Library Author Page">Book Author</a>
+                </div>
+                <p>Published MONTH YEAR by <a href="Open Library Publisher Page">Publisher name</a></p>
+                <p>Written in <a href="Open Library Language page">Language</a></p>
+                <h3>Other Formats</h3>
+                <ul class="links">
+                    <li><a href="PDF Link">PDF</a><span>|</span></li>
+                    <li><a href="Text Link">Plain Text</a><span>|</span></li>
+                    <li><a href="DAISY Link">DAISY</a><span>|</span></li>
+                    <li><a href="PDF Link">ePub</a><span>|</span></li>
+                    <li><a href="Kindle Link">Send to Kindle</a><span>|</span></li>
+                    <li><a href="archive.org Page for Book">More...</a></li>
+                </ul>
+                <p class="moreInfo"><span></span>More information on <a href="Open Libarary Book Page">openlibrary.org</a>.</p>
+            </div>
+        </div>
+        <div class="BRfloatFoot">
+            <a href="http://openlibrary.org/contact" class="problem">Report a problem</a>
+            <span>|</span>
+            <a href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a>
         </div>
     </div>
 </div>
+
  
 <script type="text/javascript"> 
   // Set some config variables -- $$$ NB: Config object format has not been finalized
