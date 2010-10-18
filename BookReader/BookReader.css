@@ -139,34 +139,6 @@ a {
     position: absolute;
 }
 
-/* search sidebar */
-#BookReaderSearch {
-    border:1px solid black;
-    position:absolute;
-    background-color: #E6E4E1;
-    font-family: arial, sans-serif;
-}
-
-#BookReaderSearchResults {
-    background-color: #FCFCFC;
-    top: 25px;
-    bottom: 0px;
-    overflow:auto;    
-    position: absolute;
-    left: 0px;
-    right: 0px;    
-    font-family: arial, san-serif;
-    font-size: 0.85em; 
-    padding: 2px;
-}
-
-.BookReaderSearchHilite {
-    opacity: 0.20; 
-    filter: alpha(opacity = 20);
-    background-color: #00f;
-    position:absolute;
-}
-
 .hidden {
   display: none;
 }
@@ -283,7 +255,7 @@ form#booksearch {
     margin-right: 10px;
 }
 form#booksearch input[type=search] {
-    width: 280px;
+    min-width: 80px;
     height: 22px;
     line-height: 22px;
     font-family: "Arial", sans-serif;
@@ -294,6 +266,7 @@ form#booksearch input[type=search] {
     margin: 9px 0 0 0;
     padding: 0;
     border: 1px inset #ccc;
+    outline: none;
 }
 form#booksearch button {
     width: 30px;
@@ -397,9 +370,92 @@ a.BRgrey:visited   { color: #666; }
         #cboxLoadedContent{background:#fff;margin:0;}
         #cboxLoadingOverlay{background:transparent;}
         /* XXXmang where is icon_close? */
-        #cboxClose{position:absolute;top:20px;right:20px;display:block;width:32px;height:32px;background-image:url(/images/icons/icon_close-pop.png);background-position:0 0;background-repeat:no-repeat;}
+        #cboxClose{position:absolute;top:20px;right:20px;display:block;width:32px;height:32px;background-image:url(/images/icon_close-pop.png);background-position:0 0;background-repeat:no-repeat;}
         #cboxClose:hover{background-position:0 -32px;}
-
+.BRfloat * {
+    margin: 0;
+    padding: 0;
+}
+.BRfloat {
+    position: relative;
+    background: #fff;
+    text-align: left;
+    min-width: 600px;
+    font-family: "Lucida Grande", "Verdana", "Arial", sans-serif;
+    color: #000;
+}
+.BRfloatHead {
+    background-color: #615132;
+    height: 32px;
+    line-height: 32px;
+    padding: 0 10px 10px 0;
+    font-family: "News Gothic MT","Trebuchet MS",Geneva,Helvetica,sans-serif;
+    font-size: 3em;
+    font-weight: 700;
+    color: #fff;
+}
+.BRfloat a.floatShut {position:absolute;top:0;right:0;display:block;width:32px;height:32px;background-image:url("images/icon_close-pop.png");background-position:0 0;background-repeat:no-repeat;}
+.BRfloat a.floatShut:hover {background-position:0 -32px;}
+.BRfloat fieldset {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: none;
+}
+.BRfloat fieldset.sub {
+    margin-top: 0px;
+    padding: 10px;
+}
+.BRfloat fieldset.center {
+    text-align: center;
+    padding: 10px 20px 30px;
+}
+.BRfloat label {
+    display: block;
+    font-weight: 700;
+    font-size: 1.6em;
+    margin: 5px 0;
+}
+.BRfloat label.sub {
+    display: inline;
+    padding: 10px 30px 10px 0;
+    font-weight: normal;
+    font-size: 1.4em;
+    color: #666;
+}
+.BRfloat input[type=text],
+.BRfloat textarea {
+    display: block;
+    margin-top: 10px;
+    width: 570px;
+    padding: 3px;
+    border: 2px inset;
+    font-family: "Lucida Grande", "Verdana", "Arial", sans-serif;
+    font-size: 1.4em;
+    line-height: 1.5em;
+    font-weight: normal;
+}
+.BRfloat textarea {
+    height: 85px;
+}
+.BRfloat button[type=button] {
+    font-size: 2em;
+    padding: 5px;
+    margin: 0 auto;
+}
+.BRfloat p {
+    width: 575px;
+    font-size: 1.6em;
+    margin: 20px 20px 0;
+}
+.BRfloat p.meta {
+    font-size: 1.1em;
+    color: #748d36;
+    margin: 10px 0 0;
+}
+.shift{
+    position:absolute!important;
+    left:-10000px!important;
+}
 div#BRpage {
     float: right;
     width: 320px;

@@ -32,7 +32,75 @@
 <body> 
  
  
-<div id="BookReader">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div> 
+<div id="BookReader">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
+
+<div style="position:fixed;top:100px;left:10px;z-index:2000;">
+<button id="shareBtn" title="Share">Temp Share Button</button>
+<button id="infoBtn" title="About this book">Temp Info Button</button>
+</div>
+
+<script type="text/javascript">
+$().ready(function(){
+    $("#shareBtn").colorbox({inline: true, opacity: "0.5", href: "#shareThis"});
+    $("#infoBtn").colorbox({inline: true, opacity: "0.5", href: "#aboutThis"});
+});
+</script>
+<style type="text/css">
+</style>
+<div class="hidden">
+    <div class="BRfloat" id="shareThis"> 
+        <div class="BRfloatHead"> 
+            Share
+            <a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a> 
+        </div> 
+        <p>Copy and paste one of these options to share this book elsewhere.</p>
+        <form method="post" action="">
+            <fieldset>
+                <label for="pageview">Link to this page view:</label>
+                <input type="text" name="pageview" id="pageview" value="http://thisisthelinktothispageview"/>
+            </fieldset>
+            <fieldset>
+                <label for="booklink">Link to the book:</label>
+                <input type="text" name="booklink" id="booklink" value="http://thisisthelinktothisbook"/>
+            </fieldset>
+            <fieldset>
+                <label for="iframe">Embed a mini Book Reader:</label>
+                <fieldset class="sub">
+                    <label class="sub">
+                        <input type="radio" name="pages" id="1page" checked="checked"/>
+                        1 page
+                    </label>
+                    <label class="sub">
+                        <input type="radio" name="pages" id="2page"/>
+                        2 pages
+                    </label>
+                    <label class="sub">
+                        <input type="checkbox" name="thispage" id="thispage"/>
+                        Open to this page?
+                    </label>
+                </fieldset>
+                <textarea cols="30" rows="4" name="iframe" id="iframe"><iframe src="http://thisisthestreamlink" width="480" height="480"></iframe></textarea>
+                <p class="meta"><strong>NOTE:</strong> We've tested EMBED on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>
+            </fieldset>
+            <fieldset class="center">
+                <button type="button" onclick="$.fn.colorbox.close();">Finished</button>            
+            </fieldset>
+        </form>
+    </div>
+    <div class="BRfloat" id="aboutThis"> 
+        <div class="BRfloatHead">About this book 
+            <a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a> 
+        </div>
+        <div class="BRfloatBody">
+            <div class="BRfloatCover"></div>
+            <div class="BRfloatMeta">
+                <h2><a href="Open Library Book Page">Book Title</a></h2>
+                by
+                <a href="Open Library Author Page">Book Author</a>
+            </div>
+        </div>
+    </div>
+</div>
  
 <script type="text/javascript"> 
   // Set some config variables -- $$$ NB: Config object format has not been finalized
