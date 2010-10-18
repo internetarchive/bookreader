@@ -74,7 +74,7 @@ function BookReader() {
     this.printPopup = null;
     
     this.searchTerm = '';
-    this.searchResults = {};
+    this.searchResults = null;
     
     this.firstIndex = null;
     
@@ -2657,17 +2657,23 @@ BookReader.prototype.searchNew = function(term) {
     url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
     url    += '&q='+escape(term);
     //console.log('search url='+url);    
-    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallbackNew'});
+    this.showProgressPopup();
+    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallbackNew'});    
 }
 
 // Unfortunately, we can't pass 'br.searchCallback' to our search service,
 // because it can't handle the '.'
-function BRSearchCallbackNew(results) {
+function BRSearchCallbackNew(results) {    
     //console.log('got ' + results.matches.length + ' results');
+    br.removeSearchResults();
+    br.searchResults = results;
+    //console.log(br.searchResults);
     var i;    
     for (i=0; i<results.matches.length; i++) {        
         br.addSearchResult(results.matches[i].text, br.leafNumToIndex(results.matches[i].par[0].page));
     }
+    br.updateSearchHilites();
+    br.removeProgressPopup();
 }
 
 // BRSearchCallback()
@@ -2757,29 +2763,38 @@ BookReader.prototype.updateSearchHilites = function() {
 // showSearchHilites1UP()
 //______________________________________________________________________________
 BookReader.prototype.updateSearchHilites1UP = function() {
-
-    for (var key in this.searchResults) {
-        
-        if (jQuery.inArray(parseInt(key), this.displayedIndices) >= 0) {
-            var result = this.searchResults[key];
-            if (null == result.div) {
-                result.div = document.createElement('div');
-                $(result.div).attr('className', 'BookReaderSearchHilite').appendTo('#pagediv'+key);
-                //console.log('appending ' + key);
-            }    
-            $(result.div).css({
-                width:  (result.r-result.l)/this.reduce + 'px',
-                height: (result.b-result.t)/this.reduce + 'px',
-                left:   (result.l)/this.reduce + 'px',
-                top:    (result.t)/this.reduce +'px'
-            });
-
-        } else {
-            //console.log(key + ' not displayed');
-            this.searchResults[key].div=null;
+    var results = this.searchResults;
+    if (null == results) return;
+    var i, j;
+    for (i=0; i<results.matches.length; i++) {
+        //console.log(results.matches[i].par[0]);
+        for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
+            var box = results.matches[i].par[0].boxes[j];
+            var pageIndex = this.leafNumToIndex(box.page);
+            if (jQuery.inArray(pageIndex, this.displayedIndices) >= 0) {
+                if (null == box.div) {
+                    //create a div for the search highlight, and stash it in the box object
+                    box.div = document.createElement('div');
+                    $(box.div).attr('className', 'BookReaderSearchHilite').appendTo('#pagediv'+pageIndex);
+                }
+                $(box.div).css({
+                    width:  (box.r-box.l)/this.reduce + 'px',
+                    height: (box.b-box.t)/this.reduce + 'px',
+                    left:   (box.l)/this.reduce + 'px',
+                    top:    (box.t)/this.reduce +'px'
+                });                
+            } else {
+                if (null != box.div) {
+                    //console.log('removing search highlight div');
+                    $(box.div).remove();
+                    box.div=null;
+                }                
+            }
         }
     }
+    
 }
+
 
 // twoPageGutter()
 //______________________________________________________________________________
@@ -2908,31 +2923,36 @@ BookReader.prototype.twoPagePlaceFlipAreas = function() {
     });
 }
     
-// showSearchHilites2UP()
+// showSearchHilites2UPNew()
 //______________________________________________________________________________
 BookReader.prototype.updateSearchHilites2UP = function() {
-
-    for (var key in this.searchResults) {
-        key = parseInt(key, 10);
-        if (jQuery.inArray(key, this.displayedIndices) >= 0) {
-            var result = this.searchResults[key];
-            if (null == result.div) {
-                result.div = document.createElement('div');
-                $(result.div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
-                //console.log('appending ' + key);
+    //console.log('updateSearchHilites2UP results = ' + this.searchResults); 
+    var results = this.searchResults;
+    if (null == results) return;
+    var i, j;
+    for (i=0; i<results.matches.length; i++) {
+        //console.log(results.matches[i].par[0]);
+        for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
+            var box = results.matches[i].par[0].boxes[j];
+            var pageIndex = this.leafNumToIndex(box.page);
+            if (jQuery.inArray(pageIndex, this.displayedIndices) >= 0) {
+                if (null == box.div) {
+                    //create a div for the search highlight, and stash it in the box object
+                    box.div = document.createElement('div');
+                    $(box.div).attr('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
+                    //console.log('appending new div');
+                }
+                this.setHilightCss2UP(box.div, pageIndex, box.l, box.r, box.t, box.b);
+            } else {
+                if (null != box.div) {
+                    //console.log('removing search highlight div');
+                    $(box.div).remove();
+                    box.div=null;
+                }                
             }
-
-            this.setHilightCss2UP(result.div, key, result.l, result.r, result.t, result.b);
-
-        } else {
-            //console.log(key + ' not displayed');
-            if (null != this.searchResults[key].div) {
-                //console.log('removing ' + key);
-                $(this.searchResults[key].div).remove();
-            }
-            this.searchResults[key].div=null;
         }
     }
+    
 }
 
 // setHilightCss2UP()
@@ -2967,13 +2987,20 @@ BookReader.prototype.setHilightCss2UP = function(div, index, left, right, top, b
 // removeSearchHilites()
 //______________________________________________________________________________
 BookReader.prototype.removeSearchHilites = function() {
-    for (var key in this.searchResults) {
-        if (null != this.searchResults[key].div) {
-            $(this.searchResults[key].div).remove();
-            this.searchResults[key].div=null;
-        }        
-    }
+    var results = this.searchResults;
+    if (null == results) return;
+    var i, j;
+    for (i=0; i<results.matches.length; i++) {
+        for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
+            var box = results.matches[i].par[0].boxes[j];
+            if (null != box.div) {
+                $(box.div).remove();
+                box.div=null;                
+            }
+        }
+    }    
 }
+
 
 // printPage
 //______________________________________________________________________________
@@ -3511,6 +3538,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
 }
 
 BookReader.prototype.removeSearchResults = function() {
+    this.removeSearchHilites(); //be sure to set all box.divs to null
     $('#BRnavpos .search').remove();
 }
 
@@ -4304,6 +4332,8 @@ BookReader.prototype.canSwitchToMode = function(mode) {
 //________
 // Returns true if a search highlight is currently being displayed
 BookReader.prototype.searchHighlightVisible = function() {
+    if (this.searchResults == null) return false;
+    
     if (this.constMode2up == this.mode) {
         if (this.searchResults[this.twoPage.currentIndexL]
                 || this.searchResults[this.twoPage.currentIndexR]) {
