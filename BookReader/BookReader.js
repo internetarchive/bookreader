@@ -1353,8 +1353,6 @@ BookReader.prototype.switchMode = function(mode) {
         // this.twoPage.autofit = null; // Take zoom level from other mode
         this.twoPageCalculateReductionFactors();
         this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
-        $('button.thumb').show();
-        $('button.twopg').hide();
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
