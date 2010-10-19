@@ -2420,7 +2420,7 @@ BookReader.prototype.prefetchImg = function(index) {
     if (loadImage) {
         //console.log('prefetching ' + index);
         var img = document.createElement("img");
-        img.className = 'BRpageimage';
+        $(img).addClass('BRpageimage').addClass('BRnoselect');
         if (index < 0 || index > (this.numLeafs - 1) ) {
             // Facing page at beginning or end, or beyond
             $(img).css({

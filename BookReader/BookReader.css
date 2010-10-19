@@ -103,6 +103,13 @@ a {
     background-color: rgb(234, 226, 205);
 }
 
+/* Disable selection on Firefox and WebKit */
+.BRnoselect {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+}
+
 .BRleafEdgeR {
     /*
     border-style: solid solid solid none;
