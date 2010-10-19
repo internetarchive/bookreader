@@ -3606,21 +3606,24 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
-    var readIcon = ''
+
+    var readIcon = '';
     if (!navigator.userAgent.match(/mobile/i)) {
         readIcon = "<button class='BRicon read modal'></button>";
     }
-
+    
     $("body").append(
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
         +     "<form action='javascript:' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         // XXXmang icons incorrect or handlers wrong
+        +     "<button class='BRicon play'></button>"
+        +     "<button class='BRicon pause'></button>"
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
         +     readIcon
-        +     "<button class='BRicon full'></button>"
+        //+     "<button class='BRicon full'></button>"
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
         +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
@@ -3638,6 +3641,8 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         + "</div>"
         */
         );
+    
+    $('#BRtoolbar .pause').hide();
     
     this.updateToolbarZoom(this.reduce); // Pretty format
         
@@ -3665,7 +3670,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
                    '.embed': 'Embed BookReader',
                    '.link': 'Link to this book (and page)',
                    '.bookmark': 'Bookmark this page',
-                   '.read': 'Allow BookReader to read this aloud',
+                   '.read': 'Read this book aloud',
                    '.full': 'Show fullscreen',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
