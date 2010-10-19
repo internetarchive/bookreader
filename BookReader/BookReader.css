@@ -262,7 +262,7 @@ form#booksearch {
     margin-right: 10px;
 }
 form#booksearch input[type=search] {
-    min-width: 80px;
+    min-width: 16em;
     height: 22px;
     line-height: 22px;
     font-family: "Arial", sans-serif;
