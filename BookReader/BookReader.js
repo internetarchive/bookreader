@@ -1344,8 +1344,6 @@ BookReader.prototype.switchMode = function(mode) {
         this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
         this.prepareOnePageView();
     } else if (3 == mode) {
-        $('button.thumb').hide();
-        $('button.twopg').show();
         this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
         this.prepareThumbnailView();
     } else {
@@ -2415,7 +2413,7 @@ BookReader.prototype.prefetchImg = function(index) {
         if (index < 0 || index > (this.numLeafs - 1) ) {
             // Facing page at beginning or end, or beyond
             $(img).css({
-                'background-color': 'transparent'
+                'background-color': '#efefef'
             });
         }
         img.src = pageURI;
@@ -3249,6 +3247,12 @@ BookReader.prototype.initNavbar = function() {
     $('#BookReader').after(
         '<div id="BRnav">'
         +     '<div id="BRpage">'   // Page turn buttons
+        +         '<button class="BRicon onepg"></button>'
+        +         '<button class="BRicon twopg"></button>'
+        +         '<button class="BRicon thumb"></button>'
+        +         '<button class="BRicon fit"></button>'
+        +         '<button class="BRicon zoom_in"></button>'
+        +         '<button class="BRicon zoom_out"></button>'
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
         +     '</div>'
@@ -3260,6 +3264,7 @@ BookReader.prototype.initNavbar = function() {
         +             '<div class="BRnavend" id="BRnavright"></div>'
         +         '</div>'     
         +     '</div>'
+        +     '<div id="BRnavCntlBtm" class="BRnavCntl BRdn"></div>'
         + '</div>'
     );
     
@@ -3478,8 +3483,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         closeWhenOthersOpen: true,
         cssStyles: {
             padding: '12px 14px',
-            //backgroundColor: '#000',
-            backgroundColor: '#444', // To set it off slightly from the chapter marker
+            backgroundColor: '#000',
             border: '4px solid #e2dcc5',
             //borderBottom: 'none',
             fontFamily: '"Arial", sans-serif',
@@ -3598,7 +3602,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
         +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
         + "</div>"
-        
+        /*
         + "<div id='BRzoomer'>"
         +   "<div id='BRzoompos'>"
         +     "<button class='BRicon zoom_out'></button>"
@@ -3608,7 +3612,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +     "</div>"
         +     "<button class='BRicon zoom_in'></button>"
         +   "</div>"
-        + "</div>");
+        + "</div>"
+        */
+        );
     
     this.updateToolbarZoom(this.reduce); // Pretty format
         
@@ -3621,8 +3627,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     
     // We build in mode 2
     jToolbar.append();
-
-    this.bindToolbarNavHandlers(jToolbar);
+    
+    // Navigation handlers will be bound after all UI is in place -- makes moving icons between
+    // the toolbar and nav bar easier
     
     // Setup tooltips -- later we could load these from a file for i18n
     var titles = { '.logo': 'Go to Archive.org',
@@ -3704,108 +3711,6 @@ BookReader.prototype.switchToolbarMode = function(mode) {
     }
 }
 
-// bindToolbarNavHandlers
-//______________________________________________________________________________
-// Binds the toolbar handlers
-BookReader.prototype.bindToolbarNavHandlers = function(jToolbar) {
-
-    var self = this; // closure
-
-    jToolbar.find('.book_left').click(function(e) {
-        self.left();
-        return false;
-    });
-         
-    jToolbar.find('.book_right').click(function(e) {
-        self.right();
-        return false;
-    });
-        
-    jToolbar.find('.book_up').bind('click', function(e) {
-        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
-            self.scrollUp();
-        } else {
-            self.prev();
-        }
-        return false;
-    });        
-        
-    jToolbar.find('.book_down').bind('click', function(e) {
-        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
-            self.scrollDown();
-        } else {
-            self.next();
-        }
-        return false;
-    });
-
-    jToolbar.find('.print').click(function(e) {
-        self.printPage();
-        return false;
-    });
-        
-    jToolbar.find('.embed').click(function(e) {
-        self.showEmbedCode();
-        return false;
-    });
-
-    jToolbar.find('.bookmark').click(function(e) {
-        self.showBookmarkCode();
-        return false;
-    });
-
-    jToolbar.find('.play').click(function(e) {
-        self.autoToggle();
-        return false;
-    });
-
-    jToolbar.find('.pause').click(function(e) {
-        self.autoToggle();
-        return false;
-    });
-    
-    jToolbar.find('.book_top').click(function(e) {
-        self.first();
-        return false;
-    });
-
-    jToolbar.find('.book_bottom').click(function(e) {
-        self.last();
-        return false;
-    });
-    
-    jToolbar.find('.book_leftmost').click(function(e) {
-        self.leftmost();
-        return false;
-    });
-  
-    jToolbar.find('.book_rightmost').click(function(e) {
-        self.rightmost();
-        return false;
-    });
-
-    jToolbar.find('.read').click(function(e) {
-        self.ttsToggle();
-        return false;
-    });
-    
-    // $$$mang cleanup
-    $('#BRzoomer .zoom_in').bind('click', function() {
-        self.zoom(1);
-        return false;
-    });
-    
-    $('#BRzoomer .zoom_out').bind('click', function() {
-        self.zoom(-1);
-        return false;
-    });
-    
-    $('#booksearch').bind('submit', function() {
-        self.search($('#textSrch').val());
-    });
-    
-}
-
 // updateToolbarZoom(reduce)
 //______________________________________________________________________________
 // Update the displayed zoom factor based on reduction factor
@@ -3836,6 +3741,119 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
 //______________________________________________________________________________
 // Bind navigation handlers
 BookReader.prototype.bindNavigationHandlers = function() {
+
+    var self = this; // closure
+    jIcons = $('.BRicon');
+
+    jIcons.filter('.onepg').bind('click', function(e) {
+        self.switchMode(self.constMode1up);
+    });
+    
+    jIcons.filter('.twopg').bind('click', function(e) {
+        self.switchMode(self.constMode2up);
+    });
+
+    jIcons.filter('.thumb').bind('click', function(e) {
+        self.switchMode(self.constModeThumb);
+    });
+    
+    jIcons.filter('.fit').bind('fit', function(e) {
+        // XXXmang implement autofit zoom
+    });
+
+    jIcons.filter('.book_left').click(function(e) {
+        self.left();
+        return false;
+    });
+         
+    jIcons.filter('.book_right').click(function(e) {
+        self.right();
+        return false;
+    });
+        
+    jIcons.filter('.book_up').bind('click', function(e) {
+        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
+            self.scrollUp();
+        } else {
+            self.prev();
+        }
+        return false;
+    });        
+        
+    jIcons.filter('.book_down').bind('click', function(e) {
+        if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
+            self.scrollDown();
+        } else {
+            self.next();
+        }
+        return false;
+    });
+
+    jIcons.filter('.print').click(function(e) {
+        self.printPage();
+        return false;
+    });
+        
+    jIcons.filter('.embed').click(function(e) {
+        self.showEmbedCode();
+        return false;
+    });
+
+    jIcons.filter('.bookmark').click(function(e) {
+        self.showBookmarkCode();
+        return false;
+    });
+
+    jIcons.filter('.play').click(function(e) {
+        self.autoToggle();
+        return false;
+    });
+
+    jIcons.filter('.pause').click(function(e) {
+        self.autoToggle();
+        return false;
+    });
+    
+    jIcons.filter('.book_top').click(function(e) {
+        self.first();
+        return false;
+    });
+
+    jIcons.filter('.book_bottom').click(function(e) {
+        self.last();
+        return false;
+    });
+    
+    jIcons.filter('.book_leftmost').click(function(e) {
+        self.leftmost();
+        return false;
+    });
+  
+    jIcons.filter('.book_rightmost').click(function(e) {
+        self.rightmost();
+        return false;
+    });
+
+    jIcons.filter('.read').click(function(e) {
+        self.ttsToggle();
+        return false;
+    });
+    
+    jIcons.filter('.zoom_in').bind('click', function() {
+        self.zoom(1);
+        return false;
+    });
+    
+    jIcons.filter('.zoom_out').bind('click', function() {
+        self.zoom(-1);
+        return false;
+    });
+    
+    // XXX fix integration
+    $('#booksearch').bind('submit', function() {
+        self.search($('#textSrch').val());
+    });
+
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
         { 'br': this },
         this.navigationMousemoveHandler
@@ -3888,7 +3906,7 @@ BookReader.prototype.hideNavigation = function() {
         // $$$ don't hardcode height
         $('#BRtoolbar').animate({top:-60});
         $('#BRnav').animate({bottom:-60});
-        $('#BRzoomer').animate({right:-26});
+        //$('#BRzoomer').animate({right:-26});
     }
 }
 
@@ -3900,7 +3918,7 @@ BookReader.prototype.showNavigation = function() {
     if (!this.navigationIsVisible()) {
         $('#BRtoolbar').animate({top:0});
         $('#BRnav').animate({bottom:0});
-        $('#BRzoomer').animate({right:0});
+        //$('#BRzoomer').animate({right:0});
     }
 }
 
@@ -4304,7 +4322,7 @@ BookReader.prototype._getPageHeight= function(index) {
 // Returns the page URI or transparent image if out of range
 BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     if (index < 0 || index >= this.numLeafs) { // Synthesize page
-        return this.imagesBaseURL + "/transparent.png";
+        return this.imagesBaseURL + "transparent.png";
     }
     
     if ('undefined' == typeof(reduce)) {
@@ -4807,3 +4825,41 @@ BookReader.prototype.ttsStartPolling = function () {
         self.ttsNextChunk();
     },500);    
 }
+//FADING, ETC.
+    function changeArrow(){
+        setTimeout(function(){
+            $('#BRnavCntlBtm').removeClass('BRdn').addClass('BRup');
+        },3000);
+    };
+    $().ready(function(){
+        $('#BRtoolbar').animate({top:0},3000).animate({top:-40});
+        $('#BRnav').animate({bottom:0},3000).animate({bottom:-53});
+        changeArrow();
+        $('.BRnavCntl').animate({opacity:1},3000).animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
+        $('.BRnavCntl').click(
+            function(){
+                if ($('#BRnavCntlBtm').hasClass('BRdn')) {
+                    $('#BRtoolbar').animate({top:-40});
+                    $('#BRnav').animate({bottom:-53});
+                    $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
+                    $('.BRnavCntl').animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
+                } else {
+                    $('#BRtoolbar').animate({top:0});
+                    $('#BRnav').animate({bottom:0});
+                    $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
+                    $('.BRnavCntl').animate({opacity:1,height:'30px'});
+                };
+            }
+        );
+        $('#BRnavCntlBtm').mouseover(function(){
+            if ($(this).hasClass('BRup')) {
+                $('.BRnavCntl').animate({opacity:1},250);
+            };
+        });
+        $('#BRnavCntlBtm').mouseleave(function(){
+            if ($(this).hasClass('BRup')) {
+                $('.BRnavCntl').animate({opacity:.25},250);
+            };
+        });
+    });
+

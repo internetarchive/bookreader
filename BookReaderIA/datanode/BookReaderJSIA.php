@@ -481,7 +481,10 @@ if (typeof(brConfig) != 'undefined') {
 
 
 function OLAuth() {
-    this.authUrl = 'http://home.us.archive.org/~rkumar/olauth.php?id=' + br.bookId;
+    //this.authUrl = 'http://home.us.archive.org/~rkumar/olauth.php?id=' + br.bookId;
+    // XXXmang update to production
+    this.authUrl = 'http://ol-mang:8080/ia_auth/' + br.bookId;
+    //this.authUrl = 'http://openlibrary.org/ia_auth/' + br.bookId;
     return this;
 }
 
@@ -490,7 +493,7 @@ OLAuth.prototype.init = function() {
     htmlStr    +=  '<p>Please wait...</p>';
 
     this.showPopup("#ddd", "#000", htmlStr);
-    $.ajax({url:this.authUrl, dataType:'jsonp', jsonpCallback:'initCallback'});
+    $.ajax({url:this.authUrl, dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
 }
 
 OLAuth.prototype.showPopup = function(bgColor, textColor, msg) {
@@ -551,7 +554,7 @@ OLAuth.prototype.setCookie = function(value) {
 OLAuth.prototype.startPolling = function () {    
     var self = this;
     this.poller=setInterval(function(){
-        $.ajax({url:self.authUrl, dataType:'jsonp', jsonpCallback:'callback'});
+        $.ajax({url:self.authUrl, dataType:'jsonp', jsonpCallback:'olAuth.callback'});
     },300000);   
 }
 

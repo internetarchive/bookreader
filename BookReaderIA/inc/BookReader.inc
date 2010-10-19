@@ -137,7 +137,7 @@ class BookReader
     <script type="text/javascript" src="/bookreader/jquery.ui.ipad.js"></script>
      <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
         <!--[if lt IE 9]>
-        <script type="text/javascript" src="excanvas.compiled.js"></script>
+        <script type="text/javascript" src="/includes/excanvas.compiled.js"></script>
         <![endif]-->
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
