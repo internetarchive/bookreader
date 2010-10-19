@@ -1239,6 +1239,8 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
     this.willChangeToIndex(index);
 
+    this.ttsStop();
+
     if (this.constMode2up == this.mode) {
         this.autoStop();
         
@@ -3371,10 +3373,13 @@ BookReader.prototype.initNavbar = function() {
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
     
+    // $$$mang, why are these set both here and in bindNavigationHandlers?
     $('.BRicon.book_left').bind('click', function() {
+        self.ttsStop();
         self.left();
     });
     $('.BRicon.book_right').bind('click', function() {
+        self.ttsStop();
         self.right();
     });
     
