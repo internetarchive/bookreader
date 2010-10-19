@@ -1239,6 +1239,8 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
     this.willChangeToIndex(index);
 
+    this.ttsStop();
+
     if (this.constMode2up == this.mode) {
         this.autoStop();
         
@@ -2654,7 +2656,7 @@ BookReader.prototype.search = function(term) {
     this.searchTerm = term;
     
     this.removeSearchResults();
-    this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'">Search results will appear below...');
+    this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
     this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallback'});    
 }
 
@@ -2667,7 +2669,17 @@ function BRSearchCallback(results) {
     br.removeSearchResults();
     br.searchResults = results; 
     //console.log(br.searchResults);
-        
+    
+    if (0 == results.matches.length) {
+        $(br.popup).text('No matches were found.');
+        setTimeout(function(){
+            $(br.popup).fadeOut('slow', function() {
+                br.removeProgressPopup();
+            })        
+        },1000);
+        return;
+    }
+    
     var i;    
     for (i=0; i<results.matches.length; i++) {        
         br.addSearchResult(results.matches[i].text, br.leafNumToIndex(results.matches[i].par[0].page));
@@ -3370,10 +3382,13 @@ BookReader.prototype.initNavbar = function() {
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
     
+    // $$$mang, why are these set both here and in bindNavigationHandlers?
     $('.BRicon.book_left').bind('click', function() {
+        self.ttsStop();
         self.left();
     });
     $('.BRicon.book_right').bind('click', function() {
+        self.ttsStop();
         self.right();
     });
     
