@@ -823,14 +823,21 @@ div#BRzoombtn {
 
 .BRprogresspopup {
     position: absolute;
-    background-color: #E6E4E1;
+    background-color: #fff;
     font-size: 1.5em; 
     z-index: 3;   
     padding: 5px;
+    border:10px solid #615132;
+    -webkit-border-radius:12px;
+    -moz-border-radius:12px;
+    border-radius:12px;
+    -moz-box-shadow: 1px 3px 10px #000;
+    -webkit-box-shadow: 1px 3px 10px #000;
+    box-shadow: 1px 3px 10px #000;
 }
 
 .BRprogressbar {
-    background-image: url(images/progressbar.gif);
+    background-image: url("images/progressbar.gif");
     background-repeat:no-repeat;
     background-position:center top;
 }

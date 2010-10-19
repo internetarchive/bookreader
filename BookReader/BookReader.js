@@ -370,7 +370,7 @@ BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
     //console.log('setting handler');
     //console.log(element.tagName);
     
-    $(element).unbind('tap').bind('tap', data, function(e) {
+    $(element).unbind('click').bind('click', data, function(e) {
         handler(e);
     });
 }
@@ -1239,6 +1239,8 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
     this.willChangeToIndex(index);
 
+    this.ttsStop();
+
     if (this.constMode2up == this.mode) {
         this.autoStop();
         
@@ -1471,7 +1473,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     $('#BRcontainer').append('<div id="BRtwopageview"></div>');
     
     // Attaches to first child, so must come after we add the page view
-    $('#BRcontainer').dragscrollable();
+    //$('#BRcontainer').dragscrollable();
     this.bindGestures($('#BRcontainer'));
 
     // $$$ calculate first then set
@@ -2375,8 +2377,13 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
+            if (e.button == 2) {
+                // right click
+                return;
+            }
             e.data.self.ttsStop();
             e.data.self.left();
+            
             e.preventDefault();
         }
     );
@@ -2384,6 +2391,10 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR],
         { self: this },
         function(e) {
+            if (e.button == 2) {
+                // right click
+                return;
+            }
             e.data.self.ttsStop();
             e.data.self.right();
             e.preventDefault();
@@ -2409,7 +2420,7 @@ BookReader.prototype.prefetchImg = function(index) {
     if (loadImage) {
         //console.log('prefetching ' + index);
         var img = document.createElement("img");
-        img.className = 'BRpageimage';
+        $(img).addClass('BRpageimage').addClass('BRnoselect');
         if (index < 0 || index > (this.numLeafs - 1) ) {
             // Facing page at beginning or end, or beyond
             $(img).css({
@@ -2645,7 +2656,7 @@ BookReader.prototype.search = function(term) {
     this.searchTerm = term;
     
     this.removeSearchResults();
-    this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'">Search results will appear below...');
+    this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
     this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallback'});    
 }
 
@@ -2658,7 +2669,17 @@ function BRSearchCallback(results) {
     br.removeSearchResults();
     br.searchResults = results; 
     //console.log(br.searchResults);
-        
+    
+    if (0 == results.matches.length) {
+        $(br.popup).text('No matches were found.');
+        setTimeout(function(){
+            $(br.popup).fadeOut('slow', function() {
+                br.removeProgressPopup();
+            })        
+        },1000);
+        return;
+    }
+    
     var i;    
     for (i=0; i<results.matches.length; i++) {        
         br.addSearchResult(results.matches[i].text, br.leafNumToIndex(results.matches[i].par[0].page));
@@ -3361,10 +3382,13 @@ BookReader.prototype.initNavbar = function() {
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
     
+    // $$$mang, why are these set both here and in bindNavigationHandlers?
     $('.BRicon.book_left').bind('click', function() {
+        self.ttsStop();
         self.left();
     });
     $('.BRicon.book_right').bind('click', function() {
+        self.ttsStop();
         self.right();
     });
     
@@ -3841,11 +3865,13 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
     
     jIcons.filter('.zoom_in').bind('click', function() {
+        self.ttsStop();
         self.zoom(1);
         return false;
     });
     
     jIcons.filter('.zoom_out').bind('click', function() {
+        self.ttsStop();
         self.zoom(-1);
         return false;
     });
@@ -3855,10 +3881,26 @@ BookReader.prototype.bindNavigationHandlers = function() {
         self.search($('#textSrch').val());
     });
 
+    this.initSwipeData();
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
         { 'br': this },
         this.navigationMousemoveHandler
     );
+    
+    $('.BRpageimage').die('mousedown.swipe').live('mousedown.swipe',
+        { 'br': this },
+        this.swipeMousedownHandler
+    )
+    .die('mousemove.swipe').live('mousemove.swipe',
+        { 'br': this },
+        this.swipeMousemoveHandler
+    )
+    .die('mouseup.swipe').live('mouseup.swipe',
+        { 'br': this },
+        this.swipeMouseupHandler
+    );
+    
+    this.bindMozTouchHandlers();
 }
 
 // unbindNavigationHandlers
@@ -3883,6 +3925,100 @@ BookReader.prototype.navigationMousemoveHandler = function(event) {
             event.data['br'].showNavigation();
         }
     }
+}
+
+BookReader.prototype.initSwipeData = function(clientX, clientY) {
+    /*
+     * Based on the really quite awesome "Today's Guardian" at http://guardian.gyford.com/
+     */
+    this._swipe = {
+        mightBeSwiping: false,
+        startTime: (new Date).getTime(),
+        startX: clientX,
+        startY: clientY,
+        deltaX: 0,
+        deltaY: 0,
+        deltaT: 0
+    }
+}
+
+BookReader.prototype.swipeMousedownHandler = function(event) {
+    //console.log('swipe mousedown');
+    //console.log(event);
+    
+    var self = event.data['br'];
+    self.initSwipeData(event.clientX, event.clientY);
+    self._swipe.mightBeSwiping = true;
+    
+    // We should be the last bubble point for the page images
+    // Disable image drag and select, but keep right-click
+    if ($(event.originalTarget).hasClass('BRpageimage') && event.button != 2) {
+        event.preventDefault();
+    }
+}
+
+BookReader.prototype.swipeMousemoveHandler = function(event) {
+    //console.log('swipe move ' + event.clientX + ',' + event.clientY);
+
+    var _swipe = event.data['br']._swipe;
+    if (! _swipe.mightBeSwiping) {
+        return;
+    }
+    
+    // Update swipe data
+    _swipe.deltaX = event.clientX - _swipe.startX;
+    _swipe.deltaY = event.clientY - _swipe.startY;
+    _swipe.deltaT = (new Date).getTime() - _swipe.startTime;
+    
+    var absX = Math.abs(_swipe.deltaX);
+    var absY = Math.abs(_swipe.deltaY);
+    
+    // Minimum distance in the amount of tim to trigger the swipe
+    var minSwipeLength = Math.max($('#BookReader').width() / 5, 100);
+    var maxSwipeTime = 1000;
+    
+    // Check for horizontal swipe
+    if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
+        //console.log('swipe! ' + _swipe.deltaX + ',' + _swipe.deltaY + ' ' + _swipe.deltaT + 'ms');
+        
+        _swipe.mightBeSwiping = false; // only trigger once
+        if (event.data['br'].mode == event.data['br'].constMode2up) {
+            if (_swipe.deltaX < 0) {
+                event.data['br'].right();
+            } else {
+                event.data['br'].left();
+            }
+        }
+    }
+}
+BookReader.prototype.swipeMouseupHandler = function(event) {
+    //console.log('swipe mouseup');
+    //console.log(event);
+    event.data['br']._swipe.mightBeSwiping = false;
+}
+
+BookReader.prototype.bindMozTouchHandlers = function() {
+    var self = this;
+    
+    // Currently only want touch handlers in 2up
+    $('#BookReader').bind('MozTouchDown', function(event) {
+        //console.log('MozTouchDown ' + event.streamId + ' ' + event.clientX + ',' + event.clientY);
+        if (this.mode == this.constMode2up) {
+            event.preventDefault();
+        }
+    })
+    .bind('MozTouchMove', function(event) {
+        //console.log('MozTouchMove - ' + event.streamId + ' ' + event.clientX + ',' + event.clientY)
+        if (this.mode == this.constMode2up) { 
+            event.preventDefault();
+        }
+    })
+    .bind('MozTouchUp', function(event) {
+        //console.log('MozTouchUp - ' + event.streamId + ' ' + event.clientX + ',' + event.clientY);
+        if (this.mode = this.constMode2up) {
+            event.preventDefault();
+        }
+    });
 }
 
 // navigationIsVisible
@@ -4873,4 +5009,3 @@ BookReader.prototype.ttsStartPolling = function () {
             };
         });
     });
-
