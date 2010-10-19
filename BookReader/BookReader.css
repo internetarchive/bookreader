@@ -139,6 +139,13 @@ a {
     position: absolute;
 }
 
+.BookReaderSearchHilite {
+    opacity: 0.20; 
+    filter: alpha(opacity = 20);
+    background-color: #00f;
+    position:absolute;
+}
+
 .hidden {
   display: none;
 }
