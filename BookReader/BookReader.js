@@ -370,7 +370,7 @@ BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
     //console.log('setting handler');
     //console.log(element.tagName);
     
-    $(element).unbind('tap').bind('tap', data, function(e) {
+    $(element).unbind('click').bind('click', data, function(e) {
         handler(e);
     });
 }
@@ -1471,7 +1471,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     $('#BRcontainer').append('<div id="BRtwopageview"></div>');
     
     // Attaches to first child, so must come after we add the page view
-    $('#BRcontainer').dragscrollable();
+    //$('#BRcontainer').dragscrollable();
     this.bindGestures($('#BRcontainer'));
 
     // $$$ calculate first then set
@@ -2375,8 +2375,15 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
+            console.log(e);
+            if (e.button == 2) {
+                // right click
+                return;
+            }
             e.data.self.ttsStop();
             e.data.self.left();
+            
+            // XXXpreventing drag and right-click?
             e.preventDefault();
         }
     );
@@ -2384,6 +2391,10 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR],
         { self: this },
         function(e) {
+            if (e.buttong == 2) {
+                // right click
+                return;
+            }
             e.data.self.ttsStop();
             e.data.self.right();
             e.preventDefault();
@@ -3861,7 +3872,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
         this.navigationMousemoveHandler
     );
     
-    $('#BookReader').die('mousedown.swipe').live('mousedown.swipe',
+    $('.BRpageimage').die('mousedown.swipe').live('mousedown.swipe',
         { 'br': this },
         this.swipeMousedownHandler
     )
@@ -3873,6 +3884,8 @@ BookReader.prototype.bindNavigationHandlers = function() {
         { 'br': this },
         this.swipeMouseupHandler
     );
+    
+    this.bindMozTouchHandlers();
 }
 
 // unbindNavigationHandlers
@@ -3915,12 +3928,18 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
 }
 
 BookReader.prototype.swipeMousedownHandler = function(event) {
-    console.log('swipe down'); // XXX
+    console.log('swipe mousedown'); // XXX
     console.log(event);
     
     var self = event.data['br'];
     self.initSwipeData(event.clientX, event.clientY);
     self._swipe.mightBeSwiping = true;
+    
+    // We should be the last bubble point for the page images
+    // Disable image drag and select, but keep right-click
+    if ($(event.originalTarget).hasClass('BRpageimage') && event.button != 2) {
+        event.preventDefault();
+    }
 }
 
 BookReader.prototype.swipeMousemoveHandler = function(event) {
@@ -3943,24 +3962,49 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     var minSwipeLength = Math.max($('#BookReader').width() / 5, 150);
     var maxSwipeTime = 1000;
     
-    // Check for swipe
+    // Check for horizontal swipe
     if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
-        console.log('swipe! ' + _swipe.deltaX + ',' + _swipe.deltaY + ' ' + _swipe.deltaX + 's');
+        console.log('swipe! ' + _swipe.deltaX + ',' + _swipe.deltaY + ' ' + _swipe.deltaT + 'ms');
         
         _swipe.mightBeSwiping = false; // only trigger once
-        if (_swipe.deltaX < 0) {
-            event.data['br'].right();
-        } else {
-            event.data['br'].left();
+        if (event.data['br'].mode == event.data['br'].constMode2up) {
+            if (_swipe.deltaX < 0) {
+                event.data['br'].right();
+            } else {
+                event.data['br'].left();
+            }
         }
     }
 }
 BookReader.prototype.swipeMouseupHandler = function(event) {
-    console.log('swipe up'); // XXX
+    console.log('swipe mouseup'); // XXX
     console.log(event);
     event.data['br']._swipe.mightBeSwiping = false;
 }
 
+BookReader.prototype.bindMozTouchHandlers = function() {
+    var self = this;
+    
+    // Currently only want touch handlers in 2up
+    $('#BookReader').bind('MozTouchDown', function(event) {
+        //console.log('MozTouchDown ' + event.streamId + ' ' + event.clientX + ',' + event.clientY);
+        if (this.mode == this.constMode2up) {
+            event.preventDefault();
+        }
+    })
+    .bind('MozTouchMove', function(event) {
+        //console.log('MozTouchMove - ' + event.streamId + ' ' + event.clientX + ',' + event.clientY)
+        if (this.mode == this.constMode2up) { 
+            event.preventDefault();
+        }
+    })
+    .bind('MozTouchUp', function(event) {
+        //console.log('MozTouchUp - ' + event.streamId + ' ' + event.clientX + ',' + event.clientY);
+        if (this.mode = this.constMode2up) {
+            event.preventDefault();
+        }
+    });
+}
 
 // navigationIsVisible
 //______________________________________________________________________________
