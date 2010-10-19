@@ -2645,7 +2645,7 @@ BookReader.prototype.search = function(term) {
     this.searchTerm = term;
     
     this.removeSearchResults();
-    this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'">Search results will appear below...');
+    this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
     this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallback'});    
 }
 
@@ -2658,7 +2658,17 @@ function BRSearchCallback(results) {
     br.removeSearchResults();
     br.searchResults = results; 
     //console.log(br.searchResults);
-        
+    
+    if (0 == results.matches.length) {
+        $(br.popup).text('No matches were found.');
+        setTimeout(function(){
+            $(br.popup).fadeOut('slow', function() {
+                br.removeProgressPopup();
+            })        
+        },1000);
+        return;
+    }
+    
     var i;    
     for (i=0; i<results.matches.length; i++) {        
         br.addSearchResult(results.matches[i].text, br.leafNumToIndex(results.matches[i].par[0].page));
