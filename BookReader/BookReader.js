@@ -2375,7 +2375,6 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
-            console.log(e);
             if (e.button == 2) {
                 // right click
                 return;
@@ -2383,7 +2382,6 @@ BookReader.prototype.setMouseHandlers2UP = function() {
             e.data.self.ttsStop();
             e.data.self.left();
             
-            // XXXpreventing drag and right-click?
             e.preventDefault();
         }
     );
@@ -2391,7 +2389,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR],
         { self: this },
         function(e) {
-            if (e.buttong == 2) {
+            if (e.button == 2) {
                 // right click
                 return;
             }
@@ -3928,8 +3926,8 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
 }
 
 BookReader.prototype.swipeMousedownHandler = function(event) {
-    console.log('swipe mousedown'); // XXX
-    console.log(event);
+    //console.log('swipe mousedown');
+    //console.log(event);
     
     var self = event.data['br'];
     self.initSwipeData(event.clientX, event.clientY);
@@ -3943,7 +3941,7 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
 }
 
 BookReader.prototype.swipeMousemoveHandler = function(event) {
-    //console.log('swipe move ' + event.clientX + ',' + event.clientY); // XXX
+    //console.log('swipe move ' + event.clientX + ',' + event.clientY);
 
     var _swipe = event.data['br']._swipe;
     if (! _swipe.mightBeSwiping) {
@@ -3959,12 +3957,12 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     var absY = Math.abs(_swipe.deltaY);
     
     // Minimum distance in the amount of tim to trigger the swipe
-    var minSwipeLength = Math.max($('#BookReader').width() / 5, 150);
+    var minSwipeLength = Math.max($('#BookReader').width() / 5, 100);
     var maxSwipeTime = 1000;
     
     // Check for horizontal swipe
     if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
-        console.log('swipe! ' + _swipe.deltaX + ',' + _swipe.deltaY + ' ' + _swipe.deltaT + 'ms');
+        //console.log('swipe! ' + _swipe.deltaX + ',' + _swipe.deltaY + ' ' + _swipe.deltaT + 'ms');
         
         _swipe.mightBeSwiping = false; // only trigger once
         if (event.data['br'].mode == event.data['br'].constMode2up) {
@@ -3977,8 +3975,8 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     }
 }
 BookReader.prototype.swipeMouseupHandler = function(event) {
-    console.log('swipe mouseup'); // XXX
-    console.log(event);
+    //console.log('swipe mouseup');
+    //console.log(event);
     event.data['br']._swipe.mightBeSwiping = false;
 }
 
