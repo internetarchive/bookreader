@@ -824,11 +824,17 @@ div#BRzoombtn {
 .BRprogresspopup {
     position: absolute;
     background-color: #E6E4E1;
+    font-size: 1.5em; 
+    z-index: 3;   
+    padding: 5px;
+}
+
+.BRprogressbar {
     background-image: url(images/progressbar.gif);
     background-repeat:no-repeat;
-    font-size: 0.8em; 
-    z-index: 3;    
+    background-position:center top;
 }
+
 .BRnavCntl {
     background-color: #e2dcc5;
     position: absolute;

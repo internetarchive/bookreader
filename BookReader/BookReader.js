@@ -2645,7 +2645,7 @@ BookReader.prototype.search = function(term) {
     this.searchTerm = term;
     
     this.removeSearchResults();
-    this.showProgressPopup();
+    this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'">Search results will appear below...');
     this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallback'});    
 }
 
@@ -2658,6 +2658,7 @@ function BRSearchCallback(results) {
     br.removeSearchResults();
     br.searchResults = results; 
     //console.log(br.searchResults);
+        
     var i;    
     for (i=0; i<results.matches.length; i++) {        
         br.addSearchResult(results.matches[i].text, br.leafNumToIndex(results.matches[i].par[0].page));
@@ -3412,7 +3413,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     var re = new RegExp('{{{(.+?)}}}', 'g');    
     queryString = queryString.replace(re, '<a href="#" onclick="br.jumpToIndex('+pageIndex+'); return false;">$1</a>')
 
-    var marker = $('<div class="search" style="left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
+    var marker = $('<div class="search" style="top:'+(-$('#BRcontainer').height())+'px; left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
         + queryString + '<span>' + uiStringPage + ' ' + pageNumber + '</span></div>')
     .data({'self': this, 'pageIndex': pageIndex })
     .appendTo('#BRnavline').bt({
@@ -3459,7 +3460,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
         $(this).data('self').jumpToIndex($(this).data('pageIndex'));
     });
     
-    $(marker).css('top', -$('#BRcontainer').height()+'px').animate({top:'-25px'}, 'slow');
+    $(marker).animate({top:'-25px'}, 'slow');
 
 }
 
@@ -4419,7 +4420,7 @@ BookReader.util = {
 BookReader.prototype.ttsToggle = function () {
     if (false == this.ttsPlaying) {
         this.ttsPlaying = true;
-        this.showProgressPopup();    
+        this.showProgressPopup('Loading audio...');    
         if(soundManager.supported()) {
             this.ttsStart();            
         } else {               
@@ -4492,7 +4493,7 @@ BookReader.prototype.ttsStartCB = function (data) {
         return;
     }
     
-    this.showProgressPopup();
+    this.showProgressPopup('Loading audio...');
     
     ///// whileloading: broken on safari
     ///// onload fires on safari, but *after* the sound starts playing..
@@ -4512,21 +4513,31 @@ BookReader.prototype.ttsStartCB = function (data) {
 
 // showProgressPopup
 //______________________________________________________________________________
-BookReader.prototype.showProgressPopup = function() {
+BookReader.prototype.showProgressPopup = function(msg) {
     if (soundManager.debugMode) console.log('showProgressPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
     if (this.popup) return;
     
     this.popup = document.createElement("div");
     $(this.popup).css({
-        top:      $('#BRtoolbar').height() + 'px',
-        left:     $('#BookReader').width()-220 + 'px',
-        width:    '220px',
-        height:   '20px',
-    }).attr('className', 'BRprogresspopup').appendTo('#BookReader');
+        top:      ($('#BookReader').height()*0.5-100) + 'px',
+        left:     ($('#BookReader').width()-300)*0.5 + 'px',
+        width:    '300px',
+        border:   '2px solid black'
+    }).attr('className', 'BRprogresspopup');
 
-    htmlStr =  '&nbsp;';
+    var bar = document.createElement("div");
+    $(bar).css({
+        height:   '20px'
+    }).attr('className', 'BRprogressbar');
+    $(this.popup).append(bar);
 
-    this.popup.innerHTML = htmlStr;
+    if (msg) {
+        var msgdiv = document.createElement("div");
+        msgdiv.innerHTML = msg;
+        $(this.popup).append(msgdiv);
+    }
+    
+    $(this.popup).appendTo('#BookReader');
 }
 
 // removeProgressPopup
