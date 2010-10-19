@@ -3855,9 +3855,23 @@ BookReader.prototype.bindNavigationHandlers = function() {
         self.search($('#textSrch').val());
     });
 
+    this.initSwipeData();
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
         { 'br': this },
         this.navigationMousemoveHandler
+    );
+    
+    $('#BookReader').die('mousedown.swipe').live('mousedown.swipe',
+        { 'br': this },
+        this.swipeMousedownHandler
+    )
+    .die('mousemove.swipe').live('mousemove.swipe',
+        { 'br': this },
+        this.swipeMousemoveHandler
+    )
+    .die('mouseup.swipe').live('mouseup.swipe',
+        { 'br': this },
+        this.swipeMouseupHandler
     );
 }
 
@@ -3884,6 +3898,69 @@ BookReader.prototype.navigationMousemoveHandler = function(event) {
         }
     }
 }
+
+BookReader.prototype.initSwipeData = function(clientX, clientY) {
+    /*
+     * Based on the really quite awesome "Today's Guardian" at http://guardian.gyford.com/
+     */
+    this._swipe = {
+        mightBeSwiping: false,
+        startTime: (new Date).getTime(),
+        startX: clientX,
+        startY: clientY,
+        deltaX: 0,
+        deltaY: 0,
+        deltaT: 0
+    }
+}
+
+BookReader.prototype.swipeMousedownHandler = function(event) {
+    console.log('swipe down'); // XXX
+    console.log(event);
+    
+    var self = event.data['br'];
+    self.initSwipeData(event.clientX, event.clientY);
+    self._swipe.mightBeSwiping = true;
+}
+
+BookReader.prototype.swipeMousemoveHandler = function(event) {
+    //console.log('swipe move ' + event.clientX + ',' + event.clientY); // XXX
+
+    var _swipe = event.data['br']._swipe;
+    if (! _swipe.mightBeSwiping) {
+        return;
+    }
+    
+    // Update swipe data
+    _swipe.deltaX = event.clientX - _swipe.startX;
+    _swipe.deltaY = event.clientY - _swipe.startY;
+    _swipe.deltaT = (new Date).getTime() - _swipe.startTime;
+    
+    var absX = Math.abs(_swipe.deltaX);
+    var absY = Math.abs(_swipe.deltaY);
+    
+    // Minimum distance in the amount of tim to trigger the swipe
+    var minSwipeLength = $('#BookReader').width() / 5;
+    var maxSwipeTime = 1000;
+    
+    // Check for swipe
+    if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
+        console.log('swipe! ' + _swipe.deltaX + ',' + _swipe.deltaY + ' ' + _swipe.deltaX + 's');
+        
+        _swipe.mightBeSwiping = false; // only trigger once
+        if (_swipe.deltaX < 0) {
+            event.data['br'].right();
+        } else {
+            event.data['br'].left();
+        }
+    }
+}
+BookReader.prototype.swipeMouseupHandler = function(event) {
+    console.log('swipe up'); // XXX
+    console.log(event);
+    event.data['br']._swipe.mightBeSwiping = false;
+}
+
 
 // navigationIsVisible
 //______________________________________________________________________________
