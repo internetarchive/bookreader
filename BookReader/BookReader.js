@@ -3856,11 +3856,13 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
     
     jIcons.filter('.zoom_in').bind('click', function() {
+        self.ttsStop();
         self.zoom(1);
         return false;
     });
     
     jIcons.filter('.zoom_out').bind('click', function() {
+        self.ttsStop();
         self.zoom(-1);
         return false;
     });
