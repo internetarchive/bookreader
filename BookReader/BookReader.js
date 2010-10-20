@@ -2870,9 +2870,10 @@ BookReader.prototype.updateSearchHilites2UP = function() {
     var i, j;
     for (i=0; i<results.matches.length; i++) {
         //console.log(results.matches[i].par[0]);
+        //TODO: loop over all par objects
+        var pageIndex = this.leafNumToIndex(results.matches[i].par[0].page);        
         for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
             var box = results.matches[i].par[0].boxes[j];
-            var pageIndex = this.leafNumToIndex(box.page);
             if (jQuery.inArray(pageIndex, this.displayedIndices) >= 0) {
                 if (null == box.div) {
                     //create a div for the search highlight, and stash it in the box object
