@@ -3101,6 +3101,8 @@ BookReader.prototype.showBookmarkCode = function() {
 //______________________________________________________________________________
 BookReader.prototype.autoToggle = function() {
 
+    this.ttsStop();
+
     var bComingFrom1up = false;
     if (2 != this.mode) {
         bComingFrom1up = true;
@@ -4561,6 +4563,9 @@ BookReader.util = {
 // ttsToggle()
 //______________________________________________________________________________
 BookReader.prototype.ttsToggle = function () {
+
+    this.autoStop();
+
     if (false == this.ttsPlaying) {
         this.ttsPlaying = true;
         this.showProgressPopup('Loading audio...');    
