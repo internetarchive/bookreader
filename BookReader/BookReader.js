@@ -2645,9 +2645,6 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 //______________________________________________________________________________
 BookReader.prototype.search = function(term) {
     //console.log('search called with term=' + term);
-    
-    $('#textSrch').blur(); //cause mobile safari to hide the keyboard 
-    
     var url = 'http://'+this.server.replace(/:.+/, ''); //remove the port and userdir
     url    += '/~edward/inside_jsonp.php?item_id='+this.bookId;
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
@@ -3620,7 +3617,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
-        +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<form action='javascript:' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         // XXXmang icons incorrect or handlers wrong
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
@@ -3880,11 +3877,9 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
     
     // XXX fix integration
-    // XXX Mobile safari was not picking up this handler, so 
-    //     I explictly set the form action in initToolbar()
-    // $('#booksearch').bind('submit', function() {
-    //    self.search($('#textSrch').val());
-    // });
+    $('#booksearch').bind('submit', function() {
+        self.search($('#textSrch').val());
+    });
 
     this.initSwipeData();
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
@@ -4655,6 +4650,7 @@ BookReader.prototype.ttsStartCB = function (data) {
 // showProgressPopup
 //______________________________________________________________________________
 BookReader.prototype.showProgressPopup = function(msg) {
+    if (soundManager.debugMode) console.log('showProgressPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
     if (this.popup) return;
     
     this.popup = document.createElement("div");
@@ -4975,61 +4971,39 @@ BookReader.prototype.ttsStartPolling = function () {
     },500);    
 }
 //FADING, ETC.
-jQuery.extend(jQuery.expr[':'], {
-    focus: function(e){
-        try{ return e == document.activeElement; }
-        catch(err){ return false; }
-    }
-});
-
-function changeArrow(){
-    setTimeout(function(){
-        $('#BRnavCntlBtm').removeClass('BRdn').addClass('BRup');
-    },3000);
-};
-
-$(window).load(function(){
-    var $navTop = $('#BRtoolbar');
-    var $navBtm = $('#BRnav');
-    var $navTab = $('.BRnavCntl');
-});
-
-/*
-$(window).load(function(){
-    if ($('#textSrch').is(':focus')) {
-        return;
-    } else {
-        $('#BRtoolbar').delay(3000).animate({top:-40});
-        $('#BRnav').delay(3000).animate({bottom:-53});
-        changeArrow();
-        $('.BRnavCntl').delay(3000).animate({height:'43px'}).delay(1000).animate({opacity:.25},1000);
+    function changeArrow(){
+        setTimeout(function(){
+            $('#BRnavCntlBtm').removeClass('BRdn').addClass('BRup');
+        },3000);
     };
-});
-*/
-$().ready(function(){
-    $('.BRnavCntl').click(
-        function(){
-            if ($('#BRnavCntlBtm').hasClass('BRdn')) {
-                $('#BRtoolbar').animate({top:-40});
-                $('#BRnav').animate({bottom:-53});
-                $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
-                $('.BRnavCntl').animate({height:'43px'}).delay(1000).animate({opacity:.25},1000);
-            } else {
-                $('#BRtoolbar').animate({top:0});
-                $('#BRnav').animate({bottom:0});
-                $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
-                $('.BRnavCntl').animate({opacity:1,height:'30px'});
+    $().ready(function(){
+        $('#BRtoolbar').animate({top:0},3000).animate({top:-40});
+        $('#BRnav').animate({bottom:0},3000).animate({bottom:-53});
+        changeArrow();
+        $('.BRnavCntl').animate({opacity:1},3000).animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
+        $('.BRnavCntl').click(
+            function(){
+                if ($('#BRnavCntlBtm').hasClass('BRdn')) {
+                    $('#BRtoolbar').animate({top:-40});
+                    $('#BRnav').animate({bottom:-53});
+                    $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
+                    $('.BRnavCntl').animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
+                } else {
+                    $('#BRtoolbar').animate({top:0});
+                    $('#BRnav').animate({bottom:0});
+                    $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
+                    $('.BRnavCntl').animate({opacity:1,height:'30px'});
+                };
+            }
+        );
+        $('#BRnavCntlBtm').mouseover(function(){
+            if ($(this).hasClass('BRup')) {
+                $('.BRnavCntl').animate({opacity:1},250);
             };
-        }
-    );
-    $('#BRnavCntlBtm').mouseover(function(){
-        if ($(this).hasClass('BRup')) {
-            $('.BRnavCntl').animate({opacity:1},250);
-        };
+        });
+        $('#BRnavCntlBtm').mouseleave(function(){
+            if ($(this).hasClass('BRup')) {
+                $('.BRnavCntl').animate({opacity:.25},250);
+            };
+        });
     });
-    $('#BRnavCntlBtm').mouseleave(function(){
-        if ($(this).hasClass('BRup')) {
-            $('.BRnavCntl').animate({opacity:.25},250);
-        };
-    });
-});
