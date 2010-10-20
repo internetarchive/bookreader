@@ -30,7 +30,6 @@ a {
     width: 100%;
     z-index: 100;
     background-color: #e2dcc5;
-    overflow: hidden;
 }
 #BRtoolbar .label {
     font-size: 1.1em;
@@ -858,13 +857,24 @@ div#BRzoombtn {
     -moz-border-radius-topleft: 8px;
     -webkit-border-top-left-radius: 8px;
 }
+#BRnavCntlTop {
+    top: 40px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+    -moz-border-radius-bottomleft: 8px;
+    -webkit-border-bottom-left-radius: 8px;
+}
 .BRup {
     background-image: url("images/nav_control-up.png");
-    background-position: 8px 4px;
     background-repeat: no-repeat;
 }
 .BRdn {
     background-image: url("images/nav_control-dn.png");
-    background-position: 8px 4px;
     background-repeat: no-repeat;
+}
+#BRnavCntlBtm.BRup,#BRnavCntlBtm.BRdn {
+    background-position: 8px 4px;
+}
+#BRnavCntlTop.BRup,#BRnavCntlTop.BRdn {
+    background-position: 8px 4px;
 }

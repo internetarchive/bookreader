@@ -3626,6 +3626,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
         +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
+        +   "<div id='BRnavCntlTop' class='BRnavCntl BRup'></div>"
         + "</div>"
         /*
         + "<div id='BRzoomer'>"
@@ -4977,22 +4978,28 @@ BookReader.prototype.ttsStartPolling = function () {
         },3000);
     };
     $().ready(function(){
-        $('#BRtoolbar').animate({top:0},3000).animate({top:-40});
-        $('#BRnav').animate({bottom:0},3000).animate({bottom:-53});
+    /*
+        $('#BRtoolbar').delay(3000).animate({top:-40});
+        $('#BRnav').delay(3000).animate({bottom:-53});
         changeArrow();
-        $('.BRnavCntl').animate({opacity:1},3000).animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
+        $('.BRnavCntl').delay(3000).animate({height:'43px'}).delay(1000).animate({opacity:.25},1000);
+    */
         $('.BRnavCntl').click(
             function(){
                 if ($('#BRnavCntlBtm').hasClass('BRdn')) {
                     $('#BRtoolbar').animate({top:-40});
-                    $('#BRnav').animate({bottom:-53});
+                    $('#BRnav').animate({bottom:-55});
                     $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
-                    $('.BRnavCntl').animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
+                    $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
+                    $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
+                    $('.BRnavCntl').delay(1000).animate({opacity:.25},1000);
                 } else {
                     $('#BRtoolbar').animate({top:0});
                     $('#BRnav').animate({bottom:0});
                     $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
-                    $('.BRnavCntl').animate({opacity:1,height:'30px'});
+                    $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
+                    $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
+                    $('.BRvavCntl').animate({opacity:1})
                 };
             }
         );
@@ -5003,6 +5010,16 @@ BookReader.prototype.ttsStartPolling = function () {
         });
         $('#BRnavCntlBtm').mouseleave(function(){
             if ($(this).hasClass('BRup')) {
+                $('.BRnavCntl').animate({opacity:.25},250);
+            };
+        });
+        $('#BRnavCntlTop').mouseover(function(){
+            if ($(this).hasClass('BRdn')) {
+                $('.BRnavCntl').animate({opacity:1},250);
+            };
+        });
+        $('#BRnavCntlTop').mouseleave(function(){
+            if ($(this).hasClass('BRdn')) {
                 $('.BRnavCntl').animate({opacity:.25},250);
             };
         });
