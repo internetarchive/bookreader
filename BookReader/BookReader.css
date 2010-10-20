@@ -823,7 +823,8 @@ div#BRzoombtn {
 
 .BRprogresspopup {
     position: absolute;
-    background-color: #fff;
+    background-color: #e6e4e1;
+    border: none!important;
     font-size: 1.5em; 
     z-index: 3;   
     padding: 20px;
