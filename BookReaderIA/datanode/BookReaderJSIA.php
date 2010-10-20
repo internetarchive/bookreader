@@ -481,10 +481,7 @@ if (typeof(brConfig) != 'undefined') {
 
 
 function OLAuth() {
-    //this.authUrl = 'http://home.us.archive.org/~rkumar/olauth.php?id=' + br.bookId;
-    // XXXmang update to production
-    this.authUrl = 'http://ol-mang:8080/ia_auth/' + br.bookId;
-    //this.authUrl = 'http://openlibrary.org/ia_auth/' + br.bookId;
+    this.authUrl = 'http://openlibrary.org/ia_auth/' + br.bookId;
     return this;
 }
 
