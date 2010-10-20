@@ -1496,7 +1496,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     $(this.twoPage.coverDiv).attr('id', 'BRbookcover').css({
         width:  this.twoPage.bookCoverDivWidth + 'px',
         height: this.twoPage.bookCoverDivHeight+'px',
-        visibility: 'visible',
+        visibility: 'visible'
     }).appendTo('#BRtwopageview');
     
     this.leafEdgeR = document.createElement('div');
@@ -3476,6 +3476,9 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
         shadow: false
     })
     .hover( function() {
+                // remove from other markers then turn on just for this
+                // XXX should be done when nav slider moves
+                $('.search,.chapter').removeClass('front');
                 $(this).addClass('front');
             }, function() {
                 $(this).removeClass('front');
@@ -3540,6 +3543,8 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         shadow: false
     })
     .hover( function() {
+            // remove hover effect from other markers then turn on just for this
+            $('.search,.chapter').removeClass('front');
                 $(this).addClass('front');
             }, function() {
                 $(this).removeClass('front');
