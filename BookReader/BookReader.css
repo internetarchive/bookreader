@@ -30,7 +30,6 @@ a {
     width: 100%;
     z-index: 100;
     background-color: #e2dcc5;
-    overflow: hidden;
 }
 #BRtoolbar .label {
     font-size: 1.1em;
@@ -101,13 +100,6 @@ a {
 
 .BRpageimage {
     background-color: rgb(234, 226, 205);
-}
-
-/* Disable selection on Firefox and WebKit */
-.BRnoselect {
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -webkit-user-drag: none;
 }
 
 .BRleafEdgeR {
@@ -808,7 +800,7 @@ div#BRzoomcontrol {
     top: 40px;
     left:3px;
     width: 23px;
-    height: 110px;    
+    height: 110px;
 }
 div#BRzoomstrip {
     position: absolute;
@@ -830,15 +822,22 @@ div#BRzoombtn {
 
 .BRprogresspopup {
     position: absolute;
-    background-color: #E6E4E1;
+    background-color: #e6e4e1;
+    border: none!important;
     font-size: 1.5em; 
     z-index: 3;   
-    padding: 5px;
-    text-align: center;
+    padding: 20px;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
+    -moz-box-shadow: 1px 0 3px #000;
+    -webkit-box-shadow: 1px 0 3px #000;
+    box-shadow: 1px 0 3px #333;
+    min-width: 300px;
 }
 
 .BRprogressbar {
-    background-image: url(images/progressbar.gif);
+    background-image: url("images/progressbar.gif");
     background-repeat:no-repeat;
     background-position:center top;
 }
@@ -858,13 +857,24 @@ div#BRzoombtn {
     -moz-border-radius-topleft: 8px;
     -webkit-border-top-left-radius: 8px;
 }
+#BRnavCntlTop {
+    top: 40px;
+    -moz-border-radius-bottomright: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+    -moz-border-radius-bottomleft: 8px;
+    -webkit-border-bottom-left-radius: 8px;
+}
 .BRup {
     background-image: url("images/nav_control-up.png");
-    background-position: 8px 4px;
     background-repeat: no-repeat;
 }
 .BRdn {
     background-image: url("images/nav_control-dn.png");
-    background-position: 8px 4px;
     background-repeat: no-repeat;
+}
+#BRnavCntlBtm.BRup,#BRnavCntlBtm.BRdn {
+    background-position: 8px 4px;
+}
+#BRnavCntlTop.BRup,#BRnavCntlTop.BRdn {
+    background-position: 8px 4px;
 }

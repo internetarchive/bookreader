@@ -1353,6 +1353,8 @@ BookReader.prototype.switchMode = function(mode) {
         // this.twoPage.autofit = null; // Take zoom level from other mode
         this.twoPageCalculateReductionFactors();
         this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
+        $('button.thumb').show();
+        $('button.twopg').hide();
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
@@ -2643,9 +2645,6 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 //______________________________________________________________________________
 BookReader.prototype.search = function(term) {
     //console.log('search called with term=' + term);
-    
-    $('#textSrch').blur(); //cause mobile safari to hide the keyboard 
-    
     var url = 'http://'+this.server.replace(/:.+/, ''); //remove the port and userdir
     url    += '/fulltext/inside.php?item_id='+this.bookId;
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
@@ -3615,27 +3614,25 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
-
-    var readIcon = '';
+    var readIcon = ''
     if (!navigator.userAgent.match(/mobile/i)) {
         readIcon = "<button class='BRicon read modal'></button>";
     }
-    
+
     $("body").append(
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
-        +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<form action='javascript:' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         // XXXmang icons incorrect or handlers wrong
-        +     "<button class='BRicon play'></button>"
-        +     "<button class='BRicon pause'></button>"
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
         +     readIcon
-        //+     "<button class='BRicon full'></button>"
+        +     "<button class='BRicon full'></button>"
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
         +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
+        +   "<div id='BRnavCntlTop' class='BRnavCntl BRup'></div>"
         + "</div>"
         /*
         + "<div id='BRzoomer'>"
@@ -3650,8 +3647,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         + "</div>"
         */
         );
-    
-    $('#BRtoolbar .pause').hide();
     
     this.updateToolbarZoom(this.reduce); // Pretty format
         
@@ -3679,7 +3674,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
                    '.embed': 'Embed BookReader',
                    '.link': 'Link to this book (and page)',
                    '.bookmark': 'Bookmark this page',
-                   '.read': 'Read this book aloud',
+                   '.read': 'Allow BookReader to read this aloud',
                    '.full': 'Show fullscreen',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
@@ -3889,11 +3884,9 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
     
     // XXX fix integration
-    // XXX Mobile safari was not picking up this handler, so 
-    //     I explictly set the form action in initToolbar()
-    // $('#booksearch').bind('submit', function() {
-    //    self.search($('#textSrch').val());
-    // });
+    $('#booksearch').bind('submit', function() {
+        self.search($('#textSrch').val());
+    });
 
     this.initSwipeData();
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
@@ -4667,14 +4660,13 @@ BookReader.prototype.ttsStartCB = function (data) {
 // showProgressPopup
 //______________________________________________________________________________
 BookReader.prototype.showProgressPopup = function(msg) {
+    if (soundManager.debugMode) console.log('showProgressPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
     if (this.popup) return;
     
     this.popup = document.createElement("div");
     $(this.popup).css({
         top:      ($('#BookReader').height()*0.5-100) + 'px',
-        left:     ($('#BookReader').width()-300)*0.5 + 'px',
-        width:    '300px',
-        border:   '2px solid black'
+        left:     ($('#BookReader').width()-300)*0.5 + 'px'
     }).attr('className', 'BRprogresspopup');
 
     var bar = document.createElement("div");
@@ -4995,22 +4987,28 @@ BookReader.prototype.ttsStartPolling = function () {
         },3000);
     };
     $().ready(function(){
-        $('#BRtoolbar').animate({top:0},3000).animate({top:-40});
-        $('#BRnav').animate({bottom:0},3000).animate({bottom:-53});
+    /*
+        $('#BRtoolbar').delay(3000).animate({top:-40});
+        $('#BRnav').delay(3000).animate({bottom:-53});
         changeArrow();
-        $('.BRnavCntl').animate({opacity:1},3000).animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
+        $('.BRnavCntl').delay(3000).animate({height:'43px'}).delay(1000).animate({opacity:.25},1000);
+    */
         $('.BRnavCntl').click(
             function(){
                 if ($('#BRnavCntlBtm').hasClass('BRdn')) {
                     $('#BRtoolbar').animate({top:-40});
-                    $('#BRnav').animate({bottom:-53});
+                    $('#BRnav').animate({bottom:-55});
                     $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
-                    $('.BRnavCntl').animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
+                    $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
+                    $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
+                    $('.BRnavCntl').delay(1000).animate({opacity:.25},1000);
                 } else {
                     $('#BRtoolbar').animate({top:0});
                     $('#BRnav').animate({bottom:0});
                     $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
-                    $('.BRnavCntl').animate({opacity:1,height:'30px'});
+                    $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
+                    $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
+                    $('.BRvavCntl').animate({opacity:1})
                 };
             }
         );
@@ -5024,5 +5022,14 @@ BookReader.prototype.ttsStartPolling = function () {
                 $('.BRnavCntl').animate({opacity:.25},250);
             };
         });
+        $('#BRnavCntlTop').mouseover(function(){
+            if ($(this).hasClass('BRdn')) {
+                $('.BRnavCntl').animate({opacity:1},250);
+            };
+        });
+        $('#BRnavCntlTop').mouseleave(function(){
+            if ($(this).hasClass('BRdn')) {
+                $('.BRnavCntl').animate({opacity:.25},250);
+            };
+        });
     });
-
