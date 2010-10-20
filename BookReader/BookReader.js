@@ -1353,6 +1353,8 @@ BookReader.prototype.switchMode = function(mode) {
         // this.twoPage.autofit = null; // Take zoom level from other mode
         this.twoPageCalculateReductionFactors();
         this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
+        $('button.thumb').show();
+        $('button.twopg').hide();
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
@@ -3606,24 +3608,21 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
-
-    var readIcon = '';
+    var readIcon = ''
     if (!navigator.userAgent.match(/mobile/i)) {
         readIcon = "<button class='BRicon read modal'></button>";
     }
-    
+
     $("body").append(
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
         +     "<form action='javascript:' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         // XXXmang icons incorrect or handlers wrong
-        +     "<button class='BRicon play'></button>"
-        +     "<button class='BRicon pause'></button>"
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
         +     readIcon
-        //+     "<button class='BRicon full'></button>"
+        +     "<button class='BRicon full'></button>"
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
         +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
@@ -3641,8 +3640,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         + "</div>"
         */
         );
-    
-    $('#BRtoolbar .pause').hide();
     
     this.updateToolbarZoom(this.reduce); // Pretty format
         
@@ -3670,7 +3667,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
                    '.embed': 'Embed BookReader',
                    '.link': 'Link to this book (and page)',
                    '.bookmark': 'Bookmark this page',
-                   '.read': 'Read this book aloud',
+                   '.read': 'Allow BookReader to read this aloud',
                    '.full': 'Show fullscreen',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
@@ -4659,9 +4656,7 @@ BookReader.prototype.showProgressPopup = function(msg) {
     this.popup = document.createElement("div");
     $(this.popup).css({
         top:      ($('#BookReader').height()*0.5-100) + 'px',
-        left:     ($('#BookReader').width()-300)*0.5 + 'px',
-        width:    '300px',
-        border:   '2px solid black'
+        left:     ($('#BookReader').width()-300)*0.5 + 'px'
     }).attr('className', 'BRprogresspopup');
 
     var bar = document.createElement("div");
@@ -4976,39 +4971,61 @@ BookReader.prototype.ttsStartPolling = function () {
     },500);    
 }
 //FADING, ETC.
-    function changeArrow(){
-        setTimeout(function(){
-            $('#BRnavCntlBtm').removeClass('BRdn').addClass('BRup');
-        },3000);
-    };
-    $().ready(function(){
-        $('#BRtoolbar').animate({top:0},3000).animate({top:-40});
-        $('#BRnav').animate({bottom:0},3000).animate({bottom:-53});
+jQuery.extend(jQuery.expr[':'], {
+    focus: function(e){
+        try{ return e == document.activeElement; }
+        catch(err){ return false; }
+    }
+});
+
+function changeArrow(){
+    setTimeout(function(){
+        $('#BRnavCntlBtm').removeClass('BRdn').addClass('BRup');
+    },3000);
+};
+
+$(window).load(function(){
+    var $navTop = $('#BRtoolbar');
+    var $navBtm = $('#BRnav');
+    var $navTab = $('.BRnavCntl');
+});
+
+/*
+$(window).load(function(){
+    if ($('#textSrch').is(':focus')) {
+        return;
+    } else {
+        $('#BRtoolbar').delay(3000).animate({top:-40});
+        $('#BRnav').delay(3000).animate({bottom:-53});
         changeArrow();
-        $('.BRnavCntl').animate({opacity:1},3000).animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
-        $('.BRnavCntl').click(
-            function(){
-                if ($('#BRnavCntlBtm').hasClass('BRdn')) {
-                    $('#BRtoolbar').animate({top:-40});
-                    $('#BRnav').animate({bottom:-53});
-                    $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
-                    $('.BRnavCntl').animate({height:'43px'}).animate({opacity:1},1000).animate({opacity:.25},1000);
-                } else {
-                    $('#BRtoolbar').animate({top:0});
-                    $('#BRnav').animate({bottom:0});
-                    $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
-                    $('.BRnavCntl').animate({opacity:1,height:'30px'});
-                };
-            }
-        );
-        $('#BRnavCntlBtm').mouseover(function(){
-            if ($(this).hasClass('BRup')) {
-                $('.BRnavCntl').animate({opacity:1},250);
+        $('.BRnavCntl').delay(3000).animate({height:'43px'}).delay(1000).animate({opacity:.25},1000);
+    };
+});
+*/
+$().ready(function(){
+    $('.BRnavCntl').click(
+        function(){
+            if ($('#BRnavCntlBtm').hasClass('BRdn')) {
+                $('#BRtoolbar').animate({top:-40});
+                $('#BRnav').animate({bottom:-53});
+                $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
+                $('.BRnavCntl').animate({height:'43px'}).delay(1000).animate({opacity:.25},1000);
+            } else {
+                $('#BRtoolbar').animate({top:0});
+                $('#BRnav').animate({bottom:0});
+                $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
+                $('.BRnavCntl').animate({opacity:1,height:'30px'});
             };
-        });
-        $('#BRnavCntlBtm').mouseleave(function(){
-            if ($(this).hasClass('BRup')) {
-                $('.BRnavCntl').animate({opacity:.25},250);
-            };
-        });
+        }
+    );
+    $('#BRnavCntlBtm').mouseover(function(){
+        if ($(this).hasClass('BRup')) {
+            $('.BRnavCntl').animate({opacity:1},250);
+        };
     });
+    $('#BRnavCntlBtm').mouseleave(function(){
+        if ($(this).hasClass('BRup')) {
+            $('.BRnavCntl').animate({opacity:.25},250);
+        };
+    });
+});
