@@ -438,10 +438,17 @@ if ('' != $metaData->{'page-progression'}) {
   echo "br.pageProgression = 'lr';\n";
 }
 
-if ('browserlending' == $metaData->{'collection'}) {
+$useOLAuth = false;
+foreach ($metaData->xpath('//collection') as $collection) {
+    if('browserlending' == $collection) {
+        $useOLAuth = true;
+    }
+}
+
+if ($useOLAuth) {
     echo "br.olAuth = true;\n";
 } else {
-    echo "br.olAuth = false; //" . $metaData->{'collection'} ."\n";
+    echo "br.olAuth = false;\n";
 }
 
 # Special cases
