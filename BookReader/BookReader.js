@@ -2647,7 +2647,7 @@ BookReader.prototype.search = function(term) {
     $('#textSrch').blur(); //cause mobile safari to hide the keyboard 
     
     var url = 'http://'+this.server.replace(/:.+/, ''); //remove the port and userdir
-    url    += '/~edward/inside_jsonp.php?item_id='+this.bookId;
+    url    += '/fulltext/inside.php?item_id='+this.bookId;
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
     url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
     url    += '&q='+escape(term);
@@ -2658,14 +2658,12 @@ BookReader.prototype.search = function(term) {
     
     this.removeSearchResults();
     this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
-    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallback'});    
+    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'br.BRSearchCallback'});    
 }
 
 // BRSearchCallback()
 //______________________________________________________________________________
-// Unfortunately, we can't pass 'br.searchCallback' to our search service,
-// because it can't handle the '.'
-function BRSearchCallback(results) {    
+BookReader.prototype.BRSearchCallback = function(results) {
     //console.log('got ' + results.matches.length + ' results');
     br.removeSearchResults();
     br.searchResults = results; 
