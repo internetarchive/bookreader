@@ -2645,6 +2645,9 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 //______________________________________________________________________________
 BookReader.prototype.search = function(term) {
     //console.log('search called with term=' + term);
+    
+    $('#textSrch').blur(); //cause mobile safari to hide the keyboard 
+    
     var url = 'http://'+this.server.replace(/:.+/, ''); //remove the port and userdir
     url    += '/~edward/inside_jsonp.php?item_id='+this.bookId;
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
@@ -3617,7 +3620,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
-        +     "<form action='javascript:' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         // XXXmang icons incorrect or handlers wrong
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
@@ -3877,9 +3880,11 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
     
     // XXX fix integration
-    $('#booksearch').bind('submit', function() {
-        self.search($('#textSrch').val());
-    });
+    // XXX Mobile safari was not picking up this handler, so 
+    //     I explictly set the form action in initToolbar()
+    // $('#booksearch').bind('submit', function() {
+    //    self.search($('#textSrch').val());
+    // });
 
     this.initSwipeData();
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
@@ -4650,7 +4655,6 @@ BookReader.prototype.ttsStartCB = function (data) {
 // showProgressPopup
 //______________________________________________________________________________
 BookReader.prototype.showProgressPopup = function(msg) {
-    if (soundManager.debugMode) console.log('showProgressPopup index='+this.ttsIndex+' pos='+this.ttsPosition);
     if (this.popup) return;
     
     this.popup = document.createElement("div");
