@@ -1353,8 +1353,6 @@ BookReader.prototype.switchMode = function(mode) {
         // this.twoPage.autofit = null; // Take zoom level from other mode
         this.twoPageCalculateReductionFactors();
         this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
-        $('button.thumb').show();
-        $('button.twopg').hide();
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
@@ -2645,6 +2643,9 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 //______________________________________________________________________________
 BookReader.prototype.search = function(term) {
     //console.log('search called with term=' + term);
+    
+    $('#textSrch').blur(); //cause mobile safari to hide the keyboard     
+    
     var url = 'http://'+this.server.replace(/:.+/, ''); //remove the port and userdir
     url    += '/fulltext/inside.php?item_id='+this.bookId;
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
@@ -3614,7 +3615,7 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
-    var readIcon = ''
+    var readIcon = '';
     if (!navigator.userAgent.match(/mobile/i)) {
         readIcon = "<button class='BRicon read modal'></button>";
     }
@@ -3623,12 +3624,13 @@ BookReader.prototype.initToolbar = function(mode, ui) {
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
-        +     "<form action='javascript:' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
-        // XXXmang icons incorrect or handlers wrong
+        +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<button class='BRicon play'></button>"
+        +     "<button class='BRicon pause'></button>"
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
         +     readIcon
-        +     "<button class='BRicon full'></button>"
+        //+     "<button class='BRicon full'></button>"
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
         +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
@@ -3647,6 +3649,8 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         + "</div>"
         */
         );
+    
+    $('#BRtoolbar .pause').hide();    
     
     this.updateToolbarZoom(this.reduce); // Pretty format
         
@@ -3674,7 +3678,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
                    '.embed': 'Embed BookReader',
                    '.link': 'Link to this book (and page)',
                    '.bookmark': 'Bookmark this page',
-                   '.read': 'Allow BookReader to read this aloud',
+                   '.read': 'Read this book aloud',
                    '.full': 'Show fullscreen',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
@@ -3883,11 +3887,6 @@ BookReader.prototype.bindNavigationHandlers = function() {
         return false;
     });
     
-    // XXX fix integration
-    $('#booksearch').bind('submit', function() {
-        self.search($('#textSrch').val());
-    });
-
     this.initSwipeData();
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
         { 'br': this },
