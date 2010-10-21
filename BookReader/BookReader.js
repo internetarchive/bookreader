@@ -3273,7 +3273,8 @@ BookReader.prototype.initNavbar = function() {
         +         '<button class="BRicon onepg"></button>'
         +         '<button class="BRicon twopg"></button>'
         +         '<button class="BRicon thumb"></button>'
-        +         '<button class="BRicon fit"></button>'
+        // $$$ not yet implemented
+        //+         '<button class="BRicon fit"></button>'
         +         '<button class="BRicon zoom_in"></button>'
         +         '<button class="BRicon zoom_out"></button>'
         +         '<button class="BRicon book_left"></button>'

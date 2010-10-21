@@ -562,7 +562,7 @@ a.BRgrey:visited   { color: #666; }
 }
 div#BRpage {
     float: right;
-    width: 320px;
+    width: 280px;
     padding-left:12px;
     text-align: right;
 }
@@ -581,7 +581,7 @@ div#BRnav {
 }
 div#BRnavpos {
     position: relative;
-    margin-right: 320px;
+    margin-right: 280px;
     height: 40px;
 }
 div#BRpager {
