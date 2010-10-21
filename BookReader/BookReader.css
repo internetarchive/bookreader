@@ -88,10 +88,12 @@ a {
 }
 
 /* Must come after .BRpagedivthumb rules in order to override them */
+/*
 .BRpagedivthumb_highlight {
     background-color: #9A9B9D;
     overflow:hidden;
 }
+*/
 
 .BRpagediv2up {
     background-color: rgb(234, 226, 205);

@@ -657,10 +657,8 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                     self.firstIndex = $(this).data('leaf');
                     self.switchMode(self.constMode1up);
                     event.preventDefault();
-                });
-                
-                // $$$ we don't actually go to this URL (click is handled in handler above)
-                link.href = '#page/' + (this.getPageNum(leaf)) +'/mode/1up' ;
+                    event.stopPropagation();
+                });                
                 $(div).append(link);
                 
                 $('#BRpageview').append(div);
