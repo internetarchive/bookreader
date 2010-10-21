@@ -2389,8 +2389,9 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return;
             }
             
-            if (e.data.self.reduce <= e.data.self.twoPage.autofit) {                
-                // Don't trigger if zoomed in
+            var autofitReduce = e.data.self.twoPageGetAutofitReduce();
+            // Don't trigger if zoomed in
+            if (e.data.self.reduce >= e.data.self.twoPageGetAutofitReduce()) {                
                 e.data.self.ttsStop();
                 e.data.self.left();                
             }
@@ -2405,8 +2406,10 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 // right click
                 return;
             }
-            if (e.data.self.reduce <= e.data.self.twoPage.autofit) {                
-                // Don't trigger if zoomed in
+
+            var autofitReduce = e.data.self.twoPageGetAutofitReduce();
+            // Don't trigger if zoomed in
+            if (e.data.self.reduce >= e.data.self.twoPageGetAutofitReduce()) {                
                 e.data.self.ttsStop();
                 e.data.self.right();
             }
