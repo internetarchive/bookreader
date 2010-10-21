@@ -93,12 +93,22 @@ function BookReader() {
     
     // Zoom levels
     // $$$ provide finer grained zooming
+    /*
     this.reductionFactors = [ {reduce: 0.5, autofit: null},
                               {reduce: 1, autofit: null},
                               {reduce: 2, autofit: null},
                               {reduce: 4, autofit: null},
                               {reduce: 8, autofit: null},
                               {reduce: 16, autofit: null} ];
+    */
+    /* The autofit code ensures that fit to width and fit to height will be available */
+    this.reductionFactors = [ {reduce: 0.5, autofit: null},
+                          {reduce: 1, autofit: null},
+                          {reduce: 2, autofit: null},
+                          {reduce: 3, autofit: null},
+                          {reduce: 4, autofit: null},
+                          {reduce: 6, autofit: null} ];
+
 
     // Object to hold parameters related to 1up mode
     this.onePage = {
@@ -2378,9 +2388,12 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 // right click
                 return;
             }
-            e.data.self.ttsStop();
-            e.data.self.left();
             
+            if (e.data.self.reduce <= e.data.self.twoPage.autofit) {                
+                // Don't trigger if zoomed in
+                e.data.self.ttsStop();
+                e.data.self.left();                
+            }
             e.preventDefault();
         }
     );
@@ -2392,8 +2405,11 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 // right click
                 return;
             }
-            e.data.self.ttsStop();
-            e.data.self.right();
+            if (e.data.self.reduce <= e.data.self.twoPage.autofit) {                
+                // Don't trigger if zoomed in
+                e.data.self.ttsStop();
+                e.data.self.right();
+            }
             e.preventDefault();
         }
     );
@@ -3940,9 +3956,13 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
     this._swipe = {
         mightBeSwiping: false,
         didSwipe: false,
+        mightBeDraggin: false,
+        didDrag: false,
         startTime: (new Date).getTime(),
         startX: clientX,
         startY: clientY,
+        lastX: clientX,
+        lastY: clientY,
         deltaX: 0,
         deltaY: 0,
         deltaT: 0
@@ -3956,6 +3976,7 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     var self = event.data['br'];
     self.initSwipeData(event.clientX, event.clientY);
     self._swipe.mightBeSwiping = true;
+    self._swipe.mightBeDragging = true;
     
     // We should be the last bubble point for the page images
     // Disable image drag and select, but keep right-click
@@ -3981,8 +4002,8 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     var absY = Math.abs(_swipe.deltaY);
     
     // Minimum distance in the amount of tim to trigger the swipe
-    var minSwipeLength = Math.min($('#BookReader').width() / 5, 50);
-    var maxSwipeTime = 1000;
+    var minSwipeLength = Math.min($('#BookReader').width() / 5, 80);
+    var maxSwipeTime = 400;
     
     // Check for horizontal swipe
     if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
@@ -3998,12 +4019,25 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
             }
         }
     }
+    
+    if ( _swipe.deltaT > maxSwipeTime && !_swipe.didSwipe) {
+        if (_swipe.mightBeDragging) {        
+            // Dragging
+            _swipe.didDrag = true;
+            $('#BRcontainer')
+            .scrollTop($('#BRcontainer').scrollTop() - event.clientY + _swipe.lastY)
+            .scrollLeft($('#BRcontainer').scrollLeft() - event.clientX + _swipe.lastX);            
+        }
+    }
+    _swipe.lastX = event.clientX;
+    _swipe.lastY = event.clientY;
 }
 BookReader.prototype.swipeMouseupHandler = function(event) {
     var _swipe = event.data['br']._swipe;
     //console.log('swipe mouseup - did swipe ' + _swipe.didSwipe);
     _swipe.mightBeSwiping = false;
-    if (_swipe.didSwipe) {
+    _swipe.mightBeDragging = false;
+    if (_swipe.didSwipe || _swipe.didDrag) {
         // Swallow event if completed swipe gesture
         event.preventDefault();
         event.stopPropagation();
