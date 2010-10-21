@@ -58,14 +58,13 @@ a {
 }
 
 .BRpagediv1up {
-    /* background-color: #FEFDEB; */
     overflow:hidden;
     cursor: move;
     background-color: #FEFDEB;
 }
 
 .BRpagedivthumb {
-    /background-color: #FEFDEB;
+    background-color: #FEFDEB;
     overflow:hidden;
 }
 
