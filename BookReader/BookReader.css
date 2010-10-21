@@ -99,7 +99,8 @@ a {
 }
 
 .BRpageimage {
-    background-color: rgb(234, 226, 205);
+    /* Bird Book */
+    background-color: #FEFDEB;
 }
 
 /* Disable selection on Firefox and WebKit */
