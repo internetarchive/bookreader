@@ -1,5 +1,6 @@
 body {
- background-color: #939598;
+ /* XXX we shouldn't change the body CSS, just within our container */
+ background-color: #9A9B9D;  /* Pantone Cool Grey 7 C */
  font-size: 67.5%;
  margin: 0;
  padding: 0;
@@ -30,6 +31,8 @@ a {
     width: 100%;
     z-index: 100;
     background-color: #e2dcc5;
+    -webkit-box-shadow: 0 1px 3px #999;
+    /* Shadow here on FF causes scroll bars */
 }
 #BRtoolbar .label {
     font-size: 1.1em;
@@ -50,11 +53,12 @@ a {
     overflow-x:auto;
     overflow-y:scroll;    
     position:absolute;
-    background-color: #939598;
+    background-color: #9A9B9D;
 }
 
 #BRpageview {
-    background-color: #939598;
+    /* XXX page view div is not being placed correctly */
+    background-color: #9A9B9D;
 }
 
 .BRpagediv1up {
@@ -85,7 +89,7 @@ a {
 
 /* Must come after .BRpagedivthumb rules in order to override them */
 .BRpagedivthumb_highlight {
-    background-color: #939598;
+    background-color: #9A9B9D;
     overflow:hidden;
 }
 
@@ -170,7 +174,7 @@ a {
 }
 #BRpagenum {
     border: none;
-    background-color: #939598;
+    background-color: #9A9B9D;
     color: #ccc;
     font-family: arial, sans-serif;
     font-size: 12px;
@@ -366,7 +370,7 @@ a.BRgrey:visited   { color: #666; }
     font-family: Arial, sans-serif;
     font-size: 11px;
     color: white;
-    background-color: #939598;
+    background-color: #9A9B9D;
     opacity: 0.85,
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
@@ -569,6 +573,9 @@ div#BRnav {
     overflow: visible;
     z-index: 100;
     background-color: #e2dcc5;    
+    
+    -webkit-box-shadow: 1px 1px 2px #333;
+    /* No shadow for FF, to be consistent with toolbar */
 }
 div#BRnavpos {
     position: relative;
