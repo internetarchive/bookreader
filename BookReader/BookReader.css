@@ -863,6 +863,7 @@ div#BRzoombtn {
     -webkit-border-bottom-right-radius: 8px;
     -moz-border-radius-bottomleft: 8px;
     -webkit-border-bottom-left-radius: 8px;
+    display: none;
 }
 .BRup {
     background-image: url("images/nav_control-up.png");
