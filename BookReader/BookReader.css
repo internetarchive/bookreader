@@ -103,9 +103,9 @@ a {
     /* background-color: #663929; */
     position: absolute;
     background-image: url(images/back_pages.png);
-    -moz-box-shadow: 1px 0 12px #111;
-    -webkit-box-shadow: 1px 0 12px #111;
-    box-shadow: 1px 0 12px #111;
+    -moz-box-shadow: 1px 0 10px #111;
+    -webkit-box-shadow: 1px 0 10px #111;
+    box-shadow: 1px 0 10px #111;
     /* -moz-border-radius: 6px; */
     /* -webkit-border-radius: 6px; */
 }
