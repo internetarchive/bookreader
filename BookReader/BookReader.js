@@ -3940,6 +3940,7 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
      */
     this._swipe = {
         mightBeSwiping: false,
+        didSwipe: false,
         startTime: (new Date).getTime(),
         startX: clientX,
         startY: clientY,
@@ -3981,7 +3982,7 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     var absY = Math.abs(_swipe.deltaY);
     
     // Minimum distance in the amount of tim to trigger the swipe
-    var minSwipeLength = Math.max($('#BookReader').width() / 5, 100);
+    var minSwipeLength = Math.min($('#BookReader').width() / 5, 50);
     var maxSwipeTime = 1000;
     
     // Check for horizontal swipe
@@ -3989,6 +3990,7 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
         //console.log('swipe! ' + _swipe.deltaX + ',' + _swipe.deltaY + ' ' + _swipe.deltaT + 'ms');
         
         _swipe.mightBeSwiping = false; // only trigger once
+        _swipe.didSwipe = true;
         if (event.data['br'].mode == event.data['br'].constMode2up) {
             if (_swipe.deltaX < 0) {
                 event.data['br'].right();
@@ -3999,9 +4001,14 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     }
 }
 BookReader.prototype.swipeMouseupHandler = function(event) {
-    //console.log('swipe mouseup');
-    //console.log(event);
-    event.data['br']._swipe.mightBeSwiping = false;
+    var _swipe = event.data['br']._swipe;
+    //console.log('swipe mouseup - did swipe ' + _swipe.didSwipe);
+    _swipe.mightBeSwiping = false;
+    if (_swipe.didSwipe) {
+        // Swallow event if completed swipe gesture
+        event.preventDefault();
+        event.stopPropagation();
+    }
 }
 
 BookReader.prototype.bindMozTouchHandlers = function() {
