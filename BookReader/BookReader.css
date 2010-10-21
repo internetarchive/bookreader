@@ -61,14 +61,17 @@ a {
     overflow:hidden;
     cursor: move;
     background-color: #FEFDEB;
+    -webkit-box-shadow: 1px 1px 2px #333;
+    -moz-box-shadow: 1px 1px 2px #333;
+    box-shadow: 1px 1px 2px #333;
 }
 
 .BRpagedivthumb {
     background-color: #FEFDEB;
     overflow:hidden;
-    -webkit-box-shadow: 2px 1px 2px #333;
+    -webkit-box-shadow: 1px 1px 2px #333;
     -moz-box-shadow: 1px 1px 2px #333;
-    box-shadow: 2px 1px 2px #333;
+    box-shadow: 1px 1px 2px #333;
 
 }
 
