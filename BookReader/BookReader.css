@@ -1,5 +1,6 @@
 body {
- background-color: #939598;
+ /* XXX we shouldn't change the body CSS, just within our container */
+ background-color: #9A9B9D;  /* Pantone Cool Grey 7 C */
  font-size: 67.5%;
  margin: 0;
  padding: 0;
@@ -30,6 +31,8 @@ a {
     width: 100%;
     z-index: 100;
     background-color: #e2dcc5;
+    -webkit-box-shadow: 0 1px 3px #999;
+    /* Shadow here on FF causes scroll bars */
 }
 #BRtoolbar .label {
     font-size: 1.1em;
@@ -43,29 +46,37 @@ a {
     float: right;
 }
 #BRcontainer {
-    top:5px;
-    bottom:5px;
+    top:0;
+    bottom:0;
     width:100%;
     z-index: 1;
     overflow-x:auto;
     overflow-y:scroll;    
     position:absolute;
-    background-color: #939598;
+    background-color: #9A9B9D;
 }
 
 #BRpageview {
-    background-color: #939598;
+    /* XXX page view div is not being placed correctly */
+    background-color: #9A9B9D;
 }
 
 .BRpagediv1up {
-    background-color: #939598;
     overflow:hidden;
     cursor: move;
+    background-color: #FEFDEB;
+    -webkit-box-shadow: 1px 1px 2px #333;
+    -moz-box-shadow: 1px 1px 2px #333;
+    box-shadow: 1px 1px 2px #333;
 }
 
 .BRpagedivthumb {
-    background-color: #939598;
+    background-color: #FEFDEB;
     overflow:hidden;
+    -webkit-box-shadow: 1px 1px 2px #333;
+    -moz-box-shadow: 1px 1px 2px #333;
+    box-shadow: 1px 1px 2px #333;
+
 }
 
 .BRpagedivthumb a {
@@ -77,10 +88,12 @@ a {
 }
 
 /* Must come after .BRpagedivthumb rules in order to override them */
+/*
 .BRpagedivthumb_highlight {
-    background-color: #939598;
+    background-color: #9A9B9D;
     overflow:hidden;
 }
+*/
 
 .BRpagediv2up {
     background-color: rgb(234, 226, 205);
@@ -92,14 +105,23 @@ a {
     /* background-color: #663929; */
     position: absolute;
     background-image: url(images/back_pages.png);
-    -moz-box-shadow: 1px 0 3px #000;
-    -webkit-box-shadow: 1px 0 3px #000;
+    -moz-box-shadow: 1px 0 10px #111;
+    -webkit-box-shadow: 1px 0 10px #111;
+    box-shadow: 1px 0 10px #111;
     /* -moz-border-radius: 6px; */
     /* -webkit-border-radius: 6px; */
 }
 
 .BRpageimage {
-    background-color: rgb(234, 226, 205);
+    /* Bird Book */
+    background-color: #FEFDEB;
+}
+
+/* Disable selection on Firefox and WebKit */
+.BRnoselect {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
 }
 
 .BRleafEdgeR {
@@ -154,7 +176,7 @@ a {
 }
 #BRpagenum {
     border: none;
-    background-color: #939598;
+    background-color: #9A9B9D;
     color: #ccc;
     font-family: arial, sans-serif;
     font-size: 12px;
@@ -350,7 +372,7 @@ a.BRgrey:visited   { color: #666; }
     font-family: Arial, sans-serif;
     font-size: 11px;
     color: white;
-    background-color: #939598;
+    background-color: #9A9B9D;
     opacity: 0.85,
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
@@ -540,7 +562,7 @@ a.BRgrey:visited   { color: #666; }
 }
 div#BRpage {
     float: right;
-    width: 320px;
+    width: 280px;
     padding-left:12px;
     text-align: right;
 }
@@ -553,10 +575,13 @@ div#BRnav {
     overflow: visible;
     z-index: 100;
     background-color: #e2dcc5;    
+    
+    -webkit-box-shadow: 1px 1px 2px #333;
+    /* No shadow for FF, to be consistent with toolbar */
 }
 div#BRnavpos {
     position: relative;
-    margin-right: 320px;
+    margin-right: 280px;
     height: 40px;
 }
 div#BRpager {
@@ -863,6 +888,7 @@ div#BRzoombtn {
     -webkit-border-bottom-right-radius: 8px;
     -moz-border-radius-bottomleft: 8px;
     -webkit-border-bottom-left-radius: 8px;
+    display: none;
 }
 .BRup {
     background-image: url("images/nav_control-up.png");

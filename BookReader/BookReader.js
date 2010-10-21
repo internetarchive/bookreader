@@ -93,12 +93,22 @@ function BookReader() {
     
     // Zoom levels
     // $$$ provide finer grained zooming
+    /*
     this.reductionFactors = [ {reduce: 0.5, autofit: null},
                               {reduce: 1, autofit: null},
                               {reduce: 2, autofit: null},
                               {reduce: 4, autofit: null},
                               {reduce: 8, autofit: null},
                               {reduce: 16, autofit: null} ];
+    */
+    /* The autofit code ensures that fit to width and fit to height will be available */
+    this.reductionFactors = [ {reduce: 0.5, autofit: null},
+                          {reduce: 1, autofit: null},
+                          {reduce: 2, autofit: null},
+                          {reduce: 3, autofit: null},
+                          {reduce: 4, autofit: null},
+                          {reduce: 6, autofit: null} ];
+
 
     // Object to hold parameters related to 1up mode
     this.onePage = {
@@ -465,6 +475,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
             var img = document.createElement("img");
             img.src = this._getPageURI(index, this.reduce, 0);
+            $(img).addClass('BRnoselect');
             $(img).css('width', width+'px');
             $(img).css('height', height+'px');
             $(div).append(img);
@@ -656,10 +667,8 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                     self.firstIndex = $(this).data('leaf');
                     self.switchMode(self.constMode1up);
                     event.preventDefault();
-                });
-                
-                // $$$ we don't actually go to this URL (click is handled in handler above)
-                link.href = '#page/' + (this.getPageNum(leaf)) +'/mode/1up' ;
+                    event.stopPropagation();
+                });                
                 $(div).append(link);
                 
                 $('#BRpageview').append(div);
@@ -1353,8 +1362,6 @@ BookReader.prototype.switchMode = function(mode) {
         // this.twoPage.autofit = null; // Take zoom level from other mode
         this.twoPageCalculateReductionFactors();
         this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
-        $('button.thumb').show();
-        $('button.twopg').hide();
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
@@ -2381,9 +2388,13 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 // right click
                 return;
             }
-            e.data.self.ttsStop();
-            e.data.self.left();
             
+            var autofitReduce = e.data.self.twoPageGetAutofitReduce();
+            // Don't trigger if zoomed in
+            if (e.data.self.reduce >= e.data.self.twoPageGetAutofitReduce()) {                
+                e.data.self.ttsStop();
+                e.data.self.left();                
+            }
             e.preventDefault();
         }
     );
@@ -2395,8 +2406,13 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 // right click
                 return;
             }
-            e.data.self.ttsStop();
-            e.data.self.right();
+
+            var autofitReduce = e.data.self.twoPageGetAutofitReduce();
+            // Don't trigger if zoomed in
+            if (e.data.self.reduce >= e.data.self.twoPageGetAutofitReduce()) {                
+                e.data.self.ttsStop();
+                e.data.self.right();
+            }
             e.preventDefault();
         }
     );
@@ -2645,8 +2661,11 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 //______________________________________________________________________________
 BookReader.prototype.search = function(term) {
     //console.log('search called with term=' + term);
+    
+    $('#textSrch').blur(); //cause mobile safari to hide the keyboard     
+    
     var url = 'http://'+this.server.replace(/:.+/, ''); //remove the port and userdir
-    url    += '/~edward/inside_jsonp.php?item_id='+this.bookId;
+    url    += '/fulltext/inside.php?item_id='+this.bookId;
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
     url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
     url    += '&q='+escape(term);
@@ -2657,14 +2676,12 @@ BookReader.prototype.search = function(term) {
     
     this.removeSearchResults();
     this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
-    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'BRSearchCallback'});    
+    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'br.BRSearchCallback'});    
 }
 
 // BRSearchCallback()
 //______________________________________________________________________________
-// Unfortunately, we can't pass 'br.searchCallback' to our search service,
-// because it can't handle the '.'
-function BRSearchCallback(results) {    
+BookReader.prototype.BRSearchCallback = function(results) {
     //console.log('got ' + results.matches.length + ' results');
     br.removeSearchResults();
     br.searchResults = results; 
@@ -2871,9 +2888,10 @@ BookReader.prototype.updateSearchHilites2UP = function() {
     var i, j;
     for (i=0; i<results.matches.length; i++) {
         //console.log(results.matches[i].par[0]);
+        //TODO: loop over all par objects
+        var pageIndex = this.leafNumToIndex(results.matches[i].par[0].page);        
         for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
             var box = results.matches[i].par[0].boxes[j];
-            var pageIndex = this.leafNumToIndex(box.page);
             if (jQuery.inArray(pageIndex, this.displayedIndices) >= 0) {
                 if (null == box.div) {
                     //create a div for the search highlight, and stash it in the box object
@@ -3101,6 +3119,8 @@ BookReader.prototype.showBookmarkCode = function() {
 //______________________________________________________________________________
 BookReader.prototype.autoToggle = function() {
 
+    this.ttsStop();
+
     var bComingFrom1up = false;
     if (2 != this.mode) {
         bComingFrom1up = true;
@@ -3272,7 +3292,8 @@ BookReader.prototype.initNavbar = function() {
         +         '<button class="BRicon onepg"></button>'
         +         '<button class="BRicon twopg"></button>'
         +         '<button class="BRicon thumb"></button>'
-        +         '<button class="BRicon fit"></button>'
+        // $$$ not yet implemented
+        //+         '<button class="BRicon fit"></button>'
         +         '<button class="BRicon zoom_in"></button>'
         +         '<button class="BRicon zoom_out"></button>'
         +         '<button class="BRicon book_left"></button>'
@@ -3613,7 +3634,7 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
-    var readIcon = ''
+    var readIcon = '';
     if (!navigator.userAgent.match(/mobile/i)) {
         readIcon = "<button class='BRicon read modal'></button>";
     }
@@ -3622,12 +3643,13 @@ BookReader.prototype.initToolbar = function(mode, ui) {
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
         /* XXXmang integrate search */
-        +     "<form action='javascript:' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
-        // XXXmang icons incorrect or handlers wrong
+        +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<button class='BRicon play'></button>"
+        +     "<button class='BRicon pause'></button>"
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
         +     readIcon
-        +     "<button class='BRicon full'></button>"
+        //+     "<button class='BRicon full'></button>"
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
         +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
@@ -3646,6 +3668,8 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         + "</div>"
         */
         );
+    
+    $('#BRtoolbar .pause').hide();    
     
     this.updateToolbarZoom(this.reduce); // Pretty format
         
@@ -3673,7 +3697,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
                    '.embed': 'Embed BookReader',
                    '.link': 'Link to this book (and page)',
                    '.bookmark': 'Bookmark this page',
-                   '.read': 'Allow BookReader to read this aloud',
+                   '.read': 'Read this book aloud',
                    '.full': 'Show fullscreen',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
@@ -3882,11 +3906,6 @@ BookReader.prototype.bindNavigationHandlers = function() {
         return false;
     });
     
-    // XXX fix integration
-    $('#booksearch').bind('submit', function() {
-        self.search($('#textSrch').val());
-    });
-
     this.initSwipeData();
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
         { 'br': this },
@@ -3939,9 +3958,14 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
      */
     this._swipe = {
         mightBeSwiping: false,
+        didSwipe: false,
+        mightBeDraggin: false,
+        didDrag: false,
         startTime: (new Date).getTime(),
         startX: clientX,
         startY: clientY,
+        lastX: clientX,
+        lastY: clientY,
         deltaX: 0,
         deltaY: 0,
         deltaT: 0
@@ -3955,6 +3979,7 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     var self = event.data['br'];
     self.initSwipeData(event.clientX, event.clientY);
     self._swipe.mightBeSwiping = true;
+    self._swipe.mightBeDragging = true;
     
     // We should be the last bubble point for the page images
     // Disable image drag and select, but keep right-click
@@ -3980,14 +4005,15 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     var absY = Math.abs(_swipe.deltaY);
     
     // Minimum distance in the amount of tim to trigger the swipe
-    var minSwipeLength = Math.max($('#BookReader').width() / 5, 100);
-    var maxSwipeTime = 1000;
+    var minSwipeLength = Math.min($('#BookReader').width() / 5, 80);
+    var maxSwipeTime = 400;
     
     // Check for horizontal swipe
     if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
         //console.log('swipe! ' + _swipe.deltaX + ',' + _swipe.deltaY + ' ' + _swipe.deltaT + 'ms');
         
         _swipe.mightBeSwiping = false; // only trigger once
+        _swipe.didSwipe = true;
         if (event.data['br'].mode == event.data['br'].constMode2up) {
             if (_swipe.deltaX < 0) {
                 event.data['br'].right();
@@ -3996,11 +4022,29 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
             }
         }
     }
+    
+    if ( _swipe.deltaT > maxSwipeTime && !_swipe.didSwipe) {
+        if (_swipe.mightBeDragging) {        
+            // Dragging
+            _swipe.didDrag = true;
+            $('#BRcontainer')
+            .scrollTop($('#BRcontainer').scrollTop() - event.clientY + _swipe.lastY)
+            .scrollLeft($('#BRcontainer').scrollLeft() - event.clientX + _swipe.lastX);            
+        }
+    }
+    _swipe.lastX = event.clientX;
+    _swipe.lastY = event.clientY;
 }
 BookReader.prototype.swipeMouseupHandler = function(event) {
-    //console.log('swipe mouseup');
-    //console.log(event);
-    event.data['br']._swipe.mightBeSwiping = false;
+    var _swipe = event.data['br']._swipe;
+    //console.log('swipe mouseup - did swipe ' + _swipe.didSwipe);
+    _swipe.mightBeSwiping = false;
+    _swipe.mightBeDragging = false;
+    if (_swipe.didSwipe || _swipe.didDrag) {
+        // Swallow event if completed swipe gesture
+        event.preventDefault();
+        event.stopPropagation();
+    }
 }
 
 BookReader.prototype.bindMozTouchHandlers = function() {
@@ -4560,6 +4604,9 @@ BookReader.util = {
 // ttsToggle()
 //______________________________________________________________________________
 BookReader.prototype.ttsToggle = function () {
+
+    this.autoStop();
+
     if (false == this.ttsPlaying) {
         this.ttsPlaying = true;
         this.showProgressPopup('Loading audio...');    
