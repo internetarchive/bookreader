@@ -465,6 +465,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
             var img = document.createElement("img");
             img.src = this._getPageURI(index, this.reduce, 0);
+            $(img).addClass('BRnoselect');
             $(img).css('width', width+'px');
             $(img).css('height', height+'px');
             $(div).append(img);
