@@ -157,7 +157,7 @@ BookReader.prototype.init = function() {
     $("#BookReader").empty();
         
     this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
-    $("#BookReader").append("<div id='BRcontainer'></div>");
+    $("#BookReader").append("<div id='BRcontainer' dir='ltr'></div>");
     $("#BRcontainer").append("<div id='BRpageview'></div>");
 
     $("#BRcontainer").bind('scroll', this, function(e) {
