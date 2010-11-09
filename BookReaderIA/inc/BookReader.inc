@@ -102,7 +102,8 @@ class BookReader
     $version = "r28";
     
     if (BookReader::getDevHost($server)) {
-        // on dev host - add time to force reload
+        // On dev host - add time to force reload
+        // If debugging on IE, remove this line otherwise breakpoints will be invalid after reload
         $version .= '_' . time();
     }
     
@@ -177,14 +178,7 @@ class BookReader
 <? } ?>
 </script>
 <!-- The script included below is dynamically generated JavaScript that includes the book metadata and page image access functions -->
-<script type="text/javascript" src="<? echo($metaURL); ?>"></script>
-
-<script type="text/javascript">
-    // $$$ hack to workaround sizing bug when starting in two-up mode
-    $(document).ready(function() {
-        $(window).trigger('resize');
-    });
-    
+<script type="text/javascript" src="<? echo($metaURL); ?>"></script>    
     // Usage stats
     if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
 </script>

@@ -212,6 +212,7 @@ BookReader.prototype.init = function() {
 
     $(window).bind('resize', this, function(e) {
         //console.log('resize!');
+
         if (1 == e.data.mode) {
             //console.log('centering 1page view');
             if (e.data.autofit) {
@@ -265,9 +266,7 @@ BookReader.prototype.init = function() {
         this.firstIndex = startIndex;
         this.prepareThumbnailView();
         this.jumpToIndex(startIndex);
-    } else {
-        //this.resizePageView();
-        
+    } else {        
         this.displayedIndices=[0];
         this.firstIndex = startIndex;
         this.displayedIndices = [this.firstIndex];
@@ -283,11 +282,12 @@ BookReader.prototype.init = function() {
     // it should start (doesn't jump after init)
     this.initNavbar();
     this.bindNavigationHandlers();
-    
+
     // Start AJAX request for OL data
     if (this.getOpenLibraryRecord) {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
     }
+
 }
 
 BookReader.prototype.setupKeyListeners = function() {
@@ -1578,7 +1578,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     
     //this.indicesToDisplay=[firstLeaf, firstLeaf+1];
     //console.log('indicesToDisplay: ' + this.indicesToDisplay[0] + ' ' + this.indicesToDisplay[1]);
-    
+        
     this.drawLeafsTwoPage();
     this.updateToolbarZoom(this.reduce);
     
@@ -1673,7 +1673,7 @@ BookReader.prototype.calculateSpreadSize = function() {
         // set based on reduction factor
         spreadSize = this.getSpreadSizeFromReduce(firstIndex, secondIndex, this.reduce);
     }
-    
+        
     // Both pages together
     this.twoPage.height = spreadSize.height;
     this.twoPage.width = spreadSize.width;
@@ -1745,7 +1745,7 @@ BookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
         height: this._getPageHeight(secondIndex),
         width: this._getPageWidth(secondIndex)
     }
-    
+        
     var firstIndexRatio  = first.height / first.width;
     var secondIndexRatio = second.height / second.width;
     //console.log('firstIndexRatio = ' + firstIndexRatio + ' secondIndexRatio = ' + secondIndexRatio);
@@ -1753,10 +1753,8 @@ BookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     var ratio;
     if (Math.abs(firstIndexRatio - canon5Dratio) < Math.abs(secondIndexRatio - canon5Dratio)) {
         ratio = firstIndexRatio;
-        //console.log('using firstIndexRatio ' + ratio);
     } else {
         ratio = secondIndexRatio;
-        //console.log('using secondIndexRatio ' + ratio);
     }
 
     var totalLeafEdgeWidth = parseInt(this.numLeafs * 0.1);
