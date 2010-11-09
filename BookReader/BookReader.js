@@ -3736,10 +3736,10 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         // $$$ Don't hardcode ids
     jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#shareThis"});
     jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#aboutThis"});
-        
+    
     $("body").append(
         [
-            '<div style="display: hidden;">',
+            '<div style="display: none;">',
                 this.makeShareDiv(),
                 this.makeAboutDiv(),
             '</div>'
