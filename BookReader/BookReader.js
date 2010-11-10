@@ -212,6 +212,7 @@ BookReader.prototype.init = function() {
 
     $(window).bind('resize', this, function(e) {
         //console.log('resize!');
+
         if (1 == e.data.mode) {
             //console.log('centering 1page view');
             if (e.data.autofit) {
@@ -265,9 +266,7 @@ BookReader.prototype.init = function() {
         this.firstIndex = startIndex;
         this.prepareThumbnailView();
         this.jumpToIndex(startIndex);
-    } else {
-        //this.resizePageView();
-        
+    } else {        
         this.displayedIndices=[0];
         this.firstIndex = startIndex;
         this.displayedIndices = [this.firstIndex];
@@ -283,11 +282,12 @@ BookReader.prototype.init = function() {
     // it should start (doesn't jump after init)
     this.initNavbar();
     this.bindNavigationHandlers();
-    
+
     // Start AJAX request for OL data
     if (this.getOpenLibraryRecord) {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
     }
+
 }
 
 BookReader.prototype.setupKeyListeners = function() {
@@ -1578,7 +1578,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     
     //this.indicesToDisplay=[firstLeaf, firstLeaf+1];
     //console.log('indicesToDisplay: ' + this.indicesToDisplay[0] + ' ' + this.indicesToDisplay[1]);
-    
+        
     this.drawLeafsTwoPage();
     this.updateToolbarZoom(this.reduce);
     
@@ -1673,7 +1673,7 @@ BookReader.prototype.calculateSpreadSize = function() {
         // set based on reduction factor
         spreadSize = this.getSpreadSizeFromReduce(firstIndex, secondIndex, this.reduce);
     }
-    
+        
     // Both pages together
     this.twoPage.height = spreadSize.height;
     this.twoPage.width = spreadSize.width;
@@ -1745,7 +1745,7 @@ BookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
         height: this._getPageHeight(secondIndex),
         width: this._getPageWidth(secondIndex)
     }
-    
+        
     var firstIndexRatio  = first.height / first.width;
     var secondIndexRatio = second.height / second.width;
     //console.log('firstIndexRatio = ' + firstIndexRatio + ' secondIndexRatio = ' + secondIndexRatio);
@@ -1753,10 +1753,8 @@ BookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     var ratio;
     if (Math.abs(firstIndexRatio - canon5Dratio) < Math.abs(secondIndexRatio - canon5Dratio)) {
         ratio = firstIndexRatio;
-        //console.log('using firstIndexRatio ' + ratio);
     } else {
         ratio = secondIndexRatio;
-        //console.log('using secondIndexRatio ' + ratio);
     }
 
     var totalLeafEdgeWidth = parseInt(this.numLeafs * 0.1);
@@ -3736,10 +3734,10 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         // $$$ Don't hardcode ids
     jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#shareThis"});
     jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#aboutThis"});
-        
+    
     $("body").append(
         [
-            '<div style="display: hidden;">',
+            '<div style="display: none;">',
                 this.makeShareDiv(),
                 this.makeAboutDiv(),
             '</div>'
@@ -4557,15 +4555,16 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
     // $$$ could refactor this so that 'this' is available
     if (olObject) {
+        // console.log(olObject);
         if (olObject['table_of_contents']) {
             // XXX check here that TOC is valid
             self.updateTOC(olObject['table_of_contents']);
         }
-    }
-    
-    // $$$mang cleanup
-    $('#BRreturn a').attr('href', 'http://openlibrary.org' + olObject.key);
 
+        // $$$mang cleanup
+        this.bookUrl = 'http://openlibrary.org' + olObject.key;
+        $('#BRreturn a').attr('href', this.bookUrl);
+    }
 }
 
 // Library functions
@@ -4600,6 +4599,15 @@ BookReader.util = {
         // Adapted from http://xkr.us/articles/dom/iframe-document/
         var outer = (iframe.contentWindow || iframe.contentDocument);
         return (outer.document || outer);
+    },
+    
+    escapeHTML: function (str) {
+        return(
+            str.replace(/&/g,'&amp;').
+                replace(/>/g,'&gt;').
+                replace(/</g,'&lt;').
+                replace(/"/g,'&quot;')
+        );
     },
     
     decodeURIComponentPlus: function(value) {
@@ -5145,37 +5153,39 @@ BookReader.prototype.makeAboutDiv = function()
             '<div class="BRfloatHead">About this book',
                 '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
             '</div>',
-            '<div class="BRfloatBody">',
-                '<div class="BRfloatCover">',
-                    '<a href="Open Library Book Page"><img src="Open Library Book Cover" alt="Book Title" height="140"/></a>',
-                '</div>',
+            '<div class="BRfloatBody">'
+    ];
+    
+    // Use 3rd-party provided function if available
+    if (this.getInfoDiv) {
+        html.push(this.getInfoDiv());
+    } else {
+        html = html.concat([
                 '<div class="BRfloatMeta">',
                     '<div class="BRfloatTitle">',
-                        '<h2><a href="Open Library Book Page" class="title">Book Title</a></h2>',
-                        'by',
-                        '<a href="Open Library Author Page">Book Author</a>',
+                        '<h2><a href="', br.bookUrl, '" class="title">', BookReader.util.escapeHTML(br.bookTitle), '</a></h2>',
                     '</div>',
-                    '<p>Published MONTH YEAR by <a href="Open Library Publisher Page">Publisher name</a></p>',
-                    '<p>Written in <a href="Open Library Language page">Language</a></p>',
-                    '<h3>Other Formats</h3>',
-                    '<ul class="links">',
-                        '<li><a href="PDF Link">PDF</a><span>|</span></li>',
-                        '<li><a href="Text Link">Plain Text</a><span>|</span></li>',
-                        '<li><a href="DAISY Link">DAISY</a><span>|</span></li>',
-                        '<li><a href="PDF Link">ePub</a><span>|</span></li>',
-                        '<li><a href="Kindle Link">Send to Kindle</a><span>|</span></li>',
-                        '<li><a href="archive.org Page for Book">More...</a></li>',
-                    '</ul>',
-                    '<p class="moreInfo"><span></span>More information on <a href="Open Libarary Book Page">openlibrary.org</a>.</p>',
                 '</div>',
-            '</div>',
-            '<div class="BRfloatFoot">',
-                '<a href="http://openlibrary.org/contact" class="problem">Report a problem</a>',
-                '<span>|</span>',
-                '<a href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a>',
-            '</div>',
-        '</div>'
-    ].join('\n');
+        ]);
+    }
     
-    return html;
+    html = html.concat([
+            '</div>', // BRfloatBody
+            '<div class="BRfloatFoot">'
+    ]);
+    
+    if (this.getInfoFooter) {
+        html.push(this.getInfoFooter());
+    } else {
+        html.push(
+                '<a href="http://openlibrary.org/dev/docs/bookreader">About the BookReader</a>'
+        );
+    }
+    
+    html = html.concat([
+            '</div>', // BRfloatfoot
+        '</div>' // BRfloat
+    ]);
+    
+    return html.join('\n');
 }

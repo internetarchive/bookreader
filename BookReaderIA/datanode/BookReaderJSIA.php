@@ -358,6 +358,52 @@ br.getOpenLibraryRecord = function(callback) {
     });
 }
 
+// getInfoDiv
+br.getInfoDiv = function() {
+    // $$$ it might make more sense to have a URL on openlibrary.org that returns this info
+
+    var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
+    var domainRe = /(\w+\.(com|org))/;
+    var domain = domainRe.exec(this.bookUrl)[1];
+    // XXX use different icon for archive.org
+    var html = [
+                '<div class="BRfloatCover">',
+                    '<a href="', this.bookUrl, '"><img src="http://www.archive.org/download/', this.bookId, '/page/cover_t.jpg" alt="', escapedTitle, '" height="140"/></a>',
+                '</div>',
+                '<div class="BRfloatMeta">',
+                    '<div class="BRfloatTitle">',
+                        '<h2><a href="', this.bookUrl, '" class="title">', escapedTitle, '</a></h2>',
+                        // $$$ lookup on OL
+                        // 'by',
+                        // '<a href="Open Library Author Page">Book Author</a>',
+                    '</div>',
+                    '<p>Published ', this.bookPublished,
+                    //, <a href="Open Library Publisher Page">Publisher name</a>',
+                    '</p>',
+                    //'<p>Written in <a href="Open Library Language page">Language</a></p>',
+                    '<h3>Other Formats</h3>',
+                    '<ul class="links">',
+                        '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '.pdf">PDF</a><span>|</span></li>',
+                        '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '_djvu.txt">Plain Text</a><span>|</span></li>',
+                        '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '_daisy.zip">DAISY</a><span>|</span></li>',
+                        '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '.epub">ePub</a><span>|</span></li>',
+                        '<li><a href="https://www.amazon.com/gp/digital/fiona/web-to-kindle?clientid=IA&itemid=', this.bookId, '&docid=', this.subPrefix, '">Send to Kindle</a><span>|</span></li>',
+                        '<li><a href="', this.bookUrl, '">More...</a></li>',
+                    '</ul>',
+                    '<p class="moreInfo"><span></span>More information on <a href="'+ this.bookUrl + '">' + domain + '</a>.</p>',
+                '</div>',
+            '</div>',
+            '<div class="BRfloatFoot">',
+                // XXX add link to bug tracker
+                '<a href="http://openlibrary.org/contact" class="problem">Report a problem</a>',
+                '<span>|</span>',
+                '<a href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a>',
+            '</div>'
+    ];
+    
+    return html.join('\n');
+}
+
 br.pageW =  [
             <?
             $i=0;
