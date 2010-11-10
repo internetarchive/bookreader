@@ -22,6 +22,7 @@ require_once '/petabox/setup.inc';
 
 $id = $_REQUEST['id'];
 $book = $_REQUEST['book']; // support multiple books within an item
+$subPrefix = $_REQUEST['subPrefix']; // same as above but with same naming as BookReaderImages
 
 if ("" == $id) {
     echo "No identifier specified!";
@@ -36,7 +37,9 @@ $server = $results[0][0];
 $serverBaseURL = BookReader::serverBaseURL($server);
 
 $url = "http://{$serverBaseURL}/BookReader/BookReaderJSIA.php?id=" . urlencode($id) . "&itemPath={$results[0][1]}&server={$server}";
-if ($book) {
+if ($subPrefix) {
+    $url .= "&subPrefix=" . urlencode($subPrefix);
+} else if ($book) {
     $url .= "&subPrefix=" . urlencode($book);
 }
 

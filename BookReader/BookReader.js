@@ -212,6 +212,7 @@ BookReader.prototype.init = function() {
 
     $(window).bind('resize', this, function(e) {
         //console.log('resize!');
+
         if (1 == e.data.mode) {
             //console.log('centering 1page view');
             if (e.data.autofit) {
@@ -265,9 +266,7 @@ BookReader.prototype.init = function() {
         this.firstIndex = startIndex;
         this.prepareThumbnailView();
         this.jumpToIndex(startIndex);
-    } else {
-        //this.resizePageView();
-        
+    } else {        
         this.displayedIndices=[0];
         this.firstIndex = startIndex;
         this.displayedIndices = [this.firstIndex];
@@ -283,11 +282,12 @@ BookReader.prototype.init = function() {
     // it should start (doesn't jump after init)
     this.initNavbar();
     this.bindNavigationHandlers();
-    
+
     // Start AJAX request for OL data
     if (this.getOpenLibraryRecord) {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
     }
+
 }
 
 BookReader.prototype.setupKeyListeners = function() {
@@ -1578,7 +1578,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     
     //this.indicesToDisplay=[firstLeaf, firstLeaf+1];
     //console.log('indicesToDisplay: ' + this.indicesToDisplay[0] + ' ' + this.indicesToDisplay[1]);
-    
+        
     this.drawLeafsTwoPage();
     this.updateToolbarZoom(this.reduce);
     
@@ -1673,7 +1673,7 @@ BookReader.prototype.calculateSpreadSize = function() {
         // set based on reduction factor
         spreadSize = this.getSpreadSizeFromReduce(firstIndex, secondIndex, this.reduce);
     }
-    
+        
     // Both pages together
     this.twoPage.height = spreadSize.height;
     this.twoPage.width = spreadSize.width;
@@ -1745,7 +1745,7 @@ BookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
         height: this._getPageHeight(secondIndex),
         width: this._getPageWidth(secondIndex)
     }
-    
+        
     var firstIndexRatio  = first.height / first.width;
     var secondIndexRatio = second.height / second.width;
     //console.log('firstIndexRatio = ' + firstIndexRatio + ' secondIndexRatio = ' + secondIndexRatio);
@@ -1753,10 +1753,8 @@ BookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     var ratio;
     if (Math.abs(firstIndexRatio - canon5Dratio) < Math.abs(secondIndexRatio - canon5Dratio)) {
         ratio = firstIndexRatio;
-        //console.log('using firstIndexRatio ' + ratio);
     } else {
         ratio = secondIndexRatio;
-        //console.log('using secondIndexRatio ' + ratio);
     }
 
     var totalLeafEdgeWidth = parseInt(this.numLeafs * 0.1);
@@ -3642,7 +3640,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     $("body").append(
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
-        /* XXXmang integrate search */
         +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
         +     "<button class='BRicon play'></button>"
         +     "<button class='BRicon pause'></button>"
@@ -3668,7 +3665,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         + "</div>"
         */
         );
-    
+
     $('#BRtoolbar .pause').hide();    
     
     this.updateToolbarZoom(this.reduce); // Pretty format
@@ -3733,7 +3730,22 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     if ( ! (this.canSwitchToMode(this.constMode2up) || this.canSwitchToMode(this.constModeThumb)) ) {
         jToolbar.find('.one_page_mode').hide();
     }
+    
+        // $$$ Don't hardcode ids
+    jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#shareThis"});
+    jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#aboutThis"});
+    
+    $("body").append(
+        [
+            '<div style="display: none;">',
+                this.makeShareDiv(),
+                this.makeAboutDiv(),
+            '</div>'
+        ].join('\n')
+    );
+    
 
+    
     // Switch to requested mode -- binds other click handlers
     //this.switchToolbarMode(mode);
     
@@ -4052,19 +4064,19 @@ BookReader.prototype.bindMozTouchHandlers = function() {
     
     // Currently only want touch handlers in 2up
     $('#BookReader').bind('MozTouchDown', function(event) {
-        //console.log('MozTouchDown ' + event.streamId + ' ' + event.clientX + ',' + event.clientY);
+        //console.log('MozTouchDown ' + event.originalEvent.streamId + ' ' + event.target + ' ' + event.clientX + ',' + event.clientY);
         if (this.mode == this.constMode2up) {
             event.preventDefault();
         }
     })
     .bind('MozTouchMove', function(event) {
-        //console.log('MozTouchMove - ' + event.streamId + ' ' + event.clientX + ',' + event.clientY)
+        //console.log('MozTouchMove - ' + event.originalEvent.streamId + ' ' + event.target + ' ' + event.clientX + ',' + event.clientY)
         if (this.mode == this.constMode2up) { 
             event.preventDefault();
         }
     })
     .bind('MozTouchUp', function(event) {
-        //console.log('MozTouchUp - ' + event.streamId + ' ' + event.clientX + ',' + event.clientY);
+        //console.log('MozTouchUp - ' + event.originalEvent.streamId + ' ' + event.target + ' ' + event.clientX + ',' + event.clientY);
         if (this.mode = this.constMode2up) {
             event.preventDefault();
         }
@@ -4543,15 +4555,16 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
     // $$$ could refactor this so that 'this' is available
     if (olObject) {
+        // console.log(olObject);
         if (olObject['table_of_contents']) {
             // XXX check here that TOC is valid
             self.updateTOC(olObject['table_of_contents']);
         }
-    }
-    
-    // $$$mang cleanup
-    $('#BRreturn a').attr('href', 'http://openlibrary.org' + olObject.key);
 
+        // $$$mang cleanup
+        this.bookUrl = 'http://openlibrary.org' + olObject.key;
+        $('#BRreturn a').attr('href', this.bookUrl);
+    }
 }
 
 // Library functions
@@ -4586,6 +4599,15 @@ BookReader.util = {
         // Adapted from http://xkr.us/articles/dom/iframe-document/
         var outer = (iframe.contentWindow || iframe.contentDocument);
         return (outer.document || outer);
+    },
+    
+    escapeHTML: function (str) {
+        return(
+            str.replace(/&/g,'&amp;').
+                replace(/>/g,'&gt;').
+                replace(/</g,'&lt;').
+                replace(/"/g,'&quot;')
+        );
     },
     
     decodeURIComponentPlus: function(value) {
@@ -5076,3 +5098,94 @@ BookReader.prototype.ttsStartPolling = function () {
             };
         });
     });
+
+BookReader.prototype.makeShareDiv = function()
+{
+    var html = [
+        '<div class="BRfloat" id="shareThis">',
+            '<div class="BRfloatHead">',
+                'Share',
+                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+            '<p>Copy and paste one of these options to share this book elsewhere.</p>',
+            '<form method="post" action="">',
+                '<fieldset>',
+                    '<label for="pageview">Link to this page view:</label>',
+                    '<input type="text" name="pageview" id="pageview" value="http://thisisthelinktothispageview"/>',
+                '</fieldset>',
+                '<fieldset>',
+                    '<label for="booklink">Link to the book:</label>',
+                    '<input type="text" name="booklink" id="booklink" value="http://thisisthelinktothisbook"/>',
+                '</fieldset>',
+                '<fieldset>',
+                    '<label for="iframe">Embed a mini Book Reader:</label>',
+                    '<fieldset class="sub">',
+                        '<label class="sub">',
+                            '<input type="radio" name="pages" id="1page" checked="checked"/>',
+                            '1 page',
+                        '</label>',
+                        '<label class="sub">',
+                            '<input type="radio" name="pages" id="2page"/>',
+                            '2 pages',
+                        '</label>',
+                        '<label class="sub">',
+                            '<input type="checkbox" name="thispage" id="thispage"/>',
+                            'Open to this page?',
+                        '</label>',
+                    '</fieldset>',
+                    '<textarea cols="30" rows="4" name="iframe" id="iframe"><iframe src="http://thisisthestreamlink" width="480" height="480"></iframe></textarea>',
+                    '<p class="meta"><strong>NOTE:</strong> We\'ve tested EMBED on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>',
+                '</fieldset>',
+                '<fieldset class="center">',
+                    '<button type="button" onclick="$.fn.colorbox.close();">Finished</button>',
+                '</fieldset>',
+            '</form>',
+        '</div>'
+    ].join('\n');
+    
+    return html;
+}
+
+BookReader.prototype.makeAboutDiv = function() 
+{
+    var html = [
+        '<div class="BRfloat" id="aboutThis">',
+            '<div class="BRfloatHead">About this book',
+                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+            '<div class="BRfloatBody">'
+    ];
+    
+    // Use 3rd-party provided function if available
+    if (this.getInfoDiv) {
+        html.push(this.getInfoDiv());
+    } else {
+        html = html.concat([
+                '<div class="BRfloatMeta">',
+                    '<div class="BRfloatTitle">',
+                        '<h2><a href="', br.bookUrl, '" class="title">', BookReader.util.escapeHTML(br.bookTitle), '</a></h2>',
+                    '</div>',
+                '</div>',
+        ]);
+    }
+    
+    html = html.concat([
+            '</div>', // BRfloatBody
+            '<div class="BRfloatFoot">'
+    ]);
+    
+    if (this.getInfoFooter) {
+        html.push(this.getInfoFooter());
+    } else {
+        html.push(
+                '<a href="http://openlibrary.org/dev/docs/bookreader">About the BookReader</a>'
+        );
+    }
+    
+    html = html.concat([
+            '</div>', // BRfloatfoot
+        '</div>' // BRfloat
+    ]);
+    
+    return html.join('\n');
+}
