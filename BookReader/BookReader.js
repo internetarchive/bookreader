@@ -4555,15 +4555,16 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
     // $$$ could refactor this so that 'this' is available
     if (olObject) {
+        // console.log(olObject);
         if (olObject['table_of_contents']) {
             // XXX check here that TOC is valid
             self.updateTOC(olObject['table_of_contents']);
         }
-    }
-    
-    // $$$mang cleanup
-    $('#BRreturn a').attr('href', 'http://openlibrary.org' + olObject.key);
 
+        // $$$mang cleanup
+        this.bookUrl = 'http://openlibrary.org' + olObject.key;
+        $('#BRreturn a').attr('href', this.bookUrl);
+    }
 }
 
 // Library functions
@@ -4598,6 +4599,15 @@ BookReader.util = {
         // Adapted from http://xkr.us/articles/dom/iframe-document/
         var outer = (iframe.contentWindow || iframe.contentDocument);
         return (outer.document || outer);
+    },
+    
+    escapeHTML: function (str) {
+        return(
+            str.replace(/&/g,'&amp;').
+                replace(/>/g,'&gt;').
+                replace(/</g,'&lt;').
+                replace(/"/g,'&quot;')
+        );
     },
     
     decodeURIComponentPlus: function(value) {
@@ -5143,37 +5153,39 @@ BookReader.prototype.makeAboutDiv = function()
             '<div class="BRfloatHead">About this book',
                 '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
             '</div>',
-            '<div class="BRfloatBody">',
-                '<div class="BRfloatCover">',
-                    '<a href="Open Library Book Page"><img src="Open Library Book Cover" alt="Book Title" height="140"/></a>',
-                '</div>',
+            '<div class="BRfloatBody">'
+    ];
+    
+    // Use 3rd-party provided function if available
+    if (this.getInfoDiv) {
+        html.push(this.getInfoDiv());
+    } else {
+        html = html.concat([
                 '<div class="BRfloatMeta">',
                     '<div class="BRfloatTitle">',
-                        '<h2><a href="Open Library Book Page" class="title">Book Title</a></h2>',
-                        'by',
-                        '<a href="Open Library Author Page">Book Author</a>',
+                        '<h2><a href="', br.bookUrl, '" class="title">', BookReader.util.escapeHTML(br.bookTitle), '</a></h2>',
                     '</div>',
-                    '<p>Published MONTH YEAR by <a href="Open Library Publisher Page">Publisher name</a></p>',
-                    '<p>Written in <a href="Open Library Language page">Language</a></p>',
-                    '<h3>Other Formats</h3>',
-                    '<ul class="links">',
-                        '<li><a href="PDF Link">PDF</a><span>|</span></li>',
-                        '<li><a href="Text Link">Plain Text</a><span>|</span></li>',
-                        '<li><a href="DAISY Link">DAISY</a><span>|</span></li>',
-                        '<li><a href="PDF Link">ePub</a><span>|</span></li>',
-                        '<li><a href="Kindle Link">Send to Kindle</a><span>|</span></li>',
-                        '<li><a href="archive.org Page for Book">More...</a></li>',
-                    '</ul>',
-                    '<p class="moreInfo"><span></span>More information on <a href="Open Libarary Book Page">openlibrary.org</a>.</p>',
                 '</div>',
-            '</div>',
-            '<div class="BRfloatFoot">',
-                '<a href="http://openlibrary.org/contact" class="problem">Report a problem</a>',
-                '<span>|</span>',
-                '<a href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a>',
-            '</div>',
-        '</div>'
-    ].join('\n');
+        ]);
+    }
     
-    return html;
+    html = html.concat([
+            '</div>', // BRfloatBody
+            '<div class="BRfloatFoot">'
+    ]);
+    
+    if (this.getInfoFooter) {
+        html.push(this.getInfoFooter());
+    } else {
+        html.push(
+                '<a href="http://openlibrary.org/dev/docs/bookreader">About the BookReader</a>'
+        );
+    }
+    
+    html = html.concat([
+            '</div>', // BRfloatfoot
+        '</div>' // BRfloat
+    ]);
+    
+    return html.join('\n');
 }
