@@ -119,7 +119,7 @@ function BookReader() {
     this.twoPage = {
         coverInternalPadding: 0, // Width of cover
         coverExternalPadding: 0, // Padding outside of cover
-        bookSpineDivWidth: 0,    // Width of book spine  $$$ consider sizing based on book length
+        bookSpineDivWidth: 64,    // Width of book spine  $$$ consider sizing based on book length
         autofit: 'auto'
     };
     
