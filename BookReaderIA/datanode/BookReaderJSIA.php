@@ -489,6 +489,7 @@ if (typeof(brConfig) != 'undefined') {
 
 function OLAuth() {
     this.authUrl = 'http://openlibrary.org/ia_auth/' + br.bookId;
+    this.olConnect = false;
     return this;
 }
 
@@ -531,6 +532,7 @@ OLAuth.prototype.initCallback = function(obj) {
     
     //user is authenticated
     this.setCookie(obj.token);
+    this.olConnect = true;
     this.startPolling();    
     br.init();
 }
@@ -541,6 +543,7 @@ OLAuth.prototype.callback = function(obj) {
         clearInterval(this.poller);
         this.ttsPoller = null;
     } else {
+        this.olConnect = true;
         this.setCookie(obj.token);
     }
 }
@@ -558,7 +561,15 @@ OLAuth.prototype.setCookie = function(value) {
 OLAuth.prototype.startPolling = function () {    
     var self = this;
     this.poller=setInterval(function(){
-        $.ajax({url:self.authUrl, dataType:'jsonp', jsonpCallback:'olAuth.callback'});
+        if (!self.olConnect) {
+          self.showPopup("#f00", "#fff", 'Cound not connect to Open Library for authentication. Please check to see if you are still connected to the Internet, and then reload this web page.');
+          clearInterval(self.poller);
+          self.ttsPoller = null;        
+        } else {
+          self.olConnect = false;
+          //be sure to add random param to authUrl to avoid stale cache
+          $.ajax({url:self.authUrl+'?rand='+Math.random(), dataType:'jsonp', jsonpCallback:'olAuth.callback'});
+        }
     },300000);   
 }
 
