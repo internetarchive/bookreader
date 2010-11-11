@@ -397,7 +397,7 @@ class BookReaderMeta {
     
     function imageFilePath($leafNum, $subPrefix, $format) {
         $pathParts = pathinfo($subPrefix);
-        $almostIdentifier = $pathParts['filename'];
+        $almostIdentifier = $pathParts['basename'];
         return sprintf("%s_%s/%s_%04d.%s", $almostIdentifier, $format, $almostIdentifier, intval($leafNum), $format);
     }
     

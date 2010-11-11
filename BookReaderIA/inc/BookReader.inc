@@ -113,6 +113,7 @@ class BookReader
     }
     
     $metaURL = BookReader::jsMetadataURL($server, $identifier, $mainDir, $subPrefix);
+    $locateURL = BookReader::jsLocateURL($identifier, $subPrefix);
     
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -177,8 +178,13 @@ class BookReader
   brConfig["mode"] = 2;
 <? } ?>
 </script>
-<!-- The script included below is dynamically generated JavaScript that includes the book metadata and page image access functions -->
-<script type="text/javascript" src="<? echo($metaURL); ?>"></script>    
+<!-- The script included below is dynamically generated JavaScript that includes the book metadata and page image access functions.
+     The ia{number}.us.archive.org server referenced below can and does change, so this URL should NOT be used for permanent access.  -->
+<script type="text/javascript" src="<? echo($metaURL); ?>"></script>
+<!-- This URL will find the item and redirect to the correct server.  Remove the line above and use the URL below for stable access. -->
+<!-- <script type="text/javascript" src="<? echo($locateURL); ?>"></script> -->
+
+<script type="text/javascript">
     // Usage stats
     if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
 </script>
@@ -233,6 +239,17 @@ class BookReader
     }
     
     return $url;
+  }
+  
+  // This returns a URL that finds the item then returns a redirect to BookReaderJSIA.php
+  // on the item's server.
+  public static function jsLocateURL($identifier, $subPrefix = '')
+  {
+    $locateURL = 'http://www.archive.org/bookreader/BookReaderJSLocate.php?id=' . $identifier;
+    if ($subPrefix) {
+        $locateURL .= '&subPrefix=' . $subPrefix;
+    }
+    return $locateURL;
   }
   
   // Return the URL for the requested /download/$path, or null
