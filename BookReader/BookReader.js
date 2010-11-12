@@ -4317,8 +4317,10 @@ BookReader.prototype.fragmentFromParams = function(params) {
     if ('undefined' != typeof(params.page)) {
         fragments.push('page', params.page);
     } else {
-        // Don't have page numbering -- use index instead
-        fragments.push('page', 'n' + params.index);
+        if ('undefined' != typeof(params.index)) {
+            // Don't have page numbering but we do have the index
+            fragments.push('page', 'n' + params.index);
+        }
     }
     
     // $$$ highlight
@@ -5092,6 +5094,10 @@ BookReader.prototype.ttsStartPolling = function () {
 
 BookReader.prototype.makeShareDiv = function()
 {
+    var pageView = document.location + '';
+    var bookView = (pageView + '').replace(/#.*/,'');
+    var embedLink = this.getEmbedURL({ 'mode': this.constMode1up } );
+    
     var html = [
         '<div class="BRfloat" id="shareThis">',
             '<div class="BRfloatHead">',
@@ -5102,11 +5108,11 @@ BookReader.prototype.makeShareDiv = function()
             '<form method="post" action="">',
                 '<fieldset>',
                     '<label for="pageview">Link to this page view:</label>',
-                    '<input type="text" name="pageview" id="pageview" value="http://thisisthelinktothispageview"/>',
+                    '<input type="text" name="pageview" id="pageview" value="' + pageView + '"/>',
                 '</fieldset>',
                 '<fieldset>',
                     '<label for="booklink">Link to the book:</label>',
-                    '<input type="text" name="booklink" id="booklink" value="http://thisisthelinktothisbook"/>',
+                    '<input type="text" name="booklink" id="booklink" value="' + bookView + '"/>',
                 '</fieldset>',
                 '<fieldset>',
                     '<label for="iframe">Embed a mini Book Reader:</label>',
@@ -5124,7 +5130,7 @@ BookReader.prototype.makeShareDiv = function()
                             'Open to this page?',
                         '</label>',
                     '</fieldset>',
-                    '<textarea cols="30" rows="4" name="iframe" id="iframe"><iframe src="http://thisisthestreamlink" width="480" height="480"></iframe></textarea>',
+                    '<textarea cols="30" rows="4" name="iframe" id="iframe"><iframe src="' + embedLink + '" width="480" height="480"></iframe></textarea>',
                     '<p class="meta"><strong>NOTE:</strong> We\'ve tested EMBED on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>',
                 '</fieldset>',
                 '<fieldset class="center">',
