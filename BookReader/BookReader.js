@@ -3724,9 +3724,10 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         jToolbar.find('.one_page_mode').hide();
     }
     
-        // $$$ Don't hardcode ids
-    jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#BRshare"});
-    jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#BRinfo"});
+    // $$$ Don't hardcode ids
+    var self = this;
+    jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#BRshare", onLoad: function() { self.ttsStop(); } });
+    jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#BRinfo", onLoad: function() { self.ttsStop(); } });
 
     $("body").append(['<div style="display: none;">',
         '<div class="BRfloat" id="BRshare">',
