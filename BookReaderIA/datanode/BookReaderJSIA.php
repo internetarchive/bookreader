@@ -313,13 +313,16 @@ br.cleanupMetadata = function() {
 // getEmbedURL
 //________
 // Returns a URL for an embedded version of the current book
-br.getEmbedURL = function() {
+br.getEmbedURL = function(viewParams) {
     // We could generate a URL hash fragment here but for now we just leave at defaults
     var url = 'http://' + window.location.host + '/stream/'+this.bookId;
     if (this.subPrefix != this.bookId) { // Only include if needed
         url += '/' + this.subPrefix;
     }
     url += '?ui=embed';
+    if (viewParams) {
+        url += '#' + this.fragmentFromParams(viewParams);
+    }
     return url;
 }
 

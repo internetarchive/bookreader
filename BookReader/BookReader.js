@@ -3406,10 +3406,12 @@ BookReader.prototype.initNavbar = function() {
 
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
     
-    //XXXmang remove once done testing
-    //this.addSearchResult("There is a place where the <strong>sidewalk</strong> ends And before the street begins, And there the grass grows soft and white, And there the sun burns crimson bright,And there the moon-bird rests from his flight To cool in the peppermint wind.", "20", 31);
-    //this.addSearchResult("There is a place where the <strong>sidewalk</strong> BEGINS And there the moon-bird rests from his flight To cool in the peppermint wind.", "60", 71);
-    
+    /* Initial hiding
+        $('#BRtoolbar').delay(3000).animate({top:-40});
+        $('#BRnav').delay(3000).animate({bottom:-53});
+        changeArrow();
+        $('.BRnavCntl').delay(3000).animate({height:'43px'}).delay(1000).animate({opacity:.25},1000);
+    */
 }
 
 BookReader.prototype.updateNavPageNum = function(index) {
@@ -3909,6 +3911,47 @@ BookReader.prototype.bindNavigationHandlers = function() {
         return false;
     });
     
+    $('.BRnavCntl').click(
+        function(){
+            if ($('#BRnavCntlBtm').hasClass('BRdn')) {
+                $('#BRtoolbar').animate({top:-40});
+                $('#BRnav').animate({bottom:-55});
+                $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
+                $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
+                $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
+                $('.BRnavCntl').delay(1000).animate({opacity:.25},1000);
+            } else {
+                $('#BRtoolbar').animate({top:0});
+                $('#BRnav').animate({bottom:0});
+                $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
+                $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
+                $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
+                $('.BRvavCntl').animate({opacity:1})
+            };
+        }
+    );
+    $('#BRnavCntlBtm').mouseover(function(){
+        if ($(this).hasClass('BRup')) {
+            $('.BRnavCntl').animate({opacity:1},250);
+        };
+    });
+    $('#BRnavCntlBtm').mouseleave(function(){
+        if ($(this).hasClass('BRup')) {
+            $('.BRnavCntl').animate({opacity:.25},250);
+        };
+    });
+    $('#BRnavCntlTop').mouseover(function(){
+        if ($(this).hasClass('BRdn')) {
+            $('.BRnavCntl').animate({opacity:1},250);
+        };
+    });
+    $('#BRnavCntlTop').mouseleave(function(){
+        if ($(this).hasClass('BRdn')) {
+            $('.BRnavCntl').animate({opacity:.25},250);
+        };
+    });
+
+    
     this.initSwipeData();
     $('#BookReader').die('mousemove.navigation').live('mousemove.navigation',
         { 'br': this },
@@ -4111,6 +4154,16 @@ BookReader.prototype.showNavigation = function() {
         //$('#BRzoomer').animate({right:0});
     }
 }
+
+// changeArrow
+//______________________________________________________________________________
+// Change the nav bar arrow
+function changeArrow(){
+    setTimeout(function(){
+        $('#BRnavCntlBtm').removeClass('BRdn').addClass('BRup');
+    },3000);
+};
+
 
 // firstDisplayableIndex
 //______________________________________________________________________________
@@ -4317,8 +4370,10 @@ BookReader.prototype.fragmentFromParams = function(params) {
     if ('undefined' != typeof(params.page)) {
         fragments.push('page', params.page);
     } else {
-        // Don't have page numbering -- use index instead
-        fragments.push('page', 'n' + params.index);
+        if ('undefined' != typeof(params.index)) {
+            // Don't have page numbering but we do have the index
+            fragments.push('page', 'n' + params.index);
+        }
     }
     
     // $$$ highlight
@@ -5036,62 +5091,13 @@ BookReader.prototype.ttsStartPolling = function () {
         self.ttsNextChunk();
     },500);    
 }
-//FADING, ETC.
-    function changeArrow(){
-        setTimeout(function(){
-            $('#BRnavCntlBtm').removeClass('BRdn').addClass('BRup');
-        },3000);
-    };
-    $().ready(function(){
-    /*
-        $('#BRtoolbar').delay(3000).animate({top:-40});
-        $('#BRnav').delay(3000).animate({bottom:-53});
-        changeArrow();
-        $('.BRnavCntl').delay(3000).animate({height:'43px'}).delay(1000).animate({opacity:.25},1000);
-    */
-        $('.BRnavCntl').click(
-            function(){
-                if ($('#BRnavCntlBtm').hasClass('BRdn')) {
-                    $('#BRtoolbar').animate({top:-40});
-                    $('#BRnav').animate({bottom:-55});
-                    $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
-                    $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
-                    $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
-                    $('.BRnavCntl').delay(1000).animate({opacity:.25},1000);
-                } else {
-                    $('#BRtoolbar').animate({top:0});
-                    $('#BRnav').animate({bottom:0});
-                    $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
-                    $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
-                    $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
-                    $('.BRvavCntl').animate({opacity:1})
-                };
-            }
-        );
-        $('#BRnavCntlBtm').mouseover(function(){
-            if ($(this).hasClass('BRup')) {
-                $('.BRnavCntl').animate({opacity:1},250);
-            };
-        });
-        $('#BRnavCntlBtm').mouseleave(function(){
-            if ($(this).hasClass('BRup')) {
-                $('.BRnavCntl').animate({opacity:.25},250);
-            };
-        });
-        $('#BRnavCntlTop').mouseover(function(){
-            if ($(this).hasClass('BRdn')) {
-                $('.BRnavCntl').animate({opacity:1},250);
-            };
-        });
-        $('#BRnavCntlTop').mouseleave(function(){
-            if ($(this).hasClass('BRdn')) {
-                $('.BRnavCntl').animate({opacity:.25},250);
-            };
-        });
-    });
 
 BookReader.prototype.makeShareDiv = function()
 {
+    var pageView = document.location + '';
+    var bookView = (pageView + '').replace(/#.*/,'');
+    var embedLink = this.getEmbedURL({ 'mode': this.constMode1up } );
+    
     var html = [
         '<div class="BRfloat" id="shareThis">',
             '<div class="BRfloatHead">',
@@ -5102,11 +5108,11 @@ BookReader.prototype.makeShareDiv = function()
             '<form method="post" action="">',
                 '<fieldset>',
                     '<label for="pageview">Link to this page view:</label>',
-                    '<input type="text" name="pageview" id="pageview" value="http://thisisthelinktothispageview"/>',
+                    '<input type="text" name="pageview" id="pageview" value="' + pageView + '"/>',
                 '</fieldset>',
                 '<fieldset>',
                     '<label for="booklink">Link to the book:</label>',
-                    '<input type="text" name="booklink" id="booklink" value="http://thisisthelinktothisbook"/>',
+                    '<input type="text" name="booklink" id="booklink" value="' + bookView + '"/>',
                 '</fieldset>',
                 '<fieldset>',
                     '<label for="iframe">Embed a mini Book Reader:</label>',
@@ -5124,7 +5130,7 @@ BookReader.prototype.makeShareDiv = function()
                             'Open to this page?',
                         '</label>',
                     '</fieldset>',
-                    '<textarea cols="30" rows="4" name="iframe" id="iframe"><iframe src="http://thisisthestreamlink" width="480" height="480"></iframe></textarea>',
+                    '<textarea cols="30" rows="4" name="iframe" id="iframe"><iframe src="' + embedLink + '" width="480" height="480"></iframe></textarea>',
                     '<p class="meta"><strong>NOTE:</strong> We\'ve tested EMBED on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>',
                 '</fieldset>',
                 '<fieldset class="center">',
