@@ -3725,19 +3725,41 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     }
     
         // $$$ Don't hardcode ids
-    jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#shareThis"});
-    jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#aboutThis"});
-    
-    $("body").append(
-        [
-            '<div style="display: none;">',
-                this.makeShareDiv(),
-                this.makeAboutDiv(),
-            '</div>'
-        ].join('\n')
-    );
-    
+    jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#BRshare"});
+    jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#BRinfo"});
 
+    $("body").append(['<div style="display: none;">',
+        '<div class="BRfloat" id="BRshare">',
+            '<div class="BRfloatHead">',
+                'Share',
+                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+        '</div>',
+        '<div class="BRfloat" id="BRinfo">',
+            '<div class="BRfloatHead">About this book',
+                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+            '<div class="BRfloatBody">',
+                '<div class="BRfloatCover">',
+                '</div>',
+                '<div class="BRfloatMeta">',
+                    '<div class="BRfloatTitle">',
+                        '<h2><a/></h2>',
+                    '</div>',
+
+                    '</div>',
+                '</div>',
+            '</div>',
+            '<div class="BRfloatFoot">',
+                '<a href="http://openlibrary.org/dev/docs/bookreader">About the BookReader</a>',
+            '</div>',
+        '</div>'].join('\n'));
+
+    $('#BRinfo .BRfloatTitle a').attr( {'href': this.bookUrl} ).text(this.bookTitle).addClass('title').appendTo
+    
+    // These functions can be overridden
+    this.buildInfoDiv($('#BRinfo'));
+    this.buildShareDiv($('#BRshare'));
     
     // Switch to requested mode -- binds other click handlers
     //this.switchToolbarMode(mode);
@@ -5092,97 +5114,72 @@ BookReader.prototype.ttsStartPolling = function () {
     },500);    
 }
 
-BookReader.prototype.makeShareDiv = function()
+BookReader.prototype.buildShareDiv = function(jShareDiv)
 {
     var pageView = document.location + '';
     var bookView = (pageView + '').replace(/#.*/,'');
-    var embedLink = this.getEmbedURL({ 'mode': this.constMode1up } );
+    var self = this;
     
-    var html = [
-        '<div class="BRfloat" id="shareThis">',
-            '<div class="BRfloatHead">',
-                'Share',
-                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
-            '</div>',
-            '<p>Copy and paste one of these options to share this book elsewhere.</p>',
-            '<form method="post" action="">',
-                '<fieldset>',
-                    '<label for="pageview">Link to this page view:</label>',
-                    '<input type="text" name="pageview" id="pageview" value="' + pageView + '"/>',
+    var jForm = $([
+        '<p>Copy and paste one of these options to share this book elsewhere.</p>',
+        '<form method="post" action="">',
+            '<fieldset>',
+                '<label for="pageview">Link to this page view:</label>',
+                '<input type="text" name="pageview" id="pageview" value="' + pageView + '"/>',
+            '</fieldset>',
+            '<fieldset>',
+                '<label for="booklink">Link to the book:</label>',
+                '<input type="text" name="booklink" id="booklink" value="' + bookView + '"/>',
+            '</fieldset>',
+            '<fieldset>',
+                '<label for="iframe">Embed a mini Book Reader:</label>',
+                '<fieldset class="sub">',
+                    '<label class="sub">',
+                        '<input type="radio" name="pages" value="' + this.constMode1up + '" checked="checked"/>',
+                        '1 page',
+                    '</label>',
+                    '<label class="sub">',
+                        '<input type="radio" name="pages" value="' + this.constMode2up + '"/>',
+                        '2 pages',
+                    '</label>',
+                    '<label class="sub">',
+                        '<input type="checkbox" name="thispage" value="thispage"/>',
+                        'Open to this page?',
+                    '</label>',
                 '</fieldset>',
-                '<fieldset>',
-                    '<label for="booklink">Link to the book:</label>',
-                    '<input type="text" name="booklink" id="booklink" value="' + bookView + '"/>',
-                '</fieldset>',
-                '<fieldset>',
-                    '<label for="iframe">Embed a mini Book Reader:</label>',
-                    '<fieldset class="sub">',
-                        '<label class="sub">',
-                            '<input type="radio" name="pages" id="1page" checked="checked"/>',
-                            '1 page',
-                        '</label>',
-                        '<label class="sub">',
-                            '<input type="radio" name="pages" id="2page"/>',
-                            '2 pages',
-                        '</label>',
-                        '<label class="sub">',
-                            '<input type="checkbox" name="thispage" id="thispage"/>',
-                            'Open to this page?',
-                        '</label>',
-                    '</fieldset>',
-                    '<textarea cols="30" rows="4" name="iframe" id="iframe"><iframe src="' + embedLink + '" width="480" height="480"></iframe></textarea>',
-                    '<p class="meta"><strong>NOTE:</strong> We\'ve tested EMBED on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>',
-                '</fieldset>',
-                '<fieldset class="center">',
-                    '<button type="button" onclick="$.fn.colorbox.close();">Finished</button>',
-                '</fieldset>',
-            '</form>',
-        '</div>'
-    ].join('\n');
+                '<textarea cols="30" rows="4" name="iframe" class="BRframeEmbed"></textarea>',
+                '<p class="meta"><strong>NOTE:</strong> We\'ve tested EMBED on blogspot.com blogs as well as self-hosted Wordpress blogs. This feature will NOT work on wordpress.com blogs.</p>',
+            '</fieldset>',
+            '<fieldset class="center">',
+                '<button type="button" onclick="$.fn.colorbox.close();">Finished</button>',
+            '</fieldset>',
+        '</form>'].join('\n'));
+        
+    jForm.appendTo(jShareDiv);
+      
+    jForm.find('input').bind('change', function() {
+        var form = $(this).parents('form:first');
+        var params = {};
+        params.mode = $(form.find('input[name=pages]:checked')).val();
+        if (form.find('input[name=thispage]').attr('checked')) {
+            params.page = self.getPageNum(self.currentIndex());
+        }
+        
+        console.log(params);
+        var embedLink = self.getEmbedURL( params );    
+        form.find('.BRframeEmbed').val('<iframe src="' + embedLink + '" width="480" height="480"></iframe>');
+    })
+    jForm.find('input[name=thispage]').trigger('change');
+    jForm.find('input, textarea').bind('focus', function() {
+        this.select();
+    });
     
-    return html;
+    jForm.appendTo(jShareDiv);
+    jForm = ''; // closure
+        
 }
 
-BookReader.prototype.makeAboutDiv = function() 
+// Should be overridden
+BookReader.prototype._buildInfoDiv = function(jInfoDiv) 
 {
-    var html = [
-        '<div class="BRfloat" id="aboutThis">',
-            '<div class="BRfloatHead">About this book',
-                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
-            '</div>',
-            '<div class="BRfloatBody">'
-    ];
-    
-    // Use 3rd-party provided function if available
-    if (this.getInfoDiv) {
-        html.push(this.getInfoDiv());
-    } else {
-        html = html.concat([
-                '<div class="BRfloatMeta">',
-                    '<div class="BRfloatTitle">',
-                        '<h2><a href="', br.bookUrl, '" class="title">', BookReader.util.escapeHTML(br.bookTitle), '</a></h2>',
-                    '</div>',
-                '</div>',
-        ]);
-    }
-    
-    html = html.concat([
-            '</div>', // BRfloatBody
-            '<div class="BRfloatFoot">'
-    ]);
-    
-    if (this.getInfoFooter) {
-        html.push(this.getInfoFooter());
-    } else {
-        html.push(
-                '<a href="http://openlibrary.org/dev/docs/bookreader">About the BookReader</a>'
-        );
-    }
-    
-    html = html.concat([
-            '</div>', // BRfloatfoot
-        '</div>' // BRfloat
-    ]);
-    
-    return html.join('\n');
 }
