@@ -4631,8 +4631,31 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         }
 
         // $$$mang cleanup
-        this.bookUrl = 'http://openlibrary.org' + olObject.key;
+        self.bookUrl = 'http://openlibrary.org' + olObject.key;
+        self.bookTitle = olObject['title'];
         $('#BRreturn a').attr('href', this.bookUrl);
+        
+        $('#BRinfo').remove();
+        $('#BRshare').after(['<div class="BRfloat" id="BRinfo">',
+            '<div class="BRfloatHead">About this book',
+                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+            '<div class="BRfloatBody">',
+                '<div class="BRfloatCover">',
+                '</div>',
+                '<div class="BRfloatMeta">',
+                    '<div class="BRfloatTitle">',
+                        '<h2><a/></h2>',
+                    '</div>',
+
+                    '</div>',
+                '</div>',
+            '</div>',
+            '<div class="BRfloatFoot">',
+                '<a href="http://openlibrary.org/dev/docs/bookreader">About the BookReader</a>',
+            '</div>',
+        '</div>'].join('\n'));
+        self.buildInfoDiv($('#BRinfo'));
     }
 }
 
@@ -5181,6 +5204,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
 }
 
 // Should be overridden
-BookReader.prototype._buildInfoDiv = function(jInfoDiv) 
+BookReader.prototype.buildInfoDiv = function(jInfoDiv) 
 {
+    jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
 }

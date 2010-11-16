@@ -367,9 +367,8 @@ br.buildInfoDiv = function(jInfoDiv) {
     var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
     var domainRe = /(\w+\.(com|org))/;
     var domain = domainRe.exec(this.bookUrl)[1];
-    
-    // XXX use different icon for archive.org
-    // XXX cover looks weird before it loads
+        
+    // $$$ cover looks weird before it loads
     jInfoDiv.find('.BRfloatCover').append([
                     '<a href="', this.bookUrl, '"><img src="http://www.archive.org/download/', this.bookId, '/page/cover_t.jpg" alt="', escapedTitle, '" height="140" /></a>'].join('')
     );
@@ -389,13 +388,22 @@ br.buildInfoDiv = function(jInfoDiv) {
                         '<li><a href="https://www.amazon.com/gp/digital/fiona/web-to-kindle?clientid=IA&itemid=', this.bookId, '&docid=', this.subPrefix, '">Send to Kindle</a><span>|</span></li>',
                         '<li><a href="', this.bookUrl, '">More...</a></li>',
                     '</ul>',
-                    '<p class="moreInfo"><span></span>More information on <a href="'+ this.bookUrl + '">' + domain + '</a>.</p>'].join('\n'));
+                    '<p class="moreInfo"><span></span>More information on <a href="'+ this.bookUrl + '">' + domain + '</a>  </p>'].join('\n'));
                     
     jInfoDiv.find('.BRfloatFoot').append([
                 // XXX add link to bug tracker
                 '<a href="http://openlibrary.org/contact" class="problem">Report a problem</a>',
                 '<span>|</span>',
                 '<a href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a>'].join('\n'));
+                
+    if (domain == 'archive.org') {
+        jInfoDiv.find('.BRfloatMeta p.moreInfo span').css(
+            {'background': 'url(http://www.archive.org/favicon.ico) no-repeat', 'width': 22, 'height': 18 }
+        );
+    }
+    
+    jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
+
 }
 
 br.pageW =  [
