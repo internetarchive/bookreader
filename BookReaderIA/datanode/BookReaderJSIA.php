@@ -370,7 +370,7 @@ br.buildInfoDiv = function(jInfoDiv) {
         
     // $$$ cover looks weird before it loads
     jInfoDiv.find('.BRfloatCover').append([
-                    '<a href="', this.bookUrl, '"><img src="http://www.archive.org/download/', this.bookId, '/page/cover_t.jpg" alt="', escapedTitle, '" height="140" /></a>'].join('')
+                    '<a href="', this.bookUrl, '"><img src="http://www.archive.org/download/', this.bookId, '/page/cover_t.jpg" alt="' + escapedTitle + '" height="140" /></a>'].join('')
     );
 
     jInfoDiv.find('.BRfloatMeta').append([
