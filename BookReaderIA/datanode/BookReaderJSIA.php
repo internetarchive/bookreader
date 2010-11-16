@@ -391,10 +391,9 @@ br.buildInfoDiv = function(jInfoDiv) {
                     '<p class="moreInfo"><span></span>More information on <a href="'+ this.bookUrl + '">' + domain + '</a>  </p>'].join('\n'));
                     
     jInfoDiv.find('.BRfloatFoot').append([
-                // XXX add link to bug tracker
+                '<span>|</span>',                
                 '<a href="http://openlibrary.org/contact" class="problem">Report a problem</a>',
-                '<span>|</span>',
-                '<a href="http://openlibrary.org/dev/docs/bookreader">About the Bookreader</a>'].join('\n'));
+    ].join('\n'));
                 
     if (domain == 'archive.org') {
         jInfoDiv.find('.BRfloatMeta p.moreInfo span').css(

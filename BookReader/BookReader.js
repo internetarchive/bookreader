@@ -4640,7 +4640,7 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
     // $$$ could refactor this so that 'this' is available
     if (olObject) {
-        // console.log(olObject);
+        //console.log(olObject);
         if (olObject['table_of_contents']) {
             // XXX check here that TOC is valid
             self.updateTOC(olObject['table_of_contents']);
@@ -4652,7 +4652,7 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         $('#BRreturn a').attr('href', this.bookUrl);
         
         $('#BRinfo').remove();
-        $('#BRshare').after(self.blankShareDiv());
+        $('#BRshare').after(self.blankInfoDiv());
         self.buildInfoDiv($('#BRinfo'));
     }
 }
