@@ -694,11 +694,9 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                 $('#pagediv'+index).remove();
             }
         } else {
-            /*
-            var mRow = this.displayedRows[i];
-            var mLeafs = '[' +  [leaf.num for each (leaf in leafMap[mRow].leafs)] + ']';
-            console.log('NOT Removing row ' + mRow + ' ' + mLeafs);
-            */
+            // var mRow = this.displayedRows[i];
+            // var mLeafs = '[' +  [leaf.num for each (leaf in leafMap[mRow].leafs)] + ']';
+            // console.log('NOT Removing row ' + mRow + ' ' + mLeafs);
         }
     }
     
