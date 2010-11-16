@@ -1801,6 +1801,20 @@ BookReader.prototype.twoPageGetAutofitReduce = function() {
     return spreadSize.reduce;
 }
 
+// twoPageIsZoomedIn
+//______________________________________________________________________________
+// Returns true if the pages extend past the edge of the view
+BookReader.prototype.twoPageIsZoomedIn = function() {
+    var autofitReduce = this.twoPageGetAutofitReduce();
+    var isZoomedIn = false;
+    if (this.twoPage.autofit != 'auto') {
+        if (this.reduce < this.twoPageGetAutofitReduce()) {                
+            isZoomedIn = true;
+        }
+    }
+    return isZoomedIn;
+}
+
 BookReader.prototype.onePageGetAutofitWidth = function() {
     var widthPadding = 20;
     return (this.getMedianPageSize().width + 0.0) / ($('#BRcontainer').attr('clientWidth') - widthPadding * 2);
@@ -2373,12 +2387,10 @@ BookReader.prototype.setMouseHandlers2UP = function() {
         function(e) {
             if (e.button == 2) {
                 // right click
-                return;
+                return true;
             }
-            
-            var autofitReduce = e.data.self.twoPageGetAutofitReduce();
-            // Don't trigger if zoomed in
-            if (e.data.self.reduce >= e.data.self.twoPageGetAutofitReduce()) {                
+                        
+             if (! e.data.self.twoPageIsZoomedIn()) {
                 e.data.self.ttsStop();
                 e.data.self.left();                
             }
@@ -2391,14 +2403,12 @@ BookReader.prototype.setMouseHandlers2UP = function() {
         function(e) {
             if (e.button == 2) {
                 // right click
-                return;
+                return true;
             }
-
-            var autofitReduce = e.data.self.twoPageGetAutofitReduce();
-            // Don't trigger if zoomed in
-            if (e.data.self.reduce >= e.data.self.twoPageGetAutofitReduce()) {                
+            
+            if (! e.data.self.twoPageIsZoomedIn()) {
                 e.data.self.ttsStop();
-                e.data.self.right();
+                e.data.self.right();                
             }
             e.preventDefault();
         }
