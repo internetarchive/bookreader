@@ -5187,7 +5187,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
             params.page = self.getPageNum(self.currentIndex());
         }
         
-        console.log(params);
+        // console.log(params);
         var embedLink = self.getEmbedURL( params );    
         form.find('.BRframeEmbed').val('<iframe src="' + embedLink + '" width="480" height="480"></iframe>');
     })
