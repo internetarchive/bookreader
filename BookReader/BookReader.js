@@ -3727,13 +3727,21 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#BRshare", onLoad: function() { self.ttsStop(); } });
     jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#BRinfo", onLoad: function() { self.ttsStop(); } });
 
-    $("body").append(['<div style="display: none;">',
-        '<div class="BRfloat" id="BRshare">',
-            '<div class="BRfloatHead">',
-                'Share',
-                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
-            '</div>',
-        '</div>',
+    $('<div style="display: none;"></div>').append(this.blankShareDiv()).append(this.blankInfoDiv()).appendTo($('body'));
+
+    $('#BRinfo .BRfloatTitle a').attr( {'href': this.bookUrl} ).text(this.bookTitle).addClass('title');
+    
+    // These functions can be overridden
+    this.buildInfoDiv($('#BRinfo'));
+    this.buildShareDiv($('#BRshare'));
+    
+    // Switch to requested mode -- binds other click handlers
+    //this.switchToolbarMode(mode);
+    
+}
+
+BookReader.prototype.blankInfoDiv = function() {
+    return $([
         '<div class="BRfloat" id="BRinfo">',
             '<div class="BRfloatHead">About this book',
                 '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
@@ -3752,17 +3760,19 @@ BookReader.prototype.initToolbar = function(mode, ui) {
             '<div class="BRfloatFoot">',
                 '<a href="http://openlibrary.org/dev/docs/bookreader">About the BookReader</a>',
             '</div>',
-        '</div>'].join('\n'));
+        '</div>'].join('\n')
+    );
+}
 
-    $('#BRinfo .BRfloatTitle a').attr( {'href': this.bookUrl} ).text(this.bookTitle).addClass('title').appendTo
-    
-    // These functions can be overridden
-    this.buildInfoDiv($('#BRinfo'));
-    this.buildShareDiv($('#BRshare'));
-    
-    // Switch to requested mode -- binds other click handlers
-    //this.switchToolbarMode(mode);
-    
+BookReader.prototype.blankShareDiv = function() {
+    return $([
+        '<div class="BRfloat" id="BRshare">',
+            '<div class="BRfloatHead">',
+                'Share',
+                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+        '</div>'].join('\n')
+    );
 }
 
 
@@ -4634,25 +4644,7 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         $('#BRreturn a').attr('href', this.bookUrl);
         
         $('#BRinfo').remove();
-        $('#BRshare').after(['<div class="BRfloat" id="BRinfo">',
-            '<div class="BRfloatHead">About this book',
-                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
-            '</div>',
-            '<div class="BRfloatBody">',
-                '<div class="BRfloatCover">',
-                '</div>',
-                '<div class="BRfloatMeta">',
-                    '<div class="BRfloatTitle">',
-                        '<h2><a/></h2>',
-                    '</div>',
-
-                    '</div>',
-                '</div>',
-            '</div>',
-            '<div class="BRfloatFoot">',
-                '<a href="http://openlibrary.org/dev/docs/bookreader">About the BookReader</a>',
-            '</div>',
-        '</div>'].join('\n'));
+        $('#BRshare').after(self.blankShareDiv());
         self.buildInfoDiv($('#BRinfo'));
     }
 }
