@@ -3753,8 +3753,6 @@ BookReader.prototype.blankInfoDiv = function() {
                     '<div class="BRfloatTitle">',
                         '<h2><a/></h2>',
                     '</div>',
-
-                    '</div>',
                 '</div>',
             '</div>',
             '<div class="BRfloatFoot">',
