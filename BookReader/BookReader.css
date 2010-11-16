@@ -363,7 +363,8 @@ a.BRgrey:visited   { color: #666; }
 }
 
 .BRfliparea {
-    background-image: url(images/transparent.png); # Required to capture mouse on IE
+    /* Required to capture mouse on IE */
+    background-image: url(images/transparent.png);
 }
 
 .BRtwoPagePopUp {
