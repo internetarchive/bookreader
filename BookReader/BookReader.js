@@ -2675,7 +2675,7 @@ BookReader.prototype.search = function(term) {
     
     this.removeSearchResults();
     this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
-    this.ttsAjax = $.ajax({url:url, dataType:'jsonp', jsonpCallback:'br.BRSearchCallback'});    
+    $.ajax({url:url, dataType:'jsonp', jsonpCallback:'br.BRSearchCallback'});    
 }
 
 // BRSearchCallback()
