@@ -273,6 +273,9 @@ BookReader.prototype.init = function() {
     // it should start (doesn't jump after init)
     this.initNavbar();
     this.bindNavigationHandlers();
+    
+    // Set strings in the UI
+    this.initUIStrings();
 
     // Start AJAX request for OL data
     if (this.getOpenLibraryRecord) {
@@ -3282,8 +3285,7 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
     
-    // $$$ should make this work inside the BookReader div (self-contained), rather than after
-    $('#BookReader').after(
+    $('#BookReader').append(
         '<div id="BRnav">'
         +     '<div id="BRpage">'   // Page turn buttons
         +         '<button class="BRicon onepg"></button>'
@@ -3638,7 +3640,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         readIcon = "<button class='BRicon read modal'></button>";
     }
 
-    $("body").append(
+    $("#BookReader").append(
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
         +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
@@ -3651,7 +3653,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
         +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
-        +   "<div id='BRnavCntlTop' class='BRnavCntl BRup'></div>"
+        +   "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
         + "</div>"
         /*
         + "<div id='BRzoomer'>"
@@ -3667,6 +3669,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         */
         );
 
+    $('#BRtoolbar .BRnavCntl').addClass('BRup');
     $('#BRtoolbar .pause').hide();    
     
     this.updateToolbarZoom(this.reduce); // Pretty format
@@ -3680,44 +3683,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     
     // We build in mode 2
     jToolbar.append();
-    
-    // Navigation handlers will be bound after all UI is in place -- makes moving icons between
-    // the toolbar and nav bar easier
-    
-    // Setup tooltips -- later we could load these from a file for i18n
-    var titles = { '.logo': 'Go to Archive.org',
-                   '.zoom_in': 'Zoom in',
-                   '.zoom_out': 'Zoom out',
-                   '.onepg': 'One-page view',
-                   '.twopg': 'Two-page view',
-                   '.thumb': 'Thumbnail view',
-                   '.print': 'Print this page',
-                   '.embed': 'Embed BookReader',
-                   '.link': 'Link to this book (and page)',
-                   '.bookmark': 'Bookmark this page',
-                   '.read': 'Read this book aloud',
-                   '.full': 'Show fullscreen',
-                   '.book_left': 'Flip left',
-                   '.book_right': 'Flip right',
-                   '.book_up': 'Page up',
-                   '.book_down': 'Page down',
-                   '.play': 'Play',
-                   '.pause': 'Pause',
-                   '.book_top': 'First page',
-                   '.book_bottom': 'Last page'
-                  };
-    if ('rl' == this.pageProgression) {
-        titles['.book_leftmost'] = 'Last page';
-        titles['.book_rightmost'] = 'First page';
-    } else { // LTR
-        titles['.book_leftmost'] = 'First page';
-        titles['.book_rightmost'] = 'Last page';
-    }
-                  
-    for (var icon in titles) {
-        jToolbar.find(icon).attr('title', titles[icon]);
-    }
-    
+        
     // Hide mode buttons and autoplay if 2up is not available
     // $$$ if we end up with more than two modes we should show the applicable buttons
     if ( !this.canSwitchToMode(this.constMode2up) ) {
@@ -5205,4 +5171,51 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
 BookReader.prototype.buildInfoDiv = function(jInfoDiv) 
 {
     jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
+}
+
+// Can be overriden
+BookReader.prototype.initUIStrings = function()
+{
+    // Navigation handlers will be bound after all UI is in place -- makes moving icons between
+    // the toolbar and nav bar easier
+        
+    // Setup tooltips -- later we could load these from a file for i18n
+    var titles = { '.logo': 'Go to Archive.org', // $$$ update after getting OL record
+                   '.zoom_in': 'Zoom in',
+                   '.zoom_out': 'Zoom out',
+                   '.onepg': 'One-page view',
+                   '.twopg': 'Two-page view',
+                   '.thumb': 'Thumbnail view',
+                   '.print': 'Print this page',
+                   '.embed': 'Embed BookReader',
+                   '.link': 'Link to this book (and page)',
+                   '.bookmark': 'Bookmark this page',
+                   '.read': 'Read this book aloud',
+                   '.share': 'Share this book',
+                   '.info': 'About this book',
+                   '.full': 'Show fullscreen',
+                   '.book_left': 'Flip left',
+                   '.book_right': 'Flip right',
+                   '.book_up': 'Page up',
+                   '.book_down': 'Page down',
+                   '.play': 'Play',
+                   '.pause': 'Pause',
+                   '.BRdn': 'Show/hide nav bar', // Would have to keep updating on state change to have just "Hide nav bar"
+                   '.BRup': 'Show/hide nav bar',
+                   '.book_top': 'First page',
+                   '.book_bottom': 'Last page'
+                  };
+    if ('rl' == this.pageProgression) {
+        titles['.book_leftmost'] = 'Last page';
+        titles['.book_rightmost'] = 'First page';
+    } else { // LTR
+        titles['.book_leftmost'] = 'First page';
+        titles['.book_rightmost'] = 'Last page';
+    }
+                  
+    for (var icon in titles) {
+        if (titles.hasOwnProperty(icon)) {
+            $('#BookReader').find(icon).attr('title', titles[icon]);
+        }
+    }
 }
