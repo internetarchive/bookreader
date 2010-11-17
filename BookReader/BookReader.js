@@ -2287,7 +2287,6 @@ BookReader.prototype.willChangeToIndex = function(index)
 {
     // Update navbar position icon - leads page change animation
     this.updateNavIndex(index);
-
 }
 
 // flipRightToLeft(nextL, nextR, gutter)
@@ -3372,12 +3371,13 @@ BookReader.prototype.initNavbar = function() {
         max: this.numLeafs - 1,
         value: this.currentIndex()
     })
-    .bind('slide', function(event, ui){
+    .bind('slide', function(event, ui) {
         self.updateNavPageNum(ui.value);
         $("#pagenum").show();
         return true;
     })
     .bind('slidechange', function(event, ui) {
+        self.updateNavPageNum(ui.value); // hiding now but will show later
         $("#pagenum").hide();
         
         // recursion prevention for jumpToIndex
@@ -4606,7 +4606,7 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
     // $$$ could refactor this so that 'this' is available
     if (olObject) {
-        //console.log(olObject);
+        // console.log(olObject);
         if (olObject['table_of_contents']) {
             // XXX check here that TOC is valid
             self.updateTOC(olObject['table_of_contents']);
