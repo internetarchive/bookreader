@@ -3309,61 +3309,6 @@ BookReader.prototype.initNavbar = function() {
         + '</div>'
     );
     
-/*
-        <div class="searchChap" style="left:49%;" title="Search result">
-            <div class="query">
-            A related distinction is between the emotion and the results of the emotion, principally behaviors and <strong><a href="">emotional</a></strong> expressions. People often behave in certain ways as a direct result of their <strong><a href="">emotional</a></strong> state, such as crying, fighting or fleeing. <span>Page 163</span>
-                <div class="queryChap">IV. The Witch <span>|</span> Page 163</div>
-            </div>
-        </div>
-*/
-    
-    /* $$$mang search results and chapters should automatically coalesce
-    $('.searchChap').bt({
-        contentSelector: '$(this).find(".query")',
-        trigger: 'click',
-        closeWhenOthersOpen: true,
-        cssStyles: {
-            width: '250px',
-            padding: '10px 10px 15px',
-            backgroundColor: '#fff',
-            border: '3px solid #e2dcc5',
-            borderBottom: 'none',
-            fontFamily: '"Lucida Grande","Arial",sans-serif',
-            fontSize: '12px',
-            lineHeight: '18px',
-            color: '#615132'
-        },
-        shrinkToFit: false,
-        width: '230px',
-        padding: 0,
-        spikeGirth: 0,
-        spikeLength: 0,
-        overlap: '10px',
-        overlay: false,
-        killTitle: true, 
-        textzIndex: 9999,
-        boxzIndex: 9998,
-        wrapperzIndex: 9997,
-        offsetParent: null,
-        positions: ['top'],
-        fill: 'white',
-        windowMargin: 10,
-        strokeWidth: 3,
-        strokeStyle: '#e2dcc5',
-        cornerRadius: 0,
-        centerPointX: 0,
-        centerPointY: 0,
-        shadow: false
-    });
-    $('.searchChap').each(function(){
-        $(this).hover(function(){
-            $(this).addClass('front');
-        },function(){
-            $(this).removeClass('front');
-        });
-    });
-    */
     var self = this;
     $('#BRpager').slider({    
         animate: true,
@@ -3639,7 +3584,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     if (!navigator.userAgent.match(/mobile/i)) {
         readIcon = "<button class='BRicon read modal'></button>";
     }
-
+    
     $("#BookReader").append(
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
