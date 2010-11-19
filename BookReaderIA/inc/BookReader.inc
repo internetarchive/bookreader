@@ -177,7 +177,6 @@ class BookReader
   var brConfig = {};
 <? if ($uiMode == 'embed') { ?>
   brConfig["mode"] = 1;
-  brConfig["reduce"] = 8;
   brConfig["ui"] = "embed";
 <? } else { ?>
   brConfig["mode"] = 2;
