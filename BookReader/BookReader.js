@@ -3367,15 +3367,18 @@ BookReader.prototype.initNavbar = function() {
 //______________________________________________________________________________
 // Initialize the navigation bar when embedded
 BookReader.prototype.initEmbedNavbar = function() {
+    // XXX we don't want embed for this link -- just the link to this book
+    var thisLink = this.getEmbedURL(this.paramsFromCurrent());
+    
     $('#BookReader').append(
         '<div id="BRnav">'
-        +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
-        +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>" // XXX escape
-        +     '<div id="BRpage">'   // Page turn buttons
+        +   "<span id='BRtoolbarbuttons'>"        
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
         //+         '<button class="BRicon fit"></button>'
-        +     '</div>'
+        +   "</span>"
+        +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
+        +   "<span id='BRreturn'><a href='" + thisLink + "' target='_blank' >" + this.bookTitle + "</a></span>" // XXX escape
         + '</div>'
     );
 }
