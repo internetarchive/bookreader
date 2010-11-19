@@ -3367,22 +3367,21 @@ BookReader.prototype.initNavbar = function() {
 //______________________________________________________________________________
 // Initialize the navigation bar when embedded
 BookReader.prototype.initEmbedNavbar = function() {
-    // XXX we don't want embed for this link -- just the link to this book
-    var thisLink = this.getEmbedURL(this.paramsFromCurrent());
+    var thisLink = (window.location + '').replace('?ui=embed',''); // IA-specific
     
     $('#BookReader').append(
         '<div id="BRnav">'
         +   "<span id='BRtoolbarbuttons'>"        
-        //+         '<button class="BRicon full"></button>'
+        +         '<button class="BRicon full"></button>'
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a></span>"
-        +   "<span id='BRembedreturn'><a href='" + thisLink + "' target='_blank' >" + this.bookTitle + "</a></span>" // XXX escape
+        +   "<span id='BRembedreturn'><a href='" + thisLink + "' target='_blank' ></a></span>"
         + '</div>'
     );
+    $('#BRembedreturn a').text(this.bookTitle);
 }
-
 
 BookReader.prototype.updateNavPageNum = function(index) {
     var pageNum = this.getPageNum(index);
@@ -3879,6 +3878,16 @@ BookReader.prototype.bindNavigationHandlers = function() {
         self.ttsStop();
         self.zoom(-1);
         return false;
+    });
+    
+    jIcons.filter('.full').bind('click', function() {
+        if (self.ui == 'embed') {
+            // $$$ bit of a hack, IA-specific
+            var url = (window.location + '').replace("?ui=embed","");
+            window.open(url);
+        }
+        
+        // Not implemented
     });
     
     $('.BRnavCntl').click(
