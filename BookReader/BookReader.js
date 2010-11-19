@@ -3347,16 +3347,6 @@ BookReader.prototype.initNavbar = function() {
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
     
-    // $$$mang, why are these set both here and in bindNavigationHandlers?
-    $('.BRicon.book_left').bind('click', function() {
-        self.ttsStop();
-        self.left();
-    });
-    $('.BRicon.book_right').bind('click', function() {
-        self.ttsStop();
-        self.right();
-    });
-    
     this.updateNavPageNum(this.currentIndex());
 
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
@@ -3772,11 +3762,13 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
 
     jIcons.filter('.book_left').click(function(e) {
+        self.ttsStop();
         self.left();
         return false;
     });
          
     jIcons.filter('.book_right').click(function(e) {
+        self.ttsStop();
         self.right();
         return false;
     });
