@@ -3373,12 +3373,12 @@ BookReader.prototype.initEmbedNavbar = function() {
     $('#BookReader').append(
         '<div id="BRnav">'
         +   "<span id='BRtoolbarbuttons'>"        
+        //+         '<button class="BRicon full"></button>'
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
-        //+         '<button class="BRicon fit"></button>'
         +   "</span>"
-        +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
-        +   "<span id='BRreturn'><a href='" + thisLink + "' target='_blank' >" + this.bookTitle + "</a></span>" // XXX escape
+        +   "<span><a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a></span>"
+        +   "<span id='BRembedreturn'><a href='" + thisLink + "' target='_blank' >" + this.bookTitle + "</a></span>" // XXX escape
         + '</div>'
     );
 }

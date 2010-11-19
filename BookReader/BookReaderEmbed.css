@@ -12,3 +12,18 @@
 #BRtoolbar .title {
     font-size: 0.9em;
 }
+
+#BRembedreturn {
+    /* Center text */
+    font-size: 14px;
+    line-height: 40px;
+    height: 40px;
+    
+    font-family: "Lucida Grande","Arial",sans-serif;
+}
+
+#BRembedreturn a {
+    font-size: 14px;
+    color: #036daa;
+}
+
