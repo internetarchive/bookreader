@@ -189,7 +189,7 @@ BookReader.prototype.init = function() {
     document.title = this.shortTitle(50);
     
     $("#BookReader").empty();
-        
+    
     this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
     $("#BookReader").append("<div id='BRcontainer' dir='ltr'></div>");
     $("#BRcontainer").append("<div id='BRpageview'></div>");
@@ -271,7 +271,11 @@ BookReader.prototype.init = function() {
 
     // We init the nav bar after the params processing so that the nav slider knows where
     // it should start (doesn't jump after init)
-    this.initNavbar();
+    if (this.ui == "embed") {
+        this.initEmbedNavbar();
+    } else {
+        this.initNavbar();
+    }
     this.bindNavigationHandlers();
     
     // Set strings in the UI
@@ -3359,6 +3363,24 @@ BookReader.prototype.initNavbar = function() {
     */
 }
 
+// initEmbedNavbar
+//______________________________________________________________________________
+// Initialize the navigation bar when embedded
+BookReader.prototype.initEmbedNavbar = function() {
+    $('#BookReader').append(
+        '<div id="BRnav">'
+        +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
+        +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>" // XXX escape
+        +     '<div id="BRpage">'   // Page turn buttons
+        +         '<button class="BRicon book_left"></button>'
+        +         '<button class="BRicon book_right"></button>'
+        //+         '<button class="BRicon fit"></button>'
+        +     '</div>'
+        + '</div>'
+    );
+}
+
+
 BookReader.prototype.updateNavPageNum = function(index) {
     var pageNum = this.getPageNum(index);
     var pageStr;
@@ -3568,6 +3590,9 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 }
 
 BookReader.prototype.initToolbar = function(mode, ui) {
+    if (ui == "embed") {
+        return; // No toolbar at top in embed mode
+    }
 
     // $$$mang should be contained within the BookReader div instead of body
     var readIcon = '';
@@ -3587,7 +3612,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         //+     "<button class='BRicon full'></button>"
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
-        +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>"
+        +   "<span id='BRreturn'><span>Back to</span><a href='" + this.bookUrl + "'>" + this.bookTitle + "</a></span>" // XXX escape
         +   "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
         + "</div>"
         /*
