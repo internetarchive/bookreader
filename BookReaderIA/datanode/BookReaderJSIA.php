@@ -519,17 +519,7 @@ if (typeof(brConfig) != 'undefined') {
             br.reduce = brConfig['reduce'];
         }
     } else if (brConfig['mode'] == 2) {
-        br.mode = 2;
-      
-<?
-        //$$$mang hack to override request for 2up for books with attribution page
-        //   as first page until we can display that page in 2up
-        $needle = 'goog';
-        if (strrpos($id, $needle) === strlen($id)-strlen($needle)) {
-            print "// override for books with attribution page\n";
-            print "br.mode = 1;\n";
-        }
-?>
+        br.mode = 2;      
     }
 } // brConfig
 
