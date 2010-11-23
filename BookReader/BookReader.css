@@ -156,8 +156,9 @@ a {
 
 #BRbookspine {    
     /* border: 1px solid rgb(68, 25, 17); */
-    background-color: rgb(68, 25, 17);
     position: absolute;
+    z-index: 6;
+    background: transparent url(images/booksplit.png) repeat scroll 0% 0%;
 }
 
 .BookReaderSearchHilite {
