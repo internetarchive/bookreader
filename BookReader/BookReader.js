@@ -1526,7 +1526,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     $(div).attr('id', 'BRbookspine').css({
         width:           this.twoPage.bookSpineDivWidth+'px',
         height:          this.twoPage.bookSpineDivHeight+'px',
-        left:            this.twoPage.bookSpineDivLeft+'px',
+        left:            (this.twoPage.gutter - this.twoPage.bookSpineDivWidth*0.5)+'px',
         top:             this.twoPage.bookSpineDivTop+'px'
     }).appendTo('#BRtwopageview');
     
@@ -2214,6 +2214,8 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
                 left: gutter-newWidthL-newLeafEdgeWidthL-self.twoPage.coverInternalPadding+'px'
             });
             
+            $('#BRbookspine').css({left: (gutter - self.twoPage.bookSpineDivWidth*0.5)+'px'});
+            
             $(self.leafEdgeTmp).remove();
             self.leafEdgeTmp = null;
 
@@ -2354,6 +2356,8 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
                 left: gutter - newWidthL - newLeafEdgeWidthL - self.twoPage.coverInternalPadding + 'px'
             });
             
+            $('#BRbookspine').css({left: (gutter - self.twoPage.bookSpineDivWidth*0.5)+'px'});
+    
             $(self.leafEdgeTmp).remove();
             self.leafEdgeTmp = null;
             
@@ -2480,14 +2484,13 @@ BookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
     //console.log('    prevL.left: ' + (gutter - scaledW) + 'px');
     //console.log('    changing prevL ' + prevL + ' to left: ' + (gutter-scaledW) + ' width: ' + scaledW);
     
-    leftCSS = {
+    var leftCSS = {
         position: 'absolute',
         left: gutter-scaledW+'px',
         right: '', // clear right property
         top:    top+'px',
         height: this.twoPage.height,
         width:  scaledW+'px',
-        borderRight: '1px solid black', // XXXmang check
         zIndex: 1
     }
     
@@ -2497,13 +2500,12 @@ BookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
 
     //console.log('    changing prevR ' + prevR + ' to left: ' + gutter + ' width: 0');
 
-    rightCSS = {
+    var rightCSS = {
         position: 'absolute',
         left:   gutter+'px',
         right: '',
         top:    top+'px',
         height: this.twoPage.height,
-        borderLeft: '1px solid black', // XXXmang check
         width:  '0',
         zIndex: 2
     }
