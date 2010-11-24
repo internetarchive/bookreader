@@ -119,7 +119,7 @@ function BookReader() {
     this.twoPage = {
         coverInternalPadding: 0, // Width of cover
         coverExternalPadding: 0, // Padding outside of cover
-        bookSpineDivWidth: 0,    // Width of book spine  $$$ consider sizing based on book length
+        bookSpineDivWidth: 64,    // Width of book spine  $$$ consider sizing based on book length
         autofit: 'auto'
     };
     
@@ -1526,7 +1526,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     $(div).attr('id', 'BRbookspine').css({
         width:           this.twoPage.bookSpineDivWidth+'px',
         height:          this.twoPage.bookSpineDivHeight+'px',
-        left:            this.twoPage.bookSpineDivLeft+'px',
+        left:            (this.twoPage.gutter - this.twoPage.bookSpineDivWidth*0.5)+'px',
         top:             this.twoPage.bookSpineDivTop+'px'
     }).appendTo('#BRtwopageview');
     
@@ -2191,6 +2191,8 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
     
         //console.log('     and now leafEdgeTmp to left: gutter+newWidthR ' + (gutter + newWidthR));
         $(self.leafEdgeTmp).animate({left: gutter+newWidthR+'px'}, self.flipSpeed, 'easeOutSine');
+        
+        $('#BRbookspine').css({left: (gutter - self.twoPage.bookSpineDivWidth*0.5)+'px'});        
 
         //console.log('  animating newIndexR ' + newIndexR + ' to ' + newWidthR + ' from ' + $(self.prefetchedImgs[newIndexR]).width());
         $(self.prefetchedImgs[newIndexR]).animate({width: newWidthR+'px'}, self.flipSpeed, 'easeOutSine', function() {
@@ -2212,7 +2214,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             $(self.twoPage.coverDiv).css({
                 width: self.twoPageCoverWidth(newWidthL+newWidthR)+'px',
                 left: gutter-newWidthL-newLeafEdgeWidthL-self.twoPage.coverInternalPadding+'px'
-            });
+            });            
             
             $(self.leafEdgeTmp).remove();
             self.leafEdgeTmp = null;
@@ -2339,6 +2341,7 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
     
     $(this.leafEdgeTmp).animate({left: gutter}, speed, 'easeInSine');    
     $(this.prefetchedImgs[this.twoPage.currentIndexR]).animate({width: '0px'}, speed, 'easeInSine', function() {
+        $('#BRbookspine').css({left: (gutter - self.twoPage.bookSpineDivWidth*0.5)+'px'});
         $(self.leafEdgeTmp).animate({left: gutter-newWidthL-leafEdgeTmpW+'px'}, speed, 'easeOutSine');    
         $(self.prefetchedImgs[newIndexL]).animate({width: newWidthL+'px'}, speed, 'easeOutSine', function() {
             $(self.prefetchedImgs[newIndexR]).css('zIndex', 2);
@@ -2352,8 +2355,8 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             $(self.twoPage.coverDiv).css({
                 width: self.twoPageCoverWidth(newWidthL+newWidthR)+'px',
                 left: gutter - newWidthL - newLeafEdgeWidthL - self.twoPage.coverInternalPadding + 'px'
-            });
-            
+            });            
+    
             $(self.leafEdgeTmp).remove();
             self.leafEdgeTmp = null;
             
@@ -2480,14 +2483,13 @@ BookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
     //console.log('    prevL.left: ' + (gutter - scaledW) + 'px');
     //console.log('    changing prevL ' + prevL + ' to left: ' + (gutter-scaledW) + ' width: ' + scaledW);
     
-    leftCSS = {
+    var leftCSS = {
         position: 'absolute',
         left: gutter-scaledW+'px',
         right: '', // clear right property
         top:    top+'px',
         height: this.twoPage.height,
         width:  scaledW+'px',
-        borderRight: '1px solid black', // XXXmang check
         zIndex: 1
     }
     
@@ -2497,13 +2499,12 @@ BookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
 
     //console.log('    changing prevR ' + prevR + ' to left: ' + gutter + ' width: 0');
 
-    rightCSS = {
+    var rightCSS = {
         position: 'absolute',
         left:   gutter+'px',
         right: '',
         top:    top+'px',
         height: this.twoPage.height,
-        borderLeft: '1px solid black', // XXXmang check
         width:  '0',
         zIndex: 2
     }
