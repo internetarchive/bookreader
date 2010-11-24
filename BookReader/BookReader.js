@@ -2993,6 +2993,8 @@ BookReader.prototype.getPrintURI = function() {
 }
 
 // showEmbedCode()
+//
+// Note: Has been replaced by the share dialog
 //______________________________________________________________________________
 BookReader.prototype.showEmbedCode = function() {
     if (null != this.embedPopup) { // check if already showing
@@ -3773,7 +3775,8 @@ BookReader.prototype.bindNavigationHandlers = function() {
         self.printPage();
         return false;
     });
-        
+    
+    // Note: Functionality has been replaced by .share
     jIcons.filter('.embed').click(function(e) {
         self.showEmbedCode();
         return false;
