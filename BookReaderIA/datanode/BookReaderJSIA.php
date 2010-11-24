@@ -330,7 +330,7 @@ br.getEmbedURL = function(viewParams) {
 //________
 // Returns the embed code HTML fragment suitable for copy and paste
 br.getEmbedCode = function() {
-    return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px'></iframe>";
+    return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px' frameborder='0' ></iframe>";
 }
 
 // getOpenLibraryRecord

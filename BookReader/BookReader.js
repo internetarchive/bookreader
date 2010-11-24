@@ -5129,8 +5129,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
         }
         
         // console.log(params);
-        var embedLink = self.getEmbedURL( params );    
-        form.find('.BRframeEmbed').val('<iframe src="' + embedLink + '" width="480" height="480"></iframe>');
+        form.find('.BRframeEmbed').val(self.getEmbedCode());
     })
     jForm.find('input[name=thispage]').trigger('change');
     jForm.find('input, textarea').bind('focus', function() {
