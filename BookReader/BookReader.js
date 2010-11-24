@@ -2992,55 +2992,6 @@ BookReader.prototype.getPrintURI = function() {
     return '/bookreader/print.php?' + options;
 }
 
-/* iframe implementation
-BookReader.prototype.getPrintFrameContent = function(index) {    
-    // We fit the image based on an assumed A4 aspect ratio.  A4 is a bit taller aspect than
-    // 8.5x11 so we should end up not overflowing on either paper size.
-    var paperAspect = 8.5 / 11;
-    var imageAspect = this._getPageWidth(index) / this._getPageHeight(index);
-    
-    var rotate = 0;
-    
-    // Rotate if possible and appropriate, to get larger image size on printed page
-    if (this.canRotatePage(index)) {
-        if (imageAspect > 1 && imageAspect > paperAspect) {
-            // more wide than square, and more wide than paper
-            rotate = 90;
-            imageAspect = 1/imageAspect;
-        }
-    }
-    
-    var fitAttrs;
-    if (imageAspect > paperAspect) {
-        // wider than paper, fit width
-        fitAttrs = 'width="95%"';
-    } else {
-        // taller than paper, fit height
-        fitAttrs = 'height="95%"';
-    }
-
-    var imageURL = this._getPageURI(index, 1, rotate);
-    var iframeStr = '<html style="padding: 0; border: 0; margin: 0"><head><title>' + this.bookTitle + '</title></head><body style="padding: 0; border:0; margin: 0">';
-    iframeStr += '<div style="text-align: center; width: 99%; height: 99%; overflow: hidden;">';
-    iframeStr +=   '<img src="' + imageURL + '" ' + fitAttrs + ' />';
-    iframeStr += '</div>';
-    iframeStr += '</body></html>';
-    
-    return iframeStr;
-}
-
-BookReader.prototype.updatePrintFrame = function(delta) {
-    var newIndex = this.indexToPrint + delta;
-    newIndex = BookReader.util.clamp(newIndex, 0, this.numLeafs - 1);
-    if (newIndex == this.indexToPrint) {
-        return;
-    }
-    this.indexToPrint = newIndex;
-    var doc = BookReader.util.getIFrameDocument($('#printFrame')[0]);
-    $('body', doc).html(this.getPrintFrameContent(this.indexToPrint));
-}
-*/
-
 // showEmbedCode()
 //______________________________________________________________________________
 BookReader.prototype.showEmbedCode = function() {
