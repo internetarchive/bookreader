@@ -154,7 +154,7 @@ a {
     position: absolute;
 }
 
-#BRbookspine {    
+#BRgutter {    
     /* border: 1px solid rgb(68, 25, 17); */
     position: absolute;
     z-index: 6;
