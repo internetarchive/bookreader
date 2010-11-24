@@ -535,7 +535,7 @@ OLAuth.prototype.init = function() {
     htmlStr    +=  '<p>Please wait...</p>';
 
     this.showPopup("#ddd", "#000", htmlStr);
-    $.ajax({url:this.authUrl, dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
+    $.ajax({url:this.authUrl + '?rand='+Math.random(), dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
 }
 
 OLAuth.prototype.showPopup = function(bgColor, textColor, msg) {
