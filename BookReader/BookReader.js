@@ -1523,7 +1523,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     }).appendTo('#BRtwopageview');
 
     div = document.createElement('div');
-    $(div).attr('id', 'BRbookspine').css({
+    $(div).attr('id', 'BRgutter').css({
         width:           this.twoPage.bookSpineDivWidth+'px',
         height:          this.twoPage.bookSpineDivHeight+'px',
         left:            (this.twoPage.gutter - this.twoPage.bookSpineDivWidth*0.5)+'px',
@@ -2192,7 +2192,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
         //console.log('     and now leafEdgeTmp to left: gutter+newWidthR ' + (gutter + newWidthR));
         $(self.leafEdgeTmp).animate({left: gutter+newWidthR+'px'}, self.flipSpeed, 'easeOutSine');
         
-        $('#BRbookspine').css({left: (gutter - self.twoPage.bookSpineDivWidth*0.5)+'px'});        
+        $('#BRgutter').css({left: (gutter - self.twoPage.bookSpineDivWidth*0.5)+'px'});        
 
         //console.log('  animating newIndexR ' + newIndexR + ' to ' + newWidthR + ' from ' + $(self.prefetchedImgs[newIndexR]).width());
         $(self.prefetchedImgs[newIndexR]).animate({width: newWidthR+'px'}, self.flipSpeed, 'easeOutSine', function() {
@@ -2341,7 +2341,7 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
     
     $(this.leafEdgeTmp).animate({left: gutter}, speed, 'easeInSine');    
     $(this.prefetchedImgs[this.twoPage.currentIndexR]).animate({width: '0px'}, speed, 'easeInSine', function() {
-        $('#BRbookspine').css({left: (gutter - self.twoPage.bookSpineDivWidth*0.5)+'px'});
+        $('#BRgutter').css({left: (gutter - self.twoPage.bookSpineDivWidth*0.5)+'px'});
         $(self.leafEdgeTmp).animate({left: gutter-newWidthL-leafEdgeTmpW+'px'}, speed, 'easeOutSine');    
         $(self.prefetchedImgs[newIndexL]).animate({width: newWidthL+'px'}, speed, 'easeOutSine', function() {
             $(self.prefetchedImgs[newIndexR]).css('zIndex', 2);
