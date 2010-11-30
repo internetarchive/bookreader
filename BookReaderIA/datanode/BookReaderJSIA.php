@@ -401,7 +401,7 @@ br.buildInfoDiv = function(jInfoDiv) {
     }
     
     jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
-    var bookPath = (window.location + '').replace('#','/');
+    var bookPath = (window.location + '').replace('#','%23');
     jInfoDiv.find('a.problem').attr('href','http://openlibrary.org/contact?path=' + bookPath);
 
 }
