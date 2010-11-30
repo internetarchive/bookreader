@@ -2692,12 +2692,18 @@ BookReader.prototype.BRSearchCallback = function(results) {
     //console.log(br.searchResults);
     
     if (0 == results.matches.length) {
-        $(br.popup).text('No matches were found.');
+        var errStr  = 'No matches were found.';
+        var timeout = 1000;
+        if (false === results.indexed) {
+            errStr  = "<p>This book isn't in the search engine yet.</p><p>Please <a href='http://openlibrary.org/contact?path=/stream/"+this.bookId+"/search'>drop us a line</a> so we can fix it. Thanks!</p>";
+            timeout = 5000;
+        }
+        $(br.popup).html(errStr);
         setTimeout(function(){
             $(br.popup).fadeOut('slow', function() {
                 br.removeProgressPopup();
             })        
-        },1000);
+        },timeout);
         return;
     }
     
