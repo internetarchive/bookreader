@@ -170,7 +170,16 @@ class BookReader
 */
 ?>
 
-<div id="BookReader">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
+<div id="BookReader">
+    Internet Archive BookReader - <? echo $title; ?>
+    <br/>
+    
+    <noscript>
+    <p>
+        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="http://www.archive.org/details/<? echo $identifier; ?>"> other formats of the book</a>.
+    </p>
+    </noscript>
+</div>
 
 <script type="text/javascript">
   // Set some config variables -- $$$ NB: Config object format has not been finalized
