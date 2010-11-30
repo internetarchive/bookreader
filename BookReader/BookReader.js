@@ -4545,6 +4545,7 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         self.bookUrl = 'http://openlibrary.org' + olObject.key;
         self.bookTitle = olObject['title'];
         $('#BRreturn a').attr( {'href': self.bookUrl, 'title': "Go to this book's page on Open Library" } );
+        $('#BRreturn a').text(self.bookTitle);
         $('#BookReader .logo').attr('title', 'Go to Open Library'); // i18n
         
         $('#BRinfo').remove();
