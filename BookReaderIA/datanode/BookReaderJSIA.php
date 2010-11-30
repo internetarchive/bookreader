@@ -386,7 +386,6 @@ br.buildInfoDiv = function(jInfoDiv) {
                         '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '_daisy.zip">DAISY</a><span>|</span></li>',
                         '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '.epub">ePub</a><span>|</span></li>',
                         '<li><a href="https://www.amazon.com/gp/digital/fiona/web-to-kindle?clientid=IA&itemid=', this.bookId, '&docid=', this.subPrefix, '">Send to Kindle</a><span>|</span></li>',
-                        '<li><a href="', this.bookUrl, '">More...</a></li>',
                     '</ul>',
                     '<p class="moreInfo"><span></span>More information on <a href="'+ this.bookUrl + '">' + domain + '</a>  </p>'].join('\n'));
                     
@@ -402,6 +401,7 @@ br.buildInfoDiv = function(jInfoDiv) {
     }
     
     jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
+    jInfoDiv.find('a.problem').attr('href','http://openlibrary.org/contact?path=' + window.location);
 
 }
 
