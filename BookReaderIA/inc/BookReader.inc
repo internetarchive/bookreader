@@ -15,6 +15,7 @@
 class BookReader
 {
 
+
   // Operators recognized in BookReader download URLs
   public static $downloadOperators = array('page');
 
@@ -113,6 +114,7 @@ class BookReader
     }
     
     $metaURL = BookReader::jsMetadataURL($server, $identifier, $mainDir, $subPrefix);
+    $metaURL .= "&version=" . $version;
     $locateURL = BookReader::jsLocateURL($identifier, $subPrefix);
     $coverThumb = 'http://www.archive.org/download/' . $identifier . '/'. $subPrefix . '/page/cover_w114.jpg';
     // startup-up-image must be exactly 320x460
