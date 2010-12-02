@@ -80,9 +80,8 @@ function BookReader() {
     
     this.lastDisplayableIndex2up = null;
     
-    // We link to index.php to avoid redirect which breaks back button
     // Should be overriden (before init) by custom implmentations.
-    this.logoURL = 'http://openlibrary.org';
+    this.logoURL = 'http://www.archive.org';
     
     // Base URL for UI images - should be overriden (before init) by
     // custom implementations.
@@ -4552,7 +4551,6 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         self.bookTitle = olObject['title'];
         $('#BRreturn a').attr( {'href': self.bookUrl, 'title': "Go to this book's page on Open Library" } );
         $('#BRreturn a').text(self.bookTitle);
-        $('#BookReader .logo').attr('title', 'Go to Open Library'); // i18n
         
         $('#BRinfo').remove();
         $('#BRshare').after(self.blankInfoDiv());
