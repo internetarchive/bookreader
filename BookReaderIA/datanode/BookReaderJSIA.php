@@ -118,6 +118,44 @@ $metaData = simplexml_load_file($metaDataFile);
 //$firstLeaf = $scanData->pageData->page[0]['leafNum'];
 ?>
 
+// Error reporting - this helps us fix errors quickly
+function logError(description,page,line) {
+    if (typeof(archive_analytics) != 'undefined') {
+        var values = {
+            'bookreader': 'error',
+            'description': description,
+            'page': page,
+            'line': line,
+            'itemid': '<?echo $id;?>',
+            'subPrefix': '<?echo $subPrefix;?>',
+            'server': '<?echo $server;?>',
+            'bookPath': '<?echo $subItemPath;?>'
+        };
+
+        // if no referrer set '-' as referrer
+        if (document.referrer == '') {
+            values['referrer'] = '-';
+        } else {
+            values['referrer'] = document.referrer;
+        }
+        
+        if (typeof(br) != 'undefined') {
+            values['itemid'] = br.bookId;
+            values['subPrefix'] = br.subPrefix;
+            values['server'] = br.server;
+            values['bookPath'] = br.bookPath;
+        }
+        
+        var qs = archive_analytics.format_bug(values);
+
+        var error_img = new Image(100,25);
+        error_img.src = archive_analytics.img_src + "?" + qs;
+    }
+
+    return false; // allow browser error handling so user sees there was a problem
+}
+window.onerror=logError;
+
 br = new BookReader();
 
 <?
@@ -622,8 +660,34 @@ if (br.olAuth) {
 
 
 function BRFatal($string) {
-    // $$$ TODO log error
-    echo "alert('$string')\n";
+    // log error
+    ?>
+    
+    if (typeof(archive_analytics) != 'undefined') {
+        var values = {
+            'bookreader': 'fatal',
+            'description': "<? echo $string; ?>",
+            'itemid': "<? echo $_REQUEST['id']; ?>",
+            'server': "<? echo $_REQUEST['server']; ?>",
+            'request_uri': "<? echo $_SERVER["REQUEST_URI"]; ?>"
+        }
+        
+        if (document.referrer == '') {
+            values['referrer'] = '-';
+        } else {
+            values['referrer'] = document.referrer;
+        }
+        
+        var qs = archive_analytics.format_bug(values);
+
+        var error_img = new Image(100,25);
+        error_img.src = archive_analytics.img_src + "?" + qs;
+    }
+
+    alert("<? echo $string;?>");
+    
+    <?
+    
     die(-1);
 }
 
