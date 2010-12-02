@@ -600,7 +600,7 @@ OLAuth.prototype.startPolling = function () {
     var self = this;
     this.poller=setInterval(function(){
         if (!self.olConnect) {
-          self.showPopup("#f00", "#fff", 'Cound not connect to Open Library for authentication. Please check to see if you are still connected to the Internet, and then reload this web page.');
+          self.showPopup("#f00", "#fff", 'The BookReader cannot reach Open Library. This might mean that you are offline or that Open Library is down. Please check your Internet connection or try again later.');
           clearInterval(self.poller);
           self.ttsPoller = null;        
         } else {
