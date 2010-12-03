@@ -5088,8 +5088,10 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
             params.page = self.getPageNum(self.currentIndex());
         }
         
-        // console.log(params);
-        form.find('.BRframeEmbed').val(self.getEmbedCode(params));
+        // $$$ changeable width/height to be added to share UI
+        var frameWidth = "480px";
+        var frameHeight = "430px";
+        form.find('.BRframeEmbed').val(self.getEmbedCode(frameWidth, frameHeight, params));
     })
     jForm.find('input[name=thispage]').trigger('change');
     jForm.find('input, textarea').bind('focus', function() {
