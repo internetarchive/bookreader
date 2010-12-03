@@ -358,7 +358,7 @@ br.getEmbedURL = function(viewParams) {
         url += '/' + this.subPrefix;
     }
     url += '?ui=embed';
-    if (viewParams) {
+    if (typeof(viewParams) != 'undefined') {
         url += '#' + this.fragmentFromParams(viewParams);
     }
     return url;
@@ -367,8 +367,8 @@ br.getEmbedURL = function(viewParams) {
 // getEmbedCode
 //________
 // Returns the embed code HTML fragment suitable for copy and paste
-br.getEmbedCode = function() {
-    return "<iframe src='" + this.getEmbedURL() + "' width='480px' height='430px' frameborder='0' ></iframe>";
+br.getEmbedCode = function(viewParams) {
+    return "<iframe src='" + this.getEmbedURL(viewParams) + "' width='480px' height='430px' frameborder='0' ></iframe>";
 }
 
 // getOpenLibraryRecord

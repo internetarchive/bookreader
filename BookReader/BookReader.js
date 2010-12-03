@@ -5089,7 +5089,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
         }
         
         // console.log(params);
-        form.find('.BRframeEmbed').val(self.getEmbedCode());
+        form.find('.BRframeEmbed').val(self.getEmbedCode(params));
     })
     jForm.find('input[name=thispage]').trigger('change');
     jForm.find('input, textarea').bind('focus', function() {
