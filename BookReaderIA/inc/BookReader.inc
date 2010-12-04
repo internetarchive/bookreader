@@ -129,9 +129,17 @@ class BookReader
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <link rel="apple-touch-icon" href="<? echo($coverThumb); ?>" />
     <title><? echo $title; ?></title>
-<!--[if lte IE 6]>
+    
+    <!--[if lte IE 6]>
     <meta http-equiv="refresh" content="2; URL=/bookreader/browserunsupported.php?id=<? echo($id); ?>">
-<![endif]-->
+    <![endif]-->
+
+    <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="/includes/excanvas.compiled.js"></script>
+    <![endif]-->
+
+<!--[if !IE 7]><![IGNORE[--><![IGNORE[]]>
     <link rel="stylesheet" type="text/css" href="/bookreader/BookReader.css?v=<? echo($version); ?>">
 <? if ($uiMode == "embed") { ?>
     <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderEmbed.css?v=<? echo($version); ?>">
@@ -144,10 +152,7 @@ class BookReader
     <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="/bookreader/jquery.colorbox-min.js"></script>
     <script type="text/javascript" src="/bookreader/jquery.ui.ipad.js"></script>
-     <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
-        <!--[if lt IE 9]>
-        <script type="text/javascript" src="/includes/excanvas.compiled.js"></script>
-        <![endif]-->
+
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
 <? if ( !preg_match("/mobile/i", $_SERVER['HTTP_USER_AGENT']) ) { ?>
@@ -161,16 +166,6 @@ class BookReader
 <? } /* mobile user agent */ ?>
 </head>
 <body style="background-color: ##939598;">
-
-<?
-/*
-// <? if ($uiMode == 'full') { ?>
-// <div id="BookReader" style="left:10px; right:200px; top:10px; bottom:2em;">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
-// <? } else { ?>
-// <div id="BookReader" style="left:0; right:0; top:0; bottom:0; border:0">Internet Archive Bookreader <noscript>requires JavaScript to be enabled.</noscript></div>
-// <? } ?>
-*/
-?>
 
 <div id="BookReader">
     Internet Archive BookReader - <? echo $title; ?>
@@ -193,19 +188,136 @@ class BookReader
   brConfig["mode"] = 2;
 <? } ?>
 </script>
-<!-- The script included below is dynamically generated JavaScript that includes the book metadata and page image access functions.
-     The ia{number}.us.archive.org server referenced below can and does change, so this URL should NOT be used for permanent access.  -->
+<script type="text/javascript">
+// The URL in the script tag below is dynamically generated JavaScript that includes the book metadata and page image access functions.
+// The ia{number}.us.archive.org server for the book can and does change, so this URL should NOT be used for permanent access.
+// Use the JSLocate URL below instead for stable access - it will find the item and redirect to the correct server
+// <? echo($locateURL); ?>
+
+</script>
 <script type="text/javascript" src="<? echo($metaURL); ?>"></script>
-<!-- This URL will find the item and redirect to the correct server.  Remove the line above and use the URL below for stable access. -->
-<!-- <script type="text/javascript" src="<? echo($locateURL); ?>"></script> -->
 
 <script type="text/javascript">
     // Usage stats
     if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
 </script>
+<!--<![endif]-->
+
+<!--[if IE 7]>
+<? BookReader::emitForIE7($server, $mainDir, $identifier, $subPrefix, $title, $coverLeaf, $titleStart, $uiMode); ?>
+<![endif]-->
+
+
+</body>
+</html>
   <?
     exit;
   }
+  
+  
+
+  
+  // Emit the HTML for the version of the BookReader for IE7
+  public static function emitForIE7($server, $mainDir, $identifier, $subPrefix, $title,
+                              $coverLeaf=null, $titleStart='Internet Archive', $uiMode='full')
+  {
+    // Set title to default if not set
+    if (!$title) {
+        $title = 'BookReader';
+    }
+    
+    $id = $identifier;
+    
+    // manually update with Launchpad version number at each checkin so that browsers
+    // do not use old cached version
+    // see https://bugs.launchpad.net/gnubook/+bug/330748
+    $version = "ie7";
+    
+    if (BookReader::getDevHost($server)) {
+        // on dev host - add time to force reload
+        $version .= '_' . time();
+    }
+    
+    if ("" == $id) {
+        echo "No identifier specified!";
+        die(-1);
+    }
+    
+    $metaURL = BookReader::jsMetadataURLForIE7($server, $identifier, $mainDir, $subPrefix);
+    
+    
+?>
+    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/BookReader.css?v=<? echo($version); ?>">
+<? if ($uiMode == "embed") { ?>
+    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/BookReaderEmbed.css?v=<? echo($version); ?>">
+<? } elseif ($uiMode == "touch") { ?>
+    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/touch/BookReaderTouch.css?v=<? echo($version); ?>">
+<? } /* uiMode */ ?>
+    <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="http://www.archive.org/includes/analytics.js?v=2"></script>
+    <script type="text/javascript" src="/bookreader/ie7/jquery-ui-1.8.1.custom.min.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/ie7/dragscrollable.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/ie7/BookReader.js?v=<? echo($version); ?>"></script>
+</head>
+<body style="background-color: #FFFFFF;">
+
+<? if ($uiMode == 'full') { ?>
+<div id="BookReader" style="left:10px; right:200px; top:10px; bottom:2em;">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
+<? } else { ?>
+<div id="BookReader" style="left:0; right:0; top:0; bottom:0; border:0">Internet Archive Bookreader <noscript>requires JavaScript to be enabled.</noscript></div>
+<? } /* uiMode*/ ?>
+
+<script type="text/javascript">
+  // Set some config variables - $$$ NB: Config object format has not been finalized
+  var brConfig = {};
+<? if ($uiMode == 'embed') { ?>
+  brConfig["mode"] = 1;
+  brConfig["reduce"] = 8;
+  brConfig["ui"] = "embed";
+<? } else { ?>
+  brConfig["mode"] = 2;
+<? } ?>
+</script>
+<script type="text/javascript" src="<? echo($metaURL); ?>"></script>
+
+<? if ($uiMode == 'full') { ?>
+<div id="BookReaderSearch" style="width:190px; right:0px; top:10px; bottom:2em;">
+    <form action='javascript:' onsubmit="br.search($('#BookReaderSearchBox').val());">
+        <p style="display: inline">
+            <input id="BookReaderSearchBox" type="text" size="20" value="search..." onfocus="if('search...'==this.value)this.value='';" /><input type="submit" value="go" />
+        </p>
+    </form>
+    <div id="BookReaderSearchResults">
+        Search results
+    </div>
+</div>
+
+
+<div id="BRfooter">
+    <div class="BRlogotype">
+        <a href="http://archive.org/" class="BRblack">Internet Archive</a>
+    </div>
+    <div class="BRnavlinks">
+        <a class="BRblack" href="http://www.archive.org/about/faqs.php#Report_Item">Content Problems</a> |
+        <a class="BRblack" href="https://bugs.launchpad.net/bookreader/+filebug">Report Bugs</a> |
+        <a class="BRblack" href="http://www.archive.org/details/texts">Texts Collection</a> |
+        <a class="BRblack" href="http://www.archive.org/about/contact.php">Contact Us</a>
+    </div>
+</div>
+<? } /* uiMode */ ?>
+
+<script type="text/javascript">
+    // $$$ hack to workaround sizing bug when starting in two-up mode
+    $(document).ready(function() {
+        $(window).trigger('resize');
+    });
+    
+    // Usage stats
+    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
+</script>
+  <?
+  }
+  
   
   // Returns the user part of dev host from URL, or null
   public static function getDevHost($server)
@@ -255,6 +367,29 @@ class BookReader
     
     return $url;
   }
+  
+    public static function jsMetadataURLForIE7($server, $identifier, $mainDir, $subPrefix = '')
+  {
+    $serverBaseURL = BookReader::serverBaseURL($server);
+
+    $params = array( 'id' => $identifier, 'itemPath' => $mainDir, 'server' => $server );
+    if ($subPrefix) {
+        $params['subPrefix'] = $subPrefix;
+    }
+    
+    $keys = array_keys($params);
+    $lastParam = end($keys);
+    $url = "http://{$serverBaseURL}/BookReader/ie7/BookReaderJSIA.php?";
+    foreach($params as $param=>$value) {
+        $url .= $param . '=' . $value;
+        if ($param != $lastParam) {
+            $url .= '&';
+        }
+    }
+    
+    return $url;
+  }
+
   
   // This returns a URL that finds the item then returns a redirect to BookReaderJSIA.php
   // on the item's server.
