@@ -33,6 +33,7 @@ a {
     background-color: #e2dcc5;
     -webkit-box-shadow: 0 1px 3px #999;
     /* Shadow here on FF causes scroll bars */
+    overflow: hidden;
 }
 #BRtoolbar .label {
     font-size: 1.1em;
@@ -189,7 +190,8 @@ a {
     /* margin: 0 10px 0 5px; */
     font-family: "Lucida Grande","Arial",sans-serif;
     color: #333;
-    height: 20px;
+    height: 100%;
+    line-height: 38px;
 }
 #BRreturn span {
     font-size: 11px;
@@ -198,10 +200,10 @@ a {
     padding-top: 3px;
 }
 #BRreturn a {
-    font-size: 14px;
+    font-size: 15px;
     display: block;
     color: #036daa;
-    height: 18px;
+    /* height: 18px; */
     overflow: hidden;
 }
 .BRicon {
