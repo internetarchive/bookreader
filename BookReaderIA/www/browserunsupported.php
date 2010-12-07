@@ -31,13 +31,13 @@ Nav::bar('Unsupported browser', 'home', null, null, 1, null,
 
 <div class="box">
 <p>
-Sorry, but our new viewer does not work in this browser yet.
+Sorry, but our new viewer does not work in this browser.
 </p>
 
 <p>
 Either go to our <a href="<?=$flippyURL?>">old viewer</a>,  
 or download <a href="http://www.mozilla.com/en-US/firefox/">Firefox</a> or
-  <a href="http://www.microsoft.com/windows/internet-explorer/download-ie.aspx">IE7 (or higher)</a>.
+  <a href="http://www.microsoft.com/windows/internet-explorer/download-ie.aspx">IE8 (or higher)</a>.
 </p>
 
 <p>
