@@ -3901,14 +3901,6 @@ BookReader.prototype.bindNavigationHandlers = function() {
     $('.BRpageimage').die('mousedown.swipe').live('mousedown.swipe',
         { 'br': this },
         this.swipeMousedownHandler
-    )
-    .die('mousemove.swipe').live('mousemove.swipe',
-        { 'br': this },
-        this.swipeMousemoveHandler
-    )
-    .die('mouseup.swipe').live('mouseup.swipe',
-        { 'br': this },
-        this.swipeMouseupHandler
     );
     
     this.bindMozTouchHandlers();
@@ -3961,17 +3953,34 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
 BookReader.prototype.swipeMousedownHandler = function(event) {
     //console.log('swipe mousedown');
     //console.log(event);
+
+    // We should be the last bubble point for the page images
+    // Disable image drag and select, but keep right-click
+    if (event.which == 3) {
+        return true;
+    }
     
     var self = event.data['br'];
+
+    $(event.target).bind('mouseout.swipe',
+        { 'br': self},
+        self.swipeMouseupHandler
+    ).bind('mouseup.swipe',
+        { 'br': self},
+        self.swipeMouseupHandler
+    ).bind('mousemove.swipe',
+        { 'br': self },
+        self.swipeMousemoveHandler
+    );    
+    
     self.initSwipeData(event.clientX, event.clientY);
     self._swipe.mightBeSwiping = true;
     self._swipe.mightBeDragging = true;
     
-    // We should be the last bubble point for the page images
-    // Disable image drag and select, but keep right-click
-    if ($(event.originalTarget).hasClass('BRpageimage') && event.button != 2) {
-        event.preventDefault();
-    }
+    event.preventDefault();
+    event.returnValue  = false;  
+    event.cancelBubble = true;          
+    return false;
 }
 
 BookReader.prototype.swipeMousemoveHandler = function(event) {
@@ -4020,19 +4029,29 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     }
     _swipe.lastX = event.clientX;
     _swipe.lastY = event.clientY;
+    
+    event.preventDefault();
+    event.returnValue  = false;
+    event.cancelBubble = true;         
+    return false;
 }
 BookReader.prototype.swipeMouseupHandler = function(event) {
     var _swipe = event.data['br']._swipe;
     //console.log('swipe mouseup - did swipe ' + _swipe.didSwipe);
     _swipe.mightBeSwiping = false;
     _swipe.mightBeDragging = false;
+
+    $(event.target).unbind('mouseout.swipe').unbind('mouseup.swipe').unbind('mousemove.swipe');
+    
     if (_swipe.didSwipe || _swipe.didDrag) {
         // Swallow event if completed swipe gesture
         event.preventDefault();
-        event.stopPropagation();
+        event.returnValue  = false;
+        event.cancelBubble = true;         
+        return false;
     }
+    return true;
 }
-
 BookReader.prototype.bindMozTouchHandlers = function() {
     var self = this;
     
