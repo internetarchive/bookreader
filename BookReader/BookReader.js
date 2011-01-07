@@ -2694,7 +2694,7 @@ BookReader.prototype.BRSearchCallback = function(results) {
         var errStr  = 'No matches were found.';
         var timeout = 1000;
         if (false === results.indexed) {
-            errStr  = "<p>This book isn't in the search engine yet.</p><p>Please <a href='http://openlibrary.org/contact?path=archive.org/stream/"+this.bookId+"/search'>drop us a line</a> so we can fix it. Thanks!</p>";
+            errStr  = "<p>This book hasn't been indexed for searching yet. We've just started indexing it, so search should be available soon. Please try again later. Thanks!</p>";
             timeout = 5000;
         }
         $(br.popup).html(errStr);
