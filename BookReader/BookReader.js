@@ -4574,7 +4574,7 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         }
 
         // $$$mang cleanup
-        self.bookUrl = 'http://openlibrary.org' + olObject.key;
+        self.bookUrl = self.olHost + olObject.key;
         self.bookTitle = olObject['title'];
         $('#BRreturn a').attr( {'href': self.bookUrl, 'title': "Go to this book's page on Open Library" } );
         $('#BRreturn a').text(self.bookTitle);
@@ -4584,7 +4584,7 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         self.buildInfoDiv($('#BRinfo'));
         
         // Check for borrowed book
-        if (this.olAuth) {
+        if (self.olAuth) {
             var returnUrl = self.olHost + olObject.key + '/do_return/borrow';
             var borrowUrl = self.olHost + olObject.key + '/borrow';
             

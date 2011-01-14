@@ -375,7 +375,7 @@ br.getEmbedCode = function(frameWidth, frameHeight, viewParams) {
 br.getOpenLibraryRecord = function(callback) {
     // Try looking up by ocaid first, then by source_record
     
-    var jsonURL = 'http://openlibrary.org/query.json?type=/type/edition&*=&ocaid=' + br.bookId;
+    var jsonURL = this.olHost + '/query.json?type=/type/edition&*=&ocaid=' + br.bookId;
     $.ajax({
         url: jsonURL,
         success: function(data) {
@@ -383,7 +383,7 @@ br.getOpenLibraryRecord = function(callback) {
                 callback(br, data[0]);
             } else {
                 // try sourceid
-                jsonURL = 'http://openlibrary.org/query.json?type=/type/edition&*=&source_records=ia:' + br.bookId;
+                jsonURL = this.olHost + '/query.json?type=/type/edition&*=&source_records=ia:' + br.bookId;
                 $.ajax({
                     url: jsonURL,
                     success: function(data) {
@@ -404,8 +404,12 @@ br.buildInfoDiv = function(jInfoDiv) {
 
     var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
     var domainRe = /(\w+\.(com|org))/;
-    var domain = domainRe.exec(this.bookUrl)[1];
-        
+    var domainMatch = domainRe.exec(this.bookUrl);
+    var domain = this.bookUrl;
+    if (domainMatch) {
+        domain = domainMatch[1];
+    }
+       
     // $$$ cover looks weird before it loads
     jInfoDiv.find('.BRfloatCover').append([
                     '<div style="height: 140px; min-width: 80px; padding: 0; margin: 0;"><a href="', this.bookUrl, '"><img src="http://www.archive.org/download/', this.bookId, '/page/cover_t.jpg" alt="' + escapedTitle + '" height="140px" /></a></div>'].join('')
@@ -532,6 +536,7 @@ foreach ($metaData->xpath('//collection') as $collection) {
 }
 
 echo "br.olHost = 'http://openlibrary.org'\n";
+# echo "br.olHost = 'http://ol-mang:8080'\n";
 
 if ($useOLAuth) {
     echo "br.olAuth = true;\n";
@@ -573,13 +578,12 @@ function OLAuth() {
 
 OLAuth.prototype.init = function() {
     var htmlStr =  '<p style="text-align:center;"><b>Authenticating in-browser loan with openlibrary.org!</b></p>';
-    htmlStr    +=  '<p>Please wait...</p>';
 
-    this.showPopup("#ddd", "#000", htmlStr);
+    this.showPopup("#ddd", "#000", htmlStr, 'Please wait...');
     $.ajax({url:this.authUrl + '?rand='+Math.random(), dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
 }
 
-OLAuth.prototype.showPopup = function(bgColor, textColor, msg) {
+OLAuth.prototype.showPopup = function(bgColor, textColor, msg, resolution) {
     this.popup = document.createElement("div");
     $(this.popup).css({
         position: 'absolute',
@@ -593,7 +597,7 @@ OLAuth.prototype.showPopup = function(bgColor, textColor, msg) {
         color: textColor
     }).appendTo('#BookReader');
 
-    this.popup.innerHTML = msg;
+    this.popup.innerHTML = msg + '<p>' + resolution + '</p>';
 
 }
 
@@ -604,7 +608,7 @@ OLAuth.prototype.initCallback = function(obj) {
             color: "#fff"
         });
 
-        this.popup.innerHTML = obj.msg;
+        this.popup.innerHTML = obj.msg + '<p>' + obj.resolution + '</p>';
         return;
     }
     
@@ -617,7 +621,7 @@ OLAuth.prototype.initCallback = function(obj) {
 
 OLAuth.prototype.callback = function(obj) {
     if (false == obj.success) {
-        this.showPopup("#f00", "#fff", obj.msg);
+        this.showPopup("#f00", "#fff", obj.msg, obj.resolution);
         clearInterval(this.poller);
         this.ttsPoller = null;
     } else {
@@ -640,7 +644,7 @@ OLAuth.prototype.startPolling = function () {
     var self = this;
     this.poller=setInterval(function(){
         if (!self.olConnect) {
-          self.showPopup("#f00", "#fff", 'The BookReader cannot reach Open Library. This might mean that you are offline or that Open Library is down. Please check your Internet connection or try again later.');
+          self.showPopup("#f00", "#fff", 'Connection error', 'The BookReader cannot reach Open Library. This might mean that you are offline or that Open Library is down. Please check your Internet connection or try again later.');
           clearInterval(self.poller);
           self.ttsPoller = null;        
         } else {
