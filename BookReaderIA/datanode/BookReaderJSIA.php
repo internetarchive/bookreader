@@ -531,6 +531,8 @@ foreach ($metaData->xpath('//collection') as $collection) {
     }
 }
 
+echo "br.olHost = 'http://openlibrary.org'\n";
+
 if ($useOLAuth) {
     echo "br.olAuth = true;\n";
 } else {
@@ -564,7 +566,7 @@ if (typeof(brConfig) != 'undefined') {
 
 
 function OLAuth() {
-    this.authUrl = 'http://openlibrary.org/ia_auth/' + br.bookId;
+    this.authUrl = br.olHost + '/ia_auth/' + br.bookId;
     this.olConnect = false;
     return this;
 }

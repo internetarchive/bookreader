@@ -4582,6 +4582,30 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         $('#BRinfo').remove();
         $('#BRshare').after(self.blankInfoDiv());
         self.buildInfoDiv($('#BRinfo'));
+        
+        // Check for borrowed book
+        if (this.olAuth) {
+            var returnUrl = self.olHost + olObject.key + '/do_return/borrow';
+            var borrowUrl = self.olHost + olObject.key + '/borrow';
+            
+            /*
+            $('<a/>')
+                .attr('href', borrowUrl)
+                .text('Return this book')
+                .click(function(event) {
+                    event.preventDefault();
+                    $('#BRreturnform').trigger('submit');
+                })
+                .appendTo('#BRreturn');
+            */
+            
+            $('#BRreturn').css({ 'line-height': '19px'} );
+            
+            $('<form id="BRreturnform" action="' + returnUrl + '" method="post"><input type="submit" value="Return book" /><input type="hidden" name="action" value="return" /></form>')
+                .appendTo('#BRreturn');
+
+        }
+        
     }
 }
 
