@@ -536,7 +536,7 @@ foreach ($metaData->xpath('//collection') as $collection) {
 }
 
 echo "br.olHost = 'http://openlibrary.org'\n";
-# echo "br.olHost = 'http://ol-mang:8080'\n";
+#echo "br.olHost = 'http://ol-mang:8080'\n";
 
 if ($useOLAuth) {
     echo "br.olAuth = true;\n";
@@ -577,9 +577,9 @@ function OLAuth() {
 }
 
 OLAuth.prototype.init = function() {
-    var htmlStr =  '<p style="text-align:center;"><b>Authenticating in-browser loan with openlibrary.org!</b></p>';
+    var htmlStr =  'Checking loan status with Open Library';
 
-    this.showPopup("#ddd", "#000", htmlStr, 'Please wait...');
+    this.showPopup("#ddd", "#000", htmlStr, 'Please wait as we check the status of this book...');
     $.ajax({url:this.authUrl + '?rand='+Math.random(), dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
 }
 
@@ -593,22 +593,27 @@ OLAuth.prototype.showPopup = function(bgColor, textColor, msg, resolution) {
         padding:  "20px",
         border:   "3px double #999999",
         zIndex:   3,
+        textAlign: 'center',
         backgroundColor: bgColor,
         color: textColor
     }).appendTo('#BookReader');
 
-    this.popup.innerHTML = msg + '<p>' + resolution + '</p>';
+    this.setPopupMsg(msg, resolution);
 
+}
+
+OLAuth.prototype.setPopupMsg = function(msg, resolution) {
+    this.popup.innerHTML = ['<p><strong>', msg, '</strong></p><p>', resolution, '</p>'].join('\n');
 }
 
 OLAuth.prototype.initCallback = function(obj) {
     if (false == obj.success) {
         $(this.popup).css({
-            backgroundColor: "#f00",
-            color: "#fff"
+            backgroundColor: "#ff",
+            color: "#000"
         });
 
-        this.popup.innerHTML = obj.msg + '<p>' + obj.resolution + '</p>';
+        this.setPopupMsg(obj.msg, obj.resolution);
         return;
     }
     
@@ -621,7 +626,7 @@ OLAuth.prototype.initCallback = function(obj) {
 
 OLAuth.prototype.callback = function(obj) {
     if (false == obj.success) {
-        this.showPopup("#f00", "#fff", obj.msg, obj.resolution);
+        this.showPopup("#fff", "#000", obj.msg, obj.resolution);
         clearInterval(this.poller);
         this.ttsPoller = null;
     } else {
