@@ -4599,12 +4599,18 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
                 .appendTo('#BRreturn');
             */
             
-            $('#BRreturn').css({ 'line-height': '19px'} );
-            
             $('<form id="BRreturnform" action="' + returnUrl + '" method="post"><input type="submit" value="Return book" /><input type="hidden" name="action" value="return" /></form>')
                 .appendTo('#BRreturn');
 
+        } else {
+            $('<a/>').attr( { 'href': self.bookUrl, 'title': 'Go to this book\'s page on Open Library' } )
+                .text('On openlibrary.org')
+                .appendTo('#BRreturn');
         }
+        
+        $('#BRreturn').css({ 'line-height': '19px'} );
+        $('#BRreturn a').css( {'height': '18px' } );
+
         
     }
 }
