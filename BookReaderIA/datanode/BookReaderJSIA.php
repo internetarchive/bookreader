@@ -573,6 +573,18 @@ if (typeof(brConfig) != 'undefined') {
 function OLAuth() {
     this.authUrl = br.olHost + '/ia_auth/' + br.bookId;
     this.olConnect = false;
+    this.loanUUID = false;
+    
+    var cookieRe = /;\s*/;
+    var cookies = document.cookie.split(cookieRe);
+    var length = cookies.length;
+    var i;
+    for (i=0; i<length; i++) {
+        if (0 == cookies[i].indexOf('br-loan-' + br.bookId)) {
+            this.loanUUID = cookies[i].split('=')[1];
+        }        
+    }
+
     return this;
 }
 
@@ -580,7 +592,11 @@ OLAuth.prototype.init = function() {
     var htmlStr =  'Checking loan status with Open Library';
 
     this.showPopup("#ddd", "#000", htmlStr, 'Please wait as we check the status of this book...');
-    $.ajax({url:this.authUrl + '?rand='+Math.random(), dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
+    var authUrl = this.authUrl+'?rand='+Math.random();
+    if (false !== this.loanUUID) {
+        authUrl += '&loan='+this.loanUUID
+    }
+    $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
 }
 
 OLAuth.prototype.showPopup = function(bgColor, textColor, msg, resolution) {
@@ -636,11 +652,7 @@ OLAuth.prototype.callback = function(obj) {
 }
 
 OLAuth.prototype.setCookie = function(value) {
-    var date = new Date();
-    date.setTime(date.getTime()+(24*60*60*1000));  //one day expiry
-    var expiry = date.toGMTString();
     var cookie = 'loan-'+br.bookId+'='+value;
-    cookie    += '; expires='+expiry;
     cookie    += '; path=/; domain=.archive.org;';
     document.cookie = cookie; 
 }
@@ -655,7 +667,11 @@ OLAuth.prototype.startPolling = function () {
         } else {
           self.olConnect = false;
           //be sure to add random param to authUrl to avoid stale cache
-          $.ajax({url:self.authUrl+'?rand='+Math.random(), dataType:'jsonp', jsonpCallback:'olAuth.callback'});
+          var authUrl = self.authUrl+'?rand='+Math.random();
+          if (false !== self.loanUUID) {
+              authUrl += '&loan='+self.loanUUID
+          }
+          $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.callback'});
         }
     },300000);   
 }
