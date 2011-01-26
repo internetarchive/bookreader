@@ -652,9 +652,21 @@ OLAuth.prototype.callback = function(obj) {
 }
 
 OLAuth.prototype.setCookie = function(value) {
+    var date = new Date();
+    date.setTime(date.getTime()+(10*60*1000));  //10 min expiry
+    var expiry = date.toGMTString();
     var cookie = 'loan-'+br.bookId+'='+value;
+    cookie    += '; expires='+expiry;
     cookie    += '; path=/; domain=.archive.org;';
-    document.cookie = cookie; 
+    document.cookie = cookie;
+    
+    //refresh the br-loan uuid cookie with current expiry, if needed
+    if (false !== this.loanUUID) {
+        cookie = 'br-loan-'+br.bookId+'='+this.loanUUID;
+        cookie    += '; expires='+expiry;
+        cookie    += '; path=/; domain=.archive.org;';
+        document.cookie = cookie;
+    }
 }
 
 OLAuth.prototype.startPolling = function () {    
@@ -673,7 +685,7 @@ OLAuth.prototype.startPolling = function () {
           }
           $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.callback'});
         }
-    },300000);   
+    },300000);   //five minute interval
 }
 
 br.cleanupMetadata();
