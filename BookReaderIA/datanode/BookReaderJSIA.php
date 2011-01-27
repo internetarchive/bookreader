@@ -574,6 +574,7 @@ function OLAuth() {
     this.authUrl = br.olHost + '/ia_auth/' + br.bookId;
     this.olConnect = false;
     this.loanUUID = false;
+    this.loanToken = false;
     
     var cookieRe = /;\s*/;
     var cookies = document.cookie.split(cookieRe);
@@ -582,7 +583,10 @@ function OLAuth() {
     for (i=0; i<length; i++) {
         if (0 == cookies[i].indexOf('br-loan-' + br.bookId)) {
             this.loanUUID = cookies[i].split('=')[1];
-        }        
+        }
+        if (0 == cookies[i].indexOf('loan-' + br.bookId)) {
+            this.loanToken = cookies[i].split('=')[1];
+        }
     }
 
     return this;
@@ -595,6 +599,9 @@ OLAuth.prototype.init = function() {
     var authUrl = this.authUrl+'?rand='+Math.random();
     if (false !== this.loanUUID) {
         authUrl += '&loan='+this.loanUUID
+    }
+    if (false !== this.loanToken) {
+        authUrl += '&token='+this.loanToken
     }
     $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
 }
