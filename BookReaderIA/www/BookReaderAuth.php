@@ -23,10 +23,29 @@ $uuid = $_POST['uuid'];
 $token = $_POST['token'];
 $bookPath = $_POST['bookPath'];
 
-// XXX sanitize incoming params!
+if (!preg_match('/^\d{10}-[0-9a-f]{32}$/', $token)) {
+    fatal();
+}
+
+if (!preg_match('/^[0-9a-f]{32}$/', $uuid)) {
+    fatal();
+}
+
+if (!preg_match('/^[a-zA-Z0-9][a-zA-Z0-9\.\-_]{1,100}$/', $id)) {
+    fatal();
+}
+
+if (!preg_match("|^/stream/$id|", $bookPath)) {
+    fatal();
+}
+
 setcookie('br-loan-' . $id, $uuid, 0, '/', '.archive.org');
 setcookie('loan-' . $id, $token, 0, '/', '.archive.org');
 
 header('Location: ' . $bookPath);
 
+function fatal() {
+    echo "Malformed request.";
+    die(-1);
+}
 ?>
