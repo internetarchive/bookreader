@@ -18,10 +18,10 @@ This file is part of BookReader.
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-$id = $_POST['id'];
-$uuid = $_POST['uuid'];
-$token = $_POST['token'];
-$bookPath = $_POST['bookPath'];
+$id = $_REQUEST['id'];
+$uuid = $_REQUEST['uuid'];
+$token = $_REQUEST['token'];
+$bookPath = $_REQUEST['bookPath'];
 
 if (!preg_match('/^\d{10}-[0-9a-f]{32}$/', $token)) {
     fatal();
