@@ -690,6 +690,10 @@ OLAuth.prototype.startPolling = function () {
           if (false !== self.loanUUID) {
               authUrl += '&loan='+self.loanUUID
           }
+          if (false !== self.loanToken) {
+              authUrl += '&token='+self.loanToken
+          }
+
           $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.callback'});
         }
     },300000);   //five minute interval
