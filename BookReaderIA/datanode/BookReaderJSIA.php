@@ -535,8 +535,8 @@ foreach ($metaData->xpath('//collection') as $collection) {
     }
 }
 
-echo "br.olHost = 'http://openlibrary.org'\n";
-#echo "br.olHost = 'http://ol-mang:8080'\n";
+#echo "br.olHost = 'http://openlibrary.org'\n";
+echo "br.olHost = 'http://ol-mang:8080'\n";
 
 if ($useOLAuth) {
     echo "br.olAuth = true;\n";
@@ -632,7 +632,7 @@ OLAuth.prototype.setPopupMsg = function(msg, resolution) {
 OLAuth.prototype.initCallback = function(obj) {
     if (false == obj.success) {
         $(this.popup).css({
-            backgroundColor: "#ff",
+            backgroundColor: "#fff",
             color: "#000"
         });
 
