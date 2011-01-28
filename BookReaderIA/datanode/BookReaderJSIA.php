@@ -535,8 +535,8 @@ foreach ($metaData->xpath('//collection') as $collection) {
     }
 }
 
-#echo "br.olHost = 'http://openlibrary.org'\n";
-echo "br.olHost = 'http://ol-mang:8080'\n";
+echo "br.olHost = 'http://openlibrary.org'\n";
+#echo "br.olHost = 'http://ol-mang:8080'\n";
 
 if ($useOLAuth) {
     echo "br.olAuth = true;\n";
