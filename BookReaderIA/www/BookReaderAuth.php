@@ -27,7 +27,8 @@ if (!preg_match('/^\d{10}-[0-9a-f]{32}$/', $token)) {
     fatal();
 }
 
-if (!preg_match('/^[0-9a-f]{32}$/', $uuid)) {
+//if (!preg_match('/^[0-9a-f]{32}$/', $uuid)) {
+if (!preg_match('/^\S{1,128}$/', $uuid)) {
     fatal();
 }
 
