@@ -676,6 +676,21 @@ OLAuth.prototype.setCookie = function(value) {
     }
 }
 
+OLAuth.prototype.deleteCookies = function() {
+    var date = new Date();
+    date.setTime(date.getTime()-(24*60*60*1000));  //one day ago
+    var expiry = date.toGMTString();
+    var cookie = 'loan-'+br.bookId+'=""';
+    cookie    += '; expires='+expiry;
+    cookie    += '; path=/; domain=.archive.org;';
+    document.cookie = cookie;
+    
+    cookie = 'br-loan-'+br.bookId+'=""';
+    cookie    += '; expires='+expiry;
+    cookie    += '; path=/; domain=.archive.org;';
+    document.cookie = cookie;
+}
+
 OLAuth.prototype.startPolling = function () {    
     var self = this;
     this.poller=setInterval(function(){

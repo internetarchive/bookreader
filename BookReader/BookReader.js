@@ -4599,7 +4599,7 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
                 .appendTo('#BRreturn');
             */
             
-            $('<form id="BRreturnform" action="' + returnUrl + '" method="post"><input type="submit" value="Return book" /><input type="hidden" name="action" value="return" /></form>')
+            $('<form id="BRreturnform" action="' + returnUrl + '" method="post"><input type="submit" value="Return book" onclick="olAuth.deleteCookies();"/><input type="hidden" name="action" value="return" /></form>')
                 .appendTo('#BRreturn');
 
         } else {
