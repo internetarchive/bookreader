@@ -88,7 +88,7 @@ class BookReader
   // 
   // @param subprefix Optional prefix to display a book inside an item (e.g. if does not match identifier)
   public static function draw($server, $mainDir, $identifier, $subPrefix, $title,
-                              $coverLeaf=null, $titleStart='Internet Archive', $uiMode='full')
+                              $coverLeaf=null, $titleStart='Internet Archive', $uiMode='full', $protected = false)
   {
     // Set title to default if not set
     if (!$title) {
@@ -146,6 +146,9 @@ class BookReader
 <? } elseif ($uiMode == "touch") { ?>
     <link rel="stylesheet" type="text/css" href="/bookreader/touch/BookReaderTouch.css?v=<? echo($version); ?>">
 <? } /* uiMode */ ?>
+<? if ($protected) { ?>
+    <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderLending.css?v=<? echo($version); ?>">
+<? } ?>
     <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
     <script type="text/javascript" src="/bookreader/jquery-ui-1.8.5.custom.min.js?v=<? echo($version); ?>"></script>
     <script type="text/javascript" src="http://www.archive.org/includes/analytics.js?v=2"></script>
