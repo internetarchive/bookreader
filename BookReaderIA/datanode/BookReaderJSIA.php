@@ -580,7 +580,7 @@ function OLAuth() {
     this.authUrl = br.olHost + '/ia_auth/' + br.bookId;
     this.olConnect = false;
     this.loanUUID = false;
-    this.loanToken = false;
+    this.permsToken = false;
     
     var cookieRe = /;\s*/;
     var cookies = document.cookie.split(cookieRe);
@@ -591,7 +591,7 @@ function OLAuth() {
             this.loanUUID = cookies[i].split('=')[1];
         }
         if (0 == cookies[i].indexOf('loan-' + br.bookId)) {
-            this.loanToken = cookies[i].split('=')[1];
+            this.permsToken = cookies[i].split('=')[1];
         }
     }
 
@@ -606,8 +606,8 @@ OLAuth.prototype.init = function() {
     if (false !== this.loanUUID) {
         authUrl += '&loan='+this.loanUUID
     }
-    if (false !== this.loanToken) {
-        authUrl += '&token='+this.loanToken
+    if (false !== this.permsToken) {
+        authUrl += '&token='+this.permsToken
     }
     $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
 }
@@ -672,6 +672,7 @@ OLAuth.prototype.setCookie = function(value) {
     cookie    += '; expires='+expiry;
     cookie    += '; path=/; domain=.archive.org;';
     document.cookie = cookie;
+    this.permsToken = value;
     
     //refresh the br-loan uuid cookie with current expiry, if needed
     if (false !== this.loanUUID) {
@@ -711,8 +712,8 @@ OLAuth.prototype.startPolling = function () {
           if (false !== self.loanUUID) {
               authUrl += '&loan='+self.loanUUID
           }
-          if (false !== self.loanToken) {
-              authUrl += '&token='+self.loanToken
+          if (false !== self.permsToken) {
+              authUrl += '&token='+self.permsToken
           }
 
           $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.callback'});
