@@ -241,15 +241,15 @@ BookReader.prototype.init = function() {
     });
     
     if (this.protected) {
-        $('.BRpagediv1up').live('contextmenu', this, function(e) {
+        $('.BRpagediv1up').live('contextmenu dragstart', this, function(e) {
             return false;
         });
         
-        $('.BRpageimage').live('contextmenu', this, function(e) {
+        $('.BRpageimage').live('contextmenu dragstart', this, function(e) {
             return false;
         });
 
-        $('.BRpagedivthumb').live('contextmenu', this, function(e) {
+        $('.BRpagedivthumb').live('contextmenu dragstart', this, function(e) {
             return false;
         });
         
