@@ -2211,6 +2211,10 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
         //console.log('  animating newIndexR ' + newIndexR + ' to ' + newWidthR + ' from ' + $(self.prefetchedImgs[newIndexR]).width());
         $(self.prefetchedImgs[newIndexR]).animate({width: newWidthR+'px'}, self.flipSpeed, 'easeOutSine', function() {
             $(self.prefetchedImgs[newIndexL]).css('zIndex', 2);
+
+            //jquery adds display:block to the element style, which interferes with our print css
+            $(self.prefetchedImgs[newIndexL]).css('display', null);
+            $(self.prefetchedImgs[newIndexR]).css('display', null);
             
             $(self.leafEdgeR).css({
                 // Moves the right leaf edge
@@ -2359,6 +2363,10 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
         $(self.leafEdgeTmp).animate({left: gutter-newWidthL-leafEdgeTmpW+'px'}, speed, 'easeOutSine');    
         $(self.prefetchedImgs[newIndexL]).animate({width: newWidthL+'px'}, speed, 'easeOutSine', function() {
             $(self.prefetchedImgs[newIndexR]).css('zIndex', 2);
+
+            //jquery adds display:block to the element style, which interferes with our print css
+            $(self.prefetchedImgs[newIndexL]).css('display', null);
+            $(self.prefetchedImgs[newIndexR]).css('display', null);
             
             $(self.leafEdgeL).css({
                 width: newLeafEdgeWidthL+'px', 
