@@ -529,9 +529,11 @@ if ('' != $metaData->{'page-progression'}) {
 }
 
 $useOLAuth = false;
+$protected = false;
 foreach ($metaData->xpath('//collection') as $collection) {
     if('browserlending' == $collection) {
         $useOLAuth = true;
+        $protected = true;
     }
 }
 
@@ -542,6 +544,10 @@ if ($useOLAuth) {
     echo "br.olAuth = true;\n";
 } else {
     echo "br.olAuth = false;\n";
+}
+
+if ($protected) {
+    echo "br.protected = true;\n";
 }
 
 # Special cases

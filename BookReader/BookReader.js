@@ -240,6 +240,21 @@ BookReader.prototype.init = function() {
         }
     });
     
+    if (this.protected) {
+        $('.BRpagediv1up').live('contextmenu', this, function(e) {
+            return false;
+        });
+        
+        $('.BRpageimage').live('contextmenu', this, function(e) {
+            return false;
+        });
+
+        $('.BRpagedivthumb').live('contextmenu', this, function(e) {
+            return false;
+        });
+        
+    }
+    
     $('.BRpagediv1up').bind('mousedown', this, function(e) {
         // $$$ the purpose of this is to disable selection of the image (makes it turn blue)
         //     but this also interferes with right-click.  See https://bugs.edge.launchpad.net/gnubook/+bug/362626
@@ -2393,8 +2408,11 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
-            if (e.button == 2) {
+            if (e.which == 3) {
                 // right click
+                if (e.data.self.protected) {
+                    return false;
+                }
                 return true;
             }
                         
@@ -2409,8 +2427,11 @@ BookReader.prototype.setMouseHandlers2UP = function() {
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexR],
         { self: this },
         function(e) {
-            if (e.button == 2) {
+            if (e.which == 3) {
                 // right click
+                if (e.data.self.protected) {
+                    return false;
+                }
                 return true;
             }
             
@@ -3961,14 +3982,17 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     //console.log('swipe mousedown');
     //console.log(event);
 
+    var self = event.data['br'];
+
     // We should be the last bubble point for the page images
     // Disable image drag and select, but keep right-click
     if (event.which == 3) {
+        if (self.protected) {
+            return false;
+        }
         return true;
     }
     
-    var self = event.data['br'];
-
     $(event.target).bind('mouseout.swipe',
         { 'br': self},
         self.swipeMouseupHandler
