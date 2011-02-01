@@ -702,7 +702,7 @@ OLAuth.prototype.startPolling = function () {
     var self = this;
     this.poller=setInterval(function(){
         if (!self.olConnect) {
-          self.showPopup("#f00", "#fff", 'Connection error', 'The BookReader cannot reach Open Library. This might mean that you are offline or that Open Library is down. Please check your Internet connection or try again later.');
+          self.showPopup("#f00", "#fff", 'Connection error', 'The BookReader cannot reach Open Library. This might mean that you are offline or that Open Library is down. Please check your Internet connection and refresh this page or try again later.');
           clearInterval(self.poller);
           self.ttsPoller = null;        
         } else {
