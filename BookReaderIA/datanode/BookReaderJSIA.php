@@ -601,7 +601,7 @@ function OLAuth() {
 OLAuth.prototype.init = function() {
     var htmlStr =  'Checking loan status with Open Library';
 
-    this.showPopup("#ddd", "#000", htmlStr, 'Please wait as we check the status of this book...');
+    this.showPopup("#F0EEE2", "#000", htmlStr, 'Please wait as we check the status of this book...');
     var authUrl = this.authUrl+'?rand='+Math.random();
     if (false !== this.loanUUID) {
         authUrl += '&loan='+this.loanUUID
@@ -616,10 +616,10 @@ OLAuth.prototype.showPopup = function(bgColor, textColor, msg, resolution) {
     this.popup = document.createElement("div");
     $(this.popup).css({
         position: 'absolute',
-        top:      '20px',
+        top:      '50px',
         left:     ($('#BookReader').attr('clientWidth')-400)/2 + 'px',
         width:    '400px',
-        padding:  "20px",
+        padding:  "15px",
         border:   "3px double #999999",
         zIndex:   3,
         textAlign: 'center',
@@ -655,7 +655,7 @@ OLAuth.prototype.initCallback = function(obj) {
 
 OLAuth.prototype.callback = function(obj) {
     if (false == obj.success) {
-        this.showPopup("#fff", "#000", obj.msg, obj.resolution);
+        this.showPopup("#F0EEE2", "#000", obj.msg, obj.resolution);
         clearInterval(this.poller);
         this.ttsPoller = null;
     } else {
@@ -702,7 +702,7 @@ OLAuth.prototype.startPolling = function () {
     var self = this;
     this.poller=setInterval(function(){
         if (!self.olConnect) {
-          self.showPopup("#f00", "#fff", 'Connection error', 'The BookReader cannot reach Open Library. This might mean that you are offline or that Open Library is down. Please check your Internet connection and refresh this page or try again later.');
+          self.showPopup("#F0EEE2", "#000", 'Connection error', 'The BookReader cannot reach Open Library. This might mean that you are offline or that Open Library is down. Please check your Internet connection and refresh this page or try again later.');
           clearInterval(self.poller);
           self.ttsPoller = null;        
         } else {
