@@ -375,20 +375,22 @@ br.getEmbedCode = function(frameWidth, frameHeight, viewParams) {
 br.getOpenLibraryRecord = function(callback) {
     // Try looking up by ocaid first, then by source_record
     
-    var jsonURL = this.olHost + '/query.json?type=/type/edition&*=&ocaid=' + br.bookId;
+    var self = this; // closure
+    
+    var jsonURL = self.olHost + '/query.json?type=/type/edition&*=&ocaid=' + self.bookId;
     $.ajax({
         url: jsonURL,
         success: function(data) {
             if (data && data.length > 0) {
-                callback(br, data[0]);
+                callback(self, data[0]);
             } else {
                 // try sourceid
-                jsonURL = this.olHost + '/query.json?type=/type/edition&*=&source_records=ia:' + br.bookId;
+                jsonURL = self.olHost + '/query.json?type=/type/edition&*=&source_records=ia:' + self.bookId;
                 $.ajax({
                     url: jsonURL,
                     success: function(data) {
                         if (data && data.length > 0) {
-                            callback(br, data[0]);
+                            callback(self, data[0]);
                         }
                     },
                     dataType: 'jsonp'
