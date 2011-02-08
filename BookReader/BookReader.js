@@ -2213,8 +2213,8 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             $(self.prefetchedImgs[newIndexL]).css('zIndex', 2);
 
             //jquery adds display:block to the element style, which interferes with our print css
-            $(self.prefetchedImgs[newIndexL]).css('display', null);
-            $(self.prefetchedImgs[newIndexR]).css('display', null);
+            $(self.prefetchedImgs[newIndexL]).css('display', '');
+            $(self.prefetchedImgs[newIndexR]).css('display', '');
             
             $(self.leafEdgeR).css({
                 // Moves the right leaf edge
@@ -2365,8 +2365,8 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             $(self.prefetchedImgs[newIndexR]).css('zIndex', 2);
 
             //jquery adds display:block to the element style, which interferes with our print css
-            $(self.prefetchedImgs[newIndexL]).css('display', null);
-            $(self.prefetchedImgs[newIndexR]).css('display', null);
+            $(self.prefetchedImgs[newIndexL]).css('display', '');
+            $(self.prefetchedImgs[newIndexR]).css('display', '');
             
             $(self.leafEdgeL).css({
                 width: newLeafEdgeWidthL+'px', 
