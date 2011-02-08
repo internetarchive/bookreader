@@ -573,6 +573,12 @@ if (typeof(brConfig) != 'undefined') {
     } else if (brConfig['mode'] == 2) {
         br.mode = 2;      
     }
+    
+    if (typeof(brConfig["isAdmin"]) != 'undefined') {
+        br.isAdmin = brConfig["isAdmin"];
+    } else {
+        br.isAdmin = false;
+    }
 } // brConfig
 
 
@@ -635,16 +641,6 @@ OLAuth.prototype.setPopupMsg = function(msg, resolution) {
     this.popup.innerHTML = ['<p><strong>', msg, '</strong></p><p>', resolution, '</p>'].join('\n');
 }
 
-OLAuth.prototype.isAdmin = function() {
-    var isAdmin = false;
-    
-    $.ajax({url:'/bookreader/BookReaderAdmin.php?id='+br.bookId, 
-        success:function(data){isAdmin=data.isAdmin;}, 
-        async:false
-    });
-    return isAdmin;
-}
-
 OLAuth.prototype.showError = function(msg, resolution) {
    $(this.popup).css({
         backgroundColor: "#fff",
@@ -656,7 +652,7 @@ OLAuth.prototype.showError = function(msg, resolution) {
 
 OLAuth.prototype.initCallback = function(obj) {
     if (false == obj.success) {
-        if (this.isAdmin()) {
+        if (br.isAdmin) {
             ret = confirm("We couldn't authenticate your loan with Open Library, but since you are an administrator or uploader of this book, you can access this book for QA purposes. Would you like to QA this book?");
             if (!ret) {
                 this.showError(obj.msg, obj.resolution)

@@ -88,7 +88,7 @@ class BookReader
   // 
   // @param subprefix Optional prefix to display a book inside an item (e.g. if does not match identifier)
   public static function draw($server, $mainDir, $identifier, $subPrefix, $title,
-                              $coverLeaf=null, $titleStart='Internet Archive', $uiMode='full', $protected = false)
+                              $coverLeaf=null, $titleStart='Internet Archive', $uiMode='full', $protected = false, $isAdmin=false)
   {
     // Set title to default if not set
     if (!$title) {
@@ -190,6 +190,9 @@ class BookReader
 <? } else { ?>
   brConfig["mode"] = 2;
 <? } ?>
+<? if ($isAdmin == true) {
+     echo '  brConfig["isAdmin"] = true;';
+   } ?>   
 </script>
 <script type="text/javascript">
 // The URL in the script tag below is dynamically generated JavaScript that includes the book metadata and page image access functions.
