@@ -804,10 +804,20 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
             // Remove class so we no longer count as loading
             $(this).removeClass('BRlazyloading');
         })
-        .attr( { width: $(dummyImage).width(),
-                   height: $(dummyImage).height(),
-                   src: $(dummyImage).data('srcURL')
+
+        //the width set with .attr is ignored by Internet Explorer, causing it to show the image at its original size
+        //but with this one line of css, even IE shows the image at the proper size
+        /*
+        .css({
+            'width': $(dummyImage).width()+'px',
+            'height': $(dummyImage).height()+'px'
+        })
+        .attr({
+            'width': $(dummyImage).width(),
+            'height': $(dummyImage).height(),
+            'src': $(dummyImage).data('srcURL')
         });
+        */
                  
     // replace with the new img
     $(dummyImage).before(img).remove();
