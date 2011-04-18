@@ -152,7 +152,16 @@ BookReader.prototype.init = function() {
     this.pageScale = this.reduce; // preserve current reduce
     
     // Find start index and mode if set in location hash
-    var params = this.paramsFromFragment(window.location.hash);
+    var params = {};
+    if (window.location.hash) {
+        // params explicitly set in URL
+        params = this.paramsFromFragment(window.location.hash);
+    } else {
+        // params not explicitly set, use defaults if we have them
+        if ('defaults' in this) {
+            params = this.paramsFromFragment(this.defaults);
+        }
+    }
     
     // Sanitize/process parameters
 

@@ -539,8 +539,8 @@ foreach ($metaData->xpath('//collection') as $collection) {
     }
 }
 
-echo "br.olHost = 'http://openlibrary.org'\n";
-#echo "br.olHost = 'http://ol-mang:8080'\n";
+echo "br.olHost = 'http://openlibrary.org';\n";
+#echo "br.olHost = 'http://mang-dev.us.archive.org:8080';\n";
 
 if ($useOLAuth) {
     echo "br.olAuth = true;\n";
@@ -552,10 +552,9 @@ if ($protected) {
     echo "br.protected = true;\n";
 }
 
-# Special cases
-if ('bandersnatchhsye00scarrich' == $id) {
-    echo "br.mode     = 2;\n";
-    echo "br.auto     = true;\n";
+# Default options for BookReader
+if ('' != $metaData->{'bookreader-defaults'}) {
+    echo "br.defaults = '" . $metaData->{'bookreader-defaults'} . "';\n";
 }
 
 ?>
