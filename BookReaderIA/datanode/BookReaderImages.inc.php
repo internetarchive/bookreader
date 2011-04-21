@@ -97,7 +97,7 @@ class BookReaderImages
 
         // deal with subPrefix
         if ($_REQUEST['subPrefix']) {
-            $parts = split('/', $_REQUEST['subPrefix']);
+            $parts = explode('/', $_REQUEST['subPrefix']);
             $bookId = $parts[count($parts) - 1 ];
         } else {
             $bookId = $_REQUEST['id'];
