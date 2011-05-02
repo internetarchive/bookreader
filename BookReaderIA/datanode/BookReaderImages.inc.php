@@ -60,6 +60,8 @@ class BookReaderImages
         'tile' => 'tile',
         'w' => 'width',
         'h' => 'height',
+        'x' => 'x',
+        'y' => 'y',
         'rotate' => 'rotate'
     );
     
@@ -108,6 +110,7 @@ class BookReaderImages
         $basePage = $pageInfo['type'];
         
         $leaf = null;
+        $region = null;
         switch ($basePage) {
         
             case 'title':
@@ -175,7 +178,7 @@ class BookReaderImages
                 // Leaf explicitly specified
                 $leaf = $pageInfo['value'];
                 break;
-                
+                                
             default:
                 // Shouldn't be possible
                 $this->BRfatal("Unrecognized page type requested");
@@ -250,6 +253,20 @@ class BookReaderImages
         
         // Get the image size and depth
         $imageInfo = $this->getImageInfo($zipPath, $file);
+        
+        $region = array();
+        foreach (array('x', 'y', 'w', 'h') as $key) {
+            if (array_key_exists($key, $requestEnv)) {
+                $region[$key] = $requestEnv[$key];
+            }
+        }
+        $regionDimensions = $this->getRegionDimensions($imageInfo, $region);    
+        
+        /* $$$ remove
+        print_r($imageInfo);
+        print_r($region);
+        print_r($regionDimensions);
+        */
         
         // Output json if requested
         if ('json' == $ext) {
@@ -872,6 +889,60 @@ class BookReaderImages
         }
         
         return $pageInfo;
+    }
+    
+    function getRegionDimensions($sourceDimensions, $regionDimensions) {
+        // Return region dimensions as { 'x' => xOffset, 'y' => yOffset, 'w' => width, 'h' => height }
+        // in terms of full resolution image.
+        // Note: this will clip the returned dimensions to fit within the source image
+
+        $sourceX = 0;
+        if (array_key_exists('x', $regionDimensions)) {
+            $sourceX = intAmount($regionDimensions['x'], $sourceDimensions['width']);
+        }
+        $sourceX = $this->clamp(0, $sourceDimensions['width'] - 2, $sourceX); // Allow at least one pixel
+        
+        $sourceY = 0;
+        if (array_key_exists('y', $regionDimensions)) {
+            $sourceY = intAmount($regionDimensions['y'], $sourceDimensions['height']);
+        }
+        $sourceY = $this->clamp(0, $sourceDimensions['height'] - 2, $sourceY); // Allow at least one pixel
+        
+        $sourceWidth = $sourceDimensions['width'] - $sourceX;
+        if (array_key_exists('w', $regionDimensions)) {
+            $sourceWidth = intAmount($regionDimensions['w'], $sourceDimensions['width']);
+        }
+        $sourceWidth = $this->clamp(1, max(1, $sourceDimensions['width'] - $sourceX), $sourceWidth);
+        
+        $sourceHeight = $sourceDimensions['height'] - $sourceY;
+        if (array_key_exists('h', $regionDimensions)) {
+            $sourceHeight = intAmount($regionDimensions['h'], $sourceDimensions['height']);
+        }
+        $sourceHeight = $this->clamp(1, max(1, $sourceDimensions['height'] - $sourceY), $sourceHeight);
+        
+        return array('x' => $sourceX, 'y' => $sourceY, 'w' => $sourceWidth, 'h' => $sourceHeight);
+    }
+    
+    function intAmount($stringValue, $maximum) {
+        // Returns integer amount for string like "5" (5 units) or "0.5" (50%)
+        if (strpos($stringValue, '.') === false) {
+            // No decimal, assume int
+            return intval($stringValue);
+        }
+        
+        return floatval($stringValue) * $maximum + 0.5;
+    }
+    
+    function clamp($minValue, $maxValue, $observedValue) {
+        if ($observedValue < $minValue) {
+            return $minValue;
+        }
+        
+        if ($observedValue > $maxValue) {
+            return $maxValue;
+        }
+        
+        return $observedValue;
     }
     
     // Clean up temporary files and resources
