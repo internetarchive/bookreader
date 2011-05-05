@@ -922,6 +922,38 @@ class BookReaderImages
         
         return array('x' => $sourceX, 'y' => $sourceY, 'w' => $sourceWidth, 'h' => $sourceHeight);
     }
+
+    function getRegionDimensionsAsFloat($sourceDimensions, $regionDimensions) {
+        // Return region dimensions as { 'x' => xOffset, 'y' => yOffset, 'w' => width, 'h' => height }
+        // in terms of full resolution image.
+        // Note: this will clip the returned dimensions to fit within the source image
+
+        $sourceX = 0;
+        if (array_key_exists('x', $regionDimensions)) {
+            $sourceX = floatAmount($regionDimensions['x'], $sourceDimensions['width']);
+        }
+        $sourceX = $this->clamp(0.0, 1.0, $sourceX);
+        
+        $sourceY = 0;
+        if (array_key_exists('y', $regionDimensions)) {
+            $sourceY = floatAmount($regionDimensions['y'], $sourceDimensions['height']);
+        }
+        $sourceY = $this->clamp(0.0, 1.0, $sourceY); // Allow at least one pixel
+        
+        $sourceWidth = $sourceDimensions['width'] - $sourceX;
+        if (array_key_exists('w', $regionDimensions)) {
+            $sourceWidth = floatAmount($regionDimensions['w'], $sourceDimensions['width']);
+        }
+        $sourceWidth = $this->clamp(0.0, 1.0, $sourceWidth);
+        
+        $sourceHeight = $sourceDimensions['height'] - $sourceY;
+        if (array_key_exists('h', $regionDimensions)) {
+            $sourceHeight = floatAmount($regionDimensions['h'], $sourceDimensions['height']);
+        }
+        $sourceHeight = $this->clamp(0.0, 1.0, $sourceHeight);
+        
+        return array('x' => $sourceX, 'y' => $sourceY, 'w' => $sourceWidth, 'h' => $sourceHeight);
+    }
     
     function intAmount($stringValue, $maximum) {
         // Returns integer amount for string like "5" (5 units) or "0.5" (50%)
@@ -931,6 +963,17 @@ class BookReaderImages
         }
         
         return floatval($stringValue) * $maximum + 0.5;
+    }
+    
+    function floatAmount($stringValue, $maximum) {
+        // Returns float amount (0.0 to 1.0) for string like "0.4" (40%) or "4" (40% if max is 10)
+        if (strpos($stringValue, ".") === false) {
+            // No decimal, assume int value out of maximum
+            return floatval($stringValue) / $maximum;
+        }
+        
+        // Given float - just pass through
+        return floatval($stringValue);
     }
     
     function clamp($minValue, $maxValue, $observedValue) {
