@@ -255,17 +255,23 @@ class BookReaderImages
         $imageInfo = $this->getImageInfo($zipPath, $file);
         
         $region = array();
-        foreach (array('x', 'y', 'w', 'h') as $key) {
+        foreach (array('x', 'y', 'width', 'height') as $key) {
             if (array_key_exists($key, $requestEnv)) {
                 $region[$key] = $requestEnv[$key];
             }
         }
         $regionDimensions = $this->getRegionDimensions($imageInfo, $region);    
         
-        /* $$$ remove
+        /*
+        print('imageInfo');
         print_r($imageInfo);
+        print('region');
         print_r($region);
+        print('regionDimensions');
         print_r($regionDimensions);
+        print('asFloat');
+        print_r($this->getRegionDimensionsAsFloat($imageInfo, $region));
+        die(-1);
         */
         
         // Output json if requested
@@ -310,11 +316,11 @@ class BookReaderImages
         // image processing load on our cluster.  The client should then scale to their final
         // needed size.
         
-        // Set scale from height or width if set
-        if (isset($requestEnv['height'])) {
+        // Set scale from height or width if set and no x or y specified
+        if ( isset($requestEnv['height']) && !isset($requestEnv['x']) && !isset($requestEnv['y']) ) {
             $powReduce = $this->nearestPow2Reduce($requestEnv['height'], $imageInfo['height']);
             $scale = pow(2, $powReduce);
-        } else if (isset($requestEnv['width'])) {
+        } else if ( isset($requestEnv['width']) && !isset($requestEnv['x']) && !isset($requestEnv['y']) ) {
             $powReduce = $this->nearestPow2Reduce($requestEnv['width'], $imageInfo['width']);
             $scale = pow(2, $powReduce);
 
@@ -370,7 +376,7 @@ class BookReaderImages
         
         $unzipCmd  = $this->getUnarchiveCommand($zipPath, $file);
         
-        $decompressCmd = $this->getDecompressCmd($imageInfo['type'], $powReduce, $rotate, $scale, $stdoutLink);
+        $decompressCmd = $this->getDecompressCmd($imageInfo, $powReduce, $rotate, $scale, $region, $stdoutLink);
                
         // Non-integer scaling is currently disabled on the cluster
         // if (isset($_REQUEST['height'])) {
@@ -427,7 +433,7 @@ class BookReaderImages
                 $powReduce = min($powReduce, $maxReduce);
                 $reduce = pow(2, $powReduce);
                 
-                $cmd = $unzipCmd . $this->getDecompressCmd($imageInfo['type'], $powReduce, $rotate, $scale, $stdoutLink) . $compressCmd;
+                $cmd = $unzipCmd . $this->getDecompressCmd($imageInfo, $powReduce, $rotate, $scale, $region, $stdoutLink) . $compressCmd;
                 trigger_error('BookReader rerunning with new cmd: ' . $cmd, E_USER_WARNING);
                 if ($this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
                     $recovered = true;
@@ -594,12 +600,14 @@ class BookReaderImages
         echo $jsonOutput;
     }
     
-    function getDecompressCmd($imageType, $powReduce, $rotate, $scale, $stdoutLink) {
+    function getDecompressCmd($srcInfo, $powReduce, $rotate, $scale, $region, $stdoutLink) {
         
-        switch ($imageType) {
+        switch ($srcInfo['type']) {
             case 'jp2':
+                $regionAsFloat = $this->getRegionDimensionsAsFloat($srcInfo, $region);
+                $regionString = sprintf("{%f,%f},{%f,%f}", $regionAsFloat['y'], $regionAsFloat['x'], $regionAsFloat['h'], $regionAsFloat['w']);
                 $decompressCmd = 
-                    " | " . $this->kduExpand . " -no_seek -quiet -reduce $powReduce -rotate $rotate -i /dev/stdin -o " . $stdoutLink;
+                    " | " . $this->kduExpand . " -no_seek -quiet -reduce $powReduce -rotate $rotate -region $regionString -i /dev/stdin -o " . $stdoutLink;
                 if ($this->decompressToBmp) {
                     // We suppress output since bmptopnm always outputs on stderr
                     $decompressCmd .= ' | (bmptopnm 2>/dev/null)';
@@ -633,6 +641,7 @@ class BookReaderImages
         }
         return $decompressCmd;
     }
+    
     
     // If the command has its initial output on stdout the headers will be emitted followed
     // by the stdout output.  If initial output is on stderr an error message will be
@@ -898,25 +907,25 @@ class BookReaderImages
 
         $sourceX = 0;
         if (array_key_exists('x', $regionDimensions)) {
-            $sourceX = intAmount($regionDimensions['x'], $sourceDimensions['width']);
+            $sourceX = $this->intAmount($regionDimensions['x'], $sourceDimensions['width']);
         }
         $sourceX = $this->clamp(0, $sourceDimensions['width'] - 2, $sourceX); // Allow at least one pixel
         
         $sourceY = 0;
         if (array_key_exists('y', $regionDimensions)) {
-            $sourceY = intAmount($regionDimensions['y'], $sourceDimensions['height']);
+            $sourceY = $this->intAmount($regionDimensions['y'], $sourceDimensions['height']);
         }
         $sourceY = $this->clamp(0, $sourceDimensions['height'] - 2, $sourceY); // Allow at least one pixel
         
         $sourceWidth = $sourceDimensions['width'] - $sourceX;
-        if (array_key_exists('w', $regionDimensions)) {
-            $sourceWidth = intAmount($regionDimensions['w'], $sourceDimensions['width']);
+        if (array_key_exists('width', $regionDimensions)) {
+            $sourceWidth = $this->intAmount($regionDimensions['width'], $sourceDimensions['width']);
         }
         $sourceWidth = $this->clamp(1, max(1, $sourceDimensions['width'] - $sourceX), $sourceWidth);
         
         $sourceHeight = $sourceDimensions['height'] - $sourceY;
-        if (array_key_exists('h', $regionDimensions)) {
-            $sourceHeight = intAmount($regionDimensions['h'], $sourceDimensions['height']);
+        if (array_key_exists('height', $regionDimensions)) {
+            $sourceHeight = $this->intAmount($regionDimensions['height'], $sourceDimensions['height']);
         }
         $sourceHeight = $this->clamp(1, max(1, $sourceDimensions['height'] - $sourceY), $sourceHeight);
         
@@ -927,28 +936,28 @@ class BookReaderImages
         // Return region dimensions as { 'x' => xOffset, 'y' => yOffset, 'w' => width, 'h' => height }
         // in terms of full resolution image.
         // Note: this will clip the returned dimensions to fit within the source image
-
+    
         $sourceX = 0;
         if (array_key_exists('x', $regionDimensions)) {
-            $sourceX = floatAmount($regionDimensions['x'], $sourceDimensions['width']);
+            $sourceX = $this->floatAmount($regionDimensions['x'], $sourceDimensions['width']);
         }
         $sourceX = $this->clamp(0.0, 1.0, $sourceX);
         
         $sourceY = 0;
         if (array_key_exists('y', $regionDimensions)) {
-            $sourceY = floatAmount($regionDimensions['y'], $sourceDimensions['height']);
+            $sourceY = $this->floatAmount($regionDimensions['y'], $sourceDimensions['height']);
         }
-        $sourceY = $this->clamp(0.0, 1.0, $sourceY); // Allow at least one pixel
+        $sourceY = $this->clamp(0.0, 1.0, $sourceY);
         
-        $sourceWidth = $sourceDimensions['width'] - $sourceX;
-        if (array_key_exists('w', $regionDimensions)) {
-            $sourceWidth = floatAmount($regionDimensions['w'], $sourceDimensions['width']);
+        $sourceWidth = 1 - $sourceX;
+        if (array_key_exists('width', $regionDimensions)) {
+            $sourceWidth = $this->floatAmount($regionDimensions['width'], $sourceDimensions['width']);
         }
         $sourceWidth = $this->clamp(0.0, 1.0, $sourceWidth);
         
-        $sourceHeight = $sourceDimensions['height'] - $sourceY;
-        if (array_key_exists('h', $regionDimensions)) {
-            $sourceHeight = floatAmount($regionDimensions['h'], $sourceDimensions['height']);
+        $sourceHeight = 1 - $sourceY;
+        if (array_key_exists('height', $regionDimensions)) {
+            $sourceHeight = $this->floatAmount($regionDimensions['height'], $sourceDimensions['height']);
         }
         $sourceHeight = $this->clamp(0.0, 1.0, $sourceHeight);
         
