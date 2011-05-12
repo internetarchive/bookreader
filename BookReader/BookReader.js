@@ -1255,7 +1255,21 @@ BookReader.prototype._reduceSort = function(a, b) {
 // Attempts to jump to page.  Returns true if page could be found, false otherwise.
 BookReader.prototype.jumpToPage = function(pageNum) {
 
-    var pageIndex = this.getPageIndex(pageNum);
+    var pageIndex;
+    
+    // Check for special "leaf"
+    var re = new RegExp('^leaf(\\d+)');
+    leafMatch = re.exec(pageNum);
+    if (leafMatch) {
+        console.log(leafMatch[1]);
+        pageIndex = this.leafNumToIndex(parseInt(leafMatch[1],10));
+        if (pageIndex === null) {
+            pageIndex = undefined; // to match return type of getPageIndex
+        }
+        
+    } else {
+        pageIndex = this.getPageIndex(pageNum);
+    }
 
     if ('undefined' != typeof(pageIndex)) {
         var leafTop = 0;
@@ -4282,7 +4296,7 @@ BookReader.prototype.updateFromParams = function(params) {
             this.jumpToPage(params.page);
         }
     }
-    
+
     // $$$ process /region
     // $$$ process /highlight
 }
