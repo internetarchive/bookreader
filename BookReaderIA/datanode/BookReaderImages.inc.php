@@ -253,27 +253,7 @@ class BookReaderImages
         
         // Get the image size and depth
         $imageInfo = $this->getImageInfo($zipPath, $file);
-        
-        $region = array();
-        foreach (array('x', 'y', 'width', 'height') as $key) {
-            if (array_key_exists($key, $requestEnv)) {
-                $region[$key] = $requestEnv[$key];
-            }
-        }
-        $regionDimensions = $this->getRegionDimensions($imageInfo, $region);    
-        
-        /*
-        print('imageInfo');
-        print_r($imageInfo);
-        print('region');
-        print_r($region);
-        print('regionDimensions');
-        print_r($regionDimensions);
-        print('asFloat');
-        print_r($this->getRegionDimensionsAsFloat($imageInfo, $region));
-        die(-1);
-        */
-        
+                
         // Output json if requested
         if ('json' == $ext) {
             // $$$ we should determine the output size first based on requested scale
@@ -318,9 +298,11 @@ class BookReaderImages
         
         // Set scale from height or width if set and no x or y specified
         if ( isset($requestEnv['height']) && !isset($requestEnv['x']) && !isset($requestEnv['y']) ) {
+            // No x or y specified, use height for scaling
             $powReduce = $this->nearestPow2Reduce($requestEnv['height'], $imageInfo['height']);
             $scale = pow(2, $powReduce);
         } else if ( isset($requestEnv['width']) && !isset($requestEnv['x']) && !isset($requestEnv['y']) ) {
+            // No x or y specified, use width for scaling
             $powReduce = $this->nearestPow2Reduce($requestEnv['width'], $imageInfo['width']);
             $scale = pow(2, $powReduce);
 
@@ -349,6 +331,30 @@ class BookReaderImages
                 $scale = pow(2, $powReduce);
             }            
         }
+        
+        // Only extract a specific region if x or y were set
+        $region = array();
+        if (isset($reqeuestEnv['x']) || isset($requestEnv['y'])) {
+            foreach (array('x', 'y', 'width', 'height') as $key) {
+                if (array_key_exists($key, $requestEnv)) {
+                    $region[$key] = $requestEnv[$key];
+                }
+            }
+        }
+        $regionDimensions = $this->getRegionDimensions($imageInfo, $region);    
+        
+        /*
+        print('imageInfo');
+        print_r($imageInfo);
+        print('region');
+        print_r($region);
+        print('regionDimensions');
+        print_r($regionDimensions);
+        print('asFloat');
+        print_r($this->getRegionDimensionsAsFloat($imageInfo, $region));
+        die(-1);
+        */
+
         
         // Override depending on source image format
         // $$$ consider doing a 302 here instead, to make better use of the browser cache
@@ -612,8 +618,8 @@ class BookReaderImages
                     // We suppress output since bmptopnm always outputs on stderr
                     $decompressCmd .= ' | (bmptopnm 2>/dev/null)';
                 }
-                break;
-        
+                break;        
+/*
             case 'tiff':
                 // We need to create a temporary file for tifftopnm since it cannot
                 // work on a pipe (the file must be seekable).
@@ -633,6 +639,20 @@ class BookReaderImages
         
             case 'png':
                 $decompressCmd = ' | ( pngtopnm 2>/dev/null ) ' . $this->reduceCommand($scale);
+                break;
+*/
+
+            // Formats handled by ImageMagick
+            case 'tiff':
+            case 'jpeg':
+            case 'png':
+                $region = $this->getRegionDimensions($srcInfo, $region);
+                $regionString = sprintf('[%dx%d+%d+%d]', $region['w'], $region['h'], $region['x'], $region['y']);
+
+                // The argument to ImageMagick's scale command is a "geometry". We pass in the new width/height
+                $scaleString = sprintf("%dx%d", $region['w'] / $scale, $region['h'] / $scale);
+                
+                $decompressCmd = ' | convert -' . $regionString . ' -scale ' . $scaleString . ' pnm:-';
                 break;
                 
             default:
