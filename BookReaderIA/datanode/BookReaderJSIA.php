@@ -209,6 +209,24 @@ br.getPageURI = function(index, reduce, rotate) {
     return 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
 }
 
+// Get a rectangular region out of a page
+br.getRegionURI = function(index, reduce, rotate, sourceX, sourceY, sourceWidth, sourceHeight) {
+
+    // Map function arguments to the url keys
+    var urlKeys = ['n', 'r', 'rot', 'x', 'y', 'w', 'h'];
+    var page = '';
+    for (var i = 0; i < arguments.length; i++) {
+        if ('undefined' != typeof(arguments[i])) {
+            if (i > 0 ) {
+                page += '_';
+            }
+            page += urlKeys[i] + argument[i];
+        }
+    }
+    
+    return 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&page='+page;
+}
+
 br._getPageFile = function(index) {
     var leafStr = '0000';
     var imgStr = this.leafMap[index].toString();
