@@ -220,11 +220,13 @@ br.getRegionURI = function(index, reduce, rotate, sourceX, sourceY, sourceWidth,
             if (i > 0 ) {
                 page += '_';
             }
-            page += urlKeys[i] + argument[i];
+            page += urlKeys[i] + arguments[i];
         }
     }
     
-    return 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&page='+page;
+    var itemPath = this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); // remove trailing subPrefix
+    
+    return 'http://'+this.server+'/BookReader/BookReaderImages.php?id=' + this.bookId + '&itemPath=' + itemPath + '&server=' + this.server + '&subPrefix=' + this.subPrefix + '&page=' +page + '.jpg';
 }
 
 br._getPageFile = function(index) {

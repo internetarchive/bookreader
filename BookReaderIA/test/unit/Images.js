@@ -184,3 +184,22 @@ asyncTest('Load jpg image from tar file - https://bugs.launchpad.net/bookreader/
     })
     .attr('src', pageURI);
 });
+
+asyncTest('Load image region from tiff - archive.org/download/fightingflyingc00rickgoog/page/n17_x1944_y1708_w668_h584.jpg', function() {
+
+    $.getScript( jsLocateURL('fightingflyingc00rickgoog'), function() {
+
+        expect(3);
+        var pageURI = br.getRegionURI(17, undefined, undefined, 1944, 1708, 668, 584);
+        
+        var img = new Image();
+        $(img).bind( 'load error', function(eventObj) {
+            equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+            equals(this.width, 668, 'Image width');
+            equals(this.height, 584, 'Image height');
+            start();
+        })
+        .attr('src', pageURI);
+        
+    });
+});
