@@ -62,7 +62,7 @@ class BookReaderImages
         'h' => 'height',
         'x' => 'x',
         'y' => 'y',
-        'rotate' => 'rotate'
+        'rot' => 'rotate'
     );
     
     // Paths to command-line tools
@@ -383,7 +383,7 @@ class BookReaderImages
         $unzipCmd  = $this->getUnarchiveCommand($zipPath, $file);
         
         $decompressCmd = $this->getDecompressCmd($imageInfo, $powReduce, $rotate, $scale, $region, $stdoutLink);
-               
+        
         // Non-integer scaling is currently disabled on the cluster
         // if (isset($_REQUEST['height'])) {
         //     $cmd .= " | pnmscale -height {$_REQUEST['height']} ";
@@ -650,9 +650,14 @@ class BookReaderImages
                 $regionString = sprintf('[%dx%d+%d+%d]', $region['w'], $region['h'], $region['x'], $region['y']);
 
                 // The argument to ImageMagick's scale command is a "geometry". We pass in the new width/height
-                $scaleString = sprintf("%dx%d", $region['w'] / $scale, $region['h'] / $scale);
+                $scaleString = ' -scale ' . sprintf("%dx%d", $region['w'] / $scale, $region['h'] / $scale);
                 
-                $decompressCmd = ' | convert -' . $regionString . ' -scale ' . $scaleString . ' pnm:-';
+                $rotateString = '';
+                if ($rotate && $rotate != '0') {
+                    $rotateString = ' -rotate ' . $rotate; // was previously checked to be a known value
+                }
+                
+                $decompressCmd = ' | convert -' . $regionString . $scaleString . $rotateString . ' pnm:-';
                 break;
                 
             default:
