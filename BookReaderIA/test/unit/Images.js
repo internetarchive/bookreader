@@ -157,7 +157,7 @@ asyncTest("Load tiff image from zip", function() {
     var img = new Image();
     $(img).bind( 'load error', function(eventObj) {
         equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
-        equals(this.width, 702, 'Image width');
+        equals(this.width, 701, 'Image width');
         start();
     })
     .attr('src', pageURI);
@@ -179,7 +179,7 @@ asyncTest('Load jpg image from tar file - https://bugs.launchpad.net/bookreader/
     var img = new Image();
     $(img).bind( 'load error', function(eventObj) {
         equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
-        equals(this.width, 244, 'Image width');
+        equals(this.width, 243, 'Image width');
         start();
     })
     .attr('src', pageURI);
