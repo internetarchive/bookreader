@@ -185,7 +185,7 @@ asyncTest('Load jpg image from tar file - https://bugs.launchpad.net/bookreader/
     .attr('src', pageURI);
 });
 
-asyncTest('Load image region using /download URL - populationsc18400378unit/page/n800_x1544_y4144_w1192_h848_s4.jpg', function() {
+asyncTest('Load image region - /download/populationsc18400378unit/page/n800_x1544_y4144_w1192_h848_s4.jpg', function() {
     expect(3);
     var pageURI = testHost() + '/download/populationsc18400378unit/page/n800_x1544_y4144_w1192_h848_s4.jpg';
     
@@ -200,8 +200,7 @@ asyncTest('Load image region using /download URL - populationsc18400378unit/page
 
 });
 
-
-asyncTest('Load image region using /download URL with decimal coordinates - populationsc18400378unit/page/n800_x0.75_y0.75_w0.25_h0.25_s4.jpg', function() {
+asyncTest('Load image region using decimal coordinates - /download/populationsc18400378unit/page/n800_x0.75_y0.75_w0.25_h0.25_s4.jpg', function() {
     expect(3);
     var pageURI = testHost() + '/download/populationsc18400378unit/page/n800_x0.75_y0.75_w0.25_h0.25_s4.jpg';
     
@@ -217,7 +216,7 @@ asyncTest('Load image region using /download URL with decimal coordinates - popu
 });
 
 
-asyncTest('Load image region - tomslademotorcyc00fitz/page/page3_x256_y96_w1720_h152_s4.jpg', function() {
+asyncTest('Load image region - /download/tomslademotorcyc00fitz/page/page3_x256_y96_w1720_h152_s4.jpg', function() {
     expect(3);
     var pageURI = testHost() + '/download/tomslademotorcyc00fitz/page/page3_x256_y96_w1720_h152_s4.jpg';
     
@@ -231,6 +230,37 @@ asyncTest('Load image region - tomslademotorcyc00fitz/page/page3_x256_y96_w1720_
     .attr('src', pageURI);    
 
 });
+
+asyncTest('Load cover, fitting within 400x400', function() {
+    expect(3);
+    var pageURI = testHost() + '/download/mechanicstheor00loverich/page/cover_w400_h400.jpg';
+    
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 264, 'Image width');
+        equals(this.height, 487, 'Image height');
+        start();
+    })
+    .attr('src', pageURI);    
+
+});
+
+asyncTest('Load cover, fitting within 100x400', function() {
+    expect(3);
+    var pageURI = testHost() + '/download/mechanicstheor00loverich/page/cover_w100_h400.jpg';
+    
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 132, 'Image width');
+        equals(this.height, 244, 'Image height');
+        start();
+    })
+    .attr('src', pageURI);    
+
+});
+
 
 asyncTest('Load image region from tiff, via br.getRegionURI - fightingflyingc00rickgoog - n17_x1944_y1708_w668_h584', function() {
 
