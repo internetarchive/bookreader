@@ -296,17 +296,26 @@ class BookReaderImages
         // image processing load on our cluster.  The client should then scale to their final
         // needed size.
         
-        // Set scale from height or width if set and no x or y specified
-        if ( isset($requestEnv['height']) && !isset($requestEnv['x']) && !isset($requestEnv['y']) ) {
-            // No x or y specified, use height for scaling
-            $powReduce = $this->nearestPow2Reduce($requestEnv['height'], $imageInfo['height']);
-            $scale = pow(2, $powReduce);
-        } else if ( isset($requestEnv['width']) && !isset($requestEnv['x']) && !isset($requestEnv['y']) ) {
-            // No x or y specified, use width for scaling
-            $powReduce = $this->nearestPow2Reduce($requestEnv['width'], $imageInfo['width']);
-            $scale = pow(2, $powReduce);
+        // Sizing logic:
+        //   If a named size is provided, we size the full image to that size
+        //   If x or y is set, we interpret the supplied width/height as the size of image region to crop to
+        //   If x and y are not set and both width and height are set, we size the full image "within" the width/height
+        //   If x and y are not set and only one of width and height are set, we size the full image to that width or height
+        //   If none of the above apply, we use the whole image
+        
+        // Crop region, if empty whole image is used
+        $region = array();
 
-        } else {
+        // Initialize scale        
+        $scale = 1;
+        if (isset($requestEnv['scale'])) {
+            $scale = $requestEnv['scale'];
+        }
+        $powReduce = $this->nearestPow2ForScale($scale);
+        // ensure integer scale
+        $scale = pow(2, $powReduce);        
+
+        if ( isset($requestEnv['size']) ) {
             // Set scale from named size (e.g. 'large') if set
             $size = $requestEnv['size'];
             if ( $size && array_key_exists($size, self::$imageSizes)) {
@@ -319,28 +328,40 @@ class BookReaderImages
                 }
                 $powReduce = $this->nearestPow2Reduce(self::$imageSizes[$size], $imageInfo[$dimension]);
                 $scale = pow(2, $powReduce);
-                
-            } else {
-                // No named size - use explicit scale, if given
-                $scale = $requestEnv['scale'];
-                if (!$scale) {
-                    $scale = 1;
-                }
-                $powReduce = $this->nearestPow2ForScale($scale);
-                // ensure integer scale
-                $scale = pow(2, $powReduce);
-            }            
-        }
-        
-        // Only extract a specific region if x or y were set
-        $region = array();
-        if (isset($reqeuestEnv['x']) || isset($requestEnv['y'])) {
+            }
+            
+        } else if ( isset($requestEnv['x']) || isset($requestEnv['y']) ) {
+            // x,y is crop region origin, width,height is size of crop region
             foreach (array('x', 'y', 'width', 'height') as $key) {
                 if (array_key_exists($key, $requestEnv)) {
                     $region[$key] = $requestEnv[$key];
                 }
             }
+            
+        } else if ( isset($requestEnv['width']) && isset($requestEnv['height']) ) {
+            // proportional scaling within requested width/height
+            $srcAspect = floatval($imageInfo['width']) / floatval($imageInfo['height']);
+            $fitAspect = floatval($requestEnv['width']) / floatval($requestEnv['height']);
+            
+            if ($srcAspect > $fitAspect) {
+                // Source image is wide compared to fit
+                $powReduce = $this->nearestPow2Reduce($requestEnv['width'], $imageInfo['width']);
+            } else {
+                $powReduce = $this->nearestPow2Reduce($requestEnv['height'], $imageInfo['height']);
+            }
+            $scale = pow(2, $poweReduce);
+            
+        } else if ( isset($requestEnv['width']) ) {
+            // Fit within width
+            $powReduce = $this->nearestPow2Reduce($requestEnv['width'], $imageInfo['width']);
+            $scale = pow(2, $powReduce);        
+            
+        }   else if ( isset($requestEnv['height'])) {
+            // Fit within height
+            $powReduce = $this->nearestPow2Reduce($requestEnv['height'], $imageInfo['height']);
+            $scale = pow(2, $powReduce);
         }
+                
         $regionDimensions = $this->getRegionDimensions($imageInfo, $region);    
         
         /*
