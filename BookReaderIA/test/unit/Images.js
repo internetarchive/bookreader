@@ -185,6 +185,21 @@ asyncTest('Load jpg image from tar file - https://bugs.launchpad.net/bookreader/
     .attr('src', pageURI);
 });
 
+asyncTest('Load image region using /download URL - populationsc18400378unit/page/n800_x1544_y4144_w1192_h848_s4.jpg', function() {
+    expect(3);
+    var pageURI = testHost() + '/download/populationsc18400378unit/page/n800_x1544_y4144_w1192_h848_s4.jpg';
+    
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 299, 'Image width');
+        equals(this.height, 212, 'Image height');
+        start();
+    })
+    .attr('src', pageURI);    
+
+});
+
 asyncTest('Load image region from tiff, via br.getRegionURI - fightingflyingc00rickgoog - n17_x1944_y1708_w668_h584', function() {
 
     $.getScript( jsLocateURL('fightingflyingc00rickgoog'), function() {
