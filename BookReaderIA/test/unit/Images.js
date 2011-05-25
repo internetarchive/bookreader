@@ -200,6 +200,38 @@ asyncTest('Load image region using /download URL - populationsc18400378unit/page
 
 });
 
+
+asyncTest('Load image region using /download URL with decimal coordinates - populationsc18400378unit/page/n800_x0.75_y0.75_w0.25_h0.25_s4.jpg', function() {
+    expect(3);
+    var pageURI = testHost() + '/download/populationsc18400378unit/page/n800_x0.75_y0.75_w0.25_h0.25_s4.jpg';
+    
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 337, 'Image width');
+        equals(this.height, 342, 'Image height');
+        start();
+    })
+    .attr('src', pageURI);    
+
+});
+
+
+asyncTest('Load image region - tomslademotorcyc00fitz/page/page3_x256_y96_w1720_h152_s4.jpg', function() {
+    expect(3);
+    var pageURI = testHost() + '/download/tomslademotorcyc00fitz/page/page3_x256_y96_w1720_h152_s4.jpg';
+    
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 430, 'Image width');
+        equals(this.height, 38, 'Image height');
+        start();
+    })
+    .attr('src', pageURI);    
+
+});
+
 asyncTest('Load image region from tiff, via br.getRegionURI - fightingflyingc00rickgoog - n17_x1944_y1708_w668_h584', function() {
 
     $.getScript( jsLocateURL('fightingflyingc00rickgoog'), function() {
