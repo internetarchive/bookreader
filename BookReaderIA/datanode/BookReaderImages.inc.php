@@ -313,8 +313,8 @@ class BookReaderImages
         }
         $powReduce = $this->nearestPow2ForScale($scale);
         // ensure integer scale
-        $scale = pow(2, $powReduce);        
-
+        $scale = pow(2, $powReduce);
+        
         if ( isset($requestEnv['size']) ) {
             // Set scale from named size (e.g. 'large') if set
             $size = $requestEnv['size'];
@@ -340,25 +340,31 @@ class BookReaderImages
             
         } else if ( isset($requestEnv['width']) && isset($requestEnv['height']) ) {
             // proportional scaling within requested width/height
+            
+            $width = $this->intAmount($requestEnv['width'], $imageInfo['width']);
+            $height = $this->intAmount($requestEnv['height'], $imageInfo['height']);
+            
             $srcAspect = floatval($imageInfo['width']) / floatval($imageInfo['height']);
-            $fitAspect = floatval($requestEnv['width']) / floatval($requestEnv['height']);
+            $fitAspect = floatval($width) / floatval($height);
             
             if ($srcAspect > $fitAspect) {
                 // Source image is wide compared to fit
-                $powReduce = $this->nearestPow2Reduce($requestEnv['width'], $imageInfo['width']);
+                $powReduce = $this->nearestPow2Reduce($width, $imageInfo['width']);
             } else {
-                $powReduce = $this->nearestPow2Reduce($requestEnv['height'], $imageInfo['height']);
+                $powReduce = $this->nearestPow2Reduce($height, $imageInfo['height']);
             }
             $scale = pow(2, $poweReduce);
             
         } else if ( isset($requestEnv['width']) ) {
             // Fit within width
-            $powReduce = $this->nearestPow2Reduce($requestEnv['width'], $imageInfo['width']);
+            $width = $this->intAmount($requestEnv['width'], $imageInfo['width']);
+            $powReduce = $this->nearestPow2Reduce($width, $imageInfo['width']);
             $scale = pow(2, $powReduce);        
             
         }   else if ( isset($requestEnv['height'])) {
             // Fit within height
-            $powReduce = $this->nearestPow2Reduce($requestEnv['height'], $imageInfo['height']);
+            $height = $this->intAmount($requestEnv['height'], $imageInfo['height']);
+            $powReduce = $this->nearestPow2Reduce($height, $imageInfo['height']);
             $scale = pow(2, $powReduce);
         }
                 
@@ -848,7 +854,14 @@ class BookReaderImages
             return 0;
         }
         $binStr = decbin($scale); // convert to binary string. e.g. 5 -> '101'
-        return strlen($binStr) - 1;
+        $largerPow2 = strlen($binStr) - 1;
+        
+        if ( strrpos($binStr, '1', 1) === false ) {
+            // Exact match for pow reduce, string is like '1000...'
+            return $largerPow2 - 1;
+        } else {
+            return $largerPow2;
+        }
     }
     
     /*
