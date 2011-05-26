@@ -262,6 +262,22 @@ asyncTest('Load cover, fitting within 100x400', function() {
 });
 
 
+asyncTest('Load cover, fitting within 0.25x0.25 (weird but valid)', function() {
+    expect(3);
+    var pageURI = testHost() + '/download/mechanicstheor00loverich/page/cover_w0.25_h0.25.jpg';
+    
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 1053, 'Image width');
+        equals(this.height, 1946, 'Image height');
+        start();
+    })
+    .attr('src', pageURI);    
+
+});
+
+
 asyncTest('Load image region from tiff, via br.getRegionURI - fightingflyingc00rickgoog - n17_x1944_y1708_w668_h584', function() {
 
     $.getScript( jsLocateURL('fightingflyingc00rickgoog'), function() {

@@ -58,7 +58,7 @@ test("Permalink format - /download/{itemid}/page/{page specifier}.jpg", function
 
 (function() {
     var itemId = 'nasa_techdoc_20050157919';
-    var page = 'n20_thumb_rotate90.jpg';
+    var page = 'n20_thumb_rot90.jpg';
     var subPrefix = '20050157919';
     
     asyncTest("Rotated thumbnail - Page " + page + " from " + itemId + '/' + subPrefix, function() {
