@@ -856,12 +856,7 @@ class BookReaderImages
         $binStr = decbin($scale); // convert to binary string. e.g. 5 -> '101'
         $largerPow2 = strlen($binStr) - 1;
         
-        if ( strrpos($binStr, '1', 1) === false ) {
-            // Exact match for pow reduce, string is like '1000...'
-            return $largerPow2 - 1;
-        } else {
-            return $largerPow2;
-        }
+        return $largerPow2;
     }
     
     /*
