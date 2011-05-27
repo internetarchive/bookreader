@@ -100,7 +100,7 @@ class BookReader
     // manually update with Launchpad version number at each checkin so that browsers
     // do not use old cached version
     // see https://bugs.launchpad.net/gnubook/+bug/330748
-    $version = "3.0.5";
+    $version = "3.0.6";
     
     if (BookReader::getDevHost($server)) {
         // On dev host - add time to force reload
