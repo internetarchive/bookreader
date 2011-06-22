@@ -4817,15 +4817,17 @@ BookReader.prototype.ttsStartCB = function (data) {
     
     this.showProgressPopup('Loading audio...');
     
-    ///// whileloading: broken on safari
-    ///// onload fires on safari, but *after* the sound starts playing..
+    ///// Many soundManger2 callbacks are broken when using HTML5 audio.
+    ///// whileloading: broken on safari, worked in FF4, but broken on FireFox 5
+    ///// onload: fires on safari, but *after* the sound starts playing, and does not fire in FF or IE9
+    ///// onbufferchange: fires in FF5 using HTML5 audio, but not in safari using flash audio
+    ///// whileplaying: fires everywhere
     this.ttsPosition = -1;    
     var snd = soundManager.createSound({
      id: 'chunk'+this.ttsIndex+'-0',
-     //url: 'http://home.us.archive.org/~rkumar/arctic.ogg',
      url: 'http://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + escape(data[0][0]) + '&format=.'+this.ttsFormat, //the .ogg is to trick SoundManager2 to use the HTML5 audio player
-     whileloading: function(){if (this.bytesLoaded == this.bytesTotal) this.br.removeProgressPopup();}, //onload never fires in FF...
-     onload: function(){this.br.removeProgressPopup();} //whileloading never fires in safari...
+     onload: function(){this.br.removeProgressPopup();}, //fires in safari...
+     onbufferchange: function(){if (false == this.isBuffering) this.br.removeProgressPopup();} //fires in FF and IE9
     });    
     snd.br = this;
     snd.load();
