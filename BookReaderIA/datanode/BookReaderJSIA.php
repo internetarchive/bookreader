@@ -604,7 +604,6 @@ if (typeof(brConfig) != 'undefined') {
 
 
 function OLAuth() {
-    this.authUrl = br.olHost + '/ia_auth/' + br.bookId;
     this.olConnect = false;
     this.loanUUID = false;
     this.permsToken = false;
@@ -620,7 +619,14 @@ function OLAuth() {
         if (0 == cookies[i].indexOf('loan-' + br.bookId)) {
             this.permsToken = cookies[i].split('=')[1];
         }
+        
+        // Set olHost to use if passed in
+        if (0 == cookies[i].indexOf('ol-host')) {
+            br.olHost = 'http://' + unescape(cookies[i].split('=')[1]);
+        }
     }
+
+    this.authUrl = br.olHost + '/ia_auth/' + br.bookId;
 
     return this;
 }
