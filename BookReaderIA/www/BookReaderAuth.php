@@ -22,7 +22,11 @@ $id = $_REQUEST['id'];
 $uuid = $_REQUEST['uuid'];
 $token = $_REQUEST['token'];
 $bookPath = $_REQUEST['bookPath'];
-$olHost = $_REQUEST['olHost'];
+
+$olHost = "openlibrary.org";
+if (isset($_REQUEST['olHost'])) {
+    $olHost = $_REQUEST['olHost'];
+}
 
 if (!preg_match('/^\d{10}-[0-9a-f]{32}$/', $token)) {
     fatal();
