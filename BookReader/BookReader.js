@@ -3367,7 +3367,6 @@ BookReader.prototype.initNavbar = function() {
     
     //append icon to handle
     var handleHelper = $('#BRpager .ui-slider-handle')
-    // $$$mang update logic for setting the page number label -- use page numbers if available
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
     
@@ -3407,7 +3406,7 @@ BookReader.prototype.updateNavPageNum = function(index) {
     var pageNum = this.getPageNum(index);
     var pageStr;
     if (pageNum[0] == 'n') { // funny index
-        pageStr = index + ' / ' + this.numLeafs;
+        pageStr = index + 1 + ' / ' + this.numLeafs; // Accessible index starts at 0 (alas) so we add 1 to make human
     } else {
         pageStr = 'Page ' + pageNum;
     }
