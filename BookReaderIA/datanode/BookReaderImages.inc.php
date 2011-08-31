@@ -594,6 +594,11 @@ class BookReaderImages
         $width = intval($tags["ImageWidth"]);
         $height = intval($tags["ImageHeight"]);
         $type = strtolower($tags["FileType"]);
+
+        // Treat jpx as jp2
+        if (strcmp($type,'jpx') == 0) {
+            $type = 'jp2';
+        }
         
         switch ($type) {
             case "jp2":
