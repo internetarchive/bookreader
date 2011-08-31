@@ -35,6 +35,9 @@
  *  preventDefault       | Prevents the event to propagate further effectivey
  *                       | dissabling other default actions. Defaults to true
  * ------------------------------------------------------------------------
+ *  scrollWindow         | Scroll the window rather than the element
+ *                       | Defaults to false
+ * ------------------------------------------------------------------------
  *  
  *  usage examples:
  *
@@ -121,7 +124,8 @@ $.fn.dragscrollable = function( options ) {
 			dragcontinue: 'mousemove touchmove',
 			dragend: 'mouseup mouseleave touchend',
 			dragMinDistance: 5,
-			namespace: '.ds'
+			namespace: '.ds',
+			scrollWindow: false
 		},options || {});
 	
 	settings.dragstart = append_namespace(settings.dragstart, settings.namespace);
@@ -130,6 +134,7 @@ $.fn.dragscrollable = function( options ) {
 
 	var dragscroll= {
 		dragStartHandler : function(event) {
+		    // console.log('dragstart');
 			
 			// mousedown, left click, check propagation
 			if (event.which > 1 ||
@@ -151,6 +156,7 @@ $.fn.dragscrollable = function( options ) {
             }
 		},
 		dragContinueHandler : function(event) { // User is dragging
+		    // console.log('drag continue');
 			
 			var lt = left_top(event);
 			
@@ -158,11 +164,19 @@ $.fn.dragscrollable = function( options ) {
 			var delta = {left: (lt.left - event.data.lastCoord.left),
 						 top: (lt.top - event.data.lastCoord.top)};
 			
+			/*
+			console.log(event.data.scrollable);
+			console.log('delta.left - ' + delta.left);
+			console.log('delta.top - ' + delta.top);
+			*/
+			
+			var scrollTarget = event.data.scrollable;
+			if (event.data.scrollWindow) {
+              scrollTarget = $(window);
+			}
 			// Set the scroll position relative to what ever the scroll is now
-			event.data.scrollable.scrollLeft(
-							event.data.scrollable.scrollLeft() - delta.left);
-			event.data.scrollable.scrollTop(
-							event.data.scrollable.scrollTop() - delta.top);
+			scrollTarget.scrollLeft( scrollTarget.scrollLeft() - delta.left );
+			scrollTarget.scrollTop(	scrollTarget.scrollTop() - delta.top );
 			
 			// Save where the cursor is
 			event.data.lastCoord = lt;
@@ -174,6 +188,7 @@ $.fn.dragscrollable = function( options ) {
 
 		},
 		dragEndHandler : function(event) { // Stop scrolling
+		    // console.log('drag END');
 		
 			handling_element
 				.unbind(settings.dragcontinue)
@@ -204,7 +219,8 @@ $.fn.dragscrollable = function( options ) {
 		// closure object data for each scrollable element
 		var data = {scrollable : $(this),
 					acceptPropagatedEvent : settings.acceptPropagatedEvent,
-                    preventDefault : settings.preventDefault }
+                    preventDefault : settings.preventDefault,
+                    scrollWindow : settings.scrollWindow }
 		// Set mouse initiating event on the desired descendant
 		$(this).find(settings.dragSelector).
 						bind(settings.dragstart, data, dragscroll.dragStartHandler);
