@@ -55,6 +55,7 @@ a {
     overflow-y:scroll;    
     position:absolute;
     background-color: #9A9B9D;
+    _height: expression(documentElement.clientHeight);
 }
 
 #BRpageview {
@@ -583,6 +584,8 @@ div#BRnav {
     
     -webkit-box-shadow: 1px 1px 2px #333;
     /* No shadow for FF, to be consistent with toolbar */
+    _position:absolute;
+    _top: expression(documentElement.scrollTop + documentElement.clientHeight-this.offsetHeight); 
 }
 div#BRnavpos {
     position: relative;

@@ -144,6 +144,7 @@ function BookReader() {
     return this;
 };
 
+(function ($) {
 // init()
 //______________________________________________________________________________
 BookReader.prototype.init = function() {
@@ -5277,3 +5278,4 @@ BookReader.prototype.initUIStrings = function()
         }
     }
 }
+})(jQuery);
