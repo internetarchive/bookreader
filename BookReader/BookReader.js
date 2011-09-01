@@ -18,7 +18,6 @@ This file is part of BookReader.
     
     The BookReader source is hosted at http://github.com/openlibrary/bookreader/
 
-    archive.org cvs $Revision: 1.2 $ $Date: 2009-06-22 18:42:51 $
 */
 
 // BookReader()
