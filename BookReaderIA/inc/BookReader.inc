@@ -270,7 +270,7 @@ class BookReader
 <? if ($uiMode == 'full') { ?>
 <div id="BookReader" style="left:10px; right:200px; top:10px; bottom:2em;">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
 <? } else { ?>
-<div id="BookReader" style="left:0; right:0; top:0; bottom:0; border:0">Internet Archive Bookreader <noscript>requires JavaScript to be enabled.</noscript></div>
+<div id="BookReader" style="left:0; right:0; top:0; bottom:0; border:0">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
 <? } /* uiMode*/ ?>
 
 <script type="text/javascript">
