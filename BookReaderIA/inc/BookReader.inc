@@ -472,7 +472,7 @@ class BookReader
   public static function browserFromUserAgent($userAgent) {
       $browserPatterns = array(
           'ipad' => '/iPad/',
-          'iphone' => '/iPhone/', // Also cover iPod Touch
+          'iphone' => '/iPhone/', // Also covers iPod Touch
           'android' => '/Android/',
       );
       
@@ -491,7 +491,7 @@ class BookReader
       $browserParams = array(
           'ipad' => array( 'ui' => 'touch' ),
           'iphone' => array( 'ui' => 'embed', 'mode' => '1up' ),
-          'android' => array( 'ui' => 'embed', 'mode' => '1up' ),
+          'android' => array( ), // Presence of this OS doesn't tell us much about device
       );
   
       $browser = BookReader::browserFromUserAgent($userAgent);
