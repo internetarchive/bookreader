@@ -35,7 +35,7 @@ This file is part of BookReader.
 // You must also add a numLeafs property before calling init().
 
 function BookReader() {
-
+    this.parentElement = $("#BRcontainer");
     // Mode constants
     this.constMode1up = 1;
     this.constMode2up = 2;
@@ -139,6 +139,8 @@ function BookReader() {
     this.ttsBuffering   = false;
     this.ttsPoller      = null;
     this.ttsFormat      = null;
+    
+    this.plugins = [];
     
     return this;
 };
@@ -308,8 +310,19 @@ BookReader.prototype.init = function() {
     if (this.getOpenLibraryRecord) {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
     }
+    for (plugin in this.plugins){
+    	plugin.init();
+    }
 
 }
+
+BookReader.prototype.getNumPages = function(){
+	// user should provide this function 
+	// in config
+		
+	return this.numLeafs;
+}
+
 
 BookReader.prototype.setupKeyListeners = function() {
     var self = this;
@@ -530,6 +543,11 @@ BookReader.prototype.drawLeafsOnePage = function() {
     }
             
     this.updateToolbarZoom(this.reduce);
+    
+    // New from Sprint
+    
+
+    //
     
 }
 
@@ -1286,7 +1304,7 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 // jumpToIndex()
 //______________________________________________________________________________
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
-
+    
     this.willChangeToIndex(index);
 
     this.ttsStop();
@@ -1360,7 +1378,12 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
         //$('#BRcontainer').attr('scrollTop', leafTop);
         $('#BRcontainer').animate({scrollTop: leafTop, scrollLeft: leafLeft },'fast');
+        
     }
+    var curIndex = this.currentIndex();
+
+    this.parentElement.trigger("br_indexUpdated", [{"newIndex":curIndex}]);
+    
 }
 
 // switchMode()
@@ -5276,4 +5299,8 @@ BookReader.prototype.initUIStrings = function()
         }
     }
 }
-})(jQuery);
+BookReader.prototype.registerPlugin = function(PluginClass){
+	this.plugins.push(PluginClass);
+}
+}
+)(jQuery);
