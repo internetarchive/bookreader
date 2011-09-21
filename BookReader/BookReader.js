@@ -1391,9 +1391,9 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
         $('#BRcontainer').animate({scrollTop: leafTop, scrollLeft: leafLeft },'fast');
         
     }
-    var curIndex = this.currentIndex();
 
-    this.parentElement.trigger("br_indexUpdated", {"newIndex":curIndex});
+	var targetIndex = index;
+    this.parentElement.trigger("br_indexUpdated", {"newIndex":targetIndex});
     
 }
 
