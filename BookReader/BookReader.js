@@ -35,7 +35,7 @@ This file is part of BookReader.
 // You must also add a numLeafs property before calling init().
 
 function BookReader() {
-
+    this.parentElement = $("#BRcontainer");
     // Mode constants
     this.constMode1up = 1;
     this.constMode2up = 2;
@@ -311,6 +311,14 @@ BookReader.prototype.init = function() {
 
 }
 
+BookReader.prototype.getNumPages = function(){
+	// user should provide this function 
+	// in config
+		
+	return this.numLeafs;
+}
+
+
 BookReader.prototype.setupKeyListeners = function() {
     var self = this;
     
@@ -530,6 +538,11 @@ BookReader.prototype.drawLeafsOnePage = function() {
     }
             
     this.updateToolbarZoom(this.reduce);
+    
+    // New from Sprint
+    
+
+    //
     
 }
 
@@ -1286,7 +1299,7 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 // jumpToIndex()
 //______________________________________________________________________________
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
-
+    
     this.willChangeToIndex(index);
 
     this.ttsStop();
@@ -1360,7 +1373,12 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
         //$('#BRcontainer').attr('scrollTop', leafTop);
         $('#BRcontainer').animate({scrollTop: leafTop, scrollLeft: leafLeft },'fast');
+        
     }
+    var curIndex = this.currentIndex();
+
+    this.parentElement.trigger("indexUpdated", [{"newIndex":curIndex}]);
+    
 }
 
 // switchMode()
