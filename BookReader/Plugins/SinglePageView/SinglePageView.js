@@ -23,6 +23,9 @@
       this.bookReaderObject = bookReaderObject;
       this.parentElement = parentElement;
       this.viewContainer = $("<div class='single-page-view'></div>");
+      /*
+      		* leftPageEl and rightPageEl are provided for short-term dev use
+      		*/
       leftPageEl = $("<div class='left-page'></div>");
       rightPageEl = $("<div class='right-page'></div>");
       this.imageElement = $("<img />");
@@ -33,21 +36,24 @@
       this.viewContainer.append(this.imageContainer);
       this.parentElement.append(this.viewContainer);
       this.currentIndex = this.bookReaderObject.getCurrentIndex();
-      this.bookReaderObject.parentElement.bind('indexUpdated', __bind(function(data) {
+      this.bookReaderObject.parentElement.bind('br_indexUpdated.SinglePageViewPlugin', __bind(function(data) {
         this.previousIndex = this.currentIndex;
         this.currentIndex = this.bookReaderObject.getCurrentIndex();
         return this.eventIndexUpdated();
       }, this));
-      this.parentElement.bind('left', __bind(function() {
+      this.parentElement.bind('br_left.SinglePageViewPlugin', __bind(function() {
         if (this.currentIndex > 1) {
           return this.bookReaderObject.jumpToIndex(this.currentIndex - 1);
         }
       }, this));
-      parentElement.bind('right', __bind(function() {
+      this.parentElement.bind('br_right.SinglePageViewPlugin', __bind(function() {
         if (this.currentIndex < this.bookReaderObject.getNumPages()) {
           return this.bookReaderObject.jumpToIndex(this.currentIndex + 1);
         }
       }, this));
+      /*
+      		* The following are for short-term dev use
+      		*/
       leftPageEl.bind('click', __bind(function() {
         return this.parentElement.trigger('left');
       }, this));
@@ -87,4 +93,7 @@
     return SinglePageViewPlugin;
   })();
   this.SinglePageViewPlugin = SinglePageViewPlugin;
+  if (typeof br !== "undefined" && br !== null) {
+    br.registerPluginClass(SinglePageViewPlugin);
+  }
 }).call(this);
