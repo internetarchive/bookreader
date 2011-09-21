@@ -286,9 +286,9 @@ BookReader2UpView.prototype.leafEdgeWidth = function(pindex) {
     }
 }
 
-BookReader2UpView.prototype.jumpToIndex = function(params) {
+BookReader2UpView.prototype.jumpToIndex = function(index) {
   // really needs to figure out if params.index is on R or L
-  var currentSpreadIndices = this.reader.getSpreadIndices(params.index);
+  var currentSpreadIndices = this.reader.getSpreadIndices(index);
   this.currentIndexL = currentSpreadIndices[0];
   this.currentIndexR = currentSpreadIndices[1];
   this.draw();
