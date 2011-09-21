@@ -16,6 +16,7 @@ function BookReader2UpView() {
 }
 
 BookReader2UpView.prototype.init = function(reader, targetElement) {
+  alert("2up!!!!"); // XXX
   
   this.reader = reader;
   this.container = $(targetElement);
@@ -750,4 +751,6 @@ BookReader2UpView.prototype.jumpIndexForRightEdgePageX = function(pageX) {
     }
 }
 
-BookReader.registerPlugin(BookReader2UpView);
+// XXX fix to not use global
+//BookReader.registerPlugin(BookReader2UpView);
+listOfPlugins.push(BookReader2UpView);
