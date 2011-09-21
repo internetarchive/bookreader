@@ -5299,7 +5299,7 @@ BookReader.prototype.initUIStrings = function()
         }
     }
 }
-Bookreader.prototype.registerPlugin = function(PluginClass){
+BookReader.prototype.registerPlugin = function(PluginClass){
 	this.plugins.push(PluginClass);
 }
 }
