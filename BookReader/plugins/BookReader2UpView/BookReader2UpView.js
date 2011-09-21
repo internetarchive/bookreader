@@ -16,7 +16,6 @@ function BookReader2UpView() {
 }
 
 BookReader2UpView.prototype.init = function(reader, targetElement) {
-  alert("2up!!!!"); // XXX
   
   this.reader = reader;
   this.container = $(targetElement);
@@ -26,7 +25,7 @@ BookReader2UpView.prototype.init = function(reader, targetElement) {
   // subscribe to events
   $(this.reader.parentElement).bind("br_indexUpdated.bookreader2up", { self: this },
     function(e, params) {
-      e.data.self.jumpToIndex(params);
+      e.data.self.jumpToIndex(params.newIndex);
     }
   );
 
