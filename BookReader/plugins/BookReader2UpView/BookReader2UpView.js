@@ -67,7 +67,7 @@ BookReader2UpView.prototype.refresh = function(params) {
   
   // Add the two page view
   // $$$ Can we get everything set up and then append?
-  this.wrapped = $('<div id="BRtwopageview"></div>').appendTo($(this.container));
+  this.wrapped = $('<div id="BRtwopageview" style="border: 4px solid red"></div>').appendTo($(this.container));
   
   // Attaches to first child, so must come after we add the page view
   //$('#BRcontainer').dragscrollable();
