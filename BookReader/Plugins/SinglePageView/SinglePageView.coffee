@@ -21,6 +21,9 @@ class SinglePageViewPlugin
 
 		@viewContainer = $("<div class='single-page-view'></div>")
 
+		###
+		* leftPageEl and rightPageEl are provided for short-term dev use
+		###
 		leftPageEl = $("<div class='left-page'></div>")
 		rightPageEl = $("<div class='right-page'></div>")
 		@imageElement = $("<img />")
@@ -33,19 +36,22 @@ class SinglePageViewPlugin
 
 		@currentIndex = @bookReaderObject.getCurrentIndex()
 
-		@bookReaderObject.parentElement.bind 'indexUpdated', (data) =>
+		@bookReaderObject.parentElement.bind 'br_indexUpdated.SinglePageViewPlugin', (data) =>
 			@previousIndex = @currentIndex
 			@currentIndex = @bookReaderObject.getCurrentIndex()
 			@eventIndexUpdated()
 			
-		@parentElement.bind 'left', () =>
+		@parentElement.bind 'br_left.SinglePageViewPlugin', () =>
 			if @currentIndex > 1
 				@bookReaderObject.jumpToIndex @currentIndex-1
 
-		parentElement.bind 'right', () =>
+		@parentElement.bind 'br_right.SinglePageViewPlugin', () =>
 			if @currentIndex < @bookReaderObject.getNumPages()
 				@bookReaderObject.jumpToIndex @currentIndex+1
-				
+		
+		###
+		* The following are for short-term dev use
+		###	
 		leftPageEl.bind 'click', () =>
 			@parentElement.trigger 'left'
 
