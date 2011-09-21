@@ -291,7 +291,6 @@ BookReader2UpView.prototype.jumpToIndex = function(params) {
   var currentSpreadIndices = this.reader.getSpreadIndices(params.index);
   this.currentIndexL = currentSpreadIndices[0];
   this.currentIndexR = currentSpreadIndices[1];
-  console.log("UPDATING", this.currentIndexL, this.currentIndexR);
   this.draw();
 }
 
@@ -304,7 +303,7 @@ BookReader2UpView.prototype.right = function(params) {
   var index = this.currentIndexL + 2;
   
   // send event
-  $(this.reader.parentElement).trigger("bookreader.jumpToIndex", [{ index : index }])
+  br.jumpToIndex(index);
 }
 
 BookReader2UpView.prototype.left = function(params) {
@@ -315,8 +314,7 @@ BookReader2UpView.prototype.left = function(params) {
   }
   var index = this.currentIndexL - 2;
   
-  // send event
-  $(this.container).trigger("bookreader.jumpToIndex", [{ index : index }])
+  br.jumpToIndex(index);
 }
 
 // drawLeafsTwoPage()
