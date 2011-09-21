@@ -1382,7 +1382,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     }
     var curIndex = this.currentIndex();
 
-    this.parentElement.trigger("br_indexUpdated.bookreader", [{"newIndex":curIndex}]);
+    this.parentElement.trigger("br_indexUpdated", [{"newIndex":curIndex}]);
     
 }
 
