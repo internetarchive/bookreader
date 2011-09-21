@@ -140,6 +140,8 @@ function BookReader() {
     this.ttsPoller      = null;
     this.ttsFormat      = null;
     
+    this.plugins = [];
+    
     return this;
 };
 
@@ -307,6 +309,9 @@ BookReader.prototype.init = function() {
     // Start AJAX request for OL data
     if (this.getOpenLibraryRecord) {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
+    }
+    for (plugin in this.plugins){
+    	plugin.init();
     }
 
 }
@@ -1377,7 +1382,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
     }
     var curIndex = this.currentIndex();
 
-    this.parentElement.trigger("indexUpdated", [{"newIndex":curIndex}]);
+    this.parentElement.trigger("br_indexUpdated.bookreader", [{"newIndex":curIndex}]);
     
 }
 
@@ -5294,4 +5299,8 @@ BookReader.prototype.initUIStrings = function()
         }
     }
 }
-})(jQuery);
+Bookreader.prototype.registerPlugin = function(PluginClass){
+	this.plugins.push(PluginClass);
+}
+}
+)(jQuery);
