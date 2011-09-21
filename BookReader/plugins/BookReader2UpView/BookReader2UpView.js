@@ -750,4 +750,4 @@ BookReader2UpView.prototype.jumpIndexForRightEdgePageX = function(pageX) {
     }
 }
 
-//BookReader.registerPlugin(BookReader2UpView);
+BookReader.registerPlugin(BookReader2UpView);
