@@ -34,6 +34,8 @@ This file is part of BookReader.
 //  - getSpreadIndices()
 // You must also add a numLeafs property before calling init().
 
+var listOfPlugins = [];
+
 function BookReader() {
     this.parentElement = $("#BRcontainer");
     // Mode constants
@@ -140,7 +142,9 @@ function BookReader() {
     this.ttsPoller      = null;
     this.ttsFormat      = null;
     
-    this.plugins = [];
+    // XXXmang fix to not use global
+    //this.plugins = [];
+    this.plugins = listOfPlugins;
     
     return this;
 };
@@ -311,7 +315,8 @@ BookReader.prototype.init = function() {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
     }
     for (plugin in this.plugins){
-    	plugin.init();
+    	var thePlugin = new plugin();
+    	thePlugin.init();
     }
 
 }
