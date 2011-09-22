@@ -10,7 +10,8 @@
         viewContainer: null,
         imageContainer: null,
         currentIndex: null,
-        previousIndex: null
+        previousIndex: null,
+        imageElements: []
       });
     }
     /*
@@ -39,6 +40,7 @@
           return this.reader.jumpToIndex(this.currentIndex + 1);
         }
       }, this));
+      this.currentIndex = this.reader.currentIndex() || this.firstDisplayableIndex();
       return this.refresh();
     };
     PageStreamViewPlugin.prototype.buildImage = function(index) {
@@ -50,11 +52,18 @@
         return false;
       }, this));
       imageElement.attr({
-        height: this.reader.getPageHeight(index),
-        width: this.reader.getPageWidth(index),
-        src: this.reader.getPageURI(index)
+        height: this.reader.getPageHeight(index) / this.pageScale(),
+        width: this.reader.getPageWidth(index) / this.pageScale(),
+        src: this.reader.getPageURI(index, this.pageScale())
       });
+      this.imageElements[index] = imageElement;
       return imageContainer;
+    };
+    PageStreamViewPlugin.prototype.pageScale = function() {
+      if (this.reader.pageScale != null) {
+        return this.reader.pageScale;
+      }
+      return 1;
     };
     PageStreamViewPlugin.prototype.refresh = function() {
       var i, _ref, _ref2;
@@ -63,11 +72,8 @@
       for (i = _ref = this.firstDisplayableIndex(), _ref2 = this.lastDisplayableIndex(); _ref <= _ref2 ? i <= _ref2 : i >= _ref2; _ref <= _ref2 ? i++ : i--) {
         this.viewContainer.append(this.buildImage(i));
       }
-      return this.container.append(this.viewContainer);
-      /*
-      * We may need to bind to events that handle advancing and retreating pages
-      * since the presentation/view plugin knows how many pages are being shown
-      		*/
+      this.container.append(this.viewContainer);
+      return this.showCurrentIndex();
     };
     /*
     * showCurrentIndex()
@@ -75,7 +81,11 @@
     * showCurrentIndex() will update the height, width, and href attributes of the <img/>
     * tag that is displaying the current page
     	*/
-    PageStreamViewPlugin.prototype.showCurrentIndex = function() {};
+    PageStreamViewPlugin.prototype.showCurrentIndex = function() {
+      return this.container.animate({
+        scrollTop: this.imageElements[this.currentIndex].position().top - this.container.offset().top + this.container.scrollTop()
+      });
+    };
     /*
     * eventIndexUpdated()
     *
@@ -83,7 +93,7 @@
     * page turning animations can be tied in.
     	*/
     PageStreamViewPlugin.prototype.eventIndexUpdated = function() {
-      this.currentIndex = this.reader.getCurrentIndex();
+      this.currentIndex = this.reader.currentIndex();
       return this.showCurrentIndex();
     };
     PageStreamViewPlugin.prototype.eventResize = function() {
@@ -127,11 +137,16 @@
         }
       }
     };
+    PageStreamViewPlugin.prototype.hide = function() {};
+    PageStreamViewPlugin.prototype.show = function() {};
+    PageStreamViewPlugin.prototype.destroy = function() {};
     return PageStreamViewPlugin;
   })();
   this.PageStreamViewPlugin = PageStreamViewPlugin;
   PageStreamViewPlugin.params = {
-    autofit: 'height'
+    autofit: 'height',
+    type: 'view',
+    'icon-class': 'single-page-icon'
   };
-  BookReader.registerPlugin(PageStreamViewPlugin);
+  BookReader.registerPlugin("page-stream-view", PageStreamViewPlugin);
 }).call(this);
