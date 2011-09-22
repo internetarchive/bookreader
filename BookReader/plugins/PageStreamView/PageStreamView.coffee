@@ -60,16 +60,8 @@ class PageStreamViewPlugin
 		1
 		
 	refresh: () ->
-		@container.empty()
-		
-		@viewContainer = $("<div class='page-stream-view'></div>")
-
-		for i in [ @firstDisplayableIndex() .. @lastDisplayableIndex() ]
-			@viewContainer.append @buildImage(i)
-		
-		@container.append @viewContainer
-		
-		@showCurrentIndex()
+		@hide()
+		@show()
 
 	###
 * showCurrentIndex()
@@ -114,16 +106,25 @@ class PageStreamViewPlugin
 			return if @reader.getPageSide(lastIndex) == 'L' then lastIndex else lastIndex + 1
 
 	hide: () ->
+		@container.empty()
 		
 	show: () ->
+		@viewContainer = $("<div class='page-stream-view'></div>")
+
+		for i in [ @firstDisplayableIndex() .. @lastDisplayableIndex() ]
+			@viewContainer.append @buildImage(i)
 		
+		@container.append @viewContainer
+		
+		@showCurrentIndex()
+	
 	destroy: () ->
 
 this.PageStreamViewPlugin = PageStreamViewPlugin
 
 PageStreamViewPlugin.params =
 	type: 'view'
-	'icon-class': 'single-page-icon'
-	
+	#cssClass: 'page-stream'
+	cssClass: 'page-stream-view'
 
 BookReader.registerPlugin "page-stream-view", PageStreamViewPlugin
