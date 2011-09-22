@@ -4,6 +4,7 @@
  * BookReader plugin that controls page-based navigation
  * 
  * Author: Mauricio Giraldo mauricio@pingpongestudio.com
+ *         David Jiao djiao@indiana.edu
  * 
  * version: 0.1
  * 
