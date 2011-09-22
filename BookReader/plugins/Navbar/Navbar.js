@@ -60,7 +60,6 @@ Navbar.prototype.init = function (reader, targetElement, options) {
   // subscribe to events
   $(this.reader.parentElement).bind("br_indexUpdated.navbar", { self: this },
     function(e, params) {
-	console.log("update index: " , params.newIndex);
 	e.data.self.updateIndex(params.newIndex);
     }
   );
@@ -139,7 +138,6 @@ Navbar.prototype._initNormal = function() {
       $("#pagenum").hide();
       
       // recursion prevention for jumpToIndex
-      console.log($(self), this);
       if ( $(this).data('swallowchange') ) {
           $(this).data('swallowchange', false);
       } else {
@@ -329,7 +327,6 @@ Navbar.prototype._bindActions = function() {
                 $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
                 $('.BRvavCntl').animate({opacity:1})
             };
-	    console.log('BRnavCntl clicked');
         }
     );
     $('#BRnavCntlBtm').mouseover(function(){
@@ -360,4 +357,4 @@ Navbar.prototype.refresh = function() {
    // do nothing
 }
 
-listOfPlugins.push(Navbar);
+BookReader.registerPlugin(Navbar);

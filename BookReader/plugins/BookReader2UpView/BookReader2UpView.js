@@ -179,6 +179,82 @@ BookReader2UpView.prototype.firstDisplayableIndex = function() {
     }
 }
 
+BookReader2UpView.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
+    var ideal = {};
+
+    // We check which page is closest to a "normal" page and use that to set the height
+    // for both pages.  This means that foldouts and other odd size pages will be displayed
+    // smaller than the nominal zoom amount.
+    var canon5Dratio = 1.5;
+    
+    var first = {
+        height: this.reader._getPageHeight(firstIndex),
+        width: this.reader._getPageWidth(firstIndex)
+    }
+    
+    var second = {
+        height: this.reader._getPageHeight(secondIndex),
+        width: this.reader._getPageWidth(secondIndex)
+    }
+        
+    var firstIndexRatio  = first.height / first.width;
+    var secondIndexRatio = second.height / second.width;
+    //console.log('firstIndexRatio = ' + firstIndexRatio + ' secondIndexRatio = ' + secondIndexRatio);
+
+    var ratio;
+    if (Math.abs(firstIndexRatio - canon5Dratio) < Math.abs(secondIndexRatio - canon5Dratio)) {
+        ratio = firstIndexRatio;
+    } else {
+        ratio = secondIndexRatio;
+    }
+
+    var totalLeafEdgeWidth = parseInt(this.reader.numLeafs * 0.1);
+    var maxLeafEdgeWidth   = parseInt($(this.container).attr('clientWidth') * 0.1);
+    ideal.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
+    
+    var widthOutsidePages = 2 * (this.coverInternalPadding + this.coverExternalPadding) + ideal.totalLeafEdgeWidth;
+    var heightOutsidePages = 2* (this.coverInternalPadding + this.coverExternalPadding);
+    
+    ideal.width = ($(this.container).width() - widthOutsidePages) >> 1;
+    ideal.width -= 10; // $$$ fudge factor
+    ideal.height = $(this.container).height() - heightOutsidePages;
+    ideal.height -= 20; // fudge factor
+    //console.log('init idealWidth='+ideal.width+' idealHeight='+ideal.height + ' ratio='+ratio);
+
+    if (ideal.height/ratio <= ideal.width) {
+        //use height
+        ideal.width = parseInt(ideal.height/ratio);
+    } else {
+        //use width
+        ideal.height = parseInt(ideal.width*ratio);
+    }
+    
+    // $$$ check this logic with large spreads
+    ideal.reduce = ((first.height + second.height) / 2) / ideal.height;
+    
+    return ideal;
+}
+
+// getSpreadSizeFromReduce()
+//______________________________________________________________________________
+// Returns the spread size calculated from the reduction factor for the given pages
+BookReader2UpView.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex, reduce) {
+    var spreadSize = {};
+    // $$$ Scale this based on reduce?
+    var totalLeafEdgeWidth = parseInt(this.reader.numLeafs * 0.1);
+    var maxLeafEdgeWidth   = parseInt($(this.container).attr('clientWidth') * 0.1); // $$$ Assumes leaf edge width constant at all zoom levels
+    spreadSize.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
+
+    // $$$ Possibly incorrect -- we should make height "dominant"
+    var nativeWidth = this.reader._getPageWidth(firstIndex) + this.reader._getPageWidth(secondIndex);
+    var nativeHeight = this.reader._getPageHeight(firstIndex) + this.reader._getPageHeight(secondIndex);
+    spreadSize.height = parseInt( (nativeHeight / 2) / this.reduce );
+    spreadSize.width = parseInt( (nativeWidth / 2) / this.reduce );
+    spreadSize.reduce = reduce;
+    
+    return spreadSize;
+}
+
 // calculateSpreadSize()
 //______________________________________________________________________________
 // Calculates 2-page spread dimensions based on this.currentIndexL and
@@ -194,10 +270,10 @@ BookReader2UpView.prototype.calculateSpreadSize = function() {
     // Calculate page sizes and total leaf width
     var spreadSize;
     if ( this.autofit) {    
-        spreadSize = this.reader.getIdealSpreadSize(firstIndex, secondIndex);
+        spreadSize = this.getIdealSpreadSize(firstIndex, secondIndex);
     } else {
         // set based on reduction factor
-        spreadSize = this.reader.getSpreadSizeFromReduce(firstIndex, secondIndex, this.reduce);
+        spreadSize = this.getSpreadSizeFromReduce(firstIndex, secondIndex, this.reduce);
     }
         
     // Both pages together
@@ -451,7 +527,7 @@ BookReader2UpView.prototype.twoPageIsZoomedIn = function() {
 //______________________________________________________________________________
 // Returns the current ideal reduction factor
 BookReader2UpView.prototype.twoPageGetAutofitReduce = function() {
-    var spreadSize = this.reader.getIdealSpreadSize(this.currentIndexL, this.currentIndexR);
+    var spreadSize = this.getIdealSpreadSize(this.currentIndexL, this.currentIndexR);
     return spreadSize.reduce;
 }
 
@@ -531,7 +607,7 @@ BookReader2UpView.prototype.twoPageCenterView = function(percentageX, percentage
 // pruneUnusedImgs()
 //______________________________________________________________________________
 BookReader2UpView.prototype.pruneUnusedImgs = function() {
-    //console.log('current: ' + this.twoPage.currentIndexL + ' ' + this.twoPage.currentIndexR);
+    //console.log('current: ' + this.currentIndexL + ' ' + this.currentIndexR);
     for (var key in this.prefetchedImgs) {
         //console.log('key is ' + key);
         if ((key != this.currentIndexL) && (key != this.currentIndexR)) {
@@ -578,16 +654,16 @@ BookReader2UpView.prototype.prefetch = function() {
     }
 
     /*
-    var lim = this.twoPage.currentIndexL-4;
+    var lim = this.currentIndexL-4;
     var i;
     lim = Math.max(lim, 0);
-    for (i = lim; i < this.twoPage.currentIndexL; i++) {
+    for (i = lim; i < this.currentIndexL; i++) {
         this.prefetchImg(i);
     }
     
-    if (this.numLeafs > (this.twoPage.currentIndexR+1)) {
-        lim = Math.min(this.twoPage.currentIndexR+4, this.numLeafs-1);
-        for (i=this.twoPage.currentIndexR+1; i<=lim; i++) {
+    if (this.numLeafs > (this.currentIndexR+1)) {
+        lim = Math.min(this.currentIndexR+4, this.numLeafs-1);
+        for (i=this.currentIndexR+1; i<=lim; i++) {
             this.prefetchImg(i);
         }
     }
@@ -597,7 +673,7 @@ BookReader2UpView.prototype.prefetch = function() {
 // prefetchImg()
 //______________________________________________________________________________
 BookReader2UpView.prototype.prefetchImg = function(index) {
-    var pageURI = this.reader._getPageURI(index);
+    var pageURI = this.reader._getPageURI(index, this.height);
 
     // Load image if not loaded or URI has changed (e.g. due to scaling)
     var loadImage = false;
@@ -744,12 +820,12 @@ BookReader2UpView.prototype.jumpIndexForRightEdgePageX = function(pageX) {
         jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.currentIndexR + 2, this.lastDisplayableIndex());
         return jumpIndex;
     } else {
-        var jumpIndex = this.twoPage.currentIndexR - (pageX - $(this.leafEdgeR).offset().left) * 10;
+        var jumpIndex = this.currentIndexR - (pageX - $(this.leafEdgeR).offset().left) * 10;
         jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.firstDisplayableIndex(), this.currentIndexR - 2);
         return jumpIndex;
     }
 }
 
 // XXX fix to not use global
-//BookReader.registerPlugin(BookReader2UpView);
-listOfPlugins.push(BookReader2UpView);
+BookReader.registerPlugin(BookReader2UpView);
+
