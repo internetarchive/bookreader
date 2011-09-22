@@ -767,12 +767,14 @@ OLAuth.prototype.startPolling = function () {
 }
 
 br.cleanupMetadata();
+/* XXXmang taken out to allow for plugin loading
 if (br.olAuth) {
     var olAuth = new OLAuth();
     olAuth.init();
 } else {
-    br.init();
+    // br.init();
 }
+*/
 <?
 
 

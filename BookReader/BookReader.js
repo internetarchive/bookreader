@@ -1403,6 +1403,21 @@ BookReader.prototype.switchMode = function(mode) {
         return;
     }
     
+    // Check for new style string plugin name mode
+    if (typeof(mode) == typeof('')) {
+    	// mode is the name of a view plugin - find it
+    	if (typeof(this.plugins.view[mode] != 'undefined')) {
+    		// switch to new view
+    		this.activeView.hide();
+    		this.activeView = this.plugins.view[mode];
+    		this.activeView.show();
+    		return; // success
+    	}
+    	
+    	// don't have this view
+    	return;
+    }
+    
     if (!this.canSwitchToMode(mode)) {
         return;
     }
@@ -3342,11 +3357,13 @@ BookReader.prototype.initNavbar = function() {
     $('#BookReader').append(
         '<div id="BRnav">'
         +     '<div id="BRpage">'   // Page turn buttons
-        +         '<button class="BRicon onepg"></button>'
-        +         '<button class="BRicon twopg"></button>'
-        +         '<button class="BRicon thumb"></button>'
-        // $$$ not yet implemented
-        //+         '<button class="BRicon fit"></button>'
+        +         '<span class="BRviewicons">'
+        +             '<button class="BRicon onepg"></button>'
+        +             '<button class="BRicon twopg"></button>'
+        +             '<button class="BRicon thumb"></button>'
+        //$$$ not yet implemented
+        //+             '<button class="BRicon fit"></button>'
+        +         '</span>'
         +         '<button class="BRicon zoom_in"></button>'
         +         '<button class="BRicon zoom_out"></button>'
         +         '<button class="BRicon book_left"></button>'
@@ -3400,6 +3417,19 @@ BookReader.prototype.initNavbar = function() {
     var handleHelper = $('#BRpager .ui-slider-handle')
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
+    
+    // Add view mode icons from plugins
+    var allPlugins = listOfPlugins;
+    var jNavElement = $('#BRnav'); // $$$ change to instance variable
+    for (var i = 0; i < allPlugins.length; i++) {
+    	var plugin = allPlugins[i];
+    	if (plugin.type == 'view') {
+    		// Add icon
+    		jNavElement.find('.BRnavicons').append(
+    			'<button class="BRicon BRviewbutton' + plugin.cssClass + '"></button>'
+    		);
+    	}
+    }
     
     this.updateNavPageNum(this.currentIndex());
 
@@ -3840,6 +3870,13 @@ BookReader.prototype.bindNavigationHandlers = function() {
 
     jIcons.filter('.thumb').bind('click', function(e) {
         self.switchMode(self.constModeThumb);
+    });
+    
+    jIcons.filter('.BRviewbutton').bind('click', function(e) {
+    	var classes = $(this).attr('class').split(' ');
+    	// assume plugin class is last
+    	var pluginName = classes[classes.length - 1];
+    	self.switchMode(pluginName);
     });
     
     jIcons.filter('.fit').bind('fit', function(e) {
