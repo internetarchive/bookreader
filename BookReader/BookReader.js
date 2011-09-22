@@ -5359,7 +5359,7 @@ BookReader.prototype.initUIStrings = function()
 }
 // This is a static method that doesn't require a BookReader instance
 BookReader.registerPlugin = function(pluginName, pluginClass){
-	listOfPlugins[pluginName] = PluginClass;
+	listOfPlugins[pluginName] = pluginClass;
 }
 }
 )(jQuery);

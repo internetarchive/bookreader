@@ -11,7 +11,10 @@
         imageContainer: null,
         currentIndex: null,
         previousIndex: null,
-        imageElements: []
+        imageElements: [],
+        params: {
+          autofit: 'height'
+        }
       });
     }
     /*
@@ -66,14 +69,8 @@
       return 1;
     };
     PageStreamViewPlugin.prototype.refresh = function() {
-      var i, _ref, _ref2;
-      this.container.empty();
-      this.viewContainer = $("<div class='page-stream-view'></div>");
-      for (i = _ref = this.firstDisplayableIndex(), _ref2 = this.lastDisplayableIndex(); _ref <= _ref2 ? i <= _ref2 : i >= _ref2; _ref <= _ref2 ? i++ : i--) {
-        this.viewContainer.append(this.buildImage(i));
-      }
-      this.container.append(this.viewContainer);
-      return this.showCurrentIndex();
+      this.hide();
+      return this.show();
     };
     /*
     * showCurrentIndex()
@@ -137,16 +134,25 @@
         }
       }
     };
-    PageStreamViewPlugin.prototype.hide = function() {};
-    PageStreamViewPlugin.prototype.show = function() {};
+    PageStreamViewPlugin.prototype.hide = function() {
+      return this.container.empty();
+    };
+    PageStreamViewPlugin.prototype.show = function() {
+      var i, _ref, _ref2;
+      this.viewContainer = $("<div class='page-stream-view'></div>");
+      for (i = _ref = this.firstDisplayableIndex(), _ref2 = this.lastDisplayableIndex(); _ref <= _ref2 ? i <= _ref2 : i >= _ref2; _ref <= _ref2 ? i++ : i--) {
+        this.viewContainer.append(this.buildImage(i));
+      }
+      this.container.append(this.viewContainer);
+      return this.showCurrentIndex();
+    };
     PageStreamViewPlugin.prototype.destroy = function() {};
     return PageStreamViewPlugin;
   })();
   this.PageStreamViewPlugin = PageStreamViewPlugin;
   PageStreamViewPlugin.params = {
-    autofit: 'height',
     type: 'view',
-    'icon-class': 'single-page-icon'
+    cssClass: 'page-stream-view'
   };
   BookReader.registerPlugin("page-stream-view", PageStreamViewPlugin);
 }).call(this);
