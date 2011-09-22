@@ -140,10 +140,6 @@ function BookReader() {
     this.ttsPoller      = null;
     this.ttsFormat      = null;
     
-    // XXXmang fix to not use global
-    //this.plugins = [];
-    //this.plugins = listOfPlugins;
-    
     return this;
 };
 
