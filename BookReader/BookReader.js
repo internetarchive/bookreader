@@ -35,7 +35,7 @@ This file is part of BookReader.
 // You must also add a numLeafs property before calling init().
 
 function BookReader() {
-    this.parentElement = $("#BRcontainer");
+    
     // Mode constants
     this.constMode1up = 1;
     this.constMode2up = 2;
@@ -158,6 +158,8 @@ BookReader.prototype.init = function() {
 
     var startIndex = undefined;
     this.pageScale = this.reduce; // preserve current reduce
+    
+    this.parentElement = $('#BookReader'); // XXX hardcoded - in the right place
     
     // Find start index and mode if set in location hash
     var params = {};
@@ -317,9 +319,13 @@ BookReader.prototype.init = function() {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
     }
     for (plugin in listOfPlugins){
-    	var thePlugin = new plugin();
-    	thePlugin.init();
+    	var thePlugin = new listOfPlugins[plugin]();
+    	
+    	// XXX Make some div for the view
+    	thePlugin.init(this, $('#BRcontainer'));
+    	thePlugin.refresh();
     }
+
 
 }
 
@@ -1387,9 +1393,9 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
         $('#BRcontainer').animate({scrollTop: leafTop, scrollLeft: leafLeft },'fast');
         
     }
-    var curIndex = this.currentIndex();
 
-    this.parentElement.trigger("br_indexUpdated", [{"newIndex":curIndex}]);
+	var targetIndex = index;
+    this.parentElement.trigger("br_indexUpdated", {"newIndex":targetIndex});
     
 }
 

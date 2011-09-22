@@ -16,7 +16,6 @@ function BookReader2UpView() {
 }
 
 BookReader2UpView.prototype.init = function(reader, targetElement) {
-  alert("2up!!!!"); // XXX
   
   this.reader = reader;
   this.container = $(targetElement);
@@ -26,7 +25,7 @@ BookReader2UpView.prototype.init = function(reader, targetElement) {
   // subscribe to events
   $(this.reader.parentElement).bind("br_indexUpdated.bookreader2up", { self: this },
     function(e, params) {
-      e.data.self.jumpToIndex(params);
+      e.data.self.jumpToIndex(params.newIndex);
     }
   );
 
@@ -68,7 +67,7 @@ BookReader2UpView.prototype.refresh = function(params) {
   
   // Add the two page view
   // $$$ Can we get everything set up and then append?
-  this.wrapped = $('<div id="BRtwopageview"></div>').appendTo($(this.container));
+  this.wrapped = $('<div id="BRtwopageview" style="border: 4px solid red"></div>').appendTo($(this.container));
   
   // Attaches to first child, so must come after we add the page view
   //$('#BRcontainer').dragscrollable();
@@ -287,9 +286,9 @@ BookReader2UpView.prototype.leafEdgeWidth = function(pindex) {
     }
 }
 
-BookReader2UpView.prototype.jumpToIndex = function(params) {
+BookReader2UpView.prototype.jumpToIndex = function(index) {
   // really needs to figure out if params.index is on R or L
-  var currentSpreadIndices = this.reader.getSpreadIndices(params.index);
+  var currentSpreadIndices = this.reader.getSpreadIndices(index);
   this.currentIndexL = currentSpreadIndices[0];
   this.currentIndexR = currentSpreadIndices[1];
   this.draw();
