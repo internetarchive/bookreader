@@ -1,10 +1,13 @@
 class SinglePageViewPlugin
 	constructor: () ->
-		@bookReaderObject = null
-		@parentElement = null
-		@imageElement = null
-		@currentIndex = null
-		@previousIndex = null
+		$.extend this,
+			reader: null
+			container: null
+			imageElement: null
+			viewContainer: null
+			imageContainer: null
+			currentIndex: null
+			previousIndex: null
 
 	###
 * init(bookReaderObject, parentElement)
@@ -16,47 +19,37 @@ class SinglePageViewPlugin
 *
 	###
 	init: (bookReaderObject, parentElement) ->
-		@bookReaderObject = bookReaderObject
-		@parentElement = parentElement
+		@reader = bookReaderObject
+		@container = $(parentElement)
+		
+		@reader.parentElement.bind 'br_indexUpdated.SinglePageViewPlugin', (data) =>
+			@previousIndex = @currentIndex
+			@eventIndexUpdated()
+			
+		@container.bind 'br_left.SinglePageViewPlugin', () =>
+			if @currentIndex > @firstDisplayableIndex()
+				@reader.jumpToIndex @currentIndex-1
 
+		@container.bind 'br_right.SinglePageViewPlugin', () =>
+			if @currentIndex < @lastDisplayableIndex()
+				@reader.jumpToIndex @currentIndex+1
+
+		@refresh()
+		
+	refresh: () ->
+		@container.empty()
+		
 		@viewContainer = $("<div class='single-page-view'></div>")
 
-		###
-		* leftPageEl and rightPageEl are provided for short-term dev use
-		###
-		leftPageEl = $("<div class='left-page'></div>")
-		rightPageEl = $("<div class='right-page'></div>")
 		@imageElement = $("<img />")
 		@imageContainer = $("<div class='image'></div>")
 		@imageContainer.append @imageElement
-		@viewContainer.append leftPageEl
-		@viewContainer.append rightPageEl
 		@viewContainer.append @imageContainer
-		@parentElement.append @viewContainer
+		@container.append @viewContainer
 
-		@currentIndex = @bookReaderObject.getCurrentIndex()
+		@showCurrentIndex()
 
-		@bookReaderObject.parentElement.bind 'br_indexUpdated.SinglePageViewPlugin', (data) =>
-			@previousIndex = @currentIndex
-			@currentIndex = @bookReaderObject.getCurrentIndex()
-			@eventIndexUpdated()
-			
-		@parentElement.bind 'br_left.SinglePageViewPlugin', () =>
-			if @currentIndex > 1
-				@bookReaderObject.jumpToIndex @currentIndex-1
 
-		@parentElement.bind 'br_right.SinglePageViewPlugin', () =>
-			if @currentIndex < @bookReaderObject.getNumPages()
-				@bookReaderObject.jumpToIndex @currentIndex+1
-		
-		###
-		* The following are for short-term dev use
-		###	
-		leftPageEl.bind 'click', () =>
-			@parentElement.trigger 'left'
-
-		rightPageEl.bind 'click', () =>
-			@parentElement.trigger 'right'
 
 		###
 * We may need to bind to events that handle advancing and retreating pages
@@ -72,11 +65,11 @@ class SinglePageViewPlugin
 	###
 	showCurrentIndex: () ->
 		@imageElement.attr 
-			height: @bookReaderObject.getPageHeight @currentIndex
-			width: @bookReaderObject.getPageWidth @currentIndex
-			src: @bookReaderObject.getPageURI @currentIndex
-		@viewContainer.width 40 + @bookReaderObject.getPageWidth @currentIndex
-		@imageContainer.width @bookReaderObject.getPageWidth @currentIndex
+			height: @reader.getPageHeight @currentIndex
+			width: @reader.getPageWidth @currentIndex
+			src: @reader.getPageURI @currentIndex
+		@viewContainer.width @reader.getPageWidth @currentIndex
+		@imageContainer.width @reader.getPageWidth @currentIndex
 
 	###
 * eventIndexUpdated()
@@ -85,8 +78,24 @@ class SinglePageViewPlugin
 * page turning animations can be tied in.
 	###
 	eventIndexUpdated: () ->
+		@currentIndex = @reader.getCurrentIndex()
 		@showCurrentIndex()
 
+	firstDisplayableIndex: () -> 1
+#		if @reader.pageProgression != 'rl'
+#			return if @reader.getPageSide(0) == 'L' then 0 else -1
+#		else
+#			return if @reader.getPageSide(0) == 'R' then 0 else -1
+
+	lastDisplayableIndex: () -> @reader.getNumPages() - 1
+#		lastIndex = @reader.getNumPages() - 1
+#
+#		if @reader.pageProgression != 'rl'
+#			return @reader.getPageSide(lastIndex) == 'R' then lastIndex else lastIndex + 1
+#		else
+#			return @reader.getPageSide(lastIndex) == 'L' then lastIndex else lastIndex + 1
+
 this.SinglePageViewPlugin = SinglePageViewPlugin
+BookReader.registerPlugin(SinglePageViewPlugin)
 if br?
 	br.registerPluginClass SinglePageViewPlugin

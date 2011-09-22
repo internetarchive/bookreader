@@ -3,11 +3,15 @@
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   SinglePageViewPlugin = (function() {
     function SinglePageViewPlugin() {
-      this.bookReaderObject = null;
-      this.parentElement = null;
-      this.imageElement = null;
-      this.currentIndex = null;
-      this.previousIndex = null;
+      $.extend(this, {
+        reader: null,
+        container: null,
+        imageElement: null,
+        viewContainer: null,
+        imageContainer: null,
+        currentIndex: null,
+        previousIndex: null
+      });
     }
     /*
     * init(bookReaderObject, parentElement)
@@ -19,47 +23,33 @@
     *
     	*/
     SinglePageViewPlugin.prototype.init = function(bookReaderObject, parentElement) {
-      var leftPageEl, rightPageEl;
-      this.bookReaderObject = bookReaderObject;
-      this.parentElement = parentElement;
+      this.reader = bookReaderObject;
+      this.container = $(parentElement);
+      this.reader.parentElement.bind('br_indexUpdated.SinglePageViewPlugin', __bind(function(data) {
+        this.previousIndex = this.currentIndex;
+        return this.eventIndexUpdated();
+      }, this));
+      this.container.bind('br_left.SinglePageViewPlugin', __bind(function() {
+        if (this.currentIndex > this.firstDisplayableIndex()) {
+          return this.reader.jumpToIndex(this.currentIndex - 1);
+        }
+      }, this));
+      this.container.bind('br_right.SinglePageViewPlugin', __bind(function() {
+        if (this.currentIndex < this.lastDisplayableIndex()) {
+          return this.reader.jumpToIndex(this.currentIndex + 1);
+        }
+      }, this));
+      return this.refresh();
+    };
+    SinglePageViewPlugin.prototype.refresh = function() {
+      this.container.empty();
       this.viewContainer = $("<div class='single-page-view'></div>");
-      /*
-      		* leftPageEl and rightPageEl are provided for short-term dev use
-      		*/
-      leftPageEl = $("<div class='left-page'></div>");
-      rightPageEl = $("<div class='right-page'></div>");
       this.imageElement = $("<img />");
       this.imageContainer = $("<div class='image'></div>");
       this.imageContainer.append(this.imageElement);
-      this.viewContainer.append(leftPageEl);
-      this.viewContainer.append(rightPageEl);
       this.viewContainer.append(this.imageContainer);
-      this.parentElement.append(this.viewContainer);
-      this.currentIndex = this.bookReaderObject.getCurrentIndex();
-      this.bookReaderObject.parentElement.bind('br_indexUpdated.SinglePageViewPlugin', __bind(function(data) {
-        this.previousIndex = this.currentIndex;
-        this.currentIndex = this.bookReaderObject.getCurrentIndex();
-        return this.eventIndexUpdated();
-      }, this));
-      this.parentElement.bind('br_left.SinglePageViewPlugin', __bind(function() {
-        if (this.currentIndex > 1) {
-          return this.bookReaderObject.jumpToIndex(this.currentIndex - 1);
-        }
-      }, this));
-      this.parentElement.bind('br_right.SinglePageViewPlugin', __bind(function() {
-        if (this.currentIndex < this.bookReaderObject.getNumPages()) {
-          return this.bookReaderObject.jumpToIndex(this.currentIndex + 1);
-        }
-      }, this));
-      /*
-      		* The following are for short-term dev use
-      		*/
-      leftPageEl.bind('click', __bind(function() {
-        return this.parentElement.trigger('left');
-      }, this));
-      rightPageEl.bind('click', __bind(function() {
-        return this.parentElement.trigger('right');
-      }, this));
+      this.container.append(this.viewContainer);
+      this.showCurrentIndex();
       /*
       * We may need to bind to events that handle advancing and retreating pages
       * since the presentation/view plugin knows how many pages are being shown
@@ -74,12 +64,12 @@
     	*/
     SinglePageViewPlugin.prototype.showCurrentIndex = function() {
       this.imageElement.attr({
-        height: this.bookReaderObject.getPageHeight(this.currentIndex),
-        width: this.bookReaderObject.getPageWidth(this.currentIndex),
-        src: this.bookReaderObject.getPageURI(this.currentIndex)
+        height: this.reader.getPageHeight(this.currentIndex),
+        width: this.reader.getPageWidth(this.currentIndex),
+        src: this.reader.getPageURI(this.currentIndex)
       });
-      this.viewContainer.width(40 + this.bookReaderObject.getPageWidth(this.currentIndex));
-      return this.imageContainer.width(this.bookReaderObject.getPageWidth(this.currentIndex));
+      this.viewContainer.width(this.reader.getPageWidth(this.currentIndex));
+      return this.imageContainer.width(this.reader.getPageWidth(this.currentIndex));
     };
     /*
     * eventIndexUpdated()
@@ -88,11 +78,19 @@
     * page turning animations can be tied in.
     	*/
     SinglePageViewPlugin.prototype.eventIndexUpdated = function() {
+      this.currentIndex = this.reader.getCurrentIndex();
       return this.showCurrentIndex();
+    };
+    SinglePageViewPlugin.prototype.firstDisplayableIndex = function() {
+      return 1;
+    };
+    SinglePageViewPlugin.prototype.lastDisplayableIndex = function() {
+      return this.reader.getNumPages() - 1;
     };
     return SinglePageViewPlugin;
   })();
   this.SinglePageViewPlugin = SinglePageViewPlugin;
+  BookReader.registerPlugin(SinglePageViewPlugin);
   if (typeof br !== "undefined" && br !== null) {
     br.registerPluginClass(SinglePageViewPlugin);
   }
