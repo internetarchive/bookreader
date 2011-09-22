@@ -160,7 +160,7 @@ class BookReader
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
     
     <!-- plugins! -->
-    <!-- <script type="text/javascript" src="/bookreader/plugins/PageStreamView/PageStreamView.js"></script> -->
+    <script type="text/javascript" src="/bookreader/plugins/PageStreamView/PageStreamView.js"></script>
     
 <? if ( !preg_match("/mobile/i", $_SERVER['HTTP_USER_AGENT']) ) { ?>
     <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2-ia.js?v=<? echo($version); ?>"></script>

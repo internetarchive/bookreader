@@ -139,8 +139,6 @@ function BookReader() {
     this.ttsBuffering   = false;
     this.ttsPoller      = null;
     this.ttsFormat      = null;
-
-    this.plugins = {};
     
     return this;
 };
@@ -148,7 +146,7 @@ function BookReader() {
 (function ($) {
 	
 	// this list of plugins is shared across all instances of BookReader
-	var listOfPlugins = {};
+	var listOfPlugins = [];
 	
 // init()
 //______________________________________________________________________________
@@ -296,7 +294,40 @@ BookReader.prototype.init = function() {
         //console.log('displayedIndices: %s', this.displayedIndices);
         this.prepareTwoPageView();
     }
-        
+            
+    // we walk the dom and instantiate the plugins we find:
+    //   if an element has a class name that is in the plugin list (prefixed by 'bookreader-'), then
+    //    we assume it's a plugin reference
+    this.plugins = {};
+	(function(self) {
+	    for (var pluginName in listOfPlugins) {
+	    	/*
+			$.each(self.parentElement.find(".bookreader-" + pluginName), function(idx, el) {
+				var thePlugin = new listOfPlugins[pluginName]();
+				thePlugin.init(self, el);
+				self.plugins[listOfPlugins[pluginName].params.type] = self.plugins[listOfPlugins[pluginName].params.type] || {};
+				self.plugins[listOfPlugins[pluginName].params.type][pluginName] = thePlugin;
+			});
+			*/
+			
+			// Hardcoded init
+			var thePlugin = new listOfPlugins[pluginName]();
+			thePlugin.init(self, $('#BRcontainer'));
+			self.plugins[listOfPlugins[pluginName].params.type] = self.plugins[listOfPlugins[pluginName].params.type] || {};
+			self.plugins[listOfPlugins[pluginName].params.type][pluginName] = thePlugin;
+		}
+	})(this);
+	for(var idx in this.plugins["view"]) {
+		this.plugins["view"][idx].refresh();
+	}
+	for(var idx in this.plugins["navigation"]) {
+		this.plugins["navigation"][idx].refresh();
+	}
+	
+	// For now, start with hardcoded view
+	this.activeView = this.plugins['view']['page-stream-view'];
+	this.activeView.show(); // we should first get the current index, e.g. from URL so no visual glitch
+	
     // Enact other parts of initial params
     this.updateFromParams(params);
 
@@ -316,25 +347,7 @@ BookReader.prototype.init = function() {
     if (this.getOpenLibraryRecord) {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
     }
-    // we walk the dom and instantiate the plugins we find:
-    //   if an element has a class name that is in the plugin list (prefixed by 'bookreader-'), then
-    //    we assume it's a plugin reference
-	(function(self) {
-	    for (var pluginName in listOfPlugins) {
-			$.each(self.parentElement.find(".bookreader-" + pluginName), function(idx, el) {
-				var thePlugin = new listOfPlugins[pluginName]();
-				thePlugin.init(self, el);
-				self.plugins[listOfPlugins[pluginName].params.type] = self.plugins[listOfPlugins[pluginName].params.type] || {};
-				self.plugins[listOfPlugins[pluginName].params.type][pluginName] = thePlugin;
-			});
-		}
-	})(this);
-	for(var idx in this.plugins["view"]) {
-		this.plugins["view"][idx].refresh();
-	}
-	for(var idx in this.plugins["navigation"]) {
-		this.plugins["navigation"][idx].refresh();
-	}
+
 }
 
 BookReader.prototype.getNumPages = function(){
@@ -1420,7 +1433,9 @@ BookReader.prototype.switchMode = function(mode) {
     	// mode is the name of a view plugin - find it
     	if (typeof(this.plugins.view[mode] != 'undefined')) {
     		// switch to new view
-    		this.activeView.hide();
+    		if (typeof(this.activeView) != 'undefined') {
+	    		this.activeView.hide();
+	    	}
     		this.activeView = this.plugins.view[mode];
     		this.activeView.show();
     		return; // success
@@ -1430,8 +1445,16 @@ BookReader.prototype.switchMode = function(mode) {
     	return;
     }
     
+    // Asked to switch to an old built-in view
+    
     if (!this.canSwitchToMode(mode)) {
         return;
+    }
+    
+    // We are switching
+    if (typeof(this.activeView) != 'undefined') {
+    	this.activeView.hide();
+    	this.activeView = undefined;
     }
 
     this.autoStop();
@@ -3431,16 +3454,19 @@ BookReader.prototype.initNavbar = function() {
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
     
     // Add view mode icons from plugins
-    var allPlugins = listOfPlugins;
-    var jNavElement = $('#BRnav'); // $$$ change to instance variable
-    for (var i = 0; i < allPlugins.length; i++) {
-    	var plugin = allPlugins[i];
-    	if (plugin.type == 'view') {
-    		// Add icon
-    		jNavElement.find('.BRnavicons').append(
-    			'<button class="BRicon BRviewbutton' + plugin.cssClass + '"></button>'
-    		);
-    	}
+    var viewPlugins = this.plugins['view']; // $$$ change to access through bookreader reference in nav bar plugin
+    var jNavElement = $('#BRnav'); // $$$ change to instance variable - stored dom element
+    console.log(viewPlugins); //xxx remove
+    for (viewPluginName in viewPlugins) {
+		// Add icon
+		console.log('adding ', viewPluginName); // xxx
+		var button = $('<button class="BRicon BRviewbutton ' + viewPluginName + '"></button>');
+    	button.bind('click', {'pluginName': viewPluginName}, function(e) {
+    		console.log('switching to mode ', e.data.pluginName); // xxx
+	    	self.switchMode(e.data.pluginName);
+ 	    });
+
+		jNavElement.find('.BRviewicons').append(button);
     }
     
     this.updateNavPageNum(this.currentIndex());
@@ -3882,13 +3908,6 @@ BookReader.prototype.bindNavigationHandlers = function() {
 
     jIcons.filter('.thumb').bind('click', function(e) {
         self.switchMode(self.constModeThumb);
-    });
-    
-    jIcons.filter('.BRviewbutton').bind('click', function(e) {
-    	var classes = $(this).attr('class').split(' ');
-    	// assume plugin class is last
-    	var pluginName = classes[classes.length - 1];
-    	self.switchMode(pluginName);
     });
     
     jIcons.filter('.fit').bind('fit', function(e) {
