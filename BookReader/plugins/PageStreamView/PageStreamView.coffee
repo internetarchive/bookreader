@@ -8,6 +8,9 @@ class PageStreamViewPlugin
 			imageContainer: null
 			currentIndex: null
 			previousIndex: null
+			imageElements: []
+			params:
+				autofit: 'height'
 
 	###
 * init(bookReaderObject, parentElement)
@@ -34,6 +37,7 @@ class PageStreamViewPlugin
 			if @currentIndex < @lastDisplayableIndex()
 				@reader.jumpToIndex @currentIndex+1
 
+		@currentIndex = @reader.currentIndex() or @firstDisplayableIndex()
 		@refresh()
 		
 	buildImage: (index) ->
@@ -44,11 +48,16 @@ class PageStreamViewPlugin
 		imageElement.bind 'mousedown', (e) => false
 		
 		imageElement.attr
-			height: @reader.getPageHeight index
-			width: @reader.getPageWidth index
-			src: @reader.getPageURI index
-
+			height: @reader.getPageHeight(index) / @pageScale()
+			width: @reader.getPageWidth(index) / @pageScale()
+			src: @reader.getPageURI index, @pageScale()
+		
+		@imageElements[index] = imageElement
 		imageContainer
+	
+	pageScale: () ->
+		return @reader.pageScale if @reader.pageScale?
+		1
 		
 	refresh: () ->
 		@container.empty()
@@ -58,23 +67,10 @@ class PageStreamViewPlugin
 		for i in [ @firstDisplayableIndex() .. @lastDisplayableIndex() ]
 			@viewContainer.append @buildImage(i)
 		
-		#@viewContainer.append @imageContainer
 		@container.append @viewContainer
-
-		# the purpose of this is to disable selection of the image (makes it turn blue)
-		# but this also interferes with right-click.  See https://bugs.edge.launchpad.net/gnubook/+bug/362626
-		#@imageElement.bind 'mousedown', (e) => false
 		
-		#@showCurrentIndex()
+		@showCurrentIndex()
 
-
-
-		###
-* We may need to bind to events that handle advancing and retreating pages
-* since the presentation/view plugin knows how many pages are being shown
-		###
-#		@showCurrentIndex()
-	
 	###
 * showCurrentIndex()
 *
@@ -82,13 +78,8 @@ class PageStreamViewPlugin
 * tag that is displaying the current page
 	###
 	showCurrentIndex: () ->
-
-#		@imageElement.attr 
-#			height: @reader.getPageHeight @currentIndex
-#			width: @reader.getPageWidth @currentIndex
-#			src: @reader.getPageURI @currentIndex
-#		@viewContainer.width @reader.getPageWidth @currentIndex
-#		@imageContainer.width @reader.getPageWidth @currentIndex
+		@container.animate
+			scrollTop: @imageElements[@currentIndex].position().top - @container.offset().top + @container.scrollTop()
 
 	###
 * eventIndexUpdated()
@@ -97,7 +88,7 @@ class PageStreamViewPlugin
 * page turning animations can be tied in.
 	###
 	eventIndexUpdated: () ->
-		@currentIndex = @reader.getCurrentIndex()
+		@currentIndex = @reader.currentIndex()
 		@showCurrentIndex()
 
 	eventResize: () ->
@@ -122,9 +113,17 @@ class PageStreamViewPlugin
 		else
 			return if @reader.getPageSide(lastIndex) == 'L' then lastIndex else lastIndex + 1
 
+	hide: () ->
+		
+	show: () ->
+		
+	destroy: () ->
+
 this.PageStreamViewPlugin = PageStreamViewPlugin
 
 PageStreamViewPlugin.params =
-	autofit: 'height'
+	type: 'view'
+	'icon-class': 'single-page-icon'
+	
 
-BookReader.registerPlugin PageStreamViewPlugin
+BookReader.registerPlugin "page-stream-view", PageStreamViewPlugin
