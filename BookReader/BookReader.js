@@ -139,6 +139,8 @@ function BookReader() {
     this.ttsBuffering   = false;
     this.ttsPoller      = null;
     this.ttsFormat      = null;
+
+    this.plugins = {};
     
     return this;
 };
@@ -146,7 +148,7 @@ function BookReader() {
 (function ($) {
 	
 	// this list of plugins is shared across all instances of BookReader
-	var listOfPlugins = [];
+	var listOfPlugins = {};
 	
 // init()
 //______________________________________________________________________________
@@ -314,15 +316,25 @@ BookReader.prototype.init = function() {
     if (this.getOpenLibraryRecord) {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
     }
-    for (plugin in listOfPlugins){
-    	var thePlugin = new listOfPlugins[plugin]();
-    	
-    	// XXX Make some div for the view
-    	thePlugin.init(this, $('#BRcontainer'));
-    	thePlugin.refresh();
-    }
-
-
+    // we walk the dom and instantiate the plugins we find:
+    //   if an element has a class name that is in the plugin list (prefixed by 'bookreader-'), then
+    //    we assume it's a plugin reference
+	(function(self) {
+	    for (var pluginName in listOfPlugins) {
+			$.each(self.parentElement.find(".bookreader-" + pluginName), function(idx, el) {
+				var thePlugin = new listOfPlugins[pluginName]();
+				thePlugin.init(self, el);
+				self.plugins[listOfPlugins[pluginName].params.type] = self.plugins[listOfPlugins[pluginName].params.type] || {};
+				self.plugins[listOfPlugins[pluginName].params.type][pluginName] = thePlugin;
+			});
+		}
+	})(this);
+	for(var idx in this.plugins["view"]) {
+		this.plugins["view"][idx].refresh();
+	}
+	for(var idx in this.plugins["navigation"]) {
+		this.plugins["navigation"][idx].refresh();
+	}
 }
 
 BookReader.prototype.getNumPages = function(){
@@ -5309,8 +5321,8 @@ BookReader.prototype.initUIStrings = function()
     }
 }
 // This is a static method that doesn't require a BookReader instance
-BookReader.registerPlugin = function(PluginClass){
-	listOfPlugins.push(PluginClass);
+BookReader.registerPlugin = function(pluginName, pluginClass){
+	listOfPlugins[pluginName] = PluginClass;
 }
 }
 )(jQuery);
