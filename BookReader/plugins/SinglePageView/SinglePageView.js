@@ -49,11 +49,22 @@
       this.imageContainer.append(this.imageElement);
       this.viewContainer.append(this.imageContainer);
       this.container.append(this.viewContainer);
+      this.imageElement.bind('mousedown', __bind(function(e) {
+        return false;
+      }, this));
       this.showCurrentIndex();
-      /*
-      * We may need to bind to events that handle advancing and retreating pages
-      * since the presentation/view plugin knows how many pages are being shown
-      		*/
+      ({
+        pageScale: function() {
+          if (this.reader.pageScale != null) {
+            return this.reader.pageScale;
+          }
+          return 1;
+        }
+        /*
+        * We may need to bind to events that handle advancing and retreating pages
+        * since the presentation/view plugin knows how many pages are being shown
+        		*/
+      });
       return this.showCurrentIndex();
     };
     /*
@@ -64,9 +75,9 @@
     	*/
     SinglePageViewPlugin.prototype.showCurrentIndex = function() {
       this.imageElement.attr({
-        height: this.reader.getPageHeight(this.currentIndex),
-        width: this.reader.getPageWidth(this.currentIndex),
-        src: this.reader.getPageURI(this.currentIndex)
+        height: this.reader.getPageHeight(this.currentIndex) / this.pageScale(),
+        width: this.reader.getPageWidth(this.currentIndex) / this.pageScale(),
+        src: this.reader.getPageURI(this.currentIndex, this.pageScale())
       });
       this.viewContainer.width(this.reader.getPageWidth(this.currentIndex));
       return this.imageContainer.width(this.reader.getPageWidth(this.currentIndex));
@@ -81,11 +92,44 @@
       this.currentIndex = this.reader.getCurrentIndex();
       return this.showCurrentIndex();
     };
+    SinglePageViewPlugin.prototype.eventResize = function() {
+      if (this.reader.autofit) {
+        this.reader.resizePageView();
+      }
+      this.reader.centerPageView();
+      return this.reader.loadLeafs();
+    };
     SinglePageViewPlugin.prototype.firstDisplayableIndex = function() {
-      return 1;
+      if (this.reader.pageProgression !== 'rl') {
+        if (this.reader.getPageSide(0) === 'L') {
+          return 0;
+        } else {
+          return -1;
+        }
+      } else {
+        if (this.reader.getPageSide(0) === 'R') {
+          return 0;
+        } else {
+          return -1;
+        }
+      }
     };
     SinglePageViewPlugin.prototype.lastDisplayableIndex = function() {
-      return this.reader.getNumPages() - 1;
+      var lastIndex;
+      lastIndex = this.reader.getNumPages() - 1;
+      if (this.reader.pageProgression !== 'rl') {
+        if (this.reader.getPageSide(lastIndex) === 'R') {
+          return lastIndex;
+        } else {
+          return lastIndex + 1;
+        }
+      } else {
+        if (this.reader.getPageSide(lastIndex) === 'L') {
+          return lastIndex;
+        } else {
+          return lastIndex + 1;
+        }
+      }
     };
     return SinglePageViewPlugin;
   })();
