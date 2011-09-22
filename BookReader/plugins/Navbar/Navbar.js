@@ -29,9 +29,7 @@ Navbar = function() {
  *    visible:true (default)/false
  *    withPage:pageIndexToShowAsCurrent (default=0)
  *    mode:normal (default)/embed
- *    position:top,bottom (default),right,left (if mode=normal, only bottom supported so far)
- *    embedX:int (if mode=embed)
- *    embedY:int (if mode=embed)
+ *    position:top,bottom (default),right,left (only bottom supported so far)
  *    }
  */
 Navbar.prototype.init = function (reader, targetElement, options) {
@@ -47,8 +45,6 @@ Navbar.prototype.init = function (reader, targetElement, options) {
 		this.options.withPage = 0;
 		this.options.mode = "normal";
 		this.options.position = "bottom";
-		this.options.embedX = 0;
-		this.options.embedY = 0;
 	}
 	this._parseOptions();
 	if (this._mode=="normal") {
@@ -70,9 +66,7 @@ Navbar.prototype.init = function (reader, targetElement, options) {
  *    visible:true (default)/false
  *    withPage:pageIndexToShowAsCurrent (default=0)
  *    mode:normal (default)/embed
- *    position:top,bottom (default),right,left (if mode=normal, only bottom supported so far)
- *    embedX:int (if mode=embed)
- *    embedY:int (if mode=embed)
+ *    position:top,bottom (default),right,left (only bottom supported so far)
  *    }
  */
 Navbar.prototype._parseOptions = function () {
@@ -81,8 +75,6 @@ Navbar.prototype._parseOptions = function () {
 	this._visible = opt.visible;
 	this._currentPage = opt.withPage;
 	this._mode = opt.mode;
-	this._x = opt.embedX;
-	this._y = opt.embedY;
 	this._position = opt.position;
 };
 
