@@ -3,6 +3,8 @@
  * =========
  * BookReader plugin that controls page-based navigation
  * 
+ * Author: Mauricio Giraldo mauricio@pingpongestudio.com
+ * 
  * version: 0.1
  * 
  */
@@ -27,9 +29,7 @@ Navbar = function() {
  *    visible:true (default)/false
  *    withPage:pageIndexToShowAsCurrent (default=0)
  *    mode:normal (default)/embed
- *    position:top,bottom (default),right,left (if mode=normal, only bottom supported so far)
- *    embedX:int (if mode=embed)
- *    embedY:int (if mode=embed)
+ *    position:top,bottom (default),right,left (only bottom supported so far)
  *    }
  */
 Navbar.prototype.init = function (reader, targetElement, options) {
@@ -45,8 +45,6 @@ Navbar.prototype.init = function (reader, targetElement, options) {
 		this.options.withPage = 0;
 		this.options.mode = "normal";
 		this.options.position = "bottom";
-		this.options.embedX = 0;
-		this.options.embedY = 0;
 	}
 	this._parseOptions();
 	if (this._mode=="normal") {
@@ -56,6 +54,16 @@ Navbar.prototype.init = function (reader, targetElement, options) {
 		// embed init
 		this._initEmbedded();
 	}
+        this._bindActions();
+
+  // subscribe to events
+  $(this.reader.parentElement).bind("br_indexUpdated.navbar", { self: this },
+    function(e, params) {
+	console.log("update index: " , params.newIndex);
+	e.data.self.updateIndex(params.newIndex);
+    }
+  );
+
 };
 
 /**
@@ -68,9 +76,7 @@ Navbar.prototype.init = function (reader, targetElement, options) {
  *    visible:true (default)/false
  *    withPage:pageIndexToShowAsCurrent (default=0)
  *    mode:normal (default)/embed
- *    position:top,bottom (default),right,left (if mode=normal, only bottom supported so far)
- *    embedX:int (if mode=embed)
- *    embedY:int (if mode=embed)
+ *    position:top,bottom (default),right,left (only bottom supported so far)
  *    }
  */
 Navbar.prototype._parseOptions = function () {
@@ -79,8 +85,6 @@ Navbar.prototype._parseOptions = function () {
 	this._visible = opt.visible;
 	this._currentPage = opt.withPage;
 	this._mode = opt.mode;
-	this._x = opt.embedX;
-	this._y = opt.embedY;
 	this._position = opt.position;
 };
 
@@ -121,24 +125,26 @@ Navbar.prototype._initNormal = function() {
   $('#BRpager').slider({    
       animate: true,
       min: 0,
-      max: this.numLeafs - 1,
-      value: this.currentIndex()
+      max: self.reader.numLeafs - 1,
+      value: self.reader.currentIndex()
   })
   .bind('slide', function(event, ui) {
-      self.updateNavPageNum(ui.value);
+      self.updatePageNum(ui.value);
       $("#pagenum").show();
       return true;
   })
   .bind('slidechange', function(event, ui) {
-      self.updateNavPageNum(ui.value); // hiding now but will show later
+      self.updatePageNum(ui.value); // hiding now but will show later
       $("#pagenum").hide();
       
       // recursion prevention for jumpToIndex
+      console.log($(self), this);
       if ( $(this).data('swallowchange') ) {
           $(this).data('swallowchange', false);
       } else {
-          self.jumpToIndex(ui.value);
+          self.reader.jumpToIndex(ui.value);
       }
+
       return true;
   })
   .hover(function() {
@@ -154,7 +160,7 @@ Navbar.prototype._initNormal = function() {
   .append('<div id="pagenum"><span class="currentpage"></span></div>');
   //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
   
-  this.updateNavPageNum(this.currentIndex());
+  this.updatePageNum(this.reader.currentIndex());
 
   $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
   
@@ -183,7 +189,7 @@ Navbar.prototype._initEmbedded = function() {
       +   "<span id='BRembedreturn'><a href='" + thisLink + "' target='_blank' ></a></span>"
       + '</div>'
   );
-  $('#BRembedreturn a').text(this.bookTitle);
+  $('#BRembedreturn a').text(this.reader.bookTitle);
 };
 
 Navbar.prototype.isVisible = function () {
@@ -191,7 +197,7 @@ Navbar.prototype.isVisible = function () {
 	var toolpos = $('#BRtoolbar').offset();
 	var tooltop = toolpos.top;
 	if (tooltop == 0) {
-		this._visible = true;
+	    this._visible = true;
 	} else {
 		this._visible = false;
 	}
@@ -236,6 +242,7 @@ Navbar.prototype.updatePageNum = function (index) {
 Navbar.prototype.updateIndex = function (index) {
     // We want to update the value, but normally moving the slider
     // triggers jumpToIndex which triggers this method
+    this._currentPage = index;
     $('#BRpager').data('swallowchange', true).slider('value', index);
 };
 
@@ -247,3 +254,109 @@ Navbar.prototype.changeArrow = function (){
 	    $('#BRnavCntlBtm').removeClass('BRdn').addClass('BRup');
 	},3000);
 };
+
+
+Navbar.prototype._bindActions = function() {
+    var self = this.reader;
+    jIcons = $('.BRicon');
+
+    jIcons.filter('.onepg').bind('click', function(e) {
+        self.switchMode(self.constMode1up);
+    });
+    
+    jIcons.filter('.twopg').bind('click', function(e) {
+        self.switchMode(self.constMode2up);
+    });
+
+    jIcons.filter('.thumb').bind('click', function(e) {
+        self.switchMode(self.constModeThumb);
+    });
+    
+    jIcons.filter('.fit').bind('fit', function(e) {
+        // XXXmang implement autofit zoom
+    });
+
+    jIcons.filter('.book_left').click(function(e) {
+	// self.ttsStop();
+	self.left();
+        return false;
+    });
+         
+    jIcons.filter('.book_right').click(function(e) {
+//        self.ttsStop();
+        self.right();
+        return false;
+    });
+        
+
+  jIcons.filter('.zoom_in').bind('click', function() {
+//        self.ttsStop();
+        self.zoom(1);
+        return false;
+    });
+    
+    jIcons.filter('.zoom_out').bind('click', function() {
+//        self.ttsStop();
+        self.zoom(-1);
+        return false;
+    });
+    
+    jIcons.filter('.full').bind('click', function() {
+        if (self.ui == 'embed') {
+            // $$$ bit of a hack, IA-specific
+            var url = (window.location + '').replace("?ui=embed","");
+            window.open(url);
+        }
+        
+        // Not implemented
+    });
+    
+    $('.BRnavCntl').click(
+        function(){
+            if ($('#BRnavCntlBtm').hasClass('BRdn')) {
+                $('#BRtoolbar').animate({top:-40});
+                $('#BRnav').animate({bottom:-55});
+                $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
+                $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
+                $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
+                $('.BRnavCntl').delay(1000).animate({opacity:.25},1000);
+            } else {
+                $('#BRtoolbar').animate({top:0});
+                $('#BRnav').animate({bottom:0});
+                $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
+                $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
+                $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
+                $('.BRvavCntl').animate({opacity:1})
+            };
+	    console.log('BRnavCntl clicked');
+        }
+    );
+    $('#BRnavCntlBtm').mouseover(function(){
+        if ($(this).hasClass('BRup')) {
+            $('.BRnavCntl').animate({opacity:1},250);
+        };
+    });
+    $('#BRnavCntlBtm').mouseleave(function(){
+        if ($(this).hasClass('BRup')) {
+            $('.BRnavCntl').animate({opacity:.25},250);
+        };
+    });
+  
+    $('#BRnavCntlTop').mouseover(function(){
+        if ($(this).hasClass('BRdn')) {
+            $('.BRnavCntl').animate({opacity:1},250);
+        };
+    });
+    $('#BRnavCntlTop').mouseleave(function(){
+        if ($(this).hasClass('BRdn')) {
+            $('.BRnavCntl').animate({opacity:.25},250);
+        };
+    });
+
+}
+
+Navbar.prototype.refresh = function() {
+   // do nothing
+}
+
+listOfPlugins.push(Navbar);
