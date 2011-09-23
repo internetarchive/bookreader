@@ -325,8 +325,9 @@ BookReader.prototype.init = function() {
 	}
 	
 	// For now, start with hardcoded view
-	this.activeView = this.plugins['view']['page-stream-view'];
-	this.activeView.show(); // we should first get the current index, e.g. from URL so no visual glitch
+	// XXXmang put back in
+	//this.activeView = this.plugins['view']['page-stream-view'];
+	//this.activeView.show(); // we should first get the current index, e.g. from URL so no visual glitch
 	
     // Enact other parts of initial params
     this.updateFromParams(params);
@@ -1313,7 +1314,7 @@ BookReader.prototype.jumpToPage = function(pageNum) {
     var re = new RegExp('^leaf(\\d+)');
     leafMatch = re.exec(pageNum);
     if (leafMatch) {
-        console.log(leafMatch[1]);
+        //console.log(leafMatch[1]);
         pageIndex = this.leafNumToIndex(parseInt(leafMatch[1],10));
         if (pageIndex === null) {
             pageIndex = undefined; // to match return type of getPageIndex
@@ -3456,13 +3457,11 @@ BookReader.prototype.initNavbar = function() {
     // Add view mode icons from plugins
     var viewPlugins = this.plugins['view']; // $$$ change to access through bookreader reference in nav bar plugin
     var jNavElement = $('#BRnav'); // $$$ change to instance variable - stored dom element
-    console.log(viewPlugins); //xxx remove
     for (viewPluginName in viewPlugins) {
 		// Add icon
-		console.log('adding ', viewPluginName); // xxx
 		var button = $('<button class="BRicon BRviewbutton ' + viewPluginName + '"></button>');
     	button.bind('click', {'pluginName': viewPluginName}, function(e) {
-    		console.log('switching to mode ', e.data.pluginName); // xxx
+    		// console.log('switching to mode ', e.data.pluginName);
 	    	self.switchMode(e.data.pluginName);
  	    });
 
