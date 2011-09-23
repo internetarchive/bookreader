@@ -286,7 +286,7 @@ BookReader.prototype.init = function() {
         this.firstIndex = startIndex;
         this.prepareThumbnailView();
         this.jumpToIndex(startIndex);
-    } else {        
+    } else if(2 == this.mode){        
         this.displayedIndices=[0];
         this.firstIndex = startIndex;
         this.displayedIndices = [this.firstIndex];
@@ -313,8 +313,8 @@ BookReader.prototype.init = function() {
 			// Hardcoded init
 			var thePlugin = new listOfPlugins[pluginName]();
 			thePlugin.init(self, $('#BRcontainer'));
-			self.plugins[listOfPlugins[pluginName].params.type] = self.plugins[listOfPlugins[pluginName].params.type] || {};
-			self.plugins[listOfPlugins[pluginName].params.type][pluginName] = thePlugin;
+			self.plugins[listOfPlugins[pluginName].manifest.type] = self.plugins[listOfPlugins[pluginName].manifest.type] || {};
+			self.plugins[listOfPlugins[pluginName].manifest.type][pluginName] = thePlugin;
 		}
 	})(this);
 	for(var idx in this.plugins["view"]) {
@@ -424,9 +424,12 @@ BookReader.prototype.drawLeafs = function() {
         this.drawLeafsOnePage();
     } else if (3 == this.mode) {
         this.drawLeafsThumbnail();
-    } else {
+    } else if (2 == this.mode) {
         this.drawLeafsTwoPage();
     }
+	else if(typeof(this.activeView) != 'undefined') {
+		this.activeView.drawLeafs();
+	}
     
 }
 
@@ -1002,7 +1005,15 @@ BookReader.prototype.zoom = function(direction) {
         case this.constModeThumb:
             // XXX update zoomThumb for named directions
             return this.zoomThumb(direction);
-            
+        
+        default:
+            if(typeof(this.activeView) != 'undefined') {
+				if (direction == 1) {
+					return this.activeView.zoom('in');
+				} else {
+					return this.activeView.zoom('out');
+				}
+			}
     }
 }
 
@@ -1386,7 +1397,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
         } else {
             $('#BRcontainer').animate({scrollTop: leafTop },'fast');
         }
-    } else {
+    } else if (this.constMode1up == this.mode){
         // 1up
         var leafTop = this.onePageGetPageTop(index);
 
@@ -1480,7 +1491,7 @@ BookReader.prototype.switchMode = function(mode) {
     } else if (3 == mode) {
         this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
         this.prepareThumbnailView();
-    } else {
+    } else if (2 == mode){
         // $$$ why don't we save autofit?
         // this.twoPage.autofit = null; // Take zoom level from other mode
         this.twoPageCalculateReductionFactors();
