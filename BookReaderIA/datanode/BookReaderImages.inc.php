@@ -447,7 +447,7 @@ class BookReaderImages
                           
         
         $errorMessage = '';
-        
+                
         if (! $this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
             // $$$ automated reporting
             trigger_error('BookReader Processing Error: ' . $cmd . ' -- ' . $errorMessage, E_USER_WARNING);
@@ -689,7 +689,7 @@ class BookReaderImages
                     $rotateString = ' -rotate ' . $rotate; // was previously checked to be a known value
                 }
                 
-                $decompressCmd = ' | convert -' . $regionString . $scaleString . $rotateString . ' pnm:-';
+                $decompressCmd = ' | convert -quiet -' . $regionString . $scaleString . $rotateString . ' pnm:-';
                 break;
                 
             default:
@@ -710,7 +710,7 @@ class BookReaderImages
     //   &$errorMessage - error string if there was an error
     //
     // $$$ Tested with our command-line image processing.  May be deadlocks for
-    //     other cases.
+    //     other cases, e.g. if there are warnings on stderr
     function passthruIfSuccessful($headers, $cmd, &$errorMessage)
     {
         $retVal = false;
@@ -1055,6 +1055,19 @@ class BookReaderImages
         
         return $observedValue;
     }
+    
+    // Get the directory for temporary files. Use the fast in-RAM tmp if available.
+    /*
+    function getTempDir() {
+        var $fast = '/var/tmp/fast';
+        if (is_dir($fast)) {
+            // We assume it's writeable
+            return $fast;
+        }
+        
+        return '/tmp';
+    }
+    */
     
     // Clean up temporary files and resources
     function cleanup() {
