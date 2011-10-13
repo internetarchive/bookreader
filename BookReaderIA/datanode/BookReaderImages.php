@@ -30,7 +30,7 @@ require_once('BookReaderImages.inc.php');
 // Serve request
 $bri = new BookReaderImages();
 try {
-    if ($_REQUEST['page']) {
+    if (array_key_exists('page', $_REQUEST) && $_REQUEST['page']) {
         // Need to lookup metadata
         $bri->serveLookupRequest($_REQUEST);
     } else {
