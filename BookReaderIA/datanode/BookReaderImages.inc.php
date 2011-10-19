@@ -98,7 +98,7 @@ class BookReaderImages
         $imageIndex = null;
 
         // deal with subPrefix
-        if ($_REQUEST['subPrefix']) {
+        if (array_key_exists($_REQUEST, 'subPrefix') && $_REQUEST['subPrefix']) {
             $parts = explode('/', $_REQUEST['subPrefix']);
             $bookId = $parts[count($parts) - 1 ];
         } else {
@@ -223,6 +223,9 @@ class BookReaderImages
      * Clean up temporary files
      */
      function serveRequest($requestEnv) {
+     
+        // Make sure cleanup happens
+        register_shutdown_function ( array( $this, 'cleanup') );
      
         // Process some of the request parameters
         $zipPath  = $requestEnv['zip'];
@@ -448,6 +451,7 @@ class BookReaderImages
         $tempFile = $this->getTempFilename($ext);
         array_push($this->tempFiles, $tempFile);
 
+        // error_log("bookreader running " . $cmd);
         $imageCreated = $this->createOutputImage($cmd, $tempFile, $errorMessage);
         if (! $imageCreated) {
             // $$$ automated reporting
@@ -471,7 +475,7 @@ class BookReaderImages
                 trigger_error('BookReader rerunning with new cmd: ' . $cmd, E_USER_WARNING);
                 
                 //if ($this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
-                $imageCreated = $this->createOutputImage($mcd, $tempFile, $errorMessage);
+                $imageCreated = $this->createOutputImage($cmd, $tempFile, $errorMessage);
                 if ($imageCreated) {
                     $recovered = true;
                 } else {
@@ -481,7 +485,7 @@ class BookReaderImages
             }
             
             if (! $recovered) {
-                $this->BRfatal('Problem processing image - command failed');
+                $this->BRfatal("Problem processing image - command failed:\n " . $cmd);
             }
         }
         
@@ -819,7 +823,7 @@ class BookReaderImages
     function createOutputImage($cmd, $tempFile, &$errorMessage) {
         $fullCmd = $cmd . " > " . $tempFile;
         system($fullCmd); // $$$ better error handling
-        return file_exists($tempFile);
+        return file_exists($tempFile) && filesize($tempFile) > 0;
     }
     
     function BRfatal($string) {
@@ -1097,9 +1101,10 @@ class BookReaderImages
             if (is_writeable($fast)) {
                 if (mkdir($fastbr)) {
                     return $fastbr;
+                } else {
+                    return $fast;
                 }
             }
-            return $fast;
         }
         
         // All else failed -- system tmp that should get cleaned on reboot
