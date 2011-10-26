@@ -1122,6 +1122,13 @@ class BookReaderImages
         }
         $this->tempFiles = array();
     }
+
+    /*    
+    function cleanTmp() {
+        system('find /var/tmp/fast -name "BookReaderImages*" -cmin +10 -exec rm {} \;');
+        system('find /var/tmp/fast/bookreader -name "BookReaderImages*" -cmin +10 -exec rm {} \;');
+    }
+    */
     
 }
 
