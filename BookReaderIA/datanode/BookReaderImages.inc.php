@@ -98,7 +98,7 @@ class BookReaderImages
         $imageIndex = null;
 
         // deal with subPrefix
-        if ($_REQUEST['subPrefix']) {
+        if (array_key_exists($_REQUEST, 'subPrefix') && $_REQUEST['subPrefix']) {
             $parts = explode('/', $_REQUEST['subPrefix']);
             $bookId = $parts[count($parts) - 1 ];
         } else {
@@ -224,11 +224,14 @@ class BookReaderImages
      */
      function serveRequest($requestEnv) {
      
+        // Make sure cleanup happens
+        register_shutdown_function ( array( $this, 'cleanup') );
+     
         // Process some of the request parameters
         $zipPath  = $requestEnv['zip'];
         $file     = $requestEnv['file'];
-        if (! $ext) {
-            $ext = $requestEnv['ext'];
+        if (array_key_exists('ext', $requestEnv)) {
+            $ext = $requestEnv['ext']; // Will get santized below
         } else {
             // Default to jpg
             $ext = 'jpeg';
@@ -440,15 +443,17 @@ class BookReaderImages
         // print $cmd;
         
         $filenameForClient = $this->filenameForClient($file, $ext);
-        
-        $headers = array('Content-type: '. self::$MIMES[$ext],
-                         'Cache-Control: max-age=15552000',
-                         'Content-disposition: inline; filename=' . $filenameForClient);
-                          
-        
+
         $errorMessage = '';
         
-        if (! $this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
+        //if (! $this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
+        
+        $tempFile = $this->getTempFilename($ext);
+        array_push($this->tempFiles, $tempFile);
+
+        // error_log("bookreader running " . $cmd);
+        $imageCreated = $this->createOutputImage($cmd, $tempFile, $errorMessage);
+        if (! $imageCreated) {
             // $$$ automated reporting
             trigger_error('BookReader Processing Error: ' . $cmd . ' -- ' . $errorMessage, E_USER_WARNING);
             
@@ -468,7 +473,10 @@ class BookReaderImages
                 
                 $cmd = $unzipCmd . $this->getDecompressCmd($imageInfo, $powReduce, $rotate, $scale, $region, $stdoutLink) . $compressCmd;
                 trigger_error('BookReader rerunning with new cmd: ' . $cmd, E_USER_WARNING);
-                if ($this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
+                
+                //if ($this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
+                $imageCreated = $this->createOutputImage($cmd, $tempFile, $errorMessage);
+                if ($imageCreated) {
                     $recovered = true;
                 } else {
                     $this->cleanup();
@@ -477,8 +485,24 @@ class BookReaderImages
             }
             
             if (! $recovered) {
-                $this->BRfatal('Problem processing image - command failed');
+                $this->BRfatal("Problem processing image - command failed:\n " . $cmd);
             }
+        }
+        
+        if ($imageCreated) {
+            // Send the image
+                    
+            $headers = array('Content-type: '. self::$MIMES[$ext],
+                             'Cache-Control: max-age=15552000',
+                             'Content-disposition: inline; filename=' . $filenameForClient,
+                             'Content-Length: ' . filesize($tempFile));
+                             
+            foreach($headers as $header) {
+                header($header);
+            }
+            ob_clean();
+            flush(); // attempt to send header to client
+            readfile($tempFile);
         }
         
         $this->cleanup();
@@ -689,13 +713,14 @@ class BookReaderImages
                     $rotateString = ' -rotate ' . $rotate; // was previously checked to be a known value
                 }
                 
-                $decompressCmd = ' | convert -' . $regionString . $scaleString . $rotateString . ' pnm:-';
+                $decompressCmd = ' | convert -quiet -' . $regionString . $scaleString . $rotateString . ' pnm:-';
                 break;
                 
             default:
                 $this->BRfatal('Unknown image type: ' . $imageType);
                 break;
         }
+        
         return $decompressCmd;
     }
     
@@ -710,9 +735,10 @@ class BookReaderImages
     //   &$errorMessage - error string if there was an error
     //
     // $$$ Tested with our command-line image processing.  May be deadlocks for
-    //     other cases.
+    //     other cases, e.g. if there are warnings on stderr
     function passthruIfSuccessful($headers, $cmd, &$errorMessage)
     {
+        
         $retVal = false;
         $errorMessage = '';
         
@@ -792,6 +818,12 @@ class BookReaderImages
             }
         }
         return $retVal;
+    }
+    
+    function createOutputImage($cmd, $tempFile, &$errorMessage) {
+        $fullCmd = $cmd . " > " . $tempFile;
+        system($fullCmd); // $$$ better error handling
+        return file_exists($tempFile) && filesize($tempFile) > 0;
     }
     
     function BRfatal($string) {
@@ -1056,6 +1088,33 @@ class BookReaderImages
         return $observedValue;
     }
     
+    // Get the directory for temporary files. Use the fast in-RAM tmp if available.
+    function getTempDir() {
+        $fastbr = '/var/tmp/fast/bookreader';
+        
+        if (is_writeable($fastbr)) {
+            // Our directory in fast tmp already exists
+            return $fastbr;    
+        } else {
+            // Check for fast tmp and make our directory
+            $fast = '/var/tmp/fast';
+            if (is_writeable($fast)) {
+                if (mkdir($fastbr)) {
+                    return $fastbr;
+                } else {
+                    return $fast;
+                }
+            }
+        }
+        
+        // All else failed -- system tmp that should get cleaned on reboot
+        return '/tmp';
+    }
+    
+    function getTempFilename($ext) {
+        return tempnam($this->getTempDir(), "BookReaderImages");
+    }
+    
     // Clean up temporary files and resources
     function cleanup() {
         foreach($this->tempFiles as $tempFile) {
@@ -1063,6 +1122,13 @@ class BookReaderImages
         }
         $this->tempFiles = array();
     }
+
+    /*    
+    function cleanTmp() {
+        system('find /var/tmp/fast -name "BookReaderImages*" -cmin +10 -exec rm {} \;');
+        system('find /var/tmp/fast/bookreader -name "BookReaderImages*" -cmin +10 -exec rm {} \;');
+    }
+    */
     
 }
 
