@@ -316,3 +316,21 @@ asyncTest('Same image rotated 90 degrees, br.getRegionURI - fightingflyingc00ric
     });
 });
 
+
+asyncTest('Book that needs jp2 recovery since it does not contain enough reduction levels', function() {
+
+    var identifier = 'Magic-Mouse-2010-12';
+
+    expect(3);
+    var pageURI = previewURL(identifier, null, 'cover_thumb.jpg');
+    
+    var img = new Image();
+    $(img).bind( 'load error', function(eventObj) {
+        equals(eventObj.type, 'load', 'Load image (' + pageURI + '). Event handler called');
+        equals(this.width, 160, 'Image width');
+        equals(this.height, 207, 'Image height');
+        start();
+    })
+    .attr('src', pageURI);
+
+});

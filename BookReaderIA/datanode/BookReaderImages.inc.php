@@ -474,7 +474,8 @@ class BookReaderImages
                 $cmd = $unzipCmd . $this->getDecompressCmd($imageInfo, $powReduce, $rotate, $scale, $region, $stdoutLink) . $compressCmd;
                 trigger_error('BookReader rerunning with new cmd: ' . $cmd, E_USER_WARNING);
                 
-                //if ($this->passthruIfSuccessful($headers, $cmd, $errorMessage)) { // $$$ move to BookReaderRequest
+                $tempFile = $this->getTempFilename($ext);
+                array_push($this->tempFiles, $tempFile);
                 $imageCreated = $this->createOutputImage($cmd, $tempFile, $errorMessage);
                 if ($imageCreated) {
                     $recovered = true;

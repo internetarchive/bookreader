@@ -4,7 +4,7 @@
 
 module("Preview");
 
-function Book(identifier, previewWidth, coverWidth, titleWidth, bookId) {
+function Book(identifier, previewWidth, coverWidth, titleWidth, imageSize, bookId) {
     this.identifier = identifier;
     this.previewWidth = previewWidth;
     this.coverWidth = coverWidth;
@@ -23,6 +23,7 @@ var books = [
     
     // Protected book with marked cover returned as cover
     new Book('joyofsoaringtrai00conw', 2571, 2571, 2419)
+    
 ];
 
 for (index in books) {
