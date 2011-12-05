@@ -33,7 +33,7 @@ function BRfatal($message) {
     die(-1);
 }
 
-$allowedPages = array('title','cover','preview');
+$allowedPages = array('title','cover','cover0','preview');
 $allowedPattern = '#^(' . join('|', $allowedPages) . ')#';
 
 $page = $_REQUEST['page'];

@@ -120,26 +120,24 @@ class BookReaderImages
                 $imageIndex = $metadata['titleIndex'];
                 break;
             
-            /* Old 'cover' behaviour where it would show cover 0 if it exists or return 404.
-               Could be re-added as cover0, cover1, etc
-            case 'cover':
+            /* Old 'cover' behaviour where it would show cover 0 if it exists or return 404. */
+            case 'cover0':
                 if (! array_key_exists('coverIndices', $metadata)) {
                     $this->BRfatal("No cover asserted in book");
                 }
                 $imageIndex = $metadata['coverIndices'][0]; // $$$ TODO add support for other covers
                 break;
-            */
             
             case 'preview':
             case 'cover': // Show our best guess if cover is requested
                 // Preference is:
-                //   Cover page if book was published >= 1950
+                //   Cover page if book was published >= 1923
                 //   Title page
                 //   Cover page
                 //   Page 0
                          
                 if ( array_key_exists('date', $metadata) && array_key_exists('coverIndices', $metadata) ) {
-                    if ($brm->parseYear($metadata['date']) >= 1950) {
+                    if ($brm->parseYear($metadata['date']) >= 1923) {
                         $imageIndex = $metadata['coverIndices'][0];                
                         break;
                     }
