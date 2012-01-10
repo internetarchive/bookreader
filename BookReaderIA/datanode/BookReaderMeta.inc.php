@@ -36,6 +36,7 @@ class BookReaderMeta {
         'contributor' => 'contributor',
         'collection' => 'collection',
         'page-progression' => 'pageProgression',
+        'ppi' => 'ppi',
     );
     
     var $metaDefaults = array(
