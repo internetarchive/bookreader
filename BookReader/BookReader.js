@@ -469,6 +469,16 @@ BookReader.prototype.drawLeafsOnePage = function() {
         leafTop += parseInt(this._getPageHeight(i)/this.reduce) +10;
     }
 
+    //center the page vertically
+    if (this.numLeafs == 1)
+    {
+        var containerHeight = $('#BRcontainer').height();
+        var zoomedHeight = parseInt((this._getPageHeight(i)/this.reduce));
+        if (zoomedHeight < containerHeight)
+            leafTop = parseInt(containerHeight/2 - zoomedHeight/2);
+         //alert("center image debug viewHeight " +viewHeight + " zoomedHedight " + zoomedHeight);
+    }
+
     //var viewWidth = $('#BRpageview').width(); //includes scroll bar width
     var viewWidth = $('#BRcontainer').attr('scrollWidth');
 
