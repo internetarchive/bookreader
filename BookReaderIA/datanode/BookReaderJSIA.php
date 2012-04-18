@@ -231,6 +231,11 @@ br.getRegionURI = function(index, reduce, rotate, sourceX, sourceY, sourceWidth,
 
 br._getPageFile = function(index) {
     var leafStr = '0000';
+    // XXX MASSIVE HACK - removew
+    if (index >= this.leafMap.length) {
+    	index = this.leafMap.length - 1;
+    }
+    
     var imgStr = this.leafMap[index].toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
     
@@ -767,12 +772,14 @@ OLAuth.prototype.startPolling = function () {
 }
 
 br.cleanupMetadata();
+/* XXXmang taken out to allow for plugin loading
 if (br.olAuth) {
     var olAuth = new OLAuth();
     olAuth.init();
 } else {
-    br.init();
+    // br.init();
 }
+*/
 <?
 
 
