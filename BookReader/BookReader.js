@@ -35,7 +35,7 @@ This file is part of BookReader.
 // You must also add a numLeafs property before calling init().
 
 function BookReader() {
-
+    
     // Mode constants
     this.constMode1up = 1;
     this.constMode2up = 2;
@@ -144,12 +144,18 @@ function BookReader() {
 };
 
 (function ($) {
+	
+	// this list of plugins is shared across all instances of BookReader
+	var listOfPlugins = [];
+	
 // init()
 //______________________________________________________________________________
 BookReader.prototype.init = function() {
 
     var startIndex = undefined;
     this.pageScale = this.reduce; // preserve current reduce
+    
+    this.parentElement = $('#BookReader'); // XXX hardcoded - in the right place
     
     // Find start index and mode if set in location hash
     var params = {};
@@ -280,7 +286,7 @@ BookReader.prototype.init = function() {
         this.firstIndex = startIndex;
         this.prepareThumbnailView();
         this.jumpToIndex(startIndex);
-    } else {        
+    } else if(2 == this.mode){        
         this.displayedIndices=[0];
         this.firstIndex = startIndex;
         this.displayedIndices = [this.firstIndex];
@@ -288,7 +294,40 @@ BookReader.prototype.init = function() {
         //console.log('displayedIndices: %s', this.displayedIndices);
         this.prepareTwoPageView();
     }
-        
+            
+    // we walk the dom and instantiate the plugins we find:
+    //   if an element has a class name that is in the plugin list (prefixed by 'bookreader-'), then
+    //    we assume it's a plugin reference
+    this.plugins = {};
+	(function(self) {
+	    for (var pluginName in listOfPlugins) {
+	    	/*
+			$.each(self.parentElement.find(".bookreader-" + pluginName), function(idx, el) {
+				var thePlugin = new listOfPlugins[pluginName]();
+				thePlugin.init(self, el);
+				self.plugins[listOfPlugins[pluginName].params.type] = self.plugins[listOfPlugins[pluginName].params.type] || {};
+				self.plugins[listOfPlugins[pluginName].params.type][pluginName] = thePlugin;
+			});
+			*/
+			
+			// Hardcoded init
+			var thePlugin = new listOfPlugins[pluginName]();
+			thePlugin.init(self, $('#BRcontainer'));
+			self.plugins[listOfPlugins[pluginName].manifest.type] = self.plugins[listOfPlugins[pluginName].manifest.type] || {};
+			self.plugins[listOfPlugins[pluginName].manifest.type][pluginName] = thePlugin;
+		}
+	})(this);
+	for(var idx in this.plugins["view"]) {
+		this.plugins["view"][idx].refresh();
+	}
+	for(var idx in this.plugins["navigation"]) {
+		this.plugins["navigation"][idx].refresh();
+	}
+	
+	// For now, start with hardcoded view
+	this.activeView = this.plugins['view']['page-stream-view'];
+	this.activeView.show(); // we should first get the current index, e.g. from URL so no visual glitch
+	
     // Enact other parts of initial params
     this.updateFromParams(params);
 
@@ -310,6 +349,14 @@ BookReader.prototype.init = function() {
     }
 
 }
+
+BookReader.prototype.getNumPages = function(){
+	// user should provide this function 
+	// in config
+		
+	return this.numLeafs;
+}
+
 
 BookReader.prototype.setupKeyListeners = function() {
     var self = this;
@@ -377,9 +424,12 @@ BookReader.prototype.drawLeafs = function() {
         this.drawLeafsOnePage();
     } else if (3 == this.mode) {
         this.drawLeafsThumbnail();
-    } else {
+    } else if (2 == this.mode) {
         this.drawLeafsTwoPage();
     }
+	else if(typeof(this.activeView) != 'undefined') {
+		this.activeView.drawLeafs();
+	}
     
 }
 
@@ -530,6 +580,11 @@ BookReader.prototype.drawLeafsOnePage = function() {
     }
             
     this.updateToolbarZoom(this.reduce);
+    
+    // New from Sprint
+    
+
+    //
     
 }
 
@@ -950,7 +1005,15 @@ BookReader.prototype.zoom = function(direction) {
         case this.constModeThumb:
             // XXX update zoomThumb for named directions
             return this.zoomThumb(direction);
-            
+        
+        default:
+            if(typeof(this.activeView) != 'undefined') {
+				if (direction == 1) {
+					return this.activeView.zoom('in');
+				} else {
+					return this.activeView.zoom('out');
+				}
+			}
     }
 }
 
@@ -1286,7 +1349,7 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 // jumpToIndex()
 //______________________________________________________________________________
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
-
+    
     this.willChangeToIndex(index);
 
     this.ttsStop();
@@ -1334,7 +1397,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
         } else {
             $('#BRcontainer').animate({scrollTop: leafTop },'fast');
         }
-    } else {
+    } else if (this.constMode1up == this.mode){
         // 1up
         var leafTop = this.onePageGetPageTop(index);
 
@@ -1360,7 +1423,12 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
 
         //$('#BRcontainer').attr('scrollTop', leafTop);
         $('#BRcontainer').animate({scrollTop: leafTop, scrollLeft: leafLeft },'fast');
+        
     }
+
+	var targetIndex = index;
+    this.parentElement.trigger("br_indexUpdated", {"newIndex":targetIndex});
+    
 }
 
 // switchMode()
@@ -1371,8 +1439,33 @@ BookReader.prototype.switchMode = function(mode) {
         return;
     }
     
+    // Check for new style string plugin name mode
+    if (typeof(mode) == typeof('')) {
+    	// mode is the name of a view plugin - find it
+    	if (typeof(this.plugins.view[mode] != 'undefined')) {
+    		// switch to new view
+    		if (typeof(this.activeView) != 'undefined') {
+	    		this.activeView.hide();
+	    	}
+    		this.activeView = this.plugins.view[mode];
+    		this.activeView.show();
+    		return; // success
+    	}
+    	
+    	// don't have this view
+    	return;
+    }
+    
+    // Asked to switch to an old built-in view
+    
     if (!this.canSwitchToMode(mode)) {
         return;
+    }
+    
+    // We are switching
+    if (typeof(this.activeView) != 'undefined') {
+    	this.activeView.hide();
+    	this.activeView = undefined;
     }
 
     this.autoStop();
@@ -1398,7 +1491,7 @@ BookReader.prototype.switchMode = function(mode) {
     } else if (3 == mode) {
         this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
         this.prepareThumbnailView();
-    } else {
+    } else if (2 == mode){
         // $$$ why don't we save autofit?
         // this.twoPage.autofit = null; // Take zoom level from other mode
         this.twoPageCalculateReductionFactors();
@@ -3310,11 +3403,13 @@ BookReader.prototype.initNavbar = function() {
     $('#BookReader').append(
         '<div id="BRnav">'
         +     '<div id="BRpage">'   // Page turn buttons
-        +         '<button class="BRicon onepg"></button>'
-        +         '<button class="BRicon twopg"></button>'
-        +         '<button class="BRicon thumb"></button>'
-        // $$$ not yet implemented
-        //+         '<button class="BRicon fit"></button>'
+        +         '<span class="BRviewicons">'
+        +             '<button class="BRicon onepg"></button>'
+        +             '<button class="BRicon twopg"></button>'
+        +             '<button class="BRicon thumb"></button>'
+        //$$$ not yet implemented
+        //+             '<button class="BRicon fit"></button>'
+        +         '</span>'
         +         '<button class="BRicon zoom_in"></button>'
         +         '<button class="BRicon zoom_out"></button>'
         +         '<button class="BRicon book_left"></button>'
@@ -3368,6 +3463,22 @@ BookReader.prototype.initNavbar = function() {
     var handleHelper = $('#BRpager .ui-slider-handle')
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
+    
+    // Add view mode icons from plugins
+    var viewPlugins = this.plugins['view']; // $$$ change to access through bookreader reference in nav bar plugin
+    var jNavElement = $('#BRnav'); // $$$ change to instance variable - stored dom element
+    console.log(viewPlugins); //xxx remove
+    for (viewPluginName in viewPlugins) {
+		// Add icon
+		console.log('adding ', viewPluginName); // xxx
+		var button = $('<button class="BRicon BRviewbutton ' + viewPluginName + '"></button>');
+    	button.bind('click', {'pluginName': viewPluginName}, function(e) {
+    		console.log('switching to mode ', e.data.pluginName); // xxx
+	    	self.switchMode(e.data.pluginName);
+ 	    });
+
+		jNavElement.find('.BRviewicons').append(button);
+    }
     
     this.updateNavPageNum(this.currentIndex());
 
@@ -5276,4 +5387,9 @@ BookReader.prototype.initUIStrings = function()
         }
     }
 }
-})(jQuery);
+// This is a static method that doesn't require a BookReader instance
+BookReader.registerPlugin = function(pluginName, pluginClass){
+	listOfPlugins[pluginName] = pluginClass;
+}
+}
+)(jQuery);

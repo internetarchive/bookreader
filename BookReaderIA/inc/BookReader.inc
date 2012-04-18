@@ -158,6 +158,10 @@ class BookReader
 
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
+    
+    <!-- plugins! -->
+    <script type="text/javascript" src="/bookreader/plugins/PageStreamView/PageStreamView.js"></script>
+    
 <? if ( !preg_match("/mobile/i", $_SERVER['HTTP_USER_AGENT']) ) { ?>
     <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2-ia.js?v=<? echo($version); ?>"></script>
     <script>
@@ -199,11 +203,19 @@ class BookReader
 // The ia{number}.us.archive.org server for the book can and does change, so this URL should NOT be used for permanent access.
 // Use the JSLocate URL below instead for stable access - it will find the item and redirect to the correct server
 // <? echo($locateURL); ?>
-
 </script>
 <script type="text/javascript" src="<? echo($metaURL); ?>"></script>
 
+
 <script type="text/javascript">
+	// Finally, init the BookReader	
+	if (br.olAuth) {
+	    var olAuth = new OLAuth();
+	    olAuth.init();
+	} else {
+	     br.init();
+	}
+
     // Usage stats
     if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
 </script>
