@@ -31,10 +31,20 @@ br.getPageURI = function(index, reduce, rotate) {
 
 // Return which side, left or right, that a given page should be displayed on
 br.getPageSide = function(index) {
-    if (0 == (index & 0x1)) {
-        return 'R';
+    if ('rl' == this.pageProgression) {
+        // Right to Left
+        if (0 == (index & 0x1)) {
+            return 'L';
+        } else {
+            return 'R';
+        }
     } else {
-        return 'L';
+        // Left to right
+        if (0 == (index & 0x1)) {
+            return 'R';
+        } else {
+            return 'L';
+        }
     }
 }
 
