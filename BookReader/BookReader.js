@@ -3691,21 +3691,36 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     
     // $$$ Don't hardcode ids
     var self = this;
-    jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#BRshare", onLoad: function() { self.autoStop(); self.ttsStop(); } });
-    jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#BRinfo", onLoad: function() { self.autoStop(); self.ttsStop(); } });
+    ['share', 'info', 'notes', 'annotations'].forEach(function(name) {
+        jToolbar.find('.'+name).colorbox({
+            inline: true,
+            opacity: "0.5",
+            href: "#BR"+name,
+            bottom: 0,
+            onLoad: function() {
+                self.autoStop();
+                self.ttsStop();
+            }
+        });
+    });
 
-    $('<div style="display: none;"></div>').append(this.blankShareDiv()).append(this.blankInfoDiv()).appendTo($('body'));
+    $('<div style="display: none;"></div>')
+        .append(this.blankShareDiv())
+        .append(this.blankInfoDiv())
+        .append(this.blankNotesDiv())
+        .append(this.blankAnnotationsDiv())
+        .appendTo($('body'));
 
     $('#BRinfo .BRfloatTitle a').attr( {'href': this.bookUrl} ).text(this.bookTitle).addClass('title');
     
     // These functions can be overridden
     this.buildInfoDiv($('#BRinfo'));
     this.buildShareDiv($('#BRshare'));
-    this.buildNoteDiv($('#BRshare'));
+    this.buildNotesDiv($('#BRnotes'));
+    this.buildAnnotationsDiv($('#BRannotations'));
     
     // Switch to requested mode -- binds other click handlers
     //this.switchToolbarMode(mode);
-    
 }
 
 BookReader.prototype.blankInfoDiv = function() {
@@ -3735,6 +3750,28 @@ BookReader.prototype.blankShareDiv = function() {
         '<div class="BRfloat" id="BRshare">',
             '<div class="BRfloatHead">',
                 'Share',
+                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+        '</div>'].join('\n')
+    );
+}
+
+BookReader.prototype.blankNotesDiv = function() {
+    return $([
+        '<div class="BRfloat" id="BRnotes">',
+            '<div class="BRfloatHead">',
+                'Notes',
+                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+        '</div>'].join('\n')
+    );
+}
+
+BookReader.prototype.blankAnnotationsDiv = function() {
+    return $([
+        '<div class="BRfloat" id="BRannotations">',
+            '<div class="BRfloatHead">',
+                'Annotations',
                 '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
             '</div>',
         '</div>'].join('\n')
@@ -5234,11 +5271,13 @@ BookReader.prototype.buildInfoDiv = function(jInfoDiv)
     jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
 }
 
-BookReader.prototype.buildNoteDiv = function(jNoteDiv)
+BookReader.prototype.buildNotesDiv = function(jNoteDiv)
 {
     console.log('jNoteDiv', jNoteDiv);
     console.log('this', this);
     // console.log('pageNum', this.getPageNum());
+
+    jNoteDiv.append('<div>Here is my super sweet content</div>')
 
     var self = this;
     // jNoteDiv.on('click', function() {
@@ -5246,6 +5285,9 @@ BookReader.prototype.buildNoteDiv = function(jNoteDiv)
         console.log('clicked');
         console.log('curent pageNum', self.getPageNum(self.currentIndex()));
     });
+}
+BookReader.prototype.buildAnnotationsDiv = function(jNoteDiv) {
+    console.log('annotations div building');
 }
 
 // Can be overriden
@@ -5268,6 +5310,8 @@ BookReader.prototype.initUIStrings = function()
                    '.read': 'Read this book aloud',
                    '.share': 'Share this book',
                    '.info': 'About this book',
+                   '.notes': 'Notes for this page',
+                   '.annotations': 'Annotations for this page',
                    '.full': 'Show fullscreen',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
