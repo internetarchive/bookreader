@@ -3692,7 +3692,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     // $$$ Don't hardcode ids
     var self = this;
     ['share', 'info', 'notes', 'annotations'].forEach(function(name) {
-        jToolbar.find('.'+name).colorbox({
+        var colorboxOptions = {
             inline: true,
             opacity: "0.5",
             href: "#BR"+name,
@@ -3701,7 +3701,18 @@ BookReader.prototype.initToolbar = function(mode, ui) {
                 self.autoStop();
                 self.ttsStop();
             }
-        });
+        };
+
+        switch (name) {
+            case 'notes':
+                colorboxOptions.onOpen = self.onOpenNotesDiv;
+                break;
+            case 'annotations':
+                colorboxOptions.onOpen = self.onOpenAnnotationsDiv;
+                break;
+        }
+
+        jToolbar.find('.'+name).colorbox(colorboxOptions);
     });
 
     $('<div style="display: none;"></div>')
@@ -3763,6 +3774,7 @@ BookReader.prototype.blankNotesDiv = function() {
                 'Notes',
                 '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
             '</div>',
+            '<div class="BRfloatBody"></div>',
         '</div>'].join('\n')
     );
 }
@@ -3774,8 +3786,17 @@ BookReader.prototype.blankAnnotationsDiv = function() {
                 'Annotations',
                 '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
             '</div>',
+            '<div class="BRfloatBody"></div>',
         '</div>'].join('\n')
     );
+}
+
+BookReader.prototype.onOpenNotesDiv = function() {
+    $('#BRnotes').find('.BRfloatBody').html('Hey check out my stuff!');
+}
+
+BookReader.prototype.onOpenAnnotationsDiv = function() {
+    $('#BRannotations').find('.BRfloatBody').html('Annotations for all!');
 }
 
 
@@ -5271,26 +5292,11 @@ BookReader.prototype.buildInfoDiv = function(jInfoDiv)
     jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
 }
 
-BookReader.prototype.buildNotesDiv = function(jNoteDiv)
-{
-    console.log('jNoteDiv', jNoteDiv);
-    console.log('this', this);
-    // console.log('pageNum', this.getPageNum());
+// Can be overridden
+BookReader.prototype.buildNotesDiv = function(jNotesDiv) {}
+BookReader.prototype.buildAnnotationsDiv = function(jAnnotationsDiv) {}
 
-    jNoteDiv.append('<div>Here is my super sweet content</div>')
-
-    var self = this;
-    // jNoteDiv.on('click', function() {
-    jNoteDiv.click(function() {
-        console.log('clicked');
-        console.log('curent pageNum', self.getPageNum(self.currentIndex()));
-    });
-}
-BookReader.prototype.buildAnnotationsDiv = function(jNoteDiv) {
-    console.log('annotations div building');
-}
-
-// Can be overriden
+// Can be overridden
 BookReader.prototype.initUIStrings = function()
 {
     // Navigation handlers will be bound after all UI is in place -- makes moving icons between
