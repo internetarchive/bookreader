@@ -3705,10 +3705,14 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
         switch (name) {
             case 'notes':
-                colorboxOptions.onOpen = self.onOpenNotesDiv;
+                colorboxOptions.onOpen = self.onOpenNotesDiv.bind(self);
+                // hacky for now - the overlay has to be display:none since
+                // otherwise the user cannot scroll while the popup is open
+                colorboxOptions.opacity = 0;
                 break;
             case 'annotations':
-                colorboxOptions.onOpen = self.onOpenAnnotationsDiv;
+                colorboxOptions.onOpen = self.onOpenAnnotationsDiv.bind(self);
+                colorboxOptions.opacity = 0;
                 break;
         }
 
@@ -3792,7 +3796,13 @@ BookReader.prototype.blankAnnotationsDiv = function() {
 }
 
 BookReader.prototype.onOpenNotesDiv = function() {
-    $('#BRnotes').find('.BRfloatBody').html('Hey check out my stuff!');
+    var notes = this.getNotes(this.currentIndex());
+    if (!notes) { // show nothing if no note - is this desirable?
+        $.colorbox.close();
+        return false;
+    }
+
+    $('#BRnotes').find('.BRfloatBody').html(notes);
 }
 
 BookReader.prototype.onOpenAnnotationsDiv = function() {
@@ -4734,9 +4744,17 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         
         $('#BRreturn').css({ 'line-height': '19px'} );
         $('#BRreturn a').css( {'height': '18px' } );
-
-        
     }
+}
+
+BookReader.prototype.getNotes = function(index) {
+    if (!this.notes) { return false; }
+    return this.notes[index+1] || false;
+}
+
+BookReader.prototype.getAnnotations = function(index) {
+    if (!this.annotations) { return false; }
+    return this.annotations[index+1] || false;
 }
 
 // Library functions
