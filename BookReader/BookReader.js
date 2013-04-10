@@ -130,6 +130,8 @@ function BookReader() {
         // table of contents
         // embed/share ui
         // info ui
+        // notes per-page
+        // annotations
     };
 
     // Text-to-Speech params
@@ -261,7 +263,6 @@ BookReader.prototype.init = function() {
         $('.BRpagedivthumb').live('contextmenu dragstart', this, function(e) {
             return false;
         });
-        
     }
     
     $('.BRpagediv1up').bind('mousedown', this, function(e) {
@@ -3628,6 +3629,8 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +     "<button class='BRicon pause'></button>"
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
+        +     (this.features.notes ? "<button class='BRicon notes'></button>" : "")
+        +     (this.features.annotations ? "<button class='BRicon annotations'></button>" : "")
         +     readIcon
         //+     "<button class='BRicon full'></button>"
         +   "</span>"
@@ -3698,6 +3701,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     // These functions can be overridden
     this.buildInfoDiv($('#BRinfo'));
     this.buildShareDiv($('#BRshare'));
+    this.buildNoteDiv($('#BRshare'));
     
     // Switch to requested mode -- binds other click handlers
     //this.switchToolbarMode(mode);
@@ -5228,6 +5232,20 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
 BookReader.prototype.buildInfoDiv = function(jInfoDiv) 
 {
     jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
+}
+
+BookReader.prototype.buildNoteDiv = function(jNoteDiv)
+{
+    console.log('jNoteDiv', jNoteDiv);
+    console.log('this', this);
+    // console.log('pageNum', this.getPageNum());
+
+    var self = this;
+    // jNoteDiv.on('click', function() {
+    jNoteDiv.click(function() {
+        console.log('clicked');
+        console.log('curent pageNum', self.getPageNum(self.currentIndex()));
+    });
 }
 
 // Can be overriden
