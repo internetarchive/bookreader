@@ -382,6 +382,7 @@ BookReader.prototype.drawLeafs = function() {
         this.drawLeafsTwoPage();
     }
     
+    this.buildAnnotationsOutlines();
 }
 
 // bindGestures(jElement)
@@ -531,7 +532,6 @@ BookReader.prototype.drawLeafsOnePage = function() {
     }
             
     this.updateToolbarZoom(this.reduce);
-    
 }
 
 // drawLeafsThumbnail()
@@ -766,7 +766,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
         $("#BRpagenum").val('');
     }
 
-    this.updateToolbarZoom(this.reduce); 
+    this.updateToolbarZoom(this.reduce);
 }
 
 BookReader.prototype.lazyLoadThumbnails = function() {
@@ -898,7 +898,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
     this.updateToolbarZoom(this.reduce);
     
     // this.twoPagePlaceFlipAreas();  // No longer used
-
 }
 
 // updatePageNumBox2UP
@@ -1426,7 +1425,7 @@ BookReader.prototype.prepareOnePageView = function() {
     $("#BRcontainer").append("<div id='BRpageview'></div>");
     
     // Attaches to first child - child must be present
-    $('#BRcontainer').dragscrollable();
+    $('#BRcontainer').dragscrollable({ preventDefault: false });
     this.bindGestures($('#BRcontainer'));
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
@@ -1453,7 +1452,7 @@ BookReader.prototype.prepareThumbnailView = function() {
         
     $("#BRcontainer").append("<div id='BRpageview'></div>");
     
-    $('#BRcontainer').dragscrollable();
+    $('#BRcontainer').dragscrollable({ preventDefault: false });
     this.bindGestures($('#BRcontainer'));
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
@@ -3691,7 +3690,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     
     // $$$ Don't hardcode ids
     var self = this;
-    ['share', 'info', 'notes', 'annotations'].forEach(function(name) {
+    ['share', 'info', 'notes'].forEach(function(name) {
         var colorboxOptions = {
             inline: true,
             opacity: "0.5",
@@ -3703,21 +3702,25 @@ BookReader.prototype.initToolbar = function(mode, ui) {
             }
         };
 
-        switch (name) {
-            case 'notes':
-                colorboxOptions.onOpen = self.onOpenNotesDiv.bind(self);
-                // hacky for now - the overlay has to be display:none since
-                // otherwise the user cannot scroll while the popup is open
-                colorboxOptions.opacity = 0;
-                break;
-            case 'annotations':
-                colorboxOptions.onOpen = self.onOpenAnnotationsDiv.bind(self);
-                colorboxOptions.opacity = 0;
-                break;
+        if (name === 'notes') {
+            // hacky for now - the overlay has to be display:none since
+            // otherwise the user cannot scroll while the popup is open
+            colorboxOptions.opacity = 0;
+            colorboxOptions.onOpen = self.onOpenNotesDiv.bind(self);
         }
 
         jToolbar.find('.'+name).colorbox(colorboxOptions);
     });
+
+    // toggle annotation outlines on toolbar button click
+    jToolbar.find('.annotations').click(function() {
+        if (this.annotations_visible === undefined) {
+            this.annotations_visible = true;
+        } else {
+            this.annotations_visible = !this.annotations_visible;
+        }
+        $('#BRpageview').find('.annotation').toggle(this.annotations_visible);
+    }.bind(this));
 
     $('<div style="display: none;"></div>')
         .append(this.blankShareDiv())
@@ -3733,7 +3736,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     this.buildShareDiv($('#BRshare'));
     this.buildNotesDiv($('#BRnotes'));
     this.buildAnnotationsDiv($('#BRannotations'));
-    
+
     // Switch to requested mode -- binds other click handlers
     //this.switchToolbarMode(mode);
 }
@@ -5313,6 +5316,34 @@ BookReader.prototype.buildInfoDiv = function(jInfoDiv)
 // Can be overridden
 BookReader.prototype.buildNotesDiv = function(jNotesDiv) {}
 BookReader.prototype.buildAnnotationsDiv = function(jAnnotationsDiv) {}
+
+// build (or rebuild) annotations
+BookReader.prototype.buildAnnotationsOutlines = function() {
+    if (!this.annotations) { return; }
+    $('#BRpageview').find('.annotation').remove();
+
+    var smallest_dimension = Math.min(br.getPageHeight() / this.reduce, br.getPageWidth() / this.reduce);
+
+    $.each(this.annotations, function(index, areas) {
+        $.each(areas, function(i, area) {
+            var $annotation = $('<div class="annotation"></div>')
+                .css({
+                     top: ((area.y || 0) / (this.reduce || 1)) + 'px'
+                    ,left: ((area.x || 0) / (this.reduce || 1)) + 'px'
+                    ,width: ((area.w || 0) / (this.reduce || 1)) + 'px'
+                    ,height: ((area.h || 0) / (this.reduce || 1)) + 'px'
+                    ,borderWidth: Math.min(Math.ceil(smallest_dimension / 150), 5) + 'px'
+                })
+                .data('content', area.content);
+
+            $('#pagediv'+(index-1)).append($annotation);
+        }.bind(this));
+    }.bind(this));
+
+    if (this.annotations_visible) {
+        $('#BRpageview').find('.annotation').show();
+    }
+}
 
 // Can be overridden
 BookReader.prototype.initUIStrings = function()
