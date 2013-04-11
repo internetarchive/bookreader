@@ -5320,7 +5320,8 @@ BookReader.prototype.buildAnnotationsDiv = function(jAnnotationsDiv) {}
 // build (or rebuild) annotations
 BookReader.prototype.buildAnnotationsOutlines = function() {
     if (!this.annotations) { return; }
-    $('#BRpageview').find('.annotation').remove();
+    var jBRpageview = $('#BRpageview');
+    jBRpageview.find('.annotation').remove();
 
     var smallest_dimension = Math.min(br.getPageHeight() / this.reduce, br.getPageWidth() / this.reduce);
 
@@ -5334,15 +5335,35 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
                     ,height: ((area.h || 0) / (this.reduce || 1)) + 'px'
                     ,borderWidth: Math.min(Math.ceil(smallest_dimension / 150), 5) + 'px'
                 })
-                .data('content', area.content);
+                .data('annotation-content', area.content);
 
             $('#pagediv'+(index-1)).append($annotation);
         }.bind(this));
     }.bind(this));
 
     if (this.annotations_visible) {
-        $('#BRpageview').find('.annotation').show();
+        jBRpageview.find('.annotation').show();
     }
+
+    var self = this; // launch annotations popup on annotation area click
+    jBRpageview.find('.annotation').click(function() {
+        console.log('annotation click');
+        var annotation_data = $(this).data('annotation-content');
+        if (!annotation_data) { return; }
+
+        $('#BRannotations').find('.BRfloatBody').html(annotation_data);
+        $.colorbox({
+            inline: true,
+            href: "#BRannotations",
+            bottom: 0,
+            // opacity: 0.5,
+            opacity: 0, // temporary hack
+            onLoad: function() {
+                self.autoStop();
+                self.ttsStop();
+            }
+        });
+    });
 }
 
 // Can be overridden
