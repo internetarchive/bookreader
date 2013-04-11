@@ -2039,7 +2039,7 @@ BookReader.prototype.prev = function() {
     } else {
         if (this.firstIndex >= 1) {
             this.jumpToIndex(this.firstIndex-1);
-        }    
+        }
     }
 }
 
@@ -2430,7 +2430,7 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             self.updatePageNumBox2UP();
             
             // self.twoPagePlaceFlipAreas(); // No longer used
-            self.setMouseHandlers2UP();     
+            self.setMouseHandlers2UP();
             self.twoPageSetCursor();
             
             if (self.animationFinishedCallback) {
@@ -3719,7 +3719,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         } else {
             this.annotations_visible = !this.annotations_visible;
         }
-        $('#BRpageview').find('.annotation').toggle(this.annotations_visible);
+        $('#BRcontainer').find('.annotation').toggle(this.annotations_visible);
     }.bind(this));
 
     $('<div style="display: none;"></div>')
@@ -5320,33 +5320,24 @@ BookReader.prototype.buildAnnotationsDiv = function(jAnnotationsDiv) {}
 // build (or rebuild) annotations
 BookReader.prototype.buildAnnotationsOutlines = function() {
     if (!this.annotations) { return; }
-    var jBRpageview = $('#BRpageview');
-    jBRpageview.find('.annotation').remove();
+    $('#BRcontainer').find('.annotation').remove();
 
-    var smallest_dimension = Math.min(br.getPageHeight() / this.reduce, br.getPageWidth() / this.reduce);
-
-    $.each(this.annotations, function(index, areas) {
-        $.each(areas, function(i, area) {
-            var $annotation = $('<div class="annotation"></div>')
-                .css({
-                     top: ((area.y || 0) / (this.reduce || 1)) + 'px'
-                    ,left: ((area.x || 0) / (this.reduce || 1)) + 'px'
-                    ,width: ((area.w || 0) / (this.reduce || 1)) + 'px'
-                    ,height: ((area.h || 0) / (this.reduce || 1)) + 'px'
-                    ,borderWidth: Math.min(Math.ceil(smallest_dimension / 150), 5) + 'px'
-                })
-                .data('annotation-content', area.content);
-
-            $('#pagediv'+(index-1)).append($annotation);
-        }.bind(this));
-    }.bind(this));
-
-    if (this.annotations_visible) {
-        jBRpageview.find('.annotation').show();
+    switch (this.mode) {
+        case 1:
+            this.buildAnnotationsOutlinesModeOne();
+            break;
+        case 2:
+            this.buildAnnotationsOutlinesModeTwo();
+            break;
+        case 3:
+            this.buildAnnotationsOutlinesModeThree();
+            break;
+        default:
+            return;
     }
 
     var self = this; // launch annotations popup on annotation area click
-    jBRpageview.find('.annotation').click(function() {
+    $('#BRcontainer').find('.annotation').click(function() {
         console.log('annotation click');
         var annotation_data = $(this).data('annotation-content');
         if (!annotation_data) { return; }
@@ -5364,6 +5355,68 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
             }
         });
     });
+}
+BookReader.prototype.buildAnnotationsOutlinesModeOne = function() {
+    $.each(this.annotations, function(index, areas) {
+        var jPageDiv = $('#pagediv' + (index - 1));
+        $.each(areas, function(i, area) {
+            this.addAnnotationOutline(area, jPageDiv);
+        }.bind(this));
+    }.bind(this));
+}
+BookReader.prototype.buildAnnotationsOutlinesModeTwo = function() {
+    var jPageDiv = $('#BRtwopageview');
+    var left_index  = this.firstIndex + 1;
+    var right_index = this.firstIndex + 2;
+
+    if (this.annotations[left_index]) {
+        $.each(this.annotations[left_index], function(i, area) {
+            this.addAnnotationOutline(area, jPageDiv);
+        }.bind(this));
+    }
+
+    if (this.annotations[right_index]) {
+        $.each(this.annotations[right_index], function(i, area) {
+            // shift page 2 coordinates right by one page width
+            area.x += this.getPageWidth(); // this gets scaled during add
+            this.addAnnotationOutline(area, jPageDiv);
+        }.bind(this));
+    }
+}
+BookReader.prototype.buildAnnotationsOutlinesModeThree = function() {
+
+}
+BookReader.prototype.addAnnotationOutline = function(the_area, jElement) {
+    area = $.extend({
+        x: 0, y: 0, w: 0, h: 0, content: null
+    }, the_area);
+
+    if (typeof area.x !== 'number'
+     || typeof area.y !== 'number'
+     || area.w === 0 || area.h === 0 
+     || !area.content || !jElement
+    ) { return; }
+
+    ['x', 'y', 'w', 'h'].forEach(function(dim) { // scale dimensions
+        area[dim] = (Number(area[dim]) || 0) / (this.reduce || 1);
+    }, this);
+
+    var smallest_dimension = Math.min(this.getPageHeight() / this.reduce, this.getPageWidth() / this.reduce);
+
+    var $annotation = $('<div class="annotation"></div>')
+        .css({
+             top: area.y + 'px'
+            ,left: area.x + 'px'
+            ,width: area.w + 'px'
+            ,height: area.h + 'px'
+            ,borderWidth: Math.min(Math.ceil(smallest_dimension / 150), 5) + 'px'
+        })
+        .data('annotation-content', area.content);
+
+    jElement.append($annotation);
+    if (this.annotations_visible) {
+        $annotation.show();
+    }
 }
 
 // Can be overridden

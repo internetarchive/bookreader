@@ -58,19 +58,20 @@ a {
     _height: expression(documentElement.clientHeight);
 }
 
-#BRpageview {
-    /* XXX page view div is not being placed correctly */
-    background-color: #9A9B9D;
-}
-
-#BRpageview .annotation {
+#BRcontainer .annotation {
     display: none;
     position: absolute;
+    z-index: 5;
     /* border-width is set by js */
     border-color: #FE2;
     border-style: solid;
     border-radius: 3px;
     box-shadow: 0 0 2px #000, 0 0 2px #000 inset;
+}
+
+#BRpageview {
+    /* XXX page view div is not being placed correctly */
+    background-color: #9A9B9D;
 }
 
 .BRpagediv1up {
