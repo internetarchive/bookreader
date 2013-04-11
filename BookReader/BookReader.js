@@ -5331,13 +5331,11 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
 
     switch (this.mode) {
         case 1:
+        case 3:
             this.buildAnnotationsOutlinesModeOne();
             break;
         case 2:
             this.buildAnnotationsOutlinesModeTwo();
-            break;
-        case 3:
-            this.buildAnnotationsOutlinesModeThree();
             break;
         default:
             return;
@@ -5389,9 +5387,6 @@ BookReader.prototype.buildAnnotationsOutlinesModeTwo = function() {
             this.addAnnotationOutline(shifted_area, jPageDiv);
         }.bind(this));
     }
-}
-BookReader.prototype.buildAnnotationsOutlinesModeThree = function() {
-
 }
 BookReader.prototype.addAnnotationOutline = function(the_area, jElement) {
     area = $.extend({
