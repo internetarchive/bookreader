@@ -1378,6 +1378,7 @@ BookReader.prototype.switchMode = function(mode) {
     this.autoStop();
     this.ttsStop();
     this.removeSearchHilites();
+    this.removeAnnotations();
 
     this.mode = mode;
     //this.switchToolbarMode(mode);
@@ -1407,6 +1408,7 @@ BookReader.prototype.switchMode = function(mode) {
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
 
+    this.buildAnnotationsOutlines();
 }
 
 //prepareOnePageView()
@@ -2193,6 +2195,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
     //      - redraw the search highlight.
     //      - update the pagenum box and the url.
     
+    this.removeAnnotations();
     
     var leftEdgeTmpLeft = gutter - currWidthL - leafEdgeTmpW;
 
@@ -2283,6 +2286,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.animating = false;
             
             self.updateSearchHilites2UP();
+            self.buildAnnotationsOutlines();
             self.updatePageNumBox2UP();
             
             // self.twoPagePlaceFlipAreas(); // No longer used
@@ -2361,6 +2365,8 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 
     var middle = this.twoPage.middle;
     var gutter = middle + this.gutterOffsetForIndex(newIndexL);
+
+    this.removeAnnotations();
     
     this.leafEdgeTmp = document.createElement('div');
     this.leafEdgeTmp.className = 'BRleafEdgeTmp';
@@ -2427,6 +2433,7 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 
 
             self.updateSearchHilites2UP();
+            self.buildAnnotationsOutlines();
             self.updatePageNumBox2UP();
             
             // self.twoPagePlaceFlipAreas(); // No longer used
@@ -5320,7 +5327,7 @@ BookReader.prototype.buildAnnotationsDiv = function(jAnnotationsDiv) {}
 // build (or rebuild) annotations
 BookReader.prototype.buildAnnotationsOutlines = function() {
     if (!this.annotations) { return; }
-    $('#BRcontainer').find('.annotation').remove();
+    this.removeAnnotations();
 
     switch (this.mode) {
         case 1:
@@ -5377,9 +5384,9 @@ BookReader.prototype.buildAnnotationsOutlinesModeTwo = function() {
 
     if (this.annotations[right_index]) {
         $.each(this.annotations[right_index], function(i, area) {
-            // shift page 2 coordinates right by one page width
-            area.x += this.getPageWidth(); // this gets scaled during add
-            this.addAnnotationOutline(area, jPageDiv);
+            var shifted_area = $.extend({}, area); // shift page 2 coordinates right by one page width
+            shifted_area.x += this.getPageWidth(); // this gets scaled during add
+            this.addAnnotationOutline(shifted_area, jPageDiv);
         }.bind(this));
     }
 }
@@ -5417,6 +5424,9 @@ BookReader.prototype.addAnnotationOutline = function(the_area, jElement) {
     if (this.annotations_visible) {
         $annotation.show();
     }
+}
+BookReader.prototype.removeAnnotations = function() {
+    $('#BRcontainer').find('.annotation').remove();
 }
 
 // Can be overridden
