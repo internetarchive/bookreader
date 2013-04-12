@@ -3736,6 +3736,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
             },
             onComplete: function() {
                 self.bindColorboxCloseClick();
+                self.bindColorboxWidthResize('100%');
             },
         });
     });
@@ -5371,6 +5372,7 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
             },
             onComplete: function() {
                 self.bindColorboxCloseClick();
+                self.bindColorboxWidthResize('100%');
             }
         });
     });
@@ -5451,6 +5453,20 @@ BookReader.prototype.bindColorboxCloseClick = function() {
             return false;
         });
     }, 1);
+}
+
+BookReader.prototype.bindColorboxWidthResize = function(width) {
+    if (!width) { return; }
+    $(window).bind('resize.colorbox', function() {
+        var $colorbox = $('#colorbox:visible');
+        if (!$colorbox.length) {
+            return $(window).unbind('resize.colorbox');
+        }
+        $.colorbox.resize({
+            width: width,
+            height: $colorbox.height()
+        });
+    });
 }
 
 // Can be overridden
