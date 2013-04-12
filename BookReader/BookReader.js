@@ -3730,6 +3730,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
             onOpen: self.onOpenNotesDiv.bind(self),
             bottom: 30,
             width: '100%',
+            height: 200,
             onLoad: function() {
                 self.autoStop();
                 self.ttsStop();
