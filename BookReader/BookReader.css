@@ -52,7 +52,7 @@ a {
     width:100%;
     z-index: 1;
     overflow-x:auto;
-    overflow-y:scroll;    
+    overflow-y:scroll;
     position:absolute;
     background-color: #9A9B9D;
     _height: expression(documentElement.clientHeight);
@@ -67,6 +67,10 @@ a {
     border-style: solid;
     border-radius: 3px;
     box-shadow: 0 0 2px #000, 0 0 2px #000 inset;
+}
+
+#BRcontainer .annotation:hover {
+    border-color: #FF0;
 }
 
 #BRpageview {
