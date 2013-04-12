@@ -1155,6 +1155,8 @@ BookReader.prototype.zoom2up = function(direction) {
     
     // Prepare view with new center to minimize visual glitches
     this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
+
+    this.buildAnnotationsOutlines();
 }
 
 BookReader.prototype.zoomThumb = function(direction) {
