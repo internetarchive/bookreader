@@ -3697,26 +3697,16 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     
     // $$$ Don't hardcode ids
     var self = this;
-    ['share', 'info', 'notes'].forEach(function(name) {
-        var colorboxOptions = {
+    ['share', 'info'].forEach(function(name) {
+        jToolbar.find('.'+name).colorbox({
             inline: true,
             opacity: "0.5",
             href: "#BR"+name,
-            bottom: 0,
             onLoad: function() {
                 self.autoStop();
                 self.ttsStop();
             }
-        };
-
-        if (name === 'notes') {
-            // hacky for now - the overlay has to be display:none since
-            // otherwise the user cannot scroll while the popup is open
-            colorboxOptions.opacity = 0;
-            colorboxOptions.onOpen = self.onOpenNotesDiv.bind(self);
-        }
-
-        jToolbar.find('.'+name).colorbox(colorboxOptions);
+        });
     });
 
     // toggle annotation outlines on toolbar button click
@@ -3728,6 +3718,25 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         }
         $('#BRcontainer').find('.annotation').toggle(this.annotations_visible);
     }.bind(this));
+
+    jToolbar.find('.notes').click(function() {
+        console.log('opening notes');
+        $.colorbox({
+            inline: true,
+            href: '#BRnotes',
+            className: 'notes-overlay',
+            onOpen: self.onOpenNotesDiv.bind(self),
+            bottom: 30,
+            width: '100%',
+            onLoad: function() {
+                self.autoStop();
+                self.ttsStop();
+            },
+            onComplete: function() {
+                self.bindColorboxCloseClick();
+            },
+        });
+    });
 
     $('<div style="display: none;"></div>')
         .append(this.blankShareDiv())
@@ -5351,12 +5360,15 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
         $.colorbox({
             inline: true,
             href: "#BRannotations",
-            bottom: 0,
-            // opacity: 0.5,
-            opacity: 0, // temporary hack
+            className: 'annotations-overlay',
+            bottom: 30,
+            width: '100%',
             onLoad: function() {
                 self.autoStop();
                 self.ttsStop();
+            },
+            onComplete: function() {
+                self.bindColorboxCloseClick();
             }
         });
     });
@@ -5422,6 +5434,21 @@ BookReader.prototype.addAnnotationOutline = function(the_area, jElement) {
 }
 BookReader.prototype.removeAnnotations = function() {
     $('#BRcontainer').find('.annotation').remove();
+}
+
+BookReader.prototype.bindColorboxCloseClick = function() {
+    setTimeout(function() { // hack to dodge the initial click
+        $('body').bind('click.colorbox', function(e) {
+            if ($(e.target).closest('#colorbox, #BRtoolbar, #BRnav').length) {
+                return true; // don't close on colorbox, toolbar, or nav clicks
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            $.colorbox.close();
+            $('body').unbind('click.colorbox');
+            return false;
+        });
+    }, 1);
 }
 
 // Can be overridden
