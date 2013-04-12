@@ -3722,7 +3722,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     }.bind(this));
 
     jToolbar.find('.notes').click(function() {
-        console.log('opening notes');
+        if (!self.pageHasNotes()) { return false; }
         $.colorbox({
             inline: true,
             href: '#BRnotes',
@@ -3819,7 +3819,16 @@ BookReader.prototype.blankAnnotationsDiv = function() {
 }
 
 BookReader.prototype.onOpenNotesDiv = function() {
-    var notes = this.getNotes(this.currentIndex());
+    var notes = '';
+    if (this.mode === 2) {
+        var left_page  = this.getNotes(this.firstIndex);
+        var right_page = this.getNotes(this.firstIndex + 1);
+        if (left_page)  { notes += '<h3>Left Page</h3>' + left_page; }
+        if (right_page) { notes += '<h3>Right Page</h3>' + right_page; }
+    } else {
+        notes = this.getNotes(this.currentIndex());
+    }
+
     if (!notes) { // show nothing if no note - is this desirable?
         $.colorbox.close();
         return false;
@@ -4773,6 +4782,14 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
 BookReader.prototype.getNotes = function(index) {
     if (!this.notes) { return false; }
     return this.notes[index+1] || false;
+}
+
+BookReader.prototype.pageHasNotes = function() {
+    if (this.mode === 2) {
+        return (!!this.notes[this.firstIndex + 1] || !!this.notes[this.firstIndex + 2])
+    } else {
+        return !!this.notes[this.currentIndex() + 1];
+    }
 }
 
 BookReader.prototype.getAnnotations = function(index) {
