@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Annotation Creation</title>
+  <meta charset="utf-8">
+  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="BookReaderAnnotationCreation.js"></script>
+  <link rel="stylesheet" href="BookReaderAnnotationCreation.css">
+</head>
+<body>
+  <div id="BookReaderAnnotationCreation">
+    <section class="annotation-image">
+      <div id="annotation-image"></div>
+      <div class="annotation-image-button">
+        <span>Current Page</span>
+        <input type="file" id="image-file-button" value="Change Annotated Image">
+      </div>
+    </section>
+    <section class="input-data">
+      <div class="page-number">
+        <span>Page Number:</span>
+        <input type="text" id="page-number" disabled="disabled">
+      </div>
+      <div class="annotation-content-container">
+        <div class="annotation-content-title">Selected Annotation</div>
+        <div class="annotation-content-textbox">
+          <textarea id="annotation-content" disabled="disabled"></textarea>
+        </div>
+      </div>
+    </section>
+    <section class="output-data">
+      <div class="annotations-output-title">Annotations Code</div>
+      <div class="annotations-output-textbox">
+        <textarea id="annotations-output" readonly="readonly"></textarea>
+      </div>
+    </section>
+    </div>
+  </div>
+</body>
+</html>
