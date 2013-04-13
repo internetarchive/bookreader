@@ -19,6 +19,15 @@ html,body {
   margin-bottom: 10px;
   border: 1px solid blue;
   line-height: 0;
+  position: relative;
+}
+#annotation-image .annotation {
+  display: none;
+  border: 5px solid yellow;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  position: absolute;
+  background: rgba(0,0,0,0.2);
 }
 section.input-data .page-number {
   margin: 25px 0;

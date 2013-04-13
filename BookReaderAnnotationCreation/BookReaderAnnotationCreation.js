@@ -10,45 +10,73 @@ var BookReaderAnnotationCreation = function() {
   this.img_scale = 1;
 
   this.data = {};
+  this.annotation = {};
 }
 
 BookReaderAnnotationCreation.prototype.bind_dom_handlers = function() {
   this.$.off('.brac')
-    .on('change.brac', '#image-file-button', this.dom_handlers.image_file_change.bind(this))
-    .on('mousedown.brac', '#annotation-image', this.dom_handlers.start_drag.bind(this))
-    .on('change.brac', '#page-number, #annotation-content', this.update_data.bind(this));
+    .on('change.brac'   , '#image-file-button', this.dom_handlers.image_file_change.bind(this))
+    .on('mousedown.brac', '#annotation-image > img', this.dom_handlers.start_annotation_drawing.bind(this))
+    .on('mousedown.brac', '#annotation-image > .annotation', this.dom_handlers.start_annotation_dragging.bind(this))
+    .on('change.brac'   , '#page-number, #annotation-content', this.update_data.bind(this));
 
-  $(document).off('.brac')
-    .on('mousemove.brac', this.dom_handlers.update_drag.bind(this))
-    .on('mouseup.brac', this.dom_handlers.end_drag.bind(this));
+  $(document).on('mouseup.brac', this.dom_handlers.end_mousedrag.bind(this));
 }
 
 BookReaderAnnotationCreation.prototype.dom_handlers = {
    image_file_change: function(e) {
     if (e.target.files && e.target.files.length) {
+      this.clean_slate();
       this.load_image_from_file(e.target.files[0]);
-      this.clear_inputs();
     }
   }
-  ,start_drag: function(e) {
+  ,end_mousedrag: function(e) {
+    if (this.drawing) { // mousedrag might be for drawing or for annotation dragging
+      return this.dom_handlers.end_annotation_drawing.call(this, e);
+    } else if (this.dragging) {
+      return this.dom_handlers.end_annotation_dragging.call(this, e);
+    }
+  }
+  ,start_annotation_drawing: function(e) {
+    this.drawing = true;
+    $('body').addClass('unselectable');
+
+    this.annotation.$ = $('<div>').addClass('annotation').appendTo('#annotation-image');
+    this.annotation.start_coords = this.utils.bound_coordinates(e.clientX, e.clientY, $('#annotation-image > img'));
+
+    $(document).on('mousemove.brac', this.dom_handlers.update_annotation_drawing.bind(this));
+    e.stopPropagation();
+    return false;
+  }
+  ,update_annotation_drawing: function(e) {
+    if (!this.drawing) { return; }
+    this.annotation.end_coords = this.utils.bound_coordinates(e.clientX, e.clientY, $('#annotation-image > img'));
+    this.annotation.$.css({
+       display: 'block'
+      ,left:   Math.min(this.annotation.start_coords.x, this.annotation.end_coords.x) + 'px'
+      ,top:    Math.min(this.annotation.start_coords.y, this.annotation.end_coords.y) + 'px'
+      ,width:  Math.abs(this.annotation.start_coords.x - this.annotation.end_coords.x) + 'px'
+      ,height: Math.abs(this.annotation.start_coords.y - this.annotation.end_coords.y) + 'px'
+    });
+  }
+  ,end_annotation_drawing: function(e) {
+    this.drawing = false;
+    $('body').removeClass('unselectable');
+    $(document).off('mousemove.brac');
+  }
+  ,start_annotation_dragging: function(e) {
     this.dragging = true;
     $('body').addClass('unselectable');
-    $(document).on('mousemove.brac', this.dom_handlers.update_drag.bind(this));
-    console.log('start drag');
+    e.stopPropagation();
+    return false;
   }
-  ,update_drag: function(e) {
+  ,udpate_annotation_dragging: function(e) {
     if (!this.dragging) { return; }
-    this.$.find('#annotation-content').val(
-      'client: ' + e.clientX + '/' + e.clientY + '\n' +
-      'page: ' + e.pageX + '/' + e.pageY + '\n' +
-      'screen: ' + e.screenX + '/' + e.screenY + '\n'
-    );
   }
-  ,end_drag: function(e) {
+  ,end_annotation_dragging: function(e) {
     this.dragging = false;
     $('body').removeClass('unselectable');
     $(document).off('mousemove.brac');
-    console.log('end drag');
   }
 }
 
@@ -57,9 +85,11 @@ BookReaderAnnotationCreation.prototype.update_data = function() {
   if (typeof page_num !== 'number' || page_num !== page_num) { return; }
 }
 
-BookReaderAnnotationCreation.prototype.clear_inputs = function() {
+BookReaderAnnotationCreation.prototype.clean_slate = function() {
   this.$.find('#page-number').removeAttr('disabled').val('');
   this.$.find('#annotation-content').removeAttr('disabled').val('');
+  this.annotation = {};
+  this.img_scale = 1;
 }
 
 BookReaderAnnotationCreation.prototype.load_image_from_file = function(file) {
@@ -72,7 +102,6 @@ BookReaderAnnotationCreation.prototype.load_image_from_file = function(file) {
   reader.onload = function(e) {
     // put the image on the page
     $img.get(0).src = e.target.result;
-    $img.on('mousedown', function() { return false; });
     this.$.find('#annotation-image')
       .html('')
       .append($img)
@@ -84,7 +113,6 @@ BookReaderAnnotationCreation.prototype.load_image_from_file = function(file) {
 
     // does the image need to be scaled?
     setTimeout(function() { // hack to make sure the img is in the DOM
-      this.img_scale = 1;
       if ($img.height() > this.max_img_height) {
         this.img_scale = this.max_img_height / $img.height();
       }
@@ -106,6 +134,16 @@ BookReaderAnnotationCreation.prototype.load_image_from_file = function(file) {
   }.bind(this);
 
   reader.readAsDataURL(file);
+}
+
+BookReaderAnnotationCreation.prototype.utils = {
+  // binds viewport coordinates to a given element
+  bound_coordinates: function(x, y, $el) {
+    return {
+       x: Math.min(Math.max(x - $el.offset().left, 0), $el.width())
+      ,y: Math.min(Math.max(y - $el.offset().top, 0), $el.height())
+    };
+  }
 }
 
 new BookReaderAnnotationCreation();
