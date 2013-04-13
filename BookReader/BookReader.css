@@ -406,26 +406,75 @@ a.BRgrey:visited   { color: #666; }
 
 /* COLORBOX POP-UP */
 
-#colorbox, #cboxOverlay, #cboxWrapper{position:absolute; top:0; left:0; z-index:9999;}
-#colorbox.notes-overlay, #colorbox.annotations-overlay {outline:none;z-index:10;}
-#colorbox.notes-overlay .BRfloat, #colorbox.annotations-overlay .BRfloat {overflow:hidden;height:100%;}
-#colorbox.notes-overlay .BRfloatBody {width:100%;height:100%;overflow-y:auto;box-sizing:border-box;padding-bottom:62px;}
-#colorbox.notes-overlay .BRfloat p, #colorbox.annotations-overlay .BRfloat p {margin:20px 20px;width:auto;}
-#cboxOverlay.notes-overlay, #cboxOverlay.annotations-overlay {display:none !important;}
-#cboxOverlay{position:fixed; width:100%; height:100%;background:#000;opacity:0.75;filter:Alpha(Opacity=75);}
-#cboxMiddleLeft, #cboxBottomLeft{clear:left;}
-#cboxContent{position:relative;}
-#cboxLoadedContent{overflow:visible!important;}
-#cboxLoadedContent iframe{display:block;border:0;}
-#cboxTitle{margin:0;display:none!important;}
-#cboxLoadingOverlay, #cboxLoadingGraphic{position:absolute; top:25px; left:25px; width:100%;}
-#cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow{cursor:pointer;}
-#cboxClose{display:none!important;}
+#colorbox,
+#cboxOverlay,
+#cboxWrapper{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+}
+#cboxOverlay {
+    position: fixed;
+    width:100%;
+    height:100%;
+    background: #000;
+    opacity: 0.75;
+    filter: Alpha(Opacity=75);
+}
+#cboxMiddleLeft,
+#cboxBottomLeft {
+    clear:left;
+}
+#cboxContent {
+    position:relative;
+}
+#cboxLoadedContent {
+    overflow: visible !important;
+}
+#cboxLoadedContent iframe {
+    display: block;
+    border: 0;
+}
+#cboxTitle {
+    margin: 0;
+    display: none !important;
+}
+#cboxLoadingOverlay,
+#cboxLoadingGraphic {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    width: 100%;
+}
+#cboxPrevious,
+#cboxNext,
+#cboxClose,
+#cboxSlideshow {
+    cursor: pointer;
+}
+#cboxClose {
+    display: none !important;
+}
 
-#colorBox{}
-    #cboxContent{background:#fff;padding:0;border:10px solid #615132;-webkit-border-radius:12px;-moz-border-radius:12px;border-radius:12px;-moz-box-shadow: 1px 3px 10px #000;-webkit-box-shadow: 1px 3px 10px #000;box-shadow: 1px 3px 10px #000;}
-        #cboxLoadedContent{background:#fff;margin:0;}
-        #cboxLoadingOverlay{background:transparent;}
+#cboxContent {
+    background: #fff;
+    padding: 0;
+    border: 10px solid #615132;
+    -webkit-border-radius: 12px;
+    -moz-border-radius: 12px;
+    border-radius: 12px;
+    -moz-box-shadow: 1px 3px 10px #000;
+    -webkit-box-shadow: 1px 3px 10px #000;
+    box-shadow: 1px 3px 10px #000;
+}
+#cboxLoadedContent {
+    background: #fff;
+    margin: 0;
+}
+#cboxLoadingOverlay {
+    background: transparent;
+}
 .BRfloat * {
     margin: 0;
     padding: 0;
@@ -462,8 +511,20 @@ a.BRgrey:visited   { color: #666; }
     font-weight: 700;
     color: #fff;
 }
-.BRfloat a.floatShut {position:absolute;top:0;right:0;display:block;width:32px;height:32px;background-image:url("images/icon_close-pop.png");background-position:0 0;background-repeat:no-repeat;}
-.BRfloat a.floatShut:hover {background-position:0 -32px;}
+.BRfloat a.floatShut {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: block;
+    width: 32px;
+    height: 32px;
+    background-image: url("images/icon_close-pop.png");
+    background-position: 0 0;
+    background-repeat: no-repeat;
+}
+.BRfloat a.floatShut:hover {
+    background-position: 0 -32px;
+}
 .BRfloat fieldset {
     margin-top: 20px;
     padding: 10px 20px;
@@ -590,6 +651,67 @@ a.BRgrey:visited   { color: #666; }
     background: url("images/icon_alert-xs.png") no-repeat;
     padding-left: 20px;
 }
+
+/* Notes & Annotations Popups */
+#colorbox.notes-overlay,
+#colorbox.annotations-overlay {
+    outline: none;
+    z-index: 10;
+}
+#colorbox.notes-overlay .BRfloat,
+#colorbox.annotations-overlay .BRfloat {
+    overflow: hidden;
+    height: 100%;
+}
+#colorbox.notes-overlay.left .BRfloat,
+#colorbox.notes-overlay.right .BRfloat,
+#colorbox.annotations-overlay.left .BRfloat,
+#colorbox.annotations-overlay.right .BRfloat {
+    min-width: 0;
+}
+/*#colorbox.notes-overlay.left .BRfloatHead,
+#colorbox.notes-overlay.right .BRfloatHead,
+#colorbox.annotations-overlay.left .BRfloatHead,
+#colorbox.annotations-overlay.right .BRfloatHead {
+    font-size: 17px;
+    line-height: 18px;
+}*/
+#colorbox.notes-overlay .BRfloatBody,
+#colorbox.annotations-overlay .BRfloatBody {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding-bottom: 62px;
+}
+#colorbox.notes-overlay.left .BRfloatBody,
+#colorbox.notes-overlay.right .BRfloatBody,
+#colorbox.annotations-overlay.left .BRfloatBody,
+#colorbox.annotations-overlay.right .BRfloatBody {
+    padding: 10px 10px 62px 10px;
+}
+#colorbox.notes-overlay.bottom .BRfloat p,
+#colorbox.annotations-overlay.bottom .BRfloat p {
+    margin: 20px 20px;
+    width: auto;
+}
+#colorbox.notes-overlay.left .BRfloat p,
+#colorbox.notes-overlay.right .BRfloat p,
+#colorbox.annotations-overlay.left .BRfloat p,
+#colorbox.annotations-overlay.right .BRfloat p {
+    margin: 0;
+    width: auto;
+}
+#colorbox.notes-overlay .BRfloatBody > h3,
+#colorbox.annotations-overlay .BRfloatBody > h3 {
+    color: #444;
+    margin-bottom: 5px;
+}
+#cboxOverlay.notes-overlay,
+#cboxOverlay.annotations-overlay {
+    display: none !important;
+}
+
 div#BRpage {
     float: right;
     width: 280px;

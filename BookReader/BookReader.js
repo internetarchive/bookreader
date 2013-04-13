@@ -3723,23 +3723,50 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     jToolbar.find('.notes').click(function() {
         if (!self.pageHasNotes()) { return false; }
-        $.colorbox({
+
+        var colorboxOptions = {
             inline: true,
             href: '#BRnotes',
             className: 'notes-overlay',
             onOpen: self.onOpenNotesDiv.bind(self),
-            bottom: 30,
-            width: '100%',
-            height: 200,
             onLoad: function() {
                 self.autoStop();
                 self.ttsStop();
             },
             onComplete: function() {
                 self.bindColorboxCloseClick();
-                self.bindColorboxWidthResize('100%');
-            },
-        });
+                self.bindColorboxResize();
+            }
+        };
+
+        switch (self.notesPopupPosition) {
+            case 'left':
+                colorboxOptions.left =  0;
+                colorboxOptions.width = Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200);
+                colorboxOptions.height = $(document).height()
+                                       - ($('#BRtoolbar:visible').height() || 0)
+                                       - ($('#BRnav:visible').height() || 0);
+                colorboxOptions.className += ' left';
+                break;
+            case 'right':
+                colorboxOptions.right =  0;
+                colorboxOptions.width = Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200);
+                colorboxOptions.height = $(document).height()
+                                       - ($('#BRtoolbar:visible').height() || 0)
+                                       - ($('#BRnav:visible').height() || 0);
+                colorboxOptions.className += ' right';
+                break;
+            case 'bottom':
+                colorboxOptions.bottom = 30;
+                colorboxOptions.width = '100%';
+                colorboxOptions.height = 200;
+                colorboxOptions.className += ' bottom';
+                break;
+            default:
+                break;
+        }
+
+        $.colorbox(colorboxOptions);
     });
 
     $('<div style="display: none;"></div>')
@@ -5378,21 +5405,47 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
         if (!annotation_data) { return; }
 
         $('#BRannotations').find('.BRfloatBody').html(annotation_data);
-        $.colorbox({
+
+        var colorboxOptions = {
             inline: true,
             href: "#BRannotations",
             className: 'annotations-overlay',
-            bottom: 30,
-            width: '100%',
             onLoad: function() {
                 self.autoStop();
                 self.ttsStop();
             },
             onComplete: function() {
                 self.bindColorboxCloseClick();
-                self.bindColorboxWidthResize('100%');
+                self.bindColorboxResize();
             }
-        });
+        };
+
+        switch (self.annotationsPopupPosition) {
+            case 'left':
+                colorboxOptions.left = 0;
+                colorboxOptions.className += ' left';
+                colorboxOptions.width = Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200);
+                colorboxOptions.height = $(document).height()
+                                       - ($('#BRtoolbar:visible').height() || 0)
+                                       - ($('#BRnav:visible').height() || 0);
+                break;
+            case 'right':
+                colorboxOptions.right = 0;
+                colorboxOptions.className += ' right';
+                colorboxOptions.width = Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200);
+                colorboxOptions.height = $(document).height()
+                                       - ($('#BRtoolbar:visible').height() || 0)
+                                       - ($('#BRnav:visible').height() || 0);
+                break;
+            case 'bottom':
+                colorboxOptions.bottom = 30;
+                colorboxOptions.width = '100%';
+                break;
+            default:
+                break;
+        }
+
+        $.colorbox(colorboxOptions);
     });
 }
 BookReader.prototype.buildAnnotationsOutlinesModeOne = function() {
@@ -5473,18 +5526,32 @@ BookReader.prototype.bindColorboxCloseClick = function() {
     }, 1);
 }
 
-BookReader.prototype.bindColorboxWidthResize = function(width) {
-    if (!width) { return; }
-    $(window).bind('resize.colorbox', function() {
-        var $colorbox = $('#colorbox:visible');
-        if (!$colorbox.length) {
-            return $(window).unbind('resize.colorbox');
-        }
-        $.colorbox.resize({
-            width: width,
-            height: $colorbox.height()
+BookReader.prototype.bindColorboxResize = function() {
+    var $colorbox = $('#colorbox');
+
+    if ($colorbox.hasClass('left') || $colorbox.hasClass('right')) {
+        $(window).bind('resize.colorbox', function() {
+            var $colorbox = $('#colorbox:visible');
+            if (!$colorbox.length) {
+                return $(window).unbind('resize.colorbox');
+            }
+            $.colorbox.resize({
+                 width: Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200)
+                ,height: $(document).height() - ($('#BRtoolbar:visible').height() || 0) - ($('#BRnav:visible').height() || 0)
+            });
         });
-    });
+    } else if ($colorbox.hasClass('bottom')) {
+        $(window).bind('resize.colorbox', function() {
+            var $colorbox = $('#colorbox:visible');
+            if (!$colorbox.length) {
+                return $(window).unbind('resize.colorbox');
+            }
+            $.colorbox.resize({
+                width: '100%',
+                height: $colorbox.height()
+            });
+        });
+    }
 }
 
 // Can be overridden
