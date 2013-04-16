@@ -695,6 +695,7 @@ a.BRgrey:visited   { color: #666; }
 #colorbox.annotations-overlay.bottom .BRfloat p {
     margin: 20px 20px;
     width: auto;
+    word-break: break-word;
 }
 #colorbox.notes-overlay.left .BRfloat p,
 #colorbox.notes-overlay.right .BRfloat p,
@@ -702,6 +703,7 @@ a.BRgrey:visited   { color: #666; }
 #colorbox.annotations-overlay.right .BRfloat p {
     margin: 0;
     width: auto;
+    word-break: break-word;
 }
 #colorbox.notes-overlay .BRfloatBody > h3,
 #colorbox.annotations-overlay .BRfloatBody > h3 {
