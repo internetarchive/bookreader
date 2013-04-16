@@ -683,6 +683,7 @@ a.BRgrey:visited   { color: #666; }
     height: 100%;
     overflow-y: auto;
     box-sizing: border-box;
+    -moz-box-sizing: border-box;
     padding-bottom: 62px;
 }
 #colorbox.notes-overlay.left .BRfloatBody,
@@ -696,6 +697,12 @@ a.BRgrey:visited   { color: #666; }
     margin: 20px 20px;
     width: auto;
     word-break: break-word;
+}
+@-moz-document url-prefix() { /* Firefox Hack */
+    #colorbox.notes-overlay.bottom .BRfloat .BRfloatBody p:last-child,
+    #colorbox.annotations-overlay.bottom .BRfloat .BRfloatBody p:last-child {
+        margin-bottom: 62px;
+    }
 }
 #colorbox.notes-overlay.left .BRfloat p,
 #colorbox.notes-overlay.right .BRfloat p,
