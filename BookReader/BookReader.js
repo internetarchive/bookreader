@@ -3723,6 +3723,18 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     jToolbar.find('.notes').click(function() {
         if (!self.pageHasNotes()) { return false; }
+        if ($('#colorbox.notes-overlay:visible').length) {
+            return $.colorbox.close(); // close notes if open
+        }
+        // if ($('#colorbox:visible')) { // close any other colorboxes first
+        //     var switch_colorbox = function(new_options) {
+        //         $(document).bind('cbox_closed', function() {
+        //             $(document).unbind('cbox_closed');
+        //             $.colorbox(new_options);
+        //         });
+        //         $.colorbox.remove();
+        //     }
+        // }
 
         var colorboxOptions = {
             inline: true,
@@ -3759,7 +3771,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
             case 'bottom':
                 colorboxOptions.bottom = 30;
                 colorboxOptions.width = '100%';
-                colorboxOptions.height = 200;
+                colorboxOptions.height = 300;
                 colorboxOptions.className += ' bottom';
                 break;
             default:
@@ -3825,8 +3837,8 @@ BookReader.prototype.blankNotesDiv = function() {
     return $([
         '<div class="BRfloat" id="BRnotes">',
             '<div class="BRfloatHead">',
-                'Notes',
-                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+                (this.notesPopupTitle || 'Notes'),
+                '<a class="floatShut" href="javascript:;" onclick="$.colorbox.close();"><span class="shift">Close</span></a>',
             '</div>',
             '<div class="BRfloatBody"></div>',
         '</div>'].join('\n')
@@ -3837,8 +3849,8 @@ BookReader.prototype.blankAnnotationsDiv = function() {
     return $([
         '<div class="BRfloat" id="BRannotations">',
             '<div class="BRfloatHead">',
-                'Annotations',
-                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+                (this.annotationsPopupTitle || 'Annotations'),
+                '<a class="floatShut" href="javascript:;" onclick="$.colorbox.close();"><span class="shift">Close</span></a>',
             '</div>',
             '<div class="BRfloatBody"></div>',
         '</div>'].join('\n')
@@ -5439,7 +5451,9 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
                 break;
             case 'bottom':
                 colorboxOptions.bottom = 30;
+                colorboxOptions.className += ' bottom';
                 colorboxOptions.width = '100%';
+                colorboxOptions.height = 300;
                 break;
             default:
                 break;
