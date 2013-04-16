@@ -3699,7 +3699,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     
     // $$$ Don't hardcode ids
     var self = this;
-    ['share', 'info'].forEach(function(name) {
+    $.each(['share', 'info'], function(i, name) {
         jToolbar.find('.'+name).colorbox({
             inline: true,
             opacity: "0.5",
@@ -3712,14 +3712,14 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     });
 
     // toggle annotation outlines on toolbar button click
-    jToolbar.find('.annotations').click(function() {
+    jToolbar.find('.annotations').click($.proxy(function() {
         if (this.annotations_visible === undefined) {
             this.annotations_visible = true;
         } else {
             this.annotations_visible = !this.annotations_visible;
         }
         $('#BRcontainer').find('.annotation').toggle(this.annotations_visible);
-    }.bind(this));
+    }, this));
 
     jToolbar.find('.notes').click(function() {
         if (!self.pageHasNotes()) { return false; }
@@ -3728,7 +3728,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
             inline: true,
             href: '#BRnotes',
             className: 'notes-overlay',
-            onOpen: self.onOpenNotesDiv.bind(self),
+            onOpen: $.proxy(self.onOpenNotesDiv, self),
             onLoad: function() {
                 self.autoStop();
                 self.ttsStop();
@@ -5449,12 +5449,12 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
     });
 }
 BookReader.prototype.buildAnnotationsOutlinesModeOne = function() {
-    $.each(this.annotations, function(index, areas) {
+    $.each(this.annotations, $.proxy(function(index, areas) {
         var jPageDiv = $('#pagediv' + (index - 1));
-        $.each(areas, function(i, area) {
+        $.each(areas, $.proxy(function(i, area) {
             this.addAnnotationOutline(area, jPageDiv);
-        }.bind(this));
-    }.bind(this));
+        }, this));
+    }, this));
 }
 BookReader.prototype.buildAnnotationsOutlinesModeTwo = function() {
     var jPageDiv = $('#BRtwopageview');
@@ -5462,17 +5462,17 @@ BookReader.prototype.buildAnnotationsOutlinesModeTwo = function() {
     var right_index = this.firstIndex + 2;
 
     if (this.annotations[left_index]) {
-        $.each(this.annotations[left_index], function(i, area) {
+        $.each(this.annotations[left_index], $.proxy(function(i, area) {
             this.addAnnotationOutline(area, jPageDiv);
-        }.bind(this));
+        }, this));
     }
 
     if (this.annotations[right_index]) {
-        $.each(this.annotations[right_index], function(i, area) {
+        $.each(this.annotations[right_index], $.proxy(function(i, area) {
             var shifted_area = $.extend({}, area); // shift page 2 coordinates right by one page width
             shifted_area.x += this.getPageWidth(); // this gets scaled during add
             this.addAnnotationOutline(shifted_area, jPageDiv);
-        }.bind(this));
+        }, this));
     }
 }
 BookReader.prototype.addAnnotationOutline = function(the_area, jElement) {
@@ -5486,9 +5486,9 @@ BookReader.prototype.addAnnotationOutline = function(the_area, jElement) {
      || !area.content || !jElement
     ) { return; }
 
-    ['x', 'y', 'w', 'h'].forEach(function(dim) { // scale dimensions
+    $.each(['x', 'y', 'w', 'h'], $.proxy(function(i, dim) { // scale dimensions
         area[dim] = (Number(area[dim]) || 0) / (this.reduce || 1);
-    }, this);
+    }, this));
 
     var smallest_dimension = Math.min(this.getPageHeight() / this.reduce, this.getPageWidth() / this.reduce);
 

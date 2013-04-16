@@ -67,6 +67,7 @@ a {
     border-style: solid;
     border-radius: 3px;
     box-shadow: 0 0 2px #000, 0 0 2px #000 inset;
+    background-image: url(images/transparent.png)\0/; /* IE8 Hack */
 }
 
 #BRcontainer .annotation:hover {
