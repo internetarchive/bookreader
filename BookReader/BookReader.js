@@ -5412,8 +5412,14 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
 
     var self = this; // launch annotations popup on annotation area click
     $('#BRcontainer').find('.annotation').click(function() {
-        console.log('annotation click');
-        var annotation_data = $(this).data('annotation-content');
+        var $this = $(this);
+        var annotation_data;
+        if ($this.data('annotation-selector')) {
+            annotation_data = $('<div>').append($($this.data('annotation-selector')).clone(true, true)).html();
+        } else {
+            annotation_data = $this.data('annotation-content');
+        }
+
         if (!annotation_data) { return; }
 
         $('#BRannotations').find('.BRfloatBody').html(annotation_data);
@@ -5491,13 +5497,14 @@ BookReader.prototype.buildAnnotationsOutlinesModeTwo = function() {
 }
 BookReader.prototype.addAnnotationOutline = function(the_area, jElement) {
     area = $.extend({
-        x: 0, y: 0, w: 0, h: 0, content: null
+        x: 0, y: 0, w: 0, h: 0, content: null, selector: null
     }, the_area);
 
     if (typeof area.x !== 'number'
      || typeof area.y !== 'number'
-     || area.w === 0 || area.h === 0 
-     || !area.content || !jElement
+     || area.w === 0 || area.h === 0
+     || (!area.selector && !area.content)
+     || !jElement
     ) { return; }
 
     $.each(['x', 'y', 'w', 'h'], $.proxy(function(i, dim) { // scale dimensions
@@ -5514,7 +5521,13 @@ BookReader.prototype.addAnnotationOutline = function(the_area, jElement) {
             ,height: area.h + 'px'
             ,borderWidth: Math.min(Math.ceil(smallest_dimension / 150), 5) + 'px'
         })
-        .data('annotation-content', area.content);
+
+    if (area.selector) {
+        $annotation.data('annotation-selector', area.selector);
+    }
+    if (area.content) {
+        $annotation.data('annotation-content', area.content);
+    }
 
     jElement.append($annotation);
     if (this.annotations_visible) {
