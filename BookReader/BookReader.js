@@ -3748,6 +3748,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
             onComplete: function() {
                 self.bindColorboxCloseClick();
                 self.bindColorboxResize();
+            },
+            onClosed: function() {
+                self.unbindColorboxCloseClick();
             }
         };
 
@@ -5435,6 +5438,9 @@ BookReader.prototype.buildAnnotationsOutlines = function() {
             onComplete: function() {
                 self.bindColorboxCloseClick();
                 self.bindColorboxResize();
+            },
+            onClosed: function() {
+                self.unbindColorboxCloseClick();
             }
         };
 
@@ -5551,6 +5557,10 @@ BookReader.prototype.bindColorboxCloseClick = function() {
             return false;
         });
     }, 1);
+}
+
+BookReader.prototype.unbindColorboxCloseClick = function() {
+    $('body').unbind('click.colorbox');
 }
 
 BookReader.prototype.bindColorboxResize = function() {
