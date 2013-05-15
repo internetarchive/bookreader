@@ -130,6 +130,9 @@ function BookReader() {
         // table of contents
         // embed/share ui
         // info ui
+        // notes per-page
+        // annotations
+        // annotations_maker
     };
 
     // Text-to-Speech params
@@ -261,7 +264,6 @@ BookReader.prototype.init = function() {
         $('.BRpagedivthumb').live('contextmenu dragstart', this, function(e) {
             return false;
         });
-        
     }
     
     $('.BRpagediv1up').bind('mousedown', this, function(e) {
@@ -381,6 +383,7 @@ BookReader.prototype.drawLeafs = function() {
         this.drawLeafsTwoPage();
     }
     
+    this.buildAnnotationsOutlines();
 }
 
 // bindGestures(jElement)
@@ -530,7 +533,6 @@ BookReader.prototype.drawLeafsOnePage = function() {
     }
             
     this.updateToolbarZoom(this.reduce);
-    
 }
 
 // drawLeafsThumbnail()
@@ -765,7 +767,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
         $("#BRpagenum").val('');
     }
 
-    this.updateToolbarZoom(this.reduce); 
+    this.updateToolbarZoom(this.reduce);
 }
 
 BookReader.prototype.lazyLoadThumbnails = function() {
@@ -897,7 +899,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
     this.updateToolbarZoom(this.reduce);
     
     // this.twoPagePlaceFlipAreas();  // No longer used
-
 }
 
 // updatePageNumBox2UP
@@ -1155,6 +1156,8 @@ BookReader.prototype.zoom2up = function(direction) {
     
     // Prepare view with new center to minimize visual glitches
     this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
+
+    this.buildAnnotationsOutlines();
 }
 
 BookReader.prototype.zoomThumb = function(direction) {
@@ -1378,6 +1381,7 @@ BookReader.prototype.switchMode = function(mode) {
     this.autoStop();
     this.ttsStop();
     this.removeSearchHilites();
+    this.removeAnnotations();
 
     this.mode = mode;
     //this.switchToolbarMode(mode);
@@ -1407,6 +1411,7 @@ BookReader.prototype.switchMode = function(mode) {
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
 
+    this.buildAnnotationsOutlines();
 }
 
 //prepareOnePageView()
@@ -1425,7 +1430,7 @@ BookReader.prototype.prepareOnePageView = function() {
     $("#BRcontainer").append("<div id='BRpageview'></div>");
     
     // Attaches to first child - child must be present
-    $('#BRcontainer').dragscrollable();
+    $('#BRcontainer').dragscrollable({ preventDefault: false });
     this.bindGestures($('#BRcontainer'));
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
@@ -1452,7 +1457,7 @@ BookReader.prototype.prepareThumbnailView = function() {
         
     $("#BRcontainer").append("<div id='BRpageview'></div>");
     
-    $('#BRcontainer').dragscrollable();
+    $('#BRcontainer').dragscrollable({ preventDefault: false });
     this.bindGestures($('#BRcontainer'));
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
@@ -2039,7 +2044,7 @@ BookReader.prototype.prev = function() {
     } else {
         if (this.firstIndex >= 1) {
             this.jumpToIndex(this.firstIndex-1);
-        }    
+        }
     }
 }
 
@@ -2193,6 +2198,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
     //      - redraw the search highlight.
     //      - update the pagenum box and the url.
     
+    this.removeAnnotations();
     
     var leftEdgeTmpLeft = gutter - currWidthL - leafEdgeTmpW;
 
@@ -2283,6 +2289,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.animating = false;
             
             self.updateSearchHilites2UP();
+            self.buildAnnotationsOutlines();
             self.updatePageNumBox2UP();
             
             // self.twoPagePlaceFlipAreas(); // No longer used
@@ -2361,6 +2368,8 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 
     var middle = this.twoPage.middle;
     var gutter = middle + this.gutterOffsetForIndex(newIndexL);
+
+    this.removeAnnotations();
     
     this.leafEdgeTmp = document.createElement('div');
     this.leafEdgeTmp.className = 'BRleafEdgeTmp';
@@ -2427,10 +2436,11 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 
 
             self.updateSearchHilites2UP();
+            self.buildAnnotationsOutlines();
             self.updatePageNumBox2UP();
             
             // self.twoPagePlaceFlipAreas(); // No longer used
-            self.setMouseHandlers2UP();     
+            self.setMouseHandlers2UP();
             self.twoPageSetCursor();
             
             if (self.animationFinishedCallback) {
@@ -3628,6 +3638,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +     "<button class='BRicon pause'></button>"
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
+        +     (this.features.notes ? "<button class='BRicon notes'></button>" : "")
+        +     (this.features.annotations ? "<button class='BRicon annotations'></button>" : "")
+        +     (this.features.annotations_maker ? "<button class='BRicon annotations_maker'></button>" : "")
         +     readIcon
         //+     "<button class='BRicon full'></button>"
         +   "</span>"
@@ -3688,20 +3701,108 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     
     // $$$ Don't hardcode ids
     var self = this;
-    jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#BRshare", onLoad: function() { self.autoStop(); self.ttsStop(); } });
-    jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#BRinfo", onLoad: function() { self.autoStop(); self.ttsStop(); } });
+    $.each(['share', 'info'], function(i, name) {
+        jToolbar.find('.'+name).colorbox({
+            inline: true,
+            opacity: "0.5",
+            href: "#BR"+name,
+            onLoad: function() {
+                self.autoStop();
+                self.ttsStop();
+            }
+        });
+    });
 
-    $('<div style="display: none;"></div>').append(this.blankShareDiv()).append(this.blankInfoDiv()).appendTo($('body'));
+    // toggle annotation outlines on toolbar button click
+    jToolbar.find('.annotations').click($.proxy(function() {
+        if (this.annotations_visible === undefined) {
+            this.annotations_visible = true;
+        } else {
+            this.annotations_visible = !this.annotations_visible;
+        }
+        $('#BRcontainer').find('.annotation').toggle(this.annotations_visible);
+    }, this));
+
+    jToolbar.find('.notes').click(function() {
+        if (!self.pageHasNotes()) { return false; }
+        if ($('#colorbox.notes-overlay:visible').length) {
+            return $.colorbox.close(); // close notes if open
+        }
+        // if ($('#colorbox:visible')) { // close any other colorboxes first
+        //     var switch_colorbox = function(new_options) {
+        //         $(document).bind('cbox_closed', function() {
+        //             $(document).unbind('cbox_closed');
+        //             $.colorbox(new_options);
+        //         });
+        //         $.colorbox.remove();
+        //     }
+        // }
+
+        var colorboxOptions = {
+            inline: true,
+            href: '#BRnotes',
+            className: 'notes-overlay',
+            onOpen: $.proxy(self.onOpenNotesDiv, self),
+            onLoad: function() {
+                self.autoStop();
+                self.ttsStop();
+            },
+            onComplete: function() {
+                self.bindColorboxCloseClick();
+                self.bindColorboxResize();
+            },
+            onClosed: function() {
+                self.unbindColorboxCloseClick();
+            }
+        };
+
+        switch (self.notesPopupPosition) {
+            case 'left':
+                colorboxOptions.left =  0;
+                colorboxOptions.width = Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200);
+                colorboxOptions.height = $(document).height()
+                                       - ($('#BRtoolbar:visible').height() || 0)
+                                       - ($('#BRnav:visible').height() || 0);
+                colorboxOptions.className += ' left';
+                break;
+            case 'right':
+                colorboxOptions.right =  0;
+                colorboxOptions.width = Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200);
+                colorboxOptions.height = $(document).height()
+                                       - ($('#BRtoolbar:visible').height() || 0)
+                                       - ($('#BRnav:visible').height() || 0);
+                colorboxOptions.className += ' right';
+                break;
+            case 'bottom':
+                colorboxOptions.bottom = 30;
+                colorboxOptions.width = '100%';
+                colorboxOptions.height = 300;
+                colorboxOptions.className += ' bottom';
+                break;
+            default:
+                break;
+        }
+
+        $.colorbox(colorboxOptions);
+    });
+
+    $('<div style="display: none;"></div>')
+        .append(this.blankShareDiv())
+        .append(this.blankInfoDiv())
+        .append(this.blankNotesDiv())
+        .append(this.blankAnnotationsDiv())
+        .appendTo($('body'));
 
     $('#BRinfo .BRfloatTitle a').attr( {'href': this.bookUrl} ).text(this.bookTitle).addClass('title');
     
     // These functions can be overridden
     this.buildInfoDiv($('#BRinfo'));
     this.buildShareDiv($('#BRshare'));
-    
+    this.buildNotesDiv($('#BRnotes'));
+    this.buildAnnotationsDiv($('#BRannotations'));
+
     // Switch to requested mode -- binds other click handlers
     //this.switchToolbarMode(mode);
-    
 }
 
 BookReader.prototype.blankInfoDiv = function() {
@@ -3735,6 +3836,53 @@ BookReader.prototype.blankShareDiv = function() {
             '</div>',
         '</div>'].join('\n')
     );
+}
+
+BookReader.prototype.blankNotesDiv = function() {
+    return $([
+        '<div class="BRfloat" id="BRnotes">',
+            '<div class="BRfloatHead">',
+                (this.notesPopupTitle || 'Notes'),
+                '<a class="floatShut" href="javascript:;" onclick="$.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+            '<div class="BRfloatBody"></div>',
+        '</div>'].join('\n')
+    );
+}
+
+BookReader.prototype.blankAnnotationsDiv = function() {
+    return $([
+        '<div class="BRfloat" id="BRannotations">',
+            '<div class="BRfloatHead">',
+                (this.annotationsPopupTitle || 'Annotations'),
+                '<a class="floatShut" href="javascript:;" onclick="$.colorbox.close();"><span class="shift">Close</span></a>',
+            '</div>',
+            '<div class="BRfloatBody"></div>',
+        '</div>'].join('\n')
+    );
+}
+
+BookReader.prototype.onOpenNotesDiv = function() {
+    var notes = '';
+    if (this.mode === 2) {
+        var left_page  = this.getNotes(this.firstIndex);
+        var right_page = this.getNotes(this.firstIndex + 1);
+        if (left_page)  { notes += '<h3>Left Page</h3>' + left_page; }
+        if (right_page) { notes += '<h3>Right Page</h3>' + right_page; }
+    } else {
+        notes = this.getNotes(this.currentIndex());
+    }
+
+    if (!notes) { // show nothing if no note - is this desirable?
+        $.colorbox.close();
+        return false;
+    }
+
+    $('#BRnotes').find('.BRfloatBody').html(notes);
+}
+
+BookReader.prototype.onOpenAnnotationsDiv = function() {
+    $('#BRannotations').find('.BRfloatBody').html('Annotations for all!');
 }
 
 
@@ -4672,9 +4820,25 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         
         $('#BRreturn').css({ 'line-height': '19px'} );
         $('#BRreturn a').css( {'height': '18px' } );
-
-        
     }
+}
+
+BookReader.prototype.getNotes = function(index) {
+    if (!this.notes) { return false; }
+    return this.notes[index+1] || false;
+}
+
+BookReader.prototype.pageHasNotes = function() {
+    if (this.mode === 2) {
+        return (!!this.notes[this.firstIndex + 1] || !!this.notes[this.firstIndex + 2])
+    } else {
+        return !!this.notes[this.currentIndex() + 1];
+    }
+}
+
+BookReader.prototype.getAnnotations = function(index) {
+    if (!this.annotations) { return false; }
+    return this.annotations[index+1] || false;
 }
 
 // Library functions
@@ -5230,7 +5394,206 @@ BookReader.prototype.buildInfoDiv = function(jInfoDiv)
     jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
 }
 
-// Can be overriden
+// Can be overridden
+BookReader.prototype.buildNotesDiv = function(jNotesDiv) {}
+BookReader.prototype.buildAnnotationsDiv = function(jAnnotationsDiv) {}
+
+// build (or rebuild) annotations
+BookReader.prototype.buildAnnotationsOutlines = function() {
+    if (!this.annotations) { return; }
+    this.removeAnnotations();
+
+    switch (this.mode) {
+        case 1:
+        case 3:
+            this.buildAnnotationsOutlinesModeOne();
+            break;
+        case 2:
+            this.buildAnnotationsOutlinesModeTwo();
+            break;
+        default:
+            return;
+    }
+
+    var self = this; // launch annotations popup on annotation area click
+    $('#BRcontainer').find('.annotation').click(function() {
+        var $this = $(this);
+        var annotation_data;
+        if ($this.data('annotation-selector')) {
+            annotation_data = $('<div>').append($($this.data('annotation-selector')).clone(true, true)).html();
+        } else {
+            annotation_data = $this.data('annotation-content');
+        }
+
+        if (!annotation_data) { return; }
+
+        $('#BRannotations').find('.BRfloatBody').html(annotation_data);
+
+        var colorboxOptions = {
+            inline: true,
+            href: "#BRannotations",
+            className: 'annotations-overlay',
+            onLoad: function() {
+                self.autoStop();
+                self.ttsStop();
+            },
+            onComplete: function() {
+                self.bindColorboxCloseClick();
+                self.bindColorboxResize();
+            },
+            onClosed: function() {
+                self.unbindColorboxCloseClick();
+            }
+        };
+
+        switch (self.annotationsPopupPosition) {
+            case 'left':
+                colorboxOptions.left = 0;
+                colorboxOptions.className += ' left';
+                colorboxOptions.width = Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200);
+                colorboxOptions.height = $(document).height()
+                                       - ($('#BRtoolbar:visible').height() || 0)
+                                       - ($('#BRnav:visible').height() || 0);
+                break;
+            case 'right':
+                colorboxOptions.right = 0;
+                colorboxOptions.className += ' right';
+                colorboxOptions.width = Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200);
+                colorboxOptions.height = $(document).height()
+                                       - ($('#BRtoolbar:visible').height() || 0)
+                                       - ($('#BRnav:visible').height() || 0);
+                break;
+            case 'bottom':
+                colorboxOptions.bottom = 30;
+                colorboxOptions.className += ' bottom';
+                colorboxOptions.width = '100%';
+                colorboxOptions.height = 300;
+                break;
+            default:
+                break;
+        }
+
+        $.colorbox(colorboxOptions);
+    });
+}
+BookReader.prototype.buildAnnotationsOutlinesModeOne = function() {
+    $.each(this.annotations, $.proxy(function(index, areas) {
+        var jPageDiv = $('#pagediv' + (index - 1));
+        $.each(areas, $.proxy(function(i, area) {
+            this.addAnnotationOutline(area, jPageDiv);
+        }, this));
+    }, this));
+}
+BookReader.prototype.buildAnnotationsOutlinesModeTwo = function() {
+    var jPageDiv = $('#BRtwopageview');
+    var left_index  = this.firstIndex + 1;
+    var right_index = this.firstIndex + 2;
+
+    if (this.annotations[left_index]) {
+        $.each(this.annotations[left_index], $.proxy(function(i, area) {
+            this.addAnnotationOutline(area, jPageDiv);
+        }, this));
+    }
+
+    if (this.annotations[right_index]) {
+        $.each(this.annotations[right_index], $.proxy(function(i, area) {
+            var shifted_area = $.extend({}, area); // shift page 2 coordinates right by one page width
+            shifted_area.x += this.getPageWidth(); // this gets scaled during add
+            this.addAnnotationOutline(shifted_area, jPageDiv);
+        }, this));
+    }
+}
+BookReader.prototype.addAnnotationOutline = function(the_area, jElement) {
+    area = $.extend({
+        x: 0, y: 0, w: 0, h: 0, content: null, selector: null
+    }, the_area);
+
+    if (typeof area.x !== 'number'
+     || typeof area.y !== 'number'
+     || area.w === 0 || area.h === 0
+     || (!area.selector && !area.content)
+     || !jElement
+    ) { return; }
+
+    $.each(['x', 'y', 'w', 'h'], $.proxy(function(i, dim) { // scale dimensions
+        area[dim] = (Number(area[dim]) || 0) / (this.reduce || 1);
+    }, this));
+
+    var smallest_dimension = Math.min(this.getPageHeight() / this.reduce, this.getPageWidth() / this.reduce);
+
+    var $annotation = $('<div class="annotation"></div>')
+        .css({
+             top: area.y + 'px'
+            ,left: area.x + 'px'
+            ,width: area.w + 'px'
+            ,height: area.h + 'px'
+            ,borderWidth: Math.min(Math.ceil(smallest_dimension / 150), 5) + 'px'
+        })
+
+    if (area.selector) {
+        $annotation.data('annotation-selector', area.selector);
+    }
+    if (area.content) {
+        $annotation.data('annotation-content', area.content);
+    }
+
+    jElement.append($annotation);
+    if (this.annotations_visible) {
+        $annotation.show();
+    }
+}
+BookReader.prototype.removeAnnotations = function() {
+    $('#BRcontainer').find('.annotation').remove();
+}
+
+BookReader.prototype.bindColorboxCloseClick = function() {
+    setTimeout(function() { // hack to dodge the initial click
+        $('body').bind('click.colorbox', function(e) {
+            if ($(e.target).closest('#colorbox, #BRtoolbar, #BRnav').length) {
+                return true; // don't close on colorbox, toolbar, or nav clicks
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            $.colorbox.close();
+            $('body').unbind('click.colorbox');
+            return false;
+        });
+    }, 1);
+}
+
+BookReader.prototype.unbindColorboxCloseClick = function() {
+    $('body').unbind('click.colorbox');
+}
+
+BookReader.prototype.bindColorboxResize = function() {
+    var $colorbox = $('#colorbox');
+
+    if ($colorbox.hasClass('left') || $colorbox.hasClass('right')) {
+        $(window).bind('resize.colorbox', function() {
+            var $colorbox = $('#colorbox:visible');
+            if (!$colorbox.length) {
+                return $(window).unbind('resize.colorbox');
+            }
+            $.colorbox.resize({
+                 width: Math.max(($(document).width() - $('#BRpageview, #BRtwopageview').width()) / 2, 200)
+                ,height: $(document).height() - ($('#BRtoolbar:visible').height() || 0) - ($('#BRnav:visible').height() || 0)
+            });
+        });
+    } else if ($colorbox.hasClass('bottom')) {
+        $(window).bind('resize.colorbox', function() {
+            var $colorbox = $('#colorbox:visible');
+            if (!$colorbox.length) {
+                return $(window).unbind('resize.colorbox');
+            }
+            $.colorbox.resize({
+                width: '100%',
+                height: $colorbox.height()
+            });
+        });
+    }
+}
+
+// Can be overridden
 BookReader.prototype.initUIStrings = function()
 {
     // Navigation handlers will be bound after all UI is in place -- makes moving icons between
@@ -5250,6 +5613,8 @@ BookReader.prototype.initUIStrings = function()
                    '.read': 'Read this book aloud',
                    '.share': 'Share this book',
                    '.info': 'About this book',
+                   '.notes': 'Notes for this page',
+                   '.annotations': 'Annotations for this page',
                    '.full': 'Show fullscreen',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
