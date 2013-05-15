@@ -273,6 +273,8 @@ a {
 .BRicon.notes:hover {background-position: -1280px 0;}
 .BRicon.annotations {background-position: -1320px 0;}
 .BRicon.annotations:hover {background-position: -1360px 0;}
+.BRicon.annotations_maker {background-position: -1400px 0;}
+.BRicon.annotations_maker:hover {background-position:-1440px 0;}
 
 
 a.logo {

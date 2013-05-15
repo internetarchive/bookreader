@@ -132,6 +132,7 @@ function BookReader() {
         // info ui
         // notes per-page
         // annotations
+        // annotations_maker
     };
 
     // Text-to-Speech params
@@ -3639,6 +3640,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +     "<button class='BRicon share'></button>"
         +     (this.features.notes ? "<button class='BRicon notes'></button>" : "")
         +     (this.features.annotations ? "<button class='BRicon annotations'></button>" : "")
+        +     (this.features.annotations_maker ? "<button class='BRicon annotations_maker'></button>" : "")
         +     readIcon
         //+     "<button class='BRicon full'></button>"
         +   "</span>"
