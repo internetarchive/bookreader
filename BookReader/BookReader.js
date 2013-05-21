@@ -150,7 +150,6 @@ BookReader.prototype.init = function() {
 
     var startIndex = undefined;
     this.pageScale = this.reduce; // preserve current reduce
-    
     // Find start index and mode if set in location hash
     var params = {};
     if (window.location.hash) {
@@ -159,7 +158,7 @@ BookReader.prototype.init = function() {
     } else {
         // params not explicitly set, use defaults if we have them
         if ('defaults' in this) {
-            params = this.paramsFromFragment(this.defaults);
+          params = this.paramsFromFragment(this.defaults);
         }
     }
     
@@ -168,13 +167,11 @@ BookReader.prototype.init = function() {
     if ( !this.canSwitchToMode( this.mode ) ) {
         this.mode = this.constMode1up;
     }    
-        
     if ('undefined' != typeof(params.index)) {
         startIndex = params.index;
     } else if ('undefined' != typeof(params.page)) {
         startIndex = this.getPageIndex(params.page);
     }
-
     if ('undefined' == typeof(startIndex)) {
         if ('undefined' != typeof(this.titleLeaf)) {
             // title leaf is known - but only use as default if book has a few pages
@@ -187,6 +184,9 @@ BookReader.prototype.init = function() {
     if ('undefined' == typeof(startIndex)) {
         startIndex = 0;
     }
+    
+    
+    
     
     if ('undefined' != typeof(params.mode)) {
         this.mode = params.mode;
@@ -203,9 +203,11 @@ BookReader.prototype.init = function() {
     $("#BRcontainer").append("<div id='BRpageview'></div>");
         
     $("#BRcontainer").bind('scroll', this, function(e) {
+    	console.log("Event data: " + JSON.stringify(e.data));
         e.data.loadLeafs();
     });
     
+    this.willChangeToIndex(startIndex);
     this.setupKeyListeners();
     this.startLocationPolling();
 
@@ -308,7 +310,7 @@ BookReader.prototype.init = function() {
     if (this.getOpenLibraryRecord) {
         this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
     }
-
+  
 }
 
 BookReader.prototype.setupKeyListeners = function() {
@@ -398,9 +400,6 @@ BookReader.prototype.bindGestures = function(jElement) {
 }
 
 BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
-    //console.log('setting handler');
-    //console.log(element.tagName);
-    
     $(element).unbind('click').bind('click', data, function(e) {
         handler(e);
     });
@@ -412,7 +411,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
     //alert('drawing leafs!');
     this.timer = null;
 
-
+    
     var scrollTop = $('#BRcontainer').attr('scrollTop');
     var scrollBottom = scrollTop + $('#BRcontainer').height();
     //console.log('top=' + scrollTop + ' bottom='+scrollBottom);
@@ -446,11 +445,12 @@ BookReader.prototype.drawLeafsOnePage = function() {
         this.willChangeToIndex(firstIndexToDraw);
     }
     this.firstIndex = firstIndexToDraw;
-    
     // Update hash, but only if we're currently displaying a leaf
     // Hack that fixes #365790
     if (this.displayedIndices.length > 0) {
+        console.log(JSON.stringify(this.paramsFromCurrent()));
         this.updateLocationHash();
+        console.log(JSON.stringify(this.paramsFromCurrent()));
     }
 
     if ((0 != firstIndexToDraw) && (1 < this.reduce)) {
@@ -512,8 +512,6 @@ BookReader.prototype.drawLeafsOnePage = function() {
     for (i=0; i<this.displayedIndices.length; i++) {
         if (BookReader.util.notInArray(this.displayedIndices[i], indicesToDisplay)) {
             var index = this.displayedIndices[i];
-            //console.log('Removing leaf ' + index);
-            //console.log('id='+'#pagediv'+index+ ' top = ' +$('#pagediv'+index).css('top'));
             $('#pagediv'+index).remove();
         } else {
             //console.log('NOT Removing leaf ' + this.displayedIndices[i]);
@@ -525,6 +523,8 @@ BookReader.prototype.drawLeafsOnePage = function() {
     
     if (null != this.getPageNum(firstIndexToDraw))  {
         $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
+        console.log("get page num is not null: " + this.getPageNum(this.currentIndex()));
+        console.log(this.currentIndex());
     } else {
         $("#BRpagenum").val('');
     }
@@ -613,7 +613,6 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     // Visible leafs with least/greatest index
     var leastVisible = this.numLeafs - 1;
     var mostVisible = 0;
-    
     // Determine the thumbnails in view
     for (i=0; i<leafMap.length; i++) {
         leafBottom += this.thumbPadding + leafMap[i].height;
@@ -914,7 +913,7 @@ BookReader.prototype.updatePageNumBox2UP = function() {
 // loadLeafs()
 //______________________________________________________________________________
 BookReader.prototype.loadLeafs = function() {
-
+console.log(" in load leafs");
 
     var self = this;
     if (null == this.timer) {
@@ -1261,7 +1260,6 @@ BookReader.prototype.jumpToPage = function(pageNum) {
     var re = new RegExp('^leaf(\\d+)');
     leafMatch = re.exec(pageNum);
     if (leafMatch) {
-        console.log(leafMatch[1]);
         pageIndex = this.leafNumToIndex(parseInt(leafMatch[1],10));
         if (pageIndex === null) {
             pageIndex = undefined; // to match return type of getPageIndex
@@ -1286,14 +1284,10 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 // jumpToIndex()
 //______________________________________________________________________________
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
-
     this.willChangeToIndex(index);
-
     this.ttsStop();
-
     if (this.constMode2up == this.mode) {
         this.autoStop();
-        
         // By checking against min/max we do nothing if requested index
         // is current
         if (index < Math.min(this.twoPage.currentIndexL, this.twoPage.currentIndexR)) {
@@ -1339,10 +1333,8 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
         var leafTop = this.onePageGetPageTop(index);
 
         if (pageY) {
-            //console.log('pageY ' + pageY);
             var offset = parseInt( (pageY) / this.reduce);
             offset -= $('#BRcontainer').attr('clientHeight') >> 1;
-            //console.log( 'jumping to ' + leafTop + ' ' + offset);
             leafTop += offset;
         } else {
             // Show page just a little below the top
@@ -1357,8 +1349,6 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY) {
             // Preserve left position
             leafLeft = $('#BRcontainer').scrollLeft();
         }
-
-        //$('#BRcontainer').attr('scrollTop', leafTop);
         $('#BRcontainer').animate({scrollTop: leafTop, scrollLeft: leafLeft },'fast');
     }
 }
@@ -1433,7 +1423,6 @@ BookReader.prototype.prepareOnePageView = function() {
     // BookReader.util.disableSelect($('#BRpageview'));
     
     this.resizePageView();    
-    
     this.jumpToIndex(startLeaf);
     this.displayedIndices = [];
     
@@ -1934,7 +1923,6 @@ BookReader.prototype.twoPageCalculateReductionFactors = function() {
 //______________________________________________________________________________
 // Set the cursor for two page view
 BookReader.prototype.twoPageSetCursor = function() {
-    // console.log('setting cursor');
     if ( ($('#BRtwopageview').width() > $('#BRcontainer').attr('clientWidth')) ||
          ($('#BRtwopageview').height() > $('#BRcontainer').attr('clientHeight')) ) {
         $(this.prefetchedImgs[this.twoPage.currentIndexL]).css('cursor','move');
@@ -2039,7 +2027,9 @@ BookReader.prototype.prev = function() {
     } else {
         if (this.firstIndex >= 1) {
             this.jumpToIndex(this.firstIndex-1);
-        }    
+        } else {
+          this.jumpToIndex(this.firstIndex);
+        }
     }
 }
 
@@ -2323,10 +2313,10 @@ BookReader.prototype.flipFwdToIndex = function(index) {
     var nextIndices = this.getSpreadIndices(index);
     
     //console.log('flipfwd to indices ' + nextIndices[0] + ',' + nextIndices[1]);
-
+    
     if ('rl' != this.pageProgression) {
         // We did not specify RTL
-        var gutter = this.prepareFlipRightToLeft(nextIndices[0], nextIndices[1]);
+       var gutter = this.prepareFlipRightToLeft(nextIndices[0], nextIndices[1]);
         this.flipRightToLeft(nextIndices[0], nextIndices[1], gutter);
     } else {
         // RTL
@@ -2338,9 +2328,9 @@ BookReader.prototype.flipFwdToIndex = function(index) {
 /*
  * Put handlers here for when we will navigate to a new page
  */
-BookReader.prototype.willChangeToIndex = function(index)
-{
+BookReader.prototype.willChangeToIndex = function(index) {
     // Update navbar position icon - leads page change animation
+	console.log("update nav index: " + index);
     this.updateNavIndex(index);
 }
 
@@ -2486,6 +2476,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
 // prefetchImg()
 //______________________________________________________________________________
 BookReader.prototype.prefetchImg = function(index) {
+	
     var pageURI = this._getPageURI(index);
 
     // Load image if not loaded or URI has changed (e.g. due to scaling)
@@ -2723,7 +2714,6 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 // search()
 //______________________________________________________________________________
 BookReader.prototype.search = function(term) {
-    //console.log('search called with term=' + term);
     
     $('#textSrch').blur(); //cause mobile safari to hide the keyboard     
     
@@ -3303,10 +3293,9 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 //______________________________________________________________________________
 // Initialize the navigation bar.
 // $$$ this could also add the base elements to the DOM, so disabling the nav bar
-//     could be as simple as not calling this function
+// could be as simple as not calling this function
 BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
-    
     $('#BookReader').append(
         '<div id="BRnav">'
         +     '<div id="BRpage">'   // Page turn buttons
@@ -3369,7 +3358,7 @@ BookReader.prototype.initNavbar = function() {
     .append('<div id="pagenum"><span class="currentpage"></span></div>');
     //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
     
-    this.updateNavPageNum(this.currentIndex());
+    //this.updateNavPageNum(this.currentIndex());
 
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
     
@@ -3426,7 +3415,6 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     var pageNumber = this.getPageNum(pageIndex);
     var uiStringSearch = "Search result"; // i18n
     var uiStringPage = "Page"; // i18n
-    
     var percentThrough = BookReader.util.cssPercentage(pageIndex, this.numLeafs - 1);
     var pageDisplayString = '';
     if (pageNumber) {
@@ -4226,13 +4214,10 @@ BookReader.prototype.firstDisplayableIndex = function() {
 // $$$ Currently we cannot display the front/back cover in 2-up and will need to update
 // this function when we can as pa  rt of https://bugs.launchpad.net/gnubook/+bug/296788
 BookReader.prototype.lastDisplayableIndex = function() {
-
     var lastIndex = this.numLeafs - 1;
-    
     if (this.mode != this.constMode2up) {
-        return lastIndex;
+      return lastIndex;
     }
-
     if ('rl' != this.pageProgression) {
         // LTR
         if (this.getPageSide(lastIndex) == 'R') {
@@ -4283,7 +4268,6 @@ BookReader.prototype.updateFromParams = function(params) {
     }
     
     // $$$ process /zoom
-    
     // We only respect page if index is not set
     if ('undefined' != typeof(params.index)) {
         if (params.index != this.currentIndex()) {
@@ -4295,7 +4279,7 @@ BookReader.prototype.updateFromParams = function(params) {
             this.jumpToPage(params.page);
         }
     }
-
+    
     // $$$ process /region
     // $$$ process /highlight
 }
@@ -4365,8 +4349,11 @@ BookReader.prototype.paramsFromFragment = function(urlFragment) {
 BookReader.prototype.paramsFromCurrent = function() {
 
     var params = {};
-    
     var index = this.currentIndex();
+    if (undefined == this.currentIndex()) {
+      index = 0
+    }
+    
     var pageNum = this.getPageNum(index);
     if ((pageNum === 0) || pageNum) {
         params.page = pageNum;
