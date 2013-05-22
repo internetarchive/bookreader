@@ -203,7 +203,6 @@ BookReader.prototype.init = function() {
     $("#BRcontainer").append("<div id='BRpageview'></div>");
         
     $("#BRcontainer").bind('scroll', this, function(e) {
-    	console.log("Event data: " + JSON.stringify(e.data));
         e.data.loadLeafs();
     });
     
@@ -448,9 +447,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
     // Update hash, but only if we're currently displaying a leaf
     // Hack that fixes #365790
     if (this.displayedIndices.length > 0) {
-        console.log(JSON.stringify(this.paramsFromCurrent()));
         this.updateLocationHash();
-        console.log(JSON.stringify(this.paramsFromCurrent()));
     }
 
     if ((0 != firstIndexToDraw) && (1 < this.reduce)) {
