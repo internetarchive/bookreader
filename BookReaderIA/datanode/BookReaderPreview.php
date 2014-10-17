@@ -26,6 +26,7 @@ This file is part of BookReader.
 
 require_once('BookReaderImages.inc.php');
 
+
 function BRfatal($message) {
     header("HTTP/1.0 404 Not Found");
     header("Content-type: text/plain");
@@ -45,6 +46,11 @@ if (preg_match($allowedPattern, $page)) {
     try {
         $bri->serveLookupRequest($_REQUEST);
     } catch (Exception $e) {
+
+        if (@$_GET['fail']=='soon.jpg')
+          exit(header("Location: https://archive.org/images/notfound.jpg"));
+        
+      
         header("HTTP/1.0 404 Not Found");
         header("Content-type: text/plain");
         
