@@ -1,0 +1,9 @@
+br.bookId   = '{{id|escape('js')}}';
+br.zip      = '{{imageStackFile|escape('js')}}';
+br.subPrefix = '{{subPrefix|escape('js')}}';
+br.server   = '{{server|escape('js')}}';
+br.bookTitle= '{{title|escape('js')}}';
+br.bookPath = '{{subItemPath|escape('js')}}';
+br.bookUrl  = 'https://archive.org/details/{{id|escape('js')}}';
+br.imageFormat = '{{imageFormat|escape('js')}}';
+br.archiveFormat = '{{archiveFormat|escape('js')}}';

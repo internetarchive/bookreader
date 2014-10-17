@@ -18,6 +18,15 @@ This file is part of BookReader.
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// Include Twig
+require_once '3rdparty/Twig/lib/Twig/Autoloader.php';
+Twig_Autoloader::register();
+$loader = new Twig_Loader_Filesystem('templates');
+
+// We turn off caching to avoid problems with protected books, where the cache dir
+// may be created by www-priv
+$twig = new Twig_Environment($loader, array('cache' => false));
+
 header('Content-Type: application/javascript');
 
 $id = $_REQUEST['id'];
@@ -118,43 +127,15 @@ $metaData = simplexml_load_file($metaDataFile);
 //$firstLeaf = $scanData->pageData->page[0]['leafNum'];
 ?>
 
-// Error reporting - this helps us fix errors quickly
-function logError(description,page,line) {
-    if (typeof(archive_analytics) != 'undefined') {
-        var values = {
-            'bookreader': 'error',
-            'description': description,
-            'page': page,
-            'line': line,
-            'itemid': '<?echo $id;?>',
-            'subPrefix': '<?echo $subPrefix;?>',
-            'server': '<?echo $server;?>',
-            'bookPath': '<?echo $subItemPath;?>'
-        };
+<?
+    $args = array();
+    $args['id'] = $id;
+    $args['subPrefix'] = $subPrefix;
+    $args['server'] = $server;
+    $args['subItemPath'] = $subItemPath;
 
-        // if no referrer set '-' as referrer
-        if (document.referrer == '') {
-            values['referrer'] = '-';
-        } else {
-            values['referrer'] = document.referrer;
-        }
-
-        if (typeof(br) != 'undefined') {
-            values['itemid'] = br.bookId;
-            values['subPrefix'] = br.subPrefix;
-            values['server'] = br.server;
-            values['bookPath'] = br.bookPath;
-        }
-
-        var qs = archive_analytics.format_bug(values);
-
-        var error_img = new Image(100,25);
-        error_img.src = archive_analytics.img_src + "?" + qs;
-    }
-
-    return false; // allow browser error handling so user sees there was a problem
-}
-window.onerror=logError;
+    print $twig->render('logError.js', $args);
+?>
 
 br = new BookReader();
 
@@ -391,6 +372,42 @@ br.getEmbedCode = function(frameWidth, frameHeight, viewParams) {
     return "<iframe src='" + this.getEmbedURL(viewParams) + "' width='" + frameWidth + "' height='" + frameHeight + "' frameborder='0' ></iframe>";
 }
 
+<?
+// XXX-Anand -- WARNING: ugly hack below
+//
+// The bookreader is designed to call openlibrary API and constructs the
+// "Return book" button using the response. Now that we have lending
+// available on archive.org, it becomes tricky to make the "Return book"
+// button go to archive.org instead of openlibrary.org.
+
+// To solve this, the ol-auth-url cookie is used to identify if the loan is
+// archive.org, and if so, a new implementation of getOpenLibraryRecord
+// function is provided, which adds the "return book" button appropriately.
+// In the original case the getOpenLibraryRecord function makes a call to
+// OL API and calls the given callback function with the response from the
+// API.
+
+$useOLAuth = false;
+$protected = false;
+foreach ($metaData->xpath('//collection') as $collection) {
+    if('browserlending' == $collection) {
+        $useOLAuth = true;
+        $protected = true;
+    }
+}
+
+if ($useOLAuth  &&  isset($_COOKIE['ol-auth-url'])  &&  strpos($_COOKIE['ol-auth-url'], "archive.org/services/borrow") !== false) {
+?>
+br.getOpenLibraryRecord = function(callback) {
+    $('<form id="BRreturnform" action="/services/borrow/<?= $id ?>" method="post"><input type="submit" value="Return book" onclick="olAuth.deleteCookies();"/><input type="hidden" name="action" value="return-loan" /></form>')
+        .appendTo('#BRreturn');
+
+    $('#BRreturn').css({ 'line-height': '19px'} );
+    $('#BRreturn a').css( {'height': '18px' } );
+}
+
+<? } else { ?>
+
 // getOpenLibraryRecord
 br.getOpenLibraryRecord = function(callback) {
     // Try looking up by ocaid first, then by source_record
@@ -420,6 +437,7 @@ br.getOpenLibraryRecord = function(callback) {
         dataType: 'jsonp'
     });
 }
+<? } ?>
 
 br.buildInfoDiv = function(jInfoDiv) {
     // $$$ it might make more sense to have a URL on openlibrary.org that returns this info
@@ -532,18 +550,23 @@ br.pageNums = [
 
 br.numLeafs = br.pageW.length;
 
-br.bookId   = '<?echo $id;?>';
-br.zip      = '<?echo $imageStackFile;?>';
-br.subPrefix = '<?echo $subPrefix;?>';
-br.server   = '<?echo $server;?>';
-br.bookTitle= '<?echo preg_replace('/\n/', ' ', preg_replace("/\'/", "\\'", $metaData->title));?>';
-br.bookPath = '<?echo $subItemPath;?>';
-br.bookUrl  = '<?echo "https://archive.org/details/$id";?>';
-br.imageFormat = '<?echo $imageFormat;?>';
-br.archiveFormat = '<?echo $archiveFormat;?>';
 
 <?
+$args = array('id' => $id,
+              'imageStackFile'  => $imageStackFile,
+              'subPrefix'       => $subPrefix,
+              'server'          => $server,
+              'title'           => $metaData->title,
+              'subItemPath'     => $subItemPath,
+              'imageFormat'     => $imageFormat,
+              'archiveFormat'   => $archiveFormat,
+              );
 
+print $twig->render('book_metadata.js', $args);
+?>
+
+
+<?
 # Load some values from meta.xml
 if ('' != $metaData->{'page-progression'}) {
   echo "br.pageProgression = '" . $metaData->{"page-progression"} . "';\n";
@@ -552,14 +575,6 @@ if ('' != $metaData->{'page-progression'}) {
   echo "br.pageProgression = 'lr';\n";
 }
 
-$useOLAuth = false;
-$protected = false;
-foreach ($metaData->xpath('//collection') as $collection) {
-    if('browserlending' == $collection) {
-        $useOLAuth = true;
-        $protected = true;
-    }
-}
 
 echo "br.olHost = 'https://openlibrary.org';\n";
 echo "br.olAuthUrl = null;\n";
@@ -648,7 +663,7 @@ function add_query_param(url, name, value) {
 }
 
 OLAuth.prototype.init = function() {
-    var htmlStr =  'Checking loan status with Open Library';
+    var htmlStr =  'Checking loan status';
 
     this.showPopup("#F0EEE2", "#000", htmlStr, 'Please wait as we check the status of this book...');
     this.callAuthUrl();
