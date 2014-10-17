@@ -4484,10 +4484,28 @@ BookReader.prototype.updateLocationHash = function() {
     var newHash = '#' + this.fragmentFromParams(this.paramsFromCurrent());
     window.location.replace(newHash);
 
+    // Send an analytics event if the location hash is changed (page flip or mode change),
+    // which indicates that the user is actively reading the book. This will cause the
+    // archive.org download count for this book to increment.
+    // Note that users with Adblock Plus will not send data to analytics.archive.org
+    if (typeof(archive_analytics) != 'undefined') {
+        if (this.oldLocationHash != newHash) {
+            var values = {
+                'bookreader': 'user_changed_view',
+                'itemid': this.bookId,
+                'cache_bust': Math.random()
+            }
+            var qs = archive_analytics.format_bug(values);
+            var error_img = new Image(100,25);
+            error_img.src = archive_analytics.img_src + "?" + qs;
+        }
+    }
+
     // This is the variable checked in the timer.  Only user-generated changes
     // to the URL will trigger the event.
     this.oldLocationHash = newHash;
 }
+
 
 // startLocationPolling
 //________
