@@ -438,6 +438,10 @@ class BookReader
         $query['subPrefix'] = $subPrefix;
     }
 
+    if (isset($_GET['fail']))
+      $query['fail'] = $_GET['fail'];
+    
+
     switch ($operator) {
         case 'page':
 
