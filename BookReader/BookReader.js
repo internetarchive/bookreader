@@ -140,6 +140,14 @@ function BookReader() {
     this.ttsPoller      = null;
     this.ttsFormat      = null;
 
+    // Themes
+    this.themes = {
+        ia: 'BookReader-ia.css',
+        ol: null
+    };
+    this.default_theme = 'ol';
+    this.theme = 'ol';
+
     return this;
 };
 
@@ -292,6 +300,11 @@ BookReader.prototype.init = function() {
 
     // Enact other parts of initial params
     this.updateFromParams(params);
+
+    // If we didn't already enable a theme, do it now
+    if ('undefined' == typeof(params.theme)) {
+        this.updateTheme(this.theme);
+    }
 
     // We init the nav bar after the params processing so that the nav slider knows where
     // it should start (doesn't jump after init)
@@ -2505,9 +2518,7 @@ BookReader.prototype.prefetchImg = function(index) {
         $(img).addClass('BRpageimage').addClass('BRnoselect');
         if (index < 0 || index > (this.numLeafs - 1) ) {
             // Facing page at beginning or end, or beyond
-            $(img).css({
-                'background-color': '#efefef'
-            });
+            $(img).addClass('BRemptypage');
         }
         img.src = pageURI;
         img.uri = pageURI; // browser may rewrite src so we stash raw URI here
@@ -4250,6 +4261,36 @@ BookReader.prototype.lastDisplayableIndex = function() {
     }
 }
 
+
+// updateTheme
+//______________________________________________________________________________
+BookReader.prototype.updateTheme = function(theme) {
+    if (!(theme in this.themes)) return;
+    var main_style = $('#BRCSS');
+    if (main_style.length == 0) return;
+    if (theme == this.theme) return;
+    this.theme = theme;
+
+    if (theme == this.default_theme) {
+        $('#BRCSSTheme').attr('disabled', true);
+        return;
+    }
+
+    var stylesheet = $('#BRCSSTheme');
+    if (stylesheet.length == 0) {
+        stylesheet = $('<link rel="stylesheet" type="text/css">').attr('id', 'BRCSSTheme');
+        $('head').append(stylesheet);
+    }
+
+    var main_href = $('#BRCSS').attr('href');
+    var index = main_href.indexOf('BookReader.css');
+    var css_prefix = main_href.substr(0, index);
+    var theme_href = css_prefix + this.themes[theme];
+
+    stylesheet.attr({disabled: false, href: theme_href});
+}
+
+
 // shortTitle(maximumCharacters)
 //________
 // Returns a shortened version of the title with the maximum number of characters
@@ -4298,6 +4339,11 @@ BookReader.prototype.updateFromParams = function(params) {
 
     // $$$ process /region
     // $$$ process /highlight
+
+    // $$$ process /theme
+    if ('undefined' != typeof(params.theme)) {
+        this.updateTheme(params.theme);
+    }
 }
 
 // paramsFromFragment(urlFragment)
@@ -4355,6 +4401,11 @@ BookReader.prototype.paramsFromFragment = function(urlFragment) {
     }
 
     // $$$ process /highlight
+
+    // $$$ process /theme
+    if (urlHash['theme'] != undefined) {
+        params.theme = urlHash['theme']
+    }
 
     return params;
 }
@@ -4654,14 +4705,17 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         }
 
         // $$$mang cleanup
-        self.bookUrl = self.olHost + olObject.key;
-        self.bookTitle = olObject['title'];
-        $('#BRreturn a').attr( {'href': self.bookUrl, 'title': "Go to this book's page on Open Library" } );
-        $('#BRreturn a').text(self.bookTitle);
+        if (self.theme == 'ol') {
+            //For the IA theme, no longer show links to OL
+            self.bookUrl = self.olHost + olObject.key;
+            self.bookTitle = olObject['title'];
+            $('#BRreturn a').attr( {'href': self.bookUrl, 'title': "Go to this book's page on Open Library" } );
+            $('#BRreturn a').text(self.bookTitle);
 
-        $('#BRinfo').remove();
-        $('#BRshare').after(self.blankInfoDiv());
-        self.buildInfoDiv($('#BRinfo'));
+            $('#BRinfo').remove();
+            $('#BRshare').after(self.blankInfoDiv());
+            self.buildInfoDiv($('#BRinfo'));
+        }
 
         // Check for borrowed book
         if (self.olAuth) {
@@ -4683,14 +4737,17 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
                 .appendTo('#BRreturn');
 
         } else {
-            $('<a/>').attr( { 'href': self.bookUrl, 'title': 'Go to this book\'s page on Open Library' } )
-                .text('On openlibrary.org')
-                .appendTo('#BRreturn');
+            if (self.theme == 'ol') {
+                $('<a/>').attr( { 'href': self.bookUrl, 'title': 'Go to this book\'s page on Open Library' } )
+                    .text('On openlibrary.org')
+                    .appendTo('#BRreturn');
+            }
         }
 
-        $('#BRreturn').css({ 'line-height': '19px'} );
-        $('#BRreturn a').css( {'height': '18px' } );
-
+        if ((self.theme == 'ol') || (self.olAuth)) {
+            $('#BRreturn').css({ 'line-height': '19px'} );
+            $('#BRreturn a').css( {'height': '18px' } );
+        }
 
     }
 }
@@ -4781,6 +4838,7 @@ BookReader.prototype.ttsToggle = function () {
 BookReader.prototype.ttsStart = function () {
     if (soundManager.debugMode) console.log('starting readAloud');
     if (this.constModeThumb == this.mode) this.switchMode(this.constMode1up);
+    $('.BRicon.read').addClass('unread');
 
     //this.ttsPlaying = true; //set this in ttsToggle()
     this.ttsIndex = this.currentIndex();
@@ -4795,6 +4853,7 @@ BookReader.prototype.ttsStart = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
     if (false == this.ttsPlaying) return;
+    $('.BRicon.read').removeClass('unread');
 
     if (soundManager.debugMode) console.log('stopping readaloud');
     soundManager.stopAll();

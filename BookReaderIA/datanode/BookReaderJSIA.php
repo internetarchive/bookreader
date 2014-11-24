@@ -101,8 +101,10 @@ if ("unknown" == $archiveFormat) {
 $scanDataFile = "${subItemPath}_scandata.xml";
 $scanDataZip  = "$itemPath/scandata.zip";
 if (file_exists($scanDataFile)) {
+    checkPrivs($scanDataFile);
     $scanData = simplexml_load_file($scanDataFile);
 } else if (file_exists($scanDataZip)) {
+    checkPrivs($scanDataZip);
     $cmd  = 'unzip -p ' . escapeshellarg($scanDataZip) . ' scandata.xml';
     exec($cmd, $output, $retval);
     if ($retval != 0) BRFatal("Could not unzip ScanData!");
@@ -111,6 +113,7 @@ if (file_exists($scanDataFile)) {
     $scanData = simplexml_load_string($dump);
 } else if (file_exists("$itemPath/scandata.xml")) {
     // For e.g. Scribe v.0 books!
+    checkPrivs("$itemPath/scandata.xml");
     $scanData = simplexml_load_file("$itemPath/scandata.xml");
 } else {
     BRFatal("ScanData file not found!");
@@ -152,6 +155,9 @@ foreach ($scanData->pageData->page as $page) {
 if ('' != $titleLeaf) {
     printf("br.titleLeaf = %d;\n", $titleLeaf);
 }
+
+/* use titleLeaf to determine handside for some collections of books */
+$use_title_for_side = shouldUseTitleForSide($titleLeaf, $id, $metaData);
 ?>
 
 br.getPageWidth = function(index) {
@@ -226,7 +232,7 @@ br.getPageSide = function(index) {
     //we should really get handside from scandata.xml
 
     <? // Use special function if we should infer the page sides based off the title page index
-    if (preg_match('/goog$/', $id) && ('' != $titleLeaf)) {
+    if ($use_title_for_side) {
     ?>
     // assume page side based on title pagex
     var titleIndex = br.leafNumToIndex(br.titleLeaf);
@@ -332,6 +338,7 @@ br.getSpreadIndices = function(pindex) {
 // a given assertion.  Ensures there is only a single page "{pagenum}"
 // e.g. the last page asserted as page 5 retains that assertion.
 br.uniquifyPageNums = function() {
+    if (br.pageNums.length == 0)return;
     var seen = {};
 
     for (var i = br.pageNums.length - 1; i--; i >= 0) {
@@ -617,6 +624,10 @@ if (typeof(brConfig) != 'undefined') {
     } else {
         br.isAdmin = false;
     }
+
+    if (typeof(brConfig["theme"]) != 'undefined') {
+        br.theme = brConfig["theme"];
+    }
 } // brConfig
 
 
@@ -880,6 +891,32 @@ function findImageStack($subPrefix, $filesData) {
 
     return array('imageFormat' => 'unknown', 'archiveFormat' => 'unknown', 'imageStackFile' => 'unknown');
 
+}
+
+
+function shouldUseTitleForSide($titleLeaf, $id, $metaData) {
+    /* use titleLeaf to determine handside for some collections of books */
+    if ('' == $titleLeaf) return false;
+
+    if (preg_match('/goog$/', $id)) {
+        return true;
+    }
+
+    foreach ($metaData->xpath('//collection') as $collection) {
+        if('early-european-books' == $collection) {
+            return true;
+        }
+    }
+}
+
+function checkPrivs($filename) {
+    // $$$ we assume here that requests for the title, cover or preview
+    //     come in via BookReaderPreview.php which will be re-run with
+    //     privileges after we return the 403
+    if (!is_readable($filename)) {
+        header('HTTP/1.1 403 Forbidden');
+        exit(0);
+    }
 }
 
 ?>

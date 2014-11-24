@@ -100,7 +100,7 @@ class BookReader
     // manually update with Launchpad version number at each checkin so that browsers
     // do not use old cached version
     // see https://bugs.launchpad.net/gnubook/+bug/330748
-    $version = "3.0.9";
+    $version = "3.1.2";
 
     if (BookReader::getDevHost($server)) {
         // On dev host - add time to force reload
@@ -137,7 +137,10 @@ class BookReader
     <![endif]-->
 
 <!--[if !IE 7]><![IGNORE[--><![IGNORE[]]>
-    <link rel="stylesheet" type="text/css" href="/bookreader/BookReader.css?v=<? echo($version); ?>">
+    <link rel="stylesheet" type="text/css" href="/bookreader/BookReader.css?v=<? echo($version); ?>" id="BRCSS">
+<? if (UI3) { ?>
+    <link rel="stylesheet" type="text/css" href="/bookreader/BookReader-ia.css?v=<? echo($version); ?>" id="BRCSSTheme">
+<? } ?>
 <? if ($uiMode == "embed") { ?>
     <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderEmbed.css?v=<? echo($version); ?>">
 <? } elseif ($uiMode == "touch") { ?>
@@ -187,6 +190,9 @@ class BookReader
 <? } else { ?>
   brConfig["mode"] = 2;
 <? } ?>
+<? if (UI3) {
+     echo '  brConfig["theme"] = "ia";';
+} ?>
 <? if ($isAdmin == true) {
      echo '  brConfig["isAdmin"] = true;';
    } ?>
@@ -440,7 +446,7 @@ class BookReader
 
     if (isset($_GET['fail']))
       $query['fail'] = $_GET['fail'];
-    
+
 
     switch ($operator) {
         case 'page':
