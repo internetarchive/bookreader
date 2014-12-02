@@ -1,0 +1,82 @@
+/* page background */
+#BRcontainer {
+    background-color: #000;
+}
+
+#BRpageview {
+    background-color: #000;
+}
+
+.BRemptypage {
+    background-color: #000;
+}
+
+#BRbookcover {
+    background-image: none;
+}
+
+
+/* toolbar */
+#BRtoolbar {
+    background-color: #000;
+    -webkit-box-shadow: none;
+}
+
+#BRreturn a {
+    color: #fff;
+}
+
+a.logo {
+    background: transparent url(images/icon_home_ia.png) no-repeat 0 0;
+}
+
+.BRicon {
+    background-image: url(images/BRicons_ia.png);
+}
+
+form#booksearch button {
+    background-color: #fff;
+    color: #000;
+}
+
+
+/* bottom toolbar */
+#BRpager .ui-slider-handle {
+    background: url(images/slider_ia.png);
+}
+
+div#BRnav {
+    background-color: #000;
+}
+
+div#BRnavline {
+    background-color: #fff;
+}
+
+.BRnavend {
+    background-color: #fff;
+}
+
+div#pagenum {
+    background-color: #fff;
+}
+
+div#pagenum span {
+    color: #000;
+}
+
+.BRnavCntl {
+    background-color: #333;
+}
+
+.BRup {
+    background-image: url("images/nav_control-up_ia.png");
+}
+
+.BRdn {
+    background-image: url("images/nav_control-dn_ia.png");
+}
+
+div.chapter {
+    background: transparent url(images/marker_chap-off_ia.png) no-repeat;
+}

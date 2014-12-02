@@ -18,6 +18,15 @@ This file is part of BookReader.
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// Include Twig
+require_once '3rdparty/Twig/lib/Twig/Autoloader.php';
+Twig_Autoloader::register();
+$loader = new Twig_Loader_Filesystem('templates');
+
+// We turn off caching to avoid problems with protected books, where the cache dir
+// may be created by www-priv
+$twig = new Twig_Environment($loader, array('cache' => false));
+
 header('Content-Type: application/javascript');
 
 $id = $_REQUEST['id'];
@@ -33,11 +42,11 @@ $server = $_REQUEST['server'];
 
 // $$$ TODO consolidate this logic
 if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
-    $server .= ':80/~mang';
+    $server .= '/~mang';
 } else if (strpos($_SERVER["REQUEST_URI"], "/~rkumar") === 0) { // Serving out of home dir
-    $server .= ':80/~rkumar';
+    $server .= '/~rkumar';
 } else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
-    $server .= ':80/~testflip';
+    $server .= '/~testflip';
 }
 
 if (! $subPrefix) {
@@ -92,16 +101,19 @@ if ("unknown" == $archiveFormat) {
 $scanDataFile = "${subItemPath}_scandata.xml";
 $scanDataZip  = "$itemPath/scandata.zip";
 if (file_exists($scanDataFile)) {
+    checkPrivs($scanDataFile);
     $scanData = simplexml_load_file($scanDataFile);
 } else if (file_exists($scanDataZip)) {
+    checkPrivs($scanDataZip);
     $cmd  = 'unzip -p ' . escapeshellarg($scanDataZip) . ' scandata.xml';
     exec($cmd, $output, $retval);
     if ($retval != 0) BRFatal("Could not unzip ScanData!");
-    
+
     $dump = join("\n", $output);
     $scanData = simplexml_load_string($dump);
 } else if (file_exists("$itemPath/scandata.xml")) {
     // For e.g. Scribe v.0 books!
+    checkPrivs("$itemPath/scandata.xml");
     $scanData = simplexml_load_file("$itemPath/scandata.xml");
 } else {
     BRFatal("ScanData file not found!");
@@ -118,43 +130,15 @@ $metaData = simplexml_load_file($metaDataFile);
 //$firstLeaf = $scanData->pageData->page[0]['leafNum'];
 ?>
 
-// Error reporting - this helps us fix errors quickly
-function logError(description,page,line) {
-    if (typeof(archive_analytics) != 'undefined') {
-        var values = {
-            'bookreader': 'error',
-            'description': description,
-            'page': page,
-            'line': line,
-            'itemid': '<?echo $id;?>',
-            'subPrefix': '<?echo $subPrefix;?>',
-            'server': '<?echo $server;?>',
-            'bookPath': '<?echo $subItemPath;?>'
-        };
+<?
+    $args = array();
+    $args['id'] = $id;
+    $args['subPrefix'] = $subPrefix;
+    $args['server'] = $server;
+    $args['subItemPath'] = $subItemPath;
 
-        // if no referrer set '-' as referrer
-        if (document.referrer == '') {
-            values['referrer'] = '-';
-        } else {
-            values['referrer'] = document.referrer;
-        }
-        
-        if (typeof(br) != 'undefined') {
-            values['itemid'] = br.bookId;
-            values['subPrefix'] = br.subPrefix;
-            values['server'] = br.server;
-            values['bookPath'] = br.bookPath;
-        }
-        
-        var qs = archive_analytics.format_bug(values);
-
-        var error_img = new Image(100,25);
-        error_img.src = archive_analytics.img_src + "?" + qs;
-    }
-
-    return false; // allow browser error handling so user sees there was a problem
-}
-window.onerror=logError;
+    print $twig->render('logError.js', $args);
+?>
 
 br = new BookReader();
 
@@ -167,10 +151,13 @@ foreach ($scanData->pageData->page as $page) {
         break;
     }
 }
-    
+
 if ('' != $titleLeaf) {
     printf("br.titleLeaf = %d;\n", $titleLeaf);
 }
+
+/* use titleLeaf to determine handside for some collections of books */
+$use_title_for_side = shouldUseTitleForSide($titleLeaf, $id, $metaData);
 ?>
 
 br.getPageWidth = function(index) {
@@ -202,11 +189,11 @@ br.getPageURI = function(index, reduce, rotate) {
     } else {
         _rotate = rotate;
     }
-    
+
     var file = this._getPageFile(index);
-        
+
     // $$$ add more image stack formats here
-    return 'http://'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
+    return '//'+this.server+'/BookReader/BookReaderImages.php?zip='+this.zip+'&file='+file+'&scale='+_reduce+'&rotate='+_rotate;
 }
 
 // Get a rectangular region out of a page
@@ -223,29 +210,29 @@ br.getRegionURI = function(index, reduce, rotate, sourceX, sourceY, sourceWidth,
             page += urlKeys[i] + arguments[i];
         }
     }
-    
+
     var itemPath = this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); // remove trailing subPrefix
-    
-    return 'http://'+this.server+'/BookReader/BookReaderImages.php?id=' + this.bookId + '&itemPath=' + itemPath + '&server=' + this.server + '&subPrefix=' + this.subPrefix + '&page=' +page + '.jpg';
+
+    return '//'+this.server+'/BookReader/BookReaderImages.php?id=' + this.bookId + '&itemPath=' + itemPath + '&server=' + this.server + '&subPrefix=' + this.subPrefix + '&page=' +page + '.jpg';
 }
 
 br._getPageFile = function(index) {
     var leafStr = '0000';
     var imgStr = this.leafMap[index].toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
-    
+
     var insideZipPrefix = this.subPrefix.match('[^/]+$');
     var file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
-    
+
     return file;
 }
 
 br.getPageSide = function(index) {
     //assume the book starts with a cover (right-hand leaf)
     //we should really get handside from scandata.xml
-    
+
     <? // Use special function if we should infer the page sides based off the title page index
-    if (preg_match('/goog$/', $id) && ('' != $titleLeaf)) {
+    if ($use_title_for_side) {
     ?>
     // assume page side based on title pagex
     var titleIndex = br.leafNumToIndex(br.titleLeaf);
@@ -260,7 +247,7 @@ br.getPageSide = function(index) {
     <?
     }
     ?>
-    
+
     // $$$ we should get this from scandata instead of assuming the accessible
     //     leafs are contiguous
     if ('rl' != this.pageProgression) {
@@ -307,7 +294,7 @@ br.leafNumToIndex = function(leafNum) {
             return index;
         }
     }
-    
+
     return null;
 }
 
@@ -318,8 +305,8 @@ br.getSpreadIndices = function(pindex) {
     // $$$ we could make a separate function for the RTL case and
     //      only bind it if necessary instead of always checking
     // $$$ we currently assume there are no gaps
-    
-    var spreadIndices = [null, null]; 
+
+    var spreadIndices = [null, null];
     if ('rl' == this.pageProgression) {
         // Right to Left
         if (this.getPageSide(pindex) == 'R') {
@@ -341,9 +328,9 @@ br.getSpreadIndices = function(pindex) {
             spreadIndices[0] = pindex - 1;
         }
     }
-    
+
     //console.log("   index %d mapped to spread %d,%d", pindex, spreadIndices[0], spreadIndices[1]);
-    
+
     return spreadIndices;
 }
 
@@ -351,8 +338,9 @@ br.getSpreadIndices = function(pindex) {
 // a given assertion.  Ensures there is only a single page "{pagenum}"
 // e.g. the last page asserted as page 5 retains that assertion.
 br.uniquifyPageNums = function() {
+    if (br.pageNums.length == 0)return;
     var seen = {};
-    
+
     for (var i = br.pageNums.length - 1; i--; i >= 0) {
         var pageNum = br.pageNums[i];
         if ( !seen[pageNum] ) {
@@ -373,7 +361,7 @@ br.cleanupMetadata = function() {
 // Returns a URL for an embedded version of the current book
 br.getEmbedURL = function(viewParams) {
     // We could generate a URL hash fragment here but for now we just leave at defaults
-    var url = 'http://' + window.location.host + '/stream/'+this.bookId;
+    var url = 'https://' + window.location.host + '/stream/'+this.bookId;
     if (this.subPrefix != this.bookId) { // Only include if needed
         url += '/' + this.subPrefix;
     }
@@ -391,12 +379,48 @@ br.getEmbedCode = function(frameWidth, frameHeight, viewParams) {
     return "<iframe src='" + this.getEmbedURL(viewParams) + "' width='" + frameWidth + "' height='" + frameHeight + "' frameborder='0' ></iframe>";
 }
 
+<?
+// XXX-Anand -- WARNING: ugly hack below
+//
+// The bookreader is designed to call openlibrary API and constructs the
+// "Return book" button using the response. Now that we have lending
+// available on archive.org, it becomes tricky to make the "Return book"
+// button go to archive.org instead of openlibrary.org.
+
+// To solve this, the ol-auth-url cookie is used to identify if the loan is
+// archive.org, and if so, a new implementation of getOpenLibraryRecord
+// function is provided, which adds the "return book" button appropriately.
+// In the original case the getOpenLibraryRecord function makes a call to
+// OL API and calls the given callback function with the response from the
+// API.
+
+$useOLAuth = false;
+$protected = false;
+foreach ($metaData->xpath('//collection') as $collection) {
+    if('browserlending' == $collection) {
+        $useOLAuth = true;
+        $protected = true;
+    }
+}
+
+if ($useOLAuth  &&  isset($_COOKIE['ol-auth-url'])  &&  strpos($_COOKIE['ol-auth-url'], "archive.org/services/borrow") !== false) {
+?>
+br.getOpenLibraryRecord = function(callback) {
+    $('<form id="BRreturnform" action="/services/borrow/<?= $id ?>" method="post"><input type="submit" value="Return book" onclick="olAuth.deleteCookies();"/><input type="hidden" name="action" value="return-loan" /></form>')
+        .appendTo('#BRreturn');
+
+    $('#BRreturn').css({ 'line-height': '19px'} );
+    $('#BRreturn a').css( {'height': '18px' } );
+}
+
+<? } else { ?>
+
 // getOpenLibraryRecord
 br.getOpenLibraryRecord = function(callback) {
     // Try looking up by ocaid first, then by source_record
-    
+
     var self = this; // closure
-    
+
     var jsonURL = self.olHost + '/query.json?type=/type/edition&*=&ocaid=' + self.bookId;
     $.ajax({
         url: jsonURL,
@@ -420,6 +444,7 @@ br.getOpenLibraryRecord = function(callback) {
         dataType: 'jsonp'
     });
 }
+<? } ?>
 
 br.buildInfoDiv = function(jInfoDiv) {
     // $$$ it might make more sense to have a URL on openlibrary.org that returns this info
@@ -431,42 +456,44 @@ br.buildInfoDiv = function(jInfoDiv) {
     if (domainMatch) {
         domain = domainMatch[1];
     }
-       
+
     // $$$ cover looks weird before it loads
     jInfoDiv.find('.BRfloatCover').append([
-                    '<div style="height: 140px; min-width: 80px; padding: 0; margin: 0;"><a href="', this.bookUrl, '"><img src="http://www.archive.org/download/', this.bookId, '/page/cover_t.jpg" alt="' + escapedTitle + '" height="140px" /></a></div>'].join('')
+                    '<div style="height: 140px; min-width: 80px; padding: 0; margin: 0;"><a href="', this.bookUrl, '"><img src="//archive.org/download/', this.bookId, '/page/cover_t.jpg" alt="' + escapedTitle + '" height="140px" /></a></div>'].join('')
     );
 
-    jInfoDiv.find('.BRfloatMeta').append([
-                    // $$$ description
-                    //'<p>Published ', this.bookPublished,
-                    //, <a href="Open Library Publisher Page">Publisher name</a>',
-                    //'</p>',
-                    //'<p>Written in <a href="Open Library Language page">Language</a></p>',
-                    '<h3>Other Formats</h3>',
-                    '<ul class="links">',
-                        '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '.pdf">PDF</a><span>|</span></li>',
-                        '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '_djvu.txt">Plain Text</a><span>|</span></li>',
-                        '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '_daisy.zip">DAISY</a><span>|</span></li>',
-                        '<li><a href="http://www.archive.org/download/', this.bookId, '/', this.subPrefix, '.epub">ePub</a><span>|</span></li>',
-                        '<li><a href="https://www.amazon.com/gp/digital/fiona/web-to-kindle?clientid=IA&itemid=', this.bookId, '&docid=', this.subPrefix, '">Send to Kindle</a></li>',
-                    '</ul>',
-                    '<p class="moreInfo"><span></span>More information on <a href="'+ this.bookUrl + '">' + domain + '</a>  </p>'].join('\n'));
-                    
+    var download_links = [];
+    if (!this.olAuth) {
+        download_links = [
+            '<h3>Other Formats</h3>',
+            '<ul class="links">',
+                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '.pdf">PDF</a><span>|</span></li>',
+                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '_djvu.txt">Plain Text</a><span>|</span></li>',
+                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '_daisy.zip">DAISY</a><span>|</span></li>',
+                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '.epub">ePub</a><span>|</span></li>',
+                '<li><a href="https://www.amazon.com/gp/digital/fiona/web-to-kindle?clientid=IA&itemid=', this.bookId, '&docid=', this.subPrefix, '">Send to Kindle</a></li>',
+            '</ul>'
+        ];
+    }
+
+    download_links.push('<p class="moreInfo"><span></span>More information on <a href="'+ this.bookUrl + '">' + domain + '</a>  </p>');
+
+    jInfoDiv.find('.BRfloatMeta').append(download_links.join('\n'));
+
     jInfoDiv.find('.BRfloatFoot').append([
-                '<span>|</span>',                
-                '<a href="http://openlibrary.org/contact" class="problem">Report a problem</a>',
+                '<span>|</span>',
+                '<a href="https://openlibrary.org/contact" class="problem">Report a problem</a>',
     ].join('\n'));
-                
+
     if (domain == 'archive.org') {
         jInfoDiv.find('.BRfloatMeta p.moreInfo span').css(
-            {'background': 'url(http://www.archive.org/favicon.ico) no-repeat', 'width': 22, 'height': 18 }
+            {'background': 'url(https://archive.org/favicon.ico) no-repeat', 'width': 22, 'height': 18 }
         );
     }
-    
+
     jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
     var bookPath = (window.location + '').replace('#','%23');
-    jInfoDiv.find('a.problem').attr('href','http://openlibrary.org/contact?path=' + bookPath);
+    jInfoDiv.find('a.problem').attr('href','https://openlibrary.org/contact?path=' + bookPath);
 
 }
 
@@ -486,10 +513,10 @@ br.pageW =  [
 br.pageH =  [
             <?
             $totalHeight = 0;
-            $i=0;            
+            $i=0;
             foreach ($scanData->pageData->page as $page) {
                 if (shouldAddPage($page)) {
-                    if(0 != $i) echo ",";   //stupid IE                
+                    if(0 != $i) echo ",";   //stupid IE
                     echo "{$page->cropBox->h}";
                     $totalHeight += intval($page->cropBox->h/4) + 10;
                     $i++;
@@ -507,7 +534,7 @@ br.leafMap = [
                     $i++;
                 }
             }
-            ?>    
+            ?>
             ];
 
 br.pageNums = [
@@ -515,7 +542,7 @@ br.pageNums = [
             $i=0;
             foreach ($scanData->pageData->page as $page) {
                 if (shouldAddPage($page)) {
-                    if(0 != $i) echo ",";   //stupid IE                
+                    if(0 != $i) echo ",";   //stupid IE
                     if (array_key_exists('pageNumber', $page) && ('' != $page->pageNumber)) {
                         echo "'{$page->pageNumber}'";
                     } else {
@@ -524,24 +551,29 @@ br.pageNums = [
                     $i++;
                 }
             }
-            ?>    
+            ?>
             ];
-            
-      
+
+
 br.numLeafs = br.pageW.length;
 
-br.bookId   = '<?echo $id;?>';
-br.zip      = '<?echo $imageStackFile;?>';
-br.subPrefix = '<?echo $subPrefix;?>';
-br.server   = '<?echo $server;?>';
-br.bookTitle= '<?echo preg_replace("/\'/", "\\'", $metaData->title);?>';
-br.bookPath = '<?echo $subItemPath;?>';
-br.bookUrl  = '<?echo "http://www.archive.org/details/$id";?>';
-br.imageFormat = '<?echo $imageFormat;?>';
-br.archiveFormat = '<?echo $archiveFormat;?>';
 
 <?
+$args = array('id' => $id,
+              'imageStackFile'  => $imageStackFile,
+              'subPrefix'       => $subPrefix,
+              'server'          => $server,
+              'title'           => $metaData->title,
+              'subItemPath'     => $subItemPath,
+              'imageFormat'     => $imageFormat,
+              'archiveFormat'   => $archiveFormat,
+              );
 
+print $twig->render('book_metadata.js', $args);
+?>
+
+
+<?
 # Load some values from meta.xml
 if ('' != $metaData->{'page-progression'}) {
   echo "br.pageProgression = '" . $metaData->{"page-progression"} . "';\n";
@@ -550,17 +582,9 @@ if ('' != $metaData->{'page-progression'}) {
   echo "br.pageProgression = 'lr';\n";
 }
 
-$useOLAuth = false;
-$protected = false;
-foreach ($metaData->xpath('//collection') as $collection) {
-    if('browserlending' == $collection) {
-        $useOLAuth = true;
-        $protected = true;
-    }
-}
 
-echo "br.olHost = 'http://openlibrary.org';\n";
-#echo "br.olHost = 'http://mang-dev.us.archive.org:8080';\n";
+echo "br.olHost = 'https://openlibrary.org';\n";
+echo "br.olAuthUrl = null;\n";
 
 if ($useOLAuth) {
     echo "br.olAuth = true;\n";
@@ -592,13 +616,17 @@ if (typeof(brConfig) != 'undefined') {
             br.reduce = brConfig['reduce'];
         }
     } else if (brConfig['mode'] == 2) {
-        br.mode = 2;      
+        br.mode = 2;
     }
-    
+
     if (typeof(brConfig["isAdmin"]) != 'undefined') {
         br.isAdmin = brConfig["isAdmin"];
     } else {
         br.isAdmin = false;
+    }
+
+    if (typeof(brConfig["theme"]) != 'undefined') {
+        br.theme = brConfig["theme"];
     }
 } // brConfig
 
@@ -607,7 +635,7 @@ function OLAuth() {
     this.olConnect = false;
     this.loanUUID = false;
     this.permsToken = false;
-    
+
     var cookieRe = /;\s*/;
     var cookies = document.cookie.split(cookieRe);
     var length = cookies.length;
@@ -619,28 +647,50 @@ function OLAuth() {
         if (0 == cookies[i].indexOf('loan-' + br.bookId)) {
             this.permsToken = cookies[i].split('=')[1];
         }
-        
+
         // Set olHost to use if passed in
         if (0 == cookies[i].indexOf('ol-host')) {
-            br.olHost = 'http://' + unescape(cookies[i].split('=')[1]);
+            br.olHost = 'https://' + unescape(cookies[i].split('=')[1]);
+        }
+
+        if (0 == cookies[i].indexOf('ol-auth-url')) {
+            br.olAuthUrl = unescape(cookies[i].split('=')[1]);
         }
     }
 
-    this.authUrl = br.olHost + '/ia_auth/' + br.bookId;
+    if (br.olAuthUrl == null) {
+        br.olAuthUrl = 'https://archive.org/bookreader/BookReaderAuthProxy.php?id=XXX';
+    }
 
+    this.authUrl = br.olAuthUrl.replace("XXX", br.bookId);
     return this;
 }
 
+function add_query_param(url, name, value) {
+    // Use & if the url already has some query parameters.
+    // Use ? otherwise.
+    var prefix = (url.indexOf("?") >= 0) ? "&" : "?";
+    return url + prefix + name + "=" + value;
+}
+
 OLAuth.prototype.init = function() {
-    var htmlStr =  'Checking loan status with Open Library';
+    var htmlStr =  'Checking loan status';
 
     this.showPopup("#F0EEE2", "#000", htmlStr, 'Please wait as we check the status of this book...');
-    var authUrl = this.authUrl+'?rand='+Math.random();
+    this.callAuthUrl();
+}
+
+OLAuth.prototype.callAuthUrl = function() {
+    var authUrl = this.authUrl;
+
+    // be sure to add random param to authUrl to avoid stale cache
+    authUrl = add_query_param(authUrl, 'rand', Math.random());
+
     if (false !== this.loanUUID) {
-        authUrl += '&loan='+this.loanUUID
+        authUrl = add_query_param(authUrl, 'loan', this.loanUUID);
     }
     if (false !== this.permsToken) {
-        authUrl += '&token='+this.permsToken
+        authUrl = add_query_param(authUrl, 'token', this.permsToken);
     }
     $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
 }
@@ -688,12 +738,12 @@ OLAuth.prototype.initCallback = function(obj) {
             }
         } else {
             this.showError(obj.msg, obj.resolution)
-        }       
-    } else {    
+        }
+    } else {
         //user is authenticated
         this.setCookie(obj.token);
         this.olConnect = true;
-        this.startPolling();    
+        this.startPolling();
         br.init();
     }
 }
@@ -718,7 +768,7 @@ OLAuth.prototype.setCookie = function(value) {
     cookie    += '; path=/; domain=.archive.org;';
     document.cookie = cookie;
     this.permsToken = value;
-    
+
     //refresh the br-loan uuid cookie with current expiry, if needed
     if (false !== this.loanUUID) {
         cookie = 'br-loan-'+br.bookId+'='+this.loanUUID;
@@ -736,32 +786,23 @@ OLAuth.prototype.deleteCookies = function() {
     cookie    += '; expires='+expiry;
     cookie    += '; path=/; domain=.archive.org;';
     document.cookie = cookie;
-    
+
     cookie = 'br-loan-'+br.bookId+'=""';
     cookie    += '; expires='+expiry;
     cookie    += '; path=/; domain=.archive.org;';
     document.cookie = cookie;
 }
 
-OLAuth.prototype.startPolling = function () {    
+OLAuth.prototype.startPolling = function () {
     var self = this;
     this.poller=setInterval(function(){
         if (!self.olConnect) {
           self.showPopup("#F0EEE2", "#000", 'Connection error', 'The BookReader cannot reach Open Library. This might mean that you are offline or that Open Library is down. Please check your Internet connection and refresh this page or try again later.');
           clearInterval(self.poller);
-          self.ttsPoller = null;        
+          self.ttsPoller = null;
         } else {
           self.olConnect = false;
-          //be sure to add random param to authUrl to avoid stale cache
-          var authUrl = self.authUrl+'?rand='+Math.random();
-          if (false !== self.loanUUID) {
-              authUrl += '&loan='+self.loanUUID
-          }
-          if (false !== self.permsToken) {
-              authUrl += '&token='+self.permsToken
-          }
-
-          $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.callback'});
+          self.callAuthUrl();
         }
     },300000);   //five minute interval
 }
@@ -779,7 +820,7 @@ if (br.olAuth) {
 function BRFatal($string) {
     // log error
     ?>
-    
+
     if (typeof(archive_analytics) != 'undefined') {
         var values = {
             'bookreader': 'fatal',
@@ -788,13 +829,13 @@ function BRFatal($string) {
             'server': "<? echo $_REQUEST['server']; ?>",
             'request_uri': "<? echo $_SERVER["REQUEST_URI"]; ?>"
         }
-        
+
         if (document.referrer == '') {
             values['referrer'] = '-';
         } else {
             values['referrer'] = document.referrer;
         }
-        
+
         var qs = archive_analytics.format_bug(values);
 
         var error_img = new Image(100,25);
@@ -802,9 +843,9 @@ function BRFatal($string) {
     }
 
     alert("<? echo $string;?>");
-    
+
     <?
-    
+
     die(-1);
 }
 
@@ -818,7 +859,7 @@ function shouldAddPage($page) {
             return false;
         }
     }
-    
+
     return true;
 }
 
@@ -832,14 +873,14 @@ function findImageStack($subPrefix, $filesData) {
     $archiveGroup = implode('|', array_keys($archiveFormats));
     // $$$ Currently only return processed images
     $imageStackRegex = "/Single Page (Processed) (${imageGroup}) (${archiveGroup})/";
-        
-    foreach ($filesData->file as $file) {        
+
+    foreach ($filesData->file as $file) {
         if (strpos($file['name'], $subPrefix) === 0) { // subprefix matches beginning
             if (preg_match($imageStackRegex, $file->format, $matches)) {
-            
+
                 // Make sure we have a regular image stack
                 $imageFormat = $imageFormats[$matches[2]];
-                if (strpos($file['name'], $subPrefix . '_' . $imageFormat) === 0) {            
+                if (strpos($file['name'], $subPrefix . '_' . $imageFormat) === 0) {
                     return array('imageFormat' => $imageFormat,
                                  'archiveFormat' => $archiveFormats[$matches[3]],
                                  'imageStackFile' => $file['name']);
@@ -847,9 +888,35 @@ function findImageStack($subPrefix, $filesData) {
             }
         }
     }
-    
+
     return array('imageFormat' => 'unknown', 'archiveFormat' => 'unknown', 'imageStackFile' => 'unknown');
-        
+
+}
+
+
+function shouldUseTitleForSide($titleLeaf, $id, $metaData) {
+    /* use titleLeaf to determine handside for some collections of books */
+    if ('' == $titleLeaf) return false;
+
+    if (preg_match('/goog$/', $id)) {
+        return true;
+    }
+
+    foreach ($metaData->xpath('//collection') as $collection) {
+        if('early-european-books' == $collection) {
+            return true;
+        }
+    }
+}
+
+function checkPrivs($filename) {
+    // $$$ we assume here that requests for the title, cover or preview
+    //     come in via BookReaderPreview.php which will be re-run with
+    //     privileges after we return the 403
+    if (!is_readable($filename)) {
+        header('HTTP/1.1 403 Forbidden');
+        exit(0);
+    }
 }
 
 ?>

@@ -18,8 +18,8 @@ a {
  position:absolute;
  font-family: arial, sans-serif;
  left:0;
- right:0; 
- top:0; 
+ right:0;
+ top:0;
  bottom:0;
 }
 #BRtoolbar {
@@ -52,7 +52,7 @@ a {
     width:100%;
     z-index: 1;
     overflow-x:auto;
-    overflow-y:scroll;    
+    overflow-y:scroll;
     position:absolute;
     background-color: #9A9B9D;
     _height: expression(documentElement.clientHeight);
@@ -119,6 +119,10 @@ a {
     background-color: #FEFDEB;
 }
 
+.BRemptypage {
+    background-color: #EFEFEF;
+}
+
 /* Disable selection on Firefox and WebKit */
 .BRnoselect {
     -moz-user-select: none;
@@ -156,7 +160,7 @@ a {
     position: absolute;
 }
 
-#BRgutter {    
+#BRgutter {
     /* border: 1px solid rgb(68, 25, 17); */
     position: absolute;
     z-index: 6;
@@ -164,7 +168,7 @@ a {
 }
 
 .BookReaderSearchHilite {
-    opacity: 0.20; 
+    opacity: 0.20;
     filter: alpha(opacity = 20);
     background-color: #00f;
     position:absolute;
@@ -175,7 +179,7 @@ a {
 }
 
 .BRpageform {
-    display: inline; 
+    display: inline;
 }
 #BRpagenum {
     border: none;
@@ -320,10 +324,10 @@ form#booksearch button {
 
 .BRlogotype {
     float:left;
-    font-weight: bold; 
-    height: 25px; 
-    line-height: 25px; 
-    vertical-align: middle; 
+    font-weight: bold;
+    height: 25px;
+    line-height: 25px;
+    vertical-align: middle;
 }
 
 a.BRwhite               { color: #fff }
@@ -339,11 +343,11 @@ a.BRgrey:hover     { text-decoration: none; }
 a.BRgrey:visited   { color: #666; }
 
 .BRnavlinks {
-    float:right; 
-    padding: 0 20px 0 0; 
-    margin: 0; 
-    height: 25px; 
-    line-height: 25px; 
+    float:right;
+    padding: 0 20px 0 0;
+    margin: 0;
+    height: 25px;
+    line-height: 25px;
     vertical-align: middle;
 }
 
@@ -354,16 +358,16 @@ a.BRgrey:visited   { color: #666; }
     bottom: 25px;
     width: 100%;
     background-color: #222;
-    text-align: right; 
-    padding: 0px 0px 0px 0px; 
+    text-align: right;
+    padding: 0px 0px 0px 0px;
 }
 
-.BRwidgetlabel { 
-    color: #919070; 
-    padding: 8px 8px 4px 8px; 
-    font-family: verdana, arial, helvetica, sans-serif; 
-    font-size: 10px; 
-    float: left; 
+.BRwidgetlabel {
+    color: #919070;
+    padding: 8px 8px 4px 8px;
+    font-family: verdana, arial, helvetica, sans-serif;
+    font-size: 10px;
+    float: left;
 }
 
 .BRfliparea {
@@ -580,12 +584,12 @@ div#BRnav {
     height: 40px;
     overflow: visible;
     z-index: 100;
-    background-color: #e2dcc5;    
-    
+    background-color: #e2dcc5;
+
     -webkit-box-shadow: 1px 1px 2px #333;
     /* No shadow for FF, to be consistent with toolbar */
     _position:absolute;
-    _top: expression(documentElement.scrollTop + documentElement.clientHeight-this.offsetHeight); 
+    _top: expression(documentElement.scrollTop + documentElement.clientHeight-this.offsetHeight);
 }
 div#BRnavpos {
     position: relative;
@@ -618,7 +622,7 @@ div#BRslider {
 #BRpager a {
     text-decoration: none;
 }
- /*   
+ /*
   width: 8px;
   height: 14px;
   position: absolute;
@@ -857,8 +861,8 @@ div#BRzoombtn {
     position: absolute;
     background-color: #e6e4e1;
     border: none!important;
-    font-size: 1.5em; 
-    z-index: 3;   
+    font-size: 1.5em;
+    z-index: 3;
     padding: 20px;
     -moz-border-radius: 8px;
     -webkit-border-radius: 8px;

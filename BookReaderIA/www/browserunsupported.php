@@ -1,4 +1,4 @@
-<? require_once '/petabox/setup.inc';
+<? define('UI3',1); require_once '/petabox/setup.inc';
 /*
 Copyright(c)2008 Internet Archive. Software license AGPL version 3.
 
@@ -21,28 +21,27 @@ This file is part of BookReader.
 
 $id = urlencode($_REQUEST['id']); // Sanitize since we put this value in the page
 
-$flippyURL = "/texts/flipbook/flippy.php?id=$id";
+$flippyURL = "https://archive.org/texts/flipbook/flippy.php?id=$id";
 
-Nav::bar('Unsupported browser', 'home', null, null, 1, null,
-         '<meta http-equiv="refresh" content="10;url=http://www.archive.org'.$flippyURL.'">',
-         '', true);
+Nav::head('Unsupported browser', array('headExtra'=>'<meta http-equiv="refresh" content="10;url='.$flippyURL.'">'));
+
 ?>
 
 
-<div class="box">
-<p>
-Sorry, but our new viewer does not work in this browser.
-</p>
+<div class="well well-sm">
+  <p>
+    Sorry, but our new viewer does not work in this browser.
+  </p>
 
-<p>
-Either go to our <a href="<?=$flippyURL?>">old viewer</a>,  
-or download <a href="http://www.mozilla.com/en-US/firefox/">Firefox</a> or
-  <a href="http://www.microsoft.com/windows/internet-explorer/download-ie.aspx">IE8 (or higher)</a>.
-</p>
+  <p>
+    Either go to our <a href="<?=$flippyURL?>">old viewer</a>,  
+    or download <a href="https://www.mozilla.com/en-US/firefox/">Firefox</a> or
+    <a href="http://www.microsoft.com/windows/internet-explorer/download-ie.aspx">IE8 (or higher)</a>.
+  </p>
 
-<p>
-You will be automatically redirected to the older viewer in 10 seconds.
-</p>
+  <p>
+    You will be automatically redirected to the older viewer in 10 seconds.
+  </p>
 
 </div>
 
