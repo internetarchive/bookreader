@@ -3358,7 +3358,7 @@ BookReader.prototype.initNavbar = function() {
     .bind('slidechange', function(event, ui) {
         self.updateNavPageNum(ui.value); // hiding now but will show later
         $("#pagenum").hide();
-        
+
         // recursion prevention for jumpToIndex
         if ( $(this).data('swallowchange') ) {
             $(this).data('swallowchange', false);
