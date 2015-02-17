@@ -26,10 +26,7 @@ function logError(description,page,line) {
             values['bookPath'] = br.bookPath;
         }
 
-        var qs = archive_analytics.format_bug(values);
-
-        var error_img = new Image(100,25);
-        error_img.src = archive_analytics.img_src + "?" + qs;
+        archive_analytics.send_ping(values);
     }
 
     return false; // allow browser error handling so user sees there was a problem

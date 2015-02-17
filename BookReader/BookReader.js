@@ -4150,7 +4150,7 @@ BookReader.prototype.bindMozTouchHandlers = function() {
     })
     .bind('MozTouchUp', function(event) {
         //console.log('MozTouchUp - ' + event.originalEvent.streamId + ' ' + event.target + ' ' + event.clientX + ',' + event.clientY);
-        if (this.mode = this.constMode2up) {
+        if (this.mode == this.constMode2up) {
             event.preventDefault();
         }
     });
@@ -4546,9 +4546,15 @@ BookReader.prototype.updateLocationHash = function() {
                 'itemid': this.bookId,
                 'cache_bust': Math.random()
             }
-            var qs = archive_analytics.format_bug(values);
-            var error_img = new Image(100,25);
-            error_img.src = archive_analytics.img_src + "?" + qs;
+            // EEK!  offsite embedding and /details/ page books look the same in analytics, otherwise!
+            values.offsite=1;
+            values.details=0;
+            try{
+              values.offsite=(                     window.top.location.hostname.match(/\.archive.org$/) ? 0 : 1);
+              values.details=(!values.offsite  &&  window.top.location.pathname.match(/^\/details\//)   ? 1 : 0);
+            } catch (e){} //avoids embed cross site exceptions -- but on (+) side, means it is and keeps marked offite!
+
+            archive_analytics.send_ping(values, null, 'augment_for_ao_site');
         }
     }
 

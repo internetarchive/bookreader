@@ -836,10 +836,7 @@ function BRFatal($string) {
             values['referrer'] = document.referrer;
         }
 
-        var qs = archive_analytics.format_bug(values);
-
-        var error_img = new Image(100,25);
-        error_img.src = archive_analytics.img_src + "?" + qs;
+        archive_analytics.send_ping(values);
     }
 
     alert("<? echo $string;?>");
