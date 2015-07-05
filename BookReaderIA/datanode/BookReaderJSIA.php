@@ -677,10 +677,10 @@ OLAuth.prototype.init = function() {
     var htmlStr =  'Checking loan status';
 
     this.showPopup("#F0EEE2", "#000", htmlStr, 'Please wait as we check the status of this book...');
-    this.callAuthUrl();
+    this.callAuthUrl('olAuth.initCallback');
 }
 
-OLAuth.prototype.callAuthUrl = function() {
+OLAuth.prototype.callAuthUrl = function(callback) {
     var authUrl = this.authUrl;
 
     // be sure to add random param to authUrl to avoid stale cache
@@ -692,7 +692,7 @@ OLAuth.prototype.callAuthUrl = function() {
     if (false !== this.permsToken) {
         authUrl = add_query_param(authUrl, 'token', this.permsToken);
     }
-    $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:'olAuth.initCallback'});
+    $.ajax({url:authUrl, dataType:'jsonp', jsonpCallback:callback});
 }
 
 OLAuth.prototype.showPopup = function(bgColor, textColor, msg, resolution) {
@@ -802,7 +802,7 @@ OLAuth.prototype.startPolling = function () {
           self.ttsPoller = null;
         } else {
           self.olConnect = false;
-          self.callAuthUrl();
+          self.callAuthUrl('olAuth.callback');
         }
     },300000);   //five minute interval
 }
