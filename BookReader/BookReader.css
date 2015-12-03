@@ -382,7 +382,7 @@ a.BRgrey:visited   { color: #666; }
     font-size: 11px;
     color: white;
     background-color: #9A9B9D;
-    opacity: 0.85,
+    opacity: 0.85;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
