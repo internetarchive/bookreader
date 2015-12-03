@@ -444,7 +444,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
         var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
         var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
         var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
-        if (topInView | bottomInView | middleInView) {
+        if (topInView || bottomInView || middleInView) {
             //console.log('displayed: ' + this.displayedIndices);
             //console.log('to display: ' + i);
             indicesToDisplay.push(i);
@@ -634,7 +634,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
         var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
         var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
         var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
-        if (topInView | bottomInView | middleInView) {
+        if (topInView || bottomInView || middleInView) {
             //console.log('row to display: ' + j);
             rowsToDisplay.push(i);
             if (leafMap[i].leafs[0].num < leastVisible) {
@@ -2482,10 +2482,8 @@ BookReader.prototype.setMouseHandlers2UP = function() {
         function(e) {
             if (e.which == 3) {
                 // right click
-                if (e.data.self.protected) {
-                    return false;
-                }
-                return true;
+                return !e.data.self.protected;
+
             }
 
             if (! e.data.self.twoPageIsZoomedIn()) {
@@ -3238,10 +3236,7 @@ BookReader.prototype.stopFlipAnimations = function() {
 //   - returns true if keyboard navigation should be disabled for the event
 //______________________________________________________________________________
 BookReader.prototype.keyboardNavigationIsDisabled = function(event) {
-    if (event.target.tagName == "INPUT") {
-        return true;
-    }
-    return false;
+    return event.target.tagName == "INPUT";
 }
 
 // gutterOffsetForIndex
@@ -4036,10 +4031,7 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     // We should be the last bubble point for the page images
     // Disable image drag and select, but keep right-click
     if (event.which == 3) {
-        if (self.protected) {
-            return false;
-        }
-        return true;
+        return !self.protected;
     }
 
     $(event.target).bind('mouseout.swipe',
@@ -4163,10 +4155,7 @@ BookReader.prototype.navigationIsVisible = function() {
     // $$$ doesn't account for transitioning states, nav must be fully visible to return true
     var toolpos = $('#BRtoolbar').offset();
     var tooltop = toolpos.top;
-    if (tooltop == 0) {
-        return true;
-    }
-    return false;
+    return tooltop == 0;
 }
 
 // hideNavigation
