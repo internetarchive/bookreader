@@ -208,7 +208,9 @@ class BookReader
 
 <script type="text/javascript">
     // Usage stats
-    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
+    if (window.archive_analytics) {
+        window.archive_analytics.values['bookreader'] = 'open';
+    }
 </script>
 <!--<![endif]-->
 
@@ -322,7 +324,9 @@ class BookReader
     });
 
     // Usage stats
-    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
+    if (window.archive_analytics) {
+        window.archive_analytics.values['bookreader'] = 'open';
+    }
 </script>
   <?
   }

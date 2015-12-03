@@ -212,7 +212,7 @@ $.fn.dragscrollable = function( options ) {
                 return false;
             }
 		}
-	}
+	};
 	
 	// set up the initial events
 	return this.each(function() {
@@ -220,7 +220,7 @@ $.fn.dragscrollable = function( options ) {
 		var data = {scrollable : $(this),
 					acceptPropagatedEvent : settings.acceptPropagatedEvent,
                     preventDefault : settings.preventDefault,
-                    scrollWindow : settings.scrollWindow }
+                    scrollWindow : settings.scrollWindow };
 		// Set mouse initiating event on the desired descendant
 		$(this).find(settings.dragSelector).
 						bind(settings.dragstart, data, dragscroll.dragStartHandler);

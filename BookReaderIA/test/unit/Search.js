@@ -48,7 +48,7 @@ function locateTest(title, identifier, book) {
             }
         });
     });
-};
+}
 
 function searchXMLTest(bookReader, term, expected) {
     asyncTest("XML search results for " + term, function() {
@@ -66,7 +66,7 @@ function searchXMLTest(bookReader, term, expected) {
             }
         });
     });
-};
+}
 
 locateTest('The Zenith Yearbook, 1993 High Point University', 'TheZenithYearbook1993HighPointUniversity', 'THE_ZENITH_1993');
 var cassidyExpected = '<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/css" href="blank.css"?><SEARCH><PAGE file="THE_ZENITH_1993_0021.djvu" width="2700" height="3451"><CONTEXT> Carr Mike </CONTEXT><WORD coords="1350,2937,1493,2903,2932">Cassidy</WORD><CONTEXT>  Mhari Cattell  Seniors </CONTEXT></PAGE></SEARCH>';

@@ -9,12 +9,12 @@ br = new BookReader();
 // Return the width of a given page.  Here we assume all images are 800 pixels wide
 br.getPageWidth = function(index) {
     return 800;
-}
+};
 
 // Return the height of a given page.  Here we assume all images are 1200 pixels high
 br.getPageHeight = function(index) {
     return 1200;
-}
+};
 
 // We load the images from archive.org -- you can modify this function to retrieve images
 // using a different URL structure
@@ -27,7 +27,7 @@ br.getPageURI = function(index, reduce, rotate) {
     var re = new RegExp("0{"+imgStr.length+"}$");
     var url = 'http://www.archive.org/download/BookReader/img/page'+leafStr.replace(re, imgStr) + '.jpg';
     return url;
-}
+};
 
 // Return which side, left or right, that a given page should be displayed on
 br.getPageSide = function(index) {
@@ -36,7 +36,7 @@ br.getPageSide = function(index) {
     } else {
         return 'L';
     }
-}
+};
 
 // This function returns the left and right indices for the user-visible
 // spread that contains the given index.  The return values may be
@@ -66,7 +66,7 @@ br.getSpreadIndices = function(pindex) {
     }
     
     return spreadIndices;
-}
+};
 
 // For a given "accessible page index" return the page number in the book.
 //
@@ -74,7 +74,7 @@ br.getSpreadIndices = function(pindex) {
 // as a title page and table of contents.
 br.getPageNum = function(index) {
     return index+1;
-}
+};
 
 // Total number of leafs
 br.numLeafs = 15;
@@ -88,7 +88,7 @@ br.imagesBaseURL = '../BookReader/images/';
 
 br.getEmbedCode = function(frameWidth, frameHeight, viewParams) {
     return "Embed code not supported in bookreader demo.";
-}
+};
 
 // Let's go!
 br.init();

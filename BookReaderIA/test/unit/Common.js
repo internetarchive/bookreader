@@ -4,7 +4,7 @@
 function testHost() {
     // Autodetect if running from a home directory, or use live site
     var user = null;
-    var patterns = [ new RegExp('.*?/~(.*?)/'), new RegExp('www-(.*?)\\.') ]
+    var patterns = [ new RegExp('.*?/~(.*?)/'), new RegExp('www-(.*?)\\.') ];
     for (index in patterns) {
         var match = patterns[index].exec(document.location.href);
         if (match) {
@@ -22,11 +22,11 @@ function testHost() {
 
 var common = {
     testHost: testHost(),
-}
+};
 
 // Set up dummy BookReader class for JSLocate
 function BookReader() {
-};
+}
 
 BookReader.prototype.init = function() {
     return true;
