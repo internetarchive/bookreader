@@ -1,4 +1,4 @@
-<? define('UI3',1); require_once '/petabox/setup.inc';
+<?require @ia;
 /*
 Copyright(c)2008 Internet Archive. Software license AGPL version 3.
 
@@ -34,7 +34,7 @@ Nav::head('Unsupported browser', array('headExtra'=>'<meta http-equiv="refresh" 
   </p>
 
   <p>
-    Either go to our <a href="<?=$flippyURL?>">old viewer</a>,  
+    Either go to our <a href="<?=$flippyURL?>">old viewer</a>,
     or download <a href="https://www.mozilla.com/en-US/firefox/">Firefox</a> or
     <a href="http://www.microsoft.com/windows/internet-explorer/download-ie.aspx">IE8 (or higher)</a>.
   </p>

@@ -8,6 +8,14 @@ import sys, re, json, os, urllib
 from extract_paragraphs import par_iter, open_abbyy
 from subprocess import Popen, PIPE
 
+def inc_graphite_counter():
+    from socket import socket, AF_INET, SOCK_DGRAM
+    addr = ('graphite.us.archive.org', 8125)
+    s = socket(AF_INET, SOCK_DGRAM)
+    s.sendto('ia.bookreader.search:1|c', addr)
+
+inc_graphite_counter()
+
 ns = '{http://www.abbyy.com/FineReader_xml/FineReader6-schema-v1.xml}'
 page_tag = ns + 'page'
 
@@ -145,22 +153,27 @@ if __name__ == '__main__':
     if callback:
         print callback + '(',
     if not results['response']['docs']:
-        index_result = urlopen('http://edward.openlibrary.org/index_now/' + item_id).read()
-        if not index_result.startswith('done'):
-            print json.dumps({ 'ia': item_id, 'q': q, 'matches': [], 'indexed': False}, indent=2),
-            print ')' if callback else ''
-            sys.exit(0)
+        #The edward.openlibrary.org server is offline. Turn off on-demand indexing
+        print json.dumps({ 'ia': item_id, 'q': q, 'matches': [], 'error': 'This item is not yet indexed in the full-text search engine.' }, indent=2),
+        print ')' if callback else ''
+        sys.exit(0)
+        #index_result = urlopen('http://edward.openlibrary.org/index_now/' + item_id).read()
+        #if not index_result.startswith('done'):
+        #    print json.dumps({ 'ia': item_id, 'q': q, 'matches': [], 'indexed': False}, indent=2),
+        #    print ')' if callback else ''
+        #    sys.exit(0)
     if not filename:
         print """{
     "ia": %s,
     "q": %s,
-    "matches": [],
+    "matches": []
 }""" % (json.dumps(item_id), json.dumps(q)),
 
         print ')' if callback else ''
         sys.exit(0)
-    solr_q = 'ia:%s AND %s' % (item_id, q)
-    reply = urllib.urlopen(solr_inside + urllib.quote(solr_q)).read()
+    terms = '"%s"' % q.replace('"', r'\"')
+    solr_q = 'ia:%s AND %s' % (item_id, terms)
+    reply = urllib.urlopen(solr_inside + urllib.quote_plus(solr_q)).read()
     try:
         results = json.loads(reply)
     except:
@@ -171,20 +184,19 @@ if __name__ == '__main__':
     "ia": %s,
     "q": %s,
     "indexed": true,
-    "matches": [],
+    "matches": []
 }""" % (json.dumps(item_id), json.dumps(q)),
 
         print ')' if callback else ''
         sys.exit(0)
     solr_doc = results['response']['docs'][0]
     hl_body = results['highlighting'][item_id]['body'][0]
-    jp2_zip = os.path.join(path, doc + '_jp2.zip')
-    tif_zip = os.path.join(path, doc + '_tif.zip')
     leaf0_missing = False
-    if os.path.exists(jp2_zip):
-        leaf0_missing = '0000.jp2' not in Popen(['unzip', '-l', jp2_zip], stdout=PIPE).communicate()[0]
-    elif os.path.exists(tif_zip):
-        leaf0_missing = '0000.tif' not in Popen(['unzip', '-l', tif_zip], stdout=PIPE).communicate()[0]
+    for ext in 'jp2', 'tif', 'jpg':
+        z = os.path.join(path, doc + '_' + ext + '.zip')
+        if os.path.exists(z):
+            leaf0_missing = '0000.' + ext not in Popen(['unzip', '-l', z], stdout=PIPE).communicate()[0]
+            break
 
     f = open_abbyy(filename)
     abbyy_iter = par_iter(f)

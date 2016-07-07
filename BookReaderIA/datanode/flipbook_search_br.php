@@ -1,4 +1,4 @@
-<?php
+<? $_SERVER['DOCUMENT_ROOT']='/petabox/www/sf'; /* <== pretty sure this is wrong/folklore xxx tracey 2015*/  require @ia;
 /*
 Copyright(c)2008 Internet Archive. Software license AGPL version 3.
 
@@ -29,19 +29,6 @@ This file is part of BookReader.
 //
 // ported from perl to php by tracey, Oct 2005
 
-//fixxx require_once '/petabox/setup.inc';
-//I think this fixxx refers to the need to set DOCUMENT_ROOT below -- mang
-
-if (strpos($_SERVER["REQUEST_URI"], "/~mang") === 0) { // Serving out of home dir
-    $_SERVER['DOCUMENT_ROOT']='/home/mang/petabox/www/sf';
-    require_once '/home/mang/petabox/setup.inc';
-} else if (strpos($_SERVER["REQUEST_URI"], "/~testflip") === 0) { // Serving out of home dir
-    $_SERVER['DOCUMENT_ROOT']='/home/testflip/petabox/www/sf';
-    require_once '/home/testflip/petabox/setup.inc';
-} else {
-    $_SERVER['DOCUMENT_ROOT']='/petabox/www/sf';
-    require_once '/petabox/setup.inc';
-}
 
 ini_set("memory_limit","200M"); // XML can be big, esp. brittanica (100MB)
 

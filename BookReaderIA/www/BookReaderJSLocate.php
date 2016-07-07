@@ -18,7 +18,7 @@ This file is part of BookReader.
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-require_once '/petabox/setup.inc';
+require @ia;
 
 $id = $_REQUEST['id'];
 $book = $_REQUEST['book']; // support multiple books within an item
