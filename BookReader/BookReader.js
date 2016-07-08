@@ -2762,9 +2762,21 @@ BookReader.prototype.BRSearchCallback = function(results) {
     br.searchResults = results;
     //console.log(br.searchResults);
 
-    if (0 == results.matches.length) {
+    if (results.error) {
+        if (/debug/.test(window.location.href)) {
+            $(br.popup).html(results.error);
+        } else {
+            $(br.popup).html('Sorry, there was an error with your search.<br />If the problem persists, please contact us.');
+            setTimeout(function(){
+                $(br.popup).fadeOut('slow', function() {
+                    br.removeProgressPopup();
+                })
+            }, 4000);
+        }
+        return;
+    } else if (0 == results.matches.length) {
         var errStr  = 'No matches were found.';
-        var timeout = 1000;
+        var timeout = 2000;
         if (false === results.indexed) {
             errStr  = "<p>This book hasn't been indexed for searching yet. We've just started indexing it, so search should be available soon. Please try again later. Thanks!</p>";
             timeout = 5000;

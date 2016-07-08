@@ -127,8 +127,8 @@ class BookReader
     <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <link rel="apple-touch-icon" href="<? echo($coverThumb); ?>" />
-    <title><? echo $title; ?></title>
+    <link rel="apple-touch-icon" href="<?=$coverThumb?>" />
+    <title><?=$title?></title>
 
 
     <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
@@ -137,29 +137,27 @@ class BookReader
     <![endif]-->
 
 <!--[if !IE 7]><![IGNORE[--><![IGNORE[]]>
-    <link rel="stylesheet" type="text/css" href="/bookreader/BookReader.css?v=<? echo($version); ?>" id="BRCSS">
-<? if (UI3) { ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/BookReader-ia.css?v=<? echo($version); ?>" id="BRCSSTheme">
-<? } ?>
+    <link rel="stylesheet" type="text/css" href="/bookreader/BookReader.css?v=<?=$version?>" id="BRCSS">
+    <link rel="stylesheet" type="text/css" href="/bookreader/BookReader-ia.css?v=<?=$version?>" id="BRCSSTheme">
 <? if ($uiMode == "embed") { ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderEmbed.css?v=<? echo($version); ?>">
+    <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderEmbed.css?v=<?=$version?>">
 <? } elseif ($uiMode == "touch") { ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/touch/BookReaderTouch.css?v=<? echo($version); ?>">
+    <link rel="stylesheet" type="text/css" href="/bookreader/touch/BookReaderTouch.css?v=<?=$version?>">
 <? } /* uiMode */ ?>
 <? if ($protected) { ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderLending.css?v=<? echo($version); ?>">
+    <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderLending.css?v=<?=$version?>">
 <? } ?>
     <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
-    <script type="text/javascript" src="/bookreader/jquery-ui-1.8.5.custom.min.js?v=<? echo($version); ?>"></script>
-    <script type="text/javascript" src="//archive.org/includes/analytics.js?v=52515"></script>
-    <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/jquery-ui-1.8.5.custom.min.js?v=<?=$version?>"></script>
+    <script type="text/javascript" src="//archive.org/includes/analytics.js?v=52516"></script>
+    <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<?=$version?>"></script>
     <script type="text/javascript" src="/bookreader/jquery.colorbox-min.js"></script>
-    <script type="text/javascript" src="/bookreader/jquery.ui.ipad.js"></script>
+    <script type="text/javascript" src="/bookreader/jquery.ui.touch-punch.js"></script>
 
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
-    <script type="text/javascript" src="/bookreader/BookReader.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/BookReader.js?v=<?=$version?>"></script>
 <? if ( !preg_match("/mobile/i", $_SERVER['HTTP_USER_AGENT']) ) { ?>
-    <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2-ia.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2-ia.js?v=<?=$version?>"></script>
     <script>
         soundManager.debugMode = false;
         soundManager.url = '/bookreader/soundmanager/swf/';
@@ -171,28 +169,24 @@ class BookReader
 <body style="background-color: ##939598;">
 
 <div id="BookReader">
-    Internet Archive BookReader - <? echo $title; ?>
+    Internet Archive BookReader - <?=$title?>
     <br/>
-
     <noscript>
     <p>
-        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="http://archive.org/details/<? echo $identifier; ?>"> other formats of the book</a>.
+        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="http://archive.org/details/<?=$identifier?>"> other formats of the book</a>.
     </p>
     </noscript>
 </div>
 
 <script type="text/javascript">
   // Set some config variables -- $$$ NB: Config object format has not been finalized
-  var brConfig = {};
+  var brConfig = {theme:"ia"};
 <? if ($uiMode == 'embed') { ?>
   brConfig["mode"] = 1;
   brConfig["ui"] = "embed";
 <? } else { ?>
   brConfig["mode"] = 2;
 <? } ?>
-<? if (UI3) {
-     echo '  brConfig["theme"] = "ia";';
-} ?>
 <? if ($isAdmin == true) {
      echo '  brConfig["isAdmin"] = true;';
    } ?>
@@ -201,10 +195,10 @@ class BookReader
 // The URL in the script tag below is dynamically generated JavaScript that includes the book metadata and page image access functions.
 // The ia{number}.us.archive.org server for the book can and does change, so this URL should NOT be used for permanent access.
 // Use the JSLocate URL below instead for stable access - it will find the item and redirect to the correct server
-// <? echo($locateURL); ?>
+// <?=$locateURL?>
 
 </script>
-<script type="text/javascript" src="<? echo($metaURL); ?>"></script>
+<script type="text/javascript" src="<?=$metaURL?>"></script>
 
 <script type="text/javascript">
     // Usage stats
@@ -256,17 +250,17 @@ class BookReader
 
 
 ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/BookReader.css?v=<? echo($version); ?>">
+    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/BookReader.css?v=<?=$version?>">
 <? if ($uiMode == "embed") { ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/BookReaderEmbed.css?v=<? echo($version); ?>">
+    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/BookReaderEmbed.css?v=<?=$version?>">
 <? } elseif ($uiMode == "touch") { ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/touch/BookReaderTouch.css?v=<? echo($version); ?>">
+    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/touch/BookReaderTouch.css?v=<?=$version?>">
 <? } /* uiMode */ ?>
     <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
     <script type="text/javascript" src="http://archive.org/includes/analytics.js?v=52515"></script>
-    <script type="text/javascript" src="/bookreader/ie7/jquery-ui-1.8.1.custom.min.js?v=<? echo($version); ?>"></script>
-    <script type="text/javascript" src="/bookreader/ie7/dragscrollable.js?v=<? echo($version); ?>"></script>
-    <script type="text/javascript" src="/bookreader/ie7/BookReader.js?v=<? echo($version); ?>"></script>
+    <script type="text/javascript" src="/bookreader/ie7/jquery-ui-1.8.1.custom.min.js?v=<?=$version?>"></script>
+    <script type="text/javascript" src="/bookreader/ie7/dragscrollable.js?v=<?=$version?>"></script>
+    <script type="text/javascript" src="/bookreader/ie7/BookReader.js?v=<?=$version?>"></script>
 </head>
 <body style="background-color: #FFFFFF;">
 
@@ -287,7 +281,7 @@ class BookReader
   brConfig["mode"] = 2;
 <? } ?>
 </script>
-<script type="text/javascript" src="<? echo($metaURL); ?>"></script>
+<script type="text/javascript" src="<?=$metaURL?>"></script>
 
 <? if ($uiMode == 'full') { ?>
 <div id="BookReaderSearch" style="width:190px; right:0px; top:10px; bottom:2em;">
@@ -347,7 +341,7 @@ class BookReader
       //     ln -s ~/petabox/www/datanode/BookReader ~/public_html/BookReader
       //     so we enable it only for known hosts
       $devhost = BookReader::getDevHost($server);
-      $devhosts = array('mang', 'testflip', 'rkumar', 'anand');
+      $devhosts = array('mang', 'rkumar', 'anand');
       if (in_array($devhost, $devhosts)) {
         $server = $server . "/~" . $devhost;
       }

@@ -87,7 +87,10 @@ class BookReaderImages
     function serveLookupRequest($requestEnv) {
         $brm = new BookReaderMeta();
         try {
-            $metadata = $brm->buildMetadata($_REQUEST['id'], $_REQUEST['itemPath'], $_REQUEST['subPrefix'], $_REQUEST['server']);
+            $metadata = $brm->buildMetadata($_REQUEST['id'], $_REQUEST['itemPath'],
+                                            // this one's optional; avoid "undefined index" error
+                                            (isset($_REQUEST['subPrefix']) ? $_REQUEST['subPrefix'] : false),
+                                            $_REQUEST['server']);
         } catch (Exception $e) {
             $this->BRfatal($e->getMessage());
         }
@@ -1104,7 +1107,7 @@ class BookReaderImages
             // Check for fast tmp and make our directory
             $fast = '/var/tmp/fast';
             if (is_writeable($fast)) {
-                if (mkdir($fastbr)) {
+                if (is_writeable($fastbr)  ||  mkdir($fastbr)) {
                     return $fastbr;
                 } else {
                     return $fast;
