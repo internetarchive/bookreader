@@ -1,4 +1,4 @@
-// 
+//
 // This file shows the minimum you need to provide to BookReader to display a book
 //
 // Copyright(c)2008-2009 Internet Archive. Software license AGPL version 3.
@@ -22,7 +22,7 @@ br.getPageURI = function(index, reduce, rotate) {
     // reduce and rotate are ignored in this simple implementation, but we
     // could e.g. look at reduce and load images from a different directory
     // or pass the information to an image server
-    var leafStr = '000';            
+    var leafStr = '000';
     var imgStr = (index+1).toString();
     var re = new RegExp("0{"+imgStr.length+"}$");
     var url = 'http://www.archive.org/download/BookReader/img/page'+leafStr.replace(re, imgStr) + '.jpg';
@@ -41,8 +41,8 @@ br.getPageSide = function(index) {
 // This function returns the left and right indices for the user-visible
 // spread that contains the given index.  The return values may be
 // null if there is no facing page or the index is invalid.
-br.getSpreadIndices = function(pindex) {   
-    var spreadIndices = [null, null]; 
+br.getSpreadIndices = function(pindex) {
+    var spreadIndices = [null, null];
     if ('rl' == this.pageProgression) {
         // Right to Left
         if (this.getPageSide(pindex) == 'R') {
@@ -64,7 +64,7 @@ br.getSpreadIndices = function(pindex) {
             spreadIndices[0] = pindex - 1;
         }
     }
-    
+
     return spreadIndices;
 }
 
@@ -90,10 +90,16 @@ br.getEmbedCode = function(frameWidth, frameHeight, viewParams) {
     return "Embed code not supported in bookreader demo.";
 }
 
+// Note previously the UI param was used for mobile, but it's going to be responsive
+// embed === iframe (and mobile but that is changing))
+// touch === ipad (but that is changing)
+
+br.ui = 'full'; // embed, touch, full (responsive)
+
 // Let's go!
 br.init();
 
 // read-aloud and search need backend compenents and are not supported in the demo
-$('#BRtoolbar').find('.read').hide();
-$('#textSrch').hide();
-$('#btnSrch').hide();
+// $('#BRtoolbar').find('.read').hide();
+// $('#textSrch').hide();
+// $('#btnSrch').hide();

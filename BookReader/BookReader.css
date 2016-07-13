@@ -45,6 +45,7 @@ a {
 }
 #BRtoolbarbuttons {
     float: right;
+    height: 100%;
 }
 #BRcontainer {
     top:0;
@@ -205,7 +206,7 @@ a {
     padding-top: 3px;
 }
 #BRreturn a {
-    font-size: 15px;
+    font-size: 14px;
     display: block;
     color: #036daa;
     /* height: 18px; */
@@ -572,7 +573,7 @@ a.BRgrey:visited   { color: #666; }
 }
 div#BRpage {
     float: right;
-    width: 280px;
+    width: 220px;
     padding-left:12px;
     text-align: right;
 }
@@ -593,7 +594,7 @@ div#BRnav {
 }
 div#BRnavpos {
     position: relative;
-    margin-right: 280px;
+    margin-right: 220px;
     height: 40px;
 }
 div#BRpager {
@@ -916,3 +917,9 @@ div#BRzoombtn {
 #BRnavCntlTop.BRup,#BRnavCntlTop.BRdn {
     background-position: 8px 4px;
 }
+
+/** dev **/
+/*.br1 {border-right:1px solid #ccc;}
+.h100 {height: 100%;}
+.fl {float:left;}
+.pl {}*/

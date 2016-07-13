@@ -1,5 +1,5 @@
 /*
-Copyright(c)2008-2009 Internet Archive. Software license AGPL version 3.
+Copyright(c)2008-2016 Internet Archive. Software license AGPL version 3.
 
 This file is part of BookReader.
 
@@ -45,7 +45,7 @@ function BookReader() {
     this.padding = 10;          // Padding in 1up
 
     this.mode    = this.constMode1up;
-    this.ui = 'full';           // UI mode
+    this.ui = 'responsive';           // UI mode
     this.uiAutoHide = false;    // Controls whether nav/toolbar will autohide
 
     // thumbnail mode
@@ -3330,15 +3330,15 @@ BookReader.prototype.initNavbar = function() {
     $('#BookReader').append(
         '<div id="BRnav">'
         +     '<div id="BRpage">'   // Page turn buttons
+        // $$$ not yet implemented
+        //+         '<button class="BRicon fit"></button>'
+        //+         '<button class="BRicon zoom_in"></button>'
+        //+         '<button class="BRicon zoom_out"></button>'
+        +         '<button class="BRicon book_left"></button>'
+        +         '<button class="BRicon book_right"></button>'
         +         '<button class="BRicon onepg"></button>'
         +         '<button class="BRicon twopg"></button>'
         +         '<button class="BRicon thumb"></button>'
-        // $$$ not yet implemented
-        //+         '<button class="BRicon fit"></button>'
-        +         '<button class="BRicon zoom_in"></button>'
-        +         '<button class="BRicon zoom_out"></button>'
-        +         '<button class="BRicon book_left"></button>'
-        +         '<button class="BRicon book_right"></button>'
         +     '</div>'
         +     '<div id="BRnavpos">' // Page slider and nav line
         //+         '<div id="BRfiller"></div>'
@@ -3643,15 +3643,23 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     $("#BookReader").append(
           "<div id='BRtoolbar'>"
         +   "<span id='BRtoolbarbuttons'>"
-        +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<span class='br h-100 fl db mh2'></span>"
         +     "<button class='BRicon play'></button>"
         +     "<button class='BRicon pause'></button>"
         +     "<button class='BRicon info'></button>"
         +     "<button class='BRicon share'></button>"
         +     readIcon
+        +     "<span class='br h-100 fl db mh2'></span>"
+              // zoom
+        +     "<button class='BRicon zoom_out'></button>"
+        +     "<button class='BRicon zoom_in'></button>"
+        +     "<span class='br h-100 fl db mh2'></span>"
+        +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+
         //+     "<button class='BRicon full'></button>"
         +   "</span>"
         +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
+        +   "<span class='br h-100 fl mh2'></span>"
         +   "<span id='BRreturn'><a></a></span>"
         +   "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
         + "</div>"
