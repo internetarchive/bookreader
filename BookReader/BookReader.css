@@ -1,6 +1,6 @@
 body {
  /* XXX we shouldn't change the body CSS, just within our container */
- background-color: #9A9B9D;  /* Pantone Cool Grey 7 C */
+ /*background-color: #9A9B9D;*/  /* Pantone Cool Grey 7 C */
  font-size: 67.5%;
  margin: 0;
  padding: 0;
@@ -21,6 +21,7 @@ a {
  right:0;
  top:0;
  bottom:0;
+ -webkit-overflow-scrolling: touch; 
 }
 #BRtoolbar {
     position: relative;
@@ -923,3 +924,14 @@ div#BRzoombtn {
 .h100 {height: 100%;}
 .fl {float:left;}
 .pl {}*/
+
+
+/* Mobile Only */
+@media (max-width: 500px) {
+  .desktop-only { display: none; }
+}
+
+/* Desktop Only */
+@media (min-width: 501px) {
+  .mobile-only { display: none; }
+}

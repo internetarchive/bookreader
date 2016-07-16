@@ -257,24 +257,24 @@ BookReader.prototype.init = function() {
         }
     });
 
-    if (this.protected) {
-        $(document).on('contextmenu dragstart', '.BRpagediv1up', function(e) {
-            return false;
-        });
-        $(document).on('contextmenu dragstart', '.BRpageimage', function(e) {
-            return false;
-        });
-        $(document).on('contextmenu dragstart', '.BRpagedivthumb', function(e) {
-            return false;
-        });
-        $('.BRicon.share').hide();
-    }
+    // if (this.protected) {
+    //     $(document).on('contextmenu dragstart', '.BRpagediv1up', function(e) {
+    //         return false;
+    //     });
+    //     $(document).on('contextmenu dragstart', '.BRpageimage', function(e) {
+    //         return false;
+    //     });
+    //     $(document).on('contextmenu dragstart', '.BRpagedivthumb', function(e) {
+    //         return false;
+    //     });
+    //     $('.BRicon.share').hide();
+    // }
 
-    $('.BRpagediv1up').bind('mousedown', this, function(e) {
-        // $$$ the purpose of this is to disable selection of the image (makes it turn blue)
-        //     but this also interferes with right-click.  See https://bugs.edge.launchpad.net/gnubook/+bug/362626
-        return false;
-    });
+    // $('.BRpagediv1up').bind('mousedown', this, function(e) {
+    //     // $$$ the purpose of this is to disable selection of the image (makes it turn blue)
+    //     //     but this also interferes with right-click.  See https://bugs.edge.launchpad.net/gnubook/+bug/362626
+    //     return false;
+    // });
 
     // $$$ refactor this so it's enough to set the first index and call preparePageView
     //     (get rid of mode-specific logic at this point)
@@ -302,6 +302,8 @@ BookReader.prototype.init = function() {
     if ('undefined' == typeof(params.theme)) {
         this.updateTheme(this.theme);
     }
+
+    // $("#BookReader").empty();// @DEBUG //
 
     // We init the nav bar after the params processing so that the nav slider knows where
     // it should start (doesn't jump after init)
@@ -1436,8 +1438,8 @@ BookReader.prototype.prepareOnePageView = function() {
     $("#BRcontainer").append("<div id='BRpageview'></div>");
 
     // Attaches to first child - child must be present
-    $('#BRcontainer').dragscrollable();
-    this.bindGestures($('#BRcontainer'));
+    /////// $('#BRcontainer').dragscrollable();
+    ///////this.bindGestures($('#BRcontainer'));
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
@@ -1463,8 +1465,8 @@ BookReader.prototype.prepareThumbnailView = function() {
 
     $("#BRcontainer").append("<div id='BRpageview'></div>");
 
-    $('#BRcontainer').dragscrollable();
-    this.bindGestures($('#BRcontainer'));
+    ///////$('#BRcontainer').dragscrollable();
+    ///////this.bindGestures($('#BRcontainer'));
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
@@ -1533,7 +1535,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
 
     // Attaches to first child, so must come after we add the page view
     //$('#BRcontainer').dragscrollable();
-    this.bindGestures($('#BRcontainer'));
+    ////////this.bindGestures($('#BRcontainer'));
 
     // $$$ calculate first then set
     $('#BRtwopageview').css( {
@@ -3328,8 +3330,8 @@ BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
 
     $('#BookReader').append(
-        '<div id="BRnav">'
-        +     '<div id="BRpage">'   // Page turn buttons
+        '<div id="BRnav" class="desktop-only-disable">'
+        +     '<div id="BRpage" class="desktop-only-d">'   // Page turn buttons
         // $$$ not yet implemented
         //+         '<button class="BRicon fit"></button>'
         //+         '<button class="BRicon zoom_in"></button>'
@@ -3640,8 +3642,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         readIcon = "<button class='BRicon read modal'></button>";
     }
 
+    // Add large screen navigation
     $("#BookReader").append(
-          "<div id='BRtoolbar'>"
+          "<div id='BRtoolbar' class='desktop-only'>"
         +   "<span id='BRtoolbarbuttons'>"
         +     "<span class='br h-100 fl db mh2'></span>"
         +     "<button class='BRicon play'></button>"
@@ -3676,6 +3679,101 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         + "</div>"
         */
         );
+
+    // Add Mobile navigation
+    // ------------------------------------------------------
+    $("body").append(
+      "<div class=\"header fixed mobile-only\">"
+      +"  <a href=\"#menu\"></a>Demo"
+      +"</div>"
+      +"<div class='menu-wrapper mobile-only'></div>"
+    );
+    $("body").append(
+        "    <nav id=\"menu\" class=\"mobile-only\">"
+        +"      <ul>"
+        +"        <li><span>Settings</span>"
+        +"          <div>"
+        +"                <b>Page Layout</b><br>"
+        +"                <button class=\"BRicon onepg\">One Page</button>"
+        +"                <button class=\"BRicon twopg\">Two Page</button>"
+        +"                <button class=\"BRicon thumb\">Thumbnails</button>"
+        +"                <br>"
+        +"                <br>"
+        +"                <b>Zoom</b><br>"
+        +                 "<button class='BRicon zoom_out'></button>"
+        +                 "<button class='BRicon zoom_in'></button>"
+        +"          </div>"
+        +"        </li>"
+        +"        <li><span>About This Book</span>"
+        +"          <div>"
+        +"                [Book Cover]<br>"
+        +"                <br>"
+        +"                Title<br>"
+        +"                <b>Goody Two Shoes</b>"
+        +"                <br>"
+        +"                Publish Date<br>"
+        +"                <b>1800</b>"
+        +"                <br>"
+        +"                Language<br>"
+        +"                <b>English</b>"
+        +"                <br>"
+        +"                Collection<br>"
+        +"                <br>"
+        +"                <div class=\"\"><a href=\"#\">More Information on Archive.org</a></div>"
+        +"          </div>"
+        +"        </li>"
+        +"        <li><span>Loan Information</span>"
+        +"          <ul>"
+        +"            <li><a href=\"#\">Loan Information</a></li>"
+        +"          </ul>"
+        +"        </li>"
+        +"        <li><span>Read Aloud</span>"
+        +"          <div>"
+        +"            <button>Read Aloud</button>"
+        +"          </div>"
+        +"        </li>"
+        +"        <li><span>Share This Book</span>"
+        +"          <div>share..."
+        +"          </div>"
+        +"        </li>"
+        +"      </ul>"
+        +"    </nav>"
+      );
+
+      $('nav#menu').mmenu({
+          searchfield: {
+             "resultsPanel": true,
+             "showTextItems": true,
+             "placeholder": "Search inside this book",
+          },
+          navbars: [
+             { "position": "top" },
+             {
+                "position": "top",
+                "content": [
+                   "searchfield"
+                ]
+             },
+          ],
+          navbar: {
+            add: true,
+            title: 'Internet Archive',
+            titleLink: 'panel'
+          },
+          extensions: [ "panelshadow" ],
+       }, {
+          searchfield: {
+             clear: true,
+          },
+          offCanvas: {
+            menuWrapperSelector: 'body',
+            wrapPageIfNeeded: false,
+            zposition: 'front'
+          }
+       });
+
+    //--------------------------------------------------------
+
 
     // Browser hack - bug with colorbox on iOS 3 see https://bugs.launchpad.net/bookreader/+bug/686220
     if ( navigator.userAgent.match(/ipad/i) && $.browser.webkit && (parseInt($.browser.version, 10) <= 531) ) {
@@ -4004,7 +4102,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
       this.swipeMousedownHandler
     );
 
-    this.bindMozTouchHandlers();
+    ////this.bindMozTouchHandlers();
 }
 
 // unbindNavigationHandlers
