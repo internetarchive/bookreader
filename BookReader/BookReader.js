@@ -3691,11 +3691,13 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +"                <button class=\"BRicon onepg\">One Page</button>"
         +"                <button class=\"BRicon twopg\">Two Page</button>"
         +"                <button class=\"BRicon thumb\">Thumbnails</button>"
-        +"                <br>"
+        +"                <br style='clear:both'>"
         +"                <br>"
         +"                <b>Zoom</b><br>"
         +                 "<button class='BRicon zoom_out'></button>"
         +                 "<button class='BRicon zoom_in'></button>"
+        +"                <br style='clear:both'><br><br>"
+        +                 "<button class=''>High contrast</button>"
         +"          </div>"
         +"        </li>"
         +"        <li><span>About This Book</span>"
@@ -3716,7 +3718,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +"                <div class=\"\"><a href=\"#\">More Information on Archive.org</a></div>"
         +"          </div>"
         +"        </li>"
-        +"        <li><span>Loan Information</span>"
+        +"        <li style='display:none;'><span>Loan Information</span>"
         +"          <ul>"
         +"            <li><a href=\"#\">Loan Information</a></li>"
         +"          </ul>"
@@ -5024,8 +5026,18 @@ BookReader.prototype.ttsStartCB = function (data) {
     var snd = soundManager.createSound({
      id: 'chunk'+this.ttsIndex+'-0',
      url: 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + escape(data[0][0]) + '&format=.'+this.ttsFormat, //the .ogg is to trick SoundManager2 to use the HTML5 audio player
-     onload: function(){this.br.removeProgressPopup();}, //fires in safari...
-     onbufferchange: function(){if (false == this.isBuffering) this.br.removeProgressPopup();} //fires in FF and IE9
+     onload: function(){
+       console.log(this.br);
+       this.br.removeProgressPopup();
+     }, //fires in safari...
+     onbufferchange: function(){
+       if (false == this.isBuffering) {
+         this.br.removeProgressPopup();
+       }
+     }, //fires in FF and IE9
+     onready: function() {
+       this.br.removeProgressPopup();
+     }
     });
     snd.br = this;
     snd.load();
@@ -5064,6 +5076,7 @@ BookReader.prototype.showProgressPopup = function(msg) {
 //______________________________________________________________________________
 BookReader.prototype.removeProgressPopup = function() {
     $(this.popup).remove();
+    $('.BRprogresspopup').remove();
     this.popup=null;
 }
 
