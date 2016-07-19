@@ -54,6 +54,7 @@ nav {
 	position: fixed;
 	top: 0;
 	left: 0;
+	z-index:100000;
 }
 .footer.fixed
 {
@@ -80,4 +81,4 @@ nav {
 
 /** overrides **/
 /*.mm-menu.mm-offcanvas { position: static; }*/
-html.mm-opened { position: static; }
+/*html.mm-opened { position: static; }*/

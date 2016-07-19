@@ -1004,7 +1004,6 @@ BookReader.prototype.zoom1up = function(direction) {
 // resizePageView()
 //______________________________________________________________________________
 BookReader.prototype.resizePageView = function() {
-
     // $$$ This code assumes 1up mode
     //     e.g. does not preserve position in thumbnail mode
     //     See http://bugs.launchpad.net/bookreader/+bug/552972
@@ -3682,11 +3681,10 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     // Add Mobile navigation
     // ------------------------------------------------------
-    $("body").append(
+    $("#BookReader").append(
       "<div class=\"header fixed mobile-only\">"
       +"  <a href=\"#menu\"></a>Demo"
       +"</div>"
-      +"<div class='menu-wrapper mobile-only'></div>"
     );
     $("body").append(
         "    <nav id=\"menu\" class=\"mobile-only\">"
@@ -3766,9 +3764,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
              clear: true,
           },
           offCanvas: {
-            menuWrapperSelector: 'body',
             wrapPageIfNeeded: false,
-            zposition: 'front'
+            zposition: 'next',
+            pageSelector: '#BookReader'
           }
        });
 

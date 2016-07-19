@@ -15,13 +15,13 @@ a {
     outline: none;
 }
 #BookReader {
- position:absolute;
+ position:relative;
  font-family: arial, sans-serif;
  left:0;
  right:0;
  top:0;
  bottom:0;
- -webkit-overflow-scrolling: touch; 
+ -webkit-overflow-scrolling: touch;
 }
 #BRtoolbar {
     position: relative;
@@ -55,7 +55,7 @@ a {
     z-index: 1;
     overflow-x:auto;
     overflow-y:scroll;
-    position:absolute;
+    position:fixed;
     background-color: #9A9B9D;
     _height: expression(documentElement.clientHeight);
 }
