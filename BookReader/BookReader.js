@@ -1437,8 +1437,8 @@ BookReader.prototype.prepareOnePageView = function() {
     $("#BRcontainer").append("<div id='BRpageview'></div>");
 
     // Attaches to first child - child must be present
-    /////// $('#BRcontainer').dragscrollable();
-    ///////this.bindGestures($('#BRcontainer'));
+    $('#BRcontainer').dragscrollable();
+    ///////this.bindGestures($('#BRcontainer'));// @note(Richard) disable gestures
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
@@ -1464,8 +1464,8 @@ BookReader.prototype.prepareThumbnailView = function() {
 
     $("#BRcontainer").append("<div id='BRpageview'></div>");
 
-    ///////$('#BRcontainer').dragscrollable();
-    ///////this.bindGestures($('#BRcontainer'));
+    $('#BRcontainer').dragscrollable();
+    ///////this.bindGestures($('#BRcontainer')); // @note(richard) disable gestures
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
@@ -1533,7 +1533,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     $('#BRcontainer').append('<div id="BRtwopageview"></div>');
 
     // Attaches to first child, so must come after we add the page view
-    //$('#BRcontainer').dragscrollable();
+    $('#BRcontainer').dragscrollable();
     ////////this.bindGestures($('#BRcontainer'));
 
     // $$$ calculate first then set
@@ -3329,8 +3329,8 @@ BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
 
     $('#BookReader').append(
-        '<div id="BRnav" class="desktop-only-disable">'
-        +     '<div id="BRpage" class="desktop-only-d">'   // Page turn buttons
+        '<div id="BRnav" class="">'
+        +     '<div id="BRpage" class="">'   // Page turn buttons
         // $$$ not yet implemented
         //+         '<button class="BRicon fit"></button>'
         //+         '<button class="BRicon zoom_in"></button>'
@@ -3643,8 +3643,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     // Add large screen navigation
     $("#BookReader").append(
-          "<div id='BRtoolbar' class='desktop-only'>"
-        +   "<span id='BRtoolbarbuttons'>"
+          "<div id='BRtoolbar' class='header fixed'>"
+        +   "<span class='hamburger mobile-only'><a href=\"#menu\"></a>Demo</span>"
+        +   "<span id='BRtoolbarbuttons' class='desktop-only'>"
         +     "<span class='br h-100 fl db mh2'></span>"
         +     "<button class='BRicon play'></button>"
         +     "<button class='BRicon pause'></button>"
@@ -3660,10 +3661,10 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
         //+     "<button class='BRicon full'></button>"
         +   "</span>"
-        +   "<span><a class='logo' href='" + this.logoURL + "'></a></span>"
-        +   "<span class='br h-100 fl mh2'></span>"
-        +   "<span id='BRreturn'><a></a></span>"
-        +   "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
+        +   "<span class='desktop-only'><a class='logo' href='" + this.logoURL + "'></a></span>"
+        +   "<span class='desktop-only br h-100 fl mh2'></span>"
+        +   "<span id='BRreturn' class='desktop-only'><a></a></span>"
+        +   "<div id='BRnavCntlTop' class='BRnabrbuvCntl desktop-only'></div>"
         + "</div>"
         /*
         + "<div id='BRzoomer'>"
@@ -3681,11 +3682,11 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     // Add Mobile navigation
     // ------------------------------------------------------
-    $("#BookReader").append(
-      "<div class=\"header fixed mobile-only\">"
-      +"  <a href=\"#menu\"></a>Demo"
-      +"</div>"
-    );
+    // $("#BookReader").append(
+    //   "<div class=\"header fixed mobile-only\">"
+    //   +"  <a href=\"#menu\"></a>Demo"
+    //   +"</div>"
+    // );
     $("body").append(
         "    <nav id=\"menu\" class=\"mobile-only\">"
         +"      <ul>"
@@ -4100,7 +4101,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
       this.swipeMousedownHandler
     );
 
-    ////this.bindMozTouchHandlers();
+    this.bindMozTouchHandlers();
 }
 
 // unbindNavigationHandlers

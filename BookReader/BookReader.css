@@ -24,7 +24,7 @@ a {
  -webkit-overflow-scrolling: touch;
 }
 #BRtoolbar {
-    position: relative;
+    position: fixed;
     top: 0;
     left: 0;
     height: 40px;
@@ -927,11 +927,11 @@ div#BRzoombtn {
 
 
 /* Mobile Only */
-@media (max-width: 500px) {
+@media (max-width: 800px) {
   .desktop-only { display: none; }
 }
 
 /* Desktop Only */
-@media (min-width: 501px) {
+@media (min-width: 801px) {
   .mobile-only { display: none; }
 }
