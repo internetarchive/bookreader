@@ -3330,16 +3330,16 @@ BookReader.prototype.initNavbar = function() {
 
     $('#BookReader').append(
         '<div id="BRnav" class="">'
-        +     '<div id="BRpage" class="">'   // Page turn buttons
+        +     '<div id="BRpage">'   // Page turn buttons
         // $$$ not yet implemented
         //+         '<button class="BRicon fit"></button>'
         //+         '<button class="BRicon zoom_in"></button>'
         //+         '<button class="BRicon zoom_out"></button>'
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
-        +         '<button class="BRicon onepg"></button>'
-        +         '<button class="BRicon twopg"></button>'
-        +         '<button class="BRicon thumb"></button>'
+        +         '<button class="BRicon onepg desktop-only"></button>'
+        +         '<button class="BRicon twopg desktop-only"></button>'
+        +         '<button class="BRicon thumb desktop-only"></button>'
         +     '</div>'
         +     '<div id="BRnavpos">' // Page slider and nav line
         //+         '<div id="BRfiller"></div>'
@@ -3637,9 +3637,9 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     // $$$mang should be contained within the BookReader div instead of body
     var readIcon = '';
-    if (!navigator.userAgent.match(/mobile/i)) {
+    // if (!navigator.userAgent.match(/mobile/i)) {
         readIcon = "<button class='BRicon read modal'></button>";
-    }
+    // }
 
     // Add large screen navigation
     $("#BookReader").append(
@@ -3682,11 +3682,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     // Add Mobile navigation
     // ------------------------------------------------------
-    // $("#BookReader").append(
-    //   "<div class=\"header fixed mobile-only\">"
-    //   +"  <a href=\"#menu\"></a>Demo"
-    //   +"</div>"
-    // );
     $("body").append(
         "    <nav id=\"menu\" class=\"mobile-only\">"
         +"      <ul>"
@@ -3728,7 +3723,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +"        </li>"
         +"        <li><span>Read Aloud</span>"
         +"          <div>"
-        +"            <button>Read Aloud</button>"
+        +"            <button class='BRicon read modal'></button>"
         +"          </div>"
         +"        </li>"
         +"        <li><span>Share This Book</span>"
