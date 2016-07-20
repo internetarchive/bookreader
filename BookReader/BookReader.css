@@ -690,7 +690,7 @@ div#BRnavline {
     margin: 0 10px;
 }
 .BRnavend {
-    position: absolute;
+    /*position: absolute;*/
     top: -2px;
     width: 1px;
     height: 6px;
@@ -925,10 +925,11 @@ div#BRzoombtn {
 .fl {float:left;}
 .pl {}*/
 
-
 /* Mobile Only */
 @media (max-width: 800px) {
   .desktop-only { display: none; }
+  div#BRpage { width: 80px; }
+  div#BRnavpos { margin-right: 80px; }
 }
 
 /* Desktop Only */

@@ -3329,28 +3329,23 @@ BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
 
     $('#BookReader').append(
-        '<div id="BRnav" class="">'
-        +     '<div id="BRpage">'   // Page turn buttons
-        // $$$ not yet implemented
-        //+         '<button class="BRicon fit"></button>'
-        //+         '<button class="BRicon zoom_in"></button>'
-        //+         '<button class="BRicon zoom_out"></button>'
-        +         '<button class="BRicon book_left"></button>'
-        +         '<button class="BRicon book_right"></button>'
-        +         '<button class="BRicon onepg desktop-only"></button>'
-        +         '<button class="BRicon twopg desktop-only"></button>'
-        +         '<button class="BRicon thumb desktop-only"></button>'
-        +     '</div>'
-        +     '<div id="BRnavpos">' // Page slider and nav line
-        //+         '<div id="BRfiller"></div>'
-        +         '<div id="BRpager"></div>'  // Page slider
-        +         '<div id="BRnavline">'      // Nav line with e.g. chapter markers
-        +             '<div class="BRnavend" id="BRnavleft"></div>'
-        +             '<div class="BRnavend" id="BRnavright"></div>'
-        +         '</div>'
-        +     '</div>'
-        +     '<div id="BRnavCntlBtm" class="BRnavCntl BRdn"></div>'
-        + '</div>'
+      "<div id=\"BRnav\" class=\"\">"
+      +"  <div id=\"BRpage\">"
+      +"    <button class=\"BRicon book_left\"></button>"
+      +"    <button class=\"BRicon book_right\"></button>"
+      +"    <button class=\"BRicon onepg desktop-only\"></button>"
+      +"    <button class=\"BRicon twopg desktop-only\"></button>"
+      +"    <button class=\"BRicon thumb desktop-only\"></button>"
+      +"  </div>"
+      +"  <div id=\"BRnavpos\">"
+      +"    <div id=\"BRpager\"></div><div id=\"BRnavline\"></div>"
+      +"    <div id=\"BRnavline\">"
+      +"      <div class=\"BRnavend\" id=\"BRnavleft\"></div>"
+      +"      <div class=\"BRnavend\" id=\"BRnavright\"></div>"
+      +"    </div>"
+      +"  </div>"
+      +"  <div id=\"BRnavCntlBtm\" class=\"BRnavCntl BRdn\"></div>"
+      +"</div>"
     );
 
     var self = this;
