@@ -18,6 +18,9 @@ This file is part of BookReader.
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// This file generates the init code for the Internet Archive book reader.
+// It is included in a <script> tag.
+
 // Include Twig
 require_once '3rdparty/Twig/lib/Twig/Autoloader.php';
 Twig_Autoloader::register();
@@ -917,4 +920,3 @@ function checkPrivs($filename) {
 }
 
 ?>
-

@@ -3689,29 +3689,14 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +"                <br style='clear:both'>"
         +"                <br>"
         +"                <b>Zoom</b><br>"
-        +                 "<button class='BRicon zoom_out'></button>"
-        +                 "<button class='BRicon zoom_in'></button>"
+        +"                 <button class='BRicon zoom_out'></button>"
+        +"                 <button class='BRicon zoom_in'></button>"
         +"                <br style='clear:both'><br><br>"
-        +                 "<button class=''>High contrast</button>"
+        +"                <button class=''>High contrast</button>"
         +"          </div>"
         +"        </li>"
         +"        <li><span>About This Book</span>"
-        +"          <div>"
-        +"                [Book Cover]<br>"
-        +"                <br>"
-        +"                Title<br>"
-        +"                <b>Goody Two Shoes</b>"
-        +"                <br>"
-        +"                Publish Date<br>"
-        +"                <b>1800</b>"
-        +"                <br>"
-        +"                Language<br>"
-        +"                <b>English</b>"
-        +"                <br>"
-        +"                Collection<br>"
-        +"                <br>"
-        +"                <div class=\"\"><a href=\"#\">More Information on Archive.org</a></div>"
-        +"          </div>"
+        +"          <div id=\"mobileInfo\"></div>"
         +"        </li>"
         +"        <li style='display:none;'><span>Loan Information</span>"
         +"          <ul>"
@@ -3724,12 +3709,16 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +"          </div>"
         +"        </li>"
         +"        <li><span>Share This Book</span>"
-        +"          <div>share..."
-        +"          </div>"
+        +"          <div id=\"mobileShare\"></div>"
         +"        </li>"
         +"      </ul>"
         +"    </nav>"
       );
+
+      // Render info into mobile info before mmenu
+      this.buildInfoDiv($('#mobileInfo'));
+      this.buildShareDiv($('#mobileShare'));
+
 
       $('nav#menu').mmenu({
           searchfield: {
@@ -3808,13 +3797,21 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#BRshare", onLoad: function() { self.autoStop(); self.ttsStop(); } });
     jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#BRinfo", onLoad: function() { self.autoStop(); self.ttsStop(); } });
 
-    $('<div style="display: none;"></div>').append(this.blankShareDiv()).append(this.blankInfoDiv()).appendTo($('body'));
+    $('<div style="display: none;"></div>').append(
+      this.blankShareDiv()
+    ).append(
+      this.blankInfoDiv()
+    ).appendTo($('body'));
 
     $('#BRinfo .BRfloatTitle a').attr( {'href': this.bookUrl} ).text(this.bookTitle).addClass('title');
 
     // These functions can be overridden
     this.buildInfoDiv($('#BRinfo'));
     this.buildShareDiv($('#BRshare'));
+
+    // mobile
+    // console.log($('#BRinfo').clone());
+    //$('#mobileInfo').empty().append($('#BRinfo').clone());
 
     // Switch to requested mode -- binds other click handlers
     //this.switchToolbarMode(mode);
@@ -4824,17 +4821,18 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
         }
 
         // $$$mang cleanup
-        if (self.theme == 'ol') {
-            //For the IA theme, no longer show links to OL
-            self.bookUrl = self.olHost + olObject.key;
-            self.bookTitle = olObject['title'];
-            $('#BRreturn a').attr( {'href': self.bookUrl, 'title': "Go to this book's page on Open Library" } );
-            $('#BRreturn a').text(self.bookTitle);
-
-            $('#BRinfo').remove();
-            $('#BRshare').after(self.blankInfoDiv());
-            self.buildInfoDiv($('#BRinfo'));
-        }
+        // @DEBUG richard @TODO
+        // if (self.theme == 'ol') {
+        //     //For the IA theme, no longer show links to OL
+        //     self.bookUrl = self.olHost + olObject.key;
+        //     self.bookTitle = olObject['title'];
+        //     $('#BRreturn a').attr( {'href': self.bookUrl, 'title': "Go to this book's page on Open Library" } );
+        //     $('#BRreturn a').text(self.bookTitle);
+        //
+        //     $('#BRinfo').remove();
+        //     $('#BRshare').after(self.blankInfoDiv());
+        //     self.buildInfoDiv($('#BRinfo'));
+        // }
 
         // Check for borrowed book
         if (self.olAuth) {
@@ -5372,38 +5370,47 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
     var self = this;
 
     var jForm = $([
-        '<p>Copy and paste one of these options to share this book elsewhere.</p>',
-        '<form method="post" action="">',
-            '<fieldset>',
-                '<label for="pageview">Link to this page view:</label>',
-                '<input type="text" name="pageview" id="pageview" value="' + pageView + '"/>',
-            '</fieldset>',
-            '<fieldset>',
-                '<label for="booklink">Link to the book:</label>',
-                '<input type="text" name="booklink" id="booklink" value="' + bookView + '"/>',
-            '</fieldset>',
-            '<fieldset>',
-                '<label for="iframe">Embed a mini Book Reader:</label>',
-                '<fieldset class="sub">',
-                    '<label class="sub">',
-                        '<input type="radio" name="pages" value="' + this.constMode1up + '" checked="checked"/>',
-                        '1 page',
-                    '</label>',
-                    '<label class="sub">',
-                        '<input type="radio" name="pages" value="' + this.constMode2up + '"/>',
-                        '2 pages',
-                    '</label>',
-                    '<label class="sub">',
-                        '<input type="checkbox" name="thispage" value="thispage"/>',
-                        'Open to this page?',
-                    '</label>',
-                '</fieldset>',
-                '<textarea cols="30" rows="4" name="iframe" class="BRframeEmbed"></textarea>',
-            '</fieldset>',
-            '<fieldset class="center">',
-                '<button type="button" onclick="$.fn.colorbox.close();">Finished</button>',
-            '</fieldset>',
-        '</form>'].join('\n'));
+        '<div class="share-title">Share this book</div>',
+        '<div class="share-social">',
+          '<div><button>Facebook TODO</button></div>',
+          '<div><button>Twitter TODO</button></div>',
+          '<div><button>Email TODO</button></div>',
+        '</div>',
+        '<div class="share-embed">',
+          '<p>Copy and paste one of these options to share this book elsewhere.</p>',
+          '<form method="post" action="">',
+              '<fieldset>',
+                  '<label for="pageview">Link to this page view:</label>',
+                  '<input type="text" name="pageview" id="pageview" value="' + pageView + '"/>',
+              '</fieldset>',
+              '<fieldset>',
+                  '<label for="booklink">Link to the book:</label>',
+                  '<input type="text" name="booklink" id="booklink" value="' + bookView + '"/>',
+              '</fieldset>',
+              '<fieldset>',
+                  '<label for="iframe">Embed a mini Book Reader:</label>',
+                  '<fieldset class="sub">',
+                      '<label class="sub">',
+                          '<input type="radio" name="pages" value="' + this.constMode1up + '" checked="checked"/>',
+                          '1 page',
+                      '</label>',
+                      '<label class="sub">',
+                          '<input type="radio" name="pages" value="' + this.constMode2up + '"/>',
+                          '2 pages',
+                      '</label>',
+                      '<label class="sub">',
+                          '<input type="checkbox" name="thispage" value="thispage"/>',
+                          'Open to this page?',
+                      '</label>',
+                  '</fieldset>',
+                  '<textarea cols="30" rows="4" name="iframe" class="BRframeEmbed"></textarea>',
+              '</fieldset>',
+              '<fieldset class="center">',
+                  '<button class="share-finished" type="button" onclick="$.fn.colorbox.close();">Finished</button>',
+              '</fieldset>',
+          '</form>',
+        '</div>',
+        ].join('\n'));
 
     jForm.appendTo(jShareDiv);
 

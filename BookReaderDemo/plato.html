@@ -1,0 +1,87 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="apple-touch-icon" href="http://archive.org/download/theworksofplato01platiala/theworksofplato01platiala/page/cover_w114.jpg" />
+    <title>The works of Plato : a new and literal version, chiefly from the text of Stallbaum</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.js"></script>
+    <script type="text/javascript" src="../BookReader/jquery-ui-1.12.0.min.js"></script>
+    <script type="text/javascript" src="../BookReader/jquery.browser.min.js"></script>
+    <script type="text/javascript" src="../BookReader/dragscrollable-br.js"></script>
+    <script type="text/javascript" src="../BookReader/jquery.colorbox-min.js"></script>
+    <script type="text/javascript" src="../BookReader/jquery.bt.min.js"></script>
+
+    <script type="text/javascript" src="../BookReader/soundmanager/script/soundmanager2-jsmin.js"></script>
+    <script>
+        soundManager.debugMode = true;
+        soundManager.url = '../BookReader/soundmanager/swf';
+        soundManager.useHTML5Audio = true;
+        soundManager.flashVersion = 9; //flash 8 version of swf is buggy when calling play() on a sound that is still loading
+    </script>
+
+    <!-- new libs -->
+    <!-- <script type="text/javascript" src="../BookReader/modernizr.min.js"></script> -->
+
+    <!-- mobile libs -->
+    <script src="../BookReader/mmenu/dist/js/jquery.mmenu.min.js" type="text/javascript"></script>
+    <link href="../BookReader/mmenu/dist/css/jquery.mmenu.css" type="text/css" rel="stylesheet" />
+    <link href="../BookReader/mmenu/demo.css" type="text/css" rel="stylesheet" />
+    <!-- navbars -->
+    <script src="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js" type="text/javascript"></script>
+    <link href="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css" type="text/css" rel="stylesheet" />
+    <!-- todo include screen reader code -->
+    <!-- search -->
+    <!-- <script src="static/jQuery.mmenu-master/dist/addons/searchfield/jquery.mmenu.searchfield.min.js" type="text/javascript"></script> -->
+    <link href="../BookReader/mmenu/dist/addons/searchfield/jquery.mmenu.searchfield.css" type="text/css" rel="stylesheet" />
+    <!-- custom search addon -->
+    <script src="../BookReader/mmenu/jquery.mmenu.searchfield.js" type="text/javascript"></script>
+
+    <!-- last but not least, the book reader -->
+    <link rel="stylesheet" type="text/css" href="../BookReader/BookReader.css" id="BRCSS"/>
+    <script type="text/javascript" src="../BookReader/BookReader.js"></script>
+</head>
+<body style="background-color: ##939598;">
+
+<div id="BookReader">
+    Internet Archive BookReader - The works of Plato : a new and literal version, chiefly from the text of Stallbaum    <br/>
+    <noscript>
+    <p>
+        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="http://archive.org/details/theworksofplato01platiala"> other formats of the book</a>.
+    </p>
+    </noscript>
+</div>
+
+<script type="text/javascript">
+  // Set some config variables -- $$$ NB: Config object format has not been finalized
+  var brConfig = {}; //{theme:"ia"};
+  brConfig["mode"] = 2;
+  brConfig["isAdmin"] = false;</script>
+<script type="text/javascript">
+// The URL in the script tag below is dynamically generated JavaScript that includes the book metadata and page image access functions.
+// The ia{number}.us.archive.org server for the book can and does change, so this URL should NOT be used for permanent access.
+// Use the JSLocate URL below instead for stable access - it will find the item and redirect to the correct server
+// http://archive.org/bookreader/BookReaderJSLocate.php?id=theworksofplato01platiala&subPrefix=theworksofplato01platiala
+</script>
+<script type="text/javascript" src="./plato.js"></script>
+</head>
+<body style="background-color: #FFFFFF;">
+
+  <div id="BookReader" style="left:10px; right:200px; top:10px; bottom:2em;">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
+
+  <script type="text/javascript">
+      // $$$ hack to workaround sizing bug when starting in two-up mode
+      $(document).ready(function() {
+          $(window).trigger('resize');
+      });
+  </script>
+
+
+</body>
+</html>

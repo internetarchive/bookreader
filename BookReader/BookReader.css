@@ -568,7 +568,7 @@ a.BRgrey:visited   { color: #666; }
     line-height: 16px;
     margin: 0 0 10px 10px;
 }
-.BRfloatFoot a.problem {
+.BRfloatFoot a.problem, a.problem-icon {
     background: url("images/icon_alert-xs.png") no-repeat;
     padding-left: 20px;
 }
@@ -925,6 +925,10 @@ div#BRzoombtn {
 .fl {float:left;}
 .pl {}*/
 
+
+.mm-menu { background: white; }
+
+
 /* Mobile Only */
 @media (max-width: 800px) {
   .desktop-only { display: none; }
@@ -935,4 +939,84 @@ div#BRzoombtn {
 /* Desktop Only */
 @media (min-width: 801px) {
   .mobile-only { display: none; }
+}
+
+
+#BRshare div.share-title { margin: 20px 20px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
+#BRshare div.share-social { margin: 20px 20px 0;}
+#BRshare div.share-social button { padding: 8px }
+#BRshare div.share-social > div { display: inline; }
+#BRshare div.share-embed { margin-top: 30px; }
+
+/****TEMPORARY STYLING OF ABOUT THIS BOOK****/
+/** This might go in separate IA specific CSS */
+
+/* Mobile Only */
+@media (max-width: 800px) {
+  /* Info */
+  .br__left_col {}
+  .br__info__right_col {}
+  .br__info__left_col { font-size: 14px; }
+  .br__image__w {text-align: center; margin-bottom: 10px;}
+  .br__image__w img { height: 200px; width: auto;}
+  .br__info__title__w { margin-bottom: 10px; }
+  .br__info__title__label { font-size: 12px; color: #999; }
+  .br__info__title { font-size: 16px; font-weight: bold;}
+  .br__info__publish_date__w { margin-bottom: 10px; }
+  .br__info__publish_date__label { font-size: 12px; color: #999; }
+  .br__info__publish_date { font-size: 16px; font-weight: bold; }
+  .br__info__language__w { margin-bottom: 10px; }
+  .br__info__language__label { font-size: 12px; color: #999; }
+  .br__info__language { font-size: 16px; font-weight: bold; }
+  .br__info__collection__w { margin-bottom: 10px; }
+  .br__info__collection__label { font-size: 12px; color: #999; }
+  .br__info__collection { font-size: 16px; font-weight: bold; }
+  .br__info__more_info__w { background-color: #4a8bcc; border-radius: 2px; padding:8px; text-align:center; margin-bottom: 20px;}
+  .br__info__more_info__w a { font-size: 14px; color: white; text-decoration: none; font-weight: bold; }
+  .br_info_other_formats { margin-bottom: 40px; }
+  .br_info__other_formats__label { font-size: 12px; color: #999; }
+  .br_info_other_formats__format { margin-bottom: 6px; }
+  .br__info__footer { margin-bottom: 10px; }
+  .br__info__footer a { display: block;}
+
+  /* Share */
+  #mobileShare { font-size: 14px; }
+  #mobileShare div.share-title { font-weight: bold; font-size: 18px; line-height: 22px; }
+  #mobileShare div.share-social { margin: 10px 0 20px 0; }
+  #mobileShare p { font-weight: bold; }
+  #mobileShare fieldset { padding: 0; border: 0; margin-bottom: 30px; }
+  #mobileShare fieldset label { display: block; }
+  #mobileShare fieldset input[type=text] { width: 100%; }
+  #mobileShare button.share-finished { display: none; }
+  #mobileShare div.share-embed { border: 1px solid #ccc; padding: 0 10px; }
+}
+
+/* Desktop Only */
+@media (min-width: 801px) {
+  /* Info */
+  .br__info__w { font-size: 14px; position: relative; padding: 20px; }
+  .br__info__left_col { float: left; width: 33%; }
+  .br__info__right_col { float: left; width: 60%; }
+  .br__image__w {text-align: center; margin-bottom: 10px;}
+  .br__image__w img { height:280px; width: auto;}
+  .br__info__title__w { margin-bottom: 10px; }
+  .br__info__title__label { font-size: 12px; color: #999; }
+  .br__info__title { font-size: 20px; line-height: 24px; font-weight: bold;}
+  .br__info__publish_date__w { margin-bottom: 10px; }
+  .br__info__publish_date__label { font-size: 12px; color: #999; }
+  .br__info__publish_date { font-size: 16px; font-weight: bold; }
+  .br__info__language__w { margin-bottom: 10px; }
+  .br__info__language__label { font-size: 12px; color: #999; }
+  .br__info__language { font-size: 16px; font-weight: bold; }
+  .br__info__collection__w { margin-bottom: 20px; }
+  .br__info__collection__label { font-size: 12px; color: #999; }
+  .br__info__collection { font-size: 16px; font-weight: bold; }
+  .br__info__more_info__w { background-color: #4a8bcc; border-radius: 2px; padding:8px; text-align:center; margin-bottom: 20px;}
+  .br__info__more_info__w a { font-size: 14px; color: white; text-decoration: none; font-weight: bold; }
+  .br_info_other_formats { margin-bottom: 40px; }
+  .br_info__other_formats__label { font-size: 12px; color: #999; }
+  .br_info_other_formats__format { display: inline; margin-right: 10px; }
+  .br_info_other_formats__format a {}
+  .br__info__footer { margin-bottom: 10px; clear:both; }
+  .br__info__footer a { display: inline; margin-right: 10px;}
 }
