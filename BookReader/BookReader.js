@@ -5380,6 +5380,10 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
           '<div><button class="facebook-share-button">Facebook</button></div>',
           '<div><button class="twitter-share-button">Twitter</button></div>',
           '<div><button class="email-share-button">Email</button></div>',
+          '<label class="sub">',
+              '<input id="thispagesocial" type="checkbox" name="thispage" value="thispage"/>',
+              'Open to this page?',
+          '</label>',
         '</div>',
         '<div class="share-embed">',
           '<p>Copy and paste one of these options to share this book elsewhere.</p>',
@@ -5440,28 +5444,34 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
     // Bind share buttons
 
     // Use url without hashes
-    var currUrl = document.location.protocol + "//" + window.location.hostname + window.location.pathname;
+    var getShareUrl = function() {
+      var shareThisPage = $('#thispagesocial').prop('checked');
+      if (shareThisPage) {
+        return window.location.href;
+      } else {
+        return document.location.protocol + "//" + window.location.hostname + window.location.pathname;
+      }
+    };
     jForm.find('.facebook-share-button').click(function(){
-      var params = $.param({ u: currUrl });
+      var params = $.param({ u: getShareUrl() });
       var url = 'https://www.facebook.com/sharer.php?' + params;
       self.popup(url, 600, 400, 'Share')
     });
     jForm.find('.twitter-share-button').click(function(){
       var params = $.param({
-        url: currUrl,
+        url: getShareUrl(),
         text: self.bookTitle
       });
       var url = 'https://twitter.com/intent/tweet?' + params;
       self.popup(url, 600, 400, 'Share')
     });
     jForm.find('.email-share-button').click(function(){
-      var body = self.bookTitle + "\n\n" + currUrl;
+      var body = self.bookTitle + "\n\n" + getShareUrl();
       window.location.href = 'mailto:?subject=' + encodeURI(self.bookTitle) + '&body=' + encodeURI(body);
     });
 
     jForm.appendTo(jShareDiv);
     jForm = ''; // closure
-
 }
 
 // Should be overridden
