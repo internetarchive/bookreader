@@ -919,6 +919,8 @@ div#BRzoombtn {
     background-position: 8px 4px;
 }
 
+
+/************ new styles for general purpose book reader ***********/
 /** dev **/
 /*.br1 {border-right:1px solid #ccc;}
 .h100 {height: 100%;}
@@ -926,20 +928,6 @@ div#BRzoombtn {
 .pl {}*/
 
 
-.mm-menu { background: white; }
-
-
-/* Mobile Only */
-@media (max-width: 800px) {
-  .desktop-only { display: none; }
-  div#BRpage { width: 80px; }
-  div#BRnavpos { margin-right: 80px; }
-}
-
-/* Desktop Only */
-@media (min-width: 801px) {
-  .mobile-only { display: none; }
-}
 
 
 #BRshare div.share-title { margin: 20px 20px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
@@ -948,8 +936,31 @@ div#BRzoombtn {
 #BRshare div.share-social > div { display: inline; }
 #BRshare div.share-embed { margin-top: 30px; }
 
+.BRtoolbarMobileTitle { overflow:hidden; width: 100%; }
+
+
+
+/* Mobile Only */
+@media (max-width: 800px) {
+  .desktop-only { display: none; }
+  div#BRpage { width: 80px; }
+  div#BRnavpos { margin-right: 80px; }
+  #BRtoolbar > span.mobile-only { padding: 0 30px 0 50px; display: block; }
+}
+
+/* Desktop Only */
+@media (min-width: 801px) {
+  .mobile-only { display: none; }
+}
+
+
 /****TEMPORARY STYLING OF ABOUT THIS BOOK****/
 /** This might go in separate IA specific CSS */
+
+.mm-menu { background: white; }
+
+
+
 
 /* Mobile Only */
 @media (max-width: 800px) {

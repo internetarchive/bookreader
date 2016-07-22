@@ -3636,10 +3636,15 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         readIcon = "<button class='BRicon read modal'></button>";
     // }
 
+    var escapedTtitle = BookReader.util.escapeHTML(this.bookTitle);
+
     // Add large screen navigation
     $("#BookReader").append(
           "<div id='BRtoolbar' class='header fixed'>"
-        +   "<span class='hamburger mobile-only'><a href=\"#menu\"></a>Demo</span>"
+        +   "<span class='mobile-only'>"
+        +     "<span class=\"hamburger\"><a href=\"#menu\"></a></span>"
+        +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTtitle+"\">" + this.bookTitle + "</span>"
+        +   "</span>"
         +   "<span id='BRtoolbarbuttons' class='desktop-only'>"
         +     "<span class='br h-100 fl db mh2'></span>"
         +     "<button class='BRicon play'></button>"
@@ -5372,9 +5377,9 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
     var jForm = $([
         '<div class="share-title">Share this book</div>',
         '<div class="share-social">',
-          '<div><button>Facebook TODO</button></div>',
-          '<div><button>Twitter TODO</button></div>',
-          '<div><button>Email TODO</button></div>',
+          '<div><button class="facebook-share-button">Facebook</button></div>',
+          '<div><button class="twitter-share-button">Twitter</button></div>',
+          '<div><button class="email-share-button">Email</button></div>',
         '</div>',
         '<div class="share-embed">',
           '<p>Copy and paste one of these options to share this book elsewhere.</p>',
@@ -5430,6 +5435,28 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
     jForm.find('input[name=thispage]').trigger('change');
     jForm.find('input, textarea').bind('focus', function() {
         this.select();
+    });
+
+    // Bind share buttons
+
+    // Use url without hashes
+    var currUrl = document.location.protocol + "//" + window.location.hostname + window.location.pathname;
+    jForm.find('.facebook-share-button').click(function(){
+      var params = $.param({ u: currUrl });
+      var url = 'https://www.facebook.com/sharer.php?' + params;
+      self.popup(url, 600, 400, 'Share')
+    });
+    jForm.find('.twitter-share-button').click(function(){
+      var params = $.param({
+        url: currUrl,
+        text: self.bookTitle
+      });
+      var url = 'https://twitter.com/intent/tweet?' + params;
+      self.popup(url, 600, 400, 'Share')
+    });
+    jForm.find('.email-share-button').click(function(){
+      var body = self.bookTitle + "\n\n" + currUrl;
+      window.location.href = 'mailto:?subject=' + encodeURI(self.bookTitle) + '&body=' + encodeURI(body);
     });
 
     jForm.appendTo(jShareDiv);
@@ -5489,4 +5516,27 @@ BookReader.prototype.initUIStrings = function()
         }
     }
 }
+
+/**
+ * Helper opens a popup window. On mobile it only opens a new tab. Used for share.
+ */
+BookReader.prototype.popup = function(href, width, height, name) {
+  // Fixes dual-screen position
+  var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
+  var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
+
+  var win_w = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+  var win_h = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+  var left   = ((win_w / 2) - (width / 2)) + dualScreenLeft,
+      top    = ((win_h / 2) - (height / 2)) + dualScreenTop,
+      url    = href,
+      opts   = 'status=1' +
+               ',width='  + width  +
+               ',height=' + height +
+               ',top='    + top    +
+               ',left='   + left;
+
+  window.open(url, name, opts);
+};
 })(jQuery);
