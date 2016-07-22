@@ -928,6 +928,34 @@ div#BRzoombtn {
 .pl {}*/
 
 
+.DrawerIconWrapper {
+  display: block;
+  float: left;
+  width: 20px;
+  height:20px;
+  overflow: hidden;
+  margin-right: 10px;
+  text-align: center;
+  position:relative;
+}
+.DrawerIcon {
+  height: 18px;
+  width: auto;
+  position: absolute;
+  left:0;
+  top:1px;
+}
+
+.DrawerSettingsTitle { color: #4990E2; font-size: 14px; font-weight: bold; margin-bottom: 10px; }
+.DrawerSettingsWrappper {}
+.DrawerSettingsLayoutWrapper {text-align: center; padding: 0; margin-bottom: 20px;}
+.DrawerLayoutButton {
+  border:none;
+  background:none;
+  color: #4990E2;
+  line-height: 18px;
+}
+.DrawerLayoutButton:active {color: grey;}
 
 
 #BRshare div.share-title { margin: 20px 20px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
@@ -938,6 +966,11 @@ div#BRzoombtn {
 
 .BRtoolbarMobileTitle { overflow:hidden; width: 100%; }
 
+body.high-contrast #BRpageview img,
+body.high-contrast #BRtwopageview img {
+  -webkit-filter: grayscale(100%) brightness(120%);
+  filter: grayscale(100%) brightness(120%);
+}
 
 
 /* Mobile Only */
@@ -946,6 +979,17 @@ div#BRzoombtn {
   div#BRpage { width: 80px; }
   div#BRnavpos { margin-right: 80px; }
   #BRtoolbar > span.mobile-only { padding: 0 30px 0 50px; display: block; }
+  .fieldset-embed { display: none; }
+  /* Share */
+  #mobileShare { font-size: 14px; }
+  #mobileShare div.share-title { font-weight: bold; font-size: 18px; line-height: 22px; }
+  #mobileShare div.share-social { margin: 10px 0 20px 0; }
+  #mobileShare p { font-weight: bold; }
+  #mobileShare fieldset { padding: 0; border: 0; margin-bottom: 30px; }
+  #mobileShare fieldset label { display: block; }
+  #mobileShare fieldset input[type=text] { width: 95%; }
+  #mobileShare button.share-finished { display: none; }
+  #mobileShare div.share-embed { border: 1px solid #ccc; padding: 0 10px; }
 }
 
 /* Desktop Only */
@@ -989,17 +1033,6 @@ div#BRzoombtn {
   .br_info_other_formats__format { margin-bottom: 6px; }
   .br__info__footer { margin-bottom: 10px; }
   .br__info__footer a { display: block;}
-
-  /* Share */
-  #mobileShare { font-size: 14px; }
-  #mobileShare div.share-title { font-weight: bold; font-size: 18px; line-height: 22px; }
-  #mobileShare div.share-social { margin: 10px 0 20px 0; }
-  #mobileShare p { font-weight: bold; }
-  #mobileShare fieldset { padding: 0; border: 0; margin-bottom: 30px; }
-  #mobileShare fieldset label { display: block; }
-  #mobileShare fieldset input[type=text] { width: 100%; }
-  #mobileShare button.share-finished { display: none; }
-  #mobileShare div.share-embed { border: 1px solid #ccc; padding: 0 10px; }
 }
 
 /* Desktop Only */

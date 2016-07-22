@@ -1438,7 +1438,7 @@ BookReader.prototype.prepareOnePageView = function() {
 
     // Attaches to first child - child must be present
     $('#BRcontainer').dragscrollable();
-    ///////this.bindGestures($('#BRcontainer'));// @note(Richard) disable gestures
+    this.bindGestures($('#BRcontainer'));
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
@@ -1465,7 +1465,7 @@ BookReader.prototype.prepareThumbnailView = function() {
     $("#BRcontainer").append("<div id='BRpageview'></div>");
 
     $('#BRcontainer').dragscrollable();
-    ///////this.bindGestures($('#BRcontainer')); // @note(richard) disable gestures
+    this.bindGestures($('#BRcontainer'));
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
@@ -1534,7 +1534,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
 
     // Attaches to first child, so must come after we add the page view
     $('#BRcontainer').dragscrollable();
-    ////////this.bindGestures($('#BRcontainer'));
+    this.bindGestures($('#BRcontainer'));
 
     // $$$ calculate first then set
     $('#BRtwopageview').css( {
@@ -3629,6 +3629,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     if (ui == "embed") {
         return; // No toolbar at top in embed mode
     }
+    var self = this;
 
     // $$$mang should be contained within the BookReader div instead of body
     var readIcon = '';
@@ -3683,88 +3684,106 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     // Add Mobile navigation
     // ------------------------------------------------------
     $("body").append(
-        "    <nav id=\"menu\" class=\"mobile-only\">"
-        +"      <ul>"
-        +"        <li><span>Settings</span>"
-        +"          <div>"
-        +"                <b>Page Layout</b><br>"
-        +"                <button class=\"BRicon onepg\">One Page</button>"
-        +"                <button class=\"BRicon twopg\">Two Page</button>"
-        +"                <button class=\"BRicon thumb\">Thumbnails</button>"
-        +"                <br style='clear:both'>"
-        +"                <br>"
-        +"                <b>Zoom</b><br>"
-        +"                 <button class='BRicon zoom_out'></button>"
-        +"                 <button class='BRicon zoom_in'></button>"
-        +"                <br style='clear:both'><br><br>"
-        +"                <button class=''>High contrast</button>"
-        +"          </div>"
-        +"        </li>"
-        +"        <li><span>About This Book</span>"
-        +"          <div id=\"mobileInfo\"></div>"
-        +"        </li>"
-        +"        <li style='display:none;'><span>Loan Information</span>"
-        +"          <ul>"
-        +"            <li><a href=\"#\">Loan Information</a></li>"
-        +"          </ul>"
-        +"        </li>"
-        +"        <li><span>Read Aloud</span>"
-        +"          <div>"
-        +"            <button class='BRicon read modal'></button>"
-        +"          </div>"
-        +"        </li>"
-        +"        <li><span>Share This Book</span>"
-        +"          <div id=\"mobileShare\"></div>"
-        +"        </li>"
-        +"      </ul>"
-        +"    </nav>"
-      );
+      "<nav id=\"menu\" class=\"mobile-only\">"
+      +"  <ul>"
+      +"    <li>"
+      +"      <span>"
+      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_gear.svg\" alt=\"settings-icon\"/></span>"
+      +"        Settings"
+      +"      </span>"
+      +"      <div class=\"DrawerSettingsWrapper\">"
+      +"        <div class=\"DrawerSettingsTitle\">Page Layout</div>"
+      +"        <div class=\"DrawerSettingsLayoutWrapper\">"
+      +"          <button class=\"DrawerLayoutButton one_page_mode\"><img class=\"\" src=\""+this.imagesBaseURL+"icon_one_page.svg\" alt=\"Single Page\"/><br>One Page</button>"
+      +"          <button class=\"DrawerLayoutButton two_page_mode TwoPagesButton\"><img class=\"\" src=\""+this.imagesBaseURL+"icon_two_pages.svg\" alt=\"Two Pages\"/><br>Two Pages</button>"
+      +"          <button class=\"DrawerLayoutButton thumbnail_mode\"><img class=\"\" src=\""+this.imagesBaseURL+"icon_thumbnails.svg\" alt=\"Thumbnails\"/><br>Thumbnails</button>"
+      +"        </div>"
+      +"        <br>"
+      +"        <div class=\"DrawerSettingsTitle\">Zoom</div>"
+      +"        <button class='BRicon zoom_out'></button>"
+      +"        <button class='BRicon zoom_in'></button>"
+      +"        <br style='clear:both'><br><br>"
+      +"        <div class=\"DrawerSettingsTitle\">Experimental (may not work)</div>"
+      +"        <button class='high-contrast-button'>Toggle high contrast</button>"
+      +"      </div>"
+      +"    </li>"
+      +"    <li>"
+      +"      <span>"
+      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_info.svg\" alt=\"info-icon\"/></span>"
+      +"        About This Book"
+      +"      </span>"
+      +"      <div id=\"mobileInfo\"></div>"
+      +"    </li>"
+      +"    <li style='display:none;'>"
+      +"      <span>"
+      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_book.svg\" alt=\"info-book\"/></span>"
+      +"        Loan Information"
+      +"      </span>"
+      +"      <ul>"
+      +"        <li><a href=\"#\">Loan Information</a></li>"
+      +"      </ul>"
+      +"    </li>"
+      +"    <li>"
+      +"      <span style='display:none;'>"
+      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_speaker.svg\" alt=\"info-speaker\"/></span>"
+      +"        Read Aloud"
+      +"      </span>"
+      +"      <div>"
+      +"        <button class='BRicon read modal'></button>"
+      +"      </div>"
+      +"    </li>"
+      +"    <li>"
+      +"      <span>"
+      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_share.svg\" alt=\"info-share\"/></span>"
+      +"        Share This Book"
+      +"      </span>"
+      +"      <div id=\"mobileShare\"></div>"
+      +"    </li>"
+      +"  </ul>"
+      +"</nav>"
+    );
 
-      // Render info into mobile info before mmenu
-      this.buildInfoDiv($('#mobileInfo'));
-      this.buildShareDiv($('#mobileShare'));
+    // Render info into mobile info before mmenu
+    this.buildInfoDiv($('#mobileInfo'));
+    this.buildShareDiv($('#mobileShare'));
 
 
-      $('nav#menu').mmenu({
-          searchfield: {
-             "resultsPanel": true,
-             "showTextItems": true,
-             "placeholder": "Search inside this book",
-          },
-          navbars: [
-             { "position": "top" },
-             {
-                "position": "top",
-                "content": [
-                   "searchfield"
-                ]
-             },
-          ],
-          navbar: {
-            add: true,
-            title: 'Internet Archive',
-            titleLink: 'panel'
-          },
-          extensions: [ "panelshadow" ],
-       }, {
-          searchfield: {
-             clear: true,
-          },
-          offCanvas: {
-            wrapPageIfNeeded: false,
-            zposition: 'next',
-            pageSelector: '#BookReader'
-          }
-       });
+    $('nav#menu').mmenu({
+        searchfield: {
+           "resultsPanel": true,
+           "showTextItems": true,
+           "placeholder": "Search inside this book",
+        },
+        navbars: [
+           { "position": "top" },
+          //  { "position": "top", "content": ["searchfield"] },
+        ],
+        navbar: {
+          add: true,
+          title: 'Internet Archive',
+          titleLink: 'panel'
+        },
+        extensions: [ "panelshadow" ],
+     }, {
+        searchfield: {
+           clear: true,
+        },
+        offCanvas: {
+          wrapPageIfNeeded: false,
+          zposition: 'next',
+          pageSelector: '#BookReader'
+        }
+     });
 
     //--------------------------------------------------------
 
 
     // Browser hack - bug with colorbox on iOS 3 see https://bugs.launchpad.net/bookreader/+bug/686220
-    if ( navigator.userAgent.match(/ipad/i) && $.browser.webkit && (parseInt($.browser.version, 10) <= 531) ) {
-       $('#BRtoolbarbuttons .info').hide();
-       $('#BRtoolbarbuttons .share').hide();
-    }
+    // Remove hack @Richard Jul 22, 2016
+    // if ( navigator.userAgent.match(/ipad/i) && $.browser.webkit && (parseInt($.browser.version, 10) <= 531) ) {
+    //    $('#BRtoolbarbuttons .info').hide();
+    //    $('#BRtoolbarbuttons .share').hide();
+    // }
 
     $('#BRreturn a').attr('href', this.bookUrl).text(this.bookTitle);
 
@@ -3798,7 +3817,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     }
 
     // $$$ Don't hardcode ids
-    var self = this;
     jToolbar.find('.share').colorbox({inline: true, opacity: "0.5", href: "#BRshare", onLoad: function() { self.autoStop(); self.ttsStop(); } });
     jToolbar.find('.info').colorbox({inline: true, opacity: "0.5", href: "#BRinfo", onLoad: function() { self.autoStop(); self.ttsStop(); } });
 
@@ -3814,6 +3832,22 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     this.buildInfoDiv($('#BRinfo'));
     this.buildShareDiv($('#BRshare'));
 
+
+    // High contrast button
+    $('.high-contrast-button').click(function() {
+      $('body').toggleClass('high-contrast');
+    });
+
+    // Bind mobile switch buttons
+    $('.DrawerLayoutButton.one_page_mode').click(function() {
+      self.switchMode(1);
+    });
+    $('.DrawerLayoutButton.two_page_mode').click(function() {
+      self.switchMode(2);
+    });
+    $('.DrawerLayoutButton.thumbnail_mode').click(function() {
+      self.switchMode(3);
+    });
     // mobile
     // console.log($('#BRinfo').clone());
     //$('#mobileInfo').empty().append($('#BRinfo').clone());
@@ -5396,7 +5430,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
                   '<label for="booklink">Link to the book:</label>',
                   '<input type="text" name="booklink" id="booklink" value="' + bookView + '"/>',
               '</fieldset>',
-              '<fieldset>',
+              '<fieldset class="fieldset-embed">',
                   '<label for="iframe">Embed a mini Book Reader:</label>',
                   '<fieldset class="sub">',
                       '<label class="sub">',
