@@ -3647,25 +3647,44 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTtitle+"\">" + this.bookTitle + "</span>"
         +   "</span>"
         +   "<span id='BRtoolbarbuttons' class='desktop-only'>"
-        +     "<span class='br h-100 fl db mh2'></span>"
-        +     "<button class='BRicon play'></button>"
-        +     "<button class='BRicon pause'></button>"
-        +     "<button class='BRicon info'></button>"
-        +     "<button class='BRicon share'></button>"
-        +     readIcon
-        +     "<span class='br h-100 fl db mh2'></span>"
-              // zoom
-        +     "<button class='BRicon zoom_out'></button>"
-        +     "<button class='BRicon zoom_in'></button>"
-        +     "<span class='br h-100 fl db mh2'></span>"
-        +     "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "<span class='BRtoolbarSection tc'>"
+        +       "<a class='logo' href='" + this.logoURL + "'></a>"
+        +     "</span>"
+
+        +     "<span class='BRtoolbarSection title tl ph10'>"
+        +       "<span>"
+        +         "<span id='BRreturn'><a></a></span>"
+        +         "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
+        +       "</span>"
+        +     "</span>"
+
+
+        //+     "<button class='BRicon play'></button>"
+        //+     "<button class='BRicon pause'></button>"
+
+        +     "<span class='BRtoolbarSection tc'>"
+        +       "<button class='BRicon info'></button>"
+        +       "<button class='BRicon share'></button>"
+        +       readIcon
+        +     "</span>"
+
+
+        // zoom
+        +     "<span class='BRtoolbarSection tc'>"
+        +       "<button class='BRicon zoom_out'></button>"
+        +       "<button class='BRicon zoom_in'></button>"
+        +     "</span>"
+
+        // Search
+        +     "<span class='BRtoolbarSection tc last'>"
+
+        +       "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
+        +     "</span>"
 
         //+     "<button class='BRicon full'></button>"
+
         +   "</span>"
-        +   "<span class='desktop-only'><a class='logo' href='" + this.logoURL + "'></a></span>"
-        +   "<span class='desktop-only br h-100 fl mh2'></span>"
-        +   "<span id='BRreturn' class='desktop-only'><a></a></span>"
-        +   "<div id='BRnavCntlTop' class='BRnabrbuvCntl desktop-only'></div>"
+
         + "</div>"
         /*
         + "<div id='BRzoomer'>"

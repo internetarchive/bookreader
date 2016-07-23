@@ -27,7 +27,7 @@ a {
     position: fixed;
     top: 0;
     left: 0;
-    height: 40px;
+    /*height: 40px;*/
     padding: 0;
     width: 100%;
     z-index: 100;
@@ -45,8 +45,12 @@ a {
     text-decoration: underline;
 }
 #BRtoolbarbuttons {
-    float: right;
-    height: 100%;
+    /*float: right;*/
+    /*height: 100%;*/
+  display: table;
+  table-layout:auto;
+  border-spacing: 0;
+  width:100%;
 }
 #BRcontainer {
     top:0;
@@ -199,23 +203,24 @@ a {
     color: #333;
     height: 100%;
     line-height: 38px;
+    overflow-y: hidden;
 }
 #BRreturn span {
     font-size: 11px;
-    display: block;
+    /*display: block;*/
     height: 12px;
     padding-top: 3px;
 }
 #BRreturn a {
     font-size: 14px;
-    display: block;
+    /*display: block;*/
     color: #036daa;
     /* height: 18px; */
     overflow: hidden;
 }
 .BRicon {
-    display: block;
-    float: left;
+    /*display: block;*/
+    /*float: left;*/
     width: 40px;
     height: 40px;
     padding: 0;
@@ -262,12 +267,11 @@ a {
 
 
 a.logo {
-    display: block;
-    float: left;
+    display: inline-block;
+    /*float: left;*/
     width: 40px;
     height: 40px;
-    margin: 0 5px;
-    background: transparent url(images/icon_home.png) no-repeat 0 0;
+    background: transparent url(images/icon_home.png) no-repeat center center;
 }
 a.popOff {
     position: absolute;
@@ -289,8 +293,9 @@ a.popOff span {
 }
 
 form#booksearch {
-    float: left;
-    margin-right: 10px;
+    /*float: left;*/
+    display:inline;
+    /*margin-right: 10px;*/
 }
 form#booksearch input[type=search] {
     min-width: 16em;
@@ -301,7 +306,7 @@ form#booksearch input[type=search] {
     -webkit-appearance: textfield;
     -moz-appearance: textfield;
     appearance: field;
-    margin: 9px 0 0 0;
+    margin: 0 0 0 0;
     padding: 0;
     border: 1px inset #ccc;
     outline: none;
@@ -921,12 +926,44 @@ div#BRzoombtn {
 
 
 /************ new styles for general purpose book reader ***********/
-/** dev **/
-/*.br1 {border-right:1px solid #ccc;}
-.h100 {height: 100%;}
-.fl {float:left;}
-.pl {}*/
 
+body {-webkit-text-size-adjust: none; }
+nav:not(.mm-menu) {	display: none; }
+nav { font-family: Arial, Helvetica, Verdana; }
+.header,
+.footer {
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 100%;
+}
+.header.fixed {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index:100000;
+}
+.footer.fixed {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+}
+.header .hamburger a {
+	background: center center no-repeat transparent;
+	background-image: url( data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAADhJREFUeNpi/P//PwOtARMDHQBdLGFBYtMq3BiHT3DRPU4YR4NrNAmPJuHRJDyahEeT8Ii3BCDAAF0WBj5Er5idAAAAAElFTkSuQmCC );
+	display: block;
+	width: 40px;
+	height: 40px;
+	position: absolute;
+	top: 0;
+	left: 10px;
+}
+
+.tl { text-align: left; }
+.tc { text-align: center; }
+.tr { text-align: right; }
+
+.ph10 { padding-left: 10px; padding-right: 10px; }
+.nowrap { white-space: nowrap; }
 
 .DrawerIconWrapper {
   display: block;
@@ -973,13 +1010,58 @@ body.high-contrast #BRtwopageview img {
 }
 
 
+/* new toolbar styles */
+
+.BRtoolbarVerticalBar {
+  border-right: 1px solid black;
+  height:100%;
+  width:1px;
+  display:block;
+  float:left;
+}
+.BRtoolbarSection {
+  display:inline-block;
+  display: table-cell;
+  text-overflow: ellipsis;
+  border-spacing: 0;
+  /*text-align:center;*/
+  vertical-align: middle;
+	border-collapse: collapse;
+	/*border-left: 1px solid gray;*/
+  border-right: 1px solid gray;
+  white-space: nowrap;
+}
+.BRtoolbarSection.last {
+  border-right:none;
+}
+.BRtoolbarSection.title > span {
+  width: 500px;
+  overflow: hidden;
+  display: inline-block;
+}
+/* TODO use flexbox */
+
 /* Mobile Only */
 @media (max-width: 800px) {
   .desktop-only { display: none; }
+  #BRtoolbarbuttons.desktop-only { display: none; }
   div#BRpage { width: 80px; }
   div#BRnavpos { margin-right: 80px; }
   #BRtoolbar > span.mobile-only { padding: 0 30px 0 50px; display: block; }
   .fieldset-embed { display: none; }
+  .header {
+    height: 40px;
+    overflow-y: hidden;
+    text-align: center;
+  	font-size: 16px;
+  	font-weight: bold;
+  	color: #fff;
+  	line-height: 40px;
+  	-moz-box-sizing: border-box;
+  	box-sizing: border-box;
+  	width: 100%;
+  }
+
   /* Share */
   #mobileShare { font-size: 14px; }
   #mobileShare div.share-title { font-weight: bold; font-size: 18px; line-height: 22px; }
@@ -1002,8 +1084,6 @@ body.high-contrast #BRtwopageview img {
 /** This might go in separate IA specific CSS */
 
 .mm-menu { background: white; }
-
-
 
 
 /* Mobile Only */
