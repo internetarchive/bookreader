@@ -148,6 +148,10 @@ function BookReader() {
     this.default_theme = 'ol';
     this.theme = 'ol';
 
+    this.bookUrl = null;
+    this.bookUrlText = null;
+    this.bookUrlTitle = null;
+
     return this;
 };
 
@@ -3637,53 +3641,60 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         readIcon = "<button class='BRicon read modal'></button>";
     // }
 
-    var escapedTtitle = BookReader.util.escapeHTML(this.bookTitle);
+    var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
 
     // Add large screen navigation
     $("#BookReader").append(
           "<div id='BRtoolbar' class='header fixed'>"
         +   "<span class='mobile-only'>"
         +     "<span class=\"hamburger\"><a href=\"#menu\"></a></span>"
-        +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTtitle+"\">" + this.bookTitle + "</span>"
+        +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
         +   "</span>"
+
         +   "<span id='BRtoolbarbuttons' class='desktop-only'>"
-        +     "<span class='BRtoolbarSection tc'>"
-        +       "<a class='logo' href='" + this.logoURL + "'></a>"
-        +     "</span>"
-
-        +     "<span class='BRtoolbarSection title tl ph10'>"
-        +       "<span>"
-        +         "<span id='BRreturn'><a></a></span>"
-        +         "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
+        +     "<span class='BRtoolbarLeft'>"
+        +       "<span class='BRtoolbarSection tc'>"
+        +         "<a class='logo' href='" + this.logoURL + "'></a>"
         +       "</span>"
-        +     "</span>"
+
+        +       "<span class='BRtoolbarSection title tl ph10 last'>"
+        +           "<span id='BRreturn'><a></a></span>"
+        +           "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
+        +       "</span>"
+        +    "</span>"
+
+        +     "<span class='BRtoolbarRight'>"
 
 
-        //+     "<button class='BRicon play'></button>"
-        //+     "<button class='BRicon pause'></button>"
-
-        +     "<span class='BRtoolbarSection tc'>"
-        +       "<button class='BRicon info'></button>"
-        +       "<button class='BRicon share'></button>"
-        +       readIcon
-        +     "</span>"
-
+        +       "<span class='BRtoolbarSection tc ph10'>"
+        +       "<button class='BRicon play'></button>"
+        +       "<button class='BRicon pause'></button>"
+        +         "<button class='BRicon info'></button>"
+        +         "<button class='BRicon share'></button>"
+        +         readIcon
+        +       "</span>"
 
         // zoom
-        +     "<span class='BRtoolbarSection tc'>"
-        +       "<button class='BRicon zoom_out'></button>"
-        +       "<button class='BRicon zoom_in'></button>"
-        +     "</span>"
+        +       "<span class='BRtoolbarSection tc ph10'>"
+        +         "<button class='BRicon zoom_out'></button>"
+        +         "<button class='BRicon zoom_in'></button>"
+        +       "</span>"
 
         // Search
-        +     "<span class='BRtoolbarSection tc last'>"
-
-        +       "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'><input type='search' id='textSrch' name='textSrch' val='' placeholder='Search inside'/><button type='submit' id='btnSrch' name='btnSrch'>GO</button></form>"
-        +     "</span>"
+        +       "<span class='BRtoolbarSection tc ph20 last'>"
+        +         "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'>"
+        +           "<input type='search' id='textSrch' class='form-control' name='textSrch' val='' placeholder='Search inside'/>"
+        +           "<button type='submit' id='btnSrch' name='btnSrch'>"
+        +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
+        +           "</button>"
+        +         "</form>"
+        +       "</span>"
 
         //+     "<button class='BRicon full'></button>"
 
-        +   "</span>"
+        +     "</span>" // end BRtoolbarRight
+
+        +   "</span>" // end desktop-only
 
         + "</div>"
         /*
@@ -3804,7 +3815,11 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     //    $('#BRtoolbarbuttons .share').hide();
     // }
 
-    $('#BRreturn a').attr('href', this.bookUrl).text(this.bookTitle);
+    var titleText = this.bookTitle;
+    $('#BRreturn a')
+      .attr('href', this.bookUrl)
+      .html('<span class="BRreturnTitle">' + titleText + '</span>')
+      .attr('title', titleText);;
 
     $('#BRtoolbar .BRnavCntl').addClass('BRup');
     $('#BRtoolbar .pause').hide();
@@ -4092,7 +4107,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
     $('.BRnavCntl').click(
         function(){
             if ($('#BRnavCntlBtm').hasClass('BRdn')) {
-                $('#BRtoolbar').animate({top:-40});
+                $('#BRtoolbar').animate({top: $('#BRtoolbar').height() * -1});
                 $('#BRnav').animate({bottom:-55});
                 $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
                 $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
@@ -4912,9 +4927,9 @@ BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
                 .appendTo('#BRreturn');
 
         } else {
-            if (self.theme == 'ol') {
-                $('<a/>').attr( { 'href': self.bookUrl, 'title': 'Go to this book\'s page on Open Library' } )
-                    .text('On openlibrary.org')
+            if (self.bookUrlText) {
+                $('<a/>').attr( { 'href': self.bookUrl, 'title': self.bookUrlTitle } )
+                    .html('<br>' + self.bookUrlText)
                     .appendTo('#BRreturn');
             }
         }

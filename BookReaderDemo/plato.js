@@ -444,6 +444,8 @@ br.archiveFormat = 'zip';
 br.publishDate = 'July 21, 2016';
 br.language = 'English';
 br.collection = 'A collection';
+br.bookUrlText = 'Back to item details';
+br.bookUrlTitle = 'Go to this book\'s page on Archive.org';
 
 br.pageProgression = 'lr';
 br.olHost = 'https://openlibrary.org';

@@ -7,16 +7,17 @@ body {
 }
 h3 {
   font-size: 20px;
-  font-family:  "News Gothic MT","Trebuchet MS",Geneva,Helvetica,sans-serif;
   font-weight: 700;
   color: #dedede;
 }
 a {
     outline: none;
 }
+#BookReader, .BRfloat {
+  font-family: "Helvetica Neue", Arial, Verdana, sans-serif
+}
 #BookReader {
- position:relative;
- font-family: arial, sans-serif;
+ /*position:relative;*/
  left:0;
  right:0;
  top:0;
@@ -31,7 +32,7 @@ a {
     padding: 0;
     width: 100%;
     z-index: 100;
-    background-color: #e2dcc5;
+    background-color: rgb(247,247,247);
     -webkit-box-shadow: 0 1px 3px #999;
     /* Shadow here on FF causes scroll bars */
     overflow: hidden;
@@ -41,16 +42,17 @@ a {
     color: #999;
 }
 #BRtoolbar a {
-    color: #ccc;
-    text-decoration: underline;
+    color: rgb(74,144,226);
+    text-decoration:none;
 }
+/* desktop header */
 #BRtoolbarbuttons {
-    /*float: right;*/
-    /*height: 100%;*/
-  display: table;
-  table-layout:auto;
+  display: block;
   border-spacing: 0;
   width:100%;
+  height: 64px;
+  border-bottom: 2px solid rgb(209,209,209);
+
 }
 #BRcontainer {
     top:0;
@@ -60,13 +62,13 @@ a {
     overflow-x:auto;
     overflow-y:scroll;
     position:fixed;
-    background-color: #9A9B9D;
+    background-color: #3a3b3b;
     _height: expression(documentElement.clientHeight);
 }
 
 #BRpageview {
     /* XXX page view div is not being placed correctly */
-    background-color: #9A9B9D;
+    background-color: #3a3b3b;
 }
 
 .BRpagediv1up {
@@ -77,6 +79,9 @@ a {
     -moz-box-shadow: 1px 1px 2px #333;
     box-shadow: 1px 1px 2px #333;
 }
+.high-contrast .BRpagediv1up {
+  background-color: white;
+}
 
 .BRpagedivthumb {
     background-color: #FEFDEB;
@@ -84,7 +89,9 @@ a {
     -webkit-box-shadow: 1px 1px 2px #333;
     -moz-box-shadow: 1px 1px 2px #333;
     box-shadow: 1px 1px 2px #333;
-
+}
+.high-contrast .BRpagedivthumb {
+  background-color: white;
 }
 
 .BRpagedivthumb a {
@@ -196,27 +203,22 @@ a {
     font-weight: 700;
 }
 #BRreturn {
-    /* display: block; */
-    /* float: left; */
-    /* margin: 0 10px 0 5px; */
-    font-family: "Lucida Grande","Arial",sans-serif;
     color: #333;
-    height: 100%;
-    line-height: 38px;
-    overflow-y: hidden;
-}
-#BRreturn span {
-    font-size: 11px;
-    /*display: block;*/
-    height: 12px;
-    padding-top: 3px;
-}
-#BRreturn a {
     font-size: 14px;
-    /*display: block;*/
-    color: #036daa;
-    /* height: 18px; */
+    line-height:18px;
+    height: 100%;
+    overflow-y: hidden;
+    padding-top:13px;
+    display:block;
+}
+#BRreturn span {}
+#BRreturn a {
+    /*color: #036daa;*/
     overflow: hidden;
+}
+.BRreturnTitle {
+  font-size: 18px;
+  font-weight:bold;
 }
 .BRicon {
     /*display: block;*/
@@ -232,6 +234,7 @@ a {
     background-image: url(images/BRicons.png);
     background-repeat: no-repeat;
 }
+
 
 .BRicon.logo {background-position:0 0;}
 .BRicon.info {background-position:-40px 0;}
@@ -268,10 +271,10 @@ a {
 
 a.logo {
     display: inline-block;
-    /*float: left;*/
-    width: 40px;
-    height: 40px;
-    background: transparent url(images/icon_home.png) no-repeat center center;
+    width: 50px;
+    height: 100%;
+    margin:0 25px;
+    background: transparent url(images/icon_home.svg) no-repeat center center;
 }
 a.popOff {
     position: absolute;
@@ -293,40 +296,48 @@ a.popOff span {
 }
 
 form#booksearch {
-    /*float: left;*/
-    display:inline;
-    /*margin-right: 10px;*/
+    position:relative;
+    top:14px;
 }
 form#booksearch input[type=search] {
+    position:relative;
     min-width: 16em;
-    height: 22px;
-    line-height: 22px;
-    font-family: "Arial", sans-serif;
+    height: 35px;
     font-size: 13px;
     -webkit-appearance: textfield;
     -moz-appearance: textfield;
     appearance: field;
     margin: 0 0 0 0;
-    padding: 0;
-    border: 1px inset #ccc;
     outline: none;
+    border-radius: 5px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    box-sizing:border-box;
+    display:block;
+    float:left;
+    padding: 0 4px;
 }
 form#booksearch button {
-    width: 30px;
-    height: 24px;
-    line-height: 24px;
-    border: none;
-    background-color: #000;
-    text-align: center;
-    color: #fff;
-    font-family: "News Gothic MT","Trebuchet MS",Geneva,Helvetica,sans-serif;
-    font-weight: 700;
-    font-size: 11px;
-    text-transform: uppercase;
-    margin: 10px 0 0 5px;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
+  width: 35px;
+  height: 35px;
+  border: none;
+  background-color: rgb(74,144,226);
+  text-align: center;
+  color: #fff;
+  overflow: hidden;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  box-sizing:boder-box;
+  display:block;
+  float:right;
+
+}
+form#booksearch button img {
+  position:relative;
+  top: 2px;
 }
 
 .BRlogotype {
@@ -410,8 +421,21 @@ a.BRgrey:visited   { color: #666; }
 #cboxClose{display:none!important;}
 
 #colorBox{}
-    #cboxContent{background:#fff;padding:0;border:10px solid #615132;-webkit-border-radius:12px;-moz-border-radius:12px;border-radius:12px;-moz-box-shadow: 1px 3px 10px #000;-webkit-box-shadow: 1px 3px 10px #000;box-shadow: 1px 3px 10px #000;}
-        #cboxLoadedContent{background:#fff;margin:0;}
+    #cboxContent {
+      background:#fff;
+      padding:0;
+      border:1px solid white;
+      -webkit-border-radius:12px;
+      -moz-border-radius:12px;
+      border-radius:12px;
+      -moz-box-shadow: 1px 3px 10px #000;
+      -webkit-box-shadow: 1px 3px 10px #000;
+      box-shadow: 1px 3px 10px #000;
+    }
+        #cboxLoadedContent{
+          /*background:#fff;*/
+          margin:0;
+        }
         #cboxLoadingOverlay{background:transparent;}
 .BRfloat * {
     margin: 0;
@@ -419,18 +443,16 @@ a.BRgrey:visited   { color: #666; }
 }
 .BRfloat {
     position: relative;
-    background: #fff;
     text-align: left;
     min-width: 600px;
-    font-family: "Lucida Grande", "Verdana", "Arial", sans-serif;
+    /*font-family: "Lucida Grande", "Verdana", "Arial", sans-serif;*/
     color: #000;
+    border-bottom: 1px solid #ccc;
 }
 .BRfloat a {
     color: #036daa;
 }
-.BRfloat a:hover {
-    color: #35672e;
-}
+.BRfloat a:hover {}
 .BRfloat a.title {
     color: #000;
     text-decoration: none;
@@ -440,16 +462,24 @@ a.BRgrey:visited   { color: #666; }
     text-decoration: underline;
 }
 .BRfloatHead {
-    background-color: #615132;
     height: 32px;
     line-height: 32px;
-    padding: 0 10px 10px 0;
-    font-family: "News Gothic MT","Trebuchet MS",Geneva,Helvetica,sans-serif;
-    font-size: 3em;
+    padding: 10px;
+    font-size: 2.5em;
     font-weight: 700;
-    color: #fff;
+    border-bottom:1px solid #ccc;
 }
-.BRfloat a.floatShut {position:absolute;top:0;right:0;display:block;width:32px;height:32px;background-image:url("images/icon_close-pop.png");background-position:0 0;background-repeat:no-repeat;}
+.BRfloat a.floatShut {
+  position:absolute;
+  top:0;
+  right:0;
+  display:block;
+  width:32px;
+  height:32px;
+  background-image:url("images/icon_close-pop.png");
+  background-position:0 0;
+  background-repeat:no-repeat;
+}
 .BRfloat a.floatShut:hover {background-position:0 -32px;}
 .BRfloat fieldset {
     margin-top: 20px;
@@ -591,7 +621,7 @@ div#BRnav {
     height: 40px;
     overflow: visible;
     z-index: 100;
-    background-color: #e2dcc5;
+    background-color: rgb(247,247,247);
 
     -webkit-box-shadow: 1px 1px 2px #333;
     /* No shadow for FF, to be consistent with toolbar */
@@ -619,12 +649,14 @@ div#BRslider {
 /* XXXmang verify correct use of handle class */
 #BRpager .ui-slider-handle {
     position: absolute;
-    width: 23px;
-    height: 27px;
-    top: 13px;
+    width: 20px;
+    height: 20px;
+    border-radius:50%;
+    top: 10px;
     margin-left: -12px; /* Center icon */
-    background: url(images/slider.png);
     z-index: 103;
+    background-color: rgb(36,94,131);
+
 }
 #BRpager a {
     text-decoration: none;
@@ -643,7 +675,7 @@ div#BRfiller {
     position: absolute;
     height: 40px;
     width: 10px;
-    background-color: #e2dcc5;
+    background-color: white;
     top: 0;
     left: 0;
     z-index: 102;
@@ -671,35 +703,42 @@ div#pagenum {
     display: none;
     position: absolute;
     left: 24px;
-    top: 4px;
-    color: #999;
+    top: -2px;
     font-size: 11px;
     line-height: 19px;
     font-weight: 700;
     padding: 0 5px;
     width: 80px;
     text-align: right;
-    background-color: #000;
-    font-family: "Lucida Grande", "Arial", sans-serif;
+    background-color: white;
+    border: 2px solid #ccc;
+    /*font-family: "Lucida Grande", "Arial", sans-serif;*/
 }
 div#pagenum span {
-    color: #ffa337;
+    /*color: #ffa337;*/
+    color: rgb(36,94,131);
     font-style: italic;
 }
 div#BRnavline {
     position: relative;
+    height: 5px;
+    width: auto;
+    background-color: rgb(216,216,216);
+    top: -25px;
+    margin: 0 10px;
+    /*position: relative;
     height: 2px;
     width: auto;
     background-color: #000;
     top: -29px;
-    margin: 0 10px;
+    margin: 0 10px;*/
 }
 .BRnavend {
     /*position: absolute;*/
     top: -2px;
     width: 1px;
     height: 6px;
-    background-color: #000;
+    /*background-color: #000;*/
 }
 #BRnavleft {
     left: 0;
@@ -815,7 +854,7 @@ div#BRzoompos {
 div#BRzoomer button {
     position: absolute;
     left: 0;
-    background-color: #e2dcc5;
+    background-color: white;
     width: 26px;
 }
 div#BRzoomer button:hover {
@@ -887,7 +926,7 @@ div#BRzoombtn {
 }
 
 .BRnavCntl {
-    background-color: #e2dcc5;
+    background-color: white;
     position: absolute;
     right: 20px;
     width: 40px;
@@ -949,7 +988,7 @@ nav { font-family: Arial, Helvetica, Verdana; }
 }
 .header .hamburger a {
 	background: center center no-repeat transparent;
-	background-image: url( data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAADhJREFUeNpi/P//PwOtARMDHQBdLGFBYtMq3BiHT3DRPU4YR4NrNAmPJuHRJDyahEeT8Ii3BCDAAF0WBj5Er5idAAAAAElFTkSuQmCC );
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAATCAYAAABhh3Y4AAAAAXNSR0IArs4c6QAAAFZJREFUSA1jrKmpafv//38xELMx0AgwMjL+AuJeFqAlubS0COR+qPm5TED2FJDNNPIU2FiozybT0o5Rs4dBCDCO5jNKYnE0n1ESeiNI72g+oyiyYfkMAKCpRQemMsj0AAAAAElFTkSuQmCC');
 	display: block;
 	width: 40px;
 	height: 40px;
@@ -963,6 +1002,8 @@ nav { font-family: Arial, Helvetica, Verdana; }
 .tr { text-align: right; }
 
 .ph10 { padding-left: 10px; padding-right: 10px; }
+.ph20 { padding-left: 20px; padding-right: 20px; }
+
 .nowrap { white-space: nowrap; }
 
 .DrawerIconWrapper {
@@ -982,7 +1023,6 @@ nav { font-family: Arial, Helvetica, Verdana; }
   left:0;
   top:1px;
 }
-
 .DrawerSettingsTitle { color: #4990E2; font-size: 14px; font-weight: bold; margin-bottom: 10px; }
 .DrawerSettingsWrappper {}
 .DrawerSettingsLayoutWrapper {text-align: center; padding: 0; margin-bottom: 20px;}
@@ -1000,6 +1040,14 @@ nav { font-family: Arial, Helvetica, Verdana; }
 #BRshare div.share-social button { padding: 8px }
 #BRshare div.share-social > div { display: inline; }
 #BRshare div.share-embed { margin-top: 30px; }
+.BRfloat button[type=button].share-finished {
+  background-color: rgb(74,144,226);
+  border: 0;
+  color: white;
+  border-radius: 3px;
+  padding: 10px 25px;
+  font-size: 15px;
+}
 
 .BRtoolbarMobileTitle { overflow:hidden; width: 100%; }
 
@@ -1009,43 +1057,78 @@ body.high-contrast #BRtwopageview img {
   filter: grayscale(100%) brightness(120%);
 }
 
+/* Forked from Bootstrap */
+.form-control {
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s
+}
+.form-control:focus {
+  border-color: #66afe9;
+  outline: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6)
+}
 
 /* new toolbar styles */
 
-.BRtoolbarVerticalBar {
-  border-right: 1px solid black;
-  height:100%;
-  width:1px;
-  display:block;
-  float:left;
+#BRtoolbarbuttons {
+  white-space: nowrap;
+  position:relative;
 }
 .BRtoolbarSection {
-  display:inline-block;
-  display: table-cell;
-  text-overflow: ellipsis;
-  border-spacing: 0;
-  /*text-align:center;*/
-  vertical-align: middle;
-	border-collapse: collapse;
-	/*border-left: 1px solid gray;*/
-  border-right: 1px solid gray;
+  /*display:inline-block;*/
+  /*vertical-align: middle;*/
+  display: block;
+  float: left;
+  border-right: 2px solid #e3e3e3;
   white-space: nowrap;
+  height:100%;
+  background-color: rgb(247,247,247);
 }
 .BRtoolbarSection.last {
   border-right:none;
 }
-.BRtoolbarSection.title > span {
-  width: 500px;
-  overflow: hidden;
-  display: inline-block;
+.BRtoolbarSection .BRicon {
+  margin-top: 10px;
 }
-/* TODO use flexbox */
+.BRtoolbarLeft {
+  /*position:absolute;*/
+  left:0;
+  top:0;
+  display:block;
+  height:100%;
+}
+.BRtoolbarRight {
+  position:absolute;
+  right:0;
+  top:0;
+  display:block;
+  border-left: 2px solid #e3e3e3;
+  height:100%;
+}
+.mm-menu .mm-navbar a, .mm-menu .mm-navbar>* {
+  color: black;
+  font-size: 14px;
+}
+.mm-menu { background: rgb(247,247,247); }
+
 
 /* Mobile Only */
 @media (max-width: 800px) {
   .desktop-only { display: none; }
   #BRtoolbarbuttons.desktop-only { display: none; }
-  div#BRpage { width: 80px; }
+  /*div#BRpage { width: 80px; }*/
   div#BRnavpos { margin-right: 80px; }
   #BRtoolbar > span.mobile-only { padding: 0 30px 0 50px; display: block; }
   .fieldset-embed { display: none; }
@@ -1055,7 +1138,7 @@ body.high-contrast #BRtwopageview img {
     text-align: center;
   	font-size: 16px;
   	font-weight: bold;
-  	color: #fff;
+  	color: rgb(74,144,226);
   	line-height: 40px;
   	-moz-box-sizing: border-box;
   	box-sizing: border-box;
@@ -1078,12 +1161,6 @@ body.high-contrast #BRtwopageview img {
 @media (min-width: 801px) {
   .mobile-only { display: none; }
 }
-
-
-/****TEMPORARY STYLING OF ABOUT THIS BOOK****/
-/** This might go in separate IA specific CSS */
-
-.mm-menu { background: white; }
 
 
 /* Mobile Only */
