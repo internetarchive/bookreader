@@ -2737,7 +2737,7 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 // search()
 //______________________________________________________________________________
 BookReader.prototype.search = function(term) {
-    //console.log('search called with term=' + term);
+    // console.log('search called with term=' + term);
 
     $('#textSrch').blur(); //cause mobile safari to hide the keyboard
 
@@ -2759,7 +2759,7 @@ BookReader.prototype.search = function(term) {
 // BRSearchCallback()
 //______________________________________________________________________________
 BookReader.prototype.BRSearchCallback = function(results) {
-    //console.log('got ' + results.matches.length + ' results');
+    // console.log('got ' + results.matches.length + ' results');
     br.removeSearchResults();
     br.searchResults = results;
     //console.log(br.searchResults);
@@ -3682,7 +3682,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
         // Search
         +       "<span class='BRtoolbarSection tc ph20 last'>"
-        +         "<form action='javascript:br.search($(\"#textSrch\").val());' id='booksearch'>"
+        +         "<form id='booksearch'>"
         +           "<input type='search' id='textSrch' class='form-control' name='textSrch' val='' placeholder='Search inside'/>"
         +           "<button type='submit' id='btnSrch' name='btnSrch'>"
         +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
@@ -3881,6 +3881,14 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     });
     $('.DrawerLayoutButton.thumbnail_mode').click(function() {
       self.switchMode(3);
+    });
+
+
+    // Bind desktop search form
+    $('#booksearch').submit(function(e) {
+      e.preventDefault();
+      br.search($("#textSrch").val());
+      return false;
     });
     // mobile
     // console.log($('#BRinfo').clone());
@@ -5523,7 +5531,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
     jForm.find('.facebook-share-button').click(function(){
       var params = $.param({ u: getShareUrl() });
       var url = 'https://www.facebook.com/sharer.php?' + params;
-      self.popup(url, 600, 400, 'Share')
+      self.createPopup(url, 600, 400, 'Share')
     });
     jForm.find('.twitter-share-button').click(function(){
       var params = $.param({
@@ -5531,7 +5539,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
         text: self.bookTitle
       });
       var url = 'https://twitter.com/intent/tweet?' + params;
-      self.popup(url, 600, 400, 'Share')
+      self.createPopup(url, 600, 400, 'Share')
     });
     jForm.find('.email-share-button').click(function(){
       var body = self.bookTitle + "\n\n" + getShareUrl();
@@ -5598,7 +5606,7 @@ BookReader.prototype.initUIStrings = function()
 /**
  * Helper opens a popup window. On mobile it only opens a new tab. Used for share.
  */
-BookReader.prototype.popup = function(href, width, height, name) {
+BookReader.prototype.createPopup = function(href, width, height, name) {
   // Fixes dual-screen position
   var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
   var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
