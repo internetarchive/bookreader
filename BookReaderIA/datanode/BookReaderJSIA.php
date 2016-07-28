@@ -22,9 +22,22 @@ This file is part of BookReader.
 // It is included in a <script> tag.
 
 // Include Twig
-require_once '3rdparty/Twig/lib/Twig/Autoloader.php';
-Twig_Autoloader::register();
-$loader = new Twig_Loader_Filesystem('templates');
+// require_once '3rdparty/Twig/lib/Twig/Autoloader.php';
+// Twig_Autoloader::register();
+// $loader = new Twig_Loader_Filesystem('templates');
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// DEBUG BLOCK (replace with above 4 lines when done debugging :) @richard(july-26-2016)
+if (strpos($_SERVER["REQUEST_URI"], "/~richard") === 0) { // Serving out of home dir
+  require_once __DIR__ . '/../../common/3rdparty/Twig/lib/Twig/Autoloader.php'; // DEBUG
+  Twig_Autoloader::register();
+  $loader = new Twig_Loader_Filesystem(__DIR__ . '/templates'); // DEBUG
+} else {
+  require_once '3rdparty/Twig/lib/Twig/Autoloader.php';
+  Twig_Autoloader::register();
+  $loader = new Twig_Loader_Filesystem('templates');
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // We turn off caching to avoid problems with protected books, where the cache dir
 // may be created by www-priv
@@ -449,55 +462,103 @@ br.getOpenLibraryRecord = function(callback) {
 }
 <? } ?>
 
+/**
+ * @param JInfoDiv DOM element. Appends info to this element
+ */
 br.buildInfoDiv = function(jInfoDiv) {
     // $$$ it might make more sense to have a URL on openlibrary.org that returns this info
-
     var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
     var domainRe = /(\w+\.(com|org))/;
     var domainMatch = domainRe.exec(this.bookUrl);
     var domain = this.bookUrl;
     if (domainMatch) {
-        domain = domainMatch[1];
+      domain = domainMatch[1];
     }
 
-    // $$$ cover looks weird before it loads
-    jInfoDiv.find('.BRfloatCover').append([
-                    '<div style="height: 140px; min-width: 80px; padding: 0; margin: 0;"><a href="', this.bookUrl, '"><img src="//archive.org/download/', this.bookId, '/page/cover_t.jpg" alt="' + escapedTitle + '" height="140px" /></a></div>'].join('')
-    );
-
-    var download_links = [];
-    if (!this.olAuth) {
-        download_links = [
-            '<h3>Other Formats</h3>',
-            '<ul class="links">',
-                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '.pdf">PDF</a><span>|</span></li>',
-                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '_djvu.txt">Plain Text</a><span>|</span></li>',
-                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '_daisy.zip">DAISY</a><span>|</span></li>',
-                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '.epub">ePub</a><span>|</span></li>',
-                '<li><a href="https://www.amazon.com/gp/digital/fiona/web-to-kindle?clientid=IA&itemid=', this.bookId, '&docid=', this.subPrefix, '">Send to Kindle</a></li>',
-            '</ul>'
-        ];
+    var data = {
+      title: this.bookTitle,
+      escapedTitle: escapedTitle,
+      coverImage: '//archive.org/download/' + this.bookId + '/page/cover_t.jpg',
+      publishDate: this.publishDate,
+      language: this.language,
+      collection: this.collection,
+      identifierAccess: this.bookUrl,
+      formats: [
+        ['PDF', '//archive.org/download/' + this.bookId + '/' + this.subPrefix + '.pdf'],
+        ['Plain Text', '//archive.org/download/' + this.bookId + '/' + this.subPrefix + '_djvu.txt'],
+        ['DAISY', '//archive.org/download/' + this.bookId, '/' + this.subPrefix + '_daisy.zip'],
+        ['ePub', '//archive.org/download/' + this.bookId + '/' + this.subPrefix + '.epub'],
+        ['Send to Kindle', 'https://www.amazon.com/gp/digital/fiona/web-to-kindle?clientid=IA&itemid=' + this.bookId + '&docid=' + this.subPrefix],
+      ]
     }
 
-    download_links.push('<p class="moreInfo"><span></span>More information on <a href="'+ this.bookUrl + '">' + domain + '</a>  </p>');
-
-    jInfoDiv.find('.BRfloatMeta').append(download_links.join('\n'));
-
-    jInfoDiv.find('.BRfloatFoot').append([
-                '<span>|</span>',
-                '<a href="https://openlibrary.org/contact" class="problem">Report a problem</a>',
-    ].join('\n'));
-
-    if (domain == 'archive.org') {
-        jInfoDiv.find('.BRfloatMeta p.moreInfo span').css(
-            {'background': 'url(https://archive.org/favicon.ico) no-repeat', 'width': 22, 'height': 18 }
-        );
+    var render = function(tmpl, data) {
+      return tmpl.replace(/{{(.+?)}}/g, function(_, placeholder) {
+        return data[placeholder];
+      });
+    }
+    var createEl = function(tmpl) {
+      return $(render(tmpl, data));
     }
 
-    jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
-    var bookPath = (window.location + '').replace('#','%23');
-    jInfoDiv.find('a.problem').attr('href','https://openlibrary.org/contact?path=' + bookPath);
+    var $leftCol = $("<div class=\"br__info__left_col\">");
+    var $rightCol = $("<div class=\"br__info__right_col\">");
 
+    $leftCol.append(createEl("<div class=\"br__image__w\">"
+    +"  <img src=\"{{coverImage}}\" alt=\"{{escapedTitle}}\" />"
+    +"</div>"));
+
+    $rightCol.append(createEl("<div class=\"br__info__title__w\">"
+    +"  <div class=\"br__info__title__label\">Title</div>"
+    +"  <div class=\"br__info__title\">{{title}}</div>"
+    +"</div>"));
+
+    $rightCol.append(createEl("<div class=\"br__info__publish_date__w\">"
+    +"  <div class=\"br__info__publish_date__label\">Publish Date</div>"
+    +"  <div class=\"br__info__publish_date\">{{publishDate}}</div>"
+    +"</div>"));
+
+    $rightCol.append(createEl("<div class=\"br__info__language__w\">"
+    +"  <div class=\"br__info__language__label\">Language</div>"
+    +"  <div class=\"br__info__language\">{{language}}</div>"
+    +"</div>"));
+
+    $rightCol.append(createEl("<div class=\"br__info__collection__w\">"
+    +"  <div class=\"br__info__collection__label\">Collection</div>"
+    +"  <div class=\"br__info__collection\">{{collection}}</div>"
+    +"</div>"));
+
+    $rightCol.append(createEl("<div class=\"br__info__more_info__w\">"
+    +"  <a class=\"br__info__more_info\" href=\"{{identifierAccess}}\">More information on Archive.org</a>"
+    +"</div>"));
+
+    var otherFormatsEl = "<div class=\"br_info_other_formats\">"
+    +"  <div class=\"br_info__other_formats__label\">Other formats</div>";
+    $.each(data.formats, function(index, row) {
+      otherFormatsEl = otherFormatsEl + "<div class=\"br_info_other_formats__format\">"
+        + "<a href=\""+row[1]+"\">"
+        + row[0]
+        + "</a></div>";
+    });
+    otherFormatsEl = otherFormatsEl + "</div>";
+
+    $rightCol.append(createEl(otherFormatsEl));
+
+    var footerEl = "<div class=\"br__info__footer\">"
+    +"  <a href=\"https://openlibrary.org/dev/docs/bookreader\">About the BookReader</a>"
+    +"  <a href=\"https://openlibrary.org/contact\" class=\"problem-icon\">Report a problem</a>"
+    +"</div>";
+
+    var children = [
+      $leftCol,
+      $rightCol,
+      createEl(footerEl)
+    ];
+    var childrenEl = $('<div class="br__info__w">').append(children);
+    jInfoDiv.append(childrenEl);
+
+    // Remove these legacy elements
+    $('#BRinfo').find('.BRfloatBody, .BRfloatCover, .BRfloatFoot').remove();
 }
 
 br.pageW =  [
@@ -570,6 +631,11 @@ $args = array('id' => $id,
               'subItemPath'     => $subItemPath,
               'imageFormat'     => $imageFormat,
               'archiveFormat'   => $archiveFormat,
+              'publishDate'     => $metaData->date,
+              'language'        => $metaData->language,
+              'collection'      => $metaData->collection,
+              'bookUrlText'     => 'Back to item details',
+              'bookUrlTitle'    => 'Go to this book\'s page on Archive.org',
               );
 
 print $twig->render('book_metadata.js', $args);
