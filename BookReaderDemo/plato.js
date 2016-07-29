@@ -302,7 +302,6 @@ br.buildInfoDiv = function(jInfoDiv) {
       ]
     }
 
-    // TODO generate about HTML in responsive format from data
     var render = function(tmpl, data) {
       return tmpl.replace(/{{(.+?)}}/g, function(_, placeholder) {
         return data[placeholder];
@@ -370,50 +369,6 @@ br.buildInfoDiv = function(jInfoDiv) {
 
     // Remove these legacy elements
     $('#BRinfo').find('.BRfloatBody, .BRfloatCover, .BRfloatFoot').remove();
-
-    return;
-
-
-    // --------- legacy code below
-
-    // $$$ cover looks weird before it loads
-    jInfoDiv.find('.BRfloatCover').append([
-                    '<div style="height: 140px; min-width: 80px; padding: 0; margin: 0;"><a href="', this.bookUrl, '"><img src="//archive.org/download/', this.bookId, '/page/cover_t.jpg" alt="' + escapedTitle + '" height="140px" /></a></div>'].join('')
-    );
-
-    var download_links = [];
-    if (!this.olAuth) {
-        download_links = [
-            '<h3>Other Formats</h3>',
-            '<ul class="links">',
-                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '.pdf">PDF</a><span>|</span></li>',
-                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '_djvu.txt">Plain Text</a><span>|</span></li>',
-                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '_daisy.zip">DAISY</a><span>|</span></li>',
-                '<li><a href="//archive.org/download/', this.bookId, '/', this.subPrefix, '.epub">ePub</a><span>|</span></li>',
-                '<li><a href="https://www.amazon.com/gp/digital/fiona/web-to-kindle?clientid=IA&itemid=', this.bookId, '&docid=', this.subPrefix, '">Send to Kindle</a></li>',
-            '</ul>'
-        ];
-    }
-
-    download_links.push('<p class="moreInfo"><span></span>More information on <a href="'+ this.bookUrl + '">' + domain + '</a>  </p>');
-
-    jInfoDiv.find('.BRfloatMeta').append(download_links.join('\n'));
-
-    jInfoDiv.find('.BRfloatFoot').append([
-                '<span>|</span>',
-                '<a href="https://openlibrary.org/contact" class="problem">Report a problem</a>',
-    ].join('\n'));
-
-    if (domain == 'archive.org') {
-        jInfoDiv.find('.BRfloatMeta p.moreInfo span').css(
-            {'background': 'url(https://archive.org/favicon.ico) no-repeat', 'width': 22, 'height': 18 }
-        );
-    }
-
-    jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
-    var bookPath = (window.location + '').replace('#','%23');
-    jInfoDiv.find('a.problem').attr('href','https://openlibrary.org/contact?path=' + bookPath);
-
 }
 
 br.pageW =  [
