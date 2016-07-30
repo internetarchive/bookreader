@@ -130,15 +130,13 @@ class BookReader
     <link rel="apple-touch-icon" href="<?=$coverThumb?>" />
     <title><?=$title?></title>
 
-
     <!-- THIS ALLOWS BEAUTYTIPS TO WORK ON IE -->
     <!--[if lt IE 9]>
     <script type="text/javascript" src="/includes/excanvas.compiled.js"></script>
     <![endif]-->
 
-<!--[if !IE 7]><![IGNORE[--><![IGNORE[]]>
     <link rel="stylesheet" type="text/css" href="/bookreader/BookReader.css?v=<?=$version?>" id="BRCSS">
-    <link rel="stylesheet" type="text/css" href="/bookreader/BookReader-ia.css?v=<?=$version?>" id="BRCSSTheme">
+    <!-- <link rel="stylesheet" type="text/css" href="/bookreader/BookReader-ia.css?v=<?=$version?>" id="BRCSSTheme"> -->
 <? if ($uiMode == "embed") { ?>
     <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderEmbed.css?v=<?=$version?>">
 <? } elseif ($uiMode == "touch") { ?>
@@ -147,24 +145,35 @@ class BookReader
 <? if ($protected) { ?>
     <link rel="stylesheet" type="text/css" href="/bookreader/BookReaderLending.css?v=<?=$version?>">
 <? } ?>
-    <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
-    <script type="text/javascript" src="/bookreader/jquery-ui-1.8.5.custom.min.js?v=<?=$version?>"></script>
-    <script type="text/javascript" src="//archive.org/includes/analytics.js?v=52516"></script>
-    <script type="text/javascript" src="/bookreader/dragscrollable.js?v=<?=$version?>"></script>
-    <script type="text/javascript" src="/bookreader/jquery.colorbox-min.js"></script>
-    <script type="text/javascript" src="/bookreader/jquery.ui.touch-punch.js"></script>
+    <script type="text/javascript" src="/includes/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="/bookreader/jquery-ui-1.12.0.min.js?v=<?=$version?>"></script>
+    <script type="text/javascript" src="/bookreader/jquery.browser.min.js?v=<?=$version?>"></script>
 
+    <script type="text/javascript" src="//archive.org/includes/analytics.js?v=52516"></script>
+    <script type="text/javascript" src="/bookreader/dragscrollable-br.js?v=<?=$version?>"></script>
+    <script type="text/javascript" src="/bookreader/jquery.colorbox-min.js"></script>
     <script type="text/javascript" src="/bookreader/jquery.bt.min.js"></script>
-    <script type="text/javascript" src="/bookreader/BookReader.js?v=<?=$version?>"></script>
-<? if ( !preg_match("/mobile/i", $_SERVER['HTTP_USER_AGENT']) ) { ?>
-    <script type="text/javascript" src="/bookreader/soundmanager/soundmanager2-ia.js?v=<?=$version?>"></script>
+    <script type="text/javascript" src="../bookreader/soundmanager/script/soundmanager2-jsmin.js"></script>
     <script>
-        soundManager.debugMode = false;
-        soundManager.url = '/bookreader/soundmanager/swf/';
+        soundManager.debugMode = true;
+        soundManager.url = '../BookReader/soundmanager/swf';
         soundManager.useHTML5Audio = true;
         soundManager.flashVersion = 9; //flash 8 version of swf is buggy when calling play() on a sound that is still loading
     </script>
-<? } /* mobile user agent */ ?>
+
+    <!-- mobile libs -->
+    <script src="/bookreader/mmenu/dist/js/jquery.mmenu.min.js" type="text/javascript"></script>
+    <link href="/bookreader/mmenu/dist/css/jquery.mmenu.css" type="text/css" rel="stylesheet" />
+    <!-- navbars -->
+    <script src="/bookreader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js" type="text/javascript"></script>
+    <link href="/bookreader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css" type="text/css" rel="stylesheet" />
+    <!-- search -->
+    <link href="/bookreader/mmenu/dist/addons/searchfield/jquery.mmenu.searchfield.css" type="text/css" rel="stylesheet" />
+    <!-- custom search addon -->
+    <script src="/bookreader/mmenu/jquery.mmenu.searchfield.js" type="text/javascript"></script>
+    <!-- todo include screen reader code -->
+
+    <script type="text/javascript" src="/bookreader/BookReader.js?v=<?=$version?>"></script>
 </head>
 <body style="background-color: ##939598;">
 
@@ -204,11 +213,7 @@ class BookReader
     // Usage stats
     if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
 </script>
-<!--<![endif]-->
 
-<!--[if IE 7]>
-<? BookReader::emitForIE7($server, $mainDir, $identifier, $subPrefix, $title, $coverLeaf, $titleStart, $uiMode); ?>
-<![endif]-->
 
 
 </body>
@@ -216,111 +221,6 @@ class BookReader
   <?
     exit;
   }
-
-
-
-
-  // Emit the HTML for the version of the BookReader for IE7
-  public static function emitForIE7($server, $mainDir, $identifier, $subPrefix, $title,
-                              $coverLeaf=null, $titleStart='Internet Archive', $uiMode='full')
-  {
-    // Set title to default if not set
-    if (!$title) {
-        $title = 'BookReader';
-    }
-
-    $id = $identifier;
-
-    // manually update with Launchpad version number at each checkin so that browsers
-    // do not use old cached version
-    // see https://bugs.launchpad.net/gnubook/+bug/330748
-    $version = "ie7";
-
-    if (BookReader::getDevHost($server)) {
-        // on dev host - add time to force reload
-        $version .= '_' . time();
-    }
-
-    if ("" == $id) {
-        echo "No identifier specified!";
-        die(-1);
-    }
-
-    $metaURL = BookReader::jsMetadataURLForIE7($server, $identifier, $mainDir, $subPrefix);
-
-
-?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/BookReader.css?v=<?=$version?>">
-<? if ($uiMode == "embed") { ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/BookReaderEmbed.css?v=<?=$version?>">
-<? } elseif ($uiMode == "touch") { ?>
-    <link rel="stylesheet" type="text/css" href="/bookreader/ie7/touch/BookReaderTouch.css?v=<?=$version?>">
-<? } /* uiMode */ ?>
-    <script src="/includes/jquery-1.4.2.min.js" type="text/javascript"></script>
-    <script type="text/javascript" src="http://archive.org/includes/analytics.js?v=52515"></script>
-    <script type="text/javascript" src="/bookreader/ie7/jquery-ui-1.8.1.custom.min.js?v=<?=$version?>"></script>
-    <script type="text/javascript" src="/bookreader/ie7/dragscrollable.js?v=<?=$version?>"></script>
-    <script type="text/javascript" src="/bookreader/ie7/BookReader.js?v=<?=$version?>"></script>
-</head>
-<body style="background-color: #FFFFFF;">
-
-<? if ($uiMode == 'full') { ?>
-<div id="BookReader" style="left:10px; right:200px; top:10px; bottom:2em;">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
-<? } else { ?>
-<div id="BookReader" style="left:0; right:0; top:0; bottom:0; border:0">Internet Archive BookReader <noscript>requires JavaScript to be enabled.</noscript></div>
-<? } /* uiMode*/ ?>
-
-<script type="text/javascript">
-  // Set some config variables - $$$ NB: Config object format has not been finalized
-  var brConfig = {};
-<? if ($uiMode == 'embed') { ?>
-  brConfig["mode"] = 1;
-  brConfig["reduce"] = 8;
-  brConfig["ui"] = "embed";
-<? } else { ?>
-  brConfig["mode"] = 2;
-<? } ?>
-</script>
-<script type="text/javascript" src="<?=$metaURL?>"></script>
-
-<? if ($uiMode == 'full') { ?>
-<div id="BookReaderSearch" style="width:190px; right:0px; top:10px; bottom:2em;">
-    <form action='javascript:' onsubmit="br.search($('#BookReaderSearchBox').val());">
-        <p style="display: inline">
-            <input id="BookReaderSearchBox" type="text" size="20" value="search..." onfocus="if('search...'==this.value)this.value='';" /><input type="submit" value="go" />
-        </p>
-    </form>
-    <div id="BookReaderSearchResults">
-        Search results
-    </div>
-</div>
-
-
-<div id="BRfooter">
-    <div class="BRlogotype">
-        <a href="http://archive.org/" class="BRblack">Internet Archive</a>
-    </div>
-    <div class="BRnavlinks">
-        <a class="BRblack" href="http://archive.org/about/faqs.php#Report_Item">Content Problems</a> |
-        <a class="BRblack" href="https://bugs.launchpad.net/bookreader/+filebug">Report Bugs</a> |
-        <a class="BRblack" href="http://archive.org/details/texts">Texts Collection</a> |
-        <a class="BRblack" href="http://archive.org/about/contact.php">Contact Us</a>
-    </div>
-</div>
-<? } /* uiMode */ ?>
-
-<script type="text/javascript">
-    // $$$ hack to workaround sizing bug when starting in two-up mode
-    $(document).ready(function() {
-        $(window).trigger('resize');
-    });
-
-    // Usage stats
-    if(window.archive_analytics) { window.archive_analytics.values['bookreader'] = 'open'};
-</script>
-  <?
-  }
-
 
   // Returns the user part of dev host from URL, or null
   public static function getDevHost($server)
@@ -361,28 +261,6 @@ class BookReader
     $keys = array_keys($params);
     $lastParam = end($keys);
     $url = "//{$serverBaseURL}/BookReader/BookReaderJSIA.php?";
-    foreach($params as $param=>$value) {
-        $url .= $param . '=' . $value;
-        if ($param != $lastParam) {
-            $url .= '&';
-        }
-    }
-
-    return $url;
-  }
-
-    public static function jsMetadataURLForIE7($server, $identifier, $mainDir, $subPrefix = '')
-  {
-    $serverBaseURL = BookReader::serverBaseURL($server);
-
-    $params = array( 'id' => $identifier, 'itemPath' => $mainDir, 'server' => $server );
-    if ($subPrefix) {
-        $params['subPrefix'] = $subPrefix;
-    }
-
-    $keys = array_keys($params);
-    $lastParam = end($keys);
-    $url = "http://{$serverBaseURL}/BookReader/ie7/BookReaderJSIA.php?";
     foreach($params as $param=>$value) {
         $url .= $param . '=' . $value;
         if ($param != $lastParam) {
