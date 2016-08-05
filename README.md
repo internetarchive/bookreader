@@ -29,3 +29,5 @@ Hosted source code:
 http://github.com/openlibrary/bookreader
 
 The source code license is AGPL v3, as described in the LICENSE file.
+
+The ability to test on multiple devices is provided courtesy of [Browser Stack](https://www.browserstack.com).
