@@ -45,7 +45,7 @@ function BookReader() {
     this.padding = 10;          // Padding in 1up
 
     this.mode    = this.constMode1up;
-    this.ui = 'responsive';           // UI mode
+    this.ui = 'full';           // UI mode
     this.uiAutoHide = false;    // Controls whether nav/toolbar will autohide
 
     // thumbnail mode
@@ -177,10 +177,6 @@ BookReader.prototype.init = function() {
 
     // Sanitize/process parameters
 
-    if ( !this.canSwitchToMode( this.mode ) ) {
-        this.mode = this.constMode1up;
-    }
-
     if ('undefined' != typeof(params.index)) {
         startIndex = params.index;
     } else if ('undefined' != typeof(params.page)) {
@@ -200,8 +196,20 @@ BookReader.prototype.init = function() {
         startIndex = 0;
     }
 
+    // Use params or browser width to set view mode
+    var nextMode;
     if ('undefined' != typeof(params.mode)) {
-        this.mode = params.mode;
+        nextMode = params.mode;
+    } else if ($(window).width() > 800) {
+        nextMode = this.constMode2up;
+    } else {
+        nextMode = this.constMode1up;
+    }
+
+    if (this.canSwitchToMode(nextMode)) {
+      this.mode = nextMode;
+    } else {
+      this.mode = this.constMode1up;
     }
 
     // Set document title -- may have already been set in enclosing html for
