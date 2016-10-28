@@ -62,7 +62,7 @@
 			this.bind( 'init',
 				function( $panels )
 				{
-					console.log(opts);
+					// console.log(opts);
 					// opts.addTo = ".search-parent";
 					//	Add the searchfield(s)
 					if ( opts.add )
@@ -79,7 +79,7 @@
 								break;
 						}
 						// alert(1);
-						console.log($wrapper);
+						// console.log($wrapper);
 
 						$wrapper
 							.each(

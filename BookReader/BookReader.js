@@ -16,7 +16,7 @@ This file is part of BookReader.
     You should have received a copy of the GNU Affero General Public License
     along with BookReader.  If not, see <http://www.gnu.org/licenses/>.
 
-    The BookReader source is hosted at http://github.com/openlibrary/bookreader/
+    The BookReader source is hosted at http://github.com/internetarchive/bookreader/
 
 */
 
@@ -216,7 +216,7 @@ BookReader.prototype.init = function() {
     // search engine visibility
     document.title = this.shortTitle(50);
 
-    $("#BookReader").empty();
+    $("#BookReader").empty().removeClass().addClass("ui-" + this.ui);
 
     this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
     $("#BookReader").append("<div id='BRcontainer' dir='ltr'></div>");
@@ -269,18 +269,18 @@ BookReader.prototype.init = function() {
         }
     });
 
-    // if (this.protected) {
-    //     $(document).on('contextmenu dragstart', '.BRpagediv1up', function(e) {
-    //         return false;
-    //     });
-    //     $(document).on('contextmenu dragstart', '.BRpageimage', function(e) {
-    //         return false;
-    //     });
-    //     $(document).on('contextmenu dragstart', '.BRpagedivthumb', function(e) {
-    //         return false;
-    //     });
-    //     $('.BRicon.share').hide();
-    // }
+    if (this.protected) {
+        $(document).on('contextmenu dragstart', '.BRpagediv1up', function(e) {
+            return false;
+        });
+        $(document).on('contextmenu dragstart', '.BRpageimage', function(e) {
+            return false;
+        });
+        $(document).on('contextmenu dragstart', '.BRpagedivthumb', function(e) {
+            return false;
+        });
+        $('.BRicon.share').hide();
+    }
 
     // $('.BRpagediv1up').bind('mousedown', this, function(e) {
     //     // $$$ the purpose of this is to disable selection of the image (makes it turn blue)
@@ -315,8 +315,6 @@ BookReader.prototype.init = function() {
         this.updateTheme(this.theme);
     }
 
-    // $("#BookReader").empty();// @DEBUG //
-
     // We init the nav bar after the params processing so that the nav slider knows where
     // it should start (doesn't jump after init)
     if (this.ui == "embed") {
@@ -329,11 +327,14 @@ BookReader.prototype.init = function() {
     // Set strings in the UI
     this.initUIStrings();
 
-    // Start AJAX request for OL data
-    if (this.getOpenLibraryRecord) {
-        this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
+    // Add a class if this is a touch enabled device
+    isTouchDevice = !!('ontouchstart' in window) || !!('msmaxtouchpoints' in window.navigator);
+    if (isTouchDevice) {
+      $("body").addClass("touch");
+    } else {
+      $("body").addClass("no-touch");
     }
-
+    $(document).trigger("BookReader:PostInit");
 }
 
 BookReader.prototype.setupKeyListeners = function() {
@@ -1507,7 +1508,7 @@ BookReader.prototype.prepareThumbnailView = function() {
 // div requires adjusting the offset of BRtwpageview and/or scrolling in BRcontent.
 BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPercentageY) {
     $('#BRcontainer').empty();
-    $('#BRcontainer').css('overflow', 'auto');
+    $('#BRcontainer').css('overflow', 'hidden');
 
     // We want to display two facing pages.  We may be missing
     // one side of the spread because it is the first/last leaf,
@@ -2744,30 +2745,46 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 
 // search()
 //______________________________________________________________________________
-BookReader.prototype.search = function(term) {
+BookReader.prototype.search = function(term, gotToFirstResult) {
     // console.log('search called with term=' + term);
+    gotToFirstResult = gotToFirstResult === undefined ? false : gotToFirstResult;
 
     $('#textSrch').blur(); //cause mobile safari to hide the keyboard
 
+    this.searchTerm = term;
+    this.searchTerm = this.searchTerm.replace(/\//g, ' '); // strip slashes, since this goes in the url
+
+    // Add quotes to the term. This is to compenstate for the backends default OR query
+    term = term.replace(/['"]+/g, '');
+    term = '"' + term + '"';
+
     var url = 'https://'+this.server.replace(/:.+/, ''); //remove the port and userdir
-    url    += '/fulltext/inside.php?item_id='+this.bookId;
+    //url    += '/fulltext/inside.php?item_id='+this.bookId;
+    url    += '/fulltext/new_inside.php?item_id='+this.bookId;
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
     url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
     url    += '&q='+escape(term);
     //console.log('search url='+url);
 
-    term = term.replace(/\//g, ' '); // strip slashes, since this goes in the url
-    this.searchTerm = term;
-
     this.removeSearchResults();
     this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
-    $.ajax({url:url, dataType:'jsonp', jsonpCallback:'br.BRSearchCallback'});
+    $.ajax({
+      url:url,
+      dataType:'jsonp',
+      jsonpCallback:'',
+      jsonpCallback: 'jsonp_callback',
+      success: function(data) {
+        br.BRSearchCallback(data, gotToFirstResult);
+      },
+    });
 }
 
 // BRSearchCallback()
 //______________________________________________________________________________
-BookReader.prototype.BRSearchCallback = function(results) {
+BookReader.prototype.BRSearchCallback = function(results, gotToFirstResult) {
     // console.log('got ' + results.matches.length + ' results');
+    gotToFirstResult = gotToFirstResult === undefined ? false : gotToFirstResult;
+
     br.removeSearchResults();
     br.searchResults = results;
     //console.log(br.searchResults);
@@ -2776,7 +2793,7 @@ BookReader.prototype.BRSearchCallback = function(results) {
         if (/debug/.test(window.location.href)) {
             $(br.popup).html(results.error);
         } else {
-            $(br.popup).html('Sorry, there was an error with your search.<br />If the problem persists, please contact us.');
+            $(br.popup).html('Sorry, there was an error with your search.<br />The text may still be processing.');
             setTimeout(function(){
                 $(br.popup).fadeOut('slow', function() {
                     br.removeProgressPopup();
@@ -2800,12 +2817,18 @@ BookReader.prototype.BRSearchCallback = function(results) {
         return;
     }
 
-    var i;
+    var i, firstResultLeaf = null;
     for (i=0; i<results.matches.length; i++) {
         br.addSearchResult(results.matches[i].text, br.leafNumToIndex(results.matches[i].par[0].page));
+        if (i === 0 && gotToFirstResult === true) {
+          firstResultLeaf = results.matches[i].par[0].page;
+        }
     }
     br.updateSearchHilites();
     br.removeProgressPopup();
+    if (firstResultLeaf !== null) {
+        br.jumpToIndex(firstResultLeaf);
+    }
 }
 
 
@@ -3341,16 +3364,17 @@ BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
 
     $('#BookReader').append(
-      "<div id=\"BRnav\" class=\"\">"
+      "<div id=\"BRnav\" class=\"BRnavDesktop\">"
       +"  <div id=\"BRpage\">"
-      +"    <button class=\"BRicon book_left\"></button>"
-      +"    <button class=\"BRicon book_right\"></button>"
-      +"    <button class=\"BRicon onepg desktop-only\"></button>"
-      +"    <button class=\"BRicon twopg desktop-only\"></button>"
-      +"    <button class=\"BRicon thumb desktop-only\"></button>"
+           +"<button class=\"BRicon book_left\"></button>"
+           +"<button class=\"BRicon book_right\"></button>"
+           +"<span class=\"desktop-only\">&nbsp;&nbsp;</span>"
+           +"<button class=\"BRicon onepg desktop-only\"></button>"
+           +"<button class=\"BRicon twopg desktop-only\"></button>"
+           +"<button class=\"BRicon thumb desktop-only\"></button>"
       +"  </div>"
       +"  <div id=\"BRnavpos\">"
-      +"    <div id=\"BRpager\"></div><div id=\"BRnavline\"></div>"
+      +"    <div id=\"BRpager\"></div>"
       +"    <div id=\"BRnavline\">"
       +"      <div class=\"BRnavend\" id=\"BRnavleft\"></div>"
       +"      <div class=\"BRnavend\" id=\"BRnavright\"></div>"
@@ -3359,7 +3383,6 @@ BookReader.prototype.initNavbar = function() {
       +"  <div id=\"BRnavCntlBtm\" class=\"BRnavCntl BRdn\"></div>"
       +"</div>"
     );
-
     var self = this;
     $('#BRpager').slider({
         animate: true,
@@ -3393,9 +3416,9 @@ BookReader.prototype.initNavbar = function() {
     );
 
     //append icon to handle
-    var handleHelper = $('#BRpager .ui-slider-handle')
-    .append('<div id="pagenum"><span class="currentpage"></span></div>');
-    //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
+    $('#BRpager .ui-slider-handle')
+      .append('<div id="pagenum"><span class="currentpage"></span></div>');
+      //.wrap('<div class="ui-handle-helper-parent"></div>').parent(); // XXXmang is this used for hiding the tooltip?
 
     this.updateNavPageNum(this.currentIndex());
 
@@ -3416,13 +3439,13 @@ BookReader.prototype.initEmbedNavbar = function() {
     var thisLink = (window.location + '').replace('?ui=embed',''); // IA-specific
 
     $('#BookReader').append(
-        '<div id="BRnav">'
+        '<div id="BRnav" class="BRnavEmbed">'
         +   "<span id='BRtoolbarbuttons'>"
         +         '<button class="BRicon full"></button>'
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
         +   "</span>"
-        +   "<span><a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a></span>"
+        +   "<a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a>"
         +   "<span id='BRembedreturn'><a href='" + thisLink + "' target='_blank' ></a></span>"
         + '</div>'
     );
@@ -3474,11 +3497,12 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
         cssStyles: {
             padding: '12px 14px',
             backgroundColor: '#fff',
-            border: '4px solid #e2dcc5',
-            fontFamily: '"Lucida Grande","Arial",sans-serif',
+            border: '4px solid rgb(216,216,216)',
+            // borderRadius: '10px',
+            // fontFamily: '"Lucida Grande","Arial",sans-serif',
             fontSize: '13px',
             //lineHeight: '18px',
-            color: '#615132'
+            color: 'rgb(52,52,52)'
         },
         shrinkToFit: false,
         width: '230px',
@@ -3539,9 +3563,10 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         cssStyles: {
             padding: '12px 14px',
             backgroundColor: '#000',
-            border: '4px solid #e2dcc5',
+            border: '4px solid rgb(216,216,216)',
+            borderRadius: '10px',
             //borderBottom: 'none',
-            fontFamily: '"Arial", sans-serif',
+            // fontFamily: '"Arial", sans-serif',
             fontSize: '12px',
             fontWeight: '700',
             color: '#fff',
@@ -3637,91 +3662,97 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
     });
 }
 
-BookReader.prototype.initToolbar = function(mode, ui) {
-    if (ui == "embed") {
-        return; // No toolbar at top in embed mode
-    }
-    var self = this;
+/**
+ * This method builds the html for the toolbar. It can be decorated to extend
+ * the toolbar.
+ * @return {jqueryElement}
+ */
+BookReader.prototype.buildToolbarElement = function() {
+  // $$$mang should be contained within the BookReader div instead of body
+  var readIcon = '';
+  // if (!navigator.userAgent.match(/mobile/i)) {
+      readIcon = "<button class='BRicon read modal'></button>";
+  // }
 
-    // $$$mang should be contained within the BookReader div instead of body
-    var readIcon = '';
-    // if (!navigator.userAgent.match(/mobile/i)) {
-        readIcon = "<button class='BRicon read modal'></button>";
-    // }
+  var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
 
-    var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
+  // Add large screen navigation
+  return $(
+    "<div id='BRtoolbar' class='header fixed'>"
+    +   "<span class='mobile-only'>"
+    +     "<span class=\"hamburger\"><a href=\"#menu\"></a></span>"
+    +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
+    +   "</span>"
 
-    // Add large screen navigation
-    $("#BookReader").append(
-          "<div id='BRtoolbar' class='header fixed'>"
-        +   "<span class='mobile-only'>"
-        +     "<span class=\"hamburger\"><a href=\"#menu\"></a></span>"
-        +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
-        +   "</span>"
+    +   "<span id='BRtoolbarbuttons' class='desktop-only'>"
+    +     "<span class='BRtoolbarLeft'>"
+    +       "<span class='BRtoolbarSection tc'>"
+    +         "<a class='logo' href='" + this.logoURL + "'></a>"
+    +       "</span>"
 
-        +   "<span id='BRtoolbarbuttons' class='desktop-only'>"
-        +     "<span class='BRtoolbarLeft'>"
-        +       "<span class='BRtoolbarSection tc'>"
-        +         "<a class='logo' href='" + this.logoURL + "'></a>"
-        +       "</span>"
+    +       "<span class='BRtoolbarSection title tl ph10 last'>"
+    +           "<span id='BRreturn'><a></a></span>"
+    +           "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
+    +       "</span>"
+    +    "</span>"
 
-        +       "<span class='BRtoolbarSection title tl ph10 last'>"
-        +           "<span id='BRreturn'><a></a></span>"
-        +           "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
-        +       "</span>"
-        +    "</span>"
-
-        +     "<span class='BRtoolbarRight'>"
+    +     "<span class='BRtoolbarRight'>"
 
 
-        +       "<span class='BRtoolbarSection tc ph10'>"
-        +       "<button class='BRicon play'></button>"
-        +       "<button class='BRicon pause'></button>"
-        +         "<button class='BRicon info'></button>"
-        +         "<button class='BRicon share'></button>"
-        +         readIcon
-        +       "</span>"
+    +       "<span class='BRtoolbarSection tc ph10'>"
+    //+       "<button class='BRicon play'></button>"
+    +       "<button class='BRicon pause'></button>"
+    +         "<button class='BRicon info'></button>"
+    +         "<button class='BRicon share'></button>"
+    +         readIcon
+    +       "</span>"
 
-        // zoom
-        +       "<span class='BRtoolbarSection tc ph10'>"
-        +         "<button class='BRicon zoom_out'></button>"
-        +         "<button class='BRicon zoom_in'></button>"
-        +       "</span>"
+    // zoom
+    +       "<span class='BRtoolbarSection tc ph10'>"
+    +         "<button class='BRicon zoom_out'></button>"
+    +         "<button class='BRicon zoom_in'></button>"
+    +       "</span>"
 
-        // Search
-        +       "<span class='BRtoolbarSection tc ph20 last'>"
-        +         "<form id='booksearch'>"
-        +           "<input type='search' id='textSrch' class='form-control' name='textSrch' val='' placeholder='Search inside'/>"
-        +           "<button type='submit' id='btnSrch' name='btnSrch'>"
-        +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
-        +           "</button>"
-        +         "</form>"
-        +       "</span>"
+    // Search
+    +       "<span class='BRtoolbarSection tc ph20 last'>"
+    +         "<form id='booksearch'>"
+    +           "<input type='search' id='textSrch' class='form-control' name='textSrch' val='' placeholder='Search inside this book'/>"
+    +           "<button type='submit' id='btnSrch' name='btnSrch'>"
+    +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
+    +           "</button>"
+    +         "</form>"
+    +       "</span>"
 
-        //+     "<button class='BRicon full'></button>"
+    //+     "<button class='BRicon full'></button>"
 
-        +     "</span>" // end BRtoolbarRight
+    +     "</span>" // end BRtoolbarRight
 
-        +   "</span>" // end desktop-only
+    +   "</span>" // end desktop-only
 
-        + "</div>"
-        /*
-        + "<div id='BRzoomer'>"
-        +   "<div id='BRzoompos'>"
-        +     "<button class='BRicon zoom_out'></button>"
-        +     "<div id='BRzoomcontrol'>"
-        +       "<div id='BRzoomstrip'></div>"
-        +       "<div id='BRzoombtn'></div>"
-        +     "</div>"
-        +     "<button class='BRicon zoom_in'></button>"
-        +   "</div>"
-        + "</div>"
-        */
-        );
+    + "</div>"
+    /*
+    + "<div id='BRzoomer'>"
+    +   "<div id='BRzoompos'>"
+    +     "<button class='BRicon zoom_out'></button>"
+    +     "<div id='BRzoomcontrol'>"
+    +       "<div id='BRzoomstrip'></div>"
+    +       "<div id='BRzoombtn'></div>"
+    +     "</div>"
+    +     "<button class='BRicon zoom_in'></button>"
+    +   "</div>"
+    + "</div>"
+    */
+    );
+}
 
-    // Add Mobile navigation
-    // ------------------------------------------------------
-    $("body").append(
+
+/**
+ * This method builds the html for the mobile drawer. It can be decorated to
+ * extend the default drawer.
+ * @return {jqueryElement}
+ */
+BookReader.prototype.buildMobileDrawerElement = function() {
+    return $(
       "<nav id=\"menu\" class=\"mobile-only\">"
       +"  <ul>"
       +"    <li>"
@@ -3742,7 +3773,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
       +"        <button class='BRicon zoom_in'></button>"
       +"        <br style='clear:both'><br><br>"
       +"        <div class=\"DrawerSettingsTitle\">Experimental (may not work)</div>"
-      +"        <button class='high-contrast-button'>Toggle high contrast</button>"
+      +"        <button class='action high-contrast-button'>Toggle high contrast</button>"
       +"      </div>"
       +"    </li>"
       +"    <li>"
@@ -3751,15 +3782,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
       +"        About This Book"
       +"      </span>"
       +"      <div id=\"mobileInfo\"></div>"
-      +"    </li>"
-      +"    <li style='display:none;'>"
-      +"      <span>"
-      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_book.svg\" alt=\"info-book\"/></span>"
-      +"        Loan Information"
-      +"      </span>"
-      +"      <ul>"
-      +"        <li><a href=\"#\">Loan Information</a></li>"
-      +"      </ul>"
       +"    </li>"
       +"    <li>"
       +"      <span style='display:none;'>"
@@ -3780,11 +3802,23 @@ BookReader.prototype.initToolbar = function(mode, ui) {
       +"  </ul>"
       +"</nav>"
     );
+}
+
+BookReader.prototype.initToolbar = function(mode, ui) {
+    if (ui == "embed") {
+        return; // No toolbar at top in embed mode
+    }
+    var self = this;
+
+    $("#BookReader").append(this.buildToolbarElement());
+
+    // Add Mobile navigation
+    // ------------------------------------------------------
+    $("body").append(this.buildMobileDrawerElement());
 
     // Render info into mobile info before mmenu
     this.buildInfoDiv($('#mobileInfo'));
     this.buildShareDiv($('#mobileShare'));
-
 
     $('nav#menu').mmenu({
         searchfield: {
@@ -3823,11 +3857,20 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     //    $('#BRtoolbarbuttons .share').hide();
     // }
 
-    var titleText = this.bookTitle;
     $('#BRreturn a')
-      .attr('href', this.bookUrl)
-      .html('<span class="BRreturnTitle">' + titleText + '</span>')
-      .attr('title', titleText);;
+      .addClass('BRTitleLink')
+      .attr({ 'href': self.bookUrl, 'title': self.bookTitle })
+      .html('<span class="BRreturnTitle">' + this.bookTitle + '</span>')
+      ;
+
+    if (self.bookUrl && self.bookUrlTitle && self.bookUrlText) {
+      $('<a/>')
+        .addClass('BRUrlLink')
+        .attr({ 'href': self.bookUrl, 'title': self.bookUrlTitle })
+        .html('<br>' + self.bookUrlText)
+        .appendTo('#BRreturn');
+    }
+
 
     $('#BRtoolbar .BRnavCntl').addClass('BRup');
     $('#BRtoolbar .pause').hide();
@@ -3911,7 +3954,7 @@ BookReader.prototype.blankInfoDiv = function() {
     return $([
         '<div class="BRfloat" id="BRinfo">',
             '<div class="BRfloatHead">About this book',
-                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+                '<button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
             '</div>',
             '<div class="BRfloatBody">',
                 '<div class="BRfloatCover">',
@@ -3934,7 +3977,7 @@ BookReader.prototype.blankShareDiv = function() {
         '<div class="BRfloat" id="BRshare">',
             '<div class="BRfloatHead">',
                 'Share',
-                '<a class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
+                '<button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
             '</div>',
         '</div>'].join('\n')
     );
@@ -4518,7 +4561,7 @@ BookReader.prototype.updateFromParams = function(params) {
     // process /search
     if ('undefined' != typeof(params.searchTerm)) {
         if (this.searchTerm != params.searchTerm) {
-            this.search(params.searchTerm);
+            this.search(params.searchTerm, true);
         }
     }
 
@@ -4897,66 +4940,8 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     return this.getPageURI(index, reduce, rotate);
 }
 
-/*
- * Update based on received record from Open Library.
- */
-BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
-    // $$$ could refactor this so that 'this' is available
-    if (olObject) {
-        // console.log(olObject);
-        if (olObject['table_of_contents']) {
-            // XXX check here that TOC is valid
-            self.updateTOC(olObject['table_of_contents']);
-        }
-
-        // $$$mang cleanup
-        // @DEBUG richard @TODO
-        // if (self.theme == 'ol') {
-        //     //For the IA theme, no longer show links to OL
-        //     self.bookUrl = self.olHost + olObject.key;
-        //     self.bookTitle = olObject['title'];
-        //     $('#BRreturn a').attr( {'href': self.bookUrl, 'title': "Go to this book's page on Open Library" } );
-        //     $('#BRreturn a').text(self.bookTitle);
-        //
-        //     $('#BRinfo').remove();
-        //     $('#BRshare').after(self.blankInfoDiv());
-        //     self.buildInfoDiv($('#BRinfo'));
-        // }
-
-        // Check for borrowed book
-        if (self.olAuth) {
-            var returnUrl = self.olHost + olObject.key + '/do_return/borrow';
-            var borrowUrl = self.olHost + olObject.key + '/borrow';
-
-            /*
-            $('<a/>')
-                .attr('href', borrowUrl)
-                .text('Return this book')
-                .click(function(event) {
-                    event.preventDefault();
-                    $('#BRreturnform').trigger('submit');
-                })
-                .appendTo('#BRreturn');
-            */
-
-            $('<form id="BRreturnform" action="' + returnUrl + '" method="post"><input type="submit" value="Return book" onclick="olAuth.deleteCookies();"/><input type="hidden" name="action" value="return" /></form>')
-                .appendTo('#BRreturn');
-
-        } else {
-            if (self.bookUrlText) {
-                $('<a/>').attr( { 'href': self.bookUrl, 'title': self.bookUrlTitle } )
-                    .html('<br>' + self.bookUrlText)
-                    .appendTo('#BRreturn');
-            }
-        }
-
-        if ((self.theme == 'ol') || (self.olAuth)) {
-            $('#BRreturn').css({ 'line-height': '19px'} );
-            $('#BRreturn a').css( {'height': '18px' } );
-        }
-
-    }
-}
+// Stub Method. Original removed from Book Reader source
+BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {};
 
 // Library functions
 BookReader.util = {
@@ -5104,12 +5089,20 @@ BookReader.prototype.ttsStartCB = function (data) {
     ///// onload: fires on safari, but *after* the sound starts playing, and does not fire in FF or IE9
     ///// onbufferchange: fires in FF5 using HTML5 audio, but not in safari using flash audio
     ///// whileplaying: fires everywhere
+
+    var dataString = data[0][0];
+    dataString = encodeURIComponent(dataString);
+
+    //the .ogg is to trick SoundManager2 to use the HTML5 audio player;
+    var soundUrl = 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string='
+                    + dataString
+                    + '&format=.'+this.ttsFormat;
+
     this.ttsPosition = -1;
     var snd = soundManager.createSound({
      id: 'chunk'+this.ttsIndex+'-0',
-     url: 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + escape(data[0][0]) + '&format=.'+this.ttsFormat, //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+     url: soundUrl,
      onload: function(){
-       console.log(this.br);
        this.br.removeProgressPopup();
      }, //fires in safari...
      onbufferchange: function(){
@@ -5179,7 +5172,7 @@ BookReader.prototype.ttsNextPageCB = function (data) {
 BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
     var snd = soundManager.createSound({
      id: 'chunk'+page+'-'+pos,
-     url: 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + escape(string) + '&format=.'+this.ttsFormat //the .ogg is to trick SoundManager2 to use the HTML5 audio player
+     url: 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + encodeURIComponent(string) + '&format=.'+this.ttsFormat //the .ogg is to trick SoundManager2 to use the HTML5 audio player
     });
     snd.br = this;
     snd.load()
@@ -5461,27 +5454,27 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
     var jForm = $([
         '<div class="share-title">Share this book</div>',
         '<div class="share-social">',
-          '<div><button class="facebook-share-button">Facebook</button></div>',
-          '<div><button class="twitter-share-button">Twitter</button></div>',
-          '<div><button class="email-share-button">Email</button></div>',
-          '<label class="sub">',
+          '<div><button class="action primary facebook-share-button">Facebook</button></div>',
+          '<div><button class="action primary twitter-share-button">Twitter</button></div>',
+          '<div><button class="action primary email-share-button">Email</button></div>',
+          '<label class="sub open-to-this-page">',
               '<input id="thispagesocial" type="checkbox" name="thispage" value="thispage"/>',
               'Open to this page?',
           '</label>',
         '</div>',
         '<div class="share-embed">',
-          '<p>Copy and paste one of these options to share this book elsewhere.</p>',
+          '<p class="share-embed-prompt">Copy and paste one of these options to share this book elsewhere.</p>',
           '<form method="post" action="">',
-              '<fieldset>',
-                  '<label for="pageview">Link to this page view:</label>',
+              '<fieldset class="fieldset-share-pageview">',
+                  '<label for="pageview">Link to this page view</label>',
                   '<input type="text" name="pageview" id="pageview" value="' + pageView + '"/>',
               '</fieldset>',
-              '<fieldset>',
-                  '<label for="booklink">Link to the book:</label>',
+              '<fieldset class="fieldset-share-book-link">',
+                  '<label for="booklink">Link to the book</label>',
                   '<input type="text" name="booklink" id="booklink" value="' + bookView + '"/>',
               '</fieldset>',
               '<fieldset class="fieldset-embed">',
-                  '<label for="iframe">Embed a mini Book Reader:</label>',
+                  '<label for="iframe">Embed a mini Book Reader</label>',
                   '<fieldset class="sub">',
                       '<label class="sub">',
                           '<input type="radio" name="pages" value="' + this.constMode1up + '" checked="checked"/>',
@@ -5498,11 +5491,11 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
                   '</fieldset>',
                   '<textarea cols="30" rows="4" name="iframe" class="BRframeEmbed"></textarea>',
               '</fieldset>',
-              '<fieldset class="center">',
-                  '<button class="share-finished" type="button" onclick="$.fn.colorbox.close();">Finished</button>',
-              '</fieldset>',
           '</form>',
         '</div>',
+        '<div class="BRfloatFoot center">',
+            '<button class="share-finished" type="button" onclick="$.fn.colorbox.close();">Finished</button>',
+        '</div>'
         ].join('\n'));
 
     jForm.appendTo(jShareDiv);
@@ -5633,4 +5626,25 @@ BookReader.prototype.createPopup = function(href, width, height, name) {
 
   window.open(url, name, opts);
 };
+
+/**
+ * Reloads images. Useful when some images might have failed.
+ */
+BookReader.prototype.reloadImages = function() {
+  $('#BRcontainer img').each(function(index, elem) {
+    if (!elem.complete || elem.naturalHeight === 0) {
+      var src = elem.src;
+      elem.src = '';
+      setTimeout(function() {
+        elem.src = src;
+      }, 1000);
+    }
+  });
+};
+
+// Fix for deprecated method
+jQuery.curCSS = function(element, prop, val) {
+    return jQuery(element).css(prop, val);
+};
+
 })(jQuery);

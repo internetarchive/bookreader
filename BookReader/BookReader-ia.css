@@ -1,14 +1,14 @@
 /* page background */
-#BRcontainer {
+/*#BRcontainer {
     background-color: #000;
-}
+}*/
 
-#BRpageview {
+/*#BRpageview {
     background-color: #000;
-}
+}*/
 
 .BRemptypage {
-    background-color: #000;
+    background-color: #3a3b3b;
 }
 
 #BRbookcover {
@@ -17,39 +17,39 @@
 
 
 /* toolbar */
-#BRtoolbar {
+/*#BRtoolbar {
     background-color: #000;
     -webkit-box-shadow: none;
-}
+}*/
 
-#BRreturn a {
+/*#BRreturn a {
     color: #fff;
-}
+}*/
 
-a.logo {
+/*a.logo {
     background: transparent url(images/icon_home_ia.png) no-repeat 0 0;
-}
+}*/
 
-.BRicon {
+/*.BRicon {
     background-image: url(images/BRicons_ia.png);
-}
+}*/
 
-form#booksearch button {
+/*form#booksearch button {
     background-color: #fff;
     color: #000;
-}
+}*/
 
 
 /* bottom toolbar */
-#BRpager .ui-slider-handle {
+/*#BRpager .ui-slider-handle {
     background: url(images/slider_ia.png);
-}
+}*/
 
-div#BRnav {
+/*div#BRnav {
     background-color: #000;
-}
+}*/
 
-div#BRnavline {
+/*div#BRnavline {
     background-color: #fff;
 }
 
@@ -63,7 +63,7 @@ div#pagenum {
 
 div#pagenum span {
     color: #000;
-}
+}*/
 
 .BRnavCntl {
     background-color: #333;
