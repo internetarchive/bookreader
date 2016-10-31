@@ -11,7 +11,7 @@
  *   http://www.gnu.org/licenses/gpl.html
  *
  * Modified by richard@archive.org 2016
- * - Added
+ * - Added setting maxWidth that disables dragscrollable above screen width
  */
 ;(function($){ // secure $ jQuery alias
 
