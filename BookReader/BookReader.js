@@ -152,6 +152,11 @@ function BookReader() {
     this.bookUrlText = null;
     this.bookUrlTitle = null;
 
+    // Fields used to populate the info window
+    this.metadata = [];
+    this.thumbnail = null;
+    this.bookUrlMoreInfo = null;
+
     return this;
 };
 
@@ -334,6 +339,20 @@ BookReader.prototype.init = function() {
     } else {
       $("body").addClass("no-touch");
     }
+
+    // Add class if in iframe. Responsiveness is disabled in iframe.
+    var isInIframe;
+    try {
+      isInIframe = window.self !== window.top;
+    } catch (e) {
+      isInIframe = true;
+    }
+    if (isInIframe) {
+      $("body").addClass("iframe");
+    } else {
+      $("body").addClass("notiframe");
+    }
+
     $(document).trigger("BookReader:PostInit");
 }
 
@@ -3686,11 +3705,11 @@ BookReader.prototype.buildToolbarElement = function() {
 
     +   "<span id='BRtoolbarbuttons' class='desktop-only'>"
     +     "<span class='BRtoolbarLeft'>"
-    +       "<span class='BRtoolbarSection tc'>"
+    +       "<span class='BRtoolbarSection BRtoolbarSectionLogo tc'>"
     +         "<a class='logo' href='" + this.logoURL + "'></a>"
     +       "</span>"
 
-    +       "<span class='BRtoolbarSection title tl ph10 last'>"
+    +       "<span class='BRtoolbarSection BRtoolbarSectionTitle title tl ph10 last'>"
     +           "<span id='BRreturn'><a></a></span>"
     +           "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
     +       "</span>"
@@ -3698,8 +3717,7 @@ BookReader.prototype.buildToolbarElement = function() {
 
     +     "<span class='BRtoolbarRight'>"
 
-
-    +       "<span class='BRtoolbarSection tc ph10'>"
+    +       "<span class='BRtoolbarSection BRtoolbarSectionInfo tc ph10'>"
     //+       "<button class='BRicon play'></button>"
     +       "<button class='BRicon pause'></button>"
     +         "<button class='BRicon info'></button>"
@@ -3708,13 +3726,13 @@ BookReader.prototype.buildToolbarElement = function() {
     +       "</span>"
 
     // zoom
-    +       "<span class='BRtoolbarSection tc ph10'>"
+    +       "<span class='BRtoolbarSection BRtoolbarSectionZoom tc ph10'>"
     +         "<button class='BRicon zoom_out'></button>"
     +         "<button class='BRicon zoom_in'></button>"
     +       "</span>"
 
     // Search
-    +       "<span class='BRtoolbarSection tc ph20 last'>"
+    +       "<span class='BRtoolbarSection BRtoolbarSectionSearch tc ph20 last'>"
     +         "<form id='booksearch'>"
     +           "<input type='search' id='textSrch' class='form-control' name='textSrch' val='' placeholder='Search inside this book'/>"
     +           "<button type='submit' id='btnSrch' name='btnSrch'>"
@@ -5551,10 +5569,67 @@ BookReader.prototype.buildShareDiv = function(jShareDiv)
     jForm = ''; // closure
 }
 
-// Should be overridden
+/**
+ * @param JInfoDiv DOM element. Appends info to this element
+ * Can be overridden or extended
+ */
 BookReader.prototype.buildInfoDiv = function(jInfoDiv)
 {
-    jInfoDiv.find('.BRfloatTitle a').attr({'href': this.bookUrl, 'alt': this.bookTitle}).text(this.bookTitle);
+    // Remove these legacy elements
+    jInfoDiv.find('.BRfloatBody, .BRfloatCover, .BRfloatFoot').remove();
+
+    var $leftCol = $("<div class=\"br__info__left_col\"></div>");
+    if (this.thumbnail) {
+      $leftCol.append($("<div class=\"br__image__w\">"
+      +"  <img src=\""+this.thumbnail+"\" "
+      +"       alt=\""+BookReader.util.escapeHTML(this.bookTitle)+"\" />"
+      +"</div>"));
+    }
+
+    var $rightCol = $("<div class=\"br__info__right_col\">");
+
+    // A loop to build fields
+    var extraClass;
+    for (var i = 0; i < this.metadata.length; i++) {
+      extraClass = this.metadata[i].extraValueClass || '';
+      $rightCol.append($("<div class=\"br__info__value__w\">"
+      +"  <div class=\"br__info__label\">"
+      +     this.metadata[i].label
+      +"  </div>"
+      +"  <div class=\"br__info__value " + extraClass + "\">"
+      +     this.metadata[i].value
+      +"  </div>"
+      +"</div>"));
+    }
+
+    var moreInfoText;
+    if (this.bookUrlMoreInfo) moreInfoText = this.bookUrlMoreInfo;
+    if (this.bookTitle) moreInfoText = this.bookTitle;
+
+    if (moreInfoText && this.bookUrl) {
+      $rightCol.append($("<div class=\"br__info__value__w\">"
+        +"<div class=\"br__info__more_info__w\">"
+        +"  <a class=\"br__info__more_info\" href=\""+this.bookUrl+"\" target=\"_blank\">"
+        +   moreInfoText
+        +"  </a>"
+        +"</div>"
+      +"</div>"));
+    }
+
+
+    var footerEl = "<div class=\"BRfloatFoot br__info__footer\"></div>";
+
+    var children = [
+      $leftCol,
+      $rightCol,
+      '<br style="clear:both"/>'
+    ];
+    var childrenEl = $('<div class="br__info__w mv20-lg">').append(children);
+
+    jInfoDiv.append(
+      childrenEl,
+      $(footerEl)
+    ).addClass('wide');
 }
 
 // Can be overriden

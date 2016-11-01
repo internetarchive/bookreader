@@ -80,8 +80,16 @@ br.getPageNum = function(index) {
 br.numLeafs = 15;
 
 // Book title and the URL used for the book title link
-br.bookTitle= 'Open Library BookReader Presentation';
-br.bookUrl  = 'http://openlibrary.org';
+br.bookTitle= 'Internet Archive BookReader Presentation';
+br.bookUrl = 'http://www.archive.org/details/BookReader';
+br.bookUrlText = 'Back to details on Archive.org';
+br.bookUrlTitle = 'Back to details on Archive.org';
+br.thumbnail = '//www.archive.org/download/BookReader/img/page014.jpg';
+br.metadata = [
+  {label: 'Title', value: 'Open Library BookReader Presentation'},
+  {label: 'Author', value: 'Internet Archive'},
+];
+
 
 // Override the path used to find UI images
 br.imagesBaseURL = '../BookReader/images/';
@@ -100,6 +108,6 @@ br.ui = 'full'; // embed, touch, full (responsive)
 br.init();
 
 // read-aloud and search need backend compenents and are not supported in the demo
-// $('#BRtoolbar').find('.read').hide();
-// $('#textSrch').hide();
+$('#BRtoolbar').find('.read').hide();
+$('.BRtoolbarSectionSearch').hide();
 // $('#btnSrch').hide();
