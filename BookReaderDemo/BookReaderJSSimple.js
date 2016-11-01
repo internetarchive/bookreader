@@ -89,7 +89,7 @@ br.metadata = [
   {label: 'Title', value: 'Open Library BookReader Presentation'},
   {label: 'Author', value: 'Internet Archive'},
 ];
-
+br.mobileNavTitle = 'BookReader demo';
 
 // Override the path used to find UI images
 br.imagesBaseURL = '../BookReader/images/';

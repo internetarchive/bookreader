@@ -157,6 +157,13 @@ function BookReader() {
     this.thumbnail = null;
     this.bookUrlMoreInfo = null;
 
+    // Settings for mobile
+    this.enableMobileNav = true;
+    this.mobileNavTitle = 'Internet Archive';
+
+    // Experimental Controls (eg b/w)
+    this.enableExperimentalControls = false;
+
     return this;
 };
 
@@ -340,18 +347,8 @@ BookReader.prototype.init = function() {
       $("body").addClass("no-touch");
     }
 
-    // Add class if in iframe. Responsiveness is disabled in iframe.
-    var isInIframe;
-    try {
-      isInIframe = window.self !== window.top;
-    } catch (e) {
-      isInIframe = true;
-    }
-    if (isInIframe) {
-      $("body").addClass("iframe");
-    } else {
-      $("body").addClass("notiframe");
-    }
+    // Add class to body for mode. Responsiveness is disabled in embed.
+    $("body").addClass("br-ui-" + this.ui);
 
     $(document).trigger("BookReader:PostInit");
 }
@@ -3695,15 +3692,19 @@ BookReader.prototype.buildToolbarElement = function() {
 
   var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
 
+  var mobileClass = '';
+  if (this.enableMobileNav) {
+    mobileClass = 'responsive';
+  }
+
   // Add large screen navigation
   return $(
-    "<div id='BRtoolbar' class='header fixed'>"
-    +   "<span class='mobile-only'>"
-    +     "<span class=\"hamburger\"><a href=\"#menu\"></a></span>"
+    "<div id='BRtoolbar' class='header fixed "+mobileClass+"'>"
+    +   "<span class='BRmobileHamburgerWrapper'>"
+    +     "<span class=\"hamburger\"><a href=\"#BRmobileMenu\"></a></span>"
     +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
     +   "</span>"
-
-    +   "<span id='BRtoolbarbuttons' class='desktop-only'>"
+    +   "<span id='BRtoolbarbuttons' >"
     +     "<span class='BRtoolbarLeft'>"
     +       "<span class='BRtoolbarSection BRtoolbarSectionLogo tc'>"
     +         "<a class='logo' href='" + this.logoURL + "'></a>"
@@ -3770,8 +3771,14 @@ BookReader.prototype.buildToolbarElement = function() {
  * @return {jqueryElement}
  */
 BookReader.prototype.buildMobileDrawerElement = function() {
+    var experimentalHtml = '';
+    if (this.enableExperimentalControls) {
+      experimentalHtml += "<div class=\"DrawerSettingsTitle\">Experimental (may not work)</div>"
+        +"        <button class='action high-contrast-button'>Toggle high contrast</button>";
+    }
+
     return $(
-      "<nav id=\"menu\" class=\"mobile-only\">"
+      "<nav id=\"BRmobileMenu\" class=\"BRmobileMenu\">"
       +"  <ul>"
       +"    <li>"
       +"      <span>"
@@ -3790,8 +3797,7 @@ BookReader.prototype.buildMobileDrawerElement = function() {
       +"        <button class='BRicon zoom_out'></button>"
       +"        <button class='BRicon zoom_in'></button>"
       +"        <br style='clear:both'><br><br>"
-      +"        <div class=\"DrawerSettingsTitle\">Experimental (may not work)</div>"
-      +"        <button class='action high-contrast-button'>Toggle high contrast</button>"
+      +         experimentalHtml
       +"      </div>"
       +"    </li>"
       +"    <li>"
@@ -3832,38 +3838,40 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     // Add Mobile navigation
     // ------------------------------------------------------
-    $("body").append(this.buildMobileDrawerElement());
+    if (this.enableMobileNav) {
+      $("body").append(this.buildMobileDrawerElement());
 
-    // Render info into mobile info before mmenu
-    this.buildInfoDiv($('#mobileInfo'));
-    this.buildShareDiv($('#mobileShare'));
+      // Render info into mobile info before mmenu
+      this.buildInfoDiv($('#mobileInfo'));
+      this.buildShareDiv($('#mobileShare'));
 
-    $('nav#menu').mmenu({
-        searchfield: {
-           "resultsPanel": true,
-           "showTextItems": true,
-           "placeholder": "Search inside this book",
-        },
-        navbars: [
-           { "position": "top" },
-          //  { "position": "top", "content": ["searchfield"] },
-        ],
-        navbar: {
-          add: true,
-          title: 'Internet Archive',
-          titleLink: 'panel'
-        },
-        extensions: [ "panelshadow" ],
-     }, {
-        searchfield: {
-           clear: true,
-        },
-        offCanvas: {
-          wrapPageIfNeeded: false,
-          zposition: 'next',
-          pageSelector: '#BookReader'
-        }
-     });
+      $('nav#BRmobileMenu').mmenu({
+          searchfield: {
+             "resultsPanel": true,
+             "showTextItems": true,
+             "placeholder": "Search inside this book",
+          },
+          navbars: [
+             { "position": "top" },
+            //  { "position": "top", "content": ["searchfield"] },
+          ],
+          navbar: {
+            add: true,
+            title: this.mobileNavTitle,
+            titleLink: 'panel'
+          },
+          extensions: [ "panelshadow" ],
+       }, {
+          searchfield: {
+             clear: true,
+          },
+          offCanvas: {
+            wrapPageIfNeeded: false,
+            zposition: 'next',
+            pageSelector: '#BookReader'
+          }
+      });
+    }
 
     //--------------------------------------------------------
 
@@ -5603,8 +5611,11 @@ BookReader.prototype.buildInfoDiv = function(jInfoDiv)
     }
 
     var moreInfoText;
-    if (this.bookUrlMoreInfo) moreInfoText = this.bookUrlMoreInfo;
-    if (this.bookTitle) moreInfoText = this.bookTitle;
+    if (this.bookUrlMoreInfo) {
+      moreInfoText = this.bookUrlMoreInfo;
+    } else if (this.bookTitle) {
+      moreInfoText = this.bookTitle;
+    }
 
     if (moreInfoText && this.bookUrl) {
       $rightCol.append($("<div class=\"br__info__value__w\">"
