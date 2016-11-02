@@ -212,10 +212,15 @@ BookReader.prototype.init = function() {
     var nextMode;
     if ('undefined' != typeof(params.mode)) {
         nextMode = params.mode;
-    } else if ($(window).width() > 800) {
+    } else if (this.ui == 'full') {
+      // In full mode, we set the default based on width
+      if ($(window).width() > 800) {
         nextMode = this.constMode2up;
-    } else {
+      } else {
         nextMode = this.constMode1up;
+      }
+    } else {
+      nextMode = this.constMode2up;
     }
 
     if (this.canSwitchToMode(nextMode)) {
