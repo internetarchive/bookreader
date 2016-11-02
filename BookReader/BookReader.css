@@ -1,5 +1,5 @@
 /* Fix for glitches that occur with mmenu on mobile */
-html, body, #BookReader { height: 100%; }
+html, body, #BookReader { height: 100%; } /* TODO see if still needed */
 
 body {
  /* XXX we shouldn't change the body CSS, just within our container */
@@ -1325,10 +1325,8 @@ a.BRpill, #BRtoolbar a.BRpill {
   width: 100%; box-sizing: border-box;
 }
 .BRfloatBody.center { text-align: center; }
-/*.BRfloatFoot { border-top: 1px solid #ccc; font-size: 1.5em; }*/
 
 /* embed styles (class .br-ui-embed is added to the body with js) */
-.BRfloatBody.center { text-align: center; }
 .br-ui-embed .BRfloat .message,
 .br-ui-embed .BRfloatBody {
   padding: 10px 15px 10px 15px;
@@ -1417,50 +1415,40 @@ a.BRpill, #BRtoolbar a.BRpill {
   .BRfloat, .br-ui-embed .BRfloat { max-width: 95%; width:95%; }
 }
 
-.BRDialogSlim {
-  border: 2px solid grey;
-  background: white;
-  position: absolute;
-  top: 0;
-  left:0;
-  z-index: 99;
-}
-.BRDialogSlim img { display: none; }
-
 /* --------------------- END BRFloat ---------------------------------------- */
 
 /* IA Info dialog */
-.br__info__value__w { margin-bottom: 10px; }
-.br__info__value { font-size: 16px; }
-.br__info__label { font-size: 12px; color: #999; }
-.br__info__more_info__w { background-color: rgb(74,144,226); border-radius: 2px; padding:8px; text-align:center;}
-.br_info_other_formats { margin-bottom: 40px; }
-.br__info__right_col > div { margin-bottom: 15px; }
+.BRinfoValueW { margin-bottom: 10px; }
+.BRinfoValue { font-size: 16px; }
+.BRinfoLabel { font-size: 12px; color: #999; }
+.BRinfoMoreInfoW { background-color: rgb(74,144,226); border-radius: 2px; padding:8px; text-align:center;}
+.BRinfoOtherFormats { margin-bottom: 40px; }
+.BRinfoRightCol > div { margin-bottom: 15px; }
 
 /* Mobile Only */
 @media (max-width: 800px) {
   #mobileInfo { font-size: 14px; line-height: 20px; }
-  .br__info__left_col { font-size: 14px; }
-  .br__image__w {text-align: center; margin-bottom: 10px;}
-  .br__image__w img { height: 200px; width: auto;}
-  .br__info__value.larger { font-size: 16px; }
-  .br__info__more_info__w a { font-size: inherit; color: white; text-decoration: none; }
-  .br_info_other_formats__format { margin-bottom: 6px; }
-  .br__info__footer { margin-bottom: 10px; }
-  .br__info__footer a { display: block;}
-  .BRfloatFoot.br__info__footer { margin: initial; padding: initial; border: initial; font-size: inherit; }
+  .BRinfoLeftCol { font-size: 14px; }
+  .BRimageW {text-align: center; margin-bottom: 10px;}
+  .BRimageW img { height: 200px; width: auto;}
+  .BRinfoValue.larger { font-size: 16px; }
+  .BRinfoMoreInfoW a { font-size: inherit; color: white; text-decoration: none; }
+  .BRinfoOtherFormatsFormat { margin-bottom: 6px; }
+  .BRinfoFooter { margin-bottom: 10px; }
+  .BRinfoFooter a { display: block;}
+  .BRfloatFoot.BRinfoFooter { margin: initial; padding: initial; border: initial; font-size: inherit; }
 }
 
 /* Desktop Only */
 @media (min-width: 801px) {
-  .br__info__w { font-size: 14px; position: relative; padding: 15px; }
-  .br__info__left_col { float: left; width: 40%; min-height: 1px; }
-  .br__info__right_col { float: left; width: 58%; }
-  .br__image__w {text-align: center; margin-bottom: 10px; margin-right: 26px;}
-  .br__image__w img { height:auto; width: 100%;}
-  .br__info__value.larger { font-size: 20px; line-height: 24px; }
-  .br__info__more_info__w a { font-size: 14px; color: white; text-decoration: none; font-weight: bold; }
-  .br_info_other_formats__format { display: inline; margin-right: 10px; }
-  .br__info__footer { font-size: 1em; clear:both; }
-  .br__info__footer a { display: inline; margin-right: 10px;}
+  .BRinfoW { font-size: 14px; position: relative; padding: 15px; }
+  .BRinfoLeftCol { float: left; width: 40%; min-height: 1px; }
+  .BRinfoRightCol { float: left; width: 58%; }
+  .BRimageW {text-align: center; margin-bottom: 10px; margin-right: 26px;}
+  .BRimageW img { height:auto; width: 100%;}
+  .BRinfoValue.larger { font-size: 20px; line-height: 24px; }
+  .BRinfoMoreInfoW a { font-size: 14px; color: white; text-decoration: none; font-weight: bold; }
+  .BRinfoOtherFormatsFormat { display: inline; margin-right: 10px; }
+  .BRinfoFooter { font-size: 1em; clear:both; }
+  .BRinfoFooter a { display: inline; margin-right: 10px;}
 }

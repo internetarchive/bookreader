@@ -5586,25 +5586,25 @@ BookReader.prototype.buildInfoDiv = function(jInfoDiv)
     // Remove these legacy elements
     jInfoDiv.find('.BRfloatBody, .BRfloatCover, .BRfloatFoot').remove();
 
-    var $leftCol = $("<div class=\"br__info__left_col\"></div>");
+    var $leftCol = $("<div class=\"BRinfoLeftCol\"></div>");
     if (this.thumbnail) {
-      $leftCol.append($("<div class=\"br__image__w\">"
+      $leftCol.append($("<div class=\"BRimageW\">"
       +"  <img src=\""+this.thumbnail+"\" "
       +"       alt=\""+BookReader.util.escapeHTML(this.bookTitle)+"\" />"
       +"</div>"));
     }
 
-    var $rightCol = $("<div class=\"br__info__right_col\">");
+    var $rightCol = $("<div class=\"BRinfoRightCol\">");
 
     // A loop to build fields
     var extraClass;
     for (var i = 0; i < this.metadata.length; i++) {
       extraClass = this.metadata[i].extraValueClass || '';
-      $rightCol.append($("<div class=\"br__info__value__w\">"
-      +"  <div class=\"br__info__label\">"
+      $rightCol.append($("<div class=\"BRinfoValueW\">"
+      +"  <div class=\"BRinfoLabel\">"
       +     this.metadata[i].label
       +"  </div>"
-      +"  <div class=\"br__info__value " + extraClass + "\">"
+      +"  <div class=\"BRinfoValue " + extraClass + "\">"
       +     this.metadata[i].value
       +"  </div>"
       +"</div>"));
@@ -5618,9 +5618,9 @@ BookReader.prototype.buildInfoDiv = function(jInfoDiv)
     }
 
     if (moreInfoText && this.bookUrl) {
-      $rightCol.append($("<div class=\"br__info__value__w\">"
-        +"<div class=\"br__info__more_info__w\">"
-        +"  <a class=\"br__info__more_info\" href=\""+this.bookUrl+"\" target=\"_blank\">"
+      $rightCol.append($("<div class=\"BRinfoValueW\">"
+        +"<div class=\"BRinfoMoreInfoW\">"
+        +"  <a class=\"BRinfoMoreInfo\" href=\""+this.bookUrl+"\" target=\"_blank\">"
         +   moreInfoText
         +"  </a>"
         +"</div>"
@@ -5628,14 +5628,14 @@ BookReader.prototype.buildInfoDiv = function(jInfoDiv)
     }
 
 
-    var footerEl = "<div class=\"BRfloatFoot br__info__footer\"></div>";
+    var footerEl = "<div class=\"BRfloatFoot BRinfoFooter\"></div>";
 
     var children = [
       $leftCol,
       $rightCol,
       '<br style="clear:both"/>'
     ];
-    var childrenEl = $('<div class="br__info__w mv20-lg">').append(children);
+    var childrenEl = $('<div class="BRinfoW mv20-lg">').append(children);
 
     jInfoDiv.append(
       childrenEl,
