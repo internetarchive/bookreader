@@ -829,6 +829,7 @@ class BookReaderImages
     }
 
     function createOutputImage($cmd, $tempFile, &$errorMessage) {
+        unlink($tempFile);
         $fullCmd = $cmd . " > " . $tempFile;
         system($fullCmd); // $$$ better error handling
         return file_exists($tempFile) && filesize($tempFile) > 0;
