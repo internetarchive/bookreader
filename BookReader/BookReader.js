@@ -3409,22 +3409,24 @@ BookReader.prototype.initNavbar = function() {
         animate: true,
         min: 0,
         max: this.numLeafs - 1,
-        value: this.currentIndex()
+        value: ('rl' != self.pageProgression) ? this.currentIndex() : this.numLeafs - this.currentIndex()
     })
     .bind('slide', function(event, ui) {
-        self.updateNavPageNum(ui.value);
+        var num = 'rl' != self.pageProgression ? ui.value : (self.numLeafs - 1 - ui.value);
+        self.updateNavPageNum(num);
         $("#pagenum").show();
         return true;
     })
     .bind('slidechange', function(event, ui) {
-        self.updateNavPageNum(ui.value); // hiding now but will show later
-        $("#pagenum").hide();
+        var num = 'rl' != self.pageProgression ? ui.value : (self.numLeafs - 1 - ui.value);
+        self.updateNavPageNum(num);
+        $("#pagenum").hide(); // hiding now but will show later
 
         // recursion prevention for jumpToIndex
         if ( $(this).data('swallowchange') ) {
             $(this).data('swallowchange', false);
         } else {
-            self.jumpToIndex(ui.value);
+            self.jumpToIndex(num);
         }
         return true;
     })
@@ -3491,7 +3493,8 @@ BookReader.prototype.updateNavPageNum = function(index) {
 BookReader.prototype.updateNavIndex = function(index) {
     // We want to update the value, but normally moving the slider
     // triggers jumpToIndex which triggers this method
-    $('#BRpager').data('swallowchange', true).slider('value', index);
+    var val = 'rl' != this.pageProgression ? index : (this.numLeafs - 1 - index);
+    $('#BRpager').data('swallowchange', true).slider('value', val);
 }
 
 BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
