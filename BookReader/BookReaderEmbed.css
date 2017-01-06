@@ -18,7 +18,6 @@
     font-size: 14px;
     line-height: 40px;
     height: 40px;
-
     font-family: "Lucida Grande","Arial",sans-serif;
 }
 
@@ -28,7 +27,7 @@
 }
 
 .BRemptypage {
-    background-color: black;
+    background-color: transparent;
 }
 
 #BRtoolbarbuttons {

@@ -5,13 +5,15 @@
  *
  * Portions Copyright (c) 2010 Reg Braithwaite
  *          Copyright (c) 2010 Internet Archive / Michael Ang
+ *          Copyright (c) 2016 Internet Archive / Richard Caceres
  *
  * Dual licensed under the MIT and GPL licenses:
  *   http://www.opensource.org/licenses/mit-license.php
  *   http://www.gnu.org/licenses/gpl.html
  *
  * Modified by richard@archive.org 2016
- * - Added setting maxWidth that disables dragscrollable above screen width
+ * - Added check to disable on touch enabled devices
+ * - Change dragend handler to bind using event "capturing" instead of "bubbling"
  */
 ;(function($){ // secure $ jQuery alias
 
@@ -124,25 +126,27 @@ $.fn.dragscrollable = function( options ) {
             preventDefault: true,
 			dragstart: 'mousedown touchstart',
 			dragcontinue: 'mousemove touchmove',
-			dragend: 'mouseup mouseleave touchend',
+			dragend: 'mouseup touchend', // mouseleave
 			dragMinDistance: 5,
 			namespace: '.ds',
 			scrollWindow: false,
-			maxWidth: 800
 		},options || {});
 
 	settings.dragstart = append_namespace(settings.dragstart, settings.namespace);
 	settings.dragcontinue = append_namespace(settings.dragcontinue, settings.namespace);
-	settings.dragend = append_namespace(settings.dragend, settings.namespace);
+	//settings.dragend = append_namespace(settings.dragend, settings.namespace);
 
-  var shouldAbort = function() {
-    return $(window).width() <= settings.maxWidth; // NOTE magic number
-  };
+	var shouldAbort = function() {
+		var isTouchDevice = !!('ontouchstart' in window) || !!('msmaxtouchpoints' in window.navigator);
+		return isTouchDevice;
+	};
+
+  var dragContinueHandlerProxy;
 
 	var dragscroll= {
 		dragStartHandler : function(event) {
-		    // console.log('dragstart');
-      if (shouldAbort()) { return true; }
+			// console.log('dragstart');
+			if (shouldAbort()) { return true; }
 
 			// mousedown, left click, check propagation
 			if (event.which > 1 ||
@@ -156,16 +160,27 @@ $.fn.dragscrollable = function( options ) {
 
 			handling_element
 				.bind(settings.dragcontinue, event.data, dragscroll.dragContinueHandler)
-				.bind(settings.dragend, event.data, dragscroll.dragEndHandler);
+				//.bind(settings.dragend, event.data, dragscroll.dragEndHandler)
+			;
+
+			// Note, we bind using addEventListener so we can use "capture" binding
+			// instead of "bubble" binding
+			dragContinueHandlerProxy = function(e){
+				e.data = event.data;
+				dragscroll.dragEndHandler(e);
+			};
+			$.each(settings.dragend.split(' '), function(idx, val) {
+				handling_element.get(0).addEventListener(val, dragContinueHandlerProxy, true);
+			});
 
 			if (event.data.preventDefault) {
-                event.preventDefault();
-                return false;
-            }
+				event.preventDefault();
+				return false;
+			}
 		},
 		dragContinueHandler : function(event) { // User is dragging
-		    // console.log('drag continue');
-        if (shouldAbort()) { return true; }
+			// console.log('drag continue');
+			if (shouldAbort()) { return true; }
 
 			var lt = left_top(event);
 
@@ -181,7 +196,7 @@ $.fn.dragscrollable = function( options ) {
 
 			var scrollTarget = event.data.scrollable;
 			if (event.data.scrollWindow) {
-              scrollTarget = $(window);
+				scrollTarget = $(window);
 			}
 			// Set the scroll position relative to what ever the scroll is now
 			scrollTarget.scrollLeft( scrollTarget.scrollLeft() - delta.left );
@@ -191,36 +206,40 @@ $.fn.dragscrollable = function( options ) {
 			event.data.lastCoord = lt;
 
 			if (event.data.preventDefault) {
-                event.preventDefault();
-                return false;
-            }
-
+				event.preventDefault();
+				return false;
+			}
 		},
 		dragEndHandler : function(event) { // Stop scrolling
-		    // console.log('drag END');
-        if (shouldAbort()) { return true; }
+			//console.log('dragEndHandler');
+
+			if (shouldAbort()) { return true; }
 
 			handling_element
 				.unbind(settings.dragcontinue)
-				.unbind(settings.dragend);
+				// Note, for some reason, even though I removeEventListener below,
+        // this call to unbind is still necessary. I don't know why.
+				.unbind(settings.dragend)
+			;
+
+			// Note, we bind using addEventListener so we can use "capture" binding
+			// instead of "bubble" binding
+			$.each(settings.dragend.split(' '), function(idx, val) {
+				handling_element.get(0).removeEventListener(val, dragContinueHandlerProxy, true);
+			});
 
 			// How much did the mouse move total?
 			var delta = {left: Math.abs(event.data.lastCoord.left - event.data.firstCoord.left),
 						 top: Math.abs(event.data.lastCoord.top - event.data.firstCoord.top)};
 			var distance = Math.max(delta.left, delta.top);
 
-			// Trigger 'tap' if did not meet drag distance
-			// $$$ does not differentiate single vs multi-touch
-			if (distance < settings.dragMinDistance) {
-			    //$(event.originalEvent.target).trigger('tap');
-			    $(event.target).trigger('tap'); // $$$ always the right target?
-			}
-
 			// Allow event to propage if min distance was not achieved
 			if (event.data.preventDefault && distance > settings.dragMinDistance) {
-                event.preventDefault();
-                return false;
-            }
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				event.stopPropagation();
+				return false;
+			}
 		}
 	}
 
@@ -229,14 +248,15 @@ $.fn.dragscrollable = function( options ) {
 		// closure object data for each scrollable element
 		var data = {scrollable : $(this),
 					acceptPropagatedEvent : settings.acceptPropagatedEvent,
-                    preventDefault : settings.preventDefault,
-                    scrollWindow : settings.scrollWindow }
+					preventDefault : settings.preventDefault,
+					scrollWindow : settings.scrollWindow }
 		// Set mouse initiating event on the desired descendant
 		$(this).find(settings.dragSelector).
 						bind(settings.dragstart, data, dragscroll.dragStartHandler);
 	});
 }; //end plugin dragscrollable
 
+// Note, this probably doesn't work anymore with our modifications - Nov/8/2016
 $.fn.removedragscrollable = function (namespace) {
 	if (typeof(namespace) == 'undefined')
 		namespace = '.ds';

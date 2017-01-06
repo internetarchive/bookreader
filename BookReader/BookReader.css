@@ -1,44 +1,34 @@
-/* Fix for glitches that occur with mmenu on mobile */
-html, body, #BookReader { height: 100%; } /* TODO see if still needed */
-
-body {
- /* XXX we shouldn't change the body CSS, just within our container */
- /*background-color: #9A9B9D;*/  /* Pantone Cool Grey 7 C */
- font-size: 67.5%;
- margin: 0;
- padding: 0;
-}
-h3 {
+#BookReader h3 {
   font-size: 20px;
   font-weight: 700;
   color: #dedede;
 }
-a {
-    outline: none;
+#BookReader a {
+  outline: none;
 }
 #BookReader, .BRfloat {
   font-family: "Helvetica Neue", Arial, Verdana, sans-serif
 }
 #BookReader {
- /*position:relative;*/
- left:0;
- right:0;
- top:0;
- bottom:0;
- -webkit-overflow-scrolling: touch;
+  font-size: 67.5%;
+  margin: 0;
+  padding: 0;
+  position:relative;
+  -webkit-overflow-scrolling: touch;
+  background-color: #3a3b3b;
 }
 #BRtoolbar {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
-    /*height: 40px;*/
     padding: 0;
+    height: 50px;
     width: 100%;
     z-index: 100;
     background-color: rgb(247,247,247);
     -webkit-box-shadow: 0 1px 3px #999;
     /* Shadow here on FF causes scroll bars */
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 #BRtoolbar .label {
     font-size: 1.1em;
@@ -48,12 +38,19 @@ a {
     color: rgb(74,144,226);
     text-decoration:none;
 }
+#BRtoolbar a:hover {
+  color: rgb(94, 163, 244);
+}
+#BRtoolbar a:active {
+  color: rgb(55, 123, 201);
+}
 /* desktop header */
 #BRtoolbarbuttons {
   display: block;
   border-spacing: 0;
   width:100%;
-  height: 64px;
+  height:100%;
+  /*height: 43px;*/
   border-bottom: 2px solid rgb(209,209,209);
 
 }
@@ -64,17 +61,14 @@ a {
     z-index: 1;
     overflow-x:auto;
     overflow-y:scroll;
-    position:fixed;
-    background-color: #3a3b3b;
+    position:absolute;
+    /*background-color: #3a3b3b;*/
     _height: expression(documentElement.clientHeight);
-}
-.br-ui-embed #BRcontainer {
-  background-color: transparent;
 }
 
 #BRpageview {
-    /* XXX page view div is not being placed correctly */
-    /*background-color: #3a3b3b;*/
+  position: relative;
+  /*top: 10px;*/ /* 1up and grid top padding TODO fix later */
 }
 
 .BRpagediv1up {
@@ -140,7 +134,6 @@ a {
 }
 
 .BRPreview .BRpageimage {
-    /*background-color: transparent;*/
     background-color: #eee;
     -webkit-filter: grayscale(100%);
     filter: grayscale(100%);
@@ -223,7 +216,7 @@ a {
     line-height:18px;
     height: 100%;
     overflow-y: hidden;
-    padding-top:13px;
+    padding-top:7px;
     display:block;
     position: absolute;
 }
@@ -237,8 +230,6 @@ a {
   font-weight:bold;
 }
 .BRicon {
-    /*display: block;*/
-    /*float: left;*/
     width: 40px;
     height: 40px;
     padding: 0;
@@ -250,9 +241,7 @@ a {
     background-image: url(images/BRicons.png);
     background-repeat: no-repeat;
 }
-
-
-
+i.BRicon { display: inline-block; }
 .BRicon.logo {background-position:0 0;}
 .BRicon.info {background-position:-40px 0;}
 .BRicon.share {background-position:-120px 0;}
@@ -272,6 +261,9 @@ a {
 .BRicon.fit:hover {background-position:-1200px 0;}
 .BRicon.download {background-position:-1520px 0;}
 .BRicon.return {background-position:-1440px 0;}
+.BRicon.fb {background-position:-1600px 0;}
+.BRicon.twitter {background-position:-1640px 0;}
+.BRicon.email {background-position:-1680px 0;}
 
 .no-touch .BRicon.info:hover {background-position:-80px 0;}
 .no-touch .BRicon.share:hover {background-position:-160px 0;}
@@ -308,11 +300,13 @@ a {
 .touch .BRicon.return:active {background-position:-1480px 0;}
 
 a.logo {
-    display: inline-block;
-    width: 50px;
-    height: 100%;
-    margin:0 25px;
-    background: transparent url(images/icon_home.svg) no-repeat center center;
+  display: inline-block;
+  width: 50px;
+  height: 38px;
+  margin: 0 25px;
+  background: transparent url(images/icon_home.svg) no-repeat center center;
+  background-size: contain;
+  margin-top: 7px;
 }
 a.popOff {
     position: absolute;
@@ -335,19 +329,19 @@ a.popOff span {
 
 form#booksearch {
     position:relative;
-    top:14px;
+    top:8px;
 }
 form#booksearch input[type=search] {
     position:relative;
-    min-width: 16em;
+    min-width: 14em;
     height: 35px;
     font-size: 13px;
-    -webkit-appearance: textfield;
-    -moz-appearance: textfield;
-    appearance: field;
+    -webkit-appearance: none;
     margin: 0 0 0 0;
     outline: none;
-    border-radius: 5px;
+    border-radius: 0;
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     box-sizing:border-box;
@@ -493,7 +487,7 @@ button.action {
   margin-left: 5px;
   margin-right: 5px;
   padding: 13px 30px;
-  font-size: 15px;
+  font-size: 14px;
   background-color: transparent;
   border: none;
   border-radius: 3px;
@@ -503,64 +497,80 @@ button.action {
   min-width: 150px;
   text-align: center;
 }
+button.action:active {
+  background-color: rgb(171, 171, 171);
+}
 button.action.primary {
   background-color: #4990E2;
-  color: white;
+}
+button.action.primary:active {
+  background-color: #2a76cd;
 }
 button.action.caution {
   background-color: rgb(240,181,52);
 }
+button.action.caution:active {
+  background-color: rgb(251, 191, 59);
+}
 button.action.red {
   background-color: rgb(192,57,43);
-  color: white;
+}
+button.action.red:active {
+  background-color: rgb(154, 43, 32);
 }
 button.action.orangeButton {
   background-color: transparent;
   border: 2px solid orange;
   color: orange;
 }
+button.action.orangeButton:active {
+  border-color: rgb(249, 198, 19);
+}
 button.action.skinny {
   min-width:50px;
 }
 
-
-/*** end BRFloa ***/
+/*** end BRFloat ***/
 div#BRpage {
-    float: right;
+    position: absolute;
+    right: 0;
     width: 220px;
     padding-left:12px;
     text-align: right;
+    margin-right: 4px;
 }
 div#BRpage .BRicon.book_left {
-  /*border-bottom-left-radius: 5px;*/
-  /*border-top-left-radius: 5px;*/
+  border-bottom-left-radius: 5px;
+  border-top-left-radius: 5px;
   border-right: 2px solid rgb(193,193,193);
   box-sizing: content-box;
 }
 div#BRpage .BRicon.book_right {
-  /*border-bottom-right-radius: 5px;*/
-  /*border-top-right-radius: 5px;*/
+  border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
   box-sizing: content-box;
 }
 div#BRpage .BRicon.onepg {
-  /*border-bottom-left-radius: 5px;*/
-  /*border-top-left-radius: 5px;*/
+  border-bottom-left-radius: 5px;
+  border-top-left-radius: 5px;
   border-right: 2px solid rgb(193,193,193);
   box-sizing: content-box;
 }
 div#BRpage .BRicon.thumb {
-  /*border-bottom-right-radius: 5px;*/
-  /*border-top-right-radius: 5px;*/
+  border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
   border-left: 2px solid rgb(193,193,193);
   box-sizing: content-box;
 }
 
 div#BRnav {
-    position: fixed;
+    box-sizing: border-box;
+    position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 40px;
+    height: 50px;
+    padding-top:5px;
     overflow: visible;
     z-index: 100;
     background-color: rgb(247,247,247);
@@ -570,10 +580,15 @@ div#BRnav {
     _position:absolute;
     _top: expression(documentElement.scrollTop + documentElement.clientHeight-this.offsetHeight);
 }
+div#BRnav.BRnavEmbed{
+  padding-top:0;
+  height:40px;
+}
 div#BRnavpos {
     position: relative;
     margin-right: 220px;
     height: 40px;
+    top: 5px;
 }
 div#BRpager {
     position: relative;
@@ -602,8 +617,14 @@ div#BRslider {
     margin-left: -9px; /* Center icon */
     z-index: 103;
     background-color: rgb(36,94,131);
-
 }
+
+#BRpager .ui-slider-range {
+    background: #90A2B6;
+    height: 100%;
+    border-radius: 10px;
+}
+
 #BRpager a {
     text-decoration: none;
 }
@@ -625,6 +646,15 @@ div#BRnavline {
 }
 #BRnavright {
     right: 0;
+}
+
+#BRcurrentpageWrapper {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  padding: 0 0 0 0;
+  font-size: 1.1em;
+  top: 5px;
 }
 
 
@@ -678,7 +708,7 @@ div#pagenum span {
 }
 div.chapter {
     position: absolute;
-    top: -24px; /* Relative to nav line */
+    top: 0; /* Relative to nav line */
     width: 18px;
     margin-left: -9px; /* Center marker triangle */
     height: 27px;
@@ -856,7 +886,7 @@ div#BRzoombtn {
 }
 
 .BRnavCntl {
-    background-color: white;
+    background-color: #868686;
     position: absolute;
     right: 20px;
     width: 40px;
@@ -864,11 +894,14 @@ div#BRzoombtn {
     cursor: pointer;
 }
 #BRnavCntlBtm {
-    bottom: 40px;
+    bottom: 50px;
     -moz-border-radius-topright: 8px;
     -webkit-border-top-right-radius: 8px;
     -moz-border-radius-topleft: 8px;
     -webkit-border-top-left-radius: 8px;
+}
+#BRnavCntlBtm:hover {
+    background-color: rgb(74, 144, 226);
 }
 #BRnavCntlTop {
     top: 40px;
@@ -1010,12 +1043,16 @@ nav { font-family: Arial, Helvetica, Verdana; }
 }
 .DrawerLayoutButton:active {color: grey;}
 
-
 #BRshare div.share-title { margin: 15px 15px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
 #BRshare div.share-social { margin: 15px 15px 0;}
-#BRshare div.share-social button { padding: 8px }
+#BRshare div.share-social button { padding: 0 5px; height: 40px; text-align: left;}
+#BRshare div.share-social button > i { margin-right: 5px; }
 #BRshare div.share-social > div { display: inline; }
 #BRshare div.share-embed { margin-top: 20px; }
+div.share-social button.facebook-share-button { background-color: #3a5998; }
+div.share-social button.twitter-share-button { background-color: #429aff; }
+div.share-social button.email-share-button { background-color: #c1c1c1; }
+
 .BRfloat button[type=button].share-finished {
   background-color: rgb(74,144,226);
   border: 0;
@@ -1025,7 +1062,7 @@ nav { font-family: Arial, Helvetica, Verdana; }
   font-size: 15px;
 }
 #BRshare.BRfloat {
-  width: 555px;
+  width: 600px;
 }
 .BRfloat label.sub.open-to-this-page { display: block; }
 
@@ -1078,7 +1115,8 @@ body.high-contrast #BRtwopageview img {
   border-right:none;
 }
 .BRtoolbarSection .BRicon {
-  margin-top: 10px;
+  position: relative;
+  top: 5px;
 }
 .BRtoolbarLeft {
   left:0;
@@ -1100,19 +1138,6 @@ body.high-contrast #BRtwopageview img {
   font-size: 14px;
 }
 .mm-menu { background: rgb(247,247,247); }
-
-a.BRpill, #BRtoolbar a.BRpill {
-  display: inline-block;
-  padding: 5px 10px;
-  background-color: rgb(122,122,122);
-  color: white;
-  border-radius: 2px;
-  position:relative;
-  top: 7px;
-  text-decoration: none;
-  font-size:14px;
-}
-
 .mm-panel { font-size: 12px; }
 .mm-panel h1 { margin-top: 0; color: rgb(36,94,131); font-size: 14px;}
 
@@ -1132,6 +1157,7 @@ a.BRpill, #BRtoolbar a.BRpill {
 /* Mobile Only */
 @media (max-width: 800px) {
   div#BRnavpos { margin-right: 80px; }
+  #BRtoolbar { height: 40px; }
   #BRtoolbar.responsive #BRtoolbarbuttons { display: none; }
   #BRtoolbar.responsive .BRmobileHamburgerWrapper { display: block; }
   #BRtoolbar .BRmobileHamburgerWrapper { padding: 0 30px 0 50px; display: block; }
@@ -1152,6 +1178,8 @@ a.BRpill, #BRtoolbar a.BRpill {
   #BRmobileMenu button { -webkit-appearance: initial; }
   button.action { padding: 8px 10px; font-size: 14px; margin-left: 0; margin-bottom: 10px; }
   #BRmobileMenu button.action { display: block; width: 100%;}
+  #BRmobileMenu div.share-social button { padding: 0 5px; height: 40px; text-align: left;}
+
 
   /* Share */
   #mobileShare { font-size: 14px; }
@@ -1163,18 +1191,22 @@ a.BRpill, #BRtoolbar a.BRpill {
   #mobileShare fieldset input[type=text] { width: 95%; }
   #mobileShare button.share-finished { display: none; }
   #mobileShare div.share-embed { border: 1px solid #ccc; padding: 0 10px; }
+}
 
-  /* Hide preview in mobile */
-  .BRPreview #BookReader { display: none; }
+/* Mid size breakpoint */
+@media (max-width: 1050px) {
+  .hide-md { display: none; }
+  form#booksearch input[type=search] {
+    padding: 0 0 0 8px;
+    width: 110px;
+    min-width: 110px;
+  }
 }
 
 
 /* --------------------- Begin BRFloat -------------------------------------- */
 
-/*.BRfloat * { margin: 0; padding: 0; }*/
 .BRfloat {
-    /*position: relative;*/
-    text-align: left;
     color: rgb(52,52,52);;
 }
 .BRfloat a {
@@ -1205,7 +1237,6 @@ a.BRpill, #BRtoolbar a.BRpill {
 }
 .BRfloat .floatShut:hover {background-position:0 -32px;}
 .BRfloat fieldset {
-    /*margin-top: 20px;*/
     padding: 10px 15px;
     border: none;
 }
@@ -1220,14 +1251,14 @@ a.BRpill, #BRtoolbar a.BRpill {
 .BRfloat label {
     display: block;
     font-weight: 700;
-    font-size: 1.6em;
+    font-size: 1em;
     margin: 5px 0;
 }
 .BRfloat label.sub {
     display: inline;
     padding: 10px 30px 10px 0;
     font-weight: normal;
-    font-size: 1.4em;
+    font-size: 1em;
     color: #666;
 }
 .BRfloat input[type=text],
@@ -1238,16 +1269,15 @@ a.BRpill, #BRtoolbar a.BRpill {
     padding: 3px;
     border: 2px inset;
     font-family: "Lucida Grande", "Verdana", "Arial", sans-serif;
-    font-size: 1.4em;
-    line-height: 1.5em;
+    font-size: .8em;
+    line-height: 1.25em;
     font-weight: normal;
 }
 .BRfloat textarea {
-    height: 85px;
+    height: 55px;
 }
 
 .BRfloat p {
-    font-size: 1.6em;
     margin: 15px 15px 0;
 }
 .BRfloat p.meta {
@@ -1261,10 +1291,10 @@ a.BRpill, #BRtoolbar a.BRpill {
     padding: 0 20px 30px 0;
 }
 
-.BRfloatTitle {
+.BRfloatHead {
     font-size: 1.2em;
 }
-.BRfloatTitle h2 {
+.BRfloatHead h2 {
     display: inline;
     font-size: 1.3em;
 }
@@ -1312,10 +1342,10 @@ a.BRpill, #BRtoolbar a.BRpill {
     background: url("images/icon_alert-xs.png") no-repeat;
     padding-left: 20px;
 }
-.BRfloatFoot.center {
+.center {
   text-align: center;
 }
-.BRfloatFoot.right {
+.right {
   text-align: right;
 }
 
@@ -1324,43 +1354,22 @@ a.BRpill, #BRtoolbar a.BRpill {
 .BRfloatFoot {
   width: 100%; box-sizing: border-box;
 }
-.BRfloatBody.center { text-align: center; }
-
-/* embed styles (class .br-ui-embed is added to the body with js) */
-.br-ui-embed .BRfloat .message,
-.br-ui-embed .BRfloatBody {
-  padding: 10px 15px 10px 15px;
-  font-size: 16px;
-  line-height: normal;
-  margin-top: 0;
-  margin-bottom: 0px;
-}
-.br-ui-embed .BRfloatHead {
-  box-sizing: border-box;
-  line-height: normal;
-  padding: 10px;
-  font-size: 16px;
-  font-weight: 700;
-  text-align: center;
-}
-.br-ui-embed .BRfloatFoot { padding: 10px; }
-.br-ui-embed button.action { padding: 8px 20px; }
 
 
 /* Desktop Only */
 @media (min-width: 801px) {
   .BRmobileHamburgerWrapper { display: none; }
   .BRmobileMenu { display: none; }
-  .br-ui-full .mobile-only { display: none; }
-  .br-ui-full .BRfloat .message,
-  .br-ui-full .BRfloatBody {
+  .mobile-only { display: none; }
+  .BRfloat .message,
+  .BRfloatBody {
     padding: 10px 15px 10px 15px;
     font-size: 16px;
     line-height: normal;
     margin-top: 0;
     margin-bottom: 0px;
   }
-  .br-ui-full .BRfloatHead {
+  .BRfloatHead {
     box-sizing: border-box;
     line-height: normal;
     padding: 10px;
@@ -1370,25 +1379,17 @@ a.BRpill, #BRtoolbar a.BRpill {
     border-bottom:1px solid rgb(216,216,216);
     margin-bottom:10px;
   }
-  .br-ui-full .BRfloatFoot { padding: 10px; }
-  /*.br-ui-full .BRfloatFoot { border-top: 1px solid #ccc; }*/
-  .br-ui-full button.action { padding: 8px 16px; }
+  .BRfloatFoot { padding: 10px; }
+  button.action { padding: 8px 16px; }
 }
 
 
 /* Mobile Only (with some responsiveness) */
 @media (max-width: 800px) {
-  .br-ui-full .BRfloatBody, .br-ui-embed .BRfloatBody { padding: 10px 10px; }
-  .br-ui-full .BRfloat .message,
-  .br-ui-full .BRfloatBody,
-  .br-ui-embed .BRfloat .message,
-  .br-ui-embed .BRfloatBody {
-    font-size: 14px;
-    line-height: 16px;
-    margin-top: 0px;
-    margin-bottom: 0px;
-  }
-  .br-ui-full .BRfloatHead, .br-ui-embed .BRfloatHead {
+  .BRfloatBody, { padding: 10px 10px; }
+  .BRfloat .message,
+  .BRfloatBody,
+  .BRfloatHead, {
     box-sizing: border-box;
     line-height: normal;
     border-bottom:1px solid rgb(216,216,216);
@@ -1398,21 +1399,22 @@ a.BRpill, #BRtoolbar a.BRpill {
     font-weight: 700;
     text-align: center;
   }
-  .br-ui-full .BRfloatFoot, .br-ui-embed .BRfloatFoot { padding: 10px 10px 0 10px; }
-  .br-ui-full .BRfloatFoot .action { margin-bottom: 10px; }
-  .br-ui-full .BRfloatFoot { border-top: 1px solid #ccc; }
+  .BRfloatFoot, { padding: 10px 10px 0 10px; }
+  .BRfloatFoot .action { margin-bottom: 10px; }
+  .BRfloatFoot { border-top: 1px solid #ccc; }
+  #BRnavline .chapter { display: none; } /* hide chapters in mobile */
+  #BRnavline .search { display: none; } /* hide search in mobile */
 }
 
 @media (min-width: 801px) {
   .BRfloat { max-width: initial; width:455px; }
   .BRfloat.wide { max-width: initial; width:555px; }
-  .br-ui-embed .BRfloat { max-width: initial; width:455px; }
 }
 @media (max-width: 800px) and (min-width: 341px) {
-  .BRfloat, .br-ui-embed .BRfloat { max-width: initial; width:340px; }
+  .BRfloat { max-width: initial; width:340px; }
 }
 @media (max-width: 340px) {
-  .BRfloat, .br-ui-embed .BRfloat { max-width: 95%; width:95%; }
+  .BRfloat { max-width: 95%; width:95%; }
 }
 
 /* --------------------- END BRFloat ---------------------------------------- */
@@ -1422,6 +1424,7 @@ a.BRpill, #BRtoolbar a.BRpill {
 .BRinfoValue { font-size: 16px; }
 .BRinfoLabel { font-size: 12px; color: #999; }
 .BRinfoMoreInfoW { background-color: rgb(74,144,226); border-radius: 2px; padding:8px; text-align:center;}
+.BRinfoMoreInfoW:active { background-color: rgb(80, 155, 242); }
 .BRinfoOtherFormats { margin-bottom: 40px; }
 .BRinfoRightCol > div { margin-bottom: 15px; }
 
