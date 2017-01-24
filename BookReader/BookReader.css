@@ -14,7 +14,6 @@
   margin: 0;
   padding: 0;
   position:relative;
-  -webkit-overflow-scrolling: touch;
   background-color: #3a3b3b;
 }
 #BRtoolbar {
@@ -35,7 +34,7 @@
     color: #999;
 }
 #BRtoolbar a {
-    color: rgb(74,144,226);
+    color: rgb(74, 144, 226); /* theme's blue */
     text-decoration:none;
 }
 #BRtoolbar a:hover {
@@ -64,6 +63,7 @@
     position:absolute;
     /*background-color: #3a3b3b;*/
     _height: expression(documentElement.clientHeight);
+    -webkit-overflow-scrolling: touch;
 }
 
 #BRpageview {
@@ -149,6 +149,10 @@
     -moz-user-select: none;
     -webkit-user-select: none;
     -webkit-user-drag: none;
+}
+
+.BRonePageImage {
+    background: url(images/loading.gif) 50% no-repeat;
 }
 
 .BRleafEdgeR {
@@ -327,11 +331,17 @@ a.popOff span {
     left: -10000px;
 }
 
-form#booksearch {
+form.booksearch {
     position:relative;
     top:8px;
 }
-form#booksearch input[type=search] {
+form.booksearch.mobile {
+    position:relative;
+    top:0;
+    display: flex;
+    flex-direction: row;
+}
+form.booksearch input[type=search] {
     position:relative;
     min-width: 14em;
     height: 35px;
@@ -349,7 +359,21 @@ form#booksearch input[type=search] {
     float:left;
     padding: 0 4px 0 8px;
 }
-form#booksearch button {
+form.booksearch.mobile input[type=search] {
+    position:relative;
+    min-width: 14em;
+    float:left;
+    padding: 0 4px 0 8px;
+    font-size: 14px;
+    padding: 0 0 0 8px;
+    width: 150px;
+    min-width: inherit;
+    float: left;
+    font-size: 16px;
+    flex: 1;
+
+}
+form.booksearch button {
   width: 35px;
   height: 35px;
   border: none;
@@ -367,7 +391,7 @@ form#booksearch button {
   float:right;
 
 }
-form#booksearch button img {
+form.booksearch button img {
   position:relative;
   top: 2px;
 }
@@ -618,6 +642,13 @@ div#BRslider {
     z-index: 103;
     background-color: rgb(36,94,131);
 }
+/* handle active state for touch */
+.touch #BRpager .ui-slider-handle.ui-state-active {
+  width: 24px;
+  height: 24px;
+  top: -4px;
+  margin-left: -11px;
+}
 
 #BRpager .ui-slider-range {
     background: #90A2B6;
@@ -793,6 +824,36 @@ div.searchChap {
 div.searchChap.front {
     background-image: url(images/marker_srchchap-on.png);
 }
+#mobileSearchResultWrapper {
+    margin-top: 20px;
+}
+.mobileNumResults {
+    margin-bottom: 10px;
+}
+.mobileSearchResult {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 15px;
+    text-decoration: none;
+    color: black;
+}
+.mobileSearchResult:active {
+    color: rgb(74, 144, 226);
+}
+.mobileSearchResult .pageDisplay {
+    text-decoration: underline;
+    color: rgb(74, 144, 226);
+    display: block;
+    margin-bottom:3px;
+}
+.mobileSearchResult .searchImgPreview {
+    width: 50px;
+    height: auto;
+    margin-right:5px;
+}
+.mobileSearchResult table td{
+    vertical-align: top;
+}
 #BRnav .front {
     z-index: 10001;
 }
@@ -960,7 +1021,7 @@ nav { font-family: Arial, Helvetica, Verdana; }
 	left: 10px;
 }
 
-/** some functional css utilities */
+/** some helper functional css utilities */
 .tl { text-align: left; }
 .tc { text-align: center; }
 .tr { text-align: right; }
@@ -984,9 +1045,10 @@ nav { font-family: Arial, Helvetica, Verdana; }
 .lighter { font-weight: lighter; }
 .f14 { font-size: 14px; }
 .b { font-weight: bold; }
+.i { font-style: italic; }
 .smaller { font-size: .8em; }
 .larger { font-size: 1.2em; }
-
+.loader { background: url(images/loading.gif) no-repeat 50%; height: 16px; min-width: 16px;}
 
 @media (max-width: 800px) {
   .smaller-sm { font-size: .8em; }
@@ -1020,7 +1082,6 @@ nav { font-family: Arial, Helvetica, Verdana; }
   float: left;
   width: 20px;
   height:20px;
-  overflow: hidden;
   margin-right: 10px;
   text-align: center;
   position:relative;
@@ -1156,7 +1217,7 @@ body.high-contrast #BRtwopageview img {
 
 /* Mobile Only */
 @media (max-width: 800px) {
-  div#BRnavpos { margin-right: 80px; }
+  div#BRnavpos { margin-right: 90px; }
   #BRtoolbar { height: 40px; }
   #BRtoolbar.responsive #BRtoolbarbuttons { display: none; }
   #BRtoolbar.responsive .BRmobileHamburgerWrapper { display: block; }
@@ -1191,15 +1252,30 @@ body.high-contrast #BRtwopageview img {
   #mobileShare fieldset input[type=text] { width: 95%; }
   #mobileShare button.share-finished { display: none; }
   #mobileShare div.share-embed { border: 1px solid #ccc; padding: 0 10px; }
+
+  .BRprogresspopup { max-width: 80%; min-width: inherit;}
 }
 
 /* Mid size breakpoint */
 @media (max-width: 1050px) {
   .hide-md { display: none; }
-  form#booksearch input[type=search] {
+  form.booksearch input[type=search] {
     padding: 0 0 0 8px;
     width: 110px;
     min-width: 110px;
+  }
+
+  form.booksearch button {
+    float: left;
+  }
+  form.booksearch.mobile button {
+    float: inherit;
+    display: inline-block;
+  }
+  form.booksearch.mobile button img {
+    position: relative;
+    top: 2px;
+    left: -2px;
   }
 }
 

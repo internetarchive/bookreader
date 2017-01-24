@@ -155,6 +155,7 @@ body.br-ui-embed #BRcontainer {
   width:100%;
   height:100%;
   background-color: white;
+  box-sizing: border-box;
 }
 #br-loading-placeholder img {
   margin-top: 20px;

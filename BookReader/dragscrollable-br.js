@@ -145,7 +145,6 @@ $.fn.dragscrollable = function( options ) {
 
 	var dragscroll= {
 		dragStartHandler : function(event) {
-			// console.log('dragstart');
 			if (shouldAbort()) { return true; }
 
 			// mousedown, left click, check propagation
