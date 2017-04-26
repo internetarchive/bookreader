@@ -2932,6 +2932,7 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 //______________________________________________________________________________
 BookReader.prototype.search = function(term, options) {
     options = options !== undefined ? options : {};
+    var br = this;
     var defaultOptions = {
         // {bool} (default=false) goToFirstResult - jump to the first result
         goToFirstResult: false,
@@ -2980,6 +2981,7 @@ BookReader.prototype.search = function(term, options) {
 // BRSearchCallback()
 //______________________________________________________________________________
 BookReader.prototype.BRSearchCallback = function(results, options) {
+    var br = this;
     br.searchResults = results;
     $('#BRnavpos .search').remove();
     $('#mobileSearchResultWrapper').empty(); // Empty mobile results
@@ -3005,6 +3007,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
 // BRSearchCallbackErrorDesktop()
 //______________________________________________________________________________
 BookReader.prototype.BRSearchCallbackErrorDesktop = function(results, options) {
+    var br = this;
     var $el = $(br.popup);
     this._BRSearchCallbackError(results, $el, true);
 };
@@ -3018,7 +3021,7 @@ BookReader.prototype.BRSearchCallbackErrorMobile = function(results, options) {
 BookReader.prototype._BRSearchCallbackError = function(results, $el, fade, options) {
     $('#BRnavpos .search').remove();
     $('#mobileSearchResultWrapper').empty(); // Empty mobile results
-
+    var br = this;
     br.searchResults = results;
     var timeout = 2000;
     if (results.error) {
@@ -3690,6 +3693,7 @@ BookReader.prototype.updateNavIndexThrottled = BookReader.prototype.throttle(Boo
 
 
 BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
+    var br = this;
     var pageNumber = this.getPageNum(pageIndex);
     var uiStringSearch = "Search result"; // i18n
     var uiStringPage = "Page"; // i18n
@@ -4227,7 +4231,8 @@ BookReader.prototype.initToolbar = function(mode, ui) {
       self.switchMode(self.constModeThumb);
     });
 
-
+    var br = this;
+    
     // Bind search form
     if (this.enableSearch) {
         $('.booksearch.desktop').submit(function(e) {
