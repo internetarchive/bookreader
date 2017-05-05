@@ -1131,8 +1131,8 @@ div.share-social button.email-share-button { background-color: #c1c1c1; }
 
 body.high-contrast #BRpageview img,
 body.high-contrast #BRtwopageview img {
-  -webkit-filter: grayscale(100%) brightness(120%);
-  filter: grayscale(100%) brightness(120%);
+  -webkit-filter: grayscale(100%) brightness(200%);
+  filter: grayscale(100%) brightness(200%);
 }
 
 /* Forked from Bootstrap */
