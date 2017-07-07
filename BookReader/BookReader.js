@@ -2733,22 +2733,91 @@ BookReader.prototype.getPageWidth2UP = function(index) {
 //______________________________________________________________________________
 BookReader.prototype.search = function(term) {
     //console.log('search called with term=' + term);
-
+	const useParseTxtSearch = false; //if set to true, use function which searches a text document instead
+    
     $('#textSrch').blur(); //cause mobile safari to hide the keyboard
 
-    var url = 'https://'+this.server.replace(/:.+/, ''); //remove the port and userdir
-    url    += '/fulltext/inside.php?item_id='+this.bookId;
-    url    += '&doc='+this.subPrefix;   //TODO: test with subitem
-    url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
-    url    += '&q='+escape(term);
-    //console.log('search url='+url);
+	var url = '';
+	
+	if(useParseTxtSearch == false) {
+		url = 'https://'+this.server.replace(/:.+/, ''); //remove the port and userdir
+		url    += '/fulltext/inside.php?item_id='+this.bookId;
+		url    += '&doc='+this.subPrefix;   //TODO: test with subitem
+		url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
+		url    += '&q='+escape(term);
+		//console.log('search url='+url);
+	}
 
     term = term.replace(/\//g, ' '); // strip slashes, since this goes in the url
     this.searchTerm = term;
 
     this.removeSearchResults();
     this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
-    $.ajax({url:url, dataType:'jsonp', jsonpCallback:'br.BRSearchCallback'});
+	
+	if(useParseTxtSearch == false) $.ajax({url:url, dataType:'jsonp', jsonpCallback:'br.BRSearchCallback'});
+	else this.parseTxtSearch(term);
+}
+
+BookReader.prototype.parseTxtSearch = function(query) {
+	var txtFileLocation = "../BookReader/texts/sample.txt";
+	var delimiter = "|||";
+	var trailing = 75; //number of characters that are displayed when hovering over search result
+	var skipFirstPage = false;	//if the first page contains no text (ex. cover page) and you want to start
+								//searching on the next page, set to true
+	
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() { //xhttp.open("GET", txtFileLocation, true); called below
+		if (this.readyState == 4 && this.status == 200) {
+			var fileContents = xhttp.responseText;
+
+			fileContents_split = fileContents.split("\n"); //text file stored in array separated by lines
+
+			var tmpstor = "";
+			var searchable_text = skipFirstPage == true ? new Array(" ") : new Array();
+			//text will be appended line by line in tmpstor until the delimiter is reached, then dumped
+			//as array element into searchable_text
+
+			for(var i=0; i < fileContents_split.length; i++) {
+				if (fileContents_split[i].indexOf(delimiter) !== -1) {	//if line contains delimiter,
+																		//dump tmpstor into searchable_text
+					searchable_text.push(tmpstor);
+					tmpstor = "";
+				} else { //otherwise keep adding to tmpstor
+					tmpstor = tmpstor + fileContents_split[i];
+				}
+			}
+			
+			//array is created of possible search results, accounting for most capitalization scenarios.
+			//Example: if user searches 'hi YOu', searches will = ['hi YOu', 'hi you', 'Hi You', 'HI YOU']
+			var searches = new Array(query);
+			
+			if (searches.indexOf(query.toUpperCase()) <= -1) searches.push(query.toUpperCase());
+			
+			if (searches.indexOf(query.toLowerCase()) <= -1) searches.push(query.toLowerCase());
+			
+			var splitStr = query.toLowerCase().split(' ');
+			for (var i = 0; i < splitStr.length; i++) {
+				splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+			}
+			var query_proper_nouns = splitStr.join(' '); //first letters of each word capitalized
+			
+			if (searches.indexOf(query_proper_nouns) <= -1) searches.push(query_proper_nouns);
+			//array of possible searches is now created
+			
+			for(var i=0; i < searches.length; i++) { //try each possible search
+				for(var x=0; x < searchable_text.length; x++) { //on array of the whole text file
+					var needle_index = searchable_text[x].indexOf(searches[i]);
+					if(needle_index > -1) { //if query is found, add a search result
+						br.addSearchResult(searchable_text[x].substring(needle_index, needle_index + trailing), x);
+					}
+				}
+			}
+		}
+		br.updateSearchHilites();
+		br.removeProgressPopup();
+	}
+	xhttp.open("GET", txtFileLocation, true);
+	xhttp.send();
 }
 
 // BRSearchCallback()
