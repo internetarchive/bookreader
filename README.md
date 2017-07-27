@@ -43,6 +43,9 @@ br.init();
 
 See `BookReaderDemo/demo-simple.html` and `BookReaderDemo/BookReaderJSSimple.js` for a full example.
 
+### Properties
+
+- TODO (for now see BookReader.js and BookReader function at approx. line 37)
 
 
 ## Notes about version 2
@@ -61,6 +64,19 @@ https://openlibrary.org/dev/docs/bookreader
 
 Hosted source code:
 https://github.com/internetarchive/bookreader
+
+IIIF (http://iiif.io)
+See `BookReaderDemo/demo-iiif.html` to see an example of how to load a IIIF manifest in BookReader.
+
+
+## Contributing
+
+Some notes for contributing:
+- Please try to follow the code style within the file (spacing/comments/etc).
+- Please only submit merge requests for features that would be useful for the general use
+- Please try to avoid adding new libraries
+- If the PR is a bug fix, include a link to a jsbin/codepen if possible
+- Please test the changes in desktop, mobile, and embed modes, and also on many different devices/browsers.
 
 
 ## License
