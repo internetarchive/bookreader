@@ -1466,10 +1466,7 @@ BookReader.prototype.jumpToPage = function(pageNum) {
     }
 
     if ('undefined' != typeof(pageIndex)) {
-        var leafTop = 0;
-        var h;
         this.jumpToIndex(pageIndex);
-        $('#BRcontainer').prop('scrollTop', leafTop);
         return true;
     }
 
@@ -4972,7 +4969,6 @@ BookReader.prototype.paramsFromFragment = function(urlFragment) {
     if (urlHash['theme'] != undefined) {
         params.theme = urlHash['theme']
     }
-
     return params;
 }
 
