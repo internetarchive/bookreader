@@ -13,5 +13,17 @@ This file is part of BookReader <http://github.com/openlibrary/bookreader
     .BRpagediv1up, .BRpageimage, .BRpagedivthumb {
         display: none;
     }
-    
+
+}
+
+.fieldset-share-pageview, .share-embed-prompt,
+.fieldset-embed, .open-to-this-page {
+  display: none !important;
+}
+
+#BookReader.ui-embed #BRnav { display: none; }
+
+/* Mobile Only */
+@media (max-width: 600px) {
+  .lending-preview #BRcontainer { display: none; }
 }
