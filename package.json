@@ -1,0 +1,22 @@
+{
+  "name": "bookreader",
+  "version": "2.0.0",
+  "description": "The Internet Archive BookReader.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/internetarchive/bookreader.git"
+  },
+  "keywords": [
+    "online",
+    "bookreader",
+    "interface",
+    "ebooks",
+    "internet archive"
+  ],
+  "author": "Internet Archive",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/internetarchive/bookreader/issues"
+  },
+  "homepage": "https://github.com/internetarchive/bookreader#readme"
+}
