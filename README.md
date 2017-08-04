@@ -69,6 +69,10 @@ IIIF (http://iiif.io)
 See `BookReaderDemo/demo-iiif.html` to see an example of how to load a IIIF manifest in BookReader.
 
 
+## Areas for improvement
+- Change libraries to be NPM dependencies rather than included in the source code
+
+
 ## Contributing
 
 Some notes for contributing:

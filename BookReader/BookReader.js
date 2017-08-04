@@ -142,7 +142,6 @@ function BookReader() {
 
     // Themes
     this.themes = {
-        ia: 'BookReader-ia.css',
         ol: null
     };
     this.default_theme = 'ol';
@@ -4159,7 +4158,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     this.updateToolbarZoom(this.reduce); // Pretty format
 
-    if (ui == "embed" || ui == "touch") {
+    if (ui == "embed") {
         $("#BookReader a.logo").attr("target","_blank");
     }
 

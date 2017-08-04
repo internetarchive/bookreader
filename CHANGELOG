@@ -1,0 +1,7 @@
+# 2.0.1
+- Add package.json and CHANGELOG
+- Remove more IA-specific code
+
+# 2.0.0
+- Major release
+- Many changes from updated Archive.org bookreader brought back to this open source project.
