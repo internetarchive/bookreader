@@ -70,7 +70,7 @@ See `BookReaderDemo/demo-iiif.html` to see an example of how to load a IIIF mani
 
 
 ## Areas for improvement
-- Change libraries to be NPM dependancies rather than included in the source code
+- Change libraries to be NPM dependencies rather than included in the source code
 
 
 ## Contributing
