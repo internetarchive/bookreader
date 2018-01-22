@@ -2952,7 +2952,7 @@ BookReader.prototype.search = function(term, options) {
     //url    += '/fulltext/inside.php?item_id='+this.bookId;
     url    += '/fulltext/new_inside.php?item_id='+this.bookId;
     url    += '&doc='+this.subPrefix;   //TODO: test with subitem
-    url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
+    url    += '&path=' + this.bookPath.replace('/' + this.subPrefix, ''); //remove subPrefix from end of path
     url    += '&q='+escape(term);
 
     if (!options.disablePopup) {
