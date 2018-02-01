@@ -1,3 +1,7 @@
+# 2.0.2
+- Fix regex issue when searching
+- Make the search api endpoint configurable
+
 # 2.0.1
 - Add package.json and CHANGELOG
 - Remove more IA-specific code
