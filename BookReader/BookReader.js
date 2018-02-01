@@ -170,6 +170,10 @@ function BookReader() {
     // Experimental Controls (eg b/w)
     this.enableExperimentalControls = false;
 
+    // Base server used by some api calls
+    this.server = '';
+    this.searchInsideUrl = '/fulltext/new_inside.php';
+
     return this;
 }
 
@@ -2948,12 +2952,23 @@ BookReader.prototype.search = function(term, options) {
     term = term.replace(/['"]+/g, '');
     term = '"' + term + '"';
 
-    var url = 'https://'+this.server.replace(/:.+/, ''); //remove the port and userdir
-    //url    += '/fulltext/inside.php?item_id='+this.bookId;
-    url    += '/fulltext/new_inside.php?item_id='+this.bookId;
-    url    += '&doc='+this.subPrefix;   //TODO: test with subitem
-    url    += '&path='+this.bookPath.replace(new RegExp('/'+this.subPrefix+'$'), ''); //remove subPrefix from end of path
-    url    += '&q='+escape(term);
+    // Remove the port and userdir
+    var url = 'https://' + this.server.replace(/:.+/, '') + this.searchInsideUrl + '?';
+
+    // Remove subPrefix from end of path
+    var path = this.bookPath;
+    if (this.bookPath.length - this.bookPath.lastIndexOf(this.subPrefix) == this.subPrefix.length) {
+      path = this.bookPath.substr(0, this.bookPath.length - this.subPrefix.length);
+    }
+
+    var urlParams = {
+      'item_id': this.bookId,
+      'doc': this.subPrefix,
+      'path': path,
+      'q': term,
+    };
+
+    url += $.param(urlParams);
 
     if (!options.disablePopup) {
         this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
