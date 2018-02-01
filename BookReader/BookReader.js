@@ -170,6 +170,10 @@ function BookReader() {
     // Experimental Controls (eg b/w)
     this.enableExperimentalControls = false;
 
+    // Base server used by some api calls
+    this.server = '';
+    this.searchInsideUrl = '/fulltext/new_inside.php';
+
     return this;
 }
 
@@ -2949,7 +2953,7 @@ BookReader.prototype.search = function(term, options) {
     term = '"' + term + '"';
 
     // Remove the port and userdir
-    var url = 'https://' + this.server.replace(/:.+/, '') + '/fulltext/new_inside.php?';
+    var url = 'https://' + this.server.replace(/:.+/, '') + this.searchInsideUrl + '?';
 
     // Remove subPrefix from end of path
     var path = this.bookPath;
