@@ -109,8 +109,7 @@ function BookReader() {
 
     // Object to hold parameters related to 1up mode
     this.onePage = {
-        autofit: 'height',       // valid values are height, width, none
-        responsiveAutofit: true, // selects the value of autofit at init
+        autofit: 'auto',       // valid values are height, width, auto, none
     };
 
     // Object to hold parameters related to 2up mode
@@ -232,14 +231,6 @@ BookReader.prototype.init = function() {
         this.mode = nextMode;
     } else {
         this.mode = this.constMode1up;
-    }
-
-    if (this.onePage.responsiveAutofit && this.mode == this.constMode1up) {
-        if (windowWidth <= this.onePageMinBreakpoint) {
-            this.onePage.autofit = 'width';
-        } else {
-            this.onePage.autofit = 'height';
-        }
     }
 
     //-------------------------------------------------------------------------
@@ -1407,20 +1398,17 @@ BookReader.prototype.quantizeReduce = function(reduce, reductionFactors) {
 // reductionFactors should be array of sorted reduction factors
 // e.g. [ {reduce: 0.25, autofit: null}, {reduce: 0.3, autofit: 'width'}, {reduce: 1, autofit: null} ]
 BookReader.prototype.nextReduce = function( currentReduce, direction, reductionFactors ) {
-
     // XXX add 'closest', to replace quantize function
 
-    if (direction == 'in') {
+    if (direction === 'in') {
         var newReduceIndex = 0;
-
         for (var i = 1; i < reductionFactors.length; i++) {
             if (reductionFactors[i].reduce < currentReduce) {
                 newReduceIndex = i;
             }
         }
         return reductionFactors[newReduceIndex];
-
-    } else if (direction == 'out') { // zoom out
+    } else if (direction === 'out') { // zoom out
         var lastIndex = reductionFactors.length - 1;
         var newReduceIndex = lastIndex;
 
@@ -1430,13 +1418,26 @@ BookReader.prototype.nextReduce = function( currentReduce, direction, reductionF
             }
         }
         return reductionFactors[newReduceIndex];
-    }
-
-    // Asked for specific autofit mode
-    for (var i = 0; i < reductionFactors.length; i++) {
-        if (reductionFactors[i].autofit == direction) {
-            return reductionFactors[i];
-        }
+    } else if (direction === 'auto') {
+      // Auto mode chooses the least reduction
+      var choice = null;
+      for (var i = 0; i < reductionFactors.length; i++) {
+          if (reductionFactors[i].autofit === 'height' || reductionFactors[i].autofit === 'width') {
+              if (choice === null || choice.reduce < reductionFactors[i].reduce) {
+                  choice = reductionFactors[i];
+              }
+          }
+      }
+      if (choice) {
+          return choice;
+      }
+    } else if (direction === 'height' || direction === 'width') {
+      // Asked for specific autofit mode
+      for (var i = 0; i < reductionFactors.length; i++) {
+          if (reductionFactors[i].autofit === direction) {
+              return reductionFactors[i];
+          }
+      }
     }
 
     alert('Could not find reduction factor for direction ' + direction);
