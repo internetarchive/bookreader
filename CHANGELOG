@@ -1,3 +1,7 @@
+# 2.1.0
+- Add auto mode to 1up autosize (in addition to height and width)
+- Remove the old responsiveAutofit (which is not needed anymore)
+
 # 2.0.2
 - Fix regex issue when searching
 - Make the search api endpoint configurable
