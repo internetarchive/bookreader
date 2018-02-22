@@ -3240,114 +3240,6 @@ BookReader.prototype.removeSearchHilites = function() {
 };
 
 
-// printPage
-//______________________________________________________________________________
-BookReader.prototype.printPage = function() {
-    window.open(this.getPrintURI(), 'printpage', 'width=400, height=500, resizable=yes, scrollbars=no, toolbar=no, location=no');
-};
-
-// Get print URI from current indices and mode
-BookReader.prototype.getPrintURI = function() {
-    var indexToPrint;
-    if (this.constMode2up == this.mode) {
-        indexToPrint = this.twoPage.currentIndexL;
-    } else {
-        indexToPrint = this.firstIndex; // $$$ the index in the middle of the viewport would make more sense
-    }
-
-    var options = 'id=' + this.subPrefix + '&server=' + this.server + '&zip=' + this.zip
-        + '&format=' + this.imageFormat + '&file=' + this._getPageFile(indexToPrint)
-        + '&width=' + this._getPageWidth(indexToPrint) + '&height=' + this._getPageHeight(indexToPrint);
-
-    if (this.constMode2up == this.mode) {
-        options += '&file2=' + this._getPageFile(this.twoPage.currentIndexR) + '&width2=' + this._getPageWidth(this.twoPage.currentIndexR);
-        options += '&height2=' + this._getPageHeight(this.twoPage.currentIndexR);
-        options += '&title=' + encodeURIComponent(this.shortTitle(50) + ' - Pages ' + this.getPageNum(this.twoPage.currentIndexL) + ', ' + this.getPageNum(this.twoPage.currentIndexR));
-    } else {
-        options += '&title=' + encodeURIComponent(this.shortTitle(50) + ' - Page ' + this.getPageNum(indexToPrint));
-    }
-
-    return '/bookreader/print.php?' + options;
-};
-
-// showEmbedCode()
-//
-// Note: Has been replaced by the share dialog
-//______________________________________________________________________________
-BookReader.prototype.showEmbedCode = function() {
-    if (null != this.embedPopup) { // check if already showing
-        return;
-    }
-    this.autoStop();
-    this.ttsStop();
-
-    this.embedPopup = document.createElement("div");
-    $(this.embedPopup).css({
-        position: 'absolute',
-        top:      (this.refs.$brContainer.prop('clientHeight')-250)/2 + 'px',
-        left:     (this.refs.$brContainer.prop('clientWidth')-400)/2 + 'px',
-        width:    '400px',
-        height:    '250px',
-        padding:  '0',
-        fontSize: '12px',
-        color:    '#333',
-        zIndex:   300,
-        border: '10px solid #615132',
-        backgroundColor: "#fff",
-        MozBorderRadius: '8px',
-        MozBoxShadow: '0 0 6px #000',
-        WebkitBorderRadius: '8px',
-        WebkitBoxShadow: '0 0 6px #000'
-    }).appendTo(this.el);
-
-    htmlStr =  '<h3 style="background:#615132;padding:10px;margin:0 0 10px;color:#fff;">Embed Bookreader</h3>';
-    htmlStr += '<textarea rows="2" cols="40" style="margin-left:10px;width:368px;height:40px;color:#333;font-size:12px;border:2px inset #ccc;background:#efefef;padding:2px;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;">' + this.getEmbedCode() + '</textarea>';
-    htmlStr += '<a href="javascript:;" class="popOff" onclick="$(this.parentNode).remove();$(\'.coverUp\').hide();return false" style="color:#999;"><span>Close</span></a>';
-
-    this.embedPopup.innerHTML = htmlStr;
-    this.refs.$br.append('<div class="coverUp" style="position:absolute;z-index:299;width:100%;height:100%;background:#000;opacity:.4;filter:alpha(opacity=40);" onclick="$(\'.popped\').hide();$(this).hide();"></div>');
-    $(this.embedPopup).find('textarea').click(function() {
-        this.select();
-    });
-    $(this.embedPopup).addClass("popped");
-};
-
-// showBookmarkCode()
-//______________________________________________________________________________
-BookReader.prototype.showBookmarkCode = function() {
-    this.bookmarkPopup = document.createElement("div");
-    $(this.bookmarkPopup).css({
-        position: 'absolute',
-        top:      (this.refs.$brContainer.prop('clientHeight')-250)/2 + 'px',
-        left:     (this.refs.$brContainer.prop('clientWidth')-400)/2 + 'px',
-        width:    '400px',
-        height:    '250px',
-        padding:  '0',
-        fontSize: '12px',
-        color:    '#333',
-        zIndex:   300,
-        border: '10px solid #615132',
-        backgroundColor: "#fff",
-        MozBorderRadius: '8px',
-        MozBoxShadow: '0 0 6px #000',
-        WebkitBorderRadius: '8px',
-        WebkitBoxShadow: '0 0 6px #000'
-    }).appendTo(this.refs.$br);
-
-    htmlStr =  '<h3 style="background:#615132;padding:10px;margin:0 0 10px;color:#fff;">Add a bookmark</h3>';
-    htmlStr += '<p style="padding:10px;line-height:18px;">You can add a bookmark to any page in any book. If you elect to make your bookmark public, other readers will be able to see it. <em>You must be logged in to your <a href="">Open Library account</a> to add bookmarks.</em></p>';
-    htmlStr += '<form name="bookmark" id="bookmark" style="line-height:20px;margin-left:10px;"><label style="padding-bottom"10px;><input type="radio" name="privacy" id="p2" disabled="disabled" checked="checked"/> Make this bookmark public.</label><br/><label style="padding-bottom:10px;"><input type="radio" name="privacy" id="p1" disabled="disabled"/> Keep this bookmark private.</label><br/><br/><button type="submit" style="font-size:20px;" disabled="disabled">Add a bookmark</button></form>';
-    htmlStr += '<a href="javascript:;" class="popOff" onclick="$(this.parentNode).remove();$(\'.coverUp\').hide();return false;" style="color:#999;"><span>Close</span></a>';
-
-    this.bookmarkPopup.innerHTML = htmlStr;
-    this.refs.$br.append('<div class="coverUp" style="position:absolute;z-index:299;width:100%;height:100%;background:#000;opacity:.4;filter:alpha(opacity=40);" onclick="$(\'.popped\').hide();$(this).hide();"></div>');
-    $(this.bookmarkPopup).find('textarea').click(function() {
-        this.select();
-    });
-    $(this.bookmarkPopup).addClass("popped");
-};
-
-
 // autoToggle()
 //______________________________________________________________________________
 BookReader.prototype.autoToggle = function() {
@@ -4324,22 +4216,6 @@ BookReader.prototype.bindNavigationHandlers = function() {
         } else {
             self.next();
         }
-        return false;
-    });
-
-    jIcons.filter('.print').click(function(e) {
-        self.printPage();
-        return false;
-    });
-
-    // Note: Functionality has been replaced by .share
-    jIcons.filter('.embed').click(function(e) {
-        self.showEmbedCode();
-        return false;
-    });
-
-    jIcons.filter('.bookmark').click(function(e) {
-        self.showBookmarkCode();
         return false;
     });
 
