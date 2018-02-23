@@ -3271,8 +3271,8 @@ BookReader.prototype.autoToggle = function() {
             this.flipFwdToIndex();
         }
 
-        $('#BRtoolbar .play').hide();
-        $('#BRtoolbar .pause').show();
+        this.refs.$BRtoolbar.find('.play').hide();
+        this.refs.$BRtoolbar.find('.pause').show();
         this.autoTimer=setInterval(function(){
             if (self.animating) {return;}
 
@@ -3294,8 +3294,8 @@ BookReader.prototype.autoStop = function() {
     if (null != this.autoTimer) {
         clearInterval(this.autoTimer);
         this.flipSpeed = 'fast';
-        $('#BRtoolbar .pause').hide();
-        $('#BRtoolbar .play').show();
+        this.refs.$BRtoolbar.find('.pause').hide();
+        this.refs.$BRtoolbar.find('.play').show();
         this.autoTimer = null;
     }
 };
@@ -3771,8 +3771,8 @@ BookReader.prototype.buildToolbarElement = function() {
   }
 
   // Add large screen navigation
-  return $(
-    "<div id='BRtoolbar' class='header fixed "+mobileClass+"'>"
+  this.refs.$BRtoolbar = $(
+    "<div class='BRtoolbar header fixed "+mobileClass+"'>"
     +   "<span class='BRmobileHamburgerWrapper'>"
     +     "<span class=\"hamburger\"><a href=\"#BRmobileMenu\"></a></span>"
     +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
@@ -3810,6 +3810,7 @@ BookReader.prototype.buildToolbarElement = function() {
     +   "</span>" // end desktop-only
     + "</div>"
     );
+    return this.refs.$BRtoolbar;
 }
 
 
@@ -3961,8 +3962,8 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     }
 
 
-    $('#BRtoolbar .BRnavCntl').addClass('BRup');
-    $('#BRtoolbar .pause').hide();
+    this.refs.$BRtoolbar.find('.BRnavCntl').addClass('BRup');
+    this.refs.$BRtoolbar.find('.pause').hide();
 
     this.updateToolbarZoom(this.reduce); // Pretty format
 
@@ -3970,28 +3971,25 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         this.refs.$br.find("a.logo").attr("target","_blank");
     }
 
-    // $$$ turn this into a member variable
-    var jToolbar = $('#BRtoolbar'); // j prefix indicates jQuery object
-
     // We build in mode 2
-    jToolbar.append();
+    this.refs.$BRtoolbar.append();
 
     // Hide mode buttons and autoplay if 2up is not available
     // $$$ if we end up with more than two modes we should show the applicable buttons
     if ( !this.canSwitchToMode(this.constMode2up) ) {
-        jToolbar.find('.two_page_mode, .play, .pause').hide();
+        this.refs.$BRtoolbar.find('.two_page_mode, .play, .pause').hide();
     }
     if ( !this.canSwitchToMode(this.constModeThumb) ) {
-        jToolbar.find('.thumbnail_mode').hide();
+        this.refs.$BRtoolbar.find('.thumbnail_mode').hide();
     }
 
     // Hide one page button if it is the only mode available
     if ( ! (this.canSwitchToMode(this.constMode2up) || this.canSwitchToMode(this.constModeThumb)) ) {
-        jToolbar.find('.one_page_mode').hide();
+        this.refs.$BRtoolbar.find('.one_page_mode').hide();
     }
 
     // $$$ Don't hardcode ids
-    jToolbar.find('.share').colorbox({
+    this.refs.$BRtoolbar.find('.share').colorbox({
         inline: true,
         opacity: "0.5",
         href: "#BRshare",
@@ -4000,7 +3998,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
             $('.BRpageviewValue').val(window.location.href);
         }
     });
-    jToolbar.find('.info').colorbox({
+    this.refs.$BRtoolbar.find('.info').colorbox({
       inline: true,
       opacity: "0.5",
       href: "#BRinfo",
@@ -4109,22 +4107,22 @@ BookReader.prototype.blankShareDiv = function() {
 BookReader.prototype.switchToolbarMode = function(mode) {
     if (1 == mode) {
         // 1-up
-        $('#BRtoolbar .BRtoolbarzoom').show().css('display', 'inline');
-        $('#BRtoolbar .BRtoolbarmode2').hide();
-        $('#BRtoolbar .BRtoolbarmode3').hide();
-        $('#BRtoolbar .BRtoolbarmode1').show().css('display', 'inline');
+        this.refs.$BRtoolbar.find('.BRtoolbarzoom').show().css('display', 'inline');
+        this.refs.$BRtoolbar.find('.BRtoolbarmode2').hide();
+        this.refs.$BRtoolbar.find('.BRtoolbarmode3').hide();
+        this.refs.$BRtoolbar.find('.BRtoolbarmode1').show().css('display', 'inline');
     } else if (2 == mode) {
         // 2-up
-        $('#BRtoolbar .BRtoolbarzoom').show().css('display', 'inline');
-        $('#BRtoolbar .BRtoolbarmode1').hide();
-        $('#BRtoolbar .BRtoolbarmode3').hide();
-        $('#BRtoolbar .BRtoolbarmode2').show().css('display', 'inline');
+        this.refs.$BRtoolbar.find('.BRtoolbarzoom').show().css('display', 'inline');
+        this.refs.$BRtoolbar.find('.BRtoolbarmode1').hide();
+        this.refs.$BRtoolbar.find('.BRtoolbarmode3').hide();
+        this.refs.$BRtoolbar.find('.BRtoolbarmode2').show().css('display', 'inline');
     } else {
         // 3-up
-        $('#BRtoolbar .BRtoolbarzoom').hide();
-        $('#BRtoolbar .BRtoolbarmode2').hide();
-        $('#BRtoolbar .BRtoolbarmode1').hide();
-        $('#BRtoolbar .BRtoolbarmode3').show().css('display', 'inline');
+        this.refs.$BRtoolbar.find('.BRtoolbarzoom').hide();
+        this.refs.$BRtoolbar.find('.BRtoolbarmode2').hide();
+        this.refs.$BRtoolbar.find('.BRtoolbarmode1').hide();
+        this.refs.$BRtoolbar.find('.BRtoolbarmode3').show().css('display', 'inline');
     }
 };
 
@@ -4265,14 +4263,14 @@ BookReader.prototype.bindNavigationHandlers = function() {
             var promises = [];
             // TODO don't use magic constants
             if ($('#BRnavCntlBtm').hasClass('BRdn')) {
-                promises.push($('#BRtoolbar').animate({top: $('#BRtoolbar').height() * -1}).promise());
+                promises.push(this.refs.$BRtoolbar.animate({top: this.refs.$BRtoolbar.height() * -1}).promise());
                 promises.push($('#BRnav').animate({bottom:-55}).promise());
                 $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
                 $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
                 $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
                 $('.BRnavCntl').delay(1000).animate({opacity:.25}, 1000);
             } else {
-                promises.push($('#BRtoolbar').animate({top:0}).promise());
+                promises.push(this.refs.$BRtoolbar.animate({top:0}).promise());
                 promises.push($('#BRnav').animate({bottom:0}).promise());
                 $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
                 $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
@@ -4502,7 +4500,7 @@ BookReader.prototype.bindMozTouchHandlers = function() {
 // Returns true if the navigation elements are currently visible
 BookReader.prototype.navigationIsVisible = function() {
     // $$$ doesn't account for transitioning states, nav must be fully visible to return true
-    var toolpos = $('#BRtoolbar').offset();
+    var toolpos = this.refs.$BRtoolbar.offset();
     var tooltop = toolpos.top;
     return tooltop == 0;
 };
@@ -4514,7 +4512,7 @@ BookReader.prototype.hideNavigation = function() {
     // Check if navigation is showing
     if (this.navigationIsVisible()) {
         // $$$ don't hardcode height
-        $('#BRtoolbar').animate({top:-60});
+        this.refs.$BRtoolbar.animate({top:-60});
         $('#BRnav').animate({bottom:-60});
     }
 };
@@ -4525,7 +4523,7 @@ BookReader.prototype.hideNavigation = function() {
 BookReader.prototype.showNavigation = function() {
     // Check if navigation is hidden
     if (!this.navigationIsVisible()) {
-        $('#BRtoolbar').animate({top:0});
+        this.refs.$BRtoolbar.animate({top:0});
         $('#BRnav').animate({bottom:0});
     }
 };
@@ -5330,8 +5328,8 @@ BookReader.prototype.reloadImages = function() {
 };
 
 BookReader.prototype.getToolBarHeight = function() {
-  if ($('#BRtoolbar').css('display') === 'block') {
-    return ($('#BRtoolbar').outerHeight() + parseInt($('#BRtoolbar').css('top')));
+  if (this.refs.$BRtoolbar.css('display') === 'block') {
+    return (this.refs.$BRtoolbar.outerHeight() + parseInt(this.refs.$BRtoolbar.css('top')));
   } else {
     return 0;
   }

@@ -16,7 +16,7 @@
   position:relative;
   background-color: #3a3b3b;
 }
-#BRtoolbar {
+.BRtoolbar {
     position: absolute;
     top: 0;
     left: 0;
@@ -29,18 +29,18 @@
     /* Shadow here on FF causes scroll bars */
     /*overflow: hidden;*/
 }
-#BRtoolbar .label {
+.BRtoolbar .label {
     font-size: 1.1em;
     color: #999;
 }
-#BRtoolbar a {
+.BRtoolbar a {
     color: rgb(74, 144, 226); /* theme's blue */
     text-decoration:none;
 }
-#BRtoolbar a:hover {
+.BRtoolbar a:hover {
   color: rgb(94, 163, 244);
 }
-#BRtoolbar a:active {
+.BRtoolbar a:active {
   color: rgb(55, 123, 201);
 }
 /* desktop header */
@@ -1202,7 +1202,7 @@ body.high-contrast #BRtwopageview img {
 .mm-panel { font-size: 12px; }
 .mm-panel h1 { margin-top: 0; color: rgb(36,94,131); font-size: 14px;}
 
-#BRtoolbar .BRmobileHamburgerWrapper { display: none; }
+.BRtoolbar .BRmobileHamburgerWrapper { display: none; }
 
 /* Responsive Utiltities */
 /* Desktop */
@@ -1218,10 +1218,10 @@ body.high-contrast #BRtwopageview img {
 /* Mobile Only */
 @media (max-width: 800px) {
   div#BRnavpos { margin-right: 90px; }
-  #BRtoolbar { height: 40px; }
-  #BRtoolbar.responsive #BRtoolbarbuttons { display: none; }
-  #BRtoolbar.responsive .BRmobileHamburgerWrapper { display: block; }
-  #BRtoolbar .BRmobileHamburgerWrapper { padding: 0 30px 0 50px; display: block; }
+  .BRtoolbar { height: 40px; }
+  .BRtoolbar.responsive #BRtoolbarbuttons { display: none; }
+  .BRtoolbar.responsive .BRmobileHamburgerWrapper { display: block; }
+  .BRtoolbar .BRmobileHamburgerWrapper { padding: 0 30px 0 50px; display: block; }
   .fieldset-embed { display: none; }
   .header.responsive {
     height: 40px;
