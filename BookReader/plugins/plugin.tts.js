@@ -33,8 +33,8 @@ BookReader.prototype.setup = (function(super_) {
                 return false;
             });
             // Setup sound manager for read-aloud
-            if (this.isSoundManagerSupported)
-                this.setupSoundManager();
+            if (br.isSoundManagerSupported)
+                br.setupSoundManager();
         });
 
         this.addEventListener('stop', function(e, br) {
