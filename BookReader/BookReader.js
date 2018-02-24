@@ -20,6 +20,8 @@ This file is part of BookReader.
 
 */
 
+window.BookReader = (function ($) {
+
 // BookReader()
 //______________________________________________________________________________
 // After you instantiate this object, you must supply the following
@@ -35,7 +37,12 @@ This file is part of BookReader.
 // You must also add a numLeafs property before calling init().
 
 function BookReader(options) {
+    this.setup(options);
+}
 
+// Private.
+// It is separate from the constructor, so plugins can extend.
+BookReader.prototype.setup = function(options) {
     // Mode constants
     this.constMode1up = 1;
     this.constMode2up = 2;
@@ -57,7 +64,6 @@ function BookReader(options) {
     this.displayedRows=[];
 
     this.displayedIndices = [];
-    //this.indicesToDisplay = [];
     this.imgs = {};
     this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index
 
@@ -70,9 +76,6 @@ function BookReader(options) {
     this.leafEdgeTmp  = null;
     this.embedPopup = null;
     this.printPopup = null;
-
-    this.searchTerm = '';
-    this.searchResults = null;
 
     this.firstIndex = null;
 
@@ -113,9 +116,7 @@ function BookReader(options) {
     };
 
     // Themes
-    this.themes = {
-        ol: null
-    };
+    this.themes = { ol: null };
     this.default_theme = 'ol';
     this.theme = 'ol';
 
@@ -133,29 +134,15 @@ function BookReader(options) {
     this.mobileNavTitle = 'Internet Archive';
     this.onePageMinBreakpoint = 800;
 
-    // Keep track of what page you are on
-    this.enablePageResume = false;
-
-    // Add search to menus
-    this.enableSearch = true;
-
     // Experimental Controls (eg b/w)
     this.enableExperimentalControls = false;
-
-    // Base server used by some api calls
-    this.server = '';
-    this.searchInsideUrl = '/fulltext/new_inside.php';
 
     // CSS selectors
     this.el = '#BookReader';
 
     // Private properties below
     this.refs = {};
-
-    return this;
 }
-
-(function ($) {
 
 // Library functions
 // At top of file so they can be used below
@@ -285,6 +272,7 @@ BookReader.prototype.init = function() {
     } else if ('undefined' != typeof(params.page)) {
         startIndex = this.getPageIndex(params.page);
     }
+    // Check for Resume plugin
     if ('undefined' == typeof(startIndex) && this.enablePageResume && this.numLeafs > 2) {
         // Check cookies
         var val = this.getResumeValue();
@@ -323,11 +311,6 @@ BookReader.prototype.init = function() {
     // Setup Navbars and other UI
 
     this.isTouchDevice = !!('ontouchstart' in window) || !!('msmaxtouchpoints' in window.navigator);
-
-    this.isSoundManagerSupported = false;
-    if (typeof(soundManager) !== 'undefined') {
-      this.isSoundManagerSupported = soundManager.supported();
-    }
 
     // Calculate Max page num (used for pagination display)
     this.maxPageNum = 0;
@@ -430,11 +413,6 @@ BookReader.prototype.init = function() {
         return false;
     });
 
-    //-------------------------------------------------------------------------
-    // Setup sound manager for read-aloud
-    if (this.isSoundManagerSupported) this.setupSoundManager();
-
-
     this.addEventListener('stop', function(e, br) {
         br.autoStop();
     });
@@ -468,11 +446,11 @@ BookReader.prototype.resize = function() {
       if (this.onePage.autofit != 'none') {
           this.resizePageView();
           this.centerPageView();
-          this.updateSearchHilites(); //deletes hilights but does not call remove()
+          if (this.enableSearch) this.updateSearchHilites(); //deletes hilights but does not call remove()
       } else {
           this.centerPageView();
           this.displayedIndices = [];
-          this.updateSearchHilites(); //deletes hilights but does not call remove()
+          if (this.enableSearch) this.updateSearchHilites(); //deletes hilights but does not call remove()
           this.drawLeafsThrottled();
       }
   } else if (this.constModeThumb == this.mode){
@@ -581,17 +559,6 @@ BookReader.prototype.setupTooltips = function() {
     ;
 }
 
-// setupSoundManager()
-//______________________________________________________________________________
-BookReader.prototype.setupSoundManager = function() {
-    soundManager.setup({
-        debugMode: false,
-        // Note, there's a bug in Chrome regarding range requests.
-        // Flash is used as a workaround.
-        // See https://bugs.chromium.org/p/chromium/issues/detail?id=505707
-        preferFlash: true
-    });
-};
 
 // drawLeafs()
 //______________________________________________________________________________
@@ -659,13 +626,10 @@ BookReader.prototype.drawLeafsOnePage = function() {
         var height  = parseInt(this._getPageHeight(i)/this.reduce);
 
         leafBottom += height;
-        //console.log('leafTop = '+leafTop+ ' pageH = ' + this._getPageHeight(i) + 'leafTop>=scrollTop=' + (leafTop>=scrollTop));
         var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
         var bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
         var middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
         if (topInView || bottomInView || middleInView) {
-            //console.log('displayed: ' + this.displayedIndices);
-            //console.log('to display: ' + i);
             indicesToDisplay.push(i);
         }
         leafTop += height +10;
@@ -740,7 +704,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
     }
 
     this.displayedIndices = indicesToDisplay.slice();
-    this.updateSearchHilites();
+    if (this.enableSearch) this.updateSearchHilites();
 
     if (null != this.getPageNum(firstIndexToDraw))  {
         $("#BRpagenum").val(this.getPageNum(this.currentIndex()));
@@ -922,7 +886,6 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                     // Store the URL of the image that will replace this one
                     .data('srcURL',  this._getPageURI(leaf, thumbReduce));
                 $(link).append(img);
-                //console.log('displaying thumbnail: ' + leaf);
             }
         }
     }
@@ -980,9 +943,6 @@ BookReader.prototype.lazyLoadThumbnails = function() {
 
     var loading = $('.BRlazyloading').length;
     var toLoad = this.thumbMaxLoading - loading;
-
-    // console.log('  ' + loading + ' thumbnails loading');
-    // console.log('  this.thumbMaxLoading ' + this.thumbMaxLoading);
 
     var self = this;
 
@@ -1171,8 +1131,8 @@ BookReader.prototype.zoom1up = function(direction) {
     this.updateToolbarZoom(this.reduce);
 
     // Recalculate search hilites
-    this.removeSearchHilites();
-    this.updateSearchHilites();
+    if (this.enableSearch) this.removeSearchHilites();
+    if (this.enableSearch) this.updateSearchHilites();
 
 };
 
@@ -1265,8 +1225,8 @@ BookReader.prototype.resizePageView1up = function() {
     this.displayedIndices = [];
     this.drawLeafs();
 
-    this.removeSearchHilites();
-    this.updateSearchHilites();
+    if (this.enableSearch) this.removeSearchHilites();
+    if (this.enableSearch) this.updateSearchHilites();
 };
 
 // Calculate the dimensions for a one page view with images at the given reduce and padding
@@ -1586,7 +1546,7 @@ BookReader.prototype.switchMode = function(mode) {
     }
 
     this.trigger('stop');
-    this.removeSearchHilites();
+    if (this.enableSearch) this.removeSearchHilites();
 
     if (this.mode == this.constMode1up || this.mode == this.constMode2up) {
       this._prevReadMode = this.mode;
@@ -1785,8 +1745,8 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
 
     this.prefetch();
 
-    this.removeSearchHilites();
-    this.updateSearchHilites();
+    if (this.enableSearch) this.removeSearchHilites();
+    if (this.enableSearch) this.updateSearchHilites();
 
 };
 
@@ -2388,7 +2348,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
 
     var self = this;
 
-    this.removeSearchHilites();
+    if (this.enableSearch) this.removeSearchHilites();
 
     $(this.prefetchedImgs[leftLeaf]).animate({width: '0px'}, self.flipSpeed, 'easeInSine', function() {
 
@@ -2438,7 +2398,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.prefetch();
             self.animating = false;
 
-            self.updateSearchHilites2UP();
+            if (this.enableSearch) self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
 
             self.setMouseHandlers2UP();
@@ -2527,7 +2487,7 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 
     var speed = this.flipSpeed;
 
-    this.removeSearchHilites();
+    if (this.enableSearch) this.removeSearchHilites();
 
     $(this.leafEdgeTmp).animate({left: gutter}, speed, 'easeInSine');
     $(this.prefetchedImgs[this.twoPage.currentIndexR]).animate({width: '0px'}, speed, 'easeInSine', function() {
@@ -2567,7 +2527,7 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             self.animating = false;
 
 
-            self.updateSearchHilites2UP();
+            if (this.enableSearch) self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
 
             // self.twoPagePlaceFlipAreas(); // No longer used
@@ -2822,182 +2782,6 @@ BookReader.prototype.getPageWidth2UP = function(index) {
     return Math.floor(this.twoPage.height*width/height); // $$$ we assume width is relative to current spread
 };
 
-// search()
-// @param {string} term
-// @param {object} options
-//______________________________________________________________________________
-BookReader.prototype.search = function(term, options) {
-    options = options !== undefined ? options : {};
-    var defaultOptions = {
-        // {bool} (default=false) goToFirstResult - jump to the first result
-        goToFirstResult: false,
-        // {bool} (default=false) disablePopup - don't show the modal progress
-        disablePopup: false,
-        error: br.BRSearchCallbackErrorDesktop,
-        success: br.BRSearchCallback,
-    };
-    options = jQuery.extend({}, defaultOptions, options);
-
-    $('.textSrch').blur(); //cause mobile safari to hide the keyboard
-
-    this.removeSearchResults();
-
-    this.searchTerm = term;
-    this.searchTerm = this.searchTerm.replace(/\//g, ' '); // strip slashes, since this goes in the url
-    this.updateLocationHash(true);
-
-    // Add quotes to the term. This is to compenstate for the backends default OR query
-    term = term.replace(/['"]+/g, '');
-    term = '"' + term + '"';
-
-    // Remove the port and userdir
-    var url = 'https://' + this.server.replace(/:.+/, '') + this.searchInsideUrl + '?';
-
-    // Remove subPrefix from end of path
-    var path = this.bookPath;
-    if (this.bookPath.length - this.bookPath.lastIndexOf(this.subPrefix) == this.subPrefix.length) {
-      path = this.bookPath.substr(0, this.bookPath.length - this.subPrefix.length);
-    }
-
-    var urlParams = {
-      'item_id': this.bookId,
-      'doc': this.subPrefix,
-      'path': path,
-      'q': term,
-    };
-
-    url += $.param(urlParams);
-
-    if (!options.disablePopup) {
-        this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
-    }
-    $.ajax({
-        url:url,
-        dataType:'jsonp',
-        success: function(data) {
-            if (data.error || 0 == data.matches.length) {
-                options.error.call(br, data, options);
-            } else {
-                options.success.call(br, data, options);
-            }
-        },
-    });
-};
-
-// BRSearchCallback()
-//______________________________________________________________________________
-BookReader.prototype.BRSearchCallback = function(results, options) {
-    br.searchResults = results;
-    $('#BRnavpos .search').remove();
-    $('#mobileSearchResultWrapper').empty(); // Empty mobile results
-
-    // Update Mobile count
-    var mobileResultsText = results.matches.length == 1 ? "1 match" : results.matches.length + " matches";
-    $('#mobileSearchResultWrapper').append("<div class='mobileNumResults'>"+mobileResultsText+" for &quot;"+this.searchTerm+"&quot;</div>");
-
-    var i, firstResultIndex = null;
-    for (i=0; i < results.matches.length; i++) {
-        br.addSearchResult(results.matches[i].text, br.leafNumToIndex(results.matches[i].par[0].page));
-        if (i === 0 && options.goToFirstResult === true) {
-          firstResultIndex = br.leafNumToIndex(results.matches[i].par[0].page);
-        }
-    }
-    br.updateSearchHilites();
-    br.removeProgressPopup();
-    if (firstResultIndex !== null) {
-        br.jumpToIndex(firstResultIndex);
-    }
-}
-
-// BRSearchCallbackErrorDesktop()
-//______________________________________________________________________________
-BookReader.prototype.BRSearchCallbackErrorDesktop = function(results, options) {
-    var $el = $(br.popup);
-    this._BRSearchCallbackError(results, $el, true);
-};
-
-// BRSearchCallbackErrorMobile()
-//______________________________________________________________________________
-BookReader.prototype.BRSearchCallbackErrorMobile = function(results, options) {
-    var $el = $('#mobileSearchResultWrapper');
-    this._BRSearchCallbackError(results, $el);
-};
-BookReader.prototype._BRSearchCallbackError = function(results, $el, fade, options) {
-    $('#BRnavpos .search').remove();
-    $('#mobileSearchResultWrapper').empty(); // Empty mobile results
-
-    br.searchResults = results;
-    var timeout = 2000;
-    if (results.error) {
-        if (/debug/.test(window.location.href)) {
-            $el.html(results.error);
-        } else {
-            timeout = 4000;
-            $el.html('Sorry, there was an error with your search.<br />The text may still be processing.');
-
-        }
-    } else if (0 == results.matches.length) {
-        var errStr  = 'No matches were found.';
-        timeout = 2000;
-        if (false === results.indexed) {
-            errStr  = "<p>This book hasn't been indexed for searching yet. We've just started indexing it, so search should be available soon. Please try again later. Thanks!</p>";
-            timeout = 5000;
-        }
-        $el.html(errStr);
-    }
-    if (fade) {
-        setTimeout(function(){
-            $el.fadeOut('slow', function() {
-                br.removeProgressPopup();
-            })
-        }, timeout);
-    }
-};
-
-
-// updateSearchHilites()
-//______________________________________________________________________________
-BookReader.prototype.updateSearchHilites = function() {
-    if (this.constMode2up == this.mode) {
-        this.updateSearchHilites2UP();
-    } else {
-        this.updateSearchHilites1UP();
-    }
-};
-
-// showSearchHilites1UP()
-//______________________________________________________________________________
-BookReader.prototype.updateSearchHilites1UP = function() {
-    var results = this.searchResults;
-    if (null == results) return;
-    var i, j;
-    for (i=0; i<results.matches.length; i++) {
-        for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
-            var box = results.matches[i].par[0].boxes[j];
-            var pageIndex = this.leafNumToIndex(box.page);
-            if (jQuery.inArray(pageIndex, this.displayedIndices) >= 0) {
-                if (null == box.div) {
-                    //create a div for the search highlight, and stash it in the box object
-                    box.div = document.createElement('div');
-                    $(box.div).prop('className', 'BookReaderSearchHilite').appendTo('#pagediv'+pageIndex);
-                }
-                $(box.div).css({
-                    width:  (box.r-box.l)/this.reduce + 'px',
-                    height: (box.b-box.t)/this.reduce + 'px',
-                    left:   (box.l)/this.reduce + 'px',
-                    top:    (box.t)/this.reduce +'px'
-                });
-            } else {
-                if (null != box.div) {
-                    $(box.div).remove();
-                    box.div=null;
-                }
-            }
-        }
-    }
-
-};
-
 
 // twoPageGutter()
 //______________________________________________________________________________
@@ -3126,36 +2910,7 @@ BookReader.prototype.twoPagePlaceFlipAreas = function() {
     });
 };
 
-// showSearchHilites2UPNew()
-//______________________________________________________________________________
-BookReader.prototype.updateSearchHilites2UP = function() {
-    var results = this.searchResults;
-    if (null == results) return;
-    var i, j;
-    for (i=0; i<results.matches.length; i++) {
-        //TODO: loop over all par objects
-        var pageIndex = this.leafNumToIndex(results.matches[i].par[0].page);
-        for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
-            var box = results.matches[i].par[0].boxes[j];
-            if (jQuery.inArray(pageIndex, this.displayedIndices) >= 0) {
-                if (null == box.div) {
-                    //create a div for the search highlight, and stash it in the box object
-                    box.div = document.createElement('div');
-                    $(box.div).prop('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
-                    //console.log('appending new div');
-                }
-                this.setHilightCss2UP(box.div, pageIndex, box.l, box.r, box.t, box.b);
-            } else {
-                if (null != box.div) {
-                    //console.log('removing search highlight div');
-                    $(box.div).remove();
-                    box.div=null;
-                }
-            }
-        }
-    }
 
-};
 
 // setHilightCss2UP()
 //______________________________________________________________________________
@@ -3183,23 +2938,6 @@ BookReader.prototype.setHilightCss2UP = function(div, index, left, right, top, b
         left:   pageL+left*reduce + 'px',
         top:    pageT+top*reduce +'px'
     });
-};
-
-// removeSearchHilites()
-//______________________________________________________________________________
-BookReader.prototype.removeSearchHilites = function() {
-    var results = this.searchResults;
-    if (null == results) return;
-    var i, j;
-    for (i=0; i<results.matches.length; i++) {
-        for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
-            var box = results.matches[i].par[0].boxes[j];
-            if (null != box.div) {
-                $(box.div).remove();
-                box.div=null;
-            }
-        }
-    }
 };
 
 
@@ -3473,235 +3211,6 @@ BookReader.prototype.updateNavIndexDebounced = BookReader.prototype.util.debounc
 BookReader.prototype.updateNavIndexThrottled = BookReader.prototype.util.throttle(BookReader.prototype.updateNavIndex, 500, false);
 
 
-BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
-    var pageNumber = this.getPageNum(pageIndex);
-    var uiStringSearch = "Search result"; // i18n
-    var uiStringPage = "Page"; // i18n
-
-    var percentThrough = BookReader.prototype.util.cssPercentage(pageIndex, this.numLeafs - 1);
-    var pageDisplayString = uiStringPage + ' ' + this.getNavPageNumString(pageIndex, true);
-
-    var searchBtSettings = {
-        contentSelector: '$(this).find(".query")',
-        trigger: 'hover',
-        closeWhenOthersOpen: true,
-        cssStyles: {
-            padding: '12px 14px',
-            backgroundColor: '#fff',
-            border: '4px solid rgb(216,216,216)',
-            fontSize: '13px',
-            color: 'rgb(52,52,52)'
-        },
-        shrinkToFit: false,
-        width: '230px',
-        padding: 0,
-        spikeGirth: 0,
-        spikeLength: 0,
-        overlap: '22px',
-        overlay: false,
-        killTitle: false,
-        textzIndex: 9999,
-        boxzIndex: 9998,
-        wrapperzIndex: 9997,
-        offsetParent: null,
-        positions: ['top'],
-        fill: 'white',
-        windowMargin: 10,
-        strokeWidth: 0,
-        cornerRadius: 0,
-        centerPointX: 0,
-        centerPointY: 0,
-        shadow: false
-    };
-
-    var re = new RegExp('{{{(.+?)}}}', 'g');
-    var queryStringWithA = queryString.replace(re,
-        '<a href="#" onclick="br.jumpToIndex('+pageIndex+'); return false;">$1</a>')
-
-    var queryStringWithB = queryString;
-    // This regex truncates words by num chars
-
-    if (queryStringWithB.length > 100) {
-        queryStringWithB = queryStringWithB.replace(/^(.{100}[^\s]*).*/, "$1");
-        queryStringWithB = queryStringWithB.replace(re, '<b>$1</b>');
-        queryStringWithB = queryStringWithB + '...';
-    } else {
-        queryStringWithB = queryStringWithB.replace(re, '<b>$1</b>');
-    }
-    queryStringWithB = queryStringWithB;
-
-    var marker = $(
-        '<div class="search" style="top:'+(-this.refs.$brContainer.height())+'px; left:' + percentThrough + ';" title="' + uiStringSearch + '"><div class="query">'
-        + queryStringWithA + '<span>' + uiStringPage + ' ' + pageNumber + '</span></div>'
-    )
-    .data({'self': this, 'pageIndex': pageIndex})
-    .appendTo('#BRnavline')
-    .bt(searchBtSettings)
-    .hover(function() {
-            // remove from other markers then turn on just for this
-            // XXX should be done when nav slider moves
-            $('.search,.chapter').removeClass('front');
-            $(this).addClass('front');
-        }, function() {
-            $(this).removeClass('front');
-        }
-    )
-    .bind('click', function() {
-        $(this).data('self').jumpToIndex($(this).data('pageIndex'));
-    });
-
-    $(marker).animate({top:'-25px'}, 'slow');
-
-    // Add Mobile Search Results
-    var self = this;
-    var imgPreviewUrl = this.getPageURI(pageIndex, 16, 0); // scale 16 is small
-    var $mobileSearchResultWrapper = $('#mobileSearchResultWrapper');
-    if ($mobileSearchResultWrapper.length) {
-        $('<a class="mobileSearchResult">'
-            +"<table>"
-            +"  <tr>"
-            +"     <span class='pageDisplay'>"+pageDisplayString+"</span>"
-            +"  </tr>"
-            +"  <tr>"
-            +"    <td>"
-            +"      <img class='searchImgPreview' src=\""+imgPreviewUrl+"\" />"
-            +"    </td>"
-            +"    <td>"
-            +"      <span>"+queryStringWithB+"</span>"
-            +"    </td>"
-            +"  </tr>"
-            +"</table>"
-        +'</a>')
-        .attr('href', '#search/' + this.searchTerm)
-        .click(function(e){
-            e.preventDefault();
-            self.switchMode(self.constMode1up);
-            self.jumpToIndex(pageIndex);
-            self.mmenu.data('mmenu').close();
-        })
-        .appendTo($mobileSearchResultWrapper)
-        ;
-    }
-};
-
-BookReader.prototype.removeSearchResults = function() {
-    this.removeSearchHilites(); //be sure to set all box.divs to null
-    this.searchTerm = null;
-    this.searchResults = null;
-    this.updateLocationHash(true);
-    $('#BRnavpos .search').remove();
-    $('#mobileSearchResultWrapper').empty(); // Empty mobile results
-};
-
-BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
-    var uiStringPage = 'Page'; // i18n
-
-    var percentThrough = BookReader.prototype.util.cssPercentage(pageIndex, this.numLeafs - 1);
-
-    $('<div class="chapter" style="left:' + percentThrough + ';"><div class="title">'
-        + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
-    .appendTo('#BRnavline')
-    .data({'self': this, 'pageIndex': pageIndex })
-    .bt({
-        contentSelector: '$(this).find(".title")',
-        trigger: 'hover',
-        closeWhenOthersOpen: true,
-        cssStyles: {
-            padding: '12px 14px',
-            backgroundColor: '#fff',
-            border: '4px solid rgb(216,216,216)',
-            fontSize: '13px',
-            color: 'rgb(52,52,52)'
-        },
-        shrinkToFit: true,
-        width: '200px',
-        padding: 0,
-        spikeGirth: 0,
-        spikeLength: 0,
-        overlap: '21px',
-        overlay: false,
-        killTitle: true,
-        textzIndex: 9999,
-        boxzIndex: 9998,
-        wrapperzIndex: 9997,
-        offsetParent: null,
-        positions: ['top'],
-        fill: 'white',
-        windowMargin: 10,
-        strokeWidth: 0,
-        cornerRadius: 0,
-        centerPointX: 0,
-        centerPointY: 0,
-        shadow: false
-    })
-    .hover( function() {
-            // remove hover effect from other markers then turn on just for this
-            $('.search,.chapter').removeClass('front');
-                $(this).addClass('front');
-            }, function() {
-                $(this).removeClass('front');
-            }
-    )
-    .bind('click', function() {
-        $(this).data('self').jumpToIndex($(this).data('pageIndex'));
-    });
-};
-
-/*
- * Remove all chapters.
- */
-BookReader.prototype.removeChapters = function() {
-    $('#BRnavpos .chapter').remove();
-};
-
-/*
- * Update the table of contents based on array of TOC entries.
- */
-BookReader.prototype.updateTOC = function(tocEntries) {
-    this.removeChapters();
-    for (var i = 0; i < tocEntries.length; i++) {
-        this.addChapterFromEntry(tocEntries[i]);
-    }
-};
-
-/*
- *   Example table of contents entry - this format is defined by Open Library
- *   {
- *       "pagenum": "17",
- *       "level": 1,
- *       "label": "CHAPTER I",
- *       "type": {"key": "/type/toc_item"},
- *       "title": "THE COUNTRY AND THE MISSION"
- *   }
- */
-BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-    var pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
-    // Only add if we know where it is
-    if (pageIndex) {
-        this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
-    }
-    $('.chapter').each(function(){
-        $(this).hover(function(){
-            $(this).addClass('front');
-        },function(){
-            $(this).removeClass('front');
-        });
-    });
-    $('.search').each(function(){
-        $(this).hover(function(){
-            $(this).addClass('front');
-        },function(){
-            $(this).removeClass('front');
-        });
-    });
-    $('.searchChap').each(function(){
-        $(this).hover(function(){
-            $(this).addClass('front');
-        },function(){
-            $(this).removeClass('front');
-        });
-    });
-};
 
 /**
  * This method builds the html for the toolbar. It can be decorated to extend
@@ -3709,29 +3218,11 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
  * @return {jqueryElement}
  */
 BookReader.prototype.buildToolbarElement = function() {
-  // $$$mang should be contained within the BookReader div instead of body
-  var readIcon = '';
-  if (this.isSoundManagerSupported) {
-      readIcon = "<button class='BRicon read modal js-tooltip'></button>";
-  }
-
   var escapedTitle = BookReader.prototype.util.escapeHTML(this.bookTitle);
 
   var mobileClass = '';
   if (this.enableMobileNav) {
     mobileClass = 'responsive';
-  }
-
-  var desktopSearchHtml = '';
-  if (this.enableSearch) {
-      desktopSearchHtml = "<span class='BRtoolbarSection BRtoolbarSectionSearch tc ph20 last'>"
-      +         "<form class='booksearch desktop'>"
-      +           "<input type='search' class='textSrch form-control' name='textSrch' val='' placeholder='Search inside this book'/>"
-      +           "<button type='submit' id='btnSrch' name='btnSrch'>"
-      +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
-      +           "</button>"
-      +         "</form>"
-      +       "</span>";
   }
 
   // Add large screen navigation
@@ -3758,7 +3249,6 @@ BookReader.prototype.buildToolbarElement = function() {
     +       "<span class='BRtoolbarSection BRtoolbarSectionInfo tc ph10'>"
     +         "<button class='BRicon info js-tooltip'></button>"
     +         "<button class='BRicon share js-tooltip'></button>"
-    +         readIcon
     +       "</span>"
 
     // zoom
@@ -3766,9 +3256,6 @@ BookReader.prototype.buildToolbarElement = function() {
     +         "<button class='BRicon zoom_out js-tooltip'></button>"
     +         "<button class='BRicon zoom_in js-tooltip'></button>"
     +       "</span>"
-
-    // Search
-    + desktopSearchHtml
 
     +     "</span>" // end BRtoolbarRight
     +   "</span>" // end desktop-only
@@ -3789,40 +3276,6 @@ BookReader.prototype.buildMobileDrawerElement = function() {
       experimentalHtml += "<div class=\"DrawerSettingsTitle\">Experimental (may not work)</div>"
         +"        <button class='action high-contrast-button'>Toggle high contrast</button>";
     }
-
-    var readAloud = '';
-    if (this.isSoundManagerSupported) {
-        readAloud = "    <li>"
-        +"      <span>"
-        +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_speaker_open.svg\" alt=\"info-speaker\"/></span>"
-        +"        Read Aloud"
-        +"      </span>"
-        +"      <div>"
-        +"        <span class='larger'>Press to toggle read aloud</span> <br/>"
-        +"        <button class='BRicon read modal'></button>"
-        +"      </div>"
-        +"    </li>";
-    }
-
-    var mobileSearchHtml = '';
-    if (this.enableSearch) {
-        mobileSearchHtml = "<li>"
-        +"      <span>"
-        +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_search_button_blue.svg\" alt=\"info-speaker\"/></span>"
-        +"        Search"
-        +"      </span>"
-        +"      <div>"
-        +         "<form class='booksearch mobile'>"
-        +           "<input type='search' class='textSrch form-control' name='textSrch' val='' placeholder='Search inside'/>"
-        +           "<button type='submit' id='btnSrch' name='btnSrch'>"
-        +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
-        +           "</button>"
-        +         "</form>"
-        +         "<div id='mobileSearchResultWrapper'>Enter your search above.</div>"
-        +"      </div>"
-        +"    </li>";
-    }
-
 
     return $(
       "<nav id=\"BRmobileMenu\" class=\"BRmobileMenu\">"
@@ -3847,15 +3300,13 @@ BookReader.prototype.buildMobileDrawerElement = function() {
       +         experimentalHtml
       +"      </div>"
       +"    </li>"
-      +"    <li>"
+      +"    <li class='BRmobileMenu--moreInfoRow'>"
       +"      <span>"
       +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_info.svg\" alt=\"info-icon\"/></span>"
       +"        About This Book"
       +"      </span>"
       +"      <div id=\"mobileInfo\"></div>"
       +"    </li>"
-      + mobileSearchHtml
-      + readAloud
       +"    <li>"
       +"      <span>"
       +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_share.svg\" alt=\"info-share\"/></span>"
@@ -3998,36 +3449,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     $('.DrawerLayoutButton.thumbnail_mode').click(function() {
       self.switchMode(self.constModeThumb);
     });
-
-
-    // Bind search form
-    if (this.enableSearch) {
-        $('.booksearch.desktop').submit(function(e) {
-            e.preventDefault();
-            var val = $(this).find('.textSrch').val();
-            if (!val.length) return false;
-            self.search(val);
-            return false;
-        });
-        $('.booksearch.mobile').submit(function(e) {
-            e.preventDefault();
-            var val = $(this).find('.textSrch').val();
-            if (!val.length) return false;
-            self.search(val, {
-                disablePopup:true,
-                error: self.BRSearchCallbackErrorMobile,
-            });
-            $('#mobileSearchResultWrapper').append(
-                '<div class="">Your search results will appear below.</div>'
-                + '<div class="loader tc mt20"></div>'
-            );
-            return false;
-        });
-        // Handle clearing the search results
-        $(".textSrch").bind('input propertychange', function() {
-            if (this.value == "") self.removeSearchResults();
-        });
-    }
 };
 
 BookReader.prototype.blankInfoDiv = function() {
@@ -4910,37 +4331,6 @@ BookReader.prototype.canSwitchToMode = function(mode) {
     return true;
 };
 
-// searchHighlightVisible
-//________
-// Returns true if a search highlight is currently being displayed
-BookReader.prototype.searchHighlightVisible = function() {
-    var results = this.searchResults;
-    if (null == results) return false;
-
-    if (this.constMode2up == this.mode) {
-        var visiblePages = Array(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
-    } else if (this.constMode1up == this.mode) {
-        var visiblePages = Array();
-        visiblePages[0] = this.currentIndex();
-    } else {
-        return false;
-    }
-
-    var i, j;
-    for (i=0; i<results.matches.length; i++) {
-        //console.log(results.matches[i].par[0]);
-        for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
-            var box = results.matches[i].par[0].boxes[j];
-            var pageIndex = this.leafNumToIndex(box.page);
-            if (jQuery.inArray(pageIndex, visiblePages) >= 0) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-};
-
 // _getPageWidth
 //--------
 // Returns the page width for the given index, or first or last page if out of range
@@ -4992,9 +4382,6 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 
     return this.getPageURI(index, reduce, rotate);
 };
-
-// Stub Method. Original removed from Book Reader source
-BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {};
 
 
 // showProgressPopup
@@ -5311,59 +4698,12 @@ BookReader.prototype.getNavHeight = function(ignoreDisplay) {
 }
 
 
-/**
- * Get's the page resume value, for remembering reader's page
- * Can be overriden for different implementation
- * @return {Number|null}
- */
-BookReader.prototype.getResumeValue = function() {
-    var val = BookReader.prototype.docCookies.getItem('br-resume');
-    if (val !== null) return parseInt(val);
-    else return null;
-}
-
-/**
- * Set's the page resume value, for remembering reader's page
- * Can be overriden for different implementation
- * @param {Number} the leaf index
- */
-BookReader.prototype.updateResumeValue = function(index) {
-    var ttl = new Date(+new Date + 12096e5); // 2 weeks
-    var path = window.location.pathname;
-    BookReader.prototype.docCookies.setItem('br-resume', index, ttl, path, null, false);
-}
-
-/*\
-|*|  https://developer.mozilla.org/en-US/docs/Web/API/document.cookie
-|*|  https://developer.mozilla.org/User:fusionchess
-|*|  https://github.com/madmurphy/cookies.js
-|*|  This framework is released under the GNU Public License, version 3 or later.
-|*|  http://www.gnu.org/licenses/gpl-3.0-standalone.html
-\*/
-BookReader.prototype.docCookies = {
-  getItem: function (sKey) {
-    if (!sKey) { return null; }
-    return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
-  },
-  setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
-    var sExpires = "";
-    if (vEnd) {
-      sExpires = "; expires=" + vEnd.toUTCString();
-    }
-    document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
-    return true;
-  },
-  removeItem: function (sKey, sPath, sDomain) {
-    if (!this.hasItem(sKey)) { return false; }
-    document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "");
-    return true;
-  },
-};
-
 
 // Fix for deprecated method
 jQuery.curCSS = function(element, prop, val) {
     return jQuery(element).css(prop, val);
 };
+
+return BookReader;
 
 })(jQuery);
