@@ -23,18 +23,7 @@ This file is part of BookReader.
 window.BookReader = (function ($) {
 
 // BookReader()
-//______________________________________________________________________________
-// After you instantiate this object, you must supply the following
-// book-specific functions, before calling init().  Some of these functions
-// can just be stubs for simple books.
-//  - getPageWidth()
-//  - getPageHeight()
-//  - getPageURI()
-//  - getPageSide()
-//  - canRotatePage()
-//  - getPageNum()
-//  - getSpreadIndices()
-// You must also add a numLeafs property before calling init().
+//_________________________________________________________________________
 
 function BookReader(options) {
     this.setup(options);
@@ -48,20 +37,104 @@ BookReader.prototype.setup = function(options) {
     this.constMode2up = 2;
     this.constModeThumb = 3;
 
-    this.reduce  = 4;
-    this.padding = 10;          // Padding in 1up
+    options = Object.assign({
+      // Padding in 1up
+      'padding': 10,
+      // UI mode
+      'ui': 'full', // full, embed, responsive
 
-    this.mode    = this.constMode1up;
-    this.ui = 'full';           // UI mode
-    this.uiAutoHide = false;    // Controls whether nav/toolbar will autohide
+      // Controls whether nav/toolbar will autohide
+      'uiAutoHide': false,
 
-    // thumbnail mode
+      // thumbnail mode
+      // number of rows to pre-cache out a view
+      'thumbRowBuffer': 2,
+      'thumbColumns': 6,
+      // number of thumbnails to load at once
+      'thumbMaxLoading': 4,
+      // spacing between thumbnails
+      thumbPadding: 10,
+      // speed for flip animation
+      flipSpeed: 'fast',
+
+      // Fo custom implmentations.
+      'logoURL': 'https://www.archive.org',
+
+      // Base URL for UI images - should be overriden (before init) by
+      // custom implementations.
+      // $$$ This is the same directory as the images referenced by relative
+      //     path in the CSS.  Would be better to automagically find that path.
+      'imagesBaseURL': '/bookreader/images/',
+
+      // Zoom levels
+      // $$$ provide finer grained zooming, {reduce: 8, autofit: null}, {reduce: 16, autofit: null}
+      /* The autofit code ensures that fit to width and fit to height will be available */
+      'reductionFactors': [
+        {reduce: 0.5, autofit: null},
+        {reduce: 1, autofit: null},
+        {reduce: 2, autofit: null},
+        {reduce: 3, autofit: null},
+        {reduce: 4, autofit: null},
+        {reduce: 6, autofit: null}
+      ],
+
+      // Object to hold parameters related to 1up mode
+      'onePage': {
+          autofit: 'auto', // valid values are height, width, auto, none
+      },
+
+      // Object to hold parameters related to 2up mode
+      'twoPage': {
+          coverInternalPadding: 0, // Width of cover
+          coverExternalPadding: 0, // Padding outside of cover
+          bookSpineDivWidth: 64,    // Width of book spine  $$$ consider sizing based on book length
+          autofit: 'auto'
+      },
+
+      'bookUrl': null,
+      'bookUrlText': null,
+      'bookUrlTitle': null,
+
+      // Fields used to populate the info window
+      'metadata': [],
+      'thumbnail': null,
+      'bookUrlMoreInfo': null,
+
+      // Settings for mobile
+      'enableMobileNav': true,
+      'mobileNavTitle': 'Internet Archive',
+      'onePageMinBreakpoint': 800,
+
+      // Experimental Controls (eg b/w)
+      'enableExperimentalControls': false,
+
+      // CSS selectors
+      // Where BookReader mounts to
+      'el': '#BookReader',
+
+      // Advanced methods for page rendering
+      'getPageWidth': function () {},
+      'getPageHeight': function() {},
+      'getPageURI': function () {},
+      'getPageSide': function () {},
+      'getPageNum': function () {},
+      'getSpreadIndices': function () {},
+    }, options);
+
+    // Private properties below
+
+    this.reduce = 4;
+    this.padding = options.padding;
+    this.mode = this.constMode1up;
+    this.ui = options.ui;
+    this.uiAutoHide = options.uiAutoHide;
+
     this.thumbWidth = 100; // will be overridden during prepareThumbnailView
-    this.thumbRowBuffer = 2; // number of rows to pre-cache out a view
-    this.thumbColumns = 6; // default
-    this.thumbMaxLoading = 4; // number of thumbnails to load at once
-    this.thumbPadding = 10; // spacing between thumbnails
-    this.displayedRows=[];
+    this.thumbRowBuffer = options.thumbRowBuffer;
+    this.thumbColumns = options.thumbColumns;
+    this.thumbMaxLoading = options.thumbMaxLoading;
+    this.thumbPadding = options.thumbPadding;
+    this.displayedRows = [];
 
     this.displayedIndices = [];
     this.imgs = {};
@@ -70,69 +143,41 @@ BookReader.prototype.setup = function(options) {
     this.animating = false;
     this.auto      = false;
     this.autoTimer = null;
-    this.flipSpeed = 'fast';
-
+    this.flipSpeed = options.flipSpeed;
     this.twoPagePopUp = null;
     this.leafEdgeTmp  = null;
-
     this.firstIndex = null;
-
     this.lastDisplayableIndex2up = null;
 
-    // Should be overriden (before init) by custom implmentations.
-    this.logoURL = 'https://www.archive.org';
+    this.logoURL = options.logoURL;
+    this.imagesBaseURL = options.imagesBaseURL;
 
-    // Base URL for UI images - should be overriden (before init) by
-    // custom implementations.
-    // $$$ This is the same directory as the images referenced by relative
-    //     path in the CSS.  Would be better to automagically find that path.
-    this.imagesBaseURL = '/bookreader/images/';
+    this.reductionFactors = options.reductionFactors;
+    this.onePage = options.onePage;
+    this.twoPage = options.twoPage;
 
-    // Zoom levels
-    // $$$ provide finer grained zooming, {reduce: 8, autofit: null}, {reduce: 16, autofit: null}
-    /* The autofit code ensures that fit to width and fit to height will be available */
-    this.reductionFactors = [ {reduce: 0.5, autofit: null},
-                          {reduce: 1, autofit: null},
-                          {reduce: 2, autofit: null},
-                          {reduce: 3, autofit: null},
-                          {reduce: 4, autofit: null},
-                          {reduce: 6, autofit: null} ];
+    this.bookUrl = options.bookUrl;
+    this.bookUrlText = options.bookUrlText;
+    this.bookUrlTitle = options.bookUrlTitle;
 
+    this.metadata = options.metadata;
+    this.thumbnail = options.thumbnail;
+    this.bookUrlMoreInfo = options.bookUrlMoreInfo;
 
-    // Object to hold parameters related to 1up mode
-    this.onePage = {
-        autofit: 'auto',       // valid values are height, width, auto, none
-    };
+    this.enableMobileNav = options.enableMobileNav;
+    this.mobileNavTitle = options.mobileNavTitle;
+    this.onePageMinBreakpoint = options.onePageMinBreakpoint;
 
-    // Object to hold parameters related to 2up mode
-    this.twoPage = {
-        coverInternalPadding: 0, // Width of cover
-        coverExternalPadding: 0, // Padding outside of cover
-        bookSpineDivWidth: 64,    // Width of book spine  $$$ consider sizing based on book length
-        autofit: 'auto'
-    };
+    this.enableExperimentalControls = options.enableExperimentalControls;
+    this.el = options.el;
 
-    this.bookUrl = null;
-    this.bookUrlText = null;
-    this.bookUrlTitle = null;
+    this.getPageWidth = options.getPageWidth;
+    this.getPageHeight = options.getPageHeight;
+    this.getPageURI = options.getPageURI;
+    this.getPageSide = options.getPageSide;
+    this.getPageNum = options.getPageNum;
+    this.getSpreadIndices = options.getSpreadIndices;
 
-    // Fields used to populate the info window
-    this.metadata = [];
-    this.thumbnail = null;
-    this.bookUrlMoreInfo = null;
-
-    // Settings for mobile
-    this.enableMobileNav = true;
-    this.mobileNavTitle = 'Internet Archive';
-    this.onePageMinBreakpoint = 800;
-
-    // Experimental Controls (eg b/w)
-    this.enableExperimentalControls = false;
-
-    // CSS selectors
-    this.el = '#BookReader';
-
-    // Private properties below
     this.refs = {};
 }
 
