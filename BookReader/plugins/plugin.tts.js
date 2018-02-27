@@ -503,6 +503,10 @@ BookReader.prototype.setupSoundManager = function() {
         // Note, there's a bug in Chrome regarding range requests.
         // Flash is used as a workaround.
         // See https://bugs.chromium.org/p/chromium/issues/detail?id=505707
-        preferFlash: true
+        preferFlash: true,
+        url: '/bookreader/BookReader/soundmanager/swf',
+        useHTML5Audio: true,
+        //flash 8 version of swf is buggy when calling play() on a sound that is still loading
+        flashVersion: 9
     });
 };
