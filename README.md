@@ -19,34 +19,68 @@ python -m SimpleHTTPServer
 
 And then open `http://localhost:8000/BookReaderDemo/demo-simple.html`.
 
+
 ## Usage
 
-The best way to learn how to use BookReader is to view the source of the demos. The general idea is to instantiate a BookReader instance, and override some property and methods. Here is a short example:
+Here is a short example.
 
 ```
-var br = new BookReader();
-br.numLeafs = 15;
-br.bookTitle= 'Internet Archive BookReader Example';
+// Create the BookReader object
+var options = {
+  data: [
+    [
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page001.jpg' },
+    ],
+    [
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page002.jpg' },
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page003.jpg' },
+    ],
+    [
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page004.jpg' },
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page005.jpg' },
+    ]
+  ],
 
-br.getPageURI = function(index, reduce, rotate) {
-  var leafStr = '000';
-  var imgStr = (index+1).toString();
-  var re = new RegExp("0{"+imgStr.length+"}$");
-  var url = 'http://example.com/image_'+leafStr.replace(re, imgStr) + '.jpg';
-  return url;
-}
+  bookTitle: 'Simple BookReader Presentation',
 
-// ... some code omitted
+  // thumbnail is optional, but it is used in the info dialog
+  thumbnail: '//archive.org/download/BookReader/img/page014.jpg',
 
+  // Metadata is optional, but it is used in the info dialog
+  metadata: [
+    {label: 'Title', value: 'Open Library BookReader Presentation'},
+    {label: 'Author', value: 'Internet Archive'},
+    {label: 'Demo Info', value: 'This demo shows how one could use BookReader with their own content.'},
+  ],
+
+  ui: 'full', // embed, full (responsive)
+
+};
+var br = new BookReader(options);
+
+// Let's go!
 br.init();
+
 ```
 
-See `BookReaderDemo/demo-simple.html` and `BookReaderDemo/BookReaderJSSimple.js` for a full example.
+See `BookReaderDemo/demo-simple.html` and `BookReaderDemo/BookReaderJSSimple.js` for a full example. The best way to learn how to use BookReader is to view the source of the demos.
 
 ### Properties
 
-- TODO (for now see BookReader.js and BookReader function at approx. line 37)
+- TODO (for now see BookReader.js and BookReader function at approx. line 44)
 
+
+## Notes about version 3
+
+- Make BookReader easier to use, by adding `options` to the constructor, and adding new `options.data` option. The old way of overriding properties should still work, but it is deprecated.  
+- Factor out extra features into plugins. See `plugins` directory.   
+- Clean up code: Remove a lot of commented-out code. Remove some unused methods.
+- Change some, but not all, CSS ids to classes.  
 
 ## Notes about version 2
 
@@ -81,6 +115,17 @@ Some notes for contributing:
 - Please try to avoid adding new libraries
 - If the PR is a bug fix, include a link to a jsbin/codepen if possible
 - Please test the changes in desktop, mobile, and embed modes, and also on many different devices/browsers.
+
+
+## Plugins
+
+A work-in-progress plugin system is in being developed. The API might change. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:
+
+- plugins.chapters.js - render chapter markers  
+- plugins.search.js - add search ui, and callbacks  
+- plugins.tts.js - add tts (read aloud) ui, sound library, and callbacks  
+- plugins.url.js - automatically updates the browser url  
+- plugins.resume.js - uses cookies to remember the current page  
 
 
 ## License

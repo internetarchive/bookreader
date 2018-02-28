@@ -29,7 +29,7 @@ var options = {
       var leafStr = '000';
       var imgStr = (index+1).toString();
       var re = new RegExp("0{"+imgStr.length+"}$");
-      var url = 'http://www.archive.org/download/BookReader/img/page'+leafStr.replace(re, imgStr) + '.jpg';
+      var url = 'http://archive.org/download/BookReader/img/page'+leafStr.replace(re, imgStr) + '.jpg';
       return url;
   },
 
@@ -82,11 +82,11 @@ var options = {
 
   // Book title and the URL used for the book title link
   bookTitle: 'Internet Archive BookReader Presentation',
-  bookUrl: 'http://www.archive.org/details/BookReader',
+  bookUrl: '//archive.org/details/BookReader',
   bookUrlText: 'Back to details on Archive.org',
   bookUrlTitle: 'Back to details on Archive.org',
   // thumbnail is optional, but it is used in the info dialog
-  thumbnail: '//www.archive.org/download/BookReader/img/page014.jpg',
+  thumbnail: '//archive.org/download/BookReader/img/page014.jpg',
   // Metadata is optional, but it is used in the info dialog
   metadata: [
     {label: 'Title', value: 'Open Library BookReader Presentation'},

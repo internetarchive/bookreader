@@ -6,10 +6,11 @@ BookReader.prototype.setup = (function(super_) {
     return function (options) {
         super_.call(this, options);
 
-        options = Object.assign({
+        options = jQuery.extend(true, {
+            enableThemesPlugin: true,
         }, options);
 
-        this.enableThemesPlugin = true;
+        this.enableThemesPlugin = options.enableThemesPlugin;
 
         // Themes
         this.themes = { ol: null };

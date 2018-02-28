@@ -6,12 +6,13 @@ BookReader.prototype.setup = (function(super_) {
     return function (options) {
         super_.call(this, options);
 
-        options = Object.assign({
+        options = jQuery.extend(true, {
+            enableUrlPlugin: true,
         }, options);
 
-        this.enableUrlPlugin = false;
+        this.enableUrlPlugin = options.enableUrlPlugin;
 
-        this.addEventListener('PostInit', function(e, br) {
+        this.bind('PostInit', function(e, br) {
             // Set document title -- may have already been set in enclosing html for
             // search engine visibility
             document.title = br.shortTitle(50);
@@ -52,8 +53,7 @@ BookReader.prototype.startLocationPolling = function() {
         var newHash = window.location.hash;
         if (newHash != self.oldLocationHash && newHash != self.oldUserHash) {
             // Only process new user hash once
-            //console.log('url change detected ' + self.oldLocationHash + " -> " + newHash);
-            self.trigger('stop');;
+            self.trigger('stop');
 
             // Queue change if animating
             if (self.animating) {
@@ -193,7 +193,7 @@ BookReader.prototype.paramsFromFragment = function(urlFragment) {
     // $$$ process /search
 
     if (urlHash['search'] != undefined) {
-        params.searchTerm = BookReader.prototype.util.decodeURIComponentPlus(urlHash['search']);
+        params.searchTerm = BookReader.util.decodeURIComponentPlus(urlHash['search']);
     }
 
     // $$$ process /highlight
@@ -246,5 +246,5 @@ BookReader.prototype.fragmentFromParams = function(params) {
         fragments.push('search', params.searchTerm);
     }
 
-    return BookReader.prototype.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+    return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
 };

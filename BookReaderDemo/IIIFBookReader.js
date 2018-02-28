@@ -141,7 +141,7 @@
                     brInstance.IIIFsequence.title = "here's a sequence";
                     brInstance.IIIFsequence.bookUrl = "http://iiif.io";
                     brInstance.IIIFsequence.imagesList = getImagesList(sequence);
-                    brInstance.numLeafs = brInstance.IIIFsequence.imagesList.length;
+                    brInstance.getNumLeafs() = brInstance.IIIFsequence.imagesList.length;
                 }
             });
 

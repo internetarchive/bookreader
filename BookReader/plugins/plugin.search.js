@@ -3,31 +3,25 @@
  */
 
 
-// Extend the constructor to add TTS properties
-BookReader.prototype.setup = (function(super_) {
+// Extend the constructor to add search properties
+BookReader.prototype.setup = (function (super_) {
     return function (options) {
         super_.call(this, options);
 
-        // Default options for TTS
-        options = Object.assign({
-          server: 'ia600609.us.archive.org',
+        options = jQuery.extend(true, {
+            server: 'ia600609.us.archive.org',
+            enableSearch: true,
+            searchInsideUrl: '/fulltext/new_inside.php',
         }, options);
 
         this.searchTerm = '';
         this.searchResults = null;
-        this.searchInsideUrl = '/fulltext/new_inside.php';
+        this.searchInsideUrl = options.searchInsideUrl;
 
-        this.enableSearch = true;
+        this.enableSearch = options.enableSearch;
 
         // Base server used by some api calls
-        this.server = '';
-
-        // Bind to events
-        this.addEventListener('PostInit', function(e, br) {
-        });
-
-        this.addEventListener('stop', function(e, br) {
-        });
+        this.server = options.server;
     };
 })(BookReader.prototype.setup);
 
@@ -36,9 +30,8 @@ BookReader.prototype.setup = (function(super_) {
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
-        if (this.isSoundManagerSupported) {
-            // TODO append after
-            $el.find('.BRmobileMenu--moreInfoRow').append($(
+        if (this.enableSearch) {
+            $el.find('.BRmobileMenu__moreInfoRow').after($(
                 "<li>"
                 +"      <span>"
                 +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_search_button_blue.svg\" alt=\"info-speaker\"/></span>"
@@ -81,8 +74,14 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
 
 // Extend initToolbar
 BookReader.prototype.initToolbar = (function (super_) {
-    return function () {
-        super_.call(this);
+    return function (mode, ui) {
+        super_.apply(this, arguments);
+
+        if (ui == 'embed') {
+            return;
+        }
+
+        var self = this;
 
         // Bind search forms
         $('.booksearch.desktop').submit(function(e) {
@@ -347,7 +346,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     var uiStringSearch = "Search result"; // i18n
     var uiStringPage = "Page"; // i18n
 
-    var percentThrough = BookReader.prototype.util.cssPercentage(pageIndex, this.numLeafs - 1);
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
     var pageDisplayString = uiStringPage + ' ' + this.getNavPageNumString(pageIndex, true);
 
     var searchBtSettings = {
