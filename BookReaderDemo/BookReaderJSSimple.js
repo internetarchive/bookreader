@@ -25,10 +25,10 @@ var options = {
   ],
 
   // Book title and the URL used for the book title link
-  bookTitle: 'Simple BookReader Presentation',
-  bookUrl: 'https://archive.org/details/BookReader',
-  bookUrlText: 'Back to Archive.org',
-  bookUrlTitle: 'Back to Archive.org',
+  bookTitle: 'BookReader Demo',
+  bookUrl: '/BookReaderDemo/index.html',
+  bookUrlText: 'Back to Demos',
+  bookUrlTitle: 'This is the book URL title',
 
   // thumbnail is optional, but it is used in the info dialog
   thumbnail: '//archive.org/download/BookReader/img/page014.jpg',
@@ -47,6 +47,4 @@ var options = {
   el: '#BookReader',
 };
 var br = new BookReader(options);
-
-// Let's go!
 br.init();

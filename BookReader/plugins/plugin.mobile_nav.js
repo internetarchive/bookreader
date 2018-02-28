@@ -1,6 +1,6 @@
 /**
  * Adds mobile navigation at responsive breakpoint
- * NOTE addition script and style must be included.
+ * NOTE additional script and style tags must be included.
  *
  * <script src="../BookReader/mmenu/dist/js/jquery.mmenu.min.js"></script>
  * <script src="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js"></script>

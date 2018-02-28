@@ -81,10 +81,10 @@ var options = {
   },
 
   // Book title and the URL used for the book title link
-  bookTitle: 'Internet Archive BookReader Presentation',
-  bookUrl: '//archive.org/details/BookReader',
-  bookUrlText: 'Back to details on Archive.org',
-  bookUrlTitle: 'Back to details on Archive.org',
+  bookTitle: 'BookReader Advanced Demo',
+  bookUrl: '/BookReaderDemo/index.html',
+  bookUrlText: 'Back to Demos',
+  bookUrlTitle: 'This is the book URL title',
   // thumbnail is optional, but it is used in the info dialog
   thumbnail: '//archive.org/download/BookReader/img/page014.jpg',
   // Metadata is optional, but it is used in the info dialog
