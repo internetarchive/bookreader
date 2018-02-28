@@ -105,11 +105,6 @@ BookReader.prototype.setup = function(options) {
       thumbnail: null,
       bookUrlMoreInfo: null,
 
-      // Settings for mobile
-      enableMobileNav: false,
-      mobileNavTitle: 'Internet Archive',
-      onePageMinBreakpoint: 800,
-
       // Experimental Controls (eg b/w)
       enableExperimentalControls: false,
 
@@ -204,10 +199,6 @@ BookReader.prototype.setup = function(options) {
     this.metadata = options.metadata;
     this.thumbnail = options.thumbnail;
     this.bookUrlMoreInfo = options.bookUrlMoreInfo;
-
-    this.enableMobileNav = options.enableMobileNav;
-    this.mobileNavTitle = options.mobileNavTitle;
-    this.onePageMinBreakpoint = options.onePageMinBreakpoint;
 
     this.enableExperimentalControls = options.enableExperimentalControls;
     this.el = options.el;
@@ -3223,10 +3214,10 @@ BookReader.prototype.initEmbedNavbar = function() {
         +         '<button class="BRicon book_right"></button>'
         +   "</span>"
         +   "<a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a>"
-        +   "<span id='BRembedreturn'><a href='" + thisLink + "' target='_blank' ></a></span>"
+        +   "<span class='BRembedreturn'><a href='" + thisLink + "' target='_blank' ></a></span>"
         + '</div>'
     );
-    $('#BRembedreturn a').text(this.bookTitle);
+    this.refs.$br.find('.BRembedreturn a').text(this.bookTitle);
 };
 
 
@@ -3268,20 +3259,10 @@ BookReader.prototype.updateNavIndexThrottled = BookReader.util.throttle(BookRead
  * @return {jqueryElement}
  */
 BookReader.prototype.buildToolbarElement = function() {
-  var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
-
-  var mobileClass = '';
-  if (this.enableMobileNav) {
-    mobileClass = 'responsive';
-  }
 
   // Add large screen navigation
   this.refs.$BRtoolbar = $(
-    "<div class='BRtoolbar header "+mobileClass+"'>"
-    +   "<span class='BRmobileHamburgerWrapper'>"
-    +     "<span class=\"hamburger\"><a href=\"#BRmobileMenu\"></a></span>"
-    +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
-    +   "</span>"
+    "<div class='BRtoolbar header'>"
     +   "<span class='BRtoolbarbuttons'>"
     +     "<span class='BRtoolbarLeft'>"
     +       "<span class='BRtoolbarSection BRtoolbarSectionLogo tc'>"
@@ -3315,59 +3296,6 @@ BookReader.prototype.buildToolbarElement = function() {
 }
 
 
-/**
- * This method builds the html for the mobile drawer. It can be decorated to
- * extend the default drawer.
- * @return {jqueryElement}
- */
-BookReader.prototype.buildMobileDrawerElement = function() {
-    var experimentalHtml = '';
-    if (this.enableExperimentalControls) {
-      experimentalHtml += "<div class=\"DrawerSettingsTitle\">Experimental (may not work)</div>"
-        +"        <button class='action high-contrast-button'>Toggle high contrast</button>";
-    }
-
-    return $(
-      "<nav id=\"BRmobileMenu\" class=\"BRmobileMenu\">"
-      +"  <ul>"
-      +"    <li>"
-      +"      <span>"
-      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_gear.svg\" alt=\"settings-icon\"/></span>"
-      +"        Settings"
-      +"      </span>"
-      +"      <div class=\"DrawerSettingsWrapper\">"
-      +"        <div class=\"DrawerSettingsTitle\">Page Layout</div>"
-      +"        <div class=\"DrawerSettingsLayoutWrapper\">"
-      +"          <button class=\"DrawerLayoutButton one_page_mode\"><img class=\"\" src=\""+this.imagesBaseURL+"icon_one_page.svg\" alt=\"Single Page\"/><br>One Page</button>"
-      +"          <button class=\"DrawerLayoutButton two_page_mode TwoPagesButton\"><img class=\"\" src=\""+this.imagesBaseURL+"icon_two_pages.svg\" alt=\"Two Pages\"/><br>Two Pages</button>"
-      +"          <button class=\"DrawerLayoutButton thumbnail_mode\"><img class=\"\" src=\""+this.imagesBaseURL+"icon_thumbnails.svg\" alt=\"Thumbnails\"/><br>Thumbnails</button>"
-      +"        </div>"
-      +"        <br>"
-      +"        <div class=\"DrawerSettingsTitle\">Zoom</div>"
-      +"        <button class='BRicon zoom_out'></button>"
-      +"        <button class='BRicon zoom_in'></button>"
-      +"        <br style='clear:both'><br><br>"
-      +         experimentalHtml
-      +"      </div>"
-      +"    </li>"
-      +"    <li class='BRmobileMenu__moreInfoRow'>"
-      +"      <span>"
-      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_info.svg\" alt=\"info-icon\"/></span>"
-      +"        About This Book"
-      +"      </span>"
-      +"      <div id=\"mobileInfo\"></div>"
-      +"    </li>"
-      +"    <li>"
-      +"      <span>"
-      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_share.svg\" alt=\"info-share\"/></span>"
-      +"        Share This Book"
-      +"      </span>"
-      +"      <div id=\"mobileShare\"></div>"
-      +"    </li>"
-      +"  </ul>"
-      +"</nav>"
-    );
-}
 
 BookReader.prototype.initToolbar = function(mode, ui) {
     if (ui == 'embed') {
@@ -3377,56 +3305,14 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     this.refs.$br.append(this.buildToolbarElement());
 
-    // Add Mobile navigation
-    // ------------------------------------------------------
-    if (this.enableMobileNav) {
-      $("body").append(this.buildMobileDrawerElement());
-
-      // Render info into mobile info before mmenu
-      this.buildInfoDiv($('#mobileInfo'));
-      this.buildShareDiv($('#mobileShare'));
-
-      var $mmenuEl = $('nav#BRmobileMenu');
-      $mmenuEl.mmenu({
-          navbars: [
-             { "position": "top" },
-          ],
-          navbar: {
-            add: true,
-            title: this.mobileNavTitle,
-            titleLink: 'panel'
-          },
-          extensions: [ "panelshadow" ],
-       }, {
-          offCanvas: {
-            wrapPageIfNeeded: false,
-            zposition: 'next',
-            pageSelector: this.el,
-          }
-      });
-
-      var $BRpageviewField = $mmenuEl.find('.BRpageviewValue');
-      $mmenuEl.data('mmenu').bind('opened', function() {
-          // Update "Link to this page view" link
-          if ($BRpageviewField.length)
-              $BRpageviewField.val(window.location.href);
-      });
-      this.mmenu = $mmenuEl;
-    }
-
-    //--------------------------------------------------------
-
-
-    $('#BRreturn a')
+    this.refs.$br.find('#BRreturn a')
       .addClass('BRTitleLink')
       .attr({'href': self.bookUrl, 'title': self.bookTitle})
-      .html('<span class="BRreturnTitle">' + this.bookTitle + '</span>')
-      ;
+      .html('<span class="BRreturnTitle">' + this.bookTitle + '</span>');
 
     if (self.bookUrl && self.bookUrlTitle && self.bookUrlText) {
-      $('#BRreturn a').append('<br>' + self.bookUrlText)
+        this.refs.$br.find('#BRreturn a').append('<br>' + self.bookUrlText)
     }
-
 
     this.refs.$BRtoolbar.find('.BRnavCntl').addClass('BRup');
     this.refs.$BRtoolbar.find('.pause').hide();
@@ -3479,27 +3365,14 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         this.blankInfoDiv()
     ).appendTo($('body'));
 
-    $('#BRinfo .BRfloatTitle a').attr( {'href': this.bookUrl} ).text(this.bookTitle).addClass('title');
+    this.refs.$br.find('#BRinfo .BRfloatTitle a')
+        .attr({'href': this.bookUrl})
+        .text(this.bookTitle)
+        .addClass('title');
 
     // These functions can be overridden
-    this.buildInfoDiv($('#BRinfo'));
-    this.buildShareDiv($('#BRshare'));
-
-    // High contrast button
-    $('.high-contrast-button').click(function() {
-        $('body').toggleClass('high-contrast');
-    });
-
-    // Bind mobile switch buttons
-    $('.DrawerLayoutButton.one_page_mode').click(function() {
-        self.switchMode(self.constMode1up);
-    });
-    $('.DrawerLayoutButton.two_page_mode').click(function() {
-        self.switchMode(self.constMode2up);
-    });
-    $('.DrawerLayoutButton.thumbnail_mode').click(function() {
-        self.switchMode(self.constModeThumb);
-    });
+    this.buildInfoDiv(this.refs.$br.find('#BRinfo'));
+    this.buildShareDiv(this.refs.$br.find('#BRshare'));
 };
 
 BookReader.prototype.blankInfoDiv = function() {
