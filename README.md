@@ -75,20 +75,17 @@ See `BookReaderDemo/demo-simple.html` and `BookReaderDemo/BookReaderJSSimple.js`
 - TODO (for now see BookReader.js and BookReader function at approx. line 44)
 
 
-## Notes about version 3
+## Plugins
 
-- Make BookReader easier to use, by adding `options` to the constructor, and adding new `options.data` option. The old way of overriding properties should still work, but it is deprecated.  
-- Factor out extra features into plugins. See `plugins` directory.   
-- Clean up code: Remove a lot of commented-out code. Remove some unused methods.
-- Change some, but not all, CSS ids to classes.  
+A basic plugin system is used. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:
 
-## Notes about version 2
+- plugins.chapters.js - render chapter markers  
+- plugins.search.js - add search ui, and callbacks  
+- plugins.tts.js - add tts (read aloud) ui, sound library, and callbacks  
+- plugins.url.js - automatically updates the browser url  
+- plugins.resume.js - uses cookies to remember the current page  
+- plugins.mobile_nav.js - adds responsive mobile nav to BookReader
 
-Some of the new features in version 2:
-- Updated look for desktop
-- Improved mobile support
-- Fix issues with Text to Speech in browsers that don't support Flash
-- Remove PHP backend code from this repository and only include frontend code
 
 
 ## More info
@@ -101,6 +98,25 @@ https://github.com/internetarchive/bookreader
 
 IIIF (http://iiif.io)
 See `BookReaderDemo/demo-iiif.html` to see an example of how to load a IIIF manifest in BookReader.
+
+
+## Notes about version 3
+
+- Make BookReader easier to use, by adding `options` to the constructor, and adding new `options.data` option. The old way of overriding properties should still work, but it is deprecated.  
+- Factor out extra features into plugins. See `plugins` directory.   
+- Clean up code: Remove a lot of commented-out code. Remove some unused methods.
+- Change some, but not all, CSS ids to classes.  
+
+See the CHANGELOG.md for more information.
+
+
+## Notes about version 2
+
+Some of the new features in version 2:
+- Updated look for desktop
+- Improved mobile support
+- Fix issues with Text to Speech in browsers that don't support Flash
+- Remove PHP backend code from this repository and only include frontend code
 
 
 ## Areas for improvement
@@ -117,24 +133,13 @@ Some notes for contributing:
 - Please test the changes in desktop, mobile, and embed modes, and also on many different devices/browsers.
 
 
-## Plugins
-
-A work-in-progress plugin system is in being developed. The API might change. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:
-
-- plugins.chapters.js - render chapter markers  
-- plugins.search.js - add search ui, and callbacks  
-- plugins.tts.js - add tts (read aloud) ui, sound library, and callbacks  
-- plugins.url.js - automatically updates the browser url  
-- plugins.resume.js - uses cookies to remember the current page  
-
-
 ## License
 
 The source code license is AGPL v3, as described in the LICENSE file.
 
 The mobile menu is built with [mmenu](http://mmenu.frebsite.nl/download.html), which is free for personal and non-profit use. However, for commmercial use, a license must be purchased.
 
-Alternatively, the mobile mmenu can be disabled with `br.enableMobileNav = false;`.
+To use it, include the script `plugins/plugin.mobile_nav.js`.
 
 
 ## Other credits

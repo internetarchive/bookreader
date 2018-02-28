@@ -19,9 +19,6 @@ br.IIIF({
     sequenceId : 'https://iiif.archivelab.org/iiif/platowithenglish04platuoft/canvas/default',
     maxWidth: 800,
     initCallback: function() {
-      // read-aloud and search need backend compenents and are not supported in the demo
-      $('#BRtoolbar').find('.read').hide();
-      $('.BRtoolbarSectionSearch').hide();
     }
 });
 

@@ -6,11 +6,11 @@ body {
 }
 
 /* Hide print and embed functionality */
-#BRtoolbar .embed, .print {
+.BRtoolbar .embed, .print {
     display: none;
 }
 
-#BookReader {
+.BookReader {
     width:800px;
     height: 600px;
     overflow: hidden;

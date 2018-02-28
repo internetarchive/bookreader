@@ -13,7 +13,7 @@
     font-size: 0.9em;
 }
 
-#BRembedreturn {
+.BRembedreturn {
     /* Center text */
     font-size: 14px;
     line-height: 40px;
@@ -21,7 +21,7 @@
     font-family: "Lucida Grande","Arial",sans-serif;
 }
 
-#BRembedreturn a {
+.BRembedreturn a {
     font-size: 14px;
     color: #036daa;
 }

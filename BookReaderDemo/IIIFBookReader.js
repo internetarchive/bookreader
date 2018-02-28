@@ -1,7 +1,9 @@
 // Bind to the BookReader object providing facilities to set the necessary
 // BookReader functions from a IIIF endpoint URL.
+// author: @aeschylus
 
 // TODO enable passing in manifest and sequence id directly
+// TODO convert this to be a v3 plugin. Use simplified options.data
 
 (function(BR){
 

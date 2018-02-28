@@ -6,19 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
 
-    <link rel="stylesheet" type="text/css" href="../BookReader/BookReader.css"/>
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
 
     <!-- Include Embed css -->
-    <link rel="stylesheet" type="text/css" href="../BookReader/BookReaderEmbed.css"/>
+    <link rel="stylesheet" href="../BookReader/BookReaderEmbed.css"/>
 
-    <script type="text/javascript" src="./jquery-1.10.1.js"></script>
-    <script type="text/javascript" src="../BookReader/jquery-ui-1.12.0.min.js"></script>
-    <script type="text/javascript" src="../BookReader/jquery.browser.min.js"></script>
-    <script type="text/javascript" src="../BookReader/dragscrollable-br.js"></script>
-    <script type="text/javascript" src="../BookReader/jquery.colorbox-min.js"></script>
-    <script type="text/javascript" src="../BookReader/jquery.bt.min.js"></script>
+    <script src="./jquery-1.10.1.js"></script>
+    <script src="../BookReader/jquery-ui-1.12.0.min.js"></script>
+    <script src="../BookReader/jquery.browser.min.js"></script>
+    <script src="../BookReader/dragscrollable-br.js"></script>
+    <script src="../BookReader/jquery.colorbox-min.js"></script>
+    <script src="../BookReader/jquery.bt.min.js"></script>
 
-    <script type="text/javascript" src="../BookReader/BookReader.js"></script>
+    <script src="../BookReader/BookReader.js"></script>
 
     <style>
 html, body, #BookReader { width: 100%; height:100%; margin:0; padding: 0; }
@@ -31,107 +31,56 @@ html, body, #BookReader { width: 100%; height:100%; margin:0; padding: 0; }
 
   <noscript>
   <p>
-      The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="http://www.archive.org/details/goodytwoshoes00newyiala"> other formats of the book</a>.
+      The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="https://archive.org/details/goodytwoshoes00newyiala"> other formats of the book</a>.
   </p>
   </noscript>
   </div>
 
 
 <script type="text/javascript">
-br = new BookReader();
+var options = {
+  data: [
+    [
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page001.jpg' },
+    ],
+    [
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page002.jpg' },
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page003.jpg' },
+    ],
+    [
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page004.jpg' },
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page005.jpg' },
+    ]
+  ],
 
-// Return the width of a given page.  Here we assume all images are 800 pixels wide
-br.getPageWidth = function(index) {
-    return 800;
-}
+  // Book title and the URL used for the book title link
+  bookTitle: 'Simple BookReader Presentation',
+  bookUrl: 'https://archive.org/details/BookReader',
+  bookUrlText: 'Back to Archive.org',
+  bookUrlTitle: 'Back to Archive.org',
 
-// Return the height of a given page.  Here we assume all images are 1200 pixels high
-br.getPageHeight = function(index) {
-    return 1200;
-}
+  // thumbnail is optional, but it is used in the info dialog
+  thumbnail: '//archive.org/download/BookReader/img/page014.jpg',
+  // Metadata is optional, but it is used in the info dialog
+  metadata: [
+    {label: 'Title', value: 'Open Library BookReader Presentation'},
+    {label: 'Author', value: 'Internet Archive'},
+    {label: 'Demo Info', value: 'This demo shows how one could use BookReader with their own content.'},
+  ],
 
-// We load the images from archive.org -- you can modify this function to retrieve images
-// using a different URL structure
-br.getPageURI = function(index, reduce, rotate) {
-    // reduce and rotate are ignored in this simple implementation, but we
-    // could e.g. look at reduce and load images from a different directory
-    // or pass the information to an image server
-    var leafStr = '000';
-    var imgStr = (index+1).toString();
-    var re = new RegExp("0{"+imgStr.length+"}$");
-    var url = 'http://www.archive.org/download/BookReader/img/page'+leafStr.replace(re, imgStr) + '.jpg';
-    return url;
-}
+  // Override the path used to find UI images
+  imagesBaseURL: '../BookReader/images/',
 
-// Return which side, left or right, that a given page should be displayed on
-br.getPageSide = function(index) {
-    if (0 == (index & 0x1)) {
-        return 'R';
-    } else {
-        return 'L';
-    }
-}
+  ui: 'embed', // embed, full (responsive)
 
-// This function returns the left and right indices for the user-visible
-// spread that contains the given index.  The return values may be
-// null if there is no facing page or the index is invalid.
-br.getSpreadIndices = function(pindex) {
-    var spreadIndices = [null, null];
-    if ('rl' == this.pageProgression) {
-        // Right to Left
-        if (this.getPageSide(pindex) == 'R') {
-            spreadIndices[1] = pindex;
-            spreadIndices[0] = pindex + 1;
-        } else {
-            // Given index was LHS
-            spreadIndices[0] = pindex;
-            spreadIndices[1] = pindex - 1;
-        }
-    } else {
-        // Left to right
-        if (this.getPageSide(pindex) == 'L') {
-            spreadIndices[0] = pindex;
-            spreadIndices[1] = pindex + 1;
-        } else {
-            // Given index was RHS
-            spreadIndices[1] = pindex;
-            spreadIndices[0] = pindex - 1;
-        }
-    }
-
-    return spreadIndices;
-}
-
-// For a given "accessible page index" return the page number in the book.
-//
-// For example, index 5 might correspond to "Page 1" if there is front matter such
-// as a title page and table of contents.
-br.getPageNum = function(index) {
-  return index+1;
-}
-
-br.numLeafs = 15;
-
-// Book title and the URL used for the book title link
-br.bookTitle= 'Internet Archive BookReader Presentation';
-br.bookUrl = 'http://www.archive.org/details/BookReader';
-br.bookUrlText = 'Back to details on Archive.org';
-br.bookUrlTitle = 'Back to details on Archive.org';
-br.thumbnail = '//www.archive.org/download/BookReader/img/page014.jpg';
-br.metadata = [
-  {label: 'Title', value: 'Open Library BookReader Presentation'},
-  {label: 'Author', value: 'Internet Archive'},
-];
-br.mobileNavTitle = 'BookReader demo';
-
-// Override the path used to find UI images
-br.imagesBaseURL = '../BookReader/images/';
-
-br.getEmbedCode = function(frameWidth, frameHeight, viewParams) {
-    return "Embed code not supported in bookreader demo.";
-}
-br.ui = 'embed'; // embed, full (responsive)
-
+  el: '#BookReader',
+};
+var br = new BookReader(options);
 br.init();
 </script>
 
