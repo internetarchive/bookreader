@@ -6,7 +6,8 @@
 
     <link rel="stylesheet" type="text/css" href="../BookReader/mmenu/dist/css/jquery.mmenu.css" />
     <link rel="stylesheet" type="text/css" href="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css" />
-    <link rel="stylesheet" type="text/css" href="../BookReader/BookReader.css" id="BRCSS"/>
+    <link rel="stylesheet" type="text/css" href="../BookReader/BookReader.css"/>
+    <link rel="stylesheet" type="text/css" href="BookReaderDemo.css"/>
 
     <script type="text/javascript" src="../BookReaderDemo/jquery-1.10.1.js"></script>
     <script type="text/javascript" src="../BookReader/jquery-ui-1.12.0.min.js"></script>
@@ -15,19 +16,20 @@
     <script type="text/javascript" src="../BookReader/jquery.colorbox-min.js"></script>
     <script type="text/javascript" src="../BookReader/jquery.bt.min.js"></script>
     <script type="text/javascript" src="../BookReader/soundmanager/script/soundmanager2-jsmin.js"></script>
-    <script>
-        soundManager.debugMode = false;
-        soundManager.url = '../BookReader/soundmanager/swf';
-        soundManager.useHTML5Audio = true;
-        soundManager.flashVersion = 9; //flash 8 version of swf is buggy when calling play() on a sound that is still loading
-    </script>
     <script type="text/javascript" src="../BookReader/mmenu/dist/js/jquery.mmenu.min.js"></script>
     <script type="text/javascript" src="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js" ></script>
     <script type="text/javascript" src="../BookReader/BookReader.js"></script>
-</head>
-<body style="background-color: #939598;">
 
-<div id="BookReader" style="width:800px; height: 600px; overflow: hidden;">
+    <!-- plugins needed for archive.org -->
+    <script type="text/javascript" src="../BookReader/plugins/plugin.url.js"></script>
+    <script type="text/javascript" src="../BookReader/plugins/plugin.resume.js"></script>
+    <script type="text/javascript" src="../BookReader/plugins/plugin.chapters.js"></script>
+    <script type="text/javascript" src="../BookReader/plugins/plugin.tts.js"></script>
+    <script type="text/javascript" src="../BookReader/plugins/plugin.search.js"></script>
+</head>
+<body>
+
+<div id="BookReader">
     Internet Archive BookReader Demo<br/>
     <noscript>
     <p>
@@ -38,7 +40,7 @@
 
 <script
   type="text/javascript"
-  src="http://archive.org/bookreader/BookReaderJSLocate.php?id=theworksofplato01platiala&subPrefix="
+  src="https://archive.org/bookreader/BookReaderJSLocate.php?id=theworksofplato01platiala&subPrefix="
 ></script>
 
 </body>

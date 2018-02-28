@@ -6,9 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
 
-    <link rel="stylesheet" type="text/css" href="../BookReader/mmenu/dist/css/jquery.mmenu.css" />
-    <link rel="stylesheet" type="text/css" href="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css" />
-    <link rel="stylesheet" type="text/css" href="../BookReader/BookReader.css" id="BRCSS"/>
+    <link rel="stylesheet" type="text/css" href="../BookReader/BookReader.css"/>
 
     <!-- Include Embed css -->
     <link rel="stylesheet" type="text/css" href="../BookReader/BookReaderEmbed.css"/>
@@ -19,15 +17,7 @@
     <script type="text/javascript" src="../BookReader/dragscrollable-br.js"></script>
     <script type="text/javascript" src="../BookReader/jquery.colorbox-min.js"></script>
     <script type="text/javascript" src="../BookReader/jquery.bt.min.js"></script>
-    <script type="text/javascript" src="../BookReader/soundmanager/script/soundmanager2-jsmin.js"></script>
-    <script>
-        soundManager.debugMode = false;
-        soundManager.url = '../BookReader/soundmanager/swf';
-        soundManager.useHTML5Audio = true;
-        soundManager.flashVersion = 9; //flash 8 version of swf is buggy when calling play() on a sound that is still loading
-    </script>
-    <script type="text/javascript" src="../BookReader/mmenu/dist/js/jquery.mmenu.min.js"></script>
-    <script type="text/javascript" src="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js" ></script>
+
     <script type="text/javascript" src="../BookReader/BookReader.js"></script>
 
     <style>
@@ -120,7 +110,7 @@ br.getPageNum = function(index) {
   return index+1;
 }
 
-br.getNumLeafs() = 15;
+br.numLeafs = 15;
 
 // Book title and the URL used for the book title link
 br.bookTitle= 'Internet Archive BookReader Presentation';

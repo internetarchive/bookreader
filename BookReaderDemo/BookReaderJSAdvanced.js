@@ -94,7 +94,7 @@ var options = {
     {label: 'Demo Info', value: 'This demo shows how one could use BookReader with their own content.'},
   ],
   // This toggles the mobile drawer (not shown in 'embed' mode)
-  enableMobileNav: true,
+  enableMobileNav: false,
   mobileNavTitle: 'BookReader demo',
 
   // Override the path used to find UI images
@@ -114,8 +114,3 @@ var br = new BookReader(options);
 
 // Let's go!
 br.init();
-
-// read-aloud and search need backend compenents and are not supported in the demo
-$('#BRtoolbar').find('.read').hide();
-$('.BRtoolbarSectionSearch').hide();
-// $('#btnSrch').hide();

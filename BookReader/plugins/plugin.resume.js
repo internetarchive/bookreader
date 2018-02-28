@@ -22,7 +22,7 @@ BookReader.prototype.setup = (function(super_) {
  * @return {Number|null}
  */
 BookReader.prototype.getResumeValue = function() {
-    var val = BookReader.prototype.docCookies.getItem('br-resume');
+    var val = BookReader.docCookies.getItem('br-resume');
     if (val !== null) return parseInt(val);
     else return null;
 }
@@ -35,7 +35,7 @@ BookReader.prototype.getResumeValue = function() {
 BookReader.prototype.updateResumeValue = function(index) {
     var ttl = new Date(+new Date + 12096e5); // 2 weeks
     var path = window.location.pathname;
-    BookReader.prototype.docCookies.setItem('br-resume', index, ttl, path, null, false);
+    BookReader.docCookies.setItem('br-resume', index, ttl, path, null, false);
 }
 
 /*\
@@ -45,7 +45,7 @@ BookReader.prototype.updateResumeValue = function(index) {
 |*|  This framework is released under the GNU Public License, version 3 or later.
 |*|  http://www.gnu.org/licenses/gpl-3.0-standalone.html
 \*/
-BookReader.prototype.docCookies = {
+BookReader.docCookies = {
   getItem: function (sKey) {
     if (!sKey) { return null; }
     return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
