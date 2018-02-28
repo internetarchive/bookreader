@@ -1,21 +1,22 @@
-#BookReader h3 {
+.BookReader h3 {
   font-size: 20px;
   font-weight: 700;
   color: #dedede;
 }
-#BookReader a {
+.BookReader a {
   outline: none;
 }
-#BookReader, .BRfloat {
+.BookReader, .BRfloat {
   font-family: "Helvetica Neue", Arial, Verdana, sans-serif
 }
-#BookReader {
+.BookReader {
   font-size: 67.5%;
   margin: 0;
   padding: 0;
   position:relative;
   background-color: #3a3b3b;
 }
+
 .BRtoolbar {
     position: absolute;
     top: 0;
@@ -44,7 +45,7 @@
   color: rgb(55, 123, 201);
 }
 /* desktop header */
-#BRtoolbarbuttons {
+.BRtoolbarbuttons {
   display: block;
   border-spacing: 0;
   width:100%;
@@ -53,7 +54,7 @@
   border-bottom: 2px solid rgb(209,209,209);
   box-sizing: border-box;
 }
-#BRcontainer {
+.BRcontainer {
     top:0;
     bottom:0;
     width:100%;
@@ -68,7 +69,6 @@
 
 #BRpageview {
   position: relative;
-  /*top: 10px;*/ /* 1up and grid top padding TODO fix later */
 }
 
 .BRpagediv1up {
@@ -102,30 +102,17 @@
     border: 0;
 }
 
-/* Must come after .BRpagedivthumb rules in order to override them */
-/*
-.BRpagedivthumb_highlight {
-    background-color: #9A9B9D;
-    overflow:hidden;
-}
-*/
-
 .BRpagediv2up {
     background-color: rgb(234, 226, 205);
     overflow:hidden;
 }
 
 #BRbookcover {
-    /* border: 1px solid rgb(68, 25, 17); */
-    /* background-color: #663929; */
     position: absolute;
-    /*background-image: url(images/back_pages.png);*/
     background-image: none;
     -moz-box-shadow: 1px 0 10px #111;
     -webkit-box-shadow: 1px 0 10px #111;
     box-shadow: 1px 0 10px #111;
-    /* -moz-border-radius: 6px; */
-    /* -webkit-border-radius: 6px; */
 }
 
 .BRpageimage {
@@ -1160,7 +1147,7 @@ body.high-contrast #BRtwopageview img {
 
 /* new toolbar styles */
 
-#BRtoolbarbuttons {
+.BRtoolbarbuttons {
   white-space: nowrap;
   position:relative;
 }
@@ -1202,6 +1189,11 @@ body.high-contrast #BRtwopageview img {
 .mm-panel { font-size: 12px; }
 .mm-panel h1 { margin-top: 0; color: rgb(36,94,131); font-size: 14px;}
 
+/* Needed to override mmenu style */
+html.mm-background .BookReader {
+  background-color: #3a3b3b;
+}
+
 .BRtoolbar .BRmobileHamburgerWrapper { display: none; }
 
 /* Responsive Utiltities */
@@ -1219,7 +1211,7 @@ body.high-contrast #BRtwopageview img {
 @media (max-width: 800px) {
   div#BRnavpos { margin-right: 90px; }
   .BRtoolbar { height: 40px; }
-  .BRtoolbar.responsive #BRtoolbarbuttons { display: none; }
+  .BRtoolbar.responsive .BRtoolbarbuttons { display: none; }
   .BRtoolbar.responsive .BRmobileHamburgerWrapper { display: block; }
   .BRtoolbar .BRmobileHamburgerWrapper { padding: 0 30px 0 50px; display: block; }
   .fieldset-embed { display: none; }

@@ -1,6 +1,5 @@
 /**
  * Plugin to remember the current page in a cookie
- * @type {[type]}
  */
 
 // Extend the constructor to add TTS properties
@@ -8,7 +7,7 @@ BookReader.prototype.setup = (function(super_) {
     return function (options) {
         super_.call(this, options);
 
-        options = Object.assign({
+        options = jQuery.extend(true, {
             enablePageResume: false,
         }, options);
 

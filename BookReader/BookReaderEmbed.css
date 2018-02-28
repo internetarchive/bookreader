@@ -3,13 +3,13 @@
  */
 
 /* Hide some navigation buttons */
-#BRtoolbar .label,.pageform,.play,.embed,
+.BRtoolbar .label,.pageform,.play,.embed,
     .two_page_mode,.one_page_mode,.thumbnail_mode,
     .book_leftmost,.book_rightmost,.book_top,.book_bottom,.print {
     display: none;
 }
 
-#BRtoolbar .title {
+.BRtoolbar .title {
     font-size: 0.9em;
 }
 
@@ -30,7 +30,7 @@
     background-color: transparent;
 }
 
-#BRtoolbarbuttons {
+.BRtoolbarbuttons {
   display: block;
   float: right;
   width: initial;

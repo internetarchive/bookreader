@@ -5,7 +5,7 @@
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
     var uiStringPage = 'Page'; // i18n
 
-    var percentThrough = BookReader.prototype.util.cssPercentage(pageIndex, this.numLeafs - 1);
+    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
 
     $('<div class="chapter" style="left:' + percentThrough + ';"><div class="title">'
         + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
@@ -44,12 +44,12 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         shadow: false
     })
     .hover( function() {
-            // remove hover effect from other markers then turn on just for this
-            $('.search,.chapter').removeClass('front');
-                $(this).addClass('front');
-            }, function() {
-                $(this).removeClass('front');
-            }
+        // remove hover effect from other markers then turn on just for this
+        $('.search,.chapter').removeClass('front');
+            $(this).addClass('front');
+        }, function() {
+            $(this).removeClass('front');
+        }
     )
     .bind('click', function() {
         $(this).data('self').jumpToIndex($(this).data('pageIndex'));

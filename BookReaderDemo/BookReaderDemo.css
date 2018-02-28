@@ -1,8 +1,17 @@
 /*
  * Custom overrides for BookReader Demo.
  */
+body {
+    background-color: #939598;
+}
 
 /* Hide print and embed functionality */
 #BRtoolbar .embed, .print {
     display: none;
+}
+
+#BookReader {
+    width:800px;
+    height: 600px;
+    overflow: hidden;
 }
