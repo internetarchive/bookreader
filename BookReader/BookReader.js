@@ -3365,14 +3365,14 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         this.blankInfoDiv()
     ).appendTo($('body'));
 
-    this.refs.$br.find('#BRinfo .BRfloatTitle a')
+    $('#BRinfo .BRfloatTitle a')
         .attr({'href': this.bookUrl})
         .text(this.bookTitle)
         .addClass('title');
 
     // These functions can be overridden
-    this.buildInfoDiv(this.refs.$br.find('#BRinfo'));
-    this.buildShareDiv(this.refs.$br.find('#BRshare'));
+    this.buildInfoDiv($('#BRinfo'));
+    this.buildShareDiv($('#BRshare'));
 };
 
 BookReader.prototype.blankInfoDiv = function() {
