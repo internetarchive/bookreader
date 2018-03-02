@@ -2,14 +2,14 @@
  * Plugin to remember the current page in a cookie
  */
 
+jQuery.extend(true, BookReader.defaultOptions, {
+    enablePageResume: false,
+});
+
 // Extend the constructor to add TTS properties
 BookReader.prototype.setup = (function(super_) {
     return function (options) {
         super_.call(this, options);
-
-        options = jQuery.extend(true, {
-            enablePageResume: false,
-        }, options);
 
         this.enablePageResume = options.enablePageResume;
     };

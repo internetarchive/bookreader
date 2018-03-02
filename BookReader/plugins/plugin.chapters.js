@@ -1,6 +1,37 @@
 /**
- * Plugin for chapter markers in BookReader
+ * Plugin for chapter markers in BookReader. Fetches from openlibrary.org
+ * Could be forked, or extended to alter behavior
  */
+
+jQuery.extend(true, BookReader.defaultOptions, {
+    olHost: 'https://openlibrary.org',
+    enableChaptersPlugin: true,
+    bookId: '',
+});
+
+// Extend the constructor to add search properties
+BookReader.prototype.setup = (function (super_) {
+    return function (options) {
+        super_.call(this, options);
+
+        this.olHost = options.olHost;
+        this.enableChaptersPlugin = options.enableChaptersPlugin;
+        this.bookId = options.bookId;
+    };
+})(BookReader.prototype.setup);
+
+
+// Extend br.init to call Open Library for TOC
+BookReader.prototype.init = (function(super_) {
+  return function() {
+    super_.call(this);
+
+    if (this.enableChaptersPlugin && this.ui !== 'embed') {
+      this.getOpenLibraryRecord(this.gotOpenLibraryRecord);
+    }
+  }
+})(BookReader.prototype.init);
+
 
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
     var uiStringPage = 'Page'; // i18n
@@ -112,5 +143,50 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
     });
 };
 
-// Stub Method. Original removed from Book Reader source
-BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {};
+// getOpenLibraryRecord
+//
+// The bookreader is designed to call openlibrary API and constructs the
+// "Return book" button using the response.
+//
+// This makes a call to OL API and calls the given callback function with the
+// response from the API.
+BookReader.prototype.getOpenLibraryRecord = function(callback) {
+  // Try looking up by ocaid first, then by source_record
+  var self = this; // closure
+  var jsonURL = self.olHost + '/query.json?type=/type/edition&*=&ocaid=' + self.bookId;
+  $.ajax({
+    url: jsonURL,
+    success: function(data) {
+      if (data && data.length > 0) {
+        callback(self, data[0]);
+      } else {
+        // try sourceid
+        jsonURL = self.olHost + '/query.json?type=/type/edition&*=&source_records=ia:' + self.bookId;
+        $.ajax({
+          url: jsonURL,
+          success: function(data) {
+            if (data && data.length > 0) {
+              callback(self, data[0]);
+            }
+          },
+          dataType: 'jsonp'
+        });
+      }
+    },
+    dataType: 'jsonp'
+  });
+}
+
+/*
+ * Update based on received record from Open Library.
+ * Open Library record is used for extra metadata, and also for lending
+ */
+BookReader.prototype.gotOpenLibraryRecord = function(self, olObject) {
+  // $$$ could refactor this so that 'this' is available
+  if (olObject) {
+    if (olObject.table_of_contents) {
+      // XXX check here that TOC is valid
+      self.updateTOC(olObject.table_of_contents);
+    }
+  }
+}

@@ -2,13 +2,13 @@
  * Deprecated theming functionality
  */
 
+jQuery.extend(true, BookReader.defaultOptions, {
+    enableThemesPlugin: true,
+});
+
 BookReader.prototype.setup = (function(super_) {
     return function (options) {
         super_.call(this, options);
-
-        options = jQuery.extend(true, {
-            enableThemesPlugin: true,
-        }, options);
 
         this.enableThemesPlugin = options.enableThemesPlugin;
 

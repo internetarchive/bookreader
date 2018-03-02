@@ -25,9 +25,144 @@ window.BookReader = (function ($) {
 // BookReader()
 //_________________________________________________________________________
 
+/**
+ * BookReader
+ * @param      {Object} options
+ * TODO document all options properties
+ * @constructor
+ */
 function BookReader(options) {
+    options = options || {};
+    options = jQuery.extend(true, {}, BookReader.defaultOptions, options, BookReader.optionOverrides);
     this.setup(options);
 }
+
+BookReader.version = "3.0.2";
+
+BookReader.defaultOptions = {
+    // Padding in 1up
+    padding: 10,
+    // UI mode
+    ui: 'full', // full, embed, responsive
+
+    // Controls whether nav/toolbar will autohide
+    uiAutoHide: false,
+
+    // thumbnail mode
+    // number of rows to pre-cache out a view
+    thumbRowBuffer: 2,
+    thumbColumns: 6,
+    // number of thumbnails to load at once
+    thumbMaxLoading: 4,
+    // spacing between thumbnails
+    thumbPadding: 10,
+    // speed for flip animation
+    flipSpeed: 'fast',
+
+    // Where the logo links to
+    logoURL: 'https://archive.org',
+
+    // Base URL for UI images - should be overriden (before init) by
+    // custom implementations.
+    // $$$ This is the same directory as the images referenced by relative
+    //     path in the CSS.  Would be better to automagically find that path.
+    imagesBaseURL: '/BookReader/images/',
+
+    // Zoom levels
+    // $$$ provide finer grained zooming, {reduce: 8, autofit: null}, {reduce: 16, autofit: null}
+    /* The autofit code ensures that fit to width and fit to height will be available */
+    reductionFactors: [
+        {reduce: 0.5, autofit: null},
+        {reduce: 1, autofit: null},
+        {reduce: 2, autofit: null},
+        {reduce: 3, autofit: null},
+        {reduce: 4, autofit: null},
+        {reduce: 6, autofit: null}
+    ],
+
+    // Object to hold parameters related to 1up mode
+    onePage: {
+        autofit: 'auto', // valid values are height, width, auto, none
+    },
+
+    // Object to hold parameters related to 2up mode
+    twoPage: {
+        coverInternalPadding: 0, // Width of cover
+        coverExternalPadding: 0, // Padding outside of cover
+        bookSpineDivWidth: 64,    // Width of book spine  $$$ consider sizing based on book length
+        autofit: 'auto'
+    },
+
+    bookTitle: '',
+    bookUrl: null,
+    bookUrlText: null,
+    bookUrlTitle: null,
+
+    // Fields used to populate the info window
+    metadata: [],
+    thumbnail: null,
+    bookUrlMoreInfo: null,
+
+    // Experimental Controls (eg b/w)
+    enableExperimentalControls: false,
+
+    // CSS selectors
+    // Where BookReader mounts to
+    el: '#BookReader',
+
+    // Page progression. Choices: 'lr', 'rl'
+    pageProgression: 'lr',
+
+    // Should image downloads be blocked
+    protected: false,
+
+    // Data is a simple way to populate the bookreader
+    // Example:
+    // [
+    //    // Each child is a spread
+    //   [
+    //     {
+    //       width: 123,
+    //       height: 123,
+    //       // Optional: If not provided, include a getPageURI
+    //       uri: 'https://archive.org/image.jpg',
+    //       // Optional: Shown instead of leaf number if present.
+    //       pageNum: 1
+    //     },
+    //     {width: 123, height: 123, uri: 'https://archive.org/image2.jpg', pageNum: 2},
+    //   ]
+    // ],
+    //
+    // Note if URI is omitted, a custom getPageURI can be provided. This allows the page
+    // URI to the result of a function, which allows for thigns such as dynamic
+    // page scaling.
+    data: [],
+
+    // Advanced methods for page rendering
+    getNumLeafs: null,
+    getPageWidth: null,
+    getPageHeight: null,
+    getPageURI: null,
+
+    // Return which side, left or right, that a given page should be displayed on
+    getPageSide: null,
+
+    // This function returns the left and right indices for the user-visible
+    // spread that contains the given index.  The return values may be
+    // null if there is no facing page or the index is invalid.
+    getSpreadIndices: null,
+
+    getPageNum: null,
+    leafNumToIndex: null,
+
+    // Optional: if present, and embed code will be shown in the share dialog
+    getEmbedCode: null,
+};
+
+/**
+ * This is here, just in case you need to absolutely override an option.
+ */
+BookReader.optionOverrides = {};
 
 /**
  * Setup
@@ -40,122 +175,6 @@ BookReader.prototype.setup = function(options) {
     this.constMode1up = 1;
     this.constMode2up = 2;
     this.constModeThumb = 3;
-
-    options = Object.assign({
-      // Padding in 1up
-      padding: 10,
-      // UI mode
-      ui: 'full', // full, embed, responsive
-
-      // Controls whether nav/toolbar will autohide
-      uiAutoHide: false,
-
-      // thumbnail mode
-      // number of rows to pre-cache out a view
-      thumbRowBuffer: 2,
-      thumbColumns: 6,
-      // number of thumbnails to load at once
-      thumbMaxLoading: 4,
-      // spacing between thumbnails
-      thumbPadding: 10,
-      // speed for flip animation
-      flipSpeed: 'fast',
-
-      // Fo custom implmentations.
-      logoURL: 'https://www.archive.org',
-
-      // Base URL for UI images - should be overriden (before init) by
-      // custom implementations.
-      // $$$ This is the same directory as the images referenced by relative
-      //     path in the CSS.  Would be better to automagically find that path.
-      imagesBaseURL: '/bookreader/images/',
-
-      // Zoom levels
-      // $$$ provide finer grained zooming, {reduce: 8, autofit: null}, {reduce: 16, autofit: null}
-      /* The autofit code ensures that fit to width and fit to height will be available */
-      reductionFactors: [
-        {reduce: 0.5, autofit: null},
-        {reduce: 1, autofit: null},
-        {reduce: 2, autofit: null},
-        {reduce: 3, autofit: null},
-        {reduce: 4, autofit: null},
-        {reduce: 6, autofit: null}
-      ],
-
-      // Object to hold parameters related to 1up mode
-      onePage: {
-          autofit: 'auto', // valid values are height, width, auto, none
-      },
-
-      // Object to hold parameters related to 2up mode
-      twoPage: {
-          coverInternalPadding: 0, // Width of cover
-          coverExternalPadding: 0, // Padding outside of cover
-          bookSpineDivWidth: 64,    // Width of book spine  $$$ consider sizing based on book length
-          autofit: 'auto'
-      },
-
-      bookTitle: '',
-      bookUrl: null,
-      bookUrlText: null,
-      bookUrlTitle: null,
-
-      // Fields used to populate the info window
-      metadata: [],
-      thumbnail: null,
-      bookUrlMoreInfo: null,
-
-      // Experimental Controls (eg b/w)
-      enableExperimentalControls: false,
-
-      // CSS selectors
-      // Where BookReader mounts to
-      el: '#BookReader',
-
-      // Page progression. Choices: 'lr', 'rl'
-      pageProgression: 'lr',
-
-      // Data is a simple way to populate the bookreader
-      // Example:
-      // [
-      //    // Each child is a spread
-      //   [
-      //     {
-      //       width: 123,
-      //       height: 123,
-      //       // Optional: If not provided, include a getPageURI
-      //       uri: 'https://archive.org/image.jpg',
-      //       // Optional: Shown instead of leaf number if present.
-      //       pageNum: 1
-      //     },
-      //     {width: 123, height: 123, uri: 'https://archive.org/image2.jpg', pageNum: 2},
-      //   ]
-      // ],
-      //
-      // Note if URI is omitted, a custom getPageURI can be provided. This allows the page
-      // URI to the result of a function, which allows for thigns such as dynamic
-      // page scaling.
-      data: [],
-
-      // Advanced methods for page rendering
-      getNumLeafs: BookReader.prototype.getNumLeafs,
-      getPageWidth: BookReader.prototype.getPageWidth,
-      getPageHeight: BookReader.prototype.getPageHeight,
-      getPageURI: BookReader.prototype.getPageURI,
-
-      // Return which side, left or right, that a given page should be displayed on
-      getPageSide: BookReader.prototype.getPageSide,
-
-      // This function returns the left and right indices for the user-visible
-      // spread that contains the given index.  The return values may be
-      // null if there is no facing page or the index is invalid.
-      getSpreadIndices: BookReader.prototype.getSpreadIndices,
-
-      getPageNum: BookReader.prototype.getPageNum,
-
-      // Optional: if present, and embed code will be shown in the share dialog
-      getEmbedCode: null,
-    }, options);
 
     // Private properties below. Configuration should be done with options.
     this.reduce = 4;
@@ -203,20 +222,20 @@ BookReader.prototype.setup = function(options) {
     this.enableExperimentalControls = options.enableExperimentalControls;
     this.el = options.el;
 
-
     this.pageProgression = options.pageProgression;
+    this.protected = options.protected;
     this.getEmbedCode = options.getEmbedCode;
 
     // Assign the data methods
     this.data = options.data;
-    this.getNumLeafs = options.getNumLeafs;
-    this.getPageWidth = options.getPageWidth;
-    this.getPageHeight = options.getPageHeight;
-    this.getPageURI = options.getPageURI;
-    this.getPageSide = options.getPageSide;
-    this.getPageNum = options.getPageNum;
-    this.getSpreadIndices = options.getSpreadIndices;
-
+    this.getNumLeafs = options.getNumLeafs || BookReader.prototype.getNumLeafs;
+    this.getPageWidth = options.getPageWidth  || BookReader.prototype.getPageWidth;
+    this.getPageHeight = options.getPageHeight || BookReader.prototype.getPageHeight;
+    this.getPageURI = options.getPageURI || BookReader.prototype.getPageURI;
+    this.getPageSide = options.getPageSide || BookReader.prototype.getPageSide;
+    this.getPageNum = options.getPageNum || BookReader.prototype.getPageNum;
+    this.getSpreadIndices = options.getSpreadIndices || BookReader.prototype.getSpreadIndices;
+    this.leafNumToIndex = options.leafNumToIndex || BookReader.prototype.leafNumToIndex;
     this.refs = {};
 };
 
@@ -273,7 +292,6 @@ BookReader.util = {
         // Encodes a URI component and converts ' ' to '+'
         return encodeURIComponent(value).replace(/%20/g, '+');
     },
-
 
     /**
      * Returns a function, that, as long as it continues to be invoked, will not
@@ -3305,13 +3323,13 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     this.refs.$br.append(this.buildToolbarElement());
 
-    this.refs.$br.find('#BRreturn a')
+    $('#BRreturn a')
       .addClass('BRTitleLink')
       .attr({'href': self.bookUrl, 'title': self.bookTitle})
       .html('<span class="BRreturnTitle">' + this.bookTitle + '</span>');
 
     if (self.bookUrl && self.bookUrlTitle && self.bookUrlText) {
-        this.refs.$br.find('#BRreturn a').append('<br>' + self.bookUrlText)
+        $('#BRreturn a').append('<br>' + self.bookUrlText)
     }
 
     this.refs.$BRtoolbar.find('.BRnavCntl').addClass('BRup');
@@ -4447,6 +4465,15 @@ BookReader.prototype.getSpreadIndices = function(pindex) {
         }
     }
     return spreadIndices;
+};
+
+/**
+ * Override if "leafNum" does not correspond to "index"
+ * @param  {Number} index
+ * @return {Number}
+ */
+BookReader.prototype.leafNumToIndex = function(index) {
+  return index;
 };
 
 /**

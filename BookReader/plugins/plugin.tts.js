@@ -2,15 +2,16 @@
  * Plugin for Text to Speech in BookReader
  */
 
+// Default options for TTS
+jQuery.extend(true, BookReader.defaultOptions, {
+    server: 'ia600609.us.archive.org',
+    bookPath: '',
+});
+
 // Extend the constructor to add TTS properties
 BookReader.prototype.setup = (function (super_) {
     return function (options) {
         super_.call(this, options);
-
-        // Default options for TTS
-        options = jQuery.extend(true, {
-            server: 'ia600609.us.archive.org',
-        }, options);
 
         // Text-to-Speech properties
         this.ttsPlaying     = false;
@@ -21,6 +22,7 @@ BookReader.prototype.setup = (function (super_) {
         this.ttsFormat      = null;
 
         this.server = options.server;
+        this.bookPath = options.bookPath;
 
         this.isSoundManagerSupported = false;
 

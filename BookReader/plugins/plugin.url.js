@@ -2,15 +2,17 @@
  * Plugin for URL management in BookReader
  */
 
+jQuery.extend(true, BookReader.defaultOptions, {
+    enableUrlPlugin: true,
+    bookId: '',
+});
+
 BookReader.prototype.setup = (function(super_) {
     return function (options) {
         super_.call(this, options);
 
-        options = jQuery.extend(true, {
-            enableUrlPlugin: true,
-        }, options);
-
         this.enableUrlPlugin = options.enableUrlPlugin;
+        this.bookId = options.bookId;
 
         this.bind('PostInit', function(e, br) {
             // Set document title -- may have already been set in enclosing html for
@@ -20,7 +22,6 @@ BookReader.prototype.setup = (function(super_) {
         });
     };
 })(BookReader.prototype.setup);
-
 
 
 // shortTitle(maximumCharacters)

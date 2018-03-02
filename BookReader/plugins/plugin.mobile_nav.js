@@ -8,15 +8,15 @@
  * <link rel="stylesheet" href="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css" />
  */
 
+jQuery.extend(true, BookReader.defaultOptions, {
+    enableMobileNav: true,
+    mobileNavTitle: 'Internet Archive',
+    onePageMinBreakpoint: 800,
+});
+
 BookReader.prototype.setup = (function(super_) {
     return function (options) {
         super_.call(this, options);
-
-        options = jQuery.extend(true, {
-            enableMobileNav: true,
-            mobileNavTitle: 'Internet Archive',
-            onePageMinBreakpoint: 800,
-        }, options);
 
         this.enableMobileNav = options.enableMobileNav;
         this.mobileNavTitle = options.mobileNavTitle;

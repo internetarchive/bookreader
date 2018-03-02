@@ -35,7 +35,6 @@ var options = {
 
   // Return which side, left or right, that a given page should be displayed on
   getPageSide: function(index) {
-      console.log(index, index & 0x1 ? 'R' : 'L');
       if (0 == (index & 0x1)) {
           return 'R';
       } else {

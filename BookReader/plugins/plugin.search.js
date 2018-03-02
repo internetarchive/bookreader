@@ -2,26 +2,30 @@
  * Plugin for Archive.org book search
  */
 
+jQuery.extend(true, BookReader.defaultOptions, {
+    server: 'ia600609.us.archive.org',
+    bookId: '',
+    subPrefix: '',
+    bookPath: '',
+    enableSearch: true,
+    searchInsideUrl: '/fulltext/new_inside.php',
+});
 
 // Extend the constructor to add search properties
 BookReader.prototype.setup = (function (super_) {
     return function (options) {
         super_.call(this, options);
 
-        options = jQuery.extend(true, {
-            server: 'ia600609.us.archive.org',
-            enableSearch: true,
-            searchInsideUrl: '/fulltext/new_inside.php',
-        }, options);
-
         this.searchTerm = '';
         this.searchResults = null;
         this.searchInsideUrl = options.searchInsideUrl;
-
         this.enableSearch = options.enableSearch;
 
         // Base server used by some api calls
+        this.bookId = options.bookId;
         this.server = options.server;
+        this.subPrefix = options.subPrefix;
+        this.bookPath = options.bookPath;
     };
 })(BookReader.prototype.setup);
 
@@ -136,7 +140,7 @@ BookReader.prototype.search = function(term, options) {
 
     this.searchTerm = term;
     this.searchTerm = this.searchTerm.replace(/\//g, ' '); // strip slashes, since this goes in the url
-    this.updateLocationHash(true);
+    if (this.enableUrlPlugin) this.updateLocationHash(true);
 
     // Add quotes to the term. This is to compenstate for the backends default OR query
     term = term.replace(/['"]+/g, '');
@@ -308,7 +312,6 @@ BookReader.prototype.updateSearchHilites2UP = function() {
                     //create a div for the search highlight, and stash it in the box object
                     box.div = document.createElement('div');
                     $(box.div).prop('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
-                    //console.log('appending new div');
                 }
                 this.setHilightCss2UP(box.div, pageIndex, box.l, box.r, box.t, box.b);
             } else {
@@ -456,7 +459,7 @@ BookReader.prototype.removeSearchResults = function() {
     this.removeSearchHilites(); //be sure to set all box.divs to null
     this.searchTerm = null;
     this.searchResults = null;
-    this.updateLocationHash(true);
+    if (this.enableUrlPlugin) this.updateLocationHash(true);
     $('#BRnavpos .search').remove();
     $('#mobileSearchResultWrapper').empty(); // Empty mobile results
 };

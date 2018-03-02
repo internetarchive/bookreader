@@ -1,3 +1,14 @@
+# 3.0.2
+In the process of upgrading IA, to use the new BookReader API, more changes/fixes were made.
+
+- Separate default options into BookReader.defaultOptions. This allows clients which use Internet Archive's JSIA endpoint (see demo-ia-plato.html) to have a hook into changing options. Also update plugins, to extend defaultOptions instead of modifying options in setup functions.
+- Add BookReader.version, which helps IA support older versions in the JSIA endpoint (eg https://archive.org/bookreader/BookReaderJSLocate.php?id=theworksofplato01platiala&subPrefix=theworksofplato01platiala).
+- Bring some IA-specific code into plugin.chapters.js
+- Add more options that were previously missed (protected, olHost, subPrefix, bookPath, zip, imageFormat, bookId). These are mostly for plugins. If you intend on using any of the plugins, you can see the full config options there.
+
+# 3.0.1
+- Fix issue setting info and share dialogs
+
 # 3.0.0 Major Release
 
 Version 3.0.0 is an effort to make BookReader more modular, extensible, and easier to use.
