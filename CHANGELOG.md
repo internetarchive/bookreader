@@ -1,3 +1,11 @@
+# 3.0.3
+- Add more options: showToolbar, showLogo  
+- Add this.options field, which stores the options last used in setup call  
+- Improve `_getDataFlattened` to have simple cache breaker  
+- Fix: don't show search UI if this.enableSearch is false  
+- Fix: add missing 'defaults' option to search plugin
+- Move constants out of instance, and into class (eg BookReader.constMode1up)  
+
 # 3.0.2
 In the process of upgrading IA, to use the new BookReader API, more changes/fixes were made.
 

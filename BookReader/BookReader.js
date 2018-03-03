@@ -37,7 +37,12 @@ function BookReader(options) {
     this.setup(options);
 }
 
-BookReader.version = "3.0.2";
+BookReader.version = "3.0.3";
+
+// Mode constants
+BookReader.constMode1up = 1;
+BookReader.constMode2up = 2;
+BookReader.constModeThumb = 3;
 
 BookReader.defaultOptions = {
     // Padding in 1up
@@ -59,6 +64,8 @@ BookReader.defaultOptions = {
     // speed for flip animation
     flipSpeed: 'fast',
 
+    showToolbar: true,
+    showLogo: true,
     // Where the logo links to
     logoURL: 'https://archive.org',
 
@@ -168,13 +175,15 @@ BookReader.optionOverrides = {};
  * Setup
  * It is separate from the constructor, so plugins can extend.
  * @param  {Object} options
- * TODO document all options properties
  */
 BookReader.prototype.setup = function(options) {
-    // Mode constants
-    this.constMode1up = 1;
-    this.constMode2up = 2;
-    this.constModeThumb = 3;
+    // Store the options used to setup bookreader
+    this.options = options;
+
+    // @deprecated: Instance constants. Use Class constants instead
+    this.constMode1up = BookReader.constMode1up;
+    this.constMode2up = BookReader.constMode2up;
+    this.constModeThumb = BookReader.constModeThumb;
 
     // Private properties below. Configuration should be done with options.
     this.reduce = 4;
@@ -203,6 +212,8 @@ BookReader.prototype.setup = function(options) {
     this.firstIndex = null;
     this.lastDisplayableIndex2up = null;
 
+    this.showToolbar = options.showToolbar;
+    this.showLogo = options.showLogo;
     this.logoURL = options.logoURL;
     this.imagesBaseURL = options.imagesBaseURL;
 
@@ -358,7 +369,7 @@ BookReader.prototype.init = function() {
         if (window.location.hash) {
             // params explicitly set in URL
             params = this.paramsFromFragment(window.location.hash);
-        } else if ('defaults' in this) {
+        } else if (this.defaults) {
             // params not explicitly set, use defaults if we have them
             params = this.paramsFromFragment(this.defaults);
         }
@@ -391,7 +402,8 @@ BookReader.prototype.init = function() {
     var nextMode;
     if ('undefined' != typeof(params.mode)) {
         nextMode = params.mode;
-    } else if (this.ui == 'full' && windowWidth <= this.onePageMinBreakpoint) {
+    } else if (this.ui == 'full'
+          && (this.enableMobileNav && windowWidth <= this.onePageMinBreakpoint)) {
         // In full mode, we set the default based on width
         nextMode = this.constMode1up;
     } else {
@@ -1447,7 +1459,7 @@ BookReader.prototype.quantizeReduce = function(reduce, reductionFactors) {
 
 // reductionFactors should be array of sorted reduction factors
 // e.g. [ {reduce: 0.25, autofit: null}, {reduce: 0.3, autofit: 'width'}, {reduce: 1, autofit: null} ]
-BookReader.prototype.nextReduce = function( currentReduce, direction, reductionFactors ) {
+BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFactors) {
     // XXX add 'closest', to replace quantize function
 
     if (direction === 'in') {
@@ -2230,6 +2242,7 @@ BookReader.prototype.next = function() {
     if (this.constMode2up == this.mode) {
         this.autoStop();
         this.flipFwdToIndex(null);
+
     } else {
         if (this.firstIndex < this.lastDisplayableIndex()) {
             this.jumpToIndex(this.firstIndex+1);
@@ -2330,7 +2343,6 @@ BookReader.prototype.flipBackToIndex = function(index) {
     if (null == index) {
         index = leftIndex-2;
     }
-    //if (index<0) return;
 
     this.updateNavIndex(index);
 
@@ -3223,6 +3235,10 @@ BookReader.prototype.initNavbar = function() {
 // Initialize the navigation bar when embedded
 BookReader.prototype.initEmbedNavbar = function() {
     var thisLink = (window.location + '').replace('?ui=embed',''); // IA-specific
+    var logoHtml = '';
+    if (this.showLogo) {
+      logoHtml = "<a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a>";
+    }
 
     this.refs.$br.append(
         '<div id="BRnav" class="BRnavEmbed">'
@@ -3231,7 +3247,7 @@ BookReader.prototype.initEmbedNavbar = function() {
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
         +   "</span>"
-        +   "<a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a>"
+        +   logoHtml
         +   "<span class='BRembedreturn'><a href='" + thisLink + "' target='_blank' ></a></span>"
         + '</div>'
     );
@@ -3277,16 +3293,19 @@ BookReader.prototype.updateNavIndexThrottled = BookReader.util.throttle(BookRead
  * @return {jqueryElement}
  */
 BookReader.prototype.buildToolbarElement = function() {
+  var logoHtml = '';
+  if (this.showLogo) {
+    logoHtml = "<span class='BRtoolbarSection BRtoolbarSectionLogo tc'>"
+    +  "<a class='logo' href='" + this.logoURL + "'></a>"
+    + "</span>";
+  }
 
   // Add large screen navigation
   this.refs.$BRtoolbar = $(
     "<div class='BRtoolbar header'>"
     +   "<span class='BRtoolbarbuttons'>"
     +     "<span class='BRtoolbarLeft'>"
-    +       "<span class='BRtoolbarSection BRtoolbarSectionLogo tc'>"
-    +         "<a class='logo' href='" + this.logoURL + "'></a>"
-    +       "</span>"
-
+    +       logoHtml
     +       "<span class='BRtoolbarSection BRtoolbarSectionTitle title tl ph10 last'>"
     +           "<span id='BRreturn'><a></a></span>"
     +           "<div id='BRnavCntlTop' class='BRnabrbuvCntl'></div>"
@@ -3316,7 +3335,7 @@ BookReader.prototype.buildToolbarElement = function() {
 
 
 BookReader.prototype.initToolbar = function(mode, ui) {
-    if (ui == 'embed') {
+    if (ui == 'embed' || !this.showToolbar) {
         return; // No toolbar at top in embed mode
     }
     var self = this;
@@ -3336,10 +3355,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     this.refs.$BRtoolbar.find('.pause').hide();
 
     this.updateToolbarZoom(this.reduce); // Pretty format
-
-    if (ui == "embed") {
-        this.refs.$br.find("a.logo").attr("target","_blank");
-    }
 
     // We build in mode 2
     this.refs.$BRtoolbar.append();
@@ -3564,14 +3579,16 @@ BookReader.prototype.bindNavigationHandlers = function() {
             var promises = [];
             // TODO don't use magic constants
             if ($('#BRnavCntlBtm').hasClass('BRdn')) {
-                promises.push(self.refs.$BRtoolbar.animate({top: self.refs.$BRtoolbar.height() * -1}).promise());
+                if (self.refs.$BRtoolbar)
+                    promises.push(self.refs.$BRtoolbar.animate({top: self.refs.$BRtoolbar.height() * -1}).promise());
                 promises.push($('#BRnav').animate({bottom:-55}).promise());
                 $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
                 $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
                 $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
                 $('.BRnavCntl').delay(1000).animate({opacity:.25}, 1000);
             } else {
-                promises.push(self.refs.$BRtoolbar.animate({top:0}).promise());
+                if (self.refs.$BRtoolbar)
+                    promises.push(self.refs.$BRtoolbar.animate({top:0}).promise());
                 promises.push($('#BRnav').animate({bottom:0}).promise());
                 $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
                 $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
@@ -4482,8 +4499,8 @@ BookReader.prototype.leafNumToIndex = function(index) {
  * @return {Array}
  */
 BookReader.prototype._getDataFlattened = function() {
-    if (this._getDataFlattened.cached)
-        return this._getDataFlattened.cached;
+    if (this._getDataFlattened.cached && this._getDataFlattened.cached[1] === this.data.length)
+        return this._getDataFlattened.cached[0];
 
     var flattend = [];
     var prevPageSide = null;
@@ -4498,7 +4515,8 @@ BookReader.prototype._getDataFlattened = function() {
             flattend.push(this.data[i][j]);
         }
     }
-    this._getDataFlattened.cached = flattend;
+    // length is used as a cache breaker
+    this._getDataFlattened.cached = [flattend, this.data.length];
     return flattend;
 };
 

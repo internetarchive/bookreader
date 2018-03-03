@@ -62,15 +62,17 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 BookReader.prototype.buildToolbarElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
-        var readIcon = '';
-        $el.find('.BRtoolbarRight').append($("<span class='BRtoolbarSection BRtoolbarSectionSearch tc ph20 last'>"
-        +         "<form class='booksearch desktop'>"
-        +           "<input type='search' class='textSrch form-control' name='textSrch' val='' placeholder='Search inside this book'/>"
-        +           "<button type='submit' id='btnSrch' name='btnSrch'>"
-        +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
-        +           "</button>"
-        +         "</form>"
-        +       "</span>"));
+        if (this.enableSearch) {
+          var readIcon = '';
+          $el.find('.BRtoolbarRight').append($("<span class='BRtoolbarSection BRtoolbarSectionSearch tc ph20 last'>"
+          +         "<form class='booksearch desktop'>"
+          +           "<input type='search' class='textSrch form-control' name='textSrch' val='' placeholder='Search inside this book'/>"
+          +           "<button type='submit' id='btnSrch' name='btnSrch'>"
+          +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
+          +           "</button>"
+          +         "</form>"
+          +       "</span>"));
+        }
         return $el;
     };
 })(BookReader.prototype.buildToolbarElement);
@@ -483,7 +485,6 @@ BookReader.prototype.searchHighlightVisible = function() {
 
     var i, j;
     for (i=0; i<results.matches.length; i++) {
-        //console.log(results.matches[i].par[0]);
         for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
             var box = results.matches[i].par[0].boxes[j];
             var pageIndex = this.leafNumToIndex(box.page);

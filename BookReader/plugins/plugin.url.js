@@ -5,6 +5,8 @@
 jQuery.extend(true, BookReader.defaultOptions, {
     enableUrlPlugin: true,
     bookId: '',
+    // Defaults can be a urlFragment string
+    defaults: null,
 });
 
 BookReader.prototype.setup = (function(super_) {
@@ -13,6 +15,7 @@ BookReader.prototype.setup = (function(super_) {
 
         this.enableUrlPlugin = options.enableUrlPlugin;
         this.bookId = options.bookId;
+        this.defaults = options.defaults;
 
         this.bind('PostInit', function(e, br) {
             // Set document title -- may have already been set in enclosing html for
