@@ -8,7 +8,7 @@ jQuery.extend(true, BookReader.defaultOptions, {
     subPrefix: '',
     bookPath: '',
     enableSearch: true,
-    searchInsideUrl: '/fulltext/new_inside.php',
+    searchInsideUrl: '/fulltext/inside.php',
 });
 
 // Extend the constructor to add search properties
@@ -164,7 +164,12 @@ BookReader.prototype.search = function(term, options) {
       'q': term,
     };
 
-    url += $.param(urlParams);
+    var paramStr = $.param(urlParams);
+
+    // NOTE that the API does not expect / (slashes) to be encoded. (%2F) won't work
+    paramStr = paramStr.replace(/%2F/g, '/');
+
+    url += paramStr;
 
     if (!options.disablePopup) {
         this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');

@@ -1,3 +1,6 @@
+# 3.0.4
+- Hotfix for plugin.search.js. Fixes fulltext search for some books on Archive.org
+
 # 3.0.3
 - Add more options: showToolbar, showLogo  
 - Add this.options field, which stores the options last used in setup call  
