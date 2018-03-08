@@ -37,7 +37,7 @@ function BookReader(options) {
     this.setup(options);
 }
 
-BookReader.version = "3.0.4";
+BookReader.version = "3.0.5";
 
 // Mode constants
 BookReader.constMode1up = 1;
@@ -2493,7 +2493,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.prefetch();
             self.animating = false;
 
-            if (this.enableSearch) self.updateSearchHilites2UP();
+            if (self.enableSearch) self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
 
             self.setMouseHandlers2UP();
@@ -2622,7 +2622,7 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             self.animating = false;
 
 
-            if (this.enableSearch) self.updateSearchHilites2UP();
+            if (self.enableSearch) self.updateSearchHilites2UP();
             self.updatePageNumBox2UP();
 
             self.setMouseHandlers2UP();

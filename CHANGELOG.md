@@ -1,3 +1,6 @@
+# 3.0.5
+- Hotfix for plugin.search.js. Fixes issue where search results were not rendered on page flip.
+
 # 3.0.4
 - Hotfix for plugin.search.js. Fixes fulltext search for some books on Archive.org
 
