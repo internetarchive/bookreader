@@ -153,8 +153,9 @@ BookReader.prototype.search = function(term, options) {
 
     // Remove subPrefix from end of path
     var path = this.bookPath;
-    if (this.bookPath.length - this.bookPath.lastIndexOf(this.subPrefix) == this.subPrefix.length) {
-      path = this.bookPath.substr(0, this.bookPath.length - this.subPrefix.length);
+    var subPrefixWithSlash = '/' + this.subPrefix;
+    if (this.bookPath.length - this.bookPath.lastIndexOf(subPrefixWithSlash) == subPrefixWithSlash.length) {
+      path = this.bookPath.substr(0, this.bookPath.length - subPrefixWithSlash.length);
     }
 
     var urlParams = {

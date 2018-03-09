@@ -1,3 +1,6 @@
+# 3.0.6
+- Another fix for plugin.search.js. The path GET param should not have a trailing slash.
+
 # 3.0.5
 - Hotfix for plugin.search.js. Fixes issue where search results were not rendered on page flip.
 
