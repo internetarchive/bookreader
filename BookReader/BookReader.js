@@ -663,6 +663,11 @@ BookReader.prototype.setupTooltips = function() {
     ;
 }
 
+// loadImage()
+//______________________________________________________________________________
+BookReader.prototype.loadImage = function(src, index, img) {
+    img.src = src;
+}
 
 // drawLeafs()
 //______________________________________________________________________________
@@ -789,11 +794,11 @@ BookReader.prototype.drawLeafsOnePage = function() {
             BRpageViewEl.appendChild(div);
 
             var img = document.createElement('img');
-            img.src = this._getPageURI(index, this.reduce, 0);
             img.className = 'BRnoselect BRonePageImage';
             img.style.width = width + 'px';
             img.style.height = height + 'px';
             div.appendChild(img);
+            this.loadImage(this._getPageURI(index, this.reduce, 0), index, img);
         }
 
         leafTop += height +10;
@@ -988,6 +993,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                     .addClass('BRlazyload')
                     // Store the URL of the image that will replace this one
                     .data('srcURL',  this._getPageURI(leaf, thumbReduce));
+                    .data('index', leaf);
                 $(link).append(img);
             }
         }
@@ -1084,11 +1090,11 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
         })
         .attr({
             'width': $(dummyImage).width(),
-            'height': $(dummyImage).height(),
-            'src': $(dummyImage).data('srcURL')
+            'height': $(dummyImage).height()
         });
 
     // replace with the new img
+    this.loadImage($(dummyImage).data('srcURL'), $(dummyImage).data('index'), img);
     $(dummyImage).before(img).remove();
 
     img = null; // tidy up closure
@@ -2695,7 +2701,7 @@ BookReader.prototype.prefetchImg = function(index) {
             // Facing page at beginning or end, or beyond
             $(img).addClass('BRemptypage');
         }
-        img.src = pageURI;
+        this.loadImage(pageURI, index, img);
         img.uri = pageURI; // browser may rewrite src so we stash raw URI here
         this.prefetchedImgs[index] = img;
     }
