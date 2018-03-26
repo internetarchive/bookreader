@@ -1,3 +1,6 @@
+# 3.0.7
+- Fix: Assign options.titleLeaf to this.titleLeaf
+
 # 3.0.6
 - Another fix for plugin.search.js. The path GET param should not have a trailing slash.
 
