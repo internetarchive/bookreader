@@ -88,7 +88,7 @@ BookReader.prototype.updateLocationHash = function(skipAnalytics) {
     // Send analytics events if the location hash is changed (page flip or mode change),
     // which indicates that the user is actively reading the book. This will cause the
     // archive.org download count for this book to increment (via setting the `bookreader` value),
-    // and also send a tracking event (via settig the `kind` attribute to `event`).
+    // and also send a tracking event (via setting the `kind` attribute to `event`).
     // Note that users with Adblock Plus will not send data to analytics.archive.org
     if (!skipAnalytics && typeof(archive_analytics) != 'undefined') {
         if (this.oldLocationHash != newHash) {
