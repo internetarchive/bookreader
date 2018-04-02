@@ -113,7 +113,7 @@ BookReader.prototype.updateLocationHash = function(skipAnalytics) {
                 kind: 'event',
                 ec: 'BookReader',
                 ea: 'UserChangedView',
-                el: location.pathname,
+                el: window.location.pathname,
                 cache_bust: Math.random()
             });
         }
