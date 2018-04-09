@@ -85,9 +85,10 @@ BookReader.prototype.updateLocationHash = function(skipAnalytics) {
         window.location.replace(newHash);
     }
 
-    // Send an analytics event if the location hash is changed (page flip or mode change),
+    // Send analytics events if the location hash is changed (page flip or mode change),
     // which indicates that the user is actively reading the book. This will cause the
-    // archive.org download count for this book to increment.
+    // archive.org download count for this book to increment (via setting the `bookreader` value),
+    // and also send a tracking event (via setting the `kind` attribute to `event`).
     // Note that users with Adblock Plus will not send data to analytics.archive.org
     if (!skipAnalytics && typeof(archive_analytics) != 'undefined') {
         if (this.oldLocationHash != newHash) {
@@ -104,7 +105,17 @@ BookReader.prototype.updateLocationHash = function(skipAnalytics) {
               values.details=(!values.offsite  &&  window.top.location.pathname.match(/^\/details\//)   ? 1 : 0);
             } catch (e){} //avoids embed cross site exceptions -- but on (+) side, means it is and keeps marked offite!
 
+            // Send bookreader ping
             archive_analytics.send_ping(values, null, 'augment_for_ao_site');
+
+            // Also send tracking event ping
+            archive_analytics.send_ping({
+                kind: 'event',
+                ec: 'BookReader',
+                ea: 'UserChangedView',
+                el: window.location.pathname,
+                cache_bust: Math.random()
+            });
         }
     }
 
