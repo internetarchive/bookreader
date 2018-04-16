@@ -16,6 +16,10 @@ See `BookReaderDemo` directory. These can be tested by starting a simple web ser
 ```
 python -m SimpleHTTPServer
 ```
+Or for Python 3:
+```
+python3 -m http.server
+```
 
 And then open `http://localhost:8000/BookReaderDemo/demo-simple.html`.
 
