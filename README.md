@@ -79,14 +79,34 @@ See `BookReaderDemo/demo-simple.html` and `BookReaderDemo/BookReaderJSSimple.js`
 
 A basic plugin system is used. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:
 
-- plugins.chapters.js - render chapter markers  
-- plugins.search.js - add search ui, and callbacks  
-- plugins.tts.js - add tts (read aloud) ui, sound library, and callbacks  
-- plugins.url.js - automatically updates the browser url  
-- plugins.resume.js - uses cookies to remember the current page  
+- plugins.chapters.js - render chapter markers
+- plugins.search.js - add search ui, and callbacks
+- plugins.tts.js - add tts (read aloud) ui, sound library, and callbacks
+- plugins.url.js - automatically updates the browser url
+- plugins.resume.js - uses cookies to remember the current page
 - plugins.mobile_nav.js - adds responsive mobile nav to BookReader
 
+## Embedding
 
+BookReader can be embedded within an `<iframe>`. If you use the URL Plugin inside the `<iframe>`, the reader will send notifications about URL changes via [`window.postMessage()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage). The parent window can send messages of its own (also via `window.postMessage()`) and the URL Plugin will handle updating the URL to match.
+
+### Message Events
+
+#### Path Change
+The Path Change message is sent to the parent window when the embedded BookReader moves between pages/modes. When the `<iframe>` receives this message, it moves to the specified page/mode.
+
+```json
+{
+  "type": "bookReaderPathChange",
+  "path": "page/n1/mode/2up"
+}
+```
+
+## Tests
+
+Tests use [QUnit](https://qunitjs.com/). To run all tests, start up an HTTP server at the root of the project and navigate to `/tests/qunit.html` in a browser.
+
+To add a new test, create a file in the `tests/` directory with the format `test-name-of-my-test.js` and add it as a `<script>` tag in `qunit.html`.
 
 ## More info
 
@@ -102,10 +122,10 @@ See `BookReaderDemo/demo-iiif.html` to see an example of how to load a IIIF mani
 
 ## Notes about version 3
 
-- Make BookReader easier to use, by adding `options` to the constructor, and adding new `options.data` option. The old way of overriding properties should still work, but it is deprecated.  
-- Factor out extra features into plugins. See `plugins` directory.   
+- Make BookReader easier to use, by adding `options` to the constructor, and adding new `options.data` option. The old way of overriding properties should still work, but it is deprecated.
+- Factor out extra features into plugins. See `plugins` directory.
 - Clean up code: Remove a lot of commented-out code. Remove some unused methods.
-- Change some, but not all, CSS ids to classes.  
+- Change some, but not all, CSS ids to classes.
 
 See the CHANGELOG.md for more information.
 
