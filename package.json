@@ -20,9 +20,6 @@
   },
   "homepage": "https://github.com/internetarchive/bookreader#readme",
   "dependencies": {},
-  "scripts": {
-    "test": "node-qunit-phantomjs ./tests/qunit.html --verbose --timeout=600"
-  },
   "devDependencies": {
     "qunitjs": "^2.4.1"
   }
