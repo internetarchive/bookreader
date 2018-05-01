@@ -88,17 +88,17 @@ A basic plugin system is used. See the examples in the plugins directory. The ge
 
 ## Embedding
 
-BookReader can be embedded within an `<iframe>`. If you use the URL Plugin inside the `<iframe>`, the reader will send notifications about URL changes via [`window.postMessage()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage). The parent window can send messages of its own (also via `window.postMessage()`) and the URL Plugin will handle updating the URL to match.
+BookReader can be embedded within an `<iframe>`. If you use the IFrame Plugin inside the `<iframe>`, the reader will send notifications about changes in the state of the reader via [`window.postMessage()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage). The parent window can send messages of its own (also via `window.postMessage()`) and the IFrame Plugin will handle updating the reader to match.
 
 ### Message Events
 
-#### Path Change
-The Path Change message is sent to the parent window when the embedded BookReader moves between pages/modes. When the `<iframe>` receives this message, it moves to the specified page/mode.
+#### Fragment Change
+The Fragment Change message is sent to the parent window when the embedded BookReader moves between pages/modes. When the `<iframe>` receives this message, it moves to the specified page/mode. The “fragment” is formatted in accordance with the [BookReader URL spec](http://openlibrary.org/dev/docs/bookurls).
 
 ```json
 {
-  "type": "bookReaderPathChange",
-  "path": "page/n1/mode/2up"
+  "type": "bookReaderFragmentChange",
+  "fragment": "page/n1/mode/2up"
 }
 ```
 
