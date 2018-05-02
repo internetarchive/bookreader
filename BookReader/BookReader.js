@@ -44,7 +44,12 @@ BookReader.constMode1up = 1;
 BookReader.constMode2up = 2;
 BookReader.constModeThumb = 3;
 
-BookReader.constEventNameFragmentChange = 'fragmentChange';
+// Names of events that can be triggered via BookReader.prototype.trigger()
+BookReader.eventNames = {
+    // Indicates that the fragment (a serialization of the reader state)
+    // has changed.
+    fragmentChange: 'fragmentChange',
+};
 
 BookReader.defaultOptions = {
     // Padding in 1up
@@ -751,7 +756,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
     // Notify of new fragment, but only if we're currently displaying a leaf
     // Hack that fixes #365790
     if (this.displayedIndices.length > 0) {
-        this.trigger(BookReader.constEventNameFragmentChange);
+        this.trigger(BookReader.eventNames.fragmentChange);
     }
 
     if ((0 != firstIndexToDraw) && (1 < this.reduce)) {
@@ -1022,7 +1027,7 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
     // Notify of new fragment, but only if we're currently displaying a leaf
     // Hack that fixes #365790
     if (this.displayedRows.length > 0) {
-        this.trigger(BookReader.constEventNameFragmentChange);
+        this.trigger(BookReader.eventNames.fragmentChange);
     }
 
     // remove previous highlights
@@ -1169,7 +1174,7 @@ BookReader.prototype.updatePageNumBox2UP = function() {
         $("#BRpagenum").val('');
     }
 
-    this.trigger(BookReader.constEventNameFragmentChange);
+    this.trigger(BookReader.eventNames.fragmentChange);
 };
 
 // drawLeafsThrottled()
@@ -4534,11 +4539,18 @@ BookReader.prototype.paramsFromCurrent = function() {
  *
  * @see http://openlibrary.org/dev/docs/bookurls for fragment syntax
  *
- * @param {String} fragment
+ * @param {String} fragment initial # is allowed for backwards compatibility
+ *                          but is deprecated
  * @return {Object}
  */
 BookReader.prototype.paramsFromFragment = function(fragment) {
     var params = {};
+
+    // For backwards compatibility we allow an initial # character
+    // (as from window.location.hash) but don't require it
+    if (fragment.substr(0, 1) == '#') {
+        fragment = fragment.substr(1);
+    }
 
     // Simple #nn syntax
     var oldStyleLeafNum = parseInt( /^\d+$/.exec(fragment) );

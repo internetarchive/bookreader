@@ -1,5 +1,5 @@
 # 3.1.0
-- Add new IFrame plugin to enable two-way communication between an embedded `<iframe>` and a parent window.
+- Add new IFrame plugin to enable two-way communication between a BookReader inside an `<iframe>` and its parent window.
 - Move the `paramsFromCurrent`, `paramsFromFragment`, and `fragmentFromParams` methods back into BookReader core and out of the URL Plugin. This change should be backwards-compatible with previous versions.
 - Fire a new event, `fragmentChange`, on BookReader when the reader’s state changes.
 

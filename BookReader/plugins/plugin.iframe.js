@@ -26,7 +26,7 @@
             return;
         }
 
-        br.bind(BookReader.constEventNameFragmentChange, function() {
+        br.bind(BookReader.eventNames.fragmentChange, function() {
             var fragment = br.fragmentFromParams(br.paramsFromCurrent());
 
             window.parent.postMessage(

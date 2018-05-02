@@ -27,7 +27,7 @@ BookReader.prototype.setup = (function(super_) {
         });
 
         this.bind(
-            BookReader.constEventNameFragmentChange,
+            BookReader.eventNames.fragmentChange,
             function handleFragmentChange() {
                 br.updateLocationHash();
             }
