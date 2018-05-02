@@ -1,6 +1,6 @@
 {
   "name": "bookreader",
-  "version": "3.0.8",
+  "version": "3.1.0",
   "description": "The Internet Archive BookReader.",
   "repository": {
     "type": "git",
@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/internetarchive/bookreader/issues"
   },
-  "homepage": "https://github.com/internetarchive/bookreader#readme"
+  "homepage": "https://github.com/internetarchive/bookreader#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "qunitjs": "^2.4.1"
+  }
 }

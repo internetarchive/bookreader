@@ -11,6 +11,8 @@ jQuery.extend(true, BookReader.defaultOptions, {
 
 BookReader.prototype.setup = (function(super_) {
     return function (options) {
+        var br = this;
+
         super_.call(this, options);
 
         this.enableUrlPlugin = options.enableUrlPlugin;
@@ -23,6 +25,13 @@ BookReader.prototype.setup = (function(super_) {
             document.title = br.shortTitle(50);
             br.startLocationPolling();
         });
+
+        this.bind(
+            BookReader.eventNames.fragmentChange,
+            function handleFragmentChange() {
+                br.updateLocationHash();
+            }
+        );
     };
 })(BookReader.prototype.setup);
 
@@ -63,10 +72,14 @@ BookReader.prototype.startLocationPolling = function() {
             if (self.animating) {
                 self.autoStop();
                 self.animationFinishedCallback = function() {
-                    self.updateFromParams(self.paramsFromFragment(newHash));
+                    self.updateFromParams(
+                        self.paramsFromFragment(newHash.substr(1))
+                    );
                 }
             } else { // update immediately
-                self.updateFromParams(self.paramsFromFragment(newHash));
+                self.updateFromParams(self.paramsFromFragment(
+                    newHash.substr(1))
+                );
             }
             self.oldUserHash = newHash;
         }
@@ -126,140 +139,4 @@ BookReader.prototype.updateLocationHash = function(skipAnalytics) {
     if (this.enablePageResume) {
         this.updateResumeValue(params.index);
     }
-};
-
-
-// paramsFromCurrent()
-//________
-// Create a params object from the current parameters.
-BookReader.prototype.paramsFromCurrent = function() {
-
-    var params = {};
-
-    var index = this.currentIndex();
-    var pageNum = this.getPageNum(index);
-    if ((pageNum === 0) || pageNum) {
-        params.page = pageNum;
-    }
-
-    params.index = index;
-    params.mode = this.mode;
-
-    // $$$ highlight
-    // $$$ region
-
-    // search
-    if (this.enableSearch) {
-        params.searchTerm = this.searchTerm;
-    }
-
-    return params;
-};
-
-
-// paramsFromFragment(urlFragment)
-//________
-// Returns a object with configuration parametes from a URL fragment.
-//
-// E.g paramsFromFragment(window.location.hash)
-BookReader.prototype.paramsFromFragment = function(urlFragment) {
-    // URL fragment syntax specification: http://openlibrary.org/dev/docs/bookurls
-
-    var params = {};
-
-    // For convenience we allow an initial # character (as from window.location.hash)
-    // but don't require it
-    if (urlFragment.substr(0,1) == '#') {
-        urlFragment = urlFragment.substr(1);
-    }
-
-    // Simple #nn syntax
-    var oldStyleLeafNum = parseInt( /^\d+$/.exec(urlFragment) );
-    if ( !isNaN(oldStyleLeafNum) ) {
-        params.index = oldStyleLeafNum;
-
-        // Done processing if using old-style syntax
-        return params;
-    }
-
-    // Split into key-value pairs
-    var urlArray = urlFragment.split('/');
-    var urlHash = {};
-    for (var i = 0; i < urlArray.length; i += 2) {
-        urlHash[urlArray[i]] = urlArray[i+1];
-    }
-
-    // Mode
-    if ('1up' == urlHash['mode']) {
-        params.mode = this.constMode1up;
-    } else if ('2up' == urlHash['mode']) {
-        params.mode = this.constMode2up;
-    } else if ('thumb' == urlHash['mode']) {
-        params.mode = this.constModeThumb;
-    }
-
-    // Index and page
-    if ('undefined' != typeof(urlHash['page'])) {
-        // page was set -- may not be int
-        params.page = urlHash['page'];
-    }
-
-    // $$$ process /region
-    // $$$ process /search
-
-    if (urlHash['search'] != undefined) {
-        params.searchTerm = BookReader.util.decodeURIComponentPlus(urlHash['search']);
-    }
-
-    // $$$ process /highlight
-
-    // $$$ process /theme
-    if (urlHash['theme'] != undefined) {
-        params.theme = urlHash['theme']
-    }
-    return params;
-};
-
-
-
-// fragmentFromParams(params)
-//________
-// Create a fragment string from the params object.
-// See http://openlibrary.org/dev/docs/bookurls for an explanation of the fragment syntax.
-BookReader.prototype.fragmentFromParams = function(params) {
-    var separator = '/';
-
-    var fragments = [];
-
-    if ('undefined' != typeof(params.page)) {
-        fragments.push('page', params.page);
-    } else {
-        if ('undefined' != typeof(params.index)) {
-            // Don't have page numbering but we do have the index
-            fragments.push('page', 'n' + params.index);
-        }
-    }
-
-    // $$$ highlight
-    // $$$ region
-
-    // mode
-    if ('undefined' != typeof(params.mode)) {
-        if (params.mode == this.constMode1up) {
-            fragments.push('mode', '1up');
-        } else if (params.mode == this.constMode2up) {
-            fragments.push('mode', '2up');
-        } else if (params.mode == this.constModeThumb) {
-            fragments.push('mode', 'thumb');
-        } else {
-            throw 'fragmentFromParams called with unknown mode ' + params.mode;
-        }
-    }
-
-    // search
-    if (params.searchTerm) {
-        fragments.push('search', params.searchTerm);
-    }
-
-    return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
 };

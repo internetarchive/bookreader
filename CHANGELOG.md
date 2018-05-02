@@ -1,3 +1,8 @@
+# 3.1.0
+- Add new IFrame plugin to enable two-way communication between a BookReader inside an `<iframe>` and its parent window.
+- Move the `paramsFromCurrent`, `paramsFromFragment`, and `fragmentFromParams` methods back into BookReader core and out of the URL Plugin. This change should be backwards-compatible with previous versions.
+- Fire a new event, `fragmentChange`, on BookReader when the reader’s state changes.
+
 # 3.0.8
 - Add additional tracking event when view changes
 

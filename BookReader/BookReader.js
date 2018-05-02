@@ -44,6 +44,13 @@ BookReader.constMode1up = 1;
 BookReader.constMode2up = 2;
 BookReader.constModeThumb = 3;
 
+// Names of events that can be triggered via BookReader.prototype.trigger()
+BookReader.eventNames = {
+    // Indicates that the fragment (a serialization of the reader state)
+    // has changed.
+    fragmentChange: 'fragmentChange',
+};
+
 BookReader.defaultOptions = {
     // Padding in 1up
     padding: 10,
@@ -369,7 +376,7 @@ BookReader.prototype.init = function() {
     if (this.enableUrlPlugin) {
         if (window.location.hash) {
             // params explicitly set in URL
-            params = this.paramsFromFragment(window.location.hash);
+            params = this.paramsFromFragment(window.location.hash.substr(1));
         } else if (this.defaults) {
             // params not explicitly set, use defaults if we have them
             params = this.paramsFromFragment(this.defaults);
@@ -746,10 +753,10 @@ BookReader.prototype.drawLeafsOnePage = function() {
     var firstIndexToDraw  = indicesToDisplay[0];
     this.firstIndex = firstIndexToDraw;
 
-    // Update hash, but only if we're currently displaying a leaf
+    // Notify of new fragment, but only if we're currently displaying a leaf
     // Hack that fixes #365790
     if (this.displayedIndices.length > 0) {
-        if (this.enableUrlPlugin) this.updateLocationHash();
+        this.trigger(BookReader.eventNames.fragmentChange);
     }
 
     if ((0 != firstIndexToDraw) && (1 < this.reduce)) {
@@ -1017,10 +1024,10 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
 
     this.displayedRows = rowsToDisplay.slice();
 
-    // Update hash, but only if we're currently displaying a leaf
+    // Notify of new fragment, but only if we're currently displaying a leaf
     // Hack that fixes #365790
     if (this.displayedRows.length > 0) {
-        if (this.enableUrlPlugin) this.updateLocationHash();
+        this.trigger(BookReader.eventNames.fragmentChange);
     }
 
     // remove previous highlights
@@ -1166,7 +1173,8 @@ BookReader.prototype.updatePageNumBox2UP = function() {
     } else {
         $("#BRpagenum").val('');
     }
-    if (this.enableUrlPlugin) this.updateLocationHash();
+
+    this.trigger(BookReader.eventNames.fragmentChange);
 };
 
 // drawLeafsThrottled()
@@ -3908,7 +3916,7 @@ BookReader.prototype.lastDisplayableIndex = function() {
 //________
 // Update ourselves from the params object.
 //
-// e.g. this.updateFromParams(this.paramsFromFragment(window.location.hash))
+// e.g. this.updateFromParams(this.paramsFromFragment(window.location.hash.substr(1)))
 BookReader.prototype.updateFromParams = function(params) {
     if ('undefined' != typeof(params.mode)) {
         this.switchMode(params.mode);
@@ -4492,6 +4500,152 @@ BookReader.prototype.getSpreadIndices = function(pindex) {
  */
 BookReader.prototype.leafNumToIndex = function(index) {
   return index;
+};
+
+/**
+ * Create a params object from the current parameters.
+ *
+ * @return {Object}
+ */
+BookReader.prototype.paramsFromCurrent = function() {
+
+    var params = {};
+
+    var index = this.currentIndex();
+    var pageNum = this.getPageNum(index);
+    if ((pageNum === 0) || pageNum) {
+        params.page = pageNum;
+    }
+
+    params.index = index;
+    params.mode = this.mode;
+
+    // $$$ highlight
+    // $$$ region
+
+    // search
+    if (this.enableSearch) {
+        params.searchTerm = this.searchTerm;
+    }
+
+    return params;
+};
+
+/**
+ * Return an object with configuration parameters from a fragment string.
+ *
+ * Fragments are formatted as a URL path but may be used outside of URLs as a
+ * serialization format for BookReader parameters
+ *
+ * @see http://openlibrary.org/dev/docs/bookurls for fragment syntax
+ *
+ * @param {String} fragment initial # is allowed for backwards compatibility
+ *                          but is deprecated
+ * @return {Object}
+ */
+BookReader.prototype.paramsFromFragment = function(fragment) {
+    var params = {};
+
+    // For backwards compatibility we allow an initial # character
+    // (as from window.location.hash) but don't require it
+    if (fragment.substr(0, 1) == '#') {
+        fragment = fragment.substr(1);
+    }
+
+    // Simple #nn syntax
+    var oldStyleLeafNum = parseInt( /^\d+$/.exec(fragment) );
+    if ( !isNaN(oldStyleLeafNum) ) {
+        params.index = oldStyleLeafNum;
+
+        // Done processing if using old-style syntax
+        return params;
+    }
+
+    // Split into key-value pairs
+    var urlArray = fragment.split('/');
+    var urlHash = {};
+    for (var i = 0; i < urlArray.length; i += 2) {
+        urlHash[urlArray[i]] = urlArray[i+1];
+    }
+
+    // Mode
+    if ('1up' == urlHash['mode']) {
+        params.mode = this.constMode1up;
+    } else if ('2up' == urlHash['mode']) {
+        params.mode = this.constMode2up;
+    } else if ('thumb' == urlHash['mode']) {
+        params.mode = this.constModeThumb;
+    }
+
+    // Index and page
+    if ('undefined' != typeof(urlHash['page'])) {
+        // page was set -- may not be int
+        params.page = urlHash['page'];
+    }
+
+    // $$$ process /region
+    // $$$ process /search
+
+    if (urlHash['search'] != undefined) {
+        params.searchTerm = BookReader.util.decodeURIComponentPlus(urlHash['search']);
+    }
+
+    // $$$ process /highlight
+
+    // $$$ process /theme
+    if (urlHash['theme'] != undefined) {
+        params.theme = urlHash['theme']
+    }
+    return params;
+};
+
+/**
+ * Create a fragment string from the params object.
+ *
+ * Fragments are formatted as a URL path but may be used outside of URLs as a
+ * serialization format for BookReader parameters
+ *
+ * @see http://openlibrary.org/dev/docs/bookurls for fragment syntax
+ *
+ * @param {Object} params
+ * @return {String}
+ */
+BookReader.prototype.fragmentFromParams = function(params) {
+    var separator = '/';
+
+    var fragments = [];
+
+    if ('undefined' != typeof(params.page)) {
+        fragments.push('page', params.page);
+    } else {
+        if ('undefined' != typeof(params.index)) {
+            // Don't have page numbering but we do have the index
+            fragments.push('page', 'n' + params.index);
+        }
+    }
+
+    // $$$ highlight
+    // $$$ region
+
+    // mode
+    if ('undefined' != typeof(params.mode)) {
+        if (params.mode == this.constMode1up) {
+            fragments.push('mode', '1up');
+        } else if (params.mode == this.constMode2up) {
+            fragments.push('mode', '2up');
+        } else if (params.mode == this.constModeThumb) {
+            fragments.push('mode', 'thumb');
+        } else {
+            throw 'fragmentFromParams called with unknown mode ' + params.mode;
+        }
+    }
+
+    // search
+    if (params.searchTerm) {
+        fragments.push('search', params.searchTerm);
+    }
+
+    return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
 };
 
 /**
