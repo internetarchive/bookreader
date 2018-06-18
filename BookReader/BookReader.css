@@ -543,12 +543,12 @@ button.action.skinny {
 
 /*** end BRFloat ***/
 div#BRpage {
-    position: absolute;
-    right: 0;
-    width: 220px;
-    padding-left:12px;
-    text-align: right;
-    margin-right: 4px;
+  flex: 0 1 auto;
+  margin-right: 4px;
+  order: 1;
+  padding-left: 4px;
+  right: 0;
+  text-align: right;
 }
 div#BRpage .BRicon.book_left {
   border-bottom-left-radius: 5px;
@@ -576,6 +576,7 @@ div#BRpage .BRicon.thumb {
 
 div#BRnav {
     box-sizing: border-box;
+    display: flex;
     position: absolute;
     bottom: 0;
     left: 0;
@@ -596,8 +597,8 @@ div#BRnav.BRnavEmbed{
   height:40px;
 }
 div#BRnavpos {
+    flex: 1 1 auto;
     position: relative;
-    margin-right: 220px;
     height: 40px;
     top: 5px;
 }
@@ -1209,7 +1210,6 @@ html.mm-background .BookReader {
 
 /* Mobile Only */
 @media (max-width: 800px) {
-  div#BRnavpos { margin-right: 90px; }
   .BRtoolbar { height: 40px; }
   .BRtoolbar.responsive .BRtoolbarbuttons { display: none; }
   .BRtoolbar.responsive .BRmobileHamburgerWrapper { display: block; }

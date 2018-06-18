@@ -57,6 +57,8 @@ BookReader.defaultOptions = {
     // UI mode
     ui: 'full', // full, embed, responsive
 
+    beta: false,
+
     // Controls whether nav/toolbar will autohide
     uiAutoHide: false,
 
@@ -187,6 +189,8 @@ BookReader.prototype.setup = function(options) {
     // Store the options used to setup bookreader
     this.options = options;
 
+    this.beta = options.beta;
+
     // @deprecated: Instance constants. Use Class constants instead
     this.constMode1up = BookReader.constMode1up;
     this.constMode2up = BookReader.constMode2up;
@@ -220,7 +224,7 @@ BookReader.prototype.setup = function(options) {
     this.lastDisplayableIndex2up = null;
 
     this.showToolbar = options.showToolbar;
-    this.showLogo = options.showLogo;
+    this.showLogo = !options.beta && options.showLogo;
     this.logoURL = options.logoURL;
     this.imagesBaseURL = options.imagesBaseURL;
 
@@ -230,7 +234,7 @@ BookReader.prototype.setup = function(options) {
 
     this.bookTitle = options.bookTitle;
     this.bookUrl = options.bookUrl;
-    this.bookUrlText = options.bookUrlText;
+    this.bookUrlText = options.beta ? null : options.bookUrlText;
     this.bookUrlTitle = options.bookUrlTitle;
     this.titleLeaf = options.titleLeaf;
 
@@ -3199,6 +3203,13 @@ BookReader.prototype.initNavbar = function() {
       +     "<button class=\"BRicon onepg desktop-only\"></button>"
       +     "<button class=\"BRicon twopg desktop-only\"></button>"
       +     "<button class=\"BRicon thumb desktop-only\"></button>"
+      +     (this.beta ?
+            '<span class="desktop-only">&nbsp;&nbsp;</span>'
+          + '<button class="BRicon zoom_out desktop-only"></button>'
+          + '<button class="BRicon zoom_in desktop-only"></button>'
+          + '<span class="desktop-only">&nbsp;&nbsp;</span>'
+          + '<button class="BRicon zoom_in desktop-only"></button>'
+            : '')
       +"  </div>"
       +"  <div id=\"BRnavpos\">"
       +"    <div id=\"BRpager\"></div>"
@@ -3237,6 +3248,8 @@ BookReader.prototype.initNavbar = function() {
     this.updateNavPageNum(this.currentIndex());
 
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
+
+    return this.refs.$br.find('#BRnav')
 };
 
 // initEmbedNavbar
@@ -3323,16 +3336,18 @@ BookReader.prototype.buildToolbarElement = function() {
 
     +     "<span class='BRtoolbarRight'>"
 
-    +       "<span class='BRtoolbarSection BRtoolbarSectionInfo tc ph10'>"
+    + (this.beta ? '' :
+            "<span class='BRtoolbarSection BRtoolbarSectionInfo tc ph10'>"
     +         "<button class='BRicon info js-tooltip'></button>"
     +         "<button class='BRicon share js-tooltip'></button>"
-    +       "</span>"
+    +       "</span>")
 
     // zoom
-    +       "<span class='BRtoolbarSection BRtoolbarSectionZoom tc ph10'>"
+    + (this.beta ? '' :
+            "<span class='BRtoolbarSection BRtoolbarSectionZoom tc ph10'>"
     +         "<button class='BRicon zoom_out js-tooltip'></button>"
     +         "<button class='BRicon zoom_in js-tooltip'></button>"
-    +       "</span>"
+    +       "</span>")
 
     +     "</span>" // end BRtoolbarRight
     +   "</span>" // end desktop-only

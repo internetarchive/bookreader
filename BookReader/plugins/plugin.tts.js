@@ -70,14 +70,38 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     };
 })(BookReader.prototype.buildMobileDrawerElement);
 
+
+// Extend initNavbar
+BookReader.prototype.initNavbar = (function (super_) {
+    return function () {
+        var $el = super_.call(this);
+
+
+        if (this.beta) {
+            if (this.isSoundManagerSupported) {
+                var readAloudButton = $("<button class='BRicon read modal'></button>");
+                readAloudButton.insertBefore($el.find('#BRpage .BRicon.onepg'));
+                $('<span class="desktop-only">&nbsp;&nbsp;</span>').insertAfter(readAloudButton);
+            }
+        }
+
+        return $el;
+    };
+})(BookReader.prototype.initNavbar);
+
+
 // Extend buildToolbarElement
 BookReader.prototype.buildToolbarElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
-        var readIcon = '';
-        if (this.isSoundManagerSupported) {
-            $el.find('.BRtoolbarSectionInfo').append($("<button class='BRicon read modal js-tooltip'></button>"));
+
+        if (!this.beta) {
+            var readIcon = '';
+            if (this.isSoundManagerSupported) {
+                $el.find('.BRtoolbarSectionInfo').append($("<button class='BRicon read modal js-tooltip'></button>"));
+            }
         }
+
         return $el;
     };
 })(BookReader.prototype.buildToolbarElement);
