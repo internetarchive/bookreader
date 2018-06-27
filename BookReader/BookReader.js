@@ -52,6 +52,9 @@ BookReader.eventNames = {
 };
 
 BookReader.defaultOptions = {
+    // A string, such as "mode/1up"
+    defaults: null,
+
     // Padding in 1up
     padding: 10,
     // UI mode
@@ -194,6 +197,7 @@ BookReader.prototype.setup = function(options) {
 
     // Private properties below. Configuration should be done with options.
     this.reduce = 4;
+    this.defaults = options.defaults;
     this.padding = options.padding;
     this.mode = this.constMode1up;
     this.ui = options.ui;
