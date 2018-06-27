@@ -200,6 +200,7 @@ BookReader.prototype.setup = function(options) {
     this.defaults = options.defaults;
     this.padding = options.padding;
     this.mode = this.constMode1up;
+    this.prevReadMode = null;
     this.ui = options.ui;
     this.uiAutoHide = options.uiAutoHide;
 
@@ -404,7 +405,11 @@ BookReader.prototype.initParams = function() {
 
     if (this.enableUrlPlugin && window.location.hash) {
         // params explicitly set in URL take precedence over all other methods
-        $.extend(true, params, this.paramsFromFragment(window.location.hash.substr(1)));
+        var urlParams = this.paramsFromFragment(window.location.hash.substr(1));
+        if (urlParams.mode) {
+            this.prevReadMode = urlParams.mode;
+        }
+        $.extend(true, params, urlParams);
     }
 
     return params;
@@ -985,13 +990,14 @@ BookReader.prototype.drawLeafsThumbnail = function( seekIndex ) {
                 div.style.width = leafWidth + 'px';
                 div.style.height = leafHeight + 'px';
 
-                // link to page in single page mode
+                // link back to page
                 link = document.createElement("a");
                 $(link).data('leaf', leaf);
                 link.addEventListener('mouseup', function(event) {
                   self.firstIndex = $(this).data('leaf');
-                  if (self._prevReadMode !== undefined) {
-                    self.switchMode(self._prevReadMode);
+                  if (self.prevReadMode === self.constMode1up
+                        || self.prevReadMode === self.constMode2up) {
+                    self.switchMode(self.prevReadMode);
                   } else {
                     self.switchMode(self.constMode1up);
                   }
@@ -1660,7 +1666,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
 //______________________________________________________________________________
 BookReader.prototype.switchMode = function(mode) {
 
-    if (mode == this.mode) {
+    if (mode === this.mode) {
         return;
     }
 
@@ -1671,14 +1677,14 @@ BookReader.prototype.switchMode = function(mode) {
     this.trigger('stop');
     if (this.enableSearch) this.removeSearchHilites();
 
-    if (this.mode == this.constMode1up || this.mode == this.constMode2up) {
-      this._prevReadMode = this.mode;
+    if (this.mode === this.constMode1up || this.mode === this.constMode2up) {
+      this.prevReadMode = this.mode;
     }
 
     this.mode = mode;
 
     // reinstate scale if moving from thumbnail view
-    if (this.pageScale != this.reduce) {
+    if (this.pageScale !== this.reduce) {
         this.reduce = this.pageScale;
     }
 
@@ -4518,10 +4524,11 @@ BookReader.prototype.leafNumToIndex = function(index) {
 
 /**
  * Create a params object from the current parameters.
- *
+ * @param {boolean} processParams - pass true to process params
  * @return {Object}
  */
-BookReader.prototype.paramsFromCurrent = function() {
+BookReader.prototype.paramsFromCurrent = function(processParams) {
+    processParams = processParams || false;
 
     var params = {};
 
@@ -4540,6 +4547,13 @@ BookReader.prototype.paramsFromCurrent = function() {
     // search
     if (this.enableSearch) {
         params.searchTerm = this.searchTerm;
+    }
+
+    if (processParams) {
+        // Only include the mode (eg mode/2up) if user has made a choice
+        if (this.prevReadMode == null) {
+            delete params.mode;
+        }
     }
 
     return params;
