@@ -363,47 +363,57 @@ BookReader.util = {
 };
 
 
-// init()
-//______________________________________________________________________________
-BookReader.prototype.init = function() {
-    //-------------------------------------------------------------------------
-    // Parse parameters from URL/Cookies/Defaults
-    var startIndex = undefined;
-    this.pageScale = this.reduce; // preserve current reduce
-
-    // Find start index and mode if set in location hash
+/**
+ * Parses params from from various initialization contexts (url, cookie, options)
+ * @private
+ * @return {object} the parased params
+ */
+BookReader.prototype.initParams = function() {
     var params = {};
-    if (this.enableUrlPlugin) {
-        if (window.location.hash) {
-            // params explicitly set in URL
-            params = this.paramsFromFragment(window.location.hash.substr(1));
-        } else if (this.defaults) {
-            // params not explicitly set, use defaults if we have them
-            params = this.paramsFromFragment(this.defaults);
-        }
+
+    var defaultParams = {
+      index: 0,
+    };
+
+    // If we have a title leaf, use that as the default instead of index 0,
+    // but only use as default if book has a few pages
+    if ('undefined' != typeof(this.titleLeaf) && this.getNumLeafs() > 2) {
+        defaultParams.index = this.leafNumToIndex(this.titleLeaf);
     }
 
-    if ('undefined' != typeof(params.index)) {
-        startIndex = params.index;
-    } else if ('undefined' != typeof(params.page)) {
-        startIndex = this.getPageIndex(params.page);
+    // this.defaults is a string passed in the url format. eg "page/1/mode/1up"
+    if (this.defaults) {
+        $.extend(true, defaultParams, this.paramsFromFragment(this.defaults));
     }
+
+    // params begins with the defaults
+    $.extend(true, params, defaultParams);
+
     // Check for Resume plugin
-    if ('undefined' == typeof(startIndex) && this.enablePageResume && this.getNumLeafs() > 2) {
+    if (this.enablePageResume && this.getNumLeafs() > 2) {
         // Check cookies
         var val = this.getResumeValue();
         if (val !== null) {
-            startIndex = val;
+            params.index = val;
         }
     }
-    if ('undefined' == typeof(startIndex) && 'undefined' != typeof(this.titleLeaf) && this.getNumLeafs() > 2) {
-        // title leaf is known - but only use as default if book has a few pages
-        startIndex = this.leafNumToIndex(this.titleLeaf);
+
+    if (this.enableUrlPlugin && window.location.hash) {
+        // params explicitly set in URL take precedence over all other methods
+        $.extend(true, params, this.paramsFromFragment(window.location.hash.substr(1)));
     }
-    if ('undefined' == typeof(startIndex)) {
-        startIndex = 0;
-    }
-    this.firstIndex = startIndex;
+
+    return params;
+}
+
+// init()
+//______________________________________________________________________________
+BookReader.prototype.init = function() {
+    this.pageScale = this.reduce; // preserve current reduce
+
+    var params = this.initParams();
+
+    this.firstIndex = params.index;
 
     // Use params or browser width to set view mode
     var windowWidth = $(window).width();
