@@ -376,23 +376,10 @@ BookReader.util = {
 BookReader.prototype.initParams = function() {
     var params = {};
 
-    var defaultParams = {
-      index: 0,
-    };
-
-    // If we have a title leaf, use that as the default instead of index 0,
-    // but only use as default if book has a few pages
-    if ('undefined' != typeof(this.titleLeaf) && this.getNumLeafs() > 2) {
-        defaultParams.index = this.leafNumToIndex(this.titleLeaf);
-    }
-
     // this.defaults is a string passed in the url format. eg "page/1/mode/1up"
     if (this.defaults) {
-        $.extend(true, defaultParams, this.paramsFromFragment(this.defaults));
+        $.extend(true, params, this.paramsFromFragment(this.defaults));
     }
-
-    // params begins with the defaults
-    $.extend(true, params, defaultParams);
 
     // Check for Resume plugin
     if (this.enablePageResume && this.getNumLeafs() > 2) {
@@ -412,6 +399,16 @@ BookReader.prototype.initParams = function() {
         $.extend(true, params, urlParams);
     }
 
+    // If we have a title leaf, use that as the default instead of index 0,
+    // but only use as default if book has a few pages
+    if (!params.index && !params.page) {
+        if ('undefined' != typeof(this.titleLeaf) && this.getNumLeafs() > 2) {
+            params.index = this.leafNumToIndex(this.titleLeaf);
+        } else {
+            params.index = 0;
+        }
+    }
+
     return params;
 }
 
@@ -422,7 +419,14 @@ BookReader.prototype.init = function() {
 
     var params = this.initParams();
 
-    this.firstIndex = params.index;
+    // params.index takes precedence over params.page
+    if (params.index) {
+        this.firstIndex = params.index;
+    } else if (params.page) {
+        this.firstIndex = this.parsePageString(params.page);
+    } else {
+        this.firstIndex = 0;
+    }
 
     // Use params or browser width to set view mode
     var windowWidth = $(window).width();
@@ -1540,25 +1544,12 @@ BookReader.prototype._reduceSort = function(a, b) {
     return a.reduce - b.reduce;
 };
 
+
 // jumpToPage()
 //______________________________________________________________________________
 // Attempts to jump to page.  Returns true if page could be found, false otherwise.
 BookReader.prototype.jumpToPage = function(pageNum) {
-
-    var pageIndex;
-
-    // Check for special "leaf"
-    var re = new RegExp('^leaf(\\d+)');
-    leafMatch = re.exec(pageNum);
-    if (leafMatch) {
-        pageIndex = this.leafNumToIndex(parseInt(leafMatch[1],10));
-        if (pageIndex === null) {
-            pageIndex = undefined; // to match return type of getPageIndex
-        }
-
-    } else {
-        pageIndex = this.getPageIndex(pageNum);
-    }
+    var pageIndex = this.parsePageString(pageNum);
 
     if ('undefined' != typeof(pageIndex)) {
         this.jumpToIndex(pageIndex);
@@ -4633,7 +4624,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
  * Fragments are formatted as a URL path but may be used outside of URLs as a
  * serialization format for BookReader parameters
  *
- * @see http://openlibrary.org/dev/docs/bookurls for fragment syntax
+ * @see https://openlibrary.org/dev/docs/bookurls for fragment syntax
  *
  * @param {Object} params
  * @return {String}
@@ -4675,6 +4666,27 @@ BookReader.prototype.fragmentFromParams = function(params) {
 
     return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
 };
+
+/**
+ * Parses the pageString format
+ * @param {string} pageNum
+ * @return {number|undefined}
+ */
+BookReader.prototype.parsePageString = function(pageNum) {
+    var pageIndex;
+    // Check for special "leaf"
+    var re = new RegExp('^leaf(\\d+)');
+    var leafMatch = re.exec(pageNum);
+    if (leafMatch) {
+        pageIndex = this.leafNumToIndex(parseInt(leafMatch[1], 10));
+        if (pageIndex === null) {
+            pageIndex = undefined; // to match return type of getPageIndex
+        }
+    } else {
+        pageIndex = this.getPageIndex(pageNum);
+    }
+    return pageIndex;
+}
 
 /**
  * Helper. Flatten the nested structure (make 1d array),
