@@ -1,3 +1,11 @@
+# 3.2.0
+On Archive.org, we needed a way to pass in a default start page for books. These changes make that easier.
+
+- Update the way bookreader inits from various params contexts
+- Add `defaults` to the init options
+- Update so that mode is only reflected on URL if user has made a change.
+- Update to handle both params.index and params.page when provided in defaults. Seperate page parsing into separate method.
+
 # 3.1.0
 - Add new IFrame plugin to enable two-way communication between a BookReader inside an `<iframe>` and its parent window.
 - Move the `paramsFromCurrent`, `paramsFromFragment`, and `fragmentFromParams` methods back into BookReader core and out of the URL Plugin. This change should be backwards-compatible with previous versions.
