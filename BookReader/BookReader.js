@@ -367,6 +367,21 @@ BookReader.util = {
     },
 };
 
+/**
+ * Helper to merge in params in to a params object.
+ * It normalizes "page" into the "index" field to disambiguate and prevent concflicts
+ * @private
+ */
+BookReader.prototype.extendParams = function(params, newParams) {
+    var modifiedNewParams = $.extend(true, newParams);
+    if ('undefined' != typeof(modifiedNewParams.page)) {
+        var pageIndex = this.parsePageString(modifiedNewParams.page);
+        if (!isNaN(pageIndex))
+            modifiedNewParams.index = pageIndex;
+        delete modifiedNewParams.page;
+    }
+    $.extend(true, params, modifiedNewParams);
+}
 
 /**
  * Parses params from from various initialization contexts (url, cookie, options)
@@ -376,13 +391,23 @@ BookReader.util = {
 BookReader.prototype.initParams = function() {
     var params = {};
 
+    // This is ordered from lowest to highest priority
+
+    // If we have a title leaf, use that as the default instead of index 0,
+    // but only use as default if book has a few pages
+    if ('undefined' != typeof(this.titleLeaf) && this.getNumLeafs() > 2) {
+        params.index = this.leafNumToIndex(this.titleLeaf);
+    } else {
+        params.index = 0;
+    }
+
     // this.defaults is a string passed in the url format. eg "page/1/mode/1up"
     if (this.defaults) {
-        $.extend(true, params, this.paramsFromFragment(this.defaults));
+        this.extendParams(params, this.paramsFromFragment(this.defaults));
     }
 
     // Check for Resume plugin
-    if (this.enablePageResume && this.getNumLeafs() > 2) {
+    if (this.enablePageResume) {
         // Check cookies
         var val = this.getResumeValue();
         if (val !== null) {
@@ -396,17 +421,7 @@ BookReader.prototype.initParams = function() {
         if (urlParams.mode) {
             this.prevReadMode = urlParams.mode;
         }
-        $.extend(true, params, urlParams);
-    }
-
-    // If we have a title leaf, use that as the default instead of index 0,
-    // but only use as default if book has a few pages
-    if (!params.index && !params.page) {
-        if ('undefined' != typeof(this.titleLeaf) && this.getNumLeafs() > 2) {
-            params.index = this.leafNumToIndex(this.titleLeaf);
-        } else {
-            params.index = 0;
-        }
+        this.extendParams(params, urlParams);
     }
 
     return params;
@@ -422,8 +437,6 @@ BookReader.prototype.init = function() {
     // params.index takes precedence over params.page
     if (params.index) {
         this.firstIndex = params.index;
-    } else if (params.page) {
-        this.firstIndex = this.parsePageString(params.page);
     } else {
         this.firstIndex = 0;
     }
@@ -4723,7 +4736,9 @@ BookReader.prototype._getDataFlattened = function() {
  */
 BookReader.prototype._getDataProp = function(index, prop) {
     var dataf = this._getDataFlattened();
-    if (index < 0 || index >= dataf.length)
+    if (isNaN(index) || index < 0 || index >= dataf.length)
+        return;
+    if ('undefined' == typeof(dataf[index][prop]))
         return;
     return dataf[index][prop];
 };
