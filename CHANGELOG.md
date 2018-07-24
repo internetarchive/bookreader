@@ -1,3 +1,6 @@
+# 3.2.1
+- Fix so initParams normalizes params.page to params.index, to prevent complexity of priority of page versus index.
+
 # 3.2.0
 On Archive.org, we needed a way to pass in a default start page for books. These changes make that easier.
 
