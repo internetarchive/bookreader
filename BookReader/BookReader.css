@@ -542,39 +542,39 @@ button.action.skinny {
 }
 
 /*** end BRFloat ***/
-div#BRpage {
-    position: absolute;
-    right: 0;
-    width: 220px;
-    padding-left:12px;
-    text-align: right;
-    margin-right: 4px;
+.BRpage {
+  position: absolute;
+  right: 0;
+  width: 420px;
+  padding-left:12px;
+  text-align: right;
+  margin-right: 4px;
 }
-div#BRpage .BRicon.book_left {
+.BRpage .BRicon.book_left {
   border-bottom-left-radius: 5px;
   border-top-left-radius: 5px;
   border-right: 2px solid rgb(193,193,193);
   box-sizing: content-box;
 }
-div#BRpage .BRicon.book_right {
+.BRpage .BRicon.book_right {
   border-bottom-right-radius: 5px;
   border-top-right-radius: 5px;
   box-sizing: content-box;
 }
-div#BRpage .BRicon.onepg {
+.BRpage .BRicon.onepg {
   border-bottom-left-radius: 5px;
   border-top-left-radius: 5px;
   border-right: 2px solid rgb(193,193,193);
   box-sizing: content-box;
 }
-div#BRpage .BRicon.thumb {
+.BRpage .BRicon.thumb {
   border-bottom-right-radius: 5px;
   border-top-right-radius: 5px;
   border-left: 2px solid rgb(193,193,193);
   box-sizing: content-box;
 }
 
-div#BRnav {
+.BRnav {
     box-sizing: border-box;
     position: absolute;
     bottom: 0;
@@ -591,28 +591,28 @@ div#BRnav {
     _position:absolute;
     _top: expression(documentElement.scrollTop + documentElement.clientHeight-this.offsetHeight);
 }
-div#BRnav.BRnavEmbed{
+.BRnav.BRnavEmbed{
   padding-top:0;
   height:40px;
 }
-div#BRnavpos {
+#BRnavpos {
     position: relative;
-    margin-right: 220px;
+    margin-right: 420px;
     height: 40px;
     top: 5px;
 }
-div#BRpager {
+#BRpager {
     position: relative;
     /* Account for padding around nav line */
     margin-left: 10px;
     margin-right: 10px;
     height: 14px;
-    top: 14px;
+    top: 8px;
     background-color: rgb(216,216,216);
     border-radius: 10px;
     box-shadow: inset 0px 1px 1px 0px rgba(155,154,155,0.39)
 }
-div#BRslider {
+#BRslider {
     position: absolute;
     top: 13px;
     height: 27px;
@@ -647,7 +647,7 @@ div#BRslider {
     text-decoration: none;
 }
 
-div#BRnavline {
+#BRnavline {
     position: relative;
     height: 1px;
     width: auto;
@@ -659,24 +659,23 @@ div#BRnavline {
     width: 1px;
     height: 6px;
 }
-#BRnavleft {
+.BRnavleft {
     left: 0;
 }
-#BRnavright {
+.BRnavright {
     right: 0;
 }
 
-#BRcurrentpageWrapper {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  padding: 0 0 0 0;
-  font-size: 1.1em;
-  top: 5px;
+.BRcurrentpageWrapper {
+    /* position: absolute; */
+    display: inline-block;
+    text-align: center;
+    padding: 0 0 0 0;
+    font-size: 1.1em;
+    margin-right: 10px;
 }
 
-
-div#BRfiller {
+#BRfiller {
     position: absolute;
     height: 40px;
     width: 10px;
@@ -685,7 +684,7 @@ div#BRfiller {
     left: 0;
     z-index: 102;
 }
-div#slider {
+#slider {
     position: absolute;
     width: 2500px;
     height: 27px;
@@ -695,7 +694,7 @@ div#slider {
     opacity: .1;
     z-index: 101;
 }
-div#pager {
+#pager {
     position: absolute;
     width: 23px;
     height: 27px;
@@ -704,7 +703,7 @@ div#pager {
     background: url(images/slider.png);
     z-index: 103;
 }
-div#pagenum {
+#pagenum {
     display: none;
     position: absolute;
     left: 24px;
@@ -719,7 +718,7 @@ div#pagenum {
     border: 2px solid #ccc;
     /*font-family: "Lucida Grande", "Arial", sans-serif;*/
 }
-div#pagenum span {
+#pagenum span {
     /*color: #ffa337;*/
     color: rgb(36,94,131);
     font-style: italic;
@@ -841,10 +840,10 @@ div.searchChap.front {
 .mobileSearchResult table td{
     vertical-align: top;
 }
-#BRnav .front {
+.BRnav .front {
     z-index: 10001;
 }
-div#BRzoomer {
+#BRzoomer {
     position: fixed;
     bottom: 40px;
     right: 0;
@@ -852,23 +851,23 @@ div#BRzoomer {
     height: 190px;
     z-index: 100;
 }
-div#BRzoompos {
+#BRzoompos {
     position: relative;
     width: 26px;
     height: 190px;
     top: 0;
     left: 0;
 }
-div#BRzoomer button {
+#BRzoomer button {
     position: absolute;
     left: 0;
     background-color: white;
     width: 26px;
 }
-div#BRzoomer button:hover {
+#BRzoomer button:hover {
     background-color: #000;
 }
-div#BRzoomer .zoom_out {
+#BRzoomer .zoom_out {
     top: 0;
     -webkit-border-top-left-radius: 6px;
     -webkit-border-bottom-left-radius: 6px;
@@ -880,20 +879,20 @@ div#BRzoomer .zoom_out {
     -moz-box-shadow: 2px 2px 2px #333;
     box-shadow: 2px 2px 2px #333;
 }
-div#BRzoomer .zoom_in {
+#BRzoomer .zoom_in {
     bottom: 0;
     -webkit-border-top-left-radius: 6px;
     -moz-border-radius-topleft: 6px;
     border-top-left-radius: 6px;
 }
-div#BRzoomcontrol {
+#BRzoomcontrol {
     position: relative;
     top: 40px;
     left:3px;
     width: 23px;
     height: 110px;
 }
-div#BRzoomstrip {
+#BRzoomstrip {
     position: absolute;
     top: 0;
     left: 0;
@@ -902,7 +901,7 @@ div#BRzoomstrip {
     background-color: #000;
     opacity: .1;
 }
-div#BRzoombtn {
+#BRzoombtn {
     position: absolute;
     width: 23px;
     height: 23px;
@@ -1209,7 +1208,7 @@ html.mm-background .BookReader {
 
 /* Mobile Only */
 @media (max-width: 800px) {
-  div#BRnavpos { margin-right: 90px; }
+  #BRnavpos { margin-right: 90px; }
   .BRtoolbar { height: 40px; }
   .BRtoolbar.responsive .BRtoolbarbuttons { display: none; }
   .BRtoolbar.responsive .BRmobileHamburgerWrapper { display: block; }

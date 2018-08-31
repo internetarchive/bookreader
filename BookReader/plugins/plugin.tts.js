@@ -70,17 +70,17 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     };
 })(BookReader.prototype.buildMobileDrawerElement);
 
-// Extend buildToolbarElement
-BookReader.prototype.buildToolbarElement = (function (super_) {
+// Extend initNavbar
+BookReader.prototype.initNavbar = (function (super_) {
     return function () {
         var $el = super_.call(this);
         var readIcon = '';
         if (this.isSoundManagerSupported) {
-            $el.find('.BRtoolbarSectionInfo').append($("<button class='BRicon read modal js-tooltip'></button>"));
+            $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
         }
         return $el;
     };
-})(BookReader.prototype.buildToolbarElement);
+})(BookReader.prototype.initNavbar);
 
 // ttsToggle()
 //______________________________________________________________________________

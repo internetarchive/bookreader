@@ -3212,28 +3212,35 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 //     could be as simple as not calling this function
 BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
-    this.refs.$br.append(
-      "<div id=\"BRnav\" class=\"BRnavDesktop\">"
-      +"  <div id=\"BRcurrentpageWrapper\"><span class='currentpage'></span></div>"
-      +"  <div id=\"BRpage\">"
+    this.refs.$brNav = $(
+      "<div class=\"BRnav BRnavDesktop\">"
+      +"  <div class=\"BRpage\">"
       // Note, it's important for there to not be whitespace
+      +     "<div class=\"BRcurrentpageWrapper\"><span class='currentpage'></span></div>"
       +     "<button class=\"BRicon book_left\"></button>"
       +     "<button class=\"BRicon book_right\"></button>"
       +     "<span class=\"desktop-only\">&nbsp;&nbsp;</span>"
       +     "<button class=\"BRicon onepg desktop-only\"></button>"
       +     "<button class=\"BRicon twopg desktop-only\"></button>"
       +     "<button class=\"BRicon thumb desktop-only\"></button>"
+
+      // zoomx`
+      +     "<button class='BRicon zoom_out js-tooltip'></button>"
+      +     "<button class='BRicon zoom_in js-tooltip'></button>"
+
       +"  </div>"
       +"  <div id=\"BRnavpos\">"
       +"    <div id=\"BRpager\"></div>"
       +"    <div id=\"BRnavline\">"
-      +"      <div class=\"BRnavend\" id=\"BRnavleft\"></div>"
-      +"      <div class=\"BRnavend\" id=\"BRnavright\"></div>"
+      +"      <div class=\"BRnavend\"></div>"
+      +"      <div class=\"BRnavend\"></div>"
       +"    </div>"
       +"  </div>"
       +"  <div id=\"BRnavCntlBtm\" class=\"BRnavCntl BRdn\"></div>"
       +"</div>"
     );
+
+    this.refs.$br.append(this.refs.$brNav);
 
     var self = this;
     $('#BRpager').slider({
@@ -3261,6 +3268,8 @@ BookReader.prototype.initNavbar = function() {
     this.updateNavPageNum(this.currentIndex());
 
     $("#BRzoombtn").draggable({axis:'y',containment:'parent'});
+
+    return this.refs.$brNav;
 };
 
 // initEmbedNavbar
@@ -3274,7 +3283,7 @@ BookReader.prototype.initEmbedNavbar = function() {
     }
 
     this.refs.$br.append(
-        '<div id="BRnav" class="BRnavEmbed">'
+        '<div class="BRnav BRnavEmbed">'
         +   "<span class='BRtoolbarbuttons'>"
         +         '<button class="BRicon full"></button>'
         +         '<button class="BRicon book_left"></button>'
@@ -3350,12 +3359,6 @@ BookReader.prototype.buildToolbarElement = function() {
     +       "<span class='BRtoolbarSection BRtoolbarSectionInfo tc ph10'>"
     +         "<button class='BRicon info js-tooltip'></button>"
     +         "<button class='BRicon share js-tooltip'></button>"
-    +       "</span>"
-
-    // zoom
-    +       "<span class='BRtoolbarSection BRtoolbarSectionZoom tc ph10'>"
-    +         "<button class='BRicon zoom_out js-tooltip'></button>"
-    +         "<button class='BRicon zoom_in js-tooltip'></button>"
     +       "</span>"
 
     +     "</span>" // end BRtoolbarRight
@@ -3614,7 +3617,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
             if ($('#BRnavCntlBtm').hasClass('BRdn')) {
                 if (self.refs.$BRtoolbar)
                     promises.push(self.refs.$BRtoolbar.animate({top: self.refs.$BRtoolbar.height() * -1}).promise());
-                promises.push($('#BRnav').animate({bottom:-55}).promise());
+                promises.push($('.BRnav').animate({bottom:-55}).promise());
                 $('#BRnavCntlBtm').addClass('BRup').removeClass('BRdn');
                 $('#BRnavCntlTop').addClass('BRdn').removeClass('BRup');
                 $('#BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
@@ -3622,7 +3625,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
             } else {
                 if (self.refs.$BRtoolbar)
                     promises.push(self.refs.$BRtoolbar.animate({top:0}).promise());
-                promises.push($('#BRnav').animate({bottom:0}).promise());
+                promises.push($('.BRnav').animate({bottom:0}).promise());
                 $('#BRnavCntlBtm').addClass('BRdn').removeClass('BRup');
                 $('#BRnavCntlTop').addClass('BRup').removeClass('BRdn');
                 $('#BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
@@ -3861,7 +3864,7 @@ BookReader.prototype.hideNavigation = function() {
     if (this.navigationIsVisible()) {
         // $$$ don't hardcode height
         this.refs.$BRtoolbar.animate({top:-60});
-        $('#BRnav').animate({bottom:-60});
+        this.refs.$br.find('.BRnav').animate({bottom:-60});
     }
 };
 
@@ -3872,7 +3875,7 @@ BookReader.prototype.showNavigation = function() {
     // Check if navigation is hidden
     if (!this.navigationIsVisible()) {
         this.refs.$BRtoolbar.animate({top:0});
-        $('#BRnav').animate({bottom:0});
+        this.refs.$br.find('.BRnav').animate({bottom:0});
     }
 };
 
@@ -4412,9 +4415,10 @@ BookReader.prototype.getToolBarHeight = function() {
  * @return {Number}
  */
 BookReader.prototype.getNavHeight = function(ignoreDisplay) {
-  if (ignoreDisplay || $('#BRnav').css('display') === 'block') {
-    var outerHeight = $('#BRnav').outerHeight();
-    var bottom = parseInt($('#BRnav').css('bottom'));
+  var $brNav = this.refs.$br.find('.BRnav');
+  if (ignoreDisplay || $brNav.css('display') === 'block') {
+    var outerHeight = $brNav.outerHeight();
+    var bottom = parseInt($brNav.css('bottom'));
     if (!isNaN(outerHeight) && !isNaN(bottom)) {
       return outerHeight + bottom;
     }
