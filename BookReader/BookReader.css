@@ -67,7 +67,7 @@
     -webkit-overflow-scrolling: touch;
 }
 
-#BRpageview {
+.BRpageview {
   position: relative;
 }
 
@@ -107,7 +107,7 @@
     overflow:hidden;
 }
 
-#BRbookcover {
+.BRbookcover {
     position: absolute;
     background-image: none;
     -moz-box-shadow: 1px 0 10px #111;
@@ -172,7 +172,7 @@
     position: absolute;
 }
 
-#BRgutter {
+.BRgutter {
     /* border: 1px solid rgb(68, 25, 17); */
     position: absolute;
     z-index: 6;
@@ -193,7 +193,7 @@
 .BRpageform {
     display: inline;
 }
-#BRpagenum {
+.BRpagenum {
     border: none;
     background-color: #9A9B9D;
     color: #ccc;
@@ -201,7 +201,7 @@
     font-size: 12px;
     font-weight: 700;
 }
-#BRreturn {
+.BRreturn {
     color: #333;
     font-size: 14px;
     line-height:18px;
@@ -211,8 +211,8 @@
     display:block;
     position: absolute;
 }
-#BRreturn span {}
-#BRreturn a {
+.BRreturn span {}
+.BRreturn a {
     /*color: #036daa;*/
     overflow: hidden;
 }
@@ -545,7 +545,7 @@ button.action.skinny {
 .BRpage {
   position: absolute;
   right: 0;
-  width: 420px;
+  width: 440px;
   padding-left:12px;
   text-align: right;
   margin-right: 4px;
@@ -595,13 +595,13 @@ button.action.skinny {
   padding-top:0;
   height:40px;
 }
-#BRnavpos {
+.BRnavpos {
     position: relative;
     margin-right: 420px;
     height: 40px;
     top: 5px;
 }
-#BRpager {
+.BRpager {
     position: relative;
     /* Account for padding around nav line */
     margin-left: 10px;
@@ -612,14 +612,15 @@ button.action.skinny {
     border-radius: 10px;
     box-shadow: inset 0px 1px 1px 0px rgba(155,154,155,0.39)
 }
-#BRslider {
+/* TODO see if still exists */
+.BRslider {
     position: absolute;
     top: 13px;
     height: 27px;
 }
 
 /* XXXmang verify correct use of handle class */
-#BRpager .ui-slider-handle {
+.BRpager .ui-slider-handle {
     position: absolute;
     width: 20px;
     height: 20px;
@@ -630,24 +631,24 @@ button.action.skinny {
     background-color: rgb(36,94,131);
 }
 /* handle active state for touch */
-.touch #BRpager .ui-slider-handle.ui-state-active {
+.touch .BRpager .ui-slider-handle.ui-state-active {
   width: 24px;
   height: 24px;
   top: -4px;
   margin-left: -11px;
 }
 
-#BRpager .ui-slider-range {
+.BRpager .ui-slider-range {
     background: #90A2B6;
     height: 100%;
     border-radius: 10px;
 }
 
-#BRpager a {
+.BRpager a {
     text-decoration: none;
 }
 
-#BRnavline {
+.BRnavline {
     position: relative;
     height: 1px;
     width: auto;
@@ -675,16 +676,7 @@ button.action.skinny {
     margin-right: 10px;
 }
 
-#BRfiller {
-    position: absolute;
-    height: 40px;
-    width: 10px;
-    background-color: white;
-    top: 0;
-    left: 0;
-    z-index: 102;
-}
-#slider {
+/* #slider {
     position: absolute;
     width: 2500px;
     height: 27px;
@@ -693,8 +685,8 @@ button.action.skinny {
     background-color: #000;
     opacity: .1;
     z-index: 101;
-}
-#pager {
+} */
+/* #pager {
     position: absolute;
     width: 23px;
     height: 27px;
@@ -702,8 +694,8 @@ button.action.skinny {
     left: 8px;
     background: url(images/slider.png);
     z-index: 103;
-}
-#pagenum {
+} */
+.pagenum {
     display: none;
     position: absolute;
     left: 24px;
@@ -718,12 +710,12 @@ button.action.skinny {
     border: 2px solid #ccc;
     /*font-family: "Lucida Grande", "Arial", sans-serif;*/
 }
-#pagenum span {
+.pagenum span {
     /*color: #ffa337;*/
     color: rgb(36,94,131);
     font-style: italic;
 }
-div.chapter {
+.chapter {
     position: absolute;
     top: 0; /* Relative to nav line */
     width: 18px;
@@ -732,17 +724,17 @@ div.chapter {
     background: transparent url(images/marker_chap-off.png) no-repeat;
     cursor: pointer;
 }
-div.chapter.front {
+.chapter.front {
     background: transparent url(images/marker_chap-on.png) no-repeat;
 }
-div.chapter div.title {
+.chapter .title {
     display: none;
 }
-div.title span {
+.title span {
     color: #666;
     padding: 0 5px;
 }
-div.search {
+.search {
     position: absolute;
     width: 18px;
     margin-left: -9px; /* Center icon */
@@ -753,25 +745,25 @@ div.search {
     background-repeat: no-repeat;
     cursor: pointer;
 }
-div.search.front {
+.search.front {
     background: transparent url(images/marker_srch-on.png) no-repeat;
 }
-div.search div.query,div.searchChap div.query {
+.search .query, .searchChap .query {
     display: none;
 }
-div.query {
+.query {
     position: relative;
 }
-div.query strong {
+.query strong {
     color: #000;
     font-weight: 700;
 }
-div.query span {
+.query span {
     font-size: 10px;
     color: #666;
     font-style: italic;
 }
-div.query div.queryChap {
+.query .queryChap {
     position: absolute;
     top: -40px;
     left: -13px;
@@ -784,12 +776,12 @@ div.query div.queryChap {
     font-weight: 700;
     font-size: 11px;
 }
-div.query div.queryChap span {
+.query .queryChap span {
     color: #666;
     padding: 0 5px;
     font-style: normal;
 }
-div.search div.pointer {
+.search .pointer {
     position: absolute;
     left: 121px;
     bottom: -14px;
@@ -797,20 +789,20 @@ div.search div.pointer {
     height: 27px;
     background: transparent url(images/marker_srch-on.png) no-repeat;
 }
-div.searchChap {
+.searchChap {
     position: absolute;
     top: -13px;
     width: 18px;
     height: 27px;
+    cursor: pointer;
     background-color: transparent;
     background-image: url(images/marker_srchchap-off.png);
     background-repeat: no-repeat;
-    cursor: pointer;
 }
-div.searchChap.front {
+.searchChap.front {
     background-image: url(images/marker_srchchap-on.png);
 }
-#mobileSearchResultWrapper {
+.mobileSearchResultWrapper {
     margin-top: 20px;
 }
 .mobileNumResults {
@@ -843,7 +835,7 @@ div.searchChap.front {
 .BRnav .front {
     z-index: 10001;
 }
-#BRzoomer {
+/* #BRzoomer {
     position: fixed;
     bottom: 40px;
     right: 0;
@@ -857,8 +849,8 @@ div.searchChap.front {
     height: 190px;
     top: 0;
     left: 0;
-}
-#BRzoomer button {
+} */
+/* #BRzoomer button {
     position: absolute;
     left: 0;
     background-color: white;
@@ -884,8 +876,8 @@ div.searchChap.front {
     -webkit-border-top-left-radius: 6px;
     -moz-border-radius-topleft: 6px;
     border-top-left-radius: 6px;
-}
-#BRzoomcontrol {
+} */
+/* #BRzoomcontrol {
     position: relative;
     top: 40px;
     left:3px;
@@ -900,15 +892,15 @@ div.searchChap.front {
     height: 110px;
     background-color: #000;
     opacity: .1;
-}
-#BRzoombtn {
+} */
+/* #BRzoombtn {
     position: absolute;
     width: 23px;
     height: 23px;
     top: 0;
     left: 0;
     background: url("images/icon_zoomer.png");
-}
+} */
 
 .BRprogresspopup {
     position: absolute;
@@ -940,17 +932,17 @@ div.searchChap.front {
     height: 30px;
     cursor: pointer;
 }
-#BRnavCntlBtm {
+.BRnavCntlBtm {
     bottom: 50px;
     -moz-border-radius-topright: 8px;
     -webkit-border-top-right-radius: 8px;
     -moz-border-radius-topleft: 8px;
     -webkit-border-top-left-radius: 8px;
 }
-#BRnavCntlBtm:hover {
+.BRnavCntlBtm:hover {
     background-color: rgb(74, 144, 226);
 }
-#BRnavCntlTop {
+.BRnavCntlTop {
     top: 40px;
     -moz-border-radius-bottomright: 8px;
     -webkit-border-bottom-right-radius: 8px;
@@ -966,16 +958,17 @@ div.searchChap.front {
     background-image: url("images/nav_control-dn.png");
     background-repeat: no-repeat;
 }
-#BRnavCntlBtm.BRup,#BRnavCntlBtm.BRdn {
+.BRnavCntlBtm.BRup, .BRnavCntlBtm.BRdn {
     background-position: 8px 4px;
 }
-#BRnavCntlTop.BRup,#BRnavCntlTop.BRdn {
+.BRnavCntlTop.BRup, .BRnavCntlTop.BRdn {
     background-position: 8px 4px;
 }
 
 
 /************ new styles for general purpose book reader ***********/
 
+/* TODO remove element level rules */
 body {-webkit-text-size-adjust: none; }
 nav:not(.mm-menu) {	display: none; }
 nav { font-family: Arial, Helvetica, Verdana; }
@@ -1090,12 +1083,12 @@ nav { font-family: Arial, Helvetica, Verdana; }
 }
 .DrawerLayoutButton:active {color: grey;}
 
-#BRshare div.share-title { margin: 15px 15px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
-#BRshare div.share-social { margin: 15px 15px 0;}
-#BRshare div.share-social button { padding: 0 5px; height: 40px; text-align: left;}
-#BRshare div.share-social button > i { margin-right: 5px; }
-#BRshare div.share-social > div { display: inline; }
-#BRshare div.share-embed { margin-top: 20px; }
+.BRshare div.share-title { margin: 15px 15px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
+.BRshare div.share-social { margin: 15px 15px 0;}
+.BRshare div.share-social button { padding: 0 5px; height: 40px; text-align: left;}
+.BRshare div.share-social button > i { margin-right: 5px; }
+.BRshare div.share-social > div { display: inline; }
+.BRshare div.share-embed { margin-top: 20px; }
 div.share-social button.facebook-share-button { background-color: #3a5998; }
 div.share-social button.twitter-share-button { background-color: #429aff; }
 div.share-social button.email-share-button { background-color: #c1c1c1; }
@@ -1108,15 +1101,15 @@ div.share-social button.email-share-button { background-color: #c1c1c1; }
   padding: 10px 25px;
   font-size: 15px;
 }
-#BRshare.BRfloat {
+.BRshare.BRfloat {
   width: 600px;
 }
 .BRfloat label.sub.open-to-this-page { display: block; }
 
 .BRtoolbarMobileTitle { overflow:hidden; width: 100%; }
 
-body.high-contrast #BRpageview img,
-body.high-contrast #BRtwopageview img {
+body.high-contrast .BRpageview img,
+body.high-contrast .BRtwopageview img {
   -webkit-filter: grayscale(100%) brightness(120%);
   filter: grayscale(100%) brightness(120%);
 }
@@ -1469,8 +1462,8 @@ html.mm-background .BookReader {
   .BRfloatFoot, { padding: 10px 10px 0 10px; }
   .BRfloatFoot .action { margin-bottom: 10px; }
   .BRfloatFoot { border-top: 1px solid #ccc; }
-  #BRnavline .chapter { display: none; } /* hide chapters in mobile */
-  #BRnavline .search { display: none; } /* hide search in mobile */
+  .BRnavline .chapter { display: none; } /* hide chapters in mobile */
+  .BRnavline .search { display: none; } /* hide search in mobile */
 }
 
 @media (min-width: 801px) {
@@ -1497,7 +1490,7 @@ html.mm-background .BookReader {
 
 /* Mobile Only */
 @media (max-width: 800px) {
-  #mobileInfo { font-size: 14px; line-height: 20px; }
+  .mobileInfo { font-size: 14px; line-height: 20px; }
   .BRinfoLeftCol { font-size: 14px; }
   .BRimageW {text-align: center; margin-bottom: 10px;}
   .BRimageW img { height: 200px; width: auto;}

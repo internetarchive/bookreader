@@ -32,7 +32,7 @@ BookReader.prototype.setup = (function (super_) {
 
         // Bind to events
         this.bind('PostInit', function(e, br) {
-            jIcons = $('.BRicon').filter('.read').click(function(e) {
+            jIcons = br.refs.$br.find('.BRicon').filter('.read').click(function(e) {
                 br.ttsToggle();
                 return false;
             });
@@ -102,7 +102,7 @@ BookReader.prototype.ttsStart = function () {
     if (this.constModeThumb == this.mode)
         this.switchMode(this.constMode1up);
 
-    $('.BRicon.read').addClass('unread');
+    this.$('.BRicon.read').addClass('unread');
 
     this.ttsIndex = this.currentIndex();
     this.ttsFormat = 'mp3';
@@ -122,7 +122,7 @@ BookReader.prototype.ttsStart = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
     if (false == this.ttsPlaying) return;
-    $('.BRicon.read').removeClass('unread');
+    $this.$('.BRicon.read').removeClass('unread');
 
     if (soundManager.debugMode) console.log('stopping readaloud');
     soundManager.stopAll();
@@ -442,7 +442,9 @@ BookReader.prototype.ttsHilite1UP = function(chunk) {
 
         var div = document.createElement('div');
         this.ttsHilites.push(div);
-        $(div).prop('className', 'BookReaderSearchHilite').appendTo('#pagediv'+this.ttsIndex);
+        $(div).prop('className', 'BookReaderSearchHilite').appendTo(
+            this.$('.pagediv'+this.ttsIndex)
+        );
 
         $(div).css({
             width:  (r-l)/this.reduce + 'px',
@@ -467,7 +469,7 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
 
         var div = document.createElement('div');
         this.ttsHilites.push(div);
-        $(div).prop('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
+        $(div).prop('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo(this.refs.$brTwoPageView);
         this.setHilightCss2UP(div, this.ttsIndex, l, r, t, b);
     }
 };

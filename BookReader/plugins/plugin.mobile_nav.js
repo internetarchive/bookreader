@@ -40,10 +40,10 @@ BookReader.prototype.initToolbar = (function (super_) {
             $('body').append($drawerEl);
 
             // Render info into mobile info before mmenu
-            this.buildInfoDiv($('#mobileInfo'));
-            this.buildShareDiv($('#mobileShare'));
+            this.buildInfoDiv(this.$('.mobileInfo'));
+            this.buildShareDiv(this.$('.mobileShare'));
 
-            var $mmenuEl = $('nav#BRmobileMenu');
+            var $mmenuEl = this.$('nav.BRmobileMenu');
             $mmenuEl.mmenu({
               navbars: [
                  { "position": "top" },
@@ -123,7 +123,7 @@ BookReader.prototype.buildMobileDrawerElement = function() {
     }
 
     return $(
-      "<nav id=\"BRmobileMenu\" class=\"BRmobileMenu\">"
+      "<nav id=\"BRmobileMenu\" class=\"BRmobileMenu BRmobileMenu\">"
       +"  <ul>"
       +"    <li>"
       +"      <span>"
@@ -150,14 +150,14 @@ BookReader.prototype.buildMobileDrawerElement = function() {
       +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_info.svg\" alt=\"info-icon\"/></span>"
       +"        About This Book"
       +"      </span>"
-      +"      <div id=\"mobileInfo\"></div>"
+      +"      <div class=\"mobileInfo\"></div>"
       +"    </li>"
       +"    <li>"
       +"      <span>"
       +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_share.svg\" alt=\"info-share\"/></span>"
       +"        Share This Book"
       +"      </span>"
-      +"      <div id=\"mobileShare\"></div>"
+      +"      <div class=\"mobileShare\"></div>"
       +"    </li>"
       +"  </ul>"
       +"</nav>"

@@ -44,11 +44,11 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
                 +"      <div>"
                 +         "<form class='booksearch mobile'>"
                 +           "<input type='search' class='textSrch form-control' name='textSrch' val='' placeholder='Search inside'/>"
-                +           "<button type='submit' id='btnSrch' name='btnSrch'>"
+                +           "<button type='submit' class='btnSrch' name='btnSrch'>"
                 +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
                 +           "</button>"
                 +         "</form>"
-                +         "<div id='mobileSearchResultWrapper'>Enter your search above.</div>"
+                +         "<div class='mobileSearchResultWrapper'>Enter your search above.</div>"
                 +"      </div>"
                 +"    </li>"
             ));
@@ -67,7 +67,7 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
           $el.find('.BRtoolbarRight').append($("<span class='BRtoolbarSection BRtoolbarSectionSearch tc ph20 last'>"
           +         "<form class='booksearch desktop'>"
           +           "<input type='search' class='textSrch form-control' name='textSrch' val='' placeholder='Search inside this book'/>"
-          +           "<button type='submit' id='btnSrch' name='btnSrch'>"
+          +           "<button type='submit' class='btnSrch' name='btnSrch'>"
           +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
           +           "</button>"
           +         "</form>"
@@ -90,14 +90,14 @@ BookReader.prototype.initToolbar = (function (super_) {
         var self = this;
 
         // Bind search forms
-        $('.booksearch.desktop').submit(function(e) {
+        this.$('.booksearch.desktop').submit(function(e) {
             e.preventDefault();
             var val = $(this).find('.textSrch').val();
             if (!val.length) return false;
             self.search(val);
             return false;
         });
-        $('.booksearch.mobile').submit(function(e) {
+        this.$('.booksearch.mobile').submit(function(e) {
             e.preventDefault();
             var val = $(this).find('.textSrch').val();
             if (!val.length) return false;
@@ -105,14 +105,14 @@ BookReader.prototype.initToolbar = (function (super_) {
                 disablePopup:true,
                 error: self.BRSearchCallbackErrorMobile,
             });
-            $('#mobileSearchResultWrapper').append(
+            $('.mobileSearchResultWrapper').append(
                 '<div class="">Your search results will appear below.</div>'
                 + '<div class="loader tc mt20"></div>'
             );
             return false;
         });
         // Handle clearing the search results
-        $(".textSrch").bind('input propertychange', function() {
+        this.$(".textSrch").bind('input propertychange', function() {
             if (this.value == "") self.removeSearchResults();
         });
     };
@@ -136,7 +136,7 @@ BookReader.prototype.search = function(term, options) {
     };
     options = jQuery.extend({}, defaultOptions, options);
 
-    $('.textSrch').blur(); //cause mobile safari to hide the keyboard
+    this.$('.textSrch').blur(); //cause mobile safari to hide the keyboard
 
     this.removeSearchResults();
 
@@ -173,7 +173,7 @@ BookReader.prototype.search = function(term, options) {
     url += paramStr;
 
     if (!options.disablePopup) {
-        this.showProgressPopup('<img id="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
+        this.showProgressPopup('<img class="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
     }
     $.ajax({
         url:url,
@@ -194,12 +194,12 @@ BookReader.prototype.search = function(term, options) {
 //______________________________________________________________________________
 BookReader.prototype.BRSearchCallback = function(results, options) {
     br.searchResults = results;
-    $('#BRnavpos .search').remove();
-    $('#mobileSearchResultWrapper').empty(); // Empty mobile results
+    this.$('.BRnavpos .search').remove();
+    this.$('.mobileSearchResultWrapper').empty(); // Empty mobile results
 
     // Update Mobile count
     var mobileResultsText = results.matches.length == 1 ? "1 match" : results.matches.length + " matches";
-    $('#mobileSearchResultWrapper').append("<div class='mobileNumResults'>"+mobileResultsText+" for &quot;"+this.searchTerm+"&quot;</div>");
+    this.$('.mobileSearchResultWrapper').append("<div class='mobileNumResults'>"+mobileResultsText+" for &quot;"+this.searchTerm+"&quot;</div>");
 
     var i, firstResultIndex = null;
     for (i=0; i < results.matches.length; i++) {
@@ -225,12 +225,12 @@ BookReader.prototype.BRSearchCallbackErrorDesktop = function(results, options) {
 // BRSearchCallbackErrorMobile()
 //______________________________________________________________________________
 BookReader.prototype.BRSearchCallbackErrorMobile = function(results, options) {
-    var $el = $('#mobileSearchResultWrapper');
+    var $el = this.$('.mobileSearchResultWrapper');
     this._BRSearchCallbackError(results, $el);
 };
 BookReader.prototype._BRSearchCallbackError = function(results, $el, fade, options) {
-    $('#BRnavpos .search').remove();
-    $('#mobileSearchResultWrapper').empty(); // Empty mobile results
+    this.$('.BRnavpos .search').remove();
+    this.$('.mobileSearchResultWrapper').empty(); // Empty mobile results
 
     br.searchResults = results;
     var timeout = 2000;
@@ -285,7 +285,7 @@ BookReader.prototype.updateSearchHilites1UP = function() {
                 if (null == box.div) {
                     //create a div for the search highlight, and stash it in the box object
                     box.div = document.createElement('div');
-                    $(box.div).prop('className', 'BookReaderSearchHilite').appendTo('#pagediv'+pageIndex);
+                    $(box.div).prop('className', 'BookReaderSearchHilite').appendTo(this.$('.pagediv'+pageIndex));
                 }
                 $(box.div).css({
                     width:  (box.r-box.l)/this.reduce + 'px',
@@ -319,7 +319,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
                 if (null == box.div) {
                     //create a div for the search highlight, and stash it in the box object
                     box.div = document.createElement('div');
-                    $(box.div).prop('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo('#BRtwopageview');
+                    $(box.div).prop('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo(this.refs.$brTwoPageView);
                 }
                 this.setHilightCss2UP(box.div, pageIndex, box.l, box.r, box.t, box.b);
             } else {
@@ -399,6 +399,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
 
     var queryStringWithB = queryString;
     // This regex truncates words by num chars
+    var self = this;
 
     if (queryStringWithB.length > 100) {
         queryStringWithB = queryStringWithB.replace(/^(.{100}[^\s]*).*/, "$1");
@@ -414,12 +415,12 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
         + queryStringWithA + '<span>' + uiStringPage + ' ' + pageNumber + '</span></div>'
     )
     .data({'self': this, 'pageIndex': pageIndex})
-    .appendTo('#BRnavline')
+    .appendTo(this.$('.BRnavline'))
     .bt(searchBtSettings)
     .hover(function() {
             // remove from other markers then turn on just for this
             // XXX should be done when nav slider moves
-            $('.search,.chapter').removeClass('front');
+            self.$('.search,.chapter').removeClass('front');
             $(this).addClass('front');
         }, function() {
             $(this).removeClass('front');
@@ -432,9 +433,8 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     $(marker).animate({top:'-25px'}, 'slow');
 
     // Add Mobile Search Results
-    var self = this;
     var imgPreviewUrl = this.getPageURI(pageIndex, 16, 0); // scale 16 is small
-    var $mobileSearchResultWrapper = $('#mobileSearchResultWrapper');
+    var $mobileSearchResultWrapper = self.$('.mobileSearchResultWrapper');
     if ($mobileSearchResultWrapper.length) {
         $('<a class="mobileSearchResult">'
             +"<table>"
@@ -468,8 +468,8 @@ BookReader.prototype.removeSearchResults = function() {
     this.searchTerm = null;
     this.searchResults = null;
     if (this.enableUrlPlugin) this.updateLocationHash(true);
-    $('#BRnavpos .search').remove();
-    $('#mobileSearchResultWrapper').empty(); // Empty mobile results
+    this.$('.BRnavpos .search').remove();
+    this.$('.mobileSearchResultWrapper').empty(); // Empty mobile results
 };
 
 

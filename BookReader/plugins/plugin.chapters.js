@@ -35,12 +35,13 @@ BookReader.prototype.init = (function(super_) {
 
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
     var uiStringPage = 'Page'; // i18n
+    var self = this;
 
     var percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
 
     $('<div class="chapter" style="left:' + percentThrough + ';"><div class="title">'
         + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
-    .appendTo('#BRnavline')
+    .appendTo(this.$('.BRnavline')
     .data({'self': this, 'pageIndex': pageIndex })
     .bt({
         contentSelector: '$(this).find(".title")',
@@ -74,16 +75,16 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         centerPointY: 0,
         shadow: false
     })
-    .hover( function() {
+    .hover(function() {
         // remove hover effect from other markers then turn on just for this
-        $('.search,.chapter').removeClass('front');
+        self.$('.search,.chapter').removeClass('front');
             $(this).addClass('front');
         }, function() {
             $(this).removeClass('front');
         }
     )
     .bind('click', function() {
-        $(this).data('self').jumpToIndex($(this).data('pageIndex'));
+        self.jumpToIndex($(this).data('pageIndex'));
     });
 };
 
@@ -91,7 +92,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
  * Remove all chapters.
  */
 BookReader.prototype.removeChapters = function() {
-    $('#BRnavpos .chapter').remove();
+    this.$('.BRnavpos .chapter').remove();
 };
 
 /*
@@ -120,21 +121,21 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
     if (pageIndex) {
         this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
     }
-    $('.chapter').each(function(){
+    this.$('.chapter').each(function(){
         $(this).hover(function(){
             $(this).addClass('front');
         },function(){
             $(this).removeClass('front');
         });
     });
-    $('.search').each(function(){
+    this.$('.search').each(function(){
         $(this).hover(function(){
             $(this).addClass('front');
         },function(){
             $(this).removeClass('front');
         });
     });
-    $('.searchChap').each(function(){
+    this.$('.searchChap').each(function(){
         $(this).hover(function(){
             $(this).addClass('front');
         },function(){
