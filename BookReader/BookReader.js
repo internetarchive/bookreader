@@ -510,13 +510,13 @@ BookReader.prototype.init = function() {
 
     // Add a class if this is a touch enabled device
     if (this.isTouchDevice) {
-      $("body").addClass("touch");
+      this.refs.$br.addClass("touch");
     } else {
-      $("body").addClass("no-touch");
+      this.refs.$br.addClass("no-touch");
     }
 
     // Add class to body for mode. Responsiveness is disabled in embed.
-    $("body").addClass("br-ui-" + this.ui);
+    this.refs.$br.addClass("br-ui-" + this.ui);
 
     //-------------------------------------------------------------------------
     // Bind to events
@@ -3277,7 +3277,7 @@ BookReader.prototype.initNavbar = function() {
     this.updateNavPageNum(this.currentIndex());
 
     // TOOD check and cleanup
-    // this.$("#BRzoombtn").draggable({axis:'y',containment:'parent'});
+    // this.$(".BRzoombtn").draggable({axis:'y',containment:'parent'});
 
     return this.refs.$brNav;
 };
@@ -3419,11 +3419,10 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         this.refs.$BRtoolbar.find('.one_page_mode').hide();
     }
 
-    // $$$ Don't hardcode ids
     this.refs.$BRtoolbar.find('.share').colorbox({
         inline: true,
         opacity: "0.5",
-        href: "#BRshare",
+        href: this.$('.BRshare').selector,
         onLoad: function() {
             self.trigger('stop');
             self.$('.BRpageviewValue').val(window.location.href);
@@ -3432,7 +3431,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     this.refs.$BRtoolbar.find('.info').colorbox({
         inline: true,
         opacity: "0.5",
-        href: ".BRinfo",
+        href: this.$('.BRinfo').selector,
         onLoad: function() {
             self.trigger('stop');
         }
@@ -3442,7 +3441,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         this.blankShareDiv()
     ).append(
         this.blankInfoDiv()
-    ).appendTo($('body'));
+    ).appendTo(this.refs.$br);
 
     this.$('.BRinfo .BRfloatTitle a')
         .attr({'href': this.bookUrl})
@@ -3511,7 +3510,7 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
         value = value.replace(/\.$/,'');
         value += '%';
     }
-    this.$('#BRzoom').text(value);
+    this.$('.BRzoom').text(value);
 };
 
 // bindNavigationHandlers
@@ -3520,7 +3519,9 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
 BookReader.prototype.bindNavigationHandlers = function() {
 
     var self = this; // closure
-    jIcons = this.$('.BRicon');
+
+    // Note the mobile plugin attaches itself to body, so we need to select outside
+    jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
 
     jIcons.filter('.onepg').bind('click', function(e) {
         self.switchMode(self.constMode1up);

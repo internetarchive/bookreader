@@ -37,7 +37,7 @@ BookReader.prototype.initToolbar = (function (super_) {
 
         if (this.enableMobileNav) {
             var $drawerEl = this.buildMobileDrawerElement();
-            $('body').append($drawerEl);
+            this.refs.$br.append($drawerEl);
 
             // Render info into mobile info before mmenu
             this.buildInfoDiv(this.$('.mobileInfo'));
@@ -72,7 +72,7 @@ BookReader.prototype.initToolbar = (function (super_) {
 
             // High contrast button
             $drawerEl.find('.high-contrast-button').click(function() {
-                $('body').toggleClass('high-contrast');
+                this.refs.$br.toggleClass('high-contrast');
             });
 
             // Bind mobile switch buttons
