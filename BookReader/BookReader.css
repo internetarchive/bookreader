@@ -10,7 +10,6 @@
   font-family: "Helvetica Neue", Arial, Verdana, sans-serif
 }
 .BookReader {
-  font-size: 67.5%;
   margin: 0;
   padding: 0;
   position:relative;
@@ -18,11 +17,10 @@
 }
 
 .BRtoolbar {
-    position: absolute;
+    position: relative;
     top: 0;
     left: 0;
     padding: 0;
-    height: 50px;
     width: 100%;
     z-index: 100;
     background-color: rgb(247,247,247);
@@ -49,11 +47,23 @@
   display: block;
   border-spacing: 0;
   width:100%;
-  height:100%;
-  /*height: 43px;*/
-  border-bottom: 2px solid rgb(209,209,209);
+  /* height:100%; */
   box-sizing: border-box;
 }
+
+.BRtoolbarbuttons button.BRpill {
+    border: 1.2pt solid white;
+    background: transparent;
+    padding: 5px 10px;
+    height: 30px;
+    border-radius: 20px;
+    color: white;
+    line-height: 0;
+}
+.BRtoolbarSection > *  {
+    margin-left: 6px;
+}
+
 .BRcontainer {
     top:0;
     bottom:0;
@@ -205,7 +215,7 @@
     color: #333;
     font-size: 14px;
     line-height:18px;
-    height: 100%;
+    /* height: 100%; */
     overflow-y: hidden;
     padding-top:7px;
     display:block;
@@ -320,31 +330,57 @@ a.popOff span {
 
 form.booksearch {
     position:relative;
-    top:8px;
 }
+
+form.booksearch.desktop {
+    position: relative;
+    height: 30px;
+    background-color: transparent;
+    border: 1.2pt solid white;
+    border-radius: 20px;
+    display: inline-block;
+    line-height:0;
+    vertical-align: top;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+form.booksearch.desktop input[type=search] {
+    position:relative;
+    width: 12rem;
+    max-width: 16rem;
+    height: 100%;
+    line-height: 1;
+    background-color: transparent;
+    color: white;
+    -webkit-appearance: none;
+    margin: 0 0 0 0;
+    outline: none;
+    border: none;
+    padding: 3px 0px 3px 10px;
+    margin: 0;
+
+    box-sizing:border-box;
+    display: inline-block;
+}
+form.booksearch.desktop button {
+    width: auto;
+    height: 100%;
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    color: #fff;
+    overflow: hidden;
+    box-sizing:boder-box;
+    display: inline-block;
+    position: relative;
+    top: -2px;
+}
+
 form.booksearch.mobile {
     position:relative;
     top:0;
     display: flex;
     flex-direction: row;
-}
-form.booksearch input[type=search] {
-    position:relative;
-    min-width: 14em;
-    height: 35px;
-    font-size: 13px;
-    -webkit-appearance: none;
-    margin: 0 0 0 0;
-    outline: none;
-    border-radius: 0;
-    border-bottom-left-radius: 5px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    box-sizing:border-box;
-    display:block;
-    float:left;
-    padding: 0 4px 0 8px;
 }
 form.booksearch.mobile input[type=search] {
     position:relative;
@@ -358,27 +394,24 @@ form.booksearch.mobile input[type=search] {
     float: left;
     font-size: 16px;
     flex: 1;
-
 }
-form.booksearch button {
-  width: 35px;
-  height: 35px;
+form.booksearch.mobile button {
+  width: 30px;
+  height: 30px;
   border: none;
-  background-color: rgb(74,144,226);
+  background-color: transparent;
   text-align: center;
   color: #fff;
   overflow: hidden;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  border-radius: 3px;
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   box-sizing:boder-box;
-  display:block;
-  float:right;
-
+  display: inline-block;
 }
-form.booksearch button img {
+form.booksearch.mobile button img {
   position:relative;
   top: 2px;
 }
@@ -404,7 +437,7 @@ a.BRgrey:hover     { text-decoration: none; }
 a.BRgrey:visited   { color: #666; }
 
 .BRnavlinks {
-    float:right;
+    float: right;
     padding: 0 20px 0 0;
     margin: 0;
     height: 25px;
@@ -545,8 +578,8 @@ button.action.skinny {
 .BRpage {
   position: absolute;
   right: 0;
-  width: 440px;
-  padding-left:12px;
+  width: 450px;
+  padding-left: 12px;
   text-align: right;
   margin-right: 4px;
 }
@@ -597,7 +630,7 @@ button.action.skinny {
 }
 .BRnavpos {
     position: relative;
-    margin-right: 420px;
+    margin-right: 450px;
     height: 40px;
     top: 5px;
 }
@@ -1141,36 +1174,23 @@ body.high-contrast .BRtwopageview img {
 
 .BRtoolbarbuttons {
   white-space: nowrap;
-  position:relative;
+  position: relative;
+  text-align: right;
+  padding: 5px;
 }
 .BRtoolbarSection {
-  display: block;
-  float: left;
-  border-right: 2px solid #e3e3e3;
+  display: inline-block;
   white-space: nowrap;
-  height:100%;
   background-color: rgb(247,247,247);
 }
 .BRtoolbarSection.last {
   border-right:none;
 }
-.BRtoolbarSection .BRicon {
-  position: relative;
-  top: 5px;
-}
 .BRtoolbarLeft {
-  left:0;
-  top:0;
-  display:block;
-  height:100%;
+  display: inline-block;
 }
 .BRtoolbarRight {
-  position:absolute;
-  right:0;
-  top:0;
-  display:block;
-  border-left: 2px solid #e3e3e3;
-  height:100%;
+  display: inline-block;
 }
 
 .mm-menu .mm-navbar a, .mm-menu .mm-navbar>* {
@@ -1187,6 +1207,20 @@ html.mm-background .BookReader {
 }
 
 .BRtoolbar .BRmobileHamburgerWrapper { display: none; }
+
+.BookReader.fullscreenActive {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    background-color: black;
+    top: 0;
+    left: 0;
+    z-index: 9998;
+}
+body.BRfullscreenActive {
+    overflow: hidden;
+}
 
 /* Responsive Utiltities */
 /* Desktop */

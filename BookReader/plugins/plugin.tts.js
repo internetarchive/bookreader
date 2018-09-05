@@ -42,8 +42,8 @@ BookReader.prototype.setup = (function (super_) {
         });
 
         this.bind('stop', function(e, br) {
-            br.ttsStop();
-        });
+            this.ttsStop();
+        }.bind(this));
     };
 })(BookReader.prototype.setup);
 

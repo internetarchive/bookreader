@@ -11,7 +11,6 @@
 jQuery.extend(true, BookReader.defaultOptions, {
     enableMobileNav: true,
     mobileNavTitle: 'Internet Archive',
-    onePageMinBreakpoint: 800,
 });
 
 BookReader.prototype.setup = (function(super_) {
@@ -20,7 +19,6 @@ BookReader.prototype.setup = (function(super_) {
 
         this.enableMobileNav = options.enableMobileNav;
         this.mobileNavTitle = options.mobileNavTitle;
-        this.onePageMinBreakpoint = options.onePageMinBreakpoint;
 
         this.mmenu = null;
     };

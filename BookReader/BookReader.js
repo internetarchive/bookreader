@@ -110,6 +110,8 @@ BookReader.defaultOptions = {
         autofit: 'auto'
     },
 
+    onePageMinBreakpoint: 800,
+
     bookTitle: '',
     bookUrl: null,
     bookUrlText: null,
@@ -223,6 +225,7 @@ BookReader.prototype.setup = function(options) {
     this.leafEdgeTmp  = null;
     this.firstIndex = null;
     this.lastDisplayableIndex2up = null;
+    this.isFullscreenActive = false;
 
     this.showToolbar = options.showToolbar;
     this.showLogo = options.showLogo;
@@ -232,6 +235,7 @@ BookReader.prototype.setup = function(options) {
     this.reductionFactors = options.reductionFactors;
     this.onePage = options.onePage;
     this.twoPage = options.twoPage;
+    this.onePageMinBreakpoint = options.onePageMinBreakpoint;
 
     this.bookTitle = options.bookTitle;
     this.bookUrl = options.bookUrl;
@@ -1715,6 +1719,37 @@ BookReader.prototype.switchMode = function(mode) {
     }
 
 };
+
+BookReader.prototype.toggleFullscreen = function() {
+    if (this.isFullscreenActive) {
+        this.exitFullScreen();
+    } else {
+        this.enterFullscreen();
+    }
+};
+
+BookReader.prototype.enterFullscreen = function() {
+    this.refs.$br.addClass('fullscreenActive');
+    $(document.body).addClass('BRfullscreenActive');
+    var windowWidth = $(window).width();
+    if (windowWidth <= this.onePageMinBreakpoint) {
+        this.switchMode(this.constMode1up);
+    }
+    this.resize();
+    this.isFullscreenActive = true;
+};
+
+BookReader.prototype.exitFullScreen = function() {
+    this.refs.$br.removeClass('fullscreenActive');
+    $(document.body).removeClass('BRfullscreenActive');
+    var windowWidth = $(window).width();
+    if (windowWidth <= this.onePageMinBreakpoint) {
+        this.switchMode(this.constMode2up);
+    }
+    this.resize();
+    this.isFullscreenActive = false;
+};
+
 
 //prepareOnePageView()
 // This is called when we switch to one page view
@@ -3366,9 +3401,14 @@ BookReader.prototype.buildToolbarElement = function() {
 
     +     "<span class='BRtoolbarRight'>"
 
-    +       "<span class='BRtoolbarSection BRtoolbarSectionInfo tc ph10'>"
-    +         "<button class='BRicon info js-tooltip'></button>"
-    +         "<button class='BRicon share js-tooltip'></button>"
+    +       "<span class='BRtoolbarSection BRtoolbarSectionInfo'>"
+    +         "<button class='BRpill info'>Info</button>"
+    +         "<button class='BRpill share'>Share</button>"
+    +       "</span>"
+    +       "<span class='BRtoolbarSection BRtoolbarSectionMenu'>"
+              // TODO menu icon
+    +         "<button class='BRpill'>...</button>"
+    // +         "<button class='BRicon hamburger js-tooltip'>...</button>"
     +       "</span>"
 
     +     "</span>" // end BRtoolbarRight
@@ -3388,13 +3428,13 @@ BookReader.prototype.initToolbar = function(mode, ui) {
 
     this.refs.$br.append(this.buildToolbarElement());
 
-    this.$('#BRreturn a')
+    this.$('.BRreturn a')
       .addClass('BRTitleLink')
       .attr({'href': self.bookUrl, 'title': self.bookTitle})
       .html('<span class="BRreturnTitle">' + this.bookTitle + '</span>');
 
     if (self.bookUrl && self.bookUrlTitle && self.bookUrlText) {
-        this.$('#BRreturn a').append('<br>' + self.bookUrlText)
+        this.$('.BRreturn a').append('<br>' + self.bookUrlText)
     }
 
     this.refs.$BRtoolbar.find('.BRnavCntl').addClass('BRup');
@@ -3517,11 +3557,10 @@ BookReader.prototype.updateToolbarZoom = function(reduce) {
 //______________________________________________________________________________
 // Bind navigation handlers
 BookReader.prototype.bindNavigationHandlers = function() {
-
-    var self = this; // closure
+    var self = this;
 
     // Note the mobile plugin attaches itself to body, so we need to select outside
-    jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
+    var jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
 
     jIcons.filter('.onepg').bind('click', function(e) {
         self.switchMode(self.constMode1up);
@@ -3616,9 +3655,9 @@ BookReader.prototype.bindNavigationHandlers = function() {
             // $$$ bit of a hack, IA-specific
             var url = (window.location + '').replace("?ui=embed","");
             window.open(url);
+        } else {
+            self.toggleFullscreen();
         }
-
-        // Not implemented
     });
 
     var $brNavCntlBtmEl = this.$('.BRnavCntlBtm');
@@ -3712,6 +3751,7 @@ BookReader.prototype.navigationMousemoveHandler = function(event) {
     // $$$ possibly not great to be calling this for every mousemove
 
     if (event.data['br'].uiAutoHide) {
+        // TODO look into these magic numbers: 75 and 76
         var navkey = $(document).height() - 75;
         if ((event.pageY < 76) || (event.pageY > navkey)) {
             // inside or near navigation elements
@@ -4194,13 +4234,13 @@ BookReader.prototype.buildShareDiv = function(jShareDiv) {
     var jForm = $([
         '<div class="share-title">Share this book</div>',
         '<div class="share-social">',
-          '<div><button class="action share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>',
-          '<div><button class="action share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>',
-          '<div><button class="action share email-share-button"><i class="BRicon email" /> Email</button></div>',
-          '<label class="sub open-to-this-page">',
-              '<input class="thispage-social" type="checkbox" />',
-              'Open to this page?',
-          '</label>',
+            '<label class="sub open-to-this-page">',
+                '<input class="thispage-social" type="checkbox" />',
+                'Open to this page?',
+            '</label>',
+            '<div><button class="action share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>',
+            '<div><button class="action share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>',
+            '<div><button class="action share email-share-button"><i class="BRicon email" /> Email</button></div>',
         '</div>',
         embedHtml,
         '<div class="BRfloatFoot center">',
@@ -4416,7 +4456,7 @@ BookReader.prototype.reloadImages = function() {
 
 BookReader.prototype.getToolBarHeight = function() {
   if (this.refs.$BRtoolbar && this.refs.$BRtoolbar.css('display') === 'block') {
-    return (this.refs.$BRtoolbar.outerHeight() + parseInt(this.refs.$BRtoolbar.css('top')));
+    return (this.refs.$BRtoolbar.height() + parseInt(this.refs.$BRtoolbar.css('top')));
   } else {
     return 0;
   }

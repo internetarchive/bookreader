@@ -63,15 +63,17 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
         if (this.enableSearch) {
-          var readIcon = '';
-          $el.find('.BRtoolbarRight').append($("<span class='BRtoolbarSection BRtoolbarSectionSearch tc ph20 last'>"
+          var $BRtoolbarSectionSearch = $("<span class='BRtoolbarSection BRtoolbarSectionSearch'>"
+          +         "<button class='BRpill info'>Info</button>"
+
           +         "<form class='booksearch desktop'>"
-          +           "<input type='search' class='textSrch form-control' name='textSrch' val='' placeholder='Search inside this book'/>"
+          +           "<input type='search' class='textSrch' name='textSrch' val='' placeholder='Search inside'/>"
           +           "<button type='submit' class='btnSrch' name='btnSrch'>"
           +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
           +           "</button>"
           +         "</form>"
-          +       "</span>"));
+          +       "</span>");
+          $BRtoolbarSectionSearch.insertAfter($el.find('.BRtoolbarSectionInfo'));
         }
         return $el;
     };
