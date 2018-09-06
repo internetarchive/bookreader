@@ -116,6 +116,7 @@ BookReader.defaultOptions = {
     bookUrl: null,
     bookUrlText: null,
     bookUrlTitle: null,
+    enableBookTitleLink: false,
 
     // Fields used to populate the info window
     metadata: [],
@@ -3255,7 +3256,7 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 //     could be as simple as not calling this function
 BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
-    this.refs.$brNav = $(
+    this.refs.$BRnav = $(
       "<div class=\"BRnav BRnavDesktop\">"
       +"  <div class=\"BRpage\">"
       // Note, it's important for there to not be whitespace
@@ -3284,7 +3285,7 @@ BookReader.prototype.initNavbar = function() {
       +"</div>"
     );
 
-    this.refs.$br.append(this.refs.$brNav);
+    this.refs.$br.append(this.refs.$BRnav);
 
     var self = this;
     this.$('.BRpager').slider({
@@ -3314,7 +3315,7 @@ BookReader.prototype.initNavbar = function() {
     // TOOD check and cleanup
     // this.$(".BRzoombtn").draggable({axis:'y',containment:'parent'});
 
-    return this.refs.$brNav;
+    return this.refs.$BRnav;
 };
 
 // initEmbedNavbar
@@ -3382,7 +3383,7 @@ BookReader.prototype.updateNavIndexThrottled = BookReader.util.throttle(BookRead
 BookReader.prototype.buildToolbarElement = function() {
   var logoHtml = '';
   if (this.showLogo) {
-    logoHtml = "<span class='BRtoolbarSection BRtoolbarSectionLogo tc'>"
+    logoHtml = "<span class='BRtoolbarSection BRtoolbarSectionLogo'>"
     +  "<a class='logo' href='" + this.logoURL + "'></a>"
     + "</span>";
   }
@@ -3390,31 +3391,40 @@ BookReader.prototype.buildToolbarElement = function() {
   // Add large screen navigation
   this.refs.$BRtoolbar = $(
     "<div class='BRtoolbar header'>"
-    +   "<span class='BRtoolbarbuttons'>"
-    +     "<span class='BRtoolbarLeft'>"
+    +   "<table class='BRtoolbarbuttons'><tbody><tr>"
+    +     "<td class='BRtoolbarLeft'>"
     +       logoHtml
-    +       "<span class='BRtoolbarSection BRtoolbarSectionTitle title tl ph10 last'>"
-    +           "<span class='BRreturn'><a></a></span>"
-    +           "<div class='BRnabrbuvCntl BRnavCntlTop'></div>"
-    +       "</span>"
-    +    "</span>"
+    +       "<span class='BRtoolbarSection BRtoolbarSectionTitle'></span>"
+    +    "</td>"
 
-    +     "<span class='BRtoolbarRight'>"
-
+    +     "<td class='BRtoolbarRight'>"
     +       "<span class='BRtoolbarSection BRtoolbarSectionInfo'>"
     +         "<button class='BRpill info'>Info</button>"
     +         "<button class='BRpill share'>Share</button>"
     +       "</span>"
     +       "<span class='BRtoolbarSection BRtoolbarSectionMenu'>"
-              // TODO menu icon
+              // TODO actual hamburger menu icon
     +         "<button class='BRpill'>...</button>"
-    // +         "<button class='BRicon hamburger js-tooltip'>...</button>"
     +       "</span>"
-
-    +     "</span>" // end BRtoolbarRight
-    +   "</span>" // end desktop-only
+    +     "</td>" // end BRtoolbarRight
+    +   "</tr></tbody></table>"
     + "</div>"
     );
+
+    var $titleSectionEl = this.refs.$BRtoolbar.find('.BRtoolbarSectionTitle');
+
+    if (this.bookUrl && this.bookTitle && this.enableBookTitleLink) {
+        $titleSectionEl.append(
+            $('<a>')
+            .attr({'href': this.bookUrl, 'title': this.bookTitle})
+            .addClass('BRreturn')
+            .html(this.bookTitle)
+        )
+    } else if (this.bookTitle) {
+        $titleSectionEl.append(this.bookTitle);
+    } else {
+
+    }
     return this.refs.$BRtoolbar;
 }
 
@@ -3427,15 +3437,6 @@ BookReader.prototype.initToolbar = function(mode, ui) {
     var self = this;
 
     this.refs.$br.append(this.buildToolbarElement());
-
-    this.$('.BRreturn a')
-      .addClass('BRTitleLink')
-      .attr({'href': self.bookUrl, 'title': self.bookTitle})
-      .html('<span class="BRreturnTitle">' + this.bookTitle + '</span>');
-
-    if (self.bookUrl && self.bookUrlTitle && self.bookUrlText) {
-        this.$('.BRreturn a').append('<br>' + self.bookUrlText)
-    }
 
     this.refs.$BRtoolbar.find('.BRnavCntl').addClass('BRup');
     this.refs.$BRtoolbar.find('.pause').hide();
@@ -3667,9 +3668,12 @@ BookReader.prototype.bindNavigationHandlers = function() {
         function(){
             var promises = [];
             // TODO don't use magic constants
+            // TODO move this to a function
             if ($brNavCntlBtmEl.hasClass('BRdn')) {
                 if (self.refs.$BRtoolbar)
-                    promises.push(self.refs.$BRtoolbar.animate({top: self.refs.$BRtoolbar.height() * -1}).promise());
+                    promises.push(self.refs.$BRtoolbar.animate(
+                        {top: self.getToolBarHeight() * -1}
+                    ).promise());
                 promises.push(self.$('.BRnav').animate({bottom:-55}).promise());
                 $brNavCntlBtmEl.addClass('BRup').removeClass('BRdn');
                 $brNavCntlTopEl.addClass('BRdn').removeClass('BRup');
@@ -3686,9 +3690,11 @@ BookReader.prototype.bindNavigationHandlers = function() {
             };
             $.when.apply($, promises).done(function() {
               // Only do full resize in auto mode and need to recalc. size
-              if (self.mode == self.constMode2up && self.twoPage.autofit != null && self.twoPage.autofit != 'none') {
+              if (self.mode == self.constMode2up && self.twoPage.autofit != null
+                    && self.twoPage.autofit != 'none') {
                 self.resize();
-              } else if (self.mode == self.constMode1up && self.onePage.autofit != null && self.onePage.autofit != 'none') {
+              } else if (self.mode == self.constMode1up && self.onePage.autofit != null
+                    && self.onePage.autofit != 'none') {
                 self.resize();
               } else {
                 // Don't do a full resize to avoid redrawing images
@@ -3914,9 +3920,11 @@ BookReader.prototype.navigationIsVisible = function() {
 BookReader.prototype.hideNavigation = function() {
     // Check if navigation is showing
     if (this.navigationIsVisible()) {
-        // $$$ don't hardcode height
-        this.refs.$BRtoolbar.animate({top:-60});
-        this.$('.BRnav').animate({bottom:-60});
+        var toolbarHeight = this.getToolBarHeight();
+        console.log(toolbarHeight);
+        var navbarHeight = this.getNavHeight();
+        this.refs.$BRtoolbar.animate({top: toolbarHeight * -1});
+        this.refs.$BRnav.animate({bottom: navbarHeight * -1});
     }
 };
 
@@ -3927,7 +3935,7 @@ BookReader.prototype.showNavigation = function() {
     // Check if navigation is hidden
     if (!this.navigationIsVisible()) {
         this.refs.$BRtoolbar.animate({top:0});
-        this.$('.BRnav').animate({bottom:0});
+        this.refs.$BRnav.animate({bottom:0});
     }
 };
 
@@ -4243,7 +4251,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv) {
             '<div><button class="action share email-share-button"><i class="BRicon email" /> Email</button></div>',
         '</div>',
         embedHtml,
-        '<div class="BRfloatFoot center">',
+        '<div class="BRfloatFoot">',
             '<button class="share-finished" type="button" onclick="$.fn.colorbox.close();">Finished</button>',
         '</div>'
         ].join('\n'));
@@ -4456,7 +4464,7 @@ BookReader.prototype.reloadImages = function() {
 
 BookReader.prototype.getToolBarHeight = function() {
   if (this.refs.$BRtoolbar && this.refs.$BRtoolbar.css('display') === 'block') {
-    return (this.refs.$BRtoolbar.height() + parseInt(this.refs.$BRtoolbar.css('top')));
+    return (this.refs.$BRtoolbar.outerHeight() + parseInt(this.refs.$BRtoolbar.css('top')));
   } else {
     return 0;
   }
@@ -4467,10 +4475,9 @@ BookReader.prototype.getToolBarHeight = function() {
  * @return {Number}
  */
 BookReader.prototype.getNavHeight = function(ignoreDisplay) {
-  var $brNav = this.$('.BRnav');
-  if (ignoreDisplay || $brNav.css('display') === 'block') {
-    var outerHeight = $brNav.outerHeight();
-    var bottom = parseInt($brNav.css('bottom'));
+  if (ignoreDisplay || this.refs.$BRnav.css('display') === 'block') {
+    var outerHeight = this.refs.$BRnav.outerHeight();
+    var bottom = parseInt(this.refs.$BRnav.css('bottom'));
     if (!isNaN(outerHeight) && !isNaN(bottom)) {
       return outerHeight + bottom;
     }

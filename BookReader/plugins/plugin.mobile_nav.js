@@ -38,8 +38,8 @@ BookReader.prototype.initToolbar = (function (super_) {
             this.refs.$br.append($drawerEl);
 
             // Render info into mobile info before mmenu
-            this.buildInfoDiv(this.$('.mobileInfo'));
-            this.buildShareDiv(this.$('.mobileShare'));
+            this.buildInfoDiv(this.$('.BRmobileInfo'));
+            this.buildShareDiv(this.$('.BRmobileShare'));
 
             var $mmenuEl = this.$('nav.BRmobileMenu');
             $mmenuEl.mmenu({
@@ -148,14 +148,14 @@ BookReader.prototype.buildMobileDrawerElement = function() {
       +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_info.svg\" alt=\"info-icon\"/></span>"
       +"        About This Book"
       +"      </span>"
-      +"      <div class=\"mobileInfo\"></div>"
+      +"      <div class=\"BRmobileInfo\"></div>"
       +"    </li>"
       +"    <li>"
       +"      <span>"
       +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_share.svg\" alt=\"info-share\"/></span>"
       +"        Share This Book"
       +"      </span>"
-      +"      <div class=\"mobileShare\"></div>"
+      +"      <div class=\"BRmobileShare\"></div>"
       +"    </li>"
       +"  </ul>"
       +"</nav>"

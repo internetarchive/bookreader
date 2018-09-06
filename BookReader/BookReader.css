@@ -70,10 +70,10 @@ a.BRgrey:visited   { color: #666; }
 }
 .BRtoolbar, .BRtoolbar table {
     color: white;
-    font-size: 1.4rem;
+    font-size: 14px;
 }
 .BRtoolbar .label {
-    font-size: 1.1em;
+    font-size: 11px;
     color: #ccc;
 }
 .BRtoolbar a {
