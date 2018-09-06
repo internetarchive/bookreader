@@ -271,8 +271,8 @@ a.logo {
 
 /* --------------------- begin icon (button) styles ---------------------- */
 .BRicon {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     padding: 0;
     margin: 0;
     vertical-align: middle;
@@ -283,62 +283,45 @@ a.logo {
     background-repeat: no-repeat;
 }
 i.BRicon { display: inline-block; }
-.BRicon.logo {background-position:0 0;}
-.BRicon.info {background-position:-40px 0;}
-.BRicon.share {background-position:-120px 0;}
-.BRicon.read {background-position:-200px 0;}
-.BRicon.unread {background-position:-280px 0;}
-.BRicon.full {background-position:-360px 0;}
-.BRicon.book_left {background-position:-440px 0;}
-.BRicon.book_right {background-position:-520px 0;}
-.BRicon.zoom_out {background-position:-600px 0;}
-.BRicon.zoom_in {background-position:-680px 0;}
-.BRicon.play {background-position:-760px 0;}
-.BRicon.pause {background-position:-840px 0;}
-.BRicon.twopg {background-position:-920px 0;}
-.BRicon.onepg {background-position:-1000px 0;}
-.BRicon.thumb {background-position:-1080px 0;}
-.BRicon.fit {background-position:-1160px 0;}
-.BRicon.fit:hover {background-position:-1200px 0;}
-.BRicon.download {background-position:-1520px 0;}
-.BRicon.return {background-position:-1440px 0;}
-.BRicon.fb {background-position:-1600px 0;}
-.BRicon.twitter {background-position:-1640px 0;}
-.BRicon.email {background-position:-1680px 0;}
+.BRicon.logo {background-position:0 center;}
+.BRicon.info {background-position:-40px center;}
+.BRicon.share {background-position:-120px center;}
+.BRicon.read {background-position:-200px center;}
+.BRicon.unread {background-position:-280px center;}
+.BRicon.full {background-position:-360px center;}
+.BRicon.book_left {background-position:-440px center;}
+.BRicon.book_right {background-position:-520px center;}
+.BRicon.zoom_out {background-position:-600px center;}
+.BRicon.zoom_in {background-position:-680px center;}
+.BRicon.play {background-position:-760px center;}
+.BRicon.pause {background-position:-840px center;}
+.BRicon.twopg {background-position:-920px center;}
+.BRicon.onepg {background-position:-1000px center;}
+.BRicon.thumb {background-position:-1080px center;}
+.BRicon.fit {background-position:-1160px center;}
+.BRicon.fit:hover {background-position:-1200px center;}
+.BRicon.download {background-position:-1520px center;}
+.BRicon.return {background-position:-1440px center;}
+.BRicon.fb {background-position:-1600px center;}
+.BRicon.twitter {background-position:-1640px center;}
+.BRicon.email {background-position:-1680px center;}
 
-.no-touch .BRicon.info:hover {background-position:-80px 0;}
-.no-touch .BRicon.share:hover {background-position:-160px 0;}
-.no-touch .BRicon.read:hover {background-position:-240px 0;}
-.no-touch .BRicon.unread:hover {background-position:-320px 0;}
-.no-touch .BRicon.full:hover {background-position:-400px 0;}
-.no-touch .BRicon.book_left:hover {background-position:-480px 0;}
-.no-touch .BRicon.book_right:hover {background-position:-560px 0;}
-.no-touch .BRicon.zoom_out:hover {background-position:-640px 0;}
-.no-touch .BRicon.zoom_in:hover {background-position:-720px 0;}
-.no-touch .BRicon.play:hover {background-position:-800px 0;}
-.no-touch .BRicon.pause:hover {background-position:-880px 0;}
-.no-touch .BRicon.twopg:hover {background-position:-960px 0;}
-.no-touch .BRicon.onepg:hover {background-position:-1040px 0;}
-.no-touch .BRicon.thumb:hover {background-position:-1120px 0;}
-.no-touch .BRicon.download:hover {background-position:-1560px 0;}
-.no-touch .BRicon.return:hover {background-position:-1480px 0;}
-
-.touch .BRicon.info:active {background-position:-80px 0;}
-.touch .BRicon.share:active {background-position:-160px 0;}
-.touch .BRicon.read:active {background-position:-240px 0;}
-.touch .BRicon.unread:active {background-position:-320px 0;}
-.touch .BRicon.full:active {background-position:-400px 0;}
-.touch .BRicon.book_left:active {background-position:-480px 0;}
-.touch .BRicon.book_right:active {background-position:-560px 0;}
-.touch .BRicon.zoom_out:active {background-position:-640px 0;}
-.touch .BRicon.zoom_in:active {background-position:-720px 0;}
-.touch .BRicon.play:active {background-position:-800px 0;}
-.touch .BRicon.pause:active {background-position:-880px 0;}
-.touch .BRicon.twopg:active {background-position:-960px 0;}
-.touch .BRicon.onepg:active {background-position:-1040px 0;}
-.touch .BRicon.thumb:active {background-position:-1120px 0;}
-.touch .BRicon.download:active {background-position:-1560px 0;}
-.touch .BRicon.return:active {background-position:-1480px 0;}
+.no-touch .BRicon.info:hover, .touch .BRicon.info:active {background-position:-80px center;}
+.no-touch .BRicon.share:hover, .touch .BRicon.share:active {background-position:-160px center;}
+.no-touch .BRicon.read:hover, .touch .BRicon.read:active  {background-position:-240px center;}
+.no-touch .BRicon.unread:hover, .touch .BRicon.unread:active {background-position:-320px center;}
+.no-touch .BRicon.full:hover, .touch .BRicon.full:active {background-position:-400px center;}
+.no-touch .BRicon.book_left:hover, .touch .BRicon.book_left:active {background-position:-480px center;}
+.no-touch .BRicon.book_right:hover, .touch .BRicon.book_right:active {background-position:-560px center;}
+.no-touch .BRicon.zoom_out:hover, .touch .BRicon.zoom_out:active {background-position:-640px center;}
+.no-touch .BRicon.zoom_in:hover, .touch .BRicon.zoom_in:active {background-position:-720px center;}
+.no-touch .BRicon.play:hover, .touch .BRicon.play:active {background-position:-800px center;}
+.no-touch .BRicon.pause:hover, .touch .BRicon.pause:active {background-position:-880px center;}
+.no-touch .BRicon.twopg:hover, .touch .BRicon.twopg:active {background-position:-960px center;}
+.no-touch .BRicon.onepg:hover, .touch .BRicon.onepg:active  {background-position:-1040px center;}
+.no-touch .BRicon.thumb:hover, .touch .BRicon.thumb:active {background-position:-1120px center;}
+.no-touch .BRicon.download:hover, .touch .BRicon.download:active {background-position:-1560px center;}
+.no-touch .BRicon.return:hover, .touch .BRicon.return:active  {background-position:-1480px center;}
 
 /* --------------------- end icon (button) styles ---------------------- */
 
@@ -497,49 +480,44 @@ button.action.skinny {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 50px;
-    padding-top:5px;
+    height: 34px;
+    padding-top: 0;
     overflow: visible;
     z-index: 100;
-    background-color: rgb(247,247,247);
-
-    -webkit-box-shadow: 1px 1px 2px #333;
-    /* No shadow for FF, to be consistent with toolbar */
-    _position:absolute;
-    _top: expression(documentElement.scrollTop + documentElement.clientHeight-this.offsetHeight);
+    background-color: #818181;
 }
-.BRnav.BRnavEmbed{
+.BRnav.BRnavEmbed {
     padding-top: 0;
-    height: 40px;
+    height: 34px;
 }
 .BRnavpos {
     position: relative;
     margin-right: 450px;
-    height: 40px;
-    top: 5px;
+    height: 6px;
+    top: 13px;
 }
 .BRpager {
-    position: relative;
-    /* Account for padding around nav line */
     margin-left: 10px;
     margin-right: 10px;
-    height: 14px;
-    top: 8px;
-    background-color: rgb(216,216,216);
+    height: 8px;
+    box-sizing: content-box;
+    /* This invisible border increases hit area */
+    position: relative;
+    top: -5px;
+    border: 6px solid #818181;
+    background-color: #4D4D4D;
     border-radius: 10px;
-    box-shadow: inset 0px 1px 1px 0px rgba(155,154,155,0.39)
 }
 
-/* XXXmang verify correct use of handle class */
 .BRpager .ui-slider-handle {
     position: absolute;
     width: 20px;
     height: 20px;
     border-radius:50%;
-    top: -2px;
+    top: -6px;
     margin-left: -9px; /* Center icon */
     z-index: 103;
-    background-color: rgb(36,94,131);
+    background-color: white;
 }
 /* handle active state for touch */
 .touch .BRpager .ui-slider-handle.ui-state-active {
@@ -549,10 +527,12 @@ button.action.skinny {
     margin-left: -11px;
 }
 .BRpager .ui-slider-range {
-    background: #90A2B6;
+    background: #4D4D4D;
+    background: rgba(255,255,255,.7);
     height: 100%;
     border-radius: 10px;
 }
+/* BRnavlin is where chapters/search are appended */
 .BRnavline {
     position: relative;
     height: 1px;
@@ -571,65 +551,56 @@ button.action.skinny {
 .BRnavright {
     right: 0;
 }
-.BRcurrentpageWrapper {
-    /* position: absolute; */
-    display: inline-block;
-    text-align: center;
-    padding: 0 0 0 0;
-    font-size: 1.1em;
-    margin-right: 10px;
-}
 .BRpage {
     position: absolute;
     right: 0;
     width: 500px;
+    height: 100%;
+    overflow: hidden;
     padding-left: 12px;
     text-align: right;
     margin-right: 4px;
 }
+.BRcurrentpage {
+    display: inline-block;
+    text-align: center;
+    padding: 0 0 0 0;
+    font-size: 12px;
+    /* font-weight: bold; */
+    margin-right: 10px;
+    color: white;
+    line-height: 1;
+}
+.BRpage .BRicon {
+    height: 100%;
+}
 .BRpage .BRicon.book_left {
-    border-bottom-left-radius: 5px;
-    border-top-left-radius: 5px;
-    border-right: 2px solid rgb(193,193,193);
+    /* border-bottom-left-radius: 5px; */
+    /* border-top-left-radius: 5px; */
+    border-left: 1px solid #4D4D4D;
+    border-right: 1px solid #4D4D4D;
     box-sizing: content-box;
 }
 .BRpage .BRicon.book_right {
-    border-bottom-right-radius: 5px;
-    border-top-right-radius: 5px;
+    /* border-bottom-right-radius: 5px; */
+    /* border-top-right-radius: 5px; */
     box-sizing: content-box;
 }
 .BRpage .BRicon.onepg {
-    border-bottom-left-radius: 5px;
-    border-top-left-radius: 5px;
-    border-right: 2px solid rgb(193,193,193);
+    /* border-bottom-left-radius: 5px; */
+    /* border-top-left-radius: 5px; */
+    border-right: 1px solid #4D4D4D;
     box-sizing: content-box;
 }
 .BRpage .BRicon.thumb {
     border-bottom-right-radius: 5px;
     border-top-right-radius: 5px;
-    border-left: 2px solid rgb(193,193,193);
+    border-left: 1px solid #4D4D4D;
     box-sizing: content-box;
 }
 
-/* #slider {
-    position: absolute;
-    width: 2500px;
-    height: 27px;
-    top: 0;
-    left: -2478px;
-    background-color: #000;
-    opacity: .1;
-    z-index: 101;
-} */
-/* #pager {
-    position: absolute;
-    width: 23px;
-    height: 27px;
-    top: 0;
-    left: 8px;
-    background: url(images/slider.png);
-    z-index: 103;
-} */
+
+/************ begin search result styles ***********/
 
 .chapter {
     position: absolute;
@@ -748,6 +719,10 @@ button.action.skinny {
 .mobileSearchResult table td{
     vertical-align: top;
 }
+
+/************ end search result styles ***********/
+
+
 .BRnav .front {
     z-index: 10001;
 }
@@ -774,7 +749,7 @@ button.action.skinny {
 }
 
 .BRnavCntl {
-    background-color: #868686;
+    background-color: #444444;
     position: absolute;
     right: 20px;
     width: 40px;
@@ -782,7 +757,7 @@ button.action.skinny {
     cursor: pointer;
 }
 .BRnavCntlBtm {
-    bottom: 50px;
+    bottom: 34px;
     -moz-border-radius-topright: 8px;
     -webkit-border-top-right-radius: 8px;
     -moz-border-radius-topleft: 8px;
@@ -805,9 +780,6 @@ button.action.skinny {
 .BRnavCntlTop.BRup, .BRnavCntlTop.BRdn {
     background-position: 8px 4px;
 }
-
-
-/************ new styles for general purpose book reader ***********/
 
 .header,
 .footer {

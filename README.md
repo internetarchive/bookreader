@@ -124,6 +124,11 @@ IIIF (http://iiif.io)
 See `BookReaderDemo/demo-iiif.html` to see an example of how to load a IIIF manifest in BookReader.
 
 
+## Target Devices
+
+Note that BookReader is a core part of Archive.org's mission of Universal Access to All Knowledge. Therefore, care must be taken to support legacy browsers. For example, avoid using Flexbox or CSS Grid for critical pieces of functionality. In other words, it should still work and be useable on old devices.
+
+
 ## Notes about version 3
 
 - Make BookReader easier to use, by adding `options` to the constructor, and adding new `options.data` option. The old way of overriding properties should still work, but it is deprecated.

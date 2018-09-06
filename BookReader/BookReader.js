@@ -3260,7 +3260,7 @@ BookReader.prototype.initNavbar = function() {
       "<div class=\"BRnav BRnavDesktop\">"
       +"  <div class=\"BRpage\">"
       // Note, it's important for there to not be whitespace
-      +     "<div class=\"BRcurrentpageWrapper\"><span class='currentpage'></span></div>"
+      +     "<span class='BRcurrentpage'></span>"
       +     "<button class=\"BRicon book_left\"></button>"
       +     "<button class=\"BRicon book_right\"></button>"
       +     "<span class=\"desktop-only\">&nbsp;&nbsp;</span>"
@@ -3281,7 +3281,7 @@ BookReader.prototype.initNavbar = function() {
       +"      <div class=\"BRnavend\"></div>"
       +"    </div>"
       +"  </div>"
-      +"  <div class=\"BRnavCntl BRnavCntlBtm BRdn\"></div>"
+      +"  <div class=\"BRnavCntl BRnavCntlBtm BRdn js-tooltip\" title=\"Toogle toolbars\"></div>"
       +"</div>"
     );
 
@@ -3356,7 +3356,7 @@ BookReader.prototype.getNavPageNumString = function(index, excludePrefix) {
     return pageStr;
 }
 BookReader.prototype.updateNavPageNum = function(index) {
-    this.$('.currentpage').text(this.getNavPageNumString(index));
+    this.$('.BRcurrentpage').text(this.getNavPageNumString(index));
 };
 
 /*
@@ -3674,7 +3674,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
                     promises.push(self.refs.$BRtoolbar.animate(
                         {top: self.getToolBarHeight() * -1}
                     ).promise());
-                promises.push(self.$('.BRnav').animate({bottom:-55}).promise());
+                promises.push(self.$('.BRnav').animate({bottom: self.getNavHeight() * -1}).promise());
                 $brNavCntlBtmEl.addClass('BRup').removeClass('BRdn');
                 $brNavCntlTopEl.addClass('BRdn').removeClass('BRup');
                 self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
