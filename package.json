@@ -22,5 +22,8 @@
   "dependencies": {},
   "devDependencies": {
     "qunitjs": "^2.4.1"
+  },
+  "scripts": {
+    "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css"
   }
 }

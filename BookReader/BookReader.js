@@ -3263,7 +3263,6 @@ BookReader.prototype.initNavbar = function() {
       +     "<span class='BRcurrentpage'></span>"
       +     "<button class=\"BRicon book_left\"></button>"
       +     "<button class=\"BRicon book_right\"></button>"
-      +     "<span class=\"desktop-only\">&nbsp;&nbsp;</span>"
       +     "<button class=\"BRicon onepg desktop-only\"></button>"
       +     "<button class=\"BRicon twopg desktop-only\"></button>"
       +     "<button class=\"BRicon thumb desktop-only\"></button>"

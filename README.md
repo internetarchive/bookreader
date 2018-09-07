@@ -106,6 +106,11 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 }
 ```
 
+## Development
+
+At the time of writing, all of BookReader's JS codebase does not use any compilation. The source files are edited directly. However, the CSS is built with SCSS. Use `npm run build` to build the scss file.
+
+
 ## Tests
 
 Tests use [QUnit](https://qunitjs.com/). To run all tests, start up an HTTP server at the root of the project and navigate to `/tests/qunit.html` in a browser.
