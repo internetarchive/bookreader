@@ -82,13 +82,6 @@ a.BRgrey:visited   { color: #666; }
     text-decoration: none;
     color: white;
 }
-.BRtoolbar a:hover {
-    /* color: rgb(94, 163, 244); */
-    /* text-decoration: underline; */
-}
-.BRtoolbar a:active {
-    /* color: rgb(55, 123, 201); */
-}
 /* desktop header */
 .BRtoolbarSection > *  {
     margin-left: 6px;
@@ -113,9 +106,7 @@ a.BRgrey:visited   { color: #666; }
     line-height: 0;
 }
 .BRtoolbarSection {
-    display: inline-block;
     white-space: nowrap;
-    /* background-color: rgb(247,247,247); */
 }
 .BRtoolbarSectionLogo {
     text-align: center;
@@ -128,12 +119,7 @@ a.BRgrey:visited   { color: #666; }
     text-align: left;
     overflow-y: hidden;
 }
-.BRreturnTitle {
-    /* font-size: 18px; */
-    /* font-weight:bold; */
-}
 .BRtoolbarRight {
-    /* display: inline-block; */
     text-align: right;
 }
 

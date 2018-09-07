@@ -64,8 +64,6 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
         var $el = super_.call(this);
         if (this.enableSearch) {
           var $BRtoolbarSectionSearch = $("<span class='BRtoolbarSection BRtoolbarSectionSearch'>"
-          +         "<button class='BRpill info'>Info</button>"
-
           +         "<form class='booksearch desktop'>"
           +           "<input type='search' class='textSrch' name='textSrch' val='' placeholder='Search inside'/>"
           +           "<button type='submit' class='btnSrch' name='btnSrch'>"

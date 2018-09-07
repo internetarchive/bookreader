@@ -166,15 +166,6 @@ a.BRgrey:visited {
   color: white;
 }
 
-.BRtoolbar a:hover {
-  /* color: rgb(94, 163, 244); */
-  /* text-decoration: underline; */
-}
-
-.BRtoolbar a:active {
-  /* color: rgb(55, 123, 201); */
-}
-
 /* desktop header */
 .BRtoolbarSection > * {
   margin-left: 6px;
@@ -202,9 +193,7 @@ a.BRgrey:visited {
 }
 
 .BRtoolbarSection {
-  display: inline-block;
   white-space: nowrap;
-  /* background-color: rgb(247,247,247); */
 }
 
 .BRtoolbarSectionLogo {
@@ -221,13 +210,7 @@ a.BRgrey:visited {
   overflow-y: hidden;
 }
 
-.BRreturnTitle {
-  /* font-size: 18px; */
-  /* font-weight:bold; */
-}
-
 .BRtoolbarRight {
-  /* display: inline-block; */
   text-align: right;
 }
 
