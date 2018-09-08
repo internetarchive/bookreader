@@ -41,7 +41,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
 
     $('<div class="chapter" style="left:' + percentThrough + ';"><div class="title">'
         + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
-    .appendTo(this.$('.BRnavline')
+    .appendTo(this.$('.BRnavline'))
     .data({'self': this, 'pageIndex': pageIndex })
     .bt({
         contentSelector: '$(this).find(".title")',
@@ -75,11 +75,13 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         centerPointY: 0,
         shadow: false
     })
-    .hover(function() {
-        // remove hover effect from other markers then turn on just for this
-        self.$('.search,.chapter').removeClass('front');
+    .hover(
+        function() {
+            // remove hover effect from other markers then turn on just for this
+            self.$('.search,.chapter').removeClass('front');
             $(this).addClass('front');
-        }, function() {
+        },
+        function() {
             $(this).removeClass('front');
         }
     )

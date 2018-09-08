@@ -14,8 +14,15 @@ $BRiconWidth: 34px;
   border: none;
   cursor: pointer;
   background-color: transparent;
-  background-image: url(images/BRicons.png);
+  background-image: url(images/BRicons.svg);
   background-repeat: no-repeat;
+  &:hover {
+    background-color: rgba(50,50,50,.2);
+  }
+  &:active {
+    background-color: rgba(255,255,255,.2);
+    background-color: rgba(50,50,50,.4);
+  }
 }
 i.BRicon {
   display: inline-block;
@@ -25,15 +32,15 @@ i.BRicon {
 }
 .BRicon.info {
   @include sprite-offet(1);
-  .no-touch &:hover, .touch &:active {
-    @include sprite-offet(2);
-  }
+  // .no-touch &:hover, .touch &:active {
+  //   @include sprite-offet(2);
+  // }
 }
 .BRicon.share {
   @include sprite-offet(3);
-  .no-touch &:hover, .touch &:active {
-    @include sprite-offet(4);
-  }
+  // .no-touch &:hover, .touch &:active {
+  //   @include sprite-offet(4);
+  // }
 }
 .BRicon.read {
   @include sprite-offet(5);
@@ -43,24 +50,24 @@ i.BRicon {
 }
 .BRicon.unread {
   @include sprite-offet(7);
-  .no-touch &:hover, .touch &:active {
-    @include sprite-offet(8);
-  }
+  // .no-touch &:hover, .touch &:active {
+  //   @include sprite-offet(8);
+  // }
 }
 .BRicon.full {
   @include sprite-offet(9);
 }
 .BRicon.book_left {
   @include sprite-offet(11);
-  .no-touch &:hover, .touch &:active {
-    @include sprite-offet(12);
-  }
+  // .no-touch &:hover, .touch &:active {
+  //   @include sprite-offet(12);
+  // }
 }
 .BRicon.book_right {
   @include sprite-offet(13);
-  .no-touch &:hover, .touch &:active {
-    @include sprite-offet(14);
-  }
+  // .no-touch &:hover, .touch &:active {
+  //   @include sprite-offet(14);
+  // }
 }
 .BRicon.zoom_out {
   @include sprite-offet(15);

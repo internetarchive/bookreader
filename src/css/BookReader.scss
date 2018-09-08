@@ -62,7 +62,7 @@ a.BRgrey:visited   { color: #666; }
     position: relative;
     top: 0;
     left: 0;
-    padding: 10px;
+    padding: 10px 10px 4px 10px;
     width: 100%;
     z-index: 100;
     background-color: transparent;
@@ -88,7 +88,7 @@ a.BRgrey:visited   { color: #666; }
 }
 .BRtoolbarbuttons {
     white-space: nowrap;
-    position: relative;
+    // position: relative;
     text-align: right;
     padding: 5px;
     border-spacing: 0;
@@ -97,14 +97,19 @@ a.BRgrey:visited   { color: #666; }
     box-sizing: border-box;
 }
 .BRtoolbarbuttons button.BRpill {
-    border: 1.2pt solid white;
+    border: 1px solid white;
     background: transparent;
     padding: 5px 10px;
     height: 30px;
     border-radius: 20px;
     color: white;
     line-height: 0;
+    &.hamburger {
+        border: none;
+        border-radius: none;
+    }
 }
+
 .BRtoolbarSection {
     white-space: nowrap;
 }
@@ -192,6 +197,7 @@ a.logo {
 }
 .BRemptypage {
     background-color: #3a3b3b;
+    background-color: transparent;
 }
 
 /* Disable selection on Firefox and WebKit */
@@ -263,7 +269,7 @@ form.booksearch {
 form.booksearch.desktop {
     position: relative;
     height: 30px;
-    border: 1.2pt solid white;
+    border: 1px solid white;
     border-radius: 20px;
     display: inline-block;
     line-height:0;
@@ -416,30 +422,37 @@ button.action.skinny {
     overflow: visible;
     z-index: 100;
     background-color: #818181;
+
+    display: block;
+    display: flex;
+    flex-direction: row;
 }
 .BRnav.BRnavEmbed {
     padding-top: 0;
     height: 34px;
 }
+.BRnav .front {
+    z-index: 10001;
+}
 .BRnavpos {
     position: relative;
-    margin-right: 450px;
-    height: 6px;
-    top: 13px;
+    margin-right: 10px;
+    margin-left: 10px;
+
+    /* non-flexbox fallback */
+    float: left;
+    flex: 1 auto;
 }
 .BRpager {
-    margin-left: 10px;
-    margin-right: 10px;
     height: 8px;
     box-sizing: content-box;
     /* This invisible border increases hit area */
     position: relative;
-    top: -5px;
+    top: 8px;
     border: 6px solid #818181;
     background-color: #4D4D4D;
     border-radius: 10px;
 }
-
 .BRpager .ui-slider-handle {
     position: absolute;
     width: 20px;
@@ -470,26 +483,18 @@ button.action.skinny {
     width: auto;
     top: -1px;
     margin: 0 10px;
-}
-.BRnavend {
-    top: -2px;
-    width: 1px;
-    height: 6px;
-}
-.BRnavleft {
-    left: 0;
-}
-.BRnavright {
-    right: 0;
+    width: 100%;
 }
 .BRpage {
-    position: absolute;
-    right: 0;
-    width: 500px;
     height: 100%;
     overflow: hidden;
-    padding-left: 12px;
+    padding-left: 0;
     text-align: right;
+    white-space: nowrap;
+
+    /* non-flexbox fallback */
+    float: left;
+    flex: none;
 }
 .BRcurrentpage {
     display: inline-block;
@@ -530,6 +535,39 @@ button.action.skinny {
     box-sizing: content-box;
 }
 
+.BRnavCntl {
+    background-color: #444444;
+    position: absolute;
+    right: 20px;
+    width: 40px;
+    height: 30px;
+    cursor: pointer;
+}
+.BRnavCntlBtm {
+    bottom: 34px;
+    -moz-border-radius-topright: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -moz-border-radius-topleft: 8px;
+    -webkit-border-top-left-radius: 8px;
+}
+.BRnavCntlBtm:hover {
+    background-color: rgb(74, 144, 226);
+}
+.BRup {
+    background-image: url("images/nav_control-up.png");
+    background-repeat: no-repeat;
+}
+.BRdn {
+    background-image: url("images/nav_control-dn.png");
+    background-repeat: no-repeat;
+}
+.BRnavCntlBtm.BRup, .BRnavCntlBtm.BRdn {
+    background-position: 8px 4px;
+}
+.BRnavCntlTop.BRup, .BRnavCntlTop.BRdn {
+    background-position: 8px 4px;
+}
+
 
 /************ begin search result styles ***********/
 
@@ -559,12 +597,12 @@ button.action.skinny {
     height: 27px;
     bottom: 0;  /* Relative to nav line */
     background-color: transparent;
-    background-image: url(images/marker_srch-off.png);
+    background-image: url(images/marker_srch-off.svg);
     background-repeat: no-repeat;
     cursor: pointer;
 }
 .search.front {
-    background: transparent url(images/marker_srch-on.png) no-repeat;
+    background: transparent url(images/marker_srch-on.svg) no-repeat;
 }
 .search .query, .searchChap .query {
     display: none;
@@ -654,9 +692,7 @@ button.action.skinny {
 /************ end search result styles ***********/
 
 
-.BRnav .front {
-    z-index: 10001;
-}
+
 .BRprogresspopup {
     position: absolute;
     background-color: white;
@@ -679,38 +715,6 @@ button.action.skinny {
     background-position:center top;
 }
 
-.BRnavCntl {
-    background-color: #444444;
-    position: absolute;
-    right: 20px;
-    width: 40px;
-    height: 30px;
-    cursor: pointer;
-}
-.BRnavCntlBtm {
-    bottom: 34px;
-    -moz-border-radius-topright: 8px;
-    -webkit-border-top-right-radius: 8px;
-    -moz-border-radius-topleft: 8px;
-    -webkit-border-top-left-radius: 8px;
-}
-.BRnavCntlBtm:hover {
-    background-color: rgb(74, 144, 226);
-}
-.BRup {
-    background-image: url("images/nav_control-up.png");
-    background-repeat: no-repeat;
-}
-.BRdn {
-    background-image: url("images/nav_control-dn.png");
-    background-repeat: no-repeat;
-}
-.BRnavCntlBtm.BRup, .BRnavCntlBtm.BRdn {
-    background-position: 8px 4px;
-}
-.BRnavCntlTop.BRup, .BRnavCntlTop.BRdn {
-    background-position: 8px 4px;
-}
 
 .header,
 .footer {
@@ -838,6 +842,9 @@ html.mm-background .BookReader {
 
 .BRtoolbar .BRmobileHamburgerWrapper { display: none; }
 
+.BRcontainer {
+    transition: height 1s linear;
+}
 .BookReader.fullscreenActive {
     position: fixed;
     width: 100%;
@@ -856,7 +863,7 @@ body.BRfullscreenActive {
 /* Mobile Only */
 @media (max-width: 800px) {
     .desktop-only { display: none; }
-    .BRnavpos { margin-right: 90px; }
+    // .BRnavpos { margin-right: 90px; }
     /* .BRtoolbar { height: 40px; } */
     .BRtoolbar.responsive .BRtoolbarbuttons { display: none; }
     .BRtoolbar.responsive .BRmobileHamburgerWrapper { display: block; }
@@ -1164,6 +1171,19 @@ body.BRfullscreenActive {
     .BRinfoOtherFormatsFormat { display: inline; margin-right: 10px; }
     .BRinfoFooter { font-size: 1em; clear:both; }
     .BRinfoFooter a { display: inline; margin-right: 10px;}
+}
+
+/* -------------------------- JS TOOLTIP STYLES -------------------------- */
+.bt-wrapper {
+    padding: 0;
+    border: none !important;
+    .bt-content {
+        background: #333;
+        border-radius: 3px;
+        padding: 5px 10px !important;
+    }
+    color: white;
+    font-weight: bold;
 }
 
 @import 'colorbox';

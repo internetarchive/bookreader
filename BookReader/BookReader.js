@@ -693,23 +693,32 @@ BookReader.prototype.setupKeyListeners = function() {
 // setupTooltips()
 //______________________________________________________________________________
 BookReader.prototype.setupTooltips = function() {
-    this.$('.js-tooltip').bt(
-      {
-        positions: ['top', 'bottom'],
-        shrinkToFit: true,
-        spikeGirth: 5,
-        spikeLength: 3,
-        fill: '#4A90E2',
-        cornerRadius: 0,
-        strokeWidth: 0,
-        cssStyles: {
-          color: 'white',
-          fontSize: '1.25em',
-          whiteSpace: 'nowrap'
-        },
-      }
-    )
-    ;
+    this.$('.js-tooltip').each(function(idx, el) {
+        var options = {
+            positions: ['top', 'bottom'],
+            shrinkToFit: true,
+            spikeGirth: 0,
+            spikeLength: 8,
+            // fill: '#4A90E2'
+            fill: 'transparent',
+            cornerRadius: 0,
+            strokeWidth: 0,
+            cssStyles: {
+                // color: 'white',
+                // border: '1px solid grey',
+                // fontSize: '12px',
+                // whiteSpace: 'nowrap'
+            },
+        };
+        var $el = $(el);
+        if ($el.parents('.BRtoolbar').length) {
+            options.positions = ['bottom'];
+            options.spikeLength = 12;
+        } else if ($el.parents('.BRnav').length) {
+            options.positions = ['top'];
+        }
+        $el.bt(options);
+    });
 }
 
 
@@ -1721,8 +1730,12 @@ BookReader.prototype.switchMode = function(mode) {
 
 };
 
+BookReader.prototype.isFullscreen = function() {
+    return this.isFullscreenActive;
+};
+
 BookReader.prototype.toggleFullscreen = function() {
-    if (this.isFullscreenActive) {
+    if (this.isFullscreen()) {
         this.exitFullScreen();
     } else {
         this.enterFullscreen();
@@ -3257,31 +3270,29 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
     this.refs.$BRnav = $(
-      "<div class=\"BRnav BRnavDesktop\">"
-      +"  <div class=\"BRpage\">"
-      // Note, it's important for there to not be whitespace
-      +     "<span class='BRcurrentpage'></span>"
-      +     "<button class=\"BRicon book_left\"></button>"
-      +     "<button class=\"BRicon book_right\"></button>"
-      +     "<button class=\"BRicon onepg desktop-only\"></button>"
-      +     "<button class=\"BRicon twopg desktop-only\"></button>"
-      +     "<button class=\"BRicon thumb desktop-only\"></button>"
+        "<div class=\"BRnav BRnavDesktop\">"
+        +"  <div class=\"BRnavpos\">"
+        +"    <div class=\"BRpager\"></div>"
+        +"    <div class=\"BRnavline\">"
+        +"    </div>"
+        +"  </div>"
+        +"  <div class=\"BRpage\">"
 
-      // zoomx`
-      +     "<button class='BRicon zoom_out desktop-only js-tooltip'></button>"
-      +     "<button class='BRicon zoom_in desktop-only js-tooltip'></button>"
-      +     "<button class='BRicon full js-tooltip'></button>"
+        // Note, it's important for there to not be whitespace
+        +     "<span class='BRcurrentpage'></span>"
+        +     "<button class=\"BRicon book_left js-tooltip\"></button>"
+        +     "<button class=\"BRicon book_right js-tooltip\"></button>"
+        +     "<button class=\"BRicon onepg desktop-only js-tooltip\"></button>"
+        +     "<button class=\"BRicon twopg desktop-only js-tooltip\"></button>"
+        +     "<button class=\"BRicon thumb desktop-only js-tooltip\"></button>"
 
-      +"  </div>"
-      +"  <div class=\"BRnavpos\">"
-      +"    <div class=\"BRpager\"></div>"
-      +"    <div class=\"BRnavline\">"
-      +"      <div class=\"BRnavend\"></div>"
-      +"      <div class=\"BRnavend\"></div>"
-      +"    </div>"
-      +"  </div>"
-      +"  <div class=\"BRnavCntl BRnavCntlBtm BRdn js-tooltip\" title=\"Toogle toolbars\"></div>"
-      +"</div>"
+        // zoomx`
+        +     "<button class='BRicon zoom_out js-tooltip'></button>"
+        +     "<button class='BRicon zoom_in js-tooltip'></button>"
+        +     "<button class='BRicon full js-tooltip'></button>"
+        +"  </div>"
+        +"  <div class=\"BRnavCntl BRnavCntlBtm BRdn js-tooltip\" title=\"Toogle toolbars\"></div>"
+        +"</div>"
     );
 
     this.refs.$br.append(this.refs.$BRnav);
@@ -3398,13 +3409,16 @@ BookReader.prototype.buildToolbarElement = function() {
 
     +     "<td class='BRtoolbarRight'>"
     +       "<span class='BRtoolbarSection BRtoolbarSectionInfo'>"
-    +         "<button class='BRpill info'>Info</button>"
-    +         "<button class='BRpill share'>Share</button>"
+    +         "<button class='BRpill info js-tooltip'>Info</button>"
+    +         "<button class='BRpill share js-tooltip'>Share</button>"
     +       "</span>"
-    +       "<span class='BRtoolbarSection BRtoolbarSectionMenu'>"
-              // TODO actual hamburger menu icon
-    +         "<button class='BRpill'>...</button>"
-    +       "</span>"
+    // +       "<span class='BRtoolbarSection BRtoolbarSectionMenu'>"
+              // TODO actual hamburger menu
+    // +         "<button class='BRpill hamburger'>"
+    // +           "<img src='"+this.imagesBaseURL+"icon_hamburger.svg' />"
+    // +           "<div class='BRhamburgerDrawer'><ul><li>hi</li></ul></div>"
+    // +         "</button>"
+    // +       "</span>"
     +     "</td>" // end BRtoolbarRight
     +   "</tr></tbody></table>"
     + "</div>"
@@ -3421,9 +3435,11 @@ BookReader.prototype.buildToolbarElement = function() {
         )
     } else if (this.bookTitle) {
         $titleSectionEl.append(this.bookTitle);
-    } else {
-
     }
+
+    var $hamburger = this.refs.$BRtoolbar.find('hamburger');
+
+
     return this.refs.$BRtoolbar;
 }
 
@@ -4396,7 +4412,7 @@ BookReader.prototype.initUIStrings = function() {
                    '.read': 'Read this book aloud',
                    '.share': 'Share this book',
                    '.info': 'About this book',
-                   '.full': 'Show fullscreen',
+                   '.full': 'Toggle fullscreen',
                    '.book_left': 'Flip left',
                    '.book_right': 'Flip right',
                    '.book_up': 'Page up',
@@ -4473,15 +4489,13 @@ BookReader.prototype.getToolBarHeight = function() {
  * @param {boolean} ignoreDisplay - bypass the display check
  * @return {Number}
  */
-BookReader.prototype.getNavHeight = function(ignoreDisplay) {
-  if (ignoreDisplay || this.refs.$BRnav.css('display') === 'block') {
+BookReader.prototype.getNavHeight = function() {
     var outerHeight = this.refs.$BRnav.outerHeight();
     var bottom = parseInt(this.refs.$BRnav.css('bottom'));
     if (!isNaN(outerHeight) && !isNaN(bottom)) {
       return outerHeight + bottom;
     }
-  }
-  return 0;
+    return 0;
 }
 
 //------------------------------------------------------------------------------

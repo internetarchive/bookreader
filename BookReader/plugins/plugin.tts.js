@@ -122,7 +122,7 @@ BookReader.prototype.ttsStart = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
     if (false == this.ttsPlaying) return;
-    $this.$('.BRicon.read').removeClass('unread');
+    this.$('.BRicon.read').removeClass('unread');
 
     if (soundManager.debugMode) console.log('stopping readaloud');
     soundManager.stopAll();

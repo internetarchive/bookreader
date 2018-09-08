@@ -173,7 +173,7 @@ BookReader.prototype.search = function(term, options) {
     url += paramStr;
 
     if (!options.disablePopup) {
-        this.showProgressPopup('<img class="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.png'+'"> Search results will appear below...');
+        this.showProgressPopup('<img class="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.svg'+'"> Search results will appear below...');
     }
     $.ajax({
         url:url,
