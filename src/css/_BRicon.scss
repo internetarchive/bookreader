@@ -1,13 +1,16 @@
-$BRiconSpriteWidth: 40px;
-$BRiconWidth: 34px;
-
 @mixin sprite-offet($index) {
-  background-position: (-1 * $index) * $BRiconSpriteWidth - (($BRiconSpriteWidth - $BRiconWidth) * .5) center;
+  width: $brIconWidthDesktop;
+  height: $brIconWidthDesktop;
+  background-position: (-1 * $index) * $brIconSpriteWidth - (($brIconSpriteWidth - $brIconWidthDesktop) * .5) center;
+
+  @media (max-width: $brBreakPointMobile) {
+    width: $brIconWidthMobile;
+    height: $brIconWidthMobile;
+    background-position: (-1 * $index) * $brIconSpriteWidth - (($brIconSpriteWidth - $brIconWidthMobile) * .5) center;
+  }
 }
 
 .BRicon {
-  width: $BRiconWidth;
-  height: $BRiconWidth;
   padding: 0;
   margin: 0;
   vertical-align: middle;
@@ -24,87 +27,25 @@ $BRiconWidth: 34px;
     background-color: rgba(50,50,50,.4);
   }
 }
-i.BRicon {
-  display: inline-block;
-}
-.BRicon.logo {
-  @include sprite-offet(0);
-}
-.BRicon.info {
-  @include sprite-offet(1);
-  // .no-touch &:hover, .touch &:active {
-  //   @include sprite-offet(2);
-  // }
-}
-.BRicon.share {
-  @include sprite-offet(3);
-  // .no-touch &:hover, .touch &:active {
-  //   @include sprite-offet(4);
-  // }
-}
-.BRicon.read {
-  @include sprite-offet(5);
-  // .no-touch &:hover, .touch &:active {
-  //   @include sprite-offet(6);
-  // }
-}
-.BRicon.unread {
-  @include sprite-offet(7);
-  // .no-touch &:hover, .touch &:active {
-  //   @include sprite-offet(8);
-  // }
-}
-.BRicon.full {
-  @include sprite-offet(9);
-}
-.BRicon.book_left {
-  @include sprite-offet(11);
-  // .no-touch &:hover, .touch &:active {
-  //   @include sprite-offet(12);
-  // }
-}
-.BRicon.book_right {
-  @include sprite-offet(13);
-  // .no-touch &:hover, .touch &:active {
-  //   @include sprite-offet(14);
-  // }
-}
-.BRicon.zoom_out {
-  @include sprite-offet(15);
-}
-.BRicon.zoom_in {
-  @include sprite-offet(17);
-}
-.BRicon.play {
-  @include sprite-offet(10);
-}
-.BRicon.pause {
-  @include sprite-offet(11);
-}
-.BRicon.twopg {
-  @include sprite-offet(23);
-}
-.BRicon.onepg {
-  @include sprite-offet(25);
-}
-.BRicon.thumb {
-  @include sprite-offet(27);
-}
-.BRicon.fit {
-  @include sprite-offet(9);
-}
-.BRicon.download {
-  @include sprite-offet(38);
-}
-.BRicon.return {
-  @include sprite-offet(26);
-}
-.BRicon.fb {
-  @include sprite-offet(40);
-}
-.BRicon.twitter {
-  @include sprite-offet(41);
-}
-.BRicon.email {
-  @include sprite-offet(42);
-}
+i.BRicon { display: inline-block; }
+.BRicon.logo { @include sprite-offet(0); }
+.BRicon.info { @include sprite-offet(1); }
+.BRicon.share { @include sprite-offet(3); }
+.BRicon.read { @include sprite-offet(5); }
+.BRicon.unread { @include sprite-offet(7); }
+.BRicon.full { @include sprite-offet(9); }
+.BRicon.book_left { @include sprite-offet(11); }
+.BRicon.book_right { @include sprite-offet(13); }
+.BRicon.zoom_out { @include sprite-offet(15); }
+.BRicon.zoom_in { @include sprite-offet(17); }
+.BRicon.play { @include sprite-offet(10); }
+.BRicon.pause { @include sprite-offet(11); }
+.BRicon.twopg { @include sprite-offet(23); }
+.BRicon.onepg { @include sprite-offet(25); }
+.BRicon.thumb { @include sprite-offet(27); }
+.BRicon.fit { @include sprite-offet(9); }
+.BRicon.download { @include sprite-offet(38); }
+.BRicon.return { @include sprite-offet(26); }
+.BRicon.fb { @include sprite-offet(40); }
+.BRicon.twitter { @include sprite-offet(41); }
+.BRicon.email { @include sprite-offet(42); }

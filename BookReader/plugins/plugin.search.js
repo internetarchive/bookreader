@@ -43,7 +43,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
                 +"      </span>"
                 +"      <div>"
                 +         "<form class='booksearch mobile'>"
-                +           "<input type='search' class='textSrch form-control' name='textSrch' val='' placeholder='Search inside'/>"
+                +           "<input type='search' class='textSrch' name='textSrch' val='' placeholder='Search inside'/>"
                 +           "<button type='submit' class='btnSrch' name='btnSrch'>"
                 +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
                 +           "</button>"

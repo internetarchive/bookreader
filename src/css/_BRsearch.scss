@@ -1,0 +1,239 @@
+#{$brScope} {
+
+  .BookReaderSearchHilite {
+    opacity: 0.20;
+    filter: alpha(opacity = 20);
+    background-color: #00f;
+    position:absolute;
+  }
+
+  .chapter {
+    position: absolute;
+    top: 0; /* Relative to nav line */
+    width: 18px;
+    margin-left: -9px; /* Center marker triangle */
+    height: 27px;
+    background: transparent url(images/marker_chap-off.png) no-repeat;
+    cursor: pointer;
+  }
+  .chapter.front {
+    background: transparent url(images/marker_chap-on.png) no-repeat;
+  }
+  .chapter .title {
+    display: none;
+  }
+  .title span {
+    color: #666;
+    padding: 0 5px;
+  }
+  .search {
+    position: absolute;
+    width: 18px;
+    margin-left: -9px; /* Center icon */
+    height: 27px;
+    bottom: 0;  /* Relative to nav line */
+    background-color: transparent;
+    background-image: url(images/marker_srch-off.svg);
+    background-repeat: no-repeat;
+    cursor: pointer;
+  }
+  .search.front {
+    background: transparent url(images/marker_srch-on.svg) no-repeat;
+  }
+  .search .query, .searchChap .query {
+    display: none;
+  }
+  .query {
+    position: relative;
+  }
+  .query strong {
+    color: #000;
+    font-weight: 700;
+  }
+  .query span {
+    font-size: $brFontSizeSmaller;
+    color: #666;
+    font-style: italic;
+  }
+  .query .queryChap {
+    position: absolute;
+    top: -40px;
+    left: -13px;
+    width: 256px;
+    overflow: hidden;
+    text-align: center;
+    background: #000;
+    padding: 5px 10px;
+    color: #fff;
+    font-weight: 700;
+    font-size: $brFontSizeSmaller;
+  }
+  .query .queryChap span {
+    color: #666;
+    padding: 0 5px;
+    font-style: normal;
+  }
+  .search .pointer {
+    position: absolute;
+    left: 121px;
+    bottom: -14px;
+    width: 18px;
+    height: 27px;
+    background: transparent url(images/marker_srch-on.png) no-repeat;
+  }
+  .searchChap {
+    position: absolute;
+    top: -13px;
+    width: 18px;
+    height: 27px;
+    cursor: pointer;
+    background-color: transparent;
+    background-image: url(images/marker_srchchap-off.png);
+    background-repeat: no-repeat;
+  }
+  .searchChap.front {
+    background-image: url(images/marker_srchchap-on.png);
+  }
+  .mobileSearchResultWrapper {
+    margin-top: 20px;
+  }
+  .mobileNumResults {
+    margin-bottom: 10px;
+  }
+  .mobileSearchResult {
+    display: block;
+    font-size: $brFontSizeBase;
+    margin-bottom: 15px;
+    text-decoration: none;
+    color: black;
+  }
+  .mobileSearchResult:active {
+    color: $brColorThemeblue;
+  }
+  .mobileSearchResult .pageDisplay {
+    text-decoration: underline;
+    color: $brColorThemeblue;
+    display: block;
+    margin-bottom:3px;
+  }
+  .mobileSearchResult .searchImgPreview {
+    width: 50px;
+    height: auto;
+    margin-right:5px;
+  }
+  .mobileSearchResult table td{
+    vertical-align: top;
+  }
+
+  form.booksearch {
+    position:relative;
+    box-sizing: border-box;
+  }
+
+  form.booksearch.desktop {
+    position: relative;
+    height: 30px;
+    border: 1px solid white;
+    border-radius: 20px;
+    display: inline-block;
+    line-height:0;
+    vertical-align: top;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  form.booksearch.desktop .textSrch {
+    position: relative;
+    width: 130px;
+    max-width: 160px;
+    height: 100%;
+    color: white;
+    -webkit-appearance: none;
+    margin: 0 0 0 0;
+    outline: none;
+    border: none;
+    padding: 3px 0px 3px 10px;
+    margin: 0;
+    box-sizing: border-box;
+    background: transparent;
+    display: block;
+    float: left;
+    font-size: $brFontSizeSmaller;
+    line-height: 1.2;
+  }
+  form.booksearch.desktop button {
+    width: auto;
+    height: 100%;
+    border: none;
+    text-align: center;
+    color: #fff;
+    overflow: hidden;
+    box-sizing:boder-box;
+    display: block;
+    background: transparent;
+    float: left;
+    cursor: pointer;
+  }
+
+  form.booksearch.mobile {
+    position:relative;
+    top:0;
+    display: flex;
+    flex-direction: row;
+  }
+  form.booksearch.mobile input[type=search] {
+    position:relative;
+    min-width: 14em;
+    float:left;
+    padding: 0 4px 0 8px;
+    font-size: $brFontSizeBase;
+    padding: 0 0 0 8px;
+    width: 150px;
+    min-width: inherit;
+    float: left;
+    font-size: $brFontSizeLarger;
+    flex: 1;
+  }
+  form.booksearch.mobile button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    color: #fff;
+    overflow: hidden;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    box-sizing:boder-box;
+    display: inline-block;
+  }
+  form.booksearch.mobile button img {
+    position:relative;
+    top: 2px;
+  }
+}
+
+/* Mid size breakpoint */
+@media (max-width: $brBreakPointMid) {
+  #{$brScope} {
+    form.booksearch input[type=search] {
+      padding: 0 0 0 8px;
+      width: 110px;
+      min-width: 110px;
+    }
+    form.booksearch button {
+      float: left;
+    }
+    form.booksearch.mobile button {
+      float: inherit;
+      display: inline-block;
+    }
+    form.booksearch.mobile button img {
+      position: relative;
+      top: 2px;
+      left: -2px;
+    }
+  }
+}

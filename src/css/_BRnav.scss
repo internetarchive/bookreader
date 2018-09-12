@@ -1,0 +1,214 @@
+/**
+ * BRnav is the bottom control bar (eg footer)
+ */
+
+@mixin brNavDark {
+  @include brDarkControls;
+
+  .BRpager {
+    background-color: $brColorDarkBorder;
+    .ui-slider-handle {
+      background-color: white;
+    }
+    .ui-slider-range {
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+  }
+
+  .BRpage {
+    .BRicon {
+      border-left: 1px solid $brColorDarkBorder;
+    }
+  }
+
+  .BRnavCntl {
+    background-color: $brColorDarkBorder;
+  }
+  .BRnavCntlBtm:hover {
+    background-color: $brColorThemeblue;
+  }
+}
+
+@mixin brNavLight {
+  @include brLightControls;
+
+  .BRpager {
+    background-color: #B7B7B7;
+    .ui-slider-handle {
+      background-color: $brColorThemeblue;
+    }
+    .ui-slider-range {
+      background-color: rgba($brColorThemeblue, .25);
+    }
+  }
+
+  .BRpage {
+    .BRicon {
+      border-left: 1px solid $brColorLightBorder;
+    }
+  }
+
+  .BRnavCntl {
+    background-color: $brColorLightBorder;
+  }
+
+  .BRnavCntlBtm:hover {
+    background-color: $brColorThemeblue;
+  }
+}
+
+.BRnav {
+  box-sizing: border-box;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: $brNavHeightDesktop;
+  padding-top: 0;
+  overflow: visible;
+  z-index: 100;
+
+  display: block;
+  display: flex;
+  flex-direction: row;
+
+  &.fixed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+  }
+
+  &.BRnavEmbed {
+    padding-top: 0;
+    height: auto; //$brNavHeightDesktop;
+    display: block;
+  }
+
+  .front {
+    z-index: 10001;
+  }
+
+  /* Theming */
+
+  // Default
+  @include brNavDark;
+
+  &.BRnavEmbed {
+    @include brNavLight;
+  }
+
+  /* Full mobile styles */
+  @media (max-width: $brBreakPointMobile) {
+    height: $brNavHeightMobile;
+    box-shadow: 0px -1px 3px 0px rgba(#666, .25);
+
+    .mm-page & {
+      @include brNavLight;
+    }
+    .BRnavCntlBtm {
+      bottom: $brNavHeightMobile;
+    }
+    .BRpager {
+      height: 10px;
+      top: ($brNavHeightMobile / 2) - 5px;
+    }
+  }
+}
+
+.BRnavpos {
+  position: relative;
+  margin-right: 10px;
+  margin-left: 10px;
+
+  /* non-flexbox fallback */
+  float: left;
+  flex: 1 auto;
+}
+.BRpager {
+  position: relative;
+  height: 8px;
+  top: ($brNavHeightDesktop / 2) - 4px;
+  box-sizing: content-box;
+  border-radius: 10px;
+
+  .ui-slider-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius:50%;
+    top: -5px;
+    margin-left: -9px; /* Center icon */
+    z-index: 103;
+  }
+  .ui-slider-range {
+    height: 100%;
+    border-radius: 10px;
+  }
+
+  /* handle active state for touch */
+  .touch & .ui-slider-handle.ui-state-active {
+    width: 24px;
+    height: 24px;
+    top: -4px;
+    margin-left: -11px;
+  }
+}
+
+/* BRnavlin is where chapters/search are appended */
+.BRnavline {
+  position: relative;
+  height: 1px;
+  width: auto;
+  top: -1px;
+  margin: 0 10px;
+  width: 100%;
+}
+.BRcurrentpage {
+  display: inline-block;
+  text-align: center;
+  padding: 0 0 0 0;
+  font-size: $brFontSizeSmaller;
+  margin-right: 10px;
+  margin-left: 5px;
+  line-height: 1;
+}
+.BRpage {
+  height: 100%;
+  overflow: hidden;
+  padding-left: 0;
+  text-align: right;
+  white-space: nowrap;
+
+  /* non-flexbox fallback */
+  float: left;
+  flex: none;
+}
+
+.BRnavCntl {
+  position: absolute;
+  right: 20px;
+  width: 40px;
+  height: 30px;
+  cursor: pointer;
+}
+.BRnavCntlBtm {
+  bottom: $brNavHeightDesktop;
+  -moz-border-radius-topright: 8px;
+  -webkit-border-top-right-radius: 8px;
+  -moz-border-radius-topleft: 8px;
+  -webkit-border-top-left-radius: 8px;
+}
+.BRup {
+  background-image: url("images/nav_control-up.png");
+  background-repeat: no-repeat;
+}
+.BRdn {
+  background-image: url("images/nav_control-dn.png");
+  background-repeat: no-repeat;
+}
+.BRnavCntlBtm.BRup, .BRnavCntlBtm.BRdn {
+  background-position: 8px 4px;
+}
+.BRnavCntlTop.BRup, .BRnavCntlTop.BRdn {
+  background-position: 8px 4px;
+}
