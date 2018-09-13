@@ -1,15 +1,30 @@
 /* COLORBOX POP-UP */
 
-#colorbox, #cboxOverlay, #cboxWrapper{position:absolute; top:0; left:0; z-index:9999;}
-#cboxOverlay{position:fixed; width:100%; height:100%;background:#000;opacity:0.75;filter:Alpha(Opacity=75);}
-#cboxMiddleLeft, #cboxBottomLeft{clear:left;}
-#cboxContent{position:relative;}
-#cboxLoadedContent{overflow:hidden!important;}
-#cboxLoadedContent iframe{display:block;border:0;}
-#cboxTitle{margin:0;display:none!important;}
-#cboxLoadingOverlay, #cboxLoadingGraphic{position:absolute; top:25px; left:25px; width:100%;}
-#cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow{cursor:pointer;}
-#cboxClose{display:none!important;}
+#colorbox, #cboxOverlay, #cboxWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: $brZindexBase + 2;
+}
+#cboxOverlay {
+  position: fixed;
+  width: 100%; height: 100%;
+  background: #000;
+  opacity:0.75; filter:Alpha(Opacity=75);
+}
+#cboxMiddleLeft, #cboxBottomLeft { clear:left; }
+#cboxContent { position:relative; }
+#cboxLoadedContent { overflow: hidden!important; }
+#cboxLoadedContent iframe { display: block; border: 0; }
+#cboxTitle { margin: 0; display: none !important; }
+#cboxLoadingOverlay, #cboxLoadingGraphic {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  width: 100%;
+}
+#cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow { cursor:pointer; }
+#cboxClose { display: none !important; }
 
 #colorbox{
   background: white;
@@ -31,6 +46,6 @@
         #cboxLoadingOverlay{background:transparent;}
 
 .shift{
-    position:absolute!important;
-    left:-10000px!important;
+    position: absolute !important;
+    left: -10000px !important;
 }

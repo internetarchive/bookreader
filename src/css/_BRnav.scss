@@ -66,26 +66,15 @@
   height: $brNavHeightDesktop;
   padding-top: 0;
   overflow: visible;
-  z-index: 100;
 
   display: block;
   display: flex;
   flex-direction: row;
 
-  &.fixed {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-  }
-
   &.BRnavEmbed {
     padding-top: 0;
-    height: auto; //$brNavHeightDesktop;
+    height: auto;
     display: block;
-  }
-
-  .front {
-    z-index: 10001;
   }
 
   /* Theming */
@@ -138,7 +127,6 @@
     border-radius:50%;
     top: -5px;
     margin-left: -9px; /* Center icon */
-    z-index: 103;
   }
   .ui-slider-range {
     height: 100%;

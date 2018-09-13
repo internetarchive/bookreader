@@ -482,7 +482,6 @@ BookReader.prototype.init = function() {
 
     this.refs.$br = $(this.el);
     this.refs.$br.empty().removeClass().addClass("ui-" + this.ui).addClass('BookReader');
-    this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
 
     this.refs.$brContainer = $("<div class='BRcontainer' dir='ltr'></div>");
     this.refs.$br.append(this.refs.$brContainer);
@@ -492,6 +491,9 @@ BookReader.prototype.init = function() {
     if (this.ui == "embed") {
         this.initEmbedNavbar();
     } else {
+        if (this.showToolbar) {
+            this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
+        }
         this.initNavbar();
     }
     this.resizeBRcontainer();
@@ -3403,7 +3405,7 @@ BookReader.prototype.buildToolbarElement = function() {
     +       "</span>"
     // +       "<span class='BRtoolbarSection BRtoolbarSectionMenu'>"
               // TODO actual hamburger menu
-    // +         "<button class='BRpill hamburger'>"
+    // +         "<button class='BRpill BRtoolbarHamburger'>"
     // +           "<img src='"+this.imagesBaseURL+"icon_hamburger.svg' />"
     // +           "<div class='BRhamburgerDrawer'><ul><li>hi</li></ul></div>"
     // +         "</button>"
@@ -3426,7 +3428,7 @@ BookReader.prototype.buildToolbarElement = function() {
         $titleSectionEl.append(this.bookTitle);
     }
 
-    var $hamburger = this.refs.$BRtoolbar.find('hamburger');
+    // var $hamburger = this.refs.$BRtoolbar.find('BRtoolbarHamburger');
 
 
     return this.refs.$BRtoolbar;
@@ -3435,9 +3437,6 @@ BookReader.prototype.buildToolbarElement = function() {
 
 
 BookReader.prototype.initToolbar = function(mode, ui) {
-    if (ui == 'embed' || !this.showToolbar) {
-        return; // No toolbar at top in embed mode
-    }
     var self = this;
 
     this.refs.$br.append(this.buildToolbarElement());

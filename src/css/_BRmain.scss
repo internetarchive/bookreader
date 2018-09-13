@@ -116,13 +116,12 @@
 }
 
 .BRcontainer {
-  top:0;
-  bottom:0;
-  width:100%;
-  z-index: 1;
-  overflow-x:auto;
-  overflow-y:scroll;
-  position:absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: scroll;
+  position: absolute;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -130,10 +129,7 @@
   position: absolute;
   background-color: white;
   font-size: 1.5em;
-  z-index: 3;
   padding: 20px;
-  /* border-radius: 8px; */
-  /* box-shadow: 1px 0 3px #333; */
   border: 2px solid #999;
   min-width: 300px;
 }
@@ -194,11 +190,19 @@
     top: 0;
     left: 0;
     margin: 0;
-    z-index: 9998;
+    z-index: $brZindexFullscreen;
+
+    .BRmobileHamburgerWrapper {
+      z-index: $brZindexFullscreen + 2;
+    }
   }
 }
 body.BRfullscreenActive {
   overflow: hidden;
+
+  .mm-menu {
+    z-index: $brZindexFullscreen - 1;
+  }
 }
 
 /* Tooltip styles  */

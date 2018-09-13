@@ -39,6 +39,8 @@ $brIconSpriteWidth: 40px;
 $brIconWidthDesktop: 34px;
 $brIconWidthMobile: 40px; //34px;
 
+$brZindexBase: 1;
+$brZindexFullscreen: 2000;
 
 @mixin brDarkControls {
     background-color: $brColorDarkGreyBg;

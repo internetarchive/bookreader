@@ -8,17 +8,9 @@
   left: 0;
   padding: 10px 10px 4px 10px;
   width: 100%;
-  z-index: 100;
   background-color: transparent;
   box-sizing: border-box;
   width: 100%;
-
-  &.fixed {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index:100000;
-  }
 }
 .BRtoolbar, .BRtoolbar table {
   color: white;
@@ -54,7 +46,7 @@
   vertical-align: middle;
   font-size: $brFontSizeSmaller;
   cursor: pointer;
-  &.hamburger {
+  &.BRtoolbarHamburger {
       border: none;
       border-radius: none;
   }
