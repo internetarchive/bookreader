@@ -4,8 +4,9 @@
 // Copyright(c)2008-2009 Internet Archive. Software license AGPL version 3.
 
 // Create the BookReader object
-function instantiateBookReader(selector) {
+function instantiateBookReader(selector, extraOptions) {
   selector = selector || '#BookReader';
+  extraOptions = extraOptions || {};
   var options = {
     data: [
       [
@@ -48,6 +49,7 @@ function instantiateBookReader(selector) {
 
     el: selector,
   };
+  Object.assign(options, extraOptions);
   var br = new BookReader(options);
   br.init();
 }

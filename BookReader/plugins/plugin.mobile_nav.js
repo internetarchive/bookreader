@@ -11,6 +11,7 @@
 jQuery.extend(true, BookReader.defaultOptions, {
     enableMobileNav: true,
     mobileNavTitle: 'Internet Archive',
+    mobileNavFullscreenOnly: false,
 });
 
 BookReader.prototype.setup = (function(super_) {
@@ -19,6 +20,7 @@ BookReader.prototype.setup = (function(super_) {
 
         this.enableMobileNav = options.enableMobileNav;
         this.mobileNavTitle = options.mobileNavTitle;
+        this.mobileNavFullscreenOnly = options.mobileNavFullscreenOnly;
 
         this.mmenu = null;
     };
@@ -80,6 +82,12 @@ BookReader.prototype.initToolbar = (function (super_) {
                 self.switchMode(self.constModeThumb);
             });
 
+            if (this.mobileNavFullscreenOnly) {
+                $(document.body).addClass('BRbodyMobileNavEnabledFullscreen');
+            } else {
+                $(document.body).addClass('BRbodyMobileNavEnabled');
+            }
+
             this.mmenu = $mmenuEl;
         }
 
@@ -88,7 +96,7 @@ BookReader.prototype.initToolbar = (function (super_) {
 
 
         if (this.enableMobileNav) {
-            // Need to bind more, consoleafter toolbar is initialized
+            // Need to bind more, console after toolbar is initialized
             this.$('.BRmobileHamburger').click(function() {
                 if ($mmenuEl.data('mmenu').getInstance().vars.opened) {
                     $mmenuEl.data('mmenu').close();

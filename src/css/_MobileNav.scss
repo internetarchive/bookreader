@@ -106,23 +106,31 @@ html.mm-background .BookReader {
   .open-to-this-page { display: block; margin: 10px 0; }
 }
 
+.BRmobileHamburgerWrapper { display: none; }
+.BRmobileMenu { display: none; }
+.BRtoolbar.responsive {display: none;}
 
 /* Mobile Only */
 @media (max-width: $brBreakPointMobile) {
-  .BRtoolbar.responsive {
-    display: block;
-    height: 40px;
-    box-sizing: border-box;
-    width: 100%;
+  .BRbodyMobileNavEnabled,
+  .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive {
+    .BRtoolbar.responsive {
+      display: block;
+      height: 40px;
+      box-sizing: border-box;
+      width: 100%;
 
-    @include brLightControls;
+      @include brLightControls;
 
-    .BRtoolbarbuttons { display: none; }
+      .BRtoolbarbuttons { display: none; }
+      .BRmobileHamburgerWrapper { display: block; }
+      .BRmobileMenu { display: block; }
+    }
   }
+
 }
 
 /* Desktop Only */
 @media (min-width: ($brBreakPointMobile + 1)) {
-  .BRmobileHamburgerWrapper { display: none; }
-  .BRmobileMenu { display: none; }
+  .BRtoolbar.responsive { display: block; }
 }

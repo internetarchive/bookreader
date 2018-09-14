@@ -1242,29 +1242,29 @@ i.BRicon {
     height: 40px;
     box-shadow: 0px -1px 3px 0px rgba(102, 102, 102, 0.25);
   }
-  .mm-page .BRnav {
+  .BRbodyMobileNavEnabled .BRnav, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav {
     background-color: white;
     color: black;
   }
-  .mm-page .BRnav a {
+  .BRbodyMobileNavEnabled .BRnav a, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav a {
     color: black;
   }
-  .mm-page .BRnav .BRpager {
+  .BRbodyMobileNavEnabled .BRnav .BRpager, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager {
     background-color: #B7B7B7;
   }
-  .mm-page .BRnav .BRpager .ui-slider-handle {
+  .BRbodyMobileNavEnabled .BRnav .BRpager .ui-slider-handle, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager .ui-slider-handle {
     background-color: #0074D1;
   }
-  .mm-page .BRnav .BRpager .ui-slider-range {
+  .BRbodyMobileNavEnabled .BRnav .BRpager .ui-slider-range, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager .ui-slider-range {
     background-color: rgba(0, 116, 209, 0.25);
   }
-  .mm-page .BRnav .BRpage .BRicon {
+  .BRbodyMobileNavEnabled .BRnav .BRpage .BRicon, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpage .BRicon {
     border-left: 1px solid #979797;
   }
-  .mm-page .BRnav .BRnavCntl {
+  .BRbodyMobileNavEnabled .BRnav .BRnavCntl, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRnavCntl {
     background-color: #979797;
   }
-  .mm-page .BRnav .BRnavCntlBtm:hover {
+  .BRbodyMobileNavEnabled .BRnav .BRnavCntlBtm:hover, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRnavCntlBtm:hover {
     background-color: #0074D1;
   }
   .BRnav .BRnavCntlBtm {
@@ -1844,9 +1844,22 @@ html.mm-background .BookReader {
   margin: 10px 0;
 }
 
+.BRmobileHamburgerWrapper {
+  display: none;
+}
+
+.BRmobileMenu {
+  display: none;
+}
+
+.BRtoolbar.responsive {
+  display: none;
+}
+
 /* Mobile Only */
 @media (max-width: 800px) {
-  .BRtoolbar.responsive {
+  .BRbodyMobileNavEnabled .BRtoolbar.responsive,
+.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive {
     display: block;
     height: 40px;
     box-sizing: border-box;
@@ -1854,20 +1867,26 @@ html.mm-background .BookReader {
     background-color: white;
     color: black;
   }
-  .BRtoolbar.responsive a {
+  .BRbodyMobileNavEnabled .BRtoolbar.responsive a,
+.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive a {
     color: black;
   }
-  .BRtoolbar.responsive .BRtoolbarbuttons {
+  .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRtoolbarbuttons,
+.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRtoolbarbuttons {
     display: none;
+  }
+  .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRmobileHamburgerWrapper,
+.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRmobileHamburgerWrapper {
+    display: block;
+  }
+  .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRmobileMenu,
+.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRmobileMenu {
+    display: block;
   }
 }
 /* Desktop Only */
 @media (min-width: 801px) {
-  .BRmobileHamburgerWrapper {
-    display: none;
-  }
-
-  .BRmobileMenu {
-    display: none;
+  .BRtoolbar.responsive {
+    display: block;
   }
 }
