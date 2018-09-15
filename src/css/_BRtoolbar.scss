@@ -11,8 +11,6 @@
   background-color: transparent;
   box-sizing: border-box;
   width: 100%;
-}
-.BRtoolbar, .BRtoolbar table {
   color: white;
   font-size: $brFontSizeBase;
 }
@@ -34,6 +32,8 @@
   border-spacing: 0;
   width:100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
 }
 .BRtoolbarbuttons .BRpill {
   border: 1px solid white;
@@ -60,14 +60,14 @@
   display: none;
 }
 .BRtoolbarLeft {
- text-align: left;
-}
-.BRtoolbarSectionTitle {
   text-align: left;
+  flex: 1 auto;
   overflow-y: hidden;
 }
+// .BRtoolbarSectionTitle {}
 .BRtoolbarRight {
   text-align: right;
+  flex: none;
 }
 
 @media (max-width: $brBreakPointMobile) {

@@ -4,11 +4,12 @@
   position: absolute;
   top: 0;
   left: 0;
-  z-index: $brZindexBase + 2;
+  z-index: $brZindexPopup;
 }
 #cboxOverlay {
   position: fixed;
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   background: #000;
   opacity:0.75; filter:Alpha(Opacity=75);
 }

@@ -33,16 +33,28 @@ i.BRicon { display: inline-block; }
 .BRicon.share { @include sprite-offet(3); }
 .BRicon.read { @include sprite-offet(5); }
 .BRicon.unread { @include sprite-offet(7); }
-.BRicon.full { @include sprite-offet(9); }
+.BRicon.full {
+  @include sprite-offet(9);
+  .BRfullscreenActive & { @include sprite-offet(35); } // 29
+}
 .BRicon.book_left { @include sprite-offet(11); }
 .BRicon.book_right { @include sprite-offet(13); }
 .BRicon.zoom_out { @include sprite-offet(15); }
 .BRicon.zoom_in { @include sprite-offet(17); }
 .BRicon.play { @include sprite-offet(10); }
 .BRicon.pause { @include sprite-offet(11); }
-.BRicon.twopg { @include sprite-offet(23); }
-.BRicon.onepg { @include sprite-offet(25); }
-.BRicon.thumb { @include sprite-offet(27); }
+.BRicon.onepg {
+  @include sprite-offet(25);
+  // .BRmode1up & { @include sprite-offet(26); }
+}
+.BRicon.twopg {
+  @include sprite-offet(23);
+  // .BRmode2up & { @include sprite-offet(24); }
+}
+.BRicon.thumb {
+  @include sprite-offet(27);
+  // .BRmodeThumb & { @include sprite-offet(28); }
+}
 .BRicon.fit { @include sprite-offet(9); }
 .BRicon.download { @include sprite-offet(38); }
 .BRicon.return { @include sprite-offet(26); }

@@ -11,6 +11,7 @@
   background-color: $brColorPlaceholderBg;
   overflow: hidden;
   box-shadow: 1px 1px 2px #333;
+  cursor: pointer;
 }
 .BRpagedivthumb a {
   border: 0;
@@ -29,6 +30,7 @@
 }
 .BRpageimage {
   background-color: $brColorPlaceholderBg;
+  cursor: pointer;
 }
 .BRPreview .BRpageimage {
   background-color: #eee;
@@ -51,6 +53,7 @@
 
   background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
   position: absolute;
+  cursor: pointer;
 }
 
 .BRleafEdgeL {
@@ -60,6 +63,7 @@
   /* background: transparent url(images/left_edges.png) repeat scroll 0% 0%; */
   background: transparent url(images/back_pages.png) repeat scroll 0% 0%; /* XXXmang replace file */
   position: absolute;
+  cursor: pointer;
 }
 
 .BRleafEdgeTmp {

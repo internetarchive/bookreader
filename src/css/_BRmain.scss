@@ -8,7 +8,7 @@
 
   /* Some helper functional css utilities  */
   .tl { text-align: left; }
-  .tc { text-align: center; }
+  .tc, .BRtc { text-align: center; }
   .tr { text-align: right; }
   .ph10 { padding-left: 10px; padding-right: 10px; }
   .mv20 { margin-top: 20px; margin-bottom: 20px; }
@@ -132,6 +132,7 @@
   padding: 20px;
   border: 2px solid #999;
   min-width: 300px;
+  z-index: $brZindexPopup;
 }
 .BRprogressbar {
   background-image: url("images/progressbar.gif");
@@ -242,11 +243,20 @@ body.BRfullscreenActive {
   .BRimageW {text-align: center; margin-bottom: 10px;}
   .BRimageW img { height: 200px; width: auto;}
   .BRinfoValue.larger { font-size: $brFontSizeLarger; }
-  .BRinfoMoreInfoWrapper a { font-size: inherit; color: white; text-decoration: none; }
+  .BRinfoMoreInfoWrapper a {
+    font-size: inherit;
+    color: white;
+    text-decoration: none;
+  }
   .BRinfoOtherFormatsFormat { margin-bottom: 6px; }
   .BRinfoFooter { margin-bottom: 10px; text-align: left; }
   .BRinfoFooter a { display: block;}
-  .BRfloatFoot.BRinfoFooter { margin: initial; padding: initial; border: initial; font-size: inherit; }
+  .BRfloatFoot.BRinfoFooter {
+    margin: initial;
+    padding: initial;
+    border: initial;
+    font-size: inherit;
+  }
 
   .BRnavline .chapter { display: none; } /* hide chapters in mobile */
   .BRnavline .search { display: none; } /* hide search in mobile */

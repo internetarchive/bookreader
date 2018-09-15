@@ -130,9 +130,9 @@
 }
 
 .BRfloatHead,
-.BRfloatBody,
-.BRfloatFoot {
-  width: 100%; box-sizing: border-box;
+.BRfloatBody {
+  width: 100%;
+  box-sizing: border-box;
   text-align: center;
 }
 
@@ -176,9 +176,11 @@
       font-weight: 700;
       text-align: center;
   }
-  .BRfloatFoot, { padding: 10px 10px 0 10px; }
+  .BRfloatFoot {
+    padding: 10px 10px 0 10px;
+    border-top: 1px solid #ccc;
+  }
   .BRfloatFoot .action { margin-bottom: 10px; }
-  .BRfloatFoot { border-top: 1px solid #ccc; }
 }
 
 @media (min-width: ($brBreakPointMobile + 1)) {

@@ -32,7 +32,7 @@ BookReader.prototype.setup = (function (super_) {
 
         // Bind to events
         this.bind('PostInit', function(e, br) {
-            jIcons = br.refs.$br.find('.BRicon').filter('.read').click(function(e) {
+            jIcons = br.$('.BRicon.read').click(function(e) {
                 br.ttsToggle();
                 return false;
             });
@@ -61,7 +61,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
                 +"      </span>"
                 +"      <div>"
                 +"        <span class='larger'>Press to toggle read aloud</span> <br/>"
-                +"        <button class='BRicon read modal'></button>"
+                +"        <button class='BRicon read'></button>"
                 +"      </div>"
                 +"    </li>"
             ));

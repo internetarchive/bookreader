@@ -3,8 +3,10 @@
   .BookReaderSearchHilite {
     opacity: 0.20;
     filter: alpha(opacity = 20);
-    background-color: #00f;
+    background-color: #0000ff;
     position:absolute;
+    /* z-index is important */
+    z-index: $brZindexBase + 3;;
   }
 
   .chapter {
@@ -28,14 +30,15 @@
   }
   .search {
     position: absolute;
-    width: 18px;
-    margin-left: -9px; /* Center icon */
-    height: 27px;
+    width: 20px;
+    margin-left: -20px; /* Center icon */
+    height: 25px;
     bottom: 0;  /* Relative to nav line */
     background-color: transparent;
     background-image: url(images/marker_srch-off.svg);
     background-repeat: no-repeat;
     cursor: pointer;
+    z-index: $brZindexBase + 2;
   }
   .search.front {
     background: transparent url(images/marker_srch-on.svg) no-repeat;
@@ -46,11 +49,13 @@
   .query {
     position: relative;
   }
-  .query strong {
+  .query strong,
+  .query b {
     color: #000;
     font-weight: 700;
   }
-  .query span {
+  .query span,
+  .query div {
     font-size: $brFontSizeSmaller;
     color: #666;
     font-style: italic;
@@ -94,43 +99,44 @@
   .searchChap.front {
     background-image: url(images/marker_srchchap-on.png);
   }
-  .mobileSearchResultWrapper {
+  .BRmobileSearchResultWrapper {
     margin-top: 20px;
   }
-  .mobileNumResults {
+  .BRmobileNumResults {
     margin-bottom: 10px;
   }
-  .mobileSearchResult {
+  .BRmobileSearchResult {
     display: block;
     font-size: $brFontSizeBase;
     margin-bottom: 15px;
     text-decoration: none;
     color: black;
-  }
-  .mobileSearchResult:active {
-    color: $brColorThemeblue;
-  }
-  .mobileSearchResult .pageDisplay {
-    text-decoration: underline;
-    color: $brColorThemeblue;
-    display: block;
-    margin-bottom:3px;
-  }
-  .mobileSearchResult .searchImgPreview {
-    width: 50px;
-    height: auto;
-    margin-right:5px;
-  }
-  .mobileSearchResult table td{
-    vertical-align: top;
+
+    &:active {
+      color: $brColorThemeblue;
+    }
+    .pageDisplay {
+      text-decoration: underline;
+      color: $brColorThemeblue;
+      display: block;
+      margin-bottom:3px;
+    }
+    .searchImgPreview {
+      width: 50px;
+      height: auto;
+      margin-right:5px;
+    }
+    table td {
+      vertical-align: top;
+    }
   }
 
-  form.booksearch {
+  .BRbooksearch {
     position:relative;
     box-sizing: border-box;
   }
 
-  form.booksearch.desktop {
+  .BRbooksearch.desktop {
     position: relative;
     height: 30px;
     border: 1px solid white;
@@ -140,97 +146,93 @@
     vertical-align: top;
     margin-top: 0;
     margin-bottom: 0;
-  }
-  form.booksearch.desktop .textSrch {
-    position: relative;
-    width: 130px;
-    max-width: 160px;
-    height: 100%;
-    color: white;
-    -webkit-appearance: none;
-    margin: 0 0 0 0;
-    outline: none;
-    border: none;
-    padding: 3px 0px 3px 10px;
-    margin: 0;
-    box-sizing: border-box;
-    background: transparent;
-    display: block;
-    float: left;
-    font-size: $brFontSizeSmaller;
-    line-height: 1.2;
-  }
-  form.booksearch.desktop button {
-    width: auto;
-    height: 100%;
-    border: none;
-    text-align: center;
-    color: #fff;
-    overflow: hidden;
-    box-sizing:boder-box;
-    display: block;
-    background: transparent;
-    float: left;
-    cursor: pointer;
+
+    .BRsearchInput {
+      -webkit-appearance: none;
+      position: relative;
+      width: 130px;
+      max-width: 160px;
+      height: 100%;
+      color: white;
+      outline: none;
+      border: none;
+      padding: 3px 0px 3px 10px;
+      margin: 0;
+      box-sizing: border-box;
+      background: transparent;
+      display: block;
+      float: left;
+      font-size: $brFontSizeSmaller;
+      line-height: 1.2;
+    }
+    .BRsearchSubmit {
+      width: auto;
+      height: 100%;
+      border: none;
+      text-align: center;
+      color: #fff;
+      overflow: hidden;
+      box-sizing:boder-box;
+      display: block;
+      background: transparent;
+      float: left;
+      cursor: pointer;
+    }
   }
 
-  form.booksearch.mobile {
-    position:relative;
-    top:0;
+  .BRbooksearch.mobile {
+    position: relative;
+    top: 0;
     display: flex;
     flex-direction: row;
-  }
-  form.booksearch.mobile input[type=search] {
-    position:relative;
-    min-width: 14em;
-    float:left;
-    padding: 0 4px 0 8px;
-    font-size: $brFontSizeBase;
-    padding: 0 0 0 8px;
-    width: 150px;
-    min-width: inherit;
-    float: left;
-    font-size: $brFontSizeLarger;
-    flex: 1;
-  }
-  form.booksearch.mobile button {
-    width: 30px;
-    height: 30px;
-    border: none;
-    background-color: transparent;
-    text-align: center;
-    color: #fff;
-    overflow: hidden;
-    -webkit-border-radius: 20px;
-    -moz-border-radius: 20px;
-    border-radius: 20px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    box-sizing:boder-box;
-    display: inline-block;
-  }
-  form.booksearch.mobile button img {
-    position:relative;
-    top: 2px;
+
+    .BRsearchInput {
+      -webkit-appearance: none;
+      position: relative;
+      min-width: 100px;
+      float: left;
+      font-size: $brFontSizeBase;
+      width: 150px;
+      height: 30px;
+      border: 1px solid $brColorLightBorder;
+      flex: 1;
+    }
+    .BRsearchSubmit {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background-color: $brColorThemeblue;
+      text-align: center;
+      color: white;
+      overflow: hidden;
+      box-sizing: boder-box;
+      display: inline-block;
+
+      img {
+        position:relative;
+        top: 2px;
+        left: 2px;
+      }
+    }
   }
 }
 
 /* Mid size breakpoint */
 @media (max-width: $brBreakPointMid) {
   #{$brScope} {
-    form.booksearch input[type=search] {
+    .BRbooksearch .BRsearchInput {
       padding: 0 0 0 8px;
       width: 110px;
       min-width: 110px;
     }
-    form.booksearch button {
+    .BRbooksearch .BRsearchSubmit {
       float: left;
     }
-    form.booksearch.mobile button {
+    .BRbooksearch.mobile .BRsearchSubmit {
       float: inherit;
       display: inline-block;
     }
-    form.booksearch.mobile button img {
+    .BRbooksearch.mobile .BRsearchSubmit img {
       position: relative;
       top: 2px;
       left: -2px;

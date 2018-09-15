@@ -4,7 +4,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 3;
+  z-index: 3000;
 }
 
 #cboxOverlay {
@@ -94,7 +94,7 @@
 .BookReader .tl, .BRmobileMenu .tl, .BRfloat .tl {
   text-align: left;
 }
-.BookReader .tc, .BRmobileMenu .tc, .BRfloat .tc {
+.BookReader .tc, .BookReader .BRtc, .BRmobileMenu .tc, .BRmobileMenu .BRtc, .BRfloat .tc, .BRfloat .BRtc {
   text-align: center;
 }
 .BookReader .tr, .BRmobileMenu .tr, .BRfloat .tr {
@@ -262,6 +262,7 @@
   padding: 20px;
   border: 2px solid #999;
   min-width: 300px;
+  z-index: 3000;
 }
 
 .BRprogressbar {
@@ -548,6 +549,7 @@ body.BRfullscreenActive .mm-menu {
   background-color: #FEFDEB;
   overflow: hidden;
   box-shadow: 1px 1px 2px #333;
+  cursor: pointer;
 }
 
 .BRpagedivthumb a {
@@ -571,6 +573,7 @@ body.BRfullscreenActive .mm-menu {
 
 .BRpageimage {
   background-color: #FEFDEB;
+  cursor: pointer;
 }
 
 .BRPreview .BRpageimage {
@@ -594,6 +597,7 @@ body.BRfullscreenActive .mm-menu {
   border-width: 1px 1px 1px 0px;
   background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
   position: absolute;
+  cursor: pointer;
 }
 
 .BRleafEdgeL {
@@ -604,6 +608,7 @@ body.BRfullscreenActive .mm-menu {
   background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
   /* XXXmang replace file */
   position: absolute;
+  cursor: pointer;
 }
 
 .BRleafEdgeTmp {
@@ -732,6 +737,18 @@ i.BRicon {
     background-position: -360px center;
   }
 }
+.BRfullscreenActive .BRicon.full {
+  width: 34px;
+  height: 34px;
+  background-position: -1403px center;
+}
+@media (max-width: 800px) {
+  .BRfullscreenActive .BRicon.full {
+    width: 40px;
+    height: 40px;
+    background-position: -1400px center;
+  }
+}
 
 .BRicon.book_left {
   width: 34px;
@@ -811,19 +828,6 @@ i.BRicon {
   }
 }
 
-.BRicon.twopg {
-  width: 34px;
-  height: 34px;
-  background-position: -923px center;
-}
-@media (max-width: 800px) {
-  .BRicon.twopg {
-    width: 40px;
-    height: 40px;
-    background-position: -920px center;
-  }
-}
-
 .BRicon.onepg {
   width: 34px;
   height: 34px;
@@ -834,6 +838,19 @@ i.BRicon {
     width: 40px;
     height: 40px;
     background-position: -1000px center;
+  }
+}
+
+.BRicon.twopg {
+  width: 34px;
+  height: 34px;
+  background-position: -923px center;
+}
+@media (max-width: 800px) {
+  .BRicon.twopg {
+    width: 40px;
+    height: 40px;
+    background-position: -920px center;
   }
 }
 
@@ -1079,8 +1096,7 @@ i.BRicon {
 }
 
 .BRfloatHead,
-.BRfloatBody,
-.BRfloatFoot {
+.BRfloatBody {
   width: 100%;
   box-sizing: border-box;
   text-align: center;
@@ -1133,14 +1149,11 @@ i.BRicon {
 
   .BRfloatFoot {
     padding: 10px 10px 0 10px;
+    border-top: 1px solid #ccc;
   }
 
   .BRfloatFoot .action {
     margin-bottom: 10px;
-  }
-
-  .BRfloatFoot {
-    border-top: 1px solid #ccc;
   }
 }
 @media (min-width: 801px) {
@@ -1291,6 +1304,7 @@ i.BRicon {
   top: 13px;
   box-sizing: content-box;
   border-radius: 10px;
+  cursor: pointer;
   /* handle active state for touch */
 }
 .BRpager .ui-slider-handle {
@@ -1390,9 +1404,6 @@ i.BRicon {
   background-color: transparent;
   box-sizing: border-box;
   width: 100%;
-}
-
-.BRtoolbar, .BRtoolbar table {
   color: white;
   font-size: 14px;
 }
@@ -1418,6 +1429,8 @@ i.BRicon {
   border-spacing: 0;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
 }
 
 .BRtoolbarbuttons .BRpill {
@@ -1448,15 +1461,13 @@ i.BRicon {
 
 .BRtoolbarLeft {
   text-align: left;
-}
-
-.BRtoolbarSectionTitle {
-  text-align: left;
+  flex: 1 auto;
   overflow-y: hidden;
 }
 
 .BRtoolbarRight {
   text-align: right;
+  flex: none;
 }
 
 @media (max-width: 800px) {
@@ -1469,8 +1480,10 @@ i.BRicon {
 .BookReader .BookReaderSearchHilite, .BRmobileMenu .BookReaderSearchHilite, .BRfloat .BookReaderSearchHilite {
   opacity: 0.2;
   filter: alpha(opacity=20);
-  background-color: #00f;
+  background-color: #0000ff;
   position: absolute;
+  /* z-index is important */
+  z-index: 4;
 }
 .BookReader .chapter, .BRmobileMenu .chapter, .BRfloat .chapter {
   position: absolute;
@@ -1495,16 +1508,17 @@ i.BRicon {
 }
 .BookReader .search, .BRmobileMenu .search, .BRfloat .search {
   position: absolute;
-  width: 18px;
-  margin-left: -9px;
+  width: 20px;
+  margin-left: -20px;
   /* Center icon */
-  height: 27px;
+  height: 25px;
   bottom: 0;
   /* Relative to nav line */
   background-color: transparent;
   background-image: url(images/marker_srch-off.svg);
   background-repeat: no-repeat;
   cursor: pointer;
+  z-index: 3;
 }
 .BookReader .search.front, .BRmobileMenu .search.front, .BRfloat .search.front {
   background: transparent url(images/marker_srch-on.svg) no-repeat;
@@ -1515,11 +1529,17 @@ i.BRicon {
 .BookReader .query, .BRmobileMenu .query, .BRfloat .query {
   position: relative;
 }
-.BookReader .query strong, .BRmobileMenu .query strong, .BRfloat .query strong {
+.BookReader .query strong,
+.BookReader .query b, .BRmobileMenu .query strong,
+.BRmobileMenu .query b, .BRfloat .query strong,
+.BRfloat .query b {
   color: #000;
   font-weight: 700;
 }
-.BookReader .query span, .BRmobileMenu .query span, .BRfloat .query span {
+.BookReader .query span,
+.BookReader .query div, .BRmobileMenu .query span,
+.BRmobileMenu .query div, .BRfloat .query span,
+.BRfloat .query div {
   font-size: 12px;
   color: #666;
   font-style: italic;
@@ -1563,41 +1583,41 @@ i.BRicon {
 .BookReader .searchChap.front, .BRmobileMenu .searchChap.front, .BRfloat .searchChap.front {
   background-image: url(images/marker_srchchap-on.png);
 }
-.BookReader .mobileSearchResultWrapper, .BRmobileMenu .mobileSearchResultWrapper, .BRfloat .mobileSearchResultWrapper {
+.BookReader .BRmobileSearchResultWrapper, .BRmobileMenu .BRmobileSearchResultWrapper, .BRfloat .BRmobileSearchResultWrapper {
   margin-top: 20px;
 }
-.BookReader .mobileNumResults, .BRmobileMenu .mobileNumResults, .BRfloat .mobileNumResults {
+.BookReader .BRmobileNumResults, .BRmobileMenu .BRmobileNumResults, .BRfloat .BRmobileNumResults {
   margin-bottom: 10px;
 }
-.BookReader .mobileSearchResult, .BRmobileMenu .mobileSearchResult, .BRfloat .mobileSearchResult {
+.BookReader .BRmobileSearchResult, .BRmobileMenu .BRmobileSearchResult, .BRfloat .BRmobileSearchResult {
   display: block;
   font-size: 14px;
   margin-bottom: 15px;
   text-decoration: none;
   color: black;
 }
-.BookReader .mobileSearchResult:active, .BRmobileMenu .mobileSearchResult:active, .BRfloat .mobileSearchResult:active {
+.BookReader .BRmobileSearchResult:active, .BRmobileMenu .BRmobileSearchResult:active, .BRfloat .BRmobileSearchResult:active {
   color: #0074D1;
 }
-.BookReader .mobileSearchResult .pageDisplay, .BRmobileMenu .mobileSearchResult .pageDisplay, .BRfloat .mobileSearchResult .pageDisplay {
+.BookReader .BRmobileSearchResult .pageDisplay, .BRmobileMenu .BRmobileSearchResult .pageDisplay, .BRfloat .BRmobileSearchResult .pageDisplay {
   text-decoration: underline;
   color: #0074D1;
   display: block;
   margin-bottom: 3px;
 }
-.BookReader .mobileSearchResult .searchImgPreview, .BRmobileMenu .mobileSearchResult .searchImgPreview, .BRfloat .mobileSearchResult .searchImgPreview {
+.BookReader .BRmobileSearchResult .searchImgPreview, .BRmobileMenu .BRmobileSearchResult .searchImgPreview, .BRfloat .BRmobileSearchResult .searchImgPreview {
   width: 50px;
   height: auto;
   margin-right: 5px;
 }
-.BookReader .mobileSearchResult table td, .BRmobileMenu .mobileSearchResult table td, .BRfloat .mobileSearchResult table td {
+.BookReader .BRmobileSearchResult table td, .BRmobileMenu .BRmobileSearchResult table td, .BRfloat .BRmobileSearchResult table td {
   vertical-align: top;
 }
-.BookReader form.booksearch, .BRmobileMenu form.booksearch, .BRfloat form.booksearch {
+.BookReader .BRbooksearch, .BRmobileMenu .BRbooksearch, .BRfloat .BRbooksearch {
   position: relative;
   box-sizing: border-box;
 }
-.BookReader form.booksearch.desktop, .BRmobileMenu form.booksearch.desktop, .BRfloat form.booksearch.desktop {
+.BookReader .BRbooksearch.desktop, .BRmobileMenu .BRbooksearch.desktop, .BRfloat .BRbooksearch.desktop {
   position: relative;
   height: 30px;
   border: 1px solid white;
@@ -1608,14 +1628,13 @@ i.BRicon {
   margin-top: 0;
   margin-bottom: 0;
 }
-.BookReader form.booksearch.desktop .textSrch, .BRmobileMenu form.booksearch.desktop .textSrch, .BRfloat form.booksearch.desktop .textSrch {
+.BookReader .BRbooksearch.desktop .BRsearchInput, .BRmobileMenu .BRbooksearch.desktop .BRsearchInput, .BRfloat .BRbooksearch.desktop .BRsearchInput {
+  -webkit-appearance: none;
   position: relative;
   width: 130px;
   max-width: 160px;
   height: 100%;
   color: white;
-  -webkit-appearance: none;
-  margin: 0 0 0 0;
   outline: none;
   border: none;
   padding: 3px 0px 3px 10px;
@@ -1627,7 +1646,7 @@ i.BRicon {
   font-size: 12px;
   line-height: 1.2;
 }
-.BookReader form.booksearch.desktop button, .BRmobileMenu form.booksearch.desktop button, .BRfloat form.booksearch.desktop button {
+.BookReader .BRbooksearch.desktop .BRsearchSubmit, .BRmobileMenu .BRbooksearch.desktop .BRsearchSubmit, .BRfloat .BRbooksearch.desktop .BRsearchSubmit {
   width: auto;
   height: 100%;
   border: none;
@@ -1640,61 +1659,55 @@ i.BRicon {
   float: left;
   cursor: pointer;
 }
-.BookReader form.booksearch.mobile, .BRmobileMenu form.booksearch.mobile, .BRfloat form.booksearch.mobile {
+.BookReader .BRbooksearch.mobile, .BRmobileMenu .BRbooksearch.mobile, .BRfloat .BRbooksearch.mobile {
   position: relative;
   top: 0;
   display: flex;
   flex-direction: row;
 }
-.BookReader form.booksearch.mobile input[type=search], .BRmobileMenu form.booksearch.mobile input[type=search], .BRfloat form.booksearch.mobile input[type=search] {
+.BookReader .BRbooksearch.mobile .BRsearchInput, .BRmobileMenu .BRbooksearch.mobile .BRsearchInput, .BRfloat .BRbooksearch.mobile .BRsearchInput {
+  -webkit-appearance: none;
   position: relative;
-  min-width: 14em;
+  min-width: 100px;
   float: left;
-  padding: 0 4px 0 8px;
   font-size: 14px;
-  padding: 0 0 0 8px;
   width: 150px;
-  min-width: inherit;
-  float: left;
-  font-size: 16px;
+  height: 30px;
+  border: 1px solid #979797;
   flex: 1;
 }
-.BookReader form.booksearch.mobile button, .BRmobileMenu form.booksearch.mobile button, .BRfloat form.booksearch.mobile button {
+.BookReader .BRbooksearch.mobile .BRsearchSubmit, .BRmobileMenu .BRbooksearch.mobile .BRsearchSubmit, .BRfloat .BRbooksearch.mobile .BRsearchSubmit {
   width: 30px;
   height: 30px;
   border: none;
-  background-color: transparent;
+  background-color: #0074D1;
   text-align: center;
-  color: #fff;
+  color: white;
   overflow: hidden;
-  -webkit-border-radius: 20px;
-  -moz-border-radius: 20px;
-  border-radius: 20px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
   box-sizing: boder-box;
   display: inline-block;
 }
-.BookReader form.booksearch.mobile button img, .BRmobileMenu form.booksearch.mobile button img, .BRfloat form.booksearch.mobile button img {
+.BookReader .BRbooksearch.mobile .BRsearchSubmit img, .BRmobileMenu .BRbooksearch.mobile .BRsearchSubmit img, .BRfloat .BRbooksearch.mobile .BRsearchSubmit img {
   position: relative;
   top: 2px;
+  left: 2px;
 }
 
 /* Mid size breakpoint */
 @media (max-width: 1050px) {
-  .BookReader form.booksearch input[type=search], .BRmobileMenu form.booksearch input[type=search], .BRfloat form.booksearch input[type=search] {
+  .BookReader .BRbooksearch .BRsearchInput, .BRmobileMenu .BRbooksearch .BRsearchInput, .BRfloat .BRbooksearch .BRsearchInput {
     padding: 0 0 0 8px;
     width: 110px;
     min-width: 110px;
   }
-  .BookReader form.booksearch button, .BRmobileMenu form.booksearch button, .BRfloat form.booksearch button {
+  .BookReader .BRbooksearch .BRsearchSubmit, .BRmobileMenu .BRbooksearch .BRsearchSubmit, .BRfloat .BRbooksearch .BRsearchSubmit {
     float: left;
   }
-  .BookReader form.booksearch.mobile button, .BRmobileMenu form.booksearch.mobile button, .BRfloat form.booksearch.mobile button {
+  .BookReader .BRbooksearch.mobile .BRsearchSubmit, .BRmobileMenu .BRbooksearch.mobile .BRsearchSubmit, .BRfloat .BRbooksearch.mobile .BRsearchSubmit {
     float: inherit;
     display: inline-block;
   }
-  .BookReader form.booksearch.mobile button img, .BRmobileMenu form.booksearch.mobile button img, .BRfloat form.booksearch.mobile button img {
+  .BookReader .BRbooksearch.mobile .BRsearchSubmit img, .BRmobileMenu .BRbooksearch.mobile .BRsearchSubmit img, .BRfloat .BRbooksearch.mobile .BRsearchSubmit img {
     position: relative;
     top: 2px;
     left: -2px;
@@ -1711,6 +1724,10 @@ i.BRicon {
 
 .mm-panel {
   font-size: 12px;
+}
+
+#mm-blocker {
+  z-index: 2002;
 }
 
 .mm-panel h1 {

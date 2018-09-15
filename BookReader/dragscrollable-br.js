@@ -187,12 +187,6 @@ $.fn.dragscrollable = function( options ) {
 			var delta = {left: (lt.left - event.data.lastCoord.left),
 						 top: (lt.top - event.data.lastCoord.top)};
 
-			/*
-			console.log(event.data.scrollable);
-			console.log('delta.left - ' + delta.left);
-			console.log('delta.top - ' + delta.top);
-			*/
-
 			var scrollTarget = event.data.scrollable;
 			if (event.data.scrollWindow) {
 				scrollTarget = $(window);

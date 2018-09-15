@@ -22,7 +22,7 @@ BookReader.prototype.setup = (function(super_) {
         this.mobileNavTitle = options.mobileNavTitle;
         this.mobileNavFullscreenOnly = options.mobileNavFullscreenOnly;
 
-        this.mmenu = null;
+        this.refs.$mmenu = null;
     };
 })(BookReader.prototype.setup);
 
@@ -68,7 +68,7 @@ BookReader.prototype.initToolbar = (function (super_) {
 
             // High contrast button
             $drawerEl.find('.high-contrast-button').click(function() {
-                this.refs.$br.toggleClass('high-contrast');
+                self.refs.$br.toggleClass('high-contrast');
             });
 
             // Bind mobile switch buttons
@@ -88,7 +88,7 @@ BookReader.prototype.initToolbar = (function (super_) {
                 $(document.body).addClass('BRbodyMobileNavEnabled');
             }
 
-            this.mmenu = $mmenuEl;
+            this.refs.$mmenu = $mmenuEl;
         }
 
         // Call the parent method at the end, because it binds events to DOM
@@ -181,3 +181,17 @@ BookReader.prototype.buildMobileDrawerElement = function() {
     );
     return $el;
 };
+
+/**
+ * Mmenu moves itself out side of the root BookReader element, so we need to
+ * include it in the scoped $ function.
+ */
+BookReader.prototype.$ = (function (super_) {
+    return function (arg) {
+        var $results = super_.call(this, arg);
+        if (this.refs.$mmenu) {
+            $results = $results.add(this.refs.$mmenu.find(arg));
+        }
+        return $results;
+    };
+})(BookReader.prototype.$);
