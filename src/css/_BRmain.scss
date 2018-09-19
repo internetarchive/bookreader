@@ -258,10 +258,11 @@ body.BRfullscreenActive {
     font-size: inherit;
   }
 
-  .BRnavline .chapter { display: none; } /* hide chapters in mobile */
-  .BRnavline .search { display: none; } /* hide search in mobile */
+  /* hide navline chapters and search in mobile */
+  .BRnavline .BRchapter { display: none; }
+  .BRnavline .BRsearch { display: none; }
 
-  .BRprogresspopup { max-width: 80%; min-width: inherit;}
+  .BRprogresspopup { max-width: 80%; min-width: inherit; }
 
   #{$brScope} {
     .fieldset-embed { display: none; }

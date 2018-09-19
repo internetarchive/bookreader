@@ -33,7 +33,7 @@ window.BookReader = (function ($) {
  */
 function BookReader(options) {
     options = options || {};
-    options = jQuery.extend(true, {}, BookReader.defaultOptions, options, BookReader.optionOverrides);
+    options = jQuery.extend({}, BookReader.defaultOptions, options, BookReader.optionOverrides);
     this.setup(options);
 }
 
@@ -49,6 +49,8 @@ BookReader.eventNames = {
     // Indicates that the fragment (a serialization of the reader state)
     // has changed.
     fragmentChange: 'fragmentChange',
+    PostInit: 'PostInit',
+    stop: 'stop',
 };
 
 BookReader.defaultOptions = {
@@ -420,9 +422,9 @@ BookReader.prototype.initParams = function() {
         }
     }
 
-    if (this.enableUrlPlugin && window.location.hash) {
+    if (this.enableUrlPlugin) {
         // params explicitly set in URL take precedence over all other methods
-        var urlParams = this.paramsFromFragment(window.location.hash.substr(1));
+        var urlParams = this.paramsFromFragment(this.urlReadFragment());
         if (urlParams.mode) {
             this.prevReadMode = urlParams.mode;
         }
@@ -568,11 +570,11 @@ BookReader.prototype.init = function() {
         return false;
     });
 
-    this.bind('stop', function(e, br) {
+    this.bind(BookReader.eventNames.stop, function(e, br) {
         br.autoStop();
     });
 
-    this.trigger('PostInit');
+    this.trigger(BookReader.eventNames.PostInit);
 
     this.init.initComplete = true;
 }
@@ -1368,8 +1370,10 @@ BookReader.prototype.resizePageView1up = function() {
     this.displayedIndices = [];
     this.drawLeafs();
 
-    if (this.enableSearch) this.removeSearchHilites();
-    if (this.enableSearch) this.updateSearchHilites();
+    if (this.enableSearch) {
+        this.removeSearchHilites();
+        this.updateSearchHilites();
+    }
 };
 
 // Calculate the dimensions for a one page view with images at the given reduce and padding
@@ -1578,7 +1582,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
 
     // Not throttling is important to prevent race conditions with scroll
     this.updateNavIndexThrottled(index);
-    this.trigger('stop');
+    this.trigger(BookReader.eventNames.stop);
 
     if (this.constMode2up == this.mode) {
         // By checking against min/max we do nothing if requested index
@@ -1674,7 +1678,7 @@ BookReader.prototype.switchMode = function(mode) {
         return;
     }
 
-    this.trigger('stop');
+    this.trigger(BookReader.eventNames.stop);
     if (this.enableSearch) this.removeSearchHilites();
 
     if (this.mode === this.constMode1up || this.mode === this.constMode2up) {
@@ -1980,13 +1984,13 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
     });
 
     $(this.leafEdgeL).bind('click', this, function(e) {
-        e.data.trigger('stop');
+        e.data.trigger(BookReader.eventNames.stop);
         var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
         e.data.jumpToIndex(jumpIndex);
     });
 
     $(this.leafEdgeR).bind('click', this, function(e) {
-        e.data.trigger('stop');
+        e.data.trigger(BookReader.eventNames.stop);
         var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
         e.data.jumpToIndex(jumpIndex);
     });
@@ -2761,7 +2765,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
             }
 
              if (! e.data.self.twoPageIsZoomedIn()) {
-                e.data.self.trigger('stop');
+                e.data.self.trigger(BookReader.eventNames.stop);
                 e.data.self.left();
             }
             e.preventDefault();
@@ -2777,7 +2781,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
             }
 
             if (! e.data.self.twoPageIsZoomedIn()) {
-                e.data.self.trigger('stop');
+                e.data.self.trigger(BookReader.eventNames.stop);
                 e.data.self.right();
             }
             e.preventDefault();
@@ -3127,7 +3131,7 @@ BookReader.prototype.setHilightCss2UP = function(div, index, left, right, top, b
 //______________________________________________________________________________
 BookReader.prototype.autoToggle = function() {
 
-    this.trigger('stop');
+    this.trigger(BookReader.eventNames.stop);
 
     var bComingFrom1up = false;
     if (2 != this.mode) {
@@ -3514,7 +3518,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         opacity: "0.5",
         href: this.$('.BRshare'),
         onLoad: function() {
-            self.trigger('stop');
+            self.trigger(BookReader.eventNames.stop);
             self.$('.BRpageviewValue').val(window.location.href);
         }
     });
@@ -3523,7 +3527,7 @@ BookReader.prototype.initToolbar = function(mode, ui) {
         opacity: "0.5",
         href: this.$('.BRinfo'),
         onLoad: function() {
-            self.trigger('stop');
+            self.trigger(BookReader.eventNames.stop);
         }
     });
 };
@@ -3614,13 +3618,13 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
 
     jIcons.filter('.book_left').click(function(e) {
-        self.trigger('stop');
+        self.trigger(BookReader.eventNames.stop);
         self.left();
         return false;
     });
 
     jIcons.filter('.book_right').click(function(e) {
-        self.trigger('stop');
+        self.trigger(BookReader.eventNames.stop);
         self.right();
         return false;
     });
@@ -3674,13 +3678,13 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
 
     jIcons.filter('.zoom_in').bind('click', function() {
-        self.trigger('stop');
+        self.trigger(BookReader.eventNames.stop);
         self.zoom(1);
         return false;
     });
 
     jIcons.filter('.zoom_out').bind('click', function() {
-        self.trigger('stop');
+        self.trigger(BookReader.eventNames.stop);
         self.zoom(-1);
         return false;
     });
@@ -4036,7 +4040,6 @@ BookReader.prototype.lastDisplayableIndex = function() {
 //________
 // Update ourselves from the params object.
 //
-// e.g. this.updateFromParams(this.paramsFromFragment(window.location.hash.substr(1)))
 BookReader.prototype.updateFromParams = function(params) {
     if ('undefined' != typeof(params.mode)) {
         this.switchMode(params.mode);
@@ -4059,11 +4062,10 @@ BookReader.prototype.updateFromParams = function(params) {
     }
 
     // process /search
-    if ('undefined' != typeof(params.searchTerm) && this.enableSearch) {
-        if (this.searchTerm != params.searchTerm) {
-            this.search(params.searchTerm, {goToFirstResult: !pageFound});
-            // Update the search fields
-            this.$('.BRsearchInput').val(params.searchTerm); // TODO fix issues with placeholder
+    if (this.enableSearch && 'undefined' != typeof(params.search)) {
+        if (this.searchTerm != params.search) {
+            this.search(params.search, {goToFirstResult: !pageFound});
+            this.$('.BRsearchInput').val(params.search);
         }
     }
 
@@ -4646,7 +4648,7 @@ BookReader.prototype.paramsFromCurrent = function(processParams) {
 
     // search
     if (this.enableSearch) {
-        params.searchTerm = this.searchTerm;
+        params.search = this.searchTerm;
     }
 
     if (processParams) {
@@ -4715,7 +4717,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
     // $$$ process /search
 
     if (urlHash['search'] != undefined) {
-        params.searchTerm = BookReader.util.decodeURIComponentPlus(urlHash['search']);
+        params.search = BookReader.util.decodeURIComponentPlus(urlHash['search']);
     }
 
     // $$$ process /highlight
@@ -4769,8 +4771,8 @@ BookReader.prototype.fragmentFromParams = function(params) {
     }
 
     // search
-    if (params.searchTerm) {
-        fragments.push('search', params.searchTerm);
+    if (params.search) {
+        fragments.push('search', params.search);
     }
 
     return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');

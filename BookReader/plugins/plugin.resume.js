@@ -2,7 +2,7 @@
  * Plugin to remember the current page in a cookie
  */
 
-jQuery.extend(true, BookReader.defaultOptions, {
+jQuery.extend(BookReader.defaultOptions, {
     enablePageResume: false,
 });
 
@@ -12,6 +12,14 @@ BookReader.prototype.setup = (function(super_) {
         super_.call(this, options);
 
         this.enablePageResume = options.enablePageResume;
+
+        if (this.enablePageResume) {
+            this.bind(BookReader.eventNames.fragmentChange, function() {
+                var params = this.paramsFromCurrent(true);
+                this.updateResumeValue(params.index);
+            }.bind(this));
+        }
+
     };
 })(BookReader.prototype.setup);
 

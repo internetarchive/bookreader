@@ -2,7 +2,7 @@
  * Deprecated theming functionality
  */
 
-jQuery.extend(true, BookReader.defaultOptions, {
+jQuery.extend(BookReader.defaultOptions, {
     enableThemesPlugin: true,
 });
 

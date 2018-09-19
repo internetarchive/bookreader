@@ -2,7 +2,7 @@
  * Plugin for Archive.org book search
  */
 
-jQuery.extend(true, BookReader.defaultOptions, {
+jQuery.extend(BookReader.defaultOptions, {
     server: 'ia600609.us.archive.org',
     bookId: '',
     subPrefix: '',
@@ -102,7 +102,7 @@ BookReader.prototype.initToolbar = (function (super_) {
                 error: self.BRSearchCallbackErrorMobile,
             });
             self.$('.BRmobileSearchResultWrapper').append(
-                '<div class="">Your search results will appear below.</div>'
+                '<div>Your search results will appear below.</div>'
                 + '<div class="loader tc mt20"></div>'
             );
             return false;
@@ -137,8 +137,10 @@ BookReader.prototype.search = function(term, options) {
     this.removeSearchResults();
 
     this.searchTerm = term;
-    this.searchTerm = this.searchTerm.replace(/\//g, ' '); // strip slashes, since this goes in the url
-    if (this.enableUrlPlugin) this.updateLocationHash(true);
+    // strip slashes, since this goes in the url
+    this.searchTerm = this.searchTerm.replace(/\//g, ' ');
+
+    this.trigger(BookReader.eventNames.fragmentChange);
 
     // Add quotes to the term. This is to compenstate for the backends default OR query
     term = term.replace(/['"]+/g, '');
@@ -361,7 +363,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     var pageDisplayString = uiStringPage + ' ' + this.getNavPageNumString(pageIndex, true);
 
     var searchBtSettings = {
-        contentSelector: '$(this).find(".query")',
+        contentSelector: '$(this).find(".BRquery")',
         trigger: 'hover',
         closeWhenOthersOpen: true,
         cssStyles: {
@@ -390,19 +392,21 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     };
 
     var re = new RegExp('{{{(.+?)}}}', 'g');
-    var queryStringReplaced = queryString.replace(re, '$1');
-    var queryStringWithB = queryString;
+    var queryStringWithB = queryString.replace(re, '<b>$1</b>');
 
-    if (queryStringWithB.length > 100) {
-        queryStringWithB = queryStringWithB.replace(/^(.{100}[^\s]*).*/, "$1");
-        queryStringWithB = queryStringWithB.replace(re, '<b>$1</b>');
-        queryStringWithB = queryStringWithB + '...';
+    var queryStringWithBTruncated;
+
+    if (queryString.length > 100) {
+        queryStringWithBTruncated = queryString
+            .replace(/^(.{100}[^\s]*).*/, "$1")
+            .replace(re, '<b>$1</b>')
+            + '...';
     } else {
-        queryStringWithB = queryStringWithB.replace(re, '<b>$1</b>');
+        queryStringWithBTruncated = queryString.replace(re, '<b>$1</b>');
     }
 
     var $marker = $('<div>')
-    .addClass('search')
+    .addClass('BRsearch')
     .css({
         top: (-this.refs.$brContainer.height())+'px',
         left: percentThrough,
@@ -410,21 +414,19 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     .attr('title', uiStringSearch)
     .append(
         $('<div>')
-        .addClass('query')
+        .addClass('BRquery')
         .append(
-            $('<div>').html(queryStringReplaced),
+            $('<div>').html(queryStringWithB),
             $('<div>').html(uiStringPage + ' ' + pageNumber)
         )
-    );
-
-    $marker
+    )
     .data({'self': this, 'pageIndex': pageIndex})
     .appendTo(this.$('.BRnavline'))
     .bt(searchBtSettings)
     .hover(function() {
             // remove from other markers then turn on just for this
             // XXX should be done when nav slider moves
-            self.$('.search,.chapter').removeClass('front');
+            self.$('.BRsearch,.BRchapter').removeClass('front');
             $(this).addClass('front');
         }, function() {
             $(this).removeClass('front');
@@ -450,7 +452,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
             +"      <img class='searchImgPreview' src=\""+imgPreviewUrl+"\" />"
             +"    </td>"
             +"    <td>"
-            +"      <span>"+queryStringWithB+"</span>"
+            +"      <span>"+queryStringWithBTruncated+"</span>"
             +"    </td>"
             +"  </tr>"
             +"</table>"
@@ -471,8 +473,8 @@ BookReader.prototype.removeSearchResults = function() {
     this.removeSearchHilites(); //be sure to set all box.divs to null
     this.searchTerm = null;
     this.searchResults = null;
-    if (this.enableUrlPlugin) this.updateLocationHash(true);
-    this.$('.BRnavpos .search').remove();
+    this.trigger(BookReader.eventNames.fragmentChange);
+    this.$('.BRnavpos .BRsearch').remove();
     this.$('.BRmobileSearchResultWrapper').empty(); // Empty mobile results
 };
 

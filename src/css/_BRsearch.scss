@@ -9,7 +9,7 @@
     z-index: $brZindexBase + 3;;
   }
 
-  .chapter {
+  .BRchapter {
     position: absolute;
     top: 0; /* Relative to nav line */
     width: 18px;
@@ -18,17 +18,17 @@
     background: transparent url(images/marker_chap-off.png) no-repeat;
     cursor: pointer;
   }
-  .chapter.front {
+  .BRchapter.front {
     background: transparent url(images/marker_chap-on.png) no-repeat;
   }
-  .chapter .title {
+  .BRchapter .BRchapterTitle {
     display: none;
   }
-  .title span {
+  .BRchapterTitle span {
     color: #666;
     padding: 0 5px;
   }
-  .search {
+  .BRsearch {
     position: absolute;
     width: 20px;
     margin-left: -20px; /* Center icon */
@@ -40,45 +40,27 @@
     cursor: pointer;
     z-index: $brZindexBase + 2;
   }
-  .search.front {
+  .BRsearch.front {
     background: transparent url(images/marker_srch-on.svg) no-repeat;
   }
-  .search .query, .searchChap .query {
+  .BRsearch .BRquery,
+  .BRsearchChap .BRquery {
     display: none;
   }
-  .query {
+
+  .BRquery {
     position: relative;
-  }
-  .query strong,
-  .query b {
-    color: #000;
-    font-weight: 700;
-  }
-  .query span,
-  .query div {
-    font-size: $brFontSizeSmaller;
+    font-weight: normal;
     color: #666;
-    font-style: italic;
+
+    b {
+      color: #000;
+      font-weight: bold;
+      background-color: rgba(0,0,255, .2);
+    }
   }
-  .query .queryChap {
-    position: absolute;
-    top: -40px;
-    left: -13px;
-    width: 256px;
-    overflow: hidden;
-    text-align: center;
-    background: #000;
-    padding: 5px 10px;
-    color: #fff;
-    font-weight: 700;
-    font-size: $brFontSizeSmaller;
-  }
-  .query .queryChap span {
-    color: #666;
-    padding: 0 5px;
-    font-style: normal;
-  }
-  .search .pointer {
+
+  .BRsearch .pointer {
     position: absolute;
     left: 121px;
     bottom: -14px;
@@ -86,7 +68,7 @@
     height: 27px;
     background: transparent url(images/marker_srch-on.png) no-repeat;
   }
-  .searchChap {
+  .BRsearchChap {
     position: absolute;
     top: -13px;
     width: 18px;
@@ -96,7 +78,7 @@
     background-image: url(images/marker_srchchap-off.png);
     background-repeat: no-repeat;
   }
-  .searchChap.front {
+  .BRsearchChap.front {
     background-image: url(images/marker_srchchap-on.png);
   }
   .BRmobileSearchResultWrapper {

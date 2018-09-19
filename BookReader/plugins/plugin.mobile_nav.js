@@ -8,7 +8,7 @@
  * <link rel="stylesheet" href="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css" />
  */
 
-jQuery.extend(true, BookReader.defaultOptions, {
+jQuery.extend(BookReader.defaultOptions, {
     enableMobileNav: true,
     mobileNavTitle: 'Internet Archive',
     mobileNavFullscreenOnly: false,

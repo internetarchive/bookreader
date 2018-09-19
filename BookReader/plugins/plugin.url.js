@@ -1,143 +1,153 @@
 /**
  * Plugin for URL management in BookReader
+ * Note read more about the url "fragment" here:
+ * https://openlibrary.org/dev/docs/bookurls
  */
 
-jQuery.extend(true, BookReader.defaultOptions, {
-    enableUrlPlugin: true,
-    bookId: '',
-    // Defaults can be a urlFragment string
-    defaults: null,
+jQuery.extend(BookReader.defaultOptions, {
+  enableUrlPlugin: true,
+  bookId: "",
+  // Defaults can be a urlFragment string
+  defaults: null,
+  updateWindowTitle: false,
+
+  // 'history' | 'hash',
+  urlMode: 'hash',
+
+  // When using 'history' mode, this part of the URL is kept constant
+  // Example: /details/plato/
+  urlHistoryBasePath: '/',
+
+  // Only these params will be reflected onto the URL
+  urlTrackedParams: ['page', 'search', 'mode', 'region', 'highlight'],
 });
 
 BookReader.prototype.setup = (function(super_) {
-    return function (options) {
-        var br = this;
+  return function(options) {
+    super_.call(this, options);
 
-        super_.call(this, options);
+    this.enableUrlPlugin = options.enableUrlPlugin;
+    this.bookId = options.bookId;
+    this.defaults = options.defaults;
 
-        this.enableUrlPlugin = options.enableUrlPlugin;
-        this.bookId = options.bookId;
-        this.defaults = options.defaults;
+    this.locationPollId = null;
+    this.oldLocationHash = null;
+    this.oldUserHash = null;
 
-        this.bind('PostInit', function(e, br) {
-            // Set document title -- may have already been set in enclosing html for
-            // search engine visibility
-            document.title = br.shortTitle(50);
-            br.startLocationPolling();
-        });
+    this.bind(BookReader.eventNames.PostInit, function(e, br) {
+      if (br.options.updateWindowTitle) {
+        document.title = br.shortTitle(50);
+      }
+      // br.urlStartLocationPolling();
+    });
 
-        this.bind(
-            BookReader.eventNames.fragmentChange,
-            function handleFragmentChange() {
-                br.updateLocationHash();
-            }
-        );
-    };
+    this.bind(BookReader.eventNames.fragmentChange,
+      this.urlUpdateFragment.bind(this)
+    );
+  };
 })(BookReader.prototype.setup);
 
-
-// shortTitle(maximumCharacters)
-//________
-// Returns a shortened version of the title with the maximum number of characters
+/**
+ * Returns a shortened version of the title with the maximum number of characters
+ * @param {string} maximumCharacters
+ */
 BookReader.prototype.shortTitle = function(maximumCharacters) {
-    if (this.bookTitle.length < maximumCharacters) {
-        return this.bookTitle;
-    }
+  if (this.bookTitle.length < maximumCharacters) {
+    return this.bookTitle;
+  }
 
-    var title = this.bookTitle.substr(0, maximumCharacters - 3);
-    title += '...';
-    return title;
+  var title = this.bookTitle.substr(0, maximumCharacters - 3);
+  title += "...";
+  return title;
 };
 
+/**
+ * Starts polling of window.location to see hash fragment changes
+ */
+BookReader.prototype.urlStartLocationPolling = function() {
+  var self = this;
+  this.oldLocationHash = this.urlReadFragment();
 
-// startLocationPolling
-//________
-// Starts polling of window.location to see hash fragment changes
-BookReader.prototype.startLocationPolling = function() {
-    var self = this; // remember who I am
-    self.oldLocationHash = window.location.hash;
+  if (this.locationPollId) {
+    clearInterval(this.locationPollID);
+    this.locationPollId = null;
+  }
 
-    if (this.locationPollId) {
-        clearInterval(this.locationPollID);
-        this.locationPollId = null;
+  this.locationPollId = setInterval(function() {
+    var newFragment = self.urlReadFragment();
+    if (newFragment != self.oldLocationHash && newFragment != self.oldUserHash) {
+      self.trigger(BookReader.eventNames.stop);
+
+      // Queue change if animating
+      if (self.animating) {
+        self.autoStop();
+        self.animationFinishedCallback = function() {
+          self.updateFromParams(self.paramsFromFragment(newFragment));
+        };
+      } else {
+        // update immediately
+        self.updateFromParams(self.paramsFromFragment(newFragment));
+      }
+      self.oldUserHash = newFragment;
     }
-
-    this.locationPollId = setInterval(function() {
-        var newHash = window.location.hash;
-        if (newHash != self.oldLocationHash && newHash != self.oldUserHash) {
-            // Only process new user hash once
-            self.trigger('stop');
-
-            // Queue change if animating
-            if (self.animating) {
-                self.autoStop();
-                self.animationFinishedCallback = function() {
-                    self.updateFromParams(
-                        self.paramsFromFragment(newHash.substr(1))
-                    );
-                }
-            } else { // update immediately
-                self.updateFromParams(self.paramsFromFragment(
-                    newHash.substr(1))
-                );
-            }
-            self.oldUserHash = newHash;
-        }
-    }, 500);
+  }, 500);
 };
 
-// updateLocationHash
-//________
-// Update the location hash from the current parameters.  Call this instead of manually
-// using window.location.replace
-BookReader.prototype.updateLocationHash = function(skipAnalytics) {
-    skipAnalytics = skipAnalytics || false;
-    var params = this.paramsFromCurrent(true);
+/**
+ * Update URL from the current parameters.
+ * Call this instead of manually using window.location.replace
+ */
+BookReader.prototype.urlUpdateFragment = function() {
+  var newFragment = this.urlFragmentFromCurrent();
+  var currFragment = this.urlReadFragment();
 
-    var newHash = '#' + this.fragmentFromParams(params);
-    if (window.location.hash != newHash) {
-        window.location.replace(newHash);
+  if (currFragment !== newFragment) {
+    if (this.options.urlMode === 'history') {
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(
+          {},
+          null,
+          this.options.urlHistoryBasePath
+          + newFragment
+          + window.location.search
+        );
+      }
+    } else {
+      window.location.replace('#' + newFragment);
     }
-
-    // Send analytics events if the location hash is changed (page flip or mode change),
-    // which indicates that the user is actively reading the book. This will cause the
-    // archive.org download count for this book to increment (via setting the `bookreader` value),
-    // and also send a tracking event (via setting the `kind` attribute to `event`).
-    // Note that users with Adblock Plus will not send data to analytics.archive.org
-    if (!skipAnalytics && typeof(archive_analytics) != 'undefined') {
-        if (this.oldLocationHash != newHash) {
-            var values = {
-                'bookreader': 'user_changed_view',
-                'itemid': this.bookId,
-                'cache_bust': Math.random()
-            };
-            // EEK!  offsite embedding and /details/ page books look the same in analytics, otherwise!
-            values.offsite=1;
-            values.details=0;
-            try{
-              values.offsite=(                     window.top.location.hostname.match(/\.archive.org$/) ? 0 : 1);
-              values.details=(!values.offsite  &&  window.top.location.pathname.match(/^\/details\//)   ? 1 : 0);
-            } catch (e){} //avoids embed cross site exceptions -- but on (+) side, means it is and keeps marked offite!
-
-            // Send bookreader ping
-            archive_analytics.send_ping(values, null, 'augment_for_ao_site');
-
-            // Also send tracking event ping
-            archive_analytics.send_ping({
-                kind: 'event',
-                ec: 'BookReader',
-                ea: 'UserChangedView',
-                el: window.location.pathname,
-                cache_bust: Math.random()
-            });
-        }
-    }
-
-    // This is the variable checked in the timer.  Only user-generated changes
-    // to the URL will trigger the event.
-    this.oldLocationHash = newHash;
-
-    if (this.enablePageResume) {
-        this.updateResumeValue(params.index);
-    }
+    this.oldLocationHash = newFragment;
+  }
 };
+
+/**
+ * Helper to get the fragment.
+ * Will filter keys based on options.urlTrackedParams.
+ * @return {string}
+ */
+BookReader.prototype.urlFragmentFromCurrent = function() {
+  var allParams = this.paramsFromCurrent(true);
+  var params = {};
+  var param;
+
+  for (var i = 0; i < this.options.urlTrackedParams.length; i++) {
+    param = this.options.urlTrackedParams[i];
+    if (param in allParams) {
+      params[param] = allParams[param];
+    }
+  }
+
+  return this.fragmentFromParams(params);
+};
+
+/**
+ * Will read either the hash or URL and return the bookreader fragment
+ * @return {string}
+ */
+BookReader.prototype.urlReadFragment = function() {
+  if (this.options.urlMode === 'history') {
+    return window.location.pathname.substr(this.options.urlHistoryBasePath.length);
+  } else {
+    return window.location.hash.substr(1);
+  }
+};
+

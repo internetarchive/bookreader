@@ -3,7 +3,7 @@
  */
 
 // Default options for TTS
-jQuery.extend(true, BookReader.defaultOptions, {
+jQuery.extend(BookReader.defaultOptions, {
     server: 'ia600609.us.archive.org',
     bookPath: '',
 });
@@ -31,7 +31,7 @@ BookReader.prototype.setup = (function (super_) {
         }
 
         // Bind to events
-        this.bind('PostInit', function(e, br) {
+        this.bind(BookReader.eventNames.PostInit, function(e, br) {
             jIcons = br.$('.BRicon.read').click(function(e) {
                 br.ttsToggle();
                 return false;
@@ -41,7 +41,7 @@ BookReader.prototype.setup = (function (super_) {
                 br.setupSoundManager();
         });
 
-        this.bind('stop', function(e, br) {
+        this.bind(BookReader.eventNames.stop, function(e, br) {
             this.ttsStop();
         }.bind(this));
     };

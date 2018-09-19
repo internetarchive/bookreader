@@ -8,7 +8,7 @@
  *   });
  */
 
-jQuery.extend(true, BookReader.defaultOptions, {
+jQuery.extend(BookReader.defaultOptions, {
     imageFormat: 'jp2',
     subPrefix: '',
     server: '',
