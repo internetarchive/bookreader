@@ -39,32 +39,41 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
 
     var percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
 
-    $('<div class="BRchapter" style="left:' + percentThrough + ';"><div class="BRchapterTitle">'
-        + chapterTitle + '<span>|</span> ' + uiStringPage + ' ' + pageNumber + '</div></div>')
+    $('<div>'
+        + '<div>'
+        +   'Chapter: '
+        +    chapterTitle
+        +    ' | '
+        +    uiStringPage
+        +    ' '
+        +    pageNumber
+        +   '</div>'
+        + '</div>'
+    )
+    .addClass('BRchapter')
+    .css({
+        left: percentThrough,
+    })
     .appendTo(this.$('.BRnavline'))
     .data({'self': this, 'pageIndex': pageIndex })
     .bt({
-        contentSelector: '$(this).find(".BRchapterTitle")',
+        contentSelector: '$(this).find("> div")',
         trigger: 'hover',
         closeWhenOthersOpen: true,
         cssStyles: {
             padding: '12px 14px',
             backgroundColor: '#fff',
             border: '4px solid rgb(216,216,216)',
-            fontSize: '13px',
             color: 'rgb(52,52,52)'
         },
-        shrinkToFit: true,
-        width: '200px',
+        shrinkToFit: false,
+        width: '230px',
         padding: 0,
         spikeGirth: 0,
         spikeLength: 0,
-        overlap: '21px',
+        overlap: '0px',
         overlay: false,
-        killTitle: true,
-        textzIndex: 9999,
-        boxzIndex: 9998,
-        wrapperzIndex: 9997,
+        killTitle: false,
         offsetParent: null,
         positions: ['top'],
         fill: 'white',
@@ -131,13 +140,6 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
         });
     });
     this.$('.BRsearch').each(function(){
-        $(this).hover(function(){
-            $(this).addClass('front');
-        },function(){
-            $(this).removeClass('front');
-        });
-    });
-    this.$('.BRsearchChap').each(function(){
         $(this).hover(function(){
             $(this).addClass('front');
         },function(){

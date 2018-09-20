@@ -8,49 +8,40 @@
     /* z-index is important */
     z-index: $brZindexBase + 3;;
   }
-
-  .BRchapter {
-    position: absolute;
-    top: 0; /* Relative to nav line */
-    width: 18px;
-    margin-left: -9px; /* Center marker triangle */
-    height: 27px;
-    background: transparent url(images/marker_chap-off.png) no-repeat;
-    cursor: pointer;
-  }
-  .BRchapter.front {
-    background: transparent url(images/marker_chap-on.png) no-repeat;
-  }
-  .BRchapter .BRchapterTitle {
-    display: none;
-  }
-  .BRchapterTitle span {
-    color: #666;
-    padding: 0 5px;
-  }
-  .BRsearch {
+  .BRchapter, .BRsearch {
     position: absolute;
     width: 20px;
     margin-left: -20px; /* Center icon */
     height: 25px;
     bottom: 0;  /* Relative to nav line */
-    background-color: transparent;
-    background-image: url(images/marker_srch-off.svg);
-    background-repeat: no-repeat;
     cursor: pointer;
     z-index: $brZindexBase + 2;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    font-weight: normal;
+  }
+  .BRchapter {
+    background-image: url(images/marker_chap-off.svg);
+    color: #666;
+    padding: 0 5px;
+    > div {
+      display: none;
+    }
+  }
+  .BRchapter.front {
+    background-image: url(images/marker_chap-on.svg);
+  }
+  .BRsearch {
+    background-image: url(images/marker_srch-off.svg);
   }
   .BRsearch.front {
-    background: transparent url(images/marker_srch-on.svg) no-repeat;
+    background-image: url(images/marker_srch-on.svg);
   }
-  .BRsearch .BRquery,
-  .BRsearchChap .BRquery {
+  .BRsearch .BRquery {
     display: none;
   }
-
   .BRquery {
     position: relative;
-    font-weight: normal;
     color: #666;
 
     b {
@@ -59,7 +50,6 @@
       background-color: rgba(0,0,255, .2);
     }
   }
-
   .BRsearch .pointer {
     position: absolute;
     left: 121px;
@@ -67,19 +57,6 @@
     width: 18px;
     height: 27px;
     background: transparent url(images/marker_srch-on.png) no-repeat;
-  }
-  .BRsearchChap {
-    position: absolute;
-    top: -13px;
-    width: 18px;
-    height: 27px;
-    cursor: pointer;
-    background-color: transparent;
-    background-image: url(images/marker_srchchap-off.png);
-    background-repeat: no-repeat;
-  }
-  .BRsearchChap.front {
-    background-image: url(images/marker_srchchap-on.png);
   }
   .BRmobileSearchResultWrapper {
     margin-top: 20px;
@@ -112,12 +89,10 @@
       vertical-align: top;
     }
   }
-
   .BRbooksearch {
     position:relative;
     box-sizing: border-box;
   }
-
   .BRbooksearch.desktop {
     position: relative;
     height: 30px;

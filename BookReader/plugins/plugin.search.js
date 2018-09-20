@@ -382,7 +382,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
         killTitle: false,
         offsetParent: null,
         positions: ['top'],
-        fill: 'blue',
+        fill: 'white',
         windowMargin: 10,
         strokeWidth: 0,
         cornerRadius: 0,

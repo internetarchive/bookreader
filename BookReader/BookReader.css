@@ -448,16 +448,15 @@ body.BRfullscreenActive .mm-menu {
     font-size: inherit;
   }
 
-  .BRnavline .chapter {
+  /* hide navline chapters and search in mobile */
+  .BRnavline .BRchapter {
     display: none;
   }
 
-  /* hide chapters in mobile */
-  .BRnavline .search {
+  .BRnavline .BRsearch {
     display: none;
   }
 
-  /* hide search in mobile */
   .BRprogresspopup {
     max-width: 80%;
     min-width: inherit;
@@ -1485,28 +1484,7 @@ i.BRicon {
   /* z-index is important */
   z-index: 4;
 }
-.BookReader .chapter, .BRmobileMenu .chapter, .BRfloat .chapter {
-  position: absolute;
-  top: 0;
-  /* Relative to nav line */
-  width: 18px;
-  margin-left: -9px;
-  /* Center marker triangle */
-  height: 27px;
-  background: transparent url(images/marker_chap-off.png) no-repeat;
-  cursor: pointer;
-}
-.BookReader .chapter.front, .BRmobileMenu .chapter.front, .BRfloat .chapter.front {
-  background: transparent url(images/marker_chap-on.png) no-repeat;
-}
-.BookReader .chapter .title, .BRmobileMenu .chapter .title, .BRfloat .chapter .title {
-  display: none;
-}
-.BookReader .title span, .BRmobileMenu .title span, .BRfloat .title span {
-  color: #666;
-  padding: 0 5px;
-}
-.BookReader .search, .BRmobileMenu .search, .BRfloat .search {
+.BookReader .BRchapter, .BookReader .BRsearch, .BRmobileMenu .BRchapter, .BRmobileMenu .BRsearch, .BRfloat .BRchapter, .BRfloat .BRsearch {
   position: absolute;
   width: 20px;
   margin-left: -20px;
@@ -1514,74 +1492,48 @@ i.BRicon {
   height: 25px;
   bottom: 0;
   /* Relative to nav line */
-  background-color: transparent;
-  background-image: url(images/marker_srch-off.svg);
-  background-repeat: no-repeat;
   cursor: pointer;
   z-index: 3;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  font-weight: normal;
 }
-.BookReader .search.front, .BRmobileMenu .search.front, .BRfloat .search.front {
-  background: transparent url(images/marker_srch-on.svg) no-repeat;
-}
-.BookReader .search .query, .BookReader .searchChap .query, .BRmobileMenu .search .query, .BRmobileMenu .searchChap .query, .BRfloat .search .query, .BRfloat .searchChap .query {
-  display: none;
-}
-.BookReader .query, .BRmobileMenu .query, .BRfloat .query {
-  position: relative;
-}
-.BookReader .query strong,
-.BookReader .query b, .BRmobileMenu .query strong,
-.BRmobileMenu .query b, .BRfloat .query strong,
-.BRfloat .query b {
-  color: #000;
-  font-weight: 700;
-}
-.BookReader .query span,
-.BookReader .query div, .BRmobileMenu .query span,
-.BRmobileMenu .query div, .BRfloat .query span,
-.BRfloat .query div {
-  font-size: 12px;
-  color: #666;
-  font-style: italic;
-}
-.BookReader .query .queryChap, .BRmobileMenu .query .queryChap, .BRfloat .query .queryChap {
-  position: absolute;
-  top: -40px;
-  left: -13px;
-  width: 256px;
-  overflow: hidden;
-  text-align: center;
-  background: #000;
-  padding: 5px 10px;
-  color: #fff;
-  font-weight: 700;
-  font-size: 12px;
-}
-.BookReader .query .queryChap span, .BRmobileMenu .query .queryChap span, .BRfloat .query .queryChap span {
+.BookReader .BRchapter, .BRmobileMenu .BRchapter, .BRfloat .BRchapter {
+  background-image: url(images/marker_chap-off.svg);
   color: #666;
   padding: 0 5px;
-  font-style: normal;
 }
-.BookReader .search .pointer, .BRmobileMenu .search .pointer, .BRfloat .search .pointer {
+.BookReader .BRchapter > div, .BRmobileMenu .BRchapter > div, .BRfloat .BRchapter > div {
+  display: none;
+}
+.BookReader .BRchapter.front, .BRmobileMenu .BRchapter.front, .BRfloat .BRchapter.front {
+  background-image: url(images/marker_chap-on.svg);
+}
+.BookReader .BRsearch, .BRmobileMenu .BRsearch, .BRfloat .BRsearch {
+  background-image: url(images/marker_srch-off.svg);
+}
+.BookReader .BRsearch.front, .BRmobileMenu .BRsearch.front, .BRfloat .BRsearch.front {
+  background-image: url(images/marker_srch-on.svg);
+}
+.BookReader .BRsearch .BRquery, .BRmobileMenu .BRsearch .BRquery, .BRfloat .BRsearch .BRquery {
+  display: none;
+}
+.BookReader .BRquery, .BRmobileMenu .BRquery, .BRfloat .BRquery {
+  position: relative;
+  color: #666;
+}
+.BookReader .BRquery b, .BRmobileMenu .BRquery b, .BRfloat .BRquery b {
+  color: #000;
+  font-weight: bold;
+  background-color: rgba(0, 0, 255, 0.2);
+}
+.BookReader .BRsearch .pointer, .BRmobileMenu .BRsearch .pointer, .BRfloat .BRsearch .pointer {
   position: absolute;
   left: 121px;
   bottom: -14px;
   width: 18px;
   height: 27px;
   background: transparent url(images/marker_srch-on.png) no-repeat;
-}
-.BookReader .searchChap, .BRmobileMenu .searchChap, .BRfloat .searchChap {
-  position: absolute;
-  top: -13px;
-  width: 18px;
-  height: 27px;
-  cursor: pointer;
-  background-color: transparent;
-  background-image: url(images/marker_srchchap-off.png);
-  background-repeat: no-repeat;
-}
-.BookReader .searchChap.front, .BRmobileMenu .searchChap.front, .BRfloat .searchChap.front {
-  background-image: url(images/marker_srchchap-on.png);
 }
 .BookReader .BRmobileSearchResultWrapper, .BRmobileMenu .BRmobileSearchResultWrapper, .BRfloat .BRmobileSearchResultWrapper {
   margin-top: 20px;
