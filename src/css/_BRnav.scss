@@ -11,7 +11,7 @@
       background-color: white;
     }
     .ui-slider-range {
-      background-color: rgba(255, 255, 255, 0.7);
+      background-color: rgba(255, 255, 255, 0.59);
     }
   }
 
@@ -129,6 +129,7 @@
     border-radius:50%;
     top: -5px;
     margin-left: -9px; /* Center icon */
+    z-index: $brZindexBase + 5;
   }
   .ui-slider-range {
     height: 100%;

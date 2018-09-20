@@ -10,9 +10,6 @@
   }
   .BRchapter, .BRsearch {
     position: absolute;
-    width: 20px;
-    margin-left: -20px; /* Center icon */
-    height: 25px;
     bottom: 0;  /* Relative to nav line */
     cursor: pointer;
     z-index: $brZindexBase + 2;
@@ -21,18 +18,26 @@
     font-weight: normal;
   }
   .BRchapter {
-    background-image: url(images/marker_chap-off.svg);
+    // background-image: url(images/marker_chap-off.svg);
+    background-color: white;
     color: #666;
-    padding: 0 5px;
+    height: 8px;
+    width: 4px;
+    bottom: -13px;
+    margin-left: -12px; /* Center icon */
     > div {
       display: none;
     }
-  }
-  .BRchapter.front {
-    background-image: url(images/marker_chap-on.svg);
+    &.front {
+      // background-image: url(images/marker_chap-on.svg);
+      background-color: blue;
+    }
   }
   .BRsearch {
     background-image: url(images/marker_srch-off.svg);
+    width: 20px;
+    height: 25px;
+    margin-left: -20px; /* Center icon */
   }
   .BRsearch.front {
     background-image: url(images/marker_srch-on.svg);
