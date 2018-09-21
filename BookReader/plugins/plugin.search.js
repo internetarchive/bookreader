@@ -143,8 +143,8 @@ BookReader.prototype.search = function(term, options) {
     this.trigger(BookReader.eventNames.fragmentChange);
 
     // Add quotes to the term. This is to compenstate for the backends default OR query
-    term = term.replace(/['"]+/g, '');
-    term = '"' + term + '"';
+    // term = term.replace(/['"]+/g, '');
+    // term = '"' + term + '"';
 
     // Remove the port and userdir
     var url = 'https://' + this.server.replace(/:.+/, '') + this.searchInsideUrl + '?';
