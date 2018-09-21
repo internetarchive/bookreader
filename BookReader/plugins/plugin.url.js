@@ -26,26 +26,32 @@ BookReader.prototype.setup = (function(super_) {
   return function(options) {
     super_.call(this, options);
 
-    this.enableUrlPlugin = options.enableUrlPlugin;
     this.bookId = options.bookId;
     this.defaults = options.defaults;
 
     this.locationPollId = null;
     this.oldLocationHash = null;
     this.oldUserHash = null;
-
-    this.bind(BookReader.eventNames.PostInit, function(e, br) {
-      if (br.options.updateWindowTitle) {
-        document.title = br.shortTitle(50);
-      }
-      // br.urlStartLocationPolling();
-    });
-
-    this.bind(BookReader.eventNames.fragmentChange,
-      this.urlUpdateFragment.bind(this)
-    );
   };
 })(BookReader.prototype.setup);
+
+BookReader.prototype.init = (function(super_) {
+  return function() {
+    if (this.options.enableUrlPlugin) {
+      this.bind(BookReader.eventNames.PostInit, function(e, br) {
+        if (br.options.updateWindowTitle) {
+          document.title = br.shortTitle(50);
+        }
+        // br.urlStartLocationPolling();
+      });
+
+      this.bind(BookReader.eventNames.fragmentChange,
+        this.urlUpdateFragment.bind(this)
+      );
+    }
+    super_.call(this);
+  };
+})(BookReader.prototype.init);
 
 /**
  * Returns a shortened version of the title with the maximum number of characters

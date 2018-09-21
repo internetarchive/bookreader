@@ -131,7 +131,15 @@ See `BookReaderDemo/demo-iiif.html` to see an example of how to load a IIIF mani
 
 ## Target Devices
 
-Note that BookReader is a core part of Archive.org's mission of Universal Access to All Knowledge. Therefore, care must be taken to support legacy browsers. For example, avoid using Flexbox or CSS Grid for critical pieces of functionality. In other words, it should still work and be useable on old devices.
+Note that BookReader is a core part of Archive.org's mission of Universal Access to All Knowledge. Therefore, care must be taken to support legacy browsers. It should still work and be useable on old devices.
+
+
+## Notes about version 4 (WIP)
+
+- CSS converted to SASS and refactored
+- BookReader selectors made relative to BookReader. This means it shouldn't interfere with parent page, and also more than one BookReader instance can be on the page.
+- New design with full-screen support.
+- WIP JavaScript code is formatted with Prettier (2 spaces instead of 4)
 
 
 ## Notes about version 3

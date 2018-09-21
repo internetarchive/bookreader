@@ -5,12 +5,12 @@
 (function setUpIframePlugin() {
     var constMessageTypeFragmentChange = 'bookReaderFragmentChange';
 
-    BookReader.prototype.setup = (function(super_) {
-        return function(options) {
-            super_.call(this, options);
+    BookReader.prototype.init = (function(super_) {
+        return function() {
+            super_.call(this);
             attachEventListeners(this);
         };
-    })(BookReader.prototype.setup);
+    })(BookReader.prototype.init);
 
     /**
      * Using window.postMessage() and event listeners, the plugin notifies the

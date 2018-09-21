@@ -6,23 +6,18 @@ jQuery.extend(BookReader.defaultOptions, {
     enablePageResume: false,
 });
 
-// Extend the constructor to add TTS properties
-BookReader.prototype.setup = (function(super_) {
-    return function (options) {
-        super_.call(this, options);
+BookReader.prototype.init = (function(super_) {
+    return function() {
+        super_.call(this);
 
-        this.enablePageResume = options.enablePageResume;
-
-        if (this.enablePageResume) {
+        if (this.options.enablePageResume) {
             this.bind(BookReader.eventNames.fragmentChange, function() {
                 var params = this.paramsFromCurrent(true);
                 this.updateResumeValue(params.index);
             }.bind(this));
         }
-
     };
-})(BookReader.prototype.setup);
-
+})(BookReader.prototype.init);
 
 /**
  * Get's the page resume value, for remembering reader's page

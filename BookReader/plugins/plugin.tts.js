@@ -29,7 +29,11 @@ BookReader.prototype.setup = (function (super_) {
         if (typeof(soundManager) !== 'undefined') {
             this.isSoundManagerSupported = soundManager.supported();
         }
+    };
+})(BookReader.prototype.setup);
 
+BookReader.prototype.init = (function(super_) {
+    return function() {
         // Bind to events
         this.bind(BookReader.eventNames.PostInit, function(e, br) {
             jIcons = br.$('.BRicon.read').click(function(e) {
@@ -44,8 +48,10 @@ BookReader.prototype.setup = (function (super_) {
         this.bind(BookReader.eventNames.stop, function(e, br) {
             this.ttsStop();
         }.bind(this));
+
+        super_.call(this);
     };
-})(BookReader.prototype.setup);
+})(BookReader.prototype.init);
 
 
 // Extend buildMobileDrawerElement

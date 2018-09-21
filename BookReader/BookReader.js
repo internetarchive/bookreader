@@ -118,7 +118,7 @@ BookReader.defaultOptions = {
     bookUrl: null,
     bookUrlText: null,
     bookUrlTitle: null,
-    enableBookTitleLink: false,
+    enableBookTitleLink: true,
 
     // Fields used to populate the info window
     metadata: [],
@@ -414,7 +414,7 @@ BookReader.prototype.initParams = function() {
     }
 
     // Check for Resume plugin
-    if (this.enablePageResume) {
+    if (this.options.enablePageResume) {
         // Check cookies
         var val = this.getResumeValue();
         if (val !== null) {
@@ -422,7 +422,7 @@ BookReader.prototype.initParams = function() {
         }
     }
 
-    if (this.enableUrlPlugin) {
+    if (this.options.enableUrlPlugin) {
         // params explicitly set in URL take precedence over all other methods
         var urlParams = this.paramsFromFragment(this.urlReadFragment());
         if (urlParams.mode) {
@@ -454,7 +454,10 @@ BookReader.prototype.init = function() {
     if ('undefined' != typeof(params.mode)) {
         nextMode = params.mode;
     } else if (this.ui == 'full'
-          && (this.enableMobileNav && windowWidth <= this.onePageMinBreakpoint)) {
+          && this.enableMobileNav
+          && this.isFullscreenActive
+          && windowWidth <= this.onePageMinBreakpoint
+    ) {
         // In full mode, we set the default based on width
         nextMode = this.constMode1up;
     } else {
@@ -3451,12 +3454,12 @@ BookReader.prototype.buildToolbarElement = function() {
 
     var $titleSectionEl = this.refs.$BRtoolbar.find('.BRtoolbarSectionTitle');
 
-    if (this.bookUrl && this.bookTitle && this.enableBookTitleLink) {
+    if (this.bookUrl && this.options.enableBookTitleLink) {
         $titleSectionEl.append(
             $('<a>')
             .attr({'href': this.bookUrl, 'title': this.bookTitle})
             .addClass('BRreturn')
-            .html(this.bookTitle)
+            .html(this.bookUrlText || this.bookTitle)
         )
     } else if (this.bookTitle) {
         $titleSectionEl.append(this.bookTitle);
