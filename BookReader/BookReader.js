@@ -4233,7 +4233,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv) {
     });
     jForm.find('.email-share-button').click(function(){
       var body = self.bookTitle + "\n\n" + self._getSocialShareUrl();
-      window.location.href = 'mailto:?subject=' + encodeURI(self.bookTitle) + '&body=' + encodeURI(body);
+      window.location.href = 'mailto:?subject=' + encodeURIComponent(self.bookTitle) + '&body=' + encodeURIComponent(body);
     });
 
     jForm.find('input[name=thispage]').trigger('change');
@@ -4242,7 +4242,7 @@ BookReader.prototype.buildShareDiv = function(jShareDiv) {
 };
 
 BookReader.prototype._getSocialShareUrl = function() {
-    var shareThisPage = this.refs.$br.find('.thispage-social').prop('checked');
+    var shareThisPage =$('.thispage-social:visible').prop('checked');
     if (shareThisPage) {
       return window.location.href;
     } else {
