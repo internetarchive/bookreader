@@ -50,45 +50,6 @@
   button {
     cursor: pointer;
 
-    &.action {
-      margin-left: 5px;
-      margin-right: 5px;
-      padding: 8px 30px;
-      font-size: $brFontSizeBase;
-      background-color: transparent;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-      background-color: rgb(193,193,193);
-      color: white;
-      min-width: 150px;
-      text-align: center;
-      line-height: 1;
-      &:active { background-color: rgb(171, 171, 171); }
-    }
-    &.action.primary {
-      background-color: #4990E2;
-      &:active { background-color: #2a76cd; }
-    }
-    &.action.caution {
-      background-color: rgb(240,181,52);
-      &:active { background-color: rgb(251, 191, 59); }
-    }
-    &.action.red {
-      background-color: rgb(192,57,43);
-      &:active { background-color: rgb(154, 43, 32); }
-    }
-    &.action.orangeButton {
-      background-color: transparent;
-      border: 2px solid orange;
-      color: orange;
-      &:active { border-color: rgb(249, 198, 19); }
-    }
-    &.action.skinny { min-width: 50px; }
-    &.facebook-share-button { background-color: #3a5998; }
-    &.twitter-share-button { background-color: #429aff; }
-    &.email-share-button { background-color: #c1c1c1; }
-
     .BRicon {
       &:hover { background: none; }
       margin: 0;
@@ -237,6 +198,47 @@ body.BRfullscreenActive {
   -webkit-user-drag: none;
 }
 
+.BRaction {
+  margin-left: 5px;
+  margin-right: 5px;
+  padding: 8px 30px;
+  font-size: $brFontSizeBase;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: white;
+  min-width: 150px;
+  text-align: center;
+  line-height: 1;
+  background-color: rgb(193,193,193);
+  &:active { background-color: rgb(171, 171, 171); }
+
+  &.primary {
+    background-color: #4990E2;
+    &:active { background-color: #2a76cd; }
+  }
+  &.caution {
+    background-color: rgb(240,181,52);
+    &:active { background-color: rgb(251, 191, 59); }
+  }
+  &.red {
+    background-color: rgb(192,57,43);
+    &:active { background-color: rgb(154, 43, 32); }
+  }
+  &.orangeButton {
+    background-color: transparent;
+    border: 2px solid orange;
+    color: orange;
+    &:active { border-color: rgb(249, 198, 19); }
+  }
+  &.skinny { min-width: 50px; }
+
+  &.facebook-share-button { background-color: #3a5998; }
+  &.twitter-share-button { background-color: #429aff; }
+  &.email-share-button { background-color: #c1c1c1; }
+}
+
+
 /* Mobile Only */
 @media (max-width: $brBreakPointMobile) {
   .BRinfoLeftCol { font-size: $brFontSizeBase; }
@@ -266,7 +268,7 @@ body.BRfullscreenActive {
 
   #{$brScope} {
     .fieldset-embed { display: none; }
-    button.action {
+    .BRaction {
       padding: 8px 10px;
       font-size: $brFontSizeBase;
       margin-left: 0; margin-bottom: 10px;
@@ -288,6 +290,6 @@ body.BRfullscreenActive {
   .BRinfoFooter a { display: inline; margin-right: 10px;}
 
   #{$brScope} {
-    button.action { padding: 8px 16px; }
+    .BRaction { padding: 8px 16px; }
   }
 }

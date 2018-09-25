@@ -22,7 +22,7 @@
   }
 
   .BRnavCntl {
-    $brZindexBase: 5;
+    z-index: $brZindexBase + 5;
     background-color: $brColorDarkBorder;
   }
   .BRnavCntlBtm:hover {

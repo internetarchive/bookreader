@@ -24,7 +24,7 @@ html.mm-background .BookReader {
 
 .BRmobileMenu {
   button { -webkit-appearance: initial; }
-  button.action { display: block; width: 100%; }
+  .BRaction { display: block; width: 100%; }
   div.share-social button { padding: 0 5px; height: 40px; text-align: left; }
 }
 

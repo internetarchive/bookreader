@@ -706,16 +706,10 @@ BookReader.prototype.setupTooltips = function() {
             shrinkToFit: true,
             spikeGirth: 0,
             spikeLength: 8,
-            // fill: '#4A90E2'
             fill: 'transparent',
             cornerRadius: 0,
             strokeWidth: 0,
-            cssStyles: {
-                // color: 'white',
-                // border: '1px solid grey',
-                // fontSize: '12px',
-                // whiteSpace: 'nowrap'
-            },
+            cssStyles: {},
         };
         var $el = $(el);
         if ($el.parents('.BRtoolbar').length) {
@@ -1714,7 +1708,6 @@ BookReader.prototype.switchMode = function(mode) {
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
-
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -4284,9 +4277,9 @@ BookReader.prototype.buildShareDiv = function(jShareDiv) {
                 '<input class="thispage-social" type="checkbox" />',
                 'Open to this page?',
             '</label>',
-            '<div><button class="action share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>',
-            '<div><button class="action share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>',
-            '<div><button class="action share email-share-button"><i class="BRicon email" /> Email</button></div>',
+            '<div><button class="BRaction share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>',
+            '<div><button class="BRaction share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>',
+            '<div><button class="BRaction share email-share-button"><i class="BRicon email" /> Email</button></div>',
         '</div>',
         embedHtml,
         '<div class="BRfloatFoot">',

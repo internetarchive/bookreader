@@ -136,7 +136,7 @@ BookReader.prototype.buildMobileDrawerElement = function() {
     var experimentalHtml = '';
     if (this.enableExperimentalControls) {
       experimentalHtml += "<div class=\"DrawerSettingsTitle\">Experimental (may not work)</div>"
-        +"        <button class='action high-contrast-button'>Toggle high contrast</button>";
+        +"        <button class='BRaction high-contrast-button'>Toggle high contrast</button>";
     }
 
     var $el = $(
