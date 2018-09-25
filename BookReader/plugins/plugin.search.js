@@ -9,6 +9,7 @@ jQuery.extend(BookReader.defaultOptions, {
     bookPath: '',
     enableSearch: true,
     searchInsideUrl: '/fulltext/inside.php',
+    initialSearchTerm: null,
 });
 
 // Extend the constructor to add search properties
@@ -28,6 +29,20 @@ BookReader.prototype.setup = (function (super_) {
         this.bookPath = options.bookPath;
     };
 })(BookReader.prototype.setup);
+
+BookReader.prototype.init = (function (super_) {
+    return function () {
+        super_.call(this);
+
+        if (this.options.enableSearch
+                && this.options.initialSearchTerm) {
+            this.$('.BRsearchInput').val(this.options.initialSearchTerm);
+            this.search(this.options.initialSearchTerm, {
+                goToFirstResult: true
+            });
+        }
+    };
+})(BookReader.prototype.init);
 
 
 // Extend buildMobileDrawerElement
