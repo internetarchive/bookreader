@@ -158,23 +158,22 @@
       height: 30px;
       border: 1px solid $brColorLightBorder;
       flex: 1;
+      border-radius: 0;
     }
     .BRsearchSubmit {
       width: 30px;
       height: 30px;
       border: none;
       background-color: $brColorThemeblue;
+      background-image: url("images/icon_search_button.svg");
+      background-repeat: no-repeat;
+      background-position: center center;
+
       text-align: center;
       color: white;
       overflow: hidden;
-      box-sizing: boder-box;
+      box-sizing: border-box;
       display: inline-block;
-
-      img {
-        position:relative;
-        top: 2px;
-        left: 2px;
-      }
     }
   }
 }
@@ -189,15 +188,6 @@
     }
     .BRbooksearch .BRsearchSubmit {
       float: left;
-    }
-    .BRbooksearch.mobile .BRsearchSubmit {
-      float: inherit;
-      display: inline-block;
-    }
-    .BRbooksearch.mobile .BRsearchSubmit img {
-      position: relative;
-      top: 2px;
-      left: -2px;
     }
   }
 }

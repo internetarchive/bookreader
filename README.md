@@ -136,9 +136,12 @@ Note that BookReader is a core part of Archive.org's mission of Universal Access
 
 ## Notes about version 4 (WIP)
 
-- CSS converted to SASS and refactored
+V4 was driven by updating BookReader to work inline on the archive.org details page. This required code refactoring (eg: changing ids to classes), and also updating the design so it integrates well with the details page.
+
 - BookReader selectors made relative to BookReader. This means it shouldn't interfere with parent page, and also more than one BookReader instance can be on the page.
+- CSS converted to SASS and refactored.
 - New design with full-screen support.
+- URL plugin is extended to support replaceState, and also configure which params are reflected into the URL fragment.
 - WIP JavaScript code is formatted with Prettier (2 spaces instead of 4)
 
 

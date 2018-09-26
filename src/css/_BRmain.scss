@@ -1,9 +1,9 @@
 #{$brScope} {
   /* Shared root element rules */
-   font-family: $brFontFamily;
-   font-size: $brFontSizeBase;
-   line-height: 1.2;
-   -webkit-text-size-adjust: none;
+  font-family: $brFontFamily;
+  font-size: $brFontSizeBase;
+  line-height: 1.2;
+  -webkit-text-size-adjust: none;
 
 
   /* Some helper functional css utilities  */
@@ -49,30 +49,23 @@
   }
   button {
     cursor: pointer;
-
-    .BRicon {
-      &:hover { background: none; }
-      margin: 0;
-      padding: 0;
-      display: inline;
-    }
   }
 
   a.logo {
     display: inline-block;
     width: auto;
     height: 100%;
-    // margin: 0 25px;
+    margin: 0 10px;
     background: transparent url(images/icon_home.svg) no-repeat center center;
     background-size: contain;
-    // margin-top: 7px;
   }
 }
 
 .BookReader {
   margin: 0;
   padding: 0;
-  position:relative;
+  position: relative;
+  overflow: hidden;
   background-color: $brColorMainBg;
 }
 
@@ -107,7 +100,12 @@
 
   .share-title { margin: 15px 15px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
   .share-social { margin: 15px 15px 0;}
-  .share-social button { padding: 0 5px; height: 40px; text-align: left;}
+  .share-social button {
+    padding: 0 5px;
+    height: 40px;
+    text-align: left;
+    color: white;
+  }
   .share-social button > i { margin-right: 5px; }
   .share-social > div { display: inline; }
   .share-embed { margin-top: 20px; }
@@ -206,24 +204,17 @@ body.BRfullscreenActive {
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  color: white;
   min-width: 150px;
   text-align: center;
   line-height: 1;
-  background-color: rgb(193,193,193);
   &:active { background-color: rgb(171, 171, 171); }
-
+  &.default {
+    background-color: rgb(193,193,193);
+    color: white;
+  }
   &.primary {
     background-color: #4990E2;
     &:active { background-color: #2a76cd; }
-  }
-  &.caution {
-    background-color: rgb(240,181,52);
-    &:active { background-color: rgb(251, 191, 59); }
-  }
-  &.red {
-    background-color: rgb(192,57,43);
-    &:active { background-color: rgb(154, 43, 32); }
   }
   &.orangeButton {
     background-color: transparent;
@@ -232,12 +223,10 @@ body.BRfullscreenActive {
     &:active { border-color: rgb(249, 198, 19); }
   }
   &.skinny { min-width: 50px; }
-
   &.facebook-share-button { background-color: #3a5998; }
   &.twitter-share-button { background-color: #429aff; }
   &.email-share-button { background-color: #c1c1c1; }
 }
-
 
 /* Mobile Only */
 @media (max-width: $brBreakPointMobile) {
@@ -260,17 +249,12 @@ body.BRfullscreenActive {
     font-size: inherit;
   }
 
-  /* hide navline chapters and search in mobile */
-  .BRnavline .BRchapter { display: none; }
-  .BRnavline .BRsearch { display: none; }
-
   .BRprogresspopup { max-width: 80%; min-width: inherit; }
 
   #{$brScope} {
     .fieldset-embed { display: none; }
     .BRaction {
       padding: 8px 10px;
-      font-size: $brFontSizeBase;
       margin-left: 0; margin-bottom: 10px;
     }
   }

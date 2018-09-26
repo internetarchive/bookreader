@@ -37,7 +37,7 @@ function BookReader(options) {
     this.setup(options);
 }
 
-BookReader.version = "3.2.1";
+BookReader.version = "4.0.0-beta";
 
 // Mode constants
 BookReader.constMode1up = 1;
@@ -1999,7 +1999,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
         // $$$ TODO: Make sure popup is positioned so that it is in view
         // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
         $(e.data.twoPagePopUp).css({
-            left: e.pageX- e.data.refs.$brContainer.offset().left + e.data.refs.$brContainer.scrollLeft() - 100 + 'px',
+            left: e.pageX- e.data.refs.$brContainer.offset().left + e.data.refs.$brContainer.scrollLeft() - 120 + 'px',
             top: e.pageY - e.data.refs.$brContainer.offset().top + e.data.refs.$brContainer.scrollTop() + 'px'
         });
     });
@@ -2012,7 +2012,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
         // $$$ TODO: Make sure popup is positioned so that it is in view
         //           (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
         $(e.data.twoPagePopUp).css({
-            left: e.pageX - e.data.refs.$brContainer.offset().left + e.data.refs.$brContainer.scrollLeft() - $(e.data.twoPagePopUp).width() + 100 + 'px',
+            left: e.pageX - e.data.refs.$brContainer.offset().left + e.data.refs.$brContainer.scrollLeft() - $(e.data.twoPagePopUp).width() + 120 + 'px',
             top: e.pageY-e.data.refs.$brContainer.offset().top + e.data.refs.$brContainer.scrollTop() + 'px'
         });
     });
@@ -3353,7 +3353,13 @@ BookReader.prototype.initNavbar = function() {
 //______________________________________________________________________________
 // Initialize the navigation bar when embedded
 BookReader.prototype.initEmbedNavbar = function() {
-    var thisLink = (window.location + '').replace('?ui=embed',''); // IA-specific
+    // IA-specific
+    var thisLink = (window.location + '')
+        .replace('?ui=embed','')
+        .replace('/stream/', '/details/')
+        .replace('#', '/')
+    ;
+
     var logoHtml = '';
     if (this.showLogo) {
       logoHtml = "<a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a>";
@@ -3361,16 +3367,17 @@ BookReader.prototype.initEmbedNavbar = function() {
 
     this.refs.$br.append(
         '<div class="BRnav BRnavEmbed">'
+        +   logoHtml
+        +   "<span class='BRembedreturn'>"
+        +      "<a href='" + thisLink + "' target='_blank'>"+this.bookTitle+"</a>"
+        +   "</span>"
         +   "<span class='BRtoolbarbuttons'>"
-        +         '<button class="BRicon full"></button>'
         +         '<button class="BRicon book_left"></button>'
         +         '<button class="BRicon book_right"></button>'
+        +         '<button class="BRicon full"></button>'
         +   "</span>"
-        +   logoHtml
-        +   "<span class='BRembedreturn'><a href='" + thisLink + "' target='_blank' ></a></span>"
         + '</div>'
     );
-    this.$('.BRembedreturn a').text(this.bookTitle);
 };
 
 
@@ -3450,17 +3457,15 @@ BookReader.prototype.buildToolbarElement = function() {
     if (this.bookUrl && this.options.enableBookTitleLink) {
         $titleSectionEl.append(
             $('<a>')
-            .attr({'href': this.bookUrl, 'title': this.bookTitle})
+            .attr({'href': this.bookUrl, 'title': this.bookUrlTitle})
             .addClass('BRreturn')
             .html(this.bookUrlText || this.bookTitle)
         )
     } else if (this.bookTitle) {
-        $titleSectionEl.append(this.bookTitle);
+        $titleSectionEl.append(this.bookUrlText || this.bookTitle);
     }
 
     // var $hamburger = this.refs.$BRtoolbar.find('BRtoolbarHamburger');
-
-
     return this.refs.$BRtoolbar;
 }
 
@@ -3687,8 +3692,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
 
     jIcons.filter('.full').bind('click', function() {
         if (self.ui == 'embed') {
-            // $$$ bit of a hack, IA-specific
-            var url = (window.location + '').replace("?ui=embed","");
+            var url = self.$('.BRembedreturn a').attr('href');
             window.open(url);
         } else {
             self.toggleFullscreen();
@@ -3712,7 +3716,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
                 $brNavCntlBtmEl.addClass('BRup').removeClass('BRdn');
                 $brNavCntlTopEl.addClass('BRdn').removeClass('BRup');
                 self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
-                self.$('.BRnavCntl').delay(1000).animate({opacity:.25}, 1000);
+                self.$('.BRnavCntl').delay(1000).animate({opacity:.75}, 1000);
             } else {
                 if (self.refs.$BRtoolbar)
                     promises.push(self.refs.$BRtoolbar.animate({top:0}).promise());
@@ -3743,7 +3747,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
         }
     }).mouseleave(function(){
         if ($(this).hasClass('BRup')) {
-            self.$('.BRnavCntl').animate({opacity:.25},250);
+            self.$('.BRnavCntl').animate({opacity:.75},250);
         }
     });
     $brNavCntlTopEl.mouseover(function(){
@@ -3752,7 +3756,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
         }
     }).mouseleave(function(){
         if ($(this).hasClass('BRdn')) {
-            self.$('.BRnavCntl').animate({opacity:.25},250);
+            self.$('.BRnavCntl').animate({opacity:.75},250);
         }
     });
 

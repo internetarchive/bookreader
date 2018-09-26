@@ -21,6 +21,10 @@
 .BRtoolbar a {
   text-decoration: none;
   color: white;
+  &:hover {
+    color: white;
+    text-decoration: underline;
+  }
 }
 /* desktop header */
 .BRtoolbarSection > *  {
@@ -30,7 +34,6 @@
   white-space: nowrap;
   text-align: right;
   border-spacing: 0;
-  width:100%;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;

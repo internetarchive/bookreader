@@ -155,9 +155,11 @@
       font-weight: 700;
       text-align: center;
       border-bottom:1px solid rgb(216,216,216);
-      margin-bottom:10px;
   }
-  .BRfloatFoot { padding: 10px; }
+  .BRfloatFoot {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
 }
 
 

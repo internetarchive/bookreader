@@ -75,7 +75,20 @@
   &.BRnavEmbed {
     padding-top: 0;
     height: auto;
-    display: block;
+    align-items: center;
+
+    .BRembedreturn {
+      flex: 1 auto;
+      overflow-x: hidden;
+    }
+    .logo {
+      display: inline-block;
+      width: 25px;
+      height: 25px;
+      margin: 0 10px;
+      background: transparent url(images/icon_home.svg) no-repeat center center;
+      background-size: contain;
+    }
   }
 
   /* Theming */
@@ -96,13 +109,6 @@
     .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive & {
       @include brNavLight;
     }
-    .BRnavCntlBtm {
-      bottom: $brNavHeightMobile;
-    }
-    .BRpager {
-      height: 10px;
-      top: ($brNavHeightMobile / 2) - 5px;
-    }
   }
 }
 
@@ -110,8 +116,6 @@
   position: relative;
   margin-right: 10px;
   margin-left: 10px;
-
-  /* non-flexbox fallback */
   float: left;
   flex: 1 auto;
 }
@@ -170,8 +174,6 @@
   padding-left: 0;
   text-align: right;
   white-space: nowrap;
-
-  /* non-flexbox fallback */
   float: left;
   flex: none;
 }
@@ -203,4 +205,20 @@
 }
 .BRnavCntlTop.BRup, .BRnavCntlTop.BRdn {
   background-position: 8px 4px;
+}
+
+
+/* Mobile Only */
+@media (max-width: $brBreakPointMobile) {
+  /* hide navline chapters and search in mobile */
+  .BRnavline .BRchapter { display: none; }
+  .BRnavline .BRsearch { display: none; }
+
+  .BRnavCntlBtm {
+    bottom: $brNavHeightMobile;
+  }
+  .BRpager {
+    height: 10px;
+    top: ($brNavHeightMobile / 2) - 5px;
+  }
 }

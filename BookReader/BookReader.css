@@ -166,74 +166,11 @@
 .BookReader button, .BRmobileMenu button, .BRfloat button {
   cursor: pointer;
 }
-.BookReader button.action, .BRmobileMenu button.action, .BRfloat button.action {
-  margin-left: 5px;
-  margin-right: 5px;
-  padding: 8px 30px;
-  font-size: 14px;
-  background-color: transparent;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  background-color: #c1c1c1;
-  color: white;
-  min-width: 150px;
-  text-align: center;
-  line-height: 1;
-}
-.BookReader button.action:active, .BRmobileMenu button.action:active, .BRfloat button.action:active {
-  background-color: #ababab;
-}
-.BookReader button.action.primary, .BRmobileMenu button.action.primary, .BRfloat button.action.primary {
-  background-color: #4990E2;
-}
-.BookReader button.action.primary:active, .BRmobileMenu button.action.primary:active, .BRfloat button.action.primary:active {
-  background-color: #2a76cd;
-}
-.BookReader button.action.caution, .BRmobileMenu button.action.caution, .BRfloat button.action.caution {
-  background-color: #f0b534;
-}
-.BookReader button.action.caution:active, .BRmobileMenu button.action.caution:active, .BRfloat button.action.caution:active {
-  background-color: #fbbf3b;
-}
-.BookReader button.action.red, .BRmobileMenu button.action.red, .BRfloat button.action.red {
-  background-color: #c0392b;
-}
-.BookReader button.action.red:active, .BRmobileMenu button.action.red:active, .BRfloat button.action.red:active {
-  background-color: #9a2b20;
-}
-.BookReader button.action.orangeButton, .BRmobileMenu button.action.orangeButton, .BRfloat button.action.orangeButton {
-  background-color: transparent;
-  border: 2px solid orange;
-  color: orange;
-}
-.BookReader button.action.orangeButton:active, .BRmobileMenu button.action.orangeButton:active, .BRfloat button.action.orangeButton:active {
-  border-color: #f9c613;
-}
-.BookReader button.action.skinny, .BRmobileMenu button.action.skinny, .BRfloat button.action.skinny {
-  min-width: 50px;
-}
-.BookReader button.facebook-share-button, .BRmobileMenu button.facebook-share-button, .BRfloat button.facebook-share-button {
-  background-color: #3a5998;
-}
-.BookReader button.twitter-share-button, .BRmobileMenu button.twitter-share-button, .BRfloat button.twitter-share-button {
-  background-color: #429aff;
-}
-.BookReader button.email-share-button, .BRmobileMenu button.email-share-button, .BRfloat button.email-share-button {
-  background-color: #c1c1c1;
-}
-.BookReader button .BRicon, .BRmobileMenu button .BRicon, .BRfloat button .BRicon {
-  margin: 0;
-  padding: 0;
-  display: inline;
-}
-.BookReader button .BRicon:hover, .BRmobileMenu button .BRicon:hover, .BRfloat button .BRicon:hover {
-  background: none;
-}
 .BookReader a.logo, .BRmobileMenu a.logo, .BRfloat a.logo {
   display: inline-block;
   width: auto;
   height: 100%;
+  margin: 0 10px;
   background: transparent url(images/icon_home.svg) no-repeat center center;
   background-size: contain;
 }
@@ -242,6 +179,7 @@
   margin: 0;
   padding: 0;
   position: relative;
+  overflow: hidden;
   background-color: black;
 }
 
@@ -288,6 +226,7 @@
   padding: 0 5px;
   height: 40px;
   text-align: left;
+  color: white;
 }
 .BRshare .share-social button > i {
   margin-right: 5px;
@@ -402,6 +341,52 @@ body.BRfullscreenActive .mm-menu {
   -webkit-user-drag: none;
 }
 
+.BRaction {
+  margin-left: 5px;
+  margin-right: 5px;
+  padding: 8px 30px;
+  font-size: 14px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  min-width: 150px;
+  text-align: center;
+  line-height: 1;
+}
+.BRaction:active {
+  background-color: #ababab;
+}
+.BRaction.default {
+  background-color: #c1c1c1;
+  color: white;
+}
+.BRaction.primary {
+  background-color: #4990E2;
+}
+.BRaction.primary:active {
+  background-color: #2a76cd;
+}
+.BRaction.orangeButton {
+  background-color: transparent;
+  border: 2px solid orange;
+  color: orange;
+}
+.BRaction.orangeButton:active {
+  border-color: #f9c613;
+}
+.BRaction.skinny {
+  min-width: 50px;
+}
+.BRaction.facebook-share-button {
+  background-color: #3a5998;
+}
+.BRaction.twitter-share-button {
+  background-color: #429aff;
+}
+.BRaction.email-share-button {
+  background-color: #c1c1c1;
+}
+
 /* Mobile Only */
 @media (max-width: 800px) {
   .BRinfoLeftCol {
@@ -448,15 +433,6 @@ body.BRfullscreenActive .mm-menu {
     font-size: inherit;
   }
 
-  /* hide navline chapters and search in mobile */
-  .BRnavline .BRchapter {
-    display: none;
-  }
-
-  .BRnavline .BRsearch {
-    display: none;
-  }
-
   .BRprogresspopup {
     max-width: 80%;
     min-width: inherit;
@@ -465,9 +441,8 @@ body.BRfullscreenActive .mm-menu {
   .BookReader .fieldset-embed, .BRmobileMenu .fieldset-embed, .BRfloat .fieldset-embed {
     display: none;
   }
-  .BookReader button.action, .BRmobileMenu button.action, .BRfloat button.action {
+  .BookReader .BRaction, .BRmobileMenu .BRaction, .BRfloat .BRaction {
     padding: 8px 10px;
-    font-size: 14px;
     margin-left: 0;
     margin-bottom: 10px;
   }
@@ -529,7 +504,7 @@ body.BRfullscreenActive .mm-menu {
     margin-right: 10px;
   }
 
-  .BookReader button.action, .BRmobileMenu button.action, .BRfloat button.action {
+  .BookReader .BRaction, .BRmobileMenu .BRaction, .BRfloat .BRaction {
     padding: 8px 16px;
   }
 }
@@ -1120,11 +1095,11 @@ i.BRicon {
     font-weight: 700;
     text-align: center;
     border-bottom: 1px solid #d8d8d8;
-    margin-bottom: 10px;
   }
 
   .BRfloatFoot {
     padding: 10px;
+    margin-bottom: 10px;
   }
 }
 /* Mobile Only (with some responsiveness) */
@@ -1151,7 +1126,7 @@ i.BRicon {
     border-top: 1px solid #ccc;
   }
 
-  .BRfloatFoot .action {
+  .BRfloatFoot .BRaction {
     margin-bottom: 10px;
   }
 }
@@ -1201,7 +1176,19 @@ i.BRicon {
 .BRnav.BRnavEmbed {
   padding-top: 0;
   height: auto;
-  display: block;
+  align-items: center;
+}
+.BRnav.BRnavEmbed .BRembedreturn {
+  flex: 1 auto;
+  overflow-x: hidden;
+}
+.BRnav.BRnavEmbed .logo {
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  margin: 0 10px;
+  background: transparent url(images/icon_home.svg) no-repeat center center;
+  background-size: contain;
 }
 .BRnav a {
   color: white;
@@ -1219,6 +1206,7 @@ i.BRicon {
   border-left: 1px solid #4D4D4D;
 }
 .BRnav .BRnavCntl {
+  z-index: 6;
   background-color: #4D4D4D;
 }
 .BRnav .BRnavCntlBtm:hover {
@@ -1279,20 +1267,12 @@ i.BRicon {
   .BRbodyMobileNavEnabled .BRnav .BRnavCntlBtm:hover, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRnavCntlBtm:hover {
     background-color: #0074D1;
   }
-  .BRnav .BRnavCntlBtm {
-    bottom: 40px;
-  }
-  .BRnav .BRpager {
-    height: 10px;
-    top: 15px;
-  }
 }
 
 .BRnavpos {
   position: relative;
   margin-right: 10px;
   margin-left: 10px;
-  /* non-flexbox fallback */
   float: left;
   flex: 1 auto;
 }
@@ -1353,7 +1333,6 @@ i.BRicon {
   padding-left: 0;
   text-align: right;
   white-space: nowrap;
-  /* non-flexbox fallback */
   float: left;
   flex: none;
 }
@@ -1392,6 +1371,26 @@ i.BRicon {
   background-position: 8px 4px;
 }
 
+/* Mobile Only */
+@media (max-width: 800px) {
+  /* hide navline chapters and search in mobile */
+  .BRnavline .BRchapter {
+    display: none;
+  }
+
+  .BRnavline .BRsearch {
+    display: none;
+  }
+
+  .BRnavCntlBtm {
+    bottom: 40px;
+  }
+
+  .BRpager {
+    height: 10px;
+    top: 15px;
+  }
+}
 /**
  * BRtoolbar is the top control bar (eg header)
  */
@@ -1417,6 +1416,10 @@ i.BRicon {
   text-decoration: none;
   color: white;
 }
+.BRtoolbar a:hover {
+  color: white;
+  text-decoration: underline;
+}
 
 /* desktop header */
 .BRtoolbarSection > * {
@@ -1427,7 +1430,6 @@ i.BRicon {
   white-space: nowrap;
   text-align: right;
   border-spacing: 0;
-  width: 100%;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -1600,7 +1602,7 @@ i.BRicon {
   background: transparent;
   display: block;
   float: left;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.2;
 }
 .BookReader .BRbooksearch.desktop .BRsearchSubmit, .BRmobileMenu .BRbooksearch.desktop .BRsearchSubmit, .BRfloat .BRbooksearch.desktop .BRsearchSubmit {
@@ -1632,22 +1634,21 @@ i.BRicon {
   height: 30px;
   border: 1px solid #979797;
   flex: 1;
+  border-radius: 0;
 }
 .BookReader .BRbooksearch.mobile .BRsearchSubmit, .BRmobileMenu .BRbooksearch.mobile .BRsearchSubmit, .BRfloat .BRbooksearch.mobile .BRsearchSubmit {
   width: 30px;
   height: 30px;
   border: none;
   background-color: #0074D1;
+  background-image: url("images/icon_search_button.svg");
+  background-repeat: no-repeat;
+  background-position: center center;
   text-align: center;
   color: white;
   overflow: hidden;
-  box-sizing: boder-box;
+  box-sizing: border-box;
   display: inline-block;
-}
-.BookReader .BRbooksearch.mobile .BRsearchSubmit img, .BRmobileMenu .BRbooksearch.mobile .BRsearchSubmit img, .BRfloat .BRbooksearch.mobile .BRsearchSubmit img {
-  position: relative;
-  top: 2px;
-  left: 2px;
 }
 
 /* Mid size breakpoint */
@@ -1659,15 +1660,6 @@ i.BRicon {
   }
   .BookReader .BRbooksearch .BRsearchSubmit, .BRmobileMenu .BRbooksearch .BRsearchSubmit, .BRfloat .BRbooksearch .BRsearchSubmit {
     float: left;
-  }
-  .BookReader .BRbooksearch.mobile .BRsearchSubmit, .BRmobileMenu .BRbooksearch.mobile .BRsearchSubmit, .BRfloat .BRbooksearch.mobile .BRsearchSubmit {
-    float: inherit;
-    display: inline-block;
-  }
-  .BookReader .BRbooksearch.mobile .BRsearchSubmit img, .BRmobileMenu .BRbooksearch.mobile .BRsearchSubmit img, .BRfloat .BRbooksearch.mobile .BRsearchSubmit img {
-    position: relative;
-    top: 2px;
-    left: -2px;
   }
 }
 .mm-menu .mm-navbar a, .mm-menu .mm-navbar > * {
@@ -1701,7 +1693,7 @@ html.mm-background .BookReader {
 .BRmobileMenu button {
   -webkit-appearance: initial;
 }
-.BRmobileMenu button.action {
+.BRmobileMenu .BRaction {
   display: block;
   width: 100%;
 }
@@ -1863,4 +1855,33 @@ html.mm-background .BookReader {
   .BRtoolbar.responsive {
     display: block;
   }
+}
+/****************** Excerpt from jquery-ui *********************/
+.ui-helper-hidden {
+  display: none;
+}
+
+.ui-helper-hidden-accessible {
+  position: absolute !important;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+.ui-helper-reset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  line-height: 1.3;
+  text-decoration: none;
+  font-size: 100%;
+  list-style: none;
+}
+
+.ui-helper-clearfix:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
 }
