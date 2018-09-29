@@ -3365,8 +3365,7 @@ BookReader.prototype.initEmbedNavbar = function() {
       logoHtml = "<a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a>";
     }
 
-    this.refs.$br.append(
-        '<div class="BRnav BRnavEmbed">'
+    this.refs.$BRnav = $('<div class="BRnav BRnavEmbed">'
         +   logoHtml
         +   "<span class='BRembedreturn'>"
         +      "<a href='" + thisLink + "' target='_blank'>"+this.bookTitle+"</a>"
@@ -3376,8 +3375,9 @@ BookReader.prototype.initEmbedNavbar = function() {
         +         '<button class="BRicon book_right"></button>'
         +         '<button class="BRicon full"></button>'
         +   "</span>"
-        + '</div>'
-    );
+        + '</div>');
+
+    this.refs.$br.append(this.refs.$BRnav);
 };
 
 
