@@ -380,14 +380,14 @@ BookReader.util = {
  * @private
  */
 BookReader.prototype.extendParams = function(params, newParams) {
-    var modifiedNewParams = $.extend(true, newParams);
+    var modifiedNewParams = $.extend({}, newParams);
     if ('undefined' != typeof(modifiedNewParams.page)) {
         var pageIndex = this.parsePageString(modifiedNewParams.page);
         if (!isNaN(pageIndex))
             modifiedNewParams.index = pageIndex;
         delete modifiedNewParams.page;
     }
-    $.extend(true, params, modifiedNewParams);
+    $.extend(params, modifiedNewParams);
 }
 
 /**

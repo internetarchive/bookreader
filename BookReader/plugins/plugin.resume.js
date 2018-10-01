@@ -3,13 +3,16 @@
  */
 
 jQuery.extend(BookReader.defaultOptions, {
-    enablePageResume: false,
+    enablePageResume: true,
+    /**
+     * @var null|string eg '/', '/details/id'
+     */
+    resumeCookiePath: null,
 });
 
 BookReader.prototype.init = (function(super_) {
     return function() {
         super_.call(this);
-
         if (this.options.enablePageResume) {
             this.bind(BookReader.eventNames.fragmentChange, function() {
                 var params = this.paramsFromCurrent(true);
@@ -35,10 +38,11 @@ BookReader.prototype.getResumeValue = function() {
  * Can be overriden for different implementation
  * @param {Number} the leaf index
  */
-BookReader.prototype.updateResumeValue = function(index) {
+BookReader.prototype.updateResumeValue = function(index, cookieName) {
     var ttl = new Date(+new Date + 12096e5); // 2 weeks
-    var path = window.location.pathname;
-    BookReader.docCookies.setItem('br-resume', index, ttl, path, null, false);
+    var path = this.options.resumeCookiePath || window.location.pathname;
+    cookieName = cookieName || 'br-resume';
+    BookReader.docCookies.setItem(cookieName, index, ttl, path, null, false);
 }
 
 /*\
