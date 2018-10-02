@@ -101,20 +101,24 @@ BookReader.prototype.ttsToggle = function () {
     }
 };
 
-// ttsStart(
+// ttsStart()
 //______________________________________________________________________________
 BookReader.prototype.ttsStart = function () {
     if (soundManager.debugMode) console.log('starting readAloud');
+
+
     if (this.constModeThumb == this.mode)
         this.switchMode(this.constMode1up);
 
     this.$('.BRicon.read').addClass('unread');
 
     this.ttsIndex = this.currentIndex();
+
     this.ttsFormat = 'mp3';
     if ($.browser.mozilla) {
         this.ttsFormat = 'ogg';
     }
+
     this.ttsGetText(this.ttsIndex, this.ttsStartCB);
     if (navigator.userAgent.match(/mobile/i)) {
         // HACK for iOS. Security restrictions require playback to be triggered
@@ -187,32 +191,41 @@ BookReader.prototype.ttsStartCB = function(data) {
     ///// onbufferchange: fires in FF5 using HTML5 audio, but not in safari using flash audio
     ///// whileplaying: fires everywhere
 
-    var dataString = data[0][0];
-    dataString = encodeURIComponent(dataString);
+    var plaintext = data[0][0];
 
-    //the .ogg is to trick SoundManager2 to use the HTML5 audio player;
-    var soundUrl = this.getSoundUrl(dataString);
+    if (true) {
+	var synth = window.speechSynthesis;
+	var utterThis = new SpeechSynthesisUtterance(plaintext);
+	synth.speak(utterThis);
+	this.removeProgressPopup();
+	this.ttsPosition = -1;
+	this.ttsNextChunk();
+    } else {
+	var dataString = encodeURIComponent(plaintext);
+	//the .ogg is to trick SoundManager2 to use the HTML5 audio player;
+	var soundUrl = this.getSoundUrl(dataString);
 
-    this.ttsPosition = -1;
-    var snd = soundManager.createSound({
-     id: 'chunk'+this.ttsIndex+'-0',
-     url: soundUrl,
-     onload: function(){
-       this.br.removeProgressPopup();
-     }, //fires in safari...
-     onbufferchange: function(){
-       if (false == this.isBuffering) {
-         this.br.removeProgressPopup();
-       }
-     }, //fires in FF and IE9
-     onready: function() {
-       this.br.removeProgressPopup();
-     }
-    });
-    snd.br = this;
-    snd.load();
+	this.ttsPosition = -1;
+	var snd = soundManager.createSound({
+	    id: 'chunk'+this.ttsIndex+'-0',
+	    url: soundUrl,
+	    onload: function(){
+		this.br.removeProgressPopup();
+	    }, //fires in safari...
+	    onbufferchange: function(){
+		if (false == this.isBuffering) {
+		    this.br.removeProgressPopup();
+		}
+	    }, //fires in FF and IE9
+	    onready: function() {
+		this.br.removeProgressPopup();
+	    }
+	});
+	snd.br = this;
+	snd.load();
+	this.ttsNextChunk();
 
-    this.ttsNextChunk();
+    }
 };
 
 
