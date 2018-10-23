@@ -1708,6 +1708,8 @@ BookReader.prototype.switchMode = function(mode) {
         this.prepareTwoPageView();
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
+
+    this.trigger(BookReader.eventNames.fragmentChange);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -4626,12 +4628,9 @@ BookReader.prototype.leafNumToIndex = function(index) {
 
 /**
  * Create a params object from the current parameters.
- * @param {boolean} processParams - pass true to process params
  * @return {Object}
  */
-BookReader.prototype.paramsFromCurrent = function(processParams) {
-    processParams = processParams || false;
-
+BookReader.prototype.paramsFromCurrent = function() {
     var params = {};
 
     var index = this.currentIndex();
@@ -4649,13 +4648,6 @@ BookReader.prototype.paramsFromCurrent = function(processParams) {
     // search
     if (this.enableSearch) {
         params.search = this.searchTerm;
-    }
-
-    if (processParams) {
-        // Only include the mode (eg mode/2up) if user has made a choice
-        if (this.prevReadMode == null) {
-            delete params.mode;
-        }
     }
 
     return params;

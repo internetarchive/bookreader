@@ -20,6 +20,9 @@ jQuery.extend(BookReader.defaultOptions, {
 
   // Only these params will be reflected onto the URL
   urlTrackedParams: ['page', 'search', 'mode', 'region', 'highlight'],
+
+  // If true, don't update the URL when page == n0 (eg "/page/n0")
+  urlTrackIndex0: false,
 });
 
 BookReader.prototype.setup = (function(super_) {
@@ -37,12 +40,15 @@ BookReader.prototype.setup = (function(super_) {
 
 BookReader.prototype.init = (function(super_) {
   return function() {
+
     if (this.options.enableUrlPlugin) {
       this.bind(BookReader.eventNames.PostInit, function(e, br) {
         if (br.options.updateWindowTitle) {
           document.title = br.shortTitle(50);
         }
-        // br.urlStartLocationPolling();
+        if (br.options.urlMode === 'hash') {
+          br.urlStartLocationPolling();
+        }
       });
 
       this.bind(BookReader.eventNames.fragmentChange,
@@ -104,36 +110,15 @@ BookReader.prototype.urlStartLocationPolling = function() {
  * Call this instead of manually using window.location.replace
  */
 BookReader.prototype.urlUpdateFragment = function() {
-  var newFragment = this.urlFragmentFromCurrent();
-  var currFragment = this.urlReadFragment();
-
-  if (currFragment !== newFragment) {
-    if (this.options.urlMode === 'history') {
-      if (window.history && window.history.replaceState) {
-        window.history.replaceState(
-          {},
-          null,
-          this.options.urlHistoryBasePath
-          + newFragment
-          + window.location.search
-        );
-      }
-    } else {
-      window.location.replace('#' + newFragment);
-    }
-    this.oldLocationHash = newFragment;
-  }
-};
-
-/**
- * Helper to get the fragment.
- * Will filter keys based on options.urlTrackedParams.
- * @return {string}
- */
-BookReader.prototype.urlFragmentFromCurrent = function() {
-  var allParams = this.paramsFromCurrent(true);
+  var allParams = this.paramsFromCurrent();
   var params = {};
-  var param;
+
+  if (!this.options.urlTrackIndex0
+      && 'undefined' !== typeof(allParams.index)
+      && allParams.index === 0) {
+    delete allParams.index;
+    delete allParams.page;
+  }
 
   for (var i = 0; i < this.options.urlTrackedParams.length; i++) {
     param = this.options.urlTrackedParams[i];
@@ -142,7 +127,31 @@ BookReader.prototype.urlFragmentFromCurrent = function() {
     }
   }
 
-  return this.fragmentFromParams(params);
+  var newFragment = this.fragmentFromParams(params);
+  var currFragment = this.urlReadFragment();
+
+  if (currFragment === newFragment) {
+    return;
+  }
+
+  if (this.options.urlMode === 'history') {
+    if (window.history && window.history.replaceState) {
+      var baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
+      var newFragmentWithSlash = newFragment === '' ? '' : '/' + newFragment;
+
+      window.history.replaceState(
+        {},
+        null,
+        baseWithoutSlash
+        + newFragmentWithSlash
+        + window.location.search
+      );
+    }
+  } else {
+    window.location.replace('#' + newFragment);
+  }
+
+  this.oldLocationHash = newFragment;
 };
 
 /**

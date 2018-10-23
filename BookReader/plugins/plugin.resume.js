@@ -15,7 +15,7 @@ BookReader.prototype.init = (function(super_) {
         super_.call(this);
         if (this.options.enablePageResume) {
             this.bind(BookReader.eventNames.fragmentChange, function() {
-                var params = this.paramsFromCurrent(true);
+                var params = this.paramsFromCurrent();
                 this.updateResumeValue(params.index);
             }.bind(this));
         }
