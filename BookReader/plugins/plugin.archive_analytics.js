@@ -23,7 +23,7 @@ BookReader.prototype.init = (function(super_) {
 BookReader.prototype.archiveAnalyticsSend = function() {
   var prevFragment = this.archiveAnalyticsSend.prevHash;
 
-  var params = this.paramsFromCurrent(true);
+  var params = this.paramsFromCurrent();
   var newFragment = this.fragmentFromParams(params);
 
   if (prevFragment != newFragment) {
