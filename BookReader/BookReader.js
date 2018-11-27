@@ -1201,8 +1201,10 @@ BookReader.prototype.drawLeafsTwoPage = function() {
     }).appendTo('#BRtwopageview');
 
     $("#BRtwopageview img").each(function () {
-        if ($(this).attr("src").indexOf("transparent.png") > -1) return;
+        var src = $(this).attr('src');
+        if (src.indexOf("transparent.png") > -1) return;
         $(this).attr('src', '../BookReader/images/transparent.png');
+        $(this).css({ backgroundImage: 'url(\'' + src + '\')' })
     })
     
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
