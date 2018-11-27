@@ -833,10 +833,13 @@ BookReader.prototype.drawLeafsOnePage = function() {
             BRpageViewEl.appendChild(div);
 
             var img = document.createElement('img');
-            img.src = this._getPageURI(index, this.reduce, 0);
+//             img.src = this._getPageURI(index, this.reduce, 0);
+            img.src = this.imagesBaseURL + 'transparent.png';
             img.className = 'BRnoselect BRonePageImage';
             img.style.width = width + 'px';
             img.style.height = height + 'px';
+            img.style.backgroundImage = "url('" + this._getPageURI(index, this.reduce, 0) + "')";
+            img.style.backgroundSize = "cover";
             div.appendChild(img);
         }
 
@@ -1172,7 +1175,9 @@ BookReader.prototype.drawLeafsTwoPage = function() {
         top:    top+'px',
         height: this.twoPage.height +'px', // $$$ height forced the same for both pages
         width:  this.twoPage.scaledWL + 'px',
-        zIndex: 2
+        zIndex: 2,
+        backgroundImage: 'url(\'' + $(this.prefetchedImgs[indexL]).attr('src') + '\')',
+        backgroundSize: 'cover'
     }).appendTo('#BRtwopageview');
 
     var indexR = this.twoPage.currentIndexR;
@@ -1190,10 +1195,16 @@ BookReader.prototype.drawLeafsTwoPage = function() {
         top:    top+'px',
         height: this.twoPage.height + 'px', // $$$ height forced the same for both pages
         width:  this.twoPage.scaledWR + 'px',
-        zIndex: 2
+        zIndex: 2,
+        backgroundImage: 'url(\'' + $(this.prefetchedImgs[indexR]).attr('src') + '\')',
+        backgroundSize: 'cover'
     }).appendTo('#BRtwopageview');
 
-
+    $("#BRtwopageview img").each(function () {
+        if ($(this).attr("src").indexOf("transparent.png") > -1) return;
+        $(this).attr('src', '../BookReader/images/transparent.png');
+    })
+    
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
     this.setMouseHandlers2UP();
     this.twoPageSetCursor();
@@ -4392,8 +4403,11 @@ BookReader.prototype.reloadImages = function() {
     if (!elem.complete || elem.naturalHeight === 0) {
       var src = elem.src;
       elem.src = '';
+      var backgroundImage = elem.style.backgroundImage;
+      elem.style.backgroundImage = '';
       setTimeout(function() {
         elem.src = src;
+        elem.style.backgroundImage = backgroundImage;
       }, 1000);
     }
   });
