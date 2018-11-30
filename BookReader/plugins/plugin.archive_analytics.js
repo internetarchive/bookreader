@@ -21,6 +21,10 @@ BookReader.prototype.init = (function(super_) {
 })(BookReader.prototype.init);
 
 BookReader.prototype.archiveAnalyticsSend = function() {
+  if (!window.archive_analytics) {
+    return;
+  }
+
   var prevFragment = this.archiveAnalyticsSend.prevHash;
 
   var params = this.paramsFromCurrent();
