@@ -1,3 +1,12 @@
+# 4.0.0-beta
+V4 was driven by updating BookReader to work inline on the archive.org details page. This required code refactoring (eg: changing ids to classes), and also updating the design so it integrates well with the details page.
+
+- BookReader selectors made relative to BookReader. This means it shouldn't interfere with parent page, and also more than one BookReader instance can be on the page.
+- CSS converted to SASS and refactored.
+- New design with full-screen support.
+- URL plugin is extended to support replaceState, and also configure which params are reflected into the URL fragment.
+- WIP JavaScript code is formatted with 2 spaces instead of 4
+
 # 3.2.1
 - Fix so initParams normalizes params.page to params.index, to prevent complexity of priority of page versus index.
 

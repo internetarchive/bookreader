@@ -110,6 +110,7 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 
 At the time of writing, all of BookReader's JS codebase does not use any compilation. The source files are edited directly. However, the CSS is built with SCSS. Use `npm run build` to build the scss file.
 
+The sass compiler will need to be installed.
 
 ## Tests
 
@@ -134,38 +135,10 @@ See `BookReaderDemo/demo-iiif.html` to see an example of how to load a IIIF mani
 Note that BookReader is a core part of Archive.org's mission of Universal Access to All Knowledge. Therefore, care must be taken to support legacy browsers. It should still work and be useable on old devices.
 
 
-## Notes about version 4 (WIP)
-
-V4 was driven by updating BookReader to work inline on the archive.org details page. This required code refactoring (eg: changing ids to classes), and also updating the design so it integrates well with the details page.
-
-- BookReader selectors made relative to BookReader. This means it shouldn't interfere with parent page, and also more than one BookReader instance can be on the page.
-- CSS converted to SASS and refactored.
-- New design with full-screen support.
-- URL plugin is extended to support replaceState, and also configure which params are reflected into the URL fragment.
-- WIP JavaScript code is formatted with Prettier (2 spaces instead of 4)
-
-
-## Notes about version 3
-
-- Make BookReader easier to use, by adding `options` to the constructor, and adding new `options.data` option. The old way of overriding properties should still work, but it is deprecated.
-- Factor out extra features into plugins. See `plugins` directory.
-- Clean up code: Remove a lot of commented-out code. Remove some unused methods.
-- Change some, but not all, CSS ids to classes.
-
-See the CHANGELOG.md for more information.
-
-
-## Notes about version 2
-
-Some of the new features in version 2:
-- Updated look for desktop
-- Improved mobile support
-- Fix issues with Text to Speech in browsers that don't support Flash
-- Remove PHP backend code from this repository and only include frontend code
-
-
 ## Areas for improvement
 - Change libraries to be NPM dependencies rather than included in the source code
+
+See [CHANGELOG.md](CHANGELOG.md) for history of the project.
 
 
 ## Contributing
