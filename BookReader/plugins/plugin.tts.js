@@ -6,6 +6,7 @@
 jQuery.extend(BookReader.defaultOptions, {
     server: 'ia600609.us.archive.org',
     bookPath: '',
+    enableTtsPlugin: true,
 });
 
 // Extend the constructor to add TTS properties
@@ -13,42 +14,45 @@ BookReader.prototype.setup = (function (super_) {
     return function (options) {
         super_.call(this, options);
 
-        // Text-to-Speech properties
-        this.ttsPlaying     = false;
-        this.ttsIndex       = null;  //leaf index
-        this.ttsPosition    = -1;    //chunk (paragraph) number
-        this.ttsBuffering   = false;
-        this.ttsPoller      = null;
-        this.ttsFormat      = null;
+        if (this.options.enableTtsPlugin) {
+            // Text-to-Speech properties
+            this.ttsPlaying     = false;
+            this.ttsIndex       = null;  //leaf index
+            this.ttsPosition    = -1;    //chunk (paragraph) number
+            this.ttsBuffering   = false;
+            this.ttsPoller      = null;
+            this.ttsFormat      = null;
 
-        this.server = options.server;
-        this.bookPath = options.bookPath;
+            this.server = options.server;
+            this.bookPath = options.bookPath;
 
-        this.isSoundManagerSupported = false;
+            this.isSoundManagerSupported = false;
 
-        if (typeof(soundManager) !== 'undefined') {
-            this.isSoundManagerSupported = soundManager.supported();
+            if (typeof(soundManager) !== 'undefined') {
+                this.isSoundManagerSupported = soundManager.supported();
+            }
         }
     };
 })(BookReader.prototype.setup);
 
 BookReader.prototype.init = (function(super_) {
     return function() {
-        // Bind to events
-        this.bind(BookReader.eventNames.PostInit, function(e, br) {
-            jIcons = br.$('.BRicon.read').click(function(e) {
-                br.ttsToggle();
-                return false;
+        if (this.options.enableTtsPlugin) {
+            // Bind to events
+            this.bind(BookReader.eventNames.PostInit, function(e, br) {
+                jIcons = br.$('.BRicon.read').click(function(e) {
+                    br.ttsToggle();
+                    return false;
+                });
+                // Setup sound manager for read-aloud
+                if (br.isSoundManagerSupported)
+                    br.setupSoundManager();
             });
-            // Setup sound manager for read-aloud
-            if (br.isSoundManagerSupported)
-                br.setupSoundManager();
-        });
 
-        this.bind(BookReader.eventNames.stop, function(e, br) {
-            this.ttsStop();
-        }.bind(this));
-
+            this.bind(BookReader.eventNames.stop, function(e, br) {
+                this.ttsStop();
+            }.bind(this));
+        }
         super_.call(this);
     };
 })(BookReader.prototype.init);
@@ -58,7 +62,7 @@ BookReader.prototype.init = (function(super_) {
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
-        if (this.isSoundManagerSupported) {
+        if (this.options.enableTtsPlugin && this.isSoundManagerSupported) {
             $el.find('.BRmobileMenu__moreInfoRow').after($(
                 "    <li>"
                 +"      <span>"
@@ -81,7 +85,7 @@ BookReader.prototype.initNavbar = (function (super_) {
     return function () {
         var $el = super_.call(this);
         var readIcon = '';
-        if (this.isSoundManagerSupported) {
+        if (this.options.enableTtsPlugin && this.isSoundManagerSupported) {
             $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
         }
         return $el;

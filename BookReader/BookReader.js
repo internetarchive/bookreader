@@ -77,6 +77,7 @@ BookReader.defaultOptions = {
     flipSpeed: 'fast',
 
     showToolbar: true,
+    showNavbar: true,
     showLogo: true,
     // Where the logo links to
     logoURL: 'https://archive.org',
@@ -230,7 +231,6 @@ BookReader.prototype.setup = function(options) {
     this.lastDisplayableIndex2up = null;
     this.isFullscreenActive = false;
 
-    this.showToolbar = options.showToolbar;
     this.showLogo = options.showLogo;
     this.logoURL = options.logoURL;
     this.imagesBaseURL = options.imagesBaseURL;
@@ -493,13 +493,15 @@ BookReader.prototype.init = function() {
 
     // We init the nav bar after the params processing so that the nav slider
     // knows where it should start (doesn't jump after init)
-    if (this.ui == "embed") {
+    if (this.ui == "embed" && this.options.showNavbar) {
         this.initEmbedNavbar();
     } else {
-        if (this.showToolbar) {
+        if (this.options.showToolbar) {
             this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
         }
-        this.initNavbar();
+        if (this.options.showNavbar) {
+            this.initNavbar();
+        }
     }
     this.resizeBRcontainer();
 
@@ -4569,7 +4571,6 @@ BookReader.prototype.getPageURI = function(index, reduce, rotate) {
 BookReader.prototype.getPageSide = function(index) {
     var pageSide = this._getDataProp(index, 'pageSide');
     if (!pageSide) {
-        // Fallback for invalid values
         pageSide = index % 2 === 0 ? 'R' : 'L';
     }
     return pageSide;
@@ -4588,42 +4589,45 @@ BookReader.prototype.getPageNum = function(index) {
 };
 
 /**
+ * This function returns the left and right indices for the user-visible
+ * spread that contains the given index.  The return values may be
+ * null if there is no facing page or the index is invalid.
  * @param  {Number} pindex
  * @return {Array} - eg [0, 1]
  */
 BookReader.prototype.getSpreadIndices = function(pindex) {
-    var spreadIndices = [null, null];
+    var spreadIndices;
     if ('rl' == this.pageProgression) {
-        // Right to Left
-        if (this.getPageSide(pindex) == 'R') {
-            spreadIndices[1] = pindex;
-            spreadIndices[0] = pindex + 1;
-        } else {
-            // Given index was LHS
-            spreadIndices[0] = pindex;
-            spreadIndices[1] = pindex - 1;
-        }
+        spreadIndices = this.getPageSide(pindex) == 'R' ? [pindex + 1, pindex] : [pindex, pindex - 1];
     } else {
-        // Left to right
-        if (this.getPageSide(pindex) == 'L') {
-            spreadIndices[0] = pindex;
-            spreadIndices[1] = pindex + 1;
-        } else {
-            // Given index was RHS
-            spreadIndices[1] = pindex;
-            spreadIndices[0] = pindex - 1;
-        }
+        spreadIndices = this.getPageSide(pindex) == 'L' ? [pindex, pindex + 1] : [pindex - 1, pindex];
     }
     return spreadIndices;
 };
 
 /**
- * Override if "leafNum" does not correspond to "index"
+ * Single images in the Internet Archive scandata.xml metadata are (somewhat incorrectly)
+ * given a "leaf" number.  Some of these images from the scanning process should not
+ * be displayed in the BookReader (for example colour calibration cards).  Since some
+ * of the scanned images will not be displayed in the BookReader (those marked with
+ * addToAccessFormats false in the scandata.xml) leaf numbers and BookReader page
+ * indexes are generally not the same.  This function returns the BookReader page
+ * index given a scanned leaf number.
+ *
+ * This function is used, for example, to map between search results (that use the
+ * leaf numbers) and the displayed pages in the BookReader.
  * @param  {Number} index
  * @return {Number}
  */
-BookReader.prototype.leafNumToIndex = function(index) {
-  return index;
+BookReader.prototype.leafNumToIndex = function(leafNum) {
+    var dataf = this._getDataFlattened();
+    for (var i = 0; i < dataf.length; i++) {
+        if (dataf[i].leafNum == leafNum) {
+            return i;
+        }
+    }
+    // If no match is found, fall back to the leafNum provide (leafNum == index)
+    return leafNum;
 };
 
 /**
@@ -4804,10 +4808,12 @@ BookReader.prototype._getDataFlattened = function() {
     var prevPageSide = null;
     for (var i = 0; i < this.data.length; i++) {
         for (var j = 0; j < this.data[i].length; j++) {
-            if (prevPageSide === null) {
-                this.data[i][j].pageSide = this.data[i].length === 2 ? 'L' : 'R';
-            } else {
-                this.data[i][j].pageSide = prevPageSide === 'L' ? 'R' : 'L';
+            if (!this.data[i][j].pageSide) {
+                if (prevPageSide === null) {
+                    this.data[i][j].pageSide = this.data[i].length === 2 ? 'L' : 'R';
+                } else {
+                    this.data[i][j].pageSide = prevPageSide === 'L' ? 'R' : 'L';
+                }
             }
             prevPageSide = this.data[i][j].pageSide;
             flattend.push(this.data[i][j]);
