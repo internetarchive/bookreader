@@ -78,6 +78,8 @@ BookReader.defaultOptions = {
 
     showToolbar: true,
     showNavbar: true,
+    navBarTitle: '',
+
     showLogo: true,
     // Where the logo links to
     logoURL: 'https://archive.org',
@@ -1919,11 +1921,13 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
 
     this.leafEdgeR = document.createElement('div');
     this.leafEdgeR.className = 'BRleafEdgeR';
+
     $(this.leafEdgeR).css({
         width: this.twoPage.leafEdgeWidthR + 'px',
         height: this.twoPage.height + 'px',
         left: this.twoPage.gutter+this.twoPage.scaledWR+'px',
-        top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px'
+        top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px',
+        border: this.twoPage.leafEdgeWidthR === 0 ? 'none' : null
     }).appendTo(this.refs.$brTwoPageView);
 
     this.leafEdgeL = document.createElement('div');
@@ -1932,7 +1936,8 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
         width: this.twoPage.leafEdgeWidthL + 'px',
         height: this.twoPage.height + 'px',
         left: this.twoPage.bookCoverDivLeft+this.twoPage.coverInternalPadding+'px',
-        top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px'
+        top: this.twoPage.bookCoverDivTop+this.twoPage.coverInternalPadding+'px',
+        border: this.twoPage.leafEdgeWidthL === 0 ? 'none' : null
     }).appendTo(this.refs.$brTwoPageView);
 
     div = document.createElement('div');
@@ -3294,11 +3299,15 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 //     could be as simple as not calling this function
 BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
+    var navbarTitleHtml = '';
+    if (this.options.navbarTitle) {
+        navbarTitleHtml = "<div class=\"BRnavTitle\">" + this.options.navbarTitle + "</div>";
+    }
+
     this.refs.$BRnav = $(
         "<div class=\"BRnav BRnavDesktop\">"
-
         +"  <div class=\"BRnavCntl BRnavCntlBtm BRdn js-tooltip\" title=\"Toogle toolbars\"></div>"
-
+        + navbarTitleHtml
         +"  <div class=\"BRnavpos\">"
         +"    <div class=\"BRpager\"></div>"
         +"    <div class=\"BRnavline\">"
@@ -3319,7 +3328,6 @@ BookReader.prototype.initNavbar = function() {
         +     "<button class='BRicon zoom_in desktop-only js-tooltip'></button>"
         +     "<button class='BRicon full js-tooltip'></button>"
         +"  </div>"
-
         +"</div>"
     );
 
