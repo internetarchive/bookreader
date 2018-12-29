@@ -1,3 +1,7 @@
+# 4.0.1
+- Add options.navBarTitle, which gets shown to the left of the scrubber.
+- Fix issue where there was a 1px border on cover leafEdge
+
 # 4.0.0
 V4 was driven by updating BookReader to work inline on the archive.org details page. This required code refactoring (eg: changing ids to classes), and also updating the design so it integrates well within the details page theatre section.
 
