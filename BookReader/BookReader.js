@@ -178,6 +178,7 @@ BookReader.defaultOptions = {
     getSpreadIndices: null,
 
     getPageNum: null,
+    getPageProp: null,
     leafNumToIndex: null,
 
     // Optional: if present, and embed code will be shown in the share dialog
@@ -267,6 +268,7 @@ BookReader.prototype.setup = function(options) {
     this.getPageURI = options.getPageURI || BookReader.prototype.getPageURI;
     this.getPageSide = options.getPageSide || BookReader.prototype.getPageSide;
     this.getPageNum = options.getPageNum || BookReader.prototype.getPageNum;
+    this.getPageProp = options.getPageProp || BookReader.prototype.getPageProp;
     this.getSpreadIndices = options.getSpreadIndices || BookReader.prototype.getSpreadIndices;
     this.leafNumToIndex = options.leafNumToIndex || BookReader.prototype.leafNumToIndex;
     this.refs = {};
@@ -3291,12 +3293,11 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
     }
 };
 
-
-// initNavbar
-//______________________________________________________________________________
-// Initialize the navigation bar.
-// $$$ this could also add the base elements to the DOM, so disabling the nav bar
-//     could be as simple as not calling this function
+/**
+ * Initialize the navigation bar.
+ * $$$ this could also add the base elements to the DOM, so disabling the nav bar
+ *     could be as simple as not calling this function
+ */
 BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
     var navbarTitleHtml = '';
@@ -3361,9 +3362,9 @@ BookReader.prototype.initNavbar = function() {
     return this.refs.$BRnav;
 };
 
-// initEmbedNavbar
-//______________________________________________________________________________
-// Initialize the navigation bar when embedded
+/**
+ * Initialize the navigation bar when embedded
+ */
 BookReader.prototype.initEmbedNavbar = function() {
     // IA-specific
     var thisLink = (window.location + '')
@@ -3392,25 +3393,37 @@ BookReader.prototype.initEmbedNavbar = function() {
     this.refs.$br.append(this.refs.$BRnav);
 };
 
-
-BookReader.prototype.getNavPageNumString = function(index, excludePrefix) {
-    excludePrefix = excludePrefix === undefined ? false : true;
+/**
+ * Returns the textual representation of the current page for the navbar
+ * @param {Number}
+ * @return {String}
+ */
+BookReader.prototype.getNavPageNumString = function(index) {
+    // Accessible index starts at 0 (alas) so we add 1 to make human
+    var pageStr = (index + 1) + '&nbsp;of&nbsp;' + this.getNumLeafs();
     var pageNum = this.getPageNum(index);
-    var pageStr;
-    if (pageNum && pageNum[0] == 'n') { // funny index
-        pageStr = index + 1 + ' / ' + this.getNumLeafs(); // Accessible index starts at 0 (alas) so we add 1 to make human
-    } else {
-        pageStr = pageNum + ' of ' + this.maxPageNum;
-        if (!excludePrefix) pageStr = 'Page ' + pageStr;
+    var pageType = this.getPageProp(index, 'pageType');
+    if (pageNum[0] != 'n') { // funny index
+        pageStr += ' <span class="BRpageLparan">(</span>Page ' + pageNum + '<span class="BRpageRparan">)</span>';
+    } else if (pageType && pageType !== 'Normal') {
+        // capitalize
+        pageType = pageType[0].toUpperCase() + pageType.slice(1);
+        pageStr += ' <span class="BRpageLparan">(</span>' + pageType + '<span class="BRpageRparan">)</span>';
     }
     return pageStr;
 }
+
+/**
+ * Renders the navbar string to the DOM
+ * @param {Number}
+ */
 BookReader.prototype.updateNavPageNum = function(index) {
-    this.$('.BRcurrentpage').text(this.getNavPageNumString(index));
+    this.$('.BRcurrentpage').html(this.getNavPageNumString(index));
 };
 
-/*
+/**
  * Update the nav bar display - does not cause navigation.
+ * @param {Number}
  */
 BookReader.prototype.updateNavIndex = function(index) {
     // We want to update the value, but normally moving the slider
@@ -3420,10 +3433,7 @@ BookReader.prototype.updateNavIndex = function(index) {
 };
 
 BookReader.prototype.updateNavIndexDebounced = BookReader.util.debounce(BookReader.prototype.updateNavIndex, 500);
-
 BookReader.prototype.updateNavIndexThrottled = BookReader.util.throttle(BookReader.prototype.updateNavIndex, 500, false);
-
-
 
 /**
  * This method builds the html for the toolbar. It can be decorated to extend
@@ -3481,8 +3491,11 @@ BookReader.prototype.buildToolbarElement = function() {
     return this.refs.$BRtoolbar;
 }
 
-
-
+/**
+ * Initializes the toolbar (top)
+ * @param {String} mode
+ * @param {String} ui
+ */
 BookReader.prototype.initToolbar = function(mode, ui) {
     var self = this;
 
@@ -4551,7 +4564,7 @@ BookReader.prototype.getNumLeafs = function() {
  * @return {Number|undefined}
  */
 BookReader.prototype.getPageWidth = function(index) {
-    return this._getDataProp(index, 'width');
+    return this.getPageProp(index, 'width');
 };
 
 /**
@@ -4559,7 +4572,7 @@ BookReader.prototype.getPageWidth = function(index) {
  * @return {Number|undefined}
  */
 BookReader.prototype.getPageHeight = function(index) {
-    return this._getDataProp(index, 'height');
+    return this.getPageProp(index, 'height');
 };
 
 /**
@@ -4569,7 +4582,7 @@ BookReader.prototype.getPageHeight = function(index) {
  * @return {Number|undefined}
  */
 BookReader.prototype.getPageURI = function(index, reduce, rotate) {
-    return this._getDataProp(index, 'uri');
+    return this.getPageProp(index, 'uri');
 };
 
 /**
@@ -4577,7 +4590,7 @@ BookReader.prototype.getPageURI = function(index, reduce, rotate) {
  * @return {String} - L or R
  */
 BookReader.prototype.getPageSide = function(index) {
-    var pageSide = this._getDataProp(index, 'pageSide');
+    var pageSide = this.getPageProp(index, 'pageSide');
     if (!pageSide) {
         pageSide = index % 2 === 0 ? 'R' : 'L';
     }
@@ -4589,11 +4602,20 @@ BookReader.prototype.getPageSide = function(index) {
  * @return {String}
  */
 BookReader.prototype.getPageNum = function(index) {
-    var pageNum = this._getDataProp(index, 'pageNum');
+    var pageNum = this.getPageProp(index, 'pageNum');
     if (pageNum === undefined) {
         pageNum = 'n' + index;
     }
     return pageNum;
+};
+
+/**
+ * Generalized property accessor.
+ * @param  {Number} index
+ * @return {mixed|undefined}
+ */
+BookReader.prototype.getPageProp = function(index, propName) {
+    return this._getDataProp(index, propName);
 };
 
 /**

@@ -1351,6 +1351,18 @@ i.BRicon {
   flex: none;
 }
 
+.BRpageLparan {
+  margin-right: 1px;
+  font-size: 0.8em;
+  vertical-align: top;
+}
+
+.BRpageRparan {
+  margin-left: 1px;
+  font-size: 0.8em;
+  vertical-align: top;
+}
+
 .BRnavCntl {
   position: absolute;
   right: 20px;
