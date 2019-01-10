@@ -222,8 +222,6 @@ BookReader.prototype.setup = function(options) {
     this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index
 
     this.animating = false;
-    this.auto      = false;
-    this.autoTimer = null;
     this.flipSpeed = options.flipSpeed;
     this.twoPagePopUp = null;
     this.leafEdgeTmp  = null;
@@ -576,10 +574,6 @@ BookReader.prototype.init = function() {
         // $$$ the purpose of this is to disable selection of the image (makes it turn blue)
         //     but this also interferes with right-click.  See https://bugs.edge.launchpad.net/gnubook/+bug/362626
         return false;
-    });
-
-    this.bind(BookReader.eventNames.stop, function(e, br) {
-        br.autoStop();
     });
 
     this.trigger(BookReader.eventNames.PostInit);
@@ -1411,7 +1405,6 @@ BookReader.prototype.centerPageView = function() {
 };
 
 BookReader.prototype.zoom2up = function(direction) {
-    // Hard stop autoplay
     this.stopFlipAnimations();
 
     // Recalculate autofit factors
@@ -2321,10 +2314,8 @@ BookReader.prototype.setCurrentIndex = function(index) {
  */
 BookReader.prototype.right = function() {
     if ('rl' != this.pageProgression) {
-        // LTR
         this.next();
     } else {
-        // RTL
         this.prev();
     }
 };
@@ -2345,10 +2336,8 @@ BookReader.prototype.rightmost = function() {
  */
 BookReader.prototype.left = function() {
     if ('rl' != this.pageProgression) {
-        // LTR
         this.prev();
     } else {
-        // RTL
         this.next();
     }
 };
@@ -2366,9 +2355,8 @@ BookReader.prototype.leftmost = function() {
 
 BookReader.prototype.next = function() {
     if (this.constMode2up == this.mode) {
-        this.autoStop();
+        this.trigger(BookReader.eventNames.stop);
         this.flipFwdToIndex(null);
-
     } else {
         if (this.firstIndex < this.lastDisplayableIndex()) {
             this.jumpToIndex(this.firstIndex+1);
@@ -2378,7 +2366,7 @@ BookReader.prototype.next = function() {
 
 BookReader.prototype.prev = function() {
     if (this.constMode2up == this.mode) {
-        this.autoStop();
+        this.trigger(BookReader.eventNames.stop);
         this.flipBackToIndex(null);
     } else {
         if (this.firstIndex >= 1) {
@@ -3113,74 +3101,11 @@ BookReader.prototype.setHilightCss2UP = function(div, index, left, right, top, b
     });
 };
 
-
-/**
- * Starts autoplay mode
- * TODO move to a plugin
- */
-BookReader.prototype.autoToggle = function() {
-    this.trigger(BookReader.eventNames.stop);
-
-    var bComingFrom1up = false;
-    if (2 != this.mode) {
-        bComingFrom1up = true;
-        this.switchMode(this.constMode2up);
-    }
-
-    // Change to autofit if book is too large
-    if (this.reduce < this.twoPageGetAutofitReduce()) {
-        this.zoom2up('auto');
-    }
-
-    var self = this;
-    if (null == this.autoTimer) {
-        this.flipSpeed = 2000;
-
-        // $$$ Draw events currently cause layout problems when they occur during animation.
-        //     There is a specific problem when changing from 1-up immediately to autoplay in RTL so
-        //     we workaround for now by not triggering immediate animation in that case.
-        //     See https://bugs.launchpad.net/gnubook/+bug/328327
-        if (('rl' == this.pageProgression) && bComingFrom1up) {
-            // don't flip immediately -- wait until timer fires
-        } else {
-            // flip immediately
-            this.flipFwdToIndex();
-        }
-
-        this.$('.play').hide();
-        this.$('.pause').show();
-        this.autoTimer=setInterval(function(){
-            if (self.animating) {return;}
-
-            if (Math.max(self.twoPage.currentIndexL, self.twoPage.currentIndexR) >= self.lastDisplayableIndex()) {
-                self.flipBackToIndex(1); // $$$ really what we want?
-            } else {
-                self.flipFwdToIndex();
-            }
-        },5000);
-    } else {
-        this.autoStop();
-    }
-};
-
-/**
- * Stop autoplay mode, allowing animations to finish
- */
-BookReader.prototype.autoStop = function() {
-    if (null != this.autoTimer) {
-        clearInterval(this.autoTimer);
-        this.flipSpeed = 'fast';
-        this.$('.pause').hide();
-        this.$('.play').show();
-        this.autoTimer = null;
-    }
-};
-
 /**
  * Immediately stop flip animations.  Callbacks are triggered.
  */
 BookReader.prototype.stopFlipAnimations = function() {
-    this.autoStop(); // Clear timers
+    this.trigger(BookReader.eventNames.stop);
 
     // Stop animation, clear queue, trigger callbacks
     if (this.leafEdgeTmp) {
@@ -3188,7 +3113,7 @@ BookReader.prototype.stopFlipAnimations = function() {
     }
     jQuery.each(this.prefetchedImgs, function() {
         $(this).stop(false, true);
-        });
+    });
 
     // And again since animations also queued in callbacks
     if (this.leafEdgeTmp) {
@@ -3197,7 +3122,6 @@ BookReader.prototype.stopFlipAnimations = function() {
     jQuery.each(this.prefetchedImgs, function() {
         $(this).stop(false, true);
     });
-
 };
 
 /**
@@ -3654,16 +3578,6 @@ BookReader.prototype.bindNavigationHandlers = function() {
         } else {
             self.next();
         }
-        return false;
-    });
-
-    jIcons.filter('.play').click(function(e) {
-        self.autoToggle();
-        return false;
-    });
-
-    jIcons.filter('.pause').click(function(e) {
-        self.autoToggle();
         return false;
     });
 
@@ -4165,6 +4079,7 @@ BookReader.prototype.canSwitchToMode = function(mode) {
 
 /**
  * Returns the page width for the given index, or first or last page if out of range
+ * @deprecated see getPageWidth
  */
 BookReader.prototype._getPageWidth = function(index) {
     // Synthesize a page width for pages not actually present in book.
@@ -4176,6 +4091,7 @@ BookReader.prototype._getPageWidth = function(index) {
 
 /**
  * Returns the page height for the given index, or first or last page if out of range
+ * @deprecated see getPageHeight
  */
 BookReader.prototype._getPageHeight = function(index) {
     var clampedIndex = BookReader.util.clamp(index, 0, this.getNumLeafs() - 1);
