@@ -228,6 +228,7 @@ BookReader.prototype.setup = function(options) {
     this.firstIndex = null;
     this.lastDisplayableIndex2up = null;
     this.isFullscreenActive = false;
+    this.lastScroll = null;
 
     this.showLogo = options.showLogo;
     this.logoURL = options.logoURL;
@@ -467,25 +468,8 @@ BookReader.prototype.init = function() {
         nextMode = this.constMode2up;
     }
 
-    if (this.canSwitchToMode(nextMode)) {
-        this.mode = nextMode;
-    } else {
-        this.mode = this.constMode1up;
-    }
-
     // Setup Navbars and other UI
-
     this.isTouchDevice = !!('ontouchstart' in window) || !!('msmaxtouchpoints' in window.navigator);
-
-    // Calculate Max page num (used for pagination display)
-    this.maxPageNum = 0;
-    var pageNumVal;
-    for (var i = 0; i < this.getNumLeafs(); i++) {
-        pageNumVal = this.getPageNum(i);
-        if (!isNaN(pageNumVal) && pageNumVal > this.maxPageNum) {
-            this.maxPageNum = pageNumVal;
-        }
-    }
 
     this.refs.$br = $(this.el);
     this.refs.$br.empty().removeClass().addClass("ui-" + this.ui).addClass('BookReader');
@@ -505,20 +489,16 @@ BookReader.prototype.init = function() {
             this.initNavbar();
         }
     }
+
+    this.initUIStrings();
     this.resizeBRcontainer();
 
-    // Set strings in the UI
-    this.initUIStrings();
-
-    // $$$ refactor this so it's enough to set the first index and call preparePageView
-    //     (get rid of mode-specific logic at this point)
-    if (this.constMode1up == this.mode) {
-        this.prepareOnePageView();
-    } else if (this.constModeThumb == this.mode) {
-        this.prepareThumbnailView();
-    } else {
-        this.displayedIndices = [this.firstIndex];
-        this.prepareTwoPageView();
+    if (!params.mode) {
+        if (this.canSwitchToMode(nextMode)) {
+            this.switchMode(nextMode);
+        } else {
+            this.switchMode(this.constMode1up)
+        }
     }
 
     // Enact other parts of initial params
