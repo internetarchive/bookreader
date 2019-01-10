@@ -3263,9 +3263,21 @@ BookReader.prototype.initEmbedNavbar = function() {
  */
 BookReader.prototype.getNavPageNumString = function(index) {
     // Accessible index starts at 0 (alas) so we add 1 to make human
-    var pageStr = (index + 1) + '&nbsp;of&nbsp;' + this.getNumLeafs();
     var pageNum = this.getPageNum(index);
     var pageType = this.getPageProp(index, 'pageType');
+    var numLeafs = this.getNumLeafs();
+    return this.getNavPageNumHtml(index, numLeafs, pageNum, pageType);
+}
+
+/**
+ * Renders the html for the page string
+ * @param {number} index
+ * @param {number} numLeafs
+ * @param {number} pageNum
+ * @param {string} pageType
+ */
+BookReader.prototype.getNavPageNumHtml = function(index, numLeafs, pageNum, pageType) {
+    var pageStr = (index + 1) + '&nbsp;/&nbsp;' + numLeafs;
     if (pageNum[0] != 'n') { // funny index
         pageStr += ' <span class="BRpageLparan">(</span>Page ' + pageNum + '<span class="BRpageRparan">)</span>';
     } else if (pageType && pageType !== 'Normal') {
@@ -3274,7 +3286,7 @@ BookReader.prototype.getNavPageNumString = function(index) {
         pageStr += ' <span class="BRpageLparan">(</span>' + pageType + '<span class="BRpageRparan">)</span>';
     }
     return pageStr;
-}
+};
 
 /**
  * Renders the navbar string to the DOM
