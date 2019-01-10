@@ -21,9 +21,11 @@
   "homepage": "https://github.com/internetarchive/bookreader#readme",
   "dependencies": {},
   "devDependencies": {
+    "eslint": "^5.12.0",
     "qunitjs": "^2.4.1"
   },
   "scripts": {
-    "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css"
+    "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
+    "eslint": "eslint ./BookReader/BookReader.js"
   }
 }
