@@ -205,7 +205,7 @@ BookReader.prototype.setup = function(options) {
     this.reduce = 4;
     this.defaults = options.defaults;
     this.padding = options.padding;
-    this.mode = this.constMode1up;
+    this.mode = null;
     this.prevReadMode = null;
     this.ui = options.ui;
     this.uiAutoHide = options.uiAutoHide;
@@ -255,6 +255,7 @@ BookReader.prototype.setup = function(options) {
     this.pageProgression = options.pageProgression;
     this.protected = options.protected;
     this.getEmbedCode = options.getEmbedCode;
+    this.popup = null;
 
     // Assign the data methods
     this.data = options.data;
@@ -437,21 +438,12 @@ BookReader.prototype.initParams = function() {
 }
 
 /**
- * This is called by the client to initialize BookReader.
- * It renders onto the DOM. It should only be called once.
+ * Determines the initial mode for starting if a mode is not already
+ * present in the params argument
+ * @param {object} params
+ * @return {number} the mode
  */
-BookReader.prototype.init = function() {
-    this.pageScale = this.reduce; // preserve current reduce
-
-    var params = this.initParams();
-
-    // params.index takes precedence over params.page
-    if (params.index) {
-        this.firstIndex = params.index;
-    } else {
-        this.firstIndex = 0;
-    }
-
+BookReader.prototype.getInitialMode = function(params) {
     // Use params or browser width to set view mode
     var windowWidth = $(window).width();
     var nextMode;
@@ -468,17 +460,46 @@ BookReader.prototype.init = function() {
         nextMode = this.constMode2up;
     }
 
+    if (!this.canSwitchToMode(nextMode)) {
+        nextMode = this.constMode1up;
+    }
+    return nextMode;
+};
+
+/**
+ * This is called by the client to initialize BookReader.
+ * It renders onto the DOM. It should only be called once.
+ */
+BookReader.prototype.init = function() {
+    this.pageScale = this.reduce; // preserve current reduce
+
+    var params = this.initParams();
+
+    this.firstIndex = params.index ? params.index : 0;
+
     // Setup Navbars and other UI
     this.isTouchDevice = !!('ontouchstart' in window) || !!('msmaxtouchpoints' in window.navigator);
 
-    this.refs.$br = $(this.el);
-    this.refs.$br.empty().removeClass().addClass("ui-" + this.ui).addClass('BookReader');
+    this.refs.$br = $(this.el)
+    .empty()
+    .removeClass()
+    .addClass("ui-" + this.ui)
+    .addClass("br-ui-" + this.ui)
+    .addClass('BookReader');
+
+    // Add a class if this is a touch enabled device
+    if (this.isTouchDevice) {
+        this.refs.$br.addClass("touch");
+    } else {
+        this.refs.$br.addClass("no-touch");
+    }
 
     this.refs.$brContainer = $("<div class='BRcontainer' dir='ltr'></div>");
     this.refs.$br.append(this.refs.$brContainer);
 
-    // We init the nav bar after the params processing so that the nav slider
-    // knows where it should start (doesn't jump after init)
+    var initialMode = this.getInitialMode(params);
+    this.mode = initialMode;
+
     if (this.ui == "embed" && this.options.showNavbar) {
         this.initEmbedNavbar();
     } else {
@@ -490,29 +511,11 @@ BookReader.prototype.init = function() {
         }
     }
 
-    this.initUIStrings();
     this.resizeBRcontainer();
-
-    if (!params.mode) {
-        if (this.canSwitchToMode(nextMode)) {
-            this.switchMode(nextMode);
-        } else {
-            this.switchMode(this.constMode1up)
-        }
-    }
-
-    // Enact other parts of initial params
+    this.mode = null; // Needed or else switchMode is a noop
+    this.switchMode(initialMode);
     this.updateFromParams(params);
-
-    // Add a class if this is a touch enabled device
-    if (this.isTouchDevice) {
-      this.refs.$br.addClass("touch");
-    } else {
-      this.refs.$br.addClass("no-touch");
-    }
-
-    // Add class to body for mode. Responsiveness is disabled in embed.
-    this.refs.$br.addClass("br-ui-" + this.ui);
+    this.initUIStrings();
 
     // Bind to events
 
@@ -583,7 +586,7 @@ BookReader.prototype.resize = function() {
 
   if (this.constMode1up == this.mode) {
       if (this.onePage.autofit != 'none') {
-          this.resizePageView();
+          this.resizePageView1up();
           this.centerPageView();
           if (this.enableSearch) this.updateSearchHilites(); //deletes hilights but does not call remove()
       } else {
@@ -1034,9 +1037,9 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     // Update which page is considered current to make sure a visible page is the current one
     var currentIndex = this.currentIndex();
     if (currentIndex < leastVisible) {
-        this.setCurrentIndex(leastVisible);
+        this.firstIndex = leastVisible;
     } else if (currentIndex > mostVisible) {
-        this.setCurrentIndex(mostVisible);
+        this.firstIndex = mostVisible;
     }
     this.updateNavIndexThrottled();
 
@@ -1234,7 +1237,7 @@ BookReader.prototype.zoom1up = function(direction) {
 
     this.pageScale = this.reduce; // preserve current reduce
 
-    this.resizePageView();
+    this.resizePageView1up();
     this.updateToolbarZoom(this.reduce);
 
     // Recalculate search hilites
@@ -1252,24 +1255,6 @@ BookReader.prototype.resizeBRcontainer = function() {
     bottom: this.getNavHeight(),
   });
 }
-
-BookReader.prototype.resizePageView = function() {
-    // $$$ This code assumes 1up mode
-    //     e.g. does not preserve position in thumbnail mode
-    //     See http://bugs.launchpad.net/bookreader/+bug/552972
-    switch (this.mode) {
-        case this.constMode1up:
-            this.resizePageView1up(); // $$$ necessary in non-1up mode?
-            break;
-        case this.constMode2up:
-            break;
-        case this.constModeThumb:
-            this.prepareThumbnailView( this.currentIndex() );
-            break;
-        default:
-            alert('Resize not implemented for this mode');
-    }
-};
 
 /**
  * Resize the current one page view
@@ -1784,7 +1769,7 @@ BookReader.prototype.prepareOnePageView = function() {
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
     // BookReader.util.disableSelect(this.$('#BRpageview'));
 
-    this.resizePageView();
+    this.resizePageView1up();
     this.jumpToIndex(startLeaf);
     this.updateBrClasses();
 };
@@ -1851,7 +1836,6 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     var currentSpreadIndices = this.getSpreadIndices(targetLeaf);
     this.twoPage.currentIndexL = currentSpreadIndices[0];
     this.twoPage.currentIndexR = currentSpreadIndices[1];
-    this.firstIndex = this.twoPage.currentIndexL;
 
     this.calculateSpreadSize(); //sets twoPage.width, twoPage.height and others
 
@@ -2278,15 +2262,6 @@ BookReader.prototype.currentIndex = function() {
     } else {
         throw 'currentIndex called for unimplemented mode ' + this.mode;
     }
-};
-
-/**
- * Sets the idea of current index without triggering other actions such as animation.
- * Compare to jumpToIndex which animates to that index
- * @param {number}
- */
-BookReader.prototype.setCurrentIndex = function(index) {
-    this.firstIndex = index;
 };
 
 /**
@@ -4075,14 +4050,16 @@ BookReader.prototype._getPageWidth = function(index) {
  */
 BookReader.prototype._getPageHeight = function(index) {
     var clampedIndex = BookReader.util.clamp(index, 0, this.getNumLeafs() - 1);
-    if (clampedIndex !== index) {
-        console.log(['Error:', clampedIndex, index])
-    }
     return this.getPageHeight(clampedIndex);
 };
 
 /**
  * Returns the page URI or transparent image if out of range
+ * Also makes the reduce argument optional
+ * @param {number} index
+ * @param {number} [reduce]
+ * @param {number} [rotate]
+ * @return {string}
  */
 BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     if (index < 0 || index >= this.getNumLeafs()) { // Synthesize page
