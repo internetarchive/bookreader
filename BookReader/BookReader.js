@@ -225,6 +225,13 @@ BookReader.prototype.setup = function(options) {
     this.flipSpeed = options.flipSpeed;
     this.twoPagePopUp = null;
     this.leafEdgeTmp  = null;
+
+    /**
+     * Represents the first displayed index
+     * In 2up mode it will be the left page
+     * In 1 up mode it is the highest page
+     * @property {number|null} firstIndex
+     */
     this.firstIndex = null;
     this.lastDisplayableIndex2up = null;
     this.isFullscreenActive = false;
@@ -778,7 +785,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
     // Based of the pages displayed in the view we set the current index
     // $$$ we should consider the page in the center of the view to be the current one
     var firstIndexToDraw  = indicesToDisplay[0];
-    this.firstIndex = firstIndexToDraw;
+    this.updateFirstIndex(firstIndexToDraw);
 
     // Notify of new fragment, but only if we're currently displaying a leaf
     // Hack that fixes #365790
@@ -995,7 +1002,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
                 link = document.createElement("a");
                 $(link).data('leaf', leaf);
                 link.addEventListener('mouseup', function(event) {
-                  self.firstIndex = $(this).data('leaf');
+                  self.updateFirstIndex($(this).data('leaf'));
                   if (self.prevReadMode === self.constMode1up
                         || self.prevReadMode === self.constMode2up) {
                     self.switchMode(self.prevReadMode);
@@ -1037,11 +1044,10 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     // Update which page is considered current to make sure a visible page is the current one
     var currentIndex = this.currentIndex();
     if (currentIndex < leastVisible) {
-        this.firstIndex = leastVisible;
+        this.updateFirstIndex(leastVisible);
     } else if (currentIndex > mostVisible) {
-        this.firstIndex = mostVisible;
+        this.updateFirstIndex(mostVisible);
     }
-    this.updateNavIndexThrottled();
 
     this.displayedRows = rowsToDisplay.slice();
 
@@ -1119,22 +1125,10 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
 BookReader.prototype.drawLeafsTwoPage = function() {
     var $twoPageViewEl = this.refs.$brTwoPageView;
     var scrollTop = $twoPageViewEl.prop('scrollTop');
-    var scrollBottom = scrollTop + $twoPageViewEl.height();
 
     // $$$ we should use calculated values in this.twoPage (recalc if necessary)
-
     var indexL = this.twoPage.currentIndexL;
-
-    var heightL  = this._getPageHeight(indexL);
-    var widthL   = this._getPageWidth(indexL);
-
-    var leafEdgeWidthL = this.leafEdgeWidth(indexL);
-    var leafEdgeWidthR = this.twoPage.edgeWidth - leafEdgeWidthL;
-    var bookCoverDivWidth = this.twoPage.bookCoverDivWidth;
-
-    var middle = this.twoPage.middle; // $$$ getter instead?
     var top = this.twoPageTop();
-    var bookCoverDivLeft = this.twoPage.bookCoverDivLeft;
 
     this.twoPage.scaledWL = this.getPageWidth2UP(indexL);
     this.twoPage.gutter = this.twoPageGutter();
@@ -1151,11 +1145,8 @@ BookReader.prototype.drawLeafsTwoPage = function() {
     }).appendTo($twoPageViewEl);
 
     var indexR = this.twoPage.currentIndexR;
-    var heightR  = this._getPageHeight(indexR);
-    var widthR   = this._getPageWidth(indexR);
 
     // $$$ should use getwidth2up?
-    //var scaledWR = this.twoPage.height*widthR/heightR;
     this.twoPage.scaledWR = this.getPageWidth2UP(indexR);
     this.prefetchImg(indexR);
     $(this.prefetchedImgs[indexR]).css({
@@ -1172,7 +1163,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
     this.setMouseHandlers2UP();
     this.twoPageSetCursor();
-
     this.updatePageNumBox2UP();
     this.updateToolbarZoom(this.reduce);
 };
@@ -1261,8 +1251,6 @@ BookReader.prototype.resizeBRcontainer = function() {
  * Note this calls drawLeafs
  */
 BookReader.prototype.resizePageView1up = function() {
-    var i;
-    var viewHeight = 0;
     var viewWidth  = this.refs.$brContainer.prop('clientWidth');
     var oldScrollTop  = this.refs.$brContainer.prop('scrollTop');
     var oldPageViewHeight = this.refs.$brPageViewEl.height();
@@ -1580,7 +1568,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
             rightPos += leafWidth + this.thumbPadding;
             leafIndex++;
         }
-        this.firstIndex=index;
+        this.updateFirstIndex(index);
         if (this.refs.$brContainer.prop('scrollTop') == leafTop) {
             this.drawLeafs();
         } else {
@@ -2265,6 +2253,17 @@ BookReader.prototype.currentIndex = function() {
 };
 
 /**
+ * Setter for this.firstIndex
+ * Also triggers an event and updates the navbar slider position
+ * @param {number}
+ */
+BookReader.prototype.updateFirstIndex = function(index) {
+    this.firstIndex = index;
+    this.trigger(BookReader.eventNames.fragmentChange);
+    this.updateNavIndexThrottled(index);
+};
+
+/**
  * Flip the right page over onto the left
  */
 BookReader.prototype.right = function() {
@@ -2314,7 +2313,7 @@ BookReader.prototype.next = function() {
         this.flipFwdToIndex(null);
     } else {
         if (this.firstIndex < this.lastDisplayableIndex()) {
-            this.jumpToIndex(this.firstIndex+1);
+            this.jumpToIndex(this.firstIndex + 1);
         }
     }
 };
@@ -2325,7 +2324,7 @@ BookReader.prototype.prev = function() {
         this.flipBackToIndex(null);
     } else {
         if (this.firstIndex >= 1) {
-            this.jumpToIndex(this.firstIndex-1);
+            this.jumpToIndex(this.firstIndex - 1);
         }
     }
 };
@@ -2406,10 +2405,10 @@ BookReader.prototype.flipBackToIndex = function(index) {
     }
 
     if (null == index) {
-        index = leftIndex-2;
+        index = leftIndex - 2;
     }
 
-    this.updateNavIndex(index);
+    this.updateNavIndexThrottled(index);
 
     var previousIndices = this.getSpreadIndices(index);
 
@@ -2553,7 +2552,7 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.twoPage.scaledWR = newWidthR;
             self.twoPage.gutter = gutter;
 
-            self.firstIndex = self.twoPage.currentIndexL;
+            self.updateFirstIndex(self.twoPage.currentIndexL);
             self.displayedIndices = [newIndexL, newIndexR];
             self.pruneUnusedImgs();
             self.prefetch();
@@ -2588,11 +2587,11 @@ BookReader.prototype.flipFwdToIndex = function(index) {
     }
 
     if (null == index) {
-        index = this.twoPage.currentIndexR+2; // $$$ assumes indices are continuous
+        index = this.twoPage.currentIndexL + 2; // $$$ assumes indices are continuous
     }
     if (index > this.lastDisplayableIndex()) return;
 
-    this.updateNavIndex(index);
+    this.updateNavIndexThrottled(index);
 
     this.animating = true;
 
@@ -2641,14 +2640,12 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
         zIndex:1000
     }).appendTo($twoPageViewEl);
 
-    var currWidthL = this.getPageWidth2UP(this.twoPage.currentIndexL);
-    var currWidthR = this.getPageWidth2UP(this.twoPage.currentIndexR);
     var newWidthL = this.getPageWidth2UP(newIndexL);
     var newWidthR = this.getPageWidth2UP(newIndexR);
 
     $(this.leafEdgeR).css({width: newLeafEdgeWidthR+'px', left: gutter+newWidthR+'px' });
 
-    var self = this; // closure-tastic!
+    var self = this;
 
     var speed = this.flipSpeed;
 
@@ -2685,7 +2682,7 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             self.twoPage.scaledWR = newWidthR;
             self.twoPage.gutter = gutter;
 
-            self.firstIndex = self.twoPage.currentIndexL;
+            self.updateFirstIndex(self.twoPage.currentIndexL);
             self.displayedIndices = [newIndexL, newIndexR];
             self.pruneUnusedImgs();
             self.prefetch();
@@ -3308,7 +3305,7 @@ BookReader.prototype.updateNavIndex = function(index) {
 };
 
 BookReader.prototype.updateNavIndexDebounced = BookReader.util.debounce(BookReader.prototype.updateNavIndex, 500);
-BookReader.prototype.updateNavIndexThrottled = BookReader.util.throttle(BookReader.prototype.updateNavIndex, 500, false);
+BookReader.prototype.updateNavIndexThrottled = BookReader.util.throttle(BookReader.prototype.updateNavIndex, 250, false);
 
 /**
  * This method builds the html for the toolbar. It can be decorated to extend
