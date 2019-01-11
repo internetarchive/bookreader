@@ -3145,12 +3145,12 @@ BookReader.prototype.jumpIndexForLeftEdgePageX = function(pageX) {
 BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
     if ('rl' != this.pageProgression) {
         // LTR
-        var jumpIndex = this.twoPage.currentIndexR + (pageX - $(this.leafEdgeR).offset().left) * 10;
-        jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.twoPage.currentIndexR + 2, this.lastDisplayableIndex());
+        var jumpIndex = this.twoPage.currentIndexL + (pageX - $(this.leafEdgeR).offset().left) * 10;
+        jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.twoPage.currentIndexL + 2, this.lastDisplayableIndex());
         return jumpIndex;
     } else {
-        var jumpIndex = this.twoPage.currentIndexR - (pageX - $(this.leafEdgeR).offset().left) * 10;
-        jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.firstDisplayableIndex(), this.twoPage.currentIndexR - 2);
+        var jumpIndex = this.twoPage.currentIndexL - (pageX - $(this.leafEdgeR).offset().left) * 10;
+        jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.firstDisplayableIndex(), this.twoPage.currentIndexL - 2);
         return jumpIndex;
     }
 };
