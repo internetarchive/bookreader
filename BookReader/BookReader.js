@@ -1529,8 +1529,6 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
     var self = this;
     var prevCurrentIndex = this.currentIndex();
 
-    // Note throttling is important to prevent race conditions with scroll
-    this.updateNavIndexThrottled(index);
     this.trigger(BookReader.eventNames.stop);
 
     if (this.constMode2up == this.mode) {
