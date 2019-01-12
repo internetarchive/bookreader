@@ -1946,9 +1946,8 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
     });
 
     $(this.leafEdgeR).bind('mousemove', this, function(e) {
-
         var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
-        $(e.data.twoPagePopUp).text('View ' + e.data.getPageName(jumpIndex));
+        $(e.data.twoPagePopUp).text('View ' + e.data.getPageName(BookReader.util.clamp(jumpIndex, 0, e.data.getNumLeafs() - 1)));
 
         // $$$ TODO: Make sure popup is positioned so that it is in view
         // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
@@ -1959,9 +1958,8 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
     });
 
     $(this.leafEdgeL).bind('mousemove', this, function(e) {
-
         var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
-        $(e.data.twoPagePopUp).text('View '+ e.data.getPageName(jumpIndex));
+        $(e.data.twoPagePopUp).text('View '+ e.data.getPageName(BookReader.util.clamp(jumpIndex, 0, e.data.getNumLeafs() - 1)));
 
         // $$$ TODO: Make sure popup is positioned so that it is in view
         //           (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
