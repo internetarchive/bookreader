@@ -1,3 +1,10 @@
+# 4.1.0
+- Change BookReader.js function comments to JSDoc
+- Move autoplay feature into an optional plugin
+- Change the format of the current page string in the navbar. eg "1 / 100 (Cover)"
+- Add BookReader.prototype.updateFirstIndex and use instead of setting this.firstIndex directly
+- Simplify BookReader.prototype.init
+
 # 4.0.1
 - Add options.navBarTitle, which gets shown to the left of the scrubber.
 - Fix issue where there was a 1px border on cover leafEdge
