@@ -790,12 +790,6 @@ BookReader.prototype.drawLeafsOnePage = function() {
     var firstIndexToDraw  = indicesToDisplay[0];
     this.updateFirstIndex(firstIndexToDraw);
 
-    // Notify of new fragment, but only if we're currently displaying a leaf
-    // Hack that fixes #365790
-    if (this.displayedIndices.length > 0) {
-        this.trigger(BookReader.eventNames.fragmentChange);
-    }
-
     if ((0 != firstIndexToDraw) && (1 < this.reduce)) {
         firstIndexToDraw--;
         indicesToDisplay.unshift(firstIndexToDraw);
@@ -1055,12 +1049,6 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
     this.displayedRows = rowsToDisplay.slice();
 
-    // Notify of new fragment, but only if we're currently displaying a leaf
-    // Hack that fixes #365790
-    if (this.displayedRows.length > 0) {
-        this.trigger(BookReader.eventNames.fragmentChange);
-    }
-
     // remove previous highlights
     this.$('.BRpagedivthumb_highlight').removeClass('BRpagedivthumb_highlight');
 
@@ -1166,13 +1154,7 @@ BookReader.prototype.drawLeafsTwoPage = function() {
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
     this.setMouseHandlers2UP();
     this.twoPageSetCursor();
-    this.updatePageNumBox2UP();
     this.updateToolbarZoom(this.reduce);
-};
-
-BookReader.prototype.updatePageNumBox2UP = function() {
-    // TODO see if this function is still needed
-    this.trigger(BookReader.eventNames.fragmentChange);
 };
 
 /**
@@ -2562,7 +2544,6 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             self.animating = false;
 
             if (self.enableSearch) self.updateSearchHilites2UP();
-            self.updatePageNumBox2UP();
 
             self.setMouseHandlers2UP();
             self.twoPageSetCursor();
@@ -2694,7 +2675,6 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 
 
             if (self.enableSearch) self.updateSearchHilites2UP();
-            self.updatePageNumBox2UP();
 
             self.setMouseHandlers2UP();
             self.twoPageSetCursor();

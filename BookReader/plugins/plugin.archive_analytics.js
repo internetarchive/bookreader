@@ -25,7 +25,7 @@ BookReader.prototype.archiveAnalyticsSend = function() {
     return;
   }
 
-  var prevFragment = this.archiveAnalyticsSend.prevHash;
+  var prevFragment = this.archiveAnalyticsSend.prevFragment;
 
   var params = this.paramsFromCurrent();
   var newFragment = this.fragmentFromParams(params);
