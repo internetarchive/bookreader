@@ -3249,7 +3249,21 @@ BookReader.prototype.getNavPageNumString = function(index) {
     var pageNum = this.getPageNum(index);
     var pageType = this.getPageProp(index, 'pageType');
     var numLeafs = this.getNumLeafs();
-    return this.getNavPageNumHtml(index, numLeafs, pageNum, pageType);
+
+    if (!this.getNavPageNumString.maxPageNum) {
+        // Calculate Max page num (used for pagination display)
+        var maxPageNum = 0;
+        var pageNumVal;
+        for (var i = 0; i < numLeafs; i++) {
+            pageNumVal = this.getPageNum(i);
+            if (!isNaN(pageNumVal) && pageNumVal > maxPageNum) {
+                maxPageNum = pageNumVal;
+            }
+        }
+        this.getNavPageNumString.maxPageNum = maxPageNum;
+    }
+
+    return this.getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.getNavPageNumString.maxPageNum);
 }
 
 /**
@@ -3259,14 +3273,15 @@ BookReader.prototype.getNavPageNumString = function(index) {
  * @param {number} pageNum
  * @param {string} pageType
  */
-BookReader.prototype.getNavPageNumHtml = function(index, numLeafs, pageNum, pageType) {
-    var pageStr = (index + 1) + '&nbsp;/&nbsp;' + numLeafs;
-    if (pageNum[0] != 'n') { // funny index
-        pageStr += ' <span class="BRpageLparan">(</span>Page ' + pageNum + '<span class="BRpageRparan">)</span>';
-    } else if (pageType && pageType !== 'Normal') {
-        // capitalize
-        pageType = pageType[0].toUpperCase() + pageType.slice(1);
-        pageStr += ' <span class="BRpageLparan">(</span>' + pageType + '<span class="BRpageRparan">)</span>';
+BookReader.prototype.getNavPageNumHtml = function(index, numLeafs, pageNum, pageType, maxPageNum) {
+    var pageStr;
+    if (pageNum[0] != 'n') {
+        pageStr = ' Page ' + pageNum;
+        if (maxPageNum) {
+            pageStr += ' of ' + maxPageNum;
+        }
+    } else {
+        pageStr = (index + 1) + '&nbsp;/&nbsp;' + numLeafs;
     }
     return pageStr;
 };
