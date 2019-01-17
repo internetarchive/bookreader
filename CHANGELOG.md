@@ -1,3 +1,8 @@
+# 4.2.0
+- Add eslint
+- Fix issue analytics plugin
+- Make the page display more extendable by splitting it into two functions
+
 # 4.1.0
 - Change BookReader.js function comments to JSDoc
 - Move autoplay feature into an optional plugin
