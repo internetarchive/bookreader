@@ -104,8 +104,8 @@ BookReader.prototype.autoToggle = function() {
 };
 
 /**
-* Stop autoplay mode, allowing animations to finish
-*/
+ * Stop autoplay mode, allowing animations to finish
+ */
 BookReader.prototype.autoStop = function() {
   if (!this.options.enableAutoPlayPlugin) return;
 

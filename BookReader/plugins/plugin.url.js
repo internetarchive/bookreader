@@ -92,7 +92,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
 
       // Queue change if animating
       if (self.animating) {
-        self.autoStop();
+        if (self.autoStop) self.autoStop();
         self.animationFinishedCallback = function() {
           self.updateFromParams(self.paramsFromFragment(newFragment));
         };

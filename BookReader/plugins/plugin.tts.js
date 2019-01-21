@@ -95,7 +95,7 @@ BookReader.prototype.initNavbar = (function (super_) {
 // ttsToggle()
 //______________________________________________________________________________
 BookReader.prototype.ttsToggle = function () {
-    this.autoStop();
+    if (this.autoStop) this.autoStop();
     if (false == this.ttsPlaying) {
         this.ttsPlaying = true;
         this.showProgressPopup('Loading audio...');
