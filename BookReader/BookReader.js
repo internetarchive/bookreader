@@ -1698,6 +1698,8 @@ BookReader.prototype.enterFullscreen = function() {
     this.updateBrClasses();
 
     this.resize();
+    this.jumpToIndex(this.currentIndex());
+
     this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
 
     this._fullscreenCloseHandler = function (e) {
