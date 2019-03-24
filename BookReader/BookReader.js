@@ -752,7 +752,7 @@ BookReader.prototype.bindGestures = function(jElement) {
 };
 
 BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
-    $(element).unbind('click').bind('click', data, function(e) {
+    $(element).unbind('click touchstart').bind('click touchstart', data, function(e) {
         handler(e);
     });
 };
@@ -1000,6 +1000,17 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
                 link = document.createElement("a");
                 $(link).data('leaf', leaf);
                 link.addEventListener('mouseup', function(event) {
+                  self.updateFirstIndex($(this).data('leaf'));
+                  if (self.prevReadMode === self.constMode1up
+                        || self.prevReadMode === self.constMode2up) {
+                    self.switchMode(self.prevReadMode);
+                  } else {
+                    self.switchMode(self.constMode1up);
+                  }
+                  event.preventDefault();
+                  event.stopPropagation();
+                }, true);
+                link.addEventListener('touchstart', function(event) {
                   self.updateFirstIndex($(this).data('leaf'));
                   if (self.prevReadMode === self.constMode1up
                         || self.prevReadMode === self.constMode2up) {
