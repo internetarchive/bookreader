@@ -234,7 +234,7 @@ BookReader.prototype.setup = function(options) {
      */
     this.firstIndex = null;
     this.lastDisplayableIndex2up = null;
-    this.isFullscreenActive = false;
+    this.isFullWindowActive = false;
     this.lastScroll = null;
 
     this.showLogo = options.showLogo;
@@ -382,6 +382,80 @@ BookReader.util = {
           }
         };
     },
+
+    /**
+     * Returns the DOM element being used for fullscreen.
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentOrShadowRoot/fullscreenElement
+     */
+    getFullscreenElement: function() {
+        return document.fullscreenElement ||
+               document.webkitFullscreenElement ||
+               document.mozFullScreenElement ||
+               document.msFullscreenElement;
+    },
+
+    /**
+     * Returns true if the document is in fullscreen mode.
+     */
+    isFullscreenActive: function() {
+        var fullscreenElement = this.getFullscreenElement();
+        return fullscreenElement !== null && fullscreenElement !== undefined;
+    },
+
+    /**
+     * Exits fullscreen mode.
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/exitFullscreen
+     */
+    exitFullscreen: function() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozExitFullScreen) {
+            document.mozExitFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    },
+
+    /**
+     * Requests fullscreen mode for the given element
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen
+     */
+    requestFullscreen: function(element) {
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        }
+    },
+
+    /**
+     * Returns true if fullscreen mode is allowed on this device and document.
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenEnabled
+     */
+    fullscreenAllowed: function() {
+        return document.fullscreenEnabled === true ||
+               document.webkitFullscreenEnabled === true ||
+               document.mozFullScreenEnabled === true ||
+               document.msFullScreenEnavled === true;
+    },
+
+    /**
+     * jQuery-style binding to a fullscreenchange event.
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenchange_event
+     */
+    bindFullscreenChangeListener: function(data, fullscreenchangeListener) {
+        $(document).bind("fullscreenchange", data, fullscreenchangeListener);
+        $(document).bind("webkitfullscreenchange", data, fullscreenchangeListener);
+        $(document).bind("mozfullscreenchange", data, fullscreenchangeListener);
+        $(document).bind("msfullscreenchange", data, fullscreenchangeListener);
+    },
+
 };
 
 /**
@@ -458,7 +532,7 @@ BookReader.prototype.getInitialMode = function(params) {
         nextMode = params.mode;
     } else if (this.ui == 'full'
           && this.enableMobileNav
-          && this.isFullscreenActive
+          && this.isFullscreen()
           && windowWidth <= this.onePageMinBreakpoint
     ) {
         // In full mode, we set the default based on width
@@ -546,6 +620,28 @@ BookReader.prototype.init = function() {
     $(window).bind("orientationchange", this, function(e) {
         e.data.resize();
     });
+    if (BookReader.util.fullscreenAllowed()) {
+        // In fullscreen mode, the colorbox and overlay need to be inside the
+        // fullscreen element to display properly.
+        BookReader.util.bindFullscreenChangeListener(this, function (e) {
+            e.data.resize();
+            e.data.updateBrClasses();
+            let cboxOverlay = document.getElementById("cboxOverlay");
+            let cbox = document.getElementById("colorbox");
+            if (BookReader.util.isFullscreenActive()) {
+                // In full screen mode, the colorbox and overlay need
+                // to be children of the fullscreen element to display properly.
+                var fullscreenElement = BookReader.util.getFullscreenElement();
+                fullscreenElement.appendChild(cboxOverlay);
+                fullscreenElement.appendChild(cbox);
+            } else {
+                // In non-fullscreen mode, the colorbox and overlay need
+                // to be children of the main document body.
+                document.body.appendChild(cboxOverlay);
+                document.body.appendChild(cbox);
+            }
+        });
+    }
 
     if (this.protected) {
         $(document).on('contextmenu dragstart', '.BRpagediv1up', function() {
@@ -1675,18 +1771,26 @@ BookReader.prototype.updateBrClasses = function() {
 };
 
 BookReader.prototype.isFullscreen = function() {
-    return this.isFullscreenActive;
+    return BookReader.util.isFullscreenActive() || this.isFullWindowActive;
 };
 
 BookReader.prototype.toggleFullscreen = function() {
     if (this.isFullscreen()) {
-        this.exitFullScreen();
+        if (BookReader.util.fullscreenAllowed()) {
+            BookReader.util.exitFullscreen();
+        } else {
+            this.exitFullWindow();
+        }
     } else {
-        this.enterFullscreen();
+        if (BookReader.util.fullscreenAllowed()) {
+            BookReader.util.requestFullscreen(this.refs.$br[0]);
+        } else {
+            this.enterFullWindow();
+        }
     }
 };
 
-BookReader.prototype.enterFullscreen = function() {
+BookReader.prototype.enterFullWindow = function() {
     this.refs.$brContainer.css('opacity', 0);
 
     var windowWidth = $(window).width();
@@ -1694,7 +1798,7 @@ BookReader.prototype.enterFullscreen = function() {
         this.switchMode(this.constMode1up);
     }
 
-    this.isFullscreenActive = true;
+    this.isFullWindowActive = true;
     this.updateBrClasses();
 
     this.resize();
@@ -1702,23 +1806,23 @@ BookReader.prototype.enterFullscreen = function() {
 
     this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
 
-    this._fullscreenCloseHandler = function (e) {
+    this._fullWindowExitHandler = function (e) {
         if (e.keyCode === 27) this.exitFullScreen();
     }.bind(this);
-    $(document).keyup(this._fullscreenCloseHandler);
+    $(document).keyup(this._fullWindowExitHandler);
 };
 
-BookReader.prototype.exitFullScreen = function() {
+BookReader.prototype.exitFullWindow = function() {
     this.refs.$brContainer.css('opacity', 0);
 
-    $(document).unbind('keyup', this._fullscreenCloseHandler);
+    $(document).unbind('keyup', this._fullWindowExitHandler);
 
     var windowWidth = $(window).width();
     if (windowWidth <= this.onePageMinBreakpoint) {
         this.switchMode(this.constMode2up);
     }
 
-    this.isFullscreenActive = false;
+    this.isFullWindowActive = false;
     this.updateBrClasses()
 
     this.resize();
