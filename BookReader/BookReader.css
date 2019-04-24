@@ -1749,7 +1749,6 @@ html.mm-background .BookReader {
 .BRmobileHamburger {
   background: center center no-repeat transparent;
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAATCAYAAABhh3Y4AAAAAXNSR0IArs4c6QAAAFZJREFUSA1jrKmpafv//38xELMx0AgwMjL+AuJeFqAlubS0COR+qPm5TED2FJDNNPIU2FiozybT0o5Rs4dBCDCO5jNKYnE0n1ESeiNI72g+oyiyYfkMAKCpRQemMsj0AAAAAElFTkSuQmCC");
-  background: url('data:image/svg+xml;utf8,<svg width="15px" height="12px" viewBox="0 0 15 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <g id="hamburger-svg" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="square"> <path d="M0,1 L14,1" id="Line" stroke="#000000"></path> <path d="M2.39808173e-14,6 L14,6" id="Line-Copy" stroke="#000000"></path> <path d="M1.15463195e-14,11 L14,11" id="Line-Copy-2" stroke="#000000"></path> </g></svg>') center/50% 50% no-repeat;
   display: block;
   width: 40px;
   height: 40px;
