@@ -29,6 +29,8 @@
         br.bind(BookReader.eventNames.fragmentChange, function() {
             var fragment = br.fragmentFromParams(br.paramsFromCurrent());
 
+            console.log("postMessage")
+
             window.parent.postMessage(
                 createWindowMessage(constMessageTypeFragmentChange, {
                     fragment: fragment
@@ -45,7 +47,7 @@
             ) {
                 return;
             }
-
+            console.log("Message received", event.data.type);
             br.updateFromParams(br.paramsFromFragment(event.data.fragment));
         });
     }

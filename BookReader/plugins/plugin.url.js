@@ -47,7 +47,10 @@ BookReader.prototype.init = (function(super_) {
           document.title = br.shortTitle(50);
         }
         if (br.options.urlMode === 'hash') {
+          console.log("START POLLING");
           br.urlStartLocationPolling();
+        } else {
+          console.log("NOT POLLING");
         }
       });
 
@@ -77,6 +80,8 @@ BookReader.prototype.shortTitle = function(maximumCharacters) {
  * Starts polling of window.location to see hash fragment changes
  */
 BookReader.prototype.urlStartLocationPolling = function() {
+  console.log("urlStartLocationPolling");
+
   var self = this;
   this.oldLocationHash = this.urlReadFragment();
 
@@ -86,6 +91,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
   }
 
   this.locationPollId = setInterval(function() {
+    console.log("URL UPDATE");
     var newFragment = self.urlReadFragment();
     if (newFragment != self.oldLocationHash && newFragment != self.oldUserHash) {
       self.trigger(BookReader.eventNames.stop);
@@ -110,6 +116,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
  * Call this instead of manually using window.location.replace
  */
 BookReader.prototype.urlUpdateFragment = function() {
+  console.log("urlUpdateFragment");
   var allParams = this.paramsFromCurrent();
   var params = {};
 
@@ -159,10 +166,13 @@ BookReader.prototype.urlUpdateFragment = function() {
  * @return {string}
  */
 BookReader.prototype.urlReadFragment = function() {
+  var fragment = '';
   if (this.options.urlMode === 'history') {
-    return window.location.pathname.substr(this.options.urlHistoryBasePath.length);
+    fragment = window.location.pathname.substr(this.options.urlHistoryBasePath.length);
   } else {
-    return window.location.hash.substr(1);
+    fragment = window.location.hash.substr(1);
   }
+  console.log("urlReadFragment", fragment);
+  return fragment;
 };
 

@@ -520,6 +520,7 @@ BookReader.prototype.init = function() {
 
     this.resizeBRcontainer();
     this.mode = null; // Needed or else switchMode is a noop
+    console.log("init");
     this.switchMode(initialMode);
     this.updateFromParams(params);
     this.initUIStrings();
@@ -753,6 +754,7 @@ BookReader.prototype.bindGestures = function(jElement) {
 
 BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
     $(element).unbind('click').bind('click', data, function(e) {
+        console.log("CLICK 1");
         handler(e);
     });
 };
@@ -1000,11 +1002,13 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
                 link = document.createElement("a");
                 $(link).data('leaf', leaf);
                 link.addEventListener('mouseup', function(event) {
+                    console.log("MOUSEUP");
                   self.updateFirstIndex($(this).data('leaf'));
-                  if (self.prevReadMode === self.constMode1up
-                        || self.prevReadMode === self.constMode2up) {
+                  if (self.prevReadMode === self.constMode1up || self.prevReadMode === self.constMode2up) {
+                      console.log("PREV READ MODE");
                     self.switchMode(self.prevReadMode);
                   } else {
+                    console.log("CONST MODE");
                     self.switchMode(self.constMode1up);
                   }
                   event.preventDefault();
@@ -1196,6 +1200,7 @@ BookReader.prototype.zoom = function(direction) {
 
 BookReader.prototype.zoom1up = function(direction) {
     if (this.constMode2up == this.mode) {     //can only zoom in 1-page mode
+        console.log("zoom1up");
         this.switchMode(this.constMode1up);
         return;
     }
@@ -1610,6 +1615,8 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
  * @param {number}
  */
 BookReader.prototype.switchMode = function(mode) {
+    console.log("switchMode", mode, this.mode)
+
     if (mode === this.mode) {
         return;
     }
@@ -1632,6 +1639,9 @@ BookReader.prototype.switchMode = function(mode) {
         this.reduce = this.pageScale;
     }
 
+    // console.log("RETURNING")
+    // return;
+
     // $$$ TODO preserve center of view when switching between mode
     //     See https://bugs.edge.launchpad.net/gnubook/+bug/416682
 
@@ -1652,7 +1662,18 @@ BookReader.prototype.switchMode = function(mode) {
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
 
-    this.trigger(BookReader.eventNames.fragmentChange);
+    // var self = this;
+
+    // setTimeout(function() {
+    //     console.log("TRIGGER FRAGMENT CHANGE");
+    //     self.trigger(BookReader.eventNames.fragcmentChange);
+    // }, 1000
+
+    // )
+
+    console.log("TRIGGER FRAGMENT CHANGE");
+    this.trigger(BookReader.eventNames.fragcmentChange);
+    // sleep()
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -1691,6 +1712,7 @@ BookReader.prototype.enterFullscreen = function() {
 
     var windowWidth = $(window).width();
     if (windowWidth <= this.onePageMinBreakpoint) {
+        console.log("enterFullScreen");
         this.switchMode(this.constMode1up);
     }
 
@@ -1715,6 +1737,7 @@ BookReader.prototype.exitFullScreen = function() {
 
     var windowWidth = $(window).width();
     if (windowWidth <= this.onePageMinBreakpoint) {
+        console.log("exitFullScreen")
         this.switchMode(this.constMode2up);
     }
 
@@ -1925,12 +1948,14 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
     });
 
     $(this.leafEdgeL).bind('click', this, function(e) {
+        console.log("CLICK 2");
         e.data.trigger(BookReader.eventNames.stop);
         var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
         e.data.jumpToIndex(jumpIndex);
     });
 
     $(this.leafEdgeR).bind('click', this, function(e) {
+        console.log("CLICK 3");
         e.data.trigger(BookReader.eventNames.stop);
         var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
         e.data.jumpToIndex(jumpIndex);
@@ -3504,14 +3529,17 @@ BookReader.prototype.bindNavigationHandlers = function() {
     var jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
 
     jIcons.filter('.onepg').bind('click', function() {
+        console.log("CLICK 4");
         self.switchMode(self.constMode1up);
     });
 
     jIcons.filter('.twopg').bind('click', function() {
+        console.log("CLICK 5");
         self.switchMode(self.constMode2up);
     });
 
     jIcons.filter('.thumb').bind('click', function() {
+        console.log("CLICK 6");
         self.switchMode(self.constModeThumb);
     });
 
@@ -3520,18 +3548,21 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
 
     jIcons.filter('.book_left').click(function() {
+        console.log("CLICK 7");
         self.trigger(BookReader.eventNames.stop);
         self.left();
         return false;
     });
 
     jIcons.filter('.book_right').click(function() {
+        console.log("CLICK 8");
         self.trigger(BookReader.eventNames.stop);
         self.right();
         return false;
     });
 
     jIcons.filter('.book_up').bind('click', function() {
+        console.log("CLICK 9");
         if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
             self.scrollUp();
         } else {
@@ -3541,6 +3572,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
 
     jIcons.filter('.book_down').bind('click', function() {
+        console.log("CLICK 10");
         if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
             self.scrollDown();
         } else {
@@ -3550,38 +3582,45 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
 
     jIcons.filter('.book_top').click(function() {
+        console.log("CLICK 11");
         self.first();
         return false;
     });
 
     jIcons.filter('.book_bottom').click(function() {
+        console.log("CLICK 12");
         self.last();
         return false;
     });
 
     jIcons.filter('.book_leftmost').click(function() {
+        console.log("CLICK 13");
         self.leftmost();
         return false;
     });
 
     jIcons.filter('.book_rightmost').click(function() {
+        console.log("CLICK 14");
         self.rightmost();
         return false;
     });
 
     jIcons.filter('.zoom_in').bind('click', function() {
+        console.log("CLICK 15");
         self.trigger(BookReader.eventNames.stop);
         self.zoom(1);
         return false;
     });
 
     jIcons.filter('.zoom_out').bind('click', function() {
+        console.log("CLICK 16");
         self.trigger(BookReader.eventNames.stop);
         self.zoom(-1);
         return false;
     });
 
     jIcons.filter('.full').bind('click', function() {
+        console.log("CLICK 17");
         if (self.ui == 'embed') {
             var url = self.$('.BRembedreturn a').attr('href');
             window.open(url);
@@ -3595,6 +3634,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
 
     this.$('.BRnavCntl').click(
         function(){
+            console.log("CLICK 18");
             var promises = [];
             // TODO don't use magic constants
             // TODO move this to a function
@@ -3938,6 +3978,7 @@ BookReader.prototype.lastDisplayableIndex = function() {
  */
 BookReader.prototype.updateFromParams = function(params) {
     if ('undefined' != typeof(params.mode)) {
+        console.log("updateFromParams")
         this.switchMode(params.mode);
     }
 
@@ -4687,7 +4728,11 @@ BookReader.prototype.fragmentFromParams = function(params) {
         fragments.push('search', params.search);
     }
 
-    return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+    var fragment =  BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+
+    console.log("fragmentFromParams", fragment)
+
+    return fragment;
 };
 
 /**
