@@ -520,7 +520,6 @@ BookReader.prototype.init = function() {
 
     this.resizeBRcontainer();
     this.mode = null; // Needed or else switchMode is a noop
-    console.log("init");
     this.switchMode(initialMode);
     this.updateFromParams(params);
     this.initUIStrings();
@@ -1001,18 +1000,17 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
                 // link back to page
                 link = document.createElement("a");
                 $(link).data('leaf', leaf);
-                link.addEventListener('mouseup', function(event) {
-                    console.log("MOUSEUP");
-                  self.updateFirstIndex($(this).data('leaf'));
-                  if (self.prevReadMode === self.constMode1up || self.prevReadMode === self.constMode2up) {
-                      console.log("PREV READ MODE");
-                    self.switchMode(self.prevReadMode);
-                  } else {
-                    console.log("CONST MODE");
-                    self.switchMode(self.constMode1up);
-                  }
-                  event.preventDefault();
-                  event.stopPropagation();
+                link.addEventListener('click', function(event) {
+                    self.updateFirstIndex($(this).data('leaf'), true);
+                    if (self.prevReadMode === self.constMode1up || self.prevReadMode === self.constMode2up) {
+                        self.switchMode(self.prevReadMode, true);
+                    } else {
+                        self.switchMode(self.constMode1up, true);
+                    }
+                    console.log('click fragment change');
+                    self.trigger(BookReader.eventNames.fragmentChange);
+                    event.preventDefault();
+                    event.stopPropagation();
                 }, true);
                 $(div).append(link);
 
@@ -1614,14 +1612,16 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
  * Switches the mode (eg 1up 2up thumb)
  * @param {number}
  */
-BookReader.prototype.switchMode = function(mode) {
+BookReader.prototype.switchMode = function(mode, suppressFragmentChange) {
     console.log("switchMode", mode, this.mode)
 
     if (mode === this.mode) {
+        console.log("THIS MODE RETURNING");
         return;
     }
 
     if (!this.canSwitchToMode(mode)) {
+        console.log("CAN'T SWITCH RETURNING");
         return;
     }
 
@@ -1638,9 +1638,6 @@ BookReader.prototype.switchMode = function(mode) {
     if (this.pageScale !== this.reduce) {
         this.reduce = this.pageScale;
     }
-
-    // console.log("RETURNING")
-    // return;
 
     // $$$ TODO preserve center of view when switching between mode
     //     See https://bugs.edge.launchpad.net/gnubook/+bug/416682
@@ -1662,12 +1659,18 @@ BookReader.prototype.switchMode = function(mode) {
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
 
-    var self = this;
+    // var self = this;
 
-    setTimeout(function() {
+    console.log("SWITCH MODE", suppressFragmentChange);
+
+    if (!suppressFragmentChange) {
         console.log("TRIGGER FRAGMENT CHANGE");
-        self.trigger(BookReader.eventNames.fragmentChange);
-    }, 0);
+        this.trigger(BookReader.eventNames.fragmentChange);
+    }
+
+    // setTimeout(function() {
+        // self.trigger(BookReader.eventNames.fragmentChange);
+    // }, 0);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -2263,9 +2266,12 @@ BookReader.prototype.currentIndex = function() {
  * Also triggers an event and updates the navbar slider position
  * @param {number}
  */
-BookReader.prototype.updateFirstIndex = function(index) {
+BookReader.prototype.updateFirstIndex = function(index, suppressFragmentChange) {
     this.firstIndex = index;
-    this.trigger(BookReader.eventNames.fragmentChange);
+    if (!suppressFragmentChange) {
+        console.log("updateFirstIndex fragmentChange")
+        this.trigger(BookReader.eventNames.fragmentChange);
+    }
     this.updateNavIndexThrottled(index);
 };
 

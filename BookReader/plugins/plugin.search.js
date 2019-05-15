@@ -153,6 +153,7 @@ BookReader.prototype.search = function(term, options) {
     // strip slashes, since this goes in the url
     this.searchTerm = this.searchTerm.replace(/\//g, ' ');
 
+    console.log("search fragmentChange")
     this.trigger(BookReader.eventNames.fragmentChange);
 
     // Add quotes to the term. This is to compenstate for the backends default OR query

@@ -178,7 +178,6 @@ $.fn.dragscrollable = function( options ) {
 			}
 		},
 		dragContinueHandler : function(event) { // User is dragging
-			// console.log('drag continue');
 			if (shouldAbort()) { return true; }
 
 			var lt = left_top(event);
@@ -204,8 +203,6 @@ $.fn.dragscrollable = function( options ) {
 			}
 		},
 		dragEndHandler : function(event) { // Stop scrolling
-			//console.log('dragEndHandler');
-
 			if (shouldAbort()) { return true; }
 
 			handling_element
