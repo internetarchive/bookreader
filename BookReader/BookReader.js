@@ -1662,18 +1662,12 @@ BookReader.prototype.switchMode = function(mode) {
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
 
-    // var self = this;
+    var self = this;
 
-    // setTimeout(function() {
-    //     console.log("TRIGGER FRAGMENT CHANGE");
-    //     self.trigger(BookReader.eventNames.fragcmentChange);
-    // }, 1000
-
-    // )
-
-    console.log("TRIGGER FRAGMENT CHANGE");
-    this.trigger(BookReader.eventNames.fragcmentChange);
-    // sleep()
+    setTimeout(function() {
+        console.log("TRIGGER FRAGMENT CHANGE");
+        self.trigger(BookReader.eventNames.fragmentChange);
+    }, 0);
 };
 
 BookReader.prototype.updateBrClasses = function() {

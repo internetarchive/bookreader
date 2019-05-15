@@ -91,7 +91,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
   }
 
   this.locationPollId = setInterval(function() {
-    console.log("URL UPDATE");
+    // console.log("URL UPDATE");
     var newFragment = self.urlReadFragment();
     if (newFragment != self.oldLocationHash && newFragment != self.oldUserHash) {
       self.trigger(BookReader.eventNames.stop);
@@ -172,7 +172,7 @@ BookReader.prototype.urlReadFragment = function() {
   } else {
     fragment = window.location.hash.substr(1);
   }
-  console.log("urlReadFragment", fragment);
+  // console.log("urlReadFragment", fragment);
   return fragment;
 };
 
