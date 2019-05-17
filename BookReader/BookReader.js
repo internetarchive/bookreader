@@ -1654,7 +1654,7 @@ BookReader.prototype.switchMode = function(mode, suppressFragmentChange) {
     }
 
     if (!suppressFragmentChange) {
-        this.trigger(BookReader.eventNames.fragmentChange);
+      this.trigger(BookReader.eventNames.fragmentChange);
     }
 };
 
@@ -2250,7 +2250,7 @@ BookReader.prototype.currentIndex = function() {
 BookReader.prototype.updateFirstIndex = function(index, suppressFragmentChange) {
     this.firstIndex = index;
     if (!suppressFragmentChange) {
-        this.trigger(BookReader.eventNames.fragmentChange);
+      this.trigger(BookReader.eventNames.fragmentChange);
     }
     this.updateNavIndexThrottled(index);
 };
