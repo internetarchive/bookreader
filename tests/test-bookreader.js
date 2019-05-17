@@ -32,7 +32,7 @@ QUnit.module('BookReader', function () {
         // we need to reset `triggerCalled` to false right before calling `switchMode` because there are
         // other calls that trigger `fragmentChange` before we get to this point in the test
         triggerCalled = false;
-        br.switchMode(BookReader.constMode1up, true);
+        br.switchMode(BookReader.constMode1up, { suppressFragmentChange: true });
         assert.notOk(triggerCalled);
       }
     );
@@ -69,7 +69,7 @@ QUnit.module('BookReader', function () {
         // we need to reset `triggerCalled` to false right before calling `updateFirstIndex` because there are
         // other calls that trigger `fragmentChange` before we get to this point in the test
         triggerCalled = false;
-        br.updateFirstIndex(1, true);
+        br.updateFirstIndex(1, { suppressFragmentChange: true });
         assert.notOk(triggerCalled);
       }
     );
