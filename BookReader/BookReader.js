@@ -1000,13 +1000,17 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
                 link = document.createElement("a");
                 $(link).data('leaf', leaf);
                 link.addEventListener('mouseup', function(event) {
-                  self.updateFirstIndex($(this).data('leaf'));
+                  // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
+                  // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
+                  // We manually trigger the `fragmentChange` once at the end.
+                  self.updateFirstIndex($(this).data('leaf'), { suppressFragmentChange: true });
                   if (self.prevReadMode === self.constMode1up
                         || self.prevReadMode === self.constMode2up) {
-                    self.switchMode(self.prevReadMode);
+                    self.switchMode(self.prevReadMode, { suppressFragmentChange: true });
                   } else {
-                    self.switchMode(self.constMode1up);
+                    self.switchMode(self.constMode1up, { suppressFragmentChange: true });
                   }
+                  self.trigger(BookReader.eventNames.fragmentChange);
                   event.preventDefault();
                   event.stopPropagation();
                 }, true);
@@ -1609,7 +1613,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
  * Switches the mode (eg 1up 2up thumb)
  * @param {number}
  */
-BookReader.prototype.switchMode = function(mode) {
+BookReader.prototype.switchMode = function(mode, options) {
     if (mode === this.mode) {
         return;
     }
@@ -1652,7 +1656,9 @@ BookReader.prototype.switchMode = function(mode) {
         this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
     }
 
-    this.trigger(BookReader.eventNames.fragmentChange);
+    if (!options || options.suppressFragmentChange === false) {
+      this.trigger(BookReader.eventNames.fragmentChange);
+    }
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -2244,9 +2250,11 @@ BookReader.prototype.currentIndex = function() {
  * Also triggers an event and updates the navbar slider position
  * @param {number}
  */
-BookReader.prototype.updateFirstIndex = function(index) {
+BookReader.prototype.updateFirstIndex = function(index, options) {
     this.firstIndex = index;
-    this.trigger(BookReader.eventNames.fragmentChange);
+    if (!options || options.suppressFragmentChange === false) {
+      this.trigger(BookReader.eventNames.fragmentChange);
+    }
     this.updateNavIndexThrottled(index);
 };
 
