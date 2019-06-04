@@ -72,6 +72,8 @@ BookReader.defaultOptions = {
     thumbPadding: 10,
     // speed for flip animation
     flipSpeed: 'fast',
+    // delay between page flips while autoplaying
+    flipDelay: 5000,
 
     showToolbar: true,
     showNavbar: true,
@@ -223,6 +225,7 @@ BookReader.prototype.setup = function(options) {
 
     this.animating = false;
     this.flipSpeed = options.flipSpeed;
+    this.flipDelay = options.flipDelay;
     this.twoPagePopUp = null;
     this.leafEdgeTmp  = null;
 

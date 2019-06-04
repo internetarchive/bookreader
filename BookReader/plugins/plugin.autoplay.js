@@ -3,7 +3,7 @@
  */
 
 jQuery.extend(BookReader.defaultOptions, {
-  enableAutoPlayPlugin: true,
+  enableAutoPlayPlugin: true
 });
 
 BookReader.prototype.setup = (function(super_) {
@@ -56,9 +56,11 @@ BookReader.prototype.bindNavigationHandlers = (function(super_) {
  * Starts autoplay mode
  * TODO move to a plugin
  */
-BookReader.prototype.autoToggle = function() {
+BookReader.prototype.autoToggle = function(options) {
   if (!this.options.enableAutoPlayPlugin) return;
 
+  this.flipSpeed = typeof options.flipSpeed === "number" ? options.flipSpeed : this.flipSpeed;
+  this.flipDelay = typeof options.flipDelay === "number" ? options.flipDelay : this.flipDelay;
   this.trigger(BookReader.eventNames.stop);
 
   var bComingFrom1up = false;
@@ -74,8 +76,6 @@ BookReader.prototype.autoToggle = function() {
 
   var self = this;
   if (null == this.autoTimer) {
-    this.flipSpeed = 2000;
-
     // $$$ Draw events currently cause layout problems when they occur during animation.
     //     There is a specific problem when changing from 1-up immediately to autoplay in RTL so
     //     we workaround for now by not triggering immediate animation in that case.
@@ -97,7 +97,7 @@ BookReader.prototype.autoToggle = function() {
       } else {
         self.flipFwdToIndex();
       }
-    }, 5000);
+    }, this.flipDelay);
   } else {
     this.autoStop();
   }

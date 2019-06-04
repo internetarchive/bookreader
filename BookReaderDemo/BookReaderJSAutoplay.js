@@ -52,6 +52,6 @@ function instantiateBookReader(selector, extraOptions) {
   Object.assign(options, extraOptions);
   var br = new BookReader(options);
   br.init();
-  br.autoToggle();
+  br.autoToggle(options);
 }
 
