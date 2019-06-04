@@ -1,3 +1,6 @@
+# 4.2.1
+- Fix rapid reload bug from thumbnail view
+
 # 4.2.0
 - Add eslint
 - Fix issue analytics plugin
