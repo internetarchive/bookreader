@@ -1,3 +1,6 @@
+# 4.2.2
+- Adds options for flipSpeed and flipDelay, the latter used for autoplay
+
 # 4.2.1
 - Fix rapid reload bug from thumbnail view
 
