@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>QUnit Tests</title>
-    <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+    <link rel="stylesheet" href="../node_modules/qunit/qunit/qunit.css">
 
     <script src="../BookReader/jquery-1.10.1.js"></script>
     <script src="../BookReader/jquery-ui-1.12.0.min.js"></script>
@@ -17,6 +17,7 @@
     <!-- Plugins -->
     <script src="../BookReader/plugins/plugin.iframe.js"></script>
     <script src="../BookReader/plugins/plugin.url.js"></script>
+    <script src="../BookReader/plugins/plugin.autoplay.js"></script>
   </head>
   <body>
     <div id="qunit"></div>
@@ -24,10 +25,11 @@
       <iframe src="qunit-embed-iframe-src.html" id="BookReaderIframe"></iframe>
     </div>
 
-    <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+    <script src="../node_modules/qunit/qunit/qunit.js"></script>
 
     <!-- Test file -->
     <script src="test-plugin-iframe.js"></script>
+    <script src="test-plugin-autoplay.js"></script>
     <script src="test-bookreader.js"></script>
   </body>
 </html>
