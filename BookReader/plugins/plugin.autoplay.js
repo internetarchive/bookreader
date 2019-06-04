@@ -12,6 +12,7 @@ BookReader.prototype.setup = (function(super_) {
 
     this.auto      = false;
     this.autoTimer = null;
+    this.flipDelay = 5000;
   };
 })(BookReader.prototype.setup);
 
@@ -54,7 +55,7 @@ BookReader.prototype.bindNavigationHandlers = (function(super_) {
 
 /**
  * Starts autoplay mode
- * TODO move to a plugin
+ * @param {object} options - accepts numeric properties flipSpeed and flipDelay
  */
 BookReader.prototype.autoToggle = function(options) {
   if (!this.options.enableAutoPlayPlugin) return;

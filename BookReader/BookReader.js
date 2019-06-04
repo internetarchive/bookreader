@@ -72,8 +72,6 @@ BookReader.defaultOptions = {
     thumbPadding: 10,
     // speed for flip animation
     flipSpeed: 'fast',
-    // delay between page flips while autoplaying
-    flipDelay: 5000,
 
     showToolbar: true,
     showNavbar: true,
