@@ -1,6 +1,6 @@
 {
   "name": "bookreader",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "description": "The Internet Archive BookReader.",
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
   "dependencies": {},
   "devDependencies": {
     "eslint": "^5.12.0",
-    "qunitjs": "^2.4.1"
+    "qunit": "^2.9.2"
   },
   "scripts": {
     "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",

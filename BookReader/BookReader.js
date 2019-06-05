@@ -34,7 +34,7 @@ function BookReader(options) {
     this.setup(options);
 }
 
-BookReader.version = "4.2.1";
+BookReader.version = "4.2.2";
 
 // Mode constants
 BookReader.constMode1up = 1;
@@ -223,6 +223,7 @@ BookReader.prototype.setup = function(options) {
 
     this.animating = false;
     this.flipSpeed = options.flipSpeed;
+    this.flipDelay = options.flipDelay;
     this.twoPagePopUp = null;
     this.leafEdgeTmp  = null;
 
