@@ -5,11 +5,11 @@ jQuery.extend(BookReader.defaultOptions, {
   enableArchiveAnalytics: true
 });
 
-BookReader.prototype.init = (function(super_) {
-  return function() {
-    super_.call(this);
+BookReader.prototype.setup = (function(super_) {
+  return function(options) {
+    super_.call(this, options);
 
-    if (this.options.enableArchiveAnalytics) {
+    if (options.enableArchiveAnalytics) {
       this.bind(
         BookReader.eventNames.fragmentChange,
         function() {
@@ -18,7 +18,7 @@ BookReader.prototype.init = (function(super_) {
       );
     }
   };
-})(BookReader.prototype.init);
+})(BookReader.prototype.setup);
 
 BookReader.prototype.archiveAnalyticsSend = function() {
   if (!window.archive_analytics) {
