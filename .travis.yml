@@ -5,5 +5,4 @@ install: npm install
 script:
   - npm run eslint
 after_success:
-    - npm run coverage
     - npm run codecov
