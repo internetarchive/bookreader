@@ -28,6 +28,8 @@
   "scripts": {
     "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
     "eslint": "eslint ./BookReader/BookReader.js",
-    "lint": "eslint \"./**/*.js\""
+    "lint": "eslint \"./**/*.js\"",
+    "coverage": "cross-env lab -a code -r html -L -o coverage/coverage.html -r lcov -o coverage/lcov.info && opn coverage/coverage.html --no-wait",
+    "codecov": "codecov"
   }
 }
