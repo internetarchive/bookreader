@@ -21,6 +21,7 @@
   "homepage": "https://github.com/internetarchive/bookreader#readme",
   "dependencies": {},
   "devDependencies": {
+    "@types/jest": "^24.0.15",
     "codecov": "^3.5.0",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
