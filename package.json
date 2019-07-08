@@ -31,7 +31,9 @@
     "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
     "eslint": "eslint ./BookReader/BookReader.js",
     "lint": "eslint \"./**/*.js\"",
-    "test": "jest --coverage",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --colors",
     "codecov": "codecov"
   }
 }

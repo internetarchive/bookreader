@@ -5,4 +5,6 @@ install: npm install
 script:
   - npm run eslint
 after_success:
+    - npm test
+    - ./node_modules/.bin/jest --coverage
     - npm run codecov
