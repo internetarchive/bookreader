@@ -19,13 +19,20 @@
     "url": "https://github.com/internetarchive/bookreader/issues"
   },
   "homepage": "https://github.com/internetarchive/bookreader#readme",
-  "dependencies": {},
+  "dependencies": {
+    "jquery": "^3.4.1"
+  },
   "devDependencies": {
     "@types/jest": "^24.0.15",
     "codecov": "^3.5.0",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
     "qunit": "^2.9.2"
+  },
+  "jest": {
+    "setupFiles": [
+      "./env-setup.js", "./BookReader/BookReader.js"
+    ]
   },
   "scripts": {
     "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
