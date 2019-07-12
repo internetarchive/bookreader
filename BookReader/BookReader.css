@@ -1747,16 +1747,31 @@ html.mm-background .BookReader {
 }
 
 .BRmobileHamburger {
-  background: center center no-repeat transparent;
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAATCAYAAABhh3Y4AAAAAXNSR0IArs4c6QAAAFZJREFUSA1jrKmpafv//38xELMx0AgwMjL+AuJeFqAlubS0COR+qPm5TED2FJDNNPIU2FiozybT0o5Rs4dBCDCO5jNKYnE0n1ESeiNI72g+oyiyYfkMAKCpRQemMsj0AAAAAElFTkSuQmCC");
   display: block;
-  width: 40px;
-  height: 40px;
   position: absolute;
   top: 0;
-  left: 10px;
-  border: none;
+  left: 17px;
+  width: 26px;
+  height: 3px;
+  margin: 18px 0;
   outline: none;
+  border: none;
+  border-radius: 3px;
+  background: #7a7a7a;
+}
+.BRmobileHamburger:before, .BRmobileHamburger:after {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  left: 0;
+  height: 3px;
+  content: "";
+  border-radius: 3px;
+  background: #7a7a7a;
+}
+.BRmobileHamburger:after {
+  top: auto;
+  bottom: -8px;
 }
 
 .DrawerIconWrapper {
