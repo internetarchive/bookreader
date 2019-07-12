@@ -1,5 +1,7 @@
 # Internet Archive BookReader
 
+[![Build Status](https://travis-ci.com/internetarchive/bookreader.svg?branch=master)](https://travis-ci.com/internetarchive/bookreader)
+
 ![](./screenshot.png)
 
 The Internet Archive BookReader is used to view books from the Internet Archive online and can also be used to view other books.
