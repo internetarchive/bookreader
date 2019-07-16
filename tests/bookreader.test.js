@@ -1,3 +1,4 @@
+require("../BookReader/BookReader.js");
 var { br } = require('./bookreader');
 
 test('', () => {
