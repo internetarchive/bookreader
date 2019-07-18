@@ -6,3 +6,7 @@ coverage:
   precision: 2
   round: down
   range: "70...100"
+
+parsers:
+  javascript:
+    enable_partials: yes
