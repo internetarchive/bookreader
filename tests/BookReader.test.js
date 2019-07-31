@@ -1,7 +1,7 @@
 const { br } = require('../BookReader/BookReader.js');
 const _ = require('lodash');
 const sinon = require('sinon');
-// jest.mock('lodash/debounce', () => jest.fn(fn => fn));
+
 
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
     expect(BookReader.util.clamp(2,1,3)).toEqual(2);
