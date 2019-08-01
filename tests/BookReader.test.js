@@ -40,8 +40,7 @@ afterEach(() => {
 
 test('testing debounce', () => {
   const func = jest.fn();
-  const debouncedFunc = _.debounce(func, 1000);
-
+  const debouncedFunc = BookReader.util.debounce(func, 1000);
   // Call it immediately
   debouncedFunc();
   expect(func).toHaveBeenCalledTimes(0); // func not called
