@@ -116,3 +116,39 @@ describe("Testing extendParams", () => {
     $.extend(obj1, modifiedNewParams);
   });
 });
+
+describe("Testing jquery bind", () => {
+  function you() {
+    alert( "User clicked on 'you.'" );
+  };
+  beforeEach(() => {
+    BookReader.prototype.bind('SK', you);
+  });
+  test("jquery.bind", () => {
+    $(document).bind('BookReader:' + 'SK', you);
+  });
+});
+
+describe("Testing unbind function", () => {
+  function fox() {
+    alert( "The quick brown fox jumps over the lazy dog." );
+  };
+  beforeEach(() => {
+    BookReader.prototype.unbind('SKR', fox);
+  });
+  test("jquery unbind", () => {
+    $(document).bind('BookReader:' + 'SKR', fox);
+  });
+});
+
+describe("Testing setUpKeyListeners function", () => {
+  function key() {
+    alert( "Handler for .keydown() called." );
+  };
+  beforeEach(() => {
+    BookReader.prototype.setupKeyListeners();
+  });
+  test("jquery keydown", () => {
+    $(document).keydown(key);
+  });
+});
