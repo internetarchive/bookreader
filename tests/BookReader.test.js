@@ -13,8 +13,12 @@ describe("Testing BookReader.util", () => {
   });
 
   test("notInArray function which return false if value present", () => {
-    expect(BookReader.util.notInArray(4, [4, "Pete", 8, "Shubham"])).toEqual(false);
-    expect(BookReader.util.notInArray(10, ["8", "9", "10", 10 + ""])).toEqual(true);
+    expect(BookReader.util.notInArray(4, [4, "Pete", 8, "Shubham"])).toEqual(
+      false
+    );
+    expect(BookReader.util.notInArray(10, ["8", "9", "10", 10 + ""])).toEqual(
+      true
+    );
   });
 
   test("escapeHTML function which replaces the string", () => {
@@ -25,13 +29,21 @@ describe("Testing BookReader.util", () => {
   });
 
   test("Decodes a URI component and converts + to emptyStr", () => {
-    expect(BookReader.util.decodeURIComponentPlus("https%3A%2F%2Farchive.org%2Fskr+")).toEqual("https://archive.org/skr ");
-    expect(BookReader.util.decodeURIComponentPlus("%3Fx%3D+test")).toEqual("?x= test");
+    expect(
+      BookReader.util.decodeURIComponentPlus("https%3A%2F%2Farchive.org%2Fskr+")
+    ).toEqual("https://archive.org/skr ");
+    expect(BookReader.util.decodeURIComponentPlus("%3Fx%3D+test")).toEqual(
+      "?x= test"
+    );
   });
 
   test("Encodes a URI component and converts emptyStr to +", () => {
-    expect(BookReader.util.encodeURIComponentPlus("?x=test ")).toEqual("%3Fx%3Dtest+");
-    expect(BookReader.util.encodeURIComponentPlus("ABC abc 123")).toEqual("ABC+abc+123");
+    expect(BookReader.util.encodeURIComponentPlus("?x=test ")).toEqual(
+      "%3Fx%3Dtest+"
+    );
+    expect(BookReader.util.encodeURIComponentPlus("ABC abc 123")).toEqual(
+      "ABC+abc+123"
+    );
   });
 });
 
@@ -66,22 +78,16 @@ describe("Testing debounce function", () => {
   });
 });
 
-describe('Testing Throttle function', () => {
+describe("Testing Throttle function", () => {
   let clock;
+  clock = sinon.useFakeTimers();
 
-  beforeEach(() => {
-    clock = sinon.useFakeTimers();
-  });
-  afterEach(() => {
-    clock.restore();
-  });
-
-  test('testing throttle', () => {
+  test("testing throttle", () => {
     const callMethod = jest.fn();
     const throttled = BookReader.util.throttle(() => callMethod(), 100);
 
     const t = setInterval(() => {
-       throttled()
+      throttled();
     }, 50);
 
     clock.tick(400);
@@ -92,63 +98,116 @@ describe('Testing Throttle function', () => {
 
 describe("Trigger function test", () => {
   beforeEach(() => {
-    BookReader.prototype.trigger('SKR', 'val');
+    BookReader.prototype.trigger("SKR", "val");
   });
   test("testing trigger", () => {
-    $(document).trigger('BookReader:' + 'SKR', 'val');
+    $(document).trigger("BookReader:" + "SKR", "val");
   });
 });
 
 describe("Testing extendParams", () => {
-  const obj1 = {
+  var br = new BookReader();
+  var obj1 = {
+    prop1: "SK"
+  };
+  var obj2 = {
+    prop2: 19
+  };
+  var result = {
     prop1: "SK",
-    prop2: 20
+    prop2: 19
   };
-  const obj2 = {
-    prop2: 19,
-    prop3: "SKR"
-  };
-  var modifiedNewParams = $.extend({}, obj2);
-  beforeEach(() => {
-    BookReader.prototype.extendParams(obj1, obj2);
-  });
+  br.extendParams(obj1, obj2);
   test("jquery.extend", () => {
-    $.extend(obj1, modifiedNewParams);
+    expect(obj1).toEqual(result);
   });
 });
 
 describe("Testing jquery bind", () => {
   function you() {
-    alert( "User clicked on 'you.'" );
-  };
+    alert("User clicked on 'you.'");
+  }
   beforeEach(() => {
-    BookReader.prototype.bind('SK', you);
+    BookReader.prototype.bind("SK", you);
   });
   test("jquery.bind", () => {
-    $(document).bind('BookReader:' + 'SK', you);
+    $(document).bind("BookReader:" + "SK", you);
   });
 });
 
 describe("Testing unbind function", () => {
   function fox() {
-    alert( "The quick brown fox jumps over the lazy dog." );
-  };
+    alert("The quick brown fox jumps over the lazy dog.");
+  }
   beforeEach(() => {
-    BookReader.prototype.unbind('SKR', fox);
+    BookReader.prototype.unbind("SKR", fox);
   });
   test("jquery unbind", () => {
-    $(document).bind('BookReader:' + 'SKR', fox);
+    $(document).bind("BookReader:" + "SKR", fox);
   });
 });
 
 describe("Testing setUpKeyListeners function", () => {
-  function key() {
-    alert( "Handler for .keydown() called." );
-  };
-  beforeEach(() => {
-    BookReader.prototype.setupKeyListeners();
+  var br = new BookReader();
+  // Mocking Keys
+  br.KEY_PGUP = jest.fn();
+  br.KEY_UP = jest.fn();
+  br.KEY_DOWN = jest.fn();
+  br.KEY_PGDOWN = jest.fn();
+  br.KEY_END = jest.fn();
+  br.KEY_HOME = jest.fn();
+  br.KEY_LEFT = jest.fn();
+  br.KEY_RIGHT = jest.fn();
+  // setup 'setupKeyListeners()'
+  br.setupKeyListeners();
+  // Calling Mock Functions
+  br.KEY_PGUP();
+  br.KEY_UP();
+  br.KEY_DOWN();
+  br.KEY_PGDOWN();
+  br.KEY_END();
+  br.KEY_HOME();
+  br.KEY_LEFT();
+  br.KEY_RIGHT();
+
+  test("when pageUP is pressed", () => {
+    var event = new KeyboardEvent("keydown", { keyCode: 33 });
+    document.dispatchEvent(event);
+    expect(br.KEY_PGUP).toHaveBeenCalledTimes(1);
   });
-  test("jquery keydown", () => {
-    $(document).keydown(key);
+  test("when up is pressed", () => {
+    var event = new KeyboardEvent("keydown", { keyCode: 38 });
+    document.dispatchEvent(event);
+    expect(br.KEY_UP).toHaveBeenCalledTimes(1);
+  });
+  test("when down is pressed", () => {
+    var event = new KeyboardEvent("keydown", { keyCode: 40 });
+    document.dispatchEvent(event);
+    expect(br.KEY_DOWN).toHaveBeenCalledTimes(1);
+  });
+  test("when pageDown is pressed", () => {
+    var event = new KeyboardEvent("keydown", { keyCode: 34 });
+    document.dispatchEvent(event);
+    expect(br.KEY_PGDOWN).toHaveBeenCalledTimes(1);
+  });
+  // test("when end is pressed", () => {
+  //   var event = new KeyboardEvent("keydown", { keyCode: 35 });
+  //   document.dispatchEvent(event);
+  //   expect(br.KEY_END).toHaveBeenCalledTimes(1);
+  // });
+  // test("when home is pressed", () => {
+  //   var event = new KeyboardEvent("keydown", { keyCode: 36 });
+  //   document.dispatchEvent(event);
+  //   expect(br.KEY_HOME).toHaveBeenCalledTimes(1);
+  // });
+  test("when left is pressed", () => {
+    var event = new KeyboardEvent("keydown", { keyCode: 37 });
+    document.dispatchEvent(event);
+    expect(br.KEY_LEFT).toHaveBeenCalledTimes(1);
+  });
+  test("when right is pressed", () => {
+    var event = new KeyboardEvent("keydown", { keyCode: 39 });
+    document.dispatchEvent(event);
+    expect(br.KEY_RIGHT).toHaveBeenCalledTimes(1);
   });
 });
