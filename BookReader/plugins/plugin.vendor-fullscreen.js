@@ -32,26 +32,27 @@
     return function() {
       super_.call(this);
 
-      if (BR.util.fullscreenAllowed()) {
-        // In fullscreen mode, the colorbox and overlay need to be inside the
-        // fullscreen element to display properly.
-        BR.util.bindFullscreenChangeListener(this, function(e) {
-          e.data.resize();
-          e.data.updateBrClasses();
-          var cboxOverlay = $("#cboxOverlay");
-          var cbox = $("#colorbox");
-          if (BR.util.isFullscreenActive()) {
-            // In full screen mode, the colorbox and overlay need
-            // to be children of the fullscreen element to display properly.
-            var $fullscreen = $(BR.util.getFullscreenElement());
-            $fullscreen.append(cboxOverlay).append(cbox);
-          } else {
-            // In non-fullscreen mode, the colorbox and overlay need
-            // to be children of the main document body.
-            $(document.body).append(cboxOverlay).append(cbox);
-          }
-        });
+      if (!BR.util.fullscreenAllowed()) {
+        return;
       }
+      // In fullscreen mode, the colorbox and overlay need to be inside the
+      // fullscreen element to display properly.
+      BR.util.bindFullscreenChangeListener(this, function(e) {
+        e.data.resize();
+        e.data.updateBrClasses();
+        var cboxOverlay = $("#cboxOverlay");
+        var cbox = $("#colorbox");
+        if (BR.util.isFullscreenActive()) {
+          // In full screen mode, the colorbox and overlay need
+          // to be children of the fullscreen element to display properly.
+          var $fullscreen = $(BR.util.getFullscreenElement());
+          $fullscreen.append(cboxOverlay).append(cbox);
+        } else {
+          // In non-fullscreen mode, the colorbox and overlay need
+          // to be children of the main document body.
+          $(document.body).append(cboxOverlay).append(cbox);
+        }
+      });
     }
   })(BR.prototype.init);
 
@@ -133,15 +134,15 @@
    * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/exitFullscreen
    */
   BR.util.exitFullscreen = function() {
-      if (document.exitFullscreen) {
-          document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-      } else if (document.mozExitFullScreen) {
-          document.mozExitFullScreen();
-      } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-      }
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.mozExitFullScreen) {
+      document.mozExitFullScreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
   };
 
   /**
@@ -149,15 +150,15 @@
    * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen
    */
   BR.util.requestFullscreen = function(element) {
-      if (element.requestFullscreen) {
-        element.requestFullscreen();
-      } else if (element.webkitRequestFullscreen) {
-        element.webkitRequestFullscreen();
-      } else if (element.mozRequestFullScreen) {
-        element.mozRequestFullScreen();
-      } else if (element.msRequestFullscreen) {
-        element.msRequestFullscreen();
-      }
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen();
+    } else if (element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if (element.msRequestFullscreen) {
+      element.msRequestFullscreen();
+    }
   };
 
   /**
