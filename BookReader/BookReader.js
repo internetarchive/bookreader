@@ -3590,12 +3590,12 @@ BookReader.prototype.bindNavigationHandlers = function() {
         return false;
     });
 
-    jIcons.filter('.full').bind('click', function() {
+    jIcons.filter('.full').bind('click', function(e) {
         if (self.ui == 'embed') {
             var url = self.$('.BRembedreturn a').attr('href');
             window.open(url);
         } else {
-            self.toggleFullscreen();
+            self.toggleFullscreen(e);
         }
     });
 

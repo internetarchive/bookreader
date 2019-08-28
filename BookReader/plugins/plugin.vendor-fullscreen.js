@@ -94,20 +94,47 @@
     return BR.util.isFullscreenActive() || this.isVendorFullscreenActive;
   };
 
-  BR.prototype.toggleFullscreen = function() {
+  BR.prototype.toggleFullscreen = function(e) {
+    e.stopImmediatePropagation();
     if (this.isFullscreen()) {
       if (BR.util.fullscreenAllowed()) {
         BR.util.exitFullscreen();
+        BR.util.toggleChrome(this, false);
       } else {
         this.exitFullWindow();
       }
     } else {
       if (BR.util.fullscreenAllowed()) {
         BR.util.requestFullscreen(this.refs.$br[0]);
+        BR.util.toggleChrome(this, true);
       } else {
         this.enterFullWindow();
       }
     }
+  };
+
+  BR.util.toggleChrome = function(instance, is_fullscreen) {
+    var events = 'click.' + event_namespace + ' touchend.' + event_namespace;
+    var $toolbar = instance.refs.$br.find('.BRtoolbar');
+    var hideToolbar = function() {
+      $toolbar.add(instance.refs.$BRnav).stop().animate({ opacity: 0 }, 400, 'linear');
+      instance.refs.$br.off(events).on(events, function(e)  {
+        var opacity = $toolbar.css('opacity') === '1' ? 0 : 1;
+        $toolbar.add(instance.refs.$BRnav).stop().animate({ opacity: opacity }, 400, 'linear');
+      });
+    };
+    var showToolbar = function() {
+      $toolbar.add(instance.refs.$BRnav).stop().animate({ opacity: 1 }, 400, 'linear');
+      instance.refs.$br.off(events);
+    }
+
+    $(document).on('fullscreenchange.' + event_namespace, function() {
+      if (!BR.util.getFullscreenElement()) {
+        showToolbar();
+        $(document).off('fullscreenchange.' + event_namespace);
+      };
+    });
+    is_fullscreen ? hideToolbar() : showToolbar();
   };
 
   /**
@@ -169,7 +196,7 @@
     return document.fullscreenEnabled === true ||
            document.webkitFullscreenEnabled === true ||
            document.mozFullScreenEnabled === true ||
-           document.msFullScreenEnavled === true;
+           document.msFullScreenEnabled === true;
   };
 
   /**
