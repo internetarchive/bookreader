@@ -1,3 +1,6 @@
+# 4.2.4
+- Skips initialization of vendor fullscreen plugin when on a mobile device
+
 # 4.2.3
 - Creates vendor native fullscreen plugin and example use page
 

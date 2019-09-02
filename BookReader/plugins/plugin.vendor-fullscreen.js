@@ -35,8 +35,8 @@
 
   BR.prototype.init = (function(super_) {
     if (isMobile()) {
-      for (var method in super_props) {
-        BR.prototype[method] = super_props[method];
+      for (var method in super_methods) {
+        BR.prototype[method] = super_methods[method];
       }
       return;
     }
