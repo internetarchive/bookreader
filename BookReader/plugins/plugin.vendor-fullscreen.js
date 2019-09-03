@@ -4,17 +4,17 @@
 
 (function(BR) {
   var event_namespace = '.bookreader_vendor-fullscreen';
-  var super_methods = {};
   function isMobile() {
     return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('IEMobile') !== -1);
   };
+
+  if (isMobile()) { return; }
 
   jQuery.extend(BR.defaultOptions, {
     enableVendorFullscreenPlugin: true
   });
 
   BR.prototype.setup = (function(super_) {
-    super_methods.setup = super_;
     return function(options) {
       super_.call(this, options);
 
@@ -23,7 +23,6 @@
   })(BR.prototype.setup);
 
   BR.prototype.getInitialMode = (function(super_) {
-    super_methods.getInitialMode = super_;
     return function(params) {
       var nextMode = super_.call(this, params);
       if (this.isVendorFullscreenActive) {
@@ -34,12 +33,6 @@
   })(BR.prototype.getInitialMode);
 
   BR.prototype.init = (function(super_) {
-    if (isMobile()) {
-      for (var method in super_methods) {
-        BR.prototype[method] = super_methods[method];
-      }
-      return;
-    }
     return function() {
       super_.call(this);
 
@@ -180,8 +173,7 @@
     return (document.fullscreenEnabled ||
            document.webkitFullscreenEnabled ||
            document.mozFullScreenEnabled ||
-           document.msFullScreenEnabled) &&
-           !isMobile();
+           document.msFullScreenEnabled);
   };
 
   /**
