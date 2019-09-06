@@ -17,6 +17,7 @@ class FestivalSpeechEngine {
      * @param {String} options.server
      * @param {String} options.bookPath
      * @param {Function} options.maybeFlipHandler
+     * @param {Number} options.numLeafs
      */
     constructor(options) {
         this.ttsPlaying     = false;
@@ -31,6 +32,7 @@ class FestivalSpeechEngine {
         this.server = options.server;
         this.bookPath = options.bookPath;
         this.maybeFlipHandler = options.maybeFlipHandler;
+        this.numLeafs = options.numLeafs;
 
         this.isSoundManagerSupported = false;
 
@@ -123,12 +125,11 @@ class FestivalSpeechEngine {
      * 4. do something smart is ttsNextChunks has not yet finished preloading (TODO)
      * 5. stop playing at end of book
      * @param {Boolean} starting 
-     * @param {Number} numLeafs 
      */
-    advance(starting, numLeafs) {
+    advance(starting) {
         this.ttsPosition++;
         if (this.ttsPosition >= this.ttsChunks.length) {
-            if (this.ttsIndex == (numLeafs - 1)) {
+            if (this.ttsIndex == (this.numLeafs - 1)) {
                 if (soundManager.debugMode) console.log('tts stop');
                 return false;
             } else {
@@ -159,7 +160,8 @@ BookReader.prototype.setup = (function (super_) {
             this.ttsEngine = new FestivalSpeechEngine({
                 server: options.server,
                 bookPath: options.bookPath,
-                maybeFlipHandler: this.ttsMaybeFlip.bind(this)
+                maybeFlipHandler: this.ttsMaybeFlip.bind(this),
+                numLeafs: this.getNumLeafs()
             });
         }
     };
@@ -264,7 +266,7 @@ BookReader.prototype.ttsStartCB = function(data) {
     //deal with the page being blank
     if (0 == data.length) {
         if (soundManager.debugMode) console.log('first page is blank!');
-        if(this.ttsEngine.advance(true, this.getNumLeafs())) {
+        if(this.ttsEngine.advance(true)) {
             this.ttsEngine.getText(this.ttsEngine.ttsIndex, this.ttsStartCB.bind(this));
         }
         return;
@@ -348,7 +350,7 @@ BookReader.prototype.ttsNextChunk = function () {
 
     this.ttsRemoveHilites(); //remove old hilights
 
-    var moreToPlay = this.ttsEngine.advance(false, this.getNumLeafs());
+    var moreToPlay = this.ttsEngine.advance(false);
 
     if (moreToPlay) {
         this.ttsNextChunkPhase2();
