@@ -117,7 +117,11 @@ class FestivalSpeechEngine {
     }
 
     /**
-     * 
+     * 1. advance ttsPosition
+     * 2. if necessary, advance ttsIndex, and copy ttsNextChunks to ttsChunks
+     * 3. if necessary, flip to current page, or scroll so chunk is visible
+     * 4. do something smart is ttsNextChunks has not yet finished preloading (TODO)
+     * 5. stop playing at end of book
      * @param {Boolean} starting 
      * @param {Number} numLeafs 
      */
@@ -136,7 +140,7 @@ class FestivalSpeechEngine {
                     this.ttsNextChunks = null;
                     return this.maybeFlipHandler(starting, this.ttsIndex);
                 } else {
-                    if (soundManager.debugMode) console.log('ttsAdvance: ttsNextChunks is null');
+                    if (soundManager.debugMode) console.log('tts advance: ttsNextChunks is null');
                     return false;
                 }
             }
@@ -260,7 +264,7 @@ BookReader.prototype.ttsStartCB = function(data) {
     //deal with the page being blank
     if (0 == data.length) {
         if (soundManager.debugMode) console.log('first page is blank!');
-        if(this.ttsAdvance(true)) {
+        if(this.ttsEngine.advance(true, this.getNumLeafs())) {
             this.ttsEngine.getText(this.ttsEngine.ttsIndex, this.ttsStartCB.bind(this));
         }
         return;
@@ -331,7 +335,7 @@ BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
 //______________________________________________________________________________
 // This function into two parts: ttsNextChunk gets run before page flip animation
 // and ttsNextChunkPhase2 get run after page flip animation.
-// If a page flip is necessary, ttsAdvance() will return false so Phase2 isn't
+// If a page flip is necessary, advance() will return false so Phase2 isn't
 // called. Instead, this.animationFinishedCallback is set, so that Phase2
 // continues after animation is finished.
 
@@ -344,7 +348,7 @@ BookReader.prototype.ttsNextChunk = function () {
 
     this.ttsRemoveHilites(); //remove old hilights
 
-    var moreToPlay = this.ttsAdvance();
+    var moreToPlay = this.ttsEngine.advance(false, this.getNumLeafs());
 
     if (moreToPlay) {
         this.ttsNextChunkPhase2();
@@ -382,18 +386,6 @@ BookReader.prototype.ttsNextChunkPhase2 = function () {
     this.ttsPrefetchAudio();
 
     this.ttsPlay();
-};
-
-// ttsAdvance()
-//______________________________________________________________________________
-// 1. advance ttsPosition
-// 2. if necessary, advance ttsIndex, and copy ttsNextChunks to ttsChunks
-// 3. if necessary, flip to current page, or scroll so chunk is visible
-// 4. do something smart is ttsNextChunks has not yet finished preloading (TODO)
-// 5. stop playing at end of book
-
-BookReader.prototype.ttsAdvance = function (starting) {
-    return this.ttsEngine.advance(starting, this.getNumLeafs());
 };
 
 // ttsMaybeFlip()
