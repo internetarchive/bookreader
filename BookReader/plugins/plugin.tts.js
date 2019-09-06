@@ -68,6 +68,16 @@ class FestivalSpeechEngine {
           success: callback
         });
     }
+
+    /**
+     * Get URL for audio that says this text
+     * @param {String} dataString the thing to say
+     */
+    getSoundUrl(dataString) {
+        return 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string='
+                  + dataString
+                  + '&format=.'+this.ttsFormat;
+    }
 }
 
 // Extend the constructor to add TTS properties
@@ -168,7 +178,7 @@ BookReader.prototype.ttsStart = function () {
         // HACK for iOS. Security restrictions require playback to be triggered
         // by a user click/touch. This intention gets lost in the ajax callback
         // above, but for some reason, if we start the audio here, it works
-        soundManager.createSound({url: this.getSoundUrl(' ')}).play();
+        soundManager.createSound({url: this.ttsEngine.getSoundUrl(' ')}).play();
     }
 };
 
@@ -189,12 +199,6 @@ BookReader.prototype.ttsStop = function () {
     this.ttsEngine.ttsPosition    = -1;    //chunk (paragraph) number
     this.ttsEngine.ttsBuffering   = false;
     this.ttsEngine.ttsPoller      = null;
-};
-
-BookReader.prototype.getSoundUrl = function(dataString) {
-    return 'https://'+this.ttsEngine.server+'/BookReader/BookReaderGetTTS.php?string='
-                  + dataString
-                  + '&format=.'+this.ttsEngine.ttsFormat;
 };
 
 // ttsStartCB(): text-to-speech callback
@@ -225,7 +229,7 @@ BookReader.prototype.ttsStartCB = function(data) {
     dataString = encodeURIComponent(dataString);
 
     //the .ogg is to trick SoundManager2 to use the HTML5 audio player;
-    var soundUrl = this.getSoundUrl(dataString);
+    var soundUrl = this.ttsEngine.getSoundUrl(dataString);
 
     this.ttsEngine.ttsPosition = -1;
     var snd = soundManager.createSound({
