@@ -54,6 +54,20 @@ class FestivalSpeechEngine {
             flashVersion: 9
         });
     }
+
+    /**
+     * Gets the text on a page with given index
+     * @param {String|Number} index
+     * @param {Function} callback 
+     */
+    getText(index, callback) {
+        var url = 'https://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+index;
+        this.ttsAjax = $.ajax({
+          url: url,
+          dataType:'jsonp',
+          success: callback
+        });
+    }
 }
 
 // Extend the constructor to add TTS properties
@@ -149,7 +163,7 @@ BookReader.prototype.ttsStart = function () {
     if ($.browser.mozilla) {
         this.ttsEngine.ttsFormat = 'ogg';
     }
-    this.ttsGetText(this.ttsEngine.ttsIndex, this.ttsStartCB);
+    this.ttsEngine.getText(this.ttsEngine.ttsIndex, this.ttsStartCB.bind(this));
     if (navigator.userAgent.match(/mobile/i)) {
         // HACK for iOS. Security restrictions require playback to be triggered
         // by a user click/touch. This intention gets lost in the ajax callback
@@ -177,20 +191,6 @@ BookReader.prototype.ttsStop = function () {
     this.ttsEngine.ttsPoller      = null;
 };
 
-// ttsGetText()
-//______________________________________________________________________________
-BookReader.prototype.ttsGetText = function(index, callback) {
-    var url = 'https://'+this.ttsEngine.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.ttsEngine.bookPath+'_djvu.xml&page='+index;
-    var self = this;
-    this.ttsAjax = $.ajax({
-      url: url,
-      dataType:'jsonp',
-      success: function(data) {
-        callback.call(self, data);
-      }
-    });
-}
-
 BookReader.prototype.getSoundUrl = function(dataString) {
     return 'https://'+this.ttsEngine.server+'/BookReader/BookReaderGetTTS.php?string='
                   + dataString
@@ -208,7 +208,7 @@ BookReader.prototype.ttsStartCB = function(data) {
     if (0 == data.length) {
         if (soundManager.debugMode) console.log('first page is blank!');
         if(this.ttsAdvance(true)) {
-            this.ttsGetText(this.ttsEngine.ttsIndex, this.ttsStartCB);
+            this.ttsEngine.getText(this.ttsEngine.ttsIndex, this.ttsStartCB.bind(this));
         }
         return;
     }
@@ -322,7 +322,7 @@ BookReader.prototype.ttsNextChunkPhase2 = function () {
     //prefetch next page of text
     if (0 == this.ttsEngine.ttsPosition) {
         if (this.ttsEngine.ttsIndex<(this.getNumLeafs()-1)) {
-            this.ttsGetText(this.ttsEngine.ttsIndex+1, this.ttsNextPageCB);
+            this.ttsEngine.getText(this.ttsEngine.ttsIndex+1, this.ttsNextPageCB.bind(this));
         }
     }
 
