@@ -16,6 +16,7 @@ class FestivalSpeechEngine {
      * @param {Object} options 
      * @param {String} options.server
      * @param {String} options.bookPath
+     * @param {Function} options.maybeFlipHandler
      */
     constructor(options) {
         this.ttsPlaying     = false;
@@ -29,6 +30,7 @@ class FestivalSpeechEngine {
 
         this.server = options.server;
         this.bookPath = options.bookPath;
+        this.maybeFlipHandler = options.maybeFlipHandler;
 
         this.isSoundManagerSupported = false;
 
@@ -118,9 +120,8 @@ class FestivalSpeechEngine {
      * 
      * @param {Boolean} starting 
      * @param {Number} numLeafs 
-     * @param {Function} possiblePageFlipCallback
      */
-    advance(starting, numLeafs, possiblePageFlipCallback) {
+    advance(starting, numLeafs) {
         this.ttsPosition++;
         if (this.ttsPosition >= this.ttsChunks.length) {
             if (this.ttsIndex == (numLeafs - 1)) {
@@ -133,7 +134,7 @@ class FestivalSpeechEngine {
                     this.ttsPosition = 0;
                     this.ttsChunks = this.ttsNextChunks;
                     this.ttsNextChunks = null;
-                    return possiblePageFlipCallback(starting, this.ttsIndex);
+                    return this.maybeFlipHandler(starting, this.ttsIndex);
                 } else {
                     if (soundManager.debugMode) console.log('ttsAdvance: ttsNextChunks is null');
                     return false;
@@ -151,7 +152,11 @@ BookReader.prototype.setup = (function (super_) {
         super_.call(this, options);
 
         if (this.options.enableTtsPlugin) {
-            this.ttsEngine = new FestivalSpeechEngine(options);
+            this.ttsEngine = new FestivalSpeechEngine({
+                server: options.server,
+                bookPath: options.bookPath,
+                maybeFlipHandler: this.ttsMaybeFlip.bind(this)
+            });
         }
     };
 })(BookReader.prototype.setup);
@@ -388,7 +393,7 @@ BookReader.prototype.ttsNextChunkPhase2 = function () {
 // 5. stop playing at end of book
 
 BookReader.prototype.ttsAdvance = function (starting) {
-    return this.ttsEngine.advance(starting, this.getNumLeafs(), this.ttsMaybeFlip.bind(this));
+    return this.ttsEngine.advance(starting, this.getNumLeafs());
 };
 
 // ttsMaybeFlip()
