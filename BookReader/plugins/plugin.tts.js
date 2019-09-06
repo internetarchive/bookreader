@@ -25,6 +25,7 @@ class FestivalSpeechEngine {
         this.ttsPoller      = null;
         this.ttsFormat      = null;
         this.ttsChunks      = null;
+        this.ttsNextChunks  = null;
 
         this.server = options.server;
         this.bookPath = options.bookPath;
@@ -270,7 +271,7 @@ BookReader.prototype.ttsStartCB = function(data) {
 // ttsNextPageCB
 //______________________________________________________________________________
 BookReader.prototype.ttsNextPageCB = function (data) {
-    this.ttsNextChunks = data;
+    this.ttsEngine.ttsNextChunks = data;
     if (soundManager.debugMode) console.log('preloaded next chunks.. data is ' + data);
 
     if (true == this.ttsEngine.ttsBuffering) {
@@ -365,12 +366,12 @@ BookReader.prototype.ttsAdvance = function (starting) {
             if (soundManager.debugMode) console.log('tts stop');
             return false;
         } else {
-            if ((null != this.ttsNextChunks) || (starting)) {
+            if ((null != this.ttsEngine.ttsNextChunks) || (starting)) {
                 if (soundManager.debugMode) console.log('moving to next page!');
                 this.ttsEngine.ttsIndex++;
                 this.ttsEngine.ttsPosition = 0;
-                this.ttsEngine.ttsChunks = this.ttsNextChunks;
-                this.ttsNextChunks = null;
+                this.ttsEngine.ttsChunks = this.ttsEngine.ttsNextChunks;
+                this.ttsEngine.ttsNextChunks = null;
 
                 //A page flip might be necessary. This code is confusing since
                 //ttsNextChunks might be null if we are starting on a blank page.
@@ -414,9 +415,9 @@ BookReader.prototype.ttsPrefetchAudio = function () {
     } else {
         //for a short page, preload might nt have yet returned..
         if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.ttsEngine.ttsIndex+1));
-        if (null != this.ttsNextChunks) {
-            if (0 != this.ttsNextChunks.length) {
-                this.ttsLoadChunk(this.ttsEngine.ttsIndex+1, 0, this.ttsNextChunks[0][0]);
+        if (null != this.ttsEngine.ttsNextChunks) {
+            if (0 != this.ttsEngine.ttsNextChunks.length) {
+                this.ttsLoadChunk(this.ttsEngine.ttsIndex+1, 0, this.ttsEngine.ttsNextChunks[0][0]);
             } else {
                 if (soundManager.debugMode) console.log('prefetchAudio(): ttsNextChunks is zero length!');
             }
