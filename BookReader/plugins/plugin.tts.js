@@ -78,6 +78,27 @@ class FestivalSpeechEngine {
                   + dataString
                   + '&format=.'+this.ttsFormat;
     }
+
+    /**
+     * @param {String|Number} index leaf index
+     * @param {Function} callback
+     */
+    start(index, callback) {
+        if (soundManager.debugMode) console.log('starting readAloud');
+        this.ttsIndex = index;
+        this.ttsFormat = 'mp3';
+        if ($.browser.mozilla) {
+            this.ttsFormat = 'ogg';
+        }
+
+        this.getText(this.ttsIndex, callback);
+        if (navigator.userAgent.match(/mobile/i)) {
+            // HACK for iOS. Security restrictions require playback to be triggered
+            // by a user click/touch. This intention gets lost in the ajax callback
+            // above, but for some reason, if we start the audio here, it works
+            soundManager.createSound({url: this.getSoundUrl(' ')}).play();
+        }
+    }
 }
 
 // Extend the constructor to add TTS properties
@@ -162,24 +183,11 @@ BookReader.prototype.ttsToggle = function () {
 // ttsStart(
 //______________________________________________________________________________
 BookReader.prototype.ttsStart = function () {
-    if (soundManager.debugMode) console.log('starting readAloud');
     if (this.constModeThumb == this.mode)
         this.switchMode(this.constMode1up);
 
     this.$('.BRicon.read').addClass('unread');
-
-    this.ttsEngine.ttsIndex = this.currentIndex();
-    this.ttsEngine.ttsFormat = 'mp3';
-    if ($.browser.mozilla) {
-        this.ttsEngine.ttsFormat = 'ogg';
-    }
-    this.ttsEngine.getText(this.ttsEngine.ttsIndex, this.ttsStartCB.bind(this));
-    if (navigator.userAgent.match(/mobile/i)) {
-        // HACK for iOS. Security restrictions require playback to be triggered
-        // by a user click/touch. This intention gets lost in the ajax callback
-        // above, but for some reason, if we start the audio here, it works
-        soundManager.createSound({url: this.ttsEngine.getSoundUrl(' ')}).play();
-    }
+    this.ttsEngine.start(this.currentIndex(), this.ttsStartCB.bind(this));
 };
 
 // ttsStop()
