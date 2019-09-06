@@ -24,6 +24,7 @@ class FestivalSpeechEngine {
         this.ttsBuffering   = false;
         this.ttsPoller      = null;
         this.ttsFormat      = null;
+        this.ttsChunks      = null;
 
         this.server = options.server;
         this.bookPath = options.bookPath;
@@ -217,7 +218,7 @@ BookReader.prototype.ttsStop = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsStartCB = function(data) {
     if (soundManager.debugMode)  console.log('ttsStartCB got data: ' + data);
-    this.ttsChunks = data;
+    this.ttsEngine.ttsChunks = data;
     this.ttsHilites = [];
 
     //deal with the page being blank
@@ -322,14 +323,14 @@ BookReader.prototype.ttsNextChunk = function () {
 //______________________________________________________________________________
 // page flip animation has now completed
 BookReader.prototype.ttsNextChunkPhase2 = function () {
-    if (null == this.ttsChunks) {
+    if (null == this.ttsEngine.ttsChunks) {
         alert('error: ttsChunks is null?'); //TODO
         return;
     }
 
-    if (0 == this.ttsChunks.length) {
+    if (0 == this.ttsEngine.ttsChunks.length) {
         if (soundManager.debugMode) console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
-        this.ttsStartCB(this.ttsChunks);
+        this.ttsStartCB(this.ttsEngine.ttsChunks);
         return;
     }
 
@@ -358,7 +359,7 @@ BookReader.prototype.ttsNextChunkPhase2 = function () {
 BookReader.prototype.ttsAdvance = function (starting) {
     this.ttsEngine.ttsPosition++;
 
-    if (this.ttsEngine.ttsPosition >= this.ttsChunks.length) {
+    if (this.ttsEngine.ttsPosition >= this.ttsEngine.ttsChunks.length) {
 
         if (this.ttsEngine.ttsIndex == (this.getNumLeafs()-1)) {
             if (soundManager.debugMode) console.log('tts stop');
@@ -368,7 +369,7 @@ BookReader.prototype.ttsAdvance = function (starting) {
                 if (soundManager.debugMode) console.log('moving to next page!');
                 this.ttsEngine.ttsIndex++;
                 this.ttsEngine.ttsPosition = 0;
-                this.ttsChunks = this.ttsNextChunks;
+                this.ttsEngine.ttsChunks = this.ttsNextChunks;
                 this.ttsNextChunks = null;
 
                 //A page flip might be necessary. This code is confusing since
@@ -408,8 +409,8 @@ BookReader.prototype.ttsPrefetchAudio = function () {
 
     //preload next chunk
     var nextPos = this.ttsEngine.ttsPosition+1;
-    if (nextPos < this.ttsChunks.length) {
-        this.ttsLoadChunk(this.ttsEngine.ttsIndex, nextPos, this.ttsChunks[nextPos][0]);
+    if (nextPos < this.ttsEngine.ttsChunks.length) {
+        this.ttsLoadChunk(this.ttsEngine.ttsIndex, nextPos, this.ttsEngine.ttsChunks[nextPos][0]);
     } else {
         //for a short page, preload might nt have yet returned..
         if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.ttsEngine.ttsIndex+1));
@@ -431,11 +432,11 @@ BookReader.prototype.ttsPrefetchAudio = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsPlay = function () {
 
-    var chunk = this.ttsChunks[this.ttsEngine.ttsPosition];
+    var chunk = this.ttsEngine.ttsChunks[this.ttsEngine.ttsPosition];
     if (soundManager.debugMode) {
         console.log('ttsPlay position = ' + this.ttsEngine.ttsPosition);
         console.log('chunk = ' + chunk);
-        console.log(this.ttsChunks);
+        console.log(this.ttsEngine.ttsChunks);
     }
 
     //add new hilights
