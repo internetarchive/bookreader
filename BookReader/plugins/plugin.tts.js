@@ -34,6 +34,26 @@ class FestivalSpeechEngine {
             this.isSoundManagerSupported = soundManager.supported();
         }
     }
+
+    init() {
+        if (this.isSoundManagerSupported) {
+            this.setupSoundManager();
+        }
+    }
+
+    setupSoundManager() {
+        soundManager.setup({
+            debugMode: false,
+            // Note, there's a bug in Chrome regarding range requests.
+            // Flash is used as a workaround.
+            // See https://bugs.chromium.org/p/chromium/issues/detail?id=505707
+            preferFlash: true,
+            url: '/bookreader/BookReader/soundmanager/swf',
+            useHTML5Audio: true,
+            //flash 8 version of swf is buggy when calling play() on a sound that is still loading
+            flashVersion: 9
+        });
+    }
 }
 
 // Extend the constructor to add TTS properties
@@ -56,9 +76,7 @@ BookReader.prototype.init = (function(super_) {
                     br.ttsToggle();
                     return false;
                 });
-                // Setup sound manager for read-aloud
-                if (br.ttsEngine.isSoundManagerSupported)
-                    br.setupSoundManager();
+                br.ttsEngine.init();
             });
 
             this.bind(BookReader.eventNames.stop, function(e, br) {
@@ -520,20 +538,4 @@ BookReader.prototype.ttsStartPolling = function () {
         self.ttsPrefetchAudio();
         self.ttsNextChunk();
     },500);
-};
-
-// setupSoundManager()
-//______________________________________________________________________________
-BookReader.prototype.setupSoundManager = function() {
-    soundManager.setup({
-        debugMode: false,
-        // Note, there's a bug in Chrome regarding range requests.
-        // Flash is used as a workaround.
-        // See https://bugs.chromium.org/p/chromium/issues/detail?id=505707
-        preferFlash: true,
-        url: '/bookreader/BookReader/soundmanager/swf',
-        useHTML5Audio: true,
-        //flash 8 version of swf is buggy when calling play() on a sound that is still loading
-        flashVersion: 9
-    });
 };
