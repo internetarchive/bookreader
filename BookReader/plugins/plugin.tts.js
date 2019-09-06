@@ -113,6 +113,36 @@ class FestivalSpeechEngine {
         this.ttsBuffering   = false;
         this.ttsPoller      = null;
     }
+
+    /**
+     * 
+     * @param {Boolean} starting 
+     * @param {Number} numLeafs 
+     * @param {Function} possiblePageFlipCallback
+     */
+    advance(starting, numLeafs, possiblePageFlipCallback) {
+        this.ttsPosition++;
+        if (this.ttsPosition >= this.ttsChunks.length) {
+            if (this.ttsIndex == (numLeafs - 1)) {
+                if (soundManager.debugMode) console.log('tts stop');
+                return false;
+            } else {
+                if ((null != this.ttsNextChunks) || (starting)) {
+                    if (soundManager.debugMode) console.log('moving to next page!');
+                    this.ttsIndex++;
+                    this.ttsPosition = 0;
+                    this.ttsChunks = this.ttsNextChunks;
+                    this.ttsNextChunks = null;
+                    return possiblePageFlipCallback(starting, this.ttsIndex);
+                } else {
+                    if (soundManager.debugMode) console.log('ttsAdvance: ttsNextChunks is null');
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
 
 // Extend the constructor to add TTS properties
@@ -358,46 +388,31 @@ BookReader.prototype.ttsNextChunkPhase2 = function () {
 // 5. stop playing at end of book
 
 BookReader.prototype.ttsAdvance = function (starting) {
-    this.ttsEngine.ttsPosition++;
+    return this.ttsEngine.advance(starting, this.getNumLeafs(), this.ttsMaybeFlip.bind(this));
+};
 
-    if (this.ttsEngine.ttsPosition >= this.ttsEngine.ttsChunks.length) {
-
-        if (this.ttsEngine.ttsIndex == (this.getNumLeafs()-1)) {
-            if (soundManager.debugMode) console.log('tts stop');
-            return false;
-        } else {
-            if ((null != this.ttsEngine.ttsNextChunks) || (starting)) {
-                if (soundManager.debugMode) console.log('moving to next page!');
-                this.ttsEngine.ttsIndex++;
-                this.ttsEngine.ttsPosition = 0;
-                this.ttsEngine.ttsChunks = this.ttsEngine.ttsNextChunks;
-                this.ttsEngine.ttsNextChunks = null;
-
-                //A page flip might be necessary. This code is confusing since
-                //ttsNextChunks might be null if we are starting on a blank page.
-                if (this.constMode2up == this.mode) {
-                    if ((this.ttsEngine.ttsIndex != this.twoPage.currentIndexL) && (this.ttsEngine.ttsIndex != this.twoPage.currentIndexR)) {
-                        if (!starting) {
-                            this.animationFinishedCallback = this.ttsNextChunkPhase2;
-                            this.next();
-                            return false;
-                        } else {
-                            this.next();
-                            return true;
-                        }
-                    } else {
-                        return true;
-                    }
-                }
-            } else {
-                if (soundManager.debugMode) console.log('ttsAdvance: ttsNextChunks is null');
+// ttsMaybeFlip()
+//______________________________________________________________________________
+// A page flip might be necessary. This code is confusing since
+// ttsNextChunks might be null if we are starting on a blank page.
+BookReader.prototype.ttsMaybeFlip = function (starting, ttsIndex) {
+    if (this.constMode2up == this.mode) {
+        if ((ttsIndex != this.twoPage.currentIndexL) && (ttsIndex != this.twoPage.currentIndexR)) {
+            if (!starting) {
+                this.animationFinishedCallback = this.ttsNextChunkPhase2;
+                this.next();
                 return false;
+            } else {
+                this.next();
+                return true;
             }
+        } else {
+            return true;
         }
     }
 
     return true;
-};
+}
 
 // ttsPrefetchAudio()
 //______________________________________________________________________________
