@@ -99,6 +99,18 @@ class FestivalSpeechEngine {
             soundManager.createSound({url: this.getSoundUrl(' ')}).play();
         }
     }
+
+    stop() {
+        if (soundManager.debugMode) console.log('stopping readaloud');
+        soundManager.stopAll();
+        soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
+
+        this.ttsPlaying     = false;
+        this.ttsIndex       = null;  //leaf index
+        this.ttsPosition    = -1;    //chunk (paragraph) number
+        this.ttsBuffering   = false;
+        this.ttsPoller      = null;
+    }
 }
 
 // Extend the constructor to add TTS properties
@@ -196,17 +208,9 @@ BookReader.prototype.ttsStop = function () {
     if (false == this.ttsEngine.ttsPlaying) return;
     this.$('.BRicon.read').removeClass('unread');
 
-    if (soundManager.debugMode) console.log('stopping readaloud');
-    soundManager.stopAll();
-    soundManager.destroySound('chunk'+this.ttsEngine.ttsIndex+'-'+this.ttsEngine.ttsPosition);
+    this.ttsEngine.stop();
     this.ttsRemoveHilites();
     this.removeProgressPopup();
-
-    this.ttsEngine.ttsPlaying     = false;
-    this.ttsEngine.ttsIndex       = null;  //leaf index
-    this.ttsEngine.ttsPosition    = -1;    //chunk (paragraph) number
-    this.ttsEngine.ttsBuffering   = false;
-    this.ttsEngine.ttsPoller      = null;
 };
 
 // ttsStartCB(): text-to-speech callback
