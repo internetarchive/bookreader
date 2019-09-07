@@ -145,16 +145,6 @@ Note that BookReader is a core part of Archive.org's mission of Universal Access
 See [CHANGELOG.md](CHANGELOG.md) for history of the project.
 
 
-## Contributing
-
-Some notes for contributing:
-- Please try to follow the code style within the file (spacing/comments/etc).
-- Please only submit merge requests for features that would be useful for the general use
-- Please try to avoid adding new libraries
-- If the PR is a bug fix, include a link to a jsbin/codepen if possible
-- Please test the changes in desktop, mobile, and embed modes, and also on many different devices/browsers.
-
-
 ## License
 
 The source code license is AGPL v3, as described in the LICENSE file.
