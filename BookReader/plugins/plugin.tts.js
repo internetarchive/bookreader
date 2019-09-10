@@ -31,7 +31,6 @@ class FestivalSpeechEngine {
      * @param {Function} options.onLoadingStart
      * @param {Function} options.onLoadingComplete
      * @param {Function} options.ttsNextChunk
-     * @param {(page: Number, position: Number, text: String) => void} options.ttsLoadChunk
      * @param {(chunk: DJVUChunk) => void} options.onPlayStart
      */
     constructor(options) {
@@ -52,7 +51,6 @@ class FestivalSpeechEngine {
         this.onLoadingStart = options.onLoadingStart;
         this.onLoadingComplete = options.onLoadingComplete;
         this.ttsNextChunk = options.ttsNextChunk;
-        this.ttsLoadChunk = options.ttsLoadChunk;
         this.onPlayStart = options.onPlayStart;
 
         this.isSoundManagerSupported = false;
@@ -265,13 +263,13 @@ class FestivalSpeechEngine {
         //preload next chunk
         var nextPos = this.ttsPosition+1;
         if (nextPos < this.ttsChunks.length) {
-            this.ttsLoadChunk(this.ttsIndex, nextPos, this.ttsChunks[nextPos][0]);
+            this.loadChunk(this.ttsIndex, nextPos, this.ttsChunks[nextPos][0]);
         } else {
             //for a short page, preload might nt have yet returned..
             if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.ttsIndex+1));
             if (null != this.ttsNextChunks) {
                 if (0 != this.ttsNextChunks.length) {
-                    this.ttsLoadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);
+                    this.loadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);
                 } else {
                     if (soundManager.debugMode) console.log('prefetchAudio(): ttsNextChunks is zero length!');
                 }
@@ -280,6 +278,19 @@ class FestivalSpeechEngine {
                 this.ttsBuffering = true;
             }
         }
+    }
+
+    /**
+     * @param {Number} page 
+     * @param {Number} pos 
+     * @param {String} string text to read
+     */
+    loadChunk(page, pos, string) {
+        var snd = soundManager.createSound({
+            id: 'chunk'+page+'-'+pos,
+            url: 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + encodeURIComponent(string) + '&format=.'+this.ttsFormat
+        });
+        snd.load();
     }
 }
 
@@ -297,7 +308,6 @@ BookReader.prototype.setup = (function (super_) {
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
                 ttsNextChunk: this.ttsNextChunk.bind(this),
-                ttsLoadChunk: this.ttsLoadChunk.bind(this),
                 onPlayStart: this.ttsHighlightChunk.bind(this)
             });
             this.ttsHilites = [];
@@ -405,18 +415,6 @@ BookReader.prototype.ttsNextPageCB = function (data) {
         this.ttsEngine.ttsBuffering = false;
     }
 };
-
-// ttsLoadChunk
-//______________________________________________________________________________
-BookReader.prototype.ttsLoadChunk = function (page, pos, string) {
-    var snd = soundManager.createSound({
-     id: 'chunk'+page+'-'+pos,
-     url: 'https://'+this.ttsEngine.server+'/BookReader/BookReaderGetTTS.php?string=' + encodeURIComponent(string) + '&format=.'+this.ttsEngine.ttsFormat //the .ogg is to trick SoundManager2 to use the HTML5 audio player
-    });
-    snd.br = this;
-    snd.load()
-};
-
 
 // ttsNextChunk()
 //______________________________________________________________________________
