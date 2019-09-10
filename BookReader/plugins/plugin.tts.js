@@ -9,6 +9,16 @@ jQuery.extend(BookReader.defaultOptions, {
     enableTtsPlugin: true,
 });
 
+/**
+ * @typedef {[number, number, number, number]} DJVURect
+ * coords are in l,b,r,t order
+ */
+
+/**
+ * @typedef {[String, ...Array<DJVURect>]} DJVUChunk
+ * A ~paragraph from DJVU with line rectangles.
+ */
+
 /** TTS using Festival endpoint */
 class FestivalSpeechEngine {
     /**
@@ -16,8 +26,11 @@ class FestivalSpeechEngine {
      * @param {Object} options 
      * @param {String} options.server
      * @param {String} options.bookPath
-     * @param {Function} options.maybeFlipHandler
      * @param {Number} options.numLeafs
+     * @param {(starting: boolean, index) => boolean} options.maybeFlipHandler
+     * @param {Function} options.onLoadingStart
+     * @param {Function} options.onLoadingComplete
+     * @param {Function} options.ttsNextChunk
      */
     constructor(options) {
         this.ttsPlaying     = false;
@@ -26,13 +39,17 @@ class FestivalSpeechEngine {
         this.ttsBuffering   = false;
         this.ttsPoller      = null;
         this.ttsFormat      = null;
+        /** @type {Array<DJVUChunk>} */
         this.ttsChunks      = null;
         this.ttsNextChunks  = null;
 
         this.server = options.server;
         this.bookPath = options.bookPath;
-        this.maybeFlipHandler = options.maybeFlipHandler;
         this.numLeafs = options.numLeafs;
+        this.maybeFlipHandler = options.maybeFlipHandler;
+        this.onLoadingStart = options.onLoadingStart;
+        this.onLoadingComplete = options.onLoadingComplete;
+        this.ttsNextChunk = options.ttsNextChunk;
 
         this.isSoundManagerSupported = false;
 
@@ -87,9 +104,8 @@ class FestivalSpeechEngine {
 
     /**
      * @param {String|Number} index leaf index
-     * @param {Function} callback
      */
-    start(index, callback) {
+    start(index) {
         if (soundManager.debugMode) console.log('starting readAloud');
         this.ttsIndex = index;
         this.ttsFormat = 'mp3';
@@ -97,7 +113,7 @@ class FestivalSpeechEngine {
             this.ttsFormat = 'ogg';
         }
 
-        this.getText(this.ttsIndex, callback);
+        this.getText(this.ttsIndex, this.startCB.bind(this));
         if (navigator.userAgent.match(/mobile/i)) {
             // HACK for iOS. Security restrictions require playback to be triggered
             // by a user click/touch. This intention gets lost in the ajax callback
@@ -149,6 +165,54 @@ class FestivalSpeechEngine {
 
         return true;
     }
+
+    /**
+     * Create the sounds from the provided text
+     * @param {Array<DJVUChunk>} data 
+     */
+    startCB(data) {
+        if (soundManager.debugMode)  console.log('ttsStartCB got data: ' + data);
+        this.ttsChunks = data;
+
+        //deal with the page being blank
+        if (0 == data.length) {
+            if (soundManager.debugMode) console.log('first page is blank!');
+            if(this.advance(true)) {
+                this.getText(this.ttsIndex, this.startCB.bind(this));
+            }
+            return;
+        }
+
+        this.onLoadingStart();
+
+        ///// Many soundManger2 callbacks are broken when using HTML5 audio.
+        ///// whileloading: broken on safari, worked in FF4, but broken on FireFox 5
+        ///// onload: fires on safari, but *after* the sound starts playing, and does not fire in FF or IE9
+        ///// onbufferchange: fires in FF5 using HTML5 audio, but not in safari using flash audio
+        ///// whileplaying: fires everywhere
+
+        var dataString = data[0][0];
+        dataString = encodeURIComponent(dataString);
+        var soundUrl = this.getSoundUrl(dataString);
+        this.ttsPosition = -1;
+        var onLoadingComplete = this.onLoadingComplete;
+        var snd = soundManager.createSound({
+            id: 'chunk'+this.ttsIndex+'-0',
+            url: soundUrl,
+            onload: onLoadingComplete,
+            //fires in safari...
+            onbufferchange: function() {
+                if (false == this.isBuffering) {
+                    onLoadingComplete();
+                }
+            },
+            //fires in FF and IE9
+            onready: onLoadingComplete
+        });
+        snd.load();
+
+        this.ttsNextChunk();
+    }
 }
 
 // Extend the constructor to add TTS properties
@@ -160,9 +224,13 @@ BookReader.prototype.setup = (function (super_) {
             this.ttsEngine = new FestivalSpeechEngine({
                 server: options.server,
                 bookPath: options.bookPath,
+                numLeafs: this.getNumLeafs(),
                 maybeFlipHandler: this.ttsMaybeFlip.bind(this),
-                numLeafs: this.getNumLeafs()
+                onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
+                onLoadingComplete: this.removeProgressPopup.bind(this),
+                ttsNextChunk: this.ttsNextChunk.bind(this)
             });
+            this.ttsHilites = [];
         }
     };
 })(BookReader.prototype.setup);
@@ -242,7 +310,7 @@ BookReader.prototype.ttsStart = function () {
         this.switchMode(this.constMode1up);
 
     this.$('.BRicon.read').addClass('unread');
-    this.ttsEngine.start(this.currentIndex(), this.ttsStartCB.bind(this));
+    this.ttsEngine.start(this.currentIndex());
 };
 
 // ttsStop()
@@ -255,59 +323,6 @@ BookReader.prototype.ttsStop = function () {
     this.ttsRemoveHilites();
     this.removeProgressPopup();
 };
-
-// ttsStartCB(): text-to-speech callback
-//______________________________________________________________________________
-BookReader.prototype.ttsStartCB = function(data) {
-    if (soundManager.debugMode)  console.log('ttsStartCB got data: ' + data);
-    this.ttsEngine.ttsChunks = data;
-    this.ttsHilites = [];
-
-    //deal with the page being blank
-    if (0 == data.length) {
-        if (soundManager.debugMode) console.log('first page is blank!');
-        if(this.ttsEngine.advance(true)) {
-            this.ttsEngine.getText(this.ttsEngine.ttsIndex, this.ttsStartCB.bind(this));
-        }
-        return;
-    }
-
-    this.showProgressPopup('Loading audio...');
-
-    ///// Many soundManger2 callbacks are broken when using HTML5 audio.
-    ///// whileloading: broken on safari, worked in FF4, but broken on FireFox 5
-    ///// onload: fires on safari, but *after* the sound starts playing, and does not fire in FF or IE9
-    ///// onbufferchange: fires in FF5 using HTML5 audio, but not in safari using flash audio
-    ///// whileplaying: fires everywhere
-
-    var dataString = data[0][0];
-    dataString = encodeURIComponent(dataString);
-
-    //the .ogg is to trick SoundManager2 to use the HTML5 audio player;
-    var soundUrl = this.ttsEngine.getSoundUrl(dataString);
-
-    this.ttsEngine.ttsPosition = -1;
-    var snd = soundManager.createSound({
-     id: 'chunk'+this.ttsEngine.ttsIndex+'-0',
-     url: soundUrl,
-     onload: function(){
-       this.br.removeProgressPopup();
-     }, //fires in safari...
-     onbufferchange: function(){
-       if (false == this.isBuffering) {
-         this.br.removeProgressPopup();
-       }
-     }, //fires in FF and IE9
-     onready: function() {
-       this.br.removeProgressPopup();
-     }
-    });
-    snd.br = this;
-    snd.load();
-
-    this.ttsNextChunk();
-};
-
 
 // ttsNextPageCB
 //______________________________________________________________________________
@@ -372,7 +387,7 @@ BookReader.prototype.ttsNextChunkPhase2 = function () {
 
     if (0 == this.ttsEngine.ttsChunks.length) {
         if (soundManager.debugMode) console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
-        this.ttsStartCB(this.ttsEngine.ttsChunks);
+        this.ttsEngine.startCB(this.ttsEngine.ttsChunks);
         return;
     }
 
