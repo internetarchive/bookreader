@@ -31,7 +31,7 @@ class FestivalSpeechEngine {
      * @param {Function} options.onLoadingStart
      * @param {Function} options.onLoadingComplete
      * @param {Function} options.ttsNextChunk
-     * @param {Function} options.ttsStartPolling
+     * @param {Function} options.ttsPrefetchAudio
      * @param {(chunk: DJVUChunk) => void} options.onPlayStart
      */
     constructor(options) {
@@ -52,7 +52,7 @@ class FestivalSpeechEngine {
         this.onLoadingStart = options.onLoadingStart;
         this.onLoadingComplete = options.onLoadingComplete;
         this.ttsNextChunk = options.ttsNextChunk;
-        this.ttsStartPolling = options.ttsStartPolling;
+        this.ttsPrefetchAudio = options.ttsPrefetchAudio;
         this.onPlayStart = options.onPlayStart;
 
         this.isSoundManagerSupported = false;
@@ -233,8 +233,27 @@ class FestivalSpeechEngine {
         if (false == this.ttsBuffering) {
             soundManager.play(soundId, { onfinish: this.ttsNextChunk });
         } else {
-            soundManager.play(soundId, { onfinish: this.ttsStartPolling });
+            soundManager.play(soundId, { onfinish: this.startPolling.bind(this) });
         }
+    }
+
+    /**
+     * Play of the current chunk has ended, but the next chunk has not yet been loaded.
+     * We need to wait for the text for the next page to be loaded, so we can
+     * load the next audio chunk
+     */
+    startPolling() {
+        if (soundManager.debugMode) console.log('Starting the TTS poller...');
+        var self = this;
+        this.ttsPoller = setInterval(function() {
+            if (self.ttsBuffering) {return;}
+    
+            if (soundManager.debugMode) console.log('TTS buffering finished!');
+            clearInterval(self.ttsPoller);
+            self.ttsPoller = null;
+            self.ttsPrefetchAudio();
+            self.ttsNextChunk();
+        }, 500);
     }
 }
 
@@ -252,7 +271,7 @@ BookReader.prototype.setup = (function (super_) {
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
                 ttsNextChunk: this.ttsNextChunk.bind(this),
-                ttsStartPolling: this.ttsStartPolling.bind(this),
+                ttsPrefetchAudio: this.ttsPrefetchAudio.bind(this),
                 onPlayStart: this.ttsHighlightChunk.bind(this)
             });
             this.ttsHilites = [];
@@ -575,23 +594,4 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
 BookReader.prototype.ttsRemoveHilites = function (chunk) {
     $(this.ttsHilites).remove();
     this.ttsHilites = [];
-};
-
-// ttsStartPolling()
-//______________________________________________________________________________
-// Play of the current chunk has ended, but the next chunk has not yet been loaded.
-// We need to wait for the text for the next page to be loaded, so we can
-// load the next audio chunk
-BookReader.prototype.ttsStartPolling = function () {
-    if (soundManager.debugMode) console.log('Starting the TTS poller...');
-    var self = this;
-    this.ttsEngine.ttsPoller=setInterval(function(){
-        if (self.ttsEngine.ttsBuffering) {return;}
-
-        if (soundManager.debugMode) console.log('TTS buffering finished!');
-        clearInterval(self.ttsEngine.ttsPoller);
-        self.ttsEngine.ttsPoller = null;
-        self.ttsPrefetchAudio();
-        self.ttsNextChunk();
-    },500);
 };
