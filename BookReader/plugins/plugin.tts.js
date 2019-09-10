@@ -31,6 +31,8 @@ class FestivalSpeechEngine {
      * @param {Function} options.onLoadingStart
      * @param {Function} options.onLoadingComplete
      * @param {Function} options.ttsNextChunk
+     * @param {Function} options.ttsStartPolling
+     * @param {(chunk: DJVUChunk) => void} options.onPlayStart
      */
     constructor(options) {
         this.ttsPlaying     = false;
@@ -50,6 +52,8 @@ class FestivalSpeechEngine {
         this.onLoadingStart = options.onLoadingStart;
         this.onLoadingComplete = options.onLoadingComplete;
         this.ttsNextChunk = options.ttsNextChunk;
+        this.ttsStartPolling = options.ttsStartPolling;
+        this.onPlayStart = options.onPlayStart;
 
         this.isSoundManagerSupported = false;
 
@@ -213,6 +217,25 @@ class FestivalSpeechEngine {
 
         this.ttsNextChunk();
     }
+
+    play() {
+        var chunk = this.ttsChunks[this.ttsPosition];
+        if (soundManager.debugMode) {
+            console.log('ttsPlay position = ' + this.ttsPosition);
+            console.log('chunk = ' + chunk);
+            console.log(this.ttsChunks);
+        }
+
+        this.onPlayStart(chunk);
+
+        //play current chunk
+        var soundId = 'chunk'+this.ttsIndex+'-'+this.ttsPosition;
+        if (false == this.ttsBuffering) {
+            soundManager.play(soundId, { onfinish: this.ttsNextChunk });
+        } else {
+            soundManager.play(soundId, { onfinish: this.ttsStartPolling });
+        }
+    }
 }
 
 // Extend the constructor to add TTS properties
@@ -228,7 +251,9 @@ BookReader.prototype.setup = (function (super_) {
                 maybeFlipHandler: this.ttsMaybeFlip.bind(this),
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
-                ttsNextChunk: this.ttsNextChunk.bind(this)
+                ttsNextChunk: this.ttsNextChunk.bind(this),
+                ttsStartPolling: this.ttsStartPolling.bind(this),
+                onPlayStart: this.ttsHighlightChunk.bind(this)
             });
             this.ttsHilites = [];
         }
@@ -402,7 +427,7 @@ BookReader.prototype.ttsNextChunkPhase2 = function () {
 
     this.ttsPrefetchAudio();
 
-    this.ttsPlay();
+    this.ttsEngine.play();
 };
 
 // ttsMaybeFlip()
@@ -458,18 +483,9 @@ BookReader.prototype.ttsPrefetchAudio = function () {
 
 };
 
-// ttsPlay()
+// ttsHighlightChunk()
 //______________________________________________________________________________
-BookReader.prototype.ttsPlay = function () {
-
-    var chunk = this.ttsEngine.ttsChunks[this.ttsEngine.ttsPosition];
-    if (soundManager.debugMode) {
-        console.log('ttsPlay position = ' + this.ttsEngine.ttsPosition);
-        console.log('chunk = ' + chunk);
-        console.log(this.ttsEngine.ttsChunks);
-    }
-
-    //add new hilights
+BookReader.prototype.ttsHighlightChunk = function (chunk) {
     if (this.constMode2up == this.mode) {
         this.ttsHilite2UP(chunk);
     } else {
@@ -477,13 +493,6 @@ BookReader.prototype.ttsPlay = function () {
     }
 
     this.ttsScrollToChunk(chunk);
-
-    //play current chunk
-    if (false == this.ttsEngine.ttsBuffering) {
-        soundManager.play('chunk'+this.ttsEngine.ttsIndex+'-'+this.ttsEngine.ttsPosition,{onfinish:function(){br.ttsNextChunk();}});
-    } else {
-        soundManager.play('chunk'+this.ttsEngine.ttsIndex+'-'+this.ttsEngine.ttsPosition,{onfinish:function(){br.ttsStartPolling();}});
-    }
 };
 
 // scrollToChunk()
