@@ -33,19 +33,19 @@ class FestivalSpeechEngine {
      * @param {(chunk: DJVUChunk) => void} options.beforeChunkStart
      */
     constructor(options) {
-        this.ttsPlaying     = false;
+        this.playing     = false;
         /** @type {Number} leaf index */
-        this.ttsIndex       = null;
-        /** @type {Number} chunk (paragraph) number; index of this.ttsChunks */
-        this.ttsPosition    = -1;
-        this.ttsBuffering   = false;
-        this.ttsPoller      = null;
+        this.leafIndex       = null;
+        /** @type {Number} index of active 'chunk'; index of this.chunks */
+        this.chunkIndex    = -1;
+        this.buffering   = false;
+        this.poller      = null;
         /** @type {'mp3' | 'ogg'} format of audio to get */
-        this.ttsFormat      = null;
+        this.audioFormat      = null;
         /** @type {Array<DJVUChunk>} Chunks currently being read */
-        this.ttsChunks      = null;
+        this.chunks      = null;
         /** @type {Array<DJVUChunk>} Chunks to read */
-        this.ttsNextChunks  = null;
+        this.nextChunks  = null;
         /** @type {Boolean} Whether this tts engine can run */
         this.isSupported = typeof(soundManager) !== 'undefined' && soundManager.supported();
 
@@ -85,7 +85,7 @@ class FestivalSpeechEngine {
      */
     getText(index, callback) {
         var url = 'https://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+index;
-        this.ttsAjax = $.ajax({
+        $.ajax({
           url: url,
           dataType:'jsonp',
           success: callback
@@ -99,7 +99,7 @@ class FestivalSpeechEngine {
     getSoundUrl(dataString) {
         return 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string='
                   + encodeURIComponent(dataString)
-                  + '&format=.'+this.ttsFormat;
+                  + '&format=.'+this.audioFormat;
     }
 
     /**
@@ -107,13 +107,13 @@ class FestivalSpeechEngine {
      */
     start(index) {
         if (soundManager.debugMode) console.log('starting readAloud');
-        this.ttsIndex = index;
-        this.ttsFormat = 'mp3';
+        this.leafIndex = index;
+        this.audioFormat = 'mp3';
         if ($.browser.mozilla) {
-            this.ttsFormat = 'ogg';
+            this.audioFormat = 'ogg';
         }
 
-        this.getText(this.ttsIndex, this.startCB.bind(this));
+        this.getText(this.leafIndex, this.startCB.bind(this));
         if (navigator.userAgent.match(/mobile/i)) {
             // HACK for iOS. Security restrictions require playback to be triggered
             // by a user click/touch. This intention gets lost in the ajax callback
@@ -125,39 +125,39 @@ class FestivalSpeechEngine {
     stop() {
         if (soundManager.debugMode) console.log('stopping readaloud');
         soundManager.stopAll();
-        soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
+        soundManager.destroySound('chunk'+this.leafIndex+'-'+this.chunkIndex);
 
-        this.ttsPlaying     = false;
-        this.ttsIndex       = null;  //leaf index
-        this.ttsPosition    = -1;    //chunk (paragraph) number
-        this.ttsBuffering   = false;
-        this.ttsPoller      = null;
+        this.playing     = false;
+        this.leafIndex       = null;  //leaf index
+        this.chunkIndex    = -1;    //chunk (paragraph) number
+        this.buffering   = false;
+        this.poller      = null;
     }
 
     /**
-     * 1. advance ttsPosition
-     * 2. if necessary, advance ttsIndex, and copy ttsNextChunks to ttsChunks
+     * 1. advance chunkIndex
+     * 2. if necessary, advance leafIndex, and copy nextChunks to chunks
      * 3. if necessary, flip to current page, or scroll so chunk is visible
-     * 4. do something smart is ttsNextChunks has not yet finished preloading (TODO)
+     * 4. do something smart is nextChunks has not yet finished preloading (TODO)
      * 5. stop playing at end of book
      * @param {Boolean} starting 
      */
     advance(starting) {
-        this.ttsPosition++;
-        if (this.ttsPosition >= this.ttsChunks.length) {
-            if (this.ttsIndex == (this.numLeafs - 1)) {
+        this.chunkIndex++;
+        if (this.chunkIndex >= this.chunks.length) {
+            if (this.leafIndex == (this.numLeafs - 1)) {
                 if (soundManager.debugMode) console.log('tts stop');
                 return false;
             } else {
-                if ((null != this.ttsNextChunks) || (starting)) {
+                if ((null != this.nextChunks) || (starting)) {
                     if (soundManager.debugMode) console.log('moving to next page!');
-                    this.ttsIndex++;
-                    this.ttsPosition = 0;
-                    this.ttsChunks = this.ttsNextChunks;
-                    this.ttsNextChunks = null;
-                    return this.maybeFlipHandler(starting, this.ttsIndex);
+                    this.leafIndex++;
+                    this.chunkIndex = 0;
+                    this.chunks = this.nextChunks;
+                    this.nextChunks = null;
+                    return this.maybeFlipHandler(starting, this.leafIndex);
                 } else {
-                    if (soundManager.debugMode) console.log('tts advance: ttsNextChunks is null');
+                    if (soundManager.debugMode) console.log('tts advance: nextChunks is null');
                     return false;
                 }
             }
@@ -172,13 +172,13 @@ class FestivalSpeechEngine {
      */
     startCB(data) {
         if (soundManager.debugMode)  console.log('ttsStartCB got data: ' + data);
-        this.ttsChunks = data;
+        this.chunks = data;
 
         //deal with the page being blank
         if (0 == data.length) {
             if (soundManager.debugMode) console.log('first page is blank!');
             if(this.advance(true)) {
-                this.getText(this.ttsIndex, this.startCB.bind(this));
+                this.getText(this.leafIndex, this.startCB.bind(this));
             }
             return;
         }
@@ -194,10 +194,10 @@ class FestivalSpeechEngine {
         var dataString = data[0][0];
         dataString = encodeURIComponent(dataString);
         var soundUrl = this.getSoundUrl(dataString);
-        this.ttsPosition = -1;
+        this.chunkIndex = -1;
         var onLoadingComplete = this.onLoadingComplete;
         var snd = soundManager.createSound({
-            id: 'chunk'+this.ttsIndex+'-0',
+            id: 'chunk'+this.leafIndex+'-0',
             url: soundUrl,
             onload: onLoadingComplete,
             //fires in safari...
@@ -215,18 +215,18 @@ class FestivalSpeechEngine {
     }
 
     play() {
-        var chunk = this.ttsChunks[this.ttsPosition];
+        var chunk = this.chunks[this.chunkIndex];
         if (soundManager.debugMode) {
-            console.log('ttsPlay position = ' + this.ttsPosition);
+            console.log('ttsPlay position = ' + this.chunkIndex);
             console.log('chunk = ' + chunk);
-            console.log(this.ttsChunks);
+            console.log(this.chunks);
         }
 
         this.beforeChunkStart(chunk);
 
         //play current chunk
-        var soundId = 'chunk'+this.ttsIndex+'-'+this.ttsPosition;
-        if (false == this.ttsBuffering) {
+        var soundId = 'chunk'+this.leafIndex+'-'+this.chunkIndex;
+        if (false == this.buffering) {
             soundManager.play(soundId, { onfinish: this.nextChunk.bind(this) });
         } else {
             soundManager.play(soundId, { onfinish: this.startPolling.bind(this) });
@@ -241,39 +241,39 @@ class FestivalSpeechEngine {
     startPolling() {
         if (soundManager.debugMode) console.log('Starting the TTS poller...');
         var self = this;
-        this.ttsPoller = setInterval(function() {
-            if (self.ttsBuffering) {return;}
+        this.poller = setInterval(function() {
+            if (self.buffering) {return;}
     
             if (soundManager.debugMode) console.log('TTS buffering finished!');
-            clearInterval(self.ttsPoller);
-            self.ttsPoller = null;
+            clearInterval(self.poller);
+            self.poller = null;
             self.prefetchAudio();
             self.nextChunk();
         }, 500);
     }
 
     prefetchAudio() {
-        if(false != this.ttsBuffering) {
+        if(false != this.buffering) {
             alert('TTS Error: prefetch() called while content still buffering!');
             return;
         }
     
         //preload next chunk
-        var nextPos = this.ttsPosition+1;
-        if (nextPos < this.ttsChunks.length) {
-            this.loadChunk(this.ttsIndex, nextPos, this.ttsChunks[nextPos][0]);
+        var nextPos = this.chunkIndex+1;
+        if (nextPos < this.chunks.length) {
+            this.loadChunk(this.leafIndex, nextPos, this.chunks[nextPos][0]);
         } else {
             //for a short page, preload might nt have yet returned..
-            if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.ttsIndex+1));
-            if (null != this.ttsNextChunks) {
-                if (0 != this.ttsNextChunks.length) {
-                    this.loadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);
+            if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.leafIndex+1));
+            if (null != this.nextChunks) {
+                if (0 != this.nextChunks.length) {
+                    this.loadChunk(this.leafIndex+1, 0, this.nextChunks[0][0]);
                 } else {
-                    if (soundManager.debugMode) console.log('prefetchAudio(): ttsNextChunks is zero length!');
+                    if (soundManager.debugMode) console.log('prefetchAudio(): nextChunks is zero length!');
                 }
             } else {
-                if (soundManager.debugMode) console.log('ttsNextChunks is null, not preloading next page');
-                this.ttsBuffering = true;
+                if (soundManager.debugMode) console.log('nextChunks is null, not preloading next page');
+                this.buffering = true;
             }
         }
     }
@@ -298,10 +298,10 @@ class FestivalSpeechEngine {
      * continues after animation is finished.
      */
     nextChunk() {
-        if (soundManager.debugMode) console.log('nextchunk pos=' + this.ttsPosition);
+        if (soundManager.debugMode) console.log('nextchunk pos=' + this.chunkIndex);
 
-        if (-1 != this.ttsPosition) {
-            soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
+        if (-1 != this.chunkIndex) {
+            soundManager.destroySound('chunk'+this.leafIndex+'-'+this.chunkIndex);
         }
     
         var moreToPlay = this.advance(false);
@@ -318,23 +318,23 @@ class FestivalSpeechEngine {
      * page flip animation has now completed
      */
     nextChunkPhase2() {
-        if (null == this.ttsChunks) {
-            alert('error: ttsChunks is null?'); //TODO
+        if (null == this.chunks) {
+            alert('error: chunks is null?'); //TODO
             return;
         }
     
-        if (0 == this.ttsChunks.length) {
-            if (soundManager.debugMode) console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
-            this.startCB(this.ttsChunks);
+        if (0 == this.chunks.length) {
+            if (soundManager.debugMode) console.log('ttsNextChunk2: chunks.length is zero.. hacking...');
+            this.startCB(this.chunks);
             return;
         }
     
-        if (soundManager.debugMode) console.log('next chunk is ' + this.ttsPosition);
+        if (soundManager.debugMode) console.log('next chunk is ' + this.chunkIndex);
     
         //prefetch next page of text
-        if (0 == this.ttsPosition) {
-            if (this.ttsIndex < (this.numLeafs-1)) {
-                this.getText(this.ttsIndex+1, this.nextPageCB.bind(this));
+        if (0 == this.chunkIndex) {
+            if (this.leafIndex < (this.numLeafs-1)) {
+                this.getText(this.leafIndex+1, this.nextPageCB.bind(this));
             }
         }
     
@@ -346,12 +346,12 @@ class FestivalSpeechEngine {
      * @param {Array<DJVUChunk>} data 
      */
     nextPageCB(data) {
-        this.ttsNextChunks = data;
+        this.nextChunks = data;
         if (soundManager.debugMode) console.log('preloaded next chunks.. data is ' + data);
     
-        if (true == this.ttsBuffering) {
-            if (soundManager.debugMode) console.log('nextPageCB: ttsBuffering is true');
-            this.ttsBuffering = false;
+        if (true == this.buffering) {
+            if (soundManager.debugMode) console.log('nextPageCB: buffering is true');
+            this.buffering = false;
         }
     }
 }
@@ -435,8 +435,8 @@ BookReader.prototype.initNavbar = (function (super_) {
 //______________________________________________________________________________
 BookReader.prototype.ttsToggle = function () {
     if (this.autoStop) this.autoStop();
-    if (false == this.ttsEngine.ttsPlaying) {
-        this.ttsEngine.ttsPlaying = true;
+    if (false == this.ttsEngine.playing) {
+        this.ttsEngine.playing = true;
         this.showProgressPopup('Loading audio...');
         this.ttsStart();
     } else {
@@ -457,7 +457,7 @@ BookReader.prototype.ttsStart = function () {
 // ttsStop()
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
-    if (false == this.ttsEngine.ttsPlaying) return;
+    if (false == this.ttsEngine.playing) return;
     this.$('.BRicon.read').removeClass('unread');
 
     this.ttsEngine.stop();
@@ -468,10 +468,10 @@ BookReader.prototype.ttsStop = function () {
 // ttsMaybeFlip()
 //______________________________________________________________________________
 // A page flip might be necessary. This code is confusing since
-// ttsNextChunks might be null if we are starting on a blank page.
-BookReader.prototype.ttsMaybeFlip = function (starting, ttsIndex) {
+// nextChunks might be null if we are starting on a blank page.
+BookReader.prototype.ttsMaybeFlip = function (starting, leafIndex) {
     if (this.constMode2up == this.mode) {
-        if ((ttsIndex != this.twoPage.currentIndexL) && (ttsIndex != this.twoPage.currentIndexR)) {
+        if ((leafIndex != this.twoPage.currentIndexL) && (leafIndex != this.twoPage.currentIndexR)) {
             if (!starting) {
                 this.animationFinishedCallback = this.ttsEngine.nextChunkPhase2.bind(this.ttsEngine);
                 this.next();
@@ -510,7 +510,7 @@ BookReader.prototype.ttsScrollToChunk = function(chunk) {
     var leafTop = 0;
     var h;
     var i;
-    for (i=0; i<this.ttsEngine.ttsIndex; i++) {
+    for (i=0; i<this.ttsEngine.leafIndex; i++) {
         h = parseInt(this._getPageHeight(i)/this.reduce);
         leafTop += h + this.padding;
     }
@@ -546,7 +546,7 @@ BookReader.prototype.ttsHilite1UP = function(chunk) {
         var div = document.createElement('div');
         this.ttsHilites.push(div);
         $(div).prop('className', 'BookReaderSearchHilite').appendTo(
-            this.$('.pagediv'+this.ttsEngine.ttsIndex)
+            this.$('.pagediv'+this.ttsEngine.leafIndex)
         );
 
         $(div).css({
@@ -573,7 +573,7 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
         var div = document.createElement('div');
         this.ttsHilites.push(div);
         $(div).prop('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo(this.refs.$brTwoPageView);
-        this.setHilightCss2UP(div, this.ttsEngine.ttsIndex, l, r, t, b);
+        this.setHilightCss2UP(div, this.ttsEngine.leafIndex, l, r, t, b);
     }
 };
 
