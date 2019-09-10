@@ -33,19 +33,20 @@ class FestivalSpeechEngine {
      * @param {(chunk: DJVUChunk) => void} options.beforeChunkStart
      */
     constructor(options) {
-        this.playing     = false;
+        this.playing = false;
         /** @type {Number} leaf index */
-        this.leafIndex       = null;
+        this.leafIndex = null;
         /** @type {Number} index of active 'chunk'; index of this.chunks */
-        this.chunkIndex    = -1;
-        this.buffering   = false;
-        this.poller      = null;
+        this.chunkIndex = -1;
+        this.buffering = false;
+        /** @type {Number?} used in setInterval */
+        this.poller = null;
         /** @type {'mp3' | 'ogg'} format of audio to get */
-        this.audioFormat      = null;
+        this.audioFormat = null;
         /** @type {Array<DJVUChunk>} Chunks currently being read */
-        this.chunks      = null;
+        this.chunks = null;
         /** @type {Array<DJVUChunk>} Chunks to read */
-        this.nextChunks  = null;
+        this.prefetchedChunks = null;
         /** @type {Boolean} Whether this tts engine can run */
         this.isSupported = typeof(soundManager) !== 'undefined' && soundManager.supported();
 
@@ -64,6 +65,9 @@ class FestivalSpeechEngine {
         }
     }
 
+    /**
+     * @private
+     */
     setupSoundManager() {
         soundManager.setup({
             debugMode: false,
@@ -79,20 +83,21 @@ class FestivalSpeechEngine {
     }
 
     /**
+     * @private
      * Gets the text on a page with given index
      * @param {String|Number} index
-     * @param {Function} callback 
+     * @return {PromiseLike<Array<DJVUChunk>>}
      */
-    getText(index, callback) {
+    getText(index) {
         var url = 'https://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+index;
-        $.ajax({
+        return $.ajax({
           url: url,
-          dataType:'jsonp',
-          success: callback
+          dataType:'jsonp'
         });
     }
 
     /**
+     * @private
      * Get URL for audio that says this text
      * @param {String} dataString the thing to say
      */
@@ -103,17 +108,14 @@ class FestivalSpeechEngine {
     }
 
     /**
-     * @param {String|Number} index leaf index
+     * @param {Number} leafIndex
      */
-    start(index) {
+    start(leafIndex) {
         if (soundManager.debugMode) console.log('starting readAloud');
-        this.leafIndex = index;
-        this.audioFormat = 'mp3';
-        if ($.browser.mozilla) {
-            this.audioFormat = 'ogg';
-        }
+        this.leafIndex = leafIndex;
+        this.audioFormat = $.browser.mozilla ? 'ogg' : 'mp3';
 
-        this.getText(this.leafIndex, this.startCB.bind(this));
+        this.getText(this.leafIndex).then(this.startWithChunks.bind(this));
         if (navigator.userAgent.match(/mobile/i)) {
             // HACK for iOS. Security restrictions require playback to be triggered
             // by a user click/touch. This intention gets lost in the ajax callback
@@ -127,18 +129,19 @@ class FestivalSpeechEngine {
         soundManager.stopAll();
         soundManager.destroySound('chunk'+this.leafIndex+'-'+this.chunkIndex);
 
-        this.playing     = false;
-        this.leafIndex       = null;  //leaf index
-        this.chunkIndex    = -1;    //chunk (paragraph) number
-        this.buffering   = false;
-        this.poller      = null;
+        this.playing = false;
+        this.leafIndex = null;
+        this.chunkIndex = -1;
+        this.buffering = false;
+        this.poller = null;
     }
 
     /**
+     * @private
      * 1. advance chunkIndex
      * 2. if necessary, advance leafIndex, and copy nextChunks to chunks
      * 3. if necessary, flip to current page, or scroll so chunk is visible
-     * 4. do something smart is nextChunks has not yet finished preloading (TODO)
+     * 4. do something smart if nextChunks has not yet finished preloading (TODO)
      * 5. stop playing at end of book
      * @param {Boolean} starting 
      */
@@ -149,12 +152,12 @@ class FestivalSpeechEngine {
                 if (soundManager.debugMode) console.log('tts stop');
                 return false;
             } else {
-                if ((null != this.nextChunks) || (starting)) {
+                if ((null != this.prefetchedChunks) || (starting)) {
                     if (soundManager.debugMode) console.log('moving to next page!');
                     this.leafIndex++;
                     this.chunkIndex = 0;
-                    this.chunks = this.nextChunks;
-                    this.nextChunks = null;
+                    this.chunks = this.prefetchedChunks;
+                    this.prefetchedChunks = null;
                     return this.maybeFlipHandler(starting, this.leafIndex);
                 } else {
                     if (soundManager.debugMode) console.log('tts advance: nextChunks is null');
@@ -167,53 +170,35 @@ class FestivalSpeechEngine {
     }
 
     /**
+     * @private
      * Create the sounds from the provided text
-     * @param {Array<DJVUChunk>} data 
+     * @param {Array<DJVUChunk>} chunks 
      */
-    startCB(data) {
-        if (soundManager.debugMode)  console.log('ttsStartCB got data: ' + data);
-        this.chunks = data;
+    startWithChunks(chunks) {
+        if (soundManager.debugMode)  console.log('ttsstartWithChunks got data: ' + chunks);
+        this.chunks = chunks;
 
         //deal with the page being blank
-        if (0 == data.length) {
+        if (!chunks.length) {
             if (soundManager.debugMode) console.log('first page is blank!');
-            if(this.advance(true)) {
-                this.getText(this.leafIndex, this.startCB.bind(this));
+            if (this.advance(true)) {
+                this.getText(this.leafIndex).then(this.startWithChunks.bind(this));
             }
             return;
         }
 
         this.onLoadingStart();
 
-        ///// Many soundManger2 callbacks are broken when using HTML5 audio.
-        ///// whileloading: broken on safari, worked in FF4, but broken on FireFox 5
-        ///// onload: fires on safari, but *after* the sound starts playing, and does not fire in FF or IE9
-        ///// onbufferchange: fires in FF5 using HTML5 audio, but not in safari using flash audio
-        ///// whileplaying: fires everywhere
-
-        var dataString = data[0][0];
-        dataString = encodeURIComponent(dataString);
-        var soundUrl = this.getSoundUrl(dataString);
+        var chunkText = chunks[0][0];
         this.chunkIndex = -1;
-        var onLoadingComplete = this.onLoadingComplete;
-        var snd = soundManager.createSound({
-            id: 'chunk'+this.leafIndex+'-0',
-            url: soundUrl,
-            onload: onLoadingComplete,
-            //fires in safari...
-            onbufferchange: function() {
-                if (false == this.isBuffering) {
-                    onLoadingComplete();
-                }
-            },
-            //fires in FF and IE9
-            onready: onLoadingComplete
-        });
-        snd.load();
-
+        this.loadTextAudio(this.leafIndex, 0, chunkText, this.onLoadingComplete.bind(this));
         this.nextChunk();
     }
 
+    /**
+     * @private
+     * Play the current chunk
+     */
     play() {
         var chunk = this.chunks[this.chunkIndex];
         if (soundManager.debugMode) {
@@ -234,6 +219,7 @@ class FestivalSpeechEngine {
     }
 
     /**
+     * @private
      * Play of the current chunk has ended, but the next chunk has not yet been loaded.
      * We need to wait for the text for the next page to be loaded, so we can
      * load the next audio chunk
@@ -252,6 +238,10 @@ class FestivalSpeechEngine {
         }, 500);
     }
 
+    /**
+     * @private
+     * Preloads the audio for the next chunk
+     */
     prefetchAudio() {
         if(false != this.buffering) {
             alert('TTS Error: prefetch() called while content still buffering!');
@@ -261,13 +251,13 @@ class FestivalSpeechEngine {
         //preload next chunk
         var nextPos = this.chunkIndex+1;
         if (nextPos < this.chunks.length) {
-            this.loadChunk(this.leafIndex, nextPos, this.chunks[nextPos][0]);
+            this.loadTextAudio(this.leafIndex, nextPos, this.chunks[nextPos][0]);
         } else {
             //for a short page, preload might nt have yet returned..
             if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.leafIndex+1));
-            if (null != this.nextChunks) {
-                if (0 != this.nextChunks.length) {
-                    this.loadChunk(this.leafIndex+1, 0, this.nextChunks[0][0]);
+            if (null != this.prefetchedChunks) {
+                if (0 != this.prefetchedChunks.length) {
+                    this.loadTextAudio(this.leafIndex+1, 0, this.prefetchedChunks[0][0]);
                 } else {
                     if (soundManager.debugMode) console.log('prefetchAudio(): nextChunks is zero length!');
                 }
@@ -279,18 +269,42 @@ class FestivalSpeechEngine {
     }
 
     /**
+     * @private
+     * Loads the audio for the provided text
      * @param {Number} page 
      * @param {Number} pos 
-     * @param {String} string text to read
+     * @param {String} text text to read
+     * @param {Function} [onload] callback to call once loading completed
      */
-    loadChunk(page, pos, string) {
-        soundManager.createSound({
+    loadTextAudio(page, pos, text, onload) {
+        var soundConfig = {
             id: 'chunk'+page+'-'+pos,
-            url: this.getSoundUrl(string)
-        }).load();
+            url: this.getSoundUrl(text)
+        };
+        if (onload) {
+            // Many soundManger2 callbacks are broken when using HTML5 audio.
+            // whileloading: broken on safari, worked in FF4, but broken on FireFox 5
+            // onload: fires on safari, but *after* the sound starts playing, and does not fire in FF or IE9
+            // onbufferchange: fires in FF5 using HTML5 audio, but not in safari using flash audio
+            // whileplaying: fires everywhere
+
+            $.extend(soundConfig, {
+                onload: onload,
+                //fires in FF and IE9
+                onready: onload,
+                //fires in safari...
+                onbufferchange: function() {
+                    if (false == this.isBuffering) {
+                        onload();
+                    }
+                }
+            });
+        }
+        soundManager.createSound(soundConfig).load();
     }
 
     /**
+     * @private
      * This function into two parts: nextChunk gets run before page flip animation
      * and nextChunkPhase2 get run after page flip animation.
      * If a page flip is necessary, advance() will return false so Phase2 isn't
@@ -309,12 +323,14 @@ class FestivalSpeechEngine {
             this.nextChunkPhase2();
         }
     
-        //This function is called again when ttsPlay() has finished playback.
-        //If the next chunk of text has not yet finished loading, ttsPlay()
+        //This function is called again when play() has finished playback.
+        //If the next chunk of text has not yet finished loading, play()
         //will start polling until the next chunk is ready.
     }
 
     /**
+     * @public
+     * FIXME This should be private
      * page flip animation has now completed
      */
     nextChunkPhase2() {
@@ -325,17 +341,15 @@ class FestivalSpeechEngine {
     
         if (0 == this.chunks.length) {
             if (soundManager.debugMode) console.log('ttsNextChunk2: chunks.length is zero.. hacking...');
-            this.startCB(this.chunks);
+            this.startWithChunks(this.chunks);
             return;
         }
     
         if (soundManager.debugMode) console.log('next chunk is ' + this.chunkIndex);
     
         //prefetch next page of text
-        if (0 == this.chunkIndex) {
-            if (this.leafIndex < (this.numLeafs-1)) {
-                this.getText(this.leafIndex+1, this.nextPageCB.bind(this));
-            }
+        if (0 == this.chunkIndex && this.leafIndex < (this.numLeafs-1)) {
+            this.getText(this.leafIndex+1).then(this.savePrefetchedChunks.bind(this));
         }
     
         this.prefetchAudio();
@@ -343,11 +357,12 @@ class FestivalSpeechEngine {
     }
 
     /**
-     * @param {Array<DJVUChunk>} data 
+     * @private
+     * @param {Array<DJVUChunk>} chunks 
      */
-    nextPageCB(data) {
-        this.nextChunks = data;
-        if (soundManager.debugMode) console.log('preloaded next chunks.. data is ' + data);
+    savePrefetchedChunks(chunks) {
+        this.prefetchedChunks = chunks;
+        if (soundManager.debugMode) console.log('preloaded next chunks.. data is ' + chunks);
     
         if (true == this.buffering) {
             if (soundManager.debugMode) console.log('nextPageCB: buffering is true');
