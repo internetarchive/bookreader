@@ -30,7 +30,6 @@ class FestivalSpeechEngine {
      * @param {(starting: boolean, index) => boolean} options.maybeFlipHandler
      * @param {Function} options.onLoadingStart
      * @param {Function} options.onLoadingComplete
-     * @param {Function} options.ttsNextChunkPhase2
      * @param {(chunk: DJVUChunk) => void} options.onPlayStart
      */
     constructor(options) {
@@ -50,7 +49,6 @@ class FestivalSpeechEngine {
         this.maybeFlipHandler = options.maybeFlipHandler;
         this.onLoadingStart = options.onLoadingStart;
         this.onLoadingComplete = options.onLoadingComplete;
-        this.ttsNextChunkPhase2 = options.ttsNextChunkPhase2;
         this.onPlayStart = options.onPlayStart;
 
         this.isSoundManagerSupported = false;
@@ -295,7 +293,7 @@ class FestivalSpeechEngine {
 
     /**
      * This function into two parts: nextChunk gets run before page flip animation
-     * and ttsNextChunkPhase2 get run after page flip animation.
+     * and nextChunkPhase2 get run after page flip animation.
      * If a page flip is necessary, advance() will return false so Phase2 isn't
      * called. Instead, this.animationFinishedCallback is set, so that Phase2
      * continues after animation is finished.
@@ -309,12 +307,53 @@ class FestivalSpeechEngine {
     
         var moreToPlay = this.advance(false);
         if (moreToPlay) {
-            this.ttsNextChunkPhase2();
+            this.nextChunkPhase2();
         }
     
         //This function is called again when ttsPlay() has finished playback.
         //If the next chunk of text has not yet finished loading, ttsPlay()
         //will start polling until the next chunk is ready.
+    }
+
+    /**
+     * page flip animation has now completed
+     */
+    nextChunkPhase2() {
+        if (null == this.ttsChunks) {
+            alert('error: ttsChunks is null?'); //TODO
+            return;
+        }
+    
+        if (0 == this.ttsChunks.length) {
+            if (soundManager.debugMode) console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
+            this.startCB(this.ttsChunks);
+            return;
+        }
+    
+        if (soundManager.debugMode) console.log('next chunk is ' + this.ttsPosition);
+    
+        //prefetch next page of text
+        if (0 == this.ttsPosition) {
+            if (this.ttsIndex < (this.numLeafs-1)) {
+                this.getText(this.ttsIndex+1, this.nextPageCB.bind(this));
+            }
+        }
+    
+        this.prefetchAudio();
+        this.play();
+    }
+
+    /**
+     * @param {Array<DJVUChunk>} data 
+     */
+    nextPageCB(data) {
+        this.ttsNextChunks = data;
+        if (soundManager.debugMode) console.log('preloaded next chunks.. data is ' + data);
+    
+        if (true == this.ttsBuffering) {
+            if (soundManager.debugMode) console.log('nextPageCB: ttsBuffering is true');
+            this.ttsBuffering = false;
+        }
     }
 }
 
@@ -331,7 +370,6 @@ BookReader.prototype.setup = (function (super_) {
                 maybeFlipHandler: this.ttsMaybeFlip.bind(this),
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
-                ttsNextChunkPhase2: this.ttsNextChunkPhase2.bind(this),
                 onPlayStart: this.ttsHighlightChunk.bind(this)
             });
             this.ttsHilites = [];
@@ -428,47 +466,6 @@ BookReader.prototype.ttsStop = function () {
     this.removeProgressPopup();
 };
 
-// ttsNextPageCB
-//______________________________________________________________________________
-BookReader.prototype.ttsNextPageCB = function (data) {
-    this.ttsEngine.ttsNextChunks = data;
-    if (soundManager.debugMode) console.log('preloaded next chunks.. data is ' + data);
-
-    if (true == this.ttsEngine.ttsBuffering) {
-        if (soundManager.debugMode) console.log('ttsNextPageCB: ttsBuffering is true');
-        this.ttsEngine.ttsBuffering = false;
-    }
-};
-
-// ttsNextChunkPhase2()
-//______________________________________________________________________________
-// page flip animation has now completed
-BookReader.prototype.ttsNextChunkPhase2 = function () {
-    if (null == this.ttsEngine.ttsChunks) {
-        alert('error: ttsChunks is null?'); //TODO
-        return;
-    }
-
-    if (0 == this.ttsEngine.ttsChunks.length) {
-        if (soundManager.debugMode) console.log('ttsNextChunk2: ttsChunks.length is zero.. hacking...');
-        this.ttsEngine.startCB(this.ttsEngine.ttsChunks);
-        return;
-    }
-
-    if (soundManager.debugMode) console.log('next chunk is ' + this.ttsEngine.ttsPosition);
-
-    //prefetch next page of text
-    if (0 == this.ttsEngine.ttsPosition) {
-        if (this.ttsEngine.ttsIndex<(this.getNumLeafs()-1)) {
-            this.ttsEngine.getText(this.ttsEngine.ttsIndex+1, this.ttsNextPageCB.bind(this));
-        }
-    }
-
-    this.ttsEngine.prefetchAudio();
-
-    this.ttsEngine.play();
-};
-
 // ttsMaybeFlip()
 //______________________________________________________________________________
 // A page flip might be necessary. This code is confusing since
@@ -477,7 +474,7 @@ BookReader.prototype.ttsMaybeFlip = function (starting, ttsIndex) {
     if (this.constMode2up == this.mode) {
         if ((ttsIndex != this.twoPage.currentIndexL) && (ttsIndex != this.twoPage.currentIndexR)) {
             if (!starting) {
-                this.animationFinishedCallback = this.ttsNextChunkPhase2;
+                this.animationFinishedCallback = this.ttsEngine.nextChunkPhase2.bind(this.ttsEngine);
                 this.next();
                 return false;
             } else {
