@@ -31,7 +31,7 @@ class FestivalSpeechEngine {
      * @param {Function} options.onLoadingStart
      * @param {Function} options.onLoadingComplete
      * @param {Function} options.ttsNextChunk
-     * @param {Function} options.ttsPrefetchAudio
+     * @param {(page: Number, position: Number, text: String) => void} options.ttsLoadChunk
      * @param {(chunk: DJVUChunk) => void} options.onPlayStart
      */
     constructor(options) {
@@ -52,7 +52,7 @@ class FestivalSpeechEngine {
         this.onLoadingStart = options.onLoadingStart;
         this.onLoadingComplete = options.onLoadingComplete;
         this.ttsNextChunk = options.ttsNextChunk;
-        this.ttsPrefetchAudio = options.ttsPrefetchAudio;
+        this.ttsLoadChunk = options.ttsLoadChunk;
         this.onPlayStart = options.onPlayStart;
 
         this.isSoundManagerSupported = false;
@@ -251,9 +251,35 @@ class FestivalSpeechEngine {
             if (soundManager.debugMode) console.log('TTS buffering finished!');
             clearInterval(self.ttsPoller);
             self.ttsPoller = null;
-            self.ttsPrefetchAudio();
+            self.prefetchAudio();
             self.ttsNextChunk();
         }, 500);
+    }
+
+    prefetchAudio() {
+        if(false != this.ttsBuffering) {
+            alert('TTS Error: prefetch() called while content still buffering!');
+            return;
+        }
+    
+        //preload next chunk
+        var nextPos = this.ttsPosition+1;
+        if (nextPos < this.ttsChunks.length) {
+            this.ttsLoadChunk(this.ttsIndex, nextPos, this.ttsChunks[nextPos][0]);
+        } else {
+            //for a short page, preload might nt have yet returned..
+            if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.ttsIndex+1));
+            if (null != this.ttsNextChunks) {
+                if (0 != this.ttsNextChunks.length) {
+                    this.ttsLoadChunk(this.ttsIndex+1, 0, this.ttsNextChunks[0][0]);
+                } else {
+                    if (soundManager.debugMode) console.log('prefetchAudio(): ttsNextChunks is zero length!');
+                }
+            } else {
+                if (soundManager.debugMode) console.log('ttsNextChunks is null, not preloading next page');
+                this.ttsBuffering = true;
+            }
+        }
     }
 }
 
@@ -271,7 +297,7 @@ BookReader.prototype.setup = (function (super_) {
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
                 ttsNextChunk: this.ttsNextChunk.bind(this),
-                ttsPrefetchAudio: this.ttsPrefetchAudio.bind(this),
+                ttsLoadChunk: this.ttsLoadChunk.bind(this),
                 onPlayStart: this.ttsHighlightChunk.bind(this)
             });
             this.ttsHilites = [];
@@ -444,7 +470,7 @@ BookReader.prototype.ttsNextChunkPhase2 = function () {
         }
     }
 
-    this.ttsPrefetchAudio();
+    this.ttsEngine.prefetchAudio();
 
     this.ttsEngine.play();
 };
@@ -471,36 +497,6 @@ BookReader.prototype.ttsMaybeFlip = function (starting, ttsIndex) {
 
     return true;
 }
-
-// ttsPrefetchAudio()
-//______________________________________________________________________________
-BookReader.prototype.ttsPrefetchAudio = function () {
-
-    if(false != this.ttsEngine.ttsBuffering) {
-        alert('TTS Error: prefetch() called while content still buffering!');
-        return;
-    }
-
-    //preload next chunk
-    var nextPos = this.ttsEngine.ttsPosition+1;
-    if (nextPos < this.ttsEngine.ttsChunks.length) {
-        this.ttsLoadChunk(this.ttsEngine.ttsIndex, nextPos, this.ttsEngine.ttsChunks[nextPos][0]);
-    } else {
-        //for a short page, preload might nt have yet returned..
-        if (soundManager.debugMode) console.log('preloading chunk 0 from next page, index='+(this.ttsEngine.ttsIndex+1));
-        if (null != this.ttsEngine.ttsNextChunks) {
-            if (0 != this.ttsEngine.ttsNextChunks.length) {
-                this.ttsLoadChunk(this.ttsEngine.ttsIndex+1, 0, this.ttsEngine.ttsNextChunks[0][0]);
-            } else {
-                if (soundManager.debugMode) console.log('prefetchAudio(): ttsNextChunks is zero length!');
-            }
-        } else {
-            if (soundManager.debugMode) console.log('ttsNextChunks is null, not preloading next page');
-            this.ttsEngine.ttsBuffering = true;
-        }
-    }
-
-};
 
 // ttsHighlightChunk()
 //______________________________________________________________________________
