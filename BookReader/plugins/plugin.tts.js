@@ -30,18 +30,24 @@ class FestivalSpeechEngine {
      * @param {(starting: boolean, index) => boolean} options.maybeFlipHandler
      * @param {Function} options.onLoadingStart
      * @param {Function} options.onLoadingComplete
-     * @param {(chunk: DJVUChunk) => void} options.onPlayStart
+     * @param {(chunk: DJVUChunk) => void} options.beforeChunkStart
      */
     constructor(options) {
         this.ttsPlaying     = false;
-        this.ttsIndex       = null;  //leaf index
-        this.ttsPosition    = -1;    //chunk (paragraph) number
+        /** @type {Number} leaf index */
+        this.ttsIndex       = null;
+        /** @type {Number} chunk (paragraph) number; index of this.ttsChunks */
+        this.ttsPosition    = -1;
         this.ttsBuffering   = false;
         this.ttsPoller      = null;
+        /** @type {'mp3' | 'ogg'} format of audio to get */
         this.ttsFormat      = null;
-        /** @type {Array<DJVUChunk>} */
+        /** @type {Array<DJVUChunk>} Chunks currently being read */
         this.ttsChunks      = null;
+        /** @type {Array<DJVUChunk>} Chunks to read */
         this.ttsNextChunks  = null;
+        /** @type {Boolean} Whether this tts engine can run */
+        this.isSupported = typeof(soundManager) !== 'undefined' && soundManager.supported();
 
         this.server = options.server;
         this.bookPath = options.bookPath;
@@ -49,17 +55,11 @@ class FestivalSpeechEngine {
         this.maybeFlipHandler = options.maybeFlipHandler;
         this.onLoadingStart = options.onLoadingStart;
         this.onLoadingComplete = options.onLoadingComplete;
-        this.onPlayStart = options.onPlayStart;
-
-        this.isSoundManagerSupported = false;
-
-        if (typeof(soundManager) !== 'undefined') {
-            this.isSoundManagerSupported = soundManager.supported();
-        }
+        this.beforeChunkStart = options.beforeChunkStart;
     }
 
     init() {
-        if (this.isSoundManagerSupported) {
+        if (this.isSupported) {
             this.setupSoundManager();
         }
     }
@@ -98,7 +98,7 @@ class FestivalSpeechEngine {
      */
     getSoundUrl(dataString) {
         return 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string='
-                  + dataString
+                  + encodeURIComponent(dataString)
                   + '&format=.'+this.ttsFormat;
     }
 
@@ -222,7 +222,7 @@ class FestivalSpeechEngine {
             console.log(this.ttsChunks);
         }
 
-        this.onPlayStart(chunk);
+        this.beforeChunkStart(chunk);
 
         //play current chunk
         var soundId = 'chunk'+this.ttsIndex+'-'+this.ttsPosition;
@@ -284,11 +284,10 @@ class FestivalSpeechEngine {
      * @param {String} string text to read
      */
     loadChunk(page, pos, string) {
-        var snd = soundManager.createSound({
+        soundManager.createSound({
             id: 'chunk'+page+'-'+pos,
-            url: 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string=' + encodeURIComponent(string) + '&format=.'+this.ttsFormat
-        });
-        snd.load();
+            url: this.getSoundUrl(string)
+        }).load();
     }
 
     /**
@@ -370,7 +369,7 @@ BookReader.prototype.setup = (function (super_) {
                 maybeFlipHandler: this.ttsMaybeFlip.bind(this),
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
-                onPlayStart: this.ttsHighlightChunk.bind(this)
+                beforeChunkStart: this.ttsHighlightChunk.bind(this)
             });
             this.ttsHilites = [];
         }
@@ -402,7 +401,7 @@ BookReader.prototype.init = (function(super_) {
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
-        if (this.options.enableTtsPlugin && this.ttsEngine.isSoundManagerSupported) {
+        if (this.options.enableTtsPlugin && this.ttsEngine.isSupported) {
             $el.find('.BRmobileMenu__moreInfoRow').after($(
                 "    <li>"
                 +"      <span>"
@@ -425,7 +424,7 @@ BookReader.prototype.initNavbar = (function (super_) {
     return function () {
         var $el = super_.call(this);
         var readIcon = '';
-        if (this.options.enableTtsPlugin && this.ttsEngine.isSoundManagerSupported) {
+        if (this.options.enableTtsPlugin && this.ttsEngine.isSupported) {
             $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
         }
         return $el;
@@ -491,7 +490,7 @@ BookReader.prototype.ttsMaybeFlip = function (starting, ttsIndex) {
 
 // ttsHighlightChunk()
 //______________________________________________________________________________
-BookReader.prototype.ttsHighlightChunk = function (chunk) {
+BookReader.prototype.ttsHighlightChunk = function(chunk) {
     this.ttsRemoveHilites();
 
     if (this.constMode2up == this.mode) {
