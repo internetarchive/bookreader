@@ -30,7 +30,7 @@ class FestivalSpeechEngine {
      * @param {(starting: boolean, index) => boolean} options.maybeFlipHandler
      * @param {Function} options.onLoadingStart
      * @param {Function} options.onLoadingComplete
-     * @param {Function} options.ttsNextChunk
+     * @param {Function} options.ttsNextChunkPhase2
      * @param {(chunk: DJVUChunk) => void} options.onPlayStart
      */
     constructor(options) {
@@ -50,7 +50,7 @@ class FestivalSpeechEngine {
         this.maybeFlipHandler = options.maybeFlipHandler;
         this.onLoadingStart = options.onLoadingStart;
         this.onLoadingComplete = options.onLoadingComplete;
-        this.ttsNextChunk = options.ttsNextChunk;
+        this.ttsNextChunkPhase2 = options.ttsNextChunkPhase2;
         this.onPlayStart = options.onPlayStart;
 
         this.isSoundManagerSupported = false;
@@ -213,7 +213,7 @@ class FestivalSpeechEngine {
         });
         snd.load();
 
-        this.ttsNextChunk();
+        this.nextChunk();
     }
 
     play() {
@@ -229,7 +229,7 @@ class FestivalSpeechEngine {
         //play current chunk
         var soundId = 'chunk'+this.ttsIndex+'-'+this.ttsPosition;
         if (false == this.ttsBuffering) {
-            soundManager.play(soundId, { onfinish: this.ttsNextChunk });
+            soundManager.play(soundId, { onfinish: this.nextChunk.bind(this) });
         } else {
             soundManager.play(soundId, { onfinish: this.startPolling.bind(this) });
         }
@@ -250,7 +250,7 @@ class FestivalSpeechEngine {
             clearInterval(self.ttsPoller);
             self.ttsPoller = null;
             self.prefetchAudio();
-            self.ttsNextChunk();
+            self.nextChunk();
         }, 500);
     }
 
@@ -292,6 +292,30 @@ class FestivalSpeechEngine {
         });
         snd.load();
     }
+
+    /**
+     * This function into two parts: nextChunk gets run before page flip animation
+     * and ttsNextChunkPhase2 get run after page flip animation.
+     * If a page flip is necessary, advance() will return false so Phase2 isn't
+     * called. Instead, this.animationFinishedCallback is set, so that Phase2
+     * continues after animation is finished.
+     */
+    nextChunk() {
+        if (soundManager.debugMode) console.log('nextchunk pos=' + this.ttsPosition);
+
+        if (-1 != this.ttsPosition) {
+            soundManager.destroySound('chunk'+this.ttsIndex+'-'+this.ttsPosition);
+        }
+    
+        var moreToPlay = this.advance(false);
+        if (moreToPlay) {
+            this.ttsNextChunkPhase2();
+        }
+    
+        //This function is called again when ttsPlay() has finished playback.
+        //If the next chunk of text has not yet finished loading, ttsPlay()
+        //will start polling until the next chunk is ready.
+    }
 }
 
 // Extend the constructor to add TTS properties
@@ -307,7 +331,7 @@ BookReader.prototype.setup = (function (super_) {
                 maybeFlipHandler: this.ttsMaybeFlip.bind(this),
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
-                ttsNextChunk: this.ttsNextChunk.bind(this),
+                ttsNextChunkPhase2: this.ttsNextChunkPhase2.bind(this),
                 onPlayStart: this.ttsHighlightChunk.bind(this)
             });
             this.ttsHilites = [];
@@ -416,34 +440,6 @@ BookReader.prototype.ttsNextPageCB = function (data) {
     }
 };
 
-// ttsNextChunk()
-//______________________________________________________________________________
-// This function into two parts: ttsNextChunk gets run before page flip animation
-// and ttsNextChunkPhase2 get run after page flip animation.
-// If a page flip is necessary, advance() will return false so Phase2 isn't
-// called. Instead, this.animationFinishedCallback is set, so that Phase2
-// continues after animation is finished.
-
-BookReader.prototype.ttsNextChunk = function () {
-    if (soundManager.debugMode) console.log('nextchunk pos=' + this.ttsEngine.ttsPosition);
-
-    if (-1 != this.ttsEngine.ttsPosition) {
-        soundManager.destroySound('chunk'+this.ttsEngine.ttsIndex+'-'+this.ttsEngine.ttsPosition);
-    }
-
-    this.ttsRemoveHilites(); //remove old hilights
-
-    var moreToPlay = this.ttsEngine.advance(false);
-
-    if (moreToPlay) {
-        this.ttsNextChunkPhase2();
-    }
-
-    //This function is called again when ttsPlay() has finished playback.
-    //If the next chunk of text has not yet finished loading, ttsPlay()
-    //will start polling until the next chunk is ready.
-};
-
 // ttsNextChunkPhase2()
 //______________________________________________________________________________
 // page flip animation has now completed
@@ -499,6 +495,8 @@ BookReader.prototype.ttsMaybeFlip = function (starting, ttsIndex) {
 // ttsHighlightChunk()
 //______________________________________________________________________________
 BookReader.prototype.ttsHighlightChunk = function (chunk) {
+    this.ttsRemoveHilites();
+
     if (this.constMode2up == this.mode) {
         this.ttsHilite2UP(chunk);
     } else {
