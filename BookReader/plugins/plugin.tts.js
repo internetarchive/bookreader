@@ -115,7 +115,7 @@ class FestivalSpeechEngine {
         this.leafIndex = leafIndex;
         this.audioFormat = $.browser.mozilla ? 'ogg' : 'mp3';
 
-        this.getText(this.leafIndex).then(this.startWithChunks.bind(this));
+        this.startWithChunks(null);
         if (navigator.userAgent.match(/mobile/i)) {
             // HACK for iOS. Security restrictions require playback to be triggered
             // by a user click/touch. This intention gets lost in the ajax callback
@@ -143,26 +143,27 @@ class FestivalSpeechEngine {
      * 3. if necessary, flip to current page, or scroll so chunk is visible
      * 4. do something smart if nextChunks has not yet finished preloading (TODO)
      * 5. stop playing at end of book
-     * @param {Boolean} starting 
+     * @param {Boolean} starting whether just started readaloud
+     * @return {Boolean} whether we could advance
      */
     advance(starting) {
         this.chunkIndex++;
+
         if (this.chunkIndex >= this.chunks.length) {
             if (this.leafIndex == (this.numLeafs - 1)) {
                 if (soundManager.debugMode) console.log('tts stop');
                 return false;
+            }
+            if ((null != this.prefetchedChunks) || (starting)) {
+                if (soundManager.debugMode) console.log('moving to next page!');
+                this.leafIndex++;
+                this.chunkIndex = 0;
+                this.chunks = this.prefetchedChunks;
+                this.prefetchedChunks = null;
+                return this.maybeFlipHandler(starting, this.leafIndex);
             } else {
-                if ((null != this.prefetchedChunks) || (starting)) {
-                    if (soundManager.debugMode) console.log('moving to next page!');
-                    this.leafIndex++;
-                    this.chunkIndex = 0;
-                    this.chunks = this.prefetchedChunks;
-                    this.prefetchedChunks = null;
-                    return this.maybeFlipHandler(starting, this.leafIndex);
-                } else {
-                    if (soundManager.debugMode) console.log('tts advance: nextChunks is null');
-                    return false;
-                }
+                if (soundManager.debugMode) console.log('tts advance: nextChunks is null');
+                return false;
             }
         }
 
@@ -172,13 +173,18 @@ class FestivalSpeechEngine {
     /**
      * @private
      * Create the sounds from the provided text
-     * @param {Array<DJVUChunk>} chunks 
+     * @param {Array<DJVUChunk>} [chunks] 
      */
     startWithChunks(chunks) {
         if (soundManager.debugMode)  console.log('ttsstartWithChunks got data: ' + chunks);
-        this.chunks = chunks;
 
-        //deal with the page being blank
+        // Starting
+        if (!chunks) {
+            this.getText(this.leafIndex).then(this.startWithChunks.bind(this));
+            return;
+        }
+
+        // Page is blank
         if (!chunks.length) {
             if (soundManager.debugMode) console.log('first page is blank!');
             if (this.advance(true)) {
@@ -186,6 +192,8 @@ class FestivalSpeechEngine {
             }
             return;
         }
+
+        this.chunks = chunks;
 
         this.onLoadingStart();
 
