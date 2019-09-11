@@ -27,7 +27,7 @@ class FestivalSpeechEngine {
      * @param {String} options.server
      * @param {String} options.bookPath
      * @param {Number} options.numLeafs
-     * @param {(starting: boolean, index) => boolean} options.maybeFlipHandler
+     * @param {(leafIndex: Number) => PromiseLike<void>} options.onLeafChange
      * @param {Function} options.onLoadingStart
      * @param {Function} options.onLoadingComplete
      * @param {(chunk: DJVUChunk) => void} options.beforeChunkStart
@@ -54,7 +54,7 @@ class FestivalSpeechEngine {
         this.server = options.server;
         this.bookPath = options.bookPath;
         this.numLeafs = options.numLeafs;
-        this.maybeFlipHandler = options.maybeFlipHandler;
+        this.onLeafChange = options.onLeafChange;
         this.onLoadingStart = options.onLoadingStart;
         this.onLoadingComplete = options.onLoadingComplete;
         this.beforeChunkStart = options.beforeChunkStart;
@@ -146,14 +146,14 @@ class FestivalSpeechEngine {
      * 4. do something smart if nextChunks has not yet finished preloading (TODO)
      * 5. stop playing at end of book
      * @param {Boolean} starting whether just started readaloud
-     * @return {Boolean} whether we could advance
+     * @param {void => void} [callback] called once advancement complete in UI
+     * @return {Boolean} whether we advanced succesfully (false implies book is done)
      */
-    advance(starting) {
+    tryAdvance(starting, callback) {
         this.chunkIndex++;
 
         if (this.chunkIndex >= this.chunks.length) {
             if (this.leafIndex == (this.numLeafs - 1)) {
-                if (soundManager.debugMode) console.log('tts stop');
                 return false;
             }
             if ((null != this.prefetchedChunks) || (starting)) {
@@ -162,13 +162,16 @@ class FestivalSpeechEngine {
                 this.chunkIndex = 0;
                 this.chunks = this.prefetchedChunks;
                 this.prefetchedChunks = null;
-                return this.maybeFlipHandler(starting, this.leafIndex);
+                var leafChangePromise = this.onLeafChange(this.leafIndex);
+                if (callback) leafChangePromise.then(callback);
+                return true;
             } else {
                 if (soundManager.debugMode) console.log('tts advance: nextChunks is null');
                 return false;
             }
         }
 
+        if (callback) callback();
         return true;
     }
 
@@ -189,7 +192,7 @@ class FestivalSpeechEngine {
         // Page is blank
         if (!chunks.length) {
             if (soundManager.debugMode) console.log('first page is blank!');
-            if (this.advance(true)) {
+            if (this.tryAdvance(true)) {
                 this.getPageChunks(this.leafIndex).then(this.startWithChunks.bind(this));
             }
             return;
@@ -324,14 +327,11 @@ class FestivalSpeechEngine {
     nextChunk() {
         if (soundManager.debugMode) console.log('nextchunk pos=' + this.chunkIndex);
 
-        if (-1 != this.chunkIndex) {
+        if (this.chunkIndex != -1) {
             soundManager.destroySound('chunk'+this.leafIndex+'-'+this.chunkIndex);
         }
     
-        var moreToPlay = this.advance(false);
-        if (moreToPlay) {
-            this.nextChunkPhase2();
-        }
+        this.tryAdvance(false, this.nextChunkPhase2.bind(this));
     
         //This function is called again when play() has finished playback.
         //If the next chunk of text has not yet finished loading, play()
@@ -339,8 +339,7 @@ class FestivalSpeechEngine {
     }
 
     /**
-     * @public
-     * FIXME This should be private
+     * @private
      * page flip animation has now completed
      */
     nextChunkPhase2() {
@@ -391,7 +390,7 @@ BookReader.prototype.setup = (function (super_) {
                 server: options.server,
                 bookPath: options.bookPath,
                 numLeafs: this.getNumLeafs(),
-                maybeFlipHandler: this.ttsMaybeFlip.bind(this),
+                onLeafChange: this.ttsMaybeFlip.bind(this),
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
                 beforeChunkStart: this.ttsHighlightChunk.bind(this)
@@ -489,27 +488,24 @@ BookReader.prototype.ttsStop = function () {
     this.removeProgressPopup();
 };
 
-// ttsMaybeFlip()
-//______________________________________________________________________________
-// A page flip might be necessary. This code is confusing since
-// nextChunks might be null if we are starting on a blank page.
-BookReader.prototype.ttsMaybeFlip = function (starting, leafIndex) {
-    if (this.constMode2up == this.mode) {
-        if ((leafIndex != this.twoPage.currentIndexL) && (leafIndex != this.twoPage.currentIndexR)) {
-            if (!starting) {
-                this.animationFinishedCallback = this.ttsEngine.nextChunkPhase2.bind(this.ttsEngine);
-                this.next();
-                return false;
-            } else {
-                this.next();
-                return true;
-            }
-        } else {
-            return true;
-        }
+/**
+ * Flip the page if the provided leaf index is not visible
+ * @param {Number} leafIndex
+ * @return {PromiseLike<void>} resolves once the flip animation has completed
+ */
+BookReader.prototype.ttsMaybeFlip = function (leafIndex) {
+    var in2PageMode = this.constMode2up == this.mode;
+    var leafVisible = (leafIndex == this.twoPage.currentIndexL) || (leafIndex == this.twoPage.currentIndexR);
+    var deferred = $.Deferred();
+
+    if (in2PageMode && !leafVisible) {
+        this.animationFinishedCallback = deferred.resolve.bind(deferred);
+        this.next();
+    } else {
+        deferred.resolve();
     }
 
-    return true;
+    return deferred.promise();
 }
 
 // ttsHighlightChunk()
