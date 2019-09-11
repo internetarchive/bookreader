@@ -38,9 +38,10 @@ class FestivalSpeechEngine {
         this.leafIndex = null;
         /** @type {Number} index of active 'chunk'; index of this.chunks */
         this.chunkIndex = -1;
-        this.buffering = false;
-        /** @type {Number?} used in setInterval */
-        this.poller = null;
+        /** Whether there's an active request for the next chunk's text */
+        this.loadingPrefetchedChunks = false;
+        /** @type {Number?} setInterval id */
+        this.prefetchedChunksPoller = null;
         /** @type {'mp3' | 'ogg'} format of audio to get */
         this.audioFormat = null;
         /** @type {Array<DJVUChunk>} Chunks currently being read */
@@ -85,11 +86,11 @@ class FestivalSpeechEngine {
     /**
      * @private
      * Gets the text on a page with given index
-     * @param {String|Number} index
+     * @param {Number} leafIndex
      * @return {PromiseLike<Array<DJVUChunk>>}
      */
-    getText(index) {
-        var url = 'https://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+index;
+    getPageChunks(leafIndex) {
+        var url = 'https://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+leafIndex;
         return $.ajax({
           url: url,
           dataType:'jsonp'
@@ -114,6 +115,7 @@ class FestivalSpeechEngine {
         if (soundManager.debugMode) console.log('starting readAloud');
         this.leafIndex = leafIndex;
         this.audioFormat = $.browser.mozilla ? 'ogg' : 'mp3';
+        this.playing = true;
 
         this.startWithChunks(null);
         if (navigator.userAgent.match(/mobile/i)) {
@@ -132,8 +134,8 @@ class FestivalSpeechEngine {
         this.playing = false;
         this.leafIndex = null;
         this.chunkIndex = -1;
-        this.buffering = false;
-        this.poller = null;
+        this.loadingPrefetchedChunks = false;
+        this.prefetchedChunksPoller = null;
     }
 
     /**
@@ -180,7 +182,7 @@ class FestivalSpeechEngine {
 
         // Starting
         if (!chunks) {
-            this.getText(this.leafIndex).then(this.startWithChunks.bind(this));
+            this.getPageChunks(this.leafIndex).then(this.startWithChunks.bind(this));
             return;
         }
 
@@ -188,18 +190,18 @@ class FestivalSpeechEngine {
         if (!chunks.length) {
             if (soundManager.debugMode) console.log('first page is blank!');
             if (this.advance(true)) {
-                this.getText(this.leafIndex).then(this.startWithChunks.bind(this));
+                this.getPageChunks(this.leafIndex).then(this.startWithChunks.bind(this));
             }
             return;
         }
 
         this.chunks = chunks;
+        this.chunkIndex = -1;
 
         this.onLoadingStart();
 
         var chunkText = chunks[0][0];
-        this.chunkIndex = -1;
-        this.loadTextAudio(this.leafIndex, 0, chunkText, this.onLoadingComplete.bind(this));
+        this.loadTextAudio(this.leafIndex, 0, chunkText, this.onLoadingComplete);
         this.nextChunk();
     }
 
@@ -219,10 +221,10 @@ class FestivalSpeechEngine {
 
         //play current chunk
         var soundId = 'chunk'+this.leafIndex+'-'+this.chunkIndex;
-        if (false == this.buffering) {
-            soundManager.play(soundId, { onfinish: this.nextChunk.bind(this) });
-        } else {
+        if (this.loadingPrefetchedChunks) {
             soundManager.play(soundId, { onfinish: this.startPolling.bind(this) });
+        } else {
+            soundManager.play(soundId, { onfinish: this.nextChunk.bind(this) });
         }
     }
 
@@ -235,12 +237,12 @@ class FestivalSpeechEngine {
     startPolling() {
         if (soundManager.debugMode) console.log('Starting the TTS poller...');
         var self = this;
-        this.poller = setInterval(function() {
-            if (self.buffering) {return;}
+        this.prefetchedChunksPoller = setInterval(function() {
+            if (self.loadingPrefetchedChunks) {return;}
     
             if (soundManager.debugMode) console.log('TTS buffering finished!');
-            clearInterval(self.poller);
-            self.poller = null;
+            clearInterval(self.prefetchedChunksPoller);
+            self.prefetchedChunksPoller = null;
             self.prefetchAudio();
             self.nextChunk();
         }, 500);
@@ -251,7 +253,7 @@ class FestivalSpeechEngine {
      * Preloads the audio for the next chunk
      */
     prefetchAudio() {
-        if(false != this.buffering) {
+        if (this.loadingPrefetchedChunks) {
             alert('TTS Error: prefetch() called while content still buffering!');
             return;
         }
@@ -271,7 +273,7 @@ class FestivalSpeechEngine {
                 }
             } else {
                 if (soundManager.debugMode) console.log('nextChunks is null, not preloading next page');
-                this.buffering = true;
+                this.loadingPrefetchedChunks = true;
             }
         }
     }
@@ -302,7 +304,7 @@ class FestivalSpeechEngine {
                 onready: onload,
                 //fires in safari...
                 onbufferchange: function() {
-                    if (false == this.isBuffering) {
+                    if (!this.isBuffering) {
                         onload();
                     }
                 }
@@ -357,7 +359,7 @@ class FestivalSpeechEngine {
     
         //prefetch next page of text
         if (0 == this.chunkIndex && this.leafIndex < (this.numLeafs-1)) {
-            this.getText(this.leafIndex+1).then(this.savePrefetchedChunks.bind(this));
+            this.getPageChunks(this.leafIndex+1).then(this.savePrefetchedChunks.bind(this));
         }
     
         this.prefetchAudio();
@@ -372,9 +374,9 @@ class FestivalSpeechEngine {
         this.prefetchedChunks = chunks;
         if (soundManager.debugMode) console.log('preloaded next chunks.. data is ' + chunks);
     
-        if (true == this.buffering) {
+        if (this.loadingPrefetchedChunks) {
             if (soundManager.debugMode) console.log('nextPageCB: buffering is true');
-            this.buffering = false;
+            this.loadingPrefetchedChunks = false;
         }
     }
 }
@@ -459,7 +461,6 @@ BookReader.prototype.initNavbar = (function (super_) {
 BookReader.prototype.ttsToggle = function () {
     if (this.autoStop) this.autoStop();
     if (false == this.ttsEngine.playing) {
-        this.ttsEngine.playing = true;
         this.showProgressPopup('Loading audio...');
         this.ttsStart();
     } else {
