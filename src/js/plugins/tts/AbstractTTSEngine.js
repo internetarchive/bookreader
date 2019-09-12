@@ -73,7 +73,9 @@ export default class AbstractTTSEngine {
         .then(item => {
             this.opts.onLoadingComplete();
             this.opts.beforeChunkPlay(item.value);
-            return this.playChunk(item.value);
+            if (this.playing) {
+                return this.playChunk(item.value);
+            }
         })
         .then(() => {
             if (this.playing) return this.step();
