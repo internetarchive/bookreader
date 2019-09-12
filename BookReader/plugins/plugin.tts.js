@@ -22,49 +22,85 @@ jQuery.extend(BookReader.defaultOptions, {
  * @property {DJVURect[]} lineRects
  */
 
-/** TTS using Festival endpoint */
-class FestivalTTSEngine {
+/**
+ * @typedef {Object} TTSEngineOptions 
+ * @property {String} server
+ * @property {String} bookPath
+ * @property {Function} onLoadingStart
+ * @property {Function} onLoadingComplete
+ * @property {function(PageChunk): void} beforeChunkPlay
+ */
+
+/**
+ * @template TSound extra properties added to PageChunk to allow playing
+ */
+class AbstractTTSEngine {
     /**
-     * 
-     * @param {Object} options 
-     * @param {String} options.server
-     * @param {String} options.bookPath
-     * @param {Function} options.onLoadingStart
-     * @param {Function} options.onLoadingComplete
-     * @param {function(PageChunk): void} options.beforeChunkPlay
+     * @protected
+     * @param {TTSEngineOptions} options 
      */
     constructor(options) {
         this.playing = false;
-        /** @type {'mp3' | 'ogg'} format of audio to get */
-        this.audioFormat = $.browser.mozilla ? 'ogg' : 'mp3';
-        /** @type {Boolean} Whether this tts engine can run */
-        this.isSupported = typeof(soundManager) !== 'undefined' && soundManager.supported();
-
         this.opts = options;
+        /** @type {AsyncStream<PageChunk>} */
+        this.chunkStream = null;
+        /** Different engines should overwrite this */
+        this.isSupported = false;
     }
 
-    init() {
-        if (this.isSupported) {
-            this.setupSoundManager();
-        }
+    /** @abstract */
+    init() { return null; }
+
+    /**
+     * @param {number} leafIndex
+     * @param {number} numLeafs total number of leafs in the current book
+     */
+    start(leafIndex, numLeafs) {
+        this.playing = true;
+        this.opts.onLoadingStart();
+
+        /** @type {AsyncStream<PageChunk>} */
+        this.chunkStream = AsyncStream.range(leafIndex, numLeafs-1)
+        .map(this.fetchPageChunks.bind(this))
+        .buffer(2)
+        .flatten();
+
+        this.step();
+    }
+
+    stop() {
+        this.playing = false;
+        this.chunkStream = null;
     }
 
     /**
      * @private
      */
-    setupSoundManager() {
-        soundManager.setup({
-            debugMode: false,
-            // Note, there's a bug in Chrome regarding range requests.
-            // Flash is used as a workaround.
-            // See https://bugs.chromium.org/p/chromium/issues/detail?id=505707
-            preferFlash: true,
-            url: '/bookreader/BookReader/soundmanager/swf',
-            useHTML5Audio: true,
-            //flash 8 version of swf is buggy when calling play() on a sound that is still loading
-            flashVersion: 9
+    step() {
+        this.getPlayStream().pull()
+        .then(item => {
+            this.opts.onLoadingComplete();
+            this.opts.beforeChunkPlay(item.value);
+            return this.playChunk(item.value);
+        })
+        .then(() => {
+            if (this.playing) return this.step();
         });
     }
+
+    /**
+
+     * @abstract
+     * @return {AbstractStream<PageChunk & TSound>}
+     */
+    getPlayStream() { return null; }
+
+    /**
+     * @abstract
+     * @param {PageChunk & TSound} chunk
+     * @return {PromiseLike} promise called once playing finished
+     */
+    playChunk(chunk) { return null; }
 
     /**
      * @private
@@ -95,72 +131,82 @@ class FestivalTTSEngine {
             }
         );
     }
+}
 
+/**
+ * @extends AbstractTTSEngine<{ sound: SMSound }>
+ * TTS using Festival endpoint
+ **/
+class FestivalTTSEngine extends AbstractTTSEngine {
     /**
-     * @private
-     * Get URL for audio that says this text
-     * @param {String} dataString the thing to say
+     * @param {TTSEngineOptions} options 
      */
-    getSoundUrl(dataString) {
-        return 'https://'+this.opts.server+'/BookReader/BookReaderGetTTS.php?string='
-                  + encodeURIComponent(dataString)
-                  + '&format=.'+this.audioFormat;
+    constructor(options) {
+        super(options);
+        /** @type {'mp3' | 'ogg'} format of audio to get */
+        this.audioFormat = $.browser.mozilla ? 'ogg' : 'mp3';
+        /** @type {Boolean} Whether this tts engine can run */
+        this.isSupported = typeof(soundManager) !== 'undefined' && soundManager.supported();
+    }
+
+    /** @override */
+    init() {
+        if (this.isSupported) {
+            // setup sound manager
+            soundManager.setup({
+                debugMode: false,
+                // Note, there's a bug in Chrome regarding range requests.
+                // Flash is used as a workaround.
+                // See https://bugs.chromium.org/p/chromium/issues/detail?id=505707
+                preferFlash: true,
+                url: '/bookreader/BookReader/soundmanager/swf',
+                useHTML5Audio: true,
+                //flash 8 version of swf is buggy when calling play() on a sound that is still loading
+                flashVersion: 9
+            });
+        }
     }
 
     /**
+     * @override
      * @param {number} leafIndex
      * @param {number} numLeafs total number of leafs in the current book
      */
     start(leafIndex, numLeafs) {
-        this.playing = true;
-
         if (navigator.userAgent.match(/mobile/i)) {
             // HACK for iOS. Security restrictions require playback to be triggered
             // by a user click/touch. This intention gets lost in the ajax callback
             // above, but for some reason, if we start the audio here, it works
             soundManager.createSound({url: this.getSoundUrl(' ')}).play();
         }
+        
+        super.start(leafIndex, numLeafs);
+    }
 
-        this.opts.onLoadingStart();
+    /** @override */
+    stop() {
+        this.playStream = null;
+        soundManager.stopAll();
+        super.stop();
+    }
 
-        /** @type {AsyncStream<PageChunk>} */
-        this.chunkStream = AsyncStream.range(leafIndex, numLeafs-1)
-        .map(this.fetchPageChunks.bind(this))
-        .buffer(2)
-        .flatten();
-
-        /** @type {AsyncStream<PageChunk & { sound: SMSound }>} */
-        this.soundStream = this.chunkStream
-        .map(this.fetchChunkAudio.bind(this))
+    /** @override */
+    getPlayStream() {
+        this.playStream = this.playStream || this.chunkStream
+        .map(this.fetchChunkSound.bind(this))
         .buffer(2);
 
-        this.step();
+        return this.playStream;
     }
 
     /**
-     * @private
-     * A step of play loop
+     * @override
+     * @param {PageChunk & { sound: SMSound }} chunk
+     * @return {PromiseLike}
      */
-    step() {
-        this.soundStream.pull()
-        .then(item => {
-            this.opts.onLoadingComplete();
-            this.opts.beforeChunkPlay(item.value);
-            return this.playSound(item.value.sound);
-        })
-        .then(() => {
-            if (this.playing) return this.step();
-        });
-    }
-
-    /**
-     * @private
-     * @param {SMSound} snd 
-     * @return {PromiseLike} resolves once the sound has finished playing
-     */
-    playSound(snd) {
-        return new Promise(res => snd.play({ onfinish: res }))
-        .then(() => snd.destruct());
+    playChunk(chunk) {
+        return new Promise(res => chunk.sound.play({ onfinish: res }))
+        .then(() => chunk.sound.destruct());
     }
 
     /**
@@ -168,7 +214,7 @@ class FestivalTTSEngine {
      * @param {PageChunk} pageChunk
      * @return {PromiseLike<PageChunk & { sound: SMSound }>}
      */
-    fetchChunkAudio(pageChunk) {
+    fetchChunkSound(pageChunk) {
         return new Promise(res => {
             function resolve(sound) {
                 res($.extend(pageChunk, { sound }))
@@ -194,9 +240,16 @@ class FestivalTTSEngine {
         });
     }
 
-    stop() {
-        soundManager.stopAll();
-        this.playing = false;
+    /**
+     * @private
+     * Get URL for audio that says this text
+     * @param {String} dataString the thing to say
+     * @return {String} url
+     */
+    getSoundUrl(dataString) {
+        return 'https://'+this.opts.server+'/BookReader/BookReaderGetTTS.php?string='
+                  + encodeURIComponent(dataString)
+                  + '&format=.'+this.audioFormat;
     }
 }
 
@@ -299,7 +352,7 @@ BookReader.prototype.ttsStart = function () {
 // ttsStop()
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
-    if (false == this.ttsEngine.playing) return;
+    if (!this.ttsEngine.playing) return;
     this.$('.BRicon.read').removeClass('unread');
 
     this.ttsEngine.stop();
