@@ -23,17 +23,15 @@ jQuery.extend(BookReader.defaultOptions, {
  */
 
 /** TTS using Festival endpoint */
-class FestivalSpeechEngine {
+class FestivalTTSEngine {
     /**
      * 
      * @param {Object} options 
      * @param {String} options.server
      * @param {String} options.bookPath
-     * @param {Number} options.numLeafs
-     * @param {(leafIndex: Number) => PromiseLike<void>} options.onLeafChange
      * @param {Function} options.onLoadingStart
      * @param {Function} options.onLoadingComplete
-     * @param {function(PageChunk): void} options.beforeChunkStart
+     * @param {function(PageChunk): void} options.beforeChunkPlay
      */
     constructor(options) {
         this.playing = false;
@@ -42,13 +40,7 @@ class FestivalSpeechEngine {
         /** @type {Boolean} Whether this tts engine can run */
         this.isSupported = typeof(soundManager) !== 'undefined' && soundManager.supported();
 
-        this.server = options.server;
-        this.bookPath = options.bookPath;
-        this.numLeafs = options.numLeafs;
-        this.onLeafChange = options.onLeafChange;
-        this.onLoadingStart = options.onLoadingStart;
-        this.onLoadingComplete = options.onLoadingComplete;
-        this.beforeChunkStart = options.beforeChunkStart;
+        this.opts = options;
     }
 
     init() {
@@ -81,8 +73,15 @@ class FestivalSpeechEngine {
      * @return {PromiseLike<Array<PageChunk>>}
      */
     fetchPageChunks(leafIndex) {
-        var url = 'https://'+this.server+'/BookReader/BookReaderGetTextWrapper.php?path='+this.bookPath+'_djvu.xml&page='+leafIndex;
-        return $.ajax({ url: url, dataType:'jsonp' })
+        return $.ajax({
+            type: 'GET',
+            url: 'https://'+this.opts.server+'/BookReader/BookReaderGetTextWrapper.php',
+            dataType:'jsonp',
+            data: {
+                path: this.opts.bookPath+'_djvu.xml',
+                page: leafIndex
+            }
+        })
         .then(
             /** @param {Array<[String, ...Array<DJVURect>]>} chunks */
             function (chunks) {
@@ -103,15 +102,16 @@ class FestivalSpeechEngine {
      * @param {String} dataString the thing to say
      */
     getSoundUrl(dataString) {
-        return 'https://'+this.server+'/BookReader/BookReaderGetTTS.php?string='
+        return 'https://'+this.opts.server+'/BookReader/BookReaderGetTTS.php?string='
                   + encodeURIComponent(dataString)
                   + '&format=.'+this.audioFormat;
     }
 
     /**
-     * @param {Number} leafIndex
+     * @param {number} leafIndex
+     * @param {number} numLeafs total number of leafs in the current book
      */
-    start(leafIndex) {
+    start(leafIndex, numLeafs) {
         this.playing = true;
 
         if (navigator.userAgent.match(/mobile/i)) {
@@ -121,10 +121,10 @@ class FestivalSpeechEngine {
             soundManager.createSound({url: this.getSoundUrl(' ')}).play();
         }
 
-        this.onLoadingStart();
+        this.opts.onLoadingStart();
 
         /** @type {AsyncStream<PageChunk>} */
-        this.chunkStream = AsyncStream.range(leafIndex, this.numLeafs-1)
+        this.chunkStream = AsyncStream.range(leafIndex, numLeafs-1)
         .map(this.fetchPageChunks.bind(this))
         .buffer(2)
         .flatten();
@@ -144,9 +144,8 @@ class FestivalSpeechEngine {
     step() {
         this.soundStream.pull()
         .then(item => {
-            this.onLoadingComplete();
-            this.onLeafChange(item.value.leafIndex);
-            this.beforeChunkStart(item.value);
+            this.opts.onLoadingComplete();
+            this.opts.beforeChunkPlay(item.value);
             return this.playSound(item.value.sound);
         })
         .then(() => {
@@ -207,14 +206,12 @@ BookReader.prototype.setup = (function (super_) {
         super_.call(this, options);
 
         if (this.options.enableTtsPlugin) {
-            this.ttsEngine = new FestivalSpeechEngine({
+            this.ttsEngine = new FestivalTTSEngine({
                 server: options.server,
                 bookPath: options.bookPath,
-                numLeafs: this.getNumLeafs(),
-                onLeafChange: this.ttsMaybeFlip.bind(this),
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
-                beforeChunkStart: this.ttsHighlightChunk.bind(this)
+                beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this)
             });
             this.ttsHilites = [];
         }
@@ -296,7 +293,7 @@ BookReader.prototype.ttsStart = function () {
         this.switchMode(this.constMode1up);
 
     this.$('.BRicon.read').addClass('unread');
-    this.ttsEngine.start(this.currentIndex());
+    this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
 };
 
 // ttsStop()
@@ -308,6 +305,15 @@ BookReader.prototype.ttsStop = function () {
     this.ttsEngine.stop();
     this.ttsRemoveHilites();
     this.removeProgressPopup();
+};
+
+/**
+ * @param {PageChunk} chunk
+ */
+BookReader.prototype.ttsBeforeChunkPlay = function(chunk) {
+    this.ttsMaybeFlip(chunk.leafIndex);
+    this.ttsHighlightChunk(chunk);
+    this.ttsScrollToChunk(chunk);
 };
 
 /**
@@ -341,8 +347,6 @@ BookReader.prototype.ttsHighlightChunk = function(chunk) {
     } else {
         this.ttsHilite1UP(chunk);
     }
-
-    this.ttsScrollToChunk(chunk);
 };
 
 /**
