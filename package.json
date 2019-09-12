@@ -22,14 +22,19 @@
   "dependencies": {
     "jquery": "^3.4.1"
   },
+  "private": true,
   "devDependencies": {
+    "@babel/core": "^7.6.0",
     "@types/jest": "^24.0.15",
+    "babel-loader": "^8.0.6",
     "codecov": "^3.5.0",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
     "lodash": "^4.17.15",
     "qunit": "^2.9.2",
-    "sinon": "^7.3.2"
+    "sinon": "^7.3.2",
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.8"
   },
   "jest": {
     "setupFiles": [
@@ -37,7 +42,7 @@
     ]
   },
   "scripts": {
-    "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
+    "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css; npx webpack",
     "eslint": "eslint ./BookReader/BookReader.js",
     "lint": "eslint \"./**/*.js\"",
     "test": "jest",
