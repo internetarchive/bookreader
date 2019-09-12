@@ -10,7 +10,6 @@
  */
 
 /**
- * @export
  * @abstract
  * Class that makes it easier to deal with a series of async events
  * (represented as Promises). All the function let you interact with
@@ -20,7 +19,7 @@
  * and hence must return the promise directly.
  * @template T
  */
-class AsyncStream {
+export default class AsyncStream {
     /** @typedef {TStreamItem<T>} TItem */
 
     /**
