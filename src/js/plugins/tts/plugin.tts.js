@@ -34,7 +34,7 @@ BookReader.prototype.init = (function(super_) {
         if (this.options.enableTtsPlugin) {
             // Bind to events
             this.bind(BookReader.eventNames.PostInit, function(e, br) {
-                jIcons = br.$('.BRicon.read').click(function(e) {
+                br.$('.BRicon.read').click(function(e) {
                     br.ttsToggle();
                     return false;
                 });
