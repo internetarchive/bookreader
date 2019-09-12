@@ -89,7 +89,6 @@ export default class AsyncStream {
  */
 class RangeAsyncStream extends AsyncStream {
     /**
-     * 
      * @param {number} start 
      * @param {number} end 
      */
@@ -140,36 +139,6 @@ class MappingAsyncStream extends AsyncStream {
             return /** @type {PromiseLike<T2>} */(mapped).then(value => {
                 return { value, done: false }
             });
-        });
-    }
-}
-
-/**
- * @private
- * @template T
- * @extends AsyncStream<T>
- */
-class FilteringAsyncStream extends AsyncStream {
-    /**
-     * 
-     * @param {AsyncStream<T>} parent 
-     * @param {function(T): Boolean} predicate
-     */
-    constructor(parent, predicate) {
-        super();
-        this.parent = parent;
-        this.predicate = predicate;
-    }
-
-    pull() {
-        return this.parent.pull()
-        .then(item => {
-            if (item.done) {
-                return Promise.resolve({ value: null, done: true });
-            }
-
-            if (this.predicate(item.value)) return Promise.resolve(item);
-            else return this.pull();
         });
     }
 }
@@ -232,7 +201,7 @@ class BufferingAsyncStream extends AsyncStream {
     }
 
     pull() {
-        var toFetch = Math.max(0, this._bufferSize - this._promiseBuffer.length);
+        var toFetch = Math.max(0, this._bufferSize - this._promiseBuffer.length + 1);
         for (var i = 0; i < toFetch; i++) {
             this._promiseBuffer.push(this.parent.pull());
         }
