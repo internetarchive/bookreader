@@ -165,7 +165,8 @@ class FlatteningAsyncStream extends AsyncStream {
         if (this._lastResult.length) {
             return Promise.resolve({ value: this._lastResult.shift(), done: false });
         } else if (this._inProgress) {
-            return this._inProgress.then(() => this.pull());
+            this._inProgress = this._inProgress.then(() => this.pull());
+            return this._inProgress;
         } else {
             this._inProgress = this.parent.pull()
             .then(item => {
