@@ -3,42 +3,42 @@ import AsyncStream from '../../../src/js/plugins/tts/AsyncStream.js';
 describe('RangeAsyncStream', () => {
     test('Returns numbers in range', () => {
         const s = AsyncStream.range(1, 3);
-        s.pull().then(x => expect(x).toEqual({ value: 1, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 2, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 3, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
+        expect(s.pull()).resolves.toEqual({ value: 1, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 2, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 3, done: false });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
     });
 
     test('Going over does not error', () => {
         const s = AsyncStream.range(1, 1);
-        s.pull().then(x => expect(x).toEqual({ value: 1, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
+        expect(s.pull()).resolves.toEqual({ value: 1, done: false });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
     });
 });
 
 describe('MappingAsyncStream', () => {
     test('Sync mapper', () => {
         const s = AsyncStream.range(1, 2).map(x => x*10);
-        s.pull().then(x => expect(x).toEqual({ value: 10, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 20, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
+        expect(s.pull()).resolves.toEqual({ value: 10, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 20, done: false });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
     });
 
     test('Async mapper', () => {
         const s = AsyncStream.range(1, 2).map(x => Promise.resolve(x*10));
-        s.pull().then(x => expect(x).toEqual({ value: 10, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 20, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
+        expect(s.pull()).resolves.toEqual({ value: 10, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 20, done: false });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
     });
 
     test('Going over does not error', () => {
         const s = AsyncStream.range(1, 1).map(x => x*10);
-        s.pull().then(x => expect(x).toEqual({ value: 10, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
+        expect(s.pull()).resolves.toEqual({ value: 10, done: false });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
     });
 });
 
@@ -47,13 +47,13 @@ describe('FlatteningAsyncStream', () => {
         const s = AsyncStream.range(1, 2)
         .map(x => [x, x*10, x*100])
         .flatten();
-        s.pull().then(x => expect(x).toEqual({ value: 1, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 10, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 100, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 2, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 20, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 200, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
+        expect(s.pull()).resolves.toEqual({ value: 1, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 10, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 100, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 2, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 20, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 200, done: false });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
     });
 });
 
@@ -65,10 +65,10 @@ describe('BufferingAsyncStream', () => {
 
     test('Yields results in order', () => {
         const s = AsyncStream.range(1, 3).buffer(10);
-        s.pull().then(x => expect(x).toEqual({ value: 1, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 2, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: 3, done: false }));
-        s.pull().then(x => expect(x).toEqual({ value: null, done: true }));
+        expect(s.pull()).resolves.toEqual({ value: 1, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 2, done: false });
+        expect(s.pull()).resolves.toEqual({ value: 3, done: false });
+        expect(s.pull()).resolves.toEqual({ value: null, done: true });
     });
 
     test('Buffer always contains bufferSize elements', () => {
