@@ -15,6 +15,7 @@ import AsyncStream from './AsyncStream.js';
  * @property {String} bookPath
  * @property {Function} onLoadingStart
  * @property {Function} onLoadingComplete
+ * @property {Function} onDone called when the entire book is done
  * @property {function(PageChunk): void} beforeChunkPlay
  */
 
@@ -71,6 +72,11 @@ export default class AbstractTTSEngine {
     step() {
         this.getPlayStream().pull()
         .then(item => {
+            if (item.done) {
+                this.stop();
+                this.opts.onDone();
+                return;
+            }
             this.opts.onLoadingComplete();
             this.opts.beforeChunkPlay(item.value);
             if (this.playing) {

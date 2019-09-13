@@ -22,6 +22,7 @@ BookReader.prototype.setup = (function (super_) {
                 bookPath: options.bookPath,
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
+                onDone: this.ttsStop.bind(this),
                 beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this)
             });
             this.ttsHilites = [];
@@ -110,9 +111,7 @@ BookReader.prototype.ttsStart = function () {
 // ttsStop()
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
-    if (!this.ttsEngine.playing) return;
     this.$('.BRicon.read').removeClass('unread');
-
     this.ttsEngine.stop();
     this.ttsRemoveHilites();
     this.removeProgressPopup();
