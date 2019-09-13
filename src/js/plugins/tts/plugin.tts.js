@@ -119,11 +119,14 @@ BookReader.prototype.ttsStop = function () {
 
 /**
  * @param {PageChunk} chunk
+ * @return {PromiseLike<void>} returns once the flip is done
  */
 BookReader.prototype.ttsBeforeChunkPlay = function(chunk) {
-    this.ttsMaybeFlip(chunk.leafIndex);
-    this.ttsHighlightChunk(chunk);
-    this.ttsScrollToChunk(chunk);
+    return this.ttsMaybeFlipToIndex(chunk.leafIndex)
+    .then(() => {
+        this.ttsHighlightChunk(chunk);
+        this.ttsScrollToChunk(chunk);
+    });
 };
 
 /**
@@ -131,19 +134,26 @@ BookReader.prototype.ttsBeforeChunkPlay = function(chunk) {
  * @param {Number} leafIndex
  * @return {PromiseLike<void>} resolves once the flip animation has completed
  */
-BookReader.prototype.ttsMaybeFlip = function (leafIndex) {
+BookReader.prototype.ttsMaybeFlipToIndex = function (leafIndex) {
     var in2PageMode = this.constMode2up == this.mode;
-    var mustFlip = leafIndex > this.twoPage.currentIndexR;
-    var deferred = $.Deferred();
-
-    if (in2PageMode && mustFlip) {
-        this.animationFinishedCallback = deferred.resolve.bind(deferred);
-        this.next();
+    var resolve = null;
+    var promise = new Promise(res => resolve = res);
+    
+    if (!in2PageMode) {
+        this.jumpToIndex(leafIndex);
+        resolve();
     } else {
-        deferred.resolve();
+        var leafVisible = leafIndex == this.twoPage.currentIndexR || leafIndex == this.twoPage.currentIndexL;
+        if (leafVisible) {
+            resolve();
+        } else {
+            this.animationFinishedCallback = resolve;
+            this.next();
+            promise.then(this.ttsMaybeFlipToIndex.bind(this, leafIndex));
+        }
     }
-
-    return deferred.promise();
+        
+    return promise;
 }
 
 /**
