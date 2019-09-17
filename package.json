@@ -34,6 +34,7 @@
     "jest": "^24.8.0",
     "lodash": "^4.17.15",
     "qunit": "^2.9.2",
+    "sass": "^1.22.12",
     "sinon": "^7.3.2",
     "webpack": "^4.39.3",
     "webpack-cli": "^3.3.8"
@@ -44,7 +45,7 @@
     ]
   },
   "scripts": {
-    "build": "sass ./src/css/BookReader.scss > ./BookReader/BookReader.css; npx webpack",
+    "build": "npx webpack && npx sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
     "eslint": "eslint ./BookReader/BookReader.js",
     "lint": "eslint \"./**/*.js\"",
     "test": "jest",
