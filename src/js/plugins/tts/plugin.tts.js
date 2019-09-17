@@ -2,6 +2,7 @@
  * Plugin for Text to Speech in BookReader
  */
 
+import 'es6-promise/auto';
 import FestivalTTSEngine from './FestivalTTSEngine.js';
 
 // Default options for TTS
