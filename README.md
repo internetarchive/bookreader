@@ -112,9 +112,7 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 
 ## Development
 
-At the time of writing, all of BookReader's JS codebase does not use any compilation. The source files are edited directly. However, the CSS is built with SCSS. Use `npm run build` to build the scss file.
-
-The sass compiler will need to be installed.
+The source JavaScript is written in ES6 (built using webpack and babel) and in ES5 (unbuilt). To build the JS run `npx webpack` (`npx webpack --watch` will auto-build when the files are saved). To build the CSS and the JS, use `npm run build`.
 
 ## Tests
 
