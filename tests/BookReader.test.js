@@ -1,5 +1,4 @@
 const { br } = require('../BookReader/BookReader.js');
-const _ = require('lodash');
 const sinon = require('sinon');
 
 
