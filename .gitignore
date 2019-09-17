@@ -1,3 +1,7 @@
 BookReaderDev
 node_modules/
 .DS_Store
+
+# Ignore build files
+BookReader/plugins/*.js.map
+BookReader/plugins/plugin.tts.js
