@@ -44,7 +44,7 @@
     ]
   },
   "scripts": {
-    "prepare": "npm run build",
+    "preinstall": "npm run build",
     "build": "npx webpack && npx sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
     "eslint": "eslint ./BookReader/BookReader.js",
     "lint": "eslint \"./**/*.js\"",
