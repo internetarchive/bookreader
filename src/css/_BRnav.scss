@@ -67,6 +67,8 @@
   height: $brNavHeightDesktop;
   padding-top: 0;
   overflow: visible;
+  /* important so it overlays over the book pages when showing */
+  z-index: 3;
 
   display: block;
   display: flex;

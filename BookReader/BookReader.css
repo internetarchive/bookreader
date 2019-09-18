@@ -510,6 +510,7 @@ body.BRfullscreenActive .mm-menu {
 }
 .BRpageview {
   position: relative;
+  margin: auto;
 }
 
 .BRpagediv1up {
@@ -1165,6 +1166,8 @@ i.BRicon {
   height: 34px;
   padding-top: 0;
   overflow: visible;
+  /* important so it overlays over the book pages when showing */
+  z-index: 3;
   display: block;
   display: flex;
   flex-direction: row;
@@ -1431,6 +1434,8 @@ i.BRicon {
   width: 100%;
   color: white;
   font-size: 14px;
+  /* ensure that this displays over book */
+  z-index: 3;
 }
 
 .BRtoolbar .label {
