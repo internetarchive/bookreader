@@ -61,8 +61,7 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     /** @override */
     getPlayStream() {
         this.playStream = this.playStream || this.chunkStream
-        .map(this.fetchChunkSound.bind(this))
-        .buffer(2);
+        .map(this.fetchChunkSound.bind(this));
 
         return this.playStream;
     }
@@ -83,10 +82,12 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
      * @return {PromiseLike<PageChunk & { sound: SMSound }>}
      */
     fetchChunkSound(pageChunk) {
+        this.opts.onLoadingStart();
         return new Promise(res => {
-            function resolve(sound) {
+            const resolve = sound => {
+                this.opts.onLoadingComplete();
                 res($.extend(pageChunk, { sound }))
-            }
+            };
             soundManager.createSound({
                 url: this.getSoundUrl(pageChunk.text),
 
