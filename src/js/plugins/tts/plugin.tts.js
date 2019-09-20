@@ -4,8 +4,10 @@
 
 import 'es6-promise/auto';
 import FestivalTTSEngine from './FestivalTTSEngine.js';
+import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
 /** @typedef {import('./AbstractTTSEngine.js').PageChunk} PageChunk */
+/** @typedef {import("./AbstractTTSEngine.js")} AbstractTTSEngine */
 
 // Default options for TTS
 jQuery.extend(BookReader.defaultOptions, {
@@ -20,17 +22,23 @@ BookReader.prototype.setup = (function (super_) {
         super_.call(this, options);
 
         if (this.options.enableTtsPlugin) {
-            this.ttsEngine = new FestivalTTSEngine({
-                server: options.server,
-                bookPath: options.bookPath,
-                bookLanguage: toISO6391(options.bookLanguage),
-                onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
-                onLoadingComplete: this.removeProgressPopup.bind(this),
-                onDone: this.ttsStop.bind(this),
-                beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this),
-                afterChunkPlay: this.ttsSendChunkFinishedAnalyticsEvent.bind(this),
-            });
             this.ttsHilites = [];
+            const TTSEngine = WebTTSEngine.isSupported() ? WebTTSEngine :
+                              FestivalTTSEngine.isSupported() ? FestivalTTSEngine :
+                              null;
+            if (TTSEngine) {
+                /** @type {AbstractTTSEngine} */
+                this.ttsEngine = new TTSEngine({
+                    server: options.server,
+                    bookPath: options.bookPath,
+                    bookLanguage: toISO6391(options.bookLanguage),
+                    onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
+                    onLoadingComplete: this.removeProgressPopup.bind(this),
+                    onDone: this.ttsStop.bind(this),
+                    beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this),
+                    afterChunkPlay: this.ttsSendChunkFinishedAnalyticsEvent.bind(this),
+                });
+            }
         }
     };
 })(BookReader.prototype.setup);
@@ -44,7 +52,7 @@ BookReader.prototype.init = (function(super_) {
                     br.ttsToggle();
                     return false;
                 });
-                br.ttsEngine.init();
+                if (br.ttsEngine) br.ttsEngine.init();
             });
 
             // This is fired when the hash changes by one of the other plugins!
@@ -62,7 +70,7 @@ BookReader.prototype.init = (function(super_) {
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
-        if (this.options.enableTtsPlugin && this.ttsEngine.isSupported) {
+        if (this.options.enableTtsPlugin && this.ttsEngine) {
             $el.find('.BRmobileMenu__moreInfoRow').after($(
                 "    <li>"
                 +"      <span>"
@@ -85,7 +93,7 @@ BookReader.prototype.initNavbar = (function (super_) {
     return function () {
         var $el = super_.call(this);
         var readIcon = '';
-        if (this.options.enableTtsPlugin && this.ttsEngine.isSupported) {
+        if (this.options.enableTtsPlugin && this.ttsEngine) {
             $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
         }
         return $el;
