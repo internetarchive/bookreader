@@ -43,9 +43,13 @@ export default class AbstractTTSEngine {
         this.opts = options;
         /** @type {AsyncStream<PageChunk>} */
         this.chunkStream = null;
-        /** Different engines should overwrite this */
-        this.isSupported = false;
     }
+
+    /**
+     * @abstract
+     * @return {boolean}
+     */
+    static isSupported() { return false; }
 
     /** @abstract */
     init() { return null; }

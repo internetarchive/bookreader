@@ -6,6 +6,11 @@ import AbstractTTSEngine from './AbstractTTSEngine.js';
  * TTS using Festival endpoint
  **/
 export default class FestivalTTSEngine extends AbstractTTSEngine {
+    /** @override */
+    static isSupported() {
+        return typeof(soundManager) !== 'undefined' && soundManager.supported();
+    }
+
     /**
      * @param {TTSEngineOptions} options 
      */
@@ -13,26 +18,22 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
         super(options);
         /** @type {'mp3' | 'ogg'} format of audio to get */
         this.audioFormat = $.browser.mozilla ? 'ogg' : 'mp3';
-        /** @type {Boolean} Whether this tts engine can run */
-        this.isSupported = typeof(soundManager) !== 'undefined' && soundManager.supported();
     }
 
     /** @override */
     init() {
-        if (this.isSupported) {
-            // setup sound manager
-            soundManager.setup({
-                debugMode: false,
-                // Note, there's a bug in Chrome regarding range requests.
-                // Flash is used as a workaround.
-                // See https://bugs.chromium.org/p/chromium/issues/detail?id=505707
-                preferFlash: true,
-                url: '/bookreader/BookReader/soundmanager/swf',
-                useHTML5Audio: true,
-                //flash 8 version of swf is buggy when calling play() on a sound that is still loading
-                flashVersion: 9
-            });
-        }
+        // setup sound manager
+        soundManager.setup({
+            debugMode: false,
+            // Note, there's a bug in Chrome regarding range requests.
+            // Flash is used as a workaround.
+            // See https://bugs.chromium.org/p/chromium/issues/detail?id=505707
+            preferFlash: true,
+            url: '/bookreader/BookReader/soundmanager/swf',
+            useHTML5Audio: true,
+            //flash 8 version of swf is buggy when calling play() on a sound that is still loading
+            flashVersion: 9
+        });
     }
 
     /**
