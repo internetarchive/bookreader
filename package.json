@@ -36,7 +36,7 @@
     "sass": "^1.22.12",
     "sinon": "^7.3.2",
     "webpack": "^4.39.3",
-    "webpack-cli": "^3.3.8"
+    "webpack-cli": "^3.3.9"
   },
   "jest": {
     "setupFiles": [
@@ -44,7 +44,7 @@
     ]
   },
   "scripts": {
-    "preinstall": "npm run build",
+    "postinstall": "npm run build",
     "build": "npx webpack && npx sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
     "eslint": "eslint ./BookReader/BookReader.js",
     "lint": "eslint \"./**/*.js\"",
