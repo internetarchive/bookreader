@@ -1,3 +1,4 @@
+import 'es6-promise/auto';
 import langs from 'iso-language-codes/js/data.js';
 
 /**
@@ -8,6 +9,26 @@ import langs from 'iso-language-codes/js/data.js';
 export function approximateWordCount(text) {
     const m = text.match(/\S+/g);
     return m ? m.length : 0;
+}
+
+/**
+ * Waits the provided number of ms and then resolves with a promise
+ * @param {number} ms
+ * @return {PromiseLike}
+ */
+export function sleep(ms) {
+    return new Promise(res => setTimeout(res, ms));
+}
+
+/**
+ * Checks whether the current browser is a Chrome/Chromium browser
+ * Code from https://stackoverflow.com/a/4565120/2317712
+ * @param {string} [userAgent]
+ * @param {string} [vendor]
+ * @return {boolean}
+ */
+export function isChrome(userAgent=navigator.userAgent, vendor=navigator.vendor) {
+    return /chrome/i.test(userAgent) && /google inc/i.test(vendor);
 }
 
 /**
