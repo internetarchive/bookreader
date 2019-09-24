@@ -1,3 +1,8 @@
+# 4.2.5
+- Large refactor of plugin.tts.js
+- ES6 compliation step
+- Known bug: Clicking on page while TTS is playing won't stop the playback
+
 # 4.2.4
 - Skips initialization of vendor fullscreen plugin when on a mobile device
 
