@@ -112,6 +112,8 @@ class FestivalTTSSound {
     }
 
     stop() { this.sound.stop(); }
+    pause() { this.sound.pause(); }
+    resume() { this.sound.resume(); }
 }
 
 /** Needed to capture the audio context for iOS hack. Generated using Audacity. */
