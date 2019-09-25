@@ -1,7 +1,10 @@
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 
+/** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
+/** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
+
 /**
- * @extends AbstractTTSEngine<{ sound: FestivalTTSSound }>
+ * @extends AbstractTTSEngine
  * TTS using Festival endpoint
  **/
 export default class FestivalTTSEngine extends AbstractTTSEngine {
@@ -10,15 +13,11 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
         return typeof(soundManager) !== 'undefined' && soundManager.supported();
     }
 
-    /**
-     * @param {TTSEngineOptions} options 
-     */
+    /** @param {TTSEngineOptions} options */
     constructor(options) {
         super(options);
         /** @type {'mp3' | 'ogg'} format of audio to get */
         this.audioFormat = $.browser.mozilla ? 'ogg' : 'mp3';
-        /** @type {FestivalTTSSound} */
-        this.activeSound = null;
     }
 
     /** @override */
@@ -55,34 +54,8 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     }
 
     /** @override */
-    stop() {
-        this.playStream = null;
-        this.activeSound.stop();
-        super.stop();
-    }
-
-    /** @override */
-    getPlayStream() {
-        this.playStream = this.playStream || this.chunkStream
-        .map(chunk => {
-            this.opts.onLoadingStart();
-            chunk.sound = new FestivalTTSSound(this.getSoundUrl(chunk.text));
-            chunk.sound.load(() => this.opts.onLoadingComplete());
-            return chunk;
-        });
-
-        return this.playStream;
-    }
-
-    /**
-     * @override
-     * @param {PageChunk & { sound: FestivalTTSSound }} chunk
-     * @return {PromiseLike}
-     */
-    playChunk(chunk) {
-        if (!chunk.sound.loaded) this.opts.onLoadingStart();
-        this.activeSound = chunk.sound;
-        return this.activeSound.play();
+    createSound(chunk) {
+        return new FestivalTTSSound(this.getSoundUrl(chunk.text));
     }
 
     /**
@@ -112,12 +85,17 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     }
 }
 
+/** @extends AbstractTTSSound */
 class FestivalTTSSound {
     /** @param {string} soundUrl **/
     constructor(soundUrl) {
         this.soundUrl = soundUrl;
         /** @type {SMSound} */
         this.sound = null;
+    }
+
+    get loaded() {
+        return this.sound && this.sound.loaded;
     }
 
     load(onload) {

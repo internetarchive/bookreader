@@ -3,12 +3,13 @@ import { isChrome, sleep } from './utils.js';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
+/** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
 /** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
 
 /** @typedef {{sound: WebTTSSound}} UtteranceMixin */
 
 /**
- * @extends AbstractTTSEngine<UtteranceMixin>
+ * @extends AbstractTTSEngine
  * TTS using Web Speech APIs
  **/
 export default class WebTTSEngine extends AbstractTTSEngine {
@@ -19,53 +20,28 @@ export default class WebTTSEngine extends AbstractTTSEngine {
     /** @param {TTSEngineOptions} options */
     constructor(options) {
         super(options);
-        /** @type {WebTTSSound} */
-        this.activeSound = null;
     }
 
     /** @override */
-    stop() {
-        this.playStream = null;
-        this.activeSound.stop();
-        super.stop();
-    }
-
-    /** @override */
-    getPlayStream() {
-        this.playStream = this.playStream || this.chunkStream
-        .map(chunk => {
-            chunk.sound = new WebTTSSound(chunk.text);
-            return chunk.sound.load()
-            .then(() => chunk);
-        })
-        .buffer(2);
-
-        return this.playStream;
-    }
-
-    /**
-     * @override
-     * @param {PageChunk & UtteranceMixin} chunk
-     * @return {PromiseLike}
-     */
-    playChunk(chunk) {
-        this.activeSound = chunk.sound;
-        return this.activeSound.play();
+    createSound(chunk) {
+        return new WebTTSSound(chunk.text);
     }
 }
 
+/** @extends AbstractTTSSound */
 class WebTTSSound {
     /** @param {string} text **/
     constructor(text) {
         this.text = text;
         /** @type {SpeechSynthesisUtterance} */
         this.sound = null;
+        this.loaded = true;
     }
 
-    load() {
+    load(onload) {
         this.sound = new SpeechSynthesisUtterance(this.text);
         this.sound.voice = speechSynthesis.getVoices().find(v => v.default);
-        return Promise.resolve(this);
+        onload();
     }
 
     play() {

@@ -6,6 +6,7 @@ import AsyncStream from './AsyncStream.js';
  * @property {Number} leafIndex
  * @property {String} text
  * @property {DJVURect[]} lineRects
+ * @property {AbstractTTSSound} sound
  */
 
 /**
@@ -30,8 +31,14 @@ import AsyncStream from './AsyncStream.js';
  */
 
 /**
- * @template TSound extra properties added to PageChunk to allow playing
- */
+ * @typedef {Object} AbstractTTSSound
+ * @property {boolean} loaded
+ * @property {(callback: Function) => void} load
+ * @property {() => PromiseLike} play
+ * @property {() => void} stop
+ **/
+
+/** Handling bookreader's text-to-speech */
 export default class AbstractTTSEngine {
     /**
      * @protected
@@ -65,21 +72,29 @@ export default class AbstractTTSEngine {
         this.chunkStream = AsyncStream.range(leafIndex, numLeafs-1)
         .map(this.fetchPageChunks.bind(this))
         .buffer(2)
-        .flatten();
+        .flatten()
+        .map(chunk => {
+            this.opts.onLoadingStart();
+            chunk.sound = this.createSound(chunk);
+            chunk.sound.load(() => this.opts.onLoadingComplete());
+            return chunk;
+        });
 
         this.step();
     }
 
     stop() {
+        this.activeSound.stop();
         this.playing = false;
         this.chunkStream = null;
+        this.activeSound = null;
     }
 
     /**
      * @private
      */
     step() {
-        this.getPlayStream().pull()
+        this.chunkStream.pull()
         .then(item => {
             if (item.done) {
                 this.stop();
@@ -101,18 +116,21 @@ export default class AbstractTTSEngine {
     }
 
     /**
-
      * @abstract
-     * @return {AbstractStream<PageChunk & TSound>}
+     * @param {PageChunk} chunk
+     * @param {AbstractTTSSound} chunk 
      */
-    getPlayStream() { return null; }
+    createSound(chunk) { throw new Error("Unimplemented abstract class"); }
 
     /**
-     * @abstract
-     * @param {PageChunk & TSound} chunk
+     * @param {PageChunk} chunk
      * @return {PromiseLike} promise called once playing finished
      */
-    playChunk(chunk) { return null; }
+    playChunk(chunk) {
+        this.activeSound = chunk.sound;
+        if (!this.activeSound.loaded) this.opts.onLoadingStart();
+        return this.activeSound.play();
+    }
 
     /**
      * @private
