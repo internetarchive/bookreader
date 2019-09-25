@@ -5,17 +5,13 @@ import AbstractTTSEngine from '../../../src/js/plugins/tts/AbstractTTSEngine.js'
 
 describe('AbstractTTSEngine', () => {
     test('stops playing once done', () => {
-        class Dummy extends AbstractTTSEngine {
-            getPlayStream() {
-                return { pull: sinon.stub().resolves({ done: true }) };
-            }
-        }
-        const d = new Dummy(DUMMY_TTS_ENGINE_OPTS);
-        const stopSpy = sinon.spy(d, 'stop');
-        expect(stopSpy.callCount).toBe(0);
+        const d = new AbstractTTSEngine(DUMMY_TTS_ENGINE_OPTS);
+        d.chunkStream = { pull: sinon.stub().resolves({ done: true }) };
+        const stopStub = sinon.stub(d, 'stop');
+        expect(stopStub.callCount).toBe(0);
         d.step();
         return afterEventLoop()
-        .then(() => expect(stopSpy.callCount).toBe(1));
+        .then(() => expect(stopStub.callCount).toBe(1));
     });
 });
 
