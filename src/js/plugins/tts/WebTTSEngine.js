@@ -5,7 +5,7 @@ import AbstractTTSEngine from './AbstractTTSEngine.js';
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
 
-/** @typedef {{utterance: SpeechSynthesisUtterance}} UtteranceMixin */
+/** @typedef {{sound: WebTTSSound}} UtteranceMixin */
 
 /**
  * @extends AbstractTTSEngine<UtteranceMixin>
@@ -19,20 +19,25 @@ export default class WebTTSEngine extends AbstractTTSEngine {
     /** @param {TTSEngineOptions} options */
     constructor(options) {
         super(options);
-        this._isChrome = isChrome();
+        /** @type {WebTTSSound} */
+        this.activeSound = null;
     }
 
     /** @override */
     stop() {
         this.playStream = null;
-        window.speechSynthesis.cancel();
+        this.activeSound.stop();
         super.stop();
     }
 
     /** @override */
     getPlayStream() {
         this.playStream = this.playStream || this.chunkStream
-        .map(this.addUtterance.bind(this))
+        .map(chunk => {
+            chunk.sound = new WebTTSSound(chunk.text);
+            return chunk.sound.load()
+            .then(() => chunk);
+        })
         .buffer(2);
 
         return this.playStream;
@@ -44,14 +49,36 @@ export default class WebTTSEngine extends AbstractTTSEngine {
      * @return {PromiseLike}
      */
     playChunk(chunk) {
-        const endPromise = new Promise(res => chunk.utterance.onend = res);
-        window.speechSynthesis.speak(chunk.utterance);
+        this.activeSound = chunk.sound;
+        return this.activeSound.play();
+    }
+}
 
-        if (this._isChrome && !chunk.utterance.voice.localService) {
-            return this.chromePausingBugFix(endPromise);
+class WebTTSSound {
+    /** @param {string} text **/
+    constructor(text) {
+        this.text = text;
+        /** @type {SpeechSynthesisUtterance} */
+        this.sound = null;
+    }
+
+    load() {
+        this.sound = new SpeechSynthesisUtterance(this.text);
+        this.sound.voice = speechSynthesis.getVoices().find(v => v.default);
+        return Promise.resolve(this);
+    }
+
+    play() {
+        const endPromise = new Promise(res => this.sound.onend = res);
+        speechSynthesis.speak(this.sound);
+
+        if (isChrome() && !this.sound.voice.localService) {
+            return this._chromePausingBugFix(endPromise);
         }
         else return endPromise;
     }
+
+    stop() { speechSynthesis.cancel(); }
 
     /**
      * @private
@@ -62,30 +89,19 @@ export default class WebTTSEngine extends AbstractTTSEngine {
      * @param {PromiseLike} endPromise promise that will file once the utterance is done
      * @return {PromiseLike}
      */
-    chromePausingBugFix(endPromise) {
+    _chromePausingBugFix(endPromise) {
         const sleepPromise = sleep(14000).then(() => 'timedout');
         return Promise.race([sleepPromise, endPromise])
         .then(result => {
             if (result == 'timedout') {
-                window.speechSynthesis.pause();
+                speechSynthesis.pause();
                 return sleep(25)
                 .then(() => {
-                    window.speechSynthesis.resume();
-                    return this.chromePausingBugFix(endPromise);
+                    speechSynthesis.resume();
+                    return this._chromePausingBugFix(endPromise);
                 });
             }
             else return endPromise;
         });
-    }
-
-    /**
-     * @private
-     * @param {PageChunk & UtteranceMixin} pageChunk
-     * @return {PageChunk & UtteranceMixin}
-     */
-    addUtterance(pageChunk) {
-        pageChunk.utterance = new SpeechSynthesisUtterance(pageChunk.text);
-        pageChunk.utterance.voice = window.speechSynthesis.getVoices().find(v => v.default);
-        return pageChunk;
     }
 }

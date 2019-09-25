@@ -1,7 +1,7 @@
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 
 /**
- * @extends AbstractTTSEngine<{ sound: SMSound }>
+ * @extends AbstractTTSEngine<{ sound: FestivalTTSSound }>
  * TTS using Festival endpoint
  **/
 export default class FestivalTTSEngine extends AbstractTTSEngine {
@@ -17,6 +17,8 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
         super(options);
         /** @type {'mp3' | 'ogg'} format of audio to get */
         this.audioFormat = $.browser.mozilla ? 'ogg' : 'mp3';
+        /** @type {FestivalTTSSound} */
+        this.activeSound = null;
     }
 
     /** @override */
@@ -55,42 +57,32 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     /** @override */
     stop() {
         this.playStream = null;
-        soundManager.stopAll();
+        this.activeSound.stop();
         super.stop();
     }
 
     /** @override */
     getPlayStream() {
         this.playStream = this.playStream || this.chunkStream
-        .map(this.fetchChunkSound.bind(this));
+        .map(chunk => {
+            this.opts.onLoadingStart();
+            chunk.sound = new FestivalTTSSound(this.getSoundUrl(chunk.text));
+            chunk.sound.load(() => this.opts.onLoadingComplete());
+            return chunk;
+        });
 
         return this.playStream;
     }
 
     /**
      * @override
-     * @param {PageChunk & { sound: SMSound }} chunk
+     * @param {PageChunk & { sound: FestivalTTSSound }} chunk
      * @return {PromiseLike}
      */
     playChunk(chunk) {
         if (!chunk.sound.loaded) this.opts.onLoadingStart();
-        return new Promise(res => chunk.sound.play({ onfinish: res }))
-        .then(() => chunk.sound.destruct());
-    }
-
-    /**
-     * @private
-     * @param {PageChunk} pageChunk
-     * @return {PageChunk & { sound: SMSound }}
-     */
-    fetchChunkSound(pageChunk) {
-        pageChunk.sound = soundManager.createSound({
-            url: this.getSoundUrl(pageChunk.text),
-            // API recommended, but only fires once play started on safari
-            onload: () => this.opts.onLoadingComplete(),
-        });
-        pageChunk.sound.load();
-        return pageChunk;
+        this.activeSound = chunk.sound;
+        return this.activeSound.play();
     }
 
     /**
@@ -118,6 +110,30 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
         return new Promise(res => sound.play({onfinish: res}))
         .then(() => sound.destruct());
     }
+}
+
+class FestivalTTSSound {
+    /** @param {string} soundUrl **/
+    constructor(soundUrl) {
+        this.soundUrl = soundUrl;
+        /** @type {SMSound} */
+        this.sound = null;
+    }
+
+    load(onload) {
+        this.sound = soundManager.createSound({
+            url: this.soundUrl,
+            // API recommended, but only fires once play started on safari
+            onload
+        }).load();
+    }
+
+    play() {
+        return new Promise(res => this.sound.play({ onfinish: res }))
+        .then(() => this.sound.destruct());
+    }
+
+    stop() { this.sound.stop(); }
 }
 
 /** Needed to capture the audio context for iOS hack. Generated using Audacity. */

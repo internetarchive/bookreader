@@ -5,6 +5,7 @@ import sinon from 'sinon';
 import { afterEventLoop } from '../../utils.js';
 import { DUMMY_TTS_ENGINE_OPTS } from './AbstractTTSEngine.test.js';
 /** @typedef {import('../../../src/js/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
+/** @typedef {import('../../../src/js/plugins/tts/AbstractTTSEngine.js').PageChunk} PageChunk */
 
 describe('iOSCaptureUserIntentHack', () => {
     test('synchronously calls createSound/play to capture user intent', () => {
@@ -31,20 +32,16 @@ describe('misc', () => {
         };
         window.soundManager = sm;
         const engine = new FestivalTTSEngine(DUMMY_TTS_ENGINE_OPTS);
-        sinon.stub(engine, 'playChunk').resolves();
-        sinon.stub(engine, 'fetchPageChunks').resolves([{
-            leafIndex: 0,
-            chunkIndex: 0,
-            text: 'Once upon a time',
-            lineRects: [],
-        }]);
+        sinon.stub(engine, 'playChunk').returns(new Promise(() => {}));
+        sinon.stub(engine, 'stop');
+        sinon.stub(engine, 'fetchPageChunks').resolves([dummyPageChunk()]);
         engine.start(0, 5);
 
         // because things happen in callbacks, need to run code at end of the JS event loop
         return afterEventLoop()
         .then(() => {
             expect(sm.createSound.callCount).toBe(1);
-            expect(engine.fetchPageChunks.callCount).toBe(5);
+            expect(engine.fetchPageChunks.callCount).toBeGreaterThanOrEqual(1);
             expect(engine.playChunk.callCount).toBe(1);
         });
     });
@@ -56,5 +53,15 @@ function createMockSound() {
         load: sinon.stub(),
         play: sinon.stub(),
         destruct: sinon.stub(),
+    };
+}
+
+/** @return {PageChunk} */
+function dummyPageChunk() {
+    return {
+        leafIndex: 0,
+        chunkIndex: 0,
+        text: 'Once upon a time',
+        lineRects: [],
     };
 }
