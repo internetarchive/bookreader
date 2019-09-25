@@ -5,8 +5,7 @@ import AbstractTTSEngine from './AbstractTTSEngine.js';
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
 /** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
-
-/** @typedef {{sound: WebTTSSound}} UtteranceMixin */
+/** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
 
 /**
  * @extends AbstractTTSEngine
@@ -55,6 +54,8 @@ class WebTTSSound {
     }
 
     stop() { speechSynthesis.cancel(); }
+    pause() { speechSynthesis.pause(); }
+    resume() { speechSynthesis.resume(); }
 
     /**
      * @private

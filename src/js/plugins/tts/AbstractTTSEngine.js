@@ -36,6 +36,7 @@ import AsyncStream from './AsyncStream.js';
  * @property {(callback: Function) => void} load
  * @property {() => PromiseLike} play
  * @property {() => void} stop
+ * @property {() => void} pause
  **/
 
 /** Handling bookreader's text-to-speech */
@@ -46,6 +47,7 @@ export default class AbstractTTSEngine {
      */
     constructor(options) {
         this.playing = false;
+        this.paused = false;
         this.opts = options;
         /** @type {AsyncStream<PageChunk>} */
         this.chunkStream = null;
@@ -90,6 +92,18 @@ export default class AbstractTTSEngine {
         this.activeSound = null;
     }
 
+    /** @public */
+    pause() {
+        this.paused = true;
+        if (this.activeSound) this.activeSound.pause();
+    }
+
+    /** @public */
+    resume() {
+        this.paused = false;
+        if (this.activeSound) this.activeSound.resume();
+    }
+
     /**
      * @private
      */
@@ -105,12 +119,14 @@ export default class AbstractTTSEngine {
             return this.opts.beforeChunkPlay(item.value).then(() => item.value);
         })
         .then(chunk => {
-            if (this.playing) {
-                return this.playChunk(chunk).then(() => chunk);
-            }
+            if (!this.playing) return;
+
+            const playPromise = this.playChunk(chunk)
+            .then(() => this.opts.afterChunkPlay(chunk));
+            if (this.paused) this.pause();
+            return playPromise;
         })
-        .then(chunk => {
-            this.opts.afterChunkPlay(chunk);
+        .then(() => {
             if (this.playing) return this.step();
         });
     }
