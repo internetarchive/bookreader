@@ -34,7 +34,7 @@ function BookReader(options) {
     this.setup(options);
 }
 
-BookReader.version = "4.2.4";
+BookReader.version = "4.2.5";
 
 // Mode constants
 BookReader.constMode1up = 1;
