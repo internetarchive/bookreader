@@ -119,6 +119,8 @@ BookReader.defaultOptions = {
     bookUrlText: null,
     bookUrlTitle: null,
     enableBookTitleLink: true,
+    /** @type {string} language in ISO 639-1 (PRIVATE: languages in other formats) */
+    bookLanguage: null,
 
     // Fields used to populate the info window
     metadata: [],

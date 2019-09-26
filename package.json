@@ -21,6 +21,7 @@
   "homepage": "https://github.com/internetarchive/bookreader#readme",
   "dependencies": {
     "es6-promise": "^4.2.8",
+    "iso-language-codes": "^1.0.5",
     "jquery": "^3.4.1"
   },
   "private": true,
