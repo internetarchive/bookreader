@@ -14,6 +14,10 @@ import AsyncStream from './AsyncStream.js';
  * @typedef {Object} TTSEngineOptions 
  * @property {String} server
  * @property {String} bookPath
+ * @property {String?} bookLanguage language in ISO 639-1. (PRIVATE: Will also
+ * handle language name in English, native name, 639-2/T, or 639-2/B . (archive.org books
+ * appear to use 639-2/B ? But I don't think that's a guarantee). See
+ * https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes )
  * @property {Function} onLoadingStart
  * @property {Function} onLoadingComplete
  * @property {Function} onDone called when the entire book is done

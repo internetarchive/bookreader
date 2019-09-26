@@ -4,6 +4,7 @@
 
 import 'es6-promise/auto';
 import FestivalTTSEngine from './FestivalTTSEngine.js';
+import { toISO6391 } from './utils.js';
 
 // Default options for TTS
 jQuery.extend(BookReader.defaultOptions, {
@@ -21,6 +22,7 @@ BookReader.prototype.setup = (function (super_) {
             this.ttsEngine = new FestivalTTSEngine({
                 server: options.server,
                 bookPath: options.bookPath,
+                bookLanguage: toISO6391(options.bookLanguage),
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
                 onDone: this.ttsStop.bind(this),
