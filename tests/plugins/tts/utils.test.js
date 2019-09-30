@@ -34,4 +34,9 @@ describe('toISO6391', () => {
         expect(toISO6391('Parseltongue')).toBe(null);
         expect(toISO6391('Pig Latin')).toBe(null);
     });
+
+    test('Falsey inputs', () => {
+        expect(toISO6391(null)).toBe(null);
+        expect(toISO6391('')).toBe(null);
+    });
 });
