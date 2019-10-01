@@ -10,17 +10,18 @@ BookReader.prototype.init = (function(super_) {
     super_.call(this);
 
     if (this.options.enableArchiveAnalytics) {
-      this.bind(BookReader.eventNames.fragmentChange, () => this.archiveAnalyticsSend());
+      this.bind(BookReader.eventNames.fragmentChange, () => this.archiveAnalyticsSendFragmentChange());
     }
   };
 })(BookReader.prototype.init);
 
-BookReader.prototype.archiveAnalyticsSend = function() {
+/** @private */
+BookReader.prototype.archiveAnalyticsSendFragmentChange = function() {
   if (!window.archive_analytics) {
     return;
   }
 
-  var prevFragment = this.archiveAnalyticsSend.prevFragment;
+  var prevFragment = this.archiveAnalyticsSendFragmentChange.prevFragment;
 
   var params = this.paramsFromCurrent();
   var newFragment = this.fragmentFromParams(params);
@@ -51,6 +52,6 @@ BookReader.prototype.archiveAnalyticsSend = function() {
     // Also send tracking event ping
     archive_analytics.send_event('BookReader', 'UserChangedView', null);
 
-    this.archiveAnalyticsSend.prevFragment = newFragment;
+    this.archiveAnalyticsSendFragmentChange.prevFragment = newFragment;
   }
 };
