@@ -10,12 +10,7 @@ BookReader.prototype.init = (function(super_) {
     super_.call(this);
 
     if (this.options.enableArchiveAnalytics) {
-      this.bind(
-        BookReader.eventNames.fragmentChange,
-        function() {
-          this.archiveAnalyticsSend();
-        }.bind(this)
-      );
+      this.bind(BookReader.eventNames.fragmentChange, () => this.archiveAnalyticsSend());
     }
   };
 })(BookReader.prototype.init);
@@ -54,13 +49,7 @@ BookReader.prototype.archiveAnalyticsSend = function() {
     archive_analytics.send_ping(values, null, "augment_for_ao_site");
 
     // Also send tracking event ping
-    archive_analytics.send_ping({
-      kind: "event",
-      ec: "BookReader",
-      ea: "UserChangedView",
-      el: window.location.pathname,
-      cache_bust: Math.random()
-    });
+    archive_analytics.send_event('BookReader', 'UserChangedView', null);
 
     this.archiveAnalyticsSend.prevFragment = newFragment;
   }
