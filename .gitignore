@@ -4,5 +4,6 @@ node_modules/
 
 # Ignore build files
 BookReader/plugins/*.js.map
-BookReader/plugins/plugin.tts.js
+BookReader/plugins/plugin.archive_analytics.js
 BookReader/plugins/plugin.fullscreen_menu_toggle.js
+BookReader/plugins/plugin.tts.js
