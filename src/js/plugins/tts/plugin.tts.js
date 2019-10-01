@@ -4,7 +4,8 @@
 
 import 'es6-promise/auto';
 import FestivalTTSEngine from './FestivalTTSEngine.js';
-import { toISO6391 } from './utils.js';
+import { toISO6391, approximateWordCount } from './utils.js';
+/** @typedef {import('./AbstractTTSEngine.js').PageChunk} PageChunk */
 
 // Default options for TTS
 jQuery.extend(BookReader.defaultOptions, {
@@ -26,7 +27,8 @@ BookReader.prototype.setup = (function (super_) {
                 onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
                 onLoadingComplete: this.removeProgressPopup.bind(this),
                 onDone: this.ttsStop.bind(this),
-                beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this)
+                beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this),
+                afterChunkPlay: this.ttsAfterChunkPlay.bind(this),
             });
             this.ttsHilites = [];
         }
@@ -108,6 +110,7 @@ BookReader.prototype.ttsStart = function () {
         this.switchMode(this.constMode1up);
 
     this.$('.BRicon.read').addClass('unread');
+    this.ttsSendAnalyticsEvent('Start', null, this.ttsEngine.opts.bookLanguage || 'null');
     this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
 };
 
@@ -115,6 +118,7 @@ BookReader.prototype.ttsStart = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
     this.$('.BRicon.read').removeClass('unread');
+    this.ttsSendAnalyticsEvent('Stop', null, this.ttsEngine.opts.bookLanguage || 'null');
     this.ttsEngine.stop();
     this.ttsRemoveHilites();
     this.removeProgressPopup();
@@ -130,6 +134,15 @@ BookReader.prototype.ttsBeforeChunkPlay = function(chunk) {
         this.ttsHighlightChunk(chunk);
         this.ttsScrollToChunk(chunk);
     });
+};
+
+/**
+ * @param {PageChunk} chunk
+ */
+BookReader.prototype.ttsAfterChunkPlay = function(chunk) {
+    // FIXME @cdrini always log the reading language as English for now since that's all
+    // Festival supports. Change this once WebTTSEngine is added.
+    this.ttsSendAnalyticsEvent('ChunkFinished-Words', approximateWordCount(chunk.text), 'en-US');
 };
 
 /**
@@ -255,4 +268,18 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
 BookReader.prototype.ttsRemoveHilites = function () {
     $(this.ttsHilites).remove();
     this.ttsHilites = [];
+};
+
+/**
+ * @private
+ * @param {string} action
+ * @param {number} [value]
+ * @param {string} [mediaLanguage] this can mean different things in different contexts
+ */
+BookReader.prototype.ttsSendAnalyticsEvent = function(action, value, mediaLanguage) {
+    if (this.archiveAnalyticsSendEvent) {
+        const extraValues = {};
+        if (mediaLanguage) extraValues.mediaLanguage = mediaLanguage;
+        this.archiveAnalyticsSendEvent('BRReadAloud', action, value, extraValues);
+    }
 };

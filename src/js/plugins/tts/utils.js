@@ -1,6 +1,16 @@
 import langs from 'iso-language-codes/js/data.js';
 
 /**
+ * Use regex to approximate word count in a string
+ * @param {string} text
+ * @return {number}
+ */
+export function approximateWordCount(text) {
+    const m = text.match(/\S+/g);
+    return m ? m.length : 0;
+}
+
+/**
  * @typedef {string} ISO6391
  * Language code in ISO 639-1 format. e.g. en, fr, zh
  **/

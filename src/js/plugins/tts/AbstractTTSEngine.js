@@ -22,6 +22,7 @@ import AsyncStream from './AsyncStream.js';
  * @property {Function} onLoadingComplete
  * @property {Function} onDone called when the entire book is done
  * @property {function(PageChunk): PromiseLike} beforeChunkPlay will delay the playing of the chunk
+ * @property {function(PageChunk): void} afterChunkPlay fires once a chunk has fully finished
  */
 
 /**
@@ -83,14 +84,15 @@ export default class AbstractTTSEngine {
                 return;
             }
             this.opts.onLoadingComplete();
-            return this.opts.beforeChunkPlay(item.value).then(() => item)
+            return this.opts.beforeChunkPlay(item.value).then(() => item.value);
         })
-        .then(item => {
+        .then(chunk => {
             if (this.playing) {
-                return this.playChunk(item.value);
+                return this.playChunk(chunk).then(() => chunk);
             }
         })
-        .then(() => {
+        .then(chunk => {
+            this.opts.afterChunkPlay(chunk);
             if (this.playing) return this.step();
         });
     }
