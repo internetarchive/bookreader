@@ -30,7 +30,7 @@ describe('misc', () => {
         };
         window.soundManager = sm;
         const engine = new FestivalTTSEngine(DUMMY_TTS_ENGINE_OPTS);
-        sinon.stub(engine, 'playChunk');
+        sinon.stub(engine, 'playChunk').resolves();
         sinon.stub(engine, 'fetchPageChunks').resolves([{
             leafIndex: 0,
             chunkIndex: 0,
@@ -67,4 +67,5 @@ const DUMMY_TTS_ENGINE_OPTS = {
     onLoadingComplete() {},
     onDone() {},
     beforeChunkPlay() { return Promise.resolve(); },
+    afterChunkPlay() {},
 };

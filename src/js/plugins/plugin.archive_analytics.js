@@ -2,7 +2,9 @@
  * Plugin for Archive.org analytics
  */
 jQuery.extend(BookReader.defaultOptions, {
-  enableArchiveAnalytics: true
+  enableArchiveAnalytics: true,
+  /** Provide a means of debugging, cause otherwise it's impossible to test locally */
+  debugArchiveAnaltyics: false,
 });
 
 BookReader.prototype.init = (function(super_) {
@@ -54,4 +56,27 @@ BookReader.prototype.archiveAnalyticsSendFragmentChange = function() {
 
     this.archiveAnalyticsSendFragmentChange.prevFragment = newFragment;
   }
+};
+
+/**
+ * Sends a tracking "Event". See https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#events
+ * @param {string} category
+ * @param {string} action
+ * @param {number} [value] (must be an int)
+ * @param {Object} [additionalEventParams]
+ */
+BookReader.prototype.archiveAnalyticsSendEvent = function(category, action, value, additionalEventParams) {
+  if (!this.options.enableArchiveAnalytics) return;
+
+  if (this.options.debugArchiveAnaltyics) {
+    console.log("archiveAnalyticsSendEvent", arguments, window.archive_analytics);
+  }
+
+  if (!window.archive_analytics) return;
+
+  additionalEventParams = additionalEventParams || {};
+  if (typeof(value) == 'number') {
+    additionalEventParams.ev = value;
+  }
+  window.archive_analytics.send_event(category, action, null, additionalEventParams);
 };
