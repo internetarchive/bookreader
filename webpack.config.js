@@ -1,7 +1,8 @@
 const path = require('path');
 
 module.exports = [
-    buildJsFromTo({from: 'plugins/tts/plugin.tts.js', to: 'BookReader/plugins/plugin.tts.js'})
+    buildJsFromTo({from: 'plugins/tts/plugin.tts.js', to: 'BookReader/plugins/plugin.tts.js'}),
+    buildJsFromTo({from: 'plugins/fullscreen_menu_toggle/plugin.fullscreen_menu_toggle.js', to: 'BookReader/plugins/plugin.fullscreen_menu_toggle.js'})
 ];
 
 /**
