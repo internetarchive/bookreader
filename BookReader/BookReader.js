@@ -3712,7 +3712,8 @@ BookReader.prototype.unbindNavigationHandlers = function() {
 BookReader.prototype.navigationMousemoveHandler = function(event) {
     // $$$ possibly not great to be calling this for every mousemove
     if (event.data['br'].uiAutoHide) {
-        // 77px is an approximation of the hidden Internet Archive Top Nav
+        // 77px is an approximate height of the Internet Archive Top Nav
+        // 75 & 76 (pixels) provide used in this context is checked againt the IA top nav height
         var navkey = $(document).height() - 75;
         if ((event.pageY < 76) || (event.pageY > navkey)) {
             // inside or near navigation elements
