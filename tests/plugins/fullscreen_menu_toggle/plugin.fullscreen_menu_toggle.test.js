@@ -12,7 +12,7 @@ beforeEach(() => {
     BookReader.prototype.enterFullScreen = jest.fn();
     BookReader.prototype.bindNavigationHandlers = jest.fn();
 
-    binder = jest.spyOn(BookReader.prototype, 'manageFullScreenToggle');
+    binder = jest.spyOn(BookReader.prototype, 'initFullScreenToggle');
 })
 
 afterEach(() => {
@@ -22,7 +22,7 @@ afterEach(() => {
 
 test('Plugin: Fullscreen Menu Toggle - successfully initializes', () => {
     expect(BookReader.defaultOptions.enableFullScreenMenuToggle).toEqual(true);
-    expect(BookReader.prototype.manageFullScreenToggle).toBeDefined();
+    expect(BookReader.prototype.initFullScreenToggle).toBeDefined();
 
     const bookrdr = new BookReader();
     bookrdr.init();

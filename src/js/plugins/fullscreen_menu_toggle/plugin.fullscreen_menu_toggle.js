@@ -71,7 +71,7 @@
       }
     }
 
-    BookReader.prototype.manageFullScreenToggle = function brManageFullScreenToggle(e) {
+    BookReader.prototype.initFullScreenToggle = function brInitFullScreenToggle(e) {
       $(document).on('BookReader:fullscreenToggled', function (e) {
         if (this.isFullscreen()) {
           this.menuFullscreenFadeManager.onEnterFullscreen(this);
@@ -113,7 +113,7 @@
       return function() {
         super_.call(this);
         if (this.options.enableFullScreenMenuToggle) {
-          this.manageFullScreenToggle();
+          this.initFullScreenToggle();
         }
       };
     })(BookReader.prototype.init);
