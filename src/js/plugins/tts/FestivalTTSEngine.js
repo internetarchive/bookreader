@@ -41,14 +41,15 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
      * @param {number} numLeafs total number of leafs in the current book
      */
     start(leafIndex, numLeafs) {
+        let promise = null;
+
+        // Hack for iOS
         if (navigator.userAgent.match(/mobile/i)) {
-            // HACK for iOS. Security restrictions require playback to be triggered
-            // by a user click/touch. This intention gets lost in the ajax callback
-            // above, but for some reason, if we start the audio here, it works
-            soundManager.createSound({url: this.getSoundUrl(' ')}).play();
+            promise = this.iOSCaptureUserIntentHack();
         }
         
-        super.start(leafIndex, numLeafs);
+        promise = promise || Promise.resolve();
+        promise.then(() => super.start(leafIndex, numLeafs));
     }
 
     /** @override */
@@ -72,6 +73,7 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
      * @return {PromiseLike}
      */
     playChunk(chunk) {
+        if (!chunk.sound.loaded) this.opts.onLoadingStart();
         return new Promise(res => chunk.sound.play({ onfinish: res }))
         .then(() => chunk.sound.destruct());
     }
@@ -79,34 +81,16 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     /**
      * @private
      * @param {PageChunk} pageChunk
-     * @return {PromiseLike<PageChunk & { sound: SMSound }>}
+     * @return {PageChunk & { sound: SMSound }}
      */
     fetchChunkSound(pageChunk) {
-        this.opts.onLoadingStart();
-        return new Promise(res => {
-            const resolve = sound => {
-                this.opts.onLoadingComplete();
-                res($.extend(pageChunk, { sound }))
-            };
-            soundManager.createSound({
-                url: this.getSoundUrl(pageChunk.text),
-
-                // Many soundManger2 callbacks are broken when using HTML5 audio.
-                // whileloading: broken on safari, worked in FF4, but broken on FireFox 5
-                // onload: fires on safari, but *after* the sound starts playing, and does not fire in FF or IE9
-                // onbufferchange: fires in FF5 using HTML5 audio, but not in safari using flash audio
-                // whileplaying: fires everywhere
-                onload: function() { resolve(this); },
-                //fires in FF and IE9
-                onready: function() { resolve(this); },
-                //fires in safari...
-                onbufferchange: function() {
-                    if (!this.isBuffering) {
-                        resolve(this);
-                    }
-                }
-            }).load();
+        pageChunk.sound = soundManager.createSound({
+            url: this.getSoundUrl(pageChunk.text),
+            // API recommended, but only fires once play started on safari
+            onload: () => this.opts.onLoadingComplete(),
         });
+        pageChunk.sound.load();
+        return pageChunk;
     }
 
     /**
@@ -119,5 +103,23 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
         return 'https://'+this.opts.server+'/BookReader/BookReaderGetTTS.php?string='
                   + encodeURIComponent(dataString)
                   + '&format=.'+this.audioFormat;
+    }
+
+    /**
+     * @private
+     * Security restrictions require playback to be triggered
+     * by a user click/touch. This intention gets lost in the async calls
+     * on iOS, but, for some reason, if we start the audio here, it works.
+     * See https://stackoverflow.com/questions/12206631/html5-audio-cant-play-through-javascript-unless-triggered-manually-once
+     * @return {PromiseLike}
+     */
+    iOSCaptureUserIntentHack() {
+        let sound = soundManager.createSound({
+            // We can't use a whitespace string; it causes an infinite loop (???)
+            url: this.getSoundUrl('t'),
+            volume: 0,
+        });
+        return new Promise(res => sound.play({onfinish: res}))
+        .then(() => sound.destruct());
     }
 }
