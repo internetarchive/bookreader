@@ -1,7 +1,7 @@
 require('../../../BookReader/BookReader.js');
 require('../../../src/js/plugins/fullscreen_menu_toggle/plugin.fullscreen_menu_toggle.js');
 
-let binder;
+let initializeSpy;
 beforeEach(() => {
     document.querySelector = jest.fn(() => true);
     document.body.innerHTML = '<div id="BookReader">';
@@ -12,12 +12,12 @@ beforeEach(() => {
     BookReader.prototype.enterFullScreen = jest.fn();
     BookReader.prototype.bindNavigationHandlers = jest.fn();
 
-    binder = jest.spyOn(BookReader.prototype, 'initFullScreenToggle');
+    initializeSpy = jest.spyOn(BookReader.prototype, 'initFullScreenToggle');
 })
 
 afterEach(() => {
     jest.clearAllMocks();
-    binder = null;
+    bininitializeSpyder = null;
 })
 
 test('Plugin: Fullscreen Menu Toggle - successfully initializes', () => {
@@ -28,5 +28,5 @@ test('Plugin: Fullscreen Menu Toggle - successfully initializes', () => {
     bookrdr.init();
 
     expect(bookrdr.menuFullscreenFadeManager).toBeDefined();
-    expect(binder).toHaveBeenCalled();
+    expect(initializeSpy).toHaveBeenCalled();
 });
