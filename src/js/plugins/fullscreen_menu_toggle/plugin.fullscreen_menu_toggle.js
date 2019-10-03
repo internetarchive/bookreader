@@ -63,7 +63,7 @@
     }
   
     function registerEventHandlers(br) {
-      var brContainer = document.querySelector('.BRcontainer');
+      var brContainer = document.querySelector('.BRcontainer') || {};
       var firstChild = brContainer.firstChild;
   
       if (firstChild) {
