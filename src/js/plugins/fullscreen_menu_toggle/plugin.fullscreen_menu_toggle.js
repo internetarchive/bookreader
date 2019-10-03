@@ -1,3 +1,4 @@
+import $ from 'jquery';
 /**
  * Plugin for managing menu in full screen
  * Enabling this plug-in removes the "menu tab" triangle
@@ -69,30 +70,7 @@
         firstChild.addEventListener('click', BRMenuClickHandler.bind(this, br), true);
       }
     }
-  
-    BookReader.prototype.setup = (function(super_) {
-      return function(options) {
-        super_.call(this, options);
-        this.menuFullscreenFadeManager = {
-          menuIsShowing: true,
-          onEnterFullscreen: onEnterFullscreen,
-          onExitFullscreen: onExitFullscreen,
-          setState: function (param, value) {
-            this[param] = value;
-          }
-        };
-      };
-    })(BookReader.prototype.setup);
-  
-    BookReader.prototype.init = (function(super_) {
-      return function() {
-        super_.call(this);
-        if (this.options.enableFullScreenMenuToggle) {
-          this.manageFullScreenToggle();
-        }
-      };
-    })(BookReader.prototype.init);
-  
+
     BookReader.prototype.manageFullScreenToggle = function brManageFullScreenToggle(e) {
       $(document).on('BookReader:fullscreenToggled', function (e) {
         if (this.isFullscreen()) {
@@ -113,7 +91,6 @@
         'BookReader:2PageViewSelected',
         'BookReader:zoomIn',
         'BookReader:zoomOut',
-        'orientationchange',
         'BookReader:resize'
       ];
   
@@ -122,5 +99,28 @@
         $(document).on(eventName, fullscreenEventRegister);
       })
     };
+
+    BookReader.prototype.setup = (function(super_) {
+      return function(options) {
+        super_.call(this, options);
+        this.menuFullscreenFadeManager = {
+          menuIsShowing: true,
+          onEnterFullscreen: onEnterFullscreen,
+          onExitFullscreen: onExitFullscreen,
+          setState: function (param, value) {
+            this[param] = value;
+          }
+        };
+      };
+    })(BookReader.prototype.setup);
+
+    BookReader.prototype.init = (function(super_) {
+      return function() {
+        super_.call(this);
+        if (this.options.enableFullScreenMenuToggle) {
+          this.manageFullScreenToggle();
+        }
+      };
+    })(BookReader.prototype.init);
   })();
   
