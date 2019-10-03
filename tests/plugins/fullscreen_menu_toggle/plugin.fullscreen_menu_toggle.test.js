@@ -17,7 +17,7 @@ beforeEach(() => {
 
 afterEach(() => {
     jest.clearAllMocks();
-    bininitializeSpyder = null;
+    initializeSpy = null;
 })
 
 test('Plugin: Fullscreen Menu Toggle - successfully initializes', () => {
