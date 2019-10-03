@@ -93,11 +93,9 @@
         'BookReader:zoomOut',
         'BookReader:resize'
       ];
-  
+
+      $(document).on(eventsToHandle.join(' '), fullscreenEventRegister);
       $(window).on('orientationchange', fullscreenEventRegister);
-      eventsToHandle.forEach(function bindEventHandlers(eventName) {
-        $(document).on(eventName, fullscreenEventRegister);
-      })
     };
 
     BookReader.prototype.setup = (function(super_) {
