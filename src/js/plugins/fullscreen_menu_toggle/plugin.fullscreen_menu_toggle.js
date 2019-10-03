@@ -34,23 +34,23 @@
   
     var removeEventHandlers = function removeEventHandlers(br) {
       if (br.refs.$brPageViewEl) {
-        br.refs.$brPageViewEl[0].removeEventListener('click', BRMenuClickHandler, true);
+        br.refs.$brPageViewEl[0].removeEventListener('click', toggleMenuIfCenterClick, true);
       }
       if (br.refs.$brTwoPageView) {
-        br.refs.$brTwoPageView[0].removeEventListener('click', BRMenuClickHandler, true);
+        br.refs.$brTwoPageView[0].removeEventListener('click', toggleMenuIfCenterClick, true);
       }
     }
   
-    var BRMenuClickHandler = function BRMenuClickHandler(br, e) {
+    var toggleMenuIfCenterClick = function toggleMenuIfCenterClick(br, e) {
       var menuManager = br.menuFullscreenFadeManager;
       var bookWidth = e.currentTarget.offsetWidth;
       var leftOffset = e.currentTarget.offsetLeft
-      var bookEndPageFlipArea = parseInt(bookWidth / 5);
-      var leftThreshold = parseInt(bookEndPageFlipArea + leftOffset); // without it, the click area is small
-      var rightThreshold = parseInt(bookWidth - bookEndPageFlipArea + leftOffset);
-      var isInRange = (e.clientX > leftThreshold) && (e.clientX < rightThreshold);
+      var bookEndPageFlipArea = Math.round(bookWidth / 5);
+      var leftThreshold = Math.round(bookEndPageFlipArea + leftOffset); // without it, the click area is small
+      var rightThreshold = Math.round(bookWidth - bookEndPageFlipArea + leftOffset);
+      var isCenterClick = (e.clientX > leftThreshold) && (e.clientX < rightThreshold);
       
-      if (isInRange) {
+      if (isCenterClick) {
         if (menuManager.menuIsShowing) {
           br.hideNavigation();
           menuManager.menuIsShowing = false;
@@ -67,7 +67,7 @@
       var firstChild = brContainer.firstChild;
   
       if (firstChild) {
-        firstChild.addEventListener('click', BRMenuClickHandler.bind(this, br), true);
+        firstChild.addEventListener('click', toggleMenuIfCenterClick.bind(this, br), true);
       }
     }
 
