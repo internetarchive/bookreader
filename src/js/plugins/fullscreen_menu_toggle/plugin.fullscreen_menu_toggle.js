@@ -7,7 +7,7 @@
  * This is fired when user clicks on the fullscreen button on the menu
  */
 
-(function enableBRFullscreenMenuManager () {
+(function addFullScreenMenuToggler () {
     jQuery.extend(BookReader.defaultOptions, {
       enableFullScreenMenuToggle: true
     });
@@ -18,7 +18,7 @@
   
       var timeoutHandler = function onEnterTimeoutHandler () {
         br.hideNavigation();
-        var menuManager = br.menuFullscreenFadeManager;
+        var menuManager = br.fullscreenMenu;
   
         registerEventHandlers(br);
         menuManager.menuIsShowing = false;
@@ -42,7 +42,7 @@
     }
   
     var toggleMenuIfCenterClick = function toggleMenuIfCenterClick(br, e) {
-      var menuManager = br.menuFullscreenFadeManager;
+      var menuManager = br.fullscreenMenu;
       var bookWidth = e.currentTarget.offsetWidth;
       var leftOffset = e.currentTarget.offsetLeft
       var bookEndPageFlipArea = Math.round(bookWidth / 5);
@@ -74,9 +74,9 @@
     BookReader.prototype.initFullScreenToggle = function brInitFullScreenToggle(e) {
       $(document).on('BookReader:fullscreenToggled', function (e) {
         if (this.isFullscreen()) {
-          this.menuFullscreenFadeManager.onEnterFullscreen(this);
+          this.fullscreenMenu.onEnterFullscreen(this);
         } else {
-          this.menuFullscreenFadeManager.onExitFullscreen(this);
+          this.fullscreenMenu.onExitFullscreen(this);
         }
       }.bind(this));
   
@@ -101,7 +101,7 @@
     BookReader.prototype.setup = (function(super_) {
       return function(options) {
         super_.call(this, options);
-        this.menuFullscreenFadeManager = {
+        this.fullscreenMenu = {
           menuIsShowing: true,
           onEnterFullscreen: onEnterFullscreen,
           onExitFullscreen: onExitFullscreen,
