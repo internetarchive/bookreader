@@ -21,7 +21,7 @@
         var menuManager = br.menuFullscreenFadeManager;
   
         registerEventHandlers(br);
-        menuManager.setState('menuIsShowing', false);
+        menuManager.menuIsShowing = false;
       }
       setTimeout(timeoutHandler, 500);
     }
@@ -53,10 +53,10 @@
       if (isInRange) {
         if (menuManager.menuIsShowing) {
           br.hideNavigation();
-          menuManager.setState('menuIsShowing', false);
+          menuManager.menuIsShowing = false;
         } else {
           br.showNavigation();
-          menuManager.setState('menuIsShowing', true);
+          menuManager.menuIsShowing = true;
         }
         event.stopPropagation();
       }
@@ -107,9 +107,6 @@
           menuIsShowing: true,
           onEnterFullscreen: onEnterFullscreen,
           onExitFullscreen: onExitFullscreen,
-          setState: function (param, value) {
-            this[param] = value;
-          }
         };
       };
     })(BookReader.prototype.setup);
