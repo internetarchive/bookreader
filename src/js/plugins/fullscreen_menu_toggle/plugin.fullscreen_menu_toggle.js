@@ -1,4 +1,4 @@
-import $ from 'jquery';
+/* global: $ */
 /**
  * Plugin for managing menu in full screen
  * Enabling this plug-in removes the "menu tab" triangle
