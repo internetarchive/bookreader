@@ -1,4 +1,5 @@
 import AsyncStream from '../../../src/js/plugins/tts/AsyncStream.js';
+import { afterEventLoop } from '../../utils.js';
 
 describe('RangeAsyncStream', () => {
     test('Returns numbers in range', () => {
@@ -69,10 +70,6 @@ describe('FlatteningAsyncStream', () => {
         /** @type {String[]} keeps track of the order events happen in (so we can check that order) */
         const events = [];
 
-        // waiting '0' seconds essentially lets us run at the end of the event
-        // loop (i.e. after any promises which aren't _actually_ async have finished)
-        const wait0 = () => new Promise(res => setTimeout(res));
-
         /**
          * Creates a promise we can resolve at a specific time
          * @template T
@@ -110,7 +107,7 @@ describe('FlatteningAsyncStream', () => {
         fakePromises[0].resolve();
         // return the final promise; that way jest waits for it to complete
         // before exiting the test
-        return wait0()
+        return afterEventLoop()
         .then(() => {
             expect(events).toEqual([
                 'parent.pull',
@@ -121,7 +118,7 @@ describe('FlatteningAsyncStream', () => {
             ]);
             events.length = 0;
             fakePromises[1].resolve();
-            return wait0();
+            return afterEventLoop();
         })
         .then(() => {
             expect(events).toEqual([
@@ -132,7 +129,7 @@ describe('FlatteningAsyncStream', () => {
             ]);
             events.length = 0;
             fakePromises[2].resolve();
-            return wait0();
+            return afterEventLoop();
         })
         .then(() => {
             expect(events).toEqual([

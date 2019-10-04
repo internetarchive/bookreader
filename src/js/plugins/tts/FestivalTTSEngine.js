@@ -116,6 +116,7 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     iOSCaptureUserIntentHack() {
         let sound = soundManager.createSound({
             // We can't use a whitespace string; it causes an infinite loop (???)
+            // Let's choose a short sound, cause it'll still wait for it to finish
             url: this.getSoundUrl('t'),
             volume: 0,
         });
