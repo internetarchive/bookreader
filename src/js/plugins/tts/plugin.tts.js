@@ -28,7 +28,7 @@ BookReader.prototype.setup = (function (super_) {
                 onLoadingComplete: this.removeProgressPopup.bind(this),
                 onDone: this.ttsStop.bind(this),
                 beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this),
-                afterChunkPlay: this.ttsAfterChunkPlay.bind(this),
+                afterChunkPlay: this.ttsSendChunkFinishedAnalyticsEvent.bind(this),
             });
             this.ttsHilites = [];
         }
@@ -110,7 +110,7 @@ BookReader.prototype.ttsStart = function () {
         this.switchMode(this.constMode1up);
 
     this.$('.BRicon.read').addClass('unread');
-    this.ttsSendAnalyticsEvent('Start', null, this.ttsEngine.opts.bookLanguage || 'null');
+    this.ttsSendAnalyticsEvent('Start');
     this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
 };
 
@@ -118,7 +118,7 @@ BookReader.prototype.ttsStart = function () {
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
     this.$('.BRicon.read').removeClass('unread');
-    this.ttsSendAnalyticsEvent('Stop', null, this.ttsEngine.opts.bookLanguage || 'null');
+    this.ttsSendAnalyticsEvent('Stop');
     this.ttsEngine.stop();
     this.ttsRemoveHilites();
     this.removeProgressPopup();
@@ -139,10 +139,8 @@ BookReader.prototype.ttsBeforeChunkPlay = function(chunk) {
 /**
  * @param {PageChunk} chunk
  */
-BookReader.prototype.ttsAfterChunkPlay = function(chunk) {
-    // FIXME @cdrini always log the reading language as English for now since that's all
-    // Festival supports. Change this once WebTTSEngine is added.
-    this.ttsSendAnalyticsEvent('ChunkFinished-Words', approximateWordCount(chunk.text), 'en-US');
+BookReader.prototype.ttsSendChunkFinishedAnalyticsEvent = function(chunk) {
+    this.ttsSendAnalyticsEvent('ChunkFinished-Words', approximateWordCount(chunk.text));
 };
 
 /**
@@ -272,13 +270,14 @@ BookReader.prototype.ttsRemoveHilites = function () {
 
 /**
  * @private
+ * Send an analytics event with an optional value. Also attaches the book's language.
  * @param {string} action
  * @param {number} [value]
- * @param {string} [mediaLanguage] this can mean different things in different contexts
  */
-BookReader.prototype.ttsSendAnalyticsEvent = function(action, value, mediaLanguage) {
+BookReader.prototype.ttsSendAnalyticsEvent = function(action, value) {
     if (this.archiveAnalyticsSendEvent) {
         const extraValues = {};
+        const mediaLanguage = this.ttsEngine.opts.bookLanguage;
         if (mediaLanguage) extraValues.mediaLanguage = mediaLanguage;
         this.archiveAnalyticsSendEvent('BRReadAloud', action, value, extraValues);
     }
