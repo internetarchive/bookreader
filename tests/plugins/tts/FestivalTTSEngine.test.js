@@ -2,6 +2,7 @@ import '../../../BookReader/jquery-1.10.1.js';
 import '../../../BookReader/jquery.browser.min.js';
 import FestivalTTSEngine from '../../../src/js/plugins/tts/FestivalTTSEngine.js';
 import sinon from 'sinon';
+import { afterEventLoop } from '../../utils.js';
 /** @typedef {import('../../../src/js/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
 
 describe('iOSCaptureUserIntentHack', () => {
@@ -38,8 +39,8 @@ describe('misc', () => {
         }]);
         engine.start(0, 5);
 
-        // because things happen in callbacks, need to run code at end of callback loop
-        return wait0()
+        // because things happen in callbacks, need to run code at end of the JS event loop
+        return afterEventLoop()
         .then(() => {
             expect(sm.createSound.callCount).toBe(1);
             expect(engine.fetchPageChunks.callCount).toBe(5);
@@ -67,11 +68,3 @@ const DUMMY_TTS_ENGINE_OPTS = {
     onDone() {},
     beforeChunkPlay() { return Promise.resolve(); },
 };
-
-/**
- * Run code after all enqueued callback have been run
- * @return {Promise}
- */
-function wait0() {
-    return new Promise(res => setTimeout(res, 0));
-}
