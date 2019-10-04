@@ -48,6 +48,15 @@ BookReader.eventNames = {
     fragmentChange: 'fragmentChange',
     PostInit: 'PostInit',
     stop: 'stop',
+    resize: 'resize',
+    // menu click events
+    fullscreenToggled: 'fullscreenToggled',
+    zoomOut: 'zoomOut',
+    zoomIn: 'zoomIn',
+    '1PageViewSelected': '1PageViewSelected',
+    '2PageViewSelected': '2PageViewSelected',
+    /* currently 3 represents thumbnail view */
+    '3PageViewSelected': '3PageViewSelected',
 };
 
 BookReader.defaultOptions = {
@@ -546,9 +555,9 @@ BookReader.prototype.init = function() {
     $(window).bind('resize', this, function(e) {
         e.data.resize();
     });
-    $(window).bind("orientationchange", this, function(e) {
+    $(window).on("orientationchange", this, function(e) {
         e.data.resize();
-    });
+    }.bind(this));
 
     if (this.protected) {
         $(document).on('contextmenu dragstart', '.BRpagediv1up', function() {
@@ -628,6 +637,7 @@ BookReader.prototype.resize = function() {
           }
       }
   }
+  this.trigger(BookReader.eventNames.resize);
 };
 
 /**
@@ -762,9 +772,9 @@ BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
 
 BookReader.prototype.drawLeafsOnePage = function() {
     var containerHeight = this.refs.$brContainer.height();
+    var containerWidth = this.refs.$brPageViewEl.width();
     var scrollTop = this.refs.$brContainer.prop('scrollTop');
     var scrollBottom = scrollTop + containerHeight;
-    var viewWidth = this.refs.$brContainer.prop('scrollWidth');
 
     var indicesToDisplay = [];
     var index;
@@ -817,13 +827,13 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
         if (BookReader.util.notInArray(indicesToDisplay[i], this.displayedIndices)) {
             var width = parseInt(this._getPageWidth(index)/this.reduce);
+            var leftMargin = parseInt((containerWidth - width) / 2);
+
             var div = document.createElement('div');
             div.className = 'BRpagediv1up pagediv' + index;
             div.style.position = "absolute";
             div.style.top = leafTop + 'px';
-            var left = (viewWidth-width)>>1;
-            if (left<0) left = 0;
-            div.style.left = left + 'px';
+            div.style.left = leftMargin + 'px';
             div.style.width = width + 'px';
             div.style.height = height + 'px';
 
@@ -1662,6 +1672,8 @@ BookReader.prototype.switchMode = function(mode, options) {
     if (!options || options.suppressFragmentChange === false) {
       this.trigger(BookReader.eventNames.fragmentChange);
     }
+    var eventName = mode + 'PageViewSelected';
+    this.trigger(BookReader.eventNames[eventName]);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -1693,6 +1705,7 @@ BookReader.prototype.toggleFullscreen = function() {
     } else {
         this.enterFullscreen();
     }
+    this.trigger('fullscreenToggled');
 };
 
 BookReader.prototype.enterFullscreen = function() {
@@ -1712,7 +1725,7 @@ BookReader.prototype.enterFullscreen = function() {
     this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
 
     this._fullscreenCloseHandler = function (e) {
-        if (e.keyCode === 27) this.exitFullScreen();
+        if (e.keyCode === 27) this.toggleFullscreen();
     }.bind(this);
     $(document).keyup(this._fullscreenCloseHandler);
 };
@@ -3583,12 +3596,14 @@ BookReader.prototype.bindNavigationHandlers = function() {
     jIcons.filter('.zoom_in').bind('click', function() {
         self.trigger(BookReader.eventNames.stop);
         self.zoom(1);
+        self.trigger(BookReader.eventNames.zoomIn);
         return false;
     });
 
     jIcons.filter('.zoom_out').bind('click', function() {
         self.trigger(BookReader.eventNames.stop);
         self.zoom(-1);
+        self.trigger(BookReader.eventNames.zoomOut);
         return false;
     });
 
@@ -3696,9 +3711,9 @@ BookReader.prototype.unbindNavigationHandlers = function() {
  */
 BookReader.prototype.navigationMousemoveHandler = function(event) {
     // $$$ possibly not great to be calling this for every mousemove
-
     if (event.data['br'].uiAutoHide) {
-        // TODO look into these magic numbers: 75 and 76
+        // 77px is an approximate height of the Internet Archive Top Nav
+        // 75 & 76 (pixels) provide used in this context is checked againt the IA top nav height
         var navkey = $(document).height() - 75;
         if ((event.pageY < 76) || (event.pageY > navkey)) {
             // inside or near navigation elements
@@ -3853,7 +3868,7 @@ BookReader.prototype.bindMozTouchHandlers = function() {
  */
 BookReader.prototype.navigationIsVisible = function() {
     // $$$ doesn't account for transitioning states, nav must be fully visible to return true
-    var toolpos = this.refs.$BRtoolbar.offset();
+    var toolpos = this.refs.$BRtoolbar.position();
     var tooltop = toolpos.top;
     return tooltop == 0;
 };
