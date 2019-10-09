@@ -1,4 +1,3 @@
-import 'es6-promise/auto';
 import langs from 'iso-language-codes/js/data.js';
 
 /**

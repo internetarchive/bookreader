@@ -1,4 +1,3 @@
-import 'es6-promise/auto';
 import AsyncStream from './AsyncStream.js';
 
 /**

@@ -1,4 +1,3 @@
-import 'es6-promise/auto';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 
 /**
