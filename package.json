@@ -20,8 +20,6 @@
   },
   "homepage": "https://github.com/internetarchive/bookreader#readme",
   "dependencies": {
-    "es6-promise": "^4.2.8",
-    "iso-language-codes": "^1.0.5",
     "jquery": "^3.4.1"
   },
   "private": true,
@@ -31,7 +29,9 @@
     "@types/jest": "^24.0.15",
     "babel-loader": "^8.0.6",
     "codecov": "^3.5.0",
+    "es6-promise": "^4.2.8",
     "eslint": "^5.16.0",
+    "iso-language-codes": "^1.0.5",
     "jest": "^24.8.0",
     "qunit": "^2.9.2",
     "sass": "^1.22.12",
@@ -48,7 +48,6 @@
     "preversion": "npm run test",
     "version": "node scripts/version.js",
     "postversion": "node scripts/postversion.js",
-    "postinstall": "npm run build",
     "build": "npx webpack && npx sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
     "eslint": "eslint ./BookReader/BookReader.js",
     "lint": "eslint \"./**/*.js\"",
