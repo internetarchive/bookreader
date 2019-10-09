@@ -1,3 +1,8 @@
+# 4.3.0
+- New plugin, `fullscreen_menu_toggle`, allowing center-tap to hide UI
+- TTS Plugin logs analytics events (if enabled)
+- ES6 compilation step no longer performed on client; build files are included in repo so clients have no build step
+
 # 4.2.5
 - Large refactor of plugin.tts.js
 - ES6 compliation step
