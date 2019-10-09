@@ -120,6 +120,10 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 
 The source JavaScript is written in ES6 (located in the `src/js` directory) and in ES5 (located in `BookReader`). To build the JS run `npx webpack` (`npx webpack --watch` will auto-build when the files are saved). To build the CSS and the JS, use `npm run build`.
 
+## Releases
+
+To version bump the repo and prepare a release, run `npm version major|minor|patch` (following [semver](https://semver.org/)), then (something like) `git push origin HEAD --tags`. It'll automatically update the version number where it appears.
+
 ## Tests
 
 Tests use [QUnit](https://qunitjs.com/). To run all tests, start up an HTTP server at the root of the project and navigate to `/tests/qunit.html` in a browser.
