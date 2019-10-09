@@ -1,5 +1,3 @@
-import 'es6-promise/auto';
-
 /**
  * @export
  * The underlying object wrapped each stream's elements. (Based on

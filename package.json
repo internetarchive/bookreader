@@ -29,7 +29,7 @@
     "@types/jest": "^24.0.15",
     "babel-loader": "^8.0.6",
     "codecov": "^3.5.0",
-    "es6-promise": "^4.2.8",
+    "core-js": "^3.2.1",
     "eslint": "^5.16.0",
     "iso-language-codes": "^1.0.5",
     "jest": "^24.8.0",

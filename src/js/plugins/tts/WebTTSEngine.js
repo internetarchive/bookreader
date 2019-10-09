@@ -1,8 +1,6 @@
-import 'es6-promise/auto';
+
 import { isChrome, sleep } from './utils.js';
-import { auto } from './polyfills.js';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
-auto();
 
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
