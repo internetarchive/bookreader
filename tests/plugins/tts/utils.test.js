@@ -1,3 +1,5 @@
+import sinon from 'sinon';
+import { afterEventLoop } from '../../utils.js';
 import * as utils from '../../../src/js/plugins/tts/utils.js';
 
 describe('approximateWordCount', () => {
@@ -6,6 +8,10 @@ describe('approximateWordCount', () => {
     test('Empties', () => {
         expect(approximateWordCount('')).toBe(0);
         expect(approximateWordCount('    ')).toBe(0);
+    });
+
+    test('Spaceless', () => {
+        expect(approximateWordCount('supercalifragilisticexpialidocious')).toBe(1);
     });
 
     test('Basic', () => {
@@ -25,6 +31,31 @@ describe('approximateWordCount', () => {
     test('Realword examples', () => {
         expect(approximateWordCount("Albert\u2019s cats had a .large blue dish of milk for breakfast.")).toBe(11);
         expect(approximateWordCount("FARM FOLK O nce upon a time there was a sturdy little boy who lived in Belgium. Every morning after he milked the cows, he gave his cats a large blue dish of milk for breakfast.")).toBe(36);
+    });
+});
+
+describe('sleep', () => {
+    const { sleep } = utils;
+
+    test('Sleep 0 doest not called immediately', () => {
+        const spy = sinon.spy();
+        sleep(0).then(spy);
+        expect(spy.callCount).toBe(0);
+        return afterEventLoop()
+        .then(() => expect(spy.callCount).toBe(1));
+    });
+
+    test('Waits the appropriate ms', () => {
+        const clock = sinon.useFakeTimers();
+        const spy = sinon.spy();
+        sleep(10).then(spy);
+        expect(spy.callCount).toBe(0);
+        clock.tick(10);
+        expect(spy.callCount).toBe(0);
+        clock.restore();
+
+        return afterEventLoop()
+        .then(() => expect(spy.callCount).toBe(1));
     });
 });
 
