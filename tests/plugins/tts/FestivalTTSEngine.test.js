@@ -3,6 +3,7 @@ import '../../../BookReader/jquery.browser.min.js';
 import FestivalTTSEngine from '../../../src/js/plugins/tts/FestivalTTSEngine.js';
 import sinon from 'sinon';
 import { afterEventLoop } from '../../utils.js';
+import { DUMMY_TTS_ENGINE_OPTS } from './AbstractTTSEngine.test.js';
 /** @typedef {import('../../../src/js/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
 
 describe('iOSCaptureUserIntentHack', () => {
@@ -57,15 +58,3 @@ function createMockSound() {
         destruct: sinon.stub(),
     };
 }
-
-/** @type {TTSEngineOptions} */
-const DUMMY_TTS_ENGINE_OPTS = {
-    server: 'blah',
-    bookPath: 'blah',
-    bookLanguage: 'blah',
-    onLoadingStart() {},
-    onLoadingComplete() {},
-    onDone() {},
-    beforeChunkPlay() { return Promise.resolve(); },
-    afterChunkPlay() {},
-};
