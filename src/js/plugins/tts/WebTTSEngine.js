@@ -20,6 +20,9 @@ export default class WebTTSEngine extends AbstractTTSEngine {
     }
 
     /** @override */
+    getVoices() { return speechSynthesis.getVoices(); }
+
+    /** @override */
     createSound(chunk) {
         return new WebTTSSound(chunk.text);
     }
@@ -35,17 +38,20 @@ class WebTTSSound {
         this.loaded = true;
         this.rate = 1;
         this._charIndex = 0;
+        /** @type {SpeechSynthesisVoice} */
+        this.voice = null;
     }
 
     load(onload) {
         this.sound = new SpeechSynthesisUtterance(this.text.slice(this._charIndex));
-        this.sound.voice = speechSynthesis.getVoices().find(v => v.default);
+        this.sound.voice = this.voice;
         this.sound.rate = this.rate;
         onload && onload();
     }
 
     play() {
         const endPromise = new Promise(res => this.sound.onend = res);
+        this.sound.voice = this.voice;
         this.sound.rate = this.rate;
         speechSynthesis.speak(this.sound);
 
