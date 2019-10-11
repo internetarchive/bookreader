@@ -128,7 +128,11 @@ BookReader.defaultOptions = {
     bookUrlText: null,
     bookUrlTitle: null,
     enableBookTitleLink: true,
-    /** @type {string} language in ISO 639-1 (PRIVATE: languages in other formats) */
+    /**
+     * @type {string} language in ISO 639-1 (PRIVATE: Will also
+     * handle language name in English, native name, 639-2/T, or 639-2/B . (archive.org books
+     * appear to use 639-2/B ? But I don't think that's a guarantee). See
+     * https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes ) */
     bookLanguage: null,
 
     // Fields used to populate the info window

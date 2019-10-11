@@ -1,4 +1,5 @@
 import AsyncStream from './AsyncStream.js';
+/** @typedef {import('./utils.js').ISO6391} ISO6391 */
 
 /**
  * @export
@@ -14,10 +15,7 @@ import AsyncStream from './AsyncStream.js';
  * @typedef {Object} TTSEngineOptions 
  * @property {String} server
  * @property {String} bookPath
- * @property {String?} bookLanguage language in ISO 639-1. (PRIVATE: Will also
- * handle language name in English, native name, 639-2/T, or 639-2/B . (archive.org books
- * appear to use 639-2/B ? But I don't think that's a guarantee). See
- * https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes )
+ * @property {ISO6391} bookLanguage
  * @property {Function} onLoadingStart
  * @property {Function} onLoadingComplete
  * @property {Function} onDone called when the entire book is done
@@ -34,6 +32,7 @@ import AsyncStream from './AsyncStream.js';
  * @typedef {Object} AbstractTTSSound
  * @property {boolean} loaded
  * @property {number} rate
+ * @property {SpeechSynthesisVoice} voice
  * @property {(callback: Function) => void} load
  * @property {() => PromiseLike} play
  * @property {() => void} stop
@@ -57,6 +56,8 @@ export default class AbstractTTSEngine {
         /** @type {AbstractTTSSound} */
         this.activeSound = null;
         this.playbackRate = 1;
+        /** @type {SpeechSynthesisVoice} */
+        this.voice = AbstractTTSEngine.getBestVoice(this.getVoices(), this.opts.bookLanguage);
     }
 
     /**
@@ -64,6 +65,12 @@ export default class AbstractTTSEngine {
      * @return {boolean}
      */
     static isSupported() { return false; }
+
+    /**
+     * @abstract
+     * @return {SpeechSynthesisVoice[]}
+     */
+    getVoices() { throw new Error("Unimplemented abstract class"); }
 
     /** @abstract */
     init() { return null; }
@@ -85,6 +92,7 @@ export default class AbstractTTSEngine {
             this.opts.onLoadingStart();
             chunk.sound = this.createSound(chunk);
             chunk.sound.rate = this.playbackRate;
+            chunk.sound.voice = this.voice;
             chunk.sound.load(() => this.opts.onLoadingComplete());
             return chunk;
         });
@@ -188,5 +196,30 @@ export default class AbstractTTSEngine {
                 });
             }
         );
+    }
+
+    /**
+     * @private
+     * @param {SpeechSynthesisVoice[]} voices
+     * @param {ISO6391} bookLanguage
+     * @return {SpeechSynthesisVoice | undefined}
+     */
+    static getBestVoice(voices, bookLanguage) {
+        const possibleVoices = voices.filter(v => v.lang.startsWith(bookLanguage));
+        // Sample navigator.languages: ["en-CA", "fr-CA", "fr", "en-US", "en", "de-DE", "de"]
+        const userLanguages = navigator.languages || navigator.language ? [navigator.language] : [];
+        const matchingUserLanguages = userLanguages.filter(lang => lang.startsWith(bookLanguage));
+        if (matchingUserLanguages.length) {
+            let voice = null;
+            matchingUserLanguages.forEach(userLang => {
+                const matchingVoices = possibleVoices.filter(v => v.lang.startsWith(userLang));
+                if (matchingVoices.length) {
+                    voice = matchingVoices.find(v => v.default) || matchingVoices[0];
+                    return;
+                }
+            });
+            if (voice) return voice;
+        }
+        return possibleVoices.find(v => v.default) || possibleVoices[0];
     }
 }

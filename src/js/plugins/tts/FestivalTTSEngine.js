@@ -21,6 +21,13 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     }
 
     /** @override */
+    getVoices() {
+        return [
+            { default: true, lang: "en-US", localService: false, name: "Festival - English (US)", voiceURI: null }
+        ];
+    }
+
+    /** @override */
     init() {
         // setup sound manager
         soundManager.setup({
