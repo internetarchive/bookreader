@@ -33,10 +33,13 @@ import AsyncStream from './AsyncStream.js';
 /**
  * @typedef {Object} AbstractTTSSound
  * @property {boolean} loaded
+ * @property {number} rate
  * @property {(callback: Function) => void} load
  * @property {() => PromiseLike} play
  * @property {() => void} stop
  * @property {() => void} pause
+ * @property {() => void} resume
+ * @property {number => void} setPlaybackRate
  **/
 
 /** Handling bookreader's text-to-speech */
@@ -51,6 +54,9 @@ export default class AbstractTTSEngine {
         this.opts = options;
         /** @type {AsyncStream<PageChunk>} */
         this.chunkStream = null;
+        /** @type {AbstractTTSSound} */
+        this.activeSound = null;
+        this.playbackRate = 1;
     }
 
     /**
@@ -78,6 +84,7 @@ export default class AbstractTTSEngine {
         .map(chunk => {
             this.opts.onLoadingStart();
             chunk.sound = this.createSound(chunk);
+            chunk.sound.rate = this.playbackRate;
             chunk.sound.load(() => this.opts.onLoadingComplete());
             return chunk;
         });
@@ -102,6 +109,12 @@ export default class AbstractTTSEngine {
     resume() {
         this.paused = false;
         if (this.activeSound) this.activeSound.resume();
+    }
+
+    /** @param {number} newRate */
+    setPlaybackRate(newRate) {
+        this.playbackRate = newRate;
+        if (this.activeSound) this.activeSound.setPlaybackRate(newRate);
     }
 
     /**
@@ -134,7 +147,6 @@ export default class AbstractTTSEngine {
     /**
      * @abstract
      * @param {PageChunk} chunk
-     * @param {AbstractTTSSound} chunk 
      */
     createSound(chunk) { throw new Error("Unimplemented abstract class"); }
 

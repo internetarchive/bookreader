@@ -1,11 +1,9 @@
 
 import { isChrome, sleep } from './utils.js';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
-
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
 /** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
-/** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
 
 /**
  * @extends AbstractTTSEngine
@@ -35,16 +33,20 @@ class WebTTSSound {
         /** @type {SpeechSynthesisUtterance} */
         this.sound = null;
         this.loaded = true;
+        this.rate = 1;
+        this._charIndex = 0;
     }
 
     load(onload) {
-        this.sound = new SpeechSynthesisUtterance(this.text);
+        this.sound = new SpeechSynthesisUtterance(this.text.slice(this._charIndex));
         this.sound.voice = speechSynthesis.getVoices().find(v => v.default);
-        onload();
+        this.sound.rate = this.rate;
+        onload && onload();
     }
 
     play() {
         const endPromise = new Promise(res => this.sound.onend = res);
+        this.sound.rate = this.rate;
         speechSynthesis.speak(this.sound);
 
         if (isChrome() && !this.sound.voice.localService) {
@@ -56,6 +58,32 @@ class WebTTSSound {
     stop() { speechSynthesis.cancel(); }
     pause() { speechSynthesis.pause(); }
     resume() { speechSynthesis.resume(); }
+
+    setPlaybackRate(rate) {
+        new Promise(res => {
+            this.sound.onpause = res;
+            this.pause();
+        }).then(/** @param {SpeechSynthesisEvent} ev */ev => {
+            // 'steal' the onend event so the promise doesn't resolve
+            let onend = this.sound ? this.sound.onend : null;
+            if (this.sound) this.sound.onend = null;
+
+            this.stop();
+            
+            // Reload the audio at the new position
+            this.rate = rate;
+            // Browser support for this is mixed, but it degrades
+            // to restarted the chunk if it doesn't exist, and that's
+            // ok
+            this._charIndex += ev.charIndex || 0;
+            this.load();
+
+            // return the promise resolver
+            this.sound.onend = onend;
+
+            speechSynthesis.speak(this.sound);
+        })
+    }
 
     /**
      * @private

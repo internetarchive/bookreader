@@ -92,6 +92,7 @@ class FestivalTTSSound {
         this.soundUrl = soundUrl;
         /** @type {SMSound} */
         this.sound = null;
+        this.rate = 1;
     }
 
     get loaded() {
@@ -102,18 +103,25 @@ class FestivalTTSSound {
         this.sound = soundManager.createSound({
             url: this.soundUrl,
             // API recommended, but only fires once play started on safari
-            onload
+            onload,
         }).load();
     }
 
     play() {
-        return new Promise(res => this.sound.play({ onfinish: res }))
+        return new Promise(res => this.sound.play({
+            playbackRate: this.rate,
+            onfinish: res,
+        }))
         .then(() => this.sound.destruct());
     }
 
     stop() { this.sound.stop(); }
     pause() { this.sound.pause(); }
     resume() { this.sound.resume(); }
+    setPlaybackRate(rate) {
+        this.rate = rate;
+        this.sound.setPlaybackRate(rate);
+    }
 }
 
 /** Needed to capture the audio context for iOS hack. Generated using Audacity. */
