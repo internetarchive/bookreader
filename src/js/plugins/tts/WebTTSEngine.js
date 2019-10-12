@@ -29,13 +29,13 @@ export default class WebTTSEngine extends AbstractTTSEngine {
 }
 
 /** @extends AbstractTTSSound */
-class WebTTSSound {
+export class WebTTSSound {
     /** @param {string} text **/
     constructor(text) {
         this.text = text;
         /** @type {SpeechSynthesisUtterance} */
         this.sound = null;
-        this.loaded = true;
+        this.loaded = false;
         this.rate = 1;
         this._charIndex = 0;
         /** @type {SpeechSynthesisVoice} */
@@ -46,6 +46,7 @@ class WebTTSSound {
         this.sound = new SpeechSynthesisUtterance(this.text.slice(this._charIndex));
         this.sound.voice = this.voice;
         this.sound.rate = this.rate;
+        this.loaded = true;
         onload && onload();
     }
 
@@ -55,7 +56,10 @@ class WebTTSSound {
         this.sound.rate = this.rate;
         speechSynthesis.speak(this.sound);
 
-        if (isChrome() && !this.sound.voice.localService) {
+        // Note this could be local; if voice is null/undefined browser
+        // uses the default, but to be safe we check it directly
+        const isLocalVoice = this.sound.voice && this.sound.voice.localService;
+        if (isChrome() && !isLocalVoice) {
             return this._chromePausingBugFix(endPromise);
         }
         else return endPromise;
@@ -66,6 +70,11 @@ class WebTTSSound {
     resume() { speechSynthesis.resume(); }
 
     setPlaybackRate(rate) {
+        if (!this.sound) {
+            this.rate = rate;
+            return;
+        }
+
         new Promise(res => {
             this.sound.onpause = res;
             this.pause();
@@ -76,11 +85,9 @@ class WebTTSSound {
 
             this.stop();
             
-            // Reload the audio at the new position
             this.rate = rate;
-            // Browser support for this is mixed, but it degrades
-            // to restarted the chunk if it doesn't exist, and that's
-            // ok
+            // Browser support for this is mixed, but it degrades to
+            // restarting the chunk if it doesn't exist, and that's ok
             this._charIndex += ev.charIndex || 0;
             this.load();
 
@@ -88,7 +95,7 @@ class WebTTSSound {
             this.sound.onend = onend;
 
             speechSynthesis.speak(this.sound);
-        })
+        });
     }
 
     /**
