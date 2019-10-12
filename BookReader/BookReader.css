@@ -1157,17 +1157,175 @@ i.BRicon {
 /**
  * BRnav is the bottom control bar (eg footer)
  */
-.BRnav {
-  box-sizing: border-box;
+.BRlowertoolbar {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  /* important so it overlays over the book pages when showing */
+  z-index: 3;
+}
+
+.BRReadAloudToolbar {
+  display: flex;
+  justify-content: center;
+  margin: 10px;
+  border-radius: 100px;
+  margin-top: 0;
+  width: 200px;
+  align-self: center;
+  background-color: #818181;
+  color: white;
+  /* Full mobile styles */
+}
+.BRReadAloudToolbar a {
+  color: white;
+}
+.BRReadAloudToolbar .BRpager {
+  background-color: #4D4D4D;
+}
+.BRReadAloudToolbar .BRpager .ui-slider-handle {
+  background-color: white;
+}
+.BRReadAloudToolbar .BRpager .ui-slider-range {
+  background-color: rgba(255, 255, 255, 0.59);
+}
+.BRReadAloudToolbar .BRpage .BRicon {
+  border-left: 1px solid #4D4D4D;
+}
+.BRReadAloudToolbar .BRnavCntl {
+  z-index: 6;
+  background-color: #4D4D4D;
+}
+.BRReadAloudToolbar .BRnavCntlBtm:hover {
+  background-color: #0074D1;
+}
+.BRReadAloudToolbar.BRnavEmbed {
+  background-color: white;
+  color: black;
+}
+.BRReadAloudToolbar.BRnavEmbed a {
+  color: black;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpager {
+  background-color: #B7B7B7;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpager .ui-slider-handle {
+  background-color: #0074D1;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpager .ui-slider-range {
+  background-color: rgba(0, 116, 209, 0.25);
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpage .BRicon {
+  border-left: 1px solid #979797;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRnavCntl {
+  background-color: #979797;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRnavCntlBtm:hover {
+  background-color: #0074D1;
+}
+@media (max-width: 800px) {
+  .BRReadAloudToolbar {
+    height: 40px;
+    box-shadow: 0px -1px 3px 0px rgba(102, 102, 102, 0.25);
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar {
+    background-color: white;
+    color: black;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar a, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar a {
+    color: black;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager {
+    background-color: #B7B7B7;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager .ui-slider-handle, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager .ui-slider-handle {
+    background-color: #0074D1;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager .ui-slider-range, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager .ui-slider-range {
+    background-color: rgba(0, 116, 209, 0.25);
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpage .BRicon, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpage .BRicon {
+    border-left: 1px solid #979797;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRnavCntl, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRnavCntl {
+    background-color: #979797;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRnavCntlBtm:hover, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRnavCntlBtm:hover {
+    background-color: #0074D1;
+  }
+}
+.BRReadAloudToolbar--controls {
+  display: flex;
+  padding-right: 48px;
+}
+.BRReadAloudToolbar--controls > * {
+  height: 100%;
+}
+.BRReadAloudToolbar .icon {
+  width: 48px;
+  height: 48px;
+}
+.BRReadAloudToolbar button {
+  padding: 0px;
+  margin: 0px;
+  border: 0px none;
+  box-sizing: border-box;
+  background: transparent none repeat scroll 0% 0%;
+  display: block;
+}
+.BRReadAloudToolbar .playback-rate-container {
+  width: 48px;
+  height: 48px;
+  position: relative;
+}
+.BRReadAloudToolbar .playback-rate-container .icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  padding-bottom: 1.1em;
+}
+.BRReadAloudToolbar .playback-rate-container select {
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  font-size: 0.8em;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  text-align: center;
+  text-align-last: center;
+  /* Chrome */
+  padding-top: 64%;
+  padding-left: 10%;
+  padding-right: 10%;
+  color: #333;
+  background: transparent;
+  /* IE */
+}
+.BRReadAloudToolbar .playback-rate-container select::-ms-expand {
+  display: none;
+}
+.BRReadAloudToolbar button:hover, .BRReadAloudToolbar .playback-rate-container:hover {
+  background: rgba(50, 50, 50, 0.2);
+}
+
+.BRnav {
+  box-sizing: border-box;
   height: 34px;
   padding-top: 0;
   overflow: visible;
-  /* important so it overlays over the book pages when showing */
-  z-index: 3;
   display: block;
   display: flex;
   flex-direction: row;

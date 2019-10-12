@@ -71,19 +71,19 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
         if (this.options.enableTtsPlugin && this.ttsEngine) {
-            $el.find('.BRmobileMenu__moreInfoRow').after($(
-                "    <li>"
-                +"      <span>"
-                +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_speaker_open.svg\" alt=\"info-speaker\"/></span>"
-                +"        Read Aloud"
-                +"      </span>"
-                +"      <div>"
-                +"        <span class='larger'>Press to toggle read aloud</span> <br/>"
-                +"        <button class='BRicon read'></button>"
-                +"      </div>"
-                +"    </li>"
-            ));
-        }
+            $el.find('.BRmobileMenu__moreInfoRow').after($(`
+                <li>
+                    <span>
+                        <span class="DrawerIconWrapper "><img class="DrawerIcon" src="${this.imagesBaseURL}icon_speaker_open.svg" alt="info-speaker"/></span>
+                        Read Aloud
+                    </span>
+                    <div>"
+                        <span class="larger">Press to toggle read aloud</span>
+                        <br/>
+                        <button class="BRicon read"></button>"
+                    </div>"
+                </li>`));
+        };
         return $el;
     };
 })(BookReader.prototype.buildMobileDrawerElement);
@@ -92,8 +92,33 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 BookReader.prototype.initNavbar = (function (super_) {
     return function () {
         var $el = super_.call(this);
-        var readIcon = '';
         if (this.options.enableTtsPlugin && this.ttsEngine) {
+            this.refs.$BRReadAloudToolbar = $(`
+                <div class="BRReadAloudToolbar" style="display:none">
+                    <div class="BRReadAloudToolbar--controls">
+                        <div class="playback-rate-container">
+                            <img class="icon" src="${this.imagesBaseURL}icon_playback-rate.svg" alt="Playback Rate"/>
+                            <select name="BRReadAloud-rate">
+                                <option value="0.25">0.25x</option>
+                                <option value="0.5">0.5x</option>
+                                <option value="0.75">0.75x</option>
+                                <option value="1.0" selected>1.0x</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="1.75">1.75x</option>
+                                <option value="2">2x</option>
+                            </select>
+                        </div>
+                        <button class="play" style="display:none"><img class="icon" src="${this.imagesBaseURL}icon_play.svg" alt="Playback Rate"/></button>
+                        <button class="pause"><img class="icon" src="${this.imagesBaseURL}icon_pause.svg" alt="Playback Rate"/></button>
+                    </div>
+                </div>
+            `);
+            this.refs.$BRReadAloudToolbar.insertBefore($el);
+            this.refs.$BRReadAloudToolbar.find('.play').click(this.ttsPlayPause.bind(this));
+            this.refs.$BRReadAloudToolbar.find('.pause').click(this.ttsPlayPause.bind(this));
+            this.refs.$BRReadAloudToolbar.RateSelector = this.refs.$BRReadAloudToolbar.find('select[name="BRReadAloud-rate"]');
+            this.refs.$BRReadAloudToolbar.RateSelector.change(ev => this.ttsEngine.setPlaybackRate(parseFloat(this.refs.$BRReadAloudToolbar.RateSelector.val())));
             $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
         }
         return $el;
@@ -117,14 +142,28 @@ BookReader.prototype.ttsStart = function () {
     if (this.constModeThumb == this.mode)
         this.switchMode(this.constMode1up);
 
+    this.refs.$BRReadAloudToolbar.show();
     this.$('.BRicon.read').addClass('unread');
     this.ttsSendAnalyticsEvent('Start');
     this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
 };
 
+BookReader.prototype.ttsPlayPause = function() {
+    if (this.ttsEngine.paused) {
+        this.$('.BRReadAloudToolbar .play').hide();
+        this.$('.BRReadAloudToolbar .pause').show();
+        this.ttsEngine.resume();
+    } else {
+        this.$('.BRReadAloudToolbar .play').show();
+        this.$('.BRReadAloudToolbar .pause').hide();
+        this.ttsEngine.pause();
+    }
+};
+
 // ttsStop()
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
+    this.refs.$BRReadAloudToolbar.hide();
     this.$('.BRicon.read').removeClass('unread');
     this.ttsSendAnalyticsEvent('Stop');
     this.ttsEngine.stop();

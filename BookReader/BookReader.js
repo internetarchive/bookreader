@@ -3181,6 +3181,7 @@ BookReader.prototype.initNavbar = function() {
         navbarTitleHtml = "<div class=\"BRnavTitle\">" + this.options.navbarTitle + "</div>";
     }
 
+    this.refs.$BRlowertoolbar = $('<div class="BRlowertoolbar"></div>');
     this.refs.$BRnav = $(
         "<div class=\"BRnav BRnavDesktop\">"
         +"  <div class=\"BRnavCntl BRnavCntlBtm BRdn js-tooltip\" title=\"Toogle toolbars\"></div>"
@@ -3200,15 +3201,16 @@ BookReader.prototype.initNavbar = function() {
         +     "<button class=\"BRicon twopg desktop-only js-tooltip\"></button>"
         +     "<button class=\"BRicon thumb desktop-only js-tooltip\"></button>"
 
-        // zoomx`
+        // zoomx
         +     "<button class='BRicon zoom_out desktop-only js-tooltip'></button>"
         +     "<button class='BRicon zoom_in desktop-only js-tooltip'></button>"
         +     "<button class='BRicon full js-tooltip'></button>"
         +"  </div>"
         +"</div>"
     );
+    this.refs.$BRlowertoolbar.append(this.refs.$BRnav);
 
-    this.refs.$br.append(this.refs.$BRnav);
+    this.refs.$br.append(this.refs.$BRlowertoolbar);
 
     var self = this;
     this.$('.BRpager').slider({
