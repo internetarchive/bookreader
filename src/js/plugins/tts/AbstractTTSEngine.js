@@ -64,7 +64,7 @@ export default class AbstractTTSEngine {
      * @abstract
      * @return {boolean}
      */
-    static isSupported() { return false; }
+    static isSupported() { throw new Error("Unimplemented abstract class"); }
 
     /**
      * @abstract
@@ -202,23 +202,23 @@ export default class AbstractTTSEngine {
      * @private
      * @param {SpeechSynthesisVoice[]} voices
      * @param {ISO6391} bookLanguage
+     * @param {string[]} userLanguages languages in BCP47 format (e.g. en-US). Ordered by preference.
      * @return {SpeechSynthesisVoice | undefined}
      */
-    static getBestVoice(voices, bookLanguage) {
+    static getBestVoice(voices, bookLanguage, userLanguages=navigator.languages) {
         const possibleVoices = voices.filter(v => v.lang.startsWith(bookLanguage));
         // Sample navigator.languages: ["en-CA", "fr-CA", "fr", "en-US", "en", "de-DE", "de"]
-        const userLanguages = navigator.languages || navigator.language ? [navigator.language] : [];
+        userLanguages = userLanguages || (navigator.language ? [navigator.language] : []);
         const matchingUserLanguages = userLanguages.filter(lang => lang.startsWith(bookLanguage));
         if (matchingUserLanguages.length) {
             let voice = null;
-            matchingUserLanguages.forEach(userLang => {
+            for (let userLang of matchingUserLanguages) {
                 const matchingVoices = possibleVoices.filter(v => v.lang.startsWith(userLang));
                 if (matchingVoices.length) {
                     voice = matchingVoices.find(v => v.default) || matchingVoices[0];
-                    return;
+                    return voice;
                 }
-            });
-            if (voice) return voice;
+            }
         }
         return possibleVoices.find(v => v.default) || possibleVoices[0];
     }
