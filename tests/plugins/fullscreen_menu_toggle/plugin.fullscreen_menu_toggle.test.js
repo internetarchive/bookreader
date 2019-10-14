@@ -1,5 +1,5 @@
 require('../../../BookReader/BookReader.js');
-require('../../../src/js/plugins/fullscreen_menu_toggle/plugin.fullscreen_menu_toggle.js');
+require('../../../src/js/plugins/menu_toggle/plugin.menu_toggle.js');
 
 let initializeSpy;
 beforeEach(() => {

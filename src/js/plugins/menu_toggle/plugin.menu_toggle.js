@@ -1,3 +1,4 @@
+
 /* global: $ */
 /**
  * Plugin for managing menu in full screen
