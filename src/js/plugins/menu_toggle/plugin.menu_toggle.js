@@ -35,7 +35,7 @@
     }
   
     var toggleMenuIfCenterClick = function toggleMenuIfCenterClick(br, e) {
-      var menuManager = br.fullscreenMenu;
+      var menuManager = br.menuToggle;
       var bookWidth = e.currentTarget.offsetWidth;
       var leftOffset = e.currentTarget.offsetLeft
       var bookEndPageFlipArea = Math.round(bookWidth / 3);
@@ -64,7 +64,7 @@
       }
     }
 
-    BookReader.prototype.initFullScreenToggle = function brInitFullScreenToggle(e) {
+    BookReader.prototype.initMenuToggle = function brInitMenuToggle(e) {
       $(document).on('BookReader:fullscreenToggled', function (e) {
         this.menuToggle.setupNavForToggle(this);
       }.bind(this));
@@ -91,7 +91,7 @@
     BookReader.prototype.setup = (function(super_) {
       return function(options) {
         super_.call(this, options);
-        this.fullscreenMenu = {
+        this.menuToggle = {
           menuIsShowing: true,
           setupNavForToggle: setupNavForToggle,
           removeToggleFromNav: removeToggleFromNav,
