@@ -17,15 +17,6 @@
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'none');
       registerEventHandlers(br);
-  
-      var timeoutHandler = function onEnterTimeoutHandler () {
-        br.hideNavigation();
-        var menuManager = br.fullscreenMenu;
-  
-        registerEventHandlers(br);
-        menuManager.menuIsShowing = false;
-      }
-      setTimeout(timeoutHandler, 500);
     }
   
     var removeToggleFromNav = function removeToggleFromNav (br) {
@@ -75,17 +66,11 @@
 
     BookReader.prototype.initFullScreenToggle = function brInitFullScreenToggle(e) {
       $(document).on('BookReader:fullscreenToggled', function (e) {
-        if (this.isFullscreen()) {
-          this.fullscreenMenu.onEnterFullscreen(this);
-        } else {
-          this.fullscreenMenu.onExitFullscreen(this);
-        }
+        this.menuToggle.setupNavForToggle(this);
       }.bind(this));
   
-      var fullscreenEventRegister = function fullscreenEventRegister (e) {
-        if (this.isFullscreen()) {
-          registerEventHandlers(this);
-        }
+      var menuToggleEventRegister = function menuToggleEventRegister (e) {
+        registerEventHandlers(this);
       }.bind(this);
   
       var eventsToHandle = [
@@ -96,8 +81,11 @@
         'BookReader:resize'
       ];
 
-      $(document).on(eventsToHandle.join(' '), fullscreenEventRegister);
-      $(window).on('orientationchange', fullscreenEventRegister);
+      $(document).on(eventsToHandle.join(' '), menuToggleEventRegister);
+      $(window).on('orientationchange', menuToggleEventRegister);
+      $(window).on('DOMContentLoaded', function setupNavAtFirstDraw(e) {
+        setupNavForToggle(this);
+      }.bind(this));
     };
 
     BookReader.prototype.setup = (function(super_) {
