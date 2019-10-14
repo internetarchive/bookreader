@@ -8,24 +8,24 @@
  * This is fired when user clicks on the fullscreen button on the menu
  */
 
-(function addMenuToggler () {
+(function addMenuToggler() {
     jQuery.extend(BookReader.defaultOptions, {
       enableMenuToggle: true
     });
   
-    function setupNavForToggle (br) {
+    function setupNavForToggle(br) {
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'none');
       registerEventHandlers(br);
     }
   
-    var removeToggleFromNav = function removeToggleFromNav (br) {
+    var removeToggleFromNav = function removeToggleFromNav(br) {
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'block');
       removeEventHandlers(br);
     }
   
-    var removeEventHandlers = function removeEventHandlers (br) {
+    var removeEventHandlers = function removeEventHandlers(br) {
       if (br.refs.$brPageViewEl) {
         br.refs.$brPageViewEl[0].removeEventListener('click', toggleMenuIfCenterClick, true);
       }
@@ -34,7 +34,7 @@
       }
     }
 
-    var toggleNav = function toggleNav (br) {
+    var toggleNav = function toggleNav(br) {
       var menuIsShowing = br.navigationIsVisible();
       if (menuIsShowing) {
         br.hideNavigation();
@@ -68,12 +68,12 @@
       var firstChild = brContainer.firstChild;
   
       if (firstChild) {
-        firstChild.addEventListener('click', function (e) { 
+        firstChild.addEventListener('click', function(e) {
           toggleMenuIfCenterClick(br, e);
         }, true);
       }
 
-      var toggleAtBackgroundClick = function toggleAtBackgroundClick (e) {
+      var toggleAtBackgroundClick = function toggleAtBackgroundClick(e) {
         const isBackground = $(event.target).hasClass('BookReader')
           || $(event.target).hasClass('BRcontainer')
           || $(event.target).hasClass('BRemptypage')
@@ -87,7 +87,7 @@
 
     BookReader.prototype.initMenuToggle = function brInitMenuToggle(e) {
       var br = this;
-      var menuToggleEventRegister = function menuToggleEventRegister (e) {
+      var menuToggleEventRegister = function menuToggleEventRegister(e) {
         registerEventHandlers(br);
       };
 
