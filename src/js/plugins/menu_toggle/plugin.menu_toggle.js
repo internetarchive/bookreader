@@ -65,13 +65,15 @@
     }
 
     BookReader.prototype.initMenuToggle = function brInitMenuToggle(e) {
-      $(document).on('BookReader:fullscreenToggled', function (e) {
-        this.menuToggle.setupNavForToggle(this);
-      }.bind(this));
+
   
       var menuToggleEventRegister = function menuToggleEventRegister (e) {
         registerEventHandlers(this);
       }.bind(this);
+
+      var setupDOMandHandlers = function setupDOMandHandlers(e) {
+        setupNavForToggle(this);
+      }.bind(this));
   
       var eventsToHandle = [
         'BookReader:1PageViewSelected',
@@ -83,9 +85,8 @@
 
       $(document).on(eventsToHandle.join(' '), menuToggleEventRegister);
       $(window).on('orientationchange', menuToggleEventRegister);
-      $(window).on('DOMContentLoaded', function setupNavAtFirstDraw(e) {
-        setupNavForToggle(this);
-      }.bind(this));
+      $(document).on('BookReader:fullscreenToggled', setupDOMandHandlers);
+      $(window).on('DOMContentLoaded', setupDOMandHandlers);
     };
 
     BookReader.prototype.setup = (function(super_) {
