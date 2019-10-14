@@ -8,14 +8,15 @@
  * This is fired when user clicks on the fullscreen button on the menu
  */
 
-(function addFullScreenMenuToggler () {
+(function addMenuToggler () {
     jQuery.extend(BookReader.defaultOptions, {
-      enableFullScreenMenuToggle: true
+      enableMenuToggle: true
     });
   
-    function onEnterFullscreen (br) {
+    function setupNavForToggle (br) {
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'none');
+      registerEventHandlers(br);
   
       var timeoutHandler = function onEnterTimeoutHandler () {
         br.hideNavigation();
@@ -27,7 +28,7 @@
       setTimeout(timeoutHandler, 500);
     }
   
-    var onExitFullscreen = function onExitFullscreen (br) {
+    var removeToggleFromNav = function removeToggleFromNav (br) {
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'block');
       removeEventHandlers(br);
@@ -104,8 +105,8 @@
         super_.call(this, options);
         this.fullscreenMenu = {
           menuIsShowing: true,
-          onEnterFullscreen: onEnterFullscreen,
-          onExitFullscreen: onExitFullscreen,
+          setupNavForToggle: setupNavForToggle,
+          removeToggleFromNav: removeToggleFromNav,
         };
       };
     })(BookReader.prototype.setup);
@@ -113,8 +114,8 @@
     BookReader.prototype.init = (function(super_) {
       return function() {
         super_.call(this);
-        if (this.options.enableFullScreenMenuToggle) {
-          this.initFullScreenToggle();
+        if (this.options.enableMenuToggle) {
+          this.initMenuToggle();
         }
       };
     })(BookReader.prototype.init);
