@@ -46,7 +46,7 @@
       var menuManager = br.fullscreenMenu;
       var bookWidth = e.currentTarget.offsetWidth;
       var leftOffset = e.currentTarget.offsetLeft
-      var bookEndPageFlipArea = Math.round(bookWidth / 5);
+      var bookEndPageFlipArea = Math.round(bookWidth / 3);
       var leftThreshold = Math.round(bookEndPageFlipArea + leftOffset); // without it, the click area is small
       var rightThreshold = Math.round(bookWidth - bookEndPageFlipArea + leftOffset);
       var isCenterClick = (e.clientX > leftThreshold) && (e.clientX < rightThreshold);
