@@ -12,11 +12,21 @@
     jQuery.extend(BookReader.defaultOptions, {
       enableMenuToggle: true
     });
-  
-    function setupNavForToggle(br) {
+
+    function hideArrow() {
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'none');
+    }
+
+    function setupNavForToggle(br) {
+      hideArrow();
       registerEventHandlers(br);
+    }
+
+    function alwaysShowNav(br) {
+      hideArrow();
+      removeToggleFromNav();
+      br.showNavigation();
     }
   
     var removeToggleFromNav = function removeToggleFromNav(br) {
@@ -94,16 +104,25 @@
       var setupDOMandHandlers = function setupDOMandHandlers(e) {
         setupNavForToggle(br);
       };
+
+      var persistNav = function persistNav(e) {
+        alwaysShowNav(br);
+      };
   
-      var eventsToHandle = [
-        'BookReader:1PageViewSelected',
+      var whenToToggleNav = [
         'BookReader:2PageViewSelected',
         'BookReader:zoomIn',
         'BookReader:zoomOut',
         'BookReader:resize'
       ];
 
-      $(document).on(eventsToHandle.join(' '), menuToggleEventRegister);
+      var whenTolwaysShowNavWhen = [
+        'BookReader:1PageViewSelected',
+        'BookReader:3PageViewSelected'
+      ];
+
+      $(document).on(whenTolwaysShowNavWhen.join(' '), persistNav);
+      $(document).on(whenToToggleNav.join(' '), menuToggleEventRegister);
       $(window).on('orientationchange', menuToggleEventRegister);
       $(document).on('BookReader:fullscreenToggled', setupDOMandHandlers);
       $(window).on('DOMContentLoaded', setupDOMandHandlers);
