@@ -75,14 +75,14 @@
 
       var toggleAtBackgroundClick = function toggleAtBackgroundClick(e) {
         const isBackground = $(event.target).hasClass('BookReader')
-          || $(event.target).hasClass('BRcontainer')
-          || $(event.target).hasClass('BRemptypage')
-          || $(event.target).hasClass('BRpageview');
+          || $(event.target).hasClass('BRcontainer') /* main black theatre */
+          || $(event.target).hasClass('BRemptypage') /* empty page placeholder */
+          || $(event.target).hasClass('BRpageview'); /* empty page placeholder */
         if (isBackground) {
           toggleNav(br);
         }
       };
-      mainBRWrapper.addEventListener('click', toggleAtBackgroundClick, true)
+      mainBRWrapper.addEventListener('click', toggleAtBackgroundClick, true);
     }
 
     BookReader.prototype.initMenuToggle = function brInitMenuToggle(e) {
