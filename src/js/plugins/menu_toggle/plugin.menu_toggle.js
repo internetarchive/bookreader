@@ -6,6 +6,12 @@
  * and uses center touch/click to show/hide the menu below
  * Behavior is predicated on custom event: `brFullScreenToggled`
  * This is fired when user clicks on the fullscreen button on the menu
+ *
+ * This uses BookReader native functions and parameters to check its UI state.
+ * This includes:
+ * - br.refs = (at best) ui references that are present at any given time
+ * - br.navigationIsVisible() - checks using refs to confirm the navbar's presence
+ *
  */
 
 (function addMenuToggler() {
@@ -13,23 +19,29 @@
       enableMenuToggle: true
     });
 
-    function hideArrow() {
+    function hideArrow(br) {
+      if (!br.refs || !br.refs.$BRnav) {
+        return;
+      }
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'none');
     }
 
     function setupNavForToggle(br) {
-      hideArrow();
+      hideArrow(br);
       registerEventHandlers(br);
     }
 
     function alwaysShowNav(br) {
-      hideArrow();
+      hideArrow(br);
       removeToggleFromNav();
       br.showNavigation();
     }
   
     var removeToggleFromNav = function removeToggleFromNav(br) {
+      if (!br.refs || !br.refs.$BRnav) {
+        return;
+      }
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'block');
       removeEventHandlers(br);
@@ -84,7 +96,7 @@
       }
 
       var toggleAtBackgroundClick = function toggleAtBackgroundClick(e) {
-        const isBackground = $(event.target).hasClass('BookReader')
+        var isBackground = $(event.target).hasClass('BookReader')
           || $(event.target).hasClass('BRcontainer') /* main black theatre */
           || $(event.target).hasClass('BRemptypage') /* empty page placeholder */
           || $(event.target).hasClass('BRpageview'); /* empty page placeholder */
@@ -97,6 +109,18 @@
 
     BookReader.prototype.initMenuToggle = function brInitMenuToggle(e) {
       var br = this;
+      var hasNav = false;
+
+      try {
+        hasNav = br.navigationIsVisible();
+      } catch(error) {
+        hasNav = false;
+      }
+
+      if (!hasNav) {
+        return;
+      }
+
       var menuToggleEventRegister = function menuToggleEventRegister(e) {
         registerEventHandlers(br);
       };
