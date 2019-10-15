@@ -1,3 +1,6 @@
+# 4.3.2
+- menu toggle plugin, now applies to in-page & fullscreen views + early escapes when navbar isn't present
+
 # 4.3.0
 - New plugin, `fullscreen_menu_toggle`, allowing center-tap to hide UI
 - TTS Plugin logs analytics events (if enabled)
