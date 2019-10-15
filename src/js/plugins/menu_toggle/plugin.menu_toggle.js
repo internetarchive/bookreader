@@ -6,6 +6,12 @@
  * and uses center touch/click to show/hide the menu below
  * Behavior is predicated on custom event: `brFullScreenToggled`
  * This is fired when user clicks on the fullscreen button on the menu
+ *
+ * This uses BookReader native functions and parameters to check its UI state.
+ * This includes:
+ * - br.refs = (at best) ui references that are present at any given time
+ * - br.navigationIsVisible() - checks using refs to confirm the navbar's presence
+ *
  */
 
 (function addMenuToggler() {
