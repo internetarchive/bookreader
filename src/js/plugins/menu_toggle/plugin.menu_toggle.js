@@ -90,7 +90,7 @@
       }
 
       var toggleAtBackgroundClick = function toggleAtBackgroundClick(e) {
-        const isBackground = $(event.target).hasClass('BookReader')
+        var isBackground = $(event.target).hasClass('BookReader')
           || $(event.target).hasClass('BRcontainer') /* main black theatre */
           || $(event.target).hasClass('BRemptypage') /* empty page placeholder */
           || $(event.target).hasClass('BRpageview'); /* empty page placeholder */
@@ -103,7 +103,7 @@
 
     BookReader.prototype.initMenuToggle = function brInitMenuToggle(e) {
       var br = this;
-      let hasNav = false;
+      var hasNav = false;
 
       try {
         hasNav = br.navigationIsVisible();
