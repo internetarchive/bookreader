@@ -107,7 +107,7 @@
 
       try {
         hasNav = br.navigationIsVisible();
-      } catch {
+      } catch(error) {
         hasNav = false;
       }
 
