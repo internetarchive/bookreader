@@ -13,23 +13,29 @@
       enableMenuToggle: true
     });
 
-    function hideArrow() {
+    function hideArrow(br) {
+      if (!br.refs || !br.refs.$BRnav) {
+        return;
+      }
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'none');
     }
 
     function setupNavForToggle(br) {
-      hideArrow();
+      hideArrow(br);
       registerEventHandlers(br);
     }
 
     function alwaysShowNav(br) {
-      hideArrow();
+      hideArrow(br);
       removeToggleFromNav();
       br.showNavigation();
     }
   
     var removeToggleFromNav = function removeToggleFromNav(br) {
+      if (!br.refs || !br.refs.$BRnav) {
+        return;
+      }
       var $menuTab = br.refs.$BRnav.children('.js-tooltip');
       $menuTab.css('display', 'block');
       removeEventHandlers(br);
@@ -97,6 +103,18 @@
 
     BookReader.prototype.initMenuToggle = function brInitMenuToggle(e) {
       var br = this;
+      let hasNav = false;
+
+      try {
+        hasNav = br.navigationIsVisible();
+      } catch {
+        hasNav = false;
+      }
+
+      if (!hasNav) {
+        return;
+      }
+
       var menuToggleEventRegister = function menuToggleEventRegister(e) {
         registerEventHandlers(br);
       };
