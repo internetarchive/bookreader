@@ -27,6 +27,5 @@ test('Plugin: Fullscreen Menu Toggle - successfully initializes', () => {
     const bookrdr = new BookReader();
     bookrdr.init();
 
-    expect(bookrdr.menuToggle).toBeDefined();
     expect(initializeSpy).toHaveBeenCalled();
 });
