@@ -1,5 +1,5 @@
 
-import { isChrome, sleep } from './utils.js';
+import { isChrome, sleep, promisifyEvent } from './utils.js';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
@@ -75,10 +75,10 @@ export class WebTTSSound {
             return;
         }
 
-        new Promise(res => {
-            this.sound.onpause = res;
-            this.pause();
-        }).then(/** @param {SpeechSynthesisEvent} ev */ev => {
+        const pausePromise = promisifyEvent(this.sound, 'pause');
+        speechSynthesis.pause();
+        pausePromise
+        .then(/** @param {SpeechSynthesisEvent} ev */ev => {
             // 'steal' the onend event so the promise doesn't resolve
             let onend = this.sound ? this.sound.onend : null;
             if (this.sound) this.sound.onend = null;
@@ -109,9 +109,13 @@ export class WebTTSSound {
      */
     _chromePausingBugFix(endPromise) {
         const sleepPromise = sleep(14000).then(() => 'timedout');
-        return Promise.race([sleepPromise, endPromise])
+        const pausePromise = promisifyEvent(this.sound, 'pause').then(() => 'paused');
+        return Promise.race([sleepPromise, pausePromise, endPromise])
         .then(result => {
-            if (result == 'timedout') {
+            if (result == 'paused') {
+                return promisifyEvent(this.sound, 'resume')
+                .then(() => this._chromePausingBugFix(endPromise));
+            } else if (result == 'timedout') {
                 speechSynthesis.pause();
                 return sleep(25)
                 .then(() => {

@@ -1,6 +1,43 @@
 import sinon from 'sinon';
-import { afterEventLoop } from '../../utils.js';
+import { afterEventLoop, eventTargetMixin } from '../../utils.js';
 import * as utils from '../../../src/js/plugins/tts/utils.js';
+
+describe('promisifyEvent', () => {
+    const { promisifyEvent } = utils;
+
+    test('Resolves once event fires', () => {
+        const fakeTarget = eventTargetMixin();
+        const resolveSpy = sinon.spy();
+        promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
+
+        return afterEventLoop()
+        .then(() => {
+            expect(resolveSpy.callCount).toBe(0);
+            fakeTarget.dispatchEvent('pause', {});
+            return afterEventLoop();
+        }).then(() => {
+            expect(resolveSpy.callCount).toBe(1);
+        });
+    });
+
+    test('Only resolves once', () => {
+        const fakeTarget = eventTargetMixin();
+        const resolveSpy = sinon.spy();
+        promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
+
+        return afterEventLoop()
+        .then(() => {
+            expect(resolveSpy.callCount).toBe(0);
+            fakeTarget.dispatchEvent('pause', {});
+            fakeTarget.dispatchEvent('pause', {});
+            fakeTarget.dispatchEvent('pause', {});
+            fakeTarget.dispatchEvent('pause', {});
+            return afterEventLoop();
+        }).then(() => {
+            expect(resolveSpy.callCount).toBe(1);
+        });
+    });
+});
 
 describe('approximateWordCount', () => {
     const { approximateWordCount } = utils;
