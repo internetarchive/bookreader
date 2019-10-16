@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { WebTTSSound } from '../../../src/js/plugins/tts/WebTTSEngine.js';
-import { afterEventLoop } from '../../utils.js';
+import { afterEventLoop, eventTargetMixin } from '../../utils.js';
 
 beforeEach(() => {
     window.speechSynthesis = {
@@ -11,6 +11,7 @@ beforeEach(() => {
     };
     window.SpeechSynthesisUtterance = function (text) {
         this.text = text;
+        Object.assign(this, eventTargetMixin());
     };
 });
 
@@ -34,11 +35,9 @@ describe('WebTTSSound', () => {
             sound.load();
             sound.play();
             const originalOnEndSpy = sinon.spy(sound.sound, 'onend');
-            let resolvePause = null;
-            sinon.stub(sound, 'pause').callsFake(() => resolvePause = sound.sound.onpause);
             sound.setPlaybackRate(2);
             expect(sound.rate).toBe(1);
-            resolvePause({});
+            sound.sound.dispatchEvent('pause', {})
             return afterEventLoop()
             .then(() => {
                 expect(sound.rate).toBe(2);
@@ -54,7 +53,7 @@ describe('WebTTSSound', () => {
             let endResolver = null;
             const endPromise = new Promise(res => endResolver = res);
             const sound = new WebTTSSound();
-            const newPromise = sound._chromePausingBugFix(endPromise);
+            sound._chromePausingBugFix(endPromise);
             clock.tick(10000);
             endResolver();
             clock.restore();
@@ -67,10 +66,10 @@ describe('WebTTSSound', () => {
         
         test('if speech greater than 15s, pause called', () => {
             let clock = sinon.useFakeTimers();
-            let endResolver = null;
-            const endPromise = new Promise(res => endResolver = res);
-            const sound = new WebTTSSound();
-            const newPromise = sound._chromePausingBugFix(endPromise);
+            const endPromise = new Promise(res => {});
+            const sound = new WebTTSSound('foo bah');
+            sound.load();
+            sound._chromePausingBugFix(endPromise);
             clock.tick(20000);
             clock.restore();
             
