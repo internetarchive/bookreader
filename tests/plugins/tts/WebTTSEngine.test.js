@@ -34,10 +34,10 @@ describe('WebTTSSound', () => {
             const sound = new WebTTSSound('hello world');
             sound.load();
             sound.play();
-            const originalOnEndSpy = sinon.spy(sound.sound, 'onend');
+            const originalOnEndSpy = sinon.spy(sound.utterance, 'onend');
             sound.setPlaybackRate(2);
             expect(sound.rate).toBe(1);
-            sound.sound.dispatchEvent('pause', {})
+            sound.utterance.dispatchEvent('pause', {})
             return afterEventLoop()
             .then(() => {
                 expect(sound.rate).toBe(2);

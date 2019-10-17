@@ -21,11 +21,11 @@ BookReader.prototype.setup = (function (super_) {
 
         if (this.options.enableTtsPlugin) {
             this.ttsHilites = [];
-            // const TTSEngine = WebTTSEngine.isSupported() ? WebTTSEngine :
-            //                   FestivalTTSEngine.isSupported() ? FestivalTTSEngine :
-            //                   null;
+            const TTSEngine = WebTTSEngine.isSupported() ? WebTTSEngine :
+                              FestivalTTSEngine.isSupported() ? FestivalTTSEngine :
+                              null;
             /** Temporary change for @cdrini so we don't release bleeding edge code */
-            const TTSEngine = FestivalTTSEngine.isSupported() ? FestivalTTSEngine : null;
+            // const TTSEngine = FestivalTTSEngine.isSupported() ? FestivalTTSEngine : null;
             if (TTSEngine) {
                 /** @type {AbstractTTSEngine} */
                 this.ttsEngine = new TTSEngine({

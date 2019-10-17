@@ -9,7 +9,7 @@ import langs from 'iso-language-codes/js/data.js';
 export function promisifyEvent(target, eventType) {
     return new Promise(res => {
         const resolver = ev => {
-            target.removeEventListener(resolver);
+            target.removeEventListener(eventType, resolver);
             res(ev);
         };
         target.addEventListener(eventType, resolver);

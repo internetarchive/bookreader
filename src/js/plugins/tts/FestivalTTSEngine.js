@@ -1,4 +1,5 @@
 import AbstractTTSEngine from './AbstractTTSEngine.js';
+import { sleep } from './utils.js';
 
 /** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
 /** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
@@ -110,15 +111,21 @@ class FestivalTTSSound {
         this.sound = soundManager.createSound({
             url: this.soundUrl,
             // API recommended, but only fires once play started on safari
-            onload,
-        }).load();
+            onload: () => {
+                if (this.rate != 1) this.sound.setPlaybackRate(this.rate);
+                onload();
+            },
+            onresume: () => {
+                sleep(25).then(() => {
+                    if (this.rate != 1) this.sound.setPlaybackRate(this.rate);
+                });
+            }
+        });
+        return this.sound.load();
     }
 
     play() {
-        return new Promise(res => this.sound.play({
-            playbackRate: this.rate,
-            onfinish: res,
-        }))
+        return new Promise(res => this.sound.play({ onfinish: res }))
         .then(() => this.sound.destruct());
     }
 
