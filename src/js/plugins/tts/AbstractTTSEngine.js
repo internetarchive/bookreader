@@ -56,8 +56,15 @@ export default class AbstractTTSEngine {
         /** @type {AbstractTTSSound} */
         this.activeSound = null;
         this.playbackRate = 1;
+        /** Events we can bind to */
+        this.events = $({});
         /** @type {SpeechSynthesisVoice} */
-        this.voice = AbstractTTSEngine.getBestVoice(this.getVoices(), this.opts.bookLanguage);
+        this.voice = null;
+        // Listen for voice changes (fired by subclasses)
+        this.events.on('voiceschanged', () => {
+            this.voice = AbstractTTSEngine.getBestVoice(this.getVoices(), this.opts.bookLanguage);
+        });
+        this.events.trigger('voiceschanged');
     }
 
     /**
@@ -131,6 +138,7 @@ export default class AbstractTTSEngine {
     step() {
         this.chunkStream.pull()
         .then(item => {
+            console.log(JSON.stringify(item));
             if (item.done) {
                 this.stop();
                 this.opts.onDone();
@@ -198,6 +206,11 @@ export default class AbstractTTSEngine {
         );
     }
 
+    /** Convenience wrapper for {@see AbstractTTSEngine.getBestVoice} */
+    getBestVoice() {
+        return AbstractTTSEngine.getBestVoice(this.getVoices(), this.opts.bookLanguage);
+    }
+
     /**
      * @private
      * @param {SpeechSynthesisVoice[]} voices
@@ -211,15 +224,37 @@ export default class AbstractTTSEngine {
         userLanguages = userLanguages || (navigator.language ? [navigator.language] : []);
         const matchingUserLanguages = userLanguages.filter(lang => lang.startsWith(bookLanguage));
         if (matchingUserLanguages.length) {
-            let voice = null;
-            for (let userLang of matchingUserLanguages) {
-                const matchingVoices = possibleVoices.filter(v => v.lang.startsWith(userLang));
-                if (matchingVoices.length) {
-                    voice = matchingVoices.find(v => v.default) || matchingVoices[0];
-                    return voice;
-                }
+            const matchingVoice = AbstractTTSEngine.getMatchingVoice(matchingUserLanguages, possibleVoices);
+            if (matchingVoice) return matchingVoice;
+        }
+
+        // if no matching languages, then we'll return the best possible voice
+        if (possibleVoices.length) {
+            const matchingVoice = possibleVoices.find(v => v.default) || possibleVoices[0];
+            if (matchingVoice) return matchingVoice;
+        }
+
+        // Still no luck? then we'll try to find a voice in the user's langauge; ignoring book lang
+        const userVoice = AbstractTTSEngine.getMatchingVoice(userLanguages, voices);
+        if (userVoice) return userVoice;
+
+        // C'mon! Ok, just read with whatever we got!
+        return voices.find(v => v.default) || voices[0];
+    }
+
+    /**
+     * 
+     * @param {string[]} languages in BCP 47 format (e.g. 'en-US', or 'en')
+     * @param {SpeechSynthesisVoice[]} voices 
+     * @return {SpeechSynthesisVoice | undefined}
+     */
+    static getMatchingVoice(languages, voices) {
+        for (let lang of languages) {
+            // Chrome Android was returning languages like `en_US` instead of `en-US`.
+            const matchingVoices = voices.filter(v => v.lang.replace('_', '-').startsWith(lang));
+            if (matchingVoices.length) {
+                return matchingVoices.find(v => v.default) || matchingVoices[0];
             }
         }
-        return possibleVoices.find(v => v.default) || possibleVoices[0];
     }
 }
