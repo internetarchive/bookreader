@@ -113,6 +113,7 @@ export default class AbstractTTSEngine {
         this.playing = false;
         this.chunkStream = null;
         this.activeSound = null;
+        this.events.trigger('stop');
     }
 
     /** @public */
