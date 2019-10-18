@@ -136,6 +136,11 @@ class FestivalTTSSound {
         this.rate = rate;
         this.sound.setPlaybackRate(rate);
     }
+
+    finish() {
+        this.sound.stop();
+        this.sound.onfinish();
+    }
 }
 
 /** Needed to capture the audio context for iOS hack. Generated using Audacity. */

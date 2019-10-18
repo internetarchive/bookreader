@@ -38,6 +38,7 @@ import AsyncStream from './AsyncStream.js';
  * @property {() => void} stop
  * @property {() => void} pause
  * @property {() => void} resume
+ * @property {() => void} finish force the sound to 'finish'
  * @property {number => void} setPlaybackRate
  **/
 
@@ -124,6 +125,11 @@ export default class AbstractTTSEngine {
     resume() {
         this.paused = false;
         if (this.activeSound) this.activeSound.resume();
+    }
+
+    /** @public */
+    jumpForward() {
+        if (this.activeSound) this.activeSound.finish();
     }
 
     /** @param {number} newRate */
