@@ -125,14 +125,17 @@ export class WebTTSSound {
         // Need to also set lang (for some reason); won't set voice on Chrome@Android otherwise
         if (this.voice) this.utterance.lang = this.voice.lang;
         this.utterance.rate = this.rate;
-        this.utterance.addEventListener('pause', () => console.log('pause'));
-        this.utterance.addEventListener('resume', () => console.log('resume'));
-        this.utterance.addEventListener('start', () => console.log('start'));
-        this.utterance.addEventListener('end', () => console.log('end'));
-        this.utterance.addEventListener('error', () => console.log('error'));
-        this.utterance.addEventListener('boundary', () => console.log('boundary'));
-        this.utterance.addEventListener('mark', () => console.log('mark'));
-        this.utterance.addEventListener('finish', () => console.log('finish'));
+
+        // Useful for debugging things
+        // this.utterance.addEventListener('pause', () => console.log('pause'));
+        // this.utterance.addEventListener('resume', () => console.log('resume'));
+        // this.utterance.addEventListener('start', () => console.log('start'));
+        // this.utterance.addEventListener('end', () => console.log('end'));
+        // this.utterance.addEventListener('error', () => console.log('error'));
+        // this.utterance.addEventListener('boundary', () => console.log('boundary'));
+        // this.utterance.addEventListener('mark', () => console.log('mark'));
+        // this.utterance.addEventListener('finish', () => console.log('finish'));
+
         // Keep track of the speech synthesis events that come in; they have useful info
         // about progress (like charIndex)
         this.utterance.addEventListener('start', ev => this._lastEvents.start = ev);

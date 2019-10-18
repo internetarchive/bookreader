@@ -74,14 +74,14 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
             $el.find('.BRmobileMenu__moreInfoRow').after($(`
                 <li>
                     <span>
-                        <span class="DrawerIconWrapper "><img class="DrawerIcon" src="${this.imagesBaseURL}icon_speaker_open.svg" alt="info-speaker"/></span>
+                        <span class="DrawerIconWrapper"><img class="DrawerIcon" src="${this.imagesBaseURL}icon_speaker_open.svg" alt="info-speaker"/></span>
                         Read Aloud
                     </span>
-                    <div>"
+                    <div>
                         <span class="larger">Press to toggle read aloud</span>
                         <br/>
-                        <button class="BRicon read"></button>"
-                    </div>"
+                        <button class="BRicon read"></button>
+                    </div>
                 </li>`));
         };
         return $el;
