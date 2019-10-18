@@ -50,14 +50,14 @@ export class WebTTSSound {
         /** @type {SpeechSynthesisVoice} */
         this.voice = null;
         
-        /** @type {SpeechSynthesisEvent} */
-        this._lastStartEvent = null;
-
-        /** @type {SpeechSynthesisEvent} */
-        this._lastPauseEvent = null;
-
-        /** @type {SpeechSynthesisEvent} */
-        this._lastBoundaryEvent = null;
+        this._lastEvents = {
+            /** @type {SpeechSynthesisEvent} */
+            pause: null,
+            /** @type {SpeechSynthesisEvent} */
+            boundary: null,
+            /** @type {SpeechSynthesisEvent} */
+            start: null,
+        };
 
         /** Store where we are in the text. Only works on some browsers. */
         this._charIndex = 0;
@@ -71,96 +71,92 @@ export class WebTTSSound {
     
     /** @override **/
     load(onload) {
-        console.log("LOAD START")
         this.loaded = false;
         this.started = false;
-        this.stopped = false;
 
         this.utterance = new SpeechSynthesisUtterance(this.text.slice(this._charIndex));
         this.utterance.voice = this.voice;
-        // Need to also set lang (for some reason); won't work on Chrome@Android otherwise
+        // Need to also set lang (for some reason); won't set voice on Chrome@Android otherwise
         if (this.voice) this.utterance.lang = this.voice.lang;
         this.utterance.rate = this.rate;
-        this.utterance.addEventListener('pause', () => console.log('pause'));
-        this.utterance.addEventListener('resume', () => console.log('resume'));
-        this.utterance.addEventListener('start', () => console.log('start'));
-        this.utterance.addEventListener('end', () => console.log('end'));
-        this.utterance.addEventListener('error', () => console.log('error'));
-        this.utterance.addEventListener('boundary', () => console.log('boundary'));
-        this.utterance.addEventListener('mark', () => console.log('mark'));
-        this.utterance.addEventListener('finish', () => console.log('finish'));
-        
-        this.utterance.addEventListener('start', ev => this._lastStartEvent = ev);
-        this.utterance.addEventListener('boundary', ev => this._lastBoundaryEvent = ev);
-        this.utterance.addEventListener('pause', ev => this._lastPauseEvent = ev);
-        this.utterance.addEventListener('pause', () => this.paused = true);
-        this.utterance.addEventListener('resume', () => this.paused = false);
+
+        // Keep track of the speech synthesis events that come in; they have useful info
+        // about progress (like charIndex)
+        this.utterance.addEventListener('start', ev => this._lastEvents.start = ev);
+        this.utterance.addEventListener('boundary', ev => this._lastEvents.boundary = ev);
+        this.utterance.addEventListener('pause', ev => this._lastEvents.pause = ev);
+
+        // Update our state
         this.utterance.addEventListener('start', () => {
             this.started = true;
+            this.stopped = false;
             this.paused = false;
         });
+        this.utterance.addEventListener('pause', () => this.paused = true);
+        this.utterance.addEventListener('resume', () => this.paused = false);
         this.utterance.addEventListener('end', ev => {
             if (!this.paused && !this.stopped) {
+                // Trigger a new event, finish, which only fires when audio fully completed
                 this.utterance.dispatchEvent(new CustomEvent('finish', ev));
             }
         });
         this.loaded = true;
         onload && onload();
-        console.log("LOAD END")
     }
 
     /**
-     * When any of the speaker settings are changed, the utterance
-     * must be reloaded.
+     * Run whenever properties have changed. Tries to restart in the same spot it
+     * left off.
      * @return {Promise<void>}
      */
     reload() {
-        console.log("RELOAD");
+        // We'll restore the pause state, so copy it here
         const wasPaused = this.paused;
-        // Safari kind of hangs when we call pause here (for some reason)
-        // But safari gives us word boudaries, so we don't even have to pause
-        const promisesToRace = [sleep(100).then(() => this._lastBoundaryEvent || this._lastStartEvent)];
-        if (!this._lastBoundaryEvent) {
-            promisesToRace.push(promisifyEvent(this.utterance, 'pause'));
-            speechSynthesis.pause();
+        // Use recent event to determine where we'll restart from
+        // Browser support for this is mixed, but it degrades to restarting the chunk
+        // and that's ok
+        const recentEvent = this._lastEvents.boundary || this._lastEvents.pause;
+        if (recentEvent) {
+            this._charIndex = this.text.indexOf(recentEvent.target.text) + recentEvent.charIndex;
         }
-        return Promise.race(promisesToRace)
-        .then(ev => {
-            const endPromise = promisifyEvent(this.utterance, 'end');
-            this.stop();
 
-            // Browser support for this is mixed, but it degrades to
-            // restarting the chunk if it doesn't exist, and that's ok
-            this._charIndex += ev ? (ev.charIndex || 0) : 0;
-
-            return endPromise;
-        }).then(() => {
-            speechSynthesis.resume();
+        // We can't modify the utterance object, so we have to make a new one
+        return this.stop()
+        .then(() => {
             this.load();
+            // Instead of playing and immediately pausing, we don't start playing. Note
+            // this is a requirement because pause doesn't work consistently across
+            // browsers.
             if (!wasPaused) this.play();
         });
     }
 
     play() {
-        console.log("PLAY START");
-        this._finishPromise = this._finishPromise || new Promise(res => this._finishResolver = () => { console.log("RESOLVING"), res() });
+        this._finishPromise = this._finishPromise || new Promise(res => this._finishResolver = res);
         this.utterance.addEventListener('finish', this._finishResolver);
+        
+        // clear the queue
         speechSynthesis.cancel();
+        // reset pause state
+        speechSynthesis.resume();
+        // Speak
         speechSynthesis.speak(this.utterance);
 
         // Note this could be local; if voice is null/undefined browser
         // uses the default, but to be safe we check it directly
         const isLocalVoice = this.utterance.voice && this.utterance.voice.localService;
         if (isChrome() && !isLocalVoice) this._chromePausingBugFix();
-        
-        console.log("PLAY END");
+
         return this._finishPromise;
     }
 
+    /** @return {Promise} */
     stop() {
-        console.log("STOP");
+        // 'end' won't fire if already stopped
+        const endPromise = this.stopped ? Promise.resolve() : promisifyEvent(this.utterance, 'end');
         this.stopped = true;
         speechSynthesis.cancel();
+        return endPromise;
     }
 
     /**
@@ -170,7 +166,7 @@ export class WebTTSSound {
     pause() {
         if (this.paused) {
             console.log("ALREADY PAUSED");
-            return Promise.resolve(this._lastPauseEvent || this._lastStartEvent);
+            return Promise.resolve(this._lastEvents.pause || this._lastEvents.start);
         } else {
             const pausePromise = promisifyEvent(this.utterance, 'pause');
             speechSynthesis.pause();
@@ -181,7 +177,7 @@ export class WebTTSSound {
                 .then(result => {
                     if (result == 'timeout') {
                         console.log("PAUSE TIMEOUT");
-                        this.utterance.dispatchEvent(new CustomEvent('pause', this._lastStartEvent));
+                        this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
                     }
                     return pausePromise;
                 });
@@ -193,7 +189,7 @@ export class WebTTSSound {
                 .then(result => {
                     if (result == 'timeout') {
                         console.log("PAUSE TIMEOUT");
-                        this.utterance.dispatchEvent(new CustomEvent('pause', this._lastStartEvent));
+                        this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
                         this.reload();
                     }
                     return pausePromise;
