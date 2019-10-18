@@ -1,4 +1,4 @@
-import { isChrome, sleep, promisifyEvent } from './utils.js';
+import { isChrome, sleep, promisifyEvent, isFirefox, isAndroid } from './utils.js';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
@@ -134,7 +134,7 @@ export class WebTTSSound {
     play() {
         this._finishPromise = this._finishPromise || new Promise(res => this._finishResolver = res);
         this.utterance.addEventListener('finish', this._finishResolver);
-        
+
         // clear the queue
         speechSynthesis.cancel();
         // reset pause state
@@ -142,8 +142,6 @@ export class WebTTSSound {
         // Speak
         speechSynthesis.speak(this.utterance);
 
-        // Note this could be local; if voice is null/undefined browser
-        // uses the default, but to be safe we check it directly
         const isLocalVoice = this.utterance.voice && this.utterance.voice.localService;
         if (isChrome() && !isLocalVoice) this._chromePausingBugFix();
 
@@ -160,44 +158,35 @@ export class WebTTSSound {
     }
 
     /**
-     * Pause synthesis and returns a promise
-     * @return {Promise<SpeechSynthesisEvent>}
-     */
+     * @override
+     * Will fire a pause event unless already paused
+     **/
     pause() {
-        if (this.paused) {
-            console.log("ALREADY PAUSED");
-            return Promise.resolve(this._lastEvents.pause || this._lastEvents.start);
-        } else {
-            const pausePromise = promisifyEvent(this.utterance, 'pause');
-            speechSynthesis.pause();
-            // Chrome Desktop doesn't fire the pause event :(
-            if (isChrome()) {
-                const timeoutPromise = sleep(40).then(() => 'timeout');
-                return Promise.race([pausePromise, timeoutPromise])
-                .then(result => {
-                    if (result == 'timeout') {
-                        console.log("PAUSE TIMEOUT");
-                        this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
-                    }
-                    return pausePromise;
-                });
-            } else if (/firefox/i.test(navigator.userAgent) && /android/i.test(navigator.userAgent)) {
-                // pause/resume don't actually do anything on FF (except set speechSynthesis.paused 🤦‍)
-                // Fallback: Just stop if the pause event doesn't fire
-                const timeoutPromise = sleep(40).then(() => 'timeout');
-                return Promise.race([pausePromise, timeoutPromise])
-                .then(result => {
-                    if (result == 'timeout') {
-                        console.log("PAUSE TIMEOUT");
-                        this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
-                        this.reload();
-                    }
-                    return pausePromise;
-                });
-            } else {
-                console.log("NORMAL PAUSE");
-                return pausePromise;
-            }
+        if (this.paused) return;
+        
+        const pausePromise = promisifyEvent(this.utterance, 'pause');
+        speechSynthesis.pause();
+        
+        // There are a few awful browser cases:
+        // 1. Pause works and fires
+        // 2. Pause doesn't work and doesn't fire
+        // 3. Pause works but doesn't fire
+        const pauseMightNotWork = (isFirefox() && isAndroid());
+        const pauseMightNotFire = isChrome() || pauseMightNotWork;
+
+        if (pauseMightNotFire) {
+            // wait for it just it incase
+            const timeoutPromise = sleep(100).then(() => 'timeout');
+            Promise.race([pausePromise, timeoutPromise])
+            .then(result => {
+                // We got our pause event; nothing to do!
+                if (result != 'timeout') return;
+
+                this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
+                // if pause might not work, then we'll stop entirely and restart later
+                // Note we use reload instead of stop, 
+                if (pauseMightNotWork) this.reload();
+            });
         }
     }
 

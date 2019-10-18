@@ -47,6 +47,24 @@ export function isChrome(userAgent=navigator.userAgent, vendor=navigator.vendor)
 }
 
 /**
+ * Checks whether the current browser is firefox
+ * @param {string} [userAgent]
+ * @return {boolean}
+ */
+export function isFirefox(userAgent=navigator.userAgent) {
+    return /firefox/i.test(userAgent);
+}
+
+/**
+ * Checks whether the current browser is on android
+ * @param {string} [userAgent]
+ * @return {boolean}
+ */
+export function isAndroid(userAgent=navigator.userAgent) {
+    return /android/i.test(userAgent);
+}
+
+/**
  * @typedef {string} ISO6391
  * Language code in ISO 639-1 format. e.g. en, fr, zh
  **/
