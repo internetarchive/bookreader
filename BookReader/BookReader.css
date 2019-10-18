@@ -613,6 +613,14 @@ body.BRfullscreenActive .mm-menu {
   white-space: nowrap;
 }
 
+.BRToolbarButton:hover, .BRicon:hover {
+  background-color: rgba(50, 50, 50, 0.2);
+}
+.BRToolbarButton:active, .BRicon:active {
+  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(50, 50, 50, 0.4);
+}
+
 .BRicon {
   padding: 0;
   margin: 0;
@@ -622,13 +630,6 @@ body.BRfullscreenActive .mm-menu {
   background-color: transparent;
   background-image: url(images/BRicons.svg);
   background-repeat: no-repeat;
-}
-.BRicon:hover {
-  background-color: rgba(50, 50, 50, 0.2);
-}
-.BRicon:active {
-  background-color: rgba(255, 255, 255, 0.2);
-  background-color: rgba(50, 50, 50, 0.4);
 }
 
 i.BRicon {
@@ -1157,6 +1158,16 @@ i.BRicon {
 /**
  * BRnav is the bottom control bar (eg footer)
  */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .BRlowertoolbar {
   position: absolute;
   bottom: 0;
@@ -1176,6 +1187,8 @@ i.BRicon {
   margin-top: 0;
   width: 200px;
   align-self: center;
+  height: 40px;
+  animation: fadeUp 0.2s;
   background-color: #818181;
   color: white;
   /* Full mobile styles */
@@ -1228,10 +1241,6 @@ i.BRicon {
   background-color: #0074D1;
 }
 @media (max-width: 800px) {
-  .BRReadAloudToolbar {
-    height: 40px;
-    box-shadow: 0px -1px 3px 0px rgba(102, 102, 102, 0.25);
-  }
   .BRbodyMobileNavEnabled .BRReadAloudToolbar, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar {
     background-color: white;
     color: black;
@@ -1260,14 +1269,14 @@ i.BRicon {
 }
 .BRReadAloudToolbar--controls {
   display: flex;
-  padding-right: 48px;
+  padding-right: 40px;
 }
 .BRReadAloudToolbar--controls > * {
   height: 100%;
 }
 .BRReadAloudToolbar .icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
 }
 .BRReadAloudToolbar button {
   padding: 0px;
@@ -1278,8 +1287,8 @@ i.BRicon {
   display: block;
 }
 .BRReadAloudToolbar .playback-rate-container {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   position: relative;
 }
 .BRReadAloudToolbar .playback-rate-container .icon {
@@ -1288,9 +1297,9 @@ i.BRicon {
   left: 0;
   width: 100%;
   height: 100%;
-  padding: 10px;
+  padding: 6px;
   box-sizing: border-box;
-  padding-bottom: 1.1em;
+  padding-bottom: 1em;
 }
 .BRReadAloudToolbar .playback-rate-container select {
   cursor: pointer;

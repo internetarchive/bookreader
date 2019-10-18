@@ -96,7 +96,7 @@ BookReader.prototype.initNavbar = (function (super_) {
             this.refs.$BRReadAloudToolbar = $(`
                 <div class="BRReadAloudToolbar" style="display:none">
                     <div class="BRReadAloudToolbar--controls">
-                        <div class="playback-rate-container">
+                        <div class="BRToolbarButton playback-rate-container">
                             <img class="icon" src="${this.imagesBaseURL}icon_playback-rate.svg" alt="Playback Rate"/>
                             <select name="BRReadAloud-rate">
                                 <option value="0.25">0.25x</option>
@@ -109,11 +109,10 @@ BookReader.prototype.initNavbar = (function (super_) {
                                 <option value="2">2x</option>
                             </select>
                         </div>
-                        <button class="play" style="display:none"><img class="icon" src="${this.imagesBaseURL}icon_play.svg" alt="Playback Rate"/></button>
-                        <button class="pause"><img class="icon" src="${this.imagesBaseURL}icon_pause.svg" alt="Playback Rate"/></button>
+                        <button class="BRToolbarButton play" style="display:none"><img class="icon" src="${this.imagesBaseURL}icon_play.svg" alt="Playback Rate"/></button>
+                        <button class="BRToolbarButton pause"><img class="icon" src="${this.imagesBaseURL}icon_pause.svg" alt="Playback Rate"/></button>
                     </div>
-                </div>
-            `);
+                </div>`);
             this.refs.$BRReadAloudToolbar.insertBefore($el);
             this.refs.$BRReadAloudToolbar.find('.play').click(this.ttsPlayPause.bind(this));
             this.refs.$BRReadAloudToolbar.find('.pause').click(this.ttsPlayPause.bind(this));
