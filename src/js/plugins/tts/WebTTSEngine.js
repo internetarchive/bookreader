@@ -184,8 +184,7 @@ export class WebTTSSound {
 
                 this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
                 // if pause might not work, then we'll stop entirely and restart later
-                // Note we use reload instead of stop, 
-                if (pauseMightNotWork) this.reload();
+                if (pauseMightNotWork) this.stop();
             });
         }
     }
@@ -193,45 +192,33 @@ export class WebTTSSound {
     resume() {
         if (!this.started) {
             this.play();
-        } else if ((isChrome() && !speechSynthesis.paused && this.paused)) {
-            // CHROME/FF ANDROID HACK 😭
-            // speechSynthesis.resume() doesn't work on Chrome Android
-            // speechSynthesis.paused is always false on Chrome Desktop/Android, but resume
-            // works on desktop.
-            // speechSynthesis.paused changes on FF@Android, but it doesn't pause or resume
-            const resumePromise = promisifyEvent(this.utterance, 'resume');
-            speechSynthesis.resume();
-            const timeoutPromise = sleep(100).then(() => 'timeout');
-            return Promise.race([resumePromise, timeoutPromise])
+            return;
+        }
+
+        if (!this.paused) return;
+
+        // Browser cases:
+        // 1. Resume works + fires
+        // 2. Resume works + doesn't fire (Chrome Desktop)
+        // 3. Resume doesn't work + doesn't fire (Chrome/FF Android)
+        const resumeMightNotWork = (isChrome() && isAndroid()) || (isFirefox() && isAndroid());
+        const resumeMightNotFire = isChrome() || resumeMightNotWork;
+
+        // Try resume
+        const resumePromise = promisifyEvent(this.utterance, 'resume');
+        speechSynthesis.resume();
+
+        if (resumeMightNotFire) {
+            Promise.race([resumePromise, sleep(100).then(() => 'timeout')])
             .then(result => {
-                if (result == 'timeout') {
-                    console.log('RESUME TIMEOUT');
-                    // I was hoping to use speechSynthesis.speaking to test if resume had
-                    // worked, but guess what; chrome on Android show .speaking to be true
-                    // after a call to pause 😭
-                    if (/android/i.test(navigator.userAgent) || !speechSynthesis.speaking) {
-                        console.log('RESUME RELOAD')
-                        // No resume; have to restart :/
-                        const reloadPromise = this.reload();
-                        const startPromise = promisifyEvent(this.utterance, 'start');
-                        reloadPromise.then(() => this.play());
-                        return startPromise;
-                    }
-                    else {
-                        console.log('RESUME SILENT');
-                        // Resume works, it just doesn't fire the event
-                        this.utterance.dispatchEvent(new CustomEvent('resume', {}));
-                        return resumePromise;
-                    }
-                } else {
-                    return resumePromise;
+                if (result != 'timeout') return;
+
+                this.utterance.dispatchEvent(new CustomEvent('resume', {}));
+                if (resumeMightNotWork) {
+                    const reloadPromise = this.reload();
+                    reloadPromise.then(() => this.play());
                 }
-            })
-        } else {
-            console.log("NORMAL RESUME");
-            const resumePromise = promisifyEvent(this.utterance, 'resume');
-            speechSynthesis.resume();
-            return resumePromise;
+            });
         }
     }
 
@@ -255,15 +242,16 @@ export class WebTTSSound {
         .then(result => {
             switch(result) {
                 case 'ended':
-                    console.log('CHROME-PAUSE-FIX: ended');
+                    // audio was stopped/finished; nothing to do
                     break;
                 case 'paused':
-                    console.log('CHROME-PAUSE-FIX: paused');
+                    // audio was paused; wait for resume
                     promisifyEvent(this.utterance, 'resume')
                     .then(() => this._chromePausingBugFix());
                     break;
                 case 'timeout':
-                    console.log('CHROME-PAUSE-FIX: timeout');
+                    // We hit Chrome's secret cut off time. Pause/resume
+                    // to be able to keep TTS-ing
                     speechSynthesis.pause();
                     sleep(25)
                     .then(() => {
