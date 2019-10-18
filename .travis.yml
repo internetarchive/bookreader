@@ -1,9 +1,9 @@
 language: node_js
 node_js:
-  - '10'
-install: npm install
+  - '12'
+install: 
+  - npm install
 script:
   - npm run eslint
-after_success:
-  - ./node_modules/.bin/jest --coverage
+  - npm run test:coverage
   - npm run codecov
