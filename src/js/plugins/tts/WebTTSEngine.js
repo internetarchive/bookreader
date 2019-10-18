@@ -79,7 +79,7 @@ export class WebTTSSound {
         this.utterance = new SpeechSynthesisUtterance(this.text.slice(this._charIndex));
         this.utterance.voice = this.voice;
         // Need to also set lang (for some reason); won't work on Chrome@Android otherwise
-        this.utterance.lang = this.voice.lang;
+        if (this.voice) this.utterance.lang = this.voice.lang;
         this.utterance.rate = this.rate;
         this.utterance.addEventListener('pause', () => console.log('pause'));
         this.utterance.addEventListener('resume', () => console.log('resume'));
@@ -131,7 +131,7 @@ export class WebTTSSound {
 
             // Browser support for this is mixed, but it degrades to
             // restarting the chunk if it doesn't exist, and that's ok
-            this._charIndex += ev.charIndex || 0;
+            this._charIndex += ev ? (ev.charIndex || 0) : 0;
 
             return endPromise;
         }).then(() => {

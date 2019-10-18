@@ -8,6 +8,7 @@ beforeEach(() => {
         speak: sinon.stub(),
         pause: sinon.stub(),
         resume: sinon.stub(),
+        ...eventTargetMixin(),
     };
     window.SpeechSynthesisUtterance = function (text) {
         this.text = text;
@@ -25,51 +26,50 @@ describe('WebTTSSound', () => {
     describe('setPlaybackRate', () => {
         test('works if not playing', () => {
             const sound = new WebTTSSound('hello world');
+            sound.load();
             expect(sound.rate).toBe(1);
             sound.setPlaybackRate(2);
             expect(sound.rate).toBe(2);
         });
 
-        test('if playing, pauses/stops, but does not resolve the original promise', () => {
+        test('reloading does not resolve the original promise', () => {
             const sound = new WebTTSSound('hello world');
             sound.load();
-            sound.play();
-            const originalOnEndSpy = sinon.spy(sound.utterance, 'onend');
-            sound.setPlaybackRate(2);
-            expect(sound.rate).toBe(1);
-            sound.utterance.dispatchEvent('pause', {})
+            const finishSpy = sinon.spy();
+            sound.play().then(finishSpy);
+            sound.reload();
+            sound.utterance.dispatchEvent('pause', {});
             return afterEventLoop()
             .then(() => {
-                expect(sound.rate).toBe(2);
-                expect(window.speechSynthesis.speak.callCount).toBe(2);
-                expect(originalOnEndSpy.callCount).toBe(0);
-            });
+                sound.utterance.dispatchEvent('end', {});
+                return afterEventLoop()
+            })
+            .then(() => expect(finishSpy.callCount).toBe(0));
         });
     });
 
     describe('_chromePausingBugFix', () => {
         test('if speech less than 15s, nothing special', () => {
             const clock = sinon.useFakeTimers();
-            let endResolver = null;
-            const endPromise = new Promise(res => endResolver = res);
-            const sound = new WebTTSSound();
-            sound._chromePausingBugFix(endPromise);
+            const sound = new WebTTSSound('hello world foo bar');
+            sound.load();
+            sound.play();
+            sound._chromePausingBugFix();
             clock.tick(10000);
-            endResolver();
+            sound.utterance.dispatchEvent('end', {});
             clock.restore();
             return afterEventLoop()
             .then(() => {
                 expect(speechSynthesis.pause.callCount).toBe(0);
             });
         });
-
         
         test('if speech greater than 15s, pause called', () => {
             let clock = sinon.useFakeTimers();
-            const endPromise = new Promise(res => {});
             const sound = new WebTTSSound('foo bah');
             sound.load();
-            sound._chromePausingBugFix(endPromise);
+            sound.play();
+            sound._chromePausingBugFix();
             clock.tick(20000);
             clock.restore();
             
