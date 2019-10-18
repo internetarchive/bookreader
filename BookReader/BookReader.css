@@ -1182,10 +1182,9 @@ i.BRicon {
 .BRReadAloudToolbar {
   display: flex;
   justify-content: center;
-  margin: 10px;
-  border-radius: 100px;
-  margin-top: 0;
-  width: 200px;
+  margin: 5px;
+  padding: 0 10px;
+  border-radius: 4px;
   align-self: center;
   height: 40px;
   animation: fadeUp 0.2s;
@@ -1269,14 +1268,20 @@ i.BRicon {
 }
 .BRReadAloudToolbar--controls {
   display: flex;
-  padding-right: 40px;
 }
 .BRReadAloudToolbar--controls > * {
   height: 100%;
 }
-.BRReadAloudToolbar .icon {
+.BRReadAloudToolbar .BRToolbarButton .icon {
   width: 40px;
   height: 40px;
+  box-sizing: border-box;
+}
+.BRReadAloudToolbar .BRToolbarButton.jumpForward .icon {
+  padding: 9px;
+}
+.BRReadAloudToolbar .BRToolbarButton.play, .BRReadAloudToolbar .BRToolbarButton.pause {
+  margin-left: 13.3333333333px;
 }
 .BRReadAloudToolbar button {
   padding: 0px;
@@ -1316,7 +1321,7 @@ i.BRicon {
   text-align: center;
   text-align-last: center;
   /* Chrome */
-  padding-top: 64%;
+  padding-top: 60%;
   padding-left: 10%;
   padding-right: 10%;
   color: #333;
@@ -2097,3 +2102,5 @@ html.mm-background .BookReader {
   clear: both;
   visibility: hidden;
 }
+
+/*# sourceMappingURL=BookReader.css.map */

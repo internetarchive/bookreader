@@ -109,14 +109,16 @@ BookReader.prototype.initNavbar = (function (super_) {
                                 <option value="2">2x</option>
                             </select>
                         </div>
-                        <button class="BRToolbarButton play" style="display:none"><img class="icon" src="${this.imagesBaseURL}icon_play.svg" alt="Playback Rate"/></button>
-                        <button class="BRToolbarButton pause"><img class="icon" src="${this.imagesBaseURL}icon_pause.svg" alt="Playback Rate"/></button>
+                        <button class="BRToolbarButton play" style="display:none"><img class="icon" src="${this.imagesBaseURL}icon_play.svg" alt="Play"/></button>
+                        <button class="BRToolbarButton pause"><img class="icon" src="${this.imagesBaseURL}icon_pause.svg" alt="Pause"/></button>
+                        <button class="BRToolbarButton jumpForward"><img class="icon" src="${this.imagesBaseURL}icon_skip-ahead.svg" alt="Jump forward"/></button>
                     </div>
                 </div>`);
             this.refs.$BRReadAloudToolbar.insertBefore($el);
             this.ttsEngine.events.on('pause resume', () => this.ttsUpdateState());
             this.refs.$BRReadAloudToolbar.find('.play').click(this.ttsPlayPause.bind(this));
             this.refs.$BRReadAloudToolbar.find('.pause').click(this.ttsPlayPause.bind(this));
+            this.refs.$BRReadAloudToolbar.find('.jumpForward').click(this.ttsJumpForward.bind(this));
             const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="BRReadAloud-rate"]');
             $rateSelector.change(ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
             $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
@@ -146,6 +148,13 @@ BookReader.prototype.ttsStart = function () {
     this.$('.BRicon.read').addClass('unread');
     this.ttsSendAnalyticsEvent('Start');
     this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
+};
+
+BookReader.prototype.ttsJumpForward = function () {
+    if (this.ttsEngine.paused) {
+        this.ttsEngine.resume();
+    }
+    this.ttsEngine.jumpForward();
 };
 
 BookReader.prototype.ttsUpdateState = function() {

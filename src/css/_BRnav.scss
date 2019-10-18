@@ -79,10 +79,9 @@
   $toolbarHeight: $brNavHeightMobile;
   display: flex;
   justify-content: center;
-  margin: 10px;
-  border-radius: 100px;
-  margin-top: 0;
-  width: 200px;
+  margin: 5px;
+  padding: 0 ($brNavHeightMobile / 4);
+  border-radius: 4px;
   align-self: center;
   height: $toolbarHeight;
   animation: fadeUp .2s;
@@ -104,16 +103,23 @@
 
   &--controls {
     display: flex;
-    // Leave some space so that we're centered around the play button
-    padding-right: $toolbarHeight;
   }
   &--controls > * {
     height: 100%;
   }
 
-  .icon {
-    width: $toolbarHeight;
-    height: $toolbarHeight;
+
+  .BRToolbarButton {
+    .icon {
+      width: $toolbarHeight;
+      height: $toolbarHeight;
+      box-sizing: border-box;
+    }
+
+    &.jumpForward .icon { padding: 9px; }
+
+    // leave room for jump back
+    &.play, &.pause { margin-left: $toolbarHeight / 3; }
   }
 
   button {
@@ -155,7 +161,7 @@
       border: 0;
       text-align: center;
       text-align-last: center; /* Chrome */
-      padding-top: 64%;
+      padding-top: 60%;
       padding-left: 10%;
       padding-right: 10%;
       color: #333;
