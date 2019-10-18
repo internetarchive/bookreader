@@ -1280,9 +1280,6 @@ i.BRicon {
 .BRReadAloudToolbar .BRToolbarButton.jumpForward .icon {
   padding: 9px;
 }
-.BRReadAloudToolbar .BRToolbarButton.play, .BRReadAloudToolbar .BRToolbarButton.pause {
-  margin-left: 13.3333333333px;
-}
 .BRReadAloudToolbar button {
   padding: 0px;
   margin: 0px;

@@ -117,9 +117,6 @@
     }
 
     &.jumpForward .icon { padding: 9px; }
-
-    // leave room for jump back
-    &.play, &.pause { margin-left: $toolbarHeight / 3; }
   }
 
   button {
