@@ -62,7 +62,7 @@ export default class AbstractTTSEngine {
         this.voice = null;
         // Listen for voice changes (fired by subclasses)
         this.events.on('voiceschanged', () => {
-            this.voice = AbstractTTSEngine.getBestVoice(this.getVoices(), this.opts.bookLanguage);
+            this.voice = AbstractTTSEngine.getBestBookVoice(this.getVoices(), this.opts.bookLanguage);
         });
         this.events.trigger('voiceschanged');
     }
@@ -138,7 +138,6 @@ export default class AbstractTTSEngine {
     step() {
         this.chunkStream.pull()
         .then(item => {
-            console.log(JSON.stringify(item));
             if (item.done) {
                 this.stop();
                 this.opts.onDone();
@@ -208,49 +207,48 @@ export default class AbstractTTSEngine {
 
     /** Convenience wrapper for {@see AbstractTTSEngine.getBestVoice} */
     getBestVoice() {
-        return AbstractTTSEngine.getBestVoice(this.getVoices(), this.opts.bookLanguage);
+        return AbstractTTSEngine.getBestBookVoice(this.getVoices(), this.opts.bookLanguage);
     }
 
     /**
      * @private
+     * Find the best voice to use given the available voices, the book language, and the user's
+     * languages.
      * @param {SpeechSynthesisVoice[]} voices
      * @param {ISO6391} bookLanguage
      * @param {string[]} userLanguages languages in BCP47 format (e.g. en-US). Ordered by preference.
      * @return {SpeechSynthesisVoice | undefined}
      */
-    static getBestVoice(voices, bookLanguage, userLanguages=navigator.languages) {
-        const possibleVoices = voices.filter(v => v.lang.startsWith(bookLanguage));
+    static getBestBookVoice(voices, bookLanguage, userLanguages=navigator.languages) {
+        const bookLangVoices = voices.filter(v => v.lang.startsWith(bookLanguage));
+        // navigator.languages browser support isn't great yet, so get just 1 langauge otherwise
         // Sample navigator.languages: ["en-CA", "fr-CA", "fr", "en-US", "en", "de-DE", "de"]
         userLanguages = userLanguages || (navigator.language ? [navigator.language] : []);
-        const matchingUserLanguages = userLanguages.filter(lang => lang.startsWith(bookLanguage));
-        if (matchingUserLanguages.length) {
-            const matchingVoice = AbstractTTSEngine.getMatchingVoice(matchingUserLanguages, possibleVoices);
-            if (matchingVoice) return matchingVoice;
-        }
 
-        // if no matching languages, then we'll return the best possible voice
-        if (possibleVoices.length) {
-            const matchingVoice = possibleVoices.find(v => v.default) || possibleVoices[0];
-            if (matchingVoice) return matchingVoice;
-        }
+        // user languages that match the book language
+        const matchingUserLangs = userLanguages.filter(lang => lang.startsWith(bookLanguage));
 
-        // Still no luck? then we'll try to find a voice in the user's langauge; ignoring book lang
-        const userVoice = AbstractTTSEngine.getMatchingVoice(userLanguages, voices);
-        if (userVoice) return userVoice;
-
+        // Try to find voices that intersect these two sets
+        return AbstractTTSEngine.getMatchingVoice(matchingUserLangs, bookLangVoices) ||
+        // no user languages match the books; let's return the best voice for the book language
+        (bookLangVoices.find(v => v.default) || bookLangVoices[0])
+        // No voices match the book language? let's find a voice in the user's langauge
+        // and ignore book lang
+        || AbstractTTSEngine.getMatchingVoice(userLanguages, voices)
         // C'mon! Ok, just read with whatever we got!
-        return voices.find(v => v.default) || voices[0];
+        || (voices.find(v => v.default) || voices[0]);
     }
 
     /**
-     * 
-     * @param {string[]} languages in BCP 47 format (e.g. 'en-US', or 'en')
-     * @param {SpeechSynthesisVoice[]} voices 
+     * @private
+     * Get the best voice that matches one of the BCP47 languages (order by preference)
+     * @param {string[]} languages in BCP 47 format (e.g. 'en-US', or 'en'); ordered by preference
+     * @param {SpeechSynthesisVoice[]} voices voices to choose from
      * @return {SpeechSynthesisVoice | undefined}
      */
     static getMatchingVoice(languages, voices) {
         for (let lang of languages) {
-            // Chrome Android was returning languages like `en_US` instead of `en-US`.
+            // Chrome Android was returning voice languages like `en_US` instead of `en-US`
             const matchingVoices = voices.filter(v => v.lang.replace('_', '-').startsWith(lang));
             if (matchingVoices.length) {
                 return matchingVoices.find(v => v.default) || matchingVoices[0];
