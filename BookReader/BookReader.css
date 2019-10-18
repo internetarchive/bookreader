@@ -1168,7 +1168,7 @@ i.BRicon {
     transform: translateY(0);
   }
 }
-.BRlowertoolbar {
+.BRfooter {
   position: absolute;
   bottom: 0;
   left: 0;
