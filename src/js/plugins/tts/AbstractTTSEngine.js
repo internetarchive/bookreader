@@ -117,14 +117,23 @@ export default class AbstractTTSEngine {
 
     /** @public */
     pause() {
+        const fireEvent = !this.paused && this.activeSound;
         this.paused = true;
         if (this.activeSound) this.activeSound.pause();
+        if (fireEvent) this.events.trigger('pause');
     }
 
     /** @public */
     resume() {
+        const fireEvent = this.paused && this.activeSound;
         this.paused = false;
         if (this.activeSound) this.activeSound.resume();
+        if (fireEvent) this.events.trigger('resume');
+    }
+
+    togglePlayPause() {
+        if (this.paused) this.resume();
+        else this.pause();
     }
 
     /** @public */

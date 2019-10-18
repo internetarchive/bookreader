@@ -27,8 +27,11 @@ export default class WebTTSEngine extends AbstractTTSEngine {
     start(leafIndex, numLeafs) {
         // Need to run in this function to capture user intent to start playing audio
         if ('mediaSession' in navigator) {
-            var audio = new Audio(SILENCE_10S);
+            const audio = new Audio(SILENCE_10S);
             audio.loop = true;
+
+            this.events.on('pause', () => audio.pause());
+            this.events.on('resume', () => audio.play());
             audio.play().then(() => {
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: br.bookTitle,
