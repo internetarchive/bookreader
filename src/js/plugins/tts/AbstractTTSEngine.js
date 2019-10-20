@@ -214,7 +214,7 @@ export default class AbstractTTSEngine {
                     return {
                         leafIndex,
                         text: c[0],
-                        lineRects: c.slice(1)
+                        lineRects: AbstractTTSEngine._fixChunkRects(c.slice(1)),
                     };
                 });
             }
@@ -270,5 +270,33 @@ export default class AbstractTTSEngine {
                 return matchingVoices.find(v => v.default) || matchingVoices[0];
             }
         }
+    }
+
+    /**
+     * @private
+     * Sometimes the first rectangle will be ridiculously wide/tall. Find those and fix them
+     * *NOTE*: Modifies the original array and returns it
+     * @param {DJVURect[]} rects 
+     * @return {DJVURect[]}
+     */
+    static _fixChunkRects(rects) {
+        if (rects.length < 2) return rects;
+
+        const firstRect = rects[0];
+        const secondRect = rects[1];
+        const { 0: left, 1: bottom, 2: right, 3: top } = firstRect;
+        const width = right - left;
+        const secondHeight = secondRect[1] - secondRect[3];
+        const secondWidth = secondRect[2] - secondRect[0];
+        const secondRight = secondRect[2];
+
+        if (width > secondWidth * 30) {
+            // Set the end to be the same
+            firstRect[2] = secondRight;
+            // And the top to be the same height
+            firstRect[3] = bottom - secondHeight;
+        }
+
+        return rects;
     }
 }
