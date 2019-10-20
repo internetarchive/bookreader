@@ -127,14 +127,16 @@ export class WebTTSSound {
         this.utterance.rate = this.rate;
 
         // Useful for debugging things
-        // this.utterance.addEventListener('pause', () => console.log('pause'));
-        // this.utterance.addEventListener('resume', () => console.log('resume'));
-        // this.utterance.addEventListener('start', () => console.log('start'));
-        // this.utterance.addEventListener('end', () => console.log('end'));
-        // this.utterance.addEventListener('error', () => console.log('error'));
-        // this.utterance.addEventListener('boundary', () => console.log('boundary'));
-        // this.utterance.addEventListener('mark', () => console.log('mark'));
-        // this.utterance.addEventListener('finish', () => console.log('finish'));
+        if (location.toString().indexOf('debugReadAloud=true') != -1) {
+            this.utterance.addEventListener('pause', () => console.log('pause'));
+            this.utterance.addEventListener('resume', () => console.log('resume'));
+            this.utterance.addEventListener('start', () => console.log('start'));
+            this.utterance.addEventListener('end', () => console.log('end'));
+            this.utterance.addEventListener('error', () => console.log('error'));
+            this.utterance.addEventListener('boundary', () => console.log('boundary'));
+            this.utterance.addEventListener('mark', () => console.log('mark'));
+            this.utterance.addEventListener('finish', () => console.log('finish'));
+        }
 
         // Keep track of the speech synthesis events that come in; they have useful info
         // about progress (like charIndex)
@@ -295,11 +297,14 @@ export class WebTTSSound {
      * by pausing after 14 seconds and ~instantly resuming.
      */
     _chromePausingBugFix() {
-        const timeoutPromise = sleep(14000).then(() => 'timeout');
+        const timeoutPromise = sleep(4000).then(() => 'timeout');
         const pausePromise = promisifyEvent(this.utterance, 'pause').then(() => 'paused');
         const endPromise = promisifyEvent(this.utterance, 'end').then(() => 'ended');
         return Promise.race([timeoutPromise, pausePromise, endPromise])
         .then(result => {
+            if (location.toString().indexOf('debugReadAloud=true') != -1) {
+                console.log(`CHROME-PAUSE-HACK: ${result}`);
+            }
             switch(result) {
                 case 'ended':
                     // audio was stopped/finished; nothing to do
