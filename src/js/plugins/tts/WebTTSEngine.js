@@ -297,7 +297,7 @@ export class WebTTSSound {
      * by pausing after 14 seconds and ~instantly resuming.
      */
     _chromePausingBugFix() {
-        const timeoutPromise = sleep(4000).then(() => 'timeout');
+        const timeoutPromise = sleep(14000).then(() => 'timeout');
         const pausePromise = promisifyEvent(this.utterance, 'pause').then(() => 'paused');
         const endPromise = promisifyEvent(this.utterance, 'end').then(() => 'ended');
         return Promise.race([timeoutPromise, pausePromise, endPromise])
@@ -311,8 +311,17 @@ export class WebTTSSound {
                     break;
                 case 'paused':
                     // audio was paused; wait for resume
-                    promisifyEvent(this.utterance, 'resume')
-                    .then(() => this._chromePausingBugFix());
+                    // Chrome won't let you resume the audio if 14s have passed 🤷‍
+                    // We could do the same as before (but resume+pause instead of pause+resume),
+                    // but that means we'd _constantly_ be running in the background. So in that
+                    // case, let's just restart the chunk
+                    Promise.race([
+                        promisifyEvent(this.utterance, 'resume'),
+                        sleep(14000).then(() => 'timeout'),
+                    ])
+                    .then(result => {
+                        result == 'timeout' ? this.reload() : this._chromePausingBugFix();
+                    });
                     break;
                 case 'timeout':
                     // We hit Chrome's secret cut off time. Pause/resume
