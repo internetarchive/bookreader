@@ -3925,15 +3925,50 @@ BookReader.prototype.navigationIsVisible = function() {
 };
 
 /**
+ * Main controller that toggles navigation.
+ * Defaults to SHOW the navigation chrome
+ */
+BookReader.prototype.toggleNavigation = function brToggleNavigation(hide) {
+    var animationLength = 300;
+    var animationType = 'linear';
+    var resizePageContainer = function resizePageContainer () {
+        /* main container fills whole container */
+        this.resizeBRcontainer();
+        if (this.constMode2up == this.mode) {
+            /*  2 page view has another layer of re-sizing.
+                Let's make sure that it happens. */
+            this.prepareTwoPageView();
+        }
+    }.bind(this);
+
+    var toolbarHeight = 0;
+    var navbarHeight = 0;
+    if (hide) {
+        toolbarHeight = this.getToolBarHeight() * -1;
+        navbarHeight = this.getNavHeight() * -1;
+    }
+
+    this.refs.$BRtoolbar.animate(
+        { top: toolbarHeight },
+        animationLength,
+        animationType,
+        resizePageContainer
+    );
+    this.refs.$BRnav.animate(
+        { bottom: navbarHeight },
+        animationLength,
+        animationType,
+        resizePageContainer
+    );
+};
+/**
  * Hide navigation elements, if visible
  */
 BookReader.prototype.hideNavigation = function() {
     // Check if navigation is showing
     if (this.navigationIsVisible()) {
-        var toolbarHeight = this.getToolBarHeight();
-        var navbarHeight = this.getFooterHeight();
-        this.refs.$BRtoolbar.animate({top: toolbarHeight * -1});
-        this.refs.$BRfooter.animate({bottom: navbarHeight * -1});
+        var hide = true;
+        this.toggleNavigation(hide);
     }
 };
 
@@ -3943,8 +3978,7 @@ BookReader.prototype.hideNavigation = function() {
 BookReader.prototype.showNavigation = function() {
     // Check if navigation is hidden
     if (!this.navigationIsVisible()) {
-        this.refs.$BRtoolbar.animate({top:0});
-        this.refs.$BRfooter.animate({bottom:0});
+        this.toggleNavigation();
     }
 };
 
