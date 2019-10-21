@@ -130,8 +130,7 @@ BookReader.prototype.initNavbar = (function (super_) {
                 </div>`);
             this.refs.$BRReadAloudToolbar.insertBefore($el);
             this.ttsEngine.events.on('pause resume', () => this.ttsUpdateState());
-            this.refs.$BRReadAloudToolbar.find('.play').click(this.ttsPlayPause.bind(this));
-            this.refs.$BRReadAloudToolbar.find('.pause').click(this.ttsPlayPause.bind(this));
+            this.refs.$BRReadAloudToolbar.find('.playPause').click(this.ttsPlayPause.bind(this));
             this.refs.$BRReadAloudToolbar.find('.jumpForward').click(this.ttsJumpForward.bind(this));
             const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="BRReadAloud-rate"]');
             $rateSelector.change(ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
