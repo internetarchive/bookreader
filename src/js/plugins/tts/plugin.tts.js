@@ -47,6 +47,18 @@ BookReader.prototype.init = (function(super_) {
     return function() {
         if (this.options.enableTtsPlugin) {
             // Bind to events
+
+            // TODO move this to BookReader.js or something
+            this.bind(BookReader.eventNames.fragmentChange, () => {
+                if (this.mode == this.constMode2up) {
+                    // clear highlights if they're no longer valid for this page
+                    const visibleIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
+                    const visibleSelector = visibleIndices.map(i => `.BRReadAloudHilite.Leaf-${i}`).join(', ');
+                    $(this.ttsHilites).filter(visibleSelector).show();
+                    $(this.ttsHilites).not(visibleSelector).hide();
+                }
+            });
+
             this.bind(BookReader.eventNames.PostInit, function(e, br) {
                 br.$('.BRicon.read').click(function(e) {
                     br.ttsToggle();
@@ -96,8 +108,8 @@ BookReader.prototype.initNavbar = (function (super_) {
             this.refs.$BRReadAloudToolbar = $(`
                 <div class="BRReadAloudToolbar" style="display:none">
                     <div class="BRReadAloudToolbar--controls">
-                        <div class="BRToolbarButton playback-rate-container">
-                            <img class="icon" src="${this.imagesBaseURL}icon_playback-rate.svg" alt="Playback Rate"/>
+                        <div class="BRToolbarButton playback-rate-container" title="Change Playback Speed">
+                            <img class="icon" src="${this.imagesBaseURL}icon_playback-rate.svg" alt="Playback Speed"/>
                             <select name="BRReadAloud-rate">
                                 <option value="0.25">0.25x</option>
                                 <option value="0.5">0.5x</option>
@@ -109,9 +121,11 @@ BookReader.prototype.initNavbar = (function (super_) {
                                 <option value="2">2x</option>
                             </select>
                         </div>
-                        <button class="BRToolbarButton play" style="display:none"><img class="icon" src="${this.imagesBaseURL}icon_play.svg" alt="Play"/></button>
-                        <button class="BRToolbarButton pause"><img class="icon" src="${this.imagesBaseURL}icon_pause.svg" alt="Pause"/></button>
-                        <button class="BRToolbarButton jumpForward"><img class="icon" src="${this.imagesBaseURL}icon_skip-ahead.svg" alt="Jump forward"/></button>
+                        <button class="BRToolbarButton playPause" title="Toggle Pause">
+                            <img class="icon play" src="${this.imagesBaseURL}icon_play.svg" alt="Play" style="display:none">
+                            <img class="icon pause" src="${this.imagesBaseURL}icon_pause.svg" alt="Pause">
+                        </button>
+                        <button class="BRToolbarButton jumpForward" title="Jump Forward"><img class="icon" src="${this.imagesBaseURL}icon_skip-ahead.svg" alt="Jump forward"/></button>
                     </div>
                 </div>`);
             this.refs.$BRReadAloudToolbar.insertBefore($el);
@@ -315,7 +329,7 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
 
         var div = document.createElement('div');
         this.ttsHilites.push(div);
-        $(div).prop('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo(this.refs.$brTwoPageView);
+        $(div).prop('className', 'BookReaderSearchHilite BRReadAloudHilite Leaf-' + chunk.leafIndex).css('zIndex', 3).appendTo(this.refs.$brTwoPageView);
         this.setHilightCss2UP(div, chunk.leafIndex, l, r, t, b);
     }
 };
