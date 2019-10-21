@@ -11,6 +11,9 @@
 }
 
 .BRToolbarButton, .BRicon {
+  position: relative;
+  transition-duration: .2s;
+  transition-property: background-color, border;
   &:hover {
     background-color: rgba(50,50,50,.2);
   }
@@ -34,8 +37,9 @@ i.BRicon { display: inline-block; }
 .BRicon.logo { @include sprite-offet(0); }
 .BRicon.info { @include sprite-offet(1); }
 .BRicon.share { @include sprite-offet(3); }
-.BRicon.read { @include sprite-offet(5); }
-.BRicon.unread { @include sprite-offet(7); }
+// We can only transition these because they are adjacent
+.BRicon.read { @include sprite-offet(5); transition-property: background-color, border, background-position; }
+.BRicon.unread { @include sprite-offet(7); transition-property: background-color, border, background-position; }
 .BRicon.full {
   @include sprite-offet(9);
   .BRfullscreenActive & { @include sprite-offet(35); } // 29
