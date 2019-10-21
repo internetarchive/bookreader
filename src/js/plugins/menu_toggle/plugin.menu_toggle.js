@@ -34,7 +34,7 @@
 
     function alwaysShowNav(br) {
       hideArrow(br);
-      removeToggleFromNav();
+      removeToggleFromNav(br);
       br.showNavigation();
     }
   
