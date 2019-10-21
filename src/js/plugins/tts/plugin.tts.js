@@ -329,7 +329,10 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
 
         var div = document.createElement('div');
         this.ttsHilites.push(div);
-        $(div).prop('className', 'BookReaderSearchHilite BRReadAloudHilite Leaf-' + chunk.leafIndex).css('zIndex', 3).appendTo(this.refs.$brTwoPageView);
+        $(div)
+        .prop('className', 'BookReaderSearchHilite BRReadAloudHilite Leaf-' + chunk.leafIndex)
+        .css('zIndex', 3)
+        .appendTo(this.refs.$brTwoPageView);
         this.setHilightCss2UP(div, chunk.leafIndex, l, r, t, b);
     }
 };

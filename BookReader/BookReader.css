@@ -1771,6 +1771,7 @@ i.BRicon {
   position: absolute;
   /* z-index is important */
   z-index: 4;
+  animation: hiliteFadeIn 0.2s;
 }
 .BookReader .BRchapter, .BookReader .BRsearch, .BRmobileMenu .BRchapter, .BRmobileMenu .BRsearch, .BRfloat .BRchapter, .BRfloat .BRsearch {
   position: absolute;
@@ -1936,6 +1937,14 @@ i.BRicon {
   display: inline-block;
 }
 
+@keyframes hiliteFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.2;
+  }
+}
 /* Mid size breakpoint */
 @media (max-width: 1050px) {
   .BookReader .BRbooksearch .BRsearchInput, .BRmobileMenu .BRbooksearch .BRsearchInput, .BRfloat .BRbooksearch .BRsearchInput {

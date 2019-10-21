@@ -2,6 +2,16 @@
  * BRnav is the bottom control bar (eg footer)
  */
 
+@mixin pseudoElementLayer {
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: block;
+}
+
 @mixin brNavDark {
   @include brDarkControls;
 
@@ -19,13 +29,7 @@
     .BRicon { border-left: 1px solid $brColorDarkBorder; }
     .BRicon.activated { background-color: rgba(255,255,255,0.4); }
     .BRicon.activated:before {
-      content: "";
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      box-sizing: border-box;
-      display: block;
+      @include pseudoElementLayer;
       border: 3px solid rgba(255,255,255,0.3);
     }
   }
@@ -56,13 +60,7 @@
     .BRicon { border-left: 1px solid $brColorLightBorder; }
     .BRicon.activated { background-color: rgba($brColorThemeblue,0.4); }
     .BRicon.activated:before {
-      content: "";
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      box-sizing: border-box;
-      display: block;
+      @include pseudoElementLayer;
       border: 3px solid rgba($brColorThemeblue,0.3);
     }
   }
