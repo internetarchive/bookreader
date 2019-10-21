@@ -106,6 +106,7 @@ export default class AbstractTTSEngine {
         });
 
         this.step();
+        this.events.trigger('start');
     }
 
     stop() {

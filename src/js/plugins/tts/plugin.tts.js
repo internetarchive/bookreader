@@ -59,12 +59,20 @@ BookReader.prototype.init = (function(super_) {
                 }
             });
 
-            this.bind(BookReader.eventNames.PostInit, function(e, br) {
-                br.$('.BRicon.read').click(function(e) {
-                    br.ttsToggle();
+            this.bind(BookReader.eventNames.PostInit, () => {
+                this.$('.BRicon.read').click(() => {
+                    this.ttsToggle();
                     return false;
                 });
-                if (br.ttsEngine) br.ttsEngine.init();
+                if (this.ttsEngine) {
+                    this.ttsEngine.init();
+                    if (/[?&]_autoReadAloud=show/.test(location.toString())) {
+                        this.refs.$BRReadAloudToolbar.show();
+                        this.$('.BRicon.read').addClass('unread activated');
+                        this.$('.BRReadAloudToolbar .play').show();
+                        this.$('.BRReadAloudToolbar .pause').hide();
+                    }
+                }
             });
 
             // This is fired when the hash changes by one of the other plugins!
@@ -129,7 +137,7 @@ BookReader.prototype.initNavbar = (function (super_) {
                     </div>
                 </div>`);
             this.refs.$BRReadAloudToolbar.insertBefore($el);
-            this.ttsEngine.events.on('pause resume', () => this.ttsUpdateState());
+            this.ttsEngine.events.on('pause resume start', () => this.ttsUpdateState());
             this.refs.$BRReadAloudToolbar.find('.playPause').click(this.ttsPlayPause.bind(this));
             this.refs.$BRReadAloudToolbar.find('.jumpForward').click(this.ttsJumpForward.bind(this));
             const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="BRReadAloud-rate"]');
@@ -171,7 +179,7 @@ BookReader.prototype.ttsJumpForward = function () {
 };
 
 BookReader.prototype.ttsUpdateState = function() {
-    if (this.ttsEngine.paused) {
+    if (this.ttsEngine.paused || !this.ttsEngine.playing) {
         this.$('.BRReadAloudToolbar .play').show();
         this.$('.BRReadAloudToolbar .pause').hide();
     } else {
@@ -181,8 +189,12 @@ BookReader.prototype.ttsUpdateState = function() {
 };
 
 BookReader.prototype.ttsPlayPause = function() {
-    this.ttsEngine.togglePlayPause();
-    this.ttsUpdateState(this.ttsEngine.paused);
+    if (!this.ttsEngine.playing) {
+        this.ttsToggle();
+    } else {
+        this.ttsEngine.togglePlayPause();
+        this.ttsUpdateState(this.ttsEngine.paused);
+    }
 };
 
 // ttsStop()
