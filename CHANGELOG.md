@@ -1,3 +1,6 @@
+# 4.4.0
+- New ReadAloud controls + engine. Uses browser's SpeechSynthesis API instead of server-side test-to-speech
+
 # 4.3.2
 - menu toggle plugin, now applies to in-page & fullscreen views + early escapes when navbar isn't present
 
