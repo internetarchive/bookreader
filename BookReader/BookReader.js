@@ -52,7 +52,9 @@ if (location.toString().indexOf('_debugShowConsole=true') != -1) {
             }
         }
 
+        // eslint-disable-next-line no-console
         var _realLog = console.log.bind(console);
+        // eslint-disable-next-line no-console
         console.log = function() {
             var args = Array.prototype.slice.call(arguments);
             _realLog.apply(console, args);
