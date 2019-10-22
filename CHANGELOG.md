@@ -1,3 +1,6 @@
+# 4.4.1
+- Remove accidental es6 syntax in BookReader.js (breaking IE11)
+
 # 4.4.0
 - New ReadAloud controls + engine. Uses browser's SpeechSynthesis API instead of server-side test-to-speech
 
