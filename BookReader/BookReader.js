@@ -31,7 +31,7 @@ if (location.toString().indexOf('_debugShowConsole=true') != -1) {
         logEl.style.overflow = 'auto';
         $(document.body).prepend(logEl);
 
-        var form = $(`<form><input style="width:100%; font-family: monospace;" id="_debugLogInput"></form>`);
+        var form = $('<form><input style="width:100%; font-family: monospace;" id="_debugLogInput"></form>');
         $(logEl).append(form);
         form.submit(function(ev) {
             ev.preventDefault();
