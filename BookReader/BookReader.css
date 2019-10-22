@@ -1327,8 +1327,8 @@ i.BRicon {
   padding: 9px;
 }
 .BRReadAloudToolbar button {
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
   border: 0px none;
   box-sizing: border-box;
   background: transparent none repeat scroll 0% 0%;

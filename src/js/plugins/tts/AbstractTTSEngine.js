@@ -276,7 +276,13 @@ export default class AbstractTTSEngine {
     /**
      * @private
      * Sometimes the first rectangle will be ridiculously wide/tall. Find those and fix them
-     * *NOTE*: Modifies the original array and returns it
+     * *NOTE*: Modifies the original array and returns it.
+     * *NOTE*: This should probably be fixed on the petabox side, and then removed here
+     * Has 2 problems:
+     *  - If the rect is the last rect on the page (and hence the only rect in the array),
+     *    the rect's size isn't fixed
+     * - Because this relies on the second rect, there's a chance it won't be the right
+     *   width
      * @param {DJVURect[]} rects 
      * @return {DJVURect[]}
      */

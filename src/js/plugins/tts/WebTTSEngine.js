@@ -127,7 +127,7 @@ export class WebTTSSound {
         this.utterance.rate = this.rate;
 
         // Useful for debugging things
-        if (location.toString().indexOf('debugReadAloud=true') != -1) {
+        if (location.toString().indexOf('_debugReadAloud=true') != -1) {
             this.utterance.addEventListener('pause', () => console.log('pause'));
             this.utterance.addEventListener('resume', () => console.log('resume'));
             this.utterance.addEventListener('start', () => console.log('start'));
@@ -302,7 +302,7 @@ export class WebTTSSound {
         const endPromise = promisifyEvent(this.utterance, 'end').then(() => 'ended');
         return Promise.race([timeoutPromise, pausePromise, endPromise])
         .then(result => {
-            if (location.toString().indexOf('debugReadAloud=true') != -1) {
+            if (location.toString().indexOf('_debugReadAloud=true') != -1) {
                 console.log(`CHROME-PAUSE-HACK: ${result}`);
             }
             switch(result) {
