@@ -76,5 +76,59 @@ describe('WebTTSSound', () => {
             return afterEventLoop()
             .then(() => expect(speechSynthesis.pause.callCount).toBe(1));
         });
+
+        test('on pause reloads if timed out', () => {
+            let clock = sinon.useFakeTimers();
+            const sound = new WebTTSSound('foo bah');
+            sound.load();
+            sound.play();
+            sound._chromePausingBugFix();
+            sound.pause();
+            clock.tick(2000);
+            clock.restore();
+            
+            return afterEventLoop()
+            .then(() => expect(speechSynthesis.cancel.callCount).toBe(1));
+        });
     });
+
+    test('fire pause if browser does not do it', () => {
+        const clock = sinon.useFakeTimers();
+        const languageGetter = jest.spyOn(window.navigator, 'userAgent', 'get');
+        languageGetter.mockReturnValue('firefox android');
+        const sound = new WebTTSSound('foo bah');
+        sound.load();
+        sound.play();
+        const dispatchSpy = sinon.spy(sound.utterance, 'dispatchEvent');
+        sound.pause();
+        clock.tick(1000);
+        clock.restore();
+        
+        return afterEventLoop()
+        .then(() => {
+            expect(dispatchSpy.callCount).toBe(1);
+            expect(dispatchSpy.args[0][0].type).toBe('pause');
+        });
+    });
+
+    test('fire resume if browser does not do it', () => {
+        const clock = sinon.useFakeTimers();
+        const languageGetter = jest.spyOn(window.navigator, 'userAgent', 'get');
+        languageGetter.mockReturnValue('firefox android');
+        const sound = new WebTTSSound('foo bah');
+        sound.load();
+        sound.play();
+        sound.started = true;
+        sound.paused = true;
+        const dispatchSpy = sinon.spy(sound.utterance, 'dispatchEvent');
+        sound.resume();
+        clock.tick(1000);
+        clock.restore();
+        
+        return afterEventLoop()
+        .then(() => {
+            expect(dispatchSpy.callCount).toBe(1);
+            expect(dispatchSpy.args[0][0].type).toBe('resume');
+        });
+    })
 });
