@@ -101,6 +101,8 @@ class FestivalTTSSound {
         /** @type {SMSound} */
         this.sound = null;
         this.rate = 1;
+        /** @type {function} calling this resolves the "play" promise */
+        this._finishResolver = null
     }
 
     get loaded() {
@@ -125,7 +127,10 @@ class FestivalTTSSound {
     }
 
     play() {
-        return new Promise(res => this.sound.play({ onfinish: res }))
+        return new Promise(res => {
+            this._finishResolver = res;
+            this.sound.play({ onfinish: res });
+        })
         .then(() => this.sound.destruct());
     }
 
@@ -135,6 +140,11 @@ class FestivalTTSSound {
     setPlaybackRate(rate) {
         this.rate = rate;
         this.sound.setPlaybackRate(rate);
+    }
+
+    finish() {
+        this.sound.stop();
+        this._finishResolver();
     }
 }
 

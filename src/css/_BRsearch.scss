@@ -1,12 +1,13 @@
 #{$brScope} {
-
   .BookReaderSearchHilite {
     opacity: 0.20;
     filter: alpha(opacity = 20);
     background-color: #0000ff;
-    position:absolute;
+    position: absolute;
     /* z-index is important */
-    z-index: $brZindexBase + 3;;
+    z-index: $brZindexBase + 3;
+
+    animation: hiliteFadeIn .2s;
   }
   .BRchapter, .BRsearch {
     position: absolute;
@@ -176,6 +177,11 @@
       display: inline-block;
     }
   }
+}
+
+@keyframes hiliteFadeIn {
+  from { opacity: 0; }
+  to { opacity: 0.2; }
 }
 
 /* Mid size breakpoint */

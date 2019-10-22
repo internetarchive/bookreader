@@ -21,11 +21,15 @@ BookReader.prototype.setup = (function (super_) {
 
         if (this.options.enableTtsPlugin) {
             this.ttsHilites = [];
-            const TTSEngine = WebTTSEngine.isSupported() ? WebTTSEngine :
-                              FestivalTTSEngine.isSupported() ? FestivalTTSEngine :
-                              null;
-            /** Temporary change for @cdrini so we don't release bleeding edge code */
-            // const TTSEngine = FestivalTTSEngine.isSupported() ? FestivalTTSEngine : null;
+            let TTSEngine = WebTTSEngine.isSupported() ? WebTTSEngine :
+                            FestivalTTSEngine.isSupported() ? FestivalTTSEngine :
+                            null;
+
+            if (/_forceTTSEngine=(festival|web)/.test(location.toString())) {
+                const engineName = location.toString().match(/_forceTTSEngine=(festival|web)/)[1];
+                TTSEngine = { festival: FestivalTTSEngine, web: WebTTSEngine }[engineName];
+            }
+
             if (TTSEngine) {
                 /** @type {AbstractTTSEngine} */
                 this.ttsEngine = new TTSEngine({
@@ -47,12 +51,32 @@ BookReader.prototype.init = (function(super_) {
     return function() {
         if (this.options.enableTtsPlugin) {
             // Bind to events
-            this.bind(BookReader.eventNames.PostInit, function(e, br) {
-                br.$('.BRicon.read').click(function(e) {
-                    br.ttsToggle();
+
+            // TODO move this to BookReader.js or something
+            this.bind(BookReader.eventNames.fragmentChange, () => {
+                if (this.mode == this.constMode2up) {
+                    // clear highlights if they're no longer valid for this page
+                    const visibleIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
+                    const visibleSelector = visibleIndices.map(i => `.BRReadAloudHilite.Leaf-${i}`).join(', ');
+                    $(this.ttsHilites).filter(visibleSelector).show();
+                    $(this.ttsHilites).not(visibleSelector).hide();
+                }
+            });
+
+            this.bind(BookReader.eventNames.PostInit, () => {
+                this.$('.BRicon.read').click(() => {
+                    this.ttsToggle();
                     return false;
                 });
-                if (br.ttsEngine) br.ttsEngine.init();
+                if (this.ttsEngine) {
+                    this.ttsEngine.init();
+                    if (/[?&]_autoReadAloud=show/.test(location.toString())) {
+                        this.refs.$BRReadAloudToolbar.show();
+                        this.$('.BRicon.read').addClass('unread activated');
+                        this.$('.BRReadAloudToolbar .play').show();
+                        this.$('.BRReadAloudToolbar .pause').hide();
+                    }
+                }
             });
 
             // This is fired when the hash changes by one of the other plugins!
@@ -71,19 +95,19 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
         if (this.options.enableTtsPlugin && this.ttsEngine) {
-            $el.find('.BRmobileMenu__moreInfoRow').after($(
-                "    <li>"
-                +"      <span>"
-                +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_speaker_open.svg\" alt=\"info-speaker\"/></span>"
-                +"        Read Aloud"
-                +"      </span>"
-                +"      <div>"
-                +"        <span class='larger'>Press to toggle read aloud</span> <br/>"
-                +"        <button class='BRicon read'></button>"
-                +"      </div>"
-                +"    </li>"
-            ));
-        }
+            $el.find('.BRmobileMenu__moreInfoRow').after($(`
+                <li>
+                    <span>
+                        <span class="DrawerIconWrapper"><img class="DrawerIcon" src="${this.imagesBaseURL}icon_speaker_open.svg" alt="info-speaker"/></span>
+                        Read Aloud
+                    </span>
+                    <div>
+                        <span class="larger">Press to toggle read aloud</span>
+                        <br/>
+                        <button class="BRicon read"></button>
+                    </div>
+                </li>`));
+        };
         return $el;
     };
 })(BookReader.prototype.buildMobileDrawerElement);
@@ -92,8 +116,36 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 BookReader.prototype.initNavbar = (function (super_) {
     return function () {
         var $el = super_.call(this);
-        var readIcon = '';
         if (this.options.enableTtsPlugin && this.ttsEngine) {
+            this.refs.$BRReadAloudToolbar = $(`
+                <div class="BRReadAloudToolbar" style="display:none">
+                    <div class="BRReadAloudToolbar--controls">
+                        <div class="BRToolbarButton playback-rate-container" title="Change Playback Speed">
+                            <img class="icon" src="${this.imagesBaseURL}icon_playback-rate.svg" alt="Playback Speed"/>
+                            <select name="BRReadAloud-rate">
+                                <option value="0.25">0.25x</option>
+                                <option value="0.5">0.5x</option>
+                                <option value="0.75">0.75x</option>
+                                <option value="1.0" selected>1.0x</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="1.75">1.75x</option>
+                                <option value="2">2x</option>
+                            </select>
+                        </div>
+                        <button class="BRToolbarButton playPause" title="Toggle Pause">
+                            <img class="icon play" src="${this.imagesBaseURL}icon_play.svg" alt="Play" style="display:none">
+                            <img class="icon pause" src="${this.imagesBaseURL}icon_pause.svg" alt="Pause">
+                        </button>
+                        <button class="BRToolbarButton jumpForward" title="Jump Forward"><img class="icon" src="${this.imagesBaseURL}icon_skip-ahead.svg" alt="Jump forward"/></button>
+                    </div>
+                </div>`);
+            this.refs.$BRReadAloudToolbar.insertBefore($el);
+            this.ttsEngine.events.on('pause resume start', () => this.ttsUpdateState());
+            this.refs.$BRReadAloudToolbar.find('.playPause').click(this.ttsPlayPause.bind(this));
+            this.refs.$BRReadAloudToolbar.find('.jumpForward').click(this.ttsJumpForward.bind(this));
+            const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="BRReadAloud-rate"]');
+            $rateSelector.change(ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
             $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
         }
         return $el;
@@ -117,15 +169,43 @@ BookReader.prototype.ttsStart = function () {
     if (this.constModeThumb == this.mode)
         this.switchMode(this.constMode1up);
 
-    this.$('.BRicon.read').addClass('unread');
+    this.refs.$BRReadAloudToolbar.show();
+    this.$('.BRicon.read').addClass('unread activated');
     this.ttsSendAnalyticsEvent('Start');
     this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
+};
+
+BookReader.prototype.ttsJumpForward = function () {
+    if (this.ttsEngine.paused) {
+        this.ttsEngine.resume();
+    }
+    this.ttsEngine.jumpForward();
+};
+
+BookReader.prototype.ttsUpdateState = function() {
+    if (this.ttsEngine.paused || !this.ttsEngine.playing) {
+        this.$('.BRReadAloudToolbar .play').show();
+        this.$('.BRReadAloudToolbar .pause').hide();
+    } else {
+        this.$('.BRReadAloudToolbar .play').hide();
+        this.$('.BRReadAloudToolbar .pause').show();
+    }
+};
+
+BookReader.prototype.ttsPlayPause = function() {
+    if (!this.ttsEngine.playing) {
+        this.ttsToggle();
+    } else {
+        this.ttsEngine.togglePlayPause();
+        this.ttsUpdateState(this.ttsEngine.paused);
+    }
 };
 
 // ttsStop()
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
-    this.$('.BRicon.read').removeClass('unread');
+    this.refs.$BRReadAloudToolbar.hide();
+    this.$('.BRicon.read').removeClass('unread activated');
     this.ttsSendAnalyticsEvent('Stop');
     this.ttsEngine.stop();
     this.ttsRemoveHilites();
@@ -264,7 +344,10 @@ BookReader.prototype.ttsHilite2UP = function (chunk) {
 
         var div = document.createElement('div');
         this.ttsHilites.push(div);
-        $(div).prop('className', 'BookReaderSearchHilite').css('zIndex', 3).appendTo(this.refs.$brTwoPageView);
+        $(div)
+        .prop('className', 'BookReaderSearchHilite BRReadAloudHilite Leaf-' + chunk.leafIndex)
+        .css('zIndex', 3)
+        .appendTo(this.refs.$brTwoPageView);
         this.setHilightCss2UP(div, chunk.leafIndex, l, r, t, b);
     }
 };

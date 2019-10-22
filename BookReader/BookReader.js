@@ -22,6 +22,51 @@ This file is part of BookReader.
 
 window.BookReader = (function ($) {
 
+if (location.toString().indexOf('_debugShowConsole=true') != -1) {
+    $(function() {
+        var logEl = document.createElement('div');
+        logEl.id = '_debugLog';
+        logEl.style.width = '100%';
+        logEl.style.height = '300px';
+        logEl.style.overflow = 'auto';
+        $(document.body).prepend(logEl);
+
+        var form = $(`<form><input style="width:100%; font-family: monospace;" id="_debugLogInput"></form>`);
+        $(logEl).append(form);
+        form.submit(function(ev) {
+            ev.preventDefault();
+            var result = eval(form.find('input').val());
+            logToScreen([result]);
+        });
+
+        var currentRun = 0;
+        function logToScreen(args) {
+            var html = Array.from(args).map(JSON.stringify).join(',');
+            if (logEl.lastChild && logEl.lastChild.lastChild.innerHTML == html) {
+                logEl.lastChild.firstChild.innerHTML = '(' + (currentRun++) + ')';
+            } else {
+                currentRun = 1;
+                var div = document.createElement('div');
+                div.innerHTML = '<code></code> <code>' + html + '</code>';
+                logEl.appendChild(div);
+            }
+        }
+
+        // eslint-disable-next-line no-console
+        var _realLog = console.log.bind(console);
+        // eslint-disable-next-line no-console
+        console.log = function() {
+            var args = Array.prototype.slice.call(arguments);
+            _realLog.apply(console, args);
+            logToScreen(args);
+        }
+
+        window.onerror = function() {
+            logToScreen(Array.prototype.slice.call(arguments));
+        };
+    })
+}
+
 /**
  * BookReader
  * @param {Object} options
@@ -722,7 +767,7 @@ BookReader.prototype.setupTooltips = function() {
         if ($el.parents('.BRtoolbar').length) {
             options.positions = ['bottom'];
             options.spikeLength = 12;
-        } else if ($el.parents('.BRnav').length) {
+        } else if ($el.parents('.BRfooter').length) {
             options.positions = ['top'];
         }
         $el.bt(options);
@@ -1248,7 +1293,7 @@ BookReader.prototype.zoom1up = function(direction) {
 BookReader.prototype.resizeBRcontainer = function() {
   this.refs.$brContainer.css({
     top: this.getToolBarHeight(),
-    bottom: this.getNavHeight(),
+    bottom: this.getFooterHeight(),
   });
 }
 
@@ -3181,6 +3226,7 @@ BookReader.prototype.initNavbar = function() {
         navbarTitleHtml = "<div class=\"BRnavTitle\">" + this.options.navbarTitle + "</div>";
     }
 
+    this.refs.$BRfooter = $('<div class="BRfooter"></div>');
     this.refs.$BRnav = $(
         "<div class=\"BRnav BRnavDesktop\">"
         +"  <div class=\"BRnavCntl BRnavCntlBtm BRdn js-tooltip\" title=\"Toogle toolbars\"></div>"
@@ -3200,15 +3246,15 @@ BookReader.prototype.initNavbar = function() {
         +     "<button class=\"BRicon twopg desktop-only js-tooltip\"></button>"
         +     "<button class=\"BRicon thumb desktop-only js-tooltip\"></button>"
 
-        // zoomx`
+        // zoomx
         +     "<button class='BRicon zoom_out desktop-only js-tooltip'></button>"
         +     "<button class='BRicon zoom_in desktop-only js-tooltip'></button>"
         +     "<button class='BRicon full js-tooltip'></button>"
         +"  </div>"
         +"</div>"
     );
-
-    this.refs.$br.append(this.refs.$BRnav);
+    this.refs.$BRfooter.append(this.refs.$BRnav);
+    this.refs.$br.append(this.refs.$BRfooter);
 
     var self = this;
     this.$('.BRpager').slider({
@@ -3254,6 +3300,7 @@ BookReader.prototype.initEmbedNavbar = function() {
       logoHtml = "<a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a>";
     }
 
+    this.refs.$BRfooter = $('<div class="BRfooter"></div>');
     this.refs.$BRnav = $('<div class="BRnav BRnavEmbed">'
         +   logoHtml
         +   "<span class='BRembedreturn'>"
@@ -3265,8 +3312,8 @@ BookReader.prototype.initEmbedNavbar = function() {
         +         '<button class="BRicon full"></button>'
         +   "</span>"
         + '</div>');
-
-    this.refs.$br.append(this.refs.$BRnav);
+    this.refs.$BRfooter.append(this.refs.$BRnav);
+    this.refs.$br.append(this.refs.$BRfooter);
 };
 
 /**
@@ -3633,7 +3680,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
                     promises.push(self.refs.$BRtoolbar.animate(
                         {top: self.getToolBarHeight() * -1}
                     ).promise());
-                promises.push(self.$('.BRnav').animate({bottom: self.getNavHeight() * -1}).promise());
+                promises.push(self.$('.BRfooter').animate({bottom: self.getFooterHeight() * -1}).promise());
                 $brNavCntlBtmEl.addClass('BRup').removeClass('BRdn');
                 $brNavCntlTopEl.addClass('BRdn').removeClass('BRup');
                 self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
@@ -3641,7 +3688,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
             } else {
                 if (self.refs.$BRtoolbar)
                     promises.push(self.refs.$BRtoolbar.animate({top:0}).promise());
-                promises.push(self.$('.BRnav').animate({bottom:0}).promise());
+                promises.push(self.$('.BRfooter').animate({bottom:0}).promise());
                 $brNavCntlBtmEl.addClass('BRdn').removeClass('BRup');
                 $brNavCntlTopEl.addClass('BRup').removeClass('BRdn');
                 self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
@@ -3884,9 +3931,9 @@ BookReader.prototype.hideNavigation = function() {
     // Check if navigation is showing
     if (this.navigationIsVisible()) {
         var toolbarHeight = this.getToolBarHeight();
-        var navbarHeight = this.getNavHeight();
+        var navbarHeight = this.getFooterHeight();
         this.refs.$BRtoolbar.animate({top: toolbarHeight * -1});
-        this.refs.$BRnav.animate({bottom: navbarHeight * -1});
+        this.refs.$BRfooter.animate({bottom: navbarHeight * -1});
     }
 };
 
@@ -3897,7 +3944,7 @@ BookReader.prototype.showNavigation = function() {
     // Check if navigation is hidden
     if (!this.navigationIsVisible()) {
         this.refs.$BRtoolbar.animate({top:0});
-        this.refs.$BRnav.animate({bottom:0});
+        this.refs.$BRfooter.animate({bottom:0});
     }
 };
 
@@ -4450,10 +4497,11 @@ BookReader.prototype.getToolBarHeight = function() {
  * @param {boolean} ignoreDisplay - bypass the display check
  * @return {number}
  */
-BookReader.prototype.getNavHeight = function() {
-    if (this.refs.$BRnav) {
-        var outerHeight = this.refs.$BRnav.outerHeight();
-        var bottom = parseInt(this.refs.$BRnav.css('bottom'));
+BookReader.prototype.getFooterHeight = function() {
+    var $heightEl = this.mode == this.constMode2up ? this.refs.$BRfooter : this.refs.$BRnav;
+    if ($heightEl && this.refs.$BRfooter) {
+        var outerHeight = $heightEl.outerHeight();
+        var bottom = parseInt(this.refs.$BRfooter.css('bottom'));
         if (!isNaN(outerHeight) && !isNaN(bottom)) {
           return outerHeight + bottom;
         }

@@ -38,6 +38,7 @@ import AsyncStream from './AsyncStream.js';
  * @property {() => void} stop
  * @property {() => void} pause
  * @property {() => void} resume
+ * @property {() => void} finish force the sound to 'finish'
  * @property {number => void} setPlaybackRate
  **/
 
@@ -105,6 +106,7 @@ export default class AbstractTTSEngine {
         });
 
         this.step();
+        this.events.trigger('start');
     }
 
     stop() {
@@ -112,18 +114,33 @@ export default class AbstractTTSEngine {
         this.playing = false;
         this.chunkStream = null;
         this.activeSound = null;
+        this.events.trigger('stop');
     }
 
     /** @public */
     pause() {
+        const fireEvent = !this.paused && this.activeSound;
         this.paused = true;
         if (this.activeSound) this.activeSound.pause();
+        if (fireEvent) this.events.trigger('pause');
     }
 
     /** @public */
     resume() {
+        const fireEvent = this.paused && this.activeSound;
         this.paused = false;
         if (this.activeSound) this.activeSound.resume();
+        if (fireEvent) this.events.trigger('resume');
+    }
+
+    togglePlayPause() {
+        if (this.paused) this.resume();
+        else this.pause();
+    }
+
+    /** @public */
+    jumpForward() {
+        if (this.activeSound) this.activeSound.finish();
     }
 
     /** @param {number} newRate */
@@ -198,7 +215,7 @@ export default class AbstractTTSEngine {
                     return {
                         leafIndex,
                         text: c[0],
-                        lineRects: c.slice(1)
+                        lineRects: AbstractTTSEngine._fixChunkRects(c.slice(1)),
                     };
                 });
             }
@@ -254,5 +271,39 @@ export default class AbstractTTSEngine {
                 return matchingVoices.find(v => v.default) || matchingVoices[0];
             }
         }
+    }
+
+    /**
+     * @private
+     * Sometimes the first rectangle will be ridiculously wide/tall. Find those and fix them
+     * *NOTE*: Modifies the original array and returns it.
+     * *NOTE*: This should probably be fixed on the petabox side, and then removed here
+     * Has 2 problems:
+     *  - If the rect is the last rect on the page (and hence the only rect in the array),
+     *    the rect's size isn't fixed
+     * - Because this relies on the second rect, there's a chance it won't be the right
+     *   width
+     * @param {DJVURect[]} rects 
+     * @return {DJVURect[]}
+     */
+    static _fixChunkRects(rects) {
+        if (rects.length < 2) return rects;
+
+        const firstRect = rects[0];
+        const secondRect = rects[1];
+        const { 0: left, 1: bottom, 2: right, 3: top } = firstRect;
+        const width = right - left;
+        const secondHeight = secondRect[1] - secondRect[3];
+        const secondWidth = secondRect[2] - secondRect[0];
+        const secondRight = secondRect[2];
+
+        if (width > secondWidth * 30) {
+            // Set the end to be the same
+            firstRect[2] = secondRight;
+            // And the top to be the same height
+            firstRect[3] = bottom - secondHeight;
+        }
+
+        return rects;
     }
 }
