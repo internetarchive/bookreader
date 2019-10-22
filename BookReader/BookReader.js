@@ -3933,11 +3933,8 @@ BookReader.prototype.toggleNavigation = function brToggleNavigation(hide) {
     var animationType = 'linear';
     var resizePageContainer = function resizePageContainer () {
         /* main container fills whole container */
-        this.resizeBRcontainer();
-        if (this.constMode2up == this.mode) {
-            /*  2 page view has another layer of re-sizing.
-                Let's make sure that it happens. */
-            this.prepareTwoPageView();
+        if (this.constMode2up !== this.mode) {
+            this.resizeBRcontainer();
         }
     }.bind(this);
 
