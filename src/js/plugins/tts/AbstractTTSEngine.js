@@ -1,14 +1,6 @@
-import AsyncStream from './AsyncStream.js';
+import PageChunkIterator from './PageChunkIterator.js';
 /** @typedef {import('./utils.js').ISO6391} ISO6391 */
-
-/**
- * @export
- * @typedef {Object} PageChunk
- * @property {Number} leafIndex
- * @property {String} text
- * @property {DJVURect[]} lineRects
- * @property {AbstractTTSSound} sound
- */
+/** @typedef {import('./PageChunk.js')} PageChunk */
 
 /**
  * @export
@@ -24,12 +16,8 @@ import AsyncStream from './AsyncStream.js';
  */
 
 /**
- * @typedef {[number, number, number, number]} DJVURect
- * coords are in l,b,r,t order
- */
-
-/**
  * @typedef {Object} AbstractTTSSound
+ * @property {PageChunk} chunk
  * @property {boolean} loaded
  * @property {number} rate
  * @property {SpeechSynthesisVoice} voice
@@ -52,8 +40,8 @@ export default class AbstractTTSEngine {
         this.playing = false;
         this.paused = false;
         this.opts = options;
-        /** @type {AsyncStream<PageChunk>} */
-        this.chunkStream = null;
+        /** @type {PageChunkIterator} */
+        this._chunkIterator = null;
         /** @type {AbstractTTSSound} */
         this.activeSound = null;
         this.playbackRate = 1;
@@ -91,18 +79,10 @@ export default class AbstractTTSEngine {
         this.playing = true;
         this.opts.onLoadingStart();
 
-        /** @type {AsyncStream<PageChunk>} */
-        this.chunkStream = AsyncStream.range(leafIndex, numLeafs-1)
-        .map(this.fetchPageChunks.bind(this))
-        .buffer(2)
-        .flatten()
-        .map(chunk => {
-            this.opts.onLoadingStart();
-            chunk.sound = this.createSound(chunk);
-            chunk.sound.rate = this.playbackRate;
-            chunk.sound.voice = this.voice;
-            chunk.sound.load(() => this.opts.onLoadingComplete());
-            return chunk;
+        this._chunkIterator = new PageChunkIterator(numLeafs, leafIndex, {
+            server: this.opts.server,
+            bookPath: this.opts.bookPath,
+            pageBufferSize: 5,
         });
 
         this.step();
@@ -112,7 +92,7 @@ export default class AbstractTTSEngine {
     stop() {
         this.activeSound.stop();
         this.playing = false;
-        this.chunkStream = null;
+        this._chunkIterator = null;
         this.activeSound = null;
         this.events.trigger('stop');
     }
@@ -153,21 +133,29 @@ export default class AbstractTTSEngine {
      * @private
      */
     step() {
-        this.chunkStream.pull()
-        .then(item => {
-            if (item.done) {
+        this._chunkIterator.next()
+        .then(chunk => {
+            if (chunk == PageChunkIterator.AT_END) {
                 this.stop();
                 this.opts.onDone();
                 return;
             }
+
+            this.opts.onLoadingStart();
+            const sound = this.createSound(chunk);
+            sound.chunk = chunk;
+            sound.rate = this.playbackRate;
+            sound.voice = this.voice;
+            sound.load(() => this.opts.onLoadingComplete());
+
             this.opts.onLoadingComplete();
-            return this.opts.beforeChunkPlay(item.value).then(() => item.value);
+            return this.opts.beforeChunkPlay(chunk).then(() => sound);
         })
-        .then(chunk => {
+        .then(sound => {
             if (!this.playing) return;
 
-            const playPromise = this.playChunk(chunk)
-            .then(() => this.opts.afterChunkPlay(chunk));
+            const playPromise = this.playSound(sound)
+            .then(() => this.opts.afterChunkPlay(sound.chunk));
             if (this.paused) this.pause();
             return playPromise;
         })
@@ -179,47 +167,18 @@ export default class AbstractTTSEngine {
     /**
      * @abstract
      * @param {PageChunk} chunk
+     * @return {AbstractTTSSound}
      */
     createSound(chunk) { throw new Error("Unimplemented abstract class"); }
 
     /**
-     * @param {PageChunk} chunk
+     * @param {AbstractTTSSound} sound
      * @return {PromiseLike} promise called once playing finished
      */
-    playChunk(chunk) {
-        this.activeSound = chunk.sound;
+    playSound(sound) {
+        this.activeSound = sound;
         if (!this.activeSound.loaded) this.opts.onLoadingStart();
         return this.activeSound.play();
-    }
-
-    /**
-     * @private
-     * Gets the text on a page with given index
-     * @param {Number} leafIndex
-     * @return {PromiseLike<Array<PageChunk>>}
-     */
-    fetchPageChunks(leafIndex) {
-        return $.ajax({
-            type: 'GET',
-            url: 'https://'+this.opts.server+'/BookReader/BookReaderGetTextWrapper.php',
-            dataType:'jsonp',
-            data: {
-                path: this.opts.bookPath+'_djvu.xml',
-                page: leafIndex
-            }
-        })
-        .then(
-            /** @param {Array<[String, ...Array<DJVURect>]>} chunks */
-            function (chunks) {
-                return chunks.map(c => {
-                    return {
-                        leafIndex,
-                        text: c[0],
-                        lineRects: AbstractTTSEngine._fixChunkRects(c.slice(1)),
-                    };
-                });
-            }
-        );
     }
 
     /** Convenience wrapper for {@see AbstractTTSEngine.getBestVoice} */
@@ -271,39 +230,5 @@ export default class AbstractTTSEngine {
                 return matchingVoices.find(v => v.default) || matchingVoices[0];
             }
         }
-    }
-
-    /**
-     * @private
-     * Sometimes the first rectangle will be ridiculously wide/tall. Find those and fix them
-     * *NOTE*: Modifies the original array and returns it.
-     * *NOTE*: This should probably be fixed on the petabox side, and then removed here
-     * Has 2 problems:
-     *  - If the rect is the last rect on the page (and hence the only rect in the array),
-     *    the rect's size isn't fixed
-     * - Because this relies on the second rect, there's a chance it won't be the right
-     *   width
-     * @param {DJVURect[]} rects 
-     * @return {DJVURect[]}
-     */
-    static _fixChunkRects(rects) {
-        if (rects.length < 2) return rects;
-
-        const firstRect = rects[0];
-        const secondRect = rects[1];
-        const { 0: left, 1: bottom, 2: right, 3: top } = firstRect;
-        const width = right - left;
-        const secondHeight = secondRect[1] - secondRect[3];
-        const secondWidth = secondRect[2] - secondRect[0];
-        const secondRight = secondRect[2];
-
-        if (width > secondWidth * 30) {
-            // Set the end to be the same
-            firstRect[2] = secondRight;
-            // And the top to be the same height
-            firstRect[3] = bottom - secondHeight;
-        }
-
-        return rects;
     }
 }
