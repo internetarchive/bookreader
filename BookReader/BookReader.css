@@ -515,6 +515,7 @@ body.BRfullscreenActive .mm-menu {
 
 .BRpagediv1up {
   overflow: hidden;
+  cursor: move;
   background-color: #FEFDEB;
   box-shadow: 1px 1px 2px #333;
 }
