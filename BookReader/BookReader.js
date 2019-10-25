@@ -86,6 +86,10 @@ BookReader.constMode1up = 1;
 BookReader.constMode2up = 2;
 BookReader.constModeThumb = 3;
 
+// Animation constants
+BookReader.constNavAnimationDuration = 300;
+BookReader.constResizeAnimationDuration = 100;
+
 // Names of events that can be triggered via BookReader.prototype.trigger()
 BookReader.eventNames = {
     // Indicates that the fragment (a serialization of the reader state)
@@ -94,6 +98,8 @@ BookReader.eventNames = {
     PostInit: 'PostInit',
     stop: 'stop',
     resize: 'resize',
+    // nav events:
+    navToggled: 'navToggled',
     // menu click events
     fullscreenToggled: 'fullscreenToggled',
     zoomOut: 'zoomOut',
@@ -1289,12 +1295,23 @@ BookReader.prototype.zoom1up = function(direction) {
 /**
  * Resizes the inner container to fit within the visible space to prevent
  * the top toolbar and bottom navbar from clipping the visible book
+ *
+ * @param { boolean } fillMainContainer - optional
+ * When used, BookReader will fill the main container with the book's content.
+ * This is primarily for 1up view - a follow up animation to the nav animation
+ * So resize isn't perceived sharp/jerky
  */
-BookReader.prototype.resizeBRcontainer = function() {
-  this.refs.$brContainer.css({
-    top: this.getToolBarHeight(),
-    bottom: this.getFooterHeight(),
-  });
+BookReader.prototype.resizeBRcontainer = function(fillMainContainer) {
+    if (!fillMainContainer) {
+        return this.refs.$brContainer.css({
+            top: this.getToolBarHeight(),
+            bottom: this.getNavHeight()
+          });
+    }
+    this.refs.$brContainer.animate({
+        top: this.getToolBarHeight(),
+        bottom: this.getNavHeight()
+      }, this.constResizeAnimationDuration, 'linear');
 }
 
 /**
@@ -3929,13 +3946,15 @@ BookReader.prototype.navigationIsVisible = function() {
  * Defaults to SHOW the navigation chrome
  */
 BookReader.prototype.toggleNavigation = function brToggleNavigation(hide) {
-    var animationLength = 300;
+    var animationLength = this.constNavAnimationDuration;
     var animationType = 'linear';
     var resizePageContainer = function resizePageContainer () {
-        /* main container fills whole container */
+        /* main page container fills whole container */
         if (this.constMode2up !== this.mode) {
-            this.resizeBRcontainer();
+            var fillContainerWithBook = true;
+            this.resizeBRcontainer(fillContainerWithBook);
         }
+        this.trigger(BookReader.eventNames.navToggled);
     }.bind(this);
 
     var toolbarHeight = 0;
