@@ -1,17 +1,19 @@
 
-/* global: $ */
+/* global: $, BookReader */
 /**
- * Plugin for managing menu in full screen
- * Enabling this plug-in removes the "menu tab" triangle
- * and uses center touch/click to show/hide the menu below
- * Behavior is predicated on custom event: `brFullScreenToggled`
- * This is fired when user clicks on the fullscreen button on the menu
+ * Plugin for managing menu visibility
+ * Enabling this plug-in:
+ * + removes the "menu tab" triangle
+ * + toggles nav at: book center tap/click
+ * + toggles nav at: black background tap/click
  *
- * This uses BookReader native functions and parameters to check its UI state.
- * This includes:
+ * This uses core BookReader functions and parameters to check its UI state:
  * - br.refs = (at best) ui references that are present at any given time
  * - br.navigationIsVisible() - checks using refs to confirm the navbar's presence
+ * - br.showNavigation() & br.hideNavigation()
  *
+ * The list of BookReader custom events this plugin taps into are mainly
+ * listed in the `.init` function
  */
 
 (function addMenuToggler() {
@@ -19,44 +21,75 @@
       enableMenuToggle: true
     });
 
+    /**
+     * Hides Nav arrow tab
+     *
+     * @param { object } br - BookReader instance
+     */
     function hideArrow(br) {
       if (!br.refs || !br.refs.$BRnav) {
         return;
       }
-      var $menuTab = br.refs.$BRnav.children('.js-tooltip');
+      var $menuTab = br.refs.$BRnav.children('.BRnavCntl');
       $menuTab.css('display', 'none');
     }
 
+    /**
+     * Sets up nav - hides arrow tab & adds click events
+     *
+     * @param { object } br - BookReader instance
+     */
     function setupNavForToggle(br) {
       hideArrow(br);
-      registerEventHandlers(br);
+      registerClickHandlers(br);
     }
 
+    /**
+     * Resets nav to always show
+     * hides arrow tab, removes click events, shows nav chrome
+     *
+     * @param { object } br - BookReader instance
+     */
     function alwaysShowNav(br) {
       hideArrow(br);
-      removeToggleFromNav(br);
+      removeEventHandlers(br);
       br.showNavigation();
     }
   
-    var removeToggleFromNav = function removeToggleFromNav(br) {
-      if (!br.refs || !br.refs.$BRnav) {
-        return;
-      }
-      var $menuTab = br.refs.$BRnav.children('.js-tooltip');
-      $menuTab.css('display', 'block');
-      removeEventHandlers(br);
-    }
-  
+    /**
+     * Removes click handlers on elements that house the book pages
+     *
+     * @param { object } br - BookReader instance
+     */
     var removeEventHandlers = function removeEventHandlers(br) {
       if (br.refs.$brPageViewEl) {
-        br.refs.$brPageViewEl[0].removeEventListener('click', toggleMenuIfCenterClick, true);
+        br.refs.$brPageViewEl[0].removeEventListener('click', onBookClick, true);
       }
       if (br.refs.$brTwoPageView) {
-        br.refs.$brTwoPageView[0].removeEventListener('click', toggleMenuIfCenterClick, true);
+        br.refs.$brTwoPageView[0].removeEventListener('click', onBookClick, true);
       }
     }
 
+    /**
+     * Toggle functionality
+     * Responsible for calling native functions `hideNavigation` & `showNavigation`
+     * Makes sure only 1 toggle action is taken at a time using `togglingNav` switch.
+     *
+     * @params { object } br - bookreader instance
+     */
+    var togglingNav = false; /* flag to make sure animations only fire once */
     var toggleNav = function toggleNav(br) {
+      if (togglingNav) {
+        return;
+      }
+
+      togglingNav = true;
+      const navToggled = function navToggled() {
+        togglingNav = false;
+        window.removeEventListener('BookReader:navToggled', navToggled);
+      };
+      $(document).on('BookReader:navToggled', navToggled);
+
       var menuIsShowing = br.navigationIsVisible();
       if (menuIsShowing) {
         br.hideNavigation();
@@ -64,50 +97,98 @@
         br.showNavigation();
       }
     }
-  
-    var toggleMenuIfCenterClick = function toggleMenuIfCenterClick(br, e) {
-      var book = e.currentTarget;
-      if (!book) {
-        return;
-      }
+
+    /**
+     * Confirms whether or not the click happened in the nav toggle zone
+     *
+     * @param { object } event - JS event object
+     */
+    var isCenterClick = function isCenterClick(event) {
+      var book = event.currentTarget;
       var bookWidth = book.offsetWidth;
       var leftOffset = book.offsetLeft
       var bookEndPageFlipArea = Math.round(bookWidth / 3);
       var leftThreshold = Math.round(bookEndPageFlipArea + leftOffset); // without it, the click area is small
       var rightThreshold = Math.round(bookWidth - bookEndPageFlipArea + leftOffset);
-      var isCenterClick = (e.clientX > leftThreshold) && (e.clientX < rightThreshold);
-      
-      if (isCenterClick) {
-        toggleNav(br);
-        event.stopPropagation();
-      }
+      var isCenterClick = (event.clientX > leftThreshold) && (event.clientX < rightThreshold);
+
+      return isCenterClick;
     }
 
-    function registerEventHandlers(br) {
+    /**
+     * Confirms whether or not the click happened in the background
+     *
+     * @param { object } event - JS event object
+     */
+    var isBackground = function isBackground(event) {
+      return $(event.target).hasClass('BookReader')
+        || $(event.target).hasClass('BRcontainer') /* main black theatre */
+        || $(event.target).hasClass('BRemptypage') /* empty page placeholder */
+        || $(event.target).hasClass('BRpageview'); /* empty page placeholder */
+    };
 
-      var brContainer = document.querySelector('.BRcontainer') || {};
-      var mainBRWrapper = document.querySelector('.BookReader') || {};
-      var firstChild = brContainer.firstChild;
-  
-      if (firstChild) {
-        firstChild.addEventListener('click', function(e) {
-          toggleMenuIfCenterClick(br, e);
-        }, true);
-      }
+    /**
+     * Main hook into toggle functionality
+     * This is the only function that should be called by the event handlers
+     *
+     * @param { object } br - BookReader instance
+     * @param { object } e - JS event object
+     * @param { boolean } atBookCenter - optional
+     */
+    var toggleRouter = function toggleRouter (br, e, atBookCenter) {
+      var isValidClickArea = atBookCenter ? isCenterClick(e) : isBackground(e);
 
-      var toggleAtBackgroundClick = function toggleAtBackgroundClick(e) {
-        var isBackground = $(event.target).hasClass('BookReader')
-          || $(event.target).hasClass('BRcontainer') /* main black theatre */
-          || $(event.target).hasClass('BRemptypage') /* empty page placeholder */
-          || $(event.target).hasClass('BRpageview'); /* empty page placeholder */
-        if (isBackground) {
-          toggleNav(br);
+      if (isValidClickArea) {
+        toggleNav(br, atBookCenter);
+
+        if (atBookCenter) {
+          e.stopPropagation(); // don't turn the page. this takes prescendence
         }
-      };
-      mainBRWrapper.addEventListener('click', toggleAtBackgroundClick, true);
+      }
     }
 
-    BookReader.prototype.initMenuToggle = function brInitMenuToggle(e) {
+    /**
+     * background click event handler
+     * @param { object } br - BookReader instance
+     * @param { object } e - JS event object
+     */
+    function onBackgroundClick(br, e) {
+      toggleRouter(br, e);
+    }
+
+    /**
+     * actual book container click event handler
+     *
+     * @param { object } br - BookReader instance
+     * @param { object } e - JS event object
+     */
+    function onBookClick(br, e) {
+
+      var atBookCenter = true;
+      toggleRouter(br, e, atBookCenter);
+    }
+
+    /**
+     * attaches click handlers to background & book
+     * @param { object } br - BookReader instance
+     */
+    function registerClickHandlers(br) {
+      var background = document.querySelector('.BookReader') || {};
+      background.addEventListener('click', onBackgroundClick.bind(null, br), { capture: true, passive: true });
+
+      var desk = document.querySelector('.BRcontainer') || {};
+      var book = desk.firstChild;
+
+      if (book) {
+        book.addEventListener('click', onBookClick.bind(null, br), true);
+      }
+    }
+
+    /**
+     * Install menu toggle
+     * attaches event handlers, sets up DOM on load
+     */
+    BookReader.prototype.install = function installMenuToggle(e) {
       var br = this;
       var hasNav = false;
 
@@ -122,7 +203,7 @@
       }
 
       var menuToggleEventRegister = function menuToggleEventRegister(e) {
-        registerEventHandlers(br);
+        registerClickHandlers(br);
       };
 
       var setupDOMandHandlers = function setupDOMandHandlers(e) {
@@ -134,6 +215,7 @@
       };
   
       var whenToToggleNav = [
+        'BookReader:1PageViewSelected',
         'BookReader:2PageViewSelected',
         'BookReader:zoomIn',
         'BookReader:zoomOut',
@@ -141,7 +223,6 @@
       ];
 
       var whenTolwaysShowNavWhen = [
-        'BookReader:1PageViewSelected',
         'BookReader:3PageViewSelected'
       ];
 
@@ -153,17 +234,23 @@
       setupDOMandHandlers();
     };
 
+    /**
+     * Add to BookReader
+     */
     BookReader.prototype.setup = (function(super_) {
       return function(options) {
         super_.call(this, options);
       };
     })(BookReader.prototype.setup);
 
+    /**
+     * Initialize plugin
+     */
     BookReader.prototype.init = (function(super_) {
       return function() {
         super_.call(this);
         if (this.options.enableMenuToggle) {
-          this.initMenuToggle();
+          this.install();
         }
       };
     })(BookReader.prototype.init);
