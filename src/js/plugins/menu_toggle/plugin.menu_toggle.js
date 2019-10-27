@@ -52,7 +52,7 @@
      */
     function alwaysShowNav(br) {
       hideArrow(br);
-      removeEventHandlers(br);
+      removeClickHandlers(br);
       br.showNavigation();
     }
   
@@ -61,7 +61,7 @@
      *
      * @param { object } br - BookReader instance
      */
-    var removeEventHandlers = function removeEventHandlers(br) {
+    var removeClickHandlers = function removeClickHandlers(br) {
       if (br.refs.$brPageViewEl) {
         br.refs.$brPageViewEl[0].removeEventListener('click', onBookClick, true);
       }
@@ -118,13 +118,13 @@
     /**
      * Confirms whether or not the click happened in the background
      *
-     * @param { object } event - JS event object
+     * @param { DOM } element
      */
-    var isBackground = function isBackground(event) {
-      return $(event.target).hasClass('BookReader')
-        || $(event.target).hasClass('BRcontainer') /* main black theatre */
-        || $(event.target).hasClass('BRemptypage') /* empty page placeholder */
-        || $(event.target).hasClass('BRpageview'); /* empty page placeholder */
+    var isBackground = function isBackground(element) {
+      return $(element).hasClass('BookReader')
+        || $(element).hasClass('BRcontainer') /* main black theatre */
+        || $(element).hasClass('BRemptypage') /* empty page placeholder */
+        || $(element).hasClass('BRpageview'); /* empty page placeholder */
     };
 
     /**
@@ -136,7 +136,7 @@
      * @param { boolean } atBookCenter - optional
      */
     var toggleRouter = function toggleRouter (br, e, atBookCenter) {
-      var isValidClickArea = atBookCenter ? isCenterClick(e) : isBackground(e);
+      var isValidClickArea = atBookCenter ? isCenterClick(e) : isBackground(e.target);
 
       if (isValidClickArea) {
         toggleNav(br, atBookCenter);
@@ -188,7 +188,7 @@
      * Install menu toggle
      * attaches event handlers, sets up DOM on load
      */
-    BookReader.prototype.install = function installMenuToggle(e) {
+    BookReader.prototype.installMenuToggle = function installMenuToggle(e) {
       var br = this;
       var hasNav = false;
 
@@ -250,7 +250,7 @@
       return function() {
         super_.call(this);
         if (this.options.enableMenuToggle) {
-          this.install();
+          this.installMenuToggle();
         }
       };
     })(BookReader.prototype.init);

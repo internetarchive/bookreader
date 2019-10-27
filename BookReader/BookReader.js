@@ -1302,16 +1302,17 @@ BookReader.prototype.zoom1up = function(direction) {
  * So resize isn't perceived sharp/jerky
  */
 BookReader.prototype.resizeBRcontainer = function(fillMainContainer) {
-    if (!fillMainContainer) {
-        return this.refs.$brContainer.css({
+    if (fillMainContainer) {
+        this.refs.$brContainer.animate({
             top: this.getToolBarHeight(),
             bottom: this.getNavHeight()
-          });
+        }, this.constResizeAnimationDuration, 'linear');
+    } else {
+        this.refs.$brContainer.css({
+            top: this.getToolBarHeight(),
+            bottom: this.getNavHeight()
+        });
     }
-    this.refs.$brContainer.animate({
-        top: this.getToolBarHeight(),
-        bottom: this.getNavHeight()
-      }, this.constResizeAnimationDuration, 'linear');
 }
 
 /**
