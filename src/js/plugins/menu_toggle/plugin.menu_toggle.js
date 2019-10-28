@@ -114,7 +114,7 @@
     /**
      * Confirms whether or not the click happened in the nav toggle zone
      *
-     * @param { object } event - JS click event object
+     * @param { MouseEvent } event - JS click event object
      * @param { DOM } book - DOM element that represents book
      */
     var isCenterClick = function isCenterClick(event, book) {
