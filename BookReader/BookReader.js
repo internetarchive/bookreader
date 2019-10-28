@@ -3943,17 +3943,17 @@ BookReader.prototype.navigationIsVisible = function() {
 };
 
 /**
- * Main controller that toggles navigation.
+ * Main controller that sets navigation into view.
  * Defaults to SHOW the navigation chrome
  */
-BookReader.prototype.toggleNavigation = function brToggleNavigation(hide) {
+BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
     var animationLength = this.constNavAnimationDuration;
     var animationType = 'linear';
     var resizePageContainer = function resizePageContainer () {
         /* main page container fills whole container */
         if (this.constMode2up !== this.mode) {
-            var fillContainerWithBook = true;
-            this.resizeBRcontainer(fillContainerWithBook);
+            var animate = true;
+            this.resizeBRcontainer(animate);
         }
         this.trigger(BookReader.eventNames.navToggled);
     }.bind(this);
@@ -3985,7 +3985,7 @@ BookReader.prototype.hideNavigation = function() {
     // Check if navigation is showing
     if (this.navigationIsVisible()) {
         var hide = true;
-        this.toggleNavigation(hide);
+        this.setNavigationView(hide);
     }
 };
 
@@ -3995,7 +3995,7 @@ BookReader.prototype.hideNavigation = function() {
 BookReader.prototype.showNavigation = function() {
     // Check if navigation is hidden
     if (!this.navigationIsVisible()) {
-        this.toggleNavigation();
+        this.setNavigationView();
     }
 };
 
