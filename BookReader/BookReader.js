@@ -1225,7 +1225,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
 
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
     this.setMouseHandlers2UP();
-    this.twoPageSetCursor();
     this.updateToolbarZoom(this.reduce);
 };
 
@@ -2294,6 +2293,7 @@ BookReader.prototype.twoPageCalculateReductionFactors = function() {
 
 /**
  * Set the cursor for two page view
+ * @deprecated Since version 4.3.3. Will be deleted in version 5.0
  */
 BookReader.prototype.twoPageSetCursor = function() {
     var $twoPageViewEl = this.refs.$brTwoPageView;
@@ -2639,7 +2639,6 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             if (self.enableSearch) self.updateSearchHilites2UP();
 
             self.setMouseHandlers2UP();
-            self.twoPageSetCursor();
 
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -2770,7 +2769,6 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             if (self.enableSearch) self.updateSearchHilites2UP();
 
             self.setMouseHandlers2UP();
-            self.twoPageSetCursor();
 
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
