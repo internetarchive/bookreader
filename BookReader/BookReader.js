@@ -1296,13 +1296,13 @@ BookReader.prototype.zoom1up = function(direction) {
  * Resizes the inner container to fit within the visible space to prevent
  * the top toolbar and bottom navbar from clipping the visible book
  *
- * @param { boolean } fillMainContainer - optional
+ * @param { boolean } animate - optional
  * When used, BookReader will fill the main container with the book's content.
  * This is primarily for 1up view - a follow up animation to the nav animation
  * So resize isn't perceived sharp/jerky
  */
-BookReader.prototype.resizeBRcontainer = function(fillMainContainer) {
-    if (fillMainContainer) {
+BookReader.prototype.resizeBRcontainer = function(animate) {
+    if (animate) {
         this.refs.$brContainer.animate({
             top: this.getToolBarHeight(),
             bottom: this.getNavHeight()
