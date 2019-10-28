@@ -124,7 +124,8 @@
       return $(element).hasClass('BookReader')
         || $(element).hasClass('BRcontainer') /* main black theatre */
         || $(element).hasClass('BRemptypage') /* empty page placeholder */
-        || $(element).hasClass('BRpageview'); /* empty page placeholder */
+        || $(element).hasClass('BRpageview') /* empty page placeholder, 1up */
+        || $(element).hasClass('BRtwopageview'); /* empty page placeholder, 2up */
     };
 
     /**
@@ -132,7 +133,7 @@
      * This is the only function that should be called by the event handlers
      *
      * @param { object } br - BookReader instance
-     * @param { object } e - JS event object
+     * @param { MouseEvent } e - JS event object
      * @param { boolean } atBookCenter - optional
      */
     var toggleRouter = function toggleRouter (br, e, atBookCenter) {
@@ -150,7 +151,7 @@
     /**
      * background click event handler
      * @param { object } br - BookReader instance
-     * @param { object } e - JS event object
+     * @param { MouseEvent } e - JS event object
      */
     function onBackgroundClick(br, e) {
       toggleRouter(br, e);
@@ -160,7 +161,7 @@
      * actual book container click event handler
      *
      * @param { object } br - BookReader instance
-     * @param { object } e - JS event object
+     * @param { MouseEvent } e - JS event object
      */
     function onBookClick(br, e) {
 
@@ -188,8 +189,7 @@
      * Install menu toggle
      * attaches event handlers, sets up DOM on load
      */
-    BookReader.prototype.installMenuToggle = function installMenuToggle(e) {
-      var br = this;
+    var installMenuToggle = function installMenuToggle(br) {
       var hasNav = false;
 
       try {
@@ -250,7 +250,7 @@
       return function() {
         super_.call(this);
         if (this.options.enableMenuToggle) {
-          this.installMenuToggle();
+          installMenuToggle(this);
         }
       };
     })(BookReader.prototype.init);

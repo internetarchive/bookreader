@@ -1305,12 +1305,12 @@ BookReader.prototype.resizeBRcontainer = function(animate) {
     if (animate) {
         this.refs.$brContainer.animate({
             top: this.getToolBarHeight(),
-            bottom: this.getNavHeight()
+            bottom: this.getFooterHeight()
         }, this.constResizeAnimationDuration, 'linear');
     } else {
         this.refs.$brContainer.css({
             top: this.getToolBarHeight(),
-            bottom: this.getNavHeight()
+            bottom: this.getFooterHeight()
         });
     }
 }
@@ -3962,7 +3962,7 @@ BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
     var navbarHeight = 0;
     if (hide) {
         toolbarHeight = this.getToolBarHeight() * -1;
-        navbarHeight = this.getNavHeight() * -1;
+        navbarHeight = this.getFooterHeight() * -1;
     }
 
     this.refs.$BRtoolbar.animate(
