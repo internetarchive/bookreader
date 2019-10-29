@@ -3971,7 +3971,7 @@ BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
         animationType,
         resizePageContainer
     );
-    this.refs.$BRnav.animate(
+    this.refs.$BRfooter.animate(
         { bottom: navbarHeight },
         animationLength,
         animationType,
