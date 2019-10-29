@@ -155,8 +155,9 @@
      */
     var toggleRouter = function toggleRouter (br, e, atBookCenter) {
       var book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : event.currentTarget;
-      var isValidClickArea = atBookCenter ? isCenterClick(e, book) : isBackground(e.target);
-
+      var is1UpMode = br.constMode1up === br.mode;
+      var validBookClick = is1UpMode ? true : isCenterClick(e, book);
+      var isValidClickArea = atBookCenter ? validBookClick : isBackground(e.target);
       if (isValidClickArea) {
         toggleNav(br, atBookCenter);
 
