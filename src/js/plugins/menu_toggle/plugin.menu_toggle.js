@@ -137,12 +137,12 @@
      * @param { DOM } element
      */
     var isBackground = function isBackground(element) {
-      var isBackground = $(element).hasClass('BookReader')
+      var isBackgroundClick = $(element).hasClass('BookReader')
         || $(element).hasClass('BRcontainer') /* main black theatre */
         || $(element).hasClass('BRemptypage') /* empty page placeholder */
         || $(element).hasClass('BRpageview') /* empty page placeholder, 1up */
         || $(element).hasClass('BRtwopageview'); /* empty page placeholder, 2up */
-        return isBackground;
+        return isBackgroundClick;
     };
 
     /**
@@ -156,7 +156,7 @@
     var toggleRouter = function toggleRouter (br, e, atBookCenter) {
       var book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : event.currentTarget;
       var is1UpMode = br.constMode1up === br.mode;
-      var validBookClick = is1UpMode ? true : isCenterClick(e, book);
+      var validBookClick = is1UpMode || isCenterClick(e, book);
       var isValidClickArea = atBookCenter ? validBookClick : isBackground(e.target);
       if (isValidClickArea) {
         toggleNav(br, atBookCenter);
