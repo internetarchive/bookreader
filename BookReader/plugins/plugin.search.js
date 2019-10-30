@@ -41,6 +41,12 @@ BookReader.prototype.init = (function (super_) {
                 goToFirstResult: true
             });
         }
+
+        var br = this;
+        $(document).on('BookReader:navToggled', function() {
+            var nextVisibleState = br.navigationIsVisible() ? 'visible' : 'hidden';
+            br.refs.$BRfooter.find('.BRsearch').css({ visibility: nextVisibleState });
+        })
     };
 })(BookReader.prototype.init);
 
