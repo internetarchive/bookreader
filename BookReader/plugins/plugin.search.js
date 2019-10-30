@@ -44,8 +44,8 @@ BookReader.prototype.init = (function (super_) {
 
         var br = this;
         $(document).on('BookReader:navToggled', function() {
-            var nextVisibleState = br.navigationIsVisible() ? 'visible' : 'hidden';
-            br.refs.$BRfooter.find('.BRsearch').css({ visibility: nextVisibleState });
+            var pinsVisibleState = br.navigationIsVisible() ? 'visible' : 'hidden';
+            br.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
         })
     };
 })(BookReader.prototype.init);
