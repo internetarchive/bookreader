@@ -10,6 +10,7 @@ require('../../../src/js/plugins/menu_toggle/plugin.menu_toggle.js');
 
 
 let br;
+let hideFlag;
 beforeAll(() => {
   $.fx.off = true;
   const OGSpeed = $.speed;
@@ -43,5 +44,23 @@ describe('Plugin: Menu Toggle', () => {
     $('.BRcontainer').click();
     expect($('.BRfooter').hasClass('js-menu-hide')).toEqual(true);
     expect($('.BRtoolbar').hasClass('js-menu-hide')).toEqual(true);
+  });
+
+  test('core function `setNavigationView` is called `hideNavigation` is called', () => {
+    br.setNavigationView = jest.fn((arg) => hideFlag = arg);
+
+    br.hideNavigation();
+    expect(br.setNavigationView).toHaveBeenCalled();
+    expect(hideFlag).toEqual(true);
+  });
+
+  test('core function `setNavigationView` is called `showNavigation` is called', () => {
+    br.setNavigationView = jest.fn((arg) => hideFlag = arg);
+    br.navigationIsVisible = jest.fn(() => false);
+
+    br.showNavigation();
+    expect(br.setNavigationView).toHaveBeenCalled();
+    expect(br.navigationIsVisible).toHaveBeenCalled();
+    expect(hideFlag).toEqual(undefined);
   });
 });
