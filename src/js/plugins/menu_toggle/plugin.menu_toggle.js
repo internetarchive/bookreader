@@ -84,7 +84,7 @@
       }
 
       togglingNav = true;
-      const navToggled = function navToggled() {
+      var navToggled = function navToggled() {
         togglingNav = false;
         window.removeEventListener('BookReader:navToggled', navToggled);
       };
@@ -99,18 +99,34 @@
     }
 
     /**
+     * Check if div `BRcontainer` is scrollable.
+     * This normally happens when bookreader is zoomed in.
+     * not using br.refs, because `scrollWidth` & `offsetWidth` is not easily accessible.
+     */
+    var isBRcontainerScrollable = function isBRcontainerScrollable() {
+      var brContainer = document.querySelector('.BRcontainer');
+      var scrollWidth = brContainer.scrollWidth;
+      var offsetWidth = brContainer.offsetWidth;
+
+      return scrollWidth > offsetWidth;
+    }
+
+    /**
      * Confirms whether or not the click happened in the nav toggle zone
      *
-     * @param { object } event - JS event object
+     * @param { MouseEvent } event - JS click event object
+     * @param { DOM } book - DOM element that represents book
      */
-    var isCenterClick = function isCenterClick(event) {
-      var book = event.currentTarget;
+    var isCenterClick = function isCenterClick(event, book) {
+      var clickPosition = event.clientX;
       var bookWidth = book.offsetWidth;
       var leftOffset = book.offsetLeft
       var bookEndPageFlipArea = Math.round(bookWidth / 3);
       var leftThreshold = Math.round(bookEndPageFlipArea + leftOffset); // without it, the click area is small
       var rightThreshold = Math.round(bookWidth - bookEndPageFlipArea + leftOffset);
-      var isCenterClick = (event.clientX > leftThreshold) && (event.clientX < rightThreshold);
+      var isOkOnRight = clickPosition > leftThreshold;
+      var isOkOnLeft = clickPosition < rightThreshold;
+      var isCenterClick = isOkOnRight && isOkOnLeft;
 
       return isCenterClick;
     }
@@ -121,11 +137,12 @@
      * @param { DOM } element
      */
     var isBackground = function isBackground(element) {
-      return $(element).hasClass('BookReader')
+      var isBackgroundClick = $(element).hasClass('BookReader')
         || $(element).hasClass('BRcontainer') /* main black theatre */
         || $(element).hasClass('BRemptypage') /* empty page placeholder */
         || $(element).hasClass('BRpageview') /* empty page placeholder, 1up */
         || $(element).hasClass('BRtwopageview'); /* empty page placeholder, 2up */
+      return isBackgroundClick;
     };
 
     /**
@@ -137,8 +154,10 @@
      * @param { boolean } atBookCenter - optional
      */
     var toggleRouter = function toggleRouter (br, e, atBookCenter) {
-      var isValidClickArea = atBookCenter ? isCenterClick(e) : isBackground(e.target);
-
+      var book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : e.currentTarget;
+      var is1UpMode = br.constMode1up === br.mode;
+      var validBookClick = is1UpMode || isCenterClick(e, book);
+      var isValidClickArea = atBookCenter ? validBookClick : isBackground(e.target);
       if (isValidClickArea) {
         toggleNav(br, atBookCenter);
 

@@ -1225,7 +1225,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
 
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
     this.setMouseHandlers2UP();
-    this.twoPageSetCursor();
     this.updateToolbarZoom(this.reduce);
 };
 
@@ -2212,6 +2211,7 @@ BookReader.prototype.twoPageGetAutofitReduce = function() {
 
 /**
  * Returns true if the pages extend past the edge of the view
+ * @deprecated Since version 4.3.3. Will be deleted in version 5.0
  * @return {boolean}
  */
 BookReader.prototype.twoPageIsZoomedIn = function() {
@@ -2294,6 +2294,7 @@ BookReader.prototype.twoPageCalculateReductionFactors = function() {
 
 /**
  * Set the cursor for two page view
+ * @deprecated Since version 4.3.3. Will be deleted in version 5.0
  */
 BookReader.prototype.twoPageSetCursor = function() {
     var $twoPageViewEl = this.refs.$brTwoPageView;
@@ -2639,7 +2640,6 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             if (self.enableSearch) self.updateSearchHilites2UP();
 
             self.setMouseHandlers2UP();
-            self.twoPageSetCursor();
 
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -2770,7 +2770,6 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             if (self.enableSearch) self.updateSearchHilites2UP();
 
             self.setMouseHandlers2UP();
-            self.twoPageSetCursor();
 
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -2792,10 +2791,8 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return true;
             }
 
-             if (! e.data.self.twoPageIsZoomedIn()) {
-                e.data.self.trigger(BookReader.eventNames.stop);
-                e.data.self.left();
-            }
+            e.data.self.trigger(BookReader.eventNames.stop);
+            e.data.self.left();
             e.preventDefault();
         }
     );
@@ -2808,10 +2805,8 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return !e.data.self.protected;
             }
 
-            if (! e.data.self.twoPageIsZoomedIn()) {
-                e.data.self.trigger(BookReader.eventNames.stop);
-                e.data.self.right();
-            }
+            e.data.self.trigger(BookReader.eventNames.stop);
+            e.data.self.right();
             e.preventDefault();
         }
     );
@@ -3963,6 +3958,12 @@ BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
     if (hide) {
         toolbarHeight = this.getToolBarHeight() * -1;
         navbarHeight = this.getFooterHeight() * -1;
+
+        this.refs.$BRtoolbar.addClass('js-menu-hide');
+        this.refs.$BRfooter.addClass('js-menu-hide');
+    } else {
+        this.refs.$BRtoolbar.removeClass('js-menu-hide');
+        this.refs.$BRfooter.removeClass('js-menu-hide');
     }
 
     this.refs.$BRtoolbar.animate(
