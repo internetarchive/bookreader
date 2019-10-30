@@ -154,6 +154,10 @@
      * @param { boolean } atBookCenter - optional
      */
     var toggleRouter = function toggleRouter (br, e, atBookCenter) {
+      if (holdOffOnToggle) {
+        return;
+      }
+
       var book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : e.currentTarget;
       var is1UpMode = br.constMode1up === br.mode;
       var validBookClick = is1UpMode || isCenterClick(e, book);
@@ -188,6 +192,35 @@
       toggleRouter(br, e, atBookCenter);
     }
 
+    var initialX;
+    var initialY;
+    var holdOffOnToggle = false;
+    /**
+     * attaches mouseup & mousedown event handlers to assess if user is dragging
+     * sets `initialX`, `initialY`, and `holdOffOnToggle`
+     *
+     * `holdOffOnToggle` is used in fn `toggleRouter`
+     * to determine if menu toggle should happen
+     */
+    var registerDragHandlers = function registerDragHandlers() {
+      var background = document.querySelector('.BookReader') || {};
+      background.addEventListener('mousedown', function (e) {
+        initialX = e.screenX;
+        initialY = e.screenY;
+
+        holdOffOnToggle = true;
+      }, true);
+      background.addEventListener('mouseup', function (e) {
+        var isDrag = (Math.abs(initialX - e.screenX) > 5 || Math.abs(initialY - e.screenY) > 5);
+
+        if (!isDrag) {
+          holdOffOnToggle = false;
+          initialX = 0;
+          initialY = 0;
+        }
+      }, true);
+    }
+
     /**
      * attaches click handlers to background & book
      * @param { object } br - BookReader instance
@@ -201,6 +234,7 @@
 
       if (book) {
         book.addEventListener('click', onBookClick.bind(null, br), true);
+        registerDragHandlers();
       }
     }
 
