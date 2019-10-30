@@ -46,7 +46,7 @@ BookReader.prototype.init = (function (super_) {
         $(document).on('BookReader:navToggled', function() {
             var pinsVisibleState = br.navigationIsVisible() ? 'visible' : 'hidden';
             br.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
-        })
+        });
     };
 })(BookReader.prototype.init);
 
@@ -71,7 +71,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
                 +"      </div>"
                 +"    </li>"
             ));
-        };
+        }
         return $el;
     };
 })(BookReader.prototype.buildMobileDrawerElement);
