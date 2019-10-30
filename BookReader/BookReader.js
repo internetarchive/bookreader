@@ -3958,6 +3958,12 @@ BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
     if (hide) {
         toolbarHeight = this.getToolBarHeight() * -1;
         navbarHeight = this.getFooterHeight() * -1;
+
+        this.refs.$BRtoolbar.addClass('js-menu-hide');
+        this.refs.$BRfooter.addClass('js-menu-hide');
+    } else {
+        this.refs.$BRtoolbar.removeClass('js-menu-hide');
+        this.refs.$BRfooter.removeClass('js-menu-hide');
     }
 
     this.refs.$BRtoolbar.animate(
