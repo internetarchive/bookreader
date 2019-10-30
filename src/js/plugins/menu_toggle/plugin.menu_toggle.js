@@ -142,7 +142,7 @@
         || $(element).hasClass('BRemptypage') /* empty page placeholder */
         || $(element).hasClass('BRpageview') /* empty page placeholder, 1up */
         || $(element).hasClass('BRtwopageview'); /* empty page placeholder, 2up */
-        return isBackgroundClick;
+      return isBackgroundClick;
     };
 
     /**
