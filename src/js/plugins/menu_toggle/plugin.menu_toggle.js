@@ -154,7 +154,7 @@
      * @param { boolean } atBookCenter - optional
      */
     var toggleRouter = function toggleRouter (br, e, atBookCenter) {
-      var book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : event.currentTarget;
+      var book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : e.currentTarget;
       var is1UpMode = br.constMode1up === br.mode;
       var validBookClick = is1UpMode || isCenterClick(e, book);
       var isValidClickArea = atBookCenter ? validBookClick : isBackground(e.target);
