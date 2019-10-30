@@ -33,6 +33,11 @@ describe('Plugin: Menu Toggle', () => {
     expect(BookReader.defaultOptions.enableMenuToggle).toEqual(true);
   });
 
+  test('core code has animation consts', () => {
+    expect(BookReader.constNavAnimationDuration).toEqual(300);
+    expect(BookReader.constResizeAnimationDuration).toEqual(100);
+  })
+
   test('when bookreader loads, the menu shows', () => {
     expect($('.BRfooter').hasClass('js-menu-hide')).toEqual(false);
     expect($('.BRtoolbar').hasClass('js-menu-hide')).toEqual(false);
