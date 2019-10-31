@@ -22,6 +22,13 @@
     });
 
     /**
+     * `holdOffOnToggle` is used in fn `toggleRouter`
+     * to determine if menu toggle should happen
+     * set by `registerDragHandlers`
+     */
+    var holdOffOnToggle = false;
+
+    /**
      * Hides Nav arrow tab
      *
      * @param { object } br - BookReader instance
@@ -194,13 +201,9 @@
 
     var initialX;
     var initialY;
-    var holdOffOnToggle = false;
     /**
      * attaches mouseup & mousedown event handlers to assess if user is dragging
      * sets `initialX`, `initialY`, and `holdOffOnToggle`
-     *
-     * `holdOffOnToggle` is used in fn `toggleRouter`
-     * to determine if menu toggle should happen
      */
     var registerDragHandlers = function registerDragHandlers() {
       var background = document.querySelector('.BookReader') || {};
