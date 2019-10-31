@@ -7,10 +7,13 @@
  * + toggles nav at: book center tap/click
  * + toggles nav at: black background tap/click
  *
+ * Handles to events at CAPTURE phase
+ *
  * This uses core BookReader functions and parameters to check its UI state:
  * - br.refs = (at best) ui references that are present at any given time
  * - br.navigationIsVisible() - checks using refs to confirm the navbar's presence
  * - br.showNavigation() & br.hideNavigation()
+ * - br.constMode1up checks against br.mode;
  *
  * The list of BookReader custom events this plugin taps into are mainly
  * listed in the `.init` function
@@ -205,8 +208,12 @@
      * attaches mouseup & mousedown event handlers to assess if user is dragging
      * sets `initialX`, `initialY`, and `holdOffOnToggle`
      */
-    var registerDragHandlers = function registerDragHandlers() {
-      var background = document.querySelector('.BookReader') || {};
+    function registerDragHandlers() {
+      var background = document.querySelector('.BookReader');
+      if (!background) {
+        return;
+      }
+
       background.addEventListener('mousedown', function (e) {
         initialX = e.screenX;
         initialY = e.screenY;
@@ -229,7 +236,11 @@
      * @param { object } br - BookReader instance
      */
     function registerClickHandlers(br) {
-      var background = document.querySelector('.BookReader') || {};
+      var background = document.querySelector('.BookReader');
+      if (!background) {
+        return;
+      }
+
       background.addEventListener('click', onBackgroundClick.bind(null, br), { capture: true, passive: true });
 
       var desk = document.querySelector('.BRcontainer') || {};
