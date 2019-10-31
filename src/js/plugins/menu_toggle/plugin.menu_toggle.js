@@ -7,10 +7,13 @@
  * + toggles nav at: book center tap/click
  * + toggles nav at: black background tap/click
  *
+ * Handles to events at CAPTURE phase
+ *
  * This uses core BookReader functions and parameters to check its UI state:
  * - br.refs = (at best) ui references that are present at any given time
  * - br.navigationIsVisible() - checks using refs to confirm the navbar's presence
  * - br.showNavigation() & br.hideNavigation()
+ * - br.constMode1up checks against br.mode;
  *
  * The list of BookReader custom events this plugin taps into are mainly
  * listed in the `.init` function
@@ -20,6 +23,13 @@
     jQuery.extend(BookReader.defaultOptions, {
       enableMenuToggle: true
     });
+
+    /**
+     * `holdOffOnToggle` is used in fn `toggleRouter`
+     * to determine if menu toggle should happen
+     * set by `registerDragHandlers`
+     */
+    var holdOffOnToggle = false;
 
     /**
      * Hides Nav arrow tab
@@ -154,6 +164,10 @@
      * @param { boolean } atBookCenter - optional
      */
     var toggleRouter = function toggleRouter (br, e, atBookCenter) {
+      if (holdOffOnToggle) {
+        return;
+      }
+
       var book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : e.currentTarget;
       var is1UpMode = br.constMode1up === br.mode;
       var validBookClick = is1UpMode || isCenterClick(e, book);
@@ -188,12 +202,45 @@
       toggleRouter(br, e, atBookCenter);
     }
 
+    var initialX;
+    var initialY;
+    /**
+     * attaches mouseup & mousedown event handlers to assess if user is dragging
+     * sets `initialX`, `initialY`, and `holdOffOnToggle`
+     */
+    function registerDragHandlers() {
+      var background = document.querySelector('.BookReader');
+      if (!background) {
+        return;
+      }
+
+      background.addEventListener('mousedown', function (e) {
+        initialX = e.screenX;
+        initialY = e.screenY;
+
+        holdOffOnToggle = true;
+      }, true);
+      background.addEventListener('mouseup', function (e) {
+        var isDrag = (Math.abs(initialX - e.screenX) > 5 || Math.abs(initialY - e.screenY) > 5);
+
+        if (!isDrag) {
+          holdOffOnToggle = false;
+          initialX = 0;
+          initialY = 0;
+        }
+      }, true);
+    }
+
     /**
      * attaches click handlers to background & book
      * @param { object } br - BookReader instance
      */
     function registerClickHandlers(br) {
-      var background = document.querySelector('.BookReader') || {};
+      var background = document.querySelector('.BookReader');
+      if (!background) {
+        return;
+      }
+
       background.addEventListener('click', onBackgroundClick.bind(null, br), { capture: true, passive: true });
 
       var desk = document.querySelector('.BRcontainer') || {};
@@ -201,6 +248,7 @@
 
       if (book) {
         book.addEventListener('click', onBookClick.bind(null, br), true);
+        registerDragHandlers();
       }
     }
 
