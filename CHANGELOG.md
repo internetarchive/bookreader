@@ -1,3 +1,7 @@
+# 4.4.2
+- more robust menu toggle plugin, working well with zoom & panning around in zoom
+- more tests
+
 # 4.4.1
 - Remove accidental es6 syntax in BookReader.js (breaking IE11)
 
