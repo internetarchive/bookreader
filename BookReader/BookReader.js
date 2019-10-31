@@ -86,6 +86,10 @@ BookReader.constMode1up = 1;
 BookReader.constMode2up = 2;
 BookReader.constModeThumb = 3;
 
+// Animation constants
+BookReader.constNavAnimationDuration = 300;
+BookReader.constResizeAnimationDuration = 100;
+
 // Names of events that can be triggered via BookReader.prototype.trigger()
 BookReader.eventNames = {
     // Indicates that the fragment (a serialization of the reader state)
@@ -94,6 +98,8 @@ BookReader.eventNames = {
     PostInit: 'PostInit',
     stop: 'stop',
     resize: 'resize',
+    // nav events:
+    navToggled: 'navToggled',
     // menu click events
     fullscreenToggled: 'fullscreenToggled',
     zoomOut: 'zoomOut',
@@ -1219,7 +1225,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
 
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
     this.setMouseHandlers2UP();
-    this.twoPageSetCursor();
     this.updateToolbarZoom(this.reduce);
 };
 
@@ -1289,12 +1294,24 @@ BookReader.prototype.zoom1up = function(direction) {
 /**
  * Resizes the inner container to fit within the visible space to prevent
  * the top toolbar and bottom navbar from clipping the visible book
+ *
+ * @param { boolean } animate - optional
+ * When used, BookReader will fill the main container with the book's content.
+ * This is primarily for 1up view - a follow up animation to the nav animation
+ * So resize isn't perceived sharp/jerky
  */
-BookReader.prototype.resizeBRcontainer = function() {
-  this.refs.$brContainer.css({
-    top: this.getToolBarHeight(),
-    bottom: this.getFooterHeight(),
-  });
+BookReader.prototype.resizeBRcontainer = function(animate) {
+    if (animate) {
+        this.refs.$brContainer.animate({
+            top: this.getToolBarHeight(),
+            bottom: this.getFooterHeight()
+        }, this.constResizeAnimationDuration, 'linear');
+    } else {
+        this.refs.$brContainer.css({
+            top: this.getToolBarHeight(),
+            bottom: this.getFooterHeight()
+        });
+    }
 }
 
 /**
@@ -2194,6 +2211,7 @@ BookReader.prototype.twoPageGetAutofitReduce = function() {
 
 /**
  * Returns true if the pages extend past the edge of the view
+ * @deprecated Since version 4.3.3. Will be deleted in version 5.0
  * @return {boolean}
  */
 BookReader.prototype.twoPageIsZoomedIn = function() {
@@ -2276,6 +2294,7 @@ BookReader.prototype.twoPageCalculateReductionFactors = function() {
 
 /**
  * Set the cursor for two page view
+ * @deprecated Since version 4.3.3. Will be deleted in version 5.0
  */
 BookReader.prototype.twoPageSetCursor = function() {
     var $twoPageViewEl = this.refs.$brTwoPageView;
@@ -2621,7 +2640,6 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             if (self.enableSearch) self.updateSearchHilites2UP();
 
             self.setMouseHandlers2UP();
-            self.twoPageSetCursor();
 
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -2752,7 +2770,6 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             if (self.enableSearch) self.updateSearchHilites2UP();
 
             self.setMouseHandlers2UP();
-            self.twoPageSetCursor();
 
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -2774,10 +2791,8 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return true;
             }
 
-             if (! e.data.self.twoPageIsZoomedIn()) {
-                e.data.self.trigger(BookReader.eventNames.stop);
-                e.data.self.left();
-            }
+            e.data.self.trigger(BookReader.eventNames.stop);
+            e.data.self.left();
             e.preventDefault();
         }
     );
@@ -2790,10 +2805,8 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return !e.data.self.protected;
             }
 
-            if (! e.data.self.twoPageIsZoomedIn()) {
-                e.data.self.trigger(BookReader.eventNames.stop);
-                e.data.self.right();
-            }
+            e.data.self.trigger(BookReader.eventNames.stop);
+            e.data.self.right();
             e.preventDefault();
         }
     );
@@ -3925,15 +3938,55 @@ BookReader.prototype.navigationIsVisible = function() {
 };
 
 /**
+ * Main controller that sets navigation into view.
+ * Defaults to SHOW the navigation chrome
+ */
+BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
+    var animationLength = this.constNavAnimationDuration;
+    var animationType = 'linear';
+    var resizePageContainer = function resizePageContainer () {
+        /* main page container fills whole container */
+        if (this.constMode2up !== this.mode) {
+            var animate = true;
+            this.resizeBRcontainer(animate);
+        }
+        this.trigger(BookReader.eventNames.navToggled);
+    }.bind(this);
+
+    var toolbarHeight = 0;
+    var navbarHeight = 0;
+    if (hide) {
+        toolbarHeight = this.getToolBarHeight() * -1;
+        navbarHeight = this.getFooterHeight() * -1;
+
+        this.refs.$BRtoolbar.addClass('js-menu-hide');
+        this.refs.$BRfooter.addClass('js-menu-hide');
+    } else {
+        this.refs.$BRtoolbar.removeClass('js-menu-hide');
+        this.refs.$BRfooter.removeClass('js-menu-hide');
+    }
+
+    this.refs.$BRtoolbar.animate(
+        { top: toolbarHeight },
+        animationLength,
+        animationType,
+        resizePageContainer
+    );
+    this.refs.$BRfooter.animate(
+        { bottom: navbarHeight },
+        animationLength,
+        animationType,
+        resizePageContainer
+    );
+};
+/**
  * Hide navigation elements, if visible
  */
 BookReader.prototype.hideNavigation = function() {
     // Check if navigation is showing
     if (this.navigationIsVisible()) {
-        var toolbarHeight = this.getToolBarHeight();
-        var navbarHeight = this.getFooterHeight();
-        this.refs.$BRtoolbar.animate({top: toolbarHeight * -1});
-        this.refs.$BRfooter.animate({bottom: navbarHeight * -1});
+        var hide = true;
+        this.setNavigationView(hide);
     }
 };
 
@@ -3943,8 +3996,7 @@ BookReader.prototype.hideNavigation = function() {
 BookReader.prototype.showNavigation = function() {
     // Check if navigation is hidden
     if (!this.navigationIsVisible()) {
-        this.refs.$BRtoolbar.animate({top:0});
-        this.refs.$BRfooter.animate({bottom:0});
+        this.setNavigationView();
     }
 };
 
