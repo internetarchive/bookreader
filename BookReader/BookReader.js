@@ -3237,7 +3237,7 @@ BookReader.prototype.initNavbar = function() {
         +"    </div>"
         +"  </div>"
         +"  <div class=\"BRpage\">"
-
+        
         // Note, it's important for there to not be whitespace
         +     "<span class='BRcurrentpage'></span>"
         +     "<button class=\"BRicon book_left js-tooltip\"></button>"
@@ -3245,7 +3245,7 @@ BookReader.prototype.initNavbar = function() {
         +     "<button class=\"BRicon onepg desktop-only js-tooltip\"></button>"
         +     "<button class=\"BRicon twopg desktop-only js-tooltip\"></button>"
         +     "<button class=\"BRicon thumb desktop-only js-tooltip\"></button>"
-
+        
         // zoomx
         +     "<button class='BRicon zoom_out desktop-only js-tooltip'></button>"
         +     "<button class='BRicon zoom_in desktop-only js-tooltip'></button>"
@@ -3588,6 +3588,11 @@ BookReader.prototype.bindNavigationHandlers = function() {
 
     jIcons.filter('.thumb').bind('click', function() {
         self.switchMode(self.constModeThumb);
+    });
+
+    jIcons.filter('.cont').bind('click', function () {
+        alert("Cont increased")
+        //self.switchMode(self.constModeThumb);
     });
 
     jIcons.filter('.fit').bind('fit', function() {
@@ -4410,6 +4415,7 @@ BookReader.prototype.initUIStrings = function() {
                    '.onepg': 'One-page view',
                    '.twopg': 'Two-page view',
                    '.thumb': 'Thumbnail view',
+                   '.cont' : 'Contrast Change',
                    '.print': 'Print this page',
                    '.embed': 'Embed BookReader',
                    '.link': 'Link to this book (and page)',

@@ -113,13 +113,15 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
     return function () {
         var $el = super_.call(this);
         if (this.enableMobileNav) {
-            var escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
+            var escapedTitle = BookReader.util.escapeHTML(this.bookTitle)
             $el
             .addClass('responsive')
             .prepend($(
                    "<span class='BRmobileHamburgerWrapper'>"
                 +     "<button class=\"BRmobileHamburger\"></button>"
-                +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
+                +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle  + "</span>"
+                +     "<button class=\"BRicon zoom_out\"></button>"
+                +     "<button class=\"BRicon zoom_in\"></button>"
                 +   "</span>"
             ));
         }
