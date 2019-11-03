@@ -2211,7 +2211,6 @@ BookReader.prototype.twoPageGetAutofitReduce = function() {
 
 /**
  * Returns true if the pages extend past the edge of the view
- * @deprecated Since version 4.3.3. Will be deleted in version 5.0
  * @return {boolean}
  */
 BookReader.prototype.twoPageIsZoomedIn = function() {
@@ -2780,6 +2779,37 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 };
 
 BookReader.prototype.setMouseHandlers2UP = function() {
+    var initialX;
+    var initialY;
+    var holdOffOnPageTurn = false;
+
+    //check for dragging/panning
+    function registerDragHandlers() {
+        var background = document.querySelector('.BookReader');
+        if (!background) {
+            return;
+        }
+        
+        var dragCheckMousedown2upView = function dragCheckMousedown2upView(e) {
+            initialX = e.screenX;
+            initialY = e.screenY;
+            holdOffOnPageTurn = true;
+        };
+        var dragCheckMouseup2upView = function mouseup2up(e) {
+            var isDrag = (Math.abs(initialX - e.screenX) > 5 || Math.abs(initialY - e.screenY) > 5);
+            if (!isDrag) {
+                holdOffOnPageTurn = false;
+                initialX = 0;
+                initialY = 0;
+            }
+        };
+        background.removeEventListener('mousedown', dragCheckMousedown2upView, true);
+        background.removeEventListener('mouseup', dragCheckMouseup2upView, true);
+        background.addEventListener('mousedown', dragCheckMousedown2upView, true);
+        background.addEventListener('mouseup', dragCheckMouseup2upView, true);
+    }
+    registerDragHandlers();
+
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
@@ -2789,6 +2819,11 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                     return false;
                 }
                 return true;
+            }
+
+            var doNotTurnPage = e.data.self.twoPageIsZoomedIn() && holdOffOnPageTurn;
+            if (doNotTurnPage) {
+                return;
             }
 
             e.data.self.trigger(BookReader.eventNames.stop);
@@ -2803,6 +2838,11 @@ BookReader.prototype.setMouseHandlers2UP = function() {
             if (e.which == 3) {
                 // right click
                 return !e.data.self.protected;
+            }
+
+            var doNotTurnPage = e.data.self.twoPageIsZoomedIn() && holdOffOnPageTurn;
+            if (doNotTurnPage) {
+                return;
             }
 
             e.data.self.trigger(BookReader.eventNames.stop);
