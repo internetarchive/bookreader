@@ -114,24 +114,3 @@ test('has `resize` function', () => {
 test('has `resizeBRcontainer` function', () => {
   expect(BookReader.prototype.resizeBRcontainer).toBeDefined();
 })
-
-/* Functions that create 2 page view */
-test('has `prepareTwoPageView` function', () => {
-  expect(BookReader.prototype.prepareTwoPageView).toBeDefined();
-})
-
-test('has `drawLeafsTwoPage` function', () => {
-  expect(BookReader.prototype.drawLeafsTwoPage).toBeDefined();
-})
-
-test('has `setMouseHandlers2UP` function', () => {
-  expect(BookReader.prototype.setMouseHandlers2UP).toBeDefined();
-})
-
-test('has `twoPageIsZoomedIn` function', () => {
-  expect(BookReader.prototype.twoPageIsZoomedIn).toBeDefined();
-})
-
-test('has `zoom2up` function', () => {
-  expect(BookReader.prototype.zoom2up).toBeDefined();
-})
