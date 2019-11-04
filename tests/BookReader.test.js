@@ -74,3 +74,7 @@ test('has registered view type selected events', () => {
 test('has registered fullscreen toggle event', () => {
   expect(BookReader.eventNames.fullscreenToggled).toBeTruthy();
 });
+
+test('has registered event: `navToggled`', () => {
+  expect(BookReader.eventNames.navToggled).toBeTruthy();
+})
