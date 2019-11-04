@@ -57,15 +57,19 @@ test('testing debounce', () => {
 });
 
 /* BookReader custom events */
-test('has `trigger` function to fire internal custom events', () => {
+test('has `trigger` function to fire internal custom event', () => {
   expect(BookReader.prototype.trigger).toBeDefined();
 })
 
-test('has registered PostInit events', () => {
+test('has registered PostInit event', () => {
   expect(BookReader.eventNames.PostInit).toBeTruthy();
 });
 
 test('has registered zoom events', () => {
+  expect(BookReader.eventNames.zoomIn).toBeTruthy();
+  expect(BookReader.eventNames.zoomOut).toBeTruthy();
+});
+test('has registered resize event', () => {
   expect(BookReader.eventNames.zoomIn).toBeTruthy();
   expect(BookReader.eventNames.zoomOut).toBeTruthy();
 });
@@ -80,12 +84,35 @@ test('has registered fullscreen toggle event', () => {
   expect(BookReader.eventNames.fullscreenToggled).toBeTruthy();
 });
 
-test('has registered event: `navToggled`', () => {
+test('has registered nav toggle event', () => {
   expect(BookReader.eventNames.navToggled).toBeTruthy();
 })
 
+/* Functions that manage view modes */
 test('has `switchMode` function', () => {
   expect(BookReader.prototype.switchMode).toBeDefined();
+})
+
+/* Functions that make the nav usable */
+test('has `bindNavigationHandlers` function', () => {
+  expect(BookReader.prototype.bindNavigationHandlers).toBeDefined();
+})
+
+test('has `setupKeyListeners` function', () => {
+  expect(BookReader.prototype.setupKeyListeners).toBeDefined();
+})
+
+test('has `setupTooltips` function', () => {
+  expect(BookReader.prototype.setupTooltips).toBeDefined();
+})
+
+/* Functions that resize BookReader */
+test('has `resize` function', () => {
+  expect(BookReader.prototype.resize).toBeDefined();
+})
+
+test('has `resizeBRcontainer` function', () => {
+  expect(BookReader.prototype.resizeBRcontainer).toBeDefined();
 })
 
 /* Functions that create 2 page view */
