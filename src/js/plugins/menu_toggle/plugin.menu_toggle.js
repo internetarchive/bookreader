@@ -21,7 +21,8 @@
 
 (function addMenuToggler() {
     jQuery.extend(BookReader.defaultOptions, {
-      enableMenuToggle: true
+      enableMenuToggle: true,
+      dragscrollable: false  /* override desktop ability to click+drag pan */
     });
 
     /**
