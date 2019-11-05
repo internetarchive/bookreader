@@ -124,12 +124,12 @@
 
     /**
      * Confirms whether or not the click happened in the nav toggle zone
-     *
      * @param { MouseEvent } event - JS click event object
      * @param { DOM } book - DOM element that represents book
      */
     var isCenterClick = function isCenterClick(event, book) {
-      var clickPosition = event.clientX;
+      var bookContainer = document.querySelector('.BRcontainer');
+      var clickPosition = event.clientX + bookContainer.scrollLeft; // relative to book's width
       var bookWidth = book.offsetWidth;
       var leftOffset = book.offsetLeft
       var bookEndPageFlipArea = Math.round(bookWidth / 3);
@@ -162,23 +162,17 @@
      *
      * @param { object } br - BookReader instance
      * @param { MouseEvent } e - JS event object
-     * @param { boolean } atBookCenter - optional
+     * @param { boolean } stopPropagation - optional
      */
-    var toggleRouter = function toggleRouter (br, e, atBookCenter) {
+    var toggleRouter = function toggleRouter (br, e, stopPropagation) {
       if (holdOffOnToggle) {
         return;
       }
 
-      var book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : e.currentTarget;
-      var is1UpMode = br.constMode1up === br.mode;
-      var validBookClick = is1UpMode || isCenterClick(e, book);
-      var isValidClickArea = atBookCenter ? validBookClick : isBackground(e.target);
-      if (isValidClickArea) {
-        toggleNav(br, atBookCenter);
+      toggleNav(br);
 
-        if (atBookCenter) {
-          e.stopPropagation(); // don't turn the page. this takes prescendence
-        }
+      if (stopPropagation) {
+        e.stopPropagation(); // don't turn the page. this takes prescendence
       }
     }
 
@@ -188,7 +182,9 @@
      * @param { MouseEvent } e - JS event object
      */
     function onBackgroundClick(br, e) {
-      toggleRouter(br, e);
+      if (isBackground(e.target)) {
+        toggleRouter(br, e);
+      }
     }
 
     /**
@@ -198,9 +194,14 @@
      * @param { MouseEvent } e - JS event object
      */
     function onBookClick(br, e) {
+      var is1UpMode = br.constMode1up === br.mode;
+      var book = br.refs.$brContainer.children()[0];
+      var validBookClick = isCenterClick(e, book);
+      var stopPropagation = true;
 
-      var atBookCenter = true;
-      toggleRouter(br, e, atBookCenter);
+      if (is1UpMode || validBookClick) {
+        toggleRouter(br, e, stopPropagation);
+      }
     }
 
     var initialX;
