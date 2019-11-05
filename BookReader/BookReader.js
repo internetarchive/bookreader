@@ -226,6 +226,9 @@ BookReader.defaultOptions = {
     // page scaling.
     data: [],
 
+    // enables the desktop click+drag panning behavior
+    dragscrollable: true,
+
     // Advanced methods for page rendering
     getNumLeafs: null,
     getPageWidth: null,
@@ -1828,8 +1831,11 @@ BookReader.prototype.prepareOnePageView = function() {
     this.refs.$brPageViewEl = $("<div class='BRpageview'></div>");
     this.refs.$brContainer.append(this.refs.$brPageViewEl);
 
-    // Attaches to first child - child must be present
-    this.refs.$brContainer.dragscrollable();
+    if (this.options.dragscrollable) {
+        // only apply if menu toggle plugin isn't attached
+        // Attaches to first child - child must be present
+        this.refs.$brContainer.dragscrollable();
+    }
     this.bindGestures(this.refs.$brContainer);
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
@@ -1850,7 +1856,11 @@ BookReader.prototype.prepareThumbnailView = function() {
 
     this.refs.$brPageViewEl = $("<div class='BRpageview'></div>");
     this.refs.$brContainer.append(this.refs.$brPageViewEl);
-    this.refs.$brContainer.dragscrollable({preventDefault:true});
+
+    if (this.options.dragscrollable) {
+        // only apply if menu toggle plugin isn't attached
+        this.refs.$brContainer.dragscrollable({preventDefault:true});
+    }
 
     this.bindGestures(this.refs.$brContainer);
 
@@ -1915,8 +1925,11 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     this.refs.$brTwoPageView = $twoPageViewEl;
     this.refs.$brContainer.append($twoPageViewEl);
 
-    // Attaches to first child, so must come after we add the page view
-    this.refs.$brContainer.dragscrollable({preventDefault:true});
+    if (this.options.dragscrollable) {
+        // only apply if menu toggle plugin isn't attached
+        // Attaches to first child, so must come after we add the page view
+        this.refs.$brContainer.dragscrollable({preventDefault:true});
+    }
     this.bindGestures(this.refs.$brContainer);
 
     // $$$ calculate first then set
