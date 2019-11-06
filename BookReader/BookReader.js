@@ -2798,28 +2798,30 @@ BookReader.prototype.setMouseHandlers2UP = function() {
 
     //check for dragging/panning
     function registerDragHandlers() {
-        var background = document.querySelector('.BookReader');
-        if (!background) {
+        var brContainer = document.querySelector('.BRcontainer');
+        var book = brContainer.firstChild;
+
+        if (!brContainer || !book) {
             return;
         }
-        
+
         var dragCheckMousedown2upView = function dragCheckMousedown2upView(e) {
             initialX = e.screenX;
             initialY = e.screenY;
             holdOffOnPageTurn = true;
         };
         var dragCheckMouseup2upView = function mouseup2up(e) {
-            var isDrag = (Math.abs(initialX - e.screenX) > 5 || Math.abs(initialY - e.screenY) > 5);
+            var isDrag = (Math.abs(initialX - e.screenX) > 10 || Math.abs(initialY - e.screenY) > 10);
             if (!isDrag) {
                 holdOffOnPageTurn = false;
                 initialX = 0;
                 initialY = 0;
             }
         };
-        background.removeEventListener('mousedown', dragCheckMousedown2upView, true);
-        background.removeEventListener('mouseup', dragCheckMouseup2upView, true);
-        background.addEventListener('mousedown', dragCheckMousedown2upView, true);
-        background.addEventListener('mouseup', dragCheckMouseup2upView, true);
+        book.removeEventListener('mousedown', dragCheckMousedown2upView, true);
+        book.removeEventListener('mouseup', dragCheckMouseup2upView, true);
+        book.addEventListener('mousedown', dragCheckMousedown2upView, true);
+        book.addEventListener('mouseup', dragCheckMouseup2upView, true);
     }
     registerDragHandlers();
 
