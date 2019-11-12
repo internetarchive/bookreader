@@ -3877,7 +3877,7 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
 
     // Minimum distance in the amount of tim to trigger the swipe
     var minSwipeLength = Math.min(self.refs.$br.width() / 5, 80);
-    var maxSwipeTime = 400;
+    var maxSwipeTime = 130;
 
     // Check for horizontal swipe
     if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
