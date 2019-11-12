@@ -3793,8 +3793,6 @@ BookReader.prototype.initDragCheck = function(clientX, clientY) {
      * Based on the really quite awesome "Today's Guardian" at http://guardian.gyford.com/
      */
     this._drag = {
-        mightBeFlicking: false,
-        didFlick: false,
         mightBeDraggin: false,
         didDrag: false,
         startTime: (new Date).getTime(),
@@ -3829,7 +3827,6 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     );
 
     self.initDragCheck(event.clientX, event.clientY);
-    self._drag.mightBeFlicking = true;
     self._drag.mightBeDragging = true;
 
     event.preventDefault();
@@ -3839,38 +3836,16 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
 };
 
 BookReader.prototype.swipeMousemoveHandler = function(event) {
+    var startOfDragTime = 100;
     var self = event.data['br'];
     var _drag = self._drag;
-    if (! _drag.mightBeFlicking) {
-        return;
-    }
 
     // Update _drag data
     _drag.deltaX = event.clientX - _drag.startX;
     _drag.deltaY = event.clientY - _drag.startY;
     _drag.deltaT = (new Date).getTime() - _drag.startTime;
 
-    var absX = Math.abs(_drag.deltaX);
-    var absY = Math.abs(_drag.deltaY);
-
-    // Minimum distance in the amount of tim to trigger the flick
-    var minFlickLength = Math.min(self.refs.$br.width() / 5, 80);
-    var maxFlickTime = 400;
-
-    // Check for horizontal flick
-    if (absX > absY && (absX > minFlickLength) && _drag.deltaT < maxFlickTime) {
-        _drag.mightBeFlicking = false; // only trigger once
-        _drag.didFlick = true;
-        if (self.mode == self.constMode2up) {
-            if (_drag.deltaX < 0) {
-                self.right();
-            } else {
-                self.left();
-            }
-        }
-    }
-
-    if ( _drag.deltaT > maxFlickTime && !_drag.didFlick) {
+    if ( _drag.deltaT > startOfDragTime) {
         if (_drag.mightBeDragging) {
             // Dragging
             _drag.didDrag = true;
@@ -3890,12 +3865,11 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
 
 BookReader.prototype.swipeMouseupHandler = function(event) {
     var _drag = event.data['br']._drag;
-    _drag.mightBeFlicking = false;
     _drag.mightBeDragging = false;
 
     $(event.target).unbind('mouseout.swipe').unbind('mouseup.swipe').unbind('mousemove.swipe');
 
-    if (_drag.didFlick || _drag.didDrag) {
+    if (_drag.didDrag) {
         // Swallow event if completed drag gesture
         event.preventDefault();
         event.returnValue  = false;
