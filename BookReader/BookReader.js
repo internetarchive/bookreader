@@ -3757,7 +3757,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
       'mousedown.swipe',
       '.BRpageimage',
       { 'br': this },
-      this.swipeMousedownHandler
+      this.dragMousedownHandler
     );
 
     this.bindMozTouchHandlers();
@@ -3806,7 +3806,7 @@ BookReader.prototype.initDragCheck = function(clientX, clientY) {
     }
 };
 
-BookReader.prototype.swipeMousedownHandler = function(event) {
+BookReader.prototype.dragMousedownHandler = function(event) {
     var self = event.data['br'];
 
     // We should be the last bubble point for the page images
@@ -3817,13 +3817,13 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
 
     $(event.target).bind('mouseout.swipe',
         { 'br': self},
-        self.swipeMouseupHandler
+        self.dragMouseupHandler
     ).bind('mouseup.swipe',
         { 'br': self},
-        self.swipeMouseupHandler
+        self.dragMouseupHandler
     ).bind('mousemove.swipe',
         { 'br': self },
-        self.swipeMousemoveHandler
+        self.dragMousemoveHandler
     );
 
     self.initDragCheck(event.clientX, event.clientY);
@@ -3835,7 +3835,7 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     return false;
 };
 
-BookReader.prototype.swipeMousemoveHandler = function(event) {
+BookReader.prototype.dragMousemoveHandler = function(event) {
     var startOfDragTime = 100;
     var self = event.data['br'];
     var _drag = self._drag;
@@ -3863,7 +3863,7 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     return false;
 };
 
-BookReader.prototype.swipeMouseupHandler = function(event) {
+BookReader.prototype.dragMouseupHandler = function(event) {
     var _drag = event.data['br']._drag;
     _drag.mightBeDragging = false;
 
