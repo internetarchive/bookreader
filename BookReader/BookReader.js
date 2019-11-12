@@ -3742,7 +3742,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
         }
     });
 
-    this.initSwipeData();
+    this.initDragCheck();
 
     $(document).off('mousemove.navigation', this.el);
     $(document).on(
@@ -3788,7 +3788,7 @@ BookReader.prototype.navigationMousemoveHandler = function(event) {
     }
 };
 
-BookReader.prototype.initSwipeData = function(clientX, clientY) {
+BookReader.prototype.initDragCheck = function(clientX, clientY) {
     /*
      * Based on the really quite awesome "Today's Guardian" at http://guardian.gyford.com/
      */
@@ -3828,7 +3828,7 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
         self.swipeMousemoveHandler
     );
 
-    self.initSwipeData(event.clientX, event.clientY);
+    self.initDragCheck(event.clientX, event.clientY);
     self._drag.mightBeFlicking = true;
     self._drag.mightBeDragging = true;
 
