@@ -3793,8 +3793,8 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
      * Based on the really quite awesome "Today's Guardian" at http://guardian.gyford.com/
      */
     this._swipe = {
-        mightBeSwiping: false,
-        didSwipe: false,
+        mightBeFlicking: false,
+        didFlick: false,
         mightBeDraggin: false,
         didDrag: false,
         startTime: (new Date).getTime(),
@@ -3829,7 +3829,7 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     );
 
     self.initSwipeData(event.clientX, event.clientY);
-    self._swipe.mightBeSwiping = true;
+    self._swipe.mightBeFlicking = true;
     self._swipe.mightBeDragging = true;
 
     event.preventDefault();
@@ -3841,7 +3841,7 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
 BookReader.prototype.swipeMousemoveHandler = function(event) {
     var self = event.data['br'];
     var _swipe = self._swipe;
-    if (! _swipe.mightBeSwiping) {
+    if (! _swipe.mightBeFlicking) {
         return;
     }
 
@@ -3854,13 +3854,13 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
     var absY = Math.abs(_swipe.deltaY);
 
     // Minimum distance in the amount of tim to trigger the swipe
-    var minSwipeLength = Math.min(self.refs.$br.width() / 5, 80);
-    var maxSwipeTime = 400;
+    var minFlickLength = Math.min(self.refs.$br.width() / 5, 80);
+    var maxFlickTime = 400;
 
     // Check for horizontal swipe
-    if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
-        _swipe.mightBeSwiping = false; // only trigger once
-        _swipe.didSwipe = true;
+    if (absX > absY && (absX > minFlickLength) && _swipe.deltaT < maxFlickTime) {
+        _swipe.mightBeFlicking = false; // only trigger once
+        _swipe.didFlick = true;
         if (self.mode == self.constMode2up) {
             if (_swipe.deltaX < 0) {
                 self.right();
@@ -3870,7 +3870,7 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
         }
     }
 
-    if ( _swipe.deltaT > maxSwipeTime && !_swipe.didSwipe) {
+    if ( _swipe.deltaT > maxFlickTime && !_swipe.didFlick) {
         if (_swipe.mightBeDragging) {
             // Dragging
             _swipe.didDrag = true;
@@ -3890,12 +3890,12 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
 
 BookReader.prototype.swipeMouseupHandler = function(event) {
     var _swipe = event.data['br']._swipe;
-    _swipe.mightBeSwiping = false;
+    _swipe.mightBeFlicking = false;
     _swipe.mightBeDragging = false;
 
     $(event.target).unbind('mouseout.swipe').unbind('mouseup.swipe').unbind('mousemove.swipe');
 
-    if (_swipe.didSwipe || _swipe.didDrag) {
+    if (_swipe.didFlick || _swipe.didDrag) {
         // Swallow event if completed swipe gesture
         event.preventDefault();
         event.returnValue  = false;
