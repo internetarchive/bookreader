@@ -2792,39 +2792,6 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 };
 
 BookReader.prototype.setMouseHandlers2UP = function() {
-    var initialX;
-    var initialY;
-    var holdOffOnPageTurn = false;
-
-    //check for dragging/panning
-    function registerDragHandlers() {
-        var brContainer = document.querySelector('.BRcontainer');
-        var book = brContainer.firstChild;
-
-        if (!brContainer || !book) {
-            return;
-        }
-
-        var dragCheckMousedown2upView = function dragCheckMousedown2upView(e) {
-            initialX = e.screenX;
-            initialY = e.screenY;
-            holdOffOnPageTurn = true;
-        };
-        var dragCheckMouseup2upView = function mouseup2up(e) {
-            var isDrag = (Math.abs(initialX - e.screenX) > 10 || Math.abs(initialY - e.screenY) > 10);
-            if (!isDrag) {
-                holdOffOnPageTurn = false;
-                initialX = 0;
-                initialY = 0;
-            }
-        };
-        book.removeEventListener('mousedown', dragCheckMousedown2upView, true);
-        book.removeEventListener('mouseup', dragCheckMouseup2upView, true);
-        book.addEventListener('mousedown', dragCheckMousedown2upView, true);
-        book.addEventListener('mouseup', dragCheckMouseup2upView, true);
-    }
-    registerDragHandlers();
-
     this.setClickHandler2UP( this.prefetchedImgs[this.twoPage.currentIndexL],
         { self: this },
         function(e) {
@@ -2836,8 +2803,8 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return true;
             }
 
-            var doNotTurnPage = e.data.self.twoPageIsZoomedIn() && holdOffOnPageTurn;
-            if (doNotTurnPage) {
+            var swipeData = e.data.self._swipe || {};
+            if (swipeData.didDrag || swipeData.didSwipe) {
                 return;
             }
 
@@ -2855,8 +2822,8 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return !e.data.self.protected;
             }
 
-            var doNotTurnPage = e.data.self.twoPageIsZoomedIn() && holdOffOnPageTurn;
-            if (doNotTurnPage) {
+            var swipeData = e.data.self._swipe || {};
+            if (swipeData.didDrag || swipeData.didSwipe) {
                 return;
             }
 
