@@ -3792,7 +3792,7 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
     /*
      * Based on the really quite awesome "Today's Guardian" at http://guardian.gyford.com/
      */
-    this._swipe = {
+    this._drag = {
         mightBeFlicking: false,
         didFlick: false,
         mightBeDraggin: false,
@@ -3829,8 +3829,8 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     );
 
     self.initSwipeData(event.clientX, event.clientY);
-    self._swipe.mightBeFlicking = true;
-    self._swipe.mightBeDragging = true;
+    self._drag.mightBeFlicking = true;
+    self._drag.mightBeDragging = true;
 
     event.preventDefault();
     event.returnValue  = false;
@@ -3840,29 +3840,29 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
 
 BookReader.prototype.swipeMousemoveHandler = function(event) {
     var self = event.data['br'];
-    var _swipe = self._swipe;
-    if (! _swipe.mightBeFlicking) {
+    var _drag = self._drag;
+    if (! _drag.mightBeFlicking) {
         return;
     }
 
-    // Update swipe data
-    _swipe.deltaX = event.clientX - _swipe.startX;
-    _swipe.deltaY = event.clientY - _swipe.startY;
-    _swipe.deltaT = (new Date).getTime() - _swipe.startTime;
+    // Update _drag data
+    _drag.deltaX = event.clientX - _drag.startX;
+    _drag.deltaY = event.clientY - _drag.startY;
+    _drag.deltaT = (new Date).getTime() - _drag.startTime;
 
-    var absX = Math.abs(_swipe.deltaX);
-    var absY = Math.abs(_swipe.deltaY);
+    var absX = Math.abs(_drag.deltaX);
+    var absY = Math.abs(_drag.deltaY);
 
-    // Minimum distance in the amount of tim to trigger the swipe
+    // Minimum distance in the amount of tim to trigger the flick
     var minFlickLength = Math.min(self.refs.$br.width() / 5, 80);
     var maxFlickTime = 400;
 
-    // Check for horizontal swipe
-    if (absX > absY && (absX > minFlickLength) && _swipe.deltaT < maxFlickTime) {
-        _swipe.mightBeFlicking = false; // only trigger once
-        _swipe.didFlick = true;
+    // Check for horizontal flick
+    if (absX > absY && (absX > minFlickLength) && _drag.deltaT < maxFlickTime) {
+        _drag.mightBeFlicking = false; // only trigger once
+        _drag.didFlick = true;
         if (self.mode == self.constMode2up) {
-            if (_swipe.deltaX < 0) {
+            if (_drag.deltaX < 0) {
                 self.right();
             } else {
                 self.left();
@@ -3870,17 +3870,17 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
         }
     }
 
-    if ( _swipe.deltaT > maxFlickTime && !_swipe.didFlick) {
-        if (_swipe.mightBeDragging) {
+    if ( _drag.deltaT > maxFlickTime && !_drag.didFlick) {
+        if (_drag.mightBeDragging) {
             // Dragging
-            _swipe.didDrag = true;
+            _drag.didDrag = true;
             self.refs.$brContainer
-            .scrollTop(self.refs.$brContainer.scrollTop() - event.clientY + _swipe.lastY)
-            .scrollLeft(self.refs.$brContainer.scrollLeft() - event.clientX + _swipe.lastX);
+            .scrollTop(self.refs.$brContainer.scrollTop() - event.clientY + _drag.lastY)
+            .scrollLeft(self.refs.$brContainer.scrollLeft() - event.clientX + _drag.lastX);
         }
     }
-    _swipe.lastX = event.clientX;
-    _swipe.lastY = event.clientY;
+    _drag.lastX = event.clientX;
+    _drag.lastY = event.clientY;
 
     event.preventDefault();
     event.returnValue  = false;
@@ -3889,14 +3889,14 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
 };
 
 BookReader.prototype.swipeMouseupHandler = function(event) {
-    var _swipe = event.data['br']._swipe;
-    _swipe.mightBeFlicking = false;
-    _swipe.mightBeDragging = false;
+    var _drag = event.data['br']._drag;
+    _drag.mightBeFlicking = false;
+    _drag.mightBeDragging = false;
 
     $(event.target).unbind('mouseout.swipe').unbind('mouseup.swipe').unbind('mousemove.swipe');
 
-    if (_swipe.didFlick || _swipe.didDrag) {
-        // Swallow event if completed swipe gesture
+    if (_drag.didFlick || _drag.didDrag) {
+        // Swallow event if completed drag gesture
         event.preventDefault();
         event.returnValue  = false;
         event.cancelBubble = true;
