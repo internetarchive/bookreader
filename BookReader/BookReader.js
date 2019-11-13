@@ -3793,7 +3793,7 @@ BookReader.prototype.initDragCheck = function(clientX, clientY) {
      * Based on the really quite awesome "Today's Guardian" at http://guardian.gyford.com/
      */
     this._drag = {
-        mightBeDraggin: false,
+        mightBeDragging: false,
         didDrag: false,
         startTime: (new Date).getTime(),
         startX: clientX,
