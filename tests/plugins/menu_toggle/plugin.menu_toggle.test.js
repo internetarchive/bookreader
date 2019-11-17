@@ -19,6 +19,11 @@ beforeAll(() => {
     return OGSpeed(0, easing, callback);
   };
   document.body.innerHTML = '<div id="BookReader">';
+
+  // sets user agent to show it is a mobile device
+  const iOSMobileUserAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1';
+  Object.defineProperty(window.navigator, 'userAgent', { value: iOSMobileUserAgent, configurable: true });
+
   br = new BookReader();
   br.init();
 });
