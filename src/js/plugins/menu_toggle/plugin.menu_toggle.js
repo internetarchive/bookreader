@@ -259,6 +259,8 @@
      */
     var installMenuToggle = function installMenuToggle(br) {
       var hasNav = false;
+      var mobileUserAgentRegex = /Android|Mobile|iPhone|Windows Phone/g;
+      var isMobile = navigator.userAgent && (navigator.userAgent.search(mobileUserAgentRegex) > 0);
 
       try {
         hasNav = br.navigationIsVisible();
@@ -267,6 +269,11 @@
       }
 
       if (!hasNav) {
+        return;
+      }
+
+      if (!isMobile) {
+        hideArrow(br);
         return;
       }
 
