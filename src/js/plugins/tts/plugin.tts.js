@@ -4,7 +4,7 @@
 import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
-/** @typedef {import('./AbstractTTSEngine.js').PageChunk} PageChunk */
+/** @typedef {import('./PageChunk.js')} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js")} AbstractTTSEngine */
 
 // Default options for TTS

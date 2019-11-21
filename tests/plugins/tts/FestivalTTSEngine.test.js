@@ -4,8 +4,9 @@ import FestivalTTSEngine from '../../../src/js/plugins/tts/FestivalTTSEngine.js'
 import sinon from 'sinon';
 import { afterEventLoop } from '../../utils.js';
 import { DUMMY_TTS_ENGINE_OPTS } from './AbstractTTSEngine.test.js';
+import PageChunk from '../../../src/js/plugins/tts/PageChunk.js';
+import PageChunkIterator from '../../../src/js/plugins/tts/PageChunkIterator.js';
 /** @typedef {import('../../../src/js/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
-/** @typedef {import('../../../src/js/plugins/tts/AbstractTTSEngine.js').PageChunk} PageChunk */
 
 describe('iOSCaptureUserIntentHack', () => {
     test('synchronously calls createSound/play to capture user intent', () => {
@@ -32,17 +33,17 @@ describe('misc', () => {
         };
         window.soundManager = sm;
         const engine = new FestivalTTSEngine(DUMMY_TTS_ENGINE_OPTS);
-        sinon.stub(engine, 'playChunk').returns(new Promise(() => {}));
+        sinon.stub(engine, 'playSound').returns(new Promise(() => {}));
         sinon.stub(engine, 'stop');
-        sinon.stub(engine, 'fetchPageChunks').resolves([dummyPageChunk()]);
+        sinon.stub(PageChunkIterator.prototype, '_fetchPage').resolves([dummyPageChunk()]);
         engine.start(0, 5);
 
         // because things happen in callbacks, need to run code at end of the JS event loop
         return afterEventLoop()
         .then(() => {
             expect(sm.createSound.callCount).toBe(1);
-            expect(engine.fetchPageChunks.callCount).toBeGreaterThanOrEqual(1);
-            expect(engine.playChunk.callCount).toBe(1);
+            expect(PageChunkIterator.prototype._fetchPage.callCount).toBeGreaterThanOrEqual(1);
+            expect(engine.playSound.callCount).toBe(1);
         });
     });
 });
@@ -58,10 +59,5 @@ function createMockSound() {
 
 /** @return {PageChunk} */
 function dummyPageChunk() {
-    return {
-        leafIndex: 0,
-        chunkIndex: 0,
-        text: 'Once upon a time',
-        lineRects: [],
-    };
+    return new PageChunk(0, 0, 'Once upon a time', []);
 }
