@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import { afterEventLoop } from '../../utils.js';
 import AbstractTTSEngine from '../../../src/js/plugins/tts/AbstractTTSEngine.js';
+import PageChunkIterator from '../../../src/js/plugins/tts/PageChunkIterator.js';
 /** @typedef {import('../../../src/js/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
 
 describe('AbstractTTSEngine', () => {
@@ -9,7 +10,7 @@ describe('AbstractTTSEngine', () => {
             getVoices() { return []; }
         }
         const d = new DummyEngine(DUMMY_TTS_ENGINE_OPTS);
-        d.chunkStream = { pull: sinon.stub().resolves({ done: true }) };
+        d._chunkIterator = { next: sinon.stub().resolves(PageChunkIterator.AT_END) };
         const stopStub = sinon.stub(d, 'stop');
         expect(stopStub.callCount).toBe(0);
         d.step();
@@ -111,28 +112,6 @@ for (let dummyVoice of [dummyVoice, dummyVoiceUnderscores]) {
         });
     });
 }
-
-describe('_fixChunkRects', () => {
-    const { _fixChunkRects } = AbstractTTSEngine;
-
-    test('Handles empty array', () => {
-        const rects = [];
-        expect(_fixChunkRects(rects)).toBe(rects);
-        expect(rects).toEqual([]);
-    });
-
-    test('Does not modify normal values values normal', () => {
-        const rects = [[100,100,500,80], [200,200,500,180], [300,300,500,280]];
-        expect(_fixChunkRects(rects)).toBe(rects);
-        expect(rects).toEqual([[100,100,500,80], [200,200,500,180], [300,300,500,280]]);
-    });
-
-    test('Fixes outlier values in first rect', () => {
-        const rects = [[100,2300,2300,0], [200,200,200,180], [300,300,200,280]];
-        expect(_fixChunkRects(rects)).toBe(rects);
-        expect(rects).toEqual([[100,2300,200,2280], [200,200,200,180], [300,300,200,280]]);
-    });
-});
 
 /** @type {TTSEngineOptions} */
 export const DUMMY_TTS_ENGINE_OPTS = {
