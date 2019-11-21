@@ -21,3 +21,16 @@ describe('_fixChunkRects', () => {
         expect(rects).toEqual([[100,2300,200,2280], [200,200,200,180], [300,300,200,280]]);
     });
 });
+
+describe('_fromTextWrapperResponse', () => {
+    const { _fromTextWrapperResponse } = PageChunk;
+
+    test('Handles empty array', () => {
+        expect(_fromTextWrapperResponse(0, [])).toEqual([]);
+    });
+
+    test('Basic test', () => {
+        const chunks = _fromTextWrapperResponse(0, [['Line', [0,100,100,0]]]);
+        expect(chunks).toEqual([new PageChunk(0, 0, 'Line', [[0,100,100,0]])]);
+    });
+});

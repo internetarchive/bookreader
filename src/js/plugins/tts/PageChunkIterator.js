@@ -13,7 +13,7 @@ export default class PageChunkIterator {
     constructor(pageCount, start, opts) {
         this.pageCount = pageCount;
         this.currentPage = start;
-        this.currentChunkIndex = 0;
+        this.nextChunkIndex = 0;
         this.opts = Object.assign({}, DEFAULT_OPTS, opts);
         /** @type {Object<number, PageChunk[]>} leaf index -> chunks*/
         this._bufferedPages = {};
@@ -25,31 +25,37 @@ export default class PageChunkIterator {
      * @return {PromiseLike<"__PageChunkIterator.AT_END__" | PageChunk>}
      */
     next() {
-        if (this.currentPage == this.pageCount) return Promise.resolve(PageChunkIterator.AT_END);
+        if (this.currentPage == this.pageCount) {
+            return Promise.resolve(PageChunkIterator.AT_END);
+        }
 
         this._recenterBuffer(this.currentPage);
 
         return this._fetchPage(this.currentPage)
         .then(chunks => {
-            if (this.currentChunkIndex == chunks.length) {
+            if (this.nextChunkIndex == chunks.length) {
                 this.currentPage++;
-                this.currentChunkIndex = 0;
+                this.nextChunkIndex = 0;
                 return this.next();
             }
-            return chunks[this.currentChunkIndex++];
+            return chunks[this.nextChunkIndex++];
         });
     }
 
     prev() {
-        if (this.currentChunkIndex == 0) {
-            this.currentPage = Math.max(0, this.currentPage - 1);
+        if (this.nextChunkIndex == 0 && this.currentPage == 0) {
+            return this._fetchPage(this.currentPage)
+            .then(chunks => chunks[0]);
+        }
+        else if (this.nextChunkIndex == 0 && this.currentPage > 0) {
+            this.currentPage--;
             return this._fetchPage(this.currentPage)
             .then(chunks => {
-                this.currentChunkIndex = chunks.length - 1;
-                this.next();
+                this.nextChunkIndex = chunks.length - 1;
+                return this.next();
             });
         } else {
-            this.currentChunkIndex--;
+            this.nextChunkIndex -= 2;
             return this._fetchPage(this.currentPage)
             .then(() => this.next());
         }
@@ -86,7 +92,7 @@ export default class PageChunkIterator {
         if (index in this._bufferingPages) return this._bufferingPages[index];
         if (index in this._bufferedPages) return Promise.resolve(this._bufferedPages[index]);
 
-        this._bufferingPages[index] = PageChunk.fetch(this.opts.server, this.opts.bookPath, index)
+        this._bufferingPages[index] = this._fetchPageDirect(index)
         .then(chunks => {
             delete this._bufferingPages[index];
             this._bufferedPages[index] = chunks;
@@ -94,6 +100,14 @@ export default class PageChunkIterator {
         });
 
         return this._bufferingPages[index];
+    }
+
+    /**
+     * Fetches a page without checking buffer
+     * @param {number} index
+     */
+    _fetchPageDirect(index) {
+        return PageChunk.fetch(this.opts.server, this.opts.bookPath, index);
     }
 }
 

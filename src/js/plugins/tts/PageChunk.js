@@ -33,7 +33,7 @@ export default class PageChunk {
                     path: `${bookPath}_djvu.xml`,
                     page: leafIndex
                 },
-                error: rej
+                error: rej,
             })
             .then(chunks => {
                 res(PageChunk._fromTextWrapperResponse(leafIndex, chunks));
@@ -44,7 +44,7 @@ export default class PageChunk {
     /**
      * @param {number} leafIndex
      * @param {Array<[String, ...DJVURect[]]>} chunksResponse 
-     * @return {PageChunk}
+     * @return {PageChunk[]}
      */
     static _fromTextWrapperResponse(leafIndex, chunksResponse) {
         return chunksResponse.map((c, i) => {
