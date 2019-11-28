@@ -6,52 +6,52 @@ import PageChunk from '../../../src/js/plugins/tts/PageChunk';
 describe('Buffers pages', () => {
     test('Does not error if no room for reverse buffer', async () => {
         const iterator = new PageChunkIterator(100, 0, {pageBufferSize: 5});
-        sinon.stub(iterator, '_fetchPageDirect').resolves([dummyPageChunk()]);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves([dummyPageChunk()]);
         await iterator.next();
-        expect(iterator._fetchPageDirect.callCount).toBe(6);
+        expect(iterator._fetchPageChunksDirect.callCount).toBe(6);
         expect(Object.keys(iterator._bufferedPages).length).toBe(6);
     });
 
     test('Does not error if no room for forward buffer', async () => {
         const iterator = new PageChunkIterator(100, 99, {pageBufferSize: 5});
-        sinon.stub(iterator, '_fetchPageDirect').resolves([dummyPageChunk()]);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves([dummyPageChunk()]);
         await iterator.next();
-        expect(iterator._fetchPageDirect.callCount).toBe(6);
+        expect(iterator._fetchPageChunksDirect.callCount).toBe(6);
         expect(Object.keys(iterator._bufferedPages).length).toBe(6);
     });
 
     test('Fewer pages than buffer size', async () => {
         const iterator = new PageChunkIterator(1, 0, {pageBufferSize: 5});
-        sinon.stub(iterator, '_fetchPageDirect').resolves([dummyPageChunk()]);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves([dummyPageChunk()]);
         await iterator.next();
-        expect(iterator._fetchPageDirect.callCount).toBe(1);
+        expect(iterator._fetchPageChunksDirect.callCount).toBe(1);
         expect(Object.keys(iterator._bufferedPages).length).toBe(1);
     });
 
     test('Buffers data before/after', async () => {
         const iterator = new PageChunkIterator(100, 50, {pageBufferSize: 5});
-        sinon.stub(iterator, '_fetchPageDirect').resolves([dummyPageChunk()]);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves([dummyPageChunk()]);
         await iterator.next();
-        expect(iterator._fetchPageDirect.callCount).toBe(11);
+        expect(iterator._fetchPageChunksDirect.callCount).toBe(11);
         expect(Object.keys(iterator._bufferedPages).length).toBe(11);
     });
 
     test('Buffer size does not grow indefinitely', async () => {
         const iterator = new PageChunkIterator(100, 50, {pageBufferSize: 5});
-        sinon.stub(iterator, '_fetchPageDirect').resolves([dummyPageChunk()]);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves([dummyPageChunk()]);
         for (let i = 0; i < 5; i++) await iterator.next();
         expect(Object.keys(iterator._bufferedPages).length).toBe(11);
     });
 
     test('Does not make a new request if buffered', async () => {
         const iterator = new PageChunkIterator(10, 7, {pageBufferSize: 5});
-        sinon.stub(iterator, '_fetchPageDirect').resolves([dummyPageChunk()]);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves([dummyPageChunk()]);
 
         await iterator.next();
-        expect(iterator._fetchPageDirect.callCount).toBe(8);
+        expect(iterator._fetchPageChunksDirect.callCount).toBe(8);
         
         await iterator.next();
-        expect(iterator._fetchPageDirect.callCount).toBe(8);
+        expect(iterator._fetchPageChunksDirect.callCount).toBe(8);
     });
 });
 
@@ -63,34 +63,34 @@ describe('Iterates pages', () => {
             dummyPageChunk(),
             dummyPageChunk(),
         ];
-        sinon.stub(iterator, '_fetchPageDirect').resolves(chunks);
-        expect(iterator.currentPage).toBe(50);
-        expect(iterator.nextChunkIndex).toBe(0);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves(chunks);
+        expect(iterator._cursor.page).toBe(50);
+        expect(iterator._cursor.chunk).toBe(0);
         return iterator.next()
         .then(() => {
-            expect(iterator.currentPage).toBe(50);
-            expect(iterator.nextChunkIndex).toBe(1);
+            expect(iterator._cursor.page).toBe(50);
+            expect(iterator._cursor.chunk).toBe(1);
             return iterator.next();
         })
         .then(() => {
-            expect(iterator.currentPage).toBe(50);
-            expect(iterator.nextChunkIndex).toBe(2);
+            expect(iterator._cursor.page).toBe(50);
+            expect(iterator._cursor.chunk).toBe(2);
             return iterator.next();
         })
         .then(() => {
-            expect(iterator.currentPage).toBe(50);
-            expect(iterator.nextChunkIndex).toBe(3);
+            expect(iterator._cursor.page).toBe(50);
+            expect(iterator._cursor.chunk).toBe(3);
             return iterator.next();
         })
         .then(() => {
-            expect(iterator.currentPage).toBe(51);
-            expect(iterator.nextChunkIndex).toBe(1);
+            expect(iterator._cursor.page).toBe(51);
+            expect(iterator._cursor.chunk).toBe(1);
         });
     });
 
     test('Fires AT_END when done', () => {
         const iterator = new PageChunkIterator(1, 0, {pageBufferSize: 5});
-        sinon.stub(iterator, '_fetchPageDirect').resolves([dummyPageChunk()]);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves([dummyPageChunk()]);
         return iterator.next()
         .then(res => {
             expect(res instanceof PageChunk).toBe(true);
@@ -103,30 +103,30 @@ describe('Iterates pages', () => {
 
     test('Fires AT_END reaching past end', () => {
         const iterator = new PageChunkIterator(1, 0, {pageBufferSize: 5});
-        sinon.stub(iterator, '_fetchPageDirect').resolves([dummyPageChunk()]);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves([dummyPageChunk()]);
         return iterator.next()
         .then(res => {
             expect(res instanceof PageChunk).toBe(true);
-            expect(iterator.currentPage).toBe(0);
-            expect(iterator.nextChunkIndex).toBe(1);
+            expect(iterator._cursor.page).toBe(0);
+            expect(iterator._cursor.chunk).toBe(1);
             return iterator.next();
         })
         .then(res => {
             expect(res).toBe(PageChunkIterator.AT_END);
-            expect(iterator.currentPage).toBe(1);
-            expect(iterator.nextChunkIndex).toBe(0);
+            expect(iterator._cursor.page).toBe(1);
+            expect(iterator._cursor.chunk).toBe(0);
             return iterator.next();
         })
         .then(res => {
             expect(res).toBe(PageChunkIterator.AT_END);
-            expect(iterator.currentPage).toBe(1);
-            expect(iterator.nextChunkIndex).toBe(0);
+            expect(iterator._cursor.page).toBe(1);
+            expect(iterator._cursor.chunk).toBe(0);
             return iterator.next();
         })
         .then(res => {
             expect(res).toBe(PageChunkIterator.AT_END);
-            expect(iterator.currentPage).toBe(1);
-            expect(iterator.nextChunkIndex).toBe(0);
+            expect(iterator._cursor.page).toBe(1);
+            expect(iterator._cursor.chunk).toBe(0);
             return iterator.next();
         });
     });
@@ -138,28 +138,28 @@ describe('Iterates pages', () => {
             dummyPageChunk(),
             dummyPageChunk(),
         ];
-        sinon.stub(iterator, '_fetchPageDirect').resolves(chunks);
-        expect(iterator.currentPage).toBe(50);
-        expect(iterator.nextChunkIndex).toBe(0);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves(chunks);
+        expect(iterator._cursor.page).toBe(50);
+        expect(iterator._cursor.chunk).toBe(0);
         return iterator.decrement()
         .then(() => {
-            expect(iterator.currentPage).toBe(49);
-            expect(iterator.nextChunkIndex).toBe(2);
+            expect(iterator._cursor.page).toBe(49);
+            expect(iterator._cursor.chunk).toBe(2);
             return iterator.decrement();
         })
         .then(() => {
-            expect(iterator.currentPage).toBe(49);
-            expect(iterator.nextChunkIndex).toBe(1);
+            expect(iterator._cursor.page).toBe(49);
+            expect(iterator._cursor.chunk).toBe(1);
             return iterator.decrement();
         })
         .then(() => {
-            expect(iterator.currentPage).toBe(49);
-            expect(iterator.nextChunkIndex).toBe(0);
+            expect(iterator._cursor.page).toBe(49);
+            expect(iterator._cursor.chunk).toBe(0);
             return iterator.decrement();
         })
         .then(() => {
-            expect(iterator.currentPage).toBe(48);
-            expect(iterator.nextChunkIndex).toBe(2);
+            expect(iterator._cursor.page).toBe(48);
+            expect(iterator._cursor.chunk).toBe(2);
         });
     });
 
@@ -170,31 +170,31 @@ describe('Iterates pages', () => {
             dummyPageChunk(),
             dummyPageChunk(),
         ];
-        sinon.stub(iterator, '_fetchPageDirect').resolves(chunks);
-        expect(iterator.currentPage).toBe(0);
-        expect(iterator.nextChunkIndex).toBe(0);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves(chunks);
+        expect(iterator._cursor.page).toBe(0);
+        expect(iterator._cursor.chunk).toBe(0);
         return iterator.decrement()
         .then(() => {
-            expect(iterator.currentPage).toBe(0);
-            expect(iterator.nextChunkIndex).toBe(0);
+            expect(iterator._cursor.page).toBe(0);
+            expect(iterator._cursor.chunk).toBe(0);
             return iterator.decrement();
         })
         .then(() => {
-            expect(iterator.currentPage).toBe(0);
-            expect(iterator.nextChunkIndex).toBe(0);
+            expect(iterator._cursor.page).toBe(0);
+            expect(iterator._cursor.chunk).toBe(0);
             return iterator.decrement();
         })
         .then(() => {
-            expect(iterator.currentPage).toBe(0);
-            expect(iterator.nextChunkIndex).toBe(0);
+            expect(iterator._cursor.page).toBe(0);
+            expect(iterator._cursor.chunk).toBe(0);
         });
     });
 
     test('Empty book', async () => {
         const iterator = new PageChunkIterator(100, 0, {pageBufferSize: 5});
-        sinon.stub(iterator, '_fetchPageDirect').resolves([]);
+        sinon.stub(iterator, '_fetchPageChunksDirect').resolves([]);
         const result = await iterator.next();
-        expect(iterator._fetchPageDirect.callCount).toBe(100);
+        expect(iterator._fetchPageChunksDirect.callCount).toBe(100);
         expect(result).toBe(PageChunkIterator.AT_END);
     });
 
@@ -204,7 +204,7 @@ describe('Iterates pages', () => {
             0: [dummyPageChunk()],
             5: [dummyPageChunk()],
         };
-        sinon.stub(iterator, '_fetchPageDirect')
+        sinon.stub(iterator, '_fetchPageChunksDirect')
         .callsFake(async i => nonEmptyPages[i] || []);
 
         const result0 = await iterator.next();
@@ -220,7 +220,7 @@ describe('Iterates pages', () => {
             0: [dummyPageChunk()],
             5: [dummyPageChunk()],
         };
-        sinon.stub(iterator, '_fetchPageDirect')
+        sinon.stub(iterator, '_fetchPageChunksDirect')
         .callsFake(async i => nonEmptyPages[i] || []);
 
         await iterator.decrement();
