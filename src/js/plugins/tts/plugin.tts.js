@@ -133,6 +133,9 @@ BookReader.prototype.initNavbar = (function (super_) {
                                 <option value="2">2x</option>
                             </select>
                         </div>
+                        <button class="BRToolbarButton jumpBackward" title="Jump Backward">
+                            <img class="icon" src="${this.imagesBaseURL}icon_skip-back.svg" alt="Jump Backward"/>
+                        </button>
                         <button class="BRToolbarButton playPause" title="Toggle Pause">
                             <img class="icon play" src="${this.imagesBaseURL}icon_play.svg" alt="Play" style="display:none">
                             <img class="icon pause" src="${this.imagesBaseURL}icon_pause.svg" alt="Pause">
@@ -144,6 +147,7 @@ BookReader.prototype.initNavbar = (function (super_) {
             this.ttsEngine.events.on('pause resume start', () => this.ttsUpdateState());
             this.refs.$BRReadAloudToolbar.find('.playPause').click(this.ttsPlayPause.bind(this));
             this.refs.$BRReadAloudToolbar.find('.jumpForward').click(this.ttsJumpForward.bind(this));
+            this.refs.$BRReadAloudToolbar.find('.jumpBackward').click(this.ttsJumpBackward.bind(this));
             const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="BRReadAloud-rate"]');
             $rateSelector.change(ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
             $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
@@ -180,6 +184,13 @@ BookReader.prototype.ttsJumpForward = function () {
         this.ttsEngine.resume();
     }
     this.ttsEngine.jumpForward();
+};
+
+BookReader.prototype.ttsJumpBackward = function () {
+    if (this.ttsEngine.paused) {
+        this.ttsEngine.resume();
+    }
+    this.ttsEngine.jumpBackward();
 };
 
 BookReader.prototype.ttsUpdateState = function() {

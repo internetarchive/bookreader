@@ -19,12 +19,28 @@ export default class PageChunkIterator {
         this._bufferedPages = {};
         /** @type {Object<number, PromiseLike<PageChunk[]>} leaf index -> chunks*/
         this._bufferingPages = {};
+        /**
+         * @type {Promise} promise that manages cursor modifications so that they
+         * happen in order triggered as opposed to order the server responds
+         **/
+        this._cursorLock = Promise.resolve();
     }
 
     /**
      * @return {PromiseLike<"__PageChunkIterator.AT_END__" | PageChunk>}
      */
     next() {
+        return this._cursorLock = this._cursorLock
+        .then(() => this._nextUncontrolled());
+    }
+
+    /** @return {Promise} */
+    decrement() {
+        return this._cursorLock = this._cursorLock
+        .then(() => this._decrementUncontrolled());
+    }
+
+    _nextUncontrolled() {
         if (this.currentPage == this.pageCount) {
             return Promise.resolve(PageChunkIterator.AT_END);
         }
@@ -36,28 +52,29 @@ export default class PageChunkIterator {
             if (this.nextChunkIndex == chunks.length) {
                 this.currentPage++;
                 this.nextChunkIndex = 0;
-                return this.next();
+                return this._nextUncontrolled();
             }
             return chunks[this.nextChunkIndex++];
         });
     }
 
-    prev() {
-        if (this.nextChunkIndex == 0 && this.currentPage == 0) {
-            return this._fetchPage(this.currentPage)
-            .then(chunks => chunks[0]);
-        }
-        else if (this.nextChunkIndex == 0 && this.currentPage > 0) {
+    /**
+     * Decrements without ensuring synchronization
+     * @return {Promise}
+     */
+    _decrementUncontrolled() {
+        if (this.currentPage == 0 && this.nextChunkIndex == 0) {
+            return this._fetchPage(this.currentPage);
+        } else if (this.currentPage > 0 && this.nextChunkIndex == 0) {
             this.currentPage--;
             return this._fetchPage(this.currentPage)
             .then(chunks => {
-                this.nextChunkIndex = chunks.length - 1;
-                return this.next();
+                if (chunks.length == 0) return this._decrementUncontrolled();
+                else this.nextChunkIndex = chunks.length - 1;
             });
         } else {
-            this.nextChunkIndex -= 2;
-            return this._fetchPage(this.currentPage)
-            .then(() => this.next());
+            this.nextChunkIndex--;
+            return this._fetchPage(this.currentPage);
         }
     }
 

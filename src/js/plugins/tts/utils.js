@@ -29,7 +29,7 @@ export function approximateWordCount(text) {
 /**
  * Waits the provided number of ms and then resolves with a promise
  * @param {number} ms
- * @return {PromiseLike}
+ * @return {Promise}
  */
 export function sleep(ms) {
     return new Promise(res => setTimeout(res, ms));
