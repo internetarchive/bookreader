@@ -1320,7 +1320,7 @@ i.BRicon {
   height: 40px;
   box-sizing: border-box;
 }
-.BRReadAloudToolbar .BRToolbarButton.jumpForward .icon {
+.BRReadAloudToolbar .BRToolbarButton.jumpForward .icon, .BRReadAloudToolbar .BRToolbarButton.jumpBackward .icon {
   padding: 9px;
 }
 .BRReadAloudToolbar button {

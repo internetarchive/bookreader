@@ -134,14 +134,23 @@ class FestivalTTSSound {
         .then(() => this.sound.destruct());
     }
 
-    stop() { this.sound.stop(); }
+    /** @override */
+    stop() {
+        this.sound.stop();
+        return Promise.resolve();
+    }
+
+    /** @override */
     pause() { this.sound.pause(); }
+    /** @override */
     resume() { this.sound.resume(); }
+    /** @override */
     setPlaybackRate(rate) {
         this.rate = rate;
         this.sound.setPlaybackRate(rate);
     }
 
+    /** @override */
     finish() {
         this.sound.stop();
         this._finishResolver();
