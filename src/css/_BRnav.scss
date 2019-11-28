@@ -132,7 +132,7 @@
       box-sizing: border-box;
     }
 
-    &.jumpForward .icon { padding: 9px; }
+    &.jumpForward .icon, &.jumpBackward .icon { padding: 9px; }
   }
 
   button {

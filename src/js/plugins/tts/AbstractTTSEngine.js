@@ -90,7 +90,7 @@ export default class AbstractTTSEngine {
     }
 
     stop() {
-        this.activeSound.stop();
+        if (this.activeSound) this.activeSound.stop();
         this.playing = false;
         this._chunkIterator = null;
         this.activeSound = null;
@@ -121,6 +121,14 @@ export default class AbstractTTSEngine {
     /** @public */
     jumpForward() {
         if (this.activeSound) this.activeSound.finish();
+    }
+
+    /** @public */
+    jumpBackward() {
+        if (this.activeSound) this.activeSound.stop();
+        this._chunkIterator.decrement()
+        .then(() => this._chunkIterator.decrement())
+        .then(() => this.step());
     }
 
     /** @param {number} newRate */

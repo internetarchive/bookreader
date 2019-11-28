@@ -53,16 +53,14 @@ export default class WebTTSEngine extends AbstractTTSEngine {
                     audio.pause();
                     this.pause();
                 });
-                // navigator.mediaSession.setActionHandler('seekbackward', () => {
-                //     console.log("MS:seekbackward");
-                // });
-                navigator.mediaSession.setActionHandler('seekforward', () => this.jumpForward());
-                // navigator.mediaSession.setActionHandler('previoustrack', () => {
-                //     console.log("MS:previoustrack");
-                // });
-                // navigator.mediaSession.setActionHandler('nexttrack', () => {
-                //     console.log("MS:nexttrack");
-                // });
+
+                // navigator.mediaSession.setActionHandler('seekbackward', () => this.jumpBackward());
+                // navigator.mediaSession.setActionHandler('seekforward', () => this.jumpForward());
+                // Some devices only support the previoustrack/nexttrack (e.g. Win10), so show those.
+                // Android devices do support the seek actions, but we don't want to show both buttons
+                // and have them do the same thing.
+                navigator.mediaSession.setActionHandler('previoustrack', () => this.jumpBackward());
+                navigator.mediaSession.setActionHandler('nexttrack', () => this.jumpForward());
             });
         }
 
