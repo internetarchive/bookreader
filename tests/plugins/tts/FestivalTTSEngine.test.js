@@ -35,14 +35,14 @@ describe('misc', () => {
         const engine = new FestivalTTSEngine(DUMMY_TTS_ENGINE_OPTS);
         sinon.stub(engine, 'playSound').returns(new Promise(() => {}));
         sinon.stub(engine, 'stop');
-        sinon.stub(PageChunkIterator.prototype, '_fetchPage').resolves([dummyPageChunk()]);
+        sinon.stub(PageChunkIterator.prototype, '_fetchPageChunks').resolves([dummyPageChunk()]);
         engine.start(0, 5);
 
         // because things happen in callbacks, need to run code at end of the JS event loop
         return afterEventLoop()
         .then(() => {
             expect(sm.createSound.callCount).toBe(1);
-            expect(PageChunkIterator.prototype._fetchPage.callCount).toBeGreaterThanOrEqual(1);
+            expect(PageChunkIterator.prototype._fetchPageChunks.callCount).toBeGreaterThanOrEqual(1);
             expect(engine.playSound.callCount).toBe(1);
         });
     });
