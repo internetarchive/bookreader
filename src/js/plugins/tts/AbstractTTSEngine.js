@@ -23,7 +23,7 @@ import PageChunkIterator from './PageChunkIterator.js';
  * @property {SpeechSynthesisVoice} voice
  * @property {(callback: Function) => void} load
  * @property {() => PromiseLike} play
- * @property {() => void} stop
+ * @property {() => Promise} stop
  * @property {() => void} pause
  * @property {() => void} resume
  * @property {() => void} finish force the sound to 'finish'
@@ -125,9 +125,11 @@ export default class AbstractTTSEngine {
 
     /** @public */
     jumpBackward() {
-        if (this.activeSound) this.activeSound.stop();
-        this._chunkIterator.decrement()
-        .then(() => this._chunkIterator.decrement())
+        Promise.all([
+            this.activeSound.stop(),
+            this._chunkIterator.decrement()
+            .then(() => this._chunkIterator.decrement())
+        ])
         .then(() => this.step());
     }
 
