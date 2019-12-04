@@ -32,24 +32,22 @@ describe('WebTTSSound', () => {
             expect(sound.rate).toBe(2);
         });
 
-        test('reloading does not resolve the original promise', () => {
+        test('reloading does not resolve the original promise', async () => {
             const sound = new WebTTSSound('hello world');
             sound.load();
             const finishSpy = sinon.spy();
             sound.play().then(finishSpy);
             sound.reload();
             sound.utterance.dispatchEvent('pause', {});
-            return afterEventLoop()
-            .then(() => {
-                sound.utterance.dispatchEvent('end', {});
-                return afterEventLoop()
-            })
-            .then(() => expect(finishSpy.callCount).toBe(0));
+            await afterEventLoop();
+            sound.utterance.dispatchEvent('end', {});
+            await afterEventLoop();
+            expect(finishSpy.callCount).toBe(0);
         });
     });
 
     describe('_chromePausingBugFix', () => {
-        test('if speech less than 15s, nothing special', () => {
+        test('if speech less than 15s, nothing special', async () => {
             const clock = sinon.useFakeTimers();
             const sound = new WebTTSSound('hello world foo bar');
             sound.load();
@@ -58,13 +56,11 @@ describe('WebTTSSound', () => {
             clock.tick(10000);
             sound.utterance.dispatchEvent('end', {});
             clock.restore();
-            return afterEventLoop()
-            .then(() => {
-                expect(speechSynthesis.pause.callCount).toBe(0);
-            });
+            await afterEventLoop();
+            expect(speechSynthesis.pause.callCount).toBe(0);
         });
         
-        test('if speech greater than 15s, pause called', () => {
+        test('if speech greater than 15s, pause called', async () => {
             let clock = sinon.useFakeTimers();
             const sound = new WebTTSSound('foo bah');
             sound.load();
@@ -73,11 +69,11 @@ describe('WebTTSSound', () => {
             clock.tick(20000);
             clock.restore();
             
-            return afterEventLoop()
-            .then(() => expect(speechSynthesis.pause.callCount).toBe(1));
+            await afterEventLoop();
+            expect(speechSynthesis.pause.callCount).toBe(1);
         });
 
-        test('on pause reloads if timed out', () => {
+        test('on pause reloads if timed out', async () => {
             let clock = sinon.useFakeTimers();
             const sound = new WebTTSSound('foo bah');
             sound.load();
@@ -87,12 +83,12 @@ describe('WebTTSSound', () => {
             clock.tick(2000);
             clock.restore();
             
-            return afterEventLoop()
-            .then(() => expect(speechSynthesis.cancel.callCount).toBe(1));
+            await afterEventLoop();
+            expect(speechSynthesis.cancel.callCount).toBe(1);
         });
     });
 
-    test('fire pause if browser does not do it', () => {
+    test('fire pause if browser does not do it', async () => {
         const clock = sinon.useFakeTimers();
         const languageGetter = jest.spyOn(window.navigator, 'userAgent', 'get');
         languageGetter.mockReturnValue('firefox android');
@@ -104,14 +100,12 @@ describe('WebTTSSound', () => {
         clock.tick(1000);
         clock.restore();
         
-        return afterEventLoop()
-        .then(() => {
-            expect(dispatchSpy.callCount).toBe(1);
-            expect(dispatchSpy.args[0][0].type).toBe('pause');
-        });
+        await afterEventLoop();
+        expect(dispatchSpy.callCount).toBe(1);
+        expect(dispatchSpy.args[0][0].type).toBe('pause');
     });
 
-    test('fire resume if browser does not do it', () => {
+    test('fire resume if browser does not do it', async () => {
         const clock = sinon.useFakeTimers();
         const languageGetter = jest.spyOn(window.navigator, 'userAgent', 'get');
         languageGetter.mockReturnValue('firefox android');
@@ -125,10 +119,8 @@ describe('WebTTSSound', () => {
         clock.tick(1000);
         clock.restore();
         
-        return afterEventLoop()
-        .then(() => {
-            expect(dispatchSpy.callCount).toBe(1);
-            expect(dispatchSpy.args[0][0].type).toBe('resume');
-        });
-    })
+        await afterEventLoop();
+        expect(dispatchSpy.callCount).toBe(1);
+        expect(dispatchSpy.args[0][0].type).toBe('resume');
+    });
 });

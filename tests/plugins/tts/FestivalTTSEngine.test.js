@@ -25,7 +25,7 @@ describe('iOSCaptureUserIntentHack', () => {
 });
 
 describe('misc', () => {
-    test('starts playing even if onload not called until play starts', () => {
+    test('starts playing even if onload not called until play starts', async () => {
         const sm = {
             supported: sinon.stub().returns(true),
             createSound: sinon.stub().returns(createMockSound()),
@@ -39,12 +39,10 @@ describe('misc', () => {
         engine.start(0, 5);
 
         // because things happen in callbacks, need to run code at end of the JS event loop
-        return afterEventLoop()
-        .then(() => {
-            expect(sm.createSound.callCount).toBe(1);
-            expect(PageChunkIterator.prototype._fetchPageChunks.callCount).toBeGreaterThanOrEqual(1);
-            expect(engine.playSound.callCount).toBe(1);
-        });
+        await afterEventLoop();
+        expect(sm.createSound.callCount).toBe(1);
+        expect(PageChunkIterator.prototype._fetchPageChunks.callCount).toBeGreaterThanOrEqual(1);
+        expect(engine.playSound.callCount).toBe(1);
     });
 });
 

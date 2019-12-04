@@ -5,37 +5,32 @@ import * as utils from '../../../src/js/plugins/tts/utils.js';
 describe('promisifyEvent', () => {
     const { promisifyEvent } = utils;
 
-    test('Resolves once event fires', () => {
+    test('Resolves once event fires', async () => {
         const fakeTarget = eventTargetMixin();
         const resolveSpy = sinon.spy();
         promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
 
-        return afterEventLoop()
-        .then(() => {
-            expect(resolveSpy.callCount).toBe(0);
-            fakeTarget.dispatchEvent('pause', {});
-            return afterEventLoop();
-        }).then(() => {
-            expect(resolveSpy.callCount).toBe(1);
-        });
+        await afterEventLoop()
+        expect(resolveSpy.callCount).toBe(0);
+        fakeTarget.dispatchEvent('pause', {});
+        await afterEventLoop();
+        expect(resolveSpy.callCount).toBe(1);
     });
 
-    test('Only resolves once', () => {
+    test('Only resolves once', async () => {
         const fakeTarget = eventTargetMixin();
         const resolveSpy = sinon.spy();
         promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
 
-        return afterEventLoop()
-        .then(() => {
-            expect(resolveSpy.callCount).toBe(0);
-            fakeTarget.dispatchEvent('pause', {});
-            fakeTarget.dispatchEvent('pause', {});
-            fakeTarget.dispatchEvent('pause', {});
-            fakeTarget.dispatchEvent('pause', {});
-            return afterEventLoop();
-        }).then(() => {
-            expect(resolveSpy.callCount).toBe(1);
-        });
+        await afterEventLoop()
+        expect(resolveSpy.callCount).toBe(0);
+        fakeTarget.dispatchEvent('pause', {});
+        fakeTarget.dispatchEvent('pause', {});
+        fakeTarget.dispatchEvent('pause', {});
+        fakeTarget.dispatchEvent('pause', {});
+        
+        await afterEventLoop();
+        expect(resolveSpy.callCount).toBe(1);
     });
 });
 
@@ -74,15 +69,15 @@ describe('approximateWordCount', () => {
 describe('sleep', () => {
     const { sleep } = utils;
 
-    test('Sleep 0 doest not called immediately', () => {
+    test('Sleep 0 doest not called immediately', async () => {
         const spy = sinon.spy();
         sleep(0).then(spy);
         expect(spy.callCount).toBe(0);
-        return afterEventLoop()
-        .then(() => expect(spy.callCount).toBe(1));
+        await afterEventLoop();
+        expect(spy.callCount).toBe(1);
     });
 
-    test('Waits the appropriate ms', () => {
+    test('Waits the appropriate ms', async () => {
         const clock = sinon.useFakeTimers();
         const spy = sinon.spy();
         sleep(10).then(spy);
@@ -91,8 +86,8 @@ describe('sleep', () => {
         expect(spy.callCount).toBe(0);
         clock.restore();
 
-        return afterEventLoop()
-        .then(() => expect(spy.callCount).toBe(1));
+        await afterEventLoop();
+        expect(spy.callCount).toBe(1);
     });
 });
 
