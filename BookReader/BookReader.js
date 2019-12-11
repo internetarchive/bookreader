@@ -711,6 +711,11 @@ BookReader.prototype.setupKeyListeners = function() {
     var KEY_RIGHT = 39;
     var KEY_DOWN = 40;
 
+    var KEY_MINUS = 173;
+    var KEY_NUMPAD_SUBTRACT = 109;
+    var KEY_EQUAL = 61;
+    var KEY_NUMPAD_ADD = 107;
+
     // We use document here instead of window to avoid a bug in jQuery on IE7
     $(document).keydown(function(e) {
 
@@ -751,6 +756,16 @@ BookReader.prototype.setupKeyListeners = function() {
                         e.preventDefault();
                         self.right();
                     }
+                    break;
+                case KEY_MINUS:
+                case KEY_NUMPAD_SUBTRACT:
+                    e.preventDefault();
+                    self.zoom(-1);
+                    break;
+                case KEY_EQUAL:
+                case KEY_NUMPAD_ADD:
+                    e.preventDefault();
+                    self.zoom(+1);
                     break;
             }
         }
