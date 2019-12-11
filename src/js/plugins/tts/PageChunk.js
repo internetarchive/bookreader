@@ -1,3 +1,6 @@
+/**
+ * Class to manage a 'chunk' (approximately a paragraph) of text on a page.
+ */
 export default class PageChunk {
     /**
      * @param {number} leafIndex 
@@ -42,6 +45,7 @@ export default class PageChunk {
     }
 
     /**
+     * Convert the response from BookReaderGetTextWrapper.php into a {@link PageChunk} instance
      * @param {number} leafIndex
      * @param {Array<[String, ...DJVURect[]]>} chunksResponse 
      * @return {PageChunk[]}
