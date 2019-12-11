@@ -45,7 +45,12 @@ export default class PageChunkIterator {
     }
 
     /**
-     * Gets without ensuring synchronization
+     * Gets without ensuring synchronization. Since this iterator has a lot of async
+     * code, calling e.g. "next" twice (before the first call to next has finished)
+     * would cause the system to be in a weird state. To avoid that, we make sure calls
+     * to next and decrement (functions that modify the cursor) are synchronized,
+     * so that regardless how long it takes for one to respond, they'll always be executed
+     * in the correct order.
      * @return {PromiseLike<"__PageChunkIterator.AT_END__" | PageChunk>}
      */
     _nextUncontrolled() {
@@ -67,7 +72,7 @@ export default class PageChunkIterator {
     }
 
     /**
-     * Decrements without ensuring synchronization
+     * Decrements without ensuring synchronization. (See {@link PageChunkIterator._nextUncontrolled});
      * @return {Promise}
      */
     _decrementUncontrolled() {
