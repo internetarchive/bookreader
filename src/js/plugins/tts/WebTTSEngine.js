@@ -207,7 +207,14 @@ export class WebTTSSound {
     /** @return {Promise} */
     stop() {
         // 'end' won't fire if already stopped
-        const endPromise = this.stopped ? Promise.resolve() : promisifyEvent(this.utterance, 'end');
+        let endPromise = Promise.resolve();
+        if (!this.stopped) {
+            endPromise = Promise.race([
+                promisifyEvent(this.utterance, 'end'),
+                // Safari triggers an error when you call cancel mid-sound
+                promisifyEvent(this.utterance, 'error'),
+            ]);
+        }
         this.stopped = true;
         speechSynthesis.cancel();
         return endPromise;
