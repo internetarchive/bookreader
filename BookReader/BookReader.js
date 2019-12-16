@@ -2211,7 +2211,7 @@ BookReader.prototype.twoPageGetAutofitReduce = function() {
 
 /**
  * Returns true if the pages extend past the edge of the view
- * @deprecated Since version 4.3.3. Will be deleted in version 5.0
+ * slated for deprecation by v5.0.0
  * @return {boolean}
  */
 BookReader.prototype.twoPageIsZoomedIn = function() {
@@ -2791,8 +2791,10 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return true;
             }
 
-            e.data.self.trigger(BookReader.eventNames.stop);
-            e.data.self.left();
+            if (! e.data.self.twoPageIsZoomedIn()) {
+                e.data.self.trigger(BookReader.eventNames.stop);
+                e.data.self.left();
+            }
             e.preventDefault();
         }
     );
@@ -2805,8 +2807,10 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return !e.data.self.protected;
             }
 
-            e.data.self.trigger(BookReader.eventNames.stop);
-            e.data.self.right();
+            if (! e.data.self.twoPageIsZoomedIn()) {
+                e.data.self.trigger(BookReader.eventNames.stop);
+                e.data.self.right();
+            }
             e.preventDefault();
         }
     );
