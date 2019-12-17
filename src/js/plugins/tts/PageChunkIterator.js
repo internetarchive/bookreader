@@ -76,19 +76,22 @@ export default class PageChunkIterator {
      * @return {Promise}
      */
     _decrementUncontrolled() {
-        if (this._cursor.page == 0 && this._cursor.chunk == 0) {
-            return this._fetchPageChunks(this._cursor.page);
-        } else if (this._cursor.page > 0 && this._cursor.chunk == 0) {
-            this._cursor.page--;
-            return this._fetchPageChunks(this._cursor.page)
-            .then(chunks => {
-                if (chunks.length == 0) return this._decrementUncontrolled();
-                else this._cursor.chunk = chunks.length - 1;
-            });
-        } else {
+        let cursorChangePromise = Promise.resolve();
+
+        if (this._cursor.chunk > 0) {
             this._cursor.chunk--;
-            return this._fetchPageChunks(this._cursor.page);
+        } else if (this._cursor.page > 0) {
+            this._cursor.page--;
+            // Go back possibly multiple pages, because pages can be blank
+            cursorChangePromise = this._fetchPageChunks(this._cursor.page)
+            .then(prevPageChunks => {
+                if (prevPageChunks.length == 0) return this._decrementUncontrolled();
+                else this._cursor.chunk = prevPageChunks.length - 1;
+            });
         }
+
+        return cursorChangePromise
+        .then(() => this._fetchPageChunks(this._cursor.page));
     }
 
     /**
@@ -115,6 +118,8 @@ export default class PageChunkIterator {
     }
 
     /**
+     * Fetches the chunks on a page; checks the buffer, so it won't make unnecessary
+     * requests if it's called multiple times for the same index.
      * @param {number} index
      * @return {Promise<PageChunk[]>}
      */
