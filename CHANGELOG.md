@@ -1,3 +1,8 @@
+# 4.5.0
+- ReadAloud now supports jumping backwards
+- Pressing -/= (or -/+ on numpad) zooms out/in
+- FIX #179: ReadAloud now ignores hyphens between lines
+
 # 4.4.2
 - more robust menu toggle plugin, working well with zoom & panning around in zoom
 - more tests
