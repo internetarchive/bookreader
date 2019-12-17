@@ -53,7 +53,8 @@ export default class PageChunk {
     static _fromTextWrapperResponse(leafIndex, chunksResponse) {
         return chunksResponse.map((c, i) => {
             const correctedLineRects = PageChunk._fixChunkRects(c.slice(1));
-            return new PageChunk(leafIndex, i, c[0], correctedLineRects);
+            const correctedText = PageChunk._removeDanglingHyphens(c[0]);
+            return new PageChunk(leafIndex, i, correctedText, correctedLineRects);
         });
     }
 
@@ -89,6 +90,15 @@ export default class PageChunk {
         }
 
         return rects;
+    }
+
+    /**
+     * Remove "dangling" hyphens from read aloud text to avoid TTS stuttering
+     * @param {string} text 
+     * @return {string}
+     */
+    static _removeDanglingHyphens(text) {
+        return text.replace(/-\s+/g, '');
     }
 }
 
