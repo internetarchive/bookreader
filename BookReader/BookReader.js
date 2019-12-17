@@ -79,7 +79,7 @@ function BookReader(options) {
     this.setup(options);
 }
 
-BookReader.version = '4.4.2';
+BookReader.version = '4.5.0';
 
 // Mode constants
 BookReader.constMode1up = 1;
