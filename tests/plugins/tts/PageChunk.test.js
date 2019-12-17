@@ -34,3 +34,24 @@ describe('_fromTextWrapperResponse', () => {
         expect(chunks).toEqual([new PageChunk(0, 0, 'Line', [[0,100,100,0]])]);
     });
 });
+
+describe('_removeDanglingHyphens', () => {
+    const { _removeDanglingHyphens } = PageChunk;
+
+    test('No change to empty string', () => {
+        expect(_removeDanglingHyphens('')).toEqual('');
+    });
+
+    test('No change when no hyphens string', () => {
+        expect(_removeDanglingHyphens('Hello world!')).toEqual('Hello world!');
+    });
+
+    test('No change to hyphens mid-word', () => {
+        expect(_removeDanglingHyphens('It is mid-word!')).toEqual('It is mid-word!');
+    });
+
+    test('Removes hyphens followed by spaces', () => {
+        expect(_removeDanglingHyphens('It is not mid- word!')).toEqual('It is not midword!');
+        expect(_removeDanglingHyphens('mid- word fid- word')).toEqual('midword fidword');
+    });
+});
