@@ -13,7 +13,13 @@ See live examples:
 
 ## Demos
 
-See `BookReaderDemo` directory. These can be tested by starting a simple web server in the root directory. For example:
+See `BookReaderDemo` directory. These can be tested by building the source files (make sure [Node.js is installed](https://nodejs.org/en/download/)):
+
+```bash
+npm run build
+```
+
+and starting a simple web server in the root directory:
 
 ```
 python -m SimpleHTTPServer
@@ -30,7 +36,7 @@ And then open `http://localhost:8000/BookReaderDemo/demo-simple.html`.
 
 Here is a short example.
 
-```
+```js
 // Create the BookReader object
 var options = {
   data: [
@@ -112,9 +118,11 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 
 ## Development
 
-At the time of writing, all of BookReader's JS codebase does not use any compilation. The source files are edited directly. However, the CSS is built with SCSS. Use `npm run build` to build the scss file.
+The source JavaScript is written in ES6 (located in the `src/js` directory) and in ES5 (located in `BookReader`). To build the JS run `npx webpack` (`npx webpack --watch` will auto-build when the files are saved). To build the CSS and the JS, use `npm run build`.
 
-The sass compiler will need to be installed.
+## Releases
+
+To version bump the repo and prepare a release, run `npm version major|minor|patch` (following [semver](https://semver.org/)), then (something like) `git push origin HEAD --tags`. It'll automatically update the version number where it appears.
 
 ## Tests
 

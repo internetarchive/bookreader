@@ -22,6 +22,51 @@ This file is part of BookReader.
 
 window.BookReader = (function ($) {
 
+if (location.toString().indexOf('_debugShowConsole=true') != -1) {
+    $(function() {
+        var logEl = document.createElement('div');
+        logEl.id = '_debugLog';
+        logEl.style.width = '100%';
+        logEl.style.height = '300px';
+        logEl.style.overflow = 'auto';
+        $(document.body).prepend(logEl);
+
+        var form = $('<form><input style="width:100%; font-family: monospace;" id="_debugLogInput"></form>');
+        $(logEl).append(form);
+        form.submit(function(ev) {
+            ev.preventDefault();
+            var result = eval(form.find('input').val());
+            logToScreen([result]);
+        });
+
+        var currentRun = 0;
+        function logToScreen(args) {
+            var html = Array.from(args).map(JSON.stringify).join(',');
+            if (logEl.lastChild && logEl.lastChild.lastChild.innerHTML == html) {
+                logEl.lastChild.firstChild.innerHTML = '(' + (currentRun++) + ')';
+            } else {
+                currentRun = 1;
+                var div = document.createElement('div');
+                div.innerHTML = '<code></code> <code>' + html + '</code>';
+                logEl.appendChild(div);
+            }
+        }
+
+        // eslint-disable-next-line no-console
+        var _realLog = console.log.bind(console);
+        // eslint-disable-next-line no-console
+        console.log = function() {
+            var args = Array.prototype.slice.call(arguments);
+            _realLog.apply(console, args);
+            logToScreen(args);
+        }
+
+        window.onerror = function() {
+            logToScreen(Array.prototype.slice.call(arguments));
+        };
+    })
+}
+
 /**
  * BookReader
  * @param {Object} options
@@ -34,12 +79,16 @@ function BookReader(options) {
     this.setup(options);
 }
 
-BookReader.version = "4.2.4";
+BookReader.version = '4.5.0';
 
 // Mode constants
 BookReader.constMode1up = 1;
 BookReader.constMode2up = 2;
 BookReader.constModeThumb = 3;
+
+// Animation constants
+BookReader.constNavAnimationDuration = 300;
+BookReader.constResizeAnimationDuration = 100;
 
 // Names of events that can be triggered via BookReader.prototype.trigger()
 BookReader.eventNames = {
@@ -48,6 +97,17 @@ BookReader.eventNames = {
     fragmentChange: 'fragmentChange',
     PostInit: 'PostInit',
     stop: 'stop',
+    resize: 'resize',
+    // nav events:
+    navToggled: 'navToggled',
+    // menu click events
+    fullscreenToggled: 'fullscreenToggled',
+    zoomOut: 'zoomOut',
+    zoomIn: 'zoomIn',
+    '1PageViewSelected': '1PageViewSelected',
+    '2PageViewSelected': '2PageViewSelected',
+    /* currently 3 represents thumbnail view */
+    '3PageViewSelected': '3PageViewSelected',
 };
 
 BookReader.defaultOptions = {
@@ -119,6 +179,12 @@ BookReader.defaultOptions = {
     bookUrlText: null,
     bookUrlTitle: null,
     enableBookTitleLink: true,
+    /**
+     * @type {string} language in ISO 639-1 (PRIVATE: Will also
+     * handle language name in English, native name, 639-2/T, or 639-2/B . (archive.org books
+     * appear to use 639-2/B ? But I don't think that's a guarantee). See
+     * https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes ) */
+    bookLanguage: null,
 
     // Fields used to populate the info window
     metadata: [],
@@ -544,9 +610,9 @@ BookReader.prototype.init = function() {
     $(window).bind('resize', this, function(e) {
         e.data.resize();
     });
-    $(window).bind("orientationchange", this, function(e) {
+    $(window).on("orientationchange", this, function(e) {
         e.data.resize();
-    });
+    }.bind(this));
 
     if (this.protected) {
         $(document).on('contextmenu dragstart', '.BRpagediv1up', function() {
@@ -626,6 +692,7 @@ BookReader.prototype.resize = function() {
           }
       }
   }
+  this.trigger(BookReader.eventNames.resize);
 };
 
 /**
@@ -643,6 +710,11 @@ BookReader.prototype.setupKeyListeners = function() {
     var KEY_UP = 38;
     var KEY_RIGHT = 39;
     var KEY_DOWN = 40;
+
+    var KEY_MINUS = 173;
+    var KEY_NUMPAD_SUBTRACT = 109;
+    var KEY_EQUAL = 61;
+    var KEY_NUMPAD_ADD = 107;
 
     // We use document here instead of window to avoid a bug in jQuery on IE7
     $(document).keydown(function(e) {
@@ -685,6 +757,16 @@ BookReader.prototype.setupKeyListeners = function() {
                         self.right();
                     }
                     break;
+                case KEY_MINUS:
+                case KEY_NUMPAD_SUBTRACT:
+                    e.preventDefault();
+                    self.zoom(-1);
+                    break;
+                case KEY_EQUAL:
+                case KEY_NUMPAD_ADD:
+                    e.preventDefault();
+                    self.zoom(+1);
+                    break;
             }
         }
     });
@@ -706,7 +788,7 @@ BookReader.prototype.setupTooltips = function() {
         if ($el.parents('.BRtoolbar').length) {
             options.positions = ['bottom'];
             options.spikeLength = 12;
-        } else if ($el.parents('.BRnav').length) {
+        } else if ($el.parents('.BRfooter').length) {
             options.positions = ['top'];
         }
         $el.bt(options);
@@ -760,9 +842,9 @@ BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
 
 BookReader.prototype.drawLeafsOnePage = function() {
     var containerHeight = this.refs.$brContainer.height();
+    var containerWidth = this.refs.$brPageViewEl.width();
     var scrollTop = this.refs.$brContainer.prop('scrollTop');
     var scrollBottom = scrollTop + containerHeight;
-    var viewWidth = this.refs.$brContainer.prop('scrollWidth');
 
     var indicesToDisplay = [];
     var index;
@@ -815,13 +897,13 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
         if (BookReader.util.notInArray(indicesToDisplay[i], this.displayedIndices)) {
             var width = parseInt(this._getPageWidth(index)/this.reduce);
+            var leftMargin = parseInt((containerWidth - width) / 2);
+
             var div = document.createElement('div');
             div.className = 'BRpagediv1up pagediv' + index;
             div.style.position = "absolute";
             div.style.top = leafTop + 'px';
-            var left = (viewWidth-width)>>1;
-            if (left<0) left = 0;
-            div.style.left = left + 'px';
+            div.style.left = leftMargin + 'px';
             div.style.width = width + 'px';
             div.style.height = height + 'px';
 
@@ -1158,7 +1240,6 @@ BookReader.prototype.drawLeafsTwoPage = function() {
 
     this.displayedIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
     this.setMouseHandlers2UP();
-    this.twoPageSetCursor();
     this.updateToolbarZoom(this.reduce);
 };
 
@@ -1228,12 +1309,24 @@ BookReader.prototype.zoom1up = function(direction) {
 /**
  * Resizes the inner container to fit within the visible space to prevent
  * the top toolbar and bottom navbar from clipping the visible book
+ *
+ * @param { boolean } animate - optional
+ * When used, BookReader will fill the main container with the book's content.
+ * This is primarily for 1up view - a follow up animation to the nav animation
+ * So resize isn't perceived sharp/jerky
  */
-BookReader.prototype.resizeBRcontainer = function() {
-  this.refs.$brContainer.css({
-    top: this.getToolBarHeight(),
-    bottom: this.getNavHeight(),
-  });
+BookReader.prototype.resizeBRcontainer = function(animate) {
+    if (animate) {
+        this.refs.$brContainer.animate({
+            top: this.getToolBarHeight(),
+            bottom: this.getFooterHeight()
+        }, this.constResizeAnimationDuration, 'linear');
+    } else {
+        this.refs.$brContainer.css({
+            top: this.getToolBarHeight(),
+            bottom: this.getFooterHeight()
+        });
+    }
 }
 
 /**
@@ -1660,6 +1753,8 @@ BookReader.prototype.switchMode = function(mode, options) {
     if (!options || options.suppressFragmentChange === false) {
       this.trigger(BookReader.eventNames.fragmentChange);
     }
+    var eventName = mode + 'PageViewSelected';
+    this.trigger(BookReader.eventNames[eventName]);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -1691,6 +1786,7 @@ BookReader.prototype.toggleFullscreen = function() {
     } else {
         this.enterFullscreen();
     }
+    this.trigger('fullscreenToggled');
 };
 
 BookReader.prototype.enterFullscreen = function() {
@@ -1710,7 +1806,7 @@ BookReader.prototype.enterFullscreen = function() {
     this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
 
     this._fullscreenCloseHandler = function (e) {
-        if (e.keyCode === 27) this.exitFullScreen();
+        if (e.keyCode === 27) this.toggleFullscreen();
     }.bind(this);
     $(document).keyup(this._fullscreenCloseHandler);
 };
@@ -2130,6 +2226,7 @@ BookReader.prototype.twoPageGetAutofitReduce = function() {
 
 /**
  * Returns true if the pages extend past the edge of the view
+ * slated for deprecation by v5.0.0
  * @return {boolean}
  */
 BookReader.prototype.twoPageIsZoomedIn = function() {
@@ -2212,6 +2309,7 @@ BookReader.prototype.twoPageCalculateReductionFactors = function() {
 
 /**
  * Set the cursor for two page view
+ * @deprecated Since version 4.3.3. Will be deleted in version 5.0
  */
 BookReader.prototype.twoPageSetCursor = function() {
     var $twoPageViewEl = this.refs.$brTwoPageView;
@@ -2557,7 +2655,6 @@ BookReader.prototype.flipLeftToRight = function(newIndexL, newIndexR) {
             if (self.enableSearch) self.updateSearchHilites2UP();
 
             self.setMouseHandlers2UP();
-            self.twoPageSetCursor();
 
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -2688,7 +2785,6 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
             if (self.enableSearch) self.updateSearchHilites2UP();
 
             self.setMouseHandlers2UP();
-            self.twoPageSetCursor();
 
             if (self.animationFinishedCallback) {
                 self.animationFinishedCallback();
@@ -2710,7 +2806,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 return true;
             }
 
-             if (! e.data.self.twoPageIsZoomedIn()) {
+            if (! e.data.self.twoPageIsZoomedIn()) {
                 e.data.self.trigger(BookReader.eventNames.stop);
                 e.data.self.left();
             }
@@ -3162,6 +3258,7 @@ BookReader.prototype.initNavbar = function() {
         navbarTitleHtml = "<div class=\"BRnavTitle\">" + this.options.navbarTitle + "</div>";
     }
 
+    this.refs.$BRfooter = $('<div class="BRfooter"></div>');
     this.refs.$BRnav = $(
         "<div class=\"BRnav BRnavDesktop\">"
         +"  <div class=\"BRnavCntl BRnavCntlBtm BRdn js-tooltip\" title=\"Toogle toolbars\"></div>"
@@ -3181,15 +3278,15 @@ BookReader.prototype.initNavbar = function() {
         +     "<button class=\"BRicon twopg desktop-only js-tooltip\"></button>"
         +     "<button class=\"BRicon thumb desktop-only js-tooltip\"></button>"
 
-        // zoomx`
+        // zoomx
         +     "<button class='BRicon zoom_out desktop-only js-tooltip'></button>"
         +     "<button class='BRicon zoom_in desktop-only js-tooltip'></button>"
         +     "<button class='BRicon full js-tooltip'></button>"
         +"  </div>"
         +"</div>"
     );
-
-    this.refs.$br.append(this.refs.$BRnav);
+    this.refs.$BRfooter.append(this.refs.$BRnav);
+    this.refs.$br.append(this.refs.$BRfooter);
 
     var self = this;
     this.$('.BRpager').slider({
@@ -3235,6 +3332,7 @@ BookReader.prototype.initEmbedNavbar = function() {
       logoHtml = "<a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a>";
     }
 
+    this.refs.$BRfooter = $('<div class="BRfooter"></div>');
     this.refs.$BRnav = $('<div class="BRnav BRnavEmbed">'
         +   logoHtml
         +   "<span class='BRembedreturn'>"
@@ -3246,8 +3344,8 @@ BookReader.prototype.initEmbedNavbar = function() {
         +         '<button class="BRicon full"></button>'
         +   "</span>"
         + '</div>');
-
-    this.refs.$br.append(this.refs.$BRnav);
+    this.refs.$BRfooter.append(this.refs.$BRnav);
+    this.refs.$br.append(this.refs.$BRfooter);
 };
 
 /**
@@ -3581,12 +3679,14 @@ BookReader.prototype.bindNavigationHandlers = function() {
     jIcons.filter('.zoom_in').bind('click', function() {
         self.trigger(BookReader.eventNames.stop);
         self.zoom(1);
+        self.trigger(BookReader.eventNames.zoomIn);
         return false;
     });
 
     jIcons.filter('.zoom_out').bind('click', function() {
         self.trigger(BookReader.eventNames.stop);
         self.zoom(-1);
+        self.trigger(BookReader.eventNames.zoomOut);
         return false;
     });
 
@@ -3612,7 +3712,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
                     promises.push(self.refs.$BRtoolbar.animate(
                         {top: self.getToolBarHeight() * -1}
                     ).promise());
-                promises.push(self.$('.BRnav').animate({bottom: self.getNavHeight() * -1}).promise());
+                promises.push(self.$('.BRfooter').animate({bottom: self.getFooterHeight() * -1}).promise());
                 $brNavCntlBtmEl.addClass('BRup').removeClass('BRdn');
                 $brNavCntlTopEl.addClass('BRdn').removeClass('BRup');
                 self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
@@ -3620,7 +3720,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
             } else {
                 if (self.refs.$BRtoolbar)
                     promises.push(self.refs.$BRtoolbar.animate({top:0}).promise());
-                promises.push(self.$('.BRnav').animate({bottom:0}).promise());
+                promises.push(self.$('.BRfooter').animate({bottom:0}).promise());
                 $brNavCntlBtmEl.addClass('BRdn').removeClass('BRup');
                 $brNavCntlTopEl.addClass('BRup').removeClass('BRdn');
                 self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
@@ -3694,9 +3794,9 @@ BookReader.prototype.unbindNavigationHandlers = function() {
  */
 BookReader.prototype.navigationMousemoveHandler = function(event) {
     // $$$ possibly not great to be calling this for every mousemove
-
     if (event.data['br'].uiAutoHide) {
-        // TODO look into these magic numbers: 75 and 76
+        // 77px is an approximate height of the Internet Archive Top Nav
+        // 75 & 76 (pixels) provide used in this context is checked againt the IA top nav height
         var navkey = $(document).height() - 75;
         if ((event.pageY < 76) || (event.pageY > navkey)) {
             // inside or near navigation elements
@@ -3851,21 +3951,61 @@ BookReader.prototype.bindMozTouchHandlers = function() {
  */
 BookReader.prototype.navigationIsVisible = function() {
     // $$$ doesn't account for transitioning states, nav must be fully visible to return true
-    var toolpos = this.refs.$BRtoolbar.offset();
+    var toolpos = this.refs.$BRtoolbar.position();
     var tooltop = toolpos.top;
     return tooltop == 0;
 };
 
+/**
+ * Main controller that sets navigation into view.
+ * Defaults to SHOW the navigation chrome
+ */
+BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
+    var animationLength = this.constNavAnimationDuration;
+    var animationType = 'linear';
+    var resizePageContainer = function resizePageContainer () {
+        /* main page container fills whole container */
+        if (this.constMode2up !== this.mode) {
+            var animate = true;
+            this.resizeBRcontainer(animate);
+        }
+        this.trigger(BookReader.eventNames.navToggled);
+    }.bind(this);
+
+    var toolbarHeight = 0;
+    var navbarHeight = 0;
+    if (hide) {
+        toolbarHeight = this.getToolBarHeight() * -1;
+        navbarHeight = this.getFooterHeight() * -1;
+
+        this.refs.$BRtoolbar.addClass('js-menu-hide');
+        this.refs.$BRfooter.addClass('js-menu-hide');
+    } else {
+        this.refs.$BRtoolbar.removeClass('js-menu-hide');
+        this.refs.$BRfooter.removeClass('js-menu-hide');
+    }
+
+    this.refs.$BRtoolbar.animate(
+        { top: toolbarHeight },
+        animationLength,
+        animationType,
+        resizePageContainer
+    );
+    this.refs.$BRfooter.animate(
+        { bottom: navbarHeight },
+        animationLength,
+        animationType,
+        resizePageContainer
+    );
+};
 /**
  * Hide navigation elements, if visible
  */
 BookReader.prototype.hideNavigation = function() {
     // Check if navigation is showing
     if (this.navigationIsVisible()) {
-        var toolbarHeight = this.getToolBarHeight();
-        var navbarHeight = this.getNavHeight();
-        this.refs.$BRtoolbar.animate({top: toolbarHeight * -1});
-        this.refs.$BRnav.animate({bottom: navbarHeight * -1});
+        var hide = true;
+        this.setNavigationView(hide);
     }
 };
 
@@ -3875,8 +4015,7 @@ BookReader.prototype.hideNavigation = function() {
 BookReader.prototype.showNavigation = function() {
     // Check if navigation is hidden
     if (!this.navigationIsVisible()) {
-        this.refs.$BRtoolbar.animate({top:0});
-        this.refs.$BRnav.animate({bottom:0});
+        this.setNavigationView();
     }
 };
 
@@ -4429,10 +4568,11 @@ BookReader.prototype.getToolBarHeight = function() {
  * @param {boolean} ignoreDisplay - bypass the display check
  * @return {number}
  */
-BookReader.prototype.getNavHeight = function() {
-    if (this.refs.$BRnav) {
-        var outerHeight = this.refs.$BRnav.outerHeight();
-        var bottom = parseInt(this.refs.$BRnav.css('bottom'));
+BookReader.prototype.getFooterHeight = function() {
+    var $heightEl = this.mode == this.constMode2up ? this.refs.$BRfooter : this.refs.$BRnav;
+    if ($heightEl && this.refs.$BRfooter) {
+        var outerHeight = $heightEl.outerHeight();
+        var bottom = parseInt(this.refs.$BRfooter.css('bottom'));
         if (!isNaN(outerHeight) && !isNaN(bottom)) {
           return outerHeight + bottom;
         }

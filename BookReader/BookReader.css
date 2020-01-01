@@ -510,11 +510,11 @@ body.BRfullscreenActive .mm-menu {
 }
 .BRpageview {
   position: relative;
+  margin: auto;
 }
 
 .BRpagediv1up {
   overflow: hidden;
-  cursor: move;
   background-color: #FEFDEB;
   box-shadow: 1px 1px 2px #333;
 }
@@ -578,7 +578,6 @@ body.BRfullscreenActive .mm-menu {
   /* border-style: solid none solid solid;
   border-color: rgb(51, 51, 34);
   border-width: 1px 0px 1px 1px; */
-  /* background: transparent url(images/left_edges.png) repeat scroll 0% 0%; */
   background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
   /* XXXmang replace file */
   position: absolute;
@@ -589,7 +588,6 @@ body.BRfullscreenActive .mm-menu {
   /* border-style: solid none solid solid;
   border-color: rgb(51, 51, 34);
   border-width: 1px 0px 1px 1px; */
-  /* background: transparent url(images/left_edges.png) repeat scroll 0% 0%; */
   background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
   /* XXXmang replace file */
   position: absolute;
@@ -612,6 +610,19 @@ body.BRfullscreenActive .mm-menu {
   white-space: nowrap;
 }
 
+.BRToolbarButton, .BRicon {
+  position: relative;
+  transition-duration: 0.2s;
+  transition-property: background-color, border;
+}
+.BRToolbarButton:hover, .BRicon:hover {
+  background-color: rgba(50, 50, 50, 0.2);
+}
+.BRToolbarButton:active, .BRicon:active {
+  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(50, 50, 50, 0.4);
+}
+
 .BRicon {
   padding: 0;
   margin: 0;
@@ -621,13 +632,6 @@ body.BRfullscreenActive .mm-menu {
   background-color: transparent;
   background-image: url(images/BRicons.svg);
   background-repeat: no-repeat;
-}
-.BRicon:hover {
-  background-color: rgba(50, 50, 50, 0.2);
-}
-.BRicon:active {
-  background-color: rgba(255, 255, 255, 0.2);
-  background-color: rgba(50, 50, 50, 0.4);
 }
 
 i.BRicon {
@@ -677,6 +681,7 @@ i.BRicon {
   width: 34px;
   height: 34px;
   background-position: -203px center;
+  transition-property: background-color, border, background-position;
 }
 @media (max-width: 800px) {
   .BRicon.read {
@@ -690,6 +695,7 @@ i.BRicon {
   width: 34px;
   height: 34px;
   background-position: -283px center;
+  transition-property: background-color, border, background-position;
 }
 @media (max-width: 800px) {
   .BRicon.unread {
@@ -1156,12 +1162,221 @@ i.BRicon {
 /**
  * BRnav is the bottom control bar (eg footer)
  */
-.BRnav {
-  box-sizing: border-box;
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.BRfooter {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  /* important so it overlays over the book pages when showing */
+  z-index: 3;
+}
+
+.BRReadAloudToolbar {
+  display: flex;
+  justify-content: center;
+  margin: 5px;
+  padding: 0 10px;
+  border-radius: 4px;
+  align-self: center;
+  height: 40px;
+  animation: fadeUp 0.2s;
+  background-color: #818181;
+  color: white;
+  /* Full mobile styles */
+}
+.BRReadAloudToolbar a {
+  color: white;
+}
+.BRReadAloudToolbar .BRpager {
+  background-color: #4D4D4D;
+}
+.BRReadAloudToolbar .BRpager .ui-slider-handle {
+  background-color: white;
+}
+.BRReadAloudToolbar .BRpager .ui-slider-range {
+  background-color: rgba(255, 255, 255, 0.59);
+}
+.BRReadAloudToolbar .BRpage .BRicon {
+  border-left: 1px solid #4D4D4D;
+}
+.BRReadAloudToolbar .BRpage .BRicon.activated {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+.BRReadAloudToolbar .BRpage .BRicon.activated:before {
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: block;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+.BRReadAloudToolbar .BRnavCntl {
+  z-index: 6;
+  background-color: #4D4D4D;
+}
+.BRReadAloudToolbar .BRnavCntlBtm:hover {
+  background-color: #0074D1;
+}
+.BRReadAloudToolbar.BRnavEmbed {
+  background-color: white;
+  color: black;
+}
+.BRReadAloudToolbar.BRnavEmbed a {
+  color: black;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpager {
+  background-color: #B7B7B7;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpager .ui-slider-handle {
+  background-color: #0074D1;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpager .ui-slider-range {
+  background-color: rgba(0, 116, 209, 0.25);
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpage .BRicon {
+  border-left: 1px solid #979797;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpage .BRicon.activated {
+  background-color: rgba(0, 116, 209, 0.4);
+}
+.BRReadAloudToolbar.BRnavEmbed .BRpage .BRicon.activated:before {
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: block;
+  border: 3px solid rgba(0, 116, 209, 0.3);
+}
+.BRReadAloudToolbar.BRnavEmbed .BRnavCntl {
+  background-color: #979797;
+}
+.BRReadAloudToolbar.BRnavEmbed .BRnavCntlBtm:hover {
+  background-color: #0074D1;
+}
+@media (max-width: 800px) {
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar {
+    background-color: white;
+    color: black;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar a, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar a {
+    color: black;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager {
+    background-color: #B7B7B7;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager .ui-slider-handle, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager .ui-slider-handle {
+    background-color: #0074D1;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager .ui-slider-range, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager .ui-slider-range {
+    background-color: rgba(0, 116, 209, 0.25);
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpage .BRicon, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpage .BRicon {
+    border-left: 1px solid #979797;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpage .BRicon.activated, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpage .BRicon.activated {
+    background-color: rgba(0, 116, 209, 0.4);
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpage .BRicon.activated:before, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpage .BRicon.activated:before {
+    content: "";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: block;
+    border: 3px solid rgba(0, 116, 209, 0.3);
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRnavCntl, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRnavCntl {
+    background-color: #979797;
+  }
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRnavCntlBtm:hover, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRnavCntlBtm:hover {
+    background-color: #0074D1;
+  }
+}
+.BRReadAloudToolbar--controls {
+  display: flex;
+}
+.BRReadAloudToolbar--controls > * {
+  height: 100%;
+}
+.BRReadAloudToolbar .BRToolbarButton .icon {
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
+}
+.BRReadAloudToolbar .BRToolbarButton.jumpForward .icon, .BRReadAloudToolbar .BRToolbarButton.jumpBackward .icon {
+  padding: 9px;
+}
+.BRReadAloudToolbar button {
+  padding: 0;
+  margin: 0;
+  border: 0px none;
+  box-sizing: border-box;
+  background: transparent none repeat scroll 0% 0%;
+  display: block;
+}
+.BRReadAloudToolbar .playback-rate-container {
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+.BRReadAloudToolbar .playback-rate-container .icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 6px;
+  box-sizing: border-box;
+  padding-bottom: 1em;
+}
+.BRReadAloudToolbar .playback-rate-container select {
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  font-size: 0.8em;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  text-align: center;
+  text-align-last: center;
+  /* Chrome */
+  padding-top: 60%;
+  padding-left: 10%;
+  padding-right: 10%;
+  color: #333;
+  background: transparent;
+  /* IE */
+}
+.BRReadAloudToolbar .playback-rate-container select::-ms-expand {
+  display: none;
+}
+.BRReadAloudToolbar button:hover, .BRReadAloudToolbar .playback-rate-container:hover {
+  background: rgba(50, 50, 50, 0.2);
+}
+
+.BRnav {
+  box-sizing: border-box;
   height: 34px;
   padding-top: 0;
   overflow: visible;
@@ -1205,6 +1420,19 @@ i.BRicon {
 .BRnav .BRpage .BRicon {
   border-left: 1px solid #4D4D4D;
 }
+.BRnav .BRpage .BRicon.activated {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+.BRnav .BRpage .BRicon.activated:before {
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: block;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
 .BRnav .BRnavCntl {
   z-index: 6;
   background-color: #4D4D4D;
@@ -1230,6 +1458,19 @@ i.BRicon {
 }
 .BRnav.BRnavEmbed .BRpage .BRicon {
   border-left: 1px solid #979797;
+}
+.BRnav.BRnavEmbed .BRpage .BRicon.activated {
+  background-color: rgba(0, 116, 209, 0.4);
+}
+.BRnav.BRnavEmbed .BRpage .BRicon.activated:before {
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: block;
+  border: 3px solid rgba(0, 116, 209, 0.3);
 }
 .BRnav.BRnavEmbed .BRnavCntl {
   background-color: #979797;
@@ -1260,6 +1501,19 @@ i.BRicon {
   }
   .BRbodyMobileNavEnabled .BRnav .BRpage .BRicon, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpage .BRicon {
     border-left: 1px solid #979797;
+  }
+  .BRbodyMobileNavEnabled .BRnav .BRpage .BRicon.activated, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpage .BRicon.activated {
+    background-color: rgba(0, 116, 209, 0.4);
+  }
+  .BRbodyMobileNavEnabled .BRnav .BRpage .BRicon.activated:before, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpage .BRicon.activated:before {
+    content: "";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: block;
+    border: 3px solid rgba(0, 116, 209, 0.3);
   }
   .BRbodyMobileNavEnabled .BRnav .BRnavCntl, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRnavCntl {
     background-color: #979797;
@@ -1431,6 +1685,8 @@ i.BRicon {
   width: 100%;
   color: white;
   font-size: 14px;
+  /* ensure that this displays over book */
+  z-index: 3;
 }
 
 .BRtoolbar .label {
@@ -1512,6 +1768,7 @@ i.BRicon {
   position: absolute;
   /* z-index is important */
   z-index: 4;
+  animation: hiliteFadeIn 0.2s;
 }
 .BookReader .BRchapter, .BookReader .BRsearch, .BRmobileMenu .BRchapter, .BRmobileMenu .BRsearch, .BRfloat .BRchapter, .BRfloat .BRsearch {
   position: absolute;
@@ -1677,6 +1934,14 @@ i.BRicon {
   display: inline-block;
 }
 
+@keyframes hiliteFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.2;
+  }
+}
 /* Mid size breakpoint */
 @media (max-width: 1050px) {
   .BookReader .BRbooksearch .BRsearchInput, .BRmobileMenu .BRbooksearch .BRsearchInput, .BRfloat .BRbooksearch .BRsearchInput {

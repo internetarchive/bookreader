@@ -1,3 +1,31 @@
+# 4.5.0
+- ReadAloud now supports jumping backwards
+- Pressing -/= (or -/+ on numpad) zooms out/in
+- FIX #179: ReadAloud now ignores hyphens between lines
+
+# 4.4.2
+- more robust menu toggle plugin, working well with zoom & panning around in zoom
+- more tests
+
+# 4.4.1
+- Remove accidental es6 syntax in BookReader.js (breaking IE11)
+
+# 4.4.0
+- New ReadAloud controls + engine. Uses browser's SpeechSynthesis API instead of server-side test-to-speech
+
+# 4.3.2
+- menu toggle plugin, now applies to in-page & fullscreen views + early escapes when navbar isn't present
+
+# 4.3.0
+- New plugin, `fullscreen_menu_toggle`, allowing center-tap to hide UI
+- TTS Plugin logs analytics events (if enabled)
+- ES6 compilation step no longer performed on client; build files are included in repo so clients have no build step
+
+# 4.2.5
+- Large refactor of plugin.tts.js
+- ES6 compliation step
+- Known bug: Clicking on page while TTS is playing won't stop the playback
+
 # 4.2.4
 - Skips initialization of vendor fullscreen plugin when on a mobile device
 

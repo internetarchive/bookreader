@@ -13,6 +13,8 @@
   width: 100%;
   color: white;
   font-size: $brFontSizeBase;
+  /* ensure that this displays over book */
+  z-index: 3;
 }
 .BRtoolbar .label {
   font-size: $brFontSizeSmaller;

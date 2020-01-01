@@ -10,3 +10,6 @@ coverage:
 parsers:
   javascript:
     enable_partials: yes
+
+ignore:
+  - "BookReader/jquery*.js"
