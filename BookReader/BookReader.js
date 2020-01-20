@@ -111,7 +111,8 @@ BookReader.eventNames = {
 };
 
 BookReader.defaultOptions = {
-    // A string, such as "mode/1up"
+    // A string, such as "mode/1up". See
+    // http://openlibrary.org/dev/docs/bookurls for valid syntax
     defaults: null,
 
     // Padding in 1up
