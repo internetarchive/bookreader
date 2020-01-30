@@ -2796,52 +2796,30 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 };
 
 BookReader.prototype.setMouseHandlers2UP = function() {
-    var currentIndexL = this.prefetchedImgs[this.twoPage.currentIndexL];
-    this.setClickHandler2UP(currentIndexL,
-        { self: this },
-        function(e) {
-            if (e.which == 3) {
-                // right click
-                if (e.data.self.protected) {
-                    return false;
-                }
-                return true;
-            }
+    var self = this;
+    ['L', 'R'].forEach(function(dir) {
+      var currentIndexEl = self.prefetchedImgs[self.twoPage['currentIndex' + dir]];
+      self.setClickHandler2UP(currentIndexEl,
+          { self: self },
+          function(e) {
+              if (e.which == 3) {
+                  // right click
+                  return !e.data.self.protected;
+              }
 
-            // Changes per WEBDEV-2737
-            // BookReader: zoomed-in 2 page view, clicking page should change the page
-            $(currentIndexL)
-            .mousemove(function() {
-                e.preventDefault();
-            })
-            .mouseup(function() {
-                e.data.self.trigger(BookReader.eventNames.stop);
-                e.data.self.left();
-            });
-        }
-    );
-
-    var currentIndexR = this.prefetchedImgs[this.twoPage.currentIndexR];
-    this.setClickHandler2UP(currentIndexR,
-        { self: this },
-        function(e) {
-            if (e.which == 3) {
-                // right click
-                return !e.data.self.protected;
-            }
-
-            // Changes per WEBDEV-2737
-            // BookReader: zoomed-in 2 page view, clicking page should change the page
-            $(currentIndexR)
-            .mousemove(function() {
-                e.preventDefault();
-            })
-            .mouseup(function() {
-                e.data.self.trigger(BookReader.eventNames.stop);
-                e.data.self.right();
-            });
-        }
-    );
+              // Changes per WEBDEV-2737
+              // BookReader: zoomed-in 2 page view, clicking page should change the page
+              $(currentIndexEl)
+              .mousemove(function() {
+                  e.preventDefault();
+              })
+              .mouseup(function() {
+                  e.data.self.trigger(BookReader.eventNames.stop);
+                  e.data.self.left();
+              });
+          }
+      );
+    });
 };
 
 BookReader.prototype.prefetchImg = function(index) {
