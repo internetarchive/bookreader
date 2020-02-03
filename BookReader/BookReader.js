@@ -2815,11 +2815,7 @@ BookReader.prototype.setMouseHandlers2UP = function() {
                 })
                 .mouseup(function() {
                     e.data.self.trigger(BookReader.eventNames.stop);
-                    if (dir === 'L') {
-                        e.data.self.left();
-                    } else {
-                        e.data.self.right();
-                    }
+                    e.data.self[dir === 'L' ? 'left' : 'right']();
                 });
             }
         );
