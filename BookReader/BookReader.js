@@ -835,9 +835,9 @@ BookReader.prototype.bindGestures = function(jElement) {
     });
 };
 
-BookReader.prototype.setClickHandler2UP = function( element, data, handler) {
+BookReader.prototype.setClickHandler2UP = function(element, data, handler) {
     $(element).unbind('mousedown').bind('mousedown', data, function(e) {
-        handler(e);
+        handler(this, e);
     });
 };
 
@@ -2797,29 +2797,34 @@ BookReader.prototype.flipRightToLeft = function(newIndexL, newIndexR) {
 
 BookReader.prototype.setMouseHandlers2UP = function() {
     var self = this;
-    ['L', 'R'].forEach(function(dir) {
-        var currentIndexEl = self.prefetchedImgs[self.twoPage['currentIndex' + dir]];
-        self.setClickHandler2UP(currentIndexEl,
-            { self: self },
-            function(e) {
-                if (e.which == 3) {
-                    // right click
-                    return !e.data.self.protected;
-                }
+    var handler = function(element, e) {
+        if (e.which == 3) {
+            // right click
+            return !e.data.self.protected;
+        }
 
-                // Changes per WEBDEV-2737
-                // BookReader: zoomed-in 2 page view, clicking page should change the page
-                $(currentIndexEl)
-                .mousemove(function() {
-                    e.preventDefault();
-                })
-                .mouseup(function() {
-                    e.data.self.trigger(BookReader.eventNames.stop);
-                    e.data.self[dir === 'L' ? 'left' : 'right']();
-                });
-            }
-        );
-    });
+        // Changes per WEBDEV-2737
+        // BookReader: zoomed-in 2 page view, clicking page should change the page
+        $(element)
+        .mousemove(function() {
+            e.preventDefault();
+        })
+        .mouseup(function() {
+            e.data.self.trigger(BookReader.eventNames.stop);
+            e.data.self[e.data.direction == 'L' ? 'left' : 'right']();
+        });
+    }
+
+    this.setClickHandler2UP(
+        this.prefetchedImgs[self.twoPage['currentIndexR']],
+        { self: self, direction: 'R' },
+        handler
+    );
+    this.setClickHandler2UP(
+        this.prefetchedImgs[self.twoPage['currentIndexL']],
+        { self: self, direction: 'L' },
+        handler
+    );
 };
 
 BookReader.prototype.prefetchImg = function(index) {
