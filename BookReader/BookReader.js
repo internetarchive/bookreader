@@ -628,12 +628,6 @@ BookReader.prototype.init = function() {
         this.$('.BRicon.share').hide();
     }
 
-    this.$('.BRpagediv1up').bind('mousedown', this, function() {
-        // $$$ the purpose of this is to disable selection of the image (makes it turn blue)
-        //     but this also interferes with right-click.  See https://bugs.edge.launchpad.net/gnubook/+bug/362626
-        return false;
-    });
-
     this.trigger(BookReader.eventNames.PostInit);
 
     this.init.initComplete = true;
