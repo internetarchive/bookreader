@@ -2011,11 +2011,18 @@ html.mm-background .BookReader {
   padding: 0 30px 0 50px;
 }
 
+.BRmobileHamburgerButtonContainer {
+  position: absolute;
+  top: 0;
+  left: 17px;
+  width: 26px;
+  cursor: pointer;
+  height: 40px;
+}
 .BRmobileHamburger {
   display: block;
   position: absolute;
   top: 0;
-  left: 17px;
   width: 26px;
   height: 3px;
   margin: 18px 0;

@@ -97,7 +97,7 @@ BookReader.prototype.initToolbar = (function (super_) {
 
         if (this.enableMobileNav) {
             // Need to bind more, console after toolbar is initialized
-            this.$('.BRmobileHamburger').click(function() {
+            this.$('.BRmobileHamburgerButtonContainer').click(function() {
                 if ($mmenuEl.data('mmenu').getInstance().vars.opened) {
                     $mmenuEl.data('mmenu').close();
                 } else {
@@ -118,8 +118,10 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
             .addClass('responsive')
             .prepend($(
                    "<span class='BRmobileHamburgerWrapper'>"
-                +     "<button class=\"BRmobileHamburger\"></button>"
-                +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
+                +     "<span class='BRmobileHamburgerButtonContainer'>"
+                +        "<button class=\"BRmobileHamburger\"></button>"
+                +     "</span>"
+                +      "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
                 +   "</span>"
             ));
         }
