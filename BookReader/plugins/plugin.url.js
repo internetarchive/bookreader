@@ -144,7 +144,6 @@ BookReader.prototype.urlUpdateFragment = function() {
         null,
         baseWithoutSlash
         + newFragmentWithSlash
-        + window.location.search
       );
     }
   } else {

@@ -4795,6 +4795,7 @@ BookReader.prototype.fragmentFromParams = function(params) {
     var separator = '/';
 
     var fragments = [];
+    var search = '';
 
     if ('undefined' != typeof(params.page)) {
         fragments.push('page', params.page);
@@ -4823,10 +4824,10 @@ BookReader.prototype.fragmentFromParams = function(params) {
 
     // search
     if (params.search) {
-        fragments.push('search', params.search);
+        search = '?q=' + params.search;
     }
 
-    return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+    return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/') + search;
 };
 
 /**
