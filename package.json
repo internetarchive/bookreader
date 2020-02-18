@@ -37,13 +37,15 @@
     "regenerator-runtime": "^0.13.3",
     "sass": "^1.22.12",
     "sinon": "^7.3.2",
+    "testcafe": "^1.8.1",
     "webpack": "^4.39.3",
     "webpack-cli": "^3.3.9"
   },
   "jest": {
     "setupFiles": [
       "./env-setup.js"
-    ]
+    ],
+    "testPathIgnorePatterns": ["tests/e2e"]
   },
   "scripts": {
     "preversion": "npm run test && node scripts/preversion.js",
@@ -53,6 +55,7 @@
     "eslint": "eslint ./BookReader/BookReader.js",
     "lint": "eslint \"./**/*.js\"",
     "test": "jest",
+    "test:e2e": "testcafe",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --colors",
     "codecov": "codecov"
