@@ -48,7 +48,7 @@
     "testPathIgnorePatterns": ["tests/e2e"]
   },
   "scripts": {
-    "preversion": "npm run test",
+    "preversion": "npm run test && node scripts/preversion.js",
     "version": "node scripts/version.js",
     "postversion": "node scripts/postversion.js",
     "build": "npx webpack && npx sass ./src/css/BookReader.scss > ./BookReader/BookReader.css",
