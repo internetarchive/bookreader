@@ -1,3 +1,9 @@
+# 4.5.1
+- Fix: Click-to-flip now works in 2up mode zoomed in
+- Fix: Image panning sometimes not working
+- Fix #144: Hamburger icon only clickable on lines
+- Add TestCafe support
+
 # 4.5.0
 - ReadAloud now supports jumping backwards
 - Pressing -/= (or -/+ on numpad) zooms out/in
