@@ -1,7 +1,6 @@
 const { br } = require('../BookReader/BookReader.js');
 const sinon = require('sinon');
 
-
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
     expect(BookReader.util.clamp(2,1,3)).toEqual(2);
 });
@@ -73,4 +72,9 @@ test('has registered view type selected events', () => {
 
 test('has registered fullscreen toggle event', () => {
   expect(BookReader.eventNames.fullscreenToggled).toBeTruthy();
+});
+
+test('full-text search redirect to ?q= param inside bookreader', () => {
+  expect(BookReader.prototype.fragmentFromParams({'search': 'jack-sparow'})).toEqual('?q=jack-sparow');
+  expect(BookReader.prototype.fragmentFromParams({'page': 1, 'search': 'archive.org'})).toEqual('page/1?q=archive.org');
 });
