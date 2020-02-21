@@ -588,7 +588,8 @@ BookReader.prototype.init = function() {
 
     this.resizeBRcontainer();
     this.mode = null; // Needed or else switchMode is a noop
-    this.switchMode(initialMode);
+    // Suppress fragement change on init
+    this.switchMode(initialMode, { suppressFragmentChange: true });
     this.updateFromParams(params);
     this.initUIStrings();
 
