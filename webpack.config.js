@@ -1,10 +1,21 @@
 const path = require('path');
 
-module.exports = [
-    buildJsFromTo({from: 'plugins/plugin.archive_analytics.js', to: 'BookReader/plugins/plugin.archive_analytics.js'}),
-    buildJsFromTo({from: 'plugins/menu_toggle/plugin.menu_toggle.js', to: 'BookReader/plugins/plugin.menu_toggle.js'}),
-    buildJsFromTo({from: 'plugins/tts/plugin.tts.js', to: 'BookReader/plugins/plugin.tts.js'}),
+const listOfFiles = [
+    'plugins/plugin.archive_analytics.js',
+    'plugins/menu_toggle/plugin.menu_toggle.js',
+    'plugins/tts/plugin.tts.js',
 ];
+
+const compileFiles = async () => {
+    const nestedDirs = new RegExp('/(.*)/');
+    return await listOfFiles.map((filePath) => {
+        const flattenedFilePath = filePath.replace(nestedDirs, '/');
+        return buildJsFromTo({
+            from: filePath,
+            to: `BookReader/${flattenedFilePath}`
+        });
+    });
+};
 
 /**
  * @param {Object} opts
@@ -32,3 +43,5 @@ function buildJsFromTo({ from: srcEntryFile, to: outputFile }) {
         devtool: 'source-map'
     };
 }
+
+module.exports = compileFiles();
