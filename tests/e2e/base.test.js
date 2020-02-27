@@ -1,7 +1,17 @@
 /* global fixture */
 import { ClientFunction, Selector } from 'testcafe';
 
-fixture`Tests page interactions`.page('http://localhost:8000/BookReaderDemo/demo-simple.html');
+fixture`Tests BookReader interactions`.page('http://localhost:8000/BookReaderDemo/demo-simple.html');
+
+test('On load, pages fit fully inside of the BookReader™', async t => {
+  const brShell = await Selector('.BookReader');
+  const brContainer = await Selector('.BRcontainer');
+
+  await t.expect(brContainer.visible).ok();
+  await t.expect(brContainer.getBoundingClientRectProperty('height')).eq(10000);
+  await t.expect(brShell.visible).ok();
+
+});
 
 test('Nav menu displays properly', async t => {
   await t.expect((await Selector('.BRfooter')).visible).ok();
