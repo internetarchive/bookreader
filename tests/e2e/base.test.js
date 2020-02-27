@@ -5,12 +5,18 @@ fixture`Tests BookReader interactions`.page('http://localhost:8000/BookReaderDem
 
 test('On load, pages fit fully inside of the BookReader™', async t => {
   const brShell = await Selector('.BookReader');
-  const brContainer = await Selector('.BRcontainer');
+  const brContainer = await brShell('.BRcontainer');
 
-  await t.expect(brContainer.visible).ok();
-  await t.expect(brContainer.getBoundingClientRectProperty('height')).eq(10000);
   await t.expect(brShell.visible).ok();
+  await t.expect(brContainer.visible).ok();
 
+  const shellHeight = await brShell.getBoundingClientRectProperty('height');
+  const bookHeight = await brContainer.getBoundingClientRectProperty('height');
+  await t.expect(bookHeight).lte(shellHeight, 'images do not get cropped vertically');
+
+  const shellWidth = await brShell.getBoundingClientRectProperty('width');
+  const bookWidth = await brContainer.getBoundingClientRectProperty('width');
+  await t.expect(bookWidth).lte(shellWidth, 'images do not get cropped horizontally');
 });
 
 test('Nav menu displays properly', async t => {
