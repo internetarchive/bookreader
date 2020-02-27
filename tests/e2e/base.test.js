@@ -70,6 +70,48 @@ test('Clicking `thumbnail view` brings up all of the page thumbnails', async t =
   await t.expect(images.count).gt(0);
 });
 
+test('Clicking `zoom out` makes book smaller', async t => {
+  const brContainer = await Selector('.BRcontainer');
+  const book = await brContainer.child(0);
+  const zoomOutButton = await Selector('.BRicon.zoom_out');
+
+  await t.expect(brContainer.visible).ok();
+  await t.expect(book.visible).ok();
+  await t.expect(zoomOutButton.visible).ok();
+
+  const initialBookHeight = await book.getBoundingClientRectProperty('height');
+  const initialBookWidth = await book.getBoundingClientRectProperty('width');
+
+  await t.click(zoomOutButton);
+
+  const zoomOutBookHeight = await book.getBoundingClientRectProperty('height');
+  const zoomOutBookWidth = await book.getBoundingClientRectProperty('width');
+
+  await t.expect(zoomOutBookHeight).lt(initialBookHeight);
+  await t.expect(zoomOutBookWidth).lt(initialBookWidth);
+});
+
+test('Clicking `zoom in` makes book larger', async t => {
+  const brContainer = await Selector('.BRcontainer');
+  const book = await brContainer.child(0);
+  const zoomInButton = await Selector('.BRicon.zoom_in');
+
+  await t.expect(brContainer.visible).ok();
+  await t.expect(book.visible).ok();
+  await t.expect(zoomInButton.visible).ok();
+
+  const initialBookHeight = await book.getBoundingClientRectProperty('height');
+  const initialBookWidth = await book.getBoundingClientRectProperty('width');
+
+  await t.click(zoomInButton);
+
+  const zoomInBookHeight = await book.getBoundingClientRectProperty('height');
+  const zoomIntBookWidth = await book.getBoundingClientRectProperty('width');
+
+  await t.expect(zoomInBookHeight).gt(initialBookHeight);
+  await t.expect(zoomIntBookWidth).gt(initialBookWidth);
+});
+
 test('Clicking `full screen button` and BookReader fills browser window', async (t) => {
   const brContainer = await Selector('.BRcontainer');
   const fullScreenToggle = await Selector('.BRicon.full');
@@ -83,4 +125,4 @@ test('Clicking `full screen button` and BookReader fills browser window', async 
   await t.click(fullScreenToggle);
   // in-page
   await t.expect(brContainer.getBoundingClientRectProperty('width')).lt(windowWidth);
-})
+});
