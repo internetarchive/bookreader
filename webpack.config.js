@@ -11,9 +11,9 @@ function buildJSFiles () {
         'plugins/menu_toggle/plugin.menu_toggle.js',
         'plugins/tts/plugin.tts.js',
     ];
-    const nestedDirs = new RegExp('/(.*)/');
+    const nestedDirRegex = new RegExp('/(.*)/');
     return listOfFiles.map((filePath) => {
-        const flattenedFilePath = filePath.replace(nestedDirs, '/');
+        const flattenedFilePath = filePath.replace(nestedDirRegex, '/');
         return buildJsFromTo({
             from: filePath,
             to: `BookReader/${flattenedFilePath}`
