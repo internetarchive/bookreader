@@ -1,20 +1,13 @@
-## Testcafe deps https://devexpress.github.io/testcafe/documentation/continuous-integration/travis.html
-dist: trusty
-sudo: required
+## Testcafe deps
+## https://devexpress.github.io/testcafe/documentation/continuous-integration/travis.html
+## https://docs.travis-ci.com/user/gui-and-headless-browsers/#using-xvfb-to-run-tests-that-require-a-gui
+dist: bionic
+services:
+  - xvfb
 
 addons:
   firefox: latest
-  apt:
-    sources:
-     - google-chrome
-    packages:
-     - google-chrome-stable fluxbox
-
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3
-  - fluxbox >/dev/null 2>&1 &
+  chrome: stable
 
 ## Node https://docs.travis-ci.com/user/languages/javascript-with-nodejs/
 language: node_js
@@ -26,5 +19,5 @@ install:
 script:
   - npm run eslint
   - npm run test:coverage
-  - npm run test:e2e
+  - xvfb-run npm run test:e2e
   - npm run codecov
