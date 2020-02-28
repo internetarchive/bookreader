@@ -1,7 +1,7 @@
 ## Testcafe deps
 ## https://devexpress.github.io/testcafe/documentation/continuous-integration/travis.html
 ## https://docs.travis-ci.com/user/gui-and-headless-browsers/#using-xvfb-to-run-tests-that-require-a-gui
-dist: bionic
+dist: xenial
 services:
   - xvfb
 
