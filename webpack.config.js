@@ -2,6 +2,9 @@ const path = require('path');
 
 module.exports = buildJSFiles();
 
+/**
+ * Applies bundling to the listed files.
+ */
 function buildJSFiles () {
     const listOfFiles = [
         'plugins/plugin.archive_analytics.js',
@@ -19,6 +22,8 @@ function buildJSFiles () {
 }
 
 /**
+ * Applies webpack config to files that it is bundling.
+ *
  * @param {Object} opts
  * @param {String} opts.from
  * @param {String} opts.to
