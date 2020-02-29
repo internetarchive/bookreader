@@ -4085,7 +4085,11 @@ BookReader.prototype.lastDisplayableIndex = function() {
  */
 BookReader.prototype.updateFromParams = function(params) {
     if ('undefined' != typeof(params.mode)) {
-        this.switchMode(params.mode);
+        var options = {};
+        if ('undefined' != typeof(params.fragmentChange)) {
+            options = { suppressFragmentChange: !params.fragmentChange };
+        }
+        this.switchMode(params.mode, options);
     }
 
     // $$$ process /zoom
