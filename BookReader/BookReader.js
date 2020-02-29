@@ -475,6 +475,8 @@ BookReader.prototype.extendParams = function(params, newParams) {
  */
 BookReader.prototype.initParams = function() {
     var params = {};
+    // True if changing the URL
+    params.fragmentChange = false;
 
     // This is ordered from lowest to highest priority
 
@@ -496,6 +498,10 @@ BookReader.prototype.initParams = function() {
         // Check cookies
         var val = this.getResumeValue();
         if (val !== null) {
+            // If page index different from default
+            if (params.index !== val) {
+                params.fragmentChange = true;
+            }
             params.index = val;
         }
     }
@@ -506,7 +512,11 @@ BookReader.prototype.initParams = function() {
         if (urlParams.mode) {
             this.prevReadMode = urlParams.mode;
         }
-        this.extendParams(params, urlParams);
+        // If there were any parameters
+        if (Object.keys(urlParams).length > 0) {
+            this.extendParams(params, urlParams);
+            params.fragmentChange = true;
+        }
     }
 
     return params;
@@ -572,14 +582,14 @@ BookReader.prototype.init = function() {
     this.refs.$brContainer = $("<div class='BRcontainer' dir='ltr'></div>");
     this.refs.$br.append(this.refs.$brContainer);
 
-    var initialMode = this.getInitialMode(params);
-    this.mode = initialMode;
+    // Explicity ensure params.mode exists for updateFromParams() below
+    params.mode = this.getInitialMode(params);
 
     if (this.ui == "embed" && this.options.showNavbar) {
         this.initEmbedNavbar();
     } else {
         if (this.options.showToolbar) {
-            this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
+            this.initToolbar(params.mode, this.ui); // Build inside of toolbar div
         }
         if (this.options.showNavbar) {
             this.initNavbar();
@@ -587,9 +597,7 @@ BookReader.prototype.init = function() {
     }
 
     this.resizeBRcontainer();
-    this.mode = null; // Needed or else switchMode is a noop
-    // Suppress fragement change on init
-    this.switchMode(initialMode, { suppressFragmentChange: true });
+    this.mode = null; // Needed or switchMode() in updateFromParams() is a noop
     this.updateFromParams(params);
     this.initUIStrings();
 
