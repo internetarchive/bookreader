@@ -1,18 +1,17 @@
 const path = require('path');
 
-module.exports = buildJSFiles();
+module.exports = buildJSFiles([
+    'plugins/plugin.archive_analytics.js',
+    'plugins/menu_toggle/plugin.menu_toggle.js',
+    'plugins/tts/plugin.tts.js',
+]);
 
 /**
  * Applies bundling to the listed files.
  */
-function buildJSFiles () {
-    const listOfFiles = [
-        'plugins/plugin.archive_analytics.js',
-        'plugins/menu_toggle/plugin.menu_toggle.js',
-        'plugins/tts/plugin.tts.js',
-    ];
+function buildJSFiles (files) {
     const nestedDirRegex = new RegExp('/(.*)/');
-    return listOfFiles.map((filePath) => {
+    return files.map((filePath) => {
         const flattenedFilePath = filePath.replace(nestedDirRegex, '/');
         return buildJsFromTo({
             from: filePath,
