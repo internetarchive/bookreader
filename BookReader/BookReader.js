@@ -582,14 +582,16 @@ BookReader.prototype.init = function() {
     this.refs.$brContainer = $("<div class='BRcontainer' dir='ltr'></div>");
     this.refs.$br.append(this.refs.$brContainer);
 
-    // Explicity ensure params.mode exists for updateFromParams() below
+    // Explicitly ensure params.mode exists for updateFromParams() below
     params.mode = this.getInitialMode(params);
+    // Explicitly ensure this.mode exists for initNavbar()
+    this.mode = params.mode;
 
     if (this.ui == "embed" && this.options.showNavbar) {
         this.initEmbedNavbar();
     } else {
         if (this.options.showToolbar) {
-            this.initToolbar(params.mode, this.ui); // Build inside of toolbar div
+            this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
         }
         if (this.options.showNavbar) {
             this.initNavbar();
