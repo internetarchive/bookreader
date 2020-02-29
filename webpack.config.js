@@ -1,12 +1,28 @@
 const path = require('path');
 
-module.exports = [
-    buildJsFromTo({from: 'plugins/plugin.archive_analytics.js', to: 'BookReader/plugins/plugin.archive_analytics.js'}),
-    buildJsFromTo({from: 'plugins/menu_toggle/plugin.menu_toggle.js', to: 'BookReader/plugins/plugin.menu_toggle.js'}),
-    buildJsFromTo({from: 'plugins/tts/plugin.tts.js', to: 'BookReader/plugins/plugin.tts.js'}),
-];
+module.exports = buildJSFiles([
+    'plugins/plugin.archive_analytics.js',
+    'plugins/menu_toggle/plugin.menu_toggle.js',
+    'plugins/tts/plugin.tts.js',
+]);
 
 /**
+ * Applies bundling to the listed files.
+ */
+function buildJSFiles (files) {
+    const nestedDirRegex = new RegExp('/(.*)/');
+    return files.map((filePath) => {
+        const flattenedFilePath = filePath.replace(nestedDirRegex, '/');
+        return buildJsFromTo({
+            from: filePath,
+            to: `BookReader/${flattenedFilePath}`
+        });
+    });
+}
+
+/**
+ * Applies webpack config to files that it is bundling.
+ *
  * @param {Object} opts
  * @param {String} opts.from
  * @param {String} opts.to
