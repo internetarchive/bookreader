@@ -42,12 +42,12 @@ BookReader.prototype.bindNavigationHandlers = (function(super_) {
     // Note the mobile plugin attaches itself to body, so we need to select outside
     var jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
 
-    jIcons.filter('.play').click(function(e) {
+    jIcons.filter('.play').click(function() {
       self.autoToggle();
       return false;
     });
 
-    jIcons.filter('.pause').click(function(e) {
+    jIcons.filter('.pause').click(function() {
       self.autoToggle();
       return false;
     });
