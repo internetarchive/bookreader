@@ -7,6 +7,9 @@ jQuery.extend(BookReader.defaultOptions, {
   enableAutoPlayPlugin: true
 });
 
+/**
+ * @augments BookReader.setup
+ */
 BookReader.prototype.setup = (function(super_) {
   return function (options) {
     super_.call(this, options);
@@ -17,7 +20,9 @@ BookReader.prototype.setup = (function(super_) {
   };
 })(BookReader.prototype.setup);
 
-
+/**
+ * @augments BookReader.init
+ */
 BookReader.prototype.init = (function(super_) {
   return function (options) {
     super_.call(this, options);
@@ -30,7 +35,9 @@ BookReader.prototype.init = (function(super_) {
   };
 })(BookReader.prototype.init);
 
-
+/**
+ * @augments BookReader.bindNavigationHandlers
+ */
 BookReader.prototype.bindNavigationHandlers = (function(super_) {
   return function() {
     super_.call(this);
