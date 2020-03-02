@@ -1,7 +1,8 @@
+/*global BookReader */
+
 /**
  * Plugin which adds an autoplay feature. Useful for kiosk situations.
  */
-
 jQuery.extend(BookReader.defaultOptions, {
   enableAutoPlayPlugin: true
 });
