@@ -1,9 +1,23 @@
+## Testcafe deps
+## https://devexpress.github.io/testcafe/documentation/continuous-integration/travis.html
+## https://docs.travis-ci.com/user/gui-and-headless-browsers/#using-xvfb-to-run-tests-that-require-a-gui
+dist: bionic
+services:
+  - xvfb
+
+addons:
+  firefox: latest
+  chrome: stable
+
+## Node https://docs.travis-ci.com/user/languages/javascript-with-nodejs/
 language: node_js
+
 node_js:
   - '12'
-install: 
+install:
   - npm install
 script:
   - npm run eslint
   - npm run test:coverage
+  - xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" npm run test:e2e
   - npm run codecov
