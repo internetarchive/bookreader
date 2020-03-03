@@ -1,5 +1,6 @@
 # Build files
 BookReader/plugins/*.js.map binary
 BookReader/plugins/plugin.archive_analytics.js binary
+BookReader/plugins/plugin.autoplay.js binary
 BookReader/plugins/plugin.menu_toggle.js binary
 BookReader/plugins/plugin.tts.js binary
