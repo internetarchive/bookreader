@@ -1,17 +1,18 @@
 /* global BookReader */
-require('../../BookReader/jquery-1.10.1.js');
-require('../../BookReader/jquery-ui-1.12.0.min.js');
-require('../../BookReader/jquery.browser.min.js');
-require('../../BookReader/dragscrollable-br.js');
-require('../../BookReader/jquery.colorbox-min.js');
-require('../../BookReader/jquery.bt.min.js');
+import '../../BookReader/jquery-1.10.1.js';
+import '../../BookReader/jquery-1.10.1.js';
+import '../../BookReader/jquery-ui-1.12.0.min.js';
+import '../../BookReader/jquery.browser.min.js';
+import '../../BookReader/dragscrollable-br.js';
+import '../../BookReader/jquery.colorbox-min.js';
+import '../../BookReader/jquery.bt.min.js';
 
-require('../../BookReader/BookReader.js');
-require('../../src/js/plugins/plugin.autoplay.js');
+import '../../BookReader/BookReader.js';
+import '../../src/js/plugins/plugin.autoplay.js';
 
 
 let br;
-beforeAll(() => {
+beforeEach(() => {
   document.body.innerHTML = '<div id="BookReader">';
   br = new BookReader();
   br.init();
@@ -25,11 +26,6 @@ describe('Plugin: Menu Toggle', () => {
   test('has option flag', () => {
     expect(BookReader.defaultOptions.enableAutoPlayPlugin).toEqual(true);
   });
-  /*
-     this.auto      = false;
-    this.autoTimer = null;
-    this.flipDelay = 5000;
-  */
   test('has added BR property: auto', () => {
     expect(br).toHaveProperty('auto');
     expect(br.auto).toEqual(false);
@@ -42,5 +38,23 @@ describe('Plugin: Menu Toggle', () => {
     expect(br).toHaveProperty('flipDelay');
     expect(br.flipDelay).toBeTruthy();
     expect(br.flipDelay).toBeGreaterThan(1);
+  });
+  test('autoplay does not start when BookReaderInitializes', () => {
+    br.autoToggle = jest.fn();
+    br.init();
+    expect(br.autoToggle).toHaveBeenCalledTimes(0);
+  });
+  test('autoplay will run without `flipSpeed` parameters', () => {
+    const initialAutoTimer = br.autoTimer;
+    br.flipFwdToIndex = jest.fn();
+    br.autoStop = jest.fn();
+    br.init();
+    br.autoToggle();
+    // internally referenced functions that fire
+    expect(br.flipFwdToIndex).toHaveBeenCalledTimes(1);
+
+    expect(initialAutoTimer).toBeFalsy();
+    // br.autoTimer changes when autoToggle turns on
+    expect(br.autoTimer).toBeTruthy();
   });
 });
