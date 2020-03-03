@@ -20,7 +20,8 @@
   },
   "homepage": "https://github.com/internetarchive/bookreader#readme",
   "dependencies": {
-    "jquery": "^3.4.1"
+    "jquery": "^3.4.1",
+    "jslint": "^0.12.1"
   },
   "private": true,
   "devDependencies": {
@@ -30,7 +31,9 @@
     "babel-loader": "^8.0.6",
     "codecov": "^3.6.5",
     "core-js": "^3.3.3",
-    "eslint": "^5.16.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.20.1",
     "iso-language-codes": "^1.0.5",
     "jest": "^24.8.0",
     "qunit": "^2.9.2",

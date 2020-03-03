@@ -1,0 +1,14 @@
+/BookReader/*
+/BookReaderDemo/*
+/BookReader/mmenu/
+/BookReader/soundmanager/
+/BookReader/plugins/
+/tests/
+/src/
+/scripts/
+/node_modules/
+/webpack.config.js
+/env-setup.js
+/.eslintrc.js
+
+!/BookReader/BookReaderNew.js
