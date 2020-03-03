@@ -28,7 +28,7 @@ BookReader.prototype.init = (function(super_) {
     super_.call(this, options);
 
     if (!this.options.enableAutoPlayPlugin) return;
-    this.bind(BookReader.eventNames.stop, (e, br) => br.autoStop());
+    this.bind(BookReader.eventNames.stop, () => this.autoStop());
   };
 })(BookReader.prototype.init);
 
@@ -41,18 +41,16 @@ BookReader.prototype.bindNavigationHandlers = (function(super_) {
 
     if (!this.options.enableAutoPlayPlugin) return;
 
-    const self = this;
-
     // Note the mobile plugin attaches itself to body, so we need to select outside
     const jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
 
-    jIcons.filter('.play').click(function() {
-      self.autoToggle();
+    jIcons.filter('.play').click(() => {
+      this.autoToggle();
       return false;
     });
 
-    jIcons.filter('.pause').click(function() {
-      self.autoToggle();
+    jIcons.filter('.pause').click(() => {
+      this.autoToggle();
       return false;
     });
   };
@@ -74,7 +72,7 @@ BookReader.prototype.autoToggle = function(overrides) {
   this.flipDelay = typeof options.flipDelay === "number" ? options.flipDelay : this.flipDelay;
   this.trigger(BookReader.eventNames.stop);
 
-  const bComingFrom1up = false;
+  let bComingFrom1up = false;
   if (this.constMode2up != this.mode) {
     bComingFrom1up = true;
     this.switchMode(this.constMode2up);
@@ -85,7 +83,6 @@ BookReader.prototype.autoToggle = function(overrides) {
     this.zoom2up('auto');
   }
 
-  const self = this;
   if (null == this.autoTimer) {
     // $$$ Draw events currently cause layout problems when they occur during animation.
     //     There is a specific problem when changing from 1-up immediately to autoplay in RTL so
@@ -100,13 +97,13 @@ BookReader.prototype.autoToggle = function(overrides) {
 
     this.$('.play').hide();
     this.$('.pause').show();
-    this.autoTimer = setInterval(function(){
-      if (self.animating) return;
+    this.autoTimer = setInterval(() => {
+      if (this.animating) return;
 
-      if (Math.max(self.twoPage.currentIndexL, self.twoPage.currentIndexR) >= self.lastDisplayableIndex()) {
-        self.flipBackToIndex(1); // $$$ really what we want?
+      if (Math.max(this.twoPage.currentIndexL, this.twoPage.currentIndexR) >= this.lastDisplayableIndex()) {
+        this.flipBackToIndex(1); // $$$ really what we want?
       } else {
-        self.flipFwdToIndex();
+        this.flipFwdToIndex();
       }
     }, this.flipDelay);
   } else {
