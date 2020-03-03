@@ -41,10 +41,10 @@ BookReader.prototype.bindNavigationHandlers = (function(super_) {
 
     if (!this.options.enableAutoPlayPlugin) return;
 
-    var self = this;
+    const self = this;
 
     // Note the mobile plugin attaches itself to body, so we need to select outside
-    var jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
+    const jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
 
     jIcons.filter('.play').click(function() {
       self.autoToggle();
@@ -65,7 +65,7 @@ BookReader.prototype.bindNavigationHandlers = (function(super_) {
 BookReader.prototype.autoToggle = function(overrides) {
   if (!this.options.enableAutoPlayPlugin) return;
 
-  var options = $.extend({
+  const options = $.extend({
     flipSpeed: this.flipSpeed,
     flipDelay: this.flipDelay
   }, overrides);
@@ -74,7 +74,7 @@ BookReader.prototype.autoToggle = function(overrides) {
   this.flipDelay = typeof options.flipDelay === "number" ? options.flipDelay : this.flipDelay;
   this.trigger(BookReader.eventNames.stop);
 
-  var bComingFrom1up = false;
+  const bComingFrom1up = false;
   if (this.constMode2up != this.mode) {
     bComingFrom1up = true;
     this.switchMode(this.constMode2up);
@@ -85,7 +85,7 @@ BookReader.prototype.autoToggle = function(overrides) {
     this.zoom2up('auto');
   }
 
-  var self = this;
+  const self = this;
   if (null == this.autoTimer) {
     // $$$ Draw events currently cause layout problems when they occur during animation.
     //     There is a specific problem when changing from 1-up immediately to autoplay in RTL so
