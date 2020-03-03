@@ -2,9 +2,9 @@ const path = require('path');
 
 module.exports = buildJSFiles([
     'plugins/plugin.archive_analytics.js',
+    'plugins/plugin.autoplay.js',
     'plugins/menu_toggle/plugin.menu_toggle.js',
-    'plugins/tts/plugin.tts.js',
-    'plugins/plugin.autoplay.js'
+    'plugins/tts/plugin.tts.js'
 ]);
 
 /**
