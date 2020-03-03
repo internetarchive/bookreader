@@ -8,7 +8,7 @@ const MESSAGE_TYPE_FRAGMENT_CHANGE = 'bookReaderFragmentChange';
 BookReader.prototype.init = (function(super_) {
     return function() {
         super_.call(this);
-        attachEventListeners(this);
+        _attachEventListeners(this);
     };
 })(BookReader.prototype.init);
 
@@ -19,17 +19,18 @@ BookReader.prototype.init = (function(super_) {
  * explicitly request a page change by sending its own message.
  *
  * @param {BookReader} br
+ * @param {Window?} [parent]
  */
-function attachEventListeners(br) {
+export function _attachEventListeners(br, parent=window.parent) {
     // Not embedded, abort
-    if (!window.parent) {
+    if (!parent) {
         return;
     }
 
     br.bind(BookReader.eventNames.fragmentChange, () => {
         const fragment = br.fragmentFromParams(br.paramsFromCurrent());
 
-        window.parent.postMessage(
+        parent.postMessage(
             { type: MESSAGE_TYPE_FRAGMENT_CHANGE, fragment },
             '*'
         );
@@ -37,10 +38,7 @@ function attachEventListeners(br) {
 
     window.addEventListener('message', event => {
         // Not a recognized message type, abort
-        if (
-            !event.data ||
-            event.data.type !== MESSAGE_TYPE_FRAGMENT_CHANGE
-        ) {
+        if (!event.data || event.data.type !== MESSAGE_TYPE_FRAGMENT_CHANGE) {
             return;
         }
 
