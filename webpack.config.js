@@ -4,6 +4,7 @@ module.exports = buildJSFiles([
     'plugins/plugin.archive_analytics.js',
     'plugins/menu_toggle/plugin.menu_toggle.js',
     'plugins/tts/plugin.tts.js',
+    'plugins/plugin.resume.js',
 ]);
 
 /**
