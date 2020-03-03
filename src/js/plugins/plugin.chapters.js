@@ -34,10 +34,10 @@ BookReader.prototype.init = (function(super_) {
 
 
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
-    var uiStringPage = 'Page'; // i18n
-    var self = this;
+    const uiStringPage = 'Page'; // i18n
+    const self = this;
 
-    var percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
+    const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
 
     $('<div>'
         + '<div>'
@@ -111,7 +111,7 @@ BookReader.prototype.removeChapters = function() {
  */
 BookReader.prototype.updateTOC = function(tocEntries) {
     this.removeChapters();
-    for (var i = 0; i < tocEntries.length; i++) {
+    for (let i = 0; i < tocEntries.length; i++) {
         this.addChapterFromEntry(tocEntries[i]);
     }
 };
@@ -127,7 +127,7 @@ BookReader.prototype.updateTOC = function(tocEntries) {
  *   }
  */
 BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-    var pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
+    const pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
     // Only add if we know where it is
     if (pageIndex) {
         this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
@@ -157,8 +157,8 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 // response from the API.
 BookReader.prototype.getOpenLibraryRecord = function(callback) {
   // Try looking up by ocaid first, then by source_record
-  var self = this; // closure
-  var jsonURL = self.olHost + '/query.json?type=/type/edition&*=&ocaid=' + self.bookId;
+  const self = this; // closure
+  const jsonURL = self.olHost + '/query.json?type=/type/edition&*=&ocaid=' + self.bookId;
   $.ajax({
     url: jsonURL,
     success: function(data) {
