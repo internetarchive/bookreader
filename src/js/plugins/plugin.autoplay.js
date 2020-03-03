@@ -8,7 +8,7 @@ jQuery.extend(BookReader.defaultOptions, {
 });
 
 /**
- * @augments BookReader.setup
+ * @override BookReader.setup
  */
 BookReader.prototype.setup = (function(super_) {
   return function (options) {
@@ -21,7 +21,7 @@ BookReader.prototype.setup = (function(super_) {
 })(BookReader.prototype.setup);
 
 /**
- * @augments BookReader.init
+ * @override BookReader.init
  */
 BookReader.prototype.init = (function(super_) {
   return function (options) {
@@ -33,7 +33,7 @@ BookReader.prototype.init = (function(super_) {
 })(BookReader.prototype.init);
 
 /**
- * @augments BookReader.bindNavigationHandlers
+ * @override BookReader.bindNavigationHandlers
  */
 BookReader.prototype.bindNavigationHandlers = (function(super_) {
   return function() {
