@@ -35,9 +35,9 @@ BookReader.prototype.init = (function(super_) {
 /**
  * Adds chapter marker to navigation scrubber
  *
- * @param { string } chapterTitle
- * @param { string } pageNumber
- * @param { number } pageIndex
+ * @param {string} chapterTitle
+ * @param {string} pageNumber
+ * @param {number} pageIndex
  */
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
     const uiStringPage = 'Page'; // i18n
