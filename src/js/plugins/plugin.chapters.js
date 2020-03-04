@@ -149,13 +149,15 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
     });
 };
 
-// getOpenLibraryRecord
-//
-// The bookreader is designed to call openlibrary API and constructs the
-// "Return book" button using the response.
-//
-// This makes a call to OL API and calls the given callback function with the
-// response from the API.
+/**
+ * getOpenLibraryRecord
+ *
+ * The bookreader is designed to call openlibrary API and constructs the
+ * "Return book" button using the response.
+ *
+ * This makes a call to OL API and calls the given callback function with the
+ * response from the API.
+ */
 BookReader.prototype.getOpenLibraryRecord = function () {
   // Try looking up by ocaid first, then by source_record
   const baseURL = `${this.olHost}//query.json?type=/type/edition&*=`;
