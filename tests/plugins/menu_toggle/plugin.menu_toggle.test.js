@@ -1,12 +1,12 @@
-const $ = require('../../../BookReader/jquery-1.10.1.js');
-require('../../../BookReader/jquery-ui-1.12.0.min.js');
-require('../../../BookReader/jquery.browser.min.js');
-require('../../../BookReader/dragscrollable-br.js');
-require('../../../BookReader/jquery.colorbox-min.js');
-require('../../../BookReader/jquery.bt.min.js');
+import '../../../BookReader/jquery-1.10.1.js';
+import '../../../BookReader/jquery-ui-1.12.0.min.js';
+import '../../../BookReader/jquery.browser.min.js';
+import '../../../BookReader/dragscrollable-br.js';
+import '../../../BookReader/jquery.colorbox-min.js';
+import '../../../BookReader/jquery.bt.min.js';
 
-require('../../../BookReader/BookReader.js');
-require('../../../src/js/plugins/menu_toggle/plugin.menu_toggle.js');
+import '../../../src/js/BookReader.js';
+import '../../../src/js/plugins/menu_toggle/plugin.menu_toggle.js';
 
 
 let br;

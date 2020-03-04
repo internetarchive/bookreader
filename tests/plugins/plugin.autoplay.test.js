@@ -7,7 +7,7 @@ import '../../BookReader/dragscrollable-br.js';
 import '../../BookReader/jquery.colorbox-min.js';
 import '../../BookReader/jquery.bt.min.js';
 
-import '../../BookReader/BookReader.js';
+import '../../src/js/BookReader.js';
 import '../../src/js/plugins/plugin.autoplay.js';
 
 
