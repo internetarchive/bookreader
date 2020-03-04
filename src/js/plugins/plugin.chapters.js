@@ -133,19 +133,11 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
     if (pageIndex) {
         this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
     }
-    this.$('.BRchapter').each(function(){
-        $(this).hover(function(){
-            $(this).addClass('front');
-        },function(){
-            $(this).removeClass('front');
-        });
-    });
-    this.$('.BRsearch').each(function(){
-        $(this).hover(function(){
-            $(this).addClass('front');
-        },function(){
-            $(this).removeClass('front');
-        });
+    this.$('.BRchapter, .BRsearch').each((i, el) => {
+        const $el = $(el);
+        $el.hover(
+          () => $el.addClass('front'),
+          () => $el.removeClass('front'));
     });
 };
 
