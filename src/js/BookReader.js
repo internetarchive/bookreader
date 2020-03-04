@@ -19,6 +19,7 @@ This file is part of BookReader.
     The BookReader source is hosted at http://github.com/internetarchive/bookreader/
 
 */
+import { version as VERSION } from '../../package.json';
 
 window.BookReader = (function ($) {
 
@@ -79,7 +80,7 @@ function BookReader(options) {
     this.setup(options);
 }
 
-BookReader.version = '4.5.1';
+BookReader.version = VERSION;
 
 // Mode constants
 BookReader.constMode1up = 1;
