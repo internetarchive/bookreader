@@ -15,11 +15,6 @@ async function main() {
 
     // build
     execSync('npm run build', { stdio: "inherit" });
-    
-    // Update BookReader.version
-    const old_js = fs.readFileSync('BookReader/BookReader.js').toString();
-    const new_js = old_js.replace(/^BookReader\.version = .*/m, `BookReader.version = '${NEW_VERSION}';`);
-    fs.writeFileSync('BookReader/BookReader.js', new_js);
 
     // Add build files
     execSync('git add ./BookReader');
