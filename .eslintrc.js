@@ -25,6 +25,7 @@ module.exports = {
     "overrides": [
         { // TODO; these should be cleaned up as well
             "files": [
+                "src/js/BookReader.js",
                 "src/js/plugins/menu_toggle/plugin.menu_toggle.js",
                 "src/js/plugins/plugin.archive_analytics.js",
                 "src/js/plugins/tts/plugin.tts.js",
