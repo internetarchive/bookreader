@@ -1,6 +1,5 @@
-const { br } = require('../BookReader/BookReader.js');
-const sinon = require('sinon');
-
+import sinon from 'sinon';
+import '../src/js/BookReader.js';
 
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
     expect(BookReader.util.clamp(2,1,3)).toEqual(2);
