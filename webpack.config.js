@@ -4,6 +4,7 @@ module.exports = buildJSFiles([
     'plugins/menu_toggle/plugin.menu_toggle.js',
     'plugins/plugin.archive_analytics.js',
     'plugins/plugin.autoplay.js',
+    'plugins/plugin.chapters.js',
     'plugins/plugin.iframe.js',
     'plugins/tts/plugin.tts.js',
 ]);
