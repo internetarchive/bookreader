@@ -58,7 +58,9 @@ BookReader.prototype.bindNavigationHandlers = (function(super_) {
 
 /**
  * Starts autoplay mode
- * @param {object} overrides - accepts numeric properties flipSpeed and flipDelay
+ * @param {object} overrides
+ * @param {number} overrides.flipSpeed
+ * @param {number} overrides.flipDelay
  */
 BookReader.prototype.autoToggle = function(overrides) {
   if (!this.options.enableAutoPlayPlugin) return;
