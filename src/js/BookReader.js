@@ -20,6 +20,7 @@ This file is part of BookReader.
 
 */
 import { version as VERSION } from '../../package.json';
+import * as utils from './BookReader/utils.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(function() {
@@ -349,107 +350,7 @@ BookReader.prototype.setup = function(options) {
  * BookReader.util are static library functions
  * At top of file so they can be used below
  */
-BookReader.util = {
-  disableSelect: function(jObject) {
-    // Bind mouse handlers
-    // Disable mouse click to avoid selected/highlighted page images - bug 354239
-    jObject.bind('mousedown', function() {
-      // $$$ check here for right-click and don't disable.  Also use jQuery style
-      //     for stopping propagation. See https://bugs.edge.launchpad.net/gnubook/+bug/362626
-      return false;
-    });
-    // Special hack for IE7
-    jObject[0].onselectstart = function() { return false; };
-  },
-
-  clamp: function(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  },
-
-  // Given value and maximum, calculate a percentage suitable for CSS
-  cssPercentage: function(value, max) {
-    return (((value + 0.0) / max) * 100) + '%';
-  },
-
-  notInArray: function(value, array) {
-    // inArray returns -1 or undefined if value not in array
-    return ! (jQuery.inArray(value, array) >= 0);
-  },
-
-  getIFrameDocument: function(iframe) {
-    // Adapted from http://xkr.us/articles/dom/iframe-document/
-    var outer = (iframe.contentWindow || iframe.contentDocument);
-    return (outer.document || outer);
-  },
-
-  escapeHTML: function (str) {
-    return(
-      str.replace(/&/g,'&amp;').
-        replace(/>/g,'&gt;').
-        replace(/</g,'&lt;').
-        replace(/"/g,'&quot;')
-    );
-  },
-
-  decodeURIComponentPlus: function(value) {
-    // Decodes a URI component and converts '+' to ' '
-    return decodeURIComponent(value).replace(/\+/g, ' ');
-  },
-
-  encodeURIComponentPlus: function(value) {
-    // Encodes a URI component and converts ' ' to '+'
-    return encodeURIComponent(value).replace(/%20/g, '+');
-  },
-
-  /**
-     * Returns a function, that, as long as it continues to be invoked, will not
-     * be triggered. The function will be called after it stops being called for
-     * N milliseconds. If `immediate` is passed, trigger the function on the
-     * leading edge, instead of the trailing.
-     * @see https://davidwalsh.name/javascript-debounce-function
-     */
-  debounce: function(func, wait, immediate) {
-    var timeout;
-    return function() {
-      var context = this, args = arguments;
-      var later = function() {
-        timeout = null;
-        if (!immediate) func.apply(context, args);
-      };
-      var callNow = immediate && !timeout;
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-      if (callNow) func.apply(context, args);
-    };
-  },
-
-  /**
-     * Throttle function
-     * @see https://remysharp.com/2010/07/21/throttling-function-calls
-     */
-  throttle: function(fn, threshhold, delay) {
-    threshhold || (threshhold = 250);
-    var last,
-      deferTimer;
-    if (delay) last = +new Date;
-    return function () {
-      var context = this;
-      var now = +new Date,
-        args = arguments;
-      if (last && now < last + threshhold) {
-        // hold on to it
-        clearTimeout(deferTimer);
-        deferTimer = setTimeout(function () {
-          last = now;
-          fn.apply(context, args);
-        }, threshhold);
-      } else {
-        last = now;
-        fn.apply(context, args);
-      }
-    };
-  },
-};
+BookReader.util = utils;
 
 /**
  * Helper to merge in params in to a params object.
@@ -889,7 +790,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
     index = indicesToDisplay[i];
     height = parseInt(this._getPageHeight(index)/this.reduce);
 
-    if (BookReader.util.notInArray(indicesToDisplay[i], this.displayedIndices)) {
+    if (utils.notInArray(indicesToDisplay[i], this.displayedIndices)) {
       var width = parseInt(this._getPageWidth(index)/this.reduce);
       var leftMargin = parseInt((containerWidth - width) / 2);
 
@@ -916,7 +817,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
   }
 
   for (i=0; i<this.displayedIndices.length; i++) {
-    if (BookReader.util.notInArray(this.displayedIndices[i], indicesToDisplay)) {
+    if (utils.notInArray(this.displayedIndices[i], indicesToDisplay)) {
       index = this.displayedIndices[i];
       this.$('.pagediv'+index).remove();
     }
@@ -1048,7 +949,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   var leaf;
 
   for (i=0; i<rowsToDisplay.length; i++) {
-    if (BookReader.util.notInArray(rowsToDisplay[i], this.displayedRows)) {
+    if (utils.notInArray(rowsToDisplay[i], this.displayedRows)) {
       row = rowsToDisplay[i];
 
       for (j=0; j<leafMap[row].leafs.length; j++) {
@@ -1111,7 +1012,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   // Remove thumbnails that are not to be displayed
   var k;
   for (i=0; i<this.displayedRows.length; i++) {
-    if (BookReader.util.notInArray(this.displayedRows[i], rowsToDisplay)) {
+    if (utils.notInArray(this.displayedRows[i], rowsToDisplay)) {
       row = this.displayedRows[i];
       for (k=0; k<leafMap[row].leafs.length; k++) {
         index = leafMap[row].leafs[k].num;
@@ -1240,7 +1141,7 @@ BookReader.prototype.drawLeafsTwoPage = function() {
 /**
  * A throttled version of drawLeafs
  */
-BookReader.prototype.drawLeafsThrottled = BookReader.util.throttle(
+BookReader.prototype.drawLeafsThrottled = utils.throttle(
   BookReader.prototype.drawLeafs,
   250 // 250 ms gives quick feedback, but doesn't eat cpu
 );
@@ -1843,7 +1744,7 @@ BookReader.prototype.prepareOnePageView = function() {
 
   // $$$ keep select enabled for now since disabling it breaks keyboard
   //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
-  // BookReader.util.disableSelect(this.$('#BRpageview'));
+  // utils.disableSelect(this.$('#BRpageview'));
 
   this.resizePageView1up();
   this.jumpToIndex(startLeaf);
@@ -1865,7 +1766,7 @@ BookReader.prototype.prepareThumbnailView = function() {
 
   // $$$ keep select enabled for now since disabling it breaks keyboard
   //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
-  // BookReader.util.disableSelect(this.$('#BRpageview'));
+  // utils.disableSelect(this.$('#BRpageview'));
 
   this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
   this.reduce = this.getPageWidth(0)/this.thumbWidth;
@@ -2035,7 +1936,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
 
   $(this.leafEdgeR).bind('mousemove', this, function(e) {
     var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
-    $(e.data.twoPagePopUp).text('View ' + e.data.getPageName(BookReader.util.clamp(jumpIndex, 0, e.data.getNumLeafs() - 1)));
+    $(e.data.twoPagePopUp).text('View ' + e.data.getPageName(utils.clamp(jumpIndex, 0, e.data.getNumLeafs() - 1)));
 
     // $$$ TODO: Make sure popup is positioned so that it is in view
     // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
@@ -2047,7 +1948,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
 
   $(this.leafEdgeL).bind('mousemove', this, function(e) {
     var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
-    $(e.data.twoPagePopUp).text('View '+ e.data.getPageName(BookReader.util.clamp(jumpIndex, 0, e.data.getNumLeafs() - 1)));
+    $(e.data.twoPagePopUp).text('View '+ e.data.getPageName(utils.clamp(jumpIndex, 0, e.data.getNumLeafs() - 1)));
 
     // $$$ TODO: Make sure popup is positioned so that it is in view
     //           (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
@@ -2332,7 +2233,7 @@ BookReader.prototype.currentIndex = function() {
     return this.firstIndex; // $$$ TODO page in center of view would be better
   } else if (this.mode == this.constMode2up) {
     // Only allow indices that are actually present in book
-    return BookReader.util.clamp(this.firstIndex, 0, this.getNumLeafs() - 1);
+    return utils.clamp(this.firstIndex, 0, this.getNumLeafs() - 1);
   } else {
     throw 'currentIndex called for unimplemented mode ' + this.mode;
   }
@@ -3078,7 +2979,7 @@ BookReader.prototype.twoPageFlipAreaWidth = function() {
   var min = 10;
 
   var width = this.twoPage.width * 0.15;
-  return parseInt(BookReader.util.clamp(width, min, max));
+  return parseInt(utils.clamp(width, min, max));
 };
 
 /**
@@ -3210,12 +3111,12 @@ BookReader.prototype.jumpIndexForLeftEdgePageX = function(pageX) {
     jumpIndex = this.twoPage.currentIndexL - ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
 
     // browser may have resized the div due to font size change -- see https://bugs.launchpad.net/gnubook/+bug/333570
-    jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.firstDisplayableIndex(), this.twoPage.currentIndexL - 2);
+    jumpIndex = utils.clamp(Math.round(jumpIndex), this.firstDisplayableIndex(), this.twoPage.currentIndexL - 2);
     return jumpIndex;
 
   } else {
     jumpIndex = this.twoPage.currentIndexL + ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
-    jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.twoPage.currentIndexL + 2, this.lastDisplayableIndex());
+    jumpIndex = utils.clamp(Math.round(jumpIndex), this.twoPage.currentIndexL + 2, this.lastDisplayableIndex());
     return jumpIndex;
   }
 };
@@ -3228,11 +3129,11 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
   if ('rl' != this.pageProgression) {
     // LTR
     jumpIndex = this.twoPage.currentIndexL + (pageX - $(this.leafEdgeR).offset().left) * 10;
-    jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.twoPage.currentIndexL + 2, this.lastDisplayableIndex());
+    jumpIndex = utils.clamp(Math.round(jumpIndex), this.twoPage.currentIndexL + 2, this.lastDisplayableIndex());
     return jumpIndex;
   } else {
     jumpIndex = this.twoPage.currentIndexL - (pageX - $(this.leafEdgeR).offset().left) * 10;
-    jumpIndex = BookReader.util.clamp(Math.round(jumpIndex), this.firstDisplayableIndex(), this.twoPage.currentIndexL - 2);
+    jumpIndex = utils.clamp(Math.round(jumpIndex), this.firstDisplayableIndex(), this.twoPage.currentIndexL - 2);
     return jumpIndex;
   }
 };
@@ -3403,8 +3304,8 @@ BookReader.prototype.updateNavIndex = function(index) {
   this.$('.BRpager').data('swallowchange', true).slider('value', index);
 };
 
-BookReader.prototype.updateNavIndexDebounced = BookReader.util.debounce(BookReader.prototype.updateNavIndex, 500);
-BookReader.prototype.updateNavIndexThrottled = BookReader.util.throttle(BookReader.prototype.updateNavIndex, 250, false);
+BookReader.prototype.updateNavIndexDebounced = utils.debounce(BookReader.prototype.updateNavIndex, 500);
+BookReader.prototype.updateNavIndexThrottled = utils.throttle(BookReader.prototype.updateNavIndex, 250, false);
 
 /**
  * This method builds the html for the toolbar. It can be decorated to extend
@@ -4191,7 +4092,7 @@ BookReader.prototype._getPageWidth = function(index) {
   // Synthesize a page width for pages not actually present in book.
   // May or may not be the best approach.
   // If index is out of range we return the width of first or last page
-  index = BookReader.util.clamp(index, 0, this.getNumLeafs() - 1);
+  index = utils.clamp(index, 0, this.getNumLeafs() - 1);
   return this.getPageWidth(index);
 };
 
@@ -4200,7 +4101,7 @@ BookReader.prototype._getPageWidth = function(index) {
  * @deprecated see getPageHeight
  */
 BookReader.prototype._getPageHeight = function(index) {
-  var clampedIndex = BookReader.util.clamp(index, 0, this.getNumLeafs() - 1);
+  var clampedIndex = utils.clamp(index, 0, this.getNumLeafs() - 1);
   return this.getPageHeight(clampedIndex);
 };
 
@@ -4403,7 +4304,7 @@ BookReader.prototype.buildInfoDiv = function(jInfoDiv) {
   if (this.thumbnail) {
     $leftCol.append($("<div class=\"BRimageW\">"
       +"  <img src=\""+this.thumbnail+"\" "
-      +"       alt=\""+BookReader.util.escapeHTML(this.bookTitle)+"\" />"
+      +"       alt=\""+utils.escapeHTML(this.bookTitle)+"\" />"
       +"</div>"));
   }
 
@@ -4767,7 +4668,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
   // $$$ process /search
 
   if (urlHash['search'] != undefined) {
-    params.search = BookReader.util.decodeURIComponentPlus(urlHash['search']);
+    params.search = utils.decodeURIComponentPlus(urlHash['search']);
   }
 
   // $$$ process /highlight
@@ -4825,7 +4726,7 @@ BookReader.prototype.fragmentFromParams = function(params) {
     fragments.push('search', params.search);
   }
 
-  return BookReader.util.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+  return utils.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
 };
 
 /**
