@@ -21,8 +21,6 @@ This file is part of BookReader.
 */
 import { version as VERSION } from '../../package.json';
 
-window.BookReader = (function ($) {
-
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
     $(function() {
         var logEl = document.createElement('div');
@@ -4909,6 +4907,4 @@ jQuery.curCSS = function(element, prop, val) {
     return jQuery(element).css(prop, val);
 };
 
-return BookReader;
-
-})(jQuery);
+window.BookReader = BookReader;
