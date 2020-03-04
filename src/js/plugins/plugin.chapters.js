@@ -10,8 +10,7 @@ jQuery.extend(BookReader.defaultOptions, {
     bookId: '',
 });
 
-// Extend the constructor to add search properties
-/** @override */
+/** @override Extend the constructor to add search properties */
 BookReader.prototype.setup = (function (super_) {
     return function (options) {
         super_.call(this, options);
