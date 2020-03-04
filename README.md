@@ -22,11 +22,7 @@ npm run build
 and starting a simple web server in the root directory:
 
 ```
-python -m SimpleHTTPServer
-```
-Or for Python 3:
-```
-python3 -m http.server
+npm run serve
 ```
 
 And then open `http://localhost:8000/BookReaderDemo/demo-simple.html`.
@@ -118,7 +114,7 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 
 ## Development
 
-The source JavaScript is written in ES6 (located in the `src/js` directory) and in ES5 (located in `BookReader`). To build the JS run `npx webpack` (`npx webpack --watch` will auto-build when the files are saved). To build the CSS and the JS, use `npm run build`.
+The source JavaScript is written in ES6 (located in the `src/js` directory) and in ES5 (located in `BookReader`). `npm run serve-dev` starts an auto-reloading dev server, that builds js/css that has been edited at `localhost:8000`.
 
 ## Releases
 
