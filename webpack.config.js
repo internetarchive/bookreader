@@ -6,6 +6,7 @@ module.exports = buildJSFiles([
     'plugins/plugin.autoplay.js',
     'plugins/plugin.chapters.js',
     'plugins/plugin.iframe.js',
+    'plugins/plugin.mobile_nav.js',
     'plugins/tts/plugin.tts.js',
 ]);
 
