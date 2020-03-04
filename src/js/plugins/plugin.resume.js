@@ -11,6 +11,9 @@ jQuery.extend(BookReader.defaultOptions, {
   resumeCookiePath: null,
 });
 
+/**
+ * @override BookReader.init
+ */
 BookReader.prototype.init = (function(super_) {
   return function() {
     super_.call(this);
@@ -26,6 +29,7 @@ BookReader.prototype.init = (function(super_) {
 /**
  * Get's the page resume value, for remembering reader's page
  * Can be overriden for different implementation
+ *
  * @return {Number|null}
  */
 BookReader.prototype.getResumeValue = function() {

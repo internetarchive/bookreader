@@ -1,14 +1,14 @@
 /* global BookReader */
+import '../../BookReader/jquery-1.10.1.js';
+import '../../BookReader/jquery-1.10.1.js';
+import '../../BookReader/jquery-ui-1.12.0.min.js';
+import '../../BookReader/jquery.browser.min.js';
+import '../../BookReader/dragscrollable-br.js';
+import '../../BookReader/jquery.colorbox-min.js';
+import '../../BookReader/jquery.bt.min.js';
 
-require('../../BookReader/jquery-1.10.1.js');
-require('../../BookReader/jquery-ui-1.12.0.min.js');
-require('../../BookReader/jquery.browser.min.js');
-require('../../BookReader/dragscrollable-br.js');
-require('../../BookReader/jquery.colorbox-min.js');
-require('../../BookReader/jquery.bt.min.js');
-
-require('../../BookReader/BookReader.js');
-require('../../src/js/plugins/plugin.resume.js');
+import '../../BookReader/BookReader.js';
+import '../../src/js/plugins/plugin.resume.js';
 
 let br;
 beforeAll(() => {
@@ -27,11 +27,11 @@ describe('Plugin: Remember Current Page in Cookies', () => {
     expect(BookReader.defaultOptions.resumeCookiePath).toEqual(null);
   });
 
-  test('has set cookie value', () => {
+  test('set cookie item value', () => {
     expect(BookReader.docCookies.setItem('test-cookie', 'jack-sparow')).toBeTruthy();
   });
 
-  test('has get cookie value', () => {
+  test('get cookie item value', () => {
     expect(BookReader.docCookies.getItem('test-cookie')).toEqual('jack-sparow');
   });
 
