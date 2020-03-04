@@ -37,9 +37,16 @@ describe('Plugin: Remember Current Page in Cookies', () => {
 
   test('has added BR property: getResumeValue', () => {
     expect(br).toHaveProperty('getResumeValue');
+    
   });
 
   test('has added BR property: updateResumeValue', () => {
     expect(br).toHaveProperty('updateResumeValue');
+  });
+
+  test('updateResumeValue does start when BookReaderInit is called', () => {
+    br.updateResumeValue = jest.fn();
+    br.init();
+    expect(br.updateResumeValue).toHaveBeenCalledTimes(2);
   });
 });

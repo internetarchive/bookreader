@@ -1,12 +1,12 @@
 /* global BookReader */
 
 /**
- * Plugin to remember the current page in a cookie
+ * Plugin to remember the current page number in a cookie
  */
 jQuery.extend(BookReader.defaultOptions, {
   enablePageResume: true,
   /**
-   * @var null|string eg '/', '/details/id'
+   * @const null|string eg '/', '/details/id'
    */
   resumeCookiePath: null,
 });
@@ -16,7 +16,7 @@ BookReader.prototype.init = (function(super_) {
     super_.call(this);
     if (this.options.enablePageResume) {
       this.bind(BookReader.eventNames.fragmentChange, function() {
-        var params = this.paramsFromCurrent();
+        const params = this.paramsFromCurrent();
         this.updateResumeValue(params.index);
       }.bind(this));
     }
@@ -29,7 +29,7 @@ BookReader.prototype.init = (function(super_) {
  * @return {Number|null}
  */
 BookReader.prototype.getResumeValue = function() {
-  var val = BookReader.docCookies.getItem('br-resume');
+  const val = BookReader.docCookies.getItem('br-resume');
   if (val !== null) return parseInt(val);
   else return null;
 }
@@ -42,8 +42,8 @@ BookReader.prototype.getResumeValue = function() {
  * @param {String} cookieName
  */
 BookReader.prototype.updateResumeValue = function(index, cookieName) {
-  var ttl = new Date(+new Date + 12096e5); // 2 weeks
-  var path = this.options.resumeCookiePath || window.location.pathname;
+  const ttl = new Date(+new Date + 12096e5); // 2 weeks
+  const path = this.options.rsumeCookiePath || window.location.pathname;
   cookieName = cookieName || 'br-resume';
   BookReader.docCookies.setItem(cookieName, index, ttl, path, null, false);
 }
@@ -60,22 +60,25 @@ BookReader.prototype.updateResumeValue = function(index, cookieName) {
  */
 BookReader.docCookies = {
   getItem: function (sKey) {
-    if (!sKey) { return null; }
+    if (!sKey) return null;
+
     return decodeURIComponent(
       // eslint-disable-next-line no-useless-escape
-      document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
+      document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
   },
   setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
-    var sExpires = "";
-    if (vEnd) {
-      sExpires = "; expires=" + vEnd.toUTCString();
-    }
-    document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+    let sExpires = "";
+    if (vEnd) sExpires = `; expires=` + vEnd.toUTCString();
+
+    document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue) + sExpires + (sDomain ? `; domain=` + sDomain : '') + (sPath ? `; path=` + sPath : '') + (bSecure ? `; secure` : '');
+
     return true;
   },
   removeItem: function (sKey, sPath, sDomain) {
-    if (!this.hasItem(sKey)) { return false; }
-    document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "");
+    if (!this.hasItem(sKey)) return false;
+
+    document.cookie = encodeURIComponent(sKey) + `=; expires=Thu, 01 Jan 1970 00:00:00 GMT` + (sDomain ? `; domain=` + sDomain : '') + (sPath ? `; path=` + sPath : '');
+
     return true;
   },
 };
