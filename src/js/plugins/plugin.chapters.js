@@ -78,12 +78,12 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
       centerPointY: 0,
       shadow: false
     })
-    .hover(() => {
-        // remove hover effect from other markers then turn on just for this
-        this.$('.BRsearch,.BRchapter').removeClass('front');
-        $(this).addClass('front');
-      },
-      () => $(this).removeClass('front')
+    .hover(event => {
+      // remove hover effect from other markers then turn on just for this
+      this.$('.BRsearch,.BRchapter').removeClass('front');
+      $(event.target).addClass('front');
+    },
+    event => $(event.target).removeClass('front')
     )
     .bind('click', jumpToChapter);
 };
