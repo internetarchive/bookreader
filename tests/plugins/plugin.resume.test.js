@@ -37,7 +37,6 @@ describe('Plugin: Remember Current Page in Cookies', () => {
 
   test('has added BR property: getResumeValue', () => {
     expect(br).toHaveProperty('getResumeValue');
-    
   });
 
   test('has added BR property: updateResumeValue', () => {
