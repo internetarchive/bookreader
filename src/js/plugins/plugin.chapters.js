@@ -107,17 +107,25 @@ BookReader.prototype.updateTOC = function(tocEntries) {
 };
 
 /**
- *   Example table of contents entry - this format is defined by Open Library
- *   {
- *       "pagenum": "17",
- *       "level": 1,
- *       "label": "CHAPTER I",
- *       "type": {"key": "/type/toc_item"},
- *       "title": "THE COUNTRY AND THE MISSION"
- *   }
- * @param { object } - tocEntryObject
- * @param { string } pageNum
- * @param { string } title
+ * @typedef {Object} TocEntry
+ * Table of contents entry as defined -- format is defined by Open Library
+ * @property {string} pagenum
+ * @property {number} level
+ * @property {string} label
+ * @property {{type: '/type/toc_item'}} type
+ * @property {string} title
+ *
+ * @example {
+ *   "pagenum": "17",
+ *   "level": 1,
+ *   "label": "CHAPTER I",
+ *   "type": {"key": "/type/toc_item"},
+ *   "title": "THE COUNTRY AND THE MISSION"
+ * }
+ */
+
+/**
+ * @param {TocEntry} tocEntryObject
  */
 BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
     const pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
