@@ -22,8 +22,7 @@ BookReader.prototype.setup = (function (super_) {
 })(BookReader.prototype.setup);
 
 
-// Extend br.init to call Open Library for TOC
-/** @override */
+/** @override Extend to call Open Library for TOC */
 BookReader.prototype.init = (function(super_) {
   return function() {
     super_.call(this);
