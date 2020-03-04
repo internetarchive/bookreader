@@ -1,4 +1,6 @@
-# Build files
+# Build files (keep me sorted, please!)
+BookReader/BookReader.js binary
+BookReader/*.js.map binary
 BookReader/plugins/*.js.map binary
 BookReader/plugins/plugin.archive_analytics.js binary
 BookReader/plugins/plugin.autoplay.js binary

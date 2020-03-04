@@ -1,6 +1,7 @@
 const path = require('path');
 
 module.exports = buildJSFiles([
+    'BookReader.js',
     'plugins/menu_toggle/plugin.menu_toggle.js',
     'plugins/plugin.archive_analytics.js',
     'plugins/plugin.autoplay.js',
