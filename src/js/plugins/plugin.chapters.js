@@ -97,7 +97,7 @@ BookReader.prototype.removeChapters = function() {
 
 /**
  * Update the table of contents based on array of TOC entries.
- * @param { list } tocEntries
+ * @param {TocEntry[]} tocEntries
  */
 BookReader.prototype.updateTOC = function(tocEntries) {
     this.removeChapters();
