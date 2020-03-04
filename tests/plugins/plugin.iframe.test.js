@@ -1,7 +1,7 @@
 /* global BookReader */
 import sinon from 'sinon';
 
-import '../../BookReader/BookReader.js';
+import '../../src/js/BookReader.js';
 import { _attachEventListeners } from '../../src/js/plugins/plugin.iframe.js';
 
 afterEach(() => {
