@@ -166,25 +166,18 @@ BookReader.prototype.getOpenLibraryRecord = function () {
     }
   };
 
-  $.ajax({
-    url: fetchUrlByBookId,
-    success: (data) => {
-      if (data && data.length > 0) {
+  $.ajax({ url: fetchUrlByBookId, dataType: 'jsonp' })
+  .then(data => {
+    if (data && data.length > 0) {
+      return data;
+    } else {
+      // try sourceid
+      return $.ajax({ url: `${baseURL}&source_records=ia:${this.bookId}`, dataType: 'jsonp' });
+    }
+  })
+  .then(data => {
+    if (data && data.length > 0) {
         setUpChapterMarkers(data[0]);
-      } else {
-        // try sourceid
-        const fetchURLBySourceId = `${baseURL}&source_records=ia:${this.bookId}`;
-        $.ajax({
-          url: fetchURLBySourceId,
-          success: (data) => {
-            if (data && data.length > 0) {
-              setUpChapterMarkers(data[0]);
-            }
-          },
-          dataType: 'jsonp'
-        });
-      }
-    },
-    dataType: 'jsonp'
+    }
   });
 }
