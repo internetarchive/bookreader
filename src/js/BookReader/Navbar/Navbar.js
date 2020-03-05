@@ -1,4 +1,4 @@
-import * as utils from '../utils.js';
+import { debounce, throttle } from '../utils.js';
 
 /**
  * Extends BookReader with Navbar prototype
@@ -7,66 +7,61 @@ import * as utils from '../utils.js';
 export function extendWithNavbar(BookReader) {
   /**
    * Initialize the navigation bar (bottom)
+   * @return {JQuery<HTMLDivElement>}
    */
   BookReader.prototype.initNavbar = function() {
     // Setup nav / chapter / search results bar
-    var navbarTitleHtml = '';
-    if (this.options.navbarTitle) {
-      navbarTitleHtml = "<div class=\"BRnavTitle\">" + this.options.navbarTitle + "</div>";
-    }
+    const { navbarTitle } = this.options;
+    const navbarTitleHtml = navbarTitle ? `<div class="BRnavTitle">${navbarTitle}</div>` : '';
 
-    this.refs.$BRfooter = $('<div class="BRfooter"></div>');
+    this.refs.$BRfooter = $(`<div class="BRfooter"></div>`);
     this.refs.$BRnav = $(
-      "<div class=\"BRnav BRnavDesktop\">"
-          +"  <div class=\"BRnavCntl BRnavCntlBtm BRdn js-tooltip\" title=\"Toogle toolbars\"></div>"
-          + navbarTitleHtml
-          +"  <div class=\"BRnavpos\">"
-          +"    <div class=\"BRpager\"></div>"
-          +"    <div class=\"BRnavline\">"
-          +"    </div>"
-          +"  </div>"
-          +"  <div class=\"BRpage\">"
+      `<div class="BRnav BRnavDesktop">
+          <div class="BRnavCntl BRnavCntlBtm BRdn js-tooltip" title="Toggle toolbars"></div>
+          ${navbarTitleHtml}
+          <div class="BRnavpos">
+            <div class="BRpager"></div>
+            <div class="BRnavline"></div>
+          </div>
+          <div class="BRpage">`
 
-          // Note, it's important for there to not be whitespace
-          +     "<span class='BRcurrentpage'></span>"
-          +     "<button class=\"BRicon book_left js-tooltip\"></button>"
-          +     "<button class=\"BRicon book_right js-tooltip\"></button>"
-          +     "<button class=\"BRicon onepg desktop-only js-tooltip\"></button>"
-          +     "<button class=\"BRicon twopg desktop-only js-tooltip\"></button>"
-          +     "<button class=\"BRicon thumb desktop-only js-tooltip\"></button>"
-
-          // zoomx
-          +     "<button class='BRicon zoom_out desktop-only js-tooltip'></button>"
-          +     "<button class='BRicon zoom_in desktop-only js-tooltip'></button>"
-          +     "<button class='BRicon full js-tooltip'></button>"
-          +"  </div>"
-          +"</div>"
-    );
+        // Note, it's important for there to not be whitespace
+        + `<span class='BRcurrentpage'></span>`
+        + `<button class="BRicon book_left js-tooltip"></button>`
+        + `<button class="BRicon book_right js-tooltip"></button>`
+        + `<button class="BRicon onepg desktop-only js-tooltip"></button>`
+        + `<button class="BRicon twopg desktop-only js-tooltip"></button>`
+        + `<button class="BRicon thumb desktop-only js-tooltip"></button>`
+        // zoomx
+        + `<button class="BRicon zoom_out desktop-only js-tooltip"></button>`
+        + `<button class="BRicon zoom_in desktop-only js-tooltip"></button>`
+        + `<button class="BRicon full js-tooltip"></button>`
+        + `</div>
+        </div>`);
     this.refs.$BRfooter.append(this.refs.$BRnav);
     this.refs.$br.append(this.refs.$BRfooter);
 
-    var self = this;
-    this.$('.BRpager').slider({
+    const $slider = this.$('.BRpager').slider({
       animate: true,
       min: 0,
       max: this.getNumLeafs() - 1,
       value: this.currentIndex(),
       range: "min"
+    });
+    $slider.on('slide', (event, ui) => {
+      this.updateNavPageNum(ui.value);
+      return true;
     })
-      .bind('slide', function(event, ui) {
-        self.updateNavPageNum(ui.value);
-        return true;
-      })
-      .bind('slidechange', function(event, ui) {
-        self.updateNavPageNum(ui.value);
-        // recursion prevention for jumpToIndex
-        if ( $(this).data('swallowchange') ) {
-          $(this).data('swallowchange', false);
-        } else {
-          self.jumpToIndex(ui.value);
-        }
-        return true;
-      });
+    $slider.on('slidechange', (event, ui) => {
+      this.updateNavPageNum(ui.value);
+      // recursion prevention for jumpToIndex
+      if ( $slider.data('swallowchange') ) {
+        $slider.data('swallowchange', false);
+      } else {
+        this.jumpToIndex(ui.value);
+      }
+      return true;
+    });
 
     this.updateNavPageNum(this.currentIndex());
 
@@ -78,29 +73,25 @@ export function extendWithNavbar(BookReader) {
   */
   BookReader.prototype.initEmbedNavbar = function() {
     // IA-specific
-    var thisLink = (window.location + '')
+    let thisLink = (window.location + '')
       .replace('?ui=embed','')
       .replace('/stream/', '/details/')
-      .replace('#', '/')
-      ;
-
-    var logoHtml = '';
-    if (this.showLogo) {
-      logoHtml = "<a class='logo' href='" + this.logoURL + "' 'target='_blank' ></a>";
-    }
+      .replace('#', '/');
+    const logoHtml = this.showLogo ? `<a class="logo" href="${this.logoURL}" target="_blank"></a>` : '';
 
     this.refs.$BRfooter = $('<div class="BRfooter"></div>');
-    this.refs.$BRnav = $('<div class="BRnav BRnavEmbed">'
-          +   logoHtml
-          +   "<span class='BRembedreturn'>"
-          +      "<a href='" + thisLink + "' target='_blank'>"+this.bookTitle+"</a>"
-          +   "</span>"
-          +   "<span class='BRtoolbarbuttons'>"
-          +         '<button class="BRicon book_left"></button>'
-          +         '<button class="BRicon book_right"></button>'
-          +         '<button class="BRicon full"></button>'
-          +   "</span>"
-          + '</div>');
+    this.refs.$BRnav = $(
+      `<div class="BRnav BRnavEmbed">
+          ${logoHtml}
+          <span class="BRembedreturn">
+             <a href="${thisLink}" target="_blank">${this.bookTitle}</a>
+          </span>
+          <span class="BRtoolbarbuttons">
+            <button class="BRicon book_left"></button>
+            <button class="BRicon book_right"></button>
+            <button class="BRicon full"></button>
+          </span>
+      </div>`);
     this.refs.$BRfooter.append(this.refs.$BRnav);
     this.refs.$br.append(this.refs.$BRfooter);
   };
@@ -112,15 +103,15 @@ export function extendWithNavbar(BookReader) {
   */
   BookReader.prototype.getNavPageNumString = function(index) {
     // Accessible index starts at 0 (alas) so we add 1 to make human
-    var pageNum = this.getPageNum(index);
-    var pageType = this.getPageProp(index, 'pageType');
-    var numLeafs = this.getNumLeafs();
+    const pageNum = this.getPageNum(index);
+    const pageType = this.getPageProp(index, 'pageType');
+    const numLeafs = this.getNumLeafs();
 
     if (!this.getNavPageNumString.maxPageNum) {
       // Calculate Max page num (used for pagination display)
-      var maxPageNum = 0;
-      var pageNumVal;
-      for (var i = 0; i < numLeafs; i++) {
+      let maxPageNum = 0;
+      let pageNumVal;
+      for (let i = 0; i < numLeafs; i++) {
         pageNumVal = this.getPageNum(i);
         if (!isNaN(pageNumVal) && pageNumVal > maxPageNum) {
           maxPageNum = pageNumVal;
@@ -133,29 +124,29 @@ export function extendWithNavbar(BookReader) {
   };
 
   /**
-  * Renders the html for the page string
-  * @param {number} index
-  * @param {number} numLeafs
-  * @param {number} pageNum
-  * @param {string} pageType
-  */
+   * Renders the html for the page string
+   * @param {number} index
+   * @param {number} numLeafs
+   * @param {number} pageNum
+   * @param {string} pageType
+   * @return {string}
+   */
   BookReader.prototype.getNavPageNumHtml = function(index, numLeafs, pageNum, pageType, maxPageNum) {
-    var pageStr;
     if (pageNum[0] != 'n') {
-      pageStr = ' Page ' + pageNum;
+      let pageStr = ` Page ${pageNum}`;
       if (maxPageNum) {
-        pageStr += ' of ' + maxPageNum;
+        pageStr += ` of ${maxPageNum}`;
       }
+      return pageStr;
     } else {
-      pageStr = (index + 1) + '&nbsp;/&nbsp;' + numLeafs;
+      return `${index + 1} &nbsp;/&nbsp; ${numLeafs}`;
     }
-    return pageStr;
   };
 
   /**
-  * Renders the navbar string to the DOM
-  * @param {number}
-  */
+   * Renders the navbar string to the DOM
+   * @param {number}
+   */
   BookReader.prototype.updateNavPageNum = function(index) {
     this.$('.BRcurrentpage').html(this.getNavPageNumString(index));
   };
@@ -171,6 +162,6 @@ export function extendWithNavbar(BookReader) {
     this.$('.BRpager').data('swallowchange', true).slider('value', index);
   };
 
-  BookReader.prototype.updateNavIndexDebounced = utils.debounce(BookReader.prototype.updateNavIndex, 500);
-  BookReader.prototype.updateNavIndexThrottled = utils.throttle(BookReader.prototype.updateNavIndex, 250, false);
+  BookReader.prototype.updateNavIndexDebounced = debounce(BookReader.prototype.updateNavIndex, 500);
+  BookReader.prototype.updateNavIndexThrottled = throttle(BookReader.prototype.updateNavIndex, 250, false);
 }
