@@ -31,7 +31,7 @@ BookReader.prototype.setup = (function(super_) {
 // Extend initToolbar
 BookReader.prototype.initToolbar = (function (super_) {
   return function (mode, ui) {
-    let self = this;
+    let $mmenuEl;
 
     if (this.enableMobileNav) {
       let $drawerEl = this.buildMobileDrawerElement();
@@ -41,7 +41,7 @@ BookReader.prototype.initToolbar = (function (super_) {
       this.buildInfoDiv(this.$('.BRmobileInfo'));
       this.buildShareDiv(this.$('.BRmobileShare'));
 
-      let $mmenuEl = $drawerEl;
+      $mmenuEl = $drawerEl;
       $mmenuEl.mmenu({
         navbars: [
           { "position": "top" },
@@ -61,27 +61,24 @@ BookReader.prototype.initToolbar = (function (super_) {
       });
 
       let $BRpageviewField = $mmenuEl.find('.BRpageviewValue');
-      $mmenuEl.data('mmenu').bind('opened', function() {
+      $mmenuEl.data('mmenu').bind('opened', () => {
         // Update "Link to this page view" link
-        if ($BRpageviewField.length)
+        if ($BRpageviewField.length) {
           $BRpageviewField.val(window.location.href);
+        }
       });
 
       // High contrast button
-      $drawerEl.find('.high-contrast-button').click(function() {
-        self.refs.$br.toggleClass('high-contrast');
-      });
+      $drawerEl.find('.high-contrast-button').click(
+        () => this.refs.$br.toggleClass('high-contrast'));
 
       // Bind mobile switch buttons
-      $drawerEl.find('.DrawerLayoutButton.one_page_mode').click(function() {
-        self.switchMode(self.constMode1up);
-      });
-      $drawerEl.find('.DrawerLayoutButton.two_page_mode').click(function() {
-        self.switchMode(self.constMode2up);
-      });
-      $drawerEl.find('.DrawerLayoutButton.thumbnail_mode').click(function() {
-        self.switchMode(self.constModeThumb);
-      });
+      $drawerEl.find('.DrawerLayoutButton.one_page_mode').click(
+        () => this.switchMode(this.constMode1up));
+      $drawerEl.find('.DrawerLayoutButton.two_page_mode').click(
+        () => this.switchMode(this.constMode2up));
+      $drawerEl.find('.DrawerLayoutButton.thumbnail_mode').click(
+        () => this.switchMode(this.constModeThumb));
 
       if (this.mobileNavFullscreenOnly) {
         $(document.body).addClass('BRbodyMobileNavEnabledFullscreen');
@@ -98,13 +95,13 @@ BookReader.prototype.initToolbar = (function (super_) {
 
     if (this.enableMobileNav) {
       // Need to bind more, console after toolbar is initialized
-      this.$('.BRmobileHamburger').click(function() {
+      this.$('.BRmobileHamburger').click(() => {
         if ($mmenuEl.data('mmenu').getInstance().vars.opened) {
           $mmenuEl.data('mmenu').close();
         } else {
           $mmenuEl.data('mmenu').open();
         }
-      })
+      });
     }
   };
 })(BookReader.prototype.initToolbar);
