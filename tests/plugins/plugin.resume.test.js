@@ -27,14 +27,6 @@ describe('Plugin: Remember Current Page in Cookies', () => {
     expect(BookReader.defaultOptions.resumeCookiePath).toEqual(null);
   });
 
-  test('set cookie item value', () => {
-    expect(BookReader.docCookies.setItem('test-cookie', 'jack-sparow')).toBeTruthy();
-  });
-
-  test('get cookie item value', () => {
-    expect(BookReader.docCookies.getItem('test-cookie')).toEqual('jack-sparow');
-  });
-
   test('has added BR property: getResumeValue', () => {
     expect(br).toHaveProperty('getResumeValue');
   });

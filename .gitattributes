@@ -1,3 +1,5 @@
+# select all the lines and ctrl-shift-p -> Sort Ascending in vscode
+
 # Build files
 BookReader/plugins/*.js.map binary
 BookReader/plugins/plugin.archive_analytics.js binary
