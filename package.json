@@ -64,7 +64,7 @@
     "lint": "eslint src/js",
     "lint:fix": "eslint --fix src/js",
     "serve": "npx http-server . --port 8000",
-    "serve-live": "npx live-server . --port 8000",
+    "serve-live": "npx live-server . --port 8000 --ignore=coverage,tests",
     "serve-dev": "npx concurrently --kill-others npm:serve-live npm:build-js:watch npm:build-css:watch",
     "test": "jest",
     "test:e2e": "testcafe",
