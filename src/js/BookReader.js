@@ -23,7 +23,7 @@ import { version as VERSION } from '../../package.json';
 import * as utils from './BookReader/utils.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
-import { DebugConsole } from './BookReader/debugConsole.js';
+import { DebugConsole } from './BookReader/DebugConsole.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
