@@ -348,7 +348,13 @@ BookReader.prototype.setup = function(options) {
   /** @type {{[name: string]: JQuery}} */
   this.refs = {};
   
-  this.components = {
+  /**
+   * @private Components are 'subchunks' of bookreader functionality, usually UI related
+   * They should be relatively decoupled from each other/bookreader.
+   * Note there are no hooks right now; components just provide methods that bookreader
+   * calls at the correct moments.
+   **/
+  this._components = {
     navbar: new Navbar(this),
   };
 };
@@ -3148,16 +3154,16 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 /***********************/
 /** Navbar extensions **/
 /***********************/
-BookReader.prototype.initNavbar = function() { return this.components.navbar.init(this.options); }
-BookReader.prototype.getNavPageNumString =  function() { return this.components.navbar.getNavPageNumString(); };
+BookReader.prototype.initNavbar = function() { return this._components.navbar.init(this.options); }
+BookReader.prototype.getNavPageNumString =  function() { return this._components.navbar.getNavPageNumString(); };
 /** @deprecated */
-BookReader.prototype.initEmbedNavbar = function() { return this.components.navbar.initEmbed(); };
+BookReader.prototype.initEmbedNavbar = function() { return this._components.navbar.initEmbed(); };
 /** @deprecated unused */
 BookReader.prototype.getNavPageNumHtml = getNavPageNumHtml;
 /** @deprecated unused outside this file */
-BookReader.prototype.updateNavPageNum =  function() { return this.components.navbar.updateNavPageNum(...arguments); };
+BookReader.prototype.updateNavPageNum =  function() { return this._components.navbar.updateNavPageNum(...arguments); };
 /** @deprecated unused outside this file */
-BookReader.prototype.updateNavIndex =  function() { return this.components.navbar.updateNavIndex(...arguments); };
+BookReader.prototype.updateNavIndex =  function() { return this._components.navbar.updateNavIndex(...arguments); };
 /** @deprecated unused outside this file */
 BookReader.prototype.updateNavIndexThrottled = utils.throttle(BookReader.prototype.updateNavIndex, 250, false);
 /** @deprecated unused */
