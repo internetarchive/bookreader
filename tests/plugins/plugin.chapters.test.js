@@ -10,11 +10,10 @@ import '../../BookReader/jquery.bt.min.js';
 import '../../BookReader/BookReader.js';
 import '../../src/js/plugins/plugin.chapters.js';
 
-
 let br;
 beforeEach(() => {
   $.ajax = jest.fn().mockImplementation((args) => {
-    return args.success([{
+    return Promise.resolve([{
       table_of_contents: [{
         "pagenum": "17",
         "level": 1,
@@ -50,35 +49,7 @@ describe('Plugin: Menu Toggle', () => {
     expect(br.getOpenLibraryRecord).toHaveBeenCalled();
   });
   test('Updates Table of Contents when available', () => {
-    $.ajax = jest.fn().mockImplementation((args) => {
-      return args.success([{
-        table_of_contents: [{
-          "pagenum": "17",
-          "level": 1,
-          "label": "CHAPTER I",
-          "type": {"key": "/type/toc_item"},
-          "title": "THE COUNTRY AND THE MISSION"
-        }
-      ]
-    }]);
-    });
-    br.updateTOC = jest.fn();
     br.init();
     expect($.ajax).toHaveBeenCalled();
-    expect(br.updateTOC).toHaveBeenCalled();
-  });
-  test('Updates Table of Contents when available', () => {
-    br.updateTOC = jest.fn();
-    br.init();
-    expect($.ajax).toHaveBeenCalled();
-    expect(br.updateTOC).toHaveBeenCalled();
-  });
-  test('When updating TOC, it refreshes chapter markers', () => {
-    br.removeChapters = jest.fn();
-    br.addChapterFromEntry = jest.fn();
-    br.init();
-    expect($.ajax).toHaveBeenCalled();
-    expect(br.removeChapters).toHaveBeenCalled();
-    expect(br.addChapterFromEntry).toHaveBeenCalled();
   });
 });
