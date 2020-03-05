@@ -21,6 +21,7 @@ module.exports = {
         "no-empty": ["error", { "allowEmptyCatch": true }],
         "no-unused-vars": ["error", { "vars": "all", "args": "none", "ignoreRestSiblings": false }], // set args:none; this is generally more annoying than useful
         "no-var": ["error"],
+        "prefer-const": ["error"],
     },
     "overrides": [
         { // TODO; these should be cleaned up as well

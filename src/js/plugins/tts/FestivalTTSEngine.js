@@ -88,7 +88,7 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
    * @return {PromiseLike}
    */
   iOSCaptureUserIntentHack() {
-    let sound = soundManager.createSound({ url: SILENCE_1MS[this.audioFormat] });
+    const sound = soundManager.createSound({ url: SILENCE_1MS[this.audioFormat] });
     return new Promise(res => sound.play({onfinish: res}))
       .then(() => sound.destruct());
   }

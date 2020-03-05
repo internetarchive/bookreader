@@ -231,7 +231,7 @@ export default class AbstractTTSEngine {
      * @return {SpeechSynthesisVoice | undefined}
      */
   static getMatchingVoice(languages, voices) {
-    for (let lang of languages) {
+    for (const lang of languages) {
       // Chrome Android was returning voice languages like `en_US` instead of `en-US`
       const matchingVoices = voices.filter(v => v.lang.replace('_', '-').startsWith(lang));
       if (matchingVoices.length) {

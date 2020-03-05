@@ -109,7 +109,7 @@ BookReader.prototype.initToolbar = (function (super_) {
 
 BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
-    let $el = super_.call(this);
+    const $el = super_.call(this);
     if (this.enableMobileNav) {
       const escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
       const toolbar = `
