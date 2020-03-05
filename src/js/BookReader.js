@@ -21,7 +21,7 @@ This file is part of BookReader.
 */
 import { version as VERSION } from '../../package.json';
 import * as utils from './BookReader/utils.js';
-import { Navbar } from './BookReader/Navbar/Navbar.js';
+import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(function() {
@@ -3153,7 +3153,7 @@ BookReader.prototype.getNavPageNumString =  function() { return this.components.
 /** @deprecated */
 BookReader.prototype.initEmbedNavbar = function() { return this.components.navbar.initEmbed(); };
 /** @deprecated unused */
-BookReader.prototype.getNavPageNumHtml =  function() { return this.components.navbar.getNavPageNumHtml(...arguments); };
+BookReader.prototype.getNavPageNumHtml = getNavPageNumHtml;
 /** @deprecated unused outside this file */
 BookReader.prototype.updateNavPageNum =  function() { return this.components.navbar.updateNavPageNum(...arguments); };
 /** @deprecated unused outside this file */
