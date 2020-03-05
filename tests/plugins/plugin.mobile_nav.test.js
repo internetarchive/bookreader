@@ -53,16 +53,16 @@ describe('Plugin: Mobile Nav', () => {
     expect($('#BRmobileMenu').length).toBeLessThan(2);
   });
   test('There is a Settings Section', () => {
-    expect($('.br-mmenu.settings').length).toBeGreaterThan(0);
-    expect($('.br-mmenu.settings').length).toBeLessThan(2);
+    expect($('.BRmobileMenu__settings').length).toBeGreaterThan(0);
+    expect($('.BRmobileMenu__settings').length).toBeLessThan(2);
   });
   test('There is a More Info Section', () => {
-    expect($('.br-mmenu.more-info').length).toBeGreaterThan(0);
-    expect($('.br-mmenu.more-info').length).toBeLessThan(2);
+    expect($('.BRmobileMenu__moreInfoRow').length).toBeGreaterThan(0);
+    expect($('.BRmobileMenu__moreInfoRow').length).toBeLessThan(2);
   });
   test('There is a Sharing Section', () => {
-    expect($('.br-mmenu.share').length).toBeGreaterThan(0);
-    expect($('.br-mmenu.share').length).toBeLessThan(2);
+    expect($('.BRmobileMenu__share').length).toBeGreaterThan(0);
+    expect($('.BRmobileMenu__share').length).toBeLessThan(2);
   });
   test('clicking on hamburger opens menu', () => {
     expect($('html').hasClass('mm-opened')).toEqual(false);

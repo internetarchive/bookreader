@@ -194,9 +194,9 @@ BookReader.prototype.buildMobileDrawerElement = function() {
   const navMenu = `
     <nav id="BRmobileMenu" class="BRmobileMenu">
         <ul>
-            <li class="br-mmenu settings">${settingsSection}</li>
-            <li class="br-mmenu more-info BRmobileMenu__moreInfoRow">${moreInfo}</li>
-            <li class="br-mmenu share">${share}</li>
+            <li class="BRmobileMenu__settings">${settingsSection}</li>
+            <li class="BRmobileMenu__moreInfoRow">${moreInfo}</li>
+            <li class="BRmobileMenu__share">${share}</li>
         </ul>
     </nav>
   `;
