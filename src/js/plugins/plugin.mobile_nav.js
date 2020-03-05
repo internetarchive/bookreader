@@ -176,7 +176,7 @@ BookReader.prototype.buildMobileDrawerElement = function() {
   const moreInfo = `
     <span>
         <span class="DrawerIconWrapper ">
-            <img class="DrawerIcon" src="${`${this.imagesBaseURL}icon_info.svg`}" alt="info-icon"/>
+            <img class="DrawerIcon" src="${this.imagesBaseURL}icon_info.svg" alt="info-icon"/>
         </span>
         About This Book
     </span>
@@ -185,7 +185,7 @@ BookReader.prototype.buildMobileDrawerElement = function() {
   const share = `
     <span>
       <span class="DrawerIconWrapper">
-        <img class="DrawerIcon" src="${`${this.imagesBaseURL}icon_share.svg`}" alt="info-share"/>
+        <img class="DrawerIcon" src="${this.imagesBaseURL}icon_share.svg" alt="info-share"/>
       </span>
       Share This Book
     </span>
