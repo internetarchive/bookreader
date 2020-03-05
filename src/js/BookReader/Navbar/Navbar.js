@@ -135,27 +135,7 @@ export class Navbar {
       this.maxPageNum = maxPageNum;
     }
 
-    return this.getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum);
-  }
-
-  /**
-   * Renders the html for the page string
-   * @param {number} index
-   * @param {number} numLeafs
-   * @param {number} pageNum
-   * @param {string} pageType
-   * @return {string}
-   */
-  getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
-    if (pageNum[0] != 'n') {
-      let pageStr = ` Page ${pageNum}`;
-      if (maxPageNum) {
-        pageStr += ` of ${maxPageNum}`;
-      }
-      return pageStr;
-    } else {
-      return `${index + 1} &nbsp;/&nbsp; ${numLeafs}`;
-    }
+    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum);
   }
 
   /**
@@ -175,5 +155,26 @@ export class Navbar {
     // triggers jumpToIndex which triggers this method
     index = index !== undefined ? index : this.br.currentIndex();
     this.$root.find('.BRpager').data('swallowchange', true).slider('value', index);
+  }
+}
+
+/**
+ * Renders the html for the page string
+ * @param {number} index
+ * @param {number} numLeafs
+ * @param {number|string} pageNum
+ * @param {*} pageType @deprecated
+ * @param {number} maxPageNum
+ * @return {string}
+ */
+export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
+  if (pageNum[0] != 'n') {
+    let pageStr = `Page ${pageNum}`;
+    if (maxPageNum) {
+      pageStr += ` of ${maxPageNum}`;
+    }
+    return pageStr;
+  } else {
+    return `${index + 1}&nbsp;/&nbsp;${numLeafs}`;
   }
 }
