@@ -1,3 +1,4 @@
+/* global BookReader */
 /**
  * Adds mobile navigation at responsive breakpoint
  * NOTE additional script and style tags must be included.
@@ -40,7 +41,7 @@ BookReader.prototype.initToolbar = (function (super_) {
       this.buildInfoDiv(this.$('.BRmobileInfo'));
       this.buildShareDiv(this.$('.BRmobileShare'));
 
-      var $mmenuEl = $drawerEl;
+      let $mmenuEl = $drawerEl;
       $mmenuEl.mmenu({
         navbars: [
           { "position": "top" },
