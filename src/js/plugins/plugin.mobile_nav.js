@@ -112,14 +112,15 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
     let $el = super_.call(this);
     if (this.enableMobileNav) {
       let escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
+      const toolbar = `
+        <span class="BRmobileHamburgerWrapper">
+            <button class="BRmobileHamburger"></button>
+            <span class="BRtoolbarMobileTitle" title="${escapedTitle}">${this.bookTitle}</span>
+        </span>
+      `;
       $el
         .addClass('responsive')
-        .prepend($(
-          "<span class='BRmobileHamburgerWrapper'>"
-                +     "<button class=\"BRmobileHamburger\"></button>"
-                +     "<span class=\"BRtoolbarMobileTitle\" title=\""+escapedTitle+"\">" + this.bookTitle + "</span>"
-                +   "</span>"
-        ));
+        .prepend($(toolbar));
     }
     return $el;
   };
@@ -133,50 +134,74 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
 BookReader.prototype.buildMobileDrawerElement = function() {
   let experimentalHtml = '';
   if (this.enableExperimentalControls) {
-    experimentalHtml += "<div class=\"DrawerSettingsTitle\">Experimental (may not work)</div>"
-        +"        <button class='BRaction default high-contrast-button'>Toggle high contrast</button>";
+    experimentalHtml = `
+        <p class="DrawerSettingsTitle">Experimental (may not work)</p>
+        <button class="BRaction default high-contrast-button">Toggle high contrast</button>
+    `;
   }
 
-  let $el = $(
-    "<nav id=\"BRmobileMenu\" class=\"BRmobileMenu\">"
-      +"  <ul>"
-      +"    <li>"
-      +"      <span>"
-      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_gear.svg\" alt=\"settings-icon\"/></span>"
-      +"        Settings"
-      +"      </span>"
-      +"      <div class=\"DrawerSettingsWrapper\">"
-      +"        <div class=\"DrawerSettingsTitle\">Page Layout</div>"
-      +"        <div class=\"DrawerSettingsLayoutWrapper\">"
-      +"          <button class=\"DrawerLayoutButton one_page_mode\"><img class=\"\" src=\""+this.imagesBaseURL+"icon_one_page.svg\" alt=\"Single Page\"/><br>One Page</button>"
-      +"          <button class=\"DrawerLayoutButton two_page_mode TwoPagesButton\"><img class=\"\" src=\""+this.imagesBaseURL+"icon_two_pages.svg\" alt=\"Two Pages\"/><br>Two Pages</button>"
-      +"          <button class=\"DrawerLayoutButton thumbnail_mode\"><img class=\"\" src=\""+this.imagesBaseURL+"icon_thumbnails.svg\" alt=\"Thumbnails\"/><br>Thumbnails</button>"
-      +"        </div>"
-      +"        <br>"
-      +"        <div class=\"DrawerSettingsTitle\">Zoom</div>"
-      +"        <button class='BRicon zoom_out'></button>"
-      +"        <button class='BRicon zoom_in'></button>"
-      +"        <br style='clear:both'><br><br>"
-      +         experimentalHtml
-      +"      </div>"
-      +"    </li>"
-      +"    <li class='BRmobileMenu__moreInfoRow'>"
-      +"      <span>"
-      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_info.svg\" alt=\"info-icon\"/></span>"
-      +"        About This Book"
-      +"      </span>"
-      +"      <div class=\"BRmobileInfo\"></div>"
-      +"    </li>"
-      +"    <li>"
-      +"      <span>"
-      +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_share.svg\" alt=\"info-share\"/></span>"
-      +"        Share This Book"
-      +"      </span>"
-      +"      <div class=\"BRmobileShare\"></div>"
-      +"    </li>"
-      +"  </ul>"
-      +"</nav>"
-  );
+  const settingsSection = `
+    <span>
+        <span class="DrawerIconWrapper">
+            <img class="DrawerIcon" src="${`${this.imagesBaseURL}icon_gear.svg`}" alt="settings-icon"/>
+        </span>
+        Settings
+    </span>
+    <div class=DrawerSettingsWrapper>
+        <div class="DrawerSettingsLayoutWrapper">
+            <button class="DrawerLayoutButton one_page_mode">
+                <img src="${`${this.imagesBaseURL}icon_one_page.svg`}" alt="Single Page"/>
+                <br>
+                One Page
+            </button>
+            <button class="DrawerLayoutButton two_page_mode TwoPagesButton">
+                <img src="${`${this.imagesBaseURL}icon_two_pages.svg`}" alt="Two Pages"/>
+                <br>
+                Two Pages
+            </button>
+            <button class="DrawerLayoutButton thumbnail_mode">
+                <img src="${`${this.imagesBaseURL}icon_thumbnails.svg`}" alt="Thumbnails"/>
+                <br>
+                Thumbnails
+            </button>
+        </div>
+        <br>
+        <div class="DrawerSettingsTitle">Zoom</div>
+        <button class='BRicon zoom_out'></button>
+        <button class='BRicon zoom_in'></button>
+        <br style="clear:both"><br><br>
+        ${experimentalHtml}
+    </div>
+  `;
+  const moreInfo = `
+    <span>
+        <span class="DrawerIconWrapper ">
+            <img class="DrawerIcon" src="${`${this.imagesBaseURL}icon_info.svg`}" alt="info-icon"/>
+        </span>
+        About This Book
+    </span>
+    <div class="BRmobileInfo"></div>
+  `;
+  const share = `
+    <span>
+        <span class="DrawerIconWrapper">
+            <img class="DrawerIcon" src="${`${this.imagesBaseURL}icon_share.svg`}" alt="info-share"/>
+        </span>
+        Share This Book
+    </span>
+    <div class="BRmobileShare"></div>
+  `;
+  const navMenu = `
+    <nav id="BRmobileMenu" class="BRmobileMenu">
+        <ul>
+            <li>${settingsSection}</li>
+            <li class="BRmobileMenu__moreInfoRow">${moreInfo}</li>
+            <li>${share}</li>
+        </ul>
+    </nav>
+  `;
+
+  let $el = $(navMenu);
   return $el;
 };
 
