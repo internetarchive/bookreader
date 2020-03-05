@@ -21,7 +21,7 @@ This file is part of BookReader.
 */
 import { version as VERSION } from '../../package.json';
 import * as utils from './BookReader/utils.js';
-import { extendWithNavbar } from './BookReader/Navbar/Navbar.js';
+import { Navbar } from './BookReader/Navbar/Navbar.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(function() {
@@ -74,7 +74,7 @@ if (location.toString().indexOf('_debugShowConsole=true') != -1) {
  * TODO document all options properties
  * @constructor
  */
-function BookReader(options) {
+export default function BookReader(options) {
   options = options || {};
   options = jQuery.extend({}, BookReader.defaultOptions, options, BookReader.optionOverrides);
   this.setup(options);
@@ -344,7 +344,13 @@ BookReader.prototype.setup = function(options) {
   this.getPageProp = options.getPageProp || BookReader.prototype.getPageProp;
   this.getSpreadIndices = options.getSpreadIndices || BookReader.prototype.getSpreadIndices;
   this.leafNumToIndex = options.leafNumToIndex || BookReader.prototype.leafNumToIndex;
+
+  /** @type {{[name: string]: JQuery}} */
   this.refs = {};
+  
+  this.components = {
+    navbar: new Navbar(this),
+  };
 };
 
 /**
@@ -3139,7 +3145,23 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
   }
 };
 
-extendWithNavbar(BookReader);
+/***********************/
+/** Navbar extensions **/
+/***********************/
+BookReader.prototype.initNavbar = function() { return this.components.navbar.init(this.options); }
+BookReader.prototype.getNavPageNumString =  function() { return this.components.navbar.getNavPageNumString(); };
+/** @deprecated */
+BookReader.prototype.initEmbedNavbar = function() { return this.components.navbar.initEmbed(); };
+/** @deprecated unused */
+BookReader.prototype.getNavPageNumHtml =  function() { return this.components.navbar.getNavPageNumHtml(...arguments); };
+/** @deprecated unused outside this file */
+BookReader.prototype.updateNavPageNum =  function() { return this.components.navbar.updateNavPageNum(...arguments); };
+/** @deprecated unused outside this file */
+BookReader.prototype.updateNavIndex =  function() { return this.components.navbar.updateNavIndex(...arguments); };
+/** @deprecated unused outside this file */
+BookReader.prototype.updateNavIndexThrottled = utils.throttle(BookReader.prototype.updateNavIndex, 250, false);
+/** @deprecated unused */
+BookReader.prototype.updateNavIndexDebounced = utils.debounce(BookReader.prototype.updateNavIndex, 500, false);
 
 /**
  * This method builds the html for the toolbar. It can be decorated to extend
