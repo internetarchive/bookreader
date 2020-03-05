@@ -34,7 +34,7 @@ BookReader.prototype.initToolbar = (function (super_) {
     let $mmenuEl;
 
     if (this.enableMobileNav) {
-      let $drawerEl = this.buildMobileDrawerElement();
+      const $drawerEl = this.buildMobileDrawerElement();
       this.refs.$br.append($drawerEl);
 
       // Render info into mobile info before mmenu
@@ -60,7 +60,7 @@ BookReader.prototype.initToolbar = (function (super_) {
         }
       });
 
-      let $BRpageviewField = $mmenuEl.find('.BRpageviewValue');
+      const $BRpageviewField = $mmenuEl.find('.BRpageviewValue');
       $mmenuEl.data('mmenu').bind('opened', () => {
         // Update "Link to this page view" link
         if ($BRpageviewField.length) {
@@ -111,7 +111,7 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
     let $el = super_.call(this);
     if (this.enableMobileNav) {
-      let escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
+      const escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
       const toolbar = `
         <span class="BRmobileHamburgerWrapper">
             <button class="BRmobileHamburger"></button>
@@ -201,7 +201,7 @@ BookReader.prototype.buildMobileDrawerElement = function() {
     </nav>
   `;
 
-  let $el = $(navMenu);
+  const $el = $(navMenu);
   return $el;
 };
 
