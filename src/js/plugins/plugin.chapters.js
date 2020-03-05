@@ -5,20 +5,20 @@
  */
 
 jQuery.extend(BookReader.defaultOptions, {
-    olHost: 'https://openlibrary.org',
-    enableChaptersPlugin: true,
-    bookId: '',
+  olHost: 'https://openlibrary.org',
+  enableChaptersPlugin: true,
+  bookId: '',
 });
 
 /** @override Extend the constructor to add search properties */
 BookReader.prototype.setup = (function (super_) {
-    return function (options) {
-        super_.call(this, options);
+  return function (options) {
+    super_.call(this, options);
 
-        this.olHost = options.olHost;
-        this.enableChaptersPlugin = options.enableChaptersPlugin;
-        this.bookId = options.bookId;
-    };
+    this.olHost = options.olHost;
+    this.enableChaptersPlugin = options.enableChaptersPlugin;
+    this.bookId = options.bookId;
+  };
 })(BookReader.prototype.setup);
 
 
@@ -40,12 +40,12 @@ BookReader.prototype.init = (function(super_) {
  * @param {number} pageIndex
  */
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
-    const uiStringPage = 'Page'; // i18n
-    const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
-    const jumpToChapter = (event) => this.jumpToIndex($(event.target).data('pageIndex'));
-    const title = `Chapter: ${chapterTitle} | ${uiStringPage} ${pageNumber}`;
+  const uiStringPage = 'Page'; // i18n
+  const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
+  const jumpToChapter = (event) => this.jumpToIndex($(event.target).data('pageIndex'));
+  const title = `Chapter: ${chapterTitle} | ${uiStringPage} ${pageNumber}`;
 
-    $(`<div><div>${title}</div></div>`)
+  $(`<div><div>${title}</div></div>`)
     .addClass('BRchapter')
     .css({ left: percentThrough })
     .appendTo(this.$('.BRnavline'))
@@ -92,7 +92,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
  * Remove all chapters.
  */
 BookReader.prototype.removeChapters = function() {
-    this.$('.BRnavpos .BRchapter').remove();
+  this.$('.BRnavpos .BRchapter').remove();
 };
 
 /**
@@ -100,10 +100,10 @@ BookReader.prototype.removeChapters = function() {
  * @param {TocEntry[]} tocEntries
  */
 BookReader.prototype.updateTOC = function(tocEntries) {
-    this.removeChapters();
-    for (let i = 0; i < tocEntries.length; i++) {
-        this.addChapterFromEntry(tocEntries[i]);
-    }
+  this.removeChapters();
+  for (let i = 0; i < tocEntries.length; i++) {
+    this.addChapterFromEntry(tocEntries[i]);
+  }
 };
 
 /**
@@ -128,17 +128,17 @@ BookReader.prototype.updateTOC = function(tocEntries) {
  * @param {TocEntry} tocEntryObject
  */
 BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-    const pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
-    // Only add if we know where it is
-    if (pageIndex) {
-        this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
-    }
-    this.$('.BRchapter, .BRsearch').each((i, el) => {
-        const $el = $(el);
-        $el.hover(
-          () => $el.addClass('front'),
-          () => $el.removeClass('front'));
-    });
+  const pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
+  // Only add if we know where it is
+  if (pageIndex) {
+    this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
+  }
+  this.$('.BRchapter, .BRsearch').each((i, el) => {
+    const $el = $(el);
+    $el.hover(
+      () => $el.addClass('front'),
+      () => $el.removeClass('front'));
+  });
 };
 
 /**
@@ -167,17 +167,17 @@ BookReader.prototype.getOpenLibraryRecord = function () {
   };
 
   $.ajax({ url: fetchUrlByBookId, dataType: 'jsonp' })
-  .then(data => {
-    if (data && data.length > 0) {
-      return data;
-    } else {
+    .then(data => {
+      if (data && data.length > 0) {
+        return data;
+      } else {
       // try sourceid
-      return $.ajax({ url: `${baseURL}&source_records=ia:${this.bookId}`, dataType: 'jsonp' });
-    }
-  })
-  .then(data => {
-    if (data && data.length > 0) {
+        return $.ajax({ url: `${baseURL}&source_records=ia:${this.bookId}`, dataType: 'jsonp' });
+      }
+    })
+    .then(data => {
+      if (data && data.length > 0) {
         setUpChapterMarkers(data[0]);
-    }
-  });
+      }
+    });
 }
