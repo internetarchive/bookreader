@@ -114,8 +114,8 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
       const escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
       const toolbar = `
         <span class="BRmobileHamburgerWrapper">
-            <button class="BRmobileHamburger"></button>
-            <span class="BRtoolbarMobileTitle" title="${escapedTitle}">${this.bookTitle}</span>
+          <button class="BRmobileHamburger"></button>
+          <span class="BRtoolbarMobileTitle" title="${escapedTitle}">${this.bookTitle}</span>
         </span>
       `;
       $el
@@ -143,27 +143,27 @@ BookReader.prototype.buildMobileDrawerElement = function() {
   const settingsSection = `
     <span>
         <span class="DrawerIconWrapper">
-            <img class="DrawerIcon" src="${`${this.imagesBaseURL}icon_gear.svg`}" alt="settings-icon"/>
+          <img class="DrawerIcon" src="${`${this.imagesBaseURL}icon_gear.svg`}" alt="settings-icon"/>
         </span>
         Settings
     </span>
     <div class=DrawerSettingsWrapper>
         <div class="DrawerSettingsLayoutWrapper">
-            <button class="DrawerLayoutButton one_page_mode">
-                <img src="${`${this.imagesBaseURL}icon_one_page.svg`}" alt="Single Page"/>
-                <br>
-                One Page
-            </button>
-            <button class="DrawerLayoutButton two_page_mode TwoPagesButton">
-                <img src="${`${this.imagesBaseURL}icon_two_pages.svg`}" alt="Two Pages"/>
-                <br>
-                Two Pages
-            </button>
-            <button class="DrawerLayoutButton thumbnail_mode">
-                <img src="${`${this.imagesBaseURL}icon_thumbnails.svg`}" alt="Thumbnails"/>
-                <br>
-                Thumbnails
-            </button>
+          <button class="DrawerLayoutButton one_page_mode">
+            <img src="${this.imagesBaseURL}icon_one_page.svg" alt="Single Page"/>
+            <br>
+            One Page
+          </button>
+          <button class="DrawerLayoutButton two_page_mode TwoPagesButton">
+            <img src="${this.imagesBaseURL}icon_two_pages.svg" alt="Two Pages"/>
+            <br>
+            Two Pages
+          </button>
+          <button class="DrawerLayoutButton thumbnail_mode">
+            <img src="${this.imagesBaseURL}icon_thumbnails.svg" alt="Thumbnails"/>
+            <br>
+            Thumbnails
+          </button>
         </div>
         <br>
         <div class="DrawerSettingsTitle">Zoom</div>
@@ -184,20 +184,20 @@ BookReader.prototype.buildMobileDrawerElement = function() {
   `;
   const share = `
     <span>
-        <span class="DrawerIconWrapper">
-            <img class="DrawerIcon" src="${`${this.imagesBaseURL}icon_share.svg`}" alt="info-share"/>
-        </span>
-        Share This Book
+      <span class="DrawerIconWrapper">
+        <img class="DrawerIcon" src="${`${this.imagesBaseURL}icon_share.svg`}" alt="info-share"/>
+      </span>
+      Share This Book
     </span>
     <div class="BRmobileShare"></div>
   `;
   const navMenu = `
     <nav id="BRmobileMenu" class="BRmobileMenu">
-        <ul>
-            <li class="BRmobileMenu__settings">${settingsSection}</li>
-            <li class="BRmobileMenu__moreInfoRow">${moreInfo}</li>
-            <li class="BRmobileMenu__share">${share}</li>
-        </ul>
+      <ul>
+        <li class="BRmobileMenu__settings">${settingsSection}</li>
+        <li class="BRmobileMenu__moreInfoRow">${moreInfo}</li>
+        <li class="BRmobileMenu__share">${share}</li>
+      </ul>
     </nav>
   `;
 
