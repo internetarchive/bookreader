@@ -18,17 +18,17 @@ export class Navbar {
   /**
    * Initialize the navigation bar (bottom)
    * @param {Object} options
-   * @param {string} [options.navTitle]
+   * @param {string} [options.navbarTitle]
    * @return {JQuery}
    */
-  init({ navTitle }) {
+  init({ navbarTitle: title }) {
     const { br } = this;
 
     br.refs.$BRfooter = this.$root = $(`<div class="BRfooter"></div>`);
     br.refs.$BRnav = this.$nav = $(
       `<div class="BRnav BRnavDesktop">
           <div class="BRnavCntl BRnavCntlBtm BRdn js-tooltip" title="Toggle toolbars"></div>
-          ${navTitle ? `<div class="BRnavTitle">${navTitle}</div>` : ''}
+          ${title ? `<div class="BRnavTitle">${title}</div>` : ''}
           <div class="BRnavpos">
             <div class="BRpager"></div>
             <div class="BRnavline"></div>
@@ -68,7 +68,7 @@ export class Navbar {
     $slider.on('slidechange', (event, ui) => {
       this.updateNavPageNum(ui.value);
       // recursion prevention for jumpToIndex
-      if ( $slider.data('swallowchange') ) {
+      if ($slider.data('swallowchange')) {
         $slider.data('swallowchange', false);
       } else {
         br.jumpToIndex(ui.value);
