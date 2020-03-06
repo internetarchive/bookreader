@@ -69,9 +69,11 @@ if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   })
 }
 
+/** @typedef {typeof DEFAULT_OPTIONS} BookReaderOptions */
+
 /**
  * BookReader
- * @param {Object} options
+ * @param {BookReaderOptions} options
  * TODO document all options properties
  * @constructor
  */
@@ -115,6 +117,7 @@ BookReader.eventNames = {
 BookReader.defaultOptions = DEFAULT_OPTIONS;
 
 /**
+ * @type {BookReaderOptions}
  * This is here, just in case you need to absolutely override an option.
  */
 BookReader.optionOverrides = {};
@@ -122,7 +125,7 @@ BookReader.optionOverrides = {};
 /**
  * Setup
  * It is separate from the constructor, so plugins can extend.
- * @param  {Object} options
+ * @param {BookReaderOptions} options
  */
 BookReader.prototype.setup = function(options) {
   // Store the options used to setup bookreader
