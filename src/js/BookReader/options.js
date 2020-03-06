@@ -173,7 +173,7 @@ export const DEFAULT_OPTIONS = {
   leafNumToIndex: null,
   
   /**
-   * @type {(frameWidth: number, frameHeight: number, viewParams) => *}
+   * @type {(frameWidth: number|string, frameHeight: number|string, viewParams) => *}
    * Optional: if present, and embed code will be shown in the share dialog
    */
   getEmbedCode: null,

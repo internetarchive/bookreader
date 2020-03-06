@@ -1,23 +1,29 @@
 import * as utils from '../utils.js';
+import { EVENTS } from '../events.js';
 /** @typedef {import("../../BookReader.js").default} BookReader */
 
-/**
- * @param {BookReader} BookReader 
- */
-export function extendWithToolbar(BookReader) {
+export class Toolbar {
+  /**
+   * @param {BookReader} br
+   */
+  constructor(br) {
+    this.br = br;
+  }
+
   /**
    * This method builds the html for the toolbar. It can be decorated to extend
    * the toolbar.
    * @return {JQuery}
    */
-  BookReader.prototype.buildToolbarElement = function() {
-    const logoHtml = !this.showLogo ? '' : `
+  buildToolbarElement() {
+    const { br } = this;
+    const logoHtml = !br.showLogo ? '' : `
       <span class="BRtoolbarSection BRtoolbarSectionLogo">
-        <a class="logo" href="${this.logoURL}"></a>
+        <a class="logo" href="${br.logoURL}"></a>
       </span>`;
 
     // Add large screen navigation
-    this.refs.$BRtoolbar = $(`
+    br.refs.$BRtoolbar = $(`
       <div class="BRtoolbar header">
         <div class="BRtoolbarbuttons">
           <div class="BRtoolbarLeft">
@@ -35,93 +41,92 @@ export function extendWithToolbar(BookReader) {
     // TODO actual hamburger menu
     // <span class="BRtoolbarSection BRtoolbarSectionMenu">
     //   <button class="BRpill BRtoolbarHamburger">
-    //     <img src="${this.imagesBaseURL}icon_hamburger.svg" />
+    //     <img src="${br.imagesBaseURL}icon_hamburger.svg" />
     //     <div class="BRhamburgerDrawer"><ul><li>hi</li></ul></div>
     //   </button>
     // </span>
 
-    const $titleSectionEl = this.refs.$BRtoolbar.find('.BRtoolbarSectionTitle');
-
-    if (this.bookUrl && this.options.enableBookTitleLink) {
+    const $titleSectionEl = br.refs.$BRtoolbar.find('.BRtoolbarSectionTitle');
+    if (br.bookUrl && br.options.enableBookTitleLink) {
       $titleSectionEl.append(
         $('<a>')
-          .attr({href: this.bookUrl, title: this.bookUrlTitle})
+          .attr({href: br.bookUrl, title: br.bookUrlTitle})
           .addClass('BRreturn')
-          .html(this.bookUrlText || this.bookTitle)
+          .html(br.bookUrlText || br.bookTitle)
       )
-    } else if (this.bookTitle) {
-      $titleSectionEl.append(this.bookUrlText || this.bookTitle);
+    } else if (br.bookTitle) {
+      $titleSectionEl.append(br.bookUrlText || br.bookTitle);
     }
 
-    // const $hamburger = this.refs.$BRtoolbar.find('BRtoolbarHamburger');
-    return this.refs.$BRtoolbar;
-  };
+    // const $hamburger = br.refs.$BRtoolbar.find('BRtoolbarHamburger');
+    return br.refs.$BRtoolbar;
+  }
 
   /**
    * Initializes the toolbar (top)
    * @param {string} mode
    * @param {string} ui
    */
-  BookReader.prototype.initToolbar = function(mode, ui) {
-    this.refs.$br.append(this.buildToolbarElement());
+  initToolbar(mode, ui) {
+    const { br } = this;
+    br.refs.$br.append(br.buildToolbarElement());
 
-    this.$('.BRnavCntl').addClass('BRup');
-    this.$('.pause').hide();
+    br.$('.BRnavCntl').addClass('BRup');
+    br.$('.pause').hide();
 
-    this.updateToolbarZoom(this.reduce); // Pretty format
+    br.updateToolbarZoom(br.reduce); // Pretty format
 
     // We build in mode 2
-    this.refs.$BRtoolbar.append();
+    br.refs.$BRtoolbar.append();
 
     // Hide mode buttons and autoplay if 2up is not available
     // $$$ if we end up with more than two modes we should show the applicable buttons
-    if ( !this.canSwitchToMode(this.constMode2up) ) {
-      this.$('.two_page_mode, .play, .pause').hide();
+    if ( !br.canSwitchToMode(br.constMode2up) ) {
+      br.$('.two_page_mode, .play, .pause').hide();
     }
-    if ( !this.canSwitchToMode(this.constModeThumb) ) {
-      this.$('.thumbnail_mode').hide();
+    if ( !br.canSwitchToMode(br.constModeThumb) ) {
+      br.$('.thumbnail_mode').hide();
     }
 
     // Hide one page button if it is the only mode available
-    if ( ! (this.canSwitchToMode(this.constMode2up) || this.canSwitchToMode(this.constModeThumb)) ) {
-      this.$('.one_page_mode').hide();
+    if ( ! (br.canSwitchToMode(br.constMode2up) || br.canSwitchToMode(br.constModeThumb)) ) {
+      br.$('.one_page_mode').hide();
     }
 
     $('<div style="display: none;"></div>')
-      .append(this.blankShareDiv())
-      .append(this.blankInfoDiv())
-      .appendTo(this.refs.$br);
+      .append(br.blankShareDiv())
+      .append(br.blankInfoDiv())
+      .appendTo(br.refs.$br);
 
-    this.$('.BRinfo .BRfloatTitle a')
-      .attr({href: this.bookUrl})
-      .text(this.bookTitle)
+    br.$('.BRinfo .BRfloatTitle a')
+      .attr({href: br.bookUrl})
+      .text(br.bookTitle)
       .addClass('title');
 
     // These functions can be overridden
-    this.buildInfoDiv(this.$('.BRinfo'));
-    this.buildShareDiv(this.$('.BRshare'));
+    br.buildInfoDiv(br.$('.BRinfo'));
+    br.buildShareDiv(br.$('.BRshare'));
 
-
-    this.$('.share').colorbox({
+    br.$('.share').colorbox({
       inline: true,
       opacity: "0.5",
-      href: this.$('.BRshare'),
+      href: br.$('.BRshare'),
       onLoad: () => {
-        this.trigger(BookReader.eventNames.stop);
-        this.$('.BRpageviewValue').val(window.location.href);
+        br.trigger(EVENTS.stop);
+        br.$('.BRpageviewValue').val(window.location.href);
       }
     });
-    this.$('.info').colorbox({
+    br.$('.info').colorbox({
       inline: true,
       opacity: "0.5",
-      href: this.$('.BRinfo'),
+      href: br.$('.BRinfo'),
       onLoad: () => {
-        this.trigger(BookReader.eventNames.stop);
+        br.trigger(EVENTS.stop);
       }
     });
-  };
+  }
 
-  BookReader.prototype.blankInfoDiv = function() {
+  blankInfoDiv() {
     // FIXME the <button> el is closed with a </a>
     return $(`
       <div class="BRfloat BRinfo">
@@ -140,9 +145,9 @@ export function extendWithToolbar(BookReader) {
           <a href="https://openlibrary.org/dev/docs/bookreader">About the BookReader</a>
         </div>
       </div>`);
-  };
+  }
 
-  BookReader.prototype.blankShareDiv = function() {
+  blankShareDiv() {
     // FIXME the <button> el is closed with a </a>
     return $(`
       <div class="BRfloat BRshare">
@@ -151,16 +156,17 @@ export function extendWithToolbar(BookReader) {
           <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>
         </div>
       </div>`);
-  };
+  }
 
   /**
    * @todo .BRzoom doesn't exist anywhere, so this is likely dead code
    * Update the displayed zoom factor based on reduction factor
    * @param {number} reduce
    */
-  BookReader.prototype.updateToolbarZoom = function(reduce) {
+  updateToolbarZoom(reduce) {
+    const { br } = this;
     // $$$ TODO preserve zoom/fit for each mode
-    const autofit = this.mode == this.constMode2up ? this.twoPage.autofit : this.onePage.autofit;
+    const autofit = br.mode == br.constMode2up ? br.twoPage.autofit : br.onePage.autofit;
     /** @type {string} */
     let value;
     if (autofit) {
@@ -173,17 +179,18 @@ export function extendWithToolbar(BookReader) {
         .replace(/\.$/,'')
         + '%';
     }
-    this.$('.BRzoom').text(value);
-  };
+    br.$('.BRzoom').text(value);
+  }
 
   /**
    * @param {JQuery} $shareDiv
    */
-  BookReader.prototype.buildShareDiv = function($shareDiv) {
+  buildShareDiv($shareDiv) {
+    const { br } = this;
     const pageView = document.location + '';
     const bookView = (pageView + '').replace(/#.*/,'');
 
-    const embedHtml = !this.getEmbedCode ? '' : `
+    const embedHtml = !br.getEmbedCode ? '' : `
       <div class="share-embed">
         <p class="share-embed-prompt">Copy and paste one of these options to share this book elsewhere.</p>
         <form method="post" action="">
@@ -199,11 +206,11 @@ export function extendWithToolbar(BookReader) {
             <label for="iframe">Embed a mini Book Reader</label>
             <fieldset class="sub">
               <label class="sub">
-                <input type="radio" name="pages" value="${this.constMode1up}" checked="checked"/>
+                <input type="radio" name="pages" value="${br.constMode1up}" checked="checked"/>
                 1 page
               </label>
               <label class="sub">
-                <input type="radio" name="pages" value="${this.constMode2up}"/>
+                <input type="radio" name="pages" value="${br.constMode2up}"/>
                 2 pages
               </label>
               <label class="sub">
@@ -239,14 +246,14 @@ export function extendWithToolbar(BookReader) {
       const params = {};
       params.mode = $(form.find('.fieldset-embed input[name=pages]:checked')).val();
       if (form.find('.fieldset-embed input[name=thispage]').prop('checked')) {
-        params.page = this.getPageNum(this.currentIndex());
+        params.page = br.getPageNum(br.currentIndex());
       }
 
-      if (this.getEmbedCode) {
+      if (br.getEmbedCode) {
         // $$$ changeable width/height to be added to share UI
         const frameWidth = "480px";
         const frameHeight = "430px";
-        form.find('.BRframeEmbed').val(this.getEmbedCode(frameWidth, frameHeight, params));
+        form.find('.BRframeEmbed').val(br.getEmbedCode(frameWidth, frameHeight, params));
       }
     });
 
@@ -263,50 +270,52 @@ export function extendWithToolbar(BookReader) {
     $form.find('.twitter-share-button').click(() => {
       const params = $.param({
         url: this._getSocialShareUrl(),
-        text: this.bookTitle
+        text: br.bookTitle
       });
       const url = 'https://twitter.com/intent/tweet?' + params;
-      this.createPopup(url, 600, 400, 'Share');
+      br.createPopup(url, 600, 400, 'Share');
     });
     $form.find('.email-share-button').click(() => {
-      const body = `${this.bookTitle}\n\n${this._getSocialShareUrl()}`;
-      window.location.href = `mailto:?subject=${encodeURI(this.bookTitle)}&body=${encodeURI(body)}`;
+      const body = `${br.bookTitle}\n\n${this._getSocialShareUrl()}`;
+      window.location.href = `mailto:?subject=${encodeURI(br.bookTitle)}&body=${encodeURI(body)}`;
     });
 
     $form.find('input[name=thispage]').trigger('change');
 
     $form.appendTo($shareDiv);
-  };
+  }
 
-  BookReader.prototype._getSocialShareUrl = function() {
-    const shareThisPage = this.$('.thispage-social').prop('checked');
+  _getSocialShareUrl() {
+    const { br } = this;
+    const shareThisPage = br.$('.thispage-social').prop('checked');
     if (shareThisPage) {
       return window.location.href;
     } else {
       return `${document.location.protocol}//${window.location.hostname}${window.location.pathname}`;
     }
-  };
+  }
 
   /**
    * @param {JQuery} $infoDiv DOM element. Appends info to this element
    * Can be overridden or extended
    */
-  BookReader.prototype.buildInfoDiv = function($infoDiv) {
+  buildInfoDiv($infoDiv) {
+    const { br } = this;
     // Remove these legacy elements
     $infoDiv.find('.BRfloatBody, .BRfloatCover, .BRfloatFoot').remove();
 
     const $leftCol = $(`<div class="BRinfoLeftCol"></div>`);
-    if (this.thumbnail) {
+    if (br.thumbnail) {
       $leftCol.append($(`
         <div class="BRimageW">
-          <img src="${this.thumbnail}" alt="${utils.escapeHTML(this.bookTitle)}" />
+          <img src="${br.thumbnail}" alt="${utils.escapeHTML(br.bookTitle)}" />
         </div>`));
     }
 
     const $rightCol = $(`<div class="BRinfoRightCol">`);
 
     // A loop to build fields
-    for (let {extraValueClass='', label, value} of this.metadata) {
+    for (let {extraValueClass='', label, value} of br.metadata) {
       $rightCol.append($(`
         <div class="BRinfoValueWrapper">
           <div class="BRinfoLabel">${label}</div>
@@ -314,12 +323,12 @@ export function extendWithToolbar(BookReader) {
         </div>`));
     }
 
-    const moreInfoText = this.bookUrlMoreInfo ? this.bookUrlMoreInfo : this.bookTitle;
-    if (moreInfoText && this.bookUrl) {
+    const moreInfoText = br.bookUrlMoreInfo ? br.bookUrlMoreInfo : br.bookTitle;
+    if (moreInfoText && br.bookUrl) {
       $rightCol.append($(`
         <div class="BRinfoValueWrapper">
           <div class="BRinfoMoreInfoWrapper">
-            <a class="BRinfoMoreInfo" href="${this.bookUrl}">
+            <a class="BRinfoMoreInfo" href="${br.bookUrl}">
               ${moreInfoText}
             </a>
           </div>
@@ -330,13 +339,13 @@ export function extendWithToolbar(BookReader) {
     const $children = $('<div class="BRinfoW mv20-lg">').append([
       $leftCol,
       $rightCol,
-      '<br style="clear:both"/>'
+      $('<br style="clear:both"/>'),
     ]);
 
     $infoDiv
       .append($children, $footer)
       .addClass('wide');
-  };
+  }
 
   /**
    * Helper opens a popup window. On mobile it only opens a new tab. Used for share.
@@ -345,7 +354,7 @@ export function extendWithToolbar(BookReader) {
    * @param {number} height
    * @param {string} name
    */
-  BookReader.prototype.createPopup = function(href, width, height, name) {
+  createPopup(href, width, height, name) {
     // Fixes dual-screen position
     const dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
     const dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
@@ -358,13 +367,13 @@ export function extendWithToolbar(BookReader) {
     const opts = `status=1,width=${width},height=${height},top=${top},left=${left}`;
 
     window.open(href, name, opts);
-  };
+  }
 
   /**
    * @return {number} (in pixels) of the toolbar height. 0 if no toolbar.
    */
-  BookReader.prototype.getToolBarHeight = function() {
-    const { $BRtoolbar } = this.refs;
+  getToolBarHeight() {
+    const { $BRtoolbar } = this.br.refs;
     if ($BRtoolbar && $BRtoolbar.css('display') === 'block') {
       return ($BRtoolbar.outerHeight() + parseInt($BRtoolbar.css('top')));
     } else {
