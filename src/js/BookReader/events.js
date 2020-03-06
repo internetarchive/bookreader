@@ -1,3 +1,4 @@
+/** @enum {string} */
 export const EVENTS = {
     /** Indicates that the fragment (a serialization of the reader
      * state) has changed. */
