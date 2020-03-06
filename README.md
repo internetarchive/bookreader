@@ -80,7 +80,7 @@ See `BookReaderDemo/demo-simple.html` and `BookReaderDemo/BookReaderJSSimple.js`
 
 ### Properties
 
-- TODO (for now see BookReader.js and BookReader function at approx. line 44)
+- TODO (for now see [src/js/BookReader/options.js](https://github.com/internetarchive/bookreader/tree/master/src/js/BookReader/options.js))
 
 
 ## Plugins
