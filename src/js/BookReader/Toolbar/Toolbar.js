@@ -8,48 +8,44 @@ export function extendWithToolbar(BookReader) {
   /**
    * This method builds the html for the toolbar. It can be decorated to extend
    * the toolbar.
-   * @return {jqueryElement}
+   * @return {JQuery}
    */
   BookReader.prototype.buildToolbarElement = function() {
-    var logoHtml = '';
-    if (this.showLogo) {
-      logoHtml = "<span class='BRtoolbarSection BRtoolbarSectionLogo'>"
-      +  "<a class='logo' href='" + this.logoURL + "'></a>"
-      + "</span>";
-    }
+    const logoHtml = !this.showLogo ? '' : `
+      <span class="BRtoolbarSection BRtoolbarSectionLogo">
+        <a class="logo" href="${this.logoURL}"></a>
+      </span>`;
 
     // Add large screen navigation
-    this.refs.$BRtoolbar = $(
-      "<div class='BRtoolbar header'>"
-      +   "<div class='BRtoolbarbuttons'>"
-      +     "<div class='BRtoolbarLeft'>"
-      +       logoHtml
-      +       "<span class='BRtoolbarSection BRtoolbarSectionTitle'></span>"
-      +    "</div>"
+    this.refs.$BRtoolbar = $(`
+      <div class="BRtoolbar header">
+        <div class="BRtoolbarbuttons">
+          <div class="BRtoolbarLeft">
+            ${logoHtml}
+            <span class="BRtoolbarSection BRtoolbarSectionTitle"></span>
+          </div>
+          <div class="BRtoolbarRight">
+            <span class="BRtoolbarSection BRtoolbarSectionInfo">
+              <button class="BRpill info js-tooltip">Info</button>
+              <button class="BRpill share js-tooltip">Share</button>
+            </span>
+          </div>
+        </div>
+      </div>`);
+    // TODO actual hamburger menu
+    // <span class="BRtoolbarSection BRtoolbarSectionMenu">
+    //   <button class="BRpill BRtoolbarHamburger">
+    //     <img src="${this.imagesBaseURL}icon_hamburger.svg" />
+    //     <div class="BRhamburgerDrawer"><ul><li>hi</li></ul></div>
+    //   </button>
+    // </span>
 
-      +     "<div class='BRtoolbarRight'>"
-      +       "<span class='BRtoolbarSection BRtoolbarSectionInfo'>"
-      +         "<button class='BRpill info js-tooltip'>Info</button>"
-      +         "<button class='BRpill share js-tooltip'>Share</button>"
-      +       "</span>"
-      // +       "<span class='BRtoolbarSection BRtoolbarSectionMenu'>"
-      // TODO actual hamburger menu
-      // +         "<button class='BRpill BRtoolbarHamburger'>"
-      // +           "<img src='"+this.imagesBaseURL+"icon_hamburger.svg' />"
-      // +           "<div class='BRhamburgerDrawer'><ul><li>hi</li></ul></div>"
-      // +         "</button>"
-      // +       "</span>"
-      +     "</div>" // end BRtoolbarRight
-      +   "</div>"
-      + "</div>"
-    );
-
-    var $titleSectionEl = this.refs.$BRtoolbar.find('.BRtoolbarSectionTitle');
+    const $titleSectionEl = this.refs.$BRtoolbar.find('.BRtoolbarSectionTitle');
 
     if (this.bookUrl && this.options.enableBookTitleLink) {
       $titleSectionEl.append(
         $('<a>')
-          .attr({'href': this.bookUrl, 'title': this.bookUrlTitle})
+          .attr({href: this.bookUrl, title: this.bookUrlTitle})
           .addClass('BRreturn')
           .html(this.bookUrlText || this.bookTitle)
       )
@@ -57,19 +53,16 @@ export function extendWithToolbar(BookReader) {
       $titleSectionEl.append(this.bookUrlText || this.bookTitle);
     }
 
-    // var $hamburger = this.refs.$BRtoolbar.find('BRtoolbarHamburger');
+    // const $hamburger = this.refs.$BRtoolbar.find('BRtoolbarHamburger');
     return this.refs.$BRtoolbar;
   };
 
   /**
-  * Initializes the toolbar (top)
-  * @param {string} mode
-  * @param {string} ui
-  */
-  // eslint-disable-next-line no-unused-vars
+   * Initializes the toolbar (top)
+   * @param {string} mode
+   * @param {string} ui
+   */
   BookReader.prototype.initToolbar = function(mode, ui) {
-    var self = this;
-
     this.refs.$br.append(this.buildToolbarElement());
 
     this.$('.BRnavCntl').addClass('BRup');
@@ -94,14 +87,13 @@ export function extendWithToolbar(BookReader) {
       this.$('.one_page_mode').hide();
     }
 
-    $('<div style="display: none;"></div>').append(
-      this.blankShareDiv()
-    ).append(
-      this.blankInfoDiv()
-    ).appendTo(this.refs.$br);
+    $('<div style="display: none;"></div>')
+      .append(this.blankShareDiv())
+      .append(this.blankInfoDiv())
+      .appendTo(this.refs.$br);
 
     this.$('.BRinfo .BRfloatTitle a')
-      .attr({'href': this.bookUrl})
+      .attr({href: this.bookUrl})
       .text(this.bookTitle)
       .addClass('title');
 
@@ -114,291 +106,267 @@ export function extendWithToolbar(BookReader) {
       inline: true,
       opacity: "0.5",
       href: this.$('.BRshare'),
-      onLoad: function() {
-        self.trigger(BookReader.eventNames.stop);
-        self.$('.BRpageviewValue').val(window.location.href);
+      onLoad: () => {
+        this.trigger(BookReader.eventNames.stop);
+        this.$('.BRpageviewValue').val(window.location.href);
       }
     });
     this.$('.info').colorbox({
       inline: true,
       opacity: "0.5",
       href: this.$('.BRinfo'),
-      onLoad: function() {
-        self.trigger(BookReader.eventNames.stop);
+      onLoad: () => {
+        this.trigger(BookReader.eventNames.stop);
       }
     });
   };
 
   BookReader.prototype.blankInfoDiv = function() {
-    return $([
-      '<div class="BRfloat BRinfo">',
-      '<div class="BRfloatHead">About this book',
-      '<button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
-      '</div>',
-      '<div class="BRfloatBody">',
-      '<div class="BRfloatCover">',
-      '</div>',
-      '<div class="BRfloatMeta">',
-      '<div class="BRfloatTitle">',
-      '<h2><a/></h2>',
-      '</div>',
-      '</div>',
-      '</div>',
-      '<div class="BRfloatFoot">',
-      '<a href="https://openlibrary.org/dev/docs/bookreader">About the BookReader</a>',
-      '</div>',
-      '</div>'].join('\n')
-    );
+    // FIXME the <button> el is closed with a </a>
+    return $(`
+      <div class="BRfloat BRinfo">
+        <div class="BRfloatHead">About this book
+          <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>
+        </div>
+        <div class="BRfloatBody">
+          <div class="BRfloatCover"></div>
+          <div class="BRfloatMeta">
+            <div class="BRfloatTitle">
+              <h2><a /></h2>
+            </div>
+          </div>
+        </div>
+        <div class="BRfloatFoot">
+          <a href="https://openlibrary.org/dev/docs/bookreader">About the BookReader</a>
+        </div>
+      </div>`);
   };
 
   BookReader.prototype.blankShareDiv = function() {
-    return $([
-      '<div class="BRfloat BRshare">',
-      '<div class="BRfloatHead">',
-      'Share',
-      '<button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>',
-      '</div>',
-      '</div>'].join('\n')
-    );
+    // FIXME the <button> el is closed with a </a>
+    return $(`
+      <div class="BRfloat BRshare">
+        <div class="BRfloatHead">
+          Share
+          <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>
+        </div>
+      </div>`);
   };
 
   /**
-  * Update the displayed zoom factor based on reduction factor
-  * @param {number} reduce
-  */
+   * @todo .BRzoom doesn't exist anywhere, so this is likely dead code
+   * Update the displayed zoom factor based on reduction factor
+   * @param {number} reduce
+   */
   BookReader.prototype.updateToolbarZoom = function(reduce) {
-    var value;
-    var autofit = null;
-
     // $$$ TODO preserve zoom/fit for each mode
-    if (this.mode == this.constMode2up) {
-      autofit = this.twoPage.autofit;
-    } else {
-      autofit = this.onePage.autofit;
-    }
-
+    const autofit = this.mode == this.constMode2up ? this.twoPage.autofit : this.onePage.autofit;
+    /** @type {string} */
+    let value;
     if (autofit) {
       value = autofit.slice(0,1).toUpperCase() + autofit.slice(1);
     } else {
-      value = (100 / reduce).toFixed(2);
-      // Strip trailing zeroes and decimal if all zeroes
-      value = value.replace(/0+$/,'');
-      value = value.replace(/\.$/,'');
-      value += '%';
+      value = (100 / reduce)
+        .toFixed(2)
+        // Strip trailing zeroes and decimal if all zeroes
+        .replace(/0+$/,'')
+        .replace(/\.$/,'')
+        + '%';
     }
     this.$('.BRzoom').text(value);
   };
 
-  BookReader.prototype.buildShareDiv = function(jShareDiv) {
-    var pageView = document.location + '';
-    var bookView = (pageView + '').replace(/#.*/,'');
-    var self = this;
+  /**
+   * @param {JQuery} $shareDiv
+   */
+  BookReader.prototype.buildShareDiv = function($shareDiv) {
+    const pageView = document.location + '';
+    const bookView = (pageView + '').replace(/#.*/,'');
 
-    var embedHtml = '';
-    if (this.getEmbedCode) {
-      embedHtml = [
-        '<div class="share-embed">',
-        '<p class="share-embed-prompt">Copy and paste one of these options to share this book elsewhere.</p>',
-        '<form method="post" action="">',
-        '<fieldset class="fieldset-share-pageview">',
-        '<label for="pageview">Link to this page view</label>',
-        '<input type="text" name="pageview" class="BRpageviewValue" value="' + pageView + '"/>',
-        '</fieldset>',
-        '<fieldset class="fieldset-share-book-link">',
-        '<label for="booklink">Link to the book</label>',
-        '<input type="text" name="booklink" class="booklink" value="' + bookView + '"/>',
-        '</fieldset>',
-        '<fieldset class="fieldset-embed">',
-        '<label for="iframe">Embed a mini Book Reader</label>',
-        '<fieldset class="sub">',
-        '<label class="sub">',
-        '<input type="radio" name="pages" value="' + this.constMode1up + '" checked="checked"/>',
-        '1 page',
-        '</label>',
-        '<label class="sub">',
-        '<input type="radio" name="pages" value="' + this.constMode2up + '"/>',
-        '2 pages',
-        '</label>',
-        '<label class="sub">',
-        '<input type="checkbox" name="thispage" value="thispage"/>',
-        'Open to this page?',
-        '</label>',
-        '</fieldset>',
-        '<textarea cols="30" rows="4" name="iframe" class="BRframeEmbed"></textarea>',
-        '</fieldset>',
-        '</form>',
-        '</div>'
-      ].join('\n');
-    }
+    const embedHtml = !this.getEmbedCode ? '' : `
+      <div class="share-embed">
+        <p class="share-embed-prompt">Copy and paste one of these options to share this book elsewhere.</p>
+        <form method="post" action="">
+          <fieldset class="fieldset-share-pageview">
+            <label for="pageview">Link to this page view</label>
+            <input type="text" name="pageview" class="BRpageviewValue" value="${pageView}"/>
+          </fieldset>
+          <fieldset class="fieldset-share-book-link">
+            <label for="booklink">Link to the book</label>
+            <input type="text" name="booklink" class="booklink" value="${bookView}"/>
+          </fieldset>
+          <fieldset class="fieldset-embed">
+            <label for="iframe">Embed a mini Book Reader</label>
+            <fieldset class="sub">
+              <label class="sub">
+                <input type="radio" name="pages" value="${this.constMode1up}" checked="checked"/>
+                1 page
+              </label>
+              <label class="sub">
+                <input type="radio" name="pages" value="${this.constMode2up}"/>
+                2 pages
+              </label>
+              <label class="sub">
+                <input type="checkbox" name="thispage" value="thispage"/>
+                Open to this page?
+              </label>
+            </fieldset>
+            <textarea cols="30" rows="4" name="iframe" class="BRframeEmbed"></textarea>
+          </fieldset>
+        </form>
+      </div>`;
 
-    var jForm = $([
-      '<div class="share-title">Share this book</div>',
-      '<div class="share-social">',
-      '<label class="sub open-to-this-page">',
-      '<input class="thispage-social" type="checkbox" />',
-      'Open to this page?',
-      '</label>',
-      '<div><button class="BRaction share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>',
-      '<div><button class="BRaction share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>',
-      '<div><button class="BRaction share email-share-button"><i class="BRicon email" /> Email</button></div>',
-      '</div>',
-      embedHtml,
-      '<div class="BRfloatFoot">',
-      '<button class="share-finished" type="button" onclick="$.fn.colorbox.close();">Finished</button>',
-      '</div>'
-    ].join('\n'));
+    const $form = $(`
+      <div class="share-title">Share this book</div>
+      <div class="share-social">
+        <label class="sub open-to-this-page">
+          <input class="thispage-social" type="checkbox" />
+          Open to this page?
+        </label>
+        <div><button class="BRaction share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>
+        <div><button class="BRaction share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>
+        <div><button class="BRaction share email-share-button"><i class="BRicon email" /> Email</button></div>
+      </div>
+      ${embedHtml}
+      <div class="BRfloatFoot">
+        <button class="share-finished" type="button" onclick="$.fn.colorbox.close();">Finished</button>
+      </div>`);
 
-    jForm.appendTo(jShareDiv);
+    $form.appendTo($shareDiv);
 
-    jForm.find('.fieldset-embed input').bind('change', function() {
-      var form = $(this).parents('form:first');
-      var params = {};
+    $form.find('.fieldset-embed input').on('change', event => {
+      const form = $(event.target).parents('form:first');
+      const params = {};
       params.mode = $(form.find('.fieldset-embed input[name=pages]:checked')).val();
       if (form.find('.fieldset-embed input[name=thispage]').prop('checked')) {
-        params.page = self.getPageNum(self.currentIndex());
+        params.page = this.getPageNum(this.currentIndex());
       }
 
-      if (self.getEmbedCode) {
+      if (this.getEmbedCode) {
         // $$$ changeable width/height to be added to share UI
-        var frameWidth = "480px";
-        var frameHeight = "430px";
-        form.find('.BRframeEmbed').val(self.getEmbedCode(frameWidth, frameHeight, params));
+        const frameWidth = "480px";
+        const frameHeight = "430px";
+        form.find('.BRframeEmbed').val(this.getEmbedCode(frameWidth, frameHeight, params));
       }
     });
 
-    jForm.find('input, textarea').bind('focus', function() {
-      this.select();
-    });
+    $form.find('input, textarea').on('focus', event => event.target.select());
 
     // Bind share buttons
 
     // Use url without hashes
-    jForm.find('.facebook-share-button').click(function(){
-      var params = $.param({ u: self._getSocialShareUrl() });
-      var url = 'https://www.facebook.com/sharer.php?' + params;
-      self.createPopup(url, 600, 400, 'Share')
+    $form.find('.facebook-share-button').click(() => {
+      const params = $.param({ u: this._getSocialShareUrl() });
+      const url = 'https://www.facebook.com/sharer.php?' + params;
+      this.createPopup(url, 600, 400, 'Share');
     });
-    jForm.find('.twitter-share-button').click(function(){
-      var params = $.param({
-        url: self._getSocialShareUrl(),
-        text: self.bookTitle
+    $form.find('.twitter-share-button').click(() => {
+      const params = $.param({
+        url: this._getSocialShareUrl(),
+        text: this.bookTitle
       });
-      var url = 'https://twitter.com/intent/tweet?' + params;
-      self.createPopup(url, 600, 400, 'Share')
+      const url = 'https://twitter.com/intent/tweet?' + params;
+      this.createPopup(url, 600, 400, 'Share');
     });
-    jForm.find('.email-share-button').click(function(){
-      var body = self.bookTitle + "\n\n" + self._getSocialShareUrl();
-      window.location.href = 'mailto:?subject=' + encodeURI(self.bookTitle) + '&body=' + encodeURI(body);
+    $form.find('.email-share-button').click(() => {
+      const body = `${this.bookTitle}\n\n${this._getSocialShareUrl()}`;
+      window.location.href = `mailto:?subject=${encodeURI(this.bookTitle)}&body=${encodeURI(body)}`;
     });
 
-    jForm.find('input[name=thispage]').trigger('change');
+    $form.find('input[name=thispage]').trigger('change');
 
-    jForm.appendTo(jShareDiv);
+    $form.appendTo($shareDiv);
   };
 
   BookReader.prototype._getSocialShareUrl = function() {
-    var shareThisPage = this.$('.thispage-social').prop('checked');
+    const shareThisPage = this.$('.thispage-social').prop('checked');
     if (shareThisPage) {
       return window.location.href;
     } else {
-      return document.location.protocol + "//" + window.location.hostname + window.location.pathname;
+      return `${document.location.protocol}//${window.location.hostname}${window.location.pathname}`;
     }
   };
 
   /**
-  * @param JInfoDiv DOM element. Appends info to this element
-  * Can be overridden or extended
-  */
-  BookReader.prototype.buildInfoDiv = function(jInfoDiv) {
+   * @param {JQuery} $infoDiv DOM element. Appends info to this element
+   * Can be overridden or extended
+   */
+  BookReader.prototype.buildInfoDiv = function($infoDiv) {
     // Remove these legacy elements
-    jInfoDiv.find('.BRfloatBody, .BRfloatCover, .BRfloatFoot').remove();
+    $infoDiv.find('.BRfloatBody, .BRfloatCover, .BRfloatFoot').remove();
 
-    var $leftCol = $("<div class=\"BRinfoLeftCol\"></div>");
+    const $leftCol = $(`<div class="BRinfoLeftCol"></div>`);
     if (this.thumbnail) {
-      $leftCol.append($("<div class=\"BRimageW\">"
-        +"  <img src=\""+this.thumbnail+"\" "
-        +"       alt=\""+utils.escapeHTML(this.bookTitle)+"\" />"
-        +"</div>"));
+      $leftCol.append($(`
+        <div class="BRimageW">
+          <img src="${this.thumbnail}" alt="${utils.escapeHTML(this.bookTitle)}" />
+        </div>`));
     }
 
-    var $rightCol = $("<div class=\"BRinfoRightCol\">");
+    const $rightCol = $(`<div class="BRinfoRightCol">`);
 
     // A loop to build fields
-    var extraClass;
-    for (var i = 0; i < this.metadata.length; i++) {
-      extraClass = this.metadata[i].extraValueClass || '';
-      $rightCol.append($("<div class=\"BRinfoValueWrapper\">"
-        +"  <div class=\"BRinfoLabel\">"
-        +     this.metadata[i].label
-        +"  </div>"
-        +"  <div class=\"BRinfoValue " + extraClass + "\">"
-        +     this.metadata[i].value
-        +"  </div>"
-        +"</div>"));
+    for (let {extraValueClass='', label, value} of this.metadata) {
+      $rightCol.append($(`
+        <div class="BRinfoValueWrapper">
+          <div class="BRinfoLabel">${label}</div>
+          <div class="BRinfoValue ${extraValueClass}">${value}</div>
+        </div>`));
     }
 
-    var moreInfoText;
-    if (this.bookUrlMoreInfo) {
-      moreInfoText = this.bookUrlMoreInfo;
-    } else if (this.bookTitle) {
-      moreInfoText = this.bookTitle;
-    }
-
+    const moreInfoText = this.bookUrlMoreInfo ? this.bookUrlMoreInfo : this.bookTitle;
     if (moreInfoText && this.bookUrl) {
-      $rightCol.append($("<div class=\"BRinfoValueWrapper\">"
-          +"<div class=\"BRinfoMoreInfoWrapper\">"
-          +"  <a class=\"BRinfoMoreInfo\" href=\""+this.bookUrl+"\">"
-          +   moreInfoText
-          +"  </a>"
-          +"</div>"
-        +"</div>"));
+      $rightCol.append($(`
+        <div class="BRinfoValueWrapper">
+          <div class="BRinfoMoreInfoWrapper">
+            <a class="BRinfoMoreInfo" href="${this.bookUrl}">
+              ${moreInfoText}
+            </a>
+          </div>
+        </div>`));
     }
 
-
-    var footerEl = "<div class=\"BRfloatFoot BRinfoFooter\"></div>";
-
-    var children = [
+    const $footer = $(`<div class="BRfloatFoot BRinfoFooter"></div>`);
+    const $children = $('<div class="BRinfoW mv20-lg">').append([
       $leftCol,
       $rightCol,
       '<br style="clear:both"/>'
-    ];
-    var childrenEl = $('<div class="BRinfoW mv20-lg">').append(children);
+    ]);
 
-    jInfoDiv.append(
-      childrenEl,
-      $(footerEl)
-    ).addClass('wide');
+    $infoDiv
+      .append($children, $footer)
+      .addClass('wide');
   };
 
   /**
-  * Helper opens a popup window. On mobile it only opens a new tab. Used for share.
-  */
+   * Helper opens a popup window. On mobile it only opens a new tab. Used for share.
+   * @param {string} href
+   * @param {number} width
+   * @param {number} height
+   * @param {string} name
+   */
   BookReader.prototype.createPopup = function(href, width, height, name) {
     // Fixes dual-screen position
-    var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
-    var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
+    const dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
+    const dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
 
-    var win_w = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
-    var win_h = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+    const win_w = window.innerWidth || document.documentElement.clientWidth || screen.width;
+    const win_h = window.innerHeight || document.documentElement.clientHeight || screen.height;
 
-    var left   = ((win_w / 2) - (width / 2)) + dualScreenLeft,
-      top    = ((win_h / 2) - (height / 2)) + dualScreenTop,
-      url    = href,
-      opts   = 'status=1' +
-                ',width='  + width  +
-                ',height=' + height +
-                ',top='    + top    +
-                ',left='   + left;
+    const left = ((win_w / 2) - (width / 2)) + dualScreenLeft;
+    const top = ((win_h / 2) - (height / 2)) + dualScreenTop;
+    const opts = `status=1,width=${width},height=${height},top=${top},left=${left}`;
 
-    window.open(url, name, opts);
+    window.open(href, name, opts);
   };
 
   /**
-  * @return {number} (in pixels) of the toolbar height. 0 if no toolbar.
-  */
+   * @return {number} (in pixels) of the toolbar height. 0 if no toolbar.
+   */
   BookReader.prototype.getToolBarHeight = function() {
-    if (this.refs.$BRtoolbar && this.refs.$BRtoolbar.css('display') === 'block') {
-      return (this.refs.$BRtoolbar.outerHeight() + parseInt(this.refs.$BRtoolbar.css('top')));
+    const { $BRtoolbar } = this.refs;
+    if ($BRtoolbar && $BRtoolbar.css('display') === 'block') {
+      return ($BRtoolbar.outerHeight() + parseInt($BRtoolbar.css('top')));
     } else {
       return 0;
     }
