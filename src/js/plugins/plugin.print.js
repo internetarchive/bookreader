@@ -1,14 +1,4 @@
-/*global BookReader */
-
-/**
- * Adds some print features to bookreader
- *
- * To bind it to a button, use code like this:
- *     jIcons.filter('.print').click(function(e) {
- *         self.printPage();
- *       return false;
- *   });
- */
+/* global BookReader */
 
 /**
  * Plugin which used to print book images.
@@ -20,9 +10,7 @@ jQuery.extend(BookReader.defaultOptions, {
   zip: '',
 });
 
-/**
- * @augments BookReader.setup
- */
+/** @override */
 BookReader.prototype.setup = (function (super_) {
   return function (options) {
     super_.call(this, options);
@@ -34,7 +22,9 @@ BookReader.prototype.setup = (function (super_) {
   };
 })(BookReader.prototype.setup);
 
-
+/**
+ * Print page of any book item
+ */
 BookReader.prototype.printPage = function() {
   window.open(
     this.getPrintURI(),
@@ -44,17 +34,19 @@ BookReader.prototype.printPage = function() {
 };
 
 /** 
- * Get print URI from current indices and mode
+ * Generate print URL from current indices and mode
+ *
+ * @returns {string} URL
  */
 BookReader.prototype.getPrintURI = function() {
-  var indexToPrint;
+  let indexToPrint;
   if (this.constMode2up === this.mode) {
     indexToPrint = this.twoPage.currentIndexL;
   } else {
     indexToPrint = this.firstIndex; // $$$ the index in the middle of the viewport would make more sense
   }
 
-  var options = 'id=' + this.subPrefix + '&server=' + this.server + '&zip=' + this.zip
+  let options = 'id=' + this.subPrefix + '&server=' + this.server + '&zip=' + this.zip
     + '&format=' + this.imageFormat + '&file=' + this.getPageFile(indexToPrint)
     + '&width=' + this._getPageWidth(indexToPrint) + '&height=' + this._getPageHeight(indexToPrint);
 
@@ -69,14 +61,19 @@ BookReader.prototype.getPrintURI = function() {
   return '/bookreader/print.php?' + options;
 };
 
+/** 
+ * Get file from lead index to create print URL
+ *
+ * @returns {null|string}
+ */
 BookReader.prototype.getPageFile = function(index) {
   if (index === null) {
     return '';
   }
-  var leafStr = '0000';
-  var imgStr = String(index); // String(this._leafMap[index]); // if index != leafNum
-  var re = new RegExp("0{"+imgStr.length+"}$");
-  var insideZipPrefix = this.subPrefix.match('[^/]+$');
-  var file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
+  let leafStr = '0000';
+  const imgStr = String(index); // String(this._leafMap[index]); // if index != leafNum
+  const re = new RegExp("0{"+imgStr.length+"}$");
+  const insideZipPrefix = this.subPrefix.match('[^/]+$');
+  const file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
   return file;
 }

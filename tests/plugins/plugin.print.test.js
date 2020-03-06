@@ -1,7 +1,5 @@
 /* global BookReader */
-require('../../BookReader/jquery-1.10.1.js');
 require('../../BookReader/jquery-ui-1.12.0.min.js');
-require('../../BookReader/jquery.browser.min.js');
 require('../../BookReader/dragscrollable-br.js');
 require('../../BookReader/jquery.colorbox-min.js');
 require('../../BookReader/jquery.bt.min.js');
@@ -13,6 +11,10 @@ let br;
 beforeAll(() => {
   document.body.innerHTML = '<div id="BookReader">';
   br = new BookReader();
+  br.imageFormat = 'jp2';
+  br.subPrefix = 'item';
+  br.server = 'test-archive.org',
+  br.zip = 'item.zip';
   br.init();
 });
 
@@ -21,31 +23,21 @@ afterEach(() => {
 });
 
 describe('Plugin: Print', () => {
-
-  /*
-    this.imageFormat = 'jp2';
-    this.subPrefix   = '';
-    this.server      = '',
-    this.zip         = '';
-  */
-
-  test('has added BR property: imageFormat', () => {
+  test('has added follwing BR properties', () => {
     expect(br).toHaveProperty('imageFormat');
     expect(br.imageFormat).toEqual('jp2');
-  });
 
-  test('has added BR property: subPrefix', () => {
     expect(br).toHaveProperty('subPrefix');
-    expect(br.subPrefix).toEqual('');
-  });
+    expect(br.subPrefix).toEqual('item');
 
-  test('has added BR property: server', () => {
     expect(br).toHaveProperty('server');
-    expect(br.server).toEqual('');
+    expect(br.server).toEqual('test-archive.org');
+
+    expect(br).toHaveProperty('zip');
+    expect(br.zip).toEqual('item.zip');
   });
 
-  test('has added BR property: zip', () => {
-    expect(br).toHaveProperty('zip');
-    expect(br.zip).toBeFalsy();
+  test('get printURI', () => {
+    expect(br.getPageFile(1)).toEqual('item_jp2/item_0001.jp2');
   });
 });
