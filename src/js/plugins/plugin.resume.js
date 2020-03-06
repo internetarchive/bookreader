@@ -21,10 +21,10 @@ BookReader.prototype.init = (function(super_) {
   return function() {
     super_.call(this);
     if (this.options.enablePageResume) {
-      this.bind(BookReader.eventNames.fragmentChange, function() {
+      this.bind(BookReader.eventNames.fragmentChange, () => {
         const params = this.paramsFromCurrent();
         this.updateResumeValue(params.index);
-      }.bind(this));
+      });
     }
   };
 })(BookReader.prototype.init);
