@@ -27,21 +27,28 @@ test('Nav menu displays properly', async t => {
   await t.expect((await Selector('.BRicon.onepg')).visible).ok();
   await t.expect((await Selector('.BRicon.twopg')).visible).ok();
   await t.expect((await Selector('.BRicon.thumb')).visible).ok();
+  // Need .desktop-only class as blank zoom buttons in mobile menu
   await t.expect((await Selector('.BRicon.zoom_in.desktop-only')).visible).ok();
   await t.expect((await Selector('.BRicon.zoom_out.desktop-only')).visible).ok();
   await t.expect((await Selector('.BRicon.full')).visible).ok();
 });
 
-
-test.only('Clicking `page flip buttons` changes pages and updates location', async t => {
+// Need to disable page caching to have cookies persist in test
+test.disablePageCaching('Clicking `page flip buttons` updates location', async t => {
   const hash = ClientFunction(() => document.location.hash);
   const flipRight = await Selector('.book_right');
   const flipLeft = await Selector('.book_left');
+  // No hash
   await t.expect(hash()).eql('');
+  // Page navigation creates hash
   await t.click(flipRight);
   await t.expect(hash()).contains('#page/n');
   await t.expect(hash()).contains('/mode/2up');
   await t.click(flipLeft);
+  await t.expect(hash()).contains('#page/n');
+  await t.expect(hash()).contains('/mode/2up');
+  // Cookie set by page navigation creates hash on navigate to canonical URL
+  await t.navigateTo('demo-ia-plato.html');
   await t.expect(hash()).contains('#page/n');
   await t.expect(hash()).contains('/mode/2up');
 });
