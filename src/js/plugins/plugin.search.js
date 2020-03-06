@@ -1,3 +1,4 @@
+/* global BookReader */
 /**
  * Plugin for Archive.org book search
  */
@@ -12,7 +13,7 @@ jQuery.extend(BookReader.defaultOptions, {
   initialSearchTerm: null,
 });
 
-// Extend the constructor to add search properties
+/** @override */
 BookReader.prototype.setup = (function (super_) {
   return function (options) {
     super_.call(this, options);
@@ -30,6 +31,7 @@ BookReader.prototype.setup = (function (super_) {
   };
 })(BookReader.prototype.setup);
 
+/** @override */
 BookReader.prototype.init = (function (super_) {
   return function () {
     super_.call(this);
@@ -50,8 +52,7 @@ BookReader.prototype.init = (function (super_) {
   };
 })(BookReader.prototype.init);
 
-
-// Extend buildMobileDrawerElement
+/** @override */
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   return function () {
     let $el = super_.call(this);
@@ -76,8 +77,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   };
 })(BookReader.prototype.buildMobileDrawerElement);
 
-
-// Extend buildToolbarElement
+/** @override */
 BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
     let $el = super_.call(this);
@@ -96,8 +96,7 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
   };
 })(BookReader.prototype.buildToolbarElement);
 
-
-// Extend initToolbar
+/** @override */
 BookReader.prototype.initToolbar = (function (super_) {
   return function (mode, ui) {
     super_.apply(this, arguments);
@@ -134,11 +133,11 @@ BookReader.prototype.initToolbar = (function (super_) {
 })(BookReader.prototype.initToolbar);
 
 
-
-// search()
-// @param {string} term
-// @param {object} options
-//______________________________________________________________________________
+/**
+ * @param { string } term
+ * @param { object } options
+ * @param { boolean } options.disablePopup
+ */
 BookReader.prototype.search = function(term, options) {
   options = options !== undefined ? options : {};
   let defaultOptions = {
@@ -205,10 +204,12 @@ BookReader.prototype.search = function(term, options) {
   });
 };
 
-
-
-// BRSearchCallback()
-//______________________________________________________________________________
+/**
+ * @param { object } results
+ * @param { array } results.matches
+ * @param { object } options
+ * @param { boolean } options.goToFirstResult
+ */
 BookReader.prototype.BRSearchCallback = function(results, options) {
   this.searchResults = results;
   this.$('.BRnavpos .search').remove();
@@ -232,20 +233,31 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   }
 }
 
-// BRSearchCallbackErrorDesktop()
-//______________________________________________________________________________
-BookReader.prototype.BRSearchCallbackErrorDesktop = function(results, options) {
+/**
+ * @param { array } results
+ */
+BookReader.prototype.BRSearchCallbackErrorDesktop = function(results) {
   let $el = $(this.popup);
   this._BRSearchCallbackError(results, $el, true);
 };
 
-// BRSearchCallbackErrorMobile()
-//______________________________________________________________________________
-BookReader.prototype.BRSearchCallbackErrorMobile = function(results, options) {
+/**
+ * @param { array } results
+ */
+BookReader.prototype.BRSearchCallbackErrorMobile = function(results) {
   let $el = this.$('.BRmobileSearchResultWrapper');
   this._BRSearchCallbackError(results, $el);
 };
-BookReader.prototype._BRSearchCallbackError = function(results, $el, fade, options) {
+
+/**
+ * @param { object } results
+ * @param { string } results.error
+ * @param { array } results.matches
+ * @param { boolean } results.indexed
+ * @param { jQuery } $el
+ * @param { boolean } fade
+ */
+BookReader.prototype._BRSearchCallbackError = function(results, $el, fade) {
   let self = this;
   this.$('.BRnavpos .search').remove();
   this.$('.BRmobileSearchResultWrapper').empty(); // Empty mobile results
@@ -278,9 +290,9 @@ BookReader.prototype._BRSearchCallbackError = function(results, $el, fade, optio
   }
 };
 
-
-// updateSearchHilites()
-//______________________________________________________________________________
+/**
+ * updates search highlights controller
+ */
 BookReader.prototype.updateSearchHilites = function() {
   if (this.constMode2up == this.mode) {
     this.updateSearchHilites2UP();
@@ -289,8 +301,9 @@ BookReader.prototype.updateSearchHilites = function() {
   }
 };
 
-// showSearchHilites1UP()
-//______________________________________________________________________________
+/**
+ * update search highlights in 1up mode
+ */
 BookReader.prototype.updateSearchHilites1UP = function() {
   let results = this.searchResults;
   if (null == results) return;
@@ -322,8 +335,9 @@ BookReader.prototype.updateSearchHilites1UP = function() {
 
 };
 
-// showSearchHilites2UPNew()
-//______________________________________________________________________________
+/**
+ * update search highlights in 2up mode
+ */
 BookReader.prototype.updateSearchHilites2UP = function() {
   let results = this.searchResults;
   if (null == results) return;
@@ -352,9 +366,9 @@ BookReader.prototype.updateSearchHilites2UP = function() {
   }
 };
 
-
-// removeSearchHilites()
-//______________________________________________________________________________
+/**
+ * remove search highlights
+ */
 BookReader.prototype.removeSearchHilites = function() {
   let results = this.searchResults;
   if (null == results) return;
