@@ -42,7 +42,7 @@ export class DebugConsole {
     const html = args.map(JSON.stringify).join(',');
     const $lastEntry = this.$log.children('.log-entry:last-child')
     if ($lastEntry.find('.entry-code').html() == html) {
-      $lastEntry.find('.count').text(`(${this.currentRun++})`);
+      $lastEntry.find('.count').text(`(${++this.currentRun})`);
     } else {
       this.currentRun = 1;
       this.$log.append($(`
