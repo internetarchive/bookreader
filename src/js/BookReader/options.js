@@ -1,25 +1,29 @@
 export const DEFAULT_OPTIONS = {
-  // A string, such as "mode/1up". See
-  // http://openlibrary.org/dev/docs/bookurls for valid syntax
+  /**
+   * @type {string} A string, such as "mode/1up". See
+   * http://openlibrary.org/dev/docs/bookurls for valid syntax
+   */
   defaults: null,
   
-  // Padding in 1up
+  /** Padding in 1up */
   padding: 10,
-  // UI mode
-  ui: 'full', // full, embed, responsive
   
-  // Controls whether nav/toolbar will autohide
+  /** @type {'full' | 'embed' | 'responsive'} UI mode */
+  ui: 'full',
+  
+  /** Controls whether nav/toolbar will autohide */
   uiAutoHide: false,
   
-  // thumbnail mode
-  // number of rows to pre-cache out a view
+  /** thumbnail mode */
+  /** number of rows to pre-cache out a view */
   thumbRowBuffer: 2,
   thumbColumns: 6,
-  // number of thumbnails to load at once
+  /** number of thumbnails to load at once */
   thumbMaxLoading: 4,
-  // spacing between thumbnails
+  /** spacing between thumbnails */
   thumbPadding: 10,
-  // speed for flip animation
+
+  /** @type {number | 'fast' | 'slow'} speed for flip animation */
   flipSpeed: 'fast',
   
   showToolbar: true,
@@ -27,18 +31,23 @@ export const DEFAULT_OPTIONS = {
   navBarTitle: '',
   
   showLogo: true,
-  // Where the logo links to
+  /** Where the logo links to */
   logoURL: 'https://archive.org',
   
-  // Base URL for UI images - should be overriden (before init) by
-  // custom implementations.
-  // $$$ This is the same directory as the images referenced by relative
-  //     path in the CSS.  Would be better to automagically find that path.
+  /**
+   * Base URL for UI images - should be overriden (before init) by
+   * custom implementations.
+   * $$$ This is the same directory as the images referenced by relative
+   *     path in the CSS.  Would be better to automagically find that path.
+   */
   imagesBaseURL: '/BookReader/images/',
   
-  // Zoom levels
-  // $$$ provide finer grained zooming, {reduce: 8, autofit: null}, {reduce: 16, autofit: null}
-  /* The autofit code ensures that fit to width and fit to height will be available */
+  /**
+   * Zoom levels
+   * @type {Array<{reduce: Float32Array, autofit: AutoFitValues}}
+   * $$$ provide finer grained zooming, {reduce: 8, autofit: null}, {reduce: 16, autofit: null}
+   * The autofit code ensures that fit to width and fit to height will be available
+   */
   reductionFactors: [
     {reduce: 0.5, autofit: null},
     {reduce: 1, autofit: null},
@@ -48,91 +57,138 @@ export const DEFAULT_OPTIONS = {
     {reduce: 6, autofit: null}
   ],
   
-  // Object to hold parameters related to 1up mode
+  /** Object to hold parameters related to 1up mode */
   onePage: {
-    autofit: 'auto', // valid values are height, width, auto, none
+    /** @type {AutoFitValues} */
+    autofit: 'auto',
   },
   
-  // Object to hold parameters related to 2up mode
+  /** Object to hold parameters related to 2up mode */
   twoPage: {
-    coverInternalPadding: 0, // Width of cover
-    coverExternalPadding: 0, // Padding outside of cover
-    bookSpineDivWidth: 64,    // Width of book spine  $$$ consider sizing based on book length
+    /** Width of cover */
+    coverInternalPadding: 0,
+    /** Padding outside of cover */
+    coverExternalPadding: 0,
+    /** Width of book spine  $$$ consider sizing based on book length */
+    bookSpineDivWidth: 64,
+    /** @type {AutoFitValues} */
     autofit: 'auto'
   },
   
   onePageMinBreakpoint: 800,
   
   bookTitle: '',
+  /** @type {string} */
   bookUrl: null,
+  /** @type {string} */
   bookUrlText: null,
+  /** @type {string} */
   bookUrlTitle: null,
   enableBookTitleLink: true,
   /**
-       * @type {string} language in ISO 639-1 (PRIVATE: Will also
-       * handle language name in English, native name, 639-2/T, or 639-2/B . (archive.org books
-       * appear to use 639-2/B ? But I don't think that's a guarantee). See
-       * https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes ) */
+   * @type {string} language in ISO 639-1 (PRIVATE: Will also
+   * handle language name in English, native name, 639-2/T, or 639-2/B . (archive.org books
+   * appear to use 639-2/B ? But I don't think that's a guarantee). See
+   * https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes ) */
   bookLanguage: null,
   
-  // Fields used to populate the info window
+  /** Fields used to populate the info window */
   metadata: [],
+  /** @type {string} */
   thumbnail: null,
+  /** @type {string} */
   bookUrlMoreInfo: null,
   
-  // Experimental Controls (eg b/w)
+  /** Experimental Controls (eg b/w) */
   enableExperimentalControls: false,
   
-  // CSS selectors
-  // Where BookReader mounts to
+  /** CSS selectors */
+  /** Where BookReader mounts to */
   el: '#BookReader',
   
-  // Page progression. Choices: 'lr', 'rl'
+  /** @type {'lr' | 'rl'} Page progression */
   pageProgression: 'lr',
   
-  // Should image downloads be blocked
+  /** Should image downloads be blocked */
   protected: false,
   
-  // Data is a simple way to populate the bookreader
-  // Example:
-  // [
-  //    // Each child is a spread
-  //   [
-  //     {
-  //       width: 123,
-  //       height: 123,
-  //       // Optional: If not provided, include a getPageURI
-  //       uri: 'https://archive.org/image.jpg',
-  //       // Optional: Shown instead of leaf number if present.
-  //       pageNum: 1
-  //     },
-  //     {width: 123, height: 123, uri: 'https://archive.org/image2.jpg', pageNum: 2},
-  //   ]
-  // ],
-  //
-  // Note if URI is omitted, a custom getPageURI can be provided. This allows the page
-  // URI to the result of a function, which allows for thigns such as dynamic
-  // page scaling.
+  /**
+   * @type {PageData[][]}
+   * Data is a simple way to populate the bookreader
+   * 
+   * Example:
+   * ```
+   * [
+   *   // Each child is a spread
+   *   [
+   *     {
+   *       width: 123,
+   *       height: 123,
+   *       // Optional: If not provided, include a getPageURI
+   *       uri: 'https://archive.org/image.jpg',
+   *       // Optional: Shown instead of leaf number if present.
+   *       pageNum: 1
+   *     },
+   *     {width: 123, height: 123, uri: 'https://archive.org/image2.jpg', pageNum: 2},
+   *   ]
+   * ],
+   * ```
+   * 
+   * Note if URI is omitted, a custom getPageURI can be provided. This allows the page
+   * URI to the result of a function, which allows for things such as dynamic
+   * page scaling.
+   */
   data: [],
   
-  // Advanced methods for page rendering
+
+  /** Advanced methods for page rendering */
+  /** @type {() => number} */
   getNumLeafs: null,
+  /** @type {(index: number) => number} */
   getPageWidth: null,
+  /** @type {(index: number) => number} */
   getPageHeight: null,
+  /** @type {(index: number, reduce: number, rotate: number) => *} */
   getPageURI: null,
   
-  // Return which side, left or right, that a given page should be displayed on
+  /**
+   * @type {(index: number) => 'L' | 'R'}
+   * Return which side, left or right, that a given page should be displayed on
+   */
   getPageSide: null,
   
-  // This function returns the left and right indices for the user-visible
-  // spread that contains the given index.  The return values may be
-  // null if there is no facing page or the index is invalid.
+  /**
+   * @type {(pindex: number) => [number, number]}
+   * This function returns the left and right indices for the user-visible
+   * spread that contains the given index.  The return values may be
+   * null if there is no facing page or the index is invalid.
+   */ 
   getSpreadIndices: null,
   
+  /** @type {(index: number) => string} */
   getPageNum: null,
+  /** @type {(index: number) => *} */
   getPageProp: null,
+  /** @type {(index: number) => number} */
   leafNumToIndex: null,
   
-  // Optional: if present, and embed code will be shown in the share dialog
+  /**
+   * @type {(frameWidth: number, frameHeight: number, viewParams) => *}
+   * Optional: if present, and embed code will be shown in the share dialog
+   */
   getEmbedCode: null,
 };
+
+/** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */
+
+/**
+ * @typedef {Object} PageData
+ * @property {number} width
+ * @property {number} height
+ * @property {string} [uri] If not provided, include a getPageURI
+ * @property {number} [pageNum] Shown instead of leaf number if present
+ * 
+ * Note if URI is omitted, a custom getPageURI can be provided. This allows the page
+ * URI to the result of a function, which allows for things such as dynamic
+ * page scaling.
+ */
