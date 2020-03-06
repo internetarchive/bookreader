@@ -1,4 +1,4 @@
-import * as utils from '../utils.js';
+import { escapeHTML } from '../utils.js';
 import { EVENTS } from '../events.js';
 /** @typedef {import("../../BookReader.js").default} BookReader */
 
@@ -94,8 +94,8 @@ export class Toolbar {
     }
 
     $('<div style="display: none;"></div>')
-      .append(br.blankShareDiv())
-      .append(br.blankInfoDiv())
+      .append(blankShareDiv())
+      .append(blankInfoDiv())
       .appendTo(br.refs.$br);
 
     br.$('.BRinfo .BRfloatTitle a')
@@ -124,38 +124,6 @@ export class Toolbar {
         br.trigger(EVENTS.stop);
       }
     });
-  }
-
-  blankInfoDiv() {
-    // FIXME the <button> el is closed with a </a>
-    return $(`
-      <div class="BRfloat BRinfo">
-        <div class="BRfloatHead">About this book
-          <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>
-        </div>
-        <div class="BRfloatBody">
-          <div class="BRfloatCover"></div>
-          <div class="BRfloatMeta">
-            <div class="BRfloatTitle">
-              <h2><a /></h2>
-            </div>
-          </div>
-        </div>
-        <div class="BRfloatFoot">
-          <a href="https://openlibrary.org/dev/docs/bookreader">About the BookReader</a>
-        </div>
-      </div>`);
-  }
-
-  blankShareDiv() {
-    // FIXME the <button> el is closed with a </a>
-    return $(`
-      <div class="BRfloat BRshare">
-        <div class="BRfloatHead">
-          Share
-          <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>
-        </div>
-      </div>`);
   }
 
   /**
@@ -265,7 +233,7 @@ export class Toolbar {
     $form.find('.facebook-share-button').click(() => {
       const params = $.param({ u: this._getSocialShareUrl() });
       const url = 'https://www.facebook.com/sharer.php?' + params;
-      this.createPopup(url, 600, 400, 'Share');
+      createPopup(url, 600, 400, 'Share');
     });
     $form.find('.twitter-share-button').click(() => {
       const params = $.param({
@@ -273,7 +241,7 @@ export class Toolbar {
         text: br.bookTitle
       });
       const url = 'https://twitter.com/intent/tweet?' + params;
-      br.createPopup(url, 600, 400, 'Share');
+      createPopup(url, 600, 400, 'Share');
     });
     $form.find('.email-share-button').click(() => {
       const body = `${br.bookTitle}\n\n${this._getSocialShareUrl()}`;
@@ -308,7 +276,7 @@ export class Toolbar {
     if (br.thumbnail) {
       $leftCol.append($(`
         <div class="BRimageW">
-          <img src="${br.thumbnail}" alt="${utils.escapeHTML(br.bookTitle)}" />
+          <img src="${br.thumbnail}" alt="${escapeHTML(br.bookTitle)}" />
         </div>`));
     }
 
@@ -348,28 +316,6 @@ export class Toolbar {
   }
 
   /**
-   * Helper opens a popup window. On mobile it only opens a new tab. Used for share.
-   * @param {string} href
-   * @param {number} width
-   * @param {number} height
-   * @param {string} name
-   */
-  createPopup(href, width, height, name) {
-    // Fixes dual-screen position
-    const dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
-    const dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
-
-    const win_w = window.innerWidth || document.documentElement.clientWidth || screen.width;
-    const win_h = window.innerHeight || document.documentElement.clientHeight || screen.height;
-
-    const left = ((win_w / 2) - (width / 2)) + dualScreenLeft;
-    const top = ((win_h / 2) - (height / 2)) + dualScreenTop;
-    const opts = `status=1,width=${width},height=${height},top=${top},left=${left}`;
-
-    window.open(href, name, opts);
-  }
-
-  /**
    * @return {number} (in pixels) of the toolbar height. 0 if no toolbar.
    */
   getToolBarHeight() {
@@ -380,4 +326,58 @@ export class Toolbar {
       return 0;
     }
   }
+}
+
+export function blankInfoDiv() {
+  // FIXME the <button> el is closed with a </a>
+  return $(`
+    <div class="BRfloat BRinfo">
+      <div class="BRfloatHead">About this book
+        <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>
+      </div>
+      <div class="BRfloatBody">
+        <div class="BRfloatCover"></div>
+        <div class="BRfloatMeta">
+          <div class="BRfloatTitle">
+            <h2><a /></h2>
+          </div>
+        </div>
+      </div>
+      <div class="BRfloatFoot">
+        <a href="https://openlibrary.org/dev/docs/bookreader">About the BookReader</a>
+      </div>
+    </div>`);
+}
+
+export function blankShareDiv() {
+  // FIXME the <button> el is closed with a </a>
+  return $(`
+    <div class="BRfloat BRshare">
+      <div class="BRfloatHead">
+        Share
+        <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>
+      </div>
+    </div>`);
+}
+
+/**
+ * Helper opens a popup window. On mobile it only opens a new tab. Used for share.
+ * @param {string} href
+ * @param {number} width
+ * @param {number} height
+ * @param {string} name
+ */
+export function createPopup(href, width, height, name) {
+  // Fixes dual-screen position
+  const dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
+  const dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
+
+  const win_w = window.innerWidth || document.documentElement.clientWidth || screen.width;
+  const win_h = window.innerHeight || document.documentElement.clientHeight || screen.height;
+
+  const left = ((win_w / 2) - (width / 2)) + dualScreenLeft;
+  const top = ((win_h / 2) - (height / 2)) + dualScreenTop;
+  const opts = `status=1,width=${width},height=${height},top=${top},left=${left}`;
+
+  window.open(href, name, opts);
 }

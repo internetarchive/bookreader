@@ -25,7 +25,12 @@ import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 import { EVENTS } from './BookReader/events.js';
 import { DebugConsole } from './BookReader/DebugConsole.js';
-import { Toolbar } from './BookReader/Toolbar/Toolbar.js';
+import {
+  Toolbar,
+  blankInfoDiv,
+  blankShareDiv,
+  createPopup,
+} from './BookReader/Toolbar/Toolbar.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -2996,13 +3001,13 @@ BookReader.prototype.buildShareDiv = function() { return this._components.toolba
 BookReader.prototype.buildInfoDiv = function() { return this._components.toolbar.buildInfoDiv(...arguments); };
 BookReader.prototype.getToolBarHeight = function() { return this._components.toolbar.getToolBarHeight(...arguments); };
 /** @deprecated unused */
-BookReader.prototype.blankInfoDiv = function() { return this._components.toolbar.blankInfoDiv(...arguments); };
+BookReader.prototype.blankInfoDiv = blankInfoDiv;
 /** @deprecated unused */
-BookReader.prototype.blankShareDiv = function() { return this._components.toolbar.blankShareDiv(...arguments); };
+BookReader.prototype.blankShareDiv = blankShareDiv;
 /** @deprecated likely dead code; zoom isn't displayed in toolbar */
 BookReader.prototype.updateToolbarZoom = function() { return this._components.toolbar.updateToolbarZoom(...arguments); };
 /** @deprecated unused */
-BookReader.prototype.createPopup = function() { return this._components.toolbar.createPopup(...arguments); };
+BookReader.prototype.createPopup = createPopup;
 
 /**
  * Bind navigation handlers
