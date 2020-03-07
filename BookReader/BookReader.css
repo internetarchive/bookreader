@@ -1203,10 +1203,11 @@ i.BRicon {
   background-color: #4D4D4D;
 }
 .BRReadAloudToolbar .BRpager .ui-slider-handle {
-  background-color: white;
+  background: white;
+  border: none;
 }
 .BRReadAloudToolbar .BRpager .ui-slider-range {
-  background-color: rgba(255, 255, 255, 0.59);
+  background: rgba(255, 255, 255, 0.59);
 }
 .BRReadAloudToolbar .BRpage .BRicon {
   border-left: 1px solid #4D4D4D;
@@ -1238,14 +1239,14 @@ i.BRicon {
 .BRReadAloudToolbar.BRnavEmbed a {
   color: black;
 }
-.BRReadAloudToolbar.BRnavEmbed .BRpager {
-  background-color: #B7B7B7;
+.BRReadAloudToolbar.BRnavEmbed .BRpager.ui-slider {
+  background: #B7B7B7;
 }
-.BRReadAloudToolbar.BRnavEmbed .BRpager .ui-slider-handle {
-  background-color: #0074D1;
+.BRReadAloudToolbar.BRnavEmbed .BRpager.ui-slider .ui-slider-handle {
+  background: #0074D1;
 }
-.BRReadAloudToolbar.BRnavEmbed .BRpager .ui-slider-range {
-  background-color: rgba(0, 116, 209, 0.25);
+.BRReadAloudToolbar.BRnavEmbed .BRpager.ui-slider .ui-slider-range {
+  background: rgba(0, 116, 209, 0.25);
 }
 .BRReadAloudToolbar.BRnavEmbed .BRpage .BRicon {
   border-left: 1px solid #979797;
@@ -1277,14 +1278,14 @@ i.BRicon {
   .BRbodyMobileNavEnabled .BRReadAloudToolbar a, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar a {
     color: black;
   }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager {
-    background-color: #B7B7B7;
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager.ui-slider, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager.ui-slider {
+    background: #B7B7B7;
   }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager .ui-slider-handle, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager .ui-slider-handle {
-    background-color: #0074D1;
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager.ui-slider .ui-slider-handle, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager.ui-slider .ui-slider-handle {
+    background: #0074D1;
   }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager .ui-slider-range, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager .ui-slider-range {
-    background-color: rgba(0, 116, 209, 0.25);
+  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager.ui-slider .ui-slider-range, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager.ui-slider .ui-slider-range {
+    background: rgba(0, 116, 209, 0.25);
   }
   .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpage .BRicon, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpage .BRicon {
     border-left: 1px solid #979797;
@@ -1412,10 +1413,11 @@ i.BRicon {
   background-color: #4D4D4D;
 }
 .BRnav .BRpager .ui-slider-handle {
-  background-color: white;
+  background: white;
+  border: none;
 }
 .BRnav .BRpager .ui-slider-range {
-  background-color: rgba(255, 255, 255, 0.59);
+  background: rgba(255, 255, 255, 0.59);
 }
 .BRnav .BRpage .BRicon {
   border-left: 1px solid #4D4D4D;
@@ -1447,14 +1449,14 @@ i.BRicon {
 .BRnav.BRnavEmbed a {
   color: black;
 }
-.BRnav.BRnavEmbed .BRpager {
-  background-color: #B7B7B7;
+.BRnav.BRnavEmbed .BRpager.ui-slider {
+  background: #B7B7B7;
 }
-.BRnav.BRnavEmbed .BRpager .ui-slider-handle {
-  background-color: #0074D1;
+.BRnav.BRnavEmbed .BRpager.ui-slider .ui-slider-handle {
+  background: #0074D1;
 }
-.BRnav.BRnavEmbed .BRpager .ui-slider-range {
-  background-color: rgba(0, 116, 209, 0.25);
+.BRnav.BRnavEmbed .BRpager.ui-slider .ui-slider-range {
+  background: rgba(0, 116, 209, 0.25);
 }
 .BRnav.BRnavEmbed .BRpage .BRicon {
   border-left: 1px solid #979797;
@@ -1490,14 +1492,14 @@ i.BRicon {
   .BRbodyMobileNavEnabled .BRnav a, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav a {
     color: black;
   }
-  .BRbodyMobileNavEnabled .BRnav .BRpager, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager {
-    background-color: #B7B7B7;
+  .BRbodyMobileNavEnabled .BRnav .BRpager.ui-slider, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager.ui-slider {
+    background: #B7B7B7;
   }
-  .BRbodyMobileNavEnabled .BRnav .BRpager .ui-slider-handle, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager .ui-slider-handle {
-    background-color: #0074D1;
+  .BRbodyMobileNavEnabled .BRnav .BRpager.ui-slider .ui-slider-handle, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager.ui-slider .ui-slider-handle {
+    background: #0074D1;
   }
-  .BRbodyMobileNavEnabled .BRnav .BRpager .ui-slider-range, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager .ui-slider-range {
-    background-color: rgba(0, 116, 209, 0.25);
+  .BRbodyMobileNavEnabled .BRnav .BRpager.ui-slider .ui-slider-range, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager.ui-slider .ui-slider-range {
+    background: rgba(0, 116, 209, 0.25);
   }
   .BRbodyMobileNavEnabled .BRnav .BRpage .BRicon, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpage .BRicon {
     border-left: 1px solid #979797;
@@ -1531,7 +1533,7 @@ i.BRicon {
   flex: 1 auto;
 }
 
-.BRpager {
+.BRpager.ui-slider {
   position: relative;
   height: 8px;
   top: 13px;
@@ -1540,7 +1542,11 @@ i.BRicon {
   cursor: pointer;
   /* handle active state for touch */
 }
-.BRpager .ui-slider-handle {
+.BRpager.ui-slider.ui-widget.ui-widget-content {
+  border: none;
+}
+.BRpager.ui-slider .ui-slider-horizontal .ui-slider-handle,
+.BRpager.ui-slider .ui-slider-handle {
   position: absolute;
   width: 20px;
   height: 20px;
@@ -1549,12 +1555,13 @@ i.BRicon {
   margin-left: -9px;
   /* Center icon */
   z-index: 6;
+  border: none;
 }
-.BRpager .ui-slider-range {
+.BRpager.ui-slider .ui-slider-range {
   height: 100%;
   border-radius: 10px;
 }
-.touch .BRpager .ui-slider-handle.ui-state-active {
+.touch .BRpager.ui-slider .ui-slider-handle.ui-state-active {
   width: 24px;
   height: 24px;
   top: -4px;
@@ -1666,7 +1673,7 @@ i.BRicon {
     bottom: 40px;
   }
 
-  .BRpager {
+  .BRpager.ui-slider {
     height: 10px;
     top: 15px;
   }
@@ -2012,31 +2019,18 @@ html.mm-background .BookReader {
 }
 
 .BRmobileHamburger {
+  background: center center no-repeat transparent;
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAATCAYAAABhh3Y4AAAAAXNSR0IArs4c6QAAAFZJREFUSA1jrKmpafv//38xELMx0AgwMjL+AuJeFqAlubS0COR+qPm5TED2FJDNNPIU2FiozybT0o5Rs4dBCDCO5jNKYnE0n1ESeiNI72g+oyiyYfkMAKCpRQemMsj0AAAAAElFTkSuQmCC");
+  /* Should use SVG (below). See https://github.com/internetarchive/bookreader/issues/100 */
+  /*background: url('data:image/svg+xml;utf8,<svg width="15px" height="12px" viewBox="0 0 15 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <g id="hamburger-svg" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="square"> <path d="M0,1 L14,1" id="Line" stroke="#000000"></path> <path d="M2.39808173e-14,6 L14,6" id="Line-Copy" stroke="#000000"></path> <path d="M1.15463195e-14,11 L14,11" id="Line-Copy-2" stroke="#000000"></path> </g></svg>') center / 50% 50% no-repeat;*/
   display: block;
+  width: 40px;
+  height: 40px;
   position: absolute;
   top: 0;
-  left: 17px;
-  width: 26px;
-  height: 3px;
-  margin: 18px 0;
-  outline: none;
+  left: 10px;
   border: none;
-  border-radius: 3px;
-  background: #7a7a7a;
-}
-.BRmobileHamburger:before, .BRmobileHamburger:after {
-  position: absolute;
-  top: -8px;
-  right: 0;
-  left: 0;
-  height: 3px;
-  content: "";
-  border-radius: 3px;
-  background: #7a7a7a;
-}
-.BRmobileHamburger:after {
-  top: auto;
-  bottom: -8px;
+  outline: none;
 }
 
 .DrawerIconWrapper {

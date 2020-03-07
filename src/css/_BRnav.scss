@@ -18,10 +18,11 @@
   .BRpager {
     background-color: $brColorDarkBorder;
     .ui-slider-handle {
-      background-color: white;
+      background: white;
+      border: none;
     }
     .ui-slider-range {
-      background-color: rgba(255, 255, 255, 0.59);
+      background: rgba(255, 255, 255, 0.59);
     }
   }
 
@@ -46,13 +47,13 @@
 @mixin brNavLight {
   @include brLightControls;
 
-  .BRpager {
-    background-color: #B7B7B7;
+  .BRpager.ui-slider {
+    background: #B7B7B7;
     .ui-slider-handle {
-      background-color: $brColorThemeblue;
+      background: $brColorThemeblue;
     }
     .ui-slider-range {
-      background-color: rgba($brColorThemeblue, .25);
+      background: rgba($brColorThemeblue, .25);
     }
   }
 
@@ -84,7 +85,7 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  
+
   display: flex;
   flex-direction: column;
   /* important so it overlays over the book pages when showing */
@@ -247,7 +248,7 @@
   float: left;
   flex: 1 auto;
 }
-.BRpager {
+.BRpager.ui-slider  {
   position: relative;
   height: 8px;
   top: ($brNavHeightDesktop / 2) - 4px;
@@ -255,6 +256,11 @@
   border-radius: 10px;
   cursor: pointer;
 
+  &.ui-widget.ui-widget-content {
+    border: none;
+  }
+
+  .ui-slider-horizontal .ui-slider-handle,
   .ui-slider-handle {
     position: absolute;
     width: 20px;
@@ -263,6 +269,7 @@
     top: -5px;
     margin-left: -9px; /* Center icon */
     z-index: $brZindexBase + 5;
+    border: none;
   }
   .ui-slider-range {
     height: 100%;
@@ -368,7 +375,7 @@
   .BRnavCntlBtm {
     bottom: $brNavHeightMobile;
   }
-  .BRpager {
+  .BRpager.ui-slider {
     height: 10px;
     top: ($brNavHeightMobile / 2) - 5px;
   }

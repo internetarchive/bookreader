@@ -1,0 +1,5 @@
+{
+  "appCommand": "npm run serve",
+  "browsers": ["chrome", "firefox"],
+  "src": ["tests/e2e/**/*test.js"]
+}

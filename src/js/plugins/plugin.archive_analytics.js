@@ -1,3 +1,4 @@
+/* global BookReader, archive_analytics */
 /**
  * Plugin for Archive.org analytics
  */
