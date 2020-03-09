@@ -310,7 +310,7 @@ BookReader.prototype._BRSearchCallbackError = function(results, $el, fade) {
 };
 
 /**
- * updates search highlights controller
+ * updates search on-page highlights controller
  */
 BookReader.prototype.updateSearchHilites = function() {
   if (this.constMode2up == this.mode) {
@@ -321,32 +321,34 @@ BookReader.prototype.updateSearchHilites = function() {
 };
 
 /**
- * update search highlights in 1up mode
+ * update search on-page highlights in 1up mode
  */
 BookReader.prototype.updateSearchHilites1UP = function() {
   const results = this.searchResults;
   if (null == results) return;
-  let i, j;
-  for (i=0; i<results.matches.length; i++) {
-    for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
-      const box = results.matches[i].par[0].boxes[j];
-      const pageIndex = this.leafNumToIndex(box.page);
-      if (jQuery.inArray(pageIndex, this.displayedIndices) >= 0) {
-        if (null == box.div) {
+  let i, j, box, pageIndex, pageIsInView, highlight;
+  for (i = 0; i < results.matches.length; i++) {
+    for (j = 0; j < results.matches[i].par[0].boxes.length; j++) {
+      box = results.matches[i].par[0].boxes[j];
+      pageIndex = this.leafNumToIndex(box.page);
+      pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
+      if (pageIsInView) {
+        if (!box.div) {
           //create a div for the search highlight, and stash it in the box object
           box.div = document.createElement('div');
-          $(box.div).prop('className', 'BookReaderSearchHilite').appendTo(this.$('.pagediv'+pageIndex));
+          $(box.div).prop('className', 'BookReaderSearchHilite').appendTo(this.$(`.pagediv${pageIndex}`));
         }
-        $(box.div).css({
-          width:  (box.r-box.l)/this.reduce + 'px',
-          height: (box.b-box.t)/this.reduce + 'px',
-          left:   (box.l)/this.reduce + 'px',
-          top:    (box.t)/this.reduce +'px'
-        });
+        highlight = {
+          width:  `${(box.r-box.l)/this.reduce}px`,
+          height: `${(box.b-box.t)/this.reduce}px`,
+          left:   `${(box.l)/this.reduce}px`,
+          top:    `${(box.t)/this.reduce}px`
+        };
+        $(box.div).css(highlight);
       } else {
-        if (null != box.div) {
+        if (box.div) {
           $(box.div).remove();
-          box.div=null;
+          box.div = null;
         }
       }
     }
@@ -354,7 +356,7 @@ BookReader.prototype.updateSearchHilites1UP = function() {
 };
 
 /**
- * update search highlights in 2up mode
+ * update search on-page highlights in 2up mode
  */
 BookReader.prototype.updateSearchHilites2UP = function() {
   const results = this.searchResults;
@@ -406,8 +408,6 @@ BookReader.prototype.removeSearchHilites = function() {
  *  Adds a search result marker
  */
 BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
-  const self = this;
-
   const pageNumber = this.getPageNum(pageIndex);
   const uiStringSearch = "Search result"; // i18n
   const uiStringPage = "Page"; // i18n
