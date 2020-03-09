@@ -384,7 +384,9 @@ BookReader.prototype.removeSearchHilites = function() {
   }
 };
 
-
+/**
+ *  Adds a search result marker
+ */
 BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
   let self = this;
 
@@ -502,6 +504,9 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
   }
 };
 
+/**
+ * Removes all search pins
+ */
 BookReader.prototype.removeSearchResults = function() {
   this.removeSearchHilites(); //be sure to set all box.divs to null
   this.searchTerm = null;
@@ -511,26 +516,25 @@ BookReader.prototype.removeSearchResults = function() {
   this.$('.BRmobileSearchResultWrapper').empty(); // Empty mobile results
 };
 
-
-// searchHighlightVisible
-//________
-// Returns true if a search highlight is currently being displayed
+/**
+ * Returns true if a search highlight is currently being displayed
+ */
 BookReader.prototype.searchHighlightVisible = function() {
-  let results = this.searchResults;
+  const results = this.searchResults;
+  let visiblePages = [];
   if (null == results) return false;
 
   if (this.constMode2up == this.mode) {
-    var visiblePages = Array(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
+    visiblePages = [this.twoPage.currentIndexL, this.twoPage.currentIndex];
   } else if (this.constMode1up == this.mode) {
-    var visiblePages = Array();
-    visiblePages[0] = this.currentIndex();
+    visiblePages = [this.currentIndex()];
   } else {
     return false;
   }
 
   let i, j;
-  for (i=0; i<results.matches.length; i++) {
-    for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
+  for (i = 0; i < results.matches.length; i++) {
+    for (j = 0; j < results.matches[i].par[0].boxes.length; j++) {
       let box = results.matches[i].par[0].boxes[j];
       let pageIndex = this.leafNumToIndex(box.page);
       if (jQuery.inArray(pageIndex, visiblePages) >= 0) {
