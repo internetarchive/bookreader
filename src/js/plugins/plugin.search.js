@@ -84,14 +84,16 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
     const $el = super_.call(this);
     if (this.enableSearch) {
-      let $BRtoolbarSectionSearch = $("<span class='BRtoolbarSection BRtoolbarSectionSearch'>"
-          +         "<form class='BRbooksearch desktop'>"
-          +           "<input type='search' class='BRsearchInput' val='' placeholder='Search inside'/>"
-          +           "<button type='submit' class='BRsearchSubmit'>"
-          +              "<img src=\""+this.imagesBaseURL+"icon_search_button.svg\" />"
-          +           "</button>"
-          +         "</form>"
-          +       "</span>");
+      const $BRtoolbarSectionSearch = $(
+        `<span class="BRtoolbarSection BRtoolbarSectionSearch">
+          <form class="BRbooksearch desktop">
+            <input type="search" class="BRsearchInput" val="" placeholder="Search inside"/>
+            <button type="submit" class="BRsearchSubmit">
+              <img src="${this.imagesBaseURL}icon_search_button.svg" />
+            </button>
+          </form>
+        </span>`
+      );
       $BRtoolbarSectionSearch.insertAfter($el.find('.BRtoolbarSectionInfo'));
     }
     return $el;
@@ -121,15 +123,15 @@ BookReader.prototype.initToolbar = (function (super_) {
         disablePopup:true,
         error: self.BRSearchCallbackErrorMobile,
       });
-      self.$('.BRmobileSearchResultWrapper').append(
-        '<div>Your search results will appear below.</div>'
-                + '<div class="loader tc mt20"></div>'
+      this.$('.BRmobileSearchResultWrapper').append(
+        `<div>Your search results will appear below.</div>
+          <div class="loader tc mt20"></div>`
       );
       return false;
     });
     // Handle clearing the search results
-    this.$(".BRsearchInput").bind('input propertychange', function() {
-      if (this.value == "") self.removeSearchResults();
+    this.$(".BRsearchInput").bind('input propertychange', () => {
+      if (this.value === "") this.removeSearchResults();
     });
   };
 })(BookReader.prototype.initToolbar);
@@ -142,13 +144,11 @@ BookReader.prototype.initToolbar = (function (super_) {
  */
 BookReader.prototype.search = function(term, options) {
   options = options !== undefined ? options : {};
-  let defaultOptions = {
+  const defaultOptions = {
     // {bool} (default=false) goToFirstResult - jump to the first result
     goToFirstResult: false,
     // {bool} (default=false) disablePopup - don't show the modal progress
-    disablePopup: false,
-    error: this.BRSearchCallbackErrorDesktop.bind(this),
-    success: this.BRSearchCallback.bind(this),
+    disablePopup: false
   };
   options = jQuery.extend({}, defaultOptions, options);
 
@@ -167,16 +167,17 @@ BookReader.prototype.search = function(term, options) {
   // term = '"' + term + '"';
 
   // Remove the port and userdir
-  let url = 'https://' + this.server.replace(/:.+/, '') + this.searchInsideUrl + '?';
+  const serverPath = this.server.replace(/:.+/, '');
+  const baseUrl = `https://${serverPath}${this.searchInsideUrl}?`;
 
   // Remove subPrefix from end of path
   let path = this.bookPath;
-  let subPrefixWithSlash = '/' + this.subPrefix;
+  const subPrefixWithSlash = `/${this.subPrefix}`;
   if (this.bookPath.length - this.bookPath.lastIndexOf(subPrefixWithSlash) == subPrefixWithSlash.length) {
     path = this.bookPath.substr(0, this.bookPath.length - subPrefixWithSlash.length);
   }
 
-  let urlParams = {
+  const urlParams = {
     'item_id': this.bookId,
     'doc': this.subPrefix,
     'path': path,
@@ -188,22 +189,26 @@ BookReader.prototype.search = function(term, options) {
   // NOTE that the API does not expect / (slashes) to be encoded. (%2F) won't work
   paramStr = paramStr.replace(/%2F/g, '/');
 
-  url += paramStr;
+  const url = `${baseUrl}${paramStr}`;
 
   if (!options.disablePopup) {
-    this.showProgressPopup('<img class="searchmarker" src="'+this.imagesBaseURL + 'marker_srch-on.svg'+'"> Search results will appear below...');
+    this.showProgressPopup(
+      `<img class="searchmarker" src="${this.imagesBaseURL}marker_srch-on.svg" />
+      Search results will appear below...`);
   }
+
+  const processSearchResults = (data) => {
+    if (data.error || 0 == data.matches.length) {
+      this.BRSearchCallbackErrorDesktop(data, options);
+    } else {
+      this.BRSearchCallback(data, options);
+    }
+  };
+
   $.ajax({
-    url:url,
-    dataType:'jsonp',
-    success: function(data) {
-      if (data.error || 0 == data.matches.length) {
-        options.error.call(br, data, options);
-      } else {
-        options.success.call(br, data, options);
-      }
-    },
-  });
+    url: url,
+    dataType: 'jsonp'
+  }).then(processSearchResults);
 };
 
 /**
