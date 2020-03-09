@@ -217,6 +217,7 @@ BookReader.prototype.search = function(term, options) {
 };
 
 /**
+ * Search Results return handler
  * @param { object } results
  * @param { array } results.matches
  * @param { object } options
@@ -250,6 +251,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
 }
 
 /**
+ * Main search results error handler
  * @param { array } results
  */
 BookReader.prototype.BRSearchCallbackError = function(results) {
@@ -260,6 +262,7 @@ BookReader.prototype.BRSearchCallbackError = function(results) {
 };
 
 /**
+ * Callback specifically to draw search results error on mobile
  * @param { array } results
  */
 BookReader.prototype.BRSearchCallbackErrorMobile = function(results) {
@@ -268,6 +271,7 @@ BookReader.prototype.BRSearchCallbackErrorMobile = function(results) {
 };
 
 /**
+ * @private draws search results error
  * @param { object } results
  * @param { string } results.error
  * @param { array } results.matches
@@ -326,19 +330,19 @@ BookReader.prototype.updateSearchHilites = function() {
 BookReader.prototype.updateSearchHilites1UP = function() {
   const results = this.searchResults;
   if (null == results) return;
-  let i, j, box, pageIndex, pageIsInView, highlight;
+  let i, j;
   for (i = 0; i < results.matches.length; i++) {
     for (j = 0; j < results.matches[i].par[0].boxes.length; j++) {
-      box = results.matches[i].par[0].boxes[j];
-      pageIndex = this.leafNumToIndex(box.page);
-      pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
+      const box = results.matches[i].par[0].boxes[j];
+      const pageIndex = this.leafNumToIndex(box.page);
+      const pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
       if (pageIsInView) {
         if (!box.div) {
           //create a div for the search highlight, and stash it in the box object
           box.div = document.createElement('div');
           $(box.div).prop('className', 'BookReaderSearchHilite').appendTo(this.$(`.pagediv${pageIndex}`));
         }
-        highlight = {
+        const highlight = {
           width:  `${(box.r-box.l)/this.reduce}px`,
           height: `${(box.b-box.t)/this.reduce}px`,
           left:   `${(box.l)/this.reduce}px`,
