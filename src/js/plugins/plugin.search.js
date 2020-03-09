@@ -44,7 +44,7 @@ BookReader.prototype.init = (function (super_) {
       });
     }
 
-    let br = this;
+    const br = this;
     $(document).on('BookReader:navToggled', function() {
       let pinsVisibleState = br.navigationIsVisible() ? 'visible' : 'hidden';
       br.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
@@ -55,22 +55,24 @@ BookReader.prototype.init = (function (super_) {
 /** @override */
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   return function () {
-    let $el = super_.call(this);
+    const $el = super_.call(this);
     if (this.enableSearch) {
       $el.find('.BRmobileMenu__moreInfoRow').after($(
-        "<li>"
-                +"      <span>"
-                +"        <span class=\"DrawerIconWrapper \"><img class=\"DrawerIcon\" src=\""+this.imagesBaseURL+"icon_search_button_blue.svg\" alt=\"info-speaker\"/></span>"
-                +"        Search"
-                +"      </span>"
-                +"      <div>"
-                +         "<form class='BRbooksearch mobile'>"
-                +           "<input type='search' class='BRsearchInput' val='' placeholder='Search inside'/>"
-                +           "<button type='submit' class='BRsearchSubmit'></button>"
-                +         "</form>"
-                +         "<div class='BRmobileSearchResultWrapper'>Enter your search above.</div>"
-                +"      </div>"
-                +"    </li>"
+        `<li>
+          <span>
+            <span class="DrawerIconWrapper">
+              <img class="DrawerIcon" src="${this.imagesBaseURL}icon_search_button_blue.svg" alt="info-speaker"/>
+            </span>
+            Search
+          </span>
+          <div>
+            <form class="BRbooksearch mobile">
+              <input type="search" class="BRsearchInput" val="" placeholder="Search inside"/>
+              <button type="submit" class="BRsearchSubmit"></button>"
+            </form>
+            <div class="BRmobileSearchResultWrapper">Enter your search above.</div>
+          </div>
+        </li>`
       ));
     }
     return $el;
@@ -80,7 +82,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 /** @override */
 BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
-    let $el = super_.call(this);
+    const $el = super_.call(this);
     if (this.enableSearch) {
       let $BRtoolbarSectionSearch = $("<span class='BRtoolbarSection BRtoolbarSectionSearch'>"
           +         "<form class='BRbooksearch desktop'>"
