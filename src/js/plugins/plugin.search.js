@@ -43,10 +43,9 @@ BookReader.prototype.init = (function (super_) {
       this.search(this.options.initialSearchTerm, { goToFirstResult: true });
     }
 
-    const br = this;
-    $(document).on('BookReader:navToggled', function() {
-      const pinsVisibleState = br.navigationIsVisible() ? 'visible' : 'hidden';
-      br.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
+    $(document).on('BookReader:navToggled', () => {
+      const pinsVisibleState = this.navigationIsVisible() ? 'visible' : 'hidden';
+      this.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
     });
   };
 })(BookReader.prototype.init);
