@@ -145,13 +145,9 @@ BookReader.prototype.initToolbar = (function (super_) {
 BookReader.prototype.search = function(term, options) {
   options = options !== undefined ? options : {};
   const defaultOptions = {
-    /**
-     * @type { bool } - (default=false) goToFirstResult - jump to the first result
-     */
+    /** @type {boolean} jump to the first result (default=false) */
     goToFirstResult: false,
-    /**
-     * @type { bool } - (default=false) disablePopup - don't show the modal progress
-     */
+    /** @type {boolean} don't show the modal progress (default=false) */
     disablePopup: false
   };
   options = jQuery.extend({}, defaultOptions, options);
