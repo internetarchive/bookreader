@@ -543,16 +543,14 @@ BookReader.prototype.searchHighlightVisible = function() {
     return false;
   }
 
-  let i, j;
-  for (i = 0; i < results.matches.length; i++) {
-    for (j = 0; j < results.matches[i].par[0].boxes.length; j++) {
-      const box = results.matches[i].par[0].boxes[j];
+  results.matches.some(match => {
+    return match.par[0].boxes.some(box => {
       const pageIndex = this.leafNumToIndex(box.page);
       if (jQuery.inArray(pageIndex, visiblePages) >= 0) {
         return true;
       }
-    }
-  }
+    });
+  });
 
   return false;
 };
