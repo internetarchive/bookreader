@@ -317,10 +317,8 @@ BookReader.prototype.updateSearchHilites = function() {
 BookReader.prototype.updateSearchHilites1UP = function() {
   const results = this.searchResults;
   if (null == results) return;
-  let i, j;
-  for (i = 0; i < results.matches.length; i++) {
-    for (j = 0; j < results.matches[i].par[0].boxes.length; j++) {
-      const box = results.matches[i].par[0].boxes[j];
+  results.matches.forEach(match => {
+    match.par[0].boxes.forEach(box => {
       const pageIndex = this.leafNumToIndex(box.page);
       const pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
       if (pageIsInView) {
@@ -342,8 +340,8 @@ BookReader.prototype.updateSearchHilites1UP = function() {
           box.div = null;
         }
       }
-    }
-  }
+    });
+  });
 };
 
 /**
