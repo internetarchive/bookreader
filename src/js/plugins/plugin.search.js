@@ -178,10 +178,10 @@ BookReader.prototype.search = function(term, options) {
   }
 
   const urlParams = {
-    'item_id': this.bookId,
-    'doc': this.subPrefix,
-    'path': path,
-    'q': term,
+    item_id: this.bookId,
+    doc: this.subPrefix,
+    path,
+    q: term,
   };
 
   let paramStr = $.param(urlParams);
