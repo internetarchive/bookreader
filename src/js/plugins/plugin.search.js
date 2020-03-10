@@ -381,16 +381,14 @@ BookReader.prototype.updateSearchHilites2UP = function() {
 BookReader.prototype.removeSearchHilites = function() {
   const results = this.searchResults;
   if (null == results) return;
-  let i, j;
-  for (i=0; i<results.matches.length; i++) {
-    for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
-      const box = results.matches[i].par[0].boxes[j];
+  results.matches.forEach(match => {
+    match.par[0].boxes.forEach(box => {
       if (null != box.div) {
         $(box.div).remove();
-        box.div=null;
+        box.div = null;
       }
-    }
-  }
+    });
+  });
 };
 
 /**
