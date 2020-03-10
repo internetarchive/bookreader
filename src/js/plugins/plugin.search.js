@@ -184,10 +184,8 @@ BookReader.prototype.search = function(term, options) {
     q: term,
   };
 
-  let paramStr = $.param(urlParams);
-
   // NOTE that the API does not expect / (slashes) to be encoded. (%2F) won't work
-  paramStr = paramStr.replace(/%2F/g, '/');
+  const paramStr = $.param(urlParams).replace(/%2F/g, '/');
 
   const url = `${baseUrl}${paramStr}`;
 
