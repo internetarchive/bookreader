@@ -10,9 +10,7 @@ BookReader.docCookies = docCookies;
  */
 jQuery.extend(BookReader.defaultOptions, {
   enablePageResume: true,
-  /**
-   * @const null|string eg '/', '/details/id'
-   */
+  /** @type {string|null} eg '/', '/details/id' */
   resumeCookiePath: null,
 });
 

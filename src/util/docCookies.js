@@ -10,10 +10,11 @@
  */
 
 /**
- * Get current page number value
+ * Get specific key's value stored in cookie
  *
  * @param {string} sKey
- * @returns {number}
+ *
+ * @returns {string|null}
  */
 export function getItem(sKey) {
   if (!sKey) return null;
@@ -24,17 +25,16 @@ export function getItem(sKey) {
 }
 
 /**
- * Get current page value from cookie
+ * Set specific key's value in cookie
  *
- * @export
  * @param {string} sKey cookie name
- * @param {number} sValue page number value
+ * @param {string} sValue cookie value
  * @param {string} vEnd expire|max-age
  * @param {string} sPath path of current item
  * @param {string} sDomain domain name
  * @param {boolean} bSecure true|false
  *
- * @returns {boolean} true
+ * @returns {true}
  */
 export function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
   let sExpires = "";
@@ -46,16 +46,16 @@ export function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
 }
 
 /**
- * Set cookie as expired
+ * Remove specific key's value from cookie
  *
  * @param {string} sKey cookie name
  * @param {string} sPath path of current item
  * @param {string} sDomain
  *
- * @returns {boolean} true
+ * @returns {boolean}
  */
 export function removeItem(sKey, sPath, sDomain) {
-  if (!this.hasItem(sKey)) return false;
+  if (!hasItem(sKey)) return false;
 
   document.cookie = encodeURIComponent(sKey) + `=; expires=Thu, 01 Jan 1970 00:00:00 GMT` + (sDomain ? `; domain=` + sDomain : '') + (sPath ? `; path=` + sPath : '');
 
