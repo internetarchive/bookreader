@@ -250,7 +250,7 @@ BookReader.prototype.search = function(term, options) {
 /**
  * Search Results return handler
  * @callback
- * @param {searchInsideResults} results
+ * @param {SearchInsideResults} results
  * @param {object} options
  * @param {boolean} options.goToFirstResult
  */
