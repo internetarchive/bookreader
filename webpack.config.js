@@ -7,6 +7,7 @@ module.exports = buildJSFiles([
   'plugins/plugin.chapters.js',
   'plugins/plugin.iframe.js',
   'plugins/plugin.mobile_nav.js',
+  'plugins/plugin.resume.js',
   'plugins/plugin.search.js',
   'plugins/tts/plugin.tts.js',
 ]);
