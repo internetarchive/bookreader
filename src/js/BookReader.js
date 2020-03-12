@@ -21,6 +21,7 @@ This file is part of BookReader.
 */
 import { version as VERSION } from '../../package.json';
 import * as utils from './BookReader/utils.js';
+import { exposeTwoWay } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 import { EVENTS } from './BookReader/events.js';
@@ -2973,19 +2974,35 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
   }
 };
 
+/**
+ * Helper method to expose a component method onto BookReader, in such a way that
+ * if the BookReader method is overriden, so is the component's method.
+ */
+function exposeComponentMethod(ComponentClass, componentKey, method, brMethod=method) {
+  const componentToBookReader = cmp => cmp.br;
+  const bookReaderToComponent = br => br._components[componentKey];
+  exposeTwoWay(ComponentClass, method, componentToBookReader, BookReader, brMethod, bookReaderToComponent);
+}
+
+
 /***********************/
 /** Navbar extensions **/
 /***********************/
-BookReader.prototype.initNavbar = function() { return this._components.navbar.init(this.options); }
-BookReader.prototype.getNavPageNumString =  function() { return this._components.navbar.getNavPageNumString(); };
+BookReader.prototype.initNavbar = Navbar.prototype.init;
+exposeComponentMethod(Navbar, 'navbar', 'init', 'initNavbar');
+BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;
+exposeComponentMethod(Navbar, 'navbar', 'getNavPageNumString');
 /** @deprecated */
-BookReader.prototype.initEmbedNavbar = function() { return this._components.navbar.initEmbed(); };
+BookReader.prototype.initEmbedNavbar = Navbar.prototype.initEmbed;
+exposeComponentMethod(Navbar, 'navbar', 'initEmbed', 'initEmbedNavbar');
 /** @deprecated unused */
 BookReader.prototype.getNavPageNumHtml = getNavPageNumHtml;
 /** @deprecated unused outside this file */
-BookReader.prototype.updateNavPageNum =  function() { return this._components.navbar.updateNavPageNum(...arguments); };
+BookReader.prototype.updateNavPageNum = Navbar.prototype.updateNavPageNum;
+exposeComponentMethod(Navbar, 'navbar', 'updateNavPageNum');
 /** @deprecated unused outside this file */
-BookReader.prototype.updateNavIndex =  function() { return this._components.navbar.updateNavIndex(...arguments); };
+BookReader.prototype.updateNavIndex = Navbar.prototype.updateNavIndex;
+exposeComponentMethod(Navbar, 'navbar', 'updateNavIndex');
 /** @deprecated unused outside this file */
 BookReader.prototype.updateNavIndexThrottled = utils.throttle(BookReader.prototype.updateNavIndex, 250, false);
 /** @deprecated unused */
@@ -2995,17 +3012,23 @@ BookReader.prototype.updateNavIndexDebounced = utils.debounce(BookReader.prototy
 /************************/
 /** Toolbar extensions **/
 /************************/
-BookReader.prototype.buildToolbarElement = function() { return this._components.toolbar.buildToolbarElement(...arguments); };
-BookReader.prototype.initToolbar = function() { return this._components.toolbar.initToolbar(...arguments); };
-BookReader.prototype.buildShareDiv = function() { return this._components.toolbar.buildShareDiv(...arguments); };
-BookReader.prototype.buildInfoDiv = function() { return this._components.toolbar.buildInfoDiv(...arguments); };
-BookReader.prototype.getToolBarHeight = function() { return this._components.toolbar.getToolBarHeight(...arguments); };
+BookReader.prototype.buildToolbarElement = Toolbar.prototype.buildToolbarElement;
+exposeComponentMethod(Toolbar, 'toolbar', 'buildToolbarElement');
+BookReader.prototype.initToolbar = Toolbar.prototype.initToolbar;
+exposeComponentMethod(Toolbar, 'toolbar', 'initToolbar');
+BookReader.prototype.buildShareDiv = Toolbar.prototype.buildShareDiv;
+exposeComponentMethod(Toolbar, 'toolbar', 'buildShareDiv');
+BookReader.prototype.buildInfoDiv = Toolbar.prototype.buildInfoDiv;
+exposeComponentMethod(Toolbar, 'toolbar', 'buildInfoDiv');
+BookReader.prototype.getToolBarHeight = Toolbar.prototype.getToolBarHeight;
+exposeComponentMethod(Toolbar, 'toolbar', 'getToolBarHeight');
+/** @deprecated zoom no longer in toolbar */
+BookReader.prototype.updateToolbarZoom = Toolbar.prototype.updateToolbarZoom;
+exposeComponentMethod(Toolbar, 'toolbar', 'updateToolbarZoom');
 /** @deprecated unused */
 BookReader.prototype.blankInfoDiv = blankInfoDiv;
 /** @deprecated unused */
 BookReader.prototype.blankShareDiv = blankShareDiv;
-/** @deprecated likely dead code; zoom isn't displayed in toolbar */
-BookReader.prototype.updateToolbarZoom = function() { return this._components.toolbar.updateToolbarZoom(...arguments); };
 /** @deprecated unused */
 BookReader.prototype.createPopup = createPopup;
 

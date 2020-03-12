@@ -69,12 +69,12 @@ export class Toolbar {
    */
   initToolbar(mode, ui) {
     const { br } = this;
-    br.refs.$br.append(br.buildToolbarElement());
+    br.refs.$br.append(this.buildToolbarElement());
 
     br.$('.BRnavCntl').addClass('BRup');
     br.$('.pause').hide();
 
-    br.updateToolbarZoom(br.reduce); // Pretty format
+    this.updateToolbarZoom(br.reduce); // Pretty format
 
     // We build in mode 2
     br.refs.$BRtoolbar.append();
@@ -104,8 +104,8 @@ export class Toolbar {
       .addClass('title');
 
     // These functions can be overridden
-    br.buildInfoDiv(br.$('.BRinfo'));
-    br.buildShareDiv(br.$('.BRshare'));
+    this.buildInfoDiv(br.$('.BRinfo'));
+    this.buildShareDiv(br.$('.BRshare'));
 
     br.$('.share').colorbox({
       inline: true,

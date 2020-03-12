@@ -17,12 +17,11 @@ export class Navbar {
 
   /**
    * Initialize the navigation bar (bottom)
-   * @param {Object} options
-   * @param {string} [options.navbarTitle]
    * @return {JQuery}
    */
-  init({ navbarTitle: title }) {
+  init() {
     const { br } = this;
+    const { navbarTitle: title } = br.options;
 
     br.refs.$BRfooter = this.$root = $(`<div class="BRfooter"></div>`);
     br.refs.$BRnav = this.$nav = $(
