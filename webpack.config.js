@@ -12,6 +12,7 @@ module.exports = buildJSFiles([
   'plugins/plugin.search.js',
   'plugins/plugin.themes.js',
   'plugins/plugin.url.js',
+  'plugins/plugin.vendor-fullscreen.js',
   'plugins/tts/plugin.tts.js',
 ]);
 
