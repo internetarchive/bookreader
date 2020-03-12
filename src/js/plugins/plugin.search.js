@@ -135,8 +135,7 @@ BookReader.prototype.initToolbar = (function (super_) {
 })(BookReader.prototype.initToolbar);
 
 /**
- * Search Options
- * @typedef {object} searchOptions
+ * @typedef {object} SearchOptions
  * @property {boolean} goToFirstResult
  * @property {boolean} disablePopup
  * @property {(null|function)} error - @deprecated at v.5.0
