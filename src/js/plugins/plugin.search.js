@@ -300,8 +300,7 @@ BookReader.prototype.BRSearchCallbackErrorMobile = function(results) {
 /**
  * @private draws search results error
  * @callback
- * @param {object} results
-
+ * @param {SearchInsideResults} results
  * @param {jQuery} $el
  * @param {boolean} fade
  */
