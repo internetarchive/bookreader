@@ -237,6 +237,12 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   }
 }
 
+/** @deprecated */
+BookReader.prototype.BRSearchCallbackErrorDesktop = function(results, options) {
+  const $el = $(this.popup);
+  this._BRSearchCallbackError(results, $el, true);
+}
+
 /**
  * Main search results error handler
  * @param { array } results
