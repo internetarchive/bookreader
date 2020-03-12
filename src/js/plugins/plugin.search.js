@@ -146,7 +146,7 @@ BookReader.prototype.initToolbar = (function (super_) {
  * Submits search request
  *
  * @param {string} term
- * @param {searchOptions} options
+ * @param {SearchOptions} options
  */
 BookReader.prototype.search = function(term, options) {
   options = options !== undefined ? options : {};
