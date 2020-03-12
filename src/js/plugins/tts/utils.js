@@ -7,13 +7,13 @@ import langs from 'iso-language-codes/js/data.js';
  * @return {Promise<Event>}
  */
 export function promisifyEvent(target, eventType) {
-    return new Promise(res => {
-        const resolver = ev => {
-            target.removeEventListener(eventType, resolver);
-            res(ev);
-        };
-        target.addEventListener(eventType, resolver);
-    });
+  return new Promise(res => {
+    const resolver = ev => {
+      target.removeEventListener(eventType, resolver);
+      res(ev);
+    };
+    target.addEventListener(eventType, resolver);
+  });
 }
 
 /**
@@ -22,8 +22,8 @@ export function promisifyEvent(target, eventType) {
  * @return {number}
  */
 export function approximateWordCount(text) {
-    const m = text.match(/\S+/g);
-    return m ? m.length : 0;
+  const m = text.match(/\S+/g);
+  return m ? m.length : 0;
 }
 
 /**
@@ -32,7 +32,7 @@ export function approximateWordCount(text) {
  * @return {Promise}
  */
 export function sleep(ms) {
-    return new Promise(res => setTimeout(res, ms));
+  return new Promise(res => setTimeout(res, ms));
 }
 
 /**
@@ -43,7 +43,7 @@ export function sleep(ms) {
  * @return {boolean}
  */
 export function isChrome(userAgent=navigator.userAgent, vendor=navigator.vendor) {
-    return /chrome/i.test(userAgent) && /google inc/i.test(vendor);
+  return /chrome/i.test(userAgent) && /google inc/i.test(vendor);
 }
 
 /**
@@ -52,7 +52,7 @@ export function isChrome(userAgent=navigator.userAgent, vendor=navigator.vendor)
  * @return {boolean}
  */
 export function isFirefox(userAgent=navigator.userAgent) {
-    return /firefox/i.test(userAgent);
+  return /firefox/i.test(userAgent);
 }
 
 /**
@@ -61,7 +61,7 @@ export function isFirefox(userAgent=navigator.userAgent) {
  * @return {boolean}
  */
 export function isAndroid(userAgent=navigator.userAgent) {
-    return /android/i.test(userAgent);
+  return /android/i.test(userAgent);
 }
 
 /**
@@ -71,11 +71,11 @@ export function isAndroid(userAgent=navigator.userAgent) {
 
 /** Each lang is an array, with each index mapping to a different property */
 const COLUMN_TO_LANG_INDEX = {
-    'Name': 0,
-    'Endonym': 1,
-    'ISO 639-1': 2,
-    'ISO 639-2/T': 3,
-    'ISO 639-2/B': 4
+  'Name': 0,
+  'Endonym': 1,
+  'ISO 639-1': 2,
+  'ISO 639-2/T': 3,
+  'ISO 639-2/B': 4
 };
 
 /**
@@ -83,10 +83,10 @@ const COLUMN_TO_LANG_INDEX = {
  * @return {ISO6391?}
  */
 export function toISO6391(language) {
-    if (!language) return null;
-    language = language.toLowerCase();
+  if (!language) return null;
+  language = language.toLowerCase();
 
-    return searchForISO6391(language, ['ISO 639-1']) ||
+  return searchForISO6391(language, ['ISO 639-1']) ||
     searchForISO6391(language, ['ISO 639-2/B']) ||
     searchForISO6391(language, ['ISO 639-2/T', 'Endonym', 'Name']);
 }
@@ -98,14 +98,14 @@ export function toISO6391(language) {
  * @return {ISO6391?}
  */
 function searchForISO6391(language, columnsToSearch) {
-    for (let i = 0; i < langs.length; i++) {
-        for (let colI = 0; colI < columnsToSearch.length; colI++) {
-            const column = columnsToSearch[colI];
-            const columnValue = langs[i][COLUMN_TO_LANG_INDEX[column]];
-            if (columnValue.split(', ').map(x => x.toLowerCase()).indexOf(language) != -1) {
-                return langs[i][COLUMN_TO_LANG_INDEX['ISO 639-1']];
-            }
-        }
+  for (let i = 0; i < langs.length; i++) {
+    for (let colI = 0; colI < columnsToSearch.length; colI++) {
+      const column = columnsToSearch[colI];
+      const columnValue = langs[i][COLUMN_TO_LANG_INDEX[column]];
+      if (columnValue.split(', ').map(x => x.toLowerCase()).indexOf(language) != -1) {
+        return langs[i][COLUMN_TO_LANG_INDEX['ISO 639-1']];
+      }
     }
-    return null;
+  }
+  return null;
 }

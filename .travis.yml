@@ -17,7 +17,7 @@ node_js:
 install:
   - npm install
 script:
-  - npm run eslint
+  - npm run lint
   - npm run test:coverage
   - xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" npm run test:e2e
   - npm run codecov
