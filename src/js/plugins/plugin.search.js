@@ -253,13 +253,16 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
     </div>`
   );
 
-  let i, firstResultIndex = null;
-  for (i = 0; i < results.matches.length; i++) {
-    this.addSearchResult(results.matches[i].text, this.leafNumToIndex(results.matches[i].par[0].page));
+  let firstResultIndex = null;
+
+  results.matches.forEach((match, i) => {
+    const { text, par: [ partial ] } = match;
+    this.addSearchResult(text, this.leafNumToIndex(partial.page));
     if (i === 0 && options.goToFirstResult === true) {
-      firstResultIndex = this.leafNumToIndex(results.matches[i].par[0].page);
+      firstResultIndex = this.leafNumToIndex(partial.page);
     }
-  }
+  });
+
   this.updateSearchHilites();
   this.removeProgressPopup();
   if (firstResultIndex !== null) {
@@ -386,30 +389,32 @@ BookReader.prototype.updateSearchHilites1UP = function() {
  */
 BookReader.prototype.updateSearchHilites2UP = function() {
   const results = this.searchResults;
-  if (null == results) return;
-  let i, j;
-  for (i=0; i<results.matches.length; i++) {
-    //TODO: loop over all par objects
-    const pageIndex = this.leafNumToIndex(results.matches[i].par[0].page);
-    for (j=0; j<results.matches[i].par[0].boxes.length; j++) {
-      const box = results.matches[i].par[0].boxes[j];
-      if (jQuery.inArray(pageIndex, this.displayedIndices) >= 0) {
-        if (null == box.div) {
+
+  if (results === null) return;
+
+  const { matches } = results;
+  matches.forEach((match) => {
+    match.par[0].boxes.forEach(box => {
+      const pageIndex = this.leafNumToIndex(match.par[0].page);
+      const pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
+
+      if (pageIsInView) {
+        if (box.div === null) {
           //create a div for the search highlight, and stash it in the box object
           box.div = document.createElement('div');
           $(box.div).addClass('BookReaderSearchHilite')
-            .appendTo(this.refs.$brTwoPageView)
-          ;
+            .appendTo(this.refs.$brTwoPageView);
         }
         this.setHilightCss2UP(box.div, pageIndex, box.l, box.r, box.t, box.b);
       } else {
-        if (null != box.div) {
+        // clear stale reference
+        if (box.div !== null) {
           $(box.div).remove();
-          box.div=null;
+          box.div = null;
         }
       }
-    }
-  }
+    });
+  });
 };
 
 /**
