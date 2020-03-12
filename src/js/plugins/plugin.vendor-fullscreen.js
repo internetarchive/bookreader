@@ -4,7 +4,7 @@
  * Toggles browser's native fullscreen mode if available
  */
 
- const EVENT_NAMESPACE = '.bookreader_vendor-fullscreen';
+const EVENT_NAMESPACE = '.bookreader_vendor-fullscreen';
 // function isMobile() {
 //   return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('IEMobile') !== -1);
 // };
@@ -86,7 +86,7 @@ BookReader.prototype.enterFullWindow = function() {
   this._fullWindowExitHandler = function (e) {
     if (e.keyCode === 27) this.exitFullScreen();
   };
-  $(document).on('keyup.' + event_namespace, this._fullWindowExitHandler);
+  $(document).on('keyup.' + EVENT_NAMESPACE, this._fullWindowExitHandler);
 };
 
 /** 
@@ -95,7 +95,7 @@ BookReader.prototype.enterFullWindow = function() {
 BookReader.prototype.exitFullWindow = function() {
   this.refs.$brContainer.css('opacity', 0);
 
-  $(document).off('keyup' + event_namespace);
+  $(document).off('keyup' + EVENT_NAMESPACE);
 
   this.isFullscreenActive = false;
   this.updateBrClasses()

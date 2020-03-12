@@ -8,7 +8,7 @@ import '../../BookReader/jquery.colorbox-min.js';
 import '../../BookReader/jquery.bt.min.js';
 
 import '../../BookReader/BookReader.js';
-import '../../src/js/plugins/plugin.autoplay.js';
+import '../../src/js/plugins/plugin.vendor-fullscreen.js';
 
 
 let br;
@@ -22,39 +22,49 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe('Plugin: Menu Toggle', () => {
+describe('Plugin: Vendor-fullscreen', () => {
   test('has option flag', () => {
-    expect(BookReader.defaultOptions.enableAutoPlayPlugin).toEqual(true);
+    expect(BookReader.defaultOptions.enableVendorFullscreenPlugin).toEqual(true);
   });
-  test('has added BR property: auto', () => {
-    expect(br).toHaveProperty('auto');
-    expect(br.auto).toEqual(false);
-  });
-  test('has added BR property: autoTimer', () => {
-    expect(br).toHaveProperty('autoTimer');
-    expect(br.autoTimer).toEqual(null);
-  });
-  test('has added BR property: flipDelay', () => {
-    expect(br).toHaveProperty('flipDelay');
-    expect(br.flipDelay).toBeTruthy();
-    expect(br.flipDelay).toBeGreaterThan(1);
-  });
-  test('autoplay does not start when BookReaderInitializes', () => {
-    br.autoToggle = jest.fn();
-    br.init();
-    expect(br.autoToggle).toHaveBeenCalledTimes(0);
-  });
-  test('autoplay will run without `flipSpeed` parameters', () => {
-    const initialAutoTimer = br.autoTimer;
-    br.flipFwdToIndex = jest.fn();
-    br.autoStop = jest.fn();
-    br.init();
-    br.autoToggle();
-    // internally referenced functions that fire
-    expect(br.flipFwdToIndex).toHaveBeenCalledTimes(1);
 
-    expect(initialAutoTimer).toBeFalsy();
-    // br.autoTimer changes when autoToggle turns on
-    expect(br.autoTimer).toBeTruthy();
+  test('enterFullWindow will run when enter in Fullscreen mode', () => {
+    const enterFullWindow = br.enterFullWindow;
+    br.updateBrClasses = jest.fn();
+    br.resize = jest.fn();
+    br.init();
+    br.enterFullWindow();
+
+    expect(enterFullWindow).toBeTruthy();
+
+    // br.isVendorFullscreenActive set to `true` when enterFullWindow Called
+    expect(br.isVendorFullscreenActive).toEqual(true);
+
+    // br.updateBrClasses trigger when enterFullWindow called
+    expect(br.updateBrClasses).toHaveBeenCalledTimes(2);
+
+    // br.resize trigger when enterFullWindow called
+    expect(br.resize).toHaveBeenCalledTimes(1);
+  });
+
+  test('exitFullWindow will run when exit Fullscreen mode', () => {
+    const exitFullWindow = br.exitFullWindow;
+    br.updateBrClasses = jest.fn();
+    br.init();
+    br.exitFullWindow();
+
+    expect(exitFullWindow).toBeTruthy();
+
+    // br.isFullscreenActive set to `false` when exitFullWindow Called
+    expect(br.isFullscreenActive).toEqual(false);
+
+    // br.updateBrClasses trigger when exitFullWindow called
+    expect(br.updateBrClasses).toHaveBeenCalledTimes(2);
+  });
+
+  test('isFullscreen returns true when fullscreen activated', () => {
+    br.init();
+    br.isVendorFullscreenActive = true;
+
+    expect(br.isFullscreen).toBeTruthy();
   });
 });
