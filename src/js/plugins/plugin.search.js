@@ -134,21 +134,29 @@ BookReader.prototype.initToolbar = (function (super_) {
   };
 })(BookReader.prototype.initToolbar);
 
+/**
+ * Search Options
+ * @typedef {object} searchOptions
+ * @property {boolean} goToFirstResult
+ * @property {boolean} disablePopup
+ * @property {(null|function)} error - @deprecated at v.5.0
+ * @property {(null|function)} success - @deprecated at v.5.0
+ */
 
 /**
  * Submits search request
  *
- * @param { string } term
- * @param { object } options
- * @param { boolean } options.disablePopup
+ * @param {string} term
+ * @param {searchOptions} options
  */
 BookReader.prototype.search = function(term, options) {
   options = options !== undefined ? options : {};
+  /** @type {searchOptions} */
   const defaultOptions = {
-    /** @type {boolean} jump to the first result (default=false) */
-    goToFirstResult: false,
-    /** @type {boolean} don't show the modal progress (default=false) */
-    disablePopup: false
+    goToFirstResult: false, /* jump to the first result (default=false) */
+    disablePopup: false,    /* don't show the modal progress (default=false) */
+    error: null,            /* optional error handler (default=null) */
+    success: null,          /* optional success handler (default=null) */
   };
   options = jQuery.extend({}, defaultOptions, options);
 
@@ -210,11 +218,19 @@ BookReader.prototype.search = function(term, options) {
 };
 
 /**
+ * Search Inside results shape
+ * @typedef {object} searchInsideResults
+ * @property {string} error
+ * @property {array} matches
+ * @property {boolean} indexed
+ */
+
+/**
  * Search Results return handler
- * @param { object } results
- * @param { array } results.matches
- * @param { object } options
- * @param { boolean } options.goToFirstResult
+ * @callback
+ * @param {searchInsideResults} results
+ * @param {object} options
+ * @param {boolean} options.goToFirstResult
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
   this.searchResults = results;
@@ -245,7 +261,8 @@ BookReader.prototype.BRSearchCallbackErrorDesktop = function(results, options) {
 
 /**
  * Main search results error handler
- * @param { array } results
+ * @callback
+ * @param {searchInsideResults} results
  */
 BookReader.prototype.BRSearchCallbackError = function(results) {
   const $el = $(this.popup);
@@ -256,7 +273,8 @@ BookReader.prototype.BRSearchCallbackError = function(results) {
 
 /**
  * Callback specifically to draw search results error on mobile
- * @param { array } results
+ * @callback
+ * @param {array} results
  */
 BookReader.prototype.BRSearchCallbackErrorMobile = function(results) {
   const $el = this.$('.BRmobileSearchResultWrapper');
@@ -265,12 +283,11 @@ BookReader.prototype.BRSearchCallbackErrorMobile = function(results) {
 
 /**
  * @private draws search results error
- * @param { object } results
- * @param { string } results.error
- * @param { array } results.matches
- * @param { boolean } results.indexed
- * @param { jQuery } $el
- * @param { boolean } fade
+ * @callback
+ * @param {object} results
+
+ * @param {jQuery} $el
+ * @param {boolean} fade
  */
 BookReader.prototype._BRSearchCallbackError = function(results, $el, fade) {
   this.$('.BRnavpos .search').remove();
@@ -535,6 +552,7 @@ BookReader.prototype.removeSearchResults = function() {
 
 /**
  * Returns true if a search highlight is currently being displayed
+ * @returns {boolean}
  */
 BookReader.prototype.searchHighlightVisible = function() {
   const results = this.searchResults;
