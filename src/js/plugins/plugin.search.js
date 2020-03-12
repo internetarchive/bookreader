@@ -293,7 +293,7 @@ BookReader.prototype.BRSearchCallbackErrorDesktop = function(results, options) {
 /**
  * Main search results error handler
  * @callback
- * @param {searchInsideResults} results
+ * @param {SearchInsideResults} results
  */
 BookReader.prototype.BRSearchCallbackError = function(results) {
   const $el = $(this.popup);
