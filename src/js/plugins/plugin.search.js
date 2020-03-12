@@ -150,7 +150,7 @@ BookReader.prototype.initToolbar = (function (super_) {
  */
 BookReader.prototype.search = function(term, options) {
   options = options !== undefined ? options : {};
-  /** @type {searchOptions} */
+  /** @type {SearchOptions} */
   const defaultOptions = {
     goToFirstResult: false, /* jump to the first result (default=false) */
     disablePopup: false,    /* don't show the modal progress (default=false) */
