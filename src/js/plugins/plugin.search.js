@@ -225,10 +225,25 @@ BookReader.prototype.search = function(term, options) {
 };
 
 /**
- * Search Inside results shape
- * @typedef {object} searchInsideResults
+  * @typedef {object} SearchInsideMatchBox
+  * @property {number} page
+  * @property {number} r
+  * @property {number} l
+  * @property {number} b
+  * @property {number} t
+  * @property {HTMLDivElement} [div]
+  */
+
+/**
+ * @typedef {object} SearchInsideMatch
+ * @property {string} text
+ * @property {Array<{ page: number, boxes: SearchInsideMatchBox[] }>} par
+ */
+
+/**
+ * @typedef {object} SearchInsideResults
  * @property {string} error
- * @property {array} matches
+ * @property {SearchInsideMatch[]} matches
  * @property {boolean} indexed
  */
 
