@@ -253,11 +253,17 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
     </div>`
   );
 
-  results.matches.forEach(match => this.addSearchResult(match.text, match.par[0].page));
+  let i, firstResultIndex = null;
+  for (i = 0; i < results.matches.length; i++) {
+    this.addSearchResult(results.matches[i].text, this.leafNumToIndex(results.matches[i].par[0].page));
+    if (i === 0 && options.goToFirstResult === true) {
+      firstResultIndex = this.leafNumToIndex(results.matches[i].par[0].page);
+    }
+  }
   this.updateSearchHilites();
   this.removeProgressPopup();
-  if (options.goToFirstResult === true) {
-    this.jumpToIndex(this.leafNumToIndex(results.matches[0].par[0].page));
+  if (firstResultIndex !== null) {
+    this.jumpToIndex(firstResultIndex);
   }
 }
 
