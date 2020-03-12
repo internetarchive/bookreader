@@ -209,11 +209,11 @@ BookReader.prototype.search = function(term, options) {
 
     if (responseHasError) {
       hasCustomError
-        ? options.error(searchInsideResults, options)
+        ? options.error.call(this, searchInsideResults, options)
         : this.BRSearchCallbackError(searchInsideResults, options);
     } else {
       hasCustomSuccess
-        ? options.success(searchInsideResults, options)
+        ? options.success.call(this, searchInsideResults, options)
         : this.BRSearchCallback(searchInsideResults, options);
     }
   };
