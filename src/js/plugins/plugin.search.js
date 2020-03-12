@@ -203,11 +203,19 @@ BookReader.prototype.search = function(term, options) {
       Search results will appear below...`);
   }
 
-  const processSearchResults = (data) => {
-    if (data.error || 0 == data.matches.length) {
-      this.BRSearchCallbackError(data, options);
+  const processSearchResults = (searchInsideResults) => {
+    const responseHasError = searchInsideResults.error || !searchInsideResults.matches.length;
+    const hasCustomError = typeof options.error === 'function';
+    const hasCustomSuccess = typeof options.success === 'function';
+
+    if (responseHasError) {
+      hasCustomError
+        ? options.error(searchInsideResults, options)
+        : this.BRSearchCallbackError(searchInsideResults, options);
     } else {
-      this.BRSearchCallback(data, options);
+      hasCustomSuccess
+        ? options.success(searchInsideResults, options)
+        : this.BRSearchCallback(searchInsideResults, options);
     }
   };
 
