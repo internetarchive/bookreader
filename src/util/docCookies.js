@@ -29,35 +29,38 @@ export function getItem(sKey) {
  *
  * @param {string} sKey cookie name
  * @param {string} sValue cookie value
- * @param {string} vEnd expire|max-age
- * @param {string} sPath path of current item
- * @param {string} sDomain domain name
- * @param {boolean} bSecure true|false
+ * @param {string} [vEnd] expire|max-age
+ * @param {string} [sPath] path of current item
+ * @param {string} [sDomain] domain name
+ * @param {boolean} [bSecure]
  *
  * @returns {true}
  */
 export function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
-  let sExpires = "";
-  if (vEnd) sExpires = `; expires=` + vEnd.toUTCString();
-
-  document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue) + sExpires + (sDomain ? `; domain=` + sDomain : '') + (sPath ? `; path=` + sPath : '') + (bSecure ? `; secure` : '');
+  document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue) 
+  + (vEnd ? `; expires=${vEnd.toUTCString()}` : '')
+  + (sDomain ? `; domain=${sDomain}`: '')
+  + (sPath ? `; path=${sPath}` : '')
+  + (bSecure ? `; secure` : '');
 
   return true;
 }
 
 /**
- * Remove specific key's value from cookie
- *
+ * BROKEN Remove specific key's value from cookie
+ * @fixme hasItem isn't even implemented! This will always error.
  * @param {string} sKey cookie name
- * @param {string} sPath path of current item
- * @param {string} sDomain
+ * @param {string} [sPath] path of current item
+ * @param {string} [sDomain]
  *
  * @returns {boolean}
  */
 export function removeItem(sKey, sPath, sDomain) {
   if (!hasItem(sKey)) return false;
 
-  document.cookie = encodeURIComponent(sKey) + `=; expires=Thu, 01 Jan 1970 00:00:00 GMT` + (sDomain ? `; domain=` + sDomain : '') + (sPath ? `; path=` + sPath : '');
+  document.cookie = encodeURIComponent(sKey) + `=; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+  + (sDomain ? `; domain=${sDomain}` : '')
+  + (sPath ? `; path=${sPath}` : '');
 
   return true;
 }
