@@ -49,7 +49,7 @@ function instantiateBookReader(selector, extraOptions) {
 
     el: selector,
   };
-  Object.assign(options, extraOptions);
+  $.extend(options, extraOptions);
   var br = new BookReader(options);
   br.init();
 }
