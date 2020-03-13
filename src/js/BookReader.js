@@ -21,7 +21,7 @@ This file is part of BookReader.
 */
 import { version as VERSION } from '../../package.json';
 import * as utils from './BookReader/utils.js';
-import { exposeTwoWay } from './BookReader/utils/classes.js';
+import { exposeLinked } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 import { EVENTS } from './BookReader/events.js';
@@ -2981,7 +2981,7 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 function exposeComponentMethod(ComponentClass, componentKey, method, brMethod=method) {
   const componentToBookReader = cmp => cmp.br;
   const bookReaderToComponent = br => br._components[componentKey];
-  exposeTwoWay(ComponentClass, method, componentToBookReader, BookReader, brMethod, bookReaderToComponent);
+  exposeLinked(ComponentClass, method, componentToBookReader, BookReader, brMethod, bookReaderToComponent);
 }
 
 
