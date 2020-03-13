@@ -9,6 +9,7 @@ module.exports = buildJSFiles([
   'plugins/plugin.mobile_nav.js',
   'plugins/plugin.resume.js',
   'plugins/plugin.search.js',
+  'plugins/plugin.themes.js',
   'plugins/tts/plugin.tts.js',
 ]);
 
