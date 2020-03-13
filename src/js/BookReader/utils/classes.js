@@ -12,7 +12,7 @@
  * @param {string} toMethod the name of the method to add to TTo (likely will be equal to fromMethod)
  * @param {function(TTo): TFrom} toTransform how to get the TFrom this to use when calling the new method
  */
-export function exposeTwoWay(FromClass, fromMethod, fromTransform, ToClass, toMethod, toTransform) {
+export function exposeLinked(FromClass, fromMethod, fromTransform, ToClass, toMethod, toTransform) {
   // Wrapper function needed to "capture" the current version of fromMethod
   let wrapper = (fn => {
     return function () {
