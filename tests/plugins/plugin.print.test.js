@@ -37,7 +37,7 @@ describe('Plugin: Print', () => {
     expect(br.zip).toEqual('item.zip');
   });
 
-  test('get printURI', () => {
+  test('get getPageFile from an book item', () => {
     expect(br.getPageFile(1)).toEqual('item_jp2/item_0001.jp2');
   });
 });

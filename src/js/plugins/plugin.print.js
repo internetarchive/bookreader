@@ -50,7 +50,7 @@ BookReader.prototype.getPrintURI = function() {
     + '&format=' + this.imageFormat + '&file=' + this.getPageFile(indexToPrint)
     + '&width=' + this._getPageWidth(indexToPrint) + '&height=' + this._getPageHeight(indexToPrint);
 
-  if (this.constMode2up == this.mode) {
+  if (this.constMode2up === this.mode) {
     options += '&file2=' + this.getPageFile(this.twoPage.currentIndexR) + '&width2=' + this._getPageWidth(this.twoPage.currentIndexR);
     options += '&height2=' + this._getPageHeight(this.twoPage.currentIndexR);
     options += '&title=' + encodeURIComponent(this.shortTitle(50) + ' - Pages ' + this.getPageNum(this.twoPage.currentIndexL) + ', ' + this.getPageNum(this.twoPage.currentIndexR));
