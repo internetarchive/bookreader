@@ -134,6 +134,15 @@ BookReader.prototype.toggleFullscreen = function() {
 
 
 /**
+ * Returns true if current device is mobile
+ *
+ * @returns {boolean}
+ */
+BookReader.util.isMobile = function() {
+  return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('IEMobile') !== -1);
+};
+
+/**
  * Returns the DOM element being used for fullscreen.
  *
  * @returns {boolean}
