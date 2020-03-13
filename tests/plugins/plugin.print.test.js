@@ -1,4 +1,3 @@
-/* global BookReader */
 require('../../BookReader/jquery-ui-1.12.0.min.js');
 require('../../BookReader/dragscrollable-br.js');
 require('../../BookReader/jquery.colorbox-min.js');
@@ -37,7 +36,7 @@ describe('Plugin: Print', () => {
     expect(br.zip).toEqual('item.zip');
   });
 
-  test('get getPageFile from an book item', () => {
+  test('get getPageFile from item', () => {
     expect(br.getPageFile(1)).toEqual('item_jp2/item_0001.jp2');
   });
 });
