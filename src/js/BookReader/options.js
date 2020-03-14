@@ -195,6 +195,7 @@ export const DEFAULT_OPTIONS = {
  * @property {number} height
  * @property {string} [uri] If not provided, include a getPageURI
  * @property {number} [pageNum] Shown instead of leaf number if present
+ * @property {'L' | 'R'} [pageSide] PRIVATE; computed automatically
  * 
  * Note if URI is omitted, a custom getPageURI can be provided. This allows the page
  * URI to the result of a function, which allows for things such as dynamic

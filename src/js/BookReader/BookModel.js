@@ -1,4 +1,5 @@
 import { clamp } from './utils.js';
+/** @typedef {import('./options.js').PageData} PageData */
 
 /**
  * Contains information about the Book/Document independent of the way it is
@@ -7,15 +8,19 @@ import { clamp } from './utils.js';
  * in the BookReader data option.)
  */
 export function extendWithBookModel(BookReader) {
+  /**
+   * Memoized
+   * @return {{width: number, height: number}}
+   */
   BookReader.prototype.getMedianPageSize = function() {
     if (this._medianPageSize) {
       return this._medianPageSize;
     }
   
     // A little expensive but we just do it once
-    var widths = [];
-    var heights = [];
-    for (var i = 0; i < this.getNumLeafs(); i++) {
+    const widths = [];
+    const heights = [];
+    for (let i = 0; i < this.getNumLeafs(); i++) {
       widths.push(this.getPageWidth(i));
       heights.push(this.getPageHeight(i));
     }
@@ -23,7 +28,10 @@ export function extendWithBookModel(BookReader) {
     widths.sort();
     heights.sort();
   
-    this._medianPageSize = { width: widths[parseInt(widths.length / 2)], height: heights[parseInt(heights.length / 2)] };
+    this._medianPageSize = {
+      width: widths[parseInt(widths.length / 2)],
+      height: heights[parseInt(heights.length / 2)]
+    };
     return this._medianPageSize;
   };
 
@@ -44,7 +52,7 @@ export function extendWithBookModel(BookReader) {
    * @deprecated see getPageHeight
    */
   BookReader.prototype._getPageHeight = function(index) {
-    var clampedIndex = clamp(index, 0, this.getNumLeafs() - 1);
+    const clampedIndex = clamp(index, 0, this.getNumLeafs() - 1);
     return this.getPageHeight(clampedIndex);
   };
 
@@ -54,28 +62,23 @@ export function extendWithBookModel(BookReader) {
    * @return {Array|undefined}
    */
   BookReader.prototype.getPageIndex = function(pageNum) {
-    var pageIndices = this.getPageIndices(pageNum);
-
-    if (pageIndices.length > 0) {
-      return pageIndices[pageIndices.length - 1];
-    }
-
-    return undefined;
+    const pageIndices = this.getPageIndices(pageNum);
+    return pageIndices.length ? pageIndices[pageIndices.length - 1] : undefined;
   };
 
   /**
    * Returns an array (possibly empty) of the indices with the given page number
    * @param {string}
-   * @return {array}
+   * @return {Array<number>}
    */
   BookReader.prototype.getPageIndices = function(pageNum) {
-    var indices = [];
+    const indices = [];
 
     // Check for special "nXX" page number
     if (pageNum.slice(0,1) == 'n') {
       try {
-        var pageIntStr = pageNum.slice(1, pageNum.length);
-        var pageIndex = parseInt(pageIntStr);
+        const pageIntStr = pageNum.slice(1, pageNum.length);
+        const pageIndex = parseInt(pageIntStr);
         indices.push(pageIndex);
         return indices;
       } catch(err) {
@@ -83,8 +86,7 @@ export function extendWithBookModel(BookReader) {
       }
     }
 
-    var i;
-    for (i=0; i<this.getNumLeafs(); i++) {
+    for (let i = 0; i<this.getNumLeafs(); i++) {
       if (this.getPageNum(i) == pageNum) {
         indices.push(i);
       }
@@ -141,14 +143,10 @@ export function extendWithBookModel(BookReader) {
 
   /**
    * @param  {number} index
-   * @return {string} - L or R
+   * @return {'L' | 'R'}
    */
   BookReader.prototype.getPageSide = function(index) {
-    var pageSide = this.getPageProp(index, 'pageSide');
-    if (!pageSide) {
-      pageSide = index % 2 === 0 ? 'R' : 'L';
-    }
-    return pageSide;
+    return this.getPageProp(index, 'pageSide') || (index % 2 === 0 ? 'R' : 'L');
   };
 
   /**
@@ -156,17 +154,14 @@ export function extendWithBookModel(BookReader) {
    * @return {string}
    */
   BookReader.prototype.getPageNum = function(index) {
-    var pageNum = this.getPageProp(index, 'pageNum');
-    if (pageNum === undefined) {
-      pageNum = 'n' + index;
-    }
-    return pageNum;
+    const pageNum = this.getPageProp(index, 'pageNum');
+    return pageNum === undefined ? `n${index}` : pageNum;
   };
 
   /**
    * Generalized property accessor.
    * @param  {number} index
-   * @return {mixed|undefined}
+   * @return {*|undefined}
    */
   BookReader.prototype.getPageProp = function(index, propName) {
     return this._getDataProp(index, propName);
@@ -180,13 +175,11 @@ export function extendWithBookModel(BookReader) {
    * @return {array} - eg [0, 1]
    */
   BookReader.prototype.getSpreadIndices = function(pindex) {
-    var spreadIndices;
-    if ('rl' == this.pageProgression) {
-      spreadIndices = this.getPageSide(pindex) == 'R' ? [pindex + 1, pindex] : [pindex, pindex - 1];
+    if (this.pageProgression == 'rl') {
+      return this.getPageSide(pindex) == 'R' ? [pindex + 1, pindex] : [pindex, pindex - 1];
     } else {
-      spreadIndices = this.getPageSide(pindex) == 'L' ? [pindex, pindex + 1] : [pindex - 1, pindex];
+      return this.getPageSide(pindex) == 'L' ? [pindex, pindex + 1] : [pindex - 1, pindex];
     }
-    return spreadIndices;
   };
 
   /**
@@ -204,25 +197,22 @@ export function extendWithBookModel(BookReader) {
    * @return {number}
    */
   BookReader.prototype.leafNumToIndex = function(leafNum) {
-    var dataf = this._getDataFlattened();
-    for (var i = 0; i < dataf.length; i++) {
-      if (dataf[i].leafNum == leafNum) {
-        return i;
-      }
-    }
+    const index = this._getDataFlattened()
+      .findIndex(d => d.leafNum == leafNum);
     // If no match is found, fall back to the leafNum provide (leafNum == index)
-    return leafNum;
+    return index > -1 ? index : leafNum;
   };
+
   /**
    * Parses the pageString format
    * @param {string} pageNum
    * @return {number|undefined}
    */
   BookReader.prototype.parsePageString = function(pageNum) {
-    var pageIndex;
+    let pageIndex;
     // Check for special "leaf"
-    var re = new RegExp('^leaf(\\d+)');
-    var leafMatch = re.exec(pageNum);
+    const re = new RegExp('^leaf(\\d+)');
+    const leafMatch = re.exec(pageNum);
     if (leafMatch) {
       pageIndex = this.leafNumToIndex(parseInt(leafMatch[1], 10));
       if (pageIndex === null) {
@@ -237,27 +227,27 @@ export function extendWithBookModel(BookReader) {
   /**
    * Helper. Flatten the nested structure (make 1d array),
    * and also add pageSide prop
-   * @return {array}
+   * @return {PageData[]}
    */
   BookReader.prototype._getDataFlattened = function() {
     if (this._getDataFlattened.cached && this._getDataFlattened.cached[1] === this.data.length)
       return this._getDataFlattened.cached[0];
 
-    var flattend = [];
-    var prevPageSide = null;
-    for (var i = 0; i < this.data.length; i++) {
-      for (var j = 0; j < this.data[i].length; j++) {
-        if (!this.data[i][j].pageSide) {
+    let prevPageSide = null;
+    const flattend = this.data.flatMap(spread => {
+      return spread.map(page => {
+        if (!page.pageSide) {
           if (prevPageSide === null) {
-            this.data[i][j].pageSide = this.data[i].length === 2 ? 'L' : 'R';
+            page.pageSide = spread.length === 2 ? 'L' : 'R';
           } else {
-            this.data[i][j].pageSide = prevPageSide === 'L' ? 'R' : 'L';
+            page.pageSide = prevPageSide === 'L' ? 'R' : 'L';
           }
         }
-        prevPageSide = this.data[i][j].pageSide;
-        flattend.push(this.data[i][j]);
-      }
-    }
+        prevPageSide = page.pageSide;
+        return page;
+      });
+    });
+
     // length is used as a cache breaker
     this._getDataFlattened.cached = [flattend, this.data.length];
     return flattend;
@@ -270,7 +260,7 @@ export function extendWithBookModel(BookReader) {
    * @return {array}
    */
   BookReader.prototype._getDataProp = function(index, prop) {
-    var dataf = this._getDataFlattened();
+    const dataf = this._getDataFlattened();
     if (isNaN(index) || index < 0 || index >= dataf.length)
       return;
     if ('undefined' == typeof(dataf[index][prop]))
