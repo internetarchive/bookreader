@@ -32,7 +32,7 @@ import {
   blankShareDiv,
   createPopup,
 } from './BookReader/Toolbar/Toolbar.js';
-import { extendWithBookModel } from './BookReader/BookModel.js';
+import { BookModel } from './BookReader/BookModel.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -82,6 +82,9 @@ BookReader.optionOverrides = {};
 BookReader.prototype.setup = function(options) {
   // Store the options used to setup bookreader
   this.options = options;
+
+  /** @type {number} @deprecated some past iterations set this */
+  this.numLeafs = undefined;
 
   // @deprecated: Instance constants. Use Class constants instead
   this.constMode1up = BookReader.constMode1up;
@@ -174,6 +177,7 @@ BookReader.prototype.setup = function(options) {
    * calls at the correct moments.
    **/
   this._components = {
+    bookModel: new BookModel(this),
     navbar: new Navbar(this),
     toolbar: new Toolbar(this),
   };
@@ -3497,7 +3501,31 @@ BookReader.prototype.lastDisplayableIndex = function() {
   }
 };
 
-extendWithBookModel(BookReader);
+
+/**************************/
+/** BookModel extensions **/
+/**************************/
+// @todo this needs to be updated with new linked facade function in other PR
+BookReader.prototype.getMedianPageSize = function() { return this._components.bookModel.getMedianPageSize(...arguments); };
+BookReader.prototype._getPageWidth = function() { return this._components.bookModel._getPageWidth(...arguments); };
+BookReader.prototype._getPageHeight = function() { return this._components.bookModel._getPageHeight(...arguments); };
+BookReader.prototype.getPageIndex = function() { return this._components.bookModel.getPageIndex(...arguments); };
+BookReader.prototype.getPageIndices = function() { return this._components.bookModel.getPageIndices(...arguments); };
+BookReader.prototype.getPageName = function() { return this._components.bookModel.getPageName(...arguments); };
+BookReader.prototype.getNumLeafs = function() { return this._components.bookModel.getNumLeafs(...arguments); };
+BookReader.prototype.getPageWidth = function() { return this._components.bookModel.getPageWidth(...arguments); };
+BookReader.prototype.getPageHeight = function() { return this._components.bookModel.getPageHeight(...arguments); };
+BookReader.prototype.getPageURI = function() { return this._components.bookModel.getPageURI(...arguments); };
+BookReader.prototype.getPageSide = function() { return this._components.bookModel.getPageSide(...arguments); };
+BookReader.prototype.getPageNum = function() { return this._components.bookModel.getPageNum(...arguments); };
+BookReader.prototype.getPageProp = function() { return this._components.bookModel.getPageProp(...arguments); };
+BookReader.prototype.getSpreadIndices = function() { return this._components.bookModel.getSpreadIndices(...arguments); };
+BookReader.prototype.leafNumToIndex = function() { return this._components.bookModel.leafNumToIndex(...arguments); };
+BookReader.prototype.parsePageString = function() { return this._components.bookModel.parsePageString(...arguments); };
+/** @deprecated unused */
+BookReader.prototype._getDataFlattened = function() { return this._components.bookModel._getDataFlattened(...arguments); };
+/** @deprecated unused */
+BookReader.prototype._getDataProp = function() { return this._components.bookModel._getDataProp(...arguments); };
 
 // Parameter related functions
 
