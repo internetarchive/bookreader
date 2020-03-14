@@ -9,7 +9,6 @@ import '../../BookReader/jquery.bt.min.js';
 import '../../BookReader/BookReader.js';
 import * as util from '../../src/js/plugins/plugin.vendor-fullscreen.js';
 
-
 let br;
 beforeEach(() => {
   document.body.innerHTML = '<div id="BookReader">';
@@ -63,7 +62,6 @@ describe('Plugin: Vendor-fullscreen', () => {
   test('isFullscreen returns true when fullscreen activated', () => {
     br.init();
     br.isVendorFullscreenActive = true;
-
     expect(br.isFullscreen).toBeTruthy();
   });
 
@@ -71,5 +69,4 @@ describe('Plugin: Vendor-fullscreen', () => {
     document.fullscreenElement = true;
     expect(util.isFullscreenActive).toBeTruthy();
   });
-  
 });
