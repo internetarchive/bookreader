@@ -2978,7 +2978,7 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
  * Helper method to expose a component method onto BookReader, in such a way that
  * if the BookReader method is overriden, so is the component's method.
  */
-function exposeComponentMethod(ComponentClass, componentKey, method, brMethod=method) {
+function exposeComponentMethod(ComponentClass, componentKey, method, brMethod = method) {
   const componentToBookReader = cmp => cmp.br;
   const bookReaderToComponent = br => br._components[componentKey];
   exposeLinked(ComponentClass, method, componentToBookReader, BookReader, brMethod, bookReaderToComponent);
@@ -3782,7 +3782,6 @@ BookReader.prototype.reloadImages = function() {
 };
 
 /**
- * @todo Move to Navbar.js
  * @param {boolean} ignoreDisplay - bypass the display check
  * @return {number}
  */
