@@ -127,6 +127,7 @@ export class Toolbar {
   }
 
   /**
+   * @deprecated
    * @todo .BRzoom doesn't exist anywhere, so this is likely dead code
    * Update the displayed zoom factor based on reduction factor
    * @param {number} reduce
