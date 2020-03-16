@@ -3,16 +3,16 @@
  * that if the ToClass's method is overriden, the FromClass's method is also overriden.
  * WARNING: This modifies FromClass' prototype! So FromClasses cannot be shared between
  * different ToClasses.
- * @template TFrom the class we'll be getting the method from
- * @template TTo the class we'll be adding the method to
  * @param {new () => TFrom} FromClass the class to get the method from
- * @param {string} fromMethod the method's name in FromClass
+ * @param {keyof TFrom} fromMethod the method's name in FromClass
  * @param {function(TFrom): TTo} fromTransform how to get the TTo `this` to use when setting the method on TFrom
  * @param {new () => TTo} ToClass the class to add the method to
  * @param {string} toMethod the name of the method to add to TTo (likely will be equal to fromMethod)
  * @param {function(TTo): TFrom} toTransform how to get the TFrom this to use when calling the new method
+ * @template TFrom type of FromClass for type-checking/autocomplete
+ * @template TTo type of ToClass for type-checking/autocomplete
  */
-export function exposeLinked(FromClass, fromMethod, fromTransform, ToClass, toMethod, toTransform) {
+export function exposeOverrideable(FromClass, fromMethod, fromTransform, ToClass, toMethod, toTransform) {
   // Wrapper function needed to "capture" the current version of fromMethod
   let wrapper = (fn => {
     return function () {

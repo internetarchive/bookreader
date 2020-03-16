@@ -21,7 +21,7 @@ This file is part of BookReader.
 */
 import { version as VERSION } from '../../package.json';
 import * as utils from './BookReader/utils.js';
-import { exposeLinked } from './BookReader/utils/classes.js';
+import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 import { EVENTS } from './BookReader/events.js';
@@ -2975,13 +2975,20 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 };
 
 /**
+ * @template TComponentClass extends { br: BookReader }
  * Helper method to expose a component method onto BookReader, in such a way that
  * if the BookReader method is overriden, so is the component's method.
+ * @param {new () => TComponentClass} ComponentClass
+ * @param {keyof BookReader.prototype._components} componentKey
+ * @param {keyof TComponentClass} method
+ * @param {string} [brMethod]
  */
 function exposeComponentMethod(ComponentClass, componentKey, method, brMethod = method) {
+  /** @type {function(TComponentClass): BookReader} */
   const componentToBookReader = cmp => cmp.br;
+  /** @type {function(BookReader): TComponentClass} */
   const bookReaderToComponent = br => br._components[componentKey];
-  exposeLinked(ComponentClass, method, componentToBookReader, BookReader, brMethod, bookReaderToComponent);
+  exposeOverrideable(ComponentClass, method, componentToBookReader, BookReader, brMethod, bookReaderToComponent);
 }
 
 
