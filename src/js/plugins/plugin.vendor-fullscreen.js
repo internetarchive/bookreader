@@ -147,7 +147,7 @@ export function getFullscreenElement() {
  * @returns {boolean}
  */
 export function isFullscreenActive() {
-  const fullscreenElement = this.getFullscreenElement();
+  const fullscreenElement = getFullscreenElement();
   return fullscreenElement !== null && fullscreenElement !== undefined;
 }
 
