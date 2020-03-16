@@ -1,10 +1,10 @@
-import { exposeLinked } from '../../../src/js/BookReader/utils/classes.js';
+import { exposeOverrideable } from '../../../src/js/BookReader/utils/classes.js';
 
-describe('exposeLinked', () => {
+describe('exposeOverrideable', () => {
     test('adds method to To class', () => {
         class From { foo() { return 3; } }
         class To { }
-        exposeLinked(From, 'foo', x => x, To, 'foo', x => x);
+        exposeOverrideable(From, 'foo', x => x, To, 'foo', x => x);
         expect(To.prototype).toHaveProperty('foo');
         expect(new To().foo()).toBe(3);
     });
@@ -13,7 +13,7 @@ describe('exposeLinked', () => {
         class From { foo() { return 3; } }
         class To { }
         const originalFoo = From.prototype.foo;
-        exposeLinked(From, 'foo', x => x, To, 'foo', x => x);
+        exposeOverrideable(From, 'foo', x => x, To, 'foo', x => x);
         To.prototype.foo = () => 7;
         expect(originalFoo).not.toBe(From.prototype.foo);
         expect(new To().foo()).toBe(7);
@@ -23,7 +23,7 @@ describe('exposeLinked', () => {
     test('can transform this', () => {
         class From { foo() { return this; } }
         class To { }
-        exposeLinked(From, 'foo', x => 'fake-this1', To, 'foo', x => 'fake-this2');
+        exposeOverrideable(From, 'foo', x => 'fake-this1', To, 'foo', x => 'fake-this2');
         const f = new From();
         expect(f.foo()).toBe(f);
         expect(new To().foo()).toBe('fake-this2');
@@ -32,7 +32,7 @@ describe('exposeLinked', () => {
     test('can transform this both ways if overriden', () => {
         class From { foo() { return [this]; } }
         class To { }
-        exposeLinked(From, 'foo', x => 'fake-this1', To, 'foo', x => 'fake-this2');
+        exposeOverrideable(From, 'foo', x => 'fake-this1', To, 'foo', x => 'fake-this2');
         // Override pattern common in bookreader
         To.prototype.foo = function(_super) {
             return function() {
@@ -65,7 +65,7 @@ describe('exposeLinked', () => {
             }
         }
 
-        exposeLinked(Component, 'createButton', c => c.br, BookReader, 'createButton', br => br.component);
+        exposeOverrideable(Component, 'createButton', c => c.br, BookReader, 'createButton', br => br.component);
 
         expect(new BookReader().createButton()).toBe('root button');
         expect(new BookReader().component.initToolbar()).toEqual(['root button']);
