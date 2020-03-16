@@ -36,19 +36,19 @@ if (!isMobile()) {
     return function() {
       super_.call(this);
 
-      if (!BookReader.util.fullscreenAllowed()) {
+      if (!fullscreenAllowed()) {
         return;
       }
       // In fullscreen mode the colorbox and overlay need to be inside the fullscreen element to display properly.
-      BookReader.util.bindFullscreenChangeListener(this, (e) => {
+      bindFullscreenChangeListener(this, (e) => {
         e.data.resize();
         e.data.updateBrClasses();
         const cboxOverlay = $('#cboxOverlay');
         const cbox = $('#colorbox');
-        if (BookReader.util.isFullscreenActive()) {
+        if (isFullscreenActive()) {
           // In full screen mode, the colorbox and overlay need
           // to be children of the fullscreen element to display properly.
-          const $fullscreen = $(BookReader.util.getFullscreenElement());
+          const $fullscreen = $(getFullscreenElement());
           $fullscreen.append(cboxOverlay).append(cbox);
         } else {
           // In non-fullscreen mode, the colorbox and overlay need
@@ -104,7 +104,7 @@ if (!isMobile()) {
    * @returns {boolean}
    */
   BookReader.prototype.isFullscreen = function() {
-    return BookReader.util.isFullscreenActive() || this.isVendorFullscreenActive;
+    return isFullscreenActive() || this.isVendorFullscreenActive;
   };
 
   /** 
@@ -112,14 +112,14 @@ if (!isMobile()) {
    */
   BookReader.prototype.toggleFullscreen = function() {
     if (this.isFullscreen()) {
-      if (BookReader.util.fullscreenAllowed()) {
-        BookReader.util.exitFullscreen();
+      if (fullscreenAllowed()) {
+        exitFullscreen();
       } else {
         this.exitFullWindow();
       }
     } else {
-      if (BookReader.util.fullscreenAllowed()) {
-        BookReader.util.requestFullscreen(this.refs.$br[0]);
+      if (fullscreenAllowed()) {
+        requestFullscreen(this.refs.$br[0]);
       } else {
         this.enterFullWindow();
       }
