@@ -95,6 +95,11 @@ export const DEFAULT_OPTIONS = {
   /**
    * @type {Array<{label: string, value: *, extraValueClass: string?}>}
    * Fields used to populate the info window
+   * @example [
+   *   {label: 'Title', value: 'Open Library BookReader Presentation'},
+   *   {label: 'Author', value: 'Internet Archive'},
+   *   {label: 'Demo Info', value: 'This demo shows how one could use BookReader with their own content.'},
+   * ]
    **/
   metadata: [],
   /** @type {string} */
