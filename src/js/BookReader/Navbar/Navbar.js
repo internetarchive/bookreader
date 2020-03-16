@@ -86,7 +86,7 @@ export class Navbar {
   initEmbed() {
     const { br } = this;
     // IA-specific
-    let thisLink = (window.location + '')
+    const thisLink = (window.location + '')
       .replace('?ui=embed','')
       .replace('/stream/', '/details/')
       .replace('#', '/');
