@@ -1,3 +1,4 @@
+/* global BookReader */
 /**
  * Plugin for URL management in BookReader
  * Note read more about the url "fragment" here:
@@ -6,7 +7,7 @@
 
 jQuery.extend(BookReader.defaultOptions, {
   enableUrlPlugin: true,
-  bookId: "",
+  bookId: '',
   // Defaults can be a urlFragment string
   defaults: null,
   updateWindowTitle: false,
@@ -25,6 +26,7 @@ jQuery.extend(BookReader.defaultOptions, {
   urlTrackIndex0: false,
 });
 
+/** @override */
 BookReader.prototype.setup = (function(super_) {
   return function(options) {
     super_.call(this, options);
@@ -38,6 +40,7 @@ BookReader.prototype.setup = (function(super_) {
   };
 })(BookReader.prototype.setup);
 
+/** @override */
 BookReader.prototype.init = (function(super_) {
   return function() {
 
@@ -74,7 +77,7 @@ BookReader.prototype.shortTitle = function(maximumCharacters) {
 };
 
 /**
- * Starts polling of window.location to see hash fragment changes
+ * Starts polling of window.location to see hash fragment changelet
  */
 BookReader.prototype.urlStartLocationPolling = function() {
   var self = this;
