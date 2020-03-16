@@ -3,8 +3,7 @@
 /**
  * Toggles browser's native fullscreen mode if available device is not mobile
  */
-// console.log(isMobile())
- if (!isMobile()) {
+if (!isMobile()) {
   const EVENT_NAMESPACE = '.bookreader_vendor-fullscreen';
 
   jQuery.extend(BookReader.defaultOptions, {
@@ -49,7 +48,7 @@
         if (BookReader.util.isFullscreenActive()) {
           // In full screen mode, the colorbox and overlay need
           // to be children of the fullscreen element to display properly.
-          let $fullscreen = $(BookReader.util.getFullscreenElement());
+          const $fullscreen = $(BookReader.util.getFullscreenElement());
           $fullscreen.append(cboxOverlay).append(cbox);
         } else {
           // In non-fullscreen mode, the colorbox and overlay need
@@ -140,7 +139,7 @@ export function getFullscreenElement() {
     document.webkitFullscreenElement ||
     document.mozFullScreenElement ||
     document.msFullscreenElement;
-};
+}
 
 /**
  * Returns true if the document is in fullscreen mode.
@@ -150,7 +149,7 @@ export function getFullscreenElement() {
 export function isFullscreenActive() {
   const fullscreenElement = this.getFullscreenElement();
   return fullscreenElement !== null && fullscreenElement !== undefined;
-};
+}
 
 /**
  * Exits fullscreen mode.
@@ -167,7 +166,7 @@ export function exitFullscreen() {
   } else if (document.msExitFullscreen) {
     document.msExitFullscreen();
   }
-};
+}
 
 /**
  * Requests fullscreen mode for the given element
@@ -184,7 +183,7 @@ export function requestFullscreen(element) {
   } else if (element.msRequestFullscreen) {
     element.msRequestFullscreen();
   }
-};
+}
 
 /**
  * Returns true if fullscreen mode is allowed on this device and document.
@@ -197,7 +196,7 @@ export function fullscreenAllowed() {
     document.webkitFullscreenEnabled ||
     document.mozFullScreenEnabled ||
     document.msFullScreenEnabled);
-};
+}
 
 /**
  * jQuery-style binding to a fullscreenchange event.
@@ -215,7 +214,7 @@ export function bindFullscreenChangeListener(
   ];
   const all_events = $.trim(event + vendor_prefixes.join(event) + event);
   $(document).bind(all_events, data, fullscreenchangeListener);
-};
+}
 
 /**
  * Returns true if current device is mobile
@@ -224,7 +223,7 @@ export function bindFullscreenChangeListener(
  */
 export function isMobile() {
   return (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('IEMobile') !== -1);
-};
+}
 
 /** @deprecated */
 BookReader.util.isMobile = isMobile;
