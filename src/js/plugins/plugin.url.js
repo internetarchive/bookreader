@@ -47,12 +47,13 @@ BookReader.prototype.init = (function(super_) {
   return function() {
 
     if (this.options.enableUrlPlugin) {
-      this.bind(BookReader.eventNames.PostInit, function(e, br) {
-        if (br.options.updateWindowTitle) {
-          document.title = br.shortTitle(50);
+      this.bind(BookReader.eventNames.PostInit, () => {
+        const { updateWindowTitle, urlMode } = this.options;
+        if (updateWindowTitle) {
+          document.title = this.shortTitle(50);
         }
-        if (br.options.urlMode === 'hash') {
-          br.urlStartLocationPolling();
+        if (urlMode === 'hash') {
+          this.urlStartLocationPolling();
         }
       });
 
@@ -129,9 +130,9 @@ BookReader.prototype.urlUpdateFragment = function() {
     delete allParams.page;
   }
 
-  const params = urlTrackedParams.reduce((validParams = {}, aParam) => {
-    if (aParam in allParams) {
-      validParams[aParam] = allParams[aParam];
+  const params = urlTrackedParams.reduce((validParams, paramName) => {
+    if (paramName in allParams) {
+      validParams[paramName] = allParams[paramName];
     }
     return validParams
   }, {});
@@ -163,8 +164,9 @@ BookReader.prototype.urlUpdateFragment = function() {
  * @return {string}
  */
 BookReader.prototype.urlReadFragment = function() {
-  if (this.options.urlMode === 'history') {
-    return window.location.pathname.substr(this.options.urlHistoryBasePath.length);
+  const { urlMode, urlHistoryBasePath } = this.options;
+  if (urlMode === 'history') {
+    return window.location.pathname.substr(urlHistoryBasePath.length);
   } else {
     return window.location.hash.substr(1);
   }
