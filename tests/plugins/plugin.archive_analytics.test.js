@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import '../../src/js/BookReader.js';
+import BookReader from '../../src/js/BookReader.js';
 import '../../src/js/plugins/plugin.archive_analytics.js';
 
 describe('archiveAnalyticsSendEvent', () => {
