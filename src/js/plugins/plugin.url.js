@@ -8,21 +8,23 @@
 jQuery.extend(BookReader.defaultOptions, {
   enableUrlPlugin: true,
   bookId: '',
-  // Defaults can be a urlFragment string
+  /** @type {string} Defaults can be a urlFragment string */
   defaults: null,
   updateWindowTitle: false,
 
-  // 'history' | 'hash',
+  /** @type {'history' | 'hash'} */
   urlMode: 'hash',
 
-  // When using 'history' mode, this part of the URL is kept constant
-  // Example: /details/plato/
+  /**
+   * When using 'history' mode, this part of the URL is kept constant
+   * @example /details/plato/
+   */
   urlHistoryBasePath: '/',
 
-  // Only these params will be reflected onto the URL
+  /** Only these params will be reflected onto the URL */
   urlTrackedParams: ['page', 'search', 'mode', 'region', 'highlight'],
 
-  // If true, don't update the URL when page == n0 (eg "/page/n0")
+  /** If true, don't update the URL when `page == n0 (eg "/page/n0")` */
   urlTrackIndex0: false,
 });
 
@@ -64,7 +66,8 @@ BookReader.prototype.init = (function(super_) {
 
 /**
  * Returns a shortened version of the title with the maximum number of characters
- * @param {string} maximumCharacters
+ * @param {number} maximumCharacters
+ * @return {string}
  */
 BookReader.prototype.shortTitle = function(maximumCharacters) {
   if (this.bookTitle.length < maximumCharacters) {
@@ -76,7 +79,7 @@ BookReader.prototype.shortTitle = function(maximumCharacters) {
 };
 
 /**
- * Starts polling of window.location to see hash fragment changelet
+ * Starts polling of window.location to see hash fragment changes
  */
 BookReader.prototype.urlStartLocationPolling = function() {
   this.oldLocationHash = this.urlReadFragment();
@@ -166,4 +169,3 @@ BookReader.prototype.urlReadFragment = function() {
     return window.location.hash.substr(1);
   }
 };
-
