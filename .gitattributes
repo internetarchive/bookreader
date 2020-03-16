@@ -7,9 +7,11 @@ BookReader/plugins/plugin.chapters.js binary
 BookReader/plugins/plugin.iframe.js binary
 BookReader/plugins/plugin.menu_toggle.js binary
 BookReader/plugins/plugin.mobile_nav.js binary
+BookReader/plugins/plugin.print.js binary
 BookReader/plugins/plugin.resume.js binary
 BookReader/plugins/plugin.themes.js binary
 BookReader/plugins/plugin.print.js binary
 BookReader/plugins/plugin.search.js binary
 BookReader/plugins/plugin.tts.js binary
 BookReader/plugins/plugin.url.js binary
+BookReader/plugins/plugin.vendor-fullscreen.js binary
