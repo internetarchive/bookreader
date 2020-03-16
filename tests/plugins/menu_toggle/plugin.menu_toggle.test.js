@@ -5,7 +5,7 @@ import '../../../BookReader/dragscrollable-br.js';
 import '../../../BookReader/jquery.colorbox-min.js';
 import '../../../BookReader/jquery.bt.min.js';
 
-import '../../../src/js/BookReader.js';
+import BookReader from '../../../src/js/BookReader.js';
 import '../../../src/js/plugins/menu_toggle/plugin.menu_toggle.js';
 
 
