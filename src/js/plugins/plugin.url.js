@@ -71,8 +71,7 @@ BookReader.prototype.shortTitle = function(maximumCharacters) {
     return this.bookTitle;
   }
 
-  var title = this.bookTitle.substr(0, maximumCharacters - 3);
-  title += "...";
+  const title = `${this.bookTitle.substr(0, maximumCharacters - 3)}...`;
   return title;
 };
 
@@ -80,7 +79,6 @@ BookReader.prototype.shortTitle = function(maximumCharacters) {
  * Starts polling of window.location to see hash fragment changelet
  */
 BookReader.prototype.urlStartLocationPolling = function() {
-  var self = this;
   this.oldLocationHash = this.urlReadFragment();
 
   if (this.locationPollId) {
@@ -88,24 +86,29 @@ BookReader.prototype.urlStartLocationPolling = function() {
     this.locationPollId = null;
   }
 
-  this.locationPollId = setInterval(function() {
-    var newFragment = self.urlReadFragment();
-    if (newFragment != self.oldLocationHash && newFragment != self.oldUserHash) {
-      self.trigger(BookReader.eventNames.stop);
+  const updateHash = () => {
+    const newFragment = this.urlReadFragment();
+    const hasFragmentChange = (newFragment != this.oldLocationHash) && (newFragment != this.oldUserHash);
 
+    if (!hasFragmentChange) { return; }
+
+    const params = this.paramsFromFragment(newFragment);
+
+    const updateParams = () => this.updateFromParams(params);
+
+    this.trigger(BookReader.eventNames.stop);
+    if (this.animating) {
       // Queue change if animating
-      if (self.animating) {
-        if (self.autoStop) self.autoStop();
-        self.animationFinishedCallback = function() {
-          self.updateFromParams(self.paramsFromFragment(newFragment));
-        };
-      } else {
-        // update immediately
-        self.updateFromParams(self.paramsFromFragment(newFragment));
-      }
-      self.oldUserHash = newFragment;
+      if (this.autoStop) this.autoStop();
+      this.animationFinishedCallback = updateParams;
+    } else {
+      // update immediately
+      updateParams();
     }
-  }, 500);
+    this.oldUserHash = newFragment;
+  }
+
+  this.locationPollId = setInterval(updateHash, 500);
 };
 
 /**
@@ -113,42 +116,37 @@ BookReader.prototype.urlStartLocationPolling = function() {
  * Call this instead of manually using window.location.replace
  */
 BookReader.prototype.urlUpdateFragment = function() {
-  var allParams = this.paramsFromCurrent();
-  var params = {};
+  const allParams = this.paramsFromCurrent();
+  const { urlMode, urlTrackIndex0, urlTrackedParams } = this.options;
 
-  if (!this.options.urlTrackIndex0
-      && 'undefined' !== typeof(allParams.index)
+  if (!urlTrackIndex0
+      && (typeof(allParams.index) !== 'undefined')
       && allParams.index === 0) {
     delete allParams.index;
     delete allParams.page;
   }
 
-  for (var i = 0; i < this.options.urlTrackedParams.length; i++) {
-    param = this.options.urlTrackedParams[i];
-    if (param in allParams) {
-      params[param] = allParams[param];
+  const params = urlTrackedParams.reduce((validParams = {}, aParam) => {
+    if (aParam in allParams) {
+      validParams[aParam] = allParams[aParam];
     }
-  }
+    return validParams
+  }, {});
 
-  var newFragment = this.fragmentFromParams(params);
-  var currFragment = this.urlReadFragment();
+  const newFragment = this.fragmentFromParams(params);
+  const currFragment = this.urlReadFragment();
 
   if (currFragment === newFragment) {
     return;
   }
 
-  if (this.options.urlMode === 'history') {
+  if (urlMode === 'history') {
     if (window.history && window.history.replaceState) {
-      var baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
-      var newFragmentWithSlash = newFragment === '' ? '' : '/' + newFragment;
+      const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
+      const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
 
-      window.history.replaceState(
-        {},
-        null,
-        baseWithoutSlash
-        + newFragmentWithSlash
-        + window.location.search
-      );
+      const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${window.location.search}`;
+      window.history.replaceState({}, null, newUrlPath);
     }
   } else {
     window.location.replace('#' + newFragment);
