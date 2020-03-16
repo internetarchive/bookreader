@@ -11,6 +11,7 @@ module.exports = buildJSFiles([
   'plugins/plugin.resume.js',
   'plugins/plugin.search.js',
   'plugins/plugin.themes.js',
+  'plugins/plugin.url.js',
   'plugins/tts/plugin.tts.js',
 ]);
 

@@ -47,6 +47,8 @@
 <script>
 // Override options coming from IA
 BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
+BookReader.optionOverrides.urlMode = 'history';
+BookReader.optionOverrides.urlHistoryBasePath = `${window.location.pathname}/`;
 </script>
 <script
   type="text/javascript"
