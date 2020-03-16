@@ -1811,11 +1811,6 @@ BookReader.prototype.exitFullScreen = function() {
 
     $(document).unbind('keyup', this._fullscreenCloseHandler);
 
-    var windowWidth = $(window).width();
-    if (windowWidth <= this.onePageMinBreakpoint) {
-        this.switchMode(this.constMode2up);
-    }
-
     this.isFullscreenActive = false;
     this.updateBrClasses()
 
