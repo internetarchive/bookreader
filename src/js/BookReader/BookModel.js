@@ -227,8 +227,7 @@ export class BookModel {
   parsePageString(pageNum) {
     let pageIndex;
     // Check for special "leaf"
-    const re = new RegExp('^leaf(\\d+)');
-    const leafMatch = re.exec(pageNum);
+    const leafMatch = /^leaf(\d+)/.exec(pageNum);
     if (leafMatch) {
       pageIndex = this.leafNumToIndex(parseInt(leafMatch[1], 10));
       if (pageIndex === null) {
@@ -250,6 +249,7 @@ export class BookModel {
       return this._getDataFlattenedCached[0];
 
     let prevPageSide = null;
+    // @ts-ignore TS doesn't know about flatMap for some reason
     const flattend = this.br.data.flatMap(spread => {
       return spread.map(page => {
         if (!page.pageSide) {

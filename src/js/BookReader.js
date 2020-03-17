@@ -24,6 +24,7 @@ import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
+/** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 import { EVENTS } from './BookReader/events.js';
 import { DebugConsole } from './BookReader/DebugConsole.js';
 import {
@@ -37,8 +38,6 @@ import { BookModel } from './BookReader/BookModel.js';
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
 }
-
-/** @typedef {typeof DEFAULT_OPTIONS} BookReaderOptions */
 
 /**
  * BookReader

@@ -121,7 +121,7 @@ export const DEFAULT_OPTIONS = {
   protected: false,
   
   /**
-   * @type {PageData[][]}
+   * @type {Array<[PageData, PageData]|[PageData]>}
    * Data is a simple way to populate the bookreader
    * 
    * Example:
@@ -135,9 +135,9 @@ export const DEFAULT_OPTIONS = {
    *       // Optional: If not provided, include a getPageURI
    *       uri: 'https://archive.org/image.jpg',
    *       // Optional: Shown instead of leaf number if present.
-   *       pageNum: 1
+   *       pageNum: '1'
    *     },
-   *     {width: 123, height: 123, uri: 'https://archive.org/image2.jpg', pageNum: 2},
+   *     {width: 123, height: 123, uri: 'https://archive.org/image2.jpg', pageNum: '2'},
    *   ]
    * ],
    * ```
@@ -194,7 +194,7 @@ export const DEFAULT_OPTIONS = {
  * @property {number} width
  * @property {number} height
  * @property {string} [uri] If not provided, include a getPageURI
- * @property {number} [pageNum] Shown instead of leaf number if present
+ * @property {string} [pageNum] Shown instead of leaf number if present
  * @property {number} [leafNum] Sometimes specified in Internet Archive books
  * @property {'L' | 'R'} [pageSide] PRIVATE; computed automatically
  * 
@@ -202,3 +202,6 @@ export const DEFAULT_OPTIONS = {
  * URI to the result of a function, which allows for things such as dynamic
  * page scaling.
  */
+
+/** @typedef {typeof DEFAULT_OPTIONS} BookReaderOptions */
+ 
