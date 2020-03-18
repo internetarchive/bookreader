@@ -1,3 +1,16 @@
+# 4.6.0
+Big change: all the plugins are now written in es6, and compiled to es5. There should
+be no observable changes, but note this was a big change.
+
+- Fix: UI on archive.org not consistent with demos due to CSS conflicts; @rchrd2
+- Convert all plugins to es6 + webpack; @cdrini @iisa @nsharma123
+- Increase jest coverage 39% → 47%; @cdrini @iisa @nsharma123
+- Increase testcafe coverage; @iisa
+- Add testcafe to travis; @cdrini
+- Add more/enforce more lint rules; @cdrini
+- Make demo pages more in sync with Internet Archive pages; @mc2
+- Add `npm run serve-dev` for auto-watching + auto-refreshing dev server; @cdrini
+
 # 4.5.1
 - Fix: Click-to-flip now works in 2up mode zoomed in
 - Fix: Image panning sometimes not working
