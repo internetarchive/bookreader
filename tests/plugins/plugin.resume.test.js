@@ -10,6 +10,9 @@ import '../../BookReader/jquery.bt.min.js';
 import '../../BookReader/BookReader.js';
 import '../../src/js/plugins/plugin.resume.js';
 
+import sinon from 'sinon';
+import * as docCookies from '../../src/util/docCookies.js';
+
 let br;
 beforeAll(() => {
   document.body.innerHTML = '<div id="BookReader">';
@@ -19,6 +22,7 @@ beforeAll(() => {
 
 afterEach(() => {
   jest.clearAllMocks();
+  sinon.restore();
 });
 
 describe('Plugin: Remember Current Page in Cookies', () => {
@@ -34,10 +38,32 @@ describe('Plugin: Remember Current Page in Cookies', () => {
   test('has added BR property: updateResumeValue', () => {
     expect(br).toHaveProperty('updateResumeValue');
   });
+});
 
-  test('updateResumeValue does start when BookReaderInit is called', () => {
+describe('updateResumeValue', () => {
+  test('starts when BookReaderInit is called', () => {
     br.updateResumeValue = jest.fn();
     br.init();
     expect(br.updateResumeValue).toHaveBeenCalledTimes(2);
+  });
+
+  test('handles cookieName=null', () => {
+    const { updateResumeValue } = BookReader.prototype;
+    const setItemSpy = sinon.spy(docCookies, 'setItem');
+    const fakeBr = { options: { resumeCookiePath: '/details/goody' } };
+    
+    updateResumeValue.call(fakeBr, 16);
+    expect(setItemSpy.callCount).toBe(1);
+    expect(setItemSpy.args[0].slice(0, 2)).toEqual(['br-resume', 16]);
+    expect(setItemSpy.args[0][3]).toEqual('/details/goody');
+  });
+
+  test('handles resumeCookiePath not set', () => {
+    const { updateResumeValue } = BookReader.prototype;
+    const setItemSpy = sinon.spy(docCookies, 'setItem');
+    const fakeBr = { options: { } };
+    
+    updateResumeValue.call(fakeBr, 16);
+    expect(setItemSpy.args[0][3]).toEqual('/');
   });
 });
