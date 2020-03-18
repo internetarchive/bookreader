@@ -156,15 +156,15 @@ BookReader.prototype.setup = function(options) {
 
   // Assign the data methods
   this.data = options.data;
-  this.getNumLeafs = options.getNumLeafs || BookReader.prototype.getNumLeafs;
-  this.getPageWidth = options.getPageWidth  || BookReader.prototype.getPageWidth;
-  this.getPageHeight = options.getPageHeight || BookReader.prototype.getPageHeight;
-  this.getPageURI = options.getPageURI || BookReader.prototype.getPageURI;
-  this.getPageSide = options.getPageSide || BookReader.prototype.getPageSide;
-  this.getPageNum = options.getPageNum || BookReader.prototype.getPageNum;
-  this.getPageProp = options.getPageProp || BookReader.prototype.getPageProp;
-  this.getSpreadIndices = options.getSpreadIndices || BookReader.prototype.getSpreadIndices;
-  this.leafNumToIndex = options.leafNumToIndex || BookReader.prototype.leafNumToIndex;
+  if (options.getNumLeafs) BookReader.prototype.getNumLeafs = options.getNumLeafs;
+  if (options.getPageWidth) BookReader.prototype.getPageWidth = options.getPageWidth;
+  if (options.getPageHeight) BookReader.prototype.getPageHeight = options.getPageHeight;
+  if (options.getPageURI) BookReader.prototype.getPageURI = options.getPageURI;
+  if (options.getPageSide) BookReader.prototype.getPageSide = options.getPageSide;
+  if (options.getPageNum) BookReader.prototype.getPageNum = options.getPageNum;
+  if (options.getPageProp) BookReader.prototype.getPageProp = options.getPageProp;
+  if (options.getSpreadIndices) BookReader.prototype.getSpreadIndices = options.getSpreadIndices;
+  if (options.leafNumToIndex) BookReader.prototype.leafNumToIndex = options.leafNumToIndex;
 
   /** @type {{[name: string]: JQuery}} */
   this.refs = {};
@@ -3504,27 +3504,46 @@ BookReader.prototype.lastDisplayableIndex = function() {
 /**************************/
 /** BookModel extensions **/
 /**************************/
-// @todo this needs to be updated with new linked facade function in other PR
-BookReader.prototype.getMedianPageSize = function() { return this._components.bookModel.getMedianPageSize(...arguments); };
-BookReader.prototype._getPageWidth = function() { return this._components.bookModel._getPageWidth(...arguments); };
-BookReader.prototype._getPageHeight = function() { return this._components.bookModel._getPageHeight(...arguments); };
-BookReader.prototype.getPageIndex = function() { return this._components.bookModel.getPageIndex(...arguments); };
-BookReader.prototype.getPageIndices = function() { return this._components.bookModel.getPageIndices(...arguments); };
-BookReader.prototype.getPageName = function() { return this._components.bookModel.getPageName(...arguments); };
-BookReader.prototype.getNumLeafs = function() { return this._components.bookModel.getNumLeafs(...arguments); };
-BookReader.prototype.getPageWidth = function() { return this._components.bookModel.getPageWidth(...arguments); };
-BookReader.prototype.getPageHeight = function() { return this._components.bookModel.getPageHeight(...arguments); };
-BookReader.prototype.getPageURI = function() { return this._components.bookModel.getPageURI(...arguments); };
-BookReader.prototype.getPageSide = function() { return this._components.bookModel.getPageSide(...arguments); };
-BookReader.prototype.getPageNum = function() { return this._components.bookModel.getPageNum(...arguments); };
-BookReader.prototype.getPageProp = function() { return this._components.bookModel.getPageProp(...arguments); };
-BookReader.prototype.getSpreadIndices = function() { return this._components.bookModel.getSpreadIndices(...arguments); };
-BookReader.prototype.leafNumToIndex = function() { return this._components.bookModel.leafNumToIndex(...arguments); };
-BookReader.prototype.parsePageString = function() { return this._components.bookModel.parsePageString(...arguments); };
+/** @deprecated not used outside */
+BookReader.prototype.getMedianPageSize = BookModel.prototype.getMedianPageSize;
+exposeComponentMethod(BookModel, 'bookModel', 'getMedianPageSize');
+BookReader.prototype._getPageWidth = BookModel.prototype._getPageWidth;
+exposeComponentMethod(BookModel, 'bookModel', '_getPageWidth');
+BookReader.prototype._getPageHeight = BookModel.prototype._getPageHeight;
+exposeComponentMethod(BookModel, 'bookModel', '_getPageHeight');
+BookReader.prototype.getPageIndex = BookModel.prototype.getPageIndex;
+exposeComponentMethod(BookModel, 'bookModel', 'getPageIndex');
+/** @deprecated not used outside */
+BookReader.prototype.getPageIndices = BookModel.prototype.getPageIndices;
+exposeComponentMethod(BookModel, 'bookModel', 'getPageIndices');
+BookReader.prototype.getPageName = BookModel.prototype.getPageName;
+exposeComponentMethod(BookModel, 'bookModel', 'getPageName');
+BookReader.prototype.getNumLeafs = BookModel.prototype.getNumLeafs;
+exposeComponentMethod(BookModel, 'bookModel', 'getNumLeafs');
+BookReader.prototype.getPageWidth = BookModel.prototype.getPageWidth;
+exposeComponentMethod(BookModel, 'bookModel', 'getPageWidth');
+BookReader.prototype.getPageHeight = BookModel.prototype.getPageHeight;
+exposeComponentMethod(BookModel, 'bookModel', 'getPageHeight');
+BookReader.prototype.getPageURI = BookModel.prototype.getPageURI;
+exposeComponentMethod(BookModel, 'bookModel', 'getPageURI');
+BookReader.prototype.getPageSide = BookModel.prototype.getPageSide;
+exposeComponentMethod(BookModel, 'bookModel', 'getPageSide');
+BookReader.prototype.getPageNum = BookModel.prototype.getPageNum;
+exposeComponentMethod(BookModel, 'bookModel', 'getPageNum');
+BookReader.prototype.getPageProp = BookModel.prototype.getPageProp;
+exposeComponentMethod(BookModel, 'bookModel', 'getPageProp');
+BookReader.prototype.getSpreadIndices = BookModel.prototype.getSpreadIndices;
+exposeComponentMethod(BookModel, 'bookModel', 'getSpreadIndices');
+BookReader.prototype.leafNumToIndex = BookModel.prototype.leafNumToIndex;
+exposeComponentMethod(BookModel, 'bookModel', 'leafNumToIndex');
+BookReader.prototype.parsePageString = BookModel.prototype.parsePageString;
+exposeComponentMethod(BookModel, 'bookModel', 'parsePageString');
 /** @deprecated unused */
-BookReader.prototype._getDataFlattened = function() { return this._components.bookModel._getDataFlattened(...arguments); };
+BookReader.prototype._getDataFlattened = BookModel.prototype._getDataFlattened;
+exposeComponentMethod(BookModel, 'bookModel', '_getDataFlattened');
 /** @deprecated unused */
-BookReader.prototype._getDataProp = function() { return this._components.bookModel._getDataProp(...arguments); };
+BookReader.prototype._getDataProp = BookModel.prototype._getDataProp;
+exposeComponentMethod(BookModel, 'bookModel', '_getDataProp');
 
 // Parameter related functions
 
