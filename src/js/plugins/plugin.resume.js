@@ -44,10 +44,10 @@ BookReader.prototype.getResumeValue = function() {
  * Can be overriden for different implementation
  *
  * @param {Number} index leaf index
- * @param {String} cookieName
  */
-BookReader.prototype.updateResumeValue = function(index, cookieName='br-resume') {
+BookReader.prototype.updateResumeValue = function(index, cookieName) {
   const ttl = new Date(+new Date + 12096e5); // 2 weeks
   const path = this.options.rsumeCookiePath || window.location.pathname;
+  cookieName = cookieName || 'br-resume';
   BookReader.docCookies.setItem(cookieName, index, ttl, path, null, false);
 }
