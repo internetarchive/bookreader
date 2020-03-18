@@ -412,7 +412,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
       const pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
 
       if (pageIsInView) {
-        if (box.div === null) {
+        if (!box.div) {
           //create a div for the search highlight, and stash it in the box object
           box.div = document.createElement('div');
           $(box.div).addClass('BookReaderSearchHilite')
@@ -421,7 +421,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
         this.setHilightCss2UP(box.div, pageIndex, box.l, box.r, box.t, box.b);
       } else {
         // clear stale reference
-        if (box.div !== null) {
+        if (box.div) {
           $(box.div).remove();
           box.div = null;
         }
