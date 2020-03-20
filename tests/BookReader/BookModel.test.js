@@ -132,14 +132,14 @@ describe('getSpreadIndices', () => {
 });
 
 describe('leafNumToIndex', () => {
-    test('returns leafNum as is if no leafNum in data', () => {
+    test('returns input if no leafNum in data', () => {
         const bm = new BookModel({ data: SAMPLE_DATA });
         expect(bm.leafNumToIndex(1)).toBe(1);
         expect(bm.leafNumToIndex(2)).toBe(2);
         expect(bm.leafNumToIndex(3)).toBe(3);
     });
 
-    test('handles pages with leafNum', () => {
+    test('returns true index when leafNum does not point to index', () => {
         const data = deepCopy(SAMPLE_DATA);
         for (const spread of data) {
             for (const page of spread) {
@@ -153,7 +153,7 @@ describe('leafNumToIndex', () => {
 });
 
 describe('parsePageString', () => {
-    test('handles pages with leafNum', () => {
+    test('handles leaf-prefixed PageString', () => {
         const data = deepCopy(SAMPLE_DATA);
         for (const spread of data) {
             for (const page of spread) {
@@ -171,5 +171,15 @@ describe('_getDataFlattened', () => {
     test('Assigns correct page sides', () => {
         const bm = new BookModel({ data: SAMPLE_DATA });
         expect(bm._getDataFlattened().map(page => page.pageSide)).toEqual(['R', 'L', 'R', 'L'])
+    });
+
+    test('Memoized based on data length', () => {
+        const data = deepCopy(SAMPLE_DATA);
+        const bm = new BookModel({ data });
+        const firstResult = bm._getDataFlattened();
+        expect(bm._getDataFlattened()).toBe(firstResult);
+        expect(bm._getDataFlattened()).toBe(firstResult);
+        bm.br.data = data.slice(0, 1);
+        expect(bm._getDataFlattened()).not.toBe(firstResult);
     });
 });

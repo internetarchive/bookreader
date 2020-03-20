@@ -1,3 +1,6 @@
+/** @typedef {import('./BookModel.js').PageNumString} PageNumString */
+/** @typedef {import('./BookModel.js').LeafNum} LeafNum */
+
 export const DEFAULT_OPTIONS = {
   /**
    * @type {string} A string, such as "mode/1up". See
@@ -194,8 +197,8 @@ export const DEFAULT_OPTIONS = {
  * @property {number} width
  * @property {number} height
  * @property {string} [uri] If not provided, include a getPageURI
- * @property {string} [pageNum] Shown instead of leaf number if present
- * @property {number} [leafNum] Sometimes specified in Internet Archive books
+ * @property {PageNumString} [pageNum] Shown instead of leaf number if present
+ * @property {LeafNum} [leafNum] Sometimes specified in Internet Archive books
  * @property {'L' | 'R'} [pageSide] PRIVATE; computed automatically
  * 
  * Note if URI is omitted, a custom getPageURI can be provided. This allows the page
