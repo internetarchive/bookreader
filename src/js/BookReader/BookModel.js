@@ -240,7 +240,7 @@ export class BookModel {
   }
 
   /**
-   * Helper. Flatten the nested structure (make 1d array), and also add pageSide prop
+   * Flatten the nested structure (make 1d array), and also add pageSide prop
    * @return {PageData[]}
    */
   _getDataFlattened() {
