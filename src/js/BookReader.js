@@ -170,23 +170,25 @@ BookReader.prototype.setup = function(options) {
   this.refs = {};
   
   /**
+   * @private (for now) Models are largely state storing classes. This might be too much
+   * granularity, but time will tell!
+   */
+  this._models = {
+    book: new BookModel(this),
+  };
+
+  /**
    * @private Components are 'subchunks' of bookreader functionality, usually UI related
    * They should be relatively decoupled from each other/bookreader.
    * Note there are no hooks right now; components just provide methods that bookreader
    * calls at the correct moments.
    **/
   this._components = {
-    /** @todo This isn't really a UI component; move to somewhere else */
-    bookModel: new BookModel(this),
     navbar: new Navbar(this),
     toolbar: new Toolbar(this),
   };
-};
 
-// Getters
-Object.defineProperty(BookReader.prototype, '_bookModel', {
-  get() { return this._components.bookModel; }
-});
+};
 
 /**
  * BookReader.util are static library functions
@@ -202,7 +204,7 @@ BookReader.util = utils;
 BookReader.prototype.extendParams = function(params, newParams) {
   var modifiedNewParams = $.extend({}, newParams);
   if ('undefined' != typeof(modifiedNewParams.page)) {
-    var pageIndex = this._bookModel.parsePageString(modifiedNewParams.page);
+    var pageIndex = this._models.book.parsePageString(modifiedNewParams.page);
     if (!isNaN(pageIndex))
       modifiedNewParams.index = pageIndex;
     delete modifiedNewParams.page;
@@ -222,8 +224,8 @@ BookReader.prototype.initParams = function() {
 
   // If we have a title leaf, use that as the default instead of index 0,
   // but only use as default if book has a few pages
-  if ('undefined' != typeof(this.titleLeaf) && this._bookModel.getNumLeafs() > 2) {
-    params.index = this._bookModel.leafNumToIndex(this.titleLeaf);
+  if ('undefined' != typeof(this.titleLeaf) && this._models.book.getNumLeafs() > 2) {
+    params.index = this._models.book.leafNumToIndex(this.titleLeaf);
   } else {
     params.index = 0;
   }
@@ -595,8 +597,8 @@ BookReader.prototype.drawLeafsOnePage = function() {
   var leafTop = 0;
   var leafBottom = 0;
 
-  for (i=0; i<this._bookModel.getNumLeafs(); i++) {
-    height  = parseInt(this._bookModel._getPageHeight(i)/this.reduce);
+  for (i=0; i<this._models.book.getNumLeafs(); i++) {
+    height  = parseInt(this._models.book._getPageHeight(i)/this.reduce);
 
     leafBottom += height;
     var topInView    = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
@@ -620,7 +622,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
   }
 
   var lastIndexToDraw = indicesToDisplay[indicesToDisplay.length-1];
-  if ( ((this._bookModel.getNumLeafs()-1) != lastIndexToDraw) && (1 < this.reduce) ) {
+  if ( ((this._models.book.getNumLeafs()-1) != lastIndexToDraw) && (1 < this.reduce) ) {
     indicesToDisplay.push(lastIndexToDraw+1);
   }
 
@@ -629,15 +631,15 @@ BookReader.prototype.drawLeafsOnePage = function() {
   leafTop = 0;
 
   for (i=0; i<firstIndexToDraw; i++) {
-    leafTop += parseInt(this._bookModel._getPageHeight(i)/this.reduce) +10;
+    leafTop += parseInt(this._models.book._getPageHeight(i)/this.reduce) +10;
   }
 
   for (i=0; i<indicesToDisplay.length; i++) {
     index = indicesToDisplay[i];
-    height = parseInt(this._bookModel._getPageHeight(index)/this.reduce);
+    height = parseInt(this._models.book._getPageHeight(index)/this.reduce);
 
     if (utils.notInArray(indicesToDisplay[i], this.displayedIndices)) {
-      var width = parseInt(this._bookModel._getPageWidth(index)/this.reduce);
+      var width = parseInt(this._models.book._getPageWidth(index)/this.reduce);
       var leftMargin = parseInt((containerWidth - width) / 2);
 
       var div = document.createElement('div');
@@ -702,7 +704,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   var seekTop;
 
   // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
-  for (i=0; i<this._bookModel.getNumLeafs(); i++) {
+  for (i=0; i<this._models.book.getNumLeafs(); i++) {
     leafWidth = this.thumbWidth;
     if (rightPos + (leafWidth + this.thumbPadding) > viewWidth){
       currentRow++;
@@ -720,7 +722,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     leafMap[currentRow].leafs[leafIndex].num = i;
     leafMap[currentRow].leafs[leafIndex].left = rightPos;
 
-    leafHeight = parseInt((this._bookModel.getPageHeight(leafMap[currentRow].leafs[leafIndex].num)*this.thumbWidth)/this._bookModel.getPageWidth(leafMap[currentRow].leafs[leafIndex].num), 10);
+    leafHeight = parseInt((this._models.book.getPageHeight(leafMap[currentRow].leafs[leafIndex].num)*this.thumbWidth)/this._models.book.getPageWidth(leafMap[currentRow].leafs[leafIndex].num), 10);
     if (leafHeight > leafMap[currentRow].height) {
       leafMap[currentRow].height = leafHeight;
     }
@@ -752,7 +754,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   var rowsToDisplay = [];
 
   // Visible leafs with least/greatest index
-  var leastVisible = this._bookModel.getNumLeafs() - 1;
+  var leastVisible = this._models.book.getNumLeafs() - 1;
   var mostVisible = 0;
 
   // Determine the thumbnails in view
@@ -803,7 +805,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         leaf = leafMap[row].leafs[j].num;
 
         leafWidth = this.thumbWidth;
-        leafHeight = parseInt((this._bookModel.getPageHeight(leaf)*this.thumbWidth)/this._bookModel.getPageWidth(leaf), 10);
+        leafHeight = parseInt((this._models.book.getPageHeight(leaf)*this.thumbWidth)/this._models.book.getPageWidth(leaf), 10);
         leafTop = leafMap[row].top;
         left = leafMap[row].leafs[index].left + pageViewBuffer;
         if ('rl' == this.pageProgression){
@@ -843,7 +845,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         this.refs.$brPageViewEl.append(div);
 
         img = document.createElement("img");
-        var thumbReduce = Math.floor(this._bookModel.getPageWidth(leaf) / this.thumbWidth);
+        var thumbReduce = Math.floor(this._models.book.getPageWidth(leaf) / this.thumbWidth);
 
         $(img).attr('src', this.imagesBaseURL + 'transparent.png')
           .css({'width': leafWidth+'px', 'height': leafHeight+'px' })
@@ -1095,7 +1097,7 @@ BookReader.prototype.resizePageView1up = function() {
     // current index in drawLeafsOnePage after we create the new view container
 
     // Make sure this will count as current page after resize
-    var fudgeFactor = (this._bookModel.getPageHeight(this.currentIndex()) / this.reduce) * 0.6;
+    var fudgeFactor = (this._models.book.getPageHeight(this.currentIndex()) / this.reduce) * 0.6;
     var oldLeafTop = this.onePageGetPageTop(this.currentIndex()) + fudgeFactor;
     var oldViewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
     scrollRatio = oldLeafTop / oldViewDimensions.height;
@@ -1141,9 +1143,9 @@ BookReader.prototype.resizePageView1up = function() {
 BookReader.prototype.onePageCalculateViewDimensions = function(reduce, padding) {
   var viewWidth = 0;
   var viewHeight = 0;
-  for (var i=0; i<this._bookModel.getNumLeafs(); i++) {
-    viewHeight += parseInt(this._bookModel._getPageHeight(i)/reduce) + padding;
-    var width = parseInt(this._bookModel._getPageWidth(i)/reduce);
+  for (var i=0; i<this._models.book.getNumLeafs(); i++) {
+    viewHeight += parseInt(this._models.book._getPageHeight(i)/reduce) + padding;
+    var width = parseInt(this._models.book._getPageWidth(i)/reduce);
     if (width>viewWidth) viewWidth=width;
   }
   return { width: viewWidth, height: viewHeight }
@@ -1335,7 +1337,7 @@ BookReader.prototype._reduceSort = function(a, b) {
  * @return {boolean} Returns true if page could be found, false otherwise.
  */
 BookReader.prototype.jumpToPage = function(pageNum) {
-  var pageIndex = this._bookModel.parsePageString(pageNum);
+  var pageIndex = this._models.book.parsePageString(pageNum);
 
   if ('undefined' != typeof(pageIndex)) {
     this.jumpToIndex(pageIndex);
@@ -1389,7 +1391,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
         leafIndex = 0;
       }
 
-      leafHeight = parseInt((this._bookModel.getPageHeight(leafIndex)*this.thumbWidth)/this._bookModel.getPageWidth(leafIndex), 10);
+      leafHeight = parseInt((this._models.book.getPageHeight(leafIndex)*this.thumbWidth)/this._models.book.getPageWidth(leafIndex), 10);
       if (leafHeight > rowHeight) { rowHeight = leafHeight; }
       if (leafIndex==0) { leafTop = bottomPos; }
       if (leafIndex==0) { bottomPos += this.thumbPadding + rowHeight; }
@@ -1615,7 +1617,7 @@ BookReader.prototype.prepareThumbnailView = function() {
   // utils.disableSelect(this.$('#BRpageview'));
 
   this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
-  this.reduce = this._bookModel.getPageWidth(0)/this.thumbWidth;
+  this.reduce = this._models.book.getPageWidth(0)/this.thumbWidth;
 
   this.displayedRows = [];
 
@@ -1656,7 +1658,7 @@ BookReader.prototype.prepareTwoPageView = function(centerPercentageX, centerPerc
     targetLeaf = this.lastDisplayableIndex();
   }
 
-  var currentSpreadIndices = this._bookModel.getSpreadIndices(targetLeaf);
+  var currentSpreadIndices = this._models.book.getSpreadIndices(targetLeaf);
   this.twoPage.currentIndexL = currentSpreadIndices[0];
   this.twoPage.currentIndexR = currentSpreadIndices[1];
 
@@ -1782,7 +1784,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
 
   $(this.leafEdgeR).bind('mousemove', this, function(e) {
     var jumpIndex = e.data.jumpIndexForRightEdgePageX(e.pageX);
-    $(e.data.twoPagePopUp).text('View ' + e.data._bookModel.getPageName(utils.clamp(jumpIndex, 0, e.data._bookModel.getNumLeafs() - 1)));
+    $(e.data.twoPagePopUp).text('View ' + e.data._models.book.getPageName(utils.clamp(jumpIndex, 0, e.data._models.book.getNumLeafs() - 1)));
 
     // $$$ TODO: Make sure popup is positioned so that it is in view
     // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
@@ -1794,7 +1796,7 @@ BookReader.prototype.prepareTwoPagePopUp = function() {
 
   $(this.leafEdgeL).bind('mousemove', this, function(e) {
     var jumpIndex = e.data.jumpIndexForLeftEdgePageX(e.pageX);
-    $(e.data.twoPagePopUp).text('View '+ e.data._bookModel.getPageName(utils.clamp(jumpIndex, 0, e.data._bookModel.getNumLeafs() - 1)));
+    $(e.data.twoPagePopUp).text('View '+ e.data._models.book.getPageName(utils.clamp(jumpIndex, 0, e.data._models.book.getNumLeafs() - 1)));
 
     // $$$ TODO: Make sure popup is positioned so that it is in view
     //           (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
@@ -1887,13 +1889,13 @@ BookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
   var canon5Dratio = 1.5;
 
   var first = {
-    height: this._bookModel._getPageHeight(firstIndex),
-    width: this._bookModel._getPageWidth(firstIndex)
+    height: this._models.book._getPageHeight(firstIndex),
+    width: this._models.book._getPageWidth(firstIndex)
   };
 
   var second = {
-    height: this._bookModel._getPageHeight(secondIndex),
-    width: this._bookModel._getPageWidth(secondIndex)
+    height: this._models.book._getPageHeight(secondIndex),
+    width: this._models.book._getPageWidth(secondIndex)
   };
 
   var firstIndexRatio  = first.height / first.width;
@@ -1906,7 +1908,7 @@ BookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
     ratio = secondIndexRatio;
   }
 
-  var totalLeafEdgeWidth = parseInt(this._bookModel.getNumLeafs() * 0.1);
+  var totalLeafEdgeWidth = parseInt(this._models.book.getNumLeafs() * 0.1);
   var maxLeafEdgeWidth   = parseInt(this.refs.$brContainer.prop('clientWidth') * 0.1);
   ideal.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
 
@@ -1942,13 +1944,13 @@ BookReader.prototype.getIdealSpreadSize = function(firstIndex, secondIndex) {
 BookReader.prototype.getSpreadSizeFromReduce = function(firstIndex, secondIndex, reduce) {
   var spreadSize = {};
   // $$$ Scale this based on reduce?
-  var totalLeafEdgeWidth = parseInt(this._bookModel.getNumLeafs() * 0.1);
+  var totalLeafEdgeWidth = parseInt(this._models.book.getNumLeafs() * 0.1);
   var maxLeafEdgeWidth   = parseInt(this.refs.$brContainer.prop('clientWidth') * 0.1); // $$$ Assumes leaf edge width constant at all zoom levels
   spreadSize.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
 
   // $$$ Possibly incorrect -- we should make height "dominant"
-  var nativeWidth = this._bookModel._getPageWidth(firstIndex) + this._bookModel._getPageWidth(secondIndex);
-  var nativeHeight = this._bookModel._getPageHeight(firstIndex) + this._bookModel._getPageHeight(secondIndex);
+  var nativeWidth = this._models.book._getPageWidth(firstIndex) + this._models.book._getPageWidth(secondIndex);
+  var nativeHeight = this._models.book._getPageHeight(firstIndex) + this._models.book._getPageHeight(secondIndex);
   spreadSize.height = parseInt( (nativeHeight / 2) / this.reduce );
   spreadSize.width = parseInt( (nativeWidth / 2) / this.reduce );
   spreadSize.reduce = reduce;
@@ -1982,12 +1984,12 @@ BookReader.prototype.twoPageIsZoomedIn = function() {
 
 BookReader.prototype.onePageGetAutofitWidth = function() {
   var widthPadding = 20;
-  return (this._bookeModel.getMedianPageSize().width + 0.0) / (this.refs.$brContainer.prop('clientWidth') - widthPadding * 2);
+  return (this._models.book.getMedianPageSize().width + 0.0) / (this.refs.$brContainer.prop('clientWidth') - widthPadding * 2);
 };
 
 BookReader.prototype.onePageGetAutofitHeight = function() {
   var availableHeight = this.refs.$brContainer.innerHeight();
-  return (this._bookeModel.getMedianPageSize().height + 0.0) / (availableHeight - this.padding * 2); // make sure a little of adjacent pages show
+  return (this._models.book.getMedianPageSize().height + 0.0) / (availableHeight - this.padding * 2); // make sure a little of adjacent pages show
 };
 
 /**
@@ -2000,7 +2002,7 @@ BookReader.prototype.onePageGetPageTop = function(index) {
   var leafTop = 0;
   var h;
   for (i=0; i<index; i++) {
-    h = parseInt(this._bookModel._getPageHeight(i)/this.reduce);
+    h = parseInt(this._models.book._getPageHeight(i)/this.reduce);
     leafTop += h + this.padding;
   }
   return leafTop;
@@ -2059,7 +2061,7 @@ BookReader.prototype.currentIndex = function() {
     return this.firstIndex; // $$$ TODO page in center of view would be better
   } else if (this.mode == this.constMode2up) {
     // Only allow indices that are actually present in book
-    return utils.clamp(this.firstIndex, 0, this._bookModel.getNumLeafs() - 1);
+    return utils.clamp(this.firstIndex, 0, this._models.book.getNumLeafs() - 1);
   } else {
     throw 'currentIndex called for unimplemented mode ' + this.mode;
   }
@@ -2198,7 +2200,7 @@ BookReader.prototype.scrollUp = function() {
 BookReader.prototype._scrollAmount = function() {
   if (this.constMode1up == this.mode) {
     // Overlap by % of page size
-    return parseInt(this.refs.$brContainer.prop('clientHeight') - this._bookModel.getPageHeight(this.currentIndex()) / this.reduce * 0.03);
+    return parseInt(this.refs.$brContainer.prop('clientHeight') - this._models.book.getPageHeight(this.currentIndex()) / this.reduce * 0.03);
   }
 
   return parseInt(0.9 * this.refs.$brContainer.prop('clientHeight'));
@@ -2225,7 +2227,7 @@ BookReader.prototype.flipBackToIndex = function(index) {
 
   this.updateNavIndexThrottled(index);
 
-  var previousIndices = this._bookModel.getSpreadIndices(index);
+  var previousIndices = this._models.book.getSpreadIndices(index);
 
   if (previousIndices[0] < this.firstDisplayableIndex() || previousIndices[1] < this.firstDisplayableIndex()) {
     return;
@@ -2408,7 +2410,7 @@ BookReader.prototype.flipFwdToIndex = function(index) {
 
   this.animating = true;
 
-  var nextIndices = this._bookModel.getSpreadIndices(index);
+  var nextIndices = this._models.book.getSpreadIndices(index);
   var gutter;
 
   if ('rl' != this.pageProgression) {
@@ -2561,7 +2563,7 @@ BookReader.prototype.prefetchImg = function(index) {
   if (loadImage) {
     var img = document.createElement("img");
     $(img).addClass('BRpageimage').addClass('BRnoselect');
-    if (index < 0 || index > (this._bookModel.getNumLeafs() - 1) ) {
+    if (index < 0 || index > (this._models.book.getNumLeafs() - 1) ) {
       // Facing page at beginning or end, or beyond
       $(img).addClass('BRemptypage');
     }
@@ -2581,8 +2583,8 @@ BookReader.prototype.prepareFlipLeftToRight = function(prevL, prevR) {
   this.prefetchImg(prevL);
   this.prefetchImg(prevR);
 
-  var height  = this._bookModel._getPageHeight(prevL);
-  var width   = this._bookModel._getPageWidth(prevL);
+  var height  = this._models.book._getPageHeight(prevL);
+  var width   = this._models.book._getPageWidth(prevL);
   var middle = this.twoPage.middle;
   var top  = this.twoPageTop();
   var scaledW = this.twoPage.height*width/height; // $$$ assumes height of page is dominant
@@ -2627,8 +2629,8 @@ BookReader.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
   this.prefetchImg(nextL);
   this.prefetchImg(nextR);
 
-  var height  = this._bookModel._getPageHeight(nextR);
-  var width   = this._bookModel._getPageWidth(nextR);
+  var height  = this._models.book._getPageHeight(nextR);
+  var width   = this._models.book._getPageWidth(nextR);
   var middle = this.twoPage.middle;
   var top  = this.twoPageTop();
   var scaledW = this.twoPage.height*width/height;
@@ -2647,8 +2649,8 @@ BookReader.prototype.prepareFlipRightToLeft = function(nextL, nextR) {
   var $twoPageViewEl = this.refs.$brTwoPageView;
   $twoPageViewEl.append(this.prefetchedImgs[nextR]);
 
-  height  = this._bookModel._getPageHeight(nextL);
-  width   = this._bookModel._getPageWidth(nextL);
+  height  = this._models.book._getPageHeight(nextL);
+  width   = this._models.book._getPageWidth(nextL);
   scaledW = this.twoPage.height*width/height;
 
   $(this.prefetchedImgs[nextL]).css({
@@ -2689,7 +2691,7 @@ BookReader.prototype.prefetch = function() {
   var highCurrent = Math.max(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
 
   var start = Math.max(lowCurrent - adjacentPagesToLoad, 0);
-  var end = Math.min(highCurrent + adjacentPagesToLoad, this._bookModel.getNumLeafs() - 1);
+  var end = Math.min(highCurrent + adjacentPagesToLoad, this._models.book.getNumLeafs() - 1);
 
   // Load images spreading out from current
   for (var i = 1; i <= adjacentPagesToLoad; i++) {
@@ -2706,8 +2708,8 @@ BookReader.prototype.prefetch = function() {
 
 BookReader.prototype.getPageWidth2UP = function(index) {
   // We return the width based on the dominant height
-  var height  = this._bookModel._getPageHeight(index);
-  var width   = this._bookModel._getPageWidth(index);
+  var height  = this._models.book._getPageHeight(index);
+  var width   = this._models.book._getPageWidth(index);
   return Math.floor(this.twoPage.height*width/height); // $$$ we assume width is relative to current spread
 };
 
@@ -2838,14 +2840,14 @@ BookReader.prototype.twoPageRightFlipAreaLeft = function() {
 BookReader.prototype.setHilightCss2UP = function(div, index, left, right, top, bottom) {
   // We calculate the reduction factor for the specific page because it can be different
   // for each page in the spread
-  var height = this._bookModel._getPageHeight(index);
-  var width  = this._bookModel._getPageWidth(index);
+  var height = this._models.book._getPageHeight(index);
+  var width  = this._models.book._getPageWidth(index);
   var reduce = this.twoPage.height/height;
   var scaledW = parseInt(width*reduce);
 
   var gutter = this.twoPageGutter();
   var pageL;
-  if ('L' == this._bookModel.getPageSide(index)) {
+  if ('L' == this._models.book.getPageSide(index)) {
     pageL = gutter-scaledW;
   } else {
     pageL = gutter;
@@ -2901,7 +2903,7 @@ BookReader.prototype.keyboardNavigationIsDisabled = function(event) {
 BookReader.prototype.gutterOffsetForIndex = function(pindex) {
   // To find the offset of the gutter from the middle we calculate our percentage distance
   // through the book (0..1), remap to (-0.5..0.5) and multiply by the total page edge width
-  var offset = parseInt(((pindex / this._bookModel.getNumLeafs()) - 0.5) * this.twoPage.edgeWidth);
+  var offset = parseInt(((pindex / this._models.book.getNumLeafs()) - 0.5) * this.twoPage.edgeWidth);
 
   // But then again for RTL it's the opposite
   if ('rl' == this.pageProgression) {
@@ -2918,10 +2920,10 @@ BookReader.prototype.gutterOffsetForIndex = function(pindex) {
  */
 BookReader.prototype.leafEdgeWidth = function(pindex) {
   // $$$ could there be single pixel rounding errors for L vs R?
-  if ((this._bookModel.getPageSide(pindex) == 'L') && (this.pageProgression != 'rl')) {
-    return parseInt( (pindex/this._bookModel.getNumLeafs()) * this.twoPage.edgeWidth + 0.5);
+  if ((this._models.book.getPageSide(pindex) == 'L') && (this.pageProgression != 'rl')) {
+    return parseInt( (pindex/this._models.book.getNumLeafs()) * this.twoPage.edgeWidth + 0.5);
   } else {
-    return parseInt( (1 - pindex/this._bookModel.getNumLeafs()) * this.twoPage.edgeWidth + 0.5);
+    return parseInt( (1 - pindex/this._models.book.getNumLeafs()) * this.twoPage.edgeWidth + 0.5);
   }
 };
 
@@ -3460,14 +3462,14 @@ BookReader.prototype.firstDisplayableIndex = function() {
 
   if ('rl' != this.pageProgression) {
     // LTR
-    if (this._bookModel.getPageSide(0) == 'L') {
+    if (this._models.book.getPageSide(0) == 'L') {
       return 0;
     } else {
       return -1;
     }
   } else {
     // RTL
-    if (this._bookModel.getPageSide(0) == 'R') {
+    if (this._models.book.getPageSide(0) == 'R') {
       return 0;
     } else {
       return -1;
@@ -3483,7 +3485,7 @@ BookReader.prototype.firstDisplayableIndex = function() {
  */
 BookReader.prototype.lastDisplayableIndex = function() {
 
-  var lastIndex = this._bookModel.getNumLeafs() - 1;
+  var lastIndex = this._models.book.getNumLeafs() - 1;
 
   if (this.mode != this.constMode2up) {
     return lastIndex;
@@ -3491,14 +3493,14 @@ BookReader.prototype.lastDisplayableIndex = function() {
 
   if ('rl' != this.pageProgression) {
     // LTR
-    if (this._bookModel.getPageSide(lastIndex) == 'R') {
+    if (this._models.book.getPageSide(lastIndex) == 'R') {
       return lastIndex;
     } else {
       return lastIndex + 1;
     }
   } else {
     // RTL
-    if (this._bookModel.getPageSide(lastIndex) == 'L') {
+    if (this._models.book.getPageSide(lastIndex) == 'L') {
       return lastIndex;
     } else {
       return lastIndex + 1;
@@ -3573,7 +3575,7 @@ BookReader.prototype.updateFromParams = function(params) {
   } else if ('undefined' != typeof(params.page)) {
     pageFound = true;
     // $$$ this assumes page numbers are unique
-    if (params.page != this._bookModel.getPageNum(this.currentIndex())) {
+    if (params.page != this._models.book.getPageNum(this.currentIndex())) {
       this.jumpToPage(params.page);
     }
   }
@@ -3605,7 +3607,7 @@ BookReader.prototype.canSwitchToMode = function(mode) {
     // check there are enough pages to display
     // $$$ this is a workaround for the mis-feature that we can't display
     //     short books in 2up mode
-    if (this._bookModel.getNumLeafs() < 2) {
+    if (this._models.book.getNumLeafs() < 2) {
       return false;
     }
   }
@@ -3622,14 +3624,14 @@ BookReader.prototype.canSwitchToMode = function(mode) {
  * @return {string}
  */
 BookReader.prototype._getPageURI = function(index, reduce, rotate) {
-  if (index < 0 || index >= this._bookModel.getNumLeafs()) { // Synthesize page
+  if (index < 0 || index >= this._models.book.getNumLeafs()) { // Synthesize page
     return this.imagesBaseURL + "transparent.png";
   }
 
   if ('undefined' == typeof(reduce)) {
     // reduce not passed in
     // $$$ this probably won't work for thumbnail mode
-    var ratio = this._bookModel.getPageHeight(index) / this.twoPage.height;
+    var ratio = this._models.book.getPageHeight(index) / this.twoPage.height;
     var scale;
     // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
     if (ratio < 2) {
@@ -3648,7 +3650,7 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
     reduce = scale;
   }
 
-  return this._bookModel.getPageURI(index, reduce, rotate);
+  return this._models.book.getPageURI(index, reduce, rotate);
 };
 
 /**
@@ -3775,7 +3777,7 @@ BookReader.prototype.paramsFromCurrent = function() {
   var params = {};
 
   var index = this.currentIndex();
-  var pageNum = this._bookModel.getPageNum(index);
+  var pageNum = this._models.book.getPageNum(index);
   if ((pageNum === 0) || pageNum) {
     params.page = pageNum;
   }
