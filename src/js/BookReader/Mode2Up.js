@@ -532,7 +532,7 @@ export class Mode2Up {
       this.flipLeftToRight(previousIndices[0], previousIndices[1]);
     } else {
       // RTL and going backward
-      const gutter = this.prepareFlipRightToLeft(previousIndices[0], previousIndices[1]);
+      this.prepareFlipRightToLeft(previousIndices[0], previousIndices[1]);
       this.flipRightToLeft(previousIndices[0], previousIndices[1]);
     }
   }
@@ -699,15 +699,14 @@ export class Mode2Up {
     this.br.animating = true;
   
     const nextIndices = this.book.getSpreadIndices(index);
-    let gutter;
   
     if ('rl' != this.br.pageProgression) {
       // We did not specify RTL
-      gutter = this.prepareFlipRightToLeft(nextIndices[0], nextIndices[1]);
+      this.prepareFlipRightToLeft(nextIndices[0], nextIndices[1]);
       this.flipRightToLeft(nextIndices[0], nextIndices[1]);
     } else {
       // RTL
-      gutter = this.prepareFlipLeftToRight(nextIndices[0], nextIndices[1]);
+      this.prepareFlipLeftToRight(nextIndices[0], nextIndices[1]);
       this.flipLeftToRight(nextIndices[0], nextIndices[1]);
     }
   }
