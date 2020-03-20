@@ -140,6 +140,7 @@ BookReader.prototype.setup = function(options) {
 
   this.reductionFactors = options.reductionFactors;
   this.onePage = options.onePage;
+  /** @type {import('./BookReader/Mode2Up').TwoPageState} */
   this.twoPage = options.twoPage;
   this.onePageMinBreakpoint = options.onePageMinBreakpoint;
 
