@@ -188,6 +188,12 @@ BookReader.prototype.setup = function(options) {
     toolbar: new Toolbar(this),
   };
 
+  /** Stores classes which we want to expose (selectively) some methods as overrideable */
+  this._overrideable = {
+    '_models.book': this._models.book,
+    '_components.navbar': this._components.navbar,
+    '_components.toolbar': this._components.toolbar,
+  };
 };
 
 /**
@@ -2967,20 +2973,21 @@ BookReader.prototype.jumpIndexForRightEdgePageX = function(pageX) {
 };
 
 /**
- * @template TComponentClass extends { br: BookReader }
- * Helper method to expose a component method onto BookReader, in such a way that
- * if the BookReader method is overriden, so is the component's method.
- * @param {new () => TComponentClass} ComponentClass
- * @param {keyof BookReader.prototype._components} componentKey
- * @param {keyof TComponentClass} method
+ * @template TClass extends { br: BookReader }
+ * Helper method to expose a method onto BookReader from a composed class.
+ * Only composed classes in BookReader._overridable can be exposed in this
+ * way.
+ * @param {new () => TClass} Class
+ * @param {keyof BookReader['_overrideable']} classKey
+ * @param {keyof TClass} method
  * @param {string} [brMethod]
  */
-function exposeComponentMethod(ComponentClass, componentKey, method, brMethod = method) {
-  /** @type {function(TComponentClass): BookReader} */
-  const componentToBookReader = cmp => cmp.br;
-  /** @type {function(BookReader): TComponentClass} */
-  const bookReaderToComponent = br => br._components[componentKey];
-  exposeOverrideable(ComponentClass, method, componentToBookReader, BookReader, brMethod, bookReaderToComponent);
+function exposeOverrideableMethod(Class, classKey, method, brMethod = method) {
+  /** @type {function(TClass): BookReader} */
+  const classToBr = cls => cls.br;
+  /** @type {function(BookReader): TClass} */
+  const brToClass = br => br._overrideable[classKey];
+  exposeOverrideable(Class, method, classToBr, BookReader, brMethod, brToClass);
 }
 
 
@@ -2988,20 +2995,20 @@ function exposeComponentMethod(ComponentClass, componentKey, method, brMethod = 
 /** Navbar extensions **/
 /***********************/
 BookReader.prototype.initNavbar = Navbar.prototype.init;
-exposeComponentMethod(Navbar, 'navbar', 'init', 'initNavbar');
+exposeOverrideableMethod(Navbar, '_components.navbar', 'init', 'initNavbar');
 BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;
-exposeComponentMethod(Navbar, 'navbar', 'getNavPageNumString');
+exposeOverrideableMethod(Navbar, '_components.navbar', 'getNavPageNumString');
 /** @deprecated */
 BookReader.prototype.initEmbedNavbar = Navbar.prototype.initEmbed;
-exposeComponentMethod(Navbar, 'navbar', 'initEmbed', 'initEmbedNavbar');
+exposeOverrideableMethod(Navbar, '_components.navbar', 'initEmbed', 'initEmbedNavbar');
 /** @deprecated unused */
 BookReader.prototype.getNavPageNumHtml = getNavPageNumHtml;
 /** @deprecated unused outside this file */
 BookReader.prototype.updateNavPageNum = Navbar.prototype.updateNavPageNum;
-exposeComponentMethod(Navbar, 'navbar', 'updateNavPageNum');
+exposeOverrideableMethod(Navbar, '_components.navbar', 'updateNavPageNum');
 /** @deprecated unused outside this file */
 BookReader.prototype.updateNavIndex = Navbar.prototype.updateNavIndex;
-exposeComponentMethod(Navbar, 'navbar', 'updateNavIndex');
+exposeOverrideableMethod(Navbar, '_components.navbar', 'updateNavIndex');
 /** @deprecated unused outside this file */
 BookReader.prototype.updateNavIndexThrottled = utils.throttle(BookReader.prototype.updateNavIndex, 250, false);
 /** @deprecated unused */
@@ -3012,18 +3019,18 @@ BookReader.prototype.updateNavIndexDebounced = utils.debounce(BookReader.prototy
 /** Toolbar extensions **/
 /************************/
 BookReader.prototype.buildToolbarElement = Toolbar.prototype.buildToolbarElement;
-exposeComponentMethod(Toolbar, 'toolbar', 'buildToolbarElement');
+exposeOverrideableMethod(Toolbar, '_components.toolbar', 'buildToolbarElement');
 BookReader.prototype.initToolbar = Toolbar.prototype.initToolbar;
-exposeComponentMethod(Toolbar, 'toolbar', 'initToolbar');
+exposeOverrideableMethod(Toolbar, '_components.toolbar', 'initToolbar');
 BookReader.prototype.buildShareDiv = Toolbar.prototype.buildShareDiv;
-exposeComponentMethod(Toolbar, 'toolbar', 'buildShareDiv');
+exposeOverrideableMethod(Toolbar, '_components.toolbar', 'buildShareDiv');
 BookReader.prototype.buildInfoDiv = Toolbar.prototype.buildInfoDiv;
-exposeComponentMethod(Toolbar, 'toolbar', 'buildInfoDiv');
+exposeOverrideableMethod(Toolbar, '_components.toolbar', 'buildInfoDiv');
 BookReader.prototype.getToolBarHeight = Toolbar.prototype.getToolBarHeight;
-exposeComponentMethod(Toolbar, 'toolbar', 'getToolBarHeight');
+exposeOverrideableMethod(Toolbar, '_components.toolbar', 'getToolBarHeight');
 /** @deprecated zoom no longer in toolbar */
 BookReader.prototype.updateToolbarZoom = Toolbar.prototype.updateToolbarZoom;
-exposeComponentMethod(Toolbar, 'toolbar', 'updateToolbarZoom');
+exposeOverrideableMethod(Toolbar, '_components.toolbar', 'updateToolbarZoom');
 /** @deprecated unused */
 BookReader.prototype.blankInfoDiv = blankInfoDiv;
 /** @deprecated unused */
@@ -3514,44 +3521,44 @@ BookReader.prototype.lastDisplayableIndex = function() {
 /**************************/
 /** @deprecated not used outside */
 BookReader.prototype.getMedianPageSize = BookModel.prototype.getMedianPageSize;
-exposeComponentMethod(BookModel, 'bookModel', 'getMedianPageSize');
+exposeOverrideableMethod(BookModel, '_models.book', 'getMedianPageSize');
 BookReader.prototype._getPageWidth = BookModel.prototype._getPageWidth;
-exposeComponentMethod(BookModel, 'bookModel', '_getPageWidth');
+exposeOverrideableMethod(BookModel, '_models.book', '_getPageWidth');
 BookReader.prototype._getPageHeight = BookModel.prototype._getPageHeight;
-exposeComponentMethod(BookModel, 'bookModel', '_getPageHeight');
+exposeOverrideableMethod(BookModel, '_models.book', '_getPageHeight');
 BookReader.prototype.getPageIndex = BookModel.prototype.getPageIndex;
-exposeComponentMethod(BookModel, 'bookModel', 'getPageIndex');
+exposeOverrideableMethod(BookModel, '_models.book', 'getPageIndex');
 /** @deprecated not used outside */
 BookReader.prototype.getPageIndices = BookModel.prototype.getPageIndices;
-exposeComponentMethod(BookModel, 'bookModel', 'getPageIndices');
+exposeOverrideableMethod(BookModel, '_models.book', 'getPageIndices');
 BookReader.prototype.getPageName = BookModel.prototype.getPageName;
-exposeComponentMethod(BookModel, 'bookModel', 'getPageName');
+exposeOverrideableMethod(BookModel, '_models.book', 'getPageName');
 BookReader.prototype.getNumLeafs = BookModel.prototype.getNumLeafs;
-exposeComponentMethod(BookModel, 'bookModel', 'getNumLeafs');
+exposeOverrideableMethod(BookModel, '_models.book', 'getNumLeafs');
 BookReader.prototype.getPageWidth = BookModel.prototype.getPageWidth;
-exposeComponentMethod(BookModel, 'bookModel', 'getPageWidth');
+exposeOverrideableMethod(BookModel, '_models.book', 'getPageWidth');
 BookReader.prototype.getPageHeight = BookModel.prototype.getPageHeight;
-exposeComponentMethod(BookModel, 'bookModel', 'getPageHeight');
+exposeOverrideableMethod(BookModel, '_models.book', 'getPageHeight');
 BookReader.prototype.getPageURI = BookModel.prototype.getPageURI;
-exposeComponentMethod(BookModel, 'bookModel', 'getPageURI');
+exposeOverrideableMethod(BookModel, '_models.book', 'getPageURI');
 BookReader.prototype.getPageSide = BookModel.prototype.getPageSide;
-exposeComponentMethod(BookModel, 'bookModel', 'getPageSide');
+exposeOverrideableMethod(BookModel, '_models.book', 'getPageSide');
 BookReader.prototype.getPageNum = BookModel.prototype.getPageNum;
-exposeComponentMethod(BookModel, 'bookModel', 'getPageNum');
+exposeOverrideableMethod(BookModel, '_models.book', 'getPageNum');
 BookReader.prototype.getPageProp = BookModel.prototype.getPageProp;
-exposeComponentMethod(BookModel, 'bookModel', 'getPageProp');
+exposeOverrideableMethod(BookModel, '_models.book', 'getPageProp');
 BookReader.prototype.getSpreadIndices = BookModel.prototype.getSpreadIndices;
-exposeComponentMethod(BookModel, 'bookModel', 'getSpreadIndices');
+exposeOverrideableMethod(BookModel, '_models.book', 'getSpreadIndices');
 BookReader.prototype.leafNumToIndex = BookModel.prototype.leafNumToIndex;
-exposeComponentMethod(BookModel, 'bookModel', 'leafNumToIndex');
+exposeOverrideableMethod(BookModel, '_models.book', 'leafNumToIndex');
 BookReader.prototype.parsePageString = BookModel.prototype.parsePageString;
-exposeComponentMethod(BookModel, 'bookModel', 'parsePageString');
+exposeOverrideableMethod(BookModel, '_models.book', 'parsePageString');
 /** @deprecated unused */
 BookReader.prototype._getDataFlattened = BookModel.prototype._getDataFlattened;
-exposeComponentMethod(BookModel, 'bookModel', '_getDataFlattened');
+exposeOverrideableMethod(BookModel, '_models.book', '_getDataFlattened');
 /** @deprecated unused */
 BookReader.prototype._getDataProp = BookModel.prototype._getDataProp;
-exposeComponentMethod(BookModel, 'bookModel', '_getDataProp');
+exposeOverrideableMethod(BookModel, '_models.book', '_getDataProp');
 
 // Parameter related functions
 
