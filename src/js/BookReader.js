@@ -86,6 +86,12 @@ BookReader.prototype.setup = function(options) {
   /** @type {number} @deprecated some past iterations set this */
   this.numLeafs = undefined;
 
+  /** Overriden by plugin.search.js */
+  this.enableSearch = false;
+
+  /** @type {function(): void} */
+  this.animationFinishedCallback = null;
+
   // @deprecated: Instance constants. Use Class constants instead
   this.constMode1up = BookReader.constMode1up;
   this.constMode2up = BookReader.constMode2up;
@@ -201,6 +207,17 @@ BookReader.prototype.setup = function(options) {
     '_modes.mode2Up': this._modes.mode2Up,
   };
 };
+
+/** @deprecated unused outside Mode2Up */
+Object.defineProperty(BookReader.prototype, 'leafEdgeL', {
+  get() { return this._modes.mode2Up.leafEdgeL; },
+  set(newVal) { this._modes.mode2Up.leafEdgeL = newVal; }
+});
+/** @deprecated unused outside Mode2Up */
+Object.defineProperty(BookReader.prototype, 'leafEdgeR', {
+  get() { return this._modes.mode2Up.leafEdgeR; },
+  set(newVal) { this._modes.mode2Up.leafEdgeR = newVal; }
+});
 
 /**
  * BookReader.util are static library functions
@@ -390,7 +407,7 @@ BookReader.prototype.init = function() {
 }
 
 /**
- * @param {keyof EVENTS} name
+ * @param {EVENTS} name
  * @param {*} [props]
  */
 BookReader.prototype.trigger = function(name, props=undefined) {
@@ -1283,10 +1300,10 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 
 /**
  * Changes the current page
- * @param {number}
- * @param {number} optional
- * @param {number} optional
- * @param {boolean} optional
+ * @param {number} index
+ * @param {number} [pageX]
+ * @param {number} [pageY]
+ * @param {boolean} [noAnimate]
  */
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
   var self = this;
@@ -1618,7 +1635,9 @@ BookReader.prototype.currentIndex = function() {
 /**
  * Setter for this.firstIndex
  * Also triggers an event and updates the navbar slider position
- * @param {number}
+ * @param {number} index
+ * @param {object} [options]
+ * @param {boolean} [suppressFragmentChange]
  */
 BookReader.prototype.updateFirstIndex = function(index, options) {
   this.firstIndex = index;

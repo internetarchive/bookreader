@@ -47,7 +47,7 @@ export const DEFAULT_OPTIONS = {
   
   /**
    * Zoom levels
-   * @type {Array<{reduce: Float32Array, autofit: AutoFitValues}}
+   * @type {Array<{reduce: number, autofit: AutoFitValues}}
    * $$$ provide finer grained zooming, {reduce: 8, autofit: null}, {reduce: 16, autofit: null}
    * The autofit code ensures that fit to width and fit to height will be available
    */
