@@ -14,6 +14,11 @@ export class Mode2Up {
   constructor(br, bookModel) {
     this.br = br;
     this.book = bookModel;
+
+    /** @type {HTMLDivElement} */
+    this.leafEdgeL = null;
+    /** @type {HTMLDivElement} */
+    this.leafEdgeR = null;
   }
 
   /**
@@ -176,10 +181,10 @@ export class Mode2Up {
       visibility: 'visible'
     }).appendTo(this.br.refs.$brTwoPageView);
   
-    this.br.leafEdgeR = document.createElement('div');
-    this.br.leafEdgeR.className = 'BRleafEdgeR';
+    this.leafEdgeR = document.createElement('div');
+    this.leafEdgeR.className = 'BRleafEdgeR';
   
-    $(this.br.leafEdgeR).css({
+    $(this.leafEdgeR).css({
       width: `${this.br.twoPage.leafEdgeWidthR}px`,
       height: `${this.br.twoPage.height}px`,
       left: `${this.br.twoPage.gutter + this.br.twoPage.scaledWR}px`,
@@ -187,9 +192,9 @@ export class Mode2Up {
       border: this.br.twoPage.leafEdgeWidthR === 0 ? 'none' : null
     }).appendTo(this.br.refs.$brTwoPageView);
   
-    this.br.leafEdgeL = document.createElement('div');
-    this.br.leafEdgeL.className = 'BRleafEdgeL';
-    $(this.br.leafEdgeL).css({
+    this.leafEdgeL = document.createElement('div');
+    this.leafEdgeL.className = 'BRleafEdgeL';
+    $(this.leafEdgeL).css({
       width: `${this.br.twoPage.leafEdgeWidthL}px`,
       height: `${this.br.twoPage.height}px`,
       left: `${this.br.twoPage.bookCoverDivLeft + this.br.twoPage.coverInternalPadding}px`,
@@ -235,27 +240,27 @@ export class Mode2Up {
     }).appendTo(this.br.refs.$brContainer);
     $(this.br.twoPagePopUp).hide();
   
-    $(this.br.leafEdgeL).add(this.br.leafEdgeR).bind('mouseenter', () => {
+    $(this.leafEdgeL).add(this.leafEdgeR).bind('mouseenter', () => {
       $(this.br.twoPagePopUp).show();
     });
   
-    $(this.br.leafEdgeL).add(this.br.leafEdgeR).bind('mouseleave', () => {
+    $(this.leafEdgeL).add(this.leafEdgeR).bind('mouseleave', () => {
       $(this.br.twoPagePopUp).hide();
     });
   
-    $(this.br.leafEdgeL).bind('click', e => {
+    $(this.leafEdgeL).bind('click', e => {
       this.br.trigger(EVENTS.stop);
       const jumpIndex = this.jumpIndexForLeftEdgePageX(e.pageX);
       this.br.jumpToIndex(jumpIndex);
     });
   
-    $(this.br.leafEdgeR).bind('click', e => {
+    $(this.leafEdgeR).bind('click', e => {
       this.br.trigger(EVENTS.stop);
       const jumpIndex = this.jumpIndexForRightEdgePageX(e.pageX);
       this.br.jumpToIndex(jumpIndex);
     });
   
-    $(this.br.leafEdgeR).bind('mousemove', e => {
+    $(this.leafEdgeR).bind('mousemove', e => {
       const jumpIndex = this.jumpIndexForRightEdgePageX(e.pageX);
       $(this.br.twoPagePopUp).text('View ' + this.book.getPageName(clamp(jumpIndex, 0, this.book.getNumLeafs() - 1)));
   
@@ -267,7 +272,7 @@ export class Mode2Up {
       });
     });
   
-    $(this.br.leafEdgeL).bind('mousemove', e => {
+    $(this.leafEdgeL).bind('mousemove', e => {
       const jumpIndex = this.jumpIndexForLeftEdgePageX(e.pageX);
       $(this.br.twoPagePopUp).text('View '+ this.book.getPageName(clamp(jumpIndex, 0, this.book.getNumLeafs() - 1)));
   
@@ -455,11 +460,12 @@ export class Mode2Up {
   }
 
   calculateReductionFactors() {
-    this.br.twoPage.reductionFactors = this.br.reductionFactors.concat(
-      [
-        { reduce: this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR ).reduce,
-          autofit: 'auto' }
-      ]);
+    this.br.twoPage.reductionFactors = this.br.reductionFactors.concat([
+      {
+        reduce: this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR ).reduce,
+        autofit: 'auto'
+      }
+    ]);
     this.br.twoPage.reductionFactors.sort(this.br._reduceSort);
   }
 
@@ -519,7 +525,7 @@ export class Mode2Up {
     } else {
       // RTL and going backward
       const gutter = this.prepareFlipRightToLeft(previousIndices[0], previousIndices[1]);
-      this.flipRightToLeft(previousIndices[0], previousIndices[1], gutter);
+      this.flipRightToLeft(previousIndices[0], previousIndices[1]);
     }
   }
 
@@ -581,7 +587,7 @@ export class Mode2Up {
       zIndex: 1000,
     }).appendTo($twoPageViewEl);
   
-    $(this.br.leafEdgeL).css({
+    $(this.leafEdgeL).css({
       width: `${newLeafEdgeWidthL}px`,
       left: `${gutter - currWidthL - newLeafEdgeWidthL}px`
     });
@@ -615,13 +621,13 @@ export class Mode2Up {
         $(this.br.prefetchedImgs[newIndexL]).css('display', '');
         $(this.br.prefetchedImgs[newIndexR]).css('display', '');
   
-        $(this.br.leafEdgeR).css({
+        $(this.leafEdgeR).css({
           // Moves the right leaf edge
           width: `${this.br.twoPage.edgeWidth - newLeafEdgeWidthL}px`,
           left:  `${gutter + newWidthR}px`
         });
   
-        $(this.br.leafEdgeL).css({
+        $(this.leafEdgeL).css({
           // Moves and resizes the left leaf edge
           width: `${newLeafEdgeWidthL}px`,
           left:  `${gutter - newWidthL - newLeafEdgeWidthL}px`
@@ -690,7 +696,7 @@ export class Mode2Up {
     if ('rl' != this.br.pageProgression) {
       // We did not specify RTL
       gutter = this.prepareFlipRightToLeft(nextIndices[0], nextIndices[1]);
-      this.flipRightToLeft(nextIndices[0], nextIndices[1], gutter);
+      this.flipRightToLeft(nextIndices[0], nextIndices[1]);
     } else {
       // RTL
       gutter = this.prepareFlipLeftToRight(nextIndices[0], nextIndices[1]);
@@ -733,7 +739,7 @@ export class Mode2Up {
     const newWidthL = this.getPageWidth(newIndexL);
     const newWidthR = this.getPageWidth(newIndexR);
   
-    $(this.br.leafEdgeR).css({width: `${newLeafEdgeWidthR}px`, left: `${gutter + newWidthR}px` });
+    $(this.leafEdgeR).css({width: `${newLeafEdgeWidthR}px`, left: `${gutter + newWidthR}px` });
     const speed = this.br.flipSpeed;
   
     if (this.br.enableSearch) this.br.removeSearchHilites();
@@ -749,7 +755,7 @@ export class Mode2Up {
         $(this.br.prefetchedImgs[newIndexL]).css('display', '');
         $(this.br.prefetchedImgs[newIndexR]).css('display', '');
   
-        $(this.br.leafEdgeL).css({
+        $(this.leafEdgeL).css({
           width: `${newLeafEdgeWidthL}px`,
           left: `${gutter - newWidthL - newLeafEdgeWidthL}px`
         });
@@ -1116,14 +1122,14 @@ export class Mode2Up {
     let jumpIndex;
     if ('rl' != this.br.pageProgression) {
       // LTR - flipping backward
-      jumpIndex = this.br.twoPage.currentIndexL - ($(this.br.leafEdgeL).offset().left + $(this.br.leafEdgeL).width() - pageX) * 10;
+      jumpIndex = this.br.twoPage.currentIndexL - ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
   
       // browser may have resized the div due to font size change -- see https://bugs.launchpad.net/gnubook/+bug/333570
       jumpIndex = clamp(Math.round(jumpIndex), this.br.firstDisplayableIndex(), this.br.twoPage.currentIndexL - 2);
       return jumpIndex;
   
     } else {
-      jumpIndex = this.br.twoPage.currentIndexL + ($(this.br.leafEdgeL).offset().left + $(this.br.leafEdgeL).width() - pageX) * 10;
+      jumpIndex = this.br.twoPage.currentIndexL + ($(this.leafEdgeL).offset().left + $(this.leafEdgeL).width() - pageX) * 10;
       jumpIndex = clamp(Math.round(jumpIndex), this.br.twoPage.currentIndexL + 2, this.br.lastDisplayableIndex());
       return jumpIndex;
     }
@@ -1136,11 +1142,11 @@ export class Mode2Up {
     let jumpIndex;
     if ('rl' != this.br.pageProgression) {
       // LTR
-      jumpIndex = this.br.twoPage.currentIndexL + (pageX - $(this.br.leafEdgeR).offset().left) * 10;
+      jumpIndex = this.br.twoPage.currentIndexL + (pageX - $(this.leafEdgeR).offset().left) * 10;
       jumpIndex = clamp(Math.round(jumpIndex), this.br.twoPage.currentIndexL + 2, this.br.lastDisplayableIndex());
       return jumpIndex;
     } else {
-      jumpIndex = this.br.twoPage.currentIndexL - (pageX - $(this.br.leafEdgeR).offset().left) * 10;
+      jumpIndex = this.br.twoPage.currentIndexL - (pageX - $(this.leafEdgeR).offset().left) * 10;
       jumpIndex = clamp(Math.round(jumpIndex), this.br.firstDisplayableIndex(), this.br.twoPage.currentIndexL - 2);
       return jumpIndex;
     }
