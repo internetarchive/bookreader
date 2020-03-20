@@ -5,6 +5,7 @@ import { EVENTS } from './events.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
+/** @typedef {import('./options.js').BookReaderOptions} BookReaderOptions */
 
 export class Mode2Up {
   /**
@@ -357,6 +358,12 @@ export class Mode2Up {
     this.br.reduce = spreadSize.reduce; // $$$ really set this here?
   }
 
+  /**
+   * 
+   * @param {number} firstIndex 
+   * @param {number} secondIndex 
+   * @return {{ width: number, height: number, totalLeafEdgeWidth: number, reduce: number}}
+   */
   getIdealSpreadSize(firstIndex, secondIndex) {
     const ideal = {};
   
@@ -1153,3 +1160,39 @@ export class Mode2Up {
     }
   }
 }
+
+/**
+ * @implements {BookReaderOptions["twoPage"]}
+ * @typedef {object} TwoPageState
+ * @property {number} coverInternalPadding
+ * @property {number} coverExternalPadding
+ *
+ * @property {import('./options.js').AutoFitValues} autofit
+ * @property {number} width
+ * @property {number} height
+ * @property {number} currentIndexL
+ * @property {number} currentIndexR
+ * @property {number} scaledWL
+ * @property {number} scaledWR
+ * @property {number} gutter
+ * @property {Array<{reduce: number, autofit: import('./options.js').AutoFitValues}>} reductionFactors
+ * @property {number} totalHeight
+ * @property {number} totalWidth
+ * 
+ * @property {HTMLDivElement} coverDiv
+ * @property {number} bookCoverDivTop
+ * @property {number} bookCoverDivLeft
+ * @property {number} bookCoverDivWidth
+ * @property {number} bookCoverDivHeight
+ * 
+ * @property {number} leafEdgeWidthL
+ * @property {number} leafEdgeWidthR
+ * 
+ * @property {number} bookSpineDivTop
+ * @property {number} bookSpineDivLeft
+ * @property {number} bookSpineDivWidth
+ * @property {number} bookSpineDivHeight
+ * 
+ * @property {number} edgeWidth
+ * @property {number} middle
+ */
