@@ -52,7 +52,7 @@ export class BookModel {
   /**
    * Returns the page width for the given index, or first or last page if out of range
    * @deprecated see getPageWidth
-   * @param {number} index
+   * @param {PageIndex} index
    */
   _getPageWidth(index) {
     // Synthesize a page width for pages not actually present in book.
@@ -65,7 +65,7 @@ export class BookModel {
   /**
    * Returns the page height for the given index, or first or last page if out of range
    * @deprecated see getPageHeight
-   * @param {number} index
+   * @param {PageIndex} index
    */
   _getPageHeight(index) {
     const clampedIndex = clamp(index, 0, this.getNumLeafs() - 1);
@@ -74,8 +74,8 @@ export class BookModel {
 
   /**
    * Returns the *highest* index the given page number, or undefined
-   * @param {string} pageNum
-   * @return {number|undefined}
+   * @param {PageNumString} pageNum
+   * @return {PageIndex|undefined}
    */
   getPageIndex(pageNum) {
     const pageIndices = this.getPageIndices(pageNum);
@@ -84,8 +84,8 @@ export class BookModel {
 
   /**
    * Returns an array (possibly empty) of the indices with the given page number
-   * @param {string} pageNum
-   * @return {number[]}
+   * @param {PageNumString} pageNum
+   * @return {PageIndex[]}
    */
   getPageIndices(pageNum) {
     const indices = [];
@@ -113,7 +113,7 @@ export class BookModel {
 
   /**
    * Returns the name of the page as it should be displayed in the user interface
-   * @param {number} index
+   * @param {PageIndex} index
    * @return {string}
    */
   getPageName(index) {
@@ -131,7 +131,7 @@ export class BookModel {
   }
 
   /**
-   * @param  {number} index
+   * @param  {PageIndex} index
    * @return {Number|undefined}
    */
   getPageWidth(index) {
@@ -139,7 +139,7 @@ export class BookModel {
   }
 
   /**
-   * @param  {number} index
+   * @param  {PageIndex} index
    * @return {Number|undefined}
    */
   getPageHeight(index) {
@@ -147,10 +147,10 @@ export class BookModel {
   }
 
   /**
-   * @param  {number} index
+   * @param  {PageIndex} index
    * @param  {number} reduce - not used in default implementation
    * @param  {number} rotate - not used in default implementation
-   * @return {Number|undefined}
+   * @return {string|undefined}
    */
   // eslint-disable-next-line no-unused-vars
   getPageURI(index, reduce, rotate) {
@@ -158,7 +158,7 @@ export class BookModel {
   }
 
   /**
-   * @param  {number} index
+   * @param {PageIndex} index
    * @return {'L' | 'R'}
    */
   getPageSide(index) {
@@ -166,8 +166,8 @@ export class BookModel {
   }
 
   /**
-   * @param  {number} index
-   * @return {string}
+   * @param {PageIndex} index
+   * @return {PageNumString}
    */
   getPageNum(index) {
     const pageNum = this.getPageProp(index, 'pageNum');
@@ -176,7 +176,7 @@ export class BookModel {
 
   /**
    * Generalized property accessor.
-   * @param  {number} index
+   * @param  {PageIndex} index
    * @return {*|undefined}
    */
   getPageProp(index, propName) {
@@ -185,10 +185,10 @@ export class BookModel {
 
   /**
    * This function returns the left and right indices for the user-visible
-   * spread that contains the given index.  The return values may be
-   * null if there is no facing page or the index is invalid.
-   * @param  {number} pindex
-   * @return {array} - eg [0, 1]
+   * spread that contains the given index.
+   * @note Can return indices out of range of what's in the book.
+   * @param  {PageIndex} pindex
+   * @return {[PageIndex, PageIndex]} eg [0, 1]
    */
   getSpreadIndices(pindex) {
     if (this.br.pageProgression == 'rl') {
@@ -209,8 +209,8 @@ export class BookModel {
    *
    * This function is used, for example, to map between search results (that use the
    * leaf numbers) and the displayed pages in the BookReader.
-   * @param {number} leafNum
-   * @return {number}
+   * @param {LeafNum} leafNum
+   * @return {PageIndex}
    */
   leafNumToIndex(leafNum) {
     const index = this._getDataFlattened()
@@ -221,27 +221,26 @@ export class BookModel {
 
   /**
    * Parses the pageString format
-   * @param {string} pageNum
-   * @return {number|undefined}
+   * @param {PageString} pageString
+   * @return {PageIndex|undefined}
    */
-  parsePageString(pageNum) {
+  parsePageString(pageString) {
     let pageIndex;
     // Check for special "leaf"
-    const leafMatch = /^leaf(\d+)/.exec(pageNum);
+    const leafMatch = /^leaf(\d+)/.exec(pageString);
     if (leafMatch) {
       pageIndex = this.leafNumToIndex(parseInt(leafMatch[1], 10));
       if (pageIndex === null) {
         pageIndex = undefined; // to match return type of getPageIndex
       }
     } else {
-      pageIndex = this.getPageIndex(pageNum);
+      pageIndex = this.getPageIndex(pageString);
     }
     return pageIndex;
   }
 
   /**
-   * Helper. Flatten the nested structure (make 1d array),
-   * and also add pageSide prop
+   * Helper. Flatten the nested structure (make 1d array), and also add pageSide prop
    * @return {PageData[]}
    */
   _getDataFlattened() {
@@ -271,9 +270,9 @@ export class BookModel {
 
   /**
    * Helper. Return a prop for a given index
-   * @param {number} index
-   * @param {string} prop
-   * @return {array}
+   * @param {PageIndex} index
+   * @param {keyof PageData} prop
+   * @return {*}
    */
   _getDataProp(index, prop) {
     const dataf = this._getDataFlattened();
@@ -284,3 +283,20 @@ export class BookModel {
     return dataf[index][prop];
   }
 }
+
+// There are a few main ways we can reference a specific page in a book:
+/**
+ * @typedef {string} PageNumString
+ * Possible values: /^n?\d+$/. Example: 'n7', '18'
+ * Not necessarily unique
+ */
+/**
+ * @typedef {number} LeafNum
+ * No clue if 0 or 1 indexed or consecutive; generally from IA book info.
+ */
+/**
+ * @typedef {string} PageString
+ * Possible values: /^(leaf)?\d+$/ Example: 'leaf7', '18'
+ * If leaf-prefixed, then the number is a LeafNum. Otherwise it's a PageNumString
+ */
+/** @typedef {number} PageIndex 0-based index of all the pages */
