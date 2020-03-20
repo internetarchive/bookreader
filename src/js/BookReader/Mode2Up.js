@@ -385,9 +385,9 @@ export class Mode2Up {
       ratio = secondIndexRatio;
     }
   
-    const totalLeafEdgeWidth = parseInt(this.book.getNumLeafs() * 0.1);
-    const maxLeafEdgeWidth   = parseInt(this.br.refs.$brContainer.prop('clientWidth') * 0.1);
-    ideal.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
+    const totalLeafEdgeWidth = this.book.getNumLeafs() * 0.1;
+    const maxLeafEdgeWidth = this.br.refs.$brContainer.prop('clientWidth') * 0.1;
+    ideal.totalLeafEdgeWidth = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
   
     const widthOutsidePages = 2 * (this.br.twoPage.coverInternalPadding + this.br.twoPage.coverExternalPadding) + ideal.totalLeafEdgeWidth;
     const heightOutsidePages = 2* (this.br.twoPage.coverInternalPadding + this.br.twoPage.coverExternalPadding);
@@ -400,10 +400,10 @@ export class Mode2Up {
   
     if (ideal.height/ratio <= ideal.width) {
       //use height
-      ideal.width = parseInt(ideal.height/ratio);
+      ideal.width = ideal.height / ratio;
     } else {
       //use width
-      ideal.height = parseInt(ideal.width*ratio);
+      ideal.height = ideal.width * ratio;
     }
   
     // $$$ check this logic with large spreads
@@ -421,15 +421,16 @@ export class Mode2Up {
   getSpreadSizeFromReduce(firstIndex, secondIndex, reduce) {
     const spreadSize = {};
     // $$$ Scale this based on reduce?
-    const totalLeafEdgeWidth = parseInt(this.book.getNumLeafs() * 0.1);
-    const maxLeafEdgeWidth   = parseInt(this.br.refs.$brContainer.prop('clientWidth') * 0.1); // $$$ Assumes leaf edge width constant at all zoom levels
-    spreadSize.totalLeafEdgeWidth     = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
+    const totalLeafEdgeWidth = this.book.getNumLeafs() * 0.1;
+    // $$$ Assumes leaf edge width constant at all zoom levels
+    const maxLeafEdgeWidth = this.br.refs.$brContainer.prop('clientWidth') * 0.1;
+    spreadSize.totalLeafEdgeWidth = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
   
     // $$$ Possibly incorrect -- we should make height "dominant"
     const nativeWidth = this.book._getPageWidth(firstIndex) + this.book._getPageWidth(secondIndex);
     const nativeHeight = this.book._getPageHeight(firstIndex) + this.book._getPageHeight(secondIndex);
-    spreadSize.height = parseInt( (nativeHeight / 2) / this.br.reduce );
-    spreadSize.width = parseInt( (nativeWidth / 2) / this.br.reduce );
+    spreadSize.height = (nativeHeight / 2) / this.br.reduce;
+    spreadSize.width = (nativeWidth / 2) / this.br.reduce;
     spreadSize.reduce = reduce;
   
     return spreadSize;
@@ -1013,7 +1014,7 @@ export class Mode2Up {
    * @return {number}
    */
   flipAreaHeight() {
-    return parseInt(this.br.twoPage.height);
+    return this.br.twoPage.height;
   }
 
   /**
@@ -1025,7 +1026,7 @@ export class Mode2Up {
     const min = 10;
   
     const width = this.br.twoPage.width * 0.15;
-    return parseInt(clamp(width, min, max));
+    return clamp(width, min, max);
   }
 
   /**
@@ -1033,7 +1034,7 @@ export class Mode2Up {
    * @return {number}
    */
   flipAreaTop() {
-    return parseInt(this.br.twoPage.bookCoverDivTop + this.br.twoPage.coverInternalPadding);
+    return this.br.twoPage.bookCoverDivTop + this.br.twoPage.coverInternalPadding;
   }
   
   /**
@@ -1041,7 +1042,7 @@ export class Mode2Up {
    * @return {number}
    */
   leftFlipAreaLeft() {
-    return parseInt(this.br.twoPage.gutter - this.br.twoPage.scaledWL);
+    return this.br.twoPage.gutter - this.br.twoPage.scaledWL;
   }
 
   /**
@@ -1049,7 +1050,7 @@ export class Mode2Up {
    * @return {number}
    */
   rightFlipAreaLeft() {
-    return parseInt(this.br.twoPage.gutter + this.br.twoPage.scaledWR - this.flipAreaWidth());
+    return this.br.twoPage.gutter + this.br.twoPage.scaledWR - this.flipAreaWidth();
   }
 
   /**
@@ -1061,7 +1062,7 @@ export class Mode2Up {
     const height = this.book._getPageHeight(index);
     const width  = this.book._getPageWidth(index);
     const reduce = this.br.twoPage.height/height;
-    const scaledW = parseInt(width*reduce);
+    const scaledW = width * reduce;
 
     const gutter = this.gutter();
     let pageL;
@@ -1089,7 +1090,7 @@ export class Mode2Up {
   gutterOffsetForIndex(pindex) {
     // To find the offset of the gutter from the middle we calculate our percentage distance
     // through the book (0..1), remap to (-0.5..0.5) and multiply by the total page edge width
-    let offset = parseInt(((pindex / this.book.getNumLeafs()) - 0.5) * this.br.twoPage.edgeWidth);
+    let offset = ((pindex / this.book.getNumLeafs()) - 0.5) * this.br.twoPage.edgeWidth;
   
     // But then again for RTL it's the opposite
     if ('rl' == this.br.pageProgression) {
@@ -1107,9 +1108,9 @@ export class Mode2Up {
   leafEdgeWidth(pindex) {
     // $$$ could there be single pixel rounding errors for L vs R?
     if ((this.book.getPageSide(pindex) == 'L') && (this.br.pageProgression != 'rl')) {
-      return parseInt( (pindex/this.book.getNumLeafs()) * this.br.twoPage.edgeWidth + 0.5);
+      return (pindex/this.book.getNumLeafs()) * this.br.twoPage.edgeWidth + 0.5;
     } else {
-      return parseInt( (1 - pindex/this.book.getNumLeafs()) * this.br.twoPage.edgeWidth + 0.5);
+      return (1 - pindex/this.book.getNumLeafs()) * this.br.twoPage.edgeWidth + 0.5;
     }
   }
 
