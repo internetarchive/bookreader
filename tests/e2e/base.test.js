@@ -6,7 +6,7 @@ import BookReader from './models/BookReader';
 const localURL = 'http://127.0.0.1:8000/BookReaderDemo/';
 const localPages = [
   'demo-ia-plato.html',
-  'demo-ia-olivertwist.html'
+  // 'demo-ia-olivertwist.html'
 ];
 
 localPages.forEach(function(page) {
