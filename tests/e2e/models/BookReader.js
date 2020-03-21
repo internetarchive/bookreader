@@ -1,13 +1,15 @@
 import { Selector } from 'testcafe';
 import Nav from './Navigation';
 
-
-class BookReader {
+/**
+ * BookReader Model
+ * @class
+ * @classdesc defines BookReader base elements
+ */
+export default class BookReader {
   constructor () {
     this.shell = new Selector('.BookReader');
     this.BRcontainer = new Selector('.BRcontainer');
-    this.Nav = Nav;
+    this.Nav = new Nav();
   }
 }
-
-export default new BookReader();

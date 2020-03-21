@@ -1,5 +1,23 @@
 import { Selector } from 'testcafe';
 
+/**
+ * Navigation Model
+ * @class
+ * @classdesc defines Navigation base elements
+ */
+export default class Navigation {
+  constructor () {
+    this.topNavShell = new Selector('.BRtoolbar');
+    this.bottomNavShell = new Selector('.BRfooter');
+    this.desktop = new DesktopNav(this.bottomNavShell);
+  }
+}
+
+/**
+ * DesktopNav Model
+ * @class
+ * @classdesc defines DesktopNav base elements
+ */
 class DesktopNav {
   constructor(bottomToolbar) {
     this.goPrevious = bottomToolbar.find('.BRicon.book_left');
@@ -12,14 +30,3 @@ class DesktopNav {
     this.fullScreen = bottomToolbar.find('.BRicon.full');
   }
 }
-
-
-class Navigation {
-  constructor () {
-    this.topNavShell = new Selector('.BRtoolbar');
-    this.bottomNavShell = new Selector('.BRfooter');
-    this.desktop = new DesktopNav(this.bottomNavShell);
-  }
-}
-
-export default new Navigation();
