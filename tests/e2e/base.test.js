@@ -15,5 +15,5 @@ localPages.forEach(function(page) {
   const fixtureName = `Base Tests for: ${page}`;
   // loadTest(fixtureName, url, BR);
   fixture `${fixtureName}`.page `${url}`;
-  runBaseTests(BR)
+  runBaseTests(BR);
 })
