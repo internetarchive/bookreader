@@ -5,6 +5,7 @@ import { ClientFunction, Selector } from 'testcafe';
  *
  * @param { BookReader } BR - Model
  */
+const PAGE_FLIP_WAIT_TIME = 1000;
 export function runBaseTests (BR) {
   test('On load, pages fit fully inside of the BookReader™', async t => {
     await t.expect(BR.shell.visible).ok();
@@ -34,8 +35,6 @@ export function runBaseTests (BR) {
 
   test('2up mode - Clicking `Previous page` changes the page', async t => {
     const { Nav, BRcontainer} = BR;
-    // await t.click(Nav.desktop.mode1Up);
-
     const onLoadBR = BRcontainer.child(0);
     const initialImages = onLoadBR.child('img');
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
@@ -43,7 +42,7 @@ export function runBaseTests (BR) {
 
     const previousButton = Nav.desktop.goPrevious;
     await t.click(previousButton);
-    await t.wait( 5000 ); // wait for animation and page flip to happen
+    await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
     const prevImages = nextBrState.child('img');
@@ -65,8 +64,6 @@ export function runBaseTests (BR) {
 
   test('2up mode - Clicking `Next page` changes the page', async t => {
     const { Nav, BRcontainer} = BR;
-    // await t.click(Nav.desktop.mode1Up);
-
     const onLoadBR = BRcontainer.child(0);
     const initialImages = onLoadBR.child('img');
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
@@ -74,13 +71,12 @@ export function runBaseTests (BR) {
 
     const nextButton = Nav.desktop.goNext;
     await t.click(nextButton);
-    await t.wait( 5000 ); // wait for animation and page flip to happen
+    await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
     const nextImages = nextBrState.child('img');
     const nextImg1Src = await nextImages.nth(0).getAttribute('src');
     const nextImg2Src = await nextImages.nth(-1).getAttribute('src');
-
 
     // we aren't showing the same image in both leaves
     await t.expect(origImg1Src).notEql(origImg2Src);
