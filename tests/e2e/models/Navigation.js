@@ -1,10 +1,6 @@
 import { Selector } from 'testcafe';
 
-/**
- * Navigation Model
- * @class
- * @classdesc defines Navigation base elements
- */
+/** Model defining BookReader's Navigation base elements */
 export default class Navigation {
   constructor () {
     this.topNavShell = new Selector('.BRtoolbar');
