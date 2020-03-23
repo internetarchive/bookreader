@@ -122,16 +122,15 @@ export function runBaseTests (br) {
   test('Clicking `zoom out` makes book smaller', async t => {
     const { Nav, BRcontainer } = br;
     const book = BRcontainer.child(0);
-    const zoomOutButton = Nav.desktop.zoomOut;
 
     await t.expect(br.BRcontainer.visible).ok();
     await t.expect(book.visible).ok();
-    await t.expect(zoomOutButton.visible).ok();
+    await t.expect(Nav.desktop.zoomOut.visible).ok();
 
     const initialBookHeight = await book.getBoundingClientRectProperty('height');
     const initialBookWidth = await book.getBoundingClientRectProperty('width');
 
-    await t.click(zoomOutButton);
+    await t.click(Nav.desktop.zoomOut);
 
     const zoomOutBookHeight = await book.getBoundingClientRectProperty('height');
     const zoomOutBookWidth = await book.getBoundingClientRectProperty('width');
@@ -144,16 +143,15 @@ export function runBaseTests (br) {
     const { Nav, BRcontainer } = br;
 
     const book = await BRcontainer.child(0);
-    const zoomInButton = Nav.desktop.zoomIn;
 
     await t.expect(BRcontainer.visible).ok();
     await t.expect(book.visible).ok();
-    await t.expect(zoomInButton.visible).ok();
+    await t.expect(Nav.desktop.zoomI.visible).ok();
 
     const initialBookHeight = await book.getBoundingClientRectProperty('height');
     const initialBookWidth = await book.getBoundingClientRectProperty('width');
 
-    await t.click(zoomInButton);
+    await t.click(Nav.desktop.zoomIn);
 
     const zoomInBookHeight = await book.getBoundingClientRectProperty('height');
     const zoomIntBookWidth = await book.getBoundingClientRectProperty('width');
@@ -164,15 +162,14 @@ export function runBaseTests (br) {
 
   test('Clicking `full screen button` and BookReader fills browser window', async (t) => {
     const { Nav, BRcontainer } = br;
-    const fullScreenToggle = Nav.desktop.fullScreen;
     const windowWidth = await ClientFunction(() => window.innerWidth)();
 
     // initial in-page
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);
-    await t.click(fullScreenToggle);
+    await t.click(Nav.desktop.fullScreen);
     // full screen
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).eql(windowWidth);
-    await t.click(fullScreenToggle);
+    await t.click(Nav.desktop.fullScreen);
     // in-page
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);
   });  
