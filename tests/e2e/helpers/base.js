@@ -1,11 +1,12 @@
 import { ClientFunction, Selector } from 'testcafe';
 
+const PAGE_FLIP_WAIT_TIME = 1000;
+
 /**
  * Runs all expected base tests for BookReader
  *
  * @param { BookReader } br - Model
  */
-const PAGE_FLIP_WAIT_TIME = 1000;
 export function runBaseTests (br) {
   test('On load, pages fit fully inside of the BookReader™', async t => {
     await t.expect(br.shell.visible).ok();
