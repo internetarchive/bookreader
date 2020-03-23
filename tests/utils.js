@@ -30,3 +30,13 @@ export function eventTargetMixin() {
         _listeners: {},
     };
 }
+
+/**
+ * Lazy deep copy function; only supports objects (no classes)
+ * @template T
+ * @param {T} obj 
+ * @return {T}
+ */
+export function deepCopy(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}

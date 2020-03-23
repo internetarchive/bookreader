@@ -1,5 +1,3 @@
-/* global BookReader */
-import '../../BookReader/jquery-1.10.1.js';
 import '../../BookReader/jquery-1.10.1.js';
 import '../../BookReader/jquery-ui-1.12.0.min.js';
 import '../../BookReader/jquery.browser.min.js';
@@ -7,7 +5,7 @@ import '../../BookReader/dragscrollable-br.js';
 import '../../BookReader/jquery.colorbox-min.js';
 import '../../BookReader/jquery.bt.min.js';
 
-import '../../BookReader/BookReader.js';
+import BookReader from '../../src/js/BookReader.js';
 import '../../src/js/plugins/plugin.autoplay.js';
 
 
