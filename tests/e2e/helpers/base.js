@@ -20,27 +20,27 @@ export function runBaseTests (br) {
     await t.expect(bookWidth).lte(shellWidth, 'images do not get cropped horizontally');
   });
 
-  test('Nav menu displays properly', async t => {
-    const { Nav } = br;
+  test('nav menu displays properly', async t => {
+    const { nav } = br;
 
-    await t.expect(Nav.desktop.goPrevious.visible).ok();
-    await t.expect(Nav.desktop.goNext.visible).ok();
-    await t.expect(Nav.desktop.mode1Up.visible).ok();
-    await t.expect(Nav.desktop.mode2Up.visible).ok();
-    await t.expect(Nav.desktop.modeThumb.visible).ok();
-    await t.expect(Nav.desktop.zoomIn.visible).ok();
-    await t.expect(Nav.desktop.zoomOut.visible).ok();
-    await t.expect(Nav.desktop.fullScreen.visible).ok();
+    await t.expect(nav.desktop.goPrevious.visible).ok();
+    await t.expect(nav.desktop.goNext.visible).ok();
+    await t.expect(nav.desktop.mode1Up.visible).ok();
+    await t.expect(nav.desktop.mode2Up.visible).ok();
+    await t.expect(nav.desktop.modeThumb.visible).ok();
+    await t.expect(nav.desktop.zoomIn.visible).ok();
+    await t.expect(nav.desktop.zoomOut.visible).ok();
+    await t.expect(nav.desktop.fullScreen.visible).ok();
   });
 
   test('2up mode - Clicking `Previous page` changes the page', async t => {
-    const { Nav, BRcontainer} = br;
+    const { nav, BRcontainer} = br;
     const onLoadBrState = BRcontainer.child(0);
     const initialImages = onLoadBrState.child('img');
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
-    await t.click(Nav.desktop.goPrevious);
+    await t.click(nav.desktop.goPrevious);
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
@@ -62,13 +62,13 @@ export function runBaseTests (br) {
   })
 
   test('2up mode - Clicking `Next page` changes the page', async t => {
-    const { Nav, BRcontainer} = br;
+    const { nav, BRcontainer} = br;
     const onLoadBrState = BRcontainer.child(0);
     const initialImages = onLoadBrState.child('img');
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
-    await t.click(Nav.desktop.goNext);
+    await t.click(nav.desktop.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
@@ -90,8 +90,8 @@ export function runBaseTests (br) {
   })
 
   test('Clicking `2 page view` brings up 2 pages at a time', async t => {
-    const { Nav } = br;
-    await t.click(Nav.desktop.mode2Up);
+    const { nav } = br;
+    await t.click(nav.desktop.mode2Up);
     const twoPageContainer = await Selector('.BRtwopageview');
     await t.expect(twoPageContainer.visible).ok();
     const images = twoPageContainer.find('img.BRpageimage');
@@ -99,8 +99,8 @@ export function runBaseTests (br) {
   });
 
   test('Clicking `1 page view` brings up 1 at a time', async t => {
-    const { Nav } = br;
-    await t.click(Nav.desktop.mode1Up);
+    const { nav } = br;
+    await t.click(nav.desktop.mode1Up);
     const onePageViewContainer = await Selector('.BRpageview');
     await t.expect(onePageViewContainer.visible).ok();
     const images = onePageViewContainer.find('.BRpagediv1up');
@@ -109,8 +109,8 @@ export function runBaseTests (br) {
   });
 
   test('Clicking `thumbnail view` brings up all of the page thumbnails', async t => {
-    const { Nav } = br;
-    await t.click(Nav.desktop.modeThumb);
+    const { nav } = br;
+    await t.click(nav.desktop.modeThumb);
     const thumbnailContainer = await Selector('.BRpageview');
     await t.expect(thumbnailContainer.visible).ok();
     const images = thumbnailContainer.find('.BRpagedivthumb');
@@ -118,17 +118,17 @@ export function runBaseTests (br) {
   });
 
   test('Clicking `zoom out` makes book smaller', async t => {
-    const { Nav, BRcontainer } = br;
+    const { nav, BRcontainer } = br;
     const book = BRcontainer.child(0);
 
     await t.expect(br.BRcontainer.visible).ok();
     await t.expect(book.visible).ok();
-    await t.expect(Nav.desktop.zoomOut.visible).ok();
+    await t.expect(nav.desktop.zoomOut.visible).ok();
 
     const initialBookHeight = await book.getBoundingClientRectProperty('height');
     const initialBookWidth = await book.getBoundingClientRectProperty('width');
 
-    await t.click(Nav.desktop.zoomOut);
+    await t.click(nav.desktop.zoomOut);
 
     const zoomOutBookHeight = await book.getBoundingClientRectProperty('height');
     const zoomOutBookWidth = await book.getBoundingClientRectProperty('width');
@@ -138,18 +138,18 @@ export function runBaseTests (br) {
   });
 
   test('Clicking `zoom in` makes book larger', async t => {
-    const { Nav, BRcontainer } = br;
+    const { nav, BRcontainer } = br;
 
     const book = await BRcontainer.child(0);
 
     await t.expect(BRcontainer.visible).ok();
     await t.expect(book.visible).ok();
-    await t.expect(Nav.desktop.zoomI.visible).ok();
+    await t.expect(nav.desktop.zoomIn.visible).ok();
 
     const initialBookHeight = await book.getBoundingClientRectProperty('height');
     const initialBookWidth = await book.getBoundingClientRectProperty('width');
 
-    await t.click(Nav.desktop.zoomIn);
+    await t.click(nav.desktop.zoomIn);
 
     const zoomInBookHeight = await book.getBoundingClientRectProperty('height');
     const zoomIntBookWidth = await book.getBoundingClientRectProperty('width');
@@ -159,15 +159,15 @@ export function runBaseTests (br) {
   });
 
   test('Clicking `full screen button` and BookReader fills browser window', async (t) => {
-    const { Nav, BRcontainer } = br;
+    const { nav, BRcontainer } = br;
     const windowWidth = await ClientFunction(() => window.innerWidth)();
 
     // initial in-page
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);
-    await t.click(Nav.desktop.fullScreen);
+    await t.click(nav.desktop.fullScreen);
     // full screen
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).eql(windowWidth);
-    await t.click(Nav.desktop.fullScreen);
+    await t.click(nav.desktop.fullScreen);
     // in-page
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);
   });  

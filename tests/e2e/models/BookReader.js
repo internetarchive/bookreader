@@ -10,6 +10,6 @@ export default class BookReader {
   constructor () {
     this.shell = new Selector('.BookReader');
     this.BRcontainer = new Selector('.BRcontainer');
-    this.Nav = new Nav();
+    this.nav = new Nav();
   }
 }
