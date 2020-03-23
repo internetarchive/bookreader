@@ -40,8 +40,7 @@ export function runBaseTests (br) {
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
-    const previousButton = Nav.desktop.goPrevious;
-    await t.click(previousButton);
+    await t.click(Nav.desktop.goPrevious);
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
@@ -69,8 +68,7 @@ export function runBaseTests (br) {
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
-    const nextButton = Nav.desktop.goNext;
-    await t.click(nextButton);
+    await t.click(Nav.desktop.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
