@@ -68,7 +68,6 @@
     "serve-dev": "npx concurrently --kill-others npm:serve-live npm:build-js:watch npm:build-css:watch",
     "test": "jest",
     "test:e2e": "testcafe",
-    "test:e2e:base": "testcafe ./tests/e2e/base.test.js",
     "test:e2e:dev": "testcafe --live --dev",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --colors",
