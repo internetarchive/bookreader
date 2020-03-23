@@ -9,9 +9,7 @@ const localPages = [
 ];
 
 localPages.forEach(function(page) {
-  const BR = new BookReader();
   const url = `${localURL}${page}`;
-  const fixtureName = `Base Tests for: ${page}`;
-  fixture `${fixtureName}`.page `${url}`;
-  runBaseTests(BR);
-})
+  fixture `Base Tests for: ${page}`.page `${url}`;
+  runBaseTests(new BookReader());
+});

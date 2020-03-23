@@ -10,9 +10,7 @@ const books = [
 ];
 
 books.forEach(function(page) {
-  const BR = new BookReader();
   const url = `${localURL}${page}`;
-  const fixtureName = `Archive.org BR Base Tests for: ${page}`;
-  fixture `${fixtureName}`.page `${url}`;
-  runBaseTests(BR);
-})
+  fixture `Archive.org BR Base Tests for: ${page}`.page `${url}`;
+  runBaseTests(new BookReader());
+});
