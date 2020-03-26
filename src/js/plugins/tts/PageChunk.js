@@ -108,7 +108,7 @@ export default class PageChunk {
   static _fixIsolatedLetters(text) {
     text = text.toString();
     let textList = text.split(' ')
-    let firstWord = textList[0];
+    const firstWord = textList[0];
     if(firstWord.length==1){
       if(firstWord!='I'&& firstWord!='A'){
         textList.shift();
