@@ -54,7 +54,7 @@ export default class PageChunk {
     return chunksResponse.map((c, i) => {
       const correctedLineRects = PageChunk._fixChunkRects(c.slice(1));
       let correctedText = PageChunk._removeDanglingHyphens(c[0]);
-      correctedText = PageChunk._fixIsolatedLetters(c[1]);
+      correctedText = PageChunk._fixIsolatedLetters(correctedText);
       return new PageChunk(leafIndex, i, correctedText, correctedLineRects);
     });
   }
