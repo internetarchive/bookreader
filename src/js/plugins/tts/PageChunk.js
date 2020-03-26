@@ -115,6 +115,7 @@ export default class PageChunk {
         textList = textList.join(' ')  
       }
     }
+    textList = textList.join(' ')
     return textList;
   }
 }
