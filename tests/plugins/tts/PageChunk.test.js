@@ -55,3 +55,24 @@ describe('_removeDanglingHyphens', () => {
         expect(_removeDanglingHyphens('mid- word fid- word')).toEqual('midword fidword');
     });
 });
+
+describe('_fixIsolatedLetters', () => {
+    const { _fixIsolatedLetters } = PageChunk;
+
+    test('No change to empty string', () => {
+        expect(_fixIsolatedLetters('')).toEqual('');
+    });
+
+    test('Concatenate when isolated letter other than A and I are found', () => {
+        expect(_fixIsolatedLetters('W hen they come for me!')).toEqual('When they come for me');
+    });
+
+    test('No change to already fixed words', () => {
+        expect(_fixIsolatedLetters('This sentence is correct')).toEqual('This sentence is correct');
+    });
+
+    test('Ambiguous case where it is difficult to decide whether to concatenate or not', () => {
+        expect(_fixIsolatedLetters('I t is absolutely fine')).toEqual('It is absolutley fine');
+        expect(_fixIsolatedLetters('I love book reader')).toEqual('I love book reader');
+    });
+});
