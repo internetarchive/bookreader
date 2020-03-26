@@ -72,7 +72,7 @@ describe('_fixIsolatedLetters', () => {
     });
 
     test('Ambiguous case where it is difficult to decide whether to concatenate or not', () => {
-        expect(_fixIsolatedLetters('It is absolutely fine')).toEqual('It is absoluteley fine');
+        expect(_fixIsolatedLetters('It is absolutely fine')).toEqual('It is absolutely fine');
         expect(_fixIsolatedLetters('I love book reader')).toEqual('I love book reader');
     });
 });
