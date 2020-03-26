@@ -106,6 +106,7 @@ export default class PageChunk {
    * @return {string}
    */
   static _fixIsolatedLetters(text) {
+    text = text.toString();
     var textList = text.split(' ')
     var firstWord = textList[0];
     if(firstWord.length==1){

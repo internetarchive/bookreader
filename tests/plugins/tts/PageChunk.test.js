@@ -64,7 +64,7 @@ describe('_fixIsolatedLetters', () => {
     });
 
     test('Concatenate when isolated letter other than A and I are found', () => {
-        expect(_fixIsolatedLetters('W hen they come for me!')).toEqual('When they come for me');
+        expect(_fixIsolatedLetters('W hen they come for me!')).toEqual('When they come for me!');
     });
 
     test('No change to already fixed words', () => {
@@ -72,7 +72,7 @@ describe('_fixIsolatedLetters', () => {
     });
 
     test('Ambiguous case where it is difficult to decide whether to concatenate or not', () => {
-        expect(_fixIsolatedLetters('I t is absolutely fine')).toEqual('It is absolutley fine');
+        expect(_fixIsolatedLetters('It is absolutely fine')).toEqual('It is absolutley fine');
         expect(_fixIsolatedLetters('I love book reader')).toEqual('I love book reader');
     });
 });
