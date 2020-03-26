@@ -53,7 +53,7 @@ export default class PageChunk {
   static _fromTextWrapperResponse(leafIndex, chunksResponse) {
     return chunksResponse.map((c, i) => {
       const correctedLineRects = PageChunk._fixChunkRects(c.slice(1));
-      const correctedText = PageChunk._removeDanglingHyphens(c[0]);
+      var correctedText = PageChunk._removeDanglingHyphens(c[0]);
       correctedText = PageChunk._fixIsolatedLetters(c[1]);
       return new PageChunk(leafIndex, i, correctedText, correctedLineRects);
     });
@@ -100,14 +100,14 @@ export default class PageChunk {
   static _removeDanglingHyphens(text) {
     return text.replace(/-\s+/g, '');
   }
-    /**
+  /**
    * Concatenate isolated letters caused due to wrong interpretation of OCR
    * @param {string} text 
    * @return {string}
    */
   static _fixIsolatedLetters(text) {
-    const textList = text.split(' ')
-    const firstWord = textList[0];
+    var textList = text.split(' ')
+    var firstWord = textList[0];
     if(firstWord.length==1){
       if(firstWord!='I'&& firstWord!='A'){
         textList.shift();
@@ -115,7 +115,7 @@ export default class PageChunk {
         textList = textList.join(' ')  
       }
     }
-  return textList;
+    return textList;
   }
 }
 
