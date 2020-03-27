@@ -110,9 +110,9 @@ export default class PageChunk {
     let textList = text.trim().split(' ')
     const firstWord = textList[0];
     if(firstWord.length == 1 && firstWord != 'I' && firstWord != 'A') {
-        textList.shift();
-        textList[0] = firstWord + textList[0];
-      }
+      textList.shift();
+      textList[0] = firstWord + textList[0];
+    }
     textList = textList.join(' ')
     return textList;
   }
