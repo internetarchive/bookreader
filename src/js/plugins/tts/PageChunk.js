@@ -112,7 +112,7 @@ export default class PageChunk {
     if(firstWord.length == 1 && firstWord != 'I' && firstWord != 'A') {
       textList.shift();
       textList[0] = firstWord + textList[0];
-    }
+      }
     textList = textList.join(' ')
     return textList;
   }
