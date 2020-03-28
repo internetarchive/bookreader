@@ -53,7 +53,7 @@ export default class PageChunk {
   static _fromTextWrapperResponse(leafIndex, chunksResponse) {
     return chunksResponse.map((c, i) => {
       const correctedLineRects = PageChunk._fixChunkRects(c.slice(1));
-      let correctedText = PageChunk._removeDanglingHyphens(c[0]);
+      let correctedText = PageChunk._trimUnwantedSymbols(c[0]);
       correctedText = PageChunk._fixIsolatedLetters(correctedText)
       return new PageChunk(leafIndex, i, correctedText, correctedLineRects);
     });
@@ -93,14 +93,14 @@ export default class PageChunk {
   }
 
   /**
-   * Remove "dangling" hyphens from read aloud text to avoid TTS stuttering
+   * Trim unwanted symbols present in text to prevent TTS speaking out the symbols
    * @param {string} text 
    * @return {string}
    */
-  static _removeDanglingHyphens(text) {
-    return text.replace(/-\s+/g, '');
+  static _trimUnwantedSymbols(text) {
+    text = text.replace(/-\s+/g, '');
+    return text.replace(/[^0-9a-zA-Z"!&,. -]/g, ''); //Trim all the unwanted symbols other than comma,fullstop and & which is pronounced while reading
   }
-
   /**
    * Concatenate isolated letters caused due to wrong interpretation of OCR
    * @param {string} text 
@@ -112,7 +112,7 @@ export default class PageChunk {
     if(firstWord.length == 1 && firstWord != 'I' && firstWord != 'A') {
       textList.shift();
       textList[0] = firstWord + textList[0];
-      }
+    }
     textList = textList.join(' ')
     return textList;
   }

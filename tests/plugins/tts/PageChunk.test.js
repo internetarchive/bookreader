@@ -35,26 +35,32 @@ describe('_fromTextWrapperResponse', () => {
     });
 });
 
-describe('_removeDanglingHyphens', () => {
-    const { _removeDanglingHyphens } = PageChunk;
+describe('_trimUnwantedSymbols', () => {
+    const { _trimUnwantedSymbols } = PageChunk;
 
     test('No change to empty string', () => {
-        expect(_removeDanglingHyphens('')).toEqual('');
+        expect(_trimUnwantedSymbols('')).toEqual('');
     });
 
     test('No change when no hyphens string', () => {
-        expect(_removeDanglingHyphens('Hello world!')).toEqual('Hello world!');
+        expect(_trimUnwantedSymbols('Hello world!')).toEqual('Hello world!');
     });
 
     test('No change to hyphens mid-word', () => {
-        expect(_removeDanglingHyphens('It is mid-word!')).toEqual('It is mid-word!');
+        expect(_trimUnwantedSymbols('It is mid-word!')).toEqual('It is mid-word!');
     });
 
     test('Removes hyphens followed by spaces', () => {
-        expect(_removeDanglingHyphens('It is not mid- word!')).toEqual('It is not midword!');
-        expect(_removeDanglingHyphens('mid- word fid- word')).toEqual('midword fidword');
+        expect(_trimUnwantedSymbols('It is not mid- word!')).toEqual('It is not midword!');
+        expect(_trimUnwantedSymbols('mid- word fid- word')).toEqual('midword fidword');
     });
+    
+    test('Removes unwanted symbols from text', () => {
+        expect(_trimUnwantedSymbols('**Go away yourself!^_- %$')).toEqual('Go away yourself!');
+        expect(_trimUnwantedSymbols('mid- word fid- word')).toEqual('midword fidword');
+    });    
 });
+
 
 describe('_fixIsolatedLetters', () => {
     const { _fixIsolatedLetters } = PageChunk;
