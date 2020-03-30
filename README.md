@@ -135,6 +135,10 @@ We also have tests that use [QUnit](https://qunitjs.com/). To run all tests, sta
 
 To add a new test, create a file in the `tests/` directory with the format `test-name-of-my-test.js` and add it as a `<script>` tag in `qunit.html`.
 
+## Ways to contribute
+
+We can always use a hand building BookReader.  Check out the issues and see what interests you.  If you have an idea for an improvement, open an issue.
+
 ## More info
 
 Developer documentation:
