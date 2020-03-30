@@ -126,14 +126,22 @@ We would like to get to 100% test coverage and are tracking our progress in this
 ### End to end tests
 We also have end to end tests using [Testcafe](https://devexpress.github.io/testcafe/documentation/getting-started/).  We write tests for the repo itself and also for our use on archive.org. You can read about them in [here](./tests/e2e/README.md). These are relatively easy to do, and a fantastic way of getting introduced to the wonders of BookReader.  Check the project board for open tickets to work on.  And if you don't see a test for something you spotted, feel free to make an issue.
 
+To run all local end to end tests, run command: `npm run test:e2e`
+
+To keep end to end test server on while developing, run command: `npm run test:e2e:dev`
+
 ### Unit tests
 We have unit tests and use Jest to run them.
 For mocks, we use Jest's internal mocking mechanism and Sinon to set spies.
+
+To run all local unit tests, run command: `npm run test`
 
 ### QUnit tests
 We also have tests that use [QUnit](https://qunitjs.com/). To run all tests, start up an HTTP server at the root of the project and navigate to `/tests/qunit.html` in a browser.
 
 To add a new test, create a file in the `tests/` directory with the format `test-name-of-my-test.js` and add it as a `<script>` tag in `qunit.html`.
+
+To run the server, run command: `npm run serve-dev`
 
 ## Ways to contribute
 
