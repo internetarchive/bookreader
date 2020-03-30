@@ -330,11 +330,10 @@ export class Toolbar {
 }
 
 export function blankInfoDiv() {
-  // FIXME the <button> el is closed with a </a>
   return $(`
     <div class="BRfloat BRinfo">
       <div class="BRfloatHead">About this book
-        <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>
+        <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></button>
       </div>
       <div class="BRfloatBody">
         <div class="BRfloatCover"></div>
@@ -351,12 +350,11 @@ export function blankInfoDiv() {
 }
 
 export function blankShareDiv() {
-  // FIXME the <button> el is closed with a </a>
   return $(`
     <div class="BRfloat BRshare">
       <div class="BRfloatHead">
         Share
-        <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></a>
+        <button class="floatShut" href="javascript:;" onclick="$.fn.colorbox.close();"><span class="shift">Close</span></button>
       </div>
     </div>`);
 }
