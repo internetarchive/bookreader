@@ -2,14 +2,14 @@
 import { runBaseTests } from './helpers/base';
 import BookReader from './models/BookReader';
 
-const localURL = 'http://127.0.0.1:8000/BookReaderDemo/';
+const { BASE_URL } = process.env;
 const localPages = [
   'demo-ia-plato.html',
   // 'demo-ia-olivertwist.html'
 ];
 
 localPages.forEach(function(page) {
-  const url = `${localURL}${page}`;
+  const url = `${BASE_URL}${page}`;
   fixture `Base Tests for: ${page}`.page `${url}`;
   runBaseTests(new BookReader());
 });
