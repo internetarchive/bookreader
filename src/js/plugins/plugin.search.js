@@ -592,7 +592,7 @@ BookReader.prototype.searchHighlightVisible = function() {
   if (null == results) return false;
 
   if (this.constMode2up == this.mode) {
-    visiblePages = [this.twoPage.currentIndexL, this.twoPage.currentIndex];
+    visiblePages = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
   } else if (this.constMode1up == this.mode) {
     visiblePages = [this.currentIndex()];
   } else {
