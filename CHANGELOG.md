@@ -1,3 +1,12 @@
+# 4.7.0
+Big change: All of BookReader core is now compiled to es5, and a large number of
+chunks have been re-written in es6. Care has been taken to ensure no public APIs
+have changed, but note this was a big change.
+
+- Extract large chunks of BookReader.js into separate files, into es6; @cdrini
+- Increase jest coverage 47% → 58%; @cdrini
+- Increase testcafe coverage; @iisa @shaneriley
+
 # 4.6.0
 Big change: all the plugins are now written in es6, and compiled to es5. There should
 be no observable changes, but note this was a big change.
