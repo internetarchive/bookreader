@@ -116,9 +116,11 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 
 The source JavaScript is written in ES6 (located in the `src/js` directory) and in ES5 (located in `BookReader`). `npm run serve-dev` starts an auto-reloading dev server, that builds js/css that has been edited at `localhost:8000`.
 
+Until the next major version bump, we have to store the build files inside the repo to maintain backwards compatibility, so you will have to also commit the build files in your PRs. We recommend keeping these as separate commits labelled "Build files", since that makes it easier to resolve merge conflicts or just drop them as necessary. To just build, run `npm run build`.
+
 ## Releases
 
-To version bump the repo and prepare a release, run `npm version major|minor|patch` (following [semver](https://semver.org/)), then (something like) `git push origin HEAD --tags`. It'll automatically update the version number where it appears.
+To version bump the repo and prepare a release, run `npm version major|minor|patch` (following [semver](https://semver.org/)), then (something like) `git push origin HEAD --tags`. It'll automatically update the version number where it appears, build the files, and ask you to update the CHANGELOG.
 
 ## Tests
 We would like to get to 100% test coverage and are tracking our progress in this project: [BookReader Fidelity](https://github.com/internetarchive/bookreader/projects/5)
