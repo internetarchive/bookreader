@@ -1,3 +1,6 @@
+# 4.7.1
+- Add new parameters to analytics @bfalling
+
 # 4.7.0
 Big change: All of BookReader core is now compiled to es5, and a large number of
 chunks have been re-written in es6. Care has been taken to ensure no public APIs
