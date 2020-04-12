@@ -483,10 +483,12 @@ BookReader.prototype.setupKeyListeners = function() {
   var KEY_UP = 38;
   var KEY_RIGHT = 39;
   var KEY_DOWN = 40;
-
-  var KEY_MINUS = 173;
+  // The minus(-) and equal(=) keys have different mapings for different browsers
+  var KEY_MINUS = 189; // Chrome
+  var KEY_MINUS_F = 173; // Firefox
   var KEY_NUMPAD_SUBTRACT = 109;
-  var KEY_EQUAL = 61;
+  var KEY_EQUAL = 187; // Chrome
+  var KEY_EQUAL_F = 61; // Firefox
   var KEY_NUMPAD_ADD = 107;
 
   // We use document here instead of window to avoid a bug in jQuery on IE7
@@ -531,11 +533,13 @@ BookReader.prototype.setupKeyListeners = function() {
         }
         break;
       case KEY_MINUS:
+      case KEY_MINUS_F:
       case KEY_NUMPAD_SUBTRACT:
         e.preventDefault();
         self.zoom(-1);
         break;
       case KEY_EQUAL:
+      case KEY_EQUAL_F:
       case KEY_NUMPAD_ADD:
         e.preventDefault();
         self.zoom(+1);
