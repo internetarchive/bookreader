@@ -46,9 +46,8 @@ if (location.toString().indexOf('_debugShowConsole=true') != -1) {
  * TODO document all options properties
  * @constructor
  */
-export default function BookReader(options) {
-  options = options || {};
-  options = jQuery.extend({}, BookReader.defaultOptions, options, BookReader.optionOverrides);
+export default function BookReader(overrides = {}) {
+  const options = jQuery.extend(true, {}, BookReader.defaultOptions, overrides, BookReader.optionOverrides);
   this.setup(options);
 }
 
