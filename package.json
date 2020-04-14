@@ -42,7 +42,7 @@
     "sinon": "^7.3.2",
     "testcafe": "^1.8.1",
     "webpack": "^4.39.3",
-    "webpack-cli": "^3.3.9"
+    "webpack-cli": "^3.3.11"
   },
   "jest": {
     "setupFiles": [
