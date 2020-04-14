@@ -1,3 +1,6 @@
+# 4.8.0
+- Adds customizable layout controls @shaneriley
+
 # 4.7.1
 - Add new parameters to analytics @bfalling
 

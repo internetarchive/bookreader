@@ -15,6 +15,15 @@ export class Navbar {
     this.maxPageNum = null;
   }
 
+  controlFor(controlName) {
+    const option = this.br.options.controls[controlName];
+    if (!option.visible) { return ''; }
+    if (option.template) {
+      return option.template(this.br);
+    }
+    return `<button class="BRicon ${option.className} desktop-only js-tooltip"></button>`;
+  }
+
   /**
    * Initialize the navigation bar (bottom)
    * @return {JQuery}
@@ -38,9 +47,9 @@ export class Navbar {
         + `<span class='BRcurrentpage'></span>`
         + `<button class="BRicon book_left js-tooltip"></button>`
         + `<button class="BRicon book_right js-tooltip"></button>`
-        + `<button class="BRicon onepg desktop-only js-tooltip"></button>`
-        + `<button class="BRicon twopg desktop-only js-tooltip"></button>`
-        + `<button class="BRicon thumb desktop-only js-tooltip"></button>`
+        + this.controlFor('onePage')
+        + this.controlFor('twoPage')
+        + this.controlFor('thumbnail')
         // zoomx
         + `<button class="BRicon zoom_out desktop-only js-tooltip"></button>`
         + `<button class="BRicon zoom_in desktop-only js-tooltip"></button>`
