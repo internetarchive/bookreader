@@ -79,3 +79,57 @@ describe('Navbar slider', () => {
         expect(jumpToIndexSpy.args[0][0]).toBe(3);
     });
 });
+
+describe('Navbar controls overrides', () => {
+  const createBRWithOverrides = (overrides) => {
+    br = new BookReader($.extend(true, br.options, overrides));
+    br.init();
+    navbar = br._components.navbar;
+  };
+
+  test('when a control is set to visible: false, do not return a button template', () => {
+    const overrides = {
+      controls: {
+        onePage: {
+          visible: false
+        }
+      }
+    };
+    createBRWithOverrides(overrides);
+
+    expect(navbar.$root.find('.onepg').length).toBe(0);
+    expect(navbar.$root.find('.twopg').length).toBe(1);
+  });
+
+  test(`when a control's className is overridden,
+      the class should be used in place of the default`, () => {
+    const overrides = {
+      controls: {
+        onePage: {
+          className: 'foo'
+        }
+      }
+    };
+    createBRWithOverrides(overrides);
+
+    expect(navbar.$root.find(`.${overrides.controls.onePage.className}`).length).toBe(1);
+    expect(navbar.$root.find('.onepg').length).toBe(0);
+  });
+
+  test(`when a control's template is overridden,
+      the HTML output should match the template provided`, () => {
+    const overrides = {
+      controls: {
+        onePage: {
+          template: () => (
+            '<button id="foo"></button>'
+          )
+        }
+      }
+    };
+    createBRWithOverrides(overrides);
+
+    expect(navbar.$root.find('#foo').length).toBe(1);
+    expect(navbar.$root.find('.onepg').length).toBe(0);
+  });
+});

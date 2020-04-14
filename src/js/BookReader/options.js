@@ -188,6 +188,21 @@ export const DEFAULT_OPTIONS = {
    * Optional: if present, and embed code will be shown in the share dialog
    */
   getEmbedCode: null,
+
+  controls: {
+    onePage: {
+      visible: true,
+      className: 'onepg',
+    },
+    twoPage: {
+      visible: true,
+      className: 'twopg',
+    },
+    thumbnail: {
+      visible: true,
+      className: 'thumb',
+    },
+  },
 };
 
 /** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */

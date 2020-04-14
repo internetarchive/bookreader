@@ -1,6 +1,6 @@
 {
   "name": "bookreader",
-  "version": "4.6.0",
+  "version": "4.7.1",
   "description": "The Internet Archive BookReader.",
   "repository": {
     "type": "git",
@@ -67,8 +67,8 @@
     "serve-live": "npx live-server . --port 8000 --ignore=coverage,tests,src",
     "serve-dev": "npx concurrently --kill-others npm:serve-live npm:build-js:watch npm:build-css:watch",
     "test": "jest",
-    "test:e2e": "testcafe",
-    "test:e2e:dev": "testcafe --live --dev",
+    "test:e2e": "BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ testcafe",
+    "test:e2e:dev": "BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ testcafe --live --dev",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --colors",
     "codecov": "codecov"

@@ -53,7 +53,10 @@ BookReader.prototype.archiveAnalyticsSendFragmentChange = function() {
     archive_analytics.send_ping(values, null, "augment_for_ao_site");
 
     // Also send tracking event ping
-    archive_analytics.send_event('BookReader', 'UserChangedView', null);
+    var additionalEventParams = this.options.lendingInfo && this.options.lendingInfo.loanId
+      ? { loanId: this.options.lendingInfo.loanId }
+      : {};
+    archive_analytics.send_event('BookReader', 'UserChangedView', window.location.pathname, additionalEventParams);
 
     this.archiveAnalyticsSendFragmentChange.prevFragment = newFragment;
   }
