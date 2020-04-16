@@ -241,49 +241,42 @@ export class Mode2Up {
     }).appendTo(this.br.refs.$brContainer);
     $(this.br.twoPagePopUp).hide();
 
-    $(this.leafEdgeL).add(this.leafEdgeR).bind('mouseenter', () => {
-      $(this.br.twoPagePopUp).show();
-    });
+    const leafEdges = [
+      {
+        $leafEdge: $(this.leafEdgeL),
+        /** @type {function(number): PageIndex} */
+        jumpIndexForPageX: this.jumpIndexForLeftEdgePageX.bind(this),
+        leftOffset: () => -$(this.br.twoPagePopUp).width() + 120,
+      },
+      {
+        $leafEdge: $(this.leafEdgeR),
+        /** @type {function(number): PageIndex} */
+        jumpIndexForPageX: this.jumpIndexForRightEdgePageX.bind(this),
+        leftOffset: () => -120,
+      },
+    ];
 
-    $(this.leafEdgeL).add(this.leafEdgeR).bind('mouseleave', () => {
-      $(this.br.twoPagePopUp).hide();
-    });
+    for (const { $leafEdge, jumpIndexForPageX, leftOffset } of leafEdges) {
+      $leafEdge.on('mouseenter', () => $(this.br.twoPagePopUp).show());
+      $leafEdge.on('mouseleave', () => $(this.br.twoPagePopUp).hide());
 
-    $(this.leafEdgeL).bind('click', e => {
-      this.br.trigger(EVENTS.stop);
-      const jumpIndex = this.jumpIndexForLeftEdgePageX(e.pageX);
-      this.br.jumpToIndex(jumpIndex);
-    });
-
-    $(this.leafEdgeR).bind('click', e => {
-      this.br.trigger(EVENTS.stop);
-      const jumpIndex = this.jumpIndexForRightEdgePageX(e.pageX);
-      this.br.jumpToIndex(jumpIndex);
-    });
-
-    $(this.leafEdgeR).bind('mousemove', e => {
-      const jumpIndex = this.jumpIndexForRightEdgePageX(e.pageX);
-      $(this.br.twoPagePopUp).text('View ' + this.book.getPageName(clamp(jumpIndex, 0, this.book.getNumLeafs() - 1)));
-
-      // $$$ TODO: Make sure popup is positioned so that it is in view
-      // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
-      $(this.br.twoPagePopUp).css({
-        left: `${e.pageX - this.br.refs.$brContainer.offset().left + this.br.refs.$brContainer.scrollLeft() - 120}px`,
-        top: `${e.pageY - this.br.refs.$brContainer.offset().top + this.br.refs.$brContainer.scrollTop()}px`
+      $leafEdge.on('click', e => {
+        this.br.trigger(EVENTS.stop);
+        this.br.jumpToIndex(jumpIndexForPageX(e.pageX));
       });
-    });
 
-    $(this.leafEdgeL).bind('mousemove', e => {
-      const jumpIndex = this.jumpIndexForLeftEdgePageX(e.pageX);
-      $(this.br.twoPagePopUp).text('View '+ this.book.getPageName(clamp(jumpIndex, 0, this.book.getNumLeafs() - 1)));
+      $leafEdge.on('mousemove', e => {
+        const jumpIndex = clamp(jumpIndexForPageX(e.pageX), 0, this.book.getNumLeafs() - 1);
+        $(this.br.twoPagePopUp).text(`View ${this.book.getPageName(jumpIndex)}`);
 
-      // $$$ TODO: Make sure popup is positioned so that it is in view
-      //           (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
-      $(this.br.twoPagePopUp).css({
-        left: `${e.pageX - this.br.refs.$brContainer.offset().left + this.br.refs.$brContainer.scrollLeft() - $(this.br.twoPagePopUp).width() + 120}px`,
-        top: `${e.pageY - this.br.refs.$brContainer.offset().top + this.br.refs.$brContainer.scrollTop()}px`
+        // $$$ TODO: Make sure popup is positioned so that it is in view
+        // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
+        $(this.br.twoPagePopUp).css({
+          left: `${e.pageX - this.br.refs.$brContainer.offset().left + this.br.refs.$brContainer.scrollLeft() + leftOffset()}px`,
+          top: `${e.pageY - this.br.refs.$brContainer.offset().top + this.br.refs.$brContainer.scrollTop()}px`
+        });
       });
-    });
+    }
   }
 
   /**
