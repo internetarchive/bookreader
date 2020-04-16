@@ -13,6 +13,9 @@ async function main() {
     }
     execSync('git add CHANGELOG.md');
 
+    // npm install to make sure deps are correct
+    execSync('npm install', { stdio: "inherit" });
+
     // build
     execSync('npm run build', { stdio: "inherit" });
 
