@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>bookreader preview pages demo</title>
+
+    <meta name="viewport" content=widthdevicewidth initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/jquery-1.10.1.js"></script>
+    <script src="../BookReader/jquery-ui-1.12.0.min.js"></script>
+    <script src="../BookReader/jquery.browser.min.js"></script>
+    <script src="../BookReader/dragscrollable-br.js"></script>
+    <script src="../BookReader/jquery.colorbox-min.js"></script>
+    <script src="../BookReader/jquery.bt.min.js"></script>
+
+    <!-- BookReader and plugins -->
+    <link rel="stylesheet" href="../BookReader/BookReader.css" />
+    <script src="../BookReader/BookReader.js"></script>
+
+    <!-- Custom CSS overrides -->
+    <link rel="stylesheet" href="BookReaderDemo.css" />
+</head>
+
+<body>
+    <div id="BookReader">
+        Internet Archive BookReader Demo<br />
+        <noscript>
+            <p>
+                The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and
+                that it is enabled in the browser settings. You can also try one of the <a
+                    href="https://archive.org/details/goodytwoshoes00newyiala"> other formats of the book</a>.
+            </p>
+        </noscript>
+    </div>
+    <script type="text/javascript" src="BookReaderJSSimple.js"></script>
+    <script>
+        var spreads = [
+            [
+                {
+                    leafNum: 1, width: 1746, height: 2900, pageType: "Cover",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0001.jp2&scale=8",
+                }
+            ],
+            [
+                {
+                    leafNum: 2, width: 1610, height: 2746, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0002.jp2&scale=8",
+                },
+                {
+                    leafNum: 3, width: 1610, height: 2746, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0003.jp2&scale=8",
+                }
+            ],
+        ];
+
+        for (var i = 0; i < 100; i++) {
+            spreads.push([
+                {
+                    preview: true, width: 1610, height: 2746, pageType: "Normal",
+                    slot_uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0004.jp2",
+                },
+                {
+                    preview: true, width: 1610, height: 2746, pageType: "Normal",
+                    slot_uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0005.jp2",
+                }
+            ]);
+        }
+
+        spreads = spreads.concat([
+            [
+                {
+                    leafNum: 494, width: 1506, height: 2638, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0494.jp2&scale=8",
+                },
+                {
+                    leafNum: 495, width: 1506, height: 2638, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0495.jp2&scale=8",
+                }
+            ]
+        ]);
+
+        for (var i = 0; i < 50; i++) {
+            spreads.push([
+                {
+                    preview: true, width: 1610, height: 2746, pageType: "Normal",
+                    slot_uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0004.jp2",
+                },
+                {
+                    preview: true, width: 1610, height: 2746, pageType: "Normal",
+                    slot_uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0005.jp2",
+                }
+            ]);
+        }
+
+        spreads = spreads.concat([
+            [
+                {
+                    leafNum: 494, width: 1506, height: 2638, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0494.jp2&scale=8",
+                },
+                {
+                    leafNum: 495, width: 1506, height: 2638, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0495.jp2&scale=8",
+                }
+            ],
+            [
+                {
+                    leafNum: 494, width: 1506, height: 2638, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0494.jp2&scale=8",
+                },
+                {
+                    preview: true, leafNum: 495, width: 1506, height: 2638, pageType: "Normal",
+                }
+            ],
+            [
+                {
+                    preview: true, leafNum: 494, width: 1506, height: 2638, pageType: "Normal",
+                },
+                {
+                    leafNum: 495, width: 1506, height: 2638, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0495.jp2&scale=8",
+                }
+            ],
+        ]);
+
+        for (var i = 0; i < 30; i++) {
+            spreads.push([
+                {
+                    preview: true, width: 1610, height: 2746, pageType: "Normal",
+                    slot_uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0004.jp2",
+                },
+                {
+                    preview: true, width: 1610, height: 2746, pageType: "Normal",
+                    slot_uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0005.jp2",
+                }
+            ]);
+        }
+
+        spreads = spreads.concat([
+            [
+                {
+                    leafNum: 520, width: 1506, height: 2638, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0520.jp2&scale=8",
+                },
+                {
+                    leafNum: 521, width: 1506, height: 2638, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0521.jp2&scale=8",
+                }
+            ],
+            [
+                {
+                    leafNum: 522, width: 1592, height: 2718, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0522.jp2&scale=8",
+                },
+                {
+                    leafNum: 523, width: 1592, height: 2718, pageType: "Normal",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0523.jp2&scale=8",
+                }
+            ],
+            [
+                {
+                    leafNum: 524, width: 1746, height: 2900, pageType: "Cover",
+                    uri: "https://ia800900.us.archive.org/BookReader/BookReaderImages.php?zip=/25/items/theworksofplato01platiala/theworksofplato01platiala_jp2.zip&file=theworksofplato01platiala_jp2/theworksofplato01platiala_0524.jp2&scale=8",
+                }
+            ]
+        ]);
+
+        instantiateBookReader('#BookReader', { data: spreads });
+    </script>
+</body>
+
+</html>
