@@ -622,6 +622,7 @@ BookReader.prototype.bindGestures = function(jElement) {
 };
 
 BookReader.prototype.drawLeafsOnePage = function() {
+  const { book } = this._models;
   const containerHeight = this.refs.$brContainer.height();
   const containerWidth = this.refs.$brPageViewEl.width();
   const scrollTop = this.refs.$brContainer.prop('scrollTop');
@@ -631,15 +632,14 @@ BookReader.prototype.drawLeafsOnePage = function() {
   let leafTop = 0;
   let leafBottom = 0;
 
-  for (let i = 0; i < this._models.book.getNumLeafs(); i++) {
-    const height = Math.floor(this._models.book._getPageHeight(i) / this.reduce);
-
+  for (const page of book.pagesIterator({ collapsePreviews: true })) {
+    const height = Math.floor(page.height / this.reduce);
     leafBottom += height;
     const topInView = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
     const bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
-    const middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
+    const middleInView = (leafTop <= scrollTop) && (leafBottom >= scrollBottom);
     if (topInView || bottomInView || middleInView) {
-      indicesToDisplay.push(i);
+      indicesToDisplay.push(page.index);
     }
     leafTop += height + 10;
     leafBottom += 10;
@@ -650,29 +650,29 @@ BookReader.prototype.drawLeafsOnePage = function() {
   let firstIndexToDraw = indicesToDisplay[0];
   this.updateFirstIndex(firstIndexToDraw);
 
-  if ((0 != firstIndexToDraw) && (1 < this.reduce)) {
-    firstIndexToDraw--;
-    indicesToDisplay.unshift(firstIndexToDraw);
-  }
+  // if zoomed out, also draw prev/next pages
+  if (this.reduce > 1) {
+    const prev = book.getPage(firstIndexToDraw).prevCollapsedPreviews;
+    if (prev) indicesToDisplay.unshift(firstIndexToDraw = prev.index);
 
-  const lastIndexToDraw = indicesToDisplay[indicesToDisplay.length-1];
-  if ( ((this._models.book.getNumLeafs() - 1) != lastIndexToDraw) && (1 < this.reduce) ) {
-    indicesToDisplay.push(lastIndexToDraw + 1);
+    const lastIndexToDraw = indicesToDisplay[indicesToDisplay.length - 1];
+    const next = book.getPage(lastIndexToDraw).nextCollapsedPreviews;
+    if (next) indicesToDisplay.push(next.index);
   }
 
   const BRpageViewEl = this.refs.$brPageViewEl.get(0);
-
   leafTop = 0;
 
-  for (let i = 0; i < firstIndexToDraw; i++) {
-    leafTop += Math.floor(this._models.book._getPageHeight(i) / this.reduce) + 10;
+  for (const page of book.pagesIterator({ end: firstIndexToDraw, collapsePreviews: true })) {
+    leafTop += Math.floor(page.height / this.reduce) + 10;
   }
 
   for (const index of indicesToDisplay) {
-    const height = Math.floor(this._models.book._getPageHeight(index)/this.reduce);
+    const page = book.getPage(index);
+    const height = Math.floor(page.height / this.reduce);
 
     if (utils.notInArray(index, this.displayedIndices)) {
-      const width = Math.floor(this._models.book._getPageWidth(index)/this.reduce);
+      const width = Math.floor(page.width / this.reduce);
       const leftMargin = Math.floor((containerWidth - width) / 2);
 
       const pageContainer = this._createPageContainer(index, {
@@ -730,7 +730,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   let seekTop;
 
   // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
-  for (let i = 0; i < book.getNumLeafs(); i++) {
+  for (const page of book.pagesIterator({ collapsePreviews: true })) {
     const leafWidth = this.thumbWidth;
     if (rightPos + (leafWidth + this.thumbPadding) > viewWidth){
       currentRow++;
@@ -745,13 +745,12 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
       leafMap[currentRow].height = 0;
       leafMap[currentRow].top = 0;
     }
-    leafMap[currentRow].leafs[leafIndex] = {};
-    leafMap[currentRow].leafs[leafIndex].num = i;
-    leafMap[currentRow].leafs[leafIndex].left = rightPos;
+    leafMap[currentRow].leafs[leafIndex] = {
+      num: page.index,
+      left: rightPos,
+    };
 
-    const pageHeight = book.getPageHeight(leafMap[currentRow].leafs[leafIndex].num);
-    const pageWidth = book.getPageWidth(leafMap[currentRow].leafs[leafIndex].num);
-    leafHeight = floor((pageHeight * this.thumbWidth) / pageWidth);
+    leafHeight = floor((page.height * this.thumbWidth) / page.width);
     if (leafHeight > leafMap[currentRow].height) {
       leafMap[currentRow].height = leafHeight;
     }
@@ -760,7 +759,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (rightPos > maxRight) { maxRight = rightPos; }
     leafIndex++;
 
-    if (i == seekIndex) {
+    if (page.index == seekIndex) {
       seekTop = bottomPos - this.thumbPadding - leafMap[currentRow].height;
     }
   }
@@ -1105,12 +1104,13 @@ BookReader.prototype.resizePageView1up = function() {
  * @param {number} padding
  */
 BookReader.prototype.onePageCalculateViewDimensions = function(reduce, padding) {
+  const { floor } = Math;
   const { book } = this._models;
   let viewWidth = 0;
   let viewHeight = 0;
-  for (let  i = 0; i < book.getNumLeafs(); i++) {
-    viewHeight += Math.floor(book._getPageHeight(i) / reduce) + padding;
-    const width = Math.floor(book._getPageWidth(i) / reduce);
+  for (const page of book.pagesIterator({ collapsePreviews: true })) {
+    viewHeight += floor(page.height / reduce) + padding;
+    const width = floor(page.width / reduce);
     if (width > viewWidth) viewWidth = width;
   }
   return { width: viewWidth, height: viewHeight };
@@ -1283,6 +1283,17 @@ BookReader.prototype.jumpToPage = function(pageNum) {
 };
 
 /**
+ * Check whether the specified index is currently displayed
+ * @param {PageIndex} index
+ */
+BookReader.prototype._isIndexDisplayed = function(index) {
+  // One up "caches" pages +- current, so exclude those in the test.
+  return this.constMode1up == this.mode ? this.displayedIndices.slice(1, -1).includes(index) :
+    this.displayedIndices ? this.displayedIndices.includes(index) :
+      this.currentIndex() == index;
+}
+
+/**
  * Changes the current page
  * @param {PageIndex} index
  * @param {number} [pageX]
@@ -1291,6 +1302,18 @@ BookReader.prototype.jumpToPage = function(pageNum) {
  */
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
   const prevCurrentIndex = this.currentIndex();
+
+  // Don't jump into specific preview page
+  const page = this._models.book.getPage(index);
+  if (page.isPreview && page.previewStart != page.index) {
+    // If already in preview range, jump to end of preview range
+    const alreadyInPreview = this._isIndexDisplayed(page.previewStart);
+    const newIndex = alreadyInPreview ? page.nextCollapsedPreviews.index : page.previewStart;
+    console.log({alreadyInPreview, index, newIndex});
+    return this.jumpToIndex(newIndex, pageX, pageY, noAnimate);
+  }
+  console.log({index});
+
   this.trigger(BookReader.eventNames.stop);
 
   if (this.constMode2up == this.mode) {
@@ -1301,7 +1324,6 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
     } else if (index > Math.max(this.twoPage.currentIndexL, this.twoPage.currentIndexR)) {
       this.flipFwdToIndex(index);
     }
-
   } else if (this.constModeThumb == this.mode) {
     const { floor } = Math;
     const { book } = this._models;
@@ -1570,10 +1592,11 @@ BookReader.prototype.onePageGetAutofitHeight = function() {
  * @return {number}
  */
 BookReader.prototype.onePageGetPageTop = function(index) {
+  const { floor } = Math;
+  const { book } = this._models;
   let leafTop = 0;
-  for (let i = 0; i < index; i++) {
-    const h = Math.floor(this._models.book._getPageHeight(i) / this.reduce);
-    leafTop += h + this.padding;
+  for (const page of book.pagesIterator({ end: index, collapsePreviews: true })) {
+    leafTop += floor(page.height / this.reduce) + this.padding;
   }
   return leafTop;
 };

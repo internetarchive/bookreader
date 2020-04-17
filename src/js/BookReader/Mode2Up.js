@@ -75,6 +75,9 @@ export class Mode2Up {
     this.br.updateToolbarZoom(this.br.reduce);
   }
 
+  /**
+   * @param {1} direction
+   */
   zoom(direction) {
     this.br.stopFlipAnimations();
 
@@ -128,16 +131,7 @@ export class Mode2Up {
     // one side of the spread because it is the first/last leaf,
     // foldouts, missing pages, etc
 
-    let targetLeaf = this.br.firstIndex;
-
-    if (targetLeaf < this.br.firstDisplayableIndex()) {
-      targetLeaf = this.br.firstDisplayableIndex();
-    }
-
-    if (targetLeaf > this.br.lastDisplayableIndex()) {
-      targetLeaf = this.br.lastDisplayableIndex();
-    }
-
+    const targetLeaf = clamp(this.br.firstIndex, this.br.firstDisplayableIndex(), this.br.lastDisplayableIndex());
     const currentSpreadIndices = this.book.getSpreadIndices(targetLeaf);
     this.br.twoPage.currentIndexL = currentSpreadIndices[0];
     this.br.twoPage.currentIndexR = currentSpreadIndices[1];
@@ -495,9 +489,6 @@ export class Mode2Up {
    */
   flipBackToIndex(index) {
     if (this.br.constMode1up == this.br.mode) return;
-
-    const leftIndex = this.br.twoPage.currentIndexL;
-
     if (this.br.animating) return;
 
     if (null != this.br.leafEdgeTmp) {
@@ -506,7 +497,10 @@ export class Mode2Up {
     }
 
     if (null == index) {
-      index = leftIndex - 2;
+      const prev = this.book.getPage(this.br.twoPage.currentIndexL).prevCollapsedPreviews;
+      if (!prev) return;
+      index = prev.index;
+      if (prev.pageSide == 'R') index--;
     }
 
     this.br.updateNavIndexThrottled(index);
@@ -683,7 +677,9 @@ export class Mode2Up {
     }
 
     if (null == index) {
-      index = this.br.twoPage.currentIndexL + 2; // $$$ assumes indices are continuous
+      const nextPage = this.book.getPage(this.br.twoPage.currentIndexR).nextCollapsedPreviews;
+      if (!nextPage) return;
+      index = nextPage.index;
     }
     if (index > this.br.lastDisplayableIndex()) return;
 
@@ -1116,7 +1112,7 @@ export class Mode2Up {
   /**
    * Returns the target jump leaf given a page coordinate (inside the left page edge div)
    * @param {number} pageX
-   * @return {number}
+   * @return {PageIndex}
    */
   jumpIndexForLeftEdgePageX(pageX) {
     let jumpIndex;
@@ -1137,6 +1133,8 @@ export class Mode2Up {
 
   /**
    * Returns the target jump leaf given a page coordinate (inside the right page edge div)
+   * @param {number} pageX
+   * @return {PageIndex}
    */
   jumpIndexForRightEdgePageX(pageX) {
     let jumpIndex;

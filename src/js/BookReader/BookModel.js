@@ -3,6 +3,9 @@ import { clamp } from './utils.js';
 /** @typedef {import('./options.js').PageData} PageData */
 /** @typedef {import('../BookReader.js').default} BookReader */
 
+// TODO Render text for the user instead.
+const PREVIEW_PAGE_URI = 'https://archive.org/bookreader/static/preview-800x1200.png';
+
 /**
  * Contains information about the Book/Document independent of the way it is
  * being rendering. Nothing here should reference e.g. the mode, zoom, etc.
@@ -154,7 +157,7 @@ export class BookModel {
    */
   // eslint-disable-next-line no-unused-vars
   getPageURI(index, reduce, rotate) {
-    return this.getPageProp(index, 'uri');
+    return this.getPageProp(index, 'preview') ? PREVIEW_PAGE_URI : this.getPageProp(index, 'uri');
   }
 
   /**
@@ -240,6 +243,32 @@ export class BookModel {
   }
 
   /**
+   * @param {number} index
+   */
+  getPage(index) {
+    return new BookPage(this, index);
+  }
+
+  /**
+   * @param {object} [arg0]
+   * @param {number} [arg0.start] inclusive
+   * @param {number} [arg0.end] exclusive
+   * @param {boolean} [arg0.collapsePreviews] Whether to only yield the first page
+   * of a series of preview pages instead of each page
+   */
+  * pagesIterator({ start=0, end=Infinity, collapsePreviews=false } = {}) {
+    start = Math.max(0, start);
+    end = Math.min(end, this.getNumLeafs());
+
+    for (let i = start; i < end; i++) {
+      const page = this.getPage(i);
+      if (collapsePreviews && page.isConsecutivePreview) continue;
+
+      yield page;
+    }
+  }
+
+  /**
    * Flatten the nested structure (make 1d array), and also add pageSide prop
    * @return {PageData[]}
    */
@@ -248,6 +277,9 @@ export class BookModel {
       return this._getDataFlattenedCached[0];
 
     let prevPageSide = null;
+    /** @type {number|null} */
+    let previewChunkStart  = null;
+    let index = 0;
     // @ts-ignore TS doesn't know about flatMap for some reason
     const flattend = this.br.data.flatMap(spread => {
       return spread.map(page => {
@@ -259,6 +291,18 @@ export class BookModel {
           }
         }
         prevPageSide = page.pageSide;
+
+        if (page.preview) {
+          if (previewChunkStart === null) {
+            page.previewStart = previewChunkStart = index;
+          } else {
+            page.previewStart = previewChunkStart;
+          }
+        } else {
+          previewChunkStart = null;
+        }
+
+        index++;
         return page;
       });
     });
@@ -281,6 +325,68 @@ export class BookModel {
     if ('undefined' == typeof(dataf[index][prop]))
       return;
     return dataf[index][prop];
+  }
+}
+
+/**
+ * A controlled schema for page data.
+ */
+class BookPage {
+  /**
+   * @param {BookModel} book
+   * @param {PageIndex} index
+   */
+  constructor(book, index) {
+    this.book = book;
+    this.index = index;
+    this.width = book.getPageWidth(index);
+    this.height = book.getPageHeight(index);
+    this.pageSide = book.getPageSide(index);
+
+    /** @type {boolean} */
+    this.isPreview = book._getDataProp(index, 'preview') || false;
+    /** @type {PageIndex} */
+    this.previewStart = book._getDataProp(index, 'previewStart') || null;
+    /**
+     * Consecutive preview pages are pages in a preview "chunk" which are not the first
+     * of that chunk.
+     */
+    this.isConsecutivePreview = this.isPreview && this.previewStart != this.index;
+  }
+
+  get prev() {
+    return this.index > 0 ? new BookPage(this.book, this.index - 1) : null;
+  }
+
+  get next() {
+    return this.index < this.book.getNumLeafs() - 1 ? new BookPage(this.book, this.index + 1) : null;
+  }
+
+  get nextCollapsedPreviews() {
+    if (this.index == this.book.getNumLeafs() - 1) return null;
+
+    if (this.isPreview) {
+      // escape the preview chain
+      for (const page of this.book.pagesIterator({ start: this.index + 1 })) {
+        if (!page.isPreview) return page;
+      }
+      // at end
+      return null;
+    } else {
+      // don't matter
+      return this.next;
+    }
+  }
+
+  /** @return {BookPage?} */
+  get prevCollapsedPreviews() {
+    if (this.index == 0) return null;
+    if (this.isPreview && this.previewStart !== this.index) {
+      return this.book.getPage(this.previewStart);
+    } else {
+      const prev = this.prev;
+      return prev.isPreview ? prev.prevCollapsedPreviews : prev;
+    }
   }
 }
 
