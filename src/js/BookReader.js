@@ -831,7 +831,6 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   var left;
   var index;
   var div;
-  var link;
   var img;
   var leaf;
 
@@ -859,8 +858,6 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           left: `${left}px`,
         }, leaf);
 
-        // link back to page
-        link = document.createElement("a");
         div.data('leaf', leaf).on('mouseup', function(event) {
           // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
           // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
