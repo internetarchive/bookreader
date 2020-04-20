@@ -2,35 +2,42 @@
   position: relative;
   margin: auto;
 }
-.BRpagediv1up {
+.BRpagediv {
+  position: relative;
   overflow: hidden;
   background-color: $brColorPlaceholderBg;
   box-shadow: 1px 1px 2px #333;
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  &:after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    content: "";
+  }
 }
-.BRpagedivthumb {
-  background-color: $brColorPlaceholderBg;
-  overflow: hidden;
-  box-shadow: 1px 1px 2px #333;
+.BRmodethumb {
   cursor: pointer;
 }
-.BRpagedivthumb a {
+.BRmodethumb a {
   border: 0;
 }
-.BRpagedivthumb img {
+.BRmodethumb img {
   border: 0;
 }
-.BRpagediv2up {
-  background-color: rgb(234, 226, 205);
-  overflow:hidden;
+.BRmode2up {
+  cursor: pointer;
 }
 .BRbookcover {
   position: absolute;
   background-image: none;
   box-shadow: 1px 0 10px #111;
-}
-.BRpageimage {
-  background-color: $brColorPlaceholderBg;
-  cursor: pointer;
 }
 .BRPreview .BRpageimage {
   background-color: #eee;
@@ -40,10 +47,6 @@
 .BRemptypage {
   background-color: #3a3b3b;
   background-color: transparent;
-}
-
-.BRonePageImage {
-  background: url(images/loading.gif) 50% no-repeat;
 }
 
 .BRleafEdgeR {

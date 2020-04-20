@@ -581,6 +581,21 @@ BookReader.prototype.drawLeafs = function() {
   }
 };
 
+BookReader.prototype.leafTemplate = function(styles, index) {
+  const css = Object.assign({ position: 'absolute' }, styles);
+  const modeClasses = {
+    [this.constMode1up]: '1up',
+    [this.constMode2up]: '2up',
+    [this.constModeThumb]: 'thumb',
+  };
+  const div = $('<div />', {
+    'class': `BRpagediv BRmode${modeClasses[this.mode]} pagediv${index}`,
+    css,
+  });
+
+  return div;
+};
+
 BookReader.prototype.bindGestures = function(jElement) {
   // TODO support gesture change is only iOS. Support android.
   // HACK(2017-01-20) - Momentum scrolling is causing the scroll position
@@ -669,22 +684,19 @@ BookReader.prototype.drawLeafsOnePage = function() {
       var width = parseInt(this._models.book._getPageWidth(index)/this.reduce);
       var leftMargin = parseInt((containerWidth - width) / 2);
 
-      var div = document.createElement('div');
-      div.className = 'BRpagediv1up pagediv' + index;
-      div.style.position = "absolute";
-      div.style.top = leafTop + 'px';
-      div.style.left = leftMargin + 'px';
-      div.style.width = width + 'px';
-      div.style.height = height + 'px';
+      const div = this.leafTemplate({
+        width:`${width}px`,
+        height: `${height}px`,
+        top: `${leafTop}px`,
+        left: `${leftMargin}px`,
+      }, index);
 
-      BRpageViewEl.appendChild(div);
+      const img = $('<img />', {
+        src: this._getPageURI(index, this.reduce, 0)
+      });
+      div.append(img);
 
-      var img = document.createElement('img');
-      img.src = this._getPageURI(index, this.reduce, 0);
-      img.className = 'BRnoselect BRonePageImage';
-      img.style.width = width + 'px';
-      img.style.height = height + 'px';
-      div.appendChild(img);
+      BRpageViewEl.appendChild(div[0]);
     }
 
     leafTop += height +10;
@@ -839,20 +851,17 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           left = viewWidth - leafWidth - left;
         }
 
-        div = document.createElement("div");
-        div.style.position = "absolute";
-        div.className = 'BRpagedivthumb pagediv' + leaf;
-
         left += this.thumbPadding;
-        div.style.top = leafTop + 'px';
-        div.style.left = left + 'px';
-        div.style.width = leafWidth + 'px';
-        div.style.height = leafHeight + 'px';
+        div = this.leafTemplate({
+          width: `${leafWidth}px`,
+          height: `${leafHeight}px`,
+          top: `${leafTop}px`,
+          left: `${left}px`,
+        }, leaf);
 
         // link back to page
         link = document.createElement("a");
-        $(link).data('leaf', leaf);
-        link.addEventListener('mouseup', function(event) {
+        div.data('leaf', leaf).on('mouseup', function(event) {
           // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
           // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
           // We manually trigger the `fragmentChange` once at the end.
@@ -866,8 +875,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           self.trigger(BookReader.eventNames.fragmentChange);
           event.preventDefault();
           event.stopPropagation();
-        }, true);
-        $(div).append(link);
+        });
 
         this.refs.$brPageViewEl.append(div);
 
@@ -879,7 +887,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           .addClass('BRlazyload')
         // Store the URL of the image that will replace this one
           .data('srcURL',  this._getPageURI(leaf, thumbReduce));
-        $(link).append(img);
+        div.append(img);
       }
     }
   }
@@ -1789,15 +1797,17 @@ BookReader.prototype.prefetchImg = function(index) {
   }
 
   if (loadImage) {
-    var img = document.createElement("img");
-    $(img).addClass('BRpageimage').addClass('BRnoselect');
+    const div = this.leafTemplate({}, index);
+    const img = $('<img />', {
+      'class': 'BRpage-frame BRpageimage',
+      src: pageURI
+    }).appendTo(div);
     if (index < 0 || index > (this._models.book.getNumLeafs() - 1) ) {
       // Facing page at beginning or end, or beyond
-      $(img).addClass('BRemptypage');
+      img.addClass('BRemptypage');
     }
-    img.src = pageURI;
-    img.uri = pageURI; // browser may rewrite src so we stash raw URI here
-    this.prefetchedImgs[index] = img;
+    div[0].uri = pageURI;
+    this.prefetchedImgs[index] = div[0];
   }
 };
 

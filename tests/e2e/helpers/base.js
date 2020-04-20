@@ -37,7 +37,7 @@ export function runBaseTests (br) {
   test('2up mode - Clicking `Previous page` changes the page', async t => {
     const { nav, BRcontainer} = br;
     const onLoadBrState = BRcontainer.child(0);
-    const initialImages = onLoadBrState.child('img');
+    const initialImages = onLoadBrState.find('img');
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
@@ -45,7 +45,7 @@ export function runBaseTests (br) {
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
-    const prevImages = nextBrState.child('img');
+    const prevImages = nextBrState.find('img');
     const prevImg1Src = await prevImages.nth(0).getAttribute('src');
     const prevImg2Src = await prevImages.nth(-1).getAttribute('src');
 
@@ -65,7 +65,7 @@ export function runBaseTests (br) {
   test('2up mode - Clicking `Next page` changes the page', async t => {
     const { nav, BRcontainer} = br;
     const onLoadBrState = BRcontainer.child(0);
-    const initialImages = onLoadBrState.child('img');
+    const initialImages = onLoadBrState.find('img');
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
@@ -73,7 +73,7 @@ export function runBaseTests (br) {
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
-    const nextImages = nextBrState.child('img');
+    const nextImages = nextBrState.find('img');
     const nextImg1Src = await nextImages.nth(0).getAttribute('src');
     const nextImg2Src = await nextImages.nth(-1).getAttribute('src');
 
@@ -104,7 +104,7 @@ export function runBaseTests (br) {
     await t.click(nav.desktop.mode1Up);
     const onePageViewContainer = await Selector('.BRpageview');
     await t.expect(onePageViewContainer.visible).ok();
-    const images = onePageViewContainer.find('.BRpagediv1up');
+    const images = onePageViewContainer.find('.BRmode1up');
     // we usually pre-fetch the page in question & the 2 after it
     await t.expect(images.count).gte(3);
   });
@@ -114,7 +114,7 @@ export function runBaseTests (br) {
     await t.click(nav.desktop.modeThumb);
     const thumbnailContainer = await Selector('.BRpageview');
     await t.expect(thumbnailContainer.visible).ok();
-    const images = thumbnailContainer.find('.BRpagedivthumb');
+    const images = thumbnailContainer.find('.BRmodethumb');
     await t.expect(images.count).gt(0);
   });
 
