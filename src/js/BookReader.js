@@ -1801,7 +1801,7 @@ BookReader.prototype.prefetchImg = function(index) {
     }).appendTo(div);
     if (index < 0 || index > (this._models.book.getNumLeafs() - 1) ) {
       // Facing page at beginning or end, or beyond
-      img.addClass('BRemptypage');
+      div.addClass('BRemptypage');
     }
     div[0].uri = pageURI;
     this.prefetchedImgs[index] = div[0];
