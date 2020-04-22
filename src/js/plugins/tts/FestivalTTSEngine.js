@@ -57,7 +57,7 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     if (navigator.userAgent.match(/mobile/i)) {
       promise = this.iOSCaptureUserIntentHack();
     }
-        
+
     promise = promise || Promise.resolve();
     promise.then(() => super.start(leafIndex, numLeafs));
   }

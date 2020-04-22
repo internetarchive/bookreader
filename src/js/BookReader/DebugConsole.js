@@ -30,13 +30,13 @@ export class DebugConsole {
       _realLog(...args);
       this.logToScreen(args);
     }
-  
+
     window.onerror = (...args) => this.logToScreen(args);
   }
 
   /**
    * Log the provided array onto the on screen console
-   * @param {Array} args 
+   * @param {Array} args
    */
   logToScreen(args) {
     const html = args.map(JSON.stringify).join(',');

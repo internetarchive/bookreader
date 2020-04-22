@@ -45,7 +45,7 @@ export default class WebTTSEngine extends AbstractTTSEngine {
             { src: br.options.thumbnail, type: 'image/jpg' },
           ]
         });
-                
+
         navigator.mediaSession.setActionHandler('play', () => {
           audio.play();
           this.resume();
@@ -91,10 +91,10 @@ export class WebTTSSound {
 
     /** @type {SpeechSynthesisUtterance} */
     this.utterance = null;
-        
+
     /** @type {SpeechSynthesisVoice} */
     this.voice = null;
-        
+
     this._lastEvents = {
       /** @type {SpeechSynthesisEvent} */
       pause: null,
@@ -113,7 +113,7 @@ export class WebTTSSound {
     /** @type {Promise} promise resolved by _finishResolver */
     this._finishPromise = null;
   }
-    
+
   /** @override **/
   load(onload) {
     this.loaded = false;
@@ -231,10 +231,10 @@ export class WebTTSSound {
    **/
   pause() {
     if (this.paused) return;
-        
+
     const pausePromise = promisifyEvent(this.utterance, 'pause');
     speechSynthesis.pause();
-        
+
     // There are a few awful browser cases:
     // 1. Pause works and fires
     // 2. Pause doesn't work and doesn't fire

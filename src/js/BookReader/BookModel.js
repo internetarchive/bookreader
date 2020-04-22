@@ -11,7 +11,7 @@ import { clamp } from './utils.js';
  */
 export class BookModel {
   /**
-   * @param {BookReader} br 
+   * @param {BookReader} br
    */
   constructor(br) {
     this.br = br;
@@ -30,7 +30,7 @@ export class BookModel {
     if (this._medianPageSize) {
       return this._medianPageSize;
     }
-  
+
     // A little expensive but we just do it once
     const widths = [];
     const heights = [];
@@ -38,10 +38,10 @@ export class BookModel {
       widths.push(this.getPageWidth(i));
       heights.push(this.getPageHeight(i));
     }
-  
+
     widths.sort();
     heights.sort();
-  
+
     this._medianPageSize = {
       width: widths[Math.floor(widths.length / 2)],
       height: heights[Math.floor(heights.length / 2)]

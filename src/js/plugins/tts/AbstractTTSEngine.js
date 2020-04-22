@@ -4,7 +4,7 @@ import PageChunkIterator from './PageChunkIterator.js';
 
 /**
  * @export
- * @typedef {Object} TTSEngineOptions 
+ * @typedef {Object} TTSEngineOptions
  * @property {String} server
  * @property {String} bookPath
  * @property {ISO6391} bookLanguage
@@ -34,7 +34,7 @@ import PageChunkIterator from './PageChunkIterator.js';
 export default class AbstractTTSEngine {
   /**
    * @protected
-   * @param {TTSEngineOptions} options 
+   * @param {TTSEngineOptions} options
    */
   constructor(options) {
     this.playing = false;

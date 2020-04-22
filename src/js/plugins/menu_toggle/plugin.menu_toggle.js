@@ -65,7 +65,7 @@
     removeClickHandlers(br);
     br.showNavigation();
   }
-  
+
   /**
      * Removes click handlers on elements that house the book pages
      *
@@ -280,7 +280,7 @@
     var persistNav = function persistNav(e) {
       alwaysShowNav(br);
     };
-  
+
     var whenToToggleNav = [
       'BookReader:1PageViewSelected',
       'BookReader:2PageViewSelected',
@@ -322,4 +322,3 @@
     };
   })(BookReader.prototype.init);
 })();
-  

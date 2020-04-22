@@ -1,9 +1,9 @@
 /**
  * Bind mouse handlers
  * Disable mouse click to avoid selected/highlighted page images
- * @param {JQuery} jObject 
+ * @param {JQuery} jObject
  */
-export function disableSelect(jObject) {  
+export function disableSelect(jObject) {
   // $$$ check here for right-click and don't disable.  Also use jQuery style
   //     for stopping propagation. See https://bugs.edge.launchpad.net/gnubook/+bug/362626
   jObject.bind('mousedown', () => false);
@@ -32,8 +32,8 @@ export function cssPercentage(value, max) {
 }
 
 /**
- * @param {*} value 
- * @param {Array} array 
+ * @param {*} value
+ * @param {Array} array
  * @return {boolean}
  */
 export function notInArray(value, array) {
@@ -41,7 +41,7 @@ export function notInArray(value, array) {
 }
 
 /**
- * @param {HTMLIFrameElement} iframe 
+ * @param {HTMLIFrameElement} iframe
  * @return {Document}
  */
 export function getIFrameDocument(iframe) {
@@ -51,7 +51,7 @@ export function getIFrameDocument(iframe) {
 }
 
 /**
- * @param {string} str 
+ * @param {string} str
  * @return {string}
  */
 export function escapeHTML(str) {
@@ -72,7 +72,7 @@ export function decodeURIComponentPlus(value) {
 
 /**
  * Encodes a URI component and converts ' ' to '+'
- * @param {string|number|boolean} value 
+ * @param {string|number|boolean} value
  * @return {string};
  */
 export function encodeURIComponentPlus(value) {
@@ -85,7 +85,7 @@ export function encodeURIComponentPlus(value) {
  * N milliseconds. If `immediate` is passed, trigger the function on the
  * leading edge, instead of the trailing.
  * @see https://davidwalsh.name/javascript-debounce-function
- * 
+ *
  * @param {Function} func
  * @param {number} wait
  * @param {boolean} immediate

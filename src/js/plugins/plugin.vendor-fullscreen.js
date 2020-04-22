@@ -59,7 +59,7 @@ if (!isMobile()) {
     }
   })(BookReader.prototype.init);
 
-  /** 
+  /**
    * Start fullscreen mode
    */
   BookReader.prototype.enterFullWindow = function() {
@@ -83,7 +83,7 @@ if (!isMobile()) {
     });
   };
 
-  /** 
+  /**
    * Exit from fullscreen mode
    */
   BookReader.prototype.exitFullWindow = function() {
@@ -98,7 +98,7 @@ if (!isMobile()) {
     this.refs.$brContainer.animate({ opacity: 1 }, 400, 'linear');
   };
 
-  /** 
+  /**
    * Returns true if fullscreen mode is enabled
    *
    * @returns {boolean}
@@ -107,7 +107,7 @@ if (!isMobile()) {
     return isFullscreenActive() || this.isVendorFullscreenActive;
   };
 
-  /** 
+  /**
    * Toggle screen
    */
   BookReader.prototype.toggleFullscreen = function() {
@@ -125,7 +125,7 @@ if (!isMobile()) {
       }
     }
   };
-  
+
   /** @deprecated */
   BookReader.util.isMobile = isMobile;
 
@@ -208,7 +208,7 @@ export function requestFullscreen(element) {
 
 /**
  * Returns true if fullscreen mode is allowed on this device and document.
- * 
+ *
  * @returns {boolean}
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenEnabled
  */

@@ -175,7 +175,7 @@ BookReader.prototype.setup = function(options) {
 
   /** @type {{[name: string]: JQuery}} */
   this.refs = {};
-  
+
   /**
    * @private (for now) Models are largely state storing classes. This might be too much
    * granularity, but time will tell!

@@ -2,7 +2,7 @@ import langs from 'iso-language-codes/js/data.js';
 
 /**
  * Convert a EventTarget style event into a promise
- * @param {EventTarget} target 
+ * @param {EventTarget} target
  * @param {string} eventType
  * @return {Promise<Event>}
  */
