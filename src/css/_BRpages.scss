@@ -2,7 +2,7 @@
   position: relative;
   margin: auto;
 }
-.BRpagediv {
+.BRpagecontainer {
   position: relative;
   overflow: hidden;
   background-color: $brColorPlaceholderBg;
@@ -11,6 +11,7 @@
     display: block;
     width: 100%;
     height: 100%;
+    background: url(images/loading.gif) 50% no-repeat;
   }
   &:after {
     position: absolute;
@@ -21,19 +22,24 @@
     z-index: 1;
     content: "";
   }
+  &.BRemptypage {
+    background: transparent;
+    img {
+      background-image: none;
+    }
+  }
+  &.BRmodethumb {
+    cursor: pointer;
+    a,
+    img {
+      border: 0;
+    }
+  }
+  &.BRmode2up {
+    cursor: pointer;
+  }
 }
-.BRmodethumb {
-  cursor: pointer;
-}
-.BRmodethumb a {
-  border: 0;
-}
-.BRmodethumb img {
-  border: 0;
-}
-.BRmode2up {
-  cursor: pointer;
-}
+
 .BRbookcover {
   position: absolute;
   background-image: none;
@@ -43,9 +49,6 @@
   background-color: #eee;
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
-}
-.BRemptypage {
-  background-color: transparent;
 }
 
 .BRleafEdgeR {

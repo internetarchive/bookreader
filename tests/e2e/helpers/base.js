@@ -104,7 +104,7 @@ export function runBaseTests (br) {
     await t.click(nav.desktop.mode1Up);
     const onePageViewContainer = await Selector('.BRpageview');
     await t.expect(onePageViewContainer.visible).ok();
-    const images = onePageViewContainer.find('.BRmode1up');
+    const images = onePageViewContainer.find('.BRpagecontainer.BRmode1up');
     // we usually pre-fetch the page in question & the 2 after it
     await t.expect(images.count).gte(3);
   });
@@ -114,7 +114,7 @@ export function runBaseTests (br) {
     await t.click(nav.desktop.modeThumb);
     const thumbnailContainer = await Selector('.BRpageview');
     await t.expect(thumbnailContainer.visible).ok();
-    const images = thumbnailContainer.find('.BRmodethumb');
+    const images = thumbnailContainer.find('.BRpagecontainer.BRmodethumb');
     await t.expect(images.count).gt(0);
   });
 

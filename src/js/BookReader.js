@@ -389,13 +389,13 @@ BookReader.prototype.init = function() {
   }.bind(this));
 
   if (this.protected) {
-    $(document).on('contextmenu dragstart', '.BRpagediv1up', function() {
+    $(document).on('contextmenu dragstart', '.BRpagecontainer1up', function() {
       return false;
     });
     $(document).on('contextmenu dragstart', '.BRpageimage', function() {
       return false;
     });
-    $(document).on('contextmenu dragstart', '.BRpagedivthumb', function() {
+    $(document).on('contextmenu dragstart', '.BRpagecontainerthumb', function() {
       return false;
     });
     this.$('.BRicon.share').hide();
@@ -581,7 +581,7 @@ BookReader.prototype.drawLeafs = function() {
   }
 };
 
-BookReader.prototype.leafTemplate = function(styles, index) {
+BookReader.prototype.createPageContainer = function(styles, index) {
   const css = Object.assign({ position: 'absolute' }, styles);
   const modeClasses = {
     [this.constMode1up]: '1up',
@@ -589,7 +589,7 @@ BookReader.prototype.leafTemplate = function(styles, index) {
     [this.constModeThumb]: 'thumb',
   };
   const div = $('<div />', {
-    'class': `BRpagediv BRmode${modeClasses[this.mode]} pagediv${index}`,
+    'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
     css,
   });
 
@@ -684,7 +684,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
       var width = parseInt(this._models.book._getPageWidth(index)/this.reduce);
       var leftMargin = parseInt((containerWidth - width) / 2);
 
-      const div = this.leafTemplate({
+      const div = this.createPageContainer({
         width:`${width}px`,
         height: `${height}px`,
         top: `${leafTop}px`,
@@ -851,7 +851,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         }
 
         left += this.thumbPadding;
-        div = this.leafTemplate({
+        div = this.createPageContainer({
           width: `${leafWidth}px`,
           height: `${leafHeight}px`,
           top: `${leafTop}px`,
@@ -1794,7 +1794,7 @@ BookReader.prototype.prefetchImg = function(index) {
   }
 
   if (loadImage) {
-    const div = this.leafTemplate({}, index);
+    const div = this.createPageContainer({}, index);
     $('<img />', {
       'class': 'BRpage-frame BRpageimage',
       src: pageURI
@@ -1803,7 +1803,7 @@ BookReader.prototype.prefetchImg = function(index) {
       // Facing page at beginning or end, or beyond
       div.addClass('BRemptypage');
     }
-    div[0].uri = pageURI;
+    div[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
     this.prefetchedImgs[index] = div[0];
   }
 };
