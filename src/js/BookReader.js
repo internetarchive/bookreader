@@ -594,6 +594,7 @@ BookReader.prototype.createPageContainer = function(styles, index) {
     'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
     css,
   });
+  div.toggleClass('protected', this.protected);
 
   return div;
 };
