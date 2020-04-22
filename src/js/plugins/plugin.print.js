@@ -33,7 +33,7 @@ BookReader.prototype.printPage = function() {
   );
 };
 
-/** 
+/**
  * Generate print URL from current indices and mode
  *
  * @returns {string} URL
@@ -61,7 +61,7 @@ BookReader.prototype.getPrintURI = function() {
   return '/bookreader/print.php?' + options;
 };
 
-/** 
+/**
  * Get file from lead index to create print URL
  *
  * @returns {null|string}

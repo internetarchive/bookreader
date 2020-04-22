@@ -110,7 +110,7 @@ export default class PageChunkIterator {
   }
 
   /**
-   * @param {number} index 
+   * @param {number} index
    */
   _removePageFromBuffer(index) {
     delete this._bufferingPages[index];

@@ -2,7 +2,7 @@
 
 export class Navbar {
   /**
-   * @param {BookReader} br 
+   * @param {BookReader} br
    */
   constructor(br) {
     this.br = br;
@@ -56,7 +56,7 @@ export class Navbar {
         + `<button class="BRicon full js-tooltip"></button>`
         + `</div>
         </div>`);
-  
+
     this.$root.append(this.$nav);
     br.refs.$br.append(this.$root);
 

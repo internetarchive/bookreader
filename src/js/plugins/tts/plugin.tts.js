@@ -252,7 +252,7 @@ BookReader.prototype.ttsMaybeFlipToIndex = function (leafIndex) {
   var in2PageMode = this.constMode2up == this.mode;
   var resolve = null;
   var promise = new Promise(res => resolve = res);
-    
+
   if (!in2PageMode) {
     this.jumpToIndex(leafIndex);
     resolve();

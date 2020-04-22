@@ -3,10 +3,10 @@
  */
 export default class PageChunk {
   /**
-   * @param {number} leafIndex 
-   * @param {number} chunkIndex 
-   * @param {string} text 
-   * @param {DJVURect[]} lineRects 
+   * @param {number} leafIndex
+   * @param {number} chunkIndex
+   * @param {string} text
+   * @param {DJVURect[]} lineRects
    */
   constructor(leafIndex, chunkIndex, text, lineRects) {
     this.leafIndex = leafIndex;
@@ -16,15 +16,15 @@ export default class PageChunk {
   }
 
   /**
-   * @param {string} server 
-   * @param {string} bookPath 
-   * @param {number} leafIndex 
+   * @param {string} server
+   * @param {string} bookPath
+   * @param {number} leafIndex
    * @return {Promise<PageChunk[]>}
    */
   static fetch(server, bookPath, leafIndex) {
     // jquery's ajax "PromiseLike" implementation is inconsistent with
     // modern Promises, so convert it to a full promise (it doesn't forward
-    // a returned promise to the next handler in the chain, which kind of 
+    // a returned promise to the next handler in the chain, which kind of
     // defeats the entire point of using promises to avoid "callback hell")
     return new Promise((res, rej) => {
       $.ajax({
@@ -47,7 +47,7 @@ export default class PageChunk {
   /**
    * Convert the response from BookReaderGetTextWrapper.php into a {@link PageChunk} instance
    * @param {number} leafIndex
-   * @param {Array<[String, ...DJVURect[]]>} chunksResponse 
+   * @param {Array<[String, ...DJVURect[]]>} chunksResponse
    * @return {PageChunk[]}
    */
   static _fromTextWrapperResponse(leafIndex, chunksResponse) {
@@ -93,7 +93,7 @@ export default class PageChunk {
 
   /**
    * Remove "dangling" hyphens from read aloud text to avoid TTS stuttering
-   * @param {string} text 
+   * @param {string} text
    * @return {string}
    */
   static _removeDanglingHyphens(text) {
