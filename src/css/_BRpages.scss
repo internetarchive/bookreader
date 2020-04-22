@@ -13,15 +13,6 @@
     height: 100%;
     background: url(images/loading.gif) 50% no-repeat;
   }
-  &:after {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1;
-    content: "";
-  }
   &.BRemptypage {
     background: transparent;
     img {
@@ -37,6 +28,17 @@
   }
   &.BRmode2up {
     cursor: pointer;
+  }
+  &.protected {
+    &:after {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 1;
+      content: "";
+    }
   }
 }
 
