@@ -1,5 +1,6 @@
 # keep these lines sorted in ascending order.
 # Build files
+BookReader/BookReader.css* binary
 BookReader/BookReader.js binary
 BookReader/*.js.map binary
 BookReader/plugins/*.js.map binary
