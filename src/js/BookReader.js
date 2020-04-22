@@ -1795,7 +1795,7 @@ BookReader.prototype.prefetchImg = function(index) {
 
   if (loadImage) {
     const div = this.leafTemplate({}, index);
-    const img = $('<img />', {
+    $('<img />', {
       'class': 'BRpage-frame BRpageimage',
       src: pageURI
     }).appendTo(div);
