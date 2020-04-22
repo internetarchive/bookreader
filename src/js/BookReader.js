@@ -583,7 +583,10 @@ BookReader.prototype.drawLeafs = function() {
   }
 };
 
-BookReader.prototype.createPageContainer = function(styles, index) {
+/**
+ * @private
+ */
+BookReader.prototype._createPageContainer = function(index, styles) {
   const css = Object.assign({ position: 'absolute' }, styles);
   const modeClasses = {
     [this.constMode1up]: '1up',
@@ -691,19 +694,19 @@ BookReader.prototype.drawLeafsOnePage = function() {
       var width = parseInt(this._models.book._getPageWidth(index)/this.reduce);
       var leftMargin = parseInt((containerWidth - width) / 2);
 
-      const div = this.createPageContainer({
+      const pageContainer = this._createPageContainer(index, {
         width:`${width}px`,
         height: `${height}px`,
         top: `${leafTop}px`,
         left: `${leftMargin}px`,
-      }, index);
+      });
 
       const img = $('<img />', {
         src: this._getPageURI(index, this.reduce, 0)
       });
-      div.append(img);
+      pageContainer.append(img);
 
-      BRpageViewEl.appendChild(div[0]);
+      BRpageViewEl.appendChild(pageContainer[0]);
     }
 
     leafTop += height +10;
@@ -837,7 +840,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   var row;
   var left;
   var index;
-  var div;
+  var pageContainer;
   var img;
   var leaf;
 
@@ -858,14 +861,14 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         }
 
         left += this.thumbPadding;
-        div = this.createPageContainer({
+        pageContainer = this._createPageContainer(leaf, {
           width: `${leafWidth}px`,
           height: `${leafHeight}px`,
           top: `${leafTop}px`,
           left: `${left}px`,
-        }, leaf);
+        });
 
-        div.data('leaf', leaf).on('mouseup', function(event) {
+        pageContainer.data('leaf', leaf).on('mouseup', function(event) {
           // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
           // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
           // We manually trigger the `fragmentChange` once at the end.
@@ -877,11 +880,10 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
             self.switchMode(self.constMode1up, { suppressFragmentChange: true });
           }
           self.trigger(BookReader.eventNames.fragmentChange);
-          event.preventDefault();
           event.stopPropagation();
         });
 
-        this.refs.$brPageViewEl.append(div);
+        this.refs.$brPageViewEl.append(pageContainer);
 
         img = document.createElement("img");
         var thumbReduce = Math.floor(this._models.book.getPageWidth(leaf) / this.thumbWidth);
@@ -891,7 +893,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           .addClass('BRlazyload')
         // Store the URL of the image that will replace this one
           .data('srcURL',  this._getPageURI(leaf, thumbReduce));
-        div.append(img);
+        pageContainer.append(img);
       }
     }
   }
@@ -1801,17 +1803,17 @@ BookReader.prototype.prefetchImg = function(index) {
   }
 
   if (loadImage) {
-    const div = this.createPageContainer({}, index);
+    const pageContainer = this._createPageContainer(index);
     $('<img />', {
-      'class': 'BRpage-frame BRpageimage',
+      'class': 'BRpageimage',
       src: pageURI
-    }).appendTo(div);
+    }).appendTo(pageContainer);
     if (index < 0 || index > (this._models.book.getNumLeafs() - 1) ) {
       // Facing page at beginning or end, or beyond
-      div.addClass('BRemptypage');
+      pageContainer.addClass('BRemptypage');
     }
-    div[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
-    this.prefetchedImgs[index] = div[0];
+    pageContainer[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
+    this.prefetchedImgs[index] = pageContainer[0];
   }
 };
 
