@@ -284,12 +284,12 @@ BookReader.prototype.initParams = function() {
     // params explicitly set in URL take precedence over all other methods
     var urlParams = this.paramsFromFragment(this.urlReadFragment());
     if (urlParams.mode) {
-        // If there were any parameters
-        if (Object.keys(urlParams).length > 0) {
-          this.extendParams(params, urlParams);
-          params.fragmentChange = true;
-        }
+      // If there were any parameters
+      if (Object.keys(urlParams).length > 0) {
+        this.extendParams(params, urlParams);
+        params.fragmentChange = true;
       }
+    }
     this.extendParams(params, urlParams);
   }
 
