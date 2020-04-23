@@ -389,15 +389,6 @@ BookReader.prototype.init = function() {
   }.bind(this));
 
   if (this.protected) {
-    $(document).on('contextmenu dragstart', '.BRpagecontainer1up', function() {
-      return false;
-    });
-    $(document).on('contextmenu dragstart', '.BRpageimage', function() {
-      return false;
-    });
-    $(document).on('contextmenu dragstart', '.BRpagecontainerthumb', function() {
-      return false;
-    });
     this.$('.BRicon.share').hide();
   }
 
@@ -593,13 +584,13 @@ BookReader.prototype._createPageContainer = function(index, styles) {
     [this.constMode2up]: '2up',
     [this.constModeThumb]: 'thumb',
   };
-  const div = $('<div />', {
+  const container = $('<div />', {
     'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
     css,
-  });
-  div.toggleClass('protected', this.protected);
+  }).append($('<div />', { 'class': 'BRscreen' }));
+  container.toggleClass('protected', this.protected);
 
-  return div;
+  return container;
 };
 
 BookReader.prototype.togglePageProtection = function(toggle) {
