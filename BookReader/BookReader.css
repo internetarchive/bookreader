@@ -334,13 +334,6 @@ body.BRfullscreenActive .mm-menu {
   filter: grayscale(100%) brightness(120%);
 }
 
-/* Disable selection on Firefox and WebKit */
-.BRnoselect {
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -webkit-user-drag: none;
-}
-
 .BRaction {
   margin-left: 5px;
   margin-right: 5px;
@@ -513,30 +506,46 @@ body.BRfullscreenActive .mm-menu {
   margin: auto;
 }
 
-.BRpagediv1up {
+.BRpagecontainer {
+  position: relative;
   overflow: hidden;
   background-color: #FEFDEB;
+}
+.BRpagecontainer img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: url(images/loading.gif) 50% no-repeat;
+}
+.BRpagecontainer .BRscreen {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+}
+.BRpagecontainer.BRemptypage {
+  background: transparent;
+}
+.BRpagecontainer.BRemptypage img {
+  background-image: none;
+}
+.BRpagecontainer.BRmode1up, .BRpagecontainer.BRmodethumb {
   box-shadow: 1px 1px 2px #333;
 }
-
-.BRpagedivthumb {
-  background-color: #FEFDEB;
-  overflow: hidden;
-  box-shadow: 1px 1px 2px #333;
+.BRpagecontainer.BRmode1up img, .BRpagecontainer.BRmodethumb img {
+  border: 0;
+}
+.BRpagecontainer.BRmodethumb {
   cursor: pointer;
 }
-
-.BRpagedivthumb a {
-  border: 0;
+.BRpagecontainer.BRmode2up {
+  cursor: pointer;
 }
-
-.BRpagedivthumb img {
-  border: 0;
-}
-
-.BRpagediv2up {
-  background-color: #eae2cd;
-  overflow: hidden;
+.BRpagecontainer.protected .BRscreen {
+  display: block;
 }
 
 .BRbookcover {
@@ -545,24 +554,10 @@ body.BRfullscreenActive .mm-menu {
   box-shadow: 1px 0 10px #111;
 }
 
-.BRpageimage {
-  background-color: #FEFDEB;
-  cursor: pointer;
-}
-
 .BRPreview .BRpageimage {
   background-color: #eee;
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
-}
-
-.BRemptypage {
-  background-color: #3a3b3b;
-  background-color: transparent;
-}
-
-.BRonePageImage {
-  background: url(images/loading.gif) 50% no-repeat;
 }
 
 .BRleafEdgeR {
