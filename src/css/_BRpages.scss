@@ -27,14 +27,15 @@
       background-image: none;
     }
   }
-  &.BRmode1up {
-    box-shadow: 1px 1px 2px #333;
-  }
+  &.BRmode1up,
   &.BRmodethumb {
-    cursor: pointer;
+    box-shadow: 1px 1px 2px #333;
     img {
       border: 0;
     }
+  }
+  &.BRmodethumb {
+    cursor: pointer;
   }
   &.BRmode2up {
     cursor: pointer;

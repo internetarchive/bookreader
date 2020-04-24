@@ -392,8 +392,6 @@ BookReader.prototype.init = function() {
     this.$('.BRicon.share').hide();
   }
 
-  this.togglePageProtection(this.protected);
-
   this.trigger(BookReader.eventNames.PostInit);
 
   this.init.initComplete = true;
@@ -592,10 +590,6 @@ BookReader.prototype._createPageContainer = function(index, styles) {
 
   return container;
 };
-
-BookReader.prototype.togglePageProtection = function(toggle) {
-  this.$('.BRpagecontainer').toggleClass('protected', toggle);
-}
 
 BookReader.prototype.bindGestures = function(jElement) {
   // TODO support gesture change is only iOS. Support android.
