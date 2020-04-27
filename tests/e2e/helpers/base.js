@@ -1,6 +1,33 @@
 import { ClientFunction, Selector } from 'testcafe';
 
 const PAGE_FLIP_WAIT_TIME = 1000;
+const flipRight = Selector('.book_right');
+const flipLeft = Selector('.book_left');
+
+const getHash = ClientFunction(() => document.location.hash);
+const getUrl = ClientFunction(() => window.location.href);
+const expectPage = ClientFunction(() => {
+  const hash = document.location.hash;
+  if (hash) {
+    return hash.indexOf('#page/');
+  } else {
+    return window.location.href.indexOf('/page/');
+  }
+});
+
+/**
+ * Check URL mode paramter in # and path
+ *
+ * @param mode '1up', '2up', 'thumb'
+ */
+const expectMode = ClientFunction((mode) => {
+  const hash = document.location.hash;
+  if (hash) {
+    return hash.indexOf('/mode/' + mode);
+  } else {
+    return window.location.href.indexOf('/mode/2up');
+  }
+});
 
 /**
  * Runs all expected base tests for BookReader
@@ -32,6 +59,28 @@ export function runBaseTests (br) {
     await t.expect(nav.desktop.zoomIn.visible).ok();
     await t.expect(nav.desktop.zoomOut.visible).ok();
     await t.expect(nav.desktop.fullScreen.visible).ok();
+  });
+
+  test("Canonical URL has no initial parameters", async t => {
+    // Initial URL has no params
+    await t.expect(getHash()).eql('');
+    // Initial URL has no page/ mode/
+    await t.expect(getUrl()).notContains('#page/');
+    await t.expect(getUrl()).notContains('/page/');
+    await t.expect(getUrl()).notContains('/mode/');
+  });
+
+  // Need to disable page caching to have cookies persist in test
+  test.disablePageCaching('Canonical URL with cookie shows paramters', async t => {
+    // Store initial URL
+    const initialUrl = await getUrl();
+    // Set Cookie by page navigation
+    await t.click(flipRight);
+
+    await t.navigateTo(initialUrl);
+    // Creates params on navigate to canonical URL
+    await t.expect(expectPage()).ok(initialUrl);
+    await t.expect(expectMode('2up')).ok();
   });
 
   test('2up mode - Clicking `Previous page` changes the page', async t => {
@@ -89,6 +138,17 @@ export function runBaseTests (br) {
     // we aren't showing the same image in the new pages
     await t.expect(nextImg1Src).notEql(nextImg2Src);
   })
+
+  test('Clicking `page flip buttons` updates location', async t => {
+    // Page navigation creates params
+    await t.click(flipRight);
+    await t.expect(expectPage()).ok();
+    await t.expect(expectMode('2up')).ok();
+
+    await t.click(flipLeft);
+    await t.expect(expectPage()).ok();
+    await t.expect(expectMode('2up')).ok();
+  });
 
   test('Clicking `2 page view` brings up 2 pages at a time', async t => {
     const { nav } = br;
@@ -171,5 +231,5 @@ export function runBaseTests (br) {
     await t.click(nav.desktop.fullScreen);
     // in-page
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);
-  });  
+  });
 }

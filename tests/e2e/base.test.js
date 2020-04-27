@@ -5,7 +5,7 @@ import BookReader from './models/BookReader';
 const { BASE_URL } = process.env;
 const localPages = [
   'demo-ia-plato.html',
-  'demo-ia-olivertwist.html'
+  'demo-ia-olivertwist.html',
 ];
 
 localPages.forEach(function(page) {
