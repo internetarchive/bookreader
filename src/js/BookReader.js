@@ -2583,7 +2583,7 @@ BookReader.prototype.updateFromParams = function(params) {
   if ('undefined' != typeof(params.mode)) {
     var options = {};
     if ('undefined' != typeof(params.fragmentChange)) {
-        options = { suppressFragmentChange: !params.fragmentChange };
+      options = { suppressFragmentChange: !params.fragmentChange };
     }
     this.switchMode(params.mode, options);
   }
