@@ -389,15 +389,6 @@ BookReader.prototype.init = function() {
   }.bind(this));
 
   if (this.protected) {
-    $(document).on('contextmenu dragstart', '.BRpagediv1up', function() {
-      return false;
-    });
-    $(document).on('contextmenu dragstart', '.BRpageimage', function() {
-      return false;
-    });
-    $(document).on('contextmenu dragstart', '.BRpagedivthumb', function() {
-      return false;
-    });
     this.$('.BRicon.share').hide();
   }
 
@@ -581,6 +572,25 @@ BookReader.prototype.drawLeafs = function() {
   }
 };
 
+/**
+ * @private
+ */
+BookReader.prototype._createPageContainer = function(index, styles) {
+  const css = Object.assign({ position: 'absolute' }, styles);
+  const modeClasses = {
+    [this.constMode1up]: '1up',
+    [this.constMode2up]: '2up',
+    [this.constModeThumb]: 'thumb',
+  };
+  const container = $('<div />', {
+    'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
+    css,
+  }).append($('<div />', { 'class': 'BRscreen' }));
+  container.toggleClass('protected', this.protected);
+
+  return container;
+};
+
 BookReader.prototype.bindGestures = function(jElement) {
   // TODO support gesture change is only iOS. Support android.
   // HACK(2017-01-20) - Momentum scrolling is causing the scroll position
@@ -669,22 +679,19 @@ BookReader.prototype.drawLeafsOnePage = function() {
       var width = parseInt(this._models.book._getPageWidth(index)/this.reduce);
       var leftMargin = parseInt((containerWidth - width) / 2);
 
-      var div = document.createElement('div');
-      div.className = 'BRpagediv1up pagediv' + index;
-      div.style.position = "absolute";
-      div.style.top = leafTop + 'px';
-      div.style.left = leftMargin + 'px';
-      div.style.width = width + 'px';
-      div.style.height = height + 'px';
+      const pageContainer = this._createPageContainer(index, {
+        width:`${width}px`,
+        height: `${height}px`,
+        top: `${leafTop}px`,
+        left: `${leftMargin}px`,
+      });
 
-      BRpageViewEl.appendChild(div);
+      const img = $('<img />', {
+        src: this._getPageURI(index, this.reduce, 0)
+      });
+      pageContainer.append(img);
 
-      var img = document.createElement('img');
-      img.src = this._getPageURI(index, this.reduce, 0);
-      img.className = 'BRnoselect BRonePageImage';
-      img.style.width = width + 'px';
-      img.style.height = height + 'px';
-      div.appendChild(img);
+      BRpageViewEl.appendChild(pageContainer[0]);
     }
 
     leafTop += height +10;
@@ -818,8 +825,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   var row;
   var left;
   var index;
-  var div;
-  var link;
+  var pageContainer;
   var img;
   var leaf;
 
@@ -839,20 +845,15 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           left = viewWidth - leafWidth - left;
         }
 
-        div = document.createElement("div");
-        div.style.position = "absolute";
-        div.className = 'BRpagedivthumb pagediv' + leaf;
-
         left += this.thumbPadding;
-        div.style.top = leafTop + 'px';
-        div.style.left = left + 'px';
-        div.style.width = leafWidth + 'px';
-        div.style.height = leafHeight + 'px';
+        pageContainer = this._createPageContainer(leaf, {
+          width: `${leafWidth}px`,
+          height: `${leafHeight}px`,
+          top: `${leafTop}px`,
+          left: `${left}px`,
+        });
 
-        // link back to page
-        link = document.createElement("a");
-        $(link).data('leaf', leaf);
-        link.addEventListener('mouseup', function(event) {
+        pageContainer.data('leaf', leaf).on('mouseup', function(event) {
           // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
           // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
           // We manually trigger the `fragmentChange` once at the end.
@@ -864,12 +865,10 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
             self.switchMode(self.constMode1up, { suppressFragmentChange: true });
           }
           self.trigger(BookReader.eventNames.fragmentChange);
-          event.preventDefault();
           event.stopPropagation();
-        }, true);
-        $(div).append(link);
+        });
 
-        this.refs.$brPageViewEl.append(div);
+        this.refs.$brPageViewEl.append(pageContainer);
 
         img = document.createElement("img");
         var thumbReduce = Math.floor(this._models.book.getPageWidth(leaf) / this.thumbWidth);
@@ -879,7 +878,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           .addClass('BRlazyload')
         // Store the URL of the image that will replace this one
           .data('srcURL',  this._getPageURI(leaf, thumbReduce));
-        $(link).append(img);
+        pageContainer.append(img);
       }
     }
   }
@@ -1789,15 +1788,17 @@ BookReader.prototype.prefetchImg = function(index) {
   }
 
   if (loadImage) {
-    var img = document.createElement("img");
-    $(img).addClass('BRpageimage').addClass('BRnoselect');
+    const pageContainer = this._createPageContainer(index);
+    $('<img />', {
+      'class': 'BRpageimage',
+      src: pageURI
+    }).appendTo(pageContainer);
     if (index < 0 || index > (this._models.book.getNumLeafs() - 1) ) {
       // Facing page at beginning or end, or beyond
-      $(img).addClass('BRemptypage');
+      pageContainer.addClass('BRemptypage');
     }
-    img.src = pageURI;
-    img.uri = pageURI; // browser may rewrite src so we stash raw URI here
-    this.prefetchedImgs[index] = img;
+    pageContainer[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
+    this.prefetchedImgs[index] = pageContainer[0];
   }
 };
 

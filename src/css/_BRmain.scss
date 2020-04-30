@@ -189,13 +189,6 @@ body.BRfullscreenActive {
   }
 }
 
-/* Disable selection on Firefox and WebKit */
-.BRnoselect {
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -webkit-user-drag: none;
-}
-
 .BRaction {
   margin-left: 5px;
   margin-right: 5px;
