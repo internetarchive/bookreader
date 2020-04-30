@@ -3,8 +3,8 @@ import { clamp } from './utils.js';
 /** @typedef {import('./options.js').PageData} PageData */
 /** @typedef {import('../BookReader.js').default} BookReader */
 
-// TODO Render text for the user instead.
-const PREVIEW_PAGE_URI = 'https://archive.org/bookreader/static/preview-800x1200.png';
+// URI to display when a page is not viewable. TODO Render text for the user instead.
+const UNVIEWABLE_PAGE_URI = 'https://archive.org/bookreader/static/preview-800x1200.png';
 
 /**
  * Contains information about the Book/Document independent of the way it is
@@ -157,7 +157,7 @@ export class BookModel {
    */
   // eslint-disable-next-line no-unused-vars
   getPageURI(index, reduce, rotate) {
-    return this.getPageProp(index, 'preview') ? PREVIEW_PAGE_URI : this.getPageProp(index, 'uri');
+    return !this.getPageProp(index, 'viewable', true) ? UNVIEWABLE_PAGE_URI : this.getPageProp(index, 'uri');
   }
 
   /**
@@ -180,10 +180,12 @@ export class BookModel {
   /**
    * Generalized property accessor.
    * @param  {PageIndex} index
+   * @param {keyof PageData} propName
+   * @param {*} [def] default if undefined
    * @return {*|undefined}
    */
-  getPageProp(index, propName) {
-    return this._getDataProp(index, propName);
+  getPageProp(index, propName, def=undefined) {
+    return this._getDataProp(index, propName, def);
   }
 
   /**
@@ -253,16 +255,16 @@ export class BookModel {
    * @param {object} [arg0]
    * @param {number} [arg0.start] inclusive
    * @param {number} [arg0.end] exclusive
-   * @param {boolean} [arg0.collapsePreviews] Whether to only yield the first page
-   * of a series of preview pages instead of each page
+   * @param {boolean} [arg0.collapseUnviewables] Whether to only yield the first page
+   * of a series of unviewable pages instead of each page
    */
-  * pagesIterator({ start=0, end=Infinity, collapsePreviews=false } = {}) {
+  * pagesIterator({ start=0, end=Infinity, collapseUnviewables=false } = {}) {
     start = Math.max(0, start);
     end = Math.min(end, this.getNumLeafs());
 
     for (let i = start; i < end; i++) {
       const page = this.getPage(i);
-      if (collapsePreviews && page.isConsecutivePreview) continue;
+      if (collapseUnviewables && page.isConsecutiveUnviewable) continue;
 
       yield page;
     }
@@ -278,7 +280,7 @@ export class BookModel {
 
     let prevPageSide = null;
     /** @type {number|null} */
-    let previewChunkStart  = null;
+    let unviewablesChunkStart  = null;
     let index = 0;
     // @ts-ignore TS doesn't know about flatMap for some reason
     const flattend = this.br.data.flatMap(spread => {
@@ -292,14 +294,14 @@ export class BookModel {
         }
         prevPageSide = page.pageSide;
 
-        if (page.preview) {
-          if (previewChunkStart === null) {
-            page.previewStart = previewChunkStart = index;
+        if (page.viewable === false) {
+          if (unviewablesChunkStart === null) {
+            page.unviewablesStart = unviewablesChunkStart = index;
           } else {
-            page.previewStart = previewChunkStart;
+            page.unviewablesStart = unviewablesChunkStart;
           }
         } else {
-          previewChunkStart = null;
+          unviewablesChunkStart = null;
         }
 
         index++;
@@ -316,14 +318,15 @@ export class BookModel {
    * Helper. Return a prop for a given index
    * @param {PageIndex} index
    * @param {keyof PageData} prop
+   * @param {*} def default if property not on the record
    * @return {*}
    */
-  _getDataProp(index, prop) {
+  _getDataProp(index, prop, def=undefined) {
     const dataf = this._getDataFlattened();
     if (isNaN(index) || index < 0 || index >= dataf.length)
       return;
     if ('undefined' == typeof(dataf[index][prop]))
-      return;
+      return def;
     return dataf[index][prop];
   }
 }
@@ -344,14 +347,14 @@ class BookPage {
     this.pageSide = book.getPageSide(index);
 
     /** @type {boolean} */
-    this.isPreview = book._getDataProp(index, 'preview') || false;
-    /** @type {PageIndex} */
-    this.previewStart = book._getDataProp(index, 'previewStart') || null;
+    this.isViewable = book._getDataProp(index, 'viewable', true);
+    /** @type {PageIndex} The first in the series of unviewable pages this is in. */
+    this.unviewablesStart = book._getDataProp(index, 'unviewablesStart') || null;
     /**
-     * Consecutive preview pages are pages in a preview "chunk" which are not the first
+     * Consecutive unviewable pages are pages in an unviewable "chunk" which are not the first
      * of that chunk.
      */
-    this.isConsecutivePreview = this.isPreview && this.previewStart != this.index;
+    this.isConsecutiveUnviewable = !this.isViewable && this.unviewablesStart != this.index;
   }
 
   get prev() {
@@ -362,13 +365,13 @@ class BookPage {
     return this.index < this.book.getNumLeafs() - 1 ? new BookPage(this.book, this.index + 1) : null;
   }
 
-  get nextCollapsedPreviews() {
+  get nextCollapsedUnviewables() {
     if (this.index == this.book.getNumLeafs() - 1) return null;
 
-    if (this.isPreview) {
-      // escape the preview chain
+    if (!this.isViewable) {
+      // escape the unviewable chain
       for (const page of this.book.pagesIterator({ start: this.index + 1 })) {
-        if (!page.isPreview) return page;
+        if (page.isViewable) return page;
       }
       // at end
       return null;
@@ -379,13 +382,13 @@ class BookPage {
   }
 
   /** @return {BookPage?} */
-  get prevCollapsedPreviews() {
+  get prevCollapsedUnviewables() {
     if (this.index == 0) return null;
-    if (this.isPreview && this.previewStart !== this.index) {
-      return this.book.getPage(this.previewStart);
+    if (!this.isViewable && this.unviewablesStart !== this.index) {
+      return this.book.getPage(this.unviewablesStart);
     } else {
       const prev = this.prev;
-      return prev.isPreview ? prev.prevCollapsedPreviews : prev;
+      return !prev.isViewable ? prev.prevCollapsedUnviewables : prev;
     }
   }
 }

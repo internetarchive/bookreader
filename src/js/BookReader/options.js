@@ -214,8 +214,9 @@ export const DEFAULT_OPTIONS = {
  * @property {PageNumString} [pageNum] Shown instead of leaf number if present
  * @property {LeafNum} [leafNum] Sometimes specified in Internet Archive books
  * @property {'L' | 'R'} [pageSide] PRIVATE; computed automatically
- * @property {boolean} [preview]
- * @property {number} [previewStart] PRIVATE; index where the preview chunk started
+ * @property {boolean} [viewable=true] Set false if page is not viewable. Displays a dummy preview image.
+ * @property {number} [unviewablesStart] PRIVATE; index where the chunk of unviewable pages started
+ *
  * Note if URI is omitted, a custom getPageURI can be provided. This allows the page
  * URI to the result of a function, which allows for things such as dynamic
  * page scaling.

@@ -497,7 +497,7 @@ export class Mode2Up {
     }
 
     if (null == index) {
-      const prev = this.book.getPage(this.br.twoPage.currentIndexL).prevCollapsedPreviews;
+      const prev = this.book.getPage(this.br.twoPage.currentIndexL).prevCollapsedUnviewables;
       if (!prev) return;
       index = prev.index;
       if (prev.pageSide == 'R') index--;
@@ -677,7 +677,7 @@ export class Mode2Up {
     }
 
     if (null == index) {
-      const nextPage = this.book.getPage(this.br.twoPage.currentIndexR).nextCollapsedPreviews;
+      const nextPage = this.book.getPage(this.br.twoPage.currentIndexR).nextCollapsedUnviewables;
       if (!nextPage) return;
       index = nextPage.index;
     }
