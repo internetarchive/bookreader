@@ -184,7 +184,7 @@ export class BookModel {
    * @param {*} [def] default if undefined
    * @return {*|undefined}
    */
-  getPageProp(index, propName, def=undefined) {
+  getPageProp(index, propName, def = undefined) {
     return this._getDataProp(index, propName, def);
   }
 
@@ -245,9 +245,13 @@ export class BookModel {
   }
 
   /**
-   * @param {number} index
+   * @param {number} index use negatives to get page relative to end
    */
   getPage(index) {
+    const numLeafs = this.getNumLeafs();
+    if (index < 0 && index >= -numLeafs) {
+      index += numLeafs;
+    }
     return new BookPage(this, index);
   }
 
@@ -321,7 +325,7 @@ export class BookModel {
    * @param {*} def default if property not on the record
    * @return {*}
    */
-  _getDataProp(index, prop, def=undefined) {
+  _getDataProp(index, prop, def = undefined) {
     const dataf = this._getDataFlattened();
     if (isNaN(index) || index < 0 || index >= dataf.length)
       return;

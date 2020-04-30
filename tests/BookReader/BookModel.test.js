@@ -166,6 +166,26 @@ describe('parsePageString', () => {
     });
 });
 
+describe('pagesIterator', () => {
+    test('Goes through all pages', () => {
+        const bm = new BookModel({ data: SAMPLE_DATA });
+        let i = 0;
+        for (const page of bm.pagesIterator()) {
+            expect(page.index).toBe(i++);
+        }
+    });
+
+    test('Can collapse unviewables', () => {
+        const data = deepCopy(SAMPLE_DATA);
+        // add some more pages
+        data.splice(2, 0, deepCopy(data[0]));
+        data[1].forEach(page => page.viewable = false);
+        const bm = new BookModel({ data });
+        for (const page of bm.pagesIterator({collapseUnviewables: true})) {
+            expect(page.isConsecutiveUnviewable).toBe(false);
+        }
+    });
+});
 
 describe('_getDataFlattened', () => {
     test('Assigns correct page sides', () => {
@@ -181,5 +201,93 @@ describe('_getDataFlattened', () => {
         expect(bm._getDataFlattened()).toBe(firstResult);
         bm.br.data = data.slice(0, 1);
         expect(bm._getDataFlattened()).not.toBe(firstResult);
+    });
+
+    test('Assigns unviewablesStart', () => {
+        const data = deepCopy(SAMPLE_DATA);
+        data.slice(1, -1)
+        .forEach(spread => spread.forEach(page => {
+            page.viewable = false;
+        }));
+        const bm = new BookModel({ data });
+        const pages = bm._getDataFlattened();
+        expect(pages[0].unviewablesStart).toBeUndefined();
+        expect(pages[1].unviewablesStart).toBe(1);
+        expect(pages[2].unviewablesStart).toBe(1);
+        expect(pages[3].unviewablesStart).toBeUndefined();
+    });
+});
+
+describe('BookPage', () => {
+    test('constructor copies fields from book model', () => {
+        const bm = new BookModel({ data: SAMPLE_DATA });
+        const spy = sinon.spy(bm, 'getPageWidth');
+        const page = bm.getPage(0);
+        expect(spy.callCount).toBe(1);
+        expect(page.width).toBe(SAMPLE_DATA[0][0].width);
+    });
+
+    test('prev at start of book returns null', () => {
+        const bm = new BookModel({ data: SAMPLE_DATA });
+        expect(bm.getPage(0).prev).toBeNull();
+    });
+
+    test('prev to return previous', () => {
+        const bm = new BookModel({ data: SAMPLE_DATA });
+        expect(bm.getPage(1).prev.index).toBe(0);
+        expect(bm.getPage(3).prev.prev.index).toBe(1);
+    });
+
+    test('next at end of book returns null', () => {
+        const bm = new BookModel({ data: SAMPLE_DATA });
+        expect(bm.getPage(-1).next).toBeNull();
+    });
+
+    test('next to return next page', () => {
+        const bm = new BookModel({ data: SAMPLE_DATA });
+        expect(bm.getPage(0).next.index).toBe(1);
+        expect(bm.getPage(1).next.next.index).toBe(3);
+    });
+
+    describe('nextCollapsedUnviewables', () => {
+        const data = deepCopy(SAMPLE_DATA);
+        // add some more pages
+        data.splice(2, 0, deepCopy(data[0]));
+        data[1].forEach(page => page.viewable = false);
+        
+        const bm = new BookModel({ data });
+
+        test('does not skip the first unviewable page', () => {
+            expect(bm.getPage(0).nextCollapsedUnviewables.index).toBe(1);
+        });
+
+        test('skips consecutive unviewables', () => {
+            expect(bm.getPage(1).nextCollapsedUnviewables.index).toBe(3);
+        });
+
+        test('at end is null', () => {
+            expect(bm.getPage(-1).nextCollapsedUnviewables).toBeNull();
+        });
+    });
+
+    describe('CollapsedUnviewables', () => {
+        const data = deepCopy(SAMPLE_DATA);
+        // add some more pages
+        data.splice(2, 0, deepCopy(data[0]));
+        data[1].forEach(page => page.viewable = false);
+        
+        const bm = new BookModel({ data });
+
+        test('works if called on first unviewable', () => {
+            expect(bm.getPage(1).prevCollapsedUnviewables.index).toBe(0);
+        });
+
+        test('works if called within unviewable chunk', () => {
+            expect(bm.getPage(2).prevCollapsedUnviewables.index).toBe(1);
+        });
+
+        test('at start is null', () => {
+            expect(bm.getPage(0).prevCollapsedUnviewables).toBeNull();
+        });
     });
 });
