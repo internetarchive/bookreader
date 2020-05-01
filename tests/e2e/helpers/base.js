@@ -1,17 +1,20 @@
 import { ClientFunction, Selector } from 'testcafe';
 
 const PAGE_FLIP_WAIT_TIME = 1000;
-const flipRight = Selector('.book_right');
-const flipLeft = Selector('.book_left');
 
 const getHash = ClientFunction(() => document.location.hash);
 const getUrl = ClientFunction(() => window.location.href);
+
+/**
+ * Check URL page paramter in # and path
+ */
 const expectPage = ClientFunction(() => {
   const hash = document.location.hash;
+  console.log(hash);
   if (hash) {
-    return hash.indexOf('#page/');
+    return hash.indexOf('#page/') > -1;
   } else {
-    return window.location.href.indexOf('/page/');
+    return window.location.href.indexOf('/page/') > -1;
   }
 });
 
@@ -72,15 +75,21 @@ export function runBaseTests (br) {
 
   // Need to disable page caching to have cookies persist in test
   test.disablePageCaching('Canonical URL with cookie shows paramters', async t => {
+    const { nav } = br;
+
     // Store initial URL
     const initialUrl = await getUrl();
-    // Set Cookie by page navigation
-    await t.click(flipRight);
 
-    await t.navigateTo(initialUrl);
-    // Creates params on navigate to canonical URL
-    await t.expect(expectPage()).ok(initialUrl);
-    await t.expect(expectMode('2up')).ok();
+    // Set Cookie by page navigation, wait for cookie
+    await t.click(nav.desktop.goNext)
+      .wait(PAGE_FLIP_WAIT_TIME);
+
+    // reload canonical URL, wait for URL change
+    await t.navigateTo(initialUrl)
+      .wait(PAGE_FLIP_WAIT_TIME);
+
+    await t.expect(expectPage()).ok(initialUrl)
+      .expect(expectMode('2up')).ok();
   });
 
   test('2up mode - Clicking `Previous page` changes the page', async t => {
@@ -140,14 +149,16 @@ export function runBaseTests (br) {
   })
 
   test('Clicking `page flip buttons` updates location', async t => {
-    // Page navigation creates params
-    await t.click(flipRight);
-    await t.expect(expectPage()).ok();
-    await t.expect(expectMode('2up')).ok();
+    const { nav } = br;
 
-    await t.click(flipLeft);
-    await t.expect(expectPage()).ok();
-    await t.expect(expectMode('2up')).ok();
+    // Page navigation creates params
+    await t.click(nav.desktop.goNext)
+      .expect(expectPage()).ok()
+      .expect(expectMode('2up')).ok();
+
+    await t.click(nav.desktop.goPrevious)
+      .expect(expectPage()).ok()
+      .expect(expectMode('2up')).ok();
   });
 
   test('Clicking `2 page view` brings up 2 pages at a time', async t => {
