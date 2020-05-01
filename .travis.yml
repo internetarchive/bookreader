@@ -20,6 +20,7 @@ before_script:
   - fluxbox >/dev/null 2>&1 &
   - sleep 3
 script:
+  - npm run build
   - npm run lint
   - npm run test:coverage
   - npm run test:e2e
