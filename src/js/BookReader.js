@@ -652,11 +652,11 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
   // if zoomed out, also draw prev/next pages
   if (this.reduce > 1) {
-    const prev = book.getPage(firstIndexToDraw).prevCollapsedUnviewables;
+    const prev = book.getPage(firstIndexToDraw).findPrev({ collapseUnviewables: true });
     if (prev) indicesToDisplay.unshift(firstIndexToDraw = prev.index);
 
     const lastIndexToDraw = indicesToDisplay[indicesToDisplay.length - 1];
-    const next = book.getPage(lastIndexToDraw).nextCollapsedUnviewables;
+    const next = book.getPage(lastIndexToDraw).findNext({ collapseUnviewables: true });
     if (next) indicesToDisplay.push(next.index);
   }
 
@@ -1308,7 +1308,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
   if (!page.isViewable && page.unviewablesStart != page.index) {
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
-    const newIndex = alreadyInPreview ? page.nextCollapsedUnviewables.index : page.unviewablesStart;
+    const newIndex = alreadyInPreview ? page.findNext({ collapseUnviewables: true }).index : page.unviewablesStart;
     console.log({alreadyInPreview, index, newIndex});
     return this.jumpToIndex(newIndex, pageX, pageY, noAnimate);
   }

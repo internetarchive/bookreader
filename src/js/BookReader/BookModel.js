@@ -362,37 +362,43 @@ class PageModel {
   }
 
   get prev() {
-    return this.index > 0 ? new PageModel(this.book, this.index - 1) : null;
+    return this.findPrev();
   }
 
   get next() {
-    return this.index < this.book.getNumLeafs() - 1 ? new PageModel(this.book, this.index + 1) : null;
+    return this.findNext();
   }
 
-  get nextCollapsedUnviewables() {
-    if (this.index == this.book.getNumLeafs() - 1) return null;
+  /**
+   * @param {object} [arg0]
+   * @param {boolean} [arg0.collapseUnviewables] Whether to only yield the first page
+   * of a series of unviewable pages instead of each page
+   * @return {PageModel|void}
+   */
+  findNext({ collapseUnviewables = false } = {}) {
+    return this.book
+      .pagesIterator({ start: this.index + 1, collapseUnviewables })
+      .next().value;
+  }
 
-    if (!this.isViewable) {
-      // escape the unviewable chain
-      for (const page of this.book.pagesIterator({ start: this.index + 1 })) {
-        if (page.isViewable) return page;
+  /**
+   * @param {object} [arg0]
+   * @param {boolean} [arg0.collapseUnviewables] Whether to only yield the first page
+   * of a series of unviewable pages instead of each page
+   * @return {PageModel|void}
+   */
+  findPrev({ collapseUnviewables = false } = {}) {
+    if (this.index == 0) return undefined;
+
+    if (collapseUnviewables) {
+      if (!this.isViewable && this.unviewablesStart !== this.index) {
+        return this.book.getPage(this.unviewablesStart);
+      } else {
+        const prev = new PageModel(this.book, this.index - 1);
+        return !prev.isViewable ? prev.findPrev({ collapseUnviewables }) : prev;
       }
-      // at end
-      return null;
     } else {
-      // don't matter
-      return this.next;
-    }
-  }
-
-  /** @return {PageModel?} */
-  get prevCollapsedUnviewables() {
-    if (this.index == 0) return null;
-    if (!this.isViewable && this.unviewablesStart !== this.index) {
-      return this.book.getPage(this.unviewablesStart);
-    } else {
-      const prev = this.prev;
-      return !prev.isViewable ? prev.prevCollapsedUnviewables : prev;
+      return new PageModel(this.book, this.index - 1);
     }
   }
 }

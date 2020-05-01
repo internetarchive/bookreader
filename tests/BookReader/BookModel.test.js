@@ -229,7 +229,7 @@ describe('PageModel', () => {
 
     test('prev at start of book returns null', () => {
         const bm = new BookModel({ data: SAMPLE_DATA });
-        expect(bm.getPage(0).prev).toBeNull();
+        expect(bm.getPage(0).prev).toBeUndefined();
     });
 
     test('prev to return previous', () => {
@@ -240,7 +240,7 @@ describe('PageModel', () => {
 
     test('next at end of book returns null', () => {
         const bm = new BookModel({ data: SAMPLE_DATA });
-        expect(bm.getPage(-1).next).toBeNull();
+        expect(bm.getPage(-1).next).toBeUndefined();
     });
 
     test('next to return next page', () => {
@@ -249,7 +249,7 @@ describe('PageModel', () => {
         expect(bm.getPage(1).next.next.index).toBe(3);
     });
 
-    describe('nextCollapsedUnviewables', () => {
+    describe('findNext collapseUnviewables=true', () => {
         const data = deepCopy(SAMPLE_DATA);
         // add some more pages
         data.splice(2, 0, deepCopy(data[0]));
@@ -258,19 +258,19 @@ describe('PageModel', () => {
         const bm = new BookModel({ data });
 
         test('does not skip the first unviewable page', () => {
-            expect(bm.getPage(0).nextCollapsedUnviewables.index).toBe(1);
+            expect(bm.getPage(0).findNext({ collapseUnviewables: true }).index).toBe(1);
         });
 
         test('skips consecutive unviewables', () => {
-            expect(bm.getPage(1).nextCollapsedUnviewables.index).toBe(3);
+            expect(bm.getPage(1).findNext({ collapseUnviewables: true }).index).toBe(3);
         });
 
-        test('at end is null', () => {
-            expect(bm.getPage(-1).nextCollapsedUnviewables).toBeNull();
+        test('at end is undefined', () => {
+            expect(bm.getPage(-1).findNext({ collapseUnviewables: true })).toBeUndefined();
         });
     });
 
-    describe('CollapsedUnviewables', () => {
+    describe('findPrev', () => {
         const data = deepCopy(SAMPLE_DATA);
         // add some more pages
         data.splice(2, 0, deepCopy(data[0]));
@@ -279,15 +279,15 @@ describe('PageModel', () => {
         const bm = new BookModel({ data });
 
         test('works if called on first unviewable', () => {
-            expect(bm.getPage(1).prevCollapsedUnviewables.index).toBe(0);
+            expect(bm.getPage(1).findPrev({ collapseUnviewables: true }).index).toBe(0);
         });
 
         test('works if called within unviewable chunk', () => {
-            expect(bm.getPage(2).prevCollapsedUnviewables.index).toBe(1);
+            expect(bm.getPage(2).findPrev({ collapseUnviewables: true }).index).toBe(1);
         });
 
-        test('at start is null', () => {
-            expect(bm.getPage(0).prevCollapsedUnviewables).toBeNull();
+        test('at start is undefined', () => {
+            expect(bm.getPage(0).findPrev({ collapseUnviewables: true })).toBeUndefined();
         });
     });
 });
