@@ -252,7 +252,7 @@ export class BookModel {
     if (index < 0 && index >= -numLeafs) {
       index += numLeafs;
     }
-    return new BookPage(this, index);
+    return new PageModel(this, index);
   }
 
   /**
@@ -338,7 +338,7 @@ export class BookModel {
 /**
  * A controlled schema for page data.
  */
-class BookPage {
+class PageModel {
   /**
    * @param {BookModel} book
    * @param {PageIndex} index
@@ -362,11 +362,11 @@ class BookPage {
   }
 
   get prev() {
-    return this.index > 0 ? new BookPage(this.book, this.index - 1) : null;
+    return this.index > 0 ? new PageModel(this.book, this.index - 1) : null;
   }
 
   get next() {
-    return this.index < this.book.getNumLeafs() - 1 ? new BookPage(this.book, this.index + 1) : null;
+    return this.index < this.book.getNumLeafs() - 1 ? new PageModel(this.book, this.index + 1) : null;
   }
 
   get nextCollapsedUnviewables() {
@@ -385,7 +385,7 @@ class BookPage {
     }
   }
 
-  /** @return {BookPage?} */
+  /** @return {PageModel?} */
   get prevCollapsedUnviewables() {
     if (this.index == 0) return null;
     if (!this.isViewable && this.unviewablesStart !== this.index) {

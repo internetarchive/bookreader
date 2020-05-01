@@ -218,7 +218,7 @@ describe('_getDataFlattened', () => {
     });
 });
 
-describe('BookPage', () => {
+describe('PageModel', () => {
     test('constructor copies fields from book model', () => {
         const bm = new BookModel({ data: SAMPLE_DATA });
         const spy = sinon.spy(bm, 'getPageWidth');
