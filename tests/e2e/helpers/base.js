@@ -73,27 +73,36 @@ export function runBaseTests (br) {
     await t.expect(getUrl()).notContains('/mode/');
   });
 
+  if (br.enablePageResume) {
   // Need to disable page caching to have cookies persist in test
-  test.disablePageCaching('Canonical URL with cookie shows paramters', async t => {
-    const { nav } = br;
+    test.disablePageCaching('Canonical URL with cookie shows parameters', async t => {
+      const { nav } = br;
 
-    // Store initial URL
-    const initialUrl = await getUrl();
+      // Store initial URL
+      const initialUrl = await getUrl();
 
-    // Set Cookie by page navigation, wait for cookie
-    await t.click(nav.desktop.goNext)
-      .wait(PAGE_FLIP_WAIT_TIME);
+      // Set Cookie by page navigation, wait for cookie
+      await t.click(nav.desktop.goNext)
+        .wait(PAGE_FLIP_WAIT_TIME);
 
-    // reload canonical URL, wait for URL change
-    await t.navigateTo(initialUrl)
-      .wait(PAGE_FLIP_WAIT_TIME);
+      // reload canonical URL, wait for URL change
+      await t.navigateTo(initialUrl)
+        .wait(PAGE_FLIP_WAIT_TIME);
 
-    await t.expect(expectPage()).ok(initialUrl)
-      .expect(expectMode('2up')).ok();
-  });
+      await t.expect(expectPage()).ok(initialUrl)
+        .expect(expectMode('2up')).ok();
+    });
+  } else {
+    test.skip('Canonical URL with cookie shows parameters [Skipped]', async t => {});
+  }
 
   test('2up mode - Clicking `Previous page` changes the page', async t => {
     const { nav, BRcontainer} = br;
+
+    // Go to next page, so we can go previous if at front cover
+    await t.click(nav.desktop.goNext);
+    await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
+
     const onLoadBrState = BRcontainer.child(0);
     const initialImages = onLoadBrState.find('img');
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
@@ -121,6 +130,7 @@ export function runBaseTests (br) {
   })
 
   test('2up mode - Clicking `Next page` changes the page', async t => {
+    // Note: this will fail on a R to L book if at front cover
     const { nav, BRcontainer} = br;
     const onLoadBrState = BRcontainer.child(0);
     const initialImages = onLoadBrState.find('img');
