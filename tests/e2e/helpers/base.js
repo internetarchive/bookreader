@@ -28,7 +28,7 @@ const expectMode = ClientFunction((mode) => {
   if (hash) {
     return hash.indexOf('/mode/' + mode);
   } else {
-    return window.location.href.indexOf('/mode/2up');
+    return window.location.href.indexOf('/mode/' + mode);
   }
 });
 
