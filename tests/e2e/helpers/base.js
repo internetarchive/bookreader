@@ -73,28 +73,34 @@ export function runBaseTests (br) {
     await t.expect(getUrl()).notContains('/mode/');
   });
 
-  if (br.enablePageResume) {
   // Need to disable page caching to have cookies persist in test
-    test.disablePageCaching('Canonical URL with cookie shows parameters', async t => {
-      const { nav } = br;
+  test.disablePageCaching('Canonical URL shows parameters if cookie set', async t => {
+    const { nav } = br;
 
-      // Store initial URL
-      const initialUrl = await getUrl();
+    // Check if uses plugin.resume.js
+    const usesResume = ClientFunction(() => typeof(br.getResumeValue) !== "undefined");
 
-      // Set Cookie by page navigation, wait for cookie
-      await t.click(nav.desktop.goNext)
-        .wait(PAGE_FLIP_WAIT_TIME);
+    // Store initial URL
+    const initialUrl = await getUrl();
 
-      // reload canonical URL, wait for URL change
-      await t.navigateTo(initialUrl)
-        .wait(PAGE_FLIP_WAIT_TIME);
+    // Set Cookie by page navigation, wait for cookie
+    await t.click(nav.desktop.goNext)
+      .wait(PAGE_FLIP_WAIT_TIME);
 
+    // reload canonical URL, wait for URL change
+    await t.navigateTo(initialUrl)
+      .wait(PAGE_FLIP_WAIT_TIME);
+
+    if (await usesResume()) {
       await t.expect(expectPage()).ok(initialUrl)
         .expect(expectMode('2up')).ok();
-    });
-  } else {
-    test.skip('Canonical URL with cookie shows parameters [Skipped]', async t => {});
-  }
+    } else {
+      // No plugin, no br-resume cookie
+      await t.expect(getUrl()).notContains('#page/');
+      await t.expect(getUrl()).notContains('/page/');
+      await t.expect(getUrl()).notContains('/mode/');
+    }
+  });
 
   test('2up mode - Clicking `Previous page` changes the page', async t => {
     const { nav, BRcontainer} = br;
