@@ -3,6 +3,9 @@ import { clamp } from './utils.js';
 /** @typedef {import('./options.js').PageData} PageData */
 /** @typedef {import('../BookReader.js').default} BookReader */
 
+// URI to display when a page is not viewable. TODO Render text for the user instead.
+const UNVIEWABLE_PAGE_URI = 'https://archive.org/bookreader/static/preview-800x1200.png';
+
 /**
  * Contains information about the Book/Document independent of the way it is
  * being rendering. Nothing here should reference e.g. the mode, zoom, etc.
@@ -154,7 +157,7 @@ export class BookModel {
    */
   // eslint-disable-next-line no-unused-vars
   getPageURI(index, reduce, rotate) {
-    return this.getPageProp(index, 'uri');
+    return !this.getPageProp(index, 'viewable', true) ? UNVIEWABLE_PAGE_URI : this.getPageProp(index, 'uri');
   }
 
   /**
@@ -177,10 +180,12 @@ export class BookModel {
   /**
    * Generalized property accessor.
    * @param  {PageIndex} index
+   * @param {keyof PageData} propName
+   * @param {*} [fallbackValue] return if undefined
    * @return {*|undefined}
    */
-  getPageProp(index, propName) {
-    return this._getDataProp(index, propName);
+  getPageProp(index, propName, fallbackValue = undefined) {
+    return this._getDataProp(index, propName, fallbackValue);
   }
 
   /**
@@ -240,6 +245,36 @@ export class BookModel {
   }
 
   /**
+   * @param {number} index use negatives to get page relative to end
+   */
+  getPage(index) {
+    const numLeafs = this.getNumLeafs();
+    if (index < 0 && index >= -numLeafs) {
+      index += numLeafs;
+    }
+    return new PageModel(this, index);
+  }
+
+  /**
+   * @param {object} [arg0]
+   * @param {number} [arg0.start] inclusive
+   * @param {number} [arg0.end] exclusive
+   * @param {boolean} [arg0.combineConsecutiveUnviewables] Yield only first unviewable
+   * of a chunk of unviewable pages instead of each page
+   */
+  * pagesIterator({ start=0, end=Infinity, combineConsecutiveUnviewables=false } = {}) {
+    start = Math.max(0, start);
+    end = Math.min(end, this.getNumLeafs());
+
+    for (let i = start; i < end; i++) {
+      const page = this.getPage(i);
+      if (combineConsecutiveUnviewables && page.isConsecutiveUnviewable) continue;
+
+      yield page;
+    }
+  }
+
+  /**
    * Flatten the nested structure (make 1d array), and also add pageSide prop
    * @return {PageData[]}
    */
@@ -248,6 +283,9 @@ export class BookModel {
       return this._getDataFlattenedCached[0];
 
     let prevPageSide = null;
+    /** @type {number|null} */
+    let unviewablesChunkStart  = null;
+    let index = 0;
     // @ts-ignore TS doesn't know about flatMap for some reason
     const flattend = this.br.data.flatMap(spread => {
       return spread.map(page => {
@@ -259,6 +297,18 @@ export class BookModel {
           }
         }
         prevPageSide = page.pageSide;
+
+        if (page.viewable === false) {
+          if (unviewablesChunkStart === null) {
+            page.unviewablesStart = unviewablesChunkStart = index;
+          } else {
+            page.unviewablesStart = unviewablesChunkStart;
+          }
+        } else {
+          unviewablesChunkStart = null;
+        }
+
+        index++;
         return page;
       });
     });
@@ -269,18 +319,92 @@ export class BookModel {
   }
 
   /**
-   * Helper. Return a prop for a given index
+   * Helper. Return a prop for a given index. Returns `fallbackValue` if property not on
+   * page. Returns undefined if page index is invalid.
    * @param {PageIndex} index
    * @param {keyof PageData} prop
+   * @param {*} fallbackValue return if property not on the record
    * @return {*}
    */
-  _getDataProp(index, prop) {
+  _getDataProp(index, prop, fallbackValue = undefined) {
     const dataf = this._getDataFlattened();
-    if (isNaN(index) || index < 0 || index >= dataf.length)
-      return;
+    const invalidIndex = isNaN(index) || index < 0 || index >= dataf.length;
+
+    if (invalidIndex) return undefined;
+
     if ('undefined' == typeof(dataf[index][prop]))
-      return;
+      return fallbackValue;
     return dataf[index][prop];
+  }
+}
+
+/**
+ * A controlled schema for page data.
+ */
+class PageModel {
+  /**
+   * @param {BookModel} book
+   * @param {PageIndex} index
+   */
+  constructor(book, index) {
+    this.book = book;
+    this.index = index;
+    this.width = book.getPageWidth(index);
+    this.height = book.getPageHeight(index);
+    this.pageSide = book.getPageSide(index);
+
+    /** @type {boolean} */
+    this.isViewable = book._getDataProp(index, 'viewable', true);
+    /** @type {PageIndex} The first in the series of unviewable pages this is in. */
+    this.unviewablesStart = book._getDataProp(index, 'unviewablesStart') || null;
+    /**
+     * Consecutive unviewable pages are pages in an unviewable "chunk" which are not the first
+     * of that chunk.
+     */
+    this.isConsecutiveUnviewable = !this.isViewable && this.unviewablesStart != this.index;
+  }
+
+  get prev() {
+    return this.findPrev();
+  }
+
+  get next() {
+    return this.findNext();
+  }
+
+  /**
+   * @param {object} [arg0]
+   * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
+   * of a series of unviewable pages instead of each page
+   * @return {PageModel|void}
+   */
+  findNext({ combineConsecutiveUnviewables = false } = {}) {
+    return this.book
+      .pagesIterator({ start: this.index + 1, combineConsecutiveUnviewables })
+      .next().value;
+  }
+
+  /**
+   * @param {object} [arg0]
+   * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
+   * of a series of unviewable pages instead of each page
+   * @return {PageModel|void}
+   */
+  findPrev({ combineConsecutiveUnviewables = false } = {}) {
+    if (this.index == 0) return undefined;
+
+    if (combineConsecutiveUnviewables) {
+      if (this.isConsecutiveUnviewable) {
+        return this.book.getPage(this.unviewablesStart);
+      } else {
+        // Recursively goes backward through the book
+        // TODO make a reverse iterator to make it look identical to findNext
+        const prev = new PageModel(this.book, this.index - 1);
+        return prev.isViewable ? prev : prev.findPrev({ combineConsecutiveUnviewables });
+      }
+    } else {
+      return new PageModel(this.book, this.index - 1);
+    }
   }
 }
 

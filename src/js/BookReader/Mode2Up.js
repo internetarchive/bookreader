@@ -75,6 +75,9 @@ export class Mode2Up {
     this.br.updateToolbarZoom(this.br.reduce);
   }
 
+  /**
+   * @param {1} direction
+   */
   zoom(direction) {
     this.br.stopFlipAnimations();
 
@@ -128,16 +131,7 @@ export class Mode2Up {
     // one side of the spread because it is the first/last leaf,
     // foldouts, missing pages, etc
 
-    let targetLeaf = this.br.firstIndex;
-
-    if (targetLeaf < this.br.firstDisplayableIndex()) {
-      targetLeaf = this.br.firstDisplayableIndex();
-    }
-
-    if (targetLeaf > this.br.lastDisplayableIndex()) {
-      targetLeaf = this.br.lastDisplayableIndex();
-    }
-
+    const targetLeaf = clamp(this.br.firstIndex, this.br.firstDisplayableIndex(), this.br.lastDisplayableIndex());
     const currentSpreadIndices = this.book.getSpreadIndices(targetLeaf);
     this.br.twoPage.currentIndexL = currentSpreadIndices[0];
     this.br.twoPage.currentIndexR = currentSpreadIndices[1];
@@ -241,49 +235,42 @@ export class Mode2Up {
     }).appendTo(this.br.refs.$brContainer);
     $(this.br.twoPagePopUp).hide();
 
-    $(this.leafEdgeL).add(this.leafEdgeR).bind('mouseenter', () => {
-      $(this.br.twoPagePopUp).show();
-    });
+    const leafEdges = [
+      {
+        $leafEdge: $(this.leafEdgeL),
+        /** @type {function(number): PageIndex} */
+        jumpIndexForPageX: this.jumpIndexForLeftEdgePageX.bind(this),
+        leftOffset: () => -$(this.br.twoPagePopUp).width() + 120,
+      },
+      {
+        $leafEdge: $(this.leafEdgeR),
+        /** @type {function(number): PageIndex} */
+        jumpIndexForPageX: this.jumpIndexForRightEdgePageX.bind(this),
+        leftOffset: () => -120,
+      },
+    ];
 
-    $(this.leafEdgeL).add(this.leafEdgeR).bind('mouseleave', () => {
-      $(this.br.twoPagePopUp).hide();
-    });
+    for (const { $leafEdge, jumpIndexForPageX, leftOffset } of leafEdges) {
+      $leafEdge.on('mouseenter', () => $(this.br.twoPagePopUp).show());
+      $leafEdge.on('mouseleave', () => $(this.br.twoPagePopUp).hide());
 
-    $(this.leafEdgeL).bind('click', e => {
-      this.br.trigger(EVENTS.stop);
-      const jumpIndex = this.jumpIndexForLeftEdgePageX(e.pageX);
-      this.br.jumpToIndex(jumpIndex);
-    });
-
-    $(this.leafEdgeR).bind('click', e => {
-      this.br.trigger(EVENTS.stop);
-      const jumpIndex = this.jumpIndexForRightEdgePageX(e.pageX);
-      this.br.jumpToIndex(jumpIndex);
-    });
-
-    $(this.leafEdgeR).bind('mousemove', e => {
-      const jumpIndex = this.jumpIndexForRightEdgePageX(e.pageX);
-      $(this.br.twoPagePopUp).text('View ' + this.book.getPageName(clamp(jumpIndex, 0, this.book.getNumLeafs() - 1)));
-
-      // $$$ TODO: Make sure popup is positioned so that it is in view
-      // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
-      $(this.br.twoPagePopUp).css({
-        left: `${e.pageX - this.br.refs.$brContainer.offset().left + this.br.refs.$brContainer.scrollLeft() - 120}px`,
-        top: `${e.pageY - this.br.refs.$brContainer.offset().top + this.br.refs.$brContainer.scrollTop()}px`
+      $leafEdge.on('click', e => {
+        this.br.trigger(EVENTS.stop);
+        this.br.jumpToIndex(jumpIndexForPageX(e.pageX));
       });
-    });
 
-    $(this.leafEdgeL).bind('mousemove', e => {
-      const jumpIndex = this.jumpIndexForLeftEdgePageX(e.pageX);
-      $(this.br.twoPagePopUp).text('View '+ this.book.getPageName(clamp(jumpIndex, 0, this.book.getNumLeafs() - 1)));
+      $leafEdge.on('mousemove', e => {
+        const jumpIndex = clamp(jumpIndexForPageX(e.pageX), 0, this.book.getNumLeafs() - 1);
+        $(this.br.twoPagePopUp).text(`View ${this.book.getPageName(jumpIndex)}`);
 
-      // $$$ TODO: Make sure popup is positioned so that it is in view
-      //           (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
-      $(this.br.twoPagePopUp).css({
-        left: `${e.pageX - this.br.refs.$brContainer.offset().left + this.br.refs.$brContainer.scrollLeft() - $(this.br.twoPagePopUp).width() + 120}px`,
-        top: `${e.pageY - this.br.refs.$brContainer.offset().top + this.br.refs.$brContainer.scrollTop()}px`
+        // $$$ TODO: Make sure popup is positioned so that it is in view
+        // (https://bugs.edge.launchpad.net/gnubook/+bug/327456)
+        $(this.br.twoPagePopUp).css({
+          left: `${e.pageX - this.br.refs.$brContainer.offset().left + this.br.refs.$brContainer.scrollLeft() + leftOffset()}px`,
+          top: `${e.pageY - this.br.refs.$brContainer.offset().top + this.br.refs.$brContainer.scrollTop()}px`
+        });
       });
-    });
+    }
   }
 
   /**
@@ -502,9 +489,6 @@ export class Mode2Up {
    */
   flipBackToIndex(index) {
     if (this.br.constMode1up == this.br.mode) return;
-
-    const leftIndex = this.br.twoPage.currentIndexL;
-
     if (this.br.animating) return;
 
     if (null != this.br.leafEdgeTmp) {
@@ -513,7 +497,11 @@ export class Mode2Up {
     }
 
     if (null == index) {
-      index = leftIndex - 2;
+      const prev = this.book.getPage(this.br.twoPage.currentIndexL)
+        .findPrev({ combineConsecutiveUnviewables: true });
+      if (!prev) return;
+      index = prev.index;
+      if (prev.pageSide == 'R') index--;
     }
 
     this.br.updateNavIndexThrottled(index);
@@ -690,7 +678,10 @@ export class Mode2Up {
     }
 
     if (null == index) {
-      index = this.br.twoPage.currentIndexL + 2; // $$$ assumes indices are continuous
+      const nextPage = this.book.getPage(this.br.twoPage.currentIndexR)
+        .findNext({ combineConsecutiveUnviewables: true });
+      if (!nextPage) return;
+      index = nextPage.index;
     }
     if (index > this.br.lastDisplayableIndex()) return;
 
@@ -1123,7 +1114,7 @@ export class Mode2Up {
   /**
    * Returns the target jump leaf given a page coordinate (inside the left page edge div)
    * @param {number} pageX
-   * @return {number}
+   * @return {PageIndex}
    */
   jumpIndexForLeftEdgePageX(pageX) {
     let jumpIndex;
@@ -1144,6 +1135,8 @@ export class Mode2Up {
 
   /**
    * Returns the target jump leaf given a page coordinate (inside the right page edge div)
+   * @param {number} pageX
+   * @return {PageIndex}
    */
   jumpIndexForRightEdgePageX(pageX) {
     let jumpIndex;
