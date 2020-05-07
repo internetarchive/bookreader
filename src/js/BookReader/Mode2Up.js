@@ -497,10 +497,13 @@ export class Mode2Up {
     }
 
     if (null == index) {
-      const prev = this.book.getPage(this.br.twoPage.currentIndexL)
-        .findPrev({ combineConsecutiveUnviewables: true });
+      const {currentIndexL, currentIndexR} = this.br.twoPage;
+      const minDisplayedIndex = Math.min(currentIndexL, currentIndexR);
+      const prev = this.book.getPage(minDisplayedIndex).findPrev({ combineConsecutiveUnviewables: true });
       if (!prev) return;
       index = prev.index;
+      // Can only flip to a left page
+      // (downstream code handles index = -1, so this is ok I guess)
       if (prev.pageSide == 'R') index--;
     }
 
@@ -678,8 +681,10 @@ export class Mode2Up {
     }
 
     if (null == index) {
-      const nextPage = this.book.getPage(this.br.twoPage.currentIndexR)
-        .findNext({ combineConsecutiveUnviewables: true });
+      // Need to use the max here, since it could be a right to left book
+      const {currentIndexL, currentIndexR} = this.br.twoPage;
+      const maxDisplayedIndex = Math.max(currentIndexL, currentIndexR);
+      const nextPage = this.book.getPage(maxDisplayedIndex).findNext({ combineConsecutiveUnviewables: true });
       if (!nextPage) return;
       index = nextPage.index;
     }
