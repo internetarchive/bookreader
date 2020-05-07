@@ -1,4 +1,14 @@
 const { version: OLD_VERSION } = require('../package.json');
-const GITHUB_DIFF_URL = `https://github.com/internetarchive/bookreader/compare/v${OLD_VERSION}...master`
+const fetch = require('node-fetch');
+const OLD_RELEASE_URL = `https://api.github.com/repos/internetarchive/bookreader/releases/tags/v${OLD_VERSION}`;
 
-console.log(`Here's what's changed since the last version: ${GITHUB_DIFF_URL}`);
+async function main() {
+    const {created_at} = await fetch(OLD_RELEASE_URL).then(r => r.json());
+    const today = new Date().toISOString().slice(0, -5);
+    const searchUrl = 'https://github.com/internetarchive/bookreader/pulls?' + new URLSearchParams({
+        q: `is:pr is:merged merged:${created_at}..${today}Z sort:updated-asc`
+    }).toString();
+    console.log(`Here are all the PRs that were merged since the last version: ${searchUrl}`);
+}
+
+main();
