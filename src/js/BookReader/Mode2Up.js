@@ -498,7 +498,7 @@ export class Mode2Up {
 
     if (null == index) {
       const prev = this.book.getPage(this.br.twoPage.currentIndexL)
-        .findPrev({ collapseUnviewables: true });
+        .findPrev({ combineConsecutiveUnviewables: true });
       if (!prev) return;
       index = prev.index;
       if (prev.pageSide == 'R') index--;
@@ -679,7 +679,7 @@ export class Mode2Up {
 
     if (null == index) {
       const nextPage = this.book.getPage(this.br.twoPage.currentIndexR)
-        .findNext({ collapseUnviewables: true });
+        .findNext({ combineConsecutiveUnviewables: true });
       if (!nextPage) return;
       index = nextPage.index;
     }

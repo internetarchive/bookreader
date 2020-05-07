@@ -175,13 +175,13 @@ describe('pagesIterator', () => {
         }
     });
 
-    test('Can collapse unviewables', () => {
+    test('Can combine unviewables', () => {
         const data = deepCopy(SAMPLE_DATA);
         // add some more pages
         data.splice(2, 0, deepCopy(data[0]));
         data[1].forEach(page => page.viewable = false);
         const bm = new BookModel({ data });
-        for (const page of bm.pagesIterator({collapseUnviewables: true})) {
+        for (const page of bm.pagesIterator({combineConsecutiveUnviewables: true})) {
             expect(page.isConsecutiveUnviewable).toBe(false);
         }
     });
@@ -249,7 +249,7 @@ describe('PageModel', () => {
         expect(bm.getPage(1).next.next.index).toBe(3);
     });
 
-    describe('findNext collapseUnviewables=true', () => {
+    describe('findNext combineConsecutiveUnviewables=true', () => {
         const data = deepCopy(SAMPLE_DATA);
         // add some more pages
         data.splice(2, 0, deepCopy(data[0]));
@@ -258,15 +258,15 @@ describe('PageModel', () => {
         const bm = new BookModel({ data });
 
         test('does not skip the first unviewable page', () => {
-            expect(bm.getPage(0).findNext({ collapseUnviewables: true }).index).toBe(1);
+            expect(bm.getPage(0).findNext({ combineConsecutiveUnviewables: true }).index).toBe(1);
         });
 
         test('skips consecutive unviewables', () => {
-            expect(bm.getPage(1).findNext({ collapseUnviewables: true }).index).toBe(3);
+            expect(bm.getPage(1).findNext({ combineConsecutiveUnviewables: true }).index).toBe(3);
         });
 
         test('at end is undefined', () => {
-            expect(bm.getPage(-1).findNext({ collapseUnviewables: true })).toBeUndefined();
+            expect(bm.getPage(-1).findNext({ combineConsecutiveUnviewables: true })).toBeUndefined();
         });
     });
 
@@ -279,15 +279,15 @@ describe('PageModel', () => {
         const bm = new BookModel({ data });
 
         test('works if called on first unviewable', () => {
-            expect(bm.getPage(1).findPrev({ collapseUnviewables: true }).index).toBe(0);
+            expect(bm.getPage(1).findPrev({ combineConsecutiveUnviewables: true }).index).toBe(0);
         });
 
         test('works if called within unviewable chunk', () => {
-            expect(bm.getPage(2).findPrev({ collapseUnviewables: true }).index).toBe(1);
+            expect(bm.getPage(2).findPrev({ combineConsecutiveUnviewables: true }).index).toBe(1);
         });
 
         test('at start is undefined', () => {
-            expect(bm.getPage(0).findPrev({ collapseUnviewables: true })).toBeUndefined();
+            expect(bm.getPage(0).findPrev({ combineConsecutiveUnviewables: true })).toBeUndefined();
         });
     });
 });

@@ -632,7 +632,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
   let leafTop = 0;
   let leafBottom = 0;
 
-  for (const page of book.pagesIterator({ collapseUnviewables: true })) {
+  for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
     const height = Math.floor(page.height / this.reduce);
     leafBottom += height;
     const topInView = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
@@ -652,18 +652,18 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
   // if zoomed out, also draw prev/next pages
   if (this.reduce > 1) {
-    const prev = book.getPage(firstIndexToDraw).findPrev({ collapseUnviewables: true });
+    const prev = book.getPage(firstIndexToDraw).findPrev({ combineConsecutiveUnviewables: true });
     if (prev) indicesToDisplay.unshift(firstIndexToDraw = prev.index);
 
     const lastIndexToDraw = indicesToDisplay[indicesToDisplay.length - 1];
-    const next = book.getPage(lastIndexToDraw).findNext({ collapseUnviewables: true });
+    const next = book.getPage(lastIndexToDraw).findNext({ combineConsecutiveUnviewables: true });
     if (next) indicesToDisplay.push(next.index);
   }
 
   const BRpageViewEl = this.refs.$brPageViewEl.get(0);
   leafTop = 0;
 
-  for (const page of book.pagesIterator({ end: firstIndexToDraw, collapseUnviewables: true })) {
+  for (const page of book.pagesIterator({ end: firstIndexToDraw, combineConsecutiveUnviewables: true })) {
     leafTop += Math.floor(page.height / this.reduce) + 10;
   }
 
@@ -730,7 +730,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   let seekTop;
 
   // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
-  for (const page of book.pagesIterator({ collapseUnviewables: true })) {
+  for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
     const leafWidth = this.thumbWidth;
     if (rightPos + (leafWidth + this.thumbPadding) > viewWidth){
       currentRow++;
@@ -1108,7 +1108,7 @@ BookReader.prototype.onePageCalculateViewDimensions = function(reduce, padding) 
   const { book } = this._models;
   let viewWidth = 0;
   let viewHeight = 0;
-  for (const page of book.pagesIterator({ collapseUnviewables: true })) {
+  for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
     viewHeight += floor(page.height / reduce) + padding;
     const width = floor(page.width / reduce);
     if (width > viewWidth) viewWidth = width;
@@ -1308,7 +1308,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
   if (!page.isViewable && page.unviewablesStart != page.index) {
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
-    const newIndex = alreadyInPreview ? page.findNext({ collapseUnviewables: true }).index : page.unviewablesStart;
+    const newIndex = alreadyInPreview ? page.findNext({ combineConsecutiveUnviewables: true }).index : page.unviewablesStart;
     console.log({alreadyInPreview, index, newIndex});
     return this.jumpToIndex(newIndex, pageX, pageY, noAnimate);
   }
@@ -1595,7 +1595,7 @@ BookReader.prototype.onePageGetPageTop = function(index) {
   const { floor } = Math;
   const { book } = this._models;
   let leafTop = 0;
-  for (const page of book.pagesIterator({ end: index, collapseUnviewables: true })) {
+  for (const page of book.pagesIterator({ end: index, combineConsecutiveUnviewables: true })) {
     leafTop += floor(page.height / this.reduce) + this.padding;
   }
   return leafTop;
