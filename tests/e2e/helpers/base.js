@@ -10,7 +10,6 @@ const getUrl = ClientFunction(() => window.location.href);
  */
 const expectPage = ClientFunction(() => {
   const hash = document.location.hash;
-  console.log(hash);
   if (hash) {
     return hash.indexOf('#page/') > -1;
   } else {
@@ -26,9 +25,9 @@ const expectPage = ClientFunction(() => {
 const expectMode = ClientFunction((mode) => {
   const hash = document.location.hash;
   if (hash) {
-    return hash.indexOf('/mode/' + mode);
+    return hash.indexOf('/mode/' + mode) > -1;
   } else {
-    return window.location.href.indexOf('/mode/' + mode);
+    return window.location.href.indexOf('/mode/' + mode) > -1;
   }
 });
 

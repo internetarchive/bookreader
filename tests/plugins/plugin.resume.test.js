@@ -40,19 +40,19 @@ describe('Plugin: Remember Current Page in Cookies', () => {
 
 describe('updateResumeValue', () => {
   /* Mark 2020-05-02
-    Commenting this out while confirming with Neeraj
+    Skipping while confirming with Neeraj
     I'm not sure:
     - What this test really does
     - If the instantiation of the prototype counts as a call
     - If so, why would there be a second call
     Can't find in production
     In this branch .toHaveBeenCalledTimes() === 1
-  test('starts when BookReaderInit is called', () => {
+  */
+  test.skip('starts when BookReaderInit is called', () => {
     br.updateResumeValue = jest.fn();
     br.init();
     expect(br.updateResumeValue).toHaveBeenCalledTimes(2);
   });
-  */
 
   test('handles cookieName=null', () => {
     const { updateResumeValue } = BookReader.prototype;

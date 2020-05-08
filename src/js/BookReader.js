@@ -22,6 +22,7 @@ This file is part of BookReader.
 import { version as VERSION } from '../../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
+
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
@@ -274,23 +275,23 @@ BookReader.prototype.initParams = function() {
     if (val !== null) {
       // If page index different from default
       if (params.index !== val) {
+        // Show in URL
         params.fragmentChange = true;
       }
       params.index = val;
     }
   }
 
+  // Check for URL plugin
   if (this.options.enableUrlPlugin) {
-    // params explicitly set in URL take precedence over all other methods
+    // Params explicitly set in URL take precedence over all other methods
     var urlParams = this.paramsFromFragment(this.urlReadFragment());
-    if (urlParams.mode) {
-      // If there were any parameters
-      if (Object.keys(urlParams).length > 0) {
-        this.extendParams(params, urlParams);
-        params.fragmentChange = true;
-      }
+    // If there were any parameters
+    if (Object.keys(urlParams).length) {
+      this.extendParams(params, urlParams);
+      // Show in URL
+      params.fragmentChange = true;
     }
-    this.extendParams(params, urlParams);
   }
 
   return params;
@@ -358,6 +359,8 @@ BookReader.prototype.init = function() {
 
   // Explicitly ensure params.mode exists for updateFromParams() below
   params.mode = this.getInitialMode(params);
+  // Save result for leaf click in thumbnail mode
+  this.prevReadMode = params.mode;
   // Explicitly ensure this.mode exists for initNavbar()
   this.mode = params.mode;
 
