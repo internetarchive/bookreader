@@ -1309,10 +1309,8 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
     const newIndex = alreadyInPreview ? page.findNext({ combineConsecutiveUnviewables: true }).index : page.unviewablesStart;
-    console.log({alreadyInPreview, index, newIndex});
     return this.jumpToIndex(newIndex, pageX, pageY, noAnimate);
   }
-  console.log({index});
 
   this.trigger(BookReader.eventNames.stop);
 
