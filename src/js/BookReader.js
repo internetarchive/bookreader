@@ -22,7 +22,6 @@ This file is part of BookReader.
 import { version as VERSION } from '../../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
-
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
@@ -1429,9 +1428,15 @@ BookReader.prototype.getPrevReadMode = function(mode) {
  * @param {number}
  * @param {object}
  */
-BookReader.prototype.switchMode = function(mode, options) {
-  // Always run during init()
-  if (!options.init) {
+BookReader.prototype.switchMode = function(mode, options = {}) {
+  // Set configuration, options overriding defaults
+  const {
+    init = false,
+    suppressFragmentChange = false,
+  } = options;
+
+  // Skip checks when init()
+  if (!init) {
     if (mode === this.mode) {
       return;
     }
@@ -1472,7 +1477,7 @@ BookReader.prototype.switchMode = function(mode, options) {
     this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
   }
 
-  if (!options || options.suppressFragmentChange === false) {
+  if (!suppressFragmentChange) {
     this.trigger(BookReader.eventNames.fragmentChange);
   }
   var eventName = mode + 'PageViewSelected';
@@ -2599,22 +2604,18 @@ exposeOverrideableMethod(BookModel, '_models.book', '_getDataProp');
  * @param {Object}
  */
 BookReader.prototype.updateFromParams = function(params) {
-  if ('undefined' != typeof(params.mode)) {
-    // Set init, fragment change options for switchMode()
-    const options = {};
-    if ('undefined' != typeof(params.fragmentChange)) {
-      $.extend(
-        options,
-        { suppressFragmentChange: !params.fragmentChange }
-      );
-    }
-    if ('undefined' != typeof(params.init)) {
-      $.extend(
-        options,
-        { init: params.init }
-      );
-    }
-    this.switchMode(params.mode, options);
+  // Set init, fragment change options for switchMode()
+  const {
+    mode = 0,
+    init = false,
+    fragmentChange = false,
+  } = params;
+
+  if (mode) {
+    this.switchMode(
+      mode,
+      { init: init, suppressFragmentChange: !fragmentChange }
+    );
   }
 
   // $$$ process /zoom
