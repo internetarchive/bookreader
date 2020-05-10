@@ -104,6 +104,7 @@ BookReader.prototype.setup = function(options) {
   this.padding = options.padding;
   this.mode = null;
   this.prevReadMode = null;
+  this.defaultReadMode = BookReader.constMode1up;
   this.ui = options.ui;
   this.uiAutoHide = options.uiAutoHide;
 
@@ -246,10 +247,13 @@ BookReader.prototype.extendParams = function(params, newParams) {
 /**
  * Parses params from from various initialization contexts (url, cookie, options)
  * @private
- * @return {object} the parased params
+ * @return {object} the parsed params
  */
 BookReader.prototype.initParams = function() {
   var params = {};
+  // Flag initializing for updateFromParams()
+  params.init = true;
+
   // True if changing the URL
   params.fragmentChange = false;
 
@@ -331,6 +335,7 @@ BookReader.prototype.getInitialMode = function(params) {
  * It renders onto the DOM. It should only be called once.
  */
 BookReader.prototype.init = function() {
+  this.init.initComplete = false;
   this.pageScale = this.reduce; // preserve current reduce
 
   var params = this.initParams();
@@ -359,9 +364,8 @@ BookReader.prototype.init = function() {
 
   // Explicitly ensure params.mode exists for updateFromParams() below
   params.mode = this.getInitialMode(params);
-  // Save result for leaf click in thumbnail mode
-  this.prevReadMode = params.mode;
-  // Explicitly ensure this.mode exists for initNavbar()
+
+  // Explicitly ensure this.mode exists for initNavbar() below
   this.mode = params.mode;
 
   if (this.ui == "embed" && this.options.showNavbar) {
@@ -376,8 +380,6 @@ BookReader.prototype.init = function() {
   }
 
   this.resizeBRcontainer();
-  this.mode = null; // Needed or else switchMode in updateFromParams() is a noop
-  // this.switchMode(initialMode);
   this.updateFromParams(params);
   this.initUIStrings();
 
@@ -1410,24 +1412,39 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
 };
 
 /**
+ * Return mode or 1up if initial thumb
+ * @param {number}
+ * @see BookReader.prototype.drawLeafsThumbnail
+ */
+BookReader.prototype.getPrevReadMode = function(mode) {
+  if (mode === BookReader.constMode1up || mode === BookReader.constMode2up) {
+    return mode;
+  } else if (this.prevReadMode === null) {
+    // Initial thumb, return 1up
+    return BookReader.constMode1up;
+  }
+}
+
+/**
  * Switches the mode (eg 1up 2up thumb)
  * @param {number}
+ * @param {object}
  */
 BookReader.prototype.switchMode = function(mode, options) {
-  if (mode === this.mode) {
-    return;
-  }
-
-  if (!this.canSwitchToMode(mode)) {
-    return;
+  // Always run during init()
+  if (!options.init) {
+    if (mode === this.mode) {
+      return;
+    }
+    if (!this.canSwitchToMode(mode)) {
+      return;
+    }
   }
 
   this.trigger(BookReader.eventNames.stop);
   if (this.enableSearch) this.removeSearchHilites();
 
-  if (this.mode === this.constMode1up || this.mode === this.constMode2up) {
-    this.prevReadMode = this.mode;
-  }
+  this.prevReadMode = this.getPrevReadMode(this.mode);
 
   this.mode = mode;
 
@@ -2584,9 +2601,19 @@ exposeOverrideableMethod(BookModel, '_models.book', '_getDataProp');
  */
 BookReader.prototype.updateFromParams = function(params) {
   if ('undefined' != typeof(params.mode)) {
-    var options = {};
+    // Set init, fragment change options for switchMode()
+    const options = {};
     if ('undefined' != typeof(params.fragmentChange)) {
-      options = { suppressFragmentChange: !params.fragmentChange };
+      $.extend(
+        options,
+        { suppressFragmentChange: !params.fragmentChange }
+      );
+    }
+    if ('undefined' != typeof(params.init)) {
+      $.extend(
+        options,
+        { init: params.init }
+      );
     }
     this.switchMode(params.mode, options);
   }
