@@ -104,7 +104,6 @@ BookReader.prototype.setup = function(options) {
   this.padding = options.padding;
   this.mode = null;
   this.prevReadMode = null;
-  this.defaultReadMode = BookReader.constMode1up;
   this.ui = options.ui;
   this.uiAutoHide = options.uiAutoHide;
 
