@@ -36,7 +36,6 @@
     "iso-language-codes": "1.0.5",
     "jest": "25.1.0",
     "live-server": "1.2.1",
-    "qunit": "2.9.2",
     "regenerator-runtime": "0.13.3",
     "sass": "1.22.12",
     "sinon": "7.3.2",
