@@ -1,3 +1,14 @@
+# 4.9.0
+- Fix: -/+ buttons not zooming in Chrome @ishank-dev
+- Add chapters demo to e2e tests @ishank-dev
+- Make Travis testcafe runs less flaky @shaneriley
+- Pin npm version dependencies for consistent builds @cdrini
+- Standardize HTML structure for pages across view modes @shaneriley
+    - WARNING: Some of the html elements/classes have changed. Potentially breaking change.
+- Feature (beta): Preview pages. Specifying `viewable: false` on pages causes them to render a preview image placeholder. @cdrini
+- Remove deprecated QUnit tests @Pyrojet99
+- Remove console.logs in test output @NayamAmarshe
+
 # 4.8.0
 - Adds customizable layout controls @shaneriley
 
