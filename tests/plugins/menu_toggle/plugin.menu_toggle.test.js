@@ -15,7 +15,6 @@ beforeAll(() => {
   $.fx.off = true;
   const OGSpeed = $.speed;
   $.speed = function(_speed, easing, callback) {
-    console.log('speed');
     return OGSpeed(0, easing, callback);
   };
   document.body.innerHTML = '<div id="BookReader">';
