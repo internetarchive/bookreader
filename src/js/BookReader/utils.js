@@ -79,6 +79,14 @@ export function encodeURIComponentPlus(value) {
   return encodeURIComponent(value).replace(/%20/g, '+');
 }
 
+export function toQueryString(obj) {
+  return Object
+    .keys(obj)
+    .map(key => `${encodeURIComponent(key)}=${encodeURIComponentPlus(obj[key])}`)
+    .join('&')
+  ;
+}
+
 /**
  * Returns a function, that, as long as it continues to be invoked, will not
  * be triggered. The function will be called after it stops being called for
