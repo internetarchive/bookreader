@@ -61,7 +61,7 @@ test('does not check cookie when initParams called', () => {
   expect(params.fragmentChange).toBe(false);
 });
 
-test('overrides cookie if page fragment when InitParams called', () => {
+test('gets index from fragment when both fragment and cookie when InitParams called', () => {
   br.getResumeValue = jest.fn(() => 15);
   br.urlReadFragment = jest.fn(() => 'page/n4');
   br.options.enablePageResume = true;
@@ -78,6 +78,9 @@ test('sets prevReadMode when init called', () => {
   expect(br.prevReadMode).toBeTruthy();
 });
 
+// Default behavior same in
+//   BookReader.prototype.drawLeafsThumbnail
+//   BookReader.prototype.getPrevReadMode
 test('sets prevPageMode if initial mode is thumb', () => {
   br.urlReadFragment = jest.fn(() => 'page/n4/mode/thumb');
 
