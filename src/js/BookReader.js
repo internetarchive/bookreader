@@ -2930,9 +2930,9 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
  * @return {string}
  */
 BookReader.prototype.fragmentFromParams = function(params) {
-  var separator = '/';
-
-  var fragments = [];
+  const separator = '/';
+  const fragments = [];
+  const queries = {};
 
   if ('undefined' != typeof(params.page)) {
     fragments.push('page', params.page);
@@ -2961,10 +2961,13 @@ BookReader.prototype.fragmentFromParams = function(params) {
 
   // search
   if (params.search) {
-    fragments.push('search', params.search);
+    queries.q = params.search;
   }
 
-  return utils.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+  let queryString = utils.toQueryString(queries);
+  queryString = (queryString) ? '?' + queryString : '';
+
+  return utils.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/') + queryString;
 };
 
 /**
