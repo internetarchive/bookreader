@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookReader Chrome</title>
+    <link rel="stylesheet" href="/static/chrome.css" />
+  </head>
+
+  <body>
+    <div class="bookreader">
+      <div class="stage">
+        <div class="book"></div>
+      </div>
+      <nav>
+        <ul class="read-aloud">
+          <li>
+            <button type="button" name="playback-speed" title="Playback speed">
+              <div class="icon icon-playback-speed"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="review" title="Review 10 seconds">
+              <div class="icon icon-review"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="play" title="Play">
+              <div class="icon icon-play"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="advance" title="Advance 10 seconds">
+              <div class="icon icon-advance"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="volume" title="Volume">
+              <div class="icon icon-volume-full"></div>
+            </button>
+          </li>
+        </ul>
+        <ul class="controls">
+          <li class="scrubber">
+            <input type="range" min="1" max="198" scale="1" value="1" />
+            <p>1/198</p>
+          </li>
+          <li>
+            <button type="button" name="read-aloud" title="Read aloud">
+              <div class="icon icon-read-aloud"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="2up" title="Switch to two page view" class="active">
+              <div class="icon icon-2up"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="fullscreen" title="Switch to fullscreen view">
+              <div class="icon icon-fullscreen"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="thumbnails" title="Switch to thumbnails view">
+              <div class="icon icon-thumbnails"></div>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <script src="/static/new_chrome.js"></script>
+  </body>
+</html>

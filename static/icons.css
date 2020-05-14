@@ -1,0 +1,66 @@
+.icon {
+  display: inline-block;
+  background: transparent 50% 50% no-repeat;
+}
+
+.active .icon {
+  filter: brightness(.2);
+}
+
+.icon-read-aloud {
+  width: 20px;
+  height: 16px;
+  background-image: url("/static/icons/read-aloud.svg");
+}
+
+.icon-2up {
+  width: 22px;
+  height: 19px;
+  background-image: url("/static/icons/2up.svg");
+}
+
+.icon-fullscreen {
+  width: 18px;
+  height: 18px;
+  background-image: url("/static/icons/fullscreen.svg");
+}
+
+.icon-thumbnails {
+  width: 24px;
+  height: 22px;
+  background-image: url("/static/icons/thumbnails.svg");
+}
+
+.icon-playback-speed {
+  width: 24px;
+  height: 32px;
+  background-image: url("/static/icons/playback-speed.svg");
+}
+
+.icon-review,
+.icon-advance {
+  width: 21px;
+  height: 19px;
+  background-image: url("/static/icons/review.svg");
+}
+
+.icon-advance {
+  background-image: url("/static/icons/advance.svg");
+}
+
+.icon-volume-full {
+  width: 23px;
+  height: 22px;
+  background-image: url("/static/icons/volume-full.svg");
+}
+
+.icon-play,
+.icon-pause {
+  width: 40px;
+  height: 40px;
+  background-image: url("/static/icons/play.svg");
+}
+
+.icon-pause {
+  background-image: url("/static/icons/pause.svg");
+}

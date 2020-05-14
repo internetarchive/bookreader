@@ -1,0 +1,112 @@
+@import url("./icons.css");
+
+/* Reset */
+ul,ol { list-style: none; }
+h1,h2,h3,h4,h5,h6,pre,code { font-size: 1em; }
+ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,body,html,p,blockquote,fieldset,input,dl,dt,dd, figure, figcaption {
+  margin: 0;
+  padding: 0; }
+a img,:link img,:visited img, fieldset { border: none; }
+address { font-style: normal; }
+header, section, article, nav, footer, hgroup, details, summary, figure, main { display: block; }
+mark {
+  color: inherit;
+  background: transparent; }
+abbr { border: none; }
+summary::-webkit-details-marker { display: none; }
+
+html {
+  font: normal 10px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.bookreader {
+  display: grid;
+  height: 100vh;
+  grid-template-areas: "stage" "controls";
+  grid-template-rows: 1fr auto;
+  --gray13: #222;
+  --gray20: #333;
+  --white: #fff;
+  --controlsText: var(--white);
+  --controlsBG: var(--gray20);
+  --iconFill: var(--white);
+  --iconActiveFill: var(--gray20);
+  --iconStroke: var(--white);
+  --iconActiveStroke: var(--gray20);
+  --activeButtonBG: var(--white);
+  --controlsBorder: var(--gray13);
+}
+
+.stage {
+  grid-area: stage;
+}
+
+.book {
+  margin: 0 auto;
+}
+
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+  cursor: pointer;
+  border: none;
+  border-radius: .2rem;
+  background: transparent;
+  outline: none;
+}
+
+.active {
+  background: var(--activeButtonBG);
+}
+
+nav {
+  grid-area: controls;
+  background: var(--controlsBG);
+}
+
+nav ul {
+  display: flex;
+}
+
+.controls {
+  padding: .2rem 1rem;
+  border-top: 1px solid var(--controlsBorder);
+}
+
+.controls button {
+  width: 3rem;
+  height: 3rem;
+}
+
+.read-aloud {
+  display: none;
+  padding: .5rem 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.read-aloud.visible {
+  display: flex;
+}
+
+.read-aloud li {
+  padding: 0 1rem;
+}
+
+.scrubber {
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+
+.scrubber input {
+  width: 100%;
+}
+
+.scrubber p {
+  padding: 0 2rem 0 1.3rem;
+  font-weight: 700;
+  color: var(--controlsText);
+}

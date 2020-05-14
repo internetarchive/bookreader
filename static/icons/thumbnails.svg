@@ -1,0 +1,17 @@
+<svg
+  width="24px"
+  height="22px"
+  viewBox="0 0 24 22"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-labelledby="thumbnailTitleID thumbnailDescID"
+>
+  <title>Thumbnails</title>
+  <desc>An illustration of a grid of two squares per row and two squares per column</desc>
+  <g stroke="#fff" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(.5, 0)">
+    <rect x="2" y="1.55263158" width="8" height="8" rx="0.5"></rect>
+    <rect x="2" y="12.4473684" width="8" height="8" rx="0.5"></rect>
+    <rect x="14" y="1.55263158" width="8" height="8" rx="0.5"></rect>
+    <rect x="14" y="12.4473684" width="8" height="8" rx="0.5"></rect>
+  </g>
+</svg>
