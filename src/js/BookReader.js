@@ -420,7 +420,7 @@ BookReader.prototype.init = function() {
   this.trigger(BookReader.eventNames.PostInit);
 
   // Return to default
-  // this.suppressFragmentChange = false;
+  this.suppressFragmentChange = false;
 
   this.init.initComplete = true;
 }
@@ -1689,6 +1689,11 @@ BookReader.prototype.updateFirstIndex = function(
   index,
   { suppressFragmentChange = false } = {}
 ) {
+  // Called multiple times when defaults contains "mode/1up",
+  // including after init(). Skip fragment change if no index change
+  if (this.firstIndex === index) {
+    suppressFragmentChange = true;
+  }
   this.firstIndex = index;
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
