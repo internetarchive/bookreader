@@ -55,7 +55,6 @@ BookReader.prototype.init = (function(super_) {
         if (urlMode === 'hash') {
           this.urlStartLocationPolling();
         }
-        this.suppressFragmentChange = false;
       });
 
       this.bind(BookReader.eventNames.fragmentChange,
