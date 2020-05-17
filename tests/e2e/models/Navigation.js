@@ -5,7 +5,7 @@ export default class Navigation {
   constructor () {
     this.topNavShell = new Selector('.BRtoolbar');
     this.bottomNavShell = new Selector('.BRfooter');
-    this.desktop = new DesktopNav(this.bottomNavShell);
+    this.desktop = new DesktopNav(this.bottomNavShell, this.topNavShell);
   }
 }
 
@@ -15,7 +15,7 @@ export default class Navigation {
  * @classdesc defines DesktopNav base elements
  */
 class DesktopNav {
-  constructor(bottomToolbar) {
+  constructor(bottomToolbar, topToolbar) {
     this.goPrevious = bottomToolbar.find('.BRicon.book_left');
     this.goNext = bottomToolbar.find('.BRicon.book_right');
     this.mode1Up = bottomToolbar.find('.BRicon.onepg');
@@ -24,5 +24,8 @@ class DesktopNav {
     this.zoomIn = bottomToolbar.find('.BRicon.desktop-only.zoom_in');
     this.zoomOut = bottomToolbar.find('.BRicon.desktop-only.zoom_out');
     this.fullScreen = bottomToolbar.find('.BRicon.full');
+    this.searchBox = topToolbar.find('.BRbooksearch.desktop');
+    this.querySign = bottomToolbar.find('.BRquery');
+
   }
 }
