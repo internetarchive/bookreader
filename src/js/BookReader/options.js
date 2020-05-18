@@ -202,6 +202,8 @@ export const DEFAULT_OPTIONS = {
       className: 'thumb',
     },
   },
+
+  startFullscreen: false,
 };
 
 /** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */

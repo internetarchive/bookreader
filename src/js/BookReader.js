@@ -360,6 +360,10 @@ BookReader.prototype.init = function() {
     }
   }
 
+  if (this.options.startFullscreen) {
+    this.enterFullscreen();
+  }
+
   this.resizeBRcontainer();
   this.mode = null; // Needed or else switchMode is a noop
   this.switchMode(initialMode);
