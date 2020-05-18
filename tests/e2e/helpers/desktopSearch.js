@@ -1,7 +1,11 @@
+import { ClientFunction } from 'testcafe';
+
 export function runDesktopSearchTests(br) {
+  const testTextFound = 'theory';
+  const testTextNotFound = 'xcjnierjnieunenojrnskz';
+
   test('Desktop search - succesful search', async t => {
     const { nav } = br;
-    const testTextFound = 'theory';
     await t.expect(br.shell.visible).ok();
     await t.expect(br.BRcontainer.visible).ok();
 
@@ -18,11 +22,15 @@ export function runDesktopSearchTests(br) {
     await t.expect(nav.desktop.querySign.exists).ok({timeout:30000});
     await t.expect(nav.desktop.querySign.child('div').exists).ok();
     await t.expect(nav.desktop.querySign.child('div').innerText).contains(testTextFound);
+
+    const getPageUrl = ClientFunction(() => window.location.href.toString());
+    await t.expect(getPageUrl()).contains(testTextFound);
+
   });
+
 
   test('Desktop search - unsuccesful search', async t => {
     const { nav } = br;
-    const testTextNotFound = 'xcjnierjnieunenojrnskz';
     await t.expect(br.shell.visible).ok();
     await t.expect(br.BRcontainer.visible).ok();
 
@@ -38,5 +46,10 @@ export function runDesktopSearchTests(br) {
     await t.click((nav.desktop.searchBox).child('.BRsearchSubmit'));
     await t.expect(nav.desktop.querySign.child('div').withText(testTextNotFound).exists).notOk({timeout:40000});
 
+    const getPageUrl = ClientFunction(() => window.location.href.toString());
+    await t.expect(getPageUrl()).contains(testTextNotFound);
   });
+  //checkUrl(testTextNotFound);
+
+
 }
