@@ -2,6 +2,35 @@ import { ClientFunction, Selector } from 'testcafe';
 
 const PAGE_FLIP_WAIT_TIME = 1000;
 
+const getHash = ClientFunction(() => document.location.hash);
+const getUrl = ClientFunction(() => window.location.href);
+
+/**
+ * Check URL page paramter in # and path
+ */
+const expectPage = ClientFunction(() => {
+  const hash = document.location.hash;
+  if (hash) {
+    return hash.indexOf('#page/') > -1;
+  } else {
+    return window.location.href.indexOf('/page/') > -1;
+  }
+});
+
+/**
+ * Check URL mode paramter in # and path
+ *
+ * @param mode '1up', '2up', 'thumb'
+ */
+const expectMode = ClientFunction((mode) => {
+  const hash = document.location.hash;
+  if (hash) {
+    return hash.indexOf('/mode/' + mode) > -1;
+  } else {
+    return window.location.href.indexOf('/mode/' + mode) > -1;
+  }
+});
+
 /**
  * Runs all expected base tests for BookReader
  *
@@ -34,8 +63,51 @@ export function runBaseTests (br) {
     await t.expect(nav.desktop.fullScreen.visible).ok();
   });
 
+  test("Canonical URL has no initial parameters", async t => {
+    // Initial URL has no params
+    await t.expect(getHash()).eql('');
+    // Initial URL has no page/ mode/
+    await t.expect(getUrl()).notContains('#page/');
+    await t.expect(getUrl()).notContains('/page/');
+    await t.expect(getUrl()).notContains('/mode/');
+  });
+
+  // Need to disable page caching to have cookies persist in test
+  test.disablePageCaching('Canonical URL shows parameters if cookie set', async t => {
+    const { nav } = br;
+
+    // Check if uses plugin.resume.js
+    const usesResume = ClientFunction(() => typeof(br.getResumeValue) !== "undefined");
+
+    // Store initial URL
+    const initialUrl = await getUrl();
+
+    // Set Cookie by page navigation, wait for cookie
+    await t.click(nav.desktop.goNext)
+      .wait(PAGE_FLIP_WAIT_TIME);
+
+    // reload canonical URL, wait for URL change
+    await t.navigateTo(initialUrl)
+      .wait(PAGE_FLIP_WAIT_TIME);
+
+    if (await usesResume()) {
+      await t.expect(expectPage()).ok(initialUrl)
+        .expect(expectMode('2up')).ok();
+    } else {
+      // No plugin, no br-resume cookie
+      await t.expect(getUrl()).notContains('#page/');
+      await t.expect(getUrl()).notContains('/page/');
+      await t.expect(getUrl()).notContains('/mode/');
+    }
+  });
+
   test('2up mode - Clicking `Previous page` changes the page', async t => {
     const { nav, BRcontainer} = br;
+
+    // Go to next page, so we can go previous if at front cover
+    await t.click(nav.desktop.goNext);
+    await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
+
     const onLoadBrState = BRcontainer.child(0);
     const initialImages = onLoadBrState.find('img');
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
@@ -63,6 +135,7 @@ export function runBaseTests (br) {
   })
 
   test('2up mode - Clicking `Next page` changes the page', async t => {
+    // Note: this will fail on a R to L book if at front cover
     const { nav, BRcontainer} = br;
     const onLoadBrState = BRcontainer.child(0);
     const initialImages = onLoadBrState.find('img');
@@ -89,6 +162,19 @@ export function runBaseTests (br) {
     // we aren't showing the same image in the new pages
     await t.expect(nextImg1Src).notEql(nextImg2Src);
   })
+
+  test('Clicking `page flip buttons` updates location', async t => {
+    const { nav } = br;
+
+    // Page navigation creates params
+    await t.click(nav.desktop.goNext)
+      .expect(expectPage()).ok()
+      .expect(expectMode('2up')).ok();
+
+    await t.click(nav.desktop.goPrevious)
+      .expect(expectPage()).ok()
+      .expect(expectMode('2up')).ok();
+  });
 
   test('Clicking `2 page view` brings up 2 pages at a time', async t => {
     const { nav } = br;
@@ -171,5 +257,5 @@ export function runBaseTests (br) {
     await t.click(nav.desktop.fullScreen);
     // in-page
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);
-  });  
+  });
 }
