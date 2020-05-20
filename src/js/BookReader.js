@@ -1870,32 +1870,30 @@ BookReader.prototype.pruneUnusedImgs = function() {
   }
 };
 
+/**
+ * Fetches the currently displayed images (if not already fetching)
+ * as wells as any nearby pages.
+ */
 BookReader.prototype.prefetch = function() {
   // $$$ We should check here if the current indices have finished
   //     loading (with some timeout) before loading more page images
   //     See https://bugs.edge.launchpad.net/bookreader/+bug/511391
+  const { max, min } = Math;
+  const { book } = this._models;
+  const { currentIndexL, currentIndexR } = this.twoPage;
+  const ADJACENT_PAGES_TO_LOAD = 3;
 
-  // prefetch visible pages first
-  this.prefetchImg(this.twoPage.currentIndexL);
-  this.prefetchImg(this.twoPage.currentIndexR);
-
-  var adjacentPagesToLoad = 3;
-
-  var lowCurrent = Math.min(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
-  var highCurrent = Math.max(this.twoPage.currentIndexL, this.twoPage.currentIndexR);
-
-  var start = Math.max(lowCurrent - adjacentPagesToLoad, 0);
-  var end = Math.min(highCurrent + adjacentPagesToLoad, this._models.book.getNumLeafs() - 1);
-
-  // Load images spreading out from current
-  for (var i = 1; i <= adjacentPagesToLoad; i++) {
-    var goingDown = lowCurrent - i;
-    if (goingDown >= start) {
-      this.prefetchImg(goingDown);
+  let lowPage = book.getPage(min(currentIndexL, currentIndexR));
+  let highPage = book.getPage(max(currentIndexL, currentIndexR));
+  for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 1; i++) {
+    if (lowPage) {
+      this.prefetchImg(lowPage.index);
+      lowPage = lowPage.findPrev({ combineConsecutiveUnviewables: true });
     }
-    var goingUp = highCurrent + i;
-    if (goingUp <= end) {
-      this.prefetchImg(goingUp);
+
+    if (highPage) {
+      this.prefetchImg(highPage.index);
+      highPage = highPage.findNext({ combineConsecutiveUnviewables: true });
     }
   }
 };
