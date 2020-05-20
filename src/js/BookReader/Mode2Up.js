@@ -1171,7 +1171,9 @@ export class Mode2Up {
     const { currentIndexL, currentIndexR } = this.br.twoPage;
     const ADJACENT_PAGES_TO_LOAD = 3;
 
-    let lowPage = book.getPage(min(currentIndexL, currentIndexR));
+    // currentIndexL can be -1; getPage returns the last page of the book
+    // when given -1, so need to prevent that.
+    let lowPage = book.getPage(max(0, min(currentIndexL, currentIndexR)));
     let highPage = book.getPage(max(currentIndexL, currentIndexR));
     for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 1; i++) {
       if (lowPage) {
