@@ -1870,34 +1870,6 @@ BookReader.prototype.pruneUnusedImgs = function() {
   }
 };
 
-/**
- * Fetches the currently displayed images (if not already fetching)
- * as wells as any nearby pages.
- */
-BookReader.prototype.prefetch = function() {
-  // $$$ We should check here if the current indices have finished
-  //     loading (with some timeout) before loading more page images
-  //     See https://bugs.edge.launchpad.net/bookreader/+bug/511391
-  const { max, min } = Math;
-  const { book } = this._models;
-  const { currentIndexL, currentIndexR } = this.twoPage;
-  const ADJACENT_PAGES_TO_LOAD = 3;
-
-  let lowPage = book.getPage(min(currentIndexL, currentIndexR));
-  let highPage = book.getPage(max(currentIndexL, currentIndexR));
-  for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 1; i++) {
-    if (lowPage) {
-      this.prefetchImg(lowPage.index);
-      lowPage = lowPage.findPrev({ combineConsecutiveUnviewables: true });
-    }
-
-    if (highPage) {
-      this.prefetchImg(highPage.index);
-      highPage = highPage.findNext({ combineConsecutiveUnviewables: true });
-    }
-  }
-};
-
 /************************/
 /** Mode2Up extensions **/
 /************************/
@@ -2001,6 +1973,9 @@ exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'jumpIndexForLeftEdgePageX',
 /** @deprecated unused outside BookReader, Mode2Up */
 BookReader.prototype.jumpIndexForRightEdgePageX = Mode2Up.prototype.jumpIndexForRightEdgePageX;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'jumpIndexForRightEdgePageX', 'jumpIndexForRightEdgePageX');
+/** @deprecated unused outside Mode2Up */
+BookReader.prototype.prefetch = Mode2Up.prototype.prefetch;
+exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'prefetch', 'prefetch');
 
 /**
  * Immediately stop flip animations.  Callbacks are triggered.
