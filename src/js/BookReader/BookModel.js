@@ -393,6 +393,14 @@ class PageModel {
   }
 
   /**
+   * @param {number} reduce
+   * @param {number} rotate
+   */
+  getURI(reduce, rotate) {
+    return this.book.getPageURI(this.index, reduce, rotate);
+  }
+
+  /**
    * @param {object} [arg0]
    * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
    * of a series of unviewable pages instead of each page

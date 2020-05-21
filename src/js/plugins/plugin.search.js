@@ -537,7 +537,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     .animate({top:'-25px'}, 'slow');
 
   // Add Mobile Search Results
-  const imgPreviewUrl = this.getPageURI(pageIndex, 16, 0); // scale 16 is small
+  const page = this._models.book.getPage(pageIndex);
   const $mobileSearchResultWrapper = this.$('.BRmobileSearchResultWrapper');
   if ($mobileSearchResultWrapper.length) {
     const onResultsClick = (e) => {
@@ -553,10 +553,11 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
             <span class="pageDisplay">${pageDisplayString}</span>
           </tr>
           <tr>
-            <td>
-              <img class="searchImgPreview" src="${imgPreviewUrl}" />
-            </td>
-            <td>
+            ${page.isViewable ? /** Scale down since it's a thumbnail */
+    `<td><img class="searchImgPreview" src="${page.getURI(16, 0)}" /></td>` :
+    ''
+}
+            <td ${!page.isViewable ? 'colspan="2"' : ''}>
               <span>${queryStringWithBTruncated}</span>
             </td>
           </tr>
