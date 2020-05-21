@@ -578,16 +578,17 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
  * @param {PageIndex} pageIndex
  */
 BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
-  const page = this._models.book.getPage(pageIndex);
+  const { book } = this._models;
+  const page = book.getPage(pageIndex);
   if (!page.isViewable) {
     const resp = await fetch('/services/bookreader/request_page?' + new URLSearchParams({
       id: this.options.bookId,
       subprefix: this.options.subPrefix,
-      leafNum: pageIndex,
+      leafNum: page.leafNum,
     })).then(r => r.json());
 
-    for (const index of resp.value) {
-      this._models.book.makeViewable(index);
+    for (const leafNum of resp.value) {
+      book.makeViewable(book.leafNumToIndex(leafNum));
     }
 
     if (!resp.value.length) {

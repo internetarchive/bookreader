@@ -369,6 +369,7 @@ class PageModel {
     this.width = book.getPageWidth(index);
     this.height = book.getPageHeight(index);
     this.pageSide = book.getPageSide(index);
+    this.leafNum = book._getDataProp(index, 'leafNum', this.index);
 
     /** @type {boolean} */
     this.isViewable = book._getDataProp(index, 'viewable', true);
