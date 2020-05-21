@@ -1,3 +1,8 @@
+# 4.10.0
+- Fix: BR shouldn't change URL until the user interacts with the page @mc2
+- Feature: Add `startFullscreen` option to launch in fullscreen @shaneriley
+- Feature (beta): Preview pages can be swapped out with search pin clicking @cdrini
+
 # 4.9.0
 - Fix: -/+ buttons not zooming in Chrome @ishank-dev
 - Add chapters demo to e2e tests @ishank-dev
