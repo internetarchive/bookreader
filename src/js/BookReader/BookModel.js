@@ -3,8 +3,10 @@ import { clamp } from './utils.js';
 /** @typedef {import('./options.js').PageData} PageData */
 /** @typedef {import('../BookReader.js').default} BookReader */
 
-// URI to display when a page is not viewable. TODO Render text for the user instead.
-const UNVIEWABLE_PAGE_URI = 'https://archive.org/bookreader/static/preview-800x1200.png';
+// URI to display when a page is not viewable.
+// TODO Render configurable html for the user instead.
+// FIXME Don't reference files on archive.org
+const UNVIEWABLE_PAGE_URI = '/bookreader/static/preview-default.png';
 
 /**
  * Contains information about the Book/Document independent of the way it is
@@ -352,6 +354,7 @@ class PageModel {
     this.width = book.getPageWidth(index);
     this.height = book.getPageHeight(index);
     this.pageSide = book.getPageSide(index);
+    this.leafNum = book._getDataProp(index, 'leafNum', this.index);
 
     /** @type {boolean} */
     this.isViewable = book._getDataProp(index, 'viewable', true);
@@ -362,6 +365,34 @@ class PageModel {
      * of that chunk.
      */
     this.isConsecutiveUnviewable = !this.isViewable && this.unviewablesStart != this.index;
+
+    this._rawData = this.book._getDataFlattened()[this.index];
+  }
+
+  /**
+   * Updates the page to no longer be unviewable. Assumes the
+   * Page's URI is already set/correct.
+   */
+  makeViewable(newViewableState=true) {
+    if (this.isViewable == newViewableState) return;
+
+    if (newViewableState) {
+      this._rawData.viewable = true;
+      delete this._rawData.unviewablesStart;
+      // Update any subsequent page to now point to the right "start"
+      for (const page of this.book.pagesIterator({ start: this.index + 1 })) {
+        if (page.isViewable) break;
+        page._rawData.unviewablesStart = this.index + 1;
+      }
+    } else {
+      this._rawData.viewable = false;
+      this._rawData.unviewablesStart = (this.prev && !this.prev.isViewable) ? this.prev.unviewablesStart : this.index;
+      // Update any subsequent page to now point to the right "start"
+      for (const page of this.book.pagesIterator({ start: this.index + 1 })) {
+        if (!page.isViewable) break;
+        page._rawData.unviewablesStart = this._rawData.unviewablesStart;
+      }
+    }
   }
 
   get prev() {
@@ -370,6 +401,14 @@ class PageModel {
 
   get next() {
     return this.findNext();
+  }
+
+  /**
+   * @param {number} reduce
+   * @param {number} rotate
+   */
+  getURI(reduce, rotate) {
+    return this.book.getPageURI(this.index, reduce, rotate);
   }
 
   /**

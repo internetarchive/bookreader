@@ -280,7 +280,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   this.updateSearchHilites();
   this.removeProgressPopup();
   if (firstResultIndex !== null) {
-    this.jumpToIndex(firstResultIndex);
+    this._searchPluginGoToResult(firstResultIndex);
   }
 }
 
@@ -532,18 +532,18 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
       // closures are nested and deep, using an arrow function breaks references.
       // Todo: update to arrow function & clean up closures
       // to remove `bind` dependency
-      this.jumpToIndex($(event.target).data('pageIndex'));
+      this._searchPluginGoToResult($(event.target).data('pageIndex'));
     }.bind(this))
     .animate({top:'-25px'}, 'slow');
 
   // Add Mobile Search Results
-  const imgPreviewUrl = this.getPageURI(pageIndex, 16, 0); // scale 16 is small
+  const page = this._models.book.getPage(pageIndex);
   const $mobileSearchResultWrapper = this.$('.BRmobileSearchResultWrapper');
   if ($mobileSearchResultWrapper.length) {
     const onResultsClick = (e) => {
       e.preventDefault();
       this.switchMode(this.constMode1up);
-      this.jumpToIndex(pageIndex);
+      this._searchPluginGoToResult(pageIndex);
       this.refs.$mmenu.data('mmenu').close();
     };
     $(
@@ -553,10 +553,11 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
             <span class="pageDisplay">${pageDisplayString}</span>
           </tr>
           <tr>
-            <td>
-              <img class="searchImgPreview" src="${imgPreviewUrl}" />
-            </td>
-            <td>
+            ${page.isViewable ? /** Scale down since it's a thumbnail */
+    `<td><img class="searchImgPreview" src="${page.getURI(16, 0)}" /></td>` :
+    ''
+}
+            <td ${!page.isViewable ? 'colspan="2"' : ''}>
               <span>${queryStringWithBTruncated}</span>
             </td>
           </tr>
@@ -567,6 +568,43 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
       .click(onResultsClick)
       .appendTo($mobileSearchResultWrapper)
     ;
+  }
+};
+
+/**
+ * @private
+ * Goes to the page specified. If the page is not viewable, tries to load the page
+ * FIXME Most of this logic is IA specific, and should be less integrated into here
+ * or at least more configurable.
+ * @param {PageIndex} pageIndex
+ */
+BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
+  const { book } = this._models;
+  const page = book.getPage(pageIndex);
+  let makeUnviewableAtEnd = false;
+  if (!page.isViewable) {
+    const resp = await fetch('/services/bookreader/request_page?' + new URLSearchParams({
+      id: this.options.bookId,
+      subprefix: this.options.subPrefix,
+      leafNum: page.leafNum,
+    })).then(r => r.json());
+
+    for (const leafNum of resp.value) {
+      book.getPage(book.leafNumToIndex(leafNum)).makeViewable();
+    }
+
+    // not able to show page; make the page viewable anyways so that it can
+    // actually open. On IA, it has a fallback to a special error page.
+    if (!resp.value.length) {
+      book.getPage(pageIndex).makeViewable();
+      makeUnviewableAtEnd = true;
+    }
+  }
+  this.jumpToIndex(pageIndex);
+
+  // Reset it to unviewable if it wasn't resolved
+  if (makeUnviewableAtEnd) {
+    book.getPage(pageIndex).makeViewable(false);
   }
 };
 
