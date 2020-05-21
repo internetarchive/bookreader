@@ -6,7 +6,9 @@ const localURL = 'https://archive.org/details/';
 const books = [
   'birdbookillustra00reedrich', // publicDomain
   // 'pianoservicingtu00rebl_0', // borrowable,
-  // 'adventuresoftoms00twaiiala' // has chapter markers
+  // 'adventuresoftoms00twaiiala', // has chapter markers
+  // 'gendaitankashu00meijuoft', // Right to Left book
+  // 'gov.uspto.patents.application.10074026', // multiple files
 ];
 
 books.forEach(function(page) {
