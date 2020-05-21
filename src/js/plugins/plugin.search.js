@@ -592,8 +592,10 @@ BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
       book.getPage(book.leafNumToIndex(leafNum)).makeViewable();
     }
 
+    // not able to show page; make the page viewable anyways so that it can
+    // actually open. On IA, it has a fallback to a special error page.
     if (!resp.value.length) {
-      window.alert('No more preview slots, buddy :( Come back in an hour or so');
+      book.getPage(pageIndex).makeViewable();
     }
   }
   this.jumpToIndex(pageIndex);
