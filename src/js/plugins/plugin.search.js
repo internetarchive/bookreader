@@ -589,7 +589,7 @@ BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
     })).then(r => r.json());
 
     for (const leafNum of resp.value) {
-      book.makeViewable(book.leafNumToIndex(leafNum));
+      book.getPage(book.leafNumToIndex(leafNum)).makeViewable();
     }
 
     if (!resp.value.length) {
