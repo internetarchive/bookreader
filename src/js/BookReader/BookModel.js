@@ -275,6 +275,23 @@ export class BookModel {
   }
 
   /**
+   * Updates the given indices to be viewable
+   * @param {PageIndex} index
+   */
+  makeViewable(index) {
+    const newPage = this.getPage(index);
+    if (!newPage || newPage.isViewable) return;
+
+    newPage._rawData.viewable = true;
+    delete newPage._rawData.unviewablesStart;
+    // Update any subsequent page to now point to the right "start"
+    for (const page of this.pagesIterator({ start: newPage.index + 1 })) {
+      if (page.isViewable) break;
+      page._rawData.unviewablesStart = newPage.index + 1;
+    }
+  }
+
+  /**
    * Flatten the nested structure (make 1d array), and also add pageSide prop
    * @return {PageData[]}
    */
@@ -362,6 +379,8 @@ class PageModel {
      * of that chunk.
      */
     this.isConsecutiveUnviewable = !this.isViewable && this.unviewablesStart != this.index;
+
+    this._rawData = this.book._getDataFlattened()[this.index];
   }
 
   get prev() {
