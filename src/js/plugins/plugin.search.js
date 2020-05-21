@@ -599,6 +599,11 @@ BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
     }
   }
   this.jumpToIndex(pageIndex);
+  
+  // Reset it after it's opened
+  if (!resp.value.length) {
+    book.getPage(pageIndex).makeViewable(false);
+  }
 };
 
 /**

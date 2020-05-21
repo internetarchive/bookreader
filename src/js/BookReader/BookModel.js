@@ -373,15 +373,25 @@ class PageModel {
    * Updates the page to no longer be unviewable. Assumes the
    * Page's URI is already set/correct.
    */
-  makeViewable() {
-    if (this.isViewable) return;
+  makeViewable(newViewableState=true) {
+    if (this.isViewable == newViewableState) return;
 
-    this._rawData.viewable = true;
-    delete this._rawData.unviewablesStart;
-    // Update any subsequent page to now point to the right "start"
-    for (const page of this.book.pagesIterator({ start: this.index + 1 })) {
-      if (page.isViewable) break;
-      page._rawData.unviewablesStart = this.index + 1;
+    if (newViewableState) {
+      this._rawData.viewable = true;
+      delete this._rawData.unviewablesStart;
+      // Update any subsequent page to now point to the right "start"
+      for (const page of this.book.pagesIterator({ start: this.index + 1 })) {
+        if (page.isViewable) break;
+        page._rawData.unviewablesStart = this.index + 1;
+      }
+    } else {
+      this._rawData.viewable = false;
+      this._rawData.unviewablesStart = (this.prev && !this.prev.isViewable) ? this.prev.unviewablesStart : this.index;
+      // Update any subsequent page to now point to the right "start"
+      for (const page of this.book.pagesIterator({ start: this.index + 1 })) {
+        if (!page.isViewable) break;
+        page._rawData.unviewablesStart = this._rawData.unviewablesStart;
+      }
     }
   }
 
