@@ -3,8 +3,10 @@ import { clamp } from './utils.js';
 /** @typedef {import('./options.js').PageData} PageData */
 /** @typedef {import('../BookReader.js').default} BookReader */
 
-// URI to display when a page is not viewable. TODO Render text for the user instead.
-const UNVIEWABLE_PAGE_URI = 'https://archive.org/bookreader/static/preview-800x1200.png';
+// URI to display when a page is not viewable.
+// TODO Render configurable html for the user instead.
+// FIXME Don't reference files on archive.org
+const UNVIEWABLE_PAGE_URI = '/bookreader/static/preview-default.png';
 
 /**
  * Contains information about the Book/Document independent of the way it is
