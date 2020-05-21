@@ -581,6 +581,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
 BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
   const { book } = this._models;
   const page = book.getPage(pageIndex);
+  let makeUnviewableAtEnd = false;
   if (!page.isViewable) {
     const resp = await fetch('/services/bookreader/request_page?' + new URLSearchParams({
       id: this.options.bookId,
@@ -596,12 +597,13 @@ BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
     // actually open. On IA, it has a fallback to a special error page.
     if (!resp.value.length) {
       book.getPage(pageIndex).makeViewable();
+      makeUnviewableAtEnd = true;
     }
   }
   this.jumpToIndex(pageIndex);
-  
-  // Reset it after it's opened
-  if (!resp.value.length) {
+
+  // Reset it to unviewable if it wasn't resolved
+  if (makeUnviewableAtEnd) {
     book.getPage(pageIndex).makeViewable(false);
   }
 };
