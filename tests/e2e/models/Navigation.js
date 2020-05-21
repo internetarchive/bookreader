@@ -25,7 +25,7 @@ class DesktopNav {
     this.zoomOut = bottomToolbar.find('.BRicon.desktop-only.zoom_out');
     this.fullScreen = bottomToolbar.find('.BRicon.full');
     this.searchBox = topToolbar.find('.BRbooksearch.desktop');
-    this.querySign = bottomToolbar.find('.BRquery');
+    this.searchPin = bottomToolbar.find('.BRsearch');
 
   }
 }

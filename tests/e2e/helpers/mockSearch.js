@@ -1,22 +1,24 @@
-export const searchLink = /https:\/\/ia[0-9]+.....\.us\.archive\.org\/fulltext\/inside\.php\?item_id=.*/;
+export const SEARCH_INSIDE_URL_RE  = /https:\/\/ia[0-9]+\.us\.archive\.org\/fulltext\/inside\.php\?item_id=.*/;
 
 //adding jQueryxxxxxxxx-xxxxxxxx (semi-random numbers) from request url to returned search request object
-export function mockResponseFound(request, res){
-  const requestUrl = new URL(request.url);
+/** Mock response for a matching search term. */
+export function mockResponseFound(req, res){
+  const requestUrl = new URL(req.url);
   const jqueryUrl = requestUrl.searchParams.get("callback");
-  const wholeString = jqueryUrl + '(' + JSON.stringify(mockedResponseFound) + ')';
+  const wholeString = jqueryUrl + '(' + JSON.stringify(MOCKED_RESPONSE_FOUND) + ')';
   res.setBody(wholeString);
 }
 
-export function mockResponseNotFound(request, res){
-  const requestUrl = new URL(request.url);
+/** Mock response for a matching search term. */
+export function mockResponseNotFound(req, res){
+  const requestUrl = new URL(req.url);
   const jqueryUrl = requestUrl.searchParams.get("callback");
-  const wholeString = jqueryUrl + '(' + JSON.stringify(mockedResponseNotFound) + ')';
+  const wholeString = jqueryUrl + '(' + JSON.stringify(MOCKED_RESPONSE_NOT_FOUND) + ')';
   res.setBody(wholeString);
 }
 
 //mocked objects inside an unsuccessful search and of a random successful search returned by search requests
-const mockedResponseNotFound = {
+const MOCKED_RESPONSE_NOT_FOUND = {
   "ia": "theworksofplato01platiala",
   "q": "HopefullyNotFoundLongWord",
   "indexed": true,
@@ -26,7 +28,7 @@ const mockedResponseNotFound = {
   "matches": []
 };
 
-const mockedResponseFound = {
+const MOCKED_RESPONSE_FOUND = {
   "ia": "This request has been mocked",
   "q": "theory",
   "indexed": true,
