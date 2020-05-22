@@ -279,7 +279,7 @@ BookReader.prototype.initParams = function() {
   // Check for Resume plugin
   if (this.options.enablePageResume) {
     // Check cookies
-    var val = this.getResumeValue();
+    const val = this.getResumeValue();
     if (val !== null) {
       // If page index different from default
       if (params.index !== val) {
@@ -293,7 +293,7 @@ BookReader.prototype.initParams = function() {
   // Check for URL plugin
   if (this.options.enableUrlPlugin) {
     // Params explicitly set in URL take precedence over all other methods
-    var urlParams = this.paramsFromFragment(this.urlReadFragment());
+    const urlParams = this.paramsFromFragment(this.urlReadFragment());
     // If there were any parameters
     if (Object.keys(urlParams).length) {
       this.extendParams(params, urlParams);
@@ -302,11 +302,37 @@ BookReader.prototype.initParams = function() {
     }
   }
 
+  /*
+  // If we have a querystring
+  params.queryString = new URLSearchParams(this.readQueryString());
+
+  // Check for Search plugin and term
+  if (this.options.enableSearch) {
+    this.options.initialSearchTerm =
+      this.options.initialSearchTerm ??
+      params.queryString.get('q') ??
+      params.search;
+  }
+*/
   // Set for init process, return to false at end of init()
   this.suppressFragmentChange = !params.fragmentChange;
 
   return params;
 }
+
+/**
+ * Return URL or fragment querystring
+ */
+/*
+BookReader.prototype.readQueryString = function() {
+  if (window.location.search) {
+    return window.location.search;
+  }
+  const hash = window.location.hash;
+  const found = hash.search(/\?\w+=/);
+  return found > -1 ? hash.slice(found) : '';
+}
+*/
 
 /**
  * Determines the initial mode for starting if a mode is not already
@@ -2635,6 +2661,8 @@ BookReader.prototype.updateFromParams = function(params) {
   }
 
   // process /search
+  // @deprecated for urlMode 'history'
+  // Continues to work for urlMode 'hash'
   if (this.enableSearch && 'undefined' != typeof(params.search)) {
     if (this.searchTerm != params.search) {
       this.search(params.search, {goToFirstResult: !pageFound});
@@ -2929,10 +2957,9 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
  * @param {Object} params
  * @return {string}
  */
-BookReader.prototype.fragmentFromParams = function(params) {
+BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
   const separator = '/';
   const fragments = [];
-  const queries = {};
 
   if ('undefined' != typeof(params.page)) {
     fragments.push('page', params.page);
@@ -2960,15 +2987,33 @@ BookReader.prototype.fragmentFromParams = function(params) {
   }
 
   // search
-  if (params.search) {
-    queries.q = params.search;
+  if (params.search && urlMode === 'hash') {
+    fragments.push('search', params.search);
   }
 
-  let queryString = utils.toQueryString(queries);
-  queryString = (queryString) ? '?' + queryString : '';
-
-  return utils.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/') + queryString;
+  return utils.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
 };
+
+/**
+ * Create, update querystring from the params object
+ *
+ * @param {Object} params
+ * @param {string} currQueryString
+ * @return {string}
+ */
+
+BookReader.prototype.queryStringFromParams = function(
+  params,
+  currQueryString,
+  urlMode = 'hash'
+) {
+  const newParams = new URLSearchParams(currQueryString);
+  if (params.search && urlMode === 'history') {
+    newParams.set('q', params.search)
+  }
+  const result = newParams.toString();
+  return result ? '?' + result : '';
+}
 
 /**
  * Helper to select within instance's elements
