@@ -137,10 +137,12 @@ BookReader.prototype.urlUpdateFragment = function() {
     return validParams
   }, {});
 
-  const newFragment = this.fragmentFromParams(params);
+  const newFragment = this.fragmentFromParams(params, urlMode);
   const currFragment = this.urlReadFragment();
+  const currQueryString = window.location.search;
+  const newQueryString = this.queryStringFromParams(params, currQueryString, urlMode);
 
-  if (currFragment === newFragment) {
+  if (currFragment === newFragment && currQueryString === newQueryString) {
     return;
   }
 
@@ -149,11 +151,11 @@ BookReader.prototype.urlUpdateFragment = function() {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
       const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
 
-      const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${window.location.search}`;
+      const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
       window.history.replaceState({}, null, newUrlPath);
     }
   } else {
-    window.location.replace('#' + newFragment);
+    window.location.replace('#' + newFragment + newQueryString);
   }
 
   this.oldLocationHash = newFragment;
