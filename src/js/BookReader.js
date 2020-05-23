@@ -446,7 +446,9 @@ BookReader.prototype.init = function() {
   this.trigger(BookReader.eventNames.PostInit);
 
   // Return to default
-  this.suppressFragmentChange = false;
+  if (!this.options.initialSearchTerm) {
+    this.suppressFragmentChange = false;
+  }
 
   this.init.initComplete = true;
 
@@ -1729,6 +1731,10 @@ BookReader.prototype.updateFirstIndex = function(
   this.firstIndex = index;
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
+  }
+  // If there's an initial search we can finally stop suppressing URL changes
+  if (this.options.initialSearchTerm) {
+    this.suppressFragmentChange = false;
   }
   this.updateNavIndexThrottled(index);
 };
