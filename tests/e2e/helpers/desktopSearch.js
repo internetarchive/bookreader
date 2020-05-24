@@ -1,11 +1,9 @@
 import { ClientFunction, RequestMock } from 'testcafe';
 import { SEARCH_INSIDE_URL_RE , mockResponseFound, mockResponseNotFound } from './mockSearch';
+import { TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND } from './searchTestWords'
 
 
 export function runDesktopSearchTests(br) {
-  const TEST_TEXT_FOUND = 'theory';
-  const TEST_TEXT_NOT_FOUND = 'HopefullyNotFoundLongWord';
-
   //building mock response  for successful and unsuccessful search
   const mockFound = RequestMock()
     .onRequestTo(SEARCH_INSIDE_URL_RE )
