@@ -1,4 +1,4 @@
-import { TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND } from './searchTestWords'
+import { TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND, PAGE_FIRST_RESULT } from './searchTestParams'
 
 export const SEARCH_INSIDE_URL_RE  = /https:\/\/ia[0-9]+\.us\.archive\.org\/fulltext\/inside\.php\?item_id=.*/;
 
@@ -19,6 +19,7 @@ export function mockResponseNotFound(req, res){
   res.setBody(wholeString);
 }
 
+const PAGE_FIRST_RESULT_ADJUSTED = PAGE_FIRST_RESULT + 12;
 //mocked objects inside an unsuccessful search and of a random successful search returned by search requests
 const MOCKED_RESPONSE_NOT_FOUND = {
   "ia": "theworksofplato01platiala",
@@ -47,7 +48,7 @@ const MOCKED_RESPONSE_FOUND = {
               "r": 1045,
               "b": 811,
               "t": 753,
-              "page": 42,
+              "page": PAGE_FIRST_RESULT_ADJUSTED,
               "l": 894
             }
           ],
@@ -57,7 +58,7 @@ const MOCKED_RESPONSE_FOUND = {
           "r": 1704,
           "l": 148,
           "page_height": 2940,
-          "page": 42
+          "page": PAGE_FIRST_RESULT_ADJUSTED
         }
       ]
     },

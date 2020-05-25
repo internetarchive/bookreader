@@ -1,6 +1,6 @@
 import { ClientFunction, RequestMock } from 'testcafe';
 import { SEARCH_INSIDE_URL_RE , mockResponseFound, mockResponseNotFound } from './mockSearch';
-import { TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND } from './searchTestWords'
+import { TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND } from './searchTestParams'
 
 
 export function runDesktopSearchTests(br) {

@@ -1,6 +1,6 @@
 import { ClientFunction, RequestMock } from 'testcafe';
 import { SEARCH_INSIDE_URL_RE , mockResponseFound, mockResponseNotFound } from './mockSearch';
-import { TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND } from './searchTestWords'
+import { TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND, PAGE_FIRST_RESULT } from './searchTestParams'
 
 
 export function runMobileSearchTests(br) {
@@ -17,8 +17,6 @@ export function runMobileSearchTests(br) {
     .requestHooks(mockFound)('Mobile search - successful search', async t => {
       await t.resizeWindowToFitDevice('Sony Xperia Z', {portraitOrientation: true})
       const { nav } = br;
-      await t.expect(br.shell.visible).ok();
-      await t.expect(br.BRcontainer.visible).ok();
 
       //opening side menu and search
       await t.expect(nav.mobile.hamburgerButton.visible).ok();
@@ -40,8 +38,13 @@ export function runMobileSearchTests(br) {
       await t.expect(nav.mobile.searchResultText.innerText).contains(TEST_TEXT_FOUND);
 
       //checking url
-      const getPageUrl = ClientFunction(() => window.location.href.toString());
+      const getPageUrl = ClientFunction(() => window.location.href);
       await t.expect(getPageUrl()).contains(TEST_TEXT_FOUND);
+
+      //checks clicking on first search result opens correct page
+      await t.click(nav.mobile.searchResult);
+      await t.expect(getPageUrl()).contains(PAGE_FIRST_RESULT);
+
       await t.maximizeWindow();
     });
 
@@ -49,8 +52,6 @@ export function runMobileSearchTests(br) {
     .requestHooks(mockNotFound)('Mobile search - unsuccessful search', async t => {
       await t.resizeWindowToFitDevice('Sony Xperia Z', {portraitOrientation: true})
       const { nav } = br;
-      await t.expect(br.shell.visible).ok();
-      await t.expect(br.BRcontainer.visible).ok();
 
       //opening side menu and search
       await t.expect(nav.mobile.hamburgerButton.visible).ok();
