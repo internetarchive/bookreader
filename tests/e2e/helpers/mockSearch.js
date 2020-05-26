@@ -1,4 +1,6 @@
-import { TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND, PAGE_FIRST_RESULT } from './searchTestParams'
+export const TEST_TEXT_FOUND = 'theory';
+export const TEST_TEXT_NOT_FOUND = 'HopefullyNotFoundLongWord';
+export const PAGE_FIRST_RESULT = 30;
 
 export const SEARCH_INSIDE_URL_RE  = /https:\/\/ia[0-9]+\.us\.archive\.org\/fulltext\/inside\.php\?item_id=.*/;
 

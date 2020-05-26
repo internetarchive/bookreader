@@ -1,6 +1,6 @@
 import { ClientFunction, RequestMock } from 'testcafe';
-import { SEARCH_INSIDE_URL_RE , mockResponseFound, mockResponseNotFound } from './mockSearch';
-import { TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND } from './searchTestParams'
+import { SEARCH_INSIDE_URL_RE , mockResponseFound, mockResponseNotFound,
+  TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND } from './mockSearch';
 
 
 export function runDesktopSearchTests(br) {
@@ -16,7 +16,7 @@ export function runDesktopSearchTests(br) {
 
   test
     .requestHooks(mockFound)('Desktop search - successful search', async t => {
-      const { nav } = br;
+      const nav = br.nav;
 
       //assuring that the search bar is enabled
       await t.expect(nav.desktop.searchBox.visible).ok();
@@ -39,7 +39,7 @@ export function runDesktopSearchTests(br) {
 
   test
     .requestHooks(mockNotFound)('Desktop search - unsuccesful search', async t => {
-      const { nav } = br;
+      const nav = br.nav;
 
       //assuring that the search bar is enabled
       await t.expect(nav.desktop.searchBox.visible).ok();
