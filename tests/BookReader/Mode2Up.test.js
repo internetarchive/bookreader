@@ -34,7 +34,7 @@ describe('zoom', () => {
         br.init();
 
         const stopAnim = sinon.spy(br, 'stopFlipAnimations');
-        br._modes.mode2Up.zoom(1);
+        br._modes.mode2Up.zoom('in');
         expect(stopAnim.callCount).toBe(1);
     });
 });
