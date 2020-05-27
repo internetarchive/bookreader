@@ -72,6 +72,7 @@ export class Mode2Up {
 
     this.displayedIndices = [this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR];
     this.setMouseHandlers();
+    this.br.displayedIndices = this.displayedIndices;
     this.br.updateToolbarZoom(this.br.reduce);
   }
 
