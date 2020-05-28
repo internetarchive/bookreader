@@ -148,7 +148,7 @@ BookReader.prototype.initToolbar = (function (super_) {
  * @param {string} term
  * @param {SearchOptions} options
  */
-BookReader.prototype.search = function(term, options) {
+BookReader.prototype.search = function(term = '', options) {
   options = options !== undefined ? options : {};
   /** @type {SearchOptions} */
   const defaultOptions = {
@@ -159,13 +159,15 @@ BookReader.prototype.search = function(term, options) {
   };
   options = jQuery.extend({}, defaultOptions, options);
 
+  /* DOM updates */
   this.$('.BRsearchInput').blur(); //cause mobile safari to hide the keyboard
-
   this.removeSearchResults();
+  // update value to desktop & mobile search inputs
+  this.$('.BRsearchInput').val(term);
+  /* End DOM updates */
 
-  this.searchTerm = term;
   // strip slashes, since this goes in the url
-  this.searchTerm = this.searchTerm.replace(/\//g, ' ');
+  this.searchTerm = term.replace(/\//g, ' ');
 
   this.trigger(BookReader.eventNames.fragmentChange);
 
