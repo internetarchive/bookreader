@@ -102,6 +102,17 @@ BookReader.prototype.initToolbar = (function (super_) {
           $mmenuEl.data('mmenu').open();
         }
       });
+
+      window.addEventListener('resize', (e) => {
+        // Need to close the mobile menu to reset DOM & Style
+        // driven by menu plugin
+        const width = $( window ).width();
+        const mobileMenuIsOpen = $mmenuEl.data('mmenu').getInstance().vars.opened;
+        // $brBreakPointMobile: 800px;
+        if (mobileMenuIsOpen && (width >= 800)) {
+          $mmenuEl.data('mmenu').close ();
+        }
+      });
     }
   };
 })(BookReader.prototype.initToolbar);
