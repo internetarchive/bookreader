@@ -302,18 +302,25 @@ BookReader.prototype.initParams = function() {
     }
   }
 
-  /*
-  // If we have a querystring
-  params.queryString = new URLSearchParams(this.readQueryString());
-
-  // Check for Search plugin and term
+  // Check for Search plugin
   if (this.options.enableSearch) {
-    this.options.initialSearchTerm =
-      this.options.initialSearchTerm ??
-      params.queryString.get('q') ??
-      params.search;
+    // If initialSearchTerm not set
+    if (!this.options.initialSearchTerm) {
+      // Look for any term in URL
+      if (params.search) {
+        // Old style: /search/[term]
+        this.options.initialSearchTerm = params.search;
+      } else {
+        // If we have a query string: q=[term]
+        const searchParams = new URLSearchParams(this.readQueryString());
+        const searchTerm = searchParams.get('q')
+        if (searchTerm) {
+          this.options.initialSearchTerm = utils.decodeURIComponentPlus(searchTerm);
+        }
+      }
+    }
   }
-*/
+
   // Set for init process, return to false at end of init()
   this.suppressFragmentChange = !params.fragmentChange;
 
@@ -323,7 +330,6 @@ BookReader.prototype.initParams = function() {
 /**
  * Return URL or fragment querystring
  */
-/*
 BookReader.prototype.readQueryString = function() {
   if (window.location.search) {
     return window.location.search;
@@ -332,7 +338,6 @@ BookReader.prototype.readQueryString = function() {
   const found = hash.search(/\?\w+=/);
   return found > -1 ? hash.slice(found) : '';
 }
-*/
 
 /**
  * Determines the initial mode for starting if a mode is not already
@@ -445,7 +450,7 @@ BookReader.prototype.init = function() {
 
   this.trigger(BookReader.eventNames.PostInit);
 
-  // Return to default
+  // If not searching, set to allow on-going fragment changes
   if (!this.options.initialSearchTerm) {
     this.suppressFragmentChange = false;
   }
@@ -712,7 +717,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
   // Based of the pages displayed in the view we set the current index
   // $$$ we should consider the page in the center of the view to be the current one
   let firstIndexToDraw = indicesToDisplay[0];
-  this.updateFirstIndex(firstIndexToDraw);
+  this.updateFirstIndex(firstIndexToDraw, true);
 
   // if zoomed out, also draw prev/next pages
   if (this.reduce > 1) {
@@ -1732,8 +1737,10 @@ BookReader.prototype.updateFirstIndex = function(
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
   }
-  // If there's an initial search we can finally stop suppressing URL changes
-  if (this.options.initialSearchTerm) {
+  // If there's an initial search we stop suppressing global URL changes
+  // when local suppression ends
+  // This seems to correctly handle multiple calls during mode/1up
+  if (this.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
   this.updateNavIndexThrottled(index);
@@ -2961,6 +2968,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
  * @see https://openlibrary.org/dev/docs/bookurls for fragment syntax
  *
  * @param {Object} params
+ * @param {string} [urlMode]
  * @return {string}
  */
 BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
@@ -3007,7 +3015,6 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
  * @param {string} currQueryString
  * @return {string}
  */
-
 BookReader.prototype.queryStringFromParams = function(
   params,
   currQueryString,

@@ -294,8 +294,6 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   if (firstResultIndex !== null) {
     this._searchPluginGoToResult(firstResultIndex);
   }
-  // Reset
-  // this.suppressFragmentChange = false;
 }
 
 /** @deprecated */
