@@ -70,9 +70,22 @@ BookReader.prototype.initToolbar = (function (super_) {
         }
       });
 
+
       // High contrast button
-      $drawerEl.find('.high-contrast-button').click(
-        () => this.refs.$br.toggleClass('high-contrast'));
+      $drawerEl.find('.apply-filters-button').click(
+        () => {
+          const page = this;
+          $('.BRcheckbox-filters').each(
+            function () {
+              page.refs.$br.removeClass($(this).attr("filterClass"));
+              if($(this).is(':checked')){
+                console.log("test-if");
+                page.refs.$br.addClass($(this).attr("filterClass"));
+              }
+            }
+          )
+        }
+      );
 
       // Bind mobile switch buttons
       $drawerEl.find('.DrawerLayoutButton.one_page_mode').click(
@@ -151,7 +164,17 @@ BookReader.prototype.buildMobileDrawerElement = function() {
   if (this.enableExperimentalControls) {
     experimentalHtml = `
         <p class="DrawerSettingsTitle">Experimental (may not work)</p>
-        <button class="BRaction default high-contrast-button">Toggle high contrast</button>
+        <div class="BRcheckbox-group-filters">
+          <input type="checkbox" class="BRcheckbox-filters" id="filter1" filterClass="test-filter-1">
+          <label for="filter1" class="BRcheckbox-label-filters">Filter 1</label><br>
+          <input type="checkbox" class="BRcheckbox-filters" id="filter2" filterClass="test-filter-2">
+          <label for="filter2" class="BRcheckbox-label-filters">Filter 2</label><br>
+          <input type="checkbox" class="BRcheckbox-filters" id="filter3" filterClass="test-filter-3">
+          <label for="filter3" class="BRcheckbox-label-filters">Filter 3</label><br>
+          <input type="checkbox" class="BRcheckbox-filters" id="filter4" filterClass="test-filter-4">
+          <label for="filter4" class="BRcheckbox-label-filters">Filter 4</label><br>
+        </div>
+        <button class="BRaction default apply-filters-button">Apply</button>
     `;
   }
 
