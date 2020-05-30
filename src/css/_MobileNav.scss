@@ -142,3 +142,12 @@ html.mm-background .BookReader {
 @media (min-width: ($brBreakPointMobile + 1)) {
   .BRtoolbar.responsive { display: block; }
 }
+
+//strange css to get two lines ellises https://stackoverflow.com/questions/5269713/css-ellipsis-on-second-line
+li.table-contents-el{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
