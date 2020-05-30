@@ -43,7 +43,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
   const uiStringPage = 'Page'; // i18n
   const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
   const jumpToChapter = (event) => this.jumpToIndex($(event.target).data('pageIndex'));
-  const title = `Chapter: ${chapterTitle} | ${uiStringPage} ${pageNumber}`;
+  const title = `${chapterTitle} | ${uiStringPage} ${pageNumber}`;
 
   //adds .BRchapters to the slider only if pageIndex exists
   if(pageIndex!=undefined){
@@ -140,7 +140,11 @@ BookReader.prototype.updateTOC = function(tocEntries) {
  */
 BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
   const pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
-  this.addChapter(tocEntryObject['title'], tocEntryObject['pagenum'], pageIndex);
+  //creates a string with non-void tocEntryObject.label and tocEntryObject.title
+  const chapterStr = [tocEntryObject.label, tocEntryObject.title]
+    .filter(x => x)
+    .join(' ');
+  this.addChapter(chapterStr, tocEntryObject['pagenum'], pageIndex);
   this.$('.BRchapter, .BRsearch').each((i, el) => {
     const $el = $(el);
     $el.hover(
