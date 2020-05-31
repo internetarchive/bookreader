@@ -328,13 +328,28 @@ BookReader.prototype.initParams = function() {
 }
 
 /**
+ * Allow mocking of window.location.search
+ */
+BookReader.prototype.getLocationSearch = function () {
+  return window.location.search;
+}
+
+/**
+ * Allow mocking of window.location.hash
+ */
+BookReader.prototype.getLocationHash = function () {
+  return window.location.hash;
+}
+
+/**
  * Return URL or fragment querystring
  */
 BookReader.prototype.readQueryString = function() {
-  if (window.location.search) {
-    return window.location.search;
+  const queryString = this.getLocationSearch();
+  if (queryString) {
+    return queryString;
   }
-  const hash = window.location.hash;
+  const hash = this.getLocationHash();
   const found = hash.search(/\?\w+=/);
   return found > -1 ? hash.slice(found) : '';
 }
@@ -3013,6 +3028,7 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
  *
  * @param {Object} params
  * @param {string} currQueryString
+ * @param {string} [urlMode]
  * @return {string}
  */
 BookReader.prototype.queryStringFromParams = function(
@@ -3024,6 +3040,8 @@ BookReader.prototype.queryStringFromParams = function(
   if (params.search && urlMode === 'history') {
     newParams.set('q', params.search)
   }
+  // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
+  // Note: This method returns the query string without the question mark.
   const result = newParams.toString();
   return result ? '?' + result : '';
 }

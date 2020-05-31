@@ -139,9 +139,8 @@ BookReader.prototype.urlUpdateFragment = function() {
 
   const newFragment = this.fragmentFromParams(params, urlMode);
   const currFragment = this.urlReadFragment();
-  const currQueryString = window.location.search;
+  const currQueryString = this.getLocationSearch();
   const newQueryString = this.queryStringFromParams(params, currQueryString, urlMode);
-
   if (currFragment === newFragment && currQueryString === newQueryString) {
     return;
   }
