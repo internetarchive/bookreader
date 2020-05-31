@@ -125,3 +125,27 @@ test('has suppressFragmentChange false when init with fragment', () => {
   expect(br.switchMode.mock.calls[0][1])
     .toHaveProperty('suppressFragmentChange', false);
 });
+
+test('adds q= term to urlMode=history query string', () => {
+  expect(br.queryStringFromParams(
+    { search: 'test value' },
+    'name=value',
+    'history'
+  )).toBe('?name=value&q=test+value');
+});
+
+test('replaces q= term in urlMode=history query string', () => {
+  expect(br.queryStringFromParams(
+    { search: 'test+value' },
+    'q=foo&a=1&b=2&c=3',
+    'history'
+  )).toBe('?q=test%2Bvalue&a=1&b=2&c=3');
+});
+
+test('does not add q= term to urlMode=hash query string', () => {
+  expect(br.queryStringFromParams(
+    { search: 'test value' },
+    'name=value',
+    'hash'
+  )).toBe('?name=value');
+});

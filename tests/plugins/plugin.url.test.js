@@ -52,20 +52,72 @@ describe('Plugin: URL controller', () => {
     expect(br.urlStartLocationPolling).toHaveBeenCalled();
   });
 
-  test('updates URL when params change', () => {
+  test('updates URL when index changes', () => {
     window.history.replaceState = jest.fn();
     BookReader.prototype.currentIndex = jest.fn(() => 1);
-    BookReader.prototype.urlReadFragment = jest.fn(() => '/page/2/mode/1up/search/foo');
+    BookReader.prototype.urlReadFragment = jest.fn(() => '/page/2/mode/1up');
     BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
       index: 88,
-      mode: 2,
+      mode: 1,
       search: ''
     }));
-    br.init();
     br.options.urlMode = 'history';
+    br.init();
     br.urlUpdateFragment();
 
     expect(window.history.replaceState).toHaveBeenCalled();
+  })
+
+  test('updates URL when mode changes', () => {
+    window.history.replaceState = jest.fn();
+    BookReader.prototype.currentIndex = jest.fn(() => 1);
+    BookReader.prototype.urlReadFragment = jest.fn(() => '/page/2/mode/1up');
+    BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
+      index: 2,
+      mode: 2,
+      search: ''
+    }));
+    br.options.urlMode = 'history';
+    br.init();
+    br.urlUpdateFragment();
+
+    expect(window.history.replaceState).toHaveBeenCalled();
+  })
+
+  test('updates URL when search changes', () => {
+    window.history.replaceState = jest.fn();
+    BookReader.prototype.currentIndex = jest.fn(() => 1);
+    BookReader.prototype.urlReadFragment = jest.fn(() => '');
+    BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
+      index: 1,
+      mode: 2,
+      search: 'foo'
+    }));
+    BookReader.prototype.search = jest.fn();
+    br.options.urlMode = 'history';
+    br.init();
+    br.urlUpdateFragment();
+
+    expect(window.history.replaceState).toHaveBeenCalled();
+  })
+
+  test('does not update URL when search in query string', () => {
+    window.history.replaceState = jest.fn();
+    BookReader.prototype.currentIndex = jest.fn(() => 1);
+    BookReader.prototype.urlReadFragment = jest.fn(() => 'mode/2up');
+    BookReader.prototype.getLocationSearch = jest.fn(() => '?q=foo');
+    BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
+      index: 1,
+      mode: 2,
+      search: 'foo'
+    }));
+    BookReader.prototype.search = jest.fn();
+    br.options.initialSearchTerm = 'foo';
+    br.options.urlMode = 'history';
+    br.init();
+    br.urlUpdateFragment();
+
+    expect(window.history.replaceState).toHaveBeenCalledTimes(0);
   })
 
 });
