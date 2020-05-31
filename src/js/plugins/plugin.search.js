@@ -175,7 +175,7 @@ BookReader.prototype.search = function(term = '', options) {
   // strip slashes, since this goes in the url
   this.searchTerm = term.replace(/\//g, ' ');
 
-  if (! options.suppressFragmentChange) {
+  if (!options.suppressFragmentChange) {
     this.trigger(BookReader.eventNames.fragmentChange);
   }
 
