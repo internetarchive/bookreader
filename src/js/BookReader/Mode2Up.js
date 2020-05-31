@@ -338,7 +338,7 @@ export class Mode2Up {
     this.br.twoPage.bookCoverDivTop = this.br.twoPage.coverExternalPadding;
 
     // Book spine
-    this.br.twoPage.bookSpineDivHeight = this.br.twoPage.height + 2*this.br.twoPage.coverInternalPadding;
+    this.br.twoPage.bookSpineDivHeight = this.br.twoPage.height + 2 * this.br.twoPage.coverInternalPadding;
     this.br.twoPage.bookSpineDivLeft = this.br.twoPage.middle - (this.br.twoPage.bookSpineDivWidth >> 1);
     this.br.twoPage.bookSpineDivTop = this.br.twoPage.bookCoverDivTop;
 
@@ -385,7 +385,7 @@ export class Mode2Up {
     ideal.totalLeafEdgeWidth = Math.min(totalLeafEdgeWidth, maxLeafEdgeWidth);
 
     const widthOutsidePages = 2 * (this.br.twoPage.coverInternalPadding + this.br.twoPage.coverExternalPadding) + ideal.totalLeafEdgeWidth;
-    const heightOutsidePages = 2* (this.br.twoPage.coverInternalPadding + this.br.twoPage.coverExternalPadding);
+    const heightOutsidePages = 2 * (this.br.twoPage.coverInternalPadding + this.br.twoPage.coverExternalPadding);
 
     ideal.width = (this.br.refs.$brContainer.width() - widthOutsidePages) >> 1;
     ideal.width -= 10; // $$$ fudge factor
@@ -393,7 +393,7 @@ export class Mode2Up {
 
     ideal.height -= 15; // fudge factor
 
-    if (ideal.height/ratio <= ideal.width) {
+    if (ideal.height / ratio <= ideal.width) {
       //use height
       ideal.width = Math.floor(ideal.height / ratio);
     } else {
@@ -716,9 +716,9 @@ export class Mode2Up {
    */
   flipRightToLeft(newIndexL, newIndexR) {
     const oldLeafEdgeWidthL = this.br.leafEdgeWidth(this.br.twoPage.currentIndexL);
-    const oldLeafEdgeWidthR = this.br.twoPage.edgeWidth-oldLeafEdgeWidthL;
+    const oldLeafEdgeWidthR = this.br.twoPage.edgeWidth - oldLeafEdgeWidthL;
     const newLeafEdgeWidthL = this.br.leafEdgeWidth(newIndexL);
-    const newLeafEdgeWidthR = this.br.twoPage.edgeWidth-newLeafEdgeWidthL;
+    const newLeafEdgeWidthR = this.br.twoPage.edgeWidth - newLeafEdgeWidthL;
 
     const leafEdgeTmpW = oldLeafEdgeWidthR - newLeafEdgeWidthR;
 
@@ -847,7 +847,7 @@ export class Mode2Up {
     const width   = this.book._getPageWidth(prevL);
     const middle = this.br.twoPage.middle;
     const top  = this.top();
-    const scaledW = this.br.twoPage.height*width/height; // $$$ assumes height of page is dominant
+    const scaledW = this.br.twoPage.height * width / height; // $$$ assumes height of page is dominant
 
     // The gutter is the dividing line between the left and right pages.
     // It is offset from the middle to create the illusion of thickness to the pages
@@ -895,7 +895,7 @@ export class Mode2Up {
     let width = this.book._getPageWidth(nextR);
     const middle = this.br.twoPage.middle;
     const top = this.top();
-    let scaledW = this.br.twoPage.height*width/height;
+    let scaledW = this.br.twoPage.height * width / height;
 
     const gutter = middle + this.gutterOffsetForIndex(nextL);
 
@@ -913,7 +913,7 @@ export class Mode2Up {
 
     height = this.book._getPageHeight(nextL);
     width = this.book._getPageWidth(nextL);
-    scaledW = this.br.twoPage.height*width/height;
+    scaledW = this.br.twoPage.height * width / height;
 
     $(this.br.prefetchedImgs[nextL]).css({
       position: 'absolute',
@@ -1064,13 +1064,13 @@ export class Mode2Up {
     // for each page in the spread
     const height = this.book._getPageHeight(index);
     const width  = this.book._getPageWidth(index);
-    const reduce = this.br.twoPage.height/height;
+    const reduce = this.br.twoPage.height / height;
     const scaledW = Math.floor(width * reduce);
 
     const gutter = this.gutter();
     let pageL;
     if ('L' == this.book.getPageSide(index)) {
-      pageL = gutter-scaledW;
+      pageL = gutter - scaledW;
     } else {
       pageL = gutter;
     }
@@ -1111,9 +1111,9 @@ export class Mode2Up {
   leafEdgeWidth(pindex) {
     // $$$ could there be single pixel rounding errors for L vs R?
     if ((this.book.getPageSide(pindex) == 'L') && (this.br.pageProgression != 'rl')) {
-      return Math.floor( (pindex/this.book.getNumLeafs()) * this.br.twoPage.edgeWidth + 0.5);
+      return Math.floor( (pindex / this.book.getNumLeafs()) * this.br.twoPage.edgeWidth + 0.5);
     } else {
-      return Math.floor( (1 - pindex/this.book.getNumLeafs()) * this.br.twoPage.edgeWidth + 0.5);
+      return Math.floor( (1 - pindex / this.book.getNumLeafs()) * this.br.twoPage.edgeWidth + 0.5);
     }
   }
 

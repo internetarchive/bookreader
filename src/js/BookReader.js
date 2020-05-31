@@ -433,7 +433,7 @@ BookReader.prototype.init = function() {
  * @param {EVENTS} name
  * @param {*} [props]
  */
-BookReader.prototype.trigger = function(name, props=undefined) {
+BookReader.prototype.trigger = function(name, props = undefined) {
   $(document).trigger('BookReader:' + name, this, props);
 };
 
@@ -824,7 +824,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     leafBottom += this.thumbPadding + leafMap[i].height;
     const topInView = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
     const bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
-    const middleInView = (leafTop <=scrollTop) && (leafBottom>=scrollBottom);
+    const middleInView = (leafTop <= scrollTop) && (leafBottom >= scrollBottom);
     if (topInView || bottomInView || middleInView) {
       rowsToDisplay.push(i);
       if (leafMap[i].leafs[0].num < leastVisible) {
@@ -840,11 +840,11 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
   // create a buffer of preloaded rows before and after the visible rows
   const firstRow = rowsToDisplay[0];
-  const lastRow = rowsToDisplay[rowsToDisplay.length-1];
+  const lastRow = rowsToDisplay[rowsToDisplay.length - 1];
   for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
     if (lastRow + i < leafMap.length) { rowsToDisplay.push(lastRow + i); }
   }
-  for (let i = 1; i<this.thumbRowBuffer + 1; i++) {
+  for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
     if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
   }
 
@@ -853,7 +853,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (utils.notInArray(row, this.displayedRows)) {
       for (const { num: leaf, left: leafLeft } of leafMap[row].leafs) {
         const leafWidth = this.thumbWidth;
-        const leafHeight = floor((book.getPageHeight(leaf) * this.thumbWidth)/book.getPageWidth(leaf));
+        const leafHeight = floor((book.getPageHeight(leaf) * this.thumbWidth) / book.getPageWidth(leaf));
         const leafTop = leafMap[row].top;
         let left = leafLeft + pageViewBuffer;
         if ('rl' == this.pageProgression){
@@ -920,7 +920,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   this.$('.BRpagedivthumb_highlight').removeClass('BRpagedivthumb_highlight');
 
   // highlight current page
-  this.$('.pagediv'+this.currentIndex()).addClass('BRpagedivthumb_highlight');
+  this.$('.pagediv' + this.currentIndex()).addClass('BRpagedivthumb_highlight');
 
   this.lazyLoadThumbnails();
 
@@ -966,8 +966,8 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
   //the width set with .attr is ignored by Internet Explorer, causing it to show the image at its original size
   //but with this one line of css, even IE shows the image at the proper size
     .css({
-      'width': $(dummyImage).width()+'px',
-      'height': $(dummyImage).height()+'px'
+      'width': $(dummyImage).width() + 'px',
+      'height': $(dummyImage).height() + 'px'
     })
     .attr({
       'width': $(dummyImage).width(),
@@ -1112,8 +1112,8 @@ BookReader.prototype.resizePageView1up = function() {
   this.refs.$brPageViewEl.width(viewDimensions.width);
 
 
-  var newCenterY = scrollRatio*viewDimensions.height;
-  var newTop = Math.max(0, Math.floor( newCenterY - this.refs.$brContainer.height()/2 ));
+  var newCenterY = scrollRatio * viewDimensions.height;
+  var newTop = Math.max(0, Math.floor( newCenterY - this.refs.$brContainer.height() / 2 ));
   this.refs.$brContainer.prop('scrollTop', newTop);
 
   // We use clientWidth here to avoid miscalculating due to scroll bar
@@ -1178,7 +1178,7 @@ BookReader.prototype.centerPageView = function() {
   var scrollWidth  = this.refs.$brContainer.prop('scrollWidth');
   var clientWidth  =  this.refs.$brContainer.prop('clientWidth');
   if (scrollWidth > clientWidth) {
-    this.refs.$brContainer.prop('scrollLeft', (scrollWidth-clientWidth)/2);
+    this.refs.$brContainer.prop('scrollLeft', (scrollWidth - clientWidth) / 2);
   }
 };
 
@@ -1618,7 +1618,7 @@ BookReader.prototype.prepareThumbnailView = function() {
   // utils.disableSelect(this.$('#BRpageview'));
 
   this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
-  this.reduce = this._models.book.getPageWidth(0)/this.thumbWidth;
+  this.reduce = this._models.book.getPageWidth(0) / this.thumbWidth;
 
   this.displayedRows = [];
 
@@ -1862,7 +1862,7 @@ BookReader.prototype.pruneUnusedImgs = function() {
     if ((key != this.twoPage.currentIndexL) && (key != this.twoPage.currentIndexR)) {
       $(this.prefetchedImgs[key]).remove();
     }
-    if ((key < this.twoPage.currentIndexL-4) || (key > this.twoPage.currentIndexR+4)) {
+    if ((key < this.twoPage.currentIndexL - 4) || (key > this.twoPage.currentIndexR + 4)) {
       delete this.prefetchedImgs[key];
     }
   }
@@ -2740,8 +2740,8 @@ BookReader.prototype.showProgressPopup = function(msg) {
 
   this.popup = document.createElement("div");
   $(this.popup).css({
-    top:      (this.refs.$br.height()*0.5-100) + 'px',
-    left:     (this.refs.$br.width()-300)*0.5 + 'px'
+    top:      (this.refs.$br.height() * 0.5 - 100) + 'px',
+    left:     (this.refs.$br.width() - 300) * 0.5 + 'px'
   }).prop('className', 'BRprogresspopup');
 
   var bar = document.createElement("div");
@@ -2762,7 +2762,7 @@ BookReader.prototype.showProgressPopup = function(msg) {
 BookReader.prototype.removeProgressPopup = function() {
   $(this.popup).remove();
   this.$('.BRprogresspopup').remove();
-  this.popup=null;
+  this.popup = null;
 };
 
 /**
@@ -2909,7 +2909,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
   var urlArray = fragment.split('/');
   var urlHash = {};
   for (var i = 0; i < urlArray.length; i += 2) {
-    urlHash[urlArray[i]] = urlArray[i+1];
+    urlHash[urlArray[i]] = urlArray[i + 1];
   }
 
   // Mode

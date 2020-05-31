@@ -203,7 +203,7 @@ export default class AbstractTTSEngine {
    * @param {string[]} userLanguages languages in BCP47 format (e.g. en-US). Ordered by preference.
    * @return {SpeechSynthesisVoice | undefined}
    */
-  static getBestBookVoice(voices, bookLanguage, userLanguages=navigator.languages) {
+  static getBestBookVoice(voices, bookLanguage, userLanguages = navigator.languages) {
     const bookLangVoices = voices.filter(v => v.lang.startsWith(bookLanguage));
     // navigator.languages browser support isn't great yet, so get just 1 langauge otherwise
     // Sample navigator.languages: ["en-CA", "fr-CA", "fr", "en-US", "en", "de-DE", "de"]

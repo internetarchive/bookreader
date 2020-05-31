@@ -72,7 +72,7 @@ BookReader.prototype.getPageFile = function(index) {
   }
   const leafStr = '0000';
   const imgStr = String(index); // String(this._leafMap[index]); // if index != leafNum
-  const re = new RegExp("0{"+imgStr.length+"}$");
+  const re = new RegExp("0{" + imgStr.length + "}$");
   const insideZipPrefix = this.subPrefix.match('[^/]+$');
   const file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
   return file;

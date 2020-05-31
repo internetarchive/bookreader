@@ -74,9 +74,9 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
    * @return {String} url
    */
   getSoundUrl(dataString) {
-    return 'https://'+this.opts.server+'/BookReader/BookReaderGetTTS.php?string='
+    return 'https://' + this.opts.server + '/BookReader/BookReaderGetTTS.php?string='
                   + encodeURIComponent(dataString)
-                  + '&format=.'+this.audioFormat;
+                  + '&format=.' + this.audioFormat;
   }
 
   /**
