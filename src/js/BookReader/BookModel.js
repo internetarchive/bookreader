@@ -107,7 +107,7 @@ export class BookModel {
       }
     }
 
-    for (let i = 0; i<this.getNumLeafs(); i++) {
+    for (let i = 0; i < this.getNumLeafs(); i++) {
       if (this.getPageNum(i) == pageNum) {
         indices.push(i);
       }
@@ -264,7 +264,7 @@ export class BookModel {
    * @param {boolean} [arg0.combineConsecutiveUnviewables] Yield only first unviewable
    * of a chunk of unviewable pages instead of each page
    */
-  * pagesIterator({ start=0, end=Infinity, combineConsecutiveUnviewables=false } = {}) {
+  * pagesIterator({ start = 0, end = Infinity, combineConsecutiveUnviewables = false } = {}) {
     start = Math.max(0, start);
     end = Math.min(end, this.getNumLeafs());
 
@@ -373,7 +373,7 @@ class PageModel {
    * Updates the page to no longer be unviewable. Assumes the
    * Page's URI is already set/correct.
    */
-  makeViewable(newViewableState=true) {
+  makeViewable(newViewableState = true) {
     if (this.isViewable == newViewableState) return;
 
     if (newViewableState) {

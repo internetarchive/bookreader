@@ -381,10 +381,10 @@ BookReader.prototype.updateSearchHilites1UP = function() {
           $(box.div).prop('className', 'BookReaderSearchHilite').appendTo(this.$(`.pagediv${pageIndex}`));
         }
         const highlight = {
-          width:  `${(box.r-box.l)/this.reduce}px`,
-          height: `${(box.b-box.t)/this.reduce}px`,
-          left:   `${(box.l)/this.reduce}px`,
-          top:    `${(box.t)/this.reduce}px`
+          width:  `${(box.r - box.l) / this.reduce}px`,
+          height: `${(box.b - box.t) / this.reduce}px`,
+          left:   `${(box.l) / this.reduce}px`,
+          top:    `${(box.t) / this.reduce}px`
         };
         $(box.div).css(highlight);
       } else {

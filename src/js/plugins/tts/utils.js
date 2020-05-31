@@ -42,7 +42,7 @@ export function sleep(ms) {
  * @param {string} [vendor]
  * @return {boolean}
  */
-export function isChrome(userAgent=navigator.userAgent, vendor=navigator.vendor) {
+export function isChrome(userAgent = navigator.userAgent, vendor = navigator.vendor) {
   return /chrome/i.test(userAgent) && /google inc/i.test(vendor);
 }
 
@@ -51,7 +51,7 @@ export function isChrome(userAgent=navigator.userAgent, vendor=navigator.vendor)
  * @param {string} [userAgent]
  * @return {boolean}
  */
-export function isFirefox(userAgent=navigator.userAgent) {
+export function isFirefox(userAgent = navigator.userAgent) {
   return /firefox/i.test(userAgent);
 }
 
@@ -60,7 +60,7 @@ export function isFirefox(userAgent=navigator.userAgent) {
  * @param {string} [userAgent]
  * @return {boolean}
  */
-export function isAndroid(userAgent=navigator.userAgent) {
+export function isAndroid(userAgent = navigator.userAgent) {
   return /android/i.test(userAgent);
 }
 

@@ -284,7 +284,7 @@ export class Toolbar {
     const $rightCol = $(`<div class="BRinfoRightCol">`);
 
     // A loop to build fields
-    for (const {extraValueClass='', label, value} of br.metadata) {
+    for (const {extraValueClass = '', label, value} of br.metadata) {
       $rightCol.append($(`
         <div class="BRinfoValueWrapper">
           <div class="BRinfoLabel">${label}</div>

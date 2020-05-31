@@ -294,16 +294,16 @@ BookReader.prototype.ttsScrollToChunk = function(chunk) {
   var leafTop = 0;
   var h;
   var i;
-  for (i=0; i<chunk.leafIndex; i++) {
-    h = parseInt(this._getPageHeight(i)/this.reduce);
+  for (i = 0; i < chunk.leafIndex; i++) {
+    h = parseInt(this._getPageHeight(i) / this.reduce);
     leafTop += h + this.padding;
   }
 
   var chunkTop = chunk.lineRects[0][3]; //coords are in l,b,r,t order
-  var chunkBot = chunk.lineRects[chunk.lineRects.length-1][1];
+  var chunkBot = chunk.lineRects[chunk.lineRects.length - 1][1];
 
-  var topOfFirstChunk = leafTop + chunkTop/this.reduce;
-  var botOfLastChunk  = leafTop + chunkBot/this.reduce;
+  var topOfFirstChunk = leafTop + chunkTop / this.reduce;
+  var botOfLastChunk  = leafTop + chunkBot / this.reduce;
 
   if (soundManager.debugMode) console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
 
@@ -330,14 +330,14 @@ BookReader.prototype.ttsHilite1UP = function(chunk) {
     var div = document.createElement('div');
     this.ttsHilites.push(div);
     $(div).prop('className', 'BookReaderSearchHilite').appendTo(
-      this.$('.pagediv'+chunk.leafIndex)
+      this.$('.pagediv' + chunk.leafIndex)
     );
 
     $(div).css({
-      width:  (r-l)/this.reduce + 'px',
-      height: (b-t)/this.reduce + 'px',
-      left:   l/this.reduce + 'px',
-      top:    t/this.reduce +'px'
+      width:  (r - l) / this.reduce + 'px',
+      height: (b - t) / this.reduce + 'px',
+      left:   l / this.reduce + 'px',
+      top:    t / this.reduce + 'px'
     });
   }
 
