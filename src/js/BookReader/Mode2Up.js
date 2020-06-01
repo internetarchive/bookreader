@@ -1157,6 +1157,36 @@ export class Mode2Up {
       return jumpIndex;
     }
   }
+
+  /**
+   * Fetches the currently displayed images (if not already fetching)
+   * as wells as any nearby pages.
+   */
+  prefetch() {
+    // $$$ We should check here if the current indices have finished
+    //     loading (with some timeout) before loading more page images
+    //     See https://bugs.edge.launchpad.net/bookreader/+bug/511391
+    const { max, min } = Math;
+    const { book } = this;
+    const { currentIndexL, currentIndexR } = this.br.twoPage;
+    const ADJACENT_PAGES_TO_LOAD = 3;
+
+    // currentIndexL can be -1; getPage returns the last page of the book
+    // when given -1, so need to prevent that.
+    let lowPage = book.getPage(max(0, min(currentIndexL, currentIndexR)));
+    let highPage = book.getPage(max(currentIndexL, currentIndexR));
+    for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 1; i++) {
+      if (lowPage) {
+        this.br.prefetchImg(lowPage.index);
+        lowPage = lowPage.findPrev({ combineConsecutiveUnviewables: true });
+      }
+
+      if (highPage) {
+        this.br.prefetchImg(highPage.index);
+        highPage = highPage.findNext({ combineConsecutiveUnviewables: true });
+      }
+    }
+  }
 }
 
 /**

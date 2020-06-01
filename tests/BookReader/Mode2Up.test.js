@@ -7,8 +7,8 @@ import '../../BookReader/jquery.bt.min.js';
 
 import sinon from 'sinon';
 import { deepCopy } from '../utils.js';
-import { Mode2Up } from '../../src/js/BookReader/Mode2Up.js';
 import BookReader from '../../src/js/BookReader.js';
+/** @typedef {import('../../src/js/BookReader/options.js').BookReaderOptions} BookReaderOptions */
 
 beforeAll(() => {
   global.alert = jest.fn();
@@ -29,8 +29,13 @@ const SAMPLE_DATA = [
   ],
   [
     { width: 123, height: 123, uri: 'https://archive.org/image3.jpg', pageNum: '4' },
+    { width: 123, height: 123, uri: 'https://archive.org/image4.jpg', pageNum: '5' },
+  ],
+  [
+    { width: 123, height: 123, uri: 'https://archive.org/image5.jpg', pageNum: '6' },
   ],
 ];
+
 
 describe('zoom', () => {
   test('stops animations when zooming', () => {
@@ -66,4 +71,42 @@ describe('draw 2up leaves', () => {
     expect(br.displayedIndices.length).toBe(2); // is array
     expect(br.displayedIndices).toEqual([-1, 0]); // default to starting index on right, placeholder for left
   })
+});
+
+describe('prefetch', () => {
+    test('loads nearby pages', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      const spy = sinon.spy(br, 'prefetchImg');
+      br.prefetch();
+      expect(spy.callCount).toBeGreaterThan(2);
+    });
+
+    test('works when at start of book', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      br.jumpToIndex(-1);
+      const spy = sinon.spy(br, 'prefetchImg');
+      br.prefetch();
+      expect(spy.callCount).toBeGreaterThan(2);
+    });
+
+    test('works when at end of book', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      br.jumpToIndex(SAMPLE_DATA.flat().length - 1);
+      const spy = sinon.spy(br, 'prefetchImg');
+      br.prefetch();
+      expect(spy.callCount).toBeGreaterThan(2);
+    });
+
+
+    test('skips consecutive unviewables', () => {
+      const data = deepCopy(SAMPLE_DATA);
+      data[1].forEach(page => page.viewable = false);
+      const br = new BookReader({ data });
+      br.init();
+      br.prefetch();
+      expect(br.prefetchedImgs).not.toContain(2);
+    });
 });
