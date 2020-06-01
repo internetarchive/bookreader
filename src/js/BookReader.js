@@ -386,13 +386,13 @@ BookReader.prototype.init = function() {
     }
   }
 
-  if (this.options.startFullscreen) {
-    this.enterFullscreen();
-  }
-
   this.resizeBRcontainer();
   this.updateFromParams(params);
   this.initUIStrings();
+
+  if (this.options.startFullscreen) {
+    this.enterFullscreen();
+  }
 
   // Bind to events
 
