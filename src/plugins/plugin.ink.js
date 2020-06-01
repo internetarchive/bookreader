@@ -141,7 +141,7 @@ class BookReaderWithInkPlugin extends BookReader {
   init() {
     super.init();
     const { projects } = this._plugins.ink;
-    this.$('.BRcontainer').on('pointerover', '.BR-ink-canvas', ev => {
+    this.$('.BRcontainer').on('pointerover pointerdown', '.BR-ink-canvas', ev => {
       const canvas = ev.currentTarget;
       const $canvas = $(canvas);
       const $container = $canvas.parents('.BRpagecontainer');
