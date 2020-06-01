@@ -412,8 +412,9 @@ BookReader.prototype.updateSearchHilites2UP = function() {
     match.par[0].boxes.forEach(box => {
       const pageIndex = this.leafNumToIndex(match.par[0].page);
       const pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
+      const { isViewable } = this._models.book.getPage(pageIndex);
 
-      if (pageIsInView) {
+      if (pageIsInView && isViewable) {
         if (!box.div) {
           //create a div for the search highlight, and stash it in the box object
           box.div = document.createElement('div');
