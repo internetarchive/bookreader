@@ -4,6 +4,9 @@
 <html>
 <head>
   <title>bookreader demo internetArchive</title>
+
+    <!-- Trick paper.js into listening for pointer events (until https://github.com/paperjs/paper.js/pull/1810 is merged) -->
+    <script> navigator.pointerEnabled = Boolean(window.PointerEvent); </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
 
@@ -25,6 +28,7 @@
     <script src="../BookReader/plugins/plugin.resume.js"></script>
     <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
     <script src="../BookReader/plugins/plugin.text_selection.js"></script>
+    <script src="../BookReader/plugins/plugin.ink.js"></script>
 
     <script type="module" src="../BookReader/bookreader-component-bundle.js"></script>
 
