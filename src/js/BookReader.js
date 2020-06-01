@@ -386,10 +386,6 @@ BookReader.prototype.init = function() {
     }
   }
 
-  if (this.options.startFullscreen) {
-    this.enterFullscreen();
-  }
-
   this.resizeBRcontainer();
   this.updateFromParams(params);
   this.initUIStrings();
@@ -427,6 +423,12 @@ BookReader.prototype.init = function() {
   this.suppressFragmentChange = false;
 
   this.init.initComplete = true;
+
+  // Must be called after this.init.initComplete set to true to allow
+  // BookReader.prototype.resize to run.
+  if (this.options.startFullscreen) {
+    this.enterFullscreen();
+  }
 }
 
 /**

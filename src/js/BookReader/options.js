@@ -203,6 +203,10 @@ export const DEFAULT_OPTIONS = {
     },
   },
 
+  /**
+   * @type {Boolean}
+   * Optional: if true, starts in fullscreen mode
+   */
   startFullscreen: false,
 };
 
