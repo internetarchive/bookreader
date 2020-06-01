@@ -115,7 +115,7 @@ BookReader.prototype.initToolbar = (function (super_) {
       e.preventDefault();
       const val = $(e.target).find('.BRsearchInput').val();
       if (!val.length) return false;
-      this.search(val);
+      this.search(val, { disablePopup: true });
       this.$('.BRmobileSearchResultWrapper').append(
         `<div>Your search results will appear below.</div>
           <div class="loader tc mt20"></div>`
