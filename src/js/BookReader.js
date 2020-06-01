@@ -390,10 +390,6 @@ BookReader.prototype.init = function() {
   this.updateFromParams(params);
   this.initUIStrings();
 
-  if (this.options.startFullscreen) {
-    this.enterFullscreen();
-  }
-
   // Bind to events
 
   if (!this.isTouchDevice) this.setupTooltips();
@@ -427,6 +423,12 @@ BookReader.prototype.init = function() {
   this.suppressFragmentChange = false;
 
   this.init.initComplete = true;
+
+  // Must be called after this.init.initComplete set to true to allow
+  // BookReader.prototype.resize to run.
+  if (this.options.startFullscreen) {
+    this.enterFullscreen();
+  }
 }
 
 /**
