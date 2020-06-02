@@ -16,33 +16,33 @@ export function runMobileSearchTests(br) {
   test
     .requestHooks(mockFound)('Mobile search - successful search', async t => {
       await t.resizeWindowToFitDevice('Sony Xperia Z', {portraitOrientation: true})
-      const nav = br.nav;
+      const nav = br.nav.mobile;
 
       //opening side menu and search
-      await t.expect(nav.mobile.hamburgerButton.visible).ok();
-      await t.click(nav.mobile.hamburgerButton);
-      await t.expect(nav.mobile.menuSearchButton.visible).ok();
-      await t.click(nav.mobile.menuSearchButton);
+      await t.expect(nav.hamburgerButton.visible).ok();
+      await t.click(nav.hamburgerButton);
+      await t.expect(nav.menuSearchButton.visible).ok();
+      await t.click(nav.menuSearchButton);
 
       //assuring that the search bar is enabled
-      await t.expect(nav.mobile.searchBox.visible).ok();
+      await t.expect(nav.searchBox.visible).ok();
 
       //testing successful search
       await t
-        .selectText(nav.mobile.searchBox.child('.BRsearchInput'))
+        .selectText(nav.searchBox.child('.BRsearchInput'))
         .pressKey('delete');
-      await t.typeText(nav.mobile.searchBox.child('.BRsearchInput'), TEST_TEXT_FOUND);
-      await t.click((nav.mobile.searchBox).child('.BRsearchSubmit'));
-      await t.expect(nav.mobile.searchResults.visible).ok();
-      await t.expect(nav.mobile.searchResultText.exists).ok();
-      await t.expect(nav.mobile.searchResultText.innerText).contains(TEST_TEXT_FOUND);
+      await t.typeText(nav.searchBox.child('.BRsearchInput'), TEST_TEXT_FOUND);
+      await t.click((nav.searchBox).child('.BRsearchSubmit'));
+      await t.expect(nav.searchResults.visible).ok();
+      await t.expect(nav.searchResultText.exists).ok();
+      await t.expect(nav.searchResultText.innerText).contains(TEST_TEXT_FOUND);
 
       //checking url
       const getPageUrl = ClientFunction(() => window.location.href);
       await t.expect(getPageUrl()).contains(TEST_TEXT_FOUND);
 
       //checks clicking on first search result opens correct page
-      await t.click(nav.mobile.searchResults);
+      await t.click(nav.searchResults);
       await t.expect(getPageUrl()).contains(PAGE_FIRST_RESULT);
 
       //checks highlight on result page is visible
@@ -55,24 +55,24 @@ export function runMobileSearchTests(br) {
   test
     .requestHooks(mockNotFound)('Mobile search - unsuccessful search', async t => {
       await t.resizeWindowToFitDevice('Sony Xperia Z', {portraitOrientation: true})
-      const nav = br.nav;
+      const nav = br.nav.mobile;
 
       //opening side menu and search
-      await t.expect(nav.mobile.hamburgerButton.visible).ok();
-      await t.click(nav.mobile.hamburgerButton);
-      await t.expect(nav.mobile.menuSearchButton.visible).ok();
-      await t.click(nav.mobile.menuSearchButton);
+      await t.expect(nav.hamburgerButton.visible).ok();
+      await t.click(nav.hamburgerButton);
+      await t.expect(nav.menuSearchButton.visible).ok();
+      await t.click(nav.menuSearchButton);
 
       //assuring that the search bar is enabled
-      await t.expect(nav.mobile.searchBox.visible).ok();
+      await t.expect(nav.searchBox.visible).ok();
 
       //testing unsuccessful search
       await t
-        .selectText(nav.mobile.searchBox.child('.BRsearchInput'))
+        .selectText(nav.searchBox.child('.BRsearchInput'))
         .pressKey('delete');
-      await t.typeText(nav.mobile.searchBox.child('.BRsearchInput'), TEST_TEXT_NOT_FOUND);
-      await t.click((nav.mobile.searchBox).child('.BRsearchSubmit'));
-      await t.expect(nav.mobile.searchResultText.withText(TEST_TEXT_NOT_FOUND).exists).notOk();
+      await t.typeText(nav.searchBox.child('.BRsearchInput'), TEST_TEXT_NOT_FOUND);
+      await t.click((nav.searchBox).child('.BRsearchSubmit'));
+      await t.expect(nav.searchResultText.withText(TEST_TEXT_NOT_FOUND).exists).notOk();
 
       //checking url
       const getPageUrl = ClientFunction(() => window.location.href.toString());
