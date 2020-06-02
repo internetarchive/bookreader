@@ -24,6 +24,7 @@ BookReader.prototype.setup = (function (super_) {
     this.searchResults = null;
     this.searchInsideUrl = options.searchInsideUrl;
     this.enableSearch = options.enableSearch;
+    this.goToFirstResult = false;
 
     // Base server used by some api calls
     this.bookId = options.bookId;
@@ -40,7 +41,10 @@ BookReader.prototype.init = (function (super_) {
 
     if (this.options.enableSearch && this.options.initialSearchTerm) {
       this.$('.BRsearchInput').val(this.options.initialSearchTerm);
-      this.search(this.options.initialSearchTerm, { goToFirstResult: true });
+      this.search(
+        this.options.initialSearchTerm,
+        { goToFirstResult: this.goToFirstResult, suppressFragmentChange: true }
+      );
     }
 
     $(document).on('BookReader:navToggled', () => {
@@ -154,14 +158,17 @@ BookReader.prototype.search = function(term = '', options) {
   const defaultOptions = {
     goToFirstResult: false, /* jump to the first result (default=false) */
     disablePopup: false,    /* don't show the modal progress (default=false) */
+    suppressFragmentChange: false, /* don't change the URL on initial load */
     error: null,            /* optional error handler (default=null) */
     success: null,          /* optional success handler (default=null) */
+
   };
   options = jQuery.extend({}, defaultOptions, options);
+  this.suppressFragmentChange = options.suppressFragmentChange
 
   /* DOM updates */
   this.$('.BRsearchInput').blur(); //cause mobile safari to hide the keyboard
-  this.removeSearchResults();
+  this.removeSearchResults(options.suppressFragmentChange);
   // update value to desktop & mobile search inputs
   this.$('.BRsearchInput').val(term);
   /* End DOM updates */
@@ -169,7 +176,9 @@ BookReader.prototype.search = function(term = '', options) {
   // strip slashes, since this goes in the url
   this.searchTerm = term.replace(/\//g, ' ');
 
-  this.trigger(BookReader.eventNames.fragmentChange);
+  if (!options.suppressFragmentChange) {
+    this.trigger(BookReader.eventNames.fragmentChange);
+  }
 
   // Add quotes to the term. This is to compenstate for the backends default OR query
   // term = term.replace(/['"]+/g, '');
@@ -614,11 +623,13 @@ BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
 /**
  * Removes all search pins
  */
-BookReader.prototype.removeSearchResults = function() {
+BookReader.prototype.removeSearchResults = function(suppressFragmentChange = false) {
   this.removeSearchHilites(); //be sure to set all box.divs to null
   this.searchTerm = null;
   this.searchResults = null;
-  this.trigger(BookReader.eventNames.fragmentChange);
+  if (!suppressFragmentChange) {
+    this.trigger(BookReader.eventNames.fragmentChange);
+  }
   this.$('.BRnavpos .BRsearch').remove();
   this.$('.BRmobileSearchResultWrapper').empty(); // Empty mobile results
 };

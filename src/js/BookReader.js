@@ -258,6 +258,12 @@ BookReader.prototype.initParams = function() {
   // Flag initializing for updateFromParams()
   params.init = true;
 
+  // Flag if page given in defaults or URL (not cookie)
+  // Used for overriding goToFirstResult in plugin.search.js
+  // Note: extendParams() converts params.page to index and gets rid of page
+  // so check and set before extendParams()
+  params.pageFound = false;
+
   // True if changing the URL
   params.fragmentChange = false;
 
@@ -273,13 +279,17 @@ BookReader.prototype.initParams = function() {
 
   // this.defaults is a string passed in the url format. eg "page/1/mode/1up"
   if (this.defaults) {
-    this.extendParams(params, this.paramsFromFragment(this.defaults));
+    const defaultParams = this.paramsFromFragment(this.defaults);
+    if ('undefined' != typeof(defaultParams.page)) {
+      params.pageFound = true;
+    }
+    this.extendParams(params, defaultParams);
   }
 
   // Check for Resume plugin
   if (this.options.enablePageResume) {
     // Check cookies
-    var val = this.getResumeValue();
+    const val = this.getResumeValue();
     if (val !== null) {
       // If page index different from default
       if (params.index !== val) {
@@ -293,12 +303,37 @@ BookReader.prototype.initParams = function() {
   // Check for URL plugin
   if (this.options.enableUrlPlugin) {
     // Params explicitly set in URL take precedence over all other methods
-    var urlParams = this.paramsFromFragment(this.urlReadFragment());
+    const urlParams = this.paramsFromFragment(this.urlReadFragment());
     // If there were any parameters
     if (Object.keys(urlParams).length) {
+      if ('undefined' != typeof(urlParams.page)) {
+        params.pageFound = true;
+      }
       this.extendParams(params, urlParams);
       // Show in URL
       params.fragmentChange = true;
+    }
+  }
+
+  // Check for Search plugin
+  if (this.options.enableSearch) {
+    // Go to first result only if no default or URL page
+    this.goToFirstResult = !params.pageFound
+
+    // If initialSearchTerm not set
+    if (!this.options.initialSearchTerm) {
+      // Look for any term in URL
+      if (params.search) {
+        // Old style: /search/[term]
+        this.options.initialSearchTerm = params.search;
+      } else {
+        // If we have a query string: q=[term]
+        const searchParams = new URLSearchParams(this.readQueryString());
+        const searchTerm = searchParams.get('q')
+        if (searchTerm) {
+          this.options.initialSearchTerm = utils.decodeURIComponentPlus(searchTerm);
+        }
+      }
     }
   }
 
@@ -306,6 +341,33 @@ BookReader.prototype.initParams = function() {
   this.suppressFragmentChange = !params.fragmentChange;
 
   return params;
+}
+
+/**
+ * Allow mocking of window.location.search
+ */
+BookReader.prototype.getLocationSearch = function () {
+  return window.location.search;
+}
+
+/**
+ * Allow mocking of window.location.hash
+ */
+BookReader.prototype.getLocationHash = function () {
+  return window.location.hash;
+}
+
+/**
+ * Return URL or fragment querystring
+ */
+BookReader.prototype.readQueryString = function() {
+  const queryString = this.getLocationSearch();
+  if (queryString) {
+    return queryString;
+  }
+  const hash = this.getLocationHash();
+  const found = hash.search(/\?\w+=/);
+  return found > -1 ? hash.slice(found) : '';
 }
 
 /**
@@ -419,8 +481,10 @@ BookReader.prototype.init = function() {
 
   this.trigger(BookReader.eventNames.PostInit);
 
-  // Return to default
-  this.suppressFragmentChange = false;
+  // If not searching, set to allow on-going fragment changes
+  if (!this.options.initialSearchTerm) {
+    this.suppressFragmentChange = false;
+  }
 
   this.init.initComplete = true;
 
@@ -1704,6 +1768,12 @@ BookReader.prototype.updateFirstIndex = function(
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
   }
+  // If there's an initial search we stop suppressing global URL changes
+  // when local suppression ends
+  // This seems to correctly handle multiple calls during mode/1up
+  if (this.options.initialSearchTerm && !suppressFragmentChange) {
+    this.suppressFragmentChange = false;
+  }
   this.updateNavIndexThrottled(index);
 };
 
@@ -2635,6 +2705,8 @@ BookReader.prototype.updateFromParams = function(params) {
   }
 
   // process /search
+  // @deprecated for urlMode 'history'
+  // Continues to work for urlMode 'hash'
   if (this.enableSearch && 'undefined' != typeof(params.search)) {
     if (this.searchTerm != params.search) {
       this.search(params.search, {goToFirstResult: !pageFound});
@@ -2927,12 +2999,12 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
  * @see https://openlibrary.org/dev/docs/bookurls for fragment syntax
  *
  * @param {Object} params
+ * @param {string} [urlMode]
  * @return {string}
  */
-BookReader.prototype.fragmentFromParams = function(params) {
-  var separator = '/';
-
-  var fragments = [];
+BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
+  const separator = '/';
+  const fragments = [];
 
   if ('undefined' != typeof(params.page)) {
     fragments.push('page', params.page);
@@ -2960,12 +3032,35 @@ BookReader.prototype.fragmentFromParams = function(params) {
   }
 
   // search
-  if (params.search) {
+  if (params.search && urlMode === 'hash') {
     fragments.push('search', params.search);
   }
 
   return utils.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
 };
+
+/**
+ * Create, update querystring from the params object
+ *
+ * @param {Object} params
+ * @param {string} currQueryString
+ * @param {string} [urlMode]
+ * @return {string}
+ */
+BookReader.prototype.queryStringFromParams = function(
+  params,
+  currQueryString,
+  urlMode = 'hash'
+) {
+  const newParams = new URLSearchParams(currQueryString);
+  if (params.search && urlMode === 'history') {
+    newParams.set('q', params.search)
+  }
+  // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
+  // Note: This method returns the query string without the question mark.
+  const result = newParams.toString();
+  return result ? '?' + result : '';
+}
 
 /**
  * Helper to select within instance's elements
