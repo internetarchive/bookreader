@@ -1,3 +1,14 @@
+# 4.11.0
+- Dev: Add E2E tests for searching on desktop @Pyrojet99
+- Fix: Search result not highlighted when landing on page with matches @iisa
+- Dev: Remove console logs from jest tests @NayamAmarshe
+- Dev: Add eslint for space-infix-ops @JanviMahajan14
+- Fix: Bugs in search results in preview books @iisa
+- Fix: `startFullscreen` option only working for mode2up @shaneriley
+- Fix: Prefetch viewable pages in preview books for smoother flipping @cdrini
+- Dev: Add dependabot for JS dependencies @cdrini
+- Dev: Update codecov, iso-language-codes @dependabot-preview + @cdrini
+
 # 4.10.0
 - Fix: BR shouldn't change URL until the user interacts with the page @mc2
 - Feature: Add `startFullscreen` option to launch in fullscreen @shaneriley
