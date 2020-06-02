@@ -748,7 +748,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
   // Based of the pages displayed in the view we set the current index
   // $$$ we should consider the page in the center of the view to be the current one
   let firstIndexToDraw = indicesToDisplay[0];
-  this.updateFirstIndex(firstIndexToDraw, true);
+  this.updateFirstIndex(firstIndexToDraw);
 
   // if zoomed out, also draw prev/next pages
   if (this.reduce > 1) {
