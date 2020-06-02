@@ -33,7 +33,7 @@
     "core-js": "3.3.3",
     "eslint": "5.16.0",
     "http-server": "0.12.1",
-    "iso-language-codes": "1.0.5",
+    "iso-language-codes": "1.0.7",
     "jest": "25.1.0",
     "live-server": "1.2.1",
     "node-fetch": "2.6.0",
