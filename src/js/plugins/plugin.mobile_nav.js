@@ -16,10 +16,6 @@ const FILTERLIST = {
   'invert': 'invert(100%)',
   'contrast': 'contrast(150%)'
 }
-const filterStyles = {
-  '-webkit-filter': 'invert(100%)',
-  'filter': 'invert(100%)'
-}
 
 jQuery.extend(BookReader.defaultOptions, {
   enableMobileNav: true,
@@ -81,25 +77,26 @@ BookReader.prototype.initToolbar = (function (super_) {
       });
 
 
-      // Dinamically creates styles for combining different filters based on checked checkbox
+      // Dinamically creates styles for combined different filters based on checked checkbox
       $drawerEl.find('.apply-filters-button').click(
         () => {
           const br = this;
-          filterStyles['-webkit-filter'] = '';
-          filterStyles['filter'] = '';
+          let filterStr = "";
+          let filterWebkitStr = "";
 
           $('.BRcheckbox-filters').each(
             function () {
               br.refs.$br.removeClass("filter-applied");
               if($(this).is(':checked')){
                 br.refs.$br.addClass($(this).attr("filter-applied"));
-                filterStyles['-webkit-filter'] = filterStyles['-webkit-filter'] + FILTERLIST[$(this).attr("filterName")];
-                filterStyles['filter'] = filterStyles['filter'] + FILTERLIST[$(this).attr("filterName")];
+                filterWebkitStr = filterWebkitStr + FILTERLIST[$(this).attr("filterName")];
+                filterStr = filterStr + FILTERLIST[$(this).attr("filterName")];
               }
             }
           )
-          br.refs.$br.find(".BRpageview").find("img").css(filterStyles);
-          br.refs.$br.find(".BRtwopageview").find("img").css(filterStyles);
+          const filtersSheet = document.createElement('style')
+          filtersSheet.innerHTML = ".BRtwopageview, .BRpageview img {filter:" + filterStr + "; -webkit-filter:" + filterWebkitStr + ";}";
+          document.body.appendChild(filtersSheet);
         }
       );
 
@@ -182,13 +179,13 @@ BookReader.prototype.buildMobileDrawerElement = function() {
         <p class="DrawerSettingsTitle">Experimental (may not work)</p>
         <div class="BRcheckbox-group-filters">
           <input type="checkbox" class="BRcheckbox-filters" id="filter1" filterName="grayscale">
-          <label for="filter1" class="BRcheckbox-label-filters">Filter 1</label><br>
+          <label for="filter1" class="BRcheckbox-label-filters">Grayscale</label><br>
           <input type="checkbox" class="BRcheckbox-filters" id="filter2" filterName="brightness">
-          <label for="filter2" class="BRcheckbox-label-filters">Filter 2</label><br>
+          <label for="filter2" class="BRcheckbox-label-filters">High brightness</label><br>
           <input type="checkbox" class="BRcheckbox-filters" id="filter3" filterName="invert">
-          <label for="filter3" class="BRcheckbox-label-filters">Filter 3</label><br>
+          <label for="filter3" class="BRcheckbox-label-filters">Inverted</label><br>
           <input type="checkbox" class="BRcheckbox-filters" id="filter4" filterName="contrast">
-          <label for="filter4" class="BRcheckbox-label-filters">Filter 4</label><br>
+          <label for="filter4" class="BRcheckbox-label-filters">High contrast</label><br>
         </div>
         <button class="BRaction default apply-filters-button">Apply</button>
     `;
