@@ -258,6 +258,12 @@ BookReader.prototype.initParams = function() {
   // Flag initializing for updateFromParams()
   params.init = true;
 
+  // Flag if page given in defaults or URL (not cookie)
+  // Used for overriding goToFirstResult in plugin.search.js
+  // Note: extendParams() converts params.page to index and gets rid of page
+  // so check and set before extendParams()
+  params.pageFound = false;
+
   // True if changing the URL
   params.fragmentChange = false;
 
@@ -273,7 +279,11 @@ BookReader.prototype.initParams = function() {
 
   // this.defaults is a string passed in the url format. eg "page/1/mode/1up"
   if (this.defaults) {
-    this.extendParams(params, this.paramsFromFragment(this.defaults));
+    const defaultParams = this.paramsFromFragment(this.defaults);
+    if ('undefined' != typeof(defaultParams.page)) {
+      params.pageFound = true;
+    }
+    this.extendParams(params, defaultParams);
   }
 
   // Check for Resume plugin
@@ -296,6 +306,9 @@ BookReader.prototype.initParams = function() {
     const urlParams = this.paramsFromFragment(this.urlReadFragment());
     // If there were any parameters
     if (Object.keys(urlParams).length) {
+      if ('undefined' != typeof(urlParams.page)) {
+        params.pageFound = true;
+      }
       this.extendParams(params, urlParams);
       // Show in URL
       params.fragmentChange = true;
@@ -304,6 +317,9 @@ BookReader.prototype.initParams = function() {
 
   // Check for Search plugin
   if (this.options.enableSearch) {
+    // Go to first result only if no default or URL page
+    this.goToFirstResult = !params.pageFound
+
     // If initialSearchTerm not set
     if (!this.options.initialSearchTerm) {
       // Look for any term in URL

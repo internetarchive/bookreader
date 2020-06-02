@@ -24,6 +24,7 @@ BookReader.prototype.setup = (function (super_) {
     this.searchResults = null;
     this.searchInsideUrl = options.searchInsideUrl;
     this.enableSearch = options.enableSearch;
+    this.goToFirstResult = false;
 
     // Base server used by some api calls
     this.bookId = options.bookId;
@@ -42,7 +43,7 @@ BookReader.prototype.init = (function (super_) {
       this.$('.BRsearchInput').val(this.options.initialSearchTerm);
       this.search(
         this.options.initialSearchTerm,
-        { goToFirstResult: true, suppressFragmentChange: true }
+        { goToFirstResult: this.goToFirstResult, suppressFragmentChange: true }
       );
     }
 
