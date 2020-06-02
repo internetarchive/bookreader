@@ -133,6 +133,11 @@ html.mm-background .BookReader {
 
 }
 
+.BRcheckbox-label-filters {
+  position: relative;
+  bottom: 2px;
+}
+
 /* Desktop Only */
 @media (min-width: ($brBreakPointMobile + 1)) {
   .BRtoolbar.responsive { display: block; }
