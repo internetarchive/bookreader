@@ -1,3 +1,6 @@
+# 4.11.1
+- Fix: search urls now redirect to query parameter `q=foo` @mc2
+
 # 4.11.0
 - Dev: Add E2E tests for searching on desktop @Pyrojet99
 - Fix: Search result not highlighted when landing on page with matches @iisa
