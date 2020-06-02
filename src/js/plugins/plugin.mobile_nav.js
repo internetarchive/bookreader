@@ -10,11 +10,12 @@
  */
 
 import * as utils from '../BookReader/utils.js';
+//contains filters for checkboxs 1 to 4
 const FILTERLIST = {
-  'grayscale': 'grayscale(100%)',
-  'brightness': 'brightness(150%)',
-  'invert': 'invert(100%)',
-  'contrast': 'contrast(150%)'
+  'filter1': 'grayscale(100%)',
+  'filter2': 'brightness(150%)',
+  'filter3': 'invert(100%)',
+  'filter4': 'contrast(150%)'
 }
 
 jQuery.extend(BookReader.defaultOptions, {
@@ -77,10 +78,12 @@ BookReader.prototype.initToolbar = (function (super_) {
       });
 
 
-      // Dinamically creates styles for combined different filters based on checked checkbox
-      $drawerEl.find('.apply-filters-button').click(
+      // Dinamically creates styles combining different filters for BookReaders imgs
+      // based on filters checkbox
+      $drawerEl.find('.BRcheckbox-filters').click(
         () => {
           const br = this;
+          $("#filtersStyle").remove();
           let filterStr = "";
           let filterWebkitStr = "";
 
@@ -89,12 +92,13 @@ BookReader.prototype.initToolbar = (function (super_) {
               br.refs.$br.removeClass("filter-applied");
               if($(this).is(':checked')){
                 br.refs.$br.addClass($(this).attr("filter-applied"));
-                filterWebkitStr = filterWebkitStr + FILTERLIST[$(this).attr("filterName")];
-                filterStr = filterStr + FILTERLIST[$(this).attr("filterName")];
+                filterWebkitStr = filterWebkitStr + FILTERLIST[$(this).attr("id")];
+                filterStr = filterStr + FILTERLIST[$(this).attr("id")];
               }
             }
           )
-          const filtersSheet = document.createElement('style')
+          const filtersSheet = document.createElement('style');
+          filtersSheet.id = "filtersStyle";
           filtersSheet.innerHTML = ".BRtwopageview, .BRpageview img {filter:" + filterStr + "; -webkit-filter:" + filterWebkitStr + ";}";
           document.body.appendChild(filtersSheet);
         }
@@ -174,20 +178,20 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
  */
 BookReader.prototype.buildMobileDrawerElement = function() {
   let experimentalHtml = '';
+  //builds filters checkbox html
   if (this.enableExperimentalControls) {
     experimentalHtml = `
         <p class="DrawerSettingsTitle">Experimental (may not work)</p>
         <div class="BRcheckbox-group-filters">
-          <input type="checkbox" class="BRcheckbox-filters" id="filter1" filterName="grayscale">
+          <input type="checkbox" class="BRcheckbox-filters" id="filter1">
           <label for="filter1" class="BRcheckbox-label-filters">Grayscale</label><br>
-          <input type="checkbox" class="BRcheckbox-filters" id="filter2" filterName="brightness">
+          <input type="checkbox" class="BRcheckbox-filters" id="filter2">
           <label for="filter2" class="BRcheckbox-label-filters">High brightness</label><br>
-          <input type="checkbox" class="BRcheckbox-filters" id="filter3" filterName="invert">
+          <input type="checkbox" class="BRcheckbox-filters" id="filter3">
           <label for="filter3" class="BRcheckbox-label-filters">Inverted</label><br>
-          <input type="checkbox" class="BRcheckbox-filters" id="filter4" filterName="contrast">
+          <input type="checkbox" class="BRcheckbox-filters" id="filter4">
           <label for="filter4" class="BRcheckbox-label-filters">High contrast</label><br>
         </div>
-        <button class="BRaction default apply-filters-button">Apply</button>
     `;
   }
 
