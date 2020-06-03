@@ -10,13 +10,26 @@
  */
 
 import * as utils from '../BookReader/utils.js';
-//contains filters for checkboxs 1 to 4
-const FILTERLIST = {
-  'filter1': 'grayscale(100%)',
-  'filter2': 'brightness(150%)',
-  'filter3': 'invert(100%)',
-  'filter4': 'contrast(150%)'
-}
+
+//contains all filters and labels for checkboxs
+const FILTERLIST = [
+  {
+    filter: "grayscale(100%)",
+    label: "Grayscale"
+  },
+  {
+    filter: "brightness(150%)",
+    label: "High brightness"
+  },
+  {
+    filter: "invert(100%)",
+    label: "Inverted (dark mode)"
+  },
+  {
+    filter: "contrast(150%)",
+    label: "High contrast"
+  },
+]
 
 jQuery.extend(BookReader.defaultOptions, {
   enableMobileNav: true,
@@ -77,32 +90,7 @@ BookReader.prototype.initToolbar = (function (super_) {
         }
       });
 
-
-      // Dinamically creates styles combining different filters for BookReaders imgs
-      // based on filters checkbox
-      $drawerEl.find('.BRcheckbox-filters').click(
-        () => {
-          const br = this;
-          $("#filtersStyle").remove();
-          let filterStr = "";
-          let filterWebkitStr = "";
-
-          $('.BRcheckbox-filters').each(
-            function () {
-              br.refs.$br.removeClass("filter-applied");
-              if($(this).is(':checked')){
-                br.refs.$br.addClass($(this).attr("filter-applied"));
-                filterWebkitStr = filterWebkitStr + FILTERLIST[$(this).attr("id")];
-                filterStr = filterStr + FILTERLIST[$(this).attr("id")];
-              }
-            }
-          )
-          const filtersSheet = document.createElement('style');
-          filtersSheet.id = "filtersStyle";
-          filtersSheet.innerHTML = ".BRtwopageview, .BRpageview img {filter:" + filterStr + "; -webkit-filter:" + filterWebkitStr + ";}";
-          document.body.appendChild(filtersSheet);
-        }
-      );
+      applyFilters($drawerEl, this);
 
       // Bind mobile switch buttons
       $drawerEl.find('.DrawerLayoutButton.one_page_mode').click(
@@ -181,19 +169,20 @@ BookReader.prototype.buildMobileDrawerElement = function() {
   //builds filters checkbox html
   if (this.enableExperimentalControls) {
     experimentalHtml = `
-        <p class="DrawerSettingsTitle">Experimental (may not work)</p>
+        <p class="DrawerSettingsTitle">Filters</p>
         <div class="BRcheckbox-group-filters">
-          <input type="checkbox" class="BRcheckbox-filters" id="filter1">
-          <label for="filter1" class="BRcheckbox-label-filters">Grayscale</label><br>
-          <input type="checkbox" class="BRcheckbox-filters" id="filter2">
-          <label for="filter2" class="BRcheckbox-label-filters">High brightness</label><br>
-          <input type="checkbox" class="BRcheckbox-filters" id="filter3">
-          <label for="filter3" class="BRcheckbox-label-filters">Inverted</label><br>
-          <input type="checkbox" class="BRcheckbox-filters" id="filter4">
-          <label for="filter4" class="BRcheckbox-label-filters">High contrast</label><br>
-        </div>
-    `;
+        `;
+    FILTERLIST.forEach( (el, i) => {
+      const checkboxHtml = `
+          <input type="checkbox" class="BRcheckbox-filters" id="filter${i}">
+          <label for="filter${i}" class="BRcheckbox-label-filters">${el.label}</label><br>
+        
+      `;
+      experimentalHtml = experimentalHtml.concat(checkboxHtml);
+    })
+    experimentalHtml = experimentalHtml.concat("</div>");
   }
+
 
   const settingsSection = `
     <span>
@@ -273,3 +262,31 @@ BookReader.prototype.$ = (function (super_) {
     return $results;
   };
 })(BookReader.prototype.$);
+
+/**
+* Dinamically creates styles combining different filters for BookReaders imgs
+* based on filters checkbox
+*/
+const applyFilters = (drawerEl, br) => {
+  drawerEl.find('.BRcheckbox-filters').click(
+    () => {
+      let filterStr = "";
+
+      $('.BRcheckbox-filters').each(
+        (i, el) => {
+          br.refs.$br.removeClass("filter-applied");
+          if($(el).is(':checked')){
+            br.refs.$br.addClass($(el).attr("filter-applied"));
+            filterStr = filterStr + FILTERLIST[i].filter;
+          }
+        }
+      )
+      const filtersSheet = $("#filtersStyle")[0] || document.createElement('style');
+      filtersSheet.id = "filtersStyle";
+      filtersSheet.innerHTML = `.BRpagecontainer  img {
+            filter: ${filterStr};
+            -webkit-filter: ${filterStr};}`;
+      document.body.appendChild(filtersSheet);
+    }
+  );
+}
