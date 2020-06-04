@@ -51,6 +51,10 @@
 <script>
 // Override options coming from IA
 BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
+
+// Temporarily fix build by mocking SearchInsideAccess; long term fix likely needs to be
+// on petabox side
+function SearchInsideAccess(br, identifier, callback) { this.init = callback; }
 </script>
 <script
   type="text/javascript"
