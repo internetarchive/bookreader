@@ -56,6 +56,10 @@ BookReader.optionOverrides.urlHistoryBasePath = `${window.location.pathname}/`;
 // BookReader.optionOverrides.initialSearchTerm = 'bob';
 // Testing 1up default mode
 // BookReader.optionOverrides.defaults = 'mode/1up';
+
+// Temporarily fix build by mocking SearchInsideAccess; long term fix likely needs to be
+// on petabox side
+function SearchInsideAccess(br, identifier, callback) { this.init = callback; }
 </script>
 <script
   type="text/javascript"
