@@ -74,39 +74,39 @@ describe('draw 2up leaves', () => {
 });
 
 describe('prefetch', () => {
-    test('loads nearby pages', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      const spy = sinon.spy(br, 'prefetchImg');
-      br.prefetch();
-      expect(spy.callCount).toBeGreaterThan(2);
-    });
+  test('loads nearby pages', () => {
+    const br = new BookReader({ data: SAMPLE_DATA });
+    br.init();
+    const spy = sinon.spy(br, 'prefetchImg');
+    br.prefetch();
+    expect(spy.callCount).toBeGreaterThan(2);
+  });
 
-    test('works when at start of book', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      br.jumpToIndex(-1);
-      const spy = sinon.spy(br, 'prefetchImg');
-      br.prefetch();
-      expect(spy.callCount).toBeGreaterThan(2);
-    });
+  test('works when at start of book', () => {
+    const br = new BookReader({ data: SAMPLE_DATA });
+    br.init();
+    br.jumpToIndex(-1);
+    const spy = sinon.spy(br, 'prefetchImg');
+    br.prefetch();
+    expect(spy.callCount).toBeGreaterThan(2);
+  });
 
-    test('works when at end of book', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      br.jumpToIndex(SAMPLE_DATA.flat().length - 1);
-      const spy = sinon.spy(br, 'prefetchImg');
-      br.prefetch();
-      expect(spy.callCount).toBeGreaterThan(2);
-    });
+  test('works when at end of book', () => {
+    const br = new BookReader({ data: SAMPLE_DATA });
+    br.init();
+    br.jumpToIndex(SAMPLE_DATA.flat().length - 1);
+    const spy = sinon.spy(br, 'prefetchImg');
+    br.prefetch();
+    expect(spy.callCount).toBeGreaterThan(2);
+  });
 
 
-    test('skips consecutive unviewables', () => {
-      const data = deepCopy(SAMPLE_DATA);
-      data[1].forEach(page => page.viewable = false);
-      const br = new BookReader({ data });
-      br.init();
-      br.prefetch();
-      expect(br.prefetchedImgs).not.toContain(2);
-    });
+  test('skips consecutive unviewables', () => {
+    const data = deepCopy(SAMPLE_DATA);
+    data[1].forEach(page => page.viewable = false);
+    const br = new BookReader({ data });
+    br.init();
+    br.prefetch();
+    expect(br.prefetchedImgs).not.toContain(2);
+  });
 });

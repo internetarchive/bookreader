@@ -1,5 +1,4 @@
 import { ClientFunction } from 'testcafe';
-import BookReader from './models/BookReader';
 
 const { BASE_URL } = process.env;
 const getLocationHref = ClientFunction(() => window.location.href.toString());

@@ -12,7 +12,7 @@ import '../../src/js/plugins/plugin.search.js';
 let br;
 beforeEach(() => {
   $.ajax = jest.fn().mockImplementation(() => {
-    // return from: 
+    // return from:
     // `https://ia800304.us.archive.org/fulltext/inside.php?item_id=adventuresofoli00dick&doc=adventuresofoli00dick&path=/30/items/adventuresofoli00dick&q=child&callback=<serialized jQ CB>`
     return Promise.resolve({
       ia: "adventuresofoli00dick",
