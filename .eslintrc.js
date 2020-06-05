@@ -6,7 +6,13 @@ module.exports = {
         "node": true,
         "jest": true
     },
-    "extends": "eslint:recommended",
+    "plugins": [
+    	"testcafe"
+    ],
+    "extends": [
+	"eslint:recommended",
+	"plugin:testcafe/recommended"
+    ],
     "globals": {
         // Browser API
         "MediaMetadata": "readonly"

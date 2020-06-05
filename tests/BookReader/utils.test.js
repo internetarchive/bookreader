@@ -1,36 +1,36 @@
 import sinon from 'sinon';
 import {
-    clamp,
-    cssPercentage,
-    debounce,
-    decodeURIComponentPlus,
-    encodeURIComponentPlus,
-    escapeHTML,
+  clamp,
+  cssPercentage,
+  debounce,
+  decodeURIComponentPlus,
+  encodeURIComponentPlus,
+  escapeHTML,
 } from '../../src/js/BookReader/utils.js';
 
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
-    expect(clamp(2,1,3)).toEqual(2);
+  expect(clamp(2,1,3)).toEqual(2);
 });
 
 test('calculate a percentage suitable for CSS', () => {
-    expect(cssPercentage(2,1)).toEqual('200%');
+  expect(cssPercentage(2,1)).toEqual('200%');
 });
 
 test('escapeHTML function which replaces the string', () => {
-    expect(escapeHTML('Me & You')).toEqual('Me &amp; You');
-    expect(escapeHTML('Me > You')).toEqual('Me &gt; You');
-    expect(escapeHTML('Me < You')).toEqual('Me &lt; You');
-    expect(escapeHTML('Me " You')).toEqual('Me &quot; You');
+  expect(escapeHTML('Me & You')).toEqual('Me &amp; You');
+  expect(escapeHTML('Me > You')).toEqual('Me &gt; You');
+  expect(escapeHTML('Me < You')).toEqual('Me &lt; You');
+  expect(escapeHTML('Me " You')).toEqual('Me &quot; You');
 });
 
 test('Decodes a URI component and converts + to emptyStr', () => {
-    expect(decodeURIComponentPlus("https%3A%2F%2Farchive.org%2Fskr+")).toEqual("https://archive.org/skr ");
-    expect(decodeURIComponentPlus("%3Fx%3D+test")).toEqual("?x= test");
+  expect(decodeURIComponentPlus("https%3A%2F%2Farchive.org%2Fskr+")).toEqual("https://archive.org/skr ");
+  expect(decodeURIComponentPlus("%3Fx%3D+test")).toEqual("?x= test");
 });
 
 test('Encodes a URI component and converts emptyStr to +', () => {
-    expect(encodeURIComponentPlus("?x=test ")).toEqual("%3Fx%3Dtest+");
-    expect(encodeURIComponentPlus("ABC abc 123")).toEqual("ABC+abc+123");
+  expect(encodeURIComponentPlus("?x=test ")).toEqual("%3Fx%3Dtest+");
+  expect(encodeURIComponentPlus("ABC abc 123")).toEqual("ABC+abc+123");
 });
 
 let clock;
