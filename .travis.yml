@@ -1,27 +1,18 @@
-## Testcafe deps
-## https://devexpress.github.io/testcafe/documentation/continuous-integration/travis.html
-## https://docs.travis-ci.com/user/gui-and-headless-browsers/#using-xvfb-to-run-tests-that-require-a-gui
 dist: bionic
-services:
-  - xvfb
 
 addons:
   firefox: latest
   chrome: stable
 
-## Node https://docs.travis-ci.com/user/languages/javascript-with-nodejs/
 language: node_js
 
 node_js:
   - '12'
 install:
   - npm install
-before_script:
-  - fluxbox >/dev/null 2>&1 &
-  - sleep 3
 script:
   - npm run build
   - npm run lint
   - npm run test:coverage
-  - npm run test:e2e
+  - BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe "chrome:headless,firefox:headless"
   - npm run codecov
