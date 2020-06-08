@@ -5,7 +5,9 @@ export default class Navigation {
   constructor () {
     this.topNavShell = new Selector('.BRtoolbar');
     this.bottomNavShell = new Selector('.BRfooter');
+    this.mobileMenu = new Selector('.BRmobileMenu');
     this.desktop = new DesktopNav(this.bottomNavShell, this.topNavShell);
+    this.mobile = new MobileNav(this.mobileMenu, this.topNavShell);
   }
 }
 
@@ -26,6 +28,15 @@ class DesktopNav {
     this.fullScreen = bottomToolbar.find('.BRicon.full');
     this.searchBox = topToolbar.find('.BRbooksearch.desktop');
     this.searchPin = bottomToolbar.find('.BRsearch');
+  }
+}
 
+class MobileNav{
+  constructor(mobileMenu, topToolbar){
+    this.hamburgerButton = topToolbar.find('.BRmobileHamburger');
+    this.menuSearchButton = mobileMenu.find('[data-target="#mm-4"]');
+    this.searchBox = mobileMenu.find('.BRbooksearch.mobile');
+    this.searchResults = mobileMenu.find('.BRmobileSearchResult');
+    this.searchResultText = mobileMenu.find('.BRmobileSearchResult').find('tbody').child(-1).find('span');
   }
 }

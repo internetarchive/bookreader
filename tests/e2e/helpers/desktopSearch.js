@@ -1,11 +1,9 @@
 import { ClientFunction, RequestMock } from 'testcafe';
-import { SEARCH_INSIDE_URL_RE , mockResponseFound, mockResponseNotFound } from './mockSearch';
+import { SEARCH_INSIDE_URL_RE , mockResponseFound, mockResponseNotFound,
+  TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND, PAGE_FIRST_RESULT } from './mockSearch';
 
 
 export function runDesktopSearchTests(br) {
-  const TEST_TEXT_FOUND = 'theory';
-  const TEST_TEXT_NOT_FOUND = 'HopefullyNotFoundLongWord';
-
   //building mock response  for successful and unsuccessful search
   const mockFound = RequestMock()
     .onRequestTo(SEARCH_INSIDE_URL_RE )
@@ -18,7 +16,7 @@ export function runDesktopSearchTests(br) {
 
   test
     .requestHooks(mockFound)('Desktop search - successful search', async t => {
-      const { nav } = br;
+      const nav = br.nav;
 
       //assuring that the search bar is enabled
       await t.expect(nav.desktop.searchBox.visible).ok();
@@ -33,15 +31,24 @@ export function runDesktopSearchTests(br) {
       await t.expect(nav.desktop.searchPin.child('.BRquery').child('div').exists).ok();
       await t.expect(nav.desktop.searchPin.child('.BRquery').child('div').innerText).contains(TEST_TEXT_FOUND);
 
+      //checking url
       const getPageUrl = ClientFunction(() => window.location.href.toString());
       await t.expect(getPageUrl()).contains(TEST_TEXT_FOUND);
+
+      //checks clicking on first search pin opens correct page
+      await t.click(nav.desktop.searchPin);
+      await t.expect(getPageUrl()).contains(PAGE_FIRST_RESULT);
+
+      //checks highlight on result page is visible
+      const highlight = br.shell.find(".BookReaderSearchHilite");
+      await t.expect(highlight.visible).ok();
 
     });
 
 
   test
     .requestHooks(mockNotFound)('Desktop search - unsuccesful search', async t => {
-      const { nav } = br;
+      const nav = br.nav;
 
       //assuring that the search bar is enabled
       await t.expect(nav.desktop.searchBox.visible).ok();
