@@ -18,7 +18,7 @@ const FILTERLIST = [
     label: "Grayscale"
   },
   {
-    filter: "brightness(150%)",
+    filter: "brightness(120%)",
     label: "High brightness"
   },
   {
@@ -26,7 +26,7 @@ const FILTERLIST = [
     label: "Inverted (dark mode)"
   },
   {
-    filter: "contrast(150%)",
+    filter: "contrast(120%)",
     label: "High contrast"
   },
 ]
@@ -90,7 +90,8 @@ BookReader.prototype.initToolbar = (function (super_) {
         }
       });
 
-      applyFilters($drawerEl, this);
+      //apply filters when checkboxs clicked
+      $drawerEl.find('.BRcheckbox-filters').click(applyFilters($drawerEl, this));
 
       // Bind mobile switch buttons
       $drawerEl.find('.DrawerLayoutButton.one_page_mode').click(
@@ -169,7 +170,7 @@ BookReader.prototype.buildMobileDrawerElement = function() {
   //builds filters checkbox html
   if (this.enableExperimentalControls) {
     experimentalHtml = `
-        <p class="DrawerSettingsTitle">Filters</p>
+        <p class="DrawerSettingsTitle">Visual Adjustment</p>
         <div class="BRcheckbox-group-filters">
         `;
     FILTERLIST.forEach( (el, i) => {
@@ -264,29 +265,25 @@ BookReader.prototype.$ = (function (super_) {
 })(BookReader.prototype.$);
 
 /**
-* Dinamically creates styles combining different filters for BookReaders imgs
+* Dynamically creates styles combining different filters for BookReaders imgs
 * based on filters checkbox
 */
 const applyFilters = (drawerEl, br) => {
-  drawerEl.find('.BRcheckbox-filters').click(
-    () => {
-      let filterStr = "";
+  let filterStr = "";
 
-      $('.BRcheckbox-filters').each(
-        (i, el) => {
-          br.refs.$br.removeClass("filter-applied");
-          if($(el).is(':checked')){
-            br.refs.$br.addClass($(el).attr("filter-applied"));
-            filterStr = filterStr + FILTERLIST[i].filter;
-          }
-        }
-      )
-      const filtersSheet = $("#filtersStyle")[0] || document.createElement('style');
-      filtersSheet.id = "filtersStyle";
-      filtersSheet.innerHTML = `.BRpagecontainer  img {
-            filter: ${filterStr};
-            -webkit-filter: ${filterStr};}`;
-      document.body.appendChild(filtersSheet);
+  $('.BRcheckbox-filters').each(
+    (i, el) => {
+      br.refs.$br.removeClass("filter-applied");
+      if($(el).is(':checked')){
+        br.refs.$br.addClass($(el).attr("filter-applied"));
+        filterStr = filterStr + FILTERLIST[i].filter;
+      }
     }
   );
+  const filtersSheet = $("#filtersStyle")[0] || document.createElement('style');
+  filtersSheet.id = "filtersStyle";
+  filtersSheet.innerHTML = `.BRpagecontainer  img {
+            filter: ${filterStr};
+            -webkit-filter: ${filterStr};}`;
+  document.body.appendChild(filtersSheet);
 }
