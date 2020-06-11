@@ -157,7 +157,7 @@ BookReader.prototype.urlUpdateFragment = function() {
     window.location.replace('#' + newFragment + newQueryString);
   }
 
-  this.oldLocationHash = newFragment;
+  this.oldLocationHash = newFragment + newQueryString;
 };
 
 /**
