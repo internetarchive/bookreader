@@ -11,6 +11,26 @@
 
 import * as utils from '../BookReader/utils.js';
 
+//contains all filters and labels for checkboxs
+const FILTERLIST = [
+  {
+    filter: "grayscale(100%)",
+    label: "Grayscale"
+  },
+  {
+    filter: "brightness(120%)",
+    label: "High brightness"
+  },
+  {
+    filter: "invert(100%)",
+    label: "Inverted (dark mode)"
+  },
+  {
+    filter: "contrast(120%)",
+    label: "High contrast"
+  },
+]
+
 jQuery.extend(BookReader.defaultOptions, {
   enableMobileNav: true,
   mobileNavTitle: 'Internet Archive',
@@ -70,9 +90,8 @@ BookReader.prototype.initToolbar = (function (super_) {
         }
       });
 
-      // High contrast button
-      $drawerEl.find('.high-contrast-button').click(
-        () => this.refs.$br.toggleClass('high-contrast'));
+      //apply filters when checkboxs clicked
+      $drawerEl.find('.BRcheckbox-filters').click(() => applyFilters($drawerEl, this));
 
       // Bind mobile switch buttons
       $drawerEl.find('.DrawerLayoutButton.one_page_mode').click(
@@ -148,12 +167,23 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
  */
 BookReader.prototype.buildMobileDrawerElement = function() {
   let experimentalHtml = '';
+  //builds filters checkbox html
   if (this.enableExperimentalControls) {
     experimentalHtml = `
-        <p class="DrawerSettingsTitle">Experimental (may not work)</p>
-        <button class="BRaction default high-contrast-button">Toggle high contrast</button>
-    `;
+        <p class="DrawerSettingsTitle">Visual Adjustment</p>
+        <div class="BRcheckbox-group-filters">
+        `;
+    FILTERLIST.forEach( (el, i) => {
+      const checkboxHtml = `
+          <input type="checkbox" class="BRcheckbox-filters" id="filter${i}">
+          <label for="filter${i}" class="BRcheckbox-label-filters">${el.label}</label><br>
+        
+      `;
+      experimentalHtml = experimentalHtml.concat(checkboxHtml);
+    })
+    experimentalHtml = experimentalHtml.concat("</div>");
   }
+
 
   const settingsSection = `
     <span>
@@ -233,3 +263,27 @@ BookReader.prototype.$ = (function (super_) {
     return $results;
   };
 })(BookReader.prototype.$);
+
+/**
+* Dynamically creates styles combining different filters for BookReaders imgs
+* based on filters checkbox
+*/
+const applyFilters = (drawerEl, br) => {
+  let filterStr = "";
+
+  $('.BRcheckbox-filters').each(
+    (i, el) => {
+      br.refs.$br.removeClass("filter-applied");
+      if($(el).is(':checked')){
+        br.refs.$br.addClass($(el).attr("filter-applied"));
+        filterStr = filterStr + FILTERLIST[i].filter;
+      }
+    }
+  );
+  const filtersSheet = $("#filtersStyle")[0] || document.createElement('style');
+  filtersSheet.id = "filtersStyle";
+  filtersSheet.innerHTML = `.BRpagecontainer  img {
+            filter: ${filterStr};
+            -webkit-filter: ${filterStr};}`;
+  document.body.appendChild(filtersSheet);
+}

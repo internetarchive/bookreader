@@ -178,17 +178,6 @@ body.BRfullscreenActive {
   font-weight: bold;
 }
 
-/* High contrast mode */
-.high-contrast {
-  .BRpagediv1up { background-color: white; }
-  .BRpagedivthumb { background-color: white; }
-  .BRpageview img,
-  .BRtwopageview img {
-    -webkit-filter: grayscale(100%) brightness(120%);
-    filter: grayscale(100%) brightness(120%);
-  }
-}
-
 .BRaction {
   margin-left: 5px;
   margin-right: 5px;
@@ -269,4 +258,10 @@ body.BRfullscreenActive {
   #{$brScope} {
     .BRaction { padding: 8px 16px; }
   }
+}
+
+/* filters */
+.filter-applied {
+  .BRpagediv1up { background-color: white; }
+  .BRpagedivthumb { background-color: white; }  
 }
