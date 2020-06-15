@@ -91,7 +91,7 @@ BookReader.prototype.initToolbar = (function (super_) {
       });
 
       //apply filters when checkboxs clicked
-      $drawerEl.find('.BRcheckbox-filters').click(applyFilters($drawerEl, this));
+      $drawerEl.find('.BRcheckbox-filters').click(() => applyFilters($drawerEl, this));
 
       // Bind mobile switch buttons
       $drawerEl.find('.DrawerLayoutButton.one_page_mode').click(
