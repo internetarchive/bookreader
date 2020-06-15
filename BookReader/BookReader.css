@@ -321,19 +321,6 @@ body.BRfullscreenActive .mm-menu {
   padding: 5px 10px !important;
 }
 
-/* High contrast mode */
-.high-contrast .BRpagediv1up {
-  background-color: white;
-}
-.high-contrast .BRpagedivthumb {
-  background-color: white;
-}
-.high-contrast .BRpageview img,
-.high-contrast .BRtwopageview img {
-  -webkit-filter: grayscale(100%) brightness(120%);
-  filter: grayscale(100%) brightness(120%);
-}
-
 .BRaction {
   margin-left: 5px;
   margin-right: 5px;
@@ -501,6 +488,14 @@ body.BRfullscreenActive .mm-menu {
     padding: 8px 16px;
   }
 }
+/* filters */
+.filter-applied .BRpagediv1up {
+  background-color: white;
+}
+.filter-applied .BRpagedivthumb {
+  background-color: white;
+}
+
 .BRpageview {
   position: relative;
   margin: auto;
@@ -2144,6 +2139,11 @@ html.mm-background .BookReader {
     display: block;
   }
 }
+.BRcheckbox-label-filters {
+  position: relative;
+  bottom: 2px;
+}
+
 /* Desktop Only */
 @media (min-width: 801px) {
   .BRtoolbar.responsive {
