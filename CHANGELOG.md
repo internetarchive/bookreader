@@ -1,3 +1,12 @@
+# 4.12.0
+- Fix: Test command for Windows users @cdrini
+- Dev: Autoplay e2e test @pyrojet99
+- Dev: Enable eslint for tests @Kartik1397
+- Dev: Mobile search e2e test @pyrojet99
+- Fix: Extra querystring after hash @kristopolous
+- Dev: Update websocket-extensions, sinon, testcafe @cdrini
+- Feature: Visual adjustments checkboxes on mobile @pyrojet99
+
 # 4.11.1
 - Fix: search urls now redirect to query parameter `q=foo` @mc2
 
