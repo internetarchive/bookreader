@@ -45,6 +45,13 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
   const jumpToChapter = (event) => this.jumpToIndex($(event.target).data('pageIndex'));
   const title = `${chapterTitle} | ${uiStringPage} ${pageNumber}`;
 
+  //adding items to mobile table of contents
+  const mobileChapter = $(`<li>${title}</li>`);
+  mobileChapter.addClass('table-contents-el')
+  .appendTo(this.$('.table-contents-list'))
+  .data({ pageIndex });
+ 
+  
   //adds .BRchapters to the slider only if pageIndex exists
   if(pageIndex!=undefined){
     $(`<div><div>${title}</div></div>`)
@@ -88,12 +95,12 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
       event => $(event.target).removeClass('front')
       )
       .bind('click', jumpToChapter);
+
+      //adding clickable properties to mobile chapters
+      mobileChapter.bind('click', jumpToChapter)
+        .addClass('chapter-clickable');
   }
-  $(`<li>${title}</li>`)
-    .addClass('table-contents-el')
-    .appendTo(this.$('.table-contents-list'))
-    .data({ pageIndex })
-    .bind('click', jumpToChapter);
+ 
 };
 
 /*

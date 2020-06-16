@@ -150,4 +150,11 @@ li.table-contents-el{
   -webkit-line-clamp: 2;
   display: -webkit-box;
   -webkit-box-orient: vertical;
+  color: gray;
+  font-weight: lighter;
+}
+
+li.table-contents-el.chapter-clickable{
+  font-weight: normal;
+  color: black;
 }
