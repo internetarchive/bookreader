@@ -48,6 +48,10 @@ BookReader.prototype.getResumeValue = function() {
  */
 BookReader.prototype.updateResumeValue = function(index, cookieName) {
   const ttl = new Date(+new Date + 12096e5); // 2 weeks
-  const path = this.options.resumeCookiePath || window.location.pathname;
+  // For multiple files in item, leave resumeCookiePath blank
+  // It's likely we can now remove resumeCookiePath by new .match()
+  // below using pathname up to /page/... or /mode/...
+  const path = this.options.resumeCookiePath
+    || window.location.pathname.match('.+?(?=/page/|/mode/|$)')[0];
   BookReader.docCookies.setItem(cookieName || 'br-resume', index, ttl, path, null, false);
 }
