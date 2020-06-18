@@ -508,7 +508,7 @@ BookReader.prototype.bind = function(name, callback) {
 };
 
 BookReader.prototype.unbind = function(name, callback) {
-  $(document).bind('BookReader:' + name, callback);
+  $(document).unbind('BookReader:' + name, callback);
 };
 
 /**
