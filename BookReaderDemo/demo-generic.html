@@ -64,13 +64,13 @@ function SearchInsideAccess(br, identifier, callback) { this.init = callback; }
 <script>
         url1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
         url2 = "&subPrefix=";
-        // currentUrl = new URL(window.location.href);
-        // bookId = currentUrl.searchParams.get("getbookid");
+         currentUrl = new URL(window.location.href);
+         bookId = currentUrl.searchParams.get("getbookid");
       
-      hashElements = (new URL(window.location.href)).hash.split("/");
-    console.log(hashElements)
-      bookId = hashElements[hashElements.indexOf("getbookid")+2];
-      console.log(bookId)
+    //   hashElements = (new URL(window.location.href)).hash.split("/");
+    // console.log(hashElements)
+    //   bookId = hashElements[hashElements.indexOf("getbookid")+2];
+    //   console.log(bookId)
 
       document.getElementById('pageUrl').src = url1 + bookId + url2;
 
