@@ -121,6 +121,7 @@ BookReader.prototype.initToolbar = (function (super_) {
           $mmenuEl.data('mmenu').close();
         } else {
           $mmenuEl.data('mmenu').open();
+          this.trigger("mobileNavOpen");
         }
       });
 

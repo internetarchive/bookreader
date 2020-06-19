@@ -29,6 +29,10 @@ BookReader.prototype.init = (function(super_) {
     if (this.enableChaptersPlugin && this.ui !== 'embed') {
       this.getOpenLibraryRecord();
     }
+    if (this.enableMobileNav) {
+      this.bind(BookReader.eventNames.mobileNavOpen, 
+        () => this.updateTOCState(this.firstIndex+1, this._tocEntries));
+    }
   }
 })(BookReader.prototype.init);
 
@@ -42,7 +46,11 @@ BookReader.prototype.init = (function(super_) {
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
   const uiStringPage = 'Page'; // i18n
   const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
-  const jumpToChapter = (event) => this.jumpToIndex($(event.target).data('pageIndex'));
+  const jumpToChapter = (event) => {
+     this.jumpToIndex($(event.target).data('pageIndex'));
+     $('.current-chapter').removeClass('current-chapter');
+     $(event.target).addClass('current-chapter');
+  }
   const title = `${chapterTitle} | ${uiStringPage} ${pageNumber}`;
 
   //adding items to mobile table of contents
@@ -122,6 +130,10 @@ BookReader.prototype.updateTOC = function(tocEntries) {
   for (let i = 0; i < tocEntries.length; i++) {
     this.addChapterFromEntry(tocEntries[i]);
   }
+  this._tocEntries = tocEntries;
+  $('.table-contents-list').children().each((i, el) => {
+    tocEntries[i].mobileHTML = el;
+  })
 };
 
 /**
@@ -132,6 +144,9 @@ BookReader.prototype.updateTOC = function(tocEntries) {
  * @property {string} label
  * @property {{type: '/type/toc_item'}} type
  * @property {string} title
+ * @property {HTMLElement} mobileHTML
+ * @property {number} pageIndex
+
  *
  * @example {
  *   "pagenum": "17",
@@ -146,12 +161,12 @@ BookReader.prototype.updateTOC = function(tocEntries) {
  * @param {TocEntry} tocEntryObject
  */
 BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-  const pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
+  tocEntryObject.pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
   //creates a string with non-void tocEntryObject.label and tocEntryObject.title
   const chapterStr = [tocEntryObject.label, tocEntryObject.title]
     .filter(x => x)
     .join(' ');
-  this.addChapter(chapterStr, tocEntryObject['pagenum'], pageIndex);
+  this.addChapter(chapterStr, tocEntryObject['pagenum'], tocEntryObject.pageIndex);
   this.$('.BRchapter, .BRsearch').each((i, el) => {
     const $el = $(el);
     $el.hover(
@@ -221,3 +236,23 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     return $el;
   };
 })(BookReader.prototype.buildMobileDrawerElement);
+
+/**
+ * @private
+ * @param {TocEntry[]} tocEntries
+ * @param {number} tocEntries
+ */
+BookReader.prototype.updateTOCState = function(currIndex, tocEntries) {
+  $('.current-chapter').removeClass('current-chapter');
+  const tocEntriesIndexed = tocEntries.filter((el) => el.pageIndex != undefined).reverse();
+  const currChapter = tocEntriesIndexed[tocEntriesIndexed.findIndex(
+    (el) => el.pageIndex <= currIndex)];
+  if(currChapter != undefined){
+    $(currChapter.mobileHTML).addClass('current-chapter');
+
+    // $('.table-contents-list').scrollTop = $('.current-chapter').offsetTop;
+    // $('.current-chapter').first().scrollTop(300)
+     $('.current-chapter')[0].scrollIntoView({block: "center"});
+  }
+}
+
