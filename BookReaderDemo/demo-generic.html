@@ -65,7 +65,7 @@ function SearchInsideAccess(br, identifier, callback) { this.init = callback; }
         url1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
         url2 = "&subPrefix=";
          currentUrl = new URL(window.location.href);
-         bookId = currentUrl.searchParams.get("getbookid");
+         bookId = currentUrl.searchParams.get("ocaid");
       
     //   hashElements = (new URL(window.location.href)).hash.split("/");
     // console.log(hashElements)

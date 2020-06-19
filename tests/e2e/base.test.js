@@ -16,7 +16,7 @@ const idBooks = [
   // /BookReaderDemo/demo-ia-olivertwist.html/page/n13/mode/2up
   // 'demo-ia-olivertwist.html',
 ];
-const genericDemo = 'demo-generic.html?getbookid='
+const genericDemo = 'demo-generic.html?ocaid='
 
 idBooks.forEach(function(book) {
   const url = `${BASE_URL}${genericDemo}${book}`;
