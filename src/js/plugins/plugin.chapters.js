@@ -238,6 +238,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 })(BookReader.prototype.buildMobileDrawerElement);
 
 /**
+ * highlights the current chapter based on current page
  * @private
  * @param {TocEntry[]} tocEntries
  * @param {number} tocEntries
