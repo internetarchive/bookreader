@@ -4,6 +4,8 @@
  * Could be forked, or extended to alter behavior
  */
 
+const { SingleEntryPlugin } = require("webpack");
+
 jQuery.extend(BookReader.defaultOptions, {
   olHost: 'https://openlibrary.org',
   enableChaptersPlugin: true,
@@ -21,7 +23,6 @@ BookReader.prototype.setup = (function (super_) {
   };
 })(BookReader.prototype.setup);
 
-
 /** @override Extend to call Open Library for TOC */
 BookReader.prototype.init = (function(super_) {
   return function() {
@@ -31,7 +32,15 @@ BookReader.prototype.init = (function(super_) {
     }
     if (this.enableMobileNav) {
       this.bind(BookReader.eventNames.mobileNavOpen, 
-        () => this.updateTOCState(this.firstIndex+1, this._tocEntries));
+        () => { if($('#mm-4').hasClass('mm-opened')){
+          this.updateTOCState(this.firstIndex+1, this._tocEntries);
+        }}
+      )
+      this.bind(BookReader.eventNames.TOCOpen,
+        () => {
+          this.updateTOCState(this.firstIndex+1, this._tocEntries);
+        }
+      )
     }
   }
 })(BookReader.prototype.init);
@@ -222,7 +231,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     const $el = super_.call(this);
     if (this.options.enableChaptersPlugin) {
       $el.find('.BRmobileMenu__moreInfoRow').after($(`
-        <li class="BRmobileMenu__tableContents">
+        <li class="BRmobileMenu__tableContents" data-event-click-tracking=”BRSidebar|TOCPanel>
             <span>
                 <span class="DrawerIconWrapper"></span>
                 Table of Contents
@@ -251,9 +260,9 @@ BookReader.prototype.updateTOCState = function(currIndex, tocEntries) {
   if(currChapter != undefined){
     $(currChapter.mobileHTML).addClass('current-chapter');
 
-    // $('.table-contents-list').scrollTop = $('.current-chapter').offsetTop;
-    // $('.current-chapter').first().scrollTop(300)
-     $('.current-chapter')[0].scrollIntoView({block: "center"});
+    //$('.table-contents-list').scrollTop($('.current-chapter').offset().top);
+    // $('.current-chapter')[0].scrollIntoView({block: "center"});
+    $('.current-chapter')[0].scrollIntoView({block: "center"});
   }
 }
 

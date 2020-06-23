@@ -106,8 +106,10 @@ BookReader.prototype.initToolbar = (function (super_) {
       } else {
         $(document.body).addClass('BRbodyMobileNavEnabled');
       }
-
+     
       this.refs.$mmenu = $mmenuEl;
+
+      
     }
 
     // Call the parent method at the end, because it binds events to DOM
@@ -124,6 +126,10 @@ BookReader.prototype.initToolbar = (function (super_) {
           this.trigger("mobileNavOpen");
         }
       });
+
+      $(".mm-next.mm-fullsubopen[data-target='#mm-4']").click(
+        () => this.trigger("TOCOpen")
+      );
 
       const closeMobileMenu = (e) => {
         // Need to close the mobile menu to reset DOM & Style
