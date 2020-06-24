@@ -32,13 +32,19 @@ BookReader.prototype.init = (function(super_) {
     }
     if (this.enableMobileNav) {
       this.bind(BookReader.eventNames.mobileNavOpen, 
-        () => { if($('#mm-4').hasClass('mm-opened')){
-          this.updateTOCState(this.firstIndex+1, this._tocEntries);
+        () => {
+          this.updateTOCState(this.firstIndex, this._tocEntries);
+
+          if($('#mm-4').hasClass('mm-opened')){
+            //looking at left page for chapter if 2-page view
+            const currIndex = (this.constMode2up == this.mode) ? this.firstIndex + 1 : this.firstIndex;
+            this.updateTOCState(currIndex, this._tocEntries);
         }}
       )
       this.bind(BookReader.eventNames.TOCOpen,
         () => {
-          this.updateTOCState(this.firstIndex+1, this._tocEntries);
+          const currIndex = (this.constMode2up == this.mode) ? this.firstIndex + 1 : this.firstIndex;
+          this.updateTOCState(currIndex, this._tocEntries);
         }
       )
     }
@@ -115,7 +121,8 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
 
       //adding clickable properties to mobile chapters
       mobileChapter.bind('click', jumpToChapter)
-        .addClass('chapter-clickable');
+        .addClass('chapter-clickable')
+        .attr("data-event-click-tracking","BRTOCPanel|GoToChapter");
   }
  
 };
@@ -259,9 +266,6 @@ BookReader.prototype.updateTOCState = function(currIndex, tocEntries) {
     (el) => el.pageIndex <= currIndex)];
   if(currChapter != undefined){
     $(currChapter.mobileHTML).addClass('current-chapter');
-
-    //$('.table-contents-list').scrollTop($('.current-chapter').offset().top);
-    // $('.current-chapter')[0].scrollIntoView({block: "center"});
     $('.current-chapter')[0].scrollIntoView({block: "center"});
   }
 }
