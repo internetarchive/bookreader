@@ -4,8 +4,6 @@
  * Could be forked, or extended to alter behavior
  */
 
-const { SingleEntryPlugin } = require("webpack");
-
 jQuery.extend(BookReader.defaultOptions, {
   olHost: 'https://openlibrary.org',
   enableChaptersPlugin: true,
@@ -36,15 +34,12 @@ BookReader.prototype.init = (function(super_) {
           this.updateTOCState(this.firstIndex, this._tocEntries);
 
           if($('#mm-4').hasClass('mm-opened')){
-            //looking at left page for chapter if 2-page view
-            const currIndex = (this.constMode2up == this.mode) ? this.firstIndex + 1 : this.firstIndex;
-            this.updateTOCState(currIndex, this._tocEntries);
+            this.updateTOCState(this.firstIndex, this._tocEntries);
         }}
       )
       this.bind(BookReader.eventNames.TOCOpen,
         () => {
-          const currIndex = (this.constMode2up == this.mode) ? this.firstIndex + 1 : this.firstIndex;
-          this.updateTOCState(currIndex, this._tocEntries);
+          this.updateTOCState(this.firstIndex, this._tocEntries);
         }
       )
     }

@@ -4,8 +4,11 @@ import '../../BookReader/jquery.browser.min.js';
 import '../../BookReader/dragscrollable-br.js';
 import '../../BookReader/jquery.colorbox-min.js';
 import '../../BookReader/jquery.bt.min.js';
+import '../../BookReader/mmenu/dist/js/jquery.mmenu.min.js';
+import '../../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js';
 
 import BookReader from '../../src/js/BookReader.js';
+import '../../src/js/plugins/plugin.mobile_nav.js';
 import '../../src/js/plugins/plugin.chapters.js';
 
 const SAMPLE_TOC = [{
@@ -108,11 +111,12 @@ describe('updateTOCState', () => {
   test('Test page is one of TOC', () => {
     br.init();
     br.updateTOCState(20, SAMPLE_TOC);
-    expect($('li.table-contents-el')[1].hasClass('current-chapter'));
+    expect($('li.table-contents-el')[1].classList.contains('current-chapter'));
   });
   
   test('Only one element has .current-chapter', () => {
     br.init();
+    br.updateTOC(SAMPLE_TOC)
     br.updateTOCState(9, SAMPLE_TOC);
     expect($('li.table-contents-el.current-chapter').length).toBe(1);
   })
@@ -126,7 +130,7 @@ describe('updateTOCState', () => {
   test('if current index == chapter index ', () => {
     br.init();
     br.updateTOCState(17, SAMPLE_TOC);
-    expect($('li.table-contents-el')[1].hasClass('current-chapter'));
+    expect($('li.table-contents-el')[1].classList.contains('current-chapter'));
   })
 
   test('No chapter has .current-chapter if all chapter have undefined pageIndex ', () => {
