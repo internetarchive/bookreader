@@ -145,13 +145,6 @@ BookReader.prototype.urlUpdateFragment = function() {
     return;
   }
 
-  //filtering query parameters to select only book search param (?q=foo)
-  //this needs to be updated/URL system modified if future query params are to be added
-  const queries = newQueryString.replace("?","").split("&");
-  const searchQueryIndx = queries.findIndex((el) => el.match(/^q=/));
-  const newQueryStringSearch = searchQueryIndx == -1 ? "" : queries[searchQueryIndx];
-
-
   if (urlMode === 'history') {
     if (window.history && window.history.replaceState) {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
@@ -161,11 +154,26 @@ BookReader.prototype.urlUpdateFragment = function() {
       window.history.replaceState({}, null, newUrlPath);
     }
   } else {
+    const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
     window.location.replace('#' + newFragment + newQueryStringSearch);
   }
 
   this.oldLocationHash = newFragment + newQueryString;
 };
+
+/**
+ * filtering query parameters to select only book search param (?q=foo)
+   this needs to be updated/URL system modified if future query params are to be added
+ * @param {string} url
+ * @return {string}
+ * */
+BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
+  const queries = new URLSearchParams(url);
+  const searchedTerm = queries.get('q');
+  const newQueryStringSearch = searchedTerm == null ? "" : 'q=' + searchedTerm;
+  return newQueryStringSearch;
+}
+
 
 /**
  * Will read either the hash or URL and return the bookreader fragment

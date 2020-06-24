@@ -3,6 +3,7 @@
    please keep up to date as BookReader evolves -->
 <html>
 <head>
+  <title>bookreader demo internetArchive</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
 
@@ -43,7 +44,7 @@
     Internet Archive BookReader Demo<br/>
     <noscript>
     <p>
-        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="https://archive.org/details/theworksofplato01platiala"> other formats of the book</a>.
+        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.
     </p>
     </noscript>
 </div>
@@ -56,24 +57,15 @@ BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 // on petabox side
 function SearchInsideAccess(br, identifier, callback) { this.init = callback; }
 </script>
-<script
-  id="pageUrl"
-  type="text/javascript"
-></script>
+
+<script id="pageUrl" type="text/javascript"></script>
 
 <script>
-        url1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
-        url2 = "&subPrefix=";
-         currentUrl = new URL(window.location.href);
-         bookId = currentUrl.searchParams.get("ocaid");
-      
-    //   hashElements = (new URL(window.location.href)).hash.split("/");
-    // console.log(hashElements)
-    //   bookId = hashElements[hashElements.indexOf("getbookid")+2];
-    //   console.log(bookId)
-
-      document.getElementById('pageUrl').src = url1 + bookId + url2;
-
+  url1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
+  url2 = "&subPrefix=";
+  currentUrl = new URL(window.location.href);
+  bookId = currentUrl.searchParams.get("ocaid");
+  document.getElementById('pageUrl').src = url1 + bookId + url2;
 </script>
 
 </body>
