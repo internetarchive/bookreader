@@ -61,11 +61,10 @@ function SearchInsideAccess(br, identifier, callback) { this.init = callback; }
 <script id="pageUrl" type="text/javascript"></script>
 
 <script>
-  url1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
-  url2 = "&subPrefix=";
-  currentUrl = new URL(window.location.href);
-  bookId = currentUrl.searchParams.get("ocaid");
-  document.getElementById('pageUrl').src = url1 + bookId + url2;
+  const URL_PART1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
+  const URL_PART1 = "&subPrefix=";
+  const bookId = new URL(window.location.href).searchParams.get("ocaid");
+  document.getElementById('pageUrl').src = URL_PART1 + bookId + URL_PART1;
 </script>
 
 </body>
