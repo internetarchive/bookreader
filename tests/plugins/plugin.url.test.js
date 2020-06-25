@@ -122,16 +122,12 @@ describe('Plugin: URL controller', () => {
 
   test('only q= param is selected from url query params', () => {
     const INTIAL_URL = "http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo"
-    br.options.urlMode = 'hash';
-    br.init();
     const result = br.urlParamsFiltersOnlySearch(INTIAL_URL);
     expect(result).toBe("q=foo");
   })
 
   test('only q= param is selected from url query params with special character', () => {
     const INTIAL_URL = "http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo%24%24"
-    br.options.urlMode = 'hash';
-    br.init();
     const result = br.urlParamsFiltersOnlySearch(INTIAL_URL);
     expect(result).toBe("q=foo%24%24");
   })
