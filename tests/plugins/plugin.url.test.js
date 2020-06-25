@@ -121,7 +121,7 @@ describe('Plugin: URL controller', () => {
   })
 
   test('only q= param is selected from url query params', () => {
-    const INTIAL_URL="http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo"
+    const INTIAL_URL = "http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo"
     br.options.urlMode = 'hash';
     br.init();
     const result = br.urlParamsFiltersOnlySearch(INTIAL_URL);
