@@ -162,16 +162,15 @@ BookReader.prototype.urlUpdateFragment = function() {
 };
 
 /**
- * filtering query parameters to select only book search param (?q=foo)
-   this needs to be updated/URL system modified if future query params are to be added
+ * @private
+ * Filtering query parameters to select only book search param (?q=foo)
+   This needs to be updated/URL system modified if future query params are to be added
  * @param {string} url
  * @return {string}
  * */
 BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
-  const queries = new URLSearchParams(url);
-  const searchedTerm = queries.get('q');
-  const newQueryStringSearch = searchedTerm == null ? "" : 'q=' + searchedTerm;
-  return newQueryStringSearch;
+  const params = new URLSearchParams(url);
+  return params.has('q') ? new URLSearchParams({ q: params.get('q') }).toString() : '';
 }
 
 

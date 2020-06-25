@@ -125,7 +125,8 @@ describe('Plugin: URL controller', () => {
     br.options.urlMode = 'hash';
     br.init();
     const result = br.urlParamsFiltersOnlySearch(INTIAL_URL);
-    expect(result).toBe("q=foo");
+    const expectedRes = new URLSearchParams({ q: "foo" }).toString();
+    expect(result).toBe(expectedRes);
   })
 });
 
