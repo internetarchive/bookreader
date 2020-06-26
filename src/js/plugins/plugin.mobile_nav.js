@@ -106,10 +106,9 @@ BookReader.prototype.initToolbar = (function (super_) {
       } else {
         $(document.body).addClass('BRbodyMobileNavEnabled');
       }
-     
+
       this.refs.$mmenu = $mmenuEl;
 
-      
     }
 
     // Call the parent method at the end, because it binds events to DOM

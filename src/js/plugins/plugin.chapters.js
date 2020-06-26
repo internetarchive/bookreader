@@ -29,13 +29,14 @@ BookReader.prototype.init = (function(super_) {
       this.getOpenLibraryRecord();
     }
     if (this.enableMobileNav) {
-      this.bind(BookReader.eventNames.mobileNavOpen, 
+      this.bind(BookReader.eventNames.mobileNavOpen,
         () => {
           this.updateTOCState(this.firstIndex, this._tocEntries);
 
           if($('#mm-4').hasClass('mm-opened')){
             this.updateTOCState(this.firstIndex, this._tocEntries);
-        }}
+          }
+        }
       )
       this.bind(BookReader.eventNames.TOCOpen,
         () => {
@@ -57,9 +58,9 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
   const uiStringPage = 'Page'; // i18n
   const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
   const jumpToChapter = (event) => {
-     this.jumpToIndex($(event.target).data('pageIndex'));
-     $('.current-chapter').removeClass('current-chapter');
-     $(event.target).addClass('current-chapter');
+    this.jumpToIndex($(event.target).data('pageIndex'));
+    $('.current-chapter').removeClass('current-chapter');
+    $(event.target).addClass('current-chapter');
   }
   const title = `${chapterTitle} | ${uiStringPage} ${pageNumber}`;
 
@@ -68,10 +69,10 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
   mobileChapter.addClass('table-contents-el')
   .appendTo(this.$('.table-contents-list'))
   .data({ pageIndex });
- 
-  
+
+
   //adds .BRchapters to the slider only if pageIndex exists
-  if(pageIndex!=undefined){
+  if(pageIndex != undefined){
     $(`<div><div>${title}</div></div>`)
       .addClass('BRchapter')
       .css({ left: percentThrough })
@@ -114,12 +115,12 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
       )
       .bind('click', jumpToChapter);
 
-      //adding clickable properties to mobile chapters
-      mobileChapter.bind('click', jumpToChapter)
-        .addClass('chapter-clickable')
-        .attr("data-event-click-tracking","BRTOCPanel|GoToChapter");
+    //adding clickable properties to mobile chapters
+    mobileChapter.bind('click', jumpToChapter)
+      .addClass('chapter-clickable')
+      .attr("data-event-click-tracking","BRTOCPanel|GoToChapter");
   }
- 
+
 };
 
 /*
@@ -135,7 +136,7 @@ BookReader.prototype.removeChapters = function() {
  */
 BookReader.prototype.updateTOC = function(tocEntries) {
   this.removeChapters();
-  if(tocEntries.length>0){
+  if(tocEntries.length > 0){
     this.$(".BRmobileMenu__tableContents").show();
   }
   for (let i = 0; i < tocEntries.length; i++) {

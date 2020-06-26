@@ -28,7 +28,7 @@ const SAMPLE_TOC = [{
   "pageIndex": 17,
 },
 {
-"pagenum": "undefined",
+  "pagenum": "undefined",
   "level": 1,
   "label": "CHAPTER III",
   "type": {"key": "/type/toc_item"},
@@ -47,19 +47,19 @@ const SAMPLE_TOC = [{
 const SAMPLE_TOC_UNDEF = [
   {
     "pagenum": "undefined",
-      "level": 1,
-      "label": "CHAPTER I",
-      "type": {"key": "/type/toc_item"},
-      "title": "THE COUNTRY AND THE MISSION 1",
-      "pageIndex": undefined,
+    "level": 1,
+    "label": "CHAPTER I",
+    "type": {"key": "/type/toc_item"},
+    "title": "THE COUNTRY AND THE MISSION 1",
+    "pageIndex": undefined,
   },
   {
     "pagenum": "undefined",
-      "level": 1,
-      "label": "CHAPTER II",
-      "type": {"key": "/type/toc_item"},
-      "title": "THE COUNTRY AND THE MISSION 2",
-      "pageIndex": undefined,
+    "level": 1,
+    "label": "CHAPTER II",
+    "type": {"key": "/type/toc_item"},
+    "title": "THE COUNTRY AND THE MISSION 2",
+    "pageIndex": undefined,
   }
 ]
 
@@ -114,7 +114,7 @@ describe('updateTOCState', () => {
     br.updateTOCState(20, SAMPLE_TOC);
     expect($('li.table-contents-el')[1].classList.contains('current-chapter'));
   });
-  
+
   test('Only one element has .current-chapter', () => {
     br.updateTOCState(9, SAMPLE_TOC);
     expect($('li.table-contents-el.current-chapter').length).toBe(1);
