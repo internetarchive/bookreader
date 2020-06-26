@@ -7,6 +7,7 @@ import '../../BookReader/jquery.bt.min.js';
 import '../../BookReader/mmenu/dist/js/jquery.mmenu.min.js';
 import '../../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js';
 
+
 import BookReader from '../../src/js/BookReader.js';
 import '../../src/js/plugins/plugin.mobile_nav.js';
 import '../../src/js/plugins/plugin.chapters.js';
@@ -100,42 +101,37 @@ describe('Plugin: Menu Toggle', () => {
   });
 });
 
-
-// Chapter 1, page: 3
-// Chapter 2, page: undefined
-// Chapter 3, page: 15
-
-
 describe('updateTOCState', () => {
 
-  test('Test page is one of TOC', () => {
+  beforeEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = function() {};
+    br.getPageIndex = (str) => parseInt(str);
     br.init();
+    br.updateTOC(SAMPLE_TOC);
+  });
+
+  test('Test page is one of TOC', () => {
     br.updateTOCState(20, SAMPLE_TOC);
     expect($('li.table-contents-el')[1].classList.contains('current-chapter'));
   });
   
   test('Only one element has .current-chapter', () => {
-    br.init();
-    br.updateTOC(SAMPLE_TOC)
     br.updateTOCState(9, SAMPLE_TOC);
     expect($('li.table-contents-el.current-chapter').length).toBe(1);
   })
 
   test('No chapter has .current-chapter if current index is < than any chapter index', () => {
-    br.init();
     br.updateTOCState(1, SAMPLE_TOC);
     expect($('li.table-contents-el.current-chapter').length).toBe(0);
   })
 
   test('if current index == chapter index ', () => {
-    br.init();
     br.updateTOCState(17, SAMPLE_TOC);
     expect($('li.table-contents-el')[1].classList.contains('current-chapter'));
   })
 
   test('No chapter has .current-chapter if all chapter have undefined pageIndex ', () => {
-    br.init();
-    br.updateTOCState(10, SAMPLE_TOC);
+    br.updateTOCState(10, SAMPLE_TOC_UNDEF);
     expect($('li.table-contents-el.current-chapter').length).toBe(0);
   })
 });
