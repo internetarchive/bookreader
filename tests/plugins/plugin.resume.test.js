@@ -67,9 +67,7 @@ describe('updateResumeValue', () => {
 
   test('handles resumeCookiePath not set', () => {
     const setItemSpy = sinon.spy(docCookies, 'setItem');
-    // Save function. Not sure why, mock of
-    // br.getCookiePath or BookReader.prototype.getCookiesPath
-    // not cleared at end of test
+    // Save function
     const saveFn = br.getCookiePath;
     br.getCookiePath = jest.fn(() => '/details/foo');
     br.updateResumeValue(16);
