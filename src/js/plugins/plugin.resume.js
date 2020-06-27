@@ -28,7 +28,7 @@ BookReader.prototype.init = (function(super_) {
 })(BookReader.prototype.init);
 
 /**
- * Gets the page resume value, for remembering reader's page
+ * Gets page resume value, for remembering reader's page
  * Can be overriden for different implementation
  *
  * @return {number|null}
