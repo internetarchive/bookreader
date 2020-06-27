@@ -28,7 +28,7 @@ BookReader.prototype.init = (function(super_) {
 })(BookReader.prototype.init);
 
 /**
- * Get's the page resume value, for remembering reader's page
+ * Gets the page resume value, for remembering reader's page
  * Can be overriden for different implementation
  *
  * @return {number|null}
@@ -40,7 +40,19 @@ BookReader.prototype.getResumeValue = function() {
 }
 
 /**
- * Set's the page resume value, for remembering reader's page
+ * Return cookie path using pathname up to /page/... or /mode/...
+ * using window.location.pathname for urlPathPart:
+ * - matches encoding
+ * - ignores querystring part
+ * - ignores fragment part (after #)
+ * @param {string} urlPathPart - window.location.pathname
+ */
+BookReader.prototype.getCookiePath = function(urlPathPart) {
+  return urlPathPart.match('.+?(?=/page/|/mode/|$)')[0];
+}
+
+/**
+ * Sets page resume value, for remembering reader's page
  * Can be overriden for different implementation
  *
  * @param {Number} index leaf index
@@ -49,9 +61,8 @@ BookReader.prototype.getResumeValue = function() {
 BookReader.prototype.updateResumeValue = function(index, cookieName) {
   const ttl = new Date(+new Date + 12096e5); // 2 weeks
   // For multiple files in item, leave resumeCookiePath blank
-  // It's likely we can now remove resumeCookiePath by new .match()
-  // below using pathname up to /page/... or /mode/...
+  // It's likely we can remove resumeCookiePath using getCookiePath()
   const path = this.options.resumeCookiePath
-    || window.location.pathname.match('.+?(?=/page/|/mode/|$)')[0];
+    || this.getCookiePath(window.location.pathname);
   BookReader.docCookies.setItem(cookieName || 'br-resume', index, ttl, path, null, false);
 }
