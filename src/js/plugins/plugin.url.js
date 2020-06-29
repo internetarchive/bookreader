@@ -170,7 +170,7 @@ BookReader.prototype.urlUpdateFragment = function() {
  * */
 BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
   const params = new URLSearchParams(url);
-  return params.has('q') ? new URLSearchParams({ q: params.get('q') }).toString() : '';
+  return params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
 }
 
 
