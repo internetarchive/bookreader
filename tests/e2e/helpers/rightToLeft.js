@@ -9,11 +9,11 @@ export function runRightToLeftTests (br) {
     //checking right leaf edge has 0 width
     await t.expect(BRcontainer.find('.BRleafEdgeR').getStyleProperty('width')).eql('0px');
 
-    //cehcking empty page before the cover is more to the left than the first page
+    //checking empty page before the cover is more to the left than the first page
     const rightEmptyPage = BRcontainer.find('.BRpagecontainer.BRemptypage.pagediv-1');
     const leftPage = BRcontainer.find('.BRpagecontainer.pagediv0');
     const leftPageLDistance = leftPage.getBoundingClientRectProperty('left');
-    const rightPageLDistance = rightEmptyPage.getBoundingClientRectProperty('left');    
+    const rightPageLDistance = rightEmptyPage.getBoundingClientRectProperty('left');
     await t.expect(rightPageLDistance).gt(await leftPageLDistance);
 
     //checks slider is in correct position

@@ -1,6 +1,6 @@
 /* global fixture */
 import { runBaseTests } from './helpers/base';
-import { runRightToLeftTests } from './helpers/RtL';
+import { runRightToLeftTests } from './helpers/rightToLeft';
 
 import BookReader from './models/BookReader';
 
