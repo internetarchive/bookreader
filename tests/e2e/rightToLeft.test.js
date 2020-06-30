@@ -4,17 +4,18 @@ import { runRightToLeftTests } from './helpers/RtL';
 
 import BookReader from './models/BookReader';
 
-const localURL = 'https://archive.org/details/';
-const books = [
+const { BASE_URL } = process.env;
+const DEMO_PATH = 'demo-internetarchive.html?ocaid=';
+const OCAIDS = [
   'gendaitankashu00meijuoft', // Right to Left book
 ];
 
-books.forEach(function(page) {
-  const url = `${localURL}${page}`;
+OCAIDS.forEach(ocaid => {
+  const url = `${BASE_URL}${DEMO_PATH}${ocaid}`;
 
-  fixture `Base Tests for right to left book: ${page}`.page `${url}`;
+  fixture `Base Tests for right to left book: ${ocaid}`.page `${url}`;
   runBaseTests(new BookReader());
 
-  fixture `Specific Tests for right to left book: ${page}`.page `${url}`;
+  fixture `Specific Tests for right to left book: ${ocaid}`.page `${url}`;
   runRightToLeftTests(new BookReader());
 });
