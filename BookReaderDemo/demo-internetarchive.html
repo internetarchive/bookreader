@@ -61,9 +61,9 @@ function SearchInsideAccess(br, identifier, callback) { this.init = callback; }
 <script id="pageUrl" type="text/javascript"></script>
 
 <script>
-  const URL_PART1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
-  const URL_PART2 = "&subPrefix=";
-  const bookId = new URL(window.location.href).searchParams.get("ocaid");
+  var URL_PART1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
+  var URL_PART2 = "&subPrefix=";
+  var bookId = location.href.match(/ocaid=([^&#]+)/i)[1];
   document.getElementById('pageUrl').src = URL_PART1 + bookId + URL_PART2;
 </script>
 
