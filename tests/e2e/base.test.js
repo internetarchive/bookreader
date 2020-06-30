@@ -6,8 +6,8 @@ import { runMobileSearchTests } from './helpers/mobileSearch';
 
 
 const { BASE_URL } = process.env;
-const localPages = [
-  'demo-ia-plato.html',
+const OCAIDS = [
+  'theworksofplato01platiala',
   // Removed because failing test 'Canonical URL with cookie shows paramters'
   // in tests/e2e/helpers/base.js
   // Cookie path should be:
@@ -16,18 +16,19 @@ const localPages = [
   // /BookReaderDemo/demo-ia-olivertwist.html/page/n13/mode/2up
   // 'demo-ia-olivertwist.html',
 ];
+const DEMO_PATH  = 'demo-internetarchive.html?ocaid='
 
-localPages.forEach(function(page) {
-  const url = `${BASE_URL}${page}`;
+OCAIDS.forEach(ocaid => {
+  const url = `${BASE_URL}${DEMO_PATH }${ocaid}`;
 
-  fixture `Base Tests for: ${page}`.page `${url}`;
+  fixture `Base Tests for: ${ocaid}`.page `${url}`;
   runBaseTests(new BookReader());
 
-  fixture `Desktop Search Tests for: ${page}`
+  fixture `Desktop Search Tests for: ${ocaid}`
     .page `${url}`
   runDesktopSearchTests(new BookReader());
 
-  fixture `Mobile Search Tests for: ${page}`
+  fixture `Mobile Search Tests for: ${ocaid}`
     .page `${url}`
   runMobileSearchTests(new BookReader());
 

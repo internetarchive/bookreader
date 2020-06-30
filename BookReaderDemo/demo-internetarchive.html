@@ -3,6 +3,7 @@
    please keep up to date as BookReader evolves -->
 <html>
 <head>
+  <title>bookreader demo internetArchive</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
 
@@ -43,7 +44,7 @@
     Internet Archive BookReader Demo<br/>
     <noscript>
     <p>
-        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="https://archive.org/details/theworksofplato01platiala"> other formats of the book</a>.
+        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.
     </p>
     </noscript>
 </div>
@@ -56,10 +57,15 @@ BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 // on petabox side
 function SearchInsideAccess(br, identifier, callback) { this.init = callback; }
 </script>
-<script
-  type="text/javascript"
-  src="https://archive.org/bookreader/BookReaderJSLocate.php?id=theworksofplato01platiala&subPrefix="
-></script>
+
+<script id="pageUrl" type="text/javascript"></script>
+
+<script>
+  var URL_PART1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
+  var URL_PART2 = "&subPrefix=";
+  var bookId = location.href.match(/ocaid=([^&#]+)/i)[1];
+  document.getElementById('pageUrl').src = URL_PART1 + bookId + URL_PART2;
+</script>
 
 </body>
 </html>
