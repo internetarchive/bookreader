@@ -38,7 +38,7 @@
     "jest": "25.1.0",
     "live-server": "1.2.1",
     "node-fetch": "2.6.0",
-    "regenerator-runtime": "0.13.3",
+    "regenerator-runtime": "0.13.5",
     "sass": "1.22.12",
     "sinon": "9.0.2",
     "testcafe": "1.8.6",
