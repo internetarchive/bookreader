@@ -28,6 +28,7 @@ class DesktopNav {
     this.fullScreen = bottomToolbar.find('.BRicon.full');
     this.searchBox = topToolbar.find('.BRbooksearch.desktop');
     this.searchPin = bottomToolbar.find('.BRsearch');
+    this.sliderRange = bottomToolbar.find('.ui-slider-range')
   }
 }
 
