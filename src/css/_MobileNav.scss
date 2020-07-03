@@ -151,17 +151,15 @@ li.table-contents-el{
   display: -webkit-box;
   -webkit-box-orient: vertical;
   color: gray;
-  font-weight: lighter;
   padding-top: 4px;
   padding-bottom: 4px;
 
-}
+  &.chapter-clickable{
+    font-weight: normal;
+    color: black;
+  }
 
-li.table-contents-el.chapter-clickable{
-  font-weight: normal;
-  color: black;
-}
-
-li.table-contents-el.current-chapter{
-  background-color: lightblue;
+  &.current-chapter{
+    background-color: lightblue;
+  }
 }

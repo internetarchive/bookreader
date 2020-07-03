@@ -126,9 +126,6 @@ BookReader.prototype.initToolbar = (function (super_) {
         }
       });
 
-      $(".mm-next.mm-fullsubopen[data-target='#mm-4']").click(
-        () => this.trigger("TOCOpen")
-      );
 
       const closeMobileMenu = (e) => {
         // Need to close the mobile menu to reset DOM & Style

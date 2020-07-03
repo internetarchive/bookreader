@@ -32,17 +32,16 @@ BookReader.prototype.init = (function(super_) {
       this.bind(BookReader.eventNames.mobileNavOpen,
         () => {
           this.updateTOCState(this.firstIndex, this._tocEntries);
-
-          if($('#mm-4').hasClass('mm-opened')){
+          if($('table-contents-list').parent().hasClass('mm-opened')){
             this.updateTOCState(this.firstIndex, this._tocEntries);
           }
         }
       )
-      this.bind(BookReader.eventNames.TOCOpen,
+      $(".BRmobileMenu__tableContents").click(
         () => {
           this.updateTOCState(this.firstIndex, this._tocEntries);
         }
-      )
+      );
     }
   }
 })(BookReader.prototype.init);
@@ -65,10 +64,10 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
   const title = `${chapterTitle} | ${uiStringPage} ${pageNumber}`;
 
   //adding items to mobile table of contents
-  const mobileChapter = $(`<li>${title}</li>`);
+  const mobileChapter = $(`<li></li>`).text(title);
   mobileChapter.addClass('table-contents-el')
-  .appendTo(this.$('.table-contents-list'))
-  .data({ pageIndex });
+    .appendTo(this.$('.table-contents-list'))
+    .data({ pageIndex });
 
 
   //adds .BRchapters to the slider only if pageIndex exists
@@ -136,7 +135,7 @@ BookReader.prototype.removeChapters = function() {
  */
 BookReader.prototype.updateTOC = function(tocEntries) {
   this.removeChapters();
-  if(tocEntries.length > 0){
+  if(this.enableMobileNav && tocEntries.length > 0){
     this.$(".BRmobileMenu__tableContents").show();
   }
   for (let i = 0; i < tocEntries.length; i++) {
@@ -232,9 +231,9 @@ BookReader.prototype.getOpenLibraryRecord = function () {
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   return function () {
     const $el = super_.call(this);
-    if (this.options.enableChaptersPlugin) {
+    if (this.enableMobileNav && this.options.enableChaptersPlugin) {
       $el.find('.BRmobileMenu__moreInfoRow').after($(`
-        <li class="BRmobileMenu__tableContents" data-event-click-tracking=”BRSidebar|TOCPanel>
+        <li class="BRmobileMenu__tableContents" data-event-click-tracking="BRSidebar|TOCPanel">
             <span>
                 <span class="DrawerIconWrapper"></span>
                 Table of Contents

@@ -1,3 +1,4 @@
+import sinon from 'sinon';
 import '../../BookReader/jquery-1.10.1.js';
 import '../../BookReader/jquery-ui-1.12.0.min.js';
 import '../../BookReader/jquery.browser.min.js';
@@ -104,10 +105,11 @@ describe('Plugin: Menu Toggle', () => {
 describe('updateTOCState', () => {
 
   beforeEach(() => {
+    // sinon.stub(window.Element, 'scrollIntoView');
     window.HTMLElement.prototype.scrollIntoView = function() {};
     br.getPageIndex = (str) => parseInt(str);
+    //sinon.stub(br, 'getPageIndex').callsFake((str) => parseInt(str));
     br.init();
-    br.updateTOC(SAMPLE_TOC);
   });
 
   test('Test page is one of TOC', () => {
