@@ -105,10 +105,10 @@ describe('Plugin: Menu Toggle', () => {
 describe('updateTOCState', () => {
 
   beforeEach(() => {
-    // sinon.stub(window.Element, 'scrollIntoView');
-    window.HTMLElement.prototype.scrollIntoView = function() {};
-    br.getPageIndex = (str) => parseInt(str);
-    //sinon.stub(br, 'getPageIndex').callsFake((str) => parseInt(str));
+    window.HTMLElement.prototype.scrollIntoView = sinon.stub();
+    //Sinon is not used because this function is imported from BookModel with exposeOverrideableMethod()
+    //which has a getter and setter
+    br.getPageIndex = (str) => parseFloat(str);
     br.init();
   });
 
