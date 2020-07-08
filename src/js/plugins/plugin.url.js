@@ -154,11 +154,25 @@ BookReader.prototype.urlUpdateFragment = function() {
       window.history.replaceState({}, null, newUrlPath);
     }
   } else {
-    window.location.replace('#' + newFragment + newQueryString);
+    const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
+    window.location.replace('#' + newFragment + newQueryStringSearch);
   }
 
   this.oldLocationHash = newFragment + newQueryString;
 };
+
+/**
+ * @private
+ * Filtering query parameters to select only book search param (?q=foo)
+   This needs to be updated/URL system modified if future query params are to be added
+ * @param {string} url
+ * @return {string}
+ * */
+BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
+  const params = new URLSearchParams(url);
+  return params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
+}
+
 
 /**
  * Will read either the hash or URL and return the bookreader fragment
