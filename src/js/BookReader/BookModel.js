@@ -340,7 +340,7 @@ export class BookModel {
 /**
  * A controlled schema for page data.
  */
-class PageModel {
+export class PageModel {
   /**
    * @param {BookModel} book
    * @param {PageIndex} index
