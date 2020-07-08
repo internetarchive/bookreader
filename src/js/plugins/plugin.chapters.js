@@ -261,7 +261,6 @@ BookReader.prototype.updateTOCState = function(currIndex, tocEntries) {
     (el) => el.pageIndex <= currIndex)];
   if(currChapter != undefined){
     $(currChapter.mobileHTML).addClass('current-chapter');
-    $('.current-chapter')[0].scrollIntoView({block: "center"});
   }
 }
 
