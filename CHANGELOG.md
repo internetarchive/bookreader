@@ -1,3 +1,6 @@
+# 4.13.1
+- Fix: Toc entries not showing page number on desktop (#369) @cdrini
+
 # 4.13.0
 - Fix: BookReader.unbind not actually unbinding (#360) @shaneriley
 - Dev: New demo with configurable IA id: `demo-internetarchive.html?ocaid=foo` (#356) @Pyrojet99
