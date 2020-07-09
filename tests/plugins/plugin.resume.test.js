@@ -66,11 +66,40 @@ describe('updateResumeValue', () => {
   });
 
   test('handles resumeCookiePath not set', () => {
-    const { updateResumeValue } = BookReader.prototype;
     const setItemSpy = sinon.spy(docCookies, 'setItem');
-    const fakeBr = { options: { } };
+    // Save function
+    const saveFn = br.getCookiePath;
+    br.getCookiePath = jest.fn(() => '/details/foo');
+    br.updateResumeValue(16);
+    expect(setItemSpy.args[0][3]).toEqual('/details/foo');
+    // Restore function
+    br.getCookiePath = saveFn;
+  });
 
-    updateResumeValue.call(fakeBr, 16);
-    expect(setItemSpy.args[0][3]).toEqual('/');
+  test('handles cookie path from URL with decoration', () => {
+    const complexPathWithPage = '/details/2008ELMValidityStudyFinalReportRevised/Executive%20Summary%20for%20the%20EPT%26ELM%20Validity%20Studie_20100603%20-%20Copy/page/n1/mode/2up';
+    const complexPath = '/details/2008ELMValidityStudyFinalReportRevised/Executive%20Summary%20for%20the%20EPT%26ELM%20Validity%20Studie_20100603%20-%20Copy';
+    expect(br.getCookiePath(complexPathWithPage))
+      .toEqual(complexPath);
+
+    expect(br.getCookiePath('/details/item/mode/1up'))
+      .toEqual('/details/item');
+
+    expect(br.getCookiePath('/details/item/inside/a/long/path/model/is/used'))
+      .toEqual('/details/item/inside/a/long/path/model/is/used');
+
+    expect(br.getCookiePath('/details/item/inside/a/long/path/mode/is/used'))
+      .toEqual('/details/item/inside/a/long/path');
+  });
+
+  test('handles cookie path from URL with no decoration', () => {
+    expect(br.getCookiePath('/details/item'))
+      .toEqual('/details/item');
+
+    expect(br.getCookiePath('/details/item/'))
+      .toEqual('/details/item/');
+
+    expect(br.getCookiePath('/details/item/almost/any/kind/of/long/path'))
+      .toEqual('/details/item/almost/any/kind/of/long/path');
   });
 });
