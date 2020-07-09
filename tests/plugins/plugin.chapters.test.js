@@ -114,26 +114,26 @@ describe('updateTOCState', () => {
 
   test('Test page is one of TOC', () => {
     br.updateTOCState(20, SAMPLE_TOC);
-    expect($('li.table-contents-el')[1].classList.contains('current-chapter'));
+    expect($('li.BRtable-contents-el')[1].classList.contains('current-chapter'));
   });
 
   test('Only one element has .current-chapter', () => {
     br.updateTOCState(9, SAMPLE_TOC);
-    expect($('li.table-contents-el.current-chapter').length).toBe(1);
+    expect($('li.BRtable-contents-el.current-chapter').length).toBe(1);
   })
 
   test('No chapter has .current-chapter if current index is < than any chapter index', () => {
     br.updateTOCState(1, SAMPLE_TOC);
-    expect($('li.table-contents-el.current-chapter').length).toBe(0);
+    expect($('li.BRtable-contents-el.current-chapter').length).toBe(0);
   })
 
   test('if current index == chapter index ', () => {
     br.updateTOCState(17, SAMPLE_TOC);
-    expect($('li.table-contents-el')[1].classList.contains('current-chapter'));
+    expect($('li.BRtable-contents-el')[1].classList.contains('current-chapter'));
   })
 
   test('No chapter has .current-chapter if all chapter have undefined pageIndex ', () => {
     br.updateTOCState(10, SAMPLE_TOC_UNDEF);
-    expect($('li.table-contents-el.current-chapter').length).toBe(0);
+    expect($('li.BRtable-contents-el.current-chapter').length).toBe(0);
   })
 });

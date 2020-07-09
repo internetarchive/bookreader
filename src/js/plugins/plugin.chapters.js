@@ -61,14 +61,15 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
     $('.current-chapter').removeClass('current-chapter');
     $(event.target).addClass('current-chapter');
   }
-  const title = `${chapterTitle} | ${uiStringPage} ${pageNumber}`;
+  const title = `${chapterTitle} | `;
+  const pageStr = `${uiStringPage} ${pageNumber}`;
 
   //adding items to mobile table of contents
-  const mobileChapter = $(`<li></li>`).text(title);
-  mobileChapter.addClass('table-contents-el')
+  const mobileChapter = $(`<li></li>`).append($(`<span class='BRTOCElementTitle'></span>`).text(title))
+    .append($(`<span class='BRTOCElementPage'></span>`).text(pageStr));
+  mobileChapter.addClass('BRtable-contents-el')
     .appendTo(this.$('.table-contents-list'))
     .data({ pageIndex });
-
 
   //adds .BRchapters to the slider only if pageIndex exists
   if(pageIndex != undefined){
