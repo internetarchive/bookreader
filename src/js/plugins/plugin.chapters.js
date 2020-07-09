@@ -235,7 +235,9 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
       $el.find('.BRmobileMenu__moreInfoRow').after($(`
         <li class="BRmobileMenu__tableContents" data-event-click-tracking="BRSidebar|TOCPanel">
             <span>
-                <span class="DrawerIconWrapper"></span>
+                <span class="DrawerIconWrapper">
+                  <img class="DrawerIcon" src="${this.imagesBaseURL}icon_toc.svg" alt="toc-icon"/>
+                </span>
                 Table of Contents
             </span>
             <div>
