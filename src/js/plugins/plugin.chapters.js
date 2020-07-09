@@ -57,13 +57,9 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
   const uiStringPage = 'Page'; // i18n
   const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
   const jumpToChapter = (event) => {
-    let $chapterEl = $(event.target);
-    if(!$(event.target).hasClass('chapter-clickable')){
-      $chapterEl = $(event.target).parent();
-    }
-    this.jumpToIndex($chapterEl.data('pageIndex'));
+    this.jumpToIndex($(event.delegateTarget).data('pageIndex'));
     $('.current-chapter').removeClass('current-chapter');
-    $chapterEl.addClass('current-chapter');
+    $(event.delegateTarget).addClass('current-chapter');
   }
   const title = `${chapterTitle} | `;
   const pageStr = `${uiStringPage} ${pageNumber}`;
@@ -122,8 +118,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
     //adding clickable properties to mobile chapters
     mobileChapter.bind('click', jumpToChapter)
       .addClass('chapter-clickable')
-      .attr("data-event-click-tracking","BRTOCPanel|GoToChapter")
-      .children().bind('click', jumpToChapter);
+      .attr("data-event-click-tracking","BRTOCPanel|GoToChapter");
   }
 
 };
@@ -273,4 +268,3 @@ BookReader.prototype.updateTOCState = function(currIndex, tocEntries) {
     $(currChapter.mobileHTML).addClass('current-chapter');
   }
 }
-
