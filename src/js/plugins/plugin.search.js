@@ -60,7 +60,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
     const $el = super_.call(this);
     if (this.enableSearch) {
       $el.find('.BRmobileMenu__moreInfoRow').after($(
-        `<li>
+        `<li class="BRmobileMenu__search">
           <span>
             <span class="DrawerIconWrapper">
               <img class="DrawerIcon" src="${this.imagesBaseURL}icon_search_button_blue.svg" alt="info-speaker"/>

@@ -108,6 +108,7 @@ BookReader.prototype.initToolbar = (function (super_) {
       }
 
       this.refs.$mmenu = $mmenuEl;
+
     }
 
     // Call the parent method at the end, because it binds events to DOM
@@ -121,8 +122,10 @@ BookReader.prototype.initToolbar = (function (super_) {
           $mmenuEl.data('mmenu').close();
         } else {
           $mmenuEl.data('mmenu').open();
+          this.trigger("mobileNavOpen");
         }
       });
+
 
       const closeMobileMenu = (e) => {
         // Need to close the mobile menu to reset DOM & Style
