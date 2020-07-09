@@ -1,3 +1,11 @@
+# 4.13.0
+- Fix: BookReader.unbind not actually unbinding (#360) @shaneriley
+- Dev: New demo with configurable IA id: `demo-internetarchive.html?ocaid=foo` (#356) @Pyrojet99
+- Dev: Add E2E tests for right-to-left books (#350) @Pyrojet99
+- Dev: Update core-js, webpack, \@types/jest, regenerator-runtime @dependabot-preview + @cdrini
+- Fix: Remembers page for multi-book items on IA (#359) @mc2
+- Feature: Table of contents panel in mobile view (#351) @Pyrojet99
+
 # 4.12.0
 - Fix: Test command for Windows users @cdrini
 - Dev: Autoplay e2e test @pyrojet99
