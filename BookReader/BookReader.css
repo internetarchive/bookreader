@@ -2150,6 +2150,28 @@ html.mm-background .BookReader {
     display: block;
   }
 }
+li.BRtable-contents-el {
+  line-height: 1em;
+  padding: 10px 10px 10px 20px;
+  overflow: hidden;
+  color: gray;
+}
+li.BRtable-contents-el.chapter-clickable {
+  font-weight: normal;
+  color: black;
+}
+li.BRtable-contents-el.current-chapter {
+  background-color: lightblue;
+}
+li.BRtable-contents-el > span {
+  display: inline;
+  padding: 0;
+  white-space: normal;
+}
+li.BRtable-contents-el .BRTOCElementPage {
+  font-size: 0.85em;
+}
+
 /****************** Excerpt from jquery-ui *********************/
 .ui-helper-hidden {
   display: none;
