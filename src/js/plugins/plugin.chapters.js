@@ -73,7 +73,8 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
 
   //adds .BRchapters to the slider only if pageIndex exists
   if(pageIndex != undefined){
-    $(`<div><div>${title}</div></div>`)
+    $(`<div></div>`)
+      .append($('<div />').text(title + pageStr))
       .addClass('BRchapter')
       .css({ left: percentThrough })
       .appendTo(this.$('.BRnavline'))
