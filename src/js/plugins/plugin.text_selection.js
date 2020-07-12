@@ -4,11 +4,10 @@ let XMLpageArr = undefined;
 class BookreaderWithTextSelection extends BookReader {
   init() {
     console.log("initializing text-selection");
-
+    const OCAID = this.bookId;
     $.ajax({
       type: "GET",
-      // url: "https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml",
-      url: "./goodytwoshoes00newyiala_djvu.xml",
+      url: `https://cors.archive.org/cors/${OCAID}/${OCAID}_djvu.xml`,
       dataType: "xml",
       async: false,
 
