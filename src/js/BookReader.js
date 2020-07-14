@@ -2154,84 +2154,64 @@ BookReader.prototype.bindNavigationHandlers = function() {
   const self = this;
 
   // Note the mobile plugin attaches itself to body, so we need to select outside
-  var jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
+  const jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
+  const navigationControls = {
+    book_left: () => {
+      this.trigger(BookReader.eventNames.stop);
+      this.left();
+    },
+    book_right: () => {
+      this.trigger(BookReader.eventNames.stop);
+      this.right();
+    },
+    book_up: () => {
+      if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
+        this.scrollUp();
+      } else {
+        this.prev();
+      }
+    },
+    book_down: () => {
+      if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
+        this.scrollDown();
+      } else {
+        this.next();
+      }
+    },
+    book_top: this.first,
+    book_bottom: this.last,
+    book_leftmost: this.leftmost,
+    book_rightmost: this.rightmost,
+    zoom_in: () => {
+      this.trigger(BookReader.eventNames.stop);
+      this.zoom(1);
+      this.trigger(BookReader.eventNames.zoomIn);
+    },
+    zoom_out: () => {
+      this.trigger(BookReader.eventNames.stop);
+      this.zoom(-1);
+      this.trigger(BookReader.eventNames.zoomOut);
+    },
+    full: () => {
+      if (this.ui == 'embed') {
+        var url = this.$('.BRembedreturn a').attr('href');
+        window.open(url);
+      } else {
+        this.toggleFullscreen();
+      }
+    },
+  };
 
   jIcons.filter('.fit').bind('fit', function() {
     // XXXmang implement autofit zoom
   });
 
-  jIcons.filter('.book_left').click(function() {
-    self.trigger(BookReader.eventNames.stop);
-    self.left();
-    return false;
-  });
-
-  jIcons.filter('.book_right').click(function() {
-    self.trigger(BookReader.eventNames.stop);
-    self.right();
-    return false;
-  });
-
-  jIcons.filter('.book_up').bind('click', function() {
-    if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
-      self.scrollUp();
-    } else {
-      self.prev();
-    }
-    return false;
-  });
-
-  jIcons.filter('.book_down').bind('click', function() {
-    if ($.inArray(self.mode, [self.constMode1up, self.constModeThumb]) >= 0) {
-      self.scrollDown();
-    } else {
-      self.next();
-    }
-    return false;
-  });
-
-  jIcons.filter('.book_top').click(function() {
-    self.first();
-    return false;
-  });
-
-  jIcons.filter('.book_bottom').click(function() {
-    self.last();
-    return false;
-  });
-
-  jIcons.filter('.book_leftmost').click(function() {
-    self.leftmost();
-    return false;
-  });
-
-  jIcons.filter('.book_rightmost').click(function() {
-    self.rightmost();
-    return false;
-  });
-
-  jIcons.filter('.zoom_in').bind('click', function() {
-    self.trigger(BookReader.eventNames.stop);
-    self.zoom(1);
-    self.trigger(BookReader.eventNames.zoomIn);
-    return false;
-  });
-
-  jIcons.filter('.zoom_out').bind('click', function() {
-    self.trigger(BookReader.eventNames.stop);
-    self.zoom(-1);
-    self.trigger(BookReader.eventNames.zoomOut);
-    return false;
-  });
-
-  jIcons.filter('.full').bind('click', function() {
-    if (self.ui == 'embed') {
-      var url = self.$('.BRembedreturn a').attr('href');
-      window.open(url);
-    } else {
-      self.toggleFullscreen();
-    }
-  });
+  for (const control in navigationControls) {
+    jIcons.filter(`.${control}`).on('click', () => {
+      navigationControls[control]()
+      return false;
+    });
+  }
 
   var $brNavCntlBtmEl = this.$('.BRnavCntlBtm');
   var $brNavCntlTopEl = this.$('.BRnavCntlTop');
@@ -2834,14 +2814,13 @@ BookReader.prototype.initUIStrings = function() {
     '.BRdn': 'Show/hide nav bar', // Would have to keep updating on state change to have just "Hide nav bar"
     '.BRup': 'Show/hide nav bar',
     '.book_top': 'First page',
-    '.book_bottom': 'Last page'
+    '.book_bottom': 'Last page',
+    '.book_leftmost': 'First page',
+    '.book_rightmost': 'Last page',
   };
   if ('rl' == this.pageProgression) {
     titles['.book_leftmost'] = 'Last page';
     titles['.book_rightmost'] = 'First page';
-  } else { // LTR
-    titles['.book_leftmost'] = 'First page';
-    titles['.book_rightmost'] = 'Last page';
   }
 
   for (var icon in titles) {
