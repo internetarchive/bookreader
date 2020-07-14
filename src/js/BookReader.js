@@ -2150,37 +2150,9 @@ BookReader.prototype.createPopup = createPopup;
  */
 BookReader.prototype.bindNavigationHandlers = function() {
   const self = this;
-  const viewModeOrder = [this.constMode1up, this.constMode2up, this.constModeThumb];
-  const viewModes = [{
-    mode: this.constMode1up,
-    className: 'onepg',
-  }, {
-    mode: this.constMode2up,
-    className: 'twopg',
-  }, {
-    mode: this.constModeThumb,
-    className: 'thumb',
-  }];
-  const modeClasses = viewModes.map((m) => m.className).join(' ');
-
-  // Reorder the viewModeOrder so the current view mode is at the end
-  const currentModeIndex = viewModeOrder.indexOf(this.mode);
-  for (let i = 0; i <= currentModeIndex; i++) {
-    viewModeOrder.push(viewModeOrder.shift());
-  }
 
   // Note the mobile plugin attaches itself to body, so we need to select outside
   var jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
-
-  jIcons.filter('.viewmode').on('click', (e) => {
-    const nextModeID = viewModeOrder.shift();
-    const newViewMode = viewModes[nextModeID - 1];
-    console.log(nextModeID);
-    console.log(newViewMode);
-    viewModeOrder.push(nextModeID);
-    $(e.target).removeClass(modeClasses).addClass(newViewMode.className);
-    this.switchMode(newViewMode.mode);
-  }).addClass(viewModes[this.mode - 1].className);
 
   jIcons.filter('.fit').bind('fit', function() {
     // XXXmang implement autofit zoom

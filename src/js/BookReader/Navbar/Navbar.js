@@ -24,6 +24,37 @@ export class Navbar {
     return `<button class="BRicon ${option.className} desktop-only js-tooltip"></button>`;
   }
 
+  bindViewModeButton() {
+    const { br } = this;
+    const viewModeOrder = [br.constMode1up, br.constMode2up, br.constModeThumb];
+    const viewModes = [{
+      mode: br.constMode1up,
+      className: 'onepg',
+    }, {
+      mode: br.constMode2up,
+      className: 'twopg',
+    }, {
+      mode: br.constModeThumb,
+      className: 'thumb',
+    }];
+    const modeClasses = viewModes.map((m) => m.className).join(' ');
+
+    // Reorder the viewModeOrder so the current view mode is at the end
+    const currentModeIndex = viewModeOrder.indexOf(br.mode);
+    for (let i = 0; i <= currentModeIndex; i++) {
+      viewModeOrder.push(viewModeOrder.shift());
+    }
+
+    this.$nav.find('.viewmode').on('click', (e) => {
+      const nextModeID = viewModeOrder.shift();
+      const newViewMode = viewModes[nextModeID - 1];
+
+      viewModeOrder.push(nextModeID);
+      $(e.target).removeClass(modeClasses).addClass(newViewMode.className);
+      br.switchMode(newViewMode.mode);
+    }).addClass(viewModes[br.mode - 1].className);
+  }
+
   /**
    * Initialize the navigation bar (bottom)
    * @return {JQuery}
@@ -82,6 +113,7 @@ export class Navbar {
       return true;
     });
 
+    this.bindViewModeButton();
     this.updateNavPageNum(br.currentIndex());
 
     return this.$nav;

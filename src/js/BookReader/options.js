@@ -192,18 +192,7 @@ export const DEFAULT_OPTIONS = {
     viewmode: {
       visible: true,
       className: 'viewmode',
-    },
-    onePage: {
-      visible: true,
-      className: 'onepg',
-    },
-    twoPage: {
-      visible: true,
-      className: 'twopg',
-    },
-    thumbnail: {
-      visible: true,
-      className: 'thumb',
+      excludedModes: [],
     },
   },
 
