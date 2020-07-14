@@ -189,6 +189,10 @@ export const DEFAULT_OPTIONS = {
   getEmbedCode: null,
 
   controls: {
+    viewmode: {
+      visible: true,
+      className: 'viewmode',
+    },
     onePage: {
       visible: true,
       className: 'onepg',

@@ -47,9 +47,7 @@ export class Navbar {
         + `<span class='BRcurrentpage'></span>`
         + `<button class="BRicon book_left js-tooltip"></button>`
         + `<button class="BRicon book_right js-tooltip"></button>`
-        + this.controlFor('onePage')
-        + this.controlFor('twoPage')
-        + this.controlFor('thumbnail')
+        + this.controlFor('viewmode')
         // zoomx
         + `<button class="BRicon zoom_out desktop-only js-tooltip"></button>`
         + `<button class="BRicon zoom_in desktop-only js-tooltip"></button>`
