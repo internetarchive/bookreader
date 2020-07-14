@@ -8,20 +8,20 @@ module.exports = {
   entry: {
     'BookReader.js': './src/js/BookReader.js',
 
-    // Plugins
-    'plugins/plugin.menu_toggle.js': './src/js/plugins/menu_toggle/plugin.menu_toggle.js',
+    // Plugins (sorted!)
     'plugins/plugin.archive_analytics.js': './src/js/plugins/plugin.archive_analytics.js',
     'plugins/plugin.autoplay.js': './src/js/plugins/plugin.autoplay.js',
     'plugins/plugin.chapters.js': './src/js/plugins/plugin.chapters.js',
     'plugins/plugin.iframe.js': './src/js/plugins/plugin.iframe.js',
+    'plugins/plugin.menu_toggle.js': './src/js/plugins/menu_toggle/plugin.menu_toggle.js',
     'plugins/plugin.mobile_nav.js': './src/js/plugins/plugin.mobile_nav.js',
     'plugins/plugin.print.js': './src/js/plugins/plugin.print.js',
     'plugins/plugin.resume.js': './src/js/plugins/plugin.resume.js',
     'plugins/plugin.search.js': './src/js/plugins/plugin.search.js',
     'plugins/plugin.themes.js': './src/js/plugins/plugin.themes.js',
+    'plugins/plugin.tts.js': './src/js/plugins/tts/plugin.tts.js',
     'plugins/plugin.url.js': './src/js/plugins/plugin.url.js',
     'plugins/plugin.vendor-fullscreen.js': './src/js/plugins/plugin.vendor-fullscreen.js',
-    'plugins/plugin.tts.js': './src/js/plugins/tts/plugin.tts.js',
   },
 
   module: {
