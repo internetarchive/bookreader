@@ -26,18 +26,28 @@ export class Navbar {
 
   bindViewModeButton() {
     const { br } = this;
-    const viewModeOrder = [br.constMode1up, br.constMode2up, br.constModeThumb];
+    const viewModeOptions = br.options.controls.viewmode;
     const viewModes = [{
       mode: br.constMode1up,
       className: 'onepg',
+      title: 'One-page view',
     }, {
       mode: br.constMode2up,
       className: 'twopg',
+      title: 'Two-page view',
     }, {
       mode: br.constModeThumb,
       className: 'thumb',
-    }];
+      title: 'Thumbnail view',
+    }].filter((mode) => (
+      !viewModeOptions.excludedModes.includes(mode.mode)
+    ));
+    const viewModeOrder = viewModes.map((m) => m.mode);
     const modeClasses = viewModes.map((m) => m.className).join(' ');
+
+    if (viewModeOptions.excludedModes.includes(br.mode)) {
+      br.switchMode(viewModeOrder[0]);
+    }
 
     // Reorder the viewModeOrder so the current view mode is at the end
     const currentModeIndex = viewModeOrder.indexOf(br.mode);
@@ -45,14 +55,22 @@ export class Navbar {
       viewModeOrder.push(viewModeOrder.shift());
     }
 
-    this.$nav.find('.viewmode').on('click', (e) => {
+    if (viewModes.length < 2) {
+      this.$nav.find(`.${viewModeOptions.className}`).remove();
+    }
+
+    this.$nav.find(`.${viewModeOptions.className}`).on('click', (e) => {
       const nextModeID = viewModeOrder.shift();
-      const newViewMode = viewModes[nextModeID - 1];
+      const newViewMode = viewModes.find((m) => m.mode === nextModeID);
+      const nextViewMode = viewModes.find((m) => m.mode === viewModeOrder[0]);
 
       viewModeOrder.push(nextModeID);
-      $(e.target).removeClass(modeClasses).addClass(newViewMode.className);
+      $(e.target)
+        .removeClass(modeClasses)
+        .addClass(nextViewMode.className)
+        .attr('bt-xtitle', nextViewMode.title);
       br.switchMode(newViewMode.mode);
-    }).addClass(viewModes[br.mode - 1].className);
+    }).addClass(viewModes.find((m) => m.mode === viewModeOrder[0]).className);
   }
 
   /**

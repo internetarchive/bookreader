@@ -87,40 +87,48 @@ describe('Navbar controls overrides', () => {
     navbar = br._components.navbar;
   };
 
-  test('when a control is set to visible: false, do not return a button template', () => {
+  test(`when a view mode is excluded,
+      the mode should not be used in viewport toggling`, () => {
     const overrides = {
       controls: {
-        onePage: {
-          visible: false
+        viewmode: {
+          visible: true,
+          className: 'viewmode',
+          excludedModes: [1],
         }
       }
     };
     createBRWithOverrides(overrides);
 
-    expect(navbar.$root.find('.onepg').length).toBe(0);
-    expect(navbar.$root.find('.twopg').length).toBe(1);
+    const $viewMode = navbar.$root.find('.viewmode');
+
+    expect($viewMode.hasClass('thumb')).toBe(true);
+    $viewMode.click();
+    expect($viewMode.hasClass('twopg')).toBe(true);
+    $viewMode.click();
+    expect($viewMode.hasClass('thumb')).toBe(true);
   });
 
   test(`when a control's className is overridden,
       the class should be used in place of the default`, () => {
     const overrides = {
       controls: {
-        onePage: {
+        viewmode: {
           className: 'foo'
         }
       }
     };
     createBRWithOverrides(overrides);
 
-    expect(navbar.$root.find(`.${overrides.controls.onePage.className}`).length).toBe(1);
-    expect(navbar.$root.find('.onepg').length).toBe(0);
+    expect(navbar.$root.find(`.${overrides.controls.viewmode.className}`).length).toBe(1);
+    expect(navbar.$root.find('.viewmode').length).toBe(0);
   });
 
   test(`when a control's template is overridden,
       the HTML output should match the template provided`, () => {
     const overrides = {
       controls: {
-        onePage: {
+        viewmode: {
           template: () => (
             '<button id="foo"></button>'
           )
@@ -130,6 +138,6 @@ describe('Navbar controls overrides', () => {
     createBRWithOverrides(overrides);
 
     expect(navbar.$root.find('#foo').length).toBe(1);
-    expect(navbar.$root.find('.onepg').length).toBe(0);
+    expect(navbar.$root.find('.viewmode').length).toBe(0);
   });
 });

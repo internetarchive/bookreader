@@ -887,6 +887,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
   // Determine the thumbnails in view
   for (let i = 0; i < leafMap.length; i++) {
+    if (!leafMap[i]) { continue; }
     leafBottom += this.thumbPadding + leafMap[i].height;
     const topInView = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
     const bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
@@ -917,6 +918,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   // Create the thumbnail divs and images (lazy loaded)
   for (const row of rowsToDisplay) {
     if (utils.notInArray(row, this.displayedRows)) {
+      if (!leafMap[row]) { continue; }
       for (const { num: leaf, left: leafLeft } of leafMap[row].leafs) {
         const leafWidth = this.thumbWidth;
         const leafHeight = floor((book.getPageHeight(leaf) * this.thumbWidth) / book.getPageWidth(leaf));
