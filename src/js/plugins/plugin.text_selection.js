@@ -77,6 +77,7 @@ class TextSelectionPlugin {
 
         $(textSvg).css({
           "fill": "red",
+          "cursor": "text",
         });
         const textNode = document.createTextNode(el.textContent);
         textSvg.append(textNode);
