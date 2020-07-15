@@ -38,15 +38,12 @@
     instantiateBookReader('#BookReader', {
       defaults: 'mode/1up',
       controls: {
-        onePage: {
-          visible: true,
+        viewmode: {
           template: function(br) {
             return '<button class="BRicon ' + this.className + ' desktop-only js-tooltip" data-param="foo"></button>';
-          }
+          },
+          excludedModes: [2]
         },
-        twoPage: {
-          visible: false
-        }
       }
     });
   </script>
