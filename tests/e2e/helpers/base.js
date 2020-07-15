@@ -55,9 +55,7 @@ export function runBaseTests (br) {
 
     await t.expect(nav.desktop.goPrevious.visible).ok();
     await t.expect(nav.desktop.goNext.visible).ok();
-    await t.expect(nav.desktop.mode1Up.visible).ok();
-    await t.expect(nav.desktop.mode2Up.visible).ok();
-    await t.expect(nav.desktop.modeThumb.visible).ok();
+    await t.expect(nav.desktop.viewmode.visible).ok();
     await t.expect(nav.desktop.zoomIn.visible).ok();
     await t.expect(nav.desktop.zoomOut.visible).ok();
     await t.expect(nav.desktop.fullScreen.visible).ok();
@@ -176,32 +174,29 @@ export function runBaseTests (br) {
       .expect(expectMode('2up')).ok();
   });
 
-  test('Clicking `2 page view` brings up 2 pages at a time', async t => {
+  test('Clicking `view mode` cycles through view modes', async t => {
     const { nav } = br;
-    await t.click(nav.desktop.mode2Up);
-    const twoPageContainer = await Selector('.BRtwopageview');
-    await t.expect(twoPageContainer.visible).ok();
-    const images = twoPageContainer.find('img.BRpageimage');
-    await t.expect(images.count).eql(2);
-  });
+    // 2up to thumb
+    await t.click(nav.desktop.viewmode);
+    const thumbnailContainer = await Selector('.BRmodeThumb');
+    await t.expect(thumbnailContainer.visible).ok();
+    const thumbImages = thumbnailContainer.find('.BRpageview img');
+    await t.expect(thumbImages.count).gt(0);
 
-  test('Clicking `1 page view` brings up 1 at a time', async t => {
-    const { nav } = br;
-    await t.click(nav.desktop.mode1Up);
+    // thumb to 1up
+    await t.click(nav.desktop.viewmode);
     const onePageViewContainer = await Selector('.BRpageview');
     await t.expect(onePageViewContainer.visible).ok();
-    const images = onePageViewContainer.find('.BRpagecontainer.BRmode1up');
+    const onePageImages = onePageViewContainer.find('.BRpagecontainer.BRmode1up');
     // we usually pre-fetch the page in question & the 2 after it
-    await t.expect(images.count).gte(3);
-  });
+    await t.expect(onePageImages.count).gte(3);
 
-  test('Clicking `thumbnail view` brings up all of the page thumbnails', async t => {
-    const { nav } = br;
-    await t.click(nav.desktop.modeThumb);
-    const thumbnailContainer = await Selector('.BRpageview');
-    await t.expect(thumbnailContainer.visible).ok();
-    const images = thumbnailContainer.find('.BRpagecontainer.BRmodethumb');
-    await t.expect(images.count).gt(0);
+    // 1up to 2up
+    await t.click(nav.desktop.viewmode);
+    const twoPageContainer = await Selector('.BRtwopageview');
+    await t.expect(twoPageContainer.visible).ok();
+    const twoPageImages = twoPageContainer.find('img.BRpageimage');
+    await t.expect(twoPageImages.count).eql(2);
   });
 
   test('Clicking `zoom out` makes book smaller', async t => {

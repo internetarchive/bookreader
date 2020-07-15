@@ -20,9 +20,7 @@ class DesktopNav {
   constructor(bottomToolbar, topToolbar) {
     this.goPrevious = bottomToolbar.find('.BRicon.book_left');
     this.goNext = bottomToolbar.find('.BRicon.book_right');
-    this.mode1Up = bottomToolbar.find('.BRicon.onepg');
-    this.mode2Up = bottomToolbar.find('.BRicon.twopg');
-    this.modeThumb = bottomToolbar.find('.BRicon.thumb');
+    this.viewmode = bottomToolbar.find('.BRicon.viewmode');
     this.zoomIn = bottomToolbar.find('.BRicon.desktop-only.zoom_in');
     this.zoomOut = bottomToolbar.find('.BRicon.desktop-only.zoom_out');
     this.fullScreen = bottomToolbar.find('.BRicon.full');
