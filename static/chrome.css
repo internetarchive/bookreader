@@ -22,6 +22,7 @@ html {
 .bookreader {
   display: grid;
   height: 100vh;
+  overflow: hidden;
   grid-template-areas: "stage" "controls";
   grid-template-rows: 1fr auto;
   --gray13: #222;
@@ -62,6 +63,7 @@ button {
 }
 
 nav {
+  position: relative;
   grid-area: controls;
   background: var(--controlsBG);
 }
@@ -71,8 +73,11 @@ nav ul {
 }
 
 .controls {
+  position: relative;
+  z-index: 2;
   padding: .2rem 1rem;
   border-top: 1px solid var(--controlsBorder);
+  background: var(--controlsBG);
 }
 
 .controls button {
@@ -81,14 +86,21 @@ nav ul {
 }
 
 .read-aloud {
-  display: none;
+  display: flex;
+  position: absolute;
+  bottom: -80px;
+  right: 0;
+  left: 0;
+  z-index: 1;
   padding: .5rem 0;
   align-items: center;
   justify-content: center;
+  transition: bottom .25s linear;
+  background: var(--controlsBG);
 }
 
 .read-aloud.visible {
-  display: flex;
+  bottom: 100%;
 }
 
 .read-aloud li {
