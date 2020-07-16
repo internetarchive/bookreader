@@ -27,6 +27,8 @@ html {
   grid-template-rows: 1fr auto;
   --gray13: #222;
   --gray20: #333;
+  --gray40: #666;
+  --gray80: #ccc;
   --white: #fff;
   --controlsText: var(--white);
   --controlsBG: var(--gray20);
@@ -36,6 +38,8 @@ html {
   --iconActiveStroke: var(--gray20);
   --activeButtonBG: var(--white);
   --controlsBorder: var(--gray13);
+  --trackColor: var(--gray40);
+  --trackFillColor: var(--gray80);
 }
 
 .stage {
@@ -113,8 +117,94 @@ nav ul {
   align-items: center;
 }
 
-.scrubber input {
+.frame {
+  position: relative;
   width: 100%;
+}
+
+.color-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+}
+
+.scrubber input[type=range] {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  background-color: transparent;
+  -webkit-appearance: none;
+}
+
+.scrubber input[type=range]:focus {
+  outline: none;
+}
+
+.scrubber input[type=range]::-webkit-slider-runnable-track {
+  background: transparent;
+  border: 0px solid rgba(204, 204, 204, 0);
+  border: 0;
+  border-radius: 8px;
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+}
+
+.scrubber input[type=range]::-webkit-slider-thumb {
+  margin-top: -4px;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border: 0px solid rgba(0, 0, 0, 0);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.scrubber input[type=range]::-moz-range-track {
+  background: #666666;
+  border: 0px solid rgba(204, 204, 204, 0);
+  border: 0;
+  border-radius: 8px;
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+}
+
+.scrubber input[type=range]::-moz-range-progress {
+  height: 8px;
+  background: #ccc;
+}
+
+.scrubber input[type=range]::-ms-track {
+  border: none;
+  color: transparent;
+  background: #666;
+}
+
+.scrubber input[type=range]::-ms-fill-lower {
+  background: #ccc;
+}
+
+.scrubber input[type=range]::-ms-tooltip {
+  display: none;
+}
+
+.scrubber input[type=range]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border: 0px solid rgba(0, 0, 0, 0);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .scrubber p {
