@@ -15,9 +15,16 @@
       <nav>
         <ul class="read-aloud">
           <li>
-            <button type="button" name="playback-speed" title="Playback speed">
-              <div class="icon icon-playback-speed"></div>
-            </button>
+            <select class="playback-speed" name="playback-speed" title="Playback speed">
+              <option value="0.25">0.25x</option>
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1.0" selected>1.0x</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.5x</option>
+              <option value="1.75">1.75x</option>
+              <option value="2">2x</option>
+            </select>
           </li>
           <li>
             <button type="button" name="review" title="Review 10 seconds">

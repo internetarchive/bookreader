@@ -62,6 +62,21 @@ button {
   outline: none;
 }
 
+select.playback-speed {
+  width: 24px;
+  padding-top: 18px;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 1rem;
+  text-align: center;
+  text-align-last: center;
+  color: var(--controlsText);
+  border: none;
+  cursor: pointer;
+  background: transparent url("/static/icons/playback-speed.svg") 50% 0 no-repeat;
+}
+
 .active {
   background: var(--activeButtonBG);
 }
