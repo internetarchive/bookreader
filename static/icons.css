@@ -3,6 +3,10 @@
   background: transparent 50% 50% no-repeat;
 }
 
+.icon.hflip {
+  transform: scaleX(-1);
+}
+
 .active .icon {
   filter: brightness(.2);
 }
@@ -63,4 +67,10 @@
 
 .icon-pause {
   background-image: url("/static/icons/pause.svg");
+}
+
+.icon-left-arrow {
+  width: 12px;
+  height: 14px;
+  background-image: url("/static/icons/left-arrow.svg");
 }
