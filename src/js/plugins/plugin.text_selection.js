@@ -74,6 +74,8 @@ class TextSelectionPlugin {
         textSvg.setAttribute("x", left.toString());
         textSvg.setAttribute("y", bottom.toString());
         textSvg.setAttribute("font-size", (bottom - top).toString());
+        textSvg.setAttribute("textLength", (right - left).toString());
+
 
         $(textSvg).css({
           "fill": "red",
