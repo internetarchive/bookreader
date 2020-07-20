@@ -28,7 +28,7 @@
     "@babel/preset-env": "7.6.0",
     "@types/jest": "26.0.3",
     "babel-loader": "8.0.6",
-    "codecov": "3.7.0",
+    "codecov": "3.7.1",
     "concurrently": "5.1.0",
     "core-js": "3.6.5",
     "eslint": "5.16.0",
