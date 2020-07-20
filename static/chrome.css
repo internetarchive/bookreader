@@ -36,6 +36,7 @@ html {
   --iconActiveFill: var(--gray20);
   --iconStroke: var(--white);
   --iconActiveStroke: var(--gray20);
+  --tooltipBG: var(--gray20);
   --activeButtonBG: var(--white);
   --controlsBorder: var(--gray13);
   --trackColor: var(--gray40);
@@ -60,6 +61,25 @@ button {
   border-radius: .2rem;
   background: transparent;
   outline: none;
+}
+button:hover .tooltip,
+button:focus .tooltip {
+  display: block;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  width: auto;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  font-weight: bold;
+  white-space: nowrap;
+  color: var(--controlsText);
+  border-radius: 3px;
+  background: var(--tooltipBG);
 }
 
 select.playback-speed {
@@ -89,6 +109,10 @@ nav {
 
 nav ul {
   display: flex;
+}
+
+nav li {
+  position: relative;
 }
 
 .controls {
