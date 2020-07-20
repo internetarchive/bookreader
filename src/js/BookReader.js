@@ -1908,6 +1908,7 @@ BookReader.prototype._scrollAmount = function() {
 
 BookReader.prototype.prefetchImg = function(index) {
   var pageURI = this._getPageURI(index);
+  var pageURISrcset = this._getPageURISrcset(index);
 
   // Load image if not loaded or URI has changed (e.g. due to scaling)
   var loadImage = false;
@@ -1921,7 +1922,8 @@ BookReader.prototype.prefetchImg = function(index) {
     const pageContainer = this._createPageContainer(index);
     $('<img />', {
       'class': 'BRpageimage',
-      src: pageURI
+      src: pageURI,
+      srcset: pageURISrcset
     }).appendTo(pageContainer);
     if (index < 0 || index > (this._models.book.getNumLeafs() - 1) ) {
       // Facing page at beginning or end, or beyond
@@ -2732,8 +2734,9 @@ BookReader.prototype.canSwitchToMode = function(mode) {
  * @return {string}
  */
 BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
+  let srcsetStr = "";
   if (index < 0 || index >= this._models.book.getNumLeafs()) { // Synthesize page
-    return this.imagesBaseURL + "transparent.png";
+    return srcsetStr;
   }
 
   if ('undefined' == typeof(reduce)) {
@@ -2741,7 +2744,6 @@ BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
     // $$$ this probably won't work for thumbnail mode
     var ratio = this._models.book.getPageHeight(index) / this.twoPage.height;
     var scale;
-    let srcsetStr = "";
     // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
     if (ratio < 2) {
       return srcsetStr;
@@ -2758,10 +2760,10 @@ BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
     }
     scale.forEach((el, i) => {
       srcsetStr = srcsetStr + this._models.book.getPageURI(index, scale[i], rotate) + " "
-      + (2^(i+1)) + "x "
+      + Math.pow(2, i + 1) + "x, ";
     } )
     return srcsetStr;
-
+  }
 }
 
 
