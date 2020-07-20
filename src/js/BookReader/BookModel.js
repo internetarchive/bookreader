@@ -321,8 +321,8 @@ export class BookModel {
   }
 
   /**
-   * Helper. Return a prop for a given index. Returns `fallbackValue` if property not on
-   * page. Returns undefined if page index is invalid.
+   * Helper. Return a prop for a given index. Returns `fallbackValue` if index is invalid or
+   * property not on page.
    * @param {PageIndex} index
    * @param {keyof PageData} prop
    * @param {*} fallbackValue return if property not on the record
@@ -331,10 +331,7 @@ export class BookModel {
   _getDataProp(index, prop, fallbackValue = undefined) {
     const dataf = this._getDataFlattened();
     const invalidIndex = isNaN(index) || index < 0 || index >= dataf.length;
-
-    if (invalidIndex) return undefined;
-
-    if ('undefined' == typeof(dataf[index][prop]))
+    if (invalidIndex || 'undefined' == typeof(dataf[index][prop]))
       return fallbackValue;
     return dataf[index][prop];
   }
