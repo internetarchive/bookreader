@@ -1,62 +1,25 @@
-@import url("./icons.css");
-
-/* Reset */
-ul,ol { list-style: none; }
-h1,h2,h3,h4,h5,h6,pre,code { font-size: 1em; }
-ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,body,html,p,blockquote,fieldset,input,dl,dt,dd, figure, figcaption {
-  margin: 0;
-  padding: 0; }
-a img,:link img,:visited img, fieldset { border: none; }
-address { font-style: normal; }
-header, section, article, nav, footer, hgroup, details, summary, figure, main { display: block; }
-mark {
-  color: inherit;
-  background: transparent; }
-abbr { border: none; }
-summary::-webkit-details-marker { display: none; }
-
-html {
-  font: normal 10px "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-.bookreader {
-  display: grid;
-  height: 100vh;
-  overflow: hidden;
-  grid-template-areas: "stage" "controls";
-  grid-template-rows: 1fr auto;
-}
-
-.stage {
-  grid-area: stage;
-}
-
-.book {
-  margin: 0 auto;
-}
+$gray13: #222;
+$gray20: #333;
+$gray40: #666;
+$gray80: #ccc;
+$white: #fff;
+$controlsText: $white;
+$controlsBG: $gray20;
+$iconFill: $white;
+$iconActiveFill: $gray20;
+$iconStroke: $white;
+$iconActiveStroke: $gray20;
+$tooltipBG: $gray20;
+$activeButtonBG: $white;
+$controlsBorder: $gray13;
+$trackColor: $gray40;
+$trackFillColor: $gray80;
 
 .BRcontrols {
-  --gray13: #222;
-  --gray20: #333;
-  --gray40: #666;
-  --gray80: #ccc;
-  --white: #fff;
-  --controlsText: var(--white);
-  --controlsBG: var(--gray20);
-  --iconFill: var(--white);
-  --iconActiveFill: var(--gray20);
-  --iconStroke: var(--white);
-  --iconActiveStroke: var(--gray20);
-  --tooltipBG: var(--gray20);
-  --activeButtonBG: var(--white);
-  --controlsBorder: var(--gray13);
-  --trackColor: var(--gray40);
-  --trackFillColor: var(--gray80);
   position: relative;
   z-index: 7;
   width: 100%;
-  grid-area: controls;
-  background: var(--controlsBG);
+  background: $controlsBG;
 }
 
 .BRcontrols button {
@@ -66,7 +29,7 @@ html {
   padding: 0;
   cursor: pointer;
   border: none;
-  border-radius: .2rem;
+  border-radius: 2px;
   background: transparent;
   outline: none;
 }
@@ -84,9 +47,15 @@ html {
   padding: 5px 10px;
   font-weight: bold;
   white-space: nowrap;
-  color: var(--controlsText);
+  color: $controlsText;
   border-radius: 3px;
-  background: var(--tooltipBG);
+  background: $tooltipBG;
+}
+
+.BRcontrols .full .tooltip {
+  left: auto;
+  right: 0;
+  transform: translateX(0);
 }
 
 .BRcontrols select.playback-speed {
@@ -95,21 +64,17 @@ html {
   -moz-appearance: none;
   -webkit-appearance: none;
   appearance: none;
-  font-size: 1rem;
+  font-size: 10px;
   text-align: center;
   text-align-last: center;
-  color: var(--controlsText);
+  color: $controlsText;
   border: none;
   cursor: pointer;
   background: transparent url("/static/icons/playback-speed.svg") 50% 0 no-repeat;
 }
 
 .BRcontrols .active {
-  background: var(--activeButtonBG);
-}
-
-.BRcontrols ul {
-  display: flex;
+  background: $activeButtonBG;
 }
 
 .BRcontrols li {
@@ -119,14 +84,17 @@ html {
 .BRcontrols .controls {
   position: relative;
   z-index: 2;
-  padding: .2rem 1rem;
-  border-top: 1px solid var(--controlsBorder);
-  background: var(--controlsBG);
+  display: flex;
+  padding: 2px 10px;
+  margin: 0;
+  list-style: none;
+  border-top: 1px solid $controlsBorder;
+  background: $controlsBG;
 }
 
 .BRcontrols .controls button {
-  width: 3rem;
-  height: 3rem;
+  width: 30px;
+  height: 30px;
 }
 
 .BRcontrols .read-aloud {
@@ -136,11 +104,11 @@ html {
   right: 0;
   left: 0;
   z-index: 1;
-  padding: .5rem 0;
+  padding: 5px 0;
   align-items: center;
   justify-content: center;
   transition: bottom .25s linear;
-  background: var(--controlsBG);
+  background: $controlsBG;
 }
 
 .BRcontrols .read-aloud.visible {
@@ -148,13 +116,13 @@ html {
 }
 
 .BRcontrols .read-aloud li {
-  padding: 0 1rem;
+  padding: 0 10px;
 }
 
 .BRcontrols .scrubber {
   display: flex;
   width: 100%;
-  align-items: center;
+  height: 30px;
 }
 
 .BRcontrols .frame {
@@ -248,7 +216,16 @@ html {
 }
 
 .BRcontrols .scrubber p {
-  padding: 0 2rem 0 1.3rem;
+  padding: 0 20px 0 13px;
+  align-self: center;
   font-weight: 700;
-  color: var(--controlsText);
+  color: $controlsText;
+}
+
+.BRcontrols .scrubber .BRpager.ui-slider {
+  top: 10px;
+  background-color: $trackColor;
+}
+.BRcontrols .scrubber .BRpager.ui-slider .ui-slider-range {
+  background-color: $trackFillColor;
 }

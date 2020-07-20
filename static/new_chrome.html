@@ -12,7 +12,7 @@
       <div class="stage">
         <div class="book"></div>
       </div>
-      <nav>
+      <nav class="BRcontrols">
         <ul class="read-aloud">
           <li>
             <select class="playback-speed" name="playback-speed" title="Playback speed">
@@ -75,8 +75,14 @@
             </button>
           </li>
           <li>
+            <button type="button" name="1up" title="Switch to one page view">
+              <div class="icon icon-onepg"></div>
+              <span class="tooltip">One-page view</span>
+            </button>
+          </li>
+          <li>
             <button type="button" name="2up" title="Switch to two page view" class="active">
-              <div class="icon icon-2up"></div>
+              <div class="icon icon-twopg"></div>
               <span class="tooltip">Two-page view</span>
             </button>
           </li>
@@ -100,7 +106,7 @@
           </li>
           <li>
             <button type="button" name="thumbnails" title="Switch to thumbnails view">
-              <div class="icon icon-thumbnails"></div>
+              <div class="icon icon-thumb"></div>
               <span class="tooltip">Thumbnail view</span>
             </button>
           </li>

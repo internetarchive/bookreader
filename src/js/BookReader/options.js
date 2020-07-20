@@ -190,14 +190,17 @@ export const DEFAULT_OPTIONS = {
 
   controls: {
     onePage: {
+      label: 'One-page view',
       visible: true,
       className: 'onepg',
     },
     twoPage: {
+      label: 'Two-page view',
       visible: true,
       className: 'twopg',
     },
     thumbnail: {
+      label: 'Thumbnail view',
       visible: true,
       className: 'thumb',
     },
