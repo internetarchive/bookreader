@@ -783,7 +783,8 @@ BookReader.prototype.drawLeafsOnePage = function() {
       });
 
       const img = $('<img />', {
-        src: this._getPageURI(index, this.reduce, 0)
+        src: this._getPageURI(index, this.reduce, 0),
+        srcset: this._getPageURISrcset(index, this.reduce, 0)
       });
       pageContainer.append(img);
 
@@ -2720,6 +2721,49 @@ BookReader.prototype.canSwitchToMode = function(mode) {
 
   return true;
 };
+
+
+/**
+ * Returns the page URI or transparent image if out of range
+ * Also makes the reduce argument optional
+ * @param {number} index
+ * @param {number} [reduce]
+ * @param {number} [rotate]
+ * @return {string}
+ */
+BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
+  if (index < 0 || index >= this._models.book.getNumLeafs()) { // Synthesize page
+    return this.imagesBaseURL + "transparent.png";
+  }
+
+  if ('undefined' == typeof(reduce)) {
+    // reduce not passed in
+    // $$$ this probably won't work for thumbnail mode
+    var ratio = this._models.book.getPageHeight(index) / this.twoPage.height;
+    var scale;
+    let srcsetStr = "";
+    // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
+    if (ratio < 2) {
+      return srcsetStr;
+    } else if (ratio < 4) {
+      scale = [1];
+    } else if (ratio < 8) {
+      scale = [2,1];
+    } else if (ratio < 16) {
+      scale = [4,2,1];
+    } else  if (ratio < 32) {
+      scale = [8,4,2,1];
+    } else {
+      scale = [16,8,4,2,1];
+    }
+    scale.forEach((el, i) => {
+      srcsetStr = srcsetStr + this._models.book.getPageURI(index, scale[i], rotate) + " "
+      + (2^(i+1)) + "x "
+    } )
+    return srcsetStr;
+
+}
+
 
 /**
  * Returns the page URI or transparent image if out of range
