@@ -222,6 +222,11 @@ $trackFillColor: $gray80;
   color: $controlsText;
 }
 
+/* BookReader defaults overrides */
+.BRcontrols .BRnavline {
+  top: -4px;
+}
+
 .BRcontrols .scrubber .BRpager.ui-slider {
   top: 10px;
   background-color: $trackColor;
