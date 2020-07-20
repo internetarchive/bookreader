@@ -2855,9 +2855,7 @@ BookReader.prototype.initUIStrings = function() {
   }
 
   for (var icon in titles) {
-    if (titles.hasOwnProperty(icon)) {
-      this.$(icon).prop('title', titles[icon]);
-    }
+    this.$(icon).prop('title', titles[icon]);
   }
 }
 
