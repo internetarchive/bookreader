@@ -1,4 +1,3 @@
-/* global fixture */
 import { runBaseTests } from './helpers/base';
 import { runRightToLeftTests } from './helpers/rightToLeft';
 

@@ -1,4 +1,3 @@
-/* global fixture */
 import { runBaseTests } from '../helpers/base';
 import BookReader from '../models/BookReader';
 
