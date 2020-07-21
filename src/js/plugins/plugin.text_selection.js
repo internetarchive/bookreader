@@ -41,13 +41,22 @@ class TextSelectionPlugin {
     return (await this.djvuPagesPromise)[index];
   }
 
+  stopPageFlip($svg, $container){
+    $svg.on("mousedown", (event) => {
+      if ($(event.target).is('text')) {
+        event.stopPropagation();
+        $container.one("mouseup", (event) => event.stopPropagation());
+      }
+    });
+  }
+
   /**
    * @param {number} pageIndex
    * @param {JQuery} $container
    */
   async createTextLayer(pageIndex, $container) {
     const $svgLayers = $container.find('textSelctionSVG');
-    if (!$svgLayers.length){
+    if (!$svgLayers.length) {
       console.log(`created svg layer for page ${pageIndex}`)
       const XMLpage = await this.getPageText(pageIndex);
       const XMLwidth = $(XMLpage).attr("width");
@@ -55,6 +64,7 @@ class TextSelectionPlugin {
 
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("viewBox", "0 0 " + XMLwidth + " " + XMLheight);
+      this.stopPageFlip($(svg), $container);
       $container.append(svg);
       $(svg).addClass('textSelctionSVG');
       svg.setAttribute('preserveAspectRatio', 'none');
@@ -83,6 +93,7 @@ class TextSelectionPlugin {
         });
         const textNode = document.createTextNode(el.textContent);
         textSvg.append(textNode);
+        // $(textSvg).on("mousedown", (event) => event.stopPropagation());
         svg.append(textSvg);
       })
     }
