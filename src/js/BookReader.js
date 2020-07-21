@@ -2178,10 +2178,10 @@ BookReader.prototype.bindNavigationHandlers = function() {
         this.next();
       }
     },
-    book_top: this.first,
-    book_bottom: this.last,
-    book_leftmost: this.leftmost,
-    book_rightmost: this.rightmost,
+    book_top: this.first.bind(this),
+    book_bottom: this.last.bind(this),
+    book_leftmost: this.leftmost.bind(this),
+    book_rightmost: this.rightmost.bind(this),
     zoom_in: () => {
       this.trigger(BookReader.eventNames.stop);
       this.zoom(1);
