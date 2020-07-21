@@ -2155,6 +2155,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
 
   // Note the mobile plugin attaches itself to body, so we need to select outside
   const jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
+  // Map of jIcon class -> click handler
   const navigationControls = {
     book_left: () => {
       this.trigger(BookReader.eventNames.stop);

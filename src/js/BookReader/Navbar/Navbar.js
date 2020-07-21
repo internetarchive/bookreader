@@ -24,7 +24,8 @@ export class Navbar {
     return `<button class="BRicon ${option.className} desktop-only js-tooltip"></button>`;
   }
 
-  bindViewModeButton() {
+  /** @private */
+  _bindViewModeButton() {
     const { br } = this;
     const viewModeOptions = br.options.controls.viewmode;
     const viewModes = [{
@@ -131,7 +132,7 @@ export class Navbar {
       return true;
     });
 
-    this.bindViewModeButton();
+    this._bindViewModeButton();
     this.updateNavPageNum(br.currentIndex());
 
     return this.$nav;
