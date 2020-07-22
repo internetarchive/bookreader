@@ -1,11 +1,7 @@
-import { ClientFunction, Selector } from 'testcafe';
+import { Selector } from 'testcafe';
 import BookReader from './models/BookReader';
-import debug from './helpers/debug';
 
 const { BASE_URL } = process.env;
-const getLocationHref = ClientFunction(() => window.location.href.toString());
-const FLIP_SPEED = 1000;
-const FIRST_PAGE_DELAY = 2000;
 
 fixture `Viewmode carousel`.page `${BASE_URL}viewmode-cycle.html`;
 
