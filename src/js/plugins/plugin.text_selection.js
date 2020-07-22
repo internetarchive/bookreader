@@ -41,13 +41,19 @@ class TextSelectionPlugin {
     return (await this.djvuPagesPromise)[index];
   }
 
-  stopPageFlip($svg, $container){
+  /**
+   * @param {JQuery} $container
+   */
+  stopPageFlip($container){
+    const $svg = $container.find('svg');
     $svg.on("mousedown", (event) => {
       if ($(event.target).is('text')) {
         event.stopPropagation();
         $container.one("mouseup", (event) => event.stopPropagation());
       }
     });
+    console.log("blocked flip for page")
+
   }
 
   /**
@@ -64,7 +70,6 @@ class TextSelectionPlugin {
 
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("viewBox", "0 0 " + XMLwidth + " " + XMLheight);
-      this.stopPageFlip($(svg), $container);
       $container.append(svg);
       $(svg).addClass('textSelctionSVG');
       svg.setAttribute('preserveAspectRatio', 'none');
@@ -86,22 +91,23 @@ class TextSelectionPlugin {
         textSvg.setAttribute("font-size", (bottom - top).toString());
         textSvg.setAttribute("textLength", (right - left).toString());
 
-
         $(textSvg).css({
           "fill": "red",
           "cursor": "text",
         });
         const textNode = document.createTextNode(el.textContent);
         textSvg.append(textNode);
-        // $(textSvg).on("mousedown", (event) => event.stopPropagation());
         svg.append(textSvg);
       })
+
+      this.stopPageFlip($container);
     }
   }
 }
 
 class BookreaderWithTextSelection extends BookReader {
   init() {
+    this.enableTextSelection = true;
     const OCAID = this.bookId;
     this.textSelectionPlugin = new TextSelectionPlugin();
     this.textSelectionPlugin.init(OCAID);

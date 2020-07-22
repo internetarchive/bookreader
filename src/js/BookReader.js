@@ -88,6 +88,8 @@ BookReader.prototype.setup = function(options) {
   /** Overriden by plugin.search.js */
   this.enableSearch = false;
 
+  this.enableTextSelection = false;
+
   /**
    * Used to supress fragment change for init with canonical URLs
    * @var {boolean}

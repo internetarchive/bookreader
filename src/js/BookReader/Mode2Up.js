@@ -664,6 +664,8 @@ export class Mode2Up {
           this.br.animationFinishedCallback();
           this.br.animationFinishedCallback = null;
         }
+
+        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
       });
     });
   }
@@ -794,6 +796,8 @@ export class Mode2Up {
           this.br.animationFinishedCallback();
           this.br.animationFinishedCallback = null;
         }
+
+        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
       });
     });
   }
