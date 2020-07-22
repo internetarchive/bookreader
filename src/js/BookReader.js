@@ -2183,6 +2183,15 @@ BookReader.prototype.bindNavigationHandlers = function() {
     book_bottom: this.last.bind(this),
     book_leftmost: this.leftmost.bind(this),
     book_rightmost: this.rightmost.bind(this),
+    onepg: () => {
+      this.switchMode(self.constMode1up);
+    },
+    thumb: () => {
+      this.switchMode(self.constModeThumb);
+    },
+    twopg: () => {
+      this.switchMode(self.constMode2up);
+    },
     zoom_in: () => {
       this.trigger(BookReader.eventNames.stop);
       this.zoom(1);
@@ -2208,7 +2217,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
   });
 
   for (const control in navigationControls) {
-    jIcons.filter(`.${control}`).on('click', () => {
+    jIcons.filter(`.${control}`).on('click.bindNavigationHandlers', () => {
       navigationControls[control]()
       return false;
     });

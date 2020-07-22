@@ -1,5 +1,7 @@
 /** @typedef {import("../../BookReader.js").default} BookReader */
 
+import { EVENTS } from '../events.js';
+
 export class Navbar {
   /**
    * @param {BookReader} br
@@ -22,6 +24,16 @@ export class Navbar {
       return option.template(this.br);
     }
     return `<button class="BRicon ${option.className} desktop-only js-tooltip"></button>`;
+  }
+
+  /** @private */
+  _viewModeControls() {
+    if (this.br.options.controls.viewmode.visible) {
+      return this.controlFor('viewmode');
+    }
+    return ['onePage', 'twoPage', 'thumbnail'].map((mode) => (
+      this.controlFor(mode)
+    )).join('');
   }
 
   /** @private */
@@ -60,18 +72,23 @@ export class Navbar {
       this.$nav.find(`.${viewModeOptions.className}`).remove();
     }
 
-    this.$nav.find(`.${viewModeOptions.className}`).on('click', (e) => {
-      const nextModeID = viewModeOrder.shift();
-      const newViewMode = viewModes.find((m) => m.mode === nextModeID);
-      const nextViewMode = viewModes.find((m) => m.mode === viewModeOrder[0]);
+    this.br.bind(EVENTS.PostInit, () => {
+      this.$nav.find(`.${viewModeOptions.className}`)
+        .off('.bindNavigationHandlers')
+        .on('click', (e) => {
+          const nextModeID = viewModeOrder.shift();
+          const newViewMode = viewModes.find((m) => m.mode === nextModeID);
+          const nextViewMode = viewModes.find((m) => m.mode === viewModeOrder[0]);
 
-      viewModeOrder.push(nextModeID);
-      $(e.target)
-        .removeClass(modeClasses)
-        .addClass(nextViewMode.className)
-        .attr('bt-xtitle', nextViewMode.title);
-      br.switchMode(newViewMode.mode);
-    }).addClass(viewModes.find((m) => m.mode === viewModeOrder[0]).className);
+          viewModeOrder.push(nextModeID);
+          $(e.target)
+            .removeClass(modeClasses)
+            .addClass(nextViewMode.className)
+            .attr('bt-xtitle', nextViewMode.title);
+          br.switchMode(newViewMode.mode);
+        })
+        .addClass(viewModes.find((m) => m.mode === viewModeOrder[0]).className);
+    });
   }
 
   /**
@@ -97,7 +114,7 @@ export class Navbar {
         + `<span class='BRcurrentpage'></span>`
         + `<button class="BRicon book_left js-tooltip"></button>`
         + `<button class="BRicon book_right js-tooltip"></button>`
-        + this.controlFor('viewmode')
+        + this._viewModeControls()
         // zoomx
         + `<button class="BRicon zoom_out desktop-only js-tooltip"></button>`
         + `<button class="BRicon zoom_in desktop-only js-tooltip"></button>`
@@ -132,7 +149,7 @@ export class Navbar {
       return true;
     });
 
-    this._bindViewModeButton();
+    br.options.controls.viewmode.visible && this._bindViewModeButton();
     this.updateNavPageNum(br.currentIndex());
 
     return this.$nav;

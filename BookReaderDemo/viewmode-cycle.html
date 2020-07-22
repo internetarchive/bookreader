@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>BookReader Toggle Controls Demo</title>
+    <title>View Mode Cycle Button</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,7 +22,6 @@
     <link rel="stylesheet" href="BookReaderDemo.css"/>
 </head>
 <body>
-  <h1>Initial view mode set to 1up</h1>
   <div id="BookReader">
       Internet Archive BookReader Demo<br/>
       <noscript>
@@ -33,19 +32,10 @@
   </div>
   <script type="text/javascript" src="BookReaderJSSimple.js"></script>
   <script>
-    // Needs to be prefixed with 'mode/'. BookReader modes are: '1up', '2up',
-    // 'thumb'. BookReader defaults to 2up mode.
     instantiateBookReader('#BookReader', {
-      defaults: 'mode/1up',
       controls: {
-        onePage: {
-          visible: true,
-          template: function(br) {
-            return '<button class="BRicon ' + this.className + ' desktop-only js-tooltip" data-param="foo"></button>';
-          }
-        },
-        twoPage: {
-          visible: false
+        viewmode: {
+          visible: true
         }
       }
     });
