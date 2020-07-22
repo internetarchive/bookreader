@@ -87,7 +87,8 @@ export class Navbar {
             .attr('bt-xtitle', nextViewMode.title);
           br.switchMode(newViewMode.mode);
         })
-        .addClass(viewModes.find((m) => m.mode === viewModeOrder[0]).className);
+        .addClass(viewModes.find((m) => m.mode === viewModeOrder[0]).className)
+        .removeClass('desktop-only');
     });
   }
 
