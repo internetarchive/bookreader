@@ -3,7 +3,6 @@ import '../../BookReader/jquery-ui-1.12.0.min.js';
 import '../../BookReader/jquery.browser.min.js';
 import '../../BookReader/dragscrollable-br.js';
 import '../../BookReader/jquery.colorbox-min.js';
-import '../../BookReader/jquery.bt.min.js';
 
 import sinon from 'sinon';
 import { deepCopy } from '../utils.js';
