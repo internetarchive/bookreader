@@ -1,5 +1,7 @@
 /** @typedef {import("../../BookReader.js").default} BookReader */
 
+import { EVENTS } from '../events.js';
+
 export class Navbar {
   /**
    * @param {BookReader} br
@@ -22,6 +24,72 @@ export class Navbar {
       return option.template(this.br);
     }
     return `<button class="BRicon ${option.className} desktop-only js-tooltip"></button>`;
+  }
+
+  /** @private */
+  _viewModeControls() {
+    if (this.br.options.controls.viewmode.visible) {
+      return this.controlFor('viewmode');
+    }
+    return ['onePage', 'twoPage', 'thumbnail'].map((mode) => (
+      this.controlFor(mode)
+    )).join('');
+  }
+
+  /** @private */
+  _bindViewModeButton() {
+    const { br } = this;
+    const viewModeOptions = br.options.controls.viewmode;
+    const viewModes = [{
+      mode: br.constMode1up,
+      className: 'onepg',
+      title: 'One-page view',
+    }, {
+      mode: br.constMode2up,
+      className: 'twopg',
+      title: 'Two-page view',
+    }, {
+      mode: br.constModeThumb,
+      className: 'thumb',
+      title: 'Thumbnail view',
+    }].filter((mode) => (
+      !viewModeOptions.excludedModes.includes(mode.mode)
+    ));
+    const viewModeOrder = viewModes.map((m) => m.mode);
+    const modeClasses = viewModes.map((m) => m.className).join(' ');
+
+    if (viewModeOptions.excludedModes.includes(br.mode)) {
+      br.switchMode(viewModeOrder[0]);
+    }
+
+    // Reorder the viewModeOrder so the current view mode is at the end
+    const currentModeIndex = viewModeOrder.indexOf(br.mode);
+    for (let i = 0; i <= currentModeIndex; i++) {
+      viewModeOrder.push(viewModeOrder.shift());
+    }
+
+    if (viewModes.length < 2) {
+      this.$nav.find(`.${viewModeOptions.className}`).remove();
+    }
+
+    this.br.bind(EVENTS.PostInit, () => {
+      this.$nav.find(`.${viewModeOptions.className}`)
+        .off('.bindNavigationHandlers')
+        .on('click', (e) => {
+          const nextModeID = viewModeOrder.shift();
+          const newViewMode = viewModes.find((m) => m.mode === nextModeID);
+          const nextViewMode = viewModes.find((m) => m.mode === viewModeOrder[0]);
+
+          viewModeOrder.push(nextModeID);
+          $(e.target)
+            .removeClass(modeClasses)
+            .addClass(nextViewMode.className)
+            .attr('bt-xtitle', nextViewMode.title);
+          br.switchMode(newViewMode.mode);
+        })
+        .addClass(viewModes.find((m) => m.mode === viewModeOrder[0]).className)
+        .removeClass('desktop-only');
+    });
   }
 
   /**
@@ -47,9 +115,7 @@ export class Navbar {
         + `<span class='BRcurrentpage'></span>`
         + `<button class="BRicon book_left js-tooltip"></button>`
         + `<button class="BRicon book_right js-tooltip"></button>`
-        + this.controlFor('onePage')
-        + this.controlFor('twoPage')
-        + this.controlFor('thumbnail')
+        + this._viewModeControls()
         // zoomx
         + `<button class="BRicon zoom_out desktop-only js-tooltip"></button>`
         + `<button class="BRicon zoom_in desktop-only js-tooltip"></button>`
@@ -84,6 +150,7 @@ export class Navbar {
       return true;
     });
 
+    br.options.controls.viewmode.visible && this._bindViewModeButton();
     this.updateNavPageNum(br.currentIndex());
 
     return this.$nav;

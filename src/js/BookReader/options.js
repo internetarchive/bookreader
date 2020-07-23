@@ -201,6 +201,11 @@ export const DEFAULT_OPTIONS = {
       visible: true,
       className: 'thumb',
     },
+    viewmode: {
+      visible: false,
+      className: 'viewmode',
+      excludedModes: [],
+    },
   },
 
   /**

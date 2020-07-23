@@ -87,6 +87,28 @@ describe('Navbar controls overrides', () => {
     navbar = br._components.navbar;
   };
 
+  test(`when a view mode is excluded,
+      the mode should not be used in viewport toggling`, () => {
+    const overrides = {
+      controls: {
+        viewmode: {
+          visible: true,
+          className: 'viewmode',
+          excludedModes: [1],
+        }
+      }
+    };
+    createBRWithOverrides(overrides);
+
+    const $viewMode = navbar.$root.find('.viewmode');
+
+    expect($viewMode.hasClass('thumb')).toBe(true);
+    $viewMode.click();
+    expect($viewMode.hasClass('twopg')).toBe(true);
+    $viewMode.click();
+    expect($viewMode.hasClass('thumb')).toBe(true);
+  });
+
   test('when a control is set to visible: false, do not return a button template', () => {
     const overrides = {
       controls: {
@@ -131,5 +153,21 @@ describe('Navbar controls overrides', () => {
 
     expect(navbar.$root.find('#foo').length).toBe(1);
     expect(navbar.$root.find('.onepg').length).toBe(0);
+  });
+
+  test(`when viewmode control set to visible,
+      the individual view mode controls are not rendered`, () => {
+    const overrides = {
+      controls: {
+        viewmode: {
+          visible: true
+        }
+      }
+    };
+    createBRWithOverrides(overrides);
+
+    expect(navbar.$root.find('.viewmode').length).toBe(1);
+    expect(navbar.$root.find('.onepg').length).toBe(0);
+    expect(navbar.$root.find('.twopg').length).toBe(0);
   });
 });
