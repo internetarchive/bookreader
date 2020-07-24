@@ -21,7 +21,7 @@ export class Navbar {
     const option = this.br.options.controls[controlName];
     if (!option.visible) { return ''; }
     if (option.template) {
-      return option.template(this.br);
+      return `<li>${option.template(this.br)}</li>`;
     }
     return `<li>
       <button class="BRicon ${option.className} desktop-only" title="${option.label}">
