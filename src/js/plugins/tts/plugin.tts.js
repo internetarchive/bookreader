@@ -73,7 +73,7 @@ BookReader.prototype.init = (function(super_) {
           this.ttsEngine.init();
           if (/[?&]_autoReadAloud=show/.test(location.toString())) {
             this.refs.$BRReadAloudToolbar.show();
-            this.$('.BRicon.read').addClass('unread activated');
+            this.$('.BRicon.read').addClass('unread active');
             this.$('.BRReadAloudToolbar .play').show();
             this.$('.BRReadAloudToolbar .pause').hide();
           }
@@ -151,7 +151,12 @@ BookReader.prototype.initNavbar = (function (super_) {
       this.refs.$BRReadAloudToolbar.find('.jumpBackward').click(this.ttsJumpBackward.bind(this));
       const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="BRReadAloud-rate"]');
       $rateSelector.change(ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
-      $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
+      $(`<li>
+          <button class="BRicon read js-tooltip" title="Read this book aloud">
+            <div class="icon icon-read-aloud"></div>
+            <span class="tooltip">Reat this book aloud</span>
+          </button>
+        </li>`).insertBefore($el.find('.BRcontrols .BRicon.zoom_out'));
     }
     return $el;
   };
@@ -175,7 +180,7 @@ BookReader.prototype.ttsStart = function () {
     this.switchMode(this.constMode1up);
 
   this.refs.$BRReadAloudToolbar.show();
-  this.$('.BRicon.read').addClass('unread activated');
+  this.$('.BRicon.read').addClass('unread active');
   this.ttsSendAnalyticsEvent('Start');
   this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
 };
@@ -217,7 +222,7 @@ BookReader.prototype.ttsPlayPause = function() {
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
   this.refs.$BRReadAloudToolbar.hide();
-  this.$('.BRicon.read').removeClass('unread activated');
+  this.$('.BRicon.read').removeClass('unread active');
   this.ttsSendAnalyticsEvent('Stop');
   this.ttsEngine.stop();
   this.ttsRemoveHilites();
