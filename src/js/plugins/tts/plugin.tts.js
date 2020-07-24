@@ -161,7 +161,7 @@ BookReader.prototype.initNavbar = (function (super_) {
             <div class="icon icon-read-aloud"></div>
             <span class="tooltip">Reat this book aloud</span>
           </button>
-        </li>`).insertBefore($el.find('.BRcontrols .BRicon.zoom_out'));
+        </li>`).insertBefore($el.find('.BRcontrols .BRicon.zoom_out').closest('li'));
     }
     return $el;
   };
