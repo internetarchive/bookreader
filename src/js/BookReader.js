@@ -786,6 +786,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
         src: this._getPageURI(index, this.reduce, 0),
         srcset: this._getPageURISrcset(index, this.reduce, 0)
       });
+      console.log(this._getPageURISrcset(index, this.reduce, 0))
       pageContainer.append(img);
 
       BRpageViewEl.appendChild(pageContainer[0]);
@@ -2739,31 +2740,32 @@ BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
     return srcsetStr;
   }
 
+  let ratio = reduce;
   if ('undefined' == typeof(reduce)) {
     // reduce not passed in
     // $$$ this probably won't work for thumbnail mode
-    var ratio = this._models.book.getPageHeight(index) / this.twoPage.height;
-    var scale;
-    // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-    if (ratio < 2) {
-      return srcsetStr;
-    } else if (ratio < 4) {
-      scale = [1];
-    } else if (ratio < 8) {
-      scale = [2,1];
-    } else if (ratio < 16) {
-      scale = [4,2,1];
-    } else  if (ratio < 32) {
-      scale = [8,4,2,1];
-    } else {
-      scale = [16,8,4,2,1];
-    }
-    scale.forEach((el, i) => {
-      srcsetStr = srcsetStr + this._models.book.getPageURI(index, scale[i], rotate) + " "
-      + Math.pow(2, i + 1) + "x, ";
-    } )
-    return srcsetStr;
+    ratio = this._models.book.getPageHeight(index) / this.twoPage.height;
   }
+  var scale;
+  // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
+  if (ratio < 2) {
+    return srcsetStr;
+  } else if (ratio < 4) {
+    scale = [1];
+  } else if (ratio < 8) {
+    scale = [2,1];
+  } else if (ratio < 16) {
+    scale = [4,2,1];
+  } else  if (ratio < 32) {
+    scale = [8,4,2,1];
+  } else {
+    scale = [16,8,4,2,1];
+  }
+  scale.forEach((el, i) => {
+    srcsetStr = srcsetStr + this._models.book.getPageURI(index, scale[i], rotate) + " "
+      + Math.pow(2, i + 1) + "x, ";
+  } )
+  return srcsetStr;
 }
 
 
