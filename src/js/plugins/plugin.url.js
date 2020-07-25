@@ -152,13 +152,15 @@ BookReader.prototype.urlUpdateFragment = function() {
 
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
       window.history.replaceState({}, null, newUrlPath);
+      this.oldLocationHash = newFragment + newQueryString;
+
     }
   } else {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
     window.location.replace('#' + newFragment + newQueryStringSearch);
-  }
+    this.oldLocationHash = newFragment + newQueryStringSearch;
 
-  this.oldLocationHash = newFragment + newQueryString;
+  }
 };
 
 /**
