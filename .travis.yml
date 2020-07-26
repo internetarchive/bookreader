@@ -14,5 +14,5 @@ script:
   - npm run build
   - npm run lint
   - npm run test:coverage
-  - BASE_URL=http://127.0.0.1:8000/ npx testcafe "chrome:headless,firefox:headless"
+  - BASE_URL=http://127.0.0.1:8000/bookReader/ npx testcafe "chrome:headless,firefox:headless"
   - npm run codecov
