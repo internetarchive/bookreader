@@ -81,7 +81,7 @@ var options = {
 
   // Book title and the URL used for the book title link
   bookTitle: 'BookReader Advanced Demo',
-  bookUrl: '/BookReaderDemo/index.html',
+  bookUrl: '../index.html',
   bookUrlText: 'Back to Demos',
   bookUrlTitle: 'This is the book URL title',
   // thumbnail is optional, but it is used in the info dialog
