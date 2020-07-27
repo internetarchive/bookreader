@@ -786,7 +786,6 @@ BookReader.prototype.drawLeafsOnePage = function() {
         src: this._getPageURI(index, this.reduce, 0),
         srcset: this._getPageURISrcset(index, this.reduce, 0)
       });
-      console.log(this._getPageURISrcset(index, this.reduce, 0))
       pageContainer.append(img);
 
       BRpageViewEl.appendChild(pageContainer[0]);
@@ -1909,7 +1908,7 @@ BookReader.prototype._scrollAmount = function() {
 
 BookReader.prototype.prefetchImg = function(index) {
   var pageURI = this._getPageURI(index);
-  var pageURISrcset = this._getPageURISrcset(index);
+  const pageURISrcset = this._getPageURISrcset(index);
 
   // Load image if not loaded or URI has changed (e.g. due to scaling)
   var loadImage = false;
@@ -2727,7 +2726,7 @@ BookReader.prototype.canSwitchToMode = function(mode) {
 
 
 /**
- * Returns the page URI or transparent image if out of range
+ * Returns the srcset with correct URIs or void string if out of range
  * Also makes the reduce argument optional
  * @param {number} index
  * @param {number} [reduce]
@@ -2735,9 +2734,8 @@ BookReader.prototype.canSwitchToMode = function(mode) {
  * @return {string}
  */
 BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
-  let srcsetStr = "";
   if (index < 0 || index >= this._models.book.getNumLeafs()) { // Synthesize page
-    return srcsetStr;
+    return "";
   }
 
   let ratio = reduce;
@@ -2746,10 +2744,10 @@ BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
     // $$$ this probably won't work for thumbnail mode
     ratio = this._models.book.getPageHeight(index) / this.twoPage.height;
   }
-  var scale;
+  let scale = [16,8,4,2,1];
   // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
   if (ratio < 2) {
-    return srcsetStr;
+    return "";
   } else if (ratio < 4) {
     scale = [1];
   } else if (ratio < 8) {
@@ -2758,14 +2756,11 @@ BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
     scale = [4,2,1];
   } else  if (ratio < 32) {
     scale = [8,4,2,1];
-  } else {
-    scale = [16,8,4,2,1];
   }
-  scale.forEach((el, i) => {
-    srcsetStr = srcsetStr + this._models.book.getPageURI(index, scale[i], rotate) + " "
-      + Math.pow(2, i + 1) + "x, ";
-  } )
-  return srcsetStr;
+  return scale.map((el, i) => (
+    this._models.book.getPageURI(index, scale[i], rotate) + " "
+        + Math.pow(2, i + 1) + "x"
+  )).join(', ');
 }
 
 
