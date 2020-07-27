@@ -149,3 +149,39 @@ test('does not add q= term to urlMode=hash query string', () => {
     'hash'
   )).toBe('?name=value');
 });
+
+test('_getPageURISrcset with 0 page book', () => {
+  br._models.book.getNumLeafs = jest.fn(() => 0);
+  br.init();
+  expect(br._getPageURISrcset(5, undefined, undefined)).toBe("");
+});
+
+test('_getPageURISrcset with negative index', () => {
+  br._models.book.getNumLeafs = jest.fn(() => 0);
+  br.init();
+  expect(br._getPageURISrcset(-7, undefined, undefined)).toBe("");
+});
+
+test('_getPageURISrcset with 0 elements in srcset', () => {
+  br._models.book.getNumLeafs = jest.fn(() => 30);
+  br.init();
+  expect(br._getPageURISrcset(5, 1, undefined)).toBe("");
+});
+
+test('_getPageURISrcset with 2 elements in srcset', () => {
+  br._models.book.getNumLeafs = jest.fn(() => 30);
+  br.init();
+  expect(br._getPageURISrcset(5, 5, undefined)).toBe("/bookreader/static/preview-default.png 2x, /bookreader/static/preview-default.png 4x, ");
+});
+
+test('_getPageURISrcset with the most elements in srcset', () => {
+  br._models.book.getNumLeafs = jest.fn(() => 30);
+  br.init();
+  expect(br._getPageURISrcset(5, 35, undefined)).toBe("/bookreader/static/preview-default.png 2x, /bookreader/static/preview-default.png 4x, /bookreader/static/preview-default.png 8x, /bookreader/static/preview-default.png 16x, /bookreader/static/preview-default.png 32x, ");
+});
+
+test('_getPageURISrcset with undefined reduce param', () => {
+  br._models.book.getNumLeafs = jest.fn(() => 30);
+  br.init();
+  expect(br._getPageURISrcset(5, undefined, undefined)).toBe("/bookreader/static/preview-default.png 2x, /bookreader/static/preview-default.png 4x, /bookreader/static/preview-default.png 8x, /bookreader/static/preview-default.png 16x, /bookreader/static/preview-default.png 32x, ");
+});
