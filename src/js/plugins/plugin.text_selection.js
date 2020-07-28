@@ -81,25 +81,43 @@ class TextSelectionPlugin {
         "left": "0",
       });
 
+      $(XMLpage).find("LINE").each((i, line) => {
+        const lineArr = $(line).find("WORD")
+        for(i = 0; i < lineArr.length; i++) {
+          const currWord = lineArr[i];
+          // eslint-disable-next-line no-unused-vars
+          const [left, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
+          const textSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          textSvg.setAttribute("x", left.toString());
+          textSvg.setAttribute("y", bottom.toString());
+          textSvg.setAttribute("font-size", (bottom - top).toString());
+          textSvg.setAttribute("textLength", (right - left).toString());
+          $(textSvg).css({
+            "fill": "red",
+            "cursor": "text",
+          });
+          const textNode = document.createTextNode(currWord.textContent);
+          textSvg.append(textNode);
+          svg.append(textSvg);
+          if(i < lineArr.length - 1){
+            const nextWord = lineArr[i + 1];
+            // eslint-disable-next-line no-unused-vars
+            const [leftNext, bottomNext, rightNext, topNext] = $(nextWord).attr("coords").split(',').map(parseFloat);
+            const spaceSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            spaceSvg.setAttribute("x", right.toString());
+            spaceSvg.setAttribute("y", Math.max(bottom, bottomNext).toString());
+            spaceSvg.setAttribute("font-size", (Math.max(bottom, bottomNext) - Math.min(top, topNext)).toString());
+            spaceSvg.setAttribute("textLength", (leftNext - right).toString());
+            $(spaceSvg).css({
+              'white-space': 'pre',
 
-      $(XMLpage).find("WORD").each((i, el) => {
-        // eslint-disable-next-line no-unused-vars
-        const [left, bottom, right, top] = $(el).attr("coords").split(',').map(parseFloat);
-        const textSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        textSvg.setAttribute("x", left.toString());
-        textSvg.setAttribute("y", bottom.toString());
-        textSvg.setAttribute("font-size", (bottom - top).toString());
-        textSvg.setAttribute("textLength", (right - left).toString());
-
-        $(textSvg).css({
-          "fill": "red",
-          "cursor": "text",
-        });
-        const textNode = document.createTextNode(el.textContent);
-        textSvg.append(textNode);
-        svg.append(textSvg);
+            });
+            const spaceTextNode = document.createTextNode(" ");
+            spaceSvg.append(spaceTextNode);
+            svg.append(spaceSvg);
+          }
+        }
       })
-
       this.stopPageFlip($container);
     }
   }
