@@ -12,22 +12,18 @@ class TextSelectionPlugin {
    * @param {string} ocaid
    */
   init(ocaid) {
-    console.log("initializing text-selection");
     this.djvuPagesPromise = $.ajax({
       type: "GET",
       url: `https://cors.archive.org/cors/${ocaid}/${ocaid}_djvu.xml`,
       dataType: "xml",
 
       error: function (e) {
-        console.log("XML reading Failed: ", e);
         return undefined;
       }
     }).then(function (response) {
       const xmlMap = response;
 
       if (xmlMap != undefined) {
-        console.log("get xml succesful");
-        console.log("xml page array created");
         return $(xmlMap).find("OBJECT");
       }
     });
@@ -52,8 +48,6 @@ class TextSelectionPlugin {
         $container.one("mouseup", (event) => event.stopPropagation());
       }
     });
-    console.log("blocked flip for page")
-
   }
 
   /**
@@ -63,7 +57,6 @@ class TextSelectionPlugin {
   async createTextLayer(pageIndex, $container) {
     const $svgLayers = $container.find('textSelctionSVG');
     if (!$svgLayers.length) {
-      console.log(`created svg layer for page ${pageIndex}`)
       const XMLpage = await this.getPageText(pageIndex);
       const XMLwidth = $(XMLpage).attr("width");
       const XMLheight = $(XMLpage).attr("height");
@@ -138,7 +131,6 @@ class BookreaderWithTextSelection extends BookReader {
    * @param {PageModel} page
    */
   _createPageContainer(page, styles = {}) {
-    console.log(`Created Page ${page.index}`);
     const $container = super._createPageContainer(page, styles);
     if(this.enableTextSelection){
       this.textSelectionPlugin.createTextLayer(page.index, $container);
