@@ -123,6 +123,9 @@ export const DEFAULT_OPTIONS = {
   /** Should image downloads be blocked */
   protected: false,
 
+  /** Enables text selection layer */
+  enableTextSelection: true,
+
   /**
    * @type {Array<[PageData, PageData]|[PageData]>}
    * Data is a simple way to populate the bookreader

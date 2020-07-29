@@ -125,10 +125,12 @@ class TextSelectionPlugin {
 
 class BookreaderWithTextSelection extends BookReader {
   init() {
-    this.enableTextSelection = true;
-    const OCAID = this.bookId;
-    this.textSelectionPlugin = new TextSelectionPlugin();
-    this.textSelectionPlugin.init(OCAID);
+    if(this.enableTextSelection){
+      this.enableTextSelection = true;
+      const OCAID = this.bookId;
+      this.textSelectionPlugin = new TextSelectionPlugin();
+      this.textSelectionPlugin.init(OCAID);
+    }
     super.init();
   }
 
@@ -138,7 +140,9 @@ class BookreaderWithTextSelection extends BookReader {
   _createPageContainer(page, styles = {}) {
     console.log(`Created Page ${page.index}`);
     const $container = super._createPageContainer(page, styles);
-    this.textSelectionPlugin.createTextLayer(page.index, $container);
+    if(this.enableTextSelection){
+      this.textSelectionPlugin.createTextLayer(page.index, $container);
+    }
     return $container;
   }
 }
