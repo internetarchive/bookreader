@@ -2787,7 +2787,6 @@ BookReader.prototype.initUIStrings = function() {
     '.embed': 'Embed BookReader',
     '.link': 'Link to this book (and page)',
     '.bookmark': 'Bookmark this page',
-    '.read': 'Read this book aloud',
     '.share': 'Share this book',
     '.info': 'About this book',
     '.full': 'Toggle fullscreen',

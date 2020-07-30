@@ -58,7 +58,7 @@ $trackFillColor: $gray80;
 
   .BRfullscreenActive & {
     .icon-fullscreen {
-      background-image: url("/static/icons/fullscreen_exit.svg");
+      background-image: url("icons/fullscreen_exit.svg");
     }
   }
 
@@ -74,7 +74,7 @@ $trackFillColor: $gray80;
     color: $controlsText;
     border: none;
     cursor: pointer;
-    background: transparent url("/static/icons/playback-speed.svg") 50% 0 no-repeat;
+    background: transparent url("icons/playback-speed.svg") 50% 0 no-repeat;
   }
 
   .active {

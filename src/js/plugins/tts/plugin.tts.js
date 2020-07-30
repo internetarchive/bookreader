@@ -5,6 +5,7 @@
 import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
+import { en as tooltips } from './tooltips.js';
 /** @typedef {import('./PageChunk.js')} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js")} AbstractTTSEngine */
 
@@ -120,7 +121,7 @@ BookReader.prototype.initNavbar = (function (super_) {
       this.refs.$BRReadAloudToolbar = $(`
         <ul class="read-aloud">
           <li>
-            <select class="playback-speed" name="playback-speed" title="Playback speed">
+            <select class="playback-speed" name="playback-speed" title="${tooltips.playbackSpeed}">
               <option value="0.25">0.25x</option>
               <option value="0.5">0.5x</option>
               <option value="0.75">0.75x</option>
@@ -132,18 +133,18 @@ BookReader.prototype.initNavbar = (function (super_) {
             </select>
           </li>
           <li>
-            <button type="button" name="review" title="Review 10 seconds">
+            <button type="button" name="review" title="${tooltips.review}">
               <div class="icon icon-review"></div>
             </button>
           </li>
           <li>
-            <button type="button" name="play" title="Play">
+            <button type="button" name="play" title="${tooltips.play}">
               <div class="icon icon-play"></div>
               <div class="icon icon-pause"></div>
             </button>
           </li>
           <li>
-            <button type="button" name="advance" title="Advance 10 seconds">
+            <button type="button" name="advance" title="${tooltips.advance}">
               <div class="icon icon-advance"></div>
             </button>
           </li>
@@ -157,9 +158,9 @@ BookReader.prototype.initNavbar = (function (super_) {
       const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="playback-speed"]');
       $rateSelector.change(ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
       $(`<li>
-          <button class="BRicon read js-tooltip" title="Read this book aloud">
+          <button class="BRicon read js-tooltip" title="${tooltips.readAloud}">
             <div class="icon icon-read-aloud"></div>
-            <span class="tooltip">Reat this book aloud</span>
+            <span class="tooltip">${tooltips.readAloud}</span>
           </button>
         </li>`).insertBefore($el.find('.BRcontrols .BRicon.zoom_out').closest('li'));
     }
