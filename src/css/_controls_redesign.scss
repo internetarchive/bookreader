@@ -56,6 +56,12 @@ $trackFillColor: $gray80;
     transform: translateX(0);
   }
 
+  .BRfullscreenActive & {
+    .icon-fullscreen {
+      background-image: url("/static/icons/fullscreen_exit.svg");
+    }
+  }
+
   select.playback-speed {
     width: 24px;
     padding-top: 18px;

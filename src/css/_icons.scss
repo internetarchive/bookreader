@@ -18,26 +18,31 @@
 }
 
 .icon-onepg {
-  width: 12px;
+  width: 11px;
   height: 19px;
   background-image: url("/static/icons/1up.svg");
 }
 
 .icon-twopg {
-  width: 22px;
+  width: 20px;
   height: 19px;
   background-image: url("/static/icons/2up.svg");
 }
 
-.icon-fullscreen {
+.icon-fullscreen,
+.icon-fullscreen-exit {
   width: 18px;
   height: 18px;
   background-image: url("/static/icons/fullscreen.svg");
 }
 
+.icon-fullscreen-exit {
+  background-image: url("/static/icons/fullscreen-exit.svg");
+}
+
 .icon-thumb {
-  width: 24px;
-  height: 22px;
+  width: 17px;
+  height: 19px;
   background-image: url("/static/icons/thumbnails.svg");
 }
 
@@ -83,20 +88,10 @@
 
 .icon-magnify {
   position: relative;
-  width: 17px;
-  height: 17px;
-  background-image: url("/static/icons/magnify.svg");
-}
-.icon-magnify:after {
-  position: absolute;
-  top: 1px;
-  left: 5px;
-  font: bold 9px "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #fff;
-  content: "-";
-}
-.icon-magnify.plus:after {
-  top: 0;
-  left: 4px;
-  content: "+";
+  width: 18px;
+  height: 18px;
+  background-image: url("/static/icons/magnify-minus.svg");
+  &.plus{
+    background-image: url("/static/icons/magnify-plus.svg");
+  }
 }
