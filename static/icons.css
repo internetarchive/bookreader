@@ -14,78 +14,78 @@
 .icon-read-aloud {
   width: 20px;
   height: 16px;
-  background-image: url("/static/icons/read-aloud.svg");
+  background-image: url("/BookReader/icons/read-aloud.svg");
 }
 
 .icon-onepg {
   width: 12px;
   height: 19px;
-  background-image: url("/static/icons/1up.svg");
+  background-image: url("/BookReader/icons/1up.svg");
 }
 
 .icon-twopg {
   width: 22px;
   height: 19px;
-  background-image: url("/static/icons/2up.svg");
+  background-image: url("/BookReader/icons/2up.svg");
 }
 
 .icon-fullscreen {
   width: 18px;
   height: 18px;
-  background-image: url("/static/icons/fullscreen.svg");
+  background-image: url("/BookReader/icons/fullscreen.svg");
 }
 
 .icon-thumb {
   width: 24px;
   height: 22px;
-  background-image: url("/static/icons/thumbnails.svg");
+  background-image: url("/BookReader/icons/thumbnails.svg");
 }
 
 .icon-playback-speed {
   width: 24px;
   height: 32px;
-  background-image: url("/static/icons/playback-speed.svg");
+  background-image: url("/BookReader/icons/playback-speed.svg");
 }
 
 .icon-review,
 .icon-advance {
   width: 21px;
   height: 19px;
-  background-image: url("/static/icons/review.svg");
+  background-image: url("/BookReader/icons/review.svg");
 }
 
 .icon-advance {
-  background-image: url("/static/icons/advance.svg");
+  background-image: url("/BookReader/icons/advance.svg");
 }
 
 .icon-volume-full {
   width: 23px;
   height: 22px;
-  background-image: url("/static/icons/volume-full.svg");
+  background-image: url("/BookReader/icons/volume-full.svg");
 }
 
 .icon-play,
 .icon-pause {
   width: 40px;
   height: 40px;
-  background-image: url("/static/icons/play.svg");
+  background-image: url("/BookReader/icons/play.svg");
 }
 
 .icon-pause {
-  background-image: url("/static/icons/pause.svg");
+  background-image: url("/BookReader/icons/pause.svg");
 }
 
 .icon-left-arrow {
   width: 12px;
   height: 14px;
-  background-image: url("/static/icons/left-arrow.svg");
+  background-image: url("/BookReader/icons/left-arrow.svg");
 }
 
 .icon-magnify {
   position: relative;
   width: 17px;
   height: 17px;
-  background-image: url("/static/icons/magnify.svg");
+  background-image: url("/BookReader/icons/magnify.svg");
 }
 .icon-magnify:after {
   position: absolute;
