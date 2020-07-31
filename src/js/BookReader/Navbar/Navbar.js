@@ -88,10 +88,11 @@ export class Navbar {
           this._updateViewModeButton($(e.currentTarget), nextViewMode.className, nextViewMode.title);
           br.switchMode(newViewMode.mode);
         });
+      const currentViewModeButton = viewModes.find((m) => m.mode === viewModeOrder[0]);
       this._updateViewModeButton(
         $button,
-        viewModes.find((m) => m.mode === viewModeOrder[0]).className,
-        viewModes.find((m) => m.mode === viewModeOrder[0]).title
+        currentViewModeButton.className,
+        currentViewModeButton.title
       );
     });
   }

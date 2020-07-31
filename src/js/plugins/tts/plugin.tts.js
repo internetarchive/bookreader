@@ -5,7 +5,7 @@
 import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
-import { en as tooltips } from './tooltips.js';
+import { en as tooltips } from './tooltip_dict.js';
 /** @typedef {import('./PageChunk.js')} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js")} AbstractTTSEngine */
 
