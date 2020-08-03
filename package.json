@@ -33,7 +33,7 @@
     "core-js": "3.6.5",
     "eslint": "7.6.0",
     "eslint-plugin-testcafe": "^0.2.1",
-    "http-server": "0.12.1",
+    "http-server": "0.12.3",
     "iso-language-codes": "1.0.7",
     "jest": "25.1.0",
     "live-server": "1.2.1",
