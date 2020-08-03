@@ -11,6 +11,6 @@
   <g fill="none" fill-rule="evenodd">
     <circle cx="7" cy="7" r="6" stroke="#fff" stroke-width="2" />
     <path d="m12 12 4.335213 4.335213" stroke="#fff" stroke-linecap="round" stroke-width="2" />
-    <path d="m10 7.75v-1.5h-6v1.5z" stroke="#fff" />
+    <path d="m10 7.75v-1.5h-6v1.5z" fill="#fff" fill-rule="nonzero" />
   </g>
 </svg>
