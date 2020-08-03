@@ -236,8 +236,10 @@ $trackFillColor: $gray80;
 
   .scrubber p {
     padding: 0 20px 0 13px;
-    align-self: center;
+    margin: 0;
+    align-self: stretch;
     font-weight: 700;
+    line-height: 26px;
     color: $controlsText;
   }
 
