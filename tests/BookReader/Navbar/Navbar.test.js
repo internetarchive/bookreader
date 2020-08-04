@@ -3,7 +3,6 @@ import '../../../BookReader/jquery-ui-1.12.0.min.js';
 import '../../../BookReader/jquery.browser.min.js';
 import '../../../BookReader/dragscrollable-br.js';
 import '../../../BookReader/jquery.colorbox-min.js';
-import '../../../BookReader/jquery.bt.min.js';
 import sinon from 'sinon';
 import { getNavPageNumHtml } from '../../../src/js/BookReader/Navbar/Navbar.js';
 import BookReader from '../../../src/js/BookReader.js';
@@ -102,11 +101,11 @@ describe('Navbar controls overrides', () => {
 
     const $viewMode = navbar.$root.find('.viewmode');
 
-    expect($viewMode.hasClass('thumb')).toBe(true);
+    expect($viewMode.find('.icon-thumb').length).toBe(1);
     $viewMode.click();
-    expect($viewMode.hasClass('twopg')).toBe(true);
+    expect($viewMode.find('.icon-twopg').length).toBe(1);
     $viewMode.click();
-    expect($viewMode.hasClass('thumb')).toBe(true);
+    expect($viewMode.find('.icon-thumb').length).toBe(1);
   });
 
   test('when a control is set to visible: false, do not return a button template', () => {

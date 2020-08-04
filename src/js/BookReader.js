@@ -454,7 +454,6 @@ BookReader.prototype.init = function() {
 
   // Bind to events
 
-  if (!this.isTouchDevice) this.setupTooltips();
   this.bindNavigationHandlers();
   this.setupKeyListeners();
 
@@ -636,29 +635,6 @@ BookReader.prototype.setupKeyListeners = function() {
     }
   });
 };
-
-BookReader.prototype.setupTooltips = function() {
-  this.$('.js-tooltip').each(function(idx, el) {
-    var options = {
-      positions: ['top', 'bottom'],
-      shrinkToFit: true,
-      spikeGirth: 0,
-      spikeLength: 8,
-      fill: 'transparent',
-      cornerRadius: 0,
-      strokeWidth: 0,
-      cssStyles: {},
-    };
-    var $el = $(el);
-    if ($el.parents('.BRtoolbar').length) {
-      options.positions = ['bottom'];
-      options.spikeLength = 12;
-    } else if ($el.parents('.BRfooter').length) {
-      options.positions = ['top'];
-    }
-    $el.bt(options);
-  });
-}
 
 BookReader.prototype.drawLeafs = function() {
   if (this.constMode1up == this.mode) {
@@ -2854,7 +2830,6 @@ BookReader.prototype.initUIStrings = function() {
     '.embed': 'Embed BookReader',
     '.link': 'Link to this book (and page)',
     '.bookmark': 'Bookmark this page',
-    '.read': 'Read this book aloud',
     '.share': 'Share this book',
     '.info': 'About this book',
     '.full': 'Toggle fullscreen',

@@ -3,7 +3,6 @@ import '../../BookReader/jquery-ui-1.12.0.min.js';
 import '../../BookReader/jquery.browser.min.js';
 import '../../BookReader/dragscrollable-br.js';
 import '../../BookReader/jquery.colorbox-min.js';
-import '../../BookReader/jquery.bt.min.js';
 
 import BookReader from '../../src/js/BookReader.js';
 import '../../src/js/plugins/plugin.url.js';

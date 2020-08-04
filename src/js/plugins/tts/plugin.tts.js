@@ -5,6 +5,7 @@
 import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
+import { en as tooltips } from './tooltip_dict.js';
 /** @typedef {import('./PageChunk.js')} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js")} AbstractTTSEngine */
 
@@ -73,9 +74,8 @@ BookReader.prototype.init = (function(super_) {
           this.ttsEngine.init();
           if (/[?&]_autoReadAloud=show/.test(location.toString())) {
             this.refs.$BRReadAloudToolbar.show();
-            this.$('.BRicon.read').addClass('unread activated');
-            this.$('.BRReadAloudToolbar .play').show();
-            this.$('.BRReadAloudToolbar .pause').hide();
+            this.$('.BRicon.read').addClass('unread active');
+            this.$('.read-aloud [name=play]').addClass('playing');
           }
         }
       });
@@ -119,39 +119,50 @@ BookReader.prototype.initNavbar = (function (super_) {
     var $el = super_.call(this);
     if (this.options.enableTtsPlugin && this.ttsEngine) {
       this.refs.$BRReadAloudToolbar = $(`
-        <div class="BRReadAloudToolbar" style="display:none">
-            <div class="BRReadAloudToolbar--controls">
-                <div class="BRToolbarButton playback-rate-container" title="Change Playback Speed">
-                    <img class="icon" src="${this.imagesBaseURL}icon_playback-rate.svg" alt="Playback Speed"/>
-                    <select name="BRReadAloud-rate">
-                        <option value="0.25">0.25x</option>
-                        <option value="0.5">0.5x</option>
-                        <option value="0.75">0.75x</option>
-                        <option value="1.0" selected>1.0x</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="1.75">1.75x</option>
-                        <option value="2">2x</option>
-                    </select>
-                </div>
-                <button class="BRToolbarButton jumpBackward" title="Jump Backward">
-                    <img class="icon" src="${this.imagesBaseURL}icon_skip-back.svg" alt="Jump Backward"/>
-                </button>
-                <button class="BRToolbarButton playPause" title="Toggle Pause">
-                    <img class="icon play" src="${this.imagesBaseURL}icon_play.svg" alt="Play" style="display:none">
-                    <img class="icon pause" src="${this.imagesBaseURL}icon_pause.svg" alt="Pause">
-                </button>
-                <button class="BRToolbarButton jumpForward" title="Jump Forward"><img class="icon" src="${this.imagesBaseURL}icon_skip-ahead.svg" alt="Jump forward"/></button>
-            </div>
-        </div>`);
-      this.refs.$BRReadAloudToolbar.insertBefore($el);
+        <ul class="read-aloud">
+          <li>
+            <select class="playback-speed" name="playback-speed" title="${tooltips.playbackSpeed}">
+              <option value="0.25">0.25x</option>
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1.0" selected>1.0x</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.5x</option>
+              <option value="1.75">1.75x</option>
+              <option value="2">2x</option>
+            </select>
+          </li>
+          <li>
+            <button type="button" name="review" title="${tooltips.review}">
+              <div class="icon icon-review"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="play" title="${tooltips.play}">
+              <div class="icon icon-play"></div>
+              <div class="icon icon-pause"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="advance" title="${tooltips.advance}">
+              <div class="icon icon-advance"></div>
+            </button>
+          </li>
+        </ul>
+      `);
+      $el.find('.BRcontrols').prepend(this.refs.$BRReadAloudToolbar);
       this.ttsEngine.events.on('pause resume start', () => this.ttsUpdateState());
-      this.refs.$BRReadAloudToolbar.find('.playPause').click(this.ttsPlayPause.bind(this));
-      this.refs.$BRReadAloudToolbar.find('.jumpForward').click(this.ttsJumpForward.bind(this));
-      this.refs.$BRReadAloudToolbar.find('.jumpBackward').click(this.ttsJumpBackward.bind(this));
-      const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="BRReadAloud-rate"]');
+      this.refs.$BRReadAloudToolbar.find('[name=play]').click(this.ttsPlayPause.bind(this));
+      this.refs.$BRReadAloudToolbar.find('[name=advance]').click(this.ttsJumpForward.bind(this));
+      this.refs.$BRReadAloudToolbar.find('[name=review]').click(this.ttsJumpBackward.bind(this));
+      const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="playback-speed"]');
       $rateSelector.change(ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
-      $("<button class='BRicon read js-tooltip'></button>").insertAfter($el.find('.BRpage .BRicon.thumb'));
+      $(`<li>
+          <button class="BRicon read js-tooltip" title="${tooltips.readAloud}">
+            <div class="icon icon-read-aloud"></div>
+            <span class="tooltip">${tooltips.readAloud}</span>
+          </button>
+        </li>`).insertBefore($el.find('.BRcontrols .BRicon.zoom_out').closest('li'));
     }
     return $el;
   };
@@ -174,8 +185,8 @@ BookReader.prototype.ttsStart = function () {
   if (this.constModeThumb == this.mode)
     this.switchMode(this.constMode1up);
 
-  this.refs.$BRReadAloudToolbar.show();
-  this.$('.BRicon.read').addClass('unread activated');
+  this.refs.$BRReadAloudToolbar.addClass('visible');
+  this.$('.BRicon.read').addClass('unread active');
   this.ttsSendAnalyticsEvent('Start');
   this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
 };
@@ -195,13 +206,8 @@ BookReader.prototype.ttsJumpBackward = function () {
 };
 
 BookReader.prototype.ttsUpdateState = function() {
-  if (this.ttsEngine.paused || !this.ttsEngine.playing) {
-    this.$('.BRReadAloudToolbar .play').show();
-    this.$('.BRReadAloudToolbar .pause').hide();
-  } else {
-    this.$('.BRReadAloudToolbar .play').hide();
-    this.$('.BRReadAloudToolbar .pause').show();
-  }
+  const isPlaying = !(this.ttsEngine.paused || !this.ttsEngine.playing);
+  this.$('.read-aloud [name=play]').toggleClass('playing', isPlaying);
 };
 
 BookReader.prototype.ttsPlayPause = function() {
@@ -216,8 +222,8 @@ BookReader.prototype.ttsPlayPause = function() {
 // ttsStop()
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
-  this.refs.$BRReadAloudToolbar.hide();
-  this.$('.BRicon.read').removeClass('unread activated');
+  this.refs.$BRReadAloudToolbar.removeClass('visible');
+  this.$('.BRicon.read').removeClass('unread active');
   this.ttsSendAnalyticsEvent('Stop');
   this.ttsEngine.stop();
   this.ttsRemoveHilites();

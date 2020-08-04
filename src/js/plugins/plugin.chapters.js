@@ -79,36 +79,16 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
       .css({ left: percentThrough })
       .appendTo(this.$('.BRnavline'))
       .data({ pageIndex })
-      .bt({
-        contentSelector: '$(this).find("> div")',
-        trigger: 'hover',
-        closeWhenOthersOpen: true,
-        cssStyles: {
-          padding: '12px 14px',
-          backgroundColor: '#fff',
-          border: '4px solid rgb(216,216,216)',
-          color: 'rgb(52,52,52)'
-        },
-        shrinkToFit: false,
-        width: '230px',
-        padding: 0,
-        spikeGirth: 0,
-        spikeLength: 0,
-        overlap: '0px',
-        overlay: false,
-        killTitle: false,
-        offsetParent: null,
-        positions: ['top'],
-        fill: 'white',
-        windowMargin: 10,
-        strokeWidth: 0,
-        cornerRadius: 0,
-        centerPointX: 0,
-        centerPointY: 0,
-        shadow: false
-      })
       .hover(event => {
-      // remove hover effect from other markers then turn on just for this
+        // remove hover effect from other markers then turn on just for this
+        const marker = event.currentTarget;
+        const tooltip = marker.querySelector('div');
+        const tooltipOffset = tooltip.getBoundingClientRect();
+        const targetOffset = marker.getBoundingClientRect();
+        const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
+        if (tooltipOffset.x - boxSizeAdjust < 0) {
+          tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
+        }
         this.$('.BRsearch,.BRchapter').removeClass('front');
         $(event.target).addClass('front');
       },

@@ -1,0 +1,157 @@
+/* Reset */
+ul,ol { list-style: none; }
+h1,h2,h3,h4,h5,h6,pre,code { font-size: 1em; }
+ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,body,html,p,blockquote,fieldset,input,dl,dt,dd, figure, figcaption {
+  margin: 0;
+  padding: 0; }
+a img,:link img,:visited img, fieldset { border: none; }
+address { font-style: normal; }
+header, section, article, nav, footer, hgroup, details, summary, figure, main { display: block; }
+mark {
+  color: inherit;
+  background: transparent; }
+abbr { border: none; }
+summary::-webkit-details-marker { display: none; }
+
+html {
+  font: normal 10px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.bookreader {
+  display: grid;
+  height: 100vh;
+  overflow: hidden;
+  grid-template-areas: "stage" "controls";
+  grid-template-rows: 1fr auto;
+}
+
+.stage {
+  grid-area: stage;
+}
+
+.book {
+  margin: 0 auto;
+}
+
+.BRcontrols {
+  --gray13: #222;
+  --gray20: #333;
+  --gray40: #666;
+  --gray80: #ccc;
+  --white: #fff;
+  --controlsText: var(--white);
+  --controlsBG: var(--gray20);
+  --iconFill: var(--white);
+  --iconActiveFill: var(--gray20);
+  --iconStroke: var(--white);
+  --iconActiveStroke: var(--gray20);
+  --tooltipBG: var(--gray20);
+  --activeButtonBG: var(--white);
+  --controlsBorder: var(--gray13);
+  --trackColor: var(--gray40);
+  --trackFillColor: var(--gray80);
+  --scrubberSlider: var(--white);
+  position: relative;
+  z-index: 7;
+  width: 100%;
+  grid-area: controls;
+  background: var(--controlsBG);
+}
+
+.BRcontrols .scrubber {
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+
+.BRcontrols .frame {
+  position: relative;
+  width: 100%;
+}
+
+.BRcontrols .color-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+}
+
+.BRcontrols .scrubber input[type=range] {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  background-color: transparent;
+  -webkit-appearance: none;
+}
+
+.BRcontrols .scrubber input[type=range]:focus {
+  outline: none;
+}
+
+.BRcontrols .scrubber input[type=range]::-webkit-slider-runnable-track {
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+}
+
+.BRcontrols .scrubber input[type=range]::-webkit-slider-thumb {
+  margin-top: -4px;
+  width: 16px;
+  height: 16px;
+  background: var(--scrubberSlider);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.BRcontrols .scrubber input[type=range]::-moz-range-track {
+  background: var(--trackColor);
+  border: none;
+  border-radius: 8px;
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+}
+
+.BRcontrols .scrubber input[type=range]::-moz-range-progress {
+  height: 8px;
+  background: #ccc;
+}
+
+.BRcontrols .scrubber input[type=range]::-ms-track {
+  border: none;
+  color: transparent;
+  background: var(--trackColor);
+}
+
+.BRcontrols .scrubber input[type=range]::-ms-fill-lower {
+  background: var(--trackFillColor);
+}
+
+.BRcontrols .scrubber input[type=range]::-ms-tooltip {
+  display: none;
+}
+
+.BRcontrols .scrubber input[type=range]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--scrubberSlider);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.BRcontrols .scrubber p {
+  padding: 0 2rem 0 1.3rem;
+  font-weight: 700;
+  color: var(--controlsText);
+}

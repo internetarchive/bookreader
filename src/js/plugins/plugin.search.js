@@ -469,35 +469,6 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
   const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
   const pageDisplayString = `${uiStringPage} ${this.getNavPageNumString(pageIndex, true)}`;
 
-  const searchBtSettings = {
-    contentSelector: '$(this).find(".BRquery")',
-    trigger: 'hover',
-    closeWhenOthersOpen: true,
-    cssStyles: {
-      padding: '12px 14px',
-      backgroundColor: '#fff',
-      border: '4px solid rgb(216,216,216)',
-      color: 'rgb(52,52,52)'
-    },
-    shrinkToFit: false,
-    width: '230px',
-    padding: 0,
-    spikeGirth: 0,
-    spikeLength: 0,
-    overlap: '0px',
-    overlay: false,
-    killTitle: false,
-    offsetParent: null,
-    positions: ['top'],
-    fill: 'white',
-    windowMargin: 10,
-    strokeWidth: 0,
-    cornerRadius: 0,
-    centerPointX: 0,
-    centerPointY: 0,
-    shadow: false
-  };
-
   const re = new RegExp('{{{(.+?)}}}', 'g');
   const queryStringWithB = queryString.replace(re, '<b>$1</b>');
 
@@ -531,11 +502,18 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     )
     .data({ pageIndex })
     .appendTo(this.$('.BRnavline'))
-    .bt(searchBtSettings)
     .hover(
       (event) => {
         // remove from other markers then turn on just for this
         // XXX should be done when nav slider moves
+        const marker = event.currentTarget;
+        const tooltip = marker.querySelector('.BRquery');
+        const tooltipOffset = tooltip.getBoundingClientRect();
+        const targetOffset = marker.getBoundingClientRect();
+        const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
+        if (tooltipOffset.x - boxSizeAdjust < 0) {
+          tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
+        }
         $('.BRsearch,.BRchapter').removeClass('front');
         $(event.target).addClass('front');
       },

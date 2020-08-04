@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookReader Chrome</title>
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+    <link rel="stylesheet" href="/static/chrome.css" />
+  </head>
+
+  <body>
+    <div class="bookreader">
+      <div class="stage">
+        <div class="book"></div>
+      </div>
+      <nav class="BRcontrols">
+        <ul class="read-aloud">
+          <li>
+            <select class="playback-speed" name="playback-speed" title="Playback speed">
+              <option value="0.25">0.25x</option>
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1.0" selected>1.0x</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.5x</option>
+              <option value="1.75">1.75x</option>
+              <option value="2">2x</option>
+            </select>
+          </li>
+          <li>
+            <button type="button" name="review" title="Review 10 seconds">
+              <div class="icon icon-review"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="play" title="Play">
+              <div class="icon icon-play"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="advance" title="Advance 10 seconds">
+              <div class="icon icon-advance"></div>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="volume" title="Volume">
+              <div class="icon icon-volume-full"></div>
+            </button>
+          </li>
+        </ul>
+        <ul class="controls">
+          <li class="scrubber">
+            <div class="frame">
+              <div class="color-fill"></div>
+              <input type="range" min="1" max="198" scale="1" value="1" />
+              <style id="webkit-fill"></style>
+            </div>
+            <p>1/198</p>
+          </li>
+          <li>
+            <button type="button" name="prev-page" title="Flip left">
+              <div class="icon icon-left-arrow"></div>
+              <span class="tooltip">Flip left</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="next-page" title="Flip right">
+              <div class="icon icon-left-arrow hflip"></div>
+              <span class="tooltip">Flip right</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="read-aloud" title="Read aloud">
+              <div class="icon icon-read-aloud"></div>
+              <span class="tooltip">Read this book aloud</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="1up" title="Switch to one page view">
+              <div class="icon icon-onepg"></div>
+              <span class="tooltip">One-page view</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="2up" title="Switch to two page view" class="active">
+              <div class="icon icon-twopg"></div>
+              <span class="tooltip">Two-page view</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="thumbnails" title="Switch to thumbnails view">
+              <div class="icon icon-thumb"></div>
+              <span class="tooltip">Thumbnail view</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="zoom-out" title="Zoom out">
+              <div class="icon icon-magnify"></div>
+              <span class="tooltip">Zoom out</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="zoom-in" title="Zoom in">
+              <div class="icon icon-magnify plus"></div>
+              <span class="tooltip">Zoom in</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" name="fullscreen" title="Switch to fullscreen view">
+              <div class="icon icon-fullscreen"></div>
+              <span class="tooltip">Toggle fullscreen</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <script src="/static/new_chrome.js"></script>
+  </body>
+</html>

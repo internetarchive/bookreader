@@ -21,9 +21,14 @@ export class Navbar {
     const option = this.br.options.controls[controlName];
     if (!option.visible) { return ''; }
     if (option.template) {
-      return option.template(this.br);
+      return `<li>${option.template(this.br)}</li>`;
     }
-    return `<button class="BRicon ${option.className} desktop-only js-tooltip"></button>`;
+    return `<li>
+      <button class="BRicon ${option.className} desktop-only" title="${option.label}">
+        <div class="icon icon-${option.className}"></div>
+        <span class="tooltip">${option.label}</span>
+      </button>
+    </li>`;
   }
 
   /** @private */
@@ -56,7 +61,6 @@ export class Navbar {
       !viewModeOptions.excludedModes.includes(mode.mode)
     ));
     const viewModeOrder = viewModes.map((m) => m.mode);
-    const modeClasses = viewModes.map((m) => m.className).join(' ');
 
     if (viewModeOptions.excludedModes.includes(br.mode)) {
       br.switchMode(viewModeOrder[0]);
@@ -73,7 +77,7 @@ export class Navbar {
     }
 
     this.br.bind(EVENTS.PostInit, () => {
-      this.$nav.find(`.${viewModeOptions.className}`)
+      const $button = this.$nav.find(`.${viewModeOptions.className}`)
         .off('.bindNavigationHandlers')
         .on('click', (e) => {
           const nextModeID = viewModeOrder.shift();
@@ -81,15 +85,28 @@ export class Navbar {
           const nextViewMode = viewModes.find((m) => m.mode === viewModeOrder[0]);
 
           viewModeOrder.push(nextModeID);
-          $(e.target)
-            .removeClass(modeClasses)
-            .addClass(nextViewMode.className)
-            .attr('bt-xtitle', nextViewMode.title);
+          this._updateViewModeButton($(e.currentTarget), nextViewMode.className, nextViewMode.title);
           br.switchMode(newViewMode.mode);
-        })
-        .addClass(viewModes.find((m) => m.mode === viewModeOrder[0]).className)
-        .removeClass('desktop-only');
+        });
+      const currentViewModeButton = viewModes.find((m) => m.mode === viewModeOrder[0]);
+      this._updateViewModeButton(
+        $button,
+        currentViewModeButton.className,
+        currentViewModeButton.title
+      );
     });
+  }
+
+  /** @private */
+  _updateViewModeButton($button, iconClass, tooltipText) {
+    $button
+      .attr('title', tooltipText)
+      .find('.icon')
+      .removeClass()
+      .addClass(`icon icon-${iconClass}`)
+      .end()
+      .find('.tooltip')
+      .text(tooltipText);
   }
 
   /**
@@ -105,22 +122,48 @@ export class Navbar {
       `<div class="BRnav BRnavDesktop">
           <div class="BRnavCntl BRnavCntlBtm BRdn js-tooltip" title="Toggle toolbars"></div>
           ${title ? `<div class="BRnavTitle">${title}</div>` : ''}
-          <div class="BRnavpos">
-            <div class="BRpager"></div>
-            <div class="BRnavline"></div>
-          </div>
-          <div class="BRpage">`
-
-        // Note, it's important for there to not be whitespace
-        + `<span class='BRcurrentpage'></span>`
-        + `<button class="BRicon book_left js-tooltip"></button>`
-        + `<button class="BRicon book_right js-tooltip"></button>`
-        + this._viewModeControls()
-        // zoomx
-        + `<button class="BRicon zoom_out desktop-only js-tooltip"></button>`
-        + `<button class="BRicon zoom_in desktop-only js-tooltip"></button>`
-        + `<button class="BRicon full js-tooltip"></button>`
-        + `</div>
+          <nav class="BRcontrols">
+            <ul class="controls">
+              <li class="scrubber">
+                <div class="BRnavpos">
+                  <div class="BRpager"></div>
+                  <div class="BRnavline"></div>
+                </div>
+                <p><span class='BRcurrentpage'></span></p>
+              </li>
+              <li>
+                <button class="BRicon book_left" title="Flip left">
+                  <div class="icon icon-left-arrow"></div>
+                  <span class="tooltip">Flip left</span>
+                </button>
+              </li>
+              <li>
+                <button class="BRicon book_right" title="Flip right">
+                  <div class="icon icon-left-arrow hflip"></div>
+                  <span class="tooltip">Flip right</span>
+                </button>
+              </li>
+              ${this._viewModeControls()}
+              <li>
+                <button class="BRicon zoom_out desktop-only" title="Zoom out">
+                  <div class="icon icon-magnify"></div>
+                  <span class="tooltip">Zoom out</span>
+                </button>
+              </li>
+              <li>
+                <button class="BRicon zoom_in desktop-only" title="Zoom in">
+                  <div class="icon icon-magnify plus"></div>
+                  <span class="tooltip">Zoom in</span>
+                </button>
+              </li>
+              <li>
+                <button class="BRicon full" title="Toggle fullscreen">
+                  <div class="icon icon-fullscreen"></div>
+                  <span class="tooltip">Toggle fullscreen</span>
+                </button>
+              </li>
+            </ul>
+          </nav>
         </div>`);
 
     this.$root.append(this.$nav);

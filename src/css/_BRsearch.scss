@@ -1,3 +1,17 @@
+%timeline-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 230px;
+  padding: 12px 14px;
+  color: #333;
+  font-weight: bold;
+  border: 4px solid rgb(216,216,216);
+  background: #fff;
+}
+
 #{$brScope} {
   .BookReaderSearchHilite {
     opacity: 0.20;
@@ -27,7 +41,12 @@
     bottom: -13px;
     margin-left: -12px; /* Center icon */
     > div {
-      display: none;
+      @extend %timeline-tooltip;
+    }
+    &:hover {
+      > div {
+        display: block;
+      }
     }
     &.front {
       // background-image: url(images/marker_chap-on.svg);
@@ -39,6 +58,11 @@
     width: 20px;
     height: 25px;
     margin-left: -20px; /* Center icon */
+    &:hover {
+      .BRquery {
+        display: block;
+      }
+    }
   }
   .BRsearch.front {
     background-image: url(images/marker_srch-on.svg);
@@ -47,9 +71,7 @@
     display: none;
   }
   .BRquery {
-    position: relative;
-    color: #666;
-
+    @extend %timeline-tooltip;
     b {
       color: #000;
       font-weight: bold;

@@ -12,7 +12,6 @@
     <script src="../BookReader/jquery.browser.min.js"></script>
     <script src="../BookReader/dragscrollable-br.js"></script>
     <script src="../BookReader/jquery.colorbox-min.js"></script>
-    <script src="../BookReader/jquery.bt.min.js"></script>
 
     <!-- BookReader and plugins -->
     <link rel="stylesheet" href="../BookReader/BookReader.css"/>
@@ -41,7 +40,10 @@
         onePage: {
           visible: true,
           template: function(br) {
-            return '<button class="BRicon ' + this.className + ' desktop-only js-tooltip" data-param="foo"></button>';
+            return '<button class="BRicon ' + this.className + ' desktop-only js-tooltip" data-param="foo">' +
+                '<div class="icon icon-onepg"></div>' +
+                '<span class="tooltip">Overridden control</span>' +
+              '</button>';
           }
         },
         twoPage: {
