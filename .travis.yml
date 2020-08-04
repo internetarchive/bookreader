@@ -14,5 +14,6 @@ script:
   - npm run build
   - npm run lint
   - npm run test:coverage
-  - BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe "chrome:headless,firefox:headless"
+  # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )
+  - BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe "chrome:headless,firefox:headless" --concurrency 2
   - npm run codecov
