@@ -72,6 +72,14 @@ $mobileMenuBG: #151515;
     a { color: black; }
 }
 
+// Highlight colors for text selection layer
+tspan::selection{
+    background: rgba($color: #08318a98, $alpha: 0.8);
+    fill: white;
+    fill-opacity: 1;
+}
+
+
 // These are the main root elements in BookReader
 $brScope: ".BookReader, .BRmobileMenu, .BRfloat";
 

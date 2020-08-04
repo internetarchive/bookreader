@@ -118,7 +118,7 @@ class TextSelectionPlugin {
           "cursor": "text",
           'white-space': 'pre',
           "dominant-baseline": "text-after-edge",
-          // "fill-opacity": "0",
+          "fill-opacity": "0",
         });
         svg.append(lineSvg);
       })
