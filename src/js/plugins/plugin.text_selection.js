@@ -43,7 +43,7 @@ class TextSelectionPlugin {
   stopPageFlip($container){
     const $svg = $container.find('svg');
     $svg.on("mousedown", (event) => {
-      if ($(event.target).is('text')) {
+      if ($(event.target).is('tspan')) {
         event.stopPropagation();
         $container.one("mouseup", (event) => event.stopPropagation());
       }
@@ -75,41 +75,52 @@ class TextSelectionPlugin {
       });
 
       $(XMLpage).find("LINE").each((i, line) => {
-        const lineArr = $(line).find("WORD")
+        // adding text element for each line in the page
+        const lineSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const lineArr = $(line).find("WORD");
+        let [leftMin, bottomMax, rightMax, topMin] = [Infinity, 0, 0, Infinity];
+
         for(i = 0; i < lineArr.length; i++) {
+          // adding tspan for each word in line
           const currWord = lineArr[i];
           // eslint-disable-next-line no-unused-vars
           const [left, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
-          const textSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          textSvg.setAttribute("x", left.toString());
-          textSvg.setAttribute("y", bottom.toString());
-          textSvg.setAttribute("font-size", (bottom - top).toString());
-          textSvg.setAttribute("textLength", (right - left).toString());
-          $(textSvg).css({
-            "fill": "red",
-            "cursor": "text",
-          });
+          if(left < leftMin) leftMin = left;
+          if(bottom > bottomMax) bottomMax = bottom;
+          if(right > rightMax) rightMax = right;
+          if(top < topMin) topMin = top;
+          const wordTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+          wordTspan.setAttribute("x", left.toString());
+          wordTspan.setAttribute("textLength", (right - left).toString());
           const textNode = document.createTextNode(currWord.textContent);
-          textSvg.append(textNode);
-          svg.append(textSvg);
+          wordTspan.append(textNode);
+          lineSvg.append(wordTspan);
+
+          // adding spaces after words not at the end of the line
           if(i < lineArr.length - 1){
             const nextWord = lineArr[i + 1];
             // eslint-disable-next-line no-unused-vars
             const [leftNext, bottomNext, rightNext, topNext] = $(nextWord).attr("coords").split(',').map(parseFloat);
-            const spaceSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            spaceSvg.setAttribute("x", right.toString());
-            spaceSvg.setAttribute("y", Math.max(bottom, bottomNext).toString());
-            spaceSvg.setAttribute("font-size", (Math.max(bottom, bottomNext) - Math.min(top, topNext)).toString());
-            spaceSvg.setAttribute("textLength", (leftNext - right).toString());
-            $(spaceSvg).css({
-              'white-space': 'pre',
-
-            });
+            const spaceTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+            spaceTspan.setAttribute("x", right.toString());
+            spaceTspan.setAttribute("textLength", (leftNext - right).toString());        
             const spaceTextNode = document.createTextNode(" ");
-            spaceSvg.append(spaceTextNode);
-            svg.append(spaceSvg);
+            spaceTspan.append(spaceTextNode);
+            lineSvg.append(spaceTspan);
           }
         }
+        lineSvg.setAttribute("x", leftMin.toString());
+        lineSvg.setAttribute("y", bottomMax.toString());
+        lineSvg.setAttribute("font-size", (bottomMax - topMin).toString());
+        lineSvg.setAttribute("textLength", (rightMax - leftMin).toString());
+        $(lineSvg).css({
+          "fill": "red",
+          "cursor": "text",
+          'white-space': 'pre',
+          "dominant-baseline": "text-after-edge",
+          // "fill-opacity": "0",
+        });
+        svg.append(lineSvg);
       })
       this.stopPageFlip($container);
     }
