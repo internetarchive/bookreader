@@ -1,3 +1,14 @@
+# 4.14.0
+- Dev: Simplify webpack file (#373) @cdrini
+- Feature: One page/Two page/Thumbnail view now one button toggler (#375) @shaneriley
+- Fix: Advanced page demo broken (#383) @Pyrojet99
+- Fix: Pages randomly flipping on /stream endpoint (#386) @Pyrojet99
+- Feature: Display high quality images on high resolution displays (#378) @Pyrojet99
+- Dev: Add eslint for newline at end of file (#396) @JanviMahajan14
+- Dev: update a bunch of dependencies @dependabot-preview + @cdrini
+- Dev: Speed up Travis (a bit) by making it run testcafe concurrently (#407) @cdrini
+- Feature: New chrome for BookReader! (#381) @shaneriley
+
 # 4.13.1
 - Fix: Toc entries not showing page number on desktop (#369) @cdrini
 
