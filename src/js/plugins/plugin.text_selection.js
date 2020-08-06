@@ -74,53 +74,60 @@ class TextSelectionPlugin {
         "left": "0",
       });
 
-      $(XMLpage).find("LINE").each((i, line) => {
-        // adding text element for each line in the page
-        const lineSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        const lineArr = $(line).find("WORD");
+      $(XMLpage).find("PARAGRAPH").each((i, paragraph) => {
+        // adding text element for each paragraph in the page
+        const paragSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const paragArr = $(paragraph).find("WORD");
         let [leftMin, bottomMax, rightMax, topMin] = [Infinity, 0, 0, Infinity];
+        let wordHeightMax = 0;
 
-        for(i = 0; i < lineArr.length; i++) {
-          // adding tspan for each word in line
-          const currWord = lineArr[i];
+        for(i = 0; i < paragArr.length; i++) {
+          // adding tspan for each word in paragraph
+          const currWord = paragArr[i];
           // eslint-disable-next-line no-unused-vars
           const [left, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
+          const wordHeight = bottomMax - top;
           if(left < leftMin) leftMin = left;
           if(bottom > bottomMax) bottomMax = bottom;
           if(right > rightMax) rightMax = right;
           if(top < topMin) topMin = top;
+          if(wordHeight > wordHeightMax) wordHeightMax = wordHeight;
+
           const wordTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
           wordTspan.setAttribute("x", left.toString());
+          wordTspan.setAttribute("y", bottom.toString());
           wordTspan.setAttribute("textLength", (right - left).toString());
+          wordTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
           const textNode = document.createTextNode(currWord.textContent);
           wordTspan.append(textNode);
-          lineSvg.append(wordTspan);
+          paragSvg.append(wordTspan);
 
-          // adding spaces after words not at the end of the line
-          if(i < lineArr.length - 1){
-            const nextWord = lineArr[i + 1];
+          // adding spaces after words except at the end of the paragraph
+          if(i < paragArr.length - 1){
+            const nextWord = paragArr[i + 1];
             // eslint-disable-next-line no-unused-vars
             const [leftNext, bottomNext, rightNext, topNext] = $(nextWord).attr("coords").split(',').map(parseFloat);
             const spaceTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
             spaceTspan.setAttribute("x", right.toString());
-            spaceTspan.setAttribute("textLength", (leftNext - right).toString());        
+            spaceTspan.setAttribute("y", bottom.toString());
+            if((leftNext - right) > 0) spaceTspan.setAttribute("textLength", (leftNext - right).toString());
+            spaceTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
             const spaceTextNode = document.createTextNode(" ");
             spaceTspan.append(spaceTextNode);
-            lineSvg.append(spaceTspan);
+            paragSvg.append(spaceTspan);
           }
         }
-        lineSvg.setAttribute("x", leftMin.toString());
-        lineSvg.setAttribute("y", bottomMax.toString());
-        lineSvg.setAttribute("font-size", (bottomMax - topMin).toString());
-        lineSvg.setAttribute("textLength", (rightMax - leftMin).toString());
-        $(lineSvg).css({
+        paragSvg.setAttribute("x", leftMin.toString());
+        paragSvg.setAttribute("y", bottomMax.toString());
+        paragSvg.setAttribute("font-size", wordHeightMax.toString());
+        paragSvg.setAttribute("textLength", (rightMax - leftMin).toString());
+        $(paragSvg).css({
           "fill": "red",
           "cursor": "text",
           'white-space': 'pre',
-          "dominant-baseline": "text-after-edge",
           "fill-opacity": "0",
         });
-        svg.append(lineSvg);
+        svg.append(paragSvg);
       })
       this.stopPageFlip($container);
     }

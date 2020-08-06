@@ -74,15 +74,10 @@ $mobileMenuBG: #151515;
 
 // Highlight colors for text selection layer
 tspan::selection {
-    background: rgba($color: #08318a98, $alpha: 0.8);
-    fill: white;
-    fill-opacity: 1;
+    background: hsla(210, 74%, 62%, 0.4);
 }
-
 tspan::-moz-selection {
-    background: rgba($color: #08318a98, $alpha: 0.8);
-    color: white;
-    fill-opacity: 1;
+    background: hsla(210, 74%, 62%, 0.4);
 }
 
 // These are the main root elements in BookReader
