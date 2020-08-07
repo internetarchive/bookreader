@@ -32,6 +32,11 @@ $trackFillColor: $gray80;
     &:hover .tooltip {
       display: block;
     }
+    @media (max-width: 480px) {
+      &.hide-mobile {
+        display: none;
+      }
+    }
   }
 
   .tooltip {
@@ -93,6 +98,9 @@ $trackFillColor: $gray80;
     list-style: none;
     border-top: 1px solid $controlsBorder;
     background: $controlsBG;
+    @media (max-width: $brBreakPointMobile) {
+      padding-left: 0;
+    }
   }
 
   .controls button {
@@ -240,6 +248,9 @@ $trackFillColor: $gray80;
     font-weight: 700;
     line-height: 26px;
     color: $controlsText;
+    @media (max-width: $brBreakPointMobile) {
+      padding: 0;
+    }
   }
 
   /* BookReader defaults overrides */

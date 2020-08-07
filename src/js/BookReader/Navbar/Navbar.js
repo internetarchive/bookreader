@@ -145,13 +145,13 @@ export class Navbar {
               </li>
               ${this._viewModeControls()}
               <li>
-                <button class="BRicon zoom_out desktop-only" title="Zoom out">
+                <button class="BRicon zoom_out hide-mobile" title="Zoom out">
                   <div class="icon icon-magnify"></div>
                   <span class="tooltip">Zoom out</span>
                 </button>
               </li>
               <li>
-                <button class="BRicon zoom_in desktop-only" title="Zoom in">
+                <button class="BRicon zoom_in hide-mobile" title="Zoom in">
                   <div class="icon icon-magnify plus"></div>
                   <span class="tooltip">Zoom in</span>
                 </button>
