@@ -1,3 +1,6 @@
+# 4.14.2
+- Dev: Make npm package public (#414) @cdrini
+
 # 4.14.1
 - Dev: Automate npm publishing on github release (#409, #412) @cdrini
 
