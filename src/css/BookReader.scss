@@ -30,7 +30,7 @@ $brColorMobileMenuTitle: black;
 $brColorMobileMenuLink: black;
 
 $brNavHeightDesktop: 34px; //40px; //34px;
-$brNavHeightMobile: 40px;
+$brNavHeightMobile: $brNavHeightDesktop;
 
 $brBreakPointMobile: 800px;
 $brBreakPointMid: 1050px;
