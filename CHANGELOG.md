@@ -1,3 +1,6 @@
+# 4.14.3
+- Fix: Zoom buttons missing on mobile + other chrome fixes (#416) @shaneriley
+
 # 4.14.2
 - Dev: Make npm package public (#414) @cdrini
 

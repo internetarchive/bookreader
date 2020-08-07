@@ -1036,12 +1036,12 @@ i.BRicon {
   display: flex;
   justify-content: center;
   margin: 5px;
-  padding: 0 10px;
+  padding: 0 8.5px;
   border-radius: 4px;
   align-self: center;
-  height: 40px;
+  height: 34px;
   animation: fadeUp 0.2s;
-  background-color: #818181;
+  background-color: #333;
   color: white;
   /* Full mobile styles */
 }
@@ -1166,8 +1166,8 @@ i.BRicon {
   height: 100%;
 }
 .BRReadAloudToolbar .BRToolbarButton .icon {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   box-sizing: border-box;
 }
 .BRReadAloudToolbar .BRToolbarButton.jumpForward .icon, .BRReadAloudToolbar .BRToolbarButton.jumpBackward .icon {
@@ -1182,8 +1182,8 @@ i.BRicon {
   display: block;
 }
 .BRReadAloudToolbar .playback-rate-container {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   position: relative;
 }
 .BRReadAloudToolbar .playback-rate-container .icon {
@@ -1233,8 +1233,9 @@ i.BRicon {
   display: block;
   display: flex;
   flex-direction: row;
+  border-top: 1px solid #222;
   /* Theming */
-  background-color: #818181;
+  background-color: #333;
   color: white;
   /* Full mobile styles */
 }
@@ -1291,86 +1292,10 @@ i.BRicon {
 .BRnav .BRnavCntlBtm:hover {
   background-color: #0074D1;
 }
-.BRnav.BRnavEmbed {
-  background-color: white;
-  color: black;
-}
-.BRnav.BRnavEmbed a {
-  color: black;
-}
-.BRnav.BRnavEmbed .BRpager.ui-slider {
-  background: #B7B7B7;
-}
-.BRnav.BRnavEmbed .BRpager.ui-slider .ui-slider-handle {
-  background: #0074D1;
-}
-.BRnav.BRnavEmbed .BRpager.ui-slider .ui-slider-range {
-  background: rgba(0, 116, 209, 0.25);
-}
-.BRnav.BRnavEmbed .BRpage .BRicon {
-  border-left: 1px solid #979797;
-}
-.BRnav.BRnavEmbed .BRpage .BRicon.activated {
-  background-color: rgba(0, 116, 209, 0.4);
-}
-.BRnav.BRnavEmbed .BRpage .BRicon.activated:before {
-  content: "";
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  display: block;
-  border: 3px solid rgba(0, 116, 209, 0.3);
-}
-.BRnav.BRnavEmbed .BRnavCntl {
-  background-color: #979797;
-}
-.BRnav.BRnavEmbed .BRnavCntlBtm:hover {
-  background-color: #0074D1;
-}
 @media (max-width: 800px) {
   .BRnav {
-    height: 40px;
+    height: 34px;
     box-shadow: 0px -1px 3px 0px rgba(102, 102, 102, 0.25);
-  }
-  .BRbodyMobileNavEnabled .BRnav, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav {
-    background-color: white;
-    color: black;
-  }
-  .BRbodyMobileNavEnabled .BRnav a, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav a {
-    color: black;
-  }
-  .BRbodyMobileNavEnabled .BRnav .BRpager.ui-slider, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager.ui-slider {
-    background: #B7B7B7;
-  }
-  .BRbodyMobileNavEnabled .BRnav .BRpager.ui-slider .ui-slider-handle, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager.ui-slider .ui-slider-handle {
-    background: #0074D1;
-  }
-  .BRbodyMobileNavEnabled .BRnav .BRpager.ui-slider .ui-slider-range, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpager.ui-slider .ui-slider-range {
-    background: rgba(0, 116, 209, 0.25);
-  }
-  .BRbodyMobileNavEnabled .BRnav .BRpage .BRicon, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpage .BRicon {
-    border-left: 1px solid #979797;
-  }
-  .BRbodyMobileNavEnabled .BRnav .BRpage .BRicon.activated, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpage .BRicon.activated {
-    background-color: rgba(0, 116, 209, 0.4);
-  }
-  .BRbodyMobileNavEnabled .BRnav .BRpage .BRicon.activated:before, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRpage .BRicon.activated:before {
-    content: "";
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    display: block;
-    border: 3px solid rgba(0, 116, 209, 0.3);
-  }
-  .BRbodyMobileNavEnabled .BRnav .BRnavCntl, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRnavCntl {
-    background-color: #979797;
-  }
-  .BRbodyMobileNavEnabled .BRnav .BRnavCntlBtm:hover, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRnav .BRnavCntlBtm:hover {
-    background-color: #0074D1;
   }
 }
 
@@ -1438,6 +1363,8 @@ i.BRicon {
 }
 
 .BRnavTitle {
+  position: relative;
+  z-index: 2;
   text-align: center;
   padding: 0 0 0 0;
   font-size: 12px;
@@ -1519,14 +1446,26 @@ i.BRicon {
   }
 
   .BRnavCntlBtm {
-    bottom: 40px;
+    bottom: 34px;
   }
 
   .BRpager.ui-slider {
     height: 10px;
-    top: 15px;
+    top: 12px;
   }
 }
+/* Mobile nav zoom buttons */
+.DrawerSettingsWrapper [class*=zoom] {
+  width: 40px;
+  height: 40px;
+  background-position: -1224px center;
+  background-size: 3440px auto;
+}
+
+.DrawerSettingsWrapper .zoom_in {
+  background-position: -1384px center;
+}
+
 /**
  * BRtoolbar is the top control bar (eg header)
  */
@@ -1612,7 +1551,7 @@ i.BRicon {
 
 @media (max-width: 800px) {
   .BRtoolbar {
-    height: 40px;
+    height: 34px;
     padding: 0;
     box-shadow: 0px 1px 3px 0px rgba(102, 102, 102, 0.25);
   }
@@ -2173,10 +2112,7 @@ li.BRtable-contents-el .BRTOCElementPage {
 }
 
 .BRcontrols {
-  position: relative;
-  z-index: 7;
   width: 100%;
-  background: #333;
   /* BookReader defaults overrides */
 }
 .BRcontrols button {
@@ -2192,6 +2128,11 @@ li.BRtable-contents-el .BRTOCElementPage {
 }
 .BRcontrols button:hover .tooltip {
   display: block;
+}
+@media (max-width: 480px) {
+  .BRcontrols button.hide-mobile {
+    display: none;
+  }
 }
 .BRcontrols .tooltip {
   display: none;
@@ -2242,8 +2183,12 @@ li.BRtable-contents-el .BRTOCElementPage {
   padding: 2px 10px;
   margin: 0;
   list-style: none;
-  border-top: 1px solid #222;
   background: #333;
+}
+@media (max-width: 800px) {
+  .BRcontrols .controls {
+    padding-left: 0;
+  }
 }
 .BRcontrols .controls button {
   width: 30px;
@@ -2369,6 +2314,11 @@ li.BRtable-contents-el .BRTOCElementPage {
   font-weight: 700;
   line-height: 26px;
   color: #fff;
+}
+@media (max-width: 800px) {
+  .BRcontrols .scrubber p {
+    padding: 0;
+  }
 }
 .BRcontrols .BRnavline {
   top: -4px;
