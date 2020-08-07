@@ -43,6 +43,23 @@ $brZindexBase: 1;
 $brZindexPopup: 3000;
 $brZindexFullscreen: 2000;
 
+$gray13: #222;
+$gray20: #333;
+$gray40: #666;
+$gray80: #ccc;
+$white: #fff;
+$controlsText: $white;
+$controlsBG: $gray20;
+$iconFill: $white;
+$iconActiveFill: $gray20;
+$iconStroke: $white;
+$iconActiveStroke: $gray20;
+$tooltipBG: $gray20;
+$activeButtonBG: $white;
+$controlsBorder: $gray13;
+$trackColor: $gray40;
+$trackFillColor: $gray80;
+
 @mixin brDarkControls {
     background-color: $brColorDarkGreyBg;
     color: white;

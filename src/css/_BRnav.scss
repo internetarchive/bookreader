@@ -200,6 +200,7 @@
   display: block;
   display: flex;
   flex-direction: row;
+  border-top: 1px solid $controlsBorder;
 
   &.BRnavEmbed {
     padding-top: 0;
@@ -295,6 +296,8 @@
   line-height: 1;
 }
 .BRnavTitle {
+  position: relative;
+  z-index: 2;
   text-align: center;
   padding: 0 0 0 0;
   font-size: $brFontSizeSmaller;
