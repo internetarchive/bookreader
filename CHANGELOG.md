@@ -1,3 +1,6 @@
+# 4.14.1
+- Dev: Automate npm publishing on github release (#409, #412) @cdrini
+
 # 4.14.0
 - Dev: Simplify webpack file (#373) @cdrini
 - Feature: One page/Two page/Thumbnail view now one button toggler (#375) @shaneriley
