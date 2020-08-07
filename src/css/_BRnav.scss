@@ -225,10 +225,6 @@
   // Default
   @include brNavDark;
 
-  &.BRnavEmbed {
-    @include brNavLight;
-  }
-
   /* Full mobile styles */
   @media (max-width: $brBreakPointMobile) {
     height: $brNavHeightMobile;
