@@ -1,25 +1,5 @@
-$gray13: #222;
-$gray20: #333;
-$gray40: #666;
-$gray80: #ccc;
-$white: #fff;
-$controlsText: $white;
-$controlsBG: $gray20;
-$iconFill: $white;
-$iconActiveFill: $gray20;
-$iconStroke: $white;
-$iconActiveStroke: $gray20;
-$tooltipBG: $gray20;
-$activeButtonBG: $white;
-$controlsBorder: $gray13;
-$trackColor: $gray40;
-$trackFillColor: $gray80;
-
 .BRcontrols {
-  position: relative;
-  z-index: 7;
   width: 100%;
-  background: $controlsBG;
   button {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -32,6 +12,11 @@ $trackFillColor: $gray80;
     outline: none;
     &:hover .tooltip {
       display: block;
+    }
+    @media (max-width: 480px) {
+      &.hide-mobile {
+        display: none;
+      }
     }
   }
 
@@ -92,8 +77,10 @@ $trackFillColor: $gray80;
     padding: 2px 10px;
     margin: 0;
     list-style: none;
-    border-top: 1px solid $controlsBorder;
     background: $controlsBG;
+    @media (max-width: $brBreakPointMobile) {
+      padding-left: 0;
+    }
   }
 
   .controls button {
@@ -241,6 +228,9 @@ $trackFillColor: $gray80;
     font-weight: 700;
     line-height: 26px;
     color: $controlsText;
+    @media (max-width: $brBreakPointMobile) {
+      padding: 0;
+    }
   }
 
   /* BookReader defaults overrides */

@@ -24,8 +24,8 @@ class DesktopNav {
     this.mode2Up = bottomToolbar.find('.BRicon.twopg');
     this.modeThumb = bottomToolbar.find('.BRicon.thumb');
     this.viewmode = bottomToolbar.find('.BRicon.viewmode');
-    this.zoomIn = bottomToolbar.find('.BRicon.desktop-only.zoom_in');
-    this.zoomOut = bottomToolbar.find('.BRicon.desktop-only.zoom_out');
+    this.zoomIn = bottomToolbar.find('.BRicon.zoom_in');
+    this.zoomOut = bottomToolbar.find('.BRicon.zoom_out');
     this.fullScreen = bottomToolbar.find('.BRicon.full');
     this.searchBox = topToolbar.find('.BRbooksearch.desktop');
     this.searchPin = bottomToolbar.find('.BRsearch');
