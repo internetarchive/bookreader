@@ -1,10 +1,13 @@
 {
-  "name": "bookreader",
+  "name": "@internetarchive/bookreader",
   "version": "4.14.0",
   "description": "The Internet Archive BookReader.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/internetarchive/bookreader.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "online",
