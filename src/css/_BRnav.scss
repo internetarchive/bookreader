@@ -374,3 +374,13 @@
     top: ($brNavHeightMobile / 2) - 5px;
   }
 }
+
+/* Mobile nav zoom buttons */
+.DrawerSettingsWrapper [class*="zoom"] {
+  width: 40px;
+  height: 40px;
+  background-position: -600px center;
+}
+.DrawerSettingsWrapper .zoom_in {
+  background-position: -680px center;
+}
