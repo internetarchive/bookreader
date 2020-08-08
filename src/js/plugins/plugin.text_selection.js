@@ -51,6 +51,26 @@ class TextSelectionPlugin {
   }
 
   /**
+   * @param {JQuery} $container
+   */
+  hideTextLayer($container) {
+    const $svg = $container.find('svg');
+    if ($container.hasClass("BRpageFlipping")) {
+      $svg.css('display', 'none');
+    }
+  }
+
+  /**
+   * @param {JQuery} $container
+   */
+  showTextLayer($container) {
+    const $svg = $container.find('svg');
+    if (!$container.hasClass("BRpageFlipping")) {
+      $svg.css('display', 'block');
+    }
+  }
+
+  /**
    * @param {number} pageIndex
    * @param {JQuery} $container
    */
