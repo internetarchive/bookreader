@@ -80,6 +80,13 @@ tspan::-moz-selection {
     background: hsla(210, 74%, 62%, 0.4);
 }
 
+// Makes page image unselectable
+.BRpageimage {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
 // These are the main root elements in BookReader
 $brScope: ".BookReader, .BRmobileMenu, .BRfloat";
 
