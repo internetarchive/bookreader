@@ -20,9 +20,7 @@ class TextSelectionPlugin {
       error: function (e) {
         return undefined;
       }
-    }).then(function (response) {
-      const xmlMap = response;
-
+    }).then(function (xmlMap) {
       if (xmlMap != undefined) {
         return $(xmlMap).find("OBJECT");
       }
@@ -51,113 +49,80 @@ class TextSelectionPlugin {
   }
 
   /**
-   * @param {JQuery} $container
-   */
-  hideTextLayer($container) {
-    const $svg = $container.find('svg');
-    if ($container.hasClass("BRpageFlipping")) {
-      $svg.css('display', 'none');
-    }
-  }
-
-  /**
-   * @param {JQuery} $container
-   */
-  showTextLayer($container) {
-    const $svg = $container.find('svg');
-    if (!$container.hasClass("BRpageFlipping")) {
-      $svg.css('display', 'block');
-    }
-  }
-
-  /**
    * @param {number} pageIndex
    * @param {JQuery} $container
    */
   async createTextLayer(pageIndex, $container) {
-    const $svgLayers = $container.find('textSelctionSVG');
-    if (!$svgLayers.length) {
-      const XMLpage = await this.getPageText(pageIndex);
-      const XMLwidth = $(XMLpage).attr("width");
-      const XMLheight = $(XMLpage).attr("height");
+    const $svgLayers = $container.find('textSelectionSVG');
+    if ($svgLayers.length) return;
+    const XMLpage = await this.getPageText(pageIndex);
+    const XMLwidth = $(XMLpage).attr("width");
+    const XMLheight = $(XMLpage).attr("height");
 
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("viewBox", "0 0 " + XMLwidth + " " + XMLheight);
-      $container.append(svg);
-      $(svg).addClass('textSelctionSVG');
-      svg.setAttribute('preserveAspectRatio', 'none');
-      $(svg).css({
-        "width": "100%",
-        "position": "absolute",
-        "height": "100%",
-        "top": "0",
-        "left": "0",
-      });
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", `0 0 ${XMLwidth} ${XMLheight}`);
+    $container.append(svg);
+    $(svg).addClass('textSelectionSVG');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    $(svg).css({
+      "width": "100%",
+      "position": "absolute",
+      "height": "100%",
+      "top": "0",
+      "left": "0",
+    });
 
-      $(XMLpage).find("PARAGRAPH").each((i, paragraph) => {
-        // adding text element for each paragraph in the page
-        const paragSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        const paragArr = $(paragraph).find("WORD");
-        let [leftMin, bottomMax, rightMax, topMin] = [Infinity, 0, 0, Infinity];
-        let wordHeightMax = 0;
+    $(XMLpage).find("PARAGRAPH").each((i, paragraph) => {
+      // adding text element for each paragraph in the page
+      const paragSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      const words = $(paragraph).find("WORD");
+      let [leftMin, bottomMax, rightMax, topMin] = [Infinity, 0, 0, Infinity];
+      let wordHeightMax = 0;
 
-        for(i = 0; i < paragArr.length; i++) {
-          // adding tspan for each word in paragraph
-          const currWord = paragArr[i];
+      for(let i = 0; i < words.length; i++) {
+        // adding tspan for each word in paragraph
+        const currWord = words[i];
+        // eslint-disable-next-line no-unused-vars
+        const [left, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
+        const wordHeight = bottomMax - top;
+        if(left < leftMin) leftMin = left;
+        if(bottom > bottomMax) bottomMax = bottom;
+        if(right > rightMax) rightMax = right;
+        if(top < topMin) topMin = top;
+        if(wordHeight > wordHeightMax) wordHeightMax = wordHeight;
+
+        const wordTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        wordTspan.setAttribute("x", left.toString());
+        wordTspan.setAttribute("y", bottom.toString());
+        wordTspan.setAttribute("textLength", (right - left).toString());
+        wordTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
+        wordTspan.textContent = currWord.textContent;
+        paragSvg.append(wordTspan);
+
+        // adding spaces after words except at the end of the paragraph
+        if(i < words.length - 1){
+          const nextWord = words[i + 1];
           // eslint-disable-next-line no-unused-vars
-          const [left, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
-          const wordHeight = bottomMax - top;
-          if(left < leftMin) leftMin = left;
-          if(bottom > bottomMax) bottomMax = bottom;
-          if(right > rightMax) rightMax = right;
-          if(top < topMin) topMin = top;
-          if(wordHeight > wordHeightMax) wordHeightMax = wordHeight;
-
-          const wordTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-          wordTspan.setAttribute("x", left.toString());
-          wordTspan.setAttribute("y", bottom.toString());
-          wordTspan.setAttribute("textLength", (right - left).toString());
-          wordTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
-          const textNode = document.createTextNode(currWord.textContent);
-          wordTspan.append(textNode);
-          paragSvg.append(wordTspan);
-
-          // adding spaces after words except at the end of the paragraph
-          if(i < paragArr.length - 1){
-            const nextWord = paragArr[i + 1];
-            // eslint-disable-next-line no-unused-vars
-            const [leftNext, bottomNext, rightNext, topNext] = $(nextWord).attr("coords").split(',').map(parseFloat);
-            const spaceTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-            spaceTspan.setAttribute("x", right.toString());
-            spaceTspan.setAttribute("y", bottom.toString());
-            if((leftNext - right) > 0) spaceTspan.setAttribute("textLength", (leftNext - right).toString());
-            spaceTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
-            const spaceTextNode = document.createTextNode(" ");
-            spaceTspan.append(spaceTextNode);
-            paragSvg.append(spaceTspan);
-          }
+          const [leftNext, bottomNext, rightNext, topNext] = $(nextWord).attr("coords").split(',').map(parseFloat);
+          const spaceTspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+          spaceTspan.setAttribute("x", right.toString());
+          spaceTspan.setAttribute("y", bottom.toString());
+          if((leftNext - right) > 0) spaceTspan.setAttribute("textLength", (leftNext - right).toString());
+          spaceTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
+          spaceTspan.textContent = " ";
+          paragSvg.append(spaceTspan);
         }
-        paragSvg.setAttribute("x", leftMin.toString());
-        paragSvg.setAttribute("y", bottomMax.toString());
-        paragSvg.setAttribute("font-size", wordHeightMax.toString());
-        paragSvg.setAttribute("textLength", (rightMax - leftMin).toString());
-        $(paragSvg).css({
-          "fill": "red",
-          "cursor": "text",
-          'white-space': 'pre',
-          "fill-opacity": "0",
-        });
-        svg.append(paragSvg);
-      })
-      this.stopPageFlip($container);
-    }
+      }
+      paragSvg.setAttribute("font-size", wordHeightMax.toString());
+      svg.append(paragSvg);
+    })
+    this.stopPageFlip($container);
   }
 }
 
 class BookreaderWithTextSelection extends BookReader {
   init() {
     if(this.enableTextSelection){
-      this.enableTextSelection = true;
       const OCAID = this.bookId;
       this.textSelectionPlugin = new TextSelectionPlugin();
       this.textSelectionPlugin.init(OCAID);

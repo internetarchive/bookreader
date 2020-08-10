@@ -536,7 +536,6 @@ export class Mode2Up {
    */
   flipLeftToRight(newIndexL, newIndexR) {
     this.br.refs.$brContainer.addClass("BRpageFlipping");
-    if (this.br.enableTextSelection) this.br.textSelectionPlugin.hideTextLayer(this.br.refs.$brContainer);
     const leftLeaf = this.br.twoPage.currentIndexL;
 
     const oldLeafEdgeWidthL = this.br.leafEdgeWidth(this.br.twoPage.currentIndexL);
@@ -669,10 +668,7 @@ export class Mode2Up {
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
 
-        if(this.br.enableTextSelection){
-          this.br.textSelectionPlugin.showTextLayer(this.br.refs.$brContainer);
-          this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
-        }
+        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
       });
     });
   }
@@ -725,7 +721,6 @@ export class Mode2Up {
    */
   flipRightToLeft(newIndexL, newIndexR) {
     this.br.refs.$brContainer.addClass("BRpageFlipping");
-    if (this.br.enableTextSelection) this.br.textSelectionPlugin.hideTextLayer(this.br.refs.$brContainer);
 
     const oldLeafEdgeWidthL = this.br.leafEdgeWidth(this.br.twoPage.currentIndexL);
     const oldLeafEdgeWidthR = this.br.twoPage.edgeWidth - oldLeafEdgeWidthL;
@@ -809,10 +804,7 @@ export class Mode2Up {
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
 
-        if(this.br.enableTextSelection) {
-          this.br.textSelectionPlugin.showTextLayer(this.br.refs.$brContainer);
-          this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
-        }
+        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
       });
     });
   }

@@ -72,7 +72,7 @@ $mobileMenuBG: #151515;
     a { color: black; }
 }
 
-// Highlight colors for text selection layer
+// Highlight colors for text selection layer ( these 2 properties do not work if joined)
 tspan::selection {
     background: hsla(210, 74%, 62%, 0.4);
 }
@@ -86,6 +86,18 @@ tspan::-moz-selection {
     -moz-user-select: none;
     user-select: none;
 }
+
+// Hides svg text layer when page animation is running
+.BRpageFlipping svg {
+    display: none;
+}
+
+text {
+    fill: red;
+    cursor: text;
+    white-space: pre;
+    // fill-opacity: 0;
+  }
 
 // These are the main root elements in BookReader
 $brScope: ".BookReader, .BRmobileMenu, .BRfloat";
