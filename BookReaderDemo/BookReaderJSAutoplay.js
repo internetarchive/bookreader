@@ -29,7 +29,7 @@ function instantiateBookReader(selector, extraOptions) {
 
     // Book title and the URL used for the book title link
     bookTitle: 'BookReader Demo',
-    bookUrl: '/BookReaderDemo/index.html',
+    bookUrl: '../index.html',
     bookUrlText: 'Back to Demos',
     bookUrlTitle: 'This is the book URL title',
 
@@ -54,4 +54,3 @@ function instantiateBookReader(selector, extraOptions) {
   br.init();
   br.autoToggle(options);
 }
-
