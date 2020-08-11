@@ -63,7 +63,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
       `<li class="BRmobileMenu__search">
         <span>
           <span class="DrawerIconWrapper">
-            <img class="DrawerIcon" src="${this.imagesBaseURL}icon_search_button_blue.svg" alt="info-speaker"/>
+            <img class="DrawerIcon" src="${this.imagesBaseURL}icon_search_button_blue.svg" alt="Icon of a magnifying glass" />
           </span>
           Search
         </span>
