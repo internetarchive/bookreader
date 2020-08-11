@@ -483,14 +483,12 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
       left: percentThrough,
     })
     .attr('title', uiStringSearch)
-    .append(
-      $('<div>')
-        .addClass('BRquery')
-        .append(
-          $('<div>').html(queryStringWithB),
-          $('<div>').html(`${uiStringPage} ${pageNumber}`)
-        )
-    )
+    .append(`
+      <div class="BRquery">
+        <div>${queryStringWithB}</div>
+        <div>${uiStringPage} ${pageNumber}</div>
+      </div>
+    `)
     .data({ pageIndex })
     .appendTo(this.$('.BRnavline'))
     .hover(
@@ -520,36 +518,33 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
   // Add Mobile Search Results
   const page = this._models.book.getPage(pageIndex);
   const $mobileSearchResultWrapper = this.$('.BRmobileSearchResultWrapper');
-  if ($mobileSearchResultWrapper.length) {
-    const onResultsClick = (e) => {
-      e.preventDefault();
-      this.switchMode(this.constMode1up);
-      this._searchPluginGoToResult(pageIndex);
-      this.refs.$mmenu.data('mmenu').close();
-    };
-    $(
-      `<a class="BRmobileSearchResult">
-        <table>
-          <tr>
-            <span class="pageDisplay">${pageDisplayString}</span>
-          </tr>
-          <tr>
-            ${page.isViewable ? /** Scale down since it's a thumbnail */
-    `<td><img class="searchImgPreview" src="${page.getURI(16, 0)}" /></td>` :
-    ''
+  if (!$mobileSearchResultWrapper.length) { return; }
+  const onResultsClick = (e) => {
+    e.preventDefault();
+    this.switchMode(this.constMode1up);
+    this._searchPluginGoToResult(pageIndex);
+    this.refs.$mmenu.data('mmenu').close();
+  };
+  $(
+    `<a class="BRmobileSearchResult" href="#search/${this.searchTerm}">
+      <table>
+        <tr>
+          <span class="pageDisplay">${pageDisplayString}</span>
+        </tr>
+        <tr>
+          ${page.isViewable ? /** Scale down since it's a thumbnail */
+  `<td><img class="searchImgPreview" src="${page.getURI(16, 0)}" /></td>` :
+  ''
 }
-            <td ${!page.isViewable ? 'colspan="2"' : ''}>
-              <span>${queryStringWithBTruncated}</span>
-            </td>
-          </tr>
-        </table>
-      </a>`
-    )
-      .attr('href', '#search/' + this.searchTerm)
-      .click(onResultsClick)
-      .appendTo($mobileSearchResultWrapper)
-    ;
-  }
+          <td ${!page.isViewable ? 'colspan="2"' : ''}>
+            <span>${queryStringWithBTruncated}</span>
+          </td>
+        </tr>
+      </table>
+    </a>`
+  )
+    .click(onResultsClick)
+    .appendTo($mobileSearchResultWrapper);
 };
 
 /**
