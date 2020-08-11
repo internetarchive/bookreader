@@ -465,15 +465,13 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
   const re = new RegExp('{{{(.+?)}}}', 'g');
   const queryStringWithB = queryString.replace(re, '<b>$1</b>');
 
-  let queryStringWithBTruncated;
+  let queryStringWithBTruncated = queryString.replace(re, '<b>$1</b>');
 
   if (queryString.length > 100) {
     queryStringWithBTruncated = queryString
       .replace(/^(.{100}[^\s]*).*/, "$1")
       .replace(re, '<b>$1</b>')
             + '...';
-  } else {
-    queryStringWithBTruncated = queryString.replace(re, '<b>$1</b>');
   }
 
   // draw marker
