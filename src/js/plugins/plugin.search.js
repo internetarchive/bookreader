@@ -525,6 +525,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
     this._searchPluginGoToResult(pageIndex);
     this.refs.$mmenu.data('mmenu').close();
   };
+  const previewImage = `<td><img class="searchImgPreview" src="${page.getURI(16, 0)}" /></td>`;
   $(
     `<a class="BRmobileSearchResult" href="#search/${this.searchTerm}">
       <table>
@@ -532,10 +533,7 @@ BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
           <span class="pageDisplay">${pageDisplayString}</span>
         </tr>
         <tr>
-          ${page.isViewable ? /** Scale down since it's a thumbnail */
-  `<td><img class="searchImgPreview" src="${page.getURI(16, 0)}" /></td>` :
-  ''
-}
+          ${page.isViewable ? /** Scale down since it's a thumbnail */ previewImage : ''}
           <td ${!page.isViewable ? 'colspan="2"' : ''}>
             <span>${queryStringWithBTruncated}</span>
           </td>
