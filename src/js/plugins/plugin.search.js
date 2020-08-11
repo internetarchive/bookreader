@@ -57,26 +57,25 @@ BookReader.prototype.init = (function (super_) {
 /** @override */
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   return function () {
+    if (!this.enableSearch) { return; }
     const $el = super_.call(this);
-    if (this.enableSearch) {
-      $el.find('.BRmobileMenu__moreInfoRow').after($(
-        `<li class="BRmobileMenu__search">
-          <span>
-            <span class="DrawerIconWrapper">
-              <img class="DrawerIcon" src="${this.imagesBaseURL}icon_search_button_blue.svg" alt="info-speaker"/>
-            </span>
-            Search
+    $el.find('.BRmobileMenu__moreInfoRow').after($(
+      `<li class="BRmobileMenu__search">
+        <span>
+          <span class="DrawerIconWrapper">
+            <img class="DrawerIcon" src="${this.imagesBaseURL}icon_search_button_blue.svg" alt="info-speaker"/>
           </span>
-          <div>
-            <form class="BRbooksearch mobile">
-              <input type="search" class="BRsearchInput" placeholder="Search inside"/>
-              <button type="submit" class="BRsearchSubmit"></button>
-            </form>
-            <div class="BRmobileSearchResultWrapper">Enter your search above.</div>
-          </div>
-        </li>`
-      ));
-    }
+          Search
+        </span>
+        <div>
+          <form class="BRbooksearch mobile">
+            <input type="search" class="BRsearchInput" placeholder="Search inside"/>
+            <button type="submit" class="BRsearchSubmit"></button>
+          </form>
+          <div class="BRmobileSearchResultWrapper">Enter your search above.</div>
+        </div>
+      </li>`
+    ));
     return $el;
   };
 })(BookReader.prototype.buildMobileDrawerElement);
@@ -84,20 +83,19 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 /** @override */
 BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
+    if (!this.enableSearch) { return; }
     const $el = super_.call(this);
-    if (this.enableSearch) {
-      const $BRtoolbarSectionSearch = $(
-        `<span class="BRtoolbarSection BRtoolbarSectionSearch">
-          <form class="BRbooksearch desktop">
-            <input type="search" class="BRsearchInput" val="" placeholder="Search inside"/>
-            <button type="submit" class="BRsearchSubmit">
-              <img src="${this.imagesBaseURL}icon_search_button.svg" />
-            </button>
-          </form>
-        </span>`
-      );
-      $BRtoolbarSectionSearch.insertAfter($el.find('.BRtoolbarSectionInfo'));
-    }
+    const $BRtoolbarSectionSearch = $(
+      `<span class="BRtoolbarSection BRtoolbarSectionSearch">
+        <form class="BRbooksearch desktop">
+          <input type="search" class="BRsearchInput" val="" placeholder="Search inside"/>
+          <button type="submit" class="BRsearchSubmit">
+            <img src="${this.imagesBaseURL}icon_search_button.svg" />
+          </button>
+        </form>
+      </span>`
+    );
+    $BRtoolbarSectionSearch.insertAfter($el.find('.BRtoolbarSectionInfo'));
     return $el;
   };
 })(BookReader.prototype.buildToolbarElement);
