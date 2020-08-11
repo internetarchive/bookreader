@@ -289,7 +289,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
 }
 
 /** @deprecated */
-BookReader.prototype.BRSearchCallbackErrorDesktop = function(results, options) {
+BookReader.prototype.BRSearchCallbackErrorDesktop = function(results) {
   const $el = $(this.popup);
   this._BRSearchCallbackError(results, $el, true);
 }
