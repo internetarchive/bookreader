@@ -105,29 +105,25 @@ BookReader.prototype.initToolbar = (function (super_) {
   return function (mode, ui) {
     super_.apply(this, arguments);
 
-    const onSubmitDesktop = (e) => {
-      e.preventDefault();
-      const val = $(e.target).find('.BRsearchInput').val();
-      if (!val.length) return false;
-      this.search(val);
-      return false;
-    };
-
-    const onSubmitMobile = (e) => {
-      e.preventDefault();
-      const val = $(e.target).find('.BRsearchInput').val();
-      if (!val.length) return false;
-      this.search(val, { disablePopup: true });
+    const renderResultsPendingMessage = () => {
       this.$('.BRmobileSearchResultWrapper').append(
         `<div>Your search results will appear below.</div>
           <div class="loader tc mt20"></div>`
       );
+    };
+
+    const onSubmit = (e) => {
+      e.preventDefault();
+      const val = $(e.target).find('.BRsearchInput').val();
+      const isMobile = $(e.target).hasClass('mobile');
+      if (!val.length) return false;
+      this.search(val, { disablePopup: isMobile });
+      isMobile && renderResultsPendingMessage();
       return false;
     };
 
     // Bind search forms
-    this.$('.BRbooksearch.desktop').submit(onSubmitDesktop);
-    this.$('.BRbooksearch.mobile').submit(onSubmitMobile);
+    this.$('.BRbooksearch').submit(onSubmit);
 
     // Handle clearing the search results
     this.$(".BRsearchInput").bind('input propertychange', () => {
