@@ -146,8 +146,7 @@ BookReader.prototype.initToolbar = (function (super_) {
  * @param {string} term
  * @param {SearchOptions} options
  */
-BookReader.prototype.search = function(term = '', options) {
-  options = options !== undefined ? options : {};
+BookReader.prototype.search = function(term = '', overrides = {}) {
   /** @type {SearchOptions} */
   const defaultOptions = {
     goToFirstResult: false, /* jump to the first result (default=false) */
@@ -157,8 +156,8 @@ BookReader.prototype.search = function(term = '', options) {
     success: null,          /* optional success handler (default=null) */
 
   };
-  options = jQuery.extend({}, defaultOptions, options);
-  this.suppressFragmentChange = options.suppressFragmentChange
+  const options = jQuery.extend({}, defaultOptions, overrides);
+  this.suppressFragmentChange = options.suppressFragmentChange;
 
   /* DOM updates */
   this.$('.BRsearchInput').blur(); //cause mobile safari to hide the keyboard
