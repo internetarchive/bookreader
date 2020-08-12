@@ -29,7 +29,7 @@ export class Mode2Up {
    * @param {function(HTMLElement, { data: T }): void} handler
    */
   setClickHandler(element, data, handler) {
-    $(element).unbind('mousedown').bind('mousedown', data, function(e) {
+    $(element).unbind('mouseup').bind('mouseup', data, function(e) {
       handler(this, e);
     });
   }
@@ -819,17 +819,18 @@ export class Mode2Up {
         // right click
         return !e.data.self.br.protected;
       }
+      e.data.self.br.trigger(EVENTS.stop);
+      e.data.self.br[e.data.direction === 'L' ? 'left' : 'right']();
 
+      // Removed event handler for mouse movement, seems not to be needed
+      /*
       // Changes per WEBDEV-2737
-      // BookReader: zoomed-in 2 page view, clicking page should change the page
+      BookReader: zoomed-in 2 page view, clicking page should change the page
       $(element)
         .mousemove(function() {
           e.preventDefault();
         })
-        .mouseup(function() {
-          e.data.self.br.trigger(EVENTS.stop);
-          e.data.self.br[e.data.direction === 'L' ? 'left' : 'right']();
-        });
+      */
     }
 
     this.setClickHandler(

@@ -36,14 +36,22 @@ class TextSelectionPlugin {
   }
 
   /**
+   * Stops page flipping on short click, allows text selction on longer mousedown
    * @param {JQuery} $container
    */
   stopPageFlip($container){
     const $svg = $container.find('svg');
+    let longPressTimer;
+
     $svg.on("mousedown", (event) => {
       if ($(event.target).is('tspan')) {
         event.stopPropagation();
-        $container.one("mouseup", (event) => event.stopPropagation());
+        longPressTimer = window.setTimeout(() => {
+          $svg.one("mouseup", (event) => {
+            event.stopPropagation();
+            clearTimeout(longPressTimer);
+          });
+        }, 250);
       }
     });
   }
