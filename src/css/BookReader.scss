@@ -81,7 +81,7 @@ tspan::-moz-selection {
 }
 
 // Makes page image unselectable
-.BRpageimage {
+.BRpagecontainer img {
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
@@ -96,7 +96,7 @@ text {
     fill: red;
     cursor: text;
     white-space: pre;
-    // fill-opacity: 0;
+    fill-opacity: 0;
   }
 
 // These are the main root elements in BookReader
