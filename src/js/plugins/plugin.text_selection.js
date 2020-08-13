@@ -36,12 +36,37 @@ class TextSelectionPlugin {
   }
 
   /**
+   * Intercept copied text
+   * @param {JQuery} $container
+   */
+  interceptCopy($container) {
+    $container.each((i, pageContainer) => {
+      pageContainer.addEventListener('copy', (event) => {
+        const selection = document.getSelection();
+        event.clipboardData.setData('text/plain', selection.toString());
+        event.preventDefault();
+      });
+    });
+  }
+
+  /**
+   * Deselect all text after clicking elswhere in the BRcontainer
+   * @param {JQuery} $container
+   */
+  deselectOnClick($container) {
+    $container.one("mousedown", (event) => {
+      if (window.getSelection) window.getSelection().removeAllRanges();
+    })
+  }
+
+  /**
    * Stops page flipping on short click, allows text selction on longer mousedown
    * @param {JQuery} $container
    */
-  stopPageFlip($container){
+  stopPageFlip($container) {
     const $svg = $container.find('svg');
     let longPressTimer;
+    this.interceptCopy($container);
 
     $svg.on("mousedown", (event) => {
       if ($(event.target).is('tspan')) {
@@ -50,6 +75,7 @@ class TextSelectionPlugin {
           $svg.one("mouseup", (event) => {
             event.stopPropagation();
             clearTimeout(longPressTimer);
+            this.deselectOnClick($container);
           });
         }, 250);
       }
