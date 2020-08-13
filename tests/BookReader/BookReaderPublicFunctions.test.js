@@ -21,7 +21,7 @@ describe('`BookReader.prototype.prev`', () => {
     expect(br.flipBackToIndex.mock.calls.length).toBe(0);
     expect(br.jumpToIndex.mock.calls.length).toBe(0);
   });
-  
+
   describe('2up mode', () => {
     test('fires event and turns the page', () => {
       br.firstIndex = 10;
