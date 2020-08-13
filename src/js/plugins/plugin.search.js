@@ -4,6 +4,7 @@
  * NOTE: This script must be loaded AFTER `plugin.mobile_nav.js`
  * as it mutates mobile nav drawer
  */
+import SearchView from './plugin.search.view.js';
 
 jQuery.extend(BookReader.defaultOptions, {
   server: 'ia600609.us.archive.org',
@@ -31,6 +32,11 @@ BookReader.prototype.setup = (function (super_) {
     this.server = options.server;
     this.subPrefix = options.subPrefix;
     this.bookPath = options.bookPath;
+
+    this.searchView = new SearchView({
+      br: this,
+      selector: '#search_tray',
+    });
   };
 })(BookReader.prototype.setup);
 
@@ -40,17 +46,11 @@ BookReader.prototype.init = (function (super_) {
     super_.call(this);
 
     if (this.options.enableSearch && this.options.initialSearchTerm) {
-      this.$('.BRsearchInput').val(this.options.initialSearchTerm);
       this.search(
         this.options.initialSearchTerm,
         { goToFirstResult: this.goToFirstResult, suppressFragmentChange: true }
       );
     }
-
-    $(document).on('BookReader:navToggled', () => {
-      const pinsVisibleState = this.navigationIsVisible() ? 'visible' : 'hidden';
-      this.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
-    });
   };
 })(BookReader.prototype.init);
 
@@ -59,78 +59,10 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   return function () {
     if (!this.enableSearch) { return; }
     const $el = super_.call(this);
-    $el.find('.BRmobileMenu__moreInfoRow').after($(
-      `<li class="BRmobileMenu__search">
-        <span>
-          <span class="DrawerIconWrapper">
-            <img class="DrawerIcon" src="${this.imagesBaseURL}icon_search_button_blue.svg" alt="Icon of a magnifying glass" />
-          </span>
-          Search
-        </span>
-        <div>
-          <form class="BRbooksearch mobile">
-            <input type="search" class="BRsearchInput" placeholder="Search inside"/>
-            <button type="submit" class="BRsearchSubmit"></button>
-          </form>
-          <div class="BRmobileSearchResultWrapper">Enter your search above.</div>
-        </div>
-      </li>`
-    ));
+    this.searchView.buildMobileDrawer($el[0]);
     return $el;
   };
 })(BookReader.prototype.buildMobileDrawerElement);
-
-/** @override */
-BookReader.prototype.buildToolbarElement = (function (super_) {
-  return function () {
-    if (!this.enableSearch) { return; }
-    const $el = super_.call(this);
-    const $BRtoolbarSectionSearch = $(
-      `<span class="BRtoolbarSection BRtoolbarSectionSearch">
-        <form class="BRbooksearch desktop">
-          <input type="search" class="BRsearchInput" val="" placeholder="Search inside"/>
-          <button type="submit" class="BRsearchSubmit">
-            <img src="${this.imagesBaseURL}icon_search_button.svg" />
-          </button>
-        </form>
-      </span>`
-    );
-    $BRtoolbarSectionSearch.insertAfter($el.find('.BRtoolbarSectionInfo'));
-    return $el;
-  };
-})(BookReader.prototype.buildToolbarElement);
-
-/** @override */
-BookReader.prototype.initToolbar = (function (super_) {
-  return function (mode, ui) {
-    super_.apply(this, arguments);
-
-    const renderResultsPendingMessage = () => {
-      this.$('.BRmobileSearchResultWrapper').append(
-        `<div>Your search results will appear below.</div>
-          <div class="loader tc mt20"></div>`
-      );
-    };
-
-    const onSubmit = (e) => {
-      e.preventDefault();
-      const val = $(e.target).find('.BRsearchInput').val();
-      const isMobile = $(e.target).hasClass('mobile');
-      if (!val.length) return false;
-      this.search(val, { disablePopup: isMobile });
-      isMobile && renderResultsPendingMessage();
-      return false;
-    };
-
-    // Bind search forms
-    this.$('.BRbooksearch').submit(onSubmit);
-
-    // Handle clearing the search results
-    this.$(".BRsearchInput").bind('input propertychange', () => {
-      if (this.value === "") this.removeSearchResults();
-    });
-  };
-})(BookReader.prototype.initToolbar);
 
 /**
  * @typedef {object} SearchOptions
@@ -158,13 +90,6 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
   };
   const options = jQuery.extend({}, defaultOptions, overrides);
   this.suppressFragmentChange = options.suppressFragmentChange;
-
-  /* DOM updates */
-  this.$('.BRsearchInput').blur(); //cause mobile safari to hide the keyboard
-  this.removeSearchResults(options.suppressFragmentChange);
-  // update value to desktop & mobile search inputs
-  this.$('.BRsearchInput').val(term);
-  /* End DOM updates */
 
   // strip slashes, since this goes in the url
   this.searchTerm = term.replace(/\//g, ' ');
@@ -200,12 +125,6 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
 
   const url = `${baseUrl}${paramStr}`;
 
-  if (!options.disablePopup) {
-    this.showProgressPopup(
-      `<img class="searchmarker" src="${this.imagesBaseURL}marker_srch-on.svg" />
-      Search results will appear below...`);
-  }
-
   const processSearchResults = (searchInsideResults) => {
     const responseHasError = searchInsideResults.error || !searchInsideResults.matches.length;
     const hasCustomError = typeof options.error === 'function';
@@ -222,6 +141,7 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
     }
   };
 
+  this.trigger('SearchStarted');
   $.ajax({
     url: url,
     dataType: 'jsonp'
@@ -260,16 +180,6 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
   this.searchResults = results;
-  this.$('.BRnavpos .search').remove();
-  this.$('.BRmobileSearchResultWrapper').empty(); // Empty mobile results
-
-  // Update Mobile count
-  const mobileResultsText = results.matches.length == 1 ? "1 match" : `${results.matches.length} matches`;
-  this.$('.BRmobileSearchResultWrapper').append(
-    `<div class="BRmobileNumResults">
-    ${mobileResultsText} for "${this.searchTerm}"
-    </div>`
-  );
 
   let firstResultIndex = null;
 
@@ -286,12 +196,10 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   if (firstResultIndex !== null) {
     this._searchPluginGoToResult(firstResultIndex);
   }
-}
-
-/** @deprecated */
-BookReader.prototype.BRSearchCallbackErrorDesktop = function(results) {
-  const $el = $(this.popup);
-  this._BRSearchCallbackError(results, $el, true);
+  // BookReader's wrapper on jQuery's trigger method is broken. Props are not
+  // passed down, since the method only takes two arguments. The actual props
+  // passed is the BookReader instance.
+  $(document).trigger('BookReader:SearchCallback', { results, options, instance: this });
 }
 
 /**
@@ -300,20 +208,7 @@ BookReader.prototype.BRSearchCallbackErrorDesktop = function(results) {
  * @param {SearchInsideResults} results
  */
 BookReader.prototype.BRSearchCallbackError = function(results) {
-  const $el = $(this.popup);
-  this._BRSearchCallbackError(results, $el, true);
-  // sync mobileView
-  this.BRSearchCallbackErrorMobile(results);
-};
-
-/**
- * Callback specifically to draw search results error on mobile
- * @callback
- * @param {array} results
- */
-BookReader.prototype.BRSearchCallbackErrorMobile = function(results) {
-  const $el = this.$('.BRmobileSearchResultWrapper');
-  this._BRSearchCallbackError(results, $el);
+  this._BRSearchCallbackError(results);
 };
 
 /**
@@ -323,37 +218,16 @@ BookReader.prototype.BRSearchCallbackErrorMobile = function(results) {
  * @param {jQuery} $el
  * @param {boolean} fade
  */
-BookReader.prototype._BRSearchCallbackError = function(results, $el, fade) {
-  this.$('.BRnavpos .search').remove();
-  this.$('.BRmobileSearchResultWrapper').empty(); // Empty mobile results
-
+BookReader.prototype._BRSearchCallbackError = function(results) {
   this.searchResults = results;
-  let timeout = 2000;
   if (results.error) {
-    if (/debug/.test(window.location.href)) {
-      $el.html(results.error);
-    } else {
-      timeout = 4000;
-      $el.html('Sorry, there was an error with your search.<br />The text may still be processing.');
-
-    }
+    $(document).trigger('BookReader:SearchCallbackError', { results, instance: this });
   } else if (0 == results.matches.length) {
-    let errStr  = 'No matches were found.';
-    timeout = 2000;
     if (false === results.indexed) {
-      errStr  = "<p>This book hasn't been indexed for searching yet. We've just started indexing it, so search should be available soon. Please try again later. Thanks!</p>";
-      timeout = 5000;
+      $(document).trigger('BookReader:SearchCallbackBookNotIndexed', { instance: this });
+      return;
     }
-    $el.html(errStr);
-  }
-
-  if (fade) {
-    const atFade = () => {
-      this.removeProgressPopup();
-    };
-    setTimeout(() => {
-      $el.fadeOut('slow', atFade);
-    }, timeout);
+    $(document).trigger('BookReader:SearchCallbackEmpty', { instance: this });
   }
 };
 
@@ -589,11 +463,10 @@ BookReader.prototype.removeSearchResults = function(suppressFragmentChange = fal
   this.removeSearchHilites(); //be sure to set all box.divs to null
   this.searchTerm = null;
   this.searchResults = null;
+  this.searchView.clearSearchFieldAndResults();
   if (!suppressFragmentChange) {
     this.trigger(BookReader.eventNames.fragmentChange);
   }
-  this.$('.BRnavpos .BRsearch').remove();
-  this.$('.BRmobileSearchResultWrapper').empty(); // Empty mobile results
 };
 
 /**

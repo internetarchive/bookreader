@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<!-- This demo mirrors, as far as possible, the archive.org BookReader configuration and functionality
+   please keep up to date as BookReader evolves -->
+<html>
+<head>
+  <title>New Search Tray</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/jquery-1.10.1.js"></script>
+    <script src="../BookReader/jquery-ui-1.12.0.min.js"></script>
+    <script src="../BookReader/jquery.browser.min.js"></script>
+    <script src="../BookReader/dragscrollable-br.js"></script>
+    <script src="../BookReader/jquery.colorbox-min.js"></script>
+    <script src="../BookReader/soundmanager/script/soundmanager2-jsmin.js"></script>
+
+    <!-- mmenu for mobile nav -->
+    <script src="../BookReader/mmenu/dist/js/jquery.mmenu.min.js"></script>
+    <script src="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js" ></script>
+    <link rel="stylesheet" href="../BookReader/mmenu/dist/css/jquery.mmenu.css" />
+    <link rel="stylesheet" href="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css" />
+
+    <!-- Bookreader -->
+    <script src="../BookReader/BookReader.js"></script>
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+
+    <!-- plugins needed for archive.org, in same order as archive.org -->
+    <script src="../BookReader/plugins/plugin.mobile_nav.js"></script>
+    <script src="../BookReader/plugins/plugin.search.js"></script>
+    <script src="../BookReader/plugins/plugin.chapters.js"></script>
+    <script src="../BookReader/plugins/plugin.tts.js"></script>
+    <script src="../BookReader/plugins/plugin.url.js"></script>
+    <script src="../BookReader/plugins/plugin.autoplay.js"></script>
+    <script src="../BookReader/plugins/plugin.resume.js"></script>
+    <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
+    
+    <link rel="stylesheet" href="BookReaderDemo.css"/>
+    <style>
+:root {
+  --menuButtonLabelDisplay: block;
+  --menuSliderBg: #151515;
+  --primaryTextColor: #fff;
+  --menuWidth: 320px;
+  --animationTiming: .25s;
+  --iconFillColor: #fff;
+  --iconStrokeColor: #fff;
+  --activeButtonBg: #282828;
+  --searchResultText: #adaedc;
+  --searchResultBg: #272958;
+  --searchResultBorder: #fff;
+}
+
+html {
+  font: normal 10px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+body {
+  display: grid;
+  height: 100vh;
+  margin: 0;
+  grid-template-rows: 1fr auto;
+  box-sizing: border-box;
+}
+
+main {
+  position: relative;
+  overflow: hidden;
+}
+
+#BookReader {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+#search_tray {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  width: var(--menuWidth);
+  padding: 1.5rem 1rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+  font-size: 1.4rem;
+  color: var(--primaryTextColor);
+  background: var(--menuSliderBg);
+  transition: transform var(--animationTiming) ease-in-out;
+}
+#search_tray.hidden {
+  transform: translateX(calc(var(--menuWidth) * -1));
+}
+
+#search_tray header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#search_tray h3 {
+  padding: 0;
+  margin: 0 1rem 0 0;
+  font-size: 2rem;
+}
+
+#search_tray header p {
+  display: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  font-style: italic;
+}
+#search_tray header p.visible {
+  display: block;
+}
+
+#search_tray header div {
+  display: flex;
+  align-items: baseline;
+}
+
+#search_tray a.close {
+  justify-self: end;
+}
+
+#search_tray fieldset {
+  padding: 2rem 0 1rem 0;
+  border: none;
+}
+
+#search_tray [type="checkbox"] {
+  display: none;
+}
+
+#search_tray label {
+  display: block;
+  text-align: center;
+}
+
+#search_tray label.checkbox {
+  padding-bottom: .5rem;
+  font-size: 1.6rem;
+  line-height: 150%;
+  vertical-align: middle;
+}
+
+#search_tray label.checkbox:after {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: .7rem;
+  content: "";
+  color: var(--primaryTextColor);
+  border: 1px solid var(--primaryTextColor);
+  border-radius: 2px;
+  background: var(--activeButtonBg) 50% 50% no-repeat;
+}
+#search_tray :checked + label.checkbox:after {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjEwIiB2aWV3Qm94PSIwIDAgMTMgMTAiIHdpZHRoPSIxMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJtNC4zMzMzMzMzMyAxMC00LjMzMzMzMzMzLTQuMTY2NjY2NjcgMS43MzMzMzMzMy0xLjY2NjY2NjY2IDIuNiAyLjUgNi45MzMzMzMzNy02LjY2NjY2NjY3IDEuNzMzMzMzMyAxLjY2NjY2NjY3eiIgZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIi8+PC9zdmc+');
+}
+
+#search_tray [type="search"] {
+  -webkit-appearance: textfield;
+  width: 100%;
+  height: 2.2rem;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+  font: normal 1.6rem "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--primaryTextColor);
+  border: 1px solid var(--primaryTextColor);
+  border-radius: 1.5rem;
+  background: transparent;
+}
+#search_tray [type="search"]:focus {
+  outline: none;
+}
+#search_tray [type="search"]::-webkit-search-cancel-button {
+  width: 18px;
+  height: 18px;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-mask: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNDAgNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgYXJpYS1sYWJlbGxlZGJ5PSJjbG9zZVRpdGxlSUQgY2xvc2VEZXNjSUQiPjxwYXRoIGQ9Ik0yOS4xOTIgMTAuODA4YTEuNSAxLjUgMCAwMTAgMi4xMkwyMi4xMjIgMjBsNy4wNyA3LjA3MmExLjUgMS41IDAgMDEtMi4xMiAyLjEyMWwtNy4wNzMtNy4wNy03LjA3IDcuMDdhMS41IDEuNSAwIDAxLTIuMTIxLTIuMTJsNy4wNy03LjA3My03LjA3LTcuMDdhMS41IDEuNSAwIDAxMi4xMi0yLjEyMUwyMCAxNy44NzhsNy4wNzItNy4wN2ExLjUgMS41IDAgMDEyLjEyMSAweiIgY2xhc3M9ImZpbGwtY29sb3IiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==') 0 0 no-repeat;
+  mask: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNDAgNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgYXJpYS1sYWJlbGxlZGJ5PSJjbG9zZVRpdGxlSUQgY2xvc2VEZXNjSUQiPjxwYXRoIGQ9Ik0yOS4xOTIgMTAuODA4YTEuNSAxLjUgMCAwMTAgMi4xMkwyMi4xMjIgMjBsNy4wNyA3LjA3MmExLjUgMS41IDAgMDEtMi4xMiAyLjEyMWwtNy4wNzMtNy4wNy03LjA3IDcuMDdhMS41IDEuNSAwIDAxLTIuMTIxLTIuMTJsNy4wNy03LjA3My03LjA3LTcuMDdhMS41IDEuNSAwIDAxMi4xMi0yLjEyMUwyMCAxNy44NzhsNy4wNzItNy4wN2ExLjUgMS41IDAgMDEyLjEyMSAweiIgY2xhc3M9ImZpbGwtY29sb3IiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==') 0 0 no-repeat;
+  -webkit-mask-size: 100%;
+  mask-size: 100%;
+  background: #fff;
+}
+
+#search_tray ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+#search_tray li {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  grid-gap: 0 .5rem;
+}
+
+#search_tray li img {
+  display: block;
+  width: 100%;
+}
+
+#search_tray li h4 {
+  grid-column: 2 / 3;
+  padding: 0 0 2rem 0;
+  margin: 0;
+  font-weight: normal;
+}
+
+#search_tray li p {
+  grid-column: 2 / 3;
+  padding: 0 0 1.5rem 0;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+#search_tray mark {
+  padding: 0 .2rem;
+  color: var(--searchResultText);
+  background: var(--searchResultBg);
+  border: 1px solid var(--searchResultBorder);
+  border-radius: 2px;
+}
+
+#search_tray #search_pending {
+  display: none;
+}
+#search_tray #search_pending.visible {
+  display: block;
+}
+
+.search_modal {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+    </style>
+</head>
+<body>
+
+<main>
+  <div id="search_tray" class="hidden">
+    <header>
+      <div>
+        <h3>Search inside</h3>
+        <p data-id="results_count">(8 results)</p>
+      </div>
+      <a href="#" class="close"></a>
+    </header>
+    <form action="" method="get">
+      <fieldset>
+        <input name="all_files" id="all_files" type="checkbox" />
+        <label class="checkbox" for="all_files">Search all files</label>
+        <input type="search" name="query" />
+      </fieldset>
+    </form>
+    <div data-id="searchPending" id="search_pending">
+      <p>Your search results will appear below</p>
+      <div class="loader tc mt20"></div>
+    </div>
+    <ul data-id="results"></ul>
+  </div>
+  <div id="BookReader">
+      Internet Archive BookReader Demo<br/>
+      <noscript>
+      <p>
+          The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.
+      </p>
+      </noscript>
+  </div>
+</main>
+<button data-id="searchTrayToggle">Toggle search tray</button>
+
+<script>
+// Override options coming from IA
+BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
+
+// Temporarily fix build by mocking SearchInsideAccess; long term fix likely needs to be
+// on petabox side
+function SearchInsideAccess(br, identifier, callback) { this.init = callback; }
+</script>
+
+<script id="pageUrl" type="text/javascript"></script>
+
+<script>
+  var URL_PART1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
+  var URL_PART2 = "&subPrefix=";
+  var bookId = location.href.match(/ocaid=([^&#]+)/i)[1];
+  document.getElementById('pageUrl').src = URL_PART1 + bookId + URL_PART2;
+</script>
+
+</body>
+</html>
