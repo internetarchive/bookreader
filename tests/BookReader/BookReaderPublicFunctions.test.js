@@ -4,9 +4,6 @@ beforeAll(() => {
   global.alert = jest.fn();
 })
 afterEach(() => {
-  if (br) {
-    br.mode = 'foo';
-  }
   jest.restoreAllMocks();
 });
 
