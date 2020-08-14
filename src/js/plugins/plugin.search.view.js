@@ -32,9 +32,13 @@ class SearchView {
     this.dom.searchTray.classList.toggle('hidden', !state);
   }
 
+  toggleResultsCount(bool) {
+    this.dom.resultsCount.classList.toggle('visible', bool);
+  }
+
   updateResultsCount(results) {
     this.dom.resultsCount.innerText = `(${results} result${results != 1 ? 's' : ''})`;
-    this.dom.resultsCount.classList.add('visible');
+    this.toggleResultsCount(true);
   }
 
   setQuery(query) {
@@ -50,6 +54,7 @@ class SearchView {
   }
 
   clearSearchFieldAndResults() {
+    this.toggleResultsCount(false);
     this.removeResultPins();
     this.emptyMatches();
     this.setQuery('');
