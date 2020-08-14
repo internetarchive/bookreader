@@ -58,7 +58,6 @@ class SearchView {
   renderMatches(matches) {
     const items = matches.map((match) => `
       <li data-page="${match.par[0].page}" data-page-index="${this.br.leafNumToIndex(match.par[0].page)}">
-        ${match.cover ? coverImage : ''}
         <h4>Page ${match.par[0].page}</h4>
         <p>${match.text.replace(this.matcher, '<mark>$1</mark>')}</p>
       </li>
@@ -101,12 +100,11 @@ class SearchView {
       const uiStringSearch = "Search result"; // i18n
       const uiStringPage = "Page"; // i18n
 
-      const percentThrough = BookReader.util.cssPercentage(pageIndex, this.br.getNumLeafs() - 1);
-      const pageDisplayString = `${uiStringPage} ${this.br.getNavPageNumString(pageIndex, true)}`;
+      const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br.getNumLeafs() - 1);
 
       const queryStringWithB = queryString.replace(this.matcher, '<b>$1</b>');
 
-      let queryStringWithBTruncated = queryString.replace(this.matcher, '<b>$1</b>');
+      let queryStringWithBTruncated = '';
 
       if (queryString.length > 100) {
         queryStringWithBTruncated = queryString
@@ -126,7 +124,7 @@ class SearchView {
         .attr('title', uiStringSearch)
         .append(`
           <div class="BRquery">
-            <div>${queryStringWithB}</div>
+            <div>${queryStringWithBTruncated || queryStringWithB}</div>
             <div>${uiStringPage} ${pageNumber}</div>
           </div>
         `)

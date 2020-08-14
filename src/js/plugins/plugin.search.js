@@ -181,8 +181,6 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
 BookReader.prototype.BRSearchCallback = function(results, options) {
   this.searchResults = results;
 
-  let firstResultIndex = null;
-
   this.updateSearchHilites();
   this.removeProgressPopup();
   if (options.goToFirstResult) {
