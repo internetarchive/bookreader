@@ -183,18 +183,10 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
 
   let firstResultIndex = null;
 
-  results.matches.forEach((match, i) => {
-    const { text, par: [ partial ] } = match;
-    this.addSearchResult(text, this.leafNumToIndex(partial.page));
-    if (i === 0 && options.goToFirstResult === true) {
-      firstResultIndex = this.leafNumToIndex(partial.page);
-    }
-  });
-
   this.updateSearchHilites();
   this.removeProgressPopup();
-  if (firstResultIndex !== null) {
-    this._searchPluginGoToResult(firstResultIndex);
+  if (options.goToFirstResult) {
+    this._searchPluginGoToResult(results.matches[0].par[0].page);
   }
   // BookReader's wrapper on jQuery's trigger method is broken. Props are not
   // passed down, since the method only takes two arguments. The actual props
@@ -237,9 +229,9 @@ BookReader.prototype._BRSearchCallbackError = function(results) {
 BookReader.prototype.updateSearchHilites = function() {
   if (this.constMode2up == this.mode) {
     this.updateSearchHilites2UP();
-  } else {
-    this.updateSearchHilites1UP();
+    return;
   }
+  this.updateSearchHilites1UP();
 };
 
 /**
@@ -326,100 +318,6 @@ BookReader.prototype.removeSearchHilites = function() {
 };
 
 /**
- *  Adds a search result marker
- */
-BookReader.prototype.addSearchResult = function(queryString, pageIndex) {
-  const pageNumber = this.getPageNum(pageIndex);
-  const uiStringSearch = "Search result"; // i18n
-  const uiStringPage = "Page"; // i18n
-
-  const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
-  const pageDisplayString = `${uiStringPage} ${this.getNavPageNumString(pageIndex, true)}`;
-
-  const re = new RegExp('{{{(.+?)}}}', 'g');
-  const queryStringWithB = queryString.replace(re, '<b>$1</b>');
-
-  let queryStringWithBTruncated = queryString.replace(re, '<b>$1</b>');
-
-  if (queryString.length > 100) {
-    queryStringWithBTruncated = queryString
-      .replace(/^(.{100}[^\s]*).*/, "$1")
-      .replace(re, '<b>$1</b>')
-            + '...';
-  }
-
-  // draw marker
-  const markerTopValue = (-this.refs.$brContainer.height());
-  $('<div>')
-    .addClass('BRsearch')
-    .css({
-      top: `${markerTopValue}px`,
-      left: percentThrough,
-    })
-    .attr('title', uiStringSearch)
-    .append(`
-      <div class="BRquery">
-        <div>${queryStringWithB}</div>
-        <div>${uiStringPage} ${pageNumber}</div>
-      </div>
-    `)
-    .data({ pageIndex })
-    .appendTo(this.$('.BRnavline'))
-    .hover(
-      (event) => {
-        // remove from other markers then turn on just for this
-        // XXX should be done when nav slider moves
-        const marker = event.currentTarget;
-        const tooltip = marker.querySelector('.BRquery');
-        const tooltipOffset = tooltip.getBoundingClientRect();
-        const targetOffset = marker.getBoundingClientRect();
-        const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
-        if (tooltipOffset.x - boxSizeAdjust < 0) {
-          tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
-        }
-        $('.BRsearch,.BRchapter').removeClass('front');
-        $(event.target).addClass('front');
-      },
-      (event) => $(event.target).removeClass('front'))
-    .click(function (event) {
-      // closures are nested and deep, using an arrow function breaks references.
-      // Todo: update to arrow function & clean up closures
-      // to remove `bind` dependency
-      this._searchPluginGoToResult($(event.target).data('pageIndex'));
-    }.bind(this))
-    .animate({top:'-25px'}, 'slow');
-
-  // Add Mobile Search Results
-  const page = this._models.book.getPage(pageIndex);
-  const $mobileSearchResultWrapper = this.$('.BRmobileSearchResultWrapper');
-  if (!$mobileSearchResultWrapper.length) { return; }
-  const onResultsClick = (e) => {
-    e.preventDefault();
-    this.switchMode(this.constMode1up);
-    this._searchPluginGoToResult(pageIndex);
-    this.refs.$mmenu.data('mmenu').close();
-  };
-  const previewImage = `<td><img class="searchImgPreview" src="${page.getURI(16, 0)}" /></td>`;
-  $(
-    `<a class="BRmobileSearchResult" href="#search/${this.searchTerm}">
-      <table>
-        <tr>
-          <span class="pageDisplay">${pageDisplayString}</span>
-        </tr>
-        <tr>
-          ${page.isViewable ? /** Scale down since it's a thumbnail */ previewImage : ''}
-          <td ${!page.isViewable ? 'colspan="2"' : ''}>
-            <span>${queryStringWithBTruncated}</span>
-          </td>
-        </tr>
-      </table>
-    </a>`
-  )
-    .click(onResultsClick)
-    .appendTo($mobileSearchResultWrapper);
-};
-
-/**
  * @private
  * Goes to the page specified. If the page is not viewable, tries to load the page
  * FIXME Most of this logic is IA specific, and should be less integrated into here
@@ -463,7 +361,6 @@ BookReader.prototype.removeSearchResults = function(suppressFragmentChange = fal
   this.removeSearchHilites(); //be sure to set all box.divs to null
   this.searchTerm = null;
   this.searchResults = null;
-  this.searchView.clearSearchFieldAndResults();
   if (!suppressFragmentChange) {
     this.trigger(BookReader.eventNames.fragmentChange);
   }

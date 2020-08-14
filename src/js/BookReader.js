@@ -1085,8 +1085,10 @@ BookReader.prototype.zoom1up = function(direction) {
   this.updateToolbarZoom(this.reduce);
 
   // Recalculate search hilites
-  if (this.enableSearch) this.removeSearchHilites();
-  if (this.enableSearch) this.updateSearchHilites();
+  if (this.enableSearch) {
+    this.removeSearchHilites();
+    this.updateSearchHilites();
+  }
 };
 
 /**

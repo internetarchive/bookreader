@@ -57,7 +57,7 @@ class SearchView {
 
   renderMatches(matches) {
     const items = matches.map((match) => `
-      <li data-page="${match.par[0].page}">
+      <li data-page="${match.par[0].page}" data-page-index="${this.br.leafNumToIndex(match.par[0].page)}">
         ${match.cover ? coverImage : ''}
         <h4>Page ${match.par[0].page}</h4>
         <p>${match.text.replace(this.matcher, '<mark>$1</mark>')}</p>
@@ -91,6 +91,72 @@ class SearchView {
       </div>
     `;
     el.querySelector('.BRmobileMenu__moreInfoRow').after(this.dom.mobileSearch);
+  }
+
+  renderPins(matches) {
+    matches.forEach((match) => {
+      const queryString = match.text;
+      const pageIndex = this.br.leafNumToIndex(match.par[0].page);
+      const pageNumber = this.br.getPageNum(pageIndex);
+      const uiStringSearch = "Search result"; // i18n
+      const uiStringPage = "Page"; // i18n
+
+      const percentThrough = BookReader.util.cssPercentage(pageIndex, this.br.getNumLeafs() - 1);
+      const pageDisplayString = `${uiStringPage} ${this.br.getNavPageNumString(pageIndex, true)}`;
+
+      const queryStringWithB = queryString.replace(this.matcher, '<b>$1</b>');
+
+      let queryStringWithBTruncated = queryString.replace(this.matcher, '<b>$1</b>');
+
+      if (queryString.length > 100) {
+        queryStringWithBTruncated = queryString
+          .replace(/^(.{100}[^\s]*).*/, "$1")
+          .replace(this.matcher, '<b>$1</b>')
+                + '...';
+      }
+
+      // draw marker
+      const markerTopValue = -this.br.refs.$brContainer.height();
+      $('<div>')
+        .addClass('BRsearch')
+        .css({
+          top: `${markerTopValue}px`,
+          left: percentThrough,
+        })
+        .attr('title', uiStringSearch)
+        .append(`
+          <div class="BRquery">
+            <div>${queryStringWithB}</div>
+            <div>${uiStringPage} ${pageNumber}</div>
+          </div>
+        `)
+        .data({ pageIndex })
+        .appendTo(this.br.$('.BRnavline'))
+        .hover(
+          (event) => {
+            // remove from other markers then turn on just for this
+            // XXX should be done when nav slider moves
+            const marker = event.currentTarget;
+            const tooltip = marker.querySelector('.BRquery');
+            const tooltipOffset = tooltip.getBoundingClientRect();
+            const targetOffset = marker.getBoundingClientRect();
+            const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
+            if (tooltipOffset.x - boxSizeAdjust < 0) {
+              tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
+            }
+            $('.BRsearch,.BRchapter').removeClass('front');
+            $(event.target).addClass('front');
+          },
+          (event) => $(event.target).removeClass('front'))
+        .click(function (event) {
+          // closures are nested and deep, using an arrow function breaks references.
+          // Todo: update to arrow function & clean up closures
+          // to remove `bind` dependency
+          this.br._searchPluginGoToResult(+$(event.target).data('pageIndex'));
+          this.br.updateSearchHilites();
+        }.bind(this))
+        .animate({top:'-25px'}, 'slow');
+    });
   }
 
   toggleSearchPending(bool) {
@@ -155,6 +221,7 @@ class SearchView {
 
     $(document).on(`${namespace}SearchCallback`, (e, { results }) => {
       this.renderMatches(results.matches);
+      this.renderPins(results.matches);
       this.updateResultsCount(results.matches.length);
       this.toggleSearchPending(false);
       this.toggleSearchTray(true);
@@ -179,7 +246,13 @@ class SearchView {
     this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
     this.dom.searchField.addEventListener('search', () => {
       if (this.dom.searchField.value) { return; }
+      this.br.removeSearchResults();
       this.clearSearchFieldAndResults();
+    });
+
+    $(this.dom.results).on('click', 'li', (e) => {
+      this.br._searchPluginGoToResult(+e.currentTarget.dataset.pageIndex);
+      this.br.updateSearchHilites();
     });
   }
 }
