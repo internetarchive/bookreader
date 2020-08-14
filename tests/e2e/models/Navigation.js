@@ -39,6 +39,6 @@ class MobileNav {
     this.menuSearchButton = mobileMenu.find('.BRmobileMenu__search');
     this.searchBox = mobileMenu.find('#BRsearch_tray');
     this.searchResults = mobileMenu.find('[data-id="results"]');
-    this.searchResultText = mobileMenu.find('.BRmobileSearchResult').find('tbody').child(-1).find('span');
+    this.searchResultText = this.searchResults.child(0).find('p');
   }
 }
