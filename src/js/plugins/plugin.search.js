@@ -3,6 +3,23 @@
  * Plugin for Archive.org book search
  * NOTE: This script must be loaded AFTER `plugin.mobile_nav.js`
  * as it mutates mobile nav drawer
+ *
+ * Events fired at various points throughout search processing are published
+ * on the document DOM element. These can be subscribed to using jQuery's event
+ * binding method `$.fn.on`. All of the events are prefixed with a BookReader
+ * namespace. The events are:
+ *
+ * @event BookReader:SearchStarted - When a search form is submitted, immediately
+ *   before an AJAX call is made to request search results
+ * @event BookReader:SearchCallback - When the search AJAX call is returned and at
+ *   least one result is returned. The event callback receives an object
+ *   with the `results`, plugin `options`, and the BookReader `instance`
+ * @event BookReader:SearchCallbackError - When the AJAX request returns an error.
+ *   Receives the `results` and `instance`
+ * @event BookReader:SearchCallbackNotIndexed - When a message is received that
+ *   the book has not had OCR text indexed yet. Receives `instance`
+ * @event BookReader:SearchCallbackEmpty - When no results found. Receives
+ *   `instance`
  */
 import SearchView from './plugin.search.view.js';
 
