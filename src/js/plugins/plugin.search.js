@@ -35,7 +35,7 @@ BookReader.prototype.setup = (function (super_) {
 
     this.searchView = new SearchView({
       br: this,
-      selector: '#search_tray',
+      selector: '#BRsearch_tray',
     });
   };
 })(BookReader.prototype.setup);

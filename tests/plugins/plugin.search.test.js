@@ -38,6 +38,7 @@ beforeEach(() => {
   document.body.innerHTML = '<div id="BookReader">';
   br = new BookReader();
   br.initToolbar = jest.fn();
+  br.showProgressPopup = jest.fn();
 });
 
 afterEach(() => {
