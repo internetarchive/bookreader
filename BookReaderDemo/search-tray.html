@@ -55,44 +55,17 @@ html {
   font: normal 10px "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-body {
-  display: grid;
-  height: 100vh;
-  margin: 0;
-  grid-template-rows: 1fr auto;
-  box-sizing: border-box;
-}
-
-main {
-  position: relative;
-  overflow: hidden;
-}
-
-#BookReader {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-}
-
 #search_tray {
   position: absolute;
   top: 0;
+  right: 0;
   bottom: 0;
   left: 0;
-  z-index: 2;
-  width: var(--menuWidth);
   padding: 1.5rem 1rem;
-  box-sizing: border-box;
   overflow-y: auto;
   font-size: 1.4rem;
   color: var(--primaryTextColor);
   background: var(--menuSliderBg);
-  transition: transform var(--animationTiming) ease-in-out;
-}
-#search_tray.hidden {
-  transform: translateX(calc(var(--menuWidth) * -1));
 }
 
 #search_tray header {
@@ -246,38 +219,14 @@ main {
 </head>
 <body>
 
-<main>
-  <div id="search_tray" class="hidden">
-    <header>
-      <div>
-        <h3>Search inside</h3>
-        <p data-id="results_count">(8 results)</p>
-      </div>
-      <a href="#" class="close"></a>
-    </header>
-    <form action="" method="get">
-      <fieldset>
-        <input name="all_files" id="all_files" type="checkbox" />
-        <label class="checkbox" for="all_files">Search all files</label>
-        <input type="search" name="query" />
-      </fieldset>
-    </form>
-    <div data-id="searchPending" id="search_pending">
-      <p>Your search results will appear below</p>
-      <div class="loader tc mt20"></div>
-    </div>
-    <ul data-id="results"></ul>
-  </div>
-  <div id="BookReader">
-      Internet Archive BookReader Demo<br/>
-      <noscript>
-      <p>
-          The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.
-      </p>
-      </noscript>
-  </div>
-</main>
-<button data-id="searchTrayToggle">Toggle search tray</button>
+<div id="BookReader">
+    Internet Archive BookReader Demo<br/>
+    <noscript>
+    <p>
+        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.
+    </p>
+    </noscript>
+</div>
 
 <script>
 // Override options coming from IA

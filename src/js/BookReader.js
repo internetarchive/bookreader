@@ -2650,15 +2650,12 @@ BookReader.prototype.updateFromParams = function(params) {
   }
 
   // $$$ process /zoom
-  var pageFound = false;
   // We only respect page if index is not set
   if ('undefined' != typeof(params.index)) {
-    pageFound = true;
     if (params.index != this.currentIndex()) {
       this.jumpToIndex(params.index);
     }
   } else if ('undefined' != typeof(params.page)) {
-    pageFound = true;
     // $$$ this assumes page numbers are unique
     if (params.page != this._models.book.getPageNum(this.currentIndex())) {
       this.jumpToPage(params.page);

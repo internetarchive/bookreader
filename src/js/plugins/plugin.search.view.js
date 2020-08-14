@@ -13,7 +13,7 @@ class SearchView {
 
     this.matcher = new RegExp('{{{(.+?)}}}', 'g');
     this.dom = {
-      searchTray: document.querySelector(params.selector),
+      searchTray: this.renderSearchTray(params.selector),
     };
     this.cacheDOMElements();
 
@@ -60,6 +60,33 @@ class SearchView {
     this.setQuery('');
   }
 
+  renderSearchTray(selector) {
+    const searchTray = document.createElement('div');
+    searchTray.setAttribute('id', selector.replace(/^#/, ''));
+    searchTray.innerHTML = `
+      <header>
+        <div>
+          <h3>Search inside</h3>
+          <p data-id="results_count"></p>
+        </div>
+        <a href="#" class="close"></a>
+      </header>
+      <form action="" method="get">
+        <fieldset>
+          <input name="all_files" id="all_files" type="checkbox" />
+          <label class="checkbox" for="all_files">Search all files</label>
+          <input type="search" name="query" />
+        </fieldset>
+      </form>
+      <div data-id="searchPending" id="search_pending">
+        <p>Your search results will appear below</p>
+        <div class="loader tc mt20"></div>
+      </div>
+      <ul data-id="results"></ul>
+    `;
+    return searchTray;
+  }
+
   renderMatches(matches) {
     const items = matches.map((match) => `
       <li data-page="${match.par[0].page}" data-page-index="${this.br.leafNumToIndex(match.par[0].page)}">
@@ -78,7 +105,6 @@ class SearchView {
   buildMobileDrawer(el) {
     if (!this.br.enableSearch) { return; }
     this.dom.mobileSearch = document.createElement('li');
-    this.dom.mobileSearch.classList.add('BRmobileMenu__search');
     this.dom.mobileSearch.innerHTML = `
       <span>
         <span class="DrawerIconWrapper">
@@ -86,14 +112,11 @@ class SearchView {
         </span>
         Search
       </span>
-      <div>
-        <form class="BRbooksearch mobile">
-          <input type="search" class="BRsearchInput" placeholder="Search inside"/>
-          <button type="submit" class="BRsearchSubmit"></button>
-        </form>
-        <div class="BRmobileSearchResultWrapper">Enter your search above.</div>
+      <div data-id="search_slot">
       </div>
     `;
+    this.dom.mobileSearch.querySelector('[data-id="search_slot"]').appendChild(this.dom.searchTray);
+    this.dom.mobileSearch.classList.add('BRmobileMenu__search');
     el.querySelector('.BRmobileMenu__moreInfoRow').after(this.dom.mobileSearch);
   }
 
@@ -209,7 +232,7 @@ class SearchView {
 
   submitHandler(e) {
     e.preventDefault();
-    const query = this.dom.searchField.value;
+    const query = e.target.querySelector('[name="query"]').value;
     if (!query.length) { return false; }
     this.br.search(query);
     this.dom.searchField.blur();
@@ -220,7 +243,6 @@ class SearchView {
 
   bindEvents() {
     const namespace = 'BookReader:';
-    document.querySelector('[data-id="searchTrayToggle"]').addEventListener('click', this.toggleSearchTray.bind(this));
 
     $(document).on(`${namespace}SearchCallback`, (e, { results }) => {
       this.renderMatches(results.matches);
