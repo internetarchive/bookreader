@@ -25,6 +25,8 @@ class SearchView {
     this.dom.resultsCount = this.dom.searchTray.querySelector('[data-id="results_count"]');
     this.dom.searchField = this.dom.searchTray.querySelector('[name="query"]');
     this.dom.searchPending = this.dom.searchTray.querySelector('[data-id="searchPending"]');
+    this.dom.mobileSearch = this.buildMobileDrawer();
+    this.dom.toolbarSearch = this.buildToolbarSearch();
   }
 
   toggleSearchTray(bool) {
@@ -102,10 +104,9 @@ class SearchView {
     instance.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
   }
 
-  buildMobileDrawer(el) {
-    if (!this.br.enableSearch) { return; }
-    this.dom.mobileSearch = document.createElement('li');
-    this.dom.mobileSearch.innerHTML = `
+  buildMobileDrawer() {
+    const mobileSearch = document.createElement('li');
+    mobileSearch.innerHTML = `
       <span>
         <span class="DrawerIconWrapper">
           <img class="DrawerIcon" src="${this.br.imagesBaseURL}icon_search_button_blue.svg" alt="Icon of a magnifying glass" />
@@ -115,9 +116,23 @@ class SearchView {
       <div data-id="search_slot">
       </div>
     `;
-    this.dom.mobileSearch.querySelector('[data-id="search_slot"]').appendChild(this.dom.searchTray);
-    this.dom.mobileSearch.classList.add('BRmobileMenu__search');
-    el.querySelector('.BRmobileMenu__moreInfoRow').after(this.dom.mobileSearch);
+    mobileSearch.querySelector('[data-id="search_slot"]').appendChild(this.dom.searchTray);
+    mobileSearch.classList.add('BRmobileMenu__search');
+    return mobileSearch;
+  }
+
+  buildToolbarSearch() {
+    const toolbarSearch = document.createElement('span');
+    toolbarSearch.classList.add('BRtoolbarSection', 'BRtoolbarSectionSearch');
+    toolbarSearch.innerHTML = `
+      <form class="BRbooksearch desktop">
+        <input type="search" name="query" class="BRsearchInput" val="" placeholder="Search inside"/>
+        <button type="submit" class="BRsearchSubmit">
+          <img src="${this.br.imagesBaseURL}icon_search_button.svg" />
+        </button>
+      </form>
+    `;
+    return toolbarSearch;
   }
 
   renderPins(matches) {
@@ -269,6 +284,7 @@ class SearchView {
     });
 
     this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
+    this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
     this.dom.searchField.addEventListener('search', () => {
       if (this.dom.searchField.value) { return; }
       this.br.removeSearchResults();

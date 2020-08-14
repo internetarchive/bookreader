@@ -2,7 +2,7 @@ import { Selector } from 'testcafe';
 
 /** Model defining BookReader's Navigation base elements */
 export default class Navigation {
-  constructor () {
+  constructor() {
     this.topNavShell = new Selector('.BRtoolbar');
     this.bottomNavShell = new Selector('.BRfooter');
     this.mobileMenu = new Selector('.BRmobileMenu');
@@ -29,16 +29,16 @@ class DesktopNav {
     this.fullScreen = bottomToolbar.find('.BRicon.full');
     this.searchBox = topToolbar.find('.BRbooksearch.desktop');
     this.searchPin = bottomToolbar.find('.BRsearch');
-    this.sliderRange = bottomToolbar.find('.ui-slider-range')
+    this.sliderRange = bottomToolbar.find('.ui-slider-range');
   }
 }
 
-class MobileNav{
-  constructor(mobileMenu, topToolbar){
+class MobileNav {
+  constructor(mobileMenu, topToolbar) {
     this.hamburgerButton = topToolbar.find('.BRmobileHamburger');
     this.menuSearchButton = mobileMenu.find('.BRmobileMenu__search');
-    this.searchBox = mobileMenu.find('.BRbooksearch.mobile');
-    this.searchResults = mobileMenu.find('.BRmobileSearchResult');
+    this.searchBox = mobileMenu.find('#BRsearch_tray');
+    this.searchResults = mobileMenu.find('[data-id="results"]');
     this.searchResultText = mobileMenu.find('.BRmobileSearchResult').find('tbody').child(-1).find('span');
   }
 }

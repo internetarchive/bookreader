@@ -86,6 +86,90 @@
     height: 27px;
     background: transparent url(images/marker_srch-on.png) no-repeat;
   }
+
+  .BRbooksearch {
+    position:relative;
+    box-sizing: border-box;
+  }
+  .BRbooksearch.desktop {
+    position: relative;
+    height: 30px;
+    border: 1px solid white;
+    border-radius: 20px;
+    display: inline-block;
+    line-height:0;
+    vertical-align: top;
+    margin-top: 0;
+    margin-bottom: 0;
+
+    .BRsearchInput {
+      -webkit-appearance: none;
+      position: relative;
+      width: 130px;
+      max-width: 160px;
+      height: 100%;
+      color: white;
+      outline: none;
+      border: none;
+      padding: 3px 0px 3px 10px;
+      margin: 0;
+      box-sizing: border-box;
+      background: transparent;
+      display: block;
+      float: left;
+      font-size: $brFontSizeBase;
+      line-height: 1.2;
+    }
+    .BRsearchSubmit {
+      width: auto;
+      height: 100%;
+      border: none;
+      text-align: center;
+      color: #fff;
+      overflow: hidden;
+      box-sizing:boder-box;
+      display: block;
+      background: transparent;
+      float: left;
+      cursor: pointer;
+    }
+  }
+
+  .BRbooksearch.mobile {
+    position: relative;
+    top: 0;
+    display: flex;
+    flex-direction: row;
+
+    .BRsearchInput {
+      -webkit-appearance: none;
+      position: relative;
+      min-width: 100px;
+      float: left;
+      font-size: $brFontSizeBase;
+      width: 150px;
+      height: 30px;
+      border: 1px solid $brColorLightBorder;
+      flex: 1;
+      border-radius: 0;
+    }
+    .BRsearchSubmit {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background-color: $brColorThemeblue;
+      background-image: url("images/icon_search_button.svg");
+      background-repeat: no-repeat;
+      background-position: center center;
+
+      text-align: center;
+      color: white;
+      overflow: hidden;
+      box-sizing: border-box;
+      display: inline-block;
+    }
+  }
+
   #BRsearch_tray {
     --menuSliderBg: #151515;
     --primaryTextColor: #fff;
@@ -257,4 +341,18 @@
 @keyframes hiliteFadeIn {
   from { opacity: 0; }
   to { opacity: 0.2; }
+}
+
+/* Mid size breakpoint */
+@media (max-width: $brBreakPointMid) {
+  #{$brScope} {
+    .BRbooksearch .BRsearchInput {
+      padding: 0 0 0 8px;
+      width: 110px;
+      min-width: 110px;
+    }
+    .BRbooksearch .BRsearchSubmit {
+      float: left;
+    }
+  }
 }
