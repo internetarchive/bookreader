@@ -72,34 +72,6 @@ $mobileMenuBG: #151515;
     a { color: black; }
 }
 
-// Highlight colors for text selection layer ( these 2 properties do not work if joined)
-tspan::selection {
-    background: hsla(210, 74%, 62%, 0.4);
-}
-tspan::-moz-selection {
-    background: hsla(210, 74%, 62%, 0.4);
-}
-
-// Makes page image unselectable
-.BRpagecontainer img {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-}
-
-// Hides svg text layer when page animation is running
-.BRpageFlipping svg {
-    display: none;
-}
-
-text {
-    fill: red;
-    cursor: text;
-    white-space: pre;
-    fill-opacity: 0;
-    font-family: Georgia, serif;
-  }
-
 // These are the main root elements in BookReader
 $brScope: ".BookReader, .BRmobileMenu, .BRfloat";
 
@@ -115,3 +87,4 @@ $brScope: ".BookReader, .BRmobileMenu, .BRfloat";
 @import 'BRvendor';
 @import 'icons';
 @import 'controls';
+@import 'TextSelection'

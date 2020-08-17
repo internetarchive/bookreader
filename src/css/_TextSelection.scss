@@ -1,0 +1,36 @@
+.textSelectionSVG {
+    width: 100%;
+    position: absolute;
+    height: 100%;
+    top: 0;
+    left: 0;
+
+    // Highlight colors for text selection layer ( these 2 properties do not work if joined)
+    .BRwordElement::selection {
+        background: hsla(210, 74%, 62%, 0.4);
+    }
+    .BRwordElement::-moz-selection {
+        background: hsla(210, 74%, 62%, 0.4);
+        color: transparent;
+    }
+
+    .BRparagElement {
+        fill: red;
+        cursor: text;
+        white-space: pre;
+        fill-opacity: 0;
+        font-family: Georgia, serif;
+    }
+}
+
+// Makes page image unselectable
+.BRpagecontainer img {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+// Hides svg text layer when page animation is running
+.BRpageFlipping .textSelectionSVG {
+    display: none;
+}
