@@ -256,32 +256,49 @@ class SearchView {
     return false;
   }
 
+  handleSearchCallback(e, { results }) {
+    this.renderMatches(results.matches);
+    this.renderPins(results.matches);
+    this.updateResultsCount(results.matches.length);
+    this.toggleSearchPending(false);
+    this.toggleSearchTray(true);
+  }
+
+  handleNavToggledCallback(e, instance) {
+    const is_visible = instance.navigationIsVisible();
+    this.togglePinsFor(instance, is_visible);
+    this.toggleSearchTray(is_visible ? !!this.dom.results.querySelector('li') : false);
+  }
+
+  handleSearchStarted() {
+    this.toggleSearchPending(true);
+    this.setQuery(this.br.searchTerm);
+  }
+
+  handleSearchCallbackError() {
+    this.toggleSearchPending(false);
+    this.renderErrorModal();
+  }
+
+  handleSearchCallbackBookNotIndexed() {
+    this.toggleSearchPending(false);
+    this.renderBookNotIndexedModal();
+  }
+
+  handleSearchCallbackEmpty() {
+    this.toggleSearchPending(false);
+    this.renderResultsEmptyModal();
+  }
+
   bindEvents() {
     const namespace = 'BookReader:';
 
-    $(document).on(`${namespace}SearchCallback`, (e, { results }) => {
-      this.renderMatches(results.matches);
-      this.renderPins(results.matches);
-      this.updateResultsCount(results.matches.length);
-      this.toggleSearchPending(false);
-      this.toggleSearchTray(true);
-    }).on(`${namespace}navToggled`, (e, instance) => {
-      const is_visible = instance.navigationIsVisible();
-      this.togglePinsFor(instance, is_visible);
-      this.toggleSearchTray(is_visible ? !!this.dom.results.querySelector('li') : false);
-    }).on(`${namespace}SearchStarted`, () => {
-      this.toggleSearchPending(true);
-      this.setQuery(this.br.searchTerm);
-    }).on(`${namespace}SearchCallbackError`, (e, { results }) => {
-      this.toggleSearchPending(false);
-      this.renderErrorModal();
-    }).on(`${namespace}SearchCallbackBookNotIndexed`, () => {
-      this.toggleSearchPending(false);
-      this.renderBookNotIndexedModal();
-    }).on(`${namespace}SearchCallbackEmpty`, () => {
-      this.toggleSearchPending(false);
-      this.renderResultsEmptyModal();
-    });
+    $(document).on(`${namespace}SearchCallback`, this.handleSearchCallback.bind(this))
+      .on(`${namespace}navToggled`, this.handleNavToggledCallback.bind(this))
+      .on(`${namespace}SearchStarted`, this.handleSearchStarted.bind(this))
+      .on(`${namespace}SearchCallbackError`, this.handleSearchCallbackError.bind(this))
+      .on(`${namespace}SearchCallbackBookNotIndexed`, this.handleSearchCallbackBookNotIndexed.bind(this))
+      .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this));
 
     this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
     this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
