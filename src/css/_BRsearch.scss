@@ -230,6 +230,13 @@
       display: none;
     }
 
+    #all_files {
+      display: none;
+      + label {
+        display: none;
+      }
+    }
+
     label {
       display: block;
       text-align: center;

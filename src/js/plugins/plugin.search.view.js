@@ -109,7 +109,7 @@ class SearchView {
     mobileSearch.innerHTML = `
       <span>
         <span class="DrawerIconWrapper">
-          <img class="DrawerIcon" src="${this.br.imagesBaseURL}icon_search_button_blue.svg" alt="Icon of a magnifying glass" />
+          <img class="DrawerIcon" src="${this.br.imagesBaseURL}icon_search_button.svg" alt="Icon of a magnifying glass" />
         </span>
         Search
       </span>
