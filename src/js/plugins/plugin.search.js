@@ -173,7 +173,7 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
   };
 
   this.trigger('SearchStarted');
-  $.ajax({
+  return $.ajax({
     url: url,
     dataType: 'jsonp'
   }).then(processSearchResults);
