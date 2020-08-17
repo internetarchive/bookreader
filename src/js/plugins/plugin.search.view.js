@@ -7,17 +7,16 @@ class SearchView {
 
     this.br = params.br;
 
-    if (this.br.options.initialSearchTerm) {
-      this.setQuery(params.query);
-    }
-
     this.matcher = new RegExp('{{{(.+?)}}}', 'g');
     this.dom = {
       searchTray: this.renderSearchTray(params.selector),
     };
     this.cacheDOMElements();
-
     this.bindEvents();
+
+    if (this.br.options.initialSearchTerm) {
+      this.setQuery(params.query);
+    }
   }
 
   cacheDOMElements() {
