@@ -32,6 +32,13 @@ const expectMode = ClientFunction((mode) => {
 });
 
 /**
+ * Tells you if book is to be read from right to left
+ */
+const isRightToLeft = ClientFunction(() => {
+  return window.br.pageProgression === 'rl';
+})
+
+/**
  * Runs all expected base tests for BookReader
  *
  * @param { BookReader } br - Model
@@ -77,13 +84,18 @@ export function runBaseTests (br) {
     const { nav } = br;
 
     // Check if uses plugin.resume.js
-    const usesResume = ClientFunction(() => typeof(br.getResumeValue) !== "undefined");
+    const usesResume = ClientFunction(() => {
+      const hasResumePlugin = typeof(br.getResumeValue) !== "undefined";
+      const hasResumeValue = hasResumePlugin ? br.getResumeValue() : false;
+      return hasResumeValue;
+    });
 
     // Store initial URL
     const initialUrl = await getUrl();
 
     // Set Cookie by page navigation, wait for cookie
-    await t.click(nav.desktop.goNext)
+    const goForward = await isRightToLeft() ? nav.desktop.goPrevious : nav.desktop.goNext;
+    await t.click(goForward)
       .wait(PAGE_FLIP_WAIT_TIME);
 
     // reload canonical URL, wait for URL change
@@ -104,8 +116,10 @@ export function runBaseTests (br) {
   test('2up mode - Clicking `Previous page` changes the page', async t => {
     const { nav, BRcontainer} = br;
 
+    const goPrevious = await isRightToLeft() ? nav.desktop.goNext : nav.desktop.goPrevious;
+    const goNext = await isRightToLeft() ? nav.desktop.goPrevious : nav.desktop.goNext;
     // Go to next page, so we can go previous if at front cover
-    await t.click(nav.desktop.goNext);
+    await t.click(goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const onLoadBrState = BRcontainer.child(0);
@@ -113,7 +127,7 @@ export function runBaseTests (br) {
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
-    await t.click(nav.desktop.goPrevious);
+    await t.click(goPrevious);
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
@@ -142,7 +156,9 @@ export function runBaseTests (br) {
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
-    await t.click(nav.desktop.goNext);
+    const goNext = await isRightToLeft() ? nav.desktop.goPrevious : nav.desktop.goNext;
+
+    await t.click(goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
 
     const nextBrState = await Selector('.BRcontainer').child(0);
@@ -165,13 +181,15 @@ export function runBaseTests (br) {
 
   test('Clicking `page flip buttons` updates location', async t => {
     const { nav } = br;
+    const goPrevious = await isRightToLeft() ? nav.desktop.goNext : nav.desktop.goPrevious;
+    const goNext = await isRightToLeft() ? nav.desktop.goPrevious : nav.desktop.goNext;
 
     // Page navigation creates params
-    await t.click(nav.desktop.goNext)
+    await t.click(goNext)
       .expect(expectPage()).ok()
       .expect(expectMode('2up')).ok();
 
-    await t.click(nav.desktop.goPrevious)
+    await t.click(goPrevious)
       .expect(expectPage()).ok()
       .expect(expectMode('2up')).ok();
   });

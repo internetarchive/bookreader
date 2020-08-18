@@ -13,7 +13,7 @@ OCAIDS.forEach(ocaid => {
   const url = `${BASE_URL}${DEMO_PATH}${ocaid}`;
 
   fixture `Base Tests for right to left book: ${ocaid}`.page `${url}`;
-  runBaseTests(new BookReader());
+  runBaseTests(new BookReader({ pageProgression: 'rl' }));
 
   fixture `Specific Tests for right to left book: ${ocaid}`.page `${url}`;
   runRightToLeftTests(new BookReader());
