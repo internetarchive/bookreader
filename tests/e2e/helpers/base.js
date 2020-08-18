@@ -60,7 +60,7 @@ export function runBaseTests (br) {
   test('nav menu displays properly', async t => {
     const { nav } = br;
 
-    await t.expect(nav.desktop.goPrevious.visible).ok();
+    await t.expect(nav.desktop.goLeft.visible).ok();
     await t.expect(nav.desktop.goNext.visible).ok();
     await t.expect(nav.desktop.mode1Up.visible).ok();
     await t.expect(nav.desktop.mode2Up.visible).ok();
@@ -94,7 +94,7 @@ export function runBaseTests (br) {
     const initialUrl = await getUrl();
 
     // Set Cookie by page navigation, wait for cookie
-    const goForward = await isRightToLeft() ? nav.desktop.goPrevious : nav.desktop.goNext;
+    const goForward = await isRightToLeft() ? nav.desktop.goLeft : nav.desktop.goNext;
     await t.click(goForward)
       .wait(PAGE_FLIP_WAIT_TIME);
 
@@ -116,8 +116,8 @@ export function runBaseTests (br) {
   test('2up mode - Clicking `Previous page` changes the page', async t => {
     const { nav, BRcontainer} = br;
 
-    const goPrevious = await isRightToLeft() ? nav.desktop.goNext : nav.desktop.goPrevious;
-    const goNext = await isRightToLeft() ? nav.desktop.goPrevious : nav.desktop.goNext;
+    const goPrevious = await isRightToLeft() ? nav.desktop.goNext : nav.desktop.goLeft;
+    const goNext = await isRightToLeft() ? nav.desktop.goLeft : nav.desktop.goNext;
     // Go to next page, so we can go previous if at front cover
     await t.click(goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
@@ -156,7 +156,7 @@ export function runBaseTests (br) {
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
-    const goNext = await isRightToLeft() ? nav.desktop.goPrevious : nav.desktop.goNext;
+    const goNext = await isRightToLeft() ? nav.desktop.goLeft : nav.desktop.goNext;
 
     await t.click(goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
@@ -181,8 +181,8 @@ export function runBaseTests (br) {
 
   test('Clicking `page flip buttons` updates location', async t => {
     const { nav } = br;
-    const goPrevious = await isRightToLeft() ? nav.desktop.goNext : nav.desktop.goPrevious;
-    const goNext = await isRightToLeft() ? nav.desktop.goPrevious : nav.desktop.goNext;
+    const goPrevious = await isRightToLeft() ? nav.desktop.goNext : nav.desktop.goLeft;
+    const goNext = await isRightToLeft() ? nav.desktop.goLeft : nav.desktop.goNext;
 
     // Page navigation creates params
     await t.click(goNext)
