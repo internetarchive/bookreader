@@ -7,10 +7,10 @@ class SearchView {
 
     this.br = params.br;
 
+    // Search results are returned as a text blob with the hits wrapped in
+    // triple mustaches. Hits occasionally include text beyond the search
+    // term, so everything within the staches is captured and wrapped.
     this.matcher = new RegExp('{{{(.+?)}}}', 'g');
-    this.dom = {
-      searchTray: this.renderSearchTray(params.selector),
-    };
     this.cacheDOMElements();
     this.bindEvents();
 
@@ -20,11 +20,22 @@ class SearchView {
   }
 
   cacheDOMElements() {
+    this.dom = {};
+
+    // The parent search tray in mobile menu
+    this.dom.searchTray: this.renderSearchTray(params.selector);
+    // Container for rendered search results
     this.dom.results = this.dom.searchTray.querySelector('[data-id="results"]');
+    // Element used to display number of results
     this.dom.resultsCount = this.dom.searchTray.querySelector('[data-id="results_count"]');
+    // Search input within the mobile search tray
     this.dom.searchField = this.dom.searchTray.querySelector('[name="query"]');
+    // Waiting indicator displayed while waiting for a search request
     this.dom.searchPending = this.dom.searchTray.querySelector('[data-id="searchPending"]');
+    // The element added to the mobile menu that is animated into view when
+    // the "search" nav item is clicked
     this.dom.mobileSearch = this.buildMobileDrawer();
+    // Search input within the top toolbar. Will be removed once the mobile menu is replaced.
     this.dom.toolbarSearch = this.buildToolbarSearch();
   }
 
