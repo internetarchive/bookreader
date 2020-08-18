@@ -12,6 +12,7 @@ class TextSelectionPlugin {
     // Tspans are necessary on Chrome because they prevent newline character after every word when coping
     this.svgParagraphElement = "text";
     this.svgWordElement = "tspan";
+    this.onFirefox = avoidTspans
     if(avoidTspans) {
       this.svgParagraphElement = "g";
       this.svgWordElement = "text";
@@ -154,6 +155,16 @@ class TextSelectionPlugin {
           spaceTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
           spaceTspan.textContent = " ";
           paragSvg.appendChild(spaceTspan);
+        }
+
+        // Adds newline at the end of paragraph on Firefox
+        if((i ==  words.length - 1 && (this.onFirefox))) {
+          const nlTspan = document.createElementNS("http://www.w3.org/2000/svg", this.svgWordElement);
+          nlTspan.setAttribute("class", "BRwordElement");
+          nlTspan.setAttribute("x", right.toString());
+          nlTspan.setAttribute("y", bottom.toString());
+          nlTspan.textContent = "\n";
+          paragSvg.appendChild(nlTspan);
         }
       }
       paragSvg.setAttribute("font-size", wordHeightMax.toString());
