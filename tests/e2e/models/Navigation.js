@@ -19,7 +19,7 @@ export default class Navigation {
 class DesktopNav {
   constructor(bottomToolbar, topToolbar) {
     this.goLeft = bottomToolbar.find('.BRicon.book_left');
-    this.goNext = bottomToolbar.find('.BRicon.book_right');
+    this.goRight = bottomToolbar.find('.BRicon.book_right');
     this.mode1Up = bottomToolbar.find('.BRicon.onepg');
     this.mode2Up = bottomToolbar.find('.BRicon.twopg');
     this.modeThumb = bottomToolbar.find('.BRicon.thumb');
