@@ -124,7 +124,7 @@ export const DEFAULT_OPTIONS = {
   protected: false,
 
   /** Enables text selection layer */
-  enableTextSelection: true,
+  enableTextSelection: false,
 
   /**
    * @type {Array<[PageData, PageData]|[PageData]>}
