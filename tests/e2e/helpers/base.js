@@ -118,7 +118,8 @@ export function runBaseTests (br) {
     const initialUrl = await getUrl();
 
     // Set Cookie by page navigation, wait for cookie
-    const goNext = getNext(nav, await bookPageProgression());
+    const pageProgression = await bookPageProgression();
+    const goNext = getNext(nav, pageProgression);
     await t.click(goNext)
       .wait(PAGE_FLIP_WAIT_TIME);
 
