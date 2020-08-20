@@ -217,10 +217,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   if (options.goToFirstResult) {
     this._searchPluginGoToResult(results.matches[0].par[0].page);
   }
-  // BookReader's wrapper on jQuery's trigger method is broken. Props are not
-  // passed down, since the method only takes two arguments. The actual props
-  // passed is the BookReader instance.
-  $(document).trigger('BookReader:SearchCallback', { results, options, instance: this });
+  this.trigger('SearchCallback', { results, options, instance: this });
 }
 
 /**
@@ -242,13 +239,13 @@ BookReader.prototype.BRSearchCallbackError = function(results) {
 BookReader.prototype._BRSearchCallbackError = function(results) {
   this.searchResults = results;
   if (results.error) {
-    $(document).trigger('BookReader:SearchCallbackError', { results, instance: this });
+    this.trigger('SearchCallbackError', { results, instance: this });
   } else if (0 == results.matches.length) {
     if (false === results.indexed) {
-      $(document).trigger('BookReader:SearchCallbackBookNotIndexed', { instance: this });
+      this.trigger('SearchCallbackBookNotIndexed', { instance: this });
       return;
     }
-    $(document).trigger('BookReader:SearchCallbackEmpty', { instance: this });
+    this.trigger('SearchCallbackEmpty', { instance: this });
   }
 };
 

@@ -11,7 +11,7 @@ class SearchView {
     // triple mustaches. Hits occasionally include text beyond the search
     // term, so everything within the staches is captured and wrapped.
     this.matcher = new RegExp('{{{(.+?)}}}', 'g');
-    this.cacheDOMElements();
+    this.cacheDOMElements(params.selector);
     this.bindEvents();
 
     if (this.br.options.initialSearchTerm) {
@@ -19,11 +19,11 @@ class SearchView {
     }
   }
 
-  cacheDOMElements() {
+  cacheDOMElements(selector) {
     this.dom = {};
 
     // The parent search tray in mobile menu
-    this.dom.searchTray: this.renderSearchTray(params.selector);
+    this.dom.searchTray = this.renderSearchTray(selector);
     // Container for rendered search results
     this.dom.results = this.dom.searchTray.querySelector('[data-id="results"]');
     // Element used to display number of results
