@@ -107,7 +107,7 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
  * Submits search request
  *
  * @param {string} term
- * @param {SearchOptions} options
+ * @param {SearchOptions} overrides
  */
 BookReader.prototype.search = function(term = '', overrides = {}) {
   /** @type {SearchOptions} */

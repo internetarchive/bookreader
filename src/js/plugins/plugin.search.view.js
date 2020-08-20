@@ -1,4 +1,10 @@
 class SearchView {
+  /**
+   * @param {object} params
+   *   @param {string} params.selector A selector for the element that the search tray will be rendered in
+   *   @param {string} params.query An existing query string
+   *   @param {object} params.br The BookReader instance
+   */
   constructor(params) {
     if (!params.selector) {
       console.warn('BookReader::Search - SearchView must be passed a valid CSS selector');
@@ -19,6 +25,9 @@ class SearchView {
     }
   }
 
+  /**
+   * @param {string} selector A selector for the element that the search tray will be rendered in
+   */
   cacheDOMElements(selector) {
     this.dom = {};
 
@@ -39,20 +48,31 @@ class SearchView {
     this.dom.toolbarSearch = this.buildToolbarSearch();
   }
 
-  toggleSearchTray(bool) {
-    const state = typeof bool !== 'boolean' ? this.dom.searchTray.classList.contains('hidden') : bool;
-    this.dom.searchTray.classList.toggle('hidden', !state);
+  /**
+   * @param {boolean} bool
+   */
+  toggleSearchTray(bool = this.dom.searchTray.classList.contains('hidden')) {
+    this.dom.searchTray.classList.toggle('hidden', !bool);
   }
 
+  /**
+   * @param {boolean} bool
+   */
   toggleResultsCount(bool) {
     this.dom.resultsCount.classList.toggle('visible', bool);
   }
 
+  /**
+   * @param {SearchInsideResults} results
+   */
   updateResultsCount(results) {
     this.dom.resultsCount.innerText = `(${results} result${results != 1 ? 's' : ''})`;
     this.toggleResultsCount(true);
   }
 
+  /**
+   * @param {string} query
+   */
   setQuery(query) {
     this.dom.searchField.value = query;
   }
@@ -72,6 +92,9 @@ class SearchView {
     this.setQuery('');
   }
 
+  /**
+   * @param {string} selector The ID attribute to be used for the search tray
+   */
   renderSearchTray(selector) {
     const searchTray = document.createElement('div');
     searchTray.setAttribute('id', selector.replace(/^#/, ''));
@@ -99,6 +122,9 @@ class SearchView {
     return searchTray;
   }
 
+  /**
+   * @param {array} matches
+   */
   renderMatches(matches) {
     const items = matches.map((match) => `
       <li data-page="${match.par[0].page}" data-page-index="${this.br.leafNumToIndex(match.par[0].page)}">
@@ -109,6 +135,9 @@ class SearchView {
     this.dom.results.innerHTML = items.join('');
   }
 
+  /**
+   * @param {boolean} bool
+   */
   togglePinsFor(bool) {
     const pinsVisibleState = bool ? 'visible' : 'hidden';
     this.br.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
@@ -119,7 +148,7 @@ class SearchView {
     mobileSearch.innerHTML = `
       <span>
         <span class="DrawerIconWrapper">
-          <img class="DrawerIcon" src="${this.br.imagesBaseURL}icon_search_button.svg" alt="Icon of a magnifying glass" />
+          <img class="DrawerIcon" src="${this.br.imagesBaseURL}icon_search_button.svg" />
         </span>
         Search
       </span>
@@ -145,6 +174,9 @@ class SearchView {
     return toolbarSearch;
   }
 
+  /**
+   * @param {array} matches
+   */
   renderPins(matches) {
     matches.forEach((match) => {
       const queryString = match.text;
@@ -210,6 +242,9 @@ class SearchView {
     });
   }
 
+  /**
+   * @param {boolean} bool
+   */
   toggleSearchPending(bool) {
     this.dom.searchPending.classList.toggle('visible', bool);
     if (bool) {
@@ -244,6 +279,9 @@ class SearchView {
     this.delayModalRemovalFor(2000);
   }
 
+  /**
+   * @param {string} messageHTML The innerHTML string used to popupate the modal contents
+   */
   renderModalMessage(messageHTML) {
     const modal = document.createElement('div');
     modal.classList.add('BRprogresspopup', 'search_modal');
@@ -251,10 +289,16 @@ class SearchView {
     document.querySelector(this.br.el).append(modal);
   }
 
+  /**
+   * @param {number} timeoutMS
+   */
   delayModalRemovalFor(timeoutMS) {
     setTimeout(this.br.removeProgressPopup.bind(this.br), timeoutMS);
   }
 
+  /**
+   * @param {Event} e
+   */
   submitHandler(e) {
     e.preventDefault();
     const query = e.target.querySelector('[name="query"]').value;
@@ -266,6 +310,11 @@ class SearchView {
     return false;
   }
 
+  /**
+   * @param {Event} e
+   * @param {object} properties
+   *   @param {object} properties.results
+   */
   handleSearchCallback(e, { results }) {
     this.renderMatches(results.matches);
     this.renderPins(results.matches);
@@ -274,6 +323,9 @@ class SearchView {
     this.toggleSearchTray(true);
   }
 
+  /**
+   * @param {Event} e
+   */
   handleNavToggledCallback(e) {
     const is_visible = this.br.navigationIsVisible();
     this.togglePinsFor(is_visible);
