@@ -109,9 +109,9 @@ class SearchView {
     this.dom.results.innerHTML = items.join('');
   }
 
-  togglePinsFor(instance, bool) {
+  togglePinsFor(bool) {
     const pinsVisibleState = bool ? 'visible' : 'hidden';
-    instance.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
+    this.br.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
   }
 
   buildMobileDrawer() {
@@ -274,9 +274,9 @@ class SearchView {
     this.toggleSearchTray(true);
   }
 
-  handleNavToggledCallback(e, instance) {
-    const is_visible = instance.navigationIsVisible();
-    this.togglePinsFor(instance, is_visible);
+  handleNavToggledCallback(e) {
+    const is_visible = this.br.navigationIsVisible();
+    this.togglePinsFor(is_visible);
     this.toggleSearchTray(is_visible ? !!this.dom.results.querySelector('li') : false);
   }
 
