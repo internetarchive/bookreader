@@ -70,8 +70,6 @@ html.mm-background .BookReader {
 }
 
 .BRmobileHamburger {
-  // background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAATCAYAAABhh3Y4AAAAAXNSR0IArs4c6QAAAFZJREFUSA1jrKmpafv//38xELMx0AgwMjL+AuJeFqAlubS0COR+qPm5TED2FJDNNPIU2FiozybT0o5Rs4dBCDCO5jNKYnE0n1ESeiNI72g+oyiyYfkMAKCpRQemMsj0AAAAAElFTkSuQmCC');
-  // Should use SVG (below). See https://github.com/internetarchive/bookreader/issues/100
   background: transparent url('icons/hamburger.svg') 50% 50% no-repeat;
   display: block;
   width: 40px;
