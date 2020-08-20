@@ -6,9 +6,9 @@ import '../../BookReader/jquery.colorbox-min.js';
 
 import BookReader from '../../src/js/BookReader.js';
 import '../../src/js/plugins/plugin.mobile_nav.js';
-import '../../src/js/plugins/plugin.search.js';
+import '../../src/js/plugins/search/plugin.search.js';
 
-jest.mock('../../src/js/plugins/plugin.search.view.js');
+jest.mock('../../src/js/plugins/search/view.js');
 
 let br;
 const namespace = 'BookReader:';

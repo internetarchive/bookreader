@@ -21,7 +21,7 @@
  * @event BookReader:SearchCallbackEmpty - When no results found. Receives
  *   `instance`
  */
-import SearchView from './plugin.search.view.js';
+import SearchView from './view.js';
 
 jQuery.extend(BookReader.defaultOptions, {
   server: 'ia600609.us.archive.org',
