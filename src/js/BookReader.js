@@ -498,7 +498,7 @@ BookReader.prototype.init = function() {
  * @param {EVENTS} name
  * @param {array | object} [props]
  */
-BookReader.prototype.trigger = function(name, props = {}) {
+BookReader.prototype.trigger = function(name, props = this) {
   $(document).trigger('BookReader:' + name, props);
 };
 
