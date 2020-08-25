@@ -4,11 +4,9 @@
     height: 100%;
     top: 0;
     left: 0;
-    pointer-events: none;
-
-    .BRwordElement {
-        pointer-events: all;
-    }
+   // Make it so right-clicking on "blank" part of svg sends events to the image (for saving)
+   pointer-events: none;
+   .BRwordElement { pointer-events: all; }
 
     // Highlight colors for text selection layer ( these 2 properties do not work if joined)
     .BRwordElement::selection {

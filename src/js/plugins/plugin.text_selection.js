@@ -3,16 +3,16 @@ import { isFirefox } from './tts/utils';
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
-class TextSelectionPlugin {
+export class TextSelectionPlugin {
 
   constructor(avoidTspans = isFirefox()) {
     /**@type {PromiseLike<JQuery<HTMLElement>>} */
     this.djvuPagesPromise = null;
     // Using text elements insted of tspans for words because Firefox does not allow svg tspan strech.
-    // Tspans are necessary on Chrome because they prevent newline character after every word when coping
+    // Tspans are necessary on Chrome because they prevent newline character after every word when copying
     this.svgParagraphElement = "text";
     this.svgWordElement = "tspan";
-    this.onFirefox = avoidTspans
+    this.insertNewlines = avoidTspans
     if(avoidTspans) {
       this.svgParagraphElement = "g";
       this.svgWordElement = "text";
@@ -31,11 +31,7 @@ class TextSelectionPlugin {
       error: function (e) {
         return undefined;
       }
-    }).then(function (xmlMap) {
-      if (xmlMap != undefined) {
-        return $(xmlMap).find("OBJECT");
-      }
-    });
+    }).then(xmlMap  => xmlMap && $(xmlMap).find("OBJECT"));
   }
 
   /**
@@ -47,7 +43,7 @@ class TextSelectionPlugin {
   }
 
   /**
-   * Intercept copied text
+   * Intercept copied text to remove any styling applied to it
    * @param {JQuery} $container
    */
   interceptCopy($container) {
@@ -119,19 +115,19 @@ class TextSelectionPlugin {
     });
 
     $(XMLpage).find("PARAGRAPH").each((i, paragraph) => {
-      // adding text element for each paragraph in the page
+      // Adding text element for each paragraph in the page
       const paragSvg = document.createElementNS("http://www.w3.org/2000/svg", this.svgParagraphElement);
       paragSvg.setAttribute("class", "BRparagElement");
       const words = $(paragraph).find("WORD");
-      let wordHeightMax = 0;
+      const wordHeightArr = [];
 
       for(let i = 0; i < words.length; i++) {
-        // adding tspan for each word in paragraph
+        // Adding tspan for each word in paragraph
         const currWord = words[i];
         // eslint-disable-next-line no-unused-vars
         const [left, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
         const wordHeight = bottom - top;
-        if(wordHeight > wordHeightMax) wordHeightMax = wordHeight;
+        wordHeightArr.push(wordHeight);
 
         const wordTspan = document.createElementNS("http://www.w3.org/2000/svg", this.svgWordElement);
         wordTspan.setAttribute("class", "BRwordElement");
@@ -142,7 +138,8 @@ class TextSelectionPlugin {
         wordTspan.textContent = currWord.textContent;
         paragSvg.appendChild(wordTspan);
 
-        // adding spaces after words except at the end of the paragraph
+        // Adding spaces after words except at the end of the paragraph
+        // TODO: assumes left-to-right text
         if(i < words.length - 1){
           const nextWord = words[i + 1];
           // eslint-disable-next-line no-unused-vars
@@ -158,33 +155,25 @@ class TextSelectionPlugin {
         }
 
         // Adds newline at the end of paragraph on Firefox
-        if((i ==  words.length - 1 && (this.onFirefox))) {
-          const nlTspan = document.createElementNS("http://www.w3.org/2000/svg", this.svgWordElement);
-          nlTspan.setAttribute("class", "BRwordElement");
-          nlTspan.setAttribute("x", right.toString());
-          nlTspan.setAttribute("y", bottom.toString());
-          nlTspan.textContent = "\n";
-          paragSvg.appendChild(nlTspan);
+        if((i ==  words.length - 1 && (this.insertNewlines))) {
+          paragSvg.appendChild(document.createTextNode("\n"));
         }
       }
-      paragSvg.setAttribute("font-size", wordHeightMax.toString());
-      // paragSvg.setAttribute("lengthAdjust", "spacingAndGlyphs");
+
+      wordHeightArr.sort();
+      const paragWordHeight = wordHeightArr[Math.floor(wordHeightArr.length * 0.85)];
+      paragSvg.setAttribute("font-size", paragWordHeight.toString());
       svg.appendChild(paragSvg);
     })
     this.stopPageFlip($container);
   }
 }
 
-class BookreaderWithTextSelection extends BookReader {
-  // constructor() {
-  //   super();
-  // }
-
+export class BookreaderWithTextSelection extends BookReader {
   init() {
     if(this.enableTextSelection){
-      const OCAID = this.bookId;
       this.textSelectionPlugin = new TextSelectionPlugin();
-      this.textSelectionPlugin.init(OCAID);
+      this.textSelectionPlugin.init(this.bookId);
     }
     super.init();
   }
