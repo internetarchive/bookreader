@@ -19,7 +19,7 @@ This file is part of BookReader.
     The BookReader source is hosted at http://github.com/internetarchive/bookreader/
 
 */
-import { version as VERSION } from '../../package.json';
+import PACKAGE_JSON from '../../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
@@ -51,7 +51,7 @@ export default function BookReader(overrides = {}) {
   this.setup(options);
 }
 
-BookReader.version = VERSION;
+BookReader.version = PACKAGE_JSON.version;
 
 // Mode constants
 BookReader.constMode1up = 1;
