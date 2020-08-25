@@ -9,20 +9,20 @@ module.exports = {
     'BookReader.js': './src/js/BookReader.js',
 
     // Plugins (sorted!)
-    'plugins/plugin.archive_analytics.js': './src/js/plugins/plugin.archive_analytics.js',
-    'plugins/plugin.autoplay.js': './src/js/plugins/plugin.autoplay.js',
-    'plugins/plugin.chapters.js': './src/js/plugins/plugin.chapters.js',
-    'plugins/plugin.iframe.js': './src/js/plugins/plugin.iframe.js',
-    'plugins/plugin.menu_toggle.js': './src/js/plugins/menu_toggle/plugin.menu_toggle.js',
-    'plugins/plugin.mobile_nav.js': './src/js/plugins/plugin.mobile_nav.js',
-    'plugins/plugin.print.js': './src/js/plugins/plugin.print.js',
-    'plugins/plugin.resume.js': './src/js/plugins/plugin.resume.js',
-    'plugins/plugin.search.js': './src/js/plugins/search/plugin.search.js',
-    'plugins/plugin.themes.js': './src/js/plugins/plugin.themes.js',
-    'plugins/plugin.tts.js': './src/js/plugins/tts/plugin.tts.js',
-    'plugins/plugin.text_selection.js': './src/js/plugins/plugin.text_selection.js',
-    'plugins/plugin.url.js': './src/js/plugins/plugin.url.js',
-    'plugins/plugin.vendor-fullscreen.js': './src/js/plugins/plugin.vendor-fullscreen.js',
+    'plugins/plugin.archive_analytics.js': { import: './src/js/plugins/plugin.archive_analytics.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.autoplay.js': { import: './src/js/plugins/plugin.autoplay.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.chapters.js': { import: './src/js/plugins/plugin.chapters.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.iframe.js': { import: './src/js/plugins/plugin.iframe.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.menu_toggle.js': { import: './src/js/plugins/menu_toggle/plugin.menu_toggle.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.mobile_nav.js': { import: './src/js/plugins/plugin.mobile_nav.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.print.js': { import: './src/js/plugins/plugin.print.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.resume.js': { import: './src/js/plugins/plugin.resume.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.search.js': { import: './src/js/plugins/search/plugin.search.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.text_selection.js': { import: './src/js/plugins/plugin.text_selection.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.themes.js': { import: './src/js/plugins/plugin.themes.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.tts.js': { import: './src/js/plugins/tts/plugin.tts.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.url.js': { import: './src/js/plugins/plugin.url.js', dependOn: 'BookReader.js' },
+    'plugins/plugin.vendor-fullscreen.js': { import: './src/js/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' }
   },
 
   module: {
@@ -33,7 +33,8 @@ module.exports = {
 
   output: {
     filename: '[name]',
-    path: path.resolve(__dirname, 'BookReader')
+    path: path.resolve(__dirname, 'BookReader'),
+    ecmaVersion: 5
   },
 
   // Accurate source maps at the expense of build time.
