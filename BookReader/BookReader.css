@@ -1633,36 +1633,6 @@ i.BRicon {
   height: 27px;
   background: transparent url(images/marker_srch-on.png) no-repeat;
 }
-.BookReader .BRmobileSearchResultWrapper, .BRmobileMenu .BRmobileSearchResultWrapper, .BRfloat .BRmobileSearchResultWrapper {
-  margin-top: 20px;
-}
-.BookReader .BRmobileNumResults, .BRmobileMenu .BRmobileNumResults, .BRfloat .BRmobileNumResults {
-  margin-bottom: 10px;
-}
-.BookReader .BRmobileSearchResult, .BRmobileMenu .BRmobileSearchResult, .BRfloat .BRmobileSearchResult {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 15px;
-  text-decoration: none;
-  color: black;
-}
-.BookReader .BRmobileSearchResult:active, .BRmobileMenu .BRmobileSearchResult:active, .BRfloat .BRmobileSearchResult:active {
-  color: #0074D1;
-}
-.BookReader .BRmobileSearchResult .pageDisplay, .BRmobileMenu .BRmobileSearchResult .pageDisplay, .BRfloat .BRmobileSearchResult .pageDisplay {
-  text-decoration: underline;
-  color: #0074D1;
-  display: block;
-  margin-bottom: 3px;
-}
-.BookReader .BRmobileSearchResult .searchImgPreview, .BRmobileMenu .BRmobileSearchResult .searchImgPreview, .BRfloat .BRmobileSearchResult .searchImgPreview {
-  width: 50px;
-  height: auto;
-  margin-right: 5px;
-}
-.BookReader .BRmobileSearchResult table td, .BRmobileMenu .BRmobileSearchResult table td, .BRfloat .BRmobileSearchResult table td {
-  vertical-align: top;
-}
 .BookReader .BRbooksearch, .BRmobileMenu .BRbooksearch, .BRfloat .BRbooksearch {
   position: relative;
   box-sizing: border-box;
@@ -1741,6 +1711,160 @@ i.BRicon {
   box-sizing: border-box;
   display: inline-block;
 }
+.BookReader #BRsearch_tray, .BRmobileMenu #BRsearch_tray, .BRfloat #BRsearch_tray {
+  --menuSliderBg: #151515;
+  --primaryTextColor: #fff;
+  --activeButtonBg: #282828;
+  --searchResultText: #adaedc;
+  --searchResultBg: #272958;
+  --searchResultBorder: #fff;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 15px 10px;
+  overflow-y: auto;
+  font-size: 14px;
+  color: var(--primaryTextColor);
+  background: var(--menuSliderBg);
+}
+.BookReader #BRsearch_tray header, .BRmobileMenu #BRsearch_tray header, .BRfloat #BRsearch_tray header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.BookReader #BRsearch_tray h3, .BRmobileMenu #BRsearch_tray h3, .BRfloat #BRsearch_tray h3 {
+  padding: 0;
+  margin: 0 10px 0 0;
+  font-size: 20px;
+}
+.BookReader #BRsearch_tray header p, .BRmobileMenu #BRsearch_tray header p, .BRfloat #BRsearch_tray header p {
+  display: none;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+  font-weight: bold;
+  font-style: italic;
+}
+.BookReader #BRsearch_tray header p.visible, .BRmobileMenu #BRsearch_tray header p.visible, .BRfloat #BRsearch_tray header p.visible {
+  display: block;
+}
+.BookReader #BRsearch_tray header div, .BRmobileMenu #BRsearch_tray header div, .BRfloat #BRsearch_tray header div {
+  display: flex;
+  align-items: baseline;
+}
+.BookReader #BRsearch_tray a.close, .BRmobileMenu #BRsearch_tray a.close, .BRfloat #BRsearch_tray a.close {
+  justify-self: end;
+}
+.BookReader #BRsearch_tray fieldset, .BRmobileMenu #BRsearch_tray fieldset, .BRfloat #BRsearch_tray fieldset {
+  padding: 20px 0 10px 0;
+  border: none;
+}
+.BookReader #BRsearch_tray [type=checkbox], .BRmobileMenu #BRsearch_tray [type=checkbox], .BRfloat #BRsearch_tray [type=checkbox] {
+  display: none;
+}
+.BookReader #BRsearch_tray #all_files, .BRmobileMenu #BRsearch_tray #all_files, .BRfloat #BRsearch_tray #all_files {
+  display: none;
+}
+.BookReader #BRsearch_tray #all_files + label, .BRmobileMenu #BRsearch_tray #all_files + label, .BRfloat #BRsearch_tray #all_files + label {
+  display: none;
+}
+.BookReader #BRsearch_tray label, .BRmobileMenu #BRsearch_tray label, .BRfloat #BRsearch_tray label {
+  display: block;
+  text-align: center;
+}
+.BookReader #BRsearch_tray label.checkbox, .BRmobileMenu #BRsearch_tray label.checkbox, .BRfloat #BRsearch_tray label.checkbox {
+  padding-bottom: 5px;
+  font-size: 16px;
+  line-height: 150%;
+  vertical-align: middle;
+}
+.BookReader #BRsearch_tray label.checkbox:after, .BRmobileMenu #BRsearch_tray label.checkbox:after, .BRfloat #BRsearch_tray label.checkbox:after {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 7px;
+  content: "";
+  color: var(--primaryTextColor);
+  border: 1px solid var(--primaryTextColor);
+  border-radius: 2px;
+  background: var(--activeButtonBg) 50% 50% no-repeat;
+}
+.BookReader #BRsearch_tray :checked + label.checkbox:after, .BRmobileMenu #BRsearch_tray :checked + label.checkbox:after, .BRfloat #BRsearch_tray :checked + label.checkbox:after {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjEwIiB2aWV3Qm94PSIwIDAgMTMgMTAiIHdpZHRoPSIxMyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJtNC4zMzMzMzMzMyAxMC00LjMzMzMzMzMzLTQuMTY2NjY2NjcgMS43MzMzMzMzMy0xLjY2NjY2NjY2IDIuNiAyLjUgNi45MzMzMzMzNy02LjY2NjY2NjY3IDEuNzMzMzMzMyAxLjY2NjY2NjY3eiIgZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIi8+PC9zdmc+");
+}
+.BookReader #BRsearch_tray [type=search], .BRmobileMenu #BRsearch_tray [type=search], .BRfloat #BRsearch_tray [type=search] {
+  -webkit-appearance: textfield;
+  width: 100%;
+  height: 22px;
+  padding: 0 15px;
+  box-sizing: border-box;
+  font: normal 16px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--primaryTextColor);
+  border: 1px solid var(--primaryTextColor);
+  border-radius: 15px;
+  background: transparent;
+}
+.BookReader #BRsearch_tray [type=search]:focus, .BRmobileMenu #BRsearch_tray [type=search]:focus, .BRfloat #BRsearch_tray [type=search]:focus {
+  outline: none;
+}
+.BookReader #BRsearch_tray [type=search]::-webkit-search-cancel-button, .BRmobileMenu #BRsearch_tray [type=search]::-webkit-search-cancel-button, .BRfloat #BRsearch_tray [type=search]::-webkit-search-cancel-button {
+  width: 18px;
+  height: 18px;
+  -webkit-appearance: none;
+  appearance: none;
+  /* Uses an X SVG shape as a mask */
+  -webkit-mask: url("data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNDAgNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgYXJpYS1sYWJlbGxlZGJ5PSJjbG9zZVRpdGxlSUQgY2xvc2VEZXNjSUQiPjxwYXRoIGQ9Ik0yOS4xOTIgMTAuODA4YTEuNSAxLjUgMCAwMTAgMi4xMkwyMi4xMjIgMjBsNy4wNyA3LjA3MmExLjUgMS41IDAgMDEtMi4xMiAyLjEyMWwtNy4wNzMtNy4wNy03LjA3IDcuMDdhMS41IDEuNSAwIDAxLTIuMTIxLTIuMTJsNy4wNy03LjA3My03LjA3LTcuMDdhMS41IDEuNSAwIDAxMi4xMi0yLjEyMUwyMCAxNy44NzhsNy4wNzItNy4wN2ExLjUgMS41IDAgMDEyLjEyMSAweiIgY2xhc3M9ImZpbGwtY29sb3IiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==") 0 0 no-repeat;
+  mask: url("data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNDAgNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgYXJpYS1sYWJlbGxlZGJ5PSJjbG9zZVRpdGxlSUQgY2xvc2VEZXNjSUQiPjxwYXRoIGQ9Ik0yOS4xOTIgMTAuODA4YTEuNSAxLjUgMCAwMTAgMi4xMkwyMi4xMjIgMjBsNy4wNyA3LjA3MmExLjUgMS41IDAgMDEtMi4xMiAyLjEyMWwtNy4wNzMtNy4wNy03LjA3IDcuMDdhMS41IDEuNSAwIDAxLTIuMTIxLTIuMTJsNy4wNy03LjA3My03LjA3LTcuMDdhMS41IDEuNSAwIDAxMi4xMi0yLjEyMUwyMCAxNy44NzhsNy4wNzItNy4wN2ExLjUgMS41IDAgMDEyLjEyMSAweiIgY2xhc3M9ImZpbGwtY29sb3IiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==") 0 0 no-repeat;
+  -webkit-mask-size: 100%;
+  mask-size: 100%;
+  background: #fff;
+}
+.BookReader #BRsearch_tray ul, .BRmobileMenu #BRsearch_tray ul, .BRfloat #BRsearch_tray ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.BookReader #BRsearch_tray li, .BRmobileMenu #BRsearch_tray li, .BRfloat #BRsearch_tray li {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  grid-gap: 0 5px;
+}
+.BookReader #BRsearch_tray li img, .BRmobileMenu #BRsearch_tray li img, .BRfloat #BRsearch_tray li img {
+  display: block;
+  width: 100%;
+}
+.BookReader #BRsearch_tray li h4, .BRmobileMenu #BRsearch_tray li h4, .BRfloat #BRsearch_tray li h4 {
+  grid-column: 2/3;
+  padding: 0 0 20px 0;
+  margin: 0;
+  font-weight: normal;
+}
+.BookReader #BRsearch_tray li p, .BRmobileMenu #BRsearch_tray li p, .BRfloat #BRsearch_tray li p {
+  grid-column: 2/3;
+  padding: 0 0 15px 0;
+  margin: 0;
+  font-size: 12px;
+}
+.BookReader #BRsearch_tray mark, .BRmobileMenu #BRsearch_tray mark, .BRfloat #BRsearch_tray mark {
+  padding: 0 2px;
+  color: var(--searchResultText);
+  background: var(--searchResultBg);
+  border: 1px solid var(--searchResultBorder);
+  border-radius: 2px;
+}
+.BookReader #BRsearch_tray #search_pending, .BRmobileMenu #BRsearch_tray #search_pending, .BRfloat #BRsearch_tray #search_pending {
+  display: none;
+}
+.BookReader #BRsearch_tray #search_pending.visible, .BRmobileMenu #BRsearch_tray #search_pending.visible, .BRfloat #BRsearch_tray #search_pending.visible {
+  display: block;
+}
+.BookReader .search_modal, .BRmobileMenu .search_modal, .BRfloat .search_modal {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
 @keyframes hiliteFadeIn {
   from {
@@ -1762,12 +1886,16 @@ i.BRicon {
   }
 }
 .mm-menu .mm-navbar a, .mm-menu .mm-navbar > * {
-  color: black;
+  color: #fff;
   font-size: 14px;
 }
 
 .mm-menu {
-  background: white;
+  color: #fff;
+  background: #151515;
+}
+.mm-menu > .mm-navbar {
+  background: #333;
 }
 
 .mm-panel {
@@ -1782,6 +1910,18 @@ i.BRicon {
   margin-top: 0;
   color: #245e83;
   font-size: 14px;
+}
+
+.mm-menu .mm-listview > li .mm-next,
+.mm-menu .mm-listview > li .mm-next:before, .mm-menu .mm-listview > li:after,
+.mm-menu .mm-listview > li .mm-arrow:after,
+.mm-menu .mm-listview > li .mm-next:after {
+  border-color: #fff;
+}
+
+.mm-menu .mm-btn:after,
+.mm-menu .mm-btn:before {
+  border-color: #fff;
 }
 
 /* Needed to override mmenu style */
@@ -1801,6 +1941,9 @@ html.mm-background .BookReader {
   height: 40px;
   text-align: left;
 }
+.BRmobileMenu a {
+  color: inherit;
+}
 
 .BRtoolbarMobileTitle {
   overflow: hidden;
@@ -1808,7 +1951,6 @@ html.mm-background .BookReader {
   white-space: nowrap;
   text-align: center;
   font-size: 14px;
-  color: black;
   line-height: 40px;
   display: block;
   margin-right: 10px;
@@ -1820,10 +1962,7 @@ html.mm-background .BookReader {
 }
 
 .BRmobileHamburger {
-  background: center center no-repeat transparent;
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAATCAYAAABhh3Y4AAAAAXNSR0IArs4c6QAAAFZJREFUSA1jrKmpafv//38xELMx0AgwMjL+AuJeFqAlubS0COR+qPm5TED2FJDNNPIU2FiozybT0o5Rs4dBCDCO5jNKYnE0n1ESeiNI72g+oyiyYfkMAKCpRQemMsj0AAAAAElFTkSuQmCC");
-  /* Should use SVG (below). See https://github.com/internetarchive/bookreader/issues/100 */
-  /*background: url('data:image/svg+xml;utf8,<svg width="15px" height="12px" viewBox="0 0 15 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <g id="hamburger-svg" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="square"> <path d="M0,1 L14,1" id="Line" stroke="#000000"></path> <path d="M2.39808173e-14,6 L14,6" id="Line-Copy" stroke="#000000"></path> <path d="M1.15463195e-14,11 L14,11" id="Line-Copy-2" stroke="#000000"></path> </g></svg>') center / 50% 50% no-repeat;*/
+  background: transparent url("icons/hamburger.svg") 50% 50% no-repeat;
   display: block;
   width: 40px;
   height: 40px;
@@ -1853,7 +1992,7 @@ html.mm-background .BookReader {
 }
 
 .DrawerSettingsTitle {
-  color: #4990E2;
+  color: #fff;
   font-size: 14px;
   font-weight: bold;
   margin-bottom: 10px;
@@ -1868,7 +2007,7 @@ html.mm-background .BookReader {
 .DrawerLayoutButton {
   border: none;
   background: none;
-  color: #4990E2;
+  color: #fff;
   line-height: 18px;
 }
 
@@ -1930,12 +2069,8 @@ html.mm-background .BookReader {
     height: 40px;
     box-sizing: border-box;
     width: 100%;
-    background-color: white;
-    color: black;
-  }
-  .BRbodyMobileNavEnabled .BRtoolbar.responsive a,
-.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive a {
-    color: black;
+    color: #fff;
+    background: #333;
   }
   .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRtoolbarbuttons,
 .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRtoolbarbuttons {
@@ -1962,10 +2097,10 @@ html.mm-background .BookReader {
   }
 }
 li.BRtable-contents-el {
-  line-height: 1em;
+  line-height: 150%;
   padding: 10px 10px 10px 20px;
   overflow: hidden;
-  color: gray;
+  color: #fff;
 }
 li.BRtable-contents-el.chapter-clickable {
   font-weight: normal;
@@ -1981,6 +2116,7 @@ li.BRtable-contents-el > span {
 }
 li.BRtable-contents-el .BRTOCElementPage {
   font-size: 0.85em;
+  opacity: 0.8;
 }
 
 /****************** Excerpt from jquery-ui *********************/

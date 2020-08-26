@@ -1,3 +1,10 @@
+# 4.15.0
+- Dev: update lodash dependency @dependabot-preview + @cdrini
+- Dev: Moves /BookReaderDemo/index.html to /index.html (#394) @anirbansaha782
+- Fix: Prevents page flipping to last page if navigating to previous page from a book's cover (#419) @iisa
+- Feature: Splits search plugin controller and view, updates mobile menu styles (#420) @shaneriley
+- Dev: Updates to e2e testing navigation model & base tests (#421) @iisa
+
 # 4.14.3
 - Fix: Zoom buttons missing on mobile + other chrome fixes (#416) @shaneriley
 
