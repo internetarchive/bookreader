@@ -496,10 +496,10 @@ BookReader.prototype.init = function() {
 
 /**
  * @param {EVENTS} name
- * @param {*} [props]
+ * @param {array | object} [props]
  */
-BookReader.prototype.trigger = function(name, props = undefined) {
-  $(document).trigger('BookReader:' + name, this, props);
+BookReader.prototype.trigger = function(name, props = this) {
+  $(document).trigger('BookReader:' + name, props);
 };
 
 BookReader.prototype.bind = function(name, callback) {
@@ -1085,8 +1085,10 @@ BookReader.prototype.zoom1up = function(direction) {
   this.updateToolbarZoom(this.reduce);
 
   // Recalculate search hilites
-  if (this.enableSearch) this.removeSearchHilites();
-  if (this.enableSearch) this.updateSearchHilites();
+  if (this.enableSearch) {
+    this.removeSearchHilites();
+    this.updateSearchHilites();
+  }
 };
 
 /**
@@ -2651,28 +2653,15 @@ BookReader.prototype.updateFromParams = function(params) {
   }
 
   // $$$ process /zoom
-  var pageFound = false;
   // We only respect page if index is not set
   if ('undefined' != typeof(params.index)) {
-    pageFound = true;
     if (params.index != this.currentIndex()) {
       this.jumpToIndex(params.index);
     }
   } else if ('undefined' != typeof(params.page)) {
-    pageFound = true;
     // $$$ this assumes page numbers are unique
     if (params.page != this._models.book.getPageNum(this.currentIndex())) {
       this.jumpToPage(params.page);
-    }
-  }
-
-  // process /search
-  // @deprecated for urlMode 'history'
-  // Continues to work for urlMode 'hash'
-  if (this.enableSearch && 'undefined' != typeof(params.search)) {
-    if (this.searchTerm != params.search) {
-      this.search(params.search, {goToFirstResult: !pageFound});
-      this.$('.BRsearchInput').val(params.search);
     }
   }
 

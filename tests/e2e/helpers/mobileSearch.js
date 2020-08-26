@@ -29,10 +29,11 @@ export function runMobileSearchTests(br) {
 
       //testing successful search
       await t
-        .selectText(nav.searchBox.child('.BRsearchInput'))
+        .selectText(nav.searchBox.find('[name="query"]'))
         .pressKey('delete');
-      await t.typeText(nav.searchBox.child('.BRsearchInput'), TEST_TEXT_FOUND);
-      await t.click((nav.searchBox).child('.BRsearchSubmit'));
+      await t
+        .typeText(nav.searchBox.find('[name="query"]'), TEST_TEXT_FOUND)
+        .pressKey('enter');
       await t.expect(nav.searchResults.visible).ok();
       await t.expect(nav.searchResultText.exists).ok();
       await t.expect(nav.searchResultText.innerText).contains(TEST_TEXT_FOUND);
@@ -42,7 +43,7 @@ export function runMobileSearchTests(br) {
       await t.expect(getPageUrl()).contains(TEST_TEXT_FOUND);
 
       //checks clicking on first search result opens correct page
-      await t.click(nav.searchResults);
+      await t.click(nav.searchResults.child(0));
       await t.expect(getPageUrl()).contains(PAGE_FIRST_RESULT);
 
       //checks highlight on result page is visible
@@ -68,10 +69,11 @@ export function runMobileSearchTests(br) {
 
       //testing unsuccessful search
       await t
-        .selectText(nav.searchBox.child('.BRsearchInput'))
+        .selectText(nav.searchBox.find('[name="query"]'))
         .pressKey('delete');
-      await t.typeText(nav.searchBox.child('.BRsearchInput'), TEST_TEXT_NOT_FOUND);
-      await t.click((nav.searchBox).child('.BRsearchSubmit'));
+      await t
+        .typeText(nav.searchBox.find('[name="query"]'), TEST_TEXT_NOT_FOUND)
+        .pressKey('enter');
       await t.expect(nav.searchResultText.withText(TEST_TEXT_NOT_FOUND).exists).notOk();
 
       //checking url
