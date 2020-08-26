@@ -1814,6 +1814,9 @@ BookReader.prototype.next = function() {
 };
 
 BookReader.prototype.prev = function() {
+  const isOnFrontPage = this.firstIndex < 1;
+  if (isOnFrontPage) return;
+
   if (this.constMode2up == this.mode) {
     this.trigger(BookReader.eventNames.stop);
     this.flipBackToIndex(null);
