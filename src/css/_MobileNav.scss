@@ -1,9 +1,13 @@
 .mm-menu .mm-navbar a, .mm-menu .mm-navbar>* {
-  color: $brColorMobileMenuLink;
+  color: $controlsText;
   font-size: $brFontSizeBase;
 }
 .mm-menu {
-  background: $brColorMobileMenuBg;
+  color: $controlsText;
+  background: $mobileMenuBG;
+  > .mm-navbar {
+    background: $controlsBG;
+  }
 }
 .mm-panel {
   font-size: $brFontSizeSmaller;
@@ -17,6 +21,25 @@
   font-size: $brFontSizeBase;
 }
 
+.mm-menu {
+  .mm-listview {
+    > li {
+      .mm-next,
+      .mm-next:before,
+      &:after,
+      .mm-arrow:after,
+      .mm-next:after {
+        border-color: $controlsText;
+      }
+    }
+  }
+}
+
+.mm-menu .mm-btn:after,
+.mm-menu .mm-btn:before {
+  border-color: $iconStroke;
+}
+
 /* Needed to override mmenu style */
 html.mm-background .BookReader {
   background-color: $brColorMainBg;
@@ -26,6 +49,9 @@ html.mm-background .BookReader {
   button { -webkit-appearance: initial; }
   .BRaction { display: block; width: 100%; }
   div.share-social button { padding: 0 5px; height: 40px; text-align: left; }
+  a {
+    color: inherit;
+  }
 }
 
 .BRtoolbarMobileTitle {
@@ -34,7 +60,6 @@ html.mm-background .BookReader {
   white-space: nowrap;
   text-align: center;
   font-size: $brFontSizeBase;
-  color: $brColorMobileMenuTitle;
   line-height: 40px;
   display: block;
   margin-right: 10px;
@@ -45,16 +70,12 @@ html.mm-background .BookReader {
 }
 
 .BRmobileHamburger {
-	background: center center no-repeat transparent;
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAATCAYAAABhh3Y4AAAAAXNSR0IArs4c6QAAAFZJREFUSA1jrKmpafv//38xELMx0AgwMjL+AuJeFqAlubS0COR+qPm5TED2FJDNNPIU2FiozybT0o5Rs4dBCDCO5jNKYnE0n1ESeiNI72g+oyiyYfkMAKCpRQemMsj0AAAAAElFTkSuQmCC');
-  /* Should use SVG (below). See https://github.com/internetarchive/bookreader/issues/100 */
-  /*background: url('data:image/svg+xml;utf8,<svg width="15px" height="12px" viewBox="0 0 15 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <g id="hamburger-svg" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="square"> <path d="M0,1 L14,1" id="Line" stroke="#000000"></path> <path d="M2.39808173e-14,6 L14,6" id="Line-Copy" stroke="#000000"></path> <path d="M1.15463195e-14,11 L14,11" id="Line-Copy-2" stroke="#000000"></path> </g></svg>') center / 50% 50% no-repeat;*/
-
-	display: block;
-	width: 40px;
-	height: 40px;
-	position: absolute;
-	top: 0;
+  background: transparent url('icons/hamburger.svg') 50% 50% no-repeat;
+  display: block;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 0;
   left: 10px;
   border: none;
   outline: none;
@@ -77,7 +98,7 @@ html.mm-background .BookReader {
   top: 1px;
 }
 .DrawerSettingsTitle {
-  color: $brColorThemeBlue2;
+  color: $controlsText;
   font-size: $brFontSizeBase;
   font-weight: bold;
   margin-bottom: 10px;
@@ -90,7 +111,7 @@ html.mm-background .BookReader {
 .DrawerLayoutButton {
   border:none;
   background:none;
-  color: $brColorThemeBlue2;
+  color: $controlsText;
   line-height: 18px;
 }
 .DrawerLayoutButton:active {
@@ -122,8 +143,8 @@ html.mm-background .BookReader {
       height: 40px;
       box-sizing: border-box;
       width: 100%;
-
-      @include brLightControls;
+      color: $controlsText;
+      background: $controlsBG;
 
       .BRtoolbarbuttons { display: none; }
       .BRmobileHamburgerWrapper { display: block; }
@@ -143,28 +164,29 @@ html.mm-background .BookReader {
   .BRtoolbar.responsive { display: block; }
 }
 
-li.BRtable-contents-el{
-  line-height: 1em;
+li.BRtable-contents-el {
+  line-height: 150%;
   padding: 10px 10px 10px 20px;
   overflow: hidden;
-  color: gray;
+  color: $controlsText;
 
-  &.chapter-clickable{
+  &.chapter-clickable {
     font-weight: normal;
     color: black;
   }
 
-  &.current-chapter{
+  &.current-chapter {
     background-color: lightblue;
   }
-//resetting mmenu styling for span inside .table-contents-el
-  > span{
-    display: inline; 
-    padding: 0; 
+  //resetting mmenu styling for span inside .table-contents-el
+  > span {
+    display: inline;
+    padding: 0;
     white-space: normal;
   }
 
   .BRTOCElementPage {
     font-size: 0.85em;
+    opacity: .8;
   }
 }
