@@ -7,7 +7,8 @@
    // Make it so right-clicking on "blank" part of svg sends events to the image (for saving)
    pointer-events: none;
    .BRwordElement { pointer-events: all; }
-
+   &.selectingSVG{ pointer-events: auto; }
+   
     // Highlight colors for text selection layer ( these 2 properties do not work if joined)
     .BRwordElement::selection {
         background: hsla(210, 74%, 62%, 0.4);

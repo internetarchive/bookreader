@@ -48,46 +48,67 @@ export class TextSelectionPlugin {
    * @param {JQuery} $container
    */
   interceptCopy($container) {
-    $container.each((i, pageContainer) => {
-      pageContainer.addEventListener('copy', (event) => {
-        const selection = document.getSelection();
-        event.clipboardData.setData('text/plain', selection.toString());
-        event.preventDefault();
-      });
+    $container[0].addEventListener('copy', (event) => {
+      const selection = document.getSelection();
+      event.clipboardData.setData('text/plain', selection.toString());
+      event.preventDefault();
     });
-  }
-
-  /**
-   * Deselect all text after clicking elswhere in the BRcontainer
-   * @param {JQuery} $container
-   */
-  deselectOnClick($container) {
-    $container.one("mousedown", (event) => {
-      if (window.getSelection) window.getSelection().removeAllRanges();
-    })
   }
 
   /**
    * Stops page flipping on short click, allows text selction on longer mousedown
+   * 2 different states
    * @param {JQuery} $container
    */
   stopPageFlip($container) {
-    const $svg = $container.find('svg');
-    let longPressTimer;
+    const $svg = $container.find('.textSelectionSVG');
     this.interceptCopy($container);
+    let mode = "default";
+    defaultMode();
 
-    $svg.on("mousedown", (event) => {
-      if ($(event.target).is(this.svgWordElement)) {
-        event.stopPropagation();
-        longPressTimer = window.setTimeout(() => {
-          $svg.one("mouseup", (event) => {
-            event.stopPropagation();
-            clearTimeout(longPressTimer);
-            this.deselectOnClick($container);
-          });
-        }, 250);
+    function switchMode() {
+      if(mode == "default") {
+        $svg.off("mousedown.defaultMode");
+        $svg.off("mouseup.defaultMode");
+        mode = "selection";
+        textSelectingMode();
       }
-    });
+      else {
+        $svg.off("mousedown.textSelectingMode");
+        $svg.off("mouseup.textSelectingMode");
+        mode = "default";
+        defaultMode();
+      }
+    }
+
+    function defaultMode() {
+      $svg[0].classList.remove("selectingSVG");
+      $svg.on("mousedown.defaultMode", (event) => {
+        if (!$(event.target).is(".BRwordElement")) return;
+        event.stopPropagation();
+        $svg[0].classList.add("selectingSVG");
+        $svg.one("mouseup.defaultMode", (event) => {
+          if (window.getSelection().toString() != "") {
+            event.stopPropagation();
+            switchMode();
+          }
+        })
+      })
+    }
+
+    function textSelectingMode() {
+      $svg.on('mousedown.textSelectingMode', (event) => {
+        if (!$(event.target).is(".BRwordElement")) return;
+        event.stopPropagation();
+      })
+      $svg.on('mouseup.textSelectingMode', (event) => {
+        if(window.getSelection().toString() == "") {
+          switchMode();
+          window.getSelection().removeAllRanges();
+        }
+        else event.stopPropagation();
+      })
+    }
   }
 
   /**
