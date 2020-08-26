@@ -6,7 +6,7 @@ const BookReader = /** @type {typeof import('../BookReader').default} */(window.
 export class TextSelectionPlugin {
 
   constructor(avoidTspans = isFirefox()) {
-    /**@type {PromiseLike<JQuery<HTMLElement>>} */
+    /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
     this.djvuPagesPromise = null;
     // Using text elements insted of tspans for words because Firefox does not allow svg tspan strech.
     // Tspans are necessary on Chrome because they prevent newline character after every word when copying
@@ -36,10 +36,11 @@ export class TextSelectionPlugin {
 
   /**
    * @param {number} index
-   * @returns {Promise<HTMLElement>}
+   * @returns {Promise<HTMLElement|undefined>}
    */
   async getPageText(index) {
-    return (await this.djvuPagesPromise)[index];
+    const XMLpagesArr = await this.djvuPagesPromise;
+    if (XMLpagesArr) return XMLpagesArr[index];
   }
 
   /**
@@ -97,6 +98,7 @@ export class TextSelectionPlugin {
     const $svgLayers = $container.find('.textSelectionSVG');
     if ($svgLayers.length) return;
     const XMLpage = await this.getPageText(pageIndex);
+    if(!XMLpage) return;
     const XMLwidth = $(XMLpage).attr("width");
     const XMLheight = $(XMLpage).attr("height");
 
