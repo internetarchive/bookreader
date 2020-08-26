@@ -23,7 +23,7 @@ export function runRightToLeftTests (br) {
   test('Right to Left - assuring flipping left goes to next page', async t => {
     const { nav } = br;
     await t.click(nav.desktop.mode2Up);
-    await t.click(nav.desktop.goPrevious);
+    await t.click(nav.desktop.goLeft);
     await t.expect(getPageUrl()).match(/page\/n2/);
   });
 }
