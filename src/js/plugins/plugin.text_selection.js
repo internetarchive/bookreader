@@ -56,39 +56,22 @@ export class TextSelectionPlugin {
   }
 
   /**
-   * Switch from deafault mode to selectingText mode clearing the events
-   * @param {JQuery} $svg
-   */
-  switchMode($svg) {
-    if(this.mode == "default") {
-      $svg.off("mousedown.defaultMode");
-      $svg.off("mouseup.defaultMode");
-      this.mode = "selection";
-      this.textSelectingMode($svg);
-    }
-    else {
-      $svg.off("mousedown.textSelectingMode");
-      $svg.off("mouseup.textSelectingMode");
-      this.mode = "default";
-      this.defaultMode($svg);
-    }
-  }
-
-  /**
    * Applies mouse events when in default mode
    * @param {JQuery} $svg
    */
   defaultMode($svg) {
     $svg[0].classList.remove("selectingSVG");
-    $svg.on("mousedown.defaultMode", (event) => {
+    $svg.on("mousedown.textSelectPluginHandler", (event) => {
       if (!$(event.target).is(".BRwordElement")) return;
       event.stopPropagation();
       $svg[0].classList.add("selectingSVG");
-      $svg.one("mouseup.defaultMode", (event) => {
+      $svg.one("mouseup.textSelectPluginHandler", (event) => {
         if (window.getSelection().toString() != "") {
           event.stopPropagation();
-          this.switchMode($svg);
+          $svg.off(".textSelectPluginHandler");
+          this.textSelectingMode($svg);
         }
+        else $svg[0].classList.remove("selectingSVG");
       })
     })
   }
@@ -98,18 +81,17 @@ export class TextSelectionPlugin {
    * @param {JQuery} $svg
    */
   textSelectingMode($svg) {
-    $svg.on('mousedown.textSelectingMode', (event) => {
+    $svg.on('mousedown.textSelectPluginHandler', (event) => {
       if (!$(event.target).is(".BRwordElement")) {
         if(window.getSelection().toString() != "") window.getSelection().removeAllRanges();
       }
       event.stopPropagation();
     })
-    $svg.on('mouseup.textSelectingMode', (event) => {
+    $svg.on('mouseup.textSelectPluginHandler', (event) => {
       event.stopPropagation();
       if(window.getSelection().toString() == "") {
-        window.getSelection().removeAllRanges();
-        this.switchMode($svg);
-      }
+        $svg.off(".textSelectPluginHandler");
+        this.defaultMode($svg);      }
     })
   }
 
