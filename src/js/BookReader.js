@@ -499,7 +499,13 @@ BookReader.prototype.init = function() {
  * @param {array | object} [props]
  */
 BookReader.prototype.trigger = function(name, props = this) {
-  $(document).trigger('BookReader:' + name, props);
+  const eventName = 'BookReader:' + name;
+  $(document).trigger(eventName, props);
+  window.dispatchEvent(new CustomEvent(eventName, {
+    bubbles: true,
+    composed: true,
+    detail: { props },
+  }));
 };
 
 BookReader.prototype.bind = function(name, callback) {

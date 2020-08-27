@@ -7,6 +7,18 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
+describe('BookReader.prototype.trigger', () => {
+  test('fires custom event', () => {
+    const br = new BookReader();
+    global.br = br;
+    global.dispatchEvent = jest.fn();
+
+    const props = {bar: 1};
+    br.trigger('foo', props);
+    expect(global.dispatchEvent.mock.calls.length).toBe(1);
+  });
+});
+
 describe('`BookReader.prototype.prev`', () => {
   const br = new BookReader();
   global.br = br;
