@@ -57,41 +57,41 @@ export class TextSelectionPlugin {
 
   /**
    * Applies mouse events when in default mode
-   * @param {JQuery} $svg
+   * @param {SVGElement} svg
    */
-  defaultMode($svg) {
-    $svg[0].classList.remove("selectingSVG");
-    $svg.on("mousedown.textSelectPluginHandler", (event) => {
+  defaultMode(svg) {
+    svg.classList.remove("selectingSVG");
+    $(svg).on("mousedown.textSelectPluginHandler", (event) => {
       if (!$(event.target).is(".BRwordElement")) return;
       event.stopPropagation();
-      $svg[0].classList.add("selectingSVG");
-      $svg.one("mouseup.textSelectPluginHandler", (event) => {
+      svg.classList.add("selectingSVG");
+      $(svg).one("mouseup.textSelectPluginHandler", (event) => {
         if (window.getSelection().toString() != "") {
           event.stopPropagation();
-          $svg.off(".textSelectPluginHandler");
-          this.textSelectingMode($svg);
+          $(svg).off(".textSelectPluginHandler");
+          this.textSelectingMode(svg);
         }
-        else $svg[0].classList.remove("selectingSVG");
+        else svg.classList.remove("selectingSVG");
       })
     })
   }
 
   /**
    * Applies mouse events when in textSelecting mode
-   * @param {JQuery} $svg
+   * @param {SVGElement} svg
    */
-  textSelectingMode($svg) {
-    $svg.on('mousedown.textSelectPluginHandler', (event) => {
+  textSelectingMode(svg) {
+    $(svg).on('mousedown.textSelectPluginHandler', (event) => {
       if (!$(event.target).is(".BRwordElement")) {
         if(window.getSelection().toString() != "") window.getSelection().removeAllRanges();
       }
       event.stopPropagation();
     })
-    $svg.on('mouseup.textSelectPluginHandler', (event) => {
+    $(svg).on('mouseup.textSelectPluginHandler', (event) => {
       event.stopPropagation();
       if(window.getSelection().toString() == "") {
-        $svg.off(".textSelectPluginHandler");
-        this.defaultMode($svg);      }
+        $(svg).off(".textSelectPluginHandler");
+        this.defaultMode(svg);      }
     })
   }
 
@@ -100,11 +100,11 @@ export class TextSelectionPlugin {
    * @param {JQuery} $container
    */
   stopPageFlip($container) {
-    const $svg = $container.find('.textSelectionSVG');
+    /** @type {JQuery<SVGElement>} */
+    const $svg = $container.find('svg.textSelectionSVG');
     if(!$svg.length) return;
+    $svg.each((i, s) => this.defaultMode(s))
     this.interceptCopy($container);
-    this.mode = "default";
-    this.defaultMode($svg);
   }
 
   /**
