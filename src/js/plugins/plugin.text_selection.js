@@ -56,59 +56,73 @@ export class TextSelectionPlugin {
   }
 
   /**
-   * Stops page flipping on short click, allows text selction on longer mousedown
-   * 2 different states
+   * Switch from deafault mode to selectingText mode clearing the events
+   * @param {JQuery} $svg
+   */
+  switchMode($svg) {
+    if(this.mode == "default") {
+      $svg.off("mousedown.defaultMode");
+      $svg.off("mouseup.defaultMode");
+      this.mode = "selection";
+      this.textSelectingMode($svg);
+    }
+    else {
+      $svg.off("mousedown.textSelectingMode");
+      $svg.off("mouseup.textSelectingMode");
+      this.mode = "default";
+      this.defaultMode($svg);
+    }
+  }
+
+  /**
+   * Applies mouse events when in default mode
+   * @param {JQuery} $svg
+   */
+  defaultMode($svg) {
+    $svg[0].classList.remove("selectingSVG");
+    $svg.on("mousedown.defaultMode", (event) => {
+      if (!$(event.target).is(".BRwordElement")) return;
+      event.stopPropagation();
+      $svg[0].classList.add("selectingSVG");
+      $svg.one("mouseup.defaultMode", (event) => {
+        if (window.getSelection().toString() != "") {
+          event.stopPropagation();
+          this.switchMode($svg);
+        }
+      })
+    })
+  }
+
+  /**
+   * Applies mouse events when in textSelecting mode
+   * @param {JQuery} $svg
+   */
+  textSelectingMode($svg) {
+    $svg.on('mousedown.textSelectingMode', (event) => {
+      if (!$(event.target).is(".BRwordElement")) {
+        if(window.getSelection().toString() != "") window.getSelection().removeAllRanges();
+      }
+      event.stopPropagation();
+    })
+    $svg.on('mouseup.textSelectingMode', (event) => {
+      event.stopPropagation();
+      if(window.getSelection().toString() == "") {
+        window.getSelection().removeAllRanges();
+        this.switchMode($svg);
+      }
+    })
+  }
+
+  /**
+   * Initializes text selection modes if there is an svg on the page
    * @param {JQuery} $container
    */
   stopPageFlip($container) {
     const $svg = $container.find('.textSelectionSVG');
+    if(!$svg.length) return;
     this.interceptCopy($container);
-    let mode = "default";
-    defaultMode();
-
-    function switchMode() {
-      if(mode == "default") {
-        $svg.off("mousedown.defaultMode");
-        $svg.off("mouseup.defaultMode");
-        mode = "selection";
-        textSelectingMode();
-      }
-      else {
-        $svg.off("mousedown.textSelectingMode");
-        $svg.off("mouseup.textSelectingMode");
-        mode = "default";
-        defaultMode();
-      }
-    }
-
-    function defaultMode() {
-      $svg[0].classList.remove("selectingSVG");
-      $svg.on("mousedown.defaultMode", (event) => {
-        if (!$(event.target).is(".BRwordElement")) return;
-        event.stopPropagation();
-        $svg[0].classList.add("selectingSVG");
-        $svg.one("mouseup.defaultMode", (event) => {
-          if (window.getSelection().toString() != "") {
-            event.stopPropagation();
-            switchMode();
-          }
-        })
-      })
-    }
-
-    function textSelectingMode() {
-      $svg.on('mousedown.textSelectingMode', (event) => {
-        if (!$(event.target).is(".BRwordElement")) return;
-        event.stopPropagation();
-      })
-      $svg.on('mouseup.textSelectingMode', (event) => {
-        if(window.getSelection().toString() == "") {
-          switchMode();
-          window.getSelection().removeAllRanges();
-        }
-        else event.stopPropagation();
-      })
-    }
+    this.mode = "default";
+    this.defaultMode($svg);
   }
 
   /**
