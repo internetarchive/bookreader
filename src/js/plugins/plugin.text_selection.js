@@ -200,12 +200,12 @@ export class BookreaderWithTextSelection extends BookReader {
   }
 
   /**
-   * @param {PageModel} page
+   * @param {number} index
    */
-  _createPageContainer(page, styles = {}) {
-    const $container = super._createPageContainer(page, styles);
+  _createPageContainer(index, styles = {}) {
+    const $container = super._createPageContainer(index, styles);
     if(this.enableTextSelection){
-      this.textSelectionPlugin.createTextLayer(page.index, $container);
+      this.textSelectionPlugin.createTextLayer(index, $container);
     }
     return $container;
   }

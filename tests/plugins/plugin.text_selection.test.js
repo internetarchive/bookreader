@@ -7,7 +7,6 @@ import '../../BookReader/jquery.colorbox-min.js';
 
 import '../../src/js/BookReader.js';
 import { BookreaderWithTextSelection, TextSelectionPlugin } from '../../src/js/plugins/plugin.text_selection.js';
-import { PageModel, BookModel } from '../../src/js/BookReader/BookModel.js';
 
 /** @type {BookReader} */
 
@@ -61,10 +60,9 @@ describe("Generic tests", () => {
   });
 
 
+
   test("_createPageContainer overriden function still creates a BRpagecontainer element", () => {
-    const book = new BookModel(br);
-    const page = new PageModel(book, 1);
-    const $container = br._createPageContainer(page);
+    const $container = br._createPageContainer(1, {});
     expect($container.hasClass("BRpagecontainer")).toBe(true);
   });
 
