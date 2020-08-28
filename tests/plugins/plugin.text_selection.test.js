@@ -20,7 +20,7 @@ const FAKE_XML_MULT_WORDS = `<OBJECT data="file://localhost//tmp/derive/goodytwo
 <WORD coords="1400,2768,1500,2640">test2</WORD>
 <WORD coords="1600,2768,1700,2640">test3</WORD></LINE></PARAGRAPH></OBJECT>`;
 const FAKE_XML_5COORDS = `<OBJECT data="file://localhost//tmp/derive/goodytwoshoes00newyiala//goodytwoshoes00newyiala.djvu" height="3192" type="image/x.djvu" usemap="goodytwoshoes00newyiala_0001.djvu" width="2454">
-<PARAGRAPH><LINE><WORD coords="1216,2768,1256,2640,2690">test</WORD></LINE></PARAGRAPH></OBJECT>`;s
+<PARAGRAPH><LINE><WORD coords="1216,2768,1256,2640,2690">test</WORD></LINE></PARAGRAPH></OBJECT>`;
 
 describe("Generic tests", () => {
 
