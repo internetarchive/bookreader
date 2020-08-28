@@ -135,9 +135,11 @@ export class TextSelectionPlugin {
 
     $(XMLpage).find("PARAGRAPH").each((i, paragraph) => {
       // Adding text element for each paragraph in the page
+      const words = $(paragraph).find("WORD");
+      if (!words.length) return;
       const paragSvg = document.createElementNS("http://www.w3.org/2000/svg", this.svgParagraphElement);
       paragSvg.setAttribute("class", "BRparagElement");
-      const words = $(paragraph).find("WORD");
+
       const wordHeightArr = [];
 
       for(let i = 0; i < words.length; i++) {
