@@ -8,6 +8,7 @@ import '../../BookReader/jquery.colorbox-min.js';
 import '../../src/js/BookReader.js';
 import { BookreaderWithTextSelection, TextSelectionPlugin } from '../../src/js/plugins/plugin.text_selection.js';
 
+
 /** @type {BookReader} */
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
@@ -19,8 +20,7 @@ const FAKE_XML_MULT_WORDS = `<OBJECT data="file://localhost//tmp/derive/goodytwo
 <WORD coords="1400,2768,1500,2640">test2</WORD>
 <WORD coords="1600,2768,1700,2640">test3</WORD></LINE></PARAGRAPH></OBJECT>`;
 const FAKE_XML_5COORDS = `<OBJECT data="file://localhost//tmp/derive/goodytwoshoes00newyiala//goodytwoshoes00newyiala.djvu" height="3192" type="image/x.djvu" usemap="goodytwoshoes00newyiala_0001.djvu" width="2454">
-<PARAGRAPH><LINE><WORD coords="1216,2768,1256,2640,2690">test</WORD></LINE></PARAGRAPH></OBJECT>`;
-
+<PARAGRAPH><LINE><WORD coords="1216,2768,1256,2640,2690">test</WORD></LINE></PARAGRAPH></OBJECT>`;s
 
 describe("Generic tests", () => {
 
@@ -58,8 +58,6 @@ describe("Generic tests", () => {
       }
     });
   });
-
-
 
   test("_createPageContainer overriden function still creates a BRpagecontainer element", () => {
     const $container = br._createPageContainer(1, {});
@@ -107,19 +105,7 @@ describe("Generic tests", () => {
       }, 2000);
     }, LONG_PRESS_DURATION);
   });
-
-  test("calling stopPageFlip allows quick click to flip the page ", () => {
-    const $container = br.refs.$brContainer;
-    br.textSelectionPlugin.stopPageFlip($container);
-    const currIndex = br.currentIndex();
-    $container.find("BRwordElement").click();
-    // Waits for flipping animation
-    setTimeout(() => {
-      expect(br.currentIndex()).not.toBe(currIndex);
-    }, 2000);
-  }, LONG_PRESS_DURATION);
-});
-
+})
 
 describe("textSelectionPlugin cosntructor", () => {
   test("textSelectionPlugin constructor with firefox browser", () => {
