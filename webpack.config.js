@@ -20,6 +20,7 @@ module.exports = {
     'plugins/plugin.search.js': './src/js/plugins/search/plugin.search.js',
     'plugins/plugin.themes.js': './src/js/plugins/plugin.themes.js',
     'plugins/plugin.tts.js': './src/js/plugins/tts/plugin.tts.js',
+    'plugins/plugin.text_selection.js': './src/js/plugins/plugin.text_selection.js',
     'plugins/plugin.url.js': './src/js/plugins/plugin.url.js',
     'plugins/plugin.vendor-fullscreen.js': './src/js/plugins/plugin.vendor-fullscreen.js',
   },

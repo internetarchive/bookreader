@@ -8,6 +8,7 @@ BookReader/plugins/plugin.archive_analytics.js binary
 BookReader/plugins/plugin.autoplay.js binary
 BookReader/plugins/plugin.chapters.js binary
 BookReader/plugins/plugin.iframe.js binary
+BookReader/plugins/plugin.text_selection.js binary
 BookReader/plugins/plugin.menu_toggle.js binary
 BookReader/plugins/plugin.mobile_nav.js binary
 BookReader/plugins/plugin.print.js binary

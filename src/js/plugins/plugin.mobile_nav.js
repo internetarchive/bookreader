@@ -54,7 +54,6 @@ BookReader.prototype.setup = (function(super_) {
 BookReader.prototype.initToolbar = (function (super_) {
   return function (mode, ui) {
     let $mmenuEl;
-
     if (this.enableMobileNav) {
       const $drawerEl = this.buildMobileDrawerElement();
       this.refs.$br.append($drawerEl);

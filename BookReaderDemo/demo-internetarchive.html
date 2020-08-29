@@ -15,6 +15,7 @@
     <script src="../BookReader/jquery.colorbox-min.js"></script>
     <script src="../BookReader/soundmanager/script/soundmanager2-jsmin.js"></script>
 
+
     <!-- mmenu for mobile nav -->
     <script src="../BookReader/mmenu/dist/js/jquery.mmenu.min.js"></script>
     <script src="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js" ></script>
@@ -34,6 +35,8 @@
     <script src="../BookReader/plugins/plugin.autoplay.js"></script>
     <script src="../BookReader/plugins/plugin.resume.js"></script>
     <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
+    <script src="../BookReader/plugins/plugin.text_selection.js"></script>
+
     
     <link rel="stylesheet" href="BookReaderDemo.css"/>
 </head>
@@ -51,6 +54,7 @@
 <script>
 // Override options coming from IA
 BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
+BookReader.optionOverrides.enableTextSelection = true;
 
 // Temporarily fix build by mocking SearchInsideAccess; long term fix likely needs to be
 // on petabox side

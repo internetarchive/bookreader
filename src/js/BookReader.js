@@ -88,6 +88,8 @@ BookReader.prototype.setup = function(options) {
   /** Overriden by plugin.search.js */
   this.enableSearch = false;
 
+  this.enableTextSelection = options.enableTextSelection;
+
   /**
    * Used to supress fragment change for init with canonical URLs
    * @var {boolean}
@@ -653,7 +655,7 @@ BookReader.prototype.drawLeafs = function() {
 };
 
 /**
- * @private
+ * @protected
  */
 BookReader.prototype._createPageContainer = function(index, styles) {
   const css = Object.assign({ position: 'absolute' }, styles);
@@ -1066,6 +1068,8 @@ BookReader.prototype.zoom = function(direction) {
     this.zoomThumb(direction);
     break
   }
+
+  if(this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
   return;
 };
 
@@ -1552,6 +1556,8 @@ BookReader.prototype.switchMode = function(
   }
   var eventName = mode + 'PageViewSelected';
   this.trigger(BookReader.eventNames[eventName]);
+
+  if(this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -1606,6 +1612,8 @@ BookReader.prototype.enterFullscreen = function() {
     if (e.keyCode === 27) this.toggleFullscreen();
   }.bind(this);
   $(document).keyup(this._fullscreenCloseHandler);
+
+  if(this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.exitFullScreen = function() {
@@ -1623,6 +1631,8 @@ BookReader.prototype.exitFullScreen = function() {
 
   this.resize();
   this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
+
+  if(this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
 };
 
 /**

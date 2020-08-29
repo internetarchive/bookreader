@@ -29,7 +29,7 @@ export class Mode2Up {
    * @param {function(HTMLElement, { data: T }): void} handler
    */
   setClickHandler(element, data, handler) {
-    $(element).unbind('mousedown').bind('mousedown', data, function(e) {
+    $(element).unbind('mouseup').bind('mouseup', data, function(e) {
       handler(this, e);
     });
   }
@@ -535,6 +535,7 @@ export class Mode2Up {
    * @param {number} newIndexR
    */
   flipLeftToRight(newIndexL, newIndexR) {
+    this.br.refs.$brContainer.addClass("BRpageFlipping");
     const leftLeaf = this.br.twoPage.currentIndexL;
 
     const oldLeafEdgeWidthL = this.br.leafEdgeWidth(this.br.twoPage.currentIndexL);
@@ -664,6 +665,10 @@ export class Mode2Up {
           this.br.animationFinishedCallback();
           this.br.animationFinishedCallback = null;
         }
+
+        this.br.refs.$brContainer.removeClass("BRpageFlipping");
+
+        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
       });
     });
   }
@@ -715,6 +720,8 @@ export class Mode2Up {
    * @param {number} newIndexR
    */
   flipRightToLeft(newIndexL, newIndexR) {
+    this.br.refs.$brContainer.addClass("BRpageFlipping");
+
     const oldLeafEdgeWidthL = this.br.leafEdgeWidth(this.br.twoPage.currentIndexL);
     const oldLeafEdgeWidthR = this.br.twoPage.edgeWidth - oldLeafEdgeWidthL;
     const newLeafEdgeWidthL = this.br.leafEdgeWidth(newIndexL);
@@ -794,6 +801,10 @@ export class Mode2Up {
           this.br.animationFinishedCallback();
           this.br.animationFinishedCallback = null;
         }
+
+        this.br.refs.$brContainer.removeClass("BRpageFlipping");
+
+        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
       });
     });
   }
@@ -808,17 +819,18 @@ export class Mode2Up {
         // right click
         return !e.data.self.br.protected;
       }
+      e.data.self.br.trigger(EVENTS.stop);
+      e.data.self.br[e.data.direction === 'L' ? 'left' : 'right']();
 
+      // Removed event handler for mouse movement, seems not to be needed
+      /*
       // Changes per WEBDEV-2737
-      // BookReader: zoomed-in 2 page view, clicking page should change the page
+      BookReader: zoomed-in 2 page view, clicking page should change the page
       $(element)
         .mousemove(function() {
           e.preventDefault();
         })
-        .mouseup(function() {
-          e.data.self.br.trigger(EVENTS.stop);
-          e.data.self.br[e.data.direction === 'L' ? 'left' : 'right']();
-        });
+      */
     }
 
     this.setClickHandler(
