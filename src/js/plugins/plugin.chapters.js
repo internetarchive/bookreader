@@ -179,7 +179,7 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
  */
 BookReader.prototype.getOpenLibraryRecord = function () {
   // Try looking up by ocaid first, then by source_record
-  const baseURL = `${this.olHost}//query.json?type=/type/edition&*=`;
+  const baseURL = `${this.olHost}/query.json?type=/type/edition&*=`;
   const fetchUrlByBookId = `${baseURL}&ocaid=${this.bookId}`;
 
   /*
