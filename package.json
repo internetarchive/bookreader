@@ -1,6 +1,6 @@
 {
   "name": "@internetarchive/bookreader",
-  "version": "4.15.0",
+  "version": "4.15.1-alpha.2b5e76c",
   "description": "The Internet Archive BookReader.",
   "repository": {
     "type": "git",
