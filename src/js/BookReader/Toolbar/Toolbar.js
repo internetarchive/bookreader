@@ -288,7 +288,7 @@ export class Toolbar {
       $rightCol.append($(`
         <div class="BRinfoValueWrapper">
           <div class="BRinfoLabel">${label}</div>
-          <div class="BRinfoValue ${extraValueClass}">${value}</div>
+          <div class="BRinfoValue ${extraValueClass}">${escapeHTML(value)}</div>
         </div>`));
     }
 
@@ -298,7 +298,7 @@ export class Toolbar {
         <div class="BRinfoValueWrapper">
           <div class="BRinfoMoreInfoWrapper">
             <a class="BRinfoMoreInfo" href="${br.bookUrl}">
-              ${moreInfoText}
+              ${escapeHTML(moreInfoText)}
             </a>
           </div>
         </div>`));
