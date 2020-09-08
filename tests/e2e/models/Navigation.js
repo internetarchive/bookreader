@@ -18,17 +18,28 @@ export default class Navigation {
  */
 class DesktopNav {
   constructor(bottomToolbar, topToolbar) {
+    // flipping
     this.goLeft = bottomToolbar.find('.BRicon.book_left');
     this.goRight = bottomToolbar.find('.BRicon.book_right');
+    this.goNext = bottomToolbar.find('.BRicon.book_flip_next');
+    this.goPrev = bottomToolbar.find('.BRicon.book_flip_prev');
+
+    // mode switching
     this.mode1Up = bottomToolbar.find('.BRicon.onepg');
     this.mode2Up = bottomToolbar.find('.BRicon.twopg');
     this.modeThumb = bottomToolbar.find('.BRicon.thumb');
     this.viewmode = bottomToolbar.find('.BRicon.viewmode');
+
+    // zoom
     this.zoomIn = bottomToolbar.find('.BRicon.zoom_in');
     this.zoomOut = bottomToolbar.find('.BRicon.zoom_out');
-    this.fullScreen = bottomToolbar.find('.BRicon.full');
+
+    // search
     this.searchBox = topToolbar.find('.BRbooksearch.desktop');
     this.searchPin = bottomToolbar.find('.BRsearch');
+
+    // other
+    this.fullScreen = bottomToolbar.find('.BRicon.full');
     this.sliderRange = bottomToolbar.find('.ui-slider-range');
   }
 }
