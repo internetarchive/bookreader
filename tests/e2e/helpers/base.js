@@ -8,7 +8,7 @@ const getUrl = ClientFunction(() => window.location.href);
 /**
  * Check URL page paramter in # and path
  */
-const expectPage = ClientFunction(() => {
+const isPageInUrl = ClientFunction(() => {
   const hash = document.location.hash;
   if (hash) {
     return hash.indexOf('#page/') > -1;
@@ -22,7 +22,7 @@ const expectPage = ClientFunction(() => {
  *
  * @param mode '1up', '2up', 'thumb'
  */
-const expectMode = ClientFunction((mode) => {
+const isModeInUrl = ClientFunction((mode) => {
   const hash = document.location.hash;
   if (hash) {
     return hash.indexOf('/mode/' + mode) > -1;
@@ -87,16 +87,16 @@ export function runBaseTests (br) {
     const initialUrl = await getUrl();
 
     // Set Cookie by page navigation, wait for cookie
-    await t.click(nav.desktop.goNext)
-      .wait(PAGE_FLIP_WAIT_TIME);
+    await t.click(nav.desktop.goNext);
+    await t.wait(PAGE_FLIP_WAIT_TIME);
 
     // reload canonical URL, wait for URL change
-    await t.navigateTo(initialUrl)
-      .wait(PAGE_FLIP_WAIT_TIME);
+    await t.navigateTo(initialUrl);
+    await t.wait(PAGE_FLIP_WAIT_TIME);
 
     if (await usesResume()) {
-      await t.expect(expectPage()).ok(initialUrl)
-        .expect(expectMode('2up')).ok();
+      await t.expect(isPageInUrl()).eql(true, initialUrl);
+      await t.expect(isModeInUrl('2up')).eql(true, initialUrl)
     } else {
       // No plugin, no br-resume cookie
       await t.expect(getUrl()).notContains('#page/');
@@ -110,7 +110,7 @@ export function runBaseTests (br) {
 
     // Go to next page, so we can go previous if at front cover
     await t.click(nav.desktop.goNext);
-    await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
+    await t.wait(PAGE_FLIP_WAIT_TIME);
 
     const onLoadBrState = BRcontainer.child(0);
     const initialImages = onLoadBrState.find('img');
@@ -118,7 +118,7 @@ export function runBaseTests (br) {
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
     await t.click(nav.desktop.goPrev);
-    await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
+    await t.wait(PAGE_FLIP_WAIT_TIME);
 
     const nextBrState = await Selector('.BRcontainer').child(0);
     const prevImages = nextBrState.find('img');
@@ -147,7 +147,7 @@ export function runBaseTests (br) {
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
     await t.click(nav.desktop.goNext);
-    await t.wait(PAGE_FLIP_WAIT_TIME); // wait for animation and page flip to happen
+    await t.wait(PAGE_FLIP_WAIT_TIME);
 
     const nextBrState = await Selector('.BRcontainer').child(0);
     const nextImages = nextBrState.find('img');
@@ -170,13 +170,13 @@ export function runBaseTests (br) {
   test('Clicking `page flip buttons` updates location', async t => {
     const { nav } = br;
     // Page navigation creates params
-    await t.click(nav.desktop.goNext)
-      .expect(expectPage()).ok()
-      .expect(expectMode('2up')).ok();
+    await t.click(nav.desktop.goNext);
+    await t.expect(isPageInUrl()).eql(true);
+    await t.expect(isModeInUrl('2up')).eql(true);
 
-    await t.click(nav.desktop.goPrev)
-      .expect(expectPage()).ok()
-      .expect(expectMode('2up')).ok();
+    await t.click(nav.desktop.goPrev);
+    await t.expect(isPageInUrl()).eql(true);
+    await t.expect(isModeInUrl('2up')).eql(true);
   });
 
   test('Clicking `2 page view` brings up 2 pages at a time', async t => {
