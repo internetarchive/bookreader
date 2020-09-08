@@ -15,5 +15,6 @@ script:
   - npm run lint
   - npm run test:coverage
   # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )
-  - BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe "chrome:headless,firefox:headless" --concurrency 2
+  # Quarantine mode (sigh) to catch unstable tests (see https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode )
+  - BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe "chrome:headless,firefox:headless" --concurrency 2 --quarantine-mode
   - npm run codecov
