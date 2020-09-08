@@ -1,5 +1,5 @@
 {
   "appCommand": "npm run serve",
-  "browsers": ["chrome", "firefox"],
+  "browsers": ["chrome:headless", "firefox:headless"],
   "src": ["tests/e2e/**/*test.js"]
 }
