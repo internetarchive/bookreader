@@ -44,7 +44,7 @@
     "regenerator-runtime": "0.13.7",
     "sass": "1.26.10",
     "sinon": "9.0.3",
-    "testcafe": "1.8.6",
+    "testcafe": "1.9.2",
     "webpack": "4.44.1",
     "webpack-cli": "3.3.9"
   },
