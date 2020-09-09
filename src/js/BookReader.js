@@ -2681,6 +2681,16 @@ BookReader.prototype.updateFromParams = function(params) {
     }
   }
 
+
+  // process /search
+  // @deprecated for urlMode 'history'
+  // Continues to work for urlMode 'hash'
+  if (this.enableSearch && 'undefined' != typeof(params.search)) {
+    if (this.searchTerm != params.search) {
+      this.$('.BRsearchInput').val(params.search);
+    }
+  }
+
   // $$$ process /region
   // $$$ process /highlight
 
