@@ -38,7 +38,7 @@
     "eslint-plugin-testcafe": "^0.2.1",
     "http-server": "0.12.3",
     "iso-language-codes": "1.0.7",
-    "jest": "26.2.2",
+    "jest": "26.4.2",
     "live-server": "1.2.1",
     "node-fetch": "2.6.0",
     "regenerator-runtime": "0.13.7",
