@@ -110,7 +110,7 @@ class SearchView {
         <fieldset>
           <input name="all_files" id="all_files" type="checkbox" />
           <label class="checkbox" for="all_files">Search all files</label>
-          <input type="search" name="query" />
+          <input type="search" name="query" placeholder="Enter a search term" />
         </fieldset>
       </form>
       <div data-id="searchPending" id="search_pending">
