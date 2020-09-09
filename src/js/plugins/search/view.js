@@ -333,6 +333,7 @@ class SearchView {
   }
 
   handleSearchStarted() {
+    this.removeResultPins();
     this.toggleSearchPending(true);
     this.setQuery(this.br.searchTerm);
   }
