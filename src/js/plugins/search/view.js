@@ -296,6 +296,14 @@ class SearchView {
     setTimeout(this.br.removeProgressPopup.bind(this.br), timeoutMS);
   }
 
+  openMobileMenu() {
+    this.br.refs.$mmenu.data('mmenu').open();
+  }
+
+  closeMobileMenu() {
+    this.br.refs.$mmenu.data('mmenu').close();
+  }
+
   /**
    * @param {Event} e
    */
@@ -320,7 +328,6 @@ class SearchView {
     this.renderPins(results.matches);
     this.updateResultsCount(results.matches.length);
     this.toggleSearchPending(false);
-    this.toggleSearchTray(true);
   }
 
   /**
@@ -375,6 +382,7 @@ class SearchView {
     $(this.dom.results).on('click', 'li', (e) => {
       this.br._searchPluginGoToResult(+e.currentTarget.dataset.pageIndex);
       this.br.updateSearchHilites();
+      this.closeMobileMenu();
     });
   }
 }
