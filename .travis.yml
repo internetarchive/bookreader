@@ -1,5 +1,10 @@
 dist: bionic
 
+# Only run travis when pushing to master branch (and PRs)
+branches:
+  only:
+    - master
+
 addons:
   firefox: latest
   chrome: stable
