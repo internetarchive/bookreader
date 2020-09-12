@@ -2686,7 +2686,7 @@ BookReader.prototype.updateFromParams = function(params) {
   // @deprecated for urlMode 'history'
   // Continues to work for urlMode 'hash'
   if (this.enableSearch && 'undefined' != typeof(params.search)) {
-    if (this.searchTerm != params.search) {
+    if (this.searchTerm !== params.search) {
       this.$('.BRsearchInput').val(params.search);
     }
   }
