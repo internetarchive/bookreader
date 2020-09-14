@@ -503,6 +503,8 @@ BookReader.prototype.init = function() {
 BookReader.prototype.trigger = function(name, props = this) {
   const eventName = 'BookReader:' + name;
   $(document).trigger(eventName, props);
+
+  utils.polyfillCustomEvent(window);
   window.dispatchEvent(new CustomEvent(eventName, {
     bubbles: true,
     composed: true,

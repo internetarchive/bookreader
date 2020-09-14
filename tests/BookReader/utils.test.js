@@ -6,6 +6,8 @@ import {
   decodeURIComponentPlus,
   encodeURIComponentPlus,
   escapeHTML,
+  polyfillCustomEvent,
+  PolyfilledCustomEvent,
 } from '../../src/js/BookReader/utils.js';
 
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
@@ -60,4 +62,33 @@ test('testing debounce', () => {
   // wait 1000ms
   clock.tick(1000);
   expect(func).toHaveBeenCalledTimes(1);  // func called
+});
+
+
+describe('polyfillCustomEvent', () => {
+  test('Overrides when missing', () => {
+    const win = {};
+    polyfillCustomEvent(win);
+    expect(win).toHaveProperty('CustomEvent');
+  });
+
+  test('Overrides when not a function', () => {
+    const win = { CustomEvent: {} };
+    polyfillCustomEvent(win);
+    expect(typeof win.CustomEvent).toBe('function');
+  });
+});
+
+describe('PolyfilledCustomEvent', () => {
+  test('Can be called as a constructor', () => {
+    new PolyfilledCustomEvent('foo');
+  });
+
+  test('Calls deprecated browser methods', () => {
+    const createEventSpy = sinon.spy(document, 'createEvent');
+    const initCustomEventSpy = sinon.spy(CustomEvent.prototype, 'initCustomEvent');
+    new PolyfilledCustomEvent('foo');
+    expect(createEventSpy.callCount).toBe(1);
+    expect(initCustomEventSpy.callCount).toBe(1);
+  });
 });
