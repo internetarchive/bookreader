@@ -151,7 +151,7 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
       const toolbar = `
         <span class="BRmobileHamburgerWrapper">
           <button class="BRmobileHamburger"></button>
-          <span class="BRtoolbarMobileTitle" title="${escapedTitle}">${this.bookTitle}</span>
+          <span class="BRtoolbarMobileTitle" title="${escapedTitle}">${escapedTitle}</span>
         </span>
       `;
       $el
