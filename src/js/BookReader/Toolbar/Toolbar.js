@@ -285,11 +285,11 @@ export class Toolbar {
 
     // A loop to build fields
     for (const {extraValueClass = '', label, value} of br.metadata) {
-      const newValue = label === 'Title' ? escapeHTML(value) : value;
+      const escapedValue = label === 'Title' ? escapeHTML(value) : value;
       $rightCol.append($(`
         <div class="BRinfoValueWrapper">
           <div class="BRinfoLabel">${label}</div>
-          <div class="BRinfoValue ${extraValueClass}">${newValue}</div>
+          <div class="BRinfoValue ${extraValueClass}">${escapedValue}</div>
         </div>`));
     }
 
