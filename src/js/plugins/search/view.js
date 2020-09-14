@@ -110,7 +110,7 @@ class SearchView {
         <fieldset>
           <input name="all_files" id="all_files" type="checkbox" />
           <label class="checkbox" for="all_files">Search all files</label>
-          <input type="search" name="query" />
+          <input type="search" name="query" placeholder="Enter a search term" />
         </fieldset>
       </form>
       <div data-id="searchPending" id="search_pending">
@@ -296,6 +296,14 @@ class SearchView {
     setTimeout(this.br.removeProgressPopup.bind(this.br), timeoutMS);
   }
 
+  openMobileMenu() {
+    this.br.refs.$mmenu.data('mmenu').open();
+  }
+
+  closeMobileMenu() {
+    this.br.refs.$mmenu.data('mmenu').close();
+  }
+
   /**
    * @param {Event} e
    */
@@ -320,7 +328,6 @@ class SearchView {
     this.renderPins(results.matches);
     this.updateResultsCount(results.matches.length);
     this.toggleSearchPending(false);
-    this.toggleSearchTray(true);
   }
 
   /**
@@ -333,6 +340,8 @@ class SearchView {
   }
 
   handleSearchStarted() {
+    this.br.removeSearchHilites();
+    this.removeResultPins();
     this.toggleSearchPending(true);
     this.setQuery(this.br.searchTerm);
   }
@@ -373,6 +382,7 @@ class SearchView {
     $(this.dom.results).on('click', 'li', (e) => {
       this.br._searchPluginGoToResult(+e.currentTarget.dataset.pageIndex);
       this.br.updateSearchHilites();
+      this.closeMobileMenu();
     });
   }
 }

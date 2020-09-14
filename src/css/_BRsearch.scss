@@ -299,9 +299,11 @@
     }
 
     li {
-      display: grid;
-      grid-template-columns: 30px 1fr;
-      grid-gap: 0 5px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid $white;
+      &:after {
+        display: none;
+      }
     }
 
     li img {
@@ -310,14 +312,13 @@
     }
 
     li h4 {
-      grid-column: 2 / 3;
       padding: 0 0 20px 0;
       margin: 0;
+      font-size: 14px;
       font-weight: normal;
     }
 
     li p {
-      grid-column: 2 / 3;
       padding: 0 0 15px 0;
       margin: 0;
       font-size: 12px;
