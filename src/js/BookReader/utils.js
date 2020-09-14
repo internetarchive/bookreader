@@ -137,3 +137,25 @@ export function throttle(fn, threshold, delay) {
     }
   };
 }
+
+/**
+ * FIXME we need a better way to do this :/ This is not automatically poly-filled by
+ * core-js https://github.com/zloirock/core-js/issues/354
+ * @param {Window} window
+ */
+export function polyfillCustomEvent(window) {
+  if (typeof window.CustomEvent === "function") return false;
+  window.CustomEvent = PolyfilledCustomEvent;
+}
+
+/**
+ * https://caniuse.com/customevent has issues on older browsers where it can't be
+ * called as a constructor, so we have to use older methods.
+ * @param {String} eventName
+ * @return {CustomEvent}
+ */
+export function PolyfilledCustomEvent(eventName, {bubbles = false, cancelable = false, detail = null} = {}) {
+  const event = document.createEvent('CustomEvent');
+  event.initCustomEvent(eventName, bubbles, cancelable, detail);
+  return event;
+}
