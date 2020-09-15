@@ -56,6 +56,15 @@ export function isFirefox(userAgent = navigator.userAgent) {
 }
 
 /**
+ * Checks whether the current browser is safari
+ * @param {string} [userAgent]
+ * @return {boolean}
+ */
+export function isSafari(userAgent = navigator.userAgent) {
+  return /safari/i.test(userAgent);
+}
+
+/**
  * Checks whether the current browser is on android
  * @param {string} [userAgent]
  * @return {boolean}
