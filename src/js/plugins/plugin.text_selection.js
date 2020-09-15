@@ -1,5 +1,5 @@
 //@ts-check
-import { isFirefox, isSafari } from './tts/utils';
+import { isFirefox, isSafari } from '../../util/browserSniffing.js';
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
