@@ -21,9 +21,10 @@ export function isFirefox(userAgent = navigator.userAgent) {
 
 /**
  * Checks whether the current browser is safari
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent#Browser_Name
  * @param {string} [userAgent]
  * @return {boolean}
  */
 export function isSafari(userAgent = navigator.userAgent) {
-  return /safari/i.test(userAgent);
+  return /safari/i.test(userAgent) && !/chrome|chromium/i.test(userAgent);
 }
