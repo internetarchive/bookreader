@@ -1,3 +1,14 @@
+# 4.16.0
+- Dev: Emit custom event to trigger @iisa
+- Feature: Text selection plugin @Pyrojet99
+- Fix: Wrong openlibrary URL @cdrini
+- Dev: update sinon, jest, concurrently, testcafe, eslint, @types/jest, webpack-cli, @babel/core, @babel/preset-env, node-fetch @dependabot-preview + @cdrini
+- Fix: Flaky TestCafe tests (#436) @cdrini
+- Fix: Search plugin fixes (#443) @shaneriley
+- Dev: Upgrade to Webpack 5 @cdrini
+- Fix: Polyfill CustomEvent constructor @cdrini
+- Fix: HTML escaping to prevent XSS (#434) @nsharma123
+
 # 4.15.0
 - Dev: update lodash dependency @dependabot-preview + @cdrini
 - Dev: Moves /BookReaderDemo/index.html to /index.html (#394) @anirbansaha782

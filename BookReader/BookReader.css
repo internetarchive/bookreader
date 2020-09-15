@@ -1827,22 +1827,23 @@ i.BRicon {
   list-style: none;
 }
 .BookReader #BRsearch_tray li, .BRmobileMenu #BRsearch_tray li, .BRfloat #BRsearch_tray li {
-  display: grid;
-  grid-template-columns: 30px 1fr;
-  grid-gap: 0 5px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #fff;
+}
+.BookReader #BRsearch_tray li:after, .BRmobileMenu #BRsearch_tray li:after, .BRfloat #BRsearch_tray li:after {
+  display: none;
 }
 .BookReader #BRsearch_tray li img, .BRmobileMenu #BRsearch_tray li img, .BRfloat #BRsearch_tray li img {
   display: block;
   width: 100%;
 }
 .BookReader #BRsearch_tray li h4, .BRmobileMenu #BRsearch_tray li h4, .BRfloat #BRsearch_tray li h4 {
-  grid-column: 2/3;
   padding: 0 0 20px 0;
   margin: 0;
+  font-size: 14px;
   font-weight: normal;
 }
 .BookReader #BRsearch_tray li p, .BRmobileMenu #BRsearch_tray li p, .BRfloat #BRsearch_tray li p {
-  grid-column: 2/3;
   padding: 0 0 15px 0;
   margin: 0;
   font-size: 12px;
@@ -2465,4 +2466,44 @@ li.BRtable-contents-el .BRTOCElementPage {
 }
 .BRcontrols .scrubber .BRpager.ui-slider .ui-slider-range {
   background-color: #ccc;
+}
+
+.textSelectionSVG {
+  width: 100%;
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+.textSelectionSVG .BRwordElement {
+  pointer-events: all;
+}
+.textSelectionSVG.selectingSVG {
+  pointer-events: auto;
+  cursor: text;
+}
+.textSelectionSVG .BRwordElement::selection {
+  background: rgba(86, 158, 230, 0.4);
+}
+.textSelectionSVG .BRwordElement::-moz-selection {
+  background: rgba(86, 158, 230, 0.4);
+  color: transparent;
+}
+.textSelectionSVG .BRparagElement {
+  fill: red;
+  cursor: text;
+  white-space: pre;
+  fill-opacity: 0;
+  font-family: Georgia, serif;
+}
+
+.BRpagecontainer img {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.BRpageFlipping .textSelectionSVG {
+  display: none;
 }
