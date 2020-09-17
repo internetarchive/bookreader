@@ -78,7 +78,7 @@
     if (br.refs.$brTwoPageView) {
       br.refs.$brTwoPageView[0].removeEventListener('click', onBookClick, true);
     }
-  }
+  };
 
   /**
      * Toggle functionality
@@ -106,7 +106,7 @@
     } else {
       br.showNavigation();
     }
-  }
+  };
 
   /**
      * Check if div `BRcontainer` is scrollable.
@@ -119,7 +119,7 @@
     var offsetWidth = brContainer.offsetWidth;
 
     return scrollWidth > offsetWidth;
-  }
+  };
 
   /**
      * Confirms whether or not the click happened in the nav toggle zone
@@ -130,7 +130,7 @@
   var isCenterClick = function isCenterClick(event, book) {
     var clickPosition = event.clientX;
     var bookWidth = book.offsetWidth;
-    var leftOffset = book.offsetLeft
+    var leftOffset = book.offsetLeft;
     var bookEndPageFlipArea = Math.round(bookWidth / 3);
     var leftThreshold = Math.round(bookEndPageFlipArea + leftOffset); // without it, the click area is small
     var rightThreshold = Math.round(bookWidth - bookEndPageFlipArea + leftOffset);
@@ -139,7 +139,7 @@
     var isCenterClick = isOkOnRight && isOkOnLeft;
 
     return isCenterClick;
-  }
+  };
 
   /**
      * Confirms whether or not the click happened in the background
@@ -179,7 +179,7 @@
         e.stopPropagation(); // don't turn the page. this takes prescendence
       }
     }
-  }
+  };
 
   /**
      * background click event handler

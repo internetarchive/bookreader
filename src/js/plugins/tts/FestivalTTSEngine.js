@@ -103,7 +103,7 @@ class FestivalTTSSound {
     this.sound = null;
     this.rate = 1;
     /** @type {function} calling this resolves the "play" promise */
-    this._finishResolver = null
+    this._finishResolver = null;
   }
 
   get loaded() {

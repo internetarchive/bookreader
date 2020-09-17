@@ -218,7 +218,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
     this._searchPluginGoToResult(results.matches[0].par[0].page);
   }
   this.trigger('SearchCallback', { results, options, instance: this });
-}
+};
 
 /**
  * Main search results error handler

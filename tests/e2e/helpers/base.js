@@ -96,7 +96,7 @@ export function runBaseTests (br) {
 
     if (await usesResume()) {
       await t.expect(isPageInUrl()).eql(true, initialUrl);
-      await t.expect(isModeInUrl('2up')).eql(true, initialUrl)
+      await t.expect(isModeInUrl('2up')).eql(true, initialUrl);
     } else {
       // No plugin, no br-resume cookie
       await t.expect(getUrl()).notContains('#page/');
@@ -136,7 +136,7 @@ export function runBaseTests (br) {
 
     // we aren't showing the same image in the new pages
     await t.expect(prevImg1Src).notEql(prevImg2Src);
-  })
+  });
 
   test('2up mode - Clicking `Next page` changes the page', async t => {
     // Note: this will fail on a R to L book if at front cover
@@ -165,7 +165,7 @@ export function runBaseTests (br) {
 
     // we aren't showing the same image in the new pages
     await t.expect(nextImg1Src).notEql(nextImg2Src);
-  })
+  });
 
   test('Clicking `page flip buttons` updates location', async t => {
     const { nav } = br;

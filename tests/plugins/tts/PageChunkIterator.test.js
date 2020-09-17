@@ -109,7 +109,7 @@ describe('Iterates pages', () => {
     expect(iterator._cursor.chunk).toBe(0);
 
     for (let i = 2; i >= 0; i--) {
-      await iterator.decrement()
+      await iterator.decrement();
       expect(iterator._cursor.page).toBe(49);
       expect(iterator._cursor.chunk).toBe(i);
     }
