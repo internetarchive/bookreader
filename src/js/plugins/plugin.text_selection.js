@@ -1,11 +1,11 @@
 //@ts-check
-import { isFirefox } from './tts/utils';
+import { isFirefox, isSafari } from '../../util/browserSniffing.js';
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
 export class TextSelectionPlugin {
 
-  constructor(avoidTspans = isFirefox()) {
+  constructor(avoidTspans = isFirefox(), pointerEventsOnParagraph = isSafari()) {
     /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
     this.djvuPagesPromise = null;
     // Using text elements insted of tspans for words because Firefox does not allow svg tspan strech.
@@ -13,6 +13,10 @@ export class TextSelectionPlugin {
     this.svgParagraphElement = "text";
     this.svgWordElement = "tspan";
     this.insertNewlines = avoidTspans
+    // Safari has a bug where `pointer-events` doesn't work on `<tspans>`. So
+    // there we will set `pointer-events: all` on the paragraph element. We don't
+    // do this everywhere, because it's a worse experience. Thanks Safari :/
+    this.pointerEventsOnParagraph = pointerEventsOnParagraph;
     if(avoidTspans) {
       this.svgParagraphElement = "g";
       this.svgWordElement = "text";
@@ -139,6 +143,9 @@ export class TextSelectionPlugin {
       if (!words.length) return;
       const paragSvg = document.createElementNS("http://www.w3.org/2000/svg", this.svgParagraphElement);
       paragSvg.setAttribute("class", "BRparagElement");
+      if (this.pointerEventsOnParagraph) {
+        paragSvg.style.pointerEvents = "all";
+      }
 
       const wordHeightArr = [];
 
@@ -204,7 +211,8 @@ export class BookreaderWithTextSelection extends BookReader {
    */
   _createPageContainer(index, styles = {}) {
     const $container = super._createPageContainer(index, styles);
-    if(this.enableTextSelection){
+    // Disable if thumb mode; it's too janky
+    if(this.enableTextSelection && this.mode != this.constModeThumb){
       this.textSelectionPlugin.createTextLayer(index, $container);
     }
     return $container;
