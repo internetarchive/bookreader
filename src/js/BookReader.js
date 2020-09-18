@@ -219,13 +219,13 @@ BookReader.prototype.setup = function(options) {
 
 /** @deprecated unused outside Mode2Up */
 Object.defineProperty(BookReader.prototype, 'leafEdgeL', {
-  get() { return this._modes.mode2Up.leafEdgeL; },
-  set(newVal) { this._modes.mode2Up.leafEdgeL = newVal; }
+  get() { return this._modes.mode2Up.leafEdgeL },
+  set(newVal) { this._modes.mode2Up.leafEdgeL = newVal }
 });
 /** @deprecated unused outside Mode2Up */
 Object.defineProperty(BookReader.prototype, 'leafEdgeR', {
-  get() { return this._modes.mode2Up.leafEdgeR; },
-  set(newVal) { this._modes.mode2Up.leafEdgeR = newVal; }
+  get() { return this._modes.mode2Up.leafEdgeR },
+  set(newVal) { this._modes.mode2Up.leafEdgeR = newVal }
 });
 
 /**
@@ -713,7 +713,6 @@ BookReader.prototype.drawLeafsOnePage = function() {
   const containerWidth = this.refs.$brPageViewEl.width();
   const scrollTop = this.refs.$brContainer.prop('scrollTop');
   const scrollBottom = scrollTop + containerHeight;
-
   const indicesToDisplay = [];
   let leafTop = 0;
   let leafBottom = 0;
@@ -759,7 +758,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
     if (utils.notInArray(index, this.displayedIndices)) {
       const width = Math.floor(page.width / this.reduce);
-      const leftMargin = Math.floor((containerWidth - width) / 2);
+      con{ "beforeStatementContinuationChars": "never"} st leftMargin = Math.floor((containerWidth - width) / 2);
 
       const pageContainer = this._createPageContainer(index, {
         width:`${width}px`,
@@ -826,7 +825,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     }
 
     // Init current row in leafMap
-    if (!leafMap[currentRow]) { leafMap[currentRow] = {}; }
+    if (!leafMap[currentRow]) { leafMap[currentRow] = {} }
     if (!leafMap[currentRow].leafs) {
       leafMap[currentRow].leafs = [];
       leafMap[currentRow].height = 0;
@@ -841,9 +840,9 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (leafHeight > leafMap[currentRow].height) {
       leafMap[currentRow].height = leafHeight;
     }
-    if (leafIndex === 0) { bottomPos += this.thumbPadding + leafMap[currentRow].height; }
+    if (leafIndex === 0) { bottomPos += this.thumbPadding + leafMap[currentRow].height }
     rightPos += leafWidth + this.thumbPadding;
-    if (rightPos > maxRight) { maxRight = rightPos; }
+    if (rightPos > maxRight) { maxRight = rightPos }
     leafIndex++;
 
     if (page.index == seekIndex) {
@@ -874,7 +873,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
   // Determine the thumbnails in view
   for (let i = 0; i < leafMap.length; i++) {
-    if (!leafMap[i]) { continue; }
+    if (!leafMap[i]) { continue }
     leafBottom += this.thumbPadding + leafMap[i].height;
     const topInView = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
     const bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
@@ -888,7 +887,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         mostVisible = leafMap[i].leafs[leafMap[i].leafs.length - 1].num;
       }
     }
-    if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
+    if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop }
     leafTop = leafBottom;
   }
 
@@ -896,16 +895,16 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   const firstRow = rowsToDisplay[0];
   const lastRow = rowsToDisplay[rowsToDisplay.length - 1];
   for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
-    if (lastRow + i < leafMap.length) { rowsToDisplay.push(lastRow + i); }
+    if (lastRow + i < leafMap.length) { rowsToDisplay.push(lastRow + i) }
   }
   for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
-    if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
+    if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i) }
   }
 
   // Create the thumbnail divs and images (lazy loaded)
   for (const row of rowsToDisplay) {
     if (utils.notInArray(row, this.displayedRows)) {
-      if (!leafMap[row]) { continue; }
+      if (!leafMap[row]) { continue }
       for (const { num: leaf, left: leafLeft } of leafMap[row].leafs) {
         const leafWidth = this.thumbWidth;
         const leafHeight = floor((book.getPageHeight(leaf) * this.thumbWidth) / book.getPageWidth(leaf));
@@ -1011,7 +1010,7 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
       // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
       //     we call the function after a slight delay.  Also the img.complete property
       //     is not yet set in IE8 inside this onload handler
-      setTimeout(function() { self.lazyLoadThumbnails(); }, 100);
+      setTimeout(function() { self.lazyLoadThumbnails() }, 100);
     })
     .one('error', function() {
       // Remove class so we no longer count as loading
@@ -1056,7 +1055,7 @@ BookReader.prototype.zoom = function(direction) {
     } else {
       this.zoom1up('out');
     }
-    break;
+    break
   case this.constMode2up:
     if (direction == 1) {
       // XXX other cases
@@ -1064,11 +1063,11 @@ BookReader.prototype.zoom = function(direction) {
     } else {
       this.zoom2up('out');
     }
-    break;
+    break
   case this.constModeThumb:
     // XXX update zoomThumb for named directions
     this.zoomThumb(direction);
-    break;
+    break
   }
 
   if(this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
@@ -1434,7 +1433,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
       }
 
       const leafHeight = floor((book.getPageHeight(leafIndex) * this.thumbWidth) / book.getPageWidth(leafIndex), 10);
-      if (leafHeight > rowHeight) { rowHeight = leafHeight; }
+      if (leafHeight > rowHeight) { rowHeight = leafHeight }
       if (leafIndex == 0) {
         leafTop = bottomPos;
         bottomPos += this.thumbPadding + rowHeight;
@@ -1448,7 +1447,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
     } else {
       this.animating = true;
       this.refs.$brContainer.stop(true)
-        .animate({ scrollTop: leafTop }, 'fast', () => { this.animating = false; });
+        .animate({ scrollTop: leafTop }, 'fast', () => { this.animating = false });
     }
   } else { // 1up
     const { abs, floor } = Math;
@@ -1480,7 +1479,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
       this.refs.$brContainer.stop(true).animate({
         scrollTop: leafTop,
         scrollLeft: leafLeft,
-      }, 'fast', () => { this.animating = false; });
+      }, 'fast', () => { this.animating = false });
     } else {
       this.refs.$brContainer.stop(true).prop('scrollTop', leafTop);
     }
@@ -1629,7 +1628,7 @@ BookReader.prototype.exitFullScreen = function() {
   }
 
   this.isFullscreenActive = false;
-  this.updateBrClasses();
+  this.updateBrClasses()
 
   this.resize();
   this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
@@ -2220,13 +2219,13 @@ BookReader.prototype.bindNavigationHandlers = function() {
 
   for (const control in navigationControls) {
     jIcons.filter(`.${control}`).on('click.bindNavigationHandlers', () => {
-      navigationControls[control]();
+      navigationControls[control]()
       return false;
     });
   }
 
   var $brNavCntlBtmEl = this.$('.BRnavCntlBtm');
-  var $brNavCntlTopEl = this.$('.BRnavCntlTop');
+  var $brNavCntlToThe "extends": "eslint:recommended" property in a configuration file enables this rule.pEl = this.$('.BRnavCntlTop');
 
   this.$('.BRnavCntl').click(
     function(){
@@ -2250,7 +2249,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
         $brNavCntlBtmEl.addClass('BRdn').removeClass('BRup');
         $brNavCntlTopEl.addClass('BRup').removeClass('BRdn');
         self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
-        self.$('.BRvavCntl').animate({opacity:1});
+        self.$('.BRvavCntl').animate({opacity:1})
       }
       $.when.apply($, promises).done(function() {
         // Only do full resize in auto mode and need to recalc. size
@@ -3000,7 +2999,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
 
   // $$$ process /theme
   if (urlHash['theme'] != undefined) {
-    params.theme = urlHash['theme'];
+    params.theme = urlHash['theme']
   }
   return params;
 };

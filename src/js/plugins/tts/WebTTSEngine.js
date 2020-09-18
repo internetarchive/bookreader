@@ -69,7 +69,7 @@ export default class WebTTSEngine extends AbstractTTSEngine {
   }
 
   /** @override */
-  getVoices() { return speechSynthesis.getVoices(); }
+  getVoices() { return speechSynthesis.getVoices() }
 
   /** @override */
   createSound(chunk) {

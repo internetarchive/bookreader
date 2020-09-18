@@ -240,7 +240,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
  */
 BookReader.prototype.updateTOCState = function(currIndex, tocEntries) {
   //this function won't have any effects if called before OpenLibrary request is finished
-  if(!tocEntries){return;}
+  if(!tocEntries){return}
   $('.current-chapter').removeClass('current-chapter');
   const tocEntriesIndexed = tocEntries.filter((el) => el.pageIndex != undefined).reverse();
   const currChapter = tocEntriesIndexed[tocEntriesIndexed.findIndex(

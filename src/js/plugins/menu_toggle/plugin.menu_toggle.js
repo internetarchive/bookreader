@@ -78,7 +78,7 @@
     if (br.refs.$brTwoPageView) {
       br.refs.$brTwoPageView[0].removeEventListener('click', onBookClick, true);
     }
-  };
+  }
 
   /**
      * Toggle functionality
@@ -130,7 +130,7 @@
   var isCenterClick = function isCenterClick(event, book) {
     var clickPosition = event.clientX;
     var bookWidth = book.offsetWidth;
-    var leftOffset = book.offsetLeft;
+    var leftOffset = book.offsetLeft
     var bookEndPageFlipArea = Math.round(bookWidth / 3);
     var leftThreshold = Math.round(bookEndPageFlipArea + leftOffset); // without it, the click area is small
     var rightThreshold = Math.round(bookWidth - bookEndPageFlipArea + leftOffset);

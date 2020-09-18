@@ -75,7 +75,7 @@ BookReader.prototype.init = (function (super_) {
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   return function () {
     const $el = super_.call(this);
-    if (!this.enableSearch) { return; }
+    if (!this.enableSearch) { return }
     if (this.searchView.dom.mobileSearch) {
       $el.find('.BRmobileMenu__moreInfoRow').after(this.searchView.dom.mobileSearch);
     }
@@ -87,7 +87,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
     const $el = super_.call(this);
-    if (!this.enableSearch) { return; }
+    if (!this.enableSearch) { return }
     if (this.searchView.dom.toolbarSearch) {
       $el.find('.BRtoolbarSectionInfo').after(this.searchView.dom.toolbarSearch);
     }

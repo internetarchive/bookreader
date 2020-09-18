@@ -94,7 +94,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
     const newFragment = this.urlReadFragment();
     const hasFragmentChange = (newFragment != this.oldLocationHash) && (newFragment != this.oldUserHash);
 
-    if (!hasFragmentChange) { return; }
+    if (!hasFragmentChange) { return }
 
     const params = this.paramsFromFragment(newFragment);
 

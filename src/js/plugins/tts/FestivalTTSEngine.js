@@ -142,9 +142,9 @@ class FestivalTTSSound {
   }
 
   /** @override */
-  pause() { this.sound.pause(); }
+  pause() { this.sound.pause() }
   /** @override */
-  resume() { this.sound.resume(); }
+  resume() { this.sound.resume() }
   /** @override */
   setPlaybackRate(rate) {
     this.rate = rate;
