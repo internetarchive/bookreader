@@ -51,19 +51,24 @@
     </noscript>
 </div>
 
-<script>
-// Override options coming from IA
-BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
-BookReader.optionOverrides.enableTextSelection = true;
-</script>
-
 <script id="pageUrl" type="text/javascript"></script>
 
 <script>
-  var URL_PART1 = "https://archive.org/bookreader/BookReaderJSLocate.php?id=";
-  var URL_PART2 = "&subPrefix=";
-  var bookId = location.href.match(/ocaid=([^&#]+)/i)[1];
-  document.getElementById('pageUrl').src = URL_PART1 + bookId + URL_PART2;
+  var ocaid = location.href.match(/ocaid=([^&#]+)/i)[1];
+
+  // Override options coming from IA
+  BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/',
+  BookReader.optionOverrides.vars = {
+    ocaid: ocaid
+  };
+  BookReader.optionOverrides.plugins = {
+    textSelection: {
+      fullDjvuXmlUrl: 'https://cors.archive.org/cors/{{ocaid}}/{{ocaid}}_djvu.xml'
+    }
+  };
+
+  var script_url = 'https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=' + ocaid;
+  document.getElementById('pageUrl').src = script_url;
 </script>
 
 </body>

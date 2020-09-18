@@ -109,14 +109,14 @@ describe("Generic tests", () => {
 
 describe("textSelectionPlugin cosntructor", () => {
   test("textSelectionPlugin constructor with firefox browser", () => {
-    const tsp = new TextSelectionPlugin(true)
+    const tsp = new TextSelectionPlugin({}, {}, true)
     expect(tsp.djvuPagesPromise).toBe(null);
     expect(tsp.svgParagraphElement).toBe("g");
     expect(tsp.svgWordElement).toBe("text");
   });
 
   test("textSelectionPlugin constructor not on firefox browser", () => {
-    const tsp = new TextSelectionPlugin(false)
+    const tsp = new TextSelectionPlugin({}, {}, false)
     expect(tsp.djvuPagesPromise).toBe(null);
     expect(tsp.svgParagraphElement).toBe("text");
     expect(tsp.svgWordElement).toBe("tspan");
