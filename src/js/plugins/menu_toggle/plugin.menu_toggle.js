@@ -78,7 +78,7 @@
     if (br.refs.$brTwoPageView) {
       br.refs.$brTwoPageView[0].removeEventListener('click', onBookClick, true);
     }
-  }
+  };
 
   /**
      * Toggle functionality

@@ -758,7 +758,7 @@ BookReader.prototype.drawLeafsOnePage = function() {
 
     if (utils.notInArray(index, this.displayedIndices)) {
       const width = Math.floor(page.width / this.reduce);
-      con{ "beforeStatementContinuationChars": "never"} st leftMargin = Math.floor((containerWidth - width) / 2);
+      const leftMargin = Math.floor((containerWidth - width) / 2);
 
       const pageContainer = this._createPageContainer(index, {
         width:`${width}px`,
@@ -2225,7 +2225,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
   }
 
   var $brNavCntlBtmEl = this.$('.BRnavCntlBtm');
-  var $brNavCntlToThe "extends": "eslint:recommended" property in a configuration file enables this rule.pEl = this.$('.BRnavCntlTop');
+  var $brNavCntlTopEl = this.$('.BRnavCntlTop');
 
   this.$('.BRnavCntl').click(
     function(){
@@ -3068,7 +3068,7 @@ BookReader.prototype.queryStringFromParams = function(
 ) {
   const newParams = new URLSearchParams(currQueryString);
   if (params.search && urlMode === 'history') {
-    newParams.set('q', params.search);
+    newParams.set('q', params.search)
   }
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
   // Note: This method returns the query string without the question mark.
