@@ -2,8 +2,8 @@
 
 /**
  * @param {StringWithVars|String} template
- * @param { {[string]: any } } vars
- * @param { {[string]: any } } [overrides]
+ * @param { {[varName: string]: any } } vars
+ * @param { {[varName: string]: any } } [overrides]
  */
 export function applyVariables(template, vars, overrides={}) {
   return template?.replace(/\{\{([^}]*?)\}\}/g, ($0, $1) => {
