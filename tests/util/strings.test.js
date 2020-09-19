@@ -1,4 +1,4 @@
-import { applyVariables } from '../../src/util/strings.js';
+import { APPLY_FILTERS, applyVariables } from '../../src/util/strings.js';
 
 describe('applyVariables', () => {
   test('null cases', () => {
@@ -26,5 +26,38 @@ describe('applyVariables', () => {
 
   test('Overrides do override', () => {
     expect(applyVariables('Hello {{name}}', {name: 'Bill'}, {name: 'Bobby'})).toEqual('Hello Bobby');
+  });
+
+  test('Nullish values', () => {
+    expect(applyVariables('Hello {{name}}', {name: undefined})).toEqual('Hello undefined');
+    expect(applyVariables('Hello {{name}}', {name: null})).toEqual('Hello null');
+    expect(applyVariables('Hello {{name}}', {name: ''})).toEqual('Hello ');
+  });
+
+  test('Non-string values', () => {
+    expect(applyVariables('Hello {{name}}', {name: 10})).toEqual('Hello 10');
+    expect(applyVariables('Hello {{name}}', {name: 0})).toEqual('Hello 0');
+  });
+
+  test('Filters', () => {
+    expect(applyVariables('Hello {{name|urlencode}}', {name: 'Jim bob'})).toEqual('Hello Jim%20bob');
+    expect(applyVariables('Hello {{name|urlencode}}', {name: 0})).toEqual('Hello 0');
+    expect(applyVariables('Hello {{name|urlencode}}', {})).toEqual('Hello {{name|urlencode}}');
+  });
+
+  test('Custom filters', () => {
+    expect(applyVariables('Hello {{name|upper}}', {name: 'Jim bob'}, {}, {upper: s => s.toUpperCase()})).toEqual('Hello JIM BOB');
+  });
+
+  test('Multiple filters', () => {
+    const filters = Object.assign({}, APPLY_FILTERS, {
+      upper: s => s.toUpperCase(),
+      lower: s => s.toLowerCase(),
+      double: s => s + s,
+    });
+    expect(applyVariables('Hello {{name|upper|urlencode}}', {name: 'Jim bob'}, {}, filters)).toEqual('Hello JIM%20BOB');
+    expect(applyVariables('Hello {{name|upper|lower}}', {name: 'Jim bob'}, {}, filters)).toEqual('Hello jim bob');
+    expect(applyVariables('Hello {{name|lower|upper}}', {name: 'Jim bob'}, {}, filters)).toEqual('Hello JIM BOB');
+    expect(applyVariables('Hello {{name|lower|double}}', {name: 'Jim bob'}, {}, filters)).toEqual('Hello jim bobjim bob');
   });
 });
