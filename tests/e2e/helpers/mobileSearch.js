@@ -15,7 +15,7 @@ export function runMobileSearchTests(br) {
 
   test
     .requestHooks(mockFound)('Mobile search - successful search', async t => {
-      await t.resizeWindowToFitDevice('Sony Xperia Z', {portraitOrientation: true})
+      await t.resizeWindowToFitDevice('Sony Xperia Z', {portraitOrientation: true});
       const nav = br.nav.mobile;
 
       //opening side menu and search
@@ -55,7 +55,7 @@ export function runMobileSearchTests(br) {
 
   test
     .requestHooks(mockNotFound)('Mobile search - unsuccessful search', async t => {
-      await t.resizeWindowToFitDevice('Sony Xperia Z', {portraitOrientation: true})
+      await t.resizeWindowToFitDevice('Sony Xperia Z', {portraitOrientation: true});
       const nav = br.nav.mobile;
 
       //opening side menu and search

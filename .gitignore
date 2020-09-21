@@ -2,3 +2,6 @@ BookReaderDev
 node_modules/
 .DS_Store
 coverage/
+BookReader/
+package.json
+package-lock.json

@@ -44,7 +44,7 @@ describe('Plugin: Mobile Nav', () => {
       return function() {
         callCount++;
         _super.apply(this, arguments);
-      }
+      };
     }(BookReader.prototype.initToolbar);
     const br = new BookReader();
     br.init();
@@ -54,7 +54,7 @@ describe('Plugin: Mobile Nav', () => {
     expect($(document.body).hasClass('BRbodyMobileNavEnabled')).toEqual(true);
   });
   test('loads the navbar on init', () => {
-    expect($('#BRmobileMenu')).toHaveLength(1)
+    expect($('#BRmobileMenu')).toHaveLength(1);
   });
   test('There is a Settings Section', () => {
     expect($('.BRmobileMenu__settings')).toHaveLength(1);

@@ -310,7 +310,7 @@ class SearchView {
   submitHandler(e) {
     e.preventDefault();
     const query = e.target.querySelector('[name="query"]').value;
-    if (!query.length) { return false; }
+    if (!query.length) { return false }
     this.br.search(query);
     this.dom.searchField.blur();
     this.emptyMatches();
@@ -374,7 +374,7 @@ class SearchView {
     this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
     this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
     this.dom.searchField.addEventListener('search', () => {
-      if (this.dom.searchField.value) { return; }
+      if (this.dom.searchField.value) { return }
       this.br.removeSearchResults();
       this.clearSearchFieldAndResults();
     });

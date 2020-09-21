@@ -53,7 +53,7 @@ export class Toolbar {
           .attr({href: br.bookUrl, title: br.bookUrlTitle})
           .addClass('BRreturn')
           .html(br.bookUrlText || br.bookTitle)
-      )
+      );
     } else if (br.bookTitle) {
       $titleSectionEl.append(br.bookUrlText || br.bookTitle);
     }

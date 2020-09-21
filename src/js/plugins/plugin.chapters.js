@@ -36,14 +36,14 @@ BookReader.prototype.init = (function(super_) {
             this.updateTOCState(this.firstIndex, this._tocEntries);
           }
         }
-      )
+      );
       $(".BRmobileMenu__tableContents").click(
         () => {
           this.updateTOCState(this.firstIndex, this._tocEntries);
         }
       );
     }
-  }
+  };
 })(BookReader.prototype.init);
 
 /**
@@ -60,7 +60,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
     this.jumpToIndex($(event.delegateTarget).data('pageIndex'));
     $('.current-chapter').removeClass('current-chapter');
     $(event.delegateTarget).addClass('current-chapter');
-  }
+  };
   const title = `${chapterTitle} | `;
   const pageStr = `${uiStringPage} ${pageNumber}`;
 
@@ -126,7 +126,7 @@ BookReader.prototype.updateTOC = function(tocEntries) {
   this._tocEntries = tocEntries;
   $('.table-contents-list').children().each((i, el) => {
     tocEntries[i].mobileHTML = el;
-  })
+  });
 };
 
 /**
@@ -207,7 +207,7 @@ BookReader.prototype.getOpenLibraryRecord = function () {
         setUpChapterMarkers(data[0]);
       }
     });
-}
+};
 
 // Extend buildMobileDrawerElement with table of contents list
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
@@ -248,4 +248,4 @@ BookReader.prototype.updateTOCState = function(currIndex, tocEntries) {
   if(currChapter != undefined){
     $(currChapter.mobileHTML).addClass('current-chapter');
   }
-}
+};
