@@ -199,11 +199,9 @@ class SearchView {
       }
 
       // draw marker
-      const markerTopValue = -this.br.refs.$brContainer.height();
       $('<div>')
         .addClass('BRsearch')
         .css({
-          top: `${markerTopValue}px`,
           left: percentThrough,
         })
         .attr('title', uiStringSearch)
@@ -237,8 +235,7 @@ class SearchView {
           // to remove `bind` dependency
           this.br._searchPluginGoToResult(+$(event.target).data('pageIndex'));
           this.br.updateSearchHilites();
-        }.bind(this))
-        .animate({top:'-25px'}, 'slow');
+        }.bind(this));
     });
   }
 
