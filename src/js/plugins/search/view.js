@@ -90,6 +90,7 @@ class SearchView {
     this.removeResultPins();
     this.emptyMatches();
     this.setQuery('');
+    this.teardownSearchNavigation();
   }
 
   /**
@@ -123,15 +124,16 @@ class SearchView {
   }
 
   renderSearchNavigation() {
+    const selector = 'BRsearch-navigation';
     $('.BRnav').before(`
-      <div class="BRsearch-navigation">
+      <div class="${selector}">
         <h4>
           <span class="icon icon-search"></span>
           Results
         </h4>
         <div class="pagination">
           <a href="#" class="prev" title="Previous result"><span class="icon icon-chevron hflip"></span></a>
-          <span>${this.currentMatch} / ${this.matches.length}</span>
+          <span data-id="resultsCount">${this.currentMatch} / ${this.matches.length}</span>
           <a href="#" class="next" title="Next result"><span class="icon icon-chevron"></a>
         </div>
         <a href="#" class="clear" title="Clear search results">
@@ -139,6 +141,19 @@ class SearchView {
         </a>
       </div>
     `);
+    this.dom.searchNavigation = $(`.${selector}`);
+  }
+
+  bindSearchNavigationEvents() {
+    if (!this.dom.searchNavigation) { return; }
+    const namespace = 'searchNavigation';
+
+    this.dom.searchNavigation.on(`click.${namespace}`, '.clear', this.clearSearchFieldAndResults.bind(this));
+  }
+
+  teardownSearchNavigation() {
+    this.dom.searchNavigation.off('.searchNavigation').remove();
+    this.dom.searchNavigation = null;
   }
 
   /**
@@ -343,6 +358,7 @@ class SearchView {
     this.matches = results.matches;
     this.currentMatch = 1;
     this.renderSearchNavigation();
+    this.bindSearchNavigationEvents();
     this.renderMatches(results.matches);
     this.renderPins(results.matches);
     this.updateResultsCount(results.matches.length);
