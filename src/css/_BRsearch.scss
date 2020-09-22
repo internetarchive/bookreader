@@ -68,7 +68,7 @@
   .BRsearch {
     width: 9px;
     height: 6px;
-    margin-left: -4px;
+    margin-left: -10px;
     &:before {
       position: absolute;
       left: calc(50% - 2px);
@@ -354,6 +354,57 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  .BRsearch-navigation {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    color: $white;
+    background-color: $brColorDarkGreyBg;
+    h4 {
+      padding: 0;
+      margin: 0;
+      font-size: 15px;
+      font-weight: normal;
+      span {
+        vertical-align: middle;
+      }
+    }
+    .pagination {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      span {
+        display: inline-block;
+        padding: 0 15px;
+      }
+      a {
+        display: inline-block;
+        vertical-align: middle;
+        span {
+          width: 8px;
+          height: 13px;
+          padding: 0;
+          background-size: 100% auto;
+        }
+      }
+    }
+    .clear {
+      span {
+        width: 18px;
+        height: 18px;
+      }
+    }
+    + .BRnav {
+      .BRnavCntl {
+        display: none;
+      }
+    }
   }
 }
 
