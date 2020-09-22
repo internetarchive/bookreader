@@ -133,7 +133,7 @@ class SearchView {
         </h4>
         <div class="pagination">
           <a href="#" class="prev" title="Previous result"><span class="icon icon-chevron hflip"></span></a>
-          <span data-id="resultsCount">${this.currentMatch} / ${this.matches.length}</span>
+          <span data-id="resultsCount">${this.resultsPosition()}</span>
           <a href="#" class="next" title="Next result"><span class="icon icon-chevron"></a>
         </div>
         <a href="#" class="clear" title="Clear search results">
@@ -144,11 +144,35 @@ class SearchView {
     this.dom.searchNavigation = $(`.${selector}`);
   }
 
+  resultsPosition() {
+    return `${this.currentMatchIndex + 1} / ${this.matches.length}`;
+  }
+
   bindSearchNavigationEvents() {
     if (!this.dom.searchNavigation) { return; }
     const namespace = 'searchNavigation';
 
-    this.dom.searchNavigation.on(`click.${namespace}`, '.clear', this.clearSearchFieldAndResults.bind(this));
+    this.dom.searchNavigation
+      .on(`click.${namespace}`, '.clear', this.clearSearchFieldAndResults.bind(this))
+      .on(`click.${namespace}`, '.prev', this.showPrevResult.bind(this))
+      .on(`click.${namespace}`, '.next', this.showNextResult.bind(this))
+      .on(`click.${namespace}`, false);
+  }
+
+  showPrevResult() {
+    if (!this.currentMatchIndex) { return; }
+    this.br.$('.BRnavline .BRsearch').eq(--this.currentMatchIndex).click();
+    this.updateResultsPosition();
+  }
+
+  showNextResult() {
+    if (this.currentMatchIndex === this.matches.length) { return; }
+    this.br.$('.BRnavline .BRsearch').eq(++this.currentMatchIndex).click();
+    this.updateResultsPosition();
+  }
+
+  updateResultsPosition() {
+    this.dom.searchNavigation.find('[data-id=resultsCount]').text(this.resultsPosition());
   }
 
   teardownSearchNavigation() {
@@ -356,7 +380,7 @@ class SearchView {
    */
   handleSearchCallback(e, { results }) {
     this.matches = results.matches;
-    this.currentMatch = 1;
+    this.currentMatchIndex = 0;
     this.renderSearchNavigation();
     this.bindSearchNavigationEvents();
     this.renderMatches(results.matches);
