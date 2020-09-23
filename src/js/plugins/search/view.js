@@ -145,7 +145,11 @@ class SearchView {
   }
 
   resultsPosition() {
-    return `${this.currentMatchIndex + 1} / ${this.matches.length}`;
+    let positionMessage = `${this.matches.length} results`;
+    if (~this.currentMatchIndex) {
+      positionMessage = `${this.currentMatchIndex + 1} / ${this.matches.length}`;
+    }
+    return positionMessage;
   }
 
   bindSearchNavigationEvents() {
@@ -166,7 +170,7 @@ class SearchView {
   }
 
   showNextResult() {
-    if (this.currentMatchIndex === this.matches.length) { return; }
+    if (this.currentMatchIndex + 1 === this.matches.length) { return; }
     this.br.$('.BRnavline .BRsearch').eq(++this.currentMatchIndex).click();
     this.updateResultsPosition();
   }
@@ -178,6 +182,15 @@ class SearchView {
   teardownSearchNavigation() {
     this.dom.searchNavigation.off('.searchNavigation').remove();
     this.dom.searchNavigation = null;
+  }
+
+  setCurrentMatchIndex() {
+    const currentIndexes = this.br.mode === this.br.constMode2up
+      ? this.br.displayedIndices
+      : [ this.br.currentIndex() ];
+    const matchingSearchResult = this.matches.find((m) => currentIndexes.includes(m.par[0].page - 1));
+
+    this.currentMatchIndex = this.matches.indexOf(matchingSearchResult);
   }
 
   /**
@@ -380,7 +393,7 @@ class SearchView {
    */
   handleSearchCallback(e, { results }) {
     this.matches = results.matches;
-    this.currentMatchIndex = 0;
+    this.setCurrentMatchIndex();
     this.renderSearchNavigation();
     this.bindSearchNavigationEvents();
     this.renderMatches(results.matches);
