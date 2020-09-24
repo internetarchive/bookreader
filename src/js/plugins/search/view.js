@@ -166,6 +166,7 @@ class SearchView {
 
   showPrevResult() {
     if (this.currentMatchIndex === 0) { return; }
+    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
     if (!~this.currentMatchIndex) { this.currentMatchIndex = 1; }
     this.br.$('.BRnavline .BRsearch').eq(--this.currentMatchIndex).click();
     this.updateResultsPosition();
@@ -173,6 +174,7 @@ class SearchView {
 
   showNextResult() {
     if (this.currentMatchIndex + 1 === this.matches.length) { return; }
+    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
     this.br.$('.BRnavline .BRsearch').eq(++this.currentMatchIndex).click();
     this.updateResultsPosition();
   }
@@ -189,8 +191,26 @@ class SearchView {
   }
 
   setCurrentMatchIndex() {
-    const matchingSearchResult = this.matches.find((m) => this.br._isIndexDisplayed(m.par[0].page - 1));
+    let matchingSearchResult;
+    if (this.br.mode === this.br.constModeThumb) {
+      this.currentMatchIndex = -1;
+      return;
+    }
+    if (this.br.mode === this.br.constMode2up) {
+      matchingSearchResult = this.find2upMatchingSearchResult();
+    }
+    else {
+      matchingSearchResult = this.find1upMatchingSearchResult();
+    }
     this.currentMatchIndex = this.matches.indexOf(matchingSearchResult);
+  }
+
+  find1upMatchingSearchResult() {
+    return this.matches.find((m) => this.br.currentIndex() === m.par[0].page - 1);
+  }
+
+  find2upMatchingSearchResult() {
+    return this.matches.find((m) => this.br._isIndexDisplayed(m.par[0].page - 1));
   }
 
   updateSearchNavigation() {
