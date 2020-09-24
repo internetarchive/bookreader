@@ -190,7 +190,7 @@ describe('pagesIterator', () => {
 describe('_getDataFlattened', () => {
   test('Assigns correct page sides', () => {
     const bm = new BookModel({ data: SAMPLE_DATA });
-    expect(bm._getDataFlattened().map(page => page.pageSide)).toEqual(['R', 'L', 'R', 'L'])
+    expect(bm._getDataFlattened().map(page => page.pageSide)).toEqual(['R', 'L', 'R', 'L']);
   });
 
   test('Memoized based on data length', () => {

@@ -56,7 +56,7 @@ if (!isMobile()) {
           $(document.body).append(cboxOverlay).append(cbox);
         }
       });
-    }
+    };
   })(BookReader.prototype.init);
 
   /**
@@ -92,7 +92,7 @@ if (!isMobile()) {
     $(document).off('keyup' + EVENT_NAMESPACE);
 
     this.isFullscreenActive = false;
-    this.updateBrClasses()
+    this.updateBrClasses();
 
     this.resize();
     this.refs.$brContainer.animate({ opacity: 1 }, 400, 'linear');

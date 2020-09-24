@@ -29,7 +29,7 @@ export class DebugConsole {
     console.log = (...args) => {
       _realLog(...args);
       this.logToScreen(args);
-    }
+    };
 
     window.onerror = (...args) => this.logToScreen(args);
   }
@@ -40,7 +40,7 @@ export class DebugConsole {
    */
   logToScreen(args) {
     const html = args.map(JSON.stringify).join(',');
-    const $lastEntry = this.$log.children('.log-entry:last-child')
+    const $lastEntry = this.$log.children('.log-entry:last-child');
     if ($lastEntry.find('.entry-code').html() == html) {
       $lastEntry.find('.count').text(`(${++this.currentRun})`);
     } else {

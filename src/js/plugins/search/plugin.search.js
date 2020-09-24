@@ -75,7 +75,7 @@ BookReader.prototype.init = (function (super_) {
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   return function () {
     const $el = super_.call(this);
-    if (!this.enableSearch) { return; }
+    if (!this.enableSearch) { return }
     if (this.searchView.dom.mobileSearch) {
       $el.find('.BRmobileMenu__moreInfoRow').after(this.searchView.dom.mobileSearch);
     }
@@ -87,7 +87,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
     const $el = super_.call(this);
-    if (!this.enableSearch) { return; }
+    if (!this.enableSearch) { return }
     if (this.searchView.dom.toolbarSearch) {
       $el.find('.BRtoolbarSectionInfo').after(this.searchView.dom.toolbarSearch);
     }
@@ -218,7 +218,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
     this._searchPluginGoToResult(results.matches[0].par[0].page);
   }
   this.trigger('SearchCallback', { results, options, instance: this });
-}
+};
 
 /**
  * Main search results error handler

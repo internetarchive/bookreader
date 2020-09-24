@@ -31,10 +31,10 @@ describe('Plugin: URL controller', () => {
     expect(defaultOptions).toHaveProperty('updateWindowTitle');
     expect(defaultOptions).toHaveProperty('defaults');
     expect(defaultOptions).toHaveProperty('bookId');
-  })
+  });
 
   test('has a whitelist of params that it tracks', () => {
-    ['page', 'search', 'mode', 'region', 'highlight']
+    ['page', 'search', 'mode', 'region', 'highlight'];
     const { defaultOptions: { urlTrackedParams } } = BookReader;
     expect(Array.isArray(urlTrackedParams)).toEqual(true);
     expect(urlTrackedParams.find(param => param === 'page')).toBeTruthy();
@@ -42,7 +42,7 @@ describe('Plugin: URL controller', () => {
     expect(urlTrackedParams.find(param => param === 'mode')).toBeTruthy();
     expect(urlTrackedParams.find(param => param === 'region')).toBeTruthy();
     expect(urlTrackedParams.find(param => param === 'highlight')).toBeTruthy();
-  })
+  });
 
   test('initializes polling for url changes if using hash', () => {
     BookReader.prototype.urlStartLocationPolling = jest.fn();
@@ -65,7 +65,7 @@ describe('Plugin: URL controller', () => {
     br.urlUpdateFragment();
 
     expect(window.history.replaceState).toHaveBeenCalled();
-  })
+  });
 
   test('updates URL when mode changes', () => {
     window.history.replaceState = jest.fn();
@@ -81,7 +81,7 @@ describe('Plugin: URL controller', () => {
     br.urlUpdateFragment();
 
     expect(window.history.replaceState).toHaveBeenCalled();
-  })
+  });
 
   test('updates URL when search changes', () => {
     window.history.replaceState = jest.fn();
@@ -98,7 +98,7 @@ describe('Plugin: URL controller', () => {
     br.urlUpdateFragment();
 
     expect(window.history.replaceState).toHaveBeenCalled();
-  })
+  });
 
   test('does not update URL when search in query string', () => {
     window.history.replaceState = jest.fn();
@@ -117,18 +117,18 @@ describe('Plugin: URL controller', () => {
     br.urlUpdateFragment();
 
     expect(window.history.replaceState).toHaveBeenCalledTimes(0);
-  })
+  });
 
   test('only q= param is selected from url query params', () => {
-    const INTIAL_URL = "http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo"
+    const INTIAL_URL = "http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo";
     const result = br.urlParamsFiltersOnlySearch(INTIAL_URL);
     expect(result).toBe("?q=foo");
-  })
+  });
 
   test('only q= param is selected from url query params with special character', () => {
-    const INTIAL_URL = "http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo%24%24"
+    const INTIAL_URL = "http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo%24%24";
     const result = br.urlParamsFiltersOnlySearch(INTIAL_URL);
     expect(result).toBe("?q=foo%24%24");
-  })
+  });
 });
 
