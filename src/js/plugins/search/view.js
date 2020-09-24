@@ -146,7 +146,7 @@ class SearchView {
   }
 
   resultsPosition() {
-    let positionMessage = `${this.matches.length} results`;
+    let positionMessage = `${this.matches.length} result${this.matches.length === 1 ? '' : 's'}`;
     if (~this.currentMatchIndex) {
       positionMessage = `${this.currentMatchIndex + 1} / ${this.matches.length}`;
     }
