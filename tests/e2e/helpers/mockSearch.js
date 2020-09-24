@@ -89,3 +89,5 @@ const MOCKED_RESPONSE_FOUND = {
     }
   ]
 };
+
+export const SEARCH_MATCHES_LENGTH = MOCKED_RESPONSE_FOUND.matches.length;

@@ -37,6 +37,7 @@ class DesktopNav {
     // search
     this.searchBox = topToolbar.find('.BRbooksearch.desktop');
     this.searchPin = bottomToolbar.find('.BRsearch');
+    this.searchNavigation = bottomToolbar.find('.BRsearch-navigation');
 
     // other
     this.fullScreen = bottomToolbar.find('.BRicon.full');
