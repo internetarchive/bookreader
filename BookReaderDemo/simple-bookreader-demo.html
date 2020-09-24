@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
 
+    <!-- Get query string parameters and set title, if passed -->
+    <script>
+        let brDemoSearchParams = new URLSearchParams(window.location.search);
+
+        if (brDemoSearchParams.has('title')) {
+            document.title = brDemoSearchParams.get('title');
+        }
+    </script>
+
     <!-- JS dependencies -->
     <script src="../BookReader/jquery-1.10.1.js"></script>
     <script src="../BookReader/jquery-ui-1.12.0.min.js"></script>
@@ -22,7 +31,20 @@
     <!-- Optional imports -->
 </head>
 <body>
+    <!-- These h1 elements will remain hidden unless the query string has a 'showElement' parameter with the element's id -->
+    <h1 id="one-up-mode" class="hidden-element">Initial view mode set to 1up</h1>
+
     <div id="BookReader">
+        Internet Archive BookReader Demo<br/>
+        <noscript>
+            <p>
+                The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="https://archive.org/details/goodytwoshoes00newyiala"> other formats of the book</a>.
+            </p>
+        </noscript>
+    </div>
+
+    <!-- Will remain hidden unless query string has 'showElement=BookReader2'-->
+    <div id="BookReader2" class="hidden-element">
         Internet Archive BookReader Demo<br/>
         <noscript>
             <p>
@@ -32,9 +54,22 @@
     </div>
     
     <script type="text/javascript" src="BookReaderJSSimple.js"></script>
-    <script type="text/javascript" src="SimpleBookReaderDemo.js"></script>
     <script>
-        displayBookReader();
+        if (brDemoSearchParams.has('extraOpts')) {
+            let extraOptions = Function('return ' + brDemoSearchParams.get('extraOpts'))()
+            instantiateBookReader('#BookReader', extraOptions)
+        } else {
+            instantiateBookReader('#BookReader')
+        }
+
+        // Show hidden elements if id is passed in query string, and instantiate second BookReader if necessary
+        if (brDemoSearchParams.has('showElement')) {
+            document.querySelector('#' + brDemoSearchParams.get('showElement')).classList.remove('hidden-element');
+
+            if (brDemoSearchParams.get('showElement') === 'BookReader2') {
+                instantiateBookReader('#BookReader2');
+            }
+        }
     </script>
 </body>
 </html>

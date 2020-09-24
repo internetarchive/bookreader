@@ -17,6 +17,11 @@ body {
     margin: 20px;
 }
 
+/* Hide irrelevant elements */
+.hidden-element {
+    display: none;
+}
+
 @media only screen and (max-width: 799px) {
     body.BRbodyMobileNavEnabled {
         margin: 0;
