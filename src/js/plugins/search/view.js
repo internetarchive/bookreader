@@ -17,6 +17,7 @@ class SearchView {
     // triple mustaches. Hits occasionally include text beyond the search
     // term, so everything within the staches is captured and wrapped.
     this.matcher = new RegExp('{{{(.+?)}}}', 'g');
+    this.matches = [];
     this.cacheDOMElements(params.selector);
     this.bindEvents();
 
@@ -164,7 +165,8 @@ class SearchView {
   }
 
   showPrevResult() {
-    if (!this.currentMatchIndex) { return; }
+    if (this.currentMatchIndex === 0) { return; }
+    if (!~this.currentMatchIndex) { this.currentMatchIndex = 1; }
     this.br.$('.BRnavline .BRsearch').eq(--this.currentMatchIndex).click();
     this.updateResultsPosition();
   }
@@ -180,17 +182,22 @@ class SearchView {
   }
 
   teardownSearchNavigation() {
+    if (!this.dom.searchNavigation) { return; }
+
     this.dom.searchNavigation.off('.searchNavigation').remove();
     this.dom.searchNavigation = null;
   }
 
   setCurrentMatchIndex() {
-    const currentIndexes = this.br.mode === this.br.constMode2up
-      ? this.br.displayedIndices
-      : [ this.br.currentIndex() ];
-    const matchingSearchResult = this.matches.find((m) => currentIndexes.includes(m.par[0].page - 1));
-
+    const matchingSearchResult = this.matches.find((m) => this.br._isIndexDisplayed(m.par[0].page - 1));
     this.currentMatchIndex = this.matches.indexOf(matchingSearchResult);
+  }
+
+  updateSearchNavigation() {
+    if (!this.matches.length) { return; }
+
+    this.setCurrentMatchIndex();
+    this.updateResultsPosition();
   }
 
   /**
@@ -415,6 +422,7 @@ class SearchView {
     this.br.removeSearchHilites();
     this.removeResultPins();
     this.toggleSearchPending(true);
+    this.teardownSearchNavigation();
     this.setQuery(this.br.searchTerm);
   }
 
@@ -441,7 +449,8 @@ class SearchView {
       .on(`${namespace}SearchStarted`, this.handleSearchStarted.bind(this))
       .on(`${namespace}SearchCallbackError`, this.handleSearchCallbackError.bind(this))
       .on(`${namespace}SearchCallbackBookNotIndexed`, this.handleSearchCallbackBookNotIndexed.bind(this))
-      .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this));
+      .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this))
+      .on(`${namespace}pageChanged`, this.updateSearchNavigation.bind(this));
 
     this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
     this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
