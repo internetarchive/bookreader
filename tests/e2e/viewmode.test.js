@@ -3,7 +3,7 @@ import BookReader from './models/BookReader';
 
 const { BASE_URL } = process.env;
 
-fixture `Viewmode carousel`.page `${BASE_URL}viewmode-cycle.html`;
+fixture `Viewmode carousel`.page `${BASE_URL}simple-bookreader-demo.html?extraOpts=%7Bcontrols:%7Bviewmode:%7Bvisible:true%7D%7D%7D&title=View%20Mode%20Cycle%20Button`;
 
 test('Clicking `view mode` cycles through view modes', async t => {
   const { nav } = (new BookReader());
