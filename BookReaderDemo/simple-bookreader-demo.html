@@ -21,18 +21,72 @@
     <script src="../BookReader/dragscrollable-br.js"></script>
     <script id = "last-js-dependency" src="../BookReader/jquery.colorbox-min.js"></script>
     
+    <!-- Link to mmenu files, if needed for this demo -->
+    <script id="import-mmenu">
+        if (brDemoSearchParams.get('mmenu')) {
+            let mmenuScript = document.createElement('script');
+            mmenuScript.src = '../BookReader/mmenu/dist/js/jquery.mmenu.min.js';
+
+            let mmenuNavbarScript = document.createElement('script');
+            mmenuNavbarScript.src = '../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js';
+
+            $('#import-mmenu').after(
+                '<link rel="stylesheet" href="../BookReader/mmenu/dist/css/jquery.mmenu.css"/>',
+                '<link rel="stylesheet" href="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css"/>',
+                mmenuScript,
+                mmenuNavbarScript
+            );
+        }
+    </script>
+
     <!-- BookReader and plugins -->
-    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+    <link id="bookreader-css" rel="stylesheet" href="../BookReader/BookReader.css"/>
     <script src="../BookReader/BookReader.js"></script>
 
-    <!-- Custom CSS overrides -->
-    <link id="css-overides" rel="stylesheet" href="BookReaderDemo.css"/>
+    <!-- Link to plugins that were passed in the query string -->
+    <script id="import-plugins">
+        if (brDemoSearchParams.has('plugins')) {
+            let pluginArray = brDemoSearchParams.get('plugins').split(',');
+            let importPluginsElement = $('#import-plugins');
 
-    <!-- Optional imports -->
+
+            pluginArray.forEach((plugin) => {
+                let pluginScript = document.createElement('script');
+                pluginScript.src = `../BookReader/plugins/plugin.${plugin}.js`;
+
+                importPluginsElement.after(pluginScript);
+            });
+        }
+    </script>
+
+    <!-- Custom CSS overrides -->
+    <link id="css-overrides" rel="stylesheet" href="BookReaderDemo.css"/>
+
+    <style>
+        /* Hide irrelevant elements */
+        .hidden-element {display: none;}
+    </style>
+
+    <!-- Use styling defined in the query string -->
+    <script>
+        if (brDemoSearchParams.has('style')) {
+            $('#css-overrides').remove();
+            if (brDemoSearchParams.get('style') === 'fullscreen') {
+                $('style').append(`
+                    html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
+                    #BookReader { width: 100%; height: 100%; }`);
+            } else if (brDemoSearchParams.get('style') === 'fullscreen_mobile') {
+                $('style').append(`
+                    html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: grey; }
+                    .BookReader { width: 100vw; height: 100vw; }`);
+            }
+        }
+    </script>
 </head>
 <body>
     <!-- These h1 elements will remain hidden unless the query string has a 'showElement' parameter with the element's id -->
     <h1 id="one-up-mode" class="hidden-element">Initial view mode set to 1up</h1>
+    <h1 id="inline-heading" class="hidden-element">My page with a bookreader</h1>
 
     <div id="BookReader">
         Internet Archive BookReader Demo<br/>
