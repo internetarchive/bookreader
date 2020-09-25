@@ -87,6 +87,7 @@ class SearchView {
   }
 
   clearSearchFieldAndResults() {
+    this.br.removeSearchResults();
     this.toggleResultsCount(false);
     this.removeResultPins();
     this.emptyMatches();
@@ -476,7 +477,6 @@ class SearchView {
     this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
     this.dom.searchField.addEventListener('search', () => {
       if (this.dom.searchField.value) { return; }
-      this.br.removeSearchResults();
       this.clearSearchFieldAndResults();
     });
 
