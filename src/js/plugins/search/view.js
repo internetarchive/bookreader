@@ -80,6 +80,7 @@ class SearchView {
 
   emptyMatches() {
     this.dom.results.innerHTML = '';
+    this.matches = [];
   }
 
   removeResultPins() {
