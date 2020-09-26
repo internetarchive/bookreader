@@ -46,7 +46,7 @@
     "sinon": "9.0.3",
     "testcafe": "1.9.2",
     "webpack": "5.0.0-beta.29",
-    "webpack-cli": "3.3.12"
+    "webpack-cli": "^3.3.12"
   },
   "jest": {
     "setupFiles": [

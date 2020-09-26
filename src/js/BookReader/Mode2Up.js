@@ -668,7 +668,7 @@ export class Mode2Up {
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
 
-        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
+        if (this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
       });
     });
   }
@@ -804,7 +804,7 @@ export class Mode2Up {
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
 
-        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
+        if (this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
       });
     });
   }

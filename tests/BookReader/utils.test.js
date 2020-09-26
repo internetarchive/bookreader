@@ -53,7 +53,7 @@ test('testing debounce', () => {
   expect(func).toHaveBeenCalledTimes(0); // func not called
 
   // Call it several times with 500ms between each call
-  for(let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     clock.tick(500);
     debouncedFunc();
   }

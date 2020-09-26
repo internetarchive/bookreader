@@ -312,7 +312,7 @@ export class WebTTSSound {
         if (location.toString().indexOf('_debugReadAloud=true') != -1) {
           console.log(`CHROME-PAUSE-HACK: ${result}`);
         }
-        switch(result) {
+        switch (result) {
         case 'ended':
           // audio was stopped/finished; nothing to do
           break;
