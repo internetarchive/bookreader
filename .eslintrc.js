@@ -22,6 +22,7 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
+        "comma-dangle": ["error", "only-multiline"],
         "indent": ["error", 2],
         "no-console": "off", // Used too often behind `debug` options; not dealing with this now
         "no-empty": ["error", { "allowEmptyCatch": true }],
