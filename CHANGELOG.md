@@ -1,3 +1,7 @@
+# 4.17.0
+- Fix: text selection on Safari @cdrini
+- Feature: Search results navigation bar @shaneriley
+
 # 4.16.0
 - Dev: Emit custom event to trigger @iisa
 - Feature: Text selection plugin @Pyrojet99
