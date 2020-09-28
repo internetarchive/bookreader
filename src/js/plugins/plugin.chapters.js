@@ -32,7 +32,7 @@ BookReader.prototype.init = (function(super_) {
       this.bind(BookReader.eventNames.mobileNavOpen,
         () => {
           this.updateTOCState(this.firstIndex, this._tocEntries);
-          if($('table-contents-list').parent().hasClass('mm-opened')){
+          if ($('table-contents-list').parent().hasClass('mm-opened')){
             this.updateTOCState(this.firstIndex, this._tocEntries);
           }
         }
@@ -72,7 +72,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
     .data({ pageIndex });
 
   //adds .BRchapters to the slider only if pageIndex exists
-  if(pageIndex != undefined){
+  if (pageIndex != undefined){
     $(`<div></div>`)
       .append($('<div />').text(title + pageStr))
       .addClass('BRchapter')
@@ -117,7 +117,7 @@ BookReader.prototype.removeChapters = function() {
  */
 BookReader.prototype.updateTOC = function(tocEntries) {
   this.removeChapters();
-  if(this.enableMobileNav && tocEntries.length > 0){
+  if (this.enableMobileNav && tocEntries.length > 0){
     this.$(".BRmobileMenu__tableContents").show();
   }
   for (let i = 0; i < tocEntries.length; i++) {
@@ -240,12 +240,12 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
  */
 BookReader.prototype.updateTOCState = function(currIndex, tocEntries) {
   //this function won't have any effects if called before OpenLibrary request is finished
-  if(!tocEntries){return}
+  if (!tocEntries){return}
   $('.current-chapter').removeClass('current-chapter');
   const tocEntriesIndexed = tocEntries.filter((el) => el.pageIndex != undefined).reverse();
   const currChapter = tocEntriesIndexed[tocEntriesIndexed.findIndex(
     (el) => el.pageIndex <= currIndex)];
-  if(currChapter != undefined){
+  if (currChapter != undefined){
     $(currChapter.mobileHTML).addClass('current-chapter');
   }
 }

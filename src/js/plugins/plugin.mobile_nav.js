@@ -276,7 +276,7 @@ const applyFilters = (drawerEl, br) => {
   $('.BRcheckbox-filters').each(
     (i, el) => {
       br.refs.$br.removeClass("filter-applied");
-      if($(el).is(':checked')){
+      if ($(el).is(':checked')){
         br.refs.$br.addClass($(el).attr("filter-applied"));
         filterStr = filterStr + FILTERLIST[i].filter;
       }
