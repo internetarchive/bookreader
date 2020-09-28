@@ -17,7 +17,7 @@ export class TextSelectionPlugin {
     // there we will set `pointer-events: all` on the paragraph element. We don't
     // do this everywhere, because it's a worse experience. Thanks Safari :/
     this.pointerEventsOnParagraph = pointerEventsOnParagraph;
-    if(avoidTspans) {
+    if (avoidTspans) {
       this.svgParagraphElement = "g";
       this.svgWordElement = "text";
     }
@@ -87,13 +87,13 @@ export class TextSelectionPlugin {
   textSelectingMode(svg) {
     $(svg).on('mousedown.textSelectPluginHandler', (event) => {
       if (!$(event.target).is(".BRwordElement")) {
-        if(window.getSelection().toString() != "") window.getSelection().removeAllRanges();
+        if (window.getSelection().toString() != "") window.getSelection().removeAllRanges();
       }
       event.stopPropagation();
     })
     $(svg).on('mouseup.textSelectPluginHandler', (event) => {
       event.stopPropagation();
-      if(window.getSelection().toString() == "") {
+      if (window.getSelection().toString() == "") {
         $(svg).off(".textSelectPluginHandler");
         this.defaultMode(svg);      }
     })
@@ -106,7 +106,7 @@ export class TextSelectionPlugin {
   stopPageFlip($container) {
     /** @type {JQuery<SVGElement>} */
     const $svg = $container.find('svg.textSelectionSVG');
-    if(!$svg.length) return;
+    if (!$svg.length) return;
     $svg.each((i, s) => this.defaultMode(s))
     this.interceptCopy($container);
   }
@@ -119,7 +119,7 @@ export class TextSelectionPlugin {
     const $svgLayers = $container.find('.textSelectionSVG');
     if ($svgLayers.length) return;
     const XMLpage = await this.getPageText(pageIndex);
-    if(!XMLpage) return;
+    if (!XMLpage) return;
     const XMLwidth = $(XMLpage).attr("width");
     const XMLheight = $(XMLpage).attr("height");
 
@@ -149,7 +149,7 @@ export class TextSelectionPlugin {
 
       const wordHeightArr = [];
 
-      for(let i = 0; i < words.length; i++) {
+      for (let i = 0; i < words.length; i++) {
         // Adding tspan for each word in paragraph
         const currWord = words[i];
         // eslint-disable-next-line no-unused-vars
@@ -168,7 +168,7 @@ export class TextSelectionPlugin {
 
         // Adding spaces after words except at the end of the paragraph
         // TODO: assumes left-to-right text
-        if(i < words.length - 1){
+        if (i < words.length - 1){
           const nextWord = words[i + 1];
           // eslint-disable-next-line no-unused-vars
           const [leftNext, bottomNext, rightNext, topNext] = $(nextWord).attr("coords").split(',').map(parseFloat);
@@ -176,14 +176,14 @@ export class TextSelectionPlugin {
           spaceTspan.setAttribute("class", "BRwordElement");
           spaceTspan.setAttribute("x", right.toString());
           spaceTspan.setAttribute("y", bottom.toString());
-          if((leftNext - right) > 0) spaceTspan.setAttribute("textLength", (leftNext - right).toString());
+          if ((leftNext - right) > 0) spaceTspan.setAttribute("textLength", (leftNext - right).toString());
           spaceTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
           spaceTspan.textContent = " ";
           paragSvg.appendChild(spaceTspan);
         }
 
         // Adds newline at the end of paragraph on Firefox
-        if((i ==  words.length - 1 && (this.insertNewlines))) {
+        if ((i ==  words.length - 1 && (this.insertNewlines))) {
           paragSvg.appendChild(document.createTextNode("\n"));
         }
       }
@@ -199,7 +199,7 @@ export class TextSelectionPlugin {
 
 export class BookreaderWithTextSelection extends BookReader {
   init() {
-    if(this.enableTextSelection){
+    if (this.enableTextSelection){
       this.textSelectionPlugin = new TextSelectionPlugin();
       this.textSelectionPlugin.init(this.bookId);
     }
@@ -212,7 +212,7 @@ export class BookreaderWithTextSelection extends BookReader {
   _createPageContainer(index, styles = {}) {
     const $container = super._createPageContainer(index, styles);
     // Disable if thumb mode; it's too janky
-    if(this.enableTextSelection && this.mode != this.constModeThumb){
+    if (this.enableTextSelection && this.mode != this.constModeThumb){
       this.textSelectionPlugin.createTextLayer(index, $container);
     }
     return $container;
