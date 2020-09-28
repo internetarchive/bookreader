@@ -17,6 +17,7 @@ class SearchView {
     // triple mustaches. Hits occasionally include text beyond the search
     // term, so everything within the staches is captured and wrapped.
     this.matcher = new RegExp('{{{(.+?)}}}', 'g');
+    this.matches = [];
     this.cacheDOMElements(params.selector);
     this.bindEvents();
 
@@ -79,6 +80,7 @@ class SearchView {
 
   emptyMatches() {
     this.dom.results.innerHTML = '';
+    this.matches = [];
   }
 
   removeResultPins() {
@@ -86,10 +88,12 @@ class SearchView {
   }
 
   clearSearchFieldAndResults() {
+    this.br.removeSearchResults();
     this.toggleResultsCount(false);
     this.removeResultPins();
     this.emptyMatches();
     this.setQuery('');
+    this.teardownSearchNavigation();
   }
 
   /**
@@ -120,6 +124,102 @@ class SearchView {
       <ul data-id="results"></ul>
     `;
     return searchTray;
+  }
+
+  renderSearchNavigation() {
+    const selector = 'BRsearch-navigation';
+    $('.BRnav').before(`
+      <div class="${selector}">
+        <h4>
+          <span class="icon icon-search"></span>
+          Results
+        </h4>
+        <div class="pagination">
+          <a href="#" class="prev" title="Previous result"><span class="icon icon-chevron hflip"></span></a>
+          <span data-id="resultsCount">${this.resultsPosition()}</span>
+          <a href="#" class="next" title="Next result"><span class="icon icon-chevron"></a>
+        </div>
+        <a href="#" class="clear" title="Clear search results">
+          <span class="icon icon-close"></span>
+        </a>
+      </div>
+    `);
+    this.dom.searchNavigation = $(`.${selector}`);
+  }
+
+  resultsPosition() {
+    let positionMessage = `${this.matches.length} result${this.matches.length === 1 ? '' : 's'}`;
+    if (~this.currentMatchIndex) {
+      positionMessage = `${this.currentMatchIndex + 1} / ${this.matches.length}`;
+    }
+    return positionMessage;
+  }
+
+  bindSearchNavigationEvents() {
+    if (!this.dom.searchNavigation) { return; }
+    const namespace = 'searchNavigation';
+
+    this.dom.searchNavigation
+      .on(`click.${namespace}`, '.clear', this.clearSearchFieldAndResults.bind(this))
+      .on(`click.${namespace}`, '.prev', this.showPrevResult.bind(this))
+      .on(`click.${namespace}`, '.next', this.showNextResult.bind(this))
+      .on(`click.${namespace}`, false);
+  }
+
+  showPrevResult() {
+    if (this.currentMatchIndex === 0) { return; }
+    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
+    if (!~this.currentMatchIndex) { this.currentMatchIndex = 1; }
+    this.br.$('.BRnavline .BRsearch').eq(--this.currentMatchIndex).click();
+    this.updateResultsPosition();
+  }
+
+  showNextResult() {
+    if (this.currentMatchIndex + 1 === this.matches.length) { return; }
+    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
+    this.br.$('.BRnavline .BRsearch').eq(++this.currentMatchIndex).click();
+    this.updateResultsPosition();
+  }
+
+  updateResultsPosition() {
+    this.dom.searchNavigation.find('[data-id=resultsCount]').text(this.resultsPosition());
+  }
+
+  teardownSearchNavigation() {
+    if (!this.dom.searchNavigation) { return; }
+
+    this.dom.searchNavigation.off('.searchNavigation').remove();
+    this.dom.searchNavigation = null;
+  }
+
+  setCurrentMatchIndex() {
+    let matchingSearchResult;
+    if (this.br.mode === this.br.constModeThumb) {
+      this.currentMatchIndex = -1;
+      return;
+    }
+    if (this.br.mode === this.br.constMode2up) {
+      matchingSearchResult = this.find2upMatchingSearchResult();
+    }
+    else {
+      matchingSearchResult = this.find1upMatchingSearchResult();
+    }
+    this.currentMatchIndex = this.matches.indexOf(matchingSearchResult);
+  }
+
+  find1upMatchingSearchResult() {
+    return this.matches.find((m) => this.br.currentIndex() === m.par[0].page - 1);
+  }
+
+  find2upMatchingSearchResult() {
+    return this.matches.find((m) => this.br._isIndexDisplayed(m.par[0].page - 1));
+  }
+
+  updateSearchNavigation() {
+    if (!this.matches.length) { return; }
+
+    this.setCurrentMatchIndex();
+    this.updateResultsPosition();
   }
 
   /**
@@ -199,11 +299,9 @@ class SearchView {
       }
 
       // draw marker
-      const markerTopValue = -this.br.refs.$brContainer.height();
       $('<div>')
         .addClass('BRsearch')
         .css({
-          top: `${markerTopValue}px`,
           left: percentThrough,
         })
         .attr('title', uiStringSearch)
@@ -237,8 +335,7 @@ class SearchView {
           // to remove `bind` dependency
           this.br._searchPluginGoToResult(+$(event.target).data('pageIndex'));
           this.br.updateSearchHilites();
-        }.bind(this))
-        .animate({top:'-25px'}, 'slow');
+        }.bind(this));
     });
   }
 
@@ -324,6 +421,10 @@ class SearchView {
    *   @param {object} properties.results
    */
   handleSearchCallback(e, { results }) {
+    this.matches = results.matches;
+    this.setCurrentMatchIndex();
+    this.renderSearchNavigation();
+    this.bindSearchNavigationEvents();
     this.renderMatches(results.matches);
     this.renderPins(results.matches);
     this.updateResultsCount(results.matches.length);
@@ -343,6 +444,7 @@ class SearchView {
     this.br.removeSearchHilites();
     this.removeResultPins();
     this.toggleSearchPending(true);
+    this.teardownSearchNavigation();
     this.setQuery(this.br.searchTerm);
   }
 
@@ -369,13 +471,13 @@ class SearchView {
       .on(`${namespace}SearchStarted`, this.handleSearchStarted.bind(this))
       .on(`${namespace}SearchCallbackError`, this.handleSearchCallbackError.bind(this))
       .on(`${namespace}SearchCallbackBookNotIndexed`, this.handleSearchCallbackBookNotIndexed.bind(this))
-      .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this));
+      .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this))
+      .on(`${namespace}pageChanged`, this.updateSearchNavigation.bind(this));
 
     this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
     this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
     this.dom.searchField.addEventListener('search', () => {
       if (this.dom.searchField.value) { return; }
-      this.br.removeSearchResults();
       this.clearSearchFieldAndResults();
     });
 

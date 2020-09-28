@@ -48,6 +48,9 @@ $gray20: #333;
 $gray40: #666;
 $gray80: #ccc;
 $white: #fff;
+$darkBlue: #272958;
+$mediumBlue: #428bca;
+$lightBlue: #adaedc;
 $controlsText: $white;
 $controlsBG: $gray20;
 $iconFill: $white;
@@ -60,6 +63,12 @@ $controlsBorder: $gray13;
 $trackColor: $gray40;
 $trackFillColor: $gray80;
 $mobileMenuBG: #151515;
+
+$tooltipBG: $gray20;
+$tooltipText: $white;
+$searchMarkerBG: $mediumBlue;
+$searchResultText: $lightBlue;
+$searchResultBG: $darkBlue;
 
 @mixin brDarkControls {
     background-color: $brColorDarkGreyBg;
