@@ -1564,10 +1564,22 @@ i.BRicon {
   transform: translateX(-50%);
   width: 230px;
   padding: 12px 14px;
-  color: #333;
+  color: #fff;
   font-weight: bold;
-  border: 4px solid #d8d8d8;
-  background: #fff;
+  background: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.BookReader .BRquery:after, .BRmobileMenu .BRquery:after, .BRfloat .BRquery:after, .BookReader .BRchapter > div:after, .BRmobileMenu .BRchapter > div:after, .BRfloat .BRchapter > div:after {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  content: "";
+  border: 7px solid transparent;
+  border-width: 7px 4px;
+  border-bottom: none;
+  border-top-color: #333;
 }
 
 .BookReader .BookReaderSearchHilite, .BRmobileMenu .BookReaderSearchHilite, .BRfloat .BookReaderSearchHilite {
@@ -1605,33 +1617,30 @@ i.BRicon {
   background-color: blue;
 }
 .BookReader .BRsearch, .BRmobileMenu .BRsearch, .BRfloat .BRsearch {
-  background-image: url(images/marker_srch-off.svg);
-  width: 20px;
-  height: 25px;
-  margin-left: -20px;
-  /* Center icon */
+  width: 9px;
+  height: 6px;
+  margin-left: -10px;
+}
+.BookReader .BRsearch:before, .BRmobileMenu .BRsearch:before, .BRfloat .BRsearch:before {
+  position: absolute;
+  left: calc(50% - 2px);
+  transform: translateX(-50%);
+  width: 2px;
+  height: 6px;
+  content: "";
+  background: #428bca;
+  border-radius: 2px;
 }
 .BookReader .BRsearch:hover .BRquery, .BRmobileMenu .BRsearch:hover .BRquery, .BRfloat .BRsearch:hover .BRquery {
   display: block;
-}
-.BookReader .BRsearch.front, .BRmobileMenu .BRsearch.front, .BRfloat .BRsearch.front {
-  background-image: url(images/marker_srch-on.svg);
 }
 .BookReader .BRsearch .BRquery, .BRmobileMenu .BRsearch .BRquery, .BRfloat .BRsearch .BRquery {
   display: none;
 }
 .BookReader .BRquery b, .BRmobileMenu .BRquery b, .BRfloat .BRquery b {
-  color: #000;
+  color: #adaedc;
   font-weight: bold;
-  background-color: rgba(0, 0, 255, 0.2);
-}
-.BookReader .BRsearch .pointer, .BRmobileMenu .BRsearch .pointer, .BRfloat .BRsearch .pointer {
-  position: absolute;
-  left: 121px;
-  bottom: -14px;
-  width: 18px;
-  height: 27px;
-  background: transparent url(images/marker_srch-on.png) no-repeat;
+  background-color: #272958;
 }
 .BookReader .BRbooksearch, .BRmobileMenu .BRbooksearch, .BRfloat .BRbooksearch {
   position: relative;
@@ -1827,22 +1836,23 @@ i.BRicon {
   list-style: none;
 }
 .BookReader #BRsearch_tray li, .BRmobileMenu #BRsearch_tray li, .BRfloat #BRsearch_tray li {
-  display: grid;
-  grid-template-columns: 30px 1fr;
-  grid-gap: 0 5px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #fff;
+}
+.BookReader #BRsearch_tray li:after, .BRmobileMenu #BRsearch_tray li:after, .BRfloat #BRsearch_tray li:after {
+  display: none;
 }
 .BookReader #BRsearch_tray li img, .BRmobileMenu #BRsearch_tray li img, .BRfloat #BRsearch_tray li img {
   display: block;
   width: 100%;
 }
 .BookReader #BRsearch_tray li h4, .BRmobileMenu #BRsearch_tray li h4, .BRfloat #BRsearch_tray li h4 {
-  grid-column: 2/3;
   padding: 0 0 20px 0;
   margin: 0;
+  font-size: 14px;
   font-weight: normal;
 }
 .BookReader #BRsearch_tray li p, .BRmobileMenu #BRsearch_tray li p, .BRfloat #BRsearch_tray li p {
-  grid-column: 2/3;
   padding: 0 0 15px 0;
   margin: 0;
   font-size: 12px;
@@ -1864,6 +1874,53 @@ i.BRicon {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+.BookReader .BRsearch-navigation, .BRmobileMenu .BRsearch-navigation, .BRfloat .BRsearch-navigation {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  color: #fff;
+  background-color: #333;
+}
+.BookReader .BRsearch-navigation h4, .BRmobileMenu .BRsearch-navigation h4, .BRfloat .BRsearch-navigation h4 {
+  padding: 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: normal;
+}
+.BookReader .BRsearch-navigation h4 span, .BRmobileMenu .BRsearch-navigation h4 span, .BRfloat .BRsearch-navigation h4 span {
+  vertical-align: middle;
+}
+.BookReader .BRsearch-navigation .pagination, .BRmobileMenu .BRsearch-navigation .pagination, .BRfloat .BRsearch-navigation .pagination {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+.BookReader .BRsearch-navigation .pagination span, .BRmobileMenu .BRsearch-navigation .pagination span, .BRfloat .BRsearch-navigation .pagination span {
+  display: inline-block;
+  padding: 0 15px;
+}
+.BookReader .BRsearch-navigation .pagination a, .BRmobileMenu .BRsearch-navigation .pagination a, .BRfloat .BRsearch-navigation .pagination a {
+  display: inline-block;
+  vertical-align: middle;
+}
+.BookReader .BRsearch-navigation .pagination a span, .BRmobileMenu .BRsearch-navigation .pagination a span, .BRfloat .BRsearch-navigation .pagination a span {
+  width: 8px;
+  height: 13px;
+  padding: 0;
+  background-size: 100% auto;
+}
+.BookReader .BRsearch-navigation .clear span, .BRmobileMenu .BRsearch-navigation .clear span, .BRfloat .BRsearch-navigation .clear span {
+  width: 18px;
+  height: 18px;
+}
+.BookReader .BRsearch-navigation + .BRnav .BRnavCntl, .BRmobileMenu .BRsearch-navigation + .BRnav .BRnavCntl, .BRfloat .BRsearch-navigation + .BRnav .BRnavCntl {
+  display: none;
 }
 
 @keyframes hiliteFadeIn {
@@ -2247,6 +2304,24 @@ li.BRtable-contents-el .BRTOCElementPage {
   background-image: url("icons/magnify-plus.svg");
 }
 
+.icon-search {
+  width: 19px;
+  height: 19px;
+  background-image: url("images/icon_search_button.svg");
+}
+
+.icon-chevron {
+  width: 5px;
+  height: 8px;
+  background-image: url("icons/chevron-right.svg");
+}
+
+.icon-close {
+  width: 12px;
+  height: 12px;
+  background-image: url("icons/close-circle.svg");
+}
+
 .BRcontrols {
   width: 100%;
   /* BookReader defaults overrides */
@@ -2465,4 +2540,44 @@ li.BRtable-contents-el .BRTOCElementPage {
 }
 .BRcontrols .scrubber .BRpager.ui-slider .ui-slider-range {
   background-color: #ccc;
+}
+
+.textSelectionSVG {
+  width: 100%;
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+.textSelectionSVG .BRwordElement {
+  pointer-events: all;
+}
+.textSelectionSVG.selectingSVG {
+  pointer-events: auto;
+  cursor: text;
+}
+.textSelectionSVG .BRwordElement::selection {
+  background: rgba(86, 158, 230, 0.4);
+}
+.textSelectionSVG .BRwordElement::-moz-selection {
+  background: rgba(86, 158, 230, 0.4);
+  color: transparent;
+}
+.textSelectionSVG .BRparagElement {
+  fill: red;
+  cursor: text;
+  white-space: pre;
+  fill-opacity: 0;
+  font-family: Georgia, serif;
+}
+
+.BRpagecontainer img {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.BRpageFlipping .textSelectionSVG {
+  display: none;
 }

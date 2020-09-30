@@ -74,6 +74,7 @@ export class Mode2Up {
     this.setMouseHandlers();
     this.br.displayedIndices = this.displayedIndices;
     this.br.updateToolbarZoom(this.br.reduce);
+    this.br.trigger('pageChanged');
   }
 
   /**
@@ -668,7 +669,9 @@ export class Mode2Up {
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
 
-        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
+        if (this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
+
+        this.br.trigger('pageChanged');
       });
     });
   }
@@ -804,7 +807,9 @@ export class Mode2Up {
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
 
-        if(this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
+        if (this.br.enableTextSelection) this.br.textSelectionPlugin.stopPageFlip(this.br.refs.$brContainer);
+
+        this.br.trigger('pageChanged');
       });
     });
   }

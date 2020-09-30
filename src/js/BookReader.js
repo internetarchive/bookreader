@@ -19,7 +19,7 @@ This file is part of BookReader.
     The BookReader source is hosted at http://github.com/internetarchive/bookreader/
 
 */
-import { version as VERSION } from '../../package.json';
+import PACKAGE_JSON from '../../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
@@ -51,7 +51,7 @@ export default function BookReader(overrides = {}) {
   this.setup(options);
 }
 
-BookReader.version = VERSION;
+BookReader.version = PACKAGE_JSON.version;
 
 // Mode constants
 BookReader.constMode1up = 1;
@@ -503,6 +503,8 @@ BookReader.prototype.init = function() {
 BookReader.prototype.trigger = function(name, props = this) {
   const eventName = 'BookReader:' + name;
   $(document).trigger(eventName, props);
+
+  utils.polyfillCustomEvent(window);
   window.dispatchEvent(new CustomEvent(eventName, {
     bubbles: true,
     composed: true,
@@ -591,7 +593,7 @@ BookReader.prototype.setupKeyListeners = function() {
 
     // Keyboard navigation
     if (!self.keyboardNavigationIsDisabled(e)) {
-      switch(e.keyCode) {
+      switch (e.keyCode) {
       case KEY_PGUP:
       case KEY_UP:
         // In 1up mode page scrolling is handled by browser
@@ -1069,7 +1071,7 @@ BookReader.prototype.zoom = function(direction) {
     break
   }
 
-  if(this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
+  if (this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
   return;
 };
 
@@ -1557,7 +1559,7 @@ BookReader.prototype.switchMode = function(
   var eventName = mode + 'PageViewSelected';
   this.trigger(BookReader.eventNames[eventName]);
 
-  if(this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
+  if (this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -1613,7 +1615,7 @@ BookReader.prototype.enterFullscreen = function() {
   }.bind(this);
   $(document).keyup(this._fullscreenCloseHandler);
 
-  if(this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
+  if (this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.exitFullScreen = function() {
@@ -1632,7 +1634,7 @@ BookReader.prototype.exitFullScreen = function() {
   this.resize();
   this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
 
-  if(this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
+  if (this.enableTextSelection) this.textSelectionPlugin.stopPageFlip(this.refs.$brContainer);
 };
 
 /**
@@ -1771,6 +1773,7 @@ BookReader.prototype.updateFirstIndex = function(
   if (this.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
+  this.trigger('pageChanged');
   this.updateNavIndexThrottled(index);
 };
 
@@ -2678,6 +2681,16 @@ BookReader.prototype.updateFromParams = function(params) {
     // $$$ this assumes page numbers are unique
     if (params.page != this._models.book.getPageNum(this.currentIndex())) {
       this.jumpToPage(params.page);
+    }
+  }
+
+
+  // process /search
+  // @deprecated for urlMode 'history'
+  // Continues to work for urlMode 'hash'
+  if (this.enableSearch && 'undefined' != typeof(params.search)) {
+    if (this.searchTerm !== params.search) {
+      this.$('.BRsearchInput').val(params.search);
     }
   }
 

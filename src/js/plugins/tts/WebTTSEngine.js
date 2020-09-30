@@ -1,5 +1,6 @@
 /* global br */
-import { isChrome, sleep, promisifyEvent, isFirefox, isAndroid } from './utils.js';
+import { isChrome, isFirefox } from '../../../util/browserSniffing.js';
+import { sleep, promisifyEvent, isAndroid } from './utils.js';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
@@ -311,7 +312,7 @@ export class WebTTSSound {
         if (location.toString().indexOf('_debugReadAloud=true') != -1) {
           console.log(`CHROME-PAUSE-HACK: ${result}`);
         }
-        switch(result) {
+        switch (result) {
         case 'ended':
           // audio was stopped/finished; nothing to do
           break;

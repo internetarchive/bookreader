@@ -151,7 +151,7 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
       const toolbar = `
         <span class="BRmobileHamburgerWrapper">
           <button class="BRmobileHamburger"></button>
-          <span class="BRtoolbarMobileTitle" title="${escapedTitle}">${this.bookTitle}</span>
+          <span class="BRtoolbarMobileTitle" title="${escapedTitle}">${escapedTitle}</span>
         </span>
       `;
       $el
@@ -276,7 +276,7 @@ const applyFilters = (drawerEl, br) => {
   $('.BRcheckbox-filters').each(
     (i, el) => {
       br.refs.$br.removeClass("filter-applied");
-      if($(el).is(':checked')){
+      if ($(el).is(':checked')){
         br.refs.$br.addClass($(el).attr("filter-applied"));
         filterStr = filterStr + FILTERLIST[i].filter;
       }

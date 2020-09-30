@@ -102,7 +102,7 @@ export class BookModel {
         const pageIndex = parseInt(pageIntStr);
         indices.push(pageIndex);
         return indices;
-      } catch(err) {
+      } catch (err) {
         // Do nothing... will run through page names and see if one matches
       }
     }

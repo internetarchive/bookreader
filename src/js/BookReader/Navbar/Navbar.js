@@ -116,6 +116,7 @@ export class Navbar {
   init() {
     const { br } = this;
     const { navbarTitle: title } = br.options;
+    const isRTL = br.pageProgression === 'rl';
 
     br.refs.$BRfooter = this.$root = $(`<div class="BRfooter"></div>`);
     br.refs.$BRnav = this.$nav = $(
@@ -132,13 +133,13 @@ export class Navbar {
                 <p><span class='BRcurrentpage'></span></p>
               </li>
               <li>
-                <button class="BRicon book_left" title="Flip left">
+                <button class="BRicon book_left ${isRTL ? 'book_flip_next' : 'book_flip_prev'}" title="Flip left">
                   <div class="icon icon-left-arrow"></div>
                   <span class="tooltip">Flip left</span>
                 </button>
               </li>
               <li>
-                <button class="BRicon book_right" title="Flip right">
+                <button class="BRicon book_right ${isRTL ? 'book_flip_prev' : 'book_flip_next'}" title="Flip right">
                   <div class="icon icon-left-arrow hflip"></div>
                   <span class="tooltip">Flip right</span>
                 </button>

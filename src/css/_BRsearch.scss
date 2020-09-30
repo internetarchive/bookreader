@@ -6,10 +6,22 @@
   transform: translateX(-50%);
   width: 230px;
   padding: 12px 14px;
-  color: #333;
+  color: $tooltipText;
   font-weight: bold;
-  border: 4px solid rgb(216,216,216);
-  background: #fff;
+  background: $tooltipBG;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .5);
+  &:after {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    content: "";
+    border: 7px solid transparent;
+    border-width: 7px 4px;
+    border-bottom: none;
+    border-top-color: $tooltipBG;
+  }
 }
 
 #{$brScope} {
@@ -54,18 +66,24 @@
     }
   }
   .BRsearch {
-    background-image: url(images/marker_srch-off.svg);
-    width: 20px;
-    height: 25px;
-    margin-left: -20px; /* Center icon */
+    width: 9px;
+    height: 6px;
+    margin-left: -10px;
+    &:before {
+      position: absolute;
+      left: calc(50% - 2px);
+      transform: translateX(-50%);
+      width: 2px;
+      height: 6px;
+      content: "";
+      background: $searchMarkerBG;
+      border-radius: 2px;
+    }
     &:hover {
       .BRquery {
         display: block;
       }
     }
-  }
-  .BRsearch.front {
-    background-image: url(images/marker_srch-on.svg);
   }
   .BRsearch .BRquery {
     display: none;
@@ -73,18 +91,10 @@
   .BRquery {
     @extend %timeline-tooltip;
     b {
-      color: #000;
+      color: $searchResultText;
       font-weight: bold;
-      background-color: rgba(0,0,255, .2);
+      background-color: $searchResultBG;
     }
-  }
-  .BRsearch .pointer {
-    position: absolute;
-    left: 121px;
-    bottom: -14px;
-    width: 18px;
-    height: 27px;
-    background: transparent url(images/marker_srch-on.png) no-repeat;
   }
 
   .BRbooksearch {
@@ -299,9 +309,11 @@
     }
 
     li {
-      display: grid;
-      grid-template-columns: 30px 1fr;
-      grid-gap: 0 5px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid $white;
+      &:after {
+        display: none;
+      }
     }
 
     li img {
@@ -310,14 +322,13 @@
     }
 
     li h4 {
-      grid-column: 2 / 3;
       padding: 0 0 20px 0;
       margin: 0;
+      font-size: 14px;
       font-weight: normal;
     }
 
     li p {
-      grid-column: 2 / 3;
       padding: 0 0 15px 0;
       margin: 0;
       font-size: 12px;
@@ -343,6 +354,58 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  .BRsearch-navigation {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    color: $white;
+    background-color: $brColorDarkGreyBg;
+    h4 {
+      padding: 0;
+      margin: 0;
+      font-size: 15px;
+      font-weight: normal;
+      span {
+        vertical-align: middle;
+      }
+    }
+    .pagination {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      span {
+        display: inline-block;
+        padding: 0 15px;
+      }
+      a {
+        display: inline-block;
+        vertical-align: middle;
+        span {
+          width: 8px;
+          height: 13px;
+          padding: 0;
+          background-size: 100% auto;
+        }
+      }
+    }
+    .clear {
+      span {
+        width: 18px;
+        height: 18px;
+      }
+    }
+    + .BRnav {
+      .BRnavCntl {
+        display: none;
+      }
+    }
   }
 }
 
