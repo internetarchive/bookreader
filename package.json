@@ -43,7 +43,7 @@
     "node-fetch": "2.6.1",
     "regenerator-runtime": "0.13.7",
     "sass": "1.26.10",
-    "sinon": "9.0.3",
+    "sinon": "9.1.0",
     "testcafe": "1.9.2",
     "webpack": "5.0.0-beta.29",
     "webpack-cli": "3.3.12"
