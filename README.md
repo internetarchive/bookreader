@@ -85,7 +85,7 @@ See `BookReaderDemo/demo-simple.html` and `BookReaderDemo/BookReaderJSSimple.js`
 
 ## Plugins
 
-A basic plugin system is used. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:
+A basic plugin system is used. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:-
 
 - plugin.autoplay.js - autoplay mode. Flips pages at set intervals.
 - plugin.chapters.js - render chapter markers
