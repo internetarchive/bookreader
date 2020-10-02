@@ -29,7 +29,7 @@
      * to determine if menu toggle should happen
      * set by `registerDragHandlers`
      */
-  var holdOffOnToggle = false;
+  let holdOffOnToggle = false;
 
   /**
      * Hides Nav arrow tab
@@ -40,7 +40,7 @@
     if (!br.refs || !br.refs.$BRnav) {
       return;
     }
-    var $menuTab = br.refs.$BRnav.children('.BRnavCntl');
+    const $menuTab = br.refs.$BRnav.children('.BRnavCntl');
     $menuTab.css('display', 'none');
   }
 
@@ -71,7 +71,7 @@
      *
      * @param { object } br - BookReader instance
      */
-  var removeClickHandlers = function removeClickHandlers(br) {
+  const removeClickHandlers = function removeClickHandlers(br) {
     if (br.refs.$brPageViewEl) {
       br.refs.$brPageViewEl[0].removeEventListener('click', onBookClick, true);
     }
@@ -87,20 +87,20 @@
      *
      * @params { object } br - bookreader instance
      */
-  var togglingNav = false; /* flag to make sure animations only fire once */
-  var toggleNav = function toggleNav(br) {
+  let togglingNav = false; /* flag to make sure animations only fire once */
+  const toggleNav = function toggleNav(br) {
     if (togglingNav) {
       return;
     }
 
     togglingNav = true;
-    var navToggled = function navToggled() {
+    const navToggled = function navToggled() {
       togglingNav = false;
       window.removeEventListener('BookReader:navToggled', navToggled);
     };
     $(document).on('BookReader:navToggled', navToggled);
 
-    var menuIsShowing = br.navigationIsVisible();
+    const menuIsShowing = br.navigationIsVisible();
     if (menuIsShowing) {
       br.hideNavigation();
     } else {
@@ -113,10 +113,10 @@
      * This normally happens when bookreader is zoomed in.
      * not using br.refs, because `scrollWidth` & `offsetWidth` is not easily accessible.
      */
-  var isBRcontainerScrollable = function isBRcontainerScrollable() {
-    var brContainer = document.querySelector('.BRcontainer');
-    var scrollWidth = brContainer.scrollWidth;
-    var offsetWidth = brContainer.offsetWidth;
+  const isBRcontainerScrollable = function isBRcontainerScrollable() {
+    const brContainer = document.querySelector('.BRcontainer');
+    const scrollWidth = brContainer.scrollWidth;
+    const offsetWidth = brContainer.offsetWidth;
 
     return scrollWidth > offsetWidth;
   }
@@ -127,16 +127,16 @@
      * @param { MouseEvent } event - JS click event object
      * @param { DOM } book - DOM element that represents book
      */
-  var isCenterClick = function isCenterClick(event, book) {
-    var clickPosition = event.clientX;
-    var bookWidth = book.offsetWidth;
-    var leftOffset = book.offsetLeft
-    var bookEndPageFlipArea = Math.round(bookWidth / 3);
-    var leftThreshold = Math.round(bookEndPageFlipArea + leftOffset); // without it, the click area is small
-    var rightThreshold = Math.round(bookWidth - bookEndPageFlipArea + leftOffset);
-    var isOkOnRight = clickPosition > leftThreshold;
-    var isOkOnLeft = clickPosition < rightThreshold;
-    var isCenterClick = isOkOnRight && isOkOnLeft;
+  const isCenterClick = function isCenterClick(event, book) {
+    const clickPosition = event.clientX;
+    const bookWidth = book.offsetWidth;
+    const leftOffset = book.offsetLeft
+    const bookEndPageFlipArea = Math.round(bookWidth / 3);
+    const leftThreshold = Math.round(bookEndPageFlipArea + leftOffset); // without it, the click area is small
+    const rightThreshold = Math.round(bookWidth - bookEndPageFlipArea + leftOffset);
+    const isOkOnRight = clickPosition > leftThreshold;
+    const isOkOnLeft = clickPosition < rightThreshold;
+    const isCenterClick = isOkOnRight && isOkOnLeft;
 
     return isCenterClick;
   }
@@ -146,8 +146,8 @@
      *
      * @param { DOM } element
      */
-  var isBackground = function isBackground(element) {
-    var isBackgroundClick = $(element).hasClass('BookReader')
+  const isBackground = function isBackground(element) {
+    const isBackgroundClick = $(element).hasClass('BookReader')
         || $(element).hasClass('BRcontainer') /* main black theatre */
         || $(element).hasClass('BRemptypage') /* empty page placeholder */
         || $(element).hasClass('BRpageview') /* empty page placeholder, 1up */
@@ -163,15 +163,15 @@
      * @param { MouseEvent } e - JS event object
      * @param { boolean } atBookCenter - optional
      */
-  var toggleRouter = function toggleRouter (br, e, atBookCenter) {
+  const toggleRouter = function toggleRouter (br, e, atBookCenter) {
     if (holdOffOnToggle) {
       return;
     }
 
-    var book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : e.currentTarget;
-    var is1UpMode = br.constMode1up === br.mode;
-    var validBookClick = is1UpMode || isCenterClick(e, book);
-    var isValidClickArea = atBookCenter ? validBookClick : isBackground(e.target);
+    const book = isBRcontainerScrollable() ? br.refs.$brContainer[0] : e.currentTarget;
+    const is1UpMode = br.constMode1up === br.mode;
+    const validBookClick = is1UpMode || isCenterClick(e, book);
+    const isValidClickArea = atBookCenter ? validBookClick : isBackground(e.target);
     if (isValidClickArea) {
       toggleNav(br, atBookCenter);
 
@@ -198,18 +198,18 @@
      */
   function onBookClick(br, e) {
 
-    var atBookCenter = true;
+    const atBookCenter = true;
     toggleRouter(br, e, atBookCenter);
   }
 
-  var initialX;
-  var initialY;
+  let initialX;
+  let initialY;
   /**
      * attaches mouseup & mousedown event handlers to assess if user is dragging
      * sets `initialX`, `initialY`, and `holdOffOnToggle`
      */
   function registerDragHandlers() {
-    var background = document.querySelector('.BookReader');
+    const background = document.querySelector('.BookReader');
     if (!background) {
       return;
     }
@@ -221,7 +221,7 @@
       holdOffOnToggle = true;
     }, true);
     background.addEventListener('mouseup', function (e) {
-      var isDrag = (Math.abs(initialX - e.screenX) > 5 || Math.abs(initialY - e.screenY) > 5);
+      const isDrag = (Math.abs(initialX - e.screenX) > 5 || Math.abs(initialY - e.screenY) > 5);
 
       if (!isDrag) {
         holdOffOnToggle = false;
@@ -236,15 +236,15 @@
      * @param { object } br - BookReader instance
      */
   function registerClickHandlers(br) {
-    var background = document.querySelector('.BookReader');
+    const background = document.querySelector('.BookReader');
     if (!background) {
       return;
     }
 
     background.addEventListener('click', onBackgroundClick.bind(null, br), { capture: true, passive: true });
 
-    var desk = document.querySelector('.BRcontainer') || {};
-    var book = desk.firstChild;
+    const desk = document.querySelector('.BRcontainer') || {};
+    const book = desk.firstChild;
 
     if (book) {
       book.addEventListener('click', onBookClick.bind(null, br), true);
@@ -256,8 +256,8 @@
      * Install menu toggle
      * attaches event handlers, sets up DOM on load
      */
-  var installMenuToggle = function installMenuToggle(br) {
-    var hasNav = false;
+  const installMenuToggle = function installMenuToggle(br) {
+    let hasNav = false;
 
     try {
       hasNav = br.navigationIsVisible();
@@ -269,19 +269,19 @@
       return;
     }
 
-    var menuToggleEventRegister = function menuToggleEventRegister(e) {
+    const menuToggleEventRegister = function menuToggleEventRegister(e) {
       registerClickHandlers(br);
     };
 
-    var setupDOMandHandlers = function setupDOMandHandlers(e) {
+    const setupDOMandHandlers = function setupDOMandHandlers(e) {
       setupNavForToggle(br);
     };
 
-    var persistNav = function persistNav(e) {
+    const persistNav = function persistNav(e) {
       alwaysShowNav(br);
     };
 
-    var whenToToggleNav = [
+    const whenToToggleNav = [
       'BookReader:1PageViewSelected',
       'BookReader:2PageViewSelected',
       'BookReader:zoomIn',
@@ -289,7 +289,7 @@
       'BookReader:resize'
     ];
 
-    var whenTolwaysShowNavWhen = [
+    const whenTolwaysShowNavWhen = [
       'BookReader:3PageViewSelected'
     ];
 

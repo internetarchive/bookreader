@@ -94,7 +94,7 @@ BookReader.prototype.init = (function(super_) {
 // Extend buildMobileDrawerElement
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   return function () {
-    var $el = super_.call(this);
+    const $el = super_.call(this);
     if (this.options.enableTtsPlugin && this.ttsEngine) {
       $el.find('.BRmobileMenu__moreInfoRow').after($(`
         <li>
@@ -116,7 +116,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 // Extend initNavbar
 BookReader.prototype.initNavbar = (function (super_) {
   return function () {
-    var $el = super_.call(this);
+    const $el = super_.call(this);
     if (this.options.enableTtsPlugin && this.ttsEngine) {
       this.refs.$BRReadAloudToolbar = $(`
         <ul class="read-aloud">
@@ -255,15 +255,15 @@ BookReader.prototype.ttsSendChunkFinishedAnalyticsEvent = function(chunk) {
  * @return {PromiseLike<void>} resolves once the flip animation has completed
  */
 BookReader.prototype.ttsMaybeFlipToIndex = function (leafIndex) {
-  var in2PageMode = this.constMode2up == this.mode;
-  var resolve = null;
-  var promise = new Promise(res => resolve = res);
+  const in2PageMode = this.constMode2up == this.mode;
+  let resolve = null;
+  const promise = new Promise(res => resolve = res);
 
   if (!in2PageMode) {
     this.jumpToIndex(leafIndex);
     resolve();
   } else {
-    var leafVisible = leafIndex == this.twoPage.currentIndexR || leafIndex == this.twoPage.currentIndexL;
+    const leafVisible = leafIndex == this.twoPage.currentIndexR || leafIndex == this.twoPage.currentIndexL;
     if (leafVisible) {
       resolve();
     } else {
@@ -297,24 +297,24 @@ BookReader.prototype.ttsHighlightChunk = function(chunk) {
 BookReader.prototype.ttsScrollToChunk = function(chunk) {
   if (this.constMode1up != this.mode) return;
 
-  var leafTop = 0;
-  var h;
-  var i;
+  let leafTop = 0;
+  let h;
+  let i;
   for (i = 0; i < chunk.leafIndex; i++) {
     h = parseInt(this._getPageHeight(i) / this.reduce);
     leafTop += h + this.padding;
   }
 
-  var chunkTop = chunk.lineRects[0][3]; //coords are in l,b,r,t order
-  var chunkBot = chunk.lineRects[chunk.lineRects.length - 1][1];
+  const chunkTop = chunk.lineRects[0][3]; //coords are in l,b,r,t order
+  const chunkBot = chunk.lineRects[chunk.lineRects.length - 1][1];
 
-  var topOfFirstChunk = leafTop + chunkTop / this.reduce;
-  var botOfLastChunk  = leafTop + chunkBot / this.reduce;
+  const topOfFirstChunk = leafTop + chunkTop / this.reduce;
+  const botOfLastChunk  = leafTop + chunkBot / this.reduce;
 
   if (soundManager.debugMode) console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
 
-  var containerTop = this.refs.$brContainer.prop('scrollTop');
-  var containerBot = containerTop + this.refs.$brContainer.height();
+  const containerTop = this.refs.$brContainer.prop('scrollTop');
+  const containerBot = containerTop + this.refs.$brContainer.height();
   if (soundManager.debugMode) console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
 
   if ((topOfFirstChunk < containerTop) || (botOfLastChunk > containerBot)) {
@@ -326,14 +326,14 @@ BookReader.prototype.ttsScrollToChunk = function(chunk) {
  * @param {PageChunk} chunk
  */
 BookReader.prototype.ttsHilite1UP = function(chunk) {
-  for (var i = 0; i < chunk.lineRects.length; i++) {
+  for (let i = 0; i < chunk.lineRects.length; i++) {
     //each rect is an array of l,b,r,t coords (djvu.xml ordering...)
-    var l = chunk.lineRects[i][0];
-    var b = chunk.lineRects[i][1];
-    var r = chunk.lineRects[i][2];
-    var t = chunk.lineRects[i][3];
+    const l = chunk.lineRects[i][0];
+    const b = chunk.lineRects[i][1];
+    const r = chunk.lineRects[i][2];
+    const t = chunk.lineRects[i][3];
 
-    var div = document.createElement('div');
+    const div = document.createElement('div');
     this.ttsHilites.push(div);
     $(div).prop('className', 'BookReaderSearchHilite').appendTo(
       this.$('.pagediv' + chunk.leafIndex)
@@ -353,14 +353,14 @@ BookReader.prototype.ttsHilite1UP = function(chunk) {
  * @param {PageChunk} chunk
  */
 BookReader.prototype.ttsHilite2UP = function (chunk) {
-  for (var i = 0; i < chunk.lineRects.length; i++) {
+  for (let i = 0; i < chunk.lineRects.length; i++) {
     //each rect is an array of l,b,r,t coords (djvu.xml ordering...)
-    var l = chunk.lineRects[i][0];
-    var b = chunk.lineRects[i][1];
-    var r = chunk.lineRects[i][2];
-    var t = chunk.lineRects[i][3];
+    const l = chunk.lineRects[i][0];
+    const b = chunk.lineRects[i][1];
+    const r = chunk.lineRects[i][2];
+    const t = chunk.lineRects[i][3];
 
-    var div = document.createElement('div');
+    const div = document.createElement('div');
     this.ttsHilites.push(div);
     $(div)
       .prop('className', 'BookReaderSearchHilite BRReadAloudHilite Leaf-' + chunk.leafIndex)
