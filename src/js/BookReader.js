@@ -34,6 +34,7 @@ import {
   createPopup,
 } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
+import { TouchGestures } from './BookReader/TouchGestures.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
@@ -200,6 +201,7 @@ BookReader.prototype.setup = function(options) {
   this._components = {
     navbar: new Navbar(this),
     toolbar: new Toolbar(this),
+    touchGestures: new TouchGestures(this),
   };
 
   this._modes = {
@@ -437,6 +439,7 @@ BookReader.prototype.init = function() {
   // Explicitly ensure this.mode exists for initNavbar() below
   this.mode = params.mode;
 
+  this._components.touchGestures.init(this.refs.$brContainer[0]);
   if (this.ui == "embed" && this.options.showNavbar) {
     this.initEmbedNavbar();
   } else {
