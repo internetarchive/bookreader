@@ -21,6 +21,9 @@ export class TouchGestures {
    * @param {HTMLElement} container
    */
   init(container) {
+    // Hammer.js by default set userSelect to None; we don't want that!
+    // TODO: Is there any way to do this not globally on Hammer?
+    delete Hammer.defaults.cssProps.userSelect;
     this.manager = new Hammer.Manager(container, {
       touchAction: 'pan-x pan-y',
     });
