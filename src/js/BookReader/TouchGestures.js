@@ -14,7 +14,9 @@ export class TouchGestures {
      * @param {HTMLElement} container
      */
   init(container) {
-    this.manager = new Hammer.Manager(container);
+    this.manager = new Hammer.Manager(container, {
+      touchAction: 'pan-x pan-y',
+    });
     this.manager.add(new Hammer.Pinch());
     let ignoreRest = false;
     this.manager.on('pinchmove', e => {
