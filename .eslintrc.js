@@ -22,6 +22,7 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
+        "comma-dangle": ["error", "only-multiline"],
         "space-before-blocks": ["error"],
         "keyword-spacing": [2, {"before": true, "after": true}],
         "indent": ["error", 2],
@@ -46,13 +47,5 @@ module.exports = {
                 "no-var": ["off"],
             }
         },
-        {
-            "files": [
-                "src/js/**/*.js"
-            ],
-            "rules": {
-                "comma-dangle": ["error", "only-multiline"]
-            }
-        }
     ],
 };
