@@ -24,13 +24,13 @@ BookReader.prototype.archiveAnalyticsSendFragmentChange = function() {
     return;
   }
 
-  var prevFragment = this.archiveAnalyticsSendFragmentChange.prevFragment;
+  const prevFragment = this.archiveAnalyticsSendFragmentChange.prevFragment;
 
-  var params = this.paramsFromCurrent();
-  var newFragment = this.fragmentFromParams(params);
+  const params = this.paramsFromCurrent();
+  const newFragment = this.fragmentFromParams(params);
 
   if (prevFragment != newFragment) {
-    var values = {
+    const values = {
       bookreader: "user_changed_view",
       itemid: this.bookId,
       cache_bust: Math.random()
@@ -53,7 +53,7 @@ BookReader.prototype.archiveAnalyticsSendFragmentChange = function() {
     archive_analytics.send_ping(values, null, "augment_for_ao_site");
 
     // Also send tracking event ping
-    var additionalEventParams = this.options.lendingInfo && this.options.lendingInfo.loanId
+    const additionalEventParams = this.options.lendingInfo && this.options.lendingInfo.loanId
       ? { loanId: this.options.lendingInfo.loanId }
       : {};
     archive_analytics.send_event('BookReader', 'UserChangedView', window.location.pathname, additionalEventParams);
