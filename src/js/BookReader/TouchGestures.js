@@ -1,34 +1,45 @@
+// @ts-check
 /** @typedef {import("../BookReader.js").default} BookReader */
 import Hammer from 'hammerjs';
 
 export class TouchGestures {
   /**
-    * @param {BookReader} br
+    * @param {{ zoom: function(1|-1): void }} br
     */
   constructor(br) {
     this.br = br;
+
+    /** Higher values cause quantized zooming to happen less frequently */
+    this.ZOOM_FACTOR = 1.25;
+
+    /** Only non-1 during a pinch gesture */
+    this.activeScale = 1;
   }
 
   /**
-     *
-     * @param {HTMLElement} container
-     */
+   *
+   * @param {HTMLElement} container
+   */
   init(container) {
     this.manager = new Hammer.Manager(container, {
       touchAction: 'pan-x pan-y',
     });
     this.manager.add(new Hammer.Pinch());
-    let lastScale = 1;
-    this.manager.on('pinchmove', e => {
-      if (e.scale > 1.25 * lastScale) {
-        this.br.zoom(1);
-        lastScale *= 1.25;
-      }
-      if (e.scale < lastScale / 1.25) {
-        this.br.zoom(-1);
-        lastScale /= 1.25;
-      }
-    });
-    this.manager.on('pinchend', () => lastScale = 1);
+    this.manager.on('pinchmove', e => this.quantizedZoom(e.scale));
+    this.manager.on('pinchend', e => this.activeScale = 1);
+  }
+
+  /**
+   * @param {Number} scale
+   */
+  quantizedZoom(scale) {
+    if (scale > this.ZOOM_FACTOR * this.activeScale) {
+      this.br.zoom(1);
+      this.activeScale *= this.ZOOM_FACTOR;
+    }
+    if (scale < this.activeScale / this.ZOOM_FACTOR) {
+      this.br.zoom(-1);
+      this.activeScale /= this.ZOOM_FACTOR;
+    }
   }
 }
