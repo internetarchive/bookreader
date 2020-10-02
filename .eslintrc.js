@@ -46,5 +46,13 @@ module.exports = {
                 "no-var": ["off"],
             }
         },
+        {
+            "files": [
+                "src/js/**/*.js"
+            ],
+            "rules": {
+                "comma-dangle": ["error", "only-multiline"]
+            }
+        }
     ],
 };
