@@ -168,7 +168,7 @@ export class TextSelectionPlugin {
 
         // Adding spaces after words except at the end of the paragraph
         // TODO: assumes left-to-right text
-        if (i < words.length - 1){
+        if (i < words.length - 1) {
           const nextWord = words[i + 1];
           // eslint-disable-next-line no-unused-vars
           const [leftNext, bottomNext, rightNext, topNext] = $(nextWord).attr("coords").split(',').map(parseFloat);
@@ -199,7 +199,7 @@ export class TextSelectionPlugin {
 
 export class BookreaderWithTextSelection extends BookReader {
   init() {
-    if (this.enableTextSelection){
+    if (this.enableTextSelection) {
       this.textSelectionPlugin = new TextSelectionPlugin();
       this.textSelectionPlugin.init(this.bookId);
     }
@@ -212,7 +212,7 @@ export class BookreaderWithTextSelection extends BookReader {
   _createPageContainer(index, styles = {}) {
     const $container = super._createPageContainer(index, styles);
     // Disable if thumb mode; it's too janky
-    if (this.enableTextSelection && this.mode != this.constModeThumb){
+    if (this.enableTextSelection && this.mode != this.constModeThumb) {
       this.textSelectionPlugin.createTextLayer(index, $container);
     }
     return $container;

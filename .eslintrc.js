@@ -22,6 +22,7 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
+        "space-before-blocks": ["error"],
         "keyword-spacing": [2, {"before": true, "after": true}],
         "indent": ["error", 2],
         "no-console": "off", // Used too often behind `debug` options; not dealing with this now

@@ -539,7 +539,7 @@ BookReader.prototype.resize = function() {
       if (this.enableSearch) this.updateSearchHilites(); //deletes hilights but does not call remove()
       this.drawLeafsThrottled();
     }
-  } else if (this.constModeThumb == this.mode){
+  } else if (this.constModeThumb == this.mode) {
     this.prepareThumbnailView();
   } else {
     // We only need to prepare again in autofit (size of spread changes)
@@ -819,7 +819,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
   for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
     const leafWidth = this.thumbWidth;
-    if (rightPos + (leafWidth + this.thumbPadding) > viewWidth){
+    if (rightPos + (leafWidth + this.thumbPadding) > viewWidth) {
       currentRow++;
       rightPos = 0;
       leafIndex = 0;
@@ -911,7 +911,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         const leafHeight = floor((book.getPageHeight(leaf) * this.thumbWidth) / book.getPageWidth(leaf));
         const leafTop = leafMap[row].top;
         let left = leafLeft + pageViewBuffer;
-        if ('rl' == this.pageProgression){
+        if ('rl' == this.pageProgression) {
           left = viewWidth - leafWidth - left;
         }
 
@@ -1427,7 +1427,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
     let leafIndex = 0;
 
     for (let i = 0; i <= index; i++) {
-      if (rightPos + (leafWidth + this.thumbPadding) > viewWidth){
+      if (rightPos + (leafWidth + this.thumbPadding) > viewWidth) {
         rightPos = 0;
         rowHeight = 0;
         leafIndex = 0;
@@ -2230,7 +2230,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
   var $brNavCntlTopEl = this.$('.BRnavCntlTop');
 
   this.$('.BRnavCntl').click(
-    function(){
+    function() {
       var promises = [];
       // TODO don't use magic constants
       // TODO move this to a function
@@ -2269,20 +2269,20 @@ BookReader.prototype.bindNavigationHandlers = function() {
       });
     }
   );
-  $brNavCntlBtmEl.mouseover(function(){
+  $brNavCntlBtmEl.mouseover(function() {
     if ($(this).hasClass('BRup')) {
       self.$('.BRnavCntl').animate({opacity:1},250);
     }
-  }).mouseleave(function(){
+  }).mouseleave(function() {
     if ($(this).hasClass('BRup')) {
       self.$('.BRnavCntl').animate({opacity:.75},250);
     }
   });
-  $brNavCntlTopEl.mouseover(function(){
+  $brNavCntlTopEl.mouseover(function() {
     if ($(this).hasClass('BRdn')) {
       self.$('.BRnavCntl').animate({opacity:1},250);
     }
-  }).mouseleave(function(){
+  }).mouseleave(function() {
     if ($(this).hasClass('BRdn')) {
       self.$('.BRnavCntl').animate({opacity:.75},250);
     }
