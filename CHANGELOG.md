@@ -1,3 +1,9 @@
+# 4.18.0
+- Dev: Add eslint for `space-after-keywords`, `space-before-blocks`, `only-multiline` @Yashs911
+- Dev: Update eslint, sinon, @types/jest, testcafe, sass, webpack @dependabot-preview + @cdrini
+- Dev: Add 3 more files to eslint @Yashs911
+- Feature: New options for text selection plugin: single page DJVU XML url @cdrini
+
 # 4.17.0
 - Fix: text selection on Safari @cdrini
 - Feature: Search results navigation bar @shaneriley
