@@ -18,12 +18,17 @@ export class TouchGestures {
       touchAction: 'pan-x pan-y',
     });
     this.manager.add(new Hammer.Pinch());
-    let ignoreRest = false;
+    let lastScale = 1;
     this.manager.on('pinchmove', e => {
-      if (ignoreRest || e.deltaTime < 100) return;
-      this.br.zoom(e.scale > 1 ? 1 : -1);
-      ignoreRest = true;
+      if (e.scale > 1.25 * lastScale) {
+        this.br.zoom(1);
+        lastScale *= 1.25;
+      }
+      if (e.scale < lastScale / 1.25) {
+        this.br.zoom(-1);
+        lastScale /= 1.25;
+      }
     });
-    this.manager.on('pinchend', () => ignoreRest = false);
+    this.manager.on('pinchend', () => lastScale = 1);
   }
 }
