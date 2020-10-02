@@ -1,11 +1,24 @@
 //@ts-check
 import { isFirefox, isSafari } from '../../util/browserSniffing.js';
+import { applyVariables } from '../../util/strings.js';
+/** @typedef {import('../../util/strings.js').StringWithVars} StringWithVars */
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
+export const DEFAULT_OPTIONS = {
+  enabled: true,
+  /** @type {StringWithVars} The URL to fetch the entire DJVU xml. Supports options.vars */
+  fullDjvuXmlUrl: null,
+  /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
+  singlePageDjvuXmlUrl: null,
+};
+/** @typedef {typeof DEFAULT_OPTIONS} TextSelectionPluginOptions */
+
 export class TextSelectionPlugin {
 
-  constructor(avoidTspans = isFirefox(), pointerEventsOnParagraph = isSafari()) {
+  constructor(options = DEFAULT_OPTIONS, optionVariables, avoidTspans = isFirefox(), pointerEventsOnParagraph = isSafari()) {
+    this.options = options;
+    this.optionVariables = optionVariables;
     /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
     this.djvuPagesPromise = null;
     // Using text elements insted of tspans for words because Firefox does not allow svg tspan strech.
@@ -23,13 +36,12 @@ export class TextSelectionPlugin {
     }
   }
 
-  /**
-   * @param {string} ocaid
-   */
-  init(ocaid) {
+  init() {
+    // Only fetch the full djvu xml if the single page url isn't there
+    if (this.options.singlePageDjvuXmlUrl) return;
     this.djvuPagesPromise = $.ajax({
       type: "GET",
-      url: `https://cors.archive.org/cors/${ocaid}/${ocaid}_djvu.xml`,
+      url: applyVariables(this.options.fullDjvuXmlUrl, this.optionVariables),
       dataType: "xml",
 
       error: function (e) {
@@ -43,8 +55,17 @@ export class TextSelectionPlugin {
    * @returns {Promise<HTMLElement|undefined>}
    */
   async getPageText(index) {
-    const XMLpagesArr = await this.djvuPagesPromise;
-    if (XMLpagesArr) return XMLpagesArr[index];
+    if (this.options.fullDjvuXmlUrl) {
+      const XMLpagesArr = await this.djvuPagesPromise;
+      if (XMLpagesArr) return XMLpagesArr[index];
+    } else {
+      return $.ajax({
+        type: "GET",
+        url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
+        dataType: "xml",
+        error: (e) => undefined,
+      }).then(xmlDoc  => xmlDoc && $(xmlDoc).find("OBJECT")[0]);
+    }
   }
 
   /**
@@ -199,9 +220,13 @@ export class TextSelectionPlugin {
 
 export class BookreaderWithTextSelection extends BookReader {
   init() {
-    if (this.enableTextSelection) {
-      this.textSelectionPlugin = new TextSelectionPlugin();
-      this.textSelectionPlugin.init(this.bookId);
+    const options = Object.assign({}, DEFAULT_OPTIONS, this.options.plugins.textSelection);
+    if (options.enabled) {
+      this.textSelectionPlugin = new TextSelectionPlugin(options, this.options.vars);
+      // Write this back; this way the plugin is the source of truth, and BR just
+      // contains a reference to it.
+      this.options.plugins.textSelection = options;
+      this.textSelectionPlugin.init();
     }
     super.init();
   }
@@ -212,8 +237,8 @@ export class BookreaderWithTextSelection extends BookReader {
   _createPageContainer(index, styles = {}) {
     const $container = super._createPageContainer(index, styles);
     // Disable if thumb mode; it's too janky
-    if (this.enableTextSelection && this.mode != this.constModeThumb) {
-      this.textSelectionPlugin.createTextLayer(index, $container);
+    if (this.mode != this.constModeThumb) {
+      this.textSelectionPlugin?.createTextLayer(index, $container);
     }
     return $container;
   }

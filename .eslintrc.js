@@ -18,7 +18,7 @@ module.exports = {
         "MediaMetadata": "readonly"
     },
     "parserOptions": {
-        "ecmaVersion": 2018,
+        "ecmaVersion": 2020,
         "sourceType": "module"
     },
     "rules": {

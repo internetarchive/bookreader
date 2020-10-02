@@ -123,8 +123,23 @@ export const DEFAULT_OPTIONS = {
   /** Should image downloads be blocked */
   protected: false,
 
-  /** Enables text selection layer */
-  enableTextSelection: false,
+  /**
+   * Settings for individual plugins. Note they have to be imported first.
+   * WIP: Most plugins just put their options anywhere in this global options file,
+   * but going forward we'll keep them here.
+   **/
+  plugins: {
+    /** @type {import('../plugins/plugin.text_selection.js').TextSelectionPluginOptions} */
+    textSelection: null,
+  },
+
+  /**
+   * Any variables you want to define. If an option has a StringWithVars type, or
+   * has something like `{{server}}/foo.com` in its value, these variables replace
+   * the `{{foo}}`.
+   * @type { {[var_name: string]: any } }
+   */
+  vars: {},
 
   /**
    * @type {Array<[PageData, PageData]|[PageData]>}
