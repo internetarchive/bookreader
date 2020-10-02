@@ -6,7 +6,7 @@ export const SEARCH_INSIDE_URL_RE  = /https:\/\/ia[0-9]+\.us\.archive\.org\/full
 
 //adding jQueryxxxxxxxx-xxxxxxxx (semi-random numbers) from request url to returned search request object
 /** Mock response for a matching search term. */
-export function mockResponseFound(req, res){
+export function mockResponseFound(req, res) {
   const requestUrl = new URL(req.url);
   const jqueryUrl = requestUrl.searchParams.get("callback");
   const wholeString = jqueryUrl + '(' + JSON.stringify(MOCKED_RESPONSE_FOUND) + ')';
@@ -14,7 +14,7 @@ export function mockResponseFound(req, res){
 }
 
 /** Mock response for a matching search term. */
-export function mockResponseNotFound(req, res){
+export function mockResponseNotFound(req, res) {
   const requestUrl = new URL(req.url);
   const jqueryUrl = requestUrl.searchParams.get("callback");
   const wholeString = jqueryUrl + '(' + JSON.stringify(MOCKED_RESPONSE_NOT_FOUND) + ')';
