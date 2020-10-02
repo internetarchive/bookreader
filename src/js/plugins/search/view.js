@@ -265,7 +265,7 @@ class SearchView {
     toolbarSearch.classList.add('BRtoolbarSection', 'BRtoolbarSectionSearch');
     toolbarSearch.innerHTML = `
       <form class="BRbooksearch desktop">
-        <input type="search" name="query" class="BRsearchInput" val="" placeholder="Search inside"></input>
+        <input type="search" name="query" class="BRsearchInput" val="" placeholder="Search inside"/>
         <button type="submit" class="BRsearchSubmit">
           <img src="${this.br.imagesBaseURL}icon_search_button.svg" />
         </button>
