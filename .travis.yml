@@ -1,9 +1,10 @@
 dist: bionic
 
-# Only run travis when pushing to master branch (and PRs)
+# Only run travis when pushing to master branch (and PRs), or branches beginning with "master-"
 branches:
   only:
     - master
+    - /^master-.*/
 
 addons:
   firefox: latest
