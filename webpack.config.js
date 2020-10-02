@@ -34,8 +34,9 @@ module.exports = {
   output: {
     filename: '[name]',
     path: path.resolve(__dirname, 'BookReader'),
-    ecmaVersion: 5
   },
+
+  target: ['web', 'es5'],
 
   // Accurate source maps at the expense of build time.
   // The source map is intentionally exposed
