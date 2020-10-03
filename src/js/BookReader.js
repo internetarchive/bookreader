@@ -2804,11 +2804,7 @@ BookReader.prototype.showProgressPopup = function(msg) {
   if (this.popup) return;
 
   this.popup = document.createElement("div");
-  $(this.popup).css({
-    top:      (this.refs.$br.height() * 0.5 - 100) + 'px',
-    left:     (this.refs.$br.width() - 300) * 0.5 + 'px'
-  }).prop('className', 'BRprogresspopup');
-
+  $(this.popup).prop('className', 'BRprogresspopup');
   var bar = document.createElement("div");
   $(bar).css({
     height:   '20px'
