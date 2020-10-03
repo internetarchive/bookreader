@@ -7,11 +7,11 @@ module.exports = {
         "jest": true
     },
     "plugins": [
-    	"testcafe"
+        "testcafe"
     ],
     "extends": [
-	"eslint:recommended",
-	"plugin:testcafe/recommended"
+        "eslint:recommended",
+        "plugin:testcafe/recommended"
     ],
     "globals": {
         // Browser API
@@ -24,7 +24,7 @@ module.exports = {
     "rules": {
         "comma-dangle": ["error", "only-multiline"],
         "space-before-blocks": ["error"],
-        "keyword-spacing": [2, {"before": true, "after": true}],
+        "keyword-spacing": [2, { "before": true, "after": true }],
         "indent": ["error", 2],
         "no-console": "off", // Used too often behind `debug` options; not dealing with this now
         "no-empty": ["error", { "allowEmptyCatch": true }],
@@ -33,7 +33,8 @@ module.exports = {
         "no-var": ["error"],
         "prefer-const": ["error"],
         "space-infix-ops": ["error", { "int32Hint": false }],
-        "eol-last": ["error", "always"]
+        "eol-last": ["error", "always"],
+        "semi": ["error", "always", { "omitLastInOneLineBlock": true }]
     },
     "overrides": [
         { // TODO; these should be cleaned up as well

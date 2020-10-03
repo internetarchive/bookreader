@@ -217,13 +217,13 @@ BookReader.prototype.setup = function(options) {
 
 /** @deprecated unused outside Mode2Up */
 Object.defineProperty(BookReader.prototype, 'leafEdgeL', {
-  get() { return this._modes.mode2Up.leafEdgeL; },
-  set(newVal) { this._modes.mode2Up.leafEdgeL = newVal; }
+  get() { return this._modes.mode2Up.leafEdgeL },
+  set(newVal) { this._modes.mode2Up.leafEdgeL = newVal }
 });
 /** @deprecated unused outside Mode2Up */
 Object.defineProperty(BookReader.prototype, 'leafEdgeR', {
-  get() { return this._modes.mode2Up.leafEdgeR; },
-  set(newVal) { this._modes.mode2Up.leafEdgeR = newVal; }
+  get() { return this._modes.mode2Up.leafEdgeR },
+  set(newVal) { this._modes.mode2Up.leafEdgeR = newVal }
 });
 
 /**
@@ -246,7 +246,7 @@ BookReader.prototype.extendParams = function(params, newParams) {
     delete modifiedNewParams.page;
   }
   $.extend(params, modifiedNewParams);
-}
+};
 
 /**
  * Parses params from from various initialization contexts (url, cookie, options)
@@ -318,7 +318,7 @@ BookReader.prototype.initParams = function() {
   // Check for Search plugin
   if (this.options.enableSearch) {
     // Go to first result only if no default or URL page
-    this.goToFirstResult = !params.pageFound
+    this.goToFirstResult = !params.pageFound;
 
     // If initialSearchTerm not set
     if (!this.options.initialSearchTerm) {
@@ -329,7 +329,7 @@ BookReader.prototype.initParams = function() {
       } else {
         // If we have a query string: q=[term]
         const searchParams = new URLSearchParams(this.readQueryString());
-        const searchTerm = searchParams.get('q')
+        const searchTerm = searchParams.get('q');
         if (searchTerm) {
           this.options.initialSearchTerm = utils.decodeURIComponentPlus(searchTerm);
         }
@@ -341,21 +341,21 @@ BookReader.prototype.initParams = function() {
   this.suppressFragmentChange = !params.fragmentChange;
 
   return params;
-}
+};
 
 /**
  * Allow mocking of window.location.search
  */
 BookReader.prototype.getLocationSearch = function () {
   return window.location.search;
-}
+};
 
 /**
  * Allow mocking of window.location.hash
  */
 BookReader.prototype.getLocationHash = function () {
   return window.location.hash;
-}
+};
 
 /**
  * Return URL or fragment querystring
@@ -368,7 +368,7 @@ BookReader.prototype.readQueryString = function() {
   const hash = this.getLocationHash();
   const found = hash.search(/\?\w+=/);
   return found > -1 ? hash.slice(found) : '';
-}
+};
 
 /**
  * Determines the initial mode for starting if a mode is not already
@@ -492,7 +492,7 @@ BookReader.prototype.init = function() {
   if (this.options.startFullscreen) {
     this.enterFullscreen();
   }
-}
+};
 
 /**
  * @param {EVENTS} name
@@ -824,7 +824,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     }
 
     // Init current row in leafMap
-    if (!leafMap[currentRow]) { leafMap[currentRow] = {}; }
+    if (!leafMap[currentRow]) { leafMap[currentRow] = {} }
     if (!leafMap[currentRow].leafs) {
       leafMap[currentRow].leafs = [];
       leafMap[currentRow].height = 0;
@@ -839,9 +839,9 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (leafHeight > leafMap[currentRow].height) {
       leafMap[currentRow].height = leafHeight;
     }
-    if (leafIndex === 0) { bottomPos += this.thumbPadding + leafMap[currentRow].height; }
+    if (leafIndex === 0) { bottomPos += this.thumbPadding + leafMap[currentRow].height }
     rightPos += leafWidth + this.thumbPadding;
-    if (rightPos > maxRight) { maxRight = rightPos; }
+    if (rightPos > maxRight) { maxRight = rightPos }
     leafIndex++;
 
     if (page.index == seekIndex) {
@@ -872,7 +872,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
   // Determine the thumbnails in view
   for (let i = 0; i < leafMap.length; i++) {
-    if (!leafMap[i]) { continue; }
+    if (!leafMap[i]) { continue }
     leafBottom += this.thumbPadding + leafMap[i].height;
     const topInView = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
     const bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
@@ -886,7 +886,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         mostVisible = leafMap[i].leafs[leafMap[i].leafs.length - 1].num;
       }
     }
-    if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
+    if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop }
     leafTop = leafBottom;
   }
 
@@ -894,16 +894,16 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   const firstRow = rowsToDisplay[0];
   const lastRow = rowsToDisplay[rowsToDisplay.length - 1];
   for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
-    if (lastRow + i < leafMap.length) { rowsToDisplay.push(lastRow + i); }
+    if (lastRow + i < leafMap.length) { rowsToDisplay.push(lastRow + i) }
   }
   for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
-    if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
+    if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i) }
   }
 
   // Create the thumbnail divs and images (lazy loaded)
   for (const row of rowsToDisplay) {
     if (utils.notInArray(row, this.displayedRows)) {
-      if (!leafMap[row]) { continue; }
+      if (!leafMap[row]) { continue }
       for (const { num: leaf, left: leafLeft } of leafMap[row].leafs) {
         const leafWidth = this.thumbWidth;
         const leafHeight = floor((book.getPageHeight(leaf) * this.thumbWidth) / book.getPageWidth(leaf));
@@ -1009,7 +1009,7 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
       // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
       //     we call the function after a slight delay.  Also the img.complete property
       //     is not yet set in IE8 inside this onload handler
-      setTimeout(function() { self.lazyLoadThumbnails(); }, 100);
+      setTimeout(function() { self.lazyLoadThumbnails() }, 100);
     })
     .one('error', function() {
       // Remove class so we no longer count as loading
@@ -1054,7 +1054,7 @@ BookReader.prototype.zoom = function(direction) {
     } else {
       this.zoom1up('out');
     }
-    break
+    break;
   case this.constMode2up:
     if (direction == 1) {
       // XXX other cases
@@ -1062,11 +1062,11 @@ BookReader.prototype.zoom = function(direction) {
     } else {
       this.zoom2up('out');
     }
-    break
+    break;
   case this.constModeThumb:
     // XXX update zoomThumb for named directions
     this.zoomThumb(direction);
-    break
+    break;
   }
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
@@ -1122,7 +1122,7 @@ BookReader.prototype.resizeBRcontainer = function(animate) {
       bottom: this.getFooterHeight()
     });
   }
-}
+};
 
 /**
  * Resize the current one page view
@@ -1382,7 +1382,7 @@ BookReader.prototype._isIndexDisplayed = function(index) {
   return this.constMode1up == this.mode ? this.displayedIndices.slice(1, -1).includes(index) :
     this.displayedIndices ? this.displayedIndices.includes(index) :
       this.currentIndex() == index;
-}
+};
 
 /**
  * Changes the current page
@@ -1432,7 +1432,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
       }
 
       const leafHeight = floor((book.getPageHeight(leafIndex) * this.thumbWidth) / book.getPageWidth(leafIndex), 10);
-      if (leafHeight > rowHeight) { rowHeight = leafHeight; }
+      if (leafHeight > rowHeight) { rowHeight = leafHeight }
       if (leafIndex == 0) {
         leafTop = bottomPos;
         bottomPos += this.thumbPadding + rowHeight;
@@ -1497,7 +1497,7 @@ BookReader.prototype.getPrevReadMode = function(mode) {
     // Initial thumb, return 1up
     return BookReader.constMode1up;
   }
-}
+};
 
 /**
  * Switches the mode (eg 1up 2up thumb)
@@ -1627,7 +1627,7 @@ BookReader.prototype.exitFullScreen = function() {
   }
 
   this.isFullscreenActive = false;
-  this.updateBrClasses()
+  this.updateBrClasses();
 
   this.resize();
   this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
@@ -2219,7 +2219,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
 
   for (const control in navigationControls) {
     jIcons.filter(`.${control}`).on('click.bindNavigationHandlers', () => {
-      navigationControls[control]()
+      navigationControls[control]();
       return false;
     });
   }
@@ -2249,7 +2249,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
         $brNavCntlBtmEl.addClass('BRdn').removeClass('BRup');
         $brNavCntlTopEl.addClass('BRup').removeClass('BRdn');
         self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
-        self.$('.BRvavCntl').animate({opacity:1})
+        self.$('.BRvavCntl').animate({opacity:1});
       }
       $.when.apply($, promises).done(function() {
         // Only do full resize in auto mode and need to recalc. size
@@ -2349,7 +2349,7 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
     deltaX: 0,
     deltaY: 0,
     deltaT: 0
-  }
+  };
 };
 
 BookReader.prototype.swipeMousedownHandler = function(event) {
@@ -2756,7 +2756,7 @@ BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
     this._models.book.getPageURI(index, scale[i], rotate) + " "
         + Math.pow(2, i + 1) + "x"
   )).join(', ');
-}
+};
 
 
 /**
@@ -2873,7 +2873,7 @@ BookReader.prototype.initUIStrings = function() {
   for (var icon in titles) {
     this.$(icon).prop('title', titles[icon]);
   }
-}
+};
 
 /**
  * Reloads images. Useful when some images might have failed.
@@ -2904,7 +2904,7 @@ BookReader.prototype.getFooterHeight = function() {
     }
   }
   return 0;
-}
+};
 
 // Basic Usage built-in Methods (can be overridden through options)
 // This implementation uses options.data value for populating BookReader
@@ -2999,7 +2999,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
 
   // $$$ process /theme
   if (urlHash['theme'] != undefined) {
-    params.theme = urlHash['theme']
+    params.theme = urlHash['theme'];
   }
   return params;
 };
@@ -3068,20 +3068,20 @@ BookReader.prototype.queryStringFromParams = function(
 ) {
   const newParams = new URLSearchParams(currQueryString);
   if (params.search && urlMode === 'history') {
-    newParams.set('q', params.search)
+    newParams.set('q', params.search);
   }
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
   // Note: This method returns the query string without the question mark.
   const result = newParams.toString();
   return result ? '?' + result : '';
-}
+};
 
 /**
  * Helper to select within instance's elements
  */
 BookReader.prototype.$ = function(selector) {
   return this.refs.$br.find(selector);
-}
+};
 
 /**
  * Polyfill for deprecated method

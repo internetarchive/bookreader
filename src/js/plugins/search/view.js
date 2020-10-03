@@ -156,7 +156,7 @@ class SearchView {
   }
 
   bindSearchNavigationEvents() {
-    if (!this.dom.searchNavigation) { return; }
+    if (!this.dom.searchNavigation) { return }
     const namespace = 'searchNavigation';
 
     this.dom.searchNavigation
@@ -167,16 +167,16 @@ class SearchView {
   }
 
   showPrevResult() {
-    if (this.currentMatchIndex === 0) { return; }
-    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
-    if (!~this.currentMatchIndex) { this.currentMatchIndex = 1; }
+    if (this.currentMatchIndex === 0) { return }
+    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up) }
+    if (!~this.currentMatchIndex) { this.currentMatchIndex = 1 }
     this.br.$('.BRnavline .BRsearch').eq(--this.currentMatchIndex).click();
     this.updateResultsPosition();
   }
 
   showNextResult() {
-    if (this.currentMatchIndex + 1 === this.matches.length) { return; }
-    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
+    if (this.currentMatchIndex + 1 === this.matches.length) { return }
+    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up) }
     this.br.$('.BRnavline .BRsearch').eq(++this.currentMatchIndex).click();
     this.updateResultsPosition();
   }
@@ -186,7 +186,7 @@ class SearchView {
   }
 
   teardownSearchNavigation() {
-    if (!this.dom.searchNavigation) { return; }
+    if (!this.dom.searchNavigation) { return }
 
     this.dom.searchNavigation.off('.searchNavigation').remove();
     this.dom.searchNavigation = null;
@@ -216,7 +216,7 @@ class SearchView {
   }
 
   updateSearchNavigation() {
-    if (!this.matches.length) { return; }
+    if (!this.matches.length) { return }
 
     this.setCurrentMatchIndex();
     this.updateResultsPosition();
@@ -407,7 +407,7 @@ class SearchView {
   submitHandler(e) {
     e.preventDefault();
     const query = e.target.querySelector('[name="query"]').value;
-    if (!query.length) { return false; }
+    if (!query.length) { return false }
     this.br.search(query);
     this.dom.searchField.blur();
     this.emptyMatches();
@@ -477,7 +477,7 @@ class SearchView {
     this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
     this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
     this.dom.searchField.addEventListener('search', () => {
-      if (this.dom.searchField.value) { return; }
+      if (this.dom.searchField.value) { return }
       this.clearSearchFieldAndResults();
     });
 
