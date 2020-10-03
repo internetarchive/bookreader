@@ -76,4 +76,4 @@ BookReader.prototype.getPageFile = function(index) {
   const insideZipPrefix = this.subPrefix.match('[^/]+$');
   const file = insideZipPrefix + '_' + this.imageFormat + '/' + insideZipPrefix + '_' + leafStr.replace(re, imgStr) + '.' + this.imageFormat;
   return file;
-}
+};

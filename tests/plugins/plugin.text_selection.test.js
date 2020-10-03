@@ -26,7 +26,7 @@ describe("Generic tests", () => {
 
   let br;
   beforeEach(() => {
-    const parser = new DOMParser()
+    const parser = new DOMParser();
     document.body.innerHTML = '<div id="BookReader">';
     br = new BookreaderWithTextSelection({
       data: [
@@ -105,18 +105,18 @@ describe("Generic tests", () => {
       }, 2000);
     }, LONG_PRESS_DURATION);
   });
-})
+});
 
 describe("textSelectionPlugin cosntructor", () => {
   test("textSelectionPlugin constructor with firefox browser", () => {
-    const tsp = new TextSelectionPlugin({}, {}, true)
+    const tsp = new TextSelectionPlugin({}, {}, true);
     expect(tsp.djvuPagesPromise).toBe(null);
     expect(tsp.svgParagraphElement).toBe("g");
     expect(tsp.svgWordElement).toBe("text");
   });
 
   test("textSelectionPlugin constructor not on firefox browser", () => {
-    const tsp = new TextSelectionPlugin({}, {}, false)
+    const tsp = new TextSelectionPlugin({}, {}, false);
     expect(tsp.djvuPagesPromise).toBe(null);
     expect(tsp.svgParagraphElement).toBe("text");
     expect(tsp.svgWordElement).toBe("tspan");

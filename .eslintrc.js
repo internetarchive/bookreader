@@ -22,6 +22,7 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
+        "semi": ["error", "always", { "omitLastInOneLineBlock": true }],
         "comma-dangle": ["error", "only-multiline"],
         "space-before-blocks": ["error"],
         "keyword-spacing": [2, {"before": true, "after": true}],
