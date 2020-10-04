@@ -329,34 +329,9 @@
   font-size: .8em;
   vertical-align: top;
 }
-
-.BRnavCntl {
-  position: absolute;
-  right: 20px;
-  width: 40px;
-  height: 30px;
-  cursor: pointer;
-}
-.BRnavCntlBtm {
-  bottom: $brNavHeightDesktop;
-  -moz-border-radius-topright: 8px;
-  -webkit-border-top-right-radius: 8px;
-  -moz-border-radius-topleft: 8px;
-  -webkit-border-top-left-radius: 8px;
-}
 .BRup {
   background-image: url("images/nav_control-up.png");
   background-repeat: no-repeat;
-}
-.BRdn {
-  background-image: url("images/nav_control-dn.png");
-  background-repeat: no-repeat;
-}
-.BRnavCntlBtm.BRup, .BRnavCntlBtm.BRdn {
-  background-position: 8px 4px;
-}
-.BRnavCntlTop.BRup, .BRnavCntlTop.BRdn {
-  background-position: 8px 4px;
 }
 
 
