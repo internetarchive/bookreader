@@ -186,7 +186,10 @@ class SearchView {
   }
 
   teardownSearchNavigation() {
-    if (!this.dom.searchNavigation) { return; }
+    if (!this.dom.searchNavigation) {
+      this.dom.searchNavigation = $('.BRsearch-navigation');
+    }
+    if (!this.dom.searchNavigation.length) { return; }
 
     this.dom.searchNavigation.off('.searchNavigation').remove();
     this.dom.searchNavigation = null;
@@ -423,6 +426,7 @@ class SearchView {
   handleSearchCallback(e, { results }) {
     this.matches = results.matches;
     this.setCurrentMatchIndex();
+    this.teardownSearchNavigation();
     this.renderSearchNavigation();
     this.bindSearchNavigationEvents();
     this.renderMatches(results.matches);

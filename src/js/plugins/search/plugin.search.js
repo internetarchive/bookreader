@@ -50,6 +50,7 @@ BookReader.prototype.setup = (function (super_) {
     this.subPrefix = options.subPrefix;
     this.bookPath = options.bookPath;
 
+    if (this.searchView) { return; }
     this.searchView = new SearchView({
       br: this,
       selector: '#BRsearch_tray',
