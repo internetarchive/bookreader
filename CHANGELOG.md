@@ -1,3 +1,6 @@
+# 4.18.1
+- Fix: Skips subsequent creation of search views when setup called 1+n times
+
 # 4.18.0
 - Dev: Add eslint for `space-after-keywords`, `space-before-blocks`, `only-multiline` @Yashs911
 - Dev: Update eslint, sinon, @types/jest, testcafe, sass, webpack @dependabot-preview + @cdrini

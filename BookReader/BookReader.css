@@ -195,12 +195,15 @@
 }
 
 .BRprogresspopup {
-  position: absolute;
+  min-width: inherit;
+  margin: 80px auto auto;
+  position: relative;
+  max-width: 50%;
+  min-width: 300px;
   background-color: white;
   font-size: 1.5em;
   padding: 20px;
   border: 2px solid #999;
-  min-width: 300px;
   z-index: 3000;
 }
 
@@ -399,11 +402,6 @@ body.BRfullscreenActive .mm-menu {
     padding: initial;
     border: initial;
     font-size: inherit;
-  }
-
-  .BRprogresspopup {
-    max-width: 80%;
-    min-width: inherit;
   }
 
   .BookReader .fieldset-embed, .BRmobileMenu .fieldset-embed, .BRfloat .fieldset-embed {
@@ -1856,11 +1854,6 @@ i.BRicon {
 }
 .BookReader #BRsearch_tray #search_pending.visible, .BRmobileMenu #BRsearch_tray #search_pending.visible, .BRfloat #BRsearch_tray #search_pending.visible {
   display: block;
-}
-.BookReader .search_modal, .BRmobileMenu .search_modal, .BRfloat .search_modal {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
 .BookReader .BRsearch-navigation, .BRmobileMenu .BRsearch-navigation, .BRfloat .BRsearch-navigation {
   position: relative;
