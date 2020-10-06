@@ -170,7 +170,9 @@ class SearchView {
   showPrevResult() {
     if (this.currentMatchIndex === 0) { return; }
     if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
-    if (!~this.currentMatchIndex) { this.currentMatchIndex = 1; }
+    if (!~this.currentMatchIndex) {
+      this.currentMatchIndex = this.getClosestMatchIndex((start, end, comparator) => end[0] > comparator) + 1;
+    }
     this.br.$('.BRnavline .BRsearch').eq(--this.currentMatchIndex).click();
     this.updateResultsPosition();
     this.updateSearchNavigationButtons();
@@ -179,9 +181,26 @@ class SearchView {
   showNextResult() {
     if (this.currentMatchIndex + 1 === this.matches.length) { return; }
     if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
+    if (!~this.currentMatchIndex) {
+      this.currentMatchIndex = this.getClosestMatchIndex((start, end, comparator) => start[start.length - 1] > comparator) - 1;
+    }
     this.br.$('.BRnavline .BRsearch').eq(++this.currentMatchIndex).click();
     this.updateResultsPosition();
     this.updateSearchNavigationButtons();
+  }
+
+  getClosestMatchIndex(comparisonFn) {
+    const matchPages = this.matches.map((m) => m.par[0].page);
+    const currentPage = this.br.currentIndex() + 1;
+    const closestTo = (pool, comparator) => {
+      if (pool.length === 1) { return pool[0]; }
+      const start = pool.slice(0, pool.length / 2);
+      const end = pool.slice(pool.length / 2);
+      return closestTo((comparisonFn(start, end, comparator) ? start : end), comparator);
+    }
+
+    const closestPage = closestTo(matchPages, currentPage);
+    return this.matches.indexOf(this.matches.find((m) => m.par[0].page === closestPage));
   }
 
   updateResultsPosition() {
