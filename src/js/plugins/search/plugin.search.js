@@ -333,7 +333,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
  */
 BookReader.prototype.removeSearchHilites = function() {
   const results = this.searchResults;
-  if (null == results) return;
+  if (null == results || !results.matches) { return; }
   results.matches.forEach(match => {
     match.par[0].boxes.forEach(box => {
       if (null != box.div) {
