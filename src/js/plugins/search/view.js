@@ -145,6 +145,7 @@ class SearchView {
       </div>
     `);
     this.dom.searchNavigation = $(`.${selector}`);
+    this.br.resize();
   }
 
   resultsPosition() {
