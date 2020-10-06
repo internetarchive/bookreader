@@ -201,6 +201,7 @@ class SearchView {
 
     this.dom.searchNavigation.off('.searchNavigation').remove();
     this.dom.searchNavigation = null;
+    this.br.resize();
   }
 
   setCurrentMatchIndex() {
