@@ -173,6 +173,7 @@ class SearchView {
     if (!~this.currentMatchIndex) { this.currentMatchIndex = 1; }
     this.br.$('.BRnavline .BRsearch').eq(--this.currentMatchIndex).click();
     this.updateResultsPosition();
+    this.updateSearchNavigationButtons();
   }
 
   showNextResult() {
@@ -180,10 +181,16 @@ class SearchView {
     if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
     this.br.$('.BRnavline .BRsearch').eq(++this.currentMatchIndex).click();
     this.updateResultsPosition();
+    this.updateSearchNavigationButtons();
   }
 
   updateResultsPosition() {
     this.dom.searchNavigation.find('[data-id=resultsCount]').text(this.resultsPosition());
+  }
+
+  updateSearchNavigationButtons() {
+    this.dom.searchNavigation.find('.prev').attr('disabled', !this.currentMatchIndex);
+    this.dom.searchNavigation.find('.next').attr('disabled', this.currentMatchIndex + 1 === this.matches.length);
   }
 
   teardownSearchNavigation() {
@@ -224,6 +231,7 @@ class SearchView {
 
     this.setCurrentMatchIndex();
     this.updateResultsPosition();
+    this.updateSearchNavigationButtons();
   }
 
   /**
