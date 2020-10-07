@@ -75,7 +75,7 @@ class SearchView {
    * @param {string} query
    */
   setQuery(query) {
-    this.dom.searchField.value = query;
+    this.br.$('[name="query"]').val(query);
   }
 
   emptyMatches() {
@@ -297,7 +297,7 @@ class SearchView {
     toolbarSearch.classList.add('BRtoolbarSection', 'BRtoolbarSectionSearch');
     toolbarSearch.innerHTML = `
       <form class="BRbooksearch desktop">
-        <input type="search" name="query" class="BRsearchInput" val="" placeholder="Search inside"/>
+        <input type="search" name="query" class="BRsearchInput" value="" placeholder="Search inside"/>
         <button type="submit" class="BRsearchSubmit">
           <img src="${this.br.imagesBaseURL}icon_search_button.svg" />
         </button>
