@@ -474,6 +474,7 @@ class SearchView {
   }
 
   handleSearchStarted() {
+    this.emptyMatches();
     this.br.removeSearchHilites();
     this.removeResultPins();
     this.toggleSearchPending(true);
