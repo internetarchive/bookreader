@@ -20,10 +20,6 @@ class SearchView {
     this.matches = [];
     this.cacheDOMElements(params.selector);
     this.bindEvents();
-
-    if (this.br.options.initialSearchTerm) {
-      this.setQuery(params.query);
-    }
   }
 
   /**
