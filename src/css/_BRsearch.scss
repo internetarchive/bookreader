@@ -381,6 +381,10 @@
       a {
         display: inline-block;
         vertical-align: middle;
+        &[disabled] {
+          opacity: .3;
+          cursor: default;
+        }
         span {
           width: 8px;
           height: 13px;

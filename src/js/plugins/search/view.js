@@ -20,10 +20,6 @@ class SearchView {
     this.matches = [];
     this.cacheDOMElements(params.selector);
     this.bindEvents();
-
-    if (this.br.options.initialSearchTerm) {
-      this.setQuery(params.query);
-    }
   }
 
   /**
@@ -75,7 +71,7 @@ class SearchView {
    * @param {string} query
    */
   setQuery(query) {
-    this.dom.searchField.value = query;
+    this.br.$('[name="query"]').val(query);
   }
 
   emptyMatches() {
@@ -145,6 +141,7 @@ class SearchView {
       </div>
     `);
     this.dom.searchNavigation = $(`.${selector}`);
+    this.br.resize();
   }
 
   resultsPosition() {
@@ -169,20 +166,60 @@ class SearchView {
   showPrevResult() {
     if (this.currentMatchIndex === 0) { return; }
     if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
-    if (!~this.currentMatchIndex) { this.currentMatchIndex = 1; }
+    if (!~this.currentMatchIndex) {
+      this.currentMatchIndex = this.getClosestMatchIndex((start, end, comparator) => end[0] > comparator) + 1;
+    }
     this.br.$('.BRnavline .BRsearch').eq(--this.currentMatchIndex).click();
     this.updateResultsPosition();
+    this.updateSearchNavigationButtons();
   }
 
   showNextResult() {
     if (this.currentMatchIndex + 1 === this.matches.length) { return; }
     if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
+    if (!~this.currentMatchIndex) {
+      this.currentMatchIndex = this.getClosestMatchIndex((start, end, comparator) => start[start.length - 1] > comparator) - 1;
+    }
     this.br.$('.BRnavline .BRsearch').eq(++this.currentMatchIndex).click();
     this.updateResultsPosition();
+    this.updateSearchNavigationButtons();
+  }
+
+  /**
+   * Obtains closest match based on the logical comparison function passed in.
+   * When the comparison function returns true, the starting (left) half of the
+   * matches array is used in the binary split, else the ending (right) half is
+   * used. A recursive call is made to perform the same split and comparison
+   * on the winning half of the matches. This is traditionally known as binary
+   * search (https://en.wikipedia.org/wiki/Binary_search_algorithm), and in
+   * most cases (medium to large search result arrays) should outperform
+   * traversing the array from start to finish. In the case of small arrays,
+   * the speed difference is negligible.
+   *
+   * @param {function} comparisonFn
+   * @return {number} matchIndex
+   */
+  getClosestMatchIndex(comparisonFn) {
+    const matchPages = this.matches.map((m) => m.par[0].page);
+    const currentPage = this.br.currentIndex() + 1;
+    const closestTo = (pool, comparator) => {
+      if (pool.length === 1) { return pool[0]; }
+      const start = pool.slice(0, pool.length / 2);
+      const end = pool.slice(pool.length / 2);
+      return closestTo((comparisonFn(start, end, comparator) ? start : end), comparator);
+    }
+
+    const closestPage = closestTo(matchPages, currentPage);
+    return this.matches.indexOf(this.matches.find((m) => m.par[0].page === closestPage));
   }
 
   updateResultsPosition() {
     this.dom.searchNavigation.find('[data-id=resultsCount]').text(this.resultsPosition());
+  }
+
+  updateSearchNavigationButtons() {
+    this.dom.searchNavigation.find('.prev').attr('disabled', !this.currentMatchIndex);
+    this.dom.searchNavigation.find('.next').attr('disabled', this.currentMatchIndex + 1 === this.matches.length);
   }
 
   teardownSearchNavigation() {
@@ -193,6 +230,7 @@ class SearchView {
 
     this.dom.searchNavigation.off('.searchNavigation').remove();
     this.dom.searchNavigation = null;
+    this.br.resize();
   }
 
   setCurrentMatchIndex() {
@@ -223,6 +261,7 @@ class SearchView {
 
     this.setCurrentMatchIndex();
     this.updateResultsPosition();
+    this.updateSearchNavigationButtons();
   }
 
   /**
@@ -268,7 +307,7 @@ class SearchView {
     toolbarSearch.classList.add('BRtoolbarSection', 'BRtoolbarSectionSearch');
     toolbarSearch.innerHTML = `
       <form class="BRbooksearch desktop">
-        <input type="search" name="query" class="BRsearchInput" val="" placeholder="Search inside"/>
+        <input type="search" name="query" class="BRsearchInput" value="" placeholder="Search inside"/>
         <button type="submit" class="BRsearchSubmit">
           <img src="${this.br.imagesBaseURL}icon_search_button.svg" />
         </button>
@@ -445,6 +484,7 @@ class SearchView {
   }
 
   handleSearchStarted() {
+    this.emptyMatches();
     this.br.removeSearchHilites();
     this.removeResultPins();
     this.toggleSearchPending(true);
