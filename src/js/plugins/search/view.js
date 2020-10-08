@@ -185,6 +185,20 @@ class SearchView {
     this.updateSearchNavigationButtons();
   }
 
+  /**
+   * Obtains closest match based on the logical comparison function passed in.
+   * When the comparison function returns true, the starting (left) half of the
+   * matches array is used in the binary split, else the ending (right) half is
+   * used. A recursive call is made to perform the same split and comparison
+   * on the winning half of the matches. This is traditionally known as binary
+   * search (https://en.wikipedia.org/wiki/Binary_search_algorithm), and in
+   * most cases (medium to large search result arrays) should outperform
+   * traversing the array from start to finish. In the case of small arrays,
+   * the speed difference is negligible.
+   *
+   * @param {function} comparisonFn
+   * @return {number} matchIndex
+   */
   getClosestMatchIndex(comparisonFn) {
     const matchPages = this.matches.map((m) => m.par[0].page);
     const currentPage = this.br.currentIndex() + 1;
