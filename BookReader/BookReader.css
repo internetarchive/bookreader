@@ -1889,6 +1889,10 @@ i.BRicon {
   display: inline-block;
   vertical-align: middle;
 }
+.BookReader .BRsearch-navigation .pagination a[disabled], .BRmobileMenu .BRsearch-navigation .pagination a[disabled], .BRfloat .BRsearch-navigation .pagination a[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
 .BookReader .BRsearch-navigation .pagination a span, .BRmobileMenu .BRsearch-navigation .pagination a span, .BRfloat .BRsearch-navigation .pagination a span {
   width: 8px;
   height: 13px;
