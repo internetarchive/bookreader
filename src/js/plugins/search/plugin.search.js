@@ -239,14 +239,19 @@ BookReader.prototype.BRSearchCallbackError = function(results) {
  */
 BookReader.prototype._BRSearchCallbackError = function(results) {
   this.searchResults = results;
+  const basePayload = {
+    term: this.searchTerm,
+    instance: this,
+  };
   if (results.error) {
-    this.trigger('SearchCallbackError', { term: this.searchTerm, results, instance: this });
+    const payload = Object.assign({}, basePayload, { results });
+    this.trigger('SearchCallbackError', payload);
   } else if (0 == results.matches.length) {
     if (false === results.indexed) {
-      this.trigger('SearchCallbackBookNotIndexed', { term: this.searchTerm, instance: this });
+      this.trigger('SearchCallbackBookNotIndexed', basePayload);
       return;
     }
-    this.trigger('SearchCallbackEmpty', { term: this.searchTerm, instance: this });
+    this.trigger('SearchCallbackEmpty', basePayload);
   }
 };
 
