@@ -173,7 +173,7 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
     }
   };
 
-  this.trigger('SearchStarted');
+  this.trigger('SearchStarted', { term: this.searchTerm });
   return $.ajax({
     url: url,
     dataType: 'jsonp'
@@ -239,14 +239,19 @@ BookReader.prototype.BRSearchCallbackError = function(results) {
  */
 BookReader.prototype._BRSearchCallbackError = function(results) {
   this.searchResults = results;
+  const basePayload = {
+    term: this.searchTerm,
+    instance: this,
+  };
   if (results.error) {
-    this.trigger('SearchCallbackError', { results, instance: this });
+    const payload = Object.assign({}, basePayload, { results });
+    this.trigger('SearchCallbackError', payload);
   } else if (0 == results.matches.length) {
     if (false === results.indexed) {
-      this.trigger('SearchCallbackBookNotIndexed', { instance: this });
+      this.trigger('SearchCallbackBookNotIndexed', basePayload);
       return;
     }
-    this.trigger('SearchCallbackEmpty', { instance: this });
+    this.trigger('SearchCallbackEmpty', basePayload);
   }
 };
 
