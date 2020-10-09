@@ -1,3 +1,7 @@
+# 4.18.3
+- Fix: Enrich context to search emitted events @iisa
+- Fix: Hides directional buttons and shows viewmode buttons on mobile viewports @shaneriley
+
 # 4.18.2
 - Fix: Search plugin fixes (#491) @shaneriley
 
