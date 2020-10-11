@@ -50,7 +50,7 @@ BookReader.prototype.setup = (function (super_) {
     this.subPrefix = options.subPrefix;
     this.bookPath = options.bookPath;
 
-    if (this.searchView) { return }
+    if (this.searchView) { return; }
     this.searchView = new SearchView({
       br: this,
       selector: '#BRsearch_tray',
@@ -76,7 +76,7 @@ BookReader.prototype.init = (function (super_) {
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
   return function () {
     const $el = super_.call(this);
-    if (!this.enableSearch) { return }
+    if (!this.enableSearch) { return; }
     if (this.searchView.dom.mobileSearch) {
       $el.find('.BRmobileMenu__moreInfoRow').after(this.searchView.dom.mobileSearch);
     }
@@ -88,7 +88,7 @@ BookReader.prototype.buildMobileDrawerElement = (function (super_) {
 BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
     const $el = super_.call(this);
-    if (!this.enableSearch) { return }
+    if (!this.enableSearch) { return; }
     if (this.searchView.dom.toolbarSearch) {
       $el.find('.BRtoolbarSectionInfo').after(this.searchView.dom.toolbarSearch);
     }
@@ -338,7 +338,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
  */
 BookReader.prototype.removeSearchHilites = function() {
   const results = this.searchResults;
-  if (null == results || !results.matches) { return }
+  if (null == results || !results.matches) { return; }
   results.matches.forEach(match => {
     match.par[0].boxes.forEach(box => {
       if (null != box.div) {

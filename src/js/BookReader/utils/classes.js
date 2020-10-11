@@ -21,7 +21,7 @@ export function exposeOverrideable(FromClass, fromMethod, fromTransform, ToClass
   })(FromClass.prototype[fromMethod]);
 
   Object.defineProperty(ToClass.prototype, toMethod, {
-    get() { return wrapper },
+    get() { return wrapper; },
     set(overrideFn) {
       // overrideFn expects `this` to be ToClass, so ensure as such
       // But we can also call this method from FromClass; need to ensure

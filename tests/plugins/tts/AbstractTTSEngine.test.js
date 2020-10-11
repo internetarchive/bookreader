@@ -7,7 +7,7 @@ import PageChunkIterator from '../../../src/js/plugins/tts/PageChunkIterator.js'
 describe('AbstractTTSEngine', () => {
   test('stops playing once done', () => {
     class DummyEngine extends AbstractTTSEngine {
-      getVoices() { return [] }
+      getVoices() { return []; }
     }
     const d = new DummyEngine(DUMMY_TTS_ENGINE_OPTS);
     d._chunkIterator = { next: sinon.stub().resolves(PageChunkIterator.AT_END) };
@@ -121,7 +121,7 @@ export const DUMMY_TTS_ENGINE_OPTS = {
   onLoadingStart() {},
   onLoadingComplete() {},
   onDone() {},
-  beforeChunkPlay() { return Promise.resolve() },
+  beforeChunkPlay() { return Promise.resolve(); },
   afterChunkPlay() {},
 };
 

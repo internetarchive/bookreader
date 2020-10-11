@@ -60,16 +60,16 @@ export default class AbstractTTSEngine {
    * @abstract
    * @return {boolean}
    */
-  static isSupported() { throw new Error("Unimplemented abstract class") }
+  static isSupported() { throw new Error("Unimplemented abstract class"); }
 
   /**
    * @abstract
    * @return {SpeechSynthesisVoice[]}
    */
-  getVoices() { throw new Error("Unimplemented abstract class") }
+  getVoices() { throw new Error("Unimplemented abstract class"); }
 
   /** @abstract */
-  init() { return null }
+  init() { return null; }
 
   /**
    * @param {number} leafIndex
@@ -177,7 +177,7 @@ export default class AbstractTTSEngine {
    * @param {PageChunk} chunk
    * @return {AbstractTTSSound}
    */
-  createSound(chunk) { throw new Error("Unimplemented abstract class") }
+  createSound(chunk) { throw new Error("Unimplemented abstract class"); }
 
   /**
    * @param {AbstractTTSSound} sound
