@@ -19,7 +19,7 @@ export class Navbar {
 
   controlFor(controlName) {
     const option = this.br.options.controls[controlName];
-    if (!option.visible) { return ''; }
+    if (!option.visible) { return '' }
     if (option.template) {
       return `<li>${option.template(this.br)}</li>`;
     }

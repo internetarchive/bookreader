@@ -834,7 +834,7 @@ export class Mode2Up {
           e.preventDefault();
         })
       */
-    }
+    };
 
     this.setClickHandler(
       this.br.prefetchedImgs[this.br.twoPage.currentIndexR],

@@ -2,7 +2,7 @@ import { exposeOverrideable } from '../../../src/js/BookReader/utils/classes.js'
 
 describe('exposeOverrideable', () => {
   test('adds method to To class', () => {
-    class From { foo() { return 3; } }
+    class From { foo() { return 3 } }
     class To { }
     exposeOverrideable(From, 'foo', x => x, To, 'foo', x => x);
     expect(To.prototype).toHaveProperty('foo');
@@ -10,7 +10,7 @@ describe('exposeOverrideable', () => {
   });
 
   test('modifying To method modifies original class', () => {
-    class From { foo() { return 3; } }
+    class From { foo() { return 3 } }
     class To { }
     const originalFoo = From.prototype.foo;
     exposeOverrideable(From, 'foo', x => x, To, 'foo', x => x);
@@ -21,7 +21,7 @@ describe('exposeOverrideable', () => {
   });
 
   test('can transform this', () => {
-    class From { foo() { return this; } }
+    class From { foo() { return this } }
     class To { }
     exposeOverrideable(From, 'foo', x => 'fake-this1', To, 'foo', x => 'fake-this2');
     const f = new From();
@@ -30,7 +30,7 @@ describe('exposeOverrideable', () => {
   });
 
   test('can transform this both ways if overriden', () => {
-    class From { foo() { return [this]; } }
+    class From { foo() { return [this] } }
     class To { }
     exposeOverrideable(From, 'foo', x => 'fake-this1', To, 'foo', x => 'fake-this2');
     // Override pattern common in bookreader
@@ -53,11 +53,11 @@ describe('exposeOverrideable', () => {
 
   test('BookReader override pattern', () => {
     class Component {
-      constructor(br) { this.br = br; }
-      createButton() { return 'root button'; }
+      constructor(br) { this.br = br }
+      createButton() { return 'root button' }
       // need to test that when called through a
       // Component method, that it work correctly
-      initToolbar() { return [this.createButton()]; }
+      initToolbar() { return [this.createButton()] }
     }
     class BookReader {
       constructor() {

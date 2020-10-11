@@ -153,7 +153,7 @@ class SearchView {
   }
 
   bindSearchNavigationEvents() {
-    if (!this.dom.searchNavigation) { return; }
+    if (!this.dom.searchNavigation) { return }
     const namespace = 'searchNavigation';
 
     this.dom.searchNavigation
@@ -164,8 +164,8 @@ class SearchView {
   }
 
   showPrevResult() {
-    if (this.currentMatchIndex === 0) { return; }
-    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
+    if (this.currentMatchIndex === 0) { return }
+    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up) }
     if (!~this.currentMatchIndex) {
       this.currentMatchIndex = this.getClosestMatchIndex((start, end, comparator) => end[0] > comparator) + 1;
     }
@@ -175,8 +175,8 @@ class SearchView {
   }
 
   showNextResult() {
-    if (this.currentMatchIndex + 1 === this.matches.length) { return; }
-    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up); }
+    if (this.currentMatchIndex + 1 === this.matches.length) { return }
+    if (this.br.mode === this.br.constModeThumb) { this.br.switchMode(this.br.constMode1up) }
     if (!~this.currentMatchIndex) {
       this.currentMatchIndex = this.getClosestMatchIndex((start, end, comparator) => start[start.length - 1] > comparator) - 1;
     }
@@ -203,11 +203,11 @@ class SearchView {
     const matchPages = this.matches.map((m) => m.par[0].page);
     const currentPage = this.br.currentIndex() + 1;
     const closestTo = (pool, comparator) => {
-      if (pool.length === 1) { return pool[0]; }
+      if (pool.length === 1) { return pool[0] }
       const start = pool.slice(0, pool.length / 2);
       const end = pool.slice(pool.length / 2);
       return closestTo((comparisonFn(start, end, comparator) ? start : end), comparator);
-    }
+    };
 
     const closestPage = closestTo(matchPages, currentPage);
     return this.matches.indexOf(this.matches.find((m) => m.par[0].page === closestPage));
@@ -226,7 +226,7 @@ class SearchView {
     if (!this.dom.searchNavigation) {
       this.dom.searchNavigation = $('.BRsearch-navigation');
     }
-    if (!this.dom.searchNavigation.length) { return; }
+    if (!this.dom.searchNavigation.length) { return }
 
     this.dom.searchNavigation.off('.searchNavigation').remove();
     this.dom.searchNavigation = null;
@@ -257,7 +257,7 @@ class SearchView {
   }
 
   updateSearchNavigation() {
-    if (!this.matches.length) { return; }
+    if (!this.matches.length) { return }
 
     this.setCurrentMatchIndex();
     this.updateResultsPosition();
@@ -449,7 +449,7 @@ class SearchView {
   submitHandler(e) {
     e.preventDefault();
     const query = e.target.querySelector('[name="query"]').value;
-    if (!query.length) { return false; }
+    if (!query.length) { return false }
     this.br.search(query);
     this.dom.searchField.blur();
     this.emptyMatches();
@@ -521,7 +521,7 @@ class SearchView {
     this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
     this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
     this.dom.searchField.addEventListener('search', () => {
-      if (this.dom.searchField.value) { return; }
+      if (this.dom.searchField.value) { return }
       this.clearSearchFieldAndResults();
     });
 

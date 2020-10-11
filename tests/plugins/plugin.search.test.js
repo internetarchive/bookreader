@@ -14,7 +14,7 @@ let br;
 const namespace = 'BookReader:';
 const triggeredEvents = () => {
   return $.fn.trigger.mock.calls.map((params) => {
-    if (typeof params[0] === 'string') { return params[0]; }
+    if (typeof params[0] === 'string') { return params[0] }
     return params[0].type;
   });
 };

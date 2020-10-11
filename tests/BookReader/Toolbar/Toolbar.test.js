@@ -4,7 +4,7 @@ import { createPopup } from '../../../src/js/BookReader/Toolbar/Toolbar.js';
 
 afterEach(() => {
   sinon.restore();
-})
+});
 
 describe('createPopup', () => {
   test('calls window.open', () => {
