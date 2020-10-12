@@ -658,6 +658,7 @@ BookReader.prototype.drawLeafs = function() {
  * @protected
  */
 BookReader.prototype._createPageContainer = function(index, styles) {
+  const { pageSide } = this._models.book.getPage(index);
   const css = Object.assign({ position: 'absolute' }, styles);
   const modeClasses = {
     [this.constMode1up]: '1up',
@@ -667,7 +668,7 @@ BookReader.prototype._createPageContainer = function(index, styles) {
   const container = $('<div />', {
     'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
     css,
-  }).append($('<div />', { 'class': 'BRscreen' }));
+  }).attr('data-side', pageSide).append($('<div />', { 'class': 'BRscreen' }));
   container.toggleClass('protected', this.protected);
 
   return container;
