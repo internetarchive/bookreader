@@ -1,3 +1,7 @@
+# 4.18.4
+- Fix: Adds data attribute to 2up page containers for side designation @shaneriley
+- Fix: Apdate interstitial modal to fixed with & clean up messaging @iisa
+
 # 4.18.3
 - Fix: Enrich context to search emitted events @iisa
 - Fix: Hides directional buttons and shows viewmode buttons on mobile viewports @shaneriley
