@@ -387,10 +387,7 @@ class SearchView {
   toggleSearchPending(bool) {
     this.dom.searchPending.classList.toggle('visible', bool);
     if (bool) {
-      this.br.showProgressPopup(
-        `<img class="searchmarker" src="${this.br.imagesBaseURL}marker_srch-on.svg" />
-        Search results will appear below...`
-      );
+      this.br.showProgressPopup("Search results will appear below...");
     }
     else {
       this.br.removeProgressPopup();
@@ -407,6 +404,7 @@ class SearchView {
       <p>
          This book hasn't been indexed for searching yet.
          We've just started indexing it, so search should be available soon.
+         <br />
          Please try again later. Thanks!
       </p>
     `);
