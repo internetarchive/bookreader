@@ -1,3 +1,6 @@
+# 4.18.5
+- Fix: Waits to resize until first result flipped to (#498) @shaneriley
+
 # 4.18.4
 - Fix: Adds data attribute to 2up page containers for side designation @shaneriley
 - Fix: Apdate interstitial modal to fixed with & clean up messaging @iisa
