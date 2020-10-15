@@ -141,7 +141,6 @@ class SearchView {
       </div>
     `);
     this.dom.searchNavigation = $(`.${selector}`);
-    this.br.resize();
   }
 
   resultsPosition() {
@@ -459,8 +458,9 @@ class SearchView {
    * @param {Event} e
    * @param {object} properties
    *   @param {object} properties.results
+   *   @param {object} properties.options
    */
-  handleSearchCallback(e, { results }) {
+  handleSearchCallback(e, { results, options }) {
     this.matches = results.matches;
     this.setCurrentMatchIndex();
     this.teardownSearchNavigation();
@@ -470,6 +470,13 @@ class SearchView {
     this.renderPins(results.matches);
     this.updateResultsCount(results.matches.length);
     this.toggleSearchPending(false);
+    if (options.goToFirstResult) {
+      $(document).one('BookReader:pageChanged', () => {
+        this.br.resize();
+      });
+    } else {
+      this.br.resize();
+    }
   }
 
   /**
