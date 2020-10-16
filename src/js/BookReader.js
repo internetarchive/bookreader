@@ -490,7 +490,7 @@ BookReader.prototype.init = function() {
   // Must be called after this.init.initComplete set to true to allow
   // BookReader.prototype.resize to run.
   if (this.options.startFullscreen) {
-    this.enterFullscreen();
+    this.toggleFullscreen();
   }
 }
 
