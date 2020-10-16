@@ -1,3 +1,6 @@
+# 4.18.6
+- Fix: use fullscreen toggle flow when starting fullscreen (#499) @iisa
+
 # 4.18.5
 - Fix: Waits to resize until first result flipped to (#498) @shaneriley
 
