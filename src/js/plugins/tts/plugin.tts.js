@@ -186,6 +186,7 @@ BookReader.prototype.ttsStart = function () {
     this.switchMode(this.constMode1up);
 
   this.refs.$BRReadAloudToolbar.addClass('visible');
+  setTimeout(() => this.refs.$BRReadAloudToolbar.addClass('animate'), 20);
   this.$('.BRicon.read').addClass('unread active');
   this.ttsSendAnalyticsEvent('Start');
   this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
@@ -222,7 +223,8 @@ BookReader.prototype.ttsPlayPause = function() {
 // ttsStop()
 //______________________________________________________________________________
 BookReader.prototype.ttsStop = function () {
-  this.refs.$BRReadAloudToolbar.removeClass('visible');
+  this.refs.$BRReadAloudToolbar.removeClass('animate');
+  setTimeout(() => this.refs.$BRReadAloudToolbar.removeClass('visible'), 250);
   this.$('.BRicon.read').removeClass('unread active');
   this.ttsSendAnalyticsEvent('Stop');
   this.ttsEngine.stop();
