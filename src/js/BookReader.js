@@ -1584,19 +1584,43 @@ BookReader.prototype.isFullscreen = function() {
   return this.isFullscreenActive;
 };
 
-BookReader.prototype.toggleFullscreen = function() {
-  if (this.isFullscreen()) {
+/**
+ * Fullscreen mode manager
+ * - toggles fullscreen
+ * - binds keyboard controls
+ * - fires custom event
+ * @param { boolean } bindKeyboardControls
+ */
+BookReader.prototype.toggleFullscreen = function(bindKeyboardControls = true) {
+  this._fullscreenCloseHandler = function _fullscreenCloseHandler(e) {
+    if (e.keyCode === 27) this.toggleFullscreen();
+  }.bind(this);
+
+  const handleExit = () => {
     this.exitFullScreen();
-  } else {
-    this.enterFullscreen();
+    $(document).unbind('keyup', this._fullscreenCloseHandler);
   }
+
+  const handleEnter = () => {
+    this.enterFullscreen();
+    if (bindKeyboardControls) {
+      $(document).keyup(this._fullscreenCloseHandler);
+    }
+  }
+  if (this.isFullscreen()) {
+    handleExit();
+  } else {
+    handleEnter();
+  }
+
   this.trigger('fullscreenToggled');
 };
 
 BookReader.prototype.enterFullscreen = function() {
+  const currentIndex = this.currentIndex();
   this.refs.$brContainer.css('opacity', 0);
 
-  var windowWidth = $(window).width();
+  const windowWidth = $(window).width();
   if (windowWidth <= this.onePageMinBreakpoint) {
     this.switchMode(this.constMode1up);
   }
@@ -1605,22 +1629,14 @@ BookReader.prototype.enterFullscreen = function() {
   this.updateBrClasses();
 
   this.resize();
-  this.jumpToIndex(this.currentIndex());
 
-  this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
-
-  this._fullscreenCloseHandler = function (e) {
-    if (e.keyCode === 27) this.toggleFullscreen();
-  }.bind(this);
-  $(document).keyup(this._fullscreenCloseHandler);
+  this.refs.$brContainer.animate({opacity: 1}, 400, 'linear', () => this.jumpToIndex(currentIndex));
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.exitFullScreen = function() {
   this.refs.$brContainer.css('opacity', 0);
-
-  $(document).unbind('keyup', this._fullscreenCloseHandler);
 
   var windowWidth = $(window).width();
   if (windowWidth <= this.onePageMinBreakpoint) {
