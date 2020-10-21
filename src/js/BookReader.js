@@ -1595,18 +1595,17 @@ BookReader.prototype.toggleFullscreen = function(bindKeyboardControls = true) {
   this._fullscreenCloseHandler = function _fullscreenCloseHandler(e) {
     if (e.keyCode === 27) this.toggleFullscreen();
   }.bind(this);
-
   const handleExit = () => {
     this.exitFullScreen();
     $(document).unbind('keyup', this._fullscreenCloseHandler);
   }
-
   const handleEnter = () => {
     this.enterFullscreen();
     if (bindKeyboardControls) {
       $(document).keyup(this._fullscreenCloseHandler);
     }
   }
+
   if (this.isFullscreen()) {
     handleExit();
   } else {
@@ -1628,9 +1627,11 @@ BookReader.prototype.enterFullscreen = function() {
   this.isFullscreenActive = true;
   this.updateBrClasses();
 
-  this.resize();
 
-  this.refs.$brContainer.animate({opacity: 1}, 400, 'linear', () => this.jumpToIndex(currentIndex));
+  this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear',() => {
+    this.resize();
+    this.jumpToIndex(currentIndex);
+  });
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
 };
