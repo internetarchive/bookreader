@@ -1,3 +1,6 @@
+# 4.18.7
+Fix: update fullscreen toggle methods to fire behaviors in an expected way @iisa
+
 # 4.18.6
 - Fix: use fullscreen toggle flow when starting fullscreen (#499) @iisa
 
