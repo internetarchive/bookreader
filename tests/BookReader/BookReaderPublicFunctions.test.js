@@ -12,8 +12,11 @@ describe('BookReader.prototype.toggleFullscreen', ()  => {
     const br = new BookReader();
     br.mode = br.constMode1up;
     br.enterFullscreen = jest.fn();
-
     br.trigger = jest.fn();
+    br.refs.$brContainer = {
+      css: jest.fn(),
+      animate: jest.fn()
+    }
 
     br.toggleFullscreen();
     expect(br.enterFullscreen).toHaveBeenCalled();
@@ -22,7 +25,12 @@ describe('BookReader.prototype.toggleFullscreen', ()  => {
   test('will bind `_fullscreenCloseHandler` by default', () => {
     const br = new BookReader();
     br.mode = br.constMode1up;
-    br.enterFullscreen = jest.fn();
+    br.switchMode = jest.fn();
+    br.updateBrClasses = jest.fn();
+    br.refs.$brContainer = {
+      css: jest.fn(),
+      animate: jest.fn(),
+    };
     expect(br._fullscreenCloseHandler).toBeUndefined();
 
     br.toggleFullscreen();
