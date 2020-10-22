@@ -35,8 +35,6 @@ describe('BookReader.prototype.toggleFullscreen', ()  => {
     expect(br.enterFullscreen).toHaveBeenCalled();
   });
 
-
-
   test('will start with opening fullscreen', () => {
     const br = new BookReader();
     br.mode = br.constMode1up;
@@ -72,8 +70,52 @@ describe('BookReader.prototype.enterFullscreen', ()  => {
     br.enterFullscreen();
     expect(br._fullscreenCloseHandler).toBeDefined();
   });
-})
 
+  test('fires certain events when called', () => {
+    const br = new BookReader();
+    br.mode = br.constMode1up;
+    br.switchMode = jest.fn();
+    br.updateBrClasses = jest.fn();
+    br.trigger = jest.fn();
+    br.resize = jest.fn();
+    br.jumpToIndex = jest.fn();
+    const animateMock = (options, speed, style, callback) => {
+      callback();
+    };
+    br.refs.$brContainer = {
+      css: jest.fn(),
+      animate: animateMock,
+    };
+
+    br.enterFullscreen();
+    expect(br.switchMode).toHaveBeenCalledTimes(1);
+    expect(br.updateBrClasses).toHaveBeenCalledTimes(1);
+    expect(br.trigger).toHaveBeenCalledTimes(1);
+    expect(br.resize).toHaveBeenCalledTimes(1);
+    expect(br.jumpToIndex).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('BookReader.prototype.exitFullScreen', () => {
+  test('fires certain events when called', () => {
+    const br = new BookReader();
+    br.mode = br.constMode1up;
+    br.switchMode = jest.fn();
+    br.updateBrClasses = jest.fn();
+    br.trigger = jest.fn();
+    br.resize = jest.fn();
+    br.refs.$brContainer = {
+      css: jest.fn(),
+      animate: jest.fn(),
+    };
+
+    br.exitFullScreen();
+    expect(br.switchMode).toHaveBeenCalledTimes(1);
+    expect(br.updateBrClasses).toHaveBeenCalledTimes(1);
+    expect(br.trigger).toHaveBeenCalledTimes(1);
+    expect(br.resize).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('BookReader.prototype.trigger', () => {
   test('fires custom event', () => {
