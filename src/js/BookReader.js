@@ -1584,19 +1584,38 @@ BookReader.prototype.isFullscreen = function() {
   return this.isFullscreenActive;
 };
 
-BookReader.prototype.toggleFullscreen = function() {
+/**
+ * Toggles fullscreen
+ * @param { boolean } bindKeyboardControls
+ */
+BookReader.prototype.toggleFullscreen = function(bindKeyboardControls = true) {
   if (this.isFullscreen()) {
     this.exitFullScreen();
   } else {
-    this.enterFullscreen();
+    this.enterFullscreen(bindKeyboardControls);
   }
-  this.trigger('fullscreenToggled');
 };
 
-BookReader.prototype.enterFullscreen = function() {
+/**
+ * Enters fullscreen
+ * including:
+ * - animation
+ * - binds keyboard controls
+ * - fires custom event
+ * @param { boolean } bindKeyboardControls
+ */
+BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
+  const currentIndex = this.currentIndex();
   this.refs.$brContainer.css('opacity', 0);
 
-  var windowWidth = $(window).width();
+  if (bindKeyboardControls) {
+    this._fullscreenCloseHandler = (e) => {
+      if (e.keyCode === 27) this.toggleFullscreen();
+    };
+    $(document).keyup(this._fullscreenCloseHandler);
+  }
+
+  const windowWidth = $(window).width();
   if (windowWidth <= this.onePageMinBreakpoint) {
     this.switchMode(this.constMode1up);
   }
@@ -1604,19 +1623,22 @@ BookReader.prototype.enterFullscreen = function() {
   this.isFullscreenActive = true;
   this.updateBrClasses();
 
-  this.resize();
-  this.jumpToIndex(this.currentIndex());
-
-  this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
-
-  this._fullscreenCloseHandler = function (e) {
-    if (e.keyCode === 27) this.toggleFullscreen();
-  }.bind(this);
-  $(document).keyup(this._fullscreenCloseHandler);
+  this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear',() => {
+    this.resize();
+    this.jumpToIndex(currentIndex);
+  });
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
+  this.trigger('fullscreenToggled');
 };
 
+/**
+ * Exits fullscreen
+ * - toggles fullscreen
+ * - binds keyboard controls
+ * - fires custom event
+ * @param { boolean } bindKeyboardControls
+ */
 BookReader.prototype.exitFullScreen = function() {
   this.refs.$brContainer.css('opacity', 0);
 
@@ -1634,6 +1656,7 @@ BookReader.prototype.exitFullScreen = function() {
   this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
+  this.trigger('fullscreenToggled');
 };
 
 /**
