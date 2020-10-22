@@ -8,6 +8,19 @@ afterEach(() => {
 });
 
 describe('BookReader.prototype.toggleFullscreen', ()  => {
+  test('uses `isFullscreen` to check fullscreen state', () => {
+    const isFSmock = jest.fn();
+    isFSmock.mockReturnValueOnce(false);
+    const br = new BookReader();
+    br.mode = br.constMode1up;
+    br.enterFullscreen = jest.fn();
+    br.isFullscreen = isFSmock;
+
+    br.toggleFullscreen();
+    expect(br.isFullscreen).toHaveBeenCalled();
+    expect(br.isFullscreen).toHaveBeenCalled();
+  });
+
   test('will always emit an event', () => {
     const br = new BookReader();
     br.mode = br.constMode1up;
