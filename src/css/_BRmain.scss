@@ -80,6 +80,16 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.BRzoom-transition {
+  transition: transform 0.2s;
+}
+
+@media (prefers-reduced-motion) {
+  .BRzoom-transition {
+    transition: none;
+  }
+}
+
 .BRprogresspopup {
   margin: 80px auto auto;
   position: relative;

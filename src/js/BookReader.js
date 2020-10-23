@@ -38,6 +38,7 @@ import {
 import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
+import { TransformManager } from './BookReader/TransformManager.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -489,6 +490,11 @@ BookReader.prototype.init = function() {
   if (!this.options.initialSearchTerm) {
     this.suppressFragmentChange = false;
   }
+
+  this.transformManager = new TransformManager({
+    transformingEl: this.$('.BRtwopageview, .BRpageview')[0],
+    containingEl: this.refs.$brContainer[0],
+  });
 
   this.init.initComplete = true;
 
@@ -986,6 +992,28 @@ BookReader.prototype.zoom = function(direction) {
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   return;
+};
+
+/**
+ * Zooms from the center of the current viewport
+ * @param {number} factor The zoom factor
+ * @param {boolean} transition Whether to transition during the zoom
+ * @param {boolean} tentative Whether to zoom is still in progress
+ */
+BookReader.prototype.continuousZoom = async function(factor, transition = false) {
+  this.transformManager.transformingEl = this.$('.BRtwopageview, .BRpageview')[0];
+  this.containingEl = this.refs.$brContainer[0];
+
+  this.transformManager.beginTransform();
+
+  if (transition) {
+    this.$('.BRtwopageview').addClass('BRzoom-transition');
+    this.transformManager.applyTentativeTransform({ scale: factor });
+    await new Promise(res => this.$('.BRtwopageview').one('transitionend', res));
+  }
+
+  this.$('.BRtwopageview').removeClass('BRzoom-transition');
+  this.transformManager.finalizeTransform();
 };
 
 /**
@@ -1923,6 +1951,22 @@ BookReader.prototype.createPopup = createPopup;
  */
 BookReader.prototype.bindNavigationHandlers = function() {
   const self = this;
+
+  let wheelTimeout = null;
+  window.addEventListener('wheel', ev => {
+    if (!ev.ctrlKey) return;
+    ev.preventDefault();
+    if (!this.transformManager.transformInProgress) this.transformManager.beginTransform();
+
+    this.transformManager.applyTentativeTransform({
+      scale: 1 - Math.sign(ev.deltaY) * .04
+    });
+    if (wheelTimeout) clearTimeout(wheelTimeout);
+    wheelTimeout = setTimeout(() => {
+      wheelTimeout = null;
+      this.transformManager.finalizeTransform();
+    }, 500);
+  }, {passive: false});
 
   // Note the mobile plugin attaches itself to body, so we need to select outside
   const jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
