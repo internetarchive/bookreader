@@ -394,7 +394,11 @@ class SearchView {
   }
 
   renderErrorModal() {
-    this.renderModalMessage('Sorry, there was an error with your search.<br />The text may still be processing.');
+    this.renderModalMessage(`
+      Sorry, there was an error with your search.
+      <br />
+      The text may still be processing.
+    `);
     this.delayModalRemovalFor(4000);
   }
 
