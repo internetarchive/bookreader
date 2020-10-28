@@ -10,6 +10,7 @@ module.exports = {
     // Note the version in the filename is wrong, but kept for backwards compatibility. Won't matter
     // once the entire file is deleted/auto-generated in v5
     'jquery-1.10.1.js': { import: './src/js/jquery-wrapper.js' },
+    'jquery-ui-1.12.0.min.js': { import: './src/js/jquery-ui-wrapper.js', dependOn: 'jquery-1.10.1.js' },
 
     // BookReader
     'BookReader.js': './src/js/BookReader.js',

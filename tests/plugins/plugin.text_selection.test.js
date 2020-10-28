@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import '../../src/js/jquery-wrapper.js';
-import '../../BookReader/jquery-ui-1.12.0.min.js';
+import '../../src/js/jquery-ui-wrapper.js';
 import '../../BookReader/jquery.browser.min.js';
 import '../../BookReader/dragscrollable-br.js';
 import '../../BookReader/jquery.colorbox-min.js';
