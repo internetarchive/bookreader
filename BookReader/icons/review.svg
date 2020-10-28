@@ -13,7 +13,7 @@
       <g transform="translate(43.000000, 10.000000)">
         <polyline stroke="#fff" stroke-width="2" stroke-linejoin="round" points="14.4444444 16.6666667 20 16.6666667 20 3.33333333 5.55555556 3.33333333"></polyline>
         <polygon fill="#fff" points="5.55555556 0 5.55555556 6.66666667 1.11111111 3.33333333"></polygon>
-        <text font-family="HelveticaNeue, Helvetica Neue" font-size="10" font-weight="normal" fill="#fff">
+        <text font-family="HelveticaNeue, Helvetica Neue, sans-serif" font-size="10" font-weight="normal" fill="#fff">
           <tspan x="0" y="17.3333333">10</tspan>
         </text>
       </g>
