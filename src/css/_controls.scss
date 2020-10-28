@@ -60,6 +60,9 @@
     border: none;
     cursor: pointer;
     background: transparent url("icons/playback-speed.svg") 50% 0 no-repeat;
+    option {
+      background: $controlsBG;
+    }
   }
 
   .active {
