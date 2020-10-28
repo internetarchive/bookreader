@@ -1,4 +1,4 @@
-/* global BookReader, soundManager */
+/* global BookReader */
 /**
  * Plugin for Text to Speech in BookReader
  */
@@ -310,11 +310,11 @@ BookReader.prototype.ttsScrollToChunk = function(chunk) {
   const topOfFirstChunk = leafTop + chunkTop / this.reduce;
   const botOfLastChunk  = leafTop + chunkBot / this.reduce;
 
-  if (soundManager.debugMode) console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
+  if (window?.soundManager?.debugMode) console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
 
   const containerTop = this.refs.$brContainer.prop('scrollTop');
   const containerBot = containerTop + this.refs.$brContainer.height();
-  if (soundManager.debugMode) console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
+  if (window?.soundManager?.debugMode) console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
 
   if ((topOfFirstChunk < containerTop) || (botOfLastChunk > containerBot)) {
     this.refs.$brContainer.stop(true).animate({scrollTop: topOfFirstChunk},'fast');
