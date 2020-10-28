@@ -45,7 +45,6 @@
     font-weight: normal;
   }
   .BRchapter {
-    // background-image: url(images/marker_chap-off.svg);
     background-color: white;
     color: #666;
     height: 8px;
@@ -61,7 +60,6 @@
       }
     }
     &.front {
-      // background-image: url(images/marker_chap-on.svg);
       background-color: blue;
     }
   }

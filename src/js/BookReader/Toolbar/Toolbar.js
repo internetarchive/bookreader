@@ -38,13 +38,6 @@ export class Toolbar {
           </div>
         </div>
       </div>`);
-    // TODO actual hamburger menu
-    // <span class="BRtoolbarSection BRtoolbarSectionMenu">
-    //   <button class="BRpill BRtoolbarHamburger">
-    //     <img src="${br.imagesBaseURL}icon_hamburger.svg" />
-    //     <div class="BRhamburgerDrawer"><ul><li>hi</li></ul></div>
-    //   </button>
-    // </span>
 
     const $titleSectionEl = br.refs.$BRtoolbar.find('.BRtoolbarSectionTitle');
     if (br.bookUrl && br.options.enableBookTitleLink) {
