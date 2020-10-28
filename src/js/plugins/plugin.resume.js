@@ -19,7 +19,7 @@ BookReader.prototype.init = (function(super_) {
   return function() {
     super_.call(this);
     if (this.options.enablePageResume) {
-      this.bind(BookReader.eventNames.fragmentChange, () => {
+      this.on(BookReader.eventNames.fragmentChange, () => {
         const params = this.paramsFromCurrent();
         this.updateResumeValue(params.index);
       });

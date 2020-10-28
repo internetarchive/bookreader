@@ -55,7 +55,7 @@ BookReader.prototype.init = (function(super_) {
       // Bind to events
 
       // TODO move this to BookReader.js or something
-      this.bind(BookReader.eventNames.fragmentChange, () => {
+      this.on(BookReader.eventNames.fragmentChange, () => {
         if (this.mode == this.constMode2up) {
           // clear highlights if they're no longer valid for this page
           const visibleIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
@@ -65,7 +65,7 @@ BookReader.prototype.init = (function(super_) {
         }
       });
 
-      this.bind(BookReader.eventNames.PostInit, () => {
+      this.on(BookReader.eventNames.PostInit, () => {
         this.$('.BRicon.read').click(() => {
           this.ttsToggle();
           return false;
@@ -82,7 +82,7 @@ BookReader.prototype.init = (function(super_) {
 
       // This is fired when the hash changes by one of the other plugins!
       // i.e. it will fire every time the page changes -_-
-      // this.bind(BookReader.eventNames.stop, function(e, br) {
+      // this.on(BookReader.eventNames.stop, function(e, br) {
       //     this.ttsStop();
       // }.bind(this));
     }

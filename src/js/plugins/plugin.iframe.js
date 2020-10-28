@@ -28,7 +28,7 @@ export function _attachEventListeners(br, parent = window.parent) {
     return;
   }
 
-  br.bind(BookReader.eventNames.fragmentChange, () => {
+  br.on(BookReader.eventNames.fragmentChange, () => {
     const fragment = br.fragmentFromParams(br.paramsFromCurrent());
 
     parent.postMessage(

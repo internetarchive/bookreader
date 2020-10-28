@@ -29,7 +29,7 @@ BookReader.prototype.init = (function(super_) {
       this.getOpenLibraryRecord();
     }
     if (this.enableMobileNav) {
-      this.bind(BookReader.eventNames.mobileNavOpen,
+      this.on(BookReader.eventNames.mobileNavOpen,
         () => {
           this.updateTOCState(this.firstIndex, this._tocEntries);
           if ($('table-contents-list').parent().hasClass('mm-opened')) {
@@ -97,7 +97,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
       .on('click', jumpToChapter);
 
     //adding clickable properties to mobile chapters
-    mobileChapter.bind('click', jumpToChapter)
+    mobileChapter.on('click', jumpToChapter)
       .addClass('chapter-clickable')
       .attr("data-event-click-tracking","BRTOCPanel|GoToChapter");
   }
