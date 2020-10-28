@@ -1,6 +1,7 @@
-/* global soundManager */
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 import { sleep } from './utils.js';
+/* global soundManager */
+import 'soundmanager2';
 
 /** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
 /** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
