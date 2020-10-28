@@ -91,10 +91,21 @@
     height: 30px;
   }
 
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .read-aloud {
     display: none;
     position: absolute;
-    bottom: -80px;
+    bottom: 100%;
     right: 0;
     left: 0;
     z-index: 1;
@@ -103,13 +114,11 @@
     align-items: center;
     justify-content: center;
     list-style: none;
-    transition: bottom .25s linear;
     background: $controlsBG;
+
     &.visible {
       display: flex;
-    }
-    &.animate {
-      bottom: 100%;
+      animation: slideUp 0.2s;
     }
 
     li {
