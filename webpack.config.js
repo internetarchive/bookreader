@@ -45,7 +45,6 @@ module.exports = [
       'plugins/plugin.resume.js': { import: './src/js/plugins/plugin.resume.js', dependOn: 'BookReader.js' },
       'plugins/plugin.search.js': { import: './src/js/plugins/search/plugin.search.js', dependOn: 'BookReader.js' },
       'plugins/plugin.text_selection.js': { import: './src/js/plugins/plugin.text_selection.js', dependOn: 'BookReader.js' },
-      'plugins/plugin.themes.js': { import: './src/js/plugins/plugin.themes.js', dependOn: 'BookReader.js' },
       'plugins/plugin.tts.js': { import: './src/js/plugins/tts/plugin.tts.js', dependOn: 'BookReader.js' },
       'plugins/plugin.url.js': { import: './src/js/plugins/plugin.url.js', dependOn: 'BookReader.js' },
       'plugins/plugin.vendor-fullscreen.js': { import: './src/js/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' }
