@@ -49,6 +49,7 @@
     "regenerator-runtime": "0.13.7",
     "sass": "1.29.0",
     "sinon": "9.2.2",
+    "soundmanager2": "2.97.20170602",
     "svgo": "1.3.2",
     "testcafe": "1.9.3",
     "webpack": "5.9.0",
