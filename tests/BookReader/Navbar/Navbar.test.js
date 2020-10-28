@@ -2,7 +2,7 @@ import '../../../src/js/jquery-wrapper.js';
 import '../../../src/js/jquery-ui-wrapper.js';
 import '../../../BookReader/jquery.browser.min.js';
 import '../../../BookReader/dragscrollable-br.js';
-import '../../../BookReader/jquery.colorbox-min.js';
+import 'jquery-colorbox';
 import sinon from 'sinon';
 import { getNavPageNumHtml } from '../../../src/js/BookReader/Navbar/Navbar.js';
 import BookReader from '../../../src/js/BookReader.js';

@@ -3,7 +3,7 @@ import '../../src/js/jquery-wrapper.js';
 import '../../src/js/jquery-ui-wrapper.js';
 import '../../BookReader/jquery.browser.min.js';
 import '../../BookReader/dragscrollable-br.js';
-import '../../BookReader/jquery.colorbox-min.js';
+import 'jquery-colorbox';
 
 import '../../src/js/BookReader.js';
 import { BookreaderWithTextSelection, TextSelectionPlugin } from '../../src/js/plugins/plugin.text_selection.js';

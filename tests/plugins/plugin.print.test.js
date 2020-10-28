@@ -1,6 +1,6 @@
 import '../../src/js/jquery-ui-wrapper.js';
 import '../../BookReader/dragscrollable-br.js';
-import '../../BookReader/jquery.colorbox-min.js';
+import 'jquery-colorbox';
 
 import BookReader from '../../src/js/BookReader.js';
 import '../../src/js/plugins/plugin.print.js';
