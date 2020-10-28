@@ -1,0 +1,15 @@
+<svg
+  width="17"
+  height="17"
+  viewBox="0 0 17 17"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-labelledby="magnifyTitleID magnifyDescID"
+>
+  <title>Magnifying glass</title>
+  <desc>An icon of a magnifying glass</desc>
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <circle stroke="#fff" stroke-width="2" cx="6.12427268" cy="7.12454189" r="5"></circle>
+    <line x1="10.9914602" y1="11.5959661" x2="15.3266728" y2="15.9311788" stroke="#fff" stroke-width="2" stroke-linecap="square"></line>
+  </g>
+</svg>
