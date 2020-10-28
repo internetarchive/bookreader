@@ -42,6 +42,7 @@
     "jquery-colorbox": "1.6.4",
     "jquery-ui": "1.12.1",
     "jquery-ui-touch-punch": "0.2.3",
+    "jquery.browser": "0.1.0",
     "live-server": "1.2.1",
     "node-fetch": "2.6.1",
     "regenerator-runtime": "0.13.7",
