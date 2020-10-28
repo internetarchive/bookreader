@@ -1,4 +1,4 @@
-import '../../../BookReader/jquery-1.10.1.js';
+import '../../../src/js/jquery-wrapper.js';
 import '../../../BookReader/jquery.browser.min.js';
 import FestivalTTSEngine from '../../../src/js/plugins/tts/FestivalTTSEngine.js';
 import sinon from 'sinon';
