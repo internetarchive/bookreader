@@ -22,9 +22,7 @@
     "url": "https://github.com/internetarchive/bookreader/issues"
   },
   "homepage": "https://github.com/internetarchive/bookreader#readme",
-  "dependencies": {
-    "jquery": "3.4.1"
-  },
+  "dependencies": {},
   "private": false,
   "devDependencies": {
     "@babel/core": "7.11.6",
@@ -39,6 +37,7 @@
     "http-server": "0.12.3",
     "iso-language-codes": "1.0.7",
     "jest": "26.4.2",
+    "jquery": "1.11.3",
     "live-server": "1.2.1",
     "node-fetch": "2.6.1",
     "regenerator-runtime": "0.13.7",

@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import '../../BookReader/jquery-1.10.1.js';
+import '../../src/js/jquery-wrapper.js';
 import '../../BookReader/jquery-ui-1.12.0.min.js';
 import '../../BookReader/jquery.browser.min.js';
 import '../../BookReader/dragscrollable-br.js';
