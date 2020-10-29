@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BookReader Simple Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Get query string parameters and set title, if passed -->
+    <script>
+        let brDemoSearchParams = new URLSearchParams(window.location.search);
+
+        if (brDemoSearchParams.has('title')) {
+            document.title = brDemoSearchParams.get('title');
+        }
+    </script>
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/jquery-1.10.1.js"></script>
+    <script src="../BookReader/jquery-ui-1.12.0.min.js"></script>
+    <script src="../BookReader/jquery.browser.min.js"></script>
+    <script src="../BookReader/dragscrollable-br.js"></script>
+    <script id = "last-js-dependency" src="../BookReader/jquery.colorbox-min.js"></script>
+    
+    <!-- Link to mmenu files, if needed for this demo -->
+    <script id="import-mmenu">
+        if (brDemoSearchParams.get('mmenu')) {
+            let mmenuScript = document.createElement('script');
+            mmenuScript.src = '../BookReader/mmenu/dist/js/jquery.mmenu.min.js';
+
+            let mmenuNavbarScript = document.createElement('script');
+            mmenuNavbarScript.src = '../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js';
+
+            $('#import-mmenu').after(
+                '<link rel="stylesheet" href="../BookReader/mmenu/dist/css/jquery.mmenu.css"/>',
+                '<link rel="stylesheet" href="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css"/>',
+                mmenuScript,
+                mmenuNavbarScript
+            );
+        }
+    </script>
+
+    <!-- BookReader and plugins -->
+    <link id="bookreader-css" rel="stylesheet" href="../BookReader/BookReader.css"/>
+    <script src="../BookReader/BookReader.js"></script>
+
+    <!-- Link to plugins that were passed in the query string -->
+    <script id="import-plugins">
+        if (brDemoSearchParams.has('plugins')) {
+            let pluginArray = brDemoSearchParams.get('plugins').split(',');
+            let importPluginsElement = $('#import-plugins');
+
+
+            pluginArray.forEach((plugin) => {
+                let pluginScript = document.createElement('script');
+                pluginScript.src = `../BookReader/plugins/plugin.${plugin}.js`;
+
+                importPluginsElement.after(pluginScript);
+            });
+        }
+    </script>
+
+    <!-- Custom CSS overrides -->
+    <link id="css-overrides" rel="stylesheet" href="BookReaderDemo.css"/>
+
+    <style>
+        /* Hide irrelevant elements */
+        .hidden-element {display: none;}
+    </style>
+
+    <!-- Use styling defined in the query string -->
+    <script>
+        if (brDemoSearchParams.has('style')) {
+            $('#css-overrides').remove();
+            if (brDemoSearchParams.get('style') === 'fullscreen') {
+                $('style').append(`
+                    html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
+                    #BookReader { width: 100%; height: 100%; }`);
+            } else if (brDemoSearchParams.get('style') === 'fullscreen_mobile') {
+                $('style').append(`
+                    html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: grey; }
+                    .BookReader { width: 100vw; height: 100vw; }`);
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- These h1 elements will remain hidden unless the query string has a 'showElement' parameter with the element's id -->
+    <h1 id="one-up-mode" class="hidden-element">Initial view mode set to 1up</h1>
+    <h1 id="inline-heading" class="hidden-element">My page with a bookreader</h1>
+
+    <div id="BookReader">
+        Internet Archive BookReader Demo<br/>
+        <noscript>
+            <p>
+                The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="https://archive.org/details/goodytwoshoes00newyiala"> other formats of the book</a>.
+            </p>
+        </noscript>
+    </div>
+
+    <!-- Will remain hidden unless query string has 'showElement=BookReader2'-->
+    <div id="BookReader2" class="hidden-element">
+        Internet Archive BookReader Demo<br/>
+        <noscript>
+            <p>
+                The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="https://archive.org/details/goodytwoshoes00newyiala"> other formats of the book</a>.
+            </p>
+        </noscript>
+    </div>
+    
+    <script type="text/javascript" src="BookReaderJSSimple.js"></script>
+    <script>
+        if (brDemoSearchParams.has('extraOpts')) {
+            let extraOptions = Function('return ' + brDemoSearchParams.get('extraOpts'))()
+            instantiateBookReader('#BookReader', extraOptions)
+        } else {
+            instantiateBookReader('#BookReader')
+        }
+
+        // Show hidden elements if id is passed in query string, and instantiate second BookReader if necessary
+        if (brDemoSearchParams.has('showElement')) {
+            document.querySelector('#' + brDemoSearchParams.get('showElement')).classList.remove('hidden-element');
+
+            if (brDemoSearchParams.get('showElement') === 'BookReader2') {
+                instantiateBookReader('#BookReader2');
+            }
+        }
+    </script>
+</body>
+</html>
