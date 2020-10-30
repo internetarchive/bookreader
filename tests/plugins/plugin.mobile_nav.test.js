@@ -2,8 +2,6 @@ import '../../src/js/jquery-ui-wrapper.js';
 import 'jquery.browser';
 import '../../src/js/dragscrollable-br.js';
 import 'jquery-colorbox';
-import 'jquery.mmenu/dist/js/jquery.mmenu.min.umd.js';
-import 'jquery.mmenu/src/addons/navbars/jquery.mmenu.navbars.js';
 
 import BookReader from '../../src/js/BookReader.js';
 import '../../src/js/plugins/plugin.mobile_nav.js';
