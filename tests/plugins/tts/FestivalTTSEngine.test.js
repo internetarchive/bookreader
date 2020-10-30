@@ -1,5 +1,5 @@
 import '../../../src/js/jquery-wrapper.js';
-import '../../../BookReader/jquery.browser.min.js';
+import 'jquery.browser';
 import FestivalTTSEngine from '../../../src/js/plugins/tts/FestivalTTSEngine.js';
 import sinon from 'sinon';
 import { afterEventLoop } from '../../utils.js';
