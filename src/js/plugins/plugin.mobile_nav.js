@@ -1,15 +1,11 @@
 /* global BookReader */
 /**
  * Adds mobile navigation at responsive breakpoint
- * NOTE additional script and style tags must be included.
- *
- * <script src="../BookReader/mmenu/dist/js/jquery.mmenu.min.js"></script>
- * <script src="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js"></script>
- * <link rel="stylesheet" href="../BookReader/mmenu/dist/css/jquery.mmenu.css" />
- * <link rel="stylesheet" href="../BookReader/mmenu/dist/addons/navbars/jquery.mmenu.navbars.css" />
  */
 
 import * as utils from '../BookReader/utils.js';
+import 'jquery.mmenu/dist/js/jquery.mmenu.min.js';
+import 'jquery.mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js';
 
 //contains all filters and labels for checkboxs
 const FILTERLIST = [
