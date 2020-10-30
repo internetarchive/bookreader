@@ -12,4 +12,4 @@ parsers:
     enable_partials: yes
 
 ignore:
-  - "BookReader/jquery*.js"
+  - "BookReader"
