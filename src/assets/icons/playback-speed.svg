@@ -1,0 +1,34 @@
+<svg
+  width="24"
+  height="32"
+  viewBox="0 0 24 32"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-labelledby="playbackSpeedTitleID playbackSpeedDescID"
+>
+  <title>Playback speed</title>
+  <desc>An illustration of a speedometer</desc>
+  <g stroke="#fff" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g transform="translate(-56.000000, -14.000000)">
+      <g transform="translate(56.922243, 5.000000)">
+        <g transform="translate(0.000000, 4.000000)">
+          <g transform="translate(0.000000, 5.000000)">
+            <g transform="translate(1.000000, 1.000000)">
+              <g transform="translate(2.000000, 2.521739)" stroke-linecap="round">
+                  <line x1="8.5" y1="9.97826087" x2="15.5" y2="2.97826087" transform="translate(12.000000, 6.478261) rotate(180.000000) translate(-12.000000, -6.478261) "></line>
+                  <line x1="15.5" y1="11.2695652" x2="15.5" y2="8.26956522" transform="translate(15.500000, 9.769565) rotate(90.000000) translate(-15.500000, -9.769565) "></line>
+                  <line x1="16.1555266" y1="5.77496471" x2="16.1480288" y2="4.77499282" transform="translate(16.151778, 5.274979) rotate(240.000000) translate(-16.151778, -5.274979) "></line>
+                  <line x1="12.9236091" y1="2.48093451" x2="12.9161756" y2="1.48096213" transform="translate(12.919892, 1.980948) rotate(210.000000) translate(-12.919892, -1.980948) "></line>
+                  <line x1="8.5" y1="3.47826087" x2="8.5" y2="0.47826087" transform="translate(8.500000, 1.978261) rotate(180.000000) translate(-8.500000, -1.978261) "></line>
+                  <line x1="4.07639089" y1="2.48093451" x2="4.08382438" y2="1.48096213" transform="translate(4.080108, 1.980948) rotate(150.000000) translate(-4.080108, -1.980948) "></line>
+                  <line x1="0.844473378" y1="5.77496471" x2="0.851971223" y2="4.77499282" transform="translate(0.848222, 5.274979) rotate(120.000000) translate(-0.848222, -5.274979) "></line>
+                  <line x1="1.5" y1="11.2695652" x2="1.5" y2="8.26956522" transform="translate(1.500000, 9.769565) rotate(90.000000) translate(-1.500000, -9.769565) "></line>
+              </g>
+              <path d="M10.5,14.9867607 C22.0227273,14.9867607 20.9752066,15.5091468 20.9752066,9.99117383 C20.9752066,4.47320089 16.2852969,0 10.5,0 C4.71470314,0 0.0247933884,4.47320089 0.0247933884,9.99117383 C0.0247933884,15.5091468 -1.02272727,14.9867607 10.5,14.9867607 Z" stroke-width="2"></path>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
