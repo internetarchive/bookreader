@@ -1,3 +1,6 @@
+@import '../../node_modules/jquery.mmenu/dist/css/jquery.mmenu';
+@import '../../node_modules/jquery.mmenu/dist/addons/navbars/jquery.mmenu.navbars';
+
 .mm-menu .mm-navbar a, .mm-menu .mm-navbar>* {
   color: $controlsText;
   font-size: $brFontSizeBase;
