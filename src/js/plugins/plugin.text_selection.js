@@ -55,16 +55,16 @@ export class TextSelectionPlugin {
    * @returns {Promise<HTMLElement|undefined>}
    */
   async getPageText(index) {
-    if (this.options.fullDjvuXmlUrl) {
-      const XMLpagesArr = await this.djvuPagesPromise;
-      if (XMLpagesArr) return XMLpagesArr[index];
-    } else {
+    if (this.options.singlePageDjvuXmlUrl) {
       return $.ajax({
         type: "GET",
         url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
         dataType: "xml",
         error: (e) => undefined,
       }).then(xmlDoc  => xmlDoc && $(xmlDoc).find("OBJECT")[0]);
+    } else {
+      const XMLpagesArr = await this.djvuPagesPromise;
+      if (XMLpagesArr) return XMLpagesArr[index];
     }
   }
 
