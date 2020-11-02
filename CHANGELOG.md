@@ -1,3 +1,15 @@
+# 4.19.0
+- Fix: `<br>` rendered in search panel @ArunTeltia
+- Fix: TTS speed dropdown has white text on white in Chrome @participator
+- Dev: Replace dependency copies with npm packages (jquery, jquery-ui, mmenu, colorbox, touch-punch, jquery.browser) @cdrini
+- Fix: Use serif font for advance/review icons @Eilima
+- Fix: Table of contents has black text on black background @xhalin01
+- Dev: Delete empty files (BookReaderEmbed.css, mmenu/demo.css) @cdrini
+- Dev: Move images into src directory and compress SVG files @cdrini
+- Fix: TTS toolbar should not be in tab order when invisible @shaneriley @cdrini
+- Fix: Text selection not working in demos @cdrini
+- Fix: Text selection throwing error on page with index=-1 @cdrini
+
 # 4.18.7
 Fix: update fullscreen toggle methods to fire behaviors in an expected way @iisa
 
