@@ -58,15 +58,7 @@
   var ocaid = location.href.match(/ocaid=([^&#]+)/i)[1];
 
   // Override options coming from IA
-  BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/',
-  BookReader.optionOverrides.vars = {
-    ocaid: ocaid
-  };
-  BookReader.optionOverrides.plugins = {
-    textSelection: {
-      fullDjvuXmlUrl: 'https://cors.archive.org/cors/{{ocaid}}/{{ocaid}}_djvu.xml'
-    }
-  };
+  BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
   var script_url = 'https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=' + ocaid;
   document.getElementById('pageUrl').src = script_url;

@@ -60,8 +60,17 @@ describe("Generic tests", () => {
   });
 
   test("_createPageContainer overriden function still creates a BRpagecontainer element", () => {
+    const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
     const $container = br._createPageContainer(1, {});
     expect($container.hasClass("BRpagecontainer")).toBe(true);
+    expect(spy.callCount).toBe(1);
+  });
+
+
+  test("_createPageContainer handles index -1", () => {
+    const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
+    br._createPageContainer(-1, {});
+    expect(spy.callCount).toBe(0);
   });
 
   test("createTextLayer creates an svg layer with paragraph with 1 word element", async () => {
