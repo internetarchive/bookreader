@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import '../../src/js/jquery-wrapper.js';
 import '../../src/js/jquery-ui-wrapper.js';
 import 'jquery.browser';
-import '../../BookReader/dragscrollable-br.js';
+import '../../src/js/dragscrollable-br.js';
 import 'jquery-colorbox';
 
 import '../../src/js/BookReader.js';
