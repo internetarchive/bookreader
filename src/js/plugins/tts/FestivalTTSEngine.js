@@ -2,6 +2,7 @@ import AbstractTTSEngine from './AbstractTTSEngine.js';
 import { sleep } from './utils.js';
 /* global soundManager */
 import 'soundmanager2';
+import 'jquery.browser';
 
 /** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
 /** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */
