@@ -91,7 +91,6 @@ module.exports = [
     // Output file -> srcfile
     entry: {
       'jquery-ui-1.12.0.min.js': { import: './src/js/jquery-ui-wrapper.js' },
-      'jquery.browser.min.js': { import: 'jquery.browser' },
       'jquery.ui.touch-punch.min.js': { import: 'jquery-ui-touch-punch' },
     },
 

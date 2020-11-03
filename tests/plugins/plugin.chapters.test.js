@@ -1,6 +1,5 @@
 import sinon from 'sinon';
 import '../../src/js/jquery-ui-wrapper.js';
-import 'jquery.browser';
 
 import BookReader from '../../src/js/BookReader.js';
 import '../../src/js/plugins/plugin.mobile_nav.js';
