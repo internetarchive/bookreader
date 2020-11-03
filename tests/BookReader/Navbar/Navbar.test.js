@@ -1,7 +1,6 @@
 import '../../../src/js/jquery-ui-wrapper.js';
 import 'jquery.browser';
 import '../../../src/js/dragscrollable-br.js';
-import 'jquery-colorbox';
 import sinon from 'sinon';
 import { getNavPageNumHtml } from '../../../src/js/BookReader/Navbar/Navbar.js';
 import BookReader from '../../../src/js/BookReader.js';
