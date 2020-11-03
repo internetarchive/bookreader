@@ -1,4 +1,5 @@
 // @ts-check
+import '../dragscrollable-br.js';
 import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
 
