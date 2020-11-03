@@ -14,6 +14,7 @@ module.exports = {
     'jquery.browser.min.js': { import: 'jquery.browser', dependOn: 'jquery-1.10.1.js' },
     'jquery.colorbox-min.js': { import: 'jquery-colorbox' },
     'jquery.ui.touch-punch.min.js': { import: 'jquery-ui-touch-punch' },
+    'dragscrollable-br.js': { import: './src/js/dragscrollable-br.js' },
 
     // BookReader
     'BookReader.js': './src/js/BookReader.js',
