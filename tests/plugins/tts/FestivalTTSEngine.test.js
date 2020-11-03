@@ -1,4 +1,3 @@
-import 'jquery.browser';
 import FestivalTTSEngine from '../../../src/js/plugins/tts/FestivalTTSEngine.js';
 import sinon from 'sinon';
 import { afterEventLoop } from '../../utils.js';
