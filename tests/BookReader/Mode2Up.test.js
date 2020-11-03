@@ -1,5 +1,4 @@
 import '../../src/js/jquery-ui-wrapper.js';
-import 'jquery.browser';
 
 import sinon from 'sinon';
 import { deepCopy } from '../utils.js';
