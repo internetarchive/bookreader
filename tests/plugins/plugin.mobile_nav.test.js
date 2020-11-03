@@ -1,7 +1,7 @@
 import '../../src/js/jquery-wrapper.js';
 import '../../src/js/jquery-ui-wrapper.js';
 import 'jquery.browser';
-import '../../BookReader/dragscrollable-br.js';
+import '../../src/js/dragscrollable-br.js';
 import 'jquery-colorbox';
 import 'jquery.mmenu/dist/js/jquery.mmenu.min.umd.js';
 import 'jquery.mmenu/src/addons/navbars/jquery.mmenu.navbars.js';
