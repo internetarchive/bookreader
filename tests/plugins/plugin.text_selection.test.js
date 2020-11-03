@@ -2,7 +2,6 @@ import sinon from 'sinon';
 import '../../src/js/jquery-ui-wrapper.js';
 import 'jquery.browser';
 import '../../src/js/dragscrollable-br.js';
-import 'jquery-colorbox';
 
 import '../../src/js/BookReader.js';
 import { BookreaderWithTextSelection, TextSelectionPlugin, Cache } from '../../src/js/plugins/plugin.text_selection.js';
