@@ -79,40 +79,4 @@ module.exports = [
 
     target: ['web', 'es5'],
   },
-
-  // jQuery plugins/extensions
-  // All of these will be replaced with just imports in v5
-  {
-    mode: 'production',
-    // Output file -> srcfile
-    entry: {
-      'jquery-ui-1.12.0.min.js': { import: './src/js/jquery-ui-wrapper.js' },
-    },
-
-    externals: {
-      // Anytime 'jquery' is imported, use the runtime-global jQuery
-      // instead of bundling a copy of jquery at compile-time.
-      jquery: 'jQuery',
-    },
-    plugins: [
-      new webpack.ProvidePlugin({
-        // Make $ and jQuery available without importing
-        $: 'jquery',
-        jQuery: 'jquery',
-      })
-    ],
-
-    module: {
-      rules: [
-        { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" }
-      ]
-    },
-
-    output: {
-      filename: '[name]',
-      path: path.resolve(__dirname, 'BookReader'),
-    },
-
-    target: ['web', 'es5'],
-  },
 ];

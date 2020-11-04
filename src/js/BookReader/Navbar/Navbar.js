@@ -1,5 +1,8 @@
 /** @typedef {import("../../BookReader.js").default} BookReader */
 
+import 'jquery-ui/ui/widget.js';
+import 'jquery-ui/ui/widgets/mouse.js';
+import 'jquery-ui/ui/widgets/slider.js';
 import { EVENTS } from '../events.js';
 
 export class Navbar {

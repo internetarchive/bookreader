@@ -1,4 +1,3 @@
-import '../../../src/js/jquery-ui-wrapper.js';
 import sinon from 'sinon';
 import { getNavPageNumHtml } from '../../../src/js/BookReader/Navbar/Navbar.js';
 import BookReader from '../../../src/js/BookReader.js';
