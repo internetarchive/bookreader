@@ -73,16 +73,16 @@
     "build-js:watch": "npx webpack --watch",
     "build-css": "npx sass --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "build-css:watch": "npx sass --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
-    "lint": "eslint src/js tests",
-    "lint:fix": "eslint --fix src/js tests",
+    "lint": "npx eslint src/js tests",
+    "lint:fix": "npx eslint --fix src/js tests",
     "serve": "npx http-server . --port 8000",
     "serve-live": "npx live-server . --port 8000 --ignore=coverage,tests,src",
     "serve-dev": "npx concurrently --kill-others npm:serve-live npm:build-*:watch",
-    "test": "jest",
-    "test:e2e": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ testcafe",
-    "test:e2e:dev": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ testcafe --live --dev",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --colors",
-    "codecov": "codecov"
+    "test": "npx jest",
+    "test:e2e": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe",
+    "test:e2e:dev": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe --live --dev",
+    "test:watch": "npx jest --watch",
+    "test:coverage": "npx jest --coverage --colors",
+    "codecov": "npx codecov"
   }
 }
