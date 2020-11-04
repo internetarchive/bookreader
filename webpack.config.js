@@ -82,32 +82,4 @@ module.exports = [
       'jquery-1.10.1.js': { import: './src/js/jquery-wrapper.js' },
     },
   },
-
-  // jQuery plugins/extensions
-  // All of these will be replaced with just imports in v5
-  {
-    ...shared,
-
-    // Output file -> srcfile
-    entry: {
-      'jquery-ui-1.12.0.min.js': { import: './src/js/jquery-ui-wrapper.js' },
-      'jquery.browser.min.js': { import: 'jquery.browser' },
-      'jquery.colorbox-min.js': { import: 'jquery-colorbox' },
-      'jquery.ui.touch-punch.min.js': { import: 'jquery-ui-touch-punch' },
-      'dragscrollable-br.js': { import: './src/js/dragscrollable-br.js' },
-    },
-
-    externals: {
-      // Anytime 'jquery' is imported, use the runtime-global jQuery
-      // instead of bundling a copy of jquery at compile-time.
-      jquery: 'jQuery',
-    },
-    plugins: [
-      new webpack.ProvidePlugin({
-        // Make $ and jQuery available without importing
-        $: 'jquery',
-        jQuery: 'jquery',
-      })
-    ],
-  },
 ];
