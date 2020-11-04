@@ -1,7 +1,3 @@
-import '../src/js/jquery-ui-wrapper.js';
-import 'jquery.browser';
-import '../src/js/dragscrollable-br.js';
-import 'jquery-colorbox';
 
 import BookReader from '../src/js/BookReader.js';
 import '../src/js/plugins/plugin.resume.js';
