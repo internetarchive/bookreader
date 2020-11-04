@@ -19,6 +19,10 @@ This file is part of BookReader.
     The BookReader source is hosted at http://github.com/internetarchive/bookreader/
 
 */
+// effect.js gives acces to extra easing function (e.g. easeInOutExpo)
+import 'jquery-ui/ui/effect.js';
+import 'jquery-ui-touch-punch';
+import './dragscrollable-br.js';
 import PACKAGE_JSON from '../../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';

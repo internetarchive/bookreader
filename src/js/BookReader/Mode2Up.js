@@ -1,4 +1,7 @@
 // @ts-check
+// effect.js gives acces to extra easing function (e.g. easeInSine)
+import 'jquery-ui/ui/effect.js';
+import '../dragscrollable-br.js';
 import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
 
