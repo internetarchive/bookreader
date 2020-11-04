@@ -1,5 +1,4 @@
 import sinon from 'sinon';
-import '../../src/js/jquery-wrapper.js';
 import '../../src/js/jquery-ui-wrapper.js';
 import 'jquery.browser';
 import '../../src/js/dragscrollable-br.js';

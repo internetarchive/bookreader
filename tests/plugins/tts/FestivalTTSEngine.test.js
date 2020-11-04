@@ -1,4 +1,3 @@
-import '../../../src/js/jquery-wrapper.js';
 import 'jquery.browser';
 import FestivalTTSEngine from '../../../src/js/plugins/tts/FestivalTTSEngine.js';
 import sinon from 'sinon';
