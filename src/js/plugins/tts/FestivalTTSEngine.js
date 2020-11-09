@@ -18,8 +18,10 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
   /** @param {TTSEngineOptions} options */
   constructor(options) {
     super(options);
+    // $.browsers is sometimes undefined on some Android browsers :/
+    // Likely related to when $.browser was moved to npm
     /** @type {'mp3' | 'ogg'} format of audio to get */
-    this.audioFormat = $.browser.mozilla ? 'ogg' : 'mp3';
+    this.audioFormat = $.browser?.mozilla ? 'ogg' : 'mp3';
   }
 
   /** @override */
