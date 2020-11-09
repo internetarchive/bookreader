@@ -1,3 +1,9 @@
+# 4.20.0
+- Dev: Update 9 dependencies (including webpack, sass, @babel/*) @dependabot-preview + @cdrini
+- Dev: Move dragscroll code into src @cdrini
+- Dev: Make webpack treat jquery as an external dependency @cdrini
+- Fix: Samsung Internet not loading BR on IA @cdrini
+
 # 4.19.0
 - Fix: `<br>` rendered in search panel @ArunTeltia
 - Fix: TTS speed dropdown has white text on white in Chrome @participator
