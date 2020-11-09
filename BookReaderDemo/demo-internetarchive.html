@@ -60,6 +60,9 @@
   // Override options coming from IA
   BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
+  // Temp; Circumvent bug in BookReaderJSIA code
+  window.Sentry = null;
+
   var script_url = 'https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=' + ocaid;
   document.getElementById('pageUrl').src = script_url;
 </script>
