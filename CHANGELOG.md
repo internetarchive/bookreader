@@ -1,3 +1,6 @@
+# 4.20.1
+- Fix: Handle empty dejavu.xml files in text selection plugin @iisa
+
 # 4.20.0
 - Dev: Update 9 dependencies (including webpack, sass, @babel/*) @dependabot-preview + @cdrini
 - Dev: Move dragscroll code into src @cdrini
