@@ -42,12 +42,16 @@ export class TextSelectionPlugin {
     this.djvuPagesPromise = $.ajax({
       type: "GET",
       url: applyVariables(this.options.fullDjvuXmlUrl, this.optionVariables),
-      dataType: "xml",
-
-      error: function (e) {
+      dataType: "html",
+      error: (e) => undefined
+    }).then((res) => {
+      try {
+        const xmlMap = $.parseXML(res);
+        return xmlMap && $(xmlMap).find("OBJECT");
+      } catch (e) {
         return undefined;
       }
-    }).then(xmlMap  => xmlMap && $(xmlMap).find("OBJECT"));
+    });
   }
 
   /**
@@ -59,9 +63,16 @@ export class TextSelectionPlugin {
       return $.ajax({
         type: "GET",
         url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
-        dataType: "xml",
+        dataType: "html",
         error: (e) => undefined,
-      }).then(xmlDoc  => xmlDoc && $(xmlDoc).find("OBJECT")[0]);
+      }).then((res) => {
+        try {
+          const xmlDoc = $.parseXML(res);
+          return xmlDoc && $(xmlDoc).find("OBJECT")[0];
+        } catch (e) {
+          return undefined;
+        }
+      });
     } else {
       const XMLpagesArr = await this.djvuPagesPromise;
       if (XMLpagesArr) return XMLpagesArr[index];
