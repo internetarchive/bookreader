@@ -20,6 +20,7 @@ const FAKE_XML_MULT_WORDS = `<OBJECT data="file://localhost//tmp/derive/goodytwo
 <WORD coords="1600,2768,1700,2640">test3</WORD></LINE></PARAGRAPH></OBJECT>`;
 const FAKE_XML_5COORDS = `<OBJECT data="file://localhost//tmp/derive/goodytwoshoes00newyiala//goodytwoshoes00newyiala.djvu" height="3192" type="image/x.djvu" usemap="goodytwoshoes00newyiala_0001.djvu" width="2454">
 <PARAGRAPH><LINE><WORD coords="1216,2768,1256,2640,2690">test</WORD></LINE></PARAGRAPH></OBJECT>`;
+const FAKE_XML_EMPTY = '';
 
 describe("Generic tests", () => {
 
@@ -54,6 +55,7 @@ describe("Generic tests", () => {
       case 1: return $(parser.parseFromString(FAKE_XML_1WORD, "text/xml"));
       case 2: return $(parser.parseFromString(FAKE_XML_MULT_WORDS, "text/xml"));
       case 3: return $(parser.parseFromString(FAKE_XML_5COORDS, "text/xml"));
+      case 4: return $(parser.parseFromString(FAKE_XML_EMPTY, "text/xml"))
       }
     });
   });
@@ -96,6 +98,14 @@ describe("Generic tests", () => {
     expect($container.find(".textSelectionSVG").length).toBe(1);
     expect($container.find(".BRparagElement").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(1);
+  });
+
+  test("createTextLayer can handle empty xml", async () => {
+    const $container = br.refs.$brContainer;
+    await br.textSelectionPlugin.createTextLayer(4, $container);
+    expect($container.find(".textSelectionSVG").length).toBe(1);
+    expect($container.find(".BRparagElement").length).toBe(0);
+    expect($container.find(".BRwordElement").length).toBe(0);
   });
 
   const LONG_PRESS_DURATION = 500;
