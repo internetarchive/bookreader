@@ -364,7 +364,6 @@
 @media (max-width: $brBreakPointMobile) {
   /* hide navline chapters and search in mobile */
   .BRnavline .BRchapter { display: none; }
-  .BRnavline .BRsearch { display: none; }
 
   .BRnavCntlBtm {
     bottom: $brNavHeightMobile;
