@@ -4,6 +4,9 @@ class SearchView {
    *   @param {string} params.selector A selector for the element that the search tray will be rendered in
    *   @param {string} params.query An existing query string
    *   @param {object} params.br The BookReader instance
+   *
+   * @event BookReader:SearchResultsCleared - when the search results nav gets cleared
+   * @event BookReader:ToggleSearchMenu - when search results menu should toggle
    */
   constructor(params) {
     if (!params.selector) {
@@ -90,8 +93,12 @@ class SearchView {
     this.emptyMatches();
     this.setQuery('');
     this.teardownSearchNavigation();
+    this.br.trigger('SearchResultsCleared');
   }
 
+  toggleSidebar() {
+    this.br.trigger('ToggleSearchMenu');
+  }
   /**
    * @param {string} selector The ID attribute to be used for the search tray
    */
@@ -160,6 +167,7 @@ class SearchView {
       .on(`click.${namespace}`, '.clear', this.clearSearchFieldAndResults.bind(this))
       .on(`click.${namespace}`, '.prev', this.showPrevResult.bind(this))
       .on(`click.${namespace}`, '.next', this.showNextResult.bind(this))
+      .on(`click.${namespace}`, '.toggle-sidebar', this.toggleSidebar.bind(this))
       .on(`click.${namespace}`, false);
   }
 
