@@ -126,18 +126,19 @@ class SearchView {
     const selector = 'BRsearch-navigation';
     $('.BRnav').before(`
       <div class="${selector}">
-        <h4>
-          <span class="icon icon-search"></span>
-          Results
-        </h4>
+        <button class="toggle-sidebar">
+          <h4>
+            <span class="icon icon-search"></span> Results
+          </h4>
+        </button>
         <div class="pagination">
-          <a href="#" class="prev" title="Previous result"><span class="icon icon-chevron hflip"></span></a>
+          <button class="prev" title="Previous result"><span class="icon icon-chevron hflip"></span></button>
           <span data-id="resultsCount">${this.resultsPosition()}</span>
-          <a href="#" class="next" title="Next result"><span class="icon icon-chevron"></a>
+          <button class="next" title="Next result"><span class="icon icon-chevron"></button>
         </div>
-        <a href="#" class="clear" title="Clear search results">
+        <button class="clear" title="Clear search results">
           <span class="icon icon-close"></span>
-        </a>
+        </button>
       </div>
     `);
     this.dom.searchNavigation = $(`.${selector}`);
