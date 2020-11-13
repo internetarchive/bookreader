@@ -525,7 +525,8 @@ class SearchView {
       .on(`${namespace}SearchCallbackError`, this.handleSearchCallbackError.bind(this))
       .on(`${namespace}SearchCallbackBookNotIndexed`, this.handleSearchCallbackBookNotIndexed.bind(this))
       .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this))
-      .on(`${namespace}pageChanged`, this.updateSearchNavigation.bind(this));
+      .on(`${namespace}pageChanged`, this.updateSearchNavigation.bind(this))
+      .on(`${namespace}SearchResultsCleared`, this.clearSearchFieldAndResults.bind(this));
 
     this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
     this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
