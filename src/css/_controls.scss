@@ -1,24 +1,5 @@
 .BRcontrols {
   width: 100%;
-  button {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    padding: 0;
-    cursor: pointer;
-    border: none;
-    border-radius: 2px;
-    background: transparent;
-    outline: none;
-    &:hover .tooltip {
-      display: block;
-    }
-    @media (max-width: 480px) {
-      &.hide-mobile {
-        display: none;
-      }
-    }
-  }
 
   .tooltip {
     display: none;

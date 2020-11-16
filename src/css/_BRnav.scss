@@ -90,6 +90,28 @@
   flex-direction: column;
   /* important so it overlays over the book pages when showing */
   z-index: 3;
+
+  button {
+    width: 30px;
+    height: 30px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 0;
+    cursor: pointer;
+    border: none;
+    border-radius: 2px;
+    background: transparent;
+    outline: none;
+    &:hover .tooltip {
+      display: block;
+    }
+    @media (max-width: 480px) {
+      &.hide-mobile {
+        display: none;
+      }
+    }
+  }
 }
 
 .BRReadAloudToolbar {
@@ -364,7 +386,6 @@
 @media (max-width: $brBreakPointMobile) {
   /* hide navline chapters and search in mobile */
   .BRnavline .BRchapter { display: none; }
-  .BRnavline .BRsearch { display: none; }
 
   .BRnavCntlBtm {
     bottom: $brNavHeightMobile;
