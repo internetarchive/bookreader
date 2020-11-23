@@ -1,3 +1,6 @@
+# 4.22.0
+Fix: update non-asserted page labelling next to nav scrubber @iisa
+
 # 4.21.0
 - Fix: Search Plugin Updates (#556) @iisa
   - always display search results markers
