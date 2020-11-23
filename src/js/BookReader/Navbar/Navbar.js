@@ -287,13 +287,13 @@ export class Navbar {
  * @return {string}
  */
 export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
-  if (pageNum[0] != 'n') {
-    let pageStr = `Page ${pageNum}`;
-    if (maxPageNum) {
-      pageStr += ` of ${maxPageNum}`;
-    }
-    return pageStr;
-  } else {
-    return `${index + 1}&nbsp;/&nbsp;${numLeafs}`;
+  const pageIsAsserted = pageNum[0] != 'n';
+
+  if (!pageIsAsserted) {
+    const pageIndex = index + 1;
+    return `Page (${pageIndex} of ${numLeafs})`; // Page (8 of 10)
   }
+
+  const bookLengthLabel = maxPageNum ? ` of ${maxPageNum}` : '';
+  return `Page ${pageNum}${bookLengthLabel}`;
 }

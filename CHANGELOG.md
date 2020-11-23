@@ -1,3 +1,12 @@
+# 4.21.0
+- Fix: Search Plugin Updates (#556) @iisa
+  - always display search results markers
+  - update search results nav tap targets & style
+  - Search Results Nav - extend click events
+    - add new click event to help toggle side menu
+    - add new test file for Search view
+- Dev: move search plugin test files to their own directory (#556) @iisa
+
 # 4.20.1
 - Fix: Handle empty dejavu.xml files in text selection plugin @iisa
 

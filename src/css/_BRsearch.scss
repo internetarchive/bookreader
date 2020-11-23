@@ -356,16 +356,21 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
     color: $white;
     background-color: $brColorDarkGreyBg;
-    h4 {
-      padding: 0;
-      margin: 0;
-      font-size: 15px;
-      font-weight: normal;
-      span {
-        vertical-align: middle;
+    padding: 5px 0;
+    button.toggle-sidebar {
+      width: unset;
+      padding: 0 10px;
+      h4 {
+        padding: 0;
+        margin: 0;
+        font-size: 15px;
+        font-weight: normal;
+        color: $white;
+        span {
+          vertical-align: middle;
+        }
       }
     }
     .pagination {
@@ -376,11 +381,9 @@
       margin: 0;
       span {
         display: inline-block;
-        padding: 0 15px;
+        padding: 0 5px;
       }
-      a {
-        display: inline-block;
-        vertical-align: middle;
+      button {
         &[disabled] {
           opacity: .3;
           cursor: default;

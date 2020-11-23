@@ -4,6 +4,9 @@ class SearchView {
    *   @param {string} params.selector A selector for the element that the search tray will be rendered in
    *   @param {string} params.query An existing query string
    *   @param {object} params.br The BookReader instance
+   *
+   * @event BookReader:SearchResultsCleared - when the search results nav gets cleared
+   * @event BookReader:ToggleSearchMenu - when search results menu should toggle
    */
   constructor(params) {
     if (!params.selector) {
@@ -90,8 +93,12 @@ class SearchView {
     this.emptyMatches();
     this.setQuery('');
     this.teardownSearchNavigation();
+    this.br.trigger('SearchResultsCleared');
   }
 
+  toggleSidebar() {
+    this.br.trigger('ToggleSearchMenu');
+  }
   /**
    * @param {string} selector The ID attribute to be used for the search tray
    */
@@ -126,18 +133,19 @@ class SearchView {
     const selector = 'BRsearch-navigation';
     $('.BRnav').before(`
       <div class="${selector}">
-        <h4>
-          <span class="icon icon-search"></span>
-          Results
-        </h4>
+        <button class="toggle-sidebar">
+          <h4>
+            <span class="icon icon-search"></span> Results
+          </h4>
+        </button>
         <div class="pagination">
-          <a href="#" class="prev" title="Previous result"><span class="icon icon-chevron hflip"></span></a>
+          <button class="prev" title="Previous result"><span class="icon icon-chevron hflip"></span></button>
           <span data-id="resultsCount">${this.resultsPosition()}</span>
-          <a href="#" class="next" title="Next result"><span class="icon icon-chevron"></a>
+          <button class="next" title="Next result"><span class="icon icon-chevron"></button>
         </div>
-        <a href="#" class="clear" title="Clear search results">
+        <button class="clear" title="Clear search results">
           <span class="icon icon-close"></span>
-        </a>
+        </button>
       </div>
     `);
     this.dom.searchNavigation = $(`.${selector}`);
@@ -159,6 +167,7 @@ class SearchView {
       .on(`click.${namespace}`, '.clear', this.clearSearchFieldAndResults.bind(this))
       .on(`click.${namespace}`, '.prev', this.showPrevResult.bind(this))
       .on(`click.${namespace}`, '.next', this.showNextResult.bind(this))
+      .on(`click.${namespace}`, '.toggle-sidebar', this.toggleSidebar.bind(this))
       .on(`click.${namespace}`, false);
   }
 
