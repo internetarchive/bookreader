@@ -378,6 +378,7 @@ BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
       makeUnviewableAtEnd = true;
     }
   }
+  /* this updates the URL */
   this.suppressFragmentChange = false;
   this.jumpToIndex(pageIndex);
 
