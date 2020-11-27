@@ -483,6 +483,7 @@ class SearchView {
     this.renderPins(results.matches);
     this.updateResultsCount(results.matches.length);
     this.toggleSearchPending(false);
+    this.toggleSidebar(); // open panel after search result
     if (options.goToFirstResult) {
       $(document).one('BookReader:pageChanged', () => {
         this.br.resize();
