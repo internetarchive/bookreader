@@ -33,10 +33,7 @@ export class Navbar {
 
   /** @private */
   _viewModeControls() {
-    if (this.br.options.controls.viewmode.visible) {
-      return this.controlFor('viewmode');
-    }
-    return ['onePage', 'twoPage', 'thumbnail'].map((mode) => (
+    return ['onePage', 'twoPage', 'thumbnail', 'viewmode'].map((mode) => (
       this.controlFor(mode)
     )).join('');
   }

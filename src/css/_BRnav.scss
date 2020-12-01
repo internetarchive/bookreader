@@ -106,9 +106,15 @@
     &:hover .tooltip {
       display: block;
     }
+    &.viewmode {
+      display: none;
+    }
     @media (max-width: 480px) {
       &.hide-mobile {
         display: none;
+      }
+      &.viewmode {
+        display: block;
       }
     }
   }
