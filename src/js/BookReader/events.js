@@ -17,5 +17,5 @@ export const EVENTS = {
   /* currently 3 represents thumbnail view */
   '3PageViewSelected': '3PageViewSelected',
   mobileNavOpen: 'mobileNavOpen',
-  pageChanged = 'pageChanged'
+  pageChanged: 'pageChanged'
 };
