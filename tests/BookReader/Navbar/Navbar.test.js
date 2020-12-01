@@ -9,7 +9,7 @@ import BookReader from '../../../src/js/BookReader.js';
 describe('getNavPageNumHtml', () => {
   const f = getNavPageNumHtml;
   test('handle n-prefixed page numbers', () => {
-    expect(f(3, 40, 'n3', '', 40)).toBe('4&nbsp;/&nbsp;40');
+    expect(f(3, 40, 'n3', '', 40)).toBe('Page (4 of 40)');
   });
 
   test('handle regular page numbers', () => {

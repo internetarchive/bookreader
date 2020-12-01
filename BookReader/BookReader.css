@@ -1014,6 +1014,27 @@ i.BRicon {
   /* important so it overlays over the book pages when showing */
   z-index: 3;
 }
+.BRfooter button {
+  width: 30px;
+  height: 30px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+  cursor: pointer;
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+  outline: none;
+}
+.BRfooter button:hover .tooltip {
+  display: block;
+}
+@media (max-width: 480px) {
+  .BRfooter button.hide-mobile {
+    display: none;
+  }
+}
 
 .BRReadAloudToolbar {
   display: flex;
@@ -1421,10 +1442,6 @@ i.BRicon {
 @media (max-width: 800px) {
   /* hide navline chapters and search in mobile */
   .BRnavline .BRchapter {
-    display: none;
-  }
-
-  .BRnavline .BRsearch {
     display: none;
   }
 
@@ -1859,17 +1876,22 @@ i.BRicon {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
   color: #fff;
   background-color: #333;
+  padding: 5px 0;
 }
-.BookReader .BRsearch-navigation h4, .BRmobileMenu .BRsearch-navigation h4, .BRfloat .BRsearch-navigation h4 {
+.BookReader .BRsearch-navigation button.toggle-sidebar, .BRmobileMenu .BRsearch-navigation button.toggle-sidebar, .BRfloat .BRsearch-navigation button.toggle-sidebar {
+  width: unset;
+  padding: 0 10px;
+}
+.BookReader .BRsearch-navigation button.toggle-sidebar h4, .BRmobileMenu .BRsearch-navigation button.toggle-sidebar h4, .BRfloat .BRsearch-navigation button.toggle-sidebar h4 {
   padding: 0;
   margin: 0;
   font-size: 15px;
   font-weight: normal;
+  color: #fff;
 }
-.BookReader .BRsearch-navigation h4 span, .BRmobileMenu .BRsearch-navigation h4 span, .BRfloat .BRsearch-navigation h4 span {
+.BookReader .BRsearch-navigation button.toggle-sidebar h4 span, .BRmobileMenu .BRsearch-navigation button.toggle-sidebar h4 span, .BRfloat .BRsearch-navigation button.toggle-sidebar h4 span {
   vertical-align: middle;
 }
 .BookReader .BRsearch-navigation .pagination, .BRmobileMenu .BRsearch-navigation .pagination, .BRfloat .BRsearch-navigation .pagination {
@@ -1881,17 +1903,13 @@ i.BRicon {
 }
 .BookReader .BRsearch-navigation .pagination span, .BRmobileMenu .BRsearch-navigation .pagination span, .BRfloat .BRsearch-navigation .pagination span {
   display: inline-block;
-  padding: 0 15px;
+  padding: 0 5px;
 }
-.BookReader .BRsearch-navigation .pagination a, .BRmobileMenu .BRsearch-navigation .pagination a, .BRfloat .BRsearch-navigation .pagination a {
-  display: inline-block;
-  vertical-align: middle;
-}
-.BookReader .BRsearch-navigation .pagination a[disabled], .BRmobileMenu .BRsearch-navigation .pagination a[disabled], .BRfloat .BRsearch-navigation .pagination a[disabled] {
+.BookReader .BRsearch-navigation .pagination button[disabled], .BRmobileMenu .BRsearch-navigation .pagination button[disabled], .BRfloat .BRsearch-navigation .pagination button[disabled] {
   opacity: 0.3;
   cursor: default;
 }
-.BookReader .BRsearch-navigation .pagination a span, .BRmobileMenu .BRsearch-navigation .pagination a span, .BRfloat .BRsearch-navigation .pagination a span {
+.BookReader .BRsearch-navigation .pagination button span, .BRmobileMenu .BRsearch-navigation .pagination button span, .BRfloat .BRsearch-navigation .pagination button span {
   width: 8px;
   height: 13px;
   padding: 0;
@@ -2306,25 +2324,6 @@ li.BRtable-contents-el .BRTOCElementPage {
 .BRcontrols {
   width: 100%;
   /* BookReader defaults overrides */
-}
-.BRcontrols button {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  padding: 0;
-  cursor: pointer;
-  border: none;
-  border-radius: 2px;
-  background: transparent;
-  outline: none;
-}
-.BRcontrols button:hover .tooltip {
-  display: block;
-}
-@media (max-width: 480px) {
-  .BRcontrols button.hide-mobile {
-    display: none;
-  }
 }
 .BRcontrols .tooltip {
   display: none;

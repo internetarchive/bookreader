@@ -1,13 +1,13 @@
-import '../../src/js/jquery-ui-wrapper.js';
+import '../../../src/js/jquery-ui-wrapper.js';
 import 'jquery.browser';
-import '../../src/js/dragscrollable-br.js';
+import '../../../src/js/dragscrollable-br.js';
 import 'jquery-colorbox';
 
-import BookReader from '../../src/js/BookReader.js';
-import '../../src/js/plugins/plugin.mobile_nav.js';
-import '../../src/js/plugins/search/plugin.search.js';
+import BookReader from '../../../src/js/BookReader.js';
+import '../../../src/js/plugins/plugin.mobile_nav.js';
+import '../../../src/js/plugins/search/plugin.search.js';
 
-jest.mock('../../src/js/plugins/search/view.js');
+jest.mock('../../../src/js/plugins/search/view.js');
 
 let br;
 const namespace = 'BookReader:';
