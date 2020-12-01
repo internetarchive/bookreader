@@ -1,3 +1,6 @@
+# 4.23.0
+Fix: first search result click now updates url @nsharma123
+
 # 4.22.0
 Fix: update non-asserted page labelling next to nav scrubber @iisa
 
