@@ -37,7 +37,7 @@
     "eslint-plugin-testcafe": "^0.2.1",
     "http-server": "0.12.3",
     "iso-language-codes": "1.0.7",
-    "jest": "26.6.2",
+    "jest": "26.6.3",
     "jquery": "1.11.3",
     "jquery-colorbox": "1.6.4",
     "jquery-ui": "1.12.1",
