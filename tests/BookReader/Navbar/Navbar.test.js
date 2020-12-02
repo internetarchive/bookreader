@@ -153,19 +153,18 @@ describe('Navbar controls overrides', () => {
     expect(navbar.$root.find('.onepg').length).toBe(0);
   });
 
-  test(`when viewmode control set to visible,
-      the individual view mode controls are not rendered`, () => {
+  test(`when any mode set to not visible, control will not render`, () => {
     const overrides = {
       controls: {
         viewmode: {
-          visible: true
+          visible: false
         }
       }
     };
     createBRWithOverrides(overrides);
 
-    expect(navbar.$root.find('.viewmode').length).toBe(1);
-    expect(navbar.$root.find('.onepg').length).toBe(0);
-    expect(navbar.$root.find('.twopg').length).toBe(0);
+    expect(navbar.$root.find('.viewmode').length).toBe(0);
+    expect(navbar.$root.find('.onepg').length).toBe(1);
+    expect(navbar.$root.find('.twopg').length).toBe(1);
   });
 });
