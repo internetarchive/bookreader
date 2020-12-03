@@ -58,8 +58,12 @@
     "setupFiles": [
       "./env-setup.js"
     ],
+    "roots": [
+      "<rootDir>/src/",
+      "<rootDir>/tests/"
+    ],
     "testPathIgnorePatterns": [
-      "tests/e2e"
+      "<rootDir>/tests/e2e/"
     ]
   },
   "scripts": {
