@@ -1,3 +1,4 @@
+// @ts-check
 import * as utils from '../BookReader/utils.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
@@ -11,37 +12,37 @@ export class Mode1Up {
     this.br = br;
     this.book = bookModel;
   }
-}
 
-export function extendBookReaderMode1Up(BookReader) {
   /**
    * This is called when we switch to one page view
    */
-  BookReader.prototype.prepareOnePageView = function() {
-    const startLeaf = this.currentIndex();
+  prepare() {
+    const startLeaf = this.br.currentIndex();
 
-    this.refs.$brContainer.empty();
-    this.refs.$brContainer.css({
+    this.br.refs.$brContainer.empty();
+    this.br.refs.$brContainer.css({
       overflowY: 'scroll',
       overflowX: 'auto'
     });
 
-    this.refs.$brPageViewEl = $("<div class='BRpageview'></div>");
-    this.refs.$brContainer.append(this.refs.$brPageViewEl);
+    this.br.refs.$brPageViewEl = $("<div class='BRpageview'></div>");
+    this.br.refs.$brContainer.append(this.br.refs.$brPageViewEl);
 
     // Attaches to first child - child must be present
-    this.refs.$brContainer.dragscrollable();
-    this.bindGestures(this.refs.$brContainer);
+    this.br.refs.$brContainer.dragscrollable();
+    this.br.bindGestures(this.br.refs.$brContainer);
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
     // utils.disableSelect(this.$('#BRpageview'));
 
-    this.resizePageView1up();
-    this.jumpToIndex(startLeaf);
-    this.updateBrClasses();
-  };
+    this.br.resizePageView1up();
+    this.br.jumpToIndex(startLeaf);
+    this.br.updateBrClasses();
+  }
+}
 
+export function extendBookReaderMode1Up(BookReader) {
   /**
    * @param {object} [options]
    */

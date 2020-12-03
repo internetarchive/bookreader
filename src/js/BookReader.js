@@ -1678,6 +1678,9 @@ BookReader.prototype.pruneUnusedImgs = function() {
 /** Mode1Up extensions **/
 /************************/
 extendBookReaderMode1Up(BookReader);
+/** @deprecated not used outside BookReader */
+BookReader.prototype.prepareOnePageView = Mode1Up.prototype.prepare;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'prepare', 'prepareOnePageView');
 
 /************************/
 /** Mode2Up extensions **/
