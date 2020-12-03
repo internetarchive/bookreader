@@ -36,7 +36,7 @@ import {
   createPopup,
 } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
-import { Mode1Up, extendBookReaderMode1Up } from './BookReader/Mode1Up.js';
+import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
@@ -1678,7 +1678,6 @@ BookReader.prototype.pruneUnusedImgs = function() {
 /************************/
 /** Mode1Up extensions **/
 /************************/
-extendBookReaderMode1Up(BookReader);
 /** @deprecated not used outside BookReader */
 BookReader.prototype.prepareOnePageView = Mode1Up.prototype.prepare;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'prepare', 'prepareOnePageView');

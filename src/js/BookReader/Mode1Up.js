@@ -303,6 +303,3 @@ export class Mode1Up {
     return Math.floor(centerY);
   }
 }
-
-export function extendBookReaderMode1Up(BookReader) {
-}
