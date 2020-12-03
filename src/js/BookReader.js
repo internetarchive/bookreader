@@ -105,7 +105,7 @@ BookReader.prototype.setup = function(options) {
   this.constModeThumb = BookReader.constModeThumb;
 
   // Private properties below. Configuration should be done with options.
-  /** @type {number} @private */
+  /** @type {number} TODO: Make private */
   this.reduce = 4;
   this.defaults = options.defaults;
   this.padding = options.padding;
@@ -1681,6 +1681,9 @@ extendBookReaderMode1Up(BookReader);
 /** @deprecated not used outside BookReader */
 BookReader.prototype.prepareOnePageView = Mode1Up.prototype.prepare;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'prepare', 'prepareOnePageView');
+/** @deprecated not used outside BookReader */
+BookReader.prototype.drawLeafsOnePage = Mode1Up.prototype.drawLeafs;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'drawLeafs', 'drawLeafsOnePage');
 
 /************************/
 /** Mode2Up extensions **/

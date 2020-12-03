@@ -40,17 +40,12 @@ export class Mode1Up {
     this.br.jumpToIndex(startLeaf);
     this.br.updateBrClasses();
   }
-}
 
-export function extendBookReaderMode1Up(BookReader) {
-  /**
-   * @param {object} [options]
-   */
-  BookReader.prototype.drawLeafsOnePage = function() {
-    const { book } = this._models;
-    const containerHeight = this.refs.$brContainer.height();
-    const containerWidth = this.refs.$brPageViewEl.width();
-    const scrollTop = this.refs.$brContainer.prop('scrollTop');
+  drawLeafs() {
+    const { book } = this;
+    const containerHeight = this.br.refs.$brContainer.height();
+    const containerWidth = this.br.refs.$brPageViewEl.width();
+    const scrollTop = this.br.refs.$brContainer.prop('scrollTop');
     const scrollBottom = scrollTop + containerHeight;
 
     const indicesToDisplay = [];
@@ -58,7 +53,7 @@ export function extendBookReaderMode1Up(BookReader) {
     let leafBottom = 0;
 
     for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
-      const height = Math.floor(page.height / this.reduce);
+      const height = Math.floor(page.height / this.br.reduce);
       leafBottom += height;
       const topInView = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
       const bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
@@ -73,10 +68,10 @@ export function extendBookReaderMode1Up(BookReader) {
     // Based of the pages displayed in the view we set the current index
     // $$$ we should consider the page in the center of the view to be the current one
     let firstIndexToDraw = indicesToDisplay[0];
-    this.updateFirstIndex(firstIndexToDraw);
+    this.br.updateFirstIndex(firstIndexToDraw);
 
     // if zoomed out, also draw prev/next pages
-    if (this.reduce > 1) {
+    if (this.br.reduce > 1) {
       const prev = book.getPage(firstIndexToDraw).findPrev({ combineConsecutiveUnviewables: true });
       if (prev) indicesToDisplay.unshift(firstIndexToDraw = prev.index);
 
@@ -85,31 +80,31 @@ export function extendBookReaderMode1Up(BookReader) {
       if (next) indicesToDisplay.push(next.index);
     }
 
-    const BRpageViewEl = this.refs.$brPageViewEl.get(0);
+    const BRpageViewEl = this.br.refs.$brPageViewEl.get(0);
     leafTop = 0;
 
     for (const page of book.pagesIterator({ end: firstIndexToDraw, combineConsecutiveUnviewables: true })) {
-      leafTop += Math.floor(page.height / this.reduce) + 10;
+      leafTop += Math.floor(page.height / this.br.reduce) + 10;
     }
 
     for (const index of indicesToDisplay) {
       const page = book.getPage(index);
-      const height = Math.floor(page.height / this.reduce);
+      const height = Math.floor(page.height / this.br.reduce);
 
-      if (utils.notInArray(index, this.displayedIndices)) {
-        const width = Math.floor(page.width / this.reduce);
+      if (!this.br.displayedIndices.includes(index)) {
+        const width = Math.floor(page.width / this.br.reduce);
         const leftMargin = Math.floor((containerWidth - width) / 2);
 
-        const pageContainer = this._createPageContainer(index, {
-          width:`${width}px`,
-          height: `${height}px`,
-          top: `${leafTop}px`,
-          left: `${leftMargin}px`,
+        const pageContainer = this.br._createPageContainer(index, {
+          width,
+          height,
+          top: leafTop,
+          left: leftMargin,
         });
 
         const img = $('<img />', {
-          src: this._getPageURI(index, this.reduce, 0),
-          srcset: this._getPageURISrcset(index, this.reduce, 0)
+          src: page.getURI(this.br.reduce, 0),
+          srcset: this.br._getPageURISrcset(index, this.br.reduce, 0)
         });
         pageContainer.append(img);
 
@@ -119,20 +114,23 @@ export function extendBookReaderMode1Up(BookReader) {
       leafTop += height + 10;
     }
 
-    for (const index of this.displayedIndices) {
+    for (const index of this.br.displayedIndices) {
       if (utils.notInArray(index, indicesToDisplay)) {
-        this.$(`.pagediv${index}`).remove();
+        this.br.$(`.pagediv${index}`).remove();
       }
     }
 
-    this.displayedIndices = indicesToDisplay.slice();
-    if (this.enableSearch) this.updateSearchHilites();
+    this.br.displayedIndices = indicesToDisplay.slice();
+    if (this.br.enableSearch) this.br.updateSearchHilites();
 
-    this.updateToolbarZoom(this.reduce);
+    this.br.updateToolbarZoom(this.br.reduce);
 
     // Update the slider
-    this.updateNavIndexThrottled();
-  };
+    this.br.updateNavIndexThrottled();
+  }
+}
+
+export function extendBookReaderMode1Up(BookReader) {
 
   BookReader.prototype.zoom1up = function(direction) {
     if (this.constMode2up == this.mode) {     //can only zoom in 1-page mode
