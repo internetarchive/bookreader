@@ -927,11 +927,8 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
           // We manually trigger the `fragmentChange` once at the end.
           this.updateFirstIndex(leaf, { suppressFragmentChange: true });
-          if (this.prevReadMode === this.constMode1up || this.prevReadMode === this.constMode2up) {
-            this.switchMode(this.prevReadMode, { suppressFragmentChange: true });
-          } else {
-            this.switchMode(this.constMode1up, { suppressFragmentChange: true });
-          }
+          // as per request in webdev-4042, we want to switch 1-up mode while clicking on thumbnail leafs
+          this.switchMode(this.constMode1up, { suppressFragmentChange: true });
           this.trigger(BookReader.eventNames.fragmentChange);
           event.stopPropagation();
         });
