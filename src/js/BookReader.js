@@ -25,6 +25,7 @@ import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
+/** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 import { EVENTS } from './BookReader/events.js';
 import { DebugConsole } from './BookReader/DebugConsole.js';
 import {
@@ -1278,17 +1279,16 @@ BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
 
 /**
  * Quantizes the given reduction factor to closest power of two from set from 12.5% to 200%
- * @param {number}
- * @param {array}
+ * @param {number} reduce
+ * @param {ReductionFactor[]} reductionFactors
  * @return {number}
  */
 BookReader.prototype.quantizeReduce = function(reduce, reductionFactors) {
-  var quantized = reductionFactors[0].reduce;
-  var distance = Math.abs(reduce - quantized);
-  var newDistance;
+  let quantized = reductionFactors[0].reduce;
+  let distance = Math.abs(reduce - quantized);
 
-  for (var i = 1; i < reductionFactors.length; i++) {
-    newDistance = Math.abs(reduce - reductionFactors[i].reduce);
+  for (let i = 1; i < reductionFactors.length; i++) {
+    const newDistance = Math.abs(reduce - reductionFactors[i].reduce);
     if (newDistance < distance) {
       distance = newDistance;
       quantized = reductionFactors[i].reduce;
@@ -1300,27 +1300,25 @@ BookReader.prototype.quantizeReduce = function(reduce, reductionFactors) {
 /**
  * @param {number} currentReduce
  * @param {'in' | 'out' | 'auto' | 'height' | 'width'} direction
- * @param {array} reductionFactors should be array of sorted reduction factors
- *   e.g. [ {reduce: 0.25, autofit: null}, {reduce: 0.3, autofit: 'width'}, {reduce: 1, autofit: null} ]
+ * @param {ReductionFactor[]} reductionFactors Must be sorted
+ * @returns {ReductionFactor}
  */
 BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFactors) {
   // XXX add 'closest', to replace quantize function
-  var i;
-  var newReduceIndex;
 
   if (direction === 'in') {
-    newReduceIndex = 0;
-    for (i = 1; i < reductionFactors.length; i++) {
+    let newReduceIndex = 0;
+    for (let i = 1; i < reductionFactors.length; i++) {
       if (reductionFactors[i].reduce < currentReduce) {
         newReduceIndex = i;
       }
     }
     return reductionFactors[newReduceIndex];
   } else if (direction === 'out') { // zoom out
-    var lastIndex = reductionFactors.length - 1;
-    newReduceIndex = lastIndex;
+    const lastIndex = reductionFactors.length - 1;
+    let newReduceIndex = lastIndex;
 
-    for (i = lastIndex; i >= 0; i--) {
+    for (let i = lastIndex; i >= 0; i--) {
       if (reductionFactors[i].reduce > currentReduce) {
         newReduceIndex = i;
       }
@@ -1328,8 +1326,8 @@ BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFa
     return reductionFactors[newReduceIndex];
   } else if (direction === 'auto') {
     // Auto mode chooses the least reduction
-    var choice = null;
-    for (i = 0; i < reductionFactors.length; i++) {
+    let choice = null;
+    for (let i = 0; i < reductionFactors.length; i++) {
       if (reductionFactors[i].autofit === 'height' || reductionFactors[i].autofit === 'width') {
         if (choice === null || choice.reduce < reductionFactors[i].reduce) {
           choice = reductionFactors[i];
@@ -1341,7 +1339,7 @@ BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFa
     }
   } else if (direction === 'height' || direction === 'width') {
     // Asked for specific autofit mode
-    for (i = 0; i < reductionFactors.length; i++) {
+    for (let i = 0; i < reductionFactors.length; i++) {
       if (reductionFactors[i].autofit === direction) {
         return reductionFactors[i];
       }

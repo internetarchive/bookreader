@@ -47,7 +47,7 @@ export const DEFAULT_OPTIONS = {
 
   /**
    * Zoom levels
-   * @type {Array<{reduce: number, autofit: AutoFitValues}}
+   * @type {ReductionFactor[]}
    * $$$ provide finer grained zooming, {reduce: 8, autofit: null}, {reduce: 16, autofit: null}
    * The autofit code ensures that fit to width and fit to height will be available
    */
@@ -237,6 +237,13 @@ export const DEFAULT_OPTIONS = {
 };
 
 /** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */
+
+/**
+ * @typedef {object} ReductionFactor
+ * @property {number} reduce
+ * @property {AutoFitValues} [autofit] If set, the corresponding reduction factors
+ * are what will be used when the user tries to autofit by width/height.
+ */
 
 /**
  * @typedef {Object} PageData
