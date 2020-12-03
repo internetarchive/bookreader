@@ -2,6 +2,7 @@
 import * as utils from '../BookReader/utils.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
+/** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 
 export class Mode1Up {
   /**
@@ -168,38 +169,37 @@ export class Mode1Up {
     // make sure a little of adjacent pages show
     return medianPageHeight / (availableHeight - 2 * this.br.padding);
   }
-}
-
-export function extendBookReaderMode1Up(BookReader) {
 
   /**
    * Returns where the top of the page with given index should be in one page view
    * @param {PageIndex} index
    * @return {number}
    */
-  BookReader.prototype.onePageGetPageTop = function(index) {
+  getPageTop(index) {
     const { floor } = Math;
-    const { book } = this._models;
+    const { book } = this;
     let leafTop = 0;
     for (const page of book.pagesIterator({ end: index, combineConsecutiveUnviewables: true })) {
-      leafTop += floor(page.height / this.reduce) + this.padding;
+      leafTop += floor(page.height / this.br.reduce) + this.br.padding;
     }
     return leafTop;
-  };
+  }
 
   /**
    * Update the reduction factors for 1up mode given the available width and height.
    * Recalculates the autofit reduction factors.
    */
-  BookReader.prototype.onePageCalculateReductionFactors = function() {
-    this.onePage.reductionFactors = this.reductionFactors.concat(
+  calculateReductionFactors() {
+    this.br.onePage.reductionFactors = this.br.reductionFactors.concat(
       [
-        { reduce: this.onePageGetAutofitWidth(), autofit: 'width' },
-        { reduce: this.onePageGetAutofitHeight(), autofit: 'height'}
+        { reduce: this.getAutofitWidth(), autofit: 'width' },
+        { reduce: this.getAutofitHeight(), autofit: 'height' },
       ]);
-    this.onePage.reductionFactors.sort(this._reduceSort);
-  };
+    this.br.onePage.reductionFactors.sort(this.br._reduceSort);
+  }
+}
 
+export function extendBookReaderMode1Up(BookReader) {
   /**
    * Resize the current one page view
    * Note this calls drawLeafs

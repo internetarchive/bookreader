@@ -26,6 +26,7 @@ import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
+/** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
 import { EVENTS } from './BookReader/events.js';
 import { DebugConsole } from './BookReader/DebugConsole.js';
 import {
@@ -1693,6 +1694,12 @@ exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitWidth', 'onePageG
 /** @deprecated not used outside Mode1Up, BookReader */
 BookReader.prototype.onePageGetAutofitHeight = Mode1Up.prototype.getAutofitHeight;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitHeight', 'onePageGetAutofitHeight');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.onePageGetPageTop = Mode1Up.prototype.getPageTop;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getPageTop', 'onePageGetPageTop');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.onePageCalculateReductionFactors = Mode1Up.prototype.calculateReductionFactors;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateReductionFactors', 'onePageCalculateReductionFactors');
 
 /************************/
 /** Mode2Up extensions **/
