@@ -70,7 +70,7 @@
     "build-assets": "npx cpx \"src/assets/**/*\" BookReader && npx svgo -f BookReader/icons && npx svgo -f BookReader/images",
     "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
     "build-js": "npx webpack && node scripts/copy-modules.js",
-    "build-js:watch": "npx webpack --watch",
+    "build-js:watch": "npx webpack --mode=development --watch",
     "build-css": "npx sass --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "build-css:watch": "npx sass --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "lint": "npx eslint src/js tests",
