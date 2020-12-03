@@ -35,7 +35,7 @@ import {
   createPopup,
 } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
-import { extendBookReaderMode1Up } from './BookReader/Mode1Up.js';
+import { Mode1Up, extendBookReaderMode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
@@ -205,6 +205,7 @@ BookReader.prototype.setup = function(options) {
   };
 
   this._modes = {
+    mode1Up: new Mode1Up(this, this._models.book),
     mode2Up: new Mode2Up(this, this._models.book),
   };
 
@@ -213,6 +214,7 @@ BookReader.prototype.setup = function(options) {
     '_models.book': this._models.book,
     '_components.navbar': this._components.navbar,
     '_components.toolbar': this._components.toolbar,
+    '_modes.mode1Up': this._modes.mode1Up,
     '_modes.mode2Up': this._modes.mode2Up,
   };
 };

@@ -1,4 +1,17 @@
 import * as utils from '../BookReader/utils.js';
+/** @typedef {import('../BookReader.js').default} BookReader */
+/** @typedef {import('./BookModel.js').BookModel} BookModel */
+
+export class Mode1Up {
+  /**
+   * @param {BookReader} br
+   * @param {BookModel} bookModel
+   */
+  constructor(br, bookModel) {
+    this.br = br;
+    this.book = bookModel;
+  }
+}
 
 export function extendBookReaderMode1Up(BookReader) {
   /**
