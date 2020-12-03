@@ -128,37 +128,35 @@ export class Mode1Up {
     // Update the slider
     this.br.updateNavIndexThrottled();
   }
-}
 
-export function extendBookReaderMode1Up(BookReader) {
+  /**
+   * @param {'in' | 'out'} direction
+   */
+  zoom(direction) {
+    const reduceFactor = this.br.nextReduce(this.br.reduce, direction, this.br.onePage.reductionFactors);
 
-  BookReader.prototype.zoom1up = function(direction) {
-    if (this.constMode2up == this.mode) {     //can only zoom in 1-page mode
-      this.switchMode(this.constMode1up);
-      return;
-    }
-
-    const reduceFactor = this.nextReduce(this.reduce, direction, this.onePage.reductionFactors);
-
-    if (this.reduce == reduceFactor.reduce) {
+    if (this.br.reduce == reduceFactor.reduce) {
       // Already at this level
       return;
     }
 
-    this.reduce = reduceFactor.reduce; // $$$ incorporate into function
-    this.onePage.autofit = reduceFactor.autofit;
+    this.br.reduce = reduceFactor.reduce; // $$$ incorporate into function
+    this.br.onePage.autofit = reduceFactor.autofit;
 
-    this.pageScale = this.reduce; // preserve current reduce
+    this.br.pageScale = this.br.reduce; // preserve current reduce
 
-    this.resizePageView1up();
-    this.updateToolbarZoom(this.reduce);
+    this.br.resizePageView1up();
+    this.br.updateToolbarZoom(this.br.reduce);
 
     // Recalculate search hilites
-    if (this.enableSearch) {
-      this.removeSearchHilites();
-      this.updateSearchHilites();
+    if (this.br.enableSearch) {
+      this.br.removeSearchHilites();
+      this.br.updateSearchHilites();
     }
-  };
+  }
+}
+
+export function extendBookReaderMode1Up(BookReader) {
 
   BookReader.prototype.onePageGetAutofitWidth = function() {
     const widthPadding = 20;

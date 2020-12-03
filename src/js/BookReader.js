@@ -1684,6 +1684,9 @@ exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'prepare', 'prepareOnePageVi
 /** @deprecated not used outside BookReader */
 BookReader.prototype.drawLeafsOnePage = Mode1Up.prototype.drawLeafs;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'drawLeafs', 'drawLeafsOnePage');
+/** @deprecated not used outside BookReader */
+BookReader.prototype.zoom1up = Mode1Up.prototype.zoom;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'zoom', 'zoom1up');
 
 /************************/
 /** Mode2Up extensions **/
