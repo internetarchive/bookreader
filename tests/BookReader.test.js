@@ -268,8 +268,7 @@ describe('nextReduce', () => {
       /* out    */  [   3,   6,  0.5, 6.2,    1,  6.2  ],
       /* width  */  [ 3.3, 3.3,  3.3, 3.3,  3.3,  3.3  ],
       /* height */  [ 6.1, 6.1,  6.1, 6.1,  6.1,  6.1  ],
-      // Auto goes to min reduction of width/height
-      /* auto   */  [ 6.1, 6.1,  6.1, 6.1,  6.1,  6.1  ],
+      /* auto   */  [ 6.2, 6.2,  6.2, 6.2,  6.2,  6.2  ],
     ];
 
     for (const [y, row] of expectations.entries()) {

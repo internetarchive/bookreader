@@ -1314,7 +1314,7 @@ BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFa
       }
     }
     return reductionFactors[newReduceIndex];
-  } else if (direction === 'out') { // zoom out
+  } else if (direction === 'out') {
     const lastIndex = reductionFactors.length - 1;
     let newReduceIndex = lastIndex;
 
@@ -1325,28 +1325,26 @@ BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFa
     }
     return reductionFactors[newReduceIndex];
   } else if (direction === 'auto') {
-    // Auto mode chooses the least reduction
+    // If an 'auto' is specified, use that
+    const autoMatch = reductionFactors.find(rf => rf.autofit == 'auto');
+    if (autoMatch) return autoMatch;
+
+    // Otherwise, choose the least reduction from height/width
+    const candidates = reductionFactors.filter(({autofit}) => autofit == 'height' || autofit == 'width');
     let choice = null;
-    for (let i = 0; i < reductionFactors.length; i++) {
-      if (reductionFactors[i].autofit === 'height' || reductionFactors[i].autofit === 'width') {
-        if (choice === null || choice.reduce < reductionFactors[i].reduce) {
-          choice = reductionFactors[i];
-        }
+    for (let i = 0; i < candidates.length; i++) {
+      if (choice === null || choice.reduce < candidates[i].reduce) {
+        choice = candidates[i];
       }
     }
-    if (choice) {
-      return choice;
-    }
+    if (choice) return choice;
   } else if (direction === 'height' || direction === 'width') {
     // Asked for specific autofit mode
-    for (let i = 0; i < reductionFactors.length; i++) {
-      if (reductionFactors[i].autofit === direction) {
-        return reductionFactors[i];
-      }
-    }
+    const match = reductionFactors.find(rf => rf.autofit == direction);
+    if (match) return match;
   }
 
-  alert('Could not find reduction factor for direction ' + direction);
+  console.error('Could not find reduction factor for direction ' + direction);
   return reductionFactors[0];
 
 };
@@ -1968,6 +1966,7 @@ BookReader.prototype.pruneUnusedImgs = function() {
 /************************/
 /** Mode2Up extensions **/
 /************************/
+/** @deprecated not used outside Mode2Up */
 BookReader.prototype.zoom2up = Mode2Up.prototype.zoom;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'zoom', 'zoom2up');
 BookReader.prototype.twoPageGetAutofitReduce = Mode2Up.prototype.getAutofitReduce;
