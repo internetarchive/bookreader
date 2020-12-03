@@ -37,7 +37,7 @@ export class Mode1Up {
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
     // utils.disableSelect(this.$('#BRpageview'));
 
-    this.br.resizePageView1up();
+    this.resizePageView();
     this.br.jumpToIndex(startLeaf);
     this.br.updateBrClasses();
   }
@@ -146,7 +146,7 @@ export class Mode1Up {
 
     this.br.pageScale = this.br.reduce; // preserve current reduce
 
-    this.br.resizePageView1up();
+    this.resizePageView();
     this.br.updateToolbarZoom(this.br.reduce);
 
     // Recalculate search hilites
@@ -197,18 +197,16 @@ export class Mode1Up {
       ]);
     this.br.onePage.reductionFactors.sort(this.br._reduceSort);
   }
-}
 
-export function extendBookReaderMode1Up(BookReader) {
   /**
    * Resize the current one page view
    * Note this calls drawLeafs
    */
-  BookReader.prototype.resizePageView1up = function() {
-    const viewWidth  = this.refs.$brContainer.prop('clientWidth');
-    const oldScrollTop  = this.refs.$brContainer.prop('scrollTop');
-    const oldPageViewHeight = this.refs.$brPageViewEl.height();
-    const oldPageViewWidth = this.refs.$brPageViewEl.width();
+  resizePageView() {
+    const viewWidth  = this.br.refs.$brContainer.prop('clientWidth');
+    const oldScrollTop  = this.br.refs.$brContainer.prop('scrollTop');
+    const oldPageViewHeight = this.br.refs.$brPageViewEl.height();
+    const oldPageViewWidth = this.br.refs.$brPageViewEl.width();
 
     // May have come here after preparing the view, in which case the scrollTop and view height are not set
 
@@ -216,8 +214,8 @@ export function extendBookReaderMode1Up(BookReader) {
     let oldCenterX;
     if (oldScrollTop > 0) {
       // We have scrolled - implies view has been set up
-      const oldCenterY = this.centerY1up();
-      oldCenterX = this.centerX1up();
+      const oldCenterY = this.br.centerY1up();
+      oldCenterX = this.br.centerX1up();
       scrollRatio = oldCenterY / oldPageViewHeight;
     } else {
       // Have not scrolled, e.g. because in new container
@@ -226,46 +224,48 @@ export function extendBookReaderMode1Up(BookReader) {
       // current index in drawLeafsOnePage after we create the new view container
 
       // Make sure this will count as current page after resize
-      const fudgeFactor = (this._models.book.getPageHeight(this.currentIndex()) / this.reduce) * 0.6;
-      const oldLeafTop = this.onePageGetPageTop(this.currentIndex()) + fudgeFactor;
-      const oldViewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
+      const fudgeFactor = (this.book.getPageHeight(this.br.currentIndex()) / this.br.reduce) * 0.6;
+      const oldLeafTop = this.getPageTop(this.br.currentIndex()) + fudgeFactor;
+      const oldViewDimensions = this.br.onePageCalculateViewDimensions(this.br.reduce, this.br.padding);
       scrollRatio = oldLeafTop / oldViewDimensions.height;
     }
 
     // Recalculate 1up reduction factors
-    this.onePageCalculateReductionFactors();
+    this.calculateReductionFactors();
     // Update current reduce (if in autofit)
-    if (this.onePage.autofit) {
-      const reductionFactor = this.nextReduce(this.reduce, this.onePage.autofit, this.onePage.reductionFactors);
-      this.reduce = reductionFactor.reduce;
+    if (this.br.onePage.autofit) {
+      const reductionFactor = this.br.nextReduce(this.br.reduce, this.br.onePage.autofit, this.br.onePage.reductionFactors);
+      this.br.reduce = reductionFactor.reduce;
     }
 
-    const viewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
+    const viewDimensions = this.br.onePageCalculateViewDimensions(this.br.reduce, this.br.padding);
 
-    this.refs.$brPageViewEl.height(viewDimensions.height);
-    this.refs.$brPageViewEl.width(viewDimensions.width);
+    this.br.refs.$brPageViewEl.height(viewDimensions.height);
+    this.br.refs.$brPageViewEl.width(viewDimensions.width);
 
 
     const newCenterY = scrollRatio * viewDimensions.height;
-    const newTop = Math.max(0, Math.floor( newCenterY - this.refs.$brContainer.height() / 2 ));
-    this.refs.$brContainer.prop('scrollTop', newTop);
+    const newTop = Math.max(0, Math.floor( newCenterY - this.br.refs.$brContainer.height() / 2 ));
+    this.br.refs.$brContainer.prop('scrollTop', newTop);
 
     // We use clientWidth here to avoid miscalculating due to scroll bar
     const newCenterX = oldCenterX * (viewWidth / oldPageViewWidth);
-    let newLeft = newCenterX - this.refs.$brContainer.prop('clientWidth') / 2;
+    let newLeft = newCenterX - this.br.refs.$brContainer.prop('clientWidth') / 2;
     newLeft = Math.max(newLeft, 0);
-    this.refs.$brContainer.prop('scrollLeft', newLeft);
+    this.br.refs.$brContainer.prop('scrollLeft', newLeft);
 
-    this.refs.$brPageViewEl.empty();
-    this.displayedIndices = [];
+    this.br.refs.$brPageViewEl.empty();
+    this.br.displayedIndices = [];
     this.drawLeafs();
 
-    if (this.enableSearch) {
-      this.removeSearchHilites();
-      this.updateSearchHilites();
+    if (this.br.enableSearch) {
+      this.br.removeSearchHilites();
+      this.br.updateSearchHilites();
     }
-  };
+  }
+}
 
+export function extendBookReaderMode1Up(BookReader) {
   /**
    * Calculate the dimensions for a one page view with images at the given reduce and padding
    * @param {number} reduce

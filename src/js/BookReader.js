@@ -1700,6 +1700,9 @@ exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getPageTop', 'onePageGetPag
 /** @deprecated not used outside Mode1Up, BookReader */
 BookReader.prototype.onePageCalculateReductionFactors = Mode1Up.prototype.calculateReductionFactors;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateReductionFactors', 'onePageCalculateReductionFactors');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.resizePageView1up = Mode1Up.prototype.resizePageView;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'resizePageView', 'resizePageView1up');
 
 /************************/
 /** Mode2Up extensions **/
