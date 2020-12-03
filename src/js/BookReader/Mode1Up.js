@@ -214,8 +214,8 @@ export class Mode1Up {
     let oldCenterX;
     if (oldScrollTop > 0) {
       // We have scrolled - implies view has been set up
-      const oldCenterY = this.br.centerY1up();
-      oldCenterX = this.br.centerX1up();
+      const oldCenterY = this.centerY();
+      oldCenterX = this.centerX();
       scrollRatio = oldCenterY / oldPageViewHeight;
     } else {
       // Have not scrolled, e.g. because in new container
@@ -226,7 +226,7 @@ export class Mode1Up {
       // Make sure this will count as current page after resize
       const fudgeFactor = (this.book.getPageHeight(this.br.currentIndex()) / this.br.reduce) * 0.6;
       const oldLeafTop = this.getPageTop(this.br.currentIndex()) + fudgeFactor;
-      const oldViewDimensions = this.br.onePageCalculateViewDimensions(this.br.reduce, this.br.padding);
+      const oldViewDimensions = this.calculateViewDimensions(this.br.reduce, this.br.padding);
       scrollRatio = oldLeafTop / oldViewDimensions.height;
     }
 
@@ -238,7 +238,7 @@ export class Mode1Up {
       this.br.reduce = reductionFactor.reduce;
     }
 
-    const viewDimensions = this.br.onePageCalculateViewDimensions(this.br.reduce, this.br.padding);
+    const viewDimensions = this.calculateViewDimensions(this.br.reduce, this.br.padding);
 
     this.br.refs.$brPageViewEl.height(viewDimensions.height);
     this.br.refs.$brPageViewEl.width(viewDimensions.width);
@@ -263,17 +263,15 @@ export class Mode1Up {
       this.br.updateSearchHilites();
     }
   }
-}
 
-export function extendBookReaderMode1Up(BookReader) {
   /**
    * Calculate the dimensions for a one page view with images at the given reduce and padding
    * @param {number} reduce
    * @param {number} padding
    */
-  BookReader.prototype.onePageCalculateViewDimensions = function(reduce, padding) {
+  calculateViewDimensions(reduce, padding) {
     const { floor } = Math;
-    const { book } = this._models;
+    const { book } = this;
     let viewWidth = 0;
     let viewHeight = 0;
     for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
@@ -282,29 +280,29 @@ export function extendBookReaderMode1Up(BookReader) {
       if (width > viewWidth) viewWidth = width;
     }
     return { width: viewWidth, height: viewHeight };
-  };
+  }
 
   /**
    * Returns the current offset of the viewport center in scaled document coordinates.
-   * @return {number}
    */
-  BookReader.prototype.centerX1up = function() {
+  centerX() {
     let centerX;
-    if (this.refs.$brPageViewEl.width() < this.refs.$brContainer.prop('clientWidth')) { // fully shown
-      centerX = this.refs.$brPageViewEl.width();
+    if (this.br.refs.$brPageViewEl.width() < this.br.refs.$brContainer.prop('clientWidth')) { // fully shown
+      centerX = this.br.refs.$brPageViewEl.width();
     } else {
-      centerX = this.refs.$brContainer.prop('scrollLeft') + this.refs.$brContainer.prop('clientWidth') / 2;
+      centerX = this.br.refs.$brContainer.prop('scrollLeft') + this.br.refs.$brContainer.prop('clientWidth') / 2;
     }
-    centerX = Math.floor(centerX);
-    return centerX;
-  };
+    return Math.floor(centerX);
+  }
 
   /**
    * Returns the current offset of the viewport center in scaled document coordinates.
-   * @return {number}
    */
-  BookReader.prototype.centerY1up = function() {
-    const centerY = this.refs.$brContainer.prop('scrollTop') + this.refs.$brContainer.height() / 2;
+  centerY() {
+    const centerY = this.br.refs.$brContainer.prop('scrollTop') + this.br.refs.$brContainer.height() / 2;
     return Math.floor(centerY);
-  };
+  }
+}
+
+export function extendBookReaderMode1Up(BookReader) {
 }

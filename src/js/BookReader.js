@@ -1703,6 +1703,15 @@ exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateReductionFactors',
 /** @deprecated not used outside Mode1Up, BookReader */
 BookReader.prototype.resizePageView1up = Mode1Up.prototype.resizePageView;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'resizePageView', 'resizePageView1up');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.onePageCalculateViewDimensions = Mode1Up.prototype.calculateViewDimensions;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateViewDimensions', 'onePageCalculateViewDimensions');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.centerX1up = Mode1Up.prototype.centerX;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerX', 'centerX1up');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.centerY1up = Mode1Up.prototype.centerY;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerY', 'centerY1up');
 
 /************************/
 /** Mode2Up extensions **/
