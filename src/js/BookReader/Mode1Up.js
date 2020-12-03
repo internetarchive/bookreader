@@ -1,5 +1,5 @@
 // @ts-check
-import * as utils from '../BookReader/utils.js';
+import { notInArray } from '../BookReader/utils.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
@@ -116,7 +116,7 @@ export class Mode1Up {
     }
 
     for (const index of this.br.displayedIndices) {
-      if (utils.notInArray(index, indicesToDisplay)) {
+      if (notInArray(index, indicesToDisplay)) {
         this.br.$(`.pagediv${index}`).remove();
       }
     }
@@ -285,12 +285,12 @@ export class Mode1Up {
   /**
    * Returns the current offset of the viewport center in scaled document coordinates.
    */
-  centerX() {
+  centerX($brContainer = this.br.refs.$brContainer, $pagesContainer = this.br.refs.$brPageViewEl) {
     let centerX;
-    if (this.br.refs.$brPageViewEl.width() < this.br.refs.$brContainer.prop('clientWidth')) { // fully shown
-      centerX = this.br.refs.$brPageViewEl.width();
+    if ($pagesContainer.width() < $brContainer.prop('clientWidth')) { // fully shown
+      centerX = $pagesContainer.width();
     } else {
-      centerX = this.br.refs.$brContainer.prop('scrollLeft') + this.br.refs.$brContainer.prop('clientWidth') / 2;
+      centerX = $brContainer.scrollLeft() + $brContainer.prop('clientWidth') / 2;
     }
     return Math.floor(centerX);
   }
@@ -298,8 +298,8 @@ export class Mode1Up {
   /**
    * Returns the current offset of the viewport center in scaled document coordinates.
    */
-  centerY() {
-    const centerY = this.br.refs.$brContainer.prop('scrollTop') + this.br.refs.$brContainer.height() / 2;
+  centerY($brContainer = this.br.refs.$brContainer) {
+    const centerY = $brContainer.scrollTop() + $brContainer.height() / 2;
     return Math.floor(centerY);
   }
 }
