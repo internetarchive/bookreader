@@ -1687,6 +1687,12 @@ exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'drawLeafs', 'drawLeafsOnePa
 /** @deprecated not used outside BookReader */
 BookReader.prototype.zoom1up = Mode1Up.prototype.zoom;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'zoom', 'zoom1up');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.onePageGetAutofitWidth = Mode1Up.prototype.getAutofitWidth;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitWidth', 'onePageGetAutofitWidth');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.onePageGetAutofitHeight = Mode1Up.prototype.getAutofitHeight;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitHeight', 'onePageGetAutofitHeight');
 
 /************************/
 /** Mode2Up extensions **/

@@ -154,19 +154,23 @@ export class Mode1Up {
       this.br.updateSearchHilites();
     }
   }
+
+  getAutofitWidth() {
+    const medianPageWidth = this.book.getMedianPageSize().width;
+    const availableWidth = this.br.refs.$brContainer.prop('clientWidth');
+    const widthPadding = 20;
+    return medianPageWidth / (availableWidth - 2 * widthPadding);
+  }
+
+  getAutofitHeight() {
+    const medianPageHeight = this.book.getMedianPageSize().height;
+    const availableHeight = this.br.refs.$brContainer.innerHeight();
+    // make sure a little of adjacent pages show
+    return medianPageHeight / (availableHeight - 2 * this.br.padding);
+  }
 }
 
 export function extendBookReaderMode1Up(BookReader) {
-
-  BookReader.prototype.onePageGetAutofitWidth = function() {
-    const widthPadding = 20;
-    return (this._models.book.getMedianPageSize().width + 0.0) / (this.refs.$brContainer.prop('clientWidth') - widthPadding * 2);
-  };
-
-  BookReader.prototype.onePageGetAutofitHeight = function() {
-    const availableHeight = this.refs.$brContainer.innerHeight();
-    return (this._models.book.getMedianPageSize().height + 0.0) / (availableHeight - this.padding * 2); // make sure a little of adjacent pages show
-  };
 
   /**
    * Returns where the top of the page with given index should be in one page view
