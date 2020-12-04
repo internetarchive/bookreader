@@ -84,11 +84,12 @@
   transition: transform 0.2s;
 }
 
-@media (prefers-reduced-motion) {
-  .BRzoom-transition {
-    transition: none;
-  }
-}
+// This was always canceling the transition :/
+// @media (prefers-reduced-motion) {
+//   .BRzoom-transition {
+//     transition: none;
+//   }
+// }
 
 .BRprogresspopup {
   margin: 80px auto auto;

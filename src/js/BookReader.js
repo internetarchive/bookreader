@@ -464,12 +464,14 @@ BookReader.prototype.init = function() {
   this.setupKeyListeners();
 
   this.lastScroll = (new Date().getTime());
-  this.refs.$brContainer.bind('scroll', this, function(e) {
+  this.refs.$brContainer.on('scroll', e => {
+    // Don't redraw if we're doing a zoom transition
+    if (this.$('.BRzoom-transition').length) return;
     // Note, this scroll event fires for both user, and js generated calls
     // It is functioning in some cases as the primary triggerer for rendering
-    e.data.lastScroll = (new Date().getTime());
-    if (e.data.constMode2up != e.data.mode) {
-      e.data.drawLeafsThrottled();
+    this.lastScroll = (new Date().getTime());
+    if (this.constMode2up != this.mode) {
+      this.drawLeafsThrottled();
     }
   });
 
@@ -969,20 +971,8 @@ BookReader.prototype.drawLeafsThrottled = utils.throttle(
 BookReader.prototype.zoom = function(direction) {
   switch (this.mode) {
   case this.constMode1up:
-    if (direction == 1) {
-      // XXX other cases
-      this.zoom1up('in');
-    } else {
-      this.zoom1up('out');
-    }
-    break
   case this.constMode2up:
-    if (direction == 1) {
-      // XXX other cases
-      this.zoom2up('in');
-    } else {
-      this.zoom2up('out');
-    }
+    this.continuousZoom(direction == 1 ? 2 : 0.5, true);
     break
   case this.constModeThumb:
     // XXX update zoomThumb for named directions
@@ -1007,12 +997,16 @@ BookReader.prototype.continuousZoom = async function(factor, transition = false)
   this.transformManager.beginTransform();
 
   if (transition) {
-    this.$('.BRtwopageview').addClass('BRzoom-transition');
+    this.$('.BRtwopageview, .BRpageview').addClass('BRzoom-transition');
     this.transformManager.applyTentativeTransform({ scale: factor });
-    await new Promise(res => this.$('.BRtwopageview').one('transitionend', res));
+    await Promise.race([
+      new Promise(res => this.$('.BRtwopageview, .BRpageview').one('transitionend', res)),
+      // Incase transition disabled
+      new Promise(res => setTimeout(res, 200)),
+    ]);
   }
 
-  this.$('.BRtwopageview').removeClass('BRzoom-transition');
+  this.$('.BRtwopageview, .BRpageview').removeClass('BRzoom-transition');
   this.transformManager.finalizeTransform();
 };
 

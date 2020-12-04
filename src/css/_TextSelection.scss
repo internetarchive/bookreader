@@ -38,6 +38,7 @@
 }
 
 // Hides svg text layer when page animation is running
-.BRpageFlipping .textSelectionSVG {
+.BRpageFlipping .textSelectionSVG,
+.BRTransformManager .textSelectionSVG {
     display: none;
 }

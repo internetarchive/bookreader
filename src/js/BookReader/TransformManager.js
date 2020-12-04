@@ -16,14 +16,15 @@ export class TransformManager {
       finalized: 1,
       tentative: 1,
       startCenter: {
-        x: 50,
-        y: 50,
+        x: 0.5,
+        y: 0.5,
       }
     };
+
+    this.animationFrameRequest = 0;
   }
 
-  _calculateContainerCenter() {
-    const c = this.containingEl;
+  _calculateContainerCenter(c = this.containingEl) {
     return {
       x: (c.scrollLeft + c.clientWidth / 2) / c.scrollWidth,
       y: (c.scrollTop + c.clientHeight / 2) / c.scrollHeight,
@@ -35,6 +36,8 @@ export class TransformManager {
     this.scale.tentative = this.scale.finalized;
     this.scale.startCenter = this._calculateContainerCenter();
     this.transformingEl.style.transformOrigin = '0 0';
+    this.animationFrameRequest = window.requestAnimationFrame(this.step.bind(this));
+    this.containingEl.classList.add('BRTransformManager');
   }
 
   /**
@@ -43,22 +46,31 @@ export class TransformManager {
    */
   applyTentativeTransform({ scale }) {
     this.scale.tentative *= scale;
-    this.transformingEl.style.transform = `scale(${this.scale.tentative})`;
+  }
+
+  step() {
+    this.transformingEl.style.transform = `scale(${this.scale.tentative}) translate3d(0px, 0px, 0px)`;
 
     const c = this.containingEl;
-    c.scrollLeft = this.scale.startCenter.x * c.scrollWidth - c.clientWidth / 2;
-    c.scrollTop = this.scale.startCenter.y * c.scrollHeight - c.clientHeight / 2;
+    const desiredScrollLeft = this.scale.startCenter.x * c.scrollWidth - c.clientWidth / 2;
+    const desiredScrollTop = this.scale.startCenter.y * c.scrollHeight - c.clientHeight / 2;
+    c.scrollLeft = desiredScrollLeft;
+    c.scrollTop = desiredScrollTop;
+    this.animationFrameRequest = window.requestAnimationFrame(this.step.bind(this));
   }
 
   cancelTransform() {
     this.transformInProgress = false;
-    this.transformingEl.style.transform = `scale(${this.scale.finalized})`;
+    this.transformingEl.style.transform = `scale(${this.scale.finalized}) translate3d(0px, 0px, 0px)`;
+    window.cancelAnimationFrame(this.animationFrameRequest);
+    this.containingEl.classList.remove('BRTransformManager');
   }
 
   finalizeTransform() {
-    // Don't allow zooming out more than 1; this doesn't work because we can't
-    // set scrollLeft/scrollTop to finalize the zoom in a centered position
-    this.scale.finalized = Math.max(1, this.scale.tentative);
+    // TODO: Zooming out more than 1 results in things being uncentered
+    this.scale.finalized = this.scale.tentative;
     this.transformInProgress = false;
+    window.cancelAnimationFrame(this.animationFrameRequest);
+    this.containingEl.classList.remove('BRTransformManager');
   }
 }

@@ -46,7 +46,7 @@ export class Mode1Up {
     const { book } = this;
     const containerHeight = this.br.refs.$brContainer.height();
     const containerWidth = this.br.refs.$brPageViewEl.width();
-    const scrollTop = this.br.refs.$brContainer.prop('scrollTop');
+    const scrollTop = this.br.refs.$brContainer.scrollTop() / (this.br.transformManager?.scale?.tentative ?? 1);
     const scrollBottom = scrollTop + containerHeight;
 
     const indicesToDisplay = [];
