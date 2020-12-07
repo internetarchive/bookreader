@@ -189,3 +189,111 @@ test('_getPageURISrcset with undefined reduce param', () => {
   br.init();
   expect(br._getPageURISrcset(5, undefined, undefined)).toBe("correctURL.png&scale=16 2x, correctURL.png&scale=8 4x, correctURL.png&scale=4 8x, correctURL.png&scale=2 16x, correctURL.png&scale=1 32x");
 });
+
+describe('quantizeReduce', () => {
+  const quantizeReduce = BookReader.prototype.quantizeReduce;
+  const SAMPLE_FACTORS = [
+    { reduce: 0.5 },
+    { reduce: 1 },
+    { reduce: 2 },
+    { reduce: 3 },
+    { reduce: 4 },
+    { reduce: 6 },
+  ];
+  test('Number larger than max', () => {
+    expect(quantizeReduce(10, SAMPLE_FACTORS)).toBe(6);
+  });
+
+  test('Number lower than max', () => {
+    expect(quantizeReduce(0.25, SAMPLE_FACTORS)).toBe(0.5);
+  });
+
+  test('Number directly between two reduction factors chooses first factor', () => {
+    expect(quantizeReduce(5, SAMPLE_FACTORS)).toBe(4);
+  });
+
+  test('Exact match', () => {
+    expect(quantizeReduce(2, SAMPLE_FACTORS)).toBe(2);
+  });
+
+  test('Closer to a lower boundary', () => {
+    expect(quantizeReduce(1.115, SAMPLE_FACTORS)).toBe(1);
+  });
+
+  test('Closer to an upper bound', () => {
+    expect(quantizeReduce(1.95, SAMPLE_FACTORS)).toBe(2);
+  });
+
+  test('Only one reduction factor', () => {
+    expect(quantizeReduce(17, [{reduce: 10}])).toBe(10);
+  });
+});
+
+
+describe('nextReduce', () => {
+  describe('Test matrix', () => {
+    const nextReduce = BookReader.prototype.nextReduce;
+    const SAMPLE_FACTORS = [
+      { reduce: 0.5 },
+      { reduce: 1 },
+      { reduce: 2 },
+      { reduce: 3 },
+      { reduce: 3.3, autofit: "width" },
+      { reduce: 4 },
+      { reduce: 6 },
+      { reduce: 6.1, autofit: "height" },
+      // auto doesn't get read by nextReduce (bug)
+      // It looks like width/height are set for 1up, and auto is set for 2up,
+      // and neither is set for thumb
+      { reduce: 6.2, autofit: "auto" }
+    ];
+
+    const currentReduces = [
+      { name: 'Exact match', value: 2 },
+      { name: 'In-between', value: 4.5 },
+      { name: '< Min', value: 0.25 },
+      { name: '> Max', value: 10 },
+
+      { name: '= Min', value: 0.5 },
+      { name: '= Max', value: 6.2 },
+    ];
+
+    const directions = [ 'in', 'out', 'width', 'height', 'auto' ];
+
+    const expectations = [
+      // currentReduces <->
+      // v^ directions
+      /*                2, 4.5, 0.25,  10,  0.5,  6.2   */
+      /* in     */  [   1,   4,  0.5, 6.2,  0.5,  6.1  ],
+      /* out    */  [   3,   6,  0.5, 6.2,    1,  6.2  ],
+      /* width  */  [ 3.3, 3.3,  3.3, 3.3,  3.3,  3.3  ],
+      /* height */  [ 6.1, 6.1,  6.1, 6.1,  6.1,  6.1  ],
+      /* auto   */  [ 6.2, 6.2,  6.2, 6.2,  6.2,  6.2  ],
+    ];
+
+    for (const [y, row] of expectations.entries()) {
+      for (const [x, expectedValue] of row.entries()) {
+        test(`${currentReduces[x].name} ${directions[y]}`, () => {
+          expect(nextReduce(currentReduces[x].value, directions[y], SAMPLE_FACTORS).reduce)
+            .toBe(expectedValue);
+        });
+      }
+    }
+  });
+
+  describe('No matching reduction', () => {
+    const nextReduce = BookReader.prototype.nextReduce;
+    const SAMPLE_FACTORS = [
+      { reduce: 0.5 },
+      { reduce: 1 },
+      { reduce: 2 },
+      { reduce: 3 },
+    ];
+
+    test('Returns first reduction when no match found', () => {
+      expect(nextReduce(2, 'width', SAMPLE_FACTORS).reduce).toBe(0.5);
+      expect(nextReduce(2, 'height', SAMPLE_FACTORS).reduce).toBe(0.5);
+      expect(nextReduce(2, 'auto', SAMPLE_FACTORS).reduce).toBe(0.5);
+    });
+  });
+});
