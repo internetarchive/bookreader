@@ -89,6 +89,12 @@ BookReader.prototype.setup = function(options) {
   this.enableSearch = false;
 
   /**
+   * Store viewModeOrder states
+   * @var {boolean}
+   */
+  this.viewModeOrder = [];
+
+  /**
    * Used to supress fragment change for init with canonical URLs
    * @var {boolean}
    */
@@ -929,6 +935,12 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           this.updateFirstIndex(leaf, { suppressFragmentChange: true });
           // as per request in webdev-4042, we want to switch 1-up mode while clicking on thumbnail leafs
           this.switchMode(this.constMode1up, { suppressFragmentChange: true });
+
+          // shift viewModeOrder after clicking on thumbsnail leaf
+          const nextModeID = this.viewModeOrder.shift();
+          this.viewModeOrder.push(nextModeID);
+          this.updateViewModeButton($('.viewmode'), 'twopg', 'Two-page view');
+
           this.trigger(BookReader.eventNames.fragmentChange);
           event.stopPropagation();
         });
@@ -2129,6 +2141,8 @@ BookReader.prototype.initNavbar = Navbar.prototype.init;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'init', 'initNavbar');
 BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'getNavPageNumString');
+BookReader.prototype.updateViewModeButton = Navbar.prototype._updateViewModeButton;
+exposeOverrideableMethod(Navbar, '_components.navbar', '_updateViewModeButton');
 /** @deprecated */
 BookReader.prototype.initEmbedNavbar = Navbar.prototype.initEmbed;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'initEmbed', 'initEmbedNavbar');

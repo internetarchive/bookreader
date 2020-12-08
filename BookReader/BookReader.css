@@ -1030,9 +1030,15 @@ i.BRicon {
 .BRfooter button:hover .tooltip {
   display: block;
 }
+.BRfooter button.viewmode {
+  display: none;
+}
 @media (max-width: 480px) {
   .BRfooter button.hide-mobile {
     display: none;
+  }
+  .BRfooter button.viewmode {
+    display: block;
   }
 }
 

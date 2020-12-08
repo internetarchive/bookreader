@@ -82,6 +82,7 @@ export class Navbar {
           const nextViewMode = viewModes.find((m) => m.mode === viewModeOrder[0]);
 
           viewModeOrder.push(nextModeID);
+          br.viewModeOrder = viewModeOrder;
           this._updateViewModeButton($(e.currentTarget), nextViewMode.className, nextViewMode.title);
           br.switchMode(newViewMode.mode);
         });
@@ -94,7 +95,9 @@ export class Navbar {
     });
   }
 
-  /** @private */
+  /**
+   * Toggle viewmode button on mobile devices
+   */
   _updateViewModeButton($button, iconClass, tooltipText) {
     $button
       .attr('title', tooltipText)
