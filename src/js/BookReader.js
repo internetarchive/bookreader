@@ -308,7 +308,13 @@ BookReader.prototype.initParams = function() {
   // Check for URL plugin
   if (this.options.enableUrlPlugin) {
     // Params explicitly set in URL take precedence over all other methods
-    const urlParams = this.paramsFromFragment(this.urlReadFragment());
+    var urlParams = this.paramsFromFragment(this.urlReadFragment());
+
+    // Get hash fragment regardless urlMode
+    if (!Object.keys(urlParams).length && this.urlReadHashFragment()) {
+      urlParams = this.paramsFromFragment(this.urlReadHashFragment());
+    }
+
     // If there were any parameters
     if (Object.keys(urlParams).length) {
       if ('undefined' != typeof(urlParams.page)) {
@@ -2836,6 +2842,17 @@ BookReader.prototype.queryStringFromParams = function(
   if (params.search && urlMode === 'history') {
     newParams.set('q', params.search)
   }
+
+  // append ?wrapper=false if query param has ?options=view-only
+  if (newParams.has('options')) {
+    var decoded = decodeURI(newParams.get('options')).split('|');
+    if (decoded.includes('view-only')) {
+      newParams.set('wrapper', 'false')
+    }
+    // delete extra incoming param
+    newParams.delete('options');
+  }
+    
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
   // Note: This method returns the query string without the question mark.
   const result = newParams.toString();
