@@ -97,6 +97,7 @@ test('calls switchMode with init option when init called', () => {
 test('has suppressFragmentChange true when init with no input', () => {
   br.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => '');
+  br.urlReadHashFragment = jest.fn(() => '');
   br.switchMode = jest.fn();
 
   br.init();
@@ -117,6 +118,17 @@ test('has suppressFragmentChange false when init with cookie', () => {
 test('has suppressFragmentChange false when init with fragment', () => {
   br.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => 'mode/1up');
+  br.switchMode = jest.fn();
+
+  br.init();
+  expect(br.switchMode.mock.calls[0][1])
+    .toHaveProperty('suppressFragmentChange', false);
+});
+
+test('has suppressFragmentChange false when init with hash fragment', () => {
+  br.getResumeValue = jest.fn(() => null);
+  br.urlReadFragment = jest.fn(() => '');
+  br.urlReadHashFragment = jest.fn(() => 'mode/1up')
   br.switchMode = jest.fn();
 
   br.init();

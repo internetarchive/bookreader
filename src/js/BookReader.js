@@ -2842,17 +2842,6 @@ BookReader.prototype.queryStringFromParams = function(
   if (params.search && urlMode === 'history') {
     newParams.set('q', params.search)
   }
-
-  // append ?wrapper=false if query param has ?options=view-only
-  if (newParams.has('options')) {
-    var decoded = decodeURI(newParams.get('options')).split('|');
-    if (decoded.includes('view-only')) {
-      newParams.set('wrapper', 'false')
-    }
-    // delete extra incoming param
-    newParams.delete('options');
-  }
-    
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
   // Note: This method returns the query string without the question mark.
   const result = newParams.toString();
