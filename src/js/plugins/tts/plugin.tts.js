@@ -73,9 +73,7 @@ BookReader.prototype.init = (function(super_) {
         if (this.ttsEngine) {
           this.ttsEngine.init();
           if (/[?&]_autoReadAloud=show/.test(location.toString())) {
-            this.refs.$BRReadAloudToolbar.show();
-            this.$('.BRicon.read').addClass('unread active');
-            this.$('.read-aloud [name=play]').addClass('playing');
+            this.ttsStart();
           }
         }
       });
