@@ -130,6 +130,7 @@ test('has suppressFragmentChange false when init with hash fragment', () => {
   br.urlReadFragment = jest.fn(() => '');
   br.urlReadHashFragment = jest.fn(() => 'mode/1up')
   br.switchMode = jest.fn();
+  br.options.urlMode = 'history',
 
   br.init();
   expect(br.switchMode.mock.calls[0][1])
