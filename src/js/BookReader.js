@@ -1323,7 +1323,6 @@ BookReader.prototype.switchMode = function(
     this.prepareTwoPageView();
     this.twoPageCalculateReductionFactors();
     this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
-    
     this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
   }
 
