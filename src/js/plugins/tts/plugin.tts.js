@@ -120,7 +120,7 @@ BookReader.prototype.initNavbar = (function (super_) {
     if (this.options.enableTtsPlugin && this.ttsEngine) {
       this.refs.$BRReadAloudToolbar = $(`
         <ul class="read-aloud">
-          <li>
+          <li class="test">
             <select class="playback-speed" name="playback-speed" title="${tooltips.playbackSpeed}">
               <option value="0.25">0.25x</option>
               <option value="0.5">0.5x</option>
