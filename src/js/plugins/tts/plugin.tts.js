@@ -73,7 +73,7 @@ BookReader.prototype.init = (function(super_) {
         if (this.ttsEngine) {
           this.ttsEngine.init();
           if (/[?&]_autoReadAloud=show/.test(location.toString())) {
-            this.ttsStart();
+            this.ttsStart(false); // false flag is to initiate read aloud controls
           }
         }
       });
@@ -179,14 +179,15 @@ BookReader.prototype.ttsToggle = function () {
 
 // ttsStart(
 //______________________________________________________________________________
-BookReader.prototype.ttsStart = function () {
+BookReader.prototype.ttsStart = function (startTTSEngine = true) {
   if (this.constModeThumb == this.mode)
     this.switchMode(this.constMode1up);
 
   this.refs.$BRReadAloudToolbar.addClass('visible');
   this.$('.BRicon.read').addClass('unread active');
   this.ttsSendAnalyticsEvent('Start');
-  this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
+  if (startTTSEngine)
+    this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
 };
 
 BookReader.prototype.ttsJumpForward = function () {
