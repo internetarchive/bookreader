@@ -60,6 +60,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
     this.jumpToIndex($(event.delegateTarget).data('pageIndex'));
     $('.current-chapter').removeClass('current-chapter');
     $(event.delegateTarget).addClass('current-chapter');
+    this.$('.BRmobileHamburger').trigger('click');
   }
   const title = `${chapterTitle} | `;
   const pageStr = `${uiStringPage} ${pageNumber}`;
