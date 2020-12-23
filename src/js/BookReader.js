@@ -1320,7 +1320,7 @@ BookReader.prototype.switchMode = function(
   } else {
     // $$$ why don't we save autofit?
     // this.twoPage.autofit = null; // Take zoom level from other mode
-    this.prepareTwoPageView();
+    this.prepareTwoPageView();//two page view
     this.twoPageCalculateReductionFactors();
     this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
     this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
