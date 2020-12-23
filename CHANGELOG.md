@@ -1,3 +1,6 @@
+# 4.25.0
+Fix: Helper changes for stream redirection to read hash fragment params from URL @nsharma123
+
 # 4.24.0
 Fix: Bookreader layout when initialized in "ReadAloud" mode @nsharma123
 
