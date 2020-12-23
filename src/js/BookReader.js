@@ -308,7 +308,14 @@ BookReader.prototype.initParams = function() {
   // Check for URL plugin
   if (this.options.enableUrlPlugin) {
     // Params explicitly set in URL take precedence over all other methods
-    const urlParams = this.paramsFromFragment(this.urlReadFragment());
+    var urlParams = this.paramsFromFragment(this.urlReadFragment());
+
+    // Get params if hash fragment available with 'history' urlMode
+    const hasHashURL = !Object.keys(urlParams).length && this.urlReadHashFragment();
+    if (hasHashURL && (this.options.urlMode === 'history')) {
+      urlParams = this.paramsFromFragment(this.urlReadHashFragment());
+    }
+
     // If there were any parameters
     if (Object.keys(urlParams).length) {
       if ('undefined' != typeof(urlParams.page)) {
