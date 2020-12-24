@@ -44,6 +44,9 @@ describe('zoom', () => {
     br._modes.mode2Up.zoom(1);
     expect(stopAnim.callCount).toBe(1);
   });
+  test('has registered PageChanged events', () => {
+    expect(BookReader.eventNames.pageChanged).toBeTruthy();
+  });
 });
 
 describe('draw 2up leaves', () => {

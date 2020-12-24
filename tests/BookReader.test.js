@@ -32,6 +32,10 @@ test('has registered view type selected events', () => {
   expect(BookReader.eventNames['3PageViewSelected']).toBeTruthy();
 });
 
+test('has registered PageChanged events', () => {
+  expect(BookReader.eventNames.pageChanged).toBeTruthy();
+});
+
 test('has registered fullscreen toggle event', () => {
   expect(BookReader.eventNames.fullscreenToggled).toBeTruthy();
 });
