@@ -2,10 +2,33 @@
 const path = require('path');
 const webpack = require('webpack');
 
+/** @type {webpack.Configuration} */
+const shared = {
+  mode: 'production',
+
+  watchOptions: {
+    ignored: ['BookReader/**', 'node_modules/**', 'tests/**']
+  },
+
+  target: ['web', 'es5'],
+
+  module: {
+    rules: [
+      { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" }
+    ]
+  },
+
+  output: {
+    filename: '[name]',
+    path: path.resolve(__dirname, 'BookReader'),
+  },
+};
+
 /** @type {webpack.Configuration[]} */
 module.exports = [
   {
-    mode: 'production',
+    ...shared,
+
     // Output file -> srcfile
     entry: {
       // BookReader
@@ -41,18 +64,10 @@ module.exports = [
       })
     ],
 
-    module: {
-      rules: [
-        { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" }
-      ]
-    },
-
     output: {
       filename: '[name]',
       path: path.resolve(__dirname, 'BookReader'),
     },
-
-    target: ['web', 'es5'],
 
     // Accurate source maps at the expense of build time.
     // The source map is intentionally exposed
@@ -63,29 +78,18 @@ module.exports = [
   // jQuery gets its own build, so that it can be used as an "external" in
   // everything else.
   {
-    mode: 'production',
+    ...shared,
+
     entry: {
       'jquery-1.10.1.js': { import: './src/js/jquery-wrapper.js' },
     },
-
-    module: {
-      rules: [
-        { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" }
-      ]
-    },
-
-    output: {
-      filename: '[name]',
-      path: path.resolve(__dirname, 'BookReader'),
-    },
-
-    target: ['web', 'es5'],
   },
 
   // jQuery plugins/extensions
   // All of these will be replaced with just imports in v5
   {
-    mode: 'production',
+    ...shared,
+
     // Output file -> srcfile
     entry: {
       'jquery-ui-1.12.0.min.js': { import: './src/js/jquery-ui-wrapper.js' },
@@ -107,18 +111,5 @@ module.exports = [
         jQuery: 'jquery',
       })
     ],
-
-    module: {
-      rules: [
-        { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" }
-      ]
-    },
-
-    output: {
-      filename: '[name]',
-      path: path.resolve(__dirname, 'BookReader'),
-    },
-
-    target: ['web', 'es5'],
   },
 ];

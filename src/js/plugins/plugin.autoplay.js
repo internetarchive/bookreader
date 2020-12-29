@@ -82,7 +82,7 @@ BookReader.prototype.autoToggle = function(overrides) {
 
   // Change to autofit if book is too large
   if (this.reduce < this.twoPageGetAutofitReduce()) {
-    this.zoom2up('auto');
+    this.zoom('auto');
   }
 
   if (null == this.autoTimer) {
