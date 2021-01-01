@@ -249,7 +249,11 @@ export class BookreaderWithTextSelection extends BookReader {
     const $container = super._createPageContainer(index, styles);
     // Disable if thumb mode; it's too janky
     // index can be -1 for "pre-cover" region
-    if (this.mode != this.constModeThumb && index > 0) {
+
+    // Removed checking of index for now.
+    // Still need to find a way to check if the first page
+    // is a book cover/pre-cover region
+    if (this.mode != this.constModeThumb) {
       this.textSelectionPlugin?.createTextLayer(index, $container);
     }
     return $container;
