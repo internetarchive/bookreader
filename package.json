@@ -33,7 +33,7 @@
     "concurrently": "5.3.0",
     "core-js": "3.8.0",
     "cpx2": "3.0.0",
-    "eslint": "7.14.0",
+    "eslint": "7.16.0",
     "eslint-plugin-testcafe": "^0.2.1",
     "http-server": "0.12.3",
     "iso-language-codes": "1.0.7",
