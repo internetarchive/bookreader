@@ -507,6 +507,7 @@ body.BRfullscreenActive .mm-menu {
 }
 .BRpagecontainer.BRemptypage {
   background: transparent;
+  display: none;
 }
 .BRpagecontainer.BRemptypage img {
   background-image: none;
