@@ -486,7 +486,7 @@ class SearchView {
 
     // open search sidebar when having query param ?q=search-term
     // suppress to auto toggle on mobile devices
-    if ($(window).width() < 640) { this.toggleSidebar(); }
+    if ($(window).width() >= 640) { this.toggleSidebar(); }
 
     if (options.goToFirstResult) {
       $(document).one('BookReader:pageChanged', () => {
