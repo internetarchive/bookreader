@@ -25,6 +25,8 @@ import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
+/** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
+/** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
 import { EVENTS } from './BookReader/events.js';
 import { DebugConsole } from './BookReader/DebugConsole.js';
 import {
@@ -34,6 +36,7 @@ import {
   createPopup,
 } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
+import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
@@ -103,7 +106,7 @@ BookReader.prototype.setup = function(options) {
   this.constModeThumb = BookReader.constModeThumb;
 
   // Private properties below. Configuration should be done with options.
-  /** @type {number} @private */
+  /** @type {number} TODO: Make private */
   this.reduce = 4;
   this.defaults = options.defaults;
   this.padding = options.padding;
@@ -203,6 +206,7 @@ BookReader.prototype.setup = function(options) {
   };
 
   this._modes = {
+    mode1Up: new Mode1Up(this, this._models.book),
     mode2Up: new Mode2Up(this, this._models.book),
   };
 
@@ -211,6 +215,7 @@ BookReader.prototype.setup = function(options) {
     '_models.book': this._models.book,
     '_components.navbar': this._components.navbar,
     '_components.toolbar': this._components.toolbar,
+    '_modes.mode1Up': this._modes.mode1Up,
     '_modes.mode2Up': this._modes.mode2Up,
   };
 };
@@ -303,7 +308,14 @@ BookReader.prototype.initParams = function() {
   // Check for URL plugin
   if (this.options.enableUrlPlugin) {
     // Params explicitly set in URL take precedence over all other methods
-    const urlParams = this.paramsFromFragment(this.urlReadFragment());
+    var urlParams = this.paramsFromFragment(this.urlReadFragment());
+
+    // Get params if hash fragment available with 'history' urlMode
+    const hasHashURL = !Object.keys(urlParams).length && this.urlReadHashFragment();
+    if (hasHashURL && (this.options.urlMode === 'history')) {
+      urlParams = this.paramsFromFragment(this.urlReadHashFragment());
+    }
+
     // If there were any parameters
     if (Object.keys(urlParams).length) {
       if ('undefined' != typeof(urlParams.page)) {
@@ -704,97 +716,6 @@ BookReader.prototype.bindGestures = function(jElement) {
 };
 
 /**
- * @param {object} [options]
- */
-BookReader.prototype.drawLeafsOnePage = function() {
-  const { book } = this._models;
-  const containerHeight = this.refs.$brContainer.height();
-  const containerWidth = this.refs.$brPageViewEl.width();
-  const scrollTop = this.refs.$brContainer.prop('scrollTop');
-  const scrollBottom = scrollTop + containerHeight;
-
-  const indicesToDisplay = [];
-  let leafTop = 0;
-  let leafBottom = 0;
-
-  for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
-    const height = Math.floor(page.height / this.reduce);
-    leafBottom += height;
-    const topInView = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
-    const bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
-    const middleInView = (leafTop <= scrollTop) && (leafBottom >= scrollBottom);
-    if (topInView || bottomInView || middleInView) {
-      indicesToDisplay.push(page.index);
-    }
-    leafTop += height + 10;
-    leafBottom += 10;
-  }
-
-  // Based of the pages displayed in the view we set the current index
-  // $$$ we should consider the page in the center of the view to be the current one
-  let firstIndexToDraw = indicesToDisplay[0];
-  this.updateFirstIndex(firstIndexToDraw);
-
-  // if zoomed out, also draw prev/next pages
-  if (this.reduce > 1) {
-    const prev = book.getPage(firstIndexToDraw).findPrev({ combineConsecutiveUnviewables: true });
-    if (prev) indicesToDisplay.unshift(firstIndexToDraw = prev.index);
-
-    const lastIndexToDraw = indicesToDisplay[indicesToDisplay.length - 1];
-    const next = book.getPage(lastIndexToDraw).findNext({ combineConsecutiveUnviewables: true });
-    if (next) indicesToDisplay.push(next.index);
-  }
-
-  const BRpageViewEl = this.refs.$brPageViewEl.get(0);
-  leafTop = 0;
-
-  for (const page of book.pagesIterator({ end: firstIndexToDraw, combineConsecutiveUnviewables: true })) {
-    leafTop += Math.floor(page.height / this.reduce) + 10;
-  }
-
-  for (const index of indicesToDisplay) {
-    const page = book.getPage(index);
-    const height = Math.floor(page.height / this.reduce);
-
-    if (utils.notInArray(index, this.displayedIndices)) {
-      const width = Math.floor(page.width / this.reduce);
-      const leftMargin = Math.floor((containerWidth - width) / 2);
-
-      const pageContainer = this._createPageContainer(index, {
-        width:`${width}px`,
-        height: `${height}px`,
-        top: `${leafTop}px`,
-        left: `${leftMargin}px`,
-      });
-
-      const img = $('<img />', {
-        src: this._getPageURI(index, this.reduce, 0),
-        srcset: this._getPageURISrcset(index, this.reduce, 0)
-      });
-      pageContainer.append(img);
-
-      BRpageViewEl.appendChild(pageContainer[0]);
-    }
-
-    leafTop += height + 10;
-  }
-
-  for (const index of this.displayedIndices) {
-    if (utils.notInArray(index, indicesToDisplay)) {
-      this.$(`.pagediv${index}`).remove();
-    }
-  }
-
-  this.displayedIndices = indicesToDisplay.slice();
-  if (this.enableSearch) this.updateSearchHilites();
-
-  this.updateToolbarZoom(this.reduce);
-
-  // Update the slider
-  this.updateNavIndexThrottled();
-};
-
-/**
  * Draws the thumbnail view
  * @param {number} optional If seekIndex is defined, the view will be drawn
  *    with that page visible (without any animated scrolling).
@@ -1074,34 +995,6 @@ BookReader.prototype.zoom = function(direction) {
   return;
 };
 
-BookReader.prototype.zoom1up = function(direction) {
-  if (this.constMode2up == this.mode) {     //can only zoom in 1-page mode
-    this.switchMode(this.constMode1up);
-    return;
-  }
-
-  var reduceFactor = this.nextReduce(this.reduce, direction, this.onePage.reductionFactors);
-
-  if (this.reduce == reduceFactor.reduce) {
-    // Already at this level
-    return;
-  }
-
-  this.reduce = reduceFactor.reduce; // $$$ incorporate into function
-  this.onePage.autofit = reduceFactor.autofit;
-
-  this.pageScale = this.reduce; // preserve current reduce
-
-  this.resizePageView1up();
-  this.updateToolbarZoom(this.reduce);
-
-  // Recalculate search hilites
-  if (this.enableSearch) {
-    this.removeSearchHilites();
-    this.updateSearchHilites();
-  }
-};
-
 /**
  * Resizes the inner container to fit within the visible space to prevent
  * the top toolbar and bottom navbar from clipping the visible book
@@ -1124,113 +1017,6 @@ BookReader.prototype.resizeBRcontainer = function(animate) {
     });
   }
 }
-
-/**
- * Resize the current one page view
- * Note this calls drawLeafs
- */
-BookReader.prototype.resizePageView1up = function() {
-  var viewWidth  = this.refs.$brContainer.prop('clientWidth');
-  var oldScrollTop  = this.refs.$brContainer.prop('scrollTop');
-  var oldPageViewHeight = this.refs.$brPageViewEl.height();
-  var oldPageViewWidth = this.refs.$brPageViewEl.width();
-
-  // May have come here after preparing the view, in which case the scrollTop and view height are not set
-
-  var scrollRatio = 0;
-  if (oldScrollTop > 0) {
-    // We have scrolled - implies view has been set up
-    var oldCenterY = this.centerY1up();
-    var oldCenterX = this.centerX1up();
-    scrollRatio = oldCenterY / oldPageViewHeight;
-  } else {
-    // Have not scrolled, e.g. because in new container
-
-    // We set the scroll ratio so that the current index will still be considered the
-    // current index in drawLeafsOnePage after we create the new view container
-
-    // Make sure this will count as current page after resize
-    var fudgeFactor = (this._models.book.getPageHeight(this.currentIndex()) / this.reduce) * 0.6;
-    var oldLeafTop = this.onePageGetPageTop(this.currentIndex()) + fudgeFactor;
-    var oldViewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
-    scrollRatio = oldLeafTop / oldViewDimensions.height;
-  }
-
-  // Recalculate 1up reduction factors
-  this.onePageCalculateReductionFactors();
-  // Update current reduce (if in autofit)
-  if (this.onePage.autofit) {
-    var reductionFactor = this.nextReduce(this.reduce, this.onePage.autofit, this.onePage.reductionFactors);
-    this.reduce = reductionFactor.reduce;
-  }
-
-  var viewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
-
-  this.refs.$brPageViewEl.height(viewDimensions.height);
-  this.refs.$brPageViewEl.width(viewDimensions.width);
-
-
-  var newCenterY = scrollRatio * viewDimensions.height;
-  var newTop = Math.max(0, Math.floor( newCenterY - this.refs.$brContainer.height() / 2 ));
-  this.refs.$brContainer.prop('scrollTop', newTop);
-
-  // We use clientWidth here to avoid miscalculating due to scroll bar
-  var newCenterX = oldCenterX * (viewWidth / oldPageViewWidth);
-  var newLeft = newCenterX - this.refs.$brContainer.prop('clientWidth') / 2;
-  newLeft = Math.max(newLeft, 0);
-  this.refs.$brContainer.prop('scrollLeft', newLeft);
-
-  this.refs.$brPageViewEl.empty();
-  this.displayedIndices = [];
-  this.drawLeafs();
-
-  if (this.enableSearch) {
-    this.removeSearchHilites();
-    this.updateSearchHilites();
-  }
-};
-
-/**
- * Calculate the dimensions for a one page view with images at the given reduce and padding
- * @param {number} reduce
- * @param {number} padding
- */
-BookReader.prototype.onePageCalculateViewDimensions = function(reduce, padding) {
-  const { floor } = Math;
-  const { book } = this._models;
-  let viewWidth = 0;
-  let viewHeight = 0;
-  for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
-    viewHeight += floor(page.height / reduce) + padding;
-    const width = floor(page.width / reduce);
-    if (width > viewWidth) viewWidth = width;
-  }
-  return { width: viewWidth, height: viewHeight };
-};
-
-/**
- * Returns the current offset of the viewport center in scaled document coordinates.
- * @return {number}
- */
-BookReader.prototype.centerX1up = function() {
-  var centerX;
-  if (this.refs.$brPageViewEl.width() < this.refs.$brContainer.prop('clientWidth')) { // fully shown
-    centerX = this.refs.$brPageViewEl.width();
-  } else {
-    centerX = this.refs.$brContainer.prop('scrollLeft') + this.refs.$brContainer.prop('clientWidth') / 2;
-  }
-  centerX = Math.floor(centerX);
-  return centerX;
-};
-
-/**
- * Returns the current offset of the viewport center in scaled document coordinates.
- * @return {number}
- */
-BookReader.prototype.centerY1up = function() {
-  var centerY = this.refs.$brContainer.prop('scrollTop') + this.refs.$brContainer.height() / 2;
-  return Math.floor(centerY);
-};
 
 BookReader.prototype.centerPageView = function() {
   var scrollWidth  = this.refs.$brContainer.prop('scrollWidth');
@@ -1278,17 +1064,16 @@ BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
 
 /**
  * Quantizes the given reduction factor to closest power of two from set from 12.5% to 200%
- * @param {number}
- * @param {array}
+ * @param {number} reduce
+ * @param {ReductionFactor[]} reductionFactors
  * @return {number}
  */
 BookReader.prototype.quantizeReduce = function(reduce, reductionFactors) {
-  var quantized = reductionFactors[0].reduce;
-  var distance = Math.abs(reduce - quantized);
-  var newDistance;
+  let quantized = reductionFactors[0].reduce;
+  let distance = Math.abs(reduce - quantized);
 
-  for (var i = 1; i < reductionFactors.length; i++) {
-    newDistance = Math.abs(reduce - reductionFactors[i].reduce);
+  for (let i = 1; i < reductionFactors.length; i++) {
+    const newDistance = Math.abs(reduce - reductionFactors[i].reduce);
     if (newDistance < distance) {
       distance = newDistance;
       quantized = reductionFactors[i].reduce;
@@ -1300,55 +1085,51 @@ BookReader.prototype.quantizeReduce = function(reduce, reductionFactors) {
 /**
  * @param {number} currentReduce
  * @param {'in' | 'out' | 'auto' | 'height' | 'width'} direction
- * @param {array} reductionFactors should be array of sorted reduction factors
- *   e.g. [ {reduce: 0.25, autofit: null}, {reduce: 0.3, autofit: 'width'}, {reduce: 1, autofit: null} ]
+ * @param {ReductionFactor[]} reductionFactors Must be sorted
+ * @returns {ReductionFactor}
  */
 BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFactors) {
   // XXX add 'closest', to replace quantize function
-  var i;
-  var newReduceIndex;
 
   if (direction === 'in') {
-    newReduceIndex = 0;
-    for (i = 1; i < reductionFactors.length; i++) {
+    let newReduceIndex = 0;
+    for (let i = 1; i < reductionFactors.length; i++) {
       if (reductionFactors[i].reduce < currentReduce) {
         newReduceIndex = i;
       }
     }
     return reductionFactors[newReduceIndex];
-  } else if (direction === 'out') { // zoom out
-    var lastIndex = reductionFactors.length - 1;
-    newReduceIndex = lastIndex;
+  } else if (direction === 'out') {
+    const lastIndex = reductionFactors.length - 1;
+    let newReduceIndex = lastIndex;
 
-    for (i = lastIndex; i >= 0; i--) {
+    for (let i = lastIndex; i >= 0; i--) {
       if (reductionFactors[i].reduce > currentReduce) {
         newReduceIndex = i;
       }
     }
     return reductionFactors[newReduceIndex];
   } else if (direction === 'auto') {
-    // Auto mode chooses the least reduction
-    var choice = null;
-    for (i = 0; i < reductionFactors.length; i++) {
-      if (reductionFactors[i].autofit === 'height' || reductionFactors[i].autofit === 'width') {
-        if (choice === null || choice.reduce < reductionFactors[i].reduce) {
-          choice = reductionFactors[i];
-        }
+    // If an 'auto' is specified, use that
+    const autoMatch = reductionFactors.find(rf => rf.autofit == 'auto');
+    if (autoMatch) return autoMatch;
+
+    // Otherwise, choose the least reduction from height/width
+    const candidates = reductionFactors.filter(({autofit}) => autofit == 'height' || autofit == 'width');
+    let choice = null;
+    for (let i = 0; i < candidates.length; i++) {
+      if (choice === null || choice.reduce < candidates[i].reduce) {
+        choice = candidates[i];
       }
     }
-    if (choice) {
-      return choice;
-    }
+    if (choice) return choice;
   } else if (direction === 'height' || direction === 'width') {
     // Asked for specific autofit mode
-    for (i = 0; i < reductionFactors.length; i++) {
-      if (reductionFactors[i].autofit === direction) {
-        return reductionFactors[i];
-      }
-    }
+    const match = reductionFactors.find(rf => rf.autofit == direction);
+    if (match) return match;
   }
 
-  alert('Could not find reduction factor for direction ' + direction);
+  console.error('Could not find reduction factor for direction ' + direction);
   return reductionFactors[0];
 
 };
@@ -1659,34 +1440,6 @@ BookReader.prototype.exitFullScreen = function() {
   this.trigger('fullscreenToggled');
 };
 
-/**
- * This is called when we switch to one page view
- */
-BookReader.prototype.prepareOnePageView = function() {
-  var startLeaf = this.currentIndex();
-
-  this.refs.$brContainer.empty();
-  this.refs.$brContainer.css({
-    overflowY: 'scroll',
-    overflowX: 'auto'
-  });
-
-  this.refs.$brPageViewEl = $("<div class='BRpageview'></div>");
-  this.refs.$brContainer.append(this.refs.$brPageViewEl);
-
-  // Attaches to first child - child must be present
-  this.refs.$brContainer.dragscrollable();
-  this.bindGestures(this.refs.$brContainer);
-
-  // $$$ keep select enabled for now since disabling it breaks keyboard
-  //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
-  // utils.disableSelect(this.$('#BRpageview'));
-
-  this.resizePageView1up();
-  this.jumpToIndex(startLeaf);
-  this.updateBrClasses();
-};
-
 BookReader.prototype.prepareThumbnailView = function() {
   this.refs.$brContainer.empty();
   this.refs.$brContainer.css({
@@ -1712,44 +1465,6 @@ BookReader.prototype.prepareThumbnailView = function() {
   // Draw leafs with current index directly in view (no animating to the index)
   this.drawLeafsThumbnail( this.currentIndex() );
   this.updateBrClasses();
-};
-
-BookReader.prototype.onePageGetAutofitWidth = function() {
-  var widthPadding = 20;
-  return (this._models.book.getMedianPageSize().width + 0.0) / (this.refs.$brContainer.prop('clientWidth') - widthPadding * 2);
-};
-
-BookReader.prototype.onePageGetAutofitHeight = function() {
-  var availableHeight = this.refs.$brContainer.innerHeight();
-  return (this._models.book.getMedianPageSize().height + 0.0) / (availableHeight - this.padding * 2); // make sure a little of adjacent pages show
-};
-
-/**
- * Returns where the top of the page with given index should be in one page view
- * @param {PageIndex} index
- * @return {number}
- */
-BookReader.prototype.onePageGetPageTop = function(index) {
-  const { floor } = Math;
-  const { book } = this._models;
-  let leafTop = 0;
-  for (const page of book.pagesIterator({ end: index, combineConsecutiveUnviewables: true })) {
-    leafTop += floor(page.height / this.reduce) + this.padding;
-  }
-  return leafTop;
-};
-
-/**
- * Update the reduction factors for 1up mode given the available width and height.
- * Recalculates the autofit reduction factors.
- */
-BookReader.prototype.onePageCalculateReductionFactors = function() {
-  this.onePage.reductionFactors = this.reductionFactors.concat(
-    [
-      { reduce: this.onePageGetAutofitWidth(), autofit: 'width' },
-      { reduce: this.onePageGetAutofitHeight(), autofit: 'height'}
-    ]);
-  this.onePage.reductionFactors.sort(this._reduceSort);
 };
 
 /**
@@ -1968,8 +1683,46 @@ BookReader.prototype.pruneUnusedImgs = function() {
 };
 
 /************************/
+/** Mode1Up extensions **/
+/************************/
+/** @deprecated not used outside BookReader */
+BookReader.prototype.prepareOnePageView = Mode1Up.prototype.prepare;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'prepare', 'prepareOnePageView');
+/** @deprecated not used outside BookReader */
+BookReader.prototype.drawLeafsOnePage = Mode1Up.prototype.drawLeafs;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'drawLeafs', 'drawLeafsOnePage');
+/** @deprecated not used outside BookReader */
+BookReader.prototype.zoom1up = Mode1Up.prototype.zoom;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'zoom', 'zoom1up');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.onePageGetAutofitWidth = Mode1Up.prototype.getAutofitWidth;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitWidth', 'onePageGetAutofitWidth');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.onePageGetAutofitHeight = Mode1Up.prototype.getAutofitHeight;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitHeight', 'onePageGetAutofitHeight');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.onePageGetPageTop = Mode1Up.prototype.getPageTop;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getPageTop', 'onePageGetPageTop');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.onePageCalculateReductionFactors = Mode1Up.prototype.calculateReductionFactors;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateReductionFactors', 'onePageCalculateReductionFactors');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.resizePageView1up = Mode1Up.prototype.resizePageView;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'resizePageView', 'resizePageView1up');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.onePageCalculateViewDimensions = Mode1Up.prototype.calculateViewDimensions;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateViewDimensions', 'onePageCalculateViewDimensions');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.centerX1up = Mode1Up.prototype.centerX;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerX', 'centerX1up');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.centerY1up = Mode1Up.prototype.centerY;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerY', 'centerY1up');
+
+/************************/
 /** Mode2Up extensions **/
 /************************/
+/** @deprecated not used outside Mode2Up */
 BookReader.prototype.zoom2up = Mode2Up.prototype.zoom;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'zoom', 'zoom2up');
 BookReader.prototype.twoPageGetAutofitReduce = Mode2Up.prototype.getAutofitReduce;

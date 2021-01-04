@@ -188,3 +188,11 @@ BookReader.prototype.urlReadFragment = function() {
     return window.location.hash.substr(1);
   }
 };
+
+/**
+ * Will read the hash return the bookreader fragment
+ * @return {string}
+ */
+BookReader.prototype.urlReadHashFragment = function() {
+  return window.location.hash.substr(1);
+};
