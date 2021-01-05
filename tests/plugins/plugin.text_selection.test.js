@@ -67,6 +67,11 @@ describe("Generic tests", () => {
     expect(spy.callCount).toBe(1);
   });
 
+  test("_createPageContainer handles index 0", () => {
+    const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
+    br._createPageContainer(0, {});
+    expect(spy.callCount).toBe(1);
+  });
 
   test("_createPageContainer handles index -1", () => {
     const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
