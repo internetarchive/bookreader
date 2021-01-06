@@ -251,7 +251,7 @@ export class BookreaderWithTextSelection extends BookReader {
     // index can be -1 for "pre-cover" region
     // Added checking of lastPageIndex to avoid loop around index value
     const lastPageIndex = this.getNumLeafs() - 1;
-    if (this.mode != this.constModeThumb && (index >= 0 || index < lastPageIndex)) {
+    if (this.mode != this.constModeThumb && (index >= 0 || index <= lastPageIndex)) {
       this.textSelectionPlugin?.createTextLayer(index, $container);
     }
     return $container;
