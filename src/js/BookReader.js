@@ -104,11 +104,11 @@ BookReader.prototype.setup = function(options) {
   this.animationFinishedCallback = null;
 
   // @deprecated: Instance constants. Use Class constants instead
-  /** 1 page view  */
+  /** 1 page view */
   this.constMode1up = BookReader.constMode1up;
-  /** 2 pages view  */
+  /** 2 pages view */
   this.constMode2up = BookReader.constMode2up;
-  /** thumbnails view  */
+  /** thumbnails view */
   this.constModeThumb = BookReader.constModeThumb;
 
   // Private properties below. Configuration should be done with options.
