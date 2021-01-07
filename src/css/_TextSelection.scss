@@ -41,3 +41,8 @@
 .BRpageFlipping .textSelectionSVG {
     display: none;
 }
+
+// Hide phantom page when last page is selected
+.BRpagecontainer.BRemptypage .textSelectionSVG{
+    display: none;
+}
