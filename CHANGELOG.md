@@ -1,3 +1,5 @@
+# 4.26.1
+Patch: Text selection layer does not get made in thumbnail view @dualcnhq
 # 4.26.0
 Dev: move to Github actions @cdrini
 Dev: version bumps @dependabot
