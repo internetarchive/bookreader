@@ -78,7 +78,7 @@ describe("Generic tests", () => {
   test("_createPageContainer handles index -1", () => {
     const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
     br._createPageContainer(-1, {});
-    expect(spy.callCount).toBe(1);
+    expect(spy.callCount).toBe(0);
   });
 
   // test loading first object from sample data
