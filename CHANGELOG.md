@@ -1,3 +1,8 @@
+# 4.26.0
+Dev: move to Github actions @cdrini
+Dev: version bumps @dependabot
+Fix: Text selection layer gets created for first page, does not get created for last page @dualcnhq
+
 # 4.25.0
 Fix: Helper changes for stream redirection to read hash fragment params from URL @nsharma123
 
