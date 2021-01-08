@@ -76,7 +76,7 @@ export class Navbar {
       this.$nav.find(`.${viewModeOptions.className}`).remove();
     }
 
-    this.br.bind(EVENTS.PostInit, () => {
+    this.br.on(EVENTS.PostInit, () => {
       const $button = this.$nav.find(`.${viewModeOptions.className}`)
         .off('.bindNavigationHandlers')
         .on('click', (e) => {

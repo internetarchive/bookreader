@@ -28,7 +28,7 @@ BookReader.prototype.init = (function(super_) {
     super_.call(this, options);
 
     if (!this.options.enableAutoPlayPlugin) return;
-    this.bind(BookReader.eventNames.stop, () => this.autoStop());
+    this.on(BookReader.eventNames.stop, () => this.autoStop());
   };
 })(BookReader.prototype.init);
 

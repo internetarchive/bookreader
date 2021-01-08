@@ -47,7 +47,7 @@ BookReader.prototype.init = (function(super_) {
   return function() {
 
     if (this.options.enableUrlPlugin) {
-      this.bind(BookReader.eventNames.PostInit, () => {
+      this.on(BookReader.eventNames.PostInit, () => {
         const { updateWindowTitle, urlMode } = this.options;
         if (updateWindowTitle) {
           document.title = this.shortTitle(50);
@@ -57,7 +57,7 @@ BookReader.prototype.init = (function(super_) {
         }
       });
 
-      this.bind(BookReader.eventNames.fragmentChange,
+      this.on(BookReader.eventNames.fragmentChange,
         this.urlUpdateFragment.bind(this)
       );
     }

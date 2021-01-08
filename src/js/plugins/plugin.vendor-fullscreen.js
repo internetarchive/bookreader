@@ -234,7 +234,7 @@ export function bindFullscreenChangeListener(
     'ms'
   ];
   const all_events = $.trim(event + vendor_prefixes.join(event) + event);
-  $(document).bind(all_events, data, fullscreenchangeListener);
+  $(document).on(all_events, data, fullscreenchangeListener);
 }
 
 /**

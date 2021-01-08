@@ -29,7 +29,7 @@ export class Mode2Up {
    * @param {function(HTMLElement, { data: T }): void} handler
    */
   setClickHandler(element, data, handler) {
-    $(element).unbind('mouseup').bind('mouseup', data, function(e) {
+    $(element).off('mouseup').on('mouseup', data, function(e) {
       handler(this, e);
     });
   }

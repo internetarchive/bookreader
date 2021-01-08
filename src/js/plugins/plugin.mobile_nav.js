@@ -82,7 +82,7 @@ BookReader.prototype.initToolbar = (function (super_) {
       });
 
       const $BRpageviewField = $mmenuEl.find('.BRpageviewValue');
-      $mmenuEl.data('mmenu').bind('opened', () => {
+      $mmenuEl.data('mmenu').on('opened', () => {
         // Update "Link to this page view" link
         if ($BRpageviewField.length) {
           $BRpageviewField.val(window.location.href);

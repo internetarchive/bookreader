@@ -480,7 +480,7 @@ BookReader.prototype.init = function() {
   this.setupKeyListeners();
 
   this.lastScroll = (new Date().getTime());
-  this.refs.$brContainer.bind('scroll', this, function(e) {
+  this.refs.$brContainer.on('scroll', this, function(e) {
     // Note, this scroll event fires for both user, and js generated calls
     // It is functioning in some cases as the primary triggerer for rendering
     e.data.lastScroll = (new Date().getTime());
@@ -489,7 +489,7 @@ BookReader.prototype.init = function() {
     }
   });
 
-  $(window).bind('resize', this, function(e) {
+  $(window).on('resize', this, function(e) {
     e.data.resize();
   });
   $(window).on("orientationchange", this, function(e) {
@@ -532,13 +532,18 @@ BookReader.prototype.trigger = function(name, props = this) {
   }));
 };
 
-BookReader.prototype.bind = function(name, callback) {
-  $(document).bind('BookReader:' + name, callback);
+BookReader.prototype.on = function(name, callback) {
+  $(document).on('BookReader:' + name, callback);
 };
 
-BookReader.prototype.unbind = function(name, callback) {
-  $(document).unbind('BookReader:' + name, callback);
+BookReader.prototype.off = function(name, callback) {
+  $(document).off('BookReader:' + name, callback);
 };
+
+/** @deprecated Use .on */
+BookReader.prototype.bind = BookReader.prototype.on;
+/** @deprecated Use .off */
+BookReader.prototype.unbind = BookReader.prototype.off;
 
 /**
  * Resizes based on the container width and height
@@ -706,12 +711,12 @@ BookReader.prototype.bindGestures = function(jElement) {
   var self = this;
   var numTouches = 1;
 
-  jElement.unbind('touchmove').bind('touchmove', function(e) {
+  jElement.off('touchmove').on('touchmove', function(e) {
     if (e.originalEvent.cancelable) numTouches = e.originalEvent.touches.length;
     e.stopPropagation();
   });
 
-  jElement.unbind('gesturechange').bind('gesturechange', function(e) {
+  jElement.off('gesturechange').on('gesturechange', function(e) {
     e.preventDefault();
     // These are two very important fixes to adjust for the scroll position
     // issues described below
@@ -1433,7 +1438,7 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
 BookReader.prototype.exitFullScreen = function() {
   this.refs.$brContainer.css('opacity', 0);
 
-  $(document).unbind('keyup', this._fullscreenCloseHandler);
+  $(document).off('keyup', this._fullscreenCloseHandler);
 
   var windowWidth = $(window).width();
   if (windowWidth <= this.onePageMinBreakpoint) {
@@ -2000,7 +2005,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
     },
   };
 
-  jIcons.filter('.fit').bind('fit', function() {
+  jIcons.filter('.fit').on('fit', function() {
     // XXXmang implement autofit zoom
   });
 
@@ -2148,13 +2153,13 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     return !self.protected;
   }
 
-  $(event.target).bind('mouseout.swipe',
+  $(event.target).on('mouseout.swipe',
     { 'br': self},
     self.swipeMouseupHandler
-  ).bind('mouseup.swipe',
+  ).on('mouseup.swipe',
     { 'br': self},
     self.swipeMouseupHandler
-  ).bind('mousemove.swipe',
+  ).on('mousemove.swipe',
     { 'br': self },
     self.swipeMousemoveHandler
   );
@@ -2224,7 +2229,7 @@ BookReader.prototype.swipeMouseupHandler = function(event) {
   _swipe.mightBeSwiping = false;
   _swipe.mightBeDragging = false;
 
-  $(event.target).unbind('mouseout.swipe').unbind('mouseup.swipe').unbind('mousemove.swipe');
+  $(event.target).off('mouseout.swipe').off('mouseup.swipe').off('mousemove.swipe');
 
   if (_swipe.didSwipe || _swipe.didDrag) {
     // Swallow event if completed swipe gesture
@@ -2240,17 +2245,17 @@ BookReader.prototype.bindMozTouchHandlers = function() {
   var self = this;
 
   // Currently only want touch handlers in 2up
-  this.refs.$br.bind('MozTouchDown', function(event) {
+  this.refs.$br.on('MozTouchDown', function(event) {
     if (this.mode == self.constMode2up) {
       event.preventDefault();
     }
   })
-    .bind('MozTouchMove', function(event) {
+    .on('MozTouchMove', function(event) {
       if (this.mode == self.constMode2up) {
         event.preventDefault();
       }
     })
-    .bind('MozTouchUp', function(event) {
+    .on('MozTouchUp', function(event) {
       if (this.mode == self.constMode2up) {
         event.preventDefault();
       }

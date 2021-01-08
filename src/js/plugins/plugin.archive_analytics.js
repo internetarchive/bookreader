@@ -13,7 +13,7 @@ BookReader.prototype.init = (function(super_) {
     super_.call(this);
 
     if (this.options.enableArchiveAnalytics) {
-      this.bind(BookReader.eventNames.fragmentChange, () => this.archiveAnalyticsSendFragmentChange());
+      this.on(BookReader.eventNames.fragmentChange, () => this.archiveAnalyticsSendFragmentChange());
     }
   };
 })(BookReader.prototype.init);
