@@ -249,7 +249,9 @@ export class BookreaderWithTextSelection extends BookReader {
     const $container = super._createPageContainer(index, styles);
     // Disable if thumb mode; it's too janky
     // index can be -1 for "pre-cover" region
-    if (this.mode != this.constModeThumb && index > 0) {
+    // Added checking of lastPageIndex to avoid loop around index value
+    const lastPageIndex = this.getNumLeafs() - 1;
+    if (this.mode !== this.constModeThumb && (index >= 0 && index <= lastPageIndex)) {
       this.textSelectionPlugin?.createTextLayer(index, $container);
     }
     return $container;

@@ -67,11 +67,42 @@ describe("Generic tests", () => {
     expect(spy.callCount).toBe(1);
   });
 
+  // test loading first object from sample data
+  test("_createPageContainer handles index 0", () => {
+    const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
+    br._createPageContainer(0, {});
+    expect(spy.callCount).toBe(1);
+  });
 
+  // test loading last object from sample data
   test("_createPageContainer handles index -1", () => {
     const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
     br._createPageContainer(-1, {});
     expect(spy.callCount).toBe(0);
+  });
+
+  // test loading first object from sample data
+  test("_createPageContainer handles index 0", () => {
+    const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
+    br._createPageContainer(0, {});
+    expect(spy.callCount).toBe(1);
+  });
+
+  test("createTextLayer will render the last page and create text layer properly", async () => {
+    const $container = br.refs.$brContainer;
+    const pageIndex = br.data.length - 1
+    await br.textSelectionPlugin.createTextLayer(pageIndex, $container);
+    expect($container.find(".textSelectionSVG").length).toBe(1);
+    expect($container.find(".BRparagElement").length).toBe(1);
+  });
+
+  test("createTextLayer will not create text layer if index is more than total number of book pages", async () => {
+    const $container = br.refs.$brContainer;
+    const pageIndex = br.data.length + 10
+    await br.textSelectionPlugin.createTextLayer(pageIndex, $container);
+    expect($container.find(".textSelectionSVG").length).toBe(0);
+    expect($container.find(".BRparagElement").length).toBe(0);
+    expect($container.find(".BRwordElement").length).toBe(0);
   });
 
   test("createTextLayer creates an svg layer with paragraph with 1 word element", async () => {
