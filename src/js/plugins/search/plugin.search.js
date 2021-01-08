@@ -64,6 +64,10 @@ BookReader.prototype.init = (function (super_) {
     super_.call(this);
 
     if (this.options.enableSearch && this.options.initialSearchTerm) {
+      if ($(window).width() >= 640) { /* open search panel */
+        this.trigger('OpenSearchMenu', { action: 'open' });
+      }
+
       this.search(
         this.options.initialSearchTerm,
         { goToFirstResult: this.goToFirstResult, suppressFragmentChange: true }

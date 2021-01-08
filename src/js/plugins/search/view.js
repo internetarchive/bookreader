@@ -483,11 +483,6 @@ class SearchView {
     this.renderPins(results.matches);
     this.updateResultsCount(results.matches.length);
     this.toggleSearchPending(false);
-
-    // open search sidebar when having query param ?q=search-term
-    // suppress to auto toggle on mobile devices
-    if ($(window).width() >= 640) { this.toggleSidebar(); }
-
     if (options.goToFirstResult) {
       $(document).one('BookReader:pageChanged', () => {
         this.br.resize();
