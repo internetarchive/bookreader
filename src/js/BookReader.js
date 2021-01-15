@@ -609,7 +609,7 @@ BookReader.prototype.setupKeyListeners = function() {
   var KEY_NUMPAD_ADD = 107;
 
   // We use document here instead of window to avoid a bug in jQuery on IE7
-  $(document).keydown(function(e) {
+  $(window).keydown(function(e) {
 
     // Keyboard navigation
     if (!self.keyboardNavigationIsDisabled(e)) {
@@ -1866,7 +1866,8 @@ BookReader.prototype.stopFlipAnimations = function() {
  * @return {boolean}
  */
 BookReader.prototype.keyboardNavigationIsDisabled = function(event) {
-  return event.target.tagName == "INPUT";
+  console.log(event)
+  return event.target.tagName == 'INPUT' || event.target.tagName == 'TEXTAREA';
 };
 
 /**
