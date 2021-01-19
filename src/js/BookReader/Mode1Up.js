@@ -105,7 +105,8 @@ export class Mode1Up {
 
         const img = $('<img />', {
           src: page.getURI(this.br.reduce, 0),
-          srcset: this.br._getPageURISrcset(index, this.br.reduce, 0)
+          srcset: this.br._getPageURISrcset(index, this.br.reduce, 0),
+          alt: ''
         });
         pageContainer.append(img);
 
