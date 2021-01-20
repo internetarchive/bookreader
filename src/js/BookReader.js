@@ -877,7 +877,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           .addClass('BRlazyload')
           // Store the URL of the image that will replace this one
           .data('srcURL',  this._getPageURI(leaf, thumbReduce))
-          .attr('alt', '');
+          .attr('alt', 'Loading book image');
         pageContainer.append(img);
       }
     }
@@ -937,7 +937,7 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
   $(img)
     .addClass('BRlazyloading')
     .one('load', function() {
-      $(this).removeClass('BRlazyloading').attr('alt', '');
+      $(this).removeClass('BRlazyloading').attr('alt', 'Loading book image');
 
       // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
       //     we call the function after a slight delay.  Also the img.complete property
@@ -959,7 +959,7 @@ BookReader.prototype.lazyLoadImage = function (dummyImage) {
       'width': $(dummyImage).width(),
       'height': $(dummyImage).height(),
       'src': $(dummyImage).data('srcURL'),
-      'alt': ''
+      'alt': 'Loading book image'
     });
 
   // replace with the new img
@@ -1671,7 +1671,7 @@ BookReader.prototype.prefetchImg = function(index) {
     const pageContainer = this._createPageContainer(index);
     $('<img />', {
       'class': 'BRpageimage',
-      'alt': '',
+      'alt': 'Book page image',
       src: pageURI,
       srcset: pageURISrcset
     }).appendTo(pageContainer);
