@@ -210,20 +210,20 @@ export const DEFAULT_OPTIONS = {
     onePage: {
       label: 'One-page view',
       visible: true,
-      className: 'onepg hide-mobile',
+      className: 'onepg',
     },
     twoPage: {
       label: 'Two-page view',
       visible: true,
-      className: 'twopg hide-mobile',
+      className: 'twopg',
     },
     thumbnail: {
       label: 'Thumbnail view',
       visible: true,
-      className: 'thumb hide-mobile',
+      className: 'thumb',
     },
     viewmode: {
-      visible: true,
+      visible: false,
       className: 'viewmode',
       excludedModes: [],
     },

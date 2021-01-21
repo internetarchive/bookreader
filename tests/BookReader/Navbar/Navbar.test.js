@@ -156,6 +156,9 @@ describe('Navbar controls overrides', () => {
   test(`when any mode set to not visible, control will not render`, () => {
     const overrides = {
       controls: {
+        thumbnail: {
+          visible: false
+        },
         viewmode: {
           visible: false
         }
@@ -163,8 +166,24 @@ describe('Navbar controls overrides', () => {
     };
     createBRWithOverrides(overrides);
 
-    expect(navbar.$root.find('.viewmode').length).toBe(0);
     expect(navbar.$root.find('.onepg').length).toBe(1);
     expect(navbar.$root.find('.twopg').length).toBe(1);
+    expect(navbar.$root.find('.thumb').length).toBe(0);
+    expect(navbar.$root.find('.viewmode').length).toBe(0);
+  });
+
+  test(`when viewmode is visibe,
+    the individual mode should have 'hide-mobile' class added`, () => {
+    const overrides = {
+      controls: {
+        viewmode: {
+          visible: true
+        }
+      }
+    };
+    createBRWithOverrides(overrides);
+    expect(navbar.$root.find(`.onepg.hide-mobile`).length).toBe(1);
+    expect(navbar.$root.find(`.twopg.hide-mobile`).length).toBe(1);
+    expect(navbar.$root.find(`.thumb.hide-mobile`).length).toBe(1);
   });
 });

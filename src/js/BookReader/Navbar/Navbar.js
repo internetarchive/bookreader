@@ -33,6 +33,12 @@ export class Navbar {
 
   /** @private */
   _viewModeControls() {
+    if (this.br.options.controls.viewmode.visible) {
+      // it will hide 1up, 2up and thumbs mode on mobile devices when viewmode is visible
+      this.br.options.controls['onePage'].className = 'onepg hide-mobile';
+      this.br.options.controls['twoPage'].className = 'twopg hide-mobile';
+      this.br.options.controls['thumbnail'].className = 'thumb hide-mobile';
+    }
     return ['onePage', 'twoPage', 'thumbnail', 'viewmode'].map((mode) => (
       this.controlFor(mode)
     )).join('');
