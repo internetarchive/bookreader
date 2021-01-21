@@ -57,8 +57,11 @@ export default function BookReader(overrides = {}) {
 BookReader.version = PACKAGE_JSON.version;
 
 // Mode constants
+/** 1 page view */
 BookReader.constMode1up = 1;
+/** 2 pages view */
 BookReader.constMode2up = 2;
+/** thumbnails view */
 BookReader.constModeThumb = 3;
 
 // Animation constants
@@ -107,8 +110,11 @@ BookReader.prototype.setup = function(options) {
   this.animationFinishedCallback = null;
 
   // @deprecated: Instance constants. Use Class constants instead
+  /** 1 page view */
   this.constMode1up = BookReader.constMode1up;
+  /** 2 pages view */
   this.constMode2up = BookReader.constMode2up;
+  /** thumbnails view */
   this.constModeThumb = BookReader.constModeThumb;
 
   // Private properties below. Configuration should be done with options.
@@ -116,6 +122,10 @@ BookReader.prototype.setup = function(options) {
   this.reduce = 4;
   this.defaults = options.defaults;
   this.padding = options.padding;
+
+  /** @type {number}
+   * can be 1 or 2 or 3 based on the display mode const value
+   */
   this.mode = null;
   this.prevReadMode = null;
   this.ui = options.ui;
