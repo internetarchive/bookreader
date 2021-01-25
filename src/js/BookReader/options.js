@@ -234,6 +234,20 @@ export const DEFAULT_OPTIONS = {
    * Optional: if true, starts in fullscreen mode
    */
   startFullscreen: false,
+
+  /**
+   * @type {Boolean}
+   * On init, by default, we want to handle resizing bookreader
+   * when browser window changes size (inc. `orientationchange` event)
+   * toggle off if you want to handle this outside of bookreader
+   */
+  autoResize: true,
+
+  /**
+   * @type {Boolean}
+   * On init, by default, we want to use srcSet for images
+   */
+  useSrcSet: true,
 };
 
 /** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */

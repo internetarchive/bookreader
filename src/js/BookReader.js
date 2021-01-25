@@ -495,18 +495,18 @@ BookReader.prototype.init = function() {
     }
   });
 
-  $(window).bind('resize', this, function(e) {
-    e.data.resize();
-  });
-  $(window).on("orientationchange", this, function(e) {
-    e.data.resize();
-  }.bind(this));
+  if (this.options.autoResize) {
+    $(window).bind('resize', this, function(e) {
+      e.data.resize();
+    });
+    $(window).on("orientationchange", this, function(e) {
+      e.data.resize();
+    }.bind(this));
+  }
 
   if (this.protected) {
     this.$('.BRicon.share').hide();
   }
-
-  this.trigger(BookReader.eventNames.PostInit);
 
   // If not searching, set to allow on-going fragment changes
   if (!this.options.initialSearchTerm) {
@@ -514,6 +514,7 @@ BookReader.prototype.init = function() {
   }
 
   this.init.initComplete = true;
+  this.trigger(BookReader.eventNames.PostInit);
 
   // Must be called after this.init.initComplete set to true to allow
   // BookReader.prototype.resize to run.
@@ -1664,7 +1665,7 @@ BookReader.prototype._scrollAmount = function() {
 
 BookReader.prototype.prefetchImg = function(index) {
   var pageURI = this._getPageURI(index);
-  const pageURISrcset = this._getPageURISrcset(index);
+  const pageURISrcset = this.options.useSrcSet ? this._getPageURISrcset(index) : [];
 
   // Load image if not loaded or URI has changed (e.g. due to scaling)
   var loadImage = false;

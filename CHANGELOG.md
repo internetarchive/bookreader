@@ -1,3 +1,6 @@
+# 4.27.0
+Fix: update init function to use new flag `autoResize` @iisa
+Fix: images - `useSrcSet` flag to determine when we fill `srcSet` attribute @iisa
 # 4.26.1
 Patch: Text selection layer does not get made in thumbnail view @dualcnhq
 # 4.26.0
