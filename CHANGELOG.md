@@ -1,3 +1,5 @@
+# 4.28.0
+Fix: adding alt tags to images @nsharma123
 # 4.27.0
 Fix: update init function to use new flag `autoResize` @iisa
 Fix: images - `useSrcSet` flag to determine when we fill `srcSet` attribute @iisa
