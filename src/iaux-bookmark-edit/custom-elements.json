@@ -1,0 +1,98 @@
+{
+  "version": 2,
+  "tags": [
+    {
+      "name": "ia-bookmark-edit",
+      "description": "Bookmark edit component for ia-menu-slider",
+      "properties": [
+        {
+          "name": "bookmark",
+          "type": "Object",
+          "description": "The bookmark to be edited",
+          "default": "{}"
+        },
+        {
+          "name": "bookmarkColors",
+          "type": "Array",
+          "description": "An array of objects used to render bookmark color options",
+          "default": "[]"
+        },
+        {
+          "name": "renderHeader",
+          "type": "Boolean",
+          "description": "A toggle for header rendering",
+          "default": "false"
+        },
+        {
+          "name": "showBookmark",
+          "type": "Boolean",
+          "description": "A toggle for rendering the bookmark thumbnail and page number",
+          "default": "true"
+        }
+      ],
+      "events": [{
+        "name": "saveBookmark",
+        "description": "Submit action for the edit form",
+        "parameters": [
+          {
+            "name": "bookmark",
+            "type": "Object",
+            "description": "The updated bookmark record"
+          }
+        ]
+      }, {
+        "name": "deleteBookmark",
+        "description": "Click action for delete button",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "Number",
+            "description": "The bookmark id"
+          }
+        ]
+      }, {
+        "name": "bookmarkColorChanged",
+        "description": "Change event for bookmark colors radios",
+        "parameters": [
+          {
+            "name": "bookmarkId",
+            "type": "Number",
+            "description": "The bookmark id"
+          }, {
+            "name": "colorId",
+            "type": "Number",
+            "description": "The color id"
+          }
+        ]
+      }],
+      "slots": [],
+      "cssProperties": [
+        {
+          "name": "--blueBookmarkColor",
+          "description": "Blue bookmark color",
+          "type": "Color"
+        }, {
+          "name": "--redBookmarkColor",
+          "description": "Red bookmark color",
+          "type": "Color"
+        }, {
+          "name": "--greenBookmarkColor",
+          "description": "Green bookmark color",
+          "type": "Color"
+        }, {
+          "name": "--saveButtonColor",
+          "description": "Save button color",
+          "type": "Color"
+        }, {
+          "name": "--deleteButtonColor",
+          "description": "Delete button color",
+          "type": "Color"
+        }, {
+          "name": "--loadingPagePlaceholder",
+          "description": "Background color of page thumbnail",
+          "type": "Color"
+        }
+      ]
+    }
+  ]
+}

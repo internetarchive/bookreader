@@ -2,18 +2,19 @@
 <!-- This demo mirrors, as far as possible, the archive.org BookReader configuration and functionality
    please keep up to date as BookReader evolves -->
 <html>
-<head>
-  <title>bookreader demo internetArchive</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="apple-mobile-web-app-capable" content="yes">
+  <head>
+    <title>bookreader demo internetArchive</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
 
     <!-- JS dependencies -->
     <script src="../BookReader/jquery-1.10.1.js"></script>
 
-
     <!-- Bookreader -->
     <script src="../BookReader/BookReader.js"></script>
-    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
 
     <!-- plugins needed for archive.org, in same order as archive.org -->
     <script src="../BookReader/plugins/plugin.mobile_nav.js"></script>
@@ -26,34 +27,48 @@
     <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
     <script src="../BookReader/plugins/plugin.text_selection.js"></script>
 
-    
-    <link rel="stylesheet" href="BookReaderDemo.css"/>
-</head>
-<body>
+    <!-- CSS only -->
+    <link
+      rel="stylesheet"
+      href="https://archive.org/includes/build/css/archive.min.css?v=a1b4a923"
+    />
 
-<div id="BookReader">
-    Internet Archive BookReader Demo<br/>
-    <noscript>
-    <p>
-        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.
-    </p>
-    </noscript>
-</div>
+    <link rel="stylesheet" href="BookReaderDemo.css" />
 
-<script id="pageUrl" type="text/javascript"></script>
+    <link rel="stylesheet" href="../BookReader/BookReader.css" />
+  </head>
 
-<script>
-  var ocaid = location.href.match(/ocaid=([^&#]+)/i)[1];
+  <body>
+    <div id="bookreader-container">
+      <div id="IABookReaderMessageWrapper" style="display: none"></div>
+      <div>
+        Internet Archive BookReader Demo<br />
+        <noscript>
+          <p>
+            The BookReader requires JavaScript to be enabled. Please check that
+            your browser supports JavaScript and that it is enabled in the
+            browser settings.
+          </p>
+        </noscript>
+      </div>
+    </div>
+    <script type="module" src="../BookReader/BookReaderTemplate.js"></script>
 
-  // Override options coming from IA
-  BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
+    <script id="pageUrl" type="text/javascript"></script>
 
-  // Temp; Circumvent bug in BookReaderJSIA code
-  window.Sentry = null;
+    <script>
+      var ocaid = location.href.match(/ocaid=([^&#]+)/i)[1];
 
-  var script_url = 'https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=' + ocaid;
-  document.getElementById('pageUrl').src = script_url;
-</script>
+      // Override options coming from IA
+      BookReader.optionOverrides.imagesBaseURL = "/BookReader/images/";
 
-</body>
+      // Temp; Circumvent bug in BookReaderJSIA code
+      window.Sentry = null;
+
+      var script_url =
+        "https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=" +
+        ocaid;
+      document.getElementById("pageUrl").src = script_url;
+    </script>
+  </body>
 </html>

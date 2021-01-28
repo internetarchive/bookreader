@@ -1,0 +1,955 @@
+{
+	"created": 1611253144,
+	"d1": "ia601501.us.archive.org",
+	"d2": "ia801501.us.archive.org",
+	"dir": "/27/items/sim_computerworld_1979-05-21_13_21",
+	"files": [{
+		"name": "__ia_thumb.jpg",
+		"source": "original",
+		"mtime": "1608341818",
+		"size": "20825",
+		"md5": "43d8dbb19f7a9221853f6316ef787d99",
+		"crc32": "273b6b06",
+		"sha1": "987a007f2c7c581c1b7ee7de50259cad53935a8c",
+		"format": "Item Tile",
+		"rotation": "0"
+	}, {
+		"name": "header/header_0000.jp2",
+		"source": "original",
+		"mtime": "1608315293",
+		"size": "4115007",
+		"md5": "87e84cf2d7dc599feef536ea513b074d",
+		"crc32": "b382d8cf",
+		"sha1": "bcd56c579d564d975d04cc8f7aed6bc2ec647a0c",
+		"format": "JPEG 2000"
+	}, {
+		"name": "header/header_0001.jp2",
+		"source": "original",
+		"mtime": "1608315281",
+		"size": "256375",
+		"md5": "55296bbacaab8b3dca912b5abae4106b",
+		"crc32": "f0c9b72f",
+		"sha1": "f76e9151e5bab404b7a565c6424504cfed5967a1",
+		"format": "JPEG 2000"
+	}, {
+		"name": "header/header_0002.jp2",
+		"source": "original",
+		"mtime": "1608315286",
+		"size": "1024733",
+		"md5": "0e56bb6977c7ef7a0fdf2f47b1e956ac",
+		"crc32": "f2f0951b",
+		"sha1": "6c83a366c8d038718a765fedace2e61f2f018cc1",
+		"format": "JPEG 2000"
+	}, {
+		"name": "history/files/sim_computerworld_1979-05-21_13_21_histograms.json.~1~",
+		"source": "original",
+		"mtime": "1608315273",
+		"size": "174120",
+		"md5": "21ea85238579815f5ab7a0c892325036",
+		"crc32": "968f3681",
+		"sha1": "e345f47943a4c508aea7cf259a7d2fce28be16dc",
+		"format": "JSON",
+		"old_version": "true"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21.pdf",
+		"source": "derivative",
+		"format": "Text PDF",
+		"original": "sim_computerworld_1979-05-21_13_21_page_numbers.json",
+		"mtime": "1608341731",
+		"size": "69179849",
+		"md5": "7306d845d1a01efd07312c8cc22e3315",
+		"crc32": "5495b04a",
+		"sha1": "7fc0bb16efdd18380c5e447acf0e8e15647f8c09"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_archive.torrent",
+		"source": "metadata",
+		"btih": "ca644f178420f8b6e6b1bc14c21f76532f8e7d07",
+		"mtime": "1610245022",
+		"size": "18513",
+		"md5": "001f85f1fa7a1a1d6d643997c0da0799",
+		"crc32": "0707c134",
+		"sha1": "e401d071847fd950f576057a56881130c3e67232",
+		"format": "Archive BitTorrent"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_djvu.txt",
+		"source": "derivative",
+		"format": "DjVuTXT",
+		"original": "sim_computerworld_1979-05-21_13_21_djvu.xml",
+		"mtime": "1608337888",
+		"size": "713523",
+		"md5": "6188c7c6f07112ada1672892386160af",
+		"crc32": "59ba4296",
+		"sha1": "4faf5a8a59d8109265d5b31202bce5cd94688f93"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_djvu.xml",
+		"source": "derivative",
+		"format": "Djvu XML",
+		"original": "sim_computerworld_1979-05-21_13_21_hocr.html.gz",
+		"mtime": "1608337881",
+		"size": "9221195",
+		"md5": "57fe556dcc90f107aef05e4987f31168",
+		"crc32": "8fbca96a",
+		"sha1": "7c9c2cd61def0349f09436a774239e75764f14c1"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_encrypted.pdf",
+		"source": "derivative",
+		"format": "ACS Encrypted PDF",
+		"original": "sim_computerworld_1979-05-21_13_21.pdf",
+		"mtime": "1608341801",
+		"size": "69151194",
+		"md5": "91d9538eec07a72b776396151a0751d3",
+		"crc32": "e38f5905",
+		"sha1": "d5a6e1c74a0ae31831acea5af3a2152c26ecb295"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_files.xml",
+		"source": "original",
+		"format": "Metadata",
+		"md5": "dac7dbea6721e77e90fcba7febfe5a19"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_frame-md.json",
+		"source": "original",
+		"mtime": "1608315267",
+		"size": "238",
+		"md5": "27a37189c62a96847c80b4106990fef6",
+		"crc32": "dffe6fab",
+		"sha1": "6d5355da59428177fea6680f17916cc8e688e3e9",
+		"format": "JSON"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_hocr.html.gz",
+		"source": "derivative",
+		"format": "hOCR GZ",
+		"original": "sim_computerworld_1979-05-21_13_21_jp2.zip",
+		"mtime": "1608337819",
+		"size": "9832539",
+		"md5": "973ef7b7f15179fb66d61d76326d6e3d",
+		"crc32": "2a944c0d",
+		"sha1": "fe00593694c19e7333741046aa39daf20bf0ff13"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_itemimage.png",
+		"source": "original",
+		"mtime": "1608315254",
+		"size": "1707274",
+		"md5": "372d4cbe61acdbdd865586fbaee26b2f",
+		"crc32": "602eaaa8",
+		"sha1": "3bb209ab45f3e7be1f8a2719e50b89ecdefae164",
+		"format": "Item Image"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_jp2.zip",
+		"source": "original",
+		"mtime": "1608315233",
+		"size": "194636405",
+		"md5": "249a696dbb921910f9c54c7561af91ff",
+		"crc32": "a272eda6",
+		"sha1": "30c9c2487e61866d50c9c3993eb7e1ec81d0eb57",
+		"preview-image": "n0",
+		"format": "Single Page Processed JP2 ZIP"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_meta.sqlite",
+		"source": "original",
+		"mtime": "1610245017",
+		"size": "38912",
+		"md5": "68398e9b9d076d84bf5eee2b681cd482",
+		"crc32": "82e2ab06",
+		"sha1": "3223c87cdfcd445d0eebfa0d60a4aaa787ffe2a8",
+		"format": "Metadata"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_meta.xml",
+		"source": "original",
+		"mtime": "1609094573",
+		"size": "3116",
+		"md5": "94afd235bf7dce9a62e21997e7e6cf71",
+		"crc32": "5f6e3816",
+		"sha1": "4f371ec98d395daaa6ab70e2a504a9b3bdded484",
+		"format": "Metadata"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_page_numbers.json",
+		"source": "derivative",
+		"format": "Page Numbers JSON",
+		"original": "sim_computerworld_1979-05-21_13_21_djvu.xml",
+		"mtime": "1608338054",
+		"size": "24252",
+		"md5": "7e494f2a272dc56c92626876f88dbad6",
+		"crc32": "302c234a",
+		"sha1": "ba986c198d9991afe105ab35b26cf62e58f8c99f"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_rotations.json",
+		"source": "original",
+		"mtime": "1608315259",
+		"size": "6646",
+		"md5": "72dc322fa471ec929a561e9dc1f48c42",
+		"crc32": "28bd335a",
+		"sha1": "d0c9734f2619f1fdf319faf2754557cbe018aec0",
+		"format": "JSON"
+	}, {
+		"name": "sim_computerworld_1979-05-21_13_21_scandata.xml",
+		"source": "derivative",
+		"format": "Scandata",
+		"original": "sim_computerworld_1979-05-21_13_21_djvu.xml",
+		"mtime": "1608338055",
+		"size": "37781",
+		"md5": "47d484274c0d3674f2afc80b5f2ece86",
+		"crc32": "36824154",
+		"sha1": "c57b8f26bfbbde5603c63acec62dda340bfb26d4"
+	}],
+	"files_count": 20,
+	"frame-md": {
+		"header": {
+			"right_to_left": null,
+			"frame_start": 11067,
+			"frame_end": 11068
+		},
+		"issue": {
+			"right_to_left": null,
+			"frame_start": 12321,
+			"frame_cover": 12321,
+			"frame_end": 12377,
+			"cover_reverse_handedness": false,
+			"split_start_frame": false
+		}
+	},
+	"item_last_updated": 1610245022,
+	"item_size": 360162497,
+	"metadata": {
+		"identifier": "sim_computerworld_1979-05-21_13_21",
+		"adaptive_ocr": "true",
+		"auditor": "associate-kimberly-fernandez@archive.org",
+		"betterpdf": "true",
+		"boxid": "IA1519206",
+		"canister": "IA1519206-02",
+		"collection": ["pub_computerworld", "sim_microfilm", "periodicals"],
+		"contrast_max": "247",
+		"contrast_min": "87",
+		"contributor": "Internet Archive",
+		"copies": "4",
+		"date": "1979-05-21",
+		"derive_version": "0.0.15",
+		"description": "Computerworld 1979-05-21: \u003Ca href=\u0022https://archive.org/search.php?query=sim_pubid%3A6206%20AND%20volume%3A13\u0022 rel=\u0022nofollow\u0022\u003EVolume 13\u003C/a\u003E, Issue 21.\u003Cbr /\u003EDigitized from \u003Ca href=\u0022https://archive.org/details/sim_raw_scan_IA1519206-02/page/n2370\u0022 rel=\u0022nofollow\u0022\u003EIA1519206-02\u003C/a\u003E.\u003Cbr /\u003EPrevious issue: \u003Ca href=\u0022https://archive.org/details/sim_computerworld_1979-05-14_13_20\u0022 rel=\u0022nofollow\u0022\u003Esim_computerworld_1979-05-14_13_20\u003C/a\u003E.\u003Cbr /\u003ENext issue: \u003Ca href=\u0022https://archive.org/details/sim_computerworld_1979-05-28_13_22\u0022 rel=\u0022nofollow\u0022\u003Esim_computerworld_1979-05-28_13_22\u003C/a\u003E.",
+		"issn": "0010-4841",
+		"issue": "21",
+		"language": "English",
+		"mediatype": "texts",
+		"next_item": "sim_computerworld_1979-05-28_13_22",
+		"ppi": "400",
+		"previous_item": "sim_computerworld_1979-05-14_13_20",
+		"pub_type": "Trade Journals",
+		"publisher": "Computerworld, Inc.",
+		"scanner": "microfilm02.cebu.archive.org",
+		"scanningcenter": "cebu",
+		"sim_pubid": "6206",
+		"software_version": "nextStar 4.5.0.20626",
+		"source": ["IA1519206-02", "microfilm"],
+		"sponsor": "Kahle/Austin Foundation",
+		"subject": ["Computers", "Computers--Microcomputers", "Computers--Personal Computers", "Trade Journals", "microfilm"],
+		"title": "Computerworld  1979-05-21: Vol 13 Iss 21",
+		"volume": "13",
+		"uploader": "arthur+microfilm02@archive.org",
+		"publicdate": "2020-12-18 18:26:12",
+		"identifier-access": "http://archive.org/details/sim_computerworld_1979-05-21_13_21",
+		"identifier-ark": "ark:/13960/t4mm65g66",
+		"imagecount": "113",
+		"ocr": "tesseract 4.1.1",
+		"ocr_parameters": "-l eng",
+		"ocr_module_version": "0.0.10",
+		"ocr_detected_script": "Latin",
+		"ocr_detected_script_conf": "0.9742",
+		"ocr_detected_lang": "en",
+		"ocr_detected_lang_conf": "1.0000",
+		"page_number_confidence": "98.21",
+		"pdf_module_version": "0.0.6",
+		"external-identifier": "urn:acs6:sim_computerworld_1979-05-21_13_21:pdf:313aaf54-0ddb-418f-b917-7db349163640",
+		"addeddate": "2020-12-27 18:42:53"
+	},
+	"page_numbers": {
+		"pages": [{
+			"confidence": 100,
+			"ocr_value": ["2", "1979", "797"],
+			"pageNumber": "2",
+			"leafNum": 1
+		}, {
+			"confidence": 100,
+			"ocr_value": ["39", "609", "08540"],
+			"pageNumber": "3",
+			"leafNum": 2
+		}, {
+			"confidence": 100,
+			"ocr_value": ["4", "1979"],
+			"pageNumber": "4",
+			"leafNum": 3
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "L"],
+			"pageNumber": "5",
+			"leafNum": 4
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "94577"],
+			"pageNumber": "6",
+			"leafNum": 5
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "7", "06854"],
+			"pageNumber": "7",
+			"leafNum": 6
+		}, {
+			"confidence": 100,
+			"ocr_value": ["8", "1979", "354"],
+			"pageNumber": "8",
+			"leafNum": 7
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "9", "5600"],
+			"pageNumber": "9",
+			"leafNum": 8
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "412", "609"],
+			"pageNumber": "10",
+			"leafNum": 9
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "11", "250"],
+			"pageNumber": "11",
+			"leafNum": 10
+		}, {
+			"confidence": 100,
+			"ocr_value": ["12", "1979", "125"],
+			"pageNumber": "12",
+			"leafNum": 11
+		}, {
+			"confidence": 100,
+			"ocr_value": ["617", "1979", "61"],
+			"pageNumber": "13",
+			"leafNum": 12
+		}, {
+			"confidence": 100,
+			"ocr_value": ["14", "1979", "08876"],
+			"pageNumber": "14",
+			"leafNum": 13
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "11787"],
+			"pageNumber": "15",
+			"leafNum": 14
+		}, {
+			"confidence": 100,
+			"ocr_value": ["16", "1979", "5"],
+			"pageNumber": "16",
+			"leafNum": 15
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "17", "90"],
+			"pageNumber": "17",
+			"leafNum": 16
+		}, {
+			"confidence": 100,
+			"ocr_value": ["18", "1979", "1974", "5000"],
+			"pageNumber": "18",
+			"leafNum": 17
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "19", "2741"],
+			"pageNumber": "19",
+			"leafNum": 18
+		}, {
+			"confidence": 100,
+			"ocr_value": [],
+			"pageNumber": "20",
+			"leafNum": 19
+		}, {
+			"confidence": 100,
+			"ocr_value": ["180", "351"],
+			"pageNumber": "21",
+			"leafNum": 20
+		}, {
+			"confidence": 100,
+			"ocr_value": ["22", "1979", "V"],
+			"pageNumber": "22",
+			"leafNum": 21
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "23", "43"],
+			"pageNumber": "23",
+			"leafNum": 22
+		}, {
+			"confidence": 100,
+			"ocr_value": ["24", "1979"],
+			"pageNumber": "24",
+			"leafNum": 23
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "25", "cdl", "i", "ii"],
+			"pageNumber": "25",
+			"leafNum": 24
+		}, {
+			"confidence": 100,
+			"ocr_value": ["26", "1979", "797"],
+			"pageNumber": "26",
+			"leafNum": 25
+		}, {
+			"confidence": 100,
+			"ocr_value": ["5", "27", "30", "32"],
+			"pageNumber": "27",
+			"leafNum": 26
+		}, {
+			"confidence": 100,
+			"ocr_value": ["30"],
+			"pageNumber": "28",
+			"leafNum": 27
+		}, {
+			"confidence": 100,
+			"ocr_value": ["12", "797"],
+			"pageNumber": "29",
+			"leafNum": 28
+		}, {
+			"confidence": 100,
+			"ocr_value": ["30", "1979", "I"],
+			"pageNumber": "30",
+			"leafNum": 29
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "31", "3", "48106"],
+			"pageNumber": "31",
+			"leafNum": 30
+		}, {
+			"confidence": 100,
+			"ocr_value": ["32", "1979"],
+			"pageNumber": "32",
+			"leafNum": 31
+		}, {
+			"confidence": 100,
+			"ocr_value": ["33", "1"],
+			"pageNumber": "33",
+			"leafNum": 32
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "76", "85077"],
+			"pageNumber": "34",
+			"leafNum": 33
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1382", "76046"],
+			"pageNumber": "35",
+			"leafNum": 34
+		}, {
+			"confidence": 100,
+			"ocr_value": ["36", "1979", "97201"],
+			"pageNumber": "36",
+			"leafNum": 35
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "08109", "6560"],
+			"pageNumber": "37",
+			"leafNum": 36
+		}, {
+			"confidence": 100,
+			"ocr_value": ["38", "1979", "24064", "55424", "612"],
+			"pageNumber": "38",
+			"leafNum": 37
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "39", "Cl"],
+			"pageNumber": "39",
+			"leafNum": 38
+		}, {
+			"confidence": 100,
+			"ocr_value": ["23", "1979", "415", "10", "213"],
+			"pageNumber": "40",
+			"leafNum": 39
+		}, {
+			"confidence": 100,
+			"ocr_value": ["41"],
+			"pageNumber": "41",
+			"leafNum": 40
+		}, {
+			"confidence": 100,
+			"ocr_value": ["700", "800"],
+			"pageNumber": "42",
+			"leafNum": 41
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "43", "6"],
+			"pageNumber": "43",
+			"leafNum": 42
+		}, {
+			"confidence": 100,
+			"ocr_value": ["44", "1979", "960"],
+			"pageNumber": "44",
+			"leafNum": 43
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979"],
+			"pageNumber": "45",
+			"leafNum": 44
+		}, {
+			"confidence": 100,
+			"ocr_value": ["i", "2", "60521", "709"],
+			"pageNumber": "46",
+			"leafNum": 45
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979"],
+			"pageNumber": "47",
+			"leafNum": 46
+		}, {
+			"confidence": 100,
+			"ocr_value": ["02160"],
+			"pageNumber": "48",
+			"leafNum": 47
+		}, {
+			"confidence": 100,
+			"ocr_value": ["214", "313", "713"],
+			"pageNumber": "49",
+			"leafNum": 48
+		}, {
+			"confidence": 100,
+			"ocr_value": ["50", "1979", "4566"],
+			"pageNumber": "50",
+			"leafNum": 49
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1", "7"],
+			"pageNumber": "51",
+			"leafNum": 50
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "20850"],
+			"pageNumber": "52",
+			"leafNum": 51
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "53"],
+			"pageNumber": "53",
+			"leafNum": 52
+		}, {
+			"confidence": 100,
+			"ocr_value": ["2", "1979", "516"],
+			"pageNumber": "54",
+			"leafNum": 53
+		}, {
+			"confidence": 100,
+			"ocr_value": [],
+			"pageNumber": "55",
+			"leafNum": 54
+		}, {
+			"confidence": 100,
+			"ocr_value": ["6000"],
+			"pageNumber": "56",
+			"leafNum": 55
+		}, {
+			"confidence": 100,
+			"ocr_value": ["150"],
+			"pageNumber": "57",
+			"leafNum": 56
+		}, {
+			"confidence": 100,
+			"ocr_value": ["2", "150", "2408"],
+			"pageNumber": "58",
+			"leafNum": 57
+		}, {
+			"confidence": 100,
+			"ocr_value": ["21", "282", "415", "800"],
+			"pageNumber": "59",
+			"leafNum": 58
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "14272"],
+			"pageNumber": "60",
+			"leafNum": 59
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "6"],
+			"pageNumber": "61",
+			"leafNum": 60
+		}, {
+			"confidence": 100,
+			"ocr_value": ["62", "1979"],
+			"pageNumber": "62",
+			"leafNum": 61
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "63", "312", "7900"],
+			"pageNumber": "63",
+			"leafNum": 62
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "2701"],
+			"pageNumber": "64",
+			"leafNum": 63
+		}, {
+			"confidence": 100,
+			"ocr_value": ["79", "5221"],
+			"pageNumber": "65",
+			"leafNum": 64
+		}, {
+			"confidence": 100,
+			"ocr_value": ["66", "1979", "18"],
+			"pageNumber": "66",
+			"leafNum": 65
+		}, {
+			"confidence": 100,
+			"ocr_value": ["67", "70", "68"],
+			"pageNumber": "67",
+			"leafNum": 66
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "603"],
+			"pageNumber": "68",
+			"leafNum": 67
+		}, {
+			"confidence": 100,
+			"ocr_value": ["69"],
+			"pageNumber": "69",
+			"leafNum": 68
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979"],
+			"pageNumber": "70",
+			"leafNum": 69
+		}, {
+			"confidence": 100,
+			"ocr_value": ["5", "71", "022"],
+			"pageNumber": "71",
+			"leafNum": 70
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979"],
+			"pageNumber": "72",
+			"leafNum": 71
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "73", "215", "617", "19103"],
+			"pageNumber": "73",
+			"leafNum": 72
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "22"],
+			"pageNumber": "74",
+			"leafNum": 73
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "75"],
+			"pageNumber": "75",
+			"leafNum": 74
+		}, {
+			"confidence": 100,
+			"ocr_value": ["76", "1979", "08002"],
+			"pageNumber": "76",
+			"leafNum": 75
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "22046", "6565"],
+			"pageNumber": "77",
+			"leafNum": 76
+		}, {
+			"confidence": 100,
+			"ocr_value": ["78", "1979", "312", "200"],
+			"pageNumber": "78",
+			"leafNum": 77
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "79", "214", "75230"],
+			"pageNumber": "79",
+			"leafNum": 78
+		}, {
+			"confidence": 100,
+			"ocr_value": ["80", "1979", "94111"],
+			"pageNumber": "80",
+			"leafNum": 79
+		}, {
+			"confidence": 100,
+			"ocr_value": ["5", "717", "17109"],
+			"pageNumber": "81",
+			"leafNum": 80
+		}, {
+			"confidence": 100,
+			"ocr_value": ["82", "1979", "4700"],
+			"pageNumber": "82",
+			"leafNum": 81
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "22209", "1401"],
+			"pageNumber": "83",
+			"leafNum": 82
+		}, {
+			"confidence": 100,
+			"ocr_value": ["84", "1979", "01420"],
+			"pageNumber": "84",
+			"leafNum": 83
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1", "85", "94111"],
+			"pageNumber": "85",
+			"leafNum": 84
+		}, {
+			"confidence": 100,
+			"ocr_value": ["86", "1979", "02160", "813"],
+			"pageNumber": "86",
+			"leafNum": 85
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "87", "32207"],
+			"pageNumber": "87",
+			"leafNum": 86
+		}, {
+			"confidence": 100,
+			"ocr_value": ["3", "1979", "97330"],
+			"pageNumber": "88",
+			"leafNum": 87
+		}, {
+			"confidence": 100,
+			"ocr_value": ["5", "89", "13503"],
+			"pageNumber": "89",
+			"leafNum": 88
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "505", "63101"],
+			"pageNumber": "90",
+			"leafNum": 89
+		}, {
+			"confidence": 100,
+			"ocr_value": ["15", "91", "850", "1500"],
+			"pageNumber": "91",
+			"leafNum": 90
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "1"],
+			"pageNumber": "92",
+			"leafNum": 91
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "93"],
+			"pageNumber": "93",
+			"leafNum": 92
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "2", "717"],
+			"pageNumber": "94",
+			"leafNum": 93
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "95", "94105"],
+			"pageNumber": "95",
+			"leafNum": 94
+		}, {
+			"confidence": 100,
+			"ocr_value": ["96", "1979", "904", "02160", "32726"],
+			"pageNumber": "96",
+			"leafNum": 95
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1", "97", "18104", "1401"],
+			"pageNumber": "97",
+			"leafNum": 96
+		}, {
+			"confidence": 100,
+			"ocr_value": ["98", "1979", "94104"],
+			"pageNumber": "98",
+			"leafNum": 97
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1", "99", "02160"],
+			"pageNumber": "99",
+			"leafNum": 98
+		}, {
+			"confidence": 100,
+			"ocr_value": ["100", "1979", "92704"],
+			"pageNumber": "100",
+			"leafNum": 99
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "101", "516"],
+			"pageNumber": "101",
+			"leafNum": 100
+		}, {
+			"confidence": 100,
+			"ocr_value": ["5", "1979", "4", "412"],
+			"pageNumber": "102",
+			"leafNum": 101
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "103", "23219", "519"],
+			"pageNumber": "103",
+			"leafNum": 102
+		}, {
+			"confidence": 100,
+			"ocr_value": ["104", "1979", "75229", "507", "34"],
+			"pageNumber": "104",
+			"leafNum": 103
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "105", "9631", "914"],
+			"pageNumber": "105",
+			"leafNum": 104
+		}, {
+			"confidence": 100,
+			"ocr_value": ["106", "1979", "714", "1425"],
+			"pageNumber": "106",
+			"leafNum": 105
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "107", "3"],
+			"pageNumber": "107",
+			"leafNum": 106
+		}, {
+			"confidence": 100,
+			"ocr_value": ["108", "1979", "313"],
+			"pageNumber": "108",
+			"leafNum": 107
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "109", "214"],
+			"pageNumber": "109",
+			"leafNum": 108
+		}, {
+			"confidence": 100,
+			"ocr_value": ["110", "1979", "91406", "416"],
+			"pageNumber": "110",
+			"leafNum": 109
+		}, {
+			"confidence": 100,
+			"ocr_value": ["1979", "111", "3"],
+			"pageNumber": "111",
+			"leafNum": 110
+		}, {
+			"confidence": 0,
+			"ocr_value": ["800", "1400", "I"],
+			"pageNumber": "112",
+			"leafNum": 111
+		}, {
+			"confidence": 0,
+			"ocr_value": [],
+			"pageNumber": "113",
+			"leafNum": 112
+		}],
+		"confidence": 98.214285714286,
+		"identifier": "/var/tmp/autoclean/derive/sim_computerworld_1979-05-21_13_21/sim_computerworld_1979-05-21_13_21"
+	},
+	"rotations": {
+		"issue": {
+			"mean": 0.18114787387387,
+			"std": 0.25550970547399,
+			"lh_mean": 0.20924543636364,
+			"lh_std": 0.26867677726902,
+			"rh_mean": 0.15355205357143,
+			"rh_std": 0.23868295702536
+		},
+		"pages": {
+			"sim_computerworld_1979-05-21_13_21_0000.jp2": -0.533119,
+			"sim_computerworld_1979-05-21_13_21_0001.jp2": 0.83887,
+			"sim_computerworld_1979-05-21_13_21_0002.jp2": -0.678302,
+			"sim_computerworld_1979-05-21_13_21_0003.jp2": 0.661479,
+			"sim_computerworld_1979-05-21_13_21_0004.jp2": -0.148882,
+			"sim_computerworld_1979-05-21_13_21_0005.jp2": 0.38335,
+			"sim_computerworld_1979-05-21_13_21_0006.jp2": -0.016051,
+			"sim_computerworld_1979-05-21_13_21_0007.jp2": 0.417449,
+			"sim_computerworld_1979-05-21_13_21_0008.jp2": -0.015927,
+			"sim_computerworld_1979-05-21_13_21_0009.jp2": 0.587257,
+			"sim_computerworld_1979-05-21_13_21_0010.jp2": 0.077462,
+			"sim_computerworld_1979-05-21_13_21_0011.jp2": 0.602277,
+			"sim_computerworld_1979-05-21_13_21_0012.jp2": -0.083656,
+			"sim_computerworld_1979-05-21_13_21_0013.jp2": 0.301275,
+			"sim_computerworld_1979-05-21_13_21_0014.jp2": 0.084449,
+			"sim_computerworld_1979-05-21_13_21_0015.jp2": 0.365344,
+			"sim_computerworld_1979-05-21_13_21_0016.jp2": -0.023414,
+			"sim_computerworld_1979-05-21_13_21_0017.jp2": 0.874435,
+			"sim_computerworld_1979-05-21_13_21_0018.jp2": -0.12175,
+			"sim_computerworld_1979-05-21_13_21_0019.jp2": 0.098291,
+			"sim_computerworld_1979-05-21_13_21_0020.jp2": -0.297131,
+			"sim_computerworld_1979-05-21_13_21_0021.jp2": 0.599574,
+			"sim_computerworld_1979-05-21_13_21_0022.jp2": -0.01216,
+			"sim_computerworld_1979-05-21_13_21_0023.jp2": 0.416381,
+			"sim_computerworld_1979-05-21_13_21_0024.jp2": 0.028168,
+			"sim_computerworld_1979-05-21_13_21_0025.jp2": 0.68907,
+			"sim_computerworld_1979-05-21_13_21_0026.jp2": 0.047334,
+			"sim_computerworld_1979-05-21_13_21_0027.jp2": 0.362568,
+			"sim_computerworld_1979-05-21_13_21_0028.jp2": 0.067845,
+			"sim_computerworld_1979-05-21_13_21_0029.jp2": 0.407149,
+			"sim_computerworld_1979-05-21_13_21_0030.jp2": -0.150748,
+			"sim_computerworld_1979-05-21_13_21_0031.jp2": 0.410388,
+			"sim_computerworld_1979-05-21_13_21_0032.jp2": 0.020735,
+			"sim_computerworld_1979-05-21_13_21_0033.jp2": 0.295242,
+			"sim_computerworld_1979-05-21_13_21_0034.jp2": 0.083232,
+			"sim_computerworld_1979-05-21_13_21_0035.jp2": 0.398174,
+			"sim_computerworld_1979-05-21_13_21_0036.jp2": 0.264066,
+			"sim_computerworld_1979-05-21_13_21_0037.jp2": 0.097335,
+			"sim_computerworld_1979-05-21_13_21_0038.jp2": 0.418667,
+			"sim_computerworld_1979-05-21_13_21_0039.jp2": 0.139952,
+			"sim_computerworld_1979-05-21_13_21_0040.jp2": 0.17135,
+			"sim_computerworld_1979-05-21_13_21_0041.jp2": 0.084735,
+			"sim_computerworld_1979-05-21_13_21_0042.jp2": 0.195851,
+			"sim_computerworld_1979-05-21_13_21_0043.jp2": 0.168116,
+			"sim_computerworld_1979-05-21_13_21_0044.jp2": 0.166769,
+			"sim_computerworld_1979-05-21_13_21_0045.jp2": 0.16631,
+			"sim_computerworld_1979-05-21_13_21_0046.jp2": 0.308975,
+			"sim_computerworld_1979-05-21_13_21_0047.jp2": null,
+			"sim_computerworld_1979-05-21_13_21_0048.jp2": 0.131906,
+			"sim_computerworld_1979-05-21_13_21_0049.jp2": 0.462679,
+			"sim_computerworld_1979-05-21_13_21_0050.jp2": 0.070239,
+			"sim_computerworld_1979-05-21_13_21_0051.jp2": 0.409733,
+			"sim_computerworld_1979-05-21_13_21_0052.jp2": 0.452915,
+			"sim_computerworld_1979-05-21_13_21_0053.jp2": 0.113171,
+			"sim_computerworld_1979-05-21_13_21_0054.jp2": 0.220757,
+			"sim_computerworld_1979-05-21_13_21_0055.jp2": 0.260237,
+			"sim_computerworld_1979-05-21_13_21_0056.jp2": 0.223607,
+			"sim_computerworld_1979-05-21_13_21_0057.jp2": 0.093046,
+			"sim_computerworld_1979-05-21_13_21_0058.jp2": 0.291067,
+			"sim_computerworld_1979-05-21_13_21_0059.jp2": 0.345575,
+			"sim_computerworld_1979-05-21_13_21_0060.jp2": 0.207233,
+			"sim_computerworld_1979-05-21_13_21_0061.jp2": 0.290961,
+			"sim_computerworld_1979-05-21_13_21_0062.jp2": 0.31605,
+			"sim_computerworld_1979-05-21_13_21_0063.jp2": 0.005266,
+			"sim_computerworld_1979-05-21_13_21_0064.jp2": 0.022692,
+			"sim_computerworld_1979-05-21_13_21_0065.jp2": -0.065692,
+			"sim_computerworld_1979-05-21_13_21_0066.jp2": 0.091316,
+			"sim_computerworld_1979-05-21_13_21_0067.jp2": -0.080965,
+			"sim_computerworld_1979-05-21_13_21_0068.jp2": 0.309871,
+			"sim_computerworld_1979-05-21_13_21_0069.jp2": 0.12337,
+			"sim_computerworld_1979-05-21_13_21_0070.jp2": 0.365586,
+			"sim_computerworld_1979-05-21_13_21_0071.jp2": -0.050203,
+			"sim_computerworld_1979-05-21_13_21_0072.jp2": 0.071902,
+			"sim_computerworld_1979-05-21_13_21_0073.jp2": 0.090236,
+			"sim_computerworld_1979-05-21_13_21_0074.jp2": 0.18033,
+			"sim_computerworld_1979-05-21_13_21_0075.jp2": 0.152281,
+			"sim_computerworld_1979-05-21_13_21_0076.jp2": 0.156399,
+			"sim_computerworld_1979-05-21_13_21_0077.jp2": 0.509204,
+			"sim_computerworld_1979-05-21_13_21_0078.jp2": 0.212231,
+			"sim_computerworld_1979-05-21_13_21_0079.jp2": 0.268235,
+			"sim_computerworld_1979-05-21_13_21_0080.jp2": 0.325971,
+			"sim_computerworld_1979-05-21_13_21_0081.jp2": -0.247987,
+			"sim_computerworld_1979-05-21_13_21_0082.jp2": 0.508649,
+			"sim_computerworld_1979-05-21_13_21_0083.jp2": -0.005221,
+			"sim_computerworld_1979-05-21_13_21_0084.jp2": 0.397401,
+			"sim_computerworld_1979-05-21_13_21_0085.jp2": 0.294337,
+			"sim_computerworld_1979-05-21_13_21_0086.jp2": 0.499498,
+			"sim_computerworld_1979-05-21_13_21_0087.jp2": -0.004202,
+			"sim_computerworld_1979-05-21_13_21_0088.jp2": 0.499933,
+			"sim_computerworld_1979-05-21_13_21_0089.jp2": 0.03594,
+			"sim_computerworld_1979-05-21_13_21_0090.jp2": 0.529198,
+			"sim_computerworld_1979-05-21_13_21_0091.jp2": -0.286587,
+			"sim_computerworld_1979-05-21_13_21_0092.jp2": 0.048676,
+			"sim_computerworld_1979-05-21_13_21_0093.jp2": 0.025709,
+			"sim_computerworld_1979-05-21_13_21_0094.jp2": 0.426675,
+			"sim_computerworld_1979-05-21_13_21_0095.jp2": 0.067199,
+			"sim_computerworld_1979-05-21_13_21_0096.jp2": 0.484055,
+			"sim_computerworld_1979-05-21_13_21_0097.jp2": -0.166481,
+			"sim_computerworld_1979-05-21_13_21_0098.jp2": 0.467978,
+			"sim_computerworld_1979-05-21_13_21_0099.jp2": -0.154315,
+			"sim_computerworld_1979-05-21_13_21_0100.jp2": 0.105188,
+			"sim_computerworld_1979-05-21_13_21_0101.jp2": -0.103262,
+			"sim_computerworld_1979-05-21_13_21_0102.jp2": 0.094705,
+			"sim_computerworld_1979-05-21_13_21_0103.jp2": -0.122437,
+			"sim_computerworld_1979-05-21_13_21_0104.jp2": 0.301698,
+			"sim_computerworld_1979-05-21_13_21_0105.jp2": -0.030912,
+			"sim_computerworld_1979-05-21_13_21_0106.jp2": 0.161227,
+			"sim_computerworld_1979-05-21_13_21_0107.jp2": 0.003961,
+			"sim_computerworld_1979-05-21_13_21_0108.jp2": 0.343489,
+			"sim_computerworld_1979-05-21_13_21_0109.jp2": 0.036586,
+			"sim_computerworld_1979-05-21_13_21_0110.jp2": 0.22671,
+			"sim_computerworld_1979-05-21_13_21_0111.jp2": -0.125984,
+			"sim_computerworld_1979-05-21_13_21_0112.jp2": null
+		}
+	},
+	"server": "ia801501.us.archive.org",
+	"uniq": 1781705791,
+	"workable_servers": ["ia801501.us.archive.org", "ia601501.us.archive.org"]
+}

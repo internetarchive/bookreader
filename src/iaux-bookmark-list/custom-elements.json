@@ -1,0 +1,144 @@
+{
+  "version": 2,
+  "tags": [
+    {
+      "name": "ia-bookmarks-list",
+      "description": "A component with a title and an action counter",
+      "properties": [
+        {
+          "name": "activeBookmarkID",
+          "type": "Number",
+          "description": "The index of the currently active bookmark",
+          "default": "undefined"
+        },
+        {
+          "name": "bookmarkColors",
+          "type": "Array",
+          "description": "An array of objects used to render bookmark color options",
+          "default": "[]"
+        },
+        {
+          "name": "bookmarks",
+          "type": "Array",
+          "description": "The bookmarks to be rendered",
+          "default": "[]"
+        },
+        {
+          "name": "editedBookmark",
+          "type": "Object",
+          "description": "The bookmark object currently being edited",
+          "default": "{}"
+        },
+        {
+          "name": "renderAddBookmarkButton",
+          "type": "Boolean",
+          "description": "A toggle for an add bookmark button",
+          "default": "true"
+        },
+        {
+          "name": "disableAddBookmarkButton",
+          "type": "Boolean",
+          "description": "A toggle to disable add bookmark button",
+          "default": "false"
+        },
+        {
+          "name": "renderHeader",
+          "type": "Boolean",
+          "description": "A toggle for header rendering",
+          "default": "false"
+        }
+      ],
+      "events": [{
+        "name": "bookmarkEdited",
+        "description": "Edit action for a bookmark clicked",
+        "parameters": [
+          {
+            "name": "bookmark",
+            "type": "Object",
+            "description": "The bookmark record to edit"
+          }
+        ]
+      }, {
+        "name": "bookmarkSelected",
+        "description": "Bookmark selected via click event",
+        "parameters": [
+          {
+            "name": "bookmark",
+            "type": "Object",
+            "description": "The bookmark record selected"
+          }
+        ]
+      }, {
+        "name": "saveBookmark",
+        "description": "Submit action for the edit form",
+        "parameters": [
+          {
+            "name": "bookmark",
+            "type": "Object",
+            "description": "The updated bookmark record"
+          }
+        ]
+      }, {
+        "name": "deleteBookmark",
+        "description": "Click action for delete button",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "Number",
+            "description": "The bookmark id"
+          }
+        ]
+      }, {
+        "name": "bookmarkColorChanged",
+        "description": "Change event for bookmark colors radios",
+        "parameters": [
+          {
+            "name": "bookmarkId",
+            "type": "Number",
+            "description": "The bookmark id"
+          }, {
+            "name": "colorId",
+            "type": "Number",
+            "description": "The color id"
+          }
+        ]
+      }, {
+        "name": "addBookmark",
+        "description": "Click event for add bookmark button",
+        "parameters": []
+      }],
+      "slots": [],
+      "cssProperties": [
+        {
+          "name": "--activeBookmark",
+          "description": "Active bookmark border color",
+          "type": "Color"
+        }, {
+          "name": "--activeBorderWidth",
+          "description": "Active bookmark border width",
+          "type": "Number"
+        }, {
+          "name": "--bookmarkThumbWidth",
+          "description": "Thumbnail image width",
+          "type": "Number"
+        }, {
+          "name": "--loadingPagePlaceholder",
+          "description": "Background color of page thumbnail",
+          "type": "Color"
+        }, {
+          "name": "--createButtonColor",
+          "description": "Background color of add bookmark button",
+          "type": "Color"
+        }, {
+          "name": "--createButtonBorderColor",
+          "description": "halo around create bookmark button",
+          "type": "Color"
+        }, {
+          "name": "--bookmarkListSeparatorColor",
+          "description": "separates bookmarks list",
+          "type": "Color"
+        }
+      ]
+    }
+  ]
+}

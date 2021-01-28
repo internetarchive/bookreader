@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "tags": [
+    {
+      "name": "ia-book-downloads",
+      "description": "Book downloads pane for ia-menu-slider",
+      "properties": [
+        {
+          "name": "files",
+          "type": "Array",
+          "description": "An array of downloadable files",
+          "default": "[]"
+        }, {
+          "name": "expiration",
+          "type": "Number",
+          "description": "The number of days until downloads expire",
+          "default": "0"
+        }
+      ],
+      "events": [],
+      "slots": [],
+      "cssProperties": [
+        {
+          "name": "--downloadButtonColor",
+          "description": "Download button text",
+          "type": "Color"
+        },
+        {
+          "name": "--downloadButtonBg",
+          "description": "Download button background",
+          "type": "Color"
+        },
+        {
+          "name": "--externalButtonColor",
+          "description": "External button text",
+          "type": "Color"
+        },
+        {
+          "name": "--externalButtonBg",
+          "description": "External button background",
+          "type": "Color"
+        }
+      ]
+    }
+  ]
+}
