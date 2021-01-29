@@ -44,6 +44,10 @@ function instantiateBookReader(selector, extraOptions) {
 
     // Override the path used to find UI images
     imagesBaseURL: '../BookReader/images/',
+    controls: {
+    //   onePage: { visible: false, className: 'onepg' },
+      // viewmode: { visible: true, className: 'viewmode' }
+    },
 
     ui: 'full', // embed, full (responsive)
 
@@ -52,4 +56,24 @@ function instantiateBookReader(selector, extraOptions) {
   $.extend(options, extraOptions);
   var br = new BookReader(options);
   br.init();
+
+  var mainBRContainer = document.querySelector('#BookReader');
+  var brWidth = 0
+  const brResizeObserver = new ResizeObserver((elements) => {
+    elements.forEach(({ contentRect, target }) => {
+      if (target === mainBRContainer) {
+        brWidth = contentRect.width;
+      }
+    });
+    setTimeout(() => {
+      if (brWidth < 640 ) {
+        console.log('br.showMinimumNavbarControls()')
+        br.showMinimumNavbarControls()
+      } else {
+        console.log('br.showMaximumNavbarControls()')
+        br.showMaximumNavbarControls()
+      }
+    }, 0);
+  });
+  brResizeObserver.observe(mainBRContainer);
 }

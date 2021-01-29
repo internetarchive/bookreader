@@ -15,6 +15,15 @@ export class Navbar {
     this.$nav = null;
     /** @type {number} */
     this.maxPageNum = null;
+
+    /** @type {Object} controls will be switch over "this.maximumControls" */
+    this.minimumControls = [
+      'viewmode'
+    ];
+    /** @type {Object} controls will be switch over "this.minimumControls" */
+    this.maximumControls = [
+      'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb'
+    ];
   }
 
   controlFor(controlName) {
@@ -33,10 +42,7 @@ export class Navbar {
 
   /** @private */
   _viewModeControls() {
-    if (this.br.options.controls.viewmode.visible) {
-      return this.controlFor('viewmode');
-    }
-    return ['onePage', 'twoPage', 'thumbnail'].map((mode) => (
+    return ['onePage', 'twoPage', 'thumbnail', 'viewmode'].map((mode) => (
       this.controlFor(mode)
     )).join('');
   }
@@ -110,6 +116,36 @@ export class Navbar {
   }
 
   /**
+   * Switch Book Navbar controls to minimised
+   * NOTE: only `this.minimumControls` and `this.maximumControls` switch on resize
+   */
+  minimumNavControls() {
+    this.minimumControls.forEach((control) => {
+      var element = document.querySelector(`.${control}`);
+      if (element) element.classList.remove('hide');
+    });
+    this.maximumControls.forEach((control) => {
+      var element = document.querySelector(`.${control}`);
+      if (element) element.classList.add('hide');
+    });
+  }
+
+  /**
+   * Switch Book Navbar controls to maximized
+   * NOTE: only `this.minimumControls` and `this.maximumControls` switch on resize
+   */
+  maximumNavControls() {
+    this.maximumControls.forEach((control) => {
+      var element = document.querySelector(`.${control}`);
+      if (element) element.classList.remove('hide');
+    });
+    this.minimumControls.forEach((control) => {
+      var element = document.querySelector(`.${control}`);
+      if (element) element.classList.add('hide');
+    });
+  }
+
+  /**
    * Initialize the navigation bar (bottom)
    * @return {JQuery}
    */
@@ -133,26 +169,26 @@ export class Navbar {
                 <p><span class='BRcurrentpage'></span></p>
               </li>
               <li>
-                <button class="BRicon book_left hide-mobile ${isRTL ? 'book_flip_next' : 'book_flip_prev'}" title="Flip left">
+                <button class="BRicon book_left ${isRTL ? 'book_flip_next' : 'book_flip_prev'}" title="Flip left">
                   <div class="icon icon-left-arrow"></div>
                   <span class="tooltip">Flip left</span>
                 </button>
               </li>
               <li>
-                <button class="BRicon book_right hide-mobile ${isRTL ? 'book_flip_prev' : 'book_flip_next'}" title="Flip right">
+                <button class="BRicon book_right ${isRTL ? 'book_flip_prev' : 'book_flip_next'}" title="Flip right">
                   <div class="icon icon-left-arrow hflip"></div>
                   <span class="tooltip">Flip right</span>
                 </button>
               </li>
               ${this._viewModeControls()}
               <li>
-                <button class="BRicon zoom_out hide-mobile" title="Zoom out">
+                <button class="BRicon zoom_out" title="Zoom out">
                   <div class="icon icon-magnify"></div>
                   <span class="tooltip">Zoom out</span>
                 </button>
               </li>
               <li>
-                <button class="BRicon zoom_in hide-mobile" title="Zoom in">
+                <button class="BRicon zoom_in" title="Zoom in">
                   <div class="icon icon-magnify plus"></div>
                   <span class="tooltip">Zoom in</span>
                 </button>

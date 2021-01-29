@@ -165,7 +165,5 @@ describe('Navbar controls overrides', () => {
     createBRWithOverrides(overrides);
 
     expect(navbar.$root.find('.viewmode').length).toBe(1);
-    expect(navbar.$root.find('.onepg').length).toBe(0);
-    expect(navbar.$root.find('.twopg').length).toBe(0);
   });
 });

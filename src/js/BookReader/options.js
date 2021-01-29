@@ -223,7 +223,7 @@ export const DEFAULT_OPTIONS = {
       className: 'thumb',
     },
     viewmode: {
-      visible: false,
+      visible: true,
       className: 'viewmode',
       excludedModes: [],
     },

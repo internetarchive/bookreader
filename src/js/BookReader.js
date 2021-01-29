@@ -1897,6 +1897,10 @@ function exposeOverrideableMethod(Class, classKey, method, brMethod = method) {
 /***********************/
 BookReader.prototype.initNavbar = Navbar.prototype.init;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'init', 'initNavbar');
+BookReader.prototype.showMinimumNavbarControls = Navbar.prototype.minimumNavControls;
+exposeOverrideableMethod(Navbar, '_components.navbar', 'minimumNavControls', 'showMinimumNavbarControls');
+BookReader.prototype.showMaximumNavbarControls = Navbar.prototype.maximumNavControls;
+exposeOverrideableMethod(Navbar, '_components.navbar', 'maximumNavControls', 'showMaximumNavbarControls');
 BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'getNavPageNumString');
 /** @deprecated */
