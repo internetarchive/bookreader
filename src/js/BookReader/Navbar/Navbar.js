@@ -134,11 +134,11 @@ export class Navbar {
    */
   minimumNavControls() {
     this.minimumControls.forEach((control) => {
-      var element = document.querySelector(`.${control}`);
+      const element = document.querySelector(`.${control}`);
       if (element) element.classList.remove('hide');
     });
     this.maximumControls.forEach((control) => {
-      var element = document.querySelector(`.${control}`);
+      const element = document.querySelector(`.${control}`);
       if (element) element.classList.add('hide');
     });
   }
@@ -149,11 +149,11 @@ export class Navbar {
    */
   maximumNavControls() {
     this.maximumControls.forEach((control) => {
-      var element = document.querySelector(`.${control}`);
+      const element = document.querySelector(`.${control}`);
       if (element) element.classList.remove('hide');
     });
     this.minimumControls.forEach((control) => {
-      var element = document.querySelector(`.${control}`);
+      const element = document.querySelector(`.${control}`);
       if (element) element.classList.add('hide');
     });
   }
@@ -166,8 +166,8 @@ export class Navbar {
     const { br } = this;
     const { navbarTitle: title } = br.options;
     const isRTL = br.pageProgression === 'rl';
-    const bookFlipLeft = isRTL ? 'book_flip_next' : 'book_flip_prev'; 
-    const bookFlipRight = isRTL ? 'book_flip_prev' : 'book_flip_next'; 
+    const bookFlipLeft = isRTL ? 'book_flip_next' : 'book_flip_prev';
+    const bookFlipRight = isRTL ? 'book_flip_prev' : 'book_flip_next';
 
     this.br.options.controls['bookLeft'].className = `book_left ${bookFlipLeft}`;
     this.br.options.controls['bookRight'].className = `book_right ${bookFlipRight}`;
