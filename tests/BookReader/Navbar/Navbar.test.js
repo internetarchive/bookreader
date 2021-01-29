@@ -159,11 +159,15 @@ describe('Navbar controls overrides', () => {
       controls: {
         viewmode: {
           visible: true
+        },
+        onePage: {
+          visible: false
         }
       }
     };
     createBRWithOverrides(overrides);
 
     expect(navbar.$root.find('.viewmode').length).toBe(1);
+    expect(navbar.$root.find('.onepg').length).toBe(0);
   });
 });

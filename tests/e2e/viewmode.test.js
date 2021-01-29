@@ -7,6 +7,10 @@ fixture `Viewmode carousel`.page `${BASE_URL}viewmode-cycle.html`;
 
 test('Clicking `view mode` cycles through view modes', async t => {
   const { nav } = (new BookReader());
+
+  // viewmode button only appear on mobile devices
+  await t.resizeWindow(400, 100)
+
   // 2up to thumb
   await t.click(nav.desktop.viewmode);
   const thumbnailContainer = await Selector('.BRmodeThumb');

@@ -101,11 +101,12 @@ export class Navbar {
           const nextViewMode = viewModes.find((m) => m.mode === viewModeOrder[0]);
 
           viewModeOrder.push(nextModeID);
-          this._updateViewModeButton($(e.currentTarget), nextViewMode.className, nextViewMode.title);
+          br.viewModeOrder = viewModeOrder;
+          this.updateViewModeButton($(e.currentTarget), nextViewMode.className, nextViewMode.title);
           br.switchMode(newViewMode.mode);
         });
       const currentViewModeButton = viewModes.find((m) => m.mode === viewModeOrder[0]);
-      this._updateViewModeButton(
+      this.updateViewModeButton(
         $button,
         currentViewModeButton.className,
         currentViewModeButton.title
@@ -113,8 +114,10 @@ export class Navbar {
     });
   }
 
-  /** @private */
-  _updateViewModeButton($button, iconClass, tooltipText) {
+  /**
+   * Toggle viewmode button to change page view
+   */
+  updateViewModeButton($button, iconClass, tooltipText) {
     $button
       .attr('title', tooltipText)
       .find('.icon')

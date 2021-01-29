@@ -95,6 +95,12 @@ BookReader.prototype.setup = function(options) {
   this.enableSearch = false;
 
   /**
+   * Store viewModeOrder states
+   * @var {boolean}
+   */
+  this.viewModeOrder = [];
+
+  /**
    * Used to supress fragment change for init with canonical URLs
    * @var {boolean}
    */
@@ -859,11 +865,14 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
           // We manually trigger the `fragmentChange` once at the end.
           this.updateFirstIndex(leaf, { suppressFragmentChange: true });
-          if (this.prevReadMode === this.constMode1up || this.prevReadMode === this.constMode2up) {
-            this.switchMode(this.prevReadMode, { suppressFragmentChange: true });
-          } else {
-            this.switchMode(this.constMode1up, { suppressFragmentChange: true });
-          }
+          // as per request in webdev-4042, we want to switch 1-up mode while clicking on thumbnail leafs
+          this.switchMode(this.constMode1up, { suppressFragmentChange: true });
+
+          // shift viewModeOrder after clicking on thumbsnail leaf
+          const nextModeID = this.viewModeOrder.shift();
+          this.viewModeOrder.push(nextModeID);
+          this.updateViewModeButton($('.viewmode'), 'twopg', 'Two-page view');
+
           this.trigger(BookReader.eventNames.fragmentChange);
           event.stopPropagation();
         });
@@ -1018,6 +1027,15 @@ BookReader.prototype.zoom = function(direction) {
  * So resize isn't perceived sharp/jerky
  */
 BookReader.prototype.resizeBRcontainer = function(animate) {
+  // we don't want navbar controls switching with liner-notes
+  if (this.options.bookType !== 'linerNotes') {
+    if (this.refs.$brContainer.prop('clientWidth') < 640) {
+      this.showMinimumNavbarControls();
+    } else {
+      this.showMaximumNavbarControls();
+    }
+  }
+
   if (animate) {
     this.refs.$brContainer.animate({
       top: this.getToolBarHeight(),
@@ -1901,6 +1919,8 @@ BookReader.prototype.showMinimumNavbarControls = Navbar.prototype.minimumNavCont
 exposeOverrideableMethod(Navbar, '_components.navbar', 'minimumNavControls', 'showMinimumNavbarControls');
 BookReader.prototype.showMaximumNavbarControls = Navbar.prototype.maximumNavControls;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'maximumNavControls', 'showMaximumNavbarControls');
+BookReader.prototype.updateViewModeButton = Navbar.prototype.updateViewModeButton;
+exposeOverrideableMethod(Navbar, '_components.navbar', 'updateViewModeButton');
 BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'getNavPageNumString');
 /** @deprecated */
