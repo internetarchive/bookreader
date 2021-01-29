@@ -57,7 +57,7 @@ const bookReaderTemplate = () =>
       }
     </style>
 
-    <div id="theatre-ia">
+    <div id="theatre-ia" class="container width-max">
       <item-navigator
         item=${encJson}
         itemType="bookreader"
