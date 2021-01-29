@@ -1,5 +1,4 @@
 import { html, LitElement } from "lit-element";
-import { nothing } from "lit-html";
 import { IAMenuSlider } from "@internetarchive/ia-menu-slider";
 import IAIcon from "@internetarchive/ia-icons";
 import { ModalConfig } from "@internetarchive/modal-manager";
@@ -175,9 +174,7 @@ export default class ItemNavigator extends LitElement {
       ({ icon, id }) => html`
         <button
           class="shortcut ${id}"
-          @click="${(e) => {
-            this.openShortcut(id);
-          }}"
+          @click="${(e) => {this.openShortcut(id);}}"
         >
           ${icon}
         </button>

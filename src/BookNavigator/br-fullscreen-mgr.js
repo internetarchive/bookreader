@@ -7,13 +7,9 @@ import Debouncer from './util/debouncer.js';
  * https://drive.google.com/drive/folders/1Ym9FDMZPiM4EbNh3NU-_2h8kizIYaLWt
  */
 export default class BRFullscreenMgr {
-  constructor(
-    readjustBookToFit = () => {},
-  ) {
-    this.readjustBookToFit = readjustBookToFit;
+  constructor() {
     this.debounceTime = 250;
-
-    this.execute = this.execute.bind(this);
+    this.setup = this.setup.bind(this);
     this.teardown = this.teardown.bind(this);
     this.resizeBookReaderContainer = this.resizeBookReaderContainer.bind(this);
     this.handleResizeEvent = this.handleResizeEvent.bind(this);
@@ -26,7 +22,7 @@ export default class BRFullscreenMgr {
    * Sets bookreader height
    * & adds resize, orientationchange listeners
    */
-  execute() {
+  setup() {
     this.resizeBookReaderContainer();
     window.addEventListener('resize', this.handleResizeEvent);
   }
@@ -52,6 +48,7 @@ export default class BRFullscreenMgr {
    * Calculates & sets BookReader's needed height to
    * take the loan bar into account
    */
+  // eslint-disable-next-line class-methods-use-this
   resizeBookReaderContainer() {
     const loanbar = document.querySelector('.BookReaderMessage');
     const bookreader = document.querySelector('#BookReader');
@@ -59,9 +56,5 @@ export default class BRFullscreenMgr {
     const windowHeight = window.innerHeight;
     const newHeight = `${(windowHeight - loanbarHeight)}px`;
     bookreader.style.height = newHeight;
-
-    setTimeout(() => {
-      this.readjustBookToFit();
-    }, this.debounceTime);
   }
 }

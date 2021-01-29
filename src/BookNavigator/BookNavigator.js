@@ -1,20 +1,20 @@
-import { html, LitElement } from 'lit-element';
-import { nothing } from 'lit-html';
-import SearchProvider from './providers/search.js';
-import DownloadProvider from './providers/download.js';
-import VisualAdjustmentProvider from './providers/visual-adjustments.js';
-import SharingProvider from '../ItemNavigator/providers/sharing.js';
-import BookmarksProvider from './providers/bookmarks.js';
-import { Book } from './BookModel.js';
-import '../ItemNavigator/ItemNavigator.js';
-import BRFullscreenMgr from './br-fullscreen-mgr.js';
-import bookLoader from './book-loader.js';
-import navigatorCSS from './styles/book-navigator.js';
+import { html, LitElement } from "lit-element";
+import { nothing } from "lit-html";
+import SearchProvider from "./providers/search.js";
+import DownloadProvider from "./providers/download.js";
+import VisualAdjustmentProvider from "./providers/visual-adjustments.js";
+import SharingProvider from "../ItemNavigator/providers/sharing.js";
+import BookmarksProvider from "./providers/bookmarks.js";
+import BRFullscreenMgr from "./br-fullscreen-mgr.js";
+import { Book } from "./BookModel.js";
+import "../ItemNavigator/ItemNavigator.js";
+import bookLoader from "./book-loader.js";
+import navigatorCSS from "./styles/book-navigator.js";
 
 const events = {
-  menuUpdated: 'menuUpdated',
-  updateSideMenu: 'updateSideMenu',
-  ViewportInFullScreen: 'ViewportInFullScreen',
+  menuUpdated: "menuUpdated",
+  updateSideMenu: "updateSideMenu",
+  ViewportInFullScreen: "ViewportInFullScreen",
 };
 export class BookNavigator extends LitElement {
   static get styles() {
@@ -24,16 +24,18 @@ export class BookNavigator extends LitElement {
   static get properties() {
     return {
       book: { type: Object },
-      bookContainerSelector: { type: String },
+      mainBRSelector: { type: String },
+      pageContainerSelector: { type: String },
+      brWidth: { type: Number },
       bookReaderLoaded: { type: Boolean },
       bookreader: { type: Object },
       downloadableTypes: { type: Array },
-      fullscreenMgr: { type: Object },
       isAdmin: { type: Boolean },
       lendingInitialized: { type: Boolean },
       lendingStatus: { type: Object },
       menuProviders: { type: Object },
       menuShortcuts: { type: Array },
+      sideMenuOpen: { type: Boolean },
       signedIn: { type: Boolean },
     };
   }
@@ -41,21 +43,24 @@ export class BookNavigator extends LitElement {
   constructor() {
     super();
     this.book = {};
-    this.bookContainerSelector = '.BRcontainer';
+    this.mainBRSelector = "#BookReader";
+    this.pageContainerSelector = ".BRcontainer";
+    this.brWidth = 0;
     this.bookReaderLoaded = false;
     this.bookreader = null;
     this.downloadableTypes = [];
-    this.fullscreenMgr = null;
     this.isAdmin = false;
     this.lendingInitialized = false;
     this.lendingStatus = {};
     this.menuProviders = {};
     this.menuShortcuts = [];
+    this.sideMenuOpen = false;
     this.signedIn = false;
 
     // Untracked properties
+    this.fullscreenMgr = new BRFullscreenMgr();
     this.model = new Book();
-    this.shortcutOrder = ['volumes', 'search', 'bookmarks'];
+    this.shortcutOrder = ["volumes", "search", "bookmarks"];
   }
 
   firstUpdated() {
@@ -73,19 +78,17 @@ export class BookNavigator extends LitElement {
    */
   initializeBookSubmenus() {
     this.menuProviders = {
-      search: new SearchProvider(
-        (brInstance = null) => {
-          if (brInstance) {
-            /* refresh br instance reference */
-            this.bookreader = brInstance;
-          }
-          this.updateMenuContents();
-          if ($(window).width() >= 640) { /* open side search menu */
-            this.openSideSearchMenu();
-          }
-        },
-        this.bookreader,
-      ),
+      search: new SearchProvider((brInstance = null) => {
+        if (brInstance) {
+          /* refresh br instance reference */
+          this.bookreader = brInstance;
+        }
+        this.updateMenuContents();
+        if (this.brWidth >= 640) {
+          /* open side search menu */
+          this.openSideSearchMenu();
+        }
+      }, this.bookreader),
       downloads: new DownloadProvider(),
       visualAdjustments: new VisualAdjustmentProvider({
         onOptionChange: (event, brInstance = null) => {
@@ -95,18 +98,30 @@ export class BookNavigator extends LitElement {
           }
           this.updateMenuContents();
         },
-        bookContainerSelector: this.bookContainerSelector,
+        bookContainerSelector: this.pageContainerSelector,
         bookreader: this.bookreader,
       }),
-      share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType),
+      share: new SharingProvider(
+        this.book.metadata,
+        this.baseHost,
+        this.itemType
+      ),
     };
 
     if (this.signedIn) {
-      this.menuProviders.bookmarks = new BookmarksProvider(this.bookmarksOptions, this.bookreader);
+      this.menuProviders.bookmarks = new BookmarksProvider(
+        this.bookmarksOptions,
+        this.bookreader
+      );
     }
 
-    this.addMenuShortcut('search'); /* start with search as a shortcut */
+    this.addMenuShortcut("search"); /* start with search as a shortcut */
     this.updateMenuContents();
+  }
+
+  /** gets element that houses the bookreader in light dom */
+  get mainBRContainer() {
+    return document.querySelector(this.mainBRSelector);
   }
 
   get bookmarksOptions() {
@@ -114,8 +129,8 @@ export class BookNavigator extends LitElement {
       showItemNavigatorModal: this.showItemNavigatorModal.bind(this),
       closeItemNavigatorModal: this.closeItemNavigatorModal.bind(this),
       onBookmarksChanged: (bookmarks) => {
-        const method = bookmarks.length ? 'add' : 'remove';
-        this[`${method}MenuShortcut`]('bookmarks');
+        const method = bookmarks.length ? "add" : "remove";
+        this[`${method}MenuShortcut`]("bookmarks");
         this.updateMenuContents();
       },
     };
@@ -125,11 +140,9 @@ export class BookNavigator extends LitElement {
    * Open side search menu
    */
   openSideSearchMenu() {
-    const event = new CustomEvent(
-      events.updateSideMenu, {
-        detail: { menuId: 'search', action: 'open' },
-      },
-    );
+    const event = new CustomEvent(events.updateSideMenu, {
+      detail: { menuId: "search", action: "open" },
+    });
     this.dispatchEvent(event);
   }
 
@@ -138,20 +151,22 @@ export class BookNavigator extends LitElement {
    */
   updateMenuContents() {
     const {
-      search, downloads, visualAdjustments, share, bookmarks,
+      search,
+      downloads,
+      visualAdjustments,
+      share,
+      bookmarks = {},
     } = this.menuProviders;
-    const menu = [search, visualAdjustments, share, bookmarks];
+    const menu = [search, bookmarks, visualAdjustments, share];
 
     if (this.shouldShowDownloadsMenu()) {
       downloads.update(this.downloadableTypes);
       menu.splice(1, 0, downloads);
     }
 
-    const event = new CustomEvent(
-      events.menuUpdated, {
-        detail: menu,
-      },
-    );
+    const event = new CustomEvent(events.menuUpdated, {
+      detail: menu,
+    });
     this.dispatchEvent(event);
   }
 
@@ -160,13 +175,20 @@ export class BookNavigator extends LitElement {
    * @returns {bool}
    */
   shouldShowDownloadsMenu() {
-    if (this.isAdmin) { return true; }
+    if (this.isAdmin) {
+      return true;
+    }
     const { user_loan_record = {} } = this.lendingStatus;
-    const hasNoLoanRecord = Array.isArray(user_loan_record); /* (bc PHP assoc. arrays) */
+    const hasNoLoanRecord = Array.isArray(
+      user_loan_record
+    ); /* (bc PHP assoc. arrays) */
 
-    if (hasNoLoanRecord) { return false; }
+    if (hasNoLoanRecord) {
+      return false;
+    }
 
-    const hasValidLoan = user_loan_record.type && (user_loan_record.type !== 'SESSION_LOAN');
+    const hasValidLoan =
+      user_loan_record.type && user_loan_record.type !== "SESSION_LOAN";
     return hasValidLoan;
   }
 
@@ -178,7 +200,9 @@ export class BookNavigator extends LitElement {
    * @param {string} menuId - a string matching the id property of a provider
    */
   addMenuShortcut(menuId) {
-    if (this.menuShortcuts.find((m) => m.id === menuId)) { return; }
+    if (this.menuShortcuts.find((m) => m.id === menuId)) {
+      return;
+    }
 
     this.menuShortcuts.push(this.menuProviders[menuId]);
     this.sortMenuShortcuts();
@@ -203,13 +227,15 @@ export class BookNavigator extends LitElement {
   sortMenuShortcuts() {
     this.menuShortcuts = this.shortcutOrder.reduce((shortcuts, id) => {
       const menu = this.menuShortcuts.find((m) => m.id === id);
-      if (menu) { shortcuts.push(menu); }
+      if (menu) {
+        shortcuts.push(menu);
+      }
       return shortcuts;
     }, []);
   }
 
   emitMenuShortcutsUpdated() {
-    const event = new CustomEvent('menuShortcutsUpdated', {
+    const event = new CustomEvent("menuShortcutsUpdated", {
       detail: this.menuShortcuts,
     });
     this.dispatchEvent(event);
@@ -222,29 +248,39 @@ export class BookNavigator extends LitElement {
    * Please update Book Navigator's instance reference of it to keep it current
    */
   bindEventListeners() {
-    window.addEventListener('BookReader:PostInit', (e) => {
+    window.addEventListener("BookReader:PostInit", (e) => {
       this.bookreader = e.detail.props;
       this.bookReaderLoaded = true;
       this.initializeBookSubmenus();
+      this.mainBRSelector = this.br?.el || "#BookReader";
       setTimeout(() => this.bookreader.resize(), 0);
-      const brSelector = this.br?.el || '#BookReader';
       // eslint-disable-next-line compat/compat
-      const brResizeObserver = new ResizeObserver((elements) => this.resizeBookReader());
-      brResizeObserver.observe(document.querySelector(brSelector));
+      const brResizeObserver = new ResizeObserver((elements) =>
+        this.reactToBrResize(elements)
+      );
+      brResizeObserver.observe(this.mainBRContainer);
     });
-    window.addEventListener('BookReader:fullscreenToggled', (event) => {
-      const { detail: { props: brInstance = null } } = event;
-      if (brInstance) {
-        this.bookreader = brInstance;
-      }
-      this.manageFullScreenBehavior(event);
-    }, { passive: true });
-    window.addEventListener('BookReader:ToggleSearchMenu', (event) => {
-      this.dispatchEvent(new CustomEvent(events.updateSideMenu, {
-        detail: { menuId: 'search', action: 'toggle' },
-      }));
+    window.addEventListener(
+      "BookReader:fullscreenToggled",
+      (event) => {
+        const {
+          detail: { props: brInstance = null },
+        } = event;
+        if (brInstance) {
+          this.bookreader = brInstance;
+        }
+        this.manageFullScreenBehavior(event);
+      },
+      { passive: true }
+    );
+    window.addEventListener("BookReader:ToggleSearchMenu", (event) => {
+      this.dispatchEvent(
+        new CustomEvent(events.updateSideMenu, {
+          detail: { menuId: "search", action: "toggle" },
+        })
+      );
     });
-    window.addEventListener('LendingFlow:PostInit', ({ detail }) => {
+    window.addEventListener("LendingFlow:PostInit", ({ detail }) => {
       const { downloadTypesAvailable, lendingStatus, isAdmin } = detail;
       this.lendingInitialized = true;
       this.downloadableTypes = downloadTypesAvailable;
@@ -253,26 +289,46 @@ export class BookNavigator extends LitElement {
     });
   }
 
-  resizeBookReader() {
-    // eslint-disable-next-line no-unused-expressions
-    this.bookreader?.resize();
+  /**
+   * Uses resize observer to fire BookReader's `resize` functionality
+   * We do not want to trigger resize IF:
+   *  - book animation is happening
+   *  - book is in fullscreen (fullscreen is handled separately)
+   *
+   * @param { Object } entries - resize observer entries
+   */
+  reactToBrResize(entries = []) {
+    const startBrWidth = this.brWidth;
+    const { animating } = this.bookreader;
+
+    entries.forEach(({ contentRect, target }) => {
+      if (target === this.mainBRContainer) {
+        this.brWidth = contentRect.width;
+      }
+    });
+    setTimeout(() => {
+      if (startBrWidth && !animating) {
+        this.bookreader.resize();
+      }
+    }, 0);
   }
 
+  /**
+   * Manages Fullscreen behavior
+   * This makes sure that controls are _always_ in view
+   * We need this to accommodate LOAN BAR during fullscreen
+   * @param { Event } event
+   */
   manageFullScreenBehavior(event) {
     this.emitFullScreenState(event);
 
-    const isFullscreen = !!this.bookreader.isFullscreenActive;
-    const showFullscreen = () => {
-      window.scroll(0, 0); // to compensate for BR's original CSS gaps
-      setTimeout(() => this.bookreader.resize(), 250);
-    };
+    const { isFullscreenActive } = this.bookreader;
 
-    if (!isFullscreen && this.fullscreenMgr) {
+    // log("manageFullScreenBehavior - isFullScreen ", isFullscreenActive);
+    if (!isFullscreenActive) {
       this.fullscreenMgr.teardown();
-      this.bookreader.resize();
     } else {
-      this.fullscreenMgr = new BRFullscreenMgr(showFullscreen);
-      this.fullscreenMgr.execute();
+      this.fullscreenMgr.setup();
     }
   }
 
@@ -284,20 +340,22 @@ export class BookNavigator extends LitElement {
     const { props: brInstance } = detail;
 
     const isFullScreen = brInstance.isFullscreenActive;
-    const event = new CustomEvent('ViewportInFullScreen', {
+    const event = new CustomEvent("ViewportInFullScreen", {
       detail: { isFullScreen },
     });
     this.dispatchEvent(event);
   }
 
   emitShowItemNavigatorModal(e) {
-    this.dispatchEvent(new CustomEvent('showItemNavigatorModal', {
-      detail: e.detail,
-    }));
+    this.dispatchEvent(
+      new CustomEvent("showItemNavigatorModal", {
+        detail: e.detail,
+      })
+    );
   }
 
   emitCloseItemNavigatorModal() {
-    this.dispatchEvent(new CustomEvent('closeItemNavigatorModal'));
+    this.dispatchEvent(new CustomEvent("closeItemNavigatorModal"));
   }
 
   showItemNavigatorModal(e) {
@@ -310,23 +368,26 @@ export class BookNavigator extends LitElement {
 
   get loader() {
     const loader = html`
-      <div class="book-loader">${bookLoader}<div>
-      <h3>Loading viewer</h3>
+      <div class="book-loader">
+        ${bookLoader}
+        <div>
+          <h3>Loading viewer</h3>
+        </div>
+      </div>
     `;
     return !this.bookReaderLoaded ? loader : nothing;
   }
 
   get loadingClass() {
-    return !this.bookReaderLoaded ? 'loading' : '';
+    return !this.bookReaderLoaded ? "loading" : "";
   }
 
   render() {
     return html`<div id="book-navigator" class="${this.loadingClass}">
       ${this.loader}
       <slot name="bookreader"></slot>
-    </div>
-  `;
+    </div> `;
   }
 }
 
-customElements.define('book-navigator', BookNavigator);
+customElements.define("book-navigator", BookNavigator);

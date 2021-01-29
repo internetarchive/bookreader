@@ -1,8 +1,7 @@
 import { css } from "lit-element";
+
 const subnavWidth = css`var(--menuWidth, 320px)`;
-const tabletPlusQuery = css`
-  @media (min-width: 640px);
-`;
+const tabletPlusQuery = css`@media (min-width: 640px)`;
 const transitionTiming = css`var(--animationTiming, 200ms)`;
 const transitionEffect = css`transform ${transitionTiming} ease-out`;
 

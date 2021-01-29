@@ -3,11 +3,22 @@ import { html, render } from "lit-html";
 const sampleJson = require("./sample.json");
 const encJson = btoa(JSON.stringify(sampleJson));
 
+import "../BookNavigator/BookNavigator.js";
 import "../ItemNavigator/ItemNavigator.js";
 
 const bookReaderTemplate = () =>
   html`
     <style>
+      #bookreader-container {
+        background-color: #000000;
+        position:relative;
+        width: 100vw;
+      }
+
+      .BookReader {
+        width: 100%;
+      }
+
       item-navigator {
         display: block;
         width: 100%;
@@ -57,16 +68,23 @@ const bookReaderTemplate = () =>
       }
     </style>
 
-    <div id="theatre-ia" class="container width-max">
-      <item-navigator
-        item=${encJson}
-        itemType="bookreader"
-        basehost="archive.org"
-      >
-        <div id="IABookReaderWrapper" class="internal-beta" slot="bookreader">
-          <div id="BookReader" class="BookReader"></div>
+    <div id="theatre-ia-wrap" class="container container-ia width-max ">
+      <div id="theatre-ia" class="container width-max">
+        <div class="row">
+          <div class="xs-col-12">
+            <div id="IABookReaderMessageWrapper" style="display:none;"></div>
+            <item-navigator
+              item=${encJson}
+              itemType="bookreader"
+              basehost="archive.org"
+            >
+              <div id="IABookReaderWrapper" class="internal-beta" slot="bookreader">
+                <div id="BookReader" class="BookReader"></div>
+              </div>
+            </item-navigator>
+          </div>
         </div>
-      </item-navigator>
+      </div>
     </div>
   `;
 
