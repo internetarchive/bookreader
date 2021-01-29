@@ -207,25 +207,58 @@ export const DEFAULT_OPTIONS = {
   getEmbedCode: null,
 
   controls: {
-    onePage: {
-      label: 'One-page view',
+    bookLeft: {
       visible: true,
+      label: 'Flip left',
+      className: 'book_left',
+      iconClassName: 'left-arrow'
+    },
+    bookRight: {
+      visible: true,
+      label: 'Flip right',
+      className: 'book_right',
+      iconClassName: 'left-arrow hflip'
+    },
+    onePage: {
+      visible: true,
+      label: 'One-page view',
       className: 'onepg',
+      iconClassName: 'onepg'
     },
     twoPage: {
-      label: 'Two-page view',
       visible: true,
+      label: 'Two-page view',
       className: 'twopg',
+      iconClassName: 'twopg'
     },
     thumbnail: {
-      label: 'Thumbnail view',
       visible: true,
+      label: 'Thumbnail view',
       className: 'thumb',
+      iconClassName: 'thumb'
     },
     viewmode: {
       visible: true,
       className: 'viewmode',
       excludedModes: [],
+    },
+    zoomOut: {
+      visible: true,
+      label: 'Zoom out',
+      className: 'zoom_out',
+      iconClassName: 'magnify'
+    },
+    zoomIn: {
+      visible: true,
+      label: 'Zoom in',
+      className: 'zoom_in',
+      iconClassName: 'magnify plus'
+    },
+    fullScreen: {
+      visible: true,
+      label: 'Toggle fullscreen',
+      className: 'full',
+      iconClassName: 'fullscreen'
     },
   },
 

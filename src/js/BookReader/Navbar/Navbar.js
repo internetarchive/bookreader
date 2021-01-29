@@ -34,15 +34,25 @@ export class Navbar {
     }
     return `<li>
       <button class="BRicon ${option.className}" title="${option.label}">
-        <div class="icon icon-${option.className}"></div>
+        <div class="icon icon-${option.iconClassName}"></div>
         <span class="tooltip">${option.label}</span>
       </button>
     </li>`;
   }
 
   /** @private */
-  _viewModeControls() {
-    return ['onePage', 'twoPage', 'thumbnail', 'viewmode'].map((mode) => (
+  _renderControls() {
+    return [
+      'bookLeft',
+      'bookRight',
+      'onePage',
+      'twoPage',
+      'thumbnail',
+      'viewmode',
+      'zoomOut',
+      'zoomIn',
+      'fullScreen',
+    ].map((mode) => (
       this.controlFor(mode)
     )).join('');
   }
@@ -153,6 +163,11 @@ export class Navbar {
     const { br } = this;
     const { navbarTitle: title } = br.options;
     const isRTL = br.pageProgression === 'rl';
+    const bookFlipLeft = isRTL ? 'book_flip_next' : 'book_flip_prev'; 
+    const bookFlipRight = isRTL ? 'book_flip_prev' : 'book_flip_next'; 
+
+    this.br.options.controls['bookLeft'].className = `book_left ${bookFlipLeft}`;
+    this.br.options.controls['bookRight'].className = `book_right ${bookFlipRight}`;
 
     br.refs.$BRfooter = this.$root = $(`<div class="BRfooter"></div>`);
     br.refs.$BRnav = this.$nav = $(
@@ -168,37 +183,7 @@ export class Navbar {
                 </div>
                 <p><span class='BRcurrentpage'></span></p>
               </li>
-              <li>
-                <button class="BRicon book_left ${isRTL ? 'book_flip_next' : 'book_flip_prev'}" title="Flip left">
-                  <div class="icon icon-left-arrow"></div>
-                  <span class="tooltip">Flip left</span>
-                </button>
-              </li>
-              <li>
-                <button class="BRicon book_right ${isRTL ? 'book_flip_prev' : 'book_flip_next'}" title="Flip right">
-                  <div class="icon icon-left-arrow hflip"></div>
-                  <span class="tooltip">Flip right</span>
-                </button>
-              </li>
-              ${this._viewModeControls()}
-              <li>
-                <button class="BRicon zoom_out" title="Zoom out">
-                  <div class="icon icon-magnify"></div>
-                  <span class="tooltip">Zoom out</span>
-                </button>
-              </li>
-              <li>
-                <button class="BRicon zoom_in" title="Zoom in">
-                  <div class="icon icon-magnify plus"></div>
-                  <span class="tooltip">Zoom in</span>
-                </button>
-              </li>
-              <li>
-                <button class="BRicon full" title="Toggle fullscreen">
-                  <div class="icon icon-fullscreen"></div>
-                  <span class="tooltip">Toggle fullscreen</span>
-                </button>
-              </li>
+              ${this._renderControls()}
             </ul>
           </nav>
         </div>`);
