@@ -1,4 +1,4 @@
-import Debouncer from './util/debouncer.js';
+import Debouncer from "../util/debouncer.js";
 
 /**
  * Manages fullscreen size
@@ -14,7 +14,9 @@ export default class BRFullscreenMgr {
     this.resizeBookReaderContainer = this.resizeBookReaderContainer.bind(this);
     this.handleResizeEvent = this.handleResizeEvent.bind(this);
     this.handleBookReaderHeight = new Debouncer(
-      this.resizeBookReaderContainer, this.debounceTime, this,
+      this.resizeBookReaderContainer,
+      this.debounceTime,
+      this
     );
   }
 
@@ -24,7 +26,7 @@ export default class BRFullscreenMgr {
    */
   setup() {
     this.resizeBookReaderContainer();
-    window.addEventListener('resize', this.handleResizeEvent);
+    window.addEventListener("resize", this.handleResizeEvent);
   }
 
   /**
@@ -32,9 +34,9 @@ export default class BRFullscreenMgr {
    * & removes event handlers
    */
   teardown() {
-    const bookreader = document.querySelector('#BookReader');
-    bookreader.setAttribute('style', '');
-    window.removeEventListener('resize', this.handleResizeEvent);
+    const bookreader = document.querySelector("#BookReader");
+    bookreader.setAttribute("style", "");
+    window.removeEventListener("resize", this.handleResizeEvent);
   }
 
   /**
@@ -50,11 +52,11 @@ export default class BRFullscreenMgr {
    */
   // eslint-disable-next-line class-methods-use-this
   resizeBookReaderContainer() {
-    const loanbar = document.querySelector('.BookReaderMessage');
-    const bookreader = document.querySelector('#BookReader');
+    const loanbar = document.querySelector(".BookReaderMessage");
+    const bookreader = document.querySelector("#BookReader");
     const loanbarHeight = loanbar?.offsetHeight ?? 0;
     const windowHeight = window.innerHeight;
-    const newHeight = `${(windowHeight - loanbarHeight)}px`;
+    const newHeight = `${windowHeight - loanbarHeight}px`;
     bookreader.style.height = newHeight;
   }
 }
