@@ -476,6 +476,9 @@ BookReader.prototype.init = function() {
     }
   }
 
+  // Switch navbar controls on mobile/desktop
+  this.switchNavbarControls();
+
   this.resizeBRcontainer();
   this.updateFromParams(params);
   this.initUIStrings();
@@ -554,6 +557,9 @@ BookReader.prototype.resize = function() {
   if (!this.init.initComplete) return;
 
   this.resizeBRcontainer();
+
+  // Switch navbar controls on mobile/desktop
+  this.switchNavbarControls();
 
   if (this.constMode1up == this.mode) {
     if (this.onePage.autofit != 'none') {
@@ -1027,15 +1033,6 @@ BookReader.prototype.zoom = function(direction) {
  * So resize isn't perceived sharp/jerky
  */
 BookReader.prototype.resizeBRcontainer = function(animate) {
-  // we don't want navbar controls switching with liner-notes
-  if (this.options.bookType !== 'linerNotes') {
-    if (this.refs.$brContainer.prop('clientWidth') < 640) {
-      this.showMinimumNavbarControls();
-    } else {
-      this.showMaximumNavbarControls();
-    }
-  }
-
   if (animate) {
     this.refs.$brContainer.animate({
       top: this.getToolBarHeight(),
@@ -1915,10 +1912,8 @@ function exposeOverrideableMethod(Class, classKey, method, brMethod = method) {
 /***********************/
 BookReader.prototype.initNavbar = Navbar.prototype.init;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'init', 'initNavbar');
-BookReader.prototype.showMinimumNavbarControls = Navbar.prototype.minimumNavControls;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'minimumNavControls', 'showMinimumNavbarControls');
-BookReader.prototype.showMaximumNavbarControls = Navbar.prototype.maximumNavControls;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'maximumNavControls', 'showMaximumNavbarControls');
+BookReader.prototype.switchNavbarControls = Navbar.prototype.switchNavbarControls;
+exposeOverrideableMethod(Navbar, '_components.navbar', 'switchNavbarControls');
 BookReader.prototype.updateViewModeButton = Navbar.prototype.updateViewModeButton;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'updateViewModeButton');
 BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;

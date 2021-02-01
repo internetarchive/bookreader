@@ -129,10 +129,24 @@ export class Navbar {
   }
 
   /**
+   * Switch navbar controls on mobile and desktop
+   */
+  switchNavbarControls() {
+     // we don't want navbar controls switching with liner-notes
+    if (this.br.options.bookType !== 'linerNotes') {
+      if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
+        this.showMinimumNavbarControls();
+      } else {
+        this.showMaximumNavbarControls();
+      }
+    }
+  };
+
+  /**
    * Switch Book Navbar controls to minimised
    * NOTE: only `this.minimumControls` and `this.maximumControls` switch on resize
    */
-  minimumNavControls() {
+  showMinimumNavbarControls() {
     this.minimumControls.forEach((control) => {
       const element = document.querySelector(`.controls .${control}`);
       if (element) element.classList.remove('hide');
@@ -147,7 +161,7 @@ export class Navbar {
    * Switch Book Navbar controls to maximized
    * NOTE: only `this.minimumControls` and `this.maximumControls` switch on resize
    */
-  maximumNavControls() {
+  showMaximumNavbarControls() {
     this.maximumControls.forEach((control) => {
       const element = document.querySelector(`.controls .${control}`);
       if (element) element.classList.remove('hide');
