@@ -134,11 +134,11 @@ export class Navbar {
    */
   minimumNavControls() {
     this.minimumControls.forEach((control) => {
-      const element = document.querySelector(`.${control}`);
+      const element = document.querySelector(`.controls .${control}`);
       if (element) element.classList.remove('hide');
     });
     this.maximumControls.forEach((control) => {
-      const element = document.querySelector(`.${control}`);
+      const element = document.querySelector(`.controls .${control}`);
       if (element) element.classList.add('hide');
     });
   }
@@ -149,11 +149,11 @@ export class Navbar {
    */
   maximumNavControls() {
     this.maximumControls.forEach((control) => {
-      const element = document.querySelector(`.${control}`);
+      const element = document.querySelector(`.controls .${control}`);
       if (element) element.classList.remove('hide');
     });
     this.minimumControls.forEach((control) => {
-      const element = document.querySelector(`.${control}`);
+      const element = document.querySelector(`.controls .${control}`);
       if (element) element.classList.add('hide');
     });
   }
