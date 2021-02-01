@@ -11,8 +11,9 @@ const bookReaderTemplate = () =>
     <style>
       #bookreader-container {
         background-color: #000000;
-        position:relative;
+        position: relative;
         width: 100vw;
+        height: 80vh;
       }
 
       .BookReader {
@@ -69,7 +70,7 @@ const bookReaderTemplate = () =>
     </style>
 
     <div id="theatre-ia-wrap" class="container container-ia width-max ">
-      <div id="theatre-ia" class="container width-max">
+      <div id="theatre-ia" class="width-max">
         <div class="row">
           <div class="xs-col-12">
             <div id="IABookReaderMessageWrapper" style="display:none;"></div>
@@ -78,7 +79,11 @@ const bookReaderTemplate = () =>
               itemType="bookreader"
               basehost="archive.org"
             >
-              <div id="IABookReaderWrapper" class="internal-beta" slot="bookreader">
+              <div
+                id="IABookReaderWrapper"
+                class="internal-beta"
+                slot="bookreader"
+              >
                 <div id="BookReader" class="BookReader"></div>
               </div>
             </item-navigator>
@@ -89,4 +94,5 @@ const bookReaderTemplate = () =>
   `;
 
 // Render the template to the document
+debugger;
 render(bookReaderTemplate(), document.querySelector("#bookreader-container"));

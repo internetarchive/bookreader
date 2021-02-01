@@ -17,7 +17,7 @@
     <script src="../BookReader/BookReader.js"></script>
 
     <!-- plugins needed for archive.org, in same order as archive.org -->
-    <script src="../BookReader/plugins/plugin.mobile_nav.js"></script>
+    <!-- <script src="../BookReader/plugins/plugin.mobile_nav.js"></script> -->
     <script src="../BookReader/plugins/plugin.search.js"></script>
     <script src="../BookReader/plugins/plugin.chapters.js"></script>
     <script src="../BookReader/plugins/plugin.tts.js"></script>
@@ -28,7 +28,7 @@
     <script src="../BookReader/plugins/plugin.text_selection.js"></script>
 
     <!-- CSS only -->
-    <link rel="stylesheet" href="https://archive.org/includes/build/css/archive.min.css?v=a1b4a923" />
+    <link rel="stylesheet" href="https://archive.org/includes/build/css/archive.min.css?v=a1b4a923"/>
 
     <link rel="stylesheet" href="BookReaderDemo.css" />
 
@@ -37,7 +37,6 @@
 
   <body>
     <div id="bookreader-container">
-      <div id="IABookReaderMessageWrapper" style="display: none"></div>
       <div>
         Internet Archive BookReader Demo<br />
         <noscript>
@@ -62,7 +61,9 @@
       // Temp; Circumvent bug in BookReaderJSIA code
       window.Sentry = null;
 
-      var script_url = "https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=" + ocaid;
+      var script_url =
+        "https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=" +
+        ocaid;
       document.getElementById("pageUrl").src = script_url;
     </script>
   </body>
