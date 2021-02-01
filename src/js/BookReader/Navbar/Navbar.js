@@ -132,7 +132,7 @@ export class Navbar {
    * Switch navbar controls on mobile and desktop
    */
   switchNavbarControls() {
-     // we don't want navbar controls switching with liner-notes
+    // we don't want navbar controls switching with liner-notes
     if (this.br.options.bookType !== 'linerNotes') {
       if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
         this.showMinimumNavbarControls();
@@ -140,7 +140,7 @@ export class Navbar {
         this.showMaximumNavbarControls();
       }
     }
-  };
+  }
 
   /**
    * Switch Book Navbar controls to minimised
