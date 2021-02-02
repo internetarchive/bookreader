@@ -159,6 +159,9 @@ describe('Navbar controls overrides', () => {
       controls: {
         viewmode: {
           visible: true
+        },
+        onePage: {
+          visible: false
         }
       }
     };
@@ -166,6 +169,5 @@ describe('Navbar controls overrides', () => {
 
     expect(navbar.$root.find('.viewmode').length).toBe(1);
     expect(navbar.$root.find('.onepg').length).toBe(0);
-    expect(navbar.$root.find('.twopg').length).toBe(0);
   });
 });

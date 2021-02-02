@@ -106,10 +106,8 @@
     &:hover .tooltip {
       display: block;
     }
-    @media (max-width: 480px) {
-      &.hide-mobile {
-        display: none;
-      }
+    &.hide {
+      display: none;
     }
   }
 }
