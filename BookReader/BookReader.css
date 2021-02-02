@@ -1030,10 +1030,8 @@ i.BRicon {
 .BRfooter button:hover .tooltip {
   display: block;
 }
-@media (max-width: 480px) {
-  .BRfooter button.hide-mobile {
-    display: none;
-  }
+.BRfooter button.hide {
+  display: none;
 }
 
 .BRReadAloudToolbar {

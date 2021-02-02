@@ -1,3 +1,6 @@
+# 4.30.0
+Fix: all view modes on desktop & view mode toggl on mobile are now default. @nsharma123
+
 # 4.28.0
 Fix: adding alt tags to images @nsharma123
 # 4.27.0
