@@ -12,7 +12,6 @@ body {
 }
 
 .BookReader {
-    max-width: 800px;
     height: 600px;
     overflow: hidden;
     margin: 0 auto;
