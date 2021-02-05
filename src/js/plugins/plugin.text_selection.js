@@ -14,6 +14,27 @@ export const DEFAULT_OPTIONS = {
 };
 /** @typedef {typeof DEFAULT_OPTIONS} TextSelectionPluginOptions */
 
+/**
+ * @template T
+ */
+export class Cache {
+  constructor(maxSize = 10) {
+    this.maxSize = maxSize;
+    /** @type {T[]} */
+    this.entries = [];
+  }
+
+  /**
+   * @param {T} entry
+   */
+  add(entry) {
+    if (this.entries.length >= this.maxSize) {
+      this.entries.shift();
+    }
+    this.entries.push(entry);
+  }
+}
+
 export class TextSelectionPlugin {
 
   constructor(options = DEFAULT_OPTIONS, optionVariables, avoidTspans = isFirefox(), pointerEventsOnParagraph = isSafari()) {
@@ -34,6 +55,9 @@ export class TextSelectionPlugin {
       this.svgParagraphElement = "g";
       this.svgWordElement = "text";
     }
+
+    /** @type {Cache<{index: number, response: any}>} */
+    this.pageTextCache = new Cache();
   }
 
   init() {
@@ -60,6 +84,10 @@ export class TextSelectionPlugin {
    */
   async getPageText(index) {
     if (this.options.singlePageDjvuXmlUrl) {
+      const cachedEntry = this.pageTextCache.entries.find(x => x.index == index);
+      if (cachedEntry) {
+        return cachedEntry.response;
+      }
       return $.ajax({
         type: "GET",
         url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
@@ -68,7 +96,9 @@ export class TextSelectionPlugin {
       }).then((res) => {
         try {
           const xmlDoc = $.parseXML(res);
-          return xmlDoc && $(xmlDoc).find("OBJECT")[0];
+          const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
+          this.pageTextCache.add({ index, response: result });
+          return result;
         } catch (e) {
           return undefined;
         }
