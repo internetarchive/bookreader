@@ -28,7 +28,7 @@ export class Cache {
    * @param {T} entry
    */
   add(entry) {
-    if (this.entries.length > this.maxSize) {
+    if (this.entries.length >= this.maxSize) {
       this.entries.shift();
     }
     this.entries.push(entry);
