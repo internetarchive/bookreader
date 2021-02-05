@@ -34,6 +34,20 @@ export class TextSelectionPlugin {
       this.svgParagraphElement = "g";
       this.svgWordElement = "text";
     }
+
+    /** @type {{index: number, response: any}[]} */
+    this.pageTextCache = [];
+    this.pageTextCacheMaxSize = 10;
+  }
+
+  /**
+   * @param {{index: number, response: any}} entry
+   */
+  addToPageTextCache(entry) {
+    if (this.pageTextCache.length > this.pageTextCacheMaxSize) {
+      this.pageTextCache.shift();
+    }
+    this.pageTextCache.push(entry);
   }
 
   init() {
@@ -60,6 +74,10 @@ export class TextSelectionPlugin {
    */
   async getPageText(index) {
     if (this.options.singlePageDjvuXmlUrl) {
+      const cachedEntry = this.pageTextCache.find(x => x.index == index);
+      if (cachedEntry) {
+        return cachedEntry.response;
+      }
       return $.ajax({
         type: "GET",
         url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
@@ -68,7 +86,9 @@ export class TextSelectionPlugin {
       }).then((res) => {
         try {
           const xmlDoc = $.parseXML(res);
-          return xmlDoc && $(xmlDoc).find("OBJECT")[0];
+          const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
+          this.addToPageTextCache({ index, response: result });
+          return result;
         } catch (e) {
           return undefined;
         }
