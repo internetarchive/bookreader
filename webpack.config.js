@@ -39,6 +39,7 @@ module.exports = [
       'plugins/plugin.autoplay.js': { import: './src/js/plugins/plugin.autoplay.js', dependOn: 'BookReader.js' },
       'plugins/plugin.chapters.js': { import: './src/js/plugins/plugin.chapters.js', dependOn: 'BookReader.js' },
       'plugins/plugin.iframe.js': { import: './src/js/plugins/plugin.iframe.js', dependOn: 'BookReader.js' },
+      'plugins/plugin.item_nav.js': { import: './src/js/plugins/plugin.item_nav.js', dependOn: 'BookReader.js' },
       'plugins/plugin.menu_toggle.js': { import: './src/js/plugins/menu_toggle/plugin.menu_toggle.js', dependOn: 'BookReader.js' },
       'plugins/plugin.mobile_nav.js': { import: './src/js/plugins/plugin.mobile_nav.js', dependOn: 'BookReader.js' },
       'plugins/plugin.resume.js': { import: './src/js/plugins/plugin.resume.js', dependOn: 'BookReader.js' },
