@@ -1,3 +1,6 @@
+# 4.31.0
+Dev: demo cleanup with @cdrini
+Fix: 2up - pass reduction factors when creating image urls @iisa
 # 4.30.0
 Fix: all view modes on desktop & view mode toggl on mobile are now default. @nsharma123
 
