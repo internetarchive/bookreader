@@ -1,3 +1,6 @@
+# 4.32.0
+Fix: slim down prefetch group @iisa
+Fix: TTS caches xml @cdrini 
 # 4.31.0
 Dev: demo cleanup with @cdrini
 Fix: 2up - pass reduction factors when creating image urls @iisa
