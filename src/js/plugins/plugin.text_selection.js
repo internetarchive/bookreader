@@ -14,6 +14,27 @@ export const DEFAULT_OPTIONS = {
 };
 /** @typedef {typeof DEFAULT_OPTIONS} TextSelectionPluginOptions */
 
+/**
+ * @template T
+ */
+export class Cache {
+  constructor(maxSize = 10) {
+    this.maxSize = maxSize;
+    /** @type {T[]} */
+    this.entries = [];
+  }
+
+  /**
+   * @param {T} entry
+   */
+  add(entry) {
+    if (this.entries.length > this.maxSize) {
+      this.entries.shift();
+    }
+    this.entries.push(entry);
+  }
+}
+
 export class TextSelectionPlugin {
 
   constructor(options = DEFAULT_OPTIONS, optionVariables, avoidTspans = isFirefox(), pointerEventsOnParagraph = isSafari()) {
@@ -35,19 +56,8 @@ export class TextSelectionPlugin {
       this.svgWordElement = "text";
     }
 
-    /** @type {{index: number, response: any}[]} */
-    this.pageTextCache = [];
-    this.pageTextCacheMaxSize = 10;
-  }
-
-  /**
-   * @param {{index: number, response: any}} entry
-   */
-  addToPageTextCache(entry) {
-    if (this.pageTextCache.length > this.pageTextCacheMaxSize) {
-      this.pageTextCache.shift();
-    }
-    this.pageTextCache.push(entry);
+    /** @type {Cache<{index: number, response: any}>} */
+    this.pageTextCache = new Cache();
   }
 
   init() {
@@ -74,7 +84,7 @@ export class TextSelectionPlugin {
    */
   async getPageText(index) {
     if (this.options.singlePageDjvuXmlUrl) {
-      const cachedEntry = this.pageTextCache.find(x => x.index == index);
+      const cachedEntry = this.pageTextCache.entries.find(x => x.index == index);
       if (cachedEntry) {
         return cachedEntry.response;
       }
@@ -87,7 +97,7 @@ export class TextSelectionPlugin {
         try {
           const xmlDoc = $.parseXML(res);
           const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
-          this.addToPageTextCache({ index, response: result });
+          this.pageTextCache.add({ index, response: result });
           return result;
         } catch (e) {
           return undefined;
