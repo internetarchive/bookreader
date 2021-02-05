@@ -1680,9 +1680,9 @@ BookReader.prototype._scrollAmount = function() {
   return parseInt(0.9 * this.refs.$brContainer.prop('clientHeight'));
 };
 
-BookReader.prototype.prefetchImg = function(index, optionalReduction) {
-  var pageURI = this._getPageURI(index, optionalReduction);
-  const pageURISrcset = this.options.useSrcSet ? this._getPageURISrcset(index) : [];
+BookReader.prototype.prefetchImg = function(index) {
+  var pageURI = this._getPageURI(index, this.reduce);
+  const pageURISrcset = this.options.useSrcSet ? this._getPageURISrcset(index, this.reduce) : [];
 
   // Load image if not loaded or URI has changed (e.g. due to scaling)
   var loadImage = false;

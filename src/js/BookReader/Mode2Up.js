@@ -44,7 +44,7 @@ export class Mode2Up {
     this.br.twoPage.scaledWL = this.getPageWidth(indexL);
     this.br.twoPage.gutter = this.gutter();
 
-    this.br.prefetchImg(indexL, this.br.reduce);
+    this.br.prefetchImg(indexL);
     $(this.br.prefetchedImgs[indexL]).css({
       position: 'absolute',
       left: `${this.br.twoPage.gutter - this.br.twoPage.scaledWL}px`,
@@ -59,7 +59,7 @@ export class Mode2Up {
 
     // $$$ should use getwidth2up?
     this.br.twoPage.scaledWR = this.getPageWidth(indexR);
-    this.br.prefetchImg(indexR, this.br.reduce);
+    this.br.prefetchImg(indexR);
     $(this.br.prefetchedImgs[indexR]).css({
       position: 'absolute',
       left: `${this.br.twoPage.gutter}px`,
@@ -860,8 +860,8 @@ export class Mode2Up {
    * @param {number} prevR
    */
   prepareFlipLeftToRight(prevL, prevR) {
-    this.br.prefetchImg(prevL, this.br.reduce);
-    this.br.prefetchImg(prevR, this.br.reduce);
+    this.br.prefetchImg(prevL);
+    this.br.prefetchImg(prevR);
 
     const height  = this.book._getPageHeight(prevL);
     const width   = this.book._getPageWidth(prevL);
@@ -908,8 +908,8 @@ export class Mode2Up {
    */
   prepareFlipRightToLeft(nextL, nextR) {
     // Prefetch images
-    this.br.prefetchImg(nextL, this.br.reduce);
-    this.br.prefetchImg(nextR, this.br.reduce);
+    this.br.prefetchImg(nextL);
+    this.br.prefetchImg(nextR);
 
     let height = this.book._getPageHeight(nextR);
     let width = this.book._getPageWidth(nextR);
@@ -1197,12 +1197,12 @@ export class Mode2Up {
     let highPage = book.getPage(max(currentIndexL, currentIndexR));
     for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 1; i++) {
       if (lowPage) {
-        this.br.prefetchImg(lowPage.index, this.br.reduce);
+        this.br.prefetchImg(lowPage.index);
         lowPage = lowPage.findPrev({ combineConsecutiveUnviewables: true });
       }
 
       if (highPage) {
-        this.br.prefetchImg(highPage.index, this.br.reduce);
+        this.br.prefetchImg(highPage.index);
         highPage = highPage.findNext({ combineConsecutiveUnviewables: true });
       }
     }
