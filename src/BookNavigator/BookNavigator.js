@@ -10,7 +10,7 @@ import { Book } from './BookModel.js';
 import '../ItemNavigator/ItemNavigator.js';
 import bookLoader from './book-loader.js';
 import navigatorCSS from './styles/book-navigator.js';
-import log from '../util/log';
+import log from '../util/log.js';
 
 const events = {
   menuUpdated: 'menuUpdated',
@@ -47,6 +47,7 @@ export class BookNavigator extends LitElement {
     this.mainBRSelector = '#BookReader';
     this.pageContainerSelector = '.BRcontainer';
     this.brWidth = 0;
+    this.bookReaderCannotLoad = false;
     this.bookReaderLoaded = false;
     this.bookreader = null;
     this.downloadableTypes = [];
@@ -149,7 +150,7 @@ export class BookNavigator extends LitElement {
    */
   updateMenuContents() {
     const {
-      search, downloads, visualAdjustments, share, bookmarks,
+      search, downloads, visualAdjustments, share, bookmarks = {},
     } = this.menuProviders;
     const availableMenus = [search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
 
@@ -241,8 +242,8 @@ export class BookNavigator extends LitElement {
       this.mainBRSelector = this.br?.el || '#BookReader';
       setTimeout(() => this.bookreader.resize(), 0);
       // eslint-disable-next-line compat/compat
-      const brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
-      brResizeObserver.observe(this.mainBRContainer);
+      // const brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
+      // brResizeObserver.observe(this.mainBRContainer);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;
@@ -262,6 +263,10 @@ export class BookNavigator extends LitElement {
       this.downloadableTypes = downloadTypesAvailable;
       this.lendingStatus = lendingStatus;
       this.isAdmin = isAdmin;
+
+      if (!this.lendingStatus.is_lendable) {
+        this.bookReaderCannotLoad = true;
+      }
     });
     window.addEventListener('BRJSIA:PostInit', ({ detail }) => {
       const { isRestricted, downloadURLs } = detail;
@@ -358,9 +363,15 @@ export class BookNavigator extends LitElement {
     return !this.bookReaderLoaded ? 'loading' : '';
   }
 
+  get itemImage() {
+    const url = `https://${this.baseHost}/services/img/${this.book.metadata.identifier}`;
+    return html`<img src="${url}" alt="cover image for ${this.book.metadata.identifier}">`;
+  }
+
   render() {
+    const placeholder = this.bookReaderCannotLoad ? this.itemImage : this.loader;
     return html`<div id="book-navigator" class="${this.loadingClass}">
-      ${this.loader}
+      ${placeholder}
       <slot name="bookreader"></slot>
     </div>
   `;
