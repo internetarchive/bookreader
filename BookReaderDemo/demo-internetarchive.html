@@ -26,11 +26,13 @@
     <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
     <script src="../BookReader/plugins/plugin.text_selection.js"></script>
 
+    <script src="../BookReader/plugins/plugin.item_nav.js"></script> 
+
     <link rel="stylesheet" href="BookReaderDemo.css"/>
 </head>
 
 <body>
-  <div id="bookreader-container">
+  <bookreader-template>
     <div>
       Internet Archive BookReader Demo<br />
       <noscript>
@@ -41,9 +43,8 @@
         </p>
       </noscript>
     </div>
-  </div>
-
-  <script src="../BookReader/plugins/plugin.item_nav.js"></script>
+  </bookreader-template>
+  
   <script id="pageUrl" type="text/javascript"></script>
 
   <script>
@@ -57,7 +58,6 @@
 
     var script_url = 'https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=' + ocaid;
     document.getElementById('pageUrl').src = script_url;
-    console.log('scriptUrl: ', script_url)
   </script>
 
 </body>
