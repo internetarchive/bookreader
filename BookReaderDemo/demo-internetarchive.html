@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="../BookReader/BookReader.css"/>
 
     <!-- plugins needed for archive.org, in same order as archive.org -->
-    <script src="../BookReader/plugins/plugin.mobile_nav.js"></script>
+    <script src="../BookReader/plugins/plugin.item_nav.js"></script> 
     <script src="../BookReader/plugins/plugin.search.js"></script>
     <script src="../BookReader/plugins/plugin.chapters.js"></script>
     <script src="../BookReader/plugins/plugin.tts.js"></script>
@@ -26,13 +26,14 @@
     <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
     <script src="../BookReader/plugins/plugin.text_selection.js"></script>
 
-    <script src="../BookReader/plugins/plugin.item_nav.js"></script> 
-
     <link rel="stylesheet" href="BookReaderDemo.css"/>
 </head>
 
 <body>
   <bookreader-template>
+    <div id="IABookReaderWrapper" class="internal-beta" slot="bookreader">
+      <div id="BookReader" class="BookReader"></div>
+    </div>
     <div>
       Internet Archive BookReader Demo<br />
       <noscript>
