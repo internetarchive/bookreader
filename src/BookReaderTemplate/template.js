@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 
-import '../BookNavigator/BookNavigator.js'
 import '../ItemNavigator/ItemNavigator.js'
+import '../BookNavigator/BookNavigator.js'
 
 export class BookReaderTemplate extends LitElement {
 
@@ -13,8 +13,11 @@ export class BookReaderTemplate extends LitElement {
 
   static get styles() {
     return css`
-      .BookReader {
-        width: 100%;
+      #theatre-ia-wrap {
+        background-color: #000000;
+        position: relative;
+        width: 100vw;
+        height: auto;
       }
 
       item-navigator {
@@ -72,8 +75,7 @@ export class BookReaderTemplate extends LitElement {
     this.base64Json = '';
   }
 
-  connectedCallback() {
-    super.connectedCallback();
+  firstUpdated() {
     this.fetchData();
   }
 
@@ -82,7 +84,12 @@ export class BookReaderTemplate extends LitElement {
     const url = 'https://archive.org/metadata/' + ocaid;
     const response = await fetch(url);
     const bookMetadata = await response.json()
-    this.base64Json = btoa(JSON.stringify(bookMetadata))
+    const jsonBtoa = btoa(JSON.stringify(bookMetadata))
+    this.setBaseJSON(jsonBtoa)
+  }
+
+  setBaseJSON(value) {
+    this.base64Json = value
   }
 
   render() {
@@ -92,8 +99,8 @@ export class BookReaderTemplate extends LitElement {
           <div class="row">
             <div id="IABookReaderMessageWrapper" style="display:none;"></div>
             <item-navigator itemType="bookreader" basehost="archive.org" item=${this.base64Json}>
-              <div id="IABookReaderWrapper" class="internal-beta" slot="bookreader">
-                <div id="BookReader" class="BookReader"></div>
+              <div slot="bookreader">
+                <slot name="bookreader"></slot>
               </div>
             </item-navigator>
           </div>
