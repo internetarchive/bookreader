@@ -150,7 +150,7 @@ export class BookNavigator extends LitElement {
    */
   updateMenuContents() {
     const {
-      search, downloads, visualAdjustments, share, bookmarks = {},
+      search, downloads, visualAdjustments, share, bookmarks,
     } = this.menuProviders;
     const availableMenus = [search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
 
@@ -242,8 +242,8 @@ export class BookNavigator extends LitElement {
       this.mainBRSelector = this.br?.el || '#BookReader';
       setTimeout(() => this.bookreader.resize(), 0);
       // eslint-disable-next-line compat/compat
-      // const brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
-      // brResizeObserver.observe(this.mainBRContainer);
+      const brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
+      brResizeObserver.observe(this.mainBRContainer);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;
@@ -258,15 +258,14 @@ export class BookNavigator extends LitElement {
       }));
     });
     window.addEventListener('LendingFlow:PostInit', ({ detail }) => {
-      const { downloadTypesAvailable, lendingStatus, isAdmin } = detail;
+      const {
+        downloadTypesAvailable, lendingStatus, isAdmin, previewType,
+      } = detail;
       this.lendingInitialized = true;
       this.downloadableTypes = downloadTypesAvailable;
       this.lendingStatus = lendingStatus;
       this.isAdmin = isAdmin;
-
-      if (!this.lendingStatus.is_lendable) {
-        this.bookReaderCannotLoad = true;
-      }
+      this.bookReaderCannotLoad = previewType === 'singlePagePreview';
     });
     window.addEventListener('BRJSIA:PostInit', ({ detail }) => {
       const { isRestricted, downloadURLs } = detail;
