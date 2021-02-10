@@ -1,0 +1,7 @@
+#item-navigator-modal {
+  display: none
+}
+
+item-navigator-modal[mode=open] {
+  display: block;
+}

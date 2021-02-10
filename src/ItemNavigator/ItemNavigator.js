@@ -16,7 +16,7 @@ export default class ItemNavigator extends LitElement {
       item: {
         type: Object,
         converter(value) {
-          return JSON.parse(atob(value));
+          return !value ? {} : JSON.parse(atob(value));
         },
       },
       itemType: { type: String },
@@ -36,6 +36,7 @@ export default class ItemNavigator extends LitElement {
       viewportInFullscreen: { type: Boolean },
     };
   }
+
 
   constructor() {
     /** TODO: Request BookModel.js
