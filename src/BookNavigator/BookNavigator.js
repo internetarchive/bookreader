@@ -10,7 +10,6 @@ import { Book } from './BookModel.js';
 import '../ItemNavigator/ItemNavigator.js';
 import bookLoader from './book-loader.js';
 import navigatorCSS from './styles/book-navigator.js';
-import log from '../util/log.js';
 
 const events = {
   menuUpdated: 'menuUpdated',
@@ -283,7 +282,6 @@ export class BookNavigator extends LitElement {
    * @param { Object } entries - resize observer entries
    */
   reactToBrResize(entries = []) {
-    log('Book Nav resize observer, is br animating?', this.bookreader.animating);
     const startBrWidth = this.brWidth;
     const { animating } = this.bookreader;
 
@@ -310,7 +308,6 @@ export class BookNavigator extends LitElement {
 
     const { isFullscreenActive } = this.bookreader;
 
-    log('manageFullScreenBehavior - isFullScreen ', isFullscreenActive);
     if (!isFullscreenActive) {
       this.fullscreenMgr.teardown();
     } else {
