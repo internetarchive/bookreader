@@ -1,7 +1,7 @@
 import { html } from 'lit-element';
 
 /* define subpanel */
-import { IABookVisualAdjustments } from '../../iaux-book-visual-adjustments/src/ia-book-visual-adjustments';
+import { IABookVisualAdjustments } from '../../iaux-book-visual-adjustments/ia-book-visual-adjustments';
 customElements.define('ia-book-visual-adjustments', IABookVisualAdjustments);
 
 const visualAdjustmentOptions = [{
