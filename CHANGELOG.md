@@ -1,3 +1,5 @@
+# 4.33.0
+Fix: use optional `srcSet` in 1up mode @iisa
 # 4.32.0
 Fix: slim down prefetch group @iisa
 Fix: TTS caches xml @cdrini 
