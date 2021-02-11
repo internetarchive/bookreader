@@ -4,7 +4,7 @@ import '../bookmark-button.js';
 import '../delete-modal-actions.js';
 import '../ia-bookmarks.js';
 
-import { IABookmarksList } from '../../iaux-bookmarks/src/ia-bookmarks-list.js';
+import { IABookmarksList } from '../../iaux-bookmarks/ia-bookmarks-list';
 import { IAIconBookmark } from '@internetarchive/icon-bookmark';
 
 customElements.define('ia-bookmarks-list', IABookmarksList);
