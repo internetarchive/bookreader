@@ -103,9 +103,10 @@ export class Mode1Up {
           left: leftMargin,
         });
 
+        const pageURISrcset = this.br.options.useSrcSet ? this.br._getPageURISrcset(index, this.br.reduce, 0) : [];
         const img = $('<img />', {
           src: page.getURI(this.br.reduce, 0),
-          srcset: this.br._getPageURISrcset(index, this.br.reduce, 0),
+          srcset: pageURISrcset,
           alt: 'Book page image'
         });
         pageContainer.append(img);
