@@ -1,3 +1,5 @@
+# 4.34.0
+Fix: exist fullscreen will change to 2up if 2up is available @iisa
 # 4.33.0
 Fix: use optional `srcSet` in 1up mode @iisa
 # 4.32.0
