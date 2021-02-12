@@ -1463,7 +1463,9 @@ BookReader.prototype.exitFullScreen = function() {
   $(document).unbind('keyup', this._fullscreenCloseHandler);
 
   var windowWidth = $(window).width();
-  if (windowWidth <= this.onePageMinBreakpoint) {
+
+  const canShow2up = this.options.controls.twoPage.visible;
+  if (canShow2up && (windowWidth <= this.onePageMinBreakpoint)) {
     this.switchMode(this.constMode2up);
   }
 
