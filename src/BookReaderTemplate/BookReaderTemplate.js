@@ -89,12 +89,11 @@ export class BookReaderTemplate extends LitElement {
    * set base64 data to props
    */
   async fetchData() {
-    const ocaid = location.href.match(/ocaid=([^&#]+)/i)[1];
-    const url = 'https://archive.org/metadata/' + ocaid;
-    const response = await fetch(url);
-    const bookMetadata = await response.json()
-    const jsonBtoa = btoa(JSON.stringify(bookMetadata))
-    this.setBaseJSON(jsonBtoa)
+    const ocaid = new URLSearchParams(location.search).get('ocaid');
+    const response = await fetch(`https://archive.org/metadata/${ocaid}`);
+    const bookMetadata = await response.json();
+    const jsonBtoa = btoa(JSON.stringify(bookMetadata));
+    this.setBaseJSON(jsonBtoa);
   }
 
   /**
@@ -102,7 +101,7 @@ export class BookReaderTemplate extends LitElement {
    * @param {string} value - base64 string format
    */
   setBaseJSON(value) {
-    this.base64Json = value
+    this.base64Json = value;
   }
 
   render() {
