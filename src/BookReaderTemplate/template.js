@@ -1,3 +1,7 @@
+/**
+ * BookReaderTemplate to load BookNavigator components
+ */
+
 import { LitElement, html, css } from 'lit-element';
 
 import '../ItemNavigator/ItemNavigator.js'
@@ -79,6 +83,11 @@ export class BookReaderTemplate extends LitElement {
     this.fetchData();
   }
 
+  /**
+   * Fetch metadata response from public metadata API
+   * convert response to base64 data
+   * set base64 data to props
+   */
   async fetchData() {
     const ocaid = location.href.match(/ocaid=([^&#]+)/i)[1];
     const url = 'https://archive.org/metadata/' + ocaid;
@@ -88,6 +97,10 @@ export class BookReaderTemplate extends LitElement {
     this.setBaseJSON(jsonBtoa)
   }
 
+  /**
+   * Set base64 data to prop
+   * @param {string} value - base64 string format
+   */
   setBaseJSON(value) {
     this.base64Json = value
   }
