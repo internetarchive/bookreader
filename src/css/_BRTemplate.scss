@@ -1,7 +1,7 @@
+/**
+ * Hide modal-manager that loads item-navigator-modal 
+ * loading bookmarks related alert messages 
+ */
 #item-navigator-modal {
   display: none
-}
-
-item-navigator-modal[mode=open] {
-  display: block;
 }
