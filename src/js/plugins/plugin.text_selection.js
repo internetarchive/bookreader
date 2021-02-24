@@ -58,6 +58,12 @@ export class TextSelectionPlugin {
 
     /** @type {Cache<{index: number, response: any}>} */
     this.pageTextCache = new Cache();
+
+    /**
+     * Sometimes there are too many words on a page, and the browser becomes near
+     * unusable. For now don't render text layer for pages with too many words.
+     */
+    this.maxWordRendered = 2500;
   }
 
   init() {
@@ -184,6 +190,12 @@ export class TextSelectionPlugin {
     if (!XMLpage) return;
     const XMLwidth = $(XMLpage).attr("width");
     const XMLheight = $(XMLpage).attr("height");
+
+    const totalWords = $(XMLpage).find("WORD").length;
+    if (totalWords > this.maxWordRendered) {
+      console.log(`Page ${pageIndex} has too many words (${totalWords} > ${this.maxWordRendered}). Not rendering text layer.`);
+      return;
+    }
 
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
