@@ -193,6 +193,7 @@ export class TextSelectionPlugin {
 
     const totalWords = $(XMLpage).find("WORD").length;
     if (totalWords > this.maxWordRendered) {
+      console.log(`Page ${pageIndex} has too many words (${totalWords} > ${this.maxWordRendered}). Not rendering text layer.`);
       return;
     }
 
