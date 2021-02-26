@@ -1227,7 +1227,7 @@ export class Mode2Up {
     return {
       position: 'absolute',
       right: '',
-      top: `${top}px`,
+      top: `${this.top()}px`,
       zIndex: 2,
     };
   }
