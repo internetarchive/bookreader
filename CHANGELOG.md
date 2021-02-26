@@ -1,3 +1,6 @@
+# 4.35.0
+Fix: show text selection layer if word count is less than 2,500 @cdrini
+Fix: 2up, only resize spread if current image is better than next size @iisa
 # 4.34.0
 Fix: exist fullscreen will change to 2up if 2up is available @iisa
 # 4.33.0
