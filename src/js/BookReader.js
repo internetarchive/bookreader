@@ -577,8 +577,10 @@ BookReader.prototype.resize = function() {
   } else {
     // We only need to prepare again in autofit (size of spread changes)
     if (this.twoPage.autofit) {
+      // most common path, esp. for archive.org books
       this.prepareTwoPageView();
     } else {
+      // used when zoomed in
       // Re-center if the scrollbars have disappeared
       var center = this.twoPageGetViewCenter();
       var doRecenter = false;
@@ -1157,9 +1159,7 @@ BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFa
     if (match) return match;
   }
 
-  console.error('Could not find reduction factor for direction ' + direction);
   return reductionFactors[0];
-
 };
 
 BookReader.prototype._reduceSort = function(a, b) {
