@@ -102,7 +102,7 @@ export class Mode2Up {
    *
    * @returns {Boolean}
    */
-  shouldRedrawSpread() {
+  get shouldRedrawSpread() {
     const { prefetchedImgs, twoPage } = this.br;
     const { reduce: idealReductionFactor } = this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR );
 
@@ -158,7 +158,7 @@ export class Mode2Up {
     // even as the page sizes change.  To e.g. keep the middle of the book in the middle of the BRcontent
     // div requires adjusting the offset of BRtwpageview and/or scrolling in BRcontent.
 
-    if (!drawNewSpread && !this.shouldRedrawSpread()) {
+    if (!drawNewSpread && !this.shouldRedrawSpread) {
       this.resizeSpread();
       return;
     }

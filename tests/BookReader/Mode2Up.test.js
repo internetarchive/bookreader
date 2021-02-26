@@ -121,7 +121,7 @@ describe('shouldRedrawSpread', () => {
     const reduceStub = 10;
     br.reduce = reduceStub;
     br._modes.mode2Up.getIdealSpreadSize = () => { return { reduce: 11 }};
-    const shouldRedrawSpread = br._modes.mode2Up.shouldRedrawSpread();
+    const shouldRedrawSpread = br._modes.mode2Up.shouldRedrawSpread;
     expect(shouldRedrawSpread).toBe(false);
   });
   test('returns TRUE if current images are smaller && if pages in view are prefetched', () => {
@@ -130,7 +130,7 @@ describe('shouldRedrawSpread', () => {
     const reduceStub = 11;
     br.reduce = reduceStub;
     br._modes.mode2Up.getIdealSpreadSize = () => { return { reduce: 10 }};
-    const shouldRedrawSpread = br._modes.mode2Up.shouldRedrawSpread();
+    const shouldRedrawSpread = br._modes.mode2Up.shouldRedrawSpread;
     expect(shouldRedrawSpread).toBe(true);
   });
 });
