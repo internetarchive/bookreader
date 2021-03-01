@@ -26,7 +26,7 @@
   "private": false,
   "devDependencies": {
     "@babel/core": "7.12.9",
-    "@babel/preset-env": "7.12.7",
+    "@babel/preset-env": "7.13.8",
     "@types/jest": "26.0.19",
     "babel-loader": "8.2.2",
     "codecov": "3.8.1",
