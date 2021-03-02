@@ -1,6 +1,6 @@
 {
   "name": "@internetarchive/bookreader",
-  "version": "4.34.0",
+  "version": "4.34.0-item-nav-3",
   "description": "The Internet Archive BookReader.",
   "repository": {
     "type": "git",
@@ -9,6 +9,8 @@
   "publishConfig": {
     "access": "public"
   },
+  "type": "module",
+  "module": "src/BookNavigator/BookNavigator.js",
   "keywords": [
     "online",
     "bookreader",
