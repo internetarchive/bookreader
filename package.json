@@ -9,6 +9,8 @@
   "publishConfig": {
     "access": "public"
   },
+  "type": "module",
+  "module": "src/BookNavigator/BookNavigator.js",
   "keywords": [
     "online",
     "bookreader",
