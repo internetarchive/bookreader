@@ -133,6 +133,49 @@ export class Mode1Up {
   }
 
   /**
+   * @param {PageIndex} index
+   * @param {number} [pageX]
+   * @param {number} [pageY]
+   * @param {boolean} [noAnimate]
+   */
+  jumpToIndex(index, pageX, pageY, noAnimate) {
+    const prevCurrentIndex = this.br.currentIndex();
+    const { abs, floor } = Math;
+    let offset = 0;
+    let leafTop = this.getPageTop(index);
+    let leafLeft = 0;
+
+    if (pageY) {
+      const clientHeight = this.br.refs.$brContainer.prop('clientHeight');
+      offset = floor(pageY / this.br.reduce) - floor(clientHeight / 2);
+      leafTop += offset;
+    } else {
+      // Show page just a little below the top
+      leafTop -= this.br.padding / 2;
+    }
+
+    if (pageX) {
+      const clientWidth = this.br.refs.$brContainer.prop('clientWidth');
+      offset = floor(pageX / this.br.reduce) - floor(clientWidth / 2);
+      leafLeft += offset;
+    } else {
+      // Preserve left position
+      leafLeft = this.br.refs.$brContainer.scrollLeft();
+    }
+
+    // Only animate for small distances
+    if (!noAnimate && abs(prevCurrentIndex - index) <= 4) {
+      this.animating = true;
+      this.br.refs.$brContainer.stop(true).animate({
+        scrollTop: leafTop,
+        scrollLeft: leafLeft,
+      }, 'fast', () => { this.animating = false });
+    } else {
+      this.br.refs.$brContainer.stop(true).prop('scrollTop', leafTop);
+    }
+  }
+
+  /**
    * @param {'in' | 'out'} direction
    */
   zoom(direction) {
