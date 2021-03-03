@@ -1700,8 +1700,8 @@ BookReader.prototype.prefetchImg = function(index) {
       'class': 'BRpageimage',
       'alt': 'Book page image',
       src: pageURI,
-      srcset: pageURISrcset
-    }).appendTo(pageContainer);
+      srcset: pageURISrcset,
+    }).data('reduce', this.reduce).appendTo(pageContainer);
     if (index < 0 || index > (this._models.book.getNumLeafs() - 1) ) {
       // Facing page at beginning or end, or beyond
       pageContainer.addClass('BRemptypage');
