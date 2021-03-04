@@ -272,14 +272,52 @@ describe('prepareTwoPageView', () => {
       expect(updateBrClasses.callCount).toBe(1);
     });
 
-    test('resizes spread if no redraw is necessary', () => {
+    describe('resizes spread if no redraw is necessary', () => {
+      test('no `this.displayedIndices` nor `br.reduce` change', () => {
+        const br = new BookReader({ data: SAMPLE_DATA });
+        br.init();
+        const drawLeafs = sinon.spy(br._modes.mode2Up, 'drawLeafs');
+        const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
+        br.prepareTwoPageView();
+        expect(drawLeafs.callCount).toBe(0);
+        expect(resizeSpread.callCount).toBe(1);
+      });
+      test('currently displayed images are better than the next reduction', () => {
+        const br = new BookReader({ data: SAMPLE_DATA });
+        br.init();
+        const drawLeafs = sinon.spy(br._modes.mode2Up, 'drawLeafs');
+        const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
+        br.prepareTwoPageView();
+        expect(drawLeafs.callCount).toBe(0);
+        expect(resizeSpread.callCount).toBe(1);
+      });
+    });
+
+
+    test('will only prune images if `this.displayedIndices` has changed', () => {
+      let pruneCount = 0;
+      let prefetchCount = 0;
+      const expectedPruneCount = 1;
+      const expectedPrefetchCount = 1;
+
       const br = new BookReader({ data: SAMPLE_DATA });
+
+      // manual stubs bc sinon can't find its scope...
+      BookReader.prototype.pruneUnusedImgs = () => {
+        pruneCount = pruneCount + 1;
+      };
+      BookReader.prototype.prefetch = () => {
+        prefetchCount = prefetchCount + 1;
+      };
       br.init();
-      const drawLeafs = sinon.spy(br._modes.mode2Up, 'drawLeafs');
       const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
+
+      br.displayedIndices = [111, 112];
       br.prepareTwoPageView();
-      expect(drawLeafs.callCount).toBe(0);
-      expect(resizeSpread.callCount).toBe(1);
+
+      expect(resizeSpread.callCount).toBe(0);
+      expect(pruneCount).toBe(expectedPruneCount);
+      expect(prefetchCount).toBe(expectedPrefetchCount);
     });
   });
 });
