@@ -120,7 +120,8 @@ describe('shouldRedrawSpread', () => {
     br.init();
     const reduceStub = 10;
     br.reduce = reduceStub;
-    br._modes.mode2Up.getIdealSpreadSize = () => { return { reduce: 11 }};
+    br._modes.mode2Up.getIdealSpreadSize = () => { return { reduce: 111111 }};
+
     const shouldRedrawSpread = br._modes.mode2Up.shouldRedrawSpread;
     expect(shouldRedrawSpread).toBe(false);
   });
@@ -259,7 +260,7 @@ describe('prepareTwoPageView', () => {
       const updateBrClasses = sinon.spy(br, 'updateBrClasses');
 
       br.prepareTwoPageView(undefined, undefined, true);
-      expect(prefetch.callCount).toBe(2);
+      expect(prefetch.callCount).toBe(1);
 
       expect(resizeSpread.callCount).toBe(0);
       expect(drawLeafs.callCount).toBe(1);
