@@ -1690,6 +1690,9 @@ BookReader.prototype._scrollAmount = function() {
  * Does not re-request if image is in the
  *
  * @param {Number} index
+ * @param {Boolean} fetchNow
+ *   - flag to allow for non-viewable page to be immediately requested
+ *     - this allows for "2up to prepare a page flip"
  */
 BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
   const pageURI = this._getPageURI(index, this.reduce);
