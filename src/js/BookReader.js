@@ -889,12 +889,14 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
         const img = document.createElement("img");
         const thumbReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
-
+        // use prefetched img src first if previously requested & available img is good enough
+        const prefetchedImg = this.prefetchedImgs[leaf] || {};
+        const imageURI = prefetchedImg.reduce <= thumbReduce ? prefetchedImg.uri || this._getPageURI(leaf, thumbReduce);
         $(img).attr('src', `${this.imagesBaseURL}transparent.png`)
           .css({ width: `${leafWidth}px`, height: `${leafHeight}px` })
           .addClass('BRlazyload')
           // Store the URL of the image that will replace this one
-          .data('srcURL',  this._getPageURI(leaf, thumbReduce))
+          .data('srcURL',  imageURI)
           .attr('alt', 'Loading book image');
         pageContainer.append(img);
       }
@@ -1713,7 +1715,7 @@ BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
     console.log('wasPrefetchedSmaller', index, this.prefetchedImgs['index']);
     $(this.prefetchedImgs[index]).find('img').attr('src', '');
   }
-    
+
   const $pageContainer = this._createPageContainer(index);
   const $imgShell = this._modes.mode2Up.createPageImgShell(index, pageURI, this.reduce, $pageContainer);
 
