@@ -103,13 +103,22 @@ export class Mode2Up {
    * @returns {Boolean}
    */
   get shouldRedrawSpread() {
-    const { prefetchedImgs, twoPage } = this.br;
+    const { prefetchedImgs, twoPage, displayedIndices } = this.br;
     const { reduce: idealReductionFactor } = this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR );
 
     const currentImagesAreLarger = this.br.reduce <= idealReductionFactor;
-    const pagesInViewArePrefetched = prefetchedImgs[twoPage.currentIndexL] && prefetchedImgs[twoPage.currentIndexR];
+    const leftDisplayed = prefetchedImgs[displayedIndices[0]] || {};
+    const rightDisplayed = prefetchedImgs[displayedIndices[1]] || {};
+    const LeftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= this.br.reduce);
+    const RightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= this.br.reduce);
+    console.log('should redraw?');
+    console.log('~~~~~ LeftImgIsPrefetchedToScale', LeftImgIsPrefetchedToScale, leftDisplayed.reduce);
+    console.log('~~~~~ LeftImgIsPrefetchedToScale', RightImgIsPrefetchedToScale, rightDisplayed.reduce);
+    console.log("BR REDUCE - ", this.br.reduce);
+    console.log('end should redraw?', !currentImagesAreLarger || !(LeftImgIsPrefetchedToScale && RightImgIsPrefetchedToScale));
+    // const pagesInViewArePrefetched = prefetchedImgs[twoPage.currentIndexL] && prefetchedImgs[twoPage.currentIndexR];
 
-    return !currentImagesAreLarger || !pagesInViewArePrefetched;
+    return !currentImagesAreLarger || !(LeftImgIsPrefetchedToScale && RightImgIsPrefetchedToScale);
   }
 
   /**
@@ -1203,6 +1212,10 @@ export class Mode2Up {
     const { currentIndexL, currentIndexR } = this.br.twoPage;
     const ADJACENT_PAGES_TO_LOAD = 2;
 
+    // prefetch images in view first
+
+    // stagger the later ones.
+
     // currentIndexL can be -1; getPage returns the last page of the book
     // when given -1, so need to prevent that.
     let lowPage = book.getPage(max(0, min(currentIndexL, currentIndexR)));
@@ -1218,6 +1231,35 @@ export class Mode2Up {
         highPage = highPage.findNext({ combineConsecutiveUnviewables: true });
       }
     }
+  }
+
+  /**
+   * 
+   * @param {*} index 
+   * @param {*} pageURI 
+   * @param {*} reduce 
+   * @param {*} $pageContainer 
+   * 
+   * @return $pageContainer
+   */
+  createPageImgShell(index, pageURI, reduce, $pageContainer) {
+
+    $pageContainer[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
+    $pageContainer[0].reduce = reduce; // browser may rewrite src so we stash raw URI here
+
+    const $imgEl = $('<img />', {
+      'class': 'BRpageimage',
+      'alt': 'Book page image',
+    }).data('reduce', reduce);
+
+    $($imgEl).appendTo($pageContainer);
+
+    if (index < 0 || index > (this.book.getNumLeafs() - 1) ) {
+      // Facing page at beginning or end, or beyond
+      $pageContainer.addClass('BRemptypage');
+    }
+
+    return $pageContainer[0];
   }
 
   /* 2up Container Sizes */
