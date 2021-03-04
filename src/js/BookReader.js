@@ -891,7 +891,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         const thumbReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
         // use prefetched img src first if previously requested & available img is good enough
         const prefetchedImg = this.prefetchedImgs[leaf] || {};
-        const imageURI = prefetchedImg.reduce <= thumbReduce ? prefetchedImg.uri || this._getPageURI(leaf, thumbReduce);
+        const imageURI = prefetchedImg.reduce <= thumbReduce ? prefetchedImg.uri : this._getPageURI(leaf, thumbReduce);
         $(img).attr('src', `${this.imagesBaseURL}transparent.png`)
           .css({ width: `${leafWidth}px`, height: `${leafHeight}px` })
           .addClass('BRlazyload')
@@ -1687,12 +1687,12 @@ BookReader.prototype._scrollAmount = function() {
 /**
  * Used by 2up
  * Fetches the image for requested index & saves in `this.prefetchedImgs`
- * Does not re-request if image is in the 
+ * Does not re-request if image is in the
  *
- * @param {Number} index 
+ * @param {Number} index
  */
 BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
-  let pageURI = this._getPageURI(index, this.reduce);
+  const pageURI = this._getPageURI(index, this.reduce);
   const pageURISrcset = this.options.useSrcSet ? this._getPageURISrcset(index, this.reduce) : [];
 
   // Load image if not loaded or URI has changed (e.g. due to scaling)
@@ -1701,7 +1701,6 @@ BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
   if (undefined == this.prefetchedImgs[index]) {
     loadImage = true;
   } else if (wasPrefetchedSmaller) {
-    console.log("PREFETCH: curr reduce rate > br.reduce - index, this.prefetchedImgs[index]?.reduce, this.br.reduce: ", index, this.prefetchedImgs[index]?.reduce, this.reduce);
     loadImage = true;
   } else if (!wasPrefetchedSmaller && (pageURI != this.prefetchedImgs[index]?.uri)) {
     loadImage = true;
@@ -1712,7 +1711,7 @@ BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
   }
 
   if (wasPrefetchedSmaller) {
-    console.log('wasPrefetchedSmaller', index, this.prefetchedImgs['index']);
+    /* cancel the request if still pending */
     $(this.prefetchedImgs[index]).find('img').attr('src', '');
   }
 
@@ -1727,19 +1726,19 @@ BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
       $imgEl.attr('srcSet', pageURISrcset);
     }
     $($imgEl).load(() => {
-      console.log('** PREFETCH LOADED: index, this.reduce', index, this.reduce);
+      console.log('** PREFETCH DONE: index, this.reduce', index, this.reduce);
+    }).error(() => {
+      console.log('** PREFETCH ERROR: index, this.reduce', index, this.reduce);
     })
     this.prefetchedImgs[index] = $imgShell;
   };
 
   if (fetchNow || (index == this.twoPage.currentIndexL) || (index == this.twoPage.currentIndexR)) {
-    console.log("*** PREFETCH NOW: - index, this.reduce ", index, this.reduce);
     fetchImageAndRegister();
   } else {
     // stagger request
     const time = 500;
     setTimeout(() => {
-      console.log(`*** PREFETCH ${time}: staggered - index, this.reduce`, index, this.reduce);
       fetchImageAndRegister();
     }, time);
   }
@@ -1747,7 +1746,6 @@ BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
 
 /** used in 2up */
 BookReader.prototype.pruneUnusedImgs = function() {
-  console.log('___ PRUNE ___', this.br.reduce);
   const prefetchIsCapped = Object.keys(this.prefetchedImgs).length == 50;
   for (var key in this.prefetchedImgs) {
     if ((key != this.twoPage.currentIndexL) && (key != this.twoPage.currentIndexR)) {
@@ -1755,12 +1753,10 @@ BookReader.prototype.pruneUnusedImgs = function() {
     }
     if ((key < this.twoPage.currentIndexL - 4) || (key > this.twoPage.currentIndexR + 4)) {
       if (prefetchIsCapped || (this.prefetchedImgs[key]?.reduce > this.reduce)) {
-        console.log("PREFETCH IS CAPPED or reduction rate is small -- key, prefetchIsCapped, this.prefetchedImgs[key]?.reduce", key, prefetchIsCapped, this.prefetchedImgs[key]?.reduce);
         delete this.prefetchedImgs[key];
       }
     }
   }
-  console.log('___ END PRUNE ___', this.br.reduce);
 };
 
 /************************/

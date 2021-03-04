@@ -99,11 +99,12 @@ export class Mode2Up {
   /**
    * Checks to see if the images/pages in view
    * are of equal or better quality
+   * If not, we return yes
    *
    * @returns {Boolean}
    */
   get shouldRedrawSpread() {
-    const { prefetchedImgs, twoPage, displayedIndices } = this.br;
+    const { prefetchedImgs, displayedIndices } = this.br;
     const { reduce: idealReductionFactor } = this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR );
 
     const currentImagesAreLarger = this.br.reduce <= idealReductionFactor;
@@ -111,12 +112,6 @@ export class Mode2Up {
     const rightDisplayed = prefetchedImgs[displayedIndices[1]] || {};
     const LeftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= this.br.reduce);
     const RightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= this.br.reduce);
-    console.log('should redraw?');
-    console.log('~~~~~ LeftImgIsPrefetchedToScale', LeftImgIsPrefetchedToScale, leftDisplayed.reduce);
-    console.log('~~~~~ LeftImgIsPrefetchedToScale', RightImgIsPrefetchedToScale, rightDisplayed.reduce);
-    console.log("BR REDUCE - ", this.br.reduce);
-    console.log('end should redraw?', !currentImagesAreLarger || !(LeftImgIsPrefetchedToScale && RightImgIsPrefetchedToScale));
-    // const pagesInViewArePrefetched = prefetchedImgs[twoPage.currentIndexL] && prefetchedImgs[twoPage.currentIndexR];
 
     return !currentImagesAreLarger || !(LeftImgIsPrefetchedToScale && RightImgIsPrefetchedToScale);
   }
