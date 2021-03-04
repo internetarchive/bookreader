@@ -110,8 +110,8 @@ export class Mode2Up {
     const currentImagesAreLarger = this.br.reduce <= idealReductionFactor;
     const leftDisplayed = prefetchedImgs[displayedIndices[0]] || {};
     const rightDisplayed = prefetchedImgs[displayedIndices[1]] || {};
-    const LeftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= this.br.reduce);
-    const RightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= this.br.reduce);
+    const LeftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= idealReductionFactor);
+    const RightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= idealReductionFactor);
 
     return !currentImagesAreLarger || !(LeftImgIsPrefetchedToScale && RightImgIsPrefetchedToScale);
   }
