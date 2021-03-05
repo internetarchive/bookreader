@@ -1728,11 +1728,11 @@ BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
     if (pageURISrcset.length) {
       $imgEl.attr('srcSet', pageURISrcset);
     }
-    $($imgEl).load(() => {
-      console.log('** PREFETCH DONE: index, this.reduce', index, this.reduce);
-    }).error(() => {
-      console.log('** PREFETCH ERROR: index, this.reduce', index, this.reduce);
-    })
+    // $($imgEl).load(() => {
+    //   console.log('** PREFETCH DONE: index, this.reduce', index, this.reduce);
+    // }).error(() => {
+    //   console.log('** PREFETCH ERROR: index, this.reduce', index, this.reduce);
+    // })
     this.prefetchedImgs[index] = $imgShell;
   };
 
