@@ -292,9 +292,7 @@ describe('prepareTwoPageView', () => {
         expect(resizeSpread.callCount).toBe(1);
       });
     });
-
-
-    test('will only prune images if `this.displayedIndices` has changed', () => {
+    test('will prune & prefetch images if `this.displayedIndices` has changed', () => {
       let pruneCount = 0;
       let prefetchCount = 0;
       const expectedPruneCount = 1;
@@ -313,6 +311,31 @@ describe('prepareTwoPageView', () => {
       const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
 
       br.displayedIndices = [111, 112];
+      br.prepareTwoPageView();
+
+      expect(resizeSpread.callCount).toBe(0);
+      expect(pruneCount).toBe(expectedPruneCount);
+      expect(prefetchCount).toBe(expectedPrefetchCount);
+    });
+
+    test('will prune & prefetch images idealReducer has changed to a better size', () => {
+      let pruneCount = 0;
+      let prefetchCount = 0;
+      const expectedPruneCount = 1;
+      const expectedPrefetchCount = 1;
+      const br = new BookReader({ data: SAMPLE_DATA });
+      // manual stubs bc sinon can't find its scope...
+      BookReader.prototype.pruneUnusedImgs = () => {
+        pruneCount = pruneCount + 1;
+      };
+      BookReader.prototype.prefetch = () => {
+        prefetchCount = prefetchCount + 1;
+      };
+      br.init();
+      const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
+      const stubIdealReduce = 3;
+      br.twoPage = {};
+      br._modes.mode2Up.getIdealSpreadSize = () => ({ reduce: stubIdealReduce });
       br.prepareTwoPageView();
 
       expect(resizeSpread.callCount).toBe(0);
