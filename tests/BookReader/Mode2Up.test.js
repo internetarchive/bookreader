@@ -120,7 +120,8 @@ describe('shouldRedrawSpread', () => {
     br.init();
     const reduceStub = 10;
     br.reduce = reduceStub;
-    br._modes.mode2Up.getIdealSpreadSize = () => { return { reduce: 11 }};
+    br._modes.mode2Up.getIdealSpreadSize = () => { return { reduce: 111111 }};
+
     const shouldRedrawSpread = br._modes.mode2Up.shouldRedrawSpread;
     expect(shouldRedrawSpread).toBe(false);
   });
@@ -259,7 +260,7 @@ describe('prepareTwoPageView', () => {
       const updateBrClasses = sinon.spy(br, 'updateBrClasses');
 
       br.prepareTwoPageView(undefined, undefined, true);
-      expect(prefetch.callCount).toBe(2);
+      expect(prefetch.callCount).toBe(1);
 
       expect(resizeSpread.callCount).toBe(0);
       expect(drawLeafs.callCount).toBe(1);
@@ -271,14 +272,75 @@ describe('prepareTwoPageView', () => {
       expect(updateBrClasses.callCount).toBe(1);
     });
 
-    test('resizes spread if no redraw is necessary', () => {
+    describe('resizes spread if no redraw is necessary', () => {
+      test('no `this.displayedIndices` nor `br.reduce` change', () => {
+        const br = new BookReader({ data: SAMPLE_DATA });
+        br.init();
+        const drawLeafs = sinon.spy(br._modes.mode2Up, 'drawLeafs');
+        const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
+        br.prepareTwoPageView();
+        expect(drawLeafs.callCount).toBe(0);
+        expect(resizeSpread.callCount).toBe(1);
+      });
+      test('currently displayed images are better than the next reduction', () => {
+        const br = new BookReader({ data: SAMPLE_DATA });
+        br.init();
+        const drawLeafs = sinon.spy(br._modes.mode2Up, 'drawLeafs');
+        const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
+        br.prepareTwoPageView();
+        expect(drawLeafs.callCount).toBe(0);
+        expect(resizeSpread.callCount).toBe(1);
+      });
+    });
+    test('will prune & prefetch images if `this.displayedIndices` has changed', () => {
+      let pruneCount = 0;
+      let prefetchCount = 0;
+      const expectedPruneCount = 1;
+      const expectedPrefetchCount = 1;
+
       const br = new BookReader({ data: SAMPLE_DATA });
+
+      // manual stubs bc sinon can't find its scope...
+      BookReader.prototype.pruneUnusedImgs = () => {
+        pruneCount = pruneCount + 1;
+      };
+      BookReader.prototype.prefetch = () => {
+        prefetchCount = prefetchCount + 1;
+      };
       br.init();
-      const drawLeafs = sinon.spy(br._modes.mode2Up, 'drawLeafs');
       const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
+
+      br.displayedIndices = [111, 112];
       br.prepareTwoPageView();
-      expect(drawLeafs.callCount).toBe(0);
-      expect(resizeSpread.callCount).toBe(1);
+
+      expect(resizeSpread.callCount).toBe(0);
+      expect(pruneCount).toBe(expectedPruneCount);
+      expect(prefetchCount).toBe(expectedPrefetchCount);
+    });
+
+    test('will prune & prefetch images idealReducer has changed to a better size', () => {
+      let pruneCount = 0;
+      let prefetchCount = 0;
+      const expectedPruneCount = 1;
+      const expectedPrefetchCount = 1;
+      const br = new BookReader({ data: SAMPLE_DATA });
+      // manual stubs bc sinon can't find its scope...
+      BookReader.prototype.pruneUnusedImgs = () => {
+        pruneCount = pruneCount + 1;
+      };
+      BookReader.prototype.prefetch = () => {
+        prefetchCount = prefetchCount + 1;
+      };
+      br.init();
+      const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
+      const stubIdealReduce = 3;
+      br.twoPage = {};
+      br._modes.mode2Up.getIdealSpreadSize = () => ({ reduce: stubIdealReduce });
+      br.prepareTwoPageView();
+
+      expect(resizeSpread.callCount).toBe(0);
+      expect(pruneCount).toBe(expectedPruneCount);
+      expect(prefetchCount).toBe(expectedPrefetchCount);
     });
   });
 });

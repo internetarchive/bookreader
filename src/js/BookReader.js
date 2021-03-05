@@ -140,7 +140,7 @@ BookReader.prototype.setup = function(options) {
 
   this.displayedIndices = [];
   this.imgs = {};
-  this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index
+  this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index, reduce
 
   this.animating = false;
   this.flipSpeed = options.flipSpeed;
@@ -889,12 +889,14 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
         const img = document.createElement("img");
         const thumbReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
-
+        // use prefetched img src first if previously requested & available img is good enough
+        const prefetchedImg = this.prefetchedImgs[leaf] || {};
+        const imageURI = prefetchedImg.reduce <= thumbReduce ? prefetchedImg.uri : this._getPageURI(leaf, thumbReduce);
         $(img).attr('src', `${this.imagesBaseURL}transparent.png`)
           .css({ width: `${leafWidth}px`, height: `${leafHeight}px` })
           .addClass('BRlazyload')
           // Store the URL of the image that will replace this one
-          .data('srcURL',  this._getPageURI(leaf, thumbReduce))
+          .data('srcURL',  imageURI)
           .attr('alt', 'Loading book image');
         pageContainer.append(img);
       }
@@ -1682,42 +1684,80 @@ BookReader.prototype._scrollAmount = function() {
   return parseInt(0.9 * this.refs.$brContainer.prop('clientHeight'));
 };
 
-BookReader.prototype.prefetchImg = function(index) {
-  var pageURI = this._getPageURI(index, this.reduce);
+/**
+ * Used by 2up
+ * Fetches the image for requested index & saves in `this.prefetchedImgs`
+ * Does not re-request if image is in the
+ *
+ * @param {Number} index
+ * @param {Boolean} fetchNow
+ *   - flag to allow for non-viewable page to be immediately requested
+ *     - this allows for "2up to prepare a page flip"
+ */
+BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
+  const pageURI = this._getPageURI(index, this.reduce);
   const pageURISrcset = this.options.useSrcSet ? this._getPageURISrcset(index, this.reduce) : [];
 
   // Load image if not loaded or URI has changed (e.g. due to scaling)
-  var loadImage = false;
+  let loadImage = false;
+  const wasPrefetchedSmaller = this.prefetchedImgs[index]?.reduce > this.reduce;
   if (undefined == this.prefetchedImgs[index]) {
     loadImage = true;
-  } else if (pageURI != this.prefetchedImgs[index].uri) {
+  } else if (wasPrefetchedSmaller) {
+    loadImage = true;
+  } else if (!wasPrefetchedSmaller && (pageURI != this.prefetchedImgs[index]?.uri)) {
     loadImage = true;
   }
 
-  if (loadImage) {
-    const pageContainer = this._createPageContainer(index);
-    $('<img />', {
-      'class': 'BRpageimage',
-      'alt': 'Book page image',
-      src: pageURI,
-      srcset: pageURISrcset
-    }).appendTo(pageContainer);
-    if (index < 0 || index > (this._models.book.getNumLeafs() - 1) ) {
-      // Facing page at beginning or end, or beyond
-      pageContainer.addClass('BRemptypage');
+  if (!loadImage) {
+    return;
+  }
+
+  if (wasPrefetchedSmaller) {
+    /* cancel the request if still pending */
+    $(this.prefetchedImgs[index]).find('img').attr('src', '');
+  }
+
+  const $pageContainer = this._createPageContainer(index);
+  const $imgShell = this._modes.mode2Up.createPageImgShell(index, pageURI, this.reduce, $pageContainer);
+
+  /** set uri in img tag to start request & save in `this.prefetchedImgs` */
+  const fetchImageAndRegister = () => {
+    const $imgEl = $($imgShell).find('img');
+    $imgEl.attr('src', pageURI);
+    if (pageURISrcset.length) {
+      $imgEl.attr('srcSet', pageURISrcset);
     }
-    pageContainer[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
-    this.prefetchedImgs[index] = pageContainer[0];
+    // $($imgEl).load(() => {
+    //   console.log('** PREFETCH DONE: index, this.reduce', index, this.reduce);
+    // }).error(() => {
+    //   console.log('** PREFETCH ERROR: index, this.reduce', index, this.reduce);
+    // })
+    this.prefetchedImgs[index] = $imgShell;
+  };
+
+  if (fetchNow || (index == this.twoPage.currentIndexL) || (index == this.twoPage.currentIndexR)) {
+    fetchImageAndRegister();
+  } else {
+    // stagger request
+    const time = 500;
+    setTimeout(() => {
+      fetchImageAndRegister();
+    }, time);
   }
 };
 
+/** used in 2up */
 BookReader.prototype.pruneUnusedImgs = function() {
+  const prefetchIsCapped = Object.keys(this.prefetchedImgs).length == 50;
   for (var key in this.prefetchedImgs) {
     if ((key != this.twoPage.currentIndexL) && (key != this.twoPage.currentIndexR)) {
       $(this.prefetchedImgs[key]).remove();
     }
     if ((key < this.twoPage.currentIndexL - 4) || (key > this.twoPage.currentIndexR + 4)) {
-      delete this.prefetchedImgs[key];
+      if (prefetchIsCapped || (this.prefetchedImgs[key]?.reduce > this.reduce)) {
+        delete this.prefetchedImgs[key];
+      }
     }
   }
 };

@@ -99,17 +99,21 @@ export class Mode2Up {
   /**
    * Checks to see if the images/pages in view
    * are of equal or better quality
+   * If not, we return yes
    *
    * @returns {Boolean}
    */
   get shouldRedrawSpread() {
-    const { prefetchedImgs, twoPage } = this.br;
+    const { prefetchedImgs, displayedIndices } = this.br;
     const { reduce: idealReductionFactor } = this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR );
 
     const currentImagesAreLarger = this.br.reduce <= idealReductionFactor;
-    const pagesInViewArePrefetched = prefetchedImgs[twoPage.currentIndexL] && prefetchedImgs[twoPage.currentIndexR];
+    const leftDisplayed = prefetchedImgs[displayedIndices[0]] || {};
+    const rightDisplayed = prefetchedImgs[displayedIndices[1]] || {};
+    const leftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= idealReductionFactor);
+    const rightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= idealReductionFactor);
 
-    return !currentImagesAreLarger || !pagesInViewArePrefetched;
+    return !currentImagesAreLarger || !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale);
   }
 
   /**
@@ -163,6 +167,9 @@ export class Mode2Up {
       return;
     }
 
+    const startingReduce = this.br.reduce;
+    const startingIndices = this.br.displayedIndices;
+
     this.br.refs.$brContainer.empty();
     this.br.refs.$brContainer.css('overflow', 'auto');
 
@@ -175,10 +182,18 @@ export class Mode2Up {
     this.br.twoPage.currentIndexL = currentSpreadIndices[0];
     this.br.twoPage.currentIndexR = currentSpreadIndices[1];
 
-    this.calculateSpreadSize(); //sets twoPage.width, twoPage.height and others
+    this.calculateSpreadSize(); //sets this.br.reduce, twoPage.width, twoPage.height and others
 
-    this.br.pruneUnusedImgs();
-    this.br.prefetch(); // Preload images or reload if scaling has changed
+    /* check if calculations have changed that warrant a new book draw */
+    const sameReducer = startingReduce == this.br.reduce;
+    const sameStart = startingIndices == this.br.displayedIndices;
+    const hasNewDisplayPagesOrDimensions = !sameStart || (sameStart && !sameReducer);
+
+    if (drawNewSpread || hasNewDisplayPagesOrDimensions) {
+      console.log("2UP PREPARE before 1st Prune & Prefetch (!sameStart || (sameStart && !sameReducer)) ", (!sameStart || (sameStart && !sameReducer)));
+      this.br.pruneUnusedImgs();
+      this.br.prefetch(); // Preload images or reload if scaling has changed
+    }
 
     // Add the two page view
     // $$$ Can we get everything set up and then append?
@@ -225,8 +240,6 @@ export class Mode2Up {
 
     this.drawLeafs();
     this.br.updateToolbarZoom(this.br.reduce);
-
-    this.br.prefetch();
 
     if (this.br.enableSearch) {
       this.br.removeSearchHilites();
@@ -872,8 +885,8 @@ export class Mode2Up {
    * @param {number} prevR
    */
   prepareFlipLeftToRight(prevL, prevR) {
-    this.br.prefetchImg(prevL);
-    this.br.prefetchImg(prevR);
+    this.br.prefetchImg(prevL, true);
+    this.br.prefetchImg(prevR, true);
 
     const height  = this.book._getPageHeight(prevL);
     const width   = this.book._getPageWidth(prevL);
@@ -920,8 +933,8 @@ export class Mode2Up {
    */
   prepareFlipRightToLeft(nextL, nextR) {
     // Prefetch images
-    this.br.prefetchImg(nextL);
-    this.br.prefetchImg(nextR);
+    this.br.prefetchImg(nextL, true);
+    this.br.prefetchImg(nextR, true);
 
     let height = this.book._getPageHeight(nextR);
     let width = this.book._getPageWidth(nextR);
@@ -1202,7 +1215,6 @@ export class Mode2Up {
     const { book } = this;
     const { currentIndexL, currentIndexR } = this.br.twoPage;
     const ADJACENT_PAGES_TO_LOAD = 2;
-
     // currentIndexL can be -1; getPage returns the last page of the book
     // when given -1, so need to prevent that.
     let lowPage = book.getPage(max(0, min(currentIndexL, currentIndexR)));
@@ -1218,6 +1230,37 @@ export class Mode2Up {
         highPage = highPage.findNext({ combineConsecutiveUnviewables: true });
       }
     }
+  }
+
+  /**
+   * Given a jQuery element as a container,
+   * it will create the nested image element & return updated container
+   *
+   * @param {Number} index
+   * @param {String} pageURI
+   * @param {Number} reduce
+   * @param {Object} $pageContainer - jQuery element
+   *
+   * @return $pageContainer
+   */
+  createPageImgShell(index, pageURI, reduce, $pageContainer) {
+
+    $pageContainer[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
+    $pageContainer[0].reduce = reduce; // browser may rewrite src so we stash raw URI here
+
+    const $imgEl = $('<img />', {
+      'class': 'BRpageimage',
+      'alt': 'Book page image',
+    }).data('reduce', reduce);
+
+    $($imgEl).appendTo($pageContainer);
+
+    if (index < 0 || index > (this.book.getNumLeafs() - 1) ) {
+      // Facing page at beginning or end, or beyond
+      $pageContainer.addClass('BRemptypage');
+    }
+
+    return $pageContainer[0];
   }
 
   /* 2up Container Sizes */
