@@ -190,7 +190,6 @@ export class Mode2Up {
     const hasNewDisplayPagesOrDimensions = !sameStart || (sameStart && !sameReducer);
 
     if (drawNewSpread || hasNewDisplayPagesOrDimensions) {
-      console.log("2UP PREPARE before 1st Prune & Prefetch (!sameStart || (sameStart && !sameReducer)) ", (!sameStart || (sameStart && !sameReducer)));
       this.br.pruneUnusedImgs();
       this.br.prefetch(); // Preload images or reload if scaling has changed
     }
