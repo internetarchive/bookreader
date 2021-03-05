@@ -1,3 +1,6 @@
+# 4.36.0
+Fix: More image caching - 2up, some sharing with thumbnail draw @iisa
+
 # 4.35.1
 Fix: 2up, `baseLeafCss` - use function to find "top" value @iisa
 # 4.35.0
