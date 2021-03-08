@@ -106,14 +106,14 @@ export class Mode2Up {
   get shouldRedrawSpread() {
     const { prefetchedImgs, displayedIndices } = this.br;
     const { reduce: idealReductionFactor } = this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR );
-
-    const currentImagesAreLarger = this.br.reduce <= idealReductionFactor;
     const leftDisplayed = prefetchedImgs[displayedIndices[0]] || {};
     const rightDisplayed = prefetchedImgs[displayedIndices[1]] || {};
     const leftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= idealReductionFactor);
     const rightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= idealReductionFactor);
 
-    return !currentImagesAreLarger || !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale);
+    console.log("____ shouldRedrawSpread ____, this.br.reduce, shouldRedraw", this.br.reduce, !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale));
+
+    return !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale);
   }
 
   /**
@@ -134,15 +134,13 @@ export class Mode2Up {
     $spreadLayers.find('.BRleafEdgeL')?.css(this.leafEdgeLCss);
     $spreadLayers.find('.BRgutter')?.css(this.spineCss);
 
-    for (const imageIdx in this.br.prefetchedImgs) {
-      const image = this.br.prefetchedImgs[imageIdx];
-      if (image.getAttribute('data-side') === 'L') {
-        $(image).css(this.leftLeafCss);
-      }
-      if (image.getAttribute('data-side') === 'R') {
-        $(image).css(this.rightLeafCss);
-      }
-    }
+    // Only worry about images that are in view
+    // set left page in view
+    const $leftImg = this.br.prefetchedImgs[this.br.twoPage.currentIndexL];
+    $($leftImg).css(this.leftLeafCss);
+    // set right page in view
+    const $rightImg = this.br.prefetchedImgs[this.br.twoPage.currentIndexR];
+    $($rightImg).css(this.rightLeafCss);
   }
 
   /**
@@ -161,12 +159,6 @@ export class Mode2Up {
     // The two page view div is resized to keep the middle of the book in the middle of the div
     // even as the page sizes change.  To e.g. keep the middle of the book in the middle of the BRcontent
     // div requires adjusting the offset of BRtwpageview and/or scrolling in BRcontent.
-
-    if (!drawNewSpread && !this.shouldRedrawSpread) {
-      this.resizeSpread();
-      return;
-    }
-
     const startingReduce = this.br.reduce;
     const startingIndices = this.br.displayedIndices;
 
@@ -189,6 +181,7 @@ export class Mode2Up {
     const sameStart = startingIndices == this.br.displayedIndices;
     const hasNewDisplayPagesOrDimensions = !sameStart || (sameStart && !sameReducer);
 
+    console.log("2up - hasNewDisplayPagesOrDimensions", hasNewDisplayPagesOrDimensions);
     if (drawNewSpread || hasNewDisplayPagesOrDimensions) {
       this.br.pruneUnusedImgs();
       this.br.prefetch(); // Preload images or reload if scaling has changed
@@ -684,7 +677,6 @@ export class Mode2Up {
         this.br.updateFirstIndex(this.br.twoPage.currentIndexL);
         this.br.displayedIndices = [newIndexL, newIndexR];
         this.br.pruneUnusedImgs();
-        this.br.prefetch();
         this.br.animating = false;
 
         if (this.br.enableSearch) this.br.updateSearchHilites();
@@ -700,6 +692,23 @@ export class Mode2Up {
 
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
         this.br.trigger('pageChanged');
+
+        // get next previous batch immediately      this.br.pruneUnusedImgs();
+        console.log("*********** PREFETCHING 1", newIndexL - 2, newIndexR - 2)
+        if (!this.br.prefetchedImgs[newIndexL - 2]) {
+          this.br.prefetchImg(newIndexL - 2);
+        }
+
+        if (!this.br.prefetchedImgs[newIndexR - 2]) {
+          this.br.prefetchImg(newIndexR - 2);
+        }
+
+        setTimeout(() => {
+          // flip prefetch
+          console.log("*********** PREFETCHING 2", newIndexL - 3, newIndexR - 3)
+          this.br.prefetchImg(newIndexL - 3);
+          this.br.prefetchImg(newIndexR - 3);
+        }, 250);
       });
     });
   }
@@ -820,7 +829,6 @@ export class Mode2Up {
         this.br.updateFirstIndex(this.br.twoPage.currentIndexL);
         this.br.displayedIndices = [newIndexL, newIndexR];
         this.br.pruneUnusedImgs();
-        this.br.prefetch();
         this.br.animating = false;
 
 
@@ -837,6 +845,22 @@ export class Mode2Up {
 
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
         this.br.trigger('pageChanged');
+
+        this.br.pruneUnusedImgs();
+        console.log("*********** PREFETCHING 1", newIndexL + 2, newIndexR + 2)
+        if (!this.br.prefetchedImgs[newIndexL + 2]) {
+          this.br.prefetchImg(newIndexL + 2);
+        }
+        if (!this.br.prefetchedImgs[newIndexR + 2]) {
+          this.br.prefetchImg(newIndexR + 2);
+        }
+        this.br.prun
+        setTimeout(() => {
+          // flip prefetch
+          console.log("*********** PREFETCHING 2", newIndexL + 3, newIndexR + 3)
+          this.br.prefetchImg(newIndexL + 3);
+          this.br.prefetchImg(newIndexR + 3);
+        }, 250);
       });
     });
   }
@@ -1206,7 +1230,7 @@ export class Mode2Up {
    * Fetches the currently displayed images (if not already fetching)
    * as wells as any nearby pages.
    */
-  prefetch() {
+  prefetch(skipPagesInView = false) {
     // $$$ We should check here if the current indices have finished
     //     loading (with some timeout) before loading more page images
     //     See https://bugs.edge.launchpad.net/bookreader/+bug/511391
@@ -1218,7 +1242,9 @@ export class Mode2Up {
     // when given -1, so need to prevent that.
     let lowPage = book.getPage(max(0, min(currentIndexL, currentIndexR)));
     let highPage = book.getPage(max(currentIndexL, currentIndexR));
-    for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 1; i++) {
+
+    for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 2; i++) {
+      console.log("PREFETCH i, lowPage, highPage", i, lowPage, highPage);
       if (lowPage) {
         this.br.prefetchImg(lowPage.index);
         lowPage = lowPage.findPrev({ combineConsecutiveUnviewables: true });

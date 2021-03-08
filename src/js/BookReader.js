@@ -38,6 +38,7 @@ import {
 import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
+import { ImageCache } from './BookReader/ImageCache.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -63,6 +64,8 @@ BookReader.constMode1up = 1;
 BookReader.constMode2up = 2;
 /** thumbnails view */
 BookReader.constModeThumb = 3;
+/** image cache */
+BookReader.imageCache = null;
 
 // Animation constants
 BookReader.constNavAnimationDuration = 300;
@@ -234,6 +237,9 @@ BookReader.prototype.setup = function(options) {
     '_modes.mode1Up': this._modes.mode1Up,
     '_modes.mode2Up': this._modes.mode2Up,
   };
+
+  /** Image cache for general image fetching */
+  this.imageCache = new ImageCache(this);
 };
 
 /** @deprecated unused outside Mode2Up */
@@ -1695,67 +1701,46 @@ BookReader.prototype._scrollAmount = function() {
  *     - this allows for "2up to prepare a page flip"
  */
 BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
-  const pageURI = this._getPageURI(index, this.reduce);
-  const pageURISrcset = this.options.useSrcSet ? this._getPageURISrcset(index, this.reduce) : [];
 
-  // Load image if not loaded or URI has changed (e.g. due to scaling)
-  let loadImage = false;
-  const wasPrefetchedSmaller = this.prefetchedImgs[index]?.reduce > this.reduce;
-  if (undefined == this.prefetchedImgs[index]) {
-    loadImage = true;
-  } else if (wasPrefetchedSmaller) {
-    loadImage = true;
-  } else if (!wasPrefetchedSmaller && (pageURI != this.prefetchedImgs[index]?.uri)) {
-    loadImage = true;
-  }
-
-  if (!loadImage) {
-    return;
-  }
-
-  if (wasPrefetchedSmaller) {
-    /* cancel the request if still pending */
-    $(this.prefetchedImgs[index]).find('img').attr('src', '');
-  }
-
-  const $pageContainer = this._createPageContainer(index);
-  const $imgShell = this._modes.mode2Up.createPageImgShell(index, pageURI, this.reduce, $pageContainer);
-
-  /** set uri in img tag to start request & save in `this.prefetchedImgs` */
   const fetchImageAndRegister = () => {
-    const $imgEl = $($imgShell).find('img');
-    $imgEl.attr('src', pageURI);
-    if (pageURISrcset.length) {
-      $imgEl.attr('srcSet', pageURISrcset);
-    }
-    // $($imgEl).load(() => {
-    //   console.log('** PREFETCH DONE: index, this.reduce', index, this.reduce);
-    // }).error(() => {
-    //   console.log('** PREFETCH ERROR: index, this.reduce', index, this.reduce);
-    // })
-    this.prefetchedImgs[index] = $imgShell;
+    const $image = this.imageCache.image(index, this.reduce);
+    const $pageContainer = this._createPageContainer(index, this._modes.mode2Up.baseLeafCss);
+    console.log('____ prefetchImg _____$image to append', $image);
+    $($image).appendTo($pageContainer);
+
+    /** store uri & reducer */
+    $pageContainer[0].uri = $image.uri;
+    $pageContainer[0].reduce = $image.reduce;
+    console.log('____ prefetchImg _____$pageContainer', $pageContainer);
+    this.prefetchedImgs[index] = $pageContainer;
   };
 
-  if (fetchNow || (index == this.twoPage.currentIndexL) || (index == this.twoPage.currentIndexR)) {
+  const indexIsInView = (index == this.twoPage.currentIndexL) || (index == this.twoPage.currentIndexR);
+  if (fetchNow || indexIsInView) {
+    console.log("____ prefetchImg _____request now", index);
     fetchImageAndRegister();
   } else {
     // stagger request
-    const time = 500;
+    const time = 300;
     setTimeout(() => {
-      fetchImageAndRegister();
+      console.log("____ prefetchImg _____staggering request", index);
+      // just fetch image, do not wrap with page container
+      this.imageCache.image(index, this.reduce);
     }, time);
   }
 };
 
-/** used in 2up */
+/**
+ * used in 2up
+ * cached 2up page containers
+ * */
 BookReader.prototype.pruneUnusedImgs = function() {
-  const prefetchIsCapped = Object.keys(this.prefetchedImgs).length == 50;
   for (var key in this.prefetchedImgs) {
     if ((key != this.twoPage.currentIndexL) && (key != this.twoPage.currentIndexR)) {
       $(this.prefetchedImgs[key]).remove();
     }
     if ((key < this.twoPage.currentIndexL - 4) || (key > this.twoPage.currentIndexR + 4)) {
-      if (prefetchIsCapped || (this.prefetchedImgs[key]?.reduce > this.reduce)) {
+      if (this.prefetchedImgs[key]?.reduce > this.reduce) {
         delete this.prefetchedImgs[key];
       }
     }

@@ -10,7 +10,7 @@ export class ImageCache {
     this.defaultScale = 8;
     this.maxCache = this.br.maxImageCache || 100;
 
-    this.createImage = this.createImage.bind(this);
+    this.createImage = this._createImage.bind(this);
     this.image = this.image.bind(this);
   }
 
@@ -26,8 +26,9 @@ export class ImageCache {
   image(index, reduce) {
     const $thisImage = this.cache[index];
     const currImageScale = $thisImage?.reduce;
-
+    console.log("IMAGE CACHE ----- `image` - index, currImageScale, reduce", index, currImageScale, reduce);
     if (currImageScale <= reduce) {
+      console.log("Image -- curr good enough reduce, index", reduce, index);
       return $thisImage;
     }
 
@@ -58,14 +59,17 @@ export class ImageCache {
    * @param {Number} reduce
    * @returns $image
    */
-  _createImage (index, reduce) {
+  _createImage(index, reduce) {
     const hasCache = this.cache[index];
     if (hasCache) {
+      console.log("Image --- bust cache - index, ", index);
       this._bustImageCache(index);
     }
 
+    // Q: where/when do we delete an image?
+
     const src = this.br._getPageURI(index, reduce);
-    const srcSet = this.options.useSrcSet ? this.br._getPageURISrcset(index, reduce) : [];
+    const srcSet = this.br.options.useSrcSet ? this.br._getPageURISrcset(index, reduce) : [];
     const $img = $('<img />', {
       'class': 'BRpageimage',
       'alt': 'Book page image',
@@ -74,6 +78,8 @@ export class ImageCache {
     }).data('reduce', reduce);
 
     this.cache[index] = { ...$img, reduce, uri: src };
+    console.log("Image --- create, reduce", reduce, this.cache[index]);
+
     return this.cache[index];
   }
 }
