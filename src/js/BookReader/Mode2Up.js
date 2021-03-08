@@ -47,6 +47,7 @@ export class Mode2Up {
     // $$$ we should use calculated values in this.twoPage (recalc if necessary)
     const indexL = this.br.twoPage.currentIndexL;
     const indexR = this.br.twoPage.currentIndexR;
+    this.br.pruneUnusedImgs();
 
     this.br.prefetchImg(indexL);
     $(this.br.prefetchedImgs[indexL]).css(this.leftLeafCss).appendTo($twoPageViewEl);

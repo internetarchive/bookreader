@@ -46,7 +46,8 @@ export class ImageCache {
   _bustImageCache(index) {
     const $thisImage = this.cache[index];
     // allows browser to abort a pending request
-    $($thisImage).find('img').attr('src', '').attr('srcSet', []);
+
+    $($thisImage).attr('src', '').attr('srcSet', []);
     delete this.cache[index];
   }
 
