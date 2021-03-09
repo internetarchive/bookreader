@@ -26,9 +26,7 @@ export class ImageCache {
   image(index, reduce) {
     const $thisImage = this.cache[index];
     const currImageScale = $thisImage?.reduce;
-    console.log("IMAGE CACHE ----- `image` - index, currImageScale, reduce", index, currImageScale, reduce);
     if (currImageScale <= reduce) {
-      console.log("Image -- curr good enough reduce, index", reduce, index);
       return $thisImage;
     }
 
@@ -54,7 +52,8 @@ export class ImageCache {
   /**
    * @private
    * Creates an image & stashes in cache
-   *  Will bust cache iff
+   * - Use only to create an image as it will
+   *    bust cache if requested index has one stashed
    *
    * @param {String|Number} index - page index
    * @param {Number} reduce
@@ -63,11 +62,8 @@ export class ImageCache {
   _createImage(index, reduce) {
     const hasCache = this.cache[index];
     if (hasCache) {
-      console.log("Image --- bust cache - index, ", index);
       this._bustImageCache(index);
     }
-
-    // Q: where/when do we delete an image?
 
     const src = this.br._getPageURI(index, reduce);
     const srcSet = this.br.options.useSrcSet ? this.br._getPageURISrcset(index, reduce) : [];
@@ -76,10 +72,11 @@ export class ImageCache {
       'alt': 'Book page image',
       src,
       srcSet
-    }).data('reduce', reduce);
+    }).data('reduce', reduce).load(() => {
+      this.cache[index].loaded = true;
+    });
 
     this.cache[index] = { ...$img, reduce, uri: src };
-    console.log("Image --- create, reduce", reduce, this.cache[index]);
 
     return this.cache[index];
   }

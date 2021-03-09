@@ -1708,7 +1708,7 @@ BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
     const $pageContainer = this._createPageContainer(index, this._modes.mode2Up.baseLeafCss);
     $($image).appendTo($pageContainer);
 
-    const isEmptyPage = index < 0 || index > (this.book.getNumLeafs() - 1);
+    const isEmptyPage = index < 0 || index > (this._models.book.getNumLeafs() - 1);
     if (isEmptyPage) {
       // Facing page at beginning or end, or beyond
       $pageContainer.addClass('BRemptypage');
