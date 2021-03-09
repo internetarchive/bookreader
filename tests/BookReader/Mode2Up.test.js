@@ -78,7 +78,6 @@ describe('prefetch', () => {
     expect(spy.callCount).toBeGreaterThan(2);
   });
 
-
   test('skips consecutive unviewables', () => {
     const data = deepCopy(SAMPLE_DATA);
     data[1].forEach(page => page.viewable = false);
@@ -115,16 +114,6 @@ describe('draw 2up leaves', () => {
 });
 
 describe('shouldRedrawSpread', () => {
-  test('returns FALSE if current images are larger && if pages in view are prefetched', () => {
-    const br = new BookReader({ data: SAMPLE_DATA });
-    br.init();
-    const reduceStub = 10;
-    br.reduce = reduceStub;
-    br._modes.mode2Up.getIdealSpreadSize = () => { return { reduce: 111111 }};
-
-    const shouldRedrawSpread = br._modes.mode2Up.shouldRedrawSpread;
-    expect(shouldRedrawSpread).toBe(false);
-  });
   test('returns TRUE if current images are smaller && if pages in view are prefetched', () => {
     const br = new BookReader({ data: SAMPLE_DATA });
     br.init();
@@ -265,82 +254,27 @@ describe('prepareTwoPageView', () => {
       expect(resizeSpread.callCount).toBe(0);
       expect(drawLeafs.callCount).toBe(1);
       expect(calculateSpreadSize.callCount).toBe(1);
-      expect(pruneUnusedImgs.callCount).toBe(1);
+      expect(pruneUnusedImgs.callCount).toBe(2);
       expect(bindGestures.callCount).toBe(1);
       expect(centerView.callCount).toBe(1);
       expect(preparePopUp.callCount).toBe(1);
       expect(updateBrClasses.callCount).toBe(1);
     });
-
-    describe('resizes spread if no redraw is necessary', () => {
-      test('no `this.displayedIndices` nor `br.reduce` change', () => {
-        const br = new BookReader({ data: SAMPLE_DATA });
-        br.init();
-        const drawLeafs = sinon.spy(br._modes.mode2Up, 'drawLeafs');
-        const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
-        br.prepareTwoPageView();
-        expect(drawLeafs.callCount).toBe(0);
-        expect(resizeSpread.callCount).toBe(1);
-      });
-      test('currently displayed images are better than the next reduction', () => {
-        const br = new BookReader({ data: SAMPLE_DATA });
-        br.init();
-        const drawLeafs = sinon.spy(br._modes.mode2Up, 'drawLeafs');
-        const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
-        br.prepareTwoPageView();
-        expect(drawLeafs.callCount).toBe(0);
-        expect(resizeSpread.callCount).toBe(1);
-      });
-    });
-    test('will prune & prefetch images if `this.displayedIndices` has changed', () => {
-      let pruneCount = 0;
-      let prefetchCount = 0;
-      const expectedPruneCount = 1;
-      const expectedPrefetchCount = 1;
-
-      const br = new BookReader({ data: SAMPLE_DATA });
-
-      // manual stubs bc sinon can't find its scope...
-      BookReader.prototype.pruneUnusedImgs = () => {
-        pruneCount = pruneCount + 1;
-      };
-      BookReader.prototype.prefetch = () => {
-        prefetchCount = prefetchCount + 1;
-      };
-      br.init();
-      const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
-
-      br.displayedIndices = [111, 112];
-      br.prepareTwoPageView();
-
-      expect(resizeSpread.callCount).toBe(0);
-      expect(pruneCount).toBe(expectedPruneCount);
-      expect(prefetchCount).toBe(expectedPrefetchCount);
-    });
-
-    test('will prune & prefetch images idealReducer has changed to a better size', () => {
-      let pruneCount = 0;
-      let prefetchCount = 0;
-      const expectedPruneCount = 1;
-      const expectedPrefetchCount = 1;
-      const br = new BookReader({ data: SAMPLE_DATA });
-      // manual stubs bc sinon can't find its scope...
-      BookReader.prototype.pruneUnusedImgs = () => {
-        pruneCount = pruneCount + 1;
-      };
-      BookReader.prototype.prefetch = () => {
-        prefetchCount = prefetchCount + 1;
-      };
-      br.init();
-      const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
-      const stubIdealReduce = 3;
-      br.twoPage = {};
-      br._modes.mode2Up.getIdealSpreadSize = () => ({ reduce: stubIdealReduce });
-      br.prepareTwoPageView();
-
-      expect(resizeSpread.callCount).toBe(0);
-      expect(pruneCount).toBe(expectedPruneCount);
-      expect(prefetchCount).toBe(expectedPrefetchCount);
-    });
   });
 });
+
+describe('`prefetchImg` call', () => {
+  test('uses ImageCache in 2up', () => {
+    const br = new BookReader({ data: SAMPLE_DATA });
+    br.init();
+
+    expect(br.imageCache).toBeTruthy();
+    expect(br.prefetchedImgs).toBeTruthy();
+    expect(br.imageCache.cache['5']).toBe(undefined);
+
+    br.prefetchImg(5, true);
+    expect(br.imageCache.cache['5']).toBeTruthy();
+  });
+});
+
+

@@ -1246,7 +1246,6 @@ export class Mode2Up {
     let highPage = book.getPage(max(currentIndexL, currentIndexR));
 
     for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 2; i++) {
-      console.log("PREFETCH i, lowPage, highPage", i, lowPage, highPage);
       if (lowPage) {
         this.br.prefetchImg(lowPage.index);
         lowPage = lowPage.findPrev({ combineConsecutiveUnviewables: true });
