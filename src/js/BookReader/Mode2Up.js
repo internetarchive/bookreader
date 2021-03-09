@@ -149,7 +149,7 @@ export class Mode2Up {
    * @param {number} centerPercentageY
    * @param {Boolean} drawNewSpread
    */
-  prepareTwoPageView(centerPercentageX = 0.5, centerPercentageY = 0.5, drawNewSpread = false) {
+  prepareTwoPageView(centerPercentageX, centerPercentageY, drawNewSpread = false) {
     // Some decisions about two page view:
     //
     // Both pages will be displayed at the same height, even if they were different physical/scanned
@@ -690,8 +690,8 @@ export class Mode2Up {
         }
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
-
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
+        this.centerView(undefined, undefined);
         this.br.trigger('pageChanged');
 
         // get next previous batch immediately      this.br.pruneUnusedImgs();
@@ -843,8 +843,8 @@ export class Mode2Up {
         }
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
-
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
+        this.centerView(undefined, undefined);
         this.br.trigger('pageChanged');
 
         this.br.pruneUnusedImgs();
@@ -855,7 +855,7 @@ export class Mode2Up {
         if (!this.br.prefetchedImgs[newIndexR + 2]) {
           this.br.prefetchImg(newIndexR + 2);
         }
-        this.br.prun
+
         setTimeout(() => {
           // flip prefetch
           console.log("*********** PREFETCHING 2", newIndexL + 3, newIndexR + 3)
@@ -1231,7 +1231,7 @@ export class Mode2Up {
    * Fetches the currently displayed images (if not already fetching)
    * as wells as any nearby pages.
    */
-  prefetch(skipPagesInView = false) {
+  prefetch() {
     // $$$ We should check here if the current indices have finished
     //     loading (with some timeout) before loading more page images
     //     See https://bugs.edge.launchpad.net/bookreader/+bug/511391
