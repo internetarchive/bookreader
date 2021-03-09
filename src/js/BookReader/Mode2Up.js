@@ -112,8 +112,6 @@ export class Mode2Up {
     const leftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= idealReductionFactor);
     const rightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= idealReductionFactor);
 
-    console.log("____ shouldRedrawSpread ____, this.br.reduce, shouldRedraw", this.br.reduce, !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale));
-
     return !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale);
   }
 
@@ -182,7 +180,6 @@ export class Mode2Up {
     const sameStart = startingIndices == this.br.displayedIndices;
     const hasNewDisplayPagesOrDimensions = !sameStart || (sameStart && !sameReducer);
 
-    console.log("2up - hasNewDisplayPagesOrDimensions", hasNewDisplayPagesOrDimensions);
     if (drawNewSpread || hasNewDisplayPagesOrDimensions) {
       this.br.pruneUnusedImgs();
       this.br.prefetch(); // Preload images or reload if scaling has changed
@@ -695,7 +692,6 @@ export class Mode2Up {
         this.br.trigger('pageChanged');
 
         // get next previous batch immediately      this.br.pruneUnusedImgs();
-        console.log("*********** PREFETCHING 1", newIndexL - 2, newIndexR - 2)
         if (!this.br.prefetchedImgs[newIndexL - 2]) {
           this.br.prefetchImg(newIndexL - 2);
         }
@@ -706,7 +702,6 @@ export class Mode2Up {
 
         setTimeout(() => {
           // flip prefetch
-          console.log("*********** PREFETCHING 2", newIndexL - 3, newIndexR - 3)
           this.br.prefetchImg(newIndexL - 3);
           this.br.prefetchImg(newIndexR - 3);
         }, 250);
@@ -848,7 +843,6 @@ export class Mode2Up {
         this.br.trigger('pageChanged');
 
         this.br.pruneUnusedImgs();
-        console.log("*********** PREFETCHING 1", newIndexL + 2, newIndexR + 2)
         if (!this.br.prefetchedImgs[newIndexL + 2]) {
           this.br.prefetchImg(newIndexL + 2);
         }
@@ -858,7 +852,6 @@ export class Mode2Up {
 
         setTimeout(() => {
           // flip prefetch
-          console.log("*********** PREFETCHING 2", newIndexL + 3, newIndexR + 3)
           this.br.prefetchImg(newIndexL + 3);
           this.br.prefetchImg(newIndexR + 3);
         }, 250);

@@ -8,7 +8,6 @@ export class ImageCache {
     this.br = br;
     this.cache = {};
     this.defaultScale = 8;
-    this.maxCache = this.br.maxImageCache || 100;
 
     this.createImage = this._createImage.bind(this);
     this.image = this.image.bind(this);
