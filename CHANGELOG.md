@@ -1,3 +1,6 @@
+# 4.37.0
+Fix: new ImageCache that keeps track of requested images & their scale factor @iisa
+Fix: 2up mode's use of ImageCache @iisa
 # 4.36.0
 Fix: More image caching - 2up, some sharing with thumbnail draw @iisa
 
