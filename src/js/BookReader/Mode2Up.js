@@ -47,6 +47,7 @@ export class Mode2Up {
     // $$$ we should use calculated values in this.twoPage (recalc if necessary)
     const indexL = this.br.twoPage.currentIndexL;
     const indexR = this.br.twoPage.currentIndexR;
+    this.br.pruneUnusedImgs();
 
     this.br.prefetchImg(indexL);
     $(this.br.prefetchedImgs[indexL]).css(this.leftLeafCss).appendTo($twoPageViewEl);
@@ -106,14 +107,12 @@ export class Mode2Up {
   get shouldRedrawSpread() {
     const { prefetchedImgs, displayedIndices } = this.br;
     const { reduce: idealReductionFactor } = this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR );
-
-    const currentImagesAreLarger = this.br.reduce <= idealReductionFactor;
     const leftDisplayed = prefetchedImgs[displayedIndices[0]] || {};
     const rightDisplayed = prefetchedImgs[displayedIndices[1]] || {};
     const leftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= idealReductionFactor);
     const rightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= idealReductionFactor);
 
-    return !currentImagesAreLarger || !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale);
+    return !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale);
   }
 
   /**
@@ -125,7 +124,7 @@ export class Mode2Up {
     this.calculateSpreadSize();
 
     this.br.refs?.$brTwoPageView.css(this.mainContainerCss);
-    this.centerView(undefined, undefined); // let function self adjust
+    this.centerView(); // let function self adjust
 
     $(this.br.twoPage.coverDiv).css(this.spreadCoverCss); // click sheath is memoized somehow
     const $spreadLayers = this.br.refs.$brTwoPageView;
@@ -134,15 +133,13 @@ export class Mode2Up {
     $spreadLayers.find('.BRleafEdgeL')?.css(this.leafEdgeLCss);
     $spreadLayers.find('.BRgutter')?.css(this.spineCss);
 
-    for (const imageIdx in this.br.prefetchedImgs) {
-      const image = this.br.prefetchedImgs[imageIdx];
-      if (image.getAttribute('data-side') === 'L') {
-        $(image).css(this.leftLeafCss);
-      }
-      if (image.getAttribute('data-side') === 'R') {
-        $(image).css(this.rightLeafCss);
-      }
-    }
+    // Only worry about images that are in view
+    // set left page in view
+    const $leftImg = this.br.prefetchedImgs[this.br.twoPage.currentIndexL];
+    $($leftImg).css(this.leftLeafCss);
+    // set right page in view
+    const $rightImg = this.br.prefetchedImgs[this.br.twoPage.currentIndexR];
+    $($rightImg).css(this.rightLeafCss);
   }
 
   /**
@@ -150,7 +147,7 @@ export class Mode2Up {
    * @param {number} centerPercentageY
    * @param {Boolean} drawNewSpread
    */
-  prepareTwoPageView(centerPercentageX = 0.5, centerPercentageY = 0.5, drawNewSpread = false) {
+  prepareTwoPageView(centerPercentageX, centerPercentageY, drawNewSpread = false) {
     // Some decisions about two page view:
     //
     // Both pages will be displayed at the same height, even if they were different physical/scanned
@@ -161,12 +158,6 @@ export class Mode2Up {
     // The two page view div is resized to keep the middle of the book in the middle of the div
     // even as the page sizes change.  To e.g. keep the middle of the book in the middle of the BRcontent
     // div requires adjusting the offset of BRtwpageview and/or scrolling in BRcontent.
-
-    if (!drawNewSpread && !this.shouldRedrawSpread) {
-      this.resizeSpread();
-      return;
-    }
-
     const startingReduce = this.br.reduce;
     const startingIndices = this.br.displayedIndices;
 
@@ -190,7 +181,6 @@ export class Mode2Up {
     const hasNewDisplayPagesOrDimensions = !sameStart || (sameStart && !sameReducer);
 
     if (drawNewSpread || hasNewDisplayPagesOrDimensions) {
-      console.log("2UP PREPARE before 1st Prune & Prefetch (!sameStart || (sameStart && !sameReducer)) ", (!sameStart || (sameStart && !sameReducer)));
       this.br.pruneUnusedImgs();
       this.br.prefetch(); // Preload images or reload if scaling has changed
     }
@@ -685,7 +675,6 @@ export class Mode2Up {
         this.br.updateFirstIndex(this.br.twoPage.currentIndexL);
         this.br.displayedIndices = [newIndexL, newIndexR];
         this.br.pruneUnusedImgs();
-        this.br.prefetch();
         this.br.animating = false;
 
         if (this.br.enableSearch) this.br.updateSearchHilites();
@@ -698,9 +687,24 @@ export class Mode2Up {
         }
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
-
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
+        this.centerView();
         this.br.trigger('pageChanged');
+
+        // get next previous batch immediately      this.br.pruneUnusedImgs();
+        if (!this.br.prefetchedImgs[newIndexL - 2]) {
+          this.br.prefetchImg(newIndexL - 2);
+        }
+
+        if (!this.br.prefetchedImgs[newIndexR - 2]) {
+          this.br.prefetchImg(newIndexR - 2);
+        }
+
+        setTimeout(() => {
+          // flip prefetch
+          this.br.prefetchImg(newIndexL - 3);
+          this.br.prefetchImg(newIndexR - 3);
+        }, 250);
       });
     });
   }
@@ -821,7 +825,6 @@ export class Mode2Up {
         this.br.updateFirstIndex(this.br.twoPage.currentIndexL);
         this.br.displayedIndices = [newIndexL, newIndexR];
         this.br.pruneUnusedImgs();
-        this.br.prefetch();
         this.br.animating = false;
 
 
@@ -835,9 +838,23 @@ export class Mode2Up {
         }
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
-
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
+        this.centerView();
         this.br.trigger('pageChanged');
+
+        this.br.pruneUnusedImgs();
+        if (!this.br.prefetchedImgs[newIndexL + 2]) {
+          this.br.prefetchImg(newIndexL + 2);
+        }
+        if (!this.br.prefetchedImgs[newIndexR + 2]) {
+          this.br.prefetchImg(newIndexR + 2);
+        }
+
+        setTimeout(() => {
+          // flip prefetch
+          this.br.prefetchImg(newIndexL + 3);
+          this.br.prefetchImg(newIndexR + 3);
+        }, 250);
       });
     });
   }
@@ -1020,10 +1037,11 @@ export class Mode2Up {
 
   /**
    * Centers the point given by percentage from left,top of twopageview
-   * @param {number} percentageX
-   * @param {number} percentageY
-   */
+   * @param {number} [percentageX=0.5]
+   * @param {number} [percentageY=0.5]
+ */
   centerView(percentageX, percentageY) {
+
     if ('undefined' == typeof(percentageX)) {
       percentageX = 0.5;
     }
@@ -1219,7 +1237,8 @@ export class Mode2Up {
     // when given -1, so need to prevent that.
     let lowPage = book.getPage(max(0, min(currentIndexL, currentIndexR)));
     let highPage = book.getPage(max(currentIndexL, currentIndexR));
-    for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 1; i++) {
+
+    for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 2; i++) {
       if (lowPage) {
         this.br.prefetchImg(lowPage.index);
         lowPage = lowPage.findPrev({ combineConsecutiveUnviewables: true });
@@ -1230,37 +1249,6 @@ export class Mode2Up {
         highPage = highPage.findNext({ combineConsecutiveUnviewables: true });
       }
     }
-  }
-
-  /**
-   * Given a jQuery element as a container,
-   * it will create the nested image element & return updated container
-   *
-   * @param {Number} index
-   * @param {String} pageURI
-   * @param {Number} reduce
-   * @param {Object} $pageContainer - jQuery element
-   *
-   * @return $pageContainer
-   */
-  createPageImgShell(index, pageURI, reduce, $pageContainer) {
-
-    $pageContainer[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
-    $pageContainer[0].reduce = reduce; // browser may rewrite src so we stash raw URI here
-
-    const $imgEl = $('<img />', {
-      'class': 'BRpageimage',
-      'alt': 'Book page image',
-    }).data('reduce', reduce);
-
-    $($imgEl).appendTo($pageContainer);
-
-    if (index < 0 || index > (this.book.getNumLeafs() - 1) ) {
-      // Facing page at beginning or end, or beyond
-      $pageContainer.addClass('BRemptypage');
-    }
-
-    return $pageContainer[0];
   }
 
   /* 2up Container Sizes */
