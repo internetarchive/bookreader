@@ -121,3 +121,5 @@ export class BookReaderTemplate extends LitElement {
     `;
   }
 }
+
+window.customElements.define("bookreader-template", BookReaderTemplate);
