@@ -9,7 +9,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "type": "module",
   "module": "src/BookNavigator/BookNavigator.js",
   "keywords": [
     "online",
@@ -90,6 +89,7 @@
     "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
     "build-js": "npx webpack",
     "build-js:watch": "npx webpack --mode=development --watch",
+    "build-demo-module": "npx esbuild src/BookReaderTemplate/BookReaderTemplate.js --outfile=BookReaderDemo/bookreader-template-bundle.js --bundle --minify",
     "build-css": "npx sass --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "build-css:watch": "npx sass --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "lint": "npx eslint src/js tests",
