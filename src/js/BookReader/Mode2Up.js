@@ -1048,6 +1048,7 @@ export class Mode2Up {
    * @param {number} percentageY
    */
   centerView(percentageX, percentageY) {
+
     if ('undefined' == typeof(percentageX)) {
       percentageX = 0.5;
     }
@@ -1256,37 +1257,6 @@ export class Mode2Up {
         highPage = highPage.findNext({ combineConsecutiveUnviewables: true });
       }
     }
-  }
-
-  /**
-   * Given a jQuery element as a container,
-   * it will create the nested image element & return updated container
-   *
-   * @param {Number} index
-   * @param {String} pageURI
-   * @param {Number} reduce
-   * @param {Object} $pageContainer - jQuery element
-   *
-   * @return $pageContainer
-   */
-  createPageImgShell(index, pageURI, reduce, $pageContainer) {
-
-    $pageContainer[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
-    $pageContainer[0].reduce = reduce; // browser may rewrite src so we stash raw URI here
-
-    const $imgEl = $('<img />', {
-      'class': 'BRpageimage',
-      'alt': 'Book page image',
-    }).data('reduce', reduce);
-
-    $($imgEl).appendTo($pageContainer);
-
-    if (index < 0 || index > (this.book.getNumLeafs() - 1) ) {
-      // Facing page at beginning or end, or beyond
-      $pageContainer.addClass('BRemptypage');
-    }
-
-    return $pageContainer[0];
   }
 
   /* 2up Container Sizes */

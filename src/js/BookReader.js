@@ -1702,28 +1702,31 @@ BookReader.prototype._scrollAmount = function() {
  */
 BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
 
+  /** main function that creates page container */
   const fetchImageAndRegister = () => {
     const $image = this.imageCache.image(index, this.reduce);
     const $pageContainer = this._createPageContainer(index, this._modes.mode2Up.baseLeafCss);
-    console.log('____ prefetchImg _____$image to append', $image);
     $($image).appendTo($pageContainer);
+
+    const isEmptyPage = index < 0 || index > (this.book.getNumLeafs() - 1);
+    if (isEmptyPage) {
+      // Facing page at beginning or end, or beyond
+      $pageContainer.addClass('BRemptypage');
+    }
 
     /** store uri & reducer */
     $pageContainer[0].uri = $image.uri;
     $pageContainer[0].reduce = $image.reduce;
-    console.log('____ prefetchImg _____$pageContainer', $pageContainer);
     this.prefetchedImgs[index] = $pageContainer;
   };
 
   const indexIsInView = (index == this.twoPage.currentIndexL) || (index == this.twoPage.currentIndexR);
   if (fetchNow || indexIsInView) {
-    console.log("____ prefetchImg _____request now", index);
     fetchImageAndRegister();
   } else {
     // stagger request
     const time = 300;
     setTimeout(() => {
-      console.log("____ prefetchImg _____staggering request", index);
       // just fetch image, do not wrap with page container
       this.imageCache.image(index, this.reduce);
     }, time);
