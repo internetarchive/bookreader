@@ -124,7 +124,7 @@ export class Mode2Up {
     this.calculateSpreadSize();
 
     this.br.refs?.$brTwoPageView.css(this.mainContainerCss);
-    this.centerView(undefined, undefined); // let function self adjust
+    this.centerView(); // let function self adjust
 
     $(this.br.twoPage.coverDiv).css(this.spreadCoverCss); // click sheath is memoized somehow
     const $spreadLayers = this.br.refs.$brTwoPageView;
@@ -688,7 +688,7 @@ export class Mode2Up {
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
-        this.centerView(undefined, undefined);
+        this.centerView();
         this.br.trigger('pageChanged');
 
         // get next previous batch immediately      this.br.pruneUnusedImgs();
@@ -839,7 +839,7 @@ export class Mode2Up {
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
-        this.centerView(undefined, undefined);
+        this.centerView();
         this.br.trigger('pageChanged');
 
         this.br.pruneUnusedImgs();
@@ -1037,9 +1037,9 @@ export class Mode2Up {
 
   /**
    * Centers the point given by percentage from left,top of twopageview
-   * @param {number} percentageX
-   * @param {number} percentageY
-   */
+   * @param {number} [percentageX=0.5]
+   * @param {number} [percentageY=0.5]
+ */
   centerView(percentageX, percentageY) {
 
     if ('undefined' == typeof(percentageX)) {
