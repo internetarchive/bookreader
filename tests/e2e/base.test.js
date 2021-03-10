@@ -27,8 +27,8 @@ OCAIDS.forEach(ocaid => {
     .page `${url}`
   runDesktopSearchTests(new BookReader());
 
-  fixture `Mobile Search Tests for: ${ocaid}`
-    .page `${url}`
+  // fixture `Mobile Search Tests for: ${ocaid}`
+  //   .page `${url}`
   // runMobileSearchTests(new BookReader());
 
 
