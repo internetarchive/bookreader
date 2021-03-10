@@ -1,4 +1,3 @@
-import '../../src/js/jquery-ui-wrapper.js';
 import 'jquery.browser';
 import '../../src/js/dragscrollable-br.js';
 import 'jquery-colorbox';
