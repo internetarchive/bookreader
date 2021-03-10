@@ -5,7 +5,7 @@ import { IASharingOptions } from '@internetarchive/ia-sharing-options';
 customElements.define('ia-sharing-options', IASharingOptions);
 
 export default class {
-  constructor(metadata, baseHost, baseItemType) {
+  constructor(metadata = {}, baseHost, baseItemType) {
     this.itemType = baseItemType;
     const label = `Share this ${this.reconcileItemType}`;
     this.icon = html`<ia-icon icon="share" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
