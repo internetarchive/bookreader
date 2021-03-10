@@ -1,7 +1,7 @@
 import { runBaseTests } from './helpers/base';
 import BookReader from './models/BookReader';
 import { runDesktopSearchTests } from './helpers/desktopSearch';
-import { runMobileSearchTests } from './helpers/mobileSearch';
+// import { runMobileSearchTests } from './helpers/mobileSearch';
 
 
 const { BASE_URL } = process.env;
@@ -27,9 +27,9 @@ OCAIDS.forEach(ocaid => {
     .page `${url}`
   runDesktopSearchTests(new BookReader());
 
-  fixture `Mobile Search Tests for: ${ocaid}`
-    .page `${url}`
-  runMobileSearchTests(new BookReader());
+  // fixture `Mobile Search Tests for: ${ocaid}`
+  //   .page `${url}`
+  // runMobileSearchTests(new BookReader());
 
 
 });
