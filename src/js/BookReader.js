@@ -711,7 +711,8 @@ BookReader.prototype._createPageContainer = function(index, styles) {
   const container = $('<div />', {
     'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
     css,
-  }).attr('data-side', pageSide).append($('<div />', { 'class': 'BRscreen' }));
+  }).attr('data-side', pageSide).append($('<div />', { 'class': 'BRscreen' }))
+    .append($(`<div />INDEX: ${index}</div>`, { 'style': 'width: 100%; background-color: red' }));
   container.toggleClass('protected', this.protected);
 
   return container;
@@ -755,6 +756,7 @@ BookReader.prototype.bindGestures = function(jElement) {
  * @typedef {Object} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce
  */
 BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
+  console.log("ASK: drawLeafsThumbnail", new Date());
   const { floor } = Math;
   const { book } = this._models;
   const viewWidth = this.refs.$brContainer.prop('scrollWidth') - 20; // width minus buffer
@@ -771,6 +773,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   let seekTop;
 
   // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
+  // make `leafMap`
   for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
     const leafWidth = this.thumbWidth;
     if (rightPos + (leafWidth + this.thumbPadding) > viewWidth) {
@@ -856,11 +859,16 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
   }
 
+  console.log("***** ROWS TO DISPLAY", rowsToDisplay);
+  console.log("***** this.displayedRows", this.displayedRows);
+  console.log("***** leafMap", leafMap);
+
   // Create the thumbnail divs and images (lazy loaded)
   for (const row of rowsToDisplay) {
+    console.log('row, leafMap[row]', row, leafMap[row] );
     if (utils.notInArray(row, this.displayedRows)) {
       if (!leafMap[row]) { continue; }
-      for (const { num: leaf, left: leafLeft } of leafMap[row].leafs) {
+      for (const { num: leaf, left: leafLeft } of leafMap[row]?.leafs) {
         const leafWidth = this.thumbWidth;
         const leafHeight = floor((book.getPageHeight(leaf) * this.thumbWidth) / book.getPageWidth(leaf));
         const leafTop = leafMap[row].top;
@@ -904,6 +912,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
         if (this.imageCache.imageLoaded(leaf)) {
           // send to page
+          console.log("SEND TO PAGE")
           $pageContainer.append($(this.imageCache.image(leaf, thumbReduce)).css(baseCSS));
         } else {
           // lazy load
@@ -913,10 +922,12 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
             .css(baseCSS)
             .addClass('BRlazyload')
             // Store the leaf/index number to reference on url swap:
-            .data('leaf', leaf)
-            .data('reduce', thumbReduce)
+            .attr('data-leaf', leaf)
+            .attr('data-reduce', thumbReduce)
+            .attr('data-row', row)
             .attr('alt', 'Loading book image');
-          $pageContainer.append($lazyLoadImgPlaceholder);
+          $pageContainer.append($lazyLoadImgPlaceholder)
+            .append(`<div src="width: 100%; background-color: red;">${leaf} -- ${thumbReduce} -- row: ${row}</div>`);
         }
       }
     }
@@ -925,6 +936,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   // Remove thumbnails that are not to be displayed
   for (const row of this.displayedRows) {
     if (utils.notInArray(row, rowsToDisplay)) {
+      console.log("ROW NOT IN ARRAY", row, rowsToDisplay);
       for (const { num: index } of leafMap[row].leafs) {
         this.$(`.pagediv${index}`).remove();
       }
@@ -939,6 +951,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     this.updateFirstIndex(mostVisible);
   }
 
+  // remember what rows are displayed
   this.displayedRows = rowsToDisplay.slice();
 
   // remove previous highlights
@@ -953,26 +966,48 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 };
 
 BookReader.prototype.lazyLoadThumbnails = function() {
-  // We check the complete property since load may not be fired if loading from the cache
-  this.$('.BRlazyloading').filter('[complete=true]').removeClass('BRlazyloading');
-
-  const loading = this.$('.BRlazyloading').length;
-  // ? - this.thumbMaxLoading - can this be the cause of draw race condition?
-  const toLoad = this.thumbMaxLoading - loading;
+  console.log("ASK: lazyLoadThumbnails", new Date());
   const self = this;
 
-  if (toLoad > 0) {
-    // $$$ TODO load those near top (but not beyond) page view first
-    const imagesToLoad = this.refs.$brPageViewEl
-      .find('img.BRlazyload')
-      .filter(':lt(' + toLoad + ')');
-
-    // really borky closure
-    imagesToLoad.each(function() {
-      const $imgPlaceholder = this;
-      self.lazyLoadImage($imgPlaceholder);
+  const batchImageRequestByRow = ($images) => {
+    const wait = new Promise((res) => {
+      setTimeout(() => res(true), 200);
     });
-  }
+
+    wait.then(() => {
+      console.log("THEN - batchImageRequestByRow", new Date());
+      $images.each(function loadEachImg() {
+        // really borky closure
+        const $imgPlaceholder = this;
+        wait.then(() => {
+          console.log("loading image now:", new Date(), $imgPlaceholder)
+          self.lazyLoadImage($imgPlaceholder)
+
+        }
+        );
+      });
+    })
+  };
+
+  this.displayedRows.forEach((row) => {
+    console.log('foo', row);
+    const $imagesInRow = this.refs.$brPageViewEl.find(`[data-row="${row}"]`);
+    console.log('imagesInRow', $imagesInRow);
+    batchImageRequestByRow($imagesInRow);
+  });
+
+
+  // const imagesToLoad = this.refs.$brPageViewEl
+  //   .find('img.BRlazyload')
+  // // .filter(':lt(' + toLoad + ')');
+  // console.log("ASK: lazyLoadThumbnails - imagesToLoad", imagesToLoad);
+  // console.log()
+
+  // imagesToLoad.each(function loadEachImg() {
+  // // really borky closure
+  //   const $imgPlaceholder = this;
+  //   self.lazyLoadImage($imgPlaceholder);
+  // });
 };
 
 /**
@@ -984,8 +1019,12 @@ BookReader.prototype.lazyLoadImage = function ($imgPlaceholder) {
   const leaf =  $($imgPlaceholder).data('leaf');
   const reduce =  $($imgPlaceholder).data('reduce');
   const $img = this.imageCache.image(leaf, reduce);
+
   // replace with the new img
-  $($imgPlaceholder).before($img).remove();
+  const $parentContainer = $($imgPlaceholder).parent();
+  $parentContainer.append($img);
+  $($imgPlaceholder).remove();
+  console.log("lazy loaded image: idx", leaf);
 };
 
 /**

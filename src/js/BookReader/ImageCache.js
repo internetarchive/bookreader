@@ -41,10 +41,20 @@ export class ImageCache {
     return !!this.cache[index]?.loaded;
   }
 
+  /**
+   * Checks if image's reduce
+   * @param {String|Number} index - page index
+   * @returns {Number} reduce
+   */
   imageReduce(index) {
     return this.cache[index]?.reduce;
   }
 
+  /**
+   * Checks if image's cache status
+   * @param {String|Number} index - page index
+   * @returns {{ index: Number, inCache: (Object|undefined), reduce: Number, loaded: Boolean }}
+   */
   imageStatus(index) {
     return {
       index,

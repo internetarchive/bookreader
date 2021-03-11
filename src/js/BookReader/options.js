@@ -280,7 +280,7 @@ export const DEFAULT_OPTIONS = {
    * @type {Boolean}
    * On init, by default, we want to use srcSet for images
    */
-  useSrcSet: true,
+  useSrcSet: false,
 };
 
 /** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */
