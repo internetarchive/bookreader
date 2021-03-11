@@ -750,6 +750,9 @@ BookReader.prototype.bindGestures = function(jElement) {
  * Draws the thumbnail view
  * @param {number} optional If seekIndex is defined, the view will be drawn
  *    with that page visible (without any animated scrolling).
+ *
+ * Creates place holder for image to load after gallery has been drawn
+ * @typedef {Object} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce
  */
 BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   const { floor } = Math;
