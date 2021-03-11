@@ -1501,8 +1501,6 @@ BookReader.prototype.prepareThumbnailView = function() {
   this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
   this.reduce = this._models.book.getPageWidth(0) / this.thumbWidth;
 
-  this.displayedRows = [];
-
   // Draw leafs with current index directly in view (no animating to the index)
   this.drawLeafsThumbnail( this.currentIndex() );
   this.updateBrClasses();
