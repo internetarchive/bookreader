@@ -32,6 +32,27 @@ export class ImageCache {
     return this._createImage(index, reduce);
   }
 
+  /**
+   * Checks if image has been loaded
+   * @param {String|Number} index - page index
+   * @returns {Boolean}
+   */
+  imageLoaded(index) {
+    return !!this.cache[index]?.loaded;
+  }
+
+  imageReduce(index) {
+    return this.cache[index]?.reduce;
+  }
+
+  imageStatus(index) {
+    return {
+      index,
+      inCache: this.cache[index],
+      reduce: this.imageReduce(index),
+      loaded: this.imageLoaded(index)
+    }
+  }
 
   /**
    * @private
@@ -43,7 +64,6 @@ export class ImageCache {
   _bustImageCache(index) {
     const $thisImage = this.cache[index];
     // allows browser to abort a pending request
-
     $($thisImage).attr('src', '').attr('srcSet', []);
     delete this.cache[index];
   }

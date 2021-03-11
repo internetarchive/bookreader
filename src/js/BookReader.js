@@ -867,14 +867,14 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         }
 
         left += this.thumbPadding;
-        const pageContainer = this._createPageContainer(leaf, {
+        const $pageContainer = this._createPageContainer(leaf, {
           width: `${leafWidth}px`,
           height: `${leafHeight}px`,
           top: `${leafTop}px`,
           left: `${left}px`,
         });
 
-        pageContainer.data('leaf', leaf).on('mouseup', event => {
+        $pageContainer.data('leaf', leaf).on('mouseup', event => {
           // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
           // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
           // We manually trigger the `fragmentChange` once at the end.
@@ -891,20 +891,30 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           event.stopPropagation();
         });
 
-        this.refs.$brPageViewEl.append(pageContainer);
+        this.refs.$brPageViewEl.append($pageContainer);
 
-        const img = document.createElement("img");
         const thumbReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
         // use prefetched img src first if previously requested & available img is good enough
-        const prefetchedImg = this.prefetchedImgs[leaf] || {};
-        const imageURI = prefetchedImg.reduce <= thumbReduce ? prefetchedImg.uri : this._getPageURI(leaf, thumbReduce);
-        $(img).attr('src', `${this.imagesBaseURL}transparent.png`)
-          .css({ width: `${leafWidth}px`, height: `${leafHeight}px` })
-          .addClass('BRlazyload')
-          // Store the URL of the image that will replace this one
-          .data('srcURL',  imageURI)
-          .attr('alt', 'Loading book image');
-        pageContainer.append(img);
+        // dip into cache so we don't set off a request
+
+        const baseCSS = { width: `${leafWidth}px`, height: `${leafHeight}px` };
+
+        if (this.imageCache.imageLoaded(leaf)) {
+          // send to page
+          $pageContainer.append($(this.imageCache.image(leaf, thumbReduce)).css(baseCSS));
+        } else {
+          // lazy load
+          const $lazyLoadImgPlaceholder = document.createElement('img');
+          $($lazyLoadImgPlaceholder)
+            .attr('src', `${this.imagesBaseURL}transparent.png`)
+            .css(baseCSS)
+            .addClass('BRlazyload')
+            // Store the leaf/index number to reference on url swap:
+            .data('leaf', leaf)
+            .data('reduce', thumbReduce)
+            .attr('alt', 'Loading book image');
+          $pageContainer.append($lazyLoadImgPlaceholder);
+        }
       }
     }
   }
@@ -943,55 +953,36 @@ BookReader.prototype.lazyLoadThumbnails = function() {
   // We check the complete property since load may not be fired if loading from the cache
   this.$('.BRlazyloading').filter('[complete=true]').removeClass('BRlazyloading');
 
-  var loading = this.$('.BRlazyloading').length;
-  var toLoad = this.thumbMaxLoading - loading;
-
-  var self = this;
+  const loading = this.$('.BRlazyloading').length;
+  // ? - this.thumbMaxLoading - can this be the cause of draw race condition?
+  const toLoad = this.thumbMaxLoading - loading;
+  const self = this;
 
   if (toLoad > 0) {
     // $$$ TODO load those near top (but not beyond) page view first
-    this.refs.$brPageViewEl.find('img.BRlazyload').filter(':lt(' + toLoad + ')').each( function() {
-      self.lazyLoadImage(this);
+    const imagesToLoad = this.refs.$brPageViewEl
+      .find('img.BRlazyload')
+      .filter(':lt(' + toLoad + ')');
+
+    // really borky closure
+    imagesToLoad.each(function() {
+      const $imgPlaceholder = this;
+      self.lazyLoadImage($imgPlaceholder);
     });
   }
 };
 
-BookReader.prototype.lazyLoadImage = function (dummyImage) {
-  var img = new Image();
-  var self = this;
-
-  $(img)
-    .addClass('BRlazyloading')
-    .one('load', function() {
-      $(this).removeClass('BRlazyloading').attr('alt', 'Loading book image');
-
-      // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
-      //     we call the function after a slight delay.  Also the img.complete property
-      //     is not yet set in IE8 inside this onload handler
-      setTimeout(function() { self.lazyLoadThumbnails(); }, 100);
-    })
-    .one('error', function() {
-      // Remove class so we no longer count as loading
-      $(this).removeClass('BRlazyloading');
-    })
-
-  //the width set with .attr is ignored by Internet Explorer, causing it to show the image at its original size
-  //but with this one line of css, even IE shows the image at the proper size
-    .css({
-      'width': $(dummyImage).width() + 'px',
-      'height': $(dummyImage).height() + 'px'
-    })
-    .attr({
-      'width': $(dummyImage).width(),
-      'height': $(dummyImage).height(),
-      'src': $(dummyImage).data('srcURL'),
-      'alt': 'Loading book image'
-    });
-
+/**
+ * Replaces placeholder image with real one
+ *
+ * @param {$lazyLoadImgPlaceholder} - $imgPlaceholder
+ */
+BookReader.prototype.lazyLoadImage = function ($imgPlaceholder) {
+  const leaf =  $($imgPlaceholder).data('leaf');
+  const reduce =  $($imgPlaceholder).data('reduce');
+  const $img = this.imageCache.image(leaf, reduce);
   // replace with the new img
-  $(dummyImage).before(img).remove();
-
-  img = null; // tidy up closure
+  $($imgPlaceholder).before($img).remove();
 };
 
 /**
