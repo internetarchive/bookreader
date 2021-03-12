@@ -1,4 +1,4 @@
-# <img style="max-width: 22px;" src="./assets/Bookreader-logo-hex-cool-grad.png" alt="Internet Archive BookReader hexagon logo"> Internet Archive BookReader
+# Internet Archive BookReader
 
 # <img style="max-width: 300px;" src="./assets/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
 
