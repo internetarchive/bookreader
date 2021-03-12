@@ -193,14 +193,7 @@ See [CHANGELOG.md](CHANGELOG.md) for history of the project.
 
 
 ## License
-
 The source code license is AGPL v3, as described in the LICENSE file.
 
-The mobile menu is built with [mmenu](http://mmenu.frebsite.nl/download.html), which is free for personal and non-profit use. However, for commmercial use, a license must be purchased.
-
-To use it, include the script `plugins/plugin.mobile_nav.js`.
-
-
 ## Other credits
-
 The ability to test on multiple devices is provided courtesy of [Browser Stack](https://www.browserstack.com).
