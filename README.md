@@ -1,6 +1,6 @@
 # Internet Archive BookReader
 
-# <img style="max-width: 300px;" src="./assets/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
+<img style="max-width: 300px;" src="./assets/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
 
 ![Build Status](https://github.com/internetarchive/bookreader/actions/workflows/node.js.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/internetarchive/bookreader/branch/master/graph/badge.svg)](https://codecov.io/gh/internetarchive/bookreader)
 
