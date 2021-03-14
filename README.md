@@ -151,7 +151,7 @@ Hosted source code:
 https://github.com/internetarchive/bookreader
 
 IIIF (http://iiif.io)
-See `BookReaderDemo/demo-iiif.html` to see an example of how to load a IIIF manifest in BookReader.
+See `BookReaderDemo/demo-iiif.html` to see an example of how to load an IIIF manifest in BookReader.
 
 
 ## Target Devices
