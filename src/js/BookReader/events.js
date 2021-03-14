@@ -6,7 +6,7 @@ export const EVENTS = {
   PostInit: 'PostInit',
   stop: 'stop',
   resize: 'resize',
-  pageChanged: = 'pageChanged',
+  pageChanged: 'pageChanged',
   // nav events:
   navToggled: 'navToggled',
   // menu click events
