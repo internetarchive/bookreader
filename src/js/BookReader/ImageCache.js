@@ -53,7 +53,6 @@ export class ImageCache {
   /**
    * Checks if image's cache status
    * @param {String|Number} index - page index
-   * @returns {{ index: Number, inCache: (Object|undefined), reduce: Number, loaded: Boolean }}
    */
   imageStatus(index) {
     return {
