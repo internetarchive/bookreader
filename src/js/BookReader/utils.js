@@ -160,6 +160,10 @@ export function PolyfilledCustomEvent(eventName, {bubbles = false, cancelable = 
   return event;
 }
 
+/**
+ * Promise based wait - resolves at default 500ms
+ * @param {Number} wait time in milliseconds
+ */
 export function wait(ms = 500) {
   return new Promise((res) => {
     setTimeout(() => res(true), ms);
