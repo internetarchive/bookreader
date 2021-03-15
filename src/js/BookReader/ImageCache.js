@@ -33,6 +33,15 @@ export class ImageCache {
   }
 
   /**
+   * Checks if image has been loaded
+   * @param {String|Number} index - page index
+   * @returns {Boolean}
+   */
+  imageLoaded(index) {
+    return !!this.cache[index]?.loaded;
+  }
+
+  /**
    * @private
    * Removes image from cache
    * Empties `src` & `srcSet` attributes prior to cancel pending requests
