@@ -755,7 +755,6 @@ BookReader.prototype.bindGestures = function(jElement) {
  * @typedef {Object} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce
  */
 BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
-  console.log("ASK: drawLeafsThumbnail", new Date());
   const { floor } = Math;
   const { book } = this._models;
   const viewWidth = this.refs.$brContainer.prop('scrollWidth') - 20; // width minus buffer
@@ -859,13 +858,8 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
   }
 
-  console.log("***** ROWS TO DISPLAY", rowsToDisplay);
-  console.log("***** this.displayedRows", this.displayedRows);
-  console.log("***** leafMap", leafMap);
-
   // Create the thumbnail divs and images (lazy loaded)
   for (const row of rowsToDisplay) {
-    console.log('row, leafMap[row]', row, leafMap[row] );
     if (utils.notInArray(row, this.displayedRows)) {
       if (!leafMap[row]) { continue; }
       for (const { num: leaf, left: leafLeft } of leafMap[row]?.leafs) {
@@ -912,7 +906,6 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         const baseCSS = { width: `${leafWidth}px`, height: `${leafHeight}px` };
         if (this.imageCache.imageLoaded(leaf)) {
           // send to page
-          console.log("SEND TO PAGE")
           $pageContainer.append($(this.imageCache.image(leaf, thumbReduce)).css(baseCSS));
         } else {
           // lazy load
@@ -971,7 +964,6 @@ BookReader.prototype.lazyLoadThumbnails = function() {
   const batchImageRequestByRow = ($images) => {
     utils.wait().then(() => {
       $images.each(function loadEachImg() {
-        // really borky closure
         const $imgPlaceholder = this;
         self.lazyLoadImage($imgPlaceholder)
       });
@@ -979,24 +971,9 @@ BookReader.prototype.lazyLoadThumbnails = function() {
   };
 
   this.displayedRows.forEach((row) => {
-    console.log('foo', row);
     const $imagesInRow = this.refs.$brPageViewEl.find(`[data-row="${row}"]`);
-    console.log('imagesInRow', $imagesInRow);
     batchImageRequestByRow($imagesInRow);
   });
-
-
-  // const imagesToLoad = this.refs.$brPageViewEl
-  //   .find('img.BRlazyload')
-  // // .filter(':lt(' + toLoad + ')');
-  // console.log("ASK: lazyLoadThumbnails - imagesToLoad", imagesToLoad);
-  // console.log()
-
-  // imagesToLoad.each(function loadEachImg() {
-  // // really borky closure
-  //   const $imgPlaceholder = this;
-  //   self.lazyLoadImage($imgPlaceholder);
-  // });
 };
 
 /**
@@ -1013,7 +990,6 @@ BookReader.prototype.lazyLoadImage = function ($imgPlaceholder) {
   const $parentContainer = $($imgPlaceholder).parent();
   $parentContainer.append($img);
   $($imgPlaceholder).remove();
-  console.log("lazy loaded image: idx", leaf);
 };
 
 /**
