@@ -711,8 +711,7 @@ BookReader.prototype._createPageContainer = function(index, styles) {
   const container = $('<div />', {
     'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
     css,
-  }).attr('data-side', pageSide).append($('<div />', { 'class': 'BRscreen' }))
-    .append($(`<div />INDEX: ${index}</div>`, { 'style': 'width: 100%; background-color: red' }));
+  }).attr('data-side', pageSide).append($('<div />', { 'class': 'BRscreen' }));
   container.toggleClass('protected', this.protected);
 
   return container;
@@ -824,6 +823,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   let leafTop = 0;
   let leafBottom = 0;
   const rowsToDisplay = [];
+  const imagesToDisplay = [];
 
   // Visible leafs with least/greatest index
   let leastVisible = book.getNumLeafs() - 1;
@@ -903,13 +903,13 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         });
 
         this.refs.$brPageViewEl.append($pageContainer);
+        imagesToDisplay.push(leaf);
 
         const thumbReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
         // use prefetched img src first if previously requested & available img is good enough
         // dip into cache so we don't set off a request
 
         const baseCSS = { width: `${leafWidth}px`, height: `${leafHeight}px` };
-
         if (this.imageCache.imageLoaded(leaf)) {
           // send to page
           console.log("SEND TO PAGE")
@@ -926,8 +926,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
             .attr('data-reduce', thumbReduce)
             .attr('data-row', row)
             .attr('alt', 'Loading book image');
-          $pageContainer.append($lazyLoadImgPlaceholder)
-            .append(`<div src="width: 100%; background-color: red;">${leaf} -- ${thumbReduce} -- row: ${row}</div>`);
+          $pageContainer.append($lazyLoadImgPlaceholder);
         }
       }
     }
@@ -936,9 +935,10 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   // Remove thumbnails that are not to be displayed
   for (const row of this.displayedRows) {
     if (utils.notInArray(row, rowsToDisplay)) {
-      console.log("ROW NOT IN ARRAY", row, rowsToDisplay);
       for (const { num: index } of leafMap[row].leafs) {
-        this.$(`.pagediv${index}`).remove();
+        if (!imagesToDisplay.includes(index)) {
+          this.$(`.pagediv${index}`).remove();
+        }
       }
     }
   }
@@ -966,25 +966,14 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 };
 
 BookReader.prototype.lazyLoadThumbnails = function() {
-  console.log("ASK: lazyLoadThumbnails", new Date());
   const self = this;
 
   const batchImageRequestByRow = ($images) => {
-    const wait = new Promise((res) => {
-      setTimeout(() => res(true), 200);
-    });
-
-    wait.then(() => {
-      console.log("THEN - batchImageRequestByRow", new Date());
+    utils.wait().then(() => {
       $images.each(function loadEachImg() {
         // really borky closure
         const $imgPlaceholder = this;
-        wait.then(() => {
-          console.log("loading image now:", new Date(), $imgPlaceholder)
-          self.lazyLoadImage($imgPlaceholder)
-
-        }
-        );
+        self.lazyLoadImage($imgPlaceholder)
       });
     })
   };
@@ -1537,8 +1526,10 @@ BookReader.prototype.prepareThumbnailView = function() {
   // $$$ keep select enabled for now since disabling it breaks keyboard
   //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
   // utils.disableSelect(this.$('#BRpageview'));
+  const defaultThumbnailWidth = 100;
 
-  this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
+  const idealReduce = this.getThumbnailWidth(this.thumbColumns);
+  this.thumbWidth = idealReduce > 0 ? idealReduce : defaultThumbnailWidth;
   this.reduce = this._models.book.getPageWidth(0) / this.thumbWidth;
 
   // Draw leafs with current index directly in view (no animating to the index)
