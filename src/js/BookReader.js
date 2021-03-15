@@ -981,9 +981,7 @@ BookReader.prototype.lazyLoadImage = function ($imgPlaceholder) {
   const $img = this.imageCache.image(leaf, reduce);
 
   // replace with the new img
-  const $parentContainer = $($imgPlaceholder).parent();
-  $parentContainer.append($img);
-  $($imgPlaceholder).remove();
+  $(imgPlaceholder).replaceWith($img);
 };
 
 /**
