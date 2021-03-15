@@ -981,7 +981,7 @@ BookReader.prototype.lazyLoadImage = function ($imgPlaceholder) {
   const $img = this.imageCache.image(leaf, reduce);
 
   // replace with the new img
-  $(imgPlaceholder).replaceWith($img);
+  $($imgPlaceholder).replaceWith($img);
 };
 
 /**
@@ -1086,9 +1086,12 @@ BookReader.prototype.zoomThumb = function(direction) {
  * @param {number}
  */
 BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
+  const DEFAULT_THUMBNAIL_WIDTH = 100;
+
   var padding = (thumbnailColumns + 1) * this.thumbPadding;
   var width = (this.refs.$brPageViewEl.width() - padding) / (thumbnailColumns + 0.5); // extra 0.5 is for some space at sides
-  return parseInt(width);
+  const idealThumbnailWidth = parseInt(width);
+  return idealThumbnailWidth > 0 ? idealThumbnailWidth : DEFAULT_THUMBNAIL_WIDTH;
 };
 
 /**
@@ -1494,10 +1497,7 @@ BookReader.prototype.prepareThumbnailView = function() {
   // $$$ keep select enabled for now since disabling it breaks keyboard
   //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
   // utils.disableSelect(this.$('#BRpageview'));
-  const defaultThumbnailWidth = 100;
-
-  const idealReduce = this.getThumbnailWidth(this.thumbColumns);
-  this.thumbWidth = idealReduce > 0 ? idealReduce : defaultThumbnailWidth;
+  this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
   this.reduce = this._models.book.getPageWidth(0) / this.thumbWidth;
 
   // Draw leafs with current index directly in view (no animating to the index)
