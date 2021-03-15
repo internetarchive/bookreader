@@ -1,6 +1,6 @@
 # Internet Archive BookReader
 
-[![Build Status](https://travis-ci.com/internetarchive/bookreader.svg?branch=master)](https://travis-ci.com/internetarchive/bookreader) [![codecov](https://codecov.io/gh/internetarchive/bookreader/branch/master/graph/badge.svg)](https://codecov.io/gh/internetarchive/bookreader)
+![Build Status](https://github.com/internetarchive/bookreader/actions/workflows/node.js.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/internetarchive/bookreader/branch/master/graph/badge.svg)](https://codecov.io/gh/internetarchive/bookreader)
 
 ![](./screenshot.png)
 
