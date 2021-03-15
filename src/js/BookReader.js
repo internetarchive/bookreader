@@ -1116,6 +1116,7 @@ BookReader.prototype.zoomThumb = function(direction) {
   }
 
   if (this.thumbColumns != oldColumns) {
+    this.displayedRows = [];  /* force a gallery redraw */
     this.prepareThumbnailView();
   }
 };
