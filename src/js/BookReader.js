@@ -959,14 +959,9 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 };
 
 BookReader.prototype.lazyLoadThumbnails = function() {
-  const self = this;
-
   const batchImageRequestByRow = ($images) => {
     utils.wait().then(() => {
-      $images.each(function loadEachImg() {
-        const $imgPlaceholder = this;
-        self.lazyLoadImage($imgPlaceholder)
-      });
+      $images.each((index, $imgPlaceholder) => this.lazyLoadImage($imgPlaceholder));
     })
   };
 
