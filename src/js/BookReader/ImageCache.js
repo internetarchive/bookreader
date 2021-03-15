@@ -33,37 +33,6 @@ export class ImageCache {
   }
 
   /**
-   * Checks if image has been loaded
-   * @param {String|Number} index - page index
-   * @returns {Boolean}
-   */
-  imageLoaded(index) {
-    return !!this.cache[index]?.loaded;
-  }
-
-  /**
-   * Checks if image's reduce
-   * @param {String|Number} index - page index
-   * @returns {Number} reduce
-   */
-  imageReduce(index) {
-    return this.cache[index]?.reduce;
-  }
-
-  /**
-   * Checks if image's cache status
-   * @param {String|Number} index - page index
-   */
-  imageStatus(index) {
-    return {
-      index,
-      inCache: this.cache[index],
-      reduce: this.imageReduce(index),
-      loaded: this.imageLoaded(index)
-    }
-  }
-
-  /**
    * @private
    * Removes image from cache
    * Empties `src` & `srcSet` attributes prior to cancel pending requests
