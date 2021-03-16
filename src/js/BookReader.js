@@ -902,9 +902,10 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         this.refs.$brPageViewEl.append($pageContainer);
         imagesToDisplay.push(leaf);
 
-        const thumbReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
-        // use prefetched img src first if previously requested & available img is good enough
-        // dip into cache so we don't set off a request
+        /* get thumbnail's reducer */
+        const idealReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
+        const nearestFactor2 = 2 * Math.round(idealReduce / 2);
+        const thumbReduce = nearestFactor2;
 
         const baseCSS = { width: `${leafWidth}px`, height: `${leafHeight}px` };
         if (this.imageCache.imageLoaded(leaf)) {
