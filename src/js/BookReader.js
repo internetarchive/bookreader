@@ -1168,9 +1168,11 @@ BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFa
   return reductionFactors[0];
 };
 
-BookReader.prototype._reduceSort = function(a, b) {
-  return a.reduce - b.reduce;
-};
+/**
+ * @param {ReductionFactor} a
+ * @param {ReductionFactor} b
+ */
+BookReader.prototype._reduceSort = (a, b) => a.reduce - b.reduce;
 
 /**
  * Attempts to jump to page

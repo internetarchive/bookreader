@@ -299,6 +299,7 @@ export const DEFAULT_OPTIONS = {
  * @property {string} [uri] If not provided, include a getPageURI
  * @property {PageNumString} [pageNum] Shown instead of leaf number if present
  * @property {LeafNum} [leafNum] Sometimes specified in Internet Archive books
+ * @property {number} [ppi] The resolution of the page
  * @property {'L' | 'R'} [pageSide] PRIVATE; computed automatically
  * @property {boolean} [viewable=true] Set false if page is not viewable. Displays a dummy preview image.
  * @property {number} [unviewablesStart] PRIVATE; index where the chunk of unviewable pages started

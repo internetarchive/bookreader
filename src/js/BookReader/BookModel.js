@@ -23,17 +23,20 @@ export class BookModel {
 
     /** @type {{width: number, height: number}} memoize storage */
     this._medianPageSize = null;
+    /** @deprecated @type {{width: number, height: number}} memoize storage */
+    this._medianPageSizePixels = null;
     /** @type {[PageData[], number]} */
     this._getDataFlattenedCached = null;
   }
 
   /**
+   * @deprecated Use getMedianPageSizeInches
    * Memoized
    * @return {{width: number, height: number}}
    */
   getMedianPageSize() {
-    if (this._medianPageSize) {
-      return this._medianPageSize;
+    if (this._medianPageSizePixels) {
+      return this._medianPageSizePixels;
     }
 
     // A little expensive but we just do it once
@@ -42,6 +45,27 @@ export class BookModel {
     for (let i = 0; i < this.getNumLeafs(); i++) {
       widths.push(this.getPageWidth(i));
       heights.push(this.getPageHeight(i));
+    }
+
+    widths.sort();
+    heights.sort();
+    this._medianPageSizePixels = {
+      width: widths[Math.floor(widths.length / 2)],
+      height: heights[Math.floor(heights.length / 2)]
+    };
+    return this._medianPageSizePixels;
+  }
+
+  getMedianPageSizeInches() {
+    if (this._medianPageSize) {
+      return this._medianPageSize;
+    }
+
+    const widths = [];
+    const heights = [];
+    for (const page of this.pagesIterator()) {
+      widths.push(page.widthInches);
+      heights.push(page.heightInches);
     }
 
     widths.sort();
@@ -346,10 +370,14 @@ class PageModel {
    * @param {PageIndex} index
    */
   constructor(book, index) {
+    // TODO: Get default from config
+    this.ppi = book._getDataProp(index, 'ppi', 500);
     this.book = book;
     this.index = index;
     this.width = book.getPageWidth(index);
+    this.widthInches = this.width / this.ppi;
     this.height = book.getPageHeight(index);
+    this.heightInches = this.height / this.ppi;
     this.pageSide = book.getPageSide(index);
     this.leafNum = book._getDataProp(index, 'leafNum', this.index);
 
