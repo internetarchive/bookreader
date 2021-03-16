@@ -821,6 +821,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
   let leafTop = 0;
   let leafBottom = 0;
+  let rowsInView = [];
   const rowsToDisplay = [];
   const imagesToDisplay = [];
 
@@ -847,6 +848,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
     leafTop = leafBottom;
   }
+  rowsInView = [...rowsToDisplay];
 
   // create a buffer of preloaded rows before and after the visible rows
   const firstRow = rowsToDisplay[0];
@@ -857,6 +859,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
     if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
   }
+  rowsToDisplay.sort();
 
   // Create the thumbnail divs and images (lazy loaded)
   for (const row of rowsToDisplay) {
@@ -960,7 +963,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
 BookReader.prototype.lazyLoadThumbnails = function() {
   const batchImageRequestByRow = async ($images) => {
-    await utils.sleep(500);
+    await utils.sleep(300);
     $images.each((index, $imgPlaceholder) => this.lazyLoadImage($imgPlaceholder));
   };
 
@@ -979,9 +982,10 @@ BookReader.prototype.lazyLoadImage = function ($imgPlaceholder) {
   const leaf =  $($imgPlaceholder).data('leaf');
   const reduce =  $($imgPlaceholder).data('reduce');
   const $img = this.imageCache.image(leaf, reduce);
-
-  // replace with the new img
-  $($imgPlaceholder).replaceWith($img);
+  const $parent = $($imgPlaceholder).parent();
+  /* March 16, 2021 (isa) - manually append & remove, `replaceWith` currently loses closure scope */
+  $($parent).append($img);
+  $($imgPlaceholder).remove();
 };
 
 /**
