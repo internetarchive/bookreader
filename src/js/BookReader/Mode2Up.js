@@ -1,6 +1,6 @@
 // @ts-check
-import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
+import { clamp } from './utils.js';
 
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
@@ -59,7 +59,7 @@ export class Mode2Up {
     this.setMouseHandlers();
     this.br.displayedIndices = this.displayedIndices;
     this.br.updateToolbarZoom(this.br.reduce);
-    this.br.trigger('pageChanged');
+    this.br.trigger('events.pageChanged');
   }
 
   /**
@@ -689,7 +689,7 @@ export class Mode2Up {
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
         this.centerView();
-        this.br.trigger('pageChanged');
+        this.br.trigger('events.pageChanged');
 
         // get next previous batch immediately      this.br.pruneUnusedImgs();
         if (!this.br.prefetchedImgs[newIndexL - 2]) {
@@ -840,7 +840,7 @@ export class Mode2Up {
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
         this.centerView();
-        this.br.trigger('pageChanged');
+        this.br.trigger('events.pageChanged');
 
         this.br.pruneUnusedImgs();
         if (!this.br.prefetchedImgs[newIndexL + 2]) {
