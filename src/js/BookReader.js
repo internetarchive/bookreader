@@ -1363,6 +1363,7 @@ BookReader.prototype.switchMode = function(
     this.prepareOnePageView();
   } else if (this.constModeThumb == mode) {
     this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
+    this.displayedRows = []; /* Forces gallery redraw when switching modes */
     this.prepareThumbnailView();
   } else {
     // $$$ why don't we save autofit?
