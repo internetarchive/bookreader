@@ -179,5 +179,7 @@ export function calcScreenDPI() {
   const dpi = el.offsetWidth;
   document.body.removeChild(el);
 
-  return dpi * devicePixelRatio;
+  const screenDPI = dpi * devicePixelRatio;
+  // This will return 0 in testing; never want it to be 0!
+  return screenDPI == 0 ? 100 : screenDPI;
 }

@@ -58,23 +58,22 @@ export class Mode1Up {
   /**
    * Get the number of pixels required to display the given inches with the given reduce
    * @param {number} inches
-   * @param {number} [reduce]
    **/
-  physicalInchesToDisplayPixels(inches, reduce = this.realWorldReduce) {
-    return inches * this.screenDPI / reduce;
+  physicalInchesToDisplayPixels(inches, reduce = this.realWorldReduce, screenDPI = this.screenDPI) {
+    return inches * screenDPI / reduce;
   }
 
   /** Iterate over pages, augmented with their top/bottom bounds */
-  * pagesWithBounds() {
+  * pagesWithBounds(reduce = this.realWorldReduce, leafSpacing = this.LEAF_SPACING_IN) {
     let leafTop = 0;
     let leafBottom = 0;
 
     for (const page of this.book.pagesIterator({ combineConsecutiveUnviewables: true })) {
-      const height = this.physicalInchesToDisplayPixels(page.heightInches);
+      const height = this.physicalInchesToDisplayPixels(page.heightInches, reduce);
       leafBottom += height;
       yield { page, top: leafTop, bottom: leafBottom };
-      leafTop += height + this.physicalInchesToDisplayPixels(this.LEAF_SPACING_IN);
-      leafBottom += this.physicalInchesToDisplayPixels(this.LEAF_SPACING_IN);
+      leafTop += height + this.physicalInchesToDisplayPixels(leafSpacing, reduce);
+      leafBottom += this.physicalInchesToDisplayPixels(leafSpacing, reduce);
     }
   }
 
@@ -116,30 +115,33 @@ export class Mode1Up {
 
   drawLeafs() {
     const pagesToDisplay = Array.from(this.findIntersectingPages());
-    const documentContainerWidth = this.$documentContainer.width();
 
-    // Based of the pages displayed in the view we set the current index
-    // $$$ we should consider the page in the center of the view to be the current one
-    this.br.updateFirstIndex(pagesToDisplay.find(({intersects}) => intersects).page.index);
+    if (pagesToDisplay.length) {
+      const documentContainerWidth = this.$documentContainer.width();
 
-    for (const {page, top, bottom} of pagesToDisplay) {
-      if (!this.br.displayedIndices.includes(page.index)) {
-        const height = bottom - top;
-        const width = this.physicalInchesToDisplayPixels(page.widthInches);
-        const reduce = page.width / width;
+      // Based of the pages displayed in the view we set the current index
+      // $$$ we should consider the page in the center of the view to be the current one
+      this.br.updateFirstIndex(pagesToDisplay.find(({intersects}) => intersects).page.index);
 
-        this.br._createPageContainer(page.index, {
-          width,
-          height,
-          top,
-          left: Math.floor((documentContainerWidth - width) / 2),
-        })
-          .append($('<img />', {
-            src: page.getURI(reduce, 0),
-            srcset: this.br.options.useSrcSet ? this.br._getPageURISrcset(page.index, reduce, 0) : '',
-            alt: 'Book page image',
-          }))
-          .appendTo(this.$documentContainer);
+      for (const {page, top, bottom} of pagesToDisplay) {
+        if (!this.br.displayedIndices.includes(page.index)) {
+          const height = bottom - top;
+          const width = this.physicalInchesToDisplayPixels(page.widthInches);
+          const reduce = page.width / width;
+
+          this.br._createPageContainer(page.index, {
+            width,
+            height,
+            top,
+            left: Math.floor((documentContainerWidth - width) / 2),
+          })
+            .append($('<img />', {
+              src: page.getURI(reduce, 0),
+              srcset: this.br.options.useSrcSet ? this.br._getPageURISrcset(page.index, reduce, 0) : '',
+              alt: 'Book page image',
+            }))
+            .appendTo(this.$documentContainer);
+        }
       }
     }
 
@@ -344,13 +346,15 @@ export class Mode1Up {
   }
 
   /**
-   * Calculate the dimensions for a one page view with images at the given reduce and padding
+   * Calculate the total width/height in pixels of the document container
+   * @param {number} reduce
+   * @param {number} leafSpacing spacing between pages in inches
    */
-  calculateViewDimensions() {
+  calculateViewDimensions(reduce = this.realWorldReduce, leafSpacing = this.LEAF_SPACING_IN) {
     let width = 0;
     let height = 0;
-    for (const {page, bottom} of this.pagesWithBounds()) {
-      const pageWidth = this.physicalInchesToDisplayPixels(page.widthInches);
+    for (const {page, bottom} of this.pagesWithBounds(reduce, leafSpacing)) {
+      const pageWidth = this.physicalInchesToDisplayPixels(page.widthInches, reduce);
       width = Math.max(width, pageWidth);
       height = bottom;
     }

@@ -9,6 +9,11 @@ import { clamp } from './utils.js';
 const UNVIEWABLE_PAGE_URI = '/bookreader/static/preview-default.png';
 
 /**
+ * Fallback PPI when one isn't specified in the book data
+ */
+export const FALLBACK_PPI = 500;
+
+/**
  * Contains information about the Book/Document independent of the way it is
  * being rendering. Nothing here should reference e.g. the mode, zoom, etc.
  * It's just information about the book and its pages (usually as specified
@@ -371,7 +376,7 @@ class PageModel {
    */
   constructor(book, index) {
     // TODO: Get default from config
-    this.ppi = book._getDataProp(index, 'ppi', 500);
+    this.ppi = book._getDataProp(index, 'ppi', FALLBACK_PPI);
     this.book = book;
     this.index = index;
     this.width = book.getPageWidth(index);
