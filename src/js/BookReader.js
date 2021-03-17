@@ -856,7 +856,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
     if (lastRow + i < leafMap.length) { rowsToDisplay.push(lastRow + i); }
   }
-  for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
+  for (let i = 1; i < this.thumbRowBuffer; i++) {
     if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
   }
   rowsToDisplay.sort();
