@@ -865,7 +865,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   for (const row of rowsToDisplay) {
     if (utils.notInArray(row, this.displayedRows)) {
       if (!leafMap[row]) { continue; }
-      for (const { num: leaf, left: leafLeft } of leafMap[row]?.leafs) {
+      for (const { num: leaf, left: leafLeft } of leafMap[row].leafs) {
         const leafWidth = this.thumbWidth;
         const leafHeight = floor((book.getPageHeight(leaf) * this.thumbWidth) / book.getPageWidth(leaf));
         const leafTop = leafMap[row].top;
@@ -928,13 +928,16 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
       }
     }
   }
+  console.log("IMGS TO DISPLAY", imagesToDisplay);
+  console.log('rowsInView', rowsInView);
+  console.log('this.displayedRows', this.displayedRows);
 
   // Remove thumbnails that are not to be displayed
   for (const row of this.displayedRows) {
     if (utils.notInArray(row, rowsToDisplay)) {
-      for (const { num: index } of leafMap[row].leafs) {
-        if (!imagesToDisplay.includes(index)) {
-          this.$(`.pagediv${index}`).remove();
+      for (const { num: index } of leafMap[row]?.leafs) {
+        if (!imagesToDisplay?.includes(index)) {
+          this.$(`.pagediv${index}`)?.remove();
         }
       }
     }
@@ -1363,7 +1366,6 @@ BookReader.prototype.switchMode = function(
     this.prepareOnePageView();
   } else if (this.constModeThumb == mode) {
     this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
-    this.displayedRows = []; /* Forces gallery redraw when switching modes */
     this.prepareThumbnailView();
   } else {
     // $$$ why don't we save autofit?
@@ -1505,7 +1507,7 @@ BookReader.prototype.prepareThumbnailView = function() {
   // utils.disableSelect(this.$('#BRpageview'));
   this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
   this.reduce = this._models.book.getPageWidth(0) / this.thumbWidth;
-
+  this.displayedRows = [];
   // Draw leafs with current index directly in view (no animating to the index)
   this.drawLeafsThumbnail( this.currentIndex() );
   this.updateBrClasses();
