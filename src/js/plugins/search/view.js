@@ -484,7 +484,7 @@ class SearchView {
     this.updateResultsCount(results.matches.length);
     this.toggleSearchPending(false);
     if (options.goToFirstResult) {
-      $(document).one('BookReader:events.pageChanged', () => {
+      $(document).one('BookReader:pageChanged', () => {
         this.br.resize();
       });
     } else {
