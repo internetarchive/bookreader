@@ -908,7 +908,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         const thumbReduce = nearestFactor2;
 
         const baseCSS = { width: `${leafWidth}px`, height: `${leafHeight}px` };
-        if (this.imageCache.imageLoaded(leaf)) {
+        if (this.imageCache.imageLoaded(leaf, thumbReduce)) {
           // send to page
           $pageContainer.append($(this.imageCache.image(leaf, thumbReduce)).css(baseCSS));
         } else {

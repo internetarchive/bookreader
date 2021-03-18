@@ -7,19 +7,16 @@ import sinon from 'sinon';
 import BookReader from '../../src/js/BookReader.js';
 /** @typedef {import('../../src/js/BookReader/options.js').BookReaderOptions} BookReaderOptions */
 
-beforeAll(() => {
-  global.alert = jest.fn();
-})
 afterEach(() => {
   jest.restoreAllMocks();
   sinon.restore();
 });
 
+const CACHE_MOCK = { 1: { reduce: 3, loaded: true }};
+const FIRST_PAGE_MOCK = { width: 123, height: 123, uri: 'https://archive.org/image0.jpg', pageNum: '1' };
 /** @type {BookReaderOptions['data']} */
 const SAMPLE_DATA = [
-  [
-    { width: 123, height: 123, uri: 'https://archive.org/image0.jpg', pageNum: '1' },
-  ],
+  [ FIRST_PAGE_MOCK ],
   [
     { width: 123, height: 123, uri: 'https://archive.org/image1.jpg', pageNum: '2' },
     { width: 123, height: 123, uri: 'https://archive.org/image2.jpg', pageNum: '3' },
@@ -32,7 +29,6 @@ const SAMPLE_DATA = [
     { width: 123, height: 123, uri: 'https://archive.org/image5.jpg', pageNum: '6' },
   ],
 ];
-
 
 describe('Image Cache', () => {
   test('has image cache in bookreader instance', () => {
@@ -52,10 +48,50 @@ describe('Image Cache', () => {
     test('will pull from cache if image of a good quality has been stored', () => {
       const br = new BookReader({ data: SAMPLE_DATA });
       br.init();
+      const serveImgElStub = sinon.spy(br.imageCache, '_serveImageElement');
       const createImageStub = sinon.spy(br.imageCache, '_createImage');
-      br.imageCache.cache = { 1: { reduce: 3 }};
+      br.imageCache.cache = CACHE_MOCK;
       br.imageCache.image(1, 5);
       expect(createImageStub.callCount).toBe(0);
+      expect(serveImgElStub.callCount).toBe(1);
+    });
+  });
+
+  describe('`imageLoaded` call', () => {
+    test('returns true if image in cache', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      br.imageCache.cache = CACHE_MOCK;
+      const isImgLoaded = br.imageCache.imageLoaded(1, 3);
+      expect(isImgLoaded).toBe(true);
+    });
+    test('returns true if image reducer in cache is good enough', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      br.imageCache.cache = CACHE_MOCK;
+      const isImgLoaded = br.imageCache.imageLoaded(1, 5);
+      expect(isImgLoaded).toBe(true);
+    });
+    test('returns false if no image in cache', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      br.imageCache.cache = CACHE_MOCK;
+      const isImgLoaded = br.imageCache.imageLoaded(2, 3);
+      expect(isImgLoaded).toBe(false);
+    });
+    test('returns false if reducer to check is better than cache', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      br.imageCache.cache = CACHE_MOCK;
+      const isImgLoaded = br.imageCache.imageLoaded(1, 2);
+      expect(isImgLoaded).toBe(false);
+    });
+    test('returns false if image hasn not loaded', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      br.imageCache.cache = { 1: { reduce: 4, loaded: false }};
+      const isImgLoaded = br.imageCache.imageLoaded(1, 2);
+      expect(isImgLoaded).toBe(false);
     });
   });
 
@@ -70,6 +106,16 @@ describe('Image Cache', () => {
       expect(Object.keys(br.imageCache.cache).length).toBe(3);
       expect(br.imageCache.cache[1]).toBeTruthy();
     });
+    test('returns image element', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      const serveImgElStub = sinon.spy(br.imageCache, '_serveImageElement');
+      const img = br.imageCache.image(0, 5);
+      expect(serveImgElStub.callCount).toBe(1);
+      expect($(img).length).toBe(1);
+      expect($(img)[0].classList.contains('BRpageimage')).toBe(true);
+      expect($(img).attr('src')).toBe(FIRST_PAGE_MOCK.uri);
+    });
   });
 
   describe('`_bustImageCache` call', () => {
@@ -79,7 +125,6 @@ describe('Image Cache', () => {
       br.imageCache.image(1, 5); // add new image
       expect(br.imageCache.cache[1].reduce).toEqual(5);
       const bustCacheStub = sinon.spy(br.imageCache, '_bustImageCache');
-
       br.imageCache.image(1, 3); // add same image w/ better reducer
       expect(br.imageCache.cache[1].reduce).toEqual(3);
       expect(bustCacheStub.callCount).toBe(1);
@@ -89,7 +134,6 @@ describe('Image Cache', () => {
       br.init();
       br.imageCache.image(1, 5); // add new image
       expect(br.imageCache.cache[1]).toBeTruthy();
-
       br.imageCache._bustImageCache(1); // add same image w/ better reducer
       expect(br.imageCache.cache[1]).toBe(undefined);
     })

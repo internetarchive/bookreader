@@ -32,10 +32,17 @@ export class ImageCache {
   /**
    * Checks if image has been loaded
    * @param {String|Number} index - page index
+   * @param {Number} reduce
    * @returns {Boolean}
    */
-  imageLoaded(index) {
-    return !!this.cache[index]?.loaded;
+  imageLoaded(index, reduce) {
+    const cacheImg = this.cache[index];
+    if (!cacheImg) {
+      return false;
+    }
+    const { reduce: cachedReduce, loaded } = cacheImg;
+    const cacheImgReducedWellEnough = cachedReduce <= reduce;
+    return cacheImgReducedWellEnough && loaded;
   }
 
   /**
