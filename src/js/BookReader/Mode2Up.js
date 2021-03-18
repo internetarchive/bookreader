@@ -677,6 +677,8 @@ export class Mode2Up {
         this.br.pruneUnusedImgs();
         this.br.animating = false;
 
+        this.resizeSpread();
+
         if (this.br.enableSearch) this.br.updateSearchHilites();
 
         this.setMouseHandlers();
@@ -827,6 +829,7 @@ export class Mode2Up {
         this.br.pruneUnusedImgs();
         this.br.animating = false;
 
+        this.resizeSpread();
 
         if (this.br.enableSearch) this.br.updateSearchHilites();
 
