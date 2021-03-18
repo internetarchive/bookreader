@@ -982,14 +982,14 @@ BookReader.prototype.lazyLoadThumbnails = function() {
  *
  * @param {$lazyLoadImgPlaceholder} - $imgPlaceholder
  */
-BookReader.prototype.lazyLoadImage = function ($imgPlaceholder) {
-  const leaf =  $($imgPlaceholder).data('leaf');
-  const reduce =  $($imgPlaceholder).data('reduce');
+BookReader.prototype.lazyLoadImage = function (imgPlaceholder) {
+  const leaf =  $(imgPlaceholder).data('leaf');
+  const reduce =  $(imgPlaceholder).data('reduce');
   const $img = this.imageCache.image(leaf, reduce);
-  const $parent = $($imgPlaceholder).parent();
+  const $parent = $(imgPlaceholder).parent();
   /* March 16, 2021 (isa) - manually append & remove, `replaceWith` currently loses closure scope */
   $($parent).append($img);
-  $($imgPlaceholder).remove();
+  $(imgPlaceholder).remove();
 };
 
 /**
