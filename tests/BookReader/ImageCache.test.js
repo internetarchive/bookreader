@@ -113,6 +113,15 @@ describe('Image Cache', () => {
       const img = br.imageCache.image(0, 5);
       expect(serveImgElStub.callCount).toBe(1);
       expect($(img).length).toBe(1);
+    });
+  });
+
+  describe('`_serveImageElement` call', () => {
+    test('returns jQuery image element', () => {
+      const br = new BookReader({ data: SAMPLE_DATA });
+      br.init();
+      const img = br.imageCache._serveImageElement(0);
+      expect($(img).length).toBe(1);
       expect($(img)[0].classList.contains('BRpageimage')).toBe(true);
       expect($(img).attr('src')).toBe(FIRST_PAGE_MOCK.uri);
     });
