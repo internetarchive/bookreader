@@ -8,7 +8,7 @@ export default html`
     xmlns="http://www.w3.org/2000/svg"
     aria-labelledby="bookreader-loading"
   >
-    <title id="bookreader-loading">Currenlty loading viewer.</title>
+    <title id="bookreader-loading">Currently loading viewer.</title>
     <desc>Please wait while we load book reader.</desc>
     <g fill="#333" fill-rule="evenodd" class="book-icon">
       <g transform="matrix(1 0 0 -1 28 67.362264)">
