@@ -78,11 +78,24 @@ export class Mode1Up {
   }
 
   /**
+   * How much do the two bounds intersection?
    * @param {{ top: number; bottom: number; }} bound1
    * @param {{ top: number; bottom: number; }} bound2
+   * @returns {number}
    */
-  static boundsIntersect(bound1, bound2) {
-    return (bound1.bottom >= bound2.top) && (bound1.top <= bound2.bottom);
+  static boundIntersection(bound1, bound2) {
+    const intersect = (bound1.bottom >= bound2.top) && (bound1.top <= bound2.bottom);
+    if (!intersect) return 0;
+
+    const boundingBox = {
+      top: Math.min(bound1.top, bound2.top),
+      bottom: Math.max(bound1.bottom, bound2.bottom),
+    };
+    const intersection = {
+      top: Math.max(bound1.top, bound2.top),
+      bottom: Math.min(bound1.bottom, bound2.bottom),
+    };
+    return (intersection.bottom - intersection.top) / (boundingBox.bottom - boundingBox.top);
   }
 
   /**
@@ -97,15 +110,15 @@ export class Mode1Up {
 
     let prev = null;
     for (const {page, top, bottom} of this.pagesWithBounds()) {
-      const intersects = Mode1Up.boundsIntersect({ top, bottom }, scrollRegion);
-      const cur = {page, top, bottom, intersects};
-      if (intersects) {
+      const intersection = Mode1Up.boundIntersection({ top, bottom }, scrollRegion);
+      const cur = {page, top, bottom, intersection: intersection};
+      if (intersection) {
         // Also yield the page just before the visible page
-        if (prev && !prev.intersects) yield prev;
+        if (prev && !prev.intersection) yield prev;
         yield cur;
       }
       // Also yield the page just after the last visible page
-      else if (!cur.intersects && prev?.intersects) {
+      else if (!cur.intersection && prev?.intersection) {
         yield cur;
         break;
       }
@@ -119,9 +132,12 @@ export class Mode1Up {
     if (pagesToDisplay.length) {
       const documentContainerWidth = this.$documentContainer.width();
 
-      // Based of the pages displayed in the view we set the current index
-      // $$$ we should consider the page in the center of the view to be the current one
-      this.br.updateFirstIndex(pagesToDisplay.find(({intersects}) => intersects).page.index);
+      // The first page that's reasonably in view we set to the current index
+      const firstProperPage = (
+        pagesToDisplay.find(({intersection}) => intersection > 0.33) ||
+        pagesToDisplay[0]
+      ).page;
+      this.br.updateFirstIndex(firstProperPage.index);
 
       for (const {page, top, bottom} of pagesToDisplay) {
         if (!this.br.displayedIndices.includes(page.index)) {

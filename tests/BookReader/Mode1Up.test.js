@@ -54,29 +54,29 @@ describe('pagesWithBounds', () => {
   });
 });
 
-describe('boundsIntersect', () => {
-  const f = Mode1Up.boundsIntersect;
+describe('boundIntersection', () => {
+  const f = Mode1Up.boundIntersection;
   test('Exactly equal', () => {
-    expect(f({top: 0, bottom: 10}, {top: 0, bottom: 10})).toBe(true);
+    expect(f({top: 0, bottom: 10}, {top: 0, bottom: 10})).toBe(1);
   });
 
   test('A contains B', () => {
-    expect(f({top: 0, bottom: 10}, {top: 1, bottom: 2})).toBe(true);
+    expect(f({top: 0, bottom: 10}, {top: 1, bottom: 2})).toBe(0.1);
   });
   test('A boundary contains B', () => {
-    expect(f({top: 0, bottom: 10}, {top: 0, bottom: 2})).toBe(true);
+    expect(f({top: 0, bottom: 10}, {top: 0, bottom: 2})).toBe(0.2);
   });
   test('A contains top part of B', () => {
-    expect(f({top: 0, bottom: 10}, {top: 5, bottom: 15})).toBe(true);
+    expect(f({top: 0, bottom: 10}, {top: 5, bottom: 15})).toBeCloseTo(5 / 15);
   });
   test('A contains bottom part of B', () => {
-    expect(f({top: 5, bottom: 10}, {top: 0, bottom: 6})).toBe(true);
+    expect(f({top: 5, bottom: 10}, {top: 0, bottom: 6})).toBe(0.1);
   });
   test('A entirely above B', () => {
-    expect(f({top: 0, bottom: 10}, {top: 20, bottom: 30})).toBe(false);
+    expect(f({top: 0, bottom: 10}, {top: 20, bottom: 30})).toBe(0);
   });
   test('A entirely below B', () => {
-    expect(f({top: 20, bottom: 30}, {top: 0, bottom: 10})).toBe(false);
+    expect(f({top: 20, bottom: 30}, {top: 0, bottom: 10})).toBe(0);
   });
 });
 
