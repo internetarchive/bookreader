@@ -821,7 +821,6 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 
   let leafTop = 0;
   let leafBottom = 0;
-  let rowsInView = [];
   const rowsToDisplay = [];
   const imagesToDisplay = [];
 
@@ -848,7 +847,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
     leafTop = leafBottom;
   }
-  rowsInView = [...rowsToDisplay];
+  // at this point, `rowsToDisplay` now has all the rows in view
 
   // create a buffer of preloaded rows before and after the visible rows
   const firstRow = rowsToDisplay[0];
