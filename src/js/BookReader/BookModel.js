@@ -1,4 +1,5 @@
 // @ts-check
+import { DEFAULT_OPTIONS } from './options.js';
 import { clamp } from './utils.js';
 /** @typedef {import('./options.js').PageData} PageData */
 /** @typedef {import('../BookReader.js').default} BookReader */
@@ -7,11 +8,6 @@ import { clamp } from './utils.js';
 // TODO Render configurable html for the user instead.
 // FIXME Don't reference files on archive.org
 const UNVIEWABLE_PAGE_URI = '/bookreader/static/preview-default.png';
-
-/**
- * Fallback PPI when one isn't specified in the book data
- */
-export const FALLBACK_PPI = 500;
 
 /**
  * Contains information about the Book/Document independent of the way it is
@@ -25,6 +21,7 @@ export class BookModel {
    */
   constructor(br) {
     this.br = br;
+    this.ppi = br.options?.ppi ?? DEFAULT_OPTIONS.ppi;
 
     /** @type {{width: number, height: number}} memoize storage */
     this._medianPageSize = null;
@@ -376,7 +373,7 @@ class PageModel {
    */
   constructor(book, index) {
     // TODO: Get default from config
-    this.ppi = book._getDataProp(index, 'ppi', FALLBACK_PPI);
+    this.ppi = book._getDataProp(index, 'ppi', book.ppi);
     this.book = book;
     this.index = index;
     this.width = book.getPageWidth(index);

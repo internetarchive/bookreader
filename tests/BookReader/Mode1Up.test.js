@@ -1,7 +1,9 @@
 import sinon from 'sinon';
 import { deepCopy } from '../utils.js';
 import { Mode1Up } from '../../src/js/BookReader/Mode1Up.js'
-import { BookModel, FALLBACK_PPI } from '../../src/js/BookReader/BookModel.js';
+import { BookModel } from '../../src/js/BookReader/BookModel.js';
+import { DEFAULT_OPTIONS } from '../../src/js/BookReader/options.js';
+const DEFAULT_PPI = DEFAULT_OPTIONS.ppi;
 
 /** @type {BookReaderOptions['data']} */
 const SAMPLE_DATA = [
@@ -96,7 +98,7 @@ describe('calculateViewDimensions', () => {
     const br = { data: SAMPLE_DATA };
     const book = new BookModel(br);
     const mode = new Mode1Up(br, book);
-    const pageSizeIn = 123 / FALLBACK_PPI;
+    const pageSizeIn = 123 / DEFAULT_PPI;
     const dims = mode.calculateViewDimensions(1, 2.5);
     expect(dims.width).toBeCloseTo(mode.physicalInchesToDisplayPixels(pageSizeIn, 1));
     expect(dims.height).toBeCloseTo(mode.physicalInchesToDisplayPixels(6 * pageSizeIn + 5 * 2.5, 1));
@@ -106,7 +108,7 @@ describe('calculateViewDimensions', () => {
     const br = { data: SAMPLE_DATA };
     const book = new BookModel(br);
     const mode = new Mode1Up(br, book);
-    const pageSizeIn = 123 / FALLBACK_PPI;
+    const pageSizeIn = 123 / DEFAULT_PPI;
     const dims = mode.calculateViewDimensions(2, 5);
     expect(dims.width).toBeCloseTo(mode.physicalInchesToDisplayPixels(pageSizeIn, 2));
     expect(dims.height).toBeCloseTo(mode.physicalInchesToDisplayPixels(6 * pageSizeIn + 5 * 5, 2));
@@ -117,7 +119,7 @@ describe('calculateViewDimensions', () => {
     br.data.flat().forEach((page, i) => page.width = i);
     const book = new BookModel(br);
     const mode = new Mode1Up(br, book);
-    expect(mode.calculateViewDimensions().width).toBe(mode.physicalInchesToDisplayPixels(5 / FALLBACK_PPI));
+    expect(mode.calculateViewDimensions().width).toBe(mode.physicalInchesToDisplayPixels(5 / DEFAULT_PPI));
   });
 });
 
