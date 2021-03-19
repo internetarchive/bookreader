@@ -750,6 +750,9 @@ BookReader.prototype.bindGestures = function(jElement) {
  * Draws the thumbnail view
  * @param {number} optional If seekIndex is defined, the view will be drawn
  *    with that page visible (without any animated scrolling).
+ *
+ * Creates place holder for image to load after gallery has been drawn
+ * @typedef {Object} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce
  */
 BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   const { floor } = Math;
@@ -768,6 +771,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   let seekTop;
 
   // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
+  // make `leafMap`
   for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
     const leafWidth = this.thumbWidth;
     if (rightPos + (leafWidth + this.thumbPadding) > viewWidth) {
@@ -818,6 +822,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   let leafTop = 0;
   let leafBottom = 0;
   const rowsToDisplay = [];
+  const imagesToDisplay = [];
 
   // Visible leafs with least/greatest index
   let leastVisible = book.getNumLeafs() - 1;
@@ -842,6 +847,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
     leafTop = leafBottom;
   }
+  // at this point, `rowsToDisplay` now has all the rows in view
 
   // create a buffer of preloaded rows before and after the visible rows
   const firstRow = rowsToDisplay[0];
@@ -849,9 +855,10 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
     if (lastRow + i < leafMap.length) { rowsToDisplay.push(lastRow + i); }
   }
-  for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
+  for (let i = 1; i < this.thumbRowBuffer; i++) {
     if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
   }
+  rowsToDisplay.sort();
 
   // Create the thumbnail divs and images (lazy loaded)
   for (const row of rowsToDisplay) {
@@ -867,14 +874,14 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         }
 
         left += this.thumbPadding;
-        const pageContainer = this._createPageContainer(leaf, {
+        const $pageContainer = this._createPageContainer(leaf, {
           width: `${leafWidth}px`,
           height: `${leafHeight}px`,
           top: `${leafTop}px`,
           left: `${left}px`,
         });
 
-        pageContainer.data('leaf', leaf).on('mouseup', event => {
+        $pageContainer.data('leaf', leaf).on('mouseup', event => {
           // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
           // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
           // We manually trigger the `fragmentChange` once at the end.
@@ -891,20 +898,32 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
           event.stopPropagation();
         });
 
-        this.refs.$brPageViewEl.append(pageContainer);
+        this.refs.$brPageViewEl.append($pageContainer);
+        imagesToDisplay.push(leaf);
 
-        const img = document.createElement("img");
-        const thumbReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
-        // use prefetched img src first if previously requested & available img is good enough
-        const prefetchedImg = this.prefetchedImgs[leaf] || {};
-        const imageURI = prefetchedImg.reduce <= thumbReduce ? prefetchedImg.uri : this._getPageURI(leaf, thumbReduce);
-        $(img).attr('src', `${this.imagesBaseURL}transparent.png`)
-          .css({ width: `${leafWidth}px`, height: `${leafHeight}px` })
-          .addClass('BRlazyload')
-          // Store the URL of the image that will replace this one
-          .data('srcURL',  imageURI)
-          .attr('alt', 'Loading book image');
-        pageContainer.append(img);
+        /* get thumbnail's reducer */
+        const idealReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
+        const nearestFactor2 = 2 * Math.round(idealReduce / 2);
+        const thumbReduce = nearestFactor2;
+
+        const baseCSS = { width: `${leafWidth}px`, height: `${leafHeight}px` };
+        if (this.imageCache.imageLoaded(leaf, thumbReduce)) {
+          // send to page
+          $pageContainer.append($(this.imageCache.image(leaf, thumbReduce)).css(baseCSS));
+        } else {
+          // lazy load
+          const $lazyLoadImgPlaceholder = document.createElement('img');
+          $($lazyLoadImgPlaceholder)
+            .attr('src', `${this.imagesBaseURL}transparent.png`)
+            .css(baseCSS)
+            .addClass('BRlazyload')
+            // Store the leaf/index number to reference on url swap:
+            .attr('data-leaf', leaf)
+            .attr('data-reduce', thumbReduce)
+            .attr('data-row', row)
+            .attr('alt', 'Loading book image');
+          $pageContainer.append($lazyLoadImgPlaceholder);
+        }
       }
     }
   }
@@ -912,8 +931,10 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   // Remove thumbnails that are not to be displayed
   for (const row of this.displayedRows) {
     if (utils.notInArray(row, rowsToDisplay)) {
-      for (const { num: index } of leafMap[row].leafs) {
-        this.$(`.pagediv${index}`).remove();
+      for (const { num: index } of leafMap[row]?.leafs) {
+        if (!imagesToDisplay?.includes(index)) {
+          this.$(`.pagediv${index}`)?.remove();
+        }
       }
     }
   }
@@ -926,6 +947,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     this.updateFirstIndex(mostVisible);
   }
 
+  // remember what rows are displayed
   this.displayedRows = rowsToDisplay.slice();
 
   // remove previous highlights
@@ -940,58 +962,30 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 };
 
 BookReader.prototype.lazyLoadThumbnails = function() {
-  // We check the complete property since load may not be fired if loading from the cache
-  this.$('.BRlazyloading').filter('[complete=true]').removeClass('BRlazyloading');
+  const batchImageRequestByRow = async ($images) => {
+    await utils.sleep(300);
+    $images.each((index, $imgPlaceholder) => this.lazyLoadImage($imgPlaceholder));
+  };
 
-  var loading = this.$('.BRlazyloading').length;
-  var toLoad = this.thumbMaxLoading - loading;
-
-  var self = this;
-
-  if (toLoad > 0) {
-    // $$$ TODO load those near top (but not beyond) page view first
-    this.refs.$brPageViewEl.find('img.BRlazyload').filter(':lt(' + toLoad + ')').each( function() {
-      self.lazyLoadImage(this);
-    });
-  }
+  this.displayedRows.forEach((row) => {
+    const $imagesInRow = this.refs.$brPageViewEl.find(`[data-row="${row}"]`);
+    batchImageRequestByRow($imagesInRow);
+  });
 };
 
-BookReader.prototype.lazyLoadImage = function (dummyImage) {
-  var img = new Image();
-  var self = this;
-
-  $(img)
-    .addClass('BRlazyloading')
-    .one('load', function() {
-      $(this).removeClass('BRlazyloading').attr('alt', 'Loading book image');
-
-      // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
-      //     we call the function after a slight delay.  Also the img.complete property
-      //     is not yet set in IE8 inside this onload handler
-      setTimeout(function() { self.lazyLoadThumbnails(); }, 100);
-    })
-    .one('error', function() {
-      // Remove class so we no longer count as loading
-      $(this).removeClass('BRlazyloading');
-    })
-
-  //the width set with .attr is ignored by Internet Explorer, causing it to show the image at its original size
-  //but with this one line of css, even IE shows the image at the proper size
-    .css({
-      'width': $(dummyImage).width() + 'px',
-      'height': $(dummyImage).height() + 'px'
-    })
-    .attr({
-      'width': $(dummyImage).width(),
-      'height': $(dummyImage).height(),
-      'src': $(dummyImage).data('srcURL'),
-      'alt': 'Loading book image'
-    });
-
-  // replace with the new img
-  $(dummyImage).before(img).remove();
-
-  img = null; // tidy up closure
+/**
+ * Replaces placeholder image with real one
+ *
+ * @param {$lazyLoadImgPlaceholder} - $imgPlaceholder
+ */
+BookReader.prototype.lazyLoadImage = function (imgPlaceholder) {
+  const leaf =  $(imgPlaceholder).data('leaf');
+  const reduce =  $(imgPlaceholder).data('reduce');
+  const $img = this.imageCache.image(leaf, reduce);
+  const $parent = $(imgPlaceholder).parent();
+  /* March 16, 2021 (isa) - manually append & remove, `replaceWith` currently loses closure scope */
+  $($parent).append($img);
+  $(imgPlaceholder).remove();
 };
 
 /**
@@ -1083,6 +1077,7 @@ BookReader.prototype.zoomThumb = function(direction) {
   }
 
   if (this.thumbColumns != oldColumns) {
+    this.displayedRows = [];  /* force a gallery redraw */
     this.prepareThumbnailView();
   }
 };
@@ -1095,9 +1090,12 @@ BookReader.prototype.zoomThumb = function(direction) {
  * @param {number}
  */
 BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
+  const DEFAULT_THUMBNAIL_WIDTH = 100;
+
   var padding = (thumbnailColumns + 1) * this.thumbPadding;
   var width = (this.refs.$brPageViewEl.width() - padding) / (thumbnailColumns + 0.5); // extra 0.5 is for some space at sides
-  return parseInt(width);
+  const idealThumbnailWidth = parseInt(width);
+  return idealThumbnailWidth > 0 ? idealThumbnailWidth : DEFAULT_THUMBNAIL_WIDTH;
 };
 
 /**
@@ -1503,12 +1501,9 @@ BookReader.prototype.prepareThumbnailView = function() {
   // $$$ keep select enabled for now since disabling it breaks keyboard
   //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
   // utils.disableSelect(this.$('#BRpageview'));
-
   this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
   this.reduce = this._models.book.getPageWidth(0) / this.thumbWidth;
-
   this.displayedRows = [];
-
   // Draw leafs with current index directly in view (no animating to the index)
   this.drawLeafsThumbnail( this.currentIndex() );
   this.updateBrClasses();

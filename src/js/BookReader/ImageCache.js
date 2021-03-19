@@ -8,9 +8,6 @@ export class ImageCache {
     this.br = br;
     this.cache = {};
     this.defaultScale = 8;
-
-    this.createImage = this._createImage.bind(this);
-    this.image = this.image.bind(this);
   }
 
   /**
@@ -20,18 +17,33 @@ export class ImageCache {
    *
    * @param {String|Number} index - page index
    * @param {Number} reduce
-   * @returns $image
+   * @returns {Element} $image
    */
   image(index, reduce) {
     const $thisImage = this.cache[index];
     const currImageScale = $thisImage?.reduce;
     if (currImageScale <= reduce) {
-      return $thisImage;
+      return this._serveImageElement(index);
     }
 
     return this._createImage(index, reduce);
   }
 
+  /**
+   * Checks if image has been loaded
+   * @param {String|Number} index - page index
+   * @param {Number} reduce
+   * @returns {Boolean}
+   */
+  imageLoaded(index, reduce) {
+    const cacheImg = this.cache[index];
+    if (!cacheImg) {
+      return false;
+    }
+    const { reduce: cachedReduce, loaded } = cacheImg;
+    const cacheImgReducedWellEnough = cachedReduce <= reduce;
+    return cacheImgReducedWellEnough && loaded;
+  }
 
   /**
    * @private
@@ -41,10 +53,6 @@ export class ImageCache {
    * @param {String|Number} index - page index
    */
   _bustImageCache(index) {
-    const $thisImage = this.cache[index];
-    // allows browser to abort a pending request
-
-    $($thisImage).attr('src', '').attr('srcSet', []);
     delete this.cache[index];
   }
 
@@ -63,20 +71,31 @@ export class ImageCache {
     if (hasCache) {
       this._bustImageCache(index);
     }
-
     const src = this.br._getPageURI(index, reduce);
     const srcSet = this.br.options.useSrcSet ? this.br._getPageURISrcset(index, reduce) : [];
-    const $img = $('<img />', {
+    this.cache[index] = { reduce, uri: src, srcSet, loaded: false }
+    return this._serveImageElement(index);
+  }
+
+  /**
+   * @private
+   * Generates an image element on the fly from image info in cache
+   *
+   * @param {String|Number} index - page index
+   * @returns {Element} jQuery <img> element with base image classes
+   */
+  _serveImageElement(index) {
+    const { uri, srcSet, reduce } = this.cache[index];
+
+    const $img = $('<img />',{
       'class': 'BRpageimage',
       'alt': 'Book page image',
-      src,
+      src: uri,
       srcSet
-    }).data('reduce', reduce).load(() => {
-      this.cache[index].loaded = true;
-    });
-
-    this.cache[index] = { ...$img, reduce, uri: src };
-
-    return this.cache[index];
+    })
+      .attr('style', '')
+      .data('reduce', reduce)
+      .load(() => this.cache[index].loaded = true);
+    return $img;
   }
 }

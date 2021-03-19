@@ -19,7 +19,7 @@ export const DEFAULT_OPTIONS = {
 
   /** thumbnail mode */
   /** number of rows to pre-cache out a view */
-  thumbRowBuffer: 2,
+  thumbRowBuffer: 1,
   thumbColumns: 6,
   /** number of thumbnails to load at once */
   thumbMaxLoading: 4,
@@ -280,7 +280,7 @@ export const DEFAULT_OPTIONS = {
    * @type {Boolean}
    * On init, by default, we want to use srcSet for images
    */
-  useSrcSet: true,
+  useSrcSet: false,
 };
 
 /** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */
