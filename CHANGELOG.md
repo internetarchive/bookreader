@@ -1,3 +1,9 @@
+# 4.38.0
+Dev: update dependencies @cdrini
+Dev: replace travis badge with GHA badge @cdrini
+Feature: Thumbnail/Gallery view reusing best scaled images @iisa
+Fix: simplify ImageCache dictionary @iisa
+
 # 4.37.0
 Fix: new ImageCache that keeps track of requested images & their scale factor @iisa
 Fix: 2up mode's use of ImageCache @iisa
