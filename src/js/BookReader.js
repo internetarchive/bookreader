@@ -928,9 +928,6 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
       }
     }
   }
-  console.log("IMGS TO DISPLAY", imagesToDisplay);
-  console.log('rowsInView', rowsInView);
-  console.log('this.displayedRows', this.displayedRows);
 
   // Remove thumbnails that are not to be displayed
   for (const row of this.displayedRows) {
