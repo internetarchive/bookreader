@@ -9,7 +9,9 @@ test('Clicking `view mode` cycles through view modes', async t => {
   const { nav } = (new BookReader());
 
   // viewmode button only appear on mobile devices
-  await t.resizeWindow(400, 100)
+  await t.resizeWindow(400, 800);
+  // Flip forward one
+  await t.pressKey('right');
 
   // 2up to thumb
   await t.click(nav.desktop.viewmode);
@@ -23,7 +25,7 @@ test('Clicking `view mode` cycles through view modes', async t => {
   const onePageViewContainer = Selector('.BRpageview');
   await t.expect(onePageViewContainer.visible).ok();
   const onePageImages = onePageViewContainer.find('.BRpagecontainer.BRmode1up');
-  // we usually pre-fetch the page in question & the 2 after it
+  // we usually pre-fetch the page in question & 1 before/after it
   await t.expect(onePageImages.count).gte(3);
 
   // 1up to 2up
@@ -31,5 +33,5 @@ test('Clicking `view mode` cycles through view modes', async t => {
   const twoPageContainer = Selector('.BRtwopageview');
   await t.expect(twoPageContainer.visible).ok();
   const twoPageImages = twoPageContainer.find('img.BRpageimage');
-  await t.expect(twoPageImages.count).eql(2);
+  await t.expect(twoPageImages.count).gte(2);
 });
