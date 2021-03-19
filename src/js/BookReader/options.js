@@ -52,6 +52,7 @@ export const DEFAULT_OPTIONS = {
    * The autofit code ensures that fit to width and fit to height will be available
    */
   reductionFactors: [
+    {reduce: 0.25, autofit: null},
     {reduce: 0.5, autofit: null},
     {reduce: 1, autofit: null},
     {reduce: 2, autofit: null},
