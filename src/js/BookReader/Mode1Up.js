@@ -58,13 +58,19 @@ export class Mode1Up {
   /**
    * Get the number of pixels required to display the given inches with the given reduce
    * @param {number} inches
+   * @param reduce Reduction factor currently at play
+   * @param screenDPI The DPI of the screen
    **/
   physicalInchesToDisplayPixels(inches, reduce = this.realWorldReduce, screenDPI = this.screenDPI) {
     return inches * screenDPI / reduce;
   }
 
-  /** Iterate over pages, augmented with their top/bottom bounds */
-  * pagesWithBounds(reduce = this.realWorldReduce, leafSpacing = this.LEAF_SPACING_IN) {
+  /**
+   * Iterate over pages, augmented with their top/bottom bounds
+   * @param reduce Reduction factor currently at play
+   * @param pageSpacing Inches of space to place between pages
+   **/
+  * pagesWithBounds(reduce = this.realWorldReduce, pageSpacing = this.LEAF_SPACING_IN) {
     let leafTop = 0;
     let leafBottom = 0;
 
@@ -72,8 +78,8 @@ export class Mode1Up {
       const height = this.physicalInchesToDisplayPixels(page.heightInches, reduce);
       leafBottom += height;
       yield { page, top: leafTop, bottom: leafBottom };
-      leafTop += height + this.physicalInchesToDisplayPixels(leafSpacing, reduce);
-      leafBottom += this.physicalInchesToDisplayPixels(leafSpacing, reduce);
+      leafTop += height + this.physicalInchesToDisplayPixels(pageSpacing, reduce);
+      leafBottom += this.physicalInchesToDisplayPixels(pageSpacing, reduce);
     }
   }
 
@@ -236,8 +242,6 @@ export class Mode1Up {
 
     this.realWorldReduce = nextReductionFactor.reduce;
     this.br.onePage.autofit = nextReductionFactor.autofit;
-
-    // this.br.pageScale = this.reduce; // preserve current reduce
 
     this.resizePageView();
     this.br.updateToolbarZoom(this.realWorldReduce);

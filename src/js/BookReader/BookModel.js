@@ -58,6 +58,7 @@ export class BookModel {
     return this._medianPageSizePixels;
   }
 
+  /** Get median width/height of page in inches. Memoized for performance. */
   getMedianPageSizeInches() {
     if (this._medianPageSize) {
       return this._medianPageSize;
