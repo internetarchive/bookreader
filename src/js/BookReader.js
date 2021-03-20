@@ -1920,8 +1920,9 @@ BookReader.prototype.stopFlipAnimations = function() {
  * @param {Event}
  * @return {boolean}
  */
-BookReader.prototype.keyboardNavigationIsDisabled = function(event) {
-  return event.target.tagName == "INPUT";
+
+BookReader.prototype.keyboardNavigationIsDisabled = function() {
+  return document.activeElement.tagName == "INPUT";
 };
 
 /**
