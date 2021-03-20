@@ -14,6 +14,27 @@ export const DEFAULT_OPTIONS = {
 };
 /** @typedef {typeof DEFAULT_OPTIONS} TextSelectionPluginOptions */
 
+/**
+ * @template T
+ */
+export class Cache {
+  constructor(maxSize = 10) {
+    this.maxSize = maxSize;
+    /** @type {T[]} */
+    this.entries = [];
+  }
+
+  /**
+   * @param {T} entry
+   */
+  add(entry) {
+    if (this.entries.length >= this.maxSize) {
+      this.entries.shift();
+    }
+    this.entries.push(entry);
+  }
+}
+
 export class TextSelectionPlugin {
 
   constructor(options = DEFAULT_OPTIONS, optionVariables, avoidTspans = isFirefox(), pointerEventsOnParagraph = isSafari()) {
@@ -34,6 +55,15 @@ export class TextSelectionPlugin {
       this.svgParagraphElement = "g";
       this.svgWordElement = "text";
     }
+
+    /** @type {Cache<{index: number, response: any}>} */
+    this.pageTextCache = new Cache();
+
+    /**
+     * Sometimes there are too many words on a page, and the browser becomes near
+     * unusable. For now don't render text layer for pages with too many words.
+     */
+    this.maxWordRendered = 2500;
   }
 
   init() {
@@ -60,6 +90,10 @@ export class TextSelectionPlugin {
    */
   async getPageText(index) {
     if (this.options.singlePageDjvuXmlUrl) {
+      const cachedEntry = this.pageTextCache.entries.find(x => x.index == index);
+      if (cachedEntry) {
+        return cachedEntry.response;
+      }
       return $.ajax({
         type: "GET",
         url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
@@ -68,7 +102,9 @@ export class TextSelectionPlugin {
       }).then((res) => {
         try {
           const xmlDoc = $.parseXML(res);
-          return xmlDoc && $(xmlDoc).find("OBJECT")[0];
+          const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
+          this.pageTextCache.add({ index, response: result });
+          return result;
         } catch (e) {
           return undefined;
         }
@@ -154,6 +190,12 @@ export class TextSelectionPlugin {
     if (!XMLpage) return;
     const XMLwidth = $(XMLpage).attr("width");
     const XMLheight = $(XMLpage).attr("height");
+
+    const totalWords = $(XMLpage).find("WORD").length;
+    if (totalWords > this.maxWordRendered) {
+      console.log(`Page ${pageIndex} has too many words (${totalWords} > ${this.maxWordRendered}). Not rendering text layer.`);
+      return;
+    }
 
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
@@ -249,7 +291,9 @@ export class BookreaderWithTextSelection extends BookReader {
     const $container = super._createPageContainer(index, styles);
     // Disable if thumb mode; it's too janky
     // index can be -1 for "pre-cover" region
-    if (this.mode != this.constModeThumb && index > 0) {
+    // Added checking of lastPageIndex to avoid loop around index value
+    const lastPageIndex = this.getNumLeafs() - 1;
+    if (this.mode !== this.constModeThumb && (index >= 0 && index <= lastPageIndex)) {
       this.textSelectionPlugin?.createTextLayer(index, $container);
     }
     return $container;

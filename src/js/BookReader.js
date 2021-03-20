@@ -25,6 +25,8 @@ import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
+/** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
+/** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
 import { EVENTS } from './BookReader/events.js';
 import { DebugConsole } from './BookReader/DebugConsole.js';
 import {
@@ -34,7 +36,9 @@ import {
   createPopup,
 } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
+import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
+import { ImageCache } from './BookReader/ImageCache.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -54,9 +58,14 @@ export default function BookReader(overrides = {}) {
 BookReader.version = PACKAGE_JSON.version;
 
 // Mode constants
+/** 1 page view */
 BookReader.constMode1up = 1;
+/** 2 pages view */
 BookReader.constMode2up = 2;
+/** thumbnails view */
 BookReader.constModeThumb = 3;
+/** image cache */
+BookReader.imageCache = null;
 
 // Animation constants
 BookReader.constNavAnimationDuration = 300;
@@ -89,6 +98,12 @@ BookReader.prototype.setup = function(options) {
   this.enableSearch = false;
 
   /**
+   * Store viewModeOrder states
+   * @var {boolean}
+   */
+  this.viewModeOrder = [];
+
+  /**
    * Used to supress fragment change for init with canonical URLs
    * @var {boolean}
    */
@@ -98,15 +113,22 @@ BookReader.prototype.setup = function(options) {
   this.animationFinishedCallback = null;
 
   // @deprecated: Instance constants. Use Class constants instead
+  /** 1 page view */
   this.constMode1up = BookReader.constMode1up;
+  /** 2 pages view */
   this.constMode2up = BookReader.constMode2up;
+  /** thumbnails view */
   this.constModeThumb = BookReader.constModeThumb;
 
   // Private properties below. Configuration should be done with options.
-  /** @type {number} @private */
-  this.reduce = 4;
+  /** @type {number} TODO: Make private */
+  this.reduce = 8; /* start very small */
   this.defaults = options.defaults;
   this.padding = options.padding;
+
+  /** @type {number}
+   * can be 1 or 2 or 3 based on the display mode const value
+   */
   this.mode = null;
   this.prevReadMode = null;
   this.ui = options.ui;
@@ -121,7 +143,7 @@ BookReader.prototype.setup = function(options) {
 
   this.displayedIndices = [];
   this.imgs = {};
-  this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index
+  this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index, reduce
 
   this.animating = false;
   this.flipSpeed = options.flipSpeed;
@@ -203,6 +225,7 @@ BookReader.prototype.setup = function(options) {
   };
 
   this._modes = {
+    mode1Up: new Mode1Up(this, this._models.book),
     mode2Up: new Mode2Up(this, this._models.book),
   };
 
@@ -211,8 +234,12 @@ BookReader.prototype.setup = function(options) {
     '_models.book': this._models.book,
     '_components.navbar': this._components.navbar,
     '_components.toolbar': this._components.toolbar,
+    '_modes.mode1Up': this._modes.mode1Up,
     '_modes.mode2Up': this._modes.mode2Up,
   };
+
+  /** Image cache for general image fetching */
+  this.imageCache = new ImageCache(this);
 };
 
 /** @deprecated unused outside Mode2Up */
@@ -303,7 +330,14 @@ BookReader.prototype.initParams = function() {
   // Check for URL plugin
   if (this.options.enableUrlPlugin) {
     // Params explicitly set in URL take precedence over all other methods
-    const urlParams = this.paramsFromFragment(this.urlReadFragment());
+    var urlParams = this.paramsFromFragment(this.urlReadFragment());
+
+    // Get params if hash fragment available with 'history' urlMode
+    const hasHashURL = !Object.keys(urlParams).length && this.urlReadHashFragment();
+    if (hasHashURL && (this.options.urlMode === 'history')) {
+      urlParams = this.paramsFromFragment(this.urlReadHashFragment());
+    }
+
     // If there were any parameters
     if (Object.keys(urlParams).length) {
       if ('undefined' != typeof(urlParams.page)) {
@@ -448,6 +482,9 @@ BookReader.prototype.init = function() {
     }
   }
 
+  // Switch navbar controls on mobile/desktop
+  this.switchNavbarControls();
+
   this.resizeBRcontainer();
   this.updateFromParams(params);
   this.initUIStrings();
@@ -467,18 +504,18 @@ BookReader.prototype.init = function() {
     }
   });
 
-  $(window).bind('resize', this, function(e) {
-    e.data.resize();
-  });
-  $(window).on("orientationchange", this, function(e) {
-    e.data.resize();
-  }.bind(this));
+  if (this.options.autoResize) {
+    $(window).bind('resize', this, function(e) {
+      e.data.resize();
+    });
+    $(window).on("orientationchange", this, function(e) {
+      e.data.resize();
+    }.bind(this));
+  }
 
   if (this.protected) {
     this.$('.BRicon.share').hide();
   }
-
-  this.trigger(BookReader.eventNames.PostInit);
 
   // If not searching, set to allow on-going fragment changes
   if (!this.options.initialSearchTerm) {
@@ -486,6 +523,7 @@ BookReader.prototype.init = function() {
   }
 
   this.init.initComplete = true;
+  this.trigger(BookReader.eventNames.PostInit);
 
   // Must be called after this.init.initComplete set to true to allow
   // BookReader.prototype.resize to run.
@@ -526,6 +564,9 @@ BookReader.prototype.resize = function() {
 
   this.resizeBRcontainer();
 
+  // Switch navbar controls on mobile/desktop
+  this.switchNavbarControls();
+
   if (this.constMode1up == this.mode) {
     if (this.onePage.autofit != 'none') {
       this.resizePageView1up();
@@ -542,8 +583,10 @@ BookReader.prototype.resize = function() {
   } else {
     // We only need to prepare again in autofit (size of spread changes)
     if (this.twoPage.autofit) {
+      // most common path, esp. for archive.org books
       this.prepareTwoPageView();
     } else {
+      // used when zoomed in
       // Re-center if the scrollbars have disappeared
       var center = this.twoPageGetViewCenter();
       var doRecenter = false;
@@ -704,100 +747,12 @@ BookReader.prototype.bindGestures = function(jElement) {
 };
 
 /**
- * @param {object} [options]
- */
-BookReader.prototype.drawLeafsOnePage = function() {
-  const { book } = this._models;
-  const containerHeight = this.refs.$brContainer.height();
-  const containerWidth = this.refs.$brPageViewEl.width();
-  const scrollTop = this.refs.$brContainer.prop('scrollTop');
-  const scrollBottom = scrollTop + containerHeight;
-
-  const indicesToDisplay = [];
-  let leafTop = 0;
-  let leafBottom = 0;
-
-  for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
-    const height = Math.floor(page.height / this.reduce);
-    leafBottom += height;
-    const topInView = (leafTop >= scrollTop) && (leafTop <= scrollBottom);
-    const bottomInView = (leafBottom >= scrollTop) && (leafBottom <= scrollBottom);
-    const middleInView = (leafTop <= scrollTop) && (leafBottom >= scrollBottom);
-    if (topInView || bottomInView || middleInView) {
-      indicesToDisplay.push(page.index);
-    }
-    leafTop += height + 10;
-    leafBottom += 10;
-  }
-
-  // Based of the pages displayed in the view we set the current index
-  // $$$ we should consider the page in the center of the view to be the current one
-  let firstIndexToDraw = indicesToDisplay[0];
-  this.updateFirstIndex(firstIndexToDraw);
-
-  // if zoomed out, also draw prev/next pages
-  if (this.reduce > 1) {
-    const prev = book.getPage(firstIndexToDraw).findPrev({ combineConsecutiveUnviewables: true });
-    if (prev) indicesToDisplay.unshift(firstIndexToDraw = prev.index);
-
-    const lastIndexToDraw = indicesToDisplay[indicesToDisplay.length - 1];
-    const next = book.getPage(lastIndexToDraw).findNext({ combineConsecutiveUnviewables: true });
-    if (next) indicesToDisplay.push(next.index);
-  }
-
-  const BRpageViewEl = this.refs.$brPageViewEl.get(0);
-  leafTop = 0;
-
-  for (const page of book.pagesIterator({ end: firstIndexToDraw, combineConsecutiveUnviewables: true })) {
-    leafTop += Math.floor(page.height / this.reduce) + 10;
-  }
-
-  for (const index of indicesToDisplay) {
-    const page = book.getPage(index);
-    const height = Math.floor(page.height / this.reduce);
-
-    if (utils.notInArray(index, this.displayedIndices)) {
-      const width = Math.floor(page.width / this.reduce);
-      const leftMargin = Math.floor((containerWidth - width) / 2);
-
-      const pageContainer = this._createPageContainer(index, {
-        width:`${width}px`,
-        height: `${height}px`,
-        top: `${leafTop}px`,
-        left: `${leftMargin}px`,
-      });
-
-      const img = $('<img />', {
-        src: this._getPageURI(index, this.reduce, 0),
-        srcset: this._getPageURISrcset(index, this.reduce, 0)
-      });
-      pageContainer.append(img);
-
-      BRpageViewEl.appendChild(pageContainer[0]);
-    }
-
-    leafTop += height + 10;
-  }
-
-  for (const index of this.displayedIndices) {
-    if (utils.notInArray(index, indicesToDisplay)) {
-      this.$(`.pagediv${index}`).remove();
-    }
-  }
-
-  this.displayedIndices = indicesToDisplay.slice();
-  if (this.enableSearch) this.updateSearchHilites();
-
-  this.updateToolbarZoom(this.reduce);
-
-  // Update the slider
-  this.updateNavIndexThrottled();
-};
-
-/**
  * Draws the thumbnail view
  * @param {number} optional If seekIndex is defined, the view will be drawn
  *    with that page visible (without any animated scrolling).
+ *
+ * Creates place holder for image to load after gallery has been drawn
+ * @typedef {Object} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce
  */
 BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   const { floor } = Math;
@@ -816,6 +771,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   let seekTop;
 
   // Calculate the position of every thumbnail.  $$$ cache instead of calculating on every draw
+  // make `leafMap`
   for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
     const leafWidth = this.thumbWidth;
     if (rightPos + (leafWidth + this.thumbPadding) > viewWidth) {
@@ -866,6 +822,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   let leafTop = 0;
   let leafBottom = 0;
   const rowsToDisplay = [];
+  const imagesToDisplay = [];
 
   // Visible leafs with least/greatest index
   let leastVisible = book.getNumLeafs() - 1;
@@ -890,6 +847,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     if (leafTop > leafMap[i].top) { leafMap[i].top = leafTop; }
     leafTop = leafBottom;
   }
+  // at this point, `rowsToDisplay` now has all the rows in view
 
   // create a buffer of preloaded rows before and after the visible rows
   const firstRow = rowsToDisplay[0];
@@ -897,9 +855,10 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
     if (lastRow + i < leafMap.length) { rowsToDisplay.push(lastRow + i); }
   }
-  for (let i = 1; i < this.thumbRowBuffer + 1; i++) {
+  for (let i = 1; i < this.thumbRowBuffer; i++) {
     if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
   }
+  rowsToDisplay.sort();
 
   // Create the thumbnail divs and images (lazy loaded)
   for (const row of rowsToDisplay) {
@@ -915,38 +874,56 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
         }
 
         left += this.thumbPadding;
-        const pageContainer = this._createPageContainer(leaf, {
+        const $pageContainer = this._createPageContainer(leaf, {
           width: `${leafWidth}px`,
           height: `${leafHeight}px`,
           top: `${leafTop}px`,
           left: `${left}px`,
         });
 
-        pageContainer.data('leaf', leaf).on('mouseup', event => {
+        $pageContainer.data('leaf', leaf).on('mouseup', event => {
           // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
           // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
           // We manually trigger the `fragmentChange` once at the end.
           this.updateFirstIndex(leaf, { suppressFragmentChange: true });
-          if (this.prevReadMode === this.constMode1up || this.prevReadMode === this.constMode2up) {
-            this.switchMode(this.prevReadMode, { suppressFragmentChange: true });
-          } else {
-            this.switchMode(this.constMode1up, { suppressFragmentChange: true });
-          }
+          // as per request in webdev-4042, we want to switch 1-up mode while clicking on thumbnail leafs
+          this.switchMode(this.constMode1up, { suppressFragmentChange: true });
+
+          // shift viewModeOrder after clicking on thumbsnail leaf
+          const nextModeID = this.viewModeOrder.shift();
+          this.viewModeOrder.push(nextModeID);
+          this.updateViewModeButton($('.viewmode'), 'twopg', 'Two-page view');
+
           this.trigger(BookReader.eventNames.fragmentChange);
           event.stopPropagation();
         });
 
-        this.refs.$brPageViewEl.append(pageContainer);
+        this.refs.$brPageViewEl.append($pageContainer);
+        imagesToDisplay.push(leaf);
 
-        const img = document.createElement("img");
-        const thumbReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
+        /* get thumbnail's reducer */
+        const idealReduce = floor(book.getPageWidth(leaf) / this.thumbWidth);
+        const nearestFactor2 = 2 * Math.round(idealReduce / 2);
+        const thumbReduce = nearestFactor2;
 
-        $(img).attr('src', `${this.imagesBaseURL}transparent.png`)
-          .css({ width: `${leafWidth}px`, height: `${leafHeight}px` })
-          .addClass('BRlazyload')
-          // Store the URL of the image that will replace this one
-          .data('srcURL',  this._getPageURI(leaf, thumbReduce));
-        pageContainer.append(img);
+        const baseCSS = { width: `${leafWidth}px`, height: `${leafHeight}px` };
+        if (this.imageCache.imageLoaded(leaf, thumbReduce)) {
+          // send to page
+          $pageContainer.append($(this.imageCache.image(leaf, thumbReduce)).css(baseCSS));
+        } else {
+          // lazy load
+          const $lazyLoadImgPlaceholder = document.createElement('img');
+          $($lazyLoadImgPlaceholder)
+            .attr('src', `${this.imagesBaseURL}transparent.png`)
+            .css(baseCSS)
+            .addClass('BRlazyload')
+            // Store the leaf/index number to reference on url swap:
+            .attr('data-leaf', leaf)
+            .attr('data-reduce', thumbReduce)
+            .attr('data-row', row)
+            .attr('alt', 'Loading book image');
+          $pageContainer.append($lazyLoadImgPlaceholder);
+        }
       }
     }
   }
@@ -954,8 +931,10 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
   // Remove thumbnails that are not to be displayed
   for (const row of this.displayedRows) {
     if (utils.notInArray(row, rowsToDisplay)) {
-      for (const { num: index } of leafMap[row].leafs) {
-        this.$(`.pagediv${index}`).remove();
+      for (const { num: index } of leafMap[row]?.leafs) {
+        if (!imagesToDisplay?.includes(index)) {
+          this.$(`.pagediv${index}`)?.remove();
+        }
       }
     }
   }
@@ -968,6 +947,7 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     this.updateFirstIndex(mostVisible);
   }
 
+  // remember what rows are displayed
   this.displayedRows = rowsToDisplay.slice();
 
   // remove previous highlights
@@ -982,57 +962,30 @@ BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
 };
 
 BookReader.prototype.lazyLoadThumbnails = function() {
-  // We check the complete property since load may not be fired if loading from the cache
-  this.$('.BRlazyloading').filter('[complete=true]').removeClass('BRlazyloading');
+  const batchImageRequestByRow = async ($images) => {
+    await utils.sleep(300);
+    $images.each((index, $imgPlaceholder) => this.lazyLoadImage($imgPlaceholder));
+  };
 
-  var loading = this.$('.BRlazyloading').length;
-  var toLoad = this.thumbMaxLoading - loading;
-
-  var self = this;
-
-  if (toLoad > 0) {
-    // $$$ TODO load those near top (but not beyond) page view first
-    this.refs.$brPageViewEl.find('img.BRlazyload').filter(':lt(' + toLoad + ')').each( function() {
-      self.lazyLoadImage(this);
-    });
-  }
+  this.displayedRows.forEach((row) => {
+    const $imagesInRow = this.refs.$brPageViewEl.find(`[data-row="${row}"]`);
+    batchImageRequestByRow($imagesInRow);
+  });
 };
 
-BookReader.prototype.lazyLoadImage = function (dummyImage) {
-  var img = new Image();
-  var self = this;
-
-  $(img)
-    .addClass('BRlazyloading')
-    .one('load', function() {
-      $(this).removeClass('BRlazyloading');
-
-      // $$$ Calling lazyLoadThumbnails here was causing stack overflow on IE so
-      //     we call the function after a slight delay.  Also the img.complete property
-      //     is not yet set in IE8 inside this onload handler
-      setTimeout(function() { self.lazyLoadThumbnails(); }, 100);
-    })
-    .one('error', function() {
-      // Remove class so we no longer count as loading
-      $(this).removeClass('BRlazyloading');
-    })
-
-  //the width set with .attr is ignored by Internet Explorer, causing it to show the image at its original size
-  //but with this one line of css, even IE shows the image at the proper size
-    .css({
-      'width': $(dummyImage).width() + 'px',
-      'height': $(dummyImage).height() + 'px'
-    })
-    .attr({
-      'width': $(dummyImage).width(),
-      'height': $(dummyImage).height(),
-      'src': $(dummyImage).data('srcURL')
-    });
-
-  // replace with the new img
-  $(dummyImage).before(img).remove();
-
-  img = null; // tidy up closure
+/**
+ * Replaces placeholder image with real one
+ *
+ * @param {$lazyLoadImgPlaceholder} - $imgPlaceholder
+ */
+BookReader.prototype.lazyLoadImage = function (imgPlaceholder) {
+  const leaf =  $(imgPlaceholder).data('leaf');
+  const reduce =  $(imgPlaceholder).data('reduce');
+  const $img = this.imageCache.image(leaf, reduce);
+  const $parent = $(imgPlaceholder).parent();
+  /* March 16, 2021 (isa) - manually append & remove, `replaceWith` currently loses closure scope */
+  $($parent).append($img);
+  $(imgPlaceholder).remove();
 };
 
 /**
@@ -1074,34 +1027,6 @@ BookReader.prototype.zoom = function(direction) {
   return;
 };
 
-BookReader.prototype.zoom1up = function(direction) {
-  if (this.constMode2up == this.mode) {     //can only zoom in 1-page mode
-    this.switchMode(this.constMode1up);
-    return;
-  }
-
-  var reduceFactor = this.nextReduce(this.reduce, direction, this.onePage.reductionFactors);
-
-  if (this.reduce == reduceFactor.reduce) {
-    // Already at this level
-    return;
-  }
-
-  this.reduce = reduceFactor.reduce; // $$$ incorporate into function
-  this.onePage.autofit = reduceFactor.autofit;
-
-  this.pageScale = this.reduce; // preserve current reduce
-
-  this.resizePageView1up();
-  this.updateToolbarZoom(this.reduce);
-
-  // Recalculate search hilites
-  if (this.enableSearch) {
-    this.removeSearchHilites();
-    this.updateSearchHilites();
-  }
-};
-
 /**
  * Resizes the inner container to fit within the visible space to prevent
  * the top toolbar and bottom navbar from clipping the visible book
@@ -1124,113 +1049,6 @@ BookReader.prototype.resizeBRcontainer = function(animate) {
     });
   }
 }
-
-/**
- * Resize the current one page view
- * Note this calls drawLeafs
- */
-BookReader.prototype.resizePageView1up = function() {
-  var viewWidth  = this.refs.$brContainer.prop('clientWidth');
-  var oldScrollTop  = this.refs.$brContainer.prop('scrollTop');
-  var oldPageViewHeight = this.refs.$brPageViewEl.height();
-  var oldPageViewWidth = this.refs.$brPageViewEl.width();
-
-  // May have come here after preparing the view, in which case the scrollTop and view height are not set
-
-  var scrollRatio = 0;
-  if (oldScrollTop > 0) {
-    // We have scrolled - implies view has been set up
-    var oldCenterY = this.centerY1up();
-    var oldCenterX = this.centerX1up();
-    scrollRatio = oldCenterY / oldPageViewHeight;
-  } else {
-    // Have not scrolled, e.g. because in new container
-
-    // We set the scroll ratio so that the current index will still be considered the
-    // current index in drawLeafsOnePage after we create the new view container
-
-    // Make sure this will count as current page after resize
-    var fudgeFactor = (this._models.book.getPageHeight(this.currentIndex()) / this.reduce) * 0.6;
-    var oldLeafTop = this.onePageGetPageTop(this.currentIndex()) + fudgeFactor;
-    var oldViewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
-    scrollRatio = oldLeafTop / oldViewDimensions.height;
-  }
-
-  // Recalculate 1up reduction factors
-  this.onePageCalculateReductionFactors();
-  // Update current reduce (if in autofit)
-  if (this.onePage.autofit) {
-    var reductionFactor = this.nextReduce(this.reduce, this.onePage.autofit, this.onePage.reductionFactors);
-    this.reduce = reductionFactor.reduce;
-  }
-
-  var viewDimensions = this.onePageCalculateViewDimensions(this.reduce, this.padding);
-
-  this.refs.$brPageViewEl.height(viewDimensions.height);
-  this.refs.$brPageViewEl.width(viewDimensions.width);
-
-
-  var newCenterY = scrollRatio * viewDimensions.height;
-  var newTop = Math.max(0, Math.floor( newCenterY - this.refs.$brContainer.height() / 2 ));
-  this.refs.$brContainer.prop('scrollTop', newTop);
-
-  // We use clientWidth here to avoid miscalculating due to scroll bar
-  var newCenterX = oldCenterX * (viewWidth / oldPageViewWidth);
-  var newLeft = newCenterX - this.refs.$brContainer.prop('clientWidth') / 2;
-  newLeft = Math.max(newLeft, 0);
-  this.refs.$brContainer.prop('scrollLeft', newLeft);
-
-  this.refs.$brPageViewEl.empty();
-  this.displayedIndices = [];
-  this.drawLeafs();
-
-  if (this.enableSearch) {
-    this.removeSearchHilites();
-    this.updateSearchHilites();
-  }
-};
-
-/**
- * Calculate the dimensions for a one page view with images at the given reduce and padding
- * @param {number} reduce
- * @param {number} padding
- */
-BookReader.prototype.onePageCalculateViewDimensions = function(reduce, padding) {
-  const { floor } = Math;
-  const { book } = this._models;
-  let viewWidth = 0;
-  let viewHeight = 0;
-  for (const page of book.pagesIterator({ combineConsecutiveUnviewables: true })) {
-    viewHeight += floor(page.height / reduce) + padding;
-    const width = floor(page.width / reduce);
-    if (width > viewWidth) viewWidth = width;
-  }
-  return { width: viewWidth, height: viewHeight };
-};
-
-/**
- * Returns the current offset of the viewport center in scaled document coordinates.
- * @return {number}
- */
-BookReader.prototype.centerX1up = function() {
-  var centerX;
-  if (this.refs.$brPageViewEl.width() < this.refs.$brContainer.prop('clientWidth')) { // fully shown
-    centerX = this.refs.$brPageViewEl.width();
-  } else {
-    centerX = this.refs.$brContainer.prop('scrollLeft') + this.refs.$brContainer.prop('clientWidth') / 2;
-  }
-  centerX = Math.floor(centerX);
-  return centerX;
-};
-
-/**
- * Returns the current offset of the viewport center in scaled document coordinates.
- * @return {number}
- */
-BookReader.prototype.centerY1up = function() {
-  var centerY = this.refs.$brContainer.prop('scrollTop') + this.refs.$brContainer.height() / 2;
-  return Math.floor(centerY);
-};
 
 BookReader.prototype.centerPageView = function() {
   var scrollWidth  = this.refs.$brContainer.prop('scrollWidth');
@@ -1259,6 +1077,7 @@ BookReader.prototype.zoomThumb = function(direction) {
   }
 
   if (this.thumbColumns != oldColumns) {
+    this.displayedRows = [];  /* force a gallery redraw */
     this.prepareThumbnailView();
   }
 };
@@ -1271,24 +1090,26 @@ BookReader.prototype.zoomThumb = function(direction) {
  * @param {number}
  */
 BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
+  const DEFAULT_THUMBNAIL_WIDTH = 100;
+
   var padding = (thumbnailColumns + 1) * this.thumbPadding;
   var width = (this.refs.$brPageViewEl.width() - padding) / (thumbnailColumns + 0.5); // extra 0.5 is for some space at sides
-  return parseInt(width);
+  const idealThumbnailWidth = parseInt(width);
+  return idealThumbnailWidth > 0 ? idealThumbnailWidth : DEFAULT_THUMBNAIL_WIDTH;
 };
 
 /**
  * Quantizes the given reduction factor to closest power of two from set from 12.5% to 200%
- * @param {number}
- * @param {array}
+ * @param {number} reduce
+ * @param {ReductionFactor[]} reductionFactors
  * @return {number}
  */
 BookReader.prototype.quantizeReduce = function(reduce, reductionFactors) {
-  var quantized = reductionFactors[0].reduce;
-  var distance = Math.abs(reduce - quantized);
-  var newDistance;
+  let quantized = reductionFactors[0].reduce;
+  let distance = Math.abs(reduce - quantized);
 
-  for (var i = 1; i < reductionFactors.length; i++) {
-    newDistance = Math.abs(reduce - reductionFactors[i].reduce);
+  for (let i = 1; i < reductionFactors.length; i++) {
+    const newDistance = Math.abs(reduce - reductionFactors[i].reduce);
     if (newDistance < distance) {
       distance = newDistance;
       quantized = reductionFactors[i].reduce;
@@ -1300,57 +1121,51 @@ BookReader.prototype.quantizeReduce = function(reduce, reductionFactors) {
 /**
  * @param {number} currentReduce
  * @param {'in' | 'out' | 'auto' | 'height' | 'width'} direction
- * @param {array} reductionFactors should be array of sorted reduction factors
- *   e.g. [ {reduce: 0.25, autofit: null}, {reduce: 0.3, autofit: 'width'}, {reduce: 1, autofit: null} ]
+ * @param {ReductionFactor[]} reductionFactors Must be sorted
+ * @returns {ReductionFactor}
  */
 BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFactors) {
   // XXX add 'closest', to replace quantize function
-  var i;
-  var newReduceIndex;
 
   if (direction === 'in') {
-    newReduceIndex = 0;
-    for (i = 1; i < reductionFactors.length; i++) {
+    let newReduceIndex = 0;
+    for (let i = 1; i < reductionFactors.length; i++) {
       if (reductionFactors[i].reduce < currentReduce) {
         newReduceIndex = i;
       }
     }
     return reductionFactors[newReduceIndex];
-  } else if (direction === 'out') { // zoom out
-    var lastIndex = reductionFactors.length - 1;
-    newReduceIndex = lastIndex;
+  } else if (direction === 'out') {
+    const lastIndex = reductionFactors.length - 1;
+    let newReduceIndex = lastIndex;
 
-    for (i = lastIndex; i >= 0; i--) {
+    for (let i = lastIndex; i >= 0; i--) {
       if (reductionFactors[i].reduce > currentReduce) {
         newReduceIndex = i;
       }
     }
     return reductionFactors[newReduceIndex];
   } else if (direction === 'auto') {
-    // Auto mode chooses the least reduction
-    var choice = null;
-    for (i = 0; i < reductionFactors.length; i++) {
-      if (reductionFactors[i].autofit === 'height' || reductionFactors[i].autofit === 'width') {
-        if (choice === null || choice.reduce < reductionFactors[i].reduce) {
-          choice = reductionFactors[i];
-        }
+    // If an 'auto' is specified, use that
+    const autoMatch = reductionFactors.find(rf => rf.autofit == 'auto');
+    if (autoMatch) return autoMatch;
+
+    // Otherwise, choose the least reduction from height/width
+    const candidates = reductionFactors.filter(({autofit}) => autofit == 'height' || autofit == 'width');
+    let choice = null;
+    for (let i = 0; i < candidates.length; i++) {
+      if (choice === null || choice.reduce < candidates[i].reduce) {
+        choice = candidates[i];
       }
     }
-    if (choice) {
-      return choice;
-    }
+    if (choice) return choice;
   } else if (direction === 'height' || direction === 'width') {
     // Asked for specific autofit mode
-    for (i = 0; i < reductionFactors.length; i++) {
-      if (reductionFactors[i].autofit === direction) {
-        return reductionFactors[i];
-      }
-    }
+    const match = reductionFactors.find(rf => rf.autofit == direction);
+    if (match) return match;
   }
 
-  alert('Could not find reduction factor for direction ' + direction);
   return reductionFactors[0];
-
 };
 
 BookReader.prototype._reduceSort = function(a, b) {
@@ -1505,10 +1320,15 @@ BookReader.prototype.getPrevReadMode = function(mode) {
  * @param {number}
  * @param {object} [options]
  * @param {boolean} [options.suppressFragmentChange = false]
+ * @param {boolean} [options.onInit = false] - this
  */
 BookReader.prototype.switchMode = function(
   mode,
-  { suppressFragmentChange = false } = {}
+  {
+    suppressFragmentChange = false,
+    init = false,
+    pageFound = false
+  } = {}
 ) {
   // Skip checks before init() complete
   if (this.init.initComplete) {
@@ -1546,8 +1366,12 @@ BookReader.prototype.switchMode = function(
   } else {
     // $$$ why don't we save autofit?
     // this.twoPage.autofit = null; // Take zoom level from other mode
-    this.twoPageCalculateReductionFactors();
-    this.reduce = this.quantizeReduce(this.reduce, this.twoPage.reductionFactors);
+    // spread indices not set, so let's set them
+    if (init || !pageFound) {
+      this.setSpreadIndices();
+    }
+
+    this.twoPageCalculateReductionFactors(); // this sets this.twoPage && this.reduce
     this.prepareTwoPageView();
     this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
   }
@@ -1645,7 +1469,9 @@ BookReader.prototype.exitFullScreen = function() {
   $(document).unbind('keyup', this._fullscreenCloseHandler);
 
   var windowWidth = $(window).width();
-  if (windowWidth <= this.onePageMinBreakpoint) {
+
+  const canShow2up = this.options.controls.twoPage.visible;
+  if (canShow2up && (windowWidth <= this.onePageMinBreakpoint)) {
     this.switchMode(this.constMode2up);
   }
 
@@ -1657,34 +1483,6 @@ BookReader.prototype.exitFullScreen = function() {
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   this.trigger('fullscreenToggled');
-};
-
-/**
- * This is called when we switch to one page view
- */
-BookReader.prototype.prepareOnePageView = function() {
-  var startLeaf = this.currentIndex();
-
-  this.refs.$brContainer.empty();
-  this.refs.$brContainer.css({
-    overflowY: 'scroll',
-    overflowX: 'auto'
-  });
-
-  this.refs.$brPageViewEl = $("<div class='BRpageview'></div>");
-  this.refs.$brContainer.append(this.refs.$brPageViewEl);
-
-  // Attaches to first child - child must be present
-  this.refs.$brContainer.dragscrollable();
-  this.bindGestures(this.refs.$brContainer);
-
-  // $$$ keep select enabled for now since disabling it breaks keyboard
-  //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
-  // utils.disableSelect(this.$('#BRpageview'));
-
-  this.resizePageView1up();
-  this.jumpToIndex(startLeaf);
-  this.updateBrClasses();
 };
 
 BookReader.prototype.prepareThumbnailView = function() {
@@ -1703,53 +1501,12 @@ BookReader.prototype.prepareThumbnailView = function() {
   // $$$ keep select enabled for now since disabling it breaks keyboard
   //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
   // utils.disableSelect(this.$('#BRpageview'));
-
   this.thumbWidth = this.getThumbnailWidth(this.thumbColumns);
   this.reduce = this._models.book.getPageWidth(0) / this.thumbWidth;
-
   this.displayedRows = [];
-
   // Draw leafs with current index directly in view (no animating to the index)
   this.drawLeafsThumbnail( this.currentIndex() );
   this.updateBrClasses();
-};
-
-BookReader.prototype.onePageGetAutofitWidth = function() {
-  var widthPadding = 20;
-  return (this._models.book.getMedianPageSize().width + 0.0) / (this.refs.$brContainer.prop('clientWidth') - widthPadding * 2);
-};
-
-BookReader.prototype.onePageGetAutofitHeight = function() {
-  var availableHeight = this.refs.$brContainer.innerHeight();
-  return (this._models.book.getMedianPageSize().height + 0.0) / (availableHeight - this.padding * 2); // make sure a little of adjacent pages show
-};
-
-/**
- * Returns where the top of the page with given index should be in one page view
- * @param {PageIndex} index
- * @return {number}
- */
-BookReader.prototype.onePageGetPageTop = function(index) {
-  const { floor } = Math;
-  const { book } = this._models;
-  let leafTop = 0;
-  for (const page of book.pagesIterator({ end: index, combineConsecutiveUnviewables: true })) {
-    leafTop += floor(page.height / this.reduce) + this.padding;
-  }
-  return leafTop;
-};
-
-/**
- * Update the reduction factors for 1up mode given the available width and height.
- * Recalculates the autofit reduction factors.
- */
-BookReader.prototype.onePageCalculateReductionFactors = function() {
-  this.onePage.reductionFactors = this.reductionFactors.concat(
-    [
-      { reduce: this.onePageGetAutofitWidth(), autofit: 'width' },
-      { reduce: this.onePageGetAutofitHeight(), autofit: 'height'}
-    ]);
-  this.onePage.reductionFactors.sort(this._reduceSort);
 };
 
 /**
@@ -1928,48 +1685,107 @@ BookReader.prototype._scrollAmount = function() {
   return parseInt(0.9 * this.refs.$brContainer.prop('clientHeight'));
 };
 
-BookReader.prototype.prefetchImg = function(index) {
-  var pageURI = this._getPageURI(index);
-  const pageURISrcset = this._getPageURISrcset(index);
+/**
+ * Used by 2up
+ * Fetches the image for requested index & saves in `this.prefetchedImgs`
+ * Does not re-request if image is in the
+ *
+ * @param {Number} index
+ * @param {Boolean} fetchNow
+ *   - flag to allow for non-viewable page to be immediately requested
+ *     - this allows for "2up to prepare a page flip"
+ */
+BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
 
-  // Load image if not loaded or URI has changed (e.g. due to scaling)
-  var loadImage = false;
-  if (undefined == this.prefetchedImgs[index]) {
-    loadImage = true;
-  } else if (pageURI != this.prefetchedImgs[index].uri) {
-    loadImage = true;
-  }
+  /** main function that creates page container */
+  const fetchImageAndRegister = () => {
+    const $image = this.imageCache.image(index, this.reduce);
+    const $pageContainer = this._createPageContainer(index, this._modes.mode2Up.baseLeafCss);
+    $($image).appendTo($pageContainer);
 
-  if (loadImage) {
-    const pageContainer = this._createPageContainer(index);
-    $('<img />', {
-      'class': 'BRpageimage',
-      src: pageURI,
-      srcset: pageURISrcset
-    }).appendTo(pageContainer);
-    if (index < 0 || index > (this._models.book.getNumLeafs() - 1) ) {
+    const isEmptyPage = index < 0 || index > (this._models.book.getNumLeafs() - 1);
+    if (isEmptyPage) {
       // Facing page at beginning or end, or beyond
-      pageContainer.addClass('BRemptypage');
+      $pageContainer.addClass('BRemptypage');
     }
-    pageContainer[0].uri = pageURI; // browser may rewrite src so we stash raw URI here
-    this.prefetchedImgs[index] = pageContainer[0];
+
+    /** store uri & reducer */
+    $pageContainer[0].uri = $image.uri;
+    $pageContainer[0].reduce = $image.reduce;
+    this.prefetchedImgs[index] = $pageContainer;
+  };
+
+  const indexIsInView = (index == this.twoPage.currentIndexL) || (index == this.twoPage.currentIndexR);
+  if (fetchNow || indexIsInView) {
+    fetchImageAndRegister();
+  } else {
+    // stagger request
+    const time = 300;
+    setTimeout(() => {
+      // just fetch image, do not wrap with page container
+      this.imageCache.image(index, this.reduce);
+    }, time);
   }
 };
 
+/**
+ * used in 2up
+ * cached 2up page containers
+ * */
 BookReader.prototype.pruneUnusedImgs = function() {
   for (var key in this.prefetchedImgs) {
     if ((key != this.twoPage.currentIndexL) && (key != this.twoPage.currentIndexR)) {
       $(this.prefetchedImgs[key]).remove();
     }
     if ((key < this.twoPage.currentIndexL - 4) || (key > this.twoPage.currentIndexR + 4)) {
-      delete this.prefetchedImgs[key];
+      if (this.prefetchedImgs[key]?.reduce > this.reduce) {
+        delete this.prefetchedImgs[key];
+      }
     }
   }
 };
 
 /************************/
+/** Mode1Up extensions **/
+/************************/
+/** @deprecated not used outside BookReader */
+BookReader.prototype.prepareOnePageView = Mode1Up.prototype.prepare;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'prepare', 'prepareOnePageView');
+/** @deprecated not used outside BookReader */
+BookReader.prototype.drawLeafsOnePage = Mode1Up.prototype.drawLeafs;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'drawLeafs', 'drawLeafsOnePage');
+/** @deprecated not used outside BookReader */
+BookReader.prototype.zoom1up = Mode1Up.prototype.zoom;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'zoom', 'zoom1up');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.onePageGetAutofitWidth = Mode1Up.prototype.getAutofitWidth;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitWidth', 'onePageGetAutofitWidth');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.onePageGetAutofitHeight = Mode1Up.prototype.getAutofitHeight;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitHeight', 'onePageGetAutofitHeight');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.onePageGetPageTop = Mode1Up.prototype.getPageTop;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getPageTop', 'onePageGetPageTop');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.onePageCalculateReductionFactors = Mode1Up.prototype.calculateReductionFactors;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateReductionFactors', 'onePageCalculateReductionFactors');
+/** @deprecated not used outside Mode1Up, BookReader */
+BookReader.prototype.resizePageView1up = Mode1Up.prototype.resizePageView;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'resizePageView', 'resizePageView1up');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.onePageCalculateViewDimensions = Mode1Up.prototype.calculateViewDimensions;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateViewDimensions', 'onePageCalculateViewDimensions');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.centerX1up = Mode1Up.prototype.centerX;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerX', 'centerX1up');
+/** @deprecated not used outside Mode1Up */
+BookReader.prototype.centerY1up = Mode1Up.prototype.centerY;
+exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerY', 'centerY1up');
+
+/************************/
 /** Mode2Up extensions **/
 /************************/
+/** @deprecated not used outside Mode2Up */
 BookReader.prototype.zoom2up = Mode2Up.prototype.zoom;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'zoom', 'zoom2up');
 BookReader.prototype.twoPageGetAutofitReduce = Mode2Up.prototype.getAutofitReduce;
@@ -2073,7 +1889,9 @@ exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'jumpIndexForRightEdgePageX'
 /** @deprecated unused outside Mode2Up */
 BookReader.prototype.prefetch = Mode2Up.prototype.prefetch;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'prefetch', 'prefetch');
-
+/** @deprecated unused outside Mode2Up */
+BookReader.prototype.setSpreadIndices = Mode2Up.prototype.setSpreadIndices;
+exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setSpreadIndices', 'setSpreadIndices');
 /**
  * Immediately stop flip animations.  Callbacks are triggered.
  */
@@ -2130,6 +1948,10 @@ function exposeOverrideableMethod(Class, classKey, method, brMethod = method) {
 /***********************/
 BookReader.prototype.initNavbar = Navbar.prototype.init;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'init', 'initNavbar');
+BookReader.prototype.switchNavbarControls = Navbar.prototype.switchNavbarControls;
+exposeOverrideableMethod(Navbar, '_components.navbar', 'switchNavbarControls');
+BookReader.prototype.updateViewModeButton = Navbar.prototype.updateViewModeButton;
+exposeOverrideableMethod(Navbar, '_components.navbar', 'updateViewModeButton');
 BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'getNavPageNumString');
 /** @deprecated */

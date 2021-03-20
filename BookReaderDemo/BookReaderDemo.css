@@ -3,6 +3,7 @@
  */
 body {
     background-color: #939598;
+    margin: 0px;
 }
 
 /* Hide print and embed functionality */
@@ -11,10 +12,9 @@ body {
 }
 
 .BookReader {
-    width:800px;
     height: 600px;
     overflow: hidden;
-    margin: 20px;
+    margin: 0 auto;
 }
 
 @media only screen and (max-width: 799px) {

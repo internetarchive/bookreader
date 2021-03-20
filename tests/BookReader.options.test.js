@@ -14,12 +14,30 @@ afterEach(() => {
 });
 
 describe('BookReader options', () => {
-  it('initializes BookReder to fullscreen when `startFullscreen` true', () => {
-    const br = new BookReader({
-      startFullscreen: true
+  describe('`autoResize`', () => {
+    it('is on by default', () => {
+      const br = new BookReader();
+      br.init();
+      expect(br.options.autoResize).toBe(true);
     });
-    br.init();
+  });
 
-    expect(document.getElementById('BookReader').classList.contains('br-ui-full')).toBe(true);
+  describe('`startFullscreen`', () => {
+    it('initializes BookReader to fullscreen', () => {
+      const br = new BookReader({
+        startFullscreen: true
+      });
+      br.init();
+
+      expect(document.getElementById('BookReader').classList.contains('br-ui-full')).toBe(true);
+    });
+  });
+
+  describe('`useSrcSet`', () => {
+    it('is on by default', () => {
+      const br = new BookReader();
+      br.init();
+      expect(br.options.autoResize).toBe(true);
+    });
   });
 });

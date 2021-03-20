@@ -15,6 +15,15 @@ export class Navbar {
     this.$nav = null;
     /** @type {number} */
     this.maxPageNum = null;
+
+    /** @type {Object} controls will be switch over "this.maximumControls" */
+    this.minimumControls = [
+      'viewmode'
+    ];
+    /** @type {Object} controls will be switch over "this.minimumControls" */
+    this.maximumControls = [
+      'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb'
+    ];
   }
 
   controlFor(controlName) {
@@ -25,18 +34,25 @@ export class Navbar {
     }
     return `<li>
       <button class="BRicon ${option.className}" title="${option.label}">
-        <div class="icon icon-${option.className}"></div>
+        <div class="icon icon-${option.iconClassName}"></div>
         <span class="tooltip">${option.label}</span>
       </button>
     </li>`;
   }
 
   /** @private */
-  _viewModeControls() {
-    if (this.br.options.controls.viewmode.visible) {
-      return this.controlFor('viewmode');
-    }
-    return ['onePage', 'twoPage', 'thumbnail'].map((mode) => (
+  _renderControls() {
+    return [
+      'bookLeft',
+      'bookRight',
+      'onePage',
+      'twoPage',
+      'thumbnail',
+      'viewmode',
+      'zoomOut',
+      'zoomIn',
+      'fullScreen',
+    ].map((mode) => (
       this.controlFor(mode)
     )).join('');
   }
@@ -85,11 +101,12 @@ export class Navbar {
           const nextViewMode = viewModes.find((m) => m.mode === viewModeOrder[0]);
 
           viewModeOrder.push(nextModeID);
-          this._updateViewModeButton($(e.currentTarget), nextViewMode.className, nextViewMode.title);
+          br.viewModeOrder = viewModeOrder;
+          this.updateViewModeButton($(e.currentTarget), nextViewMode.className, nextViewMode.title);
           br.switchMode(newViewMode.mode);
         });
       const currentViewModeButton = viewModes.find((m) => m.mode === viewModeOrder[0]);
-      this._updateViewModeButton(
+      this.updateViewModeButton(
         $button,
         currentViewModeButton.className,
         currentViewModeButton.title
@@ -97,8 +114,10 @@ export class Navbar {
     });
   }
 
-  /** @private */
-  _updateViewModeButton($button, iconClass, tooltipText) {
+  /**
+   * Toggle viewmode button to change page view
+   */
+  updateViewModeButton($button, iconClass, tooltipText) {
     $button
       .attr('title', tooltipText)
       .find('.icon')
@@ -110,6 +129,50 @@ export class Navbar {
   }
 
   /**
+   * Switch navbar controls on mobile and desktop
+   */
+  switchNavbarControls() {
+    // we don't want navbar controls switching with liner-notes
+    if (this.br.options.bookType !== 'linerNotes') {
+      if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
+        this.showMinimumNavbarControls();
+      } else {
+        this.showMaximumNavbarControls();
+      }
+    }
+  }
+
+  /**
+   * Switch Book Navbar controls to minimised
+   * NOTE: only `this.minimumControls` and `this.maximumControls` switch on resize
+   */
+  showMinimumNavbarControls() {
+    this.minimumControls.forEach((control) => {
+      const element = document.querySelector(`.controls .${control}`);
+      if (element) element.classList.remove('hide');
+    });
+    this.maximumControls.forEach((control) => {
+      const element = document.querySelector(`.controls .${control}`);
+      if (element) element.classList.add('hide');
+    });
+  }
+
+  /**
+   * Switch Book Navbar controls to maximized
+   * NOTE: only `this.minimumControls` and `this.maximumControls` switch on resize
+   */
+  showMaximumNavbarControls() {
+    this.maximumControls.forEach((control) => {
+      const element = document.querySelector(`.controls .${control}`);
+      if (element) element.classList.remove('hide');
+    });
+    this.minimumControls.forEach((control) => {
+      const element = document.querySelector(`.controls .${control}`);
+      if (element) element.classList.add('hide');
+    });
+  }
+
+  /**
    * Initialize the navigation bar (bottom)
    * @return {JQuery}
    */
@@ -117,6 +180,11 @@ export class Navbar {
     const { br } = this;
     const { navbarTitle: title } = br.options;
     const isRTL = br.pageProgression === 'rl';
+    const bookFlipLeft = isRTL ? 'book_flip_next' : 'book_flip_prev';
+    const bookFlipRight = isRTL ? 'book_flip_prev' : 'book_flip_next';
+
+    this.br.options.controls['bookLeft'].className = `book_left ${bookFlipLeft}`;
+    this.br.options.controls['bookRight'].className = `book_right ${bookFlipRight}`;
 
     br.refs.$BRfooter = this.$root = $(`<div class="BRfooter"></div>`);
     br.refs.$BRnav = this.$nav = $(
@@ -132,37 +200,7 @@ export class Navbar {
                 </div>
                 <p><span class='BRcurrentpage'></span></p>
               </li>
-              <li>
-                <button class="BRicon book_left hide-mobile ${isRTL ? 'book_flip_next' : 'book_flip_prev'}" title="Flip left">
-                  <div class="icon icon-left-arrow"></div>
-                  <span class="tooltip">Flip left</span>
-                </button>
-              </li>
-              <li>
-                <button class="BRicon book_right hide-mobile ${isRTL ? 'book_flip_prev' : 'book_flip_next'}" title="Flip right">
-                  <div class="icon icon-left-arrow hflip"></div>
-                  <span class="tooltip">Flip right</span>
-                </button>
-              </li>
-              ${this._viewModeControls()}
-              <li>
-                <button class="BRicon zoom_out hide-mobile" title="Zoom out">
-                  <div class="icon icon-magnify"></div>
-                  <span class="tooltip">Zoom out</span>
-                </button>
-              </li>
-              <li>
-                <button class="BRicon zoom_in hide-mobile" title="Zoom in">
-                  <div class="icon icon-magnify plus"></div>
-                  <span class="tooltip">Zoom in</span>
-                </button>
-              </li>
-              <li>
-                <button class="BRicon full" title="Toggle fullscreen">
-                  <div class="icon icon-fullscreen"></div>
-                  <span class="tooltip">Toggle fullscreen</span>
-                </button>
-              </li>
+              ${this._renderControls()}
             </ul>
           </nav>
         </div>`);

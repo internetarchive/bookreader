@@ -19,7 +19,7 @@ export const DEFAULT_OPTIONS = {
 
   /** thumbnail mode */
   /** number of rows to pre-cache out a view */
-  thumbRowBuffer: 2,
+  thumbRowBuffer: 1,
   thumbColumns: 6,
   /** number of thumbnails to load at once */
   thumbMaxLoading: 4,
@@ -47,7 +47,7 @@ export const DEFAULT_OPTIONS = {
 
   /**
    * Zoom levels
-   * @type {Array<{reduce: number, autofit: AutoFitValues}}
+   * @type {ReductionFactor[]}
    * $$$ provide finer grained zooming, {reduce: 8, autofit: null}, {reduce: 16, autofit: null}
    * The autofit code ensures that fit to width and fit to height will be available
    */
@@ -207,25 +207,58 @@ export const DEFAULT_OPTIONS = {
   getEmbedCode: null,
 
   controls: {
-    onePage: {
-      label: 'One-page view',
+    bookLeft: {
       visible: true,
+      label: 'Flip left',
+      className: 'book_left',
+      iconClassName: 'left-arrow'
+    },
+    bookRight: {
+      visible: true,
+      label: 'Flip right',
+      className: 'book_right',
+      iconClassName: 'left-arrow hflip'
+    },
+    onePage: {
+      visible: true,
+      label: 'One-page view',
       className: 'onepg',
+      iconClassName: 'onepg'
     },
     twoPage: {
-      label: 'Two-page view',
       visible: true,
+      label: 'Two-page view',
       className: 'twopg',
+      iconClassName: 'twopg'
     },
     thumbnail: {
-      label: 'Thumbnail view',
       visible: true,
+      label: 'Thumbnail view',
       className: 'thumb',
+      iconClassName: 'thumb'
     },
     viewmode: {
-      visible: false,
+      visible: true,
       className: 'viewmode',
       excludedModes: [],
+    },
+    zoomOut: {
+      visible: true,
+      label: 'Zoom out',
+      className: 'zoom_out',
+      iconClassName: 'magnify'
+    },
+    zoomIn: {
+      visible: true,
+      label: 'Zoom in',
+      className: 'zoom_in',
+      iconClassName: 'magnify plus'
+    },
+    fullScreen: {
+      visible: true,
+      label: 'Toggle fullscreen',
+      className: 'full',
+      iconClassName: 'fullscreen'
     },
   },
 
@@ -234,9 +267,30 @@ export const DEFAULT_OPTIONS = {
    * Optional: if true, starts in fullscreen mode
    */
   startFullscreen: false,
+
+  /**
+   * @type {Boolean}
+   * On init, by default, we want to handle resizing bookreader
+   * when browser window changes size (inc. `orientationchange` event)
+   * toggle off if you want to handle this outside of bookreader
+   */
+  autoResize: true,
+
+  /**
+   * @type {Boolean}
+   * On init, by default, we want to use srcSet for images
+   */
+  useSrcSet: false,
 };
 
 /** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */
+
+/**
+ * @typedef {object} ReductionFactor
+ * @property {number} reduce
+ * @property {AutoFitValues} [autofit] If set, the corresponding reduction factors
+ * are what will be used when the user tries to autofit by width/height.
+ */
 
 /**
  * @typedef {Object} PageData

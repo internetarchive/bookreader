@@ -1,3 +1,54 @@
+# 4.38.0
+Dev: update dependencies @cdrini
+Dev: replace travis badge with GHA badge @cdrini
+Feature: Thumbnail/Gallery view reusing best scaled images @iisa
+Fix: simplify ImageCache dictionary @iisa
+
+# 4.37.0
+Fix: new ImageCache that keeps track of requested images & their scale factor @iisa
+Fix: 2up mode's use of ImageCache @iisa
+# 4.36.0
+Fix: More image caching - 2up, some sharing with thumbnail draw @iisa
+
+# 4.35.1
+Fix: 2up, `baseLeafCss` - use function to find "top" value @iisa
+# 4.35.0
+Fix: show text selection layer if word count is less than 2,500 @cdrini
+Fix: 2up, only resize spread if current image is better than next size @iisa
+# 4.34.0
+Fix: exist fullscreen will change to 2up if 2up is available @iisa
+# 4.33.0
+Fix: use optional `srcSet` in 1up mode @iisa
+# 4.32.0
+Fix: slim down prefetch group @iisa
+Fix: TTS caches xml @cdrini 
+# 4.31.0
+Dev: demo cleanup with @cdrini
+Fix: 2up - pass reduction factors when creating image urls @iisa
+# 4.30.0
+Fix: all view modes on desktop & view mode toggl on mobile are now default. @nsharma123
+
+# 4.28.0
+Fix: adding alt tags to images @nsharma123
+# 4.27.0
+Fix: update init function to use new flag `autoResize` @iisa
+Fix: images - `useSrcSet` flag to determine when we fill `srcSet` attribute @iisa
+# 4.26.1
+Patch: Text selection layer does not get made in thumbnail view @dualcnhq
+# 4.26.0
+Dev: move to Github actions @cdrini
+Dev: version bumps @dependabot
+Fix: Text selection layer gets created for first page, does not get created for last page @dualcnhq
+
+# 4.25.0
+Fix: Helper changes for stream redirection to read hash fragment params from URL @nsharma123
+
+# 4.24.0
+Fix: Bookreader layout when initialized in "ReadAloud" mode @nsharma123
+
+# 4.23.0
+Fix: first search result click now updates url @nsharma123
+
 # 4.22.0
 Fix: update non-asserted page labelling next to nav scrubber @iisa
 

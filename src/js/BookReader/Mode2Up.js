@@ -34,41 +34,26 @@ export class Mode2Up {
     });
   }
 
+  /**
+   * Draws book spread,
+   * sets event handlers,
+   * sets: `this.br.displayedIndices`
+   * updates toolbar zoom
+   * Important: `this.br.refs.$brTwoPageView` parent container must be emptied before calling
+   */
   drawLeafs() {
     const $twoPageViewEl = this.br.refs.$brTwoPageView;
 
     // $$$ we should use calculated values in this.twoPage (recalc if necessary)
     const indexL = this.br.twoPage.currentIndexL;
-    const top = this.top();
-
-    this.br.twoPage.scaledWL = this.getPageWidth(indexL);
-    this.br.twoPage.gutter = this.gutter();
+    const indexR = this.br.twoPage.currentIndexR;
+    this.br.pruneUnusedImgs();
 
     this.br.prefetchImg(indexL);
-    $(this.br.prefetchedImgs[indexL]).css({
-      position: 'absolute',
-      left: `${this.br.twoPage.gutter - this.br.twoPage.scaledWL}px`,
-      right: '',
-      top: `${top}px`,
-      height: `${this.br.twoPage.height}px`, // $$$ height forced the same for both pages
-      width: `${this.br.twoPage.scaledWL}px`,
-      zIndex: 2
-    }).appendTo($twoPageViewEl);
+    $(this.br.prefetchedImgs[indexL]).css(this.leftLeafCss).appendTo($twoPageViewEl);
 
-    const indexR = this.br.twoPage.currentIndexR;
-
-    // $$$ should use getwidth2up?
-    this.br.twoPage.scaledWR = this.getPageWidth(indexR);
     this.br.prefetchImg(indexR);
-    $(this.br.prefetchedImgs[indexR]).css({
-      position: 'absolute',
-      left: `${this.br.twoPage.gutter}px`,
-      right: '',
-      top: `${top}px`,
-      height: `${this.br.twoPage.height}px`, // $$$ height forced the same for both pages
-      width: `${this.br.twoPage.scaledWR}px`,
-      zIndex: 2
-    }).appendTo($twoPageViewEl);
+    $(this.br.prefetchedImgs[indexR]).css(this.rightLeafCss).appendTo($twoPageViewEl);
 
     this.displayedIndices = [this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR];
     this.setMouseHandlers();
@@ -108,14 +93,61 @@ export class Mode2Up {
     }
 
     // Prepare view with new center to minimize visual glitches
-    this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY);
+    const drawNewSpread = true;
+    this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY, drawNewSpread);
+  }
+
+  /**
+   * Checks to see if the images/pages in view
+   * are of equal or better quality
+   * If not, we return yes
+   *
+   * @returns {Boolean}
+   */
+  get shouldRedrawSpread() {
+    const { prefetchedImgs, displayedIndices } = this.br;
+    const { reduce: idealReductionFactor } = this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR );
+    const leftDisplayed = prefetchedImgs[displayedIndices[0]] || {};
+    const rightDisplayed = prefetchedImgs[displayedIndices[1]] || {};
+    const leftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= idealReductionFactor);
+    const rightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= idealReductionFactor);
+
+    return !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale);
+  }
+
+  /**
+   * Resize spread containers, does not prefetch
+   * uses `this.br.twoPage` properties
+   */
+  resizeSpread() {
+    this.br.resizeBRcontainer(false); // no animation
+    this.calculateSpreadSize();
+
+    this.br.refs?.$brTwoPageView.css(this.mainContainerCss);
+    this.centerView(); // let function self adjust
+
+    $(this.br.twoPage.coverDiv).css(this.spreadCoverCss); // click sheath is memoized somehow
+    const $spreadLayers = this.br.refs.$brTwoPageView;
+
+    $spreadLayers.find('.BRleafEdgeR')?.css(this.leafEdgeRCss);
+    $spreadLayers.find('.BRleafEdgeL')?.css(this.leafEdgeLCss);
+    $spreadLayers.find('.BRgutter')?.css(this.spineCss);
+
+    // Only worry about images that are in view
+    // set left page in view
+    const $leftImg = this.br.prefetchedImgs[this.br.twoPage.currentIndexL];
+    $($leftImg).css(this.leftLeafCss);
+    // set right page in view
+    const $rightImg = this.br.prefetchedImgs[this.br.twoPage.currentIndexR];
+    $($rightImg).css(this.rightLeafCss);
   }
 
   /**
    * @param {number} centerPercentageX
    * @param {number} centerPercentageY
+   * @param {Boolean} drawNewSpread
    */
-  prepareTwoPageView(centerPercentageX, centerPercentageY) {
+  prepareTwoPageView(centerPercentageX, centerPercentageY, drawNewSpread = false) {
     // Some decisions about two page view:
     //
     // Both pages will be displayed at the same height, even if they were different physical/scanned
@@ -126,6 +158,9 @@ export class Mode2Up {
     // The two page view div is resized to keep the middle of the book in the middle of the div
     // even as the page sizes change.  To e.g. keep the middle of the book in the middle of the BRcontent
     // div requires adjusting the offset of BRtwpageview and/or scrolling in BRcontent.
+    const startingReduce = this.br.reduce;
+    const startingIndices = this.br.displayedIndices;
+
     this.br.refs.$brContainer.empty();
     this.br.refs.$brContainer.css('overflow', 'auto');
 
@@ -138,10 +173,17 @@ export class Mode2Up {
     this.br.twoPage.currentIndexL = currentSpreadIndices[0];
     this.br.twoPage.currentIndexR = currentSpreadIndices[1];
 
-    this.calculateSpreadSize(); //sets twoPage.width, twoPage.height and others
+    this.calculateSpreadSize(); //sets this.br.reduce, twoPage.width, twoPage.height and others
 
-    this.br.pruneUnusedImgs();
-    this.br.prefetch(); // Preload images or reload if scaling has changed
+    /* check if calculations have changed that warrant a new book draw */
+    const sameReducer = startingReduce == this.br.reduce;
+    const sameStart = startingIndices == this.br.displayedIndices;
+    const hasNewDisplayPagesOrDimensions = !sameStart || (sameStart && !sameReducer);
+
+    if (drawNewSpread || hasNewDisplayPagesOrDimensions) {
+      this.br.pruneUnusedImgs();
+      this.br.prefetch(); // Preload images or reload if scaling has changed
+    }
 
     // Add the two page view
     // $$$ Can we get everything set up and then append?
@@ -153,15 +195,11 @@ export class Mode2Up {
     this.br.refs.$brContainer.dragscrollable({preventDefault:true});
     this.br.bindGestures(this.br.refs.$brContainer);
 
-    // $$$ calculate first then set
-    this.br.refs.$brTwoPageView.css({
-      height: `${this.br.twoPage.totalHeight}px`,
-      width: `${this.br.twoPage.totalWidth}px`,
-      position: 'absolute'
-    });
+    // $$$ calculate container size first
+    this.br.refs?.$brTwoPageView.css(this.mainContainerCss);
 
-    // If there will not be scrollbars (e.g. when zooming out) we center the book
-    // since otherwise the book will be stuck off-center
+    // This will trump the incoming coordinates
+    // in order to center book when zooming out
     if (this.br.twoPage.totalWidth < this.br.refs.$brContainer.prop('clientWidth')) {
       centerPercentageX = 0.5;
     }
@@ -171,41 +209,20 @@ export class Mode2Up {
 
     this.centerView(centerPercentageX, centerPercentageY);
 
+    // then set
     this.br.twoPage.coverDiv = document.createElement('div');
-    $(this.br.twoPage.coverDiv).attr('class', 'BRbookcover').css({
-      width: `${this.br.twoPage.bookCoverDivWidth}px`,
-      height: `${this.br.twoPage.bookCoverDivHeight}px`,
-      visibility: 'visible'
-    }).appendTo(this.br.refs.$brTwoPageView);
+    $(this.br.twoPage.coverDiv).attr('class', 'BRbookcover').css(this.spreadCoverCss).appendTo(this.br.refs.$brTwoPageView);
 
     this.leafEdgeR = document.createElement('div');
     this.leafEdgeR.className = 'BRleafEdgeR';
-
-    $(this.leafEdgeR).css({
-      width: `${this.br.twoPage.leafEdgeWidthR}px`,
-      height: `${this.br.twoPage.height}px`,
-      left: `${this.br.twoPage.gutter + this.br.twoPage.scaledWR}px`,
-      top: `${this.br.twoPage.bookCoverDivTop + this.br.twoPage.coverInternalPadding}px`,
-      border: this.br.twoPage.leafEdgeWidthR === 0 ? 'none' : null
-    }).appendTo(this.br.refs.$brTwoPageView);
+    $(this.leafEdgeR).css(this.leafEdgeRCss).appendTo(this.br.refs.$brTwoPageView);
 
     this.leafEdgeL = document.createElement('div');
     this.leafEdgeL.className = 'BRleafEdgeL';
-    $(this.leafEdgeL).css({
-      width: `${this.br.twoPage.leafEdgeWidthL}px`,
-      height: `${this.br.twoPage.height}px`,
-      left: `${this.br.twoPage.bookCoverDivLeft + this.br.twoPage.coverInternalPadding}px`,
-      top: `${this.br.twoPage.bookCoverDivTop + this.br.twoPage.coverInternalPadding}px`,
-      border: this.br.twoPage.leafEdgeWidthL === 0 ? 'none' : null
-    }).appendTo(this.br.refs.$brTwoPageView);
+    $(this.leafEdgeL).css(this.leafEdgeLCss).appendTo(this.br.refs.$brTwoPageView);
 
     const div = document.createElement('div');
-    $(div).attr('class', 'BRgutter').css({
-      width: `${this.br.twoPage.bookSpineDivWidth}px`,
-      height: `${this.br.twoPage.bookSpineDivHeight}px`,
-      left: `${this.br.twoPage.gutter - this.br.twoPage.bookSpineDivWidth * 0.5}px`,
-      top: `${this.br.twoPage.bookSpineDivTop}px`
-    }).appendTo(this.br.refs.$brTwoPageView);
+    $(div).attr('class', 'BRgutter').css(this.spineCss).appendTo(this.br.refs.$brTwoPageView);
 
     this.preparePopUp();
 
@@ -213,8 +230,6 @@ export class Mode2Up {
 
     this.drawLeafs();
     this.br.updateToolbarZoom(this.br.reduce);
-
-    this.br.prefetch();
 
     if (this.br.enableSearch) {
       this.br.removeSearchHilites();
@@ -275,6 +290,13 @@ export class Mode2Up {
     }
   }
 
+  setSpreadIndices() {
+    const targetLeaf = clamp(this.br.firstIndex, this.br.firstDisplayableIndex(), this.br.lastDisplayableIndex());
+    const currentSpreadIndices = this.book.getSpreadIndices(targetLeaf);
+    this.br.twoPage.currentIndexL = currentSpreadIndices[0];
+    this.br.twoPage.currentIndexR = currentSpreadIndices[1];
+  }
+
   /**
    * Calculates 2-page spread dimensions based on this.br.twoPage.currentIndexL and
    * this.br.twoPage.currentIndexR
@@ -292,14 +314,13 @@ export class Mode2Up {
       // set based on reduction factor
       spreadSize = this.getSpreadSizeFromReduce(firstIndex, secondIndex, this.br.reduce);
     }
-
     // Both pages together
-    this.br.twoPage.height = spreadSize.height;
-    this.br.twoPage.width = spreadSize.width;
+    this.br.twoPage.height = spreadSize.height || 0;
+    this.br.twoPage.width = spreadSize.width || 0;
 
     // Individual pages
-    this.br.twoPage.scaledWL = this.getPageWidth(firstIndex);
-    this.br.twoPage.scaledWR = this.getPageWidth(secondIndex);
+    this.br.twoPage.scaledWL = this.getPageWidth(firstIndex) || 0;
+    this.br.twoPage.scaledWR = this.getPageWidth(secondIndex) || 0;
 
     // Leaf edges
     this.br.twoPage.edgeWidth = spreadSize.totalLeafEdgeWidth; // The combined width of both edges
@@ -343,8 +364,7 @@ export class Mode2Up {
     this.br.twoPage.bookSpineDivLeft = this.br.twoPage.middle - (this.br.twoPage.bookSpineDivWidth >> 1);
     this.br.twoPage.bookSpineDivTop = this.br.twoPage.bookCoverDivTop;
 
-
-    this.br.reduce = spreadSize.reduce; // $$$ really set this here?
+    this.br.reduce = spreadSize.reduce < 0 ? this.br.reduce : spreadSize.reduce; // $$$ really set this here?
   }
 
   /**
@@ -389,21 +409,21 @@ export class Mode2Up {
     const heightOutsidePages = 2 * (this.br.twoPage.coverInternalPadding + this.br.twoPage.coverExternalPadding);
 
     ideal.width = (this.br.refs.$brContainer.width() - widthOutsidePages) >> 1;
-    ideal.width -= 10; // $$$ fudge factor
-    ideal.height = this.br.refs.$brContainer.height() - heightOutsidePages;
+    ideal.width = ideal.width > 10 ? ideal.width - 10 : 1; // $$$ fudge factor
 
-    ideal.height -= 15; // fudge factor
+    ideal.height = this.br.refs.$brContainer.height() - heightOutsidePages;
+    ideal.height = ideal.height > 15 ? ideal.height - 15 : 1; // $$$ fudge factor
 
     if (ideal.height / ratio <= ideal.width) {
       //use height
-      ideal.width = Math.floor(ideal.height / ratio);
+      ideal.width = Math.floor(ideal.height / ratio) || 1;
     } else {
       //use width
-      ideal.height = Math.floor(ideal.width * ratio);
+      ideal.height = Math.floor(ideal.width * ratio) || 1;
     }
 
     // $$$ check this logic with large spreads
-    ideal.reduce = ((first.height + second.height) / 2) / ideal.height;
+    ideal.reduce = Math.round(((first.height + second.height) / 2) / ideal.height);
 
     return ideal;
   }
@@ -655,8 +675,9 @@ export class Mode2Up {
         this.br.updateFirstIndex(this.br.twoPage.currentIndexL);
         this.br.displayedIndices = [newIndexL, newIndexR];
         this.br.pruneUnusedImgs();
-        this.br.prefetch();
         this.br.animating = false;
+
+        this.resizeSpread();
 
         if (this.br.enableSearch) this.br.updateSearchHilites();
 
@@ -668,9 +689,24 @@ export class Mode2Up {
         }
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
-
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
+        this.centerView();
         this.br.trigger(EVENTS.pageChanged);
+
+        // get next previous batch immediately      this.br.pruneUnusedImgs();
+        if (!this.br.prefetchedImgs[newIndexL - 2]) {
+          this.br.prefetchImg(newIndexL - 2);
+        }
+
+        if (!this.br.prefetchedImgs[newIndexR - 2]) {
+          this.br.prefetchImg(newIndexR - 2);
+        }
+
+        setTimeout(() => {
+          // flip prefetch
+          this.br.prefetchImg(newIndexL - 3);
+          this.br.prefetchImg(newIndexR - 3);
+        }, 250);
       });
     });
   }
@@ -791,9 +827,9 @@ export class Mode2Up {
         this.br.updateFirstIndex(this.br.twoPage.currentIndexL);
         this.br.displayedIndices = [newIndexL, newIndexR];
         this.br.pruneUnusedImgs();
-        this.br.prefetch();
         this.br.animating = false;
 
+        this.resizeSpread();
 
         if (this.br.enableSearch) this.br.updateSearchHilites();
 
@@ -805,9 +841,27 @@ export class Mode2Up {
         }
 
         this.br.refs.$brContainer.removeClass("BRpageFlipping");
-
         this.br.textSelectionPlugin?.stopPageFlip(this.br.refs.$brContainer);
+<<<<<<< HEAD
         this.br.trigger(EVENTS.pageChanged);
+=======
+        this.centerView();
+        this.br.trigger('pageChanged');
+
+        this.br.pruneUnusedImgs();
+        if (!this.br.prefetchedImgs[newIndexL + 2]) {
+          this.br.prefetchImg(newIndexL + 2);
+        }
+        if (!this.br.prefetchedImgs[newIndexR + 2]) {
+          this.br.prefetchImg(newIndexR + 2);
+        }
+
+        setTimeout(() => {
+          // flip prefetch
+          this.br.prefetchImg(newIndexL + 3);
+          this.br.prefetchImg(newIndexR + 3);
+        }, 250);
+>>>>>>> 639833ae94fa261b59091627d8e14b86b3109ad8
       });
     });
   }
@@ -855,8 +909,8 @@ export class Mode2Up {
    * @param {number} prevR
    */
   prepareFlipLeftToRight(prevL, prevR) {
-    this.br.prefetchImg(prevL);
-    this.br.prefetchImg(prevR);
+    this.br.prefetchImg(prevL, true);
+    this.br.prefetchImg(prevR, true);
 
     const height  = this.book._getPageHeight(prevL);
     const width   = this.book._getPageWidth(prevL);
@@ -903,8 +957,8 @@ export class Mode2Up {
    */
   prepareFlipRightToLeft(nextL, nextR) {
     // Prefetch images
-    this.br.prefetchImg(nextL);
-    this.br.prefetchImg(nextR);
+    this.br.prefetchImg(nextL, true);
+    this.br.prefetchImg(nextR, true);
 
     let height = this.book._getPageHeight(nextR);
     let width = this.book._getPageWidth(nextR);
@@ -990,10 +1044,11 @@ export class Mode2Up {
 
   /**
    * Centers the point given by percentage from left,top of twopageview
-   * @param {number} percentageX
-   * @param {number} percentageY
-   */
+   * @param {number} [percentageX=0.5]
+   * @param {number} [percentageY=0.5]
+ */
   centerView(percentageX, percentageY) {
+
     if ('undefined' == typeof(percentageX)) {
       percentageX = 0.5;
     }
@@ -1184,13 +1239,13 @@ export class Mode2Up {
     const { max, min } = Math;
     const { book } = this;
     const { currentIndexL, currentIndexR } = this.br.twoPage;
-    const ADJACENT_PAGES_TO_LOAD = 3;
-
+    const ADJACENT_PAGES_TO_LOAD = 2;
     // currentIndexL can be -1; getPage returns the last page of the book
     // when given -1, so need to prevent that.
     let lowPage = book.getPage(max(0, min(currentIndexL, currentIndexR)));
     let highPage = book.getPage(max(currentIndexL, currentIndexR));
-    for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 1; i++) {
+
+    for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 2; i++) {
       if (lowPage) {
         this.br.prefetchImg(lowPage.index);
         lowPage = lowPage.findPrev({ combineConsecutiveUnviewables: true });
@@ -1202,6 +1257,96 @@ export class Mode2Up {
       }
     }
   }
+
+  /* 2up Container Sizes */
+
+  /** main positions for inner containers */
+  get baseLeafCss() {
+    return {
+      position: 'absolute',
+      right: '',
+      top: `${this.top()}px`,
+      zIndex: 2,
+    };
+  }
+
+  /** main height for inner containers */
+  get heightCss() {
+    return {
+      height: `${this.br.twoPage.height}px`, // $$$ height forced the same for both pages
+    };
+  }
+
+  /** Left Page sizing */
+  get leftLeafCss() {
+    return {
+      ...this.baseLeafCss,
+      ...this.heightCss,
+      left: `${this.br.twoPage.gutter - this.br.twoPage.scaledWL}px`,
+      width: `${this.br.twoPage.scaledWL}px`,
+    }
+  }
+
+  /** Left side book thickness */
+  get leafEdgeLCss() {
+    return {
+      ...this.heightCss,
+      width: `${this.br.twoPage.leafEdgeWidthL}px`,
+      left: `${this.br.twoPage.bookCoverDivLeft + this.br.twoPage.coverInternalPadding}px`,
+      top: `${this.br.twoPage.bookCoverDivTop + this.br.twoPage.coverInternalPadding}px`,
+      border: this.br.twoPage.leafEdgeWidthL === 0 ? 'none' : null
+    };
+  }
+
+  /** Right Page sizing */
+  get rightLeafCss() {
+    return {
+      ...this.baseLeafCss,
+      ...this.heightCss,
+      left: `${this.br.twoPage.gutter}px`,
+      width: `${this.br.twoPage.scaledWR}px`,
+    }
+  }
+
+  /** Right side book thickness */
+  get leafEdgeRCss() {
+    return {
+      ...this.heightCss,
+      width: `${this.br.twoPage.leafEdgeWidthR}px`,
+      left: `${this.br.twoPage.scaledWL + this.br.twoPage.scaledWR + this.br.twoPage.leafEdgeWidthL}px`,
+      top: `${this.br.twoPage.bookCoverDivTop + this.br.twoPage.coverInternalPadding}px`,
+      border: this.br.twoPage.leafEdgeWidthR === 0 ? 'none' : null
+    };
+  }
+
+  /** main container sizing */
+  get mainContainerCss() {
+    return {
+      height: `${this.br.twoPage.totalHeight}px`,
+      width: `${this.br.twoPage.totalWidth}px`,
+      position: 'absolute'
+    };
+  }
+
+  /** book cover sizing */
+  get spreadCoverCss() {
+    return {
+      width: `${this.br.twoPage.bookCoverDivWidth}px`,
+      height: `${this.br.twoPage.bookCoverDivHeight}px`,
+      visibility: 'visible'
+    };
+  }
+
+  /** book spine sizing */
+  get spineCss() {
+    return {
+      width: `${this.br.twoPage.bookSpineDivWidth}px`,
+      height: `${this.br.twoPage.bookSpineDivHeight}px`,
+      left: `${this.br.twoPage.gutter - (this.br.twoPage.bookSpineDivWidth / 2)}px`,
+      top: `${this.br.twoPage.bookSpineDivTop}px`
+    };
+  }
+  /** end CSS */
 }
 
 /**

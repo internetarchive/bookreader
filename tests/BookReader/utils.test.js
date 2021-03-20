@@ -8,6 +8,7 @@ import {
   escapeHTML,
   polyfillCustomEvent,
   PolyfilledCustomEvent,
+  sleep,
 } from '../../src/js/BookReader/utils.js';
 
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
@@ -90,5 +91,19 @@ describe('PolyfilledCustomEvent', () => {
     new PolyfilledCustomEvent('foo');
     expect(createEventSpy.callCount).toBe(1);
     expect(initCustomEventSpy.callCount).toBe(1);
+  });
+});
+
+describe('sleep', () => {
+  test('can set sleep in ms', async () => {
+    jest.useFakeTimers();
+
+    const sleepTimeMS = 11;
+    await sleep(sleepTimeMS);
+
+    expect(setTimeout).toHaveBeenCalledTimes(1);
+    expect(setTimeout).toHaveBeenLastCalledWith(undefined, sleepTimeMS);
+
+    jest.clearAllTimers();
   });
 });
