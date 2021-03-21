@@ -263,7 +263,8 @@ export const DEFAULT_OPTIONS = {
     rotateScreen: {
       label: 'Rotate Screen',
       visible: true,
-      className: 'rotatescreen'
+      className: 'rotatescreen',
+      iconClassName: 'rotatescreen'
     }
   },
 
