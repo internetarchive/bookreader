@@ -1168,9 +1168,11 @@ BookReader.prototype.nextReduce = function(currentReduce, direction, reductionFa
   return reductionFactors[0];
 };
 
-BookReader.prototype._reduceSort = function(a, b) {
-  return a.reduce - b.reduce;
-};
+/**
+ * @param {ReductionFactor} a
+ * @param {ReductionFactor} b
+ */
+BookReader.prototype._reduceSort = (a, b) => a.reduce - b.reduce;
 
 /**
  * Attempts to jump to page
@@ -1208,8 +1210,6 @@ BookReader.prototype._isIndexDisplayed = function(index) {
  * @param {boolean} [noAnimate]
  */
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
-  const prevCurrentIndex = this.currentIndex();
-
   // Don't jump into specific unviewable page
   const page = this._models.book.getPage(index);
   if (!page.isViewable && page.unviewablesStart != page.index) {
@@ -1222,13 +1222,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
   this.trigger(BookReader.eventNames.stop);
 
   if (this.constMode2up == this.mode) {
-    // By checking against min/max we do nothing if requested index
-    // is current
-    if (index < Math.min(this.twoPage.currentIndexL, this.twoPage.currentIndexR)) {
-      this.flipBackToIndex(index);
-    } else if (index > Math.max(this.twoPage.currentIndexL, this.twoPage.currentIndexR)) {
-      this.flipFwdToIndex(index);
-    }
+    this._modes.mode2Up.jumpToIndex(index);
   } else if (this.constModeThumb == this.mode) {
     const { floor } = Math;
     const { book } = this._models;
@@ -1265,39 +1259,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
         .animate({ scrollTop: leafTop }, 'fast', () => { this.animating = false });
     }
   } else { // 1up
-    const { abs, floor } = Math;
-    let offset = 0;
-    let leafTop = this.onePageGetPageTop(index);
-    let leafLeft = 0;
-
-    if (pageY) {
-      const clientHeight = this.refs.$brContainer.prop('clientHeight');
-      offset = floor(pageY / this.reduce) - floor(clientHeight / 2);
-      leafTop += offset;
-    } else {
-      // Show page just a little below the top
-      leafTop -= this.padding / 2;
-    }
-
-    if (pageX) {
-      const clientWidth = this.refs.$brContainer.prop('clientWidth');
-      offset = floor(pageX / this.reduce) - floor(clientWidth / 2);
-      leafLeft += offset;
-    } else {
-      // Preserve left position
-      leafLeft = this.refs.$brContainer.scrollLeft();
-    }
-
-    // Only animate for small distances
-    if (!noAnimate && abs(prevCurrentIndex - index) <= 4) {
-      this.animating = true;
-      this.refs.$brContainer.stop(true).animate({
-        scrollTop: leafTop,
-        scrollLeft: leafLeft,
-      }, 'fast', () => { this.animating = false });
-    } else {
-      this.refs.$brContainer.stop(true).prop('scrollTop', leafTop);
-    }
+    this._modes.mode1Up.jumpToIndex(index, pageX, pageY, noAnimate);
   }
 };
 

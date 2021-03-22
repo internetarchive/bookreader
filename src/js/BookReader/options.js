@@ -52,6 +52,7 @@ export const DEFAULT_OPTIONS = {
    * The autofit code ensures that fit to width and fit to height will be available
    */
   reductionFactors: [
+    {reduce: 0.25, autofit: null},
     {reduce: 0.5, autofit: null},
     {reduce: 1, autofit: null},
     {reduce: 2, autofit: null},
@@ -119,6 +120,9 @@ export const DEFAULT_OPTIONS = {
 
   /** @type {'lr' | 'rl'} Page progression */
   pageProgression: 'lr',
+
+  /** The PPI the book is scanned at **/
+  ppi: 500,
 
   /** Should image downloads be blocked */
   protected: false,
@@ -299,6 +303,7 @@ export const DEFAULT_OPTIONS = {
  * @property {string} [uri] If not provided, include a getPageURI
  * @property {PageNumString} [pageNum] Shown instead of leaf number if present
  * @property {LeafNum} [leafNum] Sometimes specified in Internet Archive books
+ * @property {number} [ppi] The resolution of the page if different from {@see BookReaderOptions.ppi}
  * @property {'L' | 'R'} [pageSide] PRIVATE; computed automatically
  * @property {boolean} [viewable=true] Set false if page is not viewable. Displays a dummy preview image.
  * @property {number} [unviewablesStart] PRIVATE; index where the chunk of unviewable pages started
