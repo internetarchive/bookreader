@@ -1,3 +1,8 @@
+# 4.39.0
+- Feature: Mode1Up DPI awareness @cdrini
+    - Introduces two new optional options: `ppi` and `PageData.ppi`
+    - Potentially breaking change: zooming in Mode1Up will now zoom at different intervals
+
 # 4.38.0
 Dev: update dependencies @cdrini
 Dev: replace travis badge with GHA badge @cdrini
