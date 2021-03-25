@@ -1,3 +1,6 @@
+# 4.39.1
+- Dev: update Readme @Himanshunitrr
+- Fix: v5 bookmarks menu update @iisa @dualcnhq
 # 4.39.0
 - Feature: Mode1Up DPI awareness @cdrini
     - Introduces two new optional options: `ppi` and `PageData.ppi`
