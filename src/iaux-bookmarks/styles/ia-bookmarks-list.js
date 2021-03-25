@@ -120,8 +120,6 @@ button.add-bookmark {
 }
 
 ia-bookmark-edit {
-  --saveButtonColor: #538bc5;
-  --deleteButtonColor: #d33630;
   margin: .5rem .5rem .3rem .6rem;
 }
 
