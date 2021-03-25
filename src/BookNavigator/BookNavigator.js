@@ -237,6 +237,7 @@ export class BookNavigator extends LitElement {
     window.addEventListener('BookReader:PostInit', (e) => {
       this.bookreader = e.detail.props;
       this.bookReaderLoaded = true;
+      this.bookReaderCannotLoad = false;
       this.initializeBookSubmenus();
       this.mainBRSelector = this.br?.el || '#BookReader';
       setTimeout(() => this.bookreader.resize(), 0);
