@@ -42,7 +42,7 @@ export class TextSelectionPlugin {
     this.optionVariables = optionVariables;
     /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
     this.djvuPagesPromise = null;
-    // Using text elements insted of tspans for words because Firefox does not allow svg tspan strech.
+    // Using text elements instead of tspans for words because Firefox does not allow svg tspan stretch.
     // Tspans are necessary on Chrome because they prevent newline character after every word when copying
     this.svgParagraphElement = "text";
     this.svgWordElement = "tspan";

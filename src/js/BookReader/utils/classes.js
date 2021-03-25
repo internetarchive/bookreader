@@ -1,6 +1,6 @@
 /**
  * Exposes a function from one class (FromClass) to another (ToClass), in such a way
- * that if the ToClass's method is overriden, the FromClass's method is also overriden.
+ * that if the ToClass's method is overridden, the FromClass's method is also overridden.
  * WARNING: This modifies FromClass' prototype! So FromClasses cannot be shared between
  * different ToClasses.
  * @param {new () => TFrom} FromClass the class to get the method from

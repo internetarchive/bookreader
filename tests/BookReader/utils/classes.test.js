@@ -82,7 +82,7 @@ describe('exposeOverrideable', () => {
     const br = new BookReader();
     expect(br.createButton()).toBe('plugin 2 plugin 1 root button');
     expect(br.component.createButton()).toBe('plugin 2 plugin 1 root button');
-    // Calls the overriden method on BookReader!
+    // Calls the overridden method on BookReader!
     expect(br.component.initToolbar()).toEqual(['plugin 2 plugin 1 root button']);
   });
 });
