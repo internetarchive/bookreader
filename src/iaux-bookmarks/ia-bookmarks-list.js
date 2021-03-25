@@ -2,7 +2,7 @@ import { nothing } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat.js';
 import { html, LitElement } from 'lit-element';
 import './ia-bookmarks-edit.js';
-import '@internetarchive/icon-edit-pencil';
+import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 import bookmarksListCSS from './styles/ia-bookmarks-list.js';
 
 export class IABookmarksList extends LitElement {
