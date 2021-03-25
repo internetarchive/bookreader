@@ -151,6 +151,8 @@ BookReader.prototype.setup = function(options) {
   this.twoPagePopUp = null;
   this.leafEdgeTmp  = null;
 
+  this.currentOrientationDeg = 0
+
   /**
      * Represents the first displayed index
      * In 2up mode it will be the left page
@@ -702,7 +704,7 @@ BookReader.prototype.drawLeafs = function() {
  */
 BookReader.prototype._createPageContainer = function(index, styles) {
   const { pageSide } = this._models.book.getPage(index);
-  const css = Object.assign({ position: 'absolute' }, styles);
+  const css = Object.assign({ position: 'absolute' }, styles, { transform: `rotate(${this.currentOrientationDeg}deg)` });
   const modeClasses = {
     [this.constMode1up]: '1up',
     [this.constMode2up]: '2up',
@@ -1587,6 +1589,32 @@ BookReader.prototype.prev = function() {
   }
 };
 
+/**
+ * Rotates screen by 90 degree
+ */
+BookReader.prototype.rotate = function() {
+  if (this.currentOrientationDeg == 0) {
+    this.currentOrientationDeg = 90
+  } else {
+    this.currentOrientationDeg += 90
+  }
+  if (this.currentOrientationDeg >= 360) {
+    this.currentOrientationDeg = 0
+  }
+
+  switch (this.mode) {
+  case 1:
+    this.refs.$brPageViewEl.empty()
+    this._modes.mode1Up.drawLeafs()
+    break
+  case 2:
+    console.log('2 page')
+    this.refs.$brTwoPageView.empty()
+    this._modes.mode2Up.drawLeafs()
+    break
+  }
+}
+
 BookReader.prototype.first = function() {
   this.jumpToIndex(this.firstDisplayableIndex());
 };
@@ -2019,6 +2047,10 @@ BookReader.prototype.bindNavigationHandlers = function() {
         this.toggleFullscreen();
       }
     },
+    rotatescreen: () => {
+      this.trigger(BookReader.eventNames.orientationChanged)
+      self.rotate()
+    }
   };
 
   jIcons.filter('.fit').bind('fit', function() {
