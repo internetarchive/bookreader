@@ -6,7 +6,7 @@ const getHash = ClientFunction(() => document.location.hash);
 const getUrl = ClientFunction(() => window.location.href);
 
 /**
- * Check URL page paramter in # and path
+ * Check URL page parameter in # and path
  */
 const isPageInUrl = ClientFunction(() => {
   const hash = document.location.hash;
@@ -18,7 +18,7 @@ const isPageInUrl = ClientFunction(() => {
 });
 
 /**
- * Check URL mode paramter in # and path
+ * Check URL mode parameter in # and path
  *
  * @param mode '1up', '2up', 'thumb'
  */

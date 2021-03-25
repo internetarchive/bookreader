@@ -50,7 +50,7 @@ export function runDesktopSearchTests(br) {
 
 
   test
-    .requestHooks(mockNotFound)('Desktop search - unsuccesful search', async t => {
+    .requestHooks(mockNotFound)('Desktop search - unsuccessful search', async t => {
       const nav = br.nav;
 
       //assuring that the search bar is enabled

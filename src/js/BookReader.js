@@ -94,7 +94,7 @@ BookReader.prototype.setup = function(options) {
   /** @type {number} @deprecated some past iterations set this */
   this.numLeafs = undefined;
 
-  /** Overriden by plugin.search.js */
+  /** Overridden by plugin.search.js */
   this.enableSearch = false;
 
   /**
@@ -104,7 +104,7 @@ BookReader.prototype.setup = function(options) {
   this.viewModeOrder = [];
 
   /**
-   * Used to supress fragment change for init with canonical URLs
+   * Used to suppress fragment change for init with canonical URLs
    * @var {boolean}
    */
   this.suppressFragmentChange = false;
@@ -143,7 +143,7 @@ BookReader.prototype.setup = function(options) {
 
   this.displayedIndices = [];
   this.imgs = {};
-  this.prefetchedImgs = {}; //an object with numeric keys cooresponding to page index, reduce
+  this.prefetchedImgs = {}; //an object with numeric keys corresponding to page index, reduce
 
   this.animating = false;
   this.flipSpeed = options.flipSpeed;
@@ -229,7 +229,7 @@ BookReader.prototype.setup = function(options) {
     mode2Up: new Mode2Up(this, this._models.book),
   };
 
-  /** Stores classes which we want to expose (selectively) some methods as overrideable */
+  /** Stores classes which we want to expose (selectively) some methods as overridable */
   this._overrideable = {
     '_models.book': this._models.book,
     '_components.navbar': this._components.navbar,
@@ -571,11 +571,11 @@ BookReader.prototype.resize = function() {
     if (this.onePage.autofit != 'none') {
       this.resizePageView1up();
       this.centerPageView();
-      if (this.enableSearch) this.updateSearchHilites(); //deletes hilights but does not call remove()
+      if (this.enableSearch) this.updateSearchHilites(); //deletes highlights but does not call remove()
     } else {
       this.centerPageView();
       this.displayedIndices = [];
-      if (this.enableSearch) this.updateSearchHilites(); //deletes hilights but does not call remove()
+      if (this.enableSearch) this.updateSearchHilites(); //deletes highlights but does not call remove()
       this.drawLeafsThrottled();
     }
   } else if (this.constModeThumb == this.mode) {
@@ -621,7 +621,7 @@ BookReader.prototype.setupKeyListeners = function() {
   var KEY_UP = 38;
   var KEY_RIGHT = 39;
   var KEY_DOWN = 40;
-  // The minus(-) and equal(=) keys have different mapings for different browsers
+  // The minus(-) and equal(=) keys have different mappings for different browsers
   var KEY_MINUS = 189; // Chrome
   var KEY_MINUS_F = 173; // Firefox
   var KEY_NUMPAD_SUBTRACT = 109;
@@ -2129,7 +2129,7 @@ BookReader.prototype.navigationMousemoveHandler = function(event) {
   // $$$ possibly not great to be calling this for every mousemove
   if (event.data['br'].uiAutoHide) {
     // 77px is an approximate height of the Internet Archive Top Nav
-    // 75 & 76 (pixels) provide used in this context is checked againt the IA top nav height
+    // 75 & 76 (pixels) provide used in this context is checked against the IA top nav height
     var navkey = $(document).height() - 75;
     if ((event.pageY < 76) || (event.pageY > navkey)) {
       // inside or near navigation elements
@@ -2635,7 +2635,7 @@ BookReader.prototype.removeProgressPopup = function() {
 };
 
 /**
- * Can be overriden
+ * Can be overridden
  */
 BookReader.prototype.initUIStrings = function() {
   // Navigation handlers will be bound after all UI is in place -- makes moving icons between
