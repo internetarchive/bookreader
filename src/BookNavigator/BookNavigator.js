@@ -7,7 +7,7 @@ import SharingProvider from '../ItemNavigator/providers/sharing.js';
 import BookmarksProvider from './providers/bookmarks.js';
 import BRFullscreenMgr from './br-fullscreen-mgr.js';
 import { Book } from './BookModel.js';
-import '../ItemNavigator/ItemNavigator.js';
+// import '../ItemNavigator/ItemNavigator.js';
 import bookLoader from './book-loader.js';
 import navigatorCSS from './styles/book-navigator.js';
 
