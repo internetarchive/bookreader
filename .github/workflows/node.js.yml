@@ -1,5 +1,7 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# This workflow will do a clean install of node dependencies, build
+# the source code and run tests on the specified version(s) of node
+# For more information see:
+# https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: Node.js CI
 
@@ -15,14 +17,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v2
       with:
         node-version: 14.x
+    - run: python3 -m pip install codespell
+    - run: $HOME/.local/bin/codespell --skip="*.json,*.map,*.tts.js" --quiet-level=2
+        --ignore-words-list="ba,cros,initialy,nd,nin,ot,te,ue,useable"
     - run: npm install
     - run: npm run build
     - run: npm run lint
     - run: npm run test:coverage
     - run: npm run codecov
-    # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )
-    # Quarantine mode (sigh) to catch unstable tests (see https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode )
+    # Quarantine mode (sigh) to catch unstable tests
+    # https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode
     - run: BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe --concurrency 2 --quarantine-mode
