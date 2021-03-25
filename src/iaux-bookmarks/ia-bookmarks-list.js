@@ -15,10 +15,8 @@ export class IABookmarksList extends LitElement {
       activeBookmarkID: { type: Number },
       bookmarkColors: { type: Array },
       defaultBookmarkColor: { type: Object },
-      bookmarks: { type: Array },
+      bookmarks: { type: Object },
       editedBookmark: { type: Object },
-      renderAddBookmarkButton: { type: Boolean },
-      disableAddBookmarkButton: { type: Boolean },
       renderHeader: { type: Boolean },
     };
   }
@@ -28,10 +26,8 @@ export class IABookmarksList extends LitElement {
     this.activeBookmarkID = undefined;
     this.bookmarkColors = [];
     this.defaultBookmarkColor = {};
-    this.bookmarks = [];
+    this.bookmarks = {};
     this.editedBookmark = {};
-    this.renderAddBookmarkButton = true;
-    this.disableAddBookmarkButton = false;
     this.renderHeader = false;
   }
 
@@ -111,6 +107,7 @@ export class IABookmarksList extends LitElement {
       <li
         @click=${() => this.emitSelectedEvent(bookmark)}
         tabindex="0"
+        data-pageIndex=${bookmark.id}
       >
         <div class="separator"></div>
         <div class="content ${activeClass}">
@@ -147,6 +144,16 @@ export class IABookmarksList extends LitElement {
     `;
   }
 
+  sortBookmarks() {
+    const sortedKeys = Object.keys(this.bookmarks).sort((a, b) => {
+      if (+a > +b) { return 1; }
+      if (+a < +b) { return -1; }
+      return 0;
+    });
+    const sortedBookmarks = sortedKeys.map(key => this.bookmarks[key]);
+    return sortedBookmarks;
+  }
+
   get bookmarksCount() {
     const count = this.bookmarks.length;
     return html`<small>(${count})</small>`;
@@ -161,24 +168,18 @@ export class IABookmarksList extends LitElement {
     </header>`;
   }
 
-  get addBookmarkButton() {
-    return html`<button class="add-bookmark" @click=${this.emitAddBookmark}>Add bookmark</button>`;
-  }
-
-  get addBookmarkDisabledButton() {
-    return html`<button disabled="disabled" class="add-bookmark" @click=${this.emitAddBookmark}>Add bookmark</button>`;
+  get bookmarkslist() {
+    const sortedBookmarks = this.sortBookmarks();
+    return html`<ul>
+        ${repeat(sortedBookmarks, bookmark => bookmark?.id, this.bookmarkItem.bind(this))}
+        <div class="separator"></div>
+      </ul>`;
   }
 
   render() {
-    const addBookmarkCTA = this.disableAddBookmarkButton
-      ? this.addBookmarkDisabledButton : this.addBookmarkButton;
     return html`
       ${this.renderHeader ? this.headerSection : nothing}
-      <ul>
-        ${this.bookmarks.length ? repeat(this.bookmarks, bookmark => bookmark.id, this.bookmarkItem.bind(this)) : nothing}
-        <div class="separator"></div>
-      </ul>
-      ${this.renderAddBookmarkButton ? addBookmarkCTA : nothing}
+      ${Object.keys(this.bookmarks).length ? this.bookmarkslist : nothing}
     `;
   }
 }
