@@ -20,25 +20,24 @@ This file is part of BookReader.
 
 */
 import PACKAGE_JSON from '../../package.json';
-import * as utils from './BookReader/utils.js';
-import { exposeOverrideable } from './BookReader/utils/classes.js';
-import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
-import { DEFAULT_OPTIONS } from './BookReader/options.js';
+import { BookModel } from './BookReader/BookModel.js';
+import { DebugConsole } from './BookReader/DebugConsole.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
 import { EVENTS } from './BookReader/events.js';
-import { DebugConsole } from './BookReader/DebugConsole.js';
-import {
-  Toolbar,
-  blankInfoDiv,
-  blankShareDiv,
-  createPopup,
-} from './BookReader/Toolbar/Toolbar.js';
-import { BookModel } from './BookReader/BookModel.js';
+import { ImageCache } from './BookReader/ImageCache.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
-import { ImageCache } from './BookReader/ImageCache.js';
+import { getNavPageNumHtml, Navbar } from './BookReader/Navbar/Navbar.js';
+import { DEFAULT_OPTIONS } from './BookReader/options.js';
+import {
+  blankInfoDiv,
+  blankShareDiv,
+  createPopup, Toolbar
+} from './BookReader/Toolbar/Toolbar.js';
+import * as utils from './BookReader/utils.js';
+import { exposeOverrideable } from './BookReader/utils/classes.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -1514,7 +1513,7 @@ BookReader.prototype.updateFirstIndex = function(
   if (this.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
-  this.trigger('pageChanged');
+  this.trigger('EVENTS.pageChanged');
   this.updateNavIndexThrottled(index);
 };
 
