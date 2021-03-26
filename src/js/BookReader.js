@@ -1604,11 +1604,11 @@ BookReader.prototype.rotate = function() {
 
   switch (this.mode) {
   case 1:
-    this.refs.$brPageViewEl.empty()
+    var $brPageElView = $('.BRpageview')
+    $brPageElView.empty()
     this._modes.mode1Up.drawLeafs()
     break
   case 2:
-    console.log('2 page')
     this.refs.$brTwoPageView.empty()
     this._modes.mode2Up.drawLeafs()
     break
