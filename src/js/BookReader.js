@@ -704,7 +704,7 @@ BookReader.prototype.drawLeafs = function() {
  */
 BookReader.prototype._createPageContainer = function(index, styles) {
   const { pageSide } = this._models.book.getPage(index);
-  const css = Object.assign({ position: 'absolute' }, styles, { transform: `rotate(${this.currentOrientationDeg}deg)` });
+  const css = Object.assign({ position: 'absolute' }, styles, this.mode !== 2 ? ({ transform: `rotate(${this.currentOrientationDeg}deg)` }) : {});
   const modeClasses = {
     [this.constMode1up]: '1up',
     [this.constMode2up]: '2up',
@@ -715,6 +715,9 @@ BookReader.prototype._createPageContainer = function(index, styles) {
     css,
   }).attr('data-side', pageSide).append($('<div />', { 'class': 'BRscreen' }));
   container.toggleClass('protected', this.protected);
+  if (this.mode === 2) {
+    this._rotate2up()
+  }
 
   return container;
 };
@@ -1590,6 +1593,17 @@ BookReader.prototype.prev = function() {
 };
 
 /**
+ * 2PageMode Rotation
+ * @private
+ */
+BookReader.prototype._rotate2up = function() {
+  const $brTwoPageView = this.refs.$brTwoPageView
+  if ($brTwoPageView) {
+    $brTwoPageView[0].style.transform = `rotate(${this.currentOrientationDeg}deg)`
+  }
+}
+
+/**
  * Rotates screen by 90 degree
  */
 BookReader.prototype.rotate = function() {
@@ -1609,8 +1623,7 @@ BookReader.prototype.rotate = function() {
     this._modes.mode1Up.drawLeafs()
     break
   case 2:
-    this.refs.$brTwoPageView.empty()
-    this._modes.mode2Up.drawLeafs()
+    this._rotate2up()
     break
   }
 }
