@@ -19,7 +19,7 @@ export const DEFAULT_OPTIONS = {
 
   /** thumbnail mode */
   /** number of rows to pre-cache out a view */
-  thumbRowBuffer: 2,
+  thumbRowBuffer: 1,
   thumbColumns: 6,
   /** number of thumbnails to load at once */
   thumbMaxLoading: 4,
@@ -38,7 +38,7 @@ export const DEFAULT_OPTIONS = {
   logoURL: 'https://archive.org',
 
   /**
-   * Base URL for UI images - should be overriden (before init) by
+   * Base URL for UI images - should be overridden (before init) by
    * custom implementations.
    * $$$ This is the same directory as the images referenced by relative
    *     path in the CSS.  Would be better to automagically find that path.
@@ -52,6 +52,7 @@ export const DEFAULT_OPTIONS = {
    * The autofit code ensures that fit to width and fit to height will be available
    */
   reductionFactors: [
+    {reduce: 0.25, autofit: null},
     {reduce: 0.5, autofit: null},
     {reduce: 1, autofit: null},
     {reduce: 2, autofit: null},
@@ -119,6 +120,9 @@ export const DEFAULT_OPTIONS = {
 
   /** @type {'lr' | 'rl'} Page progression */
   pageProgression: 'lr',
+
+  /** The PPI the book is scanned at **/
+  ppi: 500,
 
   /** Should image downloads be blocked */
   protected: false,
@@ -280,7 +284,7 @@ export const DEFAULT_OPTIONS = {
    * @type {Boolean}
    * On init, by default, we want to use srcSet for images
    */
-  useSrcSet: true,
+  useSrcSet: false,
 };
 
 /** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */
@@ -299,6 +303,7 @@ export const DEFAULT_OPTIONS = {
  * @property {string} [uri] If not provided, include a getPageURI
  * @property {PageNumString} [pageNum] Shown instead of leaf number if present
  * @property {LeafNum} [leafNum] Sometimes specified in Internet Archive books
+ * @property {number} [ppi] The resolution of the page if different from {@see BookReaderOptions.ppi}
  * @property {'L' | 'R'} [pageSide] PRIVATE; computed automatically
  * @property {boolean} [viewable=true] Set false if page is not viewable. Displays a dummy preview image.
  * @property {number} [unviewablesStart] PRIVATE; index where the chunk of unviewable pages started

@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe('Plugin: Print', () => {
-  test('has added follwing BR properties', () => {
+  test('has added following BR properties', () => {
     expect(br).toHaveProperty('imageFormat');
     expect(br.imageFormat).toEqual('jp2');
 

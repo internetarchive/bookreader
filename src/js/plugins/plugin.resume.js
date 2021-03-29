@@ -29,7 +29,7 @@ BookReader.prototype.init = (function(super_) {
 
 /**
  * Gets page resume value, for remembering reader's page
- * Can be overriden for different implementation
+ * Can be overridden for different implementation
  *
  * @return {number|null}
  */
@@ -53,7 +53,7 @@ BookReader.prototype.getCookiePath = function(urlPathPart) {
 
 /**
  * Sets page resume value, for remembering reader's page
- * Can be overriden for different implementation
+ * Can be overridden for different implementation
  *
  * @param {Number} index leaf index
  * @param {string} [cookieName]

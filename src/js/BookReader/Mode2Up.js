@@ -23,6 +23,19 @@ export class Mode2Up {
   }
 
   /**
+   * @param {PageIndex} index
+   */
+  jumpToIndex(index) {
+    // By checking against min/max we do nothing if requested index
+    // is current
+    if (index < Math.min(this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR)) {
+      this.flipBackToIndex(index);
+    } else if (index > Math.max(this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR)) {
+      this.flipFwdToIndex(index);
+    }
+  }
+
+  /**
    * @template T
    * @param {HTMLElement} element
    * @param {T} data
@@ -677,6 +690,8 @@ export class Mode2Up {
         this.br.pruneUnusedImgs();
         this.br.animating = false;
 
+        this.resizeSpread();
+
         if (this.br.enableSearch) this.br.updateSearchHilites();
 
         this.setMouseHandlers();
@@ -827,6 +842,7 @@ export class Mode2Up {
         this.br.pruneUnusedImgs();
         this.br.animating = false;
 
+        this.resizeSpread();
 
         if (this.br.enableSearch) this.br.updateSearchHilites();
 

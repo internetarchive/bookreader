@@ -159,3 +159,27 @@ export function PolyfilledCustomEvent(eventName, {bubbles = false, cancelable = 
   event.initCustomEvent(eventName, bubbles, cancelable, detail);
   return event;
 }
+
+/**
+ * Promise based sleep - resolves at default 500ms
+ * @param {Number} wait time in milliseconds
+ */
+export function sleep(ms = 500) {
+  return new Promise(res => setTimeout(res(true), ms));
+}
+
+/*
+ * Returns the number pixels something should be rendered at to be ~1n on the users
+ * screen when measured with a ruler.
+ */
+export function calcScreenDPI() {
+  const el = document.createElement('div');
+  el.style = 'width: 1in;';
+  document.body.appendChild(el);
+  const dpi = el.offsetWidth;
+  document.body.removeChild(el);
+
+  const screenDPI = dpi * devicePixelRatio;
+  // This will return 0 in testing; never want it to be 0!
+  return screenDPI == 0 ? 100 : screenDPI;
+}

@@ -6,7 +6,7 @@ const getHash = ClientFunction(() => document.location.hash);
 const getUrl = ClientFunction(() => window.location.href);
 
 /**
- * Check URL page paramter in # and path
+ * Check URL page parameter in # and path
  */
 const isPageInUrl = ClientFunction(() => {
   const hash = document.location.hash;
@@ -18,7 +18,7 @@ const isPageInUrl = ClientFunction(() => {
 });
 
 /**
- * Check URL mode paramter in # and path
+ * Check URL mode parameter in # and path
  *
  * @param mode '1up', '2up', 'thumb'
  */
@@ -120,7 +120,7 @@ export function runBaseTests (br) {
     await t.click(nav.desktop.goPrev);
     await t.wait(PAGE_FLIP_WAIT_TIME);
 
-    const nextBrState = await Selector('.BRcontainer').child(0);
+    const nextBrState = Selector('.BRcontainer').child(0);
     const prevImages = nextBrState.find('img');
     const prevImg1Src = await prevImages.nth(0).getAttribute('src');
     const prevImg2Src = await prevImages.nth(-1).getAttribute('src');
@@ -149,7 +149,7 @@ export function runBaseTests (br) {
     await t.click(nav.desktop.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME);
 
-    const nextBrState = await Selector('.BRcontainer').child(0);
+    const nextBrState = Selector('.BRcontainer').child(0);
     const nextImages = nextBrState.find('img');
     const nextImg1Src = await nextImages.nth(0).getAttribute('src');
     const nextImg2Src = await nextImages.nth(-1).getAttribute('src');
@@ -182,7 +182,7 @@ export function runBaseTests (br) {
   test('Clicking `2 page view` brings up 2 pages at a time', async t => {
     const { nav } = br;
     await t.click(nav.desktop.mode2Up);
-    const twoPageContainer = await Selector('.BRtwopageview');
+    const twoPageContainer = Selector('.BRtwopageview');
     await t.expect(twoPageContainer.visible).ok();
     const images = twoPageContainer.find('img.BRpageimage');
     await t.expect(images.count).eql(2);
@@ -191,7 +191,7 @@ export function runBaseTests (br) {
   test('Clicking `1 page view` brings up 1 at a time', async t => {
     const { nav } = br;
     await t.click(nav.desktop.mode1Up);
-    const onePageViewContainer = await Selector('.BRpageview');
+    const onePageViewContainer = Selector('.BRpageview');
     await t.expect(onePageViewContainer.visible).ok();
     const images = onePageViewContainer.find('.BRpagecontainer.BRmode1up');
     // we usually pre-fetch the page in question & the 2 after it
@@ -201,7 +201,7 @@ export function runBaseTests (br) {
   test('Clicking `thumbnail view` brings up all of the page thumbnails', async t => {
     const { nav } = br;
     await t.click(nav.desktop.modeThumb);
-    const thumbnailContainer = await Selector('.BRpageview');
+    const thumbnailContainer = Selector('.BRpageview');
     await t.expect(thumbnailContainer.visible).ok();
     const images = thumbnailContainer.find('.BRpagecontainer.BRmodethumb');
     await t.expect(images.count).gt(0);
