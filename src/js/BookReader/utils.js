@@ -174,7 +174,7 @@ export function sleep(ms = 500) {
  */
 export function calcScreenDPI() {
   const el = document.createElement('div');
-  el.style = 'width: 1in;';
+  el.style.width = '1in';
   document.body.appendChild(el);
   const dpi = el.offsetWidth;
   document.body.removeChild(el);
