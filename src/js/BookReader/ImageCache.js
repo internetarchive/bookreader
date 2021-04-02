@@ -13,7 +13,7 @@ export class ImageCache {
    */
   constructor(br) {
     this.br = br;
-    /** @type {{ [index: number]: { uri: string, srcSet: string, reduce: number, loaded: boolean }}} */
+    /** @type {{ [index: number]: { reduce: number, loaded: boolean }[] }} */
     this.cache = {};
     this.defaultScale = 8;
   }
@@ -27,13 +27,18 @@ export class ImageCache {
    * @param {Number} reduce
    */
   image(index, reduce) {
-    const $thisImage = this.cache[index];
-    const currImageScale = $thisImage?.reduce;
-    if (currImageScale <= reduce) {
-      return this._serveImageElement(index);
+    const cachedImages = this.cache[index] || [];
+    const sufficientImages = cachedImages
+      .filter(x => x.loaded && x.reduce <= reduce);
+    if (sufficientImages.length) {
+      // Choose the largest reduction factor that meets our needs
+      const bestReduce = Math.max(...sufficientImages.map(e => e.reduce));
+      return this._serveImageElement(index, bestReduce);
+    } else {
+      // Don't use a cache entry; i.e. a fresh fetch will be made
+      // for this reduce
+      return this._serveImageElement(index, reduce);
     }
-
-    return this._createImage(index, reduce);
   }
 
   /**
@@ -43,7 +48,7 @@ export class ImageCache {
    * @returns {Boolean}
    */
   imageLoaded(index, reduce) {
-    const cacheImg = this.cache[index];
+    const cacheImg = this.cache[index]?.find(e => e.reduce == reduce);
     if (!cacheImg) {
       return false;
     }
@@ -53,34 +58,24 @@ export class ImageCache {
   }
 
   /**
-   * @private
-   * Removes image from cache
-   * Empties `src` & `srcSet` attributes prior to cancel pending requests
-   *
+   * Get the best image that's already loaded for the given index,
+   * trying to choose values less that the given reduce
    * @param {PageIndex} index
+   * @param idealMaxReduce
+   * @returns {null | number}
    */
-  _bustImageCache(index) {
-    delete this.cache[index];
-  }
+  getBestLoadedReduce(index, idealMaxReduce = Infinity) {
+    const candidates = this.cache[index]?.filter(x => x.loaded) || [];
+    if (!candidates.length) return null;
 
-  /**
-   * @private
-   * Creates an image & stashes in cache
-   * - Use only to create an image as it will
-   *    bust cache if requested index has one stashed
-   *
-   * @param {PageIndex} index
-   * @param {Number} reduce
-   */
-  _createImage(index, reduce) {
-    const hasCache = this.cache[index];
-    if (hasCache) {
-      this._bustImageCache(index);
+    const lowerResImages = candidates.filter(e => e.reduce >= idealMaxReduce);
+    if (lowerResImages.length) {
+      // Choose the highest quality loaded lower res image
+      return Math.min(...lowerResImages.map(e => e.reduce));
     }
-    const src = this.br._getPageURI(index, reduce);
-    const srcSet = this.br.options.useSrcSet ? this.br._getPageURISrcset(index, reduce) : '';
-    this.cache[index] = { reduce, uri: src, srcSet, loaded: false }
-    return this._serveImageElement(index);
+    // Otherwise choose whatever is closest to the reduce
+    const higherRestImages = candidates.filter(e => e.reduce < idealMaxReduce);
+    return Math.max(...higherRestImages.map(e => e.reduce));
   }
 
   /**
@@ -88,21 +83,29 @@ export class ImageCache {
    * Generates an image element on the fly from image info in cache
    *
    * @param {PageIndex} index
+   * @param {number} reduce
    * @returns {JQuery<HTMLImageElement>} with base image classes
    */
-  _serveImageElement(index) {
-    const { uri, srcSet, reduce } = this.cache[index];
+  _serveImageElement(index, reduce) {
+    let cacheEntry = this.cache[index]?.find(e => e.reduce == reduce);
+    if (!cacheEntry) {
+      cacheEntry = { reduce, loaded: false };
+      const entries = this.cache[index] || (this.cache[index] = []);
+      entries.push(cacheEntry);
+    }
+    const page = this.br._models.book.getPage(index);
+    const srcSet = this.br.options.useSrcSet ? this.br._getPageURISrcset(index, reduce) : '';
 
     const $img = $('<img />', {
       'class': 'BRpageimage',
       'alt': 'Book page image',
-      src: uri,
-      srcSet
+      src: page.getURI(reduce, 0),
+      srcSet,
     })
-      .attr('style', '')
-      .data('reduce', reduce)
-      // FIXME this has a typo; should be .on('load'); .load is throwing a type error
-      .load(() => this.cache[index].loaded = true);
+      .data('reduce', reduce);
+    if (!cacheEntry.loaded) {
+      $img.one('load', () => cacheEntry.loaded = true);
+    }
     return $img;
   }
 }
