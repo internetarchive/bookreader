@@ -1,5 +1,5 @@
 // @ts-check
-import * as utils from './utils.js';
+import { sleep, notInArray, clamp } from './utils.js';
 import { EVENTS } from './events.js';
 /** @typedef {import('../BookREader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
@@ -135,7 +135,7 @@ export class ModeThumb {
 
     // Create the thumbnail divs and images (lazy loaded)
     for (const row of rowsToDisplay) {
-      if (utils.notInArray(row, this.br.displayedRows)) {
+      if (notInArray(row, this.br.displayedRows)) {
         if (!leafMap[row]) { continue; }
         for (const { num: leaf, left: leafLeft } of leafMap[row].leafs) {
           const leafWidth = this.br.thumbWidth;
@@ -155,9 +155,9 @@ export class ModeThumb {
           });
 
           $pageContainer.data('leaf', leaf).on('mouseup', event => {
-          // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
-          // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
-          // We manually trigger the `fragmentChange` once at the end.
+            // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
+            // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
+            // We manually trigger the `fragmentChange` once at the end.
             this.br.updateFirstIndex(leaf, { suppressFragmentChange: true });
             // as per request in webdev-4042, we want to switch 1-up mode while clicking on thumbnail leafs
             this.br.switchMode(this.br.constMode1up, { suppressFragmentChange: true });
@@ -203,7 +203,7 @@ export class ModeThumb {
 
     // Remove thumbnails that are not to be displayed
     for (const row of this.br.displayedRows) {
-      if (utils.notInArray(row, rowsToDisplay)) {
+      if (notInArray(row, rowsToDisplay)) {
         for (const { num: index } of leafMap[row]?.leafs) {
           if (!imagesToDisplay?.includes(index)) {
             this.br.$(`.pagediv${index}`)?.remove();
@@ -236,7 +236,7 @@ export class ModeThumb {
 
   lazyLoadThumbnails() {
     const batchImageRequestByRow = async ($images) => {
-      await utils.sleep(300);
+      await sleep(300);
       $images.each((index, $imgPlaceholder) => this.br.lazyLoadImage($imgPlaceholder));
     };
 
@@ -261,6 +261,9 @@ export class ModeThumb {
     $(imgPlaceholder).remove();
   }
 
+  /**
+   * @param {1 | -1} direction
+   */
   zoom(direction) {
     const oldColumns = this.br.thumbColumns;
     switch (direction) {
@@ -272,12 +275,7 @@ export class ModeThumb {
       break;
     }
 
-    // clamp
-    if (this.br.thumbColumns < 2) {
-      this.br.thumbColumns = 2;
-    } else if (this.br.thumbColumns > 8) {
-      this.br.thumbColumns = 8;
-    }
+    this.br.thumbColumns = clamp(this.br.thumbColumns, 2, 8);
 
     if (this.br.thumbColumns != oldColumns) {
       this.br.displayedRows = [];  /* force a gallery redraw */
@@ -315,7 +313,7 @@ export class ModeThumb {
 
     // $$$ keep select enabled for now since disabling it breaks keyboard
     //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
-    // utils.disableSelect(this.br.$('#BRpageview'));
+    // disableSelect(this.br.$('#BRpageview'));
     this.br.thumbWidth = this.getThumbnailWidth(this.br.thumbColumns);
     this.br.reduce = this.book.getPageWidth(0) / this.br.thumbWidth;
     this.br.displayedRows = [];
@@ -345,7 +343,7 @@ export class ModeThumb {
         leafIndex = 0;
       }
 
-      const leafHeight = floor((book.getPageHeight(leafIndex) * this.br.thumbWidth) / book.getPageWidth(leafIndex), 10);
+      const leafHeight = floor((book.getPageHeight(leafIndex) * this.br.thumbWidth) / book.getPageWidth(leafIndex));
       if (leafHeight > rowHeight) { rowHeight = leafHeight; }
       if (leafIndex == 0) {
         leafTop = bottomPos;
