@@ -963,40 +963,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
   if (this.constMode2up == this.mode) {
     this._modes.mode2Up.jumpToIndex(index);
   } else if (this.constModeThumb == this.mode) {
-    const { floor } = Math;
-    const { book } = this._models;
-    const viewWidth = this.refs.$brContainer.prop('scrollWidth') - 20; // width minus buffer
-    const leafWidth = this.thumbWidth;
-    let leafTop = 0;
-    let rightPos = 0;
-    let bottomPos = 0;
-    let rowHeight = 0;
-    let leafIndex = 0;
-
-    for (let i = 0; i <= index; i++) {
-      if (rightPos + (leafWidth + this.thumbPadding) > viewWidth) {
-        rightPos = 0;
-        rowHeight = 0;
-        leafIndex = 0;
-      }
-
-      const leafHeight = floor((book.getPageHeight(leafIndex) * this.thumbWidth) / book.getPageWidth(leafIndex), 10);
-      if (leafHeight > rowHeight) { rowHeight = leafHeight; }
-      if (leafIndex == 0) {
-        leafTop = bottomPos;
-        bottomPos += this.thumbPadding + rowHeight;
-      }
-      rightPos += leafWidth + this.thumbPadding;
-      leafIndex++;
-    }
-    this.updateFirstIndex(index);
-    if (this.refs.$brContainer.prop('scrollTop') == leafTop) {
-      this.drawLeafs();
-    } else {
-      this.animating = true;
-      this.refs.$brContainer.stop(true)
-        .animate({ scrollTop: leafTop }, 'fast', () => { this.animating = false });
-    }
+    this._modes.modeThumb.jumpToIndex(index);
   } else { // 1up
     this._modes.mode1Up.jumpToIndex(index, pageX, pageY, noAnimate);
   }

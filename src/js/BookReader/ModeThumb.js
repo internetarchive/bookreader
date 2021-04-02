@@ -323,4 +323,44 @@ export class ModeThumb {
     this.drawLeafs(this.br.currentIndex());
     this.br.updateBrClasses();
   }
+
+  /**
+   * @param {PageIndex} index
+   */
+  jumpToIndex(index) {
+    const { floor } = Math;
+    const { book } = this;
+    const viewWidth = this.br.refs.$brContainer.prop('scrollWidth') - 20; // width minus buffer
+    const leafWidth = this.br.thumbWidth;
+    let leafTop = 0;
+    let rightPos = 0;
+    let bottomPos = 0;
+    let rowHeight = 0;
+    let leafIndex = 0;
+
+    for (let i = 0; i <= index; i++) {
+      if (rightPos + (leafWidth + this.br.thumbPadding) > viewWidth) {
+        rightPos = 0;
+        rowHeight = 0;
+        leafIndex = 0;
+      }
+
+      const leafHeight = floor((book.getPageHeight(leafIndex) * this.br.thumbWidth) / book.getPageWidth(leafIndex), 10);
+      if (leafHeight > rowHeight) { rowHeight = leafHeight; }
+      if (leafIndex == 0) {
+        leafTop = bottomPos;
+        bottomPos += this.br.thumbPadding + rowHeight;
+      }
+      rightPos += leafWidth + this.br.thumbPadding;
+      leafIndex++;
+    }
+    this.br.updateFirstIndex(index);
+    if (this.br.refs.$brContainer.prop('scrollTop') == leafTop) {
+      this.br.drawLeafs();
+    } else {
+      this.br.animating = true;
+      this.br.refs.$brContainer.stop(true)
+        .animate({ scrollTop: leafTop }, 'fast', () => { this.br.animating = false });
+    }
+  }
 }
