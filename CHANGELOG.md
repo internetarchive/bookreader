@@ -1,3 +1,10 @@
+# 4.39.3
+- Hotfix: Fix iOS 8 erroring since 4.39.0 @cdrini
+
+# 4.39.2
+- Dev: update Readme @Himanshunitrr
+- Dev: in-file typo fixes @cclauss
+- Fix: v5 booknav refresh @iisa @dualcnhq
 # 4.39.1
 - Dev: update Readme @Himanshunitrr
 - Fix: v5 bookmarks menu update @iisa @dualcnhq
