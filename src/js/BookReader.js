@@ -38,8 +38,8 @@ import {
 import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
+import { ModeThumb } from './BookReader/ModeThumb';
 import { ImageCache } from './BookReader/ImageCache.js';
-import { extendBookReader } from './BookReader/ModeThumb';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -228,6 +228,7 @@ BookReader.prototype.setup = function(options) {
   this._modes = {
     mode1Up: new Mode1Up(this, this._models.book),
     mode2Up: new Mode2Up(this, this._models.book),
+    modeThumb: new ModeThumb(this, this._models.book),
   };
 
   /** Stores classes which we want to expose (selectively) some methods as overridable */
@@ -237,6 +238,7 @@ BookReader.prototype.setup = function(options) {
     '_components.toolbar': this._components.toolbar,
     '_modes.mode1Up': this._modes.mode1Up,
     '_modes.mode2Up': this._modes.mode2Up,
+    '_modes.modeThumb': this._modes.modeThumb,
   };
 
   /** Image cache for general image fetching */
@@ -747,7 +749,24 @@ BookReader.prototype.bindGestures = function(jElement) {
   });
 };
 
-extendBookReader(BookReader);
+/** @deprecated Not used outside ModeThumb */
+BookReader.prototype.drawLeafsThumbnail = ModeThumb.prototype.drawLeafs;
+exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'drawLeafs', 'drawLeafsThumbnail');
+/** @deprecated Not used outside ModeThumb */
+BookReader.prototype.lazyLoadThumbnails = ModeThumb.prototype.lazyLoadThumbnails;
+exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'lazyLoadThumbnails', 'lazyLoadThumbnails');
+BookReader.prototype.lazyLoadImage = ModeThumb.prototype.lazyLoadImage;
+exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'lazyLoadImage', 'lazyLoadImage');
+/** @deprecated Internal use only */
+BookReader.prototype.zoomThumb = ModeThumb.prototype.zoom;
+exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'zoom', 'zoomThumb');
+/** @deprecated Not used outside ModeThumb */
+BookReader.prototype.getThumbnailWidth = ModeThumb.prototype.getThumbnailWidth;
+exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'getThumbnailWidth', 'getThumbnailWidth');
+/** @deprecated Not used outside ModeThumb */
+BookReader.prototype.prepareThumbnailView = ModeThumb.prototype.prepare;
+exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'prepare', 'prepareThumbnailView');
+
 /**
  * A throttled version of drawLeafs
  */
