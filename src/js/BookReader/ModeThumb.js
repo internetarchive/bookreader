@@ -1,13 +1,16 @@
+// @ts-check
 import * as utils from './utils.js';
+/** @typedef {import('./BookModel.js').PageIndex} PageIndex */
+
+/** @typedef {JQuery} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce */
 
 export function extendBookReader(BookReader) {
   /**
    * Draws the thumbnail view
-   * @param {number} optional If seekIndex is defined, the view will be drawn
+   * @param {number} seekIndex If seekIndex is defined, the view will be drawn
    *    with that page visible (without any animated scrolling).
    *
    * Creates place holder for image to load after gallery has been drawn
-   * @typedef {Object} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce
    */
   BookReader.prototype.drawLeafsThumbnail = function(seekIndex) {
     const { floor } = Math;
@@ -20,6 +23,7 @@ export function extendBookReader(BookReader) {
     let maxRight = 0;
     let currentRow = 0;
     let leafIndex = 0;
+    /** @type {Array<{ leafs?: Array<{num: PageIndex, left: number}>, height?: number, top?: number }>} */
     const leafMap = [];
 
     // Will be set to top of requested seek index, if set
@@ -36,7 +40,9 @@ export function extendBookReader(BookReader) {
       }
 
       // Init current row in leafMap
-      if (!leafMap[currentRow]) { leafMap[currentRow] = {}; }
+      if (!leafMap[currentRow]) {
+        leafMap[currentRow] = {};
+      }
       if (!leafMap[currentRow].leafs) {
         leafMap[currentRow].leafs = [];
         leafMap[currentRow].height = 0;
@@ -231,7 +237,7 @@ export function extendBookReader(BookReader) {
   /**
    * Replaces placeholder image with real one
    *
-   * @param {$lazyLoadImgPlaceholder} - $imgPlaceholder
+   * @param {$lazyLoadImgPlaceholder} imgPlaceholder
    */
   BookReader.prototype.lazyLoadImage = function (imgPlaceholder) {
     const leaf =  $(imgPlaceholder).data('leaf');
@@ -271,15 +277,14 @@ export function extendBookReader(BookReader) {
    * Returns the width per thumbnail to display the requested number of columns
    * Note: #BRpageview must already exist since its width is used to calculate the
    *       thumbnail width
-   * @param {number}
-   * @param {number}
+   * @param {number} thumbnailColumns
    */
   BookReader.prototype.getThumbnailWidth = function(thumbnailColumns) {
     const DEFAULT_THUMBNAIL_WIDTH = 100;
 
     const padding = (thumbnailColumns + 1) * this.thumbPadding;
     const width = (this.refs.$brPageViewEl.width() - padding) / (thumbnailColumns + 0.5); // extra 0.5 is for some space at sides
-    const idealThumbnailWidth = parseInt(width);
+    const idealThumbnailWidth = Math.floor(width);
     return idealThumbnailWidth > 0 ? idealThumbnailWidth : DEFAULT_THUMBNAIL_WIDTH;
   };
 
