@@ -316,7 +316,7 @@ export class BookModel {
     let unviewablesChunkStart  = null;
     let index = 0;
     // @ts-ignore TS doesn't know about flatMap for some reason
-    const flattend = this.br.data.flatMap(spread => {
+    const flattened = this.br.data.flatMap(spread => {
       return spread.map(page => {
         if (!page.pageSide) {
           if (prevPageSide === null) {
@@ -343,8 +343,8 @@ export class BookModel {
     });
 
     // length is used as a cache breaker
-    this._getDataFlattenedCached = [flattend, this.br.data.length];
-    return flattend;
+    this._getDataFlattenedCached = [flattened, this.br.data.length];
+    return flattened;
   }
 
   /**

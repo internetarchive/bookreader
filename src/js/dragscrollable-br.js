@@ -37,7 +37,7 @@
  *	                     | draggable elements will be processed.
  * ------------------------------------------------------------------------
  *  preventDefault       | Prevents the event to propagate further effectivey
- *                       | dissabling other default actions. Defaults to true
+ *                       | disabling other default actions. Defaults to true
  * ------------------------------------------------------------------------
  *  scrollWindow         | Scroll the window rather than the element
  *                       | Defaults to false
@@ -226,7 +226,7 @@
           top: Math.abs(event.data.lastCoord.top - event.data.firstCoord.top)};
         var distance = Math.max(delta.left, delta.top);
 
-        // Allow event to propage if min distance was not achieved
+        // Allow event to propagate if min distance was not achieved
         if (event.data.preventDefault && distance > settings.dragMinDistance) {
           event.preventDefault();
           event.stopImmediatePropagation();

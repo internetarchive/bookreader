@@ -244,7 +244,7 @@ export class WebTTSSound {
     const pauseMightNotFire = isChrome() || pauseMightNotWork;
 
     if (pauseMightNotFire) {
-      // wait for it just it incase
+      // wait for it just in case
       const timeoutPromise = sleep(100).then(() => 'timeout');
       Promise.race([pausePromise, timeoutPromise])
         .then(result => {

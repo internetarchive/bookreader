@@ -205,7 +205,7 @@ export default class AbstractTTSEngine {
    */
   static getBestBookVoice(voices, bookLanguage, userLanguages = navigator.languages) {
     const bookLangVoices = voices.filter(v => v.lang.startsWith(bookLanguage));
-    // navigator.languages browser support isn't great yet, so get just 1 langauge otherwise
+    // navigator.languages browser support isn't great yet, so get just 1 language otherwise
     // Sample navigator.languages: ["en-CA", "fr-CA", "fr", "en-US", "en", "de-DE", "de"]
     userLanguages = userLanguages || (navigator.language ? [navigator.language] : []);
 
@@ -216,7 +216,7 @@ export default class AbstractTTSEngine {
     return AbstractTTSEngine.getMatchingVoice(matchingUserLangs, bookLangVoices) ||
         // no user languages match the books; let's return the best voice for the book language
         (bookLangVoices.find(v => v.default) || bookLangVoices[0])
-        // No voices match the book language? let's find a voice in the user's langauge
+        // No voices match the book language? let's find a voice in the user's language
         // and ignore book lang
         || AbstractTTSEngine.getMatchingVoice(userLanguages, voices)
         // C'mon! Ok, just read with whatever we got!

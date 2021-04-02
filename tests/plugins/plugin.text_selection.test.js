@@ -49,7 +49,7 @@ describe("Generic tests", () => {
     br.init();
   });
 
-  test("_createPageContainer overriden function still creates a BRpagecontainer element", () => {
+  test("_createPageContainer overridden function still creates a BRpagecontainer element", () => {
     const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
     sinon.stub(br.textSelectionPlugin, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));

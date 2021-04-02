@@ -38,7 +38,7 @@ export const DEFAULT_OPTIONS = {
   logoURL: 'https://archive.org',
 
   /**
-   * Base URL for UI images - should be overriden (before init) by
+   * Base URL for UI images - should be overridden (before init) by
    * custom implementations.
    * $$$ This is the same directory as the images referenced by relative
    *     path in the CSS.  Would be better to automagically find that path.
