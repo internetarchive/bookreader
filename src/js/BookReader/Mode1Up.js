@@ -151,18 +151,17 @@ export class Mode1Up {
           const width = this.physicalInchesToDisplayPixels(page.widthInches);
           const reduce = page.width / width;
 
-          this.br._createPageContainer(page.index, {
-            width,
-            height,
-            top,
-            left: Math.floor((documentContainerWidth - width) / 2),
-          })
-            .append($('<img />', {
-              src: page.getURI(reduce, 0),
-              srcset: this.br.options.useSrcSet ? this.br._getPageURISrcset(page.index, reduce, 0) : '',
-              alt: 'Book page image',
-            }))
-            .appendTo(this.$documentContainer);
+          const pageContainer = this.br._createPageContainer(page.index)
+            .update({
+              dimensions: {
+                width,
+                height,
+                top,
+                left: Math.floor((documentContainerWidth - width) / 2),
+              },
+              reduce,
+            });
+          pageContainer.$container.appendTo(this.$documentContainer);
         }
       }
     }

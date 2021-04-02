@@ -40,6 +40,7 @@ import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
 import { ModeThumb } from './BookReader/ModeThumb';
 import { ImageCache } from './BookReader/ImageCache.js';
+import { PageContainer } from './BookReader/PageContainer.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -703,21 +704,12 @@ BookReader.prototype.drawLeafs = function() {
 /**
  * @protected
  */
-BookReader.prototype._createPageContainer = function(index, styles) {
-  const { pageSide } = this._models.book.getPage(index);
-  const css = Object.assign({ position: 'absolute' }, styles);
-  const modeClasses = {
-    [this.constMode1up]: '1up',
-    [this.constMode2up]: '2up',
-    [this.constModeThumb]: 'thumb',
-  };
-  const container = $('<div />', {
-    'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
-    css,
-  }).attr('data-side', pageSide).append($('<div />', { 'class': 'BRscreen' }));
-  container.toggleClass('protected', this.protected);
-
-  return container;
+BookReader.prototype._createPageContainer = function(index) {
+  return new PageContainer(this._models.book.getPage(index), {
+    isProtected: this.protected,
+    useSrcSet: this.useSrcSet,
+    imageCache: this.imageCache,
+  });
 };
 
 BookReader.prototype.bindGestures = function(jElement) {
@@ -1343,20 +1335,17 @@ BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
 
   /** main function that creates page container */
   const fetchImageAndRegister = () => {
-    const $image = this.imageCache.image(index, this.reduce);
-    const $pageContainer = this._createPageContainer(index, this._modes.mode2Up.baseLeafCss);
-    $($image).appendTo($pageContainer);
+    const pageContainer = this._createPageContainer(index)
+      .update({ reduce: this.reduce });
+    pageContainer.$container.css(this._modes.mode2Up.baseLeafCss);
 
     const isEmptyPage = index < 0 || index > (this._models.book.getNumLeafs() - 1);
     if (isEmptyPage) {
       // Facing page at beginning or end, or beyond
-      $pageContainer.addClass('BRemptypage');
+      pageContainer.$container.addClass('BRemptypage');
     }
 
-    /** store uri & reducer */
-    $pageContainer[0].uri = $image.uri;
-    $pageContainer[0].reduce = $image.reduce;
-    this.prefetchedImgs[index] = $pageContainer;
+    this.prefetchedImgs[index] = pageContainer;
   };
 
   const indexIsInView = (index == this.twoPage.currentIndexL) || (index == this.twoPage.currentIndexR);
