@@ -1196,7 +1196,7 @@ BookReader.prototype.updateFirstIndex = function(
   if (this.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
-  this.trigger('pageChanged');
+  this.trigger(BookReader.eventNames.pageChanged);
   this.updateNavIndexThrottled(index);
 };
 
