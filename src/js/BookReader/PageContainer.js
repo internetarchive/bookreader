@@ -40,7 +40,14 @@ export class PageContainer {
    * @param {number} param0.reduce
    */
   update({dimensions = null, reduce = null}) {
-    if (dimensions) this.$container.css(dimensions);
+    if (dimensions) {
+      this.$container.css(dimensions);
+    }
+
+    if (reduce == null) {
+      return;
+    }
+
     const alreadyLoaded = this.imageCache.imageLoaded(this.page.index, reduce);
 
     this.$exitingImg?.remove();

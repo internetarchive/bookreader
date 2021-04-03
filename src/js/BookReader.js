@@ -144,7 +144,9 @@ BookReader.prototype.setup = function(options) {
   this.displayedRows = [];
 
   this.displayedIndices = [];
+  /** @deprecated Unused; will be remove in v5 */
   this.imgs = {};
+  /** @deprecated No longer used; will be remove in v5 */
   this.prefetchedImgs = {}; //an object with numeric keys corresponding to page index, reduce
 
   this.animating = false;
@@ -1322,60 +1324,17 @@ BookReader.prototype._scrollAmount = function() {
 };
 
 /**
- * Used by 2up
- * Fetches the image for requested index & saves in `this.prefetchedImgs`
- * Does not re-request if image is in the
- *
- * @param {Number} index
- * @param {Boolean} fetchNow
- *   - flag to allow for non-viewable page to be immediately requested
- *     - this allows for "2up to prepare a page flip"
+ * @deprecated No longer used; will be remove in v5
  */
 BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
-
-  /** main function that creates page container */
-  const fetchImageAndRegister = () => {
-    const pageContainer = this._createPageContainer(index)
-      .update({ reduce: this.reduce });
-    pageContainer.$container.css(this._modes.mode2Up.baseLeafCss);
-
-    const isEmptyPage = index < 0 || index > (this._models.book.getNumLeafs() - 1);
-    if (isEmptyPage) {
-      // Facing page at beginning or end, or beyond
-      pageContainer.$container.addClass('BRemptypage');
-    }
-
-    this.prefetchedImgs[index] = pageContainer;
-  };
-
-  const indexIsInView = (index == this.twoPage.currentIndexL) || (index == this.twoPage.currentIndexR);
-  if (fetchNow || indexIsInView) {
-    fetchImageAndRegister();
-  } else {
-    // stagger request
-    const time = 300;
-    setTimeout(() => {
-      // just fetch image, do not wrap with page container
-      this.imageCache.image(index, this.reduce);
-    }, time);
-  }
+  console.warn('Call to deprecated function: BookReader.prefetchImg. No-op.');
 };
 
 /**
- * used in 2up
- * cached 2up page containers
- * */
+ * @deprecated No longer used; will be remove in v5
+ */
 BookReader.prototype.pruneUnusedImgs = function() {
-  for (var key in this.prefetchedImgs) {
-    if ((key != this.twoPage.currentIndexL) && (key != this.twoPage.currentIndexR)) {
-      $(this.prefetchedImgs[key]).remove();
-    }
-    if ((key < this.twoPage.currentIndexL - 4) || (key > this.twoPage.currentIndexR + 4)) {
-      if (this.prefetchedImgs[key]?.reduce > this.reduce) {
-        delete this.prefetchedImgs[key];
-      }
-    }
-  }
+  console.warn('Call to deprecated function: BookReader.pruneUnused. No-op.');
 };
 
 /************************/
@@ -1535,16 +1494,16 @@ BookReader.prototype.stopFlipAnimations = function() {
   if (this.leafEdgeTmp) {
     $(this.leafEdgeTmp).stop(false, true);
   }
-  jQuery.each(this.prefetchedImgs, function() {
-    $(this).stop(false, true);
+  jQuery.each(this._modes.mode2Up.pageContainers, function() {
+    $(this.$container).stop(false, true);
   });
 
   // And again since animations also queued in callbacks
   if (this.leafEdgeTmp) {
     $(this.leafEdgeTmp).stop(false, true);
   }
-  jQuery.each(this.prefetchedImgs, function() {
-    $(this).stop(false, true);
+  jQuery.each(this._modes.mode2Up.pageContainers, function() {
+    $(this.$container).stop(false, true);
   });
 };
 
