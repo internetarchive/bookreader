@@ -94,15 +94,16 @@ export class ImageCache {
       entries.push(cacheEntry);
     }
     const page = this.br._models.book.getPage(index);
-    const srcSet = this.br.options.useSrcSet ? this.br._getPageURISrcset(index, reduce) : '';
 
     const $img = $('<img />', {
       'class': 'BRpageimage',
       'alt': 'Book page image',
       src: page.getURI(reduce, 0),
-      srcSet,
     })
       .data('reduce', reduce);
+    if (this.br.options.useSrcSet) {
+      $img.attr('srcset', this.br._getPageURISrcset(index, reduce));
+    }
     if (!cacheEntry.loaded) {
       $img.one('load', () => cacheEntry.loaded = true);
     }

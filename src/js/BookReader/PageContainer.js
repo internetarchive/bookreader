@@ -8,12 +8,10 @@ export class PageContainer {
    * @param {PageModel} page
    * @param {object} opts
    * @param {boolean} opts.isProtected Whether we're in a protected book
-   * @param {boolean} opts.useSrcSet
    * @param {ImageCache} opts.imageCache
    */
-  constructor(page, {isProtected, useSrcSet, imageCache}) {
+  constructor(page, {isProtected, imageCache}) {
     this.page = page;
-    this.useSrcSet = useSrcSet;
     this.imageCache = imageCache;
     this.$container = $('<div />', {
       'class': `BRpagecontainer pagediv${page.index}`,
