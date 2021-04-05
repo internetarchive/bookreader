@@ -275,12 +275,17 @@ export class BookModel {
 
   /**
    * @param {number} index use negatives to get page relative to end
+   * @param loop whether to loop (i.e. -1 == last page)
    */
-  getPage(index) {
+  getPage(index, loop = true) {
     const numLeafs = this.getNumLeafs();
+    if (!loop && (index < 0 || index >= numLeafs)) {
+      return undefined;
+    }
     if (index < 0 && index >= -numLeafs) {
       index += numLeafs;
     }
+    index = index % numLeafs;
     return new PageModel(this, index);
   }
 

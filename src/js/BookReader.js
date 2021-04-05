@@ -708,7 +708,7 @@ BookReader.prototype.drawLeafs = function() {
  * @param {PageIndex} index
  */
 BookReader.prototype._createPageContainer = function(index) {
-  return new PageContainer(this._models.book.getPage(index), {
+  return new PageContainer(this._models.book.getPage(index, false), {
     isProtected: this.protected,
     imageCache: this.imageCache,
   });

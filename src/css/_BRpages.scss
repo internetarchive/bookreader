@@ -13,6 +13,9 @@
 .BRmodeThumb .BRpagecontainer, .BRmode2Up .BRpagecontainer {
   cursor: pointer;
 }
+.BRpagecontainer.BRemptypage {
+  cursor: unset;
+}
 
 .BRpagecontainer {
   position: relative;

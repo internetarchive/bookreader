@@ -14,10 +14,9 @@ export class PageContainer {
     this.page = page;
     this.imageCache = imageCache;
     this.$container = $('<div />', {
-      'class': `BRpagecontainer pagediv${page.index}`,
+      'class': `BRpagecontainer ${page ? `pagediv${page.index}` : 'BRemptypage'}`,
       css: { position: 'absolute' },
-    })
-      .attr('data-side', page.pageSide);
+    });
 
     if (isProtected) {
       this.$container.append($('<div class="BRscreen" />'));
@@ -44,7 +43,7 @@ export class PageContainer {
       this.$container.css(dimensions);
     }
 
-    if (reduce == null) {
+    if (reduce == null || !this.page) {
       return;
     }
 
