@@ -42,19 +42,14 @@ export class ImageCache {
   }
 
   /**
-   * Checks if image has been loaded
+   * Checks if an image of equal or greater quality has been loaded
    * @param {import("./BookModel").PageIndex} index
    * @param {Number} reduce
    * @returns {Boolean}
    */
   imageLoaded(index, reduce) {
-    const cacheImg = this.cache[index]?.find(e => e.reduce == reduce);
-    if (!cacheImg) {
-      return false;
-    }
-    const { reduce: cachedReduce, loaded } = cacheImg;
-    const cacheImgReducedWellEnough = cachedReduce <= reduce;
-    return cacheImgReducedWellEnough && loaded;
+    const cacheImg = this.cache[index]?.find(e => e.reduce <= reduce);
+    return cacheImg?.loaded ?? false;
   }
 
   /**
