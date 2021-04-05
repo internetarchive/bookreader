@@ -711,6 +711,7 @@ BookReader.prototype._createPageContainer = function(index) {
   return new PageContainer(this._models.book.getPage(index, false), {
     isProtected: this.protected,
     imageCache: this.imageCache,
+    loadingImage: this.imagesBaseURL + 'loading.gif',
   });
 };
 

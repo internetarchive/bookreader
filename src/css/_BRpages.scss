@@ -20,7 +20,7 @@
 .BRpagecontainer {
   position: relative;
   overflow: hidden;
-  background: url(images/loading.gif) 50% no-repeat, $brColorPlaceholderBg;
+  background: $brColorPlaceholderBg;
   img {
     position: absolute;
     background: transparent;

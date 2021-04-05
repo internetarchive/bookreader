@@ -9,10 +9,12 @@ export class PageContainer {
    * @param {object} opts
    * @param {boolean} opts.isProtected Whether we're in a protected book
    * @param {ImageCache} opts.imageCache
+   * @param {string} opts.loadingImage
    */
-  constructor(page, {isProtected, imageCache}) {
+  constructor(page, {isProtected, imageCache, loadingImage}) {
     this.page = page;
     this.imageCache = imageCache;
+    this.loadingImage = loadingImage;
     this.$container = $('<div />', {
       'class': `BRpagecontainer ${page ? `pagediv${page.index}` : 'BRemptypage'}`,
       css: { position: 'absolute' },
@@ -24,13 +26,7 @@ export class PageContainer {
     }
 
     /** @type {JQuery<HTMLImageElement>} The main book page image */
-    this.$primaryImg = null;
-    /**
-     * @type {JQuery<HTMLImageElement>}
-     * The image at the previous resolution; shown underneath as the
-     * new image is loading.
-     */
-    this.$exitingImg = null;
+    this.$img = null;
   }
 
   /**
@@ -48,31 +44,30 @@ export class PageContainer {
     }
 
     const alreadyLoaded = this.imageCache.imageLoaded(this.page.index, reduce);
-
-    this.$exitingImg?.remove();
-    // Any image loaded we can display while loading the correct res?
-    if (!alreadyLoaded) {
-      const nextBestLoadedReduce = this.imageCache.getBestLoadedReduce(this.page.index, reduce);
-      if (nextBestLoadedReduce !== null) {
-        this.$exitingImg = this.imageCache
-          .image(this.page.index, nextBestLoadedReduce)
-          .appendTo(this.$container);
-      }
-    }
+    const nextBestLoadedReduce = !alreadyLoaded && this.imageCache.getBestLoadedReduce(this.page.index, reduce);
 
     // Add the actual, highres image
-    this.$primaryImg?.remove();
-    this.$primaryImg = this.imageCache
+    this.$img?.remove();
+    this.$img = this.imageCache
       .image(this.page.index, reduce)
       .appendTo(this.$container);
-    if (this.$exitingImg) {
-      this.$primaryImg.attr('alt', '');
-    }
+
+    const backgroundLayers = [];
     if (!alreadyLoaded) {
-      this.$primaryImg.one('loadend', async () => {
-        this.$primaryImg.attr('alt', 'Book page image');
-        this.$exitingImg?.remove();
-      });
+      this.$container.addClass('BRpageloading');
+      backgroundLayers.push(`url("${this.loadingImage}") center/20px no-repeat`);
+    }
+    if (nextBestLoadedReduce) {
+      backgroundLayers.push(`url("${this.page.getURI(nextBestLoadedReduce, 0)}") center/100% no-repeat`);
+    }
+
+    if (!alreadyLoaded) {
+      this.$img
+        .css('background', backgroundLayers.join(','))
+        .one('loadend', async (ev) => {
+          $(ev.target).css({ 'background': '' })
+          $(ev.target).parent().removeClass('BRpageloading');
+        });
     }
 
     return this;
