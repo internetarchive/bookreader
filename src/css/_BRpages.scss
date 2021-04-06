@@ -36,6 +36,10 @@
     left: 0;
     z-index: 1;
   }
+  &.BRpageloading img {
+    // Don't show the alt text while loading
+    color: transparent;
+  }
   &.BRemptypage {
     background: transparent;
     img {
