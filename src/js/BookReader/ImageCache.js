@@ -6,15 +6,21 @@
  */
 /** @typedef {import("./BookModel").BookModel} BookModel */
 /** @typedef {import("./BookModel").PageIndex} PageIndex */
+/** @typedef {import("./ReduceSet").ReduceSet} ReduceSet */
+
+import { Pow2ReduceSet } from "./ReduceSet";
 
 export class ImageCache {
   /**
    * @param {BookModel} book
    * @param {object} opts
+   * @param {boolean} [opts.useSrcSet]
+   * @param {ReduceSet} [opts.reduceSet]
    */
-  constructor(book, { useSrcSet = false } = {}) {
+  constructor(book, { useSrcSet = false, reduceSet = Pow2ReduceSet } = {}) {
     this.book = book;
     this.useSrcSet = useSrcSet;
+    this.reduceSet = reduceSet;
     /** @type {{ [index: number]: { reduce: number, loaded: boolean }[] }} */
     this.cache = {};
     this.defaultScale = 8;
@@ -84,9 +90,10 @@ export class ImageCache {
    * @returns {JQuery<HTMLImageElement>} with base image classes
    */
   _serveImageElement(index, reduce) {
-    let cacheEntry = this.cache[index]?.find(e => e.reduce == reduce);
+    const validReduce = this.reduceSet.floor(reduce);
+    let cacheEntry = this.cache[index]?.find(e => e.reduce == validReduce);
     if (!cacheEntry) {
-      cacheEntry = { reduce, loaded: false };
+      cacheEntry = { reduce: validReduce, loaded: false };
       const entries = this.cache[index] || (this.cache[index] = []);
       entries.push(cacheEntry);
     }
@@ -95,11 +102,11 @@ export class ImageCache {
     const $img = $('<img />', {
       'class': 'BRpageimage',
       'alt': 'Book page image',
-      src: page.getURI(reduce, 0),
+      src: page.getURI(validReduce, 0),
     })
-      .data('reduce', reduce);
+      .data('reduce', validReduce);
     if (this.useSrcSet) {
-      $img.attr('srcset', page.getURISrcSet(reduce));
+      $img.attr('srcset', page.getURISrcSet(validReduce));
     }
     if (!cacheEntry.loaded) {
       $img.one('load', () => cacheEntry.loaded = true);

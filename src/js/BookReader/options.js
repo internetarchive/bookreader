@@ -45,6 +45,9 @@ export const DEFAULT_OPTIONS = {
    */
   imagesBaseURL: '/BookReader/images/',
 
+  /** @type {'pow2' | 'integer'} What reduces are valid for getURI. */
+  reduceSet: 'pow2',
+
   /**
    * Zoom levels
    * @type {ReductionFactor[]}
