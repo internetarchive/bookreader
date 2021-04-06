@@ -50,7 +50,7 @@ export class PageContainer {
     this.$img?.remove();
     this.$img = this.imageCache
       .image(this.page.index, reduce)
-      .appendTo(this.$container);
+      .prependTo(this.$container);
 
     const backgroundLayers = [];
     if (!alreadyLoaded) {
