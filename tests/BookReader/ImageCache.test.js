@@ -77,6 +77,34 @@ describe('Image Cache', () => {
     });
   });
 
+  describe('`getBestLoadedReduce` call', () => {
+    test('handles empty cache', () => {
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = {};
+      expect(ic.getBestLoadedReduce(0)).toBeNull();
+    });
+
+    test('handles empty page-level cache', () => {
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = { 0: [] };
+      expect(ic.getBestLoadedReduce(0)).toBeNull();
+      ic.cache = { 0: [{ reduce: 10, loaded: false }] };
+      expect(ic.getBestLoadedReduce(0)).toBeNull();
+    });
+
+    test('chooses highest quality sufficient image', () => {
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = { 0: [{ reduce: 1, loaded: true }, { reduce: 4, loaded: true }, { reduce: 10, loaded: true }] };
+      expect(ic.getBestLoadedReduce(0, 5)).toBe(10);
+    });
+
+    test('chooses closest image if no lower images', () => {
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = { 0: [{ reduce: 1, loaded: true }, { reduce: 4, loaded: true }] };
+      expect(ic.getBestLoadedReduce(0, 5)).toBe(4);
+    });
+  });
+
   describe('`_serveImageElement` call', () => {
     test('returns jQuery image element', () => {
       const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
@@ -84,6 +112,24 @@ describe('Image Cache', () => {
       expect($(img).length).toBe(1);
       expect($(img)[0].classList.contains('BRpageimage')).toBe(true);
       expect($(img).attr('src')).toBe(FIRST_PAGE_MOCK.uri);
+    });
+
+    test('does not set srcset when useSrcSet=false', () => {
+      const ic = new ImageCache(
+        new BookModel({ data: SAMPLE_DATA }),
+        { useSrcSet: false },
+      );
+      const $img = ic._serveImageElement(0);
+      expect($img[0].hasAttribute('srcset')).toBe(false);
+    });
+
+    test('sets srcset when useSrcSet=false', () => {
+      const ic = new ImageCache(
+        new BookModel({ data: SAMPLE_DATA }),
+        { useSrcSet: true },
+      );
+      const $img = ic._serveImageElement(0);
+      expect($img.attr('srcset')).toBeTruthy();
     });
   });
 });
