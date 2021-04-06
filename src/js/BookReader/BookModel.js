@@ -445,6 +445,31 @@ export class PageModel {
   }
 
   /**
+   * Returns the srcset with correct URIs or void string if out of range
+   * Also makes the reduce argument optional
+   * @param {number} reduce
+   * @param {number} [rotate]
+   */
+  getURISrcSet(reduce, rotate = 0) {
+    let scale = [16,8,4,2,1];
+    // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
+    if (reduce < 2) {
+      return "";
+    } else if (reduce < 4) {
+      scale = [1];
+    } else if (reduce < 8) {
+      scale = [2,1];
+    } else if (reduce < 16) {
+      scale = [4,2,1];
+    } else  if (reduce < 32) {
+      scale = [8,4,2,1];
+    }
+    return scale
+      .map((el, i) => `${this.getURI(scale[i], rotate)} ${2 ** (i + 1)}x`)
+      .join(', ');
+  }
+
+  /**
    * @param {object} [arg0]
    * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
    * of a series of unviewable pages instead of each page

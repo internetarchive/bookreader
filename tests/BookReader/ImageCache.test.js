@@ -1,10 +1,6 @@
-import '../../src/js/jquery-ui-wrapper.js';
-import 'jquery.browser';
-import '../../src/js/dragscrollable-br.js';
-import 'jquery-colorbox';
-
 import sinon from 'sinon';
-import BookReader from '../../src/js/BookReader.js';
+import { BookModel } from '../../src/js/BookReader/BookModel.js';
+import { ImageCache } from '../../src/js/BookReader/ImageCache.js';
 /** @typedef {import('../../src/js/BookReader/options.js').BookReaderOptions} BookReaderOptions */
 
 afterEach(() => {
@@ -31,74 +27,60 @@ const SAMPLE_DATA = [
 ];
 
 describe('Image Cache', () => {
-  test('has image cache in bookreader instance', () => {
-    const br = new BookReader({ data: SAMPLE_DATA });
-    br.init();
-    expect(br.imageCache).toBeTruthy();
-  });
-
   describe('`image` call', () => {
     test('calling `image` will create an image if none is cached', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      br.imageCache.cache = {};
-      br.imageCache.image(1, 5);
-      expect(Object.keys(br.imageCache.cache).length).toBe(1);
-      expect(br.imageCache.cache['1'].length).toBe(1);
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = {};
+      ic.image(1, 5);
+      expect(Object.keys(ic.cache).length).toBe(1);
+      expect(ic.cache['1'].length).toBe(1);
     });
     test('will pull from cache if image of a good quality has been stored', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      const serveImgElSpy = sinon.spy(br.imageCache, '_serveImageElement');
-      br.imageCache.cache = CACHE_MOCK;
-      br.imageCache.image(1, 5);
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      const serveImgElSpy = sinon.spy(ic, '_serveImageElement');
+      ic.cache = CACHE_MOCK;
+      ic.image(1, 5);
       expect(serveImgElSpy.callCount).toBe(1);
     });
   });
 
   describe('`imageLoaded` call', () => {
     test('returns true if image in cache', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      br.imageCache.cache = CACHE_MOCK;
-      const isImgLoaded = br.imageCache.imageLoaded(1, 3);
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = CACHE_MOCK;
+      const isImgLoaded = ic.imageLoaded(1, 3);
       expect(isImgLoaded).toBe(true);
     });
     test('returns true if image reducer in cache is good enough', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      br.imageCache.cache = CACHE_MOCK;
-      const isImgLoaded = br.imageCache.imageLoaded(1, 5);
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = CACHE_MOCK;
+      const isImgLoaded = ic.imageLoaded(1, 5);
       expect(isImgLoaded).toBe(true);
     });
     test('returns false if no image in cache', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      br.imageCache.cache = CACHE_MOCK;
-      const isImgLoaded = br.imageCache.imageLoaded(2, 3);
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = CACHE_MOCK;
+      const isImgLoaded = ic.imageLoaded(2, 3);
       expect(isImgLoaded).toBe(false);
     });
     test('returns false if reducer to check is better than cache', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      br.imageCache.cache = CACHE_MOCK;
-      const isImgLoaded = br.imageCache.imageLoaded(1, 2);
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = CACHE_MOCK;
+      const isImgLoaded = ic.imageLoaded(1, 2);
       expect(isImgLoaded).toBe(false);
     });
     test('returns false if image has not loaded', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      br.imageCache.cache = { 1: [{ reduce: 4, loaded: false }] };
-      const isImgLoaded = br.imageCache.imageLoaded(1, 2);
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      ic.cache = { 1: [{ reduce: 4, loaded: false }] };
+      const isImgLoaded = ic.imageLoaded(1, 2);
       expect(isImgLoaded).toBe(false);
     });
   });
 
   describe('`_serveImageElement` call', () => {
     test('returns jQuery image element', () => {
-      const br = new BookReader({ data: SAMPLE_DATA });
-      br.init();
-      const img = br.imageCache._serveImageElement(0);
+      const ic = new ImageCache(new BookModel({ data: SAMPLE_DATA }));
+      const img = ic._serveImageElement(0);
       expect($(img).length).toBe(1);
       expect($(img)[0].classList.contains('BRpageimage')).toBe(true);
       expect($(img).attr('src')).toBe(FIRST_PAGE_MOCK.uri);

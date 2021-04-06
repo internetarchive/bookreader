@@ -245,7 +245,9 @@ BookReader.prototype.setup = function(options) {
   };
 
   /** Image cache for general image fetching */
-  this.imageCache = new ImageCache(this);
+  this.imageCache = new ImageCache(this._models.book, {
+    useSrcSet: this.options.useSrcSet
+  });
 };
 
 /** @deprecated unused outside Mode2Up */
@@ -2160,6 +2162,7 @@ BookReader.prototype.canSwitchToMode = function(mode) {
 
 
 /**
+ * @deprecated. Use PageModel.getURISrcSet. Slated for removal in v5.
  * Returns the srcset with correct URIs or void string if out of range
  * Also makes the reduce argument optional
  * @param {number} index
@@ -2168,33 +2171,17 @@ BookReader.prototype.canSwitchToMode = function(mode) {
  * @return {string}
  */
 BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
-  if (index < 0 || index >= this._models.book.getNumLeafs()) { // Synthesize page
-    return "";
+  const page = this._models.book.getPage(index, false);
+  // Synthesize page
+  if (!page) return "";
+
+  // reduce not passed in
+  // $$$ this probably won't work for thumbnail mode
+  if ('undefined' == typeof(reduce)) {
+    reduce = page.height / this.twoPage.height;
   }
 
-  let ratio = reduce;
-  if ('undefined' == typeof(reduce)) {
-    // reduce not passed in
-    // $$$ this probably won't work for thumbnail mode
-    ratio = this._models.book.getPageHeight(index) / this.twoPage.height;
-  }
-  let scale = [16,8,4,2,1];
-  // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-  if (ratio < 2) {
-    return "";
-  } else if (ratio < 4) {
-    scale = [1];
-  } else if (ratio < 8) {
-    scale = [2,1];
-  } else if (ratio < 16) {
-    scale = [4,2,1];
-  } else  if (ratio < 32) {
-    scale = [8,4,2,1];
-  }
-  return scale.map((el, i) => (
-    this._models.book.getPageURI(index, scale[i], rotate) + " "
-        + Math.pow(2, i + 1) + "x"
-  )).join(', ');
+  return page.getURISrcSet(reduce, rotate);
 }
 
 

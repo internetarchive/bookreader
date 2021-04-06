@@ -4,15 +4,17 @@
  * storing images in `<img>` tags so that
  * BookReader can leverage browser caching
  */
+/** @typedef {import("./BookModel").BookModel} BookModel */
 /** @typedef {import("./BookModel").PageIndex} PageIndex */
-/** @typedef {import("../BookReader").default} BookReader */
 
 export class ImageCache {
   /**
-   * @param {BookReader} br
+   * @param {BookModel} book
+   * @param {object} opts
    */
-  constructor(br) {
-    this.br = br;
+  constructor(book, { useSrcSet = false } = {}) {
+    this.book = book;
+    this.useSrcSet = useSrcSet;
     /** @type {{ [index: number]: { reduce: number, loaded: boolean }[] }} */
     this.cache = {};
     this.defaultScale = 8;
@@ -43,7 +45,7 @@ export class ImageCache {
 
   /**
    * Checks if an image of equal or greater quality has been loaded
-   * @param {import("./BookModel").PageIndex} index
+   * @param {PageIndex} index
    * @param {Number} reduce
    * @returns {Boolean}
    */
@@ -88,7 +90,7 @@ export class ImageCache {
       const entries = this.cache[index] || (this.cache[index] = []);
       entries.push(cacheEntry);
     }
-    const page = this.br._models.book.getPage(index);
+    const page = this.book.getPage(index);
 
     const $img = $('<img />', {
       'class': 'BRpageimage',
@@ -96,8 +98,8 @@ export class ImageCache {
       src: page.getURI(reduce, 0),
     })
       .data('reduce', reduce);
-    if (this.br.options.useSrcSet) {
-      $img.attr('srcset', this.br._getPageURISrcset(index, reduce));
+    if (this.useSrcSet) {
+      $img.attr('srcset', page.getURISrcSet(reduce));
     }
     if (!cacheEntry.loaded) {
       $img.one('load', () => cacheEntry.loaded = true);
