@@ -1,8 +1,8 @@
 import sinon from 'sinon';
+import { Debouncer } from '@internetarchive/throttler-debouncer';
 import {
   clamp,
   cssPercentage,
-  debounce,
   decodeURIComponentPlus,
   encodeURIComponentPlus,
   escapeHTML,
@@ -48,7 +48,7 @@ afterEach(() => {
 
 test('testing debounce', () => {
   const func = jest.fn();
-  const debouncedFunc = debounce(func, 1000);
+  const debouncedFunc = new Debouncer(func, 1000, this);
   // Call it immediately
   debouncedFunc();
   expect(func).toHaveBeenCalledTimes(0); // func not called

@@ -23,6 +23,10 @@ This file is part of BookReader.
 import 'jquery-ui/ui/effect.js';
 import 'jquery-ui-touch-punch';
 import './dragscrollable-br.js';
+
+// import { Debouncer } from '@internetarchive/throttler-debouncer';
+import { Throttler } from '@internetarchive/throttler-debouncer';
+
 import PACKAGE_JSON from '../../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
@@ -774,9 +778,10 @@ exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'prepare', 'prepareThumb
 /**
  * A throttled version of drawLeafs
  */
-BookReader.prototype.drawLeafsThrottled = utils.throttle(
+BookReader.prototype.drawLeafsThrottled = new Throttler(
   BookReader.prototype.drawLeafs,
-  250 // 250 ms gives quick feedback, but doesn't eat cpu
+  250, // 250 ms gives quick feedback, but doesn't eat cpu,
+  null
 );
 
 /**
@@ -1613,10 +1618,6 @@ exposeOverrideableMethod(Navbar, '_components.navbar', 'updateNavPageNum');
 /** @deprecated unused outside this file */
 BookReader.prototype.updateNavIndex = Navbar.prototype.updateNavIndex;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'updateNavIndex');
-/** @deprecated unused outside this file */
-BookReader.prototype.updateNavIndexThrottled = utils.throttle(BookReader.prototype.updateNavIndex, 250, false);
-/** @deprecated unused */
-BookReader.prototype.updateNavIndexDebounced = utils.debounce(BookReader.prototype.updateNavIndex, 500, false);
 
 
 /************************/

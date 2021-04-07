@@ -80,65 +80,6 @@ export function encodeURIComponentPlus(value) {
 }
 
 /**
- * Returns a function, that, as long as it continues to be invoked, will not
- * be triggered. The function will be called after it stops being called for
- * N milliseconds. If `immediate` is passed, trigger the function on the
- * leading edge, instead of the trailing.
- * @see https://davidwalsh.name/javascript-debounce-function
- *
- * @param {Function} func
- * @param {number} wait
- * @param {boolean} immediate
- * @return {Function}
- */
-export function debounce(func, wait, immediate) {
-  let timeout;
-  return function() {
-    const context = this;
-    const args = arguments;
-    const later = () => {
-      timeout = null;
-      if (!immediate) func.apply(context, args);
-    };
-    const callNow = immediate && !timeout;
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-    if (callNow) func.apply(context, args);
-  };
-}
-
-/**
- * Throttle function
- * @see https://remysharp.com/2010/07/21/throttling-function-calls
- * @param {Function} fn
- * @param {number} threshold
- * @param {boolean} delay
- * @return {Function}
- */
-export function throttle(fn, threshold, delay) {
-  threshold || (threshold = 250);
-  let last;
-  let deferTimer;
-  if (delay) last = +new Date;
-  return function () {
-    const context = this;
-    const now = +new Date;
-    const args = arguments;
-    if (last && now < last + threshold) {
-      // hold on to it
-      clearTimeout(deferTimer);
-      deferTimer = setTimeout(() => {
-        last = now;
-        fn.apply(context, args);
-      }, threshold);
-    } else {
-      last = now;
-      fn.apply(context, args);
-    }
-  };
-}
-
-/**
  * FIXME we need a better way to do this :/ This is not automatically poly-filled by
  * core-js https://github.com/zloirock/core-js/issues/354
  * @param {Window} window

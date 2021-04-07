@@ -1,4 +1,4 @@
-import Debouncer from '../util/debouncer';
+import { Debouncer } from '@internetarchive/throttler-debouncer';
 
 /**
  * Manages fullscreen size

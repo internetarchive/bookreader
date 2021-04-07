@@ -3,7 +3,7 @@
  * Adds mobile navigation at responsive breakpoint
  */
 
-import * as utils from '../BookReader/utils.js';
+import { Debouncer } from '@internetarchive/throttler-debouncer';
 import 'jquery.mmenu/dist/js/jquery.mmenu.min.js';
 import 'jquery.mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js';
 
@@ -133,7 +133,8 @@ BookReader.prototype.initToolbar = (function (super_) {
         }
       };
 
-      window.addEventListener('resize', utils.debounce(closeMobileMenu, 900));
+      const debounce = new Debouncer(closeMobileMenu, 900);
+      window.addEventListener('resize', debounce(closeMobileMenu, 900));
     }
   };
 })(BookReader.prototype.initToolbar);
