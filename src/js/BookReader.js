@@ -363,6 +363,7 @@ BookReader.prototype.initParams = function() {
       if (params.search) {
         // Old style: /search/[term]
         this.options.initialSearchTerm = params.search;
+        this.searchTerm = params.search;
       } else {
         // If we have a query string: q=[term]
         const searchParams = new URLSearchParams(this.readQueryString());
