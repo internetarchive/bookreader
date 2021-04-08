@@ -1,8 +1,8 @@
 .textSelectionSVG {
     // Make it so right-clicking on "blank" part of svg sends events to the image (for saving)
     pointer-events: none;
-    .BRwordElement { pointer-events: all; }
-    &.selectingSVG { 
+    a, .BRwordElement { pointer-events: all; }
+    &.selectingSVG {
         pointer-events: auto; 
         cursor: text;
     }
@@ -21,6 +21,19 @@
         cursor: text;
         white-space: pre;
         font-family: Georgia, serif;
+    }
+
+    a rect {
+        fill: hsla(210, 74%, 62%, 0.2);
+        stroke: hsla(210, 74%, 62%, 0.8);
+        stroke-width: 6px;
+        transition-property: fill, stroke;
+        transition-duration: 0.2s;
+
+        &:hover {
+            fill: hsla(210, 74%, 62%, 0.3);
+            stroke: hsla(210, 74%, 62%, 1);
+        }
     }
 }
 

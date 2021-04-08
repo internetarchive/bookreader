@@ -134,19 +134,29 @@ export class TextSelectionPlugin {
    */
   defaultMode(svg) {
     svg.classList.remove("selectingSVG");
-    $(svg).on("mousedown.textSelectPluginHandler", (event) => {
-      if (!$(event.target).is(".BRwordElement")) return;
-      event.stopPropagation();
-      svg.classList.add("selectingSVG");
-      $(svg).one("mouseup.textSelectPluginHandler", (event) => {
-        if (window.getSelection().toString() != "") {
-          event.stopPropagation();
-          $(svg).off(".textSelectPluginHandler");
-          this.textSelectingMode(svg);
-        }
-        else svg.classList.remove("selectingSVG");
-      });
-    });
+    $(svg).on("mousedown.textSelectPluginHandler", (downEvent) => {
+      if ($(downEvent.target).is(".BRwordElement")) {
+        downEvent.stopPropagation();
+        svg.classList.add("selectingSVG");
+
+        $(svg).one("mouseup.textSelectPluginHandler", (upEvent) => {
+          if (window.getSelection().toString() != "") {
+            upEvent.stopPropagation();
+            $(svg).off(".textSelectPluginHandler");
+            this.textSelectingMode(svg);
+          }
+          else svg.classList.remove("selectingSVG");
+        });
+      }
+      else if ($(downEvent.target).parents('a').length) {
+        downEvent.stopPropagation();
+        $(svg).one("mouseup.textSelectPluginHandler", (upEvent) => {
+          if (downEvent.target == upEvent.target) {
+            upEvent.stopPropagation();
+          }
+        });
+      }
+    })
   }
 
   /**
@@ -178,6 +188,22 @@ export class TextSelectionPlugin {
     if (!$svg.length) return;
     $svg.each((i, s) => this.defaultMode(s));
     this.interceptCopy($container);
+  }
+
+  getWordDimensions(word) {
+    const [left, bottom, right, top] = $(word).attr("coords").split(',').map(parseFloat);
+    return {left, bottom, right, top};
+  }
+
+  createWordElement(type, word) {
+    const {left, bottom, right, top} = this.getWordDimensions(word);
+    const el = document.createElementNS("http://www.w3.org/2000/svg", type);
+    el.setAttribute("x", left.toString());
+    el.setAttribute("y", bottom.toString());
+    el.setAttribute("width", (right - left).toString());
+    el.setAttribute("height", (bottom - top).toString());
+    el.setAttribute("textLength", (right - left).toString());
+    return el;
   }
 
   /**
@@ -220,11 +246,8 @@ export class TextSelectionPlugin {
         const wordHeight = bottom - top;
         wordHeightArr.push(wordHeight);
 
-        const wordTspan = document.createElementNS("http://www.w3.org/2000/svg", this.svgWordElement);
+        const wordTspan = this.createWordElement(this.svgWordElement, currWord);
         wordTspan.setAttribute("class", "BRwordElement");
-        wordTspan.setAttribute("x", left.toString());
-        wordTspan.setAttribute("y", bottom.toString());
-        wordTspan.setAttribute("textLength", (right - left).toString());
         wordTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
         wordTspan.textContent = currWord.textContent;
         paragSvg.appendChild(wordTspan);
@@ -256,6 +279,23 @@ export class TextSelectionPlugin {
       paragSvg.setAttribute("font-size", paragWordHeight.toString());
       svg.appendChild(paragSvg);
     });
+
+    for (const word of Array.from($(XMLpage).find("WORD"))) {
+      const contents = word.textContent.trim();
+      if (/^(http|www\.)/.test(contents) && contents != 'http') {
+        const url = contents.startsWith('http') ? contents : `http://${contents}`;
+        const a = this.createWordElement('a', word);
+        a.setAttribute('href', url);
+        a.setAttribute('target', '_blank');
+        const rect = this.createWordElement('rect', word);
+        rect.setAttribute('rx', '8');
+        rect.setAttribute('ry', '8');
+        const {top} = this.getWordDimensions(word);
+        rect.setAttribute('y', top);
+        a.appendChild(rect);
+        svg.appendChild(a);
+      }
+    }
     this.stopPageFlip($container);
   }
 }
