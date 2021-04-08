@@ -281,8 +281,10 @@ export class TextSelectionPlugin {
     });
 
     for (const word of Array.from($(XMLpage).find("WORD"))) {
-      const contents = word.textContent.trim();
-      if (/^(http|www\.)/.test(contents) && contents != 'http') {
+      const contents = word.textContent.trim()
+        // Remove any trailing noise that sometimes appears
+        .replace(/[.:;]+$/, '');
+      if (/(^(http|www\.)|\.(com|org))/.test(contents) && contents != 'http') {
         const url = contents.startsWith('http') ? contents : `http://${contents}`;
         const a = this.createWordElement('a', word);
         a.setAttribute('href', url);
