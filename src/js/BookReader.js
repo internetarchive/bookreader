@@ -40,6 +40,7 @@ import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
 import { ModeThumb } from './BookReader/ModeThumb';
 import { ImageCache } from './BookReader/ImageCache.js';
+import { PageContainer } from './BookReader/PageContainer.js';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -143,7 +144,9 @@ BookReader.prototype.setup = function(options) {
   this.displayedRows = [];
 
   this.displayedIndices = [];
+  /** @deprecated Unused; will be remove in v5 */
   this.imgs = {};
+  /** @deprecated No longer used; will be remove in v5 */
   this.prefetchedImgs = {}; //an object with numeric keys corresponding to page index, reduce
 
   this.animating = false;
@@ -242,7 +245,9 @@ BookReader.prototype.setup = function(options) {
   };
 
   /** Image cache for general image fetching */
-  this.imageCache = new ImageCache(this);
+  this.imageCache = new ImageCache(this._models.book, {
+    useSrcSet: this.options.useSrcSet
+  });
 };
 
 /** @deprecated unused outside Mode2Up */
@@ -702,22 +707,14 @@ BookReader.prototype.drawLeafs = function() {
 
 /**
  * @protected
+ * @param {PageIndex} index
  */
-BookReader.prototype._createPageContainer = function(index, styles) {
-  const { pageSide } = this._models.book.getPage(index);
-  const css = Object.assign({ position: 'absolute' }, styles);
-  const modeClasses = {
-    [this.constMode1up]: '1up',
-    [this.constMode2up]: '2up',
-    [this.constModeThumb]: 'thumb',
-  };
-  const container = $('<div />', {
-    'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
-    css,
-  }).attr('data-side', pageSide).append($('<div />', { 'class': 'BRscreen' }));
-  container.toggleClass('protected', this.protected);
-
-  return container;
+BookReader.prototype._createPageContainer = function(index) {
+  return new PageContainer(this._models.book.getPage(index, false), {
+    isProtected: this.protected,
+    imageCache: this.imageCache,
+    loadingImage: this.imagesBaseURL + 'loading.gif',
+  });
 };
 
 BookReader.prototype.bindGestures = function(jElement) {
@@ -1330,63 +1327,17 @@ BookReader.prototype._scrollAmount = function() {
 };
 
 /**
- * Used by 2up
- * Fetches the image for requested index & saves in `this.prefetchedImgs`
- * Does not re-request if image is in the
- *
- * @param {Number} index
- * @param {Boolean} fetchNow
- *   - flag to allow for non-viewable page to be immediately requested
- *     - this allows for "2up to prepare a page flip"
+ * @deprecated No longer used; will be remove in v5
  */
 BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
-
-  /** main function that creates page container */
-  const fetchImageAndRegister = () => {
-    const $image = this.imageCache.image(index, this.reduce);
-    const $pageContainer = this._createPageContainer(index, this._modes.mode2Up.baseLeafCss);
-    $($image).appendTo($pageContainer);
-
-    const isEmptyPage = index < 0 || index > (this._models.book.getNumLeafs() - 1);
-    if (isEmptyPage) {
-      // Facing page at beginning or end, or beyond
-      $pageContainer.addClass('BRemptypage');
-    }
-
-    /** store uri & reducer */
-    $pageContainer[0].uri = $image.uri;
-    $pageContainer[0].reduce = $image.reduce;
-    this.prefetchedImgs[index] = $pageContainer;
-  };
-
-  const indexIsInView = (index == this.twoPage.currentIndexL) || (index == this.twoPage.currentIndexR);
-  if (fetchNow || indexIsInView) {
-    fetchImageAndRegister();
-  } else {
-    // stagger request
-    const time = 300;
-    setTimeout(() => {
-      // just fetch image, do not wrap with page container
-      this.imageCache.image(index, this.reduce);
-    }, time);
-  }
+  console.warn('Call to deprecated function: BookReader.prefetchImg. No-op.');
 };
 
 /**
- * used in 2up
- * cached 2up page containers
- * */
+ * @deprecated No longer used; will be remove in v5
+ */
 BookReader.prototype.pruneUnusedImgs = function() {
-  for (var key in this.prefetchedImgs) {
-    if ((key != this.twoPage.currentIndexL) && (key != this.twoPage.currentIndexR)) {
-      $(this.prefetchedImgs[key]).remove();
-    }
-    if ((key < this.twoPage.currentIndexL - 4) || (key > this.twoPage.currentIndexR + 4)) {
-      if (this.prefetchedImgs[key]?.reduce > this.reduce) {
-        delete this.prefetchedImgs[key];
-      }
-    }
-  }
+  console.warn('Call to deprecated function: BookReader.pruneUnused. No-op.');
 };
 
 /************************/
@@ -1546,16 +1497,16 @@ BookReader.prototype.stopFlipAnimations = function() {
   if (this.leafEdgeTmp) {
     $(this.leafEdgeTmp).stop(false, true);
   }
-  jQuery.each(this.prefetchedImgs, function() {
-    $(this).stop(false, true);
+  jQuery.each(this._modes.mode2Up.pageContainers, function() {
+    $(this.$container).stop(false, true);
   });
 
   // And again since animations also queued in callbacks
   if (this.leafEdgeTmp) {
     $(this.leafEdgeTmp).stop(false, true);
   }
-  jQuery.each(this.prefetchedImgs, function() {
-    $(this).stop(false, true);
+  jQuery.each(this._modes.mode2Up.pageContainers, function() {
+    $(this.$container).stop(false, true);
   });
 };
 
@@ -2211,6 +2162,7 @@ BookReader.prototype.canSwitchToMode = function(mode) {
 
 
 /**
+ * @deprecated. Use PageModel.getURISrcSet. Slated for removal in v5.
  * Returns the srcset with correct URIs or void string if out of range
  * Also makes the reduce argument optional
  * @param {number} index
@@ -2219,33 +2171,17 @@ BookReader.prototype.canSwitchToMode = function(mode) {
  * @return {string}
  */
 BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
-  if (index < 0 || index >= this._models.book.getNumLeafs()) { // Synthesize page
-    return "";
+  const page = this._models.book.getPage(index, false);
+  // Synthesize page
+  if (!page) return "";
+
+  // reduce not passed in
+  // $$$ this probably won't work for thumbnail mode
+  if ('undefined' == typeof(reduce)) {
+    reduce = page.height / this.twoPage.height;
   }
 
-  let ratio = reduce;
-  if ('undefined' == typeof(reduce)) {
-    // reduce not passed in
-    // $$$ this probably won't work for thumbnail mode
-    ratio = this._models.book.getPageHeight(index) / this.twoPage.height;
-  }
-  let scale = [16,8,4,2,1];
-  // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-  if (ratio < 2) {
-    return "";
-  } else if (ratio < 4) {
-    scale = [1];
-  } else if (ratio < 8) {
-    scale = [2,1];
-  } else if (ratio < 16) {
-    scale = [4,2,1];
-  } else  if (ratio < 32) {
-    scale = [8,4,2,1];
-  }
-  return scale.map((el, i) => (
-    this._models.book.getPageURI(index, scale[i], rotate) + " "
-        + Math.pow(2, i + 1) + "x"
-  )).join(', ');
+  return page.getURISrcSet(reduce, rotate);
 }
 
 

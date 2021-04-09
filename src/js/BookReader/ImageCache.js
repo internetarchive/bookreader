@@ -1,11 +1,21 @@
+// @ts-check
 /**
  * Creates an image cache dictionary
  * storing images in `<img>` tags so that
  * BookReader can leverage browser caching
  */
+/** @typedef {import("./BookModel").BookModel} BookModel */
+/** @typedef {import("./BookModel").PageIndex} PageIndex */
+
 export class ImageCache {
-  constructor(br) {
-    this.br = br;
+  /**
+   * @param {BookModel} book
+   * @param {object} opts
+   */
+  constructor(book, { useSrcSet = false } = {}) {
+    this.book = book;
+    this.useSrcSet = useSrcSet;
+    /** @type {{ [index: number]: { reduce: number, loaded: boolean }[] }} */
     this.cache = {};
     this.defaultScale = 8;
   }
@@ -15,87 +25,85 @@ export class ImageCache {
    * Checks cache first if image is available & of equal/better scale,
    * if not, a new image gets created
    *
-   * @param {String|Number} index - page index
+   * @param {PageIndex} index
    * @param {Number} reduce
-   * @returns {Element} $image
    */
   image(index, reduce) {
-    const $thisImage = this.cache[index];
-    const currImageScale = $thisImage?.reduce;
-    if (currImageScale <= reduce) {
-      return this._serveImageElement(index);
+    const cachedImages = this.cache[index] || [];
+    const sufficientImages = cachedImages
+      .filter(x => x.loaded && x.reduce <= reduce);
+    if (sufficientImages.length) {
+      // Choose the largest reduction factor that meets our needs
+      const bestReduce = Math.max(...sufficientImages.map(e => e.reduce));
+      return this._serveImageElement(index, bestReduce);
+    } else {
+      // Don't use a cache entry; i.e. a fresh fetch will be made
+      // for this reduce
+      return this._serveImageElement(index, reduce);
     }
-
-    return this._createImage(index, reduce);
   }
 
   /**
-   * Checks if image has been loaded
-   * @param {String|Number} index - page index
+   * Checks if an image of equal or greater quality has been loaded
+   * @param {PageIndex} index
    * @param {Number} reduce
    * @returns {Boolean}
    */
   imageLoaded(index, reduce) {
-    const cacheImg = this.cache[index];
-    if (!cacheImg) {
-      return false;
-    }
-    const { reduce: cachedReduce, loaded } = cacheImg;
-    const cacheImgReducedWellEnough = cachedReduce <= reduce;
-    return cacheImgReducedWellEnough && loaded;
+    const cacheImg = this.cache[index]?.find(e => e.reduce <= reduce);
+    return cacheImg?.loaded ?? false;
   }
 
   /**
-   * @private
-   * Removes image from cache
-   * Empties `src` & `srcSet` attributes prior to cancel pending requests
-   *
-   * @param {String|Number} index - page index
+   * Get the best image that's already loaded for the given index,
+   * trying to choose values less that the given reduce
+   * @param {PageIndex} index
+   * @param idealMaxReduce
+   * @returns {null | number}
    */
-  _bustImageCache(index) {
-    delete this.cache[index];
-  }
+  getBestLoadedReduce(index, idealMaxReduce = Infinity) {
+    const candidates = this.cache[index]?.filter(x => x.loaded) || [];
+    if (!candidates.length) return null;
 
-  /**
-   * @private
-   * Creates an image & stashes in cache
-   * - Use only to create an image as it will
-   *    bust cache if requested index has one stashed
-   *
-   * @param {String|Number} index - page index
-   * @param {Number} reduce
-   * @returns $image
-   */
-  _createImage(index, reduce) {
-    const hasCache = this.cache[index];
-    if (hasCache) {
-      this._bustImageCache(index);
+    const lowerResImages = candidates.filter(e => e.reduce >= idealMaxReduce);
+    if (lowerResImages.length) {
+      // Choose the highest quality loaded lower res image
+      return Math.min(...lowerResImages.map(e => e.reduce));
     }
-    const src = this.br._getPageURI(index, reduce);
-    const srcSet = this.br.options.useSrcSet ? this.br._getPageURISrcset(index, reduce) : [];
-    this.cache[index] = { reduce, uri: src, srcSet, loaded: false }
-    return this._serveImageElement(index);
+    // Otherwise choose whatever is closest to the reduce
+    const higherRestImages = candidates.filter(e => e.reduce < idealMaxReduce);
+    return Math.max(...higherRestImages.map(e => e.reduce));
   }
 
   /**
    * @private
    * Generates an image element on the fly from image info in cache
    *
-   * @param {String|Number} index - page index
-   * @returns {Element} jQuery <img> element with base image classes
+   * @param {PageIndex} index
+   * @param {number} reduce
+   * @returns {JQuery<HTMLImageElement>} with base image classes
    */
-  _serveImageElement(index) {
-    const { uri, srcSet, reduce } = this.cache[index];
+  _serveImageElement(index, reduce) {
+    let cacheEntry = this.cache[index]?.find(e => e.reduce == reduce);
+    if (!cacheEntry) {
+      cacheEntry = { reduce, loaded: false };
+      const entries = this.cache[index] || (this.cache[index] = []);
+      entries.push(cacheEntry);
+    }
+    const page = this.book.getPage(index);
 
-    const $img = $('<img />',{
+    const $img = $('<img />', {
       'class': 'BRpageimage',
       'alt': 'Book page image',
-      src: uri,
-      srcSet
+      src: page.getURI(reduce, 0),
     })
-      .attr('style', '')
-      .data('reduce', reduce)
-      .load(() => this.cache[index].loaded = true);
+      .data('reduce', reduce);
+    if (this.useSrcSet) {
+      $img.attr('srcset', page.getURISrcSet(reduce));
+    }
+    if (!cacheEntry.loaded) {
+      $img.one('load', () => cacheEntry.loaded = true);
+    }
     return $img;
   }
 }

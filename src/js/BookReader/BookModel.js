@@ -275,12 +275,17 @@ export class BookModel {
 
   /**
    * @param {number} index use negatives to get page relative to end
+   * @param loop whether to loop (i.e. -1 == last page)
    */
-  getPage(index) {
+  getPage(index, loop = true) {
     const numLeafs = this.getNumLeafs();
+    if (!loop && (index < 0 || index >= numLeafs)) {
+      return undefined;
+    }
     if (index < 0 && index >= -numLeafs) {
       index += numLeafs;
     }
+    index = index % numLeafs;
     return new PageModel(this, index);
   }
 
@@ -367,7 +372,7 @@ export class BookModel {
 /**
  * A controlled schema for page data.
  */
-class PageModel {
+export class PageModel {
   /**
    * @param {BookModel} book
    * @param {PageIndex} index
@@ -437,6 +442,31 @@ class PageModel {
    */
   getURI(reduce, rotate) {
     return this.book.getPageURI(this.index, reduce, rotate);
+  }
+
+  /**
+   * Returns the srcset with correct URIs or void string if out of range
+   * Also makes the reduce argument optional
+   * @param {number} reduce
+   * @param {number} [rotate]
+   */
+  getURISrcSet(reduce, rotate = 0) {
+    let scale = [16,8,4,2,1];
+    // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
+    if (reduce < 2) {
+      return "";
+    } else if (reduce < 4) {
+      scale = [1];
+    } else if (reduce < 8) {
+      scale = [2,1];
+    } else if (reduce < 16) {
+      scale = [4,2,1];
+    } else  if (reduce < 32) {
+      scale = [8,4,2,1];
+    }
+    return scale
+      .map((el, i) => `${this.getURI(scale[i], rotate)} ${2 ** (i + 1)}x`)
+      .join(', ');
   }
 
   /**

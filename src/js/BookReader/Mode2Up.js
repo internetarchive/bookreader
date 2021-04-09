@@ -6,6 +6,7 @@ import { EVENTS } from './events.js';
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('./options.js').BookReaderOptions} BookReaderOptions */
+/** @typedef {import('./PageContainer.js').PageContainer} PageContainer */
 
 export class Mode2Up {
   /**
@@ -20,6 +21,9 @@ export class Mode2Up {
     this.leafEdgeL = null;
     /** @type {HTMLDivElement} */
     this.leafEdgeR = null;
+
+    /** @type {{ [index: number]: PageContainer }} */
+    this.pageContainers = {};
   }
 
   /**
@@ -56,17 +60,15 @@ export class Mode2Up {
    */
   drawLeafs() {
     const $twoPageViewEl = this.br.refs.$brTwoPageView;
-
-    // $$$ we should use calculated values in this.twoPage (recalc if necessary)
     const indexL = this.br.twoPage.currentIndexL;
     const indexR = this.br.twoPage.currentIndexR;
-    this.br.pruneUnusedImgs();
 
-    this.br.prefetchImg(indexL);
-    $(this.br.prefetchedImgs[indexL]).css(this.leftLeafCss).appendTo($twoPageViewEl);
-
-    this.br.prefetchImg(indexR);
-    $(this.br.prefetchedImgs[indexR]).css(this.rightLeafCss).appendTo($twoPageViewEl);
+    this.createPageContainer(indexL).$container
+      .css(this.leftLeafCss)
+      .appendTo($twoPageViewEl);
+    this.createPageContainer(indexR).$container
+      .css(this.rightLeafCss)
+      .appendTo($twoPageViewEl);
 
     this.displayedIndices = [this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR];
     this.setMouseHandlers();
@@ -97,35 +99,9 @@ export class Mode2Up {
     // Preserve view center position
     const oldCenter = this.getViewCenter();
 
-    // If zooming in, reload imgs.  DOM elements will be removed by prepareTwoPageView
-    // $$$ An improvement would be to use the low res image until the larger one is loaded.
-    if (1 == direction) {
-      for (const img in this.br.prefetchedImgs) {
-        delete this.br.prefetchedImgs[img];
-      }
-    }
-
     // Prepare view with new center to minimize visual glitches
     const drawNewSpread = true;
     this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY, drawNewSpread);
-  }
-
-  /**
-   * Checks to see if the images/pages in view
-   * are of equal or better quality
-   * If not, we return yes
-   *
-   * @returns {Boolean}
-   */
-  get shouldRedrawSpread() {
-    const { prefetchedImgs, displayedIndices } = this.br;
-    const { reduce: idealReductionFactor } = this.getIdealSpreadSize( this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR );
-    const leftDisplayed = prefetchedImgs[displayedIndices[0]] || {};
-    const rightDisplayed = prefetchedImgs[displayedIndices[1]] || {};
-    const leftImgIsPrefetchedToScale = leftDisplayed && (leftDisplayed.reduce <= idealReductionFactor);
-    const rightImgIsPrefetchedToScale = rightDisplayed && (rightDisplayed.reduce <= idealReductionFactor);
-
-    return !(leftImgIsPrefetchedToScale && rightImgIsPrefetchedToScale);
   }
 
   /**
@@ -146,13 +122,10 @@ export class Mode2Up {
     $spreadLayers.find('.BRleafEdgeL')?.css(this.leafEdgeLCss);
     $spreadLayers.find('.BRgutter')?.css(this.spineCss);
 
-    // Only worry about images that are in view
-    // set left page in view
-    const $leftImg = this.br.prefetchedImgs[this.br.twoPage.currentIndexL];
-    $($leftImg).css(this.leftLeafCss);
-    // set right page in view
-    const $rightImg = this.br.prefetchedImgs[this.br.twoPage.currentIndexR];
-    $($rightImg).css(this.rightLeafCss);
+    const indexL = this.br.twoPage.currentIndexL;
+    const indexR = this.br.twoPage.currentIndexR;
+    this.pageContainers[indexL].$container.css(this.leftLeafCss);
+    this.pageContainers[indexR].$container.css(this.rightLeafCss);
   }
 
   /**
@@ -194,8 +167,8 @@ export class Mode2Up {
     const hasNewDisplayPagesOrDimensions = !sameStart || (sameStart && !sameReducer);
 
     if (drawNewSpread || hasNewDisplayPagesOrDimensions) {
-      this.br.pruneUnusedImgs();
-      this.br.prefetch(); // Preload images or reload if scaling has changed
+      this.prunePageContainers();
+      this.prefetch();
     }
 
     // Add the two page view
@@ -250,6 +223,17 @@ export class Mode2Up {
     }
 
     this.br.updateBrClasses();
+  }
+
+  prunePageContainers() {
+    for (const index in this.pageContainers) {
+      if ((index != this.br.twoPage.currentIndexL) && (index != this.br.twoPage.currentIndexR)) {
+        $(this.pageContainers[index].$container).remove();
+      }
+      if ((index < this.br.twoPage.currentIndexL - 4) || (index > this.br.twoPage.currentIndexR + 4)) {
+        delete this.pageContainers[index];
+      }
+    }
   }
 
   /**
@@ -504,19 +488,7 @@ export class Mode2Up {
    * @deprecated Since version 4.3.3. Will be deleted in version 5.0
    */
   setCursor() {
-    const $twoPageViewEl = this.br.refs.$brTwoPageView;
-    if ( ($twoPageViewEl.width() > this.br.refs.$brContainer.prop('clientWidth')) ||
-           ($twoPageViewEl.height() > this.br.refs.$brContainer.prop('clientHeight')) ) {
-      if (this.br.prefetchedImgs[this.br.twoPage.currentIndexL])
-        this.br.prefetchedImgs[this.br.twoPage.currentIndexL].style.cursor = 'move';
-      if (this.br.prefetchedImgs[this.br.twoPage.currentIndexR])
-        this.br.prefetchedImgs[this.br.twoPage.currentIndexR].style.cursor = 'move';
-    } else {
-      if (this.br.prefetchedImgs[this.br.twoPage.currentIndexL])
-        this.br.prefetchedImgs[this.br.twoPage.currentIndexL].style.cursor = '';
-      if (this.br.prefetchedImgs[this.br.twoPage.currentIndexR])
-        this.br.prefetchedImgs[this.br.twoPage.currentIndexR].style.cursor = '';
-    }
+    console.warn('Call to deprecated method, Mode2Up.setCursor. No-op.');
   }
 
   /**
@@ -628,14 +600,14 @@ export class Mode2Up {
     });
 
     // Left gets the offset of the current left leaf from the document
-    const left = $(this.br.prefetchedImgs[leftLeaf]).offset().left;
+    const left = this.pageContainers[leftLeaf].$container.offset().left;
     // $$$ This seems very similar to the gutter.  May be able to consolidate the logic.
-    const right = `${$twoPageViewEl.prop('clientWidth') - left - $(this.br.prefetchedImgs[leftLeaf]).width() + $twoPageViewEl.offset().left - 2}px`;
+    const right = `${$twoPageViewEl.prop('clientWidth') - left - this.pageContainers[leftLeaf].$container.width() + $twoPageViewEl.offset().left - 2}px`;
 
     // We change the left leaf to right positioning
     // $$$ This causes animation glitches during resize.  See https://bugs.edge.launchpad.net/gnubook/+bug/328327
-    $(this.br.prefetchedImgs[leftLeaf]).css({
-      right: right,
+    this.pageContainers[leftLeaf].$container.css({
+      right,
       left: ''
     });
 
@@ -643,18 +615,14 @@ export class Mode2Up {
 
     if (this.br.enableSearch) this.br.removeSearchHilites();
 
-    $(this.br.prefetchedImgs[leftLeaf]).animate({width: '0px'}, this.br.flipSpeed, 'easeInSine', () => {
+    this.pageContainers[leftLeaf].$container.animate({width: '0px'}, this.br.flipSpeed, 'easeInSine', () => {
 
       $(this.br.leafEdgeTmp).animate({left: `${gutter + newWidthR}px`}, this.br.flipSpeed, 'easeOutSine');
 
       this.br.$('.BRgutter').css({left: `${gutter - this.br.twoPage.bookSpineDivWidth * 0.5}px`});
 
-      $(this.br.prefetchedImgs[newIndexR]).animate({width: `${newWidthR}px`}, this.br.flipSpeed, 'easeOutSine', () => {
-        $(this.br.prefetchedImgs[newIndexL]).css('zIndex', 2);
-
-        //jquery adds display:block to the element style, which interferes with our print css
-        $(this.br.prefetchedImgs[newIndexL]).css('display', '');
-        $(this.br.prefetchedImgs[newIndexR]).css('display', '');
+      this.pageContainers[newIndexR].$container.animate({width: `${newWidthR}px`}, this.br.flipSpeed, 'easeOutSine', () => {
+        this.pageContainers[newIndexL].$container.css('zIndex', 2);
 
         $(this.leafEdgeR).css({
           // Moves the right leaf edge
@@ -687,7 +655,7 @@ export class Mode2Up {
 
         this.br.updateFirstIndex(this.br.twoPage.currentIndexL);
         this.br.displayedIndices = [newIndexL, newIndexR];
-        this.br.pruneUnusedImgs();
+        this.prunePageContainers();
         this.br.animating = false;
 
         this.resizeSpread();
@@ -706,22 +674,25 @@ export class Mode2Up {
         this.centerView();
         this.br.trigger('pageChanged');
 
-        // get next previous batch immediately      this.br.pruneUnusedImgs();
-        if (!this.br.prefetchedImgs[newIndexL - 2]) {
-          this.br.prefetchImg(newIndexL - 2);
-        }
-
-        if (!this.br.prefetchedImgs[newIndexR - 2]) {
-          this.br.prefetchImg(newIndexR - 2);
-        }
-
-        setTimeout(() => {
-          // flip prefetch
-          this.br.prefetchImg(newIndexL - 3);
-          this.br.prefetchImg(newIndexR - 3);
-        }, 250);
+        // get next previous batch immediately
+        this.prunePageContainers();
+        this.createPageContainer(newIndexL - 2);
+        this.createPageContainer(newIndexR - 2);
+        this.createPageContainer(newIndexL - 3);
+        this.createPageContainer(newIndexR - 3);
       });
     });
+  }
+
+  /**
+   * @param {PageIndex} index
+   */
+  createPageContainer(index, fetch = false) {
+    if (!this.pageContainers[index]) {
+      this.pageContainers[index] = this.br._createPageContainer(index);
+    }
+    this.pageContainers[index].update({ reduce: this.br.reduce });
+    return this.pageContainers[index];
   }
 
   /**
@@ -807,15 +778,11 @@ export class Mode2Up {
     if (this.br.enableSearch) this.br.removeSearchHilites();
 
     $(this.br.leafEdgeTmp).animate({left: gutter}, speed, 'easeInSine');
-    $(this.br.prefetchedImgs[this.br.twoPage.currentIndexR]).animate({width: '0px'}, speed, 'easeInSine', () => {
+    this.pageContainers[this.br.twoPage.currentIndexR].$container.animate({width: '0px'}, speed, 'easeInSine', () => {
       this.br.$('BRgutter').css({left: `${gutter - this.br.twoPage.bookSpineDivWidth * 0.5}px`});
       $(this.br.leafEdgeTmp).animate({left: `${gutter - newWidthL - leafEdgeTmpW}px`}, speed, 'easeOutSine');
-      $(this.br.prefetchedImgs[newIndexL]).animate({width: `${newWidthL}px`}, speed, 'easeOutSine', () => {
-        $(this.br.prefetchedImgs[newIndexR]).css('zIndex', 2);
-
-        //jquery adds display:block to the element style, which interferes with our print css
-        $(this.br.prefetchedImgs[newIndexL]).css('display', '');
-        $(this.br.prefetchedImgs[newIndexR]).css('display', '');
+      this.pageContainers[newIndexL].$container.animate({width: `${newWidthL}px`}, speed, 'easeOutSine', () => {
+        this.pageContainers[newIndexR].$container.css('zIndex', 2);
 
         $(this.leafEdgeL).css({
           width: `${newLeafEdgeWidthL}px`,
@@ -858,19 +825,11 @@ export class Mode2Up {
         this.centerView();
         this.br.trigger('pageChanged');
 
-        this.br.pruneUnusedImgs();
-        if (!this.br.prefetchedImgs[newIndexL + 2]) {
-          this.br.prefetchImg(newIndexL + 2);
-        }
-        if (!this.br.prefetchedImgs[newIndexR + 2]) {
-          this.br.prefetchImg(newIndexR + 2);
-        }
-
-        setTimeout(() => {
-          // flip prefetch
-          this.br.prefetchImg(newIndexL + 3);
-          this.br.prefetchImg(newIndexR + 3);
-        }, 250);
+        this.prunePageContainers();
+        this.createPageContainer(newIndexL + 2);
+        this.createPageContainer(newIndexR + 2);
+        this.createPageContainer(newIndexL + 3);
+        this.createPageContainer(newIndexR + 3);
       });
     });
   }
@@ -900,12 +859,12 @@ export class Mode2Up {
     }
 
     this.setClickHandler(
-      this.br.prefetchedImgs[this.br.twoPage.currentIndexR],
+      this.pageContainers[this.br.twoPage.currentIndexR].$container[0],
       { self: this, direction: 'R' },
       handler
     );
     this.setClickHandler(
-      this.br.prefetchedImgs[this.br.twoPage.currentIndexL],
+      this.pageContainers[this.br.twoPage.currentIndexL].$container[0],
       { self: this, direction: 'L' },
       handler
     );
@@ -918,9 +877,10 @@ export class Mode2Up {
    * @param {number} prevR
    */
   prepareFlipLeftToRight(prevL, prevR) {
-    this.br.prefetchImg(prevL, true);
-    this.br.prefetchImg(prevR, true);
+    this.createPageContainer(prevL, true);
+    this.createPageContainer(prevR, true);
 
+    const $twoPageViewEl = this.br.refs.$brTwoPageView;
     const height  = this.book._getPageHeight(prevL);
     const width   = this.book._getPageWidth(prevL);
     const middle = this.br.twoPage.middle;
@@ -932,7 +892,6 @@ export class Mode2Up {
     const gutter = middle + this.gutterOffsetForIndex(prevL);
 
     const leftCSS = {
-      position: 'absolute',
       left: `${gutter - scaledW}px`,
       right: '', // clear right property
       top:    `${top}px`,
@@ -941,13 +900,11 @@ export class Mode2Up {
       zIndex: 1
     };
 
-    $(this.br.prefetchedImgs[prevL]).css(leftCSS);
-
-    const $twoPageViewEl = this.br.refs.$brTwoPageView;
-    $twoPageViewEl.append(this.br.prefetchedImgs[prevL]);
+    this.pageContainers[prevL].$container
+      .css(leftCSS)
+      .appendTo($twoPageViewEl);
 
     const rightCSS = {
-      position: 'absolute',
       left:   `${gutter}px`,
       right: '',
       top:    `${top}px`,
@@ -956,19 +913,19 @@ export class Mode2Up {
       zIndex: 2
     };
 
-    $(this.br.prefetchedImgs[prevR]).css(rightCSS);
-
-    $twoPageViewEl.append(this.br.prefetchedImgs[prevR]);
+    this.pageContainers[prevR].$container
+      .css(rightCSS)
+      .appendTo($twoPageViewEl);
   }
 
   /**
    * // $$$ mang we're adding an extra pixel in the middle.  See https://bugs.edge.launchpad.net/gnubook/+bug/411667
    */
   prepareFlipRightToLeft(nextL, nextR) {
-    // Prefetch images
-    this.br.prefetchImg(nextL, true);
-    this.br.prefetchImg(nextR, true);
+    this.createPageContainer(nextL, true);
+    this.createPageContainer(nextR, true);
 
+    const $twoPageViewEl = this.br.refs.$brTwoPageView;
     let height = this.book._getPageHeight(nextR);
     let width = this.book._getPageWidth(nextR);
     const middle = this.br.twoPage.middle;
@@ -977,32 +934,27 @@ export class Mode2Up {
 
     const gutter = middle + this.gutterOffsetForIndex(nextL);
 
-    $(this.br.prefetchedImgs[nextR]).css({
-      position: 'absolute',
+    $(this.pageContainers[nextR].$container).css({
       left:   `${gutter}px`,
       top:    `${top}px`,
       height: this.br.twoPage.height,
       width:  `${scaledW}px`,
       zIndex: 1,
-    });
-
-    const $twoPageViewEl = this.br.refs.$brTwoPageView;
-    $twoPageViewEl.append(this.br.prefetchedImgs[nextR]);
+    })
+      .appendTo($twoPageViewEl);
 
     height = this.book._getPageHeight(nextL);
     width = this.book._getPageWidth(nextL);
     scaledW = this.br.twoPage.height * width / height;
 
-    $(this.br.prefetchedImgs[nextL]).css({
-      position: 'absolute',
+    $(this.pageContainers[nextL].$container).css({
       right: `${$twoPageViewEl.prop('clientWidth') - gutter}px`,
       top: `${top}px`,
       height: this.br.twoPage.height,
       width: '0px', // Start at 0 width, then grow to the left
       zIndex: 2,
-    });
-
-    $twoPageViewEl.append(this.br.prefetchedImgs[nextL]);
+    })
+      .appendTo($twoPageViewEl);
   }
 
   getPageWidth(index) {
@@ -1256,12 +1208,12 @@ export class Mode2Up {
 
     for (let i = 0; i < ADJACENT_PAGES_TO_LOAD + 2; i++) {
       if (lowPage) {
-        this.br.prefetchImg(lowPage.index);
+        this.createPageContainer(lowPage.index);
         lowPage = lowPage.findPrev({ combineConsecutiveUnviewables: true });
       }
 
       if (highPage) {
-        this.br.prefetchImg(highPage.index);
+        this.createPageContainer(highPage.index);
         highPage = highPage.findNext({ combineConsecutiveUnviewables: true });
       }
     }

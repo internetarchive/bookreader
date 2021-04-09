@@ -1,5 +1,5 @@
 // @ts-check
-import { sleep, notInArray, clamp } from './utils.js';
+import { notInArray, clamp } from './utils.js';
 import { EVENTS } from './events.js';
 /** @typedef {import('../BookREader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
@@ -147,14 +147,25 @@ export class ModeThumb {
           }
 
           left += this.br.thumbPadding;
-          const $pageContainer = this.br._createPageContainer(leaf, {
-            width: `${leafWidth}px`,
-            height: `${leafHeight}px`,
-            top: `${leafTop}px`,
-            left: `${left}px`,
-          });
+          imagesToDisplay.push(leaf);
 
-          $pageContainer.data('leaf', leaf).on('mouseup', event => {
+          /* get thumbnail's reducer */
+          const idealReduce = floor(book.getPageWidth(leaf) / this.br.thumbWidth);
+          const nearestFactor2 = 2 * Math.round(idealReduce / 2);
+          const thumbReduce = nearestFactor2;
+
+          const pageContainer = this.br._createPageContainer(leaf)
+            .update({
+              dimensions: {
+                width: leafWidth,
+                height: leafHeight,
+                top: leafTop,
+                left,
+              },
+              reduce: thumbReduce,
+            });
+
+          pageContainer.$container.data('leaf', leaf).on('mouseup', event => {
             // We want to suppress the fragmentChange triggers in `updateFirstIndex` and `switchMode`
             // because otherwise it repeatedly triggers listeners and we get in an infinite loop.
             // We manually trigger the `fragmentChange` once at the end.
@@ -171,32 +182,7 @@ export class ModeThumb {
             event.stopPropagation();
           });
 
-          this.br.refs.$brPageViewEl.append($pageContainer);
-          imagesToDisplay.push(leaf);
-
-          /* get thumbnail's reducer */
-          const idealReduce = floor(book.getPageWidth(leaf) / this.br.thumbWidth);
-          const nearestFactor2 = 2 * Math.round(idealReduce / 2);
-          const thumbReduce = nearestFactor2;
-
-          const baseCSS = { width: `${leafWidth}px`, height: `${leafHeight}px` };
-          if (this.br.imageCache.imageLoaded(leaf, thumbReduce)) {
-          // send to page
-            $pageContainer.append($(this.br.imageCache.image(leaf, thumbReduce)).css(baseCSS));
-          } else {
-          // lazy load
-            const $lazyLoadImgPlaceholder = document.createElement('img');
-            $($lazyLoadImgPlaceholder)
-              .attr('src', `${this.br.imagesBaseURL}transparent.png`)
-              .css(baseCSS)
-              .addClass('BRlazyload')
-            // Store the leaf/index number to reference on url swap:
-              .attr('data-leaf', leaf)
-              .attr('data-reduce', thumbReduce)
-              .attr('data-row', row)
-              .attr('alt', 'Loading book image');
-            $pageContainer.append($lazyLoadImgPlaceholder);
-          }
+          this.br.refs.$brPageViewEl.append(pageContainer.$container);
         }
       }
     }
@@ -229,21 +215,7 @@ export class ModeThumb {
     // highlight current page
     this.br.$('.pagediv' + this.br.currentIndex()).addClass('BRpagedivthumb_highlight');
 
-    this.br.lazyLoadThumbnails();
-
     this.br.updateToolbarZoom(this.br.reduce);
-  }
-
-  lazyLoadThumbnails() {
-    const batchImageRequestByRow = async ($images) => {
-      await sleep(300);
-      $images.each((index, $imgPlaceholder) => this.br.lazyLoadImage($imgPlaceholder));
-    };
-
-    this.br.displayedRows.forEach((row) => {
-      const $imagesInRow = this.br.refs.$brPageViewEl.find(`[data-row="${row}"]`);
-      batchImageRequestByRow($imagesInRow);
-    });
   }
 
   /**

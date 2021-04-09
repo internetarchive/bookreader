@@ -54,37 +54,29 @@ describe('zoom', () => {
 describe('prefetch', () => {
   test('loads nearby pages', () => {
     const br = new BookReader({ data: SAMPLE_DATA });
+    const mode2Up = br._modes.mode2Up;
     br.init();
-    const spy = sinon.spy(br, 'prefetchImg');
-    br.prefetch();
-    expect(spy.callCount).toBeGreaterThan(2);
-  });
-
-  test('works when at start of book', () => {
-    const br = new BookReader({ data: SAMPLE_DATA });
-    br.init();
-    br.jumpToIndex(-1);
-    const spy = sinon.spy(br, 'prefetchImg');
-    br.prefetch();
-    expect(spy.callCount).toBeGreaterThan(2);
+    mode2Up.prefetch();
+    expect(Object.keys(mode2Up.pageContainers).length).toBeGreaterThan(2);
   });
 
   test('works when at end of book', () => {
     const br = new BookReader({ data: SAMPLE_DATA });
+    const mode2Up = br._modes.mode2Up;
     br.init();
-    br.jumpToIndex(SAMPLE_DATA.flat().length - 1);
-    const spy = sinon.spy(br, 'prefetchImg');
-    br.prefetch();
-    expect(spy.callCount).toBeGreaterThan(2);
+    br.jumpToIndex(-1);
+    mode2Up.prefetch();
+    expect(Object.keys(mode2Up.pageContainers).length).toBeGreaterThan(2);
   });
 
   test('skips consecutive unviewables', () => {
     const data = deepCopy(SAMPLE_DATA);
     data[1].forEach(page => page.viewable = false);
     const br = new BookReader({ data });
+    const mode2Up = br._modes.mode2Up;
     br.init();
-    br.prefetch();
-    expect(br.prefetchedImgs).not.toContain(2);
+    mode2Up.prefetch();
+    expect(mode2Up.pageContainers).not.toContain(2);
   });
 });
 
@@ -111,18 +103,6 @@ describe('draw 2up leaves', () => {
     expect(br.displayedIndices.length).toBe(2); // is array
     expect(br.displayedIndices).toEqual([-1, 0]); // default to starting index on right, placeholder for left
   })
-});
-
-describe('shouldRedrawSpread', () => {
-  test('returns TRUE if current images are smaller && if pages in view are prefetched', () => {
-    const br = new BookReader({ data: SAMPLE_DATA });
-    br.init();
-    const reduceStub = 11;
-    br.reduce = reduceStub;
-    br._modes.mode2Up.getIdealSpreadSize = () => { return { reduce: 10 }};
-    const shouldRedrawSpread = br._modes.mode2Up.shouldRedrawSpread;
-    expect(shouldRedrawSpread).toBe(true);
-  });
 });
 
 describe('resizeSpread', () => {
@@ -237,15 +217,16 @@ describe('prepareTwoPageView', () => {
   describe('drawing spread', () => {
     test('always draws new spread if `drawNewSpread` is true ', () => {
       const br = new BookReader({ data: SAMPLE_DATA });
+      const mode2Up = br._modes.mode2Up;
       br.init();
-      const drawLeafs = sinon.spy(br._modes.mode2Up, 'drawLeafs');
-      const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
-      const calculateSpreadSize = sinon.spy(br._modes.mode2Up, 'calculateSpreadSize');
-      const pruneUnusedImgs = sinon.spy(br, 'pruneUnusedImgs');
-      const prefetch = br.prefetch = sinon.spy();
+      const drawLeafs = sinon.spy(mode2Up, 'drawLeafs');
+      const resizeSpread = sinon.spy(mode2Up, 'resizeSpread');
+      const calculateSpreadSize = sinon.spy(mode2Up, 'calculateSpreadSize');
+      const prunePageContainers = sinon.spy(mode2Up, 'prunePageContainers');
+      const prefetch = sinon.spy(mode2Up, 'prefetch');
       const bindGestures = sinon.spy(br, 'bindGestures');
-      const centerView = sinon.spy(br._modes.mode2Up, 'centerView');
-      const preparePopUp = sinon.spy(br._modes.mode2Up, 'preparePopUp');
+      const centerView = sinon.spy(mode2Up, 'centerView');
+      const preparePopUp = sinon.spy(mode2Up, 'preparePopUp');
       const updateBrClasses = sinon.spy(br, 'updateBrClasses');
 
       br.prepareTwoPageView(undefined, undefined, true);
@@ -254,7 +235,7 @@ describe('prepareTwoPageView', () => {
       expect(resizeSpread.callCount).toBe(0);
       expect(drawLeafs.callCount).toBe(1);
       expect(calculateSpreadSize.callCount).toBe(1);
-      expect(pruneUnusedImgs.callCount).toBe(2);
+      expect(prunePageContainers.callCount).toBe(1);
       expect(bindGestures.callCount).toBe(1);
       expect(centerView.callCount).toBe(1);
       expect(preparePopUp.callCount).toBe(1);
@@ -263,18 +244,8 @@ describe('prepareTwoPageView', () => {
   });
 });
 
-describe('`prefetchImg` call', () => {
-  test('uses ImageCache in 2up', () => {
-    const br = new BookReader({ data: SAMPLE_DATA });
-    br.init();
-
-    expect(br.imageCache).toBeTruthy();
-    expect(br.prefetchedImgs).toBeTruthy();
-    expect(br.imageCache.cache['5']).toBe(undefined);
-
-    br.prefetchImg(5, true);
-    expect(br.imageCache.cache['5']).toBeTruthy();
-  });
+test('uses ImageCache', () => {
+  const br = new BookReader({ data: SAMPLE_DATA });
+  br.init();
+  expect(Object.keys(br.imageCache.cache).length).toBeGreaterThan(2);
 });
-
-
