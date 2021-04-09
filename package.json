@@ -42,6 +42,8 @@
   "devDependencies": {
     "@babel/core": "7.12.9",
     "@babel/preset-env": "7.12.7",
+    "@open-wc/testing": "^2.0.0",
+    "@open-wc/testing-karma": "^3.0.0",
     "@types/jest": "26.0.21",
     "babel-loader": "8.2.2",
     "codecov": "3.8.1",
@@ -79,7 +81,8 @@
       "<rootDir>/tests/"
     ],
     "testPathIgnorePatterns": [
-      "<rootDir>/tests/e2e/"
+      "<rootDir>/tests/e2e/",
+      "<rootDir>/tests/booknav-sidepanels"
     ]
   },
   "scripts": {
@@ -103,6 +106,8 @@
     "test:e2e:dev": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe --live --dev",
     "test:watch": "npx jest --watch",
     "test:coverage": "npx jest --coverage --colors",
-    "codecov": "npx codecov"
+    "codecov": "npx codecov",
+    "test:karma": "karma start --coverage",
+    "test:watch-karma": "karma start --auto-watch=true --single-run=false"
   }
 }
