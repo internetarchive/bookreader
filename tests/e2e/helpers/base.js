@@ -192,7 +192,7 @@ export function runBaseTests (br) {
     const { nav } = br;
     await t.click(nav.desktop.mode1Up);
     // we usually pre-fetch the page in question & the 2 after it
-    await t.expect(Selector('.BRpagecontainer').count).gte(1);
+    await t.expect(Selector('.BRpagecontainer').count).gte(3);
   });
 
   test('Clicking `thumbnail view` brings up all of the page thumbnails', async t => {
