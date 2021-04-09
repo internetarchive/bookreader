@@ -21,6 +21,7 @@ export class BookModel {
    */
   constructor(br) {
     this.br = br;
+    this.reduceSet = br.reduceSet;
     this.ppi = br.options?.ppi ?? DEFAULT_OPTIONS.ppi;
 
     /** @type {{width: number, height: number}} memoize storage */
@@ -446,26 +447,20 @@ export class PageModel {
 
   /**
    * Returns the srcset with correct URIs or void string if out of range
-   * Also makes the reduce argument optional
    * @param {number} reduce
    * @param {number} [rotate]
    */
   getURISrcSet(reduce, rotate = 0) {
-    let scale = [16,8,4,2,1];
-    // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-    if (reduce < 2) {
-      return "";
-    } else if (reduce < 4) {
-      scale = [1];
-    } else if (reduce < 8) {
-      scale = [2,1];
-    } else if (reduce < 16) {
-      scale = [4,2,1];
-    } else  if (reduce < 32) {
-      scale = [8,4,2,1];
+    const { reduceSet } = this.book;
+    const initialReduce = reduceSet.floor(reduce);
+    // We don't need to repeat the initial reduce in the srcset
+    const topReduce = reduceSet.decr(initialReduce);
+    const reduces = [];
+    for (let r = topReduce; r >= 1; r = reduceSet.decr(r)) {
+      reduces.push(r);
     }
-    return scale
-      .map((el, i) => `${this.getURI(scale[i], rotate)} ${2 ** (i + 1)}x`)
+    return reduces
+      .map(r => `${this.getURI(r, rotate)} ${initialReduce / r}x`)
       .join(', ');
   }
 

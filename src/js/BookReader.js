@@ -41,6 +41,7 @@ import { Mode2Up } from './BookReader/Mode2Up.js';
 import { ModeThumb } from './BookReader/ModeThumb';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
+import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet';
 
 if (location.toString().indexOf('_debugShowConsole=true') != -1) {
   $(() => new DebugConsole().init());
@@ -127,6 +128,12 @@ BookReader.prototype.setup = function(options) {
   this.reduce = 8; /* start very small */
   this.defaults = options.defaults;
   this.padding = options.padding;
+
+  this.reduceSet = NAMED_REDUCE_SETS[options.reduceSet];
+  if (!this.reduceSet) {
+    console.warn(`Invalid reduceSet ${options.reduceSet}. Ignoring.`);
+    this.reduceSet = NAMED_REDUCE_SETS[DEFAULT_OPTIONS.reduceSet];
+  }
 
   /** @type {number}
    * can be 1 or 2 or 3 based on the display mode const value
@@ -246,7 +253,8 @@ BookReader.prototype.setup = function(options) {
 
   /** Image cache for general image fetching */
   this.imageCache = new ImageCache(this._models.book, {
-    useSrcSet: this.options.useSrcSet
+    useSrcSet: this.options.useSrcSet,
+    reduceSet: this.reduceSet,
   });
 };
 
@@ -2194,33 +2202,17 @@ BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
  * @return {string}
  */
 BookReader.prototype._getPageURI = function(index, reduce, rotate) {
-  if (index < 0 || index >= this._models.book.getNumLeafs()) { // Synthesize page
-    return this.imagesBaseURL + "transparent.png";
-  }
+  const page = this._models.book.getPage(index, false);
+  // Synthesize page
+  if (!page) return this.imagesBaseURL + "transparent.png";
 
   if ('undefined' == typeof(reduce)) {
     // reduce not passed in
     // $$$ this probably won't work for thumbnail mode
-    var ratio = this._models.book.getPageHeight(index) / this.twoPage.height;
-    var scale;
-    // $$$ we make an assumption here that the scales are available pow2 (like kakadu)
-    if (ratio < 2) {
-      scale = 1;
-    } else if (ratio < 4) {
-      scale = 2;
-    } else if (ratio < 8) {
-      scale = 4;
-    } else if (ratio < 16) {
-      scale = 8;
-    } else  if (ratio < 32) {
-      scale = 16;
-    } else {
-      scale = 32;
-    }
-    reduce = scale;
+    reduce = page.height / this.twoPage.height;
   }
 
-  return this._models.book.getPageURI(index, reduce, rotate);
+  return page.getURI(reduce, rotate);
 };
 
 /**
