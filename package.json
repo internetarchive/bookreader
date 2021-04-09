@@ -82,7 +82,7 @@
     ],
     "testPathIgnorePatterns": [
       "<rootDir>/tests/e2e/",
-      "<rootDir>/tests/booknav-sidepanels"
+      "<rootDir>/tests/karma/*"
     ]
   },
   "scripts": {
