@@ -575,7 +575,7 @@ export class Mode2Up {
     //      - resize the back cover (twoPage.coverDiv) to left=gutter-newWidthL-newLeafEdgeWidthL-10
     //          and width=newWidthL+newWidthR+twoPage.edgeWidth+20
     //      - move new left leaf (newIndexL) forward to zindex=2 so it can receive clicks.
-    //      - remove old left and right leafs from the dom [pruneUnusedImgs()].
+    //      - remove old left and right leafs from the dom [prunePageContainers()].
     //      - prefetch new adjacent leafs.
     //      - set up click handlers for both new left and right leafs.
     //      - redraw the search highlight.
@@ -806,7 +806,7 @@ export class Mode2Up {
 
         this.br.updateFirstIndex(this.br.twoPage.currentIndexL);
         this.br.displayedIndices = [newIndexL, newIndexR];
-        this.br.pruneUnusedImgs();
+        this.prunePageContainers();
         this.br.animating = false;
 
         this.resizeSpread();
