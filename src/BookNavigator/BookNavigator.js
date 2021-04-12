@@ -308,12 +308,13 @@ export class BookNavigator extends LitElement {
   manageFullScreenBehavior(event) {
     this.emitFullScreenState(event);
 
-    const { isFullscreenActive } = this.bookreader;
+    const { isFullscreenActive, fullscreenScrollPos = {} } = this.bookreader;
+    const { scrollX = 0, scrollY = 0 } = fullscreenScrollPos;
 
     if (!isFullscreenActive) {
       this.fullscreenMgr.teardown();
     } else {
-      this.fullscreenMgr.setup();
+      this.fullscreenMgr.setup(scrollX, scrollY);
     }
   }
 
