@@ -16,25 +16,38 @@ export default class BRFullscreenMgr {
     this.handleBookReaderHeight = new Debouncer(
       this.resizeBookReaderContainer, this.debounceTime, this,
     );
+    this.savedScrollY = 0;
+    this.savedScrollX = 0;
   }
 
   /**
    * Sets bookreader height
    * & adds resize, orientationchange listeners
+   * & passes captured scroll positions
+   *
+   * @param {number} scrollX
+   * @param {number} scrolly
    */
-  setup() {
+  setup(scrollX = 0, scrollY = 0) {
+    // set given scroll positions
+    this.savedScrollX = scrollX;
+    this.savedScrollY = scrollY
+
     this.resizeBookReaderContainer();
     window.addEventListener('resize', this.handleResizeEvent);
   }
 
   /**
    * Resets BookReader height
-   * & removes event handlers
+   * & removes event handlers, resets captured scroll positions
    */
   teardown() {
     const bookreader = document.querySelector('#BookReader');
     bookreader.setAttribute('style', '');
     window.removeEventListener('resize', this.handleResizeEvent);
+    window.scrollTo(this.savedScrollX, this.savedScrollY);
+    this.savedScrollX = 0;
+    this.savedScrollY = 0;
   }
 
   /**
@@ -56,5 +69,6 @@ export default class BRFullscreenMgr {
     const windowHeight = window.innerHeight;
     const newHeight = `${(windowHeight - loanbarHeight)}px`;
     bookreader.style.height = newHeight;
+    window.scrollTo(0, 0);
   }
 }
