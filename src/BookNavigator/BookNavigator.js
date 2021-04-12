@@ -269,6 +269,7 @@ export class BookNavigator extends LitElement {
     });
     window.addEventListener('BRJSIA:PostInit', ({ detail }) => {
       const { isRestricted, downloadURLs } = detail;
+      this.bookReaderLoaded = true;
       this.downloadableTypes = downloadURLs;
       this.model.setRestriction(isRestricted);
     });
