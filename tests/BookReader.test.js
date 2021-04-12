@@ -196,13 +196,6 @@ test('_getPageURISrcset with the most elements in srcset', () => {
   expect(br._getPageURISrcset(5, 35, undefined)).toBe("correctURL.png&scale=16 2x, correctURL.png&scale=8 4x, correctURL.png&scale=4 8x, correctURL.png&scale=2 16x, correctURL.png&scale=1 32x");
 });
 
-test('_getPageURISrcset with undefined reduce param', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 30);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(5, undefined, undefined)).toBe("correctURL.png&scale=16 2x, correctURL.png&scale=8 4x, correctURL.png&scale=4 8x, correctURL.png&scale=2 16x, correctURL.png&scale=1 32x");
-});
-
 describe('quantizeReduce', () => {
   const quantizeReduce = BookReader.prototype.quantizeReduce;
   const SAMPLE_FACTORS = [

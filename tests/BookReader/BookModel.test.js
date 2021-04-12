@@ -218,6 +218,25 @@ describe('_getDataFlattened', () => {
   });
 });
 
+describe('getPage', () => {
+  test('loops around by default', () => {
+    const bm = new BookModel({ data: SAMPLE_DATA });
+    expect(bm.getPage(-1).index).toBe(3);
+    expect(bm.getPage(-2).index).toBe(2);
+    expect(bm.getPage(-3).index).toBe(1);
+    expect(bm.getPage(4).index).toBe(0);
+    expect(bm.getPage(5).index).toBe(1);
+  });
+
+  test('does not loop if loop=false', () => {
+    const bm = new BookModel({ data: SAMPLE_DATA });
+    expect(bm.getPage(-1, false)).toBeUndefined();
+    expect(bm.getPage(-2, false)).toBeUndefined();
+    expect(bm.getPage(4, false)).toBeUndefined();
+    expect(bm.getPage(5, false)).toBeUndefined();
+  });
+});
+
 describe('PageModel', () => {
   test('constructor copies fields from book model', () => {
     const bm = new BookModel({ data: SAMPLE_DATA });

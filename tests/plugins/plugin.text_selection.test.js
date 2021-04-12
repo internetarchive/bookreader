@@ -53,8 +53,8 @@ describe("Generic tests", () => {
     const spy = sinon.spy(br.textSelectionPlugin, 'createTextLayer');
     sinon.stub(br.textSelectionPlugin, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
-    const $container = br._createPageContainer(1, {});
-    expect($container.hasClass("BRpagecontainer")).toBe(true);
+    const container = br._createPageContainer(1, {});
+    expect(container).toBeTruthy();
     expect(spy.callCount).toBe(1);
   });
 

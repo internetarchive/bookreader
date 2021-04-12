@@ -10,7 +10,7 @@ export function runRightToLeftTests (br) {
     await t.expect(BRcontainer.find('.BRleafEdgeR').getStyleProperty('width')).eql('0px');
 
     //checking empty page before the cover is more to the left than the first page
-    const rightEmptyPage = BRcontainer.find('.BRpagecontainer.BRemptypage.pagediv-1');
+    const rightEmptyPage = BRcontainer.find('.BRpagecontainer.BRemptypage');
     const leftPage = BRcontainer.find('.BRpagecontainer.pagediv0');
     const leftPageLDistance = leftPage.getBoundingClientRectProperty('left');
     const rightPageLDistance = rightEmptyPage.getBoundingClientRectProperty('left');

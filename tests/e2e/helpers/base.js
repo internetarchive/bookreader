@@ -111,6 +111,8 @@ export function runBaseTests (br) {
     // Go to next page, so we can go previous if at front cover
     await t.click(nav.desktop.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME);
+    await t.click(nav.desktop.goNext);
+    await t.wait(PAGE_FLIP_WAIT_TIME);
 
     const onLoadBrState = BRcontainer.child(0);
     const initialImages = onLoadBrState.find('img');
@@ -141,6 +143,10 @@ export function runBaseTests (br) {
   test('2up mode - Clicking `Next page` changes the page', async t => {
     // Note: this will fail on a R to L book if at front cover
     const { nav, BRcontainer} = br;
+    // Flip away from cover
+    await t.click(nav.desktop.goNext);
+    await t.wait(PAGE_FLIP_WAIT_TIME);
+
     const onLoadBrState = BRcontainer.child(0);
     const initialImages = onLoadBrState.find('img');
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
@@ -153,9 +159,6 @@ export function runBaseTests (br) {
     const nextImages = nextBrState.find('img');
     const nextImg1Src = await nextImages.nth(0).getAttribute('src');
     const nextImg2Src = await nextImages.nth(-1).getAttribute('src');
-
-    // we aren't showing the same image in both leaves
-    await t.expect(origImg1Src).notEql(origImg2Src);
 
     // we are showing new pages
     await t.expect(nextImg1Src).notEql(origImg1Src);
@@ -182,29 +185,20 @@ export function runBaseTests (br) {
   test('Clicking `2 page view` brings up 2 pages at a time', async t => {
     const { nav } = br;
     await t.click(nav.desktop.mode2Up);
-    const twoPageContainer = Selector('.BRtwopageview');
-    await t.expect(twoPageContainer.visible).ok();
-    const images = twoPageContainer.find('img.BRpageimage');
-    await t.expect(images.count).eql(2);
+    await t.expect(Selector('.BRpagecontainer').count).eql(2);
   });
 
   test('Clicking `1 page view` brings up 1 at a time', async t => {
     const { nav } = br;
     await t.click(nav.desktop.mode1Up);
-    const onePageViewContainer = Selector('.BRpageview');
-    await t.expect(onePageViewContainer.visible).ok();
-    const images = onePageViewContainer.find('.BRpagecontainer.BRmode1up');
     // we usually pre-fetch the page in question & the 2 after it
-    await t.expect(images.count).gte(3);
+    await t.expect(Selector('.BRpagecontainer').count).gte(3);
   });
 
   test('Clicking `thumbnail view` brings up all of the page thumbnails', async t => {
     const { nav } = br;
     await t.click(nav.desktop.modeThumb);
-    const thumbnailContainer = Selector('.BRpageview');
-    await t.expect(thumbnailContainer.visible).ok();
-    const images = thumbnailContainer.find('.BRpagecontainer.BRmodethumb');
-    await t.expect(images.count).gt(0);
+    await t.expect(Selector('.BRpagecontainer').count).gte(3);
   });
 
   test('Clicking `zoom out` makes book smaller', async t => {

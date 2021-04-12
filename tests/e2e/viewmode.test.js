@@ -24,7 +24,7 @@ test('Clicking `view mode` cycles through view modes', async t => {
   await t.click(nav.desktop.viewmode);
   const onePageViewContainer = Selector('.BRpageview');
   await t.expect(onePageViewContainer.visible).ok();
-  const onePageImages = onePageViewContainer.find('.BRpagecontainer.BRmode1up');
+  const onePageImages = onePageViewContainer.find('.BRmode1up .BRpagecontainer');
   // we usually pre-fetch the page in question & 1 before/after it
   await t.expect(onePageImages.count).gte(3);
 

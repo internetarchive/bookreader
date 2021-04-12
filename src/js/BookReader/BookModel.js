@@ -21,6 +21,7 @@ export class BookModel {
    */
   constructor(br) {
     this.br = br;
+    this.reduceSet = br.reduceSet;
     this.ppi = br.options?.ppi ?? DEFAULT_OPTIONS.ppi;
 
     /** @type {{width: number, height: number}} memoize storage */
@@ -275,12 +276,17 @@ export class BookModel {
 
   /**
    * @param {number} index use negatives to get page relative to end
+   * @param loop whether to loop (i.e. -1 == last page)
    */
-  getPage(index) {
+  getPage(index, loop = true) {
     const numLeafs = this.getNumLeafs();
+    if (!loop && (index < 0 || index >= numLeafs)) {
+      return undefined;
+    }
     if (index < 0 && index >= -numLeafs) {
       index += numLeafs;
     }
+    index = index % numLeafs;
     return new PageModel(this, index);
   }
 
@@ -367,7 +373,7 @@ export class BookModel {
 /**
  * A controlled schema for page data.
  */
-class PageModel {
+export class PageModel {
   /**
    * @param {BookModel} book
    * @param {PageIndex} index
@@ -437,6 +443,25 @@ class PageModel {
    */
   getURI(reduce, rotate) {
     return this.book.getPageURI(this.index, reduce, rotate);
+  }
+
+  /**
+   * Returns the srcset with correct URIs or void string if out of range
+   * @param {number} reduce
+   * @param {number} [rotate]
+   */
+  getURISrcSet(reduce, rotate = 0) {
+    const { reduceSet } = this.book;
+    const initialReduce = reduceSet.floor(reduce);
+    // We don't need to repeat the initial reduce in the srcset
+    const topReduce = reduceSet.decr(initialReduce);
+    const reduces = [];
+    for (let r = topReduce; r >= 1; r = reduceSet.decr(r)) {
+      reduces.push(r);
+    }
+    return reduces
+      .map(r => `${this.getURI(r, rotate)} ${initialReduce / r}x`)
+      .join(', ');
   }
 
   /**

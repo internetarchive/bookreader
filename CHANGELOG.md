@@ -1,3 +1,6 @@
+# 4.39.3
+- Hotfix: Fix iOS 8 erroring since 4.39.0 @cdrini
+
 # 4.39.2
 - Dev: update Readme @Himanshunitrr
 - Dev: in-file typo fixes @cclauss
