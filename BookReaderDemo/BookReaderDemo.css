@@ -1,6 +1,10 @@
 /*
  * Custom overrides for BookReader Demo.
  */
+html {
+    font-size: 10px;
+}
+
 body {
     background-color: #939598;
     margin: 0px;
