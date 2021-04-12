@@ -1,3 +1,14 @@
+# 4.40.0
+- Dev: Separate ModeThumb into separate file @cdrini
+- Feature: Progressive loading of higher resolution images @cdrini
+    - Potentially breaking change: `data-(side|leaf|reduce|row)` no longer set
+    - Potentially breaking change: mode class no longer set on page container
+    - A number of deprecated methods converted to no-ops with `console.warn`
+- Feature: pow2 reduce by default @cdrini
+    - New option: `reduceSet: 'pow2' | 'integer' = 'pow2'` limits reduce variables sent to getURI to be powers of 2
+- Dev: Add esbuild to `npm run serve-dev` @iisa
+- Fix: BookNavigator loaded after JSIAInit @cdrini
+
 # 4.39.3
 - Hotfix: Fix iOS 8 erroring since 4.39.0 @cdrini
 
