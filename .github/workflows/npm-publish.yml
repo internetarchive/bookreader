@@ -31,9 +31,9 @@ jobs:
       # Getting 404 errors ; the internet recommended this somewhere, and it worked in Jenkins,
       # so maybe it'll also work here?
       - run: 'echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc'
-      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - run: npm publish
 
   publish-gpr:
     needs: build
