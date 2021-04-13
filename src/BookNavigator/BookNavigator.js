@@ -303,29 +303,22 @@ export class BookNavigator extends LitElement {
    * Manages Fullscreen behavior
    * This makes sure that controls are _always_ in view
    * We need this to accommodate LOAN BAR during fullscreen
-   * @param { Event } event
    */
-  manageFullScreenBehavior(event) {
-    this.emitFullScreenState(event);
+  manageFullScreenBehavior() {
+    this.emitFullScreenState();
 
-    const { isFullscreenActive, fullscreenScrollPos = {} } = this.bookreader;
-    const { scrollX = 0, scrollY = 0 } = fullscreenScrollPos;
-
-    if (!isFullscreenActive) {
+    if (!this.bookreader.isFullscreen()) {
       this.fullscreenMgr.teardown();
     } else {
-      this.fullscreenMgr.setup(scrollX, scrollY);
+      this.fullscreenMgr.setup(this.bookreader);
     }
   }
 
   /**
    * Intercepts and relays fullscreen toggle events
-   * @param {Event} e
    */
-  emitFullScreenState({ detail }) {
-    const { props: brInstance } = detail;
-
-    const isFullScreen = brInstance.isFullscreenActive;
+  emitFullScreenState() {
+    const isFullScreen = this.bookreader.isFullscreen();
     const event = new CustomEvent('ViewportInFullScreen', {
       detail: { isFullScreen },
     });

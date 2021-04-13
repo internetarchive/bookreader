@@ -175,7 +175,6 @@ BookReader.prototype.setup = function(options) {
   this.firstIndex = null;
   this.lastDisplayableIndex2up = null;
   this.isFullscreenActive = false;
-  this.fullscreenScrollPos = { scrollX: 0, scrollY: 0 };
   this.lastScroll = null;
 
   this.showLogo = options.showLogo;
@@ -1108,7 +1107,6 @@ BookReader.prototype.toggleFullscreen = function(bindKeyboardControls = true) {
  * @param { boolean } bindKeyboardControls
  */
 BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
-  const { scrollX, scrollY } = window;
   const currentIndex = this.currentIndex();
   this.refs.$brContainer.css('opacity', 0);
 
@@ -1125,8 +1123,6 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
   }
 
   this.isFullscreenActive = true;
-  this.fullscreenScrollPos = { scrollX, scrollY };
-  this.updateBrClasses();
 
   this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear',() => {
     this.resize();
