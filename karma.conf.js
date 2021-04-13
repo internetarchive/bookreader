@@ -14,6 +14,12 @@ module.exports = (config) => {
         { pattern: config.grep ? config.grep : 'tests/karma/*/*.test.js', type: 'module' },
       ],
       reporters: ['progress', 'coverage'],
+      preprocessors: {
+        // source files, that you wanna generate coverage for
+        // do not include tests or libraries
+        // (these files will be instrumented by Istanbul)
+        'src/iaux-*/*.js': ['coverage']
+      },
       coverageReporter: {
         includeAllSources: true,
         dir: 'coverage-karma/',
