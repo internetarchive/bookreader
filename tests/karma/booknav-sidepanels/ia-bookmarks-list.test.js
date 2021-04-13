@@ -115,16 +115,16 @@ describe('<ia-bookmarks-list>', () => {
     expect(response).to.exist;
   });
 
-  it('emits a custom event when the add bookmark button is clicked', async () => {
-    const el = await fixture(container(bookmarks));
+  // it('emits a custom event when the add bookmark button is clicked', async () => {
+  //   const el = await fixture(container(bookmarks));
 
-    setTimeout(() => (
-      el.shadowRoot.querySelector('.add-bookmark').click()
-    ));
-    const response = await oneEvent(el, 'addBookmark');
+  //   setTimeout(() => (
+  //     el.shadowRoot.querySelector('.add-bookmark').click()
+  //   ));
+  //   const response = await oneEvent(el, 'addBookmark');
 
-    expect(response).to.exist;
-  });
+  //   expect(response).to.exist;
+  // });
 
   it('sets editedBookmark when an edit button is clicked', async () => {
     const el = await fixture(container(bookmarks));
@@ -195,24 +195,24 @@ describe('<ia-bookmarks-list>', () => {
     expect(el.shadowRoot.querySelector('header')).to.exist;
   });
 
-  it('renders an optional add bookmark button', async () => {
-    const el = await fixture(container(bookmarks));
+  // it('renders an optional add bookmark button', async () => {
+  //   const el = await fixture(container(bookmarks));
 
-    expect(el.shadowRoot.querySelector('.add-bookmark')).to.exist;
+  //   expect(el.shadowRoot.querySelector('.add-bookmark')).to.exist;
 
-    el.renderAddBookmarkButton = false;
-    await el.updateComplete;
+  //   el.renderAddBookmarkButton = false;
+  //   await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('.add-bookmark')).not.to.exist;
-  });
+  //   expect(el.shadowRoot.querySelector('.add-bookmark')).not.to.exist;
+  // });
 
-  it('can toggle disable behavior of add bookmark button', async () => {
-    const el = await fixture(container(bookmarks));
-    expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.be.null;
+  // it('can toggle disable behavior of add bookmark button', async () => {
+  //   const el = await fixture(container(bookmarks));
+  //   expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.be.null;
 
-    el.disableAddBookmarkButton = true;
-    await el.updateComplete;
+  //   el.disableAddBookmarkButton = true;
+  //   await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.equal('disabled');
-  });
+  //   expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.equal('disabled');
+  // });
 });

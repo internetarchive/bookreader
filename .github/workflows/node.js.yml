@@ -22,6 +22,7 @@ jobs:
     - run: npm run build
     - run: npm run lint
     - run: npm run test:coverage
+    - run: npm run test:karma
     - run: npm run codecov
     # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )
     # Quarantine mode (sigh) to catch unstable tests (see https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode )
