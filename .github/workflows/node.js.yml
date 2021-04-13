@@ -21,7 +21,7 @@ jobs:
     - run: npm install
     - run: npm run build
     - run: npm run lint
-    - run: npm run test:coverage
+    - run: npm run test:jest
     - run: npm run test:karma
     - run: npm run codecov
     # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )

@@ -61,6 +61,7 @@
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "jquery.mmenu": "5.6.5",
+    "karma-coverage": "^2.0.3",
     "live-server": "1.2.1",
     "node-fetch": "2.6.1",
     "regenerator-runtime": "0.13.7",
@@ -83,7 +84,8 @@
     "testPathIgnorePatterns": [
       "<rootDir>/tests/e2e/",
       "<rootDir>/tests/karma/*"
-    ]
+    ],
+    "coverageDirectory": "<rootDir>/coverage-jest"
   },
   "scripts": {
     "preversion": "npm run test && node scripts/preversion.js",
@@ -94,6 +96,11 @@
     "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
     "build-js": "npx webpack",
     "build-js:watch": "npx webpack --mode=development --watch",
+<<<<<<< HEAD
+=======
+    "build-es": "npx esbuild src/BookReaderTemplate/BookReaderTemplate.js --outfile=BookReader/bookreader-template-bundle.js --bundle",
+    "build-es:watch": "npx esbuild src/BookReaderTemplate/BookReaderTemplate.js --outfile=BookReader/bookreader-template-bundle.js --bundle --watch",
+>>>>>>> b4c2fb1... Configure jest and karma codecov and karma test cleanup
     "build-css": "npx sass --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "build-css:watch": "npx sass --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "lint": "npx eslint src/js tests",
@@ -102,12 +109,16 @@
     "serve-live": "npx live-server . --port 8000 --watch=index.html,BookReader,BookReaderDemo",
     "serve-dev": "npm run build-css && npx concurrently --kill-others npm:serve-live npm:build-*:watch",
     "test": "npx jest",
+<<<<<<< HEAD
     "test:e2e": "npm run build && env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe",
+=======
+    "test:e2e": "npm run build && npm run build-es && env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe",
+>>>>>>> b4c2fb1... Configure jest and karma codecov and karma test cleanup
     "test:e2e:dev": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe --live --dev",
-    "test:watch": "npx jest --watch",
-    "test:coverage": "npx jest --coverage --colors",
+    "test:jest-watch": "npx jest --watch",
+    "test:jest": "npx jest --coverage --colors",
     "codecov": "npx codecov",
-    "test:karma": "karma start --coverage",
-    "test:watch-karma": "karma start --auto-watch=true --single-run=false"
+    "test:karma": "npx karma start --coverage",
+    "test:karma-watch": "npx karma start --auto-watch=true --single-run=false"
   }
 }

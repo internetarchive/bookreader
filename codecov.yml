@@ -2,6 +2,18 @@ codecov:
   notify:
     require_ci_to_pass: yes
 
+  status:
+    project:
+      bookreader:
+        paths:
+          - "!tests/karma"
+          - src/js/
+          - src/util/
+      iaux:
+        paths:
+          - "tests/karma/"
+          - "src/iaux*/"
+
 coverage:
   precision: 2
   round: down

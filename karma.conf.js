@@ -13,7 +13,15 @@ module.exports = (config) => {
         // npm run test -- --grep test/bar/*
         { pattern: config.grep ? config.grep : 'tests/karma/*/*.test.js', type: 'module' },
       ],
-
+      reporters: ['progress', 'coverage'],
+      coverageReporter: {
+        includeAllSources: true,
+        dir: 'coverage-karma/',
+        reporters: [
+          { type: "html", subdir: "html" },
+          { type: 'text-summary' }
+        ]
+      },
       esm: {
         nodeResolve: true,
       },

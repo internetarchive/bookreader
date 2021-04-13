@@ -195,24 +195,28 @@ describe('<ia-bookmarks-list>', () => {
     expect(el.shadowRoot.querySelector('header')).to.exist;
   });
 
-  // it('renders an optional add bookmark button', async () => {
-  //   const el = await fixture(container(bookmarks));
+  // SKIPPED:
+  // AssertionError: expected null to exist
+  xit('renders an optional add bookmark button', async () => {
+    const el = await fixture(container(bookmarks));
 
-  //   expect(el.shadowRoot.querySelector('.add-bookmark')).to.exist;
+    expect(el.shadowRoot.querySelector('.add-bookmark')).to.exist;
 
-  //   el.renderAddBookmarkButton = false;
-  //   await el.updateComplete;
+    el.renderAddBookmarkButton = false;
+    await el.updateComplete;
 
-  //   expect(el.shadowRoot.querySelector('.add-bookmark')).not.to.exist;
-  // });
+    expect(el.shadowRoot.querySelector('.add-bookmark')).not.to.exist;
+  });
 
-  // it('can toggle disable behavior of add bookmark button', async () => {
-  //   const el = await fixture(container(bookmarks));
-  //   expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.be.null;
+  // SKIPPED:
+  // TypeError: Cannot read property 'getAttribute' of null
+  xit('can toggle disable behavior of add bookmark button', async () => {
+    const el = await fixture(container(bookmarks));
+    expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.be.null;
 
-  //   el.disableAddBookmarkButton = true;
-  //   await el.updateComplete;
+    el.disableAddBookmarkButton = true;
+    await el.updateComplete;
 
-  //   expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.equal('disabled');
-  // });
+    expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.equal('disabled');
+  });
 });
