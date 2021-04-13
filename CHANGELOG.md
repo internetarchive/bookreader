@@ -1,3 +1,7 @@
+# 4.40.1
+- Fix: Support /search/TERM in url @nsharma123
+- Dev: Fix reference to deprecated pruneUnused @cdrini
+
 # 4.40.0
 - Dev: Separate ModeThumb into separate file @cdrini
 - Feature: Progressive loading of higher resolution images @cdrini
