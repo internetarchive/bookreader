@@ -1,15 +1,6 @@
 import { css } from 'lit-element';
 
 export default css`
-:host {
-  display: block;
-  overflow-y: auto;
-  box-sizing: border-box;
-  color: var(--primaryTextColor);
-  background: var(--activeButtonBg);
-  margin-bottom: 2rem;
-}
-
 small {
   font-style: italic;
 }

@@ -7,7 +7,7 @@ import { LitElement, html, css } from 'lit-element';
 import '../ItemNavigator/ItemNavigator.js'
 import '../BookNavigator/BookNavigator.js'
 
-export class BookReaderTemplate extends LitElement {
+export class BookReader extends LitElement {
 
   static get properties() {
     return {
@@ -17,8 +17,8 @@ export class BookReaderTemplate extends LitElement {
 
   static get styles() {
     return css`
-      #theatre-ia-wrap {
-        background-color: #000000;
+      .book-reader {
+        background-color: ${black};
         position: relative;
         width: 100vw;
         height: auto;
@@ -54,15 +54,6 @@ export class BookReaderTemplate extends LitElement {
         --shareIconBg: #151515;
         --activityIndicatorLoadingDotColor: #fff;
         --activityIndicatorLoadingRingColor: #fff;
-        --activeBorderWidth: 2px;
-        --activeBookmark: #538bc5;
-        --defaultBookmarkColor: #282828;
-        --blueBookmarkColor: #428bca;
-        --redBookmarkColor: #eb3223;
-        --greenBookmarkColor: #75ef4c;
-        --yellowBookmarkColor: #fffd54;
-        --bookmarkThumbWidth: 37px;
-        --bookmarkListSeparatorColor: #151515;
         --loadingPagePlaceholder: #fefdeb;
         --createButtonColor: #194880;
         --createButtonBorderColor: #c5d1df;
@@ -106,20 +97,18 @@ export class BookReaderTemplate extends LitElement {
 
   render() {
     return html`
-      <div id="theatre-ia-wrap" class="container container-ia width-max">
-        <div id="theatre-ia" class="width-max">
-          <div class="row">
-            <div id="IABookReaderMessageWrapper" style="display:none;"></div>
-            <item-navigator itemType="bookreader" basehost="archive.org" item=${this.base64Json}>
-              <div slot="bookreader">
-                <slot name="bookreader"></slot>
-              </div>
-            </item-navigator>
+      <div class="book-reader">
+        <item-navigator
+          itemType="bookreader"
+          basehost=${this.baseHost}
+          item=${this.base64Json}>
+          <div slot="bookreader">
+            <slot name="bookreader"></slot>
           </div>
-        </div>
+        </item-navigator>
       </div>
     `;
   }
 }
 
-window.customElements.define("bookreader-template", BookReaderTemplate);
+window.customElements.define("book-reader", BookReader);

@@ -1,13 +1,32 @@
 import { nothing } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat.js';
-import { html, LitElement } from 'lit-element';
+import { css, html, LitElement } from 'lit-element';
 import './ia-bookmarks-edit.js';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 import bookmarksListCSS from './styles/ia-bookmarks-list.js';
 
 export class IABookmarksList extends LitElement {
   static get styles() {
-    return bookmarksListCSS;
+    const main = css`
+      :host {
+        display: block;
+        overflow-y: auto;
+        box-sizing: border-box;
+        color: var(--primaryTextColor);
+        background: var(--activeButtonBg);
+        margin-bottom: 2rem;
+        --activeBorderWidth: 2px;
+        --bookmarkThumbWidth: 37px;
+        --activeBookmark: #538bc5;
+        --bookmarkListSeparatorColor: var(--secondaryGrey, #222);
+        --redBookmarkColor: #eb3223;
+        --blueBookmarkColor: #0023f5;
+        --greenBookmarkColor: #75ef4c;
+        --bookmarkListSeparatorColor: #151515;
+      }
+    `;
+
+    return [main, bookmarksListCSS];
   }
 
   static get properties() {
