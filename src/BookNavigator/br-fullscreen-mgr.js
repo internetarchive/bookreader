@@ -9,9 +9,14 @@ import Debouncer from '../util/debouncer';
 export default class BRFullscreenMgr {
   constructor() {
     this.debounceTime = 250;
+    this.savedScrollY = 0;
+    this.savedScrollX = 0;
+    this.bookreader = null;
+
     this.setup = this.setup.bind(this);
     this.teardown = this.teardown.bind(this);
     this.resizeBookReaderContainer = this.resizeBookReaderContainer.bind(this);
+
     this.handleResizeEvent = this.handleResizeEvent.bind(this);
     this.handleBookReaderHeight = new Debouncer(
       this.resizeBookReaderContainer, this.debounceTime, this,
@@ -21,20 +26,28 @@ export default class BRFullscreenMgr {
   /**
    * Sets bookreader height
    * & adds resize, orientationchange listeners
+   * & passes captured scroll positions
+   *
+   * @param {object} brInstance
    */
-  setup() {
+  setup(brInstance) {
+    this.bookreader = brInstance;
+
     this.resizeBookReaderContainer();
     window.addEventListener('resize', this.handleResizeEvent);
   }
 
   /**
    * Resets BookReader height
-   * & removes event handlers
+   * & removes event handlers, resets captured scroll positions
    */
   teardown() {
     const bookreader = document.querySelector('#BookReader');
     bookreader.setAttribute('style', '');
     window.removeEventListener('resize', this.handleResizeEvent);
+    window.scrollTo(this.savedScrollX, this.savedScrollY);
+    this.savedScrollX = 0;
+    this.savedScrollY = 0;
   }
 
   /**
@@ -47,14 +60,20 @@ export default class BRFullscreenMgr {
   /**
    * Calculates & sets BookReader's needed height to
    * take the loan bar into account
+   * + appends fullscreen classes to DOM
    */
-  // eslint-disable-next-line class-methods-use-this
   resizeBookReaderContainer() {
+    const { scrollX, scrollY } = window;
+    this.savedScrollX = scrollX;
+    this.savedScrollY = scrollY;
+    this.bookreader.updateBrClasses();
+
     const loanbar = document.querySelector('.BookReaderMessage');
     const bookreader = document.querySelector('#BookReader');
     const loanbarHeight = loanbar?.offsetHeight ?? 0;
     const windowHeight = window.innerHeight;
     const newHeight = `${(windowHeight - loanbarHeight)}px`;
     bookreader.style.height = newHeight;
+    window.scrollTo(0, 0);
   }
 }

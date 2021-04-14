@@ -1123,7 +1123,6 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
   }
 
   this.isFullscreenActive = true;
-  this.updateBrClasses();
 
   this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear',() => {
     this.resize();
@@ -1131,7 +1130,7 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
   });
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
-  this.trigger('fullscreenToggled');
+  this.trigger(BookReader.eventNames.fullscreenToggled);
 };
 
 /**
@@ -1154,13 +1153,13 @@ BookReader.prototype.exitFullScreen = function() {
   }
 
   this.isFullscreenActive = false;
-  this.updateBrClasses()
+  this.updateBrClasses();
 
   this.resize();
   this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
-  this.trigger('fullscreenToggled');
+  this.trigger(BookReader.eventNames.fullscreenToggled);
 };
 
 /**
