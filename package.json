@@ -97,7 +97,7 @@
     "lint:fix": "npx eslint --fix src/js tests",
     "serve": "npx http-server . --port 8000",
     "serve-live": "npx live-server . --port 8000 --watch=index.html,BookReader,BookReaderDemo",
-    "serve-dev": "npx concurrently --kill-others npm:serve-live npm:build-*:watch",
+    "serve-dev": "npm run build-css && npx concurrently --kill-others npm:serve-live npm:build-*:watch",
     "test": "npx jest",
     "test:e2e": "npm run build && env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe",
     "test:e2e:dev": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe --live --dev",
