@@ -31,21 +31,27 @@
 </head>
 
 <body>
-  <bookreader-template>
-    <div id="IABookReaderWrapper" class="internal-beta" slot="bookreader">
-      <div id="BookReader" class="BookReader"></div>
-    </div>
-    <div>
-      Internet Archive BookReader Demo<br />
-      <noscript>
-        <p>
-          The BookReader requires JavaScript to be enabled. Please check that
-          your browser supports JavaScript and that it is enabled in the
-          browser settings.
-        </p>
-      </noscript>
-    </div>
-  </bookreader-template>
+  <section style="width: 100%; overflow: hidden;">
+    <bookreader-template>
+      <div id="IABookReaderWrapper" class="internal-beta" slot="bookreader">
+        <div id="BookReader" class="BookReader"></div>
+      </div>
+      <div>
+        Internet Archive BookReader Demo<br />
+        <noscript>
+          <p>
+            The BookReader requires JavaScript to be enabled. Please check that
+            your browser supports JavaScript and that it is enabled in the
+            browser settings.
+          </p>
+        </noscript>
+      </div>
+    </bookreader-template>
+  </section>
+  <section style="height: 800px; width: 200px;">
+    <p>placeholder div to allow scrolling</p>
+  </section>
+
 
   <script id="pageUrl" type="text/javascript"></script>
 
