@@ -1,6 +1,6 @@
 # Internet Archive BookReader
 
-<img style="max-width: 300px;" src="./assets/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
+<img style="width: 300px;" src="./assets/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
 
 ![Build Status](https://github.com/internetarchive/bookreader/actions/workflows/node.js.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/internetarchive/bookreader/branch/master/graph/badge.svg)](https://codecov.io/gh/internetarchive/bookreader)
 
@@ -12,7 +12,8 @@ The Internet Archive BookReader is used to view books from the Internet Archive 
 
 See live examples:
 - On details page: https://archive.org/details/birdbookillustra00reedrich
-- Full Screen: https://archive.org/details/birdbookillustra00reedrich?view=theater (mobile-friendly)
+- Full window: https://archive.org/details/birdbookillustra00reedrich?view=theater
+- Embedded url for iFrames: https://archive.org/embed/birdbookillustra00reedrich
 
 ## Demos
 
