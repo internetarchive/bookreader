@@ -1,3 +1,6 @@
+# 4.40.2
+-Fix: page container has `data-side` attr @iisa
+
 # 4.40.1
 - Fix: Support /search/TERM in url @nsharma123
 - Dev: Fix reference to deprecated pruneUnused @cdrini
