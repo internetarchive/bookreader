@@ -23,6 +23,12 @@ describe('constructor', () => {
     expect(pc.$container.hasClass('BRemptypage')).toBe(false);
     expect(pc.$container.hasClass('pagediv7')).toBe(true);
   });
+
+  test('adds side attribute', () => {
+    const pc = new PageContainer({index: 7, pageSide: 'R'}, {isProtected: false});
+    expect(pc.$container.hasClass('BRemptypage')).toBe(false);
+    expect(pc.$container.attr('data-side')).toBe('R');
+  });
 });
 
 describe('update', async () => {
