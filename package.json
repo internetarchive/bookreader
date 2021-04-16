@@ -96,11 +96,6 @@
     "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
     "build-js": "npx webpack",
     "build-js:watch": "npx webpack --mode=development --watch",
-<<<<<<< HEAD
-=======
-    "build-es": "npx esbuild src/BookReaderTemplate/BookReaderTemplate.js --outfile=BookReader/bookreader-template-bundle.js --bundle",
-    "build-es:watch": "npx esbuild src/BookReaderTemplate/BookReaderTemplate.js --outfile=BookReader/bookreader-template-bundle.js --bundle --watch",
->>>>>>> b4c2fb1... Configure jest and karma codecov and karma test cleanup
     "build-css": "npx sass --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "build-css:watch": "npx sass --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "lint": "npx eslint src/js tests",
@@ -109,11 +104,7 @@
     "serve-live": "npx live-server . --port 8000 --watch=index.html,BookReader,BookReaderDemo",
     "serve-dev": "npm run build-css && npx concurrently --kill-others npm:serve-live npm:build-*:watch",
     "test": "npx jest",
-<<<<<<< HEAD
     "test:e2e": "npm run build && env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe",
-=======
-    "test:e2e": "npm run build && npm run build-es && env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe",
->>>>>>> b4c2fb1... Configure jest and karma codecov and karma test cleanup
     "test:e2e:dev": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe --live --dev",
     "test:jest-watch": "npx jest --watch",
     "test:jest": "npx jest --coverage --colors",
