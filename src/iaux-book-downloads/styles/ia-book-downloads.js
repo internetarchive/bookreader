@@ -1,15 +1,6 @@
 import { css } from 'lit-element';
 
 export default css`
-:host {
-  display: block;
-  height: 100%;
-  padding: 1.5rem 0;
-  overflow-y: auto;
-  font-size: 1.4rem;
-  box-sizing: border-box;
-}
-
 header {
   display: flex;
   align-items: center;
@@ -43,11 +34,6 @@ a.close {
   justify-self: end;
 }
 
-a.close ia-icon {
-  --iconWidth: 18px;
-  --iconHeight: 18px;
-}
-
 ul {
   padding: 0;
   margin: 0;
@@ -72,15 +58,9 @@ p {
   text-decoration: none;
   text-shadow: 1px 1px #484848;
   border-radius: 4px;
-  color: var(--downloadButtonColor);
-  background: var(--downloadButtonBg);
-  border: 1px solid var(--downloadButtonBorderColor);
 }
 
-.external {
-  color: var(--externalButtonColor);
+.button.external {
   text-shadow: none;
-  background: var(--externalButtonBg);
-  border: 1px solid var(--externalButtonBorderColor);
 }
 `;

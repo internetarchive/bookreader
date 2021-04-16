@@ -1,10 +1,36 @@
-import { html, LitElement } from 'lit-element';
+import { css, html, LitElement } from 'lit-element';
 import { nothing } from 'lit-html';
 import bookDownloadsCSS from './styles/ia-book-downloads.js';
 
 export class IABookDownloads extends LitElement {
   static get styles() {
-    return bookDownloadsCSS;
+    const main = css`
+      :host {
+        display: block;
+        height: 100%;
+        padding: 1.5rem 0;
+        overflow-y: auto;
+        font-size: 1.4rem;
+        box-sizing: border-box;
+      }
+
+      a.close ia-icon {
+        --iconWidth: 18px;
+        --iconHeight: 18px;
+      }
+
+      .button {
+        color: var(--primaryTextColor);
+        background: var(--primaryCTAFill);
+        border: 1px solid var(--primaryCTABorder);
+      }
+
+      .button.external {
+        background: var(--secondaryCTAFill, transparent);
+        border: 1px solid var(--secondaryCTABorder, #999);
+      }
+    `;
+    return [main, bookDownloadsCSS];
   }
 
   static get properties() {
