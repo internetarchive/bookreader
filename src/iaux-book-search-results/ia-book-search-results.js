@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { nothing } from 'lit-html';
-import { html, LitElement } from 'lit-element';
+import { css, html, LitElement } from 'lit-element';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import bookSearchResultsCSS from './styles/ia-book-search-results.js';
 import { BookSearchResult } from './book-search-result.js';
@@ -9,7 +9,40 @@ customElements.define('book-search-result', BookSearchResult);
 
 export class IABookSearchResults extends LitElement {
   static get styles() {
-    return bookSearchResultsCSS;
+    const searchResultText = css`var(--searchResultText, #adaedc)`;
+    const searchResultBg = css`var(--searchResultBg, #272958)`;
+    const searchResultBorder = css`var(--searchResultBorder, #adaedc)`;
+    const activeButtonBg = css`(--searchActiveButton, #282828)`;
+
+    const mainStyles = css`
+      :host {
+        display: block;
+        height: 100%;
+        padding: 1.5rem 1rem 2rem 0;
+        overflow-y: auto;
+        font-size: 1.4rem;
+        box-sizing: border-box;
+      }
+
+      mark {
+        padding: 0 .2rem;
+        color: ${searchResultText};
+        background: ${searchResultBg};
+        border: 1px solid ${searchResultBorder};
+        border-radius: 2px;
+      }
+
+      [type="search"] {
+        color: var(--primaryTextColor);
+        border: 1px solid var(--primaryTextColor);
+      }
+
+      label.checkbox[for="all_files"]:after {
+        background: ${activeButtonBg} 50% 50% no-repeat;
+        border: 1px solid var(--primaryTextColor);
+      }
+    `;
+    return [ mainStyles, bookSearchResultsCSS ];
   }
 
   static get properties() {

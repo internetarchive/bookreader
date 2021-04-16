@@ -40,9 +40,6 @@ export class BookReader extends LitElement {
         --menuSliderHeaderIconWidth: 2rem;
         --iconWidth: 2.4rem;
         --iconHeight: 2.4rem;
-        --searchResultText: #adaedc;
-        --searchResultBg: #272958;
-        --searchResultBorder: #fff;
         --downloadButtonColor: #fff;
         --downloadButtonBg: #194880;
         --downloadButtonBorderColor: #c5d1df;

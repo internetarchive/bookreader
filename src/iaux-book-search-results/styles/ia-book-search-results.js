@@ -3,15 +3,6 @@ import checkmarkIcon from './icon_checkmark.js';
 import closeIcon from './icon_close.js';
 
 export default css`
-:host {
-  display: block;
-  height: 100%;
-  padding: 1.5rem 1rem 2rem 0;
-  overflow-y: auto;
-  font-size: 1.4rem;
-  box-sizing: border-box;
-}
-
 header {
   display: flex;
   align-items: center;
@@ -59,9 +50,7 @@ label.checkbox:after {
   height: 14px;
   margin-left: .7rem;
   content: "";
-  border: 1px solid var(--primaryTextColor);
   border-radius: 2px;
-  background: var(--activeButtonBg) 50% 50% no-repeat;
 }
 :checked + label.checkbox:after {
   background-image: url('${checkmarkIcon}');
@@ -74,8 +63,6 @@ label.checkbox:after {
   padding: 0 1.5rem;
   box-sizing: border-box;
   font: normal 1.6rem "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: var(--primaryTextColor);
-  border: 1px solid var(--primaryTextColor);
   border-radius: 1.5rem;
   background: transparent;
 }
@@ -142,14 +129,6 @@ li p {
   font-size: 1.2rem;
 }
 
-mark {
-  padding: 0 .2rem;
-  color: var(--searchResultText);
-  background: var(--searchResultBg);
-  border: 1px solid var(--searchResultBorder);
-  border-radius: 2px;
-}
-
 .loading {
   text-align: center;
 }
@@ -165,7 +144,6 @@ mark {
   appearance: none;
   padding: .5rem .7rem;
   font: normal 1.4rem "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: var(--primaryTextColor);
   border: 1px solid #656565;
   border-radius: 3px;
   cursor: pointer;
