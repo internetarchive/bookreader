@@ -83,7 +83,7 @@
     ],
     "testPathIgnorePatterns": [
       "<rootDir>/tests/e2e/",
-      "<rootDir>/tests/karma/*"
+      "<rootDir>/tests/karma/"
     ],
     "coverageDirectory": "<rootDir>/coverage-jest"
   },
