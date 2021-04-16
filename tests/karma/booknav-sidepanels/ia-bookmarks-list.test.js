@@ -115,17 +115,6 @@ describe('<ia-bookmarks-list>', () => {
     expect(response).to.exist;
   });
 
-  // it('emits a custom event when the add bookmark button is clicked', async () => {
-  //   const el = await fixture(container(bookmarks));
-
-  //   setTimeout(() => (
-  //     el.shadowRoot.querySelector('.add-bookmark').click()
-  //   ));
-  //   const response = await oneEvent(el, 'addBookmark');
-
-  //   expect(response).to.exist;
-  // });
-
   it('sets editedBookmark when an edit button is clicked', async () => {
     const el = await fixture(container(bookmarks));
     let prevState = el.editedBookmark;
@@ -195,9 +184,20 @@ describe('<ia-bookmarks-list>', () => {
     expect(el.shadowRoot.querySelector('header')).to.exist;
   });
 
-  // SKIPPED:
-  // AssertionError: expected null to exist
-  xit('renders an optional add bookmark button', async () => {
+  // returning error if run locally
+  it('emits a custom event when the add bookmark button is clicked', async () => {
+    const el = await fixture(container(bookmarks));
+
+    setTimeout(() => (
+      el.shadowRoot.querySelector('.add-bookmark').click()
+    ));
+    const response = await oneEvent(el, 'addBookmark');
+
+    expect(response).to.exist;
+  });
+
+  // returning error if run locally
+  it('renders an optional add bookmark button', async () => {
     const el = await fixture(container(bookmarks));
 
     expect(el.shadowRoot.querySelector('.add-bookmark')).to.exist;
@@ -208,9 +208,8 @@ describe('<ia-bookmarks-list>', () => {
     expect(el.shadowRoot.querySelector('.add-bookmark')).not.to.exist;
   });
 
-  // SKIPPED:
-  // TypeError: Cannot read property 'getAttribute' of null
-  xit('can toggle disable behavior of add bookmark button', async () => {
+  // returning error if run locally
+  it('can toggle disable behavior of add bookmark button', async () => {
     const el = await fixture(container(bookmarks));
     expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.be.null;
 
