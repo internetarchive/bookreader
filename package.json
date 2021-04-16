@@ -103,7 +103,7 @@
     "serve": "npx http-server . --port 8000",
     "serve-live": "npx live-server . --port 8000 --watch=index.html,BookReader,BookReaderDemo",
     "serve-dev": "npm run build-css && npx concurrently --kill-others npm:serve-live npm:build-*:watch",
-    "test": "npx jest",
+    "test": "npm run test-jest && npm run test-karma",
     "test:e2e": "npm run build && env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe",
     "test:e2e:dev": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe --live --dev",
     "test:jest-watch": "npx jest --watch",
