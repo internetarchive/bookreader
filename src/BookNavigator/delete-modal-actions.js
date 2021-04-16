@@ -19,11 +19,11 @@ export default class DeleteModalActions extends LitElement {
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        background: var(--saveButtonColor);
+        background: var(--primaryCTAFill);
       }
 
       .delete {
-        background: var(--deleteButtonColor);
+        background: var(--primaryErrorCTAFill);
       }
     `;
   }

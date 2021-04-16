@@ -16,7 +16,38 @@ export class BookReader extends LitElement {
   }
 
   static get styles() {
+    const black = css`#000`;
+    const white = css`#fff`;
+    const grey222 = css`#222`;
+    const grey333 = css`#333`;
+    const grey999 = css`#999`;
+    const primaryCTAFill = css`#194880`;
+    const primaryCTABorder = css`#c5d1df`;
+    const secondaryCTAFill = grey333;
+    const secondaryCTABorder = grey999;
+    const primaryErrorCTAFill = css`#e51c26`;
+    const primaryErrorCTABorder = css`#f8c6c8`;
+
     return css`
+      :host {
+        display: block;
+        --whiteColor: ${white};
+        --blackColor: ${black};
+        --primaryBGColor: ${black};
+        --secondaryBGColor: ${grey222};
+        --tertiaryBGColor: ${grey333};
+        --primaryTextColor: var(--whiteColor);
+        --primaryCTAFill: ${primaryCTAFill};
+        --primaryCTABorder: ${primaryCTABorder};
+        --secondaryCTAFill: ${secondaryCTAFill};
+        --secondaryCTABorder: ${secondaryCTABorder};
+        --primaryErrorCTAFill: ${primaryErrorCTAFill};
+        --primaryErrorCTABorder: ${primaryErrorCTABorder};
+        --redBookmarkColor: #eb3223;
+        --blueBookmarkColor: #0023f5;
+        --greenBookmarkColor: #75ef4c;
+      }
+
       .book-reader {
         background-color: ${black};
         position: relative;
@@ -27,31 +58,23 @@ export class BookReader extends LitElement {
       item-navigator {
         display: block;
         width: 100%;
+        color: var(--primaryTextColor);
         --menuButtonLabelDisplay: block;
-        --menuSliderBg: #151515;
-        --subpanelRightBorderColor: #999;
-        --activeButtonBg: #282828;
-        --primaryTextColor: #fff;
-        --menuWidth: 32rem;
+        --menuWidth: 320px;
+        --menuSliderBg: var(--secondaryBGColor);
+        --activeButtonBg: var(--tertiaryBGColor);
         --animationTiming: 100ms;
-        --iconFillColor: #fff;
-        --iconStrokeColor: #fff;
+        --iconFillColor: var(--primaryTextColor);
+        --iconStrokeColor: var(--primaryTextColor);
         --menuSliderHeaderIconHeight: 2rem;
         --menuSliderHeaderIconWidth: 2rem;
         --iconWidth: 2.4rem;
         --iconHeight: 2.4rem;
-        --shareLinkColor: ${white};
-        --shareIconBorder: ${white};
-        --shareIconBg: #151515;
-        --activityIndicatorLoadingDotColor: #fff;
-        --activityIndicatorLoadingRingColor: #fff;
-        --loadingPagePlaceholder: #fefdeb;
-        --createButtonColor: #194880;
-        --createButtonBorderColor: #c5d1df;
-        --saveButtonColor: #194880;
-        --saveButtonBorderColor: #c5d1df;
-        --deleteButtonColor: #e51c26;
-        --deleteButtonBorderColor: #f8c6c8;
+        --shareLinkColor: var(--primaryTextColor);
+        --shareIconBorder: var(--primaryTextColor);
+        --shareIconBg: var(--secondaryBGColor);
+        --activityIndicatorLoadingDotColor: var(--primaryTextColor);
+        --activityIndicatorLoadingRingColor: var(--primaryTextColor);
       }
     `;
   }

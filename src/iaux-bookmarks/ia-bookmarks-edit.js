@@ -2,10 +2,11 @@ import { nothing } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat.js';
 import { html, LitElement } from 'lit-element';
 import bookmarkEditCSS from './styles/ia-bookmarks-edit.js';
+import bookmarkColorsCSS from './styles/bookmark-colors.js';
 
 export class IABookmarkEdit extends LitElement {
   static get styles() {
-    return bookmarkEditCSS;
+    return [bookmarkColorsCSS, bookmarkEditCSS];
   }
 
   static get properties() {

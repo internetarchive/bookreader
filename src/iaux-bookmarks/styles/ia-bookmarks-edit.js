@@ -18,13 +18,6 @@ small {
   align-items: center;
 }
 
-img {
-  display: block;
-  width: var(--bookmarkThumbWidth);
-  min-height: calc(var(--bookmarkThumbWidth) * 1.55);
-  background: var(--loadingPagePlaceholder);
-}
-
 h4 {
   margin: 0;
   font-size: 1.4rem;
@@ -80,15 +73,17 @@ li label {
 }
 
 li input:checked + label {
-  border-color: #fff;
+  border-color: var(--whiteColor);
 }
 
 input[type="submit"] {
-  background: var(--saveButtonColor);
+  background: var(--primaryCTAFill);
+  border-color: var(--primaryCTABorder);
 }
 
 button {
-  background: var(--deleteButtonColor);
+  background: var(--primaryErrorCTAFill);
+  border-color: var(--primaryErrorCTABorder);
 }
 
 .button {
@@ -108,17 +103,5 @@ button {
   grid-template-columns: auto auto;
   grid-gap: 0 1rem;
   justify-items: stretch;
-}
-
-.blue {
-  --iconFillColor: var(--blueBookmarkColor);
-}
-
-.red {
-  --iconFillColor: var(--redBookmarkColor);
-}
-
-.green {
-  --iconFillColor: var(--greenBookmarkColor);
 }
 `;

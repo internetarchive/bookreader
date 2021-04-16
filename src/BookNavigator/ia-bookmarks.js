@@ -76,7 +76,6 @@ class IABookmarks extends LitElement {
       .edit ia-bookmarks-list {
         display: none;
       }
-      
     `;
 
     return [buttonStyles, mainCss];

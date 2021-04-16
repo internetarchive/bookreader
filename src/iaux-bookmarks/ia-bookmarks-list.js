@@ -4,31 +4,10 @@ import { css, html, LitElement } from 'lit-element';
 import './ia-bookmarks-edit.js';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 import bookmarksListCSS from './styles/ia-bookmarks-list.js';
+import bookmarkColorsCSS from './styles/bookmark-colors.js';
+
 
 export class IABookmarksList extends LitElement {
-  static get styles() {
-    const main = css`
-      :host {
-        display: block;
-        overflow-y: auto;
-        box-sizing: border-box;
-        color: var(--primaryTextColor);
-        background: var(--activeButtonBg);
-        margin-bottom: 2rem;
-        --activeBorderWidth: 2px;
-        --bookmarkThumbWidth: 37px;
-        --activeBookmark: #538bc5;
-        --bookmarkListSeparatorColor: var(--secondaryGrey, #222);
-        --redBookmarkColor: #eb3223;
-        --blueBookmarkColor: #0023f5;
-        --greenBookmarkColor: #75ef4c;
-        --bookmarkListSeparatorColor: #151515;
-      }
-    `;
-
-    return [main, bookmarksListCSS];
-  }
-
   static get properties() {
     return {
       activeBookmarkID: { type: Number },
@@ -189,10 +168,13 @@ export class IABookmarksList extends LitElement {
 
   get bookmarkslist() {
     const sortedBookmarks = this.sortBookmarks();
-    return html`<ul>
-        ${repeat(sortedBookmarks, bookmark => bookmark?.id, this.bookmarkItem.bind(this))}
+    const bookmarks = repeat(sortedBookmarks, bookmark => bookmark?.id, this.bookmarkItem.bind(this));
+    return html`
+      <ul>
+        ${bookmarks}
         <div class="separator"></div>
-      </ul>`;
+      </ul>
+    `;
   }
 
   render() {
@@ -200,5 +182,50 @@ export class IABookmarksList extends LitElement {
       ${this.renderHeader ? this.headerSection : nothing}
       ${Object.keys(this.bookmarks).length ? this.bookmarkslist : nothing}
     `;
+  }
+
+  static get styles() {
+    const main = css`
+      :host {
+        display: block;
+        overflow-y: auto;
+        box-sizing: border-box;
+        color: var(--primaryTextColor);
+        margin-bottom: 2rem;
+        --activeBorderWidth: 2px;
+      }
+
+      button {
+        color: var(--primaryTextColor);
+      }
+
+      button.add-bookmark {
+        background: var(--primaryCTAFill);
+        border: 1px solid var(--primaryCTABorder);
+      }
+
+      icon-bookmark {
+        width: var(--bookmarkIconWidth, 16px);
+        height: var(--bookmarkIconHeight, 24px);
+      }
+
+      .separator {
+        background-color: var(--secondaryBGColor, #222);
+      }
+
+      ul {
+        margin: var(--activeBorderWidth) 0.5rem 1rem 0;
+      }
+
+      li .content {
+        border: var(--activeBorderWidth) solid transparent;
+        padding: .2rem 0 .4rem .2rem;
+      }
+      li .content.active {
+        border: var(--activeBorderWidth) solid var(--activeBookmark, #538bc5);
+      }
+    `;
+
+    return [main, bookmarkColorsCSS, bookmarksListCSS];
   }
 }

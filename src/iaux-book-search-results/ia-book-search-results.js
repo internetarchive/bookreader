@@ -12,7 +12,7 @@ export class IABookSearchResults extends LitElement {
     const searchResultText = css`var(--searchResultText, #adaedc)`;
     const searchResultBg = css`var(--searchResultBg, #272958)`;
     const searchResultBorder = css`var(--searchResultBorder, #adaedc)`;
-    const activeButtonBg = css`(--searchActiveButton, #282828)`;
+    const activeButtonBg = css`(--tertiaryBGColor, #333)`;
 
     const mainStyles = css`
       :host {

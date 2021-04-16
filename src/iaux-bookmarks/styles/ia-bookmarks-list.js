@@ -22,20 +22,12 @@ h4 span {
 
 p {
   padding: 0;
-  margin: .5rem 0 0 0;
+  margin: 5px 0 0 0;
   width: 98%;
   overflow-wrap: break-word;
 }
 
-img {
-  display: block;
-  width: var(--bookmarkThumbWidth);
-  min-height: calc(var(--bookmarkThumbWidth) * 1.55);
-  background: var(--loadingPagePlaceholder);
-}
-
 ul {
-  margin: var(--activeBorderWidth) 0.5rem 1rem 0;
   padding: 0;
   list-style: none;
 }
@@ -46,43 +38,23 @@ li {
   position: relative;
 }
 li .content {
-  border: var(--activeBorderWidth) solid transparent;
-  padding: .2rem 0 .4rem .2rem;
-}
-li .content.active {
-  border: var(--activeBorderWidth) solid var(--activeBookmark);
+  padding: 2px 0 4px 2px;
 }
 li button.edit {
-  padding: .5rem .2rem 0 0;
+  padding: 5px 2px 0 0;
   background: transparent;
   cursor: pointer;
-  height: 4rem;
-  width: 4rem;
+  height: 40px;
+  width: 40px;
   position: absolute;
-  right: 0.2rem;
-  top: 0.2rem;
+  right: 2px;
+  top: 2px;
   text-align: right;
 }
 li button.edit > * {
-  width: var(--iconWidth, 20px);
-  height: var(--iconHeight, 20px);
   display: block;
   height: 100%;
   width: 100%;
-}
-
-icon-bookmark {
-  width: var(--bookmarkIconWidth, 16px);
-  height: var(--bookmarkIconHeight, 24px);
-}
-icon-bookmark.blue {
-  --iconFillColor: var(--blueBookmarkColor, #0023f5);
-}
-icon-bookmark.red {
-  --iconFillColor: var(--redBookmarkColor, #eb3223);
-}
-icon-bookmark.green {
-  --iconFillColor: var(--greenBookmarkColor, #75ef4c);
 }
 
 button {
@@ -90,10 +62,9 @@ button {
   appearance: none;
   outline: none;
   background: transparent;
-  padding: .5rem 1rem;
+  padding: 5px 10px;
   box-sizing: border-box;
   font: normal 1.3rem "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: var(--primaryTextColor);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -104,14 +75,12 @@ button.add-bookmark:disabled {
 }
 
 button.add-bookmark {
-  background: var(--createButtonColor);
-  height: 3rem;
-  border: 1px solid var(--createButtonBorderColor);
-  margin-left: 0.5rem;
+  height: 30px;
+  margin-left: 5px;
 }
 
 ia-bookmark-edit {
-  margin: .5rem .5rem .3rem .6rem;
+  margin: 5px 5px 3px 6px;
 }
 
 ul > li:first-child .separator {
@@ -119,8 +88,7 @@ ul > li:first-child .separator {
 }
 .separator {
   width: 98%;
-  margin: .1rem auto;
-  background-color: var(--bookmarkListSeparatorColor);
-  height: 0.1rem;
+  margin: 1px auto;
+  height: 1px;
 }
 `;
