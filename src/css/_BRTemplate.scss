@@ -20,7 +20,7 @@
   z-index: 2;
   opacity: 0;
 }
-.BRpagecontainer.BRmode2up[data-side="L"] .bookmark-button {
+.BRtwopageview .BRpagecontainer[data-side="L"] .bookmark-button {
   right: auto;
   left: 0;
 }
