@@ -16,7 +16,7 @@ export default class ItemNavigator extends LitElement {
       item: {
         type: Object,
         converter(value) {
-          return !value ? {} : JSON.parse(atob(value));
+          return JSON.parse(atob(value));
         },
       },
       itemType: { type: String },
@@ -32,28 +32,33 @@ export default class ItemNavigator extends LitElement {
       menuOpened: { type: Boolean },
       menuContents: { type: Array },
       openMenu: { type: String },
-      signedIn: { type: Boolean },
+      signedIn: {
+        type: Boolean,
+        converter(value) {
+          return JSON.parse(value);
+        },
+      },
       viewportInFullscreen: { type: Boolean },
     };
   }
 
-
   constructor() {
     /** TODO: Request BookModel.js
-     * Request BookNavigator.js
-     * Show loading spinner
-     * When JS assets loaded:
-     * - render book-navigator component
-     */
+    * Request BookNavigator.js
+    * Show loading spinner
+    * When JS assets loaded:
+    * - render book-navigator component
+    */
     super();
-    this.baseHost = "archive.org";
+    this.baseHost = 'archive.org';
     this.item = {};
-    this.itemType = "";
+    this.itemType = '';
     this.menuOpened = false;
+    this.signedIn = false;
     this.menuShortcuts = [];
     this.menuContents = [];
     this.viewportInFullscreen = false;
-    this.openMenu = "";
+    this.openMenu = '';
     this.renderModalManager();
   }
 
@@ -85,11 +90,11 @@ export default class ItemNavigator extends LitElement {
    *     @param {string} detail.menuId - menu id to be shown
    */
   manageSideMenuEvents({ detail }) {
-    const { action = "", menuId = "" } = detail;
+    const { action = '', menuId = '' } = detail;
     if (menuId) {
-      if (action === "open") {
+      if (action === 'open') {
         this.openShortcut(menuId);
-      } else if (action === "toggle") {
+      } else if  (action === 'toggle') {
         this.openMenu = menuId;
         this.toggleMenu();
       }
@@ -108,7 +113,7 @@ export default class ItemNavigator extends LitElement {
    * Opens menu to selected menu
    * @param {string} selectedMenuId
    */
-  openShortcut(selectedMenuId = "") {
+  openShortcut(selectedMenuId = '') {
     // open sidemenu to proper tab
     this.openMenu = selectedMenuId;
     this.menuOpened = true;
@@ -116,7 +121,7 @@ export default class ItemNavigator extends LitElement {
 
   setOpenMenu({ detail }) {
     const { id } = detail;
-    this.openMenu = id === this.openMenu ? "" : id;
+    this.openMenu = id === this.openMenu ? '' : id;
   }
 
   setMenuContents({ detail }) {
@@ -131,8 +136,8 @@ export default class ItemNavigator extends LitElement {
    * computes classes for item-navigator <section> node
    */
   get menuClass() {
-    const drawerState = this.menuOpened ? "open" : "";
-    const fullscreenState = this.viewportInFullscreen ? "fullscreen" : "";
+    const drawerState = this.menuOpened ? 'open' : '';
+    const fullscreenState = this.viewportInFullscreen ? 'fullscreen' : '';
     return `${drawerState} ${fullscreenState}`;
   }
 
@@ -140,10 +145,7 @@ export default class ItemNavigator extends LitElement {
     return html`
       <button class="toggle-menu" @click=${this.toggleMenu.bind(this)}>
         <div>
-          <ia-icon
-            icon="ellipses"
-            style="width: var(--iconWidth); height: var(--iconHeight);"
-          ></ia-icon>
+          <ia-icon icon="ellipses" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>
         </div>
       </button>
     `;
@@ -171,16 +173,14 @@ export default class ItemNavigator extends LitElement {
    */
   get shortcuts() {
     // todo: aria tags
-    const shortcuts = this.menuShortcuts.map(
-      ({ icon, id }) => html`
-        <button
-          class="shortcut ${id}"
-          @click="${(e) => {this.openShortcut(id);}}"
-        >
+    const shortcuts = this.menuShortcuts.map(({
+      icon,
+      id,
+    }) => html`
+        <button class="shortcut ${id}" @click="${(e) => { this.openShortcut(id); }}">
           ${icon}
         </button>
-      `
-    );
+      `);
 
     return html`<div class="shortcuts">${shortcuts}</div>`;
   }
@@ -193,7 +193,10 @@ export default class ItemNavigator extends LitElement {
     // todo: aria tags
     return html`
       <nav>
-        <div class="minimized">${this.shortcuts} ${this.menuToggleButton}</div>
+        <div class="minimized">
+          ${this.shortcuts}
+          ${this.menuToggleButton}
+        </div>
         ${this.menuSlider}
       </nav>
     `;
@@ -204,7 +207,7 @@ export default class ItemNavigator extends LitElement {
    * @return html
    */
   get renderViewport() {
-    if (this.itemType === "bookreader") {
+    if (this.itemType === 'bookreader') {
       return html`
         <book-navigator
           .baseHost=${this.baseHost}
@@ -228,26 +231,28 @@ export default class ItemNavigator extends LitElement {
   }
 
   renderModalManager() {
-    this.modal = document.createElement("modal-manager");
-    this.modal.setAttribute("id", "item-navigator-modal");
+    this.modal = document.createElement('modal-manager');
+    this.modal.setAttribute('id', 'item-navigator-modal');
     this.modalConfig = new ModalConfig();
-    this.modalConfig.title = "Delete Bookmark";
-    this.modalConfig.headline =
-      "This bookmark contains a note. Deleting it will permanently delete the note. Are you sure?";
-    this.modalConfig.headerColor = "#194880";
+    this.modalConfig.title = 'Delete Bookmark';
+    this.modalConfig.headline = 'This bookmark contains a note. Deleting it will permanently delete the note. Are you sure?';
+    this.modalConfig.headerColor = '#194880';
     document.body.appendChild(this.modal);
   }
 
   render() {
+    const renderMenu = this.menuContents.length || this.menuShortcuts.length;
     return html`
       <div id="frame" class=${this.menuClass}>
-        ${this.renderSideMenu}
-        <div id="reader">${this.renderViewport}</div>
+        ${renderMenu ? this.renderSideMenu : nothing}
+        <div id="reader">
+          ${this.renderViewport}
+        </div>
       </div>
     `;
   }
 }
 
-customElements.define("ia-icon", IAIcon);
-customElements.define("ia-menu-slider", IAMenuSlider);
-customElements.define("item-navigator", ItemNavigator);
+customElements.define('ia-icon', IAIcon);
+customElements.define('ia-menu-slider', IAMenuSlider);
+customElements.define('item-navigator', ItemNavigator);
