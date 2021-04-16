@@ -42,6 +42,8 @@
   "devDependencies": {
     "@babel/core": "7.12.9",
     "@babel/preset-env": "7.12.7",
+    "@open-wc/testing": "^2.0.0",
+    "@open-wc/testing-karma": "^3.0.0",
     "@types/jest": "26.0.21",
     "babel-loader": "8.2.2",
     "codecov": "3.8.1",
@@ -59,6 +61,7 @@
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "jquery.mmenu": "5.6.5",
+    "karma-coverage": "^2.0.3",
     "live-server": "1.2.1",
     "node-fetch": "2.6.1",
     "regenerator-runtime": "0.13.7",
@@ -79,8 +82,10 @@
       "<rootDir>/tests/"
     ],
     "testPathIgnorePatterns": [
-      "<rootDir>/tests/e2e/"
-    ]
+      "<rootDir>/tests/e2e/",
+      "<rootDir>/tests/karma/"
+    ],
+    "coverageDirectory": "<rootDir>/coverage-jest"
   },
   "scripts": {
     "preversion": "npm run test && node scripts/preversion.js",
@@ -98,11 +103,13 @@
     "serve": "npx http-server . --port 8000",
     "serve-live": "npx live-server . --port 8000 --watch=index.html,BookReader,BookReaderDemo",
     "serve-dev": "npm run build-css && npx concurrently --kill-others npm:serve-live npm:build-*:watch",
-    "test": "npx jest",
+    "test": "npm run test-jest && npm run test-karma",
     "test:e2e": "npm run build && env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe",
     "test:e2e:dev": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe --live --dev",
-    "test:watch": "npx jest --watch",
-    "test:coverage": "npx jest --coverage --colors",
+    "test-jest:watch": "npx jest --watch",
+    "test-jest": "npx jest --coverage --colors",
+    "test-karma": "npx karma start --coverage",
+    "test-karma:watch": "npx karma start --auto-watch=true --single-run=false",
     "codecov": "npx codecov"
   }
 }
