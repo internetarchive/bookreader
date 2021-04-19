@@ -33,12 +33,7 @@ export default class ItemNavigator extends LitElement {
       menuOpened: { type: Boolean },
       menuContents: { type: Array },
       openMenu: { type: String },
-      signedIn: {
-        type: Boolean,
-        converter(value) {
-          return JSON.parse(value);
-        },
-      },
+      signedIn: { type: Boolean },
       viewportInFullscreen: { type: Boolean },
     };
   }
