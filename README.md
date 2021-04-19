@@ -2,14 +2,23 @@
 
 ![Build Status](https://github.com/internetarchive/bookreader/actions/workflows/node.js.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/internetarchive/bookreader/branch/master/graph/badge.svg)](https://codecov.io/gh/internetarchive/bookreader)
 
-![](./screenshot.png)
+**Disclaimer: BookReader v5 is currently in beta. It's stable enough for production use (and is what is being used on archive.org), but there will be some breaking changes in the next ~month or so to public BookReader APIs.**
+
+
+<p align="center">
+  <img width="200" src="./BookReaderDemo/assets/v5/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
+</p>
+
+
+<div style="border: 1px solid gray; padding: 2px; margin-bottom: 20px"><img src="./BookReaderDemo/assets/v5/bookreader-v5-screenshot.png" alt="BookReader v5 interface screenshot"></div>
+
 
 The Internet Archive BookReader is used to view books from the Internet Archive online and can also be used to view other books.
 
 See live examples:
 - On details page: https://archive.org/details/birdbookillustra00reedrich
-- Full Screen: https://archive.org/stream/birdbookillustra00reedrich (mobile-friendly)
-
+- Full window: https://archive.org/details/birdbookillustra00reedrich?view=theater
+- Embedded url for iFrames: https://archive.org/embed/birdbookillustra00reedrich
 
 ## Demos
 
@@ -75,28 +84,48 @@ var br = new BookReader(options);
 br.init();
 
 ```
+## Architecture Overview
+Starting at v5, BookReader introduces hybrid architecture that merges the core code written in jQuery closer to its evolution as a web component.  As we march toward the future of BookReader as a web component, we are taking an Event Driven approach to connect the two together.
 
-See `BookReaderDemo/demo-simple.html` and `BookReaderDemo/BookReaderJSSimple.js` for a full example. The best way to learn how to use BookReader is to view the source of the demos.
+Approach:
+- Event driven
+  - BookReader's (BR) core code emits [custom events](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent), reporting the actions it takes:
+    - UI changes
+      - Core Events [src/js/BookReader/events.js](https://github.com/internetarchive/bookreader/tree/master/src/js/BookReader/events.js)
+    - API returns
+      - Search API [src/js/BookReader/events.js](https://github.com/internetarchive/bookreader/tree/master/src/js/BookReader/events.js)
+  - BookNavigator, BR's web components controller, listens and reacts to these events in order to populate the side menu panels
+- Control BR from the outside by using public methods
+  - When BookNavigator reacts to BR's events, BookNavigator can directly control BR core using public functions.
+    - As we continue to decouple the UI from drawing/calculating logic, these logical methods will become easier to spot, raise as a public method, and create unit tests for them.
 
-### Properties
+### Menu panels: Web Components via LitElement
+BookReader's side navigation is powered by LitElement flavored web components.
 
-- TODO (for now see [src/js/BookReader/options.js](https://github.com/internetarchive/bookreader/tree/master/src/js/BookReader/options.js))
 
+### Core: jQuery
+BookReader's core functionality is in jQuery.
+This includes:
+- drawing & resizing the book and the various modes (1up, 2 page spread, gallery view)
+- the horizontal navigation
+- search API service
+- plugins
 
-## Plugins
+A peek in how to use/extend core functionality:
+- Properties
+  - TODO (for now see [src/js/BookReader/options.js](https://github.com/internetarchive/bookreader/tree/master/src/js/BookReader/options.js))
+- Plugins
+  - A basic plugin system is used. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:
+    - plugin.autoplay.js - autoplay mode. Flips pages at set intervals.
+    - plugin.chapters.js - render chapter markers
+    - plugin.search.js - add search ui, and callbacks
+    - plugin.tts.js - add tts (read aloud) ui, sound library, and callbacks
+    - plugin.url.js - automatically updates the browser url
+    - plugin.resume.js - uses cookies to remember the current page
+    - plugin.vendor-fullscreen.js - replaces fullscreen mode with vendor native fullscreen
+    - see plugin directory for current plugin files ()[https://github.com/internetarchive/bookreader/tree/master/src/js/plugins]
 
-A basic plugin system is used. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:
-
-- plugin.autoplay.js - autoplay mode. Flips pages at set intervals.
-- plugin.chapters.js - render chapter markers
-- plugin.search.js - add search ui, and callbacks
-- plugin.tts.js - add tts (read aloud) ui, sound library, and callbacks
-- plugin.url.js - automatically updates the browser url
-- plugin.resume.js - uses cookies to remember the current page
-- plugin.mobile_nav.js - adds responsive mobile nav to BookReader
-- plugin.vendor-fullscreen.js - replaces fullscreen mode with vendor native fullscreen
-
-## Embedding
+### Embedding BookReader in an iFrame
 
 BookReader can be embedded within an `<iframe>`. If you use the IFrame Plugin inside the `<iframe>`, the reader will send notifications about changes in the state of the reader via [`window.postMessage()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage). The parent window can send messages of its own (also via `window.postMessage()`) and the IFrame Plugin will handle updating the reader to match.
 
@@ -114,6 +143,8 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 
 ## Development
 
+(updates?)
+
 The source JavaScript is written in ES6 (located in the `src/js` directory) and in ES5 (located in `BookReader`). `npm run serve-dev` starts an auto-reloading dev server, that builds js/css that has been edited at `localhost:8000`.
 
 Until the next major version bump, we have to store the build files inside the repo to maintain backwards compatibility. Please _DO NOT_ include these files in your PR. Anything in the `BookReader/` directory should not be committed.
@@ -121,6 +152,8 @@ Until the next major version bump, we have to store the build files inside the r
 ## Releases
 
 To version bump the repo and prepare a release, run `npm version major|minor|patch` (following [semver](https://semver.org/)), then (something like) `git push origin HEAD --tags`. It'll automatically update the version number where it appears, build the files, and ask you to update the CHANGELOG.
+
+We release BookReader [in-repo as tags](https://github.com/internetarchive/bookreader/releases) & also as a node module [@internetarchive/bookreader](https://www.npmjs.com/package/@internetarchive/bookreader)
 
 ## Tests
 We would like to get to 100% test coverage and are tracking our progress in this project: [BookReader Fidelity](https://github.com/internetarchive/bookreader/projects/5)
@@ -166,14 +199,7 @@ See [CHANGELOG.md](CHANGELOG.md) for history of the project.
 
 
 ## License
-
 The source code license is AGPL v3, as described in the LICENSE file.
 
-The mobile menu is built with [mmenu](http://mmenu.frebsite.nl/download.html), which is free for personal and non-profit use. However, for commmercial use, a license must be purchased.
-
-To use it, include the script `plugins/plugin.mobile_nav.js`.
-
-
 ## Other credits
-
 The ability to test on multiple devices is provided courtesy of [Browser Stack](https://www.browserstack.com).
