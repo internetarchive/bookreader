@@ -1,11 +1,11 @@
 # Internet Archive BookReader
 
-<img style="width: 300px;" src="./assets/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
+<img style="width: 300px;" src="./BookReaderDemo/assets/v5/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
 
 ![Build Status](https://github.com/internetarchive/bookreader/actions/workflows/node.js.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/internetarchive/bookreader/branch/master/graph/badge.svg)](https://codecov.io/gh/internetarchive/bookreader)
 
 
-<div style="border: 1px solid gray; padding: 2px; margin-bottom: 20px"><img src="./assets/bookreader-v5-screenshot.png" alt="BookReader v5 interface screenshot"></div>
+<div style="border: 1px solid gray; padding: 2px; margin-bottom: 20px"><img src="./BookReaderDemo/assets/v5/bookreader-v5-screenshot.png" alt="BookReader v5 interface screenshot"></div>
 
 
 The Internet Archive BookReader is used to view books from the Internet Archive online and can also be used to view other books.
