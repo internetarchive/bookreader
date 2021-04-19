@@ -1,3 +1,32 @@
+# 5.0.0-0
+First beta release of v5! Lots of breaking changes:
+- Files deleted from `BookReader/` . These are all no longer needed, or bundled in other BookReader JS files
+    - jquery.bt.min.js
+    - plugin.theme.js - including methods:
+        - BookReader.prototype.themes
+        - BookReader.prototype.updateTheme
+        - BookReader.prototype.default_theme
+        - BookReader.prototype.theme
+        - option enableThemesPlugin
+    - excanvas.compiled.js
+    - plugin.print.js - including methods:
+        - BookReader.prototype.printPage 
+        - BookReader.prototype.getPrintURI 
+        - BookReader.prototype.getPageFile
+    - jquery.browser.min.js
+    - soundmanager/*
+    - jquery.ui.touch-punch.min.js
+    - mmenu/*
+    - jquery-ui-1.12.0.min.js
+- BookReader now also requires web components; more documentation on how to use will be coming in the next beta versions.
+- BookNavigator is a web component wrapper around core BookReader
+- Add Karma for testing web components
+- Switch to npm module type to allow importing of web components
+- Use submenu web components for search, book info, and other
+- New Bookmark managing submenu
+- Bug fixes
+- BookReader/ build files directory is now completely disposable
+
 # 4.40.2
 -Fix: page container has `data-side` attr @iisa
 
