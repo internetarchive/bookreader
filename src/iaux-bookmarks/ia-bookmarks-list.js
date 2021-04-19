@@ -3,7 +3,6 @@ import { repeat } from 'lit-html/directives/repeat.js';
 import { css, html, LitElement } from 'lit-element';
 import './ia-bookmarks-edit.js';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
-import bookmarksListCSS from './styles/ia-bookmarks-list.js';
 import bookmarkColorsCSS from './styles/bookmark-colors.js';
 
 
@@ -196,36 +195,108 @@ export class IABookmarksList extends LitElement {
       }
 
       button {
+        -webkit-appearance: none;
+        appearance: none;
+        outline: none;
+        background: transparent;
+        padding: 5px 10px;
+        box-sizing: border-box;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
         color: var(--primaryTextColor);
       }
-
       button.add-bookmark {
+        height: 30px;
+        margin-left: 5px;
         background: var(--primaryCTAFill);
         border: 1px solid var(--primaryCTABorder);
       }
+      button.add-bookmark:disabled {
+        opacity: .5;
+      }
 
       icon-bookmark {
-        width: var(--bookmarkIconWidth, 16px);
-        height: var(--bookmarkIconHeight, 24px);
+        width: 16px;
+        height: 24px;
       }
 
       .separator {
-        background-color: var(--secondaryBGColor, #222);
+        background-color: var(--secondaryBGColor);
+        width: 98%;
+        margin: 1px auto;
+        height: 1px;
+      }
+
+      small {
+        font-style: italic;
+      }
+
+      h4 {
+        margin: 0;
+        font-size: 1.4rem;
+      }
+      h4 * {
+        display: inline-block;
+      }
+      h4 icon-bookmark {
+        vertical-align: bottom;
+      }
+      h4 span {
+        vertical-align: top;
+        padding-top: 1%;
+      }
+
+      p {
+        padding: 0;
+        margin: 5px 0 0 0;
+        width: 98%;
+        overflow-wrap: break-word;
+      }
+
+      ia-bookmark-edit {
+        margin: 5px 5px 3px 6px;
       }
 
       ul {
+        padding: 0;
+        list-style: none;
         margin: var(--activeBorderWidth) 0.5rem 1rem 0;
       }
-
+      ul > li:first-child .separator {
+        display: none;
+      }
+      li {
+        cursor: pointer;
+        outline: none;
+        position: relative;
+      }
       li .content {
+        padding: 2px 0 4px 2px;
         border: var(--activeBorderWidth) solid transparent;
         padding: .2rem 0 .4rem .2rem;
       }
       li .content.active {
-        border: var(--activeBorderWidth) solid var(--activeBookmark, #538bc5);
+        border: var(--activeBorderWidth) solid #538bc5;
+      }
+      li button.edit {
+        padding: 5px 2px 0 0;
+        background: transparent;
+        cursor: pointer;
+        height: 40px;
+        width: 40px;
+        position: absolute;
+        right: 2px;
+        top: 2px;
+        text-align: right;
+      }
+      li button.edit > * {
+        display: block;
+        height: 100%;
+        width: 100%;
       }
     `;
 
-    return [main, bookmarkColorsCSS, bookmarksListCSS];
+    return [main, bookmarkColorsCSS];
   }
 }

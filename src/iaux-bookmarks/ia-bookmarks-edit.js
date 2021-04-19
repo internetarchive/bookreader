@@ -1,14 +1,9 @@
 import { nothing } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat.js';
-import { html, LitElement } from 'lit-element';
-import bookmarkEditCSS from './styles/ia-bookmarks-edit.js';
+import { css, html, LitElement } from 'lit-element';
 import bookmarkColorsCSS from './styles/bookmark-colors.js';
-
+import buttonCSS from '../BookNavigator/styles/button-base.js';
 export class IABookmarkEdit extends LitElement {
-  static get styles() {
-    return [bookmarkColorsCSS, bookmarkEditCSS];
-  }
-
   static get properties() {
     return {
       bookmark: { type: Object },
@@ -100,11 +95,119 @@ export class IABookmarkEdit extends LitElement {
             ${repeat(this.bookmarkColors, color => color.id, this.bookmarkColor.bind(this))}
           </ul>
           <div class="actions">
-            <button type="button" class="button" @click=${this.emitDeleteEvent}>Delete</button>
-            <input class="button" type="submit" value="Save">
+            <button type="button" class="ia-button cancel" @click=${this.emitDeleteEvent}>Delete</button>
+            <input class="ia-button" type="submit" value="Save">
           </div>
         </fieldset>
       </form>
     `;
+  }
+
+  static get styles() {
+    const bookmarkEditCSS = css`
+    :host {
+      display: block;
+      padding: 0 1rem 2rem 1rem;
+      color: var(--primaryTextColor);
+    }
+
+    small {
+      font-style: italic;
+    }
+
+    .bookmark {
+      display: grid;
+      grid-template-columns: 37px 1fr;
+      grid-gap: 0 1rem;
+      align-items: center;
+    }
+
+    h4 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    fieldset {
+      padding: 2rem 0 0 0;
+      border: none;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+    }
+
+    p {
+      padding: 0;
+      margin: .5rem 0;
+      font-size: 1.2rem;
+      line-height: 120%;
+    }
+
+    textarea {
+      width: 100%;
+      margin-bottom: 2rem;
+      box-sizing: border-box;
+      font: normal 1.4rem "Helvetica Neue", Helvetica, Arial, sans-serif;
+      resize: vertical;
+    }
+
+    ul {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      grid-gap: 0 2rem;
+      justify-content: start;
+      padding: 1rem 0 0 0;
+      margin: 0 0 2rem 0;
+      list-style: none;
+    }
+
+    li input {
+      display: none;
+    }
+
+    li label {
+      display: block;
+      min-width: 50px;
+      padding-top: .4rem;
+      text-align: center;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    li input:checked + label {
+      border-color: var(--primaryTextColor);
+    }
+
+    input[type="submit"] {
+      background: var(--primaryCTAFill);
+      border-color: var(--primaryCTABorder);
+    }
+
+    button {
+      background: var(--primaryErrorCTAFill);
+      border-color: var(--primaryErrorCTABorder);
+    }
+
+    .button {
+      -webkit-appearance: none;
+      appearance: none;
+      padding: .5rem 1rem;
+      box-sizing: border-box;
+      color: var(--primaryTextColor);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: auto auto;
+      grid-gap: 0 1rem;
+      justify-items: stretch;
+    }
+    `
+    return [buttonCSS, bookmarkColorsCSS, bookmarkEditCSS];
   }
 }
