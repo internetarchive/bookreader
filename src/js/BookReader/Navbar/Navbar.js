@@ -1,5 +1,8 @@
 /** @typedef {import("../../BookReader.js").default} BookReader */
 
+import 'jquery-ui/ui/widget.js';
+import 'jquery-ui/ui/widgets/mouse.js';
+import 'jquery-ui/ui/widgets/slider.js';
 import { EVENTS } from '../events.js';
 
 export class Navbar {
@@ -189,7 +192,6 @@ export class Navbar {
     br.refs.$BRfooter = this.$root = $(`<div class="BRfooter"></div>`);
     br.refs.$BRnav = this.$nav = $(
       `<div class="BRnav BRnavDesktop">
-          <div class="BRnavCntl BRnavCntlBtm BRdn js-tooltip" title="Toggle toolbars"></div>
           ${title ? `<div class="BRnavTitle">${title}</div>` : ''}
           <nav class="BRcontrols">
             <ul class="controls">

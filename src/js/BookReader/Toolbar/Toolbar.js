@@ -1,3 +1,4 @@
+import 'jquery-colorbox';
 import { escapeHTML } from '../utils.js';
 import { EVENTS } from '../events.js';
 /** @typedef {import("../../BookReader.js").default} BookReader */

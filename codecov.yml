@@ -13,3 +13,5 @@ parsers:
 
 ignore:
   - "BookReader"
+  - "tests"
+

@@ -41,14 +41,13 @@ module.exports = [
       'plugins/plugin.iframe.js': { import: './src/js/plugins/plugin.iframe.js', dependOn: 'BookReader.js' },
       'plugins/plugin.menu_toggle.js': { import: './src/js/plugins/menu_toggle/plugin.menu_toggle.js', dependOn: 'BookReader.js' },
       'plugins/plugin.mobile_nav.js': { import: './src/js/plugins/plugin.mobile_nav.js', dependOn: 'BookReader.js' },
-      'plugins/plugin.print.js': { import: './src/js/plugins/plugin.print.js', dependOn: 'BookReader.js' },
       'plugins/plugin.resume.js': { import: './src/js/plugins/plugin.resume.js', dependOn: 'BookReader.js' },
       'plugins/plugin.search.js': { import: './src/js/plugins/search/plugin.search.js', dependOn: 'BookReader.js' },
       'plugins/plugin.text_selection.js': { import: './src/js/plugins/plugin.text_selection.js', dependOn: 'BookReader.js' },
-      'plugins/plugin.themes.js': { import: './src/js/plugins/plugin.themes.js', dependOn: 'BookReader.js' },
       'plugins/plugin.tts.js': { import: './src/js/plugins/tts/plugin.tts.js', dependOn: 'BookReader.js' },
       'plugins/plugin.url.js': { import: './src/js/plugins/plugin.url.js', dependOn: 'BookReader.js' },
-      'plugins/plugin.vendor-fullscreen.js': { import: './src/js/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' }
+      'plugins/plugin.vendor-fullscreen.js': { import: './src/js/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' },
+      'bookreader-template-bundle.js': { import: './src/BookReaderTemplate/BookReaderTemplate.js', dependOn: 'BookReader.js' }
     },
 
     externals: {
@@ -83,33 +82,5 @@ module.exports = [
     entry: {
       'jquery-1.10.1.js': { import: './src/js/jquery-wrapper.js' },
     },
-  },
-
-  // jQuery plugins/extensions
-  // All of these will be replaced with just imports in v5
-  {
-    ...shared,
-
-    // Output file -> srcfile
-    entry: {
-      'jquery-ui-1.12.0.min.js': { import: './src/js/jquery-ui-wrapper.js' },
-      'jquery.browser.min.js': { import: 'jquery.browser' },
-      'jquery.colorbox-min.js': { import: 'jquery-colorbox' },
-      'jquery.ui.touch-punch.min.js': { import: 'jquery-ui-touch-punch' },
-      'dragscrollable-br.js': { import: './src/js/dragscrollable-br.js' },
-    },
-
-    externals: {
-      // Anytime 'jquery' is imported, use the runtime-global jQuery
-      // instead of bundling a copy of jquery at compile-time.
-      jquery: 'jQuery',
-    },
-    plugins: [
-      new webpack.ProvidePlugin({
-        // Make $ and jQuery available without importing
-        $: 'jquery',
-        jQuery: 'jquery',
-      })
-    ],
   },
 ];
