@@ -1,11 +1,13 @@
 # Internet Archive BookReader
 
-| **Disclaimer: BookReader v5 is currently in beta. It's stable enough for production use (and is what is being used on archive.org), but there will be some breaking changes in the next ~month or so to public BookReader APIs.** |
-| -- |
-
-<img style="width: 300px;" src="./BookReaderDemo/assets/v5/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
-
 ![Build Status](https://github.com/internetarchive/bookreader/actions/workflows/node.js.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/internetarchive/bookreader/branch/master/graph/badge.svg)](https://codecov.io/gh/internetarchive/bookreader)
+
+**Disclaimer: BookReader v5 is currently in beta. It's stable enough for production use (and is what is being used on archive.org), but there will be some breaking changes in the next ~month or so to public BookReader APIs.**
+
+
+<p align="center">
+  <img width="200" src="./BookReaderDemo/assets/v5/Bookreader-logo-lines.svg" alt="Internet Archive BookReader full logo">
+</p>
 
 
 <div style="border: 1px solid gray; padding: 2px; margin-bottom: 20px"><img src="./BookReaderDemo/assets/v5/bookreader-v5-screenshot.png" alt="BookReader v5 interface screenshot"></div>
