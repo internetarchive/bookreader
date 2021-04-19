@@ -31,12 +31,12 @@ export class BookReader extends LitElement {
     return css`
       :host {
         display: block;
-        --whiteColor: ${white};
+        --white: ${white};
         --blackColor: ${black};
         --primaryBGColor: ${black};
         --secondaryBGColor: ${grey222};
         --tertiaryBGColor: ${grey333};
-        --primaryTextColor: var(--whiteColor);
+        --primaryTextColor: var(--white);
         --primaryCTAFill: ${primaryCTAFill};
         --primaryCTABorder: ${primaryCTABorder};
         --secondaryCTAFill: ${secondaryCTAFill};
