@@ -91,7 +91,7 @@
     "preversion": "npm run test && node scripts/preversion.js",
     "version": "node scripts/version.js",
     "postversion": "node scripts/postversion.js",
-    "build": "npm run build-js && npm run build-css && npm run build-assets",
+    "build": "rm -r BookReader/ || true && npm run build-js && npm run build-css && npm run build-assets",
     "build-assets": "npx cpx \"src/assets/**/*\" BookReader && npx svgo -f BookReader/icons && npx svgo -f BookReader/images",
     "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
     "build-js": "npx webpack",
