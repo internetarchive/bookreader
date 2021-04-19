@@ -125,4 +125,4 @@ export class BookReader extends LitElement {
   }
 }
 
-window.customElements.define("book-reader", BookReader);
+window.customElements.define("ia-bookreader", BookReader);
