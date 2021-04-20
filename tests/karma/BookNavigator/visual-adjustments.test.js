@@ -5,7 +5,7 @@ import {
   oneEvent,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { IABookVisualAdjustments } from '../../../src/BookNavigator/menu-panels/visual-adjustments/visual-adjustments.js';
+import { IABookVisualAdjustments } from '../../../src/BookNavigator/visual-adjustments/visual-adjustments.js';
 
 customElements.define('ia-book-visual-adjustments', IABookVisualAdjustments);
 
