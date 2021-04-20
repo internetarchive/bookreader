@@ -196,7 +196,7 @@ export class Navbar {
           <nav class="BRcontrols">
             <ul class="controls">
               <li class="scrubber">
-                <div class="BRnavpos">
+                <div class="BRnavpos ${isRTL ? 'BRnavposRL' : ''}">
                   <div class="BRpager"></div>
                   <div class="BRnavline"></div>
                 </div>

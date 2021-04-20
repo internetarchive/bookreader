@@ -260,6 +260,9 @@
   float: left;
   flex: 1 auto;
 }
+.BRnavposRL{
+  transform: rotate(180deg);
+}
 .BRpager.ui-slider  {
   position: relative;
   height: 8px;
