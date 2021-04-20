@@ -5,7 +5,6 @@ import './ia-bookmarks-edit.js';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 import bookmarkColorsCSS from './styles/bookmark-colors.js';
 
-
 export class IABookmarksList extends LitElement {
   static get properties() {
     return {
@@ -194,28 +193,6 @@ export class IABookmarksList extends LitElement {
         --activeBorderWidth: 2px;
       }
 
-      button {
-        -webkit-appearance: none;
-        appearance: none;
-        outline: none;
-        background: transparent;
-        padding: 5px 10px;
-        box-sizing: border-box;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        color: var(--primaryTextColor);
-      }
-      button.add-bookmark {
-        height: 30px;
-        margin-left: 5px;
-        background: var(--primaryCTAFill);
-        border: 1px solid var(--primaryCTABorder);
-      }
-      button.add-bookmark:disabled {
-        opacity: .5;
-      }
-
       icon-bookmark {
         width: 16px;
         height: 24px;
@@ -289,6 +266,11 @@ export class IABookmarksList extends LitElement {
         right: 2px;
         top: 2px;
         text-align: right;
+        -webkit-appearance: none;
+        appearance: none;
+        outline: none;
+        box-sizing: border-box;
+        border: none;
       }
       li button.edit > * {
         display: block;
