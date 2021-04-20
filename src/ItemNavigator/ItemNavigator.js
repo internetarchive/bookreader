@@ -11,7 +11,8 @@ export default class ItemNavigator extends LitElement {
       item: {
         type: Object,
         converter(value) {
-          return !value ? {} : JSON.parse(atob(value));        },
+          return !value ? {} : JSON.parse(atob(value));
+        },
       },
       itemType: { type: String },
       menuShortcuts: {

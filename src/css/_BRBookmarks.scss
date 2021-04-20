@@ -1,17 +1,3 @@
-/**
- * Hide modal-manager that loads item-navigator-modal 
- * loading bookmarks related alert messages 
- */
-#item-navigator-modal {
-  display: none
-}
-
-.BRpagecontainer {
-  --iconWidth: 16px;
-  --iconHeight: 24px;
-  --iconFillColor: #000;
-}
-
 /* BOOKMARKS - on page */
 .BRpagecontainer .bookmark-button {
   position: absolute;
@@ -41,4 +27,3 @@
 .BRpagecontainer .bookmark-button.green {
   --iconFillColor: var(--greenBookmarkColor, #75ef4c);
 }
-/* End BOOKMARKS - on page */

@@ -6,7 +6,7 @@ export default css`
     border: none;
     outline: none;
     cursor: pointer;
-    color: var(--primaryTextColor, #fff);
+    color: var(--primaryTextColor);
     line-height: normal;
     border-radius: .4rem;
     text-align: center;
@@ -44,7 +44,7 @@ export default css`
   }
 
   .ia-button.cancel {
-    background-color: var(--primaryErrorCTAFill, #e51c26);
-    border-color: var(--primaryErrorCTABorder, #f8c6c8);
+    background-color: var(--primaryErrorCTAFill);
+    border-color: var(--primaryErrorCTABorder);
   }
 `;

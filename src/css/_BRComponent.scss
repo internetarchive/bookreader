@@ -1,0 +1,13 @@
+/**
+ * Hide modal-manager that loads item-navigator-modal 
+ * loading bookmarks related alert messages 
+ */
+#item-navigator-modal {
+  display: none
+}
+
+.BRpagecontainer {
+  --iconWidth: 16px;
+  --iconHeight: 24px;
+  --iconFillColor: #000;
+}
