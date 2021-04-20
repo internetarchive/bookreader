@@ -5,7 +5,7 @@ import {
   oneEvent,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { IABookSearchResults } from '../../../../src/BookNavigator/menu-panels/search/search-results.js';
+import { IABookSearchResults } from '../../../src/BookNavigator/search/search-results.js';
 customElements.define('ia-book-search-results', IABookSearchResults);
 
 const container = (results = [], query = '') => (

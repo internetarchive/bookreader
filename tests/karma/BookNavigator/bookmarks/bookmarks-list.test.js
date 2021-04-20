@@ -4,8 +4,7 @@ import {
   expect,
   oneEvent,
 } from '@open-wc/testing';
-import { IABookmarksList } from '../../../src/BookNavigator/bookmarks/bookmarks-list.js';
-
+import { IABookmarksList } from '../../../../src/BookNavigator/bookmarks/bookmarks-list.js';
 customElements.define('ia-bookmarks-list', IABookmarksList);
 
 const bookmarks = [{
