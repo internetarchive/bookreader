@@ -4,8 +4,8 @@ import '../features/bookmarks/bookmark-button.js';
 import '../delete-modal-actions.js';
 import '../features/bookmarks/ia-bookmarks.js';
 
-import { IABookmarkEdit } from '../menu-panels/bookmarks/ia-bookmarks-edit.js';
-import { IABookmarksList } from '../menu-panels/bookmarks/ia-bookmarks-list';
+import { IABookmarkEdit } from '../menu-panels/bookmarks/bookmark-edit.js';
+import { IABookmarksList } from '../menu-panels/bookmarks/bookmarks-list';
 import { IAIconBookmark } from '@internetarchive/icon-bookmark';
 
 customElements.define('ia-bookmark-edit', IABookmarkEdit);

@@ -4,7 +4,7 @@ import {
   expect,
   oneEvent,
 } from '@open-wc/testing';
-import { IABookmarkEdit } from  '../../../src/iaux-bookmarks/ia-bookmarks-edit.js';
+import { IABookmarkEdit } from  '../../../src/BookNavigator/menu-panels/bookmarks/bookmark-edit.js';
 
 const bookmarkColors = [{
   id: 0,
