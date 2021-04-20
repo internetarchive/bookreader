@@ -47,7 +47,7 @@ module.exports = [
       'plugins/plugin.tts.js': { import: './src/js/plugins/tts/plugin.tts.js', dependOn: 'BookReader.js' },
       'plugins/plugin.url.js': { import: './src/js/plugins/plugin.url.js', dependOn: 'BookReader.js' },
       'plugins/plugin.vendor-fullscreen.js': { import: './src/js/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' },
-      'bookreader-template-bundle.js': { import: './src/BookReaderTemplate/BookReaderTemplate.js', dependOn: 'BookReader.js' }
+      'bookreader-component-bundle.js': { import: './src/BookReaderComponent/BookReaderComponent.js', dependOn: 'BookReader.js' }
     },
 
     externals: {

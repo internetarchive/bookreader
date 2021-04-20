@@ -1,15 +1,13 @@
-import { html, LitElement } from 'lit-element';
+import { css, html, LitElement } from 'lit-element';
 import { nothing } from 'lit-html';
-import SearchProvider from './providers/search.js';
-import DownloadProvider from './providers/download.js';
-import VisualAdjustmentProvider from './providers/visual-adjustments.js';
+import SearchProvider from './search/search-provider.js';
+import DownloadProvider from './downloads/downloads-provider.js';
+import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
+import BookmarksProvider from './bookmarks/bookmarks-provider.js';
 import SharingProvider from '../ItemNavigator/providers/sharing.js';
-import BookmarksProvider from './providers/bookmarks.js';
 import BRFullscreenMgr from './br-fullscreen-mgr.js';
 import { Book } from './BookModel.js';
-// import '../ItemNavigator/ItemNavigator.js';
-import bookLoader from './book-loader.js';
-import navigatorCSS from './styles/book-navigator.js';
+import bookLoader from './assets/book-loader.js';
 
 const events = {
   menuUpdated: 'menuUpdated',
@@ -17,10 +15,6 @@ const events = {
   ViewportInFullScreen: 'ViewportInFullScreen',
 };
 export class BookNavigator extends LitElement {
-  static get styles() {
-    return navigatorCSS;
-  }
-
   static get properties() {
     return {
       book: { type: Object },
@@ -241,7 +235,6 @@ export class BookNavigator extends LitElement {
       this.initializeBookSubmenus();
       this.mainBRSelector = this.br?.el || '#BookReader';
       setTimeout(() => this.bookreader.resize(), 0);
-      // eslint-disable-next-line compat/compat
       const brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
       brResizeObserver.observe(this.mainBRContainer);
     });
@@ -367,6 +360,48 @@ export class BookNavigator extends LitElement {
       <slot name="bookreader"></slot>
     </div>
   `;
+  }
+
+  static get styles() {
+    return css`
+    #book-navigator.loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30vh;
+    }
+
+    #book-navigator .book-loader {
+      width: 30%;
+      margin: auto;
+      text-align: center;
+      color: var(--primaryTextColor);
+    }
+
+    .book-loader svg {
+      display: block;
+      width: 60%;
+      max-width: 100px;
+      height: auto;
+      margin: auto;
+    }
+
+    svg * {
+      fill: var(--primaryTextColor);
+    }
+
+    svg .ring {
+      animation: rotate 1.3s infinite linear;
+      transform-origin: 50px 50px;
+      transform-box: fill-box;
+    }
+
+    @keyframes rotate {
+      0% {
+        transform: rotate(-360deg);
+      }
+    }
+  `
   }
 }
 

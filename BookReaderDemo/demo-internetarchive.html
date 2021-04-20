@@ -25,14 +25,16 @@
     <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
     <script src="../BookReader/plugins/plugin.text_selection.js"></script>
 
-    <script type="module" src="../BookReader/bookreader-template-bundle.js"></script>
+    <script type="module" src="../BookReader/bookreader-component-bundle.js"></script>
 
     <link rel="stylesheet" href="BookReaderDemo.css"/>
 </head>
 
 <body>
-  <section style="width: 100%; overflow: hidden;">
-    <bookreader-template>
+  <section style="width: 100%; overflow: hidden; background-color: black;">
+    <ia-bookreader
+      baseHost="https://archive.org"
+    >
       <div id="IABookReaderWrapper" class="internal-beta" slot="bookreader">
         <div id="BookReader" class="BookReader"></div>
       </div>
@@ -46,7 +48,7 @@
           </p>
         </noscript>
       </div>
-    </bookreader-template>
+    </ia-bookreader>
   </section>
   <section style="height: 800px; width: 200px;">
     <p>placeholder div to allow scrolling</p>
