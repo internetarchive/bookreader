@@ -172,11 +172,7 @@ export class IABookVisualAdjustments extends LitElement {
     return html`
       ${this.headerSection}
       <ul>
-        ${repeat(
-    this.options,
-    (option) => option.id,
-    this.adjustmentCheckbox.bind(this)
-  )}
+        ${repeat(this.options, (option) => option.id, this.adjustmentCheckbox.bind(this))}
       </ul>
       ${this.showZoomControls ? this.zoomControls : nothing}
     `;
