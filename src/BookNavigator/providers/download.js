@@ -1,7 +1,7 @@
 import { html } from 'lit-element';
 
 /* register subpanel */
-import { IABookDownloads } from '../../iaux-book-downloads/ia-book-downloads';
+import { IABookDownloads } from '../menu-panels/downloads/ia-book-downloads';
 customElements.define('ia-book-downloads', IABookDownloads);
 
 let downloads = [];
@@ -27,7 +27,7 @@ export default class {
     this.component = '';
 
     this.computeAvailableTypes = this.computeAvailableTypes.bind(this);
-    this.update = this.update.bind(this);    
+    this.update = this.update.bind(this);
   }
 
 
@@ -52,7 +52,7 @@ export default class {
       if (downloadOption) {
         const menuInfo = Object.assign({}, downloadOption, { url: link });
         found.push(menuInfo);
-      };
+      }
       return found;
     }, []);
 

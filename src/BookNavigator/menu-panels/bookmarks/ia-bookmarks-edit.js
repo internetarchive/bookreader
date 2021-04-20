@@ -1,8 +1,8 @@
 import { nothing } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat.js';
 import { css, html, LitElement } from 'lit-element';
-import bookmarkColorsCSS from '../BookNavigator/styles/bookmark-colors.js';
-import buttonCSS from '../BookNavigator/styles/button-base.js';
+import bookmarkColorsCSS from '../../styles/bookmark-colors.js';
+import buttonCSS from '../../styles/button-base.js';
 export class IABookmarkEdit extends LitElement {
   static get properties() {
     return {

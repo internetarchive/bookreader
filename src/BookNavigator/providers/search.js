@@ -2,7 +2,7 @@ import { html } from 'lit-element';
 import { nothing } from 'lit-html';
 
 /* instantiate web component */
-import { IABookSearchResults } from '../../iaux-book-search-results/ia-book-search-results';
+import { IABookSearchResults } from '../menu-panels/search/ia-book-search-results';
 customElements.define('ia-book-search-results', IABookSearchResults);
 
 let searchState = {
@@ -41,7 +41,7 @@ export default class {
 
   getMenuDetails() {
     const { resultsCount, query, queryInProgress } = searchState;
-    if (queryInProgress || !query) { return nothing };
+    if (queryInProgress || !query) { return nothing }
     const unit = resultsCount === 1 ? 'result' : 'results';
     return html`(${resultsCount} ${unit})`;
   }
