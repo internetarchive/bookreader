@@ -1,7 +1,5 @@
 import { css, html, LitElement } from 'lit-element';
 import { nothing } from 'lit-html';
-import bookDownloadsCSS from './styles/ia-book-downloads.js';
-
 export class IABookDownloads extends LitElement {
   static get properties() {
     return {
@@ -63,7 +61,7 @@ export class IABookDownloads extends LitElement {
   }
 
   static get styles() {
-    const main = css`
+    return css`
       :host {
         display: block;
         height: 100%;
@@ -144,7 +142,5 @@ export class IABookDownloads extends LitElement {
         line-height: 140%;
       }
     `;
-
-    return [main, bookDownloadsCSS];
   }
 }

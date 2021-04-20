@@ -3,8 +3,8 @@ import { nothing } from 'lit-html';
 import { css, html, LitElement } from 'lit-element';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import { BookSearchResult } from './book-search-result.js';
-import checkmarkIcon from './styles/icon_checkmark.js';
-import closeIcon from './styles/icon_close.js';
+import checkmarkIcon from '../BookNavigator/styles/icon_checkmark.js';
+import closeIcon from '../BookNavigator/styles/icon_close.js';
 
 customElements.define('book-search-result', BookSearchResult);
 
