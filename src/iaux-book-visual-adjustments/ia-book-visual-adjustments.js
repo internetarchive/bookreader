@@ -1,7 +1,7 @@
-import { html, LitElement } from "lit-element";
+import { css, html, LitElement } from "lit-element";
 import { repeat } from "lit-html/directives/repeat.js";
 import { nothing } from "lit-html";
-import bookVisualAdjustmentsCSS from "./styles/ia-book-visual-adjustments.js";
+import checkmarkIcon from './styles/icon_checkmark.js';
 import "@internetarchive/icon-magnify-minus/icon-magnify-minus";
 import "@internetarchive/icon-magnify-plus/icon-magnify-plus";
 
@@ -14,10 +14,6 @@ const events = {
 };
 
 export class IABookVisualAdjustments extends LitElement {
-  static get styles() {
-    return bookVisualAdjustmentsCSS;
-  }
-
   static get properties() {
     return {
       activeCount: { type: Number },
@@ -177,12 +173,111 @@ export class IABookVisualAdjustments extends LitElement {
       ${this.headerSection}
       <ul>
         ${repeat(
-          this.options,
-          (option) => option.id,
-          this.adjustmentCheckbox.bind(this)
-        )}
+    this.options,
+    (option) => option.id,
+    this.adjustmentCheckbox.bind(this)
+  )}
       </ul>
       ${this.showZoomControls ? this.zoomControls : nothing}
     `;
+  }
+
+  static get styles() {
+    return css`
+    :host {
+      display: block;
+      height: 100%;
+      overflow-y: auto;
+      font-size: 1.4rem;
+      box-sizing: border-box;
+    }
+
+    header {
+      display: flex;
+      align-items: baseline;
+    }
+
+    h3 {
+      padding: 0;
+      margin: 0 1rem 0 0;
+      font-size: 1.6rem;
+    }
+
+    header p {
+      padding: 0;
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+      font-style: italic;
+    }
+
+    ul {
+      padding: 1rem 2rem 0 0;
+      list-style: none;
+      margin-top: 0;
+    }
+
+    [type="checkbox"] {
+      display: none;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 1.4rem;
+      font-weight: bold;
+      line-height: 150%;
+      vertical-align: middle;
+    }
+
+    .icon {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      margin-left: .7rem;
+      border: 1px solid var(--primaryTextColor);
+      border-radius: 2px;
+      background: var(--activeButtonBg) 50% 50% no-repeat;
+    }
+    :checked + .icon {
+      background-image: url('${checkmarkIcon}');
+    }
+
+    .range {
+      display: none;
+      padding-top: .5rem;
+    }
+    .range.visible {
+      display: flex;
+    }
+
+    .range p {
+      margin-left: 1rem;
+    }
+
+    h4 {
+      padding: 1rem 0;
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    button {
+      -webkit-appearance: none;
+      appearance: none;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      outline: none;
+      cursor: pointer;
+      --iconFillColor: var(--primaryTextColor);
+      --iconStrokeColor: var(--primaryTextColor);
+      height: 4rem;
+      width: 4rem;
+    }
+
+    button * {
+      display: inline-block;
+    }`;
   }
 }
