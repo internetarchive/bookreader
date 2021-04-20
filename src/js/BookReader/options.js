@@ -267,6 +267,12 @@ export const DEFAULT_OPTIONS = {
       className: 'full',
       iconClassName: 'fullscreen'
     },
+    rotateScreen: {
+      label: 'Rotate Screen',
+      visible: true,
+      className: 'rotatescreen',
+      iconClassName: 'rotatescreen'
+    }
   },
 
   /**

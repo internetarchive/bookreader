@@ -1,0 +1,17 @@
+<svg  viewBox="0 0 21 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.5 (67469) - http://www.bohemiancoding.com/sketch -->
+    <title>Rotate Screen</title>
+    <desc>An icon to indicate screen rotation.</desc>
+    <g id="Icons" stroke="none" stroke-width="0" fill="none" fill-rule="evenodd">
+        <g id="Rounded" transform="translate(-644.000000, -421.000000)">
+            <g id="Action" transform="translate(100.000000, 100.000000)">
+                <g id="-Round-/-Action-/-settings_backup_restore" transform="translate(544.000000, 318.000000)">
+                    <g>
+                        <polygon id="Path" points="0 0 24 0 24 24 0 24"></polygon>
+                        <path d="M14,12 C14,10.9 13.1,10 12,10 C10.9,10 10,10.9 10,12 C10,13.1 10.9,14 12,14 C13.1,14 14,13.1 14,12 Z M12.26,3 C7.17,2.86 3,6.95 3,12 L1.21,12 C0.76,12 0.54,12.54 0.86,12.85 L3.65,15.64 C3.85,15.84 4.16,15.84 4.36,15.64 L7.15,12.85 C7.46,12.54 7.24,12 6.79,12 L5,12 C5,8.1 8.18,4.95 12.1,5 C15.82,5.05 18.95,8.18 19,11.9 C19.05,15.81 15.9,19 12,19 C10.75,19 9.58,18.66 8.56,18.09 C8.17,17.87 7.69,17.95 7.38,18.27 C6.92,18.73 7.01,19.52 7.58,19.84 C8.89,20.57 10.39,21 12,21 C17.05,21 21.14,16.83 21,11.74 C20.87,7.05 16.95,3.13 12.26,3 Z" id="🔹Icon-Color" fill="#fff"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

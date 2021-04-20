@@ -45,17 +45,8 @@ export class Navbar {
 
   /** @private */
   _renderControls() {
-    return [
-      'bookLeft',
-      'bookRight',
-      'onePage',
-      'twoPage',
-      'thumbnail',
-      'viewmode',
-      'zoomOut',
-      'zoomIn',
-      'fullScreen',
-    ].map((mode) => (
+    const controlls = Object.keys(this.br.options.controls)
+    return controlls.map((mode) => (
       this.controlFor(mode)
     )).join('');
   }

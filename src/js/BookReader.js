@@ -166,6 +166,8 @@ BookReader.prototype.setup = function(options) {
   this.twoPagePopUp = null;
   this.leafEdgeTmp  = null;
 
+  this.currentOrientationDeg = 0
+
   /**
      * Represents the first displayed index
      * In 2up mode it will be the left page
@@ -722,12 +724,24 @@ BookReader.prototype.drawLeafs = function() {
  * @protected
  * @param {PageIndex} index
  */
-BookReader.prototype._createPageContainer = function(index) {
-  return new PageContainer(this._models.book.getPage(index, false), {
-    isProtected: this.protected,
-    imageCache: this.imageCache,
-    loadingImage: this.imagesBaseURL + 'loading.gif',
-  });
+BookReader.prototype._createPageContainer = function(index, styles) {
+  const { pageSide } = this._models.book.getPage(index);
+  const css = Object.assign({ position: 'absolute' }, styles, this.mode !== 2 ? ({ transform: `rotate(${this.currentOrientationDeg}deg)` }) : {});
+  const modeClasses = {
+    [this.constMode1up]: '1up',
+    [this.constMode2up]: '2up',
+    [this.constModeThumb]: 'thumb',
+  };
+  const container = $('<div />', {
+    'class': `BRpagecontainer BRmode${modeClasses[this.mode]} pagediv${index}`,
+    css,
+  }).attr('data-side', pageSide).append($('<div />', { 'class': 'BRscreen' }));
+  container.toggleClass('protected', this.protected);
+  if (this.mode === 2) {
+    this._rotate2up()
+  }
+
+  return container;
 };
 
 BookReader.prototype.bindGestures = function(jElement) {
@@ -1278,6 +1292,42 @@ BookReader.prototype.prev = function() {
   }
 };
 
+/**
+ * 2PageMode Rotation
+ * @private
+ */
+BookReader.prototype._rotate2up = function() {
+  const $brTwoPageView = this.refs.$brTwoPageView
+  if ($brTwoPageView) {
+    $brTwoPageView[0].style.transform = `rotate(${this.currentOrientationDeg}deg)`
+  }
+}
+
+/**
+ * Rotates screen by 90 degree
+ */
+BookReader.prototype.rotate = function() {
+  if (this.currentOrientationDeg == 0) {
+    this.currentOrientationDeg = 90
+  } else {
+    this.currentOrientationDeg += 90
+  }
+  if (this.currentOrientationDeg >= 360) {
+    this.currentOrientationDeg = 0
+  }
+
+  switch (this.mode) {
+  case 1:
+    var $brPageElView = $('.BRpageview')
+    $brPageElView.empty()
+    this._modes.mode1Up.drawLeafs()
+    break
+  case 2:
+    this._rotate2up()
+    break
+  }
+}
+
 BookReader.prototype.first = function() {
   this.jumpToIndex(this.firstDisplayableIndex());
 };
@@ -1664,6 +1714,10 @@ BookReader.prototype.bindNavigationHandlers = function() {
         this.toggleFullscreen();
       }
     },
+    rotatescreen: () => {
+      this.trigger(BookReader.eventNames.orientationChanged)
+      self.rotate()
+    }
   };
 
   jIcons.filter('.fit').bind('fit', function() {
