@@ -1,7 +1,6 @@
-/* eslint-disable compat/compat */
 import { render, nothing } from 'lit-html';
 import { LitElement, html, css } from 'lit-element';
-import buttonStyles from '../../styles/button-base.js';
+import buttonStyles from '../assets/button-base.js';
 
 const api = {
   endpoint: '/services/bookmarks.php',

@@ -1,7 +1,7 @@
 import { html } from 'lit-element';
 
 /* register subpanel */
-import { IABookDownloads } from '../menu-panels/downloads/downloads';
+import { IABookDownloads } from './downloads';
 customElements.define('ia-book-downloads', IABookDownloads);
 
 let downloads = [];

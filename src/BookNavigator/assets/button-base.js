@@ -6,7 +6,7 @@ export default css`
     border: none;
     outline: none;
     cursor: pointer;
-    color: var(--primaryTextColor);
+    color: var(--primaryTextColor );
     line-height: normal;
     border-radius: .4rem;
     text-align: center;

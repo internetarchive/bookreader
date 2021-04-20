@@ -2,7 +2,7 @@ import { html } from 'lit-element';
 import { nothing } from 'lit-html';
 
 /* instantiate web component */
-import { IABookSearchResults } from '../menu-panels/search/search-results';
+import { IABookSearchResults } from './search-results';
 customElements.define('ia-book-search-results', IABookSearchResults);
 
 let searchState = {

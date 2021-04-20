@@ -1,11 +1,10 @@
 import { html } from 'lit-element';
-
-import '../features/bookmarks/bookmark-button.js';
 import '../delete-modal-actions.js';
-import '../features/bookmarks/ia-bookmarks.js';
+import './bookmark-button.js';
+import './ia-bookmarks.js';
 
-import { IABookmarkEdit } from '../menu-panels/bookmarks/bookmark-edit.js';
-import { IABookmarksList } from '../menu-panels/bookmarks/bookmarks-list';
+import { IABookmarkEdit } from './bookmark-edit.js';
+import { IABookmarksList } from './bookmarks-list.js';
 import { IAIconBookmark } from '@internetarchive/icon-bookmark';
 
 customElements.define('ia-bookmark-edit', IABookmarkEdit);

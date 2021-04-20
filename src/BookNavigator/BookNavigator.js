@@ -1,13 +1,13 @@
 import { css, html, LitElement } from 'lit-element';
 import { nothing } from 'lit-html';
-import SearchProvider from './providers/search.js';
-import DownloadProvider from './providers/download.js';
-import VisualAdjustmentProvider from './providers/visual-adjustments.js';
+import SearchProvider from './search/search-provider.js';
+import DownloadProvider from './downloads/downloads-provider.js';
+import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
+import BookmarksProvider from './bookmarks/bookmarks-provider.js';
 import SharingProvider from '../ItemNavigator/providers/sharing.js';
-import BookmarksProvider from './providers/bookmarks.js';
 import BRFullscreenMgr from './br-fullscreen-mgr.js';
 import { Book } from './BookModel.js';
-import bookLoader from './styles/book-loader.js';
+import bookLoader from './assets/book-loader.js';
 
 const events = {
   menuUpdated: 'menuUpdated',
