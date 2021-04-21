@@ -1,3 +1,5 @@
+# 4.40.3
+- Fix: Search results not in correct place in Mode1Up @cdrini
 # 4.40.2
 -Fix: page container has `data-side` attr @iisa
 
