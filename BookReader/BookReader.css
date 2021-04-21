@@ -203,6 +203,7 @@
   padding: 20px;
   border: 2px solid #999;
   z-index: 3000;
+  color: #222;
 }
 
 .BRprogressbar {
@@ -3143,4 +3144,44 @@ li.BRtable-contents-el .BRTOCElementPage {
  */
 #item-navigator-modal {
   display: none;
+}
+
+.BRpagecontainer {
+  --iconWidth: 16px;
+  --iconHeight: 24px;
+  --iconFillColor: #000;
+}
+
+/* BOOKMARKS - on page */
+.BRpagecontainer .bookmark-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  opacity: 0;
+}
+
+.BRtwopageview .BRpagecontainer[data-side=L] .bookmark-button {
+  right: auto;
+  left: 0;
+}
+
+.BRpagecontainer .bookmark-button.filled {
+  opacity: 1;
+}
+
+.BRpagecontainer .bookmark-button.default {
+  --iconFillColor: var(--defaultBookmarkColor, #eb3223);
+}
+
+.BRpagecontainer .bookmark-button.blue {
+  --iconFillColor: var(--blueBookmarkColor, #0023f5);
+}
+
+.BRpagecontainer .bookmark-button.red {
+  --iconFillColor: var(--redBookmarkColor, #eb3223);
+}
+
+.BRpagecontainer .bookmark-button.green {
+  --iconFillColor: var(--greenBookmarkColor, #75ef4c);
 }
