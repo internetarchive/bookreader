@@ -1,3 +1,8 @@
+# 5.0.0-1
+- Actually delete the files mentioned in previous release @cdrini
+- Dev: Organize BookNavigator files @iisa
+- Fix: Search results not in correct place in Mode1Up @cdrini
+
 # 5.0.0-0
 First beta release of v5! Lots of breaking changes:
 - Files deleted from `BookReader/` . These are all no longer needed, or bundled in other BookReader JS files
