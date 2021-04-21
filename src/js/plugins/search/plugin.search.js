@@ -282,11 +282,12 @@ BookReader.prototype.updateSearchHilites1UP = function() {
           box.div = document.createElement('div');
           $(box.div).prop('className', 'BookReaderSearchHilite').appendTo(this.$(`.pagediv${pageIndex}`));
         }
+        const page = this._models.book.getPage(pageIndex);
         const highlight = {
-          width:  `${(box.r - box.l) / this.reduce}px`,
-          height: `${(box.b - box.t) / this.reduce}px`,
-          left:   `${(box.l) / this.reduce}px`,
-          top:    `${(box.t) / this.reduce}px`
+          width: this._modes.mode1Up.physicalInchesToDisplayPixels((box.r - box.l) / page.ppi),
+          height: this._modes.mode1Up.physicalInchesToDisplayPixels((box.b - box.t) / page.ppi),
+          left: this._modes.mode1Up.physicalInchesToDisplayPixels(box.l / page.ppi),
+          top: this._modes.mode1Up.physicalInchesToDisplayPixels(box.t / page.ppi),
         };
         $(box.div).css(highlight);
       } else {
