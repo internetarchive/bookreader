@@ -21,7 +21,12 @@ This file is part of BookReader.
 */
 // effect.js gives acces to extra easing function (e.g. easeInOutExpo)
 import 'jquery-ui/ui/effect.js';
+
+// Needed by touch-punch
+import 'jquery-ui/ui/widget.js';
+import 'jquery-ui/ui/widgets/mouse.js';
 import 'jquery-ui-touch-punch';
+
 import './dragscrollable-br.js';
 import PACKAGE_JSON from '../../package.json';
 import * as utils from './BookReader/utils.js';
