@@ -75,7 +75,7 @@
   },
   "jest": {
     "setupFiles": [
-      "./env-setup.js"
+      "./src/jquery-wrapper.js"
     ],
     "roots": [
       "<rootDir>/src/",
