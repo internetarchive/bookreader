@@ -80,7 +80,6 @@ export class BookReader extends LitElement {
       .ia-bookreader {
         background-color: var(--primaryBGColor);
         position: relative;
-        width: 100vw;
         height: auto;
       }
 
