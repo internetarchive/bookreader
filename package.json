@@ -47,7 +47,7 @@
     "@types/jest": "26.0.22",
     "babel-loader": "8.2.2",
     "codecov": "3.8.1",
-    "concurrently": "6.0.0",
+    "concurrently": "6.0.2",
     "core-js": "3.8.0",
     "cpx2": "3.0.0",
     "eslint": "7.24.0",
