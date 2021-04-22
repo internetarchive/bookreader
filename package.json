@@ -70,7 +70,7 @@
     "soundmanager2": "2.97.20170602",
     "svgo": "1.3.2",
     "testcafe": "1.12.0",
-    "webpack": "5.9.0",
+    "webpack": "5.34.0",
     "webpack-cli": "4.2.0"
   },
   "jest": {
