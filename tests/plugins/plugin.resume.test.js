@@ -1,5 +1,5 @@
-import BookReader from '../../src/js/BookReader.js';
-import '../../src/js/plugins/plugin.resume.js';
+import BookReader from '../../src/BookReader.js';
+import '../../src/plugins/plugin.resume.js';
 
 import sinon from 'sinon';
 import * as docCookies from '../../src/util/docCookies.js';

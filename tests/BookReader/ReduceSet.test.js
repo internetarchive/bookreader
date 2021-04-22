@@ -1,4 +1,4 @@
-import {IntegerReduceSet, Pow2ReduceSet} from '../../src/js/BookReader/ReduceSet.js';
+import {IntegerReduceSet, Pow2ReduceSet} from '../../src/BookReader/ReduceSet.js';
 
 describe('IntegerReduceSet', () => {
   test('floor', () => {

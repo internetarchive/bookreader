@@ -1,4 +1,4 @@
-import BookReader from '../../src/js/BookReader';
+import BookReader from '../../src/BookReader';
 
 beforeAll(() => {
   global.alert = jest.fn();

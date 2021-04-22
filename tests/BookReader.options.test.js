@@ -1,5 +1,5 @@
 
-import BookReader from '../src/js/BookReader.js';
+import BookReader from '../src/BookReader.js';
 
 beforeAll(() => {
   document.body.innerHTML = '<div id="BookReader">';

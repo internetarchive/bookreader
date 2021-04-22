@@ -1,6 +1,6 @@
 import sinon from 'sinon';
-import PageChunkIterator from "../../../src/js/plugins/tts/PageChunkIterator";
-import PageChunk from '../../../src/js/plugins/tts/PageChunk';
+import PageChunkIterator from "../../../src/plugins/tts/PageChunkIterator";
+import PageChunk from '../../../src/plugins/tts/PageChunk';
 
 describe('Buffers pages', () => {
   test('Does not error if no room for reverse buffer', async () => {

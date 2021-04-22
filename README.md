@@ -91,9 +91,9 @@ Approach:
 - Event driven
   - BookReader's (BR) core code emits [custom events](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent), reporting the actions it takes:
     - UI changes
-      - Core Events [src/js/BookReader/events.js](https://github.com/internetarchive/bookreader/tree/master/src/js/BookReader/events.js)
+      - Core Events [src/BookReader/events.js](https://github.com/internetarchive/bookreader/tree/master/src/BookReader/events.js)
     - API returns
-      - Search API [src/js/BookReader/events.js](https://github.com/internetarchive/bookreader/tree/master/src/js/BookReader/events.js)
+      - Search API [src/BookReader/events.js](https://github.com/internetarchive/bookreader/tree/master/src/BookReader/events.js)
   - BookNavigator, BR's web components controller, listens and reacts to these events in order to populate the side menu panels
 - Control BR from the outside by using public methods
   - When BookNavigator reacts to BR's events, BookNavigator can directly control BR core using public functions.
@@ -113,7 +113,7 @@ This includes:
 
 A peek in how to use/extend core functionality:
 - Properties
-  - TODO (for now see [src/js/BookReader/options.js](https://github.com/internetarchive/bookreader/tree/master/src/js/BookReader/options.js))
+  - TODO (for now see [src/BookReader/options.js](https://github.com/internetarchive/bookreader/tree/master/src/BookReader/options.js))
 - Plugins
   - A basic plugin system is used. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:
     - plugin.autoplay.js - autoplay mode. Flips pages at set intervals.
@@ -123,7 +123,7 @@ A peek in how to use/extend core functionality:
     - plugin.url.js - automatically updates the browser url
     - plugin.resume.js - uses cookies to remember the current page
     - plugin.vendor-fullscreen.js - replaces fullscreen mode with vendor native fullscreen
-    - see plugin directory for current plugin files ()[https://github.com/internetarchive/bookreader/tree/master/src/js/plugins]
+    - see plugin directory for current plugin files ()[https://github.com/internetarchive/bookreader/tree/master/src/plugins]
 
 ### Embedding BookReader in an iFrame
 

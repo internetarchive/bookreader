@@ -38,8 +38,8 @@ module.exports = {
     "overrides": [
         { // TODO; these should be cleaned up as well
             "files": [
-                "src/js/BookReader.js",
-                "src/js/dragscrollable-br.js"
+                "src/BookReader.js",
+                "src/dragscrollable-br.js"
             ],
             "rules": {
                 "no-var": ["off"],

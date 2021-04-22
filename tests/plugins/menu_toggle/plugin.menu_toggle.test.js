@@ -1,6 +1,6 @@
 
-import BookReader from '../../../src/js/BookReader.js';
-import '../../../src/js/plugins/menu_toggle/plugin.menu_toggle.js';
+import BookReader from '../../../src/BookReader.js';
+import '../../../src/plugins/menu_toggle/plugin.menu_toggle.js';
 
 
 let br;
