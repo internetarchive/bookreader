@@ -1,8 +1,8 @@
 
-import BookReader from '../../../src/js/BookReader.js';
-import '../../../src/js/plugins/plugin.mobile_nav.js';
-import '../../../src/js/plugins/search/plugin.search.js';
-import '../../../src/js/plugins/search/view.js';
+import BookReader from '../../../src/BookReader.js';
+import '../../../src/plugins/plugin.mobile_nav.js';
+import '../../../src/plugins/search/plugin.search.js';
+import '../../../src/plugins/search/view.js';
 
 let br;
 const namespace = 'BookReader:';

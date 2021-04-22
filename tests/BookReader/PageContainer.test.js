@@ -1,4 +1,4 @@
-import {PageContainer} from '../../src/js/BookReader/PageContainer.js';
+import {PageContainer} from '../../src/BookReader/PageContainer.js';
 
 describe('constructor', () => {
   test('protected books', () => {

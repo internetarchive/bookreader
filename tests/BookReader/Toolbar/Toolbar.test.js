@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 
-import { createPopup } from '../../../src/js/BookReader/Toolbar/Toolbar.js';
+import { createPopup } from '../../../src/BookReader/Toolbar/Toolbar.js';
 
 afterEach(() => {
   sinon.restore();

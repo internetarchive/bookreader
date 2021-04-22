@@ -1,6 +1,6 @@
 
-import BookReader from '../../src/js/BookReader.js';
-import * as util from '../../src/js/plugins/plugin.vendor-fullscreen.js';
+import BookReader from '../../src/BookReader.js';
+import * as util from '../../src/plugins/plugin.vendor-fullscreen.js';
 
 let br;
 beforeEach(() => {

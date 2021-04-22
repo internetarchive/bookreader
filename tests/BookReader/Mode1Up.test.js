@@ -1,8 +1,8 @@
 import sinon from 'sinon';
 import { deepCopy } from '../utils.js';
-import { Mode1Up } from '../../src/js/BookReader/Mode1Up.js'
-import { BookModel } from '../../src/js/BookReader/BookModel.js';
-import { DEFAULT_OPTIONS } from '../../src/js/BookReader/options.js';
+import { Mode1Up } from '../../src/BookReader/Mode1Up.js'
+import { BookModel } from '../../src/BookReader/BookModel.js';
+import { DEFAULT_OPTIONS } from '../../src/BookReader/options.js';
 const DEFAULT_PPI = DEFAULT_OPTIONS.ppi;
 
 /** @type {BookReaderOptions['data']} */

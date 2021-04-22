@@ -1,4 +1,4 @@
-import * as docCookies from '../../util/docCookies.js';
+import * as docCookies from '../util/docCookies.js';
 
 /* global BookReader */
 

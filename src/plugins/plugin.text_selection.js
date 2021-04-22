@@ -1,7 +1,7 @@
 //@ts-check
-import { isFirefox, isSafari } from '../../util/browserSniffing.js';
-import { applyVariables } from '../../util/strings.js';
-/** @typedef {import('../../util/strings.js').StringWithVars} StringWithVars */
+import { isFirefox, isSafari } from '../util/browserSniffing.js';
+import { applyVariables } from '../util/strings.js';
+/** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 

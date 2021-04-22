@@ -1,8 +1,8 @@
 import sinon from 'sinon';
 
-import BookReader from '../../src/js/BookReader.js';
-import '../../src/js/plugins/plugin.mobile_nav.js';
-import '../../src/js/plugins/plugin.chapters.js';
+import BookReader from '../../src/BookReader.js';
+import '../../src/plugins/plugin.mobile_nav.js';
+import '../../src/plugins/plugin.chapters.js';
 
 const SAMPLE_TOC = [{
   "pagenum": "3",

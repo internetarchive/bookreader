@@ -75,7 +75,7 @@
   },
   "jest": {
     "setupFiles": [
-      "./env-setup.js"
+      "./src/jquery-wrapper.js"
     ],
     "roots": [
       "<rootDir>/src/",
@@ -99,8 +99,8 @@
     "build-css": "npx sass --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "build-css:watch": "npx sass --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "clean": "rm -r BookReader/ || true",
-    "lint": "npx eslint src/js tests",
-    "lint:fix": "npx eslint --fix src/js tests",
+    "lint": "npx eslint src/ tests/ *.js",
+    "lint:fix": "npx eslint --fix src/ tests/ *.js",
     "serve": "npx http-server . --port 8000",
     "serve-live": "npx live-server . --port 8000 --watch=index.html,BookReader,BookReaderDemo",
     "serve-dev": "npm run build-css && npx concurrently --kill-others npm:serve-live npm:build-*:watch",

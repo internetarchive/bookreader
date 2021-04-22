@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { DebugConsole } from '../../src/js/BookReader/DebugConsole.js';
+import { DebugConsole } from '../../src/BookReader/DebugConsole.js';
 
 beforeEach(() => {
   sinon.stub(console, 'log');

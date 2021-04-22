@@ -1,8 +1,8 @@
 import sinon from 'sinon';
 import { afterEventLoop } from '../../utils.js';
-import AbstractTTSEngine from '../../../src/js/plugins/tts/AbstractTTSEngine.js';
-import PageChunkIterator from '../../../src/js/plugins/tts/PageChunkIterator.js';
-/** @typedef {import('../../../src/js/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
+import AbstractTTSEngine from '../../../src/plugins/tts/AbstractTTSEngine.js';
+import PageChunkIterator from '../../../src/plugins/tts/PageChunkIterator.js';
+/** @typedef {import('../../../src/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
 
 // Skipping because it's flaky. Fix in #672
 describe.skip('AbstractTTSEngine', () => {

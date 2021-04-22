@@ -37,9 +37,9 @@ export function getItem(sKey) {
  * @returns {true}
  */
 export function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
-  document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue) 
+  document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue)
   + (vEnd ? `; expires=${vEnd.toUTCString()}` : '')
-  + (sDomain ? `; domain=${sDomain}`: '')
+  + (sDomain ? `; domain=${sDomain}` : '')
   + (sPath ? `; path=${sPath}` : '')
   + (bSecure ? `; secure` : '');
 
@@ -56,6 +56,7 @@ export function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
  * @returns {boolean}
  */
 export function removeItem(sKey, sPath, sDomain) {
+  // eslint-disable-next-line
   if (!hasItem(sKey)) return false;
 
   document.cookie = encodeURIComponent(sKey) + `=; expires=Thu, 01 Jan 1970 00:00:00 GMT`
