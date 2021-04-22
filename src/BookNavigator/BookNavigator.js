@@ -125,11 +125,8 @@ export class BookNavigator extends LitElement {
         bookreader: this.bookreader,
       }),
       share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType),
+      bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader, this.signedIn)
     };
-
-    if (this.signedIn) {
-      this.menuProviders.bookmarks = new BookmarksProvider(this.bookmarksOptions, this.bookreader);
-    }
 
     this.addMenuShortcut('search'); /* start with search as a shortcut */
     this.updateMenuContents();

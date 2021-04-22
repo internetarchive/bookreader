@@ -57,6 +57,8 @@ class IABookmarks extends LitElement {
       bookmarks: { type: Array },
       bookreader: { type: Object },
       editedBookmark: { type: Object },
+      isSignedIn: { type: Boolean },
+      loginUrl: { type: String }
     };
   }
 
@@ -74,6 +76,10 @@ class IABookmarks extends LitElement {
 
       .edit ia-bookmarks-list {
         display: none;
+      }
+      
+      a {
+        text-decoration:none;
       }
     `;
 
@@ -104,15 +110,21 @@ class IABookmarks extends LitElement {
     // eslint-disable-next-line
     this.defaultColor = this.bookmarkColors[0];
     this.api = api;
+
+    // add login page url here
+    this.loginUrl = "https://archive.org/login"
   }
 
   updated(changed) {
     this.emitBookmarksChanged();
   }
 
-  setup() {
-    this.api.identifier = this.bookreader.bookId;
-    this.fetchBookmarks().then(() => this.initializeBookmarks());
+  setup(signedIn) {
+    this.isSignedIn = signedIn
+    if (signedIn) {
+      this.api.identifier = this.bookreader.bookId;
+      this.fetchBookmarks().then(() => this.initializeBookmarks());
+    }
   }
 
   initializeBookmarks() {
@@ -419,6 +431,12 @@ class IABookmarks extends LitElement {
     this.renderBookmarkButtons();
   }
 
+  /**
+   * Redirect to login URL page
+   */
+  handleLogin() {
+    location.replace('https://archive.org/login');
+  }
 
   /**
    * Tells us if we should allow user to add bookmark via menu panel
@@ -444,27 +462,35 @@ class IABookmarks extends LitElement {
       <button
         class="ia-button primary"
         ?disabled=${enableAddBookmark}
-        @click=${this.addBookmark}
-      >Add bookmark</button>
+        @click=${this.addBookmark}>
+        Add bookmark
+      </button>
     `;
+
+    const bookmarkSignedInLayout = html`
+      <ia-bookmarks-list
+        @bookmarkEdited=${this.bookmarkEdited}
+        @bookmarkSelected=${this.bookmarkSelected}
+        @saveBookmark=${this.saveBookmark}
+        @deleteBookmark=${this.deleteBookmark}
+        .editedBookmark=${this.editedBookmark}
+        .bookmarks=${{ ...this.bookmarks }}
+        .activeBookmarkID=${this.activeBookmarkID}
+        .bookmarkColors=${this.bookmarkColors}
+        .defaultBookmarkColor=${this.defaultColor}>
+      </ia-bookmarks-list>
+      ${this.allowAddingBookmark ? addBookmarkButton : nothing}
+    `
+
+    const bookmarkLoginLayout = html`
+      <p>A free account is required to save and access bookmarks.</p>
+      <button class="ia-button primary" @click=${this.handleLogin}>Login</button>
+    `
 
     return html`
       <section class="bookmarks">
-        <ia-bookmarks-list
-          @bookmarkEdited=${this.bookmarkEdited}
-          @bookmarkSelected=${this.bookmarkSelected}
-          @saveBookmark=${this.saveBookmark}
-          @deleteBookmark=${this.deleteBookmark}
-
-          .editedBookmark=${this.editedBookmark}
-          .bookmarks=${{ ...this.bookmarks }}
-          .activeBookmarkID=${this.activeBookmarkID}
-
-          .bookmarkColors=${this.bookmarkColors}
-          .defaultBookmarkColor=${this.defaultColor}
-        ></ia-bookmarks-list>
-        ${this.allowAddingBookmark ? addBookmarkButton : nothing}
-      </section
+        ${this.isSignedIn ? bookmarkSignedInLayout : bookmarkLoginLayout }        
+      </section>
     `;
   }
 }

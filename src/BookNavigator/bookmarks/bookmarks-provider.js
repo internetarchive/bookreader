@@ -12,16 +12,16 @@ customElements.define('ia-bookmarks-list', IABookmarksList);
 customElements.define('icon-bookmark', IAIconBookmark);
 
 export default class BookmarksProvider {
-  constructor(options, bookreader) {
+  constructor(options, bookreader, signedIn) {
     Object.assign(this, options);
     this.component = document.createElement('ia-bookmarks');
     this.component.bookreader = bookreader;
     this.bindEvents();
-    this.component.setup();
 
     this.icon = html`<icon-bookmark state="hollow" style="--iconWidth: 16px; --iconHeight: 24px;"></icon-bookmark>`;
     this.label = 'Bookmarks';
     this.id = 'bookmarks';
+    this.component.setup(signedIn);
     this.updateMenu(this.component.bookmarks.length);
   }
 
