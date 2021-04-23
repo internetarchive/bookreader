@@ -18,7 +18,6 @@ export class BookNavigator extends LitElement {
   static get properties() {
     return {
       book: { type: Object },
-      mainBRSelector: { type: String },
       pageContainerSelector: { type: String },
       brWidth: { type: Number },
       bookReaderLoaded: { type: Boolean },
@@ -37,7 +36,6 @@ export class BookNavigator extends LitElement {
   constructor() {
     super();
     this.book = {};
-    this.mainBRSelector = '#BookReader';
     this.pageContainerSelector = '.BRcontainer';
     this.brWidth = 0;
     this.bookReaderCannotLoad = false;
@@ -53,7 +51,7 @@ export class BookNavigator extends LitElement {
     this.signedIn = false;
 
     // Untracked properties
-    this.fullscreenMgr = new BRFullscreenMgr();
+    this.fullscreenMgr = new BRFullscreenMgr(this.bookreader?.el);
     this.model = new Book();
     this.shortcutOrder = ['volumes', 'search', 'bookmarks'];
   }
@@ -61,6 +59,15 @@ export class BookNavigator extends LitElement {
   firstUpdated() {
     this.model.setMetadata(this.book);
     this.bindEventListeners();
+
+    // emit global event when book nav has loaded with current bookreader selector
+    this.dispatchEvent(new CustomEvent('BrBookNav:PostInit', {
+      detail: {
+        brSelector: this.bookreader?.el,
+      },
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   /**
@@ -107,11 +114,6 @@ export class BookNavigator extends LitElement {
 
     this.addMenuShortcut('search'); /* start with search as a shortcut */
     this.updateMenuContents();
-  }
-
-  /** gets element that houses the bookreader in light dom */
-  get mainBRContainer() {
-    return document.querySelector(this.mainBRSelector);
   }
 
   get bookmarksOptions() {
@@ -233,10 +235,9 @@ export class BookNavigator extends LitElement {
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
       this.initializeBookSubmenus();
-      this.mainBRSelector = this.br?.el || '#BookReader';
       setTimeout(() => this.bookreader.resize(), 0);
       const brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
-      brResizeObserver.observe(this.mainBRContainer);
+      brResizeObserver.observe(document.querySelector(this.bookreader.el));
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;

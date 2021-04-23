@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!-- This demo mirrors, as far as possible, the archive.org BookReader configuration and functionality
+   please keep up to date as BookReader evolves -->
+<html>
+<head>
+  <title>bookreader demo internetArchive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/jquery-1.10.1.js"></script>
+
+
+    <!-- Bookreader -->
+    <script src="../BookReader/BookReader.js"></script>
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+
+    <!-- plugins needed for archive.org, in same order as archive.org -->
+    <script src="../BookReader/plugins/plugin.search.js"></script>
+    <script src="../BookReader/plugins/plugin.chapters.js"></script>
+    <script src="../BookReader/plugins/plugin.tts.js"></script>
+    <script src="../BookReader/plugins/plugin.url.js"></script>
+    <script src="../BookReader/plugins/plugin.autoplay.js"></script>
+    <script src="../BookReader/plugins/plugin.resume.js"></script>
+    <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
+    <script src="../BookReader/plugins/plugin.text_selection.js"></script>
+
+    <script type="module" src="../BookReader/bookreader-component-bundle.js"></script>
+
+    <link rel="stylesheet" href="BookReaderDemo.css"/>
+</head>
+
+<body>
+  <section style="width: 100%; overflow: hidden; background-color: black;">
+    <ia-bookreader
+      baseHost="https://archive.org"
+    >
+      <div id="IABookReaderWrapper" class="internal-beta" slot="bookreader">
+        <div id="BookReader" class="BookReader"></div>
+      </div>
+      <div>
+        Internet Archive BookReader Demo<br />
+        <noscript>
+          <p>
+            The BookReader requires JavaScript to be enabled. Please check that
+            your browser supports JavaScript and that it is enabled in the
+            browser settings.
+          </p>
+        </noscript>
+      </div>
+    </ia-bookreader>
+  </section>
+  <section style="height: 800px; width: 200px;">
+    <p>placeholder div to allow scrolling</p>
+  </section>
+
+
+  <script id="pageUrl" type="text/javascript"></script>
+
+  <script>
+    var ocaid = location.href.match(/ocaid=([^&#]+)/i)[1];
+
+    // Override options coming from IA
+    BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
+
+    // Temp; Circumvent bug in BookReaderJSIA code
+    window.Sentry = null;
+
+    var script_url = 'https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=' + ocaid;
+    document.getElementById('pageUrl').src = script_url;
+  </script>
+
+</body>
+</html>

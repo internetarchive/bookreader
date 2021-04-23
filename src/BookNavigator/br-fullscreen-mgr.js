@@ -7,11 +7,11 @@ import Debouncer from '../util/debouncer';
  * https://drive.google.com/drive/folders/1Ym9FDMZPiM4EbNh3NU-_2h8kizIYaLWt
  */
 export default class BRFullscreenMgr {
-  constructor() {
+  constructor(brSelector = '#BookReader') {
     this.debounceTime = 250;
     this.savedScrollY = 0;
     this.savedScrollX = 0;
-    this.bookreader = null;
+    this.brDom = document.querySelector(brSelector);
 
     this.setup = this.setup.bind(this);
     this.teardown = this.teardown.bind(this);
@@ -42,8 +42,7 @@ export default class BRFullscreenMgr {
    * & removes event handlers, resets captured scroll positions
    */
   teardown() {
-    const bookreader = document.querySelector('#BookReader');
-    bookreader.setAttribute('style', '');
+    this.brDom.setAttribute('style', '');
     window.removeEventListener('resize', this.handleResizeEvent);
     window.scrollTo(this.savedScrollX, this.savedScrollY);
     this.savedScrollX = 0;
@@ -69,11 +68,10 @@ export default class BRFullscreenMgr {
     this.bookreader.updateBrClasses();
 
     const loanbar = document.querySelector('.BookReaderMessage');
-    const bookreader = document.querySelector('#BookReader');
     const loanbarHeight = loanbar?.offsetHeight ?? 0;
     const windowHeight = window.innerHeight;
     const newHeight = `${(windowHeight - loanbarHeight)}px`;
-    bookreader.style.height = newHeight;
+    this.brDom.style.height = newHeight;
     window.scrollTo(0, 0);
   }
 }
