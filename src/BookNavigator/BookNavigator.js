@@ -12,6 +12,7 @@ import bookLoader from './assets/book-loader.js';
 const events = {
   menuUpdated: 'menuUpdated',
   updateSideMenu: 'updateSideMenu',
+  PostInit: 'PostInit',
   ViewportInFullScreen: 'ViewportInFullScreen',
 };
 export class BookNavigator extends LitElement {
@@ -59,12 +60,16 @@ export class BookNavigator extends LitElement {
   firstUpdated() {
     this.model.setMetadata(this.book);
     this.bindEventListeners();
+    this.emitPostInit();
+  }
 
+  /**
+   * Global event emitter for when Book Navigator loads
+   */
+  emitPostInit() {
     // emit global event when book nav has loaded with current bookreader selector
-    this.dispatchEvent(new CustomEvent('BrBookNav:PostInit', {
-      detail: {
-        brSelector: this.bookreader?.el,
-      },
+    this.dispatchEvent(new CustomEvent(events.PostInit, {
+      detail: { brSelector: this.bookreader?.el },
       bubbles: true,
       composed: true,
     }));
