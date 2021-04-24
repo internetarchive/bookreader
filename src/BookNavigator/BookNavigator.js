@@ -68,7 +68,7 @@ export class BookNavigator extends LitElement {
    */
   emitPostInit() {
     // emit global event when book nav has loaded with current bookreader selector
-    this.dispatchEvent(new CustomEvent(events.PostInit, {
+    this.dispatchEvent(new CustomEvent(`BrBookNav:${events.PostInit}`, {
       detail: { brSelector: this.bookreader?.el },
       bubbles: true,
       composed: true,
