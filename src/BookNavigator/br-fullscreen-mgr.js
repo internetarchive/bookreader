@@ -11,16 +11,21 @@ export default class BRFullscreenMgr {
     this.debounceTime = 250;
     this.savedScrollY = 0;
     this.savedScrollX = 0;
-    this.brDom = document.querySelector(brSelector);
+    this.brSelector  = brSelector;
 
     this.setup = this.setup.bind(this);
     this.teardown = this.teardown.bind(this);
     this.resizeBookReaderContainer = this.resizeBookReaderContainer.bind(this);
 
     this.handleResizeEvent = this.handleResizeEvent.bind(this);
+
     this.handleBookReaderHeight = new Debouncer(
       this.resizeBookReaderContainer, this.debounceTime, this,
     );
+  }
+
+  get brDom() {
+    return document.querySelector(this.brSelector);
   }
 
   /**
@@ -47,6 +52,7 @@ export default class BRFullscreenMgr {
     window.scrollTo(this.savedScrollX, this.savedScrollY);
     this.savedScrollX = 0;
     this.savedScrollY = 0;
+    this.bookreader.resize();
   }
 
   /**
@@ -72,6 +78,7 @@ export default class BRFullscreenMgr {
     const windowHeight = window.innerHeight;
     const newHeight = `${(windowHeight - loanbarHeight)}px`;
     this.brDom.style.height = newHeight;
+    this.brDom.style.top = loanbarHeight;
     window.scrollTo(0, 0);
   }
 }

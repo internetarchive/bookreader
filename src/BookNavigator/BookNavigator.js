@@ -63,6 +63,12 @@ export class BookNavigator extends LitElement {
     this.emitPostInit();
   }
 
+  updated(changed) {
+    if (changed.has('sideMenuOpen')) {
+      setTimeout(() => this.bookreader.resize(), 150);
+    }
+  }
+
   /**
    * Global event emitter for when Book Navigator loads
    */
