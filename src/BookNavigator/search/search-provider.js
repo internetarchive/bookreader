@@ -1,9 +1,7 @@
 import { html } from 'lit-element';
 import { nothing } from 'lit-html';
 
-/* instantiate web component */
-import { IABookSearchResults } from './search-results';
-customElements.define('ia-book-search-results', IABookSearchResults);
+import './search-results';
 
 let searchState = {
   query: '',

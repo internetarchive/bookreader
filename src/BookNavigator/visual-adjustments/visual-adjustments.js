@@ -277,3 +277,4 @@ export class IABookVisualAdjustments extends LitElement {
     }`;
   }
 }
+customElements.define('ia-book-visual-adjustments', IABookVisualAdjustments);

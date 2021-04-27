@@ -3,12 +3,10 @@ import '../delete-modal-actions.js';
 import './bookmark-button.js';
 import './ia-bookmarks.js';
 
-import { IABookmarkEdit } from './bookmark-edit.js';
-import { IABookmarksList } from './bookmarks-list.js';
+import './bookmark-edit.js';
+import './bookmarks-list.js';
 import { IAIconBookmark } from '@internetarchive/icon-bookmark';
 
-customElements.define('ia-bookmark-edit', IABookmarkEdit);
-customElements.define('ia-bookmarks-list', IABookmarksList);
 customElements.define('icon-bookmark', IAIconBookmark);
 
 export default class BookmarksProvider {

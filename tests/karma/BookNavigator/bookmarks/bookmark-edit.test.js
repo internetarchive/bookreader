@@ -4,7 +4,7 @@ import {
   expect,
   oneEvent,
 } from '@open-wc/testing';
-import { IABookmarkEdit } from  '../../../../src/BookNavigator/bookmarks/bookmark-edit.js';
+import '../../../../src/BookNavigator/bookmarks/bookmark-edit.js';
 
 const bookmarkColors = [{
   id: 0,
@@ -22,8 +22,6 @@ const bookmarkColors = [{
   id: 4,
   className: 'yellow',
 }];
-
-customElements.define('ia-bookmark-edit', IABookmarkEdit);
 
 const container = (bookmark = {}) => (
   html`<ia-bookmark-edit .bookmark=${bookmark} .bookmarkColors=${bookmarkColors}></ia-bookmark-edit>`

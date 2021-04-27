@@ -2,11 +2,10 @@
 import { nothing } from 'lit-html';
 import { css, html, LitElement } from 'lit-element';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
-import { BookSearchResult } from './a-search-result.js';
+import './a-search-result.js';
 import checkmarkIcon from '../assets/icon_checkmark.js';
 import closeIcon from '../assets/icon_close.js';
 
-customElements.define('book-search-result', BookSearchResult);
 
 export class IABookSearchResults extends LitElement {
   static get properties() {
@@ -369,3 +368,4 @@ export class IABookSearchResults extends LitElement {
     `;
   }
 }
+customElements.define('ia-book-search-results', IABookSearchResults);

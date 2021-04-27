@@ -1,8 +1,5 @@
 import { html } from 'lit-element';
-
-/* define subpanel */
-import { IABookVisualAdjustments } from './visual-adjustments.js';
-customElements.define('ia-book-visual-adjustments', IABookVisualAdjustments);
+import './visual-adjustments.js';
 
 const visualAdjustmentOptions = [{
   id: 'brightness',
