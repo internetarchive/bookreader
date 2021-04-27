@@ -53,6 +53,7 @@ export class BookNavigator extends LitElement {
 
     // Untracked properties
     this.fullscreenMgr = null;
+    this.brResizeObserver = null;
     this.model = new Book();
     this.shortcutOrder = ['volumes', 'search', 'bookmarks'];
   }
@@ -132,6 +133,11 @@ export class BookNavigator extends LitElement {
 
     this.addMenuShortcut('search'); /* start with search as a shortcut */
     this.updateMenuContents();
+  }
+
+  /** gets element that houses the bookreader in light dom */
+  get mainBRContainer() {
+    return document.querySelector(this.bookreader.el);
   }
 
   get bookmarksOptions() {
@@ -256,8 +262,8 @@ export class BookNavigator extends LitElement {
 
       this.initializeBookSubmenus();
       setTimeout(() => this.bookreader.resize(), 0);
-      const brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
-      brResizeObserver.observe(document.querySelector(this.bookreader.el));
+      this.brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
+      this.brResizeObserver.observe(this.mainBRContainer);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;
