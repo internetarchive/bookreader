@@ -27,7 +27,15 @@ export default class ItemNavigator extends LitElement {
       menuOpened: { type: Boolean },
       menuContents: { type: Array },
       openMenu: { type: String },
-      signedIn: { type: Boolean },
+      signedIn: {
+        type: Boolean,
+        converter: (arg) => {
+          if (typeof (arg) === 'boolean') {
+            return arg;
+          }
+          return arg === 'true';
+        },
+      },
       viewportInFullscreen: { type: Boolean },
     };
   }
@@ -234,9 +242,12 @@ export default class ItemNavigator extends LitElement {
     const renderMenu = this.menuContents.length || this.menuShortcuts.length;
     return html`
       <div id="frame" class=${this.menuClass}>
-        ${renderMenu ? this.renderSideMenu : nothing}
-        <div id="reader">
-          ${this.renderViewport}
+        <slot name="item-nav-header"></slot>
+        <div class="menu-and-reader">
+          ${renderMenu ? this.renderSideMenu : nothing}
+          <div id="reader">
+            ${this.renderViewport}
+          </div>
         </div>
       </div>
     `;
@@ -270,6 +281,10 @@ export default class ItemNavigator extends LitElement {
         outline: none;
       }
 
+      .menu-and-reader {
+        position: relative;
+      }
+
       nav button {
         background: none;
       }
@@ -279,7 +294,6 @@ export default class ItemNavigator extends LitElement {
         border-bottom-right-radius: 5%;
         position: absolute;
         padding-top: .6rem;
-        top: 0;
         left: 0;
         width: 4rem;
         z-index: 2;

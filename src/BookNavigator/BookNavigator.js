@@ -12,13 +12,13 @@ import bookLoader from './assets/book-loader.js';
 const events = {
   menuUpdated: 'menuUpdated',
   updateSideMenu: 'updateSideMenu',
+  PostInit: 'PostInit',
   ViewportInFullScreen: 'ViewportInFullScreen',
 };
 export class BookNavigator extends LitElement {
   static get properties() {
     return {
       book: { type: Object },
-      mainBRSelector: { type: String },
       pageContainerSelector: { type: String },
       brWidth: { type: Number },
       bookReaderLoaded: { type: Boolean },
@@ -37,7 +37,6 @@ export class BookNavigator extends LitElement {
   constructor() {
     super();
     this.book = {};
-    this.mainBRSelector = '#BookReader';
     this.pageContainerSelector = '.BRcontainer';
     this.brWidth = 0;
     this.bookReaderCannotLoad = false;
@@ -53,7 +52,8 @@ export class BookNavigator extends LitElement {
     this.signedIn = false;
 
     // Untracked properties
-    this.fullscreenMgr = new BRFullscreenMgr();
+    this.fullscreenMgr = null;
+    this.brResizeObserver = null;
     this.model = new Book();
     this.shortcutOrder = ['volumes', 'search', 'bookmarks'];
   }
@@ -61,6 +61,32 @@ export class BookNavigator extends LitElement {
   firstUpdated() {
     this.model.setMetadata(this.book);
     this.bindEventListeners();
+    this.emitPostInit();
+  }
+
+  updated(changed) {
+    if (!this.bookreader) {
+      return;
+    }
+    const isFirstSideMenuUpdate = changed.has('sideMenuOpen') && (changed.get('sideMenuOpen') === undefined);
+    if (!isFirstSideMenuUpdate && changed.has('sideMenuOpen')) {
+      // realign image
+      this.bookreader.resize();
+      const curIndex = this.bookreader.currentIndex();
+      this.bookreader.jumpToIndex(curIndex);
+    }
+  }
+
+  /**
+   * Global event emitter for when Book Navigator loads
+   */
+  emitPostInit() {
+    // emit global event when book nav has loaded with current bookreader selector
+    this.dispatchEvent(new CustomEvent(`BrBookNav:${events.PostInit}`, {
+      detail: { brSelector: this.bookreader?.el },
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   /**
@@ -111,7 +137,7 @@ export class BookNavigator extends LitElement {
 
   /** gets element that houses the bookreader in light dom */
   get mainBRContainer() {
-    return document.querySelector(this.mainBRSelector);
+    return document.querySelector(this.bookreader.el);
   }
 
   get bookmarksOptions() {
@@ -232,11 +258,12 @@ export class BookNavigator extends LitElement {
       this.bookreader = e.detail.props;
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
+      this.fullscreenMgr = new BRFullscreenMgr(this.bookreader.el);
+
       this.initializeBookSubmenus();
-      this.mainBRSelector = this.br?.el || '#BookReader';
       setTimeout(() => this.bookreader.resize(), 0);
-      const brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
-      brResizeObserver.observe(this.mainBRContainer);
+      this.brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
+      this.brResizeObserver.observe(this.mainBRContainer);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;

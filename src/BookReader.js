@@ -1160,9 +1160,9 @@ BookReader.prototype.exitFullScreen = function() {
   this.isFullscreenActive = false;
   this.updateBrClasses();
 
-  this.resize();
-  this.refs.$brContainer.animate({opacity: 1}, 400, 'linear');
-
+  this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', () => {
+    this.resize();
+  });
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   this.trigger(BookReader.eventNames.fullscreenToggled);
 };
