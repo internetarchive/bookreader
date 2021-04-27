@@ -91,6 +91,7 @@ export class BookReader extends LitElement {
         --menuWidth: 320px;
         --menuSliderBg: var(--secondaryBGColor);
         --activeButtonBg: var(--tertiaryBGColor);
+        --subpanelRightBorderColor: var(--secondaryCTABorder);
         --animationTiming: 100ms;
         --iconFillColor: var(--primaryTextColor);
         --iconStrokeColor: var(--primaryTextColor);

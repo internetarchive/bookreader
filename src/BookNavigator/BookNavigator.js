@@ -64,8 +64,12 @@ export class BookNavigator extends LitElement {
   }
 
   updated(changed) {
-    if (changed.has('sideMenuOpen')) {
-      setTimeout(() => this.bookreader.resize(), 150);
+    const isFirstSideMenuUpdate = changed.has('sideMenuOpen') && (changed.get('sideMenuOpen') === undefined);
+    if (!isFirstSideMenuUpdate && changed.has('sideMenuOpen')) {
+      // realign image
+      this.bookreader.resize();
+      const curIndex = this.bookreader.currentIndex();
+      this.bookreader.jumpToIndex(curIndex);
     }
   }
 
