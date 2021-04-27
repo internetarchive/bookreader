@@ -1,3 +1,11 @@
+# 5.0.0-2
+- Dev: update testing dependencies @cdrini
+- Dev: update dev-flow dependencies @cdrini
+- Dev: reorganize core BR files @cdrini
+- Dev: update build files @cdrini
+- Fix: update needed imports for older iOS versions @cdrini
+- Fix: `<ia-bookreader>` does not use full browser width to fit into container @iisa
+- Fix: updates to `<book-navigator>` to upgrade archive.org's liner notes display to v5 @iisa
 # 5.0.0-1
 - Actually delete the files mentioned in previous release @cdrini
 - Dev: Organize BookNavigator files @iisa
