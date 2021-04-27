@@ -52,7 +52,6 @@ export default class BRFullscreenMgr {
     window.scrollTo(this.savedScrollX, this.savedScrollY);
     this.savedScrollX = 0;
     this.savedScrollY = 0;
-    this.bookreader.resize();
   }
 
   /**
