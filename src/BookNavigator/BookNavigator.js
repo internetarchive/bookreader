@@ -52,7 +52,7 @@ export class BookNavigator extends LitElement {
     this.signedIn = false;
 
     // Untracked properties
-    this.fullscreenMgr = new BRFullscreenMgr(this.bookreader?.el);
+    this.fullscreenMgr = null;
     this.model = new Book();
     this.shortcutOrder = ['volumes', 'search', 'bookmarks'];
   }
@@ -64,6 +64,9 @@ export class BookNavigator extends LitElement {
   }
 
   updated(changed) {
+    if (!this.bookreader) {
+      return;
+    }
     const isFirstSideMenuUpdate = changed.has('sideMenuOpen') && (changed.get('sideMenuOpen') === undefined);
     if (!isFirstSideMenuUpdate && changed.has('sideMenuOpen')) {
       // realign image
@@ -249,6 +252,8 @@ export class BookNavigator extends LitElement {
       this.bookreader = e.detail.props;
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
+      this.fullscreenMgr = new BRFullscreenMgr(this.bookreader.el);
+
       this.initializeBookSubmenus();
       setTimeout(() => this.bookreader.resize(), 0);
       const brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
