@@ -104,11 +104,13 @@ describe('BookReader.prototype.exitFullScreen', () => {
     br.updateBrClasses = jest.fn();
     br.trigger = jest.fn();
     br.resize = jest.fn();
+    const animateMock = (options, speed, style, callback) => {
+      callback();
+    };
     br.refs.$brContainer = {
       css: jest.fn(),
-      animate: jest.fn(),
+      animate: animateMock,
     };
-
     br.exitFullScreen();
     expect(br.switchMode).toHaveBeenCalledTimes(1);
     expect(br.updateBrClasses).toHaveBeenCalledTimes(1);
