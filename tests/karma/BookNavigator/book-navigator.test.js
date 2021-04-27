@@ -1,17 +1,13 @@
 import {
   html,
   elementUpdated,
-  fixture,
   fixtureCleanup,
   fixtureSync,
   expect,
-  oneEvent,
 } from '@open-wc/testing';
 import sinon from 'sinon';
 
-// import '../../../src/BookReader.js';
-import { BookNavigator } from '../../../src/BookNavigator/BookNavigator.js';
-// import BookReader from '../../../src/BookReader.js';
+import '../../../src/BookNavigator/BookNavigator.js';
 
 const container = () => {
   const item = {};
