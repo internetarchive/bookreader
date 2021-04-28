@@ -23,7 +23,7 @@
         font-family: Georgia, serif;
     }
 
-    a rect {
+    a rect, rect.clickable {
         fill: hsla(210, 74%, 62%, 0.2);
         stroke: hsla(210, 74%, 62%, 0.8);
         stroke-width: 6px;
