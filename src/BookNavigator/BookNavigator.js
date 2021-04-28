@@ -125,7 +125,7 @@ export class BookNavigator extends LitElement {
         bookreader: this.bookreader,
       }),
       share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType),
-      bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader, this.signedIn)
+      bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader)
     };
 
     this.addMenuShortcut('search'); /* start with search as a shortcut */
@@ -139,6 +139,9 @@ export class BookNavigator extends LitElement {
 
   get bookmarksOptions() {
     return {
+      isSignedIn: this.signedIn,
+      displayMode: this.signedIn ? 'bookmarks' : 'login',
+      loginUrl: `${this.baseHost}/account/login`,
       showItemNavigatorModal: this.showItemNavigatorModal.bind(this),
       closeItemNavigatorModal: this.closeItemNavigatorModal.bind(this),
       onBookmarksChanged: (bookmarks) => {

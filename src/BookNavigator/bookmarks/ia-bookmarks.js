@@ -56,9 +56,8 @@ class IABookmarks extends LitElement {
       activeBookmarkID: { type: String },
       bookmarks: { type: Array },
       bookreader: { type: Object },
+      bookmarkOptions: { type: Object },
       editedBookmark: { type: Object },
-      isSignedIn: { type: Boolean },
-      loginUrl: { type: String }
     };
   }
 
@@ -77,10 +76,6 @@ class IABookmarks extends LitElement {
       .edit ia-bookmarks-list {
         display: none;
       }
-      
-      a {
-        text-decoration:none;
-      }
     `;
 
     return [buttonStyles, mainCss];
@@ -95,6 +90,7 @@ class IABookmarks extends LitElement {
     this.bookmarks = [];
     this.bookreader = {};
     this.editedBookmark = {};
+    this.bookmarkOptions = {};
 
     this.bookmarkColors = [{
       id: 0,
@@ -110,18 +106,14 @@ class IABookmarks extends LitElement {
     // eslint-disable-next-line
     this.defaultColor = this.bookmarkColors[0];
     this.api = api;
-
-    // add login page url here
-    this.loginUrl = "https://archive.org/login"
   }
 
   updated(changed) {
     this.emitBookmarksChanged();
   }
 
-  setup(signedIn) {
-    this.isSignedIn = signedIn
-    if (signedIn) {
+  setup() {
+    if (this.bookmarkOptions.isSignedIn) {
       this.api.identifier = this.bookreader.bookId;
       this.fetchBookmarks().then(() => this.initializeBookmarks());
     }
@@ -435,7 +427,9 @@ class IABookmarks extends LitElement {
    * Redirect to login URL page
    */
   handleLogin() {
-    location.replace('https://archive.org/login');
+    const referrerStr = `referrer=${encodeURIComponent(location.href)}`
+    const url = `${this.bookmarkOptions.loginUrl}?${referrerStr}`
+    location.replace(url);
   }
 
   /**
@@ -486,10 +480,9 @@ class IABookmarks extends LitElement {
       <p>A free account is required to save and access bookmarks.</p>
       <button class="ia-button primary" @click=${this.handleLogin}>Login</button>
     `
-
     return html`
       <section class="bookmarks">
-        ${this.isSignedIn ? bookmarkSignedInLayout : bookmarkLoginLayout }        
+        ${this.bookmarkOptions.displayMode === 'login' ? bookmarkLoginLayout : bookmarkSignedInLayout }        
       </section>
     `;
   }
