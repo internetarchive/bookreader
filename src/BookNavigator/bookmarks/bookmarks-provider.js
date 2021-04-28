@@ -16,6 +16,12 @@ export default class BookmarksProvider {
     this.component = document.createElement('ia-bookmarks');
     this.component.bookreader = bookreader;
     this.component.bookmarkOptions = Object.assign(this, options);
+
+    // add bookmark options
+    this.component.bookmarkOptions.handleLogin = () => {
+      location.replace(options.loginUrl);
+    }
+
     this.bindEvents();
 
     this.icon = html`<icon-bookmark state="hollow" style="--iconWidth: 16px; --iconHeight: 24px;"></icon-bookmark>`;

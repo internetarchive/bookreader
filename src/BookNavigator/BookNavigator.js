@@ -138,10 +138,10 @@ export class BookNavigator extends LitElement {
   }
 
   get bookmarksOptions() {
+    const referrerStr = `referer=${encodeURIComponent(location.href)}`
     return {
-      isSignedIn: this.signedIn,
+      loginUrl: `${this.baseHost}/account/login?${referrerStr}`,
       displayMode: this.signedIn ? 'bookmarks' : 'login',
-      loginUrl: `${this.baseHost}/account/login`,
       showItemNavigatorModal: this.showItemNavigatorModal.bind(this),
       closeItemNavigatorModal: this.closeItemNavigatorModal.bind(this),
       onBookmarksChanged: (bookmarks) => {

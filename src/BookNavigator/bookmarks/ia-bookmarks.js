@@ -57,6 +57,7 @@ class IABookmarks extends LitElement {
       bookmarks: { type: Array },
       bookreader: { type: Object },
       bookmarkOptions: { type: Object },
+      displayMode: { type: String },
       editedBookmark: { type: Object },
     };
   }
@@ -91,6 +92,7 @@ class IABookmarks extends LitElement {
     this.bookreader = {};
     this.editedBookmark = {};
     this.bookmarkOptions = {};
+    this.displayMode = ''
 
     this.bookmarkColors = [{
       id: 0,
@@ -113,13 +115,14 @@ class IABookmarks extends LitElement {
   }
 
   setup() {
-    if (this.bookmarkOptions.isSignedIn) {
-      this.api.identifier = this.bookreader.bookId;
-      this.fetchBookmarks().then(() => this.initializeBookmarks());
-    }
+    this.api.identifier = this.bookreader.bookId;
+    this.fetchBookmarks()
+      .then(() => this.initializeBookmarks())
+      .catch((err) => this.displayMode = 'login');
   }
 
   initializeBookmarks() {
+    this.displayMode = 'bookmarks';
     ['3PageViewSelected'].forEach((event) => {
       window.addEventListener(`BookReader:${event}`, (e) => {
         setTimeout(() => {
@@ -424,15 +427,6 @@ class IABookmarks extends LitElement {
   }
 
   /**
-   * Redirect to login URL page
-   */
-  handleLogin() {
-    const referrerStr = `referer=${encodeURIComponent(location.href)}`
-    const url = `${this.bookmarkOptions.loginUrl}?${referrerStr}`
-    location.replace(url);
-  }
-
-  /**
    * Tells us if we should allow user to add bookmark via menu panel
    * returns { Boolean }
    */
@@ -478,11 +472,11 @@ class IABookmarks extends LitElement {
 
     const bookmarkLoginLayout = html`
       <p>A free account is required to save and access bookmarks.</p>
-      <button class="ia-button primary" @click=${this.handleLogin}>Login</button>
+      <button class="ia-button primary" @click=${this.bookmarkOptions.handleLogin}>Login</button>
     `
     return html`
       <section class="bookmarks">
-        ${this.bookmarkOptions.displayMode === 'login' ? bookmarkLoginLayout : bookmarkSignedInLayout }        
+        ${this.displayMode === 'login' ? bookmarkLoginLayout : bookmarkSignedInLayout }        
       </section>
     `;
   }
