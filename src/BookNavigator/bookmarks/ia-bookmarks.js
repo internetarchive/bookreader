@@ -427,7 +427,7 @@ class IABookmarks extends LitElement {
    * Redirect to login URL page
    */
   handleLogin() {
-    const referrerStr = `referrer=${encodeURIComponent(location.href)}`
+    const referrerStr = `referer=${encodeURIComponent(location.href)}`
     const url = `${this.bookmarkOptions.loginUrl}?${referrerStr}`
     location.replace(url);
   }
