@@ -4,5 +4,3 @@ node_modules/
 coverage*/
 
 .vscode
-
-BookReader/bookreader-component-bundle*
