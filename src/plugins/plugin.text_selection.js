@@ -459,11 +459,12 @@ export class TextSelectionPlugin {
           for (const {node, range} of index) {
             if (start >= range[0] && start <= range[1]) {
               started = true;
-              nodes.push(node);
             }
-            if (started && end >= range[0] && end <= range[1]) {
-              if (nodes[nodes.length - 1] != node) nodes.push(node);
-              started = false;
+            if (started) {
+              nodes.push(node);
+              if (end >= range[0] && end <= range[1]) {
+                started = false;
+              }
             }
           }
           matches.push(nodes);
