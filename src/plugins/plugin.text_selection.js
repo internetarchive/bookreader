@@ -216,18 +216,66 @@ export class TextSelectionPlugin {
     }
 
     // .clickable listener
-    rect.addEventListener("mouseenter", async ev => {
+    rect.addEventListener("click", async ev => {
       console.log('hello world');
       const data = await fetch(
         `https://www.wikidata.org/wiki/Special:EntityData/${meta.wikidata}.json`
-      ).then((res) => res.json())
+      ).then((res) => res.json());
       const popup = document.getElementById("jit-context");
-      popup.textContent = JSON.stringify(data);
+
+      popup.innerHTML = '';
+      const wpExtract = document.createElement('div');
+      wpExtract.classList.add('wikipedia-extract');
+      const imageClaim = data.entities[meta.wikidata].claims.P18;
+      if (imageClaim) {
+        const imageCommonsFilename = imageClaim[0].mainsnak.datavalue.value;
+        // Need to use JSONP for this, so can't use fetch. The API doesn't support CORS.
+        const commonsAPIResponse = await $.ajax({
+          url: 'https://commons.wikimedia.org/w/api.php?' + new URLSearchParams({
+            action: 'query',
+            format: 'json',
+            prop: 'imageinfo',
+            iiprop: 'url',
+            iilimit: '1',
+            iiurlwidth: '400',
+            titles: `File:${imageCommonsFilename}`,
+          }),
+          dataType: 'jsonp',
+          cache: true,
+        });
+        const imageUrl = commonsAPIResponse.query.pages[Object.keys(commonsAPIResponse.query.pages)[0]].imageinfo[0].thumburl;
+        wpExtract.innerHTML += `<img src="${imageUrl}">`;
+      }
+
+      const USER_LANG = 'en';
+      const wpTitle = data.entities[meta.wikidata].sitelinks[`${USER_LANG}wiki`].title;
+      const wpAPIResponse = await $.ajax({
+        url: `https://${USER_LANG}.wikipedia.org/w/api.php?` + new URLSearchParams({
+          format: 'json',
+          action: 'query',
+          prop: 'extracts',
+          titles: wpTitle,
+        }),
+        dataType: 'jsonp',
+        cache: true,
+      });
+      const htmlExtract = wpAPIResponse.query.pages[Object.keys(wpAPIResponse.query.pages)[0]].extract;
+      const extractDiv = document.createElement('div');
+      extractDiv.classList.add('extract');
+      const html = new DOMParser().parseFromString(htmlExtract, 'text/html');
+      extractDiv.appendChild(html.querySelector(`p:not(.mw-empty-elt)`));
+      wpExtract.append(extractDiv);
+
+      const wpLink = document.createElement('a');
+      wpLink.href = `https://${USER_LANG}.wikipedia.org/wiki/${wpTitle}`;
+      wpLink.textContent = 'View on Wikipedia »';
+      wpLink.target = '_blank';
+      wpExtract.append(wpLink);
+
+
+      popup.append(wpExtract);
       popup.style.display = "block";
-    })
-    rect.addEventListener("mouseout", ev => {
-      console.log('goodbye world');
-    })
+    });
 
     // order of layers (to enable hover)
     const {top} = this.getWordDimensions(word);
@@ -309,27 +357,34 @@ export class TextSelectionPlugin {
       svg.appendChild(paragSvg);
     });
 
-    const entities = [{
-      re: /benjamin franklin/ig,
-      type: "author",
-      wikidata: "Q34969",
-    }, {
-      re: /socrates/ig,
-      type: "author",
-      wikidata: "Q913",
-
-    }, {
-      re: /plutarch/ig,
-      type: "author",
-      wikidata: "Q41523",
-    }, {
-      re: /parallel lives/ig,
-      type: "book",
-      wikidata: "Q842337",
-    }, {
-      re: /lololol/ig,
-      type: "url",
-    }];
+    // Tabular data copy/pasteed from https://docs.google.com/spreadsheets/d/1SeAttSDh3SoXW9dZLi9OruWavV3m4GIVfEiwxGbvIKg/edit#gid=0
+    const ENTITIES = `
+      Socrates	Q913	Person
+      Aristophanes	Q43353	Person
+      Anytus	Q2082582	Person
+      Gorgias the Leontine	Q179785	Person
+      Prodicus the Cean	Q297402	Person
+      Gorgias	Q179785	Person
+      Prodicus	Q297402	Person
+      Hippias the Elean	Q210573	Person
+      Callias	Q2436238	Person
+      Hippias	Q210573	Person
+      Plato	Q859	Person
+      Melitus	Q1175697	Person
+      Anaxagoras	Q83041	Person
+      Clazomene	Q3134255	Person
+      Clazomenae	Q3134255	Person
+      Hermotimus	Q3134255	Person
+      Meletus	Q1175697	Person
+    `
+      .trim()
+      .split('\n')
+      .map(row => row.trim().split('\t'))
+      .map(([name, wikidata, type]) => ({
+        re: new RegExp(name, 'ig'),
+        type,
+        wikidata,
+      }));
 
     function indexXml(node) {
       function main(node, index, str) {
@@ -379,7 +434,7 @@ export class TextSelectionPlugin {
     }
 
     const {index, str} = indexXml(XMLpage);
-    for (const entity of entities) {
+    for (const entity of ENTITIES) {
       const matches = findMatchingWords(str, index, entity.re);
       if (matches.length) {
         for (const match of matches) {
@@ -424,6 +479,11 @@ export class BookreaderWithTextSelection extends BookReader {
     const popup = document.createElement("div");
     popup.setAttribute("id", "jit-context");
     document.getElementById('BookReader').appendChild(popup);
+
+    document.body.addEventListener('click', ev => {
+      if (!$(ev.target).parents('#jit-context').length)
+        popup.style.display = 'none';
+    });
   }
 
   /**

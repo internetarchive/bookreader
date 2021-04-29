@@ -57,18 +57,59 @@
     user-select: none;
 }
 
+@keyframes slide-up {
+    from {
+        transform: translateY(3px);
+        opacity: 0;
+    }
+    to {}
+}
+
 #jit-context {
-  background: rgb(0,0,0);
-  background: linear-gradient(0deg, rgba(225,225,225,1) 5%, rgba(255,255,255,1) 10%);
-  display:block;
-  width:350px;
-  height:400px;
-  position:fixed;
-  background-color:#fff;
-  padding:10px;
-  z-index:999;
-  bottom: 40px;
-  right: 20px;
-  border-radius: 5px;
-  color: #000;
+    display: none;
+    width: 370px;
+    height: 150px;
+    position: fixed;
+    background-color: #eee;
+    z-index: 999;
+    bottom: 40px;
+    right: 20px;
+    border-radius: 3px;
+    color: #000;
+    overflow: hidden;
+    overflow: clip;
+    border: 1px solid rgba(255,255,255,0.1);
+
+    animation: slide-up 0.2s;
+
+    .wikipedia-extract {
+        height: 150px;
+        overflow: hidden;
+        overflow: clip;
+
+        display: flex;
+        & > img {
+            width: 150px;
+            object-fit: cover;
+        }
+        & > .extract {
+            padding: 0 8px;
+            margin-top: -4px;
+            height: inherit;
+        }
+
+        & > a {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            padding: 10px;
+            background: #eee;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            transition: background-color 0.2s;
+            &:hover {
+                background: white;
+            }
+        }
+    }
 }
