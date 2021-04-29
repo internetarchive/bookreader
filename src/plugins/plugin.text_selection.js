@@ -66,6 +66,8 @@ export class TextSelectionPlugin {
      * unusable. For now don't render text layer for pages with too many words.
      */
     this.maxWordRendered = 2500;
+
+    this.entities = this.loadEntities();
   }
 
   init() {
@@ -84,6 +86,28 @@ export class TextSelectionPlugin {
         return undefined;
       }
     });
+  }
+
+  async loadEntities() {
+    const resp = await $.ajax({
+      url: 'https://spreadsheets.google.com/feeds/cells/1SeAttSDh3SoXW9dZLi9OruWavV3m4GIVfEiwxGbvIKg/od6/public/values?alt=json-in-script',
+      dataType: 'jsonp',
+      cache: true,
+    })
+    const rows = resp.feed.entry.reduce((acc, cur) => {
+      const isNewRow = cur.gs$cell.row != acc.length;
+      if (isNewRow) {
+        acc.push([]);
+      }
+      acc[acc.length - 1].push(cur.gs$cell.$t);
+      return acc;
+    }, []);
+    return rows.slice(1)
+      .map(([name, wikidata, type]) => ({
+        re: new RegExp(name, 'ig'),
+        type,
+        wikidata,
+      }));
   }
 
   /**
@@ -398,94 +422,68 @@ export class TextSelectionPlugin {
       svg.appendChild(paragSvg);
     });
 
-    // Tabular data copy/pasteed from https://docs.google.com/spreadsheets/d/1SeAttSDh3SoXW9dZLi9OruWavV3m4GIVfEiwxGbvIKg/edit#gid=0
-    const ENTITIES = `
-      Socrates	Q913	Person
-      Aristophanes	Q43353	Person
-      Anytus	Q2082582	Person
-      Gorgias the Leontine	Q179785	Person
-      Prodicus the Cean	Q297402	Person
-      Gorgias	Q179785	Person
-      Prodicus	Q297402	Person
-      Hippias the Elean	Q210573	Person
-      Callias	Q2436238	Person
-      Hippias	Q210573	Person
-      Plato	Q859	Person
-      Melitus	Q1175697	Person
-      Anaxagoras	Q83041	Person
-      Clazomene	Q3134255	Person
-      Clazomenae	Q3134255	Person
-      Hermotimus	Q3134255	Person
-      Meletus	Q1175697	Person
-    `
-      .trim()
-      .split('\n')
-      .map(row => row.trim().split('\t'))
-      .map(([name, wikidata, type]) => ({
-        re: new RegExp(name, 'ig'),
-        type,
-        wikidata,
-      }));
+    this.entities.then(entities => {
 
-    function indexXml(node) {
-      function main(node, index, str) {
-        if (node.children.length == 0) {
-          const word = str ? ' ' + node.textContent : node.textContent;
-          const indexElement = { range: [str.length, str.length + word.length], node };
-          index.push(indexElement);
-          return str + word;
-        } else {
-          let aggStr = str;
-          for (const el of node.children) {
-            aggStr = main(el, index, aggStr);
-          }
-          return aggStr;
-        }
-      }
-      const index = [];
-      const str = main(node, index, '');
-      return {index, str};
-    }
-
-    function findMatchingWords(str, index, re) {
-      const matches = [];
-      for (const match of str.matchAll(re)) {
-        const start = match.index;
-        const end = match.index + match[0].length;
-        // start=10, end=27
-        // {"range":[0,5],"node":{}},
-        // {"range":[5,9],"node":{}},
-        // {"range":[9,18],"node":{}},
-        // {"range":[18,27],"node":{}}
-        const nodes = [];
-        let started = false;
-        for (const {node, range} of index) {
-          if (start >= range[0] && start <= range[1]) {
-            started = true;
-            nodes.push(node);
-          }
-          if (started && end >= range[0] && end <= range[1]) {
-            if (nodes[nodes.length - 1] != node) nodes.push(node);
-            started = false;
+      function indexXml(node) {
+        function main(node, index, str) {
+          if (node.children.length == 0) {
+            const word = str ? ' ' + node.textContent : node.textContent;
+            const indexElement = { range: [str.length, str.length + word.length], node };
+            index.push(indexElement);
+            return str + word;
+          } else {
+            let aggStr = str;
+            for (const el of node.children) {
+              aggStr = main(el, index, aggStr);
+            }
+            return aggStr;
           }
         }
-        matches.push(nodes);
+        const index = [];
+        const str = main(node, index, '');
+        return {index, str};
       }
-      return matches;
-    }
 
-    const {index, str} = indexXml(XMLpage);
-    for (const entity of ENTITIES) {
-      const matches = findMatchingWords(str, index, entity.re);
-      if (matches.length) {
-        for (const match of matches) {
-          for (const node of match) {
-            const a = this.createWordElement('a', node);
-            this.highlightRect(svg, node, a, entity);
+      function findMatchingWords(str, index, re) {
+        const matches = [];
+        for (const match of str.matchAll(re)) {
+          const start = match.index;
+          const end = match.index + match[0].length;
+          // start=10, end=27
+          // {"range":[0,5],"node":{}},
+          // {"range":[5,9],"node":{}},
+          // {"range":[9,18],"node":{}},
+          // {"range":[18,27],"node":{}}
+          const nodes = [];
+          let started = false;
+          for (const {node, range} of index) {
+            if (start >= range[0] && start <= range[1]) {
+              started = true;
+              nodes.push(node);
+            }
+            if (started && end >= range[0] && end <= range[1]) {
+              if (nodes[nodes.length - 1] != node) nodes.push(node);
+              started = false;
+            }
+          }
+          matches.push(nodes);
+        }
+        return matches;
+      }
+
+      const {index, str} = indexXml(XMLpage);
+      for (const entity of entities) {
+        const matches = findMatchingWords(str, index, entity.re);
+        if (matches.length) {
+          for (const match of matches) {
+            for (const node of match) {
+              const a = this.createWordElement('a', node);
+              this.highlightRect(svg, node, a, entity);
+            }
           }
         }
       }
-    }
+    });
 
     // Checks for entities
     for (const word of Array.from($(XMLpage).find("WORD"))) {
