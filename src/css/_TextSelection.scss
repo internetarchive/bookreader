@@ -131,6 +131,10 @@
                 text-align: center;
                 margin-left: 2px;
             }
+            img {
+                object-fit: contain;
+                object-position: top;
+            }
             .ol-fb-cover {
                 background: #AAA;
                 border-radius: 2px;
