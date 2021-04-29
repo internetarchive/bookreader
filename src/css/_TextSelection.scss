@@ -1,7 +1,7 @@
 .textSelectionSVG {
     // Make it so right-clicking on "blank" part of svg sends events to the image (for saving)
     pointer-events: none;
-    a, .BRwordElement { pointer-events: all; }
+    a, .BRwordElement, rect.clickable { pointer-events: all; }
     &.selectingSVG {
         pointer-events: auto; 
         cursor: text;
@@ -55,4 +55,20 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
+}
+
+#jit-context {
+  background: rgb(0,0,0);
+  background: linear-gradient(0deg, rgba(225,225,225,1) 5%, rgba(255,255,255,1) 10%);
+  display:block;
+  width:350px;
+  height:400px;
+  position:fixed;
+  background-color:#fff;
+  padding:10px;
+  z-index:999;
+  bottom: 40px;
+  right: 20px;
+  border-radius: 5px;
+  color: #000;
 }
