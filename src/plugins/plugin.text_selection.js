@@ -104,7 +104,7 @@ export class TextSelectionPlugin {
     }, []);
     return rows.slice(1)
       .map(([name, wikidata, type]) => ({
-        re: new RegExp(name, 'ig'),
+        re: new RegExp(`\\b${name}\\b`, 'ig'),
         type,
         wikidata,
       }));
