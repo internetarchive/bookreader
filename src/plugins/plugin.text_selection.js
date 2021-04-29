@@ -223,9 +223,13 @@ export class TextSelectionPlugin {
       ).then((res) => res.json());
       const popup = document.getElementById("jit-context");
 
+      popup.style.display = "block";
       popup.innerHTML = '';
-      const wpExtract = document.createElement('div');
+      const wpExtract = document.createElement('section');
       wpExtract.classList.add('wikipedia-extract');
+      popup.append(wpExtract);
+
+      // WP Image
       const imageClaim = data.entities[meta.wikidata].claims.P18;
       if (imageClaim) {
         const imageCommonsFilename = imageClaim[0].mainsnak.datavalue.value;
@@ -249,6 +253,15 @@ export class TextSelectionPlugin {
 
       const USER_LANG = 'en';
       const wpTitle = data.entities[meta.wikidata].sitelinks[`${USER_LANG}wiki`].title;
+
+      // WP Link
+      const wpLink = document.createElement('a');
+      wpLink.href = `https://${USER_LANG}.wikipedia.org/wiki/${wpTitle}`;
+      wpLink.textContent = 'View on Wikipedia »';
+      wpLink.target = '_blank';
+      wpExtract.append(wpLink);
+
+      // WP Description
       const wpAPIResponse = await $.ajax({
         url: `https://${USER_LANG}.wikipedia.org/w/api.php?` + new URLSearchParams({
           format: 'json',
@@ -266,15 +279,43 @@ export class TextSelectionPlugin {
       extractDiv.appendChild(html.querySelector(`p:not(.mw-empty-elt)`));
       wpExtract.append(extractDiv);
 
-      const wpLink = document.createElement('a');
-      wpLink.href = `https://${USER_LANG}.wikipedia.org/wiki/${wpTitle}`;
-      wpLink.textContent = 'View on Wikipedia »';
-      wpLink.target = '_blank';
-      wpExtract.append(wpLink);
+      // OL More books by...
+      const olidClaim = data.entities[meta.wikidata].claims.P648;
+      if (olidClaim) {
+        const olid = olidClaim[0].mainsnak.datavalue.value;
+        const olMoreBooks = document.createElement('section');
+        olMoreBooks.classList.add('openlibrary-more-books');
+        const olLink = document.createElement('a');
+        olLink.href = `https://openlibrary.org/authors/${olid}`;
+        olLink.textContent = 'View on Open Library »';
+        olLink.target = '_blank';
+        olMoreBooks.append(olLink);
 
+        const header = document.createElement('h3');
+        header.textContent = `Books by this author`;
+        olMoreBooks.append(header);
 
-      popup.append(wpExtract);
-      popup.style.display = "block";
+        const carousel = document.createElement('div');
+        carousel.classList.add('ol-books-carousel');
+        const olResponse = await fetch(`https://openlibrary.org/authors/${olid}/works.json`).then(r => r.json());
+        const workEls = olResponse.entries.map(work => {
+          const el = $(`<a href="https://openlibrary.org${work.key}" target="_blank" />`)[0];
+          const coverId = work.covers?.[0];
+          if (coverId) {
+            $(el).append(`<img src="https://covers.openlibrary.org/b/id/${coverId}-M.jpg">`);
+          } else {
+            const cover = $(`<div class="ol-fb-cover" />`)[0];
+            cover.textContent = work.title;
+            el.appendChild(cover);
+          }
+          el.title = work.title;
+          return el;
+        });
+        $(carousel).append(workEls);
+        olMoreBooks.append(carousel);
+
+        popup.append(olMoreBooks);
+      }
     });
 
     // order of layers (to enable hover)
