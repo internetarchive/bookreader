@@ -205,37 +205,36 @@ export class TextSelectionPlugin {
     el.setAttribute("textLength", (right - left).toString());
     return el;
   }
-  
-  highlightRect(svg, word, e=null, meta=null) {
-      const rect = this.createWordElement('rect', word);
-      rect.setAttribute('rx', '8');
-      rect.setAttribute('ry', '8');
-      rect.classList.add("clickable");
-      if (meta) {
-        rect.setAttribute('title', meta.wikidata);
-      }
 
-      // .clickable listener
-      rect.addEventListener("mouseenter", async ev => {
-        console.log('hello world');
-        const targetElement = event.target || event.srcElement;
-	const data = await fetch(
-	  `https://www.wikidata.org/wiki/Special:EntityData/${meta.wikidata}.json`
-	).then((res) => res.json())
-	const popup = document.getElementById("jit-context");
-	popup.textContent = JSON.stringify(data);
-	popup.style.display = "block";
-      })
-      rect.addEventListener("mouseout", ev => {
-        console.log('goodbye world');
-      })
-      // order of layers (to enable hover)
-      
-      const {top} = this.getWordDimensions(word);
-      rect.setAttribute('y', top);
-      e ? e.appendChild(rect) && svg.appendChild(e) : svg.appendChild(rect);
+  highlightRect(svg, word, e = null, meta = null) {
+    const rect = this.createWordElement('rect', word);
+    rect.setAttribute('rx', '8');
+    rect.setAttribute('ry', '8');
+    rect.classList.add("clickable");
+    if (meta) {
+      rect.setAttribute('title', meta.wikidata);
+    }
+
+    // .clickable listener
+    rect.addEventListener("mouseenter", async ev => {
+      console.log('hello world');
+      const data = await fetch(
+        `https://www.wikidata.org/wiki/Special:EntityData/${meta.wikidata}.json`
+      ).then((res) => res.json())
+      const popup = document.getElementById("jit-context");
+      popup.textContent = JSON.stringify(data);
+      popup.style.display = "block";
+    })
+    rect.addEventListener("mouseout", ev => {
+      console.log('goodbye world');
+    })
+
+    // order of layers (to enable hover)
+    const {top} = this.getWordDimensions(word);
+    rect.setAttribute('y', top);
+    e ? e.appendChild(rect) && svg.appendChild(e) : svg.appendChild(rect);
   }
-    
+
   /**
    * @param {PageContainer} pageContainer
    */
@@ -309,89 +308,89 @@ export class TextSelectionPlugin {
       paragSvg.setAttribute("font-size", paragWordHeight.toString());
       svg.appendChild(paragSvg);
     });
-      
-      const entities = [{
-          re: /benjamin franklin/ig,
-          type: "author",
-          wikidata: "Q34969",
-      }, {
-          re: /socrates/ig,
-          type: "author",
-          wikidata: "Q913",
 
-      }, {
-          re: /plutarch/ig,
-          type: "author",
-          wikidata: "Q41523",
-      }, {
-          re: /parallel lives/ig,
-          type: "book",
-          wikidata: "Q842337",
-      }, {
-          re: /lololol/ig,
-          type: "url",
-      }];
+    const entities = [{
+      re: /benjamin franklin/ig,
+      type: "author",
+      wikidata: "Q34969",
+    }, {
+      re: /socrates/ig,
+      type: "author",
+      wikidata: "Q913",
+
+    }, {
+      re: /plutarch/ig,
+      type: "author",
+      wikidata: "Q41523",
+    }, {
+      re: /parallel lives/ig,
+      type: "book",
+      wikidata: "Q842337",
+    }, {
+      re: /lololol/ig,
+      type: "url",
+    }];
 
     function indexXml(node) {
-          function main(node, index, str) {
-              if (node.children.length == 0) {
-                  const word = str ? ' ' + node.textContent : node.textContent;
-                  const indexElement = { range: [str.length, str.length + word.length], node };
-                  index.push(indexElement);
-                  return str + word;
-              } else {
-                  let aggStr = str;
-                  for (const el of node.children) {
-                      aggStr = main(el, index, aggStr);
-                  }
-                  return aggStr;
-              }
+      function main(node, index, str) {
+        if (node.children.length == 0) {
+          const word = str ? ' ' + node.textContent : node.textContent;
+          const indexElement = { range: [str.length, str.length + word.length], node };
+          index.push(indexElement);
+          return str + word;
+        } else {
+          let aggStr = str;
+          for (const el of node.children) {
+            aggStr = main(el, index, aggStr);
           }
-          const index = [];
-          const str = main(node, index, '');
-          return {index, str};
+          return aggStr;
+        }
+      }
+      const index = [];
+      const str = main(node, index, '');
+      return {index, str};
     }
 
     function findMatchingWords(str, index, re) {
-          let matches = [];
-          for(const match of str.matchAll(re)) {
-              const start = match.index;
-              const end = match.index + match[0].length;
-              // start=10, end=27
-              // {"range":[0,5],"node":{}},
-              // {"range":[5,9],"node":{}},
-              // {"range":[9,18],"node":{}},
-              // {"range":[18,27],"node":{}}
-              const nodes = [];
-              let started = false;
-              for (const {node, range} of index) {
-                  if (start >= range[0] && start <= range[1]) {
-                      started = true;
-                      nodes.push(node);
-                  }
-                  if (started && end >= range[0] && end <= range[1]) {
-                      if (nodes[nodes.length - 1] != node) nodes.push(node);
-                      started = false;
-                  }
-              }
-              matches.push(nodes);
+      const matches = [];
+      for (const match of str.matchAll(re)) {
+        const start = match.index;
+        const end = match.index + match[0].length;
+        // start=10, end=27
+        // {"range":[0,5],"node":{}},
+        // {"range":[5,9],"node":{}},
+        // {"range":[9,18],"node":{}},
+        // {"range":[18,27],"node":{}}
+        const nodes = [];
+        let started = false;
+        for (const {node, range} of index) {
+          if (start >= range[0] && start <= range[1]) {
+            started = true;
+            nodes.push(node);
           }
-          return matches;
+          if (started && end >= range[0] && end <= range[1]) {
+            if (nodes[nodes.length - 1] != node) nodes.push(node);
+            started = false;
+          }
+        }
+        matches.push(nodes);
+      }
+      return matches;
     }
 
-      const {index, str} = indexXml(XMLpage);
-      for (const entity of entities) {
-          const matches = findMatchingWords(str, index, entity.re);
-          if (matches.length) {
-              for (const match of matches) {
-                  for (const node of match) {
-		    const a = this.createWordElement('a', node);
-                    this.highlightRect(svg, node, a, entity);
-                  }
-              }
+    const {index, str} = indexXml(XMLpage);
+    for (const entity of entities) {
+      const matches = findMatchingWords(str, index, entity.re);
+      if (matches.length) {
+        for (const match of matches) {
+          for (const node of match) {
+            const a = this.createWordElement('a', node);
+            this.highlightRect(svg, node, a, entity);
           }
+        }
       }
-      
+    }
+
     // Checks for entities
     for (const word of Array.from($(XMLpage).find("WORD"))) {
       const contents = word.textContent.trim()
