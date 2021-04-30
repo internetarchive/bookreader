@@ -108,6 +108,7 @@
         overflow: clip;
         max-height: 150px;
         display: flex;
+
         & > img {
             width: 150px;
             object-fit: cover;
@@ -120,6 +121,14 @@
         }
         & > a {
             right: 15px;
+        }
+
+        // Make space for the button at the bottom
+        .extract::after {
+            display: block;
+            content: "";
+            width: 1px;
+            height: 30px;
         }
     }
 
