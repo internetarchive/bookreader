@@ -8,6 +8,8 @@ import {
 import sinon from 'sinon';
 
 import '../../../src/BookNavigator/BookNavigator.js';
+import BRFullscreenMgr from '../../../src/BookNavigator/br-fullscreen-mgr.js';
+import { sleep } from '../../../src/BookReader/utils.js';
 
 const container = () => {
   const item = {};
@@ -24,6 +26,13 @@ const container = () => {
   `;
 }
 
+beforeEach(() => {
+  const body = document.querySelector('body');
+  const brHook = document.createElement('div');
+  brHook.setAttribute('id', 'BookReader');
+  body.appendChild(brHook);
+});
+
 afterEach(() => {
   window.br = null;
   fixtureCleanup();
@@ -31,18 +40,55 @@ afterEach(() => {
 
 
 describe('<book-navigator>', () => {
-  it('emits a PostInit event on on first update', async () => {
-    let initEventFired = false;
-    window.addEventListener('BrBookNav:PostInit', (e) => {
-      initEventFired = true;
+  describe('first update', () => {
+    it('binds global event listeners', async () => {
+      const el = fixtureSync(container());
+      const spy = sinon.spy(el, 'bindEventListeners');
+      await elementUpdated(el);
+      expect(spy.callCount).to.equal(1);
     });
-    const el = fixtureSync(container());
-    await elementUpdated(el);
+    it('emits a BrBookNav:PostInit event', async () => {
+      let initEventFired = false;
+      window.addEventListener('BrBookNav:PostInit', (e) => {
+        initEventFired = true;
+      });
+      const el = fixtureSync(container());
+      const spy = sinon.spy(el, 'emitPostInit');
+      await elementUpdated(el);
 
-    expect(initEventFired).to.be.true;
+      expect(initEventFired).to.be.true;
+      expect(spy.callCount).to.equal(1);
+    });
   });
 
-  it('resizes bookreader to ', async () => {
+  it('handles global event: BookReader:PostInit', async () => {
+    const setTimeoutSpy = sinon.spy(window, 'setTimeout');
+    const brStub = {
+      resize: sinon.fake(),
+      currentIndex: sinon.fake(),
+      jumpToIndex: sinon.fake(),
+      el: '#BookReader'
+    };
+
+    const el = fixtureSync(container());
+    const initializeBookSubmenus = sinon.spy(el, 'initializeBookSubmenus');
+
+    await elementUpdated(el);
+    window.dispatchEvent(new CustomEvent('BookReader:PostInit', {
+      detail: { props: brStub }
+    }));
+    await elementUpdated(el);
+
+    expect(initializeBookSubmenus.callCount).to.equal(1);
+    expect(el.bookreader).to.equal(brStub); // sets bookreader
+    expect(el.bookReaderLoaded).to.be.true; // notes bookreader is loaded
+    expect(el.bookReaderCannotLoad).to.be.false;
+    expect(el.fullscreenMgr).to.an.instanceof(BRFullscreenMgr);
+    expect(el.brResizeObserver).to.an.instanceof(window.ResizeObserver);
+    expect(setTimeoutSpy.callCount).to.equal(1); // resizes at end
+  });
+
+  it('resizes bookreader when side menu toggles', async () => {
     const el = fixtureSync(container());
     const brStub = {
       resize: sinon.fake(),
@@ -52,12 +98,18 @@ describe('<book-navigator>', () => {
     el.bookreader = brStub;
     await elementUpdated(el);
 
-    expect(el.bookreader).to.equal(brStub);
-
     el.sideMenuOpen = true;
     await elementUpdated(el);
-    expect(el.sideMenuOpen).to.equal(123);
 
-    expect(el.bookreader.callCount).to.equal(1232);
+    expect(el.bookreader.resize.callCount).to.equal(1);
+    expect(el.bookreader.currentIndex.callCount).to.equal(1);
+    expect(el.bookreader.jumpToIndex.callCount).to.equal(1);
+
+    el.sideMenuOpen = false;
+    await elementUpdated(el);
+
+    expect(el.bookreader.resize.callCount).to.equal(2);
+    expect(el.bookreader.currentIndex.callCount).to.equal(2);
+    expect(el.bookreader.jumpToIndex.callCount).to.equal(2);
   });
 });
