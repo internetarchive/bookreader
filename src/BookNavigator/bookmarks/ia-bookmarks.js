@@ -1,6 +1,7 @@
 import { render, nothing } from 'lit-html';
 import { LitElement, html, css } from 'lit-element';
 import buttonStyles from '../assets/button-base.js';
+import './bookmarks-loginCTA.js';
 
 const api = {
   endpoint: '/services/bookmarks.php',
@@ -56,7 +57,7 @@ class IABookmarks extends LitElement {
       activeBookmarkID: { type: String },
       bookmarks: { type: Array },
       bookreader: { type: Object },
-      bookmarkOptions: { type: Object },
+      options: { type: Object },
       displayMode: { type: String },
       editedBookmark: { type: Object },
     };
@@ -91,8 +92,12 @@ class IABookmarks extends LitElement {
     this.bookmarks = [];
     this.bookreader = {};
     this.editedBookmark = {};
-    this.bookmarkOptions = {};
-    this.displayMode = ''
+    this.options = {};
+    /**
+     * Toggles display to either bookmarks or login cta
+     * @param {('bookmarks'|'login')} displayMode
+     */
+    this.displayMode = 'bookmarks';
 
     this.bookmarkColors = [{
       id: 0,
@@ -110,7 +115,7 @@ class IABookmarks extends LitElement {
     this.api = api;
   }
 
-  updated(changed) {
+  updated() {
     this.emitBookmarksChanged();
   }
 
@@ -443,19 +448,19 @@ class IABookmarks extends LitElement {
     return this.bookreader.mode !== this.bookreader.constModeThumb;
   }
 
-  render() {
-    const enableAddBookmark = this.shouldEnableAddBookmarkButton;
-
-    const addBookmarkButton = html`
+  get addBookmarkButton() {
+    return html`
       <button
         class="ia-button primary"
-        ?disabled=${enableAddBookmark}
+        ?disabled=${this.shouldEnableAddBookmarkButton}
         @click=${this.addBookmark}>
         Add bookmark
       </button>
     `;
+  }
 
-    const bookmarkSignedInLayout = html`
+  get bookmarksList() {
+    return html`
       <ia-bookmarks-list
         @bookmarkEdited=${this.bookmarkEdited}
         @bookmarkSelected=${this.bookmarkSelected}
@@ -467,16 +472,18 @@ class IABookmarks extends LitElement {
         .bookmarkColors=${this.bookmarkColors}
         .defaultBookmarkColor=${this.defaultColor}>
       </ia-bookmarks-list>
-      ${this.allowAddingBookmark ? addBookmarkButton : nothing}
-    `
+    `;
+  }
 
-    const bookmarkLoginLayout = html`
-      <p>A free account is required to save and access bookmarks.</p>
-      <button class="ia-button primary" @click=${this.bookmarkOptions.handleLogin}>Log in</button>
-    `
+  render() {
+    const { loginUrl } = this.options;
+    const bookmarks = html`
+      ${this.bookmarksList}
+      ${this.allowAddingBookmark ? this.addBookmarkButton : nothing}
+    `;
     return html`
       <section class="bookmarks">
-        ${this.displayMode === 'login' ? bookmarkLoginLayout : bookmarkSignedInLayout }        
+        ${this.displayMode === 'login' ? html`<bookmarks-login .url=${loginUrl}></bookmarks-login>` : bookmarks}
       </section>
     `;
   }
