@@ -113,14 +113,20 @@
             object-fit: cover;
         }
         & > .extract {
-	    overflow: auto;
+	        overflow: auto;
             padding: 0 8px;
             margin-top: -4px;
             height: inherit;
         }
+        & > a {
+            right: 15px;
+        }
     }
 
     .openlibrary-more-books {
+        & > a {
+            bottom: 15px;
+        }
         .ol-books-carousel {
 	    overflow-x: auto;
             a {
@@ -128,6 +134,7 @@
                 display: inline-flex;
                 text-decoration: none;
             }
+
             img, .ol-fb-cover {
                 width: 100px;
                 text-align: center;

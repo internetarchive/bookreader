@@ -309,12 +309,17 @@ export class TextSelectionPlugin {
         const olid = olidClaim[0].mainsnak.datavalue.value;
         const olMoreBooks = document.createElement('section');
         olMoreBooks.classList.add('openlibrary-more-books');
+        const olLink = document.createElement('a');
+        olLink.href = `https://openlibrary.org/b/${olid}`;
+        olLink.textContent = 'View on Open Library »';
+        olLink.target = '_blank';
+        olMoreBooks.append(olLink);
+
         const olTypes = {'A': 'authors', 'W': 'works', 'M': 'editions'}
         const olType = olTypes[olid[olid.length-1]];
         const olHref = `https://openlibrary.org/${olType}/${olid}`;
         const header = document.createElement('h3');
-        const olCopy = olType === 'authors'? "Books by this author" :  "Browse these editions";
-        header.innerHTML = `<a href="${olHref}" taget="_blank">${olCopy}</a>`;
+        header.textContent = olType === 'authors' ? "Books by this author" :  "Browse these editions";
         olMoreBooks.append(header);
 
         const carousel = document.createElement('div');
