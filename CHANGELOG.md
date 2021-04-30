@@ -1,3 +1,6 @@
+# 5.0.0-4
+- Dev: update bookmarks login archive_analytics @iisa @dualcnhq
+
 # 5.0.0-3
 - Fix: bookmarks panel has login CTA @dualcnhq @iisa
 
