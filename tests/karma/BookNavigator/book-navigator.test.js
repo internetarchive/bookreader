@@ -9,7 +9,6 @@ import sinon from 'sinon';
 
 import '../../../src/BookNavigator/BookNavigator.js';
 import BRFullscreenMgr from '../../../src/BookNavigator/br-fullscreen-mgr.js';
-import { sleep } from '../../../src/BookReader/utils.js';
 
 const container = () => {
   const item = {};
