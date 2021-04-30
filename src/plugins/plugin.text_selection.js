@@ -309,33 +309,33 @@ export class TextSelectionPlugin {
         const olid = olidClaim[0].mainsnak.datavalue.value;
         const olMoreBooks = document.createElement('section');
         olMoreBooks.classList.add('openlibrary-more-books');
-        const olLink = document.createElement('a');
-        olLink.href = `https://openlibrary.org/authors/${olid}`;
-        olLink.textContent = 'View on Open Library »';
-        olLink.target = '_blank';
-        olMoreBooks.append(olLink);
-
+        const olTypes = {'A': 'authors', 'W': 'works', 'M': 'editions'}
+        const olType = olTypes[olid[olid.length-1]];
+        const olHref = `https://openlibrary.org/${olType}/${olid}`;
         const header = document.createElement('h3');
-        header.textContent = `Books by this author`;
+        const olCopy = olType === 'authors'? "Books by this author" :  "Browse these editions";
+        header.innerHTML = `<a href="${olHref}" taget="_blank">${olCopy}</a>`;
         olMoreBooks.append(header);
 
         const carousel = document.createElement('div');
         carousel.classList.add('ol-books-carousel');
-        const olResponse = await fetch(`https://openlibrary.org/authors/${olid}/works.json`).then(r => r.json());
-        const workEls = olResponse.entries.map(work => {
-          const el = $(`<a href="https://openlibrary.org${work.key}" target="_blank" />`)[0];
-          const coverId = work.covers?.[0];
+        const olBooks = olType === 'works' ? `${olHref}/editions.json` : `${olHref}/works.json`;
+        console.log(olBooks);  
+        const olResponse = await fetch(olBooks).then(r => r.json());
+        const bookEls = olResponse.entries.map(book => {
+          const el = $(`<a href="https://openlibrary.org/${book.key}" target="_blank" />`)[0];
+          const coverId = book.covers?.[0];
           if (coverId) {
             $(el).append(`<img src="https://covers.openlibrary.org/b/id/${coverId}-M.jpg">`);
           } else {
             const cover = $(`<div class="ol-fb-cover" />`)[0];
-            cover.textContent = work.title;
+            cover.textContent = book.title;
             el.appendChild(cover);
           }
-          el.title = work.title;
+          el.title = book.title;
           return el;
         });
-        $(carousel).append(workEls);
+        $(carousel).append(bookEls);
         olMoreBooks.append(carousel);
 
         popup.append(olMoreBooks);

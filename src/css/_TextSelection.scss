@@ -84,7 +84,7 @@
     & > section {
         position: relative;
         min-height: 40px;
-        height: 150px;
+
         & > a {
             position: absolute;
             bottom: 0;
@@ -106,13 +106,14 @@
     .wikipedia-extract {
         overflow: hidden;
         overflow: clip;
-
+        max-height: 150px;
         display: flex;
         & > img {
             width: 150px;
             object-fit: cover;
         }
         & > .extract {
+	    overflow: auto;
             padding: 0 8px;
             margin-top: -4px;
             height: inherit;
@@ -121,6 +122,7 @@
 
     .openlibrary-more-books {
         .ol-books-carousel {
+	    overflow-x: auto;
             a {
                 color: #222;
                 display: inline-flex;
