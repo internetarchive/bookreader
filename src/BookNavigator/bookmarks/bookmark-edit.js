@@ -3,6 +3,7 @@ import { repeat } from 'lit-html/directives/repeat.js';
 import { css, html, LitElement } from 'lit-element';
 import bookmarkColorsCSS from '../assets/bookmark-colors.js';
 import buttonCSS from '../assets/button-base.js';
+
 export class IABookmarkEdit extends LitElement {
   static get properties() {
     return {

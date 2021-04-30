@@ -1,6 +1,7 @@
 import { render, nothing } from 'lit-html';
 import { LitElement, html, css } from 'lit-element';
 import buttonStyles from '../assets/button-base.js';
+import './bookmarks-loginCTA.js';
 
 const api = {
   endpoint: '/services/bookmarks.php',
@@ -56,6 +57,8 @@ class IABookmarks extends LitElement {
       activeBookmarkID: { type: String },
       bookmarks: { type: Array },
       bookreader: { type: Object },
+      options: { type: Object },
+      displayMode: { type: String },
       editedBookmark: { type: Object },
     };
   }
@@ -89,6 +92,12 @@ class IABookmarks extends LitElement {
     this.bookmarks = [];
     this.bookreader = {};
     this.editedBookmark = {};
+    this.options = {};
+    /**
+     * Toggles display to either bookmarks or login cta
+     * @param {('bookmarks'|'login')} displayMode
+     */
+    this.displayMode = 'bookmarks';
 
     this.bookmarkColors = [{
       id: 0,
@@ -106,16 +115,19 @@ class IABookmarks extends LitElement {
     this.api = api;
   }
 
-  updated(changed) {
+  updated() {
     this.emitBookmarksChanged();
   }
 
   setup() {
     this.api.identifier = this.bookreader.bookId;
-    this.fetchBookmarks().then(() => this.initializeBookmarks());
+    this.fetchBookmarks()
+      .then(() => this.initializeBookmarks())
+      .catch((err) => this.displayMode = 'login');
   }
 
   initializeBookmarks() {
+    this.displayMode = 'bookmarks';
     ['3PageViewSelected'].forEach((event) => {
       window.addEventListener(`BookReader:${event}`, (e) => {
         setTimeout(() => {
@@ -419,7 +431,6 @@ class IABookmarks extends LitElement {
     this.renderBookmarkButtons();
   }
 
-
   /**
    * Tells us if we should allow user to add bookmark via menu panel
    * returns { Boolean }
@@ -437,34 +448,43 @@ class IABookmarks extends LitElement {
     return this.bookreader.mode !== this.bookreader.constModeThumb;
   }
 
-  render() {
-    const enableAddBookmark = this.shouldEnableAddBookmarkButton;
-
-    const addBookmarkButton = html`
+  get addBookmarkButton() {
+    return html`
       <button
         class="ia-button primary"
-        ?disabled=${enableAddBookmark}
-        @click=${this.addBookmark}
-      >Add bookmark</button>
+        ?disabled=${this.shouldEnableAddBookmarkButton}
+        @click=${this.addBookmark}>
+        Add bookmark
+      </button>
     `;
+  }
 
+  get bookmarksList() {
+    return html`
+      <ia-bookmarks-list
+        @bookmarkEdited=${this.bookmarkEdited}
+        @bookmarkSelected=${this.bookmarkSelected}
+        @saveBookmark=${this.saveBookmark}
+        @deleteBookmark=${this.deleteBookmark}
+        .editedBookmark=${this.editedBookmark}
+        .bookmarks=${{ ...this.bookmarks }}
+        .activeBookmarkID=${this.activeBookmarkID}
+        .bookmarkColors=${this.bookmarkColors}
+        .defaultBookmarkColor=${this.defaultColor}>
+      </ia-bookmarks-list>
+    `;
+  }
+
+  render() {
+    const { loginUrl } = this.options;
+    const bookmarks = html`
+      ${this.bookmarksList}
+      ${this.allowAddingBookmark ? this.addBookmarkButton : nothing}
+    `;
     return html`
       <section class="bookmarks">
-        <ia-bookmarks-list
-          @bookmarkEdited=${this.bookmarkEdited}
-          @bookmarkSelected=${this.bookmarkSelected}
-          @saveBookmark=${this.saveBookmark}
-          @deleteBookmark=${this.deleteBookmark}
-
-          .editedBookmark=${this.editedBookmark}
-          .bookmarks=${{ ...this.bookmarks }}
-          .activeBookmarkID=${this.activeBookmarkID}
-
-          .bookmarkColors=${this.bookmarkColors}
-          .defaultBookmarkColor=${this.defaultColor}
-        ></ia-bookmarks-list>
-        ${this.allowAddingBookmark ? addBookmarkButton : nothing}
-      </section
+        ${this.displayMode === 'login' ? html`<bookmarks-login .url=${loginUrl}></bookmarks-login>` : bookmarks}
+      </section>
     `;
   }
 }

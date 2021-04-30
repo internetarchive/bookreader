@@ -24,6 +24,10 @@ export default css`
     user-select: none;
   }
 
+  .ia-button.link {
+    min-height: unset;
+  }
+
   .ia-button:disabled,
   .ia-button.disabled {
     cursor: not-allowed;
