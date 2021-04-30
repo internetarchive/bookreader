@@ -472,7 +472,7 @@ class IABookmarks extends LitElement {
 
     const bookmarkLoginLayout = html`
       <p>A free account is required to save and access bookmarks.</p>
-      <button class="ia-button primary" @click=${this.bookmarkOptions.handleLogin}>Login</button>
+      <button class="ia-button primary" @click=${this.bookmarkOptions.handleLogin}>Log in</button>
     `
     return html`
       <section class="bookmarks">
