@@ -13,5 +13,6 @@ parsers:
 
 ignore:
   - "BookReader"
-  - "tests"
+  - "*.test.js"
+  - "BookReaderDemo"
 
