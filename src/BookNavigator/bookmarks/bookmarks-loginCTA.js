@@ -25,7 +25,7 @@ class BookmarksLogin extends LitElement {
 
     return html`
       <p>A free account is required to save and access bookmarks.</p>
-      <a class="ia-button link primary" href=${this.url}>Log in</a>
+      <a class="ia-button link primary" href="${this.url}">Log in</a>
     `;
   }
 }

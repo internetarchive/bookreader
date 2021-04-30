@@ -432,6 +432,14 @@ class IABookmarks extends LitElement {
   }
 
   /**
+   * call `loginClicked` callback
+   */
+  loginClick() {
+    const { loginClicked = () => {} } = this.options;
+    loginClicked();
+  }
+
+  /**
    * Tells us if we should allow user to add bookmark via menu panel
    * returns { Boolean }
    */
@@ -483,7 +491,7 @@ class IABookmarks extends LitElement {
     `;
     return html`
       <section class="bookmarks">
-        ${this.displayMode === 'login' ? html`<bookmarks-login .url=${loginUrl}></bookmarks-login>` : bookmarks}
+        ${this.displayMode === 'login' ? html`<bookmarks-login @click=${this.loginClick} .url=${loginUrl}></bookmarks-login>` : bookmarks}
       </section>
     `;
   }

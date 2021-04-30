@@ -13,7 +13,7 @@ customElements.define('icon-bookmark', IAIconBookmark);
 
 export default class BookmarksProvider {
   constructor(options, bookreader) {
-    const boundOptions = Object.assign(this, options);
+    const boundOptions = Object.assign(this, options, {loginClicked: this.bookmarksLoginClicked});
     this.component = document.createElement('ia-bookmarks');
     this.component.bookreader = bookreader;
     this.component.options = boundOptions;
@@ -41,5 +41,15 @@ export default class BookmarksProvider {
     const bookmarksLength = Object.keys(detail.bookmarks).length;
     this.updateMenu(bookmarksLength);
     this.onBookmarksChanged(detail.bookmarks);
+  }
+
+  bookmarksLoginClicked() {
+    if (window.archive_analytics) {
+      window.archive_analytics?.send_event_no_sampling(
+        'BookReader',
+        `BookmarksLogin`,
+        window.location.path,
+      );
+    }
   }
 }
