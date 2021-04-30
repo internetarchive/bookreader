@@ -13,6 +13,7 @@ parsers:
 
 ignore:
   - "BookReader"
+  - "tests"
   - "tests/**/*"
   - "BookReaderDemo"
 
