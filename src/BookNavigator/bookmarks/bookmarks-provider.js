@@ -13,14 +13,10 @@ customElements.define('icon-bookmark', IAIconBookmark);
 
 export default class BookmarksProvider {
   constructor(options, bookreader) {
+    const boundOptions = Object.assign(this, options);
     this.component = document.createElement('ia-bookmarks');
     this.component.bookreader = bookreader;
-    this.component.bookmarkOptions = Object.assign(this, options);
-
-    // add bookmark options
-    this.component.bookmarkOptions.handleLogin = () => {
-      location.replace(options.loginUrl);
-    }
+    this.component.options = boundOptions;
 
     this.bindEvents();
 
