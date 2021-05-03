@@ -44,7 +44,7 @@
     "@babel/preset-env": "7.13.15",
     "@open-wc/testing": "^2.5.33",
     "@open-wc/testing-karma": "^4.0.9",
-    "@types/jest": "26.0.22",
+    "@types/jest": "26.0.23",
     "babel-loader": "8.2.2",
     "codecov": "3.8.1",
     "concurrently": "6.0.2",
