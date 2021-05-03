@@ -48,7 +48,7 @@
     "babel-loader": "8.2.2",
     "codecov": "3.8.1",
     "concurrently": "6.0.2",
-    "core-js": "3.11.0",
+    "core-js": "3.11.2",
     "cpx2": "3.0.0",
     "eslint": "7.25.0",
     "eslint-plugin-testcafe": "0.2.1",
