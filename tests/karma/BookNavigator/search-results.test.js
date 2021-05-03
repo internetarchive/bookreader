@@ -6,7 +6,6 @@ import {
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { IABookSearchResults } from '../../../src/BookNavigator/search/search-results.js';
-customElements.define('ia-book-search-results', IABookSearchResults);
 
 const container = (results = [], query = '') => (
   html`<ia-book-search-results .results=${results} .query=${query}></ia-book-search-results>`

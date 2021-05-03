@@ -212,3 +212,4 @@ export class IABookmarkEdit extends LitElement {
     return [buttonCSS, bookmarkColorsCSS, bookmarkEditCSS];
   }
 }
+customElements.define('ia-bookmark-edit', IABookmarkEdit);

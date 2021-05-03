@@ -7,8 +7,6 @@ import {
 import sinon from 'sinon';
 import { IABookVisualAdjustments } from '../../../src/BookNavigator/visual-adjustments/visual-adjustments.js';
 
-customElements.define('ia-book-visual-adjustments', IABookVisualAdjustments);
-
 const options = [{
   id: 'contrast',
   name: 'Adjust contrast',

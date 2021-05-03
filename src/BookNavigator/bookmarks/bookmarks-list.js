@@ -282,3 +282,4 @@ export class IABookmarksList extends LitElement {
     return [main, bookmarkColorsCSS];
   }
 }
+customElements.define('ia-bookmarks-list', IABookmarksList);

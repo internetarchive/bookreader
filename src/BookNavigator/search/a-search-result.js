@@ -52,3 +52,4 @@ export class BookSearchResult extends LitElement {
     `;
   }
 }
+customElements.define('book-search-result', BookSearchResult);
