@@ -1,25 +1,25 @@
 import { css, html, LitElement } from 'lit-element';
 
-import './volume-item.js';
-
-export class Volumes extends LitElement {
+export class VolumeItem extends LitElement {
   static get properties() {
     return {
-      viewableFiles: { type: Object },
+      item: { type: Object },
     };
   }
 
   constructor() {
     super();
-    this.viewableFiles = {};
-    console.log("******** HELLO");
+    console.log("******** viewitem: ", this.item);
   }
 
   render() {
     return html`
       <section>
-        <p>hello world ViewableFiles</p>
-        <viewable-item></viewable-item>
+        <a>
+          <img src="">
+          <p>Name</p>
+          <p>by: Author</p>
+        </a>
       </section>
     `
   }
@@ -42,4 +42,4 @@ export class Volumes extends LitElement {
   }
 }
 
-customElements.define('viewable-files', Volumes);
+customElements.define('viewable-item', VolumeItem);
