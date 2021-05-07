@@ -111,4 +111,22 @@ describe('<book-navigator>', () => {
     expect(el.bookreader.currentIndex.callCount).to.equal(2);
     expect(el.bookreader.jumpToIndex.callCount).to.equal(2);
   });
+  it('does not resize bookreader if animating', async () => {
+    const el = fixtureSync(container());
+    const brStub = {
+      animating: true, // <-- testing for this
+      resize: sinon.fake(),
+      currentIndex: sinon.fake(),
+      jumpToIndex: sinon.fake()
+    }
+    el.bookreader = brStub;
+    await elementUpdated(el);
+
+    el.sideMenuOpen = true;
+    await elementUpdated(el);
+
+    expect(el.bookreader.resize.callCount).to.equal(0);
+    expect(el.bookreader.currentIndex.callCount).to.equal(0);
+    expect(el.bookreader.jumpToIndex.callCount).to.equal(0);
+  });
 });

@@ -69,8 +69,11 @@ export class BookNavigator extends LitElement {
       return;
     }
     const isFirstSideMenuUpdate = changed.has('sideMenuOpen') && (changed.get('sideMenuOpen') === undefined);
-    if (!isFirstSideMenuUpdate && changed.has('sideMenuOpen')) {
+    if (!isFirstSideMenuUpdate) {
       // realign image
+      if (this.bookreader.animating) {
+        return;
+      }
       this.bookreader.resize();
       const curIndex = this.bookreader.currentIndex();
       this.bookreader.jumpToIndex(curIndex);
