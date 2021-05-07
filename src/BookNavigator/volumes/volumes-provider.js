@@ -35,24 +35,25 @@ const stub = {
 
 export default class VolumesProvider {
   constructor(volumes, bookreader) {
-    // const boundOptions = Object.assign(this, options, {loginClicked: this.bookmarksLoginClicked});
     this.component = document.createElement('viewable-files');
-    this.component.volumes = stub;
+
+    const files = stub.value.files.by_url
+    this.component.hostUrl = volumes.baseHost;
+    this.component.viewableFiles = files;
 
     this.icon = '';
     this.label = 'Viewable files';
     this.id = 'multiple-books';
-    this.updateMenu(Object.keys(this.component.volumes).length);
+    this.updateMenu(Object.keys(files).length);
   }
 
   updateMenu(count) {
     this.menuDetails = `(${count})`;
-    this.actionButton = html`<button @click={this.sort}>$$</button>`;
+    this.actionButton = html`<button @click=${this.sortVolumes}>$$</button>`;
   }
 
   sortVolumes() {
-    alert('hello moto');
-    // need: asc/desc state?
+    alert('need asc/desc state here');
   }
 
   bindEvents() {

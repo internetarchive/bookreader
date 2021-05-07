@@ -5,6 +5,7 @@ import './volume-item.js';
 export class Volumes extends LitElement {
   static get properties() {
     return {
+      hostUrl: { type: String },
       viewableFiles: { type: Object },
     };
   }
@@ -12,15 +13,14 @@ export class Volumes extends LitElement {
   constructor() {
     super();
     this.viewableFiles = {};
-    console.log("******** HELLO");
+    this.hostUrl = '';
   }
 
   render() {
     return html`
-      <section>
-        <p>hello world ViewableFiles</p>
-        <viewable-item></viewable-item>
-      </section>
+      ${Object.keys(this.viewableFiles).map(item => html`
+        <viewable-item .item=${this.viewableFiles[item]} .hostUrl=${this.hostUrl}></viewable-item>
+      `)}
     `
   }
 
