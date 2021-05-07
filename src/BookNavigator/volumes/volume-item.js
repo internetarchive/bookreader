@@ -4,20 +4,22 @@ export class VolumeItem extends LitElement {
   static get properties() {
     return {
       item: { type: Object },
+      hostUrl: { type: String }
     };
   }
 
   constructor() {
     super();
-    console.log("******** viewitem: ", this.item);
+    this.item = {};
+    this.hostUrl = '';
   }
 
   render() {
     return html`
       <section>
-        <a>
+        <a href="${this.hostUrl}${this.item.url_path}">
           <img src="">
-          <p>Name</p>
+          <p>${this.item.title}</p>
           <p>by: Author</p>
         </a>
       </section>
@@ -37,6 +39,11 @@ export class VolumeItem extends LitElement {
 
       section {
         margin-top: 14px;
+      }
+
+      a {
+        color: #ffffff;
+        text-decoration: none
       }
     `;
   }

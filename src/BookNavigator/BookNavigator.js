@@ -102,6 +102,7 @@ export class BookNavigator extends LitElement {
    * to keep it in sync.
    */
   initializeBookSubmenus() {
+    const bookreaderOptions = {...this.bookreader.options.multipleFilesList, baseHost: this.baseHost}
     this.menuProviders = {
       search: new SearchProvider(
         /**
@@ -137,7 +138,7 @@ export class BookNavigator extends LitElement {
       }),
       share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType),
       bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader),
-      volumes: new VolumesProvider(this.bookreader.options.multipleFilesList, this.bookreader),
+      volumes: new VolumesProvider(bookreaderOptions, this.bookreader),
     };
 
     this.addMenuShortcut('search'); /* start with search as a shortcut */
