@@ -38,7 +38,6 @@ export default class VolumesProvider {
     // const boundOptions = Object.assign(this, options, {loginClicked: this.bookmarksLoginClicked});
     this.component = document.createElement('viewable-files');
     this.component.volumes = stub;
-    debugger;
 
     this.icon = '';
     this.label = 'Viewable files';
@@ -49,7 +48,6 @@ export default class VolumesProvider {
   updateMenu(count) {
     this.menuDetails = `(${count})`;
     this.actionButton = html`<button @click={this.sort}>$$</button>`;
-
   }
 
   sortVolumes() {
