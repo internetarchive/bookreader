@@ -287,11 +287,19 @@ class SearchView {
    */
   toggleSearchPending(bool) {
     if (bool) {
-      this.br.showProgressPopup("Search results will appear below...");
+      this.br.showProgressPopup("Search results will appear below...", () => this.progressPopupClosed());
     }
     else {
       this.br.removeProgressPopup();
     }
+  }
+
+  /**
+   * Primary callback when user cancels search popup
+   */
+  progressPopupClosed() {
+    this.toggleSearchPending();
+    this.cancelSearch();
   }
 
   renderErrorModal() {
