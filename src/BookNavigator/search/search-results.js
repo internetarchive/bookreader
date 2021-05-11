@@ -90,10 +90,7 @@ export class IABookSearchResults extends LitElement {
   }
 
   dispatchSearchCanceled() {
-    this.dispatchEvent(new CustomEvent('bookSearchCanceled', {
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(new CustomEvent('bookSearchCanceled'));
   }
 
   get resultsCount() {
@@ -122,6 +119,7 @@ export class IABookSearchResults extends LitElement {
       <div class="loading">
         <ia-activity-indicator mode="processing"></ia-activity-indicator>
         <p>Searching</p>
+        <button class="cancel-search" @click=${this.cancelSearch}>Cancel</button>
       </div>
     `;
   }
@@ -353,10 +351,11 @@ export class IABookSearchResults extends LitElement {
         appearance: none;
         padding: .5rem .7rem;
         font: normal 1.4rem "Helvetica Neue", Helvetica, Arial, sans-serif;
-        border: 1px solid #656565;
+        border: 1px solid var(--primaryTextColor);
         border-radius: 3px;
         cursor: pointer;
         background: transparent;
+        color: var(--primaryTextColor);
       }
 
       ia-activity-indicator {

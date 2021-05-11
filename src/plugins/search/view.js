@@ -39,13 +39,15 @@ class SearchView {
     this.br.$('.BRnavpos .BRsearch').remove();
   }
 
-  clearSearchFieldAndResults() {
+  clearSearchFieldAndResults(dispatchEventWhenComplete = true) {
     this.br.removeSearchResults();
     this.removeResultPins();
     this.emptyMatches();
     this.setQuery('');
     this.teardownSearchNavigation();
-    this.br.trigger('SearchResultsCleared');
+    if (dispatchEventWhenComplete) {
+      this.br.trigger('SearchResultsCleared');
+    }
   }
 
   toggleSidebar() {

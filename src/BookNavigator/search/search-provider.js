@@ -20,6 +20,8 @@ export default class {
     this.onSearchResultsClicked = this.onSearchResultsClicked.bind(this);
     this.onSearchResultsChange = this.onSearchResultsChange.bind(this);
     this.onSearchResultsCleared = this.onSearchResultsCleared.bind(this);
+    this.searchCanceledInMenu = this.searchCanceledInMenu.bind(this);
+
     /* class methods */
     this.bindEventListeners = this.bindEventListeners.bind(this);
     this.getMenuDetails = this.getMenuDetails.bind(this);
@@ -51,6 +53,18 @@ export default class {
     window.addEventListener('BookReader:SearchCallbackNotIndexed', (event) => { this.onSearchRequestError(event, 'notIndexed') });
     window.addEventListener('BookReader:SearchCallbackError', (event) => { this.onSearchRequestError(event) });
     window.addEventListener('BookReader:SearchResultsCleared', () => { this.onSearchResultsCleared() });
+    window.addEventListener('BookReader:SearchCanceled', (e) => { this.onSearchCanceled(e) });
+  }
+
+  onSearchCanceled(e) {
+    searchState = {
+      query: '',
+      results: [],
+      resultsCount: 0,
+      queryInProgress: false,
+      errorMessage: '',
+    };
+    this.updateMenu();
   }
 
   onSearchStarted(e) {
@@ -104,6 +118,11 @@ export default class {
     this.updateMenu();
   }
 
+
+  searchCanceledInMenu() {
+    this.bookreader?.cancelSearchRequest();
+  }
+
   onSearchResultsCleared() {
     searchState = {
       query: '',
@@ -134,6 +153,7 @@ export default class {
       @resultSelected=${this.onSearchResultsClicked}
       @bookSearchInitiated=${this.onBookSearchInitiated}
       @bookSearchResultsCleared=${this.onSearchResultsCleared}
+      @bookSearchCanceled=${this.searchCanceledInMenu}
     ></ia-book-search-results>
   `;
   }

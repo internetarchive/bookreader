@@ -20,7 +20,10 @@
  *   the book has not had OCR text indexed yet. Receives `instance`
  * @event BookReader:SearchCallbackEmpty - When no results found. Receives
  *   `instance`
+ * @event BookReader:SearchCanceled - When no results found. Receives
+ *   `instance`
  */
+import BookReader from '../../BookReader.js';
 import SearchView from './view.js';
 
 jQuery.extend(BookReader.defaultOptions, {
@@ -50,9 +53,17 @@ BookReader.prototype.setup = (function (super_) {
     this.subPrefix = options.subPrefix;
     this.bookPath = options.bookPath;
 
+    this.searchXHR = null;
+    this._cancelSearch.bind(this);
+    this.cancelSearchRequest.bind(this);
+
     if (this.searchView) { return; }
     this.searchView = new SearchView({
       br: this,
+      cancelSearch: () => {
+        this._cancelSearch();
+        this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
+      }
     });
   };
 })(BookReader.prototype.setup);
@@ -145,6 +156,9 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
   const url = `${baseUrl}${paramStr}`;
 
   const processSearchResults = (searchInsideResults) => {
+    if (!this.searchXHR) {
+      return;
+    }
     const responseHasError = searchInsideResults.error || !searchInsideResults.matches.length;
     const hasCustomError = typeof options.error === 'function';
     const hasCustomSuccess = typeof options.success === 'function';
@@ -160,12 +174,59 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
     }
   };
 
-  this.trigger('SearchStarted', { term: this.searchTerm });
-  return $.ajax({
+  const cleanup = () => {
+    this.searchXHR = null
+  };
+
+  const beforeSend = (xhr) => {
+    this.searchXHR = xhr;
+  };
+
+  this.trigger('SearchStarted', { term: this.searchTerm, instance: this });
+  $.ajax({
     url: url,
-    dataType: 'jsonp'
-  }).then(processSearchResults);
+    dataType: 'jsonp',
+    beforeSend
+  }).then(processSearchResults)
+    .fail((xhr) => {
+      // catch any xhr failures here
+      // do not route to generic error handler
+      // as args do not match
+      const searchWasCancelled = xhr.statusText == 'abort';
+      if (searchWasCancelled) {
+        return;
+      }
+      // set default messaging
+      this.trigger('SearchCallbackBookNotIndexed', {
+        term: this.searchTerm,
+        instance: this,
+      });
+    })
+    .always(cleanup);
 };
+
+/**
+ * cancels AJAX Call
+ * emits custom event
+ */
+BookReader.prototype._cancelSearch = function () {
+  this.searchXHR?.abort();
+  this.searchView.clearSearchFieldAndResults(false);
+  this.searchTerm = '';
+  this.searchXHR = null;
+}
+
+/**
+ * External function to cancel search
+ * checks for term & xhr in flight before running
+ */
+BookReader.prototype.cancelSearchRequest = function () {
+  if (this.searchXHR !== null) {
+    this._cancelSearch();
+    this.searchView.toggleSearchPending();
+    this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
+  }
+}
 
 /**
   * @typedef {object} SearchInsideMatchBox
