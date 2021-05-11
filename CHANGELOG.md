@@ -1,3 +1,7 @@
+# 5.0.0-5
+- Fix: Book Nav: resize only when bookreader is not animating @iisa
+- Fix: Web components register themselves at EOF @iisa
+- Dev: update dependencies with dependabot @drini
 # 5.0.0-4
 - Dev: update bookmarks login archive_analytics @iisa @dualcnhq
 
