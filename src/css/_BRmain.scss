@@ -66,6 +66,22 @@
   border: 2px solid #999;
   z-index: $brZindexPopup;
   color: $gray13;
+
+  .close-popup {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+
+    ia-icon-close {
+      display: block;
+      width: 100%;
+      --iconFillColor: #222;
+    }
+  }
 }
 
 .BRprogressbar {

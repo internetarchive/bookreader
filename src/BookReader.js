@@ -27,6 +27,8 @@ import 'jquery-ui/ui/widget.js';
 import 'jquery-ui/ui/widgets/mouse.js';
 import 'jquery-ui-touch-punch';
 
+import '@internetarchive/icon-close/icon-close.js';
+
 import './dragscrollable-br.js';
 import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
@@ -2227,21 +2229,37 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 };
 
 /**
- * @param {string}
+ * @param {string} msg
+ * @param {null|function} onCloseCallback
  */
-BookReader.prototype.showProgressPopup = function(msg) {
+BookReader.prototype.showProgressPopup = function(msg, onCloseCallback = null) {
   if (this.popup) return;
 
   this.popup = document.createElement("div");
   $(this.popup).prop('className', 'BRprogresspopup');
-  var bar = document.createElement("div");
+
+  if (typeof(onCloseCallback) === 'function') {
+    const closeButton = document.createElement('button');
+    closeButton.setAttribute('title', 'close');
+    closeButton.setAttribute('class', 'close-popup');
+    const icon = document.createElement('ia-icon-close');
+    // icon.setAttribute('class', 'icon icon-close');
+    $(closeButton).append(icon);
+    closeButton.addEventListener('click', () => {
+      onCloseCallback();
+      this.removeProgressPopup();
+    });
+    $(this.popup).append(closeButton);
+  }
+
+  const bar = document.createElement("div");
   $(bar).css({
     height:   '20px'
   }).prop('className', 'BRprogressbar');
   $(this.popup).append(bar);
 
   if (msg) {
-    var msgdiv = document.createElement("div");
+    const msgdiv = document.createElement("div");
     msgdiv.innerHTML = msg;
     $(this.popup).append(msgdiv);
   }
