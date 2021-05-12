@@ -7,15 +7,7 @@
 
 
   /* Some helper functional css utilities  */
-  .tc { text-align: center; }
-  .mv20 { margin-top: 20px; margin-bottom: 20px; }
-  .mt20 { margin-top: 20px; }
   .larger { font-size: 1.2em; }
-  .loader {
-    background: url(images/loading.gif) no-repeat 50%;
-    height: 16px;
-    min-width: 16px;
-  }
 
   /* Desktop-only */
   @media (min-width: ($brBreakPointMobile + 1)) {
