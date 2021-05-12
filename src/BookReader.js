@@ -1128,10 +1128,11 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
   }
 
   this.isFullscreenActive = true;
-
+  this.animating = true;
   this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear',() => {
     this.resize();
     this.jumpToIndex(currentIndex);
+    this.animating = false;
   });
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
@@ -1159,9 +1160,10 @@ BookReader.prototype.exitFullScreen = function() {
 
   this.isFullscreenActive = false;
   this.updateBrClasses();
-
+  this.animating = true;
   this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', () => {
     this.resize();
+    this.animating = false;
   });
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   this.trigger(BookReader.eventNames.fullscreenToggled);
