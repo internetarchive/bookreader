@@ -1,3 +1,5 @@
+# 5.0.0-6
+- Fix: Fullscreen toggle sets/unsets animating flag @iisa
 # 5.0.0-5
 - Fix: Book Nav: resize only when bookreader is not animating @iisa
 - Fix: Web components register themselves at EOF @iisa
