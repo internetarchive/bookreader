@@ -6,6 +6,7 @@ import { LitElement, html, css } from 'lit-element';
 
 import '../ItemNavigator/ItemNavigator.js'
 import '../BookNavigator/BookNavigator.js'
+import brSass from '../css/BookReader.scss';
 
 export class BookReader extends LitElement {
   static get properties() {
@@ -18,7 +19,7 @@ export class BookReader extends LitElement {
   constructor() {
     super();
     this.base64Json = '';
-    this.baseHost = 'https://archive.org';
+    this.baseHost = 'https://cors.archive.org';
   }
 
   firstUpdated() {
@@ -54,7 +55,9 @@ export class BookReader extends LitElement {
           basehost=${this.baseHost}
           item=${this.base64Json}>
           <div slot="bookreader">
-            <slot name="bookreader"></slot>
+            <slot name="bookreader">
+              <div id="BookReader"></div>
+            </slot>
           </div>
         </item-navigator>
       </div>
@@ -62,7 +65,7 @@ export class BookReader extends LitElement {
   }
 
   static get styles() {
-    return css`
+    const mainCss = css`
       :host {
         display: block;
         --primaryBGColor: var(--black, #000);
@@ -105,7 +108,13 @@ export class BookReader extends LitElement {
         --activityIndicatorLoadingDotColor: var(--primaryTextColor);
         --activityIndicatorLoadingRingColor: var(--primaryTextColor);
       }
+
+      .BookReader {
+        min-height: 600px;
+      }
     `;
+
+    return [brSass, mainCss];
   }
 }
 

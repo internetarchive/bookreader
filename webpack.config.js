@@ -14,7 +14,16 @@ const shared = {
 
   module: {
     rules: [
-      { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" }
+      { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" },
+      {
+        test: /\.css|\.s(c|a)ss$/,
+        use: [{
+          loader: 'lit-scss-loader',
+          options: {
+            minify: true, // defaults to false
+          },
+        }, 'extract-loader', { loader: 'css-loader', options: { url: false } }, 'resolve-url-loader', 'sass-loader'],
+      },
     ]
   },
 
