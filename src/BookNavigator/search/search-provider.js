@@ -146,14 +146,9 @@ export default class {
     @param {{searchCanceled: boolean}} searchUpdates
    */
   updateMenu(searchUpdates = {}) {
-    const { searchCanceled = false } = searchUpdates;
     this.menuDetails = this.getMenuDetails();
     this.component = this.getComponent();
-    const sideMenuUpdates = {};
-    if (searchCanceled) {
-      sideMenuUpdates.drawerState = 'close';
-    }
-    this.onSearchChange(this.bookreader, sideMenuUpdates);
+    this.onSearchChange(this.bookreader, searchUpdates);
   }
 
   getComponent() {

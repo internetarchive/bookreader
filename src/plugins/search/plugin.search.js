@@ -23,7 +23,6 @@
  * @event BookReader:SearchCanceled - When no results found. Receives
  *   `instance`
  */
-import BookReader from '../../BookReader.js';
 import SearchView from './view.js';
 
 jQuery.extend(BookReader.defaultOptions, {
