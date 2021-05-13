@@ -2230,9 +2230,9 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 
 /**
  * @param {string} msg
- * @param {null|function} onCloseCallback
+ * @param {function|undefined} onCloseCallback
  */
-BookReader.prototype.showProgressPopup = function(msg, onCloseCallback = null) {
+BookReader.prototype.showProgressPopup = function(msg, onCloseCallback) {
   if (this.popup) return;
 
   this.popup = document.createElement("div");

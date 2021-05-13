@@ -84,18 +84,24 @@ export default class ItemNavigator extends LitElement {
    * Event handler - handles viewport slot going into fullscreen
    * @param {Event} e - custom event object
    *   @param {object} event.detail - custom event detail
-   *     @param {string} detail.action - open, toggle, close
+   *     @param {(open, toggle, close)} detail.action
    *     @param {string} detail.menuId - menu id to be shown
    */
   manageSideMenuEvents({ detail }) {
     const { action = '', menuId = '' } = detail;
-    if (menuId) {
-      if (action === 'open') {
-        this.openShortcut(menuId);
-      } else if  (action === 'toggle') {
-        this.openMenu = menuId;
-        this.toggleMenu();
-      }
+    if (!menuId) {
+      return;
+    }
+    switch (action) {
+    case 'open':
+      this.openShortcut(menuId);
+      break;
+    case 'toggle':
+      this.openMenu = menuId;
+      this.toggleMenu();
+      break;
+    default:
+      this.closeMenu();
     }
   }
 

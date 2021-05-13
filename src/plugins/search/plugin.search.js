@@ -214,6 +214,7 @@ BookReader.prototype._cancelSearch = function () {
   this.searchView.clearSearchFieldAndResults(false);
   this.searchTerm = '';
   this.searchXHR = null;
+  this.searchResults = [];
 }
 
 /**
@@ -259,7 +260,7 @@ BookReader.prototype.cancelSearchRequest = function () {
  * @param {boolean} options.goToFirstResult
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
-  this.searchResults = results;
+  this.searchResults = results || [];
 
   this.updateSearchHilites();
   this.removeProgressPopup();
@@ -320,7 +321,7 @@ BookReader.prototype.updateSearchHilites = function() {
 BookReader.prototype.updateSearchHilites1UP = function() {
   const results = this.searchResults;
   if (null == results) return;
-  results.matches.forEach(match => {
+  results.matches?.forEach(match => {
     match.par[0].boxes.forEach(box => {
       const pageIndex = this.leafNumToIndex(box.page);
       const pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
@@ -356,7 +357,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
 
   if (results === null) return;
 
-  const { matches } = results;
+  const { matches = [] } = results;
   matches.forEach((match) => {
     match.par[0].boxes.forEach(box => {
       const pageIndex = this.leafNumToIndex(match.par[0].page);

@@ -103,14 +103,23 @@ export class BookNavigator extends LitElement {
   initializeBookSubmenus() {
     this.menuProviders = {
       search: new SearchProvider(
-        (brInstance = null) => {
+        /**
+         * Search specific menu updates
+         * @param {BookReader} brInstance
+         * @param {{ drawerState: ('open'|'close'|undefined) }} customSideMenuUpdates
+         */
+        (brInstance = null, customSideMenuUpdates = {}) => {
           if (brInstance) {
             /* refresh br instance reference */
             this.bookreader = brInstance;
           }
           this.updateMenuContents();
+          if (customSideMenuUpdates?.drawerState) {
+            this.updateSearchSideMenu(customSideMenuUpdates.drawerState);
+            return;
+          }
           if (this.brWidth >= 640) { /* open side search menu */
-            this.openSideSearchMenu();
+            this.updateSearchSideMenu('open');
           }
         },
         this.bookreader,
@@ -157,11 +166,12 @@ export class BookNavigator extends LitElement {
 
   /**
    * Open side search menu
+   * @param {('open'|'close'|'toggle')} action
    */
-  openSideSearchMenu() {
+  updateSearchSideMenu(action = 'open') {
     const event = new CustomEvent(
       events.updateSideMenu, {
-        detail: { menuId: 'search', action: 'open' },
+        detail: { menuId: 'search', action },
       },
     );
     this.dispatchEvent(event);
