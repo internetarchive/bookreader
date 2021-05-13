@@ -1,73 +1,27 @@
 class SearchView {
   /**
    * @param {object} params
-   *   @param {string} params.selector A selector for the element that the search tray will be rendered in
-   *   @param {string} params.query An existing query string
-   *   @param {object} params.br The BookReader instance
+   * @param {object} params.br The BookReader instance
    *
    * @event BookReader:SearchResultsCleared - when the search results nav gets cleared
    * @event BookReader:ToggleSearchMenu - when search results menu should toggle
    */
-  constructor(params) {
-    if (!params.selector) {
-      console.warn('BookReader::Search - SearchView must be passed a valid CSS selector');
-      return;
-    }
-
-    this.br = params.br;
+  constructor({ br }) {
+    this.br = br;
 
     // Search results are returned as a text blob with the hits wrapped in
     // triple mustaches. Hits occasionally include text beyond the search
     // term, so everything within the staches is captured and wrapped.
     this.matcher = new RegExp('{{{(.+?)}}}', 'g');
     this.matches = [];
-    this.cacheDOMElements(params.selector);
+    this.cacheDOMElements();
     this.bindEvents();
   }
 
-  /**
-   * @param {string} selector A selector for the element that the search tray will be rendered in
-   */
-  cacheDOMElements(selector) {
+  cacheDOMElements() {
     this.dom = {};
-
-    // The parent search tray in mobile menu
-    this.dom.searchTray = this.renderSearchTray(selector);
-    // Container for rendered search results
-    this.dom.results = this.dom.searchTray.querySelector('[data-id="results"]');
-    // Element used to display number of results
-    this.dom.resultsCount = this.dom.searchTray.querySelector('[data-id="results_count"]');
-    // Search input within the mobile search tray
-    this.dom.searchField = this.dom.searchTray.querySelector('[name="query"]');
-    // Waiting indicator displayed while waiting for a search request
-    this.dom.searchPending = this.dom.searchTray.querySelector('[data-id="searchPending"]');
-    // The element added to the mobile menu that is animated into view when
-    // the "search" nav item is clicked
-    this.dom.mobileSearch = this.buildMobileDrawer();
     // Search input within the top toolbar. Will be removed once the mobile menu is replaced.
     this.dom.toolbarSearch = this.buildToolbarSearch();
-  }
-
-  /**
-   * @param {boolean} bool
-   */
-  toggleSearchTray(bool = this.dom.searchTray.classList.contains('hidden')) {
-    this.dom.searchTray.classList.toggle('hidden', !bool);
-  }
-
-  /**
-   * @param {boolean} bool
-   */
-  toggleResultsCount(bool) {
-    this.dom.resultsCount.classList.toggle('visible', bool);
-  }
-
-  /**
-   * @param {SearchInsideResults} results
-   */
-  updateResultsCount(results) {
-    this.dom.resultsCount.innerText = `(${results} result${results != 1 ? 's' : ''})`;
-    this.toggleResultsCount(true);
   }
 
   /**
@@ -78,7 +32,6 @@ class SearchView {
   }
 
   emptyMatches() {
-    this.dom.results.innerHTML = '';
     this.matches = [];
   }
 
@@ -88,7 +41,6 @@ class SearchView {
 
   clearSearchFieldAndResults() {
     this.br.removeSearchResults();
-    this.toggleResultsCount(false);
     this.removeResultPins();
     this.emptyMatches();
     this.setQuery('');
@@ -98,35 +50,6 @@ class SearchView {
 
   toggleSidebar() {
     this.br.trigger('ToggleSearchMenu');
-  }
-  /**
-   * @param {string} selector The ID attribute to be used for the search tray
-   */
-  renderSearchTray(selector) {
-    const searchTray = document.createElement('div');
-    searchTray.setAttribute('id', selector.replace(/^#/, ''));
-    searchTray.innerHTML = `
-      <header>
-        <div>
-          <h3>Search inside</h3>
-          <p data-id="results_count"></p>
-        </div>
-        <a href="#" class="close"></a>
-      </header>
-      <form action="" method="get">
-        <fieldset>
-          <input name="all_files" id="all_files" type="checkbox" />
-          <label class="checkbox" for="all_files">Search all files</label>
-          <input type="search" name="query" placeholder="Enter a search term" />
-        </fieldset>
-      </form>
-      <div data-id="searchPending" id="search_pending">
-        <p>Your search results will appear below</p>
-        <div class="loader tc mt20"></div>
-      </div>
-      <ul data-id="results"></ul>
-    `;
-    return searchTray;
   }
 
   renderSearchNavigation() {
@@ -273,41 +196,11 @@ class SearchView {
   }
 
   /**
-   * @param {array} matches
-   */
-  renderMatches(matches) {
-    const items = matches.map((match) => `
-      <li data-page="${match.par[0].page}" data-page-index="${this.br.leafNumToIndex(match.par[0].page)}">
-        <h4>Page ${match.par[0].page}</h4>
-        <p>${match.text.replace(this.matcher, '<mark>$1</mark>')}</p>
-      </li>
-    `);
-    this.dom.results.innerHTML = items.join('');
-  }
-
-  /**
    * @param {boolean} bool
    */
   togglePinsFor(bool) {
     const pinsVisibleState = bool ? 'visible' : 'hidden';
     this.br.refs.$BRfooter.find('.BRsearch').css({ visibility: pinsVisibleState });
-  }
-
-  buildMobileDrawer() {
-    const mobileSearch = document.createElement('li');
-    mobileSearch.innerHTML = `
-      <span>
-        <span class="DrawerIconWrapper">
-          <img class="DrawerIcon" src="${this.br.imagesBaseURL}icon_search_button.svg" />
-        </span>
-        Search
-      </span>
-      <div data-id="search_slot">
-      </div>
-    `;
-    mobileSearch.querySelector('[data-id="search_slot"]').appendChild(this.dom.searchTray);
-    mobileSearch.classList.add('BRmobileMenu__search');
-    return mobileSearch;
   }
 
   buildToolbarSearch() {
@@ -393,7 +286,6 @@ class SearchView {
    * @param {boolean} bool
    */
   toggleSearchPending(bool) {
-    this.dom.searchPending.classList.toggle('visible', bool);
     if (bool) {
       this.br.showProgressPopup("Search results will appear below...");
     }
@@ -445,14 +337,6 @@ class SearchView {
     setTimeout(this.br.removeProgressPopup.bind(this.br), timeoutMS);
   }
 
-  openMobileMenu() {
-    this.br.refs.$mmenu.data('mmenu').open();
-  }
-
-  closeMobileMenu() {
-    this.br.refs.$mmenu.data('mmenu').close();
-  }
-
   /**
    * @param {Event} e
    */
@@ -461,7 +345,6 @@ class SearchView {
     const query = e.target.querySelector('[name="query"]').value;
     if (!query.length) { return false; }
     this.br.search(query);
-    this.dom.searchField.blur();
     this.emptyMatches();
     this.toggleSearchPending(true);
     return false;
@@ -479,9 +362,7 @@ class SearchView {
     this.teardownSearchNavigation();
     this.renderSearchNavigation();
     this.bindSearchNavigationEvents();
-    this.renderMatches(results.matches);
     this.renderPins(results.matches);
-    this.updateResultsCount(results.matches.length);
     this.toggleSearchPending(false);
     if (options.goToFirstResult) {
       $(document).one('BookReader:pageChanged', () => {
@@ -498,7 +379,6 @@ class SearchView {
   handleNavToggledCallback(e) {
     const is_visible = this.br.navigationIsVisible();
     this.togglePinsFor(is_visible);
-    this.toggleSearchTray(is_visible ? !!this.dom.results.querySelector('li') : false);
   }
 
   handleSearchStarted() {
@@ -536,18 +416,7 @@ class SearchView {
       .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this))
       .on(`${namespace}pageChanged`, this.updateSearchNavigation.bind(this));
 
-    this.dom.searchTray.addEventListener('submit', this.submitHandler.bind(this));
     this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
-    this.dom.searchField.addEventListener('search', () => {
-      if (this.dom.searchField.value) { return; }
-      this.clearSearchFieldAndResults();
-    });
-
-    $(this.dom.results).on('click', 'li', (e) => {
-      this.br._searchPluginGoToResult(+e.currentTarget.dataset.pageIndex);
-      this.br.updateSearchHilites();
-      this.closeMobileMenu();
-    });
   }
 }
 

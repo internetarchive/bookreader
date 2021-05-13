@@ -7,35 +7,11 @@
 
 
   /* Some helper functional css utilities  */
-  .tl { text-align: left; }
-  .tc, .BRtc { text-align: center; }
-  .tr { text-align: right; }
-  .ph10 { padding-left: 10px; padding-right: 10px; }
-  .mv20 { margin-top: 20px; margin-bottom: 20px; }
-  .mt20 { margin-top: 20px; }
-  .b { font-weight: bold; }
-  .i { font-style: italic; }
-  .smaller { font-size: .8em; }
   .larger { font-size: 1.2em; }
-  .loader {
-    background: url(images/loading.gif) no-repeat 50%;
-    height: 16px;
-    min-width: 16px;
-  }
 
   /* Desktop-only */
   @media (min-width: ($brBreakPointMobile + 1)) {
-    .mobile-only { display: none; }
-    .pv20-lg { padding-top: 20px; padding-bottom: 20px; }
-    .pv50-lg { padding-top: 50px; padding-bottom: 50px; }
     .mv20-lg { margin-top: 20px; margin-bottom: 20px; }
-  }
-
-  @media (max-width: $brBreakPointMobile) {
-    .desktop-only { display: none; }
-  }
-  @media (min-width: $brBreakPointMobile) and (max-width: $brBreakPointMid) {
-    .hide-md { display: none; }
   }
 
   /* Element-level rules */

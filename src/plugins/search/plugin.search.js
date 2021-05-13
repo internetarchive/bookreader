@@ -53,7 +53,6 @@ BookReader.prototype.setup = (function (super_) {
     if (this.searchView) { return; }
     this.searchView = new SearchView({
       br: this,
-      selector: '#BRsearch_tray',
     });
   };
 })(BookReader.prototype.setup);
@@ -71,18 +70,6 @@ BookReader.prototype.init = (function (super_) {
     }
   };
 })(BookReader.prototype.init);
-
-/** @override */
-BookReader.prototype.buildMobileDrawerElement = (function (super_) {
-  return function () {
-    const $el = super_.call(this);
-    if (!this.enableSearch) { return; }
-    if (this.searchView.dom.mobileSearch) {
-      $el.find('.BRmobileMenu__moreInfoRow').after(this.searchView.dom.mobileSearch);
-    }
-    return $el;
-  };
-})(BookReader.prototype.buildMobileDrawerElement);
 
 /** @override */
 BookReader.prototype.buildToolbarElement = (function (super_) {
