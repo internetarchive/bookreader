@@ -290,8 +290,10 @@ export class Mode1Up {
    */
   calculateReductionFactors() {
     const autoWidthReduce = this.getAutofitWidth();
-    this.br.onePage.reductionFactors = this.br.reductionFactors.concat(
-      [
+    this.br.onePage.reductionFactors = this.br.reductionFactors
+      .filter(r => r.reduce != 1)
+      .concat([
+        { reduce: 1, autofit: null },
         { reduce: autoWidthReduce, autofit: 'width' },
         { reduce: this.getAutofitHeight(), autofit: 'height' },
       ]);
