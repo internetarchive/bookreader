@@ -1,4 +1,7 @@
 import { html } from 'lit-element';
+import sortAscendingIcon from '../assets/icon_sort_ascending.js';
+import sortDescendingIcon from '../assets/icon_sort_descending.js';
+
 import './volumes.js';
 
 const stub = {
@@ -34,26 +37,40 @@ const stub = {
 
 
 export default class VolumesProvider {
+
   constructor(volumes, bookreader) {
     this.component = document.createElement('viewable-files');
 
     const files = stub.value.files.by_url
     this.component.hostUrl = volumes.baseHost;
     this.component.viewableFiles = files;
+    this.sortAscending = true
+    this.volumeCount = Object.keys(files).length;
 
-    this.icon = '';
+    this.icon = html`<ia-icon icon="volumes" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
     this.label = 'Viewable files';
     this.id = 'multiple-books';
-    this.updateMenu(Object.keys(files).length);
+    this.updateMenu();
   }
 
-  updateMenu(count) {
-    this.menuDetails = `(${count})`;
-    this.actionButton = html`<button @click=${this.sortVolumes}>$$</button>`;
+  get menuIcon() {
+    return this.sortAscending ? html`<span>${sortAscendingIcon}</span>` : html`<span>${sortDescendingIcon}</span>`;
+  }
+
+  updateMenu() {
+    console.log('updateMenu ', this.sortAscending, 'menu: ', this.menuIcon)
+    this.volumeCount++
+    this.menuDetails = `(${this.volumeCount})`;
+    this.actionButton = html`
+      <button @click=${() => this.sortVolumes()}>${this.menuIcon}</button>
+    `;
   }
 
   sortVolumes() {
-    alert('need asc/desc state here');
+    console.log('need asc/desc state here currentState: ', this.sortAscending);
+    this.sortAscending = !this.sortAscending;
+    console.log('sortAscending: ', this.sortAscending);
+    this.updateMenu()
   }
 
   bindEvents() {
@@ -70,4 +87,5 @@ export default class VolumesProvider {
       );
     }
   }
+
 }
