@@ -6,13 +6,13 @@ export class Volumes extends LitElement {
   static get properties() {
     return {
       hostUrl: { type: String },
-      viewableFiles: { type: Object },
+      viewableFiles: { type: Array },
     };
   }
 
   constructor() {
     super();
-    this.viewableFiles = {};
+    this.viewableFiles = [];
     this.hostUrl = '';
   }
 
@@ -47,8 +47,7 @@ export class Volumes extends LitElement {
   }
 
   get volumesList() {
-    const sortedVolumes = Object.keys(this.viewableFiles).map(item => this.viewableFiles[item])
-    const volumes = repeat(sortedVolumes, volume => volume?.file_prefix, this.volumeItem.bind(this));
+    const volumes = repeat(this.viewableFiles, volume => volume?.file_prefix, this.volumeItem.bind(this));
     return html`
       <ul>
         ${volumes}
@@ -59,7 +58,7 @@ export class Volumes extends LitElement {
 
   render() {
     return html`
-      ${Object.keys(this.viewableFiles).length ? this.volumesList : nothing}
+      ${this.viewableFiles.length ? this.volumesList : nothing}
     `
   }
 

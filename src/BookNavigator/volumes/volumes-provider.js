@@ -42,35 +42,52 @@ export default class VolumesProvider {
     this.component = document.createElement('viewable-files');
 
     const files = stub.value.files.by_url
-    this.component.hostUrl = volumes.baseHost;
-    this.component.viewableFiles = files;
-    this.sortAscending = true
+    this.viewableFiles = Object.keys(files).map(item => files[item]);
+    this.sortAscending = false
     this.volumeCount = Object.keys(files).length;
 
-    this.icon = html`<ia-icon icon="volumes" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
+    this.component.hostUrl = volumes.baseHost;
+    this.component.viewableFiles = [];
+
+    this.sortVolumes()
+    this.setupMenu()
+  }
+
+  get sortAscendingIcon() {
+    return html`<span>${sortAscendingIcon}</span>`;
+  }
+
+  get sortDescendingIcon() {
+    return html`<span>${sortDescendingIcon}</span>`;
+  }
+
+  setupMenu() {
     this.label = 'Viewable files';
     this.id = 'multiple-books';
-    this.updateMenu();
-  }
+    this.icon = html`<ia-icon icon="volumes" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
 
-  get menuIcon() {
-    return this.sortAscending ? html`<span>${sortAscendingIcon}</span>` : html`<span>${sortDescendingIcon}</span>`;
-  }
-
-  updateMenu() {
-    console.log('updateMenu ', this.sortAscending, 'menu: ', this.menuIcon)
-    this.volumeCount++
-    this.menuDetails = `(${this.volumeCount})`;
+    this.menuDetails = `(${this.volumeCount})`
     this.actionButton = html`
       <button @click=${() => this.sortVolumes()}>${this.menuIcon}</button>
     `;
   }
 
   sortVolumes() {
-    console.log('need asc/desc state here currentState: ', this.sortAscending);
     this.sortAscending = !this.sortAscending;
-    console.log('sortAscending: ', this.sortAscending);
-    this.updateMenu()
+    const sortedFiles = this.viewableFiles.sort((a, b) => {
+      if (this.sortAscending) return a.title.localeCompare(b.title);
+      else return b.title.localeCompare(a.title);
+    })
+
+    this.component.viewableFiles  = [...sortedFiles]
+    this.updateActionButton()
+  }
+
+  updateActionButton() {
+    this.menuIcon = this.sortAscending ? this.sortAscendingIcon : this.sortDescendingIcon
+    this.actionButton = html`
+      <button @click=${() => this.sortVolumes()}>${this.menuIcon}</button>
+    `;
   }
 
   bindEvents() {
