@@ -5,6 +5,7 @@ import { repeat } from 'lit-html/directives/repeat';
 export class Volumes extends LitElement {
   static get properties() {
     return {
+      subPrefix: { type: String },
       hostUrl: { type: String },
       viewableFiles: { type: Array },
     };
@@ -34,10 +35,11 @@ export class Volumes extends LitElement {
   }
 
   volumeItem(item) {
+    const activeClass = this.subPrefix === item.file_subprefix ? 'active' : ''
     return html`
       <li>
         <div class="separator"></div>
-        <div class="content active">
+        <div class="content ${activeClass}">
           <a href="${this.hostUrl}${item.url_path}">
             <p class="item-title">${item.title}</p>
           </a>
