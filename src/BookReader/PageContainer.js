@@ -115,6 +115,13 @@ export class PageContainer {
     const desiredWidth = $(this.$container).height();
     const desiredScale = desiredWidth / viewport.width;
 
+    const notIdeal = desiredScale >= this.pdfScale;
+    if (!notIdeal) {
+      console.log('**exit::: !notIdeal: idx, this.pdfScale, desiredScale ', this.index, this.pdfScale, desiredScale);
+      this.fetchingPdf = false;
+      return;
+    }
+
     if (!desiredScale) {
       console.log('**exit::: !desiredScale: idx, this.pdfScale, desiredScale ', this.index, this.pdfScale, desiredScale);
       this.fetchingPdf = false;
