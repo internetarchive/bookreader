@@ -93,7 +93,7 @@ export class PageContainer {
     return this;
   }
 
-  async drawPDFpage(scale, dimensions) {
+  async drawPDFpage(scale = 1, dimensions) {
     console.log('****** drawPDFpage', this.index, this.pdf);
     if (!this.index || !this.pdf?.getPage) {
       return;
@@ -106,8 +106,8 @@ export class PageContainer {
 
     // Apply page dimensions to the <canvas> element.
     const context = this.canvas[0].getContext("2d");
-    this.canvas[0].style.height = `${dimensions.height}px`;
-    this.canvas[0].style.width = '99%';
+    this.canvas[0].height = viewport.height;
+    this.canvas[0].width = viewport.width;
     console.log("VIewport", viewport);
 
     // Render the page into the <canvas> element.
