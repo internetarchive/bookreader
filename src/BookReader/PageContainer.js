@@ -99,7 +99,7 @@ export class PageContainer {
       return;
     }
     // Load information from the first page.
-    const page = await this.pdf?.getPage(this.index);
+    const page = await this.pdf?.getPage(this.index + 1);
 
     const viewport = page.getViewport({scale: 1});
     console.log("page", page);
