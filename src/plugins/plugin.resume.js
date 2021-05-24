@@ -64,5 +64,5 @@ BookReader.prototype.updateResumeValue = function(index, cookieName) {
   // It's likely we can remove resumeCookiePath using getCookiePath()
   const path = this.options.resumeCookiePath
     || this.getCookiePath(window.location.pathname);
-  BookReader.docCookies.setItem(cookieName || 'br-resume', index, ttl, path, null, false);
+  // BookReader.docCookies.setItem(cookieName || 'br-resume', index, ttl, path, null, false);
 }

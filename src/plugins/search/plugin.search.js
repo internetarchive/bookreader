@@ -42,7 +42,6 @@ BookReader.prototype.setup = (function (super_) {
     this.searchResults = null;
     this.searchInsideUrl = options.searchInsideUrl;
     this.enableSearch = options.enableSearch;
-    this.goToFirstResult = false;
 
     // Base server used by some api calls
     this.bookId = options.bookId;
@@ -65,7 +64,7 @@ BookReader.prototype.init = (function (super_) {
     if (this.options.enableSearch && this.options.initialSearchTerm) {
       this.search(
         this.options.initialSearchTerm,
-        { goToFirstResult: this.goToFirstResult, suppressFragmentChange: true }
+        { goToFirstResult: this.options.goToFirstResult, suppressFragmentChange: true }
       );
     }
   };
@@ -110,6 +109,7 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
   const options = jQuery.extend({}, defaultOptions, overrides);
   this.suppressFragmentChange = options.suppressFragmentChange;
 
+  console.log('options:- ', options)
   // strip slashes, since this goes in the url
   this.searchTerm = term.replace(/\//g, ' ');
 
@@ -199,11 +199,22 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
   this.searchResults = results;
+  console.log('11options.goToFirstResult:- ', options.goToFirstResult);
 
   this.updateSearchHilites();
   this.removeProgressPopup();
   if (options.goToFirstResult) {
-    this._searchPluginGoToResult(results.matches[0].par[0].page);
+    console.log('results.matches[0].par[0].page', results.matches[0].par[0].page)
+    let index = results.matches[0].par[0].page;
+    this._searchPluginGoToResult((index % 2 === 0) ? index : --index);
+
+    // if (index % 2 === 0) {
+    //   console.log('even');
+    //   this._searchPluginGoToResult(index);
+    // } else {
+    //   console.log('odd');
+    //   this._searchPluginGoToResult(--index);
+    // }
   }
   this.trigger('SearchCallback', { results, options, instance: this });
 }
