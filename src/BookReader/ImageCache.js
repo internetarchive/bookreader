@@ -103,6 +103,7 @@ export class ImageCache {
       'class': 'BRpageimage',
       'alt': 'Book page image',
       src: page.getURI(validReduce, 0),
+      'style': 'display: none;'
     })
       .data('reduce', validReduce);
     if (this.useSrcSet) {

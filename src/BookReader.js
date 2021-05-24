@@ -197,6 +197,7 @@ BookReader.prototype.setup = function(options) {
   this.bookUrlText = options.bookUrlText;
   this.bookUrlTitle = options.bookUrlTitle;
   this.titleLeaf = options.titleLeaf;
+  this.bookId = options.bookId;
 
   this.metadata = options.metadata;
   this.thumbnail = options.thumbnail;
@@ -221,6 +222,12 @@ BookReader.prototype.setup = function(options) {
   if (options.getPageProp) BookReader.prototype.getPageProp = options.getPageProp;
   if (options.getSpreadIndices) BookReader.prototype.getSpreadIndices = options.getSpreadIndices;
   if (options.leafNumToIndex) BookReader.prototype.leafNumToIndex = options.leafNumToIndex;
+
+  if (options.enablePDFs) {
+    this.enablePDFs = options.enablePDFs;
+    this.pdfSources = options.pdfSources;
+    this.pdf = null;
+  }
 
   /** @type {{[name: string]: JQuery}} */
   this.refs = {};
@@ -283,6 +290,19 @@ Object.defineProperty(BookReader.prototype, 'leafEdgeR', {
  * At top of file so they can be used below
  */
 BookReader.util = utils;
+
+BookReader.prototype.getPDF = async function() {
+  console.log("getPDF getPDF");
+
+  const path = this.pdfSources[0];
+  const url = `https://www-isa.archive.org/cors/${this.bookId}/${path}`;
+
+  const loadFile = window.pdfjsLib.getDocument(url);
+  this.pdfFileLoader = loadFile;
+  this.pdf = await loadFile.promise;
+  console.log(this.pdfFileLoader, this.pdfFileLoader.promise);
+  this.drawLeafs();
+}
 
 /**
  * Helper to merge in params in to a params object.
@@ -463,7 +483,7 @@ BookReader.prototype.getInitialMode = function(params) {
  * This is called by the client to initialize BookReader.
  * It renders onto the DOM. It should only be called once.
  */
-BookReader.prototype.init = function() {
+BookReader.prototype.init = async function() {
   this.init.initComplete = false;
   this.pageScale = this.reduce; // preserve current reduce
 
@@ -510,10 +530,19 @@ BookReader.prototype.init = function() {
 
   // Switch navbar controls on mobile/desktop
   this.switchNavbarControls();
+  this.initUIStrings();
 
   this.resizeBRcontainer();
+
+  if (this.enablePDFs) {
+    console.log("AWAIT pdf");
+    this.showProgressPopup('loading pdf in pdfjs');
+    await this.getPDF();
+    console.log("END AWAIT pdf");
+    this.removeProgressPopup();
+  }
+
   this.updateFromParams(params);
-  this.initUIStrings();
 
   // Bind to events
 
@@ -732,6 +761,10 @@ BookReader.prototype._createPageContainer = function(index) {
     isProtected: this.protected,
     imageCache: this.imageCache,
     loadingImage: this.imagesBaseURL + 'loading.gif',
+    usePDF: !!this.options.enablePDFs,
+    pdfSources: this.options.pdfSources || [],
+    index,
+    pdfJSInstance: this.pdf
   });
 };
 

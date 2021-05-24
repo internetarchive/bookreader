@@ -10,11 +10,18 @@ export class PageContainer {
    * @param {boolean} opts.isProtected Whether we're in a protected book
    * @param {ImageCache} opts.imageCache
    * @param {string} opts.loadingImage
+   * @param {boolean} opts.usePDF
+   * @param {array} opts.pdfSources
+   * @param {number} opts.index
    */
-  constructor(page, {isProtected, imageCache, loadingImage}) {
+  constructor(page, {pdfJSInstance, isProtected, imageCache, loadingImage, usePDF = false, pdfSources = [], index}) {
     this.page = page;
     this.imageCache = imageCache;
     this.loadingImage = loadingImage;
+    this.usePDF = usePDF;
+    this.pdfSources = pdfSources;
+    this.index = index;
+    this.pdf = pdfJSInstance;
     this.$container = $('<div />', {
       'class': `BRpagecontainer ${page ? `pagediv${page.index}` : 'BRemptypage'}`,
       css: { position: 'absolute' },
@@ -25,8 +32,17 @@ export class PageContainer {
       this.$container.addClass('protected');
     }
 
+    if (usePDF) {
+      const pageCanvas = $('<canvas />', {
+        id: `pdf-canvas-${page.index}`
+      })
+      this.canvas = pageCanvas;
+      this.$container.append(pageCanvas);
+    }
+
     /** @type {JQuery<HTMLImageElement>} The main book page image */
     this.$img = null;
+    console.log("container", this.index, this.page);
   }
 
   /**
@@ -70,6 +86,36 @@ export class PageContainer {
         });
     }
 
+    if (this.usePDF) {
+      this.drawPDFpage(reduce, dimensions);
+    }
+
     return this;
+  }
+
+  async drawPDFpage(scale, dimensions) {
+    console.log('****** drawPDFpage', this.index, this.pdf);
+    if (!this.index || !this.pdf?.getPage) {
+      return;
+    }
+    // Load information from the first page.
+    const page = await this.pdf?.getPage(this.index);
+
+    const viewport = page.getViewport({scale: 1});
+    console.log("page", page);
+
+    // Apply page dimensions to the <canvas> element.
+    const context = this.canvas[0].getContext("2d");
+    this.canvas[0].style.height = `${dimensions.height}px`;
+    this.canvas[0].style.width = '99%';
+    console.log("VIewport", viewport);
+
+    // Render the page into the <canvas> element.
+    const renderContext = {
+      canvasContext: context,
+      viewport: viewport
+    };
+    await page.render(renderContext);
+    console.log("Page rendered!");
   }
 }
