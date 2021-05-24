@@ -147,6 +147,7 @@ export class Mode1Up {
 
       for (const {page, top, bottom} of pagesToDisplay) {
         if (!this.br.displayedIndices.includes(page.index)) {
+          console.log("!this.br.displayedIndices.includes(page.index)", page.index, this.br.displayedIndices);
           const height = bottom - top;
           const width = this.physicalInchesToDisplayPixels(page.widthInches);
           const reduce = page.width / width;

@@ -22,6 +22,7 @@ export class PageContainer {
     this.pdfSources = pdfSources;
     this.index = index;
     this.pdf = pdfJSInstance;
+    this.pdfScale = 0;
     this.$container = $('<div />', {
       'class': `BRpagecontainer ${page ? `pagediv${page.index}` : 'BRemptypage'}`,
       css: { position: 'absolute' },
@@ -42,7 +43,6 @@ export class PageContainer {
 
     /** @type {JQuery<HTMLImageElement>} The main book page image */
     this.$img = null;
-    console.log("container", this.index, this.page);
   }
 
   /**
@@ -52,7 +52,7 @@ export class PageContainer {
    */
   update({dimensions = null, reduce = null}) {
     if (this.usePDF && this.fetchingPdf) {
-      console.log("-- update--- fetching pdf page: ", this.index);
+      console.log("-- update--- fetching pdf page: ", this.index, this.pdfScale);
       return;
     }
 
@@ -113,9 +113,19 @@ export class PageContainer {
     const viewport = page.getViewport({scale: 1});
 
     const desiredWidth = $(this.$container).height();
-    this.pdfScale = desiredWidth / viewport.width;
+    const desiredScale = desiredWidth / viewport.width;
+
+    if (!desiredScale) {
+      console.log('**exit::: !desiredScale: idx, this.pdfScale, desiredScale ', this.index, this.pdfScale, desiredScale);
+      this.fetchingPdf = false;
+      return;
+    }
+
+    this.pdfScale = desiredScale;
+
     const scaledViewport = page.getViewport({ scale: this.pdfScale });
-    console.log("page, scaledViewport, desiredWidth", this.index, page, scaledViewport, desiredWidth);
+
+    console.log('*!!*draw! idx, scaledViewport, this.pdfScale', this.index, scaledViewport, this.pdfScale);
 
     // Apply page dimensions to the <canvas> element.
     const thisCanvas = this.canvas[0];

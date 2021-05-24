@@ -62,6 +62,7 @@ export class Mode2Up {
    * Important: `this.br.refs.$brTwoPageView` parent container must be emptied before calling
    */
   drawLeafs() {
+    console.log("2up draw leafs");
     const $twoPageViewEl = this.br.refs.$brTwoPageView;
     const indexL = this.br.twoPage.currentIndexL;
     const indexR = this.br.twoPage.currentIndexR;
@@ -1197,6 +1198,10 @@ export class Mode2Up {
    * as wells as any nearby pages.
    */
   prefetch() {
+    if (this.br.usePDF) {
+      console.log('2up prefetch -- exiting');
+      return;
+    }
     // $$$ We should check here if the current indices have finished
     //     loading (with some timeout) before loading more page images
     //     See https://bugs.edge.launchpad.net/bookreader/+bug/511391
