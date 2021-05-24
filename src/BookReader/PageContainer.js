@@ -51,6 +51,11 @@ export class PageContainer {
    * @param {number} param0.reduce
    */
   update({dimensions = null, reduce = null}) {
+    if (this.usePDF && this.fetchingPdf) {
+      console.log("-- update--- fetching pdf page: ", this.index);
+      return;
+    }
+
     if (dimensions) {
       this.$container.css(dimensions);
     }
@@ -93,22 +98,31 @@ export class PageContainer {
     return this;
   }
 
-  async drawPDFpage(scale = 1, dimensions) {
+  async drawPDFpage(scalez = 1, dimensions) {
+    if (this.fetchingPdf) {
+      console.log("fetching pdf page: ", this.index);
+      return;
+    }
+    this.fetchingPdf = true;
     console.log('****** drawPDFpage', this.index, this.pdf);
     if (!this.index || !this.pdf?.getPage) {
       return;
     }
     // Load information from the first page.
     const page = await this.pdf?.getPage(this.index);
-
     const viewport = page.getViewport({scale: 1});
-    console.log("page", page);
+
+    const desiredWidth = $(this.$container).height();
+    this.pdfScale = desiredWidth / viewport.width;
+    const scaledViewport = page.getViewport({ scale: this.pdfScale });
+    console.log("page, scaledViewport, desiredWidth", this.index, page, scaledViewport, desiredWidth);
 
     // Apply page dimensions to the <canvas> element.
-    const context = this.canvas[0].getContext("2d");
-    this.canvas[0].height = viewport.height;
-    this.canvas[0].width = viewport.width;
-    console.log("VIewport", viewport);
+    const thisCanvas = this.canvas[0];
+    const context = thisCanvas.getContext("2d");
+    thisCanvas.height = scaledViewport.height;
+    thisCanvas.width = scaledViewport.width;
+    context.clearRect(0, 0, thisCanvas.width, thisCanvas.height);
 
     // Render the page into the <canvas> element.
     const renderContext = {
@@ -117,5 +131,6 @@ export class PageContainer {
     };
     await page.render(renderContext);
     console.log("Page rendered!");
+    this.fetchingPdf = false;
   }
 }
