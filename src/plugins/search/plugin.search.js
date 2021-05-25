@@ -109,7 +109,6 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
   const options = jQuery.extend({}, defaultOptions, overrides);
   this.suppressFragmentChange = options.suppressFragmentChange;
 
-  console.log('options:- ', options)
   // strip slashes, since this goes in the url
   this.searchTerm = term.replace(/\//g, ' ');
 
@@ -199,22 +198,14 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
   this.searchResults = results;
-  console.log('11options.goToFirstResult:- ', options.goToFirstResult);
 
   this.updateSearchHilites();
   this.removeProgressPopup();
   if (options.goToFirstResult) {
-    console.log('results.matches[0].par[0].page', results.matches[0].par[0].page)
-    let index = results.matches[0].par[0].page;
-    this._searchPluginGoToResult((index % 2 === 0) ? index : --index);
+    const leafNum = results.matches[0].par[0].page;
+    const pageIndex = this._models.book.leafNumToIndex(leafNum);
 
-    // if (index % 2 === 0) {
-    //   console.log('even');
-    //   this._searchPluginGoToResult(index);
-    // } else {
-    //   console.log('odd');
-    //   this._searchPluginGoToResult(--index);
-    // }
+    this._searchPluginGoToResult(pageIndex);
   }
   this.trigger('SearchCallback', { results, options, instance: this });
 }
