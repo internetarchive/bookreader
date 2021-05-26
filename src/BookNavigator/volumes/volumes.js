@@ -8,6 +8,7 @@ export class Volumes extends LitElement {
       subPrefix: { type: String },
       hostUrl: { type: String },
       viewableFiles: { type: Array },
+      isSortAscending: { type: Boolean }
     };
   }
 
@@ -15,6 +16,8 @@ export class Volumes extends LitElement {
     super();
     this.viewableFiles = [];
     this.hostUrl = '';
+    this.subPrefix = '';
+    this.isSortAscending = false;
   }
 
   volumeItemWithImageTitle(item) {
@@ -48,6 +51,36 @@ export class Volumes extends LitElement {
     `
   }
 
+  sortVolumes() {
+    this.isSortAscending = !this.isSortAscending;
+    const sortedFiles = this.viewableFiles.sort((a, b) => {
+      if (this.isSortAscending) return a.title.localeCompare(b.title);
+      else return b.title.localeCompare(a.title);
+    })
+
+    this.viewableFiles  = [...sortedFiles]
+  }
+
+  get sortAscendingIcon() {
+    const icon = html`<ia-icon icon="sortAscending"></ia-icon>`;
+    return html`<button class="sort-asc icon" @click=${() => this.sortVolumes()}>${icon}</button>`;
+  }
+
+  get sortDescendingIcon() {
+    const icon = html`<ia-icon icon="sortDescending"></ia-icon>`;
+    return html`<button class="sort-desc icon" @click=${() => this.sortVolumes()}>${icon}</button>`;
+  }
+
+  get headerIcon() {
+    return this.isSortAscending ? this.sortAscendingIcon : this.sortDescendingIcon
+  }
+
+  get headerSection() {
+    return html `<header>
+      <h3>Viewable Files (${this.viewableFiles.length}) <span>${this.headerIcon}</span></h3> 
+    </header>`;
+  }
+
   get volumesList() {
     const volumes = repeat(this.viewableFiles, volume => volume?.file_prefix, this.volumeItem.bind(this));
     return html`
@@ -60,7 +93,8 @@ export class Volumes extends LitElement {
 
   render() {
     return html`
-      ${this.viewableFiles.length ? this.volumesList : nothing}
+      ${this.headerSection}
+      <div>${this.viewableFiles.length ? this.volumesList : nothing}</div>
     `
   }
 
@@ -142,6 +176,17 @@ export class Volumes extends LitElement {
       .text {
         padding-left: 10px;
       }
+
+      .icon {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        margin-left: .7rem;
+        border: 1px solid var(--primaryTextColor);
+        border-radius: 2px;
+        background: var(--activeButtonBg) 50% 50% no-repeat;
+      }
+
     `;
   }
 }
