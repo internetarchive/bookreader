@@ -138,8 +138,19 @@ export class BookNavigator extends LitElement {
       }),
       share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType),
       bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader),
-      volumes: new VolumesProvider(bookreaderOptions, this.bookreader),
     };
+
+    // add shortcut for volumes if multipleBooksList exists
+    if (this.bookreader.options.enableMultipleBooks) {
+      this.menuProviders.volumes = new VolumesProvider((brInstance) => {
+        if (brInstance) {
+          /* refresh br instance reference */
+          this.bookreader = brInstance;
+        }
+        this.updateMenuContents()
+      }, bookreaderOptions, this.bookreader)
+      this.addMenuShortcut('volumes')
+    }
 
     this.addMenuShortcut('search'); /* start with search as a shortcut */
     this.updateMenuContents();
