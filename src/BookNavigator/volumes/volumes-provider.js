@@ -21,7 +21,7 @@ export default class VolumesProvider {
     this.component.hostUrl = volumes.baseHost;
     this.component.viewableFiles = this.viewableFiles;
 
-    this.id = 'multiple-books';
+    this.id = 'volumes';
     this.label = `Viewable Files (${this.volumeCount})`
     this.icon = html`<ia-icon icon="volumes" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
     this.actionButton = this.headerIcon
