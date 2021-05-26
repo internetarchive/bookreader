@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
-import sortAscendingIcon from '../assets/icon_sort_ascending.js';
-import sortDescendingIcon from '../assets/icon_sort_descending.js';
+// import sortAscendingIcon from '../assets/icon_sort_ascending.js';
+// import sortDescendingIcon from '../assets/icon_sort_descending.js';
 
 import './volumes.js';
 
@@ -45,58 +45,26 @@ const stub = {
 export default class VolumesProvider {
 
   constructor(volumes, bookreader) {
+    console.log('volumesProvider constructor')
     this.component = document.createElement('viewable-files');
 
     const files = stub.value.files.by_subprefix
     this.viewableFiles = Object.keys(files).map(item => files[item]);
-    this.sortAscending = false
+    this.isSortAscending = false
     this.volumeCount = Object.keys(files).length;
 
-    this.component.subPrefix = bookreader.options.subPrefix
+    this.component.subPrefix = bookreader.options === undefined ? '' : bookreader.options.subPrefix
     this.component.hostUrl = volumes.baseHost;
-    this.component.viewableFiles = [];
+    this.component.viewableFiles = this.viewableFiles;
 
-    this.sortVolumes()
-    this.setupMenu()
-  }
-
-  get sortAscendingIcon() {
-    return html`<span>${sortAscendingIcon}</span>`;
-  }
-
-  get sortDescendingIcon() {
-    return html`<span>${sortDescendingIcon}</span>`;
+    this.id = 'multiple-books';
+    this.label = `Viewable Files (${this.volumeCount})`
+    this.icon = html`<ia-icon icon="volumes" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
   }
 
   setupMenu() {
     this.label = 'Viewable files';
-    this.id = 'multiple-books';
-    this.icon = html`<ia-icon icon="volumes" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
-
     this.menuDetails = `(${this.volumeCount})`
-    this.actionButton = html`
-      <button @click=${() => this.sortVolumes()}>${this.menuIcon}</button>
-    `;
-  }
-
-  sortVolumes() {
-    this.sortAscending = !this.sortAscending;
-    const sortedFiles = this.viewableFiles.sort((a, b) => {
-      if (this.sortAscending) return a.title.localeCompare(b.title);
-      else return b.title.localeCompare(a.title);
-    })
-
-    this.component.viewableFiles  = [...sortedFiles]
-    this.updateActionButton()
-  }
-
-  updateActionButton() {
-    console.log('isSortAscending: ', this.sortAscending)
-    this.menuIcon = this.sortAscending ? this.sortAscendingIcon : this.sortDescendingIcon
-    console.log("menuIcon: ", this.menuIcon)
-    this.actionButton = html`
-      <button @click=${() => this.sortVolumes()}>${this.menuIcon}</button>
-    `;
   }
 
   bindEvents() {
