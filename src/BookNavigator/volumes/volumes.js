@@ -7,17 +7,15 @@ export class Volumes extends LitElement {
     return {
       subPrefix: { type: String },
       hostUrl: { type: String },
-      viewableFiles: { type: Array },
-      isSortAscending: { type: Boolean }
+      viewableFiles: { type: Array }
     };
   }
 
   constructor() {
     super();
-    this.viewableFiles = [];
-    this.hostUrl = '';
     this.subPrefix = '';
-    this.isSortAscending = false;
+    this.hostUrl = '';
+    this.viewableFiles = [];
   }
 
   volumeItemWithImageTitle(item) {
@@ -51,36 +49,6 @@ export class Volumes extends LitElement {
     `
   }
 
-  sortVolumes() {
-    this.isSortAscending = !this.isSortAscending;
-    const sortedFiles = this.viewableFiles.sort((a, b) => {
-      if (this.isSortAscending) return a.title.localeCompare(b.title);
-      else return b.title.localeCompare(a.title);
-    })
-
-    this.viewableFiles  = [...sortedFiles]
-  }
-
-  get sortAscendingIcon() {
-    const icon = html`<ia-icon icon="sortAscending"></ia-icon>`;
-    return html`<button class="sort-asc icon" @click=${() => this.sortVolumes()}>${icon}</button>`;
-  }
-
-  get sortDescendingIcon() {
-    const icon = html`<ia-icon icon="sortDescending"></ia-icon>`;
-    return html`<button class="sort-desc icon" @click=${() => this.sortVolumes()}>${icon}</button>`;
-  }
-
-  get headerIcon() {
-    return this.isSortAscending ? this.sortAscendingIcon : this.sortDescendingIcon
-  }
-
-  get headerSection() {
-    return html `<header>
-      <h3>Viewable Files (${this.viewableFiles.length}) <span>${this.headerIcon}</span></h3> 
-    </header>`;
-  }
-
   get volumesList() {
     const volumes = repeat(this.viewableFiles, volume => volume?.file_prefix, this.volumeItem.bind(this));
     return html`
@@ -93,7 +61,6 @@ export class Volumes extends LitElement {
 
   render() {
     return html`
-      ${this.headerSection}
       <div>${this.viewableFiles.length ? this.volumesList : nothing}</div>
     `
   }
