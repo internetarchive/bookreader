@@ -1,3 +1,7 @@
+# 5.0.0-7
+- Fix: cancel search @iisa
+- Dev: remove dead css @cdrini
+- Dev: GHA node_modules caching @cdrini
 # 5.0.0-6
 - Fix: Fullscreen toggle sets/unsets animating flag @iisa
 # 5.0.0-5
