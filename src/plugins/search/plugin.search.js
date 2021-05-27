@@ -202,9 +202,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   this.updateSearchHilites();
   this.removeProgressPopup();
   if (options.goToFirstResult) {
-    const leafNum = results.matches[0].par[0].page;
-    const pageIndex = this._models.book.leafNumToIndex(leafNum);
-
+    const pageIndex = this._models.book.leafNumToIndex(results.matches[0].par[0].page);
     this._searchPluginGoToResult(pageIndex);
   }
   this.trigger('SearchCallback', { results, options, instance: this });
