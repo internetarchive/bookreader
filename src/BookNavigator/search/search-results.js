@@ -5,6 +5,7 @@ import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './a-search-result.js';
 import checkmarkIcon from '../assets/icon_checkmark.js';
 import closeIcon from '../assets/icon_close.js';
+import buttonCSS from '../assets/button-base.js';
 
 
 export class IABookSearchResults extends LitElement {
@@ -119,7 +120,7 @@ export class IABookSearchResults extends LitElement {
       <div class="loading">
         <ia-activity-indicator mode="processing"></ia-activity-indicator>
         <p>Searching</p>
-        <button class="cancel-search" @click=${this.cancelSearch}>Cancel</button>
+        <button class="ia-button external cancel-search" @click=${this.cancelSearch}>Cancel</button>
       </div>
     `;
   }
@@ -186,7 +187,7 @@ export class IABookSearchResults extends LitElement {
     const searchResultBorder = css`var(--searchResultBorder, #adaedc)`;
     const activeButtonBg = css`(--tertiaryBGColor, #333)`;
 
-    return css`
+    const mainCSS = css`
       :host {
         display: block;
         height: 100%;
@@ -346,18 +347,6 @@ export class IABookSearchResults extends LitElement {
         font-size: 1.2rem;
       }
 
-      .loading button {
-        -webkit-appearance: none;
-        appearance: none;
-        padding: .5rem .7rem;
-        font: normal 1.4rem "Helvetica Neue", Helvetica, Arial, sans-serif;
-        border: 1px solid var(--secondaryCTABorder);
-        border-radius: 4px;
-        cursor: pointer;
-        background: var(--secondaryCTAFill);
-        color: var(--primaryTextColor);
-      }
-
       ia-activity-indicator {
         display: block;
         width: 40px;
@@ -365,6 +354,7 @@ export class IABookSearchResults extends LitElement {
         margin: 0 auto;
       }
     `;
+    return [buttonCSS, mainCSS];
   }
 }
 customElements.define('ia-book-search-results', IABookSearchResults);
