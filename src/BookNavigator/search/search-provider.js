@@ -1,6 +1,5 @@
 import { html } from 'lit-element';
 import { nothing } from 'lit-html';
-import '@internetarchive/icon-close/icon-close.js';
 
 import './search-results';
 
