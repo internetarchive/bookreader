@@ -191,6 +191,9 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
     jsonpCallback: 'BRSearchInProgress'
   }).then(processSearchResults)
     .fail((xhr) => {
+      if (xhr.status == 200) {
+        return;
+      }
       // catch any xhr failures here
       // do not route to generic error handler
       // as args do not match
