@@ -175,17 +175,20 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
 
   const cleanup = () => {
     this.searchXHR = null
+    window.BRSearchInProgress = () => {};
   };
 
   const beforeSend = (xhr) => {
     this.searchXHR = xhr;
+    window.BRSearchInProgress = processSearchResults;
   };
 
   this.trigger('SearchStarted', { term: this.searchTerm, instance: this });
   $.ajax({
     url: url,
     dataType: 'jsonp',
-    beforeSend
+    beforeSend,
+    jsonpCallback: 'BRSearchInProgress'
   }).then(processSearchResults)
     .fail((xhr) => {
       // catch any xhr failures here
