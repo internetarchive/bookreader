@@ -51,4 +51,9 @@ export default css`
     background-color: var(--primaryErrorCTAFill);
     border-color: var(--primaryErrorCTABorder);
   }
+
+  .ia-button.external {
+    background: var(--secondaryCTAFill);
+    border-color: var(--secondaryCTABorder);
+  }
 `;

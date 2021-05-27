@@ -20,6 +20,8 @@
  *   the book has not had OCR text indexed yet. Receives `instance`
  * @event BookReader:SearchCallbackEmpty - When no results found. Receives
  *   `instance`
+ * @event BookReader:SearchCanceled - When no results found. Receives
+ *   `instance`
  */
 import SearchView from './view.js';
 
@@ -50,9 +52,17 @@ BookReader.prototype.setup = (function (super_) {
     this.subPrefix = options.subPrefix;
     this.bookPath = options.bookPath;
 
+    this.searchXHR = null;
+    this._cancelSearch.bind(this);
+    this.cancelSearchRequest.bind(this);
+
     if (this.searchView) { return; }
     this.searchView = new SearchView({
       br: this,
+      cancelSearch: () => {
+        this._cancelSearch();
+        this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
+      }
     });
   };
 })(BookReader.prototype.setup);
@@ -144,7 +154,15 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
 
   const url = `${baseUrl}${paramStr}`;
 
+  const cleanup = () => {
+    this.searchXHR = null
+    window.BRSearchInProgress = () => {};
+  };
+
   const processSearchResults = (searchInsideResults) => {
+    if (!this.searchXHR) {
+      return;
+    }
     const responseHasError = searchInsideResults.error || !searchInsideResults.matches.length;
     const hasCustomError = typeof options.error === 'function';
     const hasCustomSuccess = typeof options.success === 'function';
@@ -158,14 +176,47 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
         ? options.success.call(this, searchInsideResults, options)
         : this.BRSearchCallback(searchInsideResults, options);
     }
+    cleanup();
   };
 
-  this.trigger('SearchStarted', { term: this.searchTerm });
+  const beforeSend = (xhr) => {
+    this.searchXHR = xhr;
+    window.BRSearchInProgress = processSearchResults;
+  };
+
+  this.trigger('SearchStarted', { term: this.searchTerm, instance: this });
   return $.ajax({
     url: url,
-    dataType: 'jsonp'
-  }).then(processSearchResults);
+    dataType: 'jsonp',
+    beforeSend,
+    jsonpCallback: 'BRSearchInProgress'
+  }).then(processSearchResults)
 };
+
+/**
+ * cancels AJAX Call
+ * emits custom event
+ */
+BookReader.prototype._cancelSearch = function () {
+  this.searchXHR?.abort();
+  this.searchView.clearSearchFieldAndResults(false);
+  this.searchTerm = '';
+  this.searchXHR = null;
+  this.searchResults = [];
+  window.BRSearchInProgress = () => {};
+}
+
+/**
+ * External function to cancel search
+ * checks for term & xhr in flight before running
+ */
+BookReader.prototype.cancelSearchRequest = function () {
+  if (this.searchXHR !== null) {
+    this._cancelSearch();
+    this.searchView.toggleSearchPending();
+    this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
+  }
+}
 
 /**
   * @typedef {object} SearchInsideMatchBox
@@ -198,7 +249,7 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
  * @param {boolean} options.goToFirstResult
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
-  this.searchResults = results;
+  this.searchResults = results || [];
 
   this.updateSearchHilites();
   this.removeProgressPopup();
@@ -259,7 +310,7 @@ BookReader.prototype.updateSearchHilites = function() {
 BookReader.prototype.updateSearchHilites1UP = function() {
   const results = this.searchResults;
   if (null == results) return;
-  results.matches.forEach(match => {
+  results.matches?.forEach(match => {
     match.par[0].boxes.forEach(box => {
       const pageIndex = this.leafNumToIndex(box.page);
       const pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
@@ -295,7 +346,7 @@ BookReader.prototype.updateSearchHilites2UP = function() {
 
   if (results === null) return;
 
-  const { matches } = results;
+  const { matches = [] } = results;
   matches.forEach((match) => {
     match.par[0].boxes.forEach(box => {
       const pageIndex = this.leafNumToIndex(match.par[0].page);

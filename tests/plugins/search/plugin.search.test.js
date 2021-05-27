@@ -46,6 +46,7 @@ beforeEach(() => {
   br = new BookReader();
   br.initToolbar = jest.fn();
   br.showProgressPopup = jest.fn();
+  br.searchXHR = jest.fn();
 });
 
 afterEach(() => {
