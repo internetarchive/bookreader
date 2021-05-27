@@ -59,7 +59,7 @@ BookReader.prototype.setup = (function (super_) {
     if (this.searchView) { return; }
     this.searchView = new SearchView({
       br: this,
-      cancelSearch: () => {
+      searchCancelledCallback: () => {
         this._cancelSearch();
         this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
       }
