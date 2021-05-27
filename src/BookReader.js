@@ -2240,8 +2240,8 @@ BookReader.prototype.showProgressPopup = function(msg, onCloseCallback) {
     const closeButton = document.createElement('button');
     closeButton.setAttribute('title', 'close');
     closeButton.setAttribute('class', 'close-popup');
-    const icon = document.createElement('ia-icon-close');
-    // icon.setAttribute('class', 'icon icon-close');
+    const icon = document.createElement('span');
+    icon.setAttribute('class', 'icon icon-close-dark');
     $(closeButton).append(icon);
     closeButton.addEventListener('click', () => {
       onCloseCallback();

@@ -72,14 +72,15 @@
     top: 0;
     right: 0;
     width: 30px;
+    width: 30px;
     padding: 0;
     border: 0;
     background-color: transparent;
 
-    ia-icon-close {
-      display: block;
-      width: 100%;
-      --iconFillColor: #222;
+    .icon.icon-close-dark {
+      position: absolute;
+      top: 3px;
+      right: 3px;
     }
   }
 }
