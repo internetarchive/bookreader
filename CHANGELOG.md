@@ -1,3 +1,6 @@
+# 5.0.0-8
+- Fix: cancel search fix naming var @iisa
+
 # 5.0.0-7
 - Fix: cancel search @iisa
 - Dev: remove dead css @cdrini
