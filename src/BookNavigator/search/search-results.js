@@ -351,10 +351,10 @@ export class IABookSearchResults extends LitElement {
         appearance: none;
         padding: .5rem .7rem;
         font: normal 1.4rem "Helvetica Neue", Helvetica, Arial, sans-serif;
-        border: 1px solid var(--primaryTextColor);
-        border-radius: 3px;
+        border: 1px solid var(--secondaryCTABorder);
+        border-radius: 4px;
         cursor: pointer;
-        background: transparent;
+        background: var(--secondaryCTAFill);
         color: var(--primaryTextColor);
       }
 
