@@ -53,6 +53,13 @@ afterEach(() => {
 });
 
 describe('Plugin: Search', () => {
+
+  const createBRWithOverrides = (overrides) => {
+    br = new BookReader($.extend(true, br.options, overrides));
+    br.search('foo', { goToFirstResult: true});
+    // navbar = br._components.navbar;
+  };
+
   test('has option flag', () => {
     expect(BookReader.defaultOptions.enableSearch).toEqual(true);
   });
@@ -114,6 +121,12 @@ describe('Plugin: Search', () => {
     br.init();
     br.search('foo');
     expect(triggeredEvents()).toContain(`${namespace}SearchStarted`);
+  });
+
+  test('SearchStarted event fires and should go to first result', () => {    
+    br.init();
+    br.search('foo', { goToFirstResult: true});
+    expect(br.options.goToFirstResult).toBeTruthy();
   });
 
   test('SearchCallback event fires when AJAX search returns results', () => {
