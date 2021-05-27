@@ -7,7 +7,7 @@ class SearchView {
    * @event BookReader:SearchResultsCleared - when the search results nav gets cleared
    * @event BookReader:ToggleSearchMenu - when search results menu should toggle
    */
-  constructor({ br, cancelSearch = () => {} }) {
+  constructor({ br, searchCancelledCallback = () => {} }) {
     this.br = br;
 
     // Search results are returned as a text blob with the hits wrapped in
@@ -17,7 +17,7 @@ class SearchView {
     this.matches = [];
     this.cacheDOMElements();
     this.bindEvents();
-    this.cancelSearch = cancelSearch;
+    this.cancelSearch = searchCancelledCallback;
   }
 
   cacheDOMElements() {

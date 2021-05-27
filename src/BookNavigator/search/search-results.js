@@ -91,7 +91,7 @@ export class IABookSearchResults extends LitElement {
   }
 
   dispatchSearchCanceled() {
-    this.dispatchEvent(new CustomEvent('bookSearchCanceled'));
+    this.dispatchEvent(new Event('bookSearchCanceled'));
   }
 
   get resultsCount() {

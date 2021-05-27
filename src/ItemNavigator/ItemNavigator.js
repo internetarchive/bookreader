@@ -89,9 +89,7 @@ export default class ItemNavigator extends LitElement {
    */
   manageSideMenuEvents({ detail }) {
     const { action = '', menuId = '' } = detail;
-    if (!menuId) {
-      return;
-    }
+    if (!menuId) { return; }
     switch (action) {
     case 'open':
       this.openShortcut(menuId);
