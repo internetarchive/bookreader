@@ -4,10 +4,9 @@ import sortDescendingIcon from '../assets/icon_sort_descending.js';
 
 import './volumes.js';
 
-
 export default class VolumesProvider {
 
-  constructor(optionChange, volumes, bookreader) {
+  constructor(optionChange, baseHost, bookreader) {
     this.optionChange = optionChange
     this.component = document.createElement('viewable-files');
 
@@ -17,8 +16,8 @@ export default class VolumesProvider {
     this.isFirstLoad = true
     this.isSortAscending = false;
 
-    this.component.subPrefix = bookreader.options === undefined ? 'theworksofplato01platiala' : bookreader.options.subPrefix;
-    this.component.hostUrl = volumes.baseHost;
+    this.component.subPrefix = bookreader.options === undefined ? '' : bookreader.options.subPrefix;
+    this.component.hostUrl = baseHost;
     this.component.viewableFiles = this.viewableFiles;
 
     this.id = 'volumes';
