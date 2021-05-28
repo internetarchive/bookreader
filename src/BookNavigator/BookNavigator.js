@@ -102,7 +102,6 @@ export class BookNavigator extends LitElement {
    * to keep it in sync.
    */
   initializeBookSubmenus() {
-    const bookreaderOptions = {...this.bookreader.options.multipleFilesList, baseHost: this.baseHost}
     this.menuProviders = {
       search: new SearchProvider(
         /**
@@ -148,7 +147,7 @@ export class BookNavigator extends LitElement {
           this.bookreader = brInstance;
         }
         this.updateMenuContents()
-      }, bookreaderOptions, this.bookreader)
+      }, this.baseHost, this.bookreader)
       this.addMenuShortcut('volumes')
     }
 
