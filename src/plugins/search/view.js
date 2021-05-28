@@ -2,11 +2,12 @@ class SearchView {
   /**
    * @param {object} params
    * @param {object} params.br The BookReader instance
+   * @param {function} params.cancelSearch callback when a user wants to cancel search
    *
    * @event BookReader:SearchResultsCleared - when the search results nav gets cleared
    * @event BookReader:ToggleSearchMenu - when search results menu should toggle
    */
-  constructor({ br }) {
+  constructor({ br, searchCancelledCallback = () => {} }) {
     this.br = br;
 
     // Search results are returned as a text blob with the hits wrapped in
@@ -16,6 +17,7 @@ class SearchView {
     this.matches = [];
     this.cacheDOMElements();
     this.bindEvents();
+    this.cancelSearch = searchCancelledCallback;
   }
 
   cacheDOMElements() {
@@ -39,13 +41,15 @@ class SearchView {
     this.br.$('.BRnavpos .BRsearch').remove();
   }
 
-  clearSearchFieldAndResults() {
+  clearSearchFieldAndResults(dispatchEventWhenComplete = true) {
     this.br.removeSearchResults();
     this.removeResultPins();
     this.emptyMatches();
     this.setQuery('');
     this.teardownSearchNavigation();
-    this.br.trigger('SearchResultsCleared');
+    if (dispatchEventWhenComplete) {
+      this.br.trigger('SearchResultsCleared');
+    }
   }
 
   toggleSidebar() {
@@ -287,18 +291,27 @@ class SearchView {
    */
   toggleSearchPending(bool) {
     if (bool) {
-      this.br.showProgressPopup("Search results will appear below...");
+      this.br.showProgressPopup("Search results will appear below...", () => this.progressPopupClosed());
     }
     else {
       this.br.removeProgressPopup();
     }
   }
 
-  renderErrorModal() {
+  /**
+   * Primary callback when user cancels search popup
+   */
+  progressPopupClosed() {
+    this.toggleSearchPending();
+    this.cancelSearch();
+  }
+
+  renderErrorModal(textIsProcessing = false) {
+    const errorDetails = `${!textIsProcessing ? 'The text may still be processing. ' : ''}Please try again.`;
     this.renderModalMessage(`
       Sorry, there was an error with your search.
       <br />
-      The text may still be processing.
+      ${errorDetails}
     `);
     this.delayModalRemovalFor(4000);
   }
@@ -390,9 +403,14 @@ class SearchView {
     this.setQuery(this.br.searchTerm);
   }
 
-  handleSearchCallbackError() {
+  /**
+   * Event listener for: `BookReader:SearchCallbackError`
+   * @param {CustomEvent} event
+   */
+  handleSearchCallbackError(event = {}) {
     this.toggleSearchPending(false);
-    this.renderErrorModal();
+    const isIndexed = event?.detail?.props?.results?.indexed;
+    this.renderErrorModal(isIndexed);
   }
 
   handleSearchCallbackBookNotIndexed() {
@@ -408,10 +426,10 @@ class SearchView {
   bindEvents() {
     const namespace = 'BookReader:';
 
+    window.addEventListener(`${namespace}SearchCallbackError`, this.handleSearchCallbackError.bind(this));
     $(document).on(`${namespace}SearchCallback`, this.handleSearchCallback.bind(this))
       .on(`${namespace}navToggled`, this.handleNavToggledCallback.bind(this))
       .on(`${namespace}SearchStarted`, this.handleSearchStarted.bind(this))
-      .on(`${namespace}SearchCallbackError`, this.handleSearchCallbackError.bind(this))
       .on(`${namespace}SearchCallbackBookNotIndexed`, this.handleSearchCallbackBookNotIndexed.bind(this))
       .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this))
       .on(`${namespace}pageChanged`, this.updateSearchNavigation.bind(this));

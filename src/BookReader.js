@@ -2227,21 +2227,37 @@ BookReader.prototype._getPageURI = function(index, reduce, rotate) {
 };
 
 /**
- * @param {string}
+ * @param {string} msg
+ * @param {function|undefined} onCloseCallback
  */
-BookReader.prototype.showProgressPopup = function(msg) {
+BookReader.prototype.showProgressPopup = function(msg, onCloseCallback) {
   if (this.popup) return;
 
   this.popup = document.createElement("div");
   $(this.popup).prop('className', 'BRprogresspopup');
-  var bar = document.createElement("div");
+
+  if (typeof(onCloseCallback) === 'function') {
+    const closeButton = document.createElement('button');
+    closeButton.setAttribute('title', 'close');
+    closeButton.setAttribute('class', 'close-popup');
+    const icon = document.createElement('span');
+    icon.setAttribute('class', 'icon icon-close-dark');
+    $(closeButton).append(icon);
+    closeButton.addEventListener('click', () => {
+      onCloseCallback();
+      this.removeProgressPopup();
+    });
+    $(this.popup).append(closeButton);
+  }
+
+  const bar = document.createElement("div");
   $(bar).css({
     height:   '20px'
   }).prop('className', 'BRprogressbar');
   $(this.popup).append(bar);
 
   if (msg) {
-    var msgdiv = document.createElement("div");
+    const msgdiv = document.createElement("div");
     msgdiv.innerHTML = msg;
     $(this.popup).append(msgdiv);
   }
