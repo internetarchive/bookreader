@@ -44,7 +44,6 @@ BookReader.prototype.setup = (function (super_) {
     this.searchResults = null;
     this.searchInsideUrl = options.searchInsideUrl;
     this.enableSearch = options.enableSearch;
-    this.goToFirstResult = false;
 
     // Base server used by some api calls
     this.bookId = options.bookId;
@@ -75,7 +74,7 @@ BookReader.prototype.init = (function (super_) {
     if (this.options.enableSearch && this.options.initialSearchTerm) {
       this.search(
         this.options.initialSearchTerm,
-        { goToFirstResult: this.goToFirstResult, suppressFragmentChange: true }
+        { goToFirstResult: this.options.goToFirstResult, suppressFragmentChange: true }
       );
     }
   };
@@ -254,7 +253,8 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   this.updateSearchHilites();
   this.removeProgressPopup();
   if (options.goToFirstResult) {
-    this._searchPluginGoToResult(results.matches[0].par[0].page);
+    const pageIndex = this._models.book.leafNumToIndex(results.matches[0].par[0].page);
+    this._searchPluginGoToResult(pageIndex);
   }
   this.trigger('SearchCallback', { results, options, instance: this });
 }

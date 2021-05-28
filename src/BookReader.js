@@ -377,7 +377,7 @@ BookReader.prototype.initParams = function() {
   // Check for Search plugin
   if (this.options.enableSearch) {
     // Go to first result only if no default or URL page
-    this.goToFirstResult = !params.pageFound
+    this.options.goToFirstResult = !params.pageFound
 
     // If initialSearchTerm not set
     if (!this.options.initialSearchTerm) {

@@ -117,6 +117,12 @@ describe('Plugin: Search', () => {
     expect(triggeredEvents()).toContain(`${namespace}SearchStarted`);
   });
 
+  test('SearchStarted event fires and should go to first result', () => {
+    br.init();
+    br.search('foo', { goToFirstResult: true});
+    expect(br.options.goToFirstResult).toBeTruthy();
+  });
+
   test('SearchCallback event fires when AJAX search returns results', () => {
     br.init();
     const dfd = br.search('foo');
