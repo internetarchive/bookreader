@@ -16,7 +16,7 @@ body {
     display: none;
 }
 
-.BookReader {
+ia-bookreader {
     height: 600px;
     overflow: hidden;
     margin: 0 auto;
@@ -28,7 +28,7 @@ body {
         width: 100%;
         overflow: hidden;
     }
-    .BRbodyMobileNavEnabled .BookReader {
+    .BRbodyMobileNavEnabled ia-bookreader {
         top: 0;
         bottom: 0;
         left: 0;

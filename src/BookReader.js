@@ -474,7 +474,12 @@ BookReader.prototype.init = function() {
   // Setup Navbars and other UI
   this.isTouchDevice = !!('ontouchstart' in window) || !!('msmaxtouchpoints' in window.navigator);
 
-  this.refs.$br = $(this.el)
+  let $el = $(this.el);
+  if (customElements.get($el[0].tagName.toLowerCase())) {
+    $el = $($el[0].shadowRoot.querySelector('#BookReader'));
+  }
+
+  this.refs.$br = $el
     .empty()
     .removeClass()
     .addClass("ui-" + this.ui)
