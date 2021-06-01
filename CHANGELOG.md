@@ -1,3 +1,5 @@
+# 5.0.0-9
+- Fix: search-inside results check for page's index via `leafNum` @nsharma123
 # 5.0.0-8
 - Fix: cancel search fix naming var @iisa
 
