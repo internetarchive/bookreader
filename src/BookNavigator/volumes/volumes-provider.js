@@ -13,7 +13,7 @@ export default class VolumesProvider {
     const files = bookreader.options.multipleBooksList?.by_subprefix
     this.viewableFiles = Object.keys(files).map(item => files[item]);
     this.volumeCount = Object.keys(files).length;
-    this.isFirstLoad = true
+    this.isFirstLoad = true;
     this.isSortAscending = false;
 
     this.component.subPrefix = bookreader.options === undefined ? '' : bookreader.options.subPrefix;
@@ -23,8 +23,8 @@ export default class VolumesProvider {
     this.id = 'volumes';
     this.label = `Viewable Files (${this.volumeCount})`
     this.icon = html`<ia-icon icon="volumes" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
-    this.actionButton = this.headerIcon
-    this.sortVolumes()
+    this.actionButton = this.headerIcon;
+    this.sortVolumes();
   }
 
   get sortAscendingIcon() {
@@ -50,10 +50,10 @@ export default class VolumesProvider {
 
     this.component.viewableFiles  = [...sortedFiles]
     if (!this.isFirstLoad) {
-      this.actionButton = this.headerIcon
-      this.optionChange(this.bookreader)
+      this.actionButton = this.headerIcon;
+      this.optionChange(this.bookreader);
     } else {
-      this.isFirstLoad = false
+      this.isFirstLoad = false;
     }
   }
 
