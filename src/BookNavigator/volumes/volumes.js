@@ -32,7 +32,7 @@ export class Volumes extends LitElement {
           </div>
         </a>
       </li>
-    `
+    `;
   }
 
   volumeItem(item) {
@@ -46,7 +46,7 @@ export class Volumes extends LitElement {
           </a>
         </div>
       </li>
-    `
+    `;
   }
 
   get volumesList() {
@@ -56,13 +56,13 @@ export class Volumes extends LitElement {
         ${volumes}
         <div class="separator"></div> 
       </ul>
-    `
+    `;
   }
 
   render() {
     return html`
       <div>${this.viewableFiles.length ? this.volumesList : nothing}</div>
-    `
+    `;
   }
 
   static get styles() {

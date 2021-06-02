@@ -146,9 +146,9 @@ export class BookNavigator extends LitElement {
           /* refresh br instance reference */
           this.bookreader = brInstance;
         }
-        this.updateMenuContents()
-      }, this.baseHost, this.bookreader)
-      this.addMenuShortcut('volumes')
+        this.updateMenuContents();
+      }, this.baseHost, this.bookreader);
+      this.addMenuShortcut('volumes');
     }
 
     this.addMenuShortcut('search'); /* start with search as a shortcut */
