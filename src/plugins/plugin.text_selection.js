@@ -13,6 +13,8 @@ export const DEFAULT_OPTIONS = {
   fullDjvuXmlUrl: null,
   /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
   singlePageDjvuXmlUrl: null,
+  /** Whether to fetch the XML as a jsonp */
+  jsonp: false,
 };
 /** @typedef {typeof DEFAULT_OPTIONS} TextSelectionPluginOptions */
 
@@ -74,7 +76,8 @@ export class TextSelectionPlugin {
     this.djvuPagesPromise = $.ajax({
       type: "GET",
       url: applyVariables(this.options.fullDjvuXmlUrl, this.optionVariables),
-      dataType: "html",
+      dataType: this.options.jsonp ? "jsonp" : "html",
+      cache: true,
       error: (e) => undefined
     }).then((res) => {
       try {
@@ -99,7 +102,8 @@ export class TextSelectionPlugin {
       const res = await $.ajax({
         type: "GET",
         url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
-        dataType: "html",
+        dataType: this.options.jsonp ? "jsonp" : "html",
+        cache: true,
         error: (e) => undefined,
       });
       try {
