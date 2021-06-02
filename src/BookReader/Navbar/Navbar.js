@@ -331,9 +331,9 @@ export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum
 
   if (!pageIsAsserted) {
     const pageIndex = index + 1;
-    return `Page (${pageIndex} of ${numLeafs})`; // Page (8 of 10)
+    return `(${pageIndex} of ${numLeafs})`; // Page (8 of 10)
   }
 
   const bookLengthLabel = maxPageNum ? ` of ${maxPageNum}` : '';
-  return `Page ${pageNum}${bookLengthLabel}`;
+  return `${pageNum}${bookLengthLabel}`;
 }
