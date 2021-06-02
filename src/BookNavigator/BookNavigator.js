@@ -148,7 +148,7 @@ export class BookNavigator extends LitElement {
   }
 
   get bookmarksOptions() {
-    const referrerStr = `referer=${encodeURIComponent(location.href)}`
+    const referrerStr = `referer=${encodeURIComponent(location.href)}`;
     return {
       loginUrl: `https://${this.baseHost}/account/login?${referrerStr}`,
       displayMode: this.signedIn ? 'bookmarks' : 'login',
@@ -439,7 +439,7 @@ export class BookNavigator extends LitElement {
         transform: rotate(-360deg);
       }
     }
-  `
+  `;
   }
 }
 

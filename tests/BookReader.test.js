@@ -124,7 +124,7 @@ test('has suppressFragmentChange false when init with fragment', () => {
 test('has suppressFragmentChange false when init with hash fragment', () => {
   br.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => '');
-  br.urlReadHashFragment = jest.fn(() => 'mode/1up')
+  br.urlReadHashFragment = jest.fn(() => 'mode/1up');
   br.switchMode = jest.fn();
   br.options.urlMode = 'history',
 

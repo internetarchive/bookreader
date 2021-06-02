@@ -25,7 +25,7 @@ const FILTERLIST = [
     filter: "contrast(120%)",
     label: "High contrast"
   },
-]
+];
 
 jQuery.extend(BookReader.defaultOptions, {
   enableMobileNav: true,
@@ -178,7 +178,7 @@ BookReader.prototype.buildMobileDrawerElement = function() {
         
       `;
       experimentalHtml = experimentalHtml.concat(checkboxHtml);
-    })
+    });
     experimentalHtml = experimentalHtml.concat("</div>");
   }
 
@@ -284,4 +284,4 @@ const applyFilters = (drawerEl, br) => {
             filter: ${filterStr};
             -webkit-filter: ${filterStr};}`;
   document.body.appendChild(filtersSheet);
-}
+};

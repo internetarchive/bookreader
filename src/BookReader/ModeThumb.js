@@ -330,7 +330,7 @@ export class ModeThumb {
     } else {
       this.br.animating = true;
       this.br.refs.$brContainer.stop(true)
-        .animate({ scrollTop: leafTop }, 'fast', () => { this.br.animating = false });
+        .animate({ scrollTop: leafTop }, 'fast', () => { this.br.animating = false; });
     }
   }
 }

@@ -222,7 +222,7 @@ export class Mode1Up {
       this.$scrollContainer.stop(true).animate({
         scrollTop: leafTop,
         scrollLeft: leafLeft,
-      }, 'fast', () => { this.animating = false });
+      }, 'fast', () => { this.animating = false; });
     } else {
       this.$scrollContainer.stop(true).prop('scrollTop', leafTop);
     }

@@ -72,7 +72,7 @@ describe("Generic tests", () => {
     const $container = br.refs.$brContainer;
     sinon.stub(br.textSelectionPlugin, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
-    const pageIndex = br.data.length - 1
+    const pageIndex = br.data.length - 1;
     await br.textSelectionPlugin.createTextLayer(pageIndex, $container);
     expect($container.find(".textSelectionSVG").length).toBe(1);
     expect($container.find(".BRparagElement").length).toBe(1);
@@ -156,18 +156,18 @@ describe("Generic tests", () => {
       }, 2000);
     }, LONG_PRESS_DURATION);
   });
-})
+});
 
 describe("textSelectionPlugin constructor", () => {
   test("textSelectionPlugin constructor with firefox browser", () => {
-    const tsp = new TextSelectionPlugin({}, {}, true)
+    const tsp = new TextSelectionPlugin({}, {}, true);
     expect(tsp.djvuPagesPromise).toBe(null);
     expect(tsp.svgParagraphElement).toBe("g");
     expect(tsp.svgWordElement).toBe("text");
   });
 
   test("textSelectionPlugin constructor not on firefox browser", () => {
-    const tsp = new TextSelectionPlugin({}, {}, false)
+    const tsp = new TextSelectionPlugin({}, {}, false);
     expect(tsp.djvuPagesPromise).toBe(null);
     expect(tsp.svgParagraphElement).toBe("text");
     expect(tsp.svgWordElement).toBe("tspan");

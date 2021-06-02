@@ -63,14 +63,14 @@ describe('View: Plugin: Search', () => {
 
       expect(br.searchView.dom.searchNavigation).toBeUndefined();
 
-      br.searchView.handleSearchCallback(event, { results, options})
+      br.searchView.handleSearchCallback(event, { results, options});
       expect(br.searchView.dom.searchNavigation).toBeDefined();
     });
     test('has controls', () => {
       br.init();
       const event = new CustomEvent(`${namespace}SearchCallback`);
       const options = { goToFirstResult: false };
-      br.searchView.handleSearchCallback(event, { results, options})
+      br.searchView.handleSearchCallback(event, { results, options});
 
       const searchResultsNav = document.querySelector('.BRsearch-navigation');
       expect(searchResultsNav).toBeDefined();

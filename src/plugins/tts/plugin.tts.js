@@ -275,7 +275,7 @@ BookReader.prototype.ttsMaybeFlipToIndex = function (leafIndex) {
   }
 
   return promise;
-}
+};
 
 /**
  * @param {PageChunk} chunk

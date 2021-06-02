@@ -10,7 +10,7 @@ describe('promisifyEvent', () => {
     const resolveSpy = sinon.spy();
     promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
 
-    await afterEventLoop()
+    await afterEventLoop();
     expect(resolveSpy.callCount).toBe(0);
     fakeTarget.dispatchEvent('pause', {});
     await afterEventLoop();
@@ -22,7 +22,7 @@ describe('promisifyEvent', () => {
     const resolveSpy = sinon.spy();
     promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
 
-    await afterEventLoop()
+    await afterEventLoop();
     expect(resolveSpy.callCount).toBe(0);
     fakeTarget.dispatchEvent('pause', {});
     fakeTarget.dispatchEvent('pause', {});

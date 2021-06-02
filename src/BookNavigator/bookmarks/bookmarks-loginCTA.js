@@ -5,7 +5,7 @@ class BookmarksLogin extends LitElement {
   static get properties() {
     return {
       url: { type: String }
-    }
+    };
   }
 
   static get styles() {

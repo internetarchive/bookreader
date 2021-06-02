@@ -11,7 +11,7 @@ const container = (results = [], query = '') => (
   html`<ia-book-search-results .results=${results} .query=${query}></ia-book-search-results>`
 );
 
-console.log("ia-book-search-results-test")
+console.log("ia-book-search-results-test");
 
 const searchQuery = 'Bristol';
 

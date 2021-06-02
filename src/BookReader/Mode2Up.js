@@ -859,7 +859,7 @@ export class Mode2Up {
           e.preventDefault();
         })
       */
-    }
+    };
 
     this.setClickHandler(
       this.pageContainers[this.br.twoPage.currentIndexR].$container[0],
@@ -1248,7 +1248,7 @@ export class Mode2Up {
       ...this.heightCss,
       left: `${this.br.twoPage.gutter - this.br.twoPage.scaledWL}px`,
       width: `${this.br.twoPage.scaledWL}px`,
-    }
+    };
   }
 
   /** Left side book thickness */
@@ -1269,7 +1269,7 @@ export class Mode2Up {
       ...this.heightCss,
       left: `${this.br.twoPage.gutter}px`,
       width: `${this.br.twoPage.scaledWR}px`,
-    }
+    };
   }
 
   /** Right side book thickness */

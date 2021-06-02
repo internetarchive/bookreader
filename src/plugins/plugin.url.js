@@ -110,7 +110,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
       updateParams();
     }
     this.oldUserHash = newFragment;
-  }
+  };
 
   this.locationPollId = setInterval(updateHash, 500);
 };
@@ -134,7 +134,7 @@ BookReader.prototype.urlUpdateFragment = function() {
     if (paramName in allParams) {
       validParams[paramName] = allParams[paramName];
     }
-    return validParams
+    return validParams;
   }, {});
 
   const newFragment = this.fragmentFromParams(params, urlMode);
@@ -173,7 +173,7 @@ BookReader.prototype.urlUpdateFragment = function() {
 BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
   const params = new URLSearchParams(url);
   return params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
-}
+};
 
 
 /**

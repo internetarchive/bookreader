@@ -46,7 +46,7 @@ export class TextSelectionPlugin {
     // Tspans are necessary on Chrome because they prevent newline character after every word when copying
     this.svgParagraphElement = "text";
     this.svgWordElement = "tspan";
-    this.insertNewlines = avoidTspans
+    this.insertNewlines = avoidTspans;
     // Safari has a bug where `pointer-events` doesn't work on `<tspans>`. So
     // there we will set `pointer-events: all` on the paragraph element. We don't
     // do this everywhere, because it's a worse experience. Thanks Safari :/
@@ -144,8 +144,8 @@ export class TextSelectionPlugin {
           this.textSelectingMode(svg);
         }
         else svg.classList.remove("selectingSVG");
-      })
-    })
+      });
+    });
   }
 
   /**
@@ -158,13 +158,13 @@ export class TextSelectionPlugin {
         if (window.getSelection().toString() != "") window.getSelection().removeAllRanges();
       }
       event.stopPropagation();
-    })
+    });
     $(svg).on('mouseup.textSelectPluginHandler', (event) => {
       event.stopPropagation();
       if (window.getSelection().toString() == "") {
         $(svg).off(".textSelectPluginHandler");
         this.defaultMode(svg);      }
-    })
+    });
   }
 
   /**
@@ -175,7 +175,7 @@ export class TextSelectionPlugin {
     /** @type {JQuery<SVGElement>} */
     const $svg = $container.find('svg.textSelectionSVG');
     if (!$svg.length) return;
-    $svg.each((i, s) => this.defaultMode(s))
+    $svg.each((i, s) => this.defaultMode(s));
     this.interceptCopy($container);
   }
 
@@ -266,7 +266,7 @@ export class TextSelectionPlugin {
       const paragWordHeight = wordHeightArr[Math.floor(wordHeightArr.length * 0.85)];
       paragSvg.setAttribute("font-size", paragWordHeight.toString());
       svg.appendChild(paragSvg);
-    })
+    });
     this.stopPageFlip($container);
   }
 }
