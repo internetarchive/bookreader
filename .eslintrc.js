@@ -23,6 +23,7 @@ module.exports = {
   },
   "rules": {
     "comma-dangle": ["error", "only-multiline"],
+    "semi": ["error", "always"],
     "space-before-blocks": ["error"],
     "keyword-spacing": [2, {"before": true, "after": true}],
     "indent": ["error", 2],
