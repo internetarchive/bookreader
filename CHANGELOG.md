@@ -1,3 +1,9 @@
+# 5.0.0-10
+- Fix: Make 1up default to full width (up to real world size) @cdrini
+- Fix: Remove "page" from toolbar @cdrini
+- Dev: Update menu slider @iisa
+- Dev: Add semi-colons eslint rule @iisa
+
 # 5.0.0-9
 - Fix: search-inside results check for page's index via `leafNum` @nsharma123
 # 5.0.0-8
