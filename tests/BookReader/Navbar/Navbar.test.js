@@ -5,15 +5,15 @@ import BookReader from '../../../src/BookReader.js';
 describe('getNavPageNumHtml', () => {
   const f = getNavPageNumHtml;
   test('handle n-prefixed page numbers', () => {
-    expect(f(3, 40, 'n3', '', 40)).toBe('Page (4 of 40)');
+    expect(f(3, 40, 'n3', '', 40)).toBe('(4 of 40)');
   });
 
   test('handle regular page numbers', () => {
-    expect(f(3, 40, '14', '', 40)).toBe('Page 14 of 40');
+    expect(f(3, 40, '14', '', 40)).toBe('14 of 40');
   });
 
   test('handle no max page', () => {
-    expect(f(3, 40, '14', '', null)).toBe('Page 14');
+    expect(f(3, 40, '14', '', null)).toBe('14');
   });
 });
 
