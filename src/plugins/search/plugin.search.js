@@ -154,7 +154,7 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
   const url = `${baseUrl}${paramStr}`;
 
   const cleanup = () => {
-    this.searchXHR = null
+    this.searchXHR = null;
     window.BRSearchInProgress = () => {};
   };
 
@@ -189,7 +189,7 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
     dataType: 'jsonp',
     beforeSend,
     jsonpCallback: 'BRSearchInProgress'
-  }).then(processSearchResults)
+  }).then(processSearchResults);
 };
 
 /**
@@ -203,7 +203,7 @@ BookReader.prototype._cancelSearch = function () {
   this.searchXHR = null;
   this.searchResults = [];
   window.BRSearchInProgress = () => {};
-}
+};
 
 /**
  * External function to cancel search
@@ -215,7 +215,7 @@ BookReader.prototype.cancelSearchRequest = function () {
     this.searchView.toggleSearchPending();
     this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
   }
-}
+};
 
 /**
   * @typedef {object} SearchInsideMatchBox
@@ -257,7 +257,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
     this._searchPluginGoToResult(pageIndex);
   }
   this.trigger('SearchCallback', { results, options, instance: this });
-}
+};
 
 /**
  * Main search results error handler

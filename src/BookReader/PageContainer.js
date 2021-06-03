@@ -65,7 +65,7 @@ export class PageContainer {
       this.$img
         .css('background', backgroundLayers.join(','))
         .one('loadend', async (ev) => {
-          $(ev.target).css({ 'background': '' })
+          $(ev.target).css({ 'background': '' });
           $(ev.target).parent().removeClass('BRpageloading');
         });
     }

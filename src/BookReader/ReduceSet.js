@@ -18,7 +18,7 @@ export const Pow2ReduceSet = {
   decr(n) {
     return 2 ** (Math.log2(n) - 1);
   }
-}
+};
 
 export const NAMED_REDUCE_SETS = {
   pow2: Pow2ReduceSet,

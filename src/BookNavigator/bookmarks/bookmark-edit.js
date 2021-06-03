@@ -208,7 +208,7 @@ export class IABookmarkEdit extends LitElement {
       grid-gap: 0 1rem;
       justify-items: stretch;
     }
-    `
+    `;
     return [buttonCSS, bookmarkColorsCSS, bookmarkEditCSS];
   }
 }

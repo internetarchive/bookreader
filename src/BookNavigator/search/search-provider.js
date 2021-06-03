@@ -41,7 +41,7 @@ export default class {
 
   getMenuDetails() {
     const { resultsCount, query, queryInProgress } = searchState;
-    if (queryInProgress || !query) { return nothing }
+    if (queryInProgress || !query) { return nothing; }
     const unit = resultsCount === 1 ? 'result' : 'results';
     return html`(${resultsCount} ${unit})`;
   }
@@ -49,11 +49,11 @@ export default class {
   bindEventListeners() {
     window.addEventListener('BookReader:SearchStarted', this.onSearchStarted);
     window.addEventListener('BookReader:SearchCallback', this.onSearchResultsChange);
-    window.addEventListener('BookReader:SearchCallbackEmpty', (event) => { this.onSearchRequestError(event, 'noResults') });
-    window.addEventListener('BookReader:SearchCallbackNotIndexed', (event) => { this.onSearchRequestError(event, 'notIndexed') });
-    window.addEventListener('BookReader:SearchCallbackError', (event) => { this.onSearchRequestError(event) });
-    window.addEventListener('BookReader:SearchResultsCleared', () => { this.onSearchResultsCleared() });
-    window.addEventListener('BookReader:SearchCanceled', (e) => { this.onSearchCanceled(e) });
+    window.addEventListener('BookReader:SearchCallbackEmpty', (event) => { this.onSearchRequestError(event, 'noResults'); });
+    window.addEventListener('BookReader:SearchCallbackNotIndexed', (event) => { this.onSearchRequestError(event, 'notIndexed'); });
+    window.addEventListener('BookReader:SearchCallbackError', (event) => { this.onSearchRequestError(event); });
+    window.addEventListener('BookReader:SearchResultsCleared', () => { this.onSearchResultsCleared(); });
+    window.addEventListener('BookReader:SearchCanceled', (e) => { this.onSearchCanceled(e); });
   }
 
   /**
@@ -136,7 +136,7 @@ export default class {
       resultsCount: 0,
       queryInProgress: false,
       errorMessage: '',
-    }
+    };
     this.updateMenu();
     this.bookreader?.searchView?.clearSearchFieldAndResults();
   }

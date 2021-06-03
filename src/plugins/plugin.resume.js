@@ -37,7 +37,7 @@ BookReader.prototype.getResumeValue = function() {
   const val = BookReader.docCookies.getItem('br-resume');
   if (val !== null) return parseInt(val);
   else return null;
-}
+};
 
 /**
  * Return cookie path using pathname up to /page/... or /mode/...
@@ -49,7 +49,7 @@ BookReader.prototype.getResumeValue = function() {
  */
 BookReader.prototype.getCookiePath = function(urlPathPart) {
   return urlPathPart.match('.+?(?=/page/|/mode/|$)')[0];
-}
+};
 
 /**
  * Sets page resume value, for remembering reader's page
@@ -65,4 +65,4 @@ BookReader.prototype.updateResumeValue = function(index, cookieName) {
   const path = this.options.resumeCookiePath
     || this.getCookiePath(window.location.pathname);
   BookReader.docCookies.setItem(cookieName || 'br-resume', index, ttl, path, null, false);
-}
+};

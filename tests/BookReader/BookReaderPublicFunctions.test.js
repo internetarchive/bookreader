@@ -2,7 +2,7 @@ import BookReader from '../../src/BookReader';
 
 beforeAll(() => {
   global.alert = jest.fn();
-})
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });
@@ -29,7 +29,7 @@ describe('BookReader.prototype.toggleFullscreen', ()  => {
     br.refs.$brContainer = {
       css: jest.fn(),
       animate: jest.fn()
-    }
+    };
 
     br.toggleFullscreen();
     expect(br.enterFullscreen).toHaveBeenCalled();
@@ -155,7 +155,7 @@ describe('`BookReader.prototype.prev`', () => {
       expect(br.trigger.mock.calls.length).toBe(1);
       expect(br.flipBackToIndex.mock.calls.length).toBe(1);
     });
-  })
+  });
 
   describe('non 2up mode', () => {
     test('jumps to provided index', () => {
@@ -165,7 +165,7 @@ describe('`BookReader.prototype.prev`', () => {
       expect(br.jumpToIndex.mock.calls.length).toBe(1);  // <--  gets called
       expect(br.trigger.mock.calls.length).toBe(1); // <-- gets called by `jumpToIndex` internally
       expect(br.flipBackToIndex.mock.calls.length).toBe(1); // <-- gets called by `jumpToIndex` internally
-    })
+    });
   });
 });
 

@@ -29,16 +29,16 @@ describe('Plugin: Menu Toggle', () => {
   test('core code has animation consts', () => {
     expect(BookReader.constNavAnimationDuration).toEqual(300);
     expect(BookReader.constResizeAnimationDuration).toEqual(100);
-  })
+  });
 
   test('core code has registered event: `navToggled`', () => {
     expect(BookReader.eventNames.navToggled).toBeTruthy();
-  })
+  });
 
   test('when bookreader loads, the menu shows', () => {
     expect($('.BRfooter').hasClass('js-menu-hide')).toEqual(false);
     expect($('.BRtoolbar').hasClass('js-menu-hide')).toEqual(false);
-  })
+  });
 
   test('clicking on background hides the menu', () => {
     expect($('.BRfooter').hasClass('js-menu-hide')).toEqual(false);

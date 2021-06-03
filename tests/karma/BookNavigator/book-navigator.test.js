@@ -23,7 +23,7 @@ const container = () => {
       <p class="bunny">foo</p>
       </
   `;
-}
+};
 
 beforeEach(() => {
   const body = document.querySelector('body');
@@ -93,7 +93,7 @@ describe('<book-navigator>', () => {
       resize: sinon.fake(),
       currentIndex: sinon.fake(),
       jumpToIndex: sinon.fake()
-    }
+    };
     el.bookreader = brStub;
     await elementUpdated(el);
 
@@ -118,7 +118,7 @@ describe('<book-navigator>', () => {
       resize: sinon.fake(),
       currentIndex: sinon.fake(),
       jumpToIndex: sinon.fake()
-    }
+    };
     el.bookreader = brStub;
     await elementUpdated(el);
 

@@ -6,7 +6,7 @@ import BookReader from '../../src/BookReader.js';
 
 beforeAll(() => {
   global.alert = jest.fn();
-})
+});
 afterEach(() => {
   jest.restoreAllMocks();
   sinon.restore();
@@ -83,7 +83,7 @@ describe('draw 2up leaves', () => {
 
     br.init();
     expect(drawLeafs.callCount).toBe(1);
-  })
+  });
 
   test('sets `this.displayedIndices`', () => {
     const extremelyWrongValueForDisplayedIndices = null;
@@ -98,7 +98,7 @@ describe('draw 2up leaves', () => {
     expect(br.displayedIndices).not.toBe(extremelyWrongValueForDisplayedIndices);
     expect(br.displayedIndices.length).toBe(2); // is array
     expect(br.displayedIndices).toEqual([-1, 0]); // default to starting index on right, placeholder for left
-  })
+  });
 });
 
 describe('resizeSpread', () => {

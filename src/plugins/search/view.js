@@ -142,7 +142,7 @@ class SearchView {
       const start = pool.slice(0, pool.length / 2);
       const end = pool.slice(pool.length / 2);
       return closestTo((comparisonFn(start, end, comparator) ? start : end), comparator);
-    }
+    };
 
     const closestPage = closestTo(matchPages, currentPage);
     return this.matches.indexOf(this.matches.find((m) => m.par[0].page === closestPage));

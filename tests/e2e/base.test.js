@@ -15,7 +15,7 @@ const OCAIDS = [
   // /BookReaderDemo/demo-ia-olivertwist.html/page/n13/mode/2up
   // 'demo-ia-olivertwist.html',
 ];
-const DEMO_PATH  = 'demo-internetarchive.html?ocaid='
+const DEMO_PATH  = 'demo-internetarchive.html?ocaid=';
 
 OCAIDS.forEach(ocaid => {
   const url = `${BASE_URL}${DEMO_PATH }${ocaid}`;
@@ -24,7 +24,7 @@ OCAIDS.forEach(ocaid => {
   runBaseTests(new BookReader());
 
   fixture `Desktop Search Tests for: ${ocaid}`
-    .page `${url}`
+    .page `${url}`;
   runDesktopSearchTests(new BookReader());
 
   // fixture `Mobile Search Tests for: ${ocaid}`
