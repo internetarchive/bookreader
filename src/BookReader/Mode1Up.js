@@ -289,12 +289,21 @@ export class Mode1Up {
    * Recalculates the autofit reduction factors.
    */
   calculateReductionFactors() {
-    this.br.onePage.reductionFactors = this.br.reductionFactors.concat(
-      [
-        { reduce: this.getAutofitWidth(), autofit: 'width' },
+    const autoWidthReduce = this.getAutofitWidth();
+    this.br.onePage.reductionFactors = this.br.reductionFactors
+      .filter(r => r.reduce != 1)
+      .concat([
+        { reduce: 1, autofit: null },
+        { reduce: autoWidthReduce, autofit: 'width' },
         { reduce: this.getAutofitHeight(), autofit: 'height' },
       ]);
     this.br.onePage.reductionFactors.sort(this.br._reduceSort);
+    // Default to real size if it fits, otherwise default to full width
+    if (autoWidthReduce < 1) {
+      this.br.onePage.reductionFactors.find(r => r.reduce == 1).autofit = 'auto';
+    } else {
+      this.br.onePage.reductionFactors.find(r => r.autofit == 'width').autofit = 'auto';
+    }
   }
 
   /**

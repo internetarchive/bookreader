@@ -191,6 +191,11 @@ export function runBaseTests (br) {
   test('Clicking `1 page view` brings up 1 at a time', async t => {
     const { nav } = br;
     await t.click(nav.desktop.mode1Up);
+
+    // Flip away from cover
+    await t.click(nav.desktop.goNext);
+    await t.wait(PAGE_FLIP_WAIT_TIME);
+
     // we usually pre-fetch the page in question & the 2 after it
     await t.expect(Selector('.BRpagecontainer').count).gte(3);
   });
