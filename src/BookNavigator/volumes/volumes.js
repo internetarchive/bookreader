@@ -61,7 +61,7 @@ export class Volumes extends LitElement {
 
   render() {
     return html`
-      <div>${this.viewableFiles.length ? this.volumesList : nothing}</div>
+      ${this.viewableFiles.length ? this.volumesList : nothing}
     `;
   }
 
