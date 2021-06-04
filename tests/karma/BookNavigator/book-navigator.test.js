@@ -46,6 +46,7 @@ describe('<book-navigator>', () => {
       await elementUpdated(el);
       expect(spy.callCount).to.equal(1);
     });
+
     it('emits a BrBookNav:PostInit event', async () => {
       let initEventFired = false;
       window.addEventListener('BrBookNav:PostInit', (e) => {
@@ -66,6 +67,7 @@ describe('<book-navigator>', () => {
       resize: sinon.fake(),
       currentIndex: sinon.fake(),
       jumpToIndex: sinon.fake(),
+      options: { enableMultipleBooks: false }, // for multipleBooks
       el: '#BookReader'
     };
 
@@ -92,8 +94,10 @@ describe('<book-navigator>', () => {
     const brStub = {
       resize: sinon.fake(),
       currentIndex: sinon.fake(),
-      jumpToIndex: sinon.fake()
+      jumpToIndex: sinon.fake(),
+      options: { enableMultipleBooks: true },
     };
+
     el.bookreader = brStub;
     await elementUpdated(el);
 
@@ -111,14 +115,17 @@ describe('<book-navigator>', () => {
     expect(el.bookreader.currentIndex.callCount).to.equal(2);
     expect(el.bookreader.jumpToIndex.callCount).to.equal(2);
   });
+
   it('does not resize bookreader if animating', async () => {
     const el = fixtureSync(container());
     const brStub = {
       animating: true, // <-- testing for this
       resize: sinon.fake(),
       currentIndex: sinon.fake(),
-      jumpToIndex: sinon.fake()
+      jumpToIndex: sinon.fake(),
+      options: { enableMultipleBooks: true }
     };
+
     el.bookreader = brStub;
     await elementUpdated(el);
 
@@ -129,4 +136,6 @@ describe('<book-navigator>', () => {
     expect(el.bookreader.currentIndex.callCount).to.equal(0);
     expect(el.bookreader.jumpToIndex.callCount).to.equal(0);
   });
+
+
 });
