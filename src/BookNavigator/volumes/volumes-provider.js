@@ -46,9 +46,9 @@ export default class VolumesProvider {
     const sortedFiles = this.viewableFiles.sort((a, b) => {
       if (this.isSortAscending) return a.title.localeCompare(b.title);
       else return b.title.localeCompare(a.title);
-    })
+    });
 
-    this.component.viewableFiles  = [...sortedFiles]
+    this.component.viewableFiles  = [...sortedFiles];
     if (!this.isFirstLoad) {
       this.actionButton = this.headerIcon;
       this.optionChange(this.bookreader);
