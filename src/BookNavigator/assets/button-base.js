@@ -24,8 +24,10 @@ export default css`
     user-select: none;
   }
 
-  .ia-button.link {
+  .ia-button.link,
+  .ia-button.external {
     min-height: unset;
+    text-decoration: none;
   }
 
   .ia-button:disabled,

@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit-element';
+import { LitElement, html } from 'lit-element';
 import buttonStyles from '../assets/button-base.js';
 
 class BookmarksLogin extends LitElement {
@@ -9,12 +9,7 @@ class BookmarksLogin extends LitElement {
   }
 
   static get styles() {
-    const mainCss = css`
-      a {
-        text-decoration: none;
-      }
-    `;
-    return [buttonStyles, mainCss];
+    return buttonStyles;
   }
 
   constructor() {

@@ -1,5 +1,6 @@
 import { css, html, LitElement } from 'lit-element';
 import { nothing } from 'lit-html';
+import buttonStyles from '../assets/button-base.js';
 export class IABookDownloads extends LitElement {
   static get properties() {
     return {
@@ -31,7 +32,7 @@ export class IABookDownloads extends LitElement {
     return this.downloads.map(option => (
       html`
         <li>
-          <a class="button" href="${option.url}">Get ${option.type}</a>
+          <a class="ia-button link primary" href="${option.url}">Get ${option.type}</a>
           ${option.note ? html`<p>${option.note}</p>` : html``}
         </li>
       `
@@ -56,12 +57,12 @@ export class IABookDownloads extends LitElement {
       ${this.loanExpiryMessage}
       <ul>${this.renderDownloadOptions()}</ul>
       <p>To access downloaded books, you need Adobe-compliant software on your device. The Internet Archive will administer this loan, but Adobe may also collect some information.</p>
-      <a class="button external" href="https://www.adobe.com/solutions/ebook/digital-editions/download.html" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
+      <a class="ia-button external primary" href="https://www.adobe.com/solutions/ebook/digital-editions/download.html" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
     `;
   }
 
   static get styles() {
-    return css`
+    const mainCss = css`
       :host {
         display: block;
         height: 100%;
@@ -79,24 +80,6 @@ export class IABookDownloads extends LitElement {
         justify-self: end;
       }
 
-      .button {
-        color: var(--primaryTextColor);
-        background: var(--primaryCTAFill);
-        border: 1px solid var(--primaryCTABorder);
-        display: inline-block;
-        padding: .6rem 1rem;
-        font-size: 1.4rem;
-        text-decoration: none;
-        text-shadow: 1px 1px #484848;
-        border-radius: 4px;
-      }
-
-      .button.external {
-        background: var(--secondaryCTAFill, transparent);
-        border: 1px solid var(--secondaryCTABorder, #999);
-        text-shadow: none;
-      }
-
       header {
         display: flex;
         align-items: center;
@@ -109,7 +92,6 @@ export class IABookDownloads extends LitElement {
         font-weight: bold;
         font-style: italic;
       }
-      
       header div {
         display: flex;
         align-items: baseline;
@@ -142,5 +124,7 @@ export class IABookDownloads extends LitElement {
         line-height: 140%;
       }
     `;
+
+    return [buttonStyles, mainCss];
   }
 }
