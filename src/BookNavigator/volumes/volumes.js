@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit-element';
-import { nothing } from 'lit-html'
+import { nothing } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat';
 
 export class Volumes extends LitElement {
@@ -7,7 +7,7 @@ export class Volumes extends LitElement {
     return {
       subPrefix: { type: String },
       hostUrl: { type: String },
-      viewableFiles: { type: Array }
+      viewableFiles: { type: Array },
     };
   }
 
@@ -36,11 +36,11 @@ export class Volumes extends LitElement {
   }
 
   volumeItem(item) {
-    const activeClass = this.subPrefix === item.file_subprefix ? 'active' : ''
+    const activeClass = this.subPrefix === item.file_subprefix ? ' active' : '';
     return html`
       <li>
         <div class="separator"></div>
-        <div class="content ${activeClass}">
+        <div class="content${activeClass}">
           <a href="https://${this.hostUrl}${item.url_path}">
             <p class="item-title">${item.title}</p>
           </a>

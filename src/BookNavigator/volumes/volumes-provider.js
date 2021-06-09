@@ -7,10 +7,10 @@ import './volumes.js';
 export default class VolumesProvider {
 
   constructor(optionChange, baseHost, bookreader) {
-    this.optionChange = optionChange
+    this.optionChange = optionChange;
     this.component = document.createElement('viewable-files');
 
-    const files = bookreader.options.multipleBooksList?.by_subprefix
+    const files = bookreader.options.multipleBooksList?.by_subprefix;
     this.viewableFiles = Object.keys(files).map(item => files[item]);
     this.volumeCount = Object.keys(files).length;
     this.isFirstLoad = true;
@@ -21,20 +21,18 @@ export default class VolumesProvider {
     this.component.viewableFiles = this.viewableFiles;
 
     this.id = 'volumes';
-    this.label = `Viewable Files (${this.volumeCount})`
+    this.label = `Viewable Files (${this.volumeCount})`;
     this.icon = html`<ia-icon icon="volumes" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
     this.actionButton = this.headerIcon;
     this.sortVolumes();
   }
 
   get sortAscendingIcon() {
-    const iconStyle = 'background: transparent; border: none; position: absolute; right: 25px';
-    return html`<button style=${iconStyle} class="sort-asc icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes()}>${sortAscendingIcon}</button>`;
+    return html`<button class="sort-asc icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes()}>${sortAscendingIcon}</button>`;
   }
 
   get sortDescendingIcon() {
-    const iconStyle = 'background: transparent; border: none; position: absolute; right: 25px';
-    return html`<button style=${iconStyle} class="sort-desc icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes()}>${sortDescendingIcon}</button>`;
+    return html`<button class="sort-desc icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes()}>${sortDescendingIcon}</button>`;
   }
 
   get headerIcon() {
