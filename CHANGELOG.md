@@ -1,3 +1,5 @@
+# 5.0.0-11
+- Fix: standardize button style for download panel @nsharma123
 # 5.0.0-10
 - Fix: Make 1up default to full width (up to real world size) @cdrini
 - Fix: Remove "page" from toolbar @cdrini
