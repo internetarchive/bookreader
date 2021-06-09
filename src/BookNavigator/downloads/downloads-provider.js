@@ -18,13 +18,19 @@ const menuBase = {
   }
 };
 
+const publicMenuBase = {
+  pdf: "PDF",
+  epub: "ePub"
+};
+
 export default class {
-  constructor() {
+  constructor(isBookProtected) {
     this.icon = html`<ia-icon icon="download" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
     this.label = 'Downloadable files';
     this.menuDetails = '';
     this.id = 'downloads';
     this.component = '';
+    this.isBookProtected = isBookProtected;
 
     this.computeAvailableTypes = this.computeAvailableTypes.bind(this);
     this.update = this.update.bind(this);
@@ -34,6 +40,7 @@ export default class {
   update(downloadTypes) {
     this.computeAvailableTypes(downloadTypes);
     this.component = this.menu;
+    this.component.isBookProtected = this.isBookProtected;
 
     const ending = downloads.length === 1 ? '' : 's';
     this.menuDetails = `(${downloads.length} format${ending})`;
@@ -50,7 +57,8 @@ export default class {
       const formattedType = type.toLowerCase();
       const downloadOption = menuBase[formattedType] || null;
       if (downloadOption) {
-        const menuInfo = Object.assign({}, downloadOption, { url: link });
+        const menuButtonText = this.isBookProtected ? menuBase[formattedType].type : publicMenuBase[formattedType];
+        const menuInfo = Object.assign({}, downloadOption, { url: link,  type: menuButtonText});
         found.push(menuInfo);
       }
       return found;
