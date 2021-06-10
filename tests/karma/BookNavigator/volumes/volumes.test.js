@@ -1,7 +1,8 @@
 import {
   html,
   fixture,
-  expect
+  expect,
+  fixtureCleanup,
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import '../../../../src/BookNavigator/volumes/volumes.js';
@@ -51,6 +52,7 @@ beforeEach(() => {
 
 afterEach(() => {
   sinon.restore();
+  fixtureCleanup();
 });
 
 describe('<viewable-files>', () => {
@@ -88,8 +90,7 @@ describe('<viewable-files>', () => {
     expect(el.viewableFiles).to.equal(viewableFiles);
     expect(el.viewableFiles.length).to.equal(3);
 
-    const activeDivClassName = el.shadowRoot.querySelectorAll("ul li div")[1].className;
-    expect(activeDivClassName).to.equal("content active");
+    expect(el.shadowRoot.querySelectorAll("ul li div")[1].className).to.equal("content active");
   });
 
 });
