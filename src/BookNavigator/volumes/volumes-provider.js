@@ -1,4 +1,5 @@
 import { html } from 'lit-element';
+
 import sortAscendingIcon from '../assets/icon_sort_ascending.js';
 import sortDescendingIcon from '../assets/icon_sort_descending.js';
 
@@ -16,7 +17,7 @@ export default class VolumesProvider {
     this.isFirstLoad = true;
     this.isSortAscending = false;
 
-    this.component.subPrefix = bookreader.options === undefined ? '' : bookreader.options.subPrefix;
+    this.component.subPrefix = bookreader.options.subPrefix || '';
     this.component.hostUrl = baseHost;
     this.component.viewableFiles = this.viewableFiles;
 
@@ -53,18 +54,15 @@ export default class VolumesProvider {
     } else {
       this.isFirstLoad = false;
     }
+    const volumesOrderBy = this.isSortAscending ? "ascending" : "descending";
+    this.multipleFilesClicked(volumesOrderBy);
   }
 
-  bindEvents() {
-    this.component.addEventListener('click', this.multiplefilesClicked.bind(this));
-  }
-
-  multiplefilesClicked({ detail }) {
-    // maybe some analytics?
+  multipleFilesClicked(orderBy) {
     if (window.archive_analytics) {
       window.archive_analytics?.send_event_no_sampling(
         'BookReader',
-        `VolumesSort`,
+        `VolumesSort|${orderBy}`,
         window.location.path,
       );
     }
