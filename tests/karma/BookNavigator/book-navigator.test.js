@@ -136,6 +136,4 @@ describe('<book-navigator>', () => {
     expect(el.bookreader.currentIndex.callCount).to.equal(0);
     expect(el.bookreader.jumpToIndex.callCount).to.equal(0);
   });
-
-
 });
