@@ -173,7 +173,7 @@ To run all local unit tests, run command: `npm run test`
 
 ## Ways to contribute
 
-We can always use a hand-building BookReader.  Check out the issues and see what interests you.  If you have an idea for an improvement, open an issue.
+We can always use a hand building BookReader.  Check out the issues and see what interests you.  If you have an idea for an improvement, open an issue.
 
 ## More info
 
