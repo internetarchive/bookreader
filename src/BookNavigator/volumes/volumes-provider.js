@@ -23,7 +23,7 @@ export default class VolumesProvider {
     this.component.viewableFiles = this.viewableFiles;
 
     this.id = 'volumes';
-    this.label = `Viewable Files (${this.volumeCount})`;
+    this.label = `Viewable files (${this.volumeCount})`;
     this.icon = html`${volumesIcon}`;
     this.actionButton = this.headerIcon;
     this.sortVolumes();

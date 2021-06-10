@@ -47,7 +47,7 @@ describe('Volumes Provider', () => {
     expect(provider.id).to.equal('volumes');
     expect(provider.icon).to.exist;
 
-    expect(provider.label).to.equal(`Viewable Files (${volumeCount})`);
+    expect(provider.label).to.equal(`Viewable files (${volumeCount})`);
     expect(provider.viewableFiles).to.exist;
     expect(provider.viewableFiles.length).to.equal(3);
 
