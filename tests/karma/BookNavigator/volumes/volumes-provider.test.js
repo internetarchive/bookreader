@@ -55,4 +55,47 @@ describe('Volumes Provider', () => {
     expect(provider.component.hostUrl).to.equal(baseHost);
     expect(provider.component).to.exist;
   });
+
+  describe('sort volumes in ascending order', async () => {
+    const onSortClick = sinon.fake();
+    const baseHost = "https://archive.org";
+    const provider = new volumesProvider(onSortClick, baseHost, brOptions);
+
+    const parsedFiles = brOptions.options.multipleBooksList?.by_subprefix;
+    const files = Object.keys(parsedFiles).map(item => parsedFiles[item]);
+    const ascendingTitles = files.map(item => item.title);
+
+    await onSortClick();
+
+    const providerFileTitles = provider.viewableFiles.map(item => item.title);
+
+    expect(provider.actionButton).to.exist;
+    expect(provider.isSortAscending).to.equals(true);
+
+    // use `.eql` for "lose equality" in order to deeply compare values.
+    expect(providerFileTitles).to.eql([...ascendingTitles]);
+  });
+
+  describe('sort volumes in descending order', async () => {
+    const onSortClick = sinon.fake();
+    const baseHost = "https://archive.org";
+    const provider = new volumesProvider(onSortClick, baseHost, brOptions);
+
+    provider.isSortAscending = false;
+
+    const parsedFiles = brOptions.options.multipleBooksList?.by_subprefix;
+    const files = Object.keys(parsedFiles).map(item => parsedFiles[item]);
+    const descendingTitles = files.map(item => item.title).sort((a, b) => b.localeCompare(a));
+
+    await onSortClick();
+
+    const providerFileTitles = provider.viewableFiles.map(item => item.title);
+
+    expect(provider.actionButton).to.exist;
+    expect(provider.isSortAscending).to.equals(false);
+
+    // use `.eql` for "lose equality" in order to deeply compare values.
+    expect(providerFileTitles).to.eql([...descendingTitles]);
+  });
+
 });
