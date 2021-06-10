@@ -36,7 +36,6 @@ export default class {
     this.update = this.update.bind(this);
   }
 
-
   update(downloadTypes) {
     this.computeAvailableTypes(downloadTypes);
     this.component = this.menu;
@@ -56,6 +55,7 @@ export default class {
       const [ type = '', link = '' ] = incoming;
       const formattedType = type.toLowerCase();
       const downloadOption = menuBase[formattedType] || null;
+
       if (downloadOption) {
         const menuButtonText = this.isBookProtected ? menuBase[formattedType].type : publicMenuBase[formattedType];
         const menuInfo = Object.assign({}, downloadOption, { url: link,  type: menuButtonText});
