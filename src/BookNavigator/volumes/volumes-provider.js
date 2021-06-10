@@ -2,6 +2,7 @@ import { html } from 'lit-element';
 
 import sortAscendingIcon from '../assets/icon_sort_ascending.js';
 import sortDescendingIcon from '../assets/icon_sort_descending.js';
+import volumesIcon from '../assets/icon_volumes.js';
 
 import './volumes.js';
 
@@ -23,7 +24,7 @@ export default class VolumesProvider {
 
     this.id = 'volumes';
     this.label = `Viewable Files (${this.volumeCount})`;
-    this.icon = html`<ia-icon icon="volumes" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
+    this.icon = html`${volumesIcon}`;
     this.actionButton = this.headerIcon;
     this.sortVolumes();
   }
