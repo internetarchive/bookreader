@@ -38,7 +38,7 @@ export default class VolumesProvider {
   }
 
   get headerIcon() {
-    return this.isSortAscending ? this.sortAscendingIcon : this.sortDescendingIcon;
+    return this.isSortAscending ? this.sortDescendingIcon : this.sortAscendingIcon;
   }
 
   sortVolumes() {
