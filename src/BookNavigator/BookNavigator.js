@@ -135,7 +135,7 @@ export class BookNavigator extends LitElement {
         bookContainerSelector: this.pageContainerSelector,
         bookreader: this.bookreader,
       }),
-      share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType),
+      share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType, this.bookreader.options.subPrefix),
       bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader),
     };
 
