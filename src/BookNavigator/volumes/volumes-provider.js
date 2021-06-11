@@ -55,7 +55,7 @@ export default class VolumesProvider {
     } else {
       this.isFirstLoad = false;
     }
-    const volumesOrderBy = this.isSortAscending ? "ascending" : "descending";
+    const volumesOrderBy = this.isSortAscending ? 'asc' : 'desc';
     this.multipleFilesClicked(volumesOrderBy);
   }
 
