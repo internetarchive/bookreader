@@ -20,7 +20,7 @@ export class Volumes extends LitElement {
 
   firstUpdated() {
     const activeFile = this.shadowRoot.querySelector('.content.active');
-
+    // allow for css animations to run before scrolling to active file
     setTimeout(() => {
       // scroll active file into view if needed
       // note: `scrollIntoViewIfNeeded` handles auto-scroll gracefully for Chrome, Safari
@@ -32,7 +32,6 @@ export class Volumes extends LitElement {
 
       // Todo: support `scrollIntoView` or `parentContainer.crollTop = x` for FF & "IE 11"
       // currently, the hard `position: absolutes` misaligns subpanel when `scrollIntoView` is applied :(
-
     }, 350);
   }
 
