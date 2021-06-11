@@ -9,7 +9,6 @@ export default class {
     const { identifier, creator, title } = metadata;
     const encodedSubPrefix = encodeURIComponent(subPrefix);
     const urlIdentifier = subPrefix && (subPrefix !== identifier) ? `${identifier}/${encodedSubPrefix}` : identifier;
-    console.log("** SHARING", urlIdentifier, subPrefix);
     this.itemType = baseItemType;
     const label = `Share this ${this.reconcileItemType}`;
     this.icon = html`<ia-icon icon="share" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
