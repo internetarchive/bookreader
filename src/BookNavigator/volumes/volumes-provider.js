@@ -15,7 +15,6 @@ export default class VolumesProvider {
     const files = bookreader.options.multipleBooksList?.by_subprefix;
     this.viewableFiles = Object.keys(files).map(item => files[item]);
     this.volumeCount = Object.keys(files).length;
-    this.isFirstLoad = true;
     this.isSortAscending = false;
 
     this.component.subPrefix = bookreader.options.subPrefix || '';
@@ -26,7 +25,7 @@ export default class VolumesProvider {
     this.label = `Viewable files (${this.volumeCount})`;
     this.icon = html`${volumesIcon}`;
     this.actionButton = this.headerIcon;
-    this.sortVolumes();
+    this.sortVolumes(true);
   }
 
   get sortAscendingIcon() {
@@ -38,25 +37,25 @@ export default class VolumesProvider {
   }
 
   get headerIcon() {
-    return this.isSortAscending ? this.sortDescendingIcon : this.sortAscendingIcon;
+    return this.isSortAscending ? this.sortAscendingIcon : this.sortDescendingIcon;
   }
 
-  sortVolumes() {
+  sortVolumes(initialSort = false) {
     this.isSortAscending = !this.isSortAscending;
+    const volumesOrderBy = this.isSortAscending ? 'asc' : 'desc';
+
     const sortedFiles = this.viewableFiles.sort((a, b) => {
       if (this.isSortAscending) return a.title.localeCompare(b.title);
       else return b.title.localeCompare(a.title);
     });
 
     this.component.viewableFiles  = [...sortedFiles];
-    if (!this.isFirstLoad) {
-      this.actionButton = this.headerIcon;
-      this.optionChange(this.bookreader);
-    } else {
-      this.isFirstLoad = false;
+    this.actionButton = this.headerIcon;
+    this.optionChange(this.bookreader);
+
+    if (!initialSort) {
+      this.multipleFilesClicked(volumesOrderBy);
     }
-    const volumesOrderBy = this.isSortAscending ? 'asc' : 'desc';
-    this.multipleFilesClicked(volumesOrderBy);
   }
 
   multipleFilesClicked(orderBy) {
