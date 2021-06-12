@@ -7,7 +7,6 @@ import {
 import sinon from 'sinon';
 import '../../../../src/BookNavigator/volumes/volumes.js';
 
-console.log("viewable-files-test");
 
 const brOptions = {
   "options": {
