@@ -59,13 +59,14 @@ export default class VolumesProvider {
   }
 
   multipleFilesClicked(orderBy) {
-    if (window.archive_analytics) {
-      window.archive_analytics?.send_event_no_sampling(
-        'BookReader',
-        `VolumesSort|${orderBy}`,
-        window.location.path,
-      );
+    if (!window.archive_analytics) {
+      return;
     }
+    window.archive_analytics?.send_event_no_sampling(
+      'BookReader',
+      `VolumesSort|${orderBy}`,
+      window.location.path,
+    );
   }
 
 }
