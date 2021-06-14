@@ -1,3 +1,7 @@
+# 5.0.0-12
+- Fix: new side panel: sortable multiple volumes @dualcnhq @iisa
+- Fix: sharing side panel can share subfile/volume @iisa
+
 # 5.0.0-11
 - Fix: standardize button style for download panel @nsharma123
 # 5.0.0-10
