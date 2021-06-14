@@ -38,7 +38,7 @@ describe('Volumes Provider', () => {
   describe('constructor', () => {
     const onSortClick = sinon.fake();
     const baseHost = "https://archive.org";
-    const provider = new volumesProvider(onSortClick, baseHost, brOptions);
+    const provider = new volumesProvider(baseHost, brOptions, onSortClick);
 
     const files = brOptions.options.multipleBooksList?.by_subprefix;
     const volumeCount = Object.keys(files).length;
