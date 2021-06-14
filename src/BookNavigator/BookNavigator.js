@@ -5,6 +5,7 @@ import DownloadProvider from './downloads/downloads-provider.js';
 import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
 import BookmarksProvider from './bookmarks/bookmarks-provider.js';
 import SharingProvider from '../ItemNavigator/providers/sharing.js';
+import VolumesProvider from './volumes/volumes-provider.js';
 import BRFullscreenMgr from './br-fullscreen-mgr.js';
 import { Book } from './BookModel.js';
 import bookLoader from './assets/book-loader.js';
@@ -134,9 +135,21 @@ export class BookNavigator extends LitElement {
         bookContainerSelector: this.pageContainerSelector,
         bookreader: this.bookreader,
       }),
-      share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType),
-      bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader)
+      share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType, this.bookreader.options.subPrefix),
+      bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader),
     };
+
+    // add shortcut for volumes if multipleBooksList exists
+    if (this.bookreader.options.enableMultipleBooks) {
+      this.menuProviders.volumes = new VolumesProvider(this.baseHost, this.bookreader, (brInstance) => {
+        if (brInstance) {
+          /* refresh br instance reference */
+          this.bookreader = brInstance;
+        }
+        this.updateMenuContents();
+      });
+      this.addMenuShortcut('volumes');
+    }
 
     this.addMenuShortcut('search'); /* start with search as a shortcut */
     this.updateMenuContents();
@@ -180,9 +193,9 @@ export class BookNavigator extends LitElement {
    */
   updateMenuContents() {
     const {
-      search, downloads, visualAdjustments, share, bookmarks,
+      search, downloads, visualAdjustments, share, bookmarks, volumes
     } = this.menuProviders;
-    const availableMenus = [search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
+    const availableMenus = [volumes, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
 
     if (this.shouldShowDownloadsMenu()) {
       downloads.update(this.downloadableTypes);
