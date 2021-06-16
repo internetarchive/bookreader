@@ -48,10 +48,28 @@ export default css`
     background-color: var(--primaryCTAFill);
     border-color: var(--primaryCTABorder);
   }
+  .ia-button.primary:hover {
+    background-color: rgba(var(--primaryCTAFillRGB), 0.9);
+  }
+  .ia-button.primary:focus {
+    background-color: rgba(var(--primaryCTAFillRGB), 0.8);
+  }
+  .ia-button.primary:active {
+    background: rgba(var(--primaryCTAFillRGB), 0.7);
+  }
 
   .ia-button.cancel {
     background-color: var(--primaryErrorCTAFill);
     border-color: var(--primaryErrorCTABorder);
+  }
+  .ia-button.cancel:hover {
+    background-color: rgba(var(--primaryErrorCTAFillRGB), 0.9);
+  }
+  .ia-button.cancel:hover {
+    background-color: rgba(var(--primaryErrorCTAFillRGB), 0.8);
+  }
+  .ia-button.cancel:hover {
+    background-color: rgba(var(--primaryErrorCTAFillRGB), 0.7);
   }
 
   .ia-button.external {

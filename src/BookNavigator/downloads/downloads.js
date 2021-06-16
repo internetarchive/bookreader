@@ -57,7 +57,7 @@ export class IABookDownloads extends LitElement {
       ${this.loanExpiryMessage}
       <ul>${this.renderDownloadOptions()}</ul>
       <p>To access downloaded books, you need Adobe-compliant software on your device. The Internet Archive will administer this loan, but Adobe may also collect some information.</p>
-      <a class="ia-button external primary" href="https://www.adobe.com/solutions/ebook/digital-editions/download.html" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
+      <a class="ia-button external" href="https://www.adobe.com/solutions/ebook/digital-editions/download.html" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
     `;
   }
 
