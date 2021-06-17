@@ -77,6 +77,7 @@ export class BookReader extends LitElement {
         --primaryErrorCTAFill: #e51c26;
         --primaryErrorCTAFillRGB: 229, 28, 38;
         --primaryErrorCTABorder: #f8c6c8;
+        --primaryDisableCTAFill: #767676;
       }
 
       .ia-bookreader {
