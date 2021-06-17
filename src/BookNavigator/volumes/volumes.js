@@ -58,8 +58,8 @@ export class Volumes extends LitElement {
       <li>
         <div class="separator"></div>
         <div class="content${activeClass}">
-          <a href="https://${this.hostUrl}${item.url_path}">
-            <p class="item-title">${item.title}</p>
+          <a href="https://${this.hostUrl}${item.url_path}?">
+            <p class="item-title">${item.file_subprefix}</p>
           </a>
         </div>
       </li>
