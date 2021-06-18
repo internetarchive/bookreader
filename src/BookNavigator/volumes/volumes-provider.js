@@ -13,8 +13,8 @@ export default class VolumesProvider {
     this.component = document.createElement('viewable-files');
 
     const files = bookreader.options.multipleBooksList?.by_subprefix;
-    this.viewableFiles = Object.keys(files).map(item => {
-      return {...files[item], file_name: item };
+    this.viewableFiles = Object.keys(files).map((item, idx) => {
+      return { ...files[item], file_name: item, index: idx + 1 };
     });
     this.volumeCount = Object.keys(files).length;
     this.isSortAscending = false;
