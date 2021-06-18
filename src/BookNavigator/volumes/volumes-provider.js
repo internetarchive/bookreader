@@ -7,33 +7,33 @@ import volumesIcon from '../assets/icon_volumes.js';
 import './volumes.js';
 
 // added for debugging
-const brOptions = {
-  "options": {
-    "enableMultipleBooks": true,
-    "multipleBooksList": {
-      "by_subprefix": {
-        "abc":{
-          "file_source": "/abc_jp2.zip",
-          "file_subprefix": "abc",
-          "title": "3 abc",
-          "url_path": "/details/test20210616"
-        },
-        "def": {
-          "file_source": "/def_jp2.zip",
-          "file_subprefix": "def",
-          "title": "2 def",
-          "url_path": "/details/test20210616/def"
-        },
-        "ghi": {
-          "file_source": "/ghi_jp2.zip",
-          "file_subprefix": "ghi",
-          "title": "1 ghi",
-          "url_path": "/details/test20210616/ghi"
-        }
-      },
-    }
-  }
-};
+// const brOptions = {
+//   "options": {
+//     "enableMultipleBooks": true,
+//     "multipleBooksList": {
+//       "by_subprefix": {
+//         "abc":{
+//           "file_source": "/abc_jp2.zip",
+//           "file_subprefix": "abc",
+//           "title": "3 abc",
+//           "url_path": "/details/test20210616"
+//         },
+//         "def": {
+//           "file_source": "/def_jp2.zip",
+//           "file_subprefix": "def",
+//           "title": "2 def",
+//           "url_path": "/details/test20210616/def"
+//         },
+//         "ghi": {
+//           "file_source": "/ghi_jp2.zip",
+//           "file_subprefix": "ghi",
+//           "title": "1 ghi",
+//           "url_path": "/details/test20210616/ghi"
+//         }
+//       },
+//     }
+//   }
+// };
 
 export default class VolumesProvider {
 
@@ -77,7 +77,7 @@ export default class VolumesProvider {
     console.log("sortBy: ", volumesOrderBy, " initialSort: ", initialSort);
 
     let sortedFiles = [];
-    if (!initialSort) {
+    if (initialSort) {
       sortedFiles = this.viewableFiles.sort((a, b) => a.file_name.localeCompare(b.file_name));
     } else {
       sortedFiles = this.viewableFiles.sort((a, b) => {
