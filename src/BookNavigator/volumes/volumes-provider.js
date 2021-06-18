@@ -2,6 +2,7 @@ import { html } from 'lit-element';
 
 import sortAscendingIcon from '../assets/icon_sort_ascending.js';
 import sortDescendingIcon from '../assets/icon_sort_descending.js';
+import sortNeutralIcon from '../assets/icon_sort_neutral.js';
 import volumesIcon from '../assets/icon_volumes.js';
 
 import './volumes.js';
@@ -13,12 +14,8 @@ export default class VolumesProvider {
     this.component = document.createElement('viewable-files');
 
     const files = bookreader.options.multipleBooksList?.by_subprefix;
-    this.viewableFiles = Object.keys(files).map((item, idx) => {
-      return { ...files[item], file_name: item, index: idx + 1 };
-    });
+    this.viewableFiles = Object.keys(files).map(item => files[item]);
     this.volumeCount = Object.keys(files).length;
-    this.isSortAscending = false;
-    this.sortClickCounter = 0;
 
     this.component.subPrefix = bookreader.options.subPrefix || '';
     this.component.hostUrl = baseHost;
@@ -27,57 +24,52 @@ export default class VolumesProvider {
     this.id = 'volumes';
     this.label = `Viewable files (${this.volumeCount})`;
     this.icon = html`${volumesIcon}`;
-    this.actionButton = this.headerIcon;
-    this.sortVolumes(true);
+
+    this.sortOrderBy = "";
+    this.sortVolumes("initial");
+  }
+
+  get sortInitialIcon() {
+    return html`<button class="sort-by neutral-icon" aria-label="Sort volumes in initial order" @click=${() => this.sortVolumes('asc')}>${sortNeutralIcon}</button>`;
   }
 
   get sortAscendingIcon() {
-    return html`<button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes()}>${sortAscendingIcon}</button>`;
+    return html`<button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes('desc')}>${sortAscendingIcon}</button>`;
   }
 
   get sortDescendingIcon() {
-    return html`<button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes()}>${sortDescendingIcon}</button>`;
+    return html`<button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes('initial')}>${sortDescendingIcon}</button>`;
   }
 
   get headerIcon() {
-    return this.isSortAscending ? this.sortAscendingIcon : this.sortDescendingIcon;
+    if (this.sortOrderBy === 'initial') return this.sortInitialIcon;
+    else if (this.sortOrderBy === 'asc') return this.sortAscendingIcon;
+    else return this.sortDescendingIcon;
   }
 
-  sortVolumes(initialSort = false) {
+  /**
+   * @param {string} sortType (initial, asc, desc)
+   */
+  sortVolumes(sortType) {
     let sortedFiles = [];
-    let volumesOrderBy = "";
 
-    /**
-      sortClickCounter:
-        0 = initial
-        1 = asc
-        2 = desc
-        3 = reset back to 0
-    */
-    if (this.sortClickCounter === 0) {
-      sortedFiles = this.viewableFiles.sort((a, b) => a.file_name.localeCompare(b.file_name));
-    } else {
-      this.isSortAscending = !this.isSortAscending;
-      sortedFiles = this.viewableFiles.sort((a, b) => {
-        if (this.isSortAscending) return a.title.localeCompare(b.title);
-        else return b.title.localeCompare(a.title);
-      });
+    sortedFiles = this.viewableFiles.sort((a, b) => {
+      if (sortType === 'initial') return a.orig_sort - b.orig_sort;
+      else if (sortType === 'asc') return a.title.localeCompare(b.title);
+      else return b.title.localeCompare(a.title);
+    });
 
-      volumesOrderBy = this.isSortAscending ? 'asc' : 'desc';
-    }
-
-    this.sortClickCounter++;
-    if (this.sortClickCounter === 3) this.sortClickCounter = 0;
-
+    this.sortOrderBy = sortType;
     this.component.viewableFiles  = [...sortedFiles];
     this.actionButton = this.headerIcon;
     this.optionChange(this.bookreader);
 
-    if (!initialSort) {
-      this.multipleFilesClicked(volumesOrderBy);
-    }
+    this.multipleFilesClicked(sortType);
   }
 
+  /**
+   * @param {string} orderBy (initial, asc, desc)
+   */
   multipleFilesClicked(orderBy) {
     if (!window.archive_analytics) {
       return;
