@@ -59,6 +59,22 @@ describe('Volumes Provider', () => {
     expect(provider.component).to.exist;
   });
 
+  describe('sorting cycles - render headerIcon actionButton', async () => {
+    const onSortClick = sinon.fake();
+    const baseHost = "https://archive.org";
+    const provider = new volumesProvider(onSortClick, baseHost, brOptions);
+
+    provider.sortVolumes("initial");
+    expect(provider.headerIcon.getIcon.getHTML()).includes("sort-by neutral-icon");
+
+    provider.sortVolumes("asc");
+    expect(provider.headerIcon.getIcon.getHTML()).includes("sort-by asc-icon");
+
+    provider.sortVolumes("desc");
+    expect(provider.headerIcon.getIcon.getHTML()).includes("sort-by desc-icon");
+  });
+
+
   describe('sort volumes in ascending order', async () => {
     const onSortClick = sinon.fake();
     const baseHost = "https://archive.org";
@@ -73,7 +89,6 @@ describe('Volumes Provider', () => {
     const providerFileTitles = provider.viewableFiles.map(item => item.title);
 
     expect(provider.actionButton).to.exist;
-    expect(provider.isSortAscending).to.equals(true);
 
     // use `.eql` for "lose equality" in order to deeply compare values.
     expect(providerFileTitles).to.eql([...ascendingTitles]);
