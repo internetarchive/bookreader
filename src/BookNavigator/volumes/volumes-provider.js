@@ -12,25 +12,25 @@ const brOptions = {
     "enableMultipleBooks": true,
     "multipleBooksList": {
       "by_subprefix": {
-        "/details/SubBookTest": {
-          "url_path": "/details/SubBookTest",
-          "file_subprefix": "book1/GPORFP",
-          "title": "book1/GPORFP.pdf",
-          "file_source": "/book1/GPORFP_jp2.zip"
+        "abc":{
+          "file_source": "/abc_jp2.zip",
+          "file_subprefix": "abc",
+          "title": "3 abc",
+          "url_path": "/details/test20210616"
         },
-        "/details/SubBookTest/subdir/book2/brewster_kahle_internet_archive": {
-          "url_path": "/details/SubBookTest/subdir/book2/brewster_kahle_internet_archive",
-          "file_subprefix": "subdir/book2/brewster_kahle_internet_archive",
-          "title": "subdir/book2/brewster_kahle_internet_archive.pdf",
-          "file_source": "/subdir/book2/brewster_kahle_internet_archive_jp2.zip"
+        "def": {
+          "file_source": "/def_jp2.zip",
+          "file_subprefix": "def",
+          "title": "2 def",
+          "url_path": "/details/test20210616/def"
         },
-        "/details/SubBookTest/subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume": {
-          "url_path": "/details/SubBookTest/subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume",
-          "file_subprefix": "subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume",
-          "title": "subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume.pdf",
-          "file_source": "/subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume_jp2.zip"
+        "ghi": {
+          "file_source": "/ghi_jp2.zip",
+          "file_subprefix": "ghi",
+          "title": "1 ghi",
+          "url_path": "/details/test20210616/ghi"
         }
-      }
+      },
     }
   }
 };
@@ -41,8 +41,10 @@ export default class VolumesProvider {
     this.optionChange = optionChange;
     this.component = document.createElement('viewable-files');
 
-    const files = brOptions.options.multipleBooksList.by_subprefix;// bookreader.options.multipleBooksList?.by_subprefix;
-    this.viewableFiles = Object.keys(files).map(item => files[item]);
+    const files = bookreader.options.multipleBooksList?.by_subprefix;
+    this.viewableFiles = Object.keys(files).map(item => {
+      return {...files[item], file_name: item };
+    });
     this.volumeCount = Object.keys(files).length;
     this.isSortAscending = false;
 
@@ -66,21 +68,17 @@ export default class VolumesProvider {
   }
 
   get headerIcon() {
-    console.log("isSortAscending: ", this.isSortAscending);
     return this.isSortAscending ? this.sortAscendingIcon : this.sortDescendingIcon;
   }
 
   sortVolumes(initialSort = false) {
     this.isSortAscending = !this.isSortAscending;
     const volumesOrderBy = this.isSortAscending ? 'asc' : 'desc';
-    console.log("sortBy: ", volumesOrderBy);
+    console.log("sortBy: ", volumesOrderBy, " initialSort: ", initialSort);
 
     let sortedFiles = [];
     if (!initialSort) {
-      sortedFiles = this.viewableFiles.sort((a, b) => {
-        if (this.isSortAscending) return a.file_subprefix.localeCompare(b.file_subprefix);
-        else return b.file_subprefix.localeCompare(a.file_subprefix);
-      });
+      sortedFiles = this.viewableFiles.sort((a, b) => a.file_name.localeCompare(b.file_name));
     } else {
       sortedFiles = this.viewableFiles.sort((a, b) => {
         if (this.isSortAscending) return a.title.localeCompare(b.title);
