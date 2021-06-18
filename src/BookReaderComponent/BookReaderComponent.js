@@ -73,6 +73,7 @@ export class BookReader extends LitElement {
         --primaryCTAFillRGB: 25, 72, 128;
         --primaryCTABorder: #c5d1df;
         --secondaryCTAFill: #333;
+        --secondaryCTAFillRGB: 51, 51, 51;
         --secondaryCTABorder: #999;
         --primaryErrorCTAFill: #e51c26;
         --primaryErrorCTAFillRGB: 229, 28, 38;

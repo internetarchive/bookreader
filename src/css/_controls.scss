@@ -67,6 +67,11 @@
     }
   }
 
+  .controls button {
+    width: 30px;
+    height: 30px;
+  }
+  
   @keyframes slideUp {
     from {
       opacity: 0;
