@@ -6,35 +6,6 @@ import volumesIcon from '../assets/icon_volumes.js';
 
 import './volumes.js';
 
-// added for debugging
-// const brOptions = {
-//   "options": {
-//     "enableMultipleBooks": true,
-//     "multipleBooksList": {
-//       "by_subprefix": {
-//         "abc":{
-//           "file_source": "/abc_jp2.zip",
-//           "file_subprefix": "abc",
-//           "title": "3 abc",
-//           "url_path": "/details/test20210616"
-//         },
-//         "def": {
-//           "file_source": "/def_jp2.zip",
-//           "file_subprefix": "def",
-//           "title": "2 def",
-//           "url_path": "/details/test20210616/def"
-//         },
-//         "ghi": {
-//           "file_source": "/ghi_jp2.zip",
-//           "file_subprefix": "ghi",
-//           "title": "1 ghi",
-//           "url_path": "/details/test20210616/ghi"
-//         }
-//       },
-//     }
-//   }
-// };
-
 export default class VolumesProvider {
 
   constructor(baseHost, bookreader, optionChange) {
@@ -47,6 +18,7 @@ export default class VolumesProvider {
     });
     this.volumeCount = Object.keys(files).length;
     this.isSortAscending = false;
+    this.sortClickCounter = 0;
 
     this.component.subPrefix = bookreader.options.subPrefix || '';
     this.component.hostUrl = baseHost;
@@ -72,19 +44,30 @@ export default class VolumesProvider {
   }
 
   sortVolumes(initialSort = false) {
-    this.isSortAscending = !this.isSortAscending;
-    const volumesOrderBy = this.isSortAscending ? 'asc' : 'desc';
-    console.log("sortBy: ", volumesOrderBy, " initialSort: ", initialSort);
-
     let sortedFiles = [];
-    if (initialSort) {
+    let volumesOrderBy = "";
+
+    /**
+      sortClickCounter:
+        0 = initial
+        1 = asc
+        2 = desc
+        3 = reset back to 0
+    */
+    if (this.sortClickCounter === 0) {
       sortedFiles = this.viewableFiles.sort((a, b) => a.file_name.localeCompare(b.file_name));
     } else {
+      this.isSortAscending = !this.isSortAscending;
       sortedFiles = this.viewableFiles.sort((a, b) => {
         if (this.isSortAscending) return a.title.localeCompare(b.title);
         else return b.title.localeCompare(a.title);
       });
+
+      volumesOrderBy = this.isSortAscending ? 'asc' : 'desc';
     }
+
+    this.sortClickCounter++;
+    if (this.sortClickCounter === 3) this.sortClickCounter = 0;
 
     this.component.viewableFiles  = [...sortedFiles];
     this.actionButton = this.headerIcon;
