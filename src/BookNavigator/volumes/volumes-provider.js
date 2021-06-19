@@ -11,64 +11,63 @@ export default class VolumesProvider {
 
   constructor(baseHost, bookreader, optionChange) {
     this.optionChange = optionChange;
-    this.component = document.createElement('viewable-files');
+    this.component = document.createElement("viewable-files");
 
-    const files = bookreader.options.multipleBooksList?.by_subprefix;
+    const files = bookreader.options.multipleBooksList.by_subprefix;
     this.viewableFiles = Object.keys(files).map(item => files[item]);
     this.volumeCount = Object.keys(files).length;
 
-    this.component.subPrefix = bookreader.options.subPrefix || '';
+    this.component.subPrefix = bookreader.options.subPrefix || "";
     this.component.hostUrl = baseHost;
     this.component.viewableFiles = this.viewableFiles;
 
-    this.id = 'volumes';
+    this.id = "volumes";
     this.label = `Viewable files (${this.volumeCount})`;
     this.icon = html`${volumesIcon}`;
 
-    this.sortOrderBy = "";
-    this.sortVolumes("initial");
+    this.sortOrderBy = "orig_sort";
+    this.sortVolumes("orig_sort");
   }
 
-  get sortInitialIcon() {
-    return html`<button class="sort-by neutral-icon" aria-label="Sort volumes in initial order" @click=${() => this.sortVolumes('asc')}>${sortNeutralIcon}</button>`;
-  }
+  get sortButton() {
+    const sortIcons = {
+      orig_sort: html`
+        <button class="sort-by neutral-icon" aria-label="Sort volumes in initial order" @click=${() => this.sortVolumes("title_asc")}>${sortNeutralIcon}</button>
+      `,
+      title_asc: html`
+        <button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes("title_desc")}>${sortAscendingIcon}</button>
+      `,
+      title_desc: html`
+        <button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes("orig_sort")}>${sortDescendingIcon}</button>
+      `,
+    };
 
-  get sortAscendingIcon() {
-    return html`<button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes('desc')}>${sortAscendingIcon}</button>`;
-  }
-
-  get sortDescendingIcon() {
-    return html`<button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes('initial')}>${sortDescendingIcon}</button>`;
-  }
-
-  get headerIcon() {
-    if (this.sortOrderBy === 'initial') return this.sortInitialIcon;
-    else if (this.sortOrderBy === 'asc') return this.sortAscendingIcon;
-    else return this.sortDescendingIcon;
+    return sortIcons[this.sortOrderBy];
   }
 
   /**
-   * @param {string} sortType (initial, asc, desc)
+   * @param {'orig_sort' | 'title_asc' | 'title_desc'} sortByType
    */
-  sortVolumes(sortType) {
+  sortVolumes(sortByType) {
     let sortedFiles = [];
 
-    sortedFiles = this.viewableFiles.sort((a, b) => {
-      if (sortType === 'initial') return a.orig_sort - b.orig_sort;
-      else if (sortType === 'asc') return a.title.localeCompare(b.title);
+    const files = this.viewableFiles;
+    sortedFiles = files.sort((a, b) => {
+      if (sortByType === 'orig_sort') return a.orig_sort - b.orig_sort;
+      else if (sortByType === 'title_asc') return a.title.localeCompare(b.title);
       else return b.title.localeCompare(a.title);
     });
 
-    this.sortOrderBy = sortType;
+    this.sortOrderBy = sortByType;
     this.component.viewableFiles  = [...sortedFiles];
-    this.actionButton = this.headerIcon;
+    this.actionButton = this.sortButton;
     this.optionChange(this.bookreader);
 
-    this.multipleFilesClicked(sortType);
+    this.multipleFilesClicked(sortByType);
   }
 
   /**
-   * @param {string} orderBy (initial, asc, desc)
+   * @param {'orig_sort' | 'title_asc' | 'title_desc'} orderBy
    */
   multipleFilesClicked(orderBy) {
     if (!window.archive_analytics) {
