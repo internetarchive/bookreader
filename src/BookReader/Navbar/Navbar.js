@@ -237,7 +237,13 @@ export class Navbar {
     br.options.controls.viewmode.visible && this._bindViewModeButton();
     this.updateNavPageNum(br.currentIndex());
 
+    this.removeFocusFromNavbarControls();
+
     return this.$nav;
+  }
+
+  removeFocusFromNavbarControls() {
+    $('.BRicon').click((e) => { e.currentTarget.blur() });
   }
 
   /**
