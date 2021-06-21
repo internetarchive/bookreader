@@ -24,7 +24,14 @@
 }
 
 .BRicon {
+  padding: 0;
+  margin: 0;
   vertical-align: middle;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  background-image: url(images/BRicons.svg);
+  background-repeat: no-repeat;
 }
 i.BRicon { display: inline-block; }
 .BRicon.logo { @include sprite-offet(0); }
