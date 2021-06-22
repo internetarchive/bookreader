@@ -102,7 +102,7 @@ describe('Plugin: Search', () => {
     expect(br.search.mock.calls[0][1])
       .toHaveProperty('goToFirstResult', true);
     expect(br.search.mock.calls[0][1])
-      .toHaveProperty('suppressFragmentChange', true);
+      .toHaveProperty('suppressFragmentChange', false);
   });
 
   test('calling `search` fires ajax call`', () => {

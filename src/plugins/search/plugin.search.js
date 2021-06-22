@@ -72,9 +72,17 @@ BookReader.prototype.init = (function (super_) {
     super_.call(this);
 
     if (this.options.enableSearch && this.options.initialSearchTerm) {
+      /**
+       * this.search() take two parameter
+       * 1. this.options.initialSearchTerm - search term
+       * 2. {
+       *  goToFirstResult: this.options.goToFirstResult,
+       *  suppressFragmentChange: false // always want to change fragment in URL
+       * }
+       */
       this.search(
         this.options.initialSearchTerm,
-        { goToFirstResult: this.options.goToFirstResult, suppressFragmentChange: true }
+        { goToFirstResult: this.options.goToFirstResult, suppressFragmentChange: false }
       );
     }
   };
