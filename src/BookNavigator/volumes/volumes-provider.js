@@ -1,7 +1,7 @@
 import { html } from 'lit-element';
 
-import sortAscendingIcon from '../assets/icon_sort_ascending.js';
-import sortDescendingIcon from '../assets/icon_sort_descending.js';
+import sortDescIcon from '../assets/icon_sort_desc.js';
+import sortAscIcon from '../assets/icon_sort_asc.js';
 import sortNeutralIcon from '../assets/icon_sort_neutral.js';
 import volumesIcon from '../assets/icon_volumes.js';
 
@@ -35,10 +35,10 @@ export default class VolumesProvider {
         <button class="sort-by neutral-icon" aria-label="Sort volumes in initial order" @click=${() => this.sortVolumes("title_asc")}>${sortNeutralIcon}</button>
       `,
       title_asc: html`
-        <button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes("title_desc")}>${sortAscendingIcon}</button>
+        <button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes("title_desc")}>${sortAscIcon}</button>
       `,
       title_desc: html`
-        <button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes("orig_sort")}>${sortDescendingIcon}</button>
+        <button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes("orig_sort")}>${sortDescIcon}</button>
       `,
     };
 
