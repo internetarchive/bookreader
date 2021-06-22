@@ -33,7 +33,9 @@ export default css`
   .ia-button:disabled,
   .ia-button.disabled {
     cursor: not-allowed;
-    opacity: 0.5;
+    background-color: var(--primaryDisableCTAFill);
+    border: 1px solid var(--secondaryCTABorder);
+    color: var(--primaryTextColor);
   }
 
   .ia-button.transparent {
@@ -44,18 +46,48 @@ export default css`
     padding: 0;
   }
 
+
   .ia-button.primary {
     background-color: var(--primaryCTAFill);
     border-color: var(--primaryCTABorder);
   }
+  .ia-button.primary:hover {
+    background-color: rgba(var(--primaryCTAFillRGB), 0.9);
+  }
+  .ia-button.primary:focus {
+    background-color: rgba(var(--primaryCTAFillRGB), 0.8);
+  }
+  .ia-button.primary:active {
+    background-color: rgba(var(--primaryCTAFillRGB), 0.7);
+  }
+
 
   .ia-button.cancel {
     background-color: var(--primaryErrorCTAFill);
     border-color: var(--primaryErrorCTABorder);
   }
+  .ia-button.cancel:hover {
+    background-color: rgba(var(--primaryErrorCTAFillRGB), 0.9);
+  }
+  .ia-button.cancel:focus {
+    background-color: rgba(var(--primaryErrorCTAFillRGB), 0.8);
+  }
+  .ia-button.cancel:active {
+    background-color: rgba(var(--primaryErrorCTAFillRGB), 0.7);
+  }
+
 
   .ia-button.external {
-    background: var(--secondaryCTAFill);
+    background-color: var(--secondaryCTAFill);
     border-color: var(--secondaryCTABorder);
+  }
+  .ia-button.external:hover {
+    background-color: rgba(var(--secondaryCTAFillRGB), 0.9);
+  }
+  .ia-button.external:focus {
+    background-color: rgba(var(--secondaryCTAFillRGB), 0.8);
+  }
+  .ia-button.external:active {    
+    background-color: rgba(var(--secondaryCTAFillRGB), 0.7);
   }
 `;

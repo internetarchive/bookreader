@@ -70,11 +70,15 @@ export class BookReader extends LitElement {
         --tertiaryBGColor: #333;
         --primaryTextColor: var(--white, #fff);
         --primaryCTAFill: #194880;
+        --primaryCTAFillRGB: 25, 72, 128;
         --primaryCTABorder: #c5d1df;
         --secondaryCTAFill: #333;
+        --secondaryCTAFillRGB: 51, 51, 51;
         --secondaryCTABorder: #999;
         --primaryErrorCTAFill: #e51c26;
+        --primaryErrorCTAFillRGB: 229, 28, 38;
         --primaryErrorCTABorder: #f8c6c8;
+        --primaryDisableCTAFill: #767676;
       }
 
       .ia-bookreader {

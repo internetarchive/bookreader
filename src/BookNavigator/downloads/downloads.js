@@ -32,7 +32,7 @@ export class IABookDownloads extends LitElement {
     return this.downloads.map(option => (
       html`
         <li>
-          <a class="ia-button link primary" href="${option.url}">Get ${option.type}</a>
+          <a class="ia-button link primary" href="javascript:void(0)">Get ${option.type}</a>
           ${option.note ? html`<p>${option.note}</p>` : html``}
         </li>
       `
@@ -57,7 +57,7 @@ export class IABookDownloads extends LitElement {
       ${this.loanExpiryMessage}
       <ul>${this.renderDownloadOptions()}</ul>
       <p>To access downloaded books, you need Adobe-compliant software on your device. The Internet Archive will administer this loan, but Adobe may also collect some information.</p>
-      <a class="ia-button external primary" href="https://www.adobe.com/solutions/ebook/digital-editions/download.html" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
+      <a class="ia-button external" href="javascript:void(0)" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
     `;
   }
 
