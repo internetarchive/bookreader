@@ -136,4 +136,49 @@ describe('<book-navigator>', () => {
     expect(el.bookreader.currentIndex.callCount).to.equal(0);
     expect(el.bookreader.jumpToIndex.callCount).to.equal(0);
   });
+
+  describe(`this.updateSideMenu`, () => {
+    it('emits custom event', async () => {
+      const el = fixtureSync(container());
+      const brStub = {
+        resize: sinon.fake(),
+        currentIndex: sinon.fake(),
+        jumpToIndex: sinon.fake(),
+        options: { enableMultipleBooks: true }
+      };
+      el.bookreader = brStub;
+      await elementUpdated(el);
+
+      let initEventFired = false;
+      let eventDetails = {};
+      el.addEventListener('updateSideMenu', (e) => {
+        eventDetails = e.detail;
+        initEventFired = true;
+      });
+
+      el.updateSideMenu('foo', 'open');
+      expect(initEventFired).to.equal(true);
+      expect(eventDetails.menuId).to.equal('foo');
+      expect(eventDetails.action).to.equal('open');
+    });
+    it('does not emit event if missing an arg', async() => {
+      const el = fixtureSync(container());
+      const brStub = {
+        resize: sinon.fake(),
+        currentIndex: sinon.fake(),
+        jumpToIndex: sinon.fake(),
+        options: { enableMultipleBooks: true }
+      };
+      el.bookreader = brStub;
+      await elementUpdated(el);
+
+      let initEventFired = false;
+      el.addEventListener('updateSideMenu', (e) => {
+        initEventFired = true;
+      });
+
+      el.updateSideMenu('', 'open');
+      expect(initEventFired).to.equal(false);
+    });
+  });
 });
