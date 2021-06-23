@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import downloadsProvider from '../../../../src/BookNavigator/downloads/downloads-provider';
+import DownloadsProvider from '../../../../src/BookNavigator/downloads/downloads-provider';
 
 const downloadableTypes = [
   ["PDF", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.pdf"],
@@ -28,9 +28,9 @@ afterEach(() => {
 });
 
 describe('Downloads Provider', () => {
-  describe('constructor', () => {
+  it('constructor - initial setup', () => {
     const isBookProtected = false;
-    const provider = new downloadsProvider(isBookProtected);
+    const provider = new DownloadsProvider(isBookProtected);
 
     expect(provider.id).to.equal('downloads');
     expect(provider.icon).to.exist;
@@ -40,7 +40,25 @@ describe('Downloads Provider', () => {
 
     provider.update(downloadableTypes);
 
+    expect(provider.isBookProtected).to.equal(false);
+
+    expect(provider.downloads[0].type).to.equals("PDF");
+    expect(provider.downloads[1].type).to.equals("ePub");
+
     expect(provider.menuDetails).to.equal(`(${downloads.length} formats)`);
   });
 
+  it('render view if book is protected', () => {
+    const isBookProtected = true;
+    const provider = new DownloadsProvider(isBookProtected);
+
+    expect(provider.isBookProtected).to.equal(true);
+
+    provider.update(downloadableTypes);
+
+    expect(provider.downloads[0].type).to.equals("Encrypted Adobe PDF");
+    expect(provider.downloads[1].type).to.equals("Encrypted Adobe ePub");
+
+    expect(provider.downloads.length).to.equals(downloads.length);
+  });
 });

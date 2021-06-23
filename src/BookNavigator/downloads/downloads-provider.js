@@ -2,9 +2,9 @@ import { html } from 'lit-element';
 
 /* register subpanel */
 import { IABookDownloads } from './downloads';
+
 customElements.define('ia-book-downloads', IABookDownloads);
 
-let downloads = [];
 const menuBase = {
   pdf: {
     type: 'Encrypted Adobe PDF',
@@ -23,11 +23,13 @@ const publicMenuBase = {
   epub: "ePub"
 };
 
-export default class {
+export default class DownloadsProvider {
+
   constructor(isBookProtected) {
     this.icon = html`<ia-icon icon="download" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
     this.label = 'Downloadable files';
     this.menuDetails = '';
+    this.downloads = [];
     this.id = 'downloads';
     this.component = '';
     this.isBookProtected = isBookProtected;
@@ -41,8 +43,8 @@ export default class {
     this.component = this.menu;
     this.component.isBookProtected = this.isBookProtected;
 
-    const ending = downloads.length === 1 ? '' : 's';
-    this.menuDetails = `(${downloads.length} format${ending})`;
+    const ending = this.downloads.length === 1 ? '' : 's';
+    this.menuDetails = `(${this.downloads.length} format${ending})`;
   }
 
   /**
@@ -51,7 +53,7 @@ export default class {
    * @param  availableTypes
    */
   computeAvailableTypes(availableTypes = []) {
-    const menuData = availableTypes.reduce((found, incoming = [], index) => {
+    const menuData = availableTypes.reduce((found, incoming = []) => {
       const [ type = '', link = '' ] = incoming;
       const formattedType = type.toLowerCase();
       const downloadOption = menuBase[formattedType] || null;
@@ -64,11 +66,11 @@ export default class {
       return found;
     }, []);
 
-    downloads = menuData;
+    this.downloads = menuData;
   }
-
 
   get menu () {
-    return html`<ia-book-downloads .downloads=${downloads}></ia-book-downloads>`;
+    return html`<ia-book-downloads .downloads=${this.downloads}></ia-book-downloads>`;
   }
+
 }

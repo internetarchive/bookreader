@@ -9,14 +9,6 @@ import '../../../../src/BookNavigator/downloads/downloads';
 
 console.log("ia-downloads");
 
-const downloadableTypes = [
-  ["PDF", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.pdf"],
-  ["ePub", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.epub"],
-  ["Plain Text", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala_djvu.txt"],
-  ["DAISY", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala_daisy.zip"],
-  ["Kindle", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.mobi"]
-];
-
 const downloads = [
   {
     type: "PDF",
@@ -59,13 +51,5 @@ describe('<ia-book-downloads>', () => {
     expect(el.isBookProtected).to.equal(false);
 
     expect(el.shadowRoot.querySelector("ul li a").innerHTML).to.include("Get PDF");
-
-    el.isBookProtected = true;
-    await el.updateComplete;
-
-    // console.log('el: ', el.isBookProtected);
-    // console.log("el: ", el.shadowRoot);
-
-    // expect(el.shadowRoot.querySelector("ul li a").innerHTML).to.include("Get Encrypted Adobe PDF");
   });
 });
