@@ -102,6 +102,7 @@ export class BookNavigator extends LitElement {
    * to keep it in sync.
    */
   initializeBookSubmenus() {
+    const isBookProtected = this.bookreader.options.protected;
     this.menuProviders = {
       search: new SearchProvider(
         /**
@@ -123,7 +124,7 @@ export class BookNavigator extends LitElement {
         },
         this.bookreader,
       ),
-      downloads: new DownloadProvider(),
+      downloads: new DownloadProvider(isBookProtected),
       visualAdjustments: new VisualAdjustmentProvider({
         onOptionChange: (event, brInstance = null) => {
           if (brInstance) {
