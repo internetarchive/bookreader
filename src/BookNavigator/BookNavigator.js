@@ -119,7 +119,7 @@ export class BookNavigator extends LitElement {
           const wideEnoughToOpenMenu = this.brWidth >= 640;
           if (wideEnoughToOpenMenu && !searchUpdates?.searchCanceled) {
             /* open side search menu */
-            this.updateSearchSideMenu('open');
+            this.updateSideMenu('search', 'open');
           }
         },
         this.bookreader,
@@ -148,6 +148,7 @@ export class BookNavigator extends LitElement {
           this.bookreader = brInstance;
         }
         this.updateMenuContents();
+        this.updateSideMenu('volumes', 'open');
       });
       this.addMenuShortcut('volumes');
     }
@@ -177,13 +178,17 @@ export class BookNavigator extends LitElement {
   }
 
   /**
-   * Open side search menu
+   * Open side menu
+   * @param {string} menuId
    * @param {('open'|'close'|'toggle')} action
    */
-  updateSearchSideMenu(action = 'open') {
+  updateSideMenu(menuId = '', action = 'open') {
+    if (!menuId || !action) {
+      return;
+    }
     const event = new CustomEvent(
       events.updateSideMenu, {
-        detail: { menuId: 'search', action },
+        detail: { menuId, action },
       },
     );
     this.dispatchEvent(event);

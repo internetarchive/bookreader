@@ -1,4 +1,4 @@
-import { expect } from '@open-wc/testing';
+import { expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import volumesProvider from '../../../../src/BookNavigator/volumes/volumes-provider';
 
@@ -138,4 +138,23 @@ describe('Volumes Provider', () => {
     expect(providerFileTitles).to.eql([...descendingTitles]);
   });
 
+  describe('Sorting icons', () => {
+    it('has 3 icons', async () => {
+      const onSortClick = sinon.fake();
+      const baseHost = "https://archive.org";
+      const provider = new volumesProvider(baseHost, brOptions, onSortClick);
+
+      provider.sortOrderBy = 'orig_sort';
+      const origSortButton = await fixture(provider.sortButton);
+      expect(origSortButton.classList.contains('neutral-icon')).to.be.true;
+
+      provider.sortOrderBy = 'title_asc';
+      const ascButton = await fixture(provider.sortButton);
+      expect(ascButton.classList.contains('asc-icon')).to.be.true;
+
+      provider.sortOrderBy = 'title_desc';
+      const descButton = await fixture(provider.sortButton);
+      expect(descButton.classList.contains('desc-icon')).to.be.true;
+    });
+  });
 });
