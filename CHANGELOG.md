@@ -1,3 +1,8 @@
+# 5.0.0-14
+- Fix: Url search param `q=` updates dynamically @nsharma123
+- Fix: Downloads menu text updates @dualcnhq
+- Fix: Volumes updates - icons, labelling, open menu onload @iisa
+
 # 5.0.0-13
 - Enhancement: Add neutral state for sorting volumes @dualcnhq
 - Enhancement: Update subfiles/volumes title sorting logic by filename -> title_asc -> title_desc order then back to filename @dualcnhq
