@@ -7,6 +7,7 @@ export class IABookDownloads extends LitElement {
       downloads: { type: Array },
       expiration: { type: Number },
       renderHeader: { type: Boolean },
+      isBookProtected: { type: Boolean },
     };
   }
 
@@ -15,6 +16,7 @@ export class IABookDownloads extends LitElement {
     this.downloads = [];
     this.expiration = 0;
     this.renderHeader = false;
+    this.isBookProtected = false;
   }
 
   get formatsCount() {
@@ -51,13 +53,19 @@ export class IABookDownloads extends LitElement {
     `;
   }
 
+  get accessProtectedBook() {
+    return html`
+      <p>To access downloaded books, you need Adobe-compliant software on your device. The Internet Archive will administer this loan, but Adobe may also collect some information.</p>
+      <a class="ia-button external primary" href="https://www.adobe.com/solutions/ebook/digital-editions/download.html" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
+    `;
+  }
+
   render() {
     return html`
       ${this.header}
       ${this.loanExpiryMessage}
       <ul>${this.renderDownloadOptions()}</ul>
-      <p>To access downloaded books, you need Adobe-compliant software on your device. The Internet Archive will administer this loan, but Adobe may also collect some information.</p>
-      <a class="ia-button external primary" href="https://www.adobe.com/solutions/ebook/digital-editions/download.html" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
+      ${this.isBookProtected ? this.accessProtectedBook : nothing}
     `;
   }
 
