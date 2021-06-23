@@ -59,7 +59,7 @@ export class Volumes extends LitElement {
         <div class="separator"></div>
         <div class="content${activeClass}">
           <a href="https://${this.hostUrl}${item.url_path}">
-            <p class="item-title">${item.title}</p>
+            <p class="item-title">${item.orig_sort + 1} ${item.title}</p>
           </a>
         </div>
       </li>
