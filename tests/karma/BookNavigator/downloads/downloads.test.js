@@ -7,7 +7,6 @@ import {
 import sinon from 'sinon';
 import '../../../../src/BookNavigator/downloads/downloads';
 
-console.log("ia-downloads");
 
 const downloads = [
   {
