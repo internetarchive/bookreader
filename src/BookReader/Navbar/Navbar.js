@@ -247,7 +247,12 @@ export class Navbar {
    * remove focus from bookreader navbar control on icon click
    */
   removeFocusFromNavbarControls() {
-    $('.BRicon').click((e) => { e.currentTarget.blur(); });
+    let mouseDown = false;
+    $('.BRicon').mousedown(() => { mouseDown = true; });
+    $('.BRicon').click(() => { mouseDown = false; });
+    $('.BRicon').focus((e) => {
+      if (mouseDown) { e.currentTarget.blur(); }
+    });
   }
 
   /**
