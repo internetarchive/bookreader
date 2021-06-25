@@ -7,6 +7,8 @@ import volumesIcon from '../assets/icon_volumes.js';
 
 import './volumes.js';
 
+const sortArr = ["orig_sort", "title_asc", "title_desc"];
+
 export default class VolumesProvider {
 
   constructor(baseHost, bookreader, optionChange) {
@@ -25,8 +27,17 @@ export default class VolumesProvider {
     this.label = `Viewable files (${this.volumeCount})`;
     this.icon = html`${volumesIcon}`;
 
-    this.sortOrderBy = "orig_sort";
-    this.sortVolumes("orig_sort");
+    // get sort state from query param
+    // always fallback to `orig_sort` if sortOrderBy value is invalid
+    const urlParams = new URLSearchParams(window.location.href);
+    if (urlParams.get("sort")) {
+      const urlSortValue = urlParams.get("sort");
+      this.sortOrderBy = sortArr.includes(urlSortValue) ? urlSortValue : "orig_sort";
+    } else {
+      this.sortOrderBy = "orig_sort";
+    }
+
+    this.sortVolumes(this.sortOrderBy);
   }
 
   get sortButton() {
@@ -53,13 +64,14 @@ export default class VolumesProvider {
 
     const files = this.viewableFiles;
     sortedFiles = files.sort((a, b) => {
-      if (sortByType === 'orig_sort') return a.orig_sort - b.orig_sort;
-      else if (sortByType === 'title_asc') return a.title.localeCompare(b.title);
-      else return b.title.localeCompare(a.title);
+      if (sortByType === 'title_asc') return a.title.localeCompare(b.title);
+      else if (sortByType === 'title_desc') return b.title.localeCompare(a.title);
+      else return a.orig_sort - b.orig_sort;
     });
 
     this.sortOrderBy = sortByType;
     this.component.viewableFiles  = [...sortedFiles];
+    this.component.sortBy = sortByType;
     this.actionButton = this.sortButton;
     this.optionChange(this.bookreader);
 

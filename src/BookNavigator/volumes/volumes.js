@@ -8,6 +8,7 @@ export class Volumes extends LitElement {
       subPrefix: { type: String },
       hostUrl: { type: String },
       viewableFiles: { type: Array },
+      sortBy: { type: String },
     };
   }
 
@@ -15,6 +16,7 @@ export class Volumes extends LitElement {
     super();
     this.subPrefix = '';
     this.hostUrl = '';
+    this.sortBy = '';
     this.viewableFiles = [];
   }
 
@@ -58,7 +60,7 @@ export class Volumes extends LitElement {
       <li>
         <div class="separator"></div>
         <div class="content${activeClass}">
-          <a href="https://${this.hostUrl}${item.url_path}">
+          <a href="https://${this.hostUrl}${item.url_path}?sort=${this.sortBy}">
             <p class="item-title">${item.title}</p>
           </a>
         </div>
