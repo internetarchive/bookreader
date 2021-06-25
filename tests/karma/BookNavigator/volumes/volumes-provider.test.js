@@ -41,10 +41,15 @@ describe('Volumes Provider', () => {
   it('constructor', () => {
     const onSortClick = sinon.fake();
     const baseHost = "https://archive.org";
+
+    brOptions["readQueryString"] = sinon.fake();
     const provider = new volumesProvider(baseHost, brOptions, onSortClick);
 
     const files = brOptions.options.multipleBooksList.by_subprefix;
     const volumeCount = Object.keys(files).length;
+
+    expect(brOptions.readQueryString).callCount(1);
+    expect(provider.sortOrderBy).to.equal("orig_sort"); // default value
 
     expect(provider.optionChange).to.equal(onSortClick);
     expect(provider.id).to.equal('volumes');
