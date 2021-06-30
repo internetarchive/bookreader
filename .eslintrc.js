@@ -1,4 +1,5 @@
 module.exports = {
+  "parser": "babel-eslint",
   "env": {
     "browser": true,
     "jquery": true,
@@ -21,6 +22,7 @@ module.exports = {
   },
   "parserOptions": {
     "ecmaVersion": 2020,
+    "ecmaFeatures": { "legacyDecorators": true },
     "sourceType": "module"
   },
   "rules": {
@@ -28,7 +30,11 @@ module.exports = {
     "semi": ["error", "always"],
     "space-before-blocks": ["error"],
     "keyword-spacing": [2, {"before": true, "after": true}],
-    "indent": ["error", 2],
+    "indent": ["error", 2, {
+      // This for some reason causing errors after switch to parser: babel-eslint.
+      // See https://github.com/babel/babel-eslint/issues/681
+      "ignoredNodes": ["TemplateLiteral"]
+    }],
     "no-console": "off", // Used too often behind `debug` options; not dealing with this now
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "no-trailing-spaces": ["error"],
