@@ -69,17 +69,10 @@ export class Mode1Up {
    * @param {boolean} [noAnimate]
    */
   jumpToIndex(index, pageX, pageY, noAnimate) {
-    this.mode1UpLit.jumpToIndex(index);
-    // // Only animate for small distances
-    // if (!noAnimate && abs(prevCurrentIndex - index) <= 4) {
-    //   this.animating = true;
-    //   this.$brContainer.stop(true).animate({
-    //     scrollTop: leafTop,
-    //     scrollLeft: leafLeft,
-    //   }, 'fast', () => { this.animating = false; });
-    // } else {
-    //   this.$brContainer.stop(true).prop('scrollTop', leafTop);
-    // }
+    // Only smooth for small distances
+    const distance = Math.abs(this.br.currentIndex() - index);
+    const smooth = !noAnimate && distance <= 4;
+    this.mode1UpLit.jumpToIndex(index, { smooth });
   }
 
   /**

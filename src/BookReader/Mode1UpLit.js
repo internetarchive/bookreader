@@ -4,6 +4,7 @@ import { customElement, html, LitElement, property, query } from 'lit-element';
 import { styleMap } from 'lit-html/directives/style-map';
 import { arrChanged, calcScreenDPI, debounce, genToArray, sum, throttle } from './utils';
 /** @typedef {import('./BookModel').BookModel} BookModel */
+/** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */
 /** @typedef {import('./PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../BookReader').default} BookReader */
@@ -110,8 +111,17 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
 
   /************** MAIN PUBLIC METHODS **************/
 
-  jumpToIndex(index) {
+  /**
+   * @param {PageIndex} index
+   */
+  jumpToIndex(index, { smooth = false } = {}) {
+    if (smooth) {
+      this.style.scrollBehavior = 'smooth';
+    }
     this.scrollTop = this.worldUnitsToVisiblePixels(this.pagePositions[index].top);
+    if (smooth) {
+      setTimeout(() => this.style.scrollBehavior = '', 100);
+    }
   }
 
   zoomIn() {
