@@ -14,17 +14,19 @@ export function fullscreenAllowed() {
 /**
  * Requests fullscreen mode for the given element
  *
+ * @param {HTMLElement} element
+ * @param {FullscreenOptions} options
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen
  */
-export function requestFullscreen(element) {
+export function requestFullscreen(element, options = {}) {
   if (element.requestFullscreen) {
-    element.requestFullscreen();
+    element.requestFullscreen(options);
   } else if (element.webkitRequestFullscreen) {
-    element.webkitRequestFullscreen();
+    element.webkitRequestFullscreen(options);
   } else if (element.mozRequestFullScreen) {
-    element.mozRequestFullScreen();
+    element.mozRequestFullScreen(options);
   } else if (element.msRequestFullscreen) {
-    element.msRequestFullscreen();
+    element.msRequestFullscreen(options);
   }
 }
 
