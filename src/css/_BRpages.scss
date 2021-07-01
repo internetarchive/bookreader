@@ -17,6 +17,24 @@
   cursor: unset;
 }
 
+.br-mode-1up {
+  display: block;
+  overflow: auto;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.br-mode-1up__world {
+  position: absolute;
+  transform-origin: 0 0;
+}
+
+.br-mode-1up__visible-world {
+  position: absolute;
+  transform-origin: 0 0;
+}
+
 .BRpagecontainer {
   position: relative;
   overflow: hidden;

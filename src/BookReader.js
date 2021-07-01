@@ -551,7 +551,7 @@ BookReader.prototype.init = function() {
     // Note, this scroll event fires for both user, and js generated calls
     // It is functioning in some cases as the primary triggerer for rendering
     e.data.lastScroll = (new Date().getTime());
-    if (e.data.constMode2up != e.data.mode) {
+    if (e.data.constMode2up != e.data.mode && e.data.constMode1up != e.data.mode) {
       e.data.drawLeafsThrottled();
     }
   });
@@ -1407,9 +1407,6 @@ exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitWidth', 'onePageG
 BookReader.prototype.onePageGetAutofitHeight = Mode1Up.prototype.getAutofitHeight;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitHeight', 'onePageGetAutofitHeight');
 /** @deprecated not used outside Mode1Up, BookReader */
-BookReader.prototype.onePageGetPageTop = Mode1Up.prototype.getPageTop;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getPageTop', 'onePageGetPageTop');
-/** @deprecated not used outside Mode1Up, BookReader */
 BookReader.prototype.onePageCalculateReductionFactors = Mode1Up.prototype.calculateReductionFactors;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateReductionFactors', 'onePageCalculateReductionFactors');
 /** @deprecated not used outside Mode1Up, BookReader */
@@ -1418,12 +1415,6 @@ exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'resizePageView', 'resizePag
 /** @deprecated not used outside Mode1Up */
 BookReader.prototype.onePageCalculateViewDimensions = Mode1Up.prototype.calculateViewDimensions;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateViewDimensions', 'onePageCalculateViewDimensions');
-/** @deprecated not used outside Mode1Up */
-BookReader.prototype.centerX1up = Mode1Up.prototype.centerX;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerX', 'centerX1up');
-/** @deprecated not used outside Mode1Up */
-BookReader.prototype.centerY1up = Mode1Up.prototype.centerY;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerY', 'centerY1up');
 
 /************************/
 /** Mode2Up extensions **/
