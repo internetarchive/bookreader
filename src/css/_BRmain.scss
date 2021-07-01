@@ -43,6 +43,8 @@
   position: relative;
   overflow: hidden;
   background-color: $brColorMainBg;
+
+  contain: strict;
 }
 
 .BRcontainer {

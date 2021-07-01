@@ -23,6 +23,10 @@
   position: relative;
   width: 100%;
   height: 100%;
+
+  // This is a performance optimization that basically tells the browser "the size
+  // of this element doesn't depend on the size of its children".
+  contain: strict;
 }
 
 .br-mode-1up__world {
