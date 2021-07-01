@@ -1,4 +1,5 @@
 // @ts-check
+import Hammer from "hammerjs";
 import { customElement, html, LitElement, property, query } from 'lit-element';
 import { styleMap } from 'lit-html/directives/style-map';
 import { arrChanged, calcScreenDPI, debounce, genToArray, sum, throttle } from './utils';
@@ -48,6 +49,9 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
 
   @property({ type: Number })
   scale = 1;
+  /** Position (in unit-less, [0, 1] coordinates) in client to scale around */
+  @property({ type: Object })
+  scaleCenter = { x: 0.5, y: 0.5 };
 
   /************** VIRTUAL-SCROLLING PROPERTIES **************/
 
@@ -92,7 +96,7 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
   }
 
   /** @type {HTMLElement} */
-  @query('.br-mode-1up__visibleWorld')
+  @query('.br-mode-1up__visible-world')
   $visibleWorld;
 
   /************** CONSTANT PROPERTIES **************/
@@ -108,6 +112,14 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
 
   jumpToIndex(index) {
     this.scrollTop = this.worldUnitsToVisiblePixels(this.pagePositions[index].top);
+  }
+
+  zoomIn() {
+    this.scale *= 1.1;
+  }
+
+  zoomOut() {
+    this.scale *= 1 / 1.1;
   }
 
   /********************************************/
@@ -133,6 +145,61 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
     super.firstUpdated(changedProps);
 
     this.attachExpensiveListeners();
+
+    // Hammer.js by default set userSelect to None; we don't want that!
+    // TODO: Is there any way to do this not globally on Hammer?
+    delete Hammer.defaults.cssProps.userSelect;
+    const hammer = new Hammer.Manager(this, {
+      touchAction: "pan-x pan-y",
+    });
+    let pinchMoveFrame = null;
+    let pinchMoveFramePromise = Promise.resolve();
+
+    hammer.add(new Hammer.Pinch());
+    let oldScale = 1;
+    let lastEvent = null;
+    hammer.on("pinchstart", () => {
+      // Do this in case the pinchend hasn't fired yet.
+      oldScale = 1;
+      this.$visibleWorld.style.willChange = "transform";
+      this.detachExpensiveListeners();
+    });
+    // This is SLOOOOW AF on iOS :/ Try buffering with requestAnimationFrame?
+    hammer.on("pinchmove", (e) => {
+      lastEvent = e;
+      if (!pinchMoveFrame) {
+        let pinchMoveFramePromiseRes = null;
+        pinchMoveFramePromise = new Promise(
+          (res) => (pinchMoveFramePromiseRes = res)
+        );
+        pinchMoveFrame = requestAnimationFrame(() => {
+          this.updateScaleCenter({
+            clientX: lastEvent.center.x,
+            clientY: lastEvent.center.y,
+          });
+          this.scale *= lastEvent.scale / oldScale;
+          oldScale = lastEvent.scale;
+          pinchMoveFrame = null;
+          pinchMoveFramePromiseRes();
+        });
+      }
+    });
+
+    const handlePinchEnd = async () => {
+      // Want this to happen after the pinchMoveFrame,
+      // if one is in progress; otherwise setting oldScale
+      // messes up the transform.
+      await pinchMoveFramePromise;
+      this.scaleCenter = { x: 0.5, y: 0.5 };
+      oldScale = 1;
+      this.$visibleWorld.style.willChange = "auto";
+      this.attachExpensiveListeners();
+    };
+    hammer.on("pinchend", handlePinchEnd);
+    // iOS fires pinchcancel ~randomly; it looks like it sometimes
+    // things the pinch becomes a pan, at which point it cancels?
+    // More work needed here.
+    hammer.on("pinchcancel", handlePinchEnd);
   }
 
   /** @override */
@@ -151,6 +218,15 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
     }
     if (changedProps.has('visiblePages')) {
       this.throttledUpdateRenderedPages();
+    }
+    if (changedProps.has('scale')) {
+      // this.$visibleWorld.style.willChange = "transform";
+      const oldVal = changedProps.get('scale');
+      this.$visibleWorld.style.transform = `scale(${this.scale})`;
+      this.updateViewportOnZoom(this.scale, oldVal);
+
+      // this.$world.style.willChange = "transform";
+      this.$world.style.transform = `scale(${this.scale})`;
     }
   }
 
@@ -307,6 +383,50 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
     });
   }
 
+  /************** ZOOMING LOGIC **************/
+
+  /**
+   * @param {object} param0
+   * @param {number} param0.clientX
+   * @param {number} param0.clientY
+   */
+  updateScaleCenter({ clientX, clientY }) {
+    const bc = this.containerBoundingClient;
+    this.scaleCenter = {
+      x: (clientX - bc.left) / this.containerClientWidth,
+      y: (clientY - bc.top) / this.containerClientHeight,
+    };
+  }
+
+  /**
+   * @param {number} newScale
+   * @param {number} oldScale
+   */
+  updateViewportOnZoom(newScale, oldScale) {
+    const container = this;
+    const { scrollTop: T, scrollLeft: L } = container;
+    const W = this.containerClientWidth;
+    const H = this.containerClientHeight;
+
+    // Scale factor change
+    const F = newScale / oldScale;
+
+    // Where in the viewport the zoom is centered on
+    const XPOS = this.scaleCenter.x;
+    const YPOS = this.scaleCenter.y;
+    const oldCenter = {
+      x: L + XPOS * W,
+      y: T + YPOS * H,
+    };
+    const newCenter = {
+      x: F * oldCenter.x,
+      y: F * oldCenter.y,
+    };
+    container.scrollTop = newCenter.y - YPOS * H;
+    container.scrollLeft = newCenter.x - XPOS * W;
+    this.updateVisibleRegion();
+  }
+
   /************** INPUT HANDLERS **************/
 
   attachExpensiveListeners = () => {
@@ -331,10 +451,10 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
         /Mac/i.test(navigator.platform)
           ? 0.045
           : // This worked well for me on Windows
-          0.015;
+          0.03;
 
     // Zoom around the cursor
-    // this.updateTransformCenter(ev);
+    this.updateScaleCenter(ev);
     this.scale *= 1 - Math.sign(ev.deltaY) * zoomMultiplier;
   }
 }
@@ -357,8 +477,8 @@ function CachedDimensionsMixin(superClass) {
 
     /** @override */
     firstUpdated(changedProps) {
-      this.updateClientSizes();
       super.firstUpdated(changedProps);
+      this.updateClientSizes();
     }
 
     updateClientSizes = () => {

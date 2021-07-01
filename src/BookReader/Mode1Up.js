@@ -93,18 +93,9 @@ export class Mode1Up {
    * @param {'in' | 'out'} direction
    */
   zoom(direction) {
-    const nextReductionFactor = this.br.nextReduce(this.realWorldReduce, direction, this.br.onePage.reductionFactors);
-
-    if (this.realWorldReduce == nextReductionFactor.reduce) {
-      // Already at this level
-      return;
-    }
-
-    this.realWorldReduce = nextReductionFactor.reduce;
+    const nextReductionFactor = this.br.nextReduce(1 / this.mode1UpLit.scale, direction, this.br.onePage.reductionFactors);
+    this.mode1UpLit.scale = 1 / nextReductionFactor.reduce;
     this.br.onePage.autofit = nextReductionFactor.autofit;
-
-    this.resizePageView();
-    this.br.updateToolbarZoom(this.realWorldReduce);
   }
 
   /**
