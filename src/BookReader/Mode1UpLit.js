@@ -299,10 +299,11 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
 
   /** @param {PageModel} page */
   renderPage = (page) => {
-    const r = this.worldUnitsToRenderedPixels;
-    const width = r(page.widthInches);
-    const height = r(page.heightInches);
-    const transform = `translate(0px, ${r(this.pagePositions[page.index].top)}px)`;
+    const wToR = this.worldUnitsToRenderedPixels;
+    const wToV = this.worldUnitsToVisiblePixels;
+    const width = wToR(page.widthInches);
+    const height = wToR(page.heightInches);
+    const transform = `translate(0px, ${wToR(this.pagePositions[page.index].top)}px)`;
     const pageContainerEl = this.createPageContainer(page)
       .update({
         dimensions: {
@@ -311,7 +312,7 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
           top: 0,
           left: 10,
         },
-        reduce: 8,
+        reduce: page.width / wToV(page.widthInches),
       }).$container[0];
 
     pageContainerEl.style.transform = transform;
