@@ -1,7 +1,7 @@
 // @ts-check
 import { customElement, html, LitElement, property, query } from 'lit-element';
 import { styleMap } from 'lit-html/directives/style-map';
-import { calcScreenDPI, debounce, genToArray, sum, throttle } from './utils';
+import { arrChanged, calcScreenDPI, debounce, genToArray, sum, throttle } from './utils';
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageModel} PageModel */
 /** @typedef {import('./PageContainer').PageContainer} PageContainer */
@@ -11,12 +11,28 @@ import { calcScreenDPI, debounce, genToArray, sum, throttle } from './utils';
 // it's constructor :/
 @customElement('br-mode-1up')
 export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
-  @property({ type: Number })
-  scale = 1;
+  /****************************************/
+  /************** PROPERTIES **************/
+  /****************************************/
+
+  /** @type {BookReader} */
+  br;
+
+  /************** BOOK-RELATED PROPERTIES **************/
+
+  /** @type {BookModel} */
+  @property({ type: Object })
+  book;
 
   /** @type {PageModel[]} */
   @property({ type: Array })
-  renderedPages = [];
+  pages = [];
+
+  /** @type {{ [pageIndex: string]: { top: number }}} */
+  @property({ type: Object })
+  pagePositions = {};
+
+  /************** SCALE-RELATED PROPERTIES **************/
 
   /** @private */
   screenDPI = calcScreenDPI();
@@ -30,19 +46,75 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
    */
   realWorldReduce = 1;
 
+  @property({ type: Number })
+  scale = 1;
+
+  /************** VIRTUAL-SCROLLING PROPERTIES **************/
+
+  @property({ type: Object })
   visibleRegion = {
     top: 0,
     left: 0,
     width: 100,
     height: 100,
   };
+
   /** @type {PageModel[]} */
-  visiblePages = []
+  @property({ type: Array, hasChanged: arrChanged })
+  visiblePages = [];
+
+  /** @type {PageModel[]} */
+  @property({ type: Array })
+  renderedPages = [];
+
   /** @type {{ [pageIndex: string]: PageContainer}} position in inches */
   pageContainerCache = {};
 
+  /************** WORLD-RELATED PROPERTIES **************/
+  /**
+   * The world is an imaginary giant document that contains all the pages.
+   * The "world"'s size is used to determine how long the scroll bar should
+   * be, for example.
+   */
+
+  /** @type {HTMLElement} */
+  @query('.br-mode-1up__world')
+  $world;
+
+  worldDimensions = { width: 100, height: 100 };
+
+  get worldStyle() {
+    const wToR = this.worldUnitsToRenderedPixels;
+    return {
+      width: wToR(this.worldDimensions.width) + "px",
+      height: wToR(this.worldDimensions.height) + "px",
+    };
+  }
+
+  /** @type {HTMLElement} */
+  @query('.br-mode-1up__visibleWorld')
+  $visibleWorld;
+
+  /************** CONSTANT PROPERTIES **************/
+
   /** Vertical space between/around the pages in inches */
-  spacingInches = 0.2;
+  SPACING_IN = 0.2;
+
+  /****************************************/
+  /************** PUBLIC API **************/
+  /****************************************/
+
+  /************** MAIN PUBLIC METHODS **************/
+
+  jumpToIndex(index) {
+    this.scrollTop = this.worldUnitsToVisiblePixels(this.pagePositions[index].top);
+  }
+
+  /********************************************/
+  /************** INTERNAL STUFF **************/
+  /********************************************/
+
+  /************** LIFE CYCLE **************/
 
   /**
    * @param {BookModel} book
@@ -50,127 +122,83 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
    */
   constructor(book, br) {
     super();
-
-    /** @type {BookModel} */
     this.book = book;
+
     /** @type {BookReader} */
     this.br = br;
-
-    /** @type {PageModel[]} */
-    this.pages = genToArray(this.book.pagesIterator({ combineConsecutiveUnviewables: true }));
-
-    /** @type {{ [pageIndex: string]: { top: number }}} position in inches */
-    this.pagePositions = (() => {
-      /** @type {{ [pageIndex: string]: { top: number }}} */
-      const result = {};
-      let top = this.spacingInches;
-      for (const page of this.pages) {
-        result[page.index] = { top };
-        top += page.heightInches + this.spacingInches;
-      }
-      return result;
-    })();
-
-    this.world = {
-      width: Math.max(...this.pages.map(p => p.widthInches)) + 2 * this.spacingInches,
-      height:
-          sum(this.pages.map(p => p.heightInches)) +
-          (this.pages.length + 1) * this.spacingInches,
-    };
   }
 
-  // Disable shadow DOM; that would require a huge rejiggering of CSS
+  /** @override */
+  firstUpdated(changedProps) {
+    super.firstUpdated(changedProps);
+
+    this.attachExpensiveListeners();
+  }
+
+  /** @override */
+  updated(changedProps) {
+    // this.X is the new value
+    // changedProps.get('X') is the old value
+    if (changedProps.has('book')) {
+      this.pages = genToArray(this.book.pagesIterator({ combineConsecutiveUnviewables: true }));
+    }
+    if (changedProps.has('pages')) {
+      this.pagePositions = this.computePagePositions(this.pages, this.SPACING_IN);
+      this.worldDimensions = this.computeWorldDimensions();
+    }
+    if (changedProps.has('visibleRegion')) {
+      this.visiblePages = this.computeVisiblePages();
+    }
+    if (changedProps.has('visiblePages')) {
+      this.throttledUpdateRenderedPages();
+    }
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    this.detachExpensiveListeners();
+    super.disconnectedCallback();
+  }
+
+  /************** LIT CONFIGS **************/
+
+  /** @override */
   createRenderRoot() {
+    // Disable shadow DOM; that would require a huge rejiggering of CSS
     return this;
   }
 
-  /** @type {HTMLElement} */
-  @query('.br-mode-1up__world')
-  $world;
-
-  /** @type {HTMLElement} */
-  @query('.br-mode-1up__visibleWorld')
-  $visibleWorld;
-
-  // guard, cache
-  get worldStyle() {
-    const wToR = this.worldUnitsToRenderedPixels;
-    return {
-      width: wToR(this.world.width) + "px",
-      height: wToR(this.world.height) + "px",
-    };
-  }
-
-  jumpToIndex(index) {
-    this.scrollTop = this.worldUnitsToVisiblePixels(this.pagePositions[index].top);
-  }
-
-  /** COORDINATE SPACE CONVERSIONS */
-
+  /************** COORDINATE SPACE CONVERTERS **************/
   /**
-   * Should only be used for rendering; all computations should be done in world space.
+   * There are a few different "coordinate spaces" at play in BR:
+   * (1) World units: i.e. inches. Unless otherwise stated, all computations
+   *     are done in world units.
+   * (2) Rendered Pixels: i.e. img.width = '300'. Note this does _not_ take
+   *     into account zoom scaling.
+   * (3) Visible Pixels: Just rendered pixels, but taking into account scaling.
    */
-  worldUnitsToRenderedPixels = (inches, reduce = this.realWorldReduce, screenDPI = this.screenDPI) => {
-    return inches * screenDPI / reduce;
+
+  worldUnitsToRenderedPixels = (/** @type {number} */inches) => inches * this.screenDPI / this.realWorldReduce;
+  renderedPixelsToWorldUnits = (/** @type {number} */px) => px * this.realWorldReduce / this.screenDPI;
+
+  renderedPixelsToVisiblePixels = (/** @type {number} */px) => px * this.scale;
+  visiblePixelsToRenderedPixels = (/** @type {number} */px) => px / this.scale;
+
+  worldUnitsToVisiblePixels = (/** @type {number} */px) => this.renderedPixelsToVisiblePixels(this.worldUnitsToRenderedPixels(px));
+  visiblePixelsToWorldUnits = (/** @type {number} */px) => this.renderedPixelsToWorldUnits(this.visiblePixelsToRenderedPixels(px));
+
+  /************** RENDERING **************/
+
+  /** @override */
+  render() {
+    return html`
+      <div class="br-mode-1up__world" style=${styleMap(this.worldStyle)}></div>
+      <div class="br-mode-1up__visible-world">
+        ${this.renderedPages.map(p => this.renderPage(p))}
+      </div>`;
   }
 
-  /**
-   * Inverse of the above
-   * @param {number} px
-   */
-  renderedPixelsToWorldUnits = (px, reduce = this.realWorldReduce, screenDPI = this.screenDPI) => {
-    return px * reduce / screenDPI;
-  }
-
-  /**
-   * Takes into account CSS transform scale
-   * @param {number} px
-   */
-  renderedPixelsToVisiblePixels = (px, scale = this.scale) => {
-    return px * scale;
-  }
-
-  /**
-   * @param {number} px
-   */
-  visiblePixelsToRenderedPixels = (px, scale = this.scale) => {
-    return px / scale;
-  }
-
-  /**
-   * Helper of the two expected functions
-   * @param {number} px
-   */
-  worldUnitsToVisiblePixels = (px) => {
-    return this.renderedPixelsToVisiblePixels(
-      this.worldUnitsToRenderedPixels(px)
-    );
-  }
-
-  /**
-   * @param {number} px
-   */
-  visiblePixelsToWorldUnits = (px) => {
-    return this.renderedPixelsToWorldUnits(
-      this.visiblePixelsToRenderedPixels(px)
-    );
-  }
-
-  /**
-   * @param {PageModel} page
-   */
-  pageStyle = (page) => {
-    const r = this.worldUnitsToRenderedPixels;
-    return {
-      width: r(page.widthInches),
-      height: r(page.heightInches),
-      transform: `translate(0px, ${r(this.pagePositions[page.index].top)}px)`,
-    };
-  }
-
-  /**
-   * @param {PageModel} page
-   */
+  /** @param {PageModel} page */
   createPageContainer = (page) => {
     return this.pageContainerCache[page.index] || (
       this.pageContainerCache[page.index] = (
@@ -180,65 +208,28 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
     );
   }
 
-  /**
-   * @param {PageModel} page
-   */
+  /** @param {PageModel} page */
   renderPage = (page) => {
-    const pageStyle = this.pageStyle(page);
-    const el = this.createPageContainer(page)
+    const r = this.worldUnitsToRenderedPixels;
+    const width = r(page.widthInches);
+    const height = r(page.heightInches);
+    const transform = `translate(0px, ${r(this.pagePositions[page.index].top)}px)`;
+    const pageContainerEl = this.createPageContainer(page)
       .update({
         dimensions: {
-          width: pageStyle.width,
-          height: pageStyle.height,
+          width,
+          height,
           top: 0,
           left: 10,
         },
         reduce: 8,
       }).$container[0];
 
-    el.style.transform = pageStyle.transform;
-    return el;
+    pageContainerEl.style.transform = transform;
+    return pageContainerEl;
   }
 
-  render() {
-    return html`
-      <div class="br-mode-1up__world" style=${styleMap(this.worldStyle)}></div>
-      <div class="br-mode-1up__visible-world">
-        ${this.renderedPages.map(p => this.renderPage(p))}
-      </div>`;
-  }
-
-  /** @override */
-  firstUpdated(changedProps) {
-    super.firstUpdated(changedProps);
-    this.updateVisibleRegion();
-    this.updateRenderedPages();
-
-    this.attachExpensiveListeners();
-  }
-
-  attachExpensiveListeners = () => {
-    window.addEventListener("wheel", this.handleCtrlWheel, { passive: false });
-    this.addEventListener("scroll", this.handleScroll, { passive: true });
-  }
-
-  detachExpensiveListeners = () => {
-    window.removeEventListener("wheel", this.handleCtrlWheel);
-    this.removeEventListener("scroll", this.handleScroll);
-  }
-
-  handleScroll = () => {
-    this.updateVisibleRegion();
-    this.throttledUpdateRenderedPages();
-  }
-
-  /** @override */
-  disconnectedCallback() {
-    this.detachExpensiveListeners();
-    super.disconnectedCallback();
-  }
-
-  /** WHAT'S VISIBLE */
+  /************** VIRTUAL SCROLLING LOGIC **************/
 
   updateVisibleRegion = () => {
     const { scrollTop, scrollLeft } = this;
@@ -250,16 +241,63 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
     // i.e. they are affects by the CSS transforms.
 
     const vToW = this.visiblePixelsToWorldUnits;
-    this.visibleRegion.top = vToW(scrollTop);
-    this.visibleRegion.height = vToW(clientHeight);
-    // TODO: These are very likely wrong
-    this.visibleRegion.left = vToW(scrollLeft);
-    this.visibleRegion.width = vToW(clientWidth);
+    this.visibleRegion = {
+      top: vToW(scrollTop),
+      height: vToW(clientHeight),
+      // TODO: These are very likely wrong
+      left: vToW(scrollLeft),
+      width: vToW(clientWidth),
+    };
   }
 
-  updateRenderedPages = () => {
-    console.log("updateRenderedPages");
-    this.pagesNowVisible = this.pages.filter(page => {
+  /**
+   * @returns {PageModel[]}
+   */
+  computeRenderedPages() {
+    // Also render 1 page before/after
+    // @ts-ignore TS doesn't understand the filtering out of null values
+    return [
+      this.visiblePages[0]?.prev,
+      ...this.visiblePages,
+      this.visiblePages[this.visiblePages.length - 1]?.next,
+    ]
+      .filter(p => p)
+      // Never render more than 10 pages! Usually means something is wrong
+      .slice(0, 10);
+  }
+
+  throttledUpdateRenderedPages = throttle(() => {
+    console.log('updateRenderedPages');
+    this.renderedPages = this.computeRenderedPages();
+    this.requestUpdate();
+  }, 100, null)
+
+  /**
+   * @param {PageModel[]} pages
+   * @param {number} spacing
+   */
+  computePagePositions(pages, spacing) {
+    /** @type {{ [pageIndex: string]: { top: number }}} */
+    const result = {};
+    let top = spacing;
+    for (const page of pages) {
+      result[page.index] = { top };
+      top += page.heightInches + spacing;
+    }
+    return result;
+  }
+
+  computeWorldDimensions() {
+    return {
+      width: Math.max(...this.pages.map(p => p.widthInches)) + 2 * this.SPACING_IN,
+      height:
+          sum(this.pages.map(p => p.heightInches)) +
+          (this.pages.length + 1) * this.SPACING_IN,
+    };
+  }
+
+  computeVisiblePages() {
+    return this.pages.filter(page => {
       const PT = this.pagePositions[page.index].top;
       const PB = PT + page.heightInches;
 
@@ -267,26 +305,19 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
       const VB = VT + this.visibleRegion.height;
       return PT <= VB && PB >= VT;
     });
-
-    if (this.pagesNowVisible[0] === this.visiblePages[0] && this.pagesNowVisible.length == this.visiblePages.length) {
-      // No change! Get out while you still can!
-      return;
-    }
-    this.visiblePages = this.pagesNowVisible;
-
-    // Also render 1 page before/after
-    // @ts-ignore TS doesn't understand the filtering out of null values
-    this.renderedPages = [
-      this.visiblePages[0].prev,
-      ...this.visiblePages,
-      this.visiblePages[this.visiblePages.length - 1].next,
-    ]
-      .filter(p => p)
-      // Never render more than 10 pages! Usually means something is wrong
-      .slice(0, 10);
   }
 
-  throttledUpdateRenderedPages = throttle(this.updateRenderedPages, 100, null)
+  /************** INPUT HANDLERS **************/
+
+  attachExpensiveListeners = () => {
+    window.addEventListener("wheel", this.handleCtrlWheel, { passive: false });
+    this.addEventListener("scroll", this.updateVisibleRegion, { passive: true });
+  }
+
+  detachExpensiveListeners = () => {
+    window.removeEventListener("wheel", this.handleCtrlWheel);
+    this.removeEventListener("scroll", this.updateVisibleRegion);
+  }
 
   /**
    * @param {WheelEvent} ev
@@ -306,18 +337,6 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
     // this.updateTransformCenter(ev);
     this.scale *= 1 - Math.sign(ev.deltaY) * zoomMultiplier;
   }
-
-  /** @override */
-  // update(changedProps) {
-  //   // this.X is the new value
-  //   // changedProps.get('X') is the old value
-  //   if (changedProps.has('book')) {
-  //     this.pages = null; // ...
-  //   }
-  //   if (changedProps.has('pages')) {
-  //     this.pages = null; // ...
-  //   }
-  // }
 }
 
 /**
@@ -333,12 +352,13 @@ function CachedDimensionsMixin(superClass) {
   return class CachedDimensionsMixin extends superClass {
     containerClientWidth = 100;
     containerClientHeight = 100;
+
     containerBoundingClient = { top: 0, left: 0 };
 
     /** @override */
     firstUpdated(changedProps) {
-      super.firstUpdated(changedProps);
       this.updateClientSizes();
+      super.firstUpdated(changedProps);
     }
 
     updateClientSizes = () => {

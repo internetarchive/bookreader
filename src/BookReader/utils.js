@@ -220,3 +220,21 @@ export function genToArray(gen) {
   }
   return result;
 }
+
+/**
+ * Check if arrays contain the same elements. Does reference comparison.
+ * @param {Array} arr1
+ * @param {Array} arr2
+ */
+export function arrEquals(arr1, arr2) {
+  return arr1.length == arr2.length && arr1.every((x, i) => x == arr2[i]);
+}
+
+/**
+ * Check if array has changed; namely to be used with lit's property.hasChanged
+ * @param {Array} [arr1]
+ * @param {Array} [arr2]
+ */
+export function arrChanged(arr1, arr2) {
+  return arr1 && arr2 && !arrEquals(arr1, arr2);
+}
