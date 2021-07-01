@@ -122,7 +122,6 @@ A peek in how to use/extend core functionality:
     - plugin.tts.js - add tts (read aloud) ui, sound library, and callbacks
     - plugin.url.js - automatically updates the browser url
     - plugin.resume.js - uses cookies to remember the current page
-    - plugin.vendor-fullscreen.js - replaces fullscreen mode with vendor native fullscreen
     - see plugin directory for current plugin files ()[https://github.com/internetarchive/bookreader/tree/master/src/plugins]
 
 ### Embedding BookReader in an iFrame

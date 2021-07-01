@@ -29,6 +29,7 @@ import 'jquery-ui-touch-punch';
 
 import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
+import { exitFullscreen, fullscreenAllowed, requestFullscreen } from './BookReader/utils/fullscreen';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
