@@ -1,4 +1,6 @@
+// @ts-check
 /* global BookReader */
+import { exitFullscreen, fullscreenAllowed, getFullscreenElement, isFullscreenActive, requestFullscreen } from "../BookReader/utils/fullscreen";
 
 /**
  * Toggles browser's native fullscreen mode if available device is not mobile
@@ -125,98 +127,6 @@ if (!isMobile()) {
       }
     }
   };
-
-  /** @deprecated */
-  BookReader.util.isMobile = isMobile;
-
-  /** @deprecated */
-  BookReader.util.getFullscreenElement = getFullscreenElement;
-
-  /** @deprecated */
-  BookReader.util.bindFullscreenChangeListener = bindFullscreenChangeListener;
-
-  /** @deprecated */
-  BookReader.util.fullscreenAllowed = fullscreenAllowed;
-
-  /** @deprecated */
-  BookReader.util.requestFullscreen = requestFullscreen;
-
-  /** @deprecated */
-  BookReader.util.exitFullscreen = exitFullscreen;
-
-  /** @deprecated */
-  BookReader.util.isFullscreenActive = isFullscreenActive;
-}
-
-
-/**
- * Returns the DOM element being used for fullscreen.
- *
- * @returns {HTMLElement}
- * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentOrShadowRoot/fullscreenElement
- */
-export function getFullscreenElement() {
-  return document.fullscreenElement ||
-    document.webkitFullscreenElement ||
-    document.mozFullScreenElement ||
-    document.msFullscreenElement;
-}
-
-/**
- * Returns true if the document is in fullscreen mode.
- *
- * @returns {boolean}
- */
-export function isFullscreenActive() {
-  const fullscreenElement = getFullscreenElement();
-  return fullscreenElement !== null && fullscreenElement !== undefined;
-}
-
-/**
- * Exits fullscreen mode.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/exitFullscreen
- */
-export function exitFullscreen() {
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.webkitExitFullscreen) {
-    document.webkitExitFullscreen();
-  } else if (document.mozCancelFullScreen) {
-    document.mozCancelFullScreen();
-  } else if (document.msExitFullscreen) {
-    document.msExitFullscreen();
-  }
-}
-
-/**
- * Requests fullscreen mode for the given element
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen
- */
-export function requestFullscreen(element) {
-  if (element.requestFullscreen) {
-    element.requestFullscreen();
-  } else if (element.webkitRequestFullscreen) {
-    element.webkitRequestFullscreen();
-  } else if (element.mozRequestFullScreen) {
-    element.mozRequestFullScreen();
-  } else if (element.msRequestFullscreen) {
-    element.msRequestFullscreen();
-  }
-}
-
-/**
- * Returns true if fullscreen mode is allowed on this device and document.
- *
- * @returns {boolean}
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenEnabled
- */
-export function fullscreenAllowed() {
-  return (document.fullscreenEnabled ||
-    document.webkitFullscreenEnabled ||
-    document.mozFullScreenEnabled ||
-    document.msFullScreenEnabled);
 }
 
 /**
