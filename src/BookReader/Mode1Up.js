@@ -32,8 +32,7 @@ export class Mode1Up {
    * This is called when we switch to one page view
    */
   prepare() {
-    // const startLeaf = this.br.currentIndex();
-
+    const startLeaf = this.br.currentIndex();
     this.$brContainer
       .empty()
       .css({ overflow: 'hidden' })
@@ -43,11 +42,9 @@ export class Mode1Up {
     // this.$brContainer.dragscrollable();
     // this.br.bindGestures(this.$);
 
-    // // This calls drawLeafs
-    // this.resizePageView();
-
-    // this.br.jumpToIndex(startLeaf);
-    // this.br.updateBrClasses();
+    // FIXME Wait for it to render
+    setTimeout(() => this.mode1UpLit.jumpToIndex(startLeaf));
+    this.br.updateBrClasses();
   }
 
   /**
@@ -61,10 +58,6 @@ export class Mode1Up {
   }
 
   drawLeafs() {
-    // this.br.displayedIndices = displayedIndices;
-
-    // // Update the slider
-    // this.br.updateNavIndexThrottled();
   }
 
   /**
@@ -146,6 +139,7 @@ export class Mode1Up {
    * Note this calls drawLeafs
    */
   resizePageView() {
-    // this.br.displayedIndices = [];
+    this.mode1UpLit.updateClientSizes();
+    this.mode1UpLit.requestUpdate();
   }
 }

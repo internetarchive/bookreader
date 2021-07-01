@@ -218,6 +218,9 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
     }
     if (changedProps.has('visiblePages')) {
       this.throttledUpdateRenderedPages();
+      this.br.displayedIndices = this.visiblePages.map(p => p.index);
+      this.br.firstIndex = this.br.displayedIndices[0];
+      this.br.updateNavIndexThrottled();
     }
     if (changedProps.has('scale')) {
       // this.$visibleWorld.style.willChange = "transform";
