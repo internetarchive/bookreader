@@ -41,6 +41,23 @@ export function notInArray(value, array) {
 }
 
 /**
+ * Determines the active element, going into shadow doms.
+ * @return {Element}
+ */
+export function getActiveElement(doc = document, recurseShadowDom = true) {
+  const activeElement = doc.activeElement;
+  if (recurseShadowDom && activeElement?.shadowRoot) {
+    return getActiveElement(activeElement.shadowRoot, true);
+  }
+  return activeElement;
+}
+
+/** Check if an input field is active. Also checks shadow DOMs. */
+export function isInputActive(doc = document) {
+  return getActiveElement(doc)?.tagName == "INPUT";
+}
+
+/**
  * @param {HTMLIFrameElement} iframe
  * @return {Document}
  */

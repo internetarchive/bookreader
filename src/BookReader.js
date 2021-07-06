@@ -659,7 +659,7 @@ BookReader.prototype.setupKeyListeners = function() {
   $(document).keydown(function(e) {
 
     // Keyboard navigation
-    if (!self.keyboardNavigationIsDisabled(e)) {
+    if (!utils.isInputActive()) {
       switch (e.keyCode) {
       case KEY_PGUP:
       case KEY_UP:
@@ -1527,15 +1527,6 @@ BookReader.prototype.stopFlipAnimations = function() {
   jQuery.each(this._modes.mode2Up.pageContainers, function() {
     $(this.$container).stop(false, true);
   });
-};
-
-/**
- * Returns true if keyboard navigation should be disabled for the event
- * @param {Event}
- * @return {boolean}
- */
-BookReader.prototype.keyboardNavigationIsDisabled = function(event) {
-  return event.target.tagName == "INPUT";
 };
 
 /**
