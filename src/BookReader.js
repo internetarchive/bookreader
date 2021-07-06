@@ -659,56 +659,62 @@ BookReader.prototype.setupKeyListeners = function() {
   $(document).keydown(function(e) {
 
     // Keyboard navigation
-    if (!self.keyboardNavigationIsDisabled(e)) {
-      switch (e.keyCode) {
-      case KEY_PGUP:
-      case KEY_UP:
-        // In 1up mode page scrolling is handled by browser
-        if (self.constMode2up == self.mode) {
-          e.preventDefault();
-          self.prev();
-        }
-        break;
-      case KEY_DOWN:
-      case KEY_PGDOWN:
-        if (self.constMode2up == self.mode) {
-          e.preventDefault();
-          self.next();
-        }
-        break;
-      case KEY_END:
+    switch (e.keyCode) {
+    case KEY_PGUP:
+    case KEY_UP:
+      // In 1up mode page scrolling is handled by browser
+      if (!utils.isInputActive() && self.constMode2up == self.mode) {
+        e.preventDefault();
+        self.prev();
+      }
+      break;
+    case KEY_DOWN:
+    case KEY_PGDOWN:
+      if (!utils.isInputActive() && self.constMode2up == self.mode) {
+        e.preventDefault();
+        self.next();
+      }
+      break;
+    case KEY_END:
+      if (!utils.isInputActive()) {
         e.preventDefault();
         self.last();
-        break;
-      case KEY_HOME:
+      }
+      break;
+    case KEY_HOME:
+      if (!utils.isInputActive()) {
         e.preventDefault();
         self.first();
-        break;
-      case KEY_LEFT:
-        if (self.constModeThumb != self.mode) {
-          e.preventDefault();
-          self.left();
-        }
-        break;
-      case KEY_RIGHT:
-        if (self.constModeThumb != self.mode) {
-          e.preventDefault();
-          self.right();
-        }
-        break;
-      case KEY_MINUS:
-      case KEY_MINUS_F:
-      case KEY_NUMPAD_SUBTRACT:
+      }
+      break;
+    case KEY_LEFT:
+      if (!utils.isInputActive() && self.constModeThumb != self.mode) {
+        e.preventDefault();
+        self.left();
+      }
+      break;
+    case KEY_RIGHT:
+      if (!utils.isInputActive() && self.constModeThumb != self.mode) {
+        e.preventDefault();
+        self.right();
+      }
+      break;
+    case KEY_MINUS:
+    case KEY_MINUS_F:
+    case KEY_NUMPAD_SUBTRACT:
+      if (!utils.isInputActive()) {
         e.preventDefault();
         self.zoom(-1);
-        break;
-      case KEY_EQUAL:
-      case KEY_EQUAL_F:
-      case KEY_NUMPAD_ADD:
+      }
+      break;
+    case KEY_EQUAL:
+    case KEY_EQUAL_F:
+    case KEY_NUMPAD_ADD:
+      if (!utils.isInputActive()) {
         e.preventDefault();
         self.zoom(+1);
-        break;
       }
+      break;
     }
   });
 };
@@ -1527,15 +1533,6 @@ BookReader.prototype.stopFlipAnimations = function() {
   jQuery.each(this._modes.mode2Up.pageContainers, function() {
     $(this.$container).stop(false, true);
   });
-};
-
-/**
- * Returns true if keyboard navigation should be disabled for the event
- * @param {Event}
- * @return {boolean}
- */
-BookReader.prototype.keyboardNavigationIsDisabled = function(event) {
-  return event.target.tagName == "INPUT";
 };
 
 /**

@@ -6,6 +6,8 @@ import {
   decodeURIComponentPlus,
   encodeURIComponentPlus,
   escapeHTML,
+  getActiveElement,
+  isInputActive,
   polyfillCustomEvent,
   PolyfilledCustomEvent,
   sleep,
@@ -34,6 +36,44 @@ test('Decodes a URI component and converts + to emptyStr', () => {
 test('Encodes a URI component and converts emptyStr to +', () => {
   expect(encodeURIComponentPlus("?x=test ")).toEqual("%3Fx%3Dtest+");
   expect(encodeURIComponentPlus("ABC abc 123")).toEqual("ABC+abc+123");
+});
+
+describe('getActiveElement', () => {
+  test('Can ignore shadow DOM', () => {
+    const doc = {activeElement: { shadowRoot: {activeElement: {}}}};
+    expect(getActiveElement(doc, false)).toBe(doc.activeElement);
+  });
+
+  test('Can traverse shadow DOM', () => {
+    const doc = {activeElement: { shadowRoot: {activeElement: {}}}};
+    expect(getActiveElement(doc, true)).toBe(doc.activeElement.shadowRoot.activeElement);
+  });
+
+  test('Handles non-shadow elements', () => {
+    const doc = {activeElement: {}};
+    expect(getActiveElement(doc, true)).toBe(doc.activeElement);
+  });
+
+  test('Handles no active element', () => {
+    const doc = {activeElement: null};
+    expect(getActiveElement(doc, true)).toBe(null);
+  });
+});
+
+describe('isInputActive', () => {
+  test('Handles no activeElement', () => {
+    expect(isInputActive({activeElement: null})).toBe(false);
+  });
+
+  test('Handles deep input activeElement', () => {
+    const doc = {activeElement: { shadowRoot: {activeElement: { tagName: 'INPUT' }}}};
+    expect(isInputActive(doc)).toBe(true);
+  });
+
+  test('Handles deep non-input activeElement', () => {
+    const doc = {activeElement: { shadowRoot: {activeElement: { tagName: 'A' }}}};
+    expect(isInputActive(doc)).toBe(false);
+  });
 });
 
 let clock;
