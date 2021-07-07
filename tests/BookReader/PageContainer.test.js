@@ -31,7 +31,7 @@ describe('constructor', () => {
   });
 });
 
-describe('update', async () => {
+describe('update', () => {
   test('dimensions sets CSS', () => {
     const pc = new PageContainer(null, {});
     pc.update({ dimensions: { left: 20 } });

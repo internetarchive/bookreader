@@ -76,33 +76,30 @@ describe('isInputActive', () => {
   });
 });
 
-let clock;
+describe('debounce', () => {
+  /** @type {sinon.SinonFakeTimers} */
+  let clock;
+  beforeEach(() => clock = sinon.useFakeTimers());
+  afterEach(() => clock.restore());
 
-beforeEach(() => {
-  clock = sinon.useFakeTimers();
-});
-
-afterEach(() => {
-  clock.restore();
-});
-
-test('testing debounce', () => {
-  const func = jest.fn();
-  const debouncedFunc = debounce(func, 1000);
-  // Call it immediately
-  debouncedFunc();
-  expect(func).toHaveBeenCalledTimes(0); // func not called
-
-  // Call it several times with 500ms between each call
-  for (let i = 0; i < 10; i++) {
-    clock.tick(500);
+  test('testing debounce', () => {
+    const func = jest.fn();
+    const debouncedFunc = debounce(func, 1000);
+    // Call it immediately
     debouncedFunc();
-  }
-  expect(func).toHaveBeenCalledTimes(0); // func not called
+    expect(func).toHaveBeenCalledTimes(0); // func not called
 
-  // wait 1000ms
-  clock.tick(1000);
-  expect(func).toHaveBeenCalledTimes(1);  // func called
+    // Call it several times with 500ms between each call
+    for (let i = 0; i < 10; i++) {
+      clock.tick(500);
+      debouncedFunc();
+    }
+    expect(func).toHaveBeenCalledTimes(0); // func not called
+
+    // wait 1000ms
+    clock.tick(1000);
+    expect(func).toHaveBeenCalledTimes(1);  // func called
+  });
 });
 
 
@@ -135,15 +132,20 @@ describe('PolyfilledCustomEvent', () => {
 });
 
 describe('sleep', () => {
+  /** @type {sinon.SinonFakeTimers} */
+  let clock;
+  beforeEach(() => clock = sinon.useFakeTimers());
+  afterEach(() => clock.restore());
+
   test('can set sleep in ms', async () => {
-    jest.useFakeTimers();
+    const sbSpy = sinon.spy();
 
-    const sleepTimeMS = 11;
-    await sleep(sleepTimeMS);
+    sleep(5000).then(sbSpy);
 
-    expect(setTimeout).toHaveBeenCalledTimes(1);
-    expect(setTimeout).toHaveBeenLastCalledWith(undefined, sleepTimeMS);
-
-    jest.clearAllTimers();
+    expect(sbSpy.callCount).toBe(0);
+    await clock.tickAsync(1000);
+    expect(sbSpy.callCount).toBe(0);
+    await clock.tickAsync(4000);
+    expect(sbSpy.callCount).toBe(1);
   });
 });
