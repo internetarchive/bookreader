@@ -74,6 +74,7 @@
     "webpack-cli": "4.6.0"
   },
   "jest": {
+    "testEnvironment": "jsdom",
     "setupFiles": [
       "./src/jquery-wrapper.js"
     ],
