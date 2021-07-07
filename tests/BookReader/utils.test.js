@@ -10,7 +10,6 @@ import {
   isInputActive,
   polyfillCustomEvent,
   PolyfilledCustomEvent,
-  sleep,
 } from '../../src/BookReader/utils.js';
 
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
@@ -128,24 +127,5 @@ describe('PolyfilledCustomEvent', () => {
     new PolyfilledCustomEvent('foo');
     expect(createEventSpy.callCount).toBe(1);
     expect(initCustomEventSpy.callCount).toBe(1);
-  });
-});
-
-describe('sleep', () => {
-  /** @type {sinon.SinonFakeTimers} */
-  let clock;
-  beforeEach(() => clock = sinon.useFakeTimers());
-  afterEach(() => clock.restore());
-
-  test('can set sleep in ms', async () => {
-    const sbSpy = sinon.spy();
-
-    sleep(5000).then(sbSpy);
-
-    expect(sbSpy.callCount).toBe(0);
-    await clock.tickAsync(1000);
-    expect(sbSpy.callCount).toBe(0);
-    await clock.tickAsync(4000);
-    expect(sbSpy.callCount).toBe(1);
   });
 });
