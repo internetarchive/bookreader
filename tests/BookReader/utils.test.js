@@ -10,7 +10,6 @@ import {
   isInputActive,
   polyfillCustomEvent,
   PolyfilledCustomEvent,
-  sleep,
 } from '../../src/BookReader/utils.js';
 
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
@@ -76,33 +75,30 @@ describe('isInputActive', () => {
   });
 });
 
-let clock;
+describe('debounce', () => {
+  /** @type {sinon.SinonFakeTimers} */
+  let clock;
+  beforeEach(() => clock = sinon.useFakeTimers());
+  afterEach(() => clock.restore());
 
-beforeEach(() => {
-  clock = sinon.useFakeTimers();
-});
-
-afterEach(() => {
-  clock.restore();
-});
-
-test('testing debounce', () => {
-  const func = jest.fn();
-  const debouncedFunc = debounce(func, 1000);
-  // Call it immediately
-  debouncedFunc();
-  expect(func).toHaveBeenCalledTimes(0); // func not called
-
-  // Call it several times with 500ms between each call
-  for (let i = 0; i < 10; i++) {
-    clock.tick(500);
+  test('testing debounce', () => {
+    const func = jest.fn();
+    const debouncedFunc = debounce(func, 1000);
+    // Call it immediately
     debouncedFunc();
-  }
-  expect(func).toHaveBeenCalledTimes(0); // func not called
+    expect(func).toHaveBeenCalledTimes(0); // func not called
 
-  // wait 1000ms
-  clock.tick(1000);
-  expect(func).toHaveBeenCalledTimes(1);  // func called
+    // Call it several times with 500ms between each call
+    for (let i = 0; i < 10; i++) {
+      clock.tick(500);
+      debouncedFunc();
+    }
+    expect(func).toHaveBeenCalledTimes(0); // func not called
+
+    // wait 1000ms
+    clock.tick(1000);
+    expect(func).toHaveBeenCalledTimes(1);  // func called
+  });
 });
 
 
@@ -131,19 +127,5 @@ describe('PolyfilledCustomEvent', () => {
     new PolyfilledCustomEvent('foo');
     expect(createEventSpy.callCount).toBe(1);
     expect(initCustomEventSpy.callCount).toBe(1);
-  });
-});
-
-describe('sleep', () => {
-  test('can set sleep in ms', async () => {
-    jest.useFakeTimers();
-
-    const sleepTimeMS = 11;
-    await sleep(sleepTimeMS);
-
-    expect(setTimeout).toHaveBeenCalledTimes(1);
-    expect(setTimeout).toHaveBeenLastCalledWith(undefined, sleepTimeMS);
-
-    jest.clearAllTimers();
   });
 });
