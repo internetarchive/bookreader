@@ -111,6 +111,7 @@
     "test-jest": "npx jest --coverage --colors",
     "test-karma": "npx karma start --coverage",
     "test-karma:watch": "npx karma start --auto-watch=true --single-run=false",
+    "update:test-deps": "npm i @open-wc/testing@latest @open-wc/testing-karma@latest @types/jest@latest codecov@latest eslint@latest eslint-plugin-testcafe@latest jest@latest karma-coverage@latest sinon@latest testcafe@latest",
     "codecov": "npx codecov"
   }
 }
