@@ -597,11 +597,9 @@ BookReader.prototype.resize = function() {
     if (this.onePage.autofit != 'none') {
       this.resizePageView1up();
       this.centerPageView();
-      if (this.enableSearch) this.updateSearchHilites(); //deletes highlights but does not call remove()
     } else {
       this.centerPageView();
       this.displayedIndices = [];
-      if (this.enableSearch) this.updateSearchHilites(); //deletes highlights but does not call remove()
       this.drawLeafsThrottled();
     }
   } else if (this.constModeThumb == this.mode) {
@@ -1030,7 +1028,6 @@ BookReader.prototype.switchMode = function(
   }
 
   this.trigger(BookReader.eventNames.stop);
-  if (this.enableSearch) this.removeSearchHilites();
 
   this.prevReadMode = this.getPrevReadMode(this.mode);
 

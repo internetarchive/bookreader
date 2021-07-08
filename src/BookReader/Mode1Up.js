@@ -173,10 +173,7 @@ export class Mode1Up {
         this.br.$(`.pagediv${index}`).remove();
       }
     }
-
     this.br.displayedIndices = displayedIndices;
-    if (this.br.enableSearch) this.br.updateSearchHilites();
-
     this.br.updateToolbarZoom(this.realWorldReduce);
 
     // Update the slider
@@ -244,12 +241,6 @@ export class Mode1Up {
 
     this.resizePageView();
     this.br.updateToolbarZoom(this.realWorldReduce);
-
-    // Recalculate search hilites
-    if (this.br.enableSearch) {
-      this.br.removeSearchHilites();
-      this.br.updateSearchHilites();
-    }
   }
 
   /**
@@ -366,11 +357,6 @@ export class Mode1Up {
 
     // Draw all visible pages
     this.drawLeafs();
-
-    if (this.br.enableSearch) {
-      this.br.removeSearchHilites();
-      this.br.updateSearchHilites();
-    }
   }
 
   /**

@@ -176,6 +176,5 @@ export default class {
   advanceToPage(leaf) {
     const page = this.bookreader.leafNumToIndex(leaf);
     this.bookreader._searchPluginGoToResult(page);
-    this.bookreader.updateSearchHilites();
   }
 }
