@@ -106,7 +106,7 @@ export function boxToSVGRect({ l: left, r: right, b: bottom, t: top }) {
  * @param {PageModel} page
  * @param {HTMLElement} containerEl
  */
-export function renderBoxesInPageContainerElement(layerClass, boxes, page, containerEl) {
+export function renderBoxesInPageContainerLayer(layerClass, boxes, page, containerEl) {
   const mountedSvg = containerEl.querySelector(`.${layerClass}`);
   // Create the layer if it's not there
   const svg = mountedSvg || createSVGPageLayer(page, layerClass);

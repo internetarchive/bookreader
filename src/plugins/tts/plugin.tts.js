@@ -6,7 +6,7 @@ import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
 import { en as tooltips } from './tooltip_dict.js';
-import { renderBoxesInPageContainerElement } from '../../BookReader/PageContainer.js';
+import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
 /** @typedef {import('./PageChunk.js').default} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").default} AbstractTTSEngine */
 
@@ -86,7 +86,7 @@ BookReader.prototype._createPageContainer = (function (super_) {
     const pageContainer = super_.call(this, index);
     if (this.options.enableTtsPlugin && pageContainer.page && index in this._ttsBoxesByIndex) {
       const pageIndex = pageContainer.page.index;
-      renderBoxesInPageContainerElement('ttsHiliteLayer', this._ttsBoxesByIndex[pageIndex], pageContainer.page, pageContainer.$container[0]);
+      renderBoxesInPageContainerLayer('ttsHiliteLayer', this._ttsBoxesByIndex[pageIndex], pageContainer.page, pageContainer.$container[0]);
     }
     return pageContainer;
   };
@@ -299,7 +299,7 @@ BookReader.prototype.ttsHighlightChunk = function(chunk) {
     const pageIndex = parseFloat(pageIndexString);
     const page = this._models.book.getPage(pageIndex);
     const pageContainers = this.getActivePageContainerElementsForIndex(pageIndex);
-    pageContainers.forEach(container => renderBoxesInPageContainerElement('ttsHiliteLayer', boxes, page, container));
+    pageContainers.forEach(container => renderBoxesInPageContainerLayer('ttsHiliteLayer', boxes, page, container));
   }
 };
 

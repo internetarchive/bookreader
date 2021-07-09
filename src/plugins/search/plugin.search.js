@@ -23,7 +23,7 @@
  * @event BookReader:SearchCanceled - When no results found. Receives
  *   `instance`
  */
-import { renderBoxesInPageContainerElement } from '../../BookReader/PageContainer.js';
+import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
 import SearchView from './view.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
@@ -112,7 +112,7 @@ BookReader.prototype._createPageContainer = (function (super_) {
     const pageContainer = super_.call(this, index);
     if (this.enableSearch && pageContainer.page && index in this._searchBoxesByIndex) {
       const pageIndex = pageContainer.page.index;
-      renderBoxesInPageContainerElement('searchHiliteLayer', this._searchBoxesByIndex[pageIndex], pageContainer.page, pageContainer.$container[0]);
+      renderBoxesInPageContainerLayer('searchHiliteLayer', this._searchBoxesByIndex[pageIndex], pageContainer.page, pageContainer.$container[0]);
     }
     return pageContainer;
   };
@@ -345,7 +345,7 @@ BookReader.prototype.updateSearchHilites = function() {
     const pageIndex = parseFloat(pageIndexString);
     const page = this._models.book.getPage(pageIndex);
     const pageContainers = this.getActivePageContainerElementsForIndex(pageIndex);
-    pageContainers.forEach(container => renderBoxesInPageContainerElement('searchHiliteLayer', boxes, page, container));
+    pageContainers.forEach(container => renderBoxesInPageContainerLayer('searchHiliteLayer', boxes, page, container));
   }
 
   this._searchBoxesByIndex = boxesByIndex;
