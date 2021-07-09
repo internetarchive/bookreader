@@ -73,7 +73,7 @@ describe("Generic tests", () => {
     sinon.stub(br.textSelectionPlugin, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
     const pageIndex = br.data.length - 1;
-    await br.textSelectionPlugin.createTextLayer(pageIndex, $container);
+    await br.textSelectionPlugin.createTextLayer({ $container, page: { index: pageIndex, width: 100, height: 100 }});
     expect($container.find(".textSelectionSVG").length).toBe(1);
     expect($container.find(".BRparagElement").length).toBe(1);
   });
@@ -83,17 +83,7 @@ describe("Generic tests", () => {
     const xml = FAKE_XML_1WORD.replace(/<WORD.*<\/WORD>/, FAKE_XML_1WORD.match(/<WORD.*<\/WORD>/)[0].repeat(3000));
     sinon.stub(br.textSelectionPlugin, "getPageText")
       .returns($(new DOMParser().parseFromString(xml, "text/xml")));
-    await br.textSelectionPlugin.createTextLayer(0, $container);
-    expect($container.find(".textSelectionSVG").length).toBe(0);
-    expect($container.find(".BRparagElement").length).toBe(0);
-    expect($container.find(".BRwordElement").length).toBe(0);
-  });
-
-  // GRRRR!!! This is a useful test :( But can't get it working for some reason,
-  // and the error output is super cryptic.
-  test.skip("createTextLayer will not create text layer if index is more than total number of book pages", async () => {
-    const $container = br.refs.$brContainer;
-    await br.textSelectionPlugin.createTextLayer(150, $container);
+    await br.textSelectionPlugin.createTextLayer({ $container, page: { index: 0, width: 100, height: 100 }});
     expect($container.find(".textSelectionSVG").length).toBe(0);
     expect($container.find(".BRparagElement").length).toBe(0);
     expect($container.find(".BRwordElement").length).toBe(0);
@@ -103,7 +93,7 @@ describe("Generic tests", () => {
     const $container = br.refs.$brContainer;
     sinon.stub(br.textSelectionPlugin, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
-    await br.textSelectionPlugin.createTextLayer(1, $container);
+    await br.textSelectionPlugin.createTextLayer({ $container, page: { index: 1, width: 100, height: 100 }});
     expect($container.find(".textSelectionSVG").length).toBe(1);
     expect($container.find(".BRparagElement").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(1);
@@ -114,7 +104,7 @@ describe("Generic tests", () => {
     const $container = br.refs.$brContainer;
     sinon.stub(br.textSelectionPlugin, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_WORDS, "text/xml")));
-    await br.textSelectionPlugin.createTextLayer(2, $container);
+    await br.textSelectionPlugin.createTextLayer({ $container, page: { index: 2, width: 100, height: 100 }});
     expect($container.find(".textSelectionSVG").length).toBe(1);
     expect($container.find(".BRparagElement").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(5);
@@ -125,7 +115,7 @@ describe("Generic tests", () => {
     const $container = br.refs.$brContainer;
     sinon.stub(br.textSelectionPlugin, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_5COORDS, "text/xml")));
-    await br.textSelectionPlugin.createTextLayer(3, $container);
+    await br.textSelectionPlugin.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
     expect($container.find(".textSelectionSVG").length).toBe(1);
     expect($container.find(".BRparagElement").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(1);
@@ -135,7 +125,7 @@ describe("Generic tests", () => {
     const $container = br.refs.$brContainer;
     sinon.stub(br.textSelectionPlugin, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_EMPTY, "text/xml")));
-    await br.textSelectionPlugin.createTextLayer(4, $container);
+    await br.textSelectionPlugin.createTextLayer({ $container, page: { index: 4, width: 100, height: 100 }});
     expect($container.find(".textSelectionSVG").length).toBe(1);
     expect($container.find(".BRparagElement").length).toBe(0);
     expect($container.find(".BRwordElement").length).toBe(0);

@@ -23,6 +23,7 @@
  * @event BookReader:SearchCanceled - When no results found. Receives
  *   `instance`
  */
+import { createSVGPageLayer } from '../../BookReader/PageContainer.js';
 import SearchView from './view.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
@@ -107,18 +108,6 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
   };
 })(BookReader.prototype.buildToolbarElement);
 
-/**
- * @param {PageContainer} pageContainer
- */
-function createSearchHiliteLayer(pageContainer) {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  svg.setAttribute("viewBox", `0 0 ${pageContainer.page.width} ${pageContainer.page.height}`);
-  svg.setAttribute('class', 'searchHiliteLayer');
-  svg.setAttribute('preserveAspectRatio', 'none');
-  return svg;
-}
-
 /** @override */
 BookReader.prototype._createPageContainer = (function (super_) {
   return function (index) {
@@ -126,7 +115,7 @@ BookReader.prototype._createPageContainer = (function (super_) {
     if (this.enableSearch && pageContainer.page) {
       const pageIndex = pageContainer.page.index;
       if (!pageContainer.$container.find('.searchHiliteLayer').length) {
-        const layer = createSearchHiliteLayer(pageContainer);
+        const layer = createSVGPageLayer(pageContainer.page, 'searchHiliteLayer');
         this._searchHiliteLayers[pageIndex] = this._searchHiliteLayers[pageIndex] || [];
         this._searchHiliteLayers[pageIndex].push(layer);
         pageContainer.$container.append(layer);

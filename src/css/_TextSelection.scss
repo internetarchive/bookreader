@@ -1,9 +1,4 @@
 .textSelectionSVG {
-    width: 100%;
-    position: absolute;
-    height: 100%;
-    top: 0;
-    left: 0;
     // Make it so right-clicking on "blank" part of svg sends events to the image (for saving)
     pointer-events: none;
     .BRwordElement { pointer-events: all; }
@@ -35,14 +30,4 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
-}
-
-// Hides svg text layer when page animation is running
-.BRpageFlipping .textSelectionSVG {
-    display: none;
-}
-
-// Hide phantom page when last page is selected
-.BRpagecontainer.BRemptypage .textSelectionSVG{
-    display: none;
 }
