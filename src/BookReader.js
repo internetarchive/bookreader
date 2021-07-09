@@ -267,6 +267,32 @@ BookReader.prototype.setup = function(options) {
   });
 };
 
+/**
+ * Get all the HTML Elements that are being/can be rendered.
+ * Includes cached elements which might be rendered again.
+ */
+BookReader.prototype.getActivePageContainerElements = function() {
+  let containerEls = Object.values(this._modes.mode2Up.pageContainers).map(pc => pc.$container[0]);
+  if (this.mode != this.constMode2up) {
+    containerEls = containerEls.concat(this.$('.BRpagecontainer').toArray());
+  }
+  return containerEls;
+};
+
+/**
+ * Get the HTML Elements for the rendered page. Note there can be more than one, since
+ * (at least as of writing) different modes can maintain different caches.
+ * @param {PageIndex} pageIndex
+ */
+BookReader.prototype.getActivePageContainerElementsForIndex = function(pageIndex) {
+  const mode2UpContainer = this._modes.mode2Up.pageContainers[pageIndex]?.$container?.[0];
+  let containerEls = mode2UpContainer ? [mode2UpContainer] : [];
+  if (this.mode != this.constMode2up) {
+    containerEls = containerEls.concat(this.$(`.pagediv${pageIndex}`).toArray());
+  }
+  return containerEls;
+};
+
 /** @deprecated unused outside Mode2Up */
 Object.defineProperty(BookReader.prototype, 'leafEdgeL', {
   get() { return this._modes.mode2Up.leafEdgeL; },

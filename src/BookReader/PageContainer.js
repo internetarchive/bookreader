@@ -89,11 +89,7 @@ export function createSVGPageLayer(page, className) {
 }
 
 /**
- * @param {object} box
- * @param {number} box.l
- * @param {number} box.r
- * @param {number} box.b
- * @param {number} box.t
+ * @param {{ l: number, r: number, b: number, t: number }} box
  */
 export function boxToSVGRect({ l: left, r: right, b: bottom, t: top }) {
   const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -102,4 +98,23 @@ export function boxToSVGRect({ l: left, r: right, b: bottom, t: top }) {
   rect.setAttribute("width", (right - left).toString());
   rect.setAttribute("height", (bottom - top).toString());
   return rect;
+}
+
+/**
+ * @param {string} layerClass
+ * @param {Array<{ l: number, r: number, b: number, t: number }>} boxes
+ * @param {PageModel} page
+ * @param {HTMLElement} containerEl
+ */
+export function renderBoxesInPageContainerElement(layerClass, boxes, page, containerEl) {
+  const mountedSvg = containerEl.querySelector(`.${layerClass}`);
+  // Create the layer if it's not there
+  const svg = mountedSvg || createSVGPageLayer(page, layerClass);
+  if (!mountedSvg) {
+    // Insert after the image if the image is already loaded.
+    const imgEl = containerEl.querySelector('.BRpageimage');
+    if (imgEl) $(svg).insertAfter(imgEl);
+    else $(svg).prependTo(containerEl);
+  }
+  boxes.forEach(box => svg.appendChild(boxToSVGRect(box)));
 }

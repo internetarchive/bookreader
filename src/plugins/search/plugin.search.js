@@ -23,7 +23,7 @@
  * @event BookReader:SearchCanceled - When no results found. Receives
  *   `instance`
  */
-import { boxToSVGRect, createSVGPageLayer } from '../../BookReader/PageContainer.js';
+import { renderBoxesInPageContainerElement } from '../../BookReader/PageContainer.js';
 import SearchView from './view.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
@@ -58,8 +58,6 @@ BookReader.prototype.setup = (function (super_) {
     this._cancelSearch.bind(this);
     this.cancelSearchRequest.bind(this);
 
-    /** @type { {[pageIndex: number]: SVGSVGElement[]} } */
-    this._searchHiliteLayers = {};
     /** @type { {[pageIndex: number]: SearchInsideMatchBox[]} } */
     this._searchBoxesByIndex = {};
 
@@ -112,21 +110,9 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
 BookReader.prototype._createPageContainer = (function (super_) {
   return function (index) {
     const pageContainer = super_.call(this, index);
-    if (this.enableSearch && pageContainer.page) {
+    if (this.enableSearch && pageContainer.page && index in this._searchBoxesByIndex) {
       const pageIndex = pageContainer.page.index;
-      if (!pageContainer.$container.find('.searchHiliteLayer').length) {
-        const layer = createSVGPageLayer(pageContainer.page, 'searchHiliteLayer');
-        this._searchHiliteLayers[pageIndex] = this._searchHiliteLayers[pageIndex] || [];
-        this._searchHiliteLayers[pageIndex].push(layer);
-        pageContainer.$container.append(layer);
-      }
-
-      if (pageIndex in this._searchBoxesByIndex) {
-        $(this._searchHiliteLayers[pageIndex]).empty();
-        for (const box of this._searchBoxesByIndex[pageIndex]) {
-          this._searchHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
-        }
-      }
+      renderBoxesInPageContainerElement('searchHiliteLayer', this._searchBoxesByIndex[pageIndex], pageContainer.page, pageContainer.$container[0]);
     }
     return pageContainer;
   };
@@ -351,12 +337,15 @@ BookReader.prototype.updateSearchHilites = function() {
       const pageIndex = this.leafNumToIndex(box.page);
       const pageMatches = boxesByIndex[pageIndex] || (boxesByIndex[pageIndex] = []);
       pageMatches.push(box);
-
-      // update any already created pages
-      if (pageIndex in this._searchHiliteLayers) {
-        this._searchHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
-      }
     }
+  }
+
+  // update any already created pages
+  for (const [pageIndexString, boxes] of Object.entries(boxesByIndex)) {
+    const pageIndex = parseFloat(pageIndexString);
+    const page = this._models.book.getPage(pageIndex);
+    const pageContainers = this.getActivePageContainerElementsForIndex(pageIndex);
+    pageContainers.forEach(container => renderBoxesInPageContainerElement('searchHiliteLayer', boxes, page, container));
   }
 
   this._searchBoxesByIndex = boxesByIndex;
@@ -366,7 +355,7 @@ BookReader.prototype.updateSearchHilites = function() {
  * remove search highlights
  */
 BookReader.prototype.removeSearchHilites = function() {
-  $(Object.values(this._searchHiliteLayers).flat()).empty();
+  $(this.getActivePageContainerElements()).find('.searchHiliteLayer').remove();
 };
 
 /**

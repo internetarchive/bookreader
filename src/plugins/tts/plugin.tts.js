@@ -6,7 +6,7 @@ import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
 import { en as tooltips } from './tooltip_dict.js';
-import { boxToSVGRect, createSVGPageLayer } from '../../BookReader/PageContainer.js';
+import { renderBoxesInPageContainerElement } from '../../BookReader/PageContainer.js';
 /** @typedef {import('./PageChunk.js').default} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").default} AbstractTTSEngine */
 
@@ -23,8 +23,6 @@ BookReader.prototype.setup = (function (super_) {
     super_.call(this, options);
 
     if (this.options.enableTtsPlugin) {
-      /** @type { {[pageIndex: number]: SVGSVGElement[]} } */
-      this._ttsHiliteLayers = {};
       /** @type { {[pageIndex: number]: Array<{ l: number, r: number, t: number, b: number }>} } */
       this._ttsBoxesByIndex = {};
 
@@ -86,21 +84,9 @@ BookReader.prototype.init = (function(super_) {
 BookReader.prototype._createPageContainer = (function (super_) {
   return function (index) {
     const pageContainer = super_.call(this, index);
-    if (this.options.enableTtsPlugin && pageContainer.page) {
+    if (this.options.enableTtsPlugin && pageContainer.page && index in this._ttsBoxesByIndex) {
       const pageIndex = pageContainer.page.index;
-      if (!pageContainer.$container.find('.ttsHiliteLayer').length) {
-        const layer = createSVGPageLayer(pageContainer.page, 'ttsHiliteLayer');
-        this._ttsHiliteLayers[pageIndex] = this._ttsHiliteLayers[pageIndex] || [];
-        this._ttsHiliteLayers[pageIndex].push(layer);
-        pageContainer.$container.append(layer);
-      }
-
-      if (pageIndex in this._ttsBoxesByIndex) {
-        $(this._ttsHiliteLayers[pageIndex]).empty();
-        for (const box of this._ttsBoxesByIndex[pageIndex]) {
-          this._ttsHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
-        }
-      }
+      renderBoxesInPageContainerElement('ttsHiliteLayer', this._ttsBoxesByIndex[pageIndex], pageContainer.page, pageContainer.$container[0]);
     }
     return pageContainer;
   };
@@ -309,10 +295,11 @@ BookReader.prototype.ttsHighlightChunk = function(chunk) {
   };
 
   // update any already created pages
-  if (pageIndex in this._ttsHiliteLayers) {
-    for (const box of this._ttsBoxesByIndex[pageIndex]) {
-      this._ttsHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
-    }
+  for (const [pageIndexString, boxes] of Object.entries(this._ttsBoxesByIndex)) {
+    const pageIndex = parseFloat(pageIndexString);
+    const page = this._models.book.getPage(pageIndex);
+    const pageContainers = this.getActivePageContainerElementsForIndex(pageIndex);
+    pageContainers.forEach(container => renderBoxesInPageContainerElement('ttsHiliteLayer', boxes, page, container));
   }
 };
 
@@ -328,7 +315,7 @@ BookReader.prototype.ttsScrollToChunk = function(chunk) {
 // ttsRemoveHilites()
 //______________________________________________________________________________
 BookReader.prototype.ttsRemoveHilites = function () {
-  $(Object.values(this._ttsHiliteLayers).flat()).empty();
+  $(this.getActivePageContainerElements()).find('.ttsHiliteLayer').remove();
   this._ttsBoxesByIndex = {};
 };
 
