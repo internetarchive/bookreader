@@ -25,7 +25,9 @@
 }
 
 #{$brScope} {
-  .searchHiliteLayer {
+  // FIXME: .ttsHiliteLayer should probably not be in this file,
+  // but they appear the same in the UI.
+  .searchHiliteLayer, .ttsHiliteLayer {
     pointer-events: none;
 
     rect {

@@ -23,7 +23,7 @@
  * @event BookReader:SearchCanceled - When no results found. Receives
  *   `instance`
  */
-import { createSVGPageLayer } from '../../BookReader/PageContainer.js';
+import { boxToSVGRect, createSVGPageLayer } from '../../BookReader/PageContainer.js';
 import SearchView from './view.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
@@ -124,7 +124,7 @@ BookReader.prototype._createPageContainer = (function (super_) {
       if (pageIndex in this._searchBoxesByIndex) {
         this._searchHiliteLayers[pageIndex].forEach(svg => svg.innerHTML = '');
         for (const box of this._searchBoxesByIndex[pageIndex]) {
-          this._searchHiliteLayers[pageIndex].forEach(svg => svg.appendChild(renderBoxInSVGLayer(box)));
+          this._searchHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
         }
       }
     }
@@ -334,22 +334,6 @@ BookReader.prototype._BRSearchCallbackError = function(results) {
 };
 
 /**
- * @param {object} box
- * @param {number} box.l
- * @param {number} box.r
- * @param {number} box.b
- * @param {number} box.t
- */
-function renderBoxInSVGLayer({ l: left, r: right, b: bottom, t: top }) {
-  const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  rect.setAttribute("x", left.toString());
-  rect.setAttribute("y", top.toString());
-  rect.setAttribute("width", (right - left).toString());
-  rect.setAttribute("height", (bottom - top).toString());
-  return rect;
-}
-
-/**
  * updates search on-page highlights controller
  */
 BookReader.prototype.updateSearchHilites = function() {
@@ -370,7 +354,7 @@ BookReader.prototype.updateSearchHilites = function() {
 
       // update any already created pages
       if (pageIndex in this._searchHiliteLayers) {
-        this._searchHiliteLayers[pageIndex].forEach(svg => svg.appendChild(renderBoxInSVGLayer(box)));
+        this._searchHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
       }
     }
   }
@@ -382,7 +366,7 @@ BookReader.prototype.updateSearchHilites = function() {
  * remove search highlights
  */
 BookReader.prototype.removeSearchHilites = function() {
-  Object.values(this._searchHiliteLayers).flatMap(svg => svg.innerHTML = '');
+  Object.values(this._searchHiliteLayers).flat().forEach(svg => svg.innerHTML = '');
 };
 
 /**

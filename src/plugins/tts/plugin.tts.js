@@ -6,8 +6,9 @@ import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
 import { en as tooltips } from './tooltip_dict.js';
-/** @typedef {import('./PageChunk.js')} PageChunk */
-/** @typedef {import("./AbstractTTSEngine.js")} AbstractTTSEngine */
+import { boxToSVGRect, createSVGPageLayer } from '../../BookReader/PageContainer.js';
+/** @typedef {import('./PageChunk.js').default} PageChunk */
+/** @typedef {import("./AbstractTTSEngine.js").default} AbstractTTSEngine */
 
 // Default options for TTS
 jQuery.extend(BookReader.defaultOptions, {
@@ -22,7 +23,11 @@ BookReader.prototype.setup = (function (super_) {
     super_.call(this, options);
 
     if (this.options.enableTtsPlugin) {
-      this.ttsHilites = [];
+      /** @type { {[pageIndex: number]: SVGSVGElement[]} } */
+      this._ttsHiliteLayers = {};
+      /** @type { {[pageIndex: number]: Array<{ l: number, r: number, t: number, b: number }>} } */
+      this._ttsBoxesByIndex = {};
+
       let TTSEngine = WebTTSEngine.isSupported() ? WebTTSEngine :
         FestivalTTSEngine.isSupported() ? FestivalTTSEngine :
           null;
@@ -54,17 +59,6 @@ BookReader.prototype.init = (function(super_) {
     if (this.options.enableTtsPlugin) {
       // Bind to events
 
-      // TODO move this to BookReader.js or something
-      this.bind(BookReader.eventNames.fragmentChange, () => {
-        if (this.mode == this.constMode2up) {
-          // clear highlights if they're no longer valid for this page
-          const visibleIndices = [this.twoPage.currentIndexL, this.twoPage.currentIndexR];
-          const visibleSelector = visibleIndices.map(i => `.BRReadAloudHilite.Leaf-${i}`).join(', ');
-          $(this.ttsHilites).filter(visibleSelector).show();
-          $(this.ttsHilites).not(visibleSelector).hide();
-        }
-      });
-
       this.bind(BookReader.eventNames.PostInit, () => {
         this.$('.BRicon.read').click(() => {
           this.ttsToggle();
@@ -88,6 +82,29 @@ BookReader.prototype.init = (function(super_) {
   };
 })(BookReader.prototype.init);
 
+/** @override */
+BookReader.prototype._createPageContainer = (function (super_) {
+  return function (index) {
+    const pageContainer = super_.call(this, index);
+    if (this.options.enableTtsPlugin && pageContainer.page) {
+      const pageIndex = pageContainer.page.index;
+      if (!pageContainer.$container.find('.ttsHiliteLayer').length) {
+        const layer = createSVGPageLayer(pageContainer.page, 'ttsHiliteLayer');
+        this._ttsHiliteLayers[pageIndex] = this._ttsHiliteLayers[pageIndex] || [];
+        this._ttsHiliteLayers[pageIndex].push(layer);
+        pageContainer.$container.append(layer);
+      }
+
+      if (pageIndex in this._ttsBoxesByIndex) {
+        this._ttsHiliteLayers[pageIndex].forEach(svg => svg.innerHTML = '');
+        for (const box of this._ttsBoxesByIndex[pageIndex]) {
+          this._ttsHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
+        }
+      }
+    }
+    return pageContainer;
+  };
+})(BookReader.prototype._createPageContainer);
 
 // Extend buildMobileDrawerElement
 BookReader.prototype.buildMobileDrawerElement = (function (super_) {
@@ -233,12 +250,12 @@ BookReader.prototype.ttsStop = function () {
  * @param {PageChunk} chunk
  * @return {PromiseLike<void>} returns once the flip is done
  */
-BookReader.prototype.ttsBeforeChunkPlay = function(chunk) {
-  return this.ttsMaybeFlipToIndex(chunk.leafIndex)
-    .then(() => {
-      this.ttsHighlightChunk(chunk);
-      this.ttsScrollToChunk(chunk);
-    });
+BookReader.prototype.ttsBeforeChunkPlay = async function(chunk) {
+  await this.ttsMaybeFlipToIndex(chunk.leafIndex);
+  this.ttsHighlightChunk(chunk);
+  // This appears not to work; ttsMaybeFlipToIndex causes a scroll to the top of
+  // the active page :/ Disabling cause the extra scroll just adds an odd jitter.
+  // this.ttsScrollToChunk(chunk);
 };
 
 /**
@@ -281,12 +298,21 @@ BookReader.prototype.ttsMaybeFlipToIndex = function (leafIndex) {
  * @param {PageChunk} chunk
  */
 BookReader.prototype.ttsHighlightChunk = function(chunk) {
+  // The poorly-named variable leafIndex
+  const pageIndex = chunk.leafIndex;
+
   this.ttsRemoveHilites();
 
-  if (this.constMode2up == this.mode) {
-    this.ttsHilite2UP(chunk);
-  } else {
-    this.ttsHilite1UP(chunk);
+  // group by index; currently only possible to have chunks on one page :/
+  this._ttsBoxesByIndex = {
+    [pageIndex]: chunk.lineRects.map(([l, b, r, t]) => ({l, r, b, t}))
+  };
+
+  // update any already created pages
+  if (pageIndex in this._ttsHiliteLayers) {
+    for (const box of this._ttsBoxesByIndex[pageIndex]) {
+      this._ttsHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
+    }
   }
 };
 
@@ -296,84 +322,14 @@ BookReader.prototype.ttsHighlightChunk = function(chunk) {
 BookReader.prototype.ttsScrollToChunk = function(chunk) {
   if (this.constMode1up != this.mode) return;
 
-  let leafTop = 0;
-  let h;
-  let i;
-  for (i = 0; i < chunk.leafIndex; i++) {
-    h = parseInt(this._getPageHeight(i) / this.reduce);
-    leafTop += h + this.padding;
-  }
-
-  const chunkTop = chunk.lineRects[0][3]; //coords are in l,b,r,t order
-  const chunkBot = chunk.lineRects[chunk.lineRects.length - 1][1];
-
-  const topOfFirstChunk = leafTop + chunkTop / this.reduce;
-  const botOfLastChunk  = leafTop + chunkBot / this.reduce;
-
-  if (window?.soundManager?.debugMode) console.log('leafTop = ' + leafTop + ' topOfFirstChunk = ' + topOfFirstChunk + ' botOfLastChunk = ' + botOfLastChunk);
-
-  const containerTop = this.refs.$brContainer.prop('scrollTop');
-  const containerBot = containerTop + this.refs.$brContainer.height();
-  if (window?.soundManager?.debugMode) console.log('containerTop = ' + containerTop + ' containerBot = ' + containerBot);
-
-  if ((topOfFirstChunk < containerTop) || (botOfLastChunk > containerBot)) {
-    this.refs.$brContainer.stop(true).animate({scrollTop: topOfFirstChunk},'fast');
-  }
-};
-
-/**
- * @param {PageChunk} chunk
- */
-BookReader.prototype.ttsHilite1UP = function(chunk) {
-  for (let i = 0; i < chunk.lineRects.length; i++) {
-    //each rect is an array of l,b,r,t coords (djvu.xml ordering...)
-    const l = chunk.lineRects[i][0];
-    const b = chunk.lineRects[i][1];
-    const r = chunk.lineRects[i][2];
-    const t = chunk.lineRects[i][3];
-
-    const div = document.createElement('div');
-    this.ttsHilites.push(div);
-    $(div).prop('className', 'BookReaderSearchHilite').appendTo(
-      this.$('.pagediv' + chunk.leafIndex)
-    );
-
-    $(div).css({
-      width:  (r - l) / this.reduce + 'px',
-      height: (b - t) / this.reduce + 'px',
-      left:   l / this.reduce + 'px',
-      top:    t / this.reduce + 'px'
-    });
-  }
-
-};
-
-/**
- * @param {PageChunk} chunk
- */
-BookReader.prototype.ttsHilite2UP = function (chunk) {
-  for (let i = 0; i < chunk.lineRects.length; i++) {
-    //each rect is an array of l,b,r,t coords (djvu.xml ordering...)
-    const l = chunk.lineRects[i][0];
-    const b = chunk.lineRects[i][1];
-    const r = chunk.lineRects[i][2];
-    const t = chunk.lineRects[i][3];
-
-    const div = document.createElement('div');
-    this.ttsHilites.push(div);
-    $(div)
-      .prop('className', 'BookReaderSearchHilite BRReadAloudHilite Leaf-' + chunk.leafIndex)
-      .css('zIndex', 3)
-      .appendTo(this.refs.$brTwoPageView);
-    this.setHilightCss2UP(div, chunk.leafIndex, l, r, t, b);
-  }
+  $(`.pagediv${chunk.leafIndex} .ttsHiliteLayer rect`)[0]?.scrollIntoView();
 };
 
 // ttsRemoveHilites()
 //______________________________________________________________________________
 BookReader.prototype.ttsRemoveHilites = function () {
-  $(this.ttsHilites).remove();
-  this.ttsHilites = [];
+  Object.values(this._ttsHiliteLayers).flat().forEach(svg => svg.innerHTML = '');
+  this._ttsBoxesByIndex = {};
 };
 
 /**
