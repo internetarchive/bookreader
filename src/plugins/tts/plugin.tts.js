@@ -96,7 +96,7 @@ BookReader.prototype._createPageContainer = (function (super_) {
       }
 
       if (pageIndex in this._ttsBoxesByIndex) {
-        this._ttsHiliteLayers[pageIndex].forEach(svg => svg.innerHTML = '');
+        $(this._ttsHiliteLayers[pageIndex]).empty();
         for (const box of this._ttsBoxesByIndex[pageIndex]) {
           this._ttsHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
         }
@@ -328,7 +328,7 @@ BookReader.prototype.ttsScrollToChunk = function(chunk) {
 // ttsRemoveHilites()
 //______________________________________________________________________________
 BookReader.prototype.ttsRemoveHilites = function () {
-  Object.values(this._ttsHiliteLayers).flat().forEach(svg => svg.innerHTML = '');
+  $(Object.values(this._ttsHiliteLayers).flat()).empty();
   this._ttsBoxesByIndex = {};
 };
 

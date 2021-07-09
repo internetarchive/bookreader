@@ -122,7 +122,7 @@ BookReader.prototype._createPageContainer = (function (super_) {
       }
 
       if (pageIndex in this._searchBoxesByIndex) {
-        this._searchHiliteLayers[pageIndex].forEach(svg => svg.innerHTML = '');
+        $(this._searchHiliteLayers[pageIndex]).empty();
         for (const box of this._searchBoxesByIndex[pageIndex]) {
           this._searchHiliteLayers[pageIndex].forEach(svg => svg.appendChild(boxToSVGRect(box)));
         }
@@ -366,7 +366,7 @@ BookReader.prototype.updateSearchHilites = function() {
  * remove search highlights
  */
 BookReader.prototype.removeSearchHilites = function() {
-  Object.values(this._searchHiliteLayers).flat().forEach(svg => svg.innerHTML = '');
+  $(Object.values(this._searchHiliteLayers).flat()).empty();
 };
 
 /**
