@@ -1,4 +1,4 @@
-import {PageContainer} from '../../src/BookReader/PageContainer.js';
+import {PageContainer, boxToSVGRect, createSVGPageLayer} from '../../src/BookReader/PageContainer.js';
 
 describe('constructor', () => {
   test('protected books', () => {
@@ -111,5 +111,23 @@ describe('update', () => {
     // expect(pc.$img.css('background').includes('page12.jpg')).toBe(true);
     pc.$img.trigger('loadend');
     expect(pc.$img.css('background')).toBeFalsy();
+  });
+});
+
+describe('createSVGPageLayer', () => {
+  test('Does what it says', () => {
+    const svg = createSVGPageLayer({ width: 100, height: 200}, 'myClass');
+    expect(svg.getAttribute('viewBox')).toBe('0 0 100 200');
+    expect(svg.getAttribute('class')).toContain('myClass');
+  });
+});
+
+describe('boxToSVGRect', () => {
+  test('Does what it says', () => {
+    const rect = boxToSVGRect({ l: 100, r: 200, t: 300, b: 500 });
+    expect(rect.getAttribute('x')).toBe('100');
+    expect(rect.getAttribute('y')).toBe('300');
+    expect(rect.getAttribute('width')).toBe('100');
+    expect(rect.getAttribute('height')).toBe('200');
   });
 });
