@@ -219,12 +219,6 @@ export class Mode2Up {
 
     this.drawLeafs();
     this.br.updateToolbarZoom(this.br.reduce);
-
-    if (this.br.enableSearch) {
-      this.br.removeSearchHilites();
-      this.br.updateSearchHilites();
-    }
-
     this.br.updateBrClasses();
   }
 
@@ -616,8 +610,6 @@ export class Mode2Up {
 
     $(this.br.leafEdgeTmp).animate({left: gutter}, this.br.flipSpeed, 'easeInSine');
 
-    if (this.br.enableSearch) this.br.removeSearchHilites();
-
     this.pageContainers[leftLeaf].$container.animate({width: '0px'}, this.br.flipSpeed, 'easeInSine', () => {
 
       $(this.br.leafEdgeTmp).animate({left: `${gutter + newWidthR}px`}, this.br.flipSpeed, 'easeOutSine');
@@ -662,8 +654,6 @@ export class Mode2Up {
         this.br.animating = false;
 
         this.resizeSpread();
-
-        if (this.br.enableSearch) this.br.updateSearchHilites();
 
         this.setMouseHandlers();
 
@@ -778,8 +768,6 @@ export class Mode2Up {
     $(this.leafEdgeR).css({width: `${newLeafEdgeWidthR}px`, left: `${gutter + newWidthR}px` });
     const speed = this.br.flipSpeed;
 
-    if (this.br.enableSearch) this.br.removeSearchHilites();
-
     $(this.br.leafEdgeTmp).animate({left: gutter}, speed, 'easeInSine');
     this.pageContainers[this.br.twoPage.currentIndexR].$container.animate({width: '0px'}, speed, 'easeInSine', () => {
       this.br.$('BRgutter').css({left: `${gutter - this.br.twoPage.bookSpineDivWidth * 0.5}px`});
@@ -813,8 +801,6 @@ export class Mode2Up {
         this.br.animating = false;
 
         this.resizeSpread();
-
-        if (this.br.enableSearch) this.br.updateSearchHilites();
 
         this.setMouseHandlers();
 

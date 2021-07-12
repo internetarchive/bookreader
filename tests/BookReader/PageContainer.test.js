@@ -1,4 +1,4 @@
-import {PageContainer} from '../../src/BookReader/PageContainer.js';
+import {PageContainer, boxToSVGRect, createSVGPageLayer, renderBoxesInPageContainerLayer} from '../../src/BookReader/PageContainer.js';
 
 describe('constructor', () => {
   test('protected books', () => {
@@ -111,5 +111,77 @@ describe('update', () => {
     // expect(pc.$img.css('background').includes('page12.jpg')).toBe(true);
     pc.$img.trigger('loadend');
     expect(pc.$img.css('background')).toBeFalsy();
+  });
+});
+
+describe('createSVGPageLayer', () => {
+  test('Does what it says', () => {
+    const svg = createSVGPageLayer({ width: 100, height: 200}, 'myClass');
+    expect(svg.getAttribute('viewBox')).toBe('0 0 100 200');
+    expect(svg.getAttribute('class')).toContain('myClass');
+  });
+});
+
+describe('boxToSVGRect', () => {
+  test('Does what it says', () => {
+    const rect = boxToSVGRect({ l: 100, r: 200, t: 300, b: 500 });
+    expect(rect.getAttribute('x')).toBe('100');
+    expect(rect.getAttribute('y')).toBe('300');
+    expect(rect.getAttribute('width')).toBe('100');
+    expect(rect.getAttribute('height')).toBe('200');
+  });
+});
+
+describe('renderBoxesInPageContainerLayer', () => {
+  test('Handles missing layer', () => {
+    const container = document.createElement('div');
+    const page = { width: 100, height: 200 };
+    const boxes = [{l: 1, r: 2, t: 3, b: 4}];
+    renderBoxesInPageContainerLayer('foo', boxes, page, container);
+    expect(container.querySelector('.foo')).toBeTruthy();
+    expect(container.querySelectorAll('.foo rect').length).toBe(1);
+  });
+
+  test('Handles existing layer', () => {
+    const container = document.createElement('div');
+    const layer = document.createElement('svg');
+    layer.classList.add('foo');
+    container.append(layer);
+
+    const page = { width: 100, height: 200 };
+    const boxes = [{l: 1, r: 2, t: 3, b: 4}];
+    renderBoxesInPageContainerLayer('foo', boxes, page, container);
+    expect(container.querySelector('.foo')).toBe(layer);
+    expect(container.querySelectorAll('.foo rect').length).toBe(1);
+  });
+
+  test('Adds layer after image if it exists', () => {
+    const container = document.createElement('div');
+    const img = document.createElement('img');
+    img.classList.add('BRpageimage');
+    container.append(img);
+
+    const page = { width: 100, height: 200 };
+    const boxes = [{l: 1, r: 2, t: 3, b: 4}];
+    renderBoxesInPageContainerLayer('foo', boxes, page, container);
+    expect(container.querySelector('.foo')).toBeTruthy();
+    expect(container.children[0].getAttribute('class')).toBe('BRpageimage');
+    expect(container.children[1].getAttribute('class')).toBe('BRPageLayer foo');
+  });
+
+  test('Renders all boxes', () => {
+    const container = document.createElement('div');
+    const page = { width: 100, height: 200 };
+    const boxes = [{l: 1, r: 2, t: 3, b: 4}, {l: 1, r: 2, t: 3, b: 4}, {l: 1, r: 2, t: 3, b: 4}];
+    renderBoxesInPageContainerLayer('foo', boxes, page, container);
+    expect(container.querySelectorAll('.foo rect').length).toBe(3);
+  });
+
+  test('Handles no boxes', () => {
+    const container = document.createElement('div');
+    const page = { width: 100, height: 200 };
+    const boxes = [];
+    renderBoxesInPageContainerLayer('foo', boxes, page, container);
+    expect(container.querySelectorAll('.foo rect').length).toBe(0);
   });
 });

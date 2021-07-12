@@ -1,7 +1,9 @@
 //@ts-check
+import { createSVGPageLayer } from '../BookReader/PageContainer.js';
 import { isFirefox, isSafari } from '../util/browserSniffing.js';
 import { applyVariables } from '../util/strings.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
+/** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
@@ -180,16 +182,15 @@ export class TextSelectionPlugin {
   }
 
   /**
-   * @param {number} pageIndex
-   * @param {JQuery} $container
+   * @param {PageContainer} pageContainer
    */
-  async createTextLayer(pageIndex, $container) {
+  async createTextLayer(pageContainer) {
+    const pageIndex = pageContainer.page.index;
+    const $container = pageContainer.$container;
     const $svgLayers = $container.find('.textSelectionSVG');
     if ($svgLayers.length) return;
     const XMLpage = await this.getPageText(pageIndex);
     if (!XMLpage) return;
-    const XMLwidth = $(XMLpage).attr("width");
-    const XMLheight = $(XMLpage).attr("height");
 
     const totalWords = $(XMLpage).find("WORD").length;
     if (totalWords > this.maxWordRendered) {
@@ -197,19 +198,8 @@ export class TextSelectionPlugin {
       return;
     }
 
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    svg.setAttribute("viewBox", `0 0 ${XMLwidth} ${XMLheight}`);
+    const svg = createSVGPageLayer(pageContainer.page, 'textSelectionSVG');
     $container.append(svg);
-    svg.setAttribute('class', 'textSelectionSVG');
-    svg.setAttribute('preserveAspectRatio', 'none');
-    $(svg).css({
-      "width": "100%",
-      "position": "absolute",
-      "height": "100%",
-      "top": "0",
-      "left": "0",
-    });
 
     $(XMLpage).find("PARAGRAPH").each((i, paragraph) => {
       // Adding text element for each paragraph in the page
@@ -290,11 +280,9 @@ export class BookreaderWithTextSelection extends BookReader {
   _createPageContainer(index) {
     const pageContainer = super._createPageContainer(index);
     // Disable if thumb mode; it's too janky
-    // index can be -1 for "pre-cover" region
-    // Added checking of lastPageIndex to avoid loop around index value
-    const lastPageIndex = this.getNumLeafs() - 1;
-    if (this.mode !== this.constModeThumb && (index >= 0 && index <= lastPageIndex)) {
-      this.textSelectionPlugin?.createTextLayer(index, pageContainer.$container);
+    // .page can be null for "pre-cover" region
+    if (this.mode !== this.constModeThumb && pageContainer.page) {
+      this.textSelectionPlugin?.createTextLayer(pageContainer);
     }
     return pageContainer;
   }

@@ -281,7 +281,6 @@ class SearchView {
           // Todo: update to arrow function & clean up closures
           // to remove `bind` dependency
           this.br._searchPluginGoToResult(+$(event.target).data('pageIndex'));
-          this.br.updateSearchHilites();
         }.bind(this));
     });
   }

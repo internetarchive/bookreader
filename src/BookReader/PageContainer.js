@@ -73,3 +73,48 @@ export class PageContainer {
     return this;
   }
 }
+
+
+/**
+ * @param {PageModel} page
+ * @param {string} className
+ */
+export function createSVGPageLayer(page, className) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  svg.setAttribute("viewBox", `0 0 ${page.width} ${page.height}`);
+  svg.setAttribute('class', `BRPageLayer ${className}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  return svg;
+}
+
+/**
+ * @param {{ l: number, r: number, b: number, t: number }} box
+ */
+export function boxToSVGRect({ l: left, r: right, b: bottom, t: top }) {
+  const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  rect.setAttribute("x", left.toString());
+  rect.setAttribute("y", top.toString());
+  rect.setAttribute("width", (right - left).toString());
+  rect.setAttribute("height", (bottom - top).toString());
+  return rect;
+}
+
+/**
+ * @param {string} layerClass
+ * @param {Array<{ l: number, r: number, b: number, t: number }>} boxes
+ * @param {PageModel} page
+ * @param {HTMLElement} containerEl
+ */
+export function renderBoxesInPageContainerLayer(layerClass, boxes, page, containerEl) {
+  const mountedSvg = containerEl.querySelector(`.${layerClass}`);
+  // Create the layer if it's not there
+  const svg = mountedSvg || createSVGPageLayer(page, layerClass);
+  if (!mountedSvg) {
+    // Insert after the image if the image is already loaded.
+    const imgEl = containerEl.querySelector('.BRpageimage');
+    if (imgEl) $(svg).insertAfter(imgEl);
+    else $(svg).prependTo(containerEl);
+  }
+  boxes.forEach(box => svg.appendChild(boxToSVGRect(box)));
+}

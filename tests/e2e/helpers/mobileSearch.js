@@ -47,7 +47,7 @@ export function runMobileSearchTests(br) {
       await t.expect(getPageUrl()).contains(PAGE_FIRST_RESULT);
 
       //checks highlight on result page is visible
-      const highlight = br.shell.find(".BookReaderSearchHilite");
+      const highlight = br.shell.find(".searchHiliteLayer rect");
       await t.expect(highlight.visible).ok();
 
       await t.maximizeWindow();

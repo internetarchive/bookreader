@@ -23,7 +23,10 @@
  * @event BookReader:SearchCanceled - When no results found. Receives
  *   `instance`
  */
+import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
 import SearchView from './view.js';
+/** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
+/** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
 
 jQuery.extend(BookReader.defaultOptions, {
   server: 'ia600609.us.archive.org',
@@ -54,6 +57,9 @@ BookReader.prototype.setup = (function (super_) {
     this.searchXHR = null;
     this._cancelSearch.bind(this);
     this.cancelSearchRequest.bind(this);
+
+    /** @type { {[pageIndex: number]: SearchInsideMatchBox[]} } */
+    this._searchBoxesByIndex = {};
 
     if (this.searchView) { return; }
     this.searchView = new SearchView({
@@ -99,6 +105,18 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
     return $el;
   };
 })(BookReader.prototype.buildToolbarElement);
+
+/** @override */
+BookReader.prototype._createPageContainer = (function (super_) {
+  return function (index) {
+    const pageContainer = super_.call(this, index);
+    if (this.enableSearch && pageContainer.page && index in this._searchBoxesByIndex) {
+      const pageIndex = pageContainer.page.index;
+      renderBoxesInPageContainerLayer('searchHiliteLayer', this._searchBoxesByIndex[pageIndex], pageContainer.page, pageContainer.$container[0]);
+    }
+    return pageContainer;
+  };
+})(BookReader.prototype._createPageContainer);
 
 /**
  * @typedef {object} SearchOptions
@@ -305,95 +323,39 @@ BookReader.prototype._BRSearchCallbackError = function(results) {
  * updates search on-page highlights controller
  */
 BookReader.prototype.updateSearchHilites = function() {
-  if (this.constMode2up == this.mode) {
-    this.updateSearchHilites2UP();
-    return;
-  }
-  this.updateSearchHilites1UP();
-};
+  /** @type {SearchInsideMatch[]} */
+  const matches = this.searchResults?.matches || [];
+  /** @type { {[pageIndex: number]: SearchInsideMatch[]} } */
+  const boxesByIndex = {};
 
-/**
- * update search on-page highlights in 1up mode
- */
-BookReader.prototype.updateSearchHilites1UP = function() {
-  const results = this.searchResults;
-  if (null == results) return;
-  results.matches?.forEach(match => {
-    match.par[0].boxes.forEach(box => {
+  // Clear any existing svg layers
+  this.removeSearchHilites();
+
+  // Group by pageIndex
+  for (const match of matches) {
+    for (const box of match.par[0].boxes) {
       const pageIndex = this.leafNumToIndex(box.page);
-      const pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
-      if (pageIsInView) {
-        if (!box.div) {
-          //create a div for the search highlight, and stash it in the box object
-          box.div = document.createElement('div');
-          $(box.div).prop('className', 'BookReaderSearchHilite').appendTo(this.$(`.pagediv${pageIndex}`));
-        }
-        const page = this._models.book.getPage(pageIndex);
-        const highlight = {
-          width: this._modes.mode1Up.physicalInchesToDisplayPixels((box.r - box.l) / page.ppi),
-          height: this._modes.mode1Up.physicalInchesToDisplayPixels((box.b - box.t) / page.ppi),
-          left: this._modes.mode1Up.physicalInchesToDisplayPixels(box.l / page.ppi),
-          top: this._modes.mode1Up.physicalInchesToDisplayPixels(box.t / page.ppi),
-        };
-        $(box.div).css(highlight);
-      } else {
-        if (box.div) {
-          $(box.div).remove();
-          box.div = null;
-        }
-      }
-    });
-  });
-};
+      const pageMatches = boxesByIndex[pageIndex] || (boxesByIndex[pageIndex] = []);
+      pageMatches.push(box);
+    }
+  }
 
-/**
- * update search on-page highlights in 2up mode
- */
-BookReader.prototype.updateSearchHilites2UP = function() {
-  const results = this.searchResults;
+  // update any already created pages
+  for (const [pageIndexString, boxes] of Object.entries(boxesByIndex)) {
+    const pageIndex = parseFloat(pageIndexString);
+    const page = this._models.book.getPage(pageIndex);
+    const pageContainers = this.getActivePageContainerElementsForIndex(pageIndex);
+    pageContainers.forEach(container => renderBoxesInPageContainerLayer('searchHiliteLayer', boxes, page, container));
+  }
 
-  if (results === null) return;
-
-  const { matches = [] } = results;
-  matches.forEach((match) => {
-    match.par[0].boxes.forEach(box => {
-      const pageIndex = this.leafNumToIndex(match.par[0].page);
-      const pageIsInView = jQuery.inArray(pageIndex, this.displayedIndices) >= 0;
-      const { isViewable } = this._models.book.getPage(pageIndex);
-
-      if (pageIsInView && isViewable) {
-        if (!box.div) {
-          //create a div for the search highlight, and stash it in the box object
-          box.div = document.createElement('div');
-          $(box.div).addClass('BookReaderSearchHilite')
-            .appendTo(this.refs.$brTwoPageView);
-        }
-        this.setHilightCss2UP(box.div, pageIndex, box.l, box.r, box.t, box.b);
-      } else {
-        // clear stale reference
-        if (box.div) {
-          $(box.div).remove();
-          box.div = null;
-        }
-      }
-    });
-  });
+  this._searchBoxesByIndex = boxesByIndex;
 };
 
 /**
  * remove search highlights
  */
 BookReader.prototype.removeSearchHilites = function() {
-  const results = this.searchResults;
-  if (null == results || !results.matches) { return; }
-  results.matches.forEach(match => {
-    match.par[0].boxes.forEach(box => {
-      if (null != box.div) {
-        $(box.div).remove();
-        box.div = null;
-      }
-    });
-  });
+  $(this.getActivePageContainerElements()).find('.searchHiliteLayer').remove();
 };
 
 /**

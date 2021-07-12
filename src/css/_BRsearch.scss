@@ -25,16 +25,18 @@
 }
 
 #{$brScope} {
-  .BookReaderSearchHilite {
-    opacity: 0.20;
-    filter: alpha(opacity = 20);
-    background-color: #0000ff;
-    position: absolute;
-    /* z-index is important */
-    z-index: $brZindexBase + 3;
+  // FIXME: .ttsHiliteLayer should probably not be in this file,
+  // but they appear the same in the UI.
+  .searchHiliteLayer, .ttsHiliteLayer {
+    pointer-events: none;
 
-    animation: hiliteFadeIn .2s;
+    rect {
+      fill: #0000ff;
+      fill-opacity: 0.2;
+      animation: hiliteFadeIn .2s;
+    }
   }
+
   .BRchapter, .BRsearch {
     position: absolute;
     bottom: 0;  /* Relative to nav line */
@@ -206,8 +208,7 @@
 }
 
 @keyframes hiliteFadeIn {
-  from { opacity: 0; }
-  to { opacity: 0.2; }
+  from { fill-opacity: 0; }
 }
 
 /* Mid size breakpoint */
