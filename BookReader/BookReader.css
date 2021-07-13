@@ -491,6 +491,18 @@ body.BRfullscreenActive .mm-menu {
   background-image: none;
 }
 
+svg.BRPageLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.BRpageFlipping .BRPageLayer {
+  display: none;
+}
+
 .BRbookcover {
   position: absolute;
   background-image: none;
@@ -1515,13 +1527,12 @@ i.BRicon {
   border-top-color: #333;
 }
 
-.BookReader .BookReaderSearchHilite, .BRmobileMenu .BookReaderSearchHilite, .BRfloat .BookReaderSearchHilite {
-  opacity: 0.2;
-  filter: alpha(opacity=20);
-  background-color: #0000ff;
-  position: absolute;
-  /* z-index is important */
-  z-index: 4;
+.BookReader .searchHiliteLayer, .BookReader .ttsHiliteLayer, .BRmobileMenu .searchHiliteLayer, .BRmobileMenu .ttsHiliteLayer, .BRfloat .searchHiliteLayer, .BRfloat .ttsHiliteLayer {
+  pointer-events: none;
+}
+.BookReader .searchHiliteLayer rect, .BookReader .ttsHiliteLayer rect, .BRmobileMenu .searchHiliteLayer rect, .BRmobileMenu .ttsHiliteLayer rect, .BRfloat .searchHiliteLayer rect, .BRfloat .ttsHiliteLayer rect {
+  fill: #0000ff;
+  fill-opacity: 0.2;
   animation: hiliteFadeIn 0.2s;
 }
 .BookReader .BRchapter, .BookReader .BRsearch, .BRmobileMenu .BRchapter, .BRmobileMenu .BRsearch, .BRfloat .BRchapter, .BRfloat .BRsearch {
@@ -1676,10 +1687,7 @@ i.BRicon {
 
 @keyframes hiliteFadeIn {
   from {
-    opacity: 0;
-  }
-  to {
-    opacity: 0.2;
+    fill-opacity: 0;
   }
 }
 /* Mid size breakpoint */
@@ -2879,11 +2887,6 @@ li.BRtable-contents-el .BRTOCElementPage {
 }
 
 .textSelectionSVG {
-  width: 100%;
-  position: absolute;
-  height: 100%;
-  top: 0;
-  left: 0;
   pointer-events: none;
 }
 .textSelectionSVG .BRwordElement {
@@ -2901,10 +2904,9 @@ li.BRtable-contents-el .BRTOCElementPage {
   color: transparent;
 }
 .textSelectionSVG .BRparagElement {
-  fill: red;
+  fill: transparent;
   cursor: text;
   white-space: pre;
-  fill-opacity: 0;
   font-family: Georgia, serif;
 }
 
@@ -2912,14 +2914,6 @@ li.BRtable-contents-el .BRTOCElementPage {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
-}
-
-.BRpageFlipping .textSelectionSVG {
-  display: none;
-}
-
-.BRpagecontainer.BRemptypage .textSelectionSVG {
-  display: none;
 }
 
 /**

@@ -1,3 +1,15 @@
+# 5.0.0-15
+- Fix: Typing -/+ in search box no longer zooms @cdrini
+- Dev: Add script for updating dev deps @cdrini
+- Refactor/Fix: Convert search/TTS highlights to use SVG layer @cdrini
+    - Fix TTS highlights not positioned correctly in Mode1Up
+- Breaking changes (unlikely these are used by anyone):
+    - Remove public method `BookReader.prototype.keyboardNavigationIsDisabled`
+    - Remove public method `BookReader.util.sleep`
+    - Remove public method `BookReader.prototype.updateSearchHilites1UP`
+    - Remove public method `BookReader.prototype.updateSearchHilites2UP`
+    - Remove public attribute `BookReader.prototype.ttsHilites`
+
 # 5.0.0-14
 - Fix: Url search param `q=` updates dynamically @nsharma123
 - Fix: Downloads menu text updates @dualcnhq
