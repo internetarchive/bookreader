@@ -272,8 +272,9 @@ BookReader.prototype.setup = function(options) {
  * Includes cached elements which might be rendered again.
  */
 BookReader.prototype.getActivePageContainerElements = function() {
-  let containerEls = Object.values(this._modes.mode2Up.pageContainers).map(pc => pc.$container[0]);
-  if (this.mode != this.constMode2up) {
+  let containerEls = Object.values(this._modes.mode2Up.pageContainers).map(pc => pc.$container[0])
+    .concat(Object.values(this._modes.mode1Up.mode1UpLit.pageContainerCache).map(pc => pc.$container[0]));
+  if (this.mode == this.constModeThumb) {
     containerEls = containerEls.concat(this.$('.BRpagecontainer').toArray());
   }
   return containerEls;
@@ -285,12 +286,11 @@ BookReader.prototype.getActivePageContainerElements = function() {
  * @param {PageIndex} pageIndex
  */
 BookReader.prototype.getActivePageContainerElementsForIndex = function(pageIndex) {
-  const mode2UpContainer = this._modes.mode2Up.pageContainers[pageIndex]?.$container?.[0];
-  let containerEls = mode2UpContainer ? [mode2UpContainer] : [];
-  if (this.mode != this.constMode2up) {
-    containerEls = containerEls.concat(this.$(`.pagediv${pageIndex}`).toArray());
-  }
-  return containerEls;
+  return [
+    this._modes.mode2Up.pageContainers[pageIndex]?.$container?.[0],
+    this._modes.mode1Up.mode1UpLit.pageContainerCache[pageIndex]?.$container?.[0],
+    ...(this.mode == this.constModeThumb ? this.$(`.pagediv${pageIndex}`).toArray() : [])
+  ].filter(x => x);
 };
 
 /** @deprecated unused outside Mode2Up */
