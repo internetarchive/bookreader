@@ -28,9 +28,9 @@ export default class VolumesProvider {
     this.icon = html`${volumesIcon}`;
 
     // get sort state from query param
-    // always fallback to `orig_sort` if sortOrderBy value is invalid
+    // always fallback to `orig_sort` if sortOrderBy or urlParam `sort` value is invalid or empty
     const urlParams = new URLSearchParams(bookreader.readQueryString());
-    if (urlParams.get("sort") != null || urlParams.get("sort") != "") {
+    if (urlParams.get("sort") !== null || urlParams.get("sort") !== "") {
       const urlSortValue = urlParams.get("sort");
       this.sortOrderBy = sortArr.includes(urlSortValue) ? urlSortValue : "orig_sort";
     } else {

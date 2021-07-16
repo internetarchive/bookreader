@@ -56,11 +56,13 @@ export class Volumes extends LitElement {
 
   volumeItem(item) {
     const activeClass = this.subPrefix === item.file_subprefix ? ' active' : '';
+    const baseUrl = `https://${this.hostUrl}${item.url_path}`;
+    const hrefUrl = this.sortBy === 'orig_sort' ? baseUrl : `${baseUrl}?sort=${this.sortBy}`;
     return html`
       <li>
         <div class="separator"></div>
         <div class="content${activeClass}">
-          <a href="https://${this.hostUrl}${item.url_path}?sort=${this.sortBy}">
+          <a href="${hrefUrl}">
             <p class="item-title">${item.title}</p>
           </a>
         </div>
