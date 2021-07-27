@@ -448,9 +448,16 @@ export class BookNavigator extends LitElement {
     }
 
     svg .ring {
+      -webkit-animation: rotate 1.3s infinite linear;
       animation: rotate 1.3s infinite linear;
       transform-origin: 50px 50px;
       transform-box: fill-box;
+    }
+
+    @-webkit-keyframes rotate {
+      0% {
+        -webkit-transform: rotate(-360deg);
+      }
     }
 
     @keyframes rotate {
