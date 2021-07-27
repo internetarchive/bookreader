@@ -398,6 +398,7 @@ export class BookNavigator extends LitElement {
       <div class="book-loader">${bookLoader}<div>
       <h3>Loading viewer</h3>
     `;
+    return loader;
     return !this.bookReaderLoaded ? loader : nothing;
   }
 
@@ -413,8 +414,7 @@ export class BookNavigator extends LitElement {
   render() {
     const placeholder = this.bookReaderCannotLoad ? this.itemImage : this.loader;
     return html`<div id="book-navigator" class="${this.loadingClass}">
-      ${placeholder}
-      <slot name="bookreader"></slot>
+      ${this.loader}
     </div>
   `;
   }
