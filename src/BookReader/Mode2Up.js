@@ -1,5 +1,6 @@
 // @ts-check
 // effect.js gives acces to extra easing function (e.g. easeInSine)
+import Hammer from "hammerjs";
 import 'jquery-ui/ui/effect.js';
 import '../dragscrollable-br.js';
 import { clamp } from './utils.js';
@@ -27,6 +28,22 @@ export class Mode2Up {
 
     /** @type {{ [index: number]: PageContainer }} */
     this.pageContainers = {};
+
+    /** @type {HammerManager} */
+    this.hammer = null;
+    this._scale = 1;
+    this.scaleCenter = { x: 0.5, y: 0.5 };
+  }
+
+  get $visibleWorld() {
+    return this.br.refs.$brTwoPageView?.[0];
+  }
+
+  get scale() { return this._scale; }
+  set scale(newVal) {
+    this.$visibleWorld.style.transform = `scale(${newVal})`;
+    this.updateViewportOnZoom(newVal, this._scale);
+    this._scale = newVal;
   }
 
   /**
@@ -163,13 +180,20 @@ export class Mode2Up {
 
     // Add the two page view
     // $$$ Can we get everything set up and then append?
-    const $twoPageViewEl = $('<div class="BRtwopageview"></div>');
-    this.br.refs.$brTwoPageView = $twoPageViewEl;
+    this.br.refs.$brTwoPageView = this.br.refs.$brTwoPageView || $('<div class="BRtwopageview"></div>');
+    const $twoPageViewEl = this.br.refs.$brTwoPageView;
+    $twoPageViewEl.empty();
+    $twoPageViewEl[0].style.transformOrigin = '0 0';
     this.br.refs.$brContainer.append($twoPageViewEl);
 
     // Attaches to first child, so must come after we add the page view
-    this.br.refs.$brContainer.dragscrollable({preventDefault:true});
-    this.br.bindGestures(this.br.refs.$brContainer);
+    this.br.refs.$brContainer.dragscrollable({
+      preventDefault:true,
+      // Only handle mouse events; let browser/HammerJS handle touch
+      dragstart: 'mousedown',
+      dragcontinue: 'mousemove',
+      dragend: 'mouseup',
+    });
 
     this.attachMouseHandlers();
 
@@ -209,6 +233,119 @@ export class Mode2Up {
     this.drawLeafs();
     this.br.updateToolbarZoom(this.br.reduce);
     this.br.updateBrClasses();
+
+    if (!this.hammer) {
+      // Hammer.js by default set userSelect to None; we don't want that!
+      // TODO: Is there any way to do this not globally on Hammer?
+      delete Hammer.defaults.cssProps.userSelect;
+      const hammer = this.hammer = new Hammer.Manager(this.br.refs.$brContainer[0], {
+        touchAction: "pan-x pan-y",
+      });
+      let pinchMoveFrame = null;
+      let pinchMoveFramePromise = Promise.resolve();
+
+      hammer.add(new Hammer.Pinch());
+      let oldScale = 1;
+      let lastEvent = null;
+      hammer.on("pinchstart", () => {
+        // Do this in case the pinchend hasn't fired yet.
+        oldScale = 1;
+        this.$visibleWorld.style.willChange = "transform";
+        // this.detachExpensiveListeners();
+      });
+
+      hammer.on("pinchmove", (e) => {
+        lastEvent = e;
+        if (!pinchMoveFrame) {
+          let pinchMoveFramePromiseRes = null;
+          pinchMoveFramePromise = new Promise(
+            (res) => (pinchMoveFramePromiseRes = res)
+          );
+          pinchMoveFrame = requestAnimationFrame(() => {
+            this.updateScaleCenter({
+              clientX: lastEvent.center.x,
+              clientY: lastEvent.center.y,
+            });
+            this.scale *= lastEvent.scale / oldScale;
+            oldScale = lastEvent.scale;
+            pinchMoveFrame = null;
+            pinchMoveFramePromiseRes();
+          });
+        }
+      });
+
+      const handlePinchEnd = async () => {
+        // Want this to happen after the pinchMoveFrame,
+        // if one is in progress; otherwise setting oldScale
+        // messes up the transform.
+        await pinchMoveFramePromise;
+        this.scaleCenter = { x: 0.5, y: 0.5 };
+        oldScale = 1;
+        this.$visibleWorld.style.willChange = "auto";
+        // this.attachExpensiveListeners();
+      };
+      hammer.on("pinchend", handlePinchEnd);
+      // iOS fires pinchcancel ~randomly; it looks like it sometimes
+      // things the pinch becomes a pan, at which point it cancels?
+      // More work needed here.
+      hammer.on("pinchcancel", handlePinchEnd);
+    }
+  }
+
+  get containerBoundingClient() {
+    return this.br.refs.$brContainer[0].getBoundingClientRect();
+  }
+
+  get containerClientWidth() {
+    return this.br.refs.$brContainer[0].clientWidth;
+  }
+  get containerClientHeight() {
+    return this.br.refs.$brContainer[0].clientHeight;
+  }
+
+  /**
+   * @param {object} param0
+   * @param {number} param0.clientX
+   * @param {number} param0.clientY
+   */
+  updateScaleCenter({ clientX, clientY }) {
+    const bc = this.containerBoundingClient;
+    this.scaleCenter = {
+      x: (clientX - bc.left) / this.containerClientWidth,
+      y: (clientY - bc.top) / this.containerClientHeight,
+    };
+  }
+
+  /**
+   * @param {number} newScale
+   * @param {number} oldScale
+   */
+  updateViewportOnZoom(newScale, oldScale) {
+    const container = this.br.refs.$brContainer[0];
+    const { scrollTop: T, scrollLeft: L } = container;
+    const W = this.containerClientWidth;
+    const H = this.containerClientHeight;
+
+    // Scale factor change
+    const F = newScale / oldScale;
+
+    // Where in the viewport the zoom is centered on
+    const XPOS = this.scaleCenter.x;
+    const YPOS = this.scaleCenter.y;
+    const oldCenter = {
+      x: L + XPOS * W,
+      y: T + YPOS * H,
+    };
+    const newCenter = {
+      x: F * oldCenter.x,
+      y: F * oldCenter.y,
+    };
+    container.scrollTop = newCenter.y - YPOS * H;
+    container.scrollLeft = newCenter.x - XPOS * W;
+
+    // Also update the visible page containers to load in highres if necessary
+    this.pageContainers[this.br.twoPage.currentIndexL]?.update({ reduce: this.br.reduce / newScale });
+    this.pageContainers[this.br.twoPage.currentIndexR]?.update({ reduce: this.br.reduce / newScale });
   }
 
   prunePageContainers() {
@@ -667,11 +804,11 @@ export class Mode2Up {
   /**
    * @param {PageIndex} index
    */
-  createPageContainer(index, fetch = false) {
+  createPageContainer(index) {
     if (!this.pageContainers[index]) {
       this.pageContainers[index] = this.br._createPageContainer(index);
     }
-    this.pageContainers[index].update({ reduce: this.br.reduce });
+    this.pageContainers[index].update({ reduce: this.br.reduce / this.scale });
     return this.pageContainers[index];
   }
 
