@@ -435,6 +435,10 @@ export class BookNavigator extends LitElement {
       color: var(--primaryTextColor);
     }
 
+    .book-loader {
+      position: relative;
+    }
+
     .book-loader svg {
       display: block;
       width: 60%;
@@ -448,16 +452,10 @@ export class BookNavigator extends LitElement {
     }
 
     svg .ring {
-      -webkit-animation: rotate 1.3s infinite linear;
       animation: rotate 1.3s infinite linear;
       transform-origin: 50px 50px;
       transform-box: fill-box;
-    }
-
-    @-webkit-keyframes rotate {
-      0% {
-        -webkit-transform: rotate(-360deg);
-      }
+      display: block; // transform won't work on inline style
     }
 
     @keyframes rotate {
