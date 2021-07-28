@@ -1431,9 +1431,6 @@ exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipFwdToIndex', 'flipFwdTo
 BookReader.prototype.setHilightCss2UP = Mode2Up.prototype.setHilightCss;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setHilightCss', 'setHilightCss2UP');
 /** @deprecated not used outside Mode2Up */
-BookReader.prototype.setClickHandler2UP = Mode2Up.prototype.setClickHandler;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setClickHandler', 'setClickHandler2UP');
-/** @deprecated not used outside Mode2Up */
 BookReader.prototype.drawLeafsTwoPage = Mode2Up.prototype.drawLeafs;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'drawLeafs', 'drawLeafsTwoPage');
 /** @deprecated not used outside BookReader */
@@ -1466,9 +1463,6 @@ exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipLeftToRight', 'flipLeft
 /** @deprecated unused outside BookReader, Mode2Up */
 BookReader.prototype.flipRightToLeft = Mode2Up.prototype.flipRightToLeft;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipRightToLeft', 'flipRightToLeft');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.setMouseHandlers2UP = Mode2Up.prototype.setMouseHandlers;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setMouseHandlers', 'setMouseHandlers2UP');
 /** @deprecated unused outside BookReader, Mode2Up */
 BookReader.prototype.prepareFlipLeftToRight = Mode2Up.prototype.prepareFlipLeftToRight;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'prepareFlipLeftToRight', 'prepareFlipLeftToRight');

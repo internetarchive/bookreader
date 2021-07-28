@@ -43,18 +43,6 @@ export class Mode2Up {
   }
 
   /**
-   * @template T
-   * @param {HTMLElement} element
-   * @param {T} data
-   * @param {function(HTMLElement, { data: T }): void} handler
-   */
-  setClickHandler(element, data, handler) {
-    $(element).unbind('mouseup').bind('mouseup', data, function(e) {
-      handler(this, e);
-    });
-  }
-
-  /**
    * Draws book spread,
    * sets event handlers,
    * sets: `this.br.displayedIndices`
@@ -74,7 +62,6 @@ export class Mode2Up {
       .appendTo($twoPageViewEl);
 
     this.displayedIndices = [this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR];
-    this.setMouseHandlers();
     this.br.displayedIndices = this.displayedIndices;
     this.br.updateToolbarZoom(this.br.reduce);
     this.br.trigger('pageChanged');
@@ -183,6 +170,8 @@ export class Mode2Up {
     // Attaches to first child, so must come after we add the page view
     this.br.refs.$brContainer.dragscrollable({preventDefault:true});
     this.br.bindGestures(this.br.refs.$brContainer);
+
+    this.attachMouseHandlers();
 
     // $$$ calculate container size first
     this.br.refs?.$brTwoPageView.css(this.mainContainerCss);
@@ -655,8 +644,6 @@ export class Mode2Up {
 
         this.resizeSpread();
 
-        this.setMouseHandlers();
-
         if (this.br.animationFinishedCallback) {
           this.br.animationFinishedCallback();
           this.br.animationFinishedCallback = null;
@@ -802,8 +789,6 @@ export class Mode2Up {
 
         this.resizeSpread();
 
-        this.setMouseHandlers();
-
         if (this.br.animationFinishedCallback) {
           this.br.animationFinishedCallback();
           this.br.animationFinishedCallback = null;
@@ -823,40 +808,18 @@ export class Mode2Up {
     });
   }
 
-  setMouseHandlers() {
-    /**
-     * @param {HTMLElement} element
-     * @param {JQuery.MouseDownEvent<HTMLElement, { self: Mode2Up, direction: 'R' | 'L'}>} e
-     */
-    const handler = function(element, e) {
-      if (e.which == 3) {
-        // right click
-        return !e.data.self.br.protected;
-      }
-      e.data.self.br.trigger(EVENTS.stop);
-      e.data.self.br[e.data.direction === 'L' ? 'left' : 'right']();
+  attachMouseHandlers() {
+    this.br.refs.$brTwoPageView
+      .off('mouseup').on('mouseup', ev => {
+        if (ev.which == 3) {
+          // right click
+          return !this.br.protected;
+        }
 
-      // Removed event handler for mouse movement, seems not to be needed
-      /*
-      // Changes per WEBDEV-2737
-      BookReader: zoomed-in 2 page view, clicking page should change the page
-      $(element)
-        .mousemove(function() {
-          e.preventDefault();
-        })
-      */
-    };
-
-    this.setClickHandler(
-      this.pageContainers[this.br.twoPage.currentIndexR].$container[0],
-      { self: this, direction: 'R' },
-      handler
-    );
-    this.setClickHandler(
-      this.pageContainers[this.br.twoPage.currentIndexL].$container[0],
-      { self: this, direction: 'L' },
-      handler
-    );
+        const $page = $(ev.target).closest('.BRpagecontainer');
+        if ($page.data('side') == 'L') this.br.left();
+        else if ($page.data('side') == 'R') this.br.right();
+      });
   }
 
   /**
