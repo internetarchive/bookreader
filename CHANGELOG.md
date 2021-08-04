@@ -1,3 +1,7 @@
+# 5.0.0-16
+- Dev: remove unused menu toggle plugin @iisa
+- Fix: Book nav loader safari update @iisa
+
 # 5.0.0-15
 - Fix: Typing -/+ in search box no longer zooms @cdrini
 - Dev: Add script for updating dev deps @cdrini
