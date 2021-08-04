@@ -49,7 +49,7 @@ describe('Volumes Provider', () => {
     const volumeCount = Object.keys(files).length;
 
     expect(brOptions.readQueryString).callCount(1);
-    expect(provider.sortOrderBy).to.equal("orig_sort"); // default value
+    expect(provider.sortOrderBy).to.equal(""); // default value
 
     expect(provider.optionChange).to.equal(onSortClick);
     expect(provider.id).to.equal('volumes');
@@ -69,7 +69,7 @@ describe('Volumes Provider', () => {
     const baseHost = "https://archive.org";
     const provider = new volumesProvider(baseHost, brOptions, onSortClick);
 
-    expect(provider.sortOrderBy).to.equal("orig_sort");
+    expect(provider.sortOrderBy).to.equal("");
 
     provider.sortVolumes("title_asc");
     expect(provider.sortOrderBy).to.equal("title_asc");
@@ -79,8 +79,8 @@ describe('Volumes Provider', () => {
     expect(provider.sortOrderBy).to.equal("title_desc");
     expect(provider.sortButton.getHTML()).includes("sort-by desc-icon");
 
-    provider.sortVolumes("orig_sort");
-    expect(provider.sortOrderBy).to.equal("orig_sort");
+    provider.sortVolumes("");
+    expect(provider.sortOrderBy).to.equal("");
     expect(provider.sortButton.getHTML()).includes("sort-by neutral-icon");
   });
 
@@ -93,9 +93,9 @@ describe('Volumes Provider', () => {
     const files = Object.keys(parsedFiles).map(item => parsedFiles[item]).sort((a, b) => a.orig_sort - b.orig_sort);
     const origSortTitles = files.map(item => item.title);
 
-    provider.sortVolumes("orig_sort");
+    provider.sortVolumes("");
 
-    expect(provider.sortOrderBy).to.equal("orig_sort");
+    expect(provider.sortOrderBy).to.equal("");
     expect(provider.actionButton).to.exist;
 
     const providerFileTitles = provider.viewableFiles.map(item => item.title);
@@ -149,7 +149,7 @@ describe('Volumes Provider', () => {
       const baseHost = "https://archive.org";
       const provider = new volumesProvider(baseHost, brOptions, onSortClick);
 
-      provider.sortOrderBy = 'orig_sort';
+      provider.sortOrderBy = '';
       const origSortButton = await fixture(provider.sortButton);
       expect(origSortButton.classList.contains('neutral-icon')).to.be.true;
 

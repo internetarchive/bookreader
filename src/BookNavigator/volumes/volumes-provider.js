@@ -44,14 +44,14 @@ export default class VolumesProvider {
 
   get sortButton() {
     const sortIcons = {
-      orig_sort: html`
+      '': html`
         <button class="sort-by neutral-icon" aria-label="Sort volumes in initial order" @click=${() => this.sortVolumes("title_asc")}>${sortNeutralIcon}</button>
       `,
       title_asc: html`
         <button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes("title_desc")}>${sortAscIcon}</button>
       `,
       title_desc: html`
-        <button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes("orig_sort")}>${sortDescIcon}</button>
+        <button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes("")}>${sortDescIcon}</button>
       `,
     };
 
@@ -59,7 +59,7 @@ export default class VolumesProvider {
   }
 
   /**
-   * @param {'orig_sort' | 'title_asc' | 'title_desc'} sortByType
+   * @param {'title_asc' | 'title_desc'} sortByType
    */
   sortVolumes(sortByType) {
     let sortedFiles = [];
@@ -81,7 +81,7 @@ export default class VolumesProvider {
   }
 
   /**
-   * @param {'orig_sort' | 'title_asc' | 'title_desc'} orderBy
+   * @param {'title_asc' | 'title_desc'} orderBy
    */
   multipleFilesClicked(orderBy) {
     if (!window.archive_analytics) {
