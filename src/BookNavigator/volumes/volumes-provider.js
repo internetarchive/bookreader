@@ -7,7 +7,11 @@ import volumesIcon from '../assets/icon_volumes.js';
 
 import './volumes.js';
 
-const sortArr = ["orig_sort", "title_asc", "title_desc"];
+const availableSorts = {
+  asc: 'sort_asc',
+  desc: 'sort_desc',
+  orig: ''
+};
 
 export default class VolumesProvider {
 
@@ -27,14 +31,12 @@ export default class VolumesProvider {
     this.label = `Viewable files (${this.volumeCount})`;
     this.icon = html`${volumesIcon}`;
 
+    this.sortOrderBy = availableSorts.orig;
     // get sort state from query param
-    // always fallback to `orig_sort` if sortOrderBy or urlParam `sort` value is invalid or empty
     const urlParams = new URLSearchParams(bookreader.readQueryString());
-    if (urlParams.get("sort") !== null || urlParams.get("sort") !== "") {
-      const urlSortValue = urlParams.get("sort");
-      this.sortOrderBy = sortArr.includes(urlSortValue) ? urlSortValue : "orig_sort";
-    } else {
-      this.sortOrderBy = "orig_sort";
+    const urlSortValue = urlParams.get("sort");
+    if (urlSortValue === availableSorts.asc || urlSortValue === availableSorts.desc) {
+      this.sortOrderBy = urlSortValue;
     }
 
     this.sortVolumes(this.sortOrderBy);
