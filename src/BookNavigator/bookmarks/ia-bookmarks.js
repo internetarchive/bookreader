@@ -1,5 +1,6 @@
 import { render, nothing } from 'lit-html';
 import { LitElement, html, css } from 'lit-element';
+import { ModalConfig } from '@internetarchive/modal-manager';
 import buttonStyles from '../assets/button-base.js';
 import './bookmarks-loginCTA.js';
 
@@ -60,6 +61,7 @@ class IABookmarks extends LitElement {
       options: { type: Object },
       displayMode: { type: String },
       editedBookmark: { type: Object },
+      deleteModalConfig: { type: Object}
     };
   }
 
@@ -113,6 +115,11 @@ class IABookmarks extends LitElement {
     // eslint-disable-next-line
     this.defaultColor = this.bookmarkColors[0];
     this.api = api;
+    this.deleteModalConfig = new ModalConfig({
+      title: 'Delete Bookmark',
+      headline: 'This bookmark contains a note. Deleting it will permanently delete the note. Are you sure?',
+      headerColor: '#194880'
+    });
   }
 
   updated() {
@@ -404,6 +411,7 @@ class IABookmarks extends LitElement {
       bubbles: true,
       composed: true,
       detail: {
+        config: this.deleteModalConfig,
         customModalContent: html`
           <delete-modal-actions
             .deleteAction=${() => this.deleteBookmark({ detail: { id: `${pageID}` } })}
