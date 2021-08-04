@@ -8,8 +8,8 @@ import volumesIcon from '../assets/icon_volumes.js';
 import './volumes.js';
 
 const availableSorts = {
-  asc: 'sort_asc',
-  desc: 'sort_desc',
+  asc: 'title_asc',
+  desc: 'title_desc',
   orig: ''
 };
 
