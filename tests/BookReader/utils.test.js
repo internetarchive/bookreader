@@ -73,6 +73,11 @@ describe('isInputActive', () => {
     const doc = {activeElement: { shadowRoot: {activeElement: { tagName: 'A' }}}};
     expect(isInputActive(doc)).toBe(false);
   });
+  
+  test('Handles textarea activeElement', () => {
+    const doc = {activeElement: { tagName: 'TEXTAREA' }};
+    expect(isInputActive(doc)).toBe(true);
+  });
 });
 
 describe('debounce', () => {
