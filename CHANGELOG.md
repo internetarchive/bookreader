@@ -1,3 +1,6 @@
+# 5.0.0-17
+- Fix: focus in a textarea disables keyboard shortcuts @cdrini
+
 # 5.0.0-16
 - Dev: remove unused menu toggle plugin @iisa
 - Fix: Book nav loader safari update @iisa
