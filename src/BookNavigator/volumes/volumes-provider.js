@@ -5,19 +5,22 @@ import sortAscIcon from '../assets/icon_sort_asc.js';
 import sortNeutralIcon from '../assets/icon_sort_neutral.js';
 import volumesIcon from '../assets/icon_volumes.js';
 
+import { EVENTS } from '../../BookReader/events.js';
+
 import './volumes.js';
 
-const availableSorts = {
-  asc: 'title_asc',
-  desc: 'title_desc',
-  orig: ''
+const sortType = {
+  asc: 'asc',
+  desc: 'desc',
+  default: ''
 };
-
 export default class VolumesProvider {
 
   constructor(baseHost, bookreader, optionChange) {
     this.optionChange = optionChange;
     this.component = document.createElement("viewable-files");
+
+    this.bookreader = bookreader;
 
     const files = bookreader.options.multipleBooksList.by_subprefix;
     this.viewableFiles = Object.keys(files).map(item => files[item]);
@@ -31,26 +34,25 @@ export default class VolumesProvider {
     this.label = `Viewable files (${this.volumeCount})`;
     this.icon = html`${volumesIcon}`;
 
-    this.sortOrderBy = availableSorts.orig;
+    this.sortOrderBy = sortType.default;
     // get sort state from query param
     const urlParams = new URLSearchParams(bookreader.readQueryString());
     const urlSortValue = urlParams.get("sort");
-    if (urlSortValue === availableSorts.asc || urlSortValue === availableSorts.desc) {
+    if (urlSortValue === sortType.asc || urlSortValue === sortType.desc) {
       this.sortOrderBy = urlSortValue;
     }
-
     this.sortVolumes(this.sortOrderBy);
   }
 
   get sortButton() {
     const sortIcons = {
       '': html`
-        <button class="sort-by neutral-icon" aria-label="Sort volumes in initial order" @click=${() => this.sortVolumes("title_asc")}>${sortNeutralIcon}</button>
+        <button class="sort-by neutral-icon" aria-label="Sort volumes in initial order" @click=${() => this.sortVolumes("asc")}>${sortNeutralIcon}</button>
       `,
-      title_asc: html`
-        <button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes("title_desc")}>${sortAscIcon}</button>
+      asc: html`
+        <button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes("desc")}>${sortAscIcon}</button>
       `,
-      title_desc: html`
+      desc: html`
         <button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes("")}>${sortDescIcon}</button>
       `,
     };
@@ -59,15 +61,15 @@ export default class VolumesProvider {
   }
 
   /**
-   * @param {'title_asc' | 'title_desc'} sortByType
+   * @param {'asc' | 'desc'} sortByType
    */
   sortVolumes(sortByType) {
     let sortedFiles = [];
 
     const files = this.viewableFiles;
     sortedFiles = files.sort((a, b) => {
-      if (sortByType === 'title_asc') return a.title.localeCompare(b.title);
-      else if (sortByType === 'title_desc') return b.title.localeCompare(a.title);
+      if (sortByType === sortType.asc) return a.title.localeCompare(b.title);
+      else if (sortByType === sortType.desc) return b.title.localeCompare(a.title);
       else return a.orig_sort - b.orig_sort;
     });
 
@@ -75,13 +77,17 @@ export default class VolumesProvider {
     this.component.viewableFiles  = [...sortedFiles];
     this.component.sortBy = sortByType;
     this.actionButton = this.sortButton;
+    this.bookreader.volumesSortOrder = sortByType;
     this.optionChange(this.bookreader);
+
+    this.bookreader.options.volumesSortBy = sortByType ;
+    this.bookreader.trigger(EVENTS.fragmentChange);
 
     this.multipleFilesClicked(sortByType);
   }
 
   /**
-   * @param {'title_asc' | 'title_desc'} orderBy
+   * @param {'asc' | 'desc'} orderBy
    */
   multipleFilesClicked(orderBy) {
     if (!window.archive_analytics) {

@@ -121,11 +121,11 @@ BookReader.prototype.urlStartLocationPolling = function() {
  */
 BookReader.prototype.urlUpdateFragment = function() {
   const allParams = this.paramsFromCurrent();
-  const { urlMode, urlTrackIndex0, urlTrackedParams } = this.options;
+  const {
+    urlMode, urlTrackIndex0, urlTrackedParams, enableMultipleBooks, volumesSortBy
+  } = this.options;
 
-  if (!urlTrackIndex0
-      && (typeof(allParams.index) !== 'undefined')
-      && allParams.index === 0) {
+  if (!urlTrackIndex0 && (typeof(allParams.index) !== 'undefined') && allParams.index === 0) {
     delete allParams.index;
     delete allParams.page;
   }
@@ -141,7 +141,23 @@ BookReader.prototype.urlUpdateFragment = function() {
   const currFragment = this.urlReadFragment();
   const currQueryString = this.getLocationSearch();
   const newQueryString = this.queryStringFromParams(params, currQueryString, urlMode);
-  if (currFragment === newFragment && currQueryString === newQueryString) {
+
+  /**
+   * Get `?sort=` value and compare and replace it to be newQueryStringParams value
+   * onPageRefresh, `volumesSortBy` that's supposed to be passed from volumes-provider is read as `undefined`
+   * so we need to check for it
+  */
+  const currentQueryStringSort = this.urlParamsSortByValue();
+  const newQueryStringSort = volumesSortBy !== '' && volumesSortBy ? `?sort=${volumesSortBy}` : '';
+  const sortRegex = /\?sort=\w+/;
+  const isSortQueryExists = newQueryString.includes('?sort');
+  const isSortStateSame = currentQueryStringSort === volumesSortBy;
+  const isVolumesSortUndefined = volumesSortBy === undefined;
+  const newQueryStringParams = isVolumesSortUndefined && isSortQueryExists ? newQueryString :
+    !isVolumesSortUndefined && isSortQueryExists ? newQueryString.replace(sortRegex, newQueryStringSort) :
+      newQueryStringSort;
+
+  if (currFragment === newFragment && currQueryString === newQueryString && !enableMultipleBooks && isSortStateSame) {
     return;
   }
 
@@ -150,16 +166,16 @@ BookReader.prototype.urlUpdateFragment = function() {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
       const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
 
-      const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
+      const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryStringParams}`;
       window.history.replaceState({}, null, newUrlPath);
-      this.oldLocationHash = newFragment + newQueryString;
-
+      this.oldLocationHash = newFragment + newQueryStringParams;
     }
   } else {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
-    window.location.replace('#' + newFragment + newQueryStringSearch);
-    this.oldLocationHash = newFragment + newQueryStringSearch;
 
+    const newUrlPath = `#${newFragment}${newQueryStringSearch}${newQueryStringSort}`;
+    window.history.replaceState({}, null, newUrlPath);
+    this.oldLocationHash = newFragment + newQueryStringParams + newQueryStringSort;
   }
 };
 
@@ -175,6 +191,17 @@ BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
   return params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
 };
 
+/**
+ * @private
+ * Filtering query parameters to select only book search param (?q=foo)
+   This needs to be updated/URL system modified if future query params are to be added
+ * @param {string} url
+ * @return {string}
+ * */
+BookReader.prototype.urlParamsSortByValue = function(url) {
+  const params = new URLSearchParams(url);
+  return params.has('q') ? params.get('sort') : '';
+};
 
 /**
  * Will read either the hash or URL and return the bookreader fragment

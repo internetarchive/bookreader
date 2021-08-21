@@ -2393,7 +2393,6 @@ BookReader.prototype.paramsFromCurrent = function() {
   if (this.enableSearch) {
     params.search = this.searchTerm;
   }
-
   return params;
 };
 
@@ -2522,11 +2521,7 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
  * @param {string} [urlMode]
  * @return {string}
  */
-BookReader.prototype.queryStringFromParams = function(
-  params,
-  currQueryString,
-  urlMode = 'hash'
-) {
+BookReader.prototype.queryStringFromParams = function(params, currQueryString, urlMode = 'hash') {
   const newParams = new URLSearchParams(currQueryString);
   if (params.search && urlMode === 'history') {
     newParams.set('q', params.search);
