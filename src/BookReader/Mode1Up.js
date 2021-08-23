@@ -42,8 +42,8 @@ export class Mode1Up {
     // this.$brContainer.dragscrollable();
     // this.br.bindGestures(this.$);
 
-    // FIXME Wait for it to render
-    setTimeout(() => this.mode1UpLit.jumpToIndex(startLeaf));
+    this.mode1UpLit.requestUpdate()
+      .then(() => this.mode1UpLit.jumpToIndex(startLeaf));
     this.br.updateBrClasses();
   }
 
