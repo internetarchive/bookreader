@@ -1,17 +1,19 @@
 // @ts-check
-import Hammer from "hammerjs";
 import { customElement, html, LitElement, property, query } from 'lit-element';
 import { styleMap } from 'lit-html/directives/style-map';
+import { ModePinchZoom } from './ModePinchZoom';
 import { arrChanged, calcScreenDPI, genToArray, sum, throttle } from './utils';
 import { HTMLDimensionsCacher } from "./utils/dom";
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */
+/** @typedef {import('./ModePinchZoom').PinchZoomable} PinchZoomable */
 /** @typedef {import('./PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../BookReader').default} BookReader */
 
 // I _have_ to make this globally public, otherwise it won't let me call
 // it's constructor :/
+/** @implements {PinchZoomable} */
 @customElement('br-mode-1up')
 export class Mode1UpLit extends LitElement {
   /****************************************/
@@ -98,6 +100,9 @@ export class Mode1UpLit extends LitElement {
   }
 
   /** @type {HTMLElement} */
+  get $container() { return this; }
+
+  /** @type {HTMLElement} */
   @query('.br-mode-1up__visible-world')
   $visibleWorld;
 
@@ -161,62 +166,9 @@ export class Mode1UpLit extends LitElement {
     super.firstUpdated(changedProps);
 
     this.htmlDimensionsCacher.updateClientSizes();
-    this.attachExpensiveListeners();
+    this.attachScrollListeners();
 
-    // Hammer.js by default set userSelect to None; we don't want that!
-    // TODO: Is there any way to do this not globally on Hammer?
-    delete Hammer.defaults.cssProps.userSelect;
-    const hammer = new Hammer.Manager(this, {
-      touchAction: "pan-x pan-y",
-    });
-    let pinchMoveFrame = null;
-    let pinchMoveFramePromise = Promise.resolve();
-
-    hammer.add(new Hammer.Pinch());
-    let oldScale = 1;
-    let lastEvent = null;
-    hammer.on("pinchstart", () => {
-      // Do this in case the pinchend hasn't fired yet.
-      oldScale = 1;
-      this.$visibleWorld.style.willChange = "transform";
-      this.detachExpensiveListeners();
-    });
-    // This is SLOOOOW AF on iOS :/ Try buffering with requestAnimationFrame?
-    hammer.on("pinchmove", (e) => {
-      lastEvent = e;
-      if (!pinchMoveFrame) {
-        let pinchMoveFramePromiseRes = null;
-        pinchMoveFramePromise = new Promise(
-          (res) => (pinchMoveFramePromiseRes = res)
-        );
-        pinchMoveFrame = requestAnimationFrame(() => {
-          this.updateScaleCenter({
-            clientX: lastEvent.center.x,
-            clientY: lastEvent.center.y,
-          });
-          this.scale *= lastEvent.scale / oldScale;
-          oldScale = lastEvent.scale;
-          pinchMoveFrame = null;
-          pinchMoveFramePromiseRes();
-        });
-      }
-    });
-
-    const handlePinchEnd = async () => {
-      // Want this to happen after the pinchMoveFrame,
-      // if one is in progress; otherwise setting oldScale
-      // messes up the transform.
-      await pinchMoveFramePromise;
-      this.scaleCenter = { x: 0.5, y: 0.5 };
-      oldScale = 1;
-      this.$visibleWorld.style.willChange = "auto";
-      this.attachExpensiveListeners();
-    };
-    hammer.on("pinchend", handlePinchEnd);
-    // iOS fires pinchcancel ~randomly; it looks like it sometimes
-    // things the pinch becomes a pan, at which point it cancels?
-    // More work needed here.
-    hammer.on("pinchcancel", handlePinchEnd);
+    new ModePinchZoom(this).attach();
   }
 
   /** @override */
@@ -259,7 +211,7 @@ export class Mode1UpLit extends LitElement {
   /** @override */
   disconnectedCallback() {
     this.htmlDimensionsCacher.detachResizeListener();
-    this.detachExpensiveListeners();
+    this.detachScrollListeners();
     super.disconnectedCallback();
   }
 
@@ -457,12 +409,12 @@ export class Mode1UpLit extends LitElement {
 
   /************** INPUT HANDLERS **************/
 
-  attachExpensiveListeners = () => {
+  attachScrollListeners = () => {
     window.addEventListener("wheel", this.handleCtrlWheel, { passive: false });
     this.addEventListener("scroll", this.updateVisibleRegion, { passive: true });
   }
 
-  detachExpensiveListeners = () => {
+  detachScrollListeners = () => {
     window.removeEventListener("wheel", this.handleCtrlWheel);
     this.removeEventListener("scroll", this.updateVisibleRegion);
   }

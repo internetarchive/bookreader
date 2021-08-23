@@ -1,17 +1,19 @@
 // @ts-check
 // effect.js gives acces to extra easing function (e.g. easeInSine)
-import Hammer from "hammerjs";
 import 'jquery-ui/ui/effect.js';
 import '../dragscrollable-br.js';
 import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
+import { ModePinchZoom } from "./ModePinchZoom.js";
 
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('./options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./PageContainer.js').PageContainer} PageContainer */
+/** @typedef {import('./ModePinchZoom').PinchZoomable} PinchZoomable */
 
+/** @implements {PinchZoomable} */
 export class Mode2Up {
   /**
    * @param {BookReader} br
@@ -29,12 +31,15 @@ export class Mode2Up {
     /** @type {{ [index: number]: PageContainer }} */
     this.pageContainers = {};
 
-    /** @type {HammerManager} */
-    this.hammer = null;
+    /** @type {ModePinchZoom} */
+    this.pinchZoom = null;
     this._scale = 1;
     this.scaleCenter = { x: 0.5, y: 0.5 };
   }
 
+  get $container() {
+    return this.br.refs.$brContainer[0];
+  }
   get $visibleWorld() {
     return this.br.refs.$brTwoPageView?.[0];
   }
@@ -234,61 +239,9 @@ export class Mode2Up {
     this.br.updateToolbarZoom(this.br.reduce);
     this.br.updateBrClasses();
 
-    if (!this.hammer) {
-      // Hammer.js by default set userSelect to None; we don't want that!
-      // TODO: Is there any way to do this not globally on Hammer?
-      delete Hammer.defaults.cssProps.userSelect;
-      const hammer = this.hammer = new Hammer.Manager(this.br.refs.$brContainer[0], {
-        touchAction: "pan-x pan-y",
-      });
-      let pinchMoveFrame = null;
-      let pinchMoveFramePromise = Promise.resolve();
-
-      hammer.add(new Hammer.Pinch());
-      let oldScale = 1;
-      let lastEvent = null;
-      hammer.on("pinchstart", () => {
-        // Do this in case the pinchend hasn't fired yet.
-        oldScale = 1;
-        this.$visibleWorld.style.willChange = "transform";
-        // this.detachExpensiveListeners();
-      });
-
-      hammer.on("pinchmove", (e) => {
-        lastEvent = e;
-        if (!pinchMoveFrame) {
-          let pinchMoveFramePromiseRes = null;
-          pinchMoveFramePromise = new Promise(
-            (res) => (pinchMoveFramePromiseRes = res)
-          );
-          pinchMoveFrame = requestAnimationFrame(() => {
-            this.updateScaleCenter({
-              clientX: lastEvent.center.x,
-              clientY: lastEvent.center.y,
-            });
-            this.scale *= lastEvent.scale / oldScale;
-            oldScale = lastEvent.scale;
-            pinchMoveFrame = null;
-            pinchMoveFramePromiseRes();
-          });
-        }
-      });
-
-      const handlePinchEnd = async () => {
-        // Want this to happen after the pinchMoveFrame,
-        // if one is in progress; otherwise setting oldScale
-        // messes up the transform.
-        await pinchMoveFramePromise;
-        this.scaleCenter = { x: 0.5, y: 0.5 };
-        oldScale = 1;
-        this.$visibleWorld.style.willChange = "auto";
-        // this.attachExpensiveListeners();
-      };
-      hammer.on("pinchend", handlePinchEnd);
-      // iOS fires pinchcancel ~randomly; it looks like it sometimes
-      // things the pinch becomes a pan, at which point it cancels?
-      // More work needed here.
-      hammer.on("pinchcancel", handlePinchEnd);
+    if (!this.pinchZoom) {
+      this.pinchZoom = new ModePinchZoom(this);
+      this.pinchZoom.attach();
     }
   }
 
