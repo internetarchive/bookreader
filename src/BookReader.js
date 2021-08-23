@@ -1226,11 +1226,9 @@ BookReader.prototype.updateFirstIndex = function(
   index,
   { suppressFragmentChange = false } = {}
 ) {
-  // Called multiple times when defaults contains "mode/1up",
-  // including after init(). Skip fragment change if no index change
-  if (this.firstIndex === index) {
-    suppressFragmentChange = true;
-  }
+  // If there's no change, do nothing
+  if (this.firstIndex === index) return;
+
   this.firstIndex = index;
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);

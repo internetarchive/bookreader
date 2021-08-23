@@ -164,10 +164,7 @@ export class Mode1UpLit extends LitElement {
   /** @override */
   firstUpdated(changedProps) {
     super.firstUpdated(changedProps);
-
     this.htmlDimensionsCacher.updateClientSizes();
-    this.attachScrollListeners();
-
     new ModeSmoothZoom(this).attach();
   }
 
@@ -188,7 +185,7 @@ export class Mode1UpLit extends LitElement {
     if (changedProps.has('visiblePages')) {
       this.throttledUpdateRenderedPages();
       this.br.displayedIndices = this.visiblePages.map(p => p.index);
-      this.br.firstIndex = this.br.displayedIndices[0];
+      this.br.updateFirstIndex(this.br.displayedIndices[0]);
       this.br.updateNavIndexThrottled();
     }
     if (changedProps.has('scale')) {
@@ -206,6 +203,7 @@ export class Mode1UpLit extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.htmlDimensionsCacher.attachResizeListener();
+    this.attachScrollListeners();
   }
 
   /** @override */
