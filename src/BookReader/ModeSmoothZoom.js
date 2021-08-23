@@ -2,7 +2,7 @@
 import Hammer from "hammerjs";
 
 /**
- * @typedef {object} PinchZoomable
+ * @typedef {object} SmoothZoomable
  * @property {HTMLElement} $container
  * @property {HTMLElement} $visibleWorld
  * @property {number} scale
@@ -11,10 +11,10 @@ import Hammer from "hammerjs";
  * @property {function({ clientX: number, clientY: number}): void} updateScaleCenter
  */
 
-export class ModePinchZoom {
-  /** @param {PinchZoomable} mode */
+export class ModeSmoothZoom {
+  /** @param {SmoothZoomable} mode */
   constructor(mode) {
-    /** @type {PinchZoomable} */
+    /** @type {SmoothZoomable} */
     this.mode = mode;
 
     this.pinchMoveFrame = null;
@@ -27,6 +27,8 @@ export class ModePinchZoom {
   }
 
   attach() {
+    this.attachCtrlZoom();
+
     // Hammer.js by default set userSelect to None; we don't want that!
     // TODO: Is there any way to do this not globally on Hammer?
     delete Hammer.defaults.cssProps.userSelect;
@@ -39,6 +41,7 @@ export class ModePinchZoom {
       // Do this in case the pinchend hasn't fired yet.
       this.oldScale = 1;
       this.mode.$visibleWorld.style.willChange = "transform";
+      this.detachCtrlZoom();
       this.mode.detachScrollListeners?.();
     });
     // This is SLOOOOW AF on iOS :/ Try buffering with requestAnimationFrame?
@@ -70,6 +73,7 @@ export class ModePinchZoom {
       this.scaleCenter = { x: 0.5, y: 0.5 };
       this.oldScale = 1;
       this.mode.$visibleWorld.style.willChange = "auto";
+      this.attachCtrlZoom();
       this.mode.attachScrollListeners?.();
     };
     this.hammer.on("pinchend", handlePinchEnd);
@@ -77,5 +81,35 @@ export class ModePinchZoom {
     // things the pinch becomes a pan, at which point it cancels?
     // More work needed here.
     this.hammer.on("pinchcancel", handlePinchEnd);
+  }
+
+  /** @private */
+  attachCtrlZoom() {
+    window.addEventListener("wheel", this.handleCtrlWheel, { passive: false });
+  }
+
+  /** @private */
+  detachCtrlZoom() {
+    window.removeEventListener("wheel", this.handleCtrlWheel);
+  }
+
+  /**
+   * @private
+   * @param {WheelEvent} ev
+   **/
+  handleCtrlWheel = (ev) => {
+    if (!ev.ctrlKey) return;
+    ev.preventDefault();
+    const zoomMultiplier =
+        // Zooming on macs was painfully slow; likely due to their better
+        // trackpads. Give them a higher zoom rate.
+        /Mac/i.test(navigator.platform)
+          ? 0.045
+          : // This worked well for me on Windows
+          0.03;
+
+    // Zoom around the cursor
+    this.mode.updateScaleCenter(ev);
+    this.mode.scale *= 1 - Math.sign(ev.deltaY) * zoomMultiplier;
   }
 }

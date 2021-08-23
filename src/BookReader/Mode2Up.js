@@ -4,16 +4,16 @@ import 'jquery-ui/ui/effect.js';
 import '../dragscrollable-br.js';
 import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
-import { ModePinchZoom } from "./ModePinchZoom.js";
+import { ModeSmoothZoom } from "./ModeSmoothZoom.js";
 
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('./options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./PageContainer.js').PageContainer} PageContainer */
-/** @typedef {import('./ModePinchZoom').PinchZoomable} PinchZoomable */
+/** @typedef {import('./ModeSmoothZoom').SmoothZoomable} SmoothZoomable */
 
-/** @implements {PinchZoomable} */
+/** @implements {SmoothZoomable} */
 export class Mode2Up {
   /**
    * @param {BookReader} br
@@ -31,7 +31,7 @@ export class Mode2Up {
     /** @type {{ [index: number]: PageContainer }} */
     this.pageContainers = {};
 
-    /** @type {ModePinchZoom} */
+    /** @type {ModeSmoothZoom} */
     this.pinchZoom = null;
     this._scale = 1;
     this.scaleCenter = { x: 0.5, y: 0.5 };
@@ -240,7 +240,7 @@ export class Mode2Up {
     this.br.updateBrClasses();
 
     if (!this.pinchZoom) {
-      this.pinchZoom = new ModePinchZoom(this);
+      this.pinchZoom = new ModeSmoothZoom(this);
       this.pinchZoom.attach();
     }
   }

@@ -1,19 +1,19 @@
 // @ts-check
 import { customElement, html, LitElement, property, query } from 'lit-element';
 import { styleMap } from 'lit-html/directives/style-map';
-import { ModePinchZoom } from './ModePinchZoom';
+import { ModeSmoothZoom } from './ModeSmoothZoom';
 import { arrChanged, calcScreenDPI, genToArray, sum, throttle } from './utils';
 import { HTMLDimensionsCacher } from "./utils/dom";
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */
-/** @typedef {import('./ModePinchZoom').PinchZoomable} PinchZoomable */
+/** @typedef {import('./ModeSmoothZoom').SmoothZoomable} SmoothZoomable */
 /** @typedef {import('./PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../BookReader').default} BookReader */
 
 // I _have_ to make this globally public, otherwise it won't let me call
 // it's constructor :/
-/** @implements {PinchZoomable} */
+/** @implements {SmoothZoomable} */
 @customElement('br-mode-1up')
 export class Mode1UpLit extends LitElement {
   /****************************************/
@@ -168,7 +168,7 @@ export class Mode1UpLit extends LitElement {
     this.htmlDimensionsCacher.updateClientSizes();
     this.attachScrollListeners();
 
-    new ModePinchZoom(this).attach();
+    new ModeSmoothZoom(this).attach();
   }
 
   /** @override */
@@ -410,31 +410,10 @@ export class Mode1UpLit extends LitElement {
   /************** INPUT HANDLERS **************/
 
   attachScrollListeners = () => {
-    window.addEventListener("wheel", this.handleCtrlWheel, { passive: false });
     this.addEventListener("scroll", this.updateVisibleRegion, { passive: true });
   }
 
   detachScrollListeners = () => {
-    window.removeEventListener("wheel", this.handleCtrlWheel);
     this.removeEventListener("scroll", this.updateVisibleRegion);
-  }
-
-  /**
-   * @param {WheelEvent} ev
-   */
-  handleCtrlWheel = (ev) => {
-    if (!ev.ctrlKey) return;
-    ev.preventDefault();
-    const zoomMultiplier =
-        // Zooming on macs was painfully slow; likely due to their better
-        // trackpads. Give them a higher zoom rate.
-        /Mac/i.test(navigator.platform)
-          ? 0.045
-          : // This worked well for me on Windows
-          0.03;
-
-    // Zoom around the cursor
-    this.updateScaleCenter(ev);
-    this.scale *= 1 - Math.sign(ev.deltaY) * zoomMultiplier;
   }
 }
