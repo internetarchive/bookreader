@@ -1,6 +1,7 @@
 /**
  * BRnav is the bottom control bar (eg footer)
  */
+@use "sass:math";
 
 @mixin pseudoElementLayer {
   content: "";
@@ -117,7 +118,7 @@
   display: flex;
   justify-content: center;
   margin: 5px;
-  padding: 0 ($brNavHeightMobile / 4);
+  padding: 0 math.div($brNavHeightMobile, 4);
   border-radius: 4px;
   align-self: center;
   height: $toolbarHeight;
@@ -263,7 +264,7 @@
 .BRpager.ui-slider  {
   position: relative;
   height: 8px;
-  top: ($brNavHeightDesktop / 2) - 4px;
+  top: math.div($brNavHeightDesktop, 2) - 4px;
   box-sizing: content-box;
   border-radius: 10px;
   cursor: pointer;
@@ -365,7 +366,7 @@
   }
   .BRpager.ui-slider {
     height: 10px;
-    top: ($brNavHeightMobile / 2) - 5px;
+    top: math.div($brNavHeightMobile, 2) - 5px;
   }
 }
 
