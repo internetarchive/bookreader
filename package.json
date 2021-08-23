@@ -112,7 +112,10 @@
     "test-jest": "npx jest --coverage --colors",
     "test-karma": "npx karma start --coverage",
     "test-karma:watch": "npx karma start --auto-watch=true --single-run=false",
+    "DOCS:update:test-deps": "If CI succeeds, these should be good to update",
     "update:test-deps": "npm i @open-wc/testing@latest @open-wc/testing-karma@latest @types/jest@latest codecov@latest eslint@latest eslint-plugin-testcafe@latest jest@latest karma-coverage@latest sinon@latest testcafe@latest",
+    "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
+    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
     "codecov": "npx codecov"
   }
 }
