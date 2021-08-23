@@ -1,3 +1,4 @@
+// @ts-check
 import { debounce } from '../utils';
 
 /**
@@ -7,40 +8,35 @@ import { debounce } from '../utils';
  * - window resize could have cause the container to change size
  * - zoom could have cause scrollbars to appear/disappear, changing
  *   the client size.
- * @param {typeof LitElement} superClass
  */
-export function CachedDimensionsMixin(superClass) {
-  return class CachedDimensionsMixin extends superClass {
-    containerClientWidth = 100;
-    containerClientHeight = 100;
+export class HTMLDimensionsCacher {
+  clientWidth = 100;
+  clientHeight = 100;
 
-    containerBoundingClient = { top: 0, left: 0 };
+  boundingClientRect = { top: 0, left: 0 };
 
-    /** @override */
-    firstUpdated(changedProps) {
-      super.firstUpdated(changedProps);
-      this.updateClientSizes();
-    }
+  /**
+   * @param {HTMLElement} element
+   */
+  constructor(element) {
+    /** @type {HTMLElement} */
+    this.element = element;
+  }
 
-    updateClientSizes = () => {
-      const bc = this.getBoundingClientRect();
-      this.containerClientWidth = this.clientWidth;
-      this.containerClientHeight = this.clientHeight;
-      this.containerBoundingClient.top = bc.top;
-      this.containerBoundingClient.left = bc.left;
-    }
-    debouncedUpdateClientSizes = debounce(this.updateClientSizes, 150, false);
+  updateClientSizes = () => {
+    const bc = this.element.getBoundingClientRect();
+    this.clientWidth = this.element.clientWidth;
+    this.clientHeight = this.element.clientHeight;
+    this.boundingClientRect.top = bc.top;
+    this.boundingClientRect.left = bc.left;
+  }
+  debouncedUpdateClientSizes = debounce(this.updateClientSizes, 150, false);
 
-    /** @override */
-    connectedCallback() {
-      super.connectedCallback();
-      window.addEventListener('resize', this.debouncedUpdateClientSizes);
-    }
+  attachResizeListener() {
+    window.addEventListener('resize', this.debouncedUpdateClientSizes);
+  }
 
-    /** @override */
-    disconnectedCallback() {
-      window.removeEventListener('resize', this.debouncedUpdateClientSizes);
-      super.disconnectedCallback();
-    }
-  };
+  detachResizeListener() {
+    window.removeEventListener('resize', this.debouncedUpdateClientSizes);
+  }
 }

@@ -132,7 +132,7 @@ export class Mode1Up {
    * Note this calls drawLeafs
    */
   resizePageView() {
-    this.mode1UpLit.updateClientSizes();
+    this.mode1UpLit.htmlDimensionsCacher.updateClientSizes();
     this.mode1UpLit.requestUpdate();
   }
 }

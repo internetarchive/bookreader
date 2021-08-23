@@ -3,7 +3,7 @@ import Hammer from "hammerjs";
 import { customElement, html, LitElement, property, query } from 'lit-element';
 import { styleMap } from 'lit-html/directives/style-map';
 import { arrChanged, calcScreenDPI, genToArray, sum, throttle } from './utils';
-import { CachedDimensionsMixin } from "./utils/dom";
+import { HTMLDimensionsCacher } from "./utils/dom";
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */
@@ -13,7 +13,7 @@ import { CachedDimensionsMixin } from "./utils/dom";
 // I _have_ to make this globally public, otherwise it won't let me call
 // it's constructor :/
 @customElement('br-mode-1up')
-export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
+export class Mode1UpLit extends LitElement {
   /****************************************/
   /************** PROPERTIES **************/
   /****************************************/
@@ -101,6 +101,11 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
   @query('.br-mode-1up__visible-world')
   $visibleWorld;
 
+  /************** DOM-RELATED PROPERTIES **************/
+
+  /** @type {HTMLDimensionsCacher} Cache things like clientWidth to reduce repaints */
+  htmlDimensionsCacher = new HTMLDimensionsCacher(this);
+
   /************** CONSTANT PROPERTIES **************/
 
   /** Vertical space between/around the pages in inches */
@@ -155,6 +160,7 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
   firstUpdated(changedProps) {
     super.firstUpdated(changedProps);
 
+    this.htmlDimensionsCacher.updateClientSizes();
     this.attachExpensiveListeners();
 
     // Hammer.js by default set userSelect to None; we don't want that!
@@ -245,7 +251,14 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
   }
 
   /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+    this.htmlDimensionsCacher.attachResizeListener();
+  }
+
+  /** @override */
   disconnectedCallback() {
+    this.htmlDimensionsCacher.detachResizeListener();
     this.detachExpensiveListeners();
     super.disconnectedCallback();
   }
@@ -325,8 +338,8 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
   updateVisibleRegion = () => {
     const { scrollTop, scrollLeft } = this;
     // clientHeight excludes scrollbars, which is good.
-    const clientWidth = this.containerClientWidth;
-    const clientHeight = this.containerClientHeight;
+    const clientWidth = this.htmlDimensionsCacher.clientWidth;
+    const clientHeight = this.htmlDimensionsCacher.clientHeight;
 
     // Note: scrollTop, and clientWidth all are in visible space;
     // i.e. they are affects by the CSS transforms.
@@ -406,10 +419,10 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
    * @param {number} param0.clientY
    */
   updateScaleCenter({ clientX, clientY }) {
-    const bc = this.containerBoundingClient;
+    const bc = this.htmlDimensionsCacher.boundingClientRect;
     this.scaleCenter = {
-      x: (clientX - bc.left) / this.containerClientWidth,
-      y: (clientY - bc.top) / this.containerClientHeight,
+      x: (clientX - bc.left) / this.htmlDimensionsCacher.clientWidth,
+      y: (clientY - bc.top) / this.htmlDimensionsCacher.clientHeight,
     };
   }
 
@@ -420,8 +433,8 @@ export class Mode1UpLit extends CachedDimensionsMixin(LitElement) {
   updateViewportOnZoom(newScale, oldScale) {
     const container = this;
     const { scrollTop: T, scrollLeft: L } = container;
-    const W = this.containerClientWidth;
-    const H = this.containerClientHeight;
+    const W = this.htmlDimensionsCacher.clientWidth;
+    const H = this.htmlDimensionsCacher.clientHeight;
 
     // Scale factor change
     const F = newScale / oldScale;
