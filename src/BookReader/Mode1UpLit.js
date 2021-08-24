@@ -33,7 +33,7 @@ export class Mode1UpLit extends LitElement {
   @property({ type: Array })
   pages = [];
 
-  /** @type {{ [pageIndex: string]: { top: number }}} */
+  /** @type {{ [pageIndex: string]: { top: number, left: number }}} */
   @property({ type: Object })
   pagePositions = {};
 
@@ -130,6 +130,7 @@ export class Mode1UpLit extends LitElement {
       this.style.scrollBehavior = 'smooth';
     }
     this.scrollTop = this.worldUnitsToVisiblePixels(this.pagePositions[index].top);
+    // TODO: Also h center?
     if (smooth) {
       setTimeout(() => this.style.scrollBehavior = '', 100);
     }
@@ -176,8 +177,8 @@ export class Mode1UpLit extends LitElement {
       this.pages = genToArray(this.book.pagesIterator({ combineConsecutiveUnviewables: true }));
     }
     if (changedProps.has('pages')) {
-      this.pagePositions = this.computePagePositions(this.pages, this.SPACING_IN);
       this.worldDimensions = this.computeWorldDimensions();
+      this.pagePositions = this.computePagePositions(this.pages, this.SPACING_IN);
     }
     if (changedProps.has('visibleRegion')) {
       this.visiblePages = this.computeVisiblePages();
@@ -267,14 +268,14 @@ export class Mode1UpLit extends LitElement {
     const wToV = this.worldUnitsToVisiblePixels;
     const width = wToR(page.widthInches);
     const height = wToR(page.heightInches);
-    const transform = `translate(0px, ${wToR(this.pagePositions[page.index].top)}px)`;
+    const transform = `translate(${wToR(this.pagePositions[page.index].left)}px, ${wToR(this.pagePositions[page.index].top)}px)`;
     const pageContainerEl = this.createPageContainer(page)
       .update({
         dimensions: {
           width,
           height,
           top: 0,
-          left: 10,
+          left: 0,
         },
         reduce: page.width / wToV(page.widthInches),
       }).$container[0];
@@ -331,19 +332,25 @@ export class Mode1UpLit extends LitElement {
    * @param {number} spacing
    */
   computePagePositions(pages, spacing) {
-    /** @type {{ [pageIndex: string]: { top: number }}} */
+    /** @type {{ [pageIndex: string]: { top: number, left: number }}} */
     const result = {};
     let top = spacing;
+    const containerWidth = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
     for (const page of pages) {
-      result[page.index] = { top };
+      result[page.index] = {
+        top,
+        left: Math.max(this.SPACING_IN, (containerWidth - page.widthInches) / 2),
+      };
       top += page.heightInches + spacing;
     }
     return result;
   }
 
   computeWorldDimensions() {
+    const containerWidth = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
+    const maxPageWidth = Math.max(...this.pages.map(p => p.widthInches)) + 2 * this.SPACING_IN;
     return {
-      width: Math.max(...this.pages.map(p => p.widthInches)) + 2 * this.SPACING_IN,
+      width: Math.max(containerWidth, maxPageWidth),
       height:
           sum(this.pages.map(p => p.heightInches)) +
           (this.pages.length + 1) * this.SPACING_IN,
