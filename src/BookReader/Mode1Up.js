@@ -42,8 +42,7 @@ export class Mode1Up {
     // this.$brContainer.dragscrollable();
     // this.br.bindGestures(this.$);
 
-    this.mode1UpLit.requestUpdate()
-      .then(() => this.mode1UpLit.jumpToIndex(startLeaf));
+    setTimeout(() => this.mode1UpLit.jumpToIndex(startLeaf));
     this.br.updateBrClasses();
   }
 
@@ -62,7 +61,6 @@ export class Mode1Up {
 
   /**
    * BREAKING CHANGE: No longer supports pageX/pageY
-   * TODO: Support animate for small distances
    * @param {PageIndex} index
    * @param {number} [pageX] x position on the page (in pixels) to center on
    * @param {number} [pageY] y position on the page (in pixels) to center on
