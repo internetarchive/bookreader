@@ -745,7 +745,7 @@ BookReader.prototype.setupKeyListeners = function() {
 
 BookReader.prototype.drawLeafs = function() {
   if (this.constMode1up == this.mode) {
-    this.drawLeafsOnePage();
+    // Not needed for Mode1Up anymore
   } else if (this.constModeThumb == this.mode) {
     this.drawLeafsThumbnail();
   } else {
@@ -1069,8 +1069,6 @@ BookReader.prototype.switchMode = function(
 
   // XXX maybe better to preserve zoom in each mode
   if (this.constMode1up == mode) {
-    this.onePageCalculateReductionFactors();
-    this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
     this.prepareOnePageView();
   } else if (this.constModeThumb == mode) {
     this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
@@ -1393,20 +1391,8 @@ BookReader.prototype.pruneUnusedImgs = function() {
 BookReader.prototype.prepareOnePageView = Mode1Up.prototype.prepare;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'prepare', 'prepareOnePageView');
 /** @deprecated not used outside BookReader */
-BookReader.prototype.drawLeafsOnePage = Mode1Up.prototype.drawLeafs;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'drawLeafs', 'drawLeafsOnePage');
-/** @deprecated not used outside BookReader */
 BookReader.prototype.zoom1up = Mode1Up.prototype.zoom;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'zoom', 'zoom1up');
-/** @deprecated not used outside Mode1Up */
-BookReader.prototype.onePageGetAutofitWidth = Mode1Up.prototype.getAutofitWidth;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitWidth', 'onePageGetAutofitWidth');
-/** @deprecated not used outside Mode1Up, BookReader */
-BookReader.prototype.onePageGetAutofitHeight = Mode1Up.prototype.getAutofitHeight;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitHeight', 'onePageGetAutofitHeight');
-/** @deprecated not used outside Mode1Up, BookReader */
-BookReader.prototype.onePageCalculateReductionFactors = Mode1Up.prototype.calculateReductionFactors;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateReductionFactors', 'onePageCalculateReductionFactors');
 /** @deprecated not used outside Mode1Up, BookReader */
 BookReader.prototype.resizePageView1up = Mode1Up.prototype.resizePageView;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'resizePageView', 'resizePageView1up');

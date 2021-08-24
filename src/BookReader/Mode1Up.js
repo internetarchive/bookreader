@@ -1,5 +1,4 @@
 // @ts-check
-import { calcScreenDPI } from '../BookReader/utils.js';
 import { Mode1UpLit } from './Mode1UpLit.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
@@ -18,11 +17,6 @@ export class Mode1Up {
     /** @private */
     this.$el = $(this.mode1UpLit).addClass('br-mode-1up BRmode1up');
 
-    /** @private */
-    this.screenDPI = calcScreenDPI();
-
-    this.realWorldReduce = 1;
-
     this.everShown = false;
   }
 
@@ -40,10 +34,6 @@ export class Mode1Up {
       .css({ overflow: 'hidden' })
       .append(this.$el);
 
-    // // Attaches to first child - child must be present
-    // this.$brContainer.dragscrollable();
-    // this.br.bindGestures(this.$);
-
     setTimeout(() => {
       if (!this.everShown) {
         this.mode1UpLit.initFirstRender(startLeaf);
@@ -52,19 +42,6 @@ export class Mode1Up {
       this.mode1UpLit.jumpToIndex(startLeaf);
     });
     this.br.updateBrClasses();
-  }
-
-  /**
-   * Get the number of pixels required to display the given inches with the given reduce
-   * @param {number} inches
-   * @param reduce Reduction factor currently at play
-   * @param screenDPI The DPI of the screen
-   **/
-  physicalInchesToDisplayPixels(inches, reduce = this.realWorldReduce, screenDPI = this.screenDPI) {
-    return inches * screenDPI / reduce;
-  }
-
-  drawLeafs() {
   }
 
   /**
@@ -85,52 +62,8 @@ export class Mode1Up {
    * @param {'in' | 'out'} direction
    */
   zoom(direction) {
-    const nextReductionFactor = this.br.nextReduce(1 / this.mode1UpLit.scale, direction, this.br.onePage.reductionFactors);
-    this.mode1UpLit.scale = 1 / nextReductionFactor.reduce;
-    this.br.onePage.autofit = nextReductionFactor.autofit;
-  }
-
-  /**
-   * Returns the reduce factor which has the pages fill the width of the viewport.
-   */
-  getAutofitWidth() {
-    const widthPadding = 20;
-    const availableWidth = this.$brContainer.prop('clientWidth') - 2 * widthPadding;
-
-    const medianWidthInches = this.book.getMedianPageSizeInches().width;
-    const medianPageWidth = this.physicalInchesToDisplayPixels(medianWidthInches, 1);
-    return medianPageWidth / availableWidth;
-  }
-
-  getAutofitHeight() {
-    // make sure a little of adjacent pages show
-    const availableHeight = this.$brContainer.innerHeight() - 2 * this.br.padding;
-    const medianHeightInches = this.book.getMedianPageSizeInches().height;
-    const medianPageHeight = this.physicalInchesToDisplayPixels(medianHeightInches, 1);
-
-    return medianPageHeight / availableHeight;
-  }
-
-  /**
-   * Update the reduction factors for 1up mode given the available width and height.
-   * Recalculates the autofit reduction factors.
-   */
-  calculateReductionFactors() {
-    const autoWidthReduce = this.getAutofitWidth();
-    this.br.onePage.reductionFactors = this.br.reductionFactors
-      .filter(r => r.reduce != 1)
-      .concat([
-        { reduce: 1, autofit: null },
-        { reduce: autoWidthReduce, autofit: 'width' },
-        { reduce: this.getAutofitHeight(), autofit: 'height' },
-      ]);
-    this.br.onePage.reductionFactors.sort(this.br._reduceSort);
-    // Default to real size if it fits, otherwise default to full width
-    if (autoWidthReduce < 1) {
-      this.br.onePage.reductionFactors.find(r => r.reduce == 1).autofit = 'auto';
-    } else {
-      this.br.onePage.reductionFactors.find(r => r.autofit == 'width').autofit = 'auto';
-    }
+    if (direction == 'in') this.mode1UpLit.zoomIn();
+    else this.mode1UpLit.zoomOut();
   }
 
   /**
