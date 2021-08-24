@@ -129,7 +129,7 @@ export class Mode1UpLit extends LitElement {
     if (smooth) {
       this.style.scrollBehavior = 'smooth';
     }
-    this.scrollTop = this.worldUnitsToVisiblePixels(this.pagePositions[index].top);
+    this.scrollTop = this.worldUnitsToVisiblePixels(this.pagePositions[index].top - this.SPACING_IN / 2);
     // TODO: Also h center?
     if (smooth) {
       setTimeout(() => this.style.scrollBehavior = '', 100);
@@ -167,6 +167,14 @@ export class Mode1UpLit extends LitElement {
     super.firstUpdated(changedProps);
     this.htmlDimensionsCacher.updateClientSizes();
     new ModeSmoothZoom(this).attach();
+  }
+
+  /**
+   * @param {PageIndex} startIndex
+   */
+  initFirstRender(startIndex) {
+    const page = this.book.getPage(startIndex);
+    this.scale = this.computeDefaultScale(page);
   }
 
   /** @override */
@@ -344,6 +352,16 @@ export class Mode1UpLit extends LitElement {
       top += page.heightInches + spacing;
     }
     return result;
+  }
+
+  /**
+   * @param {PageModel} page
+   * @returns {number}
+   */
+  computeDefaultScale(page) {
+    // Default to real size if it fits, otherwise default to full width
+    const containerWidthIn = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
+    return Math.min(1, containerWidthIn / (page.widthInches + 2 * this.SPACING_IN));
   }
 
   computeWorldDimensions() {

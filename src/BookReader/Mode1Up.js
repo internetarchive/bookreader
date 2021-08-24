@@ -22,6 +22,8 @@ export class Mode1Up {
     this.screenDPI = calcScreenDPI();
 
     this.realWorldReduce = 1;
+
+    this.everShown = false;
   }
 
   // TODO: Might not need this anymore? Might want to delete.
@@ -42,7 +44,13 @@ export class Mode1Up {
     // this.$brContainer.dragscrollable();
     // this.br.bindGestures(this.$);
 
-    setTimeout(() => this.mode1UpLit.jumpToIndex(startLeaf));
+    setTimeout(() => {
+      if (!this.everShown) {
+        this.mode1UpLit.initFirstRender(startLeaf);
+        this.everShown = true;
+      }
+      this.mode1UpLit.jumpToIndex(startLeaf);
+    });
     this.br.updateBrClasses();
   }
 
