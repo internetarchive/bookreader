@@ -80,6 +80,9 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(lit-html|lit-element|lit)/)"
+    ],
     "setupFiles": [
       "./src/jquery-wrapper.js"
     ],
