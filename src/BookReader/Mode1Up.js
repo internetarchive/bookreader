@@ -34,10 +34,11 @@ export class Mode1Up {
       .css({ overflow: 'hidden' })
       .append(this.$el);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (!this.everShown) {
         this.mode1UpLit.initFirstRender(startLeaf);
         this.everShown = true;
+        await this.mode1UpLit.requestUpdate();
       }
       this.mode1UpLit.jumpToIndex(startLeaf);
     });
