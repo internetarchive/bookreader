@@ -1180,6 +1180,8 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   this.trigger(BookReader.eventNames.fullscreenToggled);
+  // Add "?view=theater"
+  this.trigger(BookReader.eventNames.fragmentChange);
 };
 
 /**
@@ -1204,6 +1206,7 @@ BookReader.prototype.exitFullScreen = async function () {
   this.isFullscreenActive = false;
   this.updateBrClasses();
   this.animating = true;
+<<<<<<< HEAD
   await new Promise((res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res)));
   this.resize();
 
@@ -1213,8 +1216,16 @@ BookReader.prototype.exitFullScreen = async function () {
   }
 
   this.animating = false;
+=======
+  this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', () => {
+    this.resize();
+    this.animating = false;
+  });
+>>>>>>> 71aa6353 (add url event for history url plugin mode)
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
+  // Remove "?view=theater"
+  this.trigger(BookReader.eventNames.fragmentChange);
   this.trigger(BookReader.eventNames.fullscreenToggled);
 };
 
@@ -2373,6 +2384,7 @@ BookReader.prototype.getFooterHeight = function() {
 BookReader.prototype.paramsFromCurrent = function() {
   var params = {};
 
+  // Path params
   var index = this.currentIndex();
   var pageNum = this._models.book.getPageNum(index);
   if ((pageNum === 0) || pageNum) {
@@ -2382,10 +2394,17 @@ BookReader.prototype.paramsFromCurrent = function() {
   params.index = index;
   params.mode = this.mode;
 
+  // Unused params
   // $$$ highlight
   // $$$ region
 
-  // search
+  // Querystring params
+  // View
+  const fullscreenView = 'theater';
+  if (this.isFullscreenActive) {
+    params.view = fullscreenView;
+  }
+  // Search
   if (this.enableSearch) {
     params.search = this.searchTerm;
   }
@@ -2513,6 +2532,9 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
 /**
  * Create, update querystring from the params object
  *
+ * Handles:
+ *  view=
+ *  q=
  * @param {Object} params
  * @param {string} currQueryString
  * @param {string} [urlMode]
@@ -2524,6 +2546,15 @@ BookReader.prototype.queryStringFromParams = function(
   urlMode = 'hash'
 ) {
   const newParams = new URLSearchParams(currQueryString);
+
+  if (params.view) {
+    // Set ?view=theater when fullscreen
+    newParams.set('view', params.view);
+  } else {
+    // Remove
+    newParams.delete('view');
+  }
+
   if (params.search && urlMode === 'history') {
     newParams.set('q', params.search);
   }
