@@ -33,9 +33,9 @@ export class Mode1UpLit extends LitElement {
   @property({ type: Array })
   pages = [];
 
-  /** @type {{ [pageIndex: string]: { top: number }}} */
+  /** @type {{ [pageIndex: string]: number }} */
   @property({ type: Object })
-  pagePositions = {};
+  pageTops = {};
 
   /************** SCALE-RELATED PROPERTIES **************/
 
@@ -129,7 +129,7 @@ export class Mode1UpLit extends LitElement {
     if (smooth) {
       this.style.scrollBehavior = 'smooth';
     }
-    this.scrollTop = this.worldUnitsToVisiblePixels(this.pagePositions[index].top - this.SPACING_IN / 2);
+    this.scrollTop = this.worldUnitsToVisiblePixels(this.pageTops[index] - this.SPACING_IN / 2);
     // TODO: Also h center?
     if (smooth) {
       setTimeout(() => this.style.scrollBehavior = '', 100);
@@ -186,7 +186,7 @@ export class Mode1UpLit extends LitElement {
     }
     if (changedProps.has('pages')) {
       this.worldDimensions = this.computeWorldDimensions();
-      this.pagePositions = this.computePagePositions(this.pages, this.SPACING_IN);
+      this.pageTops = this.computePageTops(this.pages, this.SPACING_IN);
     }
     if (changedProps.has('visibleRegion')) {
       this.visiblePages = this.computeVisiblePages();
@@ -279,7 +279,7 @@ export class Mode1UpLit extends LitElement {
     const width = wToR(page.widthInches);
     const height = wToR(page.heightInches);
     const left = Math.max(this.SPACING_IN, (containerWidth - page.widthInches) / 2);
-    const top = this.pagePositions[page.index].top;
+    const top = this.pageTops[page.index];
 
     const transform = `translate(${wToR(left)}px, ${wToR(top)}px)`;
     const pageContainerEl = this.createPageContainer(page)
@@ -344,14 +344,12 @@ export class Mode1UpLit extends LitElement {
    * @param {PageModel[]} pages
    * @param {number} spacing
    */
-  computePagePositions(pages, spacing) {
-    /** @type {{ [pageIndex: string]: { top: number }}} */
+  computePageTops(pages, spacing) {
+    /** @type {{ [pageIndex: string]: number }} */
     const result = {};
     let top = spacing;
     for (const page of pages) {
-      result[page.index] = {
-        top
-      };
+      result[page.index] = top;
       top += page.heightInches + spacing;
     }
     return result;
@@ -378,7 +376,7 @@ export class Mode1UpLit extends LitElement {
 
   computeVisiblePages() {
     return this.pages.filter(page => {
-      const PT = this.pagePositions[page.index].top;
+      const PT = this.pageTops[page.index];
       const PB = PT + page.heightInches;
 
       const VT = this.visibleRegion.top;
