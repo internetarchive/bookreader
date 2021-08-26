@@ -33,7 +33,7 @@ export class Mode1UpLit extends LitElement {
   @property({ type: Array })
   pages = [];
 
-  /** @type {{ [pageIndex: string]: { top: number, left: number }}} */
+  /** @type {{ [pageIndex: string]: { top: number }}} */
   @property({ type: Object })
   pagePositions = {};
 
@@ -274,9 +274,14 @@ export class Mode1UpLit extends LitElement {
   renderPage = (page) => {
     const wToR = this.worldUnitsToRenderedPixels;
     const wToV = this.worldUnitsToVisiblePixels;
+    const containerWidth = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
+
     const width = wToR(page.widthInches);
     const height = wToR(page.heightInches);
-    const transform = `translate(${wToR(this.pagePositions[page.index].left)}px, ${wToR(this.pagePositions[page.index].top)}px)`;
+    const left = Math.max(this.SPACING_IN, (containerWidth - page.widthInches) / 2);
+    const top = this.pagePositions[page.index].top;
+
+    const transform = `translate(${wToR(left)}px, ${wToR(top)}px)`;
     const pageContainerEl = this.createPageContainer(page)
       .update({
         dimensions: {
@@ -340,14 +345,12 @@ export class Mode1UpLit extends LitElement {
    * @param {number} spacing
    */
   computePagePositions(pages, spacing) {
-    /** @type {{ [pageIndex: string]: { top: number, left: number }}} */
+    /** @type {{ [pageIndex: string]: { top: number }}} */
     const result = {};
     let top = spacing;
-    const containerWidth = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
     for (const page of pages) {
       result[page.index] = {
-        top,
-        left: Math.max(this.SPACING_IN, (containerWidth - page.widthInches) / 2),
+        top
       };
       top += page.heightInches + spacing;
     }
@@ -365,10 +368,8 @@ export class Mode1UpLit extends LitElement {
   }
 
   computeWorldDimensions() {
-    const containerWidth = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
-    const maxPageWidth = Math.max(...this.pages.map(p => p.widthInches)) + 2 * this.SPACING_IN;
     return {
-      width: Math.max(containerWidth, maxPageWidth),
+      width: Math.max(...this.pages.map(p => p.widthInches)) + 2 * this.SPACING_IN,
       height:
           sum(this.pages.map(p => p.heightInches)) +
           (this.pages.length + 1) * this.SPACING_IN,
