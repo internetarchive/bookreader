@@ -9,8 +9,10 @@ import Hammer from "hammerjs";
  * @property {function(): void} [attachScrollListeners]
  * @property {function(): void} [detachScrollListeners]
  * @property {function({ clientX: number, clientY: number}): void} updateScaleCenter
+ * @property {{ x: number, y: number }} scaleCenter
  */
 
+/** Manages pinch-zoom, ctrl-wheel, and trackpad pinch smooth zooming. */
 export class ModeSmoothZoom {
   /** @param {SmoothZoomable} mode */
   constructor(mode) {
@@ -37,50 +39,58 @@ export class ModeSmoothZoom {
     });
 
     this.hammer.add(new Hammer.Pinch());
-    this.hammer.on("pinchstart", () => {
-      // Do this in case the pinchend hasn't fired yet.
-      this.oldScale = 1;
-      this.mode.$visibleWorld.style.willChange = "transform";
-      this.detachCtrlZoom();
-      this.mode.detachScrollListeners?.();
-    });
-    // This is SLOOOOW AF on iOS :/ Try buffering with requestAnimationFrame?
-    this.hammer.on("pinchmove", (e) => {
-      this.lastEvent = e;
-      if (!this.pinchMoveFrame) {
-        let pinchMoveFramePromiseRes = null;
-        this.pinchMoveFramePromise = new Promise(
-          (res) => (pinchMoveFramePromiseRes = res)
-        );
-        this.pinchMoveFrame = requestAnimationFrame(() => {
-          this.mode.updateScaleCenter({
-            clientX: this.lastEvent.center.x,
-            clientY: this.lastEvent.center.y,
-          });
-          this.mode.scale *= this.lastEvent.scale / this.oldScale;
-          this.oldScale = this.lastEvent.scale;
-          this.pinchMoveFrame = null;
-          pinchMoveFramePromiseRes();
-        });
-      }
-    });
 
-    const handlePinchEnd = async () => {
-      // Want this to happen after the pinchMoveFrame,
-      // if one is in progress; otherwise setting oldScale
-      // messes up the transform.
-      await this.pinchMoveFramePromise;
-      this.scaleCenter = { x: 0.5, y: 0.5 };
-      this.oldScale = 1;
-      this.mode.$visibleWorld.style.willChange = "auto";
-      this.attachCtrlZoom();
-      this.mode.attachScrollListeners?.();
-    };
-    this.hammer.on("pinchend", handlePinchEnd);
+    this.hammer.on("pinchstart", this._pinchStart);
+    this.hammer.on("pinchmove", this._pinchMove);
+    this.hammer.on("pinchend", this._pinchEnd);
+
     // iOS fires pinchcancel ~randomly; it looks like it sometimes
     // things the pinch becomes a pan, at which point it cancels?
     // More work needed here.
-    this.hammer.on("pinchcancel", handlePinchEnd);
+    this.hammer.on("pinchcancel", this._pinchEnd);
+  }
+
+  _pinchStart = () => {
+    // Do this in case the pinchend hasn't fired yet.
+    this.oldScale = 1;
+    this.mode.$visibleWorld.style.willChange = "transform";
+    this.detachCtrlZoom();
+    this.mode.detachScrollListeners?.();
+  }
+
+  /** @param {HammerInput} e */
+  _pinchMove = async (e) => {
+    this.lastEvent = e;
+    if (!this.pinchMoveFrame) {
+      let pinchMoveFramePromiseRes = null;
+      this.pinchMoveFramePromise = new Promise(
+        (res) => (pinchMoveFramePromiseRes = res)
+      );
+
+      // Buffer these events; only update the scale when request animation fires
+      this.pinchMoveFrame = requestAnimationFrame(() => {
+        this.mode.updateScaleCenter({
+          clientX: this.lastEvent.center.x,
+          clientY: this.lastEvent.center.y,
+        });
+        this.mode.scale *= this.lastEvent.scale / this.oldScale;
+        this.oldScale = this.lastEvent.scale;
+        this.pinchMoveFrame = null;
+        pinchMoveFramePromiseRes();
+      });
+    }
+  }
+
+  _pinchEnd = async () => {
+    // Want this to happen after the pinchMoveFrame,
+    // if one is in progress; otherwise setting oldScale
+    // messes up the transform.
+    await this.pinchMoveFramePromise;
+    this.mode.scaleCenter = { x: 0.5, y: 0.5 };
+    this.oldScale = 1;
+    this.mode.$visibleWorld.style.willChange = "auto";
+    this.attachCtrlZoom();
+    this.mode.attachScrollListeners?.();
   }
 
   /** @private */

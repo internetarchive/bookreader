@@ -198,12 +198,10 @@ export class Mode1UpLit extends LitElement {
       this.br.updateNavIndexThrottled();
     }
     if (changedProps.has('scale')) {
-      // this.$visibleWorld.style.willChange = "transform";
       const oldVal = changedProps.get('scale');
       this.$visibleWorld.style.transform = `scale(${this.scale})`;
       this.updateViewportOnZoom(this.scale, oldVal);
 
-      // this.$world.style.willChange = "transform";
       this.$world.style.transform = `scale(${this.scale})`;
     }
   }
