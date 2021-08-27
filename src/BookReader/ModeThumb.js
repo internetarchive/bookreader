@@ -1,6 +1,7 @@
 // @ts-check
 import { notInArray, clamp } from './utils.js';
 import { EVENTS } from './events.js';
+import { DragScrollable } from '../dragscrollable-br.js';
 /** @typedef {import('../BookREader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
@@ -279,7 +280,7 @@ export class ModeThumb {
 
     this.br.refs.$brPageViewEl = $("<div class='BRpageview'></div>");
     this.br.refs.$brContainer.append(this.br.refs.$brPageViewEl);
-    this.br.refs.$brContainer.dragscrollable({preventDefault:true});
+    this.dragScrollable = this.dragScrollable || new DragScrollable(this.br.refs.$brContainer[0], {preventDefault: true});
 
     this.br.bindGestures(this.br.refs.$brContainer);
 

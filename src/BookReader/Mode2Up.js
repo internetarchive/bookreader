@@ -1,11 +1,11 @@
 // @ts-check
 // effect.js gives acces to extra easing function (e.g. easeInSine)
 import 'jquery-ui/ui/effect.js';
-import '../dragscrollable-br.js';
 import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
 import { ModeSmoothZoom } from "./ModeSmoothZoom.js";
 import { HTMLDimensionsCacher } from './utils/HTMLDimensionsCacher.js';
+import { DragScrollable } from '../dragscrollable-br.js';
 
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
@@ -193,8 +193,8 @@ export class Mode2Up {
     this.br.refs.$brContainer.append($twoPageViewEl);
 
     // Attaches to first child, so must come after we add the page view
-    this.br.refs.$brContainer.dragscrollable({
-      preventDefault:true,
+    this.dragScrollable = this.dragScrollable || new DragScrollable(this.br.refs.$brContainer[0], {
+      preventDefault: true,
       // Only handle mouse events; let browser/HammerJS handle touch
       dragstart: 'mousedown',
       dragcontinue: 'mousemove',

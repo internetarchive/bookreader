@@ -27,7 +27,6 @@ import 'jquery-ui/ui/widget.js';
 import 'jquery-ui/ui/widgets/mouse.js';
 import 'jquery-ui-touch-punch';
 
-import './dragscrollable-br.js';
 import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
