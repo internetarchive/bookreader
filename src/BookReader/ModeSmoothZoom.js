@@ -23,31 +23,39 @@ export class ModeSmoothZoom {
     this.pinchMoveFramePromise = Promise.resolve();
     this.oldScale = 1;
     this.lastEvent = null;
-
-    /** @type {HammerManager} */
-    this.hammer = null;
   }
 
   attach() {
     this.attachCtrlZoom();
 
+    // GestureEvents work only on Safari; they interfere with Hammer,
+    // so block them.
+    this.mode.$container.addEventListener('gesturestart', this._preventEvent);
+    this.mode.$container.addEventListener('gesturechange', this._preventEvent);
+    this.mode.$container.addEventListener('gestureend', this._preventEvent);
+    this._attachHammer();
+  }
+
+  _attachHammer() {
     // Hammer.js by default set userSelect to None; we don't want that!
     // TODO: Is there any way to do this not globally on Hammer?
     delete Hammer.defaults.cssProps.userSelect;
-    this.hammer = new Hammer.Manager(this.mode.$container, {
+    const hammer = new Hammer.Manager(this.mode.$container, {
       touchAction: "pan-x pan-y",
     });
 
-    this.hammer.add(new Hammer.Pinch());
+    hammer.add(new Hammer.Pinch());
 
-    this.hammer.on("pinchstart", this._pinchStart);
-    this.hammer.on("pinchmove", this._pinchMove);
-    this.hammer.on("pinchend", this._pinchEnd);
+    hammer.on("pinchstart", this._pinchStart);
+    hammer.on("pinchmove", this._pinchMove);
+    hammer.on("pinchend", this._pinchEnd);
+    hammer.on("pinchcancel", this._pinchCancel);
+  }
 
-    // iOS fires pinchcancel ~randomly; it looks like it sometimes
-    // things the pinch becomes a pan, at which point it cancels?
-    // More work needed here.
-    this.hammer.on("pinchcancel", this._pinchEnd);
+  /** @param {Event} ev */
+  _preventEvent = (ev) => {
+    ev.preventDefault();
+    return false;
   }
 
   _pinchStart = () => {
@@ -91,6 +99,12 @@ export class ModeSmoothZoom {
     this.mode.$visibleWorld.style.willChange = "auto";
     this.attachCtrlZoom();
     this.mode.attachScrollListeners?.();
+  }
+
+  _pinchCancel = async () => {
+    // iOS fires pinchcancel ~randomly; it looks like it sometimes
+    // thinks the pinch becomes a pan, at which point it cancels?
+    await this._pinchEnd();
   }
 
   /** @private */
