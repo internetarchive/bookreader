@@ -1,4 +1,5 @@
 // @ts-check
+import '../dragscrollable-br.js';
 import { Mode1UpLit } from './Mode1UpLit.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
@@ -39,6 +40,14 @@ export class Mode1Up {
         this.mode1UpLit.initFirstRender(startLeaf);
         this.everShown = true;
         await this.mode1UpLit.requestUpdate();
+        $(this.mode1UpLit).dragscrollable({
+          preventDefault: true,
+          dragSelector: '.br-mode-1up__visible-world',
+          // Only handle mouse events; let browser/HammerJS handle touch
+          dragstart: 'mousedown',
+          dragcontinue: 'mousemove',
+          dragend: 'mouseup',
+        });
       }
       this.mode1UpLit.jumpToIndex(startLeaf);
     });
