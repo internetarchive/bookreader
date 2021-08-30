@@ -5,6 +5,7 @@ import '../dragscrollable-br.js';
 import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
 import { ModeSmoothZoom } from "./ModeSmoothZoom.js";
+import { HTMLDimensionsCacher } from './utils/dom.js';
 
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
@@ -243,17 +244,10 @@ export class Mode2Up {
       this.pinchZoom = new ModeSmoothZoom(this);
       this.pinchZoom.attach();
     }
-  }
 
-  get containerBoundingClient() {
-    return this.br.refs.$brContainer[0].getBoundingClientRect();
-  }
-
-  get containerClientWidth() {
-    return this.br.refs.$brContainer[0].clientWidth;
-  }
-  get containerClientHeight() {
-    return this.br.refs.$brContainer[0].clientHeight;
+    if (!this.htmlDimensionsCacher) {
+      this.htmlDimensionsCacher = new HTMLDimensionsCacher(this.$container);
+    }
   }
 
   /**
@@ -262,10 +256,10 @@ export class Mode2Up {
    * @param {number} param0.clientY
    */
   updateScaleCenter({ clientX, clientY }) {
-    const bc = this.containerBoundingClient;
+    const bc = this.htmlDimensionsCacher.boundingClientRect;
     this.scaleCenter = {
-      x: (clientX - bc.left) / this.containerClientWidth,
-      y: (clientY - bc.top) / this.containerClientHeight,
+      x: (clientX - bc.left) / this.htmlDimensionsCacher.clientWidth,
+      y: (clientY - bc.top) / this.htmlDimensionsCacher.clientHeight,
     };
   }
 
@@ -276,8 +270,8 @@ export class Mode2Up {
   updateViewportOnZoom(newScale, oldScale) {
     const container = this.br.refs.$brContainer[0];
     const { scrollTop: T, scrollLeft: L } = container;
-    const W = this.containerClientWidth;
-    const H = this.containerClientHeight;
+    const W = this.htmlDimensionsCacher.clientWidth;
+    const H = this.htmlDimensionsCacher.clientHeight;
 
     // Scale factor change
     const F = newScale / oldScale;
