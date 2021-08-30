@@ -105,15 +105,11 @@ describe('<book-navigator>', () => {
     await elementUpdated(el);
 
     expect(el.bookreader.resize.callCount).to.equal(1);
-    expect(el.bookreader.currentIndex.callCount).to.equal(1);
-    expect(el.bookreader.jumpToIndex.callCount).to.equal(1);
 
     el.sideMenuOpen = false;
     await elementUpdated(el);
 
     expect(el.bookreader.resize.callCount).to.equal(2);
-    expect(el.bookreader.currentIndex.callCount).to.equal(2);
-    expect(el.bookreader.jumpToIndex.callCount).to.equal(2);
   });
 
   it('does not resize bookreader if animating', async () => {
