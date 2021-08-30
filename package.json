@@ -53,7 +53,7 @@
     "eslint": "7.32.0",
     "eslint-plugin-testcafe": "0.2.1",
     "http-server": "0.12.3",
-    "iso-language-codes": "1.0.8",
+    "iso-language-codes": "1.1.0",
     "jest": "27.0.6",
     "jquery": "1.11.3",
     "jquery-colorbox": "1.6.4",
