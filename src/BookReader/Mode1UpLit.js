@@ -337,7 +337,6 @@ export class Mode1UpLit extends LitElement {
   }
 
   throttledUpdateRenderedPages = throttle(() => {
-    console.log('updateRenderedPages');
     this.renderedPages = this.computeRenderedPages();
     this.requestUpdate();
   }, 100, null)
