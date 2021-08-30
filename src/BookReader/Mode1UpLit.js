@@ -111,6 +111,8 @@ export class Mode1UpLit extends LitElement {
   /** @type {HTMLDimensionsCacher} Cache things like clientWidth to reduce repaints */
   htmlDimensionsCacher = new HTMLDimensionsCacher(this);
 
+  smoothZoomer = new ModeSmoothZoom(this);
+
   /************** CONSTANT PROPERTIES **************/
 
   /** Vertical space between/around the pages in inches */
@@ -166,7 +168,7 @@ export class Mode1UpLit extends LitElement {
   firstUpdated(changedProps) {
     super.firstUpdated(changedProps);
     this.htmlDimensionsCacher.updateClientSizes();
-    new ModeSmoothZoom(this).attach();
+    this.smoothZoomer.attach();
   }
 
   /**
@@ -211,12 +213,14 @@ export class Mode1UpLit extends LitElement {
     super.connectedCallback();
     this.htmlDimensionsCacher.attachResizeListener();
     this.attachScrollListeners();
+    this.smoothZoomer.attach();
   }
 
   /** @override */
   disconnectedCallback() {
     this.htmlDimensionsCacher.detachResizeListener();
     this.detachScrollListeners();
+    this.smoothZoomer.detach();
     super.disconnectedCallback();
   }
 

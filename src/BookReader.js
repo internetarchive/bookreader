@@ -293,6 +293,15 @@ BookReader.prototype.getActivePageContainerElementsForIndex = function(pageIndex
   ].filter(x => x);
 };
 
+Object.defineProperty(BookReader.prototype, 'activeMode', {
+  /** @return {Mode1Up | Mode2Up | ModeThumb} */
+  get() { return {
+    1: this._modes.mode1Up,
+    2: this._modes.mode2Up,
+    3: this._modes.modeThumb,
+  }[this.mode]; },
+});
+
 /** @deprecated unused outside Mode2Up */
 Object.defineProperty(BookReader.prototype, 'leafEdgeL', {
   get() { return this._modes.mode2Up.leafEdgeL; },
@@ -1056,6 +1065,10 @@ BookReader.prototype.switchMode = function(
   this.trigger(BookReader.eventNames.stop);
 
   this.prevReadMode = this.getPrevReadMode(this.mode);
+
+  if (this.mode != mode) {
+    this.activeMode.unprepare?.();
+  }
 
   this.mode = mode;
 

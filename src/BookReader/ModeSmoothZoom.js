@@ -23,9 +23,21 @@ export class ModeSmoothZoom {
     this.pinchMoveFramePromise = Promise.resolve();
     this.oldScale = 1;
     this.lastEvent = null;
+    this.attached = false;
+
+    // Hammer.js by default set userSelect to None; we don't want that!
+    // TODO: Is there any way to do this not globally on Hammer?
+    delete Hammer.defaults.cssProps.userSelect;
+    this.hammer = new Hammer.Manager(this.mode.$container, {
+      touchAction: "pan-x pan-y",
+    });
+
+    this.hammer.add(new Hammer.Pinch());
   }
 
   attach() {
+    if (this.attached) return;
+
     this.attachCtrlZoom();
 
     // GestureEvents work only on Safari; they interfere with Hammer,
@@ -33,23 +45,32 @@ export class ModeSmoothZoom {
     this.mode.$container.addEventListener('gesturestart', this._preventEvent);
     this.mode.$container.addEventListener('gesturechange', this._preventEvent);
     this.mode.$container.addEventListener('gestureend', this._preventEvent);
-    this._attachHammer();
+
+    // The pinch listeners
+    this.hammer.on("pinchstart", this._pinchStart);
+    this.hammer.on("pinchmove", this._pinchMove);
+    this.hammer.on("pinchend", this._pinchEnd);
+    this.hammer.on("pinchcancel", this._pinchCancel);
+
+    this.attached = true;
   }
 
-  _attachHammer() {
-    // Hammer.js by default set userSelect to None; we don't want that!
-    // TODO: Is there any way to do this not globally on Hammer?
-    delete Hammer.defaults.cssProps.userSelect;
-    const hammer = new Hammer.Manager(this.mode.$container, {
-      touchAction: "pan-x pan-y",
-    });
+  detach() {
+    this.detachCtrlZoom();
 
-    hammer.add(new Hammer.Pinch());
+    // GestureEvents work only on Safari; they interfere with Hammer,
+    // so block them.
+    this.mode.$container.removeEventListener('gesturestart', this._preventEvent);
+    this.mode.$container.removeEventListener('gesturechange', this._preventEvent);
+    this.mode.$container.removeEventListener('gestureend', this._preventEvent);
 
-    hammer.on("pinchstart", this._pinchStart);
-    hammer.on("pinchmove", this._pinchMove);
-    hammer.on("pinchend", this._pinchEnd);
-    hammer.on("pinchcancel", this._pinchCancel);
+    // The pinch listeners
+    this.hammer.off("pinchstart", this._pinchStart);
+    this.hammer.off("pinchmove", this._pinchMove);
+    this.hammer.off("pinchend", this._pinchEnd);
+    this.hammer.off("pinchcancel", this._pinchCancel);
+
+    this.attached = false;
   }
 
   /** @param {Event} ev */

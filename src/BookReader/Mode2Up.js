@@ -33,7 +33,7 @@ export class Mode2Up {
     this.pageContainers = {};
 
     /** @type {ModeSmoothZoom} */
-    this.pinchZoom = null;
+    this.smoothZoomer = null;
     this._scale = 1;
     this.scaleCenter = { x: 0.5, y: 0.5 };
   }
@@ -240,14 +240,16 @@ export class Mode2Up {
     this.br.updateToolbarZoom(this.br.reduce);
     this.br.updateBrClasses();
 
-    if (!this.pinchZoom) {
-      this.pinchZoom = new ModeSmoothZoom(this);
-      this.pinchZoom.attach();
-    }
+    this.smoothZoomer = this.smoothZoomer || new ModeSmoothZoom(this);
+    this.smoothZoomer.attach();
 
-    if (!this.htmlDimensionsCacher) {
-      this.htmlDimensionsCacher = new HTMLDimensionsCacher(this.$container);
-    }
+    this.htmlDimensionsCacher = this.htmlDimensionsCacher || new HTMLDimensionsCacher(this.$container);
+  }
+
+  unprepare() {
+    // Mode2Up attaches these listeners to the main BR container, so we need to
+    // detach these or it will cause issues for the other modes.
+    this.smoothZoomer.detach();
   }
 
   /**
