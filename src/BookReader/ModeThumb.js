@@ -1,7 +1,7 @@
 // @ts-check
 import { notInArray, clamp } from './utils.js';
 import { EVENTS } from './events.js';
-import { DragScrollable } from '../dragscrollable-br.js';
+import { DragScrollable } from './DragScrollable.js';
 /** @typedef {import('../BookREader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */

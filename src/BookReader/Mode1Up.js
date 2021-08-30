@@ -1,6 +1,6 @@
 // @ts-check
 import { Mode1UpLit } from './Mode1UpLit.js';
-import { DragScrollable } from '../dragscrollable-br.js';
+import { DragScrollable } from './DragScrollable.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
