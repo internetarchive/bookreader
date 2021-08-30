@@ -1171,6 +1171,9 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
   this.animating = true;
   this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear',() => {
     this.resize();
+    if (this.activeMode instanceof Mode1Up) {
+      this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(currentIndex));
+    }
     this.jumpToIndex(currentIndex);
     this.animating = false;
   });
@@ -1203,6 +1206,11 @@ BookReader.prototype.exitFullScreen = function() {
   this.animating = true;
   this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', () => {
     this.resize();
+
+    if (this.activeMode instanceof Mode1Up) {
+      this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(this.currentIndex()));
+    }
+
     this.animating = false;
   });
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
