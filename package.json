@@ -65,7 +65,7 @@
     "live-server": "1.2.1",
     "node-fetch": "2.6.1",
     "regenerator-runtime": "0.13.9",
-    "sass": "1.38.0",
+    "sass": "1.38.2",
     "sinon": "11.1.2",
     "soundmanager2": "2.97.20170602",
     "svgo": "2.4.0",
