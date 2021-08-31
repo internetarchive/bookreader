@@ -7,11 +7,13 @@ module.exports = {
     "jest": true
   },
   "plugins": [
-    "testcafe"
+    "testcafe",
+    "no-jquery"
   ],
   "extends": [
     "eslint:recommended",
-    "plugin:testcafe/recommended"
+    "plugin:testcafe/recommended",
+    "plugin:no-jquery/deprecated"
   ],
   "globals": {
     // Browser API
