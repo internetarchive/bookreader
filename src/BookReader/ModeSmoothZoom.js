@@ -22,8 +22,12 @@ export class ModeSmoothZoom {
     this.pinchMoveFrame = null;
     this.pinchMoveFramePromise = Promise.resolve();
     this.oldScale = 1;
+    /** @type {{ scale: number, center: { x: number, y: number }}} */
     this.lastEvent = null;
     this.attached = false;
+
+    /** @type {function(function(): void): any} */
+    this.bufferFn = window.requestAnimationFrame;
 
     // Hammer.js by default set userSelect to None; we don't want that!
     // TODO: Is there any way to do this not globally on Hammer?
@@ -87,7 +91,7 @@ export class ModeSmoothZoom {
     this.mode.detachScrollListeners?.();
   }
 
-  /** @param {HammerInput} e */
+  /** @param {{ scale: number, center: { x: number, y: number }}} e */
   _pinchMove = async (e) => {
     this.lastEvent = e;
     if (!this.pinchMoveFrame) {
@@ -97,7 +101,7 @@ export class ModeSmoothZoom {
       );
 
       // Buffer these events; only update the scale when request animation fires
-      this.pinchMoveFrame = requestAnimationFrame(() => {
+      this.pinchMoveFrame = this.bufferFn(() => {
         this.mode.updateScaleCenter({
           clientX: this.lastEvent.center.x,
           clientY: this.lastEvent.center.y,
@@ -130,19 +134,16 @@ export class ModeSmoothZoom {
 
   /** @private */
   attachCtrlZoom() {
-    window.addEventListener("wheel", this.handleCtrlWheel, { passive: false });
+    window.addEventListener("wheel", this._handleCtrlWheel, { passive: false });
   }
 
   /** @private */
   detachCtrlZoom() {
-    window.removeEventListener("wheel", this.handleCtrlWheel);
+    window.removeEventListener("wheel", this._handleCtrlWheel);
   }
 
-  /**
-   * @private
-   * @param {WheelEvent} ev
-   **/
-  handleCtrlWheel = (ev) => {
+  /** @param {WheelEvent} ev **/
+  _handleCtrlWheel = (ev) => {
     if (!ev.ctrlKey) return;
     ev.preventDefault();
     const zoomMultiplier =
