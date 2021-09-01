@@ -1135,11 +1135,11 @@ BookReader.prototype.isFullscreen = function() {
  * Toggles fullscreen
  * @param { boolean } bindKeyboardControls
  */
-BookReader.prototype.toggleFullscreen = function(bindKeyboardControls = true) {
+BookReader.prototype.toggleFullscreen = async function(bindKeyboardControls = true) {
   if (this.isFullscreen()) {
-    this.exitFullScreen();
+    await this.exitFullScreen();
   } else {
-    this.enterFullscreen(bindKeyboardControls);
+    await this.enterFullscreen(bindKeyboardControls);
   }
 };
 
@@ -1151,7 +1151,7 @@ BookReader.prototype.toggleFullscreen = function(bindKeyboardControls = true) {
  * - fires custom event
  * @param { boolean } bindKeyboardControls
  */
-BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
+BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = true) {
   const currentIndex = this.currentIndex();
   this.refs.$brContainer.css('opacity', 0);
 
@@ -1169,14 +1169,15 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
 
   this.isFullscreenActive = true;
   this.animating = true;
-  this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear',() => {
-    this.resize();
-    if (this.activeMode instanceof Mode1Up) {
-      this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(currentIndex));
-    }
-    this.jumpToIndex(currentIndex);
-    this.animating = false;
-  });
+  await new Promise(res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res));
+  this.resize();
+  if (this.activeMode instanceof Mode1Up) {
+    this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(currentIndex));
+    // Need the new scale to be applied before calling jumpToIndex
+    await this.activeMode.mode1UpLit.requestUpdate();
+  }
+  this.jumpToIndex(currentIndex);
+  this.animating = false;
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   this.trigger(BookReader.eventNames.fullscreenToggled);
@@ -1189,7 +1190,7 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
  * - fires custom event
  * @param { boolean } bindKeyboardControls
  */
-BookReader.prototype.exitFullScreen = function() {
+BookReader.prototype.exitFullScreen = async function () {
   this.refs.$brContainer.css('opacity', 0);
 
   $(document).unbind('keyup', this._fullscreenCloseHandler);
@@ -1204,15 +1205,16 @@ BookReader.prototype.exitFullScreen = function() {
   this.isFullscreenActive = false;
   this.updateBrClasses();
   this.animating = true;
-  this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', () => {
-    this.resize();
+  await new Promise((res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res)));
+  this.resize();
 
-    if (this.activeMode instanceof Mode1Up) {
-      this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(this.currentIndex()));
-    }
+  if (this.activeMode instanceof Mode1Up) {
+    this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(this.currentIndex()));
+    await this.activeMode.mode1UpLit.requestUpdate();
+  }
 
-    this.animating = false;
-  });
+  this.animating = false;
+
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   this.trigger(BookReader.eventNames.fullscreenToggled);
 };
