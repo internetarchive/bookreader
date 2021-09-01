@@ -5,7 +5,7 @@ import '../dragscrollable-br.js';
 import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
 import { ModeSmoothZoom } from "./ModeSmoothZoom.js";
-import { HTMLDimensionsCacher } from './utils/dom.js';
+import { HTMLDimensionsCacher } from './utils/HTMLDimensionsCacher.js';
 
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */

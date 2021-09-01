@@ -3,7 +3,7 @@ import { customElement, html, LitElement, property, query } from 'lit-element';
 import { styleMap } from 'lit-html/directives/style-map';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
 import { arrChanged, calcScreenDPI, genToArray, sum, throttle } from './utils';
-import { HTMLDimensionsCacher } from "./utils/dom";
+import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */

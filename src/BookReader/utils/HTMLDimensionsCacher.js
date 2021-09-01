@@ -32,11 +32,13 @@ export class HTMLDimensionsCacher {
   }
   debouncedUpdateClientSizes = debounce(this.updateClientSizes, 150, false);
 
-  attachResizeListener() {
-    window.addEventListener('resize', this.debouncedUpdateClientSizes);
+  /** @param {EventTarget} win */
+  attachResizeListener(win = window) {
+    win.addEventListener('resize', this.debouncedUpdateClientSizes);
   }
 
-  detachResizeListener() {
-    window.removeEventListener('resize', this.debouncedUpdateClientSizes);
+  /** @param {EventTarget} win */
+  detachResizeListener(win = window) {
+    win.removeEventListener('resize', this.debouncedUpdateClientSizes);
   }
 }
