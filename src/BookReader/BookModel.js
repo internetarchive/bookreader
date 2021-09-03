@@ -1,3 +1,4 @@
+/* global pdfjsLib */
 // @ts-check
 import { DEFAULT_OPTIONS } from './options.js';
 import { clamp } from './utils.js';

@@ -28,6 +28,11 @@
     <script type="module" src="../BookReader/bookreader-component-bundle.js"></script>
 
     <link rel="stylesheet" href="BookReaderDemo.css"/>
+
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.worker.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.entry.min.js" integrity="sha512-NJEHr6hlBM4MkVxJu+7FBk+pn7r+KD8rh+50DPglV/8T8I9ETqHJH0bO7NRPHaPszzYTxBWQztDfL6iJV6CQTw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf_viewer.min.css" integrity="sha512-5cOE2Zw/F4SlIUHR/xLTyFLSAR0ezXsra+8azx47gJyQCilATjazEE2hLQmMY7xeAv/RxxZhs8w8zEL7dTsvnA==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
 </head>
 
 <body>
@@ -66,7 +71,7 @@
     // Temp; Circumvent bug in BookReaderJSIA code
     window.Sentry = null;
 
-    var script_url = 'https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=' + ocaid;
+    var script_url = 'https://www-isa.archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=' + ocaid;
     document.getElementById('pageUrl').src = script_url;
   </script>
 
