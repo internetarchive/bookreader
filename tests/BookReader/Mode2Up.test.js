@@ -220,7 +220,6 @@ describe('prepareTwoPageView', () => {
       const calculateSpreadSize = sinon.spy(mode2Up, 'calculateSpreadSize');
       const prunePageContainers = sinon.spy(mode2Up, 'prunePageContainers');
       const prefetch = sinon.spy(mode2Up, 'prefetch');
-      const bindGestures = sinon.spy(br, 'bindGestures');
       const centerView = sinon.spy(mode2Up, 'centerView');
       const preparePopUp = sinon.spy(mode2Up, 'preparePopUp');
       const updateBrClasses = sinon.spy(br, 'updateBrClasses');
@@ -232,7 +231,6 @@ describe('prepareTwoPageView', () => {
       expect(drawLeafs.callCount).toBe(1);
       expect(calculateSpreadSize.callCount).toBe(1);
       expect(prunePageContainers.callCount).toBe(1);
-      expect(bindGestures.callCount).toBe(1);
       expect(centerView.callCount).toBe(1);
       expect(preparePopUp.callCount).toBe(1);
       expect(updateBrClasses.callCount).toBe(1);

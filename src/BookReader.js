@@ -272,8 +272,9 @@ BookReader.prototype.setup = function(options) {
  * Includes cached elements which might be rendered again.
  */
 BookReader.prototype.getActivePageContainerElements = function() {
-  let containerEls = Object.values(this._modes.mode2Up.pageContainers).map(pc => pc.$container[0]);
-  if (this.mode != this.constMode2up) {
+  let containerEls = Object.values(this._modes.mode2Up.pageContainers).map(pc => pc.$container[0])
+    .concat(Object.values(this._modes.mode1Up.mode1UpLit.pageContainerCache).map(pc => pc.$container[0]));
+  if (this.mode == this.constModeThumb) {
     containerEls = containerEls.concat(this.$('.BRpagecontainer').toArray());
   }
   return containerEls;
@@ -285,13 +286,21 @@ BookReader.prototype.getActivePageContainerElements = function() {
  * @param {PageIndex} pageIndex
  */
 BookReader.prototype.getActivePageContainerElementsForIndex = function(pageIndex) {
-  const mode2UpContainer = this._modes.mode2Up.pageContainers[pageIndex]?.$container?.[0];
-  let containerEls = mode2UpContainer ? [mode2UpContainer] : [];
-  if (this.mode != this.constMode2up) {
-    containerEls = containerEls.concat(this.$(`.pagediv${pageIndex}`).toArray());
-  }
-  return containerEls;
+  return [
+    this._modes.mode2Up.pageContainers[pageIndex]?.$container?.[0],
+    this._modes.mode1Up.mode1UpLit.pageContainerCache[pageIndex]?.$container?.[0],
+    ...(this.mode == this.constModeThumb ? this.$(`.pagediv${pageIndex}`).toArray() : [])
+  ].filter(x => x);
 };
+
+Object.defineProperty(BookReader.prototype, 'activeMode', {
+  /** @return {Mode1Up | Mode2Up | ModeThumb} */
+  get() { return {
+    1: this._modes.mode1Up,
+    2: this._modes.mode2Up,
+    3: this._modes.modeThumb,
+  }[this.mode]; },
+});
 
 /** @deprecated unused outside Mode2Up */
 Object.defineProperty(BookReader.prototype, 'leafEdgeL', {
@@ -551,7 +560,7 @@ BookReader.prototype.init = function() {
     // Note, this scroll event fires for both user, and js generated calls
     // It is functioning in some cases as the primary triggerer for rendering
     e.data.lastScroll = (new Date().getTime());
-    if (e.data.constMode2up != e.data.mode) {
+    if (e.data.constModeThumb == e.data.mode) {
       e.data.drawLeafsThrottled();
     }
   });
@@ -745,7 +754,7 @@ BookReader.prototype.setupKeyListeners = function() {
 
 BookReader.prototype.drawLeafs = function() {
   if (this.constMode1up == this.mode) {
-    this.drawLeafsOnePage();
+    // Not needed for Mode1Up anymore
   } else if (this.constModeThumb == this.mode) {
     this.drawLeafsThumbnail();
   } else {
@@ -1057,6 +1066,10 @@ BookReader.prototype.switchMode = function(
 
   this.prevReadMode = this.getPrevReadMode(this.mode);
 
+  if (this.mode != mode) {
+    this.activeMode.unprepare?.();
+  }
+
   this.mode = mode;
 
   // reinstate scale if moving from thumbnail view
@@ -1069,8 +1082,6 @@ BookReader.prototype.switchMode = function(
 
   // XXX maybe better to preserve zoom in each mode
   if (this.constMode1up == mode) {
-    this.onePageCalculateReductionFactors();
-    this.reduce = this.quantizeReduce(this.reduce, this.onePage.reductionFactors);
     this.prepareOnePageView();
   } else if (this.constModeThumb == mode) {
     this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
@@ -1124,11 +1135,11 @@ BookReader.prototype.isFullscreen = function() {
  * Toggles fullscreen
  * @param { boolean } bindKeyboardControls
  */
-BookReader.prototype.toggleFullscreen = function(bindKeyboardControls = true) {
+BookReader.prototype.toggleFullscreen = async function(bindKeyboardControls = true) {
   if (this.isFullscreen()) {
-    this.exitFullScreen();
+    await this.exitFullScreen();
   } else {
-    this.enterFullscreen(bindKeyboardControls);
+    await this.enterFullscreen(bindKeyboardControls);
   }
 };
 
@@ -1140,7 +1151,7 @@ BookReader.prototype.toggleFullscreen = function(bindKeyboardControls = true) {
  * - fires custom event
  * @param { boolean } bindKeyboardControls
  */
-BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
+BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = true) {
   const currentIndex = this.currentIndex();
   this.refs.$brContainer.css('opacity', 0);
 
@@ -1158,11 +1169,15 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
 
   this.isFullscreenActive = true;
   this.animating = true;
-  this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear',() => {
-    this.resize();
-    this.jumpToIndex(currentIndex);
-    this.animating = false;
-  });
+  await new Promise(res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res));
+  this.resize();
+  if (this.activeMode instanceof Mode1Up) {
+    this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(currentIndex));
+    // Need the new scale to be applied before calling jumpToIndex
+    await this.activeMode.mode1UpLit.requestUpdate();
+  }
+  this.jumpToIndex(currentIndex);
+  this.animating = false;
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   this.trigger(BookReader.eventNames.fullscreenToggled);
@@ -1175,7 +1190,7 @@ BookReader.prototype.enterFullscreen = function(bindKeyboardControls = true) {
  * - fires custom event
  * @param { boolean } bindKeyboardControls
  */
-BookReader.prototype.exitFullScreen = function() {
+BookReader.prototype.exitFullScreen = async function () {
   this.refs.$brContainer.css('opacity', 0);
 
   $(document).unbind('keyup', this._fullscreenCloseHandler);
@@ -1190,10 +1205,16 @@ BookReader.prototype.exitFullScreen = function() {
   this.isFullscreenActive = false;
   this.updateBrClasses();
   this.animating = true;
-  this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', () => {
-    this.resize();
-    this.animating = false;
-  });
+  await new Promise((res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res)));
+  this.resize();
+
+  if (this.activeMode instanceof Mode1Up) {
+    this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(this.currentIndex()));
+    await this.activeMode.mode1UpLit.requestUpdate();
+  }
+
+  this.animating = false;
+
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   this.trigger(BookReader.eventNames.fullscreenToggled);
 };
@@ -1226,11 +1247,9 @@ BookReader.prototype.updateFirstIndex = function(
   index,
   { suppressFragmentChange = false } = {}
 ) {
-  // Called multiple times when defaults contains "mode/1up",
-  // including after init(). Skip fragment change if no index change
-  if (this.firstIndex === index) {
-    suppressFragmentChange = true;
-  }
+  // If there's no change, do nothing
+  if (this.firstIndex === index) return;
+
   this.firstIndex = index;
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
@@ -1395,35 +1414,14 @@ BookReader.prototype.pruneUnusedImgs = function() {
 BookReader.prototype.prepareOnePageView = Mode1Up.prototype.prepare;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'prepare', 'prepareOnePageView');
 /** @deprecated not used outside BookReader */
-BookReader.prototype.drawLeafsOnePage = Mode1Up.prototype.drawLeafs;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'drawLeafs', 'drawLeafsOnePage');
-/** @deprecated not used outside BookReader */
 BookReader.prototype.zoom1up = Mode1Up.prototype.zoom;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'zoom', 'zoom1up');
-/** @deprecated not used outside Mode1Up */
-BookReader.prototype.onePageGetAutofitWidth = Mode1Up.prototype.getAutofitWidth;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitWidth', 'onePageGetAutofitWidth');
-/** @deprecated not used outside Mode1Up, BookReader */
-BookReader.prototype.onePageGetAutofitHeight = Mode1Up.prototype.getAutofitHeight;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getAutofitHeight', 'onePageGetAutofitHeight');
-/** @deprecated not used outside Mode1Up, BookReader */
-BookReader.prototype.onePageGetPageTop = Mode1Up.prototype.getPageTop;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'getPageTop', 'onePageGetPageTop');
-/** @deprecated not used outside Mode1Up, BookReader */
-BookReader.prototype.onePageCalculateReductionFactors = Mode1Up.prototype.calculateReductionFactors;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateReductionFactors', 'onePageCalculateReductionFactors');
 /** @deprecated not used outside Mode1Up, BookReader */
 BookReader.prototype.resizePageView1up = Mode1Up.prototype.resizePageView;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'resizePageView', 'resizePageView1up');
 /** @deprecated not used outside Mode1Up */
 BookReader.prototype.onePageCalculateViewDimensions = Mode1Up.prototype.calculateViewDimensions;
 exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateViewDimensions', 'onePageCalculateViewDimensions');
-/** @deprecated not used outside Mode1Up */
-BookReader.prototype.centerX1up = Mode1Up.prototype.centerX;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerX', 'centerX1up');
-/** @deprecated not used outside Mode1Up */
-BookReader.prototype.centerY1up = Mode1Up.prototype.centerY;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'centerY', 'centerY1up');
 
 /************************/
 /** Mode2Up extensions **/
@@ -1439,9 +1437,6 @@ BookReader.prototype.flipFwdToIndex = Mode2Up.prototype.flipFwdToIndex;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipFwdToIndex', 'flipFwdToIndex');
 BookReader.prototype.setHilightCss2UP = Mode2Up.prototype.setHilightCss;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setHilightCss', 'setHilightCss2UP');
-/** @deprecated not used outside Mode2Up */
-BookReader.prototype.setClickHandler2UP = Mode2Up.prototype.setClickHandler;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setClickHandler', 'setClickHandler2UP');
 /** @deprecated not used outside Mode2Up */
 BookReader.prototype.drawLeafsTwoPage = Mode2Up.prototype.drawLeafs;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'drawLeafs', 'drawLeafsTwoPage');
@@ -1475,9 +1470,6 @@ exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipLeftToRight', 'flipLeft
 /** @deprecated unused outside BookReader, Mode2Up */
 BookReader.prototype.flipRightToLeft = Mode2Up.prototype.flipRightToLeft;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipRightToLeft', 'flipRightToLeft');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.setMouseHandlers2UP = Mode2Up.prototype.setMouseHandlers;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setMouseHandlers', 'setMouseHandlers2UP');
 /** @deprecated unused outside BookReader, Mode2Up */
 BookReader.prototype.prepareFlipLeftToRight = Mode2Up.prototype.prepareFlipLeftToRight;
 exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'prepareFlipLeftToRight', 'prepareFlipLeftToRight');

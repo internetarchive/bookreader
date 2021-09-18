@@ -4,13 +4,17 @@ import 'jquery-ui/ui/effect.js';
 import '../dragscrollable-br.js';
 import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
+import { ModeSmoothZoom } from "./ModeSmoothZoom.js";
+import { HTMLDimensionsCacher } from './utils/HTMLDimensionsCacher.js';
 
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('./options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./PageContainer.js').PageContainer} PageContainer */
+/** @typedef {import('./ModeSmoothZoom').SmoothZoomable} SmoothZoomable */
 
+/** @implements {SmoothZoomable} */
 export class Mode2Up {
   /**
    * @param {BookReader} br
@@ -27,6 +31,25 @@ export class Mode2Up {
 
     /** @type {{ [index: number]: PageContainer }} */
     this.pageContainers = {};
+
+    /** @type {ModeSmoothZoom} */
+    this.smoothZoomer = null;
+    this._scale = 1;
+    this.scaleCenter = { x: 0.5, y: 0.5 };
+  }
+
+  get $container() {
+    return this.br.refs.$brContainer[0];
+  }
+  get $visibleWorld() {
+    return this.br.refs.$brTwoPageView?.[0];
+  }
+
+  get scale() { return this._scale; }
+  set scale(newVal) {
+    this.$visibleWorld.style.transform = `scale(${newVal})`;
+    this.updateViewportOnZoom(newVal, this._scale);
+    this._scale = newVal;
   }
 
   /**
@@ -40,18 +63,6 @@ export class Mode2Up {
     } else if (index > Math.max(this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR)) {
       this.flipFwdToIndex(index);
     }
-  }
-
-  /**
-   * @template T
-   * @param {HTMLElement} element
-   * @param {T} data
-   * @param {function(HTMLElement, { data: T }): void} handler
-   */
-  setClickHandler(element, data, handler) {
-    $(element).unbind('mouseup').bind('mouseup', data, function(e) {
-      handler(this, e);
-    });
   }
 
   /**
@@ -74,7 +85,6 @@ export class Mode2Up {
       .appendTo($twoPageViewEl);
 
     this.displayedIndices = [this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR];
-    this.setMouseHandlers();
     this.br.displayedIndices = this.displayedIndices;
     this.br.updateToolbarZoom(this.br.reduce);
     this.br.trigger('pageChanged');
@@ -176,13 +186,22 @@ export class Mode2Up {
 
     // Add the two page view
     // $$$ Can we get everything set up and then append?
-    const $twoPageViewEl = $('<div class="BRtwopageview"></div>');
-    this.br.refs.$brTwoPageView = $twoPageViewEl;
+    this.br.refs.$brTwoPageView = this.br.refs.$brTwoPageView || $('<div class="BRtwopageview"></div>');
+    const $twoPageViewEl = this.br.refs.$brTwoPageView;
+    $twoPageViewEl.empty();
+    $twoPageViewEl[0].style.transformOrigin = '0 0';
     this.br.refs.$brContainer.append($twoPageViewEl);
 
     // Attaches to first child, so must come after we add the page view
-    this.br.refs.$brContainer.dragscrollable({preventDefault:true});
-    this.br.bindGestures(this.br.refs.$brContainer);
+    this.br.refs.$brContainer.dragscrollable({
+      preventDefault:true,
+      // Only handle mouse events; let browser/HammerJS handle touch
+      dragstart: 'mousedown',
+      dragcontinue: 'mousemove',
+      dragend: 'mouseup',
+    });
+
+    this.attachMouseHandlers();
 
     // $$$ calculate container size first
     this.br.refs?.$brTwoPageView.css(this.mainContainerCss);
@@ -220,6 +239,49 @@ export class Mode2Up {
     this.drawLeafs();
     this.br.updateToolbarZoom(this.br.reduce);
     this.br.updateBrClasses();
+
+    this.smoothZoomer = this.smoothZoomer || new ModeSmoothZoom(this);
+    this.smoothZoomer.attach();
+
+    this.htmlDimensionsCacher = this.htmlDimensionsCacher || new HTMLDimensionsCacher(this.$container);
+  }
+
+  unprepare() {
+    // Mode2Up attaches these listeners to the main BR container, so we need to
+    // detach these or it will cause issues for the other modes.
+    this.smoothZoomer.detach();
+  }
+
+  /**
+   * @param {number} newScale
+   * @param {number} oldScale
+   */
+  updateViewportOnZoom(newScale, oldScale) {
+    const container = this.br.refs.$brContainer[0];
+    const { scrollTop: T, scrollLeft: L } = container;
+    const W = this.htmlDimensionsCacher.clientWidth;
+    const H = this.htmlDimensionsCacher.clientHeight;
+
+    // Scale factor change
+    const F = newScale / oldScale;
+
+    // Where in the viewport the zoom is centered on
+    const XPOS = this.scaleCenter.x;
+    const YPOS = this.scaleCenter.y;
+    const oldCenter = {
+      x: L + XPOS * W,
+      y: T + YPOS * H,
+    };
+    const newCenter = {
+      x: F * oldCenter.x,
+      y: F * oldCenter.y,
+    };
+    container.scrollTop = newCenter.y - YPOS * H;
+    container.scrollLeft = newCenter.x - XPOS * W;
+
+    // Also update the visible page containers to load in highres if necessary
+    this.pageContainers[this.br.twoPage.currentIndexL]?.update({ reduce: this.br.reduce / newScale });
+    this.pageContainers[this.br.twoPage.currentIndexR]?.update({ reduce: this.br.reduce / newScale });
   }
 
   prunePageContainers() {
@@ -655,8 +717,6 @@ export class Mode2Up {
 
         this.resizeSpread();
 
-        this.setMouseHandlers();
-
         if (this.br.animationFinishedCallback) {
           this.br.animationFinishedCallback();
           this.br.animationFinishedCallback = null;
@@ -680,11 +740,11 @@ export class Mode2Up {
   /**
    * @param {PageIndex} index
    */
-  createPageContainer(index, fetch = false) {
+  createPageContainer(index) {
     if (!this.pageContainers[index]) {
       this.pageContainers[index] = this.br._createPageContainer(index);
     }
-    this.pageContainers[index].update({ reduce: this.br.reduce });
+    this.pageContainers[index].update({ reduce: this.br.reduce / this.scale });
     return this.pageContainers[index];
   }
 
@@ -802,8 +862,6 @@ export class Mode2Up {
 
         this.resizeSpread();
 
-        this.setMouseHandlers();
-
         if (this.br.animationFinishedCallback) {
           this.br.animationFinishedCallback();
           this.br.animationFinishedCallback = null;
@@ -823,40 +881,18 @@ export class Mode2Up {
     });
   }
 
-  setMouseHandlers() {
-    /**
-     * @param {HTMLElement} element
-     * @param {JQuery.MouseDownEvent<HTMLElement, { self: Mode2Up, direction: 'R' | 'L'}>} e
-     */
-    const handler = function(element, e) {
-      if (e.which == 3) {
-        // right click
-        return !e.data.self.br.protected;
-      }
-      e.data.self.br.trigger(EVENTS.stop);
-      e.data.self.br[e.data.direction === 'L' ? 'left' : 'right']();
+  attachMouseHandlers() {
+    this.br.refs.$brTwoPageView
+      .off('mouseup').on('mouseup', ev => {
+        if (ev.which == 3) {
+          // right click
+          return !this.br.protected;
+        }
 
-      // Removed event handler for mouse movement, seems not to be needed
-      /*
-      // Changes per WEBDEV-2737
-      BookReader: zoomed-in 2 page view, clicking page should change the page
-      $(element)
-        .mousemove(function() {
-          e.preventDefault();
-        })
-      */
-    };
-
-    this.setClickHandler(
-      this.pageContainers[this.br.twoPage.currentIndexR].$container[0],
-      { self: this, direction: 'R' },
-      handler
-    );
-    this.setClickHandler(
-      this.pageContainers[this.br.twoPage.currentIndexL].$container[0],
-      { self: this, direction: 'L' },
-      handler
-    );
+        const $page = $(ev.target).closest('.BRpagecontainer');
+        if ($page.data('side') == 'L') this.br.left();
+        else if ($page.data('side') == 'R') this.br.right();
+      });
   }
 
   /**

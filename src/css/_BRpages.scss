@@ -17,6 +17,28 @@
   cursor: unset;
 }
 
+.br-mode-1up {
+  display: block;
+  overflow: auto;
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  // This is a performance optimization that basically tells the browser "the size
+  // of this element doesn't depend on the size of its children".
+  contain: strict;
+
+  .br-mode-1up__world {
+    position: absolute;
+    transform-origin: 0 0;
+  }
+  
+  .br-mode-1up__visible-world {
+    position: absolute;
+    transform-origin: 0 0;
+  }
+}
+
 .BRpagecontainer {
   position: relative;
   overflow: hidden;

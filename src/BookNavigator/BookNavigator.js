@@ -76,8 +76,6 @@ export class BookNavigator extends LitElement {
         return;
       }
       this.bookreader.resize();
-      const curIndex = this.bookreader.currentIndex();
-      this.bookreader.jumpToIndex(curIndex);
     }
   }
 

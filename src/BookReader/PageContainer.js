@@ -58,7 +58,7 @@ export class PageContainer {
       backgroundLayers.push(`url("${this.loadingImage}") center/20px no-repeat`);
     }
     if (nextBestLoadedReduce) {
-      backgroundLayers.push(`url("${this.page.getURI(nextBestLoadedReduce, 0)}") center/100% no-repeat`);
+      backgroundLayers.push(`url("${this.page.getURI(nextBestLoadedReduce, 0)}") center/100% 100% no-repeat`);
     }
 
     if (!alreadyLoaded) {

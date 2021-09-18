@@ -41,10 +41,13 @@
   },
   "devDependencies": {
     "@babel/core": "7.15.0",
+    "@babel/plugin-proposal-class-properties": "^7.14.5",
+    "@babel/plugin-proposal-decorators": "^7.14.5",
     "@babel/preset-env": "7.15.0",
     "@open-wc/testing": "^2.5.33",
     "@open-wc/testing-karma": "^4.0.9",
     "@types/jest": "27.0.1",
+    "babel-eslint": "^10.1.0",
     "babel-loader": "8.2.2",
     "codecov": "3.8.3",
     "concurrently": "6.0.2",
@@ -53,6 +56,7 @@
     "eslint": "^7.32.0",
     "eslint-plugin-no-jquery": "^2.6.0",
     "eslint-plugin-testcafe": "0.2.1",
+    "hammerjs": "^2.0.8",
     "http-server": "0.12.3",
     "iso-language-codes": "1.1.0",
     "jest": "27.0.6",
@@ -76,6 +80,9 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(lit-html|lit-element|lit)/)"
+    ],
     "setupFiles": [
       "./src/jquery-wrapper.js"
     ],
@@ -114,7 +121,7 @@
     "test-karma": "npx karma start --coverage",
     "test-karma:watch": "npx karma start --auto-watch=true --single-run=false",
     "DOCS:update:test-deps": "If CI succeeds, these should be good to update",
-    "update:test-deps": "npm i @open-wc/testing@latest @open-wc/testing-karma@latest @types/jest@latest codecov@latest eslint@latest eslint-plugin-testcafe@latest jest@latest karma-coverage@latest sinon@latest testcafe@latest",
+    "update:test-deps": "npm i @open-wc/testing@latest @open-wc/testing-karma@latest @types/jest@latest babel-eslint@latest codecov@latest eslint@latest eslint-plugin-testcafe@latest jest@latest karma-coverage@latest sinon@latest testcafe@latest",
     "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
     "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
     "codecov": "npx codecov"

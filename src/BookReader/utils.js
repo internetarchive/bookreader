@@ -98,16 +98,17 @@ export function encodeURIComponentPlus(value) {
 }
 
 /**
+ * @template {Function} T
  * Returns a function, that, as long as it continues to be invoked, will not
  * be triggered. The function will be called after it stops being called for
  * N milliseconds. If `immediate` is passed, trigger the function on the
  * leading edge, instead of the trailing.
  * @see https://davidwalsh.name/javascript-debounce-function
  *
- * @param {Function} func
+ * @param {T} func
  * @param {number} wait
  * @param {boolean} immediate
- * @return {Function}
+ * @return {T}
  */
 export function debounce(func, wait, immediate) {
   let timeout;
@@ -126,12 +127,13 @@ export function debounce(func, wait, immediate) {
 }
 
 /**
+ * @template T
  * Throttle function
  * @see https://remysharp.com/2010/07/21/throttling-function-calls
- * @param {Function} fn
+ * @param {T} fn
  * @param {number} threshold
  * @param {boolean} delay
- * @return {Function}
+ * @return {T}
  */
 export function throttle(fn, threshold, delay) {
   threshold || (threshold = 250);
@@ -196,4 +198,43 @@ export function calcScreenDPI() {
   const screenDPI = dpi * 1.25;
   // This will return 0 in testing; never want it to be 0!
   return screenDPI == 0 ? 100 : screenDPI;
+}
+
+/**
+ * @param {number[]} nums
+ * @returns {number}
+ */
+export function sum(nums) {
+  return nums.reduce((cur, acc) => cur + acc, 0);
+}
+
+/**
+ * @template T
+ * @param {Generator<T>} gen
+ * @returns {T[]}
+ */
+export function genToArray(gen) {
+  const result = [];
+  for (const item of gen) {
+    result.push(item);
+  }
+  return result;
+}
+
+/**
+ * Check if arrays contain the same elements. Does reference comparison.
+ * @param {Array} arr1
+ * @param {Array} arr2
+ */
+export function arrEquals(arr1, arr2) {
+  return arr1.length == arr2.length && arr1.every((x, i) => x == arr2[i]);
+}
+
+/**
+ * Check if array has changed; namely to be used with lit's property.hasChanged
+ * @param {Array} [arr1]
+ * @param {Array} [arr2]
+ */
+export function arrChanged(arr1, arr2) {
+  return arr1 && arr2 && !arrEquals(arr1, arr2);
 }
