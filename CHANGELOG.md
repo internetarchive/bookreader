@@ -1,3 +1,14 @@
+# 5.0.0-18
+- Dev: Update a number of dependencies @cdrini
+- Dev: Added eslint-plugin-no-jquery @soham4abc
+- Feature: Add continuous pinch zooming for touch screens and trackpads! @cdrini
+    - This is a _big_ change to the codebase. It involved rewriting 1 up mode in LitElement. This means that BookReader now need webcomponents to function.
+    - Breaking changes (unlikely to be used by anyone):
+        - Most Mode1Up Bookreader global functions removed (unlikely to be used): `drawLeafsOnePage`, `onePageGetAutofitWidth`, `onePageGetAutofitHeight`, `onePageGetPageTop`, `onePageCalculateReductionFactors`, `centerX1up`, `centerY1up`
+        - Some Mode2Up cleanups: Removed `setClickHandler2UP`, `setMouseHandlers2UP`
+        - [Web components](https://caniuse.com/custom-elementsv1) now must be supported
+        - Reduction factors options no longer applies to 1up
+
 # 5.0.0-17
 - Fix: focus in a textarea disables keyboard shortcuts @cdrini
 
