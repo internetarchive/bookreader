@@ -30,7 +30,7 @@ export class ModeSmoothZoom {
     this.attached = false;
 
     /** @type {function(function(): void): any} */
-    this.bufferFn = window.requestAnimationFrame;
+    this.bufferFn = window.requestAnimationFrame.bind(window);
 
     // Hammer.js by default set userSelect to None; we don't want that!
     // TODO: Is there any way to do this not globally on Hammer?
