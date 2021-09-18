@@ -12,7 +12,11 @@ function dummy_mode(overrides = {}) {
     $container: document.createElement('div'),
     $visibleWorld: document.createElement('div'),
     scale: 1,
-    updateScaleCenter: sinon.stub(),
+    htmlDimensionsCacher: {
+      clientWidth: 100,
+      clientHeight: 100,
+      boundingClientRect: { left: 0, top: 0 },
+    },
     scaleCenter: {x: 0.5, y: 0.5},
     ...overrides
   };
@@ -61,7 +65,23 @@ describe('ModeSmoothZoom', () => {
     expect(mode.scale).toBe(1);
     msz._pinchMove({ scale: 2, center: { x: 0, y: 0 }});
     expect(mode.scale).toBe(2);
-    expect(mode.updateScaleCenter.callCount).toBe(1);
+  });
+
+  test('updateScaleCenter sets scaleCenter in unitless coordinates', () => {
+    const mode = dummy_mode({
+      htmlDimensionsCacher: {
+        clientWidth: 200,
+        clientHeight: 100,
+        boundingClientRect: {
+          left: 5,
+          top: 50
+        }
+      }
+    });
+    const msz = new ModeSmoothZoom(mode);
+    expect(mode.scaleCenter).toEqual({ x: 0.5, y: 0.5 });
+    msz.updateScaleCenter({ clientX: 85, clientY: 110 });
+    expect(mode.scaleCenter).toEqual({ x: 0.4, y: 0.6 });
   });
 
   test('detaches all listeners', () => {
@@ -112,7 +132,6 @@ describe('ModeSmoothZoom', () => {
       const preventDefaultSpy = sinon.spy(ev, 'preventDefault');
       msz._handleCtrlWheel(ev);
       expect(preventDefaultSpy.callCount).toBe(0);
-      expect(mode.updateScaleCenter.callCount).toBe(0);
       expect(mode.scale).toBe(1);
     });
 
@@ -124,7 +143,6 @@ describe('ModeSmoothZoom', () => {
       const preventDefaultSpy = sinon.spy(ev, 'preventDefault');
       msz._handleCtrlWheel(ev);
       expect(preventDefaultSpy.callCount).toBe(1);
-      expect(mode.updateScaleCenter.callCount).toBe(1);
       expect(mode.scale).not.toBe(1);
     });
   });

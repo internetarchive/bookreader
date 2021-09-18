@@ -560,7 +560,7 @@ BookReader.prototype.init = function() {
     // Note, this scroll event fires for both user, and js generated calls
     // It is functioning in some cases as the primary triggerer for rendering
     e.data.lastScroll = (new Date().getTime());
-    if (e.data.constMode2up != e.data.mode && e.data.constMode1up != e.data.mode) {
+    if (e.data.constModeThumb == e.data.mode) {
       e.data.drawLeafsThrottled();
     }
   });

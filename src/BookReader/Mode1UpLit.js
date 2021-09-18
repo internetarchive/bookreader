@@ -33,7 +33,7 @@ export class Mode1UpLit extends LitElement {
   @property({ type: Array })
   pages = [];
 
-  /** @type {{ [pageIndex: string]: number }} */
+  /** @type {Record<PageIndex, number>} in world coordinates (inches) */
   @property({ type: Object })
   pageTops = {};
 
@@ -59,6 +59,7 @@ export class Mode1UpLit extends LitElement {
 
   /************** VIRTUAL-SCROLLING PROPERTIES **************/
 
+  /** in world coordinates (inches) */
   @property({ type: Object })
   visibleRegion = {
     top: 0,
@@ -75,7 +76,7 @@ export class Mode1UpLit extends LitElement {
   @property({ type: Array })
   renderedPages = [];
 
-  /** @type {{ [pageIndex: string]: PageContainer}} position in inches */
+  /** @type {Record<PageIndex, PageContainer>} position in inches */
   pageContainerCache = {};
 
   /************** WORLD-RELATED PROPERTIES **************/
@@ -118,6 +119,9 @@ export class Mode1UpLit extends LitElement {
   /** Vertical space between/around the pages in inches */
   SPACING_IN = 0.2;
 
+  /** How much to zoom when zoom button pressed */
+  ZOOM_FACTOR = 1.1;
+
   /****************************************/
   /************** PUBLIC API **************/
   /****************************************/
@@ -139,11 +143,11 @@ export class Mode1UpLit extends LitElement {
   }
 
   zoomIn() {
-    this.scale *= 1.1;
+    this.scale *= this.ZOOM_FACTOR;
   }
 
   zoomOut() {
-    this.scale *= 1 / 1.1;
+    this.scale *= 1 / this.ZOOM_FACTOR;
   }
 
   /********************************************/
@@ -201,9 +205,10 @@ export class Mode1UpLit extends LitElement {
     }
     if (changedProps.has('scale')) {
       const oldVal = changedProps.get('scale');
+      // Need to set this scale to actually scale the pages
       this.$visibleWorld.style.transform = `scale(${this.scale})`;
       this.updateViewportOnZoom(this.scale, oldVal);
-
+      // Need to set this scale to update the world size, so the scrollbar gets the correct size
       this.$world.style.transform = `scale(${this.scale})`;
     }
   }
@@ -387,19 +392,6 @@ export class Mode1UpLit extends LitElement {
   }
 
   /************** ZOOMING LOGIC **************/
-
-  /**
-   * @param {object} param0
-   * @param {number} param0.clientX
-   * @param {number} param0.clientY
-   */
-  updateScaleCenter({ clientX, clientY }) {
-    const bc = this.htmlDimensionsCacher.boundingClientRect;
-    this.scaleCenter = {
-      x: (clientX - bc.left) / this.htmlDimensionsCacher.clientWidth,
-      y: (clientY - bc.top) / this.htmlDimensionsCacher.clientHeight,
-    };
-  }
 
   /**
    * @param {number} newScale

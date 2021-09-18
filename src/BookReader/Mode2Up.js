@@ -253,19 +253,6 @@ export class Mode2Up {
   }
 
   /**
-   * @param {object} param0
-   * @param {number} param0.clientX
-   * @param {number} param0.clientY
-   */
-  updateScaleCenter({ clientX, clientY }) {
-    const bc = this.htmlDimensionsCacher.boundingClientRect;
-    this.scaleCenter = {
-      x: (clientX - bc.left) / this.htmlDimensionsCacher.clientWidth,
-      y: (clientY - bc.top) / this.htmlDimensionsCacher.clientHeight,
-    };
-  }
-
-  /**
    * @param {number} newScale
    * @param {number} oldScale
    */

@@ -18,6 +18,7 @@ export class Mode1Up {
     /** @private */
     this.$el = $(this.mode1UpLit).addClass('br-mode-1up BRmode1up');
 
+    /** Has mode1up ever been rendered before? */
     this.everShown = false;
   }
 
@@ -35,6 +36,8 @@ export class Mode1Up {
       .css({ overflow: 'hidden' })
       .append(this.$el);
 
+    // Need this in a setTimeout so that it happens after the browser has _actually_
+    // appended the element to the DOM
     setTimeout(async () => {
       if (!this.everShown) {
         this.mode1UpLit.initFirstRender(startLeaf);

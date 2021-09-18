@@ -1,15 +1,16 @@
 // @ts-check
 import Hammer from "hammerjs";
+/** @typedef {import('./utils/HTMLDimensionsCacher.js').HTMLDimensionsCacher} HTMLDimensionsCacher */
 
 /**
  * @typedef {object} SmoothZoomable
  * @property {HTMLElement} $container
  * @property {HTMLElement} $visibleWorld
  * @property {number} scale
+ * @property {{ x: number, y: number }} scaleCenter
+ * @property {HTMLDimensionsCacher} htmlDimensionsCacher
  * @property {function(): void} [attachScrollListeners]
  * @property {function(): void} [detachScrollListeners]
- * @property {function({ clientX: number, clientY: number}): void} updateScaleCenter
- * @property {{ x: number, y: number }} scaleCenter
  */
 
 /** Manages pinch-zoom, ctrl-wheel, and trackpad pinch smooth zooming. */
@@ -19,7 +20,9 @@ export class ModeSmoothZoom {
     /** @type {SmoothZoomable} */
     this.mode = mode;
 
+    /** Non-null when a scale has been enqueued/is being processed by the buffer function */
     this.pinchMoveFrame = null;
+    /** Promise for the current/enqueued pinch move frame. Resolves when it is complete. */
     this.pinchMoveFramePromise = Promise.resolve();
     this.oldScale = 1;
     /** @type {{ scale: number, center: { x: number, y: number }}} */
@@ -102,7 +105,7 @@ export class ModeSmoothZoom {
 
       // Buffer these events; only update the scale when request animation fires
       this.pinchMoveFrame = this.bufferFn(() => {
-        this.mode.updateScaleCenter({
+        this.updateScaleCenter({
           clientX: this.lastEvent.center.x,
           clientY: this.lastEvent.center.y,
         });
@@ -155,7 +158,20 @@ export class ModeSmoothZoom {
           0.03;
 
     // Zoom around the cursor
-    this.mode.updateScaleCenter(ev);
+    this.updateScaleCenter(ev);
     this.mode.scale *= 1 - Math.sign(ev.deltaY) * zoomMultiplier;
+  }
+
+  /**
+   * @param {object} param0
+   * @param {number} param0.clientX
+   * @param {number} param0.clientY
+   */
+  updateScaleCenter({ clientX, clientY }) {
+    const bc = this.mode.htmlDimensionsCacher.boundingClientRect;
+    this.mode.scaleCenter = {
+      x: (clientX - bc.left) / this.mode.htmlDimensionsCacher.clientWidth,
+      y: (clientY - bc.top) / this.mode.htmlDimensionsCacher.clientHeight,
+    };
   }
 }
