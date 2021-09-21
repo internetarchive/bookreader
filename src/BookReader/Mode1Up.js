@@ -1,6 +1,6 @@
 // @ts-check
-import '../dragscrollable-br.js';
 import { Mode1UpLit } from './Mode1UpLit.js';
+import { DragScrollable } from './DragScrollable.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
@@ -43,7 +43,7 @@ export class Mode1Up {
         this.mode1UpLit.initFirstRender(startLeaf);
         this.everShown = true;
         await this.mode1UpLit.requestUpdate();
-        $(this.mode1UpLit).dragscrollable({
+        new DragScrollable(this.mode1UpLit, {
           preventDefault: true,
           dragSelector: '.br-mode-1up__visible-world',
           // Only handle mouse events; let browser/HammerJS handle touch
