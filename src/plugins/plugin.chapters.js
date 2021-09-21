@@ -37,11 +37,9 @@ BookReader.prototype.init = (function(super_) {
           }
         }
       );
-      $(".BRmobileMenu__tableContents").click(
-        () => {
-          this.updateTOCState(this.firstIndex, this._tocEntries);
-        }
-      );
+      $(".BRmobileMenu__tableContents").on("click", () => {
+        this.updateTOCState(this.firstIndex, this._tocEntries);
+      });
     }
   };
 })(BookReader.prototype.init);
@@ -79,7 +77,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
       .css({ left: percentThrough })
       .appendTo(this.$('.BRnavline'))
       .data({ pageIndex })
-      .hover(event => {
+      .on("mouseenter", event => {
         // remove hover effect from other markers then turn on just for this
         const marker = event.currentTarget;
         const tooltip = marker.querySelector('div');
@@ -91,9 +89,8 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         }
         this.$('.BRsearch,.BRchapter').removeClass('front');
         $(event.target).addClass('front');
-      },
-      event => $(event.target).removeClass('front')
-      )
+      })
+      .on("mouseleave", event => $(event.target).removeClass('front'))
       .on('click', jumpToChapter);
 
     //adding clickable properties to mobile chapters
@@ -162,9 +159,9 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
   this.addChapter(chapterStr, tocEntryObject['pagenum'], tocEntryObject.pageIndex);
   this.$('.BRchapter, .BRsearch').each((i, el) => {
     const $el = $(el);
-    $el.hover(
-      () => $el.addClass('front'),
-      () => $el.removeClass('front'));
+    $el
+      .on("mouseenter", () => $el.addClass('front'))
+      .on("mouseleave", () => $el.removeClass('front'));
   });
 };
 

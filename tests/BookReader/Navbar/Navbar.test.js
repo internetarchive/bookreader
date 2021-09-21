@@ -97,9 +97,9 @@ describe('Navbar controls overrides', () => {
     const $viewMode = navbar.$root.find('.viewmode');
 
     expect($viewMode.find('.icon-thumb').length).toBe(1);
-    $viewMode.click();
+    $viewMode.trigger("click");
     expect($viewMode.find('.icon-twopg').length).toBe(1);
-    $viewMode.click();
+    $viewMode.trigger("click");
     expect($viewMode.find('.icon-thumb').length).toBe(1);
   });
 

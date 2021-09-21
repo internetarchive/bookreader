@@ -37,6 +37,10 @@ module.exports = {
     }],
     "no-console": "off", // Used too often behind `debug` options; not dealing with this now
     "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-jquery/no-bind": ["error"],
+    "no-jquery/no-event-shorthand": ["error"],
+    "no-jquery/no-sizzle": ["error"],
+    "no-jquery/no-trim": ["error"],
     "no-trailing-spaces": ["error"],
     "no-unused-vars": ["error", { "vars": "all", "args": "none", "ignoreRestSiblings": false }], // set args:none; this is generally more annoying than useful
     "no-var": ["error"],

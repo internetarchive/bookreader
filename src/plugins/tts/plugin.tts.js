@@ -153,11 +153,11 @@ BookReader.prototype.initNavbar = (function (super_) {
       `);
       $el.find('.BRcontrols').prepend(this.refs.$BRReadAloudToolbar);
       this.ttsEngine.events.on('pause resume start', () => this.ttsUpdateState());
-      this.refs.$BRReadAloudToolbar.find('[name=play]').click(this.ttsPlayPause.bind(this));
-      this.refs.$BRReadAloudToolbar.find('[name=advance]').click(this.ttsJumpForward.bind(this));
-      this.refs.$BRReadAloudToolbar.find('[name=review]').click(this.ttsJumpBackward.bind(this));
+      this.refs.$BRReadAloudToolbar.find('[name=play]').on("click", this.ttsPlayPause.bind(this));
+      this.refs.$BRReadAloudToolbar.find('[name=advance]').on("click", this.ttsJumpForward.bind(this));
+      this.refs.$BRReadAloudToolbar.find('[name=review]').on("click", this.ttsJumpBackward.bind(this));
       const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="playback-speed"]');
-      $rateSelector.change(ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
+      $rateSelector.on("change", ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
       $(`<li>
           <button class="BRicon read js-tooltip" title="${tooltips.readAloud}">
             <div class="icon icon-read-aloud"></div>

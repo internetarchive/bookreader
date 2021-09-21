@@ -212,7 +212,7 @@ export class Toolbar {
     $form.appendTo($shareDiv);
 
     $form.find('.fieldset-embed input').on('change', event => {
-      const form = $(event.target).parents('form:first');
+      const form = $(event.target).parents('form').first();
       const params = {};
       params.mode = $(form.find('.fieldset-embed input[name=pages]:checked')).val();
       if (form.find('.fieldset-embed input[name=thispage]').prop('checked')) {
@@ -232,12 +232,12 @@ export class Toolbar {
     // Bind share buttons
 
     // Use url without hashes
-    $form.find('.facebook-share-button').click(() => {
+    $form.find('.facebook-share-button').on("click", () => {
       const params = $.param({ u: this._getSocialShareUrl() });
       const url = 'https://www.facebook.com/sharer.php?' + params;
       createPopup(url, 600, 400, 'Share');
     });
-    $form.find('.twitter-share-button').click(() => {
+    $form.find('.twitter-share-button').on("click", () => {
       const params = $.param({
         url: this._getSocialShareUrl(),
         text: br.bookTitle
@@ -245,7 +245,7 @@ export class Toolbar {
       const url = 'https://twitter.com/intent/tweet?' + params;
       createPopup(url, 600, 400, 'Share');
     });
-    $form.find('.email-share-button').click(() => {
+    $form.find('.email-share-button').on("click", () => {
       const body = `${br.bookTitle}\n\n${this._getSocialShareUrl()}`;
       window.location.href = `mailto:?subject=${encodeURI(br.bookTitle)}&body=${encodeURI(body)}`;
     });
