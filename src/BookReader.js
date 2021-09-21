@@ -688,7 +688,7 @@ BookReader.prototype.setupKeyListeners = function() {
   var KEY_NUMPAD_ADD = 107;
 
   // We use document here instead of window to avoid a bug in jQuery on IE7
-  $(document).keydown(function(e) {
+  $(document).on("keydown", function(e) {
 
     // Keyboard navigation
     switch (e.keyCode) {
@@ -1158,7 +1158,7 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
     this._fullscreenCloseHandler = (e) => {
       if (e.keyCode === 27) this.toggleFullscreen();
     };
-    $(document).keyup(this._fullscreenCloseHandler);
+    $(document).on("keyup", this._fullscreenCloseHandler);
   }
 
   const windowWidth = $(window).width();
@@ -1738,24 +1738,28 @@ BookReader.prototype.bindNavigationHandlers = function() {
       });
     }
   );
-  $brNavCntlBtmEl.mouseover(function() {
-    if ($(this).hasClass('BRup')) {
-      self.$('.BRnavCntl').animate({opacity:1},250);
-    }
-  }).mouseleave(function() {
-    if ($(this).hasClass('BRup')) {
-      self.$('.BRnavCntl').animate({opacity:.75},250);
-    }
-  });
-  $brNavCntlTopEl.mouseover(function() {
-    if ($(this).hasClass('BRdn')) {
-      self.$('.BRnavCntl').animate({opacity:1},250);
-    }
-  }).mouseleave(function() {
-    if ($(this).hasClass('BRdn')) {
-      self.$('.BRnavCntl').animate({opacity:.75},250);
-    }
-  });
+  $brNavCntlBtmEl
+    .on("mouseover", function() {
+      if ($(this).hasClass('BRup')) {
+        self.$('.BRnavCntl').animate({opacity:1},250);
+      }
+    })
+    .on("mouseleave", function() {
+      if ($(this).hasClass('BRup')) {
+        self.$('.BRnavCntl').animate({opacity:.75},250);
+      }
+    });
+  $brNavCntlTopEl
+    .on("mouseover", function() {
+      if ($(this).hasClass('BRdn')) {
+        self.$('.BRnavCntl').animate({opacity:1},250);
+      }
+    })
+    .on("mouseleave", function() {
+      if ($(this).hasClass('BRdn')) {
+        self.$('.BRnavCntl').animate({opacity:.75},250);
+      }
+    });
 
   this.initSwipeData();
 

@@ -19,7 +19,7 @@ export class DebugConsole {
     </form>`);
     this.$log.append(this.$form);
 
-    this.$form.submit(ev => {
+    this.$form.on("submit", ev => {
       ev.preventDefault();
       const result = eval(this.$form.find('input').val());
       this.logToScreen([result]);

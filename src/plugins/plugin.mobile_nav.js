@@ -86,15 +86,16 @@ BookReader.prototype.initToolbar = (function (super_) {
       });
 
       //apply filters when checkboxs clicked
-      $drawerEl.find('.BRcheckbox-filters').click(() => applyFilters($drawerEl, this));
+      $drawerEl.find('.BRcheckbox-filters')
+        .on("click", () => applyFilters($drawerEl, this));
 
       // Bind mobile switch buttons
-      $drawerEl.find('.DrawerLayoutButton.one_page_mode').click(
-        () => this.switchMode(this.constMode1up));
-      $drawerEl.find('.DrawerLayoutButton.two_page_mode').click(
-        () => this.switchMode(this.constMode2up));
-      $drawerEl.find('.DrawerLayoutButton.thumbnail_mode').click(
-        () => this.switchMode(this.constModeThumb));
+      $drawerEl.find('.DrawerLayoutButton.one_page_mode')
+        .on("click", () => this.switchMode(this.constMode1up));
+      $drawerEl.find('.DrawerLayoutButton.two_page_mode')
+        .on("click", () => this.switchMode(this.constMode2up));
+      $drawerEl.find('.DrawerLayoutButton.thumbnail_mode')
+        .on("click", () => this.switchMode(this.constModeThumb));
 
       if (this.mobileNavFullscreenOnly) {
         $(document.body).addClass('BRbodyMobileNavEnabledFullscreen');
