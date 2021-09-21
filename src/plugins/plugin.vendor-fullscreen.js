@@ -233,8 +233,8 @@ export function bindFullscreenChangeListener(
     'moz',
     'ms'
   ];
-  const all_events = $.trim(event + vendor_prefixes.join(event) + event);
-  $(document).bind(all_events, data, fullscreenchangeListener);
+  const all_events = (event + vendor_prefixes.join(event) + event).trim();
+  $(document).on(all_events, data, fullscreenchangeListener);
 }
 
 /**

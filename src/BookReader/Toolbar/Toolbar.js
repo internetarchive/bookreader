@@ -212,7 +212,7 @@ export class Toolbar {
     $form.appendTo($shareDiv);
 
     $form.find('.fieldset-embed input').on('change', event => {
-      const form = $(event.target).parents('form:first');
+      const form = $(event.target).parents('form').first();
       const params = {};
       params.mode = $(form.find('.fieldset-embed input[name=pages]:checked')).val();
       if (form.find('.fieldset-embed input[name=thispage]').prop('checked')) {
