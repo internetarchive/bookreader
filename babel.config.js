@@ -3,7 +3,7 @@ module.exports = {
     [
       "@babel/preset-env",
       {
-        targets: "> 2%, ie 11, edge 14, samsung > 9, OperaMini all, UCAndroid > 12",
+        targets: "> 2%, ie 11, edge 14, samsung > 9, OperaMini all, UCAndroid > 12, Safari >= 9",
         useBuiltIns: "usage",
         corejs: 3
       }
