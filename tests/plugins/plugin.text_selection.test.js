@@ -136,10 +136,10 @@ describe("Generic tests", () => {
     const $container = br.refs.$brContainer;
     br.textSelectionPlugin.stopPageFlip($container);
     const currIndex = br.currentIndex();
-    $container.find("BRwordElement").mousedown();
+    $container.find("BRwordElement").trigger("mousedown");
     // Waits for long press
     setTimeout(() => {
-      $container.find("BRwordElement").mousedown();
+      $container.find("BRwordElement").trigger("mousedown");
       // Waits for flipping animation
       setTimeout(() => {
         expect(br.currentIndex()).toBe(currIndex);

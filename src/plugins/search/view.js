@@ -260,23 +260,22 @@ class SearchView {
         `)
         .data({ pageIndex })
         .appendTo(this.br.$('.BRnavline'))
-        .hover(
-          (event) => {
-            // remove from other markers then turn on just for this
-            // XXX should be done when nav slider moves
-            const marker = event.currentTarget;
-            const tooltip = marker.querySelector('.BRquery');
-            const tooltipOffset = tooltip.getBoundingClientRect();
-            const targetOffset = marker.getBoundingClientRect();
-            const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
-            if (tooltipOffset.x - boxSizeAdjust < 0) {
-              tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
-            }
-            $('.BRsearch,.BRchapter').removeClass('front');
-            $(event.target).addClass('front');
-          },
-          (event) => $(event.target).removeClass('front'))
-        .click(function (event) {
+        .on("mouseenter", (event) => {
+          // remove from other markers then turn on just for this
+          // XXX should be done when nav slider moves
+          const marker = event.currentTarget;
+          const tooltip = marker.querySelector('.BRquery');
+          const tooltipOffset = tooltip.getBoundingClientRect();
+          const targetOffset = marker.getBoundingClientRect();
+          const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
+          if (tooltipOffset.x - boxSizeAdjust < 0) {
+            tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
+          }
+          $('.BRsearch,.BRchapter').removeClass('front');
+          $(event.target).addClass('front');
+        })
+        .on("mouseleave", (event) => $(event.target).removeClass('front'))
+        .on("click", function (event) {
           // closures are nested and deep, using an arrow function breaks references.
           // Todo: update to arrow function & clean up closures
           // to remove `bind` dependency

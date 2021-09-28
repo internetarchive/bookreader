@@ -60,7 +60,7 @@ describe('Plugin: Mobile Nav', () => {
   });
   test('clicking on hamburger opens menu', () => {
     expect($('html').hasClass('mm-opened')).toEqual(false);
-    $('.BRmobileHamburger').click();
+    $('.BRmobileHamburger').trigger("click");
     expect($('html').hasClass('mm-opened')).toEqual(true);
   });
 });

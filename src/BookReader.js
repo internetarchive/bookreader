@@ -555,7 +555,7 @@ BookReader.prototype.init = function() {
   this.setupKeyListeners();
 
   this.lastScroll = (new Date().getTime());
-  this.refs.$brContainer.bind('scroll', this, function(e) {
+  this.refs.$brContainer.on('scroll', this, function(e) {
     // Note, this scroll event fires for both user, and js generated calls
     // It is functioning in some cases as the primary triggerer for rendering
     e.data.lastScroll = (new Date().getTime());
@@ -565,7 +565,7 @@ BookReader.prototype.init = function() {
   });
 
   if (this.options.autoResize) {
-    $(window).bind('resize', this, function(e) {
+    $(window).on('resize', this, function(e) {
       e.data.resize();
     });
     $(window).on("orientationchange", this, function(e) {
@@ -609,11 +609,11 @@ BookReader.prototype.trigger = function(name, props = this) {
 };
 
 BookReader.prototype.bind = function(name, callback) {
-  $(document).bind('BookReader:' + name, callback);
+  $(document).on('BookReader:' + name, callback);
 };
 
 BookReader.prototype.unbind = function(name, callback) {
-  $(document).unbind('BookReader:' + name, callback);
+  $(document).off('BookReader:' + name, callback);
 };
 
 /**
@@ -688,7 +688,7 @@ BookReader.prototype.setupKeyListeners = function() {
   var KEY_NUMPAD_ADD = 107;
 
   // We use document here instead of window to avoid a bug in jQuery on IE7
-  $(document).keydown(function(e) {
+  $(document).on("keydown", function(e) {
 
     // Keyboard navigation
     switch (e.keyCode) {
@@ -1158,7 +1158,7 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
     this._fullscreenCloseHandler = (e) => {
       if (e.keyCode === 27) this.toggleFullscreen();
     };
-    $(document).keyup(this._fullscreenCloseHandler);
+    $(document).on("keyup", this._fullscreenCloseHandler);
   }
 
   const windowWidth = $(window).width();
@@ -1192,7 +1192,7 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
 BookReader.prototype.exitFullScreen = async function () {
   this.refs.$brContainer.css('opacity', 0);
 
-  $(document).unbind('keyup', this._fullscreenCloseHandler);
+  $(document).off('keyup', this._fullscreenCloseHandler);
 
   var windowWidth = $(window).width();
 
@@ -1738,24 +1738,28 @@ BookReader.prototype.bindNavigationHandlers = function() {
       });
     }
   );
-  $brNavCntlBtmEl.mouseover(function() {
-    if ($(this).hasClass('BRup')) {
-      self.$('.BRnavCntl').animate({opacity:1},250);
-    }
-  }).mouseleave(function() {
-    if ($(this).hasClass('BRup')) {
-      self.$('.BRnavCntl').animate({opacity:.75},250);
-    }
-  });
-  $brNavCntlTopEl.mouseover(function() {
-    if ($(this).hasClass('BRdn')) {
-      self.$('.BRnavCntl').animate({opacity:1},250);
-    }
-  }).mouseleave(function() {
-    if ($(this).hasClass('BRdn')) {
-      self.$('.BRnavCntl').animate({opacity:.75},250);
-    }
-  });
+  $brNavCntlBtmEl
+    .on("mouseover", function() {
+      if ($(this).hasClass('BRup')) {
+        self.$('.BRnavCntl').animate({opacity:1},250);
+      }
+    })
+    .on("mouseleave", function() {
+      if ($(this).hasClass('BRup')) {
+        self.$('.BRnavCntl').animate({opacity:.75},250);
+      }
+    });
+  $brNavCntlTopEl
+    .on("mouseover", function() {
+      if ($(this).hasClass('BRdn')) {
+        self.$('.BRnavCntl').animate({opacity:1},250);
+      }
+    })
+    .on("mouseleave", function() {
+      if ($(this).hasClass('BRdn')) {
+        self.$('.BRnavCntl').animate({opacity:.75},250);
+      }
+    });
 
   this.initSwipeData();
 
@@ -1832,13 +1836,13 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
     return !self.protected;
   }
 
-  $(event.target).bind('mouseout.swipe',
+  $(event.target).on('mouseout.swipe',
     { 'br': self},
     self.swipeMouseupHandler
-  ).bind('mouseup.swipe',
+  ).on('mouseup.swipe',
     { 'br': self},
     self.swipeMouseupHandler
-  ).bind('mousemove.swipe',
+  ).on('mousemove.swipe',
     { 'br': self },
     self.swipeMousemoveHandler
   );
@@ -1908,7 +1912,7 @@ BookReader.prototype.swipeMouseupHandler = function(event) {
   _swipe.mightBeSwiping = false;
   _swipe.mightBeDragging = false;
 
-  $(event.target).unbind('mouseout.swipe').unbind('mouseup.swipe').unbind('mousemove.swipe');
+  $(event.target).off('mouseout.swipe').off('mouseup.swipe').off('mousemove.swipe');
 
   if (_swipe.didSwipe || _swipe.didDrag) {
     // Swallow event if completed swipe gesture
@@ -1924,17 +1928,18 @@ BookReader.prototype.bindMozTouchHandlers = function() {
   var self = this;
 
   // Currently only want touch handlers in 2up
-  this.refs.$br.bind('MozTouchDown', function(event) {
-    if (this.mode == self.constMode2up) {
-      event.preventDefault();
-    }
-  })
-    .bind('MozTouchMove', function(event) {
+  this.refs.$br
+    .on('MozTouchDown', function(event) {
       if (this.mode == self.constMode2up) {
         event.preventDefault();
       }
     })
-    .bind('MozTouchUp', function(event) {
+    .on('MozTouchMove', function(event) {
+      if (this.mode == self.constMode2up) {
+        event.preventDefault();
+      }
+    })
+    .on('MozTouchUp', function(event) {
       if (this.mode == self.constMode2up) {
         event.preventDefault();
       }
