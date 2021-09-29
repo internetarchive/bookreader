@@ -33,6 +33,9 @@ const books = {
 
 export default class VolumesProvider {
 
+  /**
+   * @param {import('../../BookReader').default} bookreader
+   */
   constructor(baseHost, bookreader, optionChange) {
     this.optionChange = optionChange;
     this.component = document.createElement("viewable-files");
@@ -41,6 +44,7 @@ export default class VolumesProvider {
     this.viewableFiles = Object.keys(files).map(item => files[item]);
     this.volumeCount = Object.keys(files).length;
 
+    /** @type {import('../../BookReader').default} */
     this.bookreader = bookreader;
 
     this.component.subPrefix = bookreader.options.subPrefix || "";
@@ -91,6 +95,8 @@ export default class VolumesProvider {
 
 
     console.log('this.bookreader: ', this.bookreader);
+
+    this.bookreader.urlPlugin?.setUrlParam('mode', '1up');
     this.multipleFilesClicked(sortByType);
   }
 

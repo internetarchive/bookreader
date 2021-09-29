@@ -1,6 +1,6 @@
-
+// npx jest --coverage --watch <path file>
 import BookReader from '../../src/BookReader.js';
-import '../../src/plugins/plugin.url.js';
+import { UrlPlugin } from '../../src/plugins/plugin.url.js';
 
 let br;
 beforeAll(() => {
@@ -10,6 +10,30 @@ beforeAll(() => {
 
 afterEach(() => {
   jest.clearAllMocks();
+});
+
+describe.only('UrlPlugin', () => {
+  test('urlStateToUrlString', () => {
+    const urlPlugin = new UrlPlugin();
+    const f = urlPlugin.urlStateToUrlString.bind(urlPlugin);
+
+    expect(f({ page: '3' })).toBe('page/3');
+  });
+
+  test('urlStringToUrlState', () => {
+    const urlPlugin = new UrlPlugin();
+    const f = urlPlugin.urlStateToUrlString.bind(urlPlugin);
+
+    expect(f('page/3')).toBe({page: '3'});
+  });
+
+  test('pullFromAddressBar hash mode', () => {
+    const urlPlugin = new UrlPlugin();
+    urlPlugin.mode = 'hash';
+
+    urlPlugin.pullFromAddressBar('#page/3', '?q=hello');
+    expect(urlPlugin.urlState).toBe({page: '3'});
+  });
 });
 
 describe('Plugin: URL controller', () => {

@@ -280,7 +280,7 @@ export class BookreaderWithTextSelection extends BookReader {
    * @param {number} index
    */
   _createPageContainer(index) {
-    console.log('bookreader text selection createpage container index: ', index);
+    console.log('bookreader text selection createpage container index:L ', index);
     const pageContainer = super._createPageContainer(index);
     // Disable if thumb mode; it's too janky
     // .page can be null for "pre-cover" region

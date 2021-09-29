@@ -64,6 +64,10 @@ if (location.toString().indexOf('_debugShowConsole=true') != -1) {
  */
 export default function BookReader(overrides = {}) {
   const options = jQuery.extend(true, {}, BookReader.defaultOptions, overrides, BookReader.optionOverrides);
+
+  /** @type {import('./plugins/plugin.url').UrlPlugin | null} */
+  this.urlPlugin = null;
+
   this.setup(options);
 }
 

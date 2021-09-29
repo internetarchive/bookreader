@@ -213,23 +213,21 @@ export class UrlPlugin {
       { name: 'admin', position: 'query_param' },
     ];
 
+    this.urlState = {
+      'page': 'n7',
+      'mode': '2up',
+      'q': 'hello',
+    };
     this.readURL();
   }
 
   readURL() {
     // console.log('thisUrlSchema: ', this.urlSchema);
-    // console.log('hash: ', window.location.hash);
+    console.log('location: ', window.location);
     // console.log('query: ', window.location.search);
-    const urlState = {
-      'page': 'n7',
-      'mode': '2up',
-      'q': 'hello',
-      'admin': '1',
-      'sortOrder': 'asc'
-    };
 
-    const urlString = '/page/n7?q=hello&sort=title_asc';
-    this.urlStateToUrlString(urlState);
+    const urlString = window.location; // '/page/n7?q=hello&sort=title_asc';
+    this.urlStateToUrlString(this.urlState);
     this.urlStringToUrlState(urlString);
 
     // this.debouncedPushToAddressBar = debounce(this.pushToAddressBar.bind(this), 100);
@@ -272,17 +270,21 @@ export class UrlPlugin {
   urlStringToUrlState(state) {
     console.log('url string to url state: ', state);
 
+    const urlString = new URL(state);
+    console.log('urlString: ', urlString.pathname);
     // build query string state object
-    const queryString = state.substr(state.indexOf('?'), state.length);
-    const searchParamsObj = Object.fromEntries(new URLSearchParams(queryString));
+    // const queryString = state.substr(state.indexOf('?'), state.length);
+    const searchParamsObj = Object.fromEntries(new URLSearchParams(state));
     console.log('searchParams: ', searchParamsObj);
   }
 
   setUrlParam(key, val) {
+    // add/append or update if exists the key-value to the state
     console.log('setUrlparam: ', key, ' val: ', val);
   }
 
   removeUrlParam(key) {
+    // remove key-value to the URL
     console.log('remove url param key: ', key);
   }
 
@@ -303,11 +305,15 @@ export class UrlPlugin {
     // this.br.trigger('fragmentChange');
   }
 
-  pullFromAddressBar() {
+  /**
+   * @param {string} hash
+   * @param {string} fullUrl
+   */
+  pullFromAddressBar(hash = window.location.hash, fullUrl = window.location) {
     if (this.mode == 'history') {
       // Also need to read hash url, and combine the states from the
-      const mainUrlState = this.urlStringToUrlState(window.location);
-      const hashUrlState = this.urlStringToUrlState(window.location.hash.slice(1));
+      const mainUrlState = this.urlStringToUrlState(fullUrl.location);
+      const hashUrlState = this.urlStringToUrlState(hash.slice(1));
 
       console.log('mainUrlState: ', mainUrlState);
       console.log('hashUrlState: ', hashUrlState);
