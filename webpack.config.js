@@ -16,7 +16,7 @@ const shared = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules\/(?!(lit-element|lit-html)\/).*/,
+        exclude: /node_modules[/\\](?!(lit-element|lit-html)[/\\]).*/,
         loader: "babel-loader",
       }
     ]
