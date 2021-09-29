@@ -263,7 +263,9 @@ export class TextSelectionPlugin {
 
 export class BookreaderWithTextSelection extends BookReader {
   init() {
+    console.log('bookreader text selection init');
     const options = Object.assign({}, DEFAULT_OPTIONS, this.options.plugins.textSelection);
+    console.log('bookreader text selection options: ', options);
     if (options.enabled) {
       this.textSelectionPlugin = new TextSelectionPlugin(options, this.options.vars);
       // Write this back; this way the plugin is the source of truth, and BR just
@@ -278,6 +280,7 @@ export class BookreaderWithTextSelection extends BookReader {
    * @param {number} index
    */
   _createPageContainer(index) {
+    console.log('bookreader text selection createpage container index: ', index);
     const pageContainer = super._createPageContainer(index);
     // Disable if thumb mode; it's too janky
     // .page can be null for "pre-cover" region

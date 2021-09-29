@@ -153,14 +153,14 @@ BookReader.prototype.urlUpdateFragment = function() {
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
       window.history.replaceState({}, null, newUrlPath);
       this.oldLocationHash = newFragment + newQueryString;
-
     }
   } else {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
     window.location.replace('#' + newFragment + newQueryStringSearch);
     this.oldLocationHash = newFragment + newQueryStringSearch;
-
   }
+
+  console.log('thisOldLocationHash: ', this.oldLocationHash);
 };
 
 /**
@@ -196,3 +196,149 @@ BookReader.prototype.urlReadFragment = function() {
 BookReader.prototype.urlReadHashFragment = function() {
   return window.location.hash.substr(1);
 };
+
+
+export class UrlPlugin {
+
+  constructor() {
+    console.log('url plugin constructor');
+
+    this.urlSchema = [
+      { name: 'page', position: 'path', default: 'n0' },
+      { name: 'mode', position: 'path' },
+      { name: 'search', position: 'path', deprecated_for: 'q' },
+      { name: 'q', position: 'query_param' },
+      { name: 'sort', position: 'query_param' },
+      { name: 'view', position: 'query_param' },
+      { name: 'admin', position: 'query_param' },
+    ];
+
+    this.readURL();
+  }
+
+  readURL() {
+    // console.log('thisUrlSchema: ', this.urlSchema);
+    // console.log('hash: ', window.location.hash);
+    // console.log('query: ', window.location.search);
+    const urlState = {
+      'page': 'n7',
+      'mode': '2up',
+      'q': 'hello',
+      'admin': '1',
+      'sortOrder': 'asc'
+    };
+
+    const urlString = '/page/n7?q=hello&sort=title_asc';
+    this.urlStateToUrlString(urlState);
+    this.urlStringToUrlState(urlString);
+
+    // this.debouncedPushToAddressBar = debounce(this.pushToAddressBar.bind(this), 100);
+  }
+
+  /**
+   * Parse JSON object URL state to string format
+   * @param {object} state
+   */
+  urlStateToUrlString(state) {
+    console.log('url state to string');
+    let strPathParams = '';
+    const searchParams = new URLSearchParams();
+    console.log('state: ', state);
+
+    Object.keys(state).map(key => {
+      const schema = this.urlSchema.filter(schema => schema.name === key)[0];
+      if (schema) {
+        if (schema.position == 'path') {
+          strPathParams = `${strPathParams}/${key}/${state[key]}`;
+        } else if (schema.position == 'query_param') {
+          searchParams.append(key, state[key]);
+        } else {
+          console.log('could be something else');
+        }
+      } else {
+        console.log('not a valid url schema');
+      }
+    });
+    console.log(`combined: ${strPathParams}?${searchParams.toString()}`);
+  }
+
+  // urlStringToUrlState('/page/n7') == {'page': 'n7'}
+  // urlStringToUrlState('/page/n7?q=hello') == {'page': 'n7', 'q': 'hello'}
+  // urlStringToUrlState('/path/n7?admin=1') == {'page': 'n7', 'admin': '1'}
+  /**
+   * Parse string URL state to JSON object format
+   * @param {string} state
+   */
+  urlStringToUrlState(state) {
+    console.log('url string to url state: ', state);
+
+    // build query string state object
+    const queryString = state.substr(state.indexOf('?'), state.length);
+    const searchParamsObj = Object.fromEntries(new URLSearchParams(queryString));
+    console.log('searchParams: ', searchParamsObj);
+  }
+
+  setUrlParam(key, val) {
+    console.log('setUrlparam: ', key, ' val: ', val);
+  }
+
+  removeUrlParam(key) {
+    console.log('remove url param key: ', key);
+  }
+
+  getUrlParam(key) {
+    console.log('get url param key: ', key);
+  }
+
+  pushToAddressBar() {
+    // const newPath = this.urlStateToUrlString(this.urlState);
+    // if (this.curPath == newPath) return;
+    if (this.mode == 'history') {
+      // window.history.replaceState(...)
+      // window.location.hash = '';
+    } else {
+      // window.location.replace('#' + str);
+    }
+    // this.curPath = newPath;
+    // this.br.trigger('fragmentChange');
+  }
+
+  pullFromAddressBar() {
+    if (this.mode == 'history') {
+      // Also need to read hash url, and combine the states from the
+      const mainUrlState = this.urlStringToUrlState(window.location);
+      const hashUrlState = this.urlStringToUrlState(window.location.hash.slice(1));
+
+      console.log('mainUrlState: ', mainUrlState);
+      console.log('hashUrlState: ', hashUrlState);
+      // combine the two objects
+      // this.urlState = combine(...);
+    } else {
+      console.log('mode hash');
+    }
+  }
+
+  listenForHashChanges() {
+    console.log('listen for hash changes');
+  }
+}
+
+export class BookreaderUrlPlugin extends BookReader {
+
+  init() {
+    console.log('bookreader urlplugin init');
+    console.log('urlReadHashFragment: ', this.urlReadHashFragment());
+    console.log('urlReadFragment: ', this.urlReadFragment());
+    super.init();
+
+    console.log('bookreader url plugin', this.options.enableUrlPlugin);
+    if (this.options.enableUrlPlugin) {
+      console.log('do mods for URL');
+      this.urlPlugin = new UrlPlugin();
+    }
+  }
+
+}
+
+window.BookReader = BookreaderUrlPlugin;
+export default BookreaderUrlPlugin;

@@ -141,8 +141,11 @@ export class BookNavigator extends LitElement {
     };
 
     // add shortcut for volumes if multipleBooksList exists
+    this.bookreader.options.enableMultipleBooks = true;
     if (this.bookreader.options.enableMultipleBooks) {
       this.menuProviders.volumes = new VolumesProvider(this.baseHost, this.bookreader, (brInstance) => {
+
+        console.log('booknavigator testing: ', brInstance);
         if (brInstance) {
           /* refresh br instance reference */
           this.bookreader = brInstance;

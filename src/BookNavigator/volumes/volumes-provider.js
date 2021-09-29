@@ -7,15 +7,41 @@ import volumesIcon from '../assets/icon_volumes.js';
 
 import './volumes.js';
 
+const books = {
+  "/details/SubBookTest": {
+    "url_path": "/details/SubBookTest",
+    "file_subprefix": "book1/GPORFP",
+    "orig_sort": 1,
+    "title": "book1/GPORFP.pdf",
+    "file_source": "/book1/GPORFP_jp2.zip"
+  },
+  "/details/SubBookTest/subdir/book2/brewster_kahle_internet_archive": {
+    "url_path": "/details/SubBookTest/subdir/book2/brewster_kahle_internet_archive",
+    "file_subprefix": "subdir/book2/brewster_kahle_internet_archive",
+    "orig_sort": 2,
+    "title": "subdir/book2/brewster_kahle_internet_archive.pdf",
+    "file_source": "/subdir/book2/brewster_kahle_internet_archive_jp2.zip"
+  },
+  "/details/SubBookTest/subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume": {
+    "url_path": "/details/SubBookTest/subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume",
+    "file_subprefix": "subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume",
+    "orig_sort": 3,
+    "title": "subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume.pdf",
+    "file_source": "/subdir/subsubdir/book3/Rfp008011ResponseInternetArchive-without-resume_jp2.zip"
+  }
+};
+
 export default class VolumesProvider {
 
   constructor(baseHost, bookreader, optionChange) {
     this.optionChange = optionChange;
     this.component = document.createElement("viewable-files");
 
-    const files = bookreader.options.multipleBooksList.by_subprefix;
+    const files = books;// bookreader.options.multipleBooksList.by_subprefix;
     this.viewableFiles = Object.keys(files).map(item => files[item]);
     this.volumeCount = Object.keys(files).length;
+
+    this.bookreader = bookreader;
 
     this.component.subPrefix = bookreader.options.subPrefix || "";
     this.component.hostUrl = baseHost;
@@ -63,6 +89,8 @@ export default class VolumesProvider {
     this.actionButton = this.sortButton;
     this.optionChange(this.bookreader);
 
+
+    console.log('this.bookreader: ', this.bookreader);
     this.multipleFilesClicked(sortByType);
   }
 
