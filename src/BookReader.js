@@ -29,6 +29,7 @@ import 'jquery-ui-touch-punch';
 
 import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
+import { exitFullscreen, fullscreenAllowed, requestFullscreen } from './BookReader/utils/fullscreen';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
@@ -1166,6 +1167,15 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
     this.switchMode(this.constMode1up);
   }
 
+  // Vendor-native full screen
+  // Note: We check to see if the window as already full-width; that
+  // way only mobile devices will get it.
+  // Note: innerWidth DOES NOT include the scrollbar; BUT, mobile devices
+  // _overlay_ the scrollbar so it doesn't take up any width!
+  if (fullscreenAllowed() && screen.width === window.innerWidth) {
+    requestFullscreen(document.body, { navigationUI: 'hide' });
+  }
+
   this.isFullscreenActive = true;
   this.animating = true;
   await new Promise(res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res));
@@ -1199,6 +1209,11 @@ BookReader.prototype.exitFullScreen = async function () {
   const canShow2up = this.options.controls.twoPage.visible;
   if (canShow2up && (windowWidth <= this.onePageMinBreakpoint)) {
     this.switchMode(this.constMode2up);
+  }
+
+  // Vendor-native full screen
+  if (fullscreenAllowed()) {
+    exitFullscreen();
   }
 
   this.isFullscreenActive = false;
