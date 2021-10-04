@@ -462,7 +462,7 @@ body.BRfullscreenActive .mm-menu {
   cursor: unset;
 }
 
-.br-mode-1up {
+.br-mode-1up__root {
   display: block;
   overflow: auto;
   position: relative;
@@ -470,11 +470,11 @@ body.BRfullscreenActive .mm-menu {
   height: 100%;
   contain: strict;
 }
-.br-mode-1up .br-mode-1up__world {
+.br-mode-1up__root .br-mode-1up__world {
   position: absolute;
   transform-origin: 0 0;
 }
-.br-mode-1up .br-mode-1up__visible-world {
+.br-mode-1up__root .br-mode-1up__visible-world {
   position: absolute;
   transform-origin: 0 0;
 }
