@@ -16,7 +16,11 @@ export class Mode1Up {
     this.mode1UpLit = new Mode1UpLit(bookModel, br);
 
     /** @private */
-    this.$el = $(this.mode1UpLit).addClass('br-mode-1up BRmode1up');
+    this.$el = $(this.mode1UpLit)
+      // We CANNOT use `br-mode-1up` as a class, because it's the same
+      // as the name of the web component, and the webcomponents polyfill
+      // uses the name of component as a class for style scoping 😒
+      .addClass('br-mode-1up__root BRmode1up');
 
     /** Has mode1up ever been rendered before? */
     this.everShown = false;
