@@ -1,3 +1,11 @@
+# 5.0.0-19
+- Dev: Refactor dragscrollable from a jquery plugin to a JS class @cdrini
+- Dev: Fix jquery eslint errors @cdrini
+- Dev: Replace deprecated babel-eslint with successor @cdrini
+- Fix: BR not working on iOS 9 / iOS 10! @cdrini, @iisa
+    - Added webcomponents, ResizeObserver polyfill
+    - ES5-ify lit node_modules
+
 # 5.0.0-18
 - Dev: Update a number of dependencies @cdrini
 - Dev: Added eslint-plugin-no-jquery @soham4abc
