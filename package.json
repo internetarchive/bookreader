@@ -49,6 +49,7 @@
     "@open-wc/testing": "^2.5.33",
     "@open-wc/testing-karma": "^4.0.9",
     "@types/jest": "27.0.1",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
     "babel-loader": "8.2.2",
     "codecov": "3.8.3",
     "concurrently": "6.0.2",

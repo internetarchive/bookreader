@@ -35,6 +35,9 @@ module.exports = [
 
     // Output file -> srcfile
     entry: {
+      // Polyfill bundles
+      'webcomponents-bundle.js': { import: '@webcomponents/webcomponentsjs/webcomponents-bundle.js' },
+
       // BookReader
       'BookReader.js': './src/BookReader.js',
 
