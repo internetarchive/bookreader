@@ -3,7 +3,7 @@ module.exports = {
     [
       "@babel/preset-env",
       {
-        targets: "> 2%, ie 11, edge 14, samsung > 9, OperaMini all, UCAndroid > 12",
+        targets: "> 2%, ie 11, edge 14, samsung > 9, OperaMini all, UCAndroid > 12, Safari >= 9",
         useBuiltIns: "usage",
         corejs: 3
       }
@@ -13,6 +13,6 @@ module.exports = {
     ["@babel/plugin-proposal-decorators", {decoratorsBeforeExport: true}],
     ["@babel/plugin-proposal-class-properties", {loose: true}],
     ["@babel/plugin-proposal-private-property-in-object", { loose: true }],
-    ["@babel/plugin-proposal-private-methods", { loose: true }]
+    ["@babel/plugin-proposal-private-methods", { loose: true }],
   ]
 };

@@ -14,7 +14,11 @@ const shared = {
 
   module: {
     rules: [
-      { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" }
+      {
+        test: /\.js$/,
+        exclude: /node_modules[/\\](?!(lit-element|lit-html)[/\\]).*/,
+        loader: "babel-loader",
+      }
     ]
   },
 
@@ -31,6 +35,9 @@ module.exports = [
 
     // Output file -> srcfile
     entry: {
+      // Polyfill bundles
+      'webcomponents-bundle.js': { import: '@webcomponents/webcomponentsjs/webcomponents-bundle.js' },
+
       // BookReader
       'BookReader.js': './src/BookReader.js',
 
