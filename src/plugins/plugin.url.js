@@ -219,6 +219,7 @@ export class UrlPlugin {
 
     this.urlState = {};
     this.urlMode = 'hash';
+    this.combinedUrlStrPath = '';
     this.urlHistoryBasePath = '/';
 
     this.pullFromAddressBar();
@@ -228,19 +229,21 @@ export class UrlPlugin {
    * Parse JSON object URL state to string format
    * @param {object} state
    */
-  urlStateToUrlString(state) {
-    console.log('url state to string');
+  urlStateToUrlString() {
+    // this.setUrlParam('q', 'foo');
+    console.log('url state to string: ', this.urlState);
     let strPathParams = '';
+    let hasAppendQueryParams = false;
     const searchParams = new URLSearchParams();
-    console.log('state: ', state);
 
-    Object.keys(state).map(key => {
+    Object.keys(this.urlState).map(key => {
       const schema = this.urlSchema.filter(schema => schema.name === key)[0];
       if (schema) {
         if (schema.position == 'path') {
-          strPathParams = `${strPathParams}/${key}/${state[key]}`;
+          strPathParams = `${strPathParams}/${key}/${this.urlState[key]}`;
         } else if (schema.position == 'query_param') {
-          searchParams.append(key, state[key]);
+          searchParams.append(key, this.urlState[key]);
+          hasAppendQueryParams = true;
         } else {
           console.log('could be something else');
         }
@@ -248,7 +251,9 @@ export class UrlPlugin {
         console.log('not a valid url schema');
       }
     });
-    console.log(`combined: ${strPathParams}?${searchParams.toString()}`);
+
+    this.combinedUrlStrPath = hasAppendQueryParams ? `${strPathParams}?${searchParams.toString()}` : strPathParams;
+    console.log('urlStateToUrlString combinedURlStrPath: ', this.combinedUrlStrPath);
   }
 
   // urlStringToUrlState('/page/n7') == {'page': 'n7'}
@@ -261,6 +266,7 @@ export class UrlPlugin {
   urlStringToUrlState(str) {
     console.log('url string to url state: ', str);
 
+    // this is working for url paths only
     const urlStrSplitSlash = str.split('/');
     this.urlSchema.map(schema => {
       const pKey = urlStrSplitSlash.filter(item => item === schema.name);
@@ -269,8 +275,14 @@ export class UrlPlugin {
         this.urlState[pKey] = urlStrSplitSlash[indexOf];
       }
     });
+    // end [working] url paths parsing
+
+    // TODO:
+    // - add a way to parse string with query string
+    // - write test
 
     console.log('new current urlState: ', this.urlState);
+    this.urlStateToUrlString();
   }
 
   /**
@@ -317,14 +329,10 @@ export class UrlPlugin {
    * @param {string} fullUrl
    */
   pullFromAddressBar(hash = window.location.hash, fullUrl = window.location) {
-    // console.log('thisUrlSchema: ', this.urlSchema);
-    // console.log('query: ', window.location.search);
-
-    // const urlString = window.location; // '/page/n7?q=hello&sort=title_asc';
     const urlFragment = this.urlReadFragment();
     console.log('urlReadFragment: ', this.urlReadFragment());
     if (this.urlMode === 'history') {
-    //   console.log('mode history: ', fullUrl);
+      console.log('mode history: ', fullUrl);
     // Also need to read hash url, and combine the states from the
     //   const mainUrlState = this.urlStringToUrlState(fullUrl.location);
     //   console.log('mainUrlState: ', mainUrlState);
@@ -336,6 +344,7 @@ export class UrlPlugin {
     }
   }
 
+  // TODO: cant figure out a way to listen to hash changes yet
   listenForHashChanges() {
     console.log('listen for hash changes');
   }
@@ -369,8 +378,16 @@ export class BookreaderUrlPlugin extends BookReader {
 
     console.log('BookreaderUrlPlugin this.options', this.options);
     if (this.options.enableUrlPlugin) {
-      console.log('do mods for URL');
       this.urlPlugin = new UrlPlugin(this.options);
+      this.bind(BookReader.eventNames.PostInit, () => {
+        const { updateWindowTitle, urlMode } = this.options;
+        if (updateWindowTitle) {
+          document.title = this.shortTitle(50);
+        }
+        if (urlMode === 'hash') {
+          this.urlPlugin.listenForHashChanges();
+        }
+      });
     }
   }
 
