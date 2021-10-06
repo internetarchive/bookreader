@@ -1206,7 +1206,6 @@ BookReader.prototype.exitFullScreen = async function () {
   this.isFullscreenActive = false;
   this.updateBrClasses();
   this.animating = true;
-<<<<<<< HEAD
   await new Promise((res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res)));
   this.resize();
 
@@ -1216,12 +1215,6 @@ BookReader.prototype.exitFullScreen = async function () {
   }
 
   this.animating = false;
-=======
-  this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', () => {
-    this.resize();
-    this.animating = false;
-  });
->>>>>>> 71aa6353 (add url event for history url plugin mode)
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   // Remove "?view=theater"
