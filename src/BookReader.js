@@ -1179,9 +1179,9 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   this.animating = false;
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
-  this.trigger(BookReader.eventNames.fullscreenToggled);
   // Add "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
+  this.trigger(BookReader.eventNames.fullscreenToggled);
 };
 
 /**

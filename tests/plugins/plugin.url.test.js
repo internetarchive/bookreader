@@ -37,6 +37,7 @@ describe('Plugin: URL controller', () => {
     expect(urlTrackedParams.find(param => param === 'mode')).toBeTruthy();
     expect(urlTrackedParams.find(param => param === 'region')).toBeTruthy();
     expect(urlTrackedParams.find(param => param === 'highlight')).toBeTruthy();
+    expect(urlTrackedParams.find(param => param === 'view')).toBeTruthy();
   });
 
   test('initializes polling for url changes if using hash', () => {
@@ -86,6 +87,23 @@ describe('Plugin: URL controller', () => {
       index: 1,
       mode: 2,
       search: 'foo'
+    }));
+    BookReader.prototype.search = jest.fn();
+    br.options.urlMode = 'history';
+    br.init();
+    br.urlUpdateFragment();
+
+    expect(window.history.replaceState).toHaveBeenCalled();
+  });
+
+  test('updates URL when view changes', () => {
+    window.history.replaceState = jest.fn();
+    BookReader.prototype.currentIndex = jest.fn(() => 1);
+    BookReader.prototype.urlReadFragment = jest.fn(() => '');
+    BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
+      index: 1,
+      mode: 2,
+      view: 'theater'
     }));
     BookReader.prototype.search = jest.fn();
     br.options.urlMode = 'history';
