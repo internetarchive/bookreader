@@ -136,3 +136,4 @@ export class IABookDownloads extends LitElement {
     return [buttonStyles, mainCss];
   }
 }
+customElements.define('ia-book-downloads', IABookDownloads);

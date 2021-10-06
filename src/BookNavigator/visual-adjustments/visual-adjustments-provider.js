@@ -1,5 +1,6 @@
 import { html } from 'lit-element';
-import './visual-adjustments.js';
+import '@internetarchive/icon-visual-adjustment/icon-visual-adjustment';
+import './visual-adjustments';
 
 const visualAdjustmentOptions = [{
   id: 'brightness',
@@ -41,7 +42,7 @@ export default class {
     this.onZoomOut = this.onZoomOut.bind(this);
 
     this.activeCount = 0;
-    this.icon = html`<ia-icon icon="visualAdjustment" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
+    this.icon = html`<ia-icon-visual-adjustment style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-visual-adjustment>`;
     this.label = 'Visual Adjustments';
     this.menuDetails = this.updateOptionsCount();
     this.id = 'adjustment';

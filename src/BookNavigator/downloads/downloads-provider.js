@@ -1,9 +1,6 @@
 import { html } from 'lit-element';
-
-/* register subpanel */
-import { IABookDownloads } from './downloads';
-
-customElements.define('ia-book-downloads', IABookDownloads);
+import '@internetarchive/icon-dl/icon-dl';
+import './downloads';
 
 const menuBase = {
   pdf: {
@@ -26,7 +23,7 @@ const publicMenuBase = {
 export default class DownloadsProvider {
 
   constructor(isBookProtected) {
-    this.icon = html`<ia-icon icon="download" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
+    this.icon = html`<ia-icon-dl style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-dl>`;
     this.label = 'Downloadable files';
     this.menuDetails = '';
     this.downloads = [];
@@ -72,5 +69,4 @@ export default class DownloadsProvider {
   get menu () {
     return html`<ia-book-downloads .downloads=${this.downloads}></ia-book-downloads>`;
   }
-
 }

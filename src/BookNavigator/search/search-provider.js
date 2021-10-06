@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
 import { nothing } from 'lit-html';
-
+import '@internetarchive/icon-search/icon-search';
 import './search-results';
 
 let searchState = {
@@ -31,7 +31,7 @@ export default class {
 
     this.onSearchChange = onSearchChange;
     this.bookreader = brInstance;
-    this.icon = html`<ia-icon icon="search" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
+    this.icon = html`<ia-icon-search style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-search>`;
     this.label = 'Search inside';
     this.menuDetails = this.getMenuDetails();
     this.id = 'search';

@@ -4,7 +4,7 @@
 
 import { LitElement, html, css } from 'lit-element';
 
-import '../ItemNavigator/ItemNavigator.js';
+import '@internetarchive/ia-item-navigator';
 import '../BookNavigator/BookNavigator.js';
 
 export class BookReader extends LitElement {

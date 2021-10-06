@@ -1,6 +1,5 @@
 import { html } from 'lit-element';
-
-/* register subpanel */
+import '@internetarchive/icon-share/icon-share';
 import { IASharingOptions } from '@internetarchive/ia-sharing-options';
 customElements.define('ia-sharing-options', IASharingOptions);
 
@@ -12,7 +11,7 @@ export default class {
     this.idPath = urlIdentifier;
     this.itemType = baseItemType;
     const label = `Share this ${this.reconcileItemType}`;
-    this.icon = html`<ia-icon icon="share" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
+    this.icon = html`<ia-icon-share style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-share>`;
     this.label = label;
     this.id = 'share';
     this.component = html`<ia-sharing-options

@@ -1,15 +1,13 @@
 import { css, html, LitElement } from 'lit-element';
-import { nothing } from 'lit-html';
 import { ResizeObserver as roPolyfill } from '@juggle/resize-observer';
 import SearchProvider from './search/search-provider.js';
 import DownloadProvider from './downloads/downloads-provider.js';
 import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
 import BookmarksProvider from './bookmarks/bookmarks-provider.js';
-import SharingProvider from '../ItemNavigator/providers/sharing.js';
+import SharingProvider from './sharing.js';
 import VolumesProvider from './volumes/volumes-provider.js';
 import BRFullscreenMgr from './br-fullscreen-mgr.js';
 import { Book } from './BookModel.js';
-import bookLoader from './assets/book-loader.js';
 
 const ResizeObserver = window.ResizeObserver || roPolyfill;
 
@@ -278,6 +276,13 @@ export class BookNavigator extends LitElement {
     this.dispatchEvent(event);
   }
 
+  emitLoadingStatusUpdate(loaded) {
+    const event = new CustomEvent('loadingStateUpdated', {
+      detail: { loaded },
+    });
+    this.dispatchEvent(event);
+  }
+
   /**
    * Core bookreader event handler registry
    *
@@ -295,6 +300,7 @@ export class BookNavigator extends LitElement {
       setTimeout(() => this.bookreader.resize(), 0);
       this.brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
       this.brResizeObserver.observe(this.mainBRContainer);
+      this.emitLoadingStatusUpdate(true);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;
@@ -392,14 +398,6 @@ export class BookNavigator extends LitElement {
 
   closeItemNavigatorModal() {
     this.emitCloseItemNavigatorModal();
-  }
-
-  get loader() {
-    const loader = html`
-      <div class="book-loader">${bookLoader}<div>
-      <h3>Loading viewer</h3>
-    `;
-    return !this.bookReaderLoaded ? loader : nothing;
   }
 
   get loadingClass() {
