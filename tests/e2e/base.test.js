@@ -2,9 +2,9 @@ import { runBaseTests } from './helpers/base';
 import BookReader from './models/BookReader';
 import { runDesktopSearchTests } from './helpers/desktopSearch';
 // import { runMobileSearchTests } from './helpers/mobileSearch';
-import { DEMOS_BASE_URL } from './helpers/params';
+import params from './helpers/params';
 
-const OCAIDS = [
+const ocaids = params.ocaids || [
   'theworksofplato01platiala',
   // Removed because failing test 'Canonical URL with cookie shows paramters'
   // in tests/e2e/helpers/base.js
@@ -15,8 +15,8 @@ const OCAIDS = [
   // 'demo-ia-olivertwist.html',
 ];
 
-OCAIDS.forEach(ocaid => {
-  const url = `${DEMOS_BASE_URL}/BookReaderDemo/demo-internetarchive.html?ocaid=${ocaid}`;
+ocaids.forEach(ocaid => {
+  const url = params.getArchiveUrl(ocaid);
 
   fixture `Base Tests for: ${ocaid}`.page `${url}`;
   runBaseTests(new BookReader());
