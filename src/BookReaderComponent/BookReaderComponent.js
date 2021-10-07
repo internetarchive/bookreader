@@ -80,7 +80,8 @@ export class BookReader extends LitElement {
       .ia-bookreader {
         background-color: var(--primaryBGColor);
         position: relative;
-        height: auto;
+        min-height: inherit;
+        height: inherit;
       }
 
       item-navigator {
