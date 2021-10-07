@@ -1,5 +1,6 @@
 import { css, html, LitElement } from 'lit-element';
-import { ResizeObserver as roPolyfill } from '@juggle/resize-observer';
+import { PromisedSingleton } from '@internetarchive/promised-singleton';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import SearchProvider from './search/search-provider.js';
 import DownloadProvider from './downloads/downloads-provider.js';
 import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
@@ -8,8 +9,6 @@ import SharingProvider from './sharing.js';
 import VolumesProvider from './volumes/volumes-provider.js';
 import BRFullscreenMgr from './br-fullscreen-mgr.js';
 import { Book } from './BookModel.js';
-
-const ResizeObserver = window.ResizeObserver || roPolyfill;
 
 const events = {
   menuUpdated: 'menuUpdated',
@@ -33,6 +32,7 @@ export class BookNavigator extends LitElement {
       menuShortcuts: { type: Array },
       sideMenuOpen: { type: Boolean },
       signedIn: { type: Boolean },
+      sharedObserver: { reflect: false }
     };
   }
 
@@ -55,7 +55,7 @@ export class BookNavigator extends LitElement {
 
     // Untracked properties
     this.fullscreenMgr = null;
-    this.brResizeObserver = null;
+    this.sharedObserver = null;
     this.model = new Book();
     this.shortcutOrder = ['volumes', 'search', 'bookmarks'];
   }
@@ -298,8 +298,8 @@ export class BookNavigator extends LitElement {
 
       this.initializeBookSubmenus();
       setTimeout(() => this.bookreader.resize(), 0);
-      this.brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
-      this.brResizeObserver.observe(this.mainBRContainer);
+
+      this.startResizeObserver();
       this.emitLoadingStatusUpdate(true);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
@@ -338,22 +338,38 @@ export class BookNavigator extends LitElement {
    *  - book animation is happening
    *  - book is in fullscreen (fullscreen is handled separately)
    *
-   * @param { Object } entries - resize observer entries
+   * @param { target: HTMLElement, contentRect: DOMRectReadOnly } entry
    */
-  reactToBrResize(entries = []) {
+  handleResize({ contentRect, target }) {
     const startBrWidth = this.brWidth;
     const { animating } = this.bookreader;
+    console.log("HANDLE RESIZE", { contentRect, target });
 
-    entries.forEach(({ contentRect, target }) => {
-      if (target === this.mainBRContainer) {
-        this.brWidth = contentRect.width;
-      }
-    });
+    if (target === this.mainBRContainer) {
+      this.brWidth = contentRect.width;
+    }
+
     setTimeout(() => {
       if (startBrWidth && !animating) {
         this.bookreader.resize();
       }
     }, 0);
+  }
+
+  async startResizeObserver() {
+    if (!this.sharedObserver) {
+      const ro = new PromisedSingleton({
+        generator: async () => {
+          return new SharedResizeObserver();
+        },
+      });
+      this.sharedObserver = await ro.get();
+    }
+
+    this.sharedObserver?.addObserver({
+      handler: this,
+      target: this.mainBRContainer,
+    });
   }
 
   /**
