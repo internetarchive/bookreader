@@ -149,10 +149,29 @@ BookReader.prototype.initNavbar = (function (super_) {
               <div class="icon icon-advance"></div>
             </button>
           </li>
+          <li>
+            <select class="playback-voices" name="playback-voice" style="display: none" title="Change readloud voices">
+            </select>
+          </li>
         </ul>
       `);
+
       $el.find('.BRcontrols').prepend(this.refs.$BRReadAloudToolbar);
+
+      const renderVoicesMenu = (voicesMenu) => {
+        if (this.ttsEngine.getVoices().length > 1) {
+          voicesMenu.append(this.ttsEngine.getVoices().map(voice => $(`<option value="${voice.voiceURI}">${voice.name}</option>`)));
+          voicesMenu.val(this.ttsEngine.voice.voiceURI);
+          voicesMenu.show();
+        } else {
+          voicesMenu.hide();
+        }
+      };
+      const voicesMenu = this.refs.$BRReadAloudToolbar.find('[name=playback-voice]');
+      renderVoicesMenu(voicesMenu);
+      voicesMenu.on("change", ev => this.ttsEngine.setVoice(voicesMenu.val()));
       this.ttsEngine.events.on('pause resume start', () => this.ttsUpdateState());
+      this.ttsEngine.events.on('voiceschanged', () => renderVoicesMenu(voicesMenu));
       this.refs.$BRReadAloudToolbar.find('[name=play]').on("click", this.ttsPlayPause.bind(this));
       this.refs.$BRReadAloudToolbar.find('[name=advance]').on("click", this.ttsJumpForward.bind(this));
       this.refs.$BRReadAloudToolbar.find('[name=review]').on("click", this.ttsJumpBackward.bind(this));
