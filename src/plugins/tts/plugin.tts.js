@@ -160,7 +160,9 @@ BookReader.prototype.initNavbar = (function (super_) {
 
       const renderVoicesMenu = (voicesMenu) => {
         if (this.ttsEngine.getVoices().length > 1) {
-          voicesMenu.append(this.ttsEngine.getVoices().map(voice => $(`<option value="${voice.voiceURI}">${voice.name}</option>`)));
+            voicesMenu.append(this.ttsEngine.getVoices().map(
+		voice =>
+		    $(`<option value="${voice.voiceURI}">${voice.lang} - ${voice.name}</option>`)));
           voicesMenu.val(this.ttsEngine.voice.voiceURI);
           voicesMenu.show();
         } else {
