@@ -157,7 +157,6 @@ BookReader.prototype.urlUpdateFragment = function() {
       this.oldLocationHash = newFragment + newQueryString;
     }
   } else {
-    console.log('urlMode hash: ');
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
     window.location.replace('#' + newFragment + newQueryStringSearch);
     this.oldLocationHash = newFragment + newQueryStringSearch;
@@ -396,11 +395,9 @@ export class BookreaderUrlPlugin extends BookReader {
 
   init() {
     if (this.options.enableUrlPlugin) {
-      console.log('enabled');
       this.urlPlugin = new UrlPlugin(this.options);
       this.bind(BookReader.eventNames.PostInit, () => {
         const { updateWindowTitle, urlMode } = this.options;
-        console.log('thisOptions, updateWindowTitle: ', updateWindowTitle, ' urlMOde: ', urlMode);
         if (updateWindowTitle) {
           document.title = this.urlPlugin.shortTitle(50);
         }
