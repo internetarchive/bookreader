@@ -13,23 +13,24 @@ afterEach(() => {
 });
 
 describe.only('UrlPlugin', () => {
-  // test('urlStateToUrlString', () => {
-  //   const urlPlugin = new UrlPlugin();
-  //   const f = urlPlugin.urlStateToUrlString.bind(urlPlugin);
+  test('urlStateToUrlString', () => {
+    const urlPlugin = new UrlPlugin();
+    urlPlugin.setUrlParam('page', '3');
+    urlPlugin.urlStateToUrlString();
 
-  //   expect(f({ page: '3' })).toBe('page/3');
-  // });
+    expect(urlPlugin.combinedUrlStrPath).toBe('/page/3');
+  });
 
-  // test('urlStringToUrlState', () => {
-  //   const urlPlugin = new UrlPlugin();
-  //   const f = urlPlugin.urlStateToUrlString.bind(urlPlugin);
+  test('urlStringToUrlState without query string', () => {
+    const urlPlugin = new UrlPlugin();
+    urlPlugin.urlStringToUrlState('/page/n7/mode/2up');
 
-  //   expect(f('page/3')).toBe({page: '3'});
-  // });
+    expect(urlPlugin.urlState).toBe({"mode": "2up", "page": "n7"});
+  });
 
   // test('pullFromAddressBar hash mode', () => {
   //   const urlPlugin = new UrlPlugin();
-  //   urlPlugin.mode = 'hash';
+  //   urlPlugin.urlMode = 'hash';
 
   //   urlPlugin.pullFromAddressBar('#page/3', '?q=hello');
   //   expect(urlPlugin.urlState).toBe({page: '3'});
