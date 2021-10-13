@@ -343,7 +343,6 @@ export class BookNavigator extends LitElement {
   handleResize({ contentRect, target }) {
     const startBrWidth = this.brWidth;
     const { animating } = this.bookreader;
-    console.log("HANDLE RESIZE", { contentRect, target });
 
     if (target === this.mainBRContainer) {
       this.brWidth = contentRect.width;

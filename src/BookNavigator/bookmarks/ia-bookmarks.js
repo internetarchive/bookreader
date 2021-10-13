@@ -61,7 +61,7 @@ class IABookmarks extends LitElement {
       options: { type: Object },
       displayMode: { type: String },
       editedBookmark: { type: Object },
-      deleteModalConfig: { type: Object}
+      deleteModalConfig: { type: Object }
     };
   }
 
@@ -118,7 +118,7 @@ class IABookmarks extends LitElement {
     this.deleteModalConfig = new ModalConfig({
       title: 'Delete Bookmark',
       headline: 'This bookmark contains a note. Deleting it will permanently delete the note. Are you sure?',
-      headerColor: '#194880'
+      headerColor: '#194880',
     });
   }
 
