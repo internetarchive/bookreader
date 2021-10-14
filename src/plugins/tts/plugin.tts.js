@@ -150,7 +150,7 @@ BookReader.prototype.initNavbar = (function (super_) {
             </button>
           </li>
           <li>
-            <select class="playback-voices" name="playback-voice" style="display: none" title="Change readloud voices">
+            <select class="playback-voices" name="playback-voice" style="display: none" title="Change read aloud voices">
             </select>
           </li>
         </ul>
