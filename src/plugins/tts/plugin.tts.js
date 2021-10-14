@@ -159,6 +159,7 @@ BookReader.prototype.initNavbar = (function (super_) {
       $el.find('.BRcontrols').prepend(this.refs.$BRReadAloudToolbar);
 
       const renderVoicesMenu = (voicesMenu) => {
+        voicesMenu.empty();
         if (this.ttsEngine.getVoices().length > 1) {
             voicesMenu.append(this.ttsEngine.getVoices().map(
 		voice =>
