@@ -298,7 +298,6 @@ export class WebTTSSound {
 
   /** @param {SpeechSynthesisVoice} voice */
   setVoice(voice) {
-    console.log('hello?');
     this.voice = voice;
     this.reload();
   }
