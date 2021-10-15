@@ -1,3 +1,8 @@
+# 5.0.0-20
+- Feature: Add voice selection dropdown to ReadAloud! @mekarpeles
+- Dev: Make jest support root-level imports with "@" @cdrini
+- Dev: Make it easy to run e2e tests on archive.org/browserstack @cdrini
+
 # 5.0.0-19
 - Dev: Refactor dragscrollable from a jquery plugin to a JS class @cdrini
 - Dev: Fix jquery eslint errors @cdrini
