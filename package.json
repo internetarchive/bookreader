@@ -85,6 +85,9 @@
     "transformIgnorePatterns": [
       "node_modules/(?!(lit-html|lit-element|lit)/)"
     ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    },
     "setupFiles": [
       "./src/jquery-wrapper.js"
     ],

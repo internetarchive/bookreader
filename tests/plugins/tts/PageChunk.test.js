@@ -1,4 +1,4 @@
-import PageChunk from '../../../src/plugins/tts/PageChunk.js';
+import PageChunk from '@/src/plugins/tts/PageChunk.js';
 
 describe('_fixChunkRects', () => {
   const { _fixChunkRects } = PageChunk;

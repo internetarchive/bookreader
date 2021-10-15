@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { afterEventLoop, eventTargetMixin } from '../../utils.js';
-import * as utils from '../../../src/plugins/tts/utils.js';
+import * as utils from '@/src/plugins/tts/utils.js';
 
 describe('promisifyEvent', () => {
   const { promisifyEvent } = utils;

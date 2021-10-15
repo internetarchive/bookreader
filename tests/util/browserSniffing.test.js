@@ -1,6 +1,6 @@
 import {
   isChrome, isFirefox, isSafari,
-} from '../../src/util/browserSniffing.js';
+} from '@/src/util/browserSniffing.js';
 
 const TESTS = [
   {

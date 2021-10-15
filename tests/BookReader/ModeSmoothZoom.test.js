@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { EventTargetSpy } from '../utils.js';
-import { ModeSmoothZoom } from '../../src/BookReader/ModeSmoothZoom.js';
-/** @typedef {import('../../src/BookReader/ModeSmoothZoom.js').SmoothZoomable} SmoothZoomable */
+import { ModeSmoothZoom } from '@/src/BookReader/ModeSmoothZoom.js';
+/** @typedef {import('@/src/BookReader/ModeSmoothZoom.js').SmoothZoomable} SmoothZoomable */
 
 /**
  * @param {Partial<SmoothZoomable>} overrides
