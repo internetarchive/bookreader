@@ -75,7 +75,7 @@
     "sass": "1.38.2",
     "sinon": "11.1.2",
     "soundmanager2": "2.97.20170602",
-    "svgo": "2.4.0",
+    "svgo": "2.7.0",
     "testcafe": "^1.16.1",
     "testcafe-browser-provider-browserstack": "^1.13.2-alpha.1",
     "webpack": "5.51.1",
