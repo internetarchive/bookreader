@@ -296,6 +296,11 @@ export class WebTTSSound {
     this.reload();
   }
 
+  /** @param {SpeechSynthesisVoice} voice */
+  setVoice(voice) {
+    this.voice = voice;
+    this.reload();
+  }
   /**
    * @private
    * Chrome has a bug where it only plays 15 seconds of TTS and then

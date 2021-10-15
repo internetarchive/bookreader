@@ -28,6 +28,7 @@ import PageChunkIterator from './PageChunkIterator.js';
  * @property {() => void} resume
  * @property {() => void} finish force the sound to 'finish'
  * @property {number => void} setPlaybackRate
+ * @property {SpeechSynthesisVoice => void} setVoice
  **/
 
 /** Handling bookreader's text-to-speech */
@@ -131,6 +132,12 @@ export default class AbstractTTSEngine {
         .then(() => this._chunkIterator.decrement())
     ])
       .then(() => this.step());
+  }
+
+  /** @param {number} newRate */
+  setVoice(voiceURI) {
+    this.voice = this.getVoices().find(voice => voice.voiceURI === voiceURI);
+    if (this.activeSound) this.activeSound.setVoice(this.voice);
   }
 
   /** @param {number} newRate */

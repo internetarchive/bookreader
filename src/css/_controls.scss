@@ -28,8 +28,7 @@
     }
   }
 
-  select.playback-speed {
-    width: 24px;
+  select.playback-speed, select.playback-voices {
     padding-top: 18px;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -40,10 +39,20 @@
     color: $controlsText;
     border: none;
     cursor: pointer;
-    background: transparent url("icons/playback-speed.svg") 50% 0 no-repeat;
     option {
       background: $controlsBG;
     }
+  }
+
+  select.playback-speed {
+      width: 30px;
+      background: transparent url("icons/playback-speed.svg") 50% 0 no-repeat;
+  }
+
+  select.playback-voices {
+      width: 30px;
+      background: transparent url("icons/voice.svg") 50% 0 no-repeat;
+      background-size: 18px;
   }
 
   .active {
