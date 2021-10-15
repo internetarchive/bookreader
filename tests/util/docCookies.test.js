@@ -1,4 +1,4 @@
-import * as docCookies from '../../src/util/docCookies.js';
+import * as docCookies from '@/src/util/docCookies.js';
 
 afterEach(() => {
   jest.clearAllMocks();

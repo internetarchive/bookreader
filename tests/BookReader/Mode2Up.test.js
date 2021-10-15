@@ -1,8 +1,8 @@
 
 import sinon from 'sinon';
 import { deepCopy } from '../utils.js';
-import BookReader from '../../src/BookReader.js';
-/** @typedef {import('../../src/BookReader/options.js').BookReaderOptions} BookReaderOptions */
+import BookReader from '@/src/BookReader.js';
+/** @typedef {import('@/src/BookReader/options.js').BookReaderOptions} BookReaderOptions */
 
 beforeAll(() => {
   global.alert = jest.fn();

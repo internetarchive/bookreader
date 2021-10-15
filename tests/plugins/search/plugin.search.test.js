@@ -1,9 +1,9 @@
 
-import BookReader from '../../../src/BookReader.js';
-import '../../../src/plugins/plugin.mobile_nav.js';
-import '../../../src/plugins/search/plugin.search.js';
+import BookReader from '@/src/BookReader.js';
+import '@/src/plugins/plugin.mobile_nav.js';
+import '@/src/plugins/search/plugin.search.js';
 
-jest.mock('../../../src/plugins/search/view.js');
+jest.mock('@/src/plugins/search/view.js');
 
 let br;
 const namespace = 'BookReader:';

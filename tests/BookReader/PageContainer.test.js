@@ -1,4 +1,4 @@
-import {PageContainer, boxToSVGRect, createSVGPageLayer, renderBoxesInPageContainerLayer} from '../../src/BookReader/PageContainer.js';
+import {PageContainer, boxToSVGRect, createSVGPageLayer, renderBoxesInPageContainerLayer} from '@/src/BookReader/PageContainer.js';
 
 describe('constructor', () => {
   test('protected books', () => {

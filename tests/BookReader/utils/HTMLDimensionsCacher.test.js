@@ -1,6 +1,6 @@
 // @ts-check
 import  sinon from 'sinon';
-import { HTMLDimensionsCacher } from '../../../src/BookReader/utils/HTMLDimensionsCacher';
+import { HTMLDimensionsCacher } from '@/src/BookReader/utils/HTMLDimensionsCacher';
 
 describe('HTMLDimensionsCacher', () => {
   test('Does not read from element directly', () => {
