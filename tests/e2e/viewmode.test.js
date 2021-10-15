@@ -1,9 +1,8 @@
 import { Selector } from 'testcafe';
 import BookReader from './models/BookReader';
+import params from './helpers/params';
 
-const { BASE_URL } = process.env;
-
-fixture `Viewmode carousel`.page `${BASE_URL}viewmode-cycle.html`;
+fixture `Viewmode carousel`.page `${params.baseUrl}/BookReaderDemo/viewmode-cycle.html`;
 
 test('Clicking `view mode` cycles through view modes', async t => {
   const { nav } = (new BookReader());

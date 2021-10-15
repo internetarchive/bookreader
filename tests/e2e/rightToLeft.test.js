@@ -1,16 +1,15 @@
 import { runBaseTests } from './helpers/base';
 import { runRightToLeftTests } from './helpers/rightToLeft';
+import params from './helpers/params';
 
 import BookReader from './models/BookReader';
 
-const { BASE_URL } = process.env;
-const DEMO_PATH = 'demo-internetarchive.html?ocaid=';
-const OCAIDS = [
+const ocaids = params.ocaids || [
   'gendaitankashu00meijuoft', // Right to Left book
 ];
 
-OCAIDS.forEach(ocaid => {
-  const url = `${BASE_URL}${DEMO_PATH}${ocaid}`;
+ocaids.forEach(ocaid => {
+  const url = `${params.baseUrl}/BookReaderDemo/demo-internetarchive.html?ocaid=${ocaid}`;
 
   fixture `Base Tests for right to left book: ${ocaid}`.page `${url}`;
   runBaseTests(new BookReader({ pageProgression: 'rl' }));

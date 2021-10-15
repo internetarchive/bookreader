@@ -48,6 +48,43 @@ To run a particular fixture, add the path to the file at the end of your argumen
 
 `npm run test:e2e chrome tests/e2e/example.test.js`
 
+### Testing netlify or archive.org
+
+```sh
+BASE_URL='https://lucid-poitras-9a1249.netlify.app' npx testcafe
+BASE_URL='https://archive.org' npx testcafe
+```
+
+### Testing any OCAID
+
+For OCAIDs you should pick the specific test file to run, since things like autoplay tests won't work. The main tests are in `base.test.js`.
+
+```sh
+OCAIDS='goody,goodytwoshoes00newyiala' npx testcafe tests/e2e/base.test.js
+OCAIDS='goody,goodytwoshoes00newyiala' BASE_URL='https://archive.org' npx testcafe tests/e2e/base.test.js
+
+# right to left book; note this also runs the base tests
+OCAIDS='gendaitankashu00meijuoft' BASE_URL='https://archive.org' npx testcafe tests/e2e/rightToLeft.test.js
+```
+
+### Running tests with browserstack
+
+Note these can only test a public url, so you either need to create a draft PR and use the netlify link, or use ngrok to publish your dev server's port.
+
+Note: Windows users, there is a bug that prevents spaces in the browser field when using `npx`, so you'll need to have `testcafe` globally installed, and run it without `npx`. (See https://github.com/DevExpress/testcafe/issues/6600 ). Or, you can add browserstack browsers the `.testcaferc.js` file.
+
+```sh
+# Set auth; find yours at https://www.browserstack.com/accounts/settings
+export BROWSERSTACK_USERNAME="YOUR_USERNAME"
+export BROWSERSTACK_ACCESS_KEY="YOUR_ACCESS_KEY"
+
+BASE_URL='https://archive.org' OCAIDS='goody,goodytwoshoes00newyiala' npx testcafe 'browserstack:iPad Pro 12.9 2018@15' tests/e2e/base.test.js
+```
+
+See a list of available browsers with `npx testcafe -b browserstack`. Note there are some browsers which appear to not work for some reason (eg `browserstack:iPad Mini 4@9.3`).
+
+Read more about other options/etc at the browserstack docs: https://www.browserstack.com/docs/automate/selenium/getting-started/nodejs/testcafe .
+
 ## Pending (skip) tests
 
 You can skip any tests by calling the method `.skip` on the test object rather
