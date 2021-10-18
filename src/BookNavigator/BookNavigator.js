@@ -408,7 +408,7 @@ export class BookNavigator extends LitElement {
 
   get itemImage() {
     const url = `https://${this.baseHost}/services/img/${this.book.metadata.identifier}`;
-    return html`<img src="${url}" alt="cover image for ${this.book.metadata.identifier}">`;
+    return html`<img class="cover-img" src="${url}" alt="cover image for ${this.book.metadata.identifier}">`;
   }
 
   render() {
@@ -463,6 +463,10 @@ export class BookNavigator extends LitElement {
       0% {
         transform: rotate(-360deg);
       }
+    }
+
+    .cover-img {
+      max-height: 300px;
     }
   `;
   }
