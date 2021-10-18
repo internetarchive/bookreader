@@ -10,7 +10,7 @@ import {
   isInputActive,
   polyfillCustomEvent,
   PolyfilledCustomEvent,
-} from '../../src/BookReader/utils.js';
+} from '@/src/BookReader/utils.js';
 
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
   expect(clamp(2,1,3)).toEqual(2);

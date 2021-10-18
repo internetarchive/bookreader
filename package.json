@@ -1,6 +1,6 @@
 {
   "name": "@internetarchive/bookreader",
-  "version": "5.0.0-19",
+  "version": "5.0.0-20",
   "description": "The Internet Archive BookReader.",
   "repository": {
     "type": "git",
@@ -76,7 +76,8 @@
     "sinon": "11.1.2",
     "soundmanager2": "2.97.20170602",
     "svgo": "2.4.0",
-    "testcafe": "1.15.3",
+    "testcafe": "^1.16.1",
+    "testcafe-browser-provider-browserstack": "^1.13.2-alpha.1",
     "webpack": "5.51.1",
     "webpack-cli": "4.8.0"
   },
@@ -85,6 +86,9 @@
     "transformIgnorePatterns": [
       "node_modules/(?!(lit-html|lit-element|lit)/)"
     ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    },
     "setupFiles": [
       "./src/jquery-wrapper.js"
     ],
@@ -116,8 +120,8 @@
     "serve-live": "npx live-server . --port 8000 --watch=index.html,BookReader,BookReaderDemo",
     "serve-dev": "npm run build-css && npx concurrently --kill-others npm:serve-live npm:build-*:watch",
     "test": "npm run test-jest && npm run test-karma",
-    "test:e2e": "npm run build && env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe",
-    "test:e2e:dev": "env BASE_URL=http://127.0.0.1:8000/BookReaderDemo/ npx testcafe --live --dev",
+    "test:e2e": "npm run build && npx testcafe",
+    "test:e2e:dev": "npx testcafe --live --dev",
     "test-jest:watch": "npx jest --watch",
     "test-jest": "npx jest --coverage --colors",
     "test-karma": "npx karma start --coverage",

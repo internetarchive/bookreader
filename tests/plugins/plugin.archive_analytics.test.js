@@ -1,6 +1,6 @@
 import sinon from 'sinon';
-import BookReader from '../../src/BookReader.js';
-import '../../src/plugins/plugin.archive_analytics.js';
+import BookReader from '@/src/BookReader.js';
+import '@/src/plugins/plugin.archive_analytics.js';
 
 describe('archiveAnalyticsSendEvent', () => {
   const sendEvent = BookReader.prototype.archiveAnalyticsSendEvent;

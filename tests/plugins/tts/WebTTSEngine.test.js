@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { WebTTSSound } from '../../../src/plugins/tts/WebTTSEngine.js';
+import { WebTTSSound } from '@/src/plugins/tts/WebTTSEngine.js';
 import { afterEventLoop, eventTargetMixin } from '../../utils.js';
 
 beforeEach(() => {

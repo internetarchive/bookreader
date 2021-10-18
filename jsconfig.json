@@ -2,10 +2,15 @@
   "compilerOptions": {
     "target": "es6",
     "moduleResolution": "node",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": [
-    "src/**/*.js"
+    "src/**/*.js",
+    "tests/**/*.js",
   ],
   "exclude": [
     "node_modules",

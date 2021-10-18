@@ -1,4 +1,4 @@
-import { exposeOverrideable } from '../../../src/BookReader/utils/classes.js';
+import { exposeOverrideable } from '@/src/BookReader/utils/classes.js';
 
 describe('exposeOverrideable', () => {
   test('adds method to To class', () => {
