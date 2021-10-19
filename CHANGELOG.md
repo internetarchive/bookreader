@@ -1,3 +1,6 @@
+# 5.0.0-21
+- Dev: Toggle view=theater in fullscreen @mc2
+
 # 5.0.0-20
 - Feature: Add voice selection dropdown to ReadAloud! @mekarpeles
 - Dev: Make jest support root-level imports with "@" @cdrini
