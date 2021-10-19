@@ -2716,8 +2716,7 @@ li.BRtable-contents-el .BRTOCElementPage {
 .BRfullscreenActive .BRcontrols .icon-fullscreen {
   background-image: url("icons/fullscreen_exit.svg");
 }
-.BRcontrols select.playback-speed {
-  width: 24px;
+.BRcontrols select.playback-speed, .BRcontrols select.playback-voices {
   padding-top: 18px;
   -moz-appearance: none;
   -webkit-appearance: none;
@@ -2728,10 +2727,18 @@ li.BRtable-contents-el .BRTOCElementPage {
   color: #fff;
   border: none;
   cursor: pointer;
+}
+.BRcontrols select.playback-speed option, .BRcontrols select.playback-voices option {
+  background: #333;
+}
+.BRcontrols select.playback-speed {
+  width: 30px;
   background: transparent url("icons/playback-speed.svg") 50% 0 no-repeat;
 }
-.BRcontrols select.playback-speed option {
-  background: #333;
+.BRcontrols select.playback-voices {
+  width: 30px;
+  background: transparent url("icons/voice.svg") 50% 0 no-repeat;
+  background-size: 18px;
 }
 .BRcontrols .active {
   background: #fff;

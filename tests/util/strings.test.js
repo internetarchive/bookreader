@@ -1,4 +1,4 @@
-import { APPLY_FILTERS, applyVariables } from '../../src/util/strings.js';
+import { APPLY_FILTERS, applyVariables } from '@/src/util/strings.js';
 
 describe('applyVariables', () => {
   test('null cases', () => {

@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 
-import '../../src/BookReader.js';
-import { BookreaderWithTextSelection, TextSelectionPlugin, Cache } from '../../src/plugins/plugin.text_selection.js';
+import '@/src/BookReader.js';
+import { BookreaderWithTextSelection, TextSelectionPlugin, Cache } from '@/src/plugins/plugin.text_selection.js';
 
 
 /** @type {BookReader} */

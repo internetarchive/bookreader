@@ -1,10 +1,10 @@
-import FestivalTTSEngine from '../../../src/plugins/tts/FestivalTTSEngine.js';
+import FestivalTTSEngine from '@/src/plugins/tts/FestivalTTSEngine.js';
 import sinon from 'sinon';
 import { afterEventLoop } from '../../utils.js';
 import { DUMMY_TTS_ENGINE_OPTS } from './AbstractTTSEngine.test.js';
-import PageChunk from '../../../src/plugins/tts/PageChunk.js';
-import PageChunkIterator from '../../../src/plugins/tts/PageChunkIterator.js';
-/** @typedef {import('../../../src/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
+import PageChunk from '@/src/plugins/tts/PageChunk.js';
+import PageChunkIterator from '@/src/plugins/tts/PageChunkIterator.js';
+/** @typedef {import('@/src/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
 
 describe('iOSCaptureUserIntentHack', () => {
   test('synchronously calls createSound/play to capture user intent', () => {

@@ -1,6 +1,6 @@
 import sinon from 'sinon';
-import { getNavPageNumHtml } from '../../../src/BookReader/Navbar/Navbar.js';
-import BookReader from '../../../src/BookReader.js';
+import { getNavPageNumHtml } from '@/src/BookReader/Navbar/Navbar.js';
+import BookReader from '@/src/BookReader.js';
 
 describe('getNavPageNumHtml', () => {
   const f = getNavPageNumHtml;

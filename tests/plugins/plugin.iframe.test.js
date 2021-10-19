@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 
-import BookReader from '../../src/BookReader.js';
-import { _attachEventListeners } from '../../src/plugins/plugin.iframe.js';
+import BookReader from '@/src/BookReader.js';
+import { _attachEventListeners } from '@/src/plugins/plugin.iframe.js';
 
 afterEach(() => {
   sinon.restore();

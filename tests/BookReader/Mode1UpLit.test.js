@@ -1,7 +1,7 @@
-import { BookModel } from '../../src/BookReader/BookModel.js';
-import { Mode1UpLit } from '../../src/BookReader/Mode1UpLit.js';
+import { BookModel } from '@/src/BookReader/BookModel.js';
+import { Mode1UpLit } from '@/src/BookReader/Mode1UpLit.js';
 
-/** @type {import('../../src/BookReader/options.js').BookReaderOptions['data']} */
+/** @type {import('@/src/BookReader/options.js').BookReaderOptions['data']} */
 const SAMPLE_DATA = [
   [
     { width: 123, height: 123, uri: 'https://archive.org/image0.jpg', pageNum: '1' },

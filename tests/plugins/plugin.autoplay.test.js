@@ -1,6 +1,6 @@
 
-import BookReader from '../../src/BookReader.js';
-import '../../src/plugins/plugin.autoplay.js';
+import BookReader from '@/src/BookReader.js';
+import '@/src/plugins/plugin.autoplay.js';
 
 
 let br;

@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { deepCopy } from '../utils.js';
-import { BookModel } from '../../src/BookReader/BookModel.js';
-/** @typedef {import('../../src/BookReader/options.js').BookReaderOptions} BookReaderOptions */
+import { BookModel } from '@/src/BookReader/BookModel.js';
+/** @typedef {import('@/src/BookReader/options.js').BookReaderOptions} BookReaderOptions */
 
 afterEach(() => {
   sinon.restore();

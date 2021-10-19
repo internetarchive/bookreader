@@ -1,8 +1,8 @@
 import sinon from 'sinon';
-import { BookModel } from '../../src/BookReader/BookModel.js';
-import { ImageCache } from '../../src/BookReader/ImageCache.js';
-import { Pow2ReduceSet } from '../../src/BookReader/ReduceSet.js';
-/** @typedef {import('../../src/BookReader/options.js').BookReaderOptions} BookReaderOptions */
+import { BookModel } from '@/src/BookReader/BookModel.js';
+import { ImageCache } from '@/src/BookReader/ImageCache.js';
+import { Pow2ReduceSet } from '@/src/BookReader/ReduceSet.js';
+/** @typedef {import('@/src/BookReader/options.js').BookReaderOptions} BookReaderOptions */
 
 afterEach(() => {
   jest.restoreAllMocks();
