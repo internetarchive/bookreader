@@ -86,7 +86,7 @@ describe('BookReader.prototype.enterFullscreen', ()  => {
     await br.enterFullscreen();
     expect(br.switchMode).toHaveBeenCalledTimes(1);
     expect(br.updateBrClasses).toHaveBeenCalledTimes(0); // book nav's fullscreen manager will set these classes
-    expect(br.trigger).toHaveBeenCalledTimes(1);
+    expect(br.trigger).toHaveBeenCalledTimes(2); // fragmentChange, fullscreenToggled
     expect(br.resize).toHaveBeenCalledTimes(1);
     expect(br.jumpToIndex).toHaveBeenCalledTimes(1);
   });
@@ -107,7 +107,7 @@ describe('BookReader.prototype.exitFullScreen', () => {
     await br.exitFullScreen();
     expect(br.switchMode).toHaveBeenCalledTimes(1);
     expect(br.updateBrClasses).toHaveBeenCalledTimes(1);
-    expect(br.trigger).toHaveBeenCalledTimes(1);
+    expect(br.trigger).toHaveBeenCalledTimes(2); // fragmentChange, fullscreenToggled
     expect(br.resize).toHaveBeenCalledTimes(1);
   });
 });

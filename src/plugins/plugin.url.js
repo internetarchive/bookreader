@@ -22,7 +22,7 @@ jQuery.extend(BookReader.defaultOptions, {
   urlHistoryBasePath: '/',
 
   /** Only these params will be reflected onto the URL */
-  urlTrackedParams: ['page', 'search', 'mode', 'region', 'highlight'],
+  urlTrackedParams: ['page', 'search', 'mode', 'region', 'highlight', 'view'],
 
   /** If true, don't update the URL when `page == n0 (eg "/page/n0")` */
   urlTrackIndex0: false,
