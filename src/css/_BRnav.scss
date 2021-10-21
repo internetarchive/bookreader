@@ -110,6 +110,17 @@
     &.hide {
       display: none;
     }
+    &.BRicon:not(.active) {
+      &:hover {
+        background-color: rgba(244, 255, 255, 0.1);
+      }
+      &:focus {
+        background-color: rgba(244, 255, 255, 0.2);
+      }
+      &:active:not(.BRicon.read) {
+        background-color: rgba(244, 255, 255, 0.3);
+      }
+    }
   }
 }
 

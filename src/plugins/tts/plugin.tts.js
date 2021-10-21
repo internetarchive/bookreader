@@ -134,7 +134,7 @@ BookReader.prototype.initNavbar = (function (super_) {
             </select>
           </li>
           <li>
-            <button type="button" name="review" title="${tooltips.review}">
+            <button class="BRicon" type="button" name="review" title="${tooltips.review}">
               <div class="icon icon-review"></div>
             </button>
           </li>
@@ -145,7 +145,7 @@ BookReader.prototype.initNavbar = (function (super_) {
             </button>
           </li>
           <li>
-            <button type="button" name="advance" title="${tooltips.advance}">
+            <button class="BRicon" type="button" name="advance" title="${tooltips.advance}">
               <div class="icon icon-advance"></div>
             </button>
           </li>

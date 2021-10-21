@@ -237,7 +237,22 @@ export class Navbar {
     br.options.controls.viewmode.visible && this._bindViewModeButton();
     this.updateNavPageNum(br.currentIndex());
 
+    // remove focus from bookreader navbar controls
+    this.removeFocusFromNavbarControls();
+
     return this.$nav;
+  }
+
+  /**
+   * remove focus from bookreader navbar control on icon click
+   */
+  removeFocusFromNavbarControls() {
+    let mouseDown = false;
+    $('.BRicon').mousedown(() => { mouseDown = true; });
+    $('.BRicon').click(() => { mouseDown = false; });
+    $('.BRicon').focus((e) => {
+      if (mouseDown) { e.currentTarget.blur(); }
+    });
   }
 
   /**
