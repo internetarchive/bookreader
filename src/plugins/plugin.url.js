@@ -196,3 +196,229 @@ BookReader.prototype.urlReadFragment = function() {
 BookReader.prototype.urlReadHashFragment = function() {
   return window.location.hash.substr(1);
 };
+
+
+ export class UrlPlugin {
+
+  constructor(options = {}) {
+    this.bookReaderOptions = options;
+
+    this.urlSchema = [
+      { name: 'page', position: 'path', default: 'n0' },
+      { name: 'mode', position: 'path', default: '2up' },
+      { name: 'search', position: 'path', deprecated_for: 'q' },
+      { name: 'q', position: 'query_param' },
+      { name: 'sort', position: 'query_param' },
+      { name: 'view', position: 'query_param' },
+      { name: 'admin', position: 'query_param' },
+    ];
+
+    this.urlState = {};
+    this.urlMode = 'hash';
+    this.urlHistoryBasePath = '/';
+    this.locationPollId = null;
+    this.oldLocationHash = null;
+    this.oldUserHash = null;
+
+    this.pullFromAddressBar();
+  }
+
+  /**
+   * Parse JSON object URL state to string format
+   * @param {object} urlState
+   * @returns {string}
+   */
+  urlStateToUrlString(urlSchema, urlState) {
+    let strPathParams = '';
+    let hasAppendQueryParams = false;
+    const searchParams = new URLSearchParams();
+
+    const addToSearchParams = (key, value) => {
+      searchParams.append(key, value);
+      hasAppendQueryParams = true;
+    }
+
+    const addToPathParams = (key, value) => {
+      strPathParams = `${strPathParams}/${key}/${value}`;
+    }
+
+    Object.keys(urlState).forEach(key => {
+      const schema = urlSchema.filter(schema => schema.name === key)[0];
+      if (schema) {
+        if (schema.position == 'path') {
+          if (schema.deprecated_for) {
+            addToSearchParams(schema.deprecated_for, urlState[key]);
+          } else {
+            addToPathParams(key, urlState[key]);
+          }
+        } else {
+          addToSearchParams(key, urlState[key]);
+        }
+      } else {
+        addToSearchParams(key, urlState[key]);
+      }
+    });
+
+    const concatenatedPath = `${strPathParams}?${searchParams.toString()}`;
+    return hasAppendQueryParams ? concatenatedPath : strPathParams;
+  }
+
+  /**
+   * Parse string URL add it in the current urlState
+   * Example:
+   *  /page/n7/mode/2up => {page: 'n7', mode: '2up'}
+   *  /page/n7/mode/2up/search/hello => {page: 'n7', mode: '2up', q: 'hello'}
+   * @param {array} urlSchema
+   * @param {string} str
+   * @returns {object}
+   */
+  urlStringToUrlState(urlSchema, str) {
+    const urlState = {};
+  
+    // Fetch searchParams from given {str}
+    // Note: whole URL path is needed for URLSearchParams
+    const urlPath = new URL(str, 'http://example.com');
+    const urlSearchParamsObj = Object.fromEntries(urlPath.searchParams.entries());
+    const urlStrSplitSlash = urlPath.pathname.split('/');
+    
+    urlSchema.forEach(schema => {
+      const pKey = urlStrSplitSlash.filter(item => item === schema.name);
+      if (pKey.length === 1) {
+        const indexOf = urlStrSplitSlash.indexOf(schema.name) + 1;
+        if (schema.deprecated_for) {
+          urlState[schema.deprecated_for] = urlStrSplitSlash[indexOf];
+        } else {
+          urlState[pKey] = urlStrSplitSlash[indexOf];
+        }
+      }
+    });
+    Object.keys(urlSearchParamsObj).forEach(params => {
+      urlState[params] = urlSearchParamsObj[params];
+    });
+    return urlState;
+  }
+
+  /**
+   * Add or update key-value to the urlState
+   * @param {string} key
+   * @param {string} val
+   */
+  setUrlParam(key, value) {
+    this.urlState[key] = value;
+
+    this.pushToAddressBar();
+  }
+
+  /**
+   * Delete key-value to the urlState
+   * @param {string} key
+   */
+  removeUrlParam(key) {
+    delete this.urlState[key];
+
+    this.pushToAddressBar();
+  }
+
+  /**
+   * Get key-value from the urlState
+   * @param {string} key
+   * @return {string}
+   */
+  getUrlParam(key) {
+    return this.urlState[key];
+  }
+
+  /**
+   * Put URL params to addressbar
+   */
+  pushToAddressBar() {
+    const urlStrPath = this.urlStateToUrlString(this.urlSchema, this.urlSchema);
+    if (this.urlMode == 'history') {
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, null, urlStrPath);
+      }
+    } else {
+      window.location.replace('#' + urlStrPath);
+    }
+    this.oldLocationHash = urlStrPath;
+  }
+
+  /**
+   * @param {string} urlFragment
+   */
+  pullFromAddressBar(urlFragment) {
+    this.urlState = this.urlStringToUrlState(this.urlSchema, urlFragment);
+  }
+
+  listenForHashChanges() {
+    this.oldLocationHash = this.urlReadFragment();
+    if (this.locationPollId) {
+      clearInterval(this.locationPollID);
+      this.locationPollId = null;
+    }
+
+    // check if the URL changes
+    const updateHash = () => {
+      const newFragment = this.urlReadFragment();
+      const hasFragmentChange = (newFragment != this.oldLocationHash) && (newFragment != this.oldUserHash);
+
+      if (!hasFragmentChange) { return; }
+
+      this.pullFromAddressBar();
+      this.oldUserHash = newFragment;
+    };
+    this.locationPollId = setInterval(updateHash, 500);
+  }
+
+  /**
+   * Will read either the hash or URL and return the bookreader fragment
+   * @return {string}
+   */
+  urlReadFragment () {
+    if (this.urlMode === 'history') {
+      return window.location.pathname.substr(this.urlHistoryBasePath.length);
+    } else {
+      return window.location.hash.substr(1);
+    }
+  }
+
+  /**
+ * Returns a shortened version of the title with the maximum number of characters
+ * @param {string} bookTitle
+ * @param {number} maximumCharacters
+ * @return {string}
+ */
+  shortTitle (bookTitle, maximumCharacters) {
+    if (bookTitle.length < maximumCharacters) {
+      return bookTitle;
+    }
+
+    const title = `${bookTitle.substr(0, maximumCharacters - 3)}...`;
+    return title;
+  }
+
+}
+
+export class BookreaderUrlPlugin extends BookReader {
+
+  init() {
+    if (this.options.enableUrlPlugin) {
+      this.urlPlugin = new UrlPlugin(this.options);
+      this.bind(BookReader.eventNames.PostInit, () => {
+        const { updateWindowTitle, urlMode } = this.options;
+        if (updateWindowTitle) {
+          document.title = this.urlPlugin.shortTitle(50);
+        }
+        if (urlMode === 'hash') {
+          this.urlPlugin.listenForHashChanges();
+        }
+      });
+    }
+
+    super.init();
+  }
+
+}
+
+window.BookReader = BookreaderUrlPlugin;
+export default BookreaderUrlPlugin;
