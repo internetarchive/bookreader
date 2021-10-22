@@ -196,14 +196,7 @@ BookReader.prototype.urlReadFragment = function() {
 BookReader.prototype.urlReadHashFragment = function() {
   return window.location.hash.substr(1);
 };
-
-
-<<<<<<< HEAD
 export class UrlPlugin {
-=======
- export class UrlPlugin {
->>>>>>> 82bb3226 (Add new URL plugin flow)
-
   constructor(options = {}) {
     this.bookReaderOptions = options;
 
@@ -240,11 +233,11 @@ export class UrlPlugin {
     const addToSearchParams = (key, value) => {
       searchParams.append(key, value);
       hasAppendQueryParams = true;
-    }
+    };
 
     const addToPathParams = (key, value) => {
       strPathParams = `${strPathParams}/${key}/${value}`;
-    }
+    };
 
     Object.keys(urlState).forEach(key => {
       const schema = urlSchema.filter(schema => schema.name === key)[0];
@@ -278,13 +271,13 @@ export class UrlPlugin {
    */
   urlStringToUrlState(urlSchema, str) {
     const urlState = {};
-  
+
     // Fetch searchParams from given {str}
     // Note: whole URL path is needed for URLSearchParams
     const urlPath = new URL(str, 'http://example.com');
     const urlSearchParamsObj = Object.fromEntries(urlPath.searchParams.entries());
     const urlStrSplitSlash = urlPath.pathname.split('/');
-    
+
     urlSchema.forEach(schema => {
       const pKey = urlStrSplitSlash.filter(item => item === schema.name);
       if (pKey.length === 1) {

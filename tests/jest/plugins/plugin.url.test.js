@@ -228,11 +228,11 @@ describe.only('UrlPlugin', () => {
       ];
       const url = '/page/n7/mode/2up';
       const url1 = '/page/n7/mode/1up';
-  
+
       expect(urlPlugin.urlStringToUrlState(urlSchema, url)).toEqual({page: 'n7', mode: '2up'});
       expect(urlPlugin.urlStringToUrlState(urlSchema, url1)).toEqual({page: 'n7', mode: '1up'});
     });
-  
+
     test('urlStringToUrlState with deprecated_for', () => {
       const urlPlugin = new UrlPlugin();
       const urlSchema = [
@@ -245,10 +245,10 @@ describe.only('UrlPlugin', () => {
         { name: 'admin', position: 'query_param' },
       ];
       const url = '/page/n7/mode/2up/search/hello';
-  
+
       expect(urlPlugin.urlStringToUrlState(urlSchema, url)).toEqual({page: 'n7', mode: '2up', q: 'hello'});
     });
-  
+
     test('urlStringToUrlState with query string', () => {
       const urlPlugin = new UrlPlugin();
       const urlSchema = [
@@ -260,8 +260,8 @@ describe.only('UrlPlugin', () => {
         { name: 'view', position: 'query_param' },
         { name: 'admin', position: 'query_param' },
       ];
-      const url = '/page/n7/mode/2up/search/hello?view=theather&foo=bar&sort=title_asc'
-  
+      const url = '/page/n7/mode/2up/search/hello?view=theather&foo=bar&sort=title_asc';
+
       expect(urlPlugin.urlStringToUrlState(urlSchema, url)).toEqual(
         {page: 'n7', mode: '2up', q: 'hello', view: 'theather', foo: 'bar', sort: 'title_asc'}
       );
@@ -293,7 +293,7 @@ describe.only('UrlPlugin', () => {
     urlPlugin.setUrlParam('page', '20');
     urlPlugin.setUrlParam('mode', '2up');
     urlPlugin.removeUrlParam('mode');
-    
+
     expect(urlPlugin.urlState).toEqual({page: '20'});
   });
 
@@ -307,7 +307,7 @@ describe.only('UrlPlugin', () => {
 
   test('shortTitle', () => {
     const urlPlugin = new UrlPlugin();
-    
+
     expect(urlPlugin.shortTitle('Goody Two-Shoes Book', 10)).toEqual('Goody T...');
     expect(urlPlugin.shortTitle('Goody Two-Shoes Book', 12)).toEqual('Goody Two...');
   });
