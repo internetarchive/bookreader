@@ -531,15 +531,12 @@ BookReader.prototype.init = function() {
   // Explicitly ensure this.mode exists for initNavbar() below
   this.mode = params.mode;
 
-  if (this.ui == "embed" && this.options.showNavbar) {
-    this.initEmbedNavbar();
-  } else {
-    if (this.options.showToolbar) {
-      this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
-    }
-    if (this.options.showNavbar) {
-      this.initNavbar();
-    }
+  // Display Navigation
+  if (this.options.showToolbar) {
+    this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
+  }
+  if (this.options.showNavbar) { // default navigation
+    this.initNavbar();
   }
 
   // Switch navbar controls on mobile/desktop
@@ -1583,9 +1580,6 @@ BookReader.prototype.updateViewModeButton = Navbar.prototype.updateViewModeButto
 exposeOverrideableMethod(Navbar, '_components.navbar', 'updateViewModeButton');
 BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'getNavPageNumString');
-/** @deprecated */
-BookReader.prototype.initEmbedNavbar = Navbar.prototype.initEmbed;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'initEmbed', 'initEmbedNavbar');
 /** @deprecated unused */
 BookReader.prototype.getNavPageNumHtml = getNavPageNumHtml;
 /** @deprecated unused outside this file */
