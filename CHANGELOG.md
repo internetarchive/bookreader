@@ -1,3 +1,6 @@
+# 5.0.0-22
+- Dev: remove deprecated embed nav view, use standard default @iisa
+
 # 5.0.0-21
 - Dev: Toggle view=theater in fullscreen @mc2
 
