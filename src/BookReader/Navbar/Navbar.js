@@ -241,35 +241,6 @@ export class Navbar {
   }
 
   /**
-   * Initialize the navigation bar when embedded
-   */
-  initEmbed() {
-    const { br } = this;
-    // IA-specific
-    const thisLink = (window.location + '')
-      .replace('?ui=embed','')
-      .replace('/stream/', '/details/')
-      .replace('#', '/');
-    const logoHtml = br.showLogo ? `<a class="logo" href="${br.logoURL}" target="_blank"></a>` : '';
-
-    br.refs.$BRfooter = this.$root = $('<div class="BRfooter"></div>');
-    br.refs.$BRnav = this.$nav = $(
-      `<div class="BRnav BRnavEmbed">
-          ${logoHtml}
-          <span class="BRembedreturn">
-             <a href="${thisLink}" target="_blank">${br.bookTitle}</a>
-          </span>
-          <span class="BRtoolbarbuttons">
-            <button class="BRicon book_left"></button>
-            <button class="BRicon book_right"></button>
-            <button class="BRicon full"></button>
-          </span>
-      </div>`);
-    this.$root.append(this.$nav);
-    br.refs.$br.append(this.$root);
-  }
-
-  /**
   * Returns the textual representation of the current page for the navbar
   * @param {number} index
   * @return {string}

@@ -127,10 +127,6 @@
   // Default
   @include brNavDark;
 
-  &.BRnavEmbed {
-    @include brNavLight;
-  }
-
   /* Full mobile styles */
   @media (max-width: $brBreakPointMobile) {
     .BRbodyMobileNavEnabled &,
@@ -222,25 +218,6 @@
   display: flex;
   flex-direction: row;
   border-top: 1px solid $controlsBorder;
-
-  &.BRnavEmbed {
-    padding-top: 0;
-    height: auto;
-    align-items: center;
-
-    .BRembedreturn {
-      flex: 1 auto;
-      overflow-x: hidden;
-    }
-    .logo {
-      display: inline-block;
-      width: 25px;
-      height: 25px;
-      margin: 0 10px;
-      background: transparent url(images/icon_home.svg) no-repeat center center;
-      background-size: contain;
-    }
-  }
 
   /* Theming */
 
