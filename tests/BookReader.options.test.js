@@ -36,4 +36,12 @@ describe('BookReader options', () => {
       expect(br.options.autoResize).toBe(true);
     });
   });
+
+  describe('`showNavbar`', () => {
+    it('is on by default', () => {
+      const br = new BookReader();
+      br.init();
+      expect(br.options.showNavbar).toBe(true);
+    });
+  });
 });

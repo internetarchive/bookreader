@@ -192,6 +192,22 @@ test('_getPageURISrcset with the most elements in srcset', () => {
   expect(br._getPageURISrcset(5, 35, undefined)).toBe("correctURL.png&scale=16 2x, correctURL.png&scale=8 4x, correctURL.png&scale=4 8x, correctURL.png&scale=2 16x, correctURL.png&scale=1 32x");
 });
 
+describe('Navigation Bars', () => {
+  test('Standard navigation is being used by default', () => {
+    br.initNavbar = jest.fn();
+    br.options.ui = '';
+    br.init();
+    expect(br.initNavbar).toHaveBeenCalledTimes(1);
+  });
+  test('Standard navigation is being used by default - when bookreader is embedded', () => {
+    br.initNavbar = jest.fn();
+    br.options.ui = 'embed';
+    br.init();
+    expect(br.initNavbar).toHaveBeenCalledTimes(1);
+    expect(br.options.ui).toEqual('embed');
+  });
+});
+
 describe('quantizeReduce', () => {
   const quantizeReduce = BookReader.prototype.quantizeReduce;
   const SAMPLE_FACTORS = [
