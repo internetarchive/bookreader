@@ -56,12 +56,32 @@
     </ia-bookreader>
   </section>
   <section style="height: 800px; width: 200px;">
+    <div style="margin-top: 10px;">
+      <button id="toggle-loggedin">Toggle Logged in view</button>
+    </div>
     <p>placeholder div to allow scrolling</p>
   </section>
 
 
-  <script id="pageUrl" type="text/javascript"></script>
+  <script>
+    // Set up demo things
+  
+    const toggleLoginBtn = document.querySelector('#toggle-loggedin');
+    const iaBR = document.querySelector('ia-bookreader');
+    toggleLoginBtn.addEventListener('click', () => {
+      const itemNav = iaBR.shadowRoot.querySelector('item-navigator');
+      const bookNav = itemNav.shadowRoot.querySelector('book-navigator');
 
+      const currLoggedIn = bookNav.signedIn;
+
+
+      console.log("Toggled SignedIn state", bookNav.signedIn, { currLoggedIn })
+    });
+
+    window.addEventListener('BookReader:PostInit', () => {
+    });
+  </script>
+  
   <script>
     // gather params here
     const urlParams = new URLSearchParams(window.location.search);

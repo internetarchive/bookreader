@@ -1,5 +1,4 @@
 import { css, html, LitElement } from 'lit-element';
-import { PromisedSingleton } from '@internetarchive/promised-singleton';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import SearchProvider from './search/search-provider.js';
 import DownloadProvider from './downloads/downloads-provider.js';
@@ -52,6 +51,8 @@ export class BookNavigator extends LitElement {
     this.menuShortcuts = [];
     this.sideMenuOpen = false;
     this.signedIn = false;
+    this.modal = undefined;
+    this.sharedObserver = undefined;
 
     // Untracked properties
     this.fullscreenMgr = null;
@@ -69,6 +70,10 @@ export class BookNavigator extends LitElement {
   updated(changed) {
     if (!this.bookreader) {
       return;
+    }
+    if (changed.has('signedIn') || changed.has('isAdmin')) {
+      /** redraw book submenus to propagate property update */
+      this.initializeBookSubmenus();
     }
     const isFirstSideMenuUpdate = changed.has('sideMenuOpen') && (changed.get('sideMenuOpen') === undefined);
     if (!isFirstSideMenuUpdate) {
@@ -102,6 +107,15 @@ export class BookNavigator extends LitElement {
    */
   initializeBookSubmenus() {
     const isBookProtected = this.bookreader.options.protected;
+
+    // const baseProviderConfig = {
+    //   modal: this.modal,
+    //   sharedObserver: this.sharedObserver,
+    //   bookreader: this.bookreader,
+    //   signedIn: this.signedIn,
+    //   isAdmin: this.isAdmin,
+    // };
+
     this.menuProviders = {
       search: new SearchProvider(
         /**
@@ -136,7 +150,7 @@ export class BookNavigator extends LitElement {
         bookreader: this.bookreader,
       }),
       share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType, this.bookreader.options.subPrefix),
-      bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader),
+      bookmarks: new BookmarksProvider(this.bookmarksOptions),
     };
 
     // add shortcut for volumes if multipleBooksList exists
@@ -165,9 +179,11 @@ export class BookNavigator extends LitElement {
     const referrerStr = `referer=${encodeURIComponent(location.href)}`;
     return {
       loginUrl: `https://${this.baseHost}/account/login?${referrerStr}`,
-      displayMode: this.signedIn ? 'bookmarks' : 'login',
-      showItemNavigatorModal: this.showItemNavigatorModal.bind(this),
-      closeItemNavigatorModal: this.closeItemNavigatorModal.bind(this),
+      signedIn: this.signedIn,
+      isAdmin: this.isAdmin,
+      modal: this.modal,
+      sharedObserver: this.sharedObserver,
+      bookreader: this.bookreader,
       onBookmarksChanged: (bookmarks) => {
         const method = Object.keys(bookmarks).length ? 'add' : 'remove';
         this[`${method}MenuShortcut`]('bookmarks');
@@ -203,7 +219,7 @@ export class BookNavigator extends LitElement {
     const availableMenus = [volumes, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
 
     if (this.shouldShowDownloadsMenu()) {
-      downloads.update(this.downloadableTypes);
+      downloads?.update(this.downloadableTypes);
       availableMenus.splice(1, 0, downloads);
     }
 
@@ -357,12 +373,7 @@ export class BookNavigator extends LitElement {
 
   async startResizeObserver() {
     if (!this.sharedObserver) {
-      const ro = new PromisedSingleton({
-        generator: async () => {
-          return new SharedResizeObserver();
-        },
-      });
-      this.sharedObserver = await ro.get();
+      this.sharedObserver = new SharedResizeObserver();
     }
 
     this.sharedObserver?.addObserver({
@@ -395,24 +406,6 @@ export class BookNavigator extends LitElement {
       detail: { isFullScreen },
     });
     this.dispatchEvent(event);
-  }
-
-  emitShowItemNavigatorModal(e) {
-    this.dispatchEvent(new CustomEvent('showItemNavigatorModal', {
-      detail: e.detail,
-    }));
-  }
-
-  emitCloseItemNavigatorModal() {
-    this.dispatchEvent(new CustomEvent('closeItemNavigatorModal'));
-  }
-
-  showItemNavigatorModal(e) {
-    this.emitShowItemNavigatorModal(e);
-  }
-
-  closeItemNavigatorModal() {
-    this.emitCloseItemNavigatorModal();
   }
 
   get loadingClass() {

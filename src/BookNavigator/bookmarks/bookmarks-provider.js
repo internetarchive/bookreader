@@ -10,12 +10,15 @@ import { IAIconBookmark } from '@internetarchive/icon-bookmark';
 customElements.define('icon-bookmark', IAIconBookmark);
 
 export default class BookmarksProvider {
-  constructor(options, bookreader) {
+  constructor(options) {
+    const { bookreader, modal } = options;
+    this.modal = options.modal;
     const boundOptions = Object.assign(this, options, {loginClicked: this.bookmarksLoginClicked});
     this.component = document.createElement('ia-bookmarks');
     this.component.bookreader = bookreader;
     this.component.options = boundOptions;
     this.component.displayMode = this.component.options.displayMode;
+    this.component.modal = modal;
 
     this.bindEvents();
 
@@ -32,8 +35,6 @@ export default class BookmarksProvider {
 
   bindEvents() {
     this.component.addEventListener('bookmarksChanged', this.bookmarksChanged.bind(this));
-    this.component.addEventListener('showItemNavigatorModal', this.showItemNavigatorModal);
-    this.component.addEventListener('closeItemNavigatorModal', this.closeItemNavigatorModal);
   }
 
   bookmarksChanged({ detail }) {

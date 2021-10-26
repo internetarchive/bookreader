@@ -16,8 +16,14 @@ body {
     display: none;
 }
 
+ia-bookreader {
+    min-height: 64vh;
+    height: 64vh;
+}
+
 .BookReader {
-    height: 600px;
+    min-height: 64vh;
+    height: 64vh;
     overflow: hidden;
     margin: 0 auto;
 }

@@ -61,7 +61,8 @@ class IABookmarks extends LitElement {
       options: { type: Object },
       displayMode: { type: String },
       editedBookmark: { type: Object },
-      deleteModalConfig: { type: Object }
+      deleteModalConfig: { type: Object},
+      modal: { attribute: false }
     };
   }
 
@@ -95,11 +96,12 @@ class IABookmarks extends LitElement {
     this.bookreader = {};
     this.editedBookmark = {};
     this.options = {};
+    this.modal = undefined;
     /**
      * Toggles display to either bookmarks or login cta
      * @param {('bookmarks'|'login')} displayMode
      */
-    this.displayMode = 'bookmarks';
+    this.displayMode = 'login';
 
     this.bookmarkColors = [{
       id: 0,
@@ -122,7 +124,11 @@ class IABookmarks extends LitElement {
     });
   }
 
-  updated() {
+  updated(changed) {
+    if (changed.has('options')) {
+      this.updateDisplay();
+    }
+
     this.emitBookmarksChanged();
   }
 
@@ -131,13 +137,25 @@ class IABookmarks extends LitElement {
     if (this.displayMode === 'login') {
       return;
     }
+  }
+
+  updateDisplay() {
+    const shouldDisplay = this.options.signedIn ? 'bookmarks' : 'login';
+    if (this.displayMode !== shouldDisplay) {
+      this.displayMode = shouldDisplay;
+      if (this.shouldDisplay === 'bookmarks') {
+        this.fetchUserBookmarks();
+      }
+    }
+  }
+
+  fetchUserBookmarks() {
     this.fetchBookmarks()
       .then(() => this.initializeBookmarks())
       .catch((err) => this.displayMode = 'login');
   }
 
   initializeBookmarks() {
-    this.displayMode = 'bookmarks';
     ['3PageViewSelected'].forEach((event) => {
       window.addEventListener(`BookReader:${event}`, (e) => {
         setTimeout(() => {
@@ -400,34 +418,26 @@ class IABookmarks extends LitElement {
   confirmDeletion(pageID) {
     const existingBookmark = this.getBookmark(pageID);
     if (existingBookmark.note) {
-      this.emitShowModal(pageID);
+      this.displayDeletionModal(pageID);
       return;
     }
     this.deleteBookmark({ detail: { id: `${pageID}` } });
   }
 
-  emitShowModal(pageID) {
-    this.dispatchEvent(new CustomEvent('showItemNavigatorModal', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        config: this.deleteModalConfig,
-        customModalContent: html`
-          <delete-modal-actions
-            .deleteAction=${() => this.deleteBookmark({ detail: { id: `${pageID}` } })}
-            .cancelAction=${() => this.emitCloseModal()}
-            .pageID=${pageID}
-          ></delete-modal-actions>
-        `,
-      },
-    }));
-  }
+  displayDeletionModal(pageID) {
+    const customModalContent = html`
+      <delete-modal-actions
+        .deleteAction=${() => this.deleteBookmark({ detail: { id: `${pageID}` } })}
+        .cancelAction=${() => this.modal.closeModal()}
+        .pageID=${pageID}
+      ></delete-modal-actions>
+    `;
 
-  emitCloseModal() {
-    this.dispatchEvent(new CustomEvent('closeItemNavigatorModal', {
-      bubbles: true,
-      composed: true,
-    }));
+
+    this.modal.showModal({
+      config: this.deleteModalConfig,
+      customModalContent,
+    });
   }
 
   deleteBookmark({ detail }) {
@@ -438,7 +448,7 @@ class IABookmarks extends LitElement {
 
     this.api.delete(detail.id);
     this.editedBookmark = {};
-    this.emitCloseModal();
+    this.modal.closeModal();
     this.renderBookmarkButtons();
   }
 
