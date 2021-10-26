@@ -137,13 +137,15 @@ class IABookmarks extends LitElement {
     if (this.displayMode === 'login') {
       return;
     }
+    this.setBREventListeners();
+    this.initializeBookmarks();
   }
 
   updateDisplay() {
     const shouldDisplay = this.options.signedIn ? 'bookmarks' : 'login';
     if (this.displayMode !== shouldDisplay) {
       this.displayMode = shouldDisplay;
-      if (this.shouldDisplay === 'bookmarks') {
+      if (shouldDisplay === 'bookmarks') {
         this.fetchUserBookmarks();
       }
     }
@@ -151,11 +153,12 @@ class IABookmarks extends LitElement {
 
   fetchUserBookmarks() {
     this.fetchBookmarks()
-      .then(() => this.initializeBookmarks())
-      .catch((err) => this.displayMode = 'login');
+      .then(() => {
+        this.initializeBookmarks();
+      });
   }
 
-  initializeBookmarks() {
+  setBREventListeners() {
     ['3PageViewSelected'].forEach((event) => {
       window.addEventListener(`BookReader:${event}`, (e) => {
         setTimeout(() => {
@@ -180,7 +183,9 @@ class IABookmarks extends LitElement {
         }
       });
     });
+  }
 
+  initializeBookmarks() {
     this.renderBookmarkButtons();
     this.markActiveBookmark(true);
     this.emitBookmarksChanged();
