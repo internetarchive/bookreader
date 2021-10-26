@@ -101,7 +101,7 @@ class IABookmarks extends LitElement {
      * Toggles display to either bookmarks or login cta
      * @param {('bookmarks'|'login')} displayMode
      */
-    this.displayMode = 'login';
+    this.displayMode = 'bookmarks';
 
     this.bookmarkColors = [{
       id: 0,

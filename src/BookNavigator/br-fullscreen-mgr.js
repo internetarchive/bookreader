@@ -16,9 +16,7 @@ export default class BRFullscreenMgr {
     this.setup = this.setup.bind(this);
     this.teardown = this.teardown.bind(this);
     this.resizeBookReaderContainer = this.resizeBookReaderContainer.bind(this);
-
     this.handleResizeEvent = this.handleResizeEvent.bind(this);
-
     this.handleBookReaderHeight = new Debouncer(
       this.resizeBookReaderContainer, this.debounceTime, this,
     );

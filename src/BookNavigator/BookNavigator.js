@@ -75,14 +75,6 @@ export class BookNavigator extends LitElement {
       /** redraw book submenus to propagate property update */
       this.initializeBookSubmenus();
     }
-    const isFirstSideMenuUpdate = changed.has('sideMenuOpen') && (changed.get('sideMenuOpen') === undefined);
-    if (!isFirstSideMenuUpdate) {
-      // realign image
-      if (this.bookreader.animating) {
-        return;
-      }
-      this.bookreader.resize();
-    }
   }
 
   /**
@@ -313,8 +305,6 @@ export class BookNavigator extends LitElement {
       this.fullscreenMgr = new BRFullscreenMgr(this.bookreader.el);
 
       this.initializeBookSubmenus();
-      setTimeout(() => this.bookreader.resize(), 0);
-
       this.startResizeObserver();
       this.emitLoadingStatusUpdate(true);
     });
