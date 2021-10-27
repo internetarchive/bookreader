@@ -94,11 +94,7 @@
     ],
     "roots": [
       "<rootDir>/src/",
-      "<rootDir>/tests/"
-    ],
-    "testPathIgnorePatterns": [
-      "<rootDir>/tests/e2e/",
-      "<rootDir>/tests/karma/"
+      "<rootDir>/tests/jest/"
     ],
     "coverageDirectory": "<rootDir>/coverage-jest"
   },
