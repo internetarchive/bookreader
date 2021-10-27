@@ -267,6 +267,7 @@ export default class ItemNavigator extends LitElement {
       #frame {
         position: relative;
         overflow: hidden;
+        color-scheme: dark;
       }
 
       #frame.fullscreen,
