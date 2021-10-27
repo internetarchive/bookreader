@@ -40,7 +40,7 @@ export default class BookmarksProvider {
   bookmarksChanged({ detail }) {
     const bookmarksLength = Object.keys(detail.bookmarks).length;
     this.updateMenu(bookmarksLength);
-    this.onBookmarksChanged(detail.bookmarks);
+    this.onBookmarksChanged(detail.bookmarks, detail.showSidePanel);
   }
 
   bookmarksLoginClicked() {

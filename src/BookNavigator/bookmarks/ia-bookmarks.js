@@ -138,7 +138,7 @@ class IABookmarks extends LitElement {
       return;
     }
     this.setBREventListeners();
-    this.initializeBookmarks();
+    // this.initializeBookmarks();
   }
 
   updateDisplay() {
@@ -178,9 +178,7 @@ class IABookmarks extends LitElement {
     });
     ['zoomOut', 'zoomIn', 'resize'].forEach((event) => {
       window.addEventListener(`BookReader:${event}`, () => {
-        if (this.bookreader.mode === this.bookreader.constModeThumb) {
-          this.renderBookmarkButtons();
-        }
+        this.renderBookmarkButtons();
       });
     });
   }
@@ -250,12 +248,13 @@ class IABookmarks extends LitElement {
     });
   }
 
-  emitBookmarksChanged() {
+  emitBookmarksChanged(showSidePanel = false) {
     this.dispatchEvent(new CustomEvent('bookmarksChanged', {
       bubbles: true,
       composed: true,
       detail: {
         bookmarks: this.bookmarks,
+        showSidePanel
       },
     }));
   }
@@ -271,6 +270,10 @@ class IABookmarks extends LitElement {
   }
 
   bookmarkButtonClicked(pageID) {
+    if (this.displayMode !== 'bookmarks') {
+      this.emitBookmarksChanged(true);
+      return;
+    }
     if (this.getBookmark(pageID)) {
       this.confirmDeletion(pageID);
     } else {
@@ -283,7 +286,13 @@ class IABookmarks extends LitElement {
 
     pages.forEach((pageEl) => {
       const existingButton = pageEl.querySelector('.bookmark-button');
-      if (existingButton) { existingButton.remove(); }
+      if (existingButton) {
+        existingButton.remove();
+      }
+      console.log('iterator renderBookmarkButtons', this.displayMode);
+      if (this.displayMode !== 'bookmarks') {
+        return;
+      }
       const pageID = +pageEl.classList.value.match(/pagediv\d+/)[0].replace(/\D/g, '');
       const pageBookmark = this.getBookmark(pageID);
       const bookmarkState = pageBookmark ? 'filled' : 'hollow';
@@ -515,6 +524,7 @@ class IABookmarks extends LitElement {
       ${this.bookmarksList}
       ${this.allowAddingBookmark ? this.addBookmarkButton : nothing}
     `;
+    console.log('this.render', this.bookmarks, this.modal);
     return html`
       <section class="bookmarks">
         ${this.displayMode === 'login' ? html`<bookmarks-login @click=${this.loginClick} .url=${loginUrl}></bookmarks-login>` : bookmarks}

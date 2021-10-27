@@ -176,7 +176,11 @@ export class BookNavigator extends LitElement {
       modal: this.modal,
       sharedObserver: this.sharedObserver,
       bookreader: this.bookreader,
-      onBookmarksChanged: (bookmarks) => {
+      onBookmarksChanged: (bookmarks, showSidePanel = false) => {
+        console.log('booknav on bkch', bookmarks, showSidePanel);
+        if (showSidePanel) {
+          this.updateSideMenu('bookmarks', 'open');
+        }
         const method = Object.keys(bookmarks).length ? 'add' : 'remove';
         this[`${method}MenuShortcut`]('bookmarks');
         this.updateMenuContents();
@@ -379,7 +383,6 @@ export class BookNavigator extends LitElement {
    */
   manageFullScreenBehavior() {
     this.emitFullScreenState();
-
     if (!this.bookreader.isFullscreen()) {
       this.fullscreenMgr.teardown();
     } else {
@@ -418,49 +421,6 @@ export class BookNavigator extends LitElement {
 
   static get styles() {
     return css`
-    #book-navigator.loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 30vh;
-    }
-
-    #book-navigator .book-loader {
-      width: 30%;
-      margin: auto;
-      text-align: center;
-      color: var(--primaryTextColor);
-    }
-
-    .book-loader {
-      position: relative;
-    }
-
-    .book-loader svg {
-      display: block;
-      width: 60%;
-      max-width: 100px;
-      height: auto;
-      margin: auto;
-    }
-
-    svg * {
-      fill: var(--primaryTextColor);
-    }
-
-    svg .ring {
-      animation: rotate 1.3s infinite linear;
-      transform-origin: 50px 50px;
-      transform-box: fill-box;
-      display: block; // transform won't work on inline style
-    }
-
-    @keyframes rotate {
-      0% {
-        transform: rotate(-360deg);
-      }
-    }
-
     .cover-img {
       max-height: 300px;
     }

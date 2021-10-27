@@ -77,5 +77,6 @@ export default class BRFullscreenMgr {
     this.brDom.style.height = newHeight;
     this.brDom.style.top = loanbarHeight;
     window.scrollTo(0, 0);
+    console.log('resizeBookReaderContainer');
   }
 }
