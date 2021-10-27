@@ -1,6 +1,7 @@
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.url.js';
 import { UrlPlugin } from '@/src/plugins/plugin.url.js';
+import sinon from 'sinon';
 
 let br;
 beforeAll(() => {
@@ -10,6 +11,7 @@ beforeAll(() => {
 
 afterEach(() => {
   jest.clearAllMocks();
+  sinon.restore();
 });
 
 describe.only('UrlPlugin', () => {
@@ -111,18 +113,48 @@ describe.only('UrlPlugin', () => {
     });
   });
 
-  test('pullFromAddressBar', () => {
-    const urlPlugin = new UrlPlugin();
-    urlPlugin.urlReadFragment = jest.fn(() => '/page/2/mode/1up');
+  describe('pullFromAddressBar', () => {
+    test('pullFromAddressBar', () => {
+      const urlPlugin = new UrlPlugin();
+      urlPlugin.urlReadFragment = jest.fn(() => '/page/2/mode/1up');
+  
+      urlPlugin.pullFromAddressBar(urlPlugin.urlReadFragment());
+      expect(urlPlugin.urlState).toEqual({page: '2', mode: '1up'});
+    });
 
-    urlPlugin.pullFromAddressBar(urlPlugin.urlReadFragment());
-    expect(urlPlugin.urlState).toEqual({page: '2', mode: '1up'});
+    test('pullFromAddressBar', () => {
+      // Not great-ish way 
+      urlPlugin.pullFromAddressBar({ pathname: '/foo/bar', hash: '#foo-bar' });
+    })
+  })
+
+
+  describe('pushToAddressBar', () => {
+
+    test('Calls replaceState in history mode', () => {
+      const historyReplaceSpy = sinon.spy(window.history, 'replaceState');
+      const hashReplaceSpy = sinon.spy(window.location, 'replace');
+      // something = new UrlPlugin() { urlMode = 'history' }
+      // something.pushToAddressBar()
+      expect(historyReplaceSpy.callCount).toBe(1);
+      expect(hashReplaceSpy.callCount).toBe(0);
+    });
+
+    test('Uses urlModeBasePath in history mode', () => {
+      x = new UrlPlugin()
+      x.urlModeBasePath = '/fake-base/path';
+      expect(historyReplaceSpy.args[0]).toBe([{}, null, '/fake-base/path/page/3'])
+    })
+
+    test('Calls replaceState in history mode', () => {
+      // Same but for hash mode
+    });
+
+
   });
 
-  test('pushToAddressBar', () => {
-    // TODO
-  });
 
+  
   test('setUrlParam', () => {
     const urlPlugin = new UrlPlugin();
     urlPlugin.setUrlParam('page', '20');

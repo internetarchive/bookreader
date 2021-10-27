@@ -204,23 +204,26 @@ export class UrlPlugin {
     this.bookReaderOptions = options;
 
     this.urlSchema = [
+      // The order of the position:path parameters matter and is used
+      // during rendering of the URL
       { name: 'page', position: 'path', default: 'n0' },
       { name: 'mode', position: 'path', default: '2up' },
       { name: 'search', position: 'path', deprecated_for: 'q' },
+
+      // Order of these doesn't matter
       { name: 'q', position: 'query_param' },
       { name: 'sort', position: 'query_param' },
       { name: 'view', position: 'query_param' },
       { name: 'admin', position: 'query_param' },
     ];
 
-    this.urlState = {};
     this.urlMode = 'hash';
     this.urlHistoryBasePath = '/';
     this.locationPollId = null;
     this.oldLocationHash = null;
     this.oldUserHash = null;
 
-    this.pullFromAddressBar();
+    this.pullFromAddressBar()
   }
 
   /**
@@ -232,6 +235,7 @@ export class UrlPlugin {
     let strPathParams = '';
     let hasAppendQueryParams = false;
     const searchParams = new URLSearchParams();
+    const pathParams = {};
 
     const addToSearchParams = (key, value) => {
       searchParams.append(key, value);
@@ -243,21 +247,27 @@ export class UrlPlugin {
     };
 
     Object.keys(urlState).forEach(key => {
-      const schema = urlSchema.filter(schema => schema.name === key)[0];
-      if (schema) {
-        if (schema.position == 'path') {
-          if (schema.deprecated_for) {
-            addToSearchParams(schema.deprecated_for, urlState[key]);
-          } else {
-            addToPathParams(key, urlState[key]);
-          }
-        } else {
-          addToSearchParams(key, urlState[key]);
-        }
+      let schema = urlSchema.find(schema => schema.name === key);
+      if (schema?.deprecated_for) {
+        schema = urlSchema.find(schema => schema.name === schema.deprecated_for);
+      }
+      if (schema?.position == 'path') {
+        // name=page, val=3, order=0
+        pathParams[schema.name] = urlState[key];
+        addToPathParams(key, urlState[key]);
       } else {
         addToSearchParams(key, urlState[key]);
       }
     });
+
+    // Ensure order of path paramters is the same as the order they
+    // appear in the schema
+    const strPathParams = urlSchema
+      .filter(s => s.position == 'path')
+      .map(schema => `${schema.name}/${pathParams[schema.name]}`)
+      .filter(s => s)
+      .join('/');
+
 
     const concatenatedPath = `${strPathParams}?${searchParams.toString()}`;
     return hasAppendQueryParams ? concatenatedPath : strPathParams;
@@ -281,18 +291,20 @@ export class UrlPlugin {
     const urlSearchParamsObj = Object.fromEntries(urlPath.searchParams.entries());
     const urlStrSplitSlash = urlPath.pathname.split('/');
 
-    urlSchema.forEach(schema => {
-      const pKey = urlStrSplitSlash.filter(item => item === schema.name);
-      if (pKey.length === 1) {
-        const indexOf = urlStrSplitSlash.indexOf(schema.name) + 1;
-        if (schema.deprecated_for) {
-          urlState[schema.deprecated_for] = urlStrSplitSlash[indexOf];
-        } else {
-          urlState[pKey] = urlStrSplitSlash[indexOf];
+    urlSchema
+      .filter(schema => schema.position == 'path')
+      .forEach(schema => {
+        const pKey = urlStrSplitSlash.filter(item => item === schema.name);
+        if (pKey.length === 1) {
+          const indexOf = urlStrSplitSlash.indexOf(schema.name) + 1;
+          if (schema.deprecated_for) {
+            urlState[schema.deprecated_for] = urlStrSplitSlash[indexOf];
+          } else {
+            urlState[pKey] = urlStrSplitSlash[indexOf];
+          }
         }
-      }
-    });
-    Object.keys(urlSearchParamsObj).forEach(params => {
+      });
+    Object.keys(urlSearchParamsObj).forEach(([key, val]) => {
       urlState[params] = urlSearchParamsObj[params];
     });
     return urlState;
@@ -340,18 +352,26 @@ export class UrlPlugin {
     } else {
       window.location.replace('#' + urlStrPath);
     }
+
+    // Question? Test do we need this?
     this.oldLocationHash = urlStrPath;
   }
 
   /**
    * @param {string} urlFragment
    */
-  pullFromAddressBar(urlFragment) {
-    this.urlState = this.urlStringToUrlState(this.urlSchema, urlFragment);
-  }
+  // pullFromAddressBar(urlFragment) {
+  //   this.urlState = this.urlStringToUrlState(this.urlSchema, urlFragment);
+  // }
+
+  //
+  // Get the url
+  // Check if it has changed
+  // if it has changed, it will update urlState
+  // trigger some sort of BR event, that will cause down stream to update
 
   listenForHashChanges() {
-    this.oldLocationHash = this.urlReadFragment();
+    this.oldLocationHash = window.location.hash.substr(1);
     if (this.locationPollId) {
       clearInterval(this.locationPollID);
       this.locationPollId = null;
@@ -359,13 +379,12 @@ export class UrlPlugin {
 
     // check if the URL changes
     const updateHash = () => {
-      const newFragment = this.urlReadFragment();
-      const hasFragmentChange = (newFragment != this.oldLocationHash) && (newFragment != this.oldUserHash);
+      const newFragment = window.location.hash.substr(1);
+      const hasFragmentChange = newFragment != this.oldLocationHash;
 
       if (!hasFragmentChange) { return; }
 
-      this.pullFromAddressBar();
-      this.oldUserHash = newFragment;
+      this.urlState = this.urlStringToUrlState(newFragment);
     };
     this.locationPollId = setInterval(updateHash, 500);
   }
@@ -374,12 +393,11 @@ export class UrlPlugin {
    * Will read either the hash or URL and return the bookreader fragment
    * @return {string}
    */
-  urlReadFragment () {
-    if (this.urlMode === 'history') {
-      return window.location.pathname.substr(this.urlHistoryBasePath.length);
-    } else {
-      return window.location.hash.substr(1);
-    }
+   pullFromAddressBar(location=window.location) {
+    const path = this.urlMode === 'history' ?
+      location.pathname.substr(this.urlHistoryBasePath.length)
+      : location.hash.substr(1);
+    this.urlState = this.urlStringToUrlState(this.urlSchema, this.urlState);
   }
 
   /**
