@@ -1,3 +1,8 @@
+# 5.0.0-23
+Fix: Darken scrollbars in Safari @pezvi
+Fix: Bookmarks service calls when reader is logged in @mc2
+Dev: Move jest tests into separate directory @cdrini
+
 # 5.0.0-22
 - Dev: remove deprecated embed nav view, use standard default @iisa
 
