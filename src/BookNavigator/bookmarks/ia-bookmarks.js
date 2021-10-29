@@ -121,6 +121,9 @@ class IABookmarks extends LitElement {
 
   setup() {
     this.api.identifier = this.bookreader.bookId;
+    if (this.displayMode === 'login') {
+      return;
+    }
     this.fetchBookmarks()
       .then(() => this.initializeBookmarks())
       .catch((err) => this.displayMode = 'login');

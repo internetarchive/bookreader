@@ -15,6 +15,7 @@ export default class BookmarksProvider {
     this.component = document.createElement('ia-bookmarks');
     this.component.bookreader = bookreader;
     this.component.options = boundOptions;
+    this.component.displayMode = this.component.options.displayMode;
 
     this.bindEvents();
 
