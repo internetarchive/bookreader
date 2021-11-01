@@ -5,7 +5,7 @@
  * https://openlibrary.org/dev/docs/bookurls
  */
 
-jQuery.extend(BookReader.defaultOptions, {
+ jQuery.extend(BookReader.defaultOptions, {
   enableUrlPlugin: true,
   bookId: '',
   /** @type {string} Defaults can be a urlFragment string */
@@ -50,7 +50,7 @@ BookReader.prototype.init = (function(super_) {
       this.bind(BookReader.eventNames.PostInit, () => {
         const { updateWindowTitle, urlMode } = this.options;
         if (updateWindowTitle) {
-          document.title = this.shortTitle(50);
+          document.title = this.shortTitle(this.bookTitle, 50);
         }
         if (urlMode === 'hash') {
           this.urlStartLocationPolling();
@@ -225,46 +225,38 @@ export class UrlPlugin {
 
   /**
    * Parse JSON object URL state to string format
+   * Arrange path names in an order that it is positioned on the urlSchema
    * @param {object} urlState
    * @returns {string}
    */
   urlStateToUrlString(urlSchema, urlState) {
-    let strPathParams = '';
-    let hasAppendQueryParams = false;
     const searchParams = new URLSearchParams();
-
-    const addToSearchParams = (key, value) => {
-      searchParams.append(key, value);
-      hasAppendQueryParams = true;
-    };
-
-    const addToPathParams = (key, value) => {
-      strPathParams = `${strPathParams}/${key}/${value}`;
-    };
+    const pathParams = {};
 
     Object.keys(urlState).forEach(key => {
-      const schema = urlSchema.filter(schema => schema.name === key)[0];
-      if (schema) {
-        if (schema.position == 'path') {
-          if (schema.deprecated_for) {
-            addToSearchParams(schema.deprecated_for, urlState[key]);
-          } else {
-            addToPathParams(key, urlState[key]);
-          }
-        } else {
-          addToSearchParams(key, urlState[key]);
-        }
+      let schema = urlSchema.find(schema => schema.name === key);
+      if (schema?.deprecated_for) {
+        schema = urlSchema.find(schemaKey => schemaKey.name === schema.deprecated_for);
+      }
+      if (schema?.position == 'path') {
+        pathParams[schema?.name] = urlState[key];
       } else {
-        addToSearchParams(key, urlState[key]);
+        searchParams.append(schema?.name || key, urlState[key]);
       }
     });
 
-    const concatenatedPath = `${strPathParams}?${searchParams.toString()}`;
-    return hasAppendQueryParams ? concatenatedPath : strPathParams;
+    const strPathParams = urlSchema
+      .filter(s => s.position == 'path')
+      .map(schema => pathParams[schema.name] ? `${schema.name}/${pathParams[schema.name]}` : '')
+      .join('/');
+
+    const strStrippedTrailingSlash = `${strPathParams.replace(/\/$/, '')}`;
+    const concatenatedPath = `/${strStrippedTrailingSlash}?${searchParams.toString()}`;
+    return searchParams.toString() ? concatenatedPath : `/${strStrippedTrailingSlash}`;
   }
 
   /**
-   * Parse string URL add it in the current urlState
+   * Parse string URL and add it in the current urlState
    * Example:
    *  /page/n7/mode/2up => {page: 'n7', mode: '2up'}
    *  /page/n7/mode/2up/search/hello => {page: 'n7', mode: '2up', q: 'hello'}
@@ -279,22 +271,38 @@ export class UrlPlugin {
     // Note: whole URL path is needed for URLSearchParams
     const urlPath = new URL(str, 'http://example.com');
     const urlSearchParamsObj = Object.fromEntries(urlPath.searchParams.entries());
-    const urlStrSplitSlash = urlPath.pathname.split('/');
+    const urlStrSplitSlashObj = Object.fromEntries(urlPath.pathname
+      .match(/[^\\/]+\/[^\\/]+/g)
+      .map(x => x.split('/'))
+    );
+    const doesKeyExists = (_object, _key) => {
+      return Object.keys(_object).some(value => value == _key);
+    };
 
-    urlSchema.forEach(schema => {
-      const pKey = urlStrSplitSlash.filter(item => item === schema.name);
-      if (pKey.length === 1) {
-        const indexOf = urlStrSplitSlash.indexOf(schema.name) + 1;
-        if (schema.deprecated_for) {
-          urlState[schema.deprecated_for] = urlStrSplitSlash[indexOf];
-        } else {
-          urlState[pKey] = urlStrSplitSlash[indexOf];
+    urlSchema
+      .filter(schema => schema.position == 'path')
+      .forEach(schema => {
+        if (!urlStrSplitSlashObj[schema.name] && schema.default) {
+          return urlState[schema.name] = schema.default;
         }
-      }
+        const hasPropertyKey = doesKeyExists(urlStrSplitSlashObj, schema.name);
+        const hasDeprecatedKey = doesKeyExists(schema, 'deprecated_for') && hasPropertyKey;
+
+        if (hasDeprecatedKey)
+          return urlState[schema.deprecated_for] = urlStrSplitSlashObj[schema.name];
+
+        if (hasPropertyKey)
+          return urlState[schema.name] = urlStrSplitSlashObj[schema.name];
+      });
+
+    // Add searchParams to urlState
+    // Check if Object value is a Boolean and convert value to Boolean
+    // Otherwise, return Object value
+    const isBoolean = value => value === 'true' || (value === 'false' ? false : value);
+    Object.entries(urlSearchParamsObj).forEach(([key, value]) => {
+      urlState[key] = isBoolean(value);
     });
-    Object.keys(urlSearchParamsObj).forEach(params => {
-      urlState[params] = urlSearchParamsObj[params];
-    });
+
     return urlState;
   }
 
@@ -332,7 +340,7 @@ export class UrlPlugin {
    * Put URL params to addressbar
    */
   pushToAddressBar() {
-    const urlStrPath = this.urlStateToUrlString(this.urlSchema, this.urlSchema);
+    const urlStrPath = this.urlStateToUrlString(this.urlSchema, this.urlState);
     if (this.urlMode == 'history') {
       if (window.history && window.history.replaceState) {
         window.history.replaceState({}, null, urlStrPath);
@@ -344,14 +352,11 @@ export class UrlPlugin {
   }
 
   /**
-   * @param {string} urlFragment
+   * Get the url and check if it has changed
+   * If it was changeed, update the urlState
    */
-  pullFromAddressBar(urlFragment) {
-    this.urlState = this.urlStringToUrlState(this.urlSchema, urlFragment);
-  }
-
   listenForHashChanges() {
-    this.oldLocationHash = this.urlReadFragment();
+    this.oldLocationHash = window.location.hash.substr(1);
     if (this.locationPollId) {
       clearInterval(this.locationPollID);
       this.locationPollId = null;
@@ -359,13 +364,12 @@ export class UrlPlugin {
 
     // check if the URL changes
     const updateHash = () => {
-      const newFragment = this.urlReadFragment();
-      const hasFragmentChange = (newFragment != this.oldLocationHash) && (newFragment != this.oldUserHash);
+      const newFragment = window.location.hash.substr(1);
+      const hasFragmentChange = newFragment != this.oldLocationHash;
 
       if (!hasFragmentChange) { return; }
 
-      this.pullFromAddressBar();
-      this.oldUserHash = newFragment;
+      this.urlState = this.urlStringToUrlState(newFragment);
     };
     this.locationPollId = setInterval(updateHash, 500);
   }
@@ -374,27 +378,12 @@ export class UrlPlugin {
    * Will read either the hash or URL and return the bookreader fragment
    * @return {string}
    */
-  urlReadFragment () {
+  pullFromAddressBar () {
     if (this.urlMode === 'history') {
       return window.location.pathname.substr(this.urlHistoryBasePath.length);
     } else {
       return window.location.hash.substr(1);
     }
-  }
-
-  /**
- * Returns a shortened version of the title with the maximum number of characters
- * @param {string} bookTitle
- * @param {number} maximumCharacters
- * @return {string}
- */
-  shortTitle (bookTitle, maximumCharacters) {
-    if (bookTitle.length < maximumCharacters) {
-      return bookTitle;
-    }
-
-    const title = `${bookTitle.substr(0, maximumCharacters - 3)}...`;
-    return title;
   }
 
 }
@@ -405,10 +394,8 @@ export class BookreaderUrlPlugin extends BookReader {
     if (this.options.enableUrlPlugin) {
       this.urlPlugin = new UrlPlugin(this.options);
       this.bind(BookReader.eventNames.PostInit, () => {
-        const { updateWindowTitle, urlMode } = this.options;
-        if (updateWindowTitle) {
-          document.title = this.urlPlugin.shortTitle(50);
-        }
+        const { urlMode } = this.options;
+
         if (urlMode === 'hash') {
           this.urlPlugin.listenForHashChanges();
         }
