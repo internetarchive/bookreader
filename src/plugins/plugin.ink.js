@@ -1,54 +1,57 @@
 // @ts-check
+import 'pepjs';
 import paper from 'paper/dist/paper-core';
+import { Mode1Up } from '../BookReader/Mode1Up';
+import { Mode2Up } from '../BookReader/Mode2Up';
 /** @typedef {import('../BookReader/BookModel').PageModel} PageModel */
 
-function makePenTool() {
-  const penTool = new paper.Tool();
-
+class PenTool extends paper.Tool {
   /** @type {paper.Path} */
-  let path = null;
+  path = null;
 
-  /**
+  constructor() {
+    super();
+
+    /**
      * @param {paper.ToolEvent} event
      */
-  penTool.onMouseDown = function (event) {
-    // Create a new path and set its stroke color to black:
-    path = new paper.Path({
-      segments: [event.point],
-      strokeColor: 'red',
-      strokeWidth: 4,
-    });
+    this.onMouseDown = (event) => {
+      if (event.event.pointerType != 'pen') return;
+      const scale = window.br.activeMode instanceof Mode1Up ? window.br.activeMode.mode1UpLit.scale :
+        window.br.activeMode instanceof Mode2Up ? window.br.activeMode.scale :
+          1;
+      // Create a new path and set its stroke color to black:
+      this.path = new paper.Path({
+        segments: [event.point.divide(scale)],
+        strokeColor: 'red',
+        strokeWidth: 2,
+      });
+    };
+
+    this.onMouseDrag =  (event) => {
+      if (event.event.pointerType != 'pen') return;
+      const scale = window.br.activeMode instanceof Mode1Up ? window.br.activeMode.mode1UpLit.scale :
+        window.br.activeMode instanceof Mode2Up ? window.br.activeMode.scale :
+          1;
+      this.path.add(event.point.divide(scale));
+    };
+
+    this.onMouseUp = (event) => {
+      if (event.event.pointerType != 'pen') return;
+      this.path = null;
+    };
   }
-
-  /**
-     * While the user drags the mouse, points are added to the path
-     * at the position of the mouse:
-     */
-  penTool.onMouseDrag = function (event) {
-    // console.log('mousedrag', event);
-    path.add(event.point);
-  }
-
-  /**
-     * @param {paper.ToolEvent} event
-     */
-  penTool.onMouseUp = function (event) {
-
-  }
-
-  return penTool;
 }
 
-/**
- *
- * @param {paper.Project} project
- */
-function makeEraserTool(project) {
+function makeEraserTool() {
   const eraserTool = new paper.Tool();
 
   /** @param {paper.ToolEvent} event */
   eraserTool.onMouseDrag = function(event) {
-    const m = project.hitTest(event.point);
+    const scale = window.br.activeMode instanceof Mode1Up ? window.br.activeMode.mode1UpLit.scale :
+      window.br.activeMode instanceof Mode2Up ? window.br.activeMode.scale :
+        1;
+    const m = paper.project.hitTest(event.point.divide(scale));
     if (m) m.item.remove();
   };
 
@@ -69,40 +72,40 @@ function makeEraserTool(project) {
 //     }
 // }
 
-/**
- * @param {HTMLCanvasElement} canvas
- */
-function initCanvas(canvas) {
-  paper.setup(canvas);
-
-  const penTool = makePenTool();
-  const eraserTool = makeEraserTool(paper.project);
-  penTool.activate();
-
-  canvas.addEventListener('pointerdown', ev => {
-    if (ev.button == 5) eraserTool.activate();
-    else penTool.activate();
-  });
-
-  canvas.addEventListener('pointerup', ev => penTool.activate());
-
-  // @ts-ignore
-  window.paper = paper;
-  return paper.project;
-}
-
 class InkPlugin {
+  /** @type {{[index: number]: paper.Project}} */
+  projects = {};
+
+  // Tools
+  penTool = new PenTool();
+  eraserTool = makeEraserTool();
+
   /** @param {import('../BookReader').default} br */
   constructor(br) {
     this.br = br;
-
-    /** @type {{[index: number]: paper.Project}} */
-    this.projects = {};
   }
 
   setup() {
-
     return this;
+  }
+
+  /**
+   * @param {HTMLCanvasElement} canvas
+   */
+  initProject(canvas) {
+    paper.setup(canvas);
+    this.penTool.activate();
+
+    canvas.addEventListener('pointerdown', ev => {
+      if (ev.button == 5) this.eraserTool.activate();
+      else this.penTool.activate();
+    });
+
+    canvas.addEventListener('pointerup', ev => this.penTool.activate());
+
+    // @ts-ignore
+    window.paper = paper;
+    return paper.project;
   }
 
   /**
@@ -121,7 +124,8 @@ class InkPlugin {
 
     return $canvas
       .attr('data-page-index', page.index)
-      .attr('data-page-width', page.width);
+      .attr('data-page-width', page.width)
+      .attr('data-page-height', page.height);
   }
 }
 
@@ -142,23 +146,19 @@ class BookReaderWithInkPlugin extends BookReader {
     super.init();
     const { projects } = this._plugins.ink;
     this.$('.BRcontainer').on('pointerover pointerdown', '.BR-ink-canvas', ev => {
+      if (ev.originalEvent.pointerType != 'pen') return;
+
       const canvas = ev.currentTarget;
       const $canvas = $(canvas);
-      const $container = $canvas.parents('.BRpagecontainer');
+      // this.$('.BRcontainer').addClass('pen-hover');
+      // $(document).one('pointerleave', ev => this.$('.BRcontainer').removeClass('pen-hover'))
       const index = $canvas.data('page-index');
-      console.log(`Activating project for ${index}`);
       if (!(index in projects)) {
-        projects[index] = initCanvas(canvas);
-        projects[index].view.scale($container.width() / $canvas.data('page-width'), new paper.Point(0, 0));
+        projects[index] = this._plugins.ink.initProject(canvas);
+        projects[index].view.setViewSize(new paper.Size($canvas.data('page-width'), $canvas.data('page-height')));
+
       }
-      const project = projects[index];
-      const { view } = project;
-
-      const curSize = new paper.Size($container.width(), $container.height());
-      view.scale(curSize.width / view.viewSize.width, new paper.Point(0, 0));
-      view.viewSize = curSize;
-
-      project.activate();
+      projects[index].activate();
     });
 
 
@@ -183,7 +183,6 @@ class BookReaderWithInkPlugin extends BookReader {
      * @param {import('../BookReader/BookModel').PageIndex} index
      */
   _createPageContainer(index) {
-    console.log(`Created Page ${index}`);
     const pageContainer = super._createPageContainer(index);
     this._plugins.ink.prependPageCanvas(this._models.book.getPage(index), pageContainer.$container);
 
