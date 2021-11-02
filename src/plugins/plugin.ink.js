@@ -162,15 +162,27 @@ class BookReaderWithInkPlugin extends BookReader {
     });
 
 
+    const $brContainer = this.$('.BRcontainer');
+    $brContainer[0].addEventListener("pointerover", e => {
+      if (e.pointerType == 'pen') {
+        $brContainer.addClass('pen-hover');
+      }
+    }, { passive: true, capture: true });
+
+    $brContainer[0].addEventListener("pointerleave", e => {
+      if (e.pointerType == 'pen') {
+        $brContainer.removeClass('pen-hover');
+      }
+    }, { passive: true, capture: true });
+
     // Prevent scrolling document with pen
     let isPen = false;
 
     // Copypasta from https://stackoverflow.com/a/49375331/2317712
     // to prevent pen scrolling
-    const $brContainer = this.$('.BRcontainer');
     $brContainer[0].addEventListener("pointerdown", e => {
       isPen = e.pointerType == "pen";
-      e.preventDefault();
+      if (isPen) e.preventDefault();
     }, { capture: true });
 
     $brContainer[0].addEventListener("touchstart", e => isPen && e.preventDefault(), {
