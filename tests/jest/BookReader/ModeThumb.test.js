@@ -36,34 +36,34 @@ describe('zoom', () => {
   const prepare = sinon.spy(br._modes.modeThumb, 'prepare');
 
   test('initializes with default columns', () => {
-    expect(this.br.thumbColumns).toBe(br.options.thumbColumns);
+    expect(br.thumbColumns).toBe(br.options.thumbColumns);
   });
 
   test('removes column and redraws zooming in', () => {
-    const oldColumns = this.br.thumbColumns;
+    const startColumns = br.thumbColumns;
     br._modes.modeThumb.zoom('in');
-    expect(this.br.thumbColumns).toBe(oldColumns - 1);
+    expect(br.thumbColumns).toBe(startColumns - 1);
     expect(prepare.callCount).toBe(1);
   });
 
   test('adds column and redraws zooming out', () => {
-    const oldColumns = this.br.thumbColumns;
+    const startColumns = br.thumbColumns;
     br._modes.modeThumb.zoom('out');
-    expect(this.br.thumbColumns).toBe(oldColumns + 1);
+    expect(br.thumbColumns).toBe(startColumns + 1);
     expect(prepare.callCount).toBe(1);
   });
 
   test('keeps columns and no redraw at zooming in limit', () => {
-    this.br.thumbColumns = br.options.thumbMinZoomColumns;
+    br.thumbColumns = br.options.thumbMinZoomColumns;
     br._modes.modeThumb.zoom('in');
-    expect(this.br.thumbColumns).toBe(br.options.thumbMinZoomColumns);
+    expect(br.thumbColumns).toBe(br.options.thumbMinZoomColumns);
     expect(prepare.callCount).toBe(0);
   });
 
   test('keeps columns and no redraw at zooming out limit', () => {
-    this.br.thumbColumns = br.options.thumbMaxZoomColumns;
+    br.thumbColumns = br.options.thumbMaxZoomColumns;
     br._modes.modeThumb.zoom('out');
-    expect(this.br.thumbColumns).toBe(br.options.thumbMaxZoomColumns);
+    expect(br.thumbColumns).toBe(br.options.thumbMaxZoomColumns);
     expect(prepare.callCount).toBe(0);
   });
 });
