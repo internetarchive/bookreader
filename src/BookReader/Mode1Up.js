@@ -79,8 +79,16 @@ export class Mode1Up {
    * @param {'in' | 'out'} direction
    */
   zoom(direction) {
-    if (direction == 'in') this.mode1UpLit.zoomIn();
-    else this.mode1UpLit.zoomOut();
+    switch (direction) {
+    case 'in':
+      this.mode1UpLit.zoomIn();
+      break;
+    case 'out':
+      this.mode1UpLit.zoomOut();
+      break;
+    default:
+      console.error(`Unsupported direction: ${direction}`);
+    }
   }
 
   /**

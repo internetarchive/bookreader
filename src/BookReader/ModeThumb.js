@@ -235,20 +235,27 @@ export class ModeThumb {
   }
 
   /**
-   * @param {1 | -1} direction
+   * @param {'in' | 'out'} direction
    */
   zoom(direction) {
     const oldColumns = this.br.thumbColumns;
     switch (direction) {
-    case -1:
-      this.br.thumbColumns += 1;
-      break;
-    case 1:
+    case 'in':
       this.br.thumbColumns -= 1;
       break;
+    case 'out':
+      this.br.thumbColumns += 1;
+      break;
+    default:
+      console.error(`Unsupported direction: ${direction}`);
     }
 
-    this.br.thumbColumns = clamp(this.br.thumbColumns, 2, 8);
+    // Limit zoom in/out columns
+    this.br.thumbColumns = clamp(
+      this.br.thumbColumns,
+      this.br.options.thumbMinZoomColumns,
+      this.br.options.thumbMaxZoomColumns
+    );
 
     if (this.br.thumbColumns != oldColumns) {
       this.br.displayedRows = [];  /* force a gallery redraw */
