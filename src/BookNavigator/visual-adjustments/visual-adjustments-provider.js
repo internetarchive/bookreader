@@ -60,7 +60,7 @@ export default class {
   }
 
   onZoomOut() {
-    this.bookreader.zoom();
+    this.bookreader.zoom(-1);
   }
 
   onAdjustmentChange(event) {
