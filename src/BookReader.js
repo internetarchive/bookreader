@@ -829,29 +829,11 @@ BookReader.prototype.drawLeafsThrottled = utils.throttle(
  * @param {number} direction Pass 1 to zoom in, anything else to zoom out
  */
 BookReader.prototype.zoom = function(direction) {
-  switch (this.mode) {
-  case this.constMode1up:
-    if (direction == 1) {
-      // XXX other cases
-      this.zoom1up('in');
-    } else {
-      this.zoom1up('out');
-    }
-    break;
-  case this.constMode2up:
-    if (direction == 1) {
-      // XXX other cases
-      this.zoom2up('in');
-    } else {
-      this.zoom2up('out');
-    }
-    break;
-  case this.constModeThumb:
-    // XXX update zoomThumb for named directions
-    this.zoomThumb(direction);
-    break;
+  if (direction == 1) {
+    this.activeMode.zoom('in');
+  } else {
+    this.activeMode.zoom('out');
   }
-
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   return;
 };

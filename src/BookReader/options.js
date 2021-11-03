@@ -25,6 +25,10 @@ export const DEFAULT_OPTIONS = {
   thumbMaxLoading: 4,
   /** spacing between thumbnails */
   thumbPadding: 10,
+  /** min zoom in columns */
+  thumbMinZoomColumns: 2,
+  /** max zoom out columns */
+  thumbMaxZoomColumns: 8,
 
   /** @type {number | 'fast' | 'slow'} speed for flip animation */
   flipSpeed: 'fast',
