@@ -33,13 +33,12 @@ describe('zoom', () => {
   const br = new BookReader({ data: SAMPLE_DATA });
   br.init();
 
-  const prepare = sinon.spy(br._modes.modeThumb, 'prepare');
-
   test('initializes with default columns', () => {
     expect(br.thumbColumns).toBe(br.options.thumbColumns);
   });
 
   test('removes column and redraws zooming in', () => {
+    const prepare = sinon.spy(br._modes.modeThumb, 'prepare');
     const startColumns = br.thumbColumns;
     br._modes.modeThumb.zoom('in');
     expect(br.thumbColumns).toBe(startColumns - 1);
@@ -47,6 +46,7 @@ describe('zoom', () => {
   });
 
   test('adds column and redraws zooming out', () => {
+    const prepare = sinon.spy(br._modes.modeThumb, 'prepare');
     const startColumns = br.thumbColumns;
     br._modes.modeThumb.zoom('out');
     expect(br.thumbColumns).toBe(startColumns + 1);
@@ -54,6 +54,7 @@ describe('zoom', () => {
   });
 
   test('keeps columns and no redraw at zooming in limit', () => {
+    const prepare = sinon.spy(br._modes.modeThumb, 'prepare');
     br.thumbColumns = br.options.thumbMinZoomColumns;
     br._modes.modeThumb.zoom('in');
     expect(br.thumbColumns).toBe(br.options.thumbMinZoomColumns);
@@ -61,6 +62,7 @@ describe('zoom', () => {
   });
 
   test('keeps columns and no redraw at zooming out limit', () => {
+    const prepare = sinon.spy(br._modes.modeThumb, 'prepare');
     br.thumbColumns = br.options.thumbMaxZoomColumns;
     br._modes.modeThumb.zoom('out');
     expect(br.thumbColumns).toBe(br.options.thumbMaxZoomColumns);
