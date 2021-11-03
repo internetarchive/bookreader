@@ -95,6 +95,7 @@ class InkPlugin {
     return JSON.stringify(
       Object.fromEntries(
         Object.entries(this.projects)
+          .filter(([index, project]) => !project.isEmpty())
           .map(([index, project]) => [index, project.exportJSON()])
       )
     );
