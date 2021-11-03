@@ -73,6 +73,8 @@ function makeEraserTool() {
 // }
 
 class InkPlugin {
+  /** @type {{[index: number]: string}} */
+  projectsFile = {};
   /** @type {{[index: number]: paper.Project}} */
   projects = {};
 
@@ -87,6 +89,20 @@ class InkPlugin {
 
   setup() {
     return this;
+  }
+
+  export() {
+    return JSON.stringify(
+      Object.fromEntries(
+        Object.entries(this.projects)
+          .map(([index, project]) => [index, project.exportJSON()])
+      )
+    );
+  }
+
+  /** @param {string} exportJsonStr */
+  import(exportJsonStr) {
+    this.projectsFile = JSON.parse(exportJsonStr);
   }
 
   /**
@@ -156,7 +172,9 @@ class BookReaderWithInkPlugin extends BookReader {
       if (!(index in projects)) {
         projects[index] = this._plugins.ink.initProject(canvas);
         projects[index].view.setViewSize(new paper.Size($canvas.data('page-width'), $canvas.data('page-height')));
-
+        if (index in this._plugins.ink.projectsFile) {
+          projects[index].importJSON(this._plugins.ink.projectsFile[index]);
+        }
       }
       projects[index].activate();
     });
