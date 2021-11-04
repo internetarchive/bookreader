@@ -283,6 +283,7 @@ BookReader.prototype.getActivePageContainerElements = function() {
  * Get the HTML Elements for the rendered page. Note there can be more than one, since
  * (at least as of writing) different modes can maintain different caches.
  * @param {PageIndex} pageIndex
+ * @return {HTMLElement[]}
  */
 BookReader.prototype.getActivePageContainerElementsForIndex = function(pageIndex) {
   return [

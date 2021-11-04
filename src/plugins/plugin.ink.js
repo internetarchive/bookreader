@@ -73,7 +73,7 @@ function makeEraserTool() {
 // }
 
 class InkPlugin {
-  /** @type {{[index: number]: string}} */
+  /** @type {{[index: number]: object}} */
   projectsFile = {};
   /** @type {{[index: number]: paper.Project}} */
   projects = {};
@@ -96,7 +96,7 @@ class InkPlugin {
       Object.fromEntries(
         Object.entries(this.projects)
           .filter(([index, project]) => !project.isEmpty())
-          .map(([index, project]) => [index, project.exportJSON()])
+          .map(([index, project]) => [index, project.exportJSON({ asString: false })]),
       )
     );
   }
@@ -104,14 +104,49 @@ class InkPlugin {
   /** @param {string} exportJsonStr */
   import(exportJsonStr) {
     this.projectsFile = JSON.parse(exportJsonStr);
+    for (const indexStr in this.projectsFile) {
+      const index = parseFloat(indexStr);
+      const page = this.br._models.book.getPage(index);
+      const activePageContainerEls = this.br.getActivePageContainerElementsForIndex(index);
+      for (const el of activePageContainerEls) {
+        const canvas = /** @type {HTMLCanvasElement} */($(el).find('.BR-ink-canvas')[0]);
+        if (!canvas) continue;
+        if (!(index in this.projects)) {
+          this.projects[indexStr] = this.createProject(page, canvas);
+        }
+        this.projects[indexStr].importJSON(this.projectsFile[indexStr]);
+      }
+    }
   }
 
   /**
+   * Construct or re-use the canvas, and add it to the given page container
+   * @param {PageModel} page
+   */
+  createCanvas(page) {
+    /** @type {JQuery<HTMLCanvasElement>} */
+    const $canvas = page.index in this.projects ?
+      $(this.projects[page.index].view.element) :
+      $(`<canvas class="BR-ink-canvas" />`);
+
+    if (page.index in this.projectsFile) {
+      if (!(page.index in this.projects)) {
+        this.projects[page.index] = this.createProject(page, $canvas[0]);
+      }
+      this.projects[page.index].importJSON(this.projectsFile[page.index]);
+    }
+
+    return $canvas;
+  }
+
+  /**
+   * @param {PageModel} page
    * @param {HTMLCanvasElement} canvas
    */
-  initProject(canvas) {
+  createProject(page, canvas) {
     paper.setup(canvas);
     this.penTool.activate();
+    paper.project.view.setViewSize(new paper.Size(page.width, page.height));
 
     canvas.addEventListener('pointerdown', ev => {
       if (ev.button == 5) this.eraserTool.activate();
@@ -123,26 +158,6 @@ class InkPlugin {
     // @ts-ignore
     window.paper = paper;
     return paper.project;
-  }
-
-  /**
-     * Construct or re-use the canvas, and add it to the given page container
-     * @param {PageModel} page
-     * @param {JQuery<HTMLElement>} $pageContainer
-     */
-  prependPageCanvas(page, $pageContainer) {
-    let $canvas = $pageContainer.find('canvas');
-    if (!$canvas.length) {
-      $canvas = page.index in this.projects ?
-        $(this.projects[page.index].view.element) :
-        $(`<canvas class="BR-ink-canvas" />`);
-      $pageContainer.prepend($canvas);
-    }
-
-    return $canvas
-      .attr('data-page-index', page.index)
-      .attr('data-page-width', page.width)
-      .attr('data-page-height', page.height);
   }
 }
 
@@ -169,15 +184,17 @@ class BookReaderWithInkPlugin extends BookReader {
       const $canvas = $(canvas);
       // this.$('.BRcontainer').addClass('pen-hover');
       // $(document).one('pointerleave', ev => this.$('.BRcontainer').removeClass('pen-hover'))
-      const index = $canvas.data('page-index');
-      if (!(index in projects)) {
-        projects[index] = this._plugins.ink.initProject(canvas);
-        projects[index].view.setViewSize(new paper.Size($canvas.data('page-width'), $canvas.data('page-height')));
-        if (index in this._plugins.ink.projectsFile) {
-          projects[index].importJSON(this._plugins.ink.projectsFile[index]);
-        }
+      const pageIndex = parseFloat(
+        $canvas.closest('.BRpagecontainer')
+          .attr('class')
+          .match(/pagediv\d+/)[0]
+          .slice('pagediv'.length)
+      );
+      if (!(pageIndex in projects)) {
+        const page = this._models.book.getPage(pageIndex);
+        projects[pageIndex] = this._plugins.ink.createProject(page, canvas);
       }
-      projects[index].activate();
+      projects[pageIndex].activate();
     });
 
 
@@ -215,7 +232,10 @@ class BookReaderWithInkPlugin extends BookReader {
      */
   _createPageContainer(index) {
     const pageContainer = super._createPageContainer(index);
-    this._plugins.ink.prependPageCanvas(this._models.book.getPage(index), pageContainer.$container);
+    if (!pageContainer.$container.find('.BR-ink-canvas').length) {
+      pageContainer.$container
+        .append(this._plugins.ink.createCanvas(this._models.book.getPage(index)));
+    }
 
     return pageContainer;
   }
