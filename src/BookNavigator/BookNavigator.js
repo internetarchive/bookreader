@@ -8,6 +8,7 @@ import SharingProvider from './sharing.js';
 import VolumesProvider from './volumes/volumes-provider.js';
 import BRFullscreenMgr from './br-fullscreen-mgr.js';
 import { Book } from './BookModel.js';
+import iaLogo from './assets/ia-logo.js';
 
 const events = {
   menuUpdated: 'menuUpdated',
@@ -58,7 +59,7 @@ export class BookNavigator extends LitElement {
     this.fullscreenMgr = null;
     this.sharedObserver = null;
     this.model = new Book();
-    this.shortcutOrder = ['volumes', 'search', 'bookmarks'];
+    this.shortcutOrder = ['fullscreen', 'volumes', 'search', 'bookmarks'];
   }
 
   firstUpdated() {
@@ -188,6 +189,42 @@ export class BookNavigator extends LitElement {
       },
     };
   }
+
+  /** Fullscreen Shortcut */
+  addFullscreenShortcut() {
+    const closeFS = {
+      icon: this.fullscreenShortcut,
+      id: 'fullscreen',
+    };
+    this.menuShortcuts.push(closeFS);
+    this.sortMenuShortcuts();
+    this.emitMenuShortcutsUpdated();
+  }
+
+  deleteFullscreenShortcut() {
+    console.log('delete fullscreenshortcut', this.menuShortcuts);
+    const updatedShortcuts = this.menuShortcuts.filter(({ id }) => {
+      return id !== 'fullscreen';
+    });
+    console.log('updatedShortcuts', updatedShortcuts);
+    this.menuShortcuts = updatedShortcuts;
+    this.sortMenuShortcuts();
+    this.emitMenuShortcutsUpdated();
+  }
+
+  closeFullscreen() {
+    this.bookreader.exitFullScreen();
+  }
+
+  get fullscreenShortcut() {
+    return html`
+      <button
+        @click=${this.closeFullscreen}
+        title="Exit fullscreen view"
+      >${iaLogo}</button>
+    `;
+  }
+  /** End Fullscreen Shortcut */
 
   /**
    * Open side menu
@@ -319,6 +356,11 @@ export class BookNavigator extends LitElement {
         this.bookreader = brInstance;
       }
       this.manageFullScreenBehavior(event);
+      if (this.bookreader.isFullscreenActive) {
+        this.addFullscreenShortcut();
+      } else {
+        this.deleteFullscreenShortcut();
+      }
     }, { passive: true });
     window.addEventListener('BookReader:ToggleSearchMenu', (event) => {
       this.dispatchEvent(new CustomEvent(events.updateSideMenu, {

@@ -49,14 +49,14 @@ export class BookReader extends LitElement {
   render() {
     return html`
       <div class="ia-bookreader">
-        <item-navigator
+        <ia-item-navigator
           itemType="bookreader"
           basehost=${this.baseHost}
           item=${this.base64Json}>
           <div slot="theater-main">
             <slot name="theater-main"></slot>
           </div>
-        </item-navigator>
+        </ia-item-navigator>
       </div>
     `;
   }
@@ -84,7 +84,7 @@ export class BookReader extends LitElement {
         height: inherit;
       }
 
-      item-navigator {
+      ia-item-navigator {
         display: block;
         width: 100%;
         color: var(--primaryTextColor);

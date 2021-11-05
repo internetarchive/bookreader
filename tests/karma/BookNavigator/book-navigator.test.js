@@ -17,9 +17,9 @@ const container = () => {
       .item=${item}
       .baseHost
     >
-      <div slot="bookreader">
+      <div slot="theater-main">
         <p class="visible-in-reader">now showing</p>
-      <div>
+      <\div>
       <p class="bunny">foo</p>
       </
   `;
