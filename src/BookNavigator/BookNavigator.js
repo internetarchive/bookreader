@@ -415,7 +415,7 @@ export class BookNavigator extends LitElement {
     const placeholder = this.bookReaderCannotLoad ? this.itemImage : this.loader;
     return html`<div id="book-navigator" class="${this.loadingClass}">
       ${placeholder}
-      <slot name="bookreader"></slot>
+      <slot name="theater-main"></slot>
     </div>
   `;
   }

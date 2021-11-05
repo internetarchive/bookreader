@@ -53,8 +53,8 @@ export class BookReader extends LitElement {
           itemType="bookreader"
           basehost=${this.baseHost}
           item=${this.base64Json}>
-          <div slot="bookreader">
-            <slot name="bookreader"></slot>
+          <div slot="theater-main">
+            <slot name="theater-main"></slot>
           </div>
         </item-navigator>
       </div>
