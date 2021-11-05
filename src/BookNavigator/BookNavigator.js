@@ -172,6 +172,7 @@ export class BookNavigator extends LitElement {
     return {
       loginUrl: `https://${this.baseHost}/account/login?${referrerStr}`,
       signedIn: this.signedIn,
+      displayMode: this.signedIn ? 'bookmarks' : 'login',
       isAdmin: this.isAdmin,
       modal: this.modal,
       sharedObserver: this.sharedObserver,

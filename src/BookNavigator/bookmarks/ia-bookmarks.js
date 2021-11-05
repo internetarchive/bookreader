@@ -138,16 +138,12 @@ class IABookmarks extends LitElement {
       return;
     }
     this.setBREventListeners();
-    // this.initializeBookmarks();
+    this.initializeBookmarks();
   }
 
   updateDisplay() {
-    const shouldDisplay = this.options.signedIn ? 'bookmarks' : 'login';
-    if (this.displayMode !== shouldDisplay) {
-      this.displayMode = shouldDisplay;
-      if (shouldDisplay === 'bookmarks') {
-        this.fetchUserBookmarks();
-      }
+    if (this.displayMode === 'bookmarks') {
+      this.fetchUserBookmarks();
     }
   }
 
@@ -270,10 +266,6 @@ class IABookmarks extends LitElement {
   }
 
   bookmarkButtonClicked(pageID) {
-    if (this.displayMode !== 'bookmarks') {
-      this.emitBookmarksChanged(true);
-      return;
-    }
     if (this.getBookmark(pageID)) {
       this.confirmDeletion(pageID);
     } else {
@@ -288,10 +280,6 @@ class IABookmarks extends LitElement {
       const existingButton = pageEl.querySelector('.bookmark-button');
       if (existingButton) {
         existingButton.remove();
-      }
-      console.log('iterator renderBookmarkButtons', this.displayMode);
-      if (this.displayMode !== 'bookmarks') {
-        return;
       }
       const pageID = +pageEl.classList.value.match(/pagediv\d+/)[0].replace(/\D/g, '');
       const pageBookmark = this.getBookmark(pageID);
@@ -524,7 +512,6 @@ class IABookmarks extends LitElement {
       ${this.bookmarksList}
       ${this.allowAddingBookmark ? this.addBookmarkButton : nothing}
     `;
-    console.log('this.render', this.bookmarks, this.modal);
     return html`
       <section class="bookmarks">
         ${this.displayMode === 'login' ? html`<bookmarks-login @click=${this.loginClick} .url=${loginUrl}></bookmarks-login>` : bookmarks}

@@ -2,7 +2,7 @@
  * Hide modal-manager that loads item-navigator-modal 
  * loading bookmarks related alert messages 
  */
-modal-manager {
+modal-manager[mode="closed"] {
   display: none
 }
 
