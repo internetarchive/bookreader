@@ -219,7 +219,7 @@ export class BookNavigator extends LitElement {
   get fullscreenShortcut() {
     return html`
       <button
-        @click=${this.closeFullscreen}
+        @click=${() => this.closeFullscreen()}
         title="Exit fullscreen view"
       >${iaLogo}</button>
     `;
