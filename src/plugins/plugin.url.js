@@ -216,8 +216,6 @@ export class UrlPlugin {
     this.locationPollId = null;
     this.oldLocationHash = null;
     this.oldUserHash = null;
-
-    this.pullFromAddressBar();
   }
 
   /**
@@ -334,9 +332,10 @@ export class UrlPlugin {
   }
 
   /**
-   * Put URL params to addressbar
+   * Push URL params to addressbar
    */
   pushToAddressBar() {
+    // add {this.urlHistoryBasePath} here
     const urlStrPath = this.urlStateToUrlString(this.urlSchema, this.urlState);
     if (this.urlMode == 'history') {
       if (window.history && window.history.replaceState) {
@@ -373,14 +372,14 @@ export class UrlPlugin {
 
   /**
    * Will read either the hash or URL and return the bookreader fragment
+   * @param {string} location
    * @return {string}
    */
-  pullFromAddressBar () {
-    if (this.urlMode === 'history') {
-      return window.location.pathname.substr(this.urlHistoryBasePath.length);
-    } else {
-      return window.location.hash.substr(1);
-    }
+  pullFromAddressBar (location) {
+    const path = this.urlMode === 'history'
+      ? location.substr(this.urlHistoryBasePath.length)
+      : location.substr(1);
+    this.urlState = this.urlStringToUrlState(this.urlSchema, path);
   }
 
 }
