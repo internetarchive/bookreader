@@ -12,6 +12,7 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+
 describe.only('UrlPlugin tests', () => {
   const urlPlugin = new UrlPlugin();
   const urlSchema = [
@@ -81,10 +82,18 @@ describe.only('UrlPlugin tests', () => {
         {page: 'n0', mode: '2up', ref: 'ol', ui: 'embed', wrapper: false, view: 'theater'}
       );
     });
+
+    test('urlStringToUrlState compare search and ?q', () => {
+      const url = '/page/n7/mode/2up/search/hello';
+      urlPlugin.urlState = { q: 'hello' };
+
+      expect(urlPlugin.urlStringToUrlState(urlSchema, url)).toEqual({page: 'n7', mode: '2up', q: 'hello'});
+    });
   });
 
   describe('url plugin helper functions', () => {
     test('setUrlParam', () => {
+      urlPlugin.urlState = {};
       urlPlugin.setUrlParam('page', '20');
       urlPlugin.setUrlParam('mode', '2up');
 
@@ -107,6 +116,49 @@ describe.only('UrlPlugin tests', () => {
     });
   });
 
+  describe('pushToAddressBar tests', () => {
+    test('pushToAddressBar hash mode', () => {
+      urlPlugin.urlMode = 'hash';
+      urlPlugin.urlSchema = urlSchema;
+      urlPlugin.urlState = {page: '20', mode: '2up', q: 'hello'};
+
+      urlPlugin.pushToAddressBar();
+
+      expect(window.location.hash).toBe('#/page/20/mode/2up?q=hello');
+    });
+
+    test('pushToAddressBar history mode', () => {
+      urlPlugin.urlMode = 'history';
+      urlPlugin.urlSchema = urlSchema;
+      urlPlugin.urlState = {page: '20', mode: '2up'};
+
+      urlPlugin.pushToAddressBar();
+
+      expect(window.location.pathname).toBe('/page/20/mode/2up');
+    });
+  });
+
+  describe('pullFromAddressBar tests', () => {
+    test('pullFromAddressBar history mode', () => {
+      urlPlugin.urlMode = 'history';
+      urlPlugin.pullFromAddressBar(window.location.pathname);
+
+      expect(urlPlugin.urlState).toEqual({page: '20', mode: '2up'});
+    });
+
+    test('pullFromAddressBar hash mode', () => {
+      window.history.pushState('', '', "#/page/20/mode/2up?q=hello");
+      urlPlugin.urlMode = 'hash';
+      urlPlugin.pullFromAddressBar(window.location.hash);
+
+      expect(urlPlugin.urlState).toEqual({page: '20', mode: '2up', q: 'hello'});
+    });
+
+  });
+
+  describe('listenForHasChanges', () => {
+    
+  });
 
 });
 
