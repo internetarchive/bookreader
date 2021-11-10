@@ -1,7 +1,6 @@
 import { html } from 'lit-element';
 import '@internetarchive/icon-share/icon-share';
-import { IASharingOptions } from '@internetarchive/ia-sharing-options';
-customElements.define('ia-sharing-options', IASharingOptions);
+import '@internetarchive/ia-sharing-options';
 
 export default class {
   constructor(metadata = {}, baseHost, baseItemType, subPrefix = '') {

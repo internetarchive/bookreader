@@ -32,7 +32,9 @@ export class BookNavigator extends LitElement {
       menuShortcuts: { type: Array },
       sideMenuOpen: { type: Boolean },
       signedIn: { type: Boolean },
-      sharedObserver: { reflect: false }
+      sharedObserver: { type: Object },
+      fullscreenBranding: { type: Object },
+      addBranding: { type: Boolean },
     };
   }
 
@@ -54,7 +56,8 @@ export class BookNavigator extends LitElement {
     this.signedIn = false;
     this.modal = undefined;
     this.sharedObserver = undefined;
-
+    this.fullscreenBranding = iaLogo;
+    this.addBranding = true;
     // Untracked properties
     this.fullscreenMgr = null;
     this.sharedObserver = null;
@@ -221,7 +224,7 @@ export class BookNavigator extends LitElement {
       <button
         @click=${() => this.closeFullscreen()}
         title="Exit fullscreen view"
-      >${iaLogo}</button>
+      >${this.fullscreenBranding}</button>
     `;
   }
   /** End Fullscreen Shortcut */
