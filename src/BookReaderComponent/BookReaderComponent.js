@@ -3,6 +3,7 @@
  */
 
 import { LitElement, html, css } from 'lit-element';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 
 import '@internetarchive/ia-item-navigator';
 import '../BookNavigator/BookNavigator.js';
@@ -12,6 +13,7 @@ export class BookReader extends LitElement {
     return {
       base64Json: { type: String },
       baseHost: { type: String },
+      sharedObserver: { type: Object }
     };
   }
 
@@ -19,6 +21,7 @@ export class BookReader extends LitElement {
     super();
     this.base64Json = '';
     this.baseHost = 'https://archive.org';
+    this.sharedObserver = new SharedResizeObserver();
   }
 
   firstUpdated() {
@@ -50,9 +53,10 @@ export class BookReader extends LitElement {
     return html`
       <div class="ia-bookreader">
         <ia-item-navigator
-          itemType="bookreader"
-          basehost=${this.baseHost}
-          item=${this.base64Json}>
+          .itemType=${'bookreader'}
+          .basehost=${this.baseHost}
+          .item=${this.base64Json}>
+          .sharedObserver=${this.sharedObserver}
           <div slot="theater-main">
             <slot name="theater-main"></slot>
           </div>
