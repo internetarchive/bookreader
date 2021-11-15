@@ -120,13 +120,14 @@ class IABookmarks extends LitElement {
   }
 
   setup() {
+    console.log('ia-bookmarks-setup', this.displayMode);
     this.api.identifier = this.bookreader.bookId;
     if (this.displayMode === 'login') {
       return;
     }
-    this.fetchBookmarks()
-      .then(() => this.initializeBookmarks())
-      .catch((err) => this.displayMode = 'login');
+    // this.fetchBookmarks()
+    //   .then(() => this.initializeBookmarks())
+    //   .catch((err) => this.displayMode = 'login');
   }
 
   initializeBookmarks() {
