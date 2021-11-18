@@ -515,7 +515,9 @@ BookReader.prototype.init = function () {
     .removeClass()
     .addClass("ui-" + this.ui)
     .addClass("br-ui-" + this.ui)
-    .addClass('BookReader');
+    .addClass('BookReader')
+    .attr('tabindex', -1)
+    .trigger('focus');
 
   // Add a class if this is a touch enabled device
   if (this.isTouchDevice) {
@@ -697,68 +699,63 @@ BookReader.prototype.setupKeyListeners = function () {
       return;
     }
     switch (e.key) {
-      // Page navigation
-      case "Home":
+    // Page navigation
+    case "Home":
+      e.preventDefault();
+      self.first();
+      break;
+    case "End":
+      e.preventDefault();
+      self.last();
+      break;
+    case "ArrowDown":
+    case "PageDown":
+    case "Down": // hack for IE and old Gecko
+      if (self.constMode2up === self.mode) {
         e.preventDefault();
-        self.first();
-        break;
-      case "End":
+        self.next();
+      }
+      break;
+    case "ArrowUp":
+    case "PageUp":
+    case "Up": // hack for IE and old Gecko
+      if (self.constMode2up === self.mode) {
         e.preventDefault();
-        self.last();
-        break;
-      case "ArrowDown":
-      case "PageDown":
-      case "Down": // hack for IE and old Gecko
-        if (self.constMode2up === self.mode) {
-          e.preventDefault();
-          self.next();
-        }
-        break;
-      case "ArrowUp":
-      case "PageUp":
-      case "Up": // hack for IE and old Gecko
-        if (self.constMode2up === self.mode) {
-          e.preventDefault();
-          self.prev();
-        }
-        break;
-      case "ArrowLeft":
-      case "Left": // hack for IE and old Gecko
-        if (self.constModeThumb != self.mode) {
-          e.preventDefault();
-          self.left();
-        }
-        break;
-      case "ArrowRight":
-      case "Right": // hack for IE and old Gecko
-        if (self.constModeThumb != self.mode) {
-          e.preventDefault();
-          self.right();
-        }
-        break;
-      // Zoom
-      case '-':
-      case 'Subtract':
+        self.prev();
+      }
+      break;
+    case "ArrowLeft":
+    case "Left": // hack for IE and old Gecko
+      if (self.constModeThumb != self.mode) {
         e.preventDefault();
-        self.zoom(-1);
-        break;
-      case '-':
-      case 'Subtract':
+        self.left();
+      }
+      break;
+    case "ArrowRight":
+    case "Right": // hack for IE and old Gecko
+      if (self.constModeThumb != self.mode) {
         e.preventDefault();
-        self.zoom(-1);
-        break;
-      case '+':
-      case '=':
-      case 'Add':
-        e.preventDefault();
-        self.zoom(1);
-        break;
-      // Fullscreen
-      case 'F':
-      case 'f':
-        e.preventDefault();
-        self.toggleFullscreen();
-        break;
+        self.right();
+      }
+      break;
+    // Zoom
+    case '-':
+    case 'Subtract':
+      e.preventDefault();
+      self.zoom(-1);
+      break;
+    case '+':
+    case '=':
+    case 'Add':
+      e.preventDefault();
+      self.zoom(1);
+      break;
+    // Fullscreen
+    case 'F':
+    case 'f':
+      e.preventDefault();
+      self.toggleFullscreen();
+      break;
     }
   });
 
