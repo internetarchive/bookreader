@@ -338,11 +338,11 @@ export class UrlPlugin {
    * Push URL params to addressbar
    */
   pushToAddressBar() {
-    // add {this.urlHistoryBasePath} here
     const urlStrPath = this.urlStateToUrlString(this.urlSchema, this.urlState);
     if (this.urlMode == 'history') {
       if (window.history && window.history.replaceState) {
-        window.history.replaceState({}, null, urlStrPath);
+        const newUrlPath = `${this.urlHistoryBasePath}${urlStrPath}`;
+        window.history.replaceState({}, null, newUrlPath);
       }
     } else {
       window.location.replace('#' + urlStrPath);
