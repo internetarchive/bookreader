@@ -6,7 +6,6 @@ import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-pr
 import BookmarksProvider from './bookmarks/bookmarks-provider.js';
 import SharingProvider from './sharing.js';
 import VolumesProvider from './volumes/volumes-provider.js';
-import BRFullscreenMgr from './br-fullscreen-mgr.js';
 import { Book } from './BookModel.js';
 import iaLogo from './assets/ia-logo.js';
 
@@ -59,7 +58,6 @@ export class BookNavigator extends LitElement {
     this.fullscreenBranding = iaLogo;
     this.addBranding = true;
     // Untracked properties
-    this.fullscreenMgr = null;
     this.sharedObserver = null;
     this.model = new Book();
     this.shortcutOrder = ['fullscreen', 'volumes', 'search', 'bookmarks'];
@@ -344,26 +342,22 @@ export class BookNavigator extends LitElement {
    */
   bindEventListeners() {
     window.addEventListener('BookReader:PostInit', (e) => {
+      console.log('BookReader:PostInit', e);
       this.bookreader = e.detail.props;
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
-      this.fullscreenMgr = new BRFullscreenMgr(this.bookreader.el);
 
       this.initializeBookSubmenus();
       this.startResizeObserver();
       this.emitLoadingStatusUpdate(true);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
+      console.log('BookReader:fullscreenToggled');
       const { detail: { props: brInstance = null } } = event;
       if (brInstance) {
         this.bookreader = brInstance;
       }
-      this.manageFullScreenBehavior(event);
-      if (this.bookreader.isFullscreenActive) {
-        this.addFullscreenShortcut();
-      } else {
-        this.deleteFullscreenShortcut();
-      }
+      this.manageFullScreenBehavior();
     }, { passive: true });
     window.addEventListener('BookReader:ToggleSearchMenu', (event) => {
       this.dispatchEvent(new CustomEvent(events.updateSideMenu, {
@@ -428,12 +422,16 @@ export class BookNavigator extends LitElement {
    * We need this to accommodate LOAN BAR during fullscreen
    */
   manageFullScreenBehavior() {
-    this.emitFullScreenState();
-    if (!this.bookreader.isFullscreen()) {
-      this.fullscreenMgr.teardown();
+    if (this.bookreader.isFullscreenActive) {
+      this.addFullscreenShortcut();
     } else {
-      this.fullscreenMgr.setup(this.bookreader);
+      this.deleteFullscreenShortcut();
     }
+    this.bookreader.updateBrClasses();
+
+    this.emitFullScreenState();
+
+    this.bookreader.resize(); // do we need?
   }
 
   /**
