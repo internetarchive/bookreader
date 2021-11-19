@@ -5,7 +5,7 @@
  * https://openlibrary.org/dev/docs/bookurls
  */
 
- jQuery.extend(BookReader.defaultOptions, {
+jQuery.extend(BookReader.defaultOptions, {
   enableUrlPlugin: true,
   bookId: '',
   /** @type {string} Defaults can be a urlFragment string */
