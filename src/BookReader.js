@@ -503,6 +503,9 @@ BookReader.prototype.init = function() {
 
   var params = this.initParams();
 
+  this.bind('urlStateChanged', () => this.updateFromParams());
+  // Call pullFromAddressBar
+
   this.firstIndex = params.index ? params.index : 0;
 
   // Setup Navbars and other UI
@@ -541,6 +544,8 @@ BookReader.prototype.init = function() {
       this.initNavbar();
     }
   }
+
+
 
   // Switch navbar controls on mobile/desktop
   this.switchNavbarControls();
@@ -1104,6 +1109,7 @@ BookReader.prototype.switchMode = function(
   var eventName = mode + 'PageViewSelected';
   this.trigger(BookReader.eventNames[eventName]);
 
+  this.urlPlugin?.setUrlParam('mode', /** Name of mode */);
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
 };
 
@@ -1243,26 +1249,24 @@ BookReader.prototype.currentIndex = function() {
  * Setter for this.firstIndex
  * Also triggers an event and updates the navbar slider position
  * @param {number} index
- * @param {object} [options]
- * @param {boolean} [options.suppressFragmentChange = false]
  */
-BookReader.prototype.updateFirstIndex = function(
-  index,
-  { suppressFragmentChange = false } = {}
-) {
+BookReader.prototype.updateFirstIndex = function(index) {
   // If there's no change, do nothing
   if (this.firstIndex === index) return;
 
   this.firstIndex = index;
-  if (!(this.suppressFragmentChange || suppressFragmentChange)) {
+  if (!(this.suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
   }
   // If there's an initial search we stop suppressing global URL changes
   // when local suppression ends
   // This seems to correctly handle multiple calls during mode/1up
-  if (this.options.initialSearchTerm && !suppressFragmentChange) {
+  if (this.options.initialSearchTerm) {
     this.suppressFragmentChange = false;
   }
+
+  // Might have to do this.book.getPage()
+  this.urlPlugin.setUrlParam('page', index);
   this.trigger('pageChanged');
   this.updateNavIndexThrottled(index);
 };
