@@ -162,9 +162,10 @@ describe.only('UrlPlugin tests', () => {
 
       urlPlugin.pullFromAddressBar('/details/foo/page/12/search/hello?view=theater');
       expect(urlPlugin.urlState).toEqual({page: '12', mode: '2up', q: 'hello', view: 'theater'});
-      // to fix test here
+
       urlPlugin.pushToAddressBar();
-      expect(window.location.pathname).toEqual('/details/foo/page/12/mode/2up?q=hello&view=theater');
+      const locationUrl = `${window.location.pathname}${window.location.search}`;
+      expect(locationUrl).toEqual('/details/foo/page/12/mode/2up?q=hello&view=theater');
     });
   });
 
