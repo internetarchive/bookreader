@@ -1,3 +1,7 @@
+# 5.0.0-24
+Fix: book-nav side panel zoom out @mc2
+Dev: refactor zoom code @mc2
+
 # 5.0.0-23
 Fix: Darken scrollbars in Safari @pezvi
 Fix: Bookmarks service calls when reader is logged in @mc2
