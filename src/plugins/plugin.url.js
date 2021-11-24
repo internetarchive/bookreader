@@ -86,7 +86,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
   this.oldLocationHash = this.urlReadFragment();
 
   if (this.locationPollId) {
-    clearInterval(this.locationPollID);
+    clearInterval(this.locationPollId);
     this.locationPollId = null;
   }
 
@@ -213,7 +213,7 @@ export class UrlPlugin {
     this.urlState = {};
     this.urlMode = 'hash';
     this.urlHistoryBasePath = '/';
-    this.locationPollId = null;
+    this.urlLocationPollId = null;
     this.oldLocationHash = null;
     this.oldUserHash = null;
   }
@@ -353,9 +353,9 @@ export class UrlPlugin {
    */
   listenForHashChanges() {
     this.oldLocationHash = window.location.hash.substr(1);
-    if (this.locationPollId) {
-      clearInterval(this.locationPollID);
-      this.locationPollId = null;
+    if (this.urlLocationPollId) {
+      clearInterval(this.urlLocationPollId);
+      this.urlLocationPollId = null;
     }
 
     // check if the URL changes
@@ -367,7 +367,7 @@ export class UrlPlugin {
 
       this.urlState = this.urlStringToUrlState(newFragment);
     };
-    this.locationPollId = setInterval(updateHash, 500);
+    this.urlLocationPollId = setInterval(updateHash, 500);
   }
 
   /**
