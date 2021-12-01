@@ -422,16 +422,13 @@ export class BookNavigator extends LitElement {
    * We need this to accommodate LOAN BAR during fullscreen
    */
   manageFullScreenBehavior() {
+    this.emitFullScreenState();
+
     if (this.bookreader.isFullscreenActive) {
       this.addFullscreenShortcut();
     } else {
       this.deleteFullscreenShortcut();
     }
-    this.bookreader.updateBrClasses();
-
-    this.emitFullScreenState();
-
-    this.bookreader.resize(); // do we need?
   }
 
   /**

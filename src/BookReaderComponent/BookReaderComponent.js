@@ -3,7 +3,6 @@
  */
 
 import { LitElement, html, css } from 'lit-element';
-import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 
 import '@internetarchive/ia-item-navigator';
 import '../BookNavigator/BookNavigator.js';
@@ -13,7 +12,7 @@ export class BookReader extends LitElement {
     return {
       base64Json: { type: String },
       baseHost: { type: String },
-      sharedObserver: { type: Object }
+      fullscreen: { type: Boolean, reflect: true, attribute: true }
     };
   }
 
@@ -21,7 +20,7 @@ export class BookReader extends LitElement {
     super();
     this.base64Json = '';
     this.baseHost = 'https://archive.org';
-    this.sharedObserver = new SharedResizeObserver();
+    this.fullscreen = false;
   }
 
   firstUpdated() {
@@ -49,14 +48,33 @@ export class BookReader extends LitElement {
     this.base64Json = value;
   }
 
+  manageFullscreen(e) {
+    const { detail } = e;
+    console.log("MANAGE FS ", detail);
+
+    const fullscreen = !!detail.isFullScreen;
+    if (fullscreen) {
+      setTimeout(() => {
+        console.log('IN TIME OUT FS', detail);
+        this.fullscreen = fullscreen;
+      }, 300);
+    } else {
+      console.log(" IN FS NOT FS", detail);
+      this.fullscreen = fullscreen;
+    }
+
+
+  }
+
   render() {
     return html`
       <div class="ia-bookreader">
         <ia-item-navigator
+          @fullscreenToggled=${this.manageFullscreen}
           .itemType=${'bookreader'}
           .basehost=${this.baseHost}
           .item=${this.base64Json}>
-          .sharedObserver=${this.sharedObserver}
+        >
           <div slot="theater-main">
             <slot name="theater-main"></slot>
           </div>
@@ -79,6 +97,12 @@ export class BookReader extends LitElement {
         --secondaryCTABorder: #999;
         --primaryErrorCTAFill: #e51c26;
         --primaryErrorCTABorder: #f8c6c8;
+      }
+
+      :host([fullscreen]),
+      ia-item-navigator[viewportinfullscreen] {
+        position: fixed;
+        inset: 0;
       }
 
       .ia-bookreader {
