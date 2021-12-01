@@ -423,16 +423,19 @@ export class BookNavigator extends LitElement {
    */
   manageFullScreenBehavior() {
     this.emitFullScreenState();
+    const isFullScreen = this.bookreader.isFullscreen();
 
-    if (this.bookreader.isFullscreenActive) {
+    if (isFullScreen) {
       this.addFullscreenShortcut();
+      console.log('in book-nav manageFullScreenBehavior - isFS will fire UpdateClasses');
+      this.bookreader.updateBrClasses();
     } else {
       this.deleteFullscreenShortcut();
     }
   }
 
   /**
-   * Intercepts and relays fullscreen toggle events
+   * Relays fullscreen toggle events
    */
   emitFullScreenState() {
     const isFullScreen = this.bookreader.isFullscreen();
