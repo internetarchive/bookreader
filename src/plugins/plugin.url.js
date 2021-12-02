@@ -372,16 +372,13 @@ export class UrlPlugin {
 
   /**
    * Will read either the hash or URL and return the bookreader fragment
-   * @param {string} location
-   * @return {string}
    */
-  pullFromAddressBar (location) {
+  pullFromAddressBar (location = window.location) {
     const path = this.urlMode === 'history'
-      ? location.substr(this.urlHistoryBasePath.length)
-      : location.substr(1);
+      ? (location.pathname.substr(this.urlHistoryBasePath.length) + location.search)
+      : location.hash.substr(1);
     this.urlState = this.urlStringToUrlState(this.urlSchema, path);
   }
-
 }
 
 export class BookreaderUrlPlugin extends BookReader {

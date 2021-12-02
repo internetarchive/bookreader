@@ -123,7 +123,7 @@ describe.only('UrlPlugin tests', () => {
       urlPlugin.urlState = {};
       urlPlugin.urlMode = 'hash';
 
-      urlPlugin.pullFromAddressBar('/page/12');
+      urlPlugin.pullFromAddressBar({ pathname: '/page/12', search: '', hash: '' });
       expect(urlPlugin.urlState).toEqual({page: '12', mode: '2up'});
 
       urlPlugin.pushToAddressBar();
@@ -134,7 +134,7 @@ describe.only('UrlPlugin tests', () => {
       urlPlugin.urlState = {};
       urlPlugin.urlMode = 'hash';
 
-      urlPlugin.pullFromAddressBar('/page/12/search/hello?view=theater');
+      urlPlugin.pullFromAddressBar({ pathname: '/page/12', search: '?q=hello&view=theater', hash: '' });
       expect(urlPlugin.urlState).toEqual({page: '12', mode: '2up', q: 'hello', view: 'theater'});
 
       urlPlugin.pushToAddressBar();
@@ -148,7 +148,7 @@ describe.only('UrlPlugin tests', () => {
       urlPlugin.urlHistoryBasePath = '/details/foo';
       urlPlugin.urlMode = 'history';
 
-      urlPlugin.pullFromAddressBar('/details/foo/page/12');
+      urlPlugin.pullFromAddressBar({ pathname: '/details/foo/page/12', search: '', hash: '' });
       expect(urlPlugin.urlState).toEqual({page: '12', mode: '2up'});
 
       urlPlugin.pushToAddressBar();
@@ -160,7 +160,7 @@ describe.only('UrlPlugin tests', () => {
       urlPlugin.urlHistoryBasePath = '/details/foo';
       urlPlugin.urlMode = 'history';
 
-      urlPlugin.pullFromAddressBar('/details/foo/page/12/search/hello?view=theater');
+      urlPlugin.pullFromAddressBar({ pathname: '/details/foo/page/12', search: '?q=hello&view=theater', hash: '' });
       expect(urlPlugin.urlState).toEqual({page: '12', mode: '2up', q: 'hello', view: 'theater'});
 
       urlPlugin.pushToAddressBar();
