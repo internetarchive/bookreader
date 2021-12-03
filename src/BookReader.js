@@ -264,6 +264,15 @@ BookReader.prototype.setup = function (options) {
     useSrcSet: this.options.useSrcSet,
     reduceSet: this.reduceSet,
   });
+
+  /**
+   * Flag if BookReader has "focus" for keyboard shortcuts
+   * Initially true, set to false when:
+   * - BookReader scrolled out of view
+   * - User clicked outside of BookReader or NavBar
+   * - User tabbed to element outside of BookReader or NavBar
+   */
+  this.hasKeyFocus = true;
 };
 
 /**
@@ -515,9 +524,7 @@ BookReader.prototype.init = function () {
     .removeClass()
     .addClass("ui-" + this.ui)
     .addClass("br-ui-" + this.ui)
-    .addClass('BookReader')
-    .attr('tabindex', -1)
-    .trigger('focus');
+    .addClass('BookReader');
 
   // Add a class if this is a touch enabled device
   if (this.isTouchDevice) {
@@ -666,31 +673,67 @@ BookReader.prototype.resize = function () {
 };
 
 /**
- * Binds keyboard event listeners
+ * Intersection observer callback sets BookReader keyboard focus
+ * off when the BookReader is not in the viewport.
+ * @param {object} entries
+ * @param {function} observer
+ */
+BookReader.prototype.handleIntersection = function (entries, observer) {
+  entries.forEach((entry) => {
+    if (entry.intersectionRatio === 0) {
+      this.hasKeyFocus = false;
+    }
+  });
+};
+
+/**
+ * Returns true if element in area to activate BookReader keyboard focus
+ * @param {object} element
+ * @returns {boolean}
+ */
+BookReader.prototype.isKeyFocus = function (element) {
+  if (element.closest('#theatre-ia')) {
+    return true;
+  } else if (element.closest('#topnav')) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Binds keyboard and keyboard focus event listeners
  */
 BookReader.prototype.setupKeyListeners = function () {
 
-  const brArea = document.getElementById('BookReader');
-  var self = this;
-  /*
-    var KEY_PGUP = 33;
-    var KEY_PGDOWN = 34;
-    var KEY_END = 35;
-    var KEY_HOME = 36;
-    var KEY_LEFT = 37;
-    var KEY_UP = 38;
-    var KEY_RIGHT = 39;
-    var KEY_DOWN = 40;
-    // The minus(-) and equal(=) keys have different mappings for different browsers
-    var KEY_MINUS = 189; // Chrome
-    var KEY_MINUS_F = 173; // Firefox
-    var KEY_NUMPAD_SUBTRACT = 109;
-    var KEY_EQUAL = 187; // Chrome
-    var KEY_EQUAL_F = 61; // Firefox
-    var KEY_NUMPAD_ADD = 107;
-  */
+  // Keyboard focus by click location
+  document.addEventListener('click', (event) => {
+    this.hasKeyFocus = this.isKeyFocus(event.target);
+  });
 
-  brArea.addEventListener('keydown', (e) => {
+  // Keyboard focus by tabbed element location
+  document.addEventListener('focusin', (event) => {
+    this.hasKeyFocus = this.isKeyFocus(event.target);
+  });
+
+  // Keyboard focus by BookReader in viewport
+  const brArea = document.getElementById('BookReader');
+  const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: [0, 1],
+  };
+  const observer = new IntersectionObserver(this.handleIntersection.bind(this), options);
+  observer.observe(brArea);
+
+  // Keyboard listeners
+  var self = this;
+  document.addEventListener('keydown', (e) => {
+
+    // Ignore if BookReader "focus" flag not set
+    if (!self.hasKeyFocus) {
+      return;
+    }
+
     // Ignore if modifiers are active.
     if (e.getModifierState('Control') ||
       e.getModifierState('Alt') ||
@@ -698,6 +741,12 @@ BookReader.prototype.setupKeyListeners = function () {
       e.getModifierState('Win') /* hack for IE */) {
       return;
     }
+
+    // Ignore in input elements
+    if (utils.isInputActive()) {
+      return;
+    }
+
     switch (e.key) {
     // Page navigation
     case "Home":
@@ -711,6 +760,7 @@ BookReader.prototype.setupKeyListeners = function () {
     case "ArrowDown":
     case "PageDown":
     case "Down": // hack for IE and old Gecko
+      // In 1up and thumb mode page scrolling handled by browser
       if (self.constMode2up === self.mode) {
         e.preventDefault();
         self.next();
@@ -719,6 +769,7 @@ BookReader.prototype.setupKeyListeners = function () {
     case "ArrowUp":
     case "PageUp":
     case "Up": // hack for IE and old Gecko
+      // In 1up and thumb mode page scrolling handled by browser
       if (self.constMode2up === self.mode) {
         e.preventDefault();
         self.prev();
@@ -726,6 +777,7 @@ BookReader.prototype.setupKeyListeners = function () {
       break;
     case "ArrowLeft":
     case "Left": // hack for IE and old Gecko
+      // No y-scrolling in thumb mode
       if (self.constModeThumb != self.mode) {
         e.preventDefault();
         self.left();
@@ -733,6 +785,7 @@ BookReader.prototype.setupKeyListeners = function () {
       break;
     case "ArrowRight":
     case "Right": // hack for IE and old Gecko
+      // No y-scrolling in thumb mode
       if (self.constModeThumb != self.mode) {
         e.preventDefault();
         self.right();
@@ -758,71 +811,6 @@ BookReader.prototype.setupKeyListeners = function () {
       break;
     }
   });
-
-/*
-  // We use document here instead of window to avoid a bug in jQuery on IE7
-  $(document).on("keydown", function (e) {
-
-    // Keyboard navigation
-    switch (e.keyCode) {
-      case KEY_PGUP:
-      case KEY_UP:
-        // In 1up mode page scrolling is handled by browser
-        if (!utils.isInputActive() && self.constMode2up == self.mode) {
-          e.preventDefault();
-          self.prev();
-        }
-        break;
-      case KEY_DOWN:
-      case KEY_PGDOWN:
-        if (!utils.isInputActive() && self.constMode2up == self.mode) {
-          e.preventDefault();
-          self.next();
-        }
-        break;
-      case KEY_END:
-        if (!utils.isInputActive()) {
-          e.preventDefault();
-          self.last();
-        }
-        break;
-      case KEY_HOME:
-        if (!utils.isInputActive()) {
-          e.preventDefault();
-          self.first();
-        }
-        break;
-      case KEY_LEFT:
-        if (!utils.isInputActive() && self.constModeThumb != self.mode) {
-          e.preventDefault();
-          self.left();
-        }
-        break;
-      case KEY_RIGHT:
-        if (!utils.isInputActive() && self.constModeThumb != self.mode) {
-          e.preventDefault();
-          self.right();
-        }
-        break;
-      case KEY_MINUS:
-      case KEY_MINUS_F:
-      case KEY_NUMPAD_SUBTRACT:
-        if (!utils.isInputActive()) {
-          e.preventDefault();
-          self.zoom(-1);
-        }
-        break;
-      case KEY_EQUAL:
-      case KEY_EQUAL_F:
-      case KEY_NUMPAD_ADD:
-        if (!utils.isInputActive()) {
-          e.preventDefault();
-          self.zoom(+1);
-        }
-        break;
-    }
-  });
-  */
 };
 
 BookReader.prototype.drawLeafs = function () {
