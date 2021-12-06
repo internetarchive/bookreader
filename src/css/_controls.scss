@@ -109,6 +109,10 @@
     &.visible {
       display: flex;
       animation: slideUp 0.2s;
+      button {
+        width: unset;
+        height: unset;
+      }
     }
 
     li {
