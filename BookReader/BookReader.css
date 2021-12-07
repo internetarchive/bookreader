@@ -2737,10 +2737,6 @@ li.BRtable-contents-el .BRTOCElementPage {
   display: flex;
   animation: slideUp 0.2s;
 }
-.BRcontrols .read-aloud.visible button {
-  width: unset;
-  height: unset;
-}
 .BRcontrols .read-aloud li {
   padding: 0 10px;
 }
