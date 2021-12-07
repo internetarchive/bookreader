@@ -722,15 +722,14 @@ BookReader.prototype.setupKeyListeners = function () {
     rootMargin: '0px',
     threshold: [0, 1],
   };
-  const observer = new IntersectionObserver(this.handleIntersection.bind(this), options);
+  const observer = new IntersectionObserver(this.handleIntersection, options);
   observer.observe(brArea);
 
   // Keyboard listeners
-  var self = this;
   document.addEventListener('keydown', (e) => {
 
     // Ignore if BookReader "focus" flag not set
-    if (!self.hasKeyFocus) {
+    if (!this.hasKeyFocus) {
       return;
     }
 
@@ -751,63 +750,63 @@ BookReader.prototype.setupKeyListeners = function () {
     // Page navigation
     case "Home":
       e.preventDefault();
-      self.first();
+      this.first();
       break;
     case "End":
       e.preventDefault();
-      self.last();
+      this.last();
       break;
     case "ArrowDown":
     case "PageDown":
     case "Down": // hack for IE and old Gecko
       // In 1up and thumb mode page scrolling handled by browser
-      if (self.constMode2up === self.mode) {
+      if (this.constMode2up === this.mode) {
         e.preventDefault();
-        self.next();
+        this.next();
       }
       break;
     case "ArrowUp":
     case "PageUp":
     case "Up": // hack for IE and old Gecko
       // In 1up and thumb mode page scrolling handled by browser
-      if (self.constMode2up === self.mode) {
+      if (this.constMode2up === this.mode) {
         e.preventDefault();
-        self.prev();
+        this.prev();
       }
       break;
     case "ArrowLeft":
     case "Left": // hack for IE and old Gecko
       // No y-scrolling in thumb mode
-      if (self.constModeThumb != self.mode) {
+      if (this.constModeThumb != this.mode) {
         e.preventDefault();
-        self.left();
+        this.left();
       }
       break;
     case "ArrowRight":
     case "Right": // hack for IE and old Gecko
       // No y-scrolling in thumb mode
-      if (self.constModeThumb != self.mode) {
+      if (this.constModeThumb != this.mode) {
         e.preventDefault();
-        self.right();
+        this.right();
       }
       break;
     // Zoom
     case '-':
     case 'Subtract':
       e.preventDefault();
-      self.zoom(-1);
+      this.zoom(-1);
       break;
     case '+':
     case '=':
     case 'Add':
       e.preventDefault();
-      self.zoom(1);
+      this.zoom(1);
       break;
     // Fullscreen
     case 'F':
     case 'f':
       e.preventDefault();
-      self.toggleFullscreen();
+      this.toggleFullscreen();
       break;
     }
   });
