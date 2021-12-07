@@ -118,7 +118,7 @@
       }
 
       // we expect this at the global level
-      BookReaderJSIAinit(brManifest.data, { ...options, ...customAutoflipParams });
+      BookReaderJSIAinit(brManifest.data, { ...options });
 
       if (customAutoflipParams.autoflip) {
         br.autoToggle(customAutoflipParams);
