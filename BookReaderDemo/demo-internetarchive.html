@@ -29,6 +29,10 @@
     <script type="module" src="../BookReader/bookreader-component-bundle.js"></script>
 
     <link rel="stylesheet" href="BookReaderDemo.css"/>
+
+    <!-- IA scripts -->
+    <script src="https://www-isa.archive.org/bookreader/BookReaderJSIA.js"></script>
+
 </head>
 
 <body>
@@ -59,16 +63,94 @@
   <script id="pageUrl" type="text/javascript"></script>
 
   <script>
-    var ocaid = location.href.match(/ocaid=([^&#]+)/i)[1];
+    // gather params here
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const ocaid = urlParams.get('ocaid');
+    const openFullImmersionTheater = urlParams.get('view') === 'theater';
+    const ui = urlParams.get('ui');
+    const autoflip = urlParams.get('autoflip');
+    const searchTerm = urlParams.get('q');
 
     // Override options coming from IA
     BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
+    const initializeBookReader = (brManifest) => {
+      console.log('initializeBookReader', brManifest);
+      const br = new BookReader();
+      const iaBookManifestUrl = '';
+
+      const customAutoflipParams = {
+          autoflip: !!autoflip,
+          flipSpeed: urlParams.flipSpeed || 2000,
+          flipDelay: urlParams.flipDelay || 5000
+        };
+
+      const options = {
+        el: '#BookReader',
+        /* Url plugin - IA uses History mode for URL */
+        // commenting these out as demo uses hash mode
+        // keeping them here for reference
+        // urlHistoryBasePath: `/details/{$ocaid}/`,
+        // resumeCookiePath: `/details/{$ocaid}/`,
+        // urlMode: 'history',
+        // Only reflect these params onto the URL
+        // urlTrackedParams: ['page', 'search', 'mode'],
+        /* End url plugin */
+        enableBookTitleLink: false,
+        bookUrlText: null,
+        startFullscreen: urlParams.view === 'theater',
+        initialSearchTerm: searchTerm ? searchTerm : '',
+        // leaving this option commented out bc we change given user agent on archive.org
+        // onePage: { autofit: <?=json_encode($this->ios ? 'width' : 'auto')?> },
+        showToolbar: false,
+        /* Multiple volumes */
+        // To show multiple volumes:
+        enableMultipleBooks: false, // turn this on
+        multipleBooksList: [], // populate this  // TODO: get sample blob and tie into demo
+        /* End multiple volumes */
+      };
+
+      // we want to show item as embedded when ?ui=embed is in URI
+      if (ui === 'embed') {
+        options.mode = 1;
+        options.ui = 'embed';
+      }
+
+      // we expect this at the global level
+      BookReaderJSIAinit(brManifest.data, { ...options, ...customAutoflipParams });
+
+      if (customAutoflipParams.autoflip) {
+        br.autoToggle(customAutoflipParams);
+      }
+    }
+
+    const fetchBookManifestAndInitializeBookreader = async (iaMetadata) => {
+      const {
+        metadata: {
+          identifier
+        },
+      } = iaMetadata;
+
+    const locator =`https://archive.org/bookreader/BookReaderJSLocate.php?format=json&subPrefix=&id=${identifier}`;
+      // Todo: move from `locator` to create `iaManifestUrl` url from `iaMetadata`
+      // so we can support multiple volumes
+      // const iaManifestUrl = `https://${server}/BookReader/BookReaderJSIA.php?format=jsonp&itemPath=${dir}&id=${identifier}`;
+
+      const manifest = await fetch(locator)
+      .then(response => response.json())
+
+      initializeBookReader(manifest);
+    }
+
     // Temp; Circumvent bug in BookReaderJSIA code
     window.Sentry = null;
-
-    var script_url = 'https://archive.org/bookreader/BookReaderJSLocate.php?subPrefix=&id=' + ocaid;
-    document.getElementById('pageUrl').src = script_url;
+    window.logError = function(e) {
+      console.error(e);
+    };
+    fetch(`https://archive.org/metadata/${ocaid}`)
+      .then(response => response.json())
+      .then(iaMetadata => fetchBookManifestAndInitializeBookreader(iaMetadata));
   </script>
 
 </body>
