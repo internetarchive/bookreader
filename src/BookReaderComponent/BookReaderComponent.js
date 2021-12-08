@@ -7,26 +7,29 @@ import { LitElement, html, css } from 'lit-element';
 import '@internetarchive/ia-item-navigator';
 import '../BookNavigator/BookNavigator.js';
 import '@internetarchive/modal-manager';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 export class BookReader extends LitElement {
   static get properties() {
     return {
-      base64Json: { type: String },
+      item: { type: String },
       baseHost: { type: String },
-      fullscreen: { type: Boolean, reflect: true, attribute: true }
+      fullscreen: { type: Boolean, reflect: true, attribute: true },
+      sharedObserver: { type: Object }
     };
   }
 
   constructor() {
     super();
-    this.base64Json = '';
+    this.item = undefined;
+    this.bookreader = undefined;
     this.baseHost = 'https://archive.org';
     this.fullscreen = false;
     this.modal = undefined;
+    this.sharedObserver = new SharedResizeObserver();
   }
 
   firstUpdated() {
     this.createModal();
-    this.fetchData();
   }
 
   /** Creates modal DOM & attaches to `<body>` */
@@ -38,31 +41,8 @@ export class BookReader extends LitElement {
   }
   /* End Modal management */
 
-  /**
-   * Fetch metadata response from public metadata API
-   * convert response to base64 data
-   * set base64 data to props
-   */
-  async fetchData() {
-    const ocaid = new URLSearchParams(location.search).get('ocaid');
-    const response = await fetch(`${this.baseHost}/metadata/${ocaid}`);
-    const bookMetadata = await response.json();
-    const jsonBtoa = btoa(JSON.stringify(bookMetadata));
-    this.setBaseJSON(jsonBtoa);
-  }
-
-  /**
-   * Set base64 data to prop
-   * @param {string} value - base64 string format
-   */
-  setBaseJSON(value) {
-    this.base64Json = value;
-  }
-
   manageFullscreen(e) {
     const { detail } = e;
-    console.log("MANAGE FS ", detail);
-
     const fullscreen = !!detail.isFullScreen;
     this.fullscreen = fullscreen;
   }
@@ -74,8 +54,9 @@ export class BookReader extends LitElement {
           @fullscreenToggled=${this.manageFullscreen}
           .itemType=${'bookreader'}
           .basehost=${this.baseHost}
-          .item=${this.base64Json}
+          .item=${this.item}
           .modal=${this.modal}
+          .sharedObserver=${this.sharedObserver}
         >
           <div slot="theater-main">
             <slot name="theater-main"></slot>
