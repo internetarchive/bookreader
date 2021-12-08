@@ -4,6 +4,7 @@
 html {
     font-size: 10px;
     font-family: sans-serif;
+    --br-height: calc(100vh - 100px);
 }
 
 body {
@@ -16,8 +17,17 @@ body {
     display: none;
 }
 
+ia-bookreader[fullscreen] {
+    height: unset;
+}
+
+ia-bookreader{
+    display: block;
+    height: var(--br-height);
+}
+
 .BookReader {
-    height: calc(100vh - 100px);
+    height: var(--br-height);
     overflow: hidden;
     margin: 0 auto;
 }

@@ -10,18 +10,18 @@ import sinon from 'sinon';
 import '../../../src/BookNavigator/BookNavigator.js';
 import BRFullscreenMgr from '../../../src/BookNavigator/br-fullscreen-mgr.js';
 
-const container = () => {
+const container = (sharedObserver = null) => {
   const item = {};
   return html`
     <book-navigator
       .item=${item}
-      .baseHost
+      .baseHost=${`https://foo.archive.org`}
+      .sharedObserver=${sharedObserver}
     >
       <div slot="theater-main">
         <p class="visible-in-reader">now showing</p>
       <\div>
-      <p class="bunny">foo</p>
-      </
+    </book-navigator>
   `;
 };
 
@@ -34,7 +34,10 @@ beforeEach(() => {
 
 afterEach(() => {
   window.br = null;
+  const body = document.querySelector('body');
+  body.innerHTML = '';
   fixtureCleanup();
+  sinon.restore();
 });
 
 

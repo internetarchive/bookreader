@@ -26,8 +26,8 @@
   "private": false,
   "dependencies": {
     "@internetarchive/ia-activity-indicator": "^0.0.1",
-    "@internetarchive/ia-item-navigator": "0.0.0-a12",
-    "@internetarchive/ia-menu-slider": "^1.1.0",
+    "@internetarchive/ia-item-navigator": "^0.0.1",
+    "@internetarchive/ia-menu-slider": "^1.1.1",
     "@internetarchive/ia-sharing-options": "^0.1.3-alpha2",
     "@internetarchive/icon-bookmark": "^1.1.3",
     "@internetarchive/icon-collapse-sidebar": "^1.1.0",

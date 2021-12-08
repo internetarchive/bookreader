@@ -178,7 +178,7 @@ BookReader.prototype.setup = function(options) {
      */
   this.firstIndex = null;
   this.lastDisplayableIndex2up = null;
-  this.isFullscreenActive = false;
+  this.isFullscreenActive = options.isFullscreenActive || false;
   this.lastScroll = null;
 
   this.showLogo = options.showLogo;

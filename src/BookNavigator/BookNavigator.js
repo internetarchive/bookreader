@@ -406,10 +406,6 @@ export class BookNavigator extends LitElement {
   }
 
   async startResizeObserver() {
-    if (!this.sharedObserver) {
-      this.sharedObserver = new SharedResizeObserver();
-    }
-
     this.sharedObserver?.addObserver({
       handler: this,
       target: this.mainBRContainer,

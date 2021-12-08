@@ -6,7 +6,7 @@ import { LitElement, html, css } from 'lit-element';
 
 import '@internetarchive/ia-item-navigator';
 import '../BookNavigator/BookNavigator.js';
-
+import '@internetarchive/modal-manager';
 export class BookReader extends LitElement {
   static get properties() {
     return {
@@ -21,11 +21,22 @@ export class BookReader extends LitElement {
     this.base64Json = '';
     this.baseHost = 'https://archive.org';
     this.fullscreen = false;
+    this.modal = undefined;
   }
 
   firstUpdated() {
+    this.createModal();
     this.fetchData();
   }
+
+  /** Creates modal DOM & attaches to `<body>` */
+  createModal() {
+    this.modal = document.createElement(
+      'modal-manager'
+    );
+    document.body.appendChild(this.modal);
+  }
+  /* End Modal management */
 
   /**
    * Fetch metadata response from public metadata API
@@ -53,17 +64,7 @@ export class BookReader extends LitElement {
     console.log("MANAGE FS ", detail);
 
     const fullscreen = !!detail.isFullScreen;
-    if (fullscreen) {
-      setTimeout(() => {
-        console.log('IN TIME OUT FS', detail);
-        this.fullscreen = fullscreen;
-      }, 300);
-    } else {
-      console.log(" IN FS NOT FS", detail);
-      this.fullscreen = fullscreen;
-    }
-
-
+    this.fullscreen = fullscreen;
   }
 
   render() {
@@ -73,7 +74,8 @@ export class BookReader extends LitElement {
           @fullscreenToggled=${this.manageFullscreen}
           .itemType=${'bookreader'}
           .basehost=${this.baseHost}
-          .item=${this.base64Json}>
+          .item=${this.base64Json}
+          .modal=${this.modal}
         >
           <div slot="theater-main">
             <slot name="theater-main"></slot>
