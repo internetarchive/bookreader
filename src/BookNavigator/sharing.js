@@ -3,13 +3,16 @@ import '@internetarchive/icon-share/icon-share';
 import '@internetarchive/ia-sharing-options';
 
 export default class {
-  constructor(metadata = {}, baseHost, baseItemType, subPrefix = '') {
-    const { identifier, creator, title } = metadata;
+  constructor({
+    item,
+    baseHost,
+    bookreader
+  }) {
+    const { identifier, creator, title } = item?.metadata;
+    const subPrefix = bookreader.options.subPrefix;
     const encodedSubPrefix = encodeURIComponent(subPrefix);
     const urlIdentifier = subPrefix && (subPrefix !== identifier) ? `${identifier}/${encodedSubPrefix}` : identifier;
-    this.idPath = urlIdentifier;
-    this.itemType = baseItemType;
-    const label = `Share this ${this.reconcileItemType}`;
+    const label = `Share this book`;
     this.icon = html`<ia-icon-share style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-share>`;
     this.label = label;
     this.id = 'share';
@@ -20,12 +23,5 @@ export default class {
       description="${title}"
       baseHost="${baseHost}"
     ></ia-sharing-options>`;
-  }
-
-  get reconcileItemType() {
-    if (this.itemType === 'bookreader') {
-      return 'book';
-    }
-    return 'item';
   }
 }

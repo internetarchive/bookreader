@@ -11,7 +11,10 @@ let searchState = {
   errorMessage: '',
 };
 export default class {
-  constructor(onSearchChange = () => {}, brInstance) {
+  constructor({
+    onProviderChange,
+    bookreader
+  }) {
     /* search menu events */
     this.onBookSearchInitiated = this.onBookSearchInitiated.bind(this);
     /* bookreader search events */
@@ -29,8 +32,8 @@ export default class {
     this.advanceToPage = this.advanceToPage.bind(this);
     this.updateMenu = this.updateMenu.bind(this);
 
-    this.onSearchChange = onSearchChange;
-    this.bookreader = brInstance;
+    this.onProviderChange = onProviderChange;
+    this.bookreader = bookreader;
     this.icon = html`<ia-icon-search style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-search>`;
     this.label = 'Search inside';
     this.menuDetails = this.getMenuDetails();
@@ -148,7 +151,7 @@ export default class {
   updateMenu(searchUpdates = {}) {
     this.menuDetails = this.getMenuDetails();
     this.component = this.getComponent();
-    this.onSearchChange(this.bookreader, searchUpdates);
+    this.onProviderChange(this.bookreader, searchUpdates);
   }
 
   getComponent() {

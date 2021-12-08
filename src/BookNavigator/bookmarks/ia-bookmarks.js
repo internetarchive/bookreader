@@ -58,11 +58,11 @@ class IABookmarks extends LitElement {
       activeBookmarkID: { type: String },
       bookmarks: { type: Array },
       bookreader: { type: Object },
-      options: { type: Object },
       displayMode: { type: String },
       editedBookmark: { type: Object },
       deleteModalConfig: { type: Object},
-      modal: { attribute: false }
+      modal: { attribute: false },
+      loginOptions: { type: Object, attribute: false }
     };
   }
 
@@ -95,8 +95,11 @@ class IABookmarks extends LitElement {
     this.bookmarks = [];
     this.bookreader = {};
     this.editedBookmark = {};
-    this.options = {};
     this.modal = undefined;
+    this.loginOptions = {
+      loginClicked: () => {},
+      loginUrl: '',
+    };
     /**
      * Toggles display to either bookmarks or login cta
      * @param {('bookmarks'|'login')} displayMode
@@ -455,14 +458,6 @@ class IABookmarks extends LitElement {
   }
 
   /**
-   * call `loginClicked` callback
-   */
-  loginClick() {
-    const { loginClicked = () => {} } = this.options;
-    loginClicked();
-  }
-
-  /**
    * Tells us if we should allow user to add bookmark via menu panel
    * returns { Boolean }
    */
@@ -507,14 +502,18 @@ class IABookmarks extends LitElement {
   }
 
   render() {
-    const { loginUrl } = this.options;
     const bookmarks = html`
       ${this.bookmarksList}
       ${this.allowAddingBookmark ? this.addBookmarkButton : nothing}
     `;
     return html`
       <section class="bookmarks">
-        ${this.displayMode === 'login' ? html`<bookmarks-login @click=${this.loginClick} .url=${loginUrl}></bookmarks-login>` : bookmarks}
+      ${ this.displayMode === 'login'
+      ? html`<bookmarks-login
+        @click=${() => this.loginOptions.loginClicked()}
+        .url=${this.loginOptions.loginUrl}></bookmarks-login>`
+      : bookmarks
+      }
       </section>
     `;
   }

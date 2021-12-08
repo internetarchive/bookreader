@@ -22,14 +22,14 @@ const publicMenuBase = {
 
 export default class DownloadsProvider {
 
-  constructor(isBookProtected) {
+  constructor({ bookreader }) {
     this.icon = html`<ia-icon-dl style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-dl>`;
     this.label = 'Downloadable files';
     this.menuDetails = '';
     this.downloads = [];
     this.id = 'downloads';
     this.component = '';
-    this.isBookProtected = isBookProtected;
+    this.isBookProtected = bookreader?.options?.isProtected || false;
 
     this.computeAvailableTypes = this.computeAvailableTypes.bind(this);
     this.update = this.update.bind(this);

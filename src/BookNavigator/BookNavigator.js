@@ -1,5 +1,7 @@
-import { css, html, LitElement } from 'lit-element';
+// eslint-disable-next-line no-unused-vars
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
+
+import { css, html, LitElement } from 'lit-element';
 import SearchProvider from './search/search-provider.js';
 import DownloadProvider from './downloads/downloads-provider.js';
 import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
@@ -18,7 +20,7 @@ const events = {
 export class BookNavigator extends LitElement {
   static get properties() {
     return {
-      book: { type: Object },
+      itemMD: { type: Object },
       pageContainerSelector: { type: String },
       brWidth: { type: Number },
       bookReaderLoaded: { type: Boolean },
@@ -31,6 +33,7 @@ export class BookNavigator extends LitElement {
       menuShortcuts: { type: Array },
       sideMenuOpen: { type: Boolean },
       signedIn: { type: Boolean },
+      /** @type {SharedResizeObserver} */
       sharedObserver: { type: Object },
       fullscreenBranding: { type: Object },
       addBranding: { type: Boolean },
@@ -39,7 +42,7 @@ export class BookNavigator extends LitElement {
 
   constructor() {
     super();
-    this.book = {};
+    this.itemMD = undefined;
     this.pageContainerSelector = '.BRcontainer';
     this.brWidth = 0;
     this.bookReaderCannotLoad = false;
@@ -70,11 +73,14 @@ export class BookNavigator extends LitElement {
   }
 
   updated(changed) {
-    if (!this.bookreader) {
+    if (!this.bookreader || !this.itemMD) {
       return;
     }
-    if (changed.has('signedIn') || changed.has('isAdmin')) {
-      /** redraw book submenus to propagate property update */
+
+    if (changed.has('itemMD')
+      || changed.has('bookreader')
+      || changed.has('signedIn')
+      || changed.has('isAdmin')) {
       this.initializeBookSubmenus();
     }
   }
@@ -100,24 +106,38 @@ export class BookNavigator extends LitElement {
    * to keep it in sync.
    */
   initializeBookSubmenus() {
-    const isBookProtected = this.bookreader.options.protected;
-
-    // const baseProviderConfig = {
-    //   modal: this.modal,
-    //   sharedObserver: this.sharedObserver,
-    //   bookreader: this.bookreader,
-    //   signedIn: this.signedIn,
-    //   isAdmin: this.isAdmin,
-    // };
+    /**
+     * @typedef {{
+     *  baseHost: string,
+     *  modal: ModalManager,
+     *  sharedObserver: SharedResizeObserver,
+     *  bookreader: BookReader,
+     *  item: Item,
+     *  signedIn: boolean,
+     *  isAdmin: boolean,
+     *  onProviderChange: function,
+     * }} baseProviderConfig
+     */
+    const baseProviderConfig = {
+      baseHost: this.baseHost,
+      modal: this.modal,
+      sharedObserver: this.sharedObserver,
+      bookreader: this.bookreader,
+      item: this.itemMD,
+      signedIn: this.signedIn,
+      isAdmin: this.isAdmin,
+      onProviderChange: () => {}
+    };
 
     this.menuProviders = {
-      search: new SearchProvider(
+      search: new SearchProvider({
+        ...baseProviderConfig,
         /**
          * Search specific menu updates
          * @param {BookReader} brInstance
          * @param {{ searchCanceled: boolean }} searchUpdates
          */
-        (brInstance = null, searchUpdates = {}) => {
+        onProviderChange: (brInstance = null, searchUpdates = {}) => {
           if (brInstance) {
             /* refresh br instance reference */
             this.bookreader = brInstance;
@@ -129,22 +149,27 @@ export class BookNavigator extends LitElement {
             this.updateSideMenu('search', 'open');
           }
         },
-        this.bookreader,
-      ),
-      downloads: new DownloadProvider(isBookProtected),
+      }),
+      downloads: new DownloadProvider(baseProviderConfig),
       visualAdjustments: new VisualAdjustmentProvider({
-        onOptionChange: (event, brInstance = null) => {
-          if (brInstance) {
-            /* refresh br instance reference */
-            this.bookreader = brInstance;
-          }
+        ...baseProviderConfig,
+        /** Update menu contents */
+        onProviderChange: () => {
           this.updateMenuContents();
         },
-        bookContainerSelector: this.pageContainerSelector,
-        bookreader: this.bookreader,
       }),
-      share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType, this.bookreader.options.subPrefix),
-      bookmarks: new BookmarksProvider(this.bookmarksOptions),
+      share: new SharingProvider(baseProviderConfig),
+      bookmarks: new BookmarksProvider({
+        ...baseProviderConfig,
+        onProviderChange: (bookmarks, showSidePanel = false) => {
+          if (showSidePanel) {
+            this.updateSideMenu('bookmarks', 'open');
+          }
+          const method = Object.keys(bookmarks).length ? 'add' : 'remove';
+          this[`${method}MenuShortcut`]('bookmarks');
+          this.updateMenuContents();
+        }
+      }),
     };
 
     // add shortcut for volumes if multipleBooksList exists
@@ -170,7 +195,6 @@ export class BookNavigator extends LitElement {
   }
 
   get bookmarksOptions() {
-    const referrerStr = `referer=${encodeURIComponent(location.href)}`;
     return {
       loginUrl: `https://${this.baseHost}/account/login?${referrerStr}`,
       signedIn: this.signedIn,
@@ -180,7 +204,6 @@ export class BookNavigator extends LitElement {
       sharedObserver: this.sharedObserver,
       bookreader: this.bookreader,
       onBookmarksChanged: (bookmarks, showSidePanel = false) => {
-        console.log('booknav on bkch', bookmarks, showSidePanel);
         if (showSidePanel) {
           this.updateSideMenu('bookmarks', 'open');
         }
@@ -203,11 +226,9 @@ export class BookNavigator extends LitElement {
   }
 
   deleteFullscreenShortcut() {
-    console.log('delete fullscreenshortcut', this.menuShortcuts);
     const updatedShortcuts = this.menuShortcuts.filter(({ id }) => {
       return id !== 'fullscreen';
     });
-    console.log('updatedShortcuts', updatedShortcuts);
     this.menuShortcuts = updatedShortcuts;
     this.sortMenuShortcuts();
     this.emitMenuShortcutsUpdated();
@@ -342,17 +363,16 @@ export class BookNavigator extends LitElement {
    */
   bindEventListeners() {
     window.addEventListener('BookReader:PostInit', (e) => {
-      console.log('BookReader:PostInit', e);
       this.bookreader = e.detail.props;
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
-
       this.initializeBookSubmenus();
-      this.startResizeObserver();
       this.emitLoadingStatusUpdate(true);
+      setTimeout(() => {
+        this.bookreader.resize();
+      }, 0);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
-      console.log('BookReader:fullscreenToggled');
       const { detail: { props: brInstance = null } } = event;
       if (brInstance) {
         this.bookreader = brInstance;
@@ -405,13 +425,6 @@ export class BookNavigator extends LitElement {
     }, 0);
   }
 
-  async startResizeObserver() {
-    this.sharedObserver?.addObserver({
-      handler: this,
-      target: this.mainBRContainer,
-    });
-  }
-
   /**
    * Manages Fullscreen behavior
    * This makes sure that controls are _always_ in view
@@ -419,12 +432,10 @@ export class BookNavigator extends LitElement {
    */
   manageFullScreenBehavior() {
     this.emitFullScreenState();
-    const isFullScreen = this.bookreader.isFullscreen();
 
+    const isFullScreen = this.bookreader.isFullscreen();
     if (isFullScreen) {
       this.addFullscreenShortcut();
-      console.log('in book-nav manageFullScreenBehavior - isFS will fire UpdateClasses');
-      this.bookreader.updateBrClasses();
     } else {
       this.deleteFullscreenShortcut();
     }
@@ -446,8 +457,8 @@ export class BookNavigator extends LitElement {
   }
 
   get itemImage() {
-    const url = `https://${this.baseHost}/services/img/${this.book.metadata.identifier}`;
-    return html`<img class="cover-img" src="${url}" alt="cover image for ${this.book.metadata.identifier}">`;
+    const url = `https://${this.baseHost}/services/img/${this.item.metadata.identifier}`;
+    return html`<img class="cover-img" src=${url} alt="cover image for ${this.item.metadata.identifier}">`;
   }
 
   render() {

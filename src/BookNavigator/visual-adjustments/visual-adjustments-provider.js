@@ -30,9 +30,9 @@ const visualAdjustmentOptions = [{
 
 export default class {
   constructor(options) {
-    const { onOptionChange = () => {}, bookContainerSelector, bookreader } = options;
-    this.onOptionChange = onOptionChange;
-    this.bookContainerSelector = bookContainerSelector;
+    const { onProviderChange, bookreader } = options;
+    this.onProviderChange = onProviderChange;
+    this.bookContainerSelector = bookreader.refs.$brContainer;
     this.bookreader = bookreader;
 
     this.onAdjustmentChange = this.onAdjustmentChange.bind(this);
@@ -85,7 +85,7 @@ export default class {
   optionUpdateComplete(event) {
     this.activeCount = event.detail.activeCount;
     this.updateOptionsCount(event);
-    this.onOptionChange(event);
+    this.onProviderChange();
   }
 
   updateOptionsCount() {
