@@ -87,7 +87,7 @@ export class BookReader extends LitElement {
       ia-item-navigator[viewportinfullscreen] {
         position: fixed;
         inset: 0;
-        height: unset;
+        height: 100vh;
         min-height: unset;
       }
 
