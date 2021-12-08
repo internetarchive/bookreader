@@ -1146,9 +1146,10 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   }
 
   this.isFullscreenActive = true;
+  // prioritize class updates so CSS can propagate
+  this.updateBrClasses();
   this.animating = true;
   await new Promise(res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res));
-  this.resize();
   if (this.activeMode instanceof Mode1Up) {
     this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(currentIndex));
     // Need the new scale to be applied before calling jumpToIndex
@@ -1163,6 +1164,11 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   // trigger event here, so that animations,
   // class updates happen before BookNavigator relays to web components
   this.trigger(BookReader.eventNames.fullscreenToggled);
+
+  setTimeout(() => {
+    // resize book after all events & css updates
+    this.resize();
+  }, 0);
 };
 
 /**
