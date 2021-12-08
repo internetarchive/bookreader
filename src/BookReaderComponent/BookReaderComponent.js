@@ -51,6 +51,7 @@ export class BookReader extends LitElement {
     return html`
       <div class="ia-bookreader">
         <ia-item-navigator
+          ?viewportInFullscreen=${this.fullscreen}
           @fullscreenToggled=${this.manageFullscreen}
           .itemType=${'bookreader'}
           .basehost=${this.baseHost}
@@ -86,6 +87,8 @@ export class BookReader extends LitElement {
       ia-item-navigator[viewportinfullscreen] {
         position: fixed;
         inset: 0;
+        height: unset;
+        min-height: unset;
       }
 
       .ia-bookreader {
@@ -96,6 +99,8 @@ export class BookReader extends LitElement {
       }
 
       ia-item-navigator {
+        min-height: var(--br-height, inherit);
+        height: var(--br-height, inherit);
         display: block;
         width: 100%;
         color: var(--primaryTextColor);

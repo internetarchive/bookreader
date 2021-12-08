@@ -107,7 +107,7 @@ export class BookNavigator extends LitElement {
    */
   initializeBookSubmenus() {
     /**
-     * @typedef {{
+     *  @typedef {{
      *  baseHost: string,
      *  modal: ModalManager,
      *  sharedObserver: SharedResizeObserver,
@@ -116,7 +116,7 @@ export class BookNavigator extends LitElement {
      *  signedIn: boolean,
      *  isAdmin: boolean,
      *  onProviderChange: function,
-     * }} baseProviderConfig
+     *  }} baseProviderConfig
      */
     const baseProviderConfig = {
       baseHost: this.baseHost,

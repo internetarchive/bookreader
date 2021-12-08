@@ -579,14 +579,16 @@ BookReader.prototype.init = function() {
     this.suppressFragmentChange = false;
   }
 
+  if (this.options.startFullscreen) {
+    this.enterFullscreen(true);
+  }
+
   this.init.initComplete = true;
   this.trigger(BookReader.eventNames.PostInit);
 
   // Must be called after this.init.initComplete set to true to allow
   // BookReader.prototype.resize to run.
-  if (this.options.startFullscreen) {
-    this.toggleFullscreen();
-  }
+
 };
 
 /**

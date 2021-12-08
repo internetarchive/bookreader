@@ -17,6 +17,10 @@ body {
     display: none;
 }
 
+body.BRfullscreenActive section.theater,
+body.BRfullscreenActive ia-book-reader {
+    height: 100vh;
+}
 ia-bookreader[fullscreen] {
     height: unset;
 }

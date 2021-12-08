@@ -35,7 +35,7 @@
 </head>
 
 <body>
-  <section style="width: 100%; overflow: hidden; background-color: black;">
+  <section class="theater" style="width: 100%; overflow: hidden; background-color: black;">
     <ia-bookreader
       baseHost="https://archive.org"
     >
@@ -67,12 +67,12 @@
   </style>
   <section class="demos">
     <div class="demo">
-      <h3>placeholder div to allow scrolling</h3>
-    </div>
-    <div class="demo">
       <button id="toggle-loggedin">Toggle Logged in view</button>
       <p>Features behind signed in gate: Bookmarks</p>
       <p>Logged In Status: <span id="logged-in-status">Logged Out</span></p>
+    </div>
+    <div class="demo">
+      <button id="start-fs">Start at Fullscreen</button>
     </div>
     <div class="demo">
       <h3 id="placeholder">please wait as we are fetching the following: </h3>
@@ -80,6 +80,9 @@
       <input type='checkbox' class='group1' name='bookManifest' disabled> Book manifest</input><br>
     </div>
   </section>
+  <div class="demo">
+    <h3>Placeholder div to allow scrolling</h3>
+  </div>
 </body>
 
 <script>
@@ -93,6 +96,14 @@
   const ui = urlParams.get('ui');
   const autoflip = urlParams.get('autoflip');
   const searchTerm = urlParams.get('q');
+
+  const iaBookReader = document.querySelector('ia-bookreader');
+
+  if (openFullImmersionTheater) {
+    const body = document.querySelector('body');
+    $(document.body).addClass('BRfullscreenActive');
+    iaBookReader.fullscreen = openFullImmersionTheater;
+  }
 
   // Override options coming from IA
   BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
@@ -121,7 +132,7 @@
       /* End url plugin */
       enableBookTitleLink: false,
       bookUrlText: null,
-      startFullscreen: urlParams.view === 'theater',
+      startFullscreen: openFullImmersionTheater,
       initialSearchTerm: searchTerm ? searchTerm : '',
       // leaving this option commented out bc we change given user agent on archive.org
       // onePage: { autofit: <?=json_encode($this->ios ? 'width' : 'auto')?> },
@@ -149,9 +160,7 @@
 
   const fetchBookManifestAndInitializeBookreader = async (iaMetadata) => {
     document.querySelector('input[name="itemMD"]').checked = true;
-    const iaBookReader = document.querySelector('ia-bookreader');
     iaBookReader.item = iaMetadata;
-    iaBookReader.fullscreen = openFullImmersionTheater;
 
     const {
       metadata: {
@@ -183,8 +192,8 @@
 
   <script >
     // Set up demo things
-    const toggleLoginBtn = document.querySelector('#toggle-loggedin');
     const iaBR = document.querySelector('ia-bookreader');
+    const toggleLoginBtn = document.querySelector('#toggle-loggedin');
     toggleLoginBtn.addEventListener('click', () => {
       const itemNav = iaBR.shadowRoot.querySelector('ia-item-navigator');
       const bookNav = itemNav.shadowRoot.querySelector('book-navigator');
@@ -194,6 +203,18 @@
 
       document.querySelector('#logged-in-status').innerText = bookNav.signedIn ? 'Logged In' : 'Logged Out';
       console.log("Toggled SignedIn state", bookNav.signedIn, { currLoggedIn })
+    });
+
+    const startFSBtn = document.querySelector('#start-fs');
+    startFSBtn.addEventListener('click', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('view')) {
+        const url = new URL(window.location);
+        url.searchParams.delete('view');
+        window.history.pushState({}, '', url);
+      }
+      urlParams.set('view', 'theater');
+      window.location.search = urlParams.toString();
     });
 
     window.addEventListener('BookReader:PostInit', () => {
