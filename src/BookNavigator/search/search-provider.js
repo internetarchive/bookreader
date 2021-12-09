@@ -78,7 +78,10 @@ export default class {
   }
 
   onSearchStarted(e) {
-    const { term = '' } = e.detail.props;
+    const { term = '', instance } = e.detail.props;
+    if (instance) {
+      this.bookreader = instance;
+    }
     searchState.query = term;
     searchState.results = [];
     searchState.resultsCount = 0;

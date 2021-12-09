@@ -32,7 +32,7 @@ export default class {
   constructor(options) {
     const { onProviderChange, bookreader } = options;
     this.onProviderChange = onProviderChange;
-    this.bookContainerSelector = bookreader.refs.$brContainer;
+    this.bookContainer = bookreader.refs.$brContainer;
     this.bookreader = bookreader;
 
     this.onAdjustmentChange = this.onAdjustmentChange.bind(this);
@@ -77,7 +77,7 @@ export default class {
       return newValue ? [...values, newValue] : values;
     }, []).join(' ');
 
-    document.querySelector(this.bookContainerSelector).style.setProperty('filter', filters);
+    this.bookreader.$(this.bookContainer).css('filter', filters);
 
     this.optionUpdateComplete(event);
   }
