@@ -597,7 +597,6 @@ BookReader.prototype.init = function() {
  */
 BookReader.prototype.trigger = function(name, props = this) {
   const eventName = 'BookReader:' + name;
-  $(document).trigger(eventName, props);
 
   utils.polyfillCustomEvent(window);
   window.dispatchEvent(new CustomEvent(eventName, {
@@ -605,6 +604,7 @@ BookReader.prototype.trigger = function(name, props = this) {
     composed: true,
     detail: { props },
   }));
+  $(document).trigger(eventName, props);
 };
 
 BookReader.prototype.bind = function(name, callback) {
