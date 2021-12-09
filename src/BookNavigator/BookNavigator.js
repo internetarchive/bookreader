@@ -34,7 +34,7 @@ export class BookNavigator extends LitElement {
       sideMenuOpen: { type: Boolean },
       signedIn: { type: Boolean },
       /** @type {SharedResizeObserver} */
-      sharedObserver: { type: Object },
+      sharedObserver: { type: Object, attribute: false },
       fullscreenBranding: { type: Object },
       addBranding: { type: Boolean },
     };
@@ -61,7 +61,6 @@ export class BookNavigator extends LitElement {
     this.fullscreenBranding = iaLogo;
     this.addBranding = true;
     // Untracked properties
-    this.sharedObserver = null;
     this.model = new Book();
     this.shortcutOrder = ['fullscreen', 'volumes', 'search', 'bookmarks'];
   }
@@ -73,11 +72,13 @@ export class BookNavigator extends LitElement {
   }
 
   updated(changed) {
-    if (!this.bookreader || !this.itemMD) {
+    if (!this.bookreader || !this.itemMD || !this.bookReaderLoaded) {
       return;
     }
 
-    if (changed.has('itemMD')
+    const reload = changed.has('loaded') && this.loaded;
+    if (reload
+      || changed.has('itemMD')
       || changed.has('bookreader')
       || changed.has('signedIn')
       || changed.has('isAdmin')) {
@@ -192,26 +193,6 @@ export class BookNavigator extends LitElement {
   /** gets element that houses the bookreader in light dom */
   get mainBRContainer() {
     return document.querySelector(this.bookreader.el);
-  }
-
-  get bookmarksOptions() {
-    return {
-      loginUrl: `https://${this.baseHost}/account/login?${referrerStr}`,
-      signedIn: this.signedIn,
-      displayMode: this.signedIn ? 'bookmarks' : 'login',
-      isAdmin: this.isAdmin,
-      modal: this.modal,
-      sharedObserver: this.sharedObserver,
-      bookreader: this.bookreader,
-      onBookmarksChanged: (bookmarks, showSidePanel = false) => {
-        if (showSidePanel) {
-          this.updateSideMenu('bookmarks', 'open');
-        }
-        const method = Object.keys(bookmarks).length ? 'add' : 'remove';
-        this[`${method}MenuShortcut`]('bookmarks');
-        this.updateMenuContents();
-      },
-    };
   }
 
   /** Fullscreen Shortcut */
@@ -366,11 +347,12 @@ export class BookNavigator extends LitElement {
       this.bookreader = e.detail.props;
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
-      this.initializeBookSubmenus();
       this.emitLoadingStatusUpdate(true);
-      setTimeout(() => {
-        this.bookreader.resize();
-      }, 0);
+      this.sharedObserver?.addObserver({
+        target: this.mainBRContainer,
+        handler: this
+      });
+      setTimeout(() => this.bookreader.resize(), 0);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;
@@ -418,8 +400,9 @@ export class BookNavigator extends LitElement {
       this.brWidth = contentRect.width;
     }
 
+    const widthChange = startBrWidth !== this.brWidth;
     setTimeout(() => {
-      if (startBrWidth && !animating) {
+      if (widthChange && !animating) {
         this.bookreader.resize();
       }
     }, 0);
