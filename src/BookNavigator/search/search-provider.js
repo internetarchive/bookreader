@@ -110,6 +110,7 @@ export default class {
     };
 
     const messageToShow = errorMessages[errorType] ?? errorMessages.default;
+    searchState.query = instance?.searchResults?.q || '';
     searchState.results = [];
     searchState.resultsCount = 0;
     searchState.queryInProgress = false;
