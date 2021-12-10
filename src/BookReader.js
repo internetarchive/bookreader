@@ -718,7 +718,7 @@ BookReader.prototype.setupKeyListeners = function () {
     rootMargin: '0px',
     threshold: [0, 1],
   });
-  observer.observe(this.refs.$br);
+  observer.observe(this.refs.$br[0]);
 
   // Keyboard listeners
   document.addEventListener('keydown', (e) => {
