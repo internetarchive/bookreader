@@ -263,7 +263,7 @@ export class UrlPlugin {
     const urlState = {};
 
     // Fetch searchParams from given {str}
-    // Note: whole URL path is needed for URLSearchParams
+    // Note: whole URL path is needed for URL parsing
     const urlPath = new URL(str, 'http://example.com');
     const urlSearchParamsObj = Object.fromEntries(urlPath.searchParams.entries());
     const urlStrSplitSlashObj = Object.fromEntries(urlPath.pathname
@@ -291,11 +291,8 @@ export class UrlPlugin {
       });
 
     // Add searchParams to urlState
-    // Check if Object value is a Boolean and convert value to Boolean
-    // Otherwise, return Object value
-    const isBoolean = value => value === 'true' || (value === 'false' ? false : value);
     Object.entries(urlSearchParamsObj).forEach(([key, value]) => {
-      urlState[key] = isBoolean(value);
+      urlState[key] = value;
     });
 
     return urlState;
