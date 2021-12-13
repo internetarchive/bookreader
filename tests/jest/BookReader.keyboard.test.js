@@ -38,41 +38,6 @@ describe('Keyboard shortcuts turned off', () => {
     br.hasKeyFocus = true;
   });
 
-  /**
-   * going to have to try another way to test this
-   */
-  /*
-  test('Control modifier disables', () => {
-    br.mode = br.constMode2up;
-    br.next = jest.fn();
-    const keyEvent = new KeyboardEvent('keydown', {'key': 'ArrowDown', 'ctrlKey': true});
-    keyEvent.preventDefault = jest.fn();
-    document.dispatchEvent(keyEvent);
-    expect(br.next).toHaveBeenCalledTimes(0);
-    expect(keyEvent.preventDefault).toHaveBeenCalledTimes(0);
-  });
-
-  test('Alt modifier disables', () => {
-    br.mode = br.constMode2up;
-    br.next = jest.fn();
-    const keyEvent = new KeyboardEvent('keydown', {'key': 'ArrowDown', 'altKey': true});
-    keyEvent.preventDefault = jest.fn();
-    document.dispatchEvent(keyEvent);
-    expect(br.next).toHaveBeenCalledTimes(0);
-    expect(keyEvent.preventDefault).toHaveBeenCalledTimes(0);
-  });
-
-  test('Meta modifier disables', () => {
-    br.mode = br.constMode2up;
-    br.next = jest.fn();
-    const keyEvent = new KeyboardEvent('keydown', {'key': 'ArrowDown', 'metaKey': true});
-    keyEvent.preventDefault = jest.fn();
-    document.dispatchEvent(keyEvent);
-    expect(br.next).toHaveBeenCalledTimes(0);
-    expect(keyEvent.preventDefault).toHaveBeenCalledTimes(0);
-  });
-  */
-
   test('Input active disables', () => {
     // eslint-disable-next-line no-import-assign
     utils.isInputActive = jest.fn(() => true);
