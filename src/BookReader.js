@@ -671,37 +671,9 @@ BookReader.prototype.resize = function() {
 };
 
 /**
- * Returns true if passed element activates or maintains BookReader keyboard shortcut focus
- * @param {HTMLElement} element
- * @returns {boolean}
- */
-BookReader.prototype.isKeyFocus = function (element) {
-  // BookReader and ItemNavigator
-  let selectors = this.el;
-  selectors += ',' + 'item-navigator';
-  // Top level elements
-  // NOTE: a <nav> element containing both
-  // or a standard banner container (<ia-bannners>?)
-  // would be a helpful design change here
-  selectors += ',' + '#topnav';
-  selectors += ',' + '#donate_banner';
-  return Boolean(element.closest(selectors));
-};
-
-/**
  * Binds keyboard and keyboard focus event listeners
  */
 BookReader.prototype.setupKeyListeners = function () {
-
-  // Keyboard focus by click location
-  document.addEventListener('click', (event) => {
-    this.hasKeyFocus = this.isKeyFocus(event.target);
-  });
-
-  // Keyboard focus by tabbed element location
-  document.addEventListener('focusin', (event) => {
-    this.hasKeyFocus = this.isKeyFocus(event.target);
-  });
 
   // Keyboard focus by BookReader in viewport
   //
@@ -711,6 +683,8 @@ BookReader.prototype.setupKeyListeners = function () {
     entries.forEach((entry) => {
       if (entry.intersectionRatio === 0) {
         this.hasKeyFocus = false;
+      } else {
+        this.hasKeyFocus = true;
       }
     });
   }, {
