@@ -690,7 +690,7 @@ BookReader.prototype.setupKeyListeners = function () {
   }, {
     root: null,
     rootMargin: '0px',
-    threshold: [0, 1],
+    threshold: [0, 0.05, 1],
   });
   observer.observe(this.refs.$br[0]);
 
