@@ -679,20 +679,22 @@ BookReader.prototype.setupKeyListeners = function () {
   //
   // Intersection observer and callback sets BookReader keyboard
   // "focus" flag off when the BookReader is not in the viewport.
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.intersectionRatio === 0) {
-        this.hasKeyFocus = false;
-      } else {
-        this.hasKeyFocus = true;
-      }
+  if (window.IntersectionObserver) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.intersectionRatio === 0) {
+          this.hasKeyFocus = false;
+        } else {
+          this.hasKeyFocus = true;
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '0px',
+      threshold: [0, 0.05, 1],
     });
-  }, {
-    root: null,
-    rootMargin: '0px',
-    threshold: [0, 0.05, 1],
-  });
-  observer.observe(this.refs.$br[0]);
+    observer.observe(this.refs.$br[0]);
+  }
 
   // Keyboard listeners
   document.addEventListener('keydown', (e) => {

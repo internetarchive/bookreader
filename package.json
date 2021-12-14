@@ -90,8 +90,7 @@
       "^@/(.*)$": "<rootDir>/$1"
     },
     "setupFiles": [
-      "./src/jquery-wrapper.js",
-      "./tests/jest/jest.setup.js"
+      "./src/jquery-wrapper.js"
     ],
     "roots": [
       "<rootDir>/src/",
