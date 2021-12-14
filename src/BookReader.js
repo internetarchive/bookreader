@@ -269,8 +269,8 @@ BookReader.prototype.setup = function(options) {
    * Flag if BookReader has "focus" for keyboard shortcuts
    * Initially true, set to false when:
    * - BookReader scrolled out of view
-   * - User clicked outside of BookReader or NavBar
-   * - User tabbed to element outside of BookReader or NavBar
+   * Set to true when:
+   * - BookReader scrolled into view
    */
   this.hasKeyFocus = true;
 };
