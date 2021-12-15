@@ -1,3 +1,8 @@
+# 5.0.0-25
+Fix: read aloud play/pause button @nsharma123 
+Dev: strict keyboard shortcuts @mc2
+Dev: update IA demo page @iisa 
+
 # 5.0.0-24
 Fix: book-nav side panel zoom out @mc2
 Dev: refactor zoom code @mc2
