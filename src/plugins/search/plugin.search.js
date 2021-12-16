@@ -213,6 +213,7 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
   return $.ajax({
     url: url,
     dataType: 'jsonp',
+    cache: true,
     beforeSend,
     jsonpCallback: 'BRSearchInProgress'
   }).then(processSearchResults);
