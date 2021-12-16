@@ -1,3 +1,6 @@
+# 5.0.0-27
+Dev: eslint fix for $.browser @homewardgamer
+Fix: cache search inside requests @iisa
 # 5.0.0-26
 Fix: read aloud play/pause button @nsharma123
 Dev: strict keyboard shortcuts @mc2
