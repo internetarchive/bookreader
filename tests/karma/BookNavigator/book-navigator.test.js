@@ -49,6 +49,18 @@ describe('<book-navigator>', () => {
       expect(el.shortcutOrder[2]).to.equal('search');
       expect(el.shortcutOrder[3]).to.equal('bookmarks');
     });
+    it('has `baseProviderConfig`', () => {
+      const el = fixtureSync(container());
+      const baseConfigKeys = Object.keys(el.baseProviderConfig);
+      expect(baseConfigKeys).to.contain('baseHost');
+      expect(baseConfigKeys).to.contain('modal');
+      expect(baseConfigKeys).to.contain('sharedObserver');
+      expect(baseConfigKeys).to.contain('bookreader');
+      expect(baseConfigKeys).to.contain('item');
+      expect(baseConfigKeys).to.contain('signedIn');
+      expect(baseConfigKeys).to.contain('isAdmin');
+      expect(baseConfigKeys).to.contain('onProviderChange');
+    });
   });
 
   describe('first update', () => {

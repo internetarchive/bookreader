@@ -93,27 +93,19 @@ export class BookNavigator extends LitElement {
   }
 
   /**
-   * Instantiates books submenus & their update callbacks
-   *
-   * NOTE: we are doing our best to scope bookreader's instance.
-   * If your submenu provider uses a bookreader instance to read, manually
-   * manipulate BookReader, please update the navigator's instance of it
-   * to keep it in sync.
+   *  @typedef {{
+   *  baseHost: string,
+   *  modal: ModalManager,
+   *  sharedObserver: SharedResizeObserver,
+   *  bookreader: BookReader,
+   *  item: Item,
+   *  signedIn: boolean,
+   *  isAdmin: boolean,
+   *  onProviderChange: function,
+   *  }} baseProviderConfig
    */
-  initializeBookSubmenus() {
-    /**
-     *  @typedef {{
-     *  baseHost: string,
-     *  modal: ModalManager,
-     *  sharedObserver: SharedResizeObserver,
-     *  bookreader: BookReader,
-     *  item: Item,
-     *  signedIn: boolean,
-     *  isAdmin: boolean,
-     *  onProviderChange: function,
-     *  }} baseProviderConfig
-     */
-    const baseProviderConfig = {
+  get baseProviderConfig() {
+    return  {
       baseHost: this.baseHost,
       modal: this.modal,
       sharedObserver: this.sharedObserver,
@@ -123,10 +115,20 @@ export class BookNavigator extends LitElement {
       isAdmin: this.isAdmin,
       onProviderChange: () => {}
     };
+  }
 
+  /**
+   * Instantiates books submenus & their update callbacks
+   *
+   * NOTE: we are doing our best to scope bookreader's instance.
+   * If your submenu provider uses a bookreader instance to read, manually
+   * manipulate BookReader, please update the navigator's instance of it
+   * to keep it in sync.
+   */
+  initializeBookSubmenus() {
     this.menuProviders = {
       search: new SearchProvider({
-        ...baseProviderConfig,
+        ...this.c,
         /**
          * Search specific menu updates
          * @param {BookReader} brInstance
@@ -147,17 +149,17 @@ export class BookNavigator extends LitElement {
           }
         },
       }),
-      downloads: new DownloadProvider(baseProviderConfig),
+      downloads: new DownloadProvider(this.baseProviderConfig),
       visualAdjustments: new VisualAdjustmentProvider({
-        ...baseProviderConfig,
+        ...this.baseProviderConfig,
         /** Update menu contents */
         onProviderChange: () => {
           this.updateMenuContents();
         },
       }),
-      share: new SharingProvider(baseProviderConfig),
+      share: new SharingProvider(this.baseProviderConfig),
       bookmarks: new BookmarksProvider({
-        ...baseProviderConfig,
+        ...this.baseProviderConfig,
         onProviderChange: (bookmarks, showSidePanel = false) => {
           if (showSidePanel) {
             this.updateSideMenu('bookmarks', 'open');
@@ -172,7 +174,7 @@ export class BookNavigator extends LitElement {
     // add shortcut for volumes if multipleBooksList exists
     if (this.bookreader.options.enableMultipleBooks) {
       this.menuProviders.volumes = new VolumesProvider({
-        ...baseProviderConfig,
+        ...this.baseProviderConfig,
         onProviderChange: (brInstance = null, volumesUpdates = {}) => {
           if (brInstance) {
             /* refresh br instance reference */
