@@ -92,48 +92,71 @@ describe('<book-navigator>', () => {
     expect(setTimeoutSpy.callCount).to.equal(1); // resizes at end
   });
 
-  it('resizes bookreader when side menu toggles', async () => {
-    const el = fixtureSync(container());
-    const brStub = {
-      resize: sinon.fake(),
-      currentIndex: sinon.fake(),
-      jumpToIndex: sinon.fake(),
-      options: { enableMultipleBooks: true },
-    };
+  describe('Resizing',() => {
+    it('resizes bookreader when side menu toggles', async () => {
+      const el = fixtureSync(container());
+      const brStub = {
+        resize: sinon.fake(),
+        currentIndex: sinon.fake(),
+        jumpToIndex: sinon.fake(),
+        options: { enableMultipleBooks: true },
+      };
 
-    el.bookreader = brStub;
-    await elementUpdated(el);
+      el.bookreader = brStub;
+      await elementUpdated(el);
 
-    el.sideMenuOpen = true;
-    await elementUpdated(el);
+      el.sideMenuOpen = true;
+      await elementUpdated(el);
 
-    expect(el.bookreader.resize.callCount).to.equal(1);
+      expect(el.bookreader.resize.callCount).to.equal(1);
 
-    el.sideMenuOpen = false;
-    await elementUpdated(el);
+      el.sideMenuOpen = false;
+      await elementUpdated(el);
 
-    expect(el.bookreader.resize.callCount).to.equal(2);
+      expect(el.bookreader.resize.callCount).to.equal(2);
+    });
+
+    it('does not resize bookreader if animating', async () => {
+      const el = fixtureSync(container());
+      const brStub = {
+        animating: true, // <-- testing for this
+        resize: sinon.fake(),
+        currentIndex: sinon.fake(),
+        jumpToIndex: sinon.fake(),
+        options: { enableMultipleBooks: true }
+      };
+
+      el.bookreader = brStub;
+      await elementUpdated(el);
+
+      el.sideMenuOpen = true;
+      await elementUpdated(el);
+
+      expect(el.bookreader.resize.callCount).to.equal(0);
+      expect(el.bookreader.currentIndex.callCount).to.equal(0);
+      expect(el.bookreader.jumpToIndex.callCount).to.equal(0);
+    });
   });
 
-  it('does not resize bookreader if animating', async () => {
-    const el = fixtureSync(container());
-    const brStub = {
-      animating: true, // <-- testing for this
-      resize: sinon.fake(),
-      currentIndex: sinon.fake(),
-      jumpToIndex: sinon.fake(),
-      options: { enableMultipleBooks: true }
-    };
+  describe('Fullscreen Management', () => {
+    it('Event: Listens for `BookReader:FullscreenToggled', async() => {
+      const el = fixtureSync(container());
+      const brStub = {
+        resize: sinon.fake(),
+        currentIndex: sinon.fake(),
+        jumpToIndex: sinon.fake(),
+      };
+      el.bookreader = brStub;
+      el.emitCloseItemNavigatorModal = sinon.fake();
+      await elementUpdated(el);
 
-    el.bookreader = brStub;
-    await elementUpdated(el);
+      window.dispatchEvent(new CustomEvent('BookReader:FullscreenToggled', {
+        detail: { fullscreen: true }
+      }));
+      await elementUpdated(el);
 
-    el.sideMenuOpen = true;
-    await elementUpdated(el);
-
-    expect(el.bookreader.resize.callCount).to.equal(0);
-    expect(el.bookreader.currentIndex.callCount).to.equal(0);
-    expect(el.bookreader.jumpToIndex.callCount).to.equal(0);
+      expect(el.emitCloseItemNavigatorModal.callCount).to.equal(11);
+    });
   });
 
   describe(`this.updateSideMenu`, () => {
@@ -160,7 +183,7 @@ describe('<book-navigator>', () => {
       expect(eventDetails.menuId).to.equal('foo');
       expect(eventDetails.action).to.equal('open');
     });
-    it('does not emit event if missing an arg', async() => {
+    it('Event: will not emit event if menu ID is missing', async() => {
       const el = fixtureSync(container());
       const brStub = {
         resize: sinon.fake(),

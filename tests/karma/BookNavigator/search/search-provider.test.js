@@ -8,12 +8,16 @@ afterEach(() => {
 
 describe('Search Provider', () => {
   describe('constructor', () => {
-    const onSearchChangeCB = sinon.fake();
-    const br = sinon.fake();
-    const provider = new searchProvider(onSearchChangeCB, br);
+    const onProviderChange = sinon.fake();
+    const fooBr = {};
+    const bookreader = fooBr;
+    const provider = new searchProvider({
+      onProviderChange,
+      bookreader
+    });
 
-    expect(provider.bookreader).to.equal(br);
-    expect(provider.onSearchChange).to.equal(onSearchChangeCB);
+    expect(provider.bookreader).to.equal(bookreader);
+    expect(provider.onProviderChange).to.equal(onProviderChange);
     expect(provider.id).to.equal('search');
     expect(provider.icon).to.exist;
     expect(provider.label).to.equal('Search inside');

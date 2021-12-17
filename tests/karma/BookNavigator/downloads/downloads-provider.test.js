@@ -49,8 +49,9 @@ describe('Downloads Provider', () => {
   });
 
   it('render view if book is protected', () => {
-    const isBookProtected = true;
-    const provider = new DownloadsProvider(isBookProtected);
+    const provider = new DownloadsProvider({
+      bookreader: { options: { isProtected: true } }
+    });
 
     expect(provider.isBookProtected).to.equal(true);
 
