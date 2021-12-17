@@ -40,6 +40,7 @@ export default class BookmarkButton extends LitElement {
   constructor() {
     super();
     this.state = 'hollow';
+    this.side = undefined;
   }
 
   handleClick(e) {
