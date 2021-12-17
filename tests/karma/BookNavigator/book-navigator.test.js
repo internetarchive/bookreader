@@ -6,17 +6,19 @@ import {
   expect,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-
+import { ModalManager } from '@internetarchive/modal-manager';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import '../../../src/BookNavigator/BookNavigator.js';
 
 const container = (sharedObserver = null) => {
   const item = {};
+  const modalMgr = new ModalManager();
   return html`
     <book-navigator
       .item=${item}
       .baseHost=${`https://foo.archive.org`}
       .sharedObserver=${sharedObserver || new SharedResizeObserver()}
-      .modal=${new ModalManager()}
+      .modal=${modalMgr}
     >
       <div slot="theater-main">
         <p class="visible-in-reader">now showing</p>
