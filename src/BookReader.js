@@ -477,7 +477,6 @@ BookReader.prototype.getInitialMode = function(params) {
   if ('undefined' != typeof(params.mode)) {
     nextMode = params.mode;
   } else if (this.ui == 'full'
-          && this.enableMobileNav
           && this.isFullscreenActive
           && windowWidth <= this.onePageMinBreakpoint
   ) {

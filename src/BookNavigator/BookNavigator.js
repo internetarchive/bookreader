@@ -22,7 +22,6 @@ export class BookNavigator extends LitElement {
     return {
       itemMD: { type: Object },
       pageContainerSelector: { type: String },
-      brWidth: { type: Number },
       bookReaderLoaded: { type: Boolean },
       bookreader: { type: Object },
       downloadableTypes: { type: Array },
@@ -44,7 +43,6 @@ export class BookNavigator extends LitElement {
     super();
     this.itemMD = undefined;
     this.pageContainerSelector = '.BRcontainer';
-    this.brWidth = 0;
     this.bookReaderCannotLoad = false;
     this.bookReaderLoaded = false;
     this.bookreader = null;
@@ -62,6 +60,8 @@ export class BookNavigator extends LitElement {
     this.addBranding = true;
     // Untracked properties
     this.model = new Book();
+    this.brWidth = 0;
+    this.brHeight = 0;
     this.shortcutOrder = ['fullscreen', 'volumes', 'search', 'bookmarks'];
   }
 
@@ -147,7 +147,9 @@ export class BookNavigator extends LitElement {
           const wideEnoughToOpenMenu = this.brWidth >= 640;
           if (wideEnoughToOpenMenu && !searchUpdates?.searchCanceled) {
             /* open side search menu */
-            this.updateSideMenu('search', 'open');
+            setTimeout(() => {
+              this.updateSideMenu('search', 'open');
+            }, 0);
           }
         },
       }),
@@ -394,15 +396,18 @@ export class BookNavigator extends LitElement {
    */
   handleResize({ contentRect, target }) {
     const startBrWidth = this.brWidth;
+    const startBrHeight = this.brHeight;
     const { animating } = this.bookreader;
 
     if (target === this.mainBRContainer) {
       this.brWidth = contentRect.width;
+      this.brHeight = contentRect.height;
     }
 
     const widthChange = startBrWidth !== this.brWidth;
+    const heightChange = startBrHeight !== this.brHeight;
     setTimeout(() => {
-      if (widthChange && !animating) {
+      if (!animating && (widthChange || heightChange)) {
         this.bookreader.resize();
       }
     }, 0);
