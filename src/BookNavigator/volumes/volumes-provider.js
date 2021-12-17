@@ -8,9 +8,8 @@ import volumesIcon from '../assets/icon_volumes.js';
 import './volumes.js';
 
 export default class VolumesProvider {
-
-  constructor(baseHost, bookreader, optionChange) {
-    this.optionChange = optionChange;
+  constructor({ baseHost, bookreader, onProviderChange }) {
+    this.onProviderChange = onProviderChange;
     this.component = document.createElement("viewable-files");
 
     const files = bookreader.options.multipleBooksList.by_subprefix;
@@ -61,7 +60,7 @@ export default class VolumesProvider {
     this.sortOrderBy = sortByType;
     this.component.viewableFiles  = [...sortedFiles];
     this.actionButton = this.sortButton;
-    this.optionChange(this.bookreader);
+    this.onProviderChange(this.bookreader);
 
     this.multipleFilesClicked(sortByType);
   }

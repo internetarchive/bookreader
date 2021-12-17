@@ -171,13 +171,16 @@ export class BookNavigator extends LitElement {
 
     // add shortcut for volumes if multipleBooksList exists
     if (this.bookreader.options.enableMultipleBooks) {
-      this.menuProviders.volumes = new VolumesProvider(this.baseHost, this.bookreader, (brInstance) => {
-        if (brInstance) {
-          /* refresh br instance reference */
-          this.bookreader = brInstance;
+      this.menuProviders.volumes = new VolumesProvider({
+        ...baseProviderConfig,
+        onProviderChange: (brInstance = null, volumesUpdates = {}) => {
+          if (brInstance) {
+            /* refresh br instance reference */
+            this.bookreader = brInstance;
+          }
+          this.updateMenuContents();
+          this.updateSideMenu('volumes', 'open');
         }
-        this.updateMenuContents();
-        this.updateSideMenu('volumes', 'open');
       });
       this.addMenuShortcut('volumes');
     }
