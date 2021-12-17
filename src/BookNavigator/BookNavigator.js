@@ -21,7 +21,6 @@ export class BookNavigator extends LitElement {
   static get properties() {
     return {
       itemMD: { type: Object },
-      pageContainerSelector: { type: String },
       bookReaderLoaded: { type: Boolean },
       bookreader: { type: Object },
       downloadableTypes: { type: Array },
@@ -30,19 +29,16 @@ export class BookNavigator extends LitElement {
       lendingStatus: { type: Object },
       menuProviders: { type: Object },
       menuShortcuts: { type: Array },
-      sideMenuOpen: { type: Boolean },
       signedIn: { type: Boolean },
       /** @type {SharedResizeObserver} */
       sharedObserver: { type: Object, attribute: false },
       fullscreenBranding: { type: Object },
-      addBranding: { type: Boolean },
     };
   }
 
   constructor() {
     super();
     this.itemMD = undefined;
-    this.pageContainerSelector = '.BRcontainer';
     this.bookReaderCannotLoad = false;
     this.bookReaderLoaded = false;
     this.bookreader = null;
@@ -52,12 +48,10 @@ export class BookNavigator extends LitElement {
     this.lendingStatus = {};
     this.menuProviders = {};
     this.menuShortcuts = [];
-    this.sideMenuOpen = false;
     this.signedIn = false;
     this.modal = undefined;
     this.sharedObserver = undefined;
     this.fullscreenBranding = iaLogo;
-    this.addBranding = true;
     // Untracked properties
     this.model = new Book();
     this.brWidth = 0;
@@ -237,7 +231,7 @@ export class BookNavigator extends LitElement {
    * @param {('open'|'close'|'toggle')} action
    */
   updateSideMenu(menuId = '', action = 'open') {
-    if (!menuId || !action) {
+    if (!menuId) {
       return;
     }
     const event = new CustomEvent(

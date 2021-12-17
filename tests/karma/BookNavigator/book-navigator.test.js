@@ -8,7 +8,6 @@ import {
 import sinon from 'sinon';
 
 import '../../../src/BookNavigator/BookNavigator.js';
-import BRFullscreenMgr from '../../../src/BookNavigator/br-fullscreen-mgr.js';
 
 const container = (sharedObserver = null) => {
   const item = {};
@@ -42,6 +41,16 @@ afterEach(() => {
 
 
 describe('<book-navigator>', () => {
+  describe('defaults', () => {
+    it('has specific order of menu shortcuts to show', () => {
+      const el = fixtureSync(container());
+      expect(el.shortcutOrder[0]).to.equal('fullscreen');
+      expect(el.shortcutOrder[1]).to.equal('volumes');
+      expect(el.shortcutOrder[2]).to.equal('search');
+      expect(el.shortcutOrder[3]).to.equal('bookmarks');
+    });
+  });
+
   describe('first update', () => {
     it('binds global event listeners', async () => {
       const el = fixtureSync(container());
@@ -50,7 +59,7 @@ describe('<book-navigator>', () => {
       expect(spy.callCount).to.equal(1);
     });
 
-    it('emits a BrBookNav:PostInit event', async () => {
+    it('Event: emits a BrBookNav:PostInit event', async () => {
       let initEventFired = false;
       window.addEventListener('BrBookNav:PostInit', (e) => {
         initEventFired = true;
@@ -64,7 +73,7 @@ describe('<book-navigator>', () => {
     });
   });
 
-  it('handles global event: BookReader:PostInit', async () => {
+  it('Event: handles global event: BookReader:PostInit', async () => {
     const setTimeoutSpy = sinon.spy(window, 'setTimeout');
     const brStub = {
       resize: sinon.fake(),
@@ -75,47 +84,29 @@ describe('<book-navigator>', () => {
     };
 
     const el = fixtureSync(container());
-    const initializeBookSubmenus = sinon.spy(el, 'initializeBookSubmenus');
-
     await elementUpdated(el);
+
+    el.initializeBookSubmenus = sinon.fake();
+    el.emitLoadingStatusUpdate = sinon.fake();
+    el.sharedObserver = {
+      addObserver: sinon.fake()
+    };
+    await elementUpdated(el);
+
     window.dispatchEvent(new CustomEvent('BookReader:PostInit', {
       detail: { props: brStub }
     }));
     await elementUpdated(el);
 
-    expect(initializeBookSubmenus.callCount).to.equal(1);
+    expect(el.emitLoadingStatusUpdate.callCount).to.equal(1);
     expect(el.bookreader).to.equal(brStub); // sets bookreader
     expect(el.bookReaderLoaded).to.be.true; // notes bookreader is loaded
     expect(el.bookReaderCannotLoad).to.be.false;
-    expect(el.fullscreenMgr).to.an.instanceof(BRFullscreenMgr);
-    expect(el.brResizeObserver).to.an.instanceof(window.ResizeObserver);
+    expect(el.sharedObserver.addObserver.callCount).to.equal(1);
     expect(setTimeoutSpy.callCount).to.equal(1); // resizes at end
   });
 
   describe('Resizing',() => {
-    it('resizes bookreader when side menu toggles', async () => {
-      const el = fixtureSync(container());
-      const brStub = {
-        resize: sinon.fake(),
-        currentIndex: sinon.fake(),
-        jumpToIndex: sinon.fake(),
-        options: { enableMultipleBooks: true },
-      };
-
-      el.bookreader = brStub;
-      await elementUpdated(el);
-
-      el.sideMenuOpen = true;
-      await elementUpdated(el);
-
-      expect(el.bookreader.resize.callCount).to.equal(1);
-
-      el.sideMenuOpen = false;
-      await elementUpdated(el);
-
-      expect(el.bookreader.resize.callCount).to.equal(2);
-    });
-
     it('does not resize bookreader if animating', async () => {
       const el = fixtureSync(container());
       const brStub = {
@@ -139,23 +130,75 @@ describe('<book-navigator>', () => {
   });
 
   describe('Fullscreen Management', () => {
+    it('sets fullscreen shortcut when entering Fullscreen', async () => {
+      const el = fixtureSync(container());
+      const brStub = {
+        isFullscreen: () => true,
+      };
+
+      el.bookreader = brStub;
+      el.emitMenuShortcutsUpdated = sinon.fake();
+      await elementUpdated(el);
+
+      el.manageFullScreenBehavior();
+      await elementUpdated(el);
+      expect(el.menuShortcuts.length).to.equal(1);
+      expect(el.menuShortcuts[0].id).to.equal('fullscreen');
+      expect(el.menuShortcuts[0].icon).to.exist;
+      expect(el.emitMenuShortcutsUpdated.callCount).to.equal(1);
+    });
+    it('clicking Fullscreen shortcut closes fullscreen', async () => {
+      const el = fixtureSync(container());
+      const brStub = {
+        isFullscreen: () => true,
+      };
+
+      el.bookreader = brStub;
+      el.emitMenuShortcutsUpdated = sinon.fake();
+      el.closeFullscreen = sinon.fake();
+      await elementUpdated(el);
+
+      el.manageFullScreenBehavior();
+      await elementUpdated(el);
+
+      fixtureSync(el.menuShortcuts[0].icon).click();
+      await elementUpdated(el);
+
+      expect(el.closeFullscreen.callCount).to.equal(1);
+    });
+    it('removes Fullscreen shortcut when leaving fullscreen', async() => {
+      const el = fixtureSync(container());
+      const brStub = {
+        isFullscreen: () => false,
+      };
+
+      el.bookreader = brStub;
+      el.emitMenuShortcutsUpdated = sinon.fake();
+      await elementUpdated(el);
+
+      el.manageFullScreenBehavior();
+      await elementUpdated(el);
+      expect(el.menuShortcuts.length).to.equal(0);
+      expect(el.emitMenuShortcutsUpdated.callCount).to.equal(1);
+    });
     it('Event: Listens for `BookReader:FullscreenToggled', async() => {
       const el = fixtureSync(container());
       const brStub = {
+        isFullscreen: () => true,
         resize: sinon.fake(),
         currentIndex: sinon.fake(),
         jumpToIndex: sinon.fake(),
       };
       el.bookreader = brStub;
-      el.emitCloseItemNavigatorModal = sinon.fake();
+      el.manageFullScreenBehavior = sinon.fake();
       await elementUpdated(el);
 
-      window.dispatchEvent(new CustomEvent('BookReader:FullscreenToggled', {
-        detail: { fullscreen: true }
+      window.dispatchEvent(new CustomEvent('BookReader:fullscreenToggled', {
+        detail: { props: brStub }
       }));
       await elementUpdated(el);
 
-      expect(el.emitCloseItemNavigatorModal.callCount).to.equal(11);
+      expect(el.manageFullScreenBehavior.callCount).to.equal(1);
     });
   });
 
