@@ -275,6 +275,30 @@ describe('<book-navigator>', () => {
       });
     });
 
+    it('Event: listens for `BookReader:ToggleSearchMenu to open search side panel', async () => {
+      const el = fixtureSync(container());
+      const brStub = {
+        resize: sinon.fake(),
+        currentIndex: sinon.fake(),
+        jumpToIndex: sinon.fake(),
+        options: { enableMultipleBooks: true }
+      };
+      el.bookreader = brStub;
+      await elementUpdated(el);
+
+      let sidePanelConfig = {};
+      el.addEventListener('updateSideMenu', (e) => {
+        console.log();
+        sidePanelConfig = e.detail;
+      });
+      const toggleSearchMenuEvent = new Event('BookReader:ToggleSearchMenu');
+      window.dispatchEvent(toggleSearchMenuEvent);
+
+      await elementUpdated(el);
+      expect(sidePanelConfig.menuId).to.equal('search');
+      expect(sidePanelConfig.action).to.equal('toggle');
+    });
+
     describe(`this.updateSideMenu`, () => {
       it('emits custom event', async () => {
         const el = fixtureSync(container());
