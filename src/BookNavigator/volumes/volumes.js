@@ -8,13 +8,15 @@ export class Volumes extends LitElement {
       subPrefix: { type: String },
       hostUrl: { type: String },
       viewableFiles: { type: Array },
+      sortOrderBy: { type: String },
     };
   }
 
   constructor() {
     super();
-    this.subPrefix = '';
     this.hostUrl = '';
+    this.sortOrderBy = '';
+    this.subPrefix = '';
     this.viewableFiles = [];
   }
 
@@ -36,10 +38,14 @@ export class Volumes extends LitElement {
   }
 
   volumeItemWithImageTitle(item) {
+    const hrefUrl = this.sortOrderBy === 'default'
+      ? `${this.hostUrl}${item.url_path}`
+      : `${this.hostUrl}${item.url_path}?sort=${this.sortOrderBy}`;
+
     return html`
       <li class="content active">
         <div class="separator"></div>
-        <a class="container" href="${this.hostUrl}${item.url_path}">
+        <a class="container" href="${hrefUrl}">
           <div class="image">
             <img src="${item.image}">
           </div>
@@ -54,11 +60,16 @@ export class Volumes extends LitElement {
 
   volumeItem(item) {
     const activeClass = this.subPrefix === item.file_subprefix ? ' active' : '';
+
+    const hrefUrl = this.sortOrderBy === 'default'
+      ? `${this.hostUrl}${item.url_path}`
+      : `${this.hostUrl}${item.url_path}?sort=${this.sortOrderBy}`;
+
     return html`
       <li>
         <div class="separator"></div>
         <div class="content${activeClass}">
-          <a href="https://${this.hostUrl}${item.url_path}">
+          <a href="https://${hrefUrl}">
             <p class="item-title">${item.title}</p>
           </a>
         </div>

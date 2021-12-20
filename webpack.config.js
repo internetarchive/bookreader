@@ -51,7 +51,7 @@ module.exports = [
       'plugins/plugin.search.js': { import: './src/plugins/search/plugin.search.js', dependOn: 'BookReader.js' },
       'plugins/plugin.text_selection.js': { import: './src/plugins/plugin.text_selection.js', dependOn: 'BookReader.js' },
       'plugins/plugin.tts.js': { import: './src/plugins/tts/plugin.tts.js', dependOn: 'BookReader.js' },
-      'plugins/plugin.url.js': { import: './src/plugins/plugin.url.js', dependOn: 'BookReader.js' },
+      'plugins/plugin.url.js': { import: './src/plugins/url/plugin.url.js', dependOn: 'BookReader.js' },
       'plugins/plugin.vendor-fullscreen.js': { import: './src/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' },
       'bookreader-component-bundle.js': { import: './src/BookReaderComponent/BookReaderComponent.js', dependOn: 'BookReader.js' }
     },
