@@ -1,7 +1,7 @@
 
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.resume.js';
-import '@/src/plugins/plugin.url.js';
+import '@/src/plugins/url/plugin.url.js';
 
 let br;
 beforeAll(() => {

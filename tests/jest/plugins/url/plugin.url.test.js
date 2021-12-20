@@ -1,6 +1,6 @@
-
 import BookReader from '@/src/BookReader.js';
-import '@/src/plugins/plugin.url.js';
+import '@/src/plugins/url/plugin.url.js';
+import sinon from 'sinon';
 
 let br;
 beforeAll(() => {
@@ -10,6 +10,7 @@ beforeAll(() => {
 
 afterEach(() => {
   jest.clearAllMocks();
+  sinon.restore();
 });
 
 describe('Plugin: URL controller', () => {

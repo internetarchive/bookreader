@@ -1,4 +1,7 @@
 /* global BookReader */
+
+import { UrlPlugin } from "./UrlPlugin";
+
 /**
  * Plugin for URL management in BookReader
  * Note read more about the url "fragment" here:
@@ -50,7 +53,7 @@ BookReader.prototype.init = (function(super_) {
       this.bind(BookReader.eventNames.PostInit, () => {
         const { updateWindowTitle, urlMode } = this.options;
         if (updateWindowTitle) {
-          document.title = this.shortTitle(50);
+          document.title = this.shortTitle(this.bookTitle, 50);
         }
         if (urlMode === 'hash') {
           this.urlStartLocationPolling();
@@ -86,7 +89,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
   this.oldLocationHash = this.urlReadFragment();
 
   if (this.locationPollId) {
-    clearInterval(this.locationPollID);
+    clearInterval(this.locationPollId);
     this.locationPollId = null;
   }
 
@@ -196,3 +199,22 @@ BookReader.prototype.urlReadFragment = function() {
 BookReader.prototype.urlReadHashFragment = function() {
   return window.location.hash.substr(1);
 };
+export class BookreaderUrlPlugin extends BookReader {
+  init() {
+    if (this.options.enableUrlPlugin) {
+      this.urlPlugin = new UrlPlugin(this.options);
+      this.bind(BookReader.eventNames.PostInit, () => {
+        const { urlMode } = this.options;
+
+        if (urlMode === 'hash') {
+          this.urlPlugin.listenForHashChanges();
+        }
+      });
+    }
+
+    super.init();
+  }
+}
+
+window.BookReader = BookreaderUrlPlugin;
+export default BookreaderUrlPlugin;
