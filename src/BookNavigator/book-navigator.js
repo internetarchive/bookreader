@@ -22,6 +22,7 @@ export class BookNavigator extends LitElement {
       itemMD: { type: Object },
       bookReaderLoaded: { type: Boolean },
       bookreader: { type: Object },
+      bookIsRestricted: { type: Boolean },
       downloadableTypes: { type: Array },
       isAdmin: { type: Boolean },
       lendingInitialized: { type: Boolean },
@@ -43,6 +44,7 @@ export class BookNavigator extends LitElement {
     this.bookReaderCannotLoad = false;
     this.bookReaderLoaded = false;
     this.bookreader = null;
+    this.bookIsRestricted = false;
     this.downloadableTypes = [];
     this.isAdmin = false;
     this.lendingInitialized = false;
@@ -281,7 +283,7 @@ export class BookNavigator extends LitElement {
    * @returns {bool}
    */
   shouldShowDownloadsMenu() {
-    if (this.model.isRestricted === false) { return true; }
+    if (this.bookIsRestricted === false) { return true; }
     if (this.isAdmin) { return true; }
     const { user_loan_record = {} } = this.lendingStatus;
     const hasNoLoanRecord = Array.isArray(user_loan_record); /* (bc PHP assoc. arrays) */
@@ -391,7 +393,7 @@ export class BookNavigator extends LitElement {
       const { isRestricted, downloadURLs } = detail;
       this.bookReaderLoaded = true;
       this.downloadableTypes = downloadURLs;
-      this.model.setRestriction(isRestricted);
+      this.bookIsRestricted = isRestricted;
     });
   }
 
