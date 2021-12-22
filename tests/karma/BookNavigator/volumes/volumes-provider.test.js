@@ -73,7 +73,7 @@ describe('Volumes Provider', () => {
       onProviderChange
     });
 
-    expect(provider.sortOrderBy).to.equal("orig_sort");
+    expect(provider.sortOrderBy).to.equal("default");
 
     provider.sortVolumes("title_asc");
     expect(provider.sortOrderBy).to.equal("title_asc");
@@ -83,8 +83,8 @@ describe('Volumes Provider', () => {
     expect(provider.sortOrderBy).to.equal("title_desc");
     expect(provider.sortButton.getHTML()).includes("sort-by desc-icon");
 
-    provider.sortVolumes("orig_sort");
-    expect(provider.sortOrderBy).to.equal("orig_sort");
+    provider.sortVolumes("default");
+    expect(provider.sortOrderBy).to.equal("default");
     expect(provider.sortButton.getHTML()).includes("sort-by neutral-icon");
   });
 
@@ -101,9 +101,9 @@ describe('Volumes Provider', () => {
     const files = Object.keys(parsedFiles).map(item => parsedFiles[item]).sort((a, b) => a.orig_sort - b.orig_sort);
     const origSortTitles = files.map(item => item.title);
 
-    provider.sortVolumes("orig_sort");
+    provider.sortVolumes("default");
 
-    expect(provider.sortOrderBy).to.equal("orig_sort");
+    expect(provider.sortOrderBy).to.equal("default");
     expect(provider.actionButton).to.exist;
 
     const providerFileTitles = provider.viewableFiles.map(item => item.title);
@@ -167,7 +167,8 @@ describe('Volumes Provider', () => {
         bookreader: brOptions,
         onProviderChange
       });
-      provider.sortOrderBy = 'orig_sort';
+      provider.sortOrderBy = 'default';
+
       const origSortButton = await fixture(provider.sortButton);
       expect(origSortButton.classList.contains('neutral-icon')).to.be.true;
 

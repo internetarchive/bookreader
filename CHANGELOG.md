@@ -1,3 +1,14 @@
+# 5.0.0-28
+Dev: Refactor URLPlugin + sync volumes sorting state to URL @dualcnhq @cdrini
+
+# 5.0.0-27
+Dev: eslint fix for $.browser @homewardgamer
+Fix: cache search inside requests @iisa
+# 5.0.0-26
+Fix: read aloud play/pause button @nsharma123
+Dev: strict keyboard shortcuts @mc2
+Dev: update IA demo page @iisa
+
 # 5.0.0-24
 Fix: book-nav side panel zoom out @mc2
 Dev: refactor zoom code @mc2

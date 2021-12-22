@@ -23,7 +23,7 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     // $.browsers is sometimes undefined on some Android browsers :/
     // Likely related to when $.browser was moved to npm
     /** @type {'mp3' | 'ogg'} format of audio to get */
-    this.audioFormat = $.browser?.mozilla ? 'ogg' : 'mp3';
+    this.audioFormat = $.browser?.mozilla ? 'ogg' : 'mp3'; //eslint-disable-line no-jquery/no-browser
   }
 
   /** @override */

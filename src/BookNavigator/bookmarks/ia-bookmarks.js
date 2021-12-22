@@ -478,6 +478,7 @@ class IABookmarks extends LitElement {
     return html`
       <button
         class="ia-button primary"
+        tabindex="-1"
         ?disabled=${this.shouldEnableAddBookmarkButton}
         @click=${this.addBookmark}>
         Add bookmark

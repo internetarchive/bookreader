@@ -264,6 +264,15 @@ BookReader.prototype.setup = function(options) {
     useSrcSet: this.options.useSrcSet,
     reduceSet: this.reduceSet,
   });
+
+  /**
+   * Flag if BookReader has "focus" for keyboard shortcuts
+   * Initially true, set to false when:
+   * - BookReader scrolled out of view
+   * Set to true when:
+   * - BookReader scrolled into view
+   */
+  this.hasKeyFocus = true;
 };
 
 /**
@@ -663,87 +672,116 @@ BookReader.prototype.resize = function() {
 };
 
 /**
- * Binds keyboard event listeners
+ * Binds keyboard and keyboard focus event listeners
  */
-BookReader.prototype.setupKeyListeners = function() {
-  var self = this;
+BookReader.prototype.setupKeyListeners = function () {
 
-  var KEY_PGUP = 33;
-  var KEY_PGDOWN = 34;
-  var KEY_END = 35;
-  var KEY_HOME = 36;
+  // Keyboard focus by BookReader in viewport
+  //
+  // Intersection observer and callback sets BookReader keyboard
+  // "focus" flag off when the BookReader is not in the viewport.
+  if (window.IntersectionObserver) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.intersectionRatio === 0) {
+          this.hasKeyFocus = false;
+        } else {
+          this.hasKeyFocus = true;
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '0px',
+      threshold: [0, 0.05, 1],
+    });
+    observer.observe(this.refs.$br[0]);
+  }
 
-  var KEY_LEFT = 37;
-  var KEY_UP = 38;
-  var KEY_RIGHT = 39;
-  var KEY_DOWN = 40;
-  // The minus(-) and equal(=) keys have different mappings for different browsers
-  var KEY_MINUS = 189; // Chrome
-  var KEY_MINUS_F = 173; // Firefox
-  var KEY_NUMPAD_SUBTRACT = 109;
-  var KEY_EQUAL = 187; // Chrome
-  var KEY_EQUAL_F = 61; // Firefox
-  var KEY_NUMPAD_ADD = 107;
+  // Keyboard listeners
+  document.addEventListener('keydown', (e) => {
 
-  // We use document here instead of window to avoid a bug in jQuery on IE7
-  $(document).on("keydown", function(e) {
+    // Ignore if BookReader "focus" flag not set
+    if (!this.hasKeyFocus) {
+      return;
+    }
 
-    // Keyboard navigation
-    switch (e.keyCode) {
-    case KEY_PGUP:
-    case KEY_UP:
-      // In 1up mode page scrolling is handled by browser
-      if (!utils.isInputActive() && self.constMode2up == self.mode) {
+    // Ignore if modifiers are active.
+    if (e.getModifierState('Control') ||
+      e.getModifierState('Alt') ||
+      e.getModifierState('Meta') ||
+      e.getModifierState('Win') /* hack for IE */) {
+      return;
+    }
+
+    // Ignore in input elements
+    if (utils.isInputActive()) {
+      return;
+    }
+
+    // KeyboardEvent code values:
+    //   https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values
+    switch (e.key) {
+
+    // Page navigation
+    case "Home":
+      e.preventDefault();
+      this.first();
+      break;
+    case "End":
+      e.preventDefault();
+      this.last();
+      break;
+    case "ArrowDown":
+    case "PageDown":
+    case "Down": // hack for IE and old Gecko
+      // In 1up and thumb mode page scrolling handled by browser
+      if (this.constMode2up === this.mode) {
         e.preventDefault();
-        self.prev();
+        this.next();
       }
       break;
-    case KEY_DOWN:
-    case KEY_PGDOWN:
-      if (!utils.isInputActive() && self.constMode2up == self.mode) {
+    case "ArrowUp":
+    case "PageUp":
+    case "Up": // hack for IE and old Gecko
+      // In 1up and thumb mode page scrolling handled by browser
+      if (this.constMode2up === this.mode) {
         e.preventDefault();
-        self.next();
+        this.prev();
       }
       break;
-    case KEY_END:
-      if (!utils.isInputActive()) {
+    case "ArrowLeft":
+    case "Left": // hack for IE and old Gecko
+      // No y-scrolling in thumb mode
+      if (this.constModeThumb != this.mode) {
         e.preventDefault();
-        self.last();
+        this.left();
       }
       break;
-    case KEY_HOME:
-      if (!utils.isInputActive()) {
+    case "ArrowRight":
+    case "Right": // hack for IE and old Gecko
+      // No y-scrolling in thumb mode
+      if (this.constModeThumb != this.mode) {
         e.preventDefault();
-        self.first();
+        this.right();
       }
       break;
-    case KEY_LEFT:
-      if (!utils.isInputActive() && self.constModeThumb != self.mode) {
-        e.preventDefault();
-        self.left();
-      }
+    // Zoom
+    case '-':
+    case 'Subtract':
+      e.preventDefault();
+      this.zoom(-1);
       break;
-    case KEY_RIGHT:
-      if (!utils.isInputActive() && self.constModeThumb != self.mode) {
-        e.preventDefault();
-        self.right();
-      }
+    case '+':
+    case '=':
+    case 'Add':
+      e.preventDefault();
+      this.zoom(1);
       break;
-    case KEY_MINUS:
-    case KEY_MINUS_F:
-    case KEY_NUMPAD_SUBTRACT:
-      if (!utils.isInputActive()) {
-        e.preventDefault();
-        self.zoom(-1);
-      }
-      break;
-    case KEY_EQUAL:
-    case KEY_EQUAL_F:
-    case KEY_NUMPAD_ADD:
-      if (!utils.isInputActive()) {
-        e.preventDefault();
-        self.zoom(+1);
-      }
+    // Fullscreen
+    case 'F':
+    case 'f':
+      e.preventDefault();
+      this.toggleFullscreen();
       break;
     }
   });
