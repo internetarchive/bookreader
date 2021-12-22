@@ -30,6 +30,7 @@ export class BookNavigator extends LitElement {
       menuProviders: { type: Object },
       menuShortcuts: { type: Array },
       signedIn: { type: Boolean },
+      loaded: { type: Boolean },
       /** @type {SharedResizeObserver} */
       sharedObserver: { type: Object, attribute: false },
       fullscreenBranding: { type: Object },
@@ -39,6 +40,7 @@ export class BookNavigator extends LitElement {
   constructor() {
     super();
     this.itemMD = undefined;
+    this.loaded = false;
     this.bookReaderCannotLoad = false;
     this.bookReaderLoaded = false;
     this.bookreader = null;
@@ -63,6 +65,7 @@ export class BookNavigator extends LitElement {
     this.model.setMetadata(this.book);
     this.bindEventListeners();
     this.emitPostInit();
+    this.loaded = true;
   }
 
   updated(changed) {
@@ -128,6 +131,7 @@ export class BookNavigator extends LitElement {
   initializeBookSubmenus() {
     const providers = {
       downloads: new DownloadProvider(this.baseProviderConfig),
+      share: new SharingProvider(this.baseProviderConfig),
       visualAdjustments: new VisualAdjustmentProvider({
         ...this.baseProviderConfig,
         /** Update menu contents */
@@ -135,7 +139,6 @@ export class BookNavigator extends LitElement {
           this.updateMenuContents();
         },
       }),
-      share: new SharingProvider(this.baseProviderConfig),
     };
 
     if (this.bookreader.options.enableSearch) {
@@ -361,7 +364,9 @@ export class BookNavigator extends LitElement {
         target: this.mainBRContainer,
         handler: this
       });
-      setTimeout(() => this.bookreader.resize(), 0);
+      setTimeout(() => {
+        this.bookreader.resize();
+      }, 0);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;
@@ -413,11 +418,10 @@ export class BookNavigator extends LitElement {
 
     const widthChange = startBrWidth !== this.brWidth;
     const heightChange = startBrHeight !== this.brHeight;
-    setTimeout(() => {
-      if (!animating && (widthChange || heightChange)) {
-        this.bookreader.resize();
-      }
-    }, 0);
+
+    if (!animating && (widthChange || heightChange)) {
+      this.bookreader.resize();
+    }
   }
 
   /**
