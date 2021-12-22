@@ -9,7 +9,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "module": "src/BookNavigator/BookNavigator.js",
+  "module": "src/BookNavigator/book-navigator.js",
   "keywords": [
     "online",
     "bookreader",

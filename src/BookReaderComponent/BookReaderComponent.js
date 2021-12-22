@@ -5,7 +5,7 @@
 import { LitElement, html, css } from 'lit-element';
 
 import '@internetarchive/ia-item-navigator';
-import '../BookNavigator/BookNavigator.js';
+import '../BookNavigator/book-navigator.js';
 import '@internetarchive/modal-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 export class BookReader extends LitElement {
