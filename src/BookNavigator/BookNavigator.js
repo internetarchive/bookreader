@@ -8,7 +8,6 @@ import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-pr
 import BookmarksProvider from './bookmarks/bookmarks-provider.js';
 import SharingProvider from './sharing.js';
 import VolumesProvider from './volumes/volumes-provider.js';
-import { Book } from './BookModel.js';
 import iaLogo from './assets/ia-logo.js';
 
 const events = {
@@ -55,14 +54,12 @@ export class BookNavigator extends LitElement {
     this.sharedObserver = undefined;
     this.fullscreenBranding = iaLogo;
     // Untracked properties
-    this.model = new Book();
     this.brWidth = 0;
     this.brHeight = 0;
     this.shortcutOrder = ['fullscreen', 'volumes', 'search', 'bookmarks'];
   }
 
   firstUpdated() {
-    this.model.setMetadata(this.book);
     this.bindEventListeners();
     this.emitPostInit();
     this.loaded = true;
