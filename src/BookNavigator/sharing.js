@@ -9,19 +9,19 @@ export default class SharingProvider {
     bookreader
   }) {
     const { identifier, creator, title } = item?.metadata;
-    const subPrefix = bookreader.options.subPrefix;
-    const encodedSubPrefix = encodeURIComponent(subPrefix);
-    const urlIdentifier = subPrefix && (subPrefix !== identifier) ? `${identifier}/${encodedSubPrefix}` : identifier;
+    const creatorToUse = Array.isArray(creator) ? creator[0] : creator;
+    const subPrefix = bookreader.options.subPrefix || '';
     const label = `Share this book`;
     this.icon = html`<ia-icon-share style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-share>`;
     this.label = label;
     this.id = 'share';
     this.component = html`<ia-sharing-options
-      identifier="${urlIdentifier}"
-      type="book"
-      creator="${creator}"
-      description="${title}"
-      baseHost="${baseHost}"
+      .identifier=${identifier}
+      .type=${`book`}
+      .creator=${creatorToUse}
+      .description=${title}
+      .baseHost=${baseHost}
+      .fileSubPrefix=${subPrefix}
     ></ia-sharing-options>`;
   }
 }
