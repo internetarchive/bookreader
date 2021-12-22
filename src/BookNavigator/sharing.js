@@ -2,7 +2,7 @@ import { html } from 'lit-element';
 import '@internetarchive/icon-share/icon-share';
 import '@internetarchive/ia-sharing-options';
 
-export default class {
+export default class SharingProvider {
   constructor({
     item,
     baseHost,

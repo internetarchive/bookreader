@@ -10,7 +10,7 @@ let searchState = {
   queryInProgress: false,
   errorMessage: '',
 };
-export default class {
+export default class SearchProvider {
   constructor({
     onProviderChange,
     bookreader

@@ -28,7 +28,7 @@ const visualAdjustmentOptions = [{
   active: false,
 }];
 
-export default class {
+export default class VisualAdjustmentsProvider {
   constructor(options) {
     const { onProviderChange, bookreader } = options;
     this.onProviderChange = onProviderChange;

@@ -126,9 +126,21 @@ export class BookNavigator extends LitElement {
    * to keep it in sync.
    */
   initializeBookSubmenus() {
-    this.menuProviders = {
-      search: new SearchProvider({
-        ...this.c,
+    const providers = {
+      downloads: new DownloadProvider(this.baseProviderConfig),
+      visualAdjustments: new VisualAdjustmentProvider({
+        ...this.baseProviderConfig,
+        /** Update menu contents */
+        onProviderChange: () => {
+          this.updateMenuContents();
+        },
+      }),
+      share: new SharingProvider(this.baseProviderConfig),
+    };
+
+    if (this.bookreader.options.enableSearch) {
+      providers.search = new SearchProvider({
+        ...this.baseProviderConfig,
         /**
          * Search specific menu updates
          * @param {BookReader} brInstance
@@ -139,7 +151,6 @@ export class BookNavigator extends LitElement {
             /* refresh br instance reference */
             this.bookreader = brInstance;
           }
-          this.updateMenuContents();
           const wideEnoughToOpenMenu = this.brWidth >= 640;
           if (wideEnoughToOpenMenu && !searchUpdates?.searchCanceled) {
             /* open side search menu */
@@ -147,18 +158,13 @@ export class BookNavigator extends LitElement {
               this.updateSideMenu('search', 'open');
             }, 0);
           }
-        },
-      }),
-      downloads: new DownloadProvider(this.baseProviderConfig),
-      visualAdjustments: new VisualAdjustmentProvider({
-        ...this.baseProviderConfig,
-        /** Update menu contents */
-        onProviderChange: () => {
           this.updateMenuContents();
         },
-      }),
-      share: new SharingProvider(this.baseProviderConfig),
-      bookmarks: new BookmarksProvider({
+      });
+    }
+
+    if (this.bookreader.options.enableBookmarks) {
+      providers.bookmarks = new BookmarksProvider({
         ...this.baseProviderConfig,
         onProviderChange: (bookmarks, showSidePanel = false) => {
           if (showSidePanel) {
@@ -168,12 +174,12 @@ export class BookNavigator extends LitElement {
           this[`${method}MenuShortcut`]('bookmarks');
           this.updateMenuContents();
         }
-      }),
-    };
+      });
+    }
 
     // add shortcut for volumes if multipleBooksList exists
     if (this.bookreader.options.enableMultipleBooks) {
-      this.menuProviders.volumes = new VolumesProvider({
+      providers.volumes = new VolumesProvider({
         ...this.baseProviderConfig,
         onProviderChange: (brInstance = null, volumesUpdates = {}) => {
           if (brInstance) {
@@ -184,10 +190,11 @@ export class BookNavigator extends LitElement {
           this.updateSideMenu('volumes', 'open');
         }
       });
-      this.addMenuShortcut('volumes');
     }
 
-    this.addMenuShortcut('search'); /* start with search as a shortcut */
+    this.menuProviders = providers;
+    this.addMenuShortcut('search');
+    this.addMenuShortcut('volumes');
     this.updateMenuContents();
   }
 
@@ -293,9 +300,10 @@ export class BookNavigator extends LitElement {
    * @param {string} menuId - a string matching the id property of a provider
    */
   addMenuShortcut(menuId) {
-    if (this.menuShortcuts.find((m) => m.id === menuId)) { return; }
+    if (!this.menuProviders[menuId] || this.menuShortcuts.find((m) => m.id === menuId)) { return; }
 
     this.menuShortcuts.push(this.menuProviders[menuId]);
+
     this.sortMenuShortcuts();
     this.emitMenuShortcutsUpdated();
   }
