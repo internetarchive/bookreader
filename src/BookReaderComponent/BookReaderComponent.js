@@ -6,12 +6,14 @@ import { LitElement, html, css } from 'lit-element';
 
 import '@internetarchive/ia-item-navigator';
 import '../BookNavigator/book-navigator.js';
+// eslint-disable-next-line no-unused-vars
+import { ModalManager } from '@internetarchive/modal-manager';
 import '@internetarchive/modal-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 export class BookReader extends LitElement {
   static get properties() {
     return {
-      item: { type: String },
+      item: { type: Object },
       baseHost: { type: String },
       fullscreen: { type: Boolean, reflect: true, attribute: true },
       sharedObserver: { type: Object }
@@ -24,7 +26,9 @@ export class BookReader extends LitElement {
     this.bookreader = undefined;
     this.baseHost = 'https://archive.org';
     this.fullscreen = false;
+    /** @type {ModalManager} */
     this.modal = undefined;
+    /** @type {SharedResizeObserver} */
     this.sharedObserver = new SharedResizeObserver();
   }
 

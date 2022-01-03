@@ -77,7 +77,7 @@ export default class VisualAdjustmentsProvider {
       return newValue ? [...values, newValue] : values;
     }, []).join(' ');
 
-    this.bookreader.$(this.bookContainer).css('filter', filters);
+    this.bookContainer.css('filter', filters);
 
     this.optionUpdateComplete(event);
   }
