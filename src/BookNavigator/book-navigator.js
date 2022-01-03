@@ -61,7 +61,16 @@ export class BookNavigator extends LitElement {
     // Untracked properties
     this.brWidth = 0;
     this.brHeight = 0;
-    this.shortcutOrder = ['fullscreen', 'volumes', 'search', 'bookmarks'];
+    this.shortcutOrder = [
+      /**
+       * sets exit FS button (`this.fullscreenBranding1)
+       * when `br.options.enableFSLogoShortcut`
+       */
+      'fullscreen',
+      'volumes',
+      'search',
+      'bookmarks'
+    ];
   }
 
   firstUpdated() {
