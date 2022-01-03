@@ -178,7 +178,7 @@ BookReader.prototype.setup = function(options) {
      */
   this.firstIndex = null;
   this.lastDisplayableIndex2up = null;
-  this.isFullscreenActive = options.isFullscreenActive || false;
+  this.isFullscreenActive = options.startFullscreen || false;
   this.lastScroll = null;
 
   this.showLogo = options.showLogo;
@@ -1201,7 +1201,7 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   // Add "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
   // trigger event here, so that animations,
-  // class updates happen before BookNavigator relays to web components
+  // class updates happen before book-nav relays to web components
   this.trigger(BookReader.eventNames.fullscreenToggled);
 
   setTimeout(() => {
@@ -1231,7 +1231,7 @@ BookReader.prototype.exitFullScreen = async function () {
 
   this.isFullscreenActive = false;
   // Trigger fullscreen event immediately
-  // so that BookNavigator can relay to web components
+  // so that book-nav can relay to web components
   this.trigger(BookReader.eventNames.fullscreenToggled);
 
   this.updateBrClasses();
