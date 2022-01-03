@@ -54,7 +54,8 @@ const initializeBookReader = (brManifest) => {
     enableMultipleBooks: false, // turn this on
     multipleBooksList: [], // populate this  // TODO: get sample blob and tie into demo
     /* End multiple volumes */
-    enableBookmarks: true // turn this on
+    enableBookmarks: true, // turn this on
+    enableFSLogoShortcut: true,
   };
 
   // we want to show item as embedded when ?ui=embed is in URI

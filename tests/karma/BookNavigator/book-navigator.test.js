@@ -13,7 +13,7 @@ import VisualAdjustmentsProvider from '../../../src/BookNavigator/visual-adjustm
 import VolumesProvider from '../../../src/BookNavigator/volumes/volumes-provider.js';
 import { ModalManager } from '@internetarchive/modal-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
-import '../../../src/BookNavigator/BookNavigator.js';
+import '../../../src/BookNavigator/book-navigator.js';
 
 const promise0 = () => new Promise(res => setTimeout(res, 0));
 
@@ -382,10 +382,30 @@ describe('<book-navigator>', () => {
   });
 
   describe('Fullscreen Management', () => {
+    it('needs option: `enableFSLogoShortcut` to use FS logo', async () => {
+      const el = fixtureSync(container());
+      const brStub = {
+        isFullscreen: () => true,
+        options: {
+          enableFSLogoShortcut: false,
+        }
+      };
+
+      el.bookreader = brStub;
+      el.emitMenuShortcutsUpdated = sinon.fake();
+      await elementUpdated(el);
+
+      el.manageFullScreenBehavior();
+      await elementUpdated(el);
+      expect(el.menuShortcuts.length).to.equal(0);
+    });
     it('sets fullscreen shortcut when entering Fullscreen', async () => {
       const el = fixtureSync(container());
       const brStub = {
         isFullscreen: () => true,
+        options: {
+          enableFSLogoShortcut: true,
+        }
       };
 
       el.bookreader = brStub;
@@ -403,6 +423,9 @@ describe('<book-navigator>', () => {
       const el = fixtureSync(container());
       const brStub = {
         isFullscreen: () => true,
+        options: {
+          enableFSLogoShortcut: true,
+        }
       };
 
       el.bookreader = brStub;
@@ -422,6 +445,9 @@ describe('<book-navigator>', () => {
       const el = fixtureSync(container());
       const brStub = {
         isFullscreen: () => false,
+        options: {
+          enableFSLogoShortcut: true,
+        }
       };
 
       el.bookreader = brStub;
@@ -440,6 +466,9 @@ describe('<book-navigator>', () => {
         resize: sinon.fake(),
         currentIndex: sinon.fake(),
         jumpToIndex: sinon.fake(),
+        options: {
+          enableFSLogoShortcut: true,
+        }
       };
       el.bookreader = brStub;
       el.manageFullScreenBehavior = sinon.fake();

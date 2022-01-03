@@ -431,6 +431,10 @@ export class BookNavigator extends LitElement {
   manageFullScreenBehavior() {
     this.emitFullScreenState();
 
+    if (!this.bookreader.options.enableFSLogoShortcut) {
+      return;
+    }
+
     const isFullScreen = this.bookreader.isFullscreen();
     if (isFullScreen) {
       this.addFullscreenShortcut();
