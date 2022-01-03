@@ -48,7 +48,8 @@ export class UrlPlugin {
       .map(schema => pathParams[schema.name] ? `${schema.name}/${pathParams[schema.name]}` : '')
       .join('/');
 
-    const strStrippedTrailingSlash = `${strPathParams.replace(/\/$/, '')}`;
+    // replace consecutive slashes with a single slash + remove trailing slashes
+    const strStrippedTrailingSlash = `${strPathParams.replace(/\/+/g, '/').replace(/\/+$/, '')}`;
     const concatenatedPath = `${strStrippedTrailingSlash}?${searchParams.toString()}`;
     return searchParams.toString() ? concatenatedPath : `${strStrippedTrailingSlash}`;
   }
@@ -79,9 +80,6 @@ export class UrlPlugin {
     this.urlSchema
       .filter(schema => schema.position == 'path')
       .forEach(schema => {
-        if (!urlStrSplitSlashObj[schema.name] && schema.default) {
-          return urlState[schema.name] = schema.default;
-        }
         const hasPropertyKey = doesKeyExists(urlStrSplitSlashObj, schema.name);
         const hasDeprecatedKey = doesKeyExists(schema, 'deprecated_for') && hasPropertyKey;
 
@@ -139,13 +137,14 @@ export class UrlPlugin {
    */
   pushToAddressBar() {
     const urlStrPath = this.urlStateToUrlString(this.urlState);
+    const concatenatedPath = urlStrPath !== '/' ? urlStrPath : '';
     if (this.urlMode == 'history') {
       if (window.history && window.history.replaceState) {
-        const newUrlPath = `${this.urlHistoryBasePath}${urlStrPath}`;
+        const newUrlPath = `${this.urlHistoryBasePath}${concatenatedPath}`;
         window.history.replaceState({}, null, newUrlPath);
       }
     } else {
-      window.location.replace('#' + urlStrPath);
+      window.location.replace('#' + concatenatedPath);
     }
     this.oldLocationHash = urlStrPath;
   }
