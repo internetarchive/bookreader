@@ -4,7 +4,6 @@
 html {
     font-size: 10px;
     font-family: sans-serif;
-    --br-height: calc(100vh - 100px);
 }
 
 body {
@@ -17,8 +16,7 @@ body {
     display: none;
 }
 
-body.BRfullscreenActive section.theater,
-body.BRfullscreenActive ia-book-reader {
+body.BRfullscreenActive section.theater {
     height: 100vh;
 }
 ia-bookreader[fullscreen] {
@@ -26,6 +24,7 @@ ia-bookreader[fullscreen] {
 }
 
 ia-bookreader{
+    --br-height: calc(100vh - 100px);
     display: block;
     height: var(--br-height);
 }
