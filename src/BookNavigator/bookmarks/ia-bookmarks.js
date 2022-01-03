@@ -1,6 +1,6 @@
 import { render, nothing } from 'lit-html';
 import { LitElement, html, css } from 'lit-element';
-import { ModalConfig } from '@internetarchive/modal-manager';
+import { ModalConfig, ModalManagerInterface } from '@internetarchive/modal-manager';
 import buttonStyles from '../assets/button-base.js';
 import './bookmarks-loginCTA.js';
 
@@ -95,6 +95,7 @@ class IABookmarks extends LitElement {
     this.bookmarks = [];
     this.bookreader = {};
     this.editedBookmark = {};
+    /** @type {ModalManagerInterface} */
     this.modal = undefined;
     this.loginOptions = {
       loginClicked: () => {},
@@ -128,7 +129,7 @@ class IABookmarks extends LitElement {
   }
 
   updated(changed) {
-    if (changed.has('options')) {
+    if (changed.has('displayMode')) {
       this.updateDisplay();
     }
 
@@ -225,13 +226,22 @@ class IABookmarks extends LitElement {
   }
 
   fetchBookmarks() {
-    return this.api.getAll().then((res) => res.json()).then(({
-      success,
-      error = 'Something happened while fetching bookmarks.',
-      value: bkmrks = [],
-    }) => {
+    return this.api.getAll().then((res) => {
+      let response;
+      try {
+        response = JSON.parse(res);
+      } catch (e) {
+        response = { error: e.message };
+      }
+      return response;
+    }).then((response) => {
+      const {
+        success,
+        error = 'Something happened while fetching bookmarks.',
+        value: bkmrks = [],
+      } = response;
       if (!success) {
-        throw new Error(`Failed to load bookmarks: ${error}`);
+        console?.warn('Error fetching bookmarks', error);
       }
 
       const bookmarks = {};
@@ -502,10 +512,14 @@ class IABookmarks extends LitElement {
     `;
   }
 
+  get bookmarkHelperMessage() {
+    return html`<p>Please use 1up or 2up view modes to add bookmark.</p>`;
+  }
+
   render() {
     const bookmarks = html`
       ${this.bookmarksList}
-      ${this.allowAddingBookmark ? this.addBookmarkButton : nothing}
+      ${this.allowAddingBookmark ? this.addBookmarkButton : this.bookmarkHelperMessage}
     `;
     return html`
       <section class="bookmarks">
