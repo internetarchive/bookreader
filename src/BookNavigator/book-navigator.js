@@ -32,9 +32,7 @@ export class BookNavigator extends LitElement {
       menuShortcuts: { type: Array },
       signedIn: { type: Boolean },
       loaded: { type: Boolean },
-      /** @type {SharedResizeObserver} */
       sharedObserver: { type: Object, attribute: false },
-      /** @type {ModalManager} */
       modal: { type: Object, attribute: false },
       fullscreenBranding: { type: Object },
     };
@@ -55,10 +53,13 @@ export class BookNavigator extends LitElement {
     this.menuProviders = {};
     this.menuShortcuts = [];
     this.signedIn = false;
+    /** @type {ModalManager} */
     this.modal = undefined;
+    /** @type {SharedResizeObserver} */
     this.sharedObserver = undefined;
     this.fullscreenBranding = iaLogo;
     // Untracked properties
+    this.sharedObserverHandler = undefined;
     this.brWidth = 0;
     this.brHeight = 0;
     this.shortcutOrder = [
@@ -71,6 +72,13 @@ export class BookNavigator extends LitElement {
       'search',
       'bookmarks'
     ];
+  }
+
+  disconnectedCallback() {
+    this.sharedObserver.removeObserver({
+      target: this.mainBRContainer,
+      handler: this.sharedObserverHandler
+    });
   }
 
   firstUpdated() {
@@ -92,6 +100,10 @@ export class BookNavigator extends LitElement {
       || changed.has('isAdmin')
       || changed.has('modal')) {
       this.initializeBookSubmenus();
+    }
+
+    if (changed.has('sharedObserver') && this.bookreader) {
+      this.loadSharedObserver();
     }
   }
 
@@ -382,10 +394,7 @@ export class BookNavigator extends LitElement {
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
       this.emitLoadingStatusUpdate(true);
-      this.sharedObserver?.addObserver({
-        target: this.mainBRContainer,
-        handler: this
-      });
+      this.loadSharedObserver();
       setTimeout(() => {
         this.bookreader.resize();
       }, 0);
@@ -417,6 +426,14 @@ export class BookNavigator extends LitElement {
       this.bookReaderLoaded = true;
       this.downloadableTypes = downloadURLs;
       this.bookIsRestricted = isRestricted;
+    });
+  }
+
+  loadSharedObserver() {
+    this.sharedObserverHandler = { handleResize: this.handleResize.bind(this) };
+    this.sharedObserver?.addObserver({
+      target: this.mainBRContainer,
+      handler: this.sharedObserverHandler
     });
   }
 
