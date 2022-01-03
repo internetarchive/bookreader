@@ -226,7 +226,7 @@ export class BookNavigator extends LitElement {
 
   /** gets element that houses the bookreader in light dom */
   get mainBRContainer() {
-    return document.querySelector(this.bookreader.el);
+    return document.querySelector(this.bookreader?.el);
   }
 
   /** Fullscreen Shortcut */
