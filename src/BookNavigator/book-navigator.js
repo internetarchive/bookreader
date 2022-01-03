@@ -317,7 +317,15 @@ export class BookNavigator extends LitElement {
    * @param {string} menuId - a string matching the id property of a provider
    */
   addMenuShortcut(menuId) {
-    if (!this.menuProviders[menuId] || this.menuShortcuts.find((m) => m.id === menuId)) { return; }
+    if (this.menuShortcuts.find((m) => m.id === menuId)) {
+      // menu is already there
+      return;
+    }
+
+    if (!this.menuProviders[menuId]) {
+      // no provider for this menu
+      return;
+    }
 
     this.menuShortcuts.push(this.menuProviders[menuId]);
 
