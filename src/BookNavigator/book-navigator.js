@@ -116,8 +116,10 @@ export class BookNavigator extends LitElement {
    *  item: Item,
    *  signedIn: boolean,
    *  isAdmin: boolean,
-   *  onProviderChange: function,
+   *  onProviderChange: (BookReader, object) => void,
    *  }} baseProviderConfig
+   *
+   * @return {baseProviderConfig}
    */
   get baseProviderConfig() {
     return  {
