@@ -1,6 +1,7 @@
-import { render, nothing } from 'lit-html';
+import { render } from 'lit-html';
 import { LitElement, html, css } from 'lit-element';
-import { ModalConfig, ModalManagerInterface } from '@internetarchive/modal-manager';
+// eslint-disable-next-line no-unused-vars
+import { ModalConfig, ModalManager } from '@internetarchive/modal-manager';
 import buttonStyles from '../assets/button-base.js';
 import './bookmarks-loginCTA.js';
 
@@ -95,7 +96,7 @@ class IABookmarks extends LitElement {
     this.bookmarks = [];
     this.bookreader = {};
     this.editedBookmark = {};
-    /** @type {ModalManagerInterface} */
+    /** @type {ModalManager} */
     this.modal = undefined;
     this.loginOptions = {
       loginClicked: () => {},
