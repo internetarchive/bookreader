@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
-
+// eslint-disable-next-line no-unused-vars
+import { ModalManager } from '@internetarchive/modal-manager';
 import { css, html, LitElement } from 'lit-element';
 import SearchProvider from './search/search-provider.js';
 import DownloadProvider from './downloads/downloads-provider.js';
@@ -33,6 +34,8 @@ export class BookNavigator extends LitElement {
       loaded: { type: Boolean },
       /** @type {SharedResizeObserver} */
       sharedObserver: { type: Object, attribute: false },
+      /** @type {ModalManager} */
+      modal: { type: Object, attribute: false },
       fullscreenBranding: { type: Object },
     };
   }
@@ -77,7 +80,8 @@ export class BookNavigator extends LitElement {
       || changed.has('itemMD')
       || changed.has('bookreader')
       || changed.has('signedIn')
-      || changed.has('isAdmin')) {
+      || changed.has('isAdmin')
+      || changed.has('modal')) {
       this.initializeBookSubmenus();
     }
   }
