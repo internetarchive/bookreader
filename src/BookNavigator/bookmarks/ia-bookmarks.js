@@ -257,13 +257,12 @@ class IABookmarks extends LitElement {
     });
   }
 
-  emitBookmarksChanged(showSidePanel = false) {
+  emitBookmarksChanged() {
     this.dispatchEvent(new CustomEvent('bookmarksChanged', {
       bubbles: true,
       composed: true,
       detail: {
         bookmarks: this.bookmarks,
-        showSidePanel
       },
     }));
   }

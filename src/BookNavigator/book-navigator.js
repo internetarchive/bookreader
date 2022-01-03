@@ -195,10 +195,7 @@ export class BookNavigator extends LitElement {
     if (this.bookreader.options.enableBookmarks) {
       providers.bookmarks = new BookmarksProvider({
         ...this.baseProviderConfig,
-        onProviderChange: (bookmarks, showSidePanel = false) => {
-          if (showSidePanel) {
-            this.updateSideMenu('bookmarks', 'open');
-          }
+        onProviderChange: (bookmarks) => {
           const method = Object.keys(bookmarks).length ? 'add' : 'remove';
           this[`${method}MenuShortcut`]('bookmarks');
           this.updateMenuContents();
