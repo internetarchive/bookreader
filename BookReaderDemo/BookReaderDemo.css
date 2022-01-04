@@ -16,8 +16,21 @@ body {
     display: none;
 }
 
+body.BRfullscreenActive section.theater {
+    height: 100vh;
+}
+ia-bookreader[fullscreen] {
+    height: unset;
+}
+
+ia-bookreader{
+    --br-height: calc(100vh - 100px);
+    display: block;
+    height: var(--br-height);
+}
+
 .BookReader {
-    height: 600px;
+    height: var(--br-height);
     overflow: hidden;
     margin: 0 auto;
 }

@@ -61,14 +61,7 @@ BookReader.prototype.setup = (function (super_) {
     /** @type { {[pageIndex: number]: SearchInsideMatchBox[]} } */
     this._searchBoxesByIndex = {};
 
-    if (this.searchView) { return; }
-    this.searchView = new SearchView({
-      br: this,
-      searchCancelledCallback: () => {
-        this._cancelSearch();
-        this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
-      }
-    });
+    this.searchView = undefined;
   };
 })(BookReader.prototype.setup);
 
@@ -76,7 +69,14 @@ BookReader.prototype.setup = (function (super_) {
 BookReader.prototype.init = (function (super_) {
   return function () {
     super_.call(this);
-
+    // give SearchView the most complete bookreader state
+    this.searchView = new SearchView({
+      br: this,
+      searchCancelledCallback: () => {
+        this._cancelSearch();
+        this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
+      }
+    });
     if (this.options.enableSearch && this.options.initialSearchTerm) {
       /**
        * this.search() take two parameter

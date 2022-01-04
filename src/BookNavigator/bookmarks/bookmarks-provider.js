@@ -10,18 +10,32 @@ import { IAIconBookmark } from '@internetarchive/icon-bookmark';
 customElements.define('icon-bookmark', IAIconBookmark);
 
 export default class BookmarksProvider {
-  constructor(options, bookreader) {
-    const boundOptions = Object.assign(this, options, {loginClicked: this.bookmarksLoginClicked});
+  constructor(options) {
+    const {
+      baseHost,
+      signedIn,
+      bookreader,
+      modal,
+      onProviderChange
+    } = options;
+
+    const referrerStr = `referer=${encodeURIComponent(location.href)}`;
+    const loginUrl = `https://${baseHost}/account/login?${referrerStr}`;
+
     this.component = document.createElement('ia-bookmarks');
     this.component.bookreader = bookreader;
-    this.component.options = boundOptions;
-    this.component.displayMode = this.component.options.displayMode;
-
+    this.component.displayMode = signedIn ? 'bookmarks' : 'login';
+    this.component.modal = modal;
+    this.component.loginOptions = {
+      loginClicked: this.bookmarksLoginClicked,
+      loginUrl
+    };
     this.bindEvents();
 
     this.icon = html`<icon-bookmark state="hollow" style="--iconWidth: 16px; --iconHeight: 24px;"></icon-bookmark>`;
     this.label = 'Bookmarks';
     this.id = 'bookmarks';
+    this.onProviderChange = onProviderChange;
     this.component.setup();
     this.updateMenu(this.component.bookmarks.length);
   }
@@ -32,14 +46,12 @@ export default class BookmarksProvider {
 
   bindEvents() {
     this.component.addEventListener('bookmarksChanged', this.bookmarksChanged.bind(this));
-    this.component.addEventListener('showItemNavigatorModal', this.showItemNavigatorModal);
-    this.component.addEventListener('closeItemNavigatorModal', this.closeItemNavigatorModal);
   }
 
   bookmarksChanged({ detail }) {
     const bookmarksLength = Object.keys(detail.bookmarks).length;
     this.updateMenu(bookmarksLength);
-    this.onBookmarksChanged(detail.bookmarks);
+    this.onProviderChange(detail.bookmarks, detail.showSidePanel);
   }
 
   bookmarksLoginClicked() {

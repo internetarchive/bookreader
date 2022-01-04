@@ -1,56 +1,66 @@
 import BookReader from '@/src/BookReader';
+import { sleep } from '@/src/plugins/tts/utils';
+import sinon from 'sinon';
 
 beforeAll(() => {
-  global.alert = jest.fn();
+  global.alert = sinon.fake();
 });
 afterEach(() => {
-  jest.restoreAllMocks();
+  sinon.restore();
 });
 
 describe('BookReader.prototype.toggleFullscreen', ()  => {
   test('uses `isFullscreen` to check fullscreen state', () => {
-    const isFSmock = jest.fn();
-    isFSmock.mockReturnValueOnce(false);
+    const isFSmock = sinon.fake();
+    // isFSmock.mockReturnValueOnce(false);
     const br = new BookReader();
     br.mode = br.constMode1up;
-    br.enterFullscreen = jest.fn();
+    br.enterFullscreen = sinon.fake();
     br.isFullscreen = isFSmock;
 
     br.toggleFullscreen();
-    expect(br.isFullscreen).toHaveBeenCalled();
+    expect(br.isFullscreen.callCount).toEqual(1);
   });
 
   test('will always emit an event', async () => {
     const br = new BookReader();
     br.mode = br.constMode2up;
-    br.trigger = jest.fn();
-    br.switchMode = jest.fn();
+    br.trigger = sinon.fake();
+    br.switchMode = sinon.fake();
+    br.updateBrClasses = sinon.fake();
     br.refs.$brContainer = {
-      css: jest.fn(),
+      css: sinon.fake(),
+      animate: (options, speed, style, callback) => callback()
+    };
+    br.refs.$br = {
+      updateBrClasses: sinon.fake(),
+      removeClass: sinon.fake(),
+      addClass: sinon.fake(),
+      css: sinon.fake(),
       animate: (options, speed, style, callback) => callback()
     };
 
     await br.toggleFullscreen();
-    expect(br.trigger).toHaveBeenCalled();
+    expect(br.trigger.callCount).toBeGreaterThan(0);
   });
 
   test('will start with opening fullscreen', () => {
     const br = new BookReader();
     br.mode = br.constMode2up;
-    br.enterFullscreen = jest.fn();
+    br.enterFullscreen = sinon.fake();
 
     br.toggleFullscreen();
-    expect(br.enterFullscreen).toHaveBeenCalled();
+    expect(br.enterFullscreen.callCount).toEqual(1);
   });
 
   test('will close fullscreen if BookReader is in fullscreen', () => {
     const br = new BookReader();
     br.mode = br.constMode1up;
-    br.exitFullScreen = jest.fn();
+    br.exitFullScreen = sinon.fake();
     br.isFullscreenActive = true;
 
     br.toggleFullscreen();
-    expect(br.exitFullScreen).toHaveBeenCalled();
+    expect(br.exitFullScreen.callCount).toEqual(1);
   });
 });
 
@@ -58,11 +68,11 @@ describe('BookReader.prototype.enterFullscreen', ()  => {
   test('will bind `_fullscreenCloseHandler` by default', () => {
     const br = new BookReader();
     br.mode = br.constMode1up;
-    br.switchMode = jest.fn();
-    br.updateBrClasses = jest.fn();
+    br.switchMode = sinon.fake();
+    br.updateBrClasses = sinon.fake();
     br.refs.$brContainer = {
-      css: jest.fn(),
-      animate: jest.fn(),
+      css: sinon.fake(),
+      animate: sinon.fake(),
     };
     expect(br._fullscreenCloseHandler).toBeUndefined();
 
@@ -73,22 +83,24 @@ describe('BookReader.prototype.enterFullscreen', ()  => {
   test('fires certain events when called', async () => {
     const br = new BookReader();
     br.mode = br.constMode2up;
-    br.switchMode = jest.fn();
-    br.updateBrClasses = jest.fn();
-    br.trigger = jest.fn();
-    br.resize = jest.fn();
-    br.jumpToIndex = jest.fn();
+    br.switchMode = sinon.fake();
+    br.updateBrClasses = sinon.fake();
+    br.trigger = sinon.fake();
+    br.resize = sinon.fake();
+    br.jumpToIndex = sinon.fake();
     br.refs.$brContainer = {
-      css: jest.fn(),
+      css: sinon.fake(),
       animate: (options, speed, style, callback) => callback()
     };
 
     await br.enterFullscreen();
-    expect(br.switchMode).toHaveBeenCalledTimes(1);
-    expect(br.updateBrClasses).toHaveBeenCalledTimes(0); // book nav's fullscreen manager will set these classes
-    expect(br.trigger).toHaveBeenCalledTimes(2); // fragmentChange, fullscreenToggled
-    expect(br.resize).toHaveBeenCalledTimes(1);
-    expect(br.jumpToIndex).toHaveBeenCalledTimes(1);
+    expect(br.switchMode.callCount).toEqual(1);
+    expect(br.updateBrClasses.callCount).toEqual(1);
+    expect(br.trigger.callCount).toEqual(2); // fragmentChange, fullscreenToggled
+    expect(br.jumpToIndex.callCount).toEqual(1);
+
+    await sleep(0);
+    expect(br.resize.callCount).toEqual(1);
   });
 });
 
@@ -96,19 +108,19 @@ describe('BookReader.prototype.exitFullScreen', () => {
   test('fires certain events when called', async () => {
     const br = new BookReader();
     br.mode = br.constMode2up;
-    br.switchMode = jest.fn();
-    br.updateBrClasses = jest.fn();
-    br.trigger = jest.fn();
-    br.resize = jest.fn();
+    br.switchMode = sinon.fake();
+    br.updateBrClasses = sinon.fake();
+    br.trigger = sinon.fake();
+    br.resize = sinon.fake();
     br.refs.$brContainer = {
-      css: jest.fn(),
+      css: sinon.fake(),
       animate: (options, speed, style, callback) => callback()
     };
     await br.exitFullScreen();
-    expect(br.switchMode).toHaveBeenCalledTimes(1);
-    expect(br.updateBrClasses).toHaveBeenCalledTimes(1);
-    expect(br.trigger).toHaveBeenCalledTimes(2); // fragmentChange, fullscreenToggled
-    expect(br.resize).toHaveBeenCalledTimes(1);
+    expect(br.switchMode.callCount).toEqual(1);
+    expect(br.updateBrClasses.callCount).toEqual(1);
+    expect(br.trigger.callCount).toEqual(2); // fragmentChange, fullscreenToggled
+    expect(br.resize.callCount).toEqual(1);
   });
 });
 
@@ -116,27 +128,27 @@ describe('BookReader.prototype.trigger', () => {
   test('fires custom event', () => {
     const br = new BookReader();
     global.br = br;
-    global.dispatchEvent = jest.fn();
+    global.dispatchEvent = sinon.fake();
 
     const props = {bar: 1};
     br.trigger('foo', props);
-    expect(global.dispatchEvent.mock.calls.length).toBe(1);
+    expect(global.dispatchEvent.callCount).toBe(1);
   });
 });
 
 describe('`BookReader.prototype.prev`', () => {
   const br = new BookReader();
   global.br = br;
-  br.trigger = jest.fn();
-  br.flipBackToIndex = jest.fn();
-  br.jumpToIndex = jest.fn();
+  br.trigger = sinon.fake();
+  br.flipBackToIndex = sinon.fake();
+  br.jumpToIndex = sinon.fake();
 
   test('does not take action if user is on front page', () => {
     br.firstIndex = 0;
     br.prev();
-    expect(br.trigger.mock.calls.length).toBe(0);
-    expect(br.flipBackToIndex.mock.calls.length).toBe(0);
-    expect(br.jumpToIndex.mock.calls.length).toBe(0);
+    expect(br.trigger.callCount).toBe(0);
+    expect(br.flipBackToIndex.callCount).toBe(0);
+    expect(br.jumpToIndex.callCount).toBe(0);
   });
 
   describe('2up mode', () => {
@@ -144,9 +156,9 @@ describe('`BookReader.prototype.prev`', () => {
       br.firstIndex = 10;
       br.mode = br.constMode2up;
       br.prev();
-      expect(br.jumpToIndex.mock.calls.length).toBe(0); // <--  does not get called
-      expect(br.trigger.mock.calls.length).toBe(1);
-      expect(br.flipBackToIndex.mock.calls.length).toBe(1);
+      expect(br.jumpToIndex.callCount).toBe(0); // <--  does not get called
+      expect(br.trigger.callCount).toBe(1);
+      expect(br.flipBackToIndex.callCount).toBe(1);
     });
   });
 
@@ -155,9 +167,9 @@ describe('`BookReader.prototype.prev`', () => {
       br.firstIndex = 100;
       br.mode = br.constMode1up;
       br.prev();
-      expect(br.jumpToIndex.mock.calls.length).toBe(1);  // <--  gets called
-      expect(br.trigger.mock.calls.length).toBe(1); // <-- gets called by `jumpToIndex` internally
-      expect(br.flipBackToIndex.mock.calls.length).toBe(1); // <-- gets called by `jumpToIndex` internally
+      expect(br.jumpToIndex.callCount).toBe(1);  // <--  gets called
+      expect(br.trigger.callCount).toBe(1); // <-- gets called by `jumpToIndex` internally
+      expect(br.flipBackToIndex.callCount).toBe(1); // <-- gets called by `jumpToIndex` internally
     });
   });
 });

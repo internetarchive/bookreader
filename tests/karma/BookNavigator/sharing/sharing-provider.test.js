@@ -1,40 +1,49 @@
-import { expect } from '@open-wc/testing';
+import { expect, fixtureSync } from '@open-wc/testing';
 import sinon from 'sinon';
-import sharingProvider from '../../../../src/ItemNavigator/providers/sharing.js';
+import SharingProvider from '../../../../src/BookNavigator/sharing.js';
 
 afterEach(() => {
   sinon.restore();
 });
 
-const mdStub = {
-  identifier: 'stubby-id'
+const item = {
+  metadata: {
+    identifier: 'stubby-id',
+    creator: 'mr. big',
+    title: 'Stubby title',
+  }
 };
 
-const baseHostStub = 'foo.org';
-const itemType = 'texts';
+const baseHost = 'foo.org';
 const subPrefix = 'beep-boop_12 4 5';
 
 describe('Sharing Provider', () => {
   describe('constructor', () => {
-    const provider = new sharingProvider(mdStub, baseHostStub, itemType, subPrefix);
+    const provider = new SharingProvider({
+      item,
+      baseHost,
+      bookreader: {
+        options: { subPrefix }
+      }
+    });
 
     expect(provider.id).to.equal('share');
     expect(provider.icon).to.exist;
-    expect(provider.label).to.equal('Share this item');
-    expect(provider.itemType).to.equal(itemType);
-    expect(provider.idPath).to.exist;
-    expect(provider.component).to.exist;
+    expect(provider.label).to.equal('Share this book');
+    expect(fixtureSync(provider.component).tagName).to.contains('IA-SHARING-OPTIONS');
   });
 
-  describe('handles subprefix', () => {
-    it('encodes the subprefix if it has one', () => {
-      const provider = new sharingProvider(mdStub, baseHostStub, itemType, subPrefix);
-      const encodedSubprefix = encodeURIComponent(subPrefix);
-      expect(provider.idPath).to.equal(`${mdStub.identifier}/${encodedSubprefix}`);
-    });
-    it('does not add subprefix to path if subprefix is item id', () => {
-      const provider = new sharingProvider(mdStub, baseHostStub, itemType, mdStub.identifier);
-      expect(provider.idPath).to.equal(mdStub.identifier);
+  describe('Handles being a sub file/volume', () => {
+    it('encodes the subprefix if it has one', async () => {
+      const provider = new SharingProvider({
+        item,
+        baseHost,
+        bookreader: {
+          options: { subPrefix }
+        }
+      });
+
+      expect(fixtureSync(provider.component).fileSubPrefix).to.equal(subPrefix);
     });
   });
 });

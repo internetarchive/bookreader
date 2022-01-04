@@ -178,7 +178,7 @@ BookReader.prototype.setup = function(options) {
      */
   this.firstIndex = null;
   this.lastDisplayableIndex2up = null;
-  this.isFullscreenActive = false;
+  this.isFullscreenActive = options.startFullscreen || false;
   this.lastScroll = null;
 
   this.showLogo = options.showLogo;
@@ -486,7 +486,6 @@ BookReader.prototype.getInitialMode = function(params) {
   if ('undefined' != typeof(params.mode)) {
     nextMode = params.mode;
   } else if (this.ui == 'full'
-          && this.enableMobileNav
           && this.isFullscreenActive
           && windowWidth <= this.onePageMinBreakpoint
   ) {
@@ -588,14 +587,16 @@ BookReader.prototype.init = function() {
     this.suppressFragmentChange = false;
   }
 
+  if (this.options.startFullscreen) {
+    this.enterFullscreen(true);
+  }
+
   this.init.initComplete = true;
   this.trigger(BookReader.eventNames.PostInit);
 
   // Must be called after this.init.initComplete set to true to allow
   // BookReader.prototype.resize to run.
-  if (this.options.startFullscreen) {
-    this.toggleFullscreen();
-  }
+
 };
 
 /**
@@ -604,7 +605,6 @@ BookReader.prototype.init = function() {
  */
 BookReader.prototype.trigger = function(name, props = this) {
   const eventName = 'BookReader:' + name;
-  $(document).trigger(eventName, props);
 
   utils.polyfillCustomEvent(window);
   window.dispatchEvent(new CustomEvent(eventName, {
@@ -612,6 +612,7 @@ BookReader.prototype.trigger = function(name, props = this) {
     composed: true,
     detail: { props },
   }));
+  $(document).trigger(eventName, props);
 };
 
 BookReader.prototype.bind = function(name, callback) {
@@ -1184,9 +1185,10 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   }
 
   this.isFullscreenActive = true;
+  // prioritize class updates so CSS can propagate
+  this.updateBrClasses();
   this.animating = true;
   await new Promise(res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res));
-  this.resize();
   if (this.activeMode instanceof Mode1Up) {
     this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(currentIndex));
     // Need the new scale to be applied before calling jumpToIndex
@@ -1198,7 +1200,14 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   // Add "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
+  // trigger event here, so that animations,
+  // class updates happen before book-nav relays to web components
   this.trigger(BookReader.eventNames.fullscreenToggled);
+
+  setTimeout(() => {
+    // resize book after all events & css updates
+    this.resize();
+  }, 0);
 };
 
 /**
@@ -1221,6 +1230,10 @@ BookReader.prototype.exitFullScreen = async function () {
   }
 
   this.isFullscreenActive = false;
+  // Trigger fullscreen event immediately
+  // so that book-nav can relay to web components
+  this.trigger(BookReader.eventNames.fullscreenToggled);
+
   this.updateBrClasses();
   this.animating = true;
   await new Promise((res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res)));
@@ -1236,7 +1249,6 @@ BookReader.prototype.exitFullScreen = async function () {
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   // Remove "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
-  this.trigger(BookReader.eventNames.fullscreenToggled);
 };
 
 /**

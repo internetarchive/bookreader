@@ -1,5 +1,6 @@
 import { html } from 'lit-element';
-import './visual-adjustments.js';
+import '@internetarchive/icon-visual-adjustment/icon-visual-adjustment';
+import './visual-adjustments';
 
 const visualAdjustmentOptions = [{
   id: 'brightness',
@@ -27,11 +28,11 @@ const visualAdjustmentOptions = [{
   active: false,
 }];
 
-export default class {
+export default class VisualAdjustmentsProvider {
   constructor(options) {
-    const { onOptionChange = () => {}, bookContainerSelector, bookreader } = options;
-    this.onOptionChange = onOptionChange;
-    this.bookContainerSelector = bookContainerSelector;
+    const { onProviderChange, bookreader } = options;
+    this.onProviderChange = onProviderChange;
+    this.bookContainer = bookreader.refs.$brContainer;
     this.bookreader = bookreader;
 
     this.onAdjustmentChange = this.onAdjustmentChange.bind(this);
@@ -41,7 +42,7 @@ export default class {
     this.onZoomOut = this.onZoomOut.bind(this);
 
     this.activeCount = 0;
-    this.icon = html`<ia-icon icon="visualAdjustment" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
+    this.icon = html`<ia-icon-visual-adjustment style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-visual-adjustment>`;
     this.label = 'Visual Adjustments';
     this.menuDetails = this.updateOptionsCount();
     this.id = 'adjustment';
@@ -76,7 +77,7 @@ export default class {
       return newValue ? [...values, newValue] : values;
     }, []).join(' ');
 
-    document.querySelector(this.bookContainerSelector).style.setProperty('filter', filters);
+    this.bookContainer.css('filter', filters);
 
     this.optionUpdateComplete(event);
   }
@@ -84,7 +85,7 @@ export default class {
   optionUpdateComplete(event) {
     this.activeCount = event.detail.activeCount;
     this.updateOptionsCount(event);
-    this.onOptionChange(event);
+    this.onProviderChange();
   }
 
   updateOptionsCount() {

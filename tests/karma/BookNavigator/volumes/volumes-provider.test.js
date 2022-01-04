@@ -1,4 +1,4 @@
-import { expect, fixture } from '@open-wc/testing';
+import { expect, fixture, fixtureCleanup, fixtureSync } from '@open-wc/testing';
 import sinon from 'sinon';
 import volumesProvider from '../../../../src/BookNavigator/volumes/volumes-provider';
 
@@ -35,21 +35,26 @@ const brOptions = {
 
 afterEach(() => {
   sinon.restore();
+  fixtureCleanup();
 });
 
 describe('Volumes Provider', () => {
   it('constructor', () => {
-    const onSortClick = sinon.fake();
+    const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
-    const provider = new volumesProvider(baseHost, brOptions, onSortClick);
+    const provider = new volumesProvider({
+      baseHost,
+      bookreader: brOptions,
+      onProviderChange
+    });
 
     const files = brOptions.options.multipleBooksList.by_subprefix;
     const volumeCount = Object.keys(files).length;
 
-    expect(provider.optionChange).to.equal(onSortClick);
+    expect(provider.onProviderChange).to.equal(onProviderChange);
     expect(provider.id).to.equal('volumes');
     expect(provider.icon).to.exist;
-
+    expect(fixtureSync(provider.icon).tagName).to.equal('svg');
     expect(provider.label).to.equal(`Viewable files (${volumeCount})`);
     expect(provider.viewableFiles).to.exist;
     expect(provider.viewableFiles.length).to.equal(3);
@@ -60,9 +65,13 @@ describe('Volumes Provider', () => {
   });
 
   it('sorting cycles - render sort actionButton', async () => {
-    const onSortClick = sinon.fake();
+    const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
-    const provider = new volumesProvider(baseHost, brOptions, onSortClick);
+    const provider = new volumesProvider({
+      baseHost,
+      bookreader: brOptions,
+      onProviderChange
+    });
 
     expect(provider.sortOrderBy).to.equal("default");
 
@@ -80,9 +89,13 @@ describe('Volumes Provider', () => {
   });
 
   it('sort volumes in initial order', async () => {
-    const onSortClick = sinon.fake();
+    const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
-    const provider = new volumesProvider(baseHost, brOptions, onSortClick);
+    const provider = new volumesProvider({
+      baseHost,
+      bookreader: brOptions,
+      onProviderChange
+    });
 
     const parsedFiles = brOptions.options.multipleBooksList.by_subprefix;
     const files = Object.keys(parsedFiles).map(item => parsedFiles[item]).sort((a, b) => a.orig_sort - b.orig_sort);
@@ -99,9 +112,13 @@ describe('Volumes Provider', () => {
   });
 
   it('sort volumes in ascending title order', async () => {
-    const onSortClick = sinon.fake();
+    const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
-    const provider = new volumesProvider(baseHost, brOptions, onSortClick);
+    const provider = new volumesProvider({
+      baseHost,
+      bookreader: brOptions,
+      onProviderChange
+    });
 
     const parsedFiles = brOptions.options.multipleBooksList.by_subprefix;
     const files = Object.keys(parsedFiles).map(item => parsedFiles[item]);
@@ -118,10 +135,13 @@ describe('Volumes Provider', () => {
   });
 
   it('sort volumes in descending title order', async () => {
-    const onSortClick = sinon.fake();
+    const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
-    const provider = new volumesProvider(baseHost, brOptions, onSortClick);
-
+    const provider = new volumesProvider({
+      baseHost,
+      bookreader: brOptions,
+      onProviderChange
+    });
     provider.isSortAscending = false;
 
     const parsedFiles = brOptions.options.multipleBooksList.by_subprefix;
@@ -140,11 +160,15 @@ describe('Volumes Provider', () => {
 
   describe('Sorting icons', () => {
     it('has 3 icons', async () => {
-      const onSortClick = sinon.fake();
+      const onProviderChange = sinon.fake();
       const baseHost = "https://archive.org";
-      const provider = new volumesProvider(baseHost, brOptions, onSortClick);
-
+      const provider = new volumesProvider({
+        baseHost,
+        bookreader: brOptions,
+        onProviderChange
+      });
       provider.sortOrderBy = 'default';
+
       const origSortButton = await fixture(provider.sortButton);
       expect(origSortButton.classList.contains('neutral-icon')).to.be.true;
 

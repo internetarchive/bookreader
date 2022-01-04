@@ -1,4 +1,4 @@
-import { expect } from '@open-wc/testing';
+import { expect, fixtureCleanup, fixtureSync } from '@open-wc/testing';
 import sinon from 'sinon';
 import DownloadsProvider from '../../../../src/BookNavigator/downloads/downloads-provider';
 
@@ -25,6 +25,7 @@ const downloads = [
 
 afterEach(() => {
   sinon.restore();
+  fixtureCleanup();
 });
 
 describe('Downloads Provider', () => {
@@ -34,6 +35,7 @@ describe('Downloads Provider', () => {
 
     expect(provider.id).to.equal('downloads');
     expect(provider.icon).to.exist;
+    expect(fixtureSync(provider.icon).tagName).to.equal('IA-ICON-DL');
     expect(provider.label).to.equal('Downloadable files');
     expect(provider.menuDetails).to.exist;
     expect(provider.component).to.exist;
@@ -49,8 +51,9 @@ describe('Downloads Provider', () => {
   });
 
   it('render view if book is protected', () => {
-    const isBookProtected = true;
-    const provider = new DownloadsProvider(isBookProtected);
+    const provider = new DownloadsProvider({
+      bookreader: { options: { isProtected: true } }
+    });
 
     expect(provider.isBookProtected).to.equal(true);
 

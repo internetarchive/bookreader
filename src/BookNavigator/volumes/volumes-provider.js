@@ -13,12 +13,11 @@ const sortType = {
   default: 'default'
 };
 export default class VolumesProvider {
-
   /**
    * @param {import('../../BookReader').default} bookreader
    */
-  constructor(baseHost, bookreader, optionChange) {
-    this.optionChange = optionChange;
+  constructor({ baseHost, bookreader, onProviderChange }) {
+    this.onProviderChange = onProviderChange;
     this.component = document.createElement("viewable-files");
 
     const files = bookreader.options.multipleBooksList.by_subprefix;
@@ -93,7 +92,7 @@ export default class VolumesProvider {
       }
     }
 
-    this.optionChange(this.bookreader);
+    this.onProviderChange(this.bookreader);
 
     this.multipleFilesClicked(sortByType);
   }

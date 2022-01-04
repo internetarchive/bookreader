@@ -281,6 +281,12 @@ export const DEFAULT_OPTIONS = {
 
   /**
    * @type {Boolean}
+   * will show logo at fullscreen mode
+  */
+  enableFSLogoShortcut: false,
+
+  /**
+   * @type {Boolean}
    * On init, by default, we want to handle resizing bookreader
    * when browser window changes size (inc. `orientationchange` event)
    * toggle off if you want to handle this outside of bookreader

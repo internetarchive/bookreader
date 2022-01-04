@@ -4,59 +4,69 @@
 
 import { LitElement, html, css } from 'lit-element';
 
-import '../ItemNavigator/ItemNavigator.js';
-import '../BookNavigator/BookNavigator.js';
-
+import '@internetarchive/ia-item-navigator';
+import '../BookNavigator/book-navigator.js';
+// eslint-disable-next-line no-unused-vars
+import { ModalManager } from '@internetarchive/modal-manager';
+import '@internetarchive/modal-manager';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 export class BookReader extends LitElement {
   static get properties() {
     return {
-      base64Json: { type: String },
+      item: { type: Object },
       baseHost: { type: String },
+      fullscreen: { type: Boolean, reflect: true, attribute: true },
+      sharedObserver: { type: Object }
     };
   }
 
   constructor() {
     super();
-    this.base64Json = '';
+    this.item = undefined;
+    this.bookreader = undefined;
     this.baseHost = 'https://archive.org';
+    this.fullscreen = false;
+    /** @type {ModalManager} */
+    this.modal = undefined;
+    /** @type {SharedResizeObserver} */
+    this.sharedObserver = new SharedResizeObserver();
   }
 
   firstUpdated() {
-    this.fetchData();
+    this.createModal();
   }
 
-  /**
-   * Fetch metadata response from public metadata API
-   * convert response to base64 data
-   * set base64 data to props
-   */
-  async fetchData() {
-    const ocaid = new URLSearchParams(location.search).get('ocaid');
-    const response = await fetch(`${this.baseHost}/metadata/${ocaid}`);
-    const bookMetadata = await response.json();
-    const jsonBtoa = btoa(JSON.stringify(bookMetadata));
-    this.setBaseJSON(jsonBtoa);
+  /** Creates modal DOM & attaches to `<body>` */
+  createModal() {
+    this.modal = document.createElement(
+      'modal-manager'
+    );
+    document.body.appendChild(this.modal);
   }
+  /* End Modal management */
 
-  /**
-   * Set base64 data to prop
-   * @param {string} value - base64 string format
-   */
-  setBaseJSON(value) {
-    this.base64Json = value;
+  manageFullscreen(e) {
+    const { detail } = e;
+    const fullscreen = !!detail.isFullScreen;
+    this.fullscreen = fullscreen;
   }
 
   render() {
     return html`
       <div class="ia-bookreader">
-        <item-navigator
-          itemType="bookreader"
-          basehost=${this.baseHost}
-          item=${this.base64Json}>
-          <div slot="bookreader">
-            <slot name="bookreader"></slot>
+        <ia-item-navigator
+          ?viewportInFullscreen=${this.fullscreen}
+          @fullscreenToggled=${this.manageFullscreen}
+          .itemType=${'bookreader'}
+          .basehost=${this.baseHost}
+          .item=${this.item}
+          .modal=${this.modal}
+          .sharedObserver=${this.sharedObserver}
+        >
+          <div slot="theater-main">
+            <slot name="theater-main"></slot>
           </div>
-        </item-navigator>
+        </ia-item-navigator>
       </div>
     `;
   }
@@ -77,13 +87,24 @@ export class BookReader extends LitElement {
         --primaryErrorCTABorder: #f8c6c8;
       }
 
+      :host([fullscreen]),
+      ia-item-navigator[viewportinfullscreen] {
+        position: fixed;
+        inset: 0;
+        height: 100vh;
+        min-height: unset;
+      }
+
       .ia-bookreader {
         background-color: var(--primaryBGColor);
         position: relative;
-        height: auto;
+        min-height: inherit;
+        height: inherit;
       }
 
-      item-navigator {
+      ia-item-navigator {
+        min-height: var(--br-height, inherit);
+        height: var(--br-height, inherit);
         display: block;
         width: 100%;
         color: var(--primaryTextColor);

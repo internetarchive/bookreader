@@ -1,17 +1,15 @@
+// eslint-disable-next-line no-unused-vars
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
+// eslint-disable-next-line no-unused-vars
+import { ModalManager } from '@internetarchive/modal-manager';
 import { css, html, LitElement } from 'lit-element';
-import { nothing } from 'lit-html';
-import { ResizeObserver as roPolyfill } from '@juggle/resize-observer';
 import SearchProvider from './search/search-provider.js';
 import DownloadProvider from './downloads/downloads-provider.js';
 import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
 import BookmarksProvider from './bookmarks/bookmarks-provider.js';
-import SharingProvider from '../ItemNavigator/providers/sharing.js';
+import SharingProvider from './sharing.js';
 import VolumesProvider from './volumes/volumes-provider.js';
-import BRFullscreenMgr from './br-fullscreen-mgr.js';
-import { Book } from './BookModel.js';
-import bookLoader from './assets/book-loader.js';
-
-const ResizeObserver = window.ResizeObserver || roPolyfill;
+import iaLogo from './assets/ia-logo.js';
 
 const events = {
   menuUpdated: 'menuUpdated',
@@ -22,63 +20,90 @@ const events = {
 export class BookNavigator extends LitElement {
   static get properties() {
     return {
-      book: { type: Object },
-      pageContainerSelector: { type: String },
-      brWidth: { type: Number },
+      itemMD: { type: Object },
       bookReaderLoaded: { type: Boolean },
       bookreader: { type: Object },
+      bookIsRestricted: { type: Boolean },
       downloadableTypes: { type: Array },
       isAdmin: { type: Boolean },
       lendingInitialized: { type: Boolean },
       lendingStatus: { type: Object },
       menuProviders: { type: Object },
       menuShortcuts: { type: Array },
-      sideMenuOpen: { type: Boolean },
       signedIn: { type: Boolean },
+      loaded: { type: Boolean },
+      sharedObserver: { type: Object, attribute: false },
+      modal: { type: Object, attribute: false },
+      fullscreenBranding: { type: Object },
     };
   }
 
   constructor() {
     super();
-    this.book = {};
-    this.pageContainerSelector = '.BRcontainer';
-    this.brWidth = 0;
+    this.itemMD = undefined;
+    this.loaded = false;
     this.bookReaderCannotLoad = false;
     this.bookReaderLoaded = false;
     this.bookreader = null;
+    this.bookIsRestricted = false;
     this.downloadableTypes = [];
     this.isAdmin = false;
     this.lendingInitialized = false;
     this.lendingStatus = {};
     this.menuProviders = {};
     this.menuShortcuts = [];
-    this.sideMenuOpen = false;
     this.signedIn = false;
-
+    /** @type {ModalManager} */
+    this.modal = undefined;
+    /** @type {SharedResizeObserver} */
+    this.sharedObserver = undefined;
+    this.fullscreenBranding = iaLogo;
     // Untracked properties
-    this.fullscreenMgr = null;
-    this.brResizeObserver = null;
-    this.model = new Book();
-    this.shortcutOrder = ['volumes', 'search', 'bookmarks'];
+    this.sharedObserverHandler = undefined;
+    this.brWidth = 0;
+    this.brHeight = 0;
+    this.shortcutOrder = [
+      /**
+       * sets exit FS button (`this.fullscreenBranding1)
+       * when `br.options.enableFSLogoShortcut`
+       */
+      'fullscreen',
+      'volumes',
+      'search',
+      'bookmarks'
+    ];
+  }
+
+  disconnectedCallback() {
+    this.sharedObserver.removeObserver({
+      target: this.mainBRContainer,
+      handler: this.sharedObserverHandler
+    });
   }
 
   firstUpdated() {
-    this.model.setMetadata(this.book);
     this.bindEventListeners();
     this.emitPostInit();
+    this.loaded = true;
   }
 
   updated(changed) {
-    if (!this.bookreader) {
+    if (!this.bookreader || !this.itemMD || !this.bookReaderLoaded) {
       return;
     }
-    const isFirstSideMenuUpdate = changed.has('sideMenuOpen') && (changed.get('sideMenuOpen') === undefined);
-    if (!isFirstSideMenuUpdate) {
-      // realign image
-      if (this.bookreader.animating) {
-        return;
-      }
-      this.bookreader.resize();
+
+    const reload = changed.has('loaded') && this.loaded;
+    if (reload
+      || changed.has('itemMD')
+      || changed.has('bookreader')
+      || changed.has('signedIn')
+      || changed.has('isAdmin')
+      || changed.has('modal')) {
+      this.initializeBookSubmenus();
+    }
+
+    if (changed.has('sharedObserver') && this.bookreader) {
+      this.loadSharedObserver();
     }
   }
 
@@ -95,6 +120,33 @@ export class BookNavigator extends LitElement {
   }
 
   /**
+   *  @typedef {{
+   *  baseHost: string,
+   *  modal: ModalManager,
+   *  sharedObserver: SharedResizeObserver,
+   *  bookreader: BookReader,
+   *  item: Item,
+   *  signedIn: boolean,
+   *  isAdmin: boolean,
+   *  onProviderChange: (BookReader, object) => void,
+   *  }} baseProviderConfig
+   *
+   * @return {baseProviderConfig}
+   */
+  get baseProviderConfig() {
+    return  {
+      baseHost: this.baseHost,
+      modal: this.modal,
+      sharedObserver: this.sharedObserver,
+      bookreader: this.bookreader,
+      item: this.itemMD,
+      signedIn: this.signedIn,
+      isAdmin: this.isAdmin,
+      onProviderChange: () => {}
+    };
+  }
+
+  /**
    * Instantiates books submenus & their update callbacks
    *
    * NOTE: we are doing our best to scope bookreader's instance.
@@ -103,80 +155,113 @@ export class BookNavigator extends LitElement {
    * to keep it in sync.
    */
   initializeBookSubmenus() {
-    const isBookProtected = this.bookreader.options.protected;
-    this.menuProviders = {
-      search: new SearchProvider(
+    const providers = {
+      downloads: new DownloadProvider(this.baseProviderConfig),
+      share: new SharingProvider(this.baseProviderConfig),
+      visualAdjustments: new VisualAdjustmentProvider({
+        ...this.baseProviderConfig,
+        /** Update menu contents */
+        onProviderChange: () => {
+          this.updateMenuContents();
+        },
+      }),
+    };
+
+    if (this.bookreader.options.enableSearch) {
+      providers.search = new SearchProvider({
+        ...this.baseProviderConfig,
         /**
          * Search specific menu updates
          * @param {BookReader} brInstance
          * @param {{ searchCanceled: boolean }} searchUpdates
          */
-        (brInstance = null, searchUpdates = {}) => {
+        onProviderChange: (brInstance = null, searchUpdates = {}) => {
           if (brInstance) {
             /* refresh br instance reference */
             this.bookreader = brInstance;
           }
-          this.updateMenuContents();
           const wideEnoughToOpenMenu = this.brWidth >= 640;
           if (wideEnoughToOpenMenu && !searchUpdates?.searchCanceled) {
             /* open side search menu */
-            this.updateSideMenu('search', 'open');
+            setTimeout(() => {
+              this.updateSideMenu('search', 'open');
+            }, 0);
           }
+          this.updateMenuContents();
         },
-        this.bookreader,
-      ),
-      downloads: new DownloadProvider(isBookProtected),
-      visualAdjustments: new VisualAdjustmentProvider({
-        onOptionChange: (event, brInstance = null) => {
+      });
+    }
+
+    if (this.bookreader.options.enableBookmarks) {
+      providers.bookmarks = new BookmarksProvider({
+        ...this.baseProviderConfig,
+        onProviderChange: (bookmarks) => {
+          const method = Object.keys(bookmarks).length ? 'add' : 'remove';
+          this[`${method}MenuShortcut`]('bookmarks');
+          this.updateMenuContents();
+        }
+      });
+    }
+
+    // add shortcut for volumes if multipleBooksList exists
+    if (this.bookreader.options.enableMultipleBooks) {
+      providers.volumes = new VolumesProvider({
+        ...this.baseProviderConfig,
+        onProviderChange: (brInstance = null, volumesUpdates = {}) => {
           if (brInstance) {
             /* refresh br instance reference */
             this.bookreader = brInstance;
           }
           this.updateMenuContents();
-        },
-        bookContainerSelector: this.pageContainerSelector,
-        bookreader: this.bookreader,
-      }),
-      share: new SharingProvider(this.book.metadata, this.baseHost, this.itemType, this.bookreader.options.subPrefix),
-      bookmarks: new BookmarksProvider(this.bookmarksOptions, this.bookreader),
-    };
-
-    // add shortcut for volumes if multipleBooksList exists
-    if (this.bookreader.options.enableMultipleBooks) {
-      this.menuProviders.volumes = new VolumesProvider(this.baseHost, this.bookreader, (brInstance) => {
-        if (brInstance) {
-          /* refresh br instance reference */
-          this.bookreader = brInstance;
+          this.updateSideMenu('volumes', 'open');
         }
-        this.updateMenuContents();
-        this.updateSideMenu('volumes', 'open');
       });
-      this.addMenuShortcut('volumes');
     }
 
-    this.addMenuShortcut('search'); /* start with search as a shortcut */
+    this.menuProviders = providers;
+    this.addMenuShortcut('search');
+    this.addMenuShortcut('volumes');
     this.updateMenuContents();
   }
 
   /** gets element that houses the bookreader in light dom */
   get mainBRContainer() {
-    return document.querySelector(this.bookreader.el);
+    return document.querySelector(this.bookreader?.el);
   }
 
-  get bookmarksOptions() {
-    const referrerStr = `referer=${encodeURIComponent(location.href)}`;
-    return {
-      loginUrl: `https://${this.baseHost}/account/login?${referrerStr}`,
-      displayMode: this.signedIn ? 'bookmarks' : 'login',
-      showItemNavigatorModal: this.showItemNavigatorModal.bind(this),
-      closeItemNavigatorModal: this.closeItemNavigatorModal.bind(this),
-      onBookmarksChanged: (bookmarks) => {
-        const method = Object.keys(bookmarks).length ? 'add' : 'remove';
-        this[`${method}MenuShortcut`]('bookmarks');
-        this.updateMenuContents();
-      },
+  /** Fullscreen Shortcut */
+  addFullscreenShortcut() {
+    const closeFS = {
+      icon: this.fullscreenShortcut,
+      id: 'fullscreen',
     };
+    this.menuShortcuts.push(closeFS);
+    this.sortMenuShortcuts();
+    this.emitMenuShortcutsUpdated();
   }
+
+  deleteFullscreenShortcut() {
+    const updatedShortcuts = this.menuShortcuts.filter(({ id }) => {
+      return id !== 'fullscreen';
+    });
+    this.menuShortcuts = updatedShortcuts;
+    this.sortMenuShortcuts();
+    this.emitMenuShortcutsUpdated();
+  }
+
+  closeFullscreen() {
+    this.bookreader.exitFullScreen();
+  }
+
+  get fullscreenShortcut() {
+    return html`
+      <button
+        @click=${() => this.closeFullscreen()}
+        title="Exit fullscreen view"
+      >${this.fullscreenBranding}</button>
+    `;
+  }
+  /** End Fullscreen Shortcut */
 
   /**
    * Open side menu
@@ -184,7 +269,7 @@ export class BookNavigator extends LitElement {
    * @param {('open'|'close'|'toggle')} action
    */
   updateSideMenu(menuId = '', action = 'open') {
-    if (!menuId || !action) {
+    if (!menuId) {
       return;
     }
     const event = new CustomEvent(
@@ -205,7 +290,7 @@ export class BookNavigator extends LitElement {
     const availableMenus = [volumes, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
 
     if (this.shouldShowDownloadsMenu()) {
-      downloads.update(this.downloadableTypes);
+      downloads?.update(this.downloadableTypes);
       availableMenus.splice(1, 0, downloads);
     }
 
@@ -222,7 +307,7 @@ export class BookNavigator extends LitElement {
    * @returns {bool}
    */
   shouldShowDownloadsMenu() {
-    if (this.model.isRestricted === false) { return true; }
+    if (this.bookIsRestricted === false) { return true; }
     if (this.isAdmin) { return true; }
     const { user_loan_record = {} } = this.lendingStatus;
     const hasNoLoanRecord = Array.isArray(user_loan_record); /* (bc PHP assoc. arrays) */
@@ -241,9 +326,18 @@ export class BookNavigator extends LitElement {
    * @param {string} menuId - a string matching the id property of a provider
    */
   addMenuShortcut(menuId) {
-    if (this.menuShortcuts.find((m) => m.id === menuId)) { return; }
+    if (this.menuShortcuts.find((m) => m.id === menuId)) {
+      // menu is already there
+      return;
+    }
+
+    if (!this.menuProviders[menuId]) {
+      // no provider for this menu
+      return;
+    }
 
     this.menuShortcuts.push(this.menuProviders[menuId]);
+
     this.sortMenuShortcuts();
     this.emitMenuShortcutsUpdated();
   }
@@ -278,6 +372,13 @@ export class BookNavigator extends LitElement {
     this.dispatchEvent(event);
   }
 
+  emitLoadingStatusUpdate(loaded) {
+    const event = new CustomEvent('loadingStateUpdated', {
+      detail: { loaded },
+    });
+    this.dispatchEvent(event);
+  }
+
   /**
    * Core bookreader event handler registry
    *
@@ -289,19 +390,18 @@ export class BookNavigator extends LitElement {
       this.bookreader = e.detail.props;
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
-      this.fullscreenMgr = new BRFullscreenMgr(this.bookreader.el);
-
-      this.initializeBookSubmenus();
-      setTimeout(() => this.bookreader.resize(), 0);
-      this.brResizeObserver = new ResizeObserver((elements) => this.reactToBrResize(elements));
-      this.brResizeObserver.observe(this.mainBRContainer);
+      this.emitLoadingStatusUpdate(true);
+      this.loadSharedObserver();
+      setTimeout(() => {
+        this.bookreader.resize();
+      }, 0);
     });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;
       if (brInstance) {
         this.bookreader = brInstance;
       }
-      this.manageFullScreenBehavior(event);
+      this.manageFullScreenBehavior();
     }, { passive: true });
     window.addEventListener('BookReader:ToggleSearchMenu', (event) => {
       this.dispatchEvent(new CustomEvent(events.updateSideMenu, {
@@ -322,7 +422,15 @@ export class BookNavigator extends LitElement {
       const { isRestricted, downloadURLs } = detail;
       this.bookReaderLoaded = true;
       this.downloadableTypes = downloadURLs;
-      this.model.setRestriction(isRestricted);
+      this.bookIsRestricted = isRestricted;
+    });
+  }
+
+  loadSharedObserver() {
+    this.sharedObserverHandler = { handleResize: this.handleResize.bind(this) };
+    this.sharedObserver?.addObserver({
+      target: this.mainBRContainer,
+      handler: this.sharedObserverHandler
     });
   }
 
@@ -332,22 +440,24 @@ export class BookNavigator extends LitElement {
    *  - book animation is happening
    *  - book is in fullscreen (fullscreen is handled separately)
    *
-   * @param { Object } entries - resize observer entries
+   * @param { target: HTMLElement, contentRect: DOMRectReadOnly } entry
    */
-  reactToBrResize(entries = []) {
+  handleResize({ contentRect, target }) {
     const startBrWidth = this.brWidth;
+    const startBrHeight = this.brHeight;
     const { animating } = this.bookreader;
 
-    entries.forEach(({ contentRect, target }) => {
-      if (target === this.mainBRContainer) {
-        this.brWidth = contentRect.width;
-      }
-    });
-    setTimeout(() => {
-      if (startBrWidth && !animating) {
-        this.bookreader.resize();
-      }
-    }, 0);
+    if (target === this.mainBRContainer) {
+      this.brWidth = contentRect.width;
+      this.brHeight = contentRect.height;
+    }
+
+    const widthChange = startBrWidth !== this.brWidth;
+    const heightChange = startBrHeight !== this.brHeight;
+
+    if (!animating && (widthChange || heightChange)) {
+      this.bookreader.resize();
+    }
   }
 
   /**
@@ -358,15 +468,20 @@ export class BookNavigator extends LitElement {
   manageFullScreenBehavior() {
     this.emitFullScreenState();
 
-    if (!this.bookreader.isFullscreen()) {
-      this.fullscreenMgr.teardown();
+    if (!this.bookreader.options.enableFSLogoShortcut) {
+      return;
+    }
+
+    const isFullScreen = this.bookreader.isFullscreen();
+    if (isFullScreen) {
+      this.addFullscreenShortcut();
     } else {
-      this.fullscreenMgr.setup(this.bookreader);
+      this.deleteFullscreenShortcut();
     }
   }
 
   /**
-   * Intercepts and relays fullscreen toggle events
+   * Relays fullscreen toggle events
    */
   emitFullScreenState() {
     const isFullScreen = this.bookreader.isFullscreen();
@@ -376,95 +491,26 @@ export class BookNavigator extends LitElement {
     this.dispatchEvent(event);
   }
 
-  emitShowItemNavigatorModal(e) {
-    this.dispatchEvent(new CustomEvent('showItemNavigatorModal', {
-      detail: e.detail,
-    }));
-  }
-
-  emitCloseItemNavigatorModal() {
-    this.dispatchEvent(new CustomEvent('closeItemNavigatorModal'));
-  }
-
-  showItemNavigatorModal(e) {
-    this.emitShowItemNavigatorModal(e);
-  }
-
-  closeItemNavigatorModal() {
-    this.emitCloseItemNavigatorModal();
-  }
-
-  get loader() {
-    const loader = html`
-      <div class="book-loader">${bookLoader}<div>
-      <h3>Loading viewer</h3>
-    `;
-    return !this.bookReaderLoaded ? loader : nothing;
-  }
-
   get loadingClass() {
     return !this.bookReaderLoaded ? 'loading' : '';
   }
 
   get itemImage() {
-    const url = `https://${this.baseHost}/services/img/${this.book.metadata.identifier}`;
-    return html`<img class="cover-img" src="${url}" alt="cover image for ${this.book.metadata.identifier}">`;
+    const url = `https://${this.baseHost}/services/img/${this.item.metadata.identifier}`;
+    return html`<img class="cover-img" src=${url} alt="cover image for ${this.item.metadata.identifier}">`;
   }
 
   render() {
     const placeholder = this.bookReaderCannotLoad ? this.itemImage : this.loader;
     return html`<div id="book-navigator" class="${this.loadingClass}">
       ${placeholder}
-      <slot name="bookreader"></slot>
+      <slot name="theater-main"></slot>
     </div>
   `;
   }
 
   static get styles() {
     return css`
-    #book-navigator.loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 30vh;
-    }
-
-    #book-navigator .book-loader {
-      width: 30%;
-      margin: auto;
-      text-align: center;
-      color: var(--primaryTextColor);
-    }
-
-    .book-loader {
-      position: relative;
-    }
-
-    .book-loader svg {
-      display: block;
-      width: 60%;
-      max-width: 100px;
-      height: auto;
-      margin: auto;
-    }
-
-    svg * {
-      fill: var(--primaryTextColor);
-    }
-
-    svg .ring {
-      animation: rotate 1.3s infinite linear;
-      transform-origin: 50px 50px;
-      transform-box: fill-box;
-      display: block; // transform won't work on inline style
-    }
-
-    @keyframes rotate {
-      0% {
-        transform: rotate(-360deg);
-      }
-    }
-
     .cover-img {
       max-height: 300px;
     }

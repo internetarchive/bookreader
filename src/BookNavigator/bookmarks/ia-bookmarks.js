@@ -1,5 +1,7 @@
-import { render, nothing } from 'lit-html';
+import { render } from 'lit-html';
 import { LitElement, html, css } from 'lit-element';
+// eslint-disable-next-line no-unused-vars
+import { ModalConfig, ModalManager } from '@internetarchive/modal-manager';
 import buttonStyles from '../assets/button-base.js';
 import './bookmarks-loginCTA.js';
 
@@ -57,9 +59,11 @@ class IABookmarks extends LitElement {
       activeBookmarkID: { type: String },
       bookmarks: { type: Array },
       bookreader: { type: Object },
-      options: { type: Object },
       displayMode: { type: String },
       editedBookmark: { type: Object },
+      deleteModalConfig: { type: Object},
+      modal: { attribute: false },
+      loginOptions: { type: Object, attribute: false }
     };
   }
 
@@ -92,7 +96,12 @@ class IABookmarks extends LitElement {
     this.bookmarks = [];
     this.bookreader = {};
     this.editedBookmark = {};
-    this.options = {};
+    /** @type {ModalManager} */
+    this.modal = undefined;
+    this.loginOptions = {
+      loginClicked: () => {},
+      loginUrl: '',
+    };
     /**
      * Toggles display to either bookmarks or login cta
      * @param {('bookmarks'|'login')} displayMode
@@ -113,9 +122,18 @@ class IABookmarks extends LitElement {
     // eslint-disable-next-line
     this.defaultColor = this.bookmarkColors[0];
     this.api = api;
+    this.deleteModalConfig = new ModalConfig({
+      title: 'Delete Bookmark',
+      headline: 'This bookmark contains a note. Deleting it will permanently delete the note. Are you sure?',
+      headerColor: '#194880',
+    });
   }
 
-  updated() {
+  updated(changed) {
+    if (changed.has('displayMode')) {
+      this.updateDisplay();
+    }
+
     this.emitBookmarksChanged();
   }
 
@@ -124,13 +142,24 @@ class IABookmarks extends LitElement {
     if (this.displayMode === 'login') {
       return;
     }
-    this.fetchBookmarks()
-      .then(() => this.initializeBookmarks())
-      .catch((err) => this.displayMode = 'login');
+    this.setBREventListeners();
+    this.initializeBookmarks();
   }
 
-  initializeBookmarks() {
-    this.displayMode = 'bookmarks';
+  updateDisplay() {
+    if (this.displayMode === 'bookmarks') {
+      this.fetchUserBookmarks();
+    }
+  }
+
+  fetchUserBookmarks() {
+    this.fetchBookmarks()
+      .then(() => {
+        this.initializeBookmarks();
+      });
+  }
+
+  setBREventListeners() {
     ['3PageViewSelected'].forEach((event) => {
       window.addEventListener(`BookReader:${event}`, (e) => {
         setTimeout(() => {
@@ -150,12 +179,12 @@ class IABookmarks extends LitElement {
     });
     ['zoomOut', 'zoomIn', 'resize'].forEach((event) => {
       window.addEventListener(`BookReader:${event}`, () => {
-        if (this.bookreader.mode === this.bookreader.constModeThumb) {
-          this.renderBookmarkButtons();
-        }
+        this.renderBookmarkButtons();
       });
     });
+  }
 
+  initializeBookmarks() {
     this.renderBookmarkButtons();
     this.markActiveBookmark(true);
     this.emitBookmarksChanged();
@@ -198,13 +227,22 @@ class IABookmarks extends LitElement {
   }
 
   fetchBookmarks() {
-    return this.api.getAll().then((res) => res.json()).then(({
-      success,
-      error = 'Something happened while fetching bookmarks.',
-      value: bkmrks = [],
-    }) => {
+    return this.api.getAll().then((res) => {
+      let response;
+      try {
+        response = JSON.parse(res);
+      } catch (e) {
+        response = { error: e.message };
+      }
+      return response;
+    }).then((response) => {
+      const {
+        success,
+        error = 'Something happened while fetching bookmarks.',
+        value: bkmrks = [],
+      } = response;
       if (!success) {
-        throw new Error(`Failed to load bookmarks: ${error}`);
+        console?.warn('Error fetching bookmarks', error);
       }
 
       const bookmarks = {};
@@ -253,7 +291,9 @@ class IABookmarks extends LitElement {
 
     pages.forEach((pageEl) => {
       const existingButton = pageEl.querySelector('.bookmark-button');
-      if (existingButton) { existingButton.remove(); }
+      if (existingButton) {
+        existingButton.remove();
+      }
       const pageID = +pageEl.classList.value.match(/pagediv\d+/)[0].replace(/\D/g, '');
       const pageBookmark = this.getBookmark(pageID);
       const bookmarkState = pageBookmark ? 'filled' : 'hollow';
@@ -393,33 +433,26 @@ class IABookmarks extends LitElement {
   confirmDeletion(pageID) {
     const existingBookmark = this.getBookmark(pageID);
     if (existingBookmark.note) {
-      this.emitShowModal(pageID);
+      this.displayDeletionModal(pageID);
       return;
     }
     this.deleteBookmark({ detail: { id: `${pageID}` } });
   }
 
-  emitShowModal(pageID) {
-    this.dispatchEvent(new CustomEvent('showItemNavigatorModal', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        customModalContent: html`
-          <delete-modal-actions
-            .deleteAction=${() => this.deleteBookmark({ detail: { id: `${pageID}` } })}
-            .cancelAction=${() => this.emitCloseModal()}
-            .pageID=${pageID}
-          ></delete-modal-actions>
-        `,
-      },
-    }));
-  }
+  displayDeletionModal(pageID) {
+    const customModalContent = html`
+      <delete-modal-actions
+        .deleteAction=${() => this.deleteBookmark({ detail: { id: `${pageID}` } })}
+        .cancelAction=${() => this.modal.closeModal()}
+        .pageID=${pageID}
+      ></delete-modal-actions>
+    `;
 
-  emitCloseModal() {
-    this.dispatchEvent(new CustomEvent('closeItemNavigatorModal', {
-      bubbles: true,
-      composed: true,
-    }));
+
+    this.modal.showModal({
+      config: this.deleteModalConfig,
+      customModalContent,
+    });
   }
 
   deleteBookmark({ detail }) {
@@ -430,16 +463,8 @@ class IABookmarks extends LitElement {
 
     this.api.delete(detail.id);
     this.editedBookmark = {};
-    this.emitCloseModal();
+    this.modal.closeModal();
     this.renderBookmarkButtons();
-  }
-
-  /**
-   * call `loginClicked` callback
-   */
-  loginClick() {
-    const { loginClicked = () => {} } = this.options;
-    loginClicked();
   }
 
   /**
@@ -487,15 +512,23 @@ class IABookmarks extends LitElement {
     `;
   }
 
+  get bookmarkHelperMessage() {
+    return html`<p>Please use 1up or 2up view modes to add bookmark.</p>`;
+  }
+
   render() {
-    const { loginUrl } = this.options;
     const bookmarks = html`
       ${this.bookmarksList}
-      ${this.allowAddingBookmark ? this.addBookmarkButton : nothing}
+      ${this.allowAddingBookmark ? this.addBookmarkButton : this.bookmarkHelperMessage}
     `;
     return html`
       <section class="bookmarks">
-        ${this.displayMode === 'login' ? html`<bookmarks-login @click=${this.loginClick} .url=${loginUrl}></bookmarks-login>` : bookmarks}
+      ${ this.displayMode === 'login'
+      ? html`<bookmarks-login
+        @click=${() => this.loginOptions.loginClicked()}
+        .url=${this.loginOptions.loginUrl}></bookmarks-login>`
+      : bookmarks
+      }
       </section>
     `;
   }

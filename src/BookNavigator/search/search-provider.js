@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
 import { nothing } from 'lit-html';
-
+import '@internetarchive/icon-search/icon-search';
 import './search-results';
 
 let searchState = {
@@ -10,8 +10,11 @@ let searchState = {
   queryInProgress: false,
   errorMessage: '',
 };
-export default class {
-  constructor(onSearchChange = () => {}, brInstance) {
+export default class SearchProvider {
+  constructor({
+    onProviderChange,
+    bookreader
+  }) {
     /* search menu events */
     this.onBookSearchInitiated = this.onBookSearchInitiated.bind(this);
     /* bookreader search events */
@@ -29,9 +32,9 @@ export default class {
     this.advanceToPage = this.advanceToPage.bind(this);
     this.updateMenu = this.updateMenu.bind(this);
 
-    this.onSearchChange = onSearchChange;
-    this.bookreader = brInstance;
-    this.icon = html`<ia-icon icon="search" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon>`;
+    this.onProviderChange = onProviderChange;
+    this.bookreader = bookreader;
+    this.icon = html`<ia-icon-search style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-search>`;
     this.label = 'Search inside';
     this.menuDetails = this.getMenuDetails();
     this.id = 'search';
@@ -75,7 +78,10 @@ export default class {
   }
 
   onSearchStarted(e) {
-    const { term = '' } = e.detail.props;
+    const { term = '', instance } = e.detail.props;
+    if (instance) {
+      this.bookreader = instance;
+    }
     searchState.query = term;
     searchState.results = [];
     searchState.resultsCount = 0;
@@ -104,6 +110,7 @@ export default class {
     };
 
     const messageToShow = errorMessages[errorType] ?? errorMessages.default;
+    searchState.query = instance?.searchResults?.q || '';
     searchState.results = [];
     searchState.resultsCount = 0;
     searchState.queryInProgress = false;
@@ -148,7 +155,7 @@ export default class {
   updateMenu(searchUpdates = {}) {
     this.menuDetails = this.getMenuDetails();
     this.component = this.getComponent();
-    this.onSearchChange(this.bookreader, searchUpdates);
+    this.onProviderChange(this.bookreader, searchUpdates);
   }
 
   getComponent() {
