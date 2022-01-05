@@ -61,7 +61,7 @@ describe('UrlPlugin tests', () => {
         {page: 'n7', mode: '2up', q: 'hello', view: 'theather', foo: 'bar', sort: 'title_asc'}
       );
       expect(urlPlugin.urlStringToUrlState(url1)).toEqual(
-        {page: 'n0', mode: '2up', ref: 'ol', ui: 'embed', wrapper: 'false', view: 'theater'}
+        {mode: '2up', ref: 'ol', ui: 'embed', wrapper: 'false', view: 'theater'}
       );
     });
 
@@ -99,15 +99,26 @@ describe('UrlPlugin tests', () => {
   });
 
   describe('pullFromAddressBar and pushToAddressBar - hash mode', () => {
+    test('url first load - empty state', () => {
+      urlPlugin.urlState = {};
+      urlPlugin.urlMode = 'hash';
+
+      urlPlugin.pullFromAddressBar({ pathname: '', search: '', hash: '#' });
+      expect(urlPlugin.urlState).toEqual({});
+
+      urlPlugin.pushToAddressBar();
+      expect(window.location.hash).toEqual('');
+    });
+
     test('url without mode state value - use default', () => {
       urlPlugin.urlState = {};
       urlPlugin.urlMode = 'hash';
 
       urlPlugin.pullFromAddressBar({ pathname: '', search: '', hash: '#page/12' });
-      expect(urlPlugin.urlState).toEqual({page: '12', mode: '2up'});
+      expect(urlPlugin.urlState).toEqual({page: '12'});
 
       urlPlugin.pushToAddressBar();
-      expect(window.location.hash).toEqual('#page/12/mode/2up');
+      expect(window.location.hash).toEqual('#page/12');
     });
 
     test('url with query param', () => {
@@ -115,24 +126,36 @@ describe('UrlPlugin tests', () => {
       urlPlugin.urlMode = 'hash';
 
       urlPlugin.pullFromAddressBar({ pathname: '', search: '', hash: '#page/12?q=hello&view=theater' });
-      expect(urlPlugin.urlState).toEqual({page: '12', mode: '2up', q: 'hello', view: 'theater'});
+      expect(urlPlugin.urlState).toEqual({page: '12', q: 'hello', view: 'theater'});
 
       urlPlugin.pushToAddressBar();
-      expect(window.location.hash).toEqual('#page/12/mode/2up?q=hello&view=theater');
+      expect(window.location.hash).toEqual('#page/12?q=hello&view=theater');
     });
   });
 
   describe('pullFromAddressBar and pushToAddressBar - history mode', () => {
-    test('url without mode state value - use default', () => {
+    test('url first load - empty state', () => {
+      urlPlugin.urlState = {};
+      urlPlugin.urlHistoryBasePath = '/details/foo';
+      urlPlugin.urlMode = 'history';
+
+      urlPlugin.pullFromAddressBar({ pathname: '', search: '', hash: '' });
+      expect(urlPlugin.urlState).toEqual({});
+
+      urlPlugin.pushToAddressBar();
+      expect(window.location.pathname).toEqual('/details/foo');
+    });
+
+    test('url without mode state value', () => {
       urlPlugin.urlState = {};
       urlPlugin.urlHistoryBasePath = '/details/foo/';
       urlPlugin.urlMode = 'history';
 
       urlPlugin.pullFromAddressBar({ pathname: '/details/foo/page/12', search: '', hash: '' });
-      expect(urlPlugin.urlState).toEqual({page: '12', mode: '2up'});
+      expect(urlPlugin.urlState).toEqual({page: '12'});
 
       urlPlugin.pushToAddressBar();
-      expect(window.location.pathname).toEqual('/details/foo/page/12/mode/2up');
+      expect(window.location.pathname).toEqual('/details/foo/page/12');
     });
 
     test('url with query param', () => {
@@ -141,11 +164,11 @@ describe('UrlPlugin tests', () => {
       urlPlugin.urlMode = 'history';
 
       urlPlugin.pullFromAddressBar({ pathname: '/details/foo/page/12', search: '?q=hello&view=theater', hash: '' });
-      expect(urlPlugin.urlState).toEqual({page: '12', mode: '2up', q: 'hello', view: 'theater'});
+      expect(urlPlugin.urlState).toEqual({page: '12', q: 'hello', view: 'theater'});
 
       urlPlugin.pushToAddressBar();
       const locationUrl = `${window.location.pathname}${window.location.search}`;
-      expect(locationUrl).toEqual('/details/foo/page/12/mode/2up?q=hello&view=theater');
+      expect(locationUrl).toEqual('/details/foo/page/12?q=hello&view=theater');
     });
   });
 
