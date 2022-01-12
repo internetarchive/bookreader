@@ -1,3 +1,7 @@
+# 5.0.0-29
+- import ia-item-navigator for menu management @iisa
+- url plugin: suppress default state on load @dualcnhq
+
 # 5.0.0-28
 Dev: Refactor URLPlugin + sync volumes sorting state to URL @dualcnhq @cdrini
 
