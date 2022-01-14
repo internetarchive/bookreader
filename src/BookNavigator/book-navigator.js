@@ -511,6 +511,13 @@ export class BookNavigator extends LitElement {
 
   static get styles() {
     return css`
+    :host,
+    #book-navigator,
+    slot,
+    slot > * {
+      display: block;
+      height: inherit;
+    }
     .cover-img {
       max-height: 300px;
     }
