@@ -149,8 +149,14 @@ export class IaBookReader extends LitElement {
         height: 100vh;
         min-height: unset;
       }
-      div[slot="theater-main"] {
+
+      div[slot="theater-main"],
+      div[slot="theater-main"] > * {
         height: inherit;
+      }
+
+      slot {
+        display: block;
       }
 
       .ia-bookreader {
