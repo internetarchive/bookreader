@@ -10,7 +10,8 @@ import '../BookNavigator/book-navigator.js';
 import { ModalManager } from '@internetarchive/modal-manager';
 import '@internetarchive/modal-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
-export class BookReader extends LitElement {
+
+export class IaBookReader extends LitElement {
   static get properties() {
     return {
       item: { type: Object },
@@ -187,4 +188,4 @@ export class BookReader extends LitElement {
   }
 }
 
-window.customElements.define("ia-bookreader", BookReader);
+window.customElements.define("ia-bookreader", IaBookReader);
