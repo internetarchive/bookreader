@@ -18,6 +18,8 @@ export class BookReader extends LitElement {
       fullscreen: { type: Boolean, reflect: true, attribute: true },
       sharedObserver: { type: Object },
       loaded: { type: Boolean },
+      menuShortcuts: { type: Array },
+      menuContents: { type: Array },
     };
   }
 
@@ -32,6 +34,8 @@ export class BookReader extends LitElement {
     /** @type {SharedResizeObserver} */
     this.sharedObserver = new SharedResizeObserver();
     this.loaded = false;
+    this.menuShortcuts = [];
+    this.menuContents = [];
   }
 
   firstUpdated() {
