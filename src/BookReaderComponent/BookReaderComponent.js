@@ -16,7 +16,8 @@ export class BookReader extends LitElement {
       item: { type: Object },
       baseHost: { type: String },
       fullscreen: { type: Boolean, reflect: true, attribute: true },
-      sharedObserver: { type: Object }
+      sharedObserver: { type: Object },
+      loaded: { type: Boolean },
     };
   }
 
@@ -30,6 +31,7 @@ export class BookReader extends LitElement {
     this.modal = undefined;
     /** @type {SharedResizeObserver} */
     this.sharedObserver = new SharedResizeObserver();
+    this.loaded = false;
   }
 
   firstUpdated() {
@@ -51,20 +53,68 @@ export class BookReader extends LitElement {
     this.fullscreen = fullscreen;
   }
 
+  loadingStateUpdated(e) {
+    const { loaded } = e.detail;
+    this.loaded = loaded || null;
+  }
+
+  setMenuShortcuts(e) {
+    this.menuShortcuts = [...e.detail];
+  }
+
+  setMenuContents(e) {
+    const updatedContents = [...e.detail];
+    this.menuContents = updatedContents;
+  }
+
+  manageSideMenuEvents(e) {
+    const { menuId, action } = e.detail;
+    if (!menuId) {
+      return;
+    }
+
+    if (action === 'open') {
+      this.itemNav.openShortcut(menuId);
+      this.openShortcut(menuId);
+    } else if (action === 'toggle') {
+      this.itemNav.openMenu(menuId);
+      this.itemNav.toggleMenu();
+    }
+  }
+
   render() {
     return html`
       <div class="ia-bookreader">
         <ia-item-navigator
           ?viewportInFullscreen=${this.fullscreen}
-          @fullscreenToggled=${this.manageFullscreen}
-          .itemType=${'bookreader'}
+          .itemType=${'open'}
           .basehost=${this.baseHost}
           .item=${this.item}
           .modal=${this.modal}
+          .loaded=${this.loaded}
           .sharedObserver=${this.sharedObserver}
+          ?signedIn=${this.signedIn}
+          .menuShortcuts=${this.menuShortcuts}
+          .menuContents=${this.menuContents}
         >
           <div slot="theater-main">
-            <slot name="theater-main"></slot>
+            <book-navigator
+              .modal=${this.modal}
+              .baseHost=${this.baseHost}
+              .itemMD=${this.item}
+              ?signedIn=${this.signedIn}
+              ?sideMenuOpen=${this.menuOpened}
+              .sharedObserver=${this.sharedObserver}
+              @ViewportInFullScreen=${this.manageFullscreen}
+              @loadingStateUpdated=${this.loadingStateUpdated}
+              @updateSideMenu=${this.manageSideMenuEvents}
+              @menuUpdated=${this.setMenuContents}
+              @menuShortcutsUpdated=${this.setMenuShortcuts}
+            >
+              <div slot="theater-main">
+                <slot name="theater-main"></slot>
+              </div>
+            </book-navigator>
           </div>
         </ia-item-navigator>
       </div>
@@ -93,6 +143,9 @@ export class BookReader extends LitElement {
         inset: 0;
         height: 100vh;
         min-height: unset;
+      }
+      div[slot="theater-main"] {
+        height: inherit;
       }
 
       .ia-bookreader {
