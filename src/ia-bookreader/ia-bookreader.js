@@ -132,6 +132,8 @@ export class IaBookReader extends LitElement {
     return css`
       :host {
         display: block;
+        height: inherit;
+        min-height: inherit;
         --primaryBGColor: var(--black, #000);
         --secondaryBGColor: #222;
         --tertiaryBGColor: #333;
