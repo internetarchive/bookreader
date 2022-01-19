@@ -35,14 +35,20 @@ export class IaBookReader extends LitElement {
     /** @type {ModalManager} */
     this.modal = undefined;
     /** @type {SharedResizeObserver} */
-    this.sharedObserver = new SharedResizeObserver();
+    this.sharedObserver = undefined;
     this.loaded = false;
     this.menuShortcuts = [];
     this.menuContents = [];
   }
 
-  firstUpdated() {
-    this.createModal();
+  updated() {
+    if (!this.modal) {
+      this.modal = new ModalManager();
+    }
+
+    if (!this.sharedObserver) {
+      this.sharedObserver = new SharedResizeObserver();
+    }
   }
 
 
