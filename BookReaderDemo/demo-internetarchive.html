@@ -88,19 +88,17 @@
     <h3>Placeholder div to allow scrolling</h3>
   </div>
 
+  <modal-manager></modal-manager>
   <script >
     // Set up demo things
     const iaBR = document.querySelector('ia-bookreader');
     const toggleLoginBtn = document.querySelector('#toggle-loggedin');
     toggleLoginBtn.addEventListener('click', () => {
-      const itemNav = iaBR.shadowRoot.querySelector('ia-item-navigator');
-      const bookNav = itemNav.shadowRoot.querySelector('book-navigator');
+      const currLoggedIn = iaBR.signedIn;
+      iaBR.signedIn = !currLoggedIn;
 
-      const currLoggedIn = bookNav.signedIn;
-      bookNav.signedIn = !currLoggedIn;
-
-      document.querySelector('#logged-in-status').innerText = bookNav.signedIn ? 'Logged In' : 'Logged Out';
-      console.log("Toggled SignedIn state", bookNav.signedIn, { currLoggedIn })
+      document.querySelector('#logged-in-status').innerText = iaBR.signedIn ? 'Logged In' : 'Logged Out';
+      console.log("Toggled SignedIn state", iaBR.signedIn, { currLoggedIn })
     });
 
     const startFSBtn = document.querySelector('#start-fs');

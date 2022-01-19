@@ -16,6 +16,7 @@ export class IaBookReader extends LitElement {
     return {
       item: { type: Object },
       baseHost: { type: String },
+      signedIn: { type: Boolean },
       fullscreen: { type: Boolean, reflect: true, attribute: true },
       sharedObserver: { type: Object },
       loaded: { type: Boolean },
@@ -30,6 +31,7 @@ export class IaBookReader extends LitElement {
     this.bookreader = undefined;
     this.baseHost = 'https://archive.org';
     this.fullscreen = false;
+    this.signedIn = false;
     /** @type {ModalManager} */
     this.modal = undefined;
     /** @type {SharedResizeObserver} */
@@ -43,14 +45,6 @@ export class IaBookReader extends LitElement {
     this.createModal();
   }
 
-  /** Creates modal DOM & attaches to `<body>` */
-  createModal() {
-    this.modal = document.createElement(
-      'modal-manager'
-    );
-    document.body.appendChild(this.modal);
-  }
-  /* End Modal management */
 
   manageFullscreen(e) {
     const { detail } = e;
