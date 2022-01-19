@@ -18,7 +18,8 @@ export class IaBookReader extends LitElement {
       baseHost: { type: String },
       signedIn: { type: Boolean },
       fullscreen: { type: Boolean, reflect: true, attribute: true },
-      sharedObserver: { type: Object },
+      sharedObserver: { type: Object, attribute: false },
+      modal: { type: Object, attribute: false },
       loaded: { type: Boolean },
       menuShortcuts: { type: Array },
       menuContents: { type: Array },
@@ -61,6 +62,7 @@ export class IaBookReader extends LitElement {
   loadingStateUpdated(e) {
     const { loaded } = e.detail;
     this.loaded = loaded || null;
+    this.dispatchEvent(new CustomEvent('loadingStateUpdated', { detail: { loaded }}));
   }
 
   setMenuShortcuts(e) {
