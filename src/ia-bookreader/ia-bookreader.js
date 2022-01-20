@@ -57,6 +57,8 @@ export class IaBookReader extends LitElement {
     const { detail } = e;
     const fullscreen = !!detail.isFullScreen;
     this.fullscreen = fullscreen;
+    this.dispatchEvent(new CustomEvent('fullscreenStatusUpdated', { detail: { fullscreen }}));
+
   }
 
   loadingStateUpdated(e) {
@@ -104,6 +106,9 @@ export class IaBookReader extends LitElement {
           .menuShortcuts=${this.menuShortcuts}
           .menuContents=${this.menuContents}
         >
+          <div slot="theater-header">
+            <slot name="theater-header"></slot>
+          </div>
           <div slot="theater-main">
             <book-navigator
               .modal=${this.modal}
