@@ -33,7 +33,7 @@ const container = (sharedObserver = null) => {
       .sharedObserver=${sharedObserver || new SharedResizeObserver()}
       .modal=${modalMgr}
     >
-      <div slot="theater-main">
+      <div slot="main">
         <div id="BookReader"></div>
         <p class="visible-in-reader">now showing</p>
       <\div>
