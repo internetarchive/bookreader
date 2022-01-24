@@ -1,3 +1,6 @@
+# 5.0.0-31
+Fix: modal loads into dom from `<ia-bookreader>` @iisa
+
 # 5.0.0-30
 - `<ia-bookreader>` is top-most web component @iisa
 
