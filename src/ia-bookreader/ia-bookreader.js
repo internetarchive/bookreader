@@ -96,7 +96,6 @@ export class IaBookReader extends LitElement {
       <div class="ia-bookreader">
         <ia-item-navigator
           ?viewportInFullscreen=${this.fullscreen}
-          .itemType=${'open'}
           .basehost=${this.baseHost}
           .item=${this.item}
           .modal=${this.modal}
@@ -106,10 +105,10 @@ export class IaBookReader extends LitElement {
           .menuShortcuts=${this.menuShortcuts}
           .menuContents=${this.menuContents}
         >
-          <div slot="theater-header">
-            <slot name="theater-header"></slot>
+          <div slot="header">
+            <slot name="header"></slot>
           </div>
-          <div slot="theater-main">
+          <div slot="main">
             <book-navigator
               .modal=${this.modal}
               .baseHost=${this.baseHost}
@@ -123,8 +122,8 @@ export class IaBookReader extends LitElement {
               @menuUpdated=${this.setMenuContents}
               @menuShortcutsUpdated=${this.setMenuShortcuts}
             >
-              <div slot="theater-main">
-                <slot name="theater-main"></slot>
+              <div slot="main">
+                <slot name="main"></slot>
               </div>
             </book-navigator>
           </div>
@@ -159,8 +158,8 @@ export class IaBookReader extends LitElement {
         min-height: unset;
       }
 
-      div[slot="theater-main"],
-      div[slot="theater-main"] > * {
+      div[slot="main"],
+      div[slot="main"] > * {
         height: inherit;
       }
 
