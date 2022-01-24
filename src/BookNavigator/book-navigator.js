@@ -504,13 +504,20 @@ export class BookNavigator extends LitElement {
     const placeholder = this.bookReaderCannotLoad ? this.itemImage : this.loader;
     return html`<div id="book-navigator" class="${this.loadingClass}">
       ${placeholder}
-      <slot name="theater-main"></slot>
+      <slot name="main"></slot>
     </div>
   `;
   }
 
   static get styles() {
     return css`
+    :host,
+    #book-navigator,
+    slot,
+    slot > * {
+      display: block;
+      height: inherit;
+    }
     .cover-img {
       max-height: 300px;
     }

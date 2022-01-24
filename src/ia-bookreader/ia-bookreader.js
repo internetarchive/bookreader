@@ -10,13 +10,19 @@ import '../BookNavigator/book-navigator.js';
 import { ModalManager } from '@internetarchive/modal-manager';
 import '@internetarchive/modal-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
-export class BookReader extends LitElement {
+
+export class IaBookReader extends LitElement {
   static get properties() {
     return {
       item: { type: Object },
       baseHost: { type: String },
+      signedIn: { type: Boolean },
       fullscreen: { type: Boolean, reflect: true, attribute: true },
-      sharedObserver: { type: Object }
+      sharedObserver: { type: Object, attribute: false },
+      modal: { type: Object, attribute: false },
+      loaded: { type: Boolean },
+      menuShortcuts: { type: Array },
+      menuContents: { type: Array },
     };
   }
 
@@ -26,29 +32,75 @@ export class BookReader extends LitElement {
     this.bookreader = undefined;
     this.baseHost = 'https://archive.org';
     this.fullscreen = false;
+    this.signedIn = false;
     /** @type {ModalManager} */
     this.modal = undefined;
     /** @type {SharedResizeObserver} */
-    this.sharedObserver = new SharedResizeObserver();
+    this.sharedObserver = undefined;
+    this.loaded = false;
+    this.menuShortcuts = [];
+    this.menuContents = [];
   }
 
-  firstUpdated() {
-    this.createModal();
+  updated() {
+    if (!this.modal) {
+      this.setModalManager();
+    }
+
+    if (!this.sharedObserver) {
+      this.sharedObserver = new SharedResizeObserver();
+    }
   }
 
   /** Creates modal DOM & attaches to `<body>` */
-  createModal() {
-    this.modal = document.createElement(
-      'modal-manager'
-    );
-    document.body.appendChild(this.modal);
+  setModalManager() {
+    let modalManager = document.querySelector('modal-manager');
+    if (!modalManager) {
+      modalManager = document.createElement(
+        'modal-manager'
+      );
+      document.body.appendChild(this.modal);
+    }
+
+    this.modal = modalManager;
   }
-  /* End Modal management */
 
   manageFullscreen(e) {
     const { detail } = e;
     const fullscreen = !!detail.isFullScreen;
     this.fullscreen = fullscreen;
+    this.dispatchEvent(new CustomEvent('fullscreenStateUpdated', { detail: { fullscreen }}));
+
+  }
+
+  loadingStateUpdated(e) {
+    const { loaded } = e.detail;
+    this.loaded = loaded || null;
+    this.dispatchEvent(new CustomEvent('loadingStateUpdated', { detail: { loaded }}));
+  }
+
+  setMenuShortcuts(e) {
+    this.menuShortcuts = [...e.detail];
+  }
+
+  setMenuContents(e) {
+    const updatedContents = [...e.detail];
+    this.menuContents = updatedContents;
+  }
+
+  manageSideMenuEvents(e) {
+    const { menuId, action } = e.detail;
+    if (!menuId) {
+      return;
+    }
+
+    if (action === 'open') {
+      this.itemNav.openShortcut(menuId);
+      this.openShortcut(menuId);
+    } else if (action === 'toggle') {
+      this.itemNav.openMenu(menuId);
+      this.itemNav.toggleMenu();
+    }
   }
 
   render() {
@@ -56,15 +108,36 @@ export class BookReader extends LitElement {
       <div class="ia-bookreader">
         <ia-item-navigator
           ?viewportInFullscreen=${this.fullscreen}
-          @fullscreenToggled=${this.manageFullscreen}
-          .itemType=${'bookreader'}
           .basehost=${this.baseHost}
           .item=${this.item}
           .modal=${this.modal}
+          .loaded=${this.loaded}
           .sharedObserver=${this.sharedObserver}
+          ?signedIn=${this.signedIn}
+          .menuShortcuts=${this.menuShortcuts}
+          .menuContents=${this.menuContents}
         >
-          <div slot="theater-main">
-            <slot name="theater-main"></slot>
+          <div slot="header">
+            <slot name="header"></slot>
+          </div>
+          <div slot="main">
+            <book-navigator
+              .modal=${this.modal}
+              .baseHost=${this.baseHost}
+              .itemMD=${this.item}
+              ?signedIn=${this.signedIn}
+              ?sideMenuOpen=${this.menuOpened}
+              .sharedObserver=${this.sharedObserver}
+              @ViewportInFullScreen=${this.manageFullscreen}
+              @loadingStateUpdated=${this.loadingStateUpdated}
+              @updateSideMenu=${this.manageSideMenuEvents}
+              @menuUpdated=${this.setMenuContents}
+              @menuShortcutsUpdated=${this.setMenuShortcuts}
+            >
+              <div slot="main">
+                <slot name="main"></slot>
+              </div>
+            </book-navigator>
           </div>
         </ia-item-navigator>
       </div>
@@ -75,6 +148,8 @@ export class BookReader extends LitElement {
     return css`
       :host {
         display: block;
+        height: inherit;
+        min-height: inherit;
         --primaryBGColor: var(--black, #000);
         --secondaryBGColor: #222;
         --tertiaryBGColor: #333;
@@ -91,8 +166,17 @@ export class BookReader extends LitElement {
       ia-item-navigator[viewportinfullscreen] {
         position: fixed;
         inset: 0;
-        height: 100vh;
+        height: 100%;
         min-height: unset;
+      }
+
+      div[slot="main"],
+      div[slot="main"] > * {
+        height: inherit;
+      }
+
+      slot {
+        display: block;
       }
 
       .ia-bookreader {
@@ -130,4 +214,4 @@ export class BookReader extends LitElement {
   }
 }
 
-window.customElements.define("ia-bookreader", BookReader);
+window.customElements.define("ia-bookreader", IaBookReader);
