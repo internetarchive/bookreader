@@ -44,7 +44,7 @@ export class IaBookReader extends LitElement {
 
   updated() {
     if (!this.modal) {
-      this.modal = new ModalManager();
+      this.setModalManager();
     }
 
     if (!this.sharedObserver) {
@@ -52,6 +52,18 @@ export class IaBookReader extends LitElement {
     }
   }
 
+  /** Creates modal DOM & attaches to `<body>` */
+  setModalManager() {
+    let modalManager = document.querySelector('modal-manager');
+    if (!modalManager) {
+      modalManager = document.createElement(
+        'modal-manager'
+      );
+      document.body.appendChild(this.modal);
+    }
+
+    this.modal = modalManager;
+  }
 
   manageFullscreen(e) {
     const { detail } = e;
