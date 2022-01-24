@@ -57,7 +57,7 @@ export class IaBookReader extends LitElement {
     const { detail } = e;
     const fullscreen = !!detail.isFullScreen;
     this.fullscreen = fullscreen;
-    this.dispatchEvent(new CustomEvent('fullscreenStatusUpdated', { detail: { fullscreen }}));
+    this.dispatchEvent(new CustomEvent('fullscreenStateUpdated', { detail: { fullscreen }}));
 
   }
 
