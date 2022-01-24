@@ -59,7 +59,7 @@ export class IaBookReader extends LitElement {
       modalManager = document.createElement(
         'modal-manager'
       );
-      document.body.appendChild(this.modal);
+      document.body.appendChild(modalManager);
     }
 
     this.modal = modalManager;
