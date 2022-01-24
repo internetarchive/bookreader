@@ -1,3 +1,6 @@
+# 5.0.0-30
+- `<ia-bookreader>` is top-most web component @iisa
+
 # 5.0.0-29
 - import ia-item-navigator for menu management @iisa
 - url plugin: suppress default state on load @dualcnhq
