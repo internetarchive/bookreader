@@ -36,6 +36,7 @@ module.exports = [
     // Output file -> srcfile
     entry: {
       // Polyfill bundles
+      'lit-polyfill-support.js': { import: 'lit/polyfill-support.js' },
       'webcomponents-bundle.js': { import: '@webcomponents/webcomponentsjs/webcomponents-bundle.js' },
 
       // BookReader
