@@ -18,7 +18,7 @@ describe('<ia-bookmarks>', () => {
     await el.updateComplete;
 
     let fetchHappened = false;
-    el.identifier = 'foo';
+    el.bookreader.bookId = 'foo';
     el.displayMode = 'bookmarks';
 
     el.fetchBookmarks = async () => {
