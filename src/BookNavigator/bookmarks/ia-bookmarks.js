@@ -142,8 +142,8 @@ class IABookmarks extends LitElement {
     if (this.displayMode === 'login') {
       return;
     }
+    this.fetchUserBookmarks();
     this.setBREventListeners();
-    this.initializeBookmarks();
   }
 
   updateDisplay() {
