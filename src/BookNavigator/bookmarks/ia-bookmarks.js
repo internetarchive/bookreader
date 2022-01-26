@@ -153,7 +153,7 @@ class IABookmarks extends LitElement {
   }
 
   fetchUserBookmarks() {
-    if (!this.identifier) {
+    if (!this.api.identifier) {
       return;
     }
     this.fetchBookmarks()

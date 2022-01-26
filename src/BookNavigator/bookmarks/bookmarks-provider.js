@@ -25,7 +25,6 @@ export default class BookmarksProvider {
 
     this.component = document.createElement('ia-bookmarks');
     this.component.bookreader = bookreader;
-    this.component.identifier = item?.metadata?.identifier;
     this.component.displayMode = signedIn ? 'bookmarks' : 'login';
     this.component.modal = modal;
     this.component.loginOptions = {
