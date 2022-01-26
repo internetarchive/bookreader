@@ -176,13 +176,10 @@ export class IaBookReader extends LitElement {
         min-height: inherit;
       }
 
+      div[slot="header"],
       div[slot="main"] {
         display: flex;
         width: 100%;
-      }
-
-      slot[name="main"] {
-        flex: 1;
       }
 
       slot {
