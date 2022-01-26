@@ -105,7 +105,7 @@ export class IaBookReader extends LitElement {
 
   render() {
     return html`
-      <div>
+      <div class="main-component">
         <ia-item-navigator
           ?viewportInFullscreen=${this.fullscreen}
           .basehost=${this.baseHost}
@@ -168,6 +168,12 @@ export class IaBookReader extends LitElement {
         inset: 0;
         height: 100%;
         min-height: unset;
+      }
+
+      .main-component {
+        height: 100%;
+        width: 100%;
+        min-height: inherit;
       }
 
       div[slot="main"] {
