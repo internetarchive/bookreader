@@ -184,6 +184,7 @@ export class IaBookReader extends LitElement {
 
       slot {
         display: block;
+        flex: 1;
       }
 
       ia-item-navigator {
