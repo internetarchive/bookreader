@@ -230,7 +230,7 @@ class IABookmarks extends LitElement {
   }
 
   fetchBookmarks() {
-    return this.api.getAll().then((res) => {
+    return this.api.getAll().then(res => res.text()).then((res) => {
       let response;
       try {
         response = JSON.parse(res);
