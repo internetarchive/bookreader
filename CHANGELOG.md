@@ -1,3 +1,6 @@
+# 5.0.0-32
+Fix: fetch bookmarks from service when logged in @iisa
+Fix: adjust css to help shadydom render properly @iisa
 # 5.0.0-31
 Fix: modal loads into dom from `<ia-bookreader>` @iisa
 
