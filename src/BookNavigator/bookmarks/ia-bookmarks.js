@@ -142,8 +142,8 @@ class IABookmarks extends LitElement {
     if (this.displayMode === 'login') {
       return;
     }
+    this.fetchUserBookmarks();
     this.setBREventListeners();
-    this.initializeBookmarks();
   }
 
   updateDisplay() {
@@ -153,6 +153,9 @@ class IABookmarks extends LitElement {
   }
 
   fetchUserBookmarks() {
+    if (!this.api.identifier) {
+      return;
+    }
     this.fetchBookmarks()
       .then(() => {
         this.initializeBookmarks();
@@ -227,7 +230,7 @@ class IABookmarks extends LitElement {
   }
 
   fetchBookmarks() {
-    return this.api.getAll().then((res) => {
+    return this.api.getAll().then(res => res.text()).then((res) => {
       let response;
       try {
         response = JSON.parse(res);
