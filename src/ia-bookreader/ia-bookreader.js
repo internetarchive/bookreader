@@ -105,7 +105,7 @@ export class IaBookReader extends LitElement {
 
   render() {
     return html`
-      <div class="ia-bookreader">
+      <div class="main-component">
         <ia-item-navigator
           ?viewportInFullscreen=${this.fullscreen}
           .basehost=${this.baseHost}
@@ -148,8 +148,6 @@ export class IaBookReader extends LitElement {
     return css`
       :host {
         display: block;
-        height: inherit;
-        min-height: inherit;
         --primaryBGColor: var(--black, #000);
         --secondaryBGColor: #222;
         --tertiaryBGColor: #333;
@@ -160,6 +158,8 @@ export class IaBookReader extends LitElement {
         --secondaryCTABorder: #999;
         --primaryErrorCTAFill: #e51c26;
         --primaryErrorCTABorder: #f8c6c8;
+        background-color: var(--primaryBGColor);
+        position: relative;
       }
 
       :host([fullscreen]),
@@ -170,20 +170,21 @@ export class IaBookReader extends LitElement {
         min-height: unset;
       }
 
-      div[slot="main"],
-      div[slot="main"] > * {
-        height: inherit;
+      .main-component {
+        height: 100%;
+        width: 100%;
+        min-height: inherit;
+      }
+
+      div[slot="header"],
+      div[slot="main"] {
+        display: flex;
+        width: 100%;
       }
 
       slot {
         display: block;
-      }
-
-      .ia-bookreader {
-        background-color: var(--primaryBGColor);
-        position: relative;
-        min-height: inherit;
-        height: inherit;
+        flex: 1;
       }
 
       ia-item-navigator {

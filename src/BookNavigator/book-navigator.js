@@ -517,6 +517,7 @@ export class BookNavigator extends LitElement {
     slot > * {
       display: block;
       height: inherit;
+      width: inherit;
     }
     .cover-img {
       max-height: 300px;
