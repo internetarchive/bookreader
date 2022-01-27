@@ -16,7 +16,7 @@ export default class BookmarksProvider {
       signedIn,
       bookreader,
       modal,
-      onProviderChange
+      onProviderChange,
     } = options;
 
     const referrerStr = `referer=${encodeURIComponent(location.href)}`;
