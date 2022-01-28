@@ -70,7 +70,7 @@
     "jquery-ui": "1.12.1",
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
-    "jquery.mmenu": "5.6.5",
+    "jquery.mmenu": "7.3.3",
     "karma-coverage": "^2.1.0",
     "live-server": "1.2.1",
     "node-fetch": "2.6.1",
