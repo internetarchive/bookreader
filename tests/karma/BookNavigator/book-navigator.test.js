@@ -111,11 +111,6 @@ describe('<book-navigator>', () => {
 
     it('creates an item image from metadata', async () => {
       const el = fixtureSync(container());
-      el.item = {
-        metadata: { identifier: 'foo' },
-      };
-      await elementUpdated(el);
-
       const itemImage = fixtureSync(el.itemImage);
       expect(itemImage).to.be.instanceOf(HTMLImageElement);
       expect(itemImage.getAttribute('class')).to.equal('cover-img');
