@@ -3,6 +3,7 @@ import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 // eslint-disable-next-line no-unused-vars
 import { ModalManager } from '@internetarchive/modal-manager';
 import { css, html, LitElement } from 'lit-element';
+import { nothing } from 'lit-html';
 import SearchProvider from './search/search-provider.js';
 import DownloadProvider from './downloads/downloads-provider.js';
 import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
@@ -417,6 +418,7 @@ export class BookNavigator extends LitElement {
       this.lendingStatus = lendingStatus;
       this.isAdmin = isAdmin;
       this.bookReaderCannotLoad = previewType === 'singlePagePreview';
+      this.emitLoadingStatusUpdate(true);
     });
     window.addEventListener('BRJSIA:PostInit', ({ detail }) => {
       const { isRestricted, downloadURLs } = detail;
@@ -491,21 +493,20 @@ export class BookNavigator extends LitElement {
     this.dispatchEvent(event);
   }
 
-  get loadingClass() {
-    return !this.bookReaderLoaded ? 'loading' : '';
-  }
-
   get itemImage() {
     const identifier = this.itemMD?.metadata.identifier;
     const url = `https://${this.baseHost}/services/img/${identifier}`;
     return html`<img class="cover-img" src=${url} alt="cover image for ${identifier}">`;
   }
 
+  get placeholder() {
+    return html`<div class="placeholder">${this.itemImage}</div>`;
+  }
+
   render() {
-    const placeholder = this.bookReaderCannotLoad ? this.itemImage : this.loader;
-    return html`<div id="book-navigator" class="${this.loadingClass}">
-      ${placeholder}
-      <slot name="main"></slot>
+    return html`<div id="book-navigator__root">
+      ${this.bookReaderCannotLoad ? this.placeholder : nothing}
+      ${!this.bookReaderCannotLoad ? html`<slot name="main"></slot>` : nothing}
     </div>
   `;
   }
@@ -513,12 +514,19 @@ export class BookNavigator extends LitElement {
   static get styles() {
     return css`
     :host,
-    #book-navigator,
+    #book-navigator__root,
     slot,
     slot > * {
       display: block;
       height: inherit;
       width: inherit;
+    }
+    .placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      margin: 5%;
     }
     .cover-img {
       max-height: 300px;
