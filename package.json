@@ -49,7 +49,7 @@
     "@babel/plugin-proposal-class-properties": "^7.14.5",
     "@babel/plugin-proposal-decorators": "^7.14.5",
     "@babel/preset-env": "7.15.0",
-    "@open-wc/testing": "^3.0.3",
+    "@open-wc/testing": "^2.5.33",
     "@open-wc/testing-karma": "^4.0.9",
     "@types/jest": "^27.4.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
