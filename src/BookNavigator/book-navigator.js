@@ -496,7 +496,7 @@ export class BookNavigator extends LitElement {
   }
 
   get itemImage() {
-    const url = `https://${this.baseHost}/services/img/${this.item.metadata.identifier}`;
+    const url = `https://${this.baseHost}/services/img/${this.itemMD?.metadata.identifier}`;
     return html`<img class="cover-img" src=${url} alt="cover image for ${this.item.metadata.identifier}">`;
   }
 
