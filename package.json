@@ -65,7 +65,7 @@
     "http-server": "0.12.3",
     "iso-language-codes": "1.1.0",
     "jest": "^27.4.7",
-    "jquery": "1.11.3",
+    "jquery": "3.5.0",
     "jquery-colorbox": "1.6.4",
     "jquery-ui": "1.12.1",
     "jquery-ui-touch-punch": "0.2.3",
