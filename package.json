@@ -58,7 +58,7 @@
     "concurrently": "6.0.2",
     "core-js": "3.16.2",
     "cpx2": "3.0.0",
-    "eslint": "^8.7.0",
+    "eslint": "^7.32.0",
     "eslint-plugin-no-jquery": "^2.7.0",
     "eslint-plugin-testcafe": "^0.2.1",
     "hammerjs": "^2.0.8",
