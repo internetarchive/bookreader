@@ -97,7 +97,10 @@ export default class PageChunk {
    * @return {string}
    */
   static _removeDanglingHyphens(text) {
-    return text.replace(/-\s+/g, '');
+    // Some books mis-OCR a dangling hyphen as a ¬ (mathematical not sign) . Since in math
+    // the not sign should not appear followed by a space, we think we can safely assume
+    // this should be replaced.
+    return text.replace(/[-¬]\s+/g, '');
   }
 }
 
