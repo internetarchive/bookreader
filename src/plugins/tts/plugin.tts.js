@@ -290,10 +290,7 @@ BookReader.prototype.ttsMaybeFlipToIndex = function (leafIndex) {
       resolve();
     } else {
       this.animationFinishedCallback = resolve;
-      const mustGoNext = leafIndex > Math.max(this.twoPage.currentIndexR, this.twoPage.currentIndexL);
-      if (mustGoNext) this.next();
-      else this.prev();
-      promise.then(this.ttsMaybeFlipToIndex.bind(this, leafIndex));
+      this.jumpToIndex(leafIndex);
     }
   }
 
