@@ -1,4 +1,5 @@
 /* global BookReader, BookReaderJSIAinit */
+import { extraVolOptions, custvolumesManifest } from './ia-multiple-volumes-manifest.js';
 
 /**
  * This is how Internet Archive loads bookreader
@@ -74,6 +75,18 @@ const initializeBookReader = (brManifest) => {
     br.autoToggle(customAutoflipParams);
   }
 };
+
+window.initializeBookReader = initializeBookReader;
+
+const multiVolume = document.querySelector('#multi-volume');
+multiVolume.addEventListener('click', () => {
+  // remove everything
+  $('#BookReader').empty();
+  delete window.br;
+  // and re-mount with a new book
+  BookReaderJSIAinit(custvolumesManifest, extraVolOptions);
+});
+
 
 const fetchBookManifestAndInitializeBookreader = async (iaMetadata) => {
   document.querySelector('input[name="itemMD"]').checked = true;
