@@ -220,6 +220,18 @@ describe('<book-navigator>', () => {
 
     describe('Controlling Menu Side Panel & Shortcuts', () => {
       describe('Side Menu Panels', () => {
+        it('`isWideEnoughToOpenMenu` checks if menu should be open', async () => {
+          const el = fixtureSync(container());
+          el.brWidth = 300;
+          await el.elementUpdated;
+
+          expect(el.isWideEnoughToOpenMenu).to.equal(false);
+
+          el.brWidth = 641;
+          await el.elementUpdated;
+
+          expect(el.isWideEnoughToOpenMenu).to.equal(true);
+        });
         describe('Control which side menu to toggle open by using: `this.updateSideMenu`', () => {
           it('Emits `@updateSideMenu` to signal which menu gets the update', async () => {
             const el = fixtureSync(container());
