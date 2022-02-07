@@ -105,6 +105,7 @@ export class BookNavigator extends LitElement {
 
     if (changed.has('sharedObserver') && this.bookreader) {
       this.loadSharedObserver();
+      this.initializeBookSubmenus();
     }
   }
 
