@@ -1,5 +1,4 @@
 /* global BookReader, BookReaderJSIAinit */
-import { extraVolOptions, custvolumesManifest } from './ia-multiple-volumes-manifest.js';
 
 /**
  * This is how Internet Archive loads bookreader
@@ -25,7 +24,7 @@ iaBookReader.modal = modal;
 // Override options coming from IA
 BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
-const initializeBookReader = (brManifest) => {
+function initializeBookReader(brManifest) {
   console.log('initializeBookReader', brManifest);
   const br = new BookReader();
 
@@ -74,21 +73,20 @@ const initializeBookReader = (brManifest) => {
   if (customAutoflipParams.autoflip) {
     br.autoToggle(customAutoflipParams);
   }
-};
-
-window.initializeBookReader = initializeBookReader;
+}
 
 const multiVolume = document.querySelector('#multi-volume');
-multiVolume.addEventListener('click', () => {
+multiVolume.addEventListener('click', async () => {
   // remove everything
   $('#BookReader').empty();
   delete window.br;
   // and re-mount with a new book
+  const {extraVolOptions, custvolumesManifest} = await fetch('./ia-multiple-volumes-manifest.js').then(r => r.json());
   BookReaderJSIAinit(custvolumesManifest, extraVolOptions);
 });
 
 
-const fetchBookManifestAndInitializeBookreader = async (iaMetadata) => {
+async function fetchBookManifestAndInitializeBookreader(iaMetadata) {
   document.querySelector('input[name="itemMD"]').checked = true;
   iaBookReader.item = iaMetadata;
 
@@ -108,7 +106,7 @@ const fetchBookManifestAndInitializeBookreader = async (iaMetadata) => {
   document.querySelector('input[name="bookManifest"]').checked = true;
 
   initializeBookReader(manifest);
-};
+}
 
 // Temp; Circumvent bug in BookReaderJSIA code
 window.Sentry = null;
