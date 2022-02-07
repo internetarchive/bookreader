@@ -81,7 +81,7 @@ multiVolume.addEventListener('click', async () => {
   $('#BookReader').empty();
   delete window.br;
   // and re-mount with a new book
-  const {extraVolOptions, custvolumesManifest} = await fetch('./ia-multiple-volumes-manifest.js').then(r => r.json());
+  const {extraVolOptions, custvolumesManifest} = await fetch('./ia-multiple-volumes-manifest.json').then(r => r.json());
   BookReaderJSIAinit(custvolumesManifest, extraVolOptions);
 });
 
