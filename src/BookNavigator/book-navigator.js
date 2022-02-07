@@ -147,6 +147,9 @@ export class BookNavigator extends LitElement {
     };
   }
 
+  get isWideEnoughToOpenMenu() {
+    return this.brWidth >= 640;
+  }
   /**
    * Instantiates books submenus & their update callbacks
    *
@@ -181,8 +184,7 @@ export class BookNavigator extends LitElement {
             /* refresh br instance reference */
             this.bookreader = brInstance;
           }
-          const wideEnoughToOpenMenu = this.brWidth >= 640;
-          if (wideEnoughToOpenMenu && !searchUpdates?.searchCanceled) {
+          if (this.isWideEnoughToOpenMenu && !searchUpdates?.searchCanceled) {
             /* open side search menu */
             setTimeout(() => {
               this.updateSideMenu('search', 'open');
@@ -214,7 +216,12 @@ export class BookNavigator extends LitElement {
             this.bookreader = brInstance;
           }
           this.updateMenuContents();
-          this.updateSideMenu('volumes', 'open');
+          if (this.isWideEnoughToOpenMenu) {
+            /* open side search menu */
+            setTimeout(() => {
+              this.updateSideMenu('volumes', 'open');
+            });
+          }
         }
       });
     }

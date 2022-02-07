@@ -38,9 +38,6 @@
     <!-- IA scripts -->
     <script src="https://archive.org/bookreader/BookReaderJSIA.js"></script>
 
-    <!-- IA fetch demo -->
-    <script type="module" src="IADemoBr.js"></script>
-
   </head>
 
 <body>
@@ -79,6 +76,9 @@
       <button id="toggle-loggedin">Toggle Logged in view</button>
       <p>Features behind signed in gate: Bookmarks</p>
       <p>Logged In Status: <span id="logged-in-status">Logged Out</span></p>
+    </div>
+    <div class="demo">
+      <button id="multi-volume">Multiple books</button>
     </div>
     <div class="demo">
       <button id="start-fs">Start at Fullscreen</button>
@@ -124,5 +124,8 @@
       placeholder.innerHTML = 'Dependencies are complete, bookreader has loaded';
     });
   </script>
+
+  <!-- IA fetch demo -->
+  <script type="module" src="IADemoBr.js"></script>
 </body>
 </html>

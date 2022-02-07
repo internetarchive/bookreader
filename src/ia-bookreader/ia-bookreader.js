@@ -52,6 +52,10 @@ export class IaBookReader extends LitElement {
     }
   }
 
+  get itemNav() {
+    return this.shadowRoot.querySelector('ia-item-navigator');
+  }
+
   /** Creates modal DOM & attaches to `<body>` */
   setModalManager() {
     let modalManager = document.querySelector('modal-manager');
@@ -95,11 +99,10 @@ export class IaBookReader extends LitElement {
     }
 
     if (action === 'open') {
-      this.itemNav.openShortcut(menuId);
-      this.openShortcut(menuId);
+      this.itemNav?.openShortcut(menuId);
     } else if (action === 'toggle') {
-      this.itemNav.openMenu(menuId);
-      this.itemNav.toggleMenu();
+      this.itemNav?.openMenu(menuId);
+      this.itemNav?.toggleMenu();
     }
   }
 
