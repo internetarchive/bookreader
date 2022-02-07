@@ -1,3 +1,8 @@
+# 5.0.0-34
+Dev: udpate test dependencies @cdrini
+Fix: Update hyphen stitching regex to include dangling "¬" @cdrini
+Fix: pop open multiple files menu at proper width @iisa
+
 # 5.0.0-33
 Fix: restricted books get cover image @iisa
 
