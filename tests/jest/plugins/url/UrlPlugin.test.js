@@ -170,6 +170,21 @@ describe('UrlPlugin tests', () => {
       const locationUrl = `${window.location.pathname}${window.location.search}`;
       expect(locationUrl).toEqual('/details/foo/page/12?q=hello&view=theater');
     });
+
+    test('strips leading slash of incoming path name for no double slash', () => {
+      const urlPlugin = new UrlPlugin();
+      urlPlugin.urlMode = 'history';
+
+      urlPlugin.urlHistoryBasePath = '/details/SubBookTest/book1/GPORFP/';
+      urlPlugin.urlState = {
+        "mode": "1up",
+      };
+
+      urlPlugin.setUrlParam('sort', 'title_asc');
+      urlPlugin.setUrlParam('mode', 'thumb');
+
+      expect(window.location.href).toEqual('http://localhost/details/SubBookTest/book1/GPORFP/mode/thumb?sort=title_asc');
+    });
   });
 
 });
