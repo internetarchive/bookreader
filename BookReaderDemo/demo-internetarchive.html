@@ -10,7 +10,6 @@
     <!-- WC dependencies -->
     <script type="text/javascript" src="https://polyfill.io/v3/polyfill.min.js?features=es2015%2Ces5%2CglobalThis"></script>
     <script type="text/javascript" src="https://unpkg.com/lit@2.1.2/polyfill-support.js"></script>
-    <script type="text/javascript" src="https://unpkg.com/@webcomponents/webcomponentsjs@2.2.10/webcomponents-bundle.js"></script>
 
     <!-- JS dependencies -->
     <script src="../BookReader/webcomponents-bundle.js"></script>
@@ -31,7 +30,7 @@
     <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
     <script src="../BookReader/plugins/plugin.text_selection.js"></script>
 
-    <script type="module" src="../BookReader/ia-bookreader-bundle.js"></script>
+    <script src="../BookReader/ia-bookreader-bundle.js"></script>
 
     <link rel="stylesheet" href="BookReaderDemo.css"/>
 
@@ -42,9 +41,7 @@
 
 <body>
   <section class="theater" style="width: 100%; overflow: hidden; background-color: black;">
-    <ia-bookreader
-      baseHost="https://archive.org"
-    >
+    <ia-bookreader baseHost="https://archive.org">
       <div id="IABookReaderWrapper" slot="main">
         <div id="BookReader" class="BookReader"></div>
       </div>
@@ -60,69 +57,106 @@
       </div>
     </ia-bookreader>
   </section>
-  <style>
-    .demos {
-      height: 800px;
-      width: inherit;
-      padding: 10px;
-    }
-    .demo {
-      border: 1px solid white;
-      padding: 10px;
-    }
-  </style>
-  <section class="demos">
-    <div class="demo">
-      <button id="toggle-loggedin">Toggle Logged in view</button>
-      <p>Features behind signed in gate: Bookmarks</p>
-      <p>Logged In Status: <span id="logged-in-status">Logged Out</span></p>
-    </div>
-    <div class="demo">
-      <button id="multi-volume">Multiple books</button>
-    </div>
-    <div class="demo">
-      <button id="start-fs">Start at Fullscreen</button>
-    </div>
-    <div class="demo">
-      <h3 id="placeholder">please wait as we are fetching the following: </h3>
-      <input type='checkbox' class='group1' name='itemMD' disabled>Item metadata</input><br>
-      <input type='checkbox' class='group1' name='bookManifest' disabled> Book manifest</input><br>
-    </div>
-  </section>
-  <div class="demo">
-    <h3>Placeholder div to allow scrolling</h3>
-  </div>
 
   <!-- Certain features, like Bookmarks, use modal-manager to draw their interface -->
   <modal-manager></modal-manager>
-  <script >
-    // Set up demo things
-    const iaBR = document.querySelector('ia-bookreader');
-    const toggleLoginBtn = document.querySelector('#toggle-loggedin');
-    toggleLoginBtn.addEventListener('click', () => {
-      const currLoggedIn = iaBR.signedIn;
-      iaBR.signedIn = !currLoggedIn;
 
-      document.querySelector('#logged-in-status').innerText = iaBR.signedIn ? 'Logged In' : 'Logged Out';
-      console.log("Toggled SignedIn state", iaBR.signedIn, { currLoggedIn })
-    });
+  <!--
+    Useful controls for testers to use. Not helpful for folks who want to
+    use bookreader on their sites, but useful for testing.
+  -->
+  <script src="../BookReader/br-demo-bed.js"></script>
+  <br-demo-bed brSelector="ia-bookreader"></br-demo-bed>
 
-    const startFSBtn = document.querySelector('#start-fs');
-    startFSBtn.addEventListener('click', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('view')) {
-        const url = new URL(window.location);
-        url.searchParams.delete('view');
-        window.history.pushState({}, '', url);
-      }
-      urlParams.set('view', 'theater');
-      window.location.search = urlParams.toString();
-    });
+  <script>
+    var iaBookReader = document.querySelector('ia-bookreader');
+    var brDemoBed = document.querySelector('br-demo-bed');
+    iaBookReader.modal = document.querySelector('modal-manager');
 
-    window.addEventListener('BookReader:PostInit', () => {
-      const placeholder = document.querySelector('#placeholder');
-      placeholder.innerHTML = 'Dependencies are complete, bookreader has loaded';
-    });
+    // Override options coming from IA
+    BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var ocaid = urlParams.get('ocaid');
+    var openFullImmersionTheater = urlParams.get('view') === 'theater';
+    var ui = urlParams.get('ui');
+    var autoflip = urlParams.get('autoflip');
+    var searchTerm = urlParams.get('q');
+
+    if (openFullImmersionTheater) {
+      $(document.body).addClass('BRfullscreenActive');
+      iaBookReader.fullscreen = openFullImmersionTheater;
+    }
+
+    $.getJSON('https://archive.org/metadata/' + ocaid)
+      .then(function (iaMetadata) {
+        brDemoBed.metadataLoaded = true;
+        iaBookReader.item = iaMetadata;
+
+        var locator = `https://archive.org/bookreader/BookReaderJSLocate.php?format=json&subPrefix=&id=${iaMetadata.metadata.identifier}`;
+        // Todo: move from `locator` to create `iaManifestUrl` url from `iaMetadata`
+        // so we can support multiple volumes
+        // var iaManifestUrl = `https://${server}/BookReader/BookReaderJSIA.php?format=jsonp&itemPath=${dir}&id=${identifier}`;
+        return $.getJSON(locator);
+      })
+      .then(function (brManifest) {
+        brDemoBed.manifestLoaded = true;
+
+        console.log('initializeBookReader', brManifest);
+        var br = window.br = new BookReader();
+
+        var customAutoflipParams = {
+          autoflip: !!autoflip,
+          flipSpeed: urlParams.flipSpeed || 2000,
+          flipDelay: urlParams.flipDelay || 5000
+        };
+
+        var options = {
+          el: '#BookReader',
+          /* Url plugin - IA uses History mode for URL */
+          // commenting these out as demo uses hash mode
+          // keeping them here for reference
+          // urlHistoryBasePath: `/details/{$ocaid}/`,
+          // resumeCookiePath: `/details/{$ocaid}/`,
+          // urlMode: 'history',
+          // Only reflect these params onto the URL
+          // urlTrackedParams: ['page', 'search', 'mode'],
+          /* End url plugin */
+          enableBookTitleLink: false,
+          bookUrlText: null,
+          startFullscreen: openFullImmersionTheater,
+          initialSearchTerm: searchTerm ? searchTerm : '',
+          // leaving this option commented out bc we change given user agent on archive.org
+          // onePage: { autofit: <?=json_encode($this->ios ? 'width' : 'auto')?> },
+          showToolbar: false,
+          /* Multiple volumes */
+          // To show multiple volumes:
+          enableMultipleBooks: false, // turn this on
+          multipleBooksList: [], // populate this  // TODO: get sample blob and tie into demo
+          /* End multiple volumes */
+          enableBookmarks: true, // turn this on
+          enableFSLogoShortcut: true,
+        };
+
+        // we want to show item as embedded when ?ui=embed is in URI
+        if (ui === 'embed') {
+          options.mode = 1;
+          options.ui = 'embed';
+        }
+
+        // we expect this at the global level
+        BookReaderJSIAinit(brManifest.data, options);
+
+        if (customAutoflipParams.autoflip) {
+          br.autoToggle(customAutoflipParams);
+        }
+      });
+
+    // Temp; Circumvent bug in BookReaderJSIA code
+    window.Sentry = null;
+    window.logError = function(e) {
+      console.error(e);
+    };
   </script>
 
   <!-- IA fetch demo -->

@@ -16,7 +16,17 @@ const shared = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules[/\\](?!(lit-element|lit-html)[/\\]).*/,
+        // The negative regex `(?!...) is to exclude (from the exclude) packages
+        // that contain raw es6 code. We _do_ want to transpile those to get rid
+        // of things like `const`.
+        //
+        // To test this is working correctly, change the `mode` to `development`
+        // and run `npm run build`. If everything is correct, there should be
+        // no occurrences of "const " (note the space) in BookReader/ia-bookreader.js
+        // except in comments.
+        // Note: We can't transpile ALL dependencies; it causes things to break
+        // wildly.
+        exclude: /node_modules[/\\](?!(@internetarchive|@lit|lit|lit-element|lit-html)[/\\]).*/,
         loader: "babel-loader",
       }
     ]
@@ -40,6 +50,8 @@ module.exports = [
 
       // BookReader
       'BookReader.js': './src/BookReader.js',
+      'ia-bookreader-bundle.js': { import: './src/ia-bookreader/ia-bookreader.js', dependOn: 'BookReader.js' },
+      'br-demo-bed.js': { import: './src/BRDemoBed/br-demo-bed.js', dependOn: ['BookReader.js', 'ia-bookreader-bundle.js'] },
 
       // Plugins (sorted!)
       'plugins/plugin.archive_analytics.js': { import: './src/plugins/plugin.archive_analytics.js', dependOn: 'BookReader.js' },
@@ -53,7 +65,6 @@ module.exports = [
       'plugins/plugin.tts.js': { import: './src/plugins/tts/plugin.tts.js', dependOn: 'BookReader.js' },
       'plugins/plugin.url.js': { import: './src/plugins/url/plugin.url.js', dependOn: 'BookReader.js' },
       'plugins/plugin.vendor-fullscreen.js': { import: './src/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' },
-      'ia-bookreader-bundle.js': { import: './src/ia-bookreader/ia-bookreader.js', dependOn: 'BookReader.js' }
     },
 
     externals: {
