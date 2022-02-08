@@ -105,6 +105,7 @@ export class BookNavigator extends LitElement {
 
     if (changed.has('sharedObserver') && this.bookreader) {
       this.loadSharedObserver();
+      this.initializeBookSubmenus();
     }
   }
 
@@ -461,11 +462,16 @@ export class BookNavigator extends LitElement {
       this.brHeight = contentRect.height;
     }
 
+    if (!startBrWidth && this.brWidth) {
+      // loading up, let's update side menus
+      this.initializeBookSubmenus();
+    }
+
     const widthChange = startBrWidth !== this.brWidth;
     const heightChange = startBrHeight !== this.brHeight;
 
     if (!animating && (widthChange || heightChange)) {
-      this.bookreader.resize();
+      this.bookreader?.resize();
     }
   }
 

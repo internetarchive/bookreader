@@ -323,6 +323,10 @@ describe('<book-navigator>', () => {
       const el = fixtureSync(container());
       const brStub = {
         resize: sinon.fake(),
+        options: {},
+        refs: {
+          $brContainer: document.createElement('div')
+        }
       };
       el.bookreader = brStub;
       await elementUpdated(el);
@@ -349,7 +353,12 @@ describe('<book-navigator>', () => {
       const brStub = {
         animating: false,
         resize: sinon.fake(),
+        options: {},
+        refs: {
+          $brContainer: document.createElement('div')
+        }
       };
+
       el.bookreader = brStub;
       await elementUpdated(el);
       expect(el.brWidth).to.equal(0);

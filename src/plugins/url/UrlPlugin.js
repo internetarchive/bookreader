@@ -140,7 +140,7 @@ export class UrlPlugin {
     const concatenatedPath = urlStrPath !== '/' ? urlStrPath : '';
     if (this.urlMode == 'history') {
       if (window.history && window.history.replaceState) {
-        const newUrlPath = `${this.urlHistoryBasePath}${concatenatedPath}`;
+        const newUrlPath = `${this.urlHistoryBasePath}${concatenatedPath}`.trim().replace(/(\/+)/g, '/');
         window.history.replaceState({}, null, newUrlPath);
       }
     } else {
