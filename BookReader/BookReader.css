@@ -76,7 +76,7 @@
   background: transparent;
 }
 
-.shift {
+.br-colorbox-shift {
   position: absolute !important;
   left: -10000px !important;
 }

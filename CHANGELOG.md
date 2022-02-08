@@ -1,3 +1,8 @@
+# 5.0.0-35
+Fix: global syle leak specify colorbox styles @iisa
+Fix: br menu reinits with shared ro load @iisa
+Fix: url plugin does not rewrite with multiple slashes @iisa
+
 # 5.0.0-34
 Dev: udpate test dependencies @cdrini
 Fix: Update hyphen stitching regex to include dangling "¬" @cdrini
