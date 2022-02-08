@@ -261,9 +261,7 @@ BookReader.prototype.ttsStop = function () {
 BookReader.prototype.ttsBeforeChunkPlay = async function(chunk) {
   await this.ttsMaybeFlipToIndex(chunk.leafIndex);
   this.ttsHighlightChunk(chunk);
-  // This appears not to work; ttsMaybeFlipToIndex causes a scroll to the top of
-  // the active page :/ Disabling cause the extra scroll just adds an odd jitter.
-  // this.ttsScrollToChunk(chunk);
+  this.ttsScrollToChunk(chunk);
 };
 
 /**
@@ -292,10 +290,7 @@ BookReader.prototype.ttsMaybeFlipToIndex = function (leafIndex) {
       resolve();
     } else {
       this.animationFinishedCallback = resolve;
-      const mustGoNext = leafIndex > Math.max(this.twoPage.currentIndexR, this.twoPage.currentIndexL);
-      if (mustGoNext) this.next();
-      else this.prev();
-      promise.then(this.ttsMaybeFlipToIndex.bind(this, leafIndex));
+      this.jumpToIndex(leafIndex);
     }
   }
 
@@ -329,9 +324,20 @@ BookReader.prototype.ttsHighlightChunk = function(chunk) {
  * @param {PageChunk} chunk
  */
 BookReader.prototype.ttsScrollToChunk = function(chunk) {
-  if (this.constMode1up != this.mode) return;
+  // It behaves weird if used in thumb mode
+  if (this.constModeThumb == this.mode) return;
 
-  $(`.pagediv${chunk.leafIndex} .ttsHiliteLayer rect`)[0]?.scrollIntoView();
+  $(`.pagediv${chunk.leafIndex} .ttsHiliteLayer rect`).last()?.[0]?.scrollIntoView({
+    // Only vertically center the highlight if we're in 1up or in full screen. In
+    // 2up, if we're not fullscreen, the whole body gets scrolled around to try to
+    // center the highlight 🙄 See:
+    // https://stackoverflow.com/questions/11039885/scrollintoview-causing-the-whole-page-to-move/11041376
+    // Note: nearest doesn't quite work great, because the ReadAloud toolbar is now
+    // full-width, and covers up the last line of the highlight.
+    block: this.constMode1up == this.mode || this.isFullscreenActive ? 'center' : 'nearest',
+    inline: 'center',
+    behavior: 'smooth',
+  });
 };
 
 // ttsRemoveHilites()
