@@ -47,15 +47,5 @@ module.exports = {
     "prefer-const": ["error"],
     "space-infix-ops": ["error", { "int32Hint": false }],
     "eol-last": ["error", "always"]
-  },
-  "overrides": [
-    { // TODO; these should be cleaned up as well
-      "files": [
-        "src/BookReader.js"
-      ],
-      "rules": {
-        "no-var": ["off"],
-      }
-    },
-  ],
+  }
 };
