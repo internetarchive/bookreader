@@ -333,9 +333,9 @@ BookReader.util = utils;
  * @private
  */
 BookReader.prototype.extendParams = function(params, newParams) {
-  var modifiedNewParams = $.extend({}, newParams);
+  const modifiedNewParams = $.extend({}, newParams);
   if ('undefined' != typeof(modifiedNewParams.page)) {
-    var pageIndex = this._models.book.parsePageString(modifiedNewParams.page);
+    const pageIndex = this._models.book.parsePageString(modifiedNewParams.page);
     if (!isNaN(pageIndex))
       modifiedNewParams.index = pageIndex;
     delete modifiedNewParams.page;
@@ -349,7 +349,7 @@ BookReader.prototype.extendParams = function(params, newParams) {
  * @return {object} the parsed params
  */
 BookReader.prototype.initParams = function() {
-  var params = {};
+  const params = {};
   // Flag initializing for updateFromParams()
   params.init = true;
 
@@ -398,7 +398,7 @@ BookReader.prototype.initParams = function() {
   // Check for URL plugin
   if (this.options.enableUrlPlugin) {
     // Params explicitly set in URL take precedence over all other methods
-    var urlParams = this.paramsFromFragment(this.urlReadFragment());
+    let urlParams = this.paramsFromFragment(this.urlReadFragment());
 
     // Get params if hash fragment available with 'history' urlMode
     const hasHashURL = !Object.keys(urlParams).length && this.urlReadHashFragment();
@@ -481,8 +481,8 @@ BookReader.prototype.readQueryString = function() {
  */
 BookReader.prototype.getInitialMode = function(params) {
   // Use params or browser width to set view mode
-  var windowWidth = $(window).width();
-  var nextMode;
+  const windowWidth = $(window).width();
+  let nextMode;
   if ('undefined' != typeof(params.mode)) {
     nextMode = params.mode;
   } else if (this.ui == 'full'
@@ -509,7 +509,7 @@ BookReader.prototype.init = function() {
   this.init.initComplete = false;
   this.pageScale = this.reduce; // preserve current reduce
 
-  var params = this.initParams();
+  const params = this.initParams();
 
   this.firstIndex = params.index ? params.index : 0;
 
@@ -653,8 +653,8 @@ BookReader.prototype.resize = function() {
     } else {
       // used when zoomed in
       // Re-center if the scrollbars have disappeared
-      var center = this.twoPageGetViewCenter();
-      var doRecenter = false;
+      const center = this.twoPageGetViewCenter();
+      let doRecenter = false;
       if (this.twoPage.totalWidth < this.refs.$brContainer.prop('clientWidth')) {
         center.percentageX = 0.5;
         doRecenter = true;
@@ -816,8 +816,8 @@ BookReader.prototype.bindGestures = function(jElement) {
   // when you move the book with one finger and then add another
   // finger to pinch. Gestures are aware of scroll state.
 
-  var self = this;
-  var numTouches = 1;
+  const self = this;
+  let numTouches = 1;
 
   jElement.unbind('touchmove').bind('touchmove', function(e) {
     if (e.originalEvent.cancelable) numTouches = e.originalEvent.touches.length;
@@ -901,8 +901,8 @@ BookReader.prototype.resizeBRcontainer = function(animate) {
 };
 
 BookReader.prototype.centerPageView = function() {
-  var scrollWidth  = this.refs.$brContainer.prop('scrollWidth');
-  var clientWidth  =  this.refs.$brContainer.prop('clientWidth');
+  const scrollWidth  = this.refs.$brContainer.prop('scrollWidth');
+  const clientWidth  =  this.refs.$brContainer.prop('clientWidth');
   if (scrollWidth > clientWidth) {
     this.refs.$brContainer.prop('scrollLeft', (scrollWidth - clientWidth) / 2);
   }
@@ -990,7 +990,7 @@ BookReader.prototype._reduceSort = (a, b) => a.reduce - b.reduce;
  * @return {boolean} Returns true if page could be found, false otherwise.
  */
 BookReader.prototype.jumpToPage = function(pageNum) {
-  var pageIndex = this._models.book.parsePageString(pageNum);
+  const pageIndex = this._models.book.parsePageString(pageNum);
 
   if ('undefined' != typeof(pageIndex)) {
     this.jumpToIndex(pageIndex);
@@ -1119,14 +1119,14 @@ BookReader.prototype.switchMode = function(
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
   }
-  var eventName = mode + 'PageViewSelected';
+  const eventName = mode + 'PageViewSelected';
   this.trigger(BookReader.eventNames[eventName]);
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.updateBrClasses = function() {
-  var modeToClass = {};
+  const modeToClass = {};
   modeToClass[this.constMode1up] = 'BRmode1up';
   modeToClass[this.constMode2up] = 'BRmode2Up';
   modeToClass[this.constModeThumb] = 'BRmodeThumb';
@@ -1222,7 +1222,7 @@ BookReader.prototype.exitFullScreen = async function () {
 
   $(document).off('keyup', this._fullscreenCloseHandler);
 
-  var windowWidth = $(window).width();
+  const windowWidth = $(window).width();
 
   const canShow2up = this.options.controls.twoPage.visible;
   if (canShow2up && (windowWidth <= this.onePageMinBreakpoint)) {
@@ -1706,7 +1706,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
     },
     full: () => {
       if (this.ui == 'embed') {
-        var url = this.$('.BRembedreturn a').attr('href');
+        const url = this.$('.BRembedreturn a').attr('href');
         window.open(url);
       } else {
         this.toggleFullscreen();
@@ -1725,12 +1725,12 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
   }
 
-  var $brNavCntlBtmEl = this.$('.BRnavCntlBtm');
-  var $brNavCntlTopEl = this.$('.BRnavCntlTop');
+  const $brNavCntlBtmEl = this.$('.BRnavCntlBtm');
+  const $brNavCntlTopEl = this.$('.BRnavCntlTop');
 
   this.$('.BRnavCntl').click(
     function() {
-      var promises = [];
+      const promises = [];
       // TODO don't use magic constants
       // TODO move this to a function
       if ($brNavCntlBtmEl.hasClass('BRdn')) {
@@ -1827,7 +1827,7 @@ BookReader.prototype.navigationMousemoveHandler = function(event) {
   if (event.data['br'].uiAutoHide) {
     // 77px is an approximate height of the Internet Archive Top Nav
     // 75 & 76 (pixels) provide used in this context is checked against the IA top nav height
-    var navkey = $(document).height() - 75;
+    const navkey = $(document).height() - 75;
     if ((event.pageY < 76) || (event.pageY > navkey)) {
       // inside or near navigation elements
       event.data['br'].hideNavigation();
@@ -1858,7 +1858,7 @@ BookReader.prototype.initSwipeData = function(clientX, clientY) {
 };
 
 BookReader.prototype.swipeMousedownHandler = function(event) {
-  var self = event.data['br'];
+  const self = event.data['br'];
 
   // We should be the last bubble point for the page images
   // Disable image drag and select, but keep right-click
@@ -1888,8 +1888,8 @@ BookReader.prototype.swipeMousedownHandler = function(event) {
 };
 
 BookReader.prototype.swipeMousemoveHandler = function(event) {
-  var self = event.data['br'];
-  var _swipe = self._swipe;
+  const self = event.data['br'];
+  const _swipe = self._swipe;
   if (! _swipe.mightBeSwiping) {
     return;
   }
@@ -1899,12 +1899,12 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
   _swipe.deltaY = event.clientY - _swipe.startY;
   _swipe.deltaT = (new Date).getTime() - _swipe.startTime;
 
-  var absX = Math.abs(_swipe.deltaX);
-  var absY = Math.abs(_swipe.deltaY);
+  const absX = Math.abs(_swipe.deltaX);
+  const absY = Math.abs(_swipe.deltaY);
 
   // Minimum distance in the amount of tim to trigger the swipe
-  var minSwipeLength = Math.min(self.refs.$br.width() / 5, 80);
-  var maxSwipeTime = 400;
+  const minSwipeLength = Math.min(self.refs.$br.width() / 5, 80);
+  const maxSwipeTime = 400;
 
   // Check for horizontal swipe
   if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
@@ -1938,7 +1938,7 @@ BookReader.prototype.swipeMousemoveHandler = function(event) {
 };
 
 BookReader.prototype.swipeMouseupHandler = function(event) {
-  var _swipe = event.data['br']._swipe;
+  const _swipe = event.data['br']._swipe;
   _swipe.mightBeSwiping = false;
   _swipe.mightBeDragging = false;
 
@@ -1955,7 +1955,7 @@ BookReader.prototype.swipeMouseupHandler = function(event) {
 };
 
 BookReader.prototype.bindMozTouchHandlers = function() {
-  var self = this;
+  const self = this;
 
   // Currently only want touch handlers in 2up
   this.refs.$br
@@ -1982,8 +1982,8 @@ BookReader.prototype.bindMozTouchHandlers = function() {
  */
 BookReader.prototype.navigationIsVisible = function() {
   // $$$ doesn't account for transitioning states, nav must be fully visible to return true
-  var toolpos = this.refs.$BRtoolbar.position();
-  var tooltop = toolpos.top;
+  const toolpos = this.refs.$BRtoolbar.position();
+  const tooltop = toolpos.top;
   return tooltop == 0;
 };
 
@@ -1992,19 +1992,19 @@ BookReader.prototype.navigationIsVisible = function() {
  * Defaults to SHOW the navigation chrome
  */
 BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
-  var animationLength = this.constNavAnimationDuration;
-  var animationType = 'linear';
-  var resizePageContainer = function resizePageContainer () {
+  const animationLength = this.constNavAnimationDuration;
+  const animationType = 'linear';
+  const resizePageContainer = function resizePageContainer () {
     /* main page container fills whole container */
     if (this.constMode2up !== this.mode) {
-      var animate = true;
+      const animate = true;
       this.resizeBRcontainer(animate);
     }
     this.trigger(BookReader.eventNames.navToggled);
   }.bind(this);
 
-  var toolbarHeight = 0;
-  var navbarHeight = 0;
+  let toolbarHeight = 0;
+  let navbarHeight = 0;
   if (hide) {
     toolbarHeight = this.getToolBarHeight() * -1;
     navbarHeight = this.getFooterHeight() * -1;
@@ -2035,7 +2035,7 @@ BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
 BookReader.prototype.hideNavigation = function() {
   // Check if navigation is showing
   if (this.navigationIsVisible()) {
-    var hide = true;
+    const hide = true;
     this.setNavigationView(hide);
   }
 };
@@ -2086,7 +2086,7 @@ BookReader.prototype.firstDisplayableIndex = function() {
  */
 BookReader.prototype.lastDisplayableIndex = function() {
 
-  var lastIndex = this._models.book.getNumLeafs() - 1;
+  const lastIndex = this._models.book.getNumLeafs() - 1;
 
   if (this.mode != this.constMode2up) {
     return lastIndex;
@@ -2325,7 +2325,7 @@ BookReader.prototype.initUIStrings = function() {
   // the toolbar and nav bar easier
 
   // Setup tooltips -- later we could load these from a file for i18n
-  var titles = {
+  const titles = {
     '.logo': 'Go to Archive.org', // $$$ update after getting OL record
     '.zoom_in': 'Zoom in',
     '.zoom_out': 'Zoom out',
@@ -2357,7 +2357,7 @@ BookReader.prototype.initUIStrings = function() {
     titles['.book_rightmost'] = 'First page';
   }
 
-  for (var icon in titles) {
+  for (const icon in titles) {
     this.$(icon).prop('title', titles[icon]);
   }
 };
@@ -2368,7 +2368,7 @@ BookReader.prototype.initUIStrings = function() {
 BookReader.prototype.reloadImages = function() {
   this.refs.$brContainer.find('img').each(function(index, elem) {
     if (!elem.complete || elem.naturalHeight === 0) {
-      var src = elem.src;
+      const src = elem.src;
       elem.src = '';
       setTimeout(function() {
         elem.src = src;
@@ -2382,10 +2382,10 @@ BookReader.prototype.reloadImages = function() {
  * @return {number}
  */
 BookReader.prototype.getFooterHeight = function() {
-  var $heightEl = this.mode == this.constMode2up ? this.refs.$BRfooter : this.refs.$BRnav;
+  const $heightEl = this.mode == this.constMode2up ? this.refs.$BRfooter : this.refs.$BRnav;
   if ($heightEl && this.refs.$BRfooter) {
-    var outerHeight = $heightEl.outerHeight();
-    var bottom = parseInt(this.refs.$BRfooter.css('bottom'));
+    const outerHeight = $heightEl.outerHeight();
+    const bottom = parseInt(this.refs.$BRfooter.css('bottom'));
     if (!isNaN(outerHeight) && !isNaN(bottom)) {
       return outerHeight + bottom;
     }
@@ -2401,11 +2401,11 @@ BookReader.prototype.getFooterHeight = function() {
  * @return {Object}
  */
 BookReader.prototype.paramsFromCurrent = function() {
-  var params = {};
+  const params = {};
 
   // Path params
-  var index = this.currentIndex();
-  var pageNum = this._models.book.getPageNum(index);
+  const index = this.currentIndex();
+  const pageNum = this._models.book.getPageNum(index);
   if ((pageNum === 0) || pageNum) {
     params.page = pageNum;
   }
@@ -2444,7 +2444,7 @@ BookReader.prototype.paramsFromCurrent = function() {
  * @return {Object}
  */
 BookReader.prototype.paramsFromFragment = function(fragment) {
-  var params = {};
+  const params = {};
 
   // For backwards compatibility we allow an initial # character
   // (as from window.location.hash) but don't require it
@@ -2453,7 +2453,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
   }
 
   // Simple #nn syntax
-  var oldStyleLeafNum = parseInt( /^\d+$/.exec(fragment) );
+  const oldStyleLeafNum = parseInt( /^\d+$/.exec(fragment) );
   if ( !isNaN(oldStyleLeafNum) ) {
     params.index = oldStyleLeafNum;
 
@@ -2462,9 +2462,9 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
   }
 
   // Split into key-value pairs
-  var urlArray = fragment.split('/');
-  var urlHash = {};
-  for (var i = 0; i < urlArray.length; i += 2) {
+  const urlArray = fragment.split('/');
+  const urlHash = {};
+  for (let i = 0; i < urlArray.length; i += 2) {
     urlHash[urlArray[i]] = urlArray[i + 1];
   }
 
