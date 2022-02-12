@@ -144,6 +144,7 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
   };
   const options = jQuery.extend({}, defaultOptions, overrides);
   this.suppressFragmentChange = options.suppressFragmentChange;
+  this.searchCancelled = false;
 
   // strip slashes, since this goes in the url
   this.searchTerm = term.replace(/\//g, ' ');
@@ -179,13 +180,8 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
 
   const url = `${baseUrl}${paramStr}`;
 
-  const cleanup = () => {
-    this.searchXHR = null;
-    window.BRSearchInProgress = () => {};
-  };
-
   const processSearchResults = (searchInsideResults) => {
-    if (!this.searchXHR) {
+    if (this.searchCancelled) {
       return;
     }
     const responseHasError = searchInsideResults.error || !searchInsideResults.matches.length;
@@ -201,12 +197,6 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
         ? options.success.call(this, searchInsideResults, options)
         : this.BRSearchCallback(searchInsideResults, options);
     }
-    cleanup();
-  };
-
-  const beforeSend = (xhr) => {
-    this.searchXHR = xhr;
-    window.BRSearchInProgress = processSearchResults;
   };
 
   this.trigger('SearchStarted', { term: this.searchTerm, instance: this });
@@ -214,8 +204,7 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
     url: url,
     dataType: 'jsonp',
     cache: true,
-    beforeSend,
-    jsonpCallback: 'BRSearchInProgress'
+    beforeSend: xhr => { this.searchXHR = xhr; },
   }));
 };
 
@@ -228,8 +217,8 @@ BookReader.prototype._cancelSearch = function () {
   this.searchView.clearSearchFieldAndResults(false);
   this.searchTerm = '';
   this.searchXHR = null;
+  this.searchCancelled = true;
   this.searchResults = [];
-  window.BRSearchInProgress = () => {};
 };
 
 /**
@@ -237,6 +226,7 @@ BookReader.prototype._cancelSearch = function () {
  * checks for term & xhr in flight before running
  */
 BookReader.prototype.cancelSearchRequest = function () {
+  this.searchCancelled = true;
   if (this.searchXHR !== null) {
     this._cancelSearch();
     this.searchView.toggleSearchPending();

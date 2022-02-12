@@ -6,7 +6,8 @@ export default class Navigation {
     this.topNavShell = new Selector('.BRtoolbar');
     this.bottomNavShell = new Selector('.BRfooter');
     this.mobileMenu = new Selector('.BRmobileMenu');
-    this.desktop = new DesktopNav(this.bottomNavShell, this.topNavShell);
+    this.itemNav = Selector('ia-bookreader').shadowRoot().find('ia-item-navigator').shadowRoot();
+    this.desktop = new DesktopNav(this.bottomNavShell, this.itemNav);
     this.mobile = new MobileNav(this.mobileMenu, this.topNavShell);
   }
 }
@@ -17,7 +18,11 @@ export default class Navigation {
  * @classdesc defines DesktopNav base elements
  */
 class DesktopNav {
-  constructor(bottomToolbar, topToolbar) {
+  /**
+   * @param {Selector} bottomToolbar
+   * @param {Selector} itemNav
+   */
+  constructor(bottomToolbar, itemNav) {
     // flipping
     this.goLeft = bottomToolbar.find('.BRicon.book_left');
     this.goRight = bottomToolbar.find('.BRicon.book_right');
@@ -35,7 +40,11 @@ class DesktopNav {
     this.zoomOut = bottomToolbar.find('.BRicon.zoom_out');
 
     // search
-    this.searchBox = topToolbar.find('.BRbooksearch.desktop');
+    this.searchIcon = itemNav.find('button.shortcut.search');
+    this.searchBox = itemNav
+      .find('ia-menu-slider').shadowRoot()
+      .find('ia-book-search-results').shadowRoot()
+      .find('input[name=query]');
     this.searchPin = bottomToolbar.find('.BRsearch');
     this.searchNavigation = bottomToolbar.find('.BRsearch-navigation');
 
