@@ -1,6 +1,7 @@
 // @ts-check
-import { customElement, html, LitElement, property, query } from 'lit-element';
-import { styleMap } from 'lit-html/directives/style-map';
+import { customElement, property, query } from 'lit/decorators.js';
+import {LitElement, html} from 'lit';
+import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
 import { arrChanged, calcScreenDPI, genToArray, sum, throttle } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";

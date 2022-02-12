@@ -1,4 +1,4 @@
-import { html } from 'lit-element';
+import { html } from 'lit';
 import '@internetarchive/icon-dl/icon-dl';
 import './downloads';
 

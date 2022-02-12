@@ -1,4 +1,4 @@
-import { html } from 'lit-element';
+import { html } from 'lit';
 import '../delete-modal-actions.js';
 import './bookmark-button.js';
 import './ia-bookmarks.js';

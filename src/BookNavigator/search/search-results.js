@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
-import { nothing } from 'lit-html';
-import { css, html, LitElement } from 'lit-element';
+import { nothing } from 'lit';
+import { css, html, LitElement } from 'lit';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './a-search-result.js';
 import checkmarkIcon from '../assets/icon_checkmark.js';

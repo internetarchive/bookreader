@@ -1,6 +1,6 @@
-import { css, html, LitElement } from "lit-element";
-import { repeat } from "lit-html/directives/repeat.js";
-import { nothing } from "lit-html";
+import { css, html, LitElement } from "lit";
+import { repeat } from "lit/directives/repeat.js";
+import { nothing } from "lit";
 import checkmarkIcon from '../assets/icon_checkmark.js';
 import "@internetarchive/icon-magnify-minus/icon-magnify-minus";
 import "@internetarchive/icon-magnify-plus/icon-magnify-plus";
