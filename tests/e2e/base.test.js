@@ -21,10 +21,13 @@ ocaids.forEach(ocaid => {
   fixture `Base Tests for: ${ocaid}`.page `${url}`;
   runBaseTests(new BookReader());
 
-  fixture `Desktop Search Tests for: ${ocaid}`
-    .page `${url}`;
-  runDesktopSearchTests(new BookReader());
 
+  // Todo: Re-enable when testing side panel
+  // fixture `Desktop Search Tests for: ${ocaid}`
+  //   .page `${url}`;
+  // runDesktopSearchTests(new BookReader());
+
+  // Todo: deprecated, will remove once mmenu is removed.
   // fixture `Mobile Search Tests for: ${ocaid}`
   //   .page `${url}`
   // runMobileSearchTests(new BookReader());
