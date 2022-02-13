@@ -1,6 +1,6 @@
 import { runBaseTests } from './helpers/base';
 import BookReader from './models/BookReader';
-import { runDesktopSearchTests } from './helpers/desktopSearch';
+// import { runDesktopSearchTests } from './helpers/desktopSearch';
 // import { runMobileSearchTests } from './helpers/mobileSearch';
 import params from './helpers/params';
 
