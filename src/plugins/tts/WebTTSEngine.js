@@ -258,7 +258,7 @@ export class WebTTSSound {
     }
   }
 
-  resume() {
+  async resume() {
     if (!this.started) {
       this.play();
       return;
@@ -278,16 +278,15 @@ export class WebTTSSound {
     speechSynthesis.resume();
 
     if (resumeMightNotFire) {
-      Promise.race([resumePromise, sleep(100).then(() => 'timeout')])
-        .then(result => {
-          if (result != 'timeout') return;
+      const result = await Promise.race([resumePromise, sleep(100).then(() => 'timeout')]);
 
-          this.utterance.dispatchEvent(new CustomEvent('resume', {}));
-          if (resumeMightNotWork) {
-            const reloadPromise = this.reload();
-            reloadPromise.then(() => this.play());
-          }
-        });
+      if (result != 'timeout') return;
+
+      this.utterance.dispatchEvent(new CustomEvent('resume', {}));
+      if (resumeMightNotWork) {
+        const reloadPromise = this.reload();
+        reloadPromise.then(() => this.play());
+      }
     }
   }
 
@@ -308,45 +307,41 @@ export class WebTTSSound {
    * We avoid this (as described here: https://bugs.chromium.org/p/chromium/issues/detail?id=679437#c15 )
    * by pausing after 14 seconds and ~instantly resuming.
    */
-  _chromePausingBugFix() {
+  async _chromePausingBugFix() {
     const timeoutPromise = sleep(14000).then(() => 'timeout');
     const pausePromise = promisifyEvent(this.utterance, 'pause').then(() => 'paused');
     const endPromise = promisifyEvent(this.utterance, 'end').then(() => 'ended');
-    return Promise.race([timeoutPromise, pausePromise, endPromise])
-      .then(result => {
-        if (location.toString().indexOf('_debugReadAloud=true') != -1) {
-          console.log(`CHROME-PAUSE-HACK: ${result}`);
-        }
-        switch (result) {
-        case 'ended':
-          // audio was stopped/finished; nothing to do
-          break;
-        case 'paused':
-          // audio was paused; wait for resume
-          // Chrome won't let you resume the audio if 14s have passed 🤷‍
-          // We could do the same as before (but resume+pause instead of pause+resume),
-          // but that means we'd _constantly_ be running in the background. So in that
-          // case, let's just restart the chunk
-          Promise.race([
-            promisifyEvent(this.utterance, 'resume'),
-            sleep(14000).then(() => 'timeout'),
-          ])
-            .then(result => {
-              result == 'timeout' ? this.reload() : this._chromePausingBugFix();
-            });
-          break;
-        case 'timeout':
-          // We hit Chrome's secret cut off time. Pause/resume
-          // to be able to keep TTS-ing
-          speechSynthesis.pause();
-          sleep(25)
-            .then(() => {
-              speechSynthesis.resume();
-              this._chromePausingBugFix();
-            });
-          break;
-        }
-      });
+    const result = await Promise.race([timeoutPromise, pausePromise, endPromise]);
+    if (location.toString().indexOf('_debugReadAloud=true') != -1) {
+      console.log(`CHROME-PAUSE-HACK: ${result}`);
+    }
+    switch (result) {
+    case 'ended':
+      // audio was stopped/finished; nothing to do
+      break;
+    case 'paused':
+      // audio was paused; wait for resume
+      // Chrome won't let you resume the audio if 14s have passed 🤷‍
+      // We could do the same as before (but resume+pause instead of pause+resume),
+      // but that means we'd _constantly_ be running in the background. So in that
+      // case, let's just restart the chunk
+      Promise.race([
+        promisifyEvent(this.utterance, 'resume'),
+        sleep(14000).then(() => 'timeout'),
+      ])
+        .then(result => {
+          result == 'timeout' ? this.reload() : this._chromePausingBugFix();
+        });
+      break;
+    case 'timeout':
+      // We hit Chrome's secret cut off time. Pause/resume
+      // to be able to keep TTS-ing
+      speechSynthesis.pause();
+      await sleep(25);
+      speechSynthesis.resume();
+      this._chromePausingBugFix();
+      break;
+    }
   }
 }
 
