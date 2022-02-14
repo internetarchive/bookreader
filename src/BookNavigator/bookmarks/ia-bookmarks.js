@@ -229,17 +229,14 @@ class IABookmarks extends LitElement {
     return bookmark;
   }
 
-  fetchBookmarks() {
-    return this.api.getAll().then(res => res.text()).then((res) => {
-      let response;
-      try {
-        response = JSON.parse(res);
-      } catch (e) {
-        response = { error: e.message };
-      }
-      return response;
-    }).then((response) => {
-      const {
+  async fetchBookmarks() {
+    let response = await this.api.getAll().then(res => res.text());
+    try {
+      response = JSON.parse(res);
+    } catch (e) {
+      response = { error: e.message };
+    }
+    const {
         success,
         error = 'Something happened while fetching bookmarks.',
         value: bkmrks = [],
@@ -258,8 +255,39 @@ class IABookmarks extends LitElement {
 
       this.bookmarks = bookmarks;
       return bookmarks;
-    });
-  }
+  };
+
+  // async fetchBookmarks() {
+  //   return this.api.getAll().then(res => res.text()).then((res) => {
+  //     let response;
+  //     try {
+  //       response = JSON.parse(res);
+  //     } catch (e) {
+  //       response = { error: e.message };
+  //     }
+  //     return response;
+  //   }).then((response) => {
+  //     const {
+  //       success,
+  //       error = 'Something happened while fetching bookmarks.',
+  //       value: bkmrks = [],
+  //     } = response;
+  //     if (!success) {
+  //       console?.warn('Error fetching bookmarks', error);
+  //     }
+
+  //     const bookmarks = {};
+  //     Object.keys(bkmrks).forEach((leafNum) => {
+  //       const bookmark = bkmrks[leafNum];
+  //       const formattedLeafNum = parseInt(leafNum, 10);
+  //       const formattedBookmark = this.formatBookmark({ ...bookmark, leafNum: formattedLeafNum });
+  //       bookmarks[leafNum] = formattedBookmark;
+  //     });
+
+  //     this.bookmarks = bookmarks;
+  //     return bookmarks;
+  //   });
+  // }
 
   emitBookmarksChanged() {
     this.dispatchEvent(new CustomEvent('bookmarksChanged', {
