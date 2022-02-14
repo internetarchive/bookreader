@@ -229,21 +229,23 @@ class IABookmarks extends LitElement {
     return bookmark;
   }
 
-  fetchBookmarks() {
-    return this.api.getAll().then(res => res.text()).then((res) => {
-      let response;
+  async fetchBookmarks() {
+    try {
+      const res = await this.api.getAll();
+      const resText = await res.text();
+      let parsedResponse;
       try {
-        response = JSON.parse(res);
+        parsedResponse = await JSON.parse(resText);
       } catch (e) {
-        response = { error: e.message };
+        parsedResponse = {error : e.message};
       }
-      return response;
-    }).then((response) => {
+
       const {
         success,
         error = 'Something happened while fetching bookmarks.',
         value: bkmrks = [],
-      } = response;
+      } = await parsedResponse;
+
       if (!success) {
         console?.warn('Error fetching bookmarks', error);
       }
@@ -258,7 +260,9 @@ class IABookmarks extends LitElement {
 
       this.bookmarks = bookmarks;
       return bookmarks;
-    });
+    } catch (e) {
+      return e;
+    }
   }
 
   emitBookmarksChanged() {
