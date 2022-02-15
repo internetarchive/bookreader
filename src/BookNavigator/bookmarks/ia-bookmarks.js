@@ -230,39 +230,34 @@ class IABookmarks extends LitElement {
   }
 
   async fetchBookmarks() {
+    const resText = await this.api.getAll().then(r=> r.text());
+    let parsedResponse;
     try {
-      const res = await this.api.getAll();
-      const resText = await res.text();
-      let parsedResponse;
-      try {
-        parsedResponse = await JSON.parse(resText);
-      } catch (e) {
-        parsedResponse = {error : e.message};
-      }
-
-      const {
-        success,
-        error = 'Something happened while fetching bookmarks.',
-        value: bkmrks = [],
-      } = await parsedResponse;
-
-      if (!success) {
-        console?.warn('Error fetching bookmarks', error);
-      }
-
-      const bookmarks = {};
-      Object.keys(bkmrks).forEach((leafNum) => {
-        const bookmark = bkmrks[leafNum];
-        const formattedLeafNum = parseInt(leafNum, 10);
-        const formattedBookmark = this.formatBookmark({ ...bookmark, leafNum: formattedLeafNum });
-        bookmarks[leafNum] = formattedBookmark;
-      });
-
-      this.bookmarks = bookmarks;
-      return bookmarks;
+      parsedResponse = JSON.parse(resText);
     } catch (e) {
-      return e;
+      parsedResponse = {error : e.message};
     }
+
+    const {
+      success,
+      error = 'Something happened while fetching bookmarks.',
+      value: bkmrks = [],
+    } = parsedResponse;
+
+    if (!success) {
+      console?.warn('Error fetching bookmarks', error);
+    }
+
+    const bookmarks = {};
+    Object.keys(bkmrks).forEach((leafNum) => {
+      const bookmark = bkmrks[leafNum];
+      const formattedLeafNum = parseInt(leafNum, 10);
+      const formattedBookmark = this.formatBookmark({ ...bookmark, leafNum: formattedLeafNum });
+      bookmarks[leafNum] = formattedBookmark;
+    });
+
+    this.bookmarks = bookmarks;
+    return bookmarks;
   }
 
   emitBookmarksChanged() {
