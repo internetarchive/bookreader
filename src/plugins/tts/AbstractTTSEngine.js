@@ -163,14 +163,15 @@ export default class AbstractTTSEngine {
 
     this.opts.onLoadingComplete();
 
-    const soundFn = await this.opts.beforeChunkPlay(chunk).then(() => sound);
+    await this.opts.beforeChunkPlay(chunk);
 
     if (!this.playing) return;
 
-    await this.playSound(soundFn);
-    this.opts.afterChunkPlay(soundFn.chunk);
+    const playPromise = await this.playSound(sound)
+      .then(()=> this.opts.afterChunkPlay(sound.chunk));
 
     if (this.paused) this.pause();
+    await playPromise;
 
     if (this.playing) return this.step();
   }
