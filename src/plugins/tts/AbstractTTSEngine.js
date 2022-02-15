@@ -125,13 +125,13 @@ export default class AbstractTTSEngine {
   }
 
   /** @public */
-  jumpBackward() {
-    Promise.all([
+  async jumpBackward() {
+    await Promise.all([
       this.activeSound.stop(),
       this._chunkIterator.decrement()
         .then(() => this._chunkIterator.decrement())
-    ])
-      .then(() => this.step());
+    ]);
+    this.step();
   }
 
   /** @param {number} newRate */
@@ -147,36 +147,33 @@ export default class AbstractTTSEngine {
   }
 
   /** @private */
-  step() {
-    this._chunkIterator.next()
-      .then(chunk => {
-        if (chunk == PageChunkIterator.AT_END) {
-          this.stop();
-          this.opts.onDone();
-          return;
-        }
+  async step() {
+    const chunk = await  this._chunkIterator.next();
+    if (chunk == PageChunkIterator.AT_END) {
+      this.stop();
+      this.opts.onDone();
+      return;
+    }
+    this.opts.onLoadingStart();
+    const sound = this.createSound(chunk);
+    sound.chunk = chunk;
+    sound.rate = this.playbackRate;
+    sound.voice = this.voice;
+    sound.load(() => this.opts.onLoadingComplete());
 
-        this.opts.onLoadingStart();
-        const sound = this.createSound(chunk);
-        sound.chunk = chunk;
-        sound.rate = this.playbackRate;
-        sound.voice = this.voice;
-        sound.load(() => this.opts.onLoadingComplete());
+    this.opts.onLoadingComplete();
 
-        this.opts.onLoadingComplete();
-        return this.opts.beforeChunkPlay(chunk).then(() => sound);
-      })
-      .then(sound => {
-        if (!this.playing) return;
+    await this.opts.beforeChunkPlay(chunk);
 
-        const playPromise = this.playSound(sound)
-          .then(() => this.opts.afterChunkPlay(sound.chunk));
-        if (this.paused) this.pause();
-        return playPromise;
-      })
-      .then(() => {
-        if (this.playing) return this.step();
-      });
+    if (!this.playing) return;
+
+    const playPromise = await this.playSound(sound)
+      .then(()=> this.opts.afterChunkPlay(sound.chunk));
+
+    if (this.paused) this.pause();
+    await playPromise;
+
+    if (this.playing) return this.step();
   }
 
   /**

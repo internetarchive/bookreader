@@ -53,22 +53,18 @@ export default class PageChunkIterator {
    * in the correct order.
    * @return {PromiseLike<"__PageChunkIterator.AT_END__" | PageChunk>}
    */
-  _nextUncontrolled() {
+  async  _nextUncontrolled() {
     if (this._cursor.page == this.pageCount) {
       return Promise.resolve(PageChunkIterator.AT_END);
     }
-
     this._recenterBuffer(this._cursor.page);
-
-    return this._fetchPageChunks(this._cursor.page)
-      .then(chunks => {
-        if (this._cursor.chunk == chunks.length) {
-          this._cursor.page++;
-          this._cursor.chunk = 0;
-          return this._nextUncontrolled();
-        }
-        return chunks[this._cursor.chunk++];
-      });
+    const chunks = await this._fetchPageChunks(this._cursor.page);
+    if (this._cursor.chunk == chunks.length) {
+      this._cursor.page++;
+      this._cursor.chunk = 0;
+      return this._nextUncontrolled();
+    }
+    return chunks[this._cursor.chunk++];
   }
 
   /**
