@@ -149,10 +149,12 @@ class SearchView {
   }
 
   updateResultsPosition() {
+    if (!this.dom.searchNavigation) return;
     this.dom.searchNavigation.find('[data-id=resultsCount]').text(this.resultsPosition());
   }
 
   updateSearchNavigationButtons() {
+    if (!this.dom.searchNavigation) return;
     this.dom.searchNavigation.find('.prev').attr('disabled', !this.currentMatchIndex);
     this.dom.searchNavigation.find('.next').attr('disabled', this.currentMatchIndex + 1 === this.matches.length);
   }
