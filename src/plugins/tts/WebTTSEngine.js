@@ -284,8 +284,8 @@ export class WebTTSSound {
 
       this.utterance.dispatchEvent(new CustomEvent('resume', {}));
       if (resumeMightNotWork) {
-        const reloadPromise = this.reload();
-        reloadPromise.then(() => this.play());
+        await this.reload();
+        this.play();
       }
     }
   }
