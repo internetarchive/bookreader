@@ -58,17 +58,13 @@ export default class PageChunkIterator {
       return Promise.resolve(PageChunkIterator.AT_END);
     }
     this._recenterBuffer(this._cursor.page);
-    try {
-      const chunks = await this._fetchPageChunks(this._cursor.page);
-      if (this._cursor.chunk == chunks.length) {
-        this._cursor.page++;
-        this._cursor.chunk = 0;
-        return this._nextUncontrolled();
-      }
-      return chunks[this._cursor.chunk++];
-    } catch (e) {
-      return e;
+    const chunks = await this._fetchPageChunks(this._cursor.page);
+    if (this._cursor.chunk == chunks.length) {
+      this._cursor.page++;
+      this._cursor.chunk = 0;
+      return this._nextUncontrolled();
     }
+    return chunks[this._cursor.chunk++];
   }
 
   /**
