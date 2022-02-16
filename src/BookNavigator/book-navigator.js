@@ -185,13 +185,19 @@ export class BookNavigator extends LitElement {
             /* refresh br instance reference */
             this.bookreader = brInstance;
           }
+
+          this.updateMenuContents();
+
+          if (searchUpdates.openMenu === false) {
+            return;
+          }
+
           if (this.isWideEnoughToOpenMenu && !searchUpdates?.searchCanceled) {
             /* open side search menu */
             setTimeout(() => {
               this.updateSideMenu('search', 'open');
             }, 0);
           }
-          this.updateMenuContents();
         },
       });
     }

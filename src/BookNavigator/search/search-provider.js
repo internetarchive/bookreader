@@ -144,8 +144,8 @@ export default class SearchProvider {
       queryInProgress: false,
       errorMessage: '',
     };
-    this.updateMenu();
-    this.bookreader?.searchView?.clearSearchFieldAndResults();
+    this.updateMenu({ openMenu: false });
+    this.bookreader?.searchView?.clearSearchFieldAndResults(false);
   }
 
   /**
