@@ -86,7 +86,7 @@
   "jest": {
     "testEnvironment": "jsdom",
     "transformIgnorePatterns": [
-      "node_modules/(?!(lit-html|lit-element|lit)/)"
+      "node_modules/(?!(lit-html|lit-element|lit|@lit|@internetarchive)/)"
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/$1"
