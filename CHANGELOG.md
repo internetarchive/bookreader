@@ -1,3 +1,10 @@
+# 5.0.0-36
+Fix: Readaloud scrolls along with dext @cdrini
+Dev: ES6 var to let/const updates @sancodes
+Dev: ES6 async/await updates @sancodes
+Dev: Re-enable testcafe tests in GH action @iisa
+Fix: Search results bar clears and closes properly @iisa
+
 # 5.0.0-35
 Fix: global syle leak specify colorbox styles @iisa
 Fix: br menu reinits with shared ro load @iisa
