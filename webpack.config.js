@@ -16,7 +16,7 @@ const shared = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules[/\\](?!(lit-element|lit-html)[/\\]).*/,
+        exclude: /node_modules[/\\](?!(lit|lit-element|lit-html)[/\\]).*/,
         loader: "babel-loader",
       }
     ]
@@ -36,6 +36,7 @@ module.exports = [
     // Output file -> srcfile
     entry: {
       // Polyfill bundles
+      'lit-polyfill-support.js': { import: 'lit/polyfill-support.js' },
       'webcomponents-bundle.js': { import: '@webcomponents/webcomponentsjs/webcomponents-bundle.js' },
 
       // BookReader
