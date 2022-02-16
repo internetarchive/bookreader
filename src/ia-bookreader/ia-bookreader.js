@@ -40,6 +40,7 @@ export class IaBookReader extends LitElement {
     this.loaded = false;
     this.menuShortcuts = [];
     this.menuContents = [];
+    this.openMenuName = '';
   }
 
   updated() {
@@ -98,10 +99,11 @@ export class IaBookReader extends LitElement {
       return;
     }
 
+    this.openMenuName = menuId;
+
     if (action === 'open') {
       this.itemNav?.openShortcut(menuId);
     } else if (action === 'toggle') {
-      this.itemNav?.openMenu(menuId);
       this.itemNav?.toggleMenu();
     }
   }
@@ -119,6 +121,7 @@ export class IaBookReader extends LitElement {
           ?signedIn=${this.signedIn}
           .menuShortcuts=${this.menuShortcuts}
           .menuContents=${this.menuContents}
+          .openMenu=${this.openMenuName}
         >
           <div slot="header">
             <slot name="header"></slot>

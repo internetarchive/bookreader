@@ -145,7 +145,7 @@ export default class SearchProvider {
       errorMessage: '',
     };
     this.updateMenu();
-    this.bookreader?.searchView?.clearSearchFieldAndResults();
+    this.bookreader?.searchView?.clearSearchFieldAndResults(false);
   }
 
   /**
