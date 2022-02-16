@@ -46,7 +46,8 @@ export class Mode1Up {
       if (!this.everShown) {
         this.mode1UpLit.initFirstRender(startLeaf);
         this.everShown = true;
-        await this.mode1UpLit.requestUpdate();
+        this.mode1UpLit.requestUpdate();
+        await this.mode1UpLit.updateComplete;
         new DragScrollable(this.mode1UpLit, {
           preventDefault: true,
           dragSelector: '.br-mode-1up__visible-world',

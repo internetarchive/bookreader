@@ -35,7 +35,8 @@ describe('pageTops', () => {
     const book = new BookModel(br);
     const mode = new Mode1UpLit(book, br);
     document.body.appendChild(mode);
-    await mode.requestUpdate();
+    mode.requestUpdate();
+    await mode.updateComplete;
     expect(mode.pageTops).toEqual({});
   });
 

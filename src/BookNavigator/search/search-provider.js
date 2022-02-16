@@ -1,5 +1,4 @@
-import { html } from 'lit';
-import { nothing } from 'lit';
+import { html, nothing } from 'lit';
 import '@internetarchive/icon-search/icon-search';
 import './search-results';
 

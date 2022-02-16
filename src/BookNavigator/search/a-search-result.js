@@ -1,5 +1,4 @@
-import { nothing } from 'lit';
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
 export class BookSearchResult extends LitElement {
