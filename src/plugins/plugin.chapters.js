@@ -174,7 +174,7 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
  * This makes a call to OL API and calls the given callback function with the
  * response from the API.
  */
-BookReader.prototype.getOpenLibraryRecord = function () {
+BookReader.prototype.getOpenLibraryRecord = async function () {
   // Try looking up by ocaid first, then by source_record
   const baseURL = `${this.olHost}/query.json?type=/type/edition&*=`;
   const fetchUrlByBookId = `${baseURL}&ocaid=${this.bookId}`;
@@ -190,20 +190,16 @@ BookReader.prototype.getOpenLibraryRecord = function () {
     }
   };
 
-  $.ajax({ url: fetchUrlByBookId, dataType: 'jsonp' })
-    .then(data => {
-      if (data && data.length > 0) {
-        return data;
-      } else {
-      // try sourceid
-        return $.ajax({ url: `${baseURL}&source_records=ia:${this.bookId}`, dataType: 'jsonp' });
-      }
-    })
-    .then(data => {
-      if (data && data.length > 0) {
-        setUpChapterMarkers(data[0]);
-      }
-    });
+  let data = await $.ajax({ url: fetchUrlByBookId, dataType: 'jsonp' });
+
+  if (!data && data.length < 0) {
+    // try sourceid
+    data = $.ajax({ url: `${baseURL}&source_records=ia:${this.bookId}`, dataType: 'jsonp' });
+  }
+
+  if (data && data.length > 0) {
+    setUpChapterMarkers(data[0]);
+  }
 };
 
 // Extend buildMobileDrawerElement with table of contents list
