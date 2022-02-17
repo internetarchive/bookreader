@@ -132,7 +132,7 @@ BookReader.prototype._createPageContainer = (function (super_) {
  * @param {string} term
  * @param {SearchOptions} overrides
  */
-BookReader.prototype.search = function(term = '', overrides = {}) {
+BookReader.prototype.search = async function(term = '', overrides = {}) {
   /** @type {SearchOptions} */
   const defaultOptions = {
     goToFirstResult: false, /* jump to the first result (default=false) */
@@ -210,13 +210,14 @@ BookReader.prototype.search = function(term = '', overrides = {}) {
   };
 
   this.trigger('SearchStarted', { term: this.searchTerm, instance: this });
-  return $.ajax({
+  await $.ajax({
     url: url,
     dataType: 'jsonp',
     cache: true,
     beforeSend,
     jsonpCallback: 'BRSearchInProgress'
-  }).then(processSearchResults);
+  });
+  await processSearchResults;
 };
 
 /**
