@@ -21,13 +21,13 @@ export default class PageChunk {
    * @param {number} leafIndex
    * @return {Promise<PageChunk[]>}
    */
-  static fetch(server, bookPath, leafIndex) {
+  static async fetch(server, bookPath, leafIndex) {
     // jquery's ajax "PromiseLike" implementation is inconsistent with
     // modern Promises, so convert it to a full promise (it doesn't forward
     // a returned promise to the next handler in the chain, which kind of
     // defeats the entire point of using promises to avoid "callback hell")
-    return new Promise((res, rej) => {
-      $.ajax({
+    try {
+      const chunks = await $.ajax({
         type: 'GET',
         url: `https://${server}/BookReader/BookReaderGetTextWrapper.php`,
         dataType:'jsonp',
@@ -35,13 +35,13 @@ export default class PageChunk {
         data: {
           path: `${bookPath}_djvu.xml`,
           page: leafIndex
-        },
-        error: rej,
-      })
-        .then(chunks => {
-          res(PageChunk._fromTextWrapperResponse(leafIndex, chunks));
-        });
-    });
+        }
+      });
+      return PageChunk._fromTextWrapperResponse(leafIndex, chunks);
+    }
+    catch (e) {
+      return {error: e};
+    }
   }
 
   /**
