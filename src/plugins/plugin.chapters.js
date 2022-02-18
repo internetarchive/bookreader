@@ -192,9 +192,9 @@ BookReader.prototype.getOpenLibraryRecord = async function () {
 
   let data = await $.ajax({ url: fetchUrlByBookId, dataType: 'jsonp' });
 
-  if (!data && data.length < 0) {
+  if (!data || !data.length) {
     // try sourceid
-    data = $.ajax({ url: `${baseURL}&source_records=ia:${this.bookId}`, dataType: 'jsonp' });
+    data = await $.ajax({ url: `${baseURL}&source_records=ia:${this.bookId}`, dataType: 'jsonp' });
   }
 
   if (data && data.length > 0) {
