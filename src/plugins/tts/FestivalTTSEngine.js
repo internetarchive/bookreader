@@ -91,10 +91,9 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
    * See https://stackoverflow.com/questions/12206631/html5-audio-cant-play-through-javascript-unless-triggered-manually-once
    * @return {PromiseLike}
    */
-  iOSCaptureUserIntentHack() {
+  async iOSCaptureUserIntentHack() {
     const sound = soundManager.createSound({ url: SILENCE_1MS[this.audioFormat] });
-    return new Promise(res => sound.play({onfinish: res}))
-      .then(() => sound.destruct());
+    await sound.play({onfinish: await sound.destruct()});
   }
 }
 
@@ -122,21 +121,18 @@ class FestivalTTSSound {
         if (this.rate != 1) this.sound.setPlaybackRate(this.rate);
         onload();
       },
-      onresume: () => {
-        sleep(25).then(() => {
-          if (this.rate != 1) this.sound.setPlaybackRate(this.rate);
-        });
+      onresume: async () => {
+        await sleep(25);
+        if (this.rate != 1) this.sound.setPlaybackRate(this.rate);
       }
     });
     return this.sound.load();
   }
 
-  play() {
-    return new Promise(res => {
-      this._finishResolver = res;
-      this.sound.play({ onfinish: res });
-    })
-      .then(() => this.sound.destruct());
+  async play() {
+    const destruct = await this.sound.destruct();
+    this._finishResolver = destruct;
+    this.sound.play({ onfinish: destruct});
   }
 
   /** @override */
