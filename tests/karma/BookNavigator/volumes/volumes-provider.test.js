@@ -77,15 +77,15 @@ describe('Volumes Provider', () => {
 
     provider.sortVolumes("title_asc");
     expect(provider.sortOrderBy).to.equal("title_asc");
-    expect(provider.sortButton.getHTML()).includes("sort-by asc-icon");
+    expect(fixtureSync(provider.sortButton).outerHTML).includes("sort-by asc-icon");
 
     provider.sortVolumes("title_desc");
     expect(provider.sortOrderBy).to.equal("title_desc");
-    expect(provider.sortButton.getHTML()).includes("sort-by desc-icon");
+    expect(fixtureSync(provider.sortButton).outerHTML).includes("sort-by desc-icon");
 
     provider.sortVolumes("default");
     expect(provider.sortOrderBy).to.equal("default");
-    expect(provider.sortButton.getHTML()).includes("sort-by neutral-icon");
+    expect(fixtureSync(provider.sortButton).outerHTML).includes("sort-by neutral-icon");
   });
 
   it('sort volumes in initial order', async () => {
