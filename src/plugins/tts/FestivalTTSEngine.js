@@ -93,7 +93,8 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
    */
   async iOSCaptureUserIntentHack() {
     const sound = soundManager.createSound({ url: SILENCE_1MS[this.audioFormat] });
-    await sound.play({onfinish: await sound.destruct()});
+    await new Promise(res => sound.play({onfinish: res}));
+    sound.destruct();
   }
 }
 
@@ -130,9 +131,11 @@ class FestivalTTSSound {
   }
 
   async play() {
-    const destruct = await this.sound.destruct();
-    this._finishResolver = destruct;
-    this.sound.play({ onfinish: destruct});
+    await new Promise(res => {
+      this._finishResolver = res;
+      this.sound.play({ onfinish: res });
+    });
+    this.sound.destruct();
   }
 
   /** @override */
