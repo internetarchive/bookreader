@@ -210,14 +210,13 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
   };
 
   this.trigger('SearchStarted', { term: this.searchTerm, instance: this });
-  await $.ajax({
+  return processSearchResults(await $.ajax({
     url: url,
     dataType: 'jsonp',
     cache: true,
     beforeSend,
     jsonpCallback: 'BRSearchInProgress'
-  });
-  await processSearchResults;
+  }));
 };
 
 /**
