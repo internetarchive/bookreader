@@ -1,4 +1,4 @@
-import { html } from 'lit-element';
+import { html } from 'lit';
 import '@internetarchive/icon-visual-adjustment/icon-visual-adjustment';
 import './visual-adjustments';
 

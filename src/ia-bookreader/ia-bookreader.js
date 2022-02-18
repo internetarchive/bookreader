@@ -2,7 +2,7 @@
  * BookReaderTemplate to load BookNavigator components
  */
 
-import { LitElement, html, css } from 'lit-element';
+import { LitElement, html, css } from 'lit';
 
 import '@internetarchive/ia-item-navigator';
 import '../BookNavigator/book-navigator.js';

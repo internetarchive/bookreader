@@ -1,5 +1,4 @@
-import { render } from 'lit-html';
-import { LitElement, html, css } from 'lit-element';
+import { LitElement, html, css, render } from 'lit';
 // eslint-disable-next-line no-unused-vars
 import { ModalConfig, ModalManager } from '@internetarchive/modal-manager';
 import buttonStyles from '../assets/button-base.js';

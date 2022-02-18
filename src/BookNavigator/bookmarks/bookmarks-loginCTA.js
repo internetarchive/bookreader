@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit-element';
+import { LitElement, html } from 'lit';
 import buttonStyles from '../assets/button-base.js';
 
 class BookmarksLogin extends LitElement {

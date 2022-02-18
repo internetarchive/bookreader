@@ -1,4 +1,4 @@
-import { html } from 'lit-element';
+import { html } from 'lit';
 
 import sortDescIcon from '../assets/icon_sort_desc.js';
 import sortAscIcon from '../assets/icon_sort_asc.js';

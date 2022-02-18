@@ -1,6 +1,5 @@
-import { nothing } from 'lit-html';
-import { repeat } from 'lit-html/directives/repeat.js';
-import { css, html, LitElement } from 'lit-element';
+import { repeat } from 'lit/directives/repeat.js';
+import { css, html, LitElement, nothing } from 'lit';
 import './bookmark-edit.js';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 import bookmarkColorsCSS from '../assets/bookmark-colors.js';

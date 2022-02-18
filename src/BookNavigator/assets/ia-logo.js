@@ -1,4 +1,4 @@
-import { svg } from 'lit-element';
+import { svg } from 'lit';
 
 export default svg`
   <svg class="ia-logo" width="27" height="30" viewBox="0 0 27 30" xmlns="http://www.w3.org/2000/svg" aria-labelledby="logoTitleID logoDescID">

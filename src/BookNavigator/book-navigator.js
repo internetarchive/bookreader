@@ -2,8 +2,7 @@
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 // eslint-disable-next-line no-unused-vars
 import { ModalManager } from '@internetarchive/modal-manager';
-import { css, html, LitElement } from 'lit-element';
-import { nothing } from 'lit-html';
+import { css, html, LitElement, nothing } from 'lit';
 import SearchProvider from './search/search-provider.js';
 import DownloadProvider from './downloads/downloads-provider.js';
 import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';

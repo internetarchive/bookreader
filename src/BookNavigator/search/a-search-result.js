@@ -1,6 +1,5 @@
-import { nothing } from 'lit-html';
-import { html, LitElement } from 'lit-element';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html';
+import { html, LitElement, nothing } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
 export class BookSearchResult extends LitElement {
   static get properties() {

@@ -1192,7 +1192,8 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   if (this.activeMode instanceof Mode1Up) {
     this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(currentIndex));
     // Need the new scale to be applied before calling jumpToIndex
-    await this.activeMode.mode1UpLit.requestUpdate();
+    this.activeMode.mode1UpLit.requestUpdate();
+    await this.activeMode.mode1UpLit.updateComplete;
   }
   this.jumpToIndex(currentIndex);
   this.animating = false;
@@ -1241,7 +1242,8 @@ BookReader.prototype.exitFullScreen = async function () {
 
   if (this.activeMode instanceof Mode1Up) {
     this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(this.currentIndex()));
-    await this.activeMode.mode1UpLit.requestUpdate();
+    this.activeMode.mode1UpLit.requestUpdate();
+    await this.activeMode.mode1UpLit.updateComplete;
   }
 
   this.animating = false;

@@ -49,6 +49,6 @@ describe('<ia-book-downloads>', () => {
     expect(el.shadowRoot.querySelector("ul").childElementCount).to.equal(2);
     expect(el.isBookProtected).to.equal(false);
 
-    expect(el.shadowRoot.querySelector("ul li a").innerHTML).to.include("Get PDF");
+    expect(el.shadowRoot.querySelector("ul li a").textContent).to.include("Get PDF");
   });
 });
