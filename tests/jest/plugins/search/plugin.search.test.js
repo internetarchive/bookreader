@@ -125,9 +125,8 @@ describe('Plugin: Search', () => {
 
   test('SearchCallback event fires when AJAX search returns results', async () => {
     br.init();
-    const dfd = br.search('foo');
-    await expect(triggeredEvents()).toContain(`${namespace}SearchCallback`);
-    return dfd;
+    await br.search('foo');
+    expect(triggeredEvents()).toContain(`${namespace}SearchCallback`);
   });
 
   test('SearchCallbackError event fires when AJAX search returns error', async () => {
@@ -137,9 +136,8 @@ describe('Plugin: Search', () => {
       });
     });
     br.init();
-    const dfd = br.search('foo');
-    await expect(triggeredEvents()).toContain(`${namespace}SearchCallbackError`);
-    return dfd;
+    await br.search('foo');
+    expect(triggeredEvents()).toContain(`${namespace}SearchCallbackError`);
   });
 
   test('SearchCallbackNotIndexed event fires when AJAX search returns false indexed value', async () => {
@@ -150,9 +148,8 @@ describe('Plugin: Search', () => {
       });
     });
     br.init();
-    const dfd = br.search('foo');
-    await expect(triggeredEvents()).toContain(`${namespace}SearchCallbackBookNotIndexed`);
-    return dfd;
+    await br.search('foo');
+    expect(triggeredEvents()).toContain(`${namespace}SearchCallbackBookNotIndexed`);
   });
 
   test('SearchCallbackEmpty event fires when AJAX search returns no matches', async () => {
@@ -162,8 +159,7 @@ describe('Plugin: Search', () => {
       });
     });
     br.init();
-    const dfd = br.search('foo');
-    await expect(triggeredEvents()).toContain(`${namespace}SearchCallbackEmpty`);
-    return dfd;
+    await br.search('foo');
+    expect(triggeredEvents()).toContain(`${namespace}SearchCallbackEmpty`);
   });
 });
