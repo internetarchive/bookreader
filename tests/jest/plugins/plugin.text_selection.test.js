@@ -19,30 +19,32 @@ const FAKE_XML_5COORDS = `<OBJECT data="file://localhost//tmp/derive/goodytwosho
 const FAKE_XML_EMPTY = '';
 
 describe("Generic tests", () => {
-  let br;
-  beforeEach(() => {
-    document.body.innerHTML = '<div id="BookReader">';
-    br = new BookreaderWithTextSelection({
-      data: [
-        [
-          { width: 800, height: 1200,
-            uri: '//archive.org/download/BookReader/img/page001.jpg' },
-        ],
-        [
-          { width: 800, height: 1200,
-            uri: '//archive.org/download/BookReader/img/page002.jpg' },
-          { width: 800, height: 1200,
-            uri: '//archive.org/download/BookReader/img/page003.jpg' },
-        ],
-        [
-          { width: 800, height: 1200,
-            uri: '//archive.org/download/BookReader/img/page004.jpg' },
-          { width: 800, height: 1200,
-            uri: '//archive.org/download/BookReader/img/page005.jpg' },
-        ]
+  document.body.innerHTML = '<div id="BookReader">';
+  const br = new BookreaderWithTextSelection({
+    data: [
+      [
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page001.jpg' },
       ],
-    });
-    br.init();
+      [
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page002.jpg' },
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page003.jpg' },
+      ],
+      [
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page004.jpg' },
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page005.jpg' },
+      ]
+    ],
+  });
+  br.init();
+
+  afterEach(() => {
+    sinon.restore();
+    $('.textSelectionSVG').remove();
   });
 
   test("_createPageContainer overridden function still creates a BRpagecontainer element", () => {
