@@ -17,16 +17,16 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
-        node-version: 14.x
+        node-version: 16.x
     - uses: actions/cache@v2
       with:
         # Caching node_modules isn't recommended because it can break across
         # Node versions and won't work with npm ci (See https://github.com/actions/cache/blob/main/examples.md#node---npm )
-        # But we pin the node version, and we don't update it that often anyways. And 
+        # But we pin the node version, and we don't update it that often anyways. And
         # we don't use `npm ci` specifically to try to get faster CI flows. So caching
         # `node_modules` directly.
         path: 'node_modules'
-        key: ${{ runner.os }}-node-${{ hashFiles('package*.json') }}
+        key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - run: npm install
     - run: npm run build
     - run: npm run lint
