@@ -49,7 +49,7 @@ describe('<ia-bookmarks-list>', () => {
   it('renders bookmarks that contain page numbers', async () => {
     const el = await fixture(container(bookmarks));
 
-    expect(el.shadowRoot.innerHTML).to.include(`Page ${bookmarks[0].page}`);
+    expect(el.shadowRoot.textContent).to.include(`Page ${bookmarks[0].page}`);
   });
 
   it('renders bookmarks that contain an optional note', async () => {
@@ -161,7 +161,7 @@ describe('<ia-bookmarks-list>', () => {
     const el = await fixture(container([bookmarks[0]]));
     const bookmarksCount = await fixture(el.bookmarksCount);
 
-    expect(bookmarksCount.innerHTML).to.include('(1)');
+    expect(bookmarksCount.textContent).to.include('(1)');
   });
 
   it('does not render the bookmarks count when no bookmarks present', async () => {
