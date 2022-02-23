@@ -96,21 +96,20 @@ export class TextSelectionPlugin {
       if (cachedEntry) {
         return cachedEntry.response;
       }
-      return $.ajax({
+      const res = await $.ajax({
         type: "GET",
         url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
         dataType: "html",
         error: (e) => undefined,
-      }).then((res) => {
-        try {
-          const xmlDoc = $.parseXML(res);
-          const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
-          this.pageTextCache.add({ index, response: result });
-          return result;
-        } catch (e) {
-          return undefined;
-        }
       });
+      try {
+        const xmlDoc = $.parseXML(res);
+        const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
+        this.pageTextCache.add({ index, response: result });
+        return result;
+      } catch (e) {
+        return undefined;
+      }
     } else {
       const XMLpagesArr = await this.djvuPagesPromise;
       if (XMLpagesArr) return XMLpagesArr[index];

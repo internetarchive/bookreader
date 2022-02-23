@@ -6,7 +6,7 @@ import PageChunkIterator from '@/src/plugins/tts/PageChunkIterator.js';
 
 // Skipping because it's flaky. Fix in #672
 describe.skip('AbstractTTSEngine', () => {
-  test('stops playing once done', () => {
+  test('stops playing once done', async () => {
     class DummyEngine extends AbstractTTSEngine {
       getVoices() { return []; }
     }
@@ -15,8 +15,8 @@ describe.skip('AbstractTTSEngine', () => {
     const stopStub = sinon.stub(d, 'stop');
     expect(stopStub.callCount).toBe(0);
     d.step();
-    return afterEventLoop()
-      .then(() => expect(stopStub.callCount).toBe(1));
+    await afterEventLoop();
+    expect(stopStub.callCount).toBe(1);
   });
 });
 

@@ -123,28 +123,24 @@ describe('Plugin: Search', () => {
     expect(br.options.goToFirstResult).toBeTruthy();
   });
 
-  test('SearchCallback event fires when AJAX search returns results', () => {
+  test('SearchCallback event fires when AJAX search returns results', async () => {
     br.init();
-    const dfd = br.search('foo');
-    return dfd.then(() => {
-      expect(triggeredEvents()).toContain(`${namespace}SearchCallback`);
-    });
+    await br.search('foo');
+    expect(triggeredEvents()).toContain(`${namespace}SearchCallback`);
   });
 
-  test('SearchCallbackError event fires when AJAX search returns error', () => {
+  test('SearchCallbackError event fires when AJAX search returns error', async () => {
     $.ajax = jest.fn().mockImplementation(() => {
       return Promise.resolve({
         error: true,
       });
     });
     br.init();
-    const dfd = br.search('foo');
-    return dfd.then(() => {
-      expect(triggeredEvents()).toContain(`${namespace}SearchCallbackError`);
-    });
+    await br.search('foo');
+    expect(triggeredEvents()).toContain(`${namespace}SearchCallbackError`);
   });
 
-  test('SearchCallbackNotIndexed event fires when AJAX search returns false indexed value', () => {
+  test('SearchCallbackNotIndexed event fires when AJAX search returns false indexed value', async () => {
     $.ajax = jest.fn().mockImplementation(() => {
       return Promise.resolve({
         matches: [],
@@ -152,22 +148,18 @@ describe('Plugin: Search', () => {
       });
     });
     br.init();
-    const dfd = br.search('foo');
-    return dfd.then(() => {
-      expect(triggeredEvents()).toContain(`${namespace}SearchCallbackBookNotIndexed`);
-    });
+    await br.search('foo');
+    expect(triggeredEvents()).toContain(`${namespace}SearchCallbackBookNotIndexed`);
   });
 
-  test('SearchCallbackEmpty event fires when AJAX search returns no matches', () => {
+  test('SearchCallbackEmpty event fires when AJAX search returns no matches', async () => {
     $.ajax = jest.fn().mockImplementation(() => {
       return Promise.resolve({
         matches: [],
       });
     });
     br.init();
-    const dfd = br.search('foo');
-    return dfd.then(() => {
-      expect(triggeredEvents()).toContain(`${namespace}SearchCallbackEmpty`);
-    });
+    await br.search('foo');
+    expect(triggeredEvents()).toContain(`${namespace}SearchCallbackEmpty`);
   });
 });
