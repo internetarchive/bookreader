@@ -167,7 +167,7 @@ export class WebTTSSound {
    * left off.
    * @return {Promise<void>}
    */
-  reload() {
+  async reload() {
     // We'll restore the pause state, so copy it here
     const wasPaused = this.paused;
     // Use recent event to determine where we'll restart from
@@ -179,14 +179,12 @@ export class WebTTSSound {
     }
 
     // We can't modify the utterance object, so we have to make a new one
-    return this.stop()
-      .then(() => {
-        this.load();
-        // Instead of playing and immediately pausing, we don't start playing. Note
-        // this is a requirement because pause doesn't work consistently across
-        // browsers.
-        if (!wasPaused) this.play();
-      });
+    await this.stop();
+    this.load();
+    // Instead of playing and immediately pausing, we don't start playing. Note
+    // this is a requirement because pause doesn't work consistently across
+    // browsers.
+    if (!wasPaused) this.play();
   }
 
   play() {
@@ -222,15 +220,16 @@ export class WebTTSSound {
     return endPromise;
   }
 
-  finish() {
-    this.stop().then(() => this.utterance.dispatchEvent(new Event('finish')));
+  async finish() {
+    await this.stop();
+    this.utterance.dispatchEvent(new Event('finish'));
   }
 
   /**
    * @override
    * Will fire a pause event unless already paused
    **/
-  pause() {
+  async pause() {
     if (this.paused) return;
 
     const pausePromise = promisifyEvent(this.utterance, 'pause');
@@ -246,15 +245,14 @@ export class WebTTSSound {
     if (pauseMightNotFire) {
       // wait for it just in case
       const timeoutPromise = sleep(100).then(() => 'timeout');
-      Promise.race([pausePromise, timeoutPromise])
-        .then(result => {
-          // We got our pause event; nothing to do!
-          if (result != 'timeout') return;
+      const result = await Promise.race([pausePromise, timeoutPromise]);
+      // We got our pause event; nothing to do!
+      if (result != 'timeout') return;
 
-          this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
-          // if pause might not work, then we'll stop entirely and restart later
-          if (pauseMightNotWork) this.stop();
-        });
+      this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
+
+      // if pause might not work, then we'll stop entirely and restart later
+      if (pauseMightNotWork) this.stop();
     }
   }
 
@@ -325,13 +323,11 @@ export class WebTTSSound {
       // We could do the same as before (but resume+pause instead of pause+resume),
       // but that means we'd _constantly_ be running in the background. So in that
       // case, let's just restart the chunk
-      Promise.race([
+      await Promise.race([
         promisifyEvent(this.utterance, 'resume'),
         sleep(14000).then(() => 'timeout'),
-      ])
-        .then(result => {
-          result == 'timeout' ? this.reload() : this._chromePausingBugFix();
-        });
+      ]);
+      result == 'timeout' ? this.reload() : this._chromePausingBugFix();
       break;
     case 'timeout':
       // We hit Chrome's secret cut off time. Pause/resume
