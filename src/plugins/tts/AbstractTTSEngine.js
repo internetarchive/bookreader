@@ -51,9 +51,7 @@ export default class AbstractTTSEngine {
     /** @type {SpeechSynthesisVoice} */
     this.voice = null;
     // Listen for voice changes (fired by subclasses)
-    this.events.on('voiceschanged', () => {
-      this.voice = AbstractTTSEngine.getBestBookVoice(this.getVoices(), this.opts.bookLanguage);
-    });
+    this.events.on('voiceschanged', this.updateBestVoice);
     this.events.trigger('voiceschanged');
   }
 
@@ -71,6 +69,10 @@ export default class AbstractTTSEngine {
 
   /** @abstract */
   init() { return null; }
+
+  updateBestVoice = () => {
+    this.voice = AbstractTTSEngine.getBestBookVoice(this.getVoices(), this.opts.bookLanguage);
+  }
 
   /**
    * @param {number} leafIndex
@@ -134,8 +136,11 @@ export default class AbstractTTSEngine {
     this.step();
   }
 
-  /** @param {number} newRate */
+  /** @param {string} voiceURI */
   setVoice(voiceURI) {
+    // if the user actively selects a voice, don't re-choose best voice anymore
+    // MS Edge fires voices changed randomly very often
+    this.events.off('voiceschanged', this.updateBestVoice);
     this.voice = this.getVoices().find(voice => voice.voiceURI === voiceURI);
     if (this.activeSound) this.activeSound.setVoice(this.voice);
   }
