@@ -151,14 +151,12 @@ class IABookmarks extends LitElement {
     }
   }
 
-  fetchUserBookmarks() {
+  async fetchUserBookmarks() {
     if (!this.api.identifier) {
       return;
     }
-    this.fetchBookmarks()
-      .then(() => {
-        this.initializeBookmarks();
-      });
+    await this.fetchBookmarks();
+    this.initializeBookmarks();
   }
 
   setBREventListeners() {
