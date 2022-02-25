@@ -27,7 +27,7 @@
   "dependencies": {
     "@internetarchive/ia-activity-indicator": "^0.0.1",
     "@internetarchive/ia-item-navigator": "^1.0.0",
-    "@internetarchive/ia-sharing-options": "^1.0.0",
+    "@internetarchive/ia-sharing-options": "^1.0.1",
     "@internetarchive/icon-bookmark": "^1.1.3",
     "@internetarchive/icon-dl": "^1.1.3",
     "@internetarchive/icon-edit-pencil": "1.1.5",
