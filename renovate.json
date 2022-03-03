@@ -2,21 +2,23 @@
   "extends": [
     "config:base"
   ],
-  {
-    "matchPackageNames": [
-      "@babel/eslint-parser",
-      "@open-wc/testing",
-      "@open-wc/testing-karma",
-      "@types/jest",
-      "codecov",
-      "eslint",
-      "eslint-plugin-no-jquery",
-      "eslint-plugin-testcafe",
-      "jest",
-      "karma-coverage",
-      "sinon",
-      "testcafe"
-    ],
-    "automerge": true
-  }
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "@babel/eslint-parser",
+        "@open-wc/testing",
+        "@open-wc/testing-karma",
+        "@types/jest",
+        "codecov",
+        "eslint",
+        "eslint-plugin-no-jquery",
+        "eslint-plugin-testcafe",
+        "jest",
+        "karma-coverage",
+        "sinon",
+        "testcafe"
+      ],
+      "automerge": true
+    }
+  ]
 }
