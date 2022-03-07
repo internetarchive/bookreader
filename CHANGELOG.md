@@ -1,3 +1,12 @@
+# 5.0.0-37
+Fix: Update all `.then()` to async/await @sancodes
+Fix: Upgrade to Lit 2 @Aadilhassan
+Dev: Update to Node v16.x @duggiefresh
+Dev: Remove unused demo bundle @cdrini
+Dev: Fix README broken link for plugin directory @duggiefresh
+Dev: Update sharing options menu to lit2 @iisa
+Dev: Remove package publishing from GHA @cdrini
+
 # 5.0.0-36
 Fix: Readaloud scrolls along with dext @cdrini
 Dev: ES6 var to let/const updates @sancodes
