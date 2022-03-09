@@ -22,8 +22,12 @@
     },
     {
       "matchPackageNames": [
-        "http-server"
+        "concurrently",
+        "http-server",
+        "live-server",
+        "node-fetch",
       ],
+      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
     }
   ]
