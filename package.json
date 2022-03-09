@@ -59,7 +59,7 @@
     "eslint-plugin-no-jquery": "^2.7.0",
     "eslint-plugin-testcafe": "^0.2.1",
     "hammerjs": "^2.0.8",
-    "http-server": "0.12.3",
+    "http-server": "14.1.0",
     "iso-language-codes": "1.1.0",
     "jest": "^27.4.7",
     "jquery": "1.11.3",
