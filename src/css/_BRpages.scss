@@ -39,6 +39,11 @@
   }
 }
 
+
+.BRcontainer.pen-hover .textSelectionSVG,
+.BRcontainer.pen-hover .BRwordElement {
+  pointer-events: none;
+}
 .BRpagecontainer {
   position: relative;
   overflow: hidden;
@@ -50,14 +55,30 @@
     width: 100%;
     height: 100%;
   }
+  .BR-ink-canvas {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
   .BRscreen {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 1;
   }
+
+  // Layering
+  img { z-index: 0; }
+  .BRscreen { z-index: 1; }
+  .BR-ink-canvas { z-index: 2; }
+  .textSelectionSVG { z-index: 3; }
+  .bookmark-button { z-index: 4; }
+
   &.BRpageloading img {
     // Don't show the alt text while loading
     color: transparent;

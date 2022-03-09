@@ -292,6 +292,7 @@ BookReader.prototype.getActivePageContainerElements = function() {
  * Get the HTML Elements for the rendered page. Note there can be more than one, since
  * (at least as of writing) different modes can maintain different caches.
  * @param {PageIndex} pageIndex
+ * @return {HTMLElement[]}
  */
 BookReader.prototype.getActivePageContainerElementsForIndex = function(pageIndex) {
   return [
@@ -2600,3 +2601,6 @@ jQuery.curCSS = function(element, prop, val) {
 };
 
 window.BookReader = BookReader;
+
+// Trick paper.js into listening for pointer events (until https://github.com/paperjs/paper.js/pull/1810 is merged)
+navigator.pointerEnabled = Boolean(window.PointerEvent);

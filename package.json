@@ -71,6 +71,8 @@
     "karma-coverage": "^2.1.0",
     "live-server": "1.2.1",
     "node-fetch": "2.6.1",
+    "paper": "0.12.7",
+    "pepjs": "^0.5.3",
     "regenerator-runtime": "0.13.9",
     "sass": "1.38.2",
     "sinon": "^12.0.1",
