@@ -64,7 +64,7 @@
     "jest": "^27.4.7",
     "jquery": "1.11.3",
     "jquery-colorbox": "1.6.4",
-    "jquery-ui": "1.12.1",
+    "jquery-ui": "1.13.0",
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "jquery.mmenu": "5.6.5",
