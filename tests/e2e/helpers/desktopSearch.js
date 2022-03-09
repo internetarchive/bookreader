@@ -19,14 +19,15 @@ export function runDesktopSearchTests(br) {
       const nav = br.nav;
 
       //assuring that the search bar is enabled
-      await t.expect(nav.desktop.searchBox.visible).ok();
+      await t.expect(nav.desktop.searchIcon.visible).ok();
+      await t.click(nav.desktop.searchIcon);
 
       //testing search for a word found in the book
-      await t
-        .selectText(nav.desktop.searchBox.child('.BRsearchInput'))
-        .pressKey('delete');
-      await t.typeText(nav.desktop.searchBox.child('.BRsearchInput'), TEST_TEXT_FOUND);
-      await t.click((nav.desktop.searchBox).child('.BRsearchSubmit'));
+      await t.selectText(nav.desktop.searchBox).pressKey('delete');
+      // FIXME: Why is it only typing every other letter?!?!
+      await t.typeText(nav.desktop.searchBox, TEST_TEXT_FOUND.split('').join('_'));
+      await t.pressKey('enter');
+
       await t.expect(nav.desktop.searchPin.exists).ok();
       await t.expect(nav.desktop.searchPin.child('.BRquery').child('div').exists).ok();
       await t.expect(nav.desktop.searchPin.child('.BRquery').child('div').innerText).contains(TEST_TEXT_FOUND);
@@ -54,14 +55,14 @@ export function runDesktopSearchTests(br) {
       const nav = br.nav;
 
       //assuring that the search bar is enabled
-      await t.expect(nav.desktop.searchBox.visible).ok();
+      await t.expect(nav.desktop.searchIcon.visible).ok();
+      await t.click(nav.desktop.searchIcon);
 
       //testing search for a word not found in the book
-      await t
-        .selectText(nav.desktop.searchBox.child('.BRsearchInput'))
-        .pressKey('delete');
-      await t.typeText(nav.desktop.searchBox.child('.BRsearchInput'), TEST_TEXT_NOT_FOUND);
-      await t.click((nav.desktop.searchBox).child('.BRsearchSubmit'));
+      await t.selectText(nav.desktop.searchBox).pressKey('delete');
+      // FIXME: Why is it only typing every other letter?!?!
+      await t.typeText(nav.desktop.searchBox, TEST_TEXT_NOT_FOUND.split('').join('_'));
+      await t.pressKey('enter');
       await t.expect(nav.desktop.searchPin.child('.BRquery').child('div').withText(TEST_TEXT_NOT_FOUND).exists).notOk();
 
       const getPageUrl = ClientFunction(() => window.location.href.toString());

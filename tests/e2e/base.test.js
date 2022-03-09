@@ -1,6 +1,6 @@
 import { runBaseTests } from './helpers/base';
 import BookReader from './models/BookReader';
-// import { runDesktopSearchTests } from './helpers/desktopSearch';
+import { runDesktopSearchTests } from './helpers/desktopSearch';
 // import { runMobileSearchTests } from './helpers/mobileSearch';
 import params from './helpers/params';
 
@@ -22,10 +22,9 @@ ocaids.forEach(ocaid => {
   runBaseTests(new BookReader());
 
 
-  // Todo: Re-enable when testing side panel
-  // fixture `Desktop Search Tests for: ${ocaid}`
-  //   .page `${url}`;
-  // runDesktopSearchTests(new BookReader());
+  fixture `Desktop Search Tests for: ${ocaid}`
+    .page `${url}`;
+  runDesktopSearchTests(new BookReader());
 
   // Todo: deprecated, will remove once mmenu is removed.
   // fixture `Mobile Search Tests for: ${ocaid}`

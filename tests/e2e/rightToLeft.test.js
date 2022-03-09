@@ -9,7 +9,7 @@ const ocaids = params.ocaids || [
 ];
 
 ocaids.forEach(ocaid => {
-  const url = `${params.baseUrl}/BookReaderDemo/demo-internetarchive.html?ocaid=${ocaid}`;
+  const url = `${params.getArchiveUrl(ocaid)}`;
 
   fixture `Base Tests for right to left book: ${ocaid}`.page `${url}`;
   runBaseTests(new BookReader({ pageProgression: 'rl' }));
