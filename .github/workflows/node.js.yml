@@ -10,7 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  install:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,10 +28,25 @@ jobs:
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - run: npm install
+
+  build:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
     - run: npm run build
+
+  tests:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
     - run: npm run lint
     - run: npm run test
     - run: npm run codecov
+    
+  e2e-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
     # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )
     # Quarantine mode (sigh) to catch unstable tests (see https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode )
     - run: npx testcafe --concurrency 2 --quarantine-mode
