@@ -25,7 +25,7 @@
         "concurrently",
         "http-server",
         "live-server",
-        "node-fetch",
+        "node-fetch"
       ],
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": true
