@@ -19,6 +19,12 @@
         "testcafe"
       ],
       "automerge": true
+    },
+    {
+      "matchPackageNames": [
+        "http-server"
+      ],
+      "automerge": true
     }
   ]
 }
