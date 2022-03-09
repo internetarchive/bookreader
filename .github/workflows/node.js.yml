@@ -41,11 +41,7 @@ jobs:
         node-version: 16.x
     - uses: actions/cache@v2
       with:
-        # Caching node_modules isn't recommended because it can break across
-        # Node versions and won't work with npm ci (See https://github.com/actions/cache/blob/main/examples.md#node---npm )
-        # But we pin the node version, and we don't update it that often anyways. And
-        # we don't use `npm ci` specifically to try to get faster CI flows. So caching
-        # `node_modules` directly.
+        # Use node_modules from previous jobs
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - uses: actions/cache@v2
@@ -65,11 +61,7 @@ jobs:
         node-version: 16.x
     - uses: actions/cache@v2
       with:
-        # Caching node_modules isn't recommended because it can break across
-        # Node versions and won't work with npm ci (See https://github.com/actions/cache/blob/main/examples.md#node---npm )
-        # But we pin the node version, and we don't update it that often anyways. And
-        # we don't use `npm ci` specifically to try to get faster CI flows. So caching
-        # `node_modules` directly.
+        # Use node_modules from previous jobs
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - run: npm run lint
@@ -86,11 +78,7 @@ jobs:
         node-version: 16.x
     - uses: actions/cache@v2
       with:
-        # Caching node_modules isn't recommended because it can break across
-        # Node versions and won't work with npm ci (See https://github.com/actions/cache/blob/main/examples.md#node---npm )
-        # But we pin the node version, and we don't update it that often anyways. And
-        # we don't use `npm ci` specifically to try to get faster CI flows. So caching
-        # `node_modules` directly.
+        # Use node_modules from previous jobs
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - uses: actions/cache@v2
