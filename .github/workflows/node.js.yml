@@ -33,12 +33,38 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+    - uses: actions/cache@v2
+      with:
+        # Caching node_modules isn't recommended because it can break across
+        # Node versions and won't work with npm ci (See https://github.com/actions/cache/blob/main/examples.md#node---npm )
+        # But we pin the node version, and we don't update it that often anyways. And
+        # we don't use `npm ci` specifically to try to get faster CI flows. So caching
+        # `node_modules` directly.
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - run: npm run build
 
   tests:
     needs: install
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+    - uses: actions/cache@v2
+      with:
+        # Caching node_modules isn't recommended because it can break across
+        # Node versions and won't work with npm ci (See https://github.com/actions/cache/blob/main/examples.md#node---npm )
+        # But we pin the node version, and we don't update it that often anyways. And
+        # we don't use `npm ci` specifically to try to get faster CI flows. So caching
+        # `node_modules` directly.
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - run: npm run lint
     - run: npm run test
     - run: npm run codecov
@@ -47,6 +73,19 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+    - uses: actions/cache@v2
+      with:
+        # Caching node_modules isn't recommended because it can break across
+        # Node versions and won't work with npm ci (See https://github.com/actions/cache/blob/main/examples.md#node---npm )
+        # But we pin the node version, and we don't update it that often anyways. And
+        # we don't use `npm ci` specifically to try to get faster CI flows. So caching
+        # `node_modules` directly.
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )
     # Quarantine mode (sigh) to catch unstable tests (see https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode )
     - run: npx testcafe --concurrency 2 --quarantine-mode
