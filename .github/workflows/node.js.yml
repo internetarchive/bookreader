@@ -45,11 +45,13 @@ jobs:
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - uses: actions/cache@v2
+      id: build-cache
       with:
         # Cache the build files so we don't have to build twice for e2e tests
         path: 'BookReader'
         key: ${{ runner.os }}-${{ github.sha }}
-    - run: npm run build
+    - if: steps.build-cache.outputs.cache-hit != 'true'
+      run: npm run build
 
   tests:
     needs: install
