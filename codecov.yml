@@ -1,6 +1,12 @@
 codecov:
   notify:
     require_ci_to_pass: yes
+  status:
+    project:
+      default:
+        # Allow small drops in coverage
+        threshold: 0.005  # .5 %
+        if_not_found: failure
 
 coverage:
   precision: 2
