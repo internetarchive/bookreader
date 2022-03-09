@@ -96,4 +96,4 @@ jobs:
         key: ${{ runner.os }}-${{ github.sha }}
     # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )
     # Quarantine mode (sigh) to catch unstable tests (see https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode )
-    - run: npx testcafe --concurrency 2 --quarantine-mode
+    - run: npx testcafe --concurrency 4 --quarantine-mode
