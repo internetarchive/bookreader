@@ -36,7 +36,7 @@
       "rangeStrategy": "bump"
     },
     {
-      "matchPackagePatterns": ["^@internetarchive"],
+      "matchPackagePatterns": ["*"],
       "rangeStrategy": "bump"
     }
   ]
