@@ -32,7 +32,12 @@
     },
     {
       "matchPackagePatterns": ["^@internetarchive/icon-"],
-      "groupName": "@internetarchive icons"
+      "groupName": "@internetarchive icons",
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchPackagePatterns": ["^@internetarchive"],
+      "rangeStrategy": "bump"
     }
   ]
 }
