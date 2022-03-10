@@ -1,3 +1,15 @@
+# 5.0.0-38
+Dev: Add Renovate Bot @cdrini
+Dev: Update node-fetch @cdrini
+Fix: Search request promise err & fix tests @cdrini
+Dev: Split node workflow into different jobs @cdrini
+Dev: Give cache steps better names in GHA @cdrini
+Dev: Update concurrently + Small speedup to build & test @cdrini
+Dev: Renovate - Auto-update dev dependencies for minor/patch @cdrini
+Fix: Better MS Edge voice selection @cdrini
+Dev: Allow small drops in codecov coverage (< 0.5%) @cdrini
+Dev: Renovate - add `^@internetarchive/icon-` @cdrini
+
 # 5.0.0-37
 Fix: Update all `.then()` to async/await @sancodes
 Fix: Upgrade to Lit 2 @Aadilhassan
