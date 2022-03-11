@@ -1006,10 +1006,8 @@ BookReader.prototype.jumpToPage = function(pageNum) {
  * @param {PageIndex} index
  */
 BookReader.prototype._isIndexDisplayed = function(index) {
-  // One up "caches" pages +- current, so exclude those in the test.
-  return this.constMode1up == this.mode ? this.displayedIndices.slice(1, -1).includes(index) :
-    this.displayedIndices ? this.displayedIndices.includes(index) :
-      this.currentIndex() == index;
+  return this.displayedIndices ? this.displayedIndices.includes(index) :
+    this.currentIndex() == index;
 };
 
 /**
