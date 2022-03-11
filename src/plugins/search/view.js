@@ -260,7 +260,6 @@ class SearchView {
             <div>${uiStringPage} ${pageNumber}</div>
           </div>
         `)
-        .data({ pageIndex })
         .appendTo(this.br.$('.BRnavline'))
         .on("mouseenter", (event) => {
           // remove from other markers then turn on just for this
@@ -277,12 +276,7 @@ class SearchView {
           $(event.target).addClass('front');
         })
         .on("mouseleave", (event) => $(event.target).removeClass('front'))
-        .on("click", function (event) {
-          // closures are nested and deep, using an arrow function breaks references.
-          // Todo: update to arrow function & clean up closures
-          // to remove `bind` dependency
-          this.br._searchPluginGoToResult(+$(event.target).data('pageIndex'));
-        }.bind(this));
+        .on("click", () => { this.br._searchPluginGoToResult(match); });
     });
   }
 

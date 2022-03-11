@@ -1,3 +1,4 @@
+// @ts-check
 /* global BookReader */
 /**
  * Plugin for Archive.org book search
@@ -112,7 +113,14 @@ BookReader.prototype._createPageContainer = (function (super_) {
     const pageContainer = super_.call(this, index);
     if (this.enableSearch && pageContainer.page && index in this._searchBoxesByIndex) {
       const pageIndex = pageContainer.page.index;
-      renderBoxesInPageContainerLayer('searchHiliteLayer', this._searchBoxesByIndex[pageIndex], pageContainer.page, pageContainer.$container[0]);
+      const boxes = this._searchBoxesByIndex[pageIndex];
+      renderBoxesInPageContainerLayer(
+        'searchHiliteLayer',
+        boxes,
+        pageContainer.page,
+        pageContainer.$container[0],
+        boxes.map(b => `match-index-${b.matchIndex}`),
+      );
     }
     return pageContainer;
   };
@@ -180,7 +188,7 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
 
   const url = `${baseUrl}${paramStr}`;
 
-  const processSearchResults = (searchInsideResults) => {
+  const callSearchResultsCallback = (searchInsideResults) => {
     if (this.searchCancelled) {
       return;
     }
@@ -200,7 +208,7 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
   };
 
   this.trigger('SearchStarted', { term: this.searchTerm, instance: this });
-  return processSearchResults(await $.ajax({
+  callSearchResultsCallback(await $.ajax({
     url: url,
     dataType: 'jsonp',
     cache: true,
@@ -242,10 +250,12 @@ BookReader.prototype.cancelSearchRequest = function () {
   * @property {number} b
   * @property {number} t
   * @property {HTMLDivElement} [div]
+  * @property {number} matchIndex This is a fake field! not part of the API response. The index of the match that contains this box in total search results matches.
   */
 
 /**
  * @typedef {object} SearchInsideMatch
+ * @property {number} matchIndex This is a fake field! Not part of the API response. It is added by the JS.
  * @property {string} text
  * @property {Array<{ page: number, boxes: SearchInsideMatchBox[] }>} par
  */
@@ -259,19 +269,27 @@ BookReader.prototype.cancelSearchRequest = function () {
 
 /**
  * Search Results return handler
- * @callback
  * @param {SearchInsideResults} results
  * @param {object} options
  * @param {boolean} options.goToFirstResult
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
+  // Attach matchIndex to a few things to make it easier to identify
+  // an active/selected match
+  for (const [index, match] of results.matches.entries()) {
+    match.matchIndex = index;
+    for (const par of match.par) {
+      for (const box of par.boxes) {
+        box.matchIndex = index;
+      }
+    }
+  }
   this.searchResults = results || [];
 
   this.updateSearchHilites();
   this.removeProgressPopup();
   if (options.goToFirstResult) {
-    const pageIndex = this._models.book.leafNumToIndex(results.matches[0].par[0].page);
-    this._searchPluginGoToResult(pageIndex);
+    this._searchPluginGoToResult(results.matches[0]);
   }
   this.trigger('SearchCallback', { results, options, instance: this });
 };
@@ -316,7 +334,7 @@ BookReader.prototype._BRSearchCallbackError = function(results) {
 BookReader.prototype.updateSearchHilites = function() {
   /** @type {SearchInsideMatch[]} */
   const matches = this.searchResults?.matches || [];
-  /** @type { {[pageIndex: number]: SearchInsideMatch[]} } */
+  /** @type { {[pageIndex: number]: SearchInsideMatchBox[]} } */
   const boxesByIndex = {};
 
   // Clear any existing svg layers
@@ -326,8 +344,8 @@ BookReader.prototype.updateSearchHilites = function() {
   for (const match of matches) {
     for (const box of match.par[0].boxes) {
       const pageIndex = this.leafNumToIndex(box.page);
-      const pageMatches = boxesByIndex[pageIndex] || (boxesByIndex[pageIndex] = []);
-      pageMatches.push(box);
+      const pageBoxes = boxesByIndex[pageIndex] || (boxesByIndex[pageIndex] = []);
+      pageBoxes.push(box);
     }
   }
 
@@ -336,7 +354,9 @@ BookReader.prototype.updateSearchHilites = function() {
     const pageIndex = parseFloat(pageIndexString);
     const page = this._models.book.getPage(pageIndex);
     const pageContainers = this.getActivePageContainerElementsForIndex(pageIndex);
-    pageContainers.forEach(container => renderBoxesInPageContainerLayer('searchHiliteLayer', boxes, page, container));
+    for (const container of pageContainers) {
+      renderBoxesInPageContainerLayer('searchHiliteLayer', boxes, page, container, boxes.map(b => `match-index-${b.matchIndex}`));
+    }
   }
 
   this._searchBoxesByIndex = boxesByIndex;
@@ -354,9 +374,10 @@ BookReader.prototype.removeSearchHilites = function() {
  * Goes to the page specified. If the page is not viewable, tries to load the page
  * FIXME Most of this logic is IA specific, and should be less integrated into here
  * or at least more configurable.
- * @param {PageIndex} pageIndex
+ * @param {SearchInsideMatch} match
  */
-BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
+BookReader.prototype._searchPluginGoToResult = async function (match) {
+  const pageIndex = this.leafNumToIndex(match.par[0].page);
   const { book } = this._models;
   const page = book.getPage(pageIndex);
   let makeUnviewableAtEnd = false;
@@ -379,12 +400,36 @@ BookReader.prototype._searchPluginGoToResult = async function (pageIndex) {
     }
   }
   /* this updates the URL */
-  this.suppressFragmentChange = false;
-  this.jumpToIndex(pageIndex);
+  if (!this._isIndexDisplayed(pageIndex)) {
+    this.suppressFragmentChange = false;
+    this.jumpToIndex(pageIndex);
+    // Wait 100ms for flipping or anything; bit of a hack
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
 
   // Reset it to unviewable if it wasn't resolved
   if (makeUnviewableAtEnd) {
     book.getPage(pageIndex).makeViewable(false);
+  }
+
+  // Scroll/flash in the ui
+  const $boxes = $(`rect.match-index-${match.matchIndex}`);
+  if ($boxes.length) {
+    $boxes.css('animation', 'none');
+    $boxes[0].scrollIntoView({
+      // Only vertically center the highlight if we're in 1up or in full screen. In
+      // 2up, if we're not fullscreen, the whole body gets scrolled around to try to
+      // center the highlight 🙄 See:
+      // https://stackoverflow.com/questions/11039885/scrollintoview-causing-the-whole-page-to-move/11041376
+      // Note: nearest doesn't quite work great, because the ReadAloud toolbar is now
+      // full-width, and covers up the last line of the highlight.
+      block: this.constMode1up == this.mode || this.isFullscreenActive ? 'center' : 'nearest',
+      inline: 'center',
+      behavior: 'smooth',
+    });
+    // wait for animation to start
+    await new Promise(resolve => setTimeout(resolve, 100));
+    $boxes.removeAttr("style");
   }
 };
 
