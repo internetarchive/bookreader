@@ -425,11 +425,22 @@ export class Mode1UpLit extends LitElement {
 
   /************** INPUT HANDLERS **************/
 
+  setScrollingActiveClass = () => {
+    this.$visibleWorld.classList.add('BRscrolling-active');
+    clearTimeout(this.scrollingActiveTimeout);
+    // TODO: Also remove class on mousemove, touch, click, etc.
+    this.scrollingActiveTimeout = setTimeout(() => {
+      this.$visibleWorld.classList.remove('BRscrolling-active');
+    }, 1000);
+  }
+
   attachScrollListeners = () => {
-    this.addEventListener("scroll", this.updateVisibleRegion, { passive: true });
+    this.addEventListener("scroll", this.updateVisibleRegion);
+    this.addEventListener("scroll", this.setScrollingActiveClass);
   }
 
   detachScrollListeners = () => {
     this.removeEventListener("scroll", this.updateVisibleRegion);
+    this.removeEventListener("scroll", this.setScrollingActiveClass);
   }
 }

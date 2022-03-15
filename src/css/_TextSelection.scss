@@ -24,6 +24,13 @@
     }
 }
 
+// Hide text layer for performance during zooming & scrolling
+.BRsmooth-zooming, .BRscrolling-active {
+    .textSelectionSVG {
+        display: none;
+    }
+}
+
 // Makes page image unselectable
 .BRpagecontainer img {
     -webkit-user-select: none;
