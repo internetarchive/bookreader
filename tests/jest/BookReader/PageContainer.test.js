@@ -62,17 +62,18 @@ describe('update', () => {
     expect(pc.$img[0].style.background).toBe('');
   });
 
-  test('removes image between updates', () => {
+  test('removes image between updates only if changed', () => {
     const fakeImageCache = {
       imageLoaded: () => true,
-      image: () => $('<img/>'),
+      image: (index, reduce) => $(`<img src="page${index}-${reduce}.jpg" />`),
     };
     const pc = new PageContainer({index: 12}, {imageCache: fakeImageCache});
     pc.update({ reduce: 7 });
     const $im1 = pc.$img;
     pc.update({ reduce: 7 });
-    const $im2 = pc.$img;
-    expect($im1).not.toBe($im2);
+    expect(pc.$img).toBe($im1);
+    pc.update({ reduce: 16 });
+    expect(pc.$img).not.toBe($im1);
     expect($im1.parent().length).toBe(0);
   });
 
