@@ -6,6 +6,7 @@ import { EVENTS } from './events.js';
 import { ModeSmoothZoom } from "./ModeSmoothZoom.js";
 import { HTMLDimensionsCacher } from './utils/HTMLDimensionsCacher.js';
 import { DragScrollable } from './DragScrollable.js';
+import { ScrollClassAdder } from './utils/ScrollClassAdder.js';
 
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
@@ -36,6 +37,9 @@ export class Mode2Up {
     this.smoothZoomer = null;
     this._scale = 1;
     this.scaleCenter = { x: 0.5, y: 0.5 };
+
+    /** @type {ScrollClassAdder} */
+    this.scrollClassAdder = null;
   }
 
   get $container() {
@@ -242,6 +246,12 @@ export class Mode2Up {
 
     this.smoothZoomer = this.smoothZoomer || new ModeSmoothZoom(this);
     this.smoothZoomer.attach();
+    if (!this.scrollClassAdder) {
+      this.scrollClassAdder = new ScrollClassAdder(this.$container, 'BRscrolling-active');
+    }
+    this.scrollClassAdder.detach();
+    this.scrollClassAdder.element = this.$container;
+    this.scrollClassAdder.attach();
 
     this.htmlDimensionsCacher = this.htmlDimensionsCacher || new HTMLDimensionsCacher(this.$container);
   }
@@ -250,6 +260,7 @@ export class Mode2Up {
     // Mode2Up attaches these listeners to the main BR container, so we need to
     // detach these or it will cause issues for the other modes.
     this.smoothZoomer.detach();
+    this.scrollClassAdder.detach();
   }
 
   /**

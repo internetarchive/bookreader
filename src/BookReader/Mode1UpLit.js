@@ -5,6 +5,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
 import { arrChanged, calcScreenDPI, genToArray, sum, throttle } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
+import { ScrollClassAdder } from './utils/ScrollClassAdder';
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */
@@ -114,6 +115,8 @@ export class Mode1UpLit extends LitElement {
   htmlDimensionsCacher = new HTMLDimensionsCacher(this);
 
   smoothZoomer = new ModeSmoothZoom(this);
+
+  scrollClassAdder = new ScrollClassAdder(this, 'BRscrolling-active');
 
   /************** CONSTANT PROPERTIES **************/
 
@@ -425,22 +428,13 @@ export class Mode1UpLit extends LitElement {
 
   /************** INPUT HANDLERS **************/
 
-  setScrollingActiveClass = () => {
-    this.$visibleWorld.classList.add('BRscrolling-active');
-    clearTimeout(this.scrollingActiveTimeout);
-    // TODO: Also remove class on mousemove, touch, click, etc.
-    this.scrollingActiveTimeout = setTimeout(() => {
-      this.$visibleWorld.classList.remove('BRscrolling-active');
-    }, 1000);
-  }
-
   attachScrollListeners = () => {
     this.addEventListener("scroll", this.updateVisibleRegion);
-    this.addEventListener("scroll", this.setScrollingActiveClass);
+    this.scrollClassAdder.attach();
   }
 
   detachScrollListeners = () => {
     this.removeEventListener("scroll", this.updateVisibleRegion);
-    this.removeEventListener("scroll", this.setScrollingActiveClass);
+    this.scrollClassAdder.detach();
   }
 }
