@@ -26,6 +26,6 @@ export class ScrollClassAdder {
     // TODO: Also remove class on mousemove, touch, click, etc.
     this.timeout = setTimeout(() => {
       this.element.classList.remove(this.className);
-    }, 1000);
+    }, 600);
   }
 }

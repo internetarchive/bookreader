@@ -29,18 +29,18 @@ describe('ScrollClassAdder', () => {
     expect(el.getAttribute('class')).toBeFalsy();
     sca.onScroll();
     expect(el.getAttribute('class')).toBe('foo');
-    clock.tick(1000);
+    clock.tick(600);
     expect(el.getAttribute('class')).toBeFalsy();
 
     sca.onScroll();
     expect(el.getAttribute('class')).toBe('foo');
-    clock.tick(900);
+    clock.tick(500);
     expect(el.getAttribute('class')).toBe('foo');
     sca.onScroll();
     expect(el.getAttribute('class')).toBe('foo');
     clock.tick(100);
     expect(el.getAttribute('class')).toBe('foo');
-    clock.tick(899);
+    clock.tick(499);
     expect(el.getAttribute('class')).toBe('foo');
     clock.tick(1);
     expect(el.getAttribute('class')).toBeFalsy();
