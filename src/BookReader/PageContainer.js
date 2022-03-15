@@ -46,11 +46,17 @@ export class PageContainer {
     const alreadyLoaded = this.imageCache.imageLoaded(this.page.index, reduce);
     const nextBestLoadedReduce = !alreadyLoaded && this.imageCache.getBestLoadedReduce(this.page.index, reduce);
 
-    // Add the actual, highres image
+    // Create high res image
+    const $newImg = this.imageCache.image(this.page.index, reduce);
+
+    // Avoid removing/re-adding the image if it's already there
+    // This can be called quite a bit, so we need to be fast
+    if (this.$img?.[0].src == $newImg[0].src) {
+      return this;
+    }
+
     this.$img?.remove();
-    this.$img = this.imageCache
-      .image(this.page.index, reduce)
-      .prependTo(this.$container);
+    this.$img = $newImg.prependTo(this.$container);
 
     const backgroundLayers = [];
     if (!alreadyLoaded) {
