@@ -149,6 +149,19 @@ The source JavaScript is written in ES6 (located in the `src/js` directory) and 
 
 Until the next major version bump, we have to store the build files inside the repo to maintain backwards compatibility. Please _DO NOT_ include these files in your PR. Anything in the `BookReader/` directory should not be committed.
 
+### Developing icons
+To see local icon package changes in bookreader, you'll need to install core-js into the icon package and link into bookreader.
+
+Let's use `icon-share` as an example.
+1.  Confirm your icon package is working properly in the iaux-icons demo
+2.  Navigate to your icon package (`iaux-icons/packages/icon-share`) and run command: `npm install core-js`
+    -  You shouldn't need to commit any of these core-js changes
+3.  From within your icon package directory run command: `npm link`
+    -  You can use the command `npm ls -g` to confirm your local package now appears in the registry
+4.  Navigate to `/bookreader` and run command: `npm link @internetarchive/icon-share`
+    -  You can use the command `npm ls |grep icon-share` to confirm icon-share is now a link to your local directory
+5. You may now start a local server to see your changes by running command: `npm run serve-dev`
+
 ## Releases
 
 To version bump the repo and prepare a release, run `npm version major|minor|patch` (following [semver](https://semver.org/)), then (something like) `git push origin HEAD --tags`. It'll automatically update the version number where it appears, build the files, and ask you to update the CHANGELOG.
