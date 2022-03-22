@@ -24,6 +24,19 @@
     }
 }
 
+// Hide text layer for performance during zooming & scrolling
+.BRsmooth-zooming, .BRscrolling-active {
+    .textSelectionSVG {
+        display: none;
+    }
+}
+
+// Hide text selection layers of off-screen pages, and only display
+// 2 text layers regardless of zoom level
+.BRmode1up .BRpagecontainer:not(.BRpage-visible) .textSelectionSVG {
+    display: none;
+}
+
 // Makes page image unselectable
 .BRpagecontainer img {
     -webkit-user-select: none;

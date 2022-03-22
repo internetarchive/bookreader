@@ -5,6 +5,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
 import { arrChanged, calcScreenDPI, genToArray, sum, throttle } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
+import { ScrollClassAdder } from './utils/ScrollClassAdder';
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */
@@ -114,6 +115,8 @@ export class Mode1UpLit extends LitElement {
   htmlDimensionsCacher = new HTMLDimensionsCacher(this);
 
   smoothZoomer = new ModeSmoothZoom(this);
+
+  scrollClassAdder = new ScrollClassAdder(this, 'BRscrolling-active');
 
   /************** CONSTANT PROPERTIES **************/
 
@@ -302,6 +305,7 @@ export class Mode1UpLit extends LitElement {
       }).$container[0];
 
     pageContainerEl.style.transform = transform;
+    pageContainerEl.classList.toggle('BRpage-visible', this.visiblePages.includes(page));
     return pageContainerEl;
   }
 
@@ -426,10 +430,12 @@ export class Mode1UpLit extends LitElement {
   /************** INPUT HANDLERS **************/
 
   attachScrollListeners = () => {
-    this.addEventListener("scroll", this.updateVisibleRegion, { passive: true });
+    this.addEventListener("scroll", this.updateVisibleRegion);
+    this.scrollClassAdder.attach();
   }
 
   detachScrollListeners = () => {
     this.removeEventListener("scroll", this.updateVisibleRegion);
+    this.scrollClassAdder.detach();
   }
 }

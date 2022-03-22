@@ -89,6 +89,7 @@ export class ModeSmoothZoom {
   _pinchStart = () => {
     // Do this in case the pinchend hasn't fired yet.
     this.oldScale = 1;
+    this.mode.$visibleWorld.classList.add("BRsmooth-zooming");
     this.mode.$visibleWorld.style.willChange = "transform";
     this.detachCtrlZoom();
     this.mode.detachScrollListeners?.();
@@ -124,6 +125,7 @@ export class ModeSmoothZoom {
     await this.pinchMoveFramePromise;
     this.mode.scaleCenter = { x: 0.5, y: 0.5 };
     this.oldScale = 1;
+    this.mode.$visibleWorld.classList.remove("BRsmooth-zooming");
     this.mode.$visibleWorld.style.willChange = "auto";
     this.attachCtrlZoom();
     this.mode.attachScrollListeners?.();
