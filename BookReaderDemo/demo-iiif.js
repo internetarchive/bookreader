@@ -4,22 +4,22 @@
 // It is intended as a rapid proof of concept.
 // More development could be done.
 
-var br = new BookReader({
-    // Book title and the URL used for the book title link
-    bookTitle: 'Open Library BookReader Presentation',
-    bookUrl: 'http://openlibrary.org',
+const br = new BookReader({
+  // Book title and the URL used for the book title link
+  bookTitle: 'Open Library BookReader Presentation',
+  bookUrl: 'http://openlibrary.org',
 
-    // Override the path used to find UI images
-    imagesBaseURL: '../BookReader/images/',
-    enableMobileNav: false,
+  // Override the path used to find UI images
+  imagesBaseURL: '../BookReader/images/',
+  enableMobileNav: false,
 });
 
 br.IIIF({
-    url: 'https://iiif.archivelab.org/iiif/platowithenglish04platuoft/manifest.json',
-    sequenceId : 'https://iiif.archivelab.org/iiif/platowithenglish04platuoft/canvas/default',
-    maxWidth: 800,
-    initCallback: function() {
-    }
+  url: 'https://iiif.archivelab.org/iiif/platowithenglish04platuoft/manifest.json',
+  sequenceId : 'https://iiif.archivelab.org/iiif/platowithenglish04platuoft/canvas/default',
+  maxWidth: 800,
+  initCallback: function() {
+  }
 });
 
 // Let's go!

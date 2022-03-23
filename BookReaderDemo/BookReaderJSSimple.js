@@ -7,7 +7,7 @@
 function instantiateBookReader(selector, extraOptions) {
   selector = selector || '#BookReader';
   extraOptions = extraOptions || {};
-  var options = {
+  const options = {
     data: [
       [
         { width: 800, height: 1200,
@@ -50,6 +50,6 @@ function instantiateBookReader(selector, extraOptions) {
     el: selector,
   };
   $.extend(options, extraOptions);
-  var br = new BookReader(options);
+  const br = new BookReader(options);
   br.init();
 }
