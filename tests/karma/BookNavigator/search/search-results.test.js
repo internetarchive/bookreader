@@ -5,6 +5,7 @@ import {
   oneEvent,
 } from '@open-wc/testing';
 import sinon from 'sinon';
+import '../../../../src/BookReader.js';
 import { IABookSearchResults } from '../../../../src/BookNavigator/search/search-results.js';
 
 const container = (results = [], query = '') => (
