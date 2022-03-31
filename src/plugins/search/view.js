@@ -276,7 +276,7 @@ class SearchView {
           $(event.target).addClass('front');
         })
         .on("mouseleave", (event) => $(event.target).removeClass('front'))
-        .on("click", () => { this.br._searchPluginGoToResult(match); });
+        .on("click", () => { this.br._searchPluginGoToResult(match.matchIndex); });
     });
   }
 

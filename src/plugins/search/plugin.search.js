@@ -289,7 +289,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   this.updateSearchHilites();
   this.removeProgressPopup();
   if (options.goToFirstResult) {
-    this._searchPluginGoToResult(results.matches[0]);
+    this._searchPluginGoToResult(0);
   }
   this.trigger('SearchCallback', { results, options, instance: this });
 };
@@ -374,9 +374,10 @@ BookReader.prototype.removeSearchHilites = function() {
  * Goes to the page specified. If the page is not viewable, tries to load the page
  * FIXME Most of this logic is IA specific, and should be less integrated into here
  * or at least more configurable.
- * @param {SearchInsideMatch} match
+ * @param {number} matchIndex
  */
-BookReader.prototype._searchPluginGoToResult = async function (match) {
+BookReader.prototype._searchPluginGoToResult = async function (matchIndex) {
+  const match = this.searchResults?.matches[matchIndex];
   const pageIndex = this.leafNumToIndex(match.par[0].page);
   const { book } = this._models;
   const page = book.getPage(pageIndex);
