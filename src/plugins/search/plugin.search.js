@@ -380,6 +380,7 @@ BookReader.prototype._searchPluginGoToResult = async function (match) {
   const pageIndex = this.leafNumToIndex(match.par[0].page);
   const { book } = this._models;
   const page = book.getPage(pageIndex);
+  const onNearbyPage = Math.abs(this.currentIndex() - pageIndex) < 3;
   let makeUnviewableAtEnd = false;
   if (!page.isViewable) {
     const resp = await fetch('/services/bookreader/request_page?' + new URLSearchParams({
@@ -425,7 +426,7 @@ BookReader.prototype._searchPluginGoToResult = async function (match) {
       // full-width, and covers up the last line of the highlight.
       block: this.constMode1up == this.mode || this.isFullscreenActive ? 'center' : 'nearest',
       inline: 'center',
-      behavior: 'smooth',
+      behavior: onNearbyPage ? 'smooth' : 'auto',
     });
     // wait for animation to start
     await new Promise(resolve => setTimeout(resolve, 100));
