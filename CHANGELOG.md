@@ -1,3 +1,8 @@
+# 5.0.0-39
+Fix: Performance improvements to scroll/zooming when text layer is larger @cdrini
+Fix: Update zoom in/out icons to match iconochive glyphs @pezvi
+Dev: update dependencies @renovate
+
 # 5.0.0-38
 Dev: Add Renovate Bot @cdrini
 Dev: Update node-fetch @cdrini

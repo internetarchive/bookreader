@@ -2884,6 +2884,14 @@ li.BRtable-contents-el .BRTOCElementPage {
   font-family: Georgia, serif;
 }
 
+.BRsmooth-zooming .textSelectionSVG, .BRscrolling-active .textSelectionSVG {
+  display: none;
+}
+
+.BRmode1up .BRpagecontainer:not(.BRpage-visible) .textSelectionSVG {
+  display: none;
+}
+
 .BRpagecontainer img {
   -webkit-user-select: none;
   -moz-user-select: none;
