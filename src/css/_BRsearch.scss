@@ -39,9 +39,8 @@
 
   .searchHiliteLayer rect {
     animation: highlightFocus 600ms 1 reverse;
-    outline: 4px solid blue;
-    outline-offset: 4px;
-    border-radius: 4px;
+    stroke: blue;
+    stroke-width: 4px;
 
     // Sass for loop for nth-child animation delay
     @for $i from 1 through 10 {
@@ -222,7 +221,7 @@
 }
 
 @keyframes highlightFocus {
-  to { outline-width: 20px; }
+  to { stroke-width: 20px; }
 }
 
 /* Mid size breakpoint */
