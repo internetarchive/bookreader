@@ -24,6 +24,7 @@
  * @event BookReader:SearchCanceled - When no results found. Receives
  *   `instance`
  */
+import { poll } from '../../BookReader/utils.js';
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
 import SearchView from './view.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
@@ -405,8 +406,6 @@ BookReader.prototype._searchPluginGoToResult = async function (matchIndex) {
   if (!this._isIndexDisplayed(pageIndex)) {
     this.suppressFragmentChange = false;
     this.jumpToIndex(pageIndex);
-    // Wait 100ms for flipping or anything; bit of a hack
-    await new Promise(resolve => setTimeout(resolve, 100));
   }
 
   // Reset it to unviewable if it wasn't resolved
@@ -415,7 +414,7 @@ BookReader.prototype._searchPluginGoToResult = async function (matchIndex) {
   }
 
   // Scroll/flash in the ui
-  const $boxes = $(`rect.match-index-${match.matchIndex}`);
+  const $boxes = await poll(() => $(`rect.match-index-${match.matchIndex}`), { until: result => result.length > 0 });
   if ($boxes.length) {
     $boxes.css('animation', 'none');
     $boxes[0].scrollIntoView({

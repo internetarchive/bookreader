@@ -238,3 +238,27 @@ export function arrEquals(arr1, arr2) {
 export function arrChanged(arr1, arr2) {
   return arr1 && arr2 && !arrEquals(arr1, arr2);
 }
+
+/**
+ * Waits the provided number of ms and then resolves with a promise
+ * @param {number} ms
+ **/
+export async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * @template T
+ * @param {function(): T} fn
+ * @param {Object} options
+ * @param {function(T): boolean} [options.until]
+ * @return {T | undefined}
+ */
+export async function poll(fn, { step = 50, timeout = 500, until = val => Boolean(val), _sleep = sleep } = {}) {
+  const startTime = Date.now();
+  while (Date.now() - startTime < timeout) {
+    const result = fn();
+    if (until(result)) return result;
+    await _sleep(step);
+  }
+}

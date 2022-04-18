@@ -8,6 +8,7 @@ import {
   escapeHTML,
   getActiveElement,
   isInputActive,
+  poll,
   polyfillCustomEvent,
   PolyfilledCustomEvent,
 } from '@/src/BookReader/utils.js';
@@ -132,5 +133,29 @@ describe('PolyfilledCustomEvent', () => {
     new PolyfilledCustomEvent('foo');
     expect(createEventSpy.callCount).toBe(1);
     expect(initCustomEventSpy.callCount).toBe(1);
+  });
+});
+
+describe('poll', () => {
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+  test('polls until condition is true', async () => {
+    const fakeSleep = sinon.spy((ms) => jest.advanceTimersByTime(ms));
+
+    const returns = [null, null, 'foo'];
+    const check = sinon.spy(() => returns.shift());
+    const result = await poll(check, {_sleep: fakeSleep});
+    expect(fakeSleep.callCount).toBe(2);
+    expect(result).toBe('foo');
+    expect(check.callCount).toBe(3);
+  });
+
+  test('times out eventually', async () => {
+    const fakeSleep = sinon.spy((ms) => jest.advanceTimersByTime(ms));
+
+    const check = sinon.stub().returns(null);
+    const result = await poll(check, {_sleep: fakeSleep});
+    expect(result).toBeUndefined();
+    expect(check.callCount).toBe(10);
   });
 });
