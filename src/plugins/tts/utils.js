@@ -27,15 +27,6 @@ export function approximateWordCount(text) {
 }
 
 /**
- * Waits the provided number of ms and then resolves with a promise
- * @param {number} ms
- * @return {Promise}
- */
-export function sleep(ms) {
-  return new Promise(res => setTimeout(res, ms));
-}
-
-/**
  * Checks whether the current browser is on android
  * @param {string} [userAgent]
  * @return {boolean}

@@ -1,4 +1,5 @@
 import sinon from 'sinon';
+import { afterEventLoop } from '../utils.js';
 import {
   clamp,
   cssPercentage,
@@ -11,6 +12,7 @@ import {
   poll,
   polyfillCustomEvent,
   PolyfilledCustomEvent,
+  sleep,
 } from '@/src/BookReader/utils.js';
 
 test('clamp function returns Math.min(Math.max(value, min), max)', () => {
@@ -157,5 +159,28 @@ describe('poll', () => {
     const result = await poll(check, {_sleep: fakeSleep});
     expect(result).toBeUndefined();
     expect(check.callCount).toBe(10);
+  });
+});
+
+describe('sleep', () => {
+  test('Sleep 0 doest not called immediately', async () => {
+    const spy = sinon.spy();
+    sleep(0).then(spy);
+    expect(spy.callCount).toBe(0);
+    await afterEventLoop();
+    expect(spy.callCount).toBe(1);
+  });
+
+  test('Waits the appropriate ms', async () => {
+    const clock = sinon.useFakeTimers();
+    const spy = sinon.spy();
+    sleep(10).then(spy);
+    expect(spy.callCount).toBe(0);
+    clock.tick(10);
+    expect(spy.callCount).toBe(0);
+    clock.restore();
+
+    await afterEventLoop();
+    expect(spy.callCount).toBe(1);
   });
 });

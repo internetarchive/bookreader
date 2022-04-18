@@ -1,5 +1,5 @@
 import BookReader from '@/src/BookReader';
-import { sleep } from '@/src/plugins/tts/utils';
+import { sleep } from '@/src/BookReader/utils.js';
 import sinon from 'sinon';
 
 beforeAll(() => {

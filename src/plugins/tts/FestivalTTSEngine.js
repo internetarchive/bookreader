@@ -1,5 +1,5 @@
 import AbstractTTSEngine from './AbstractTTSEngine.js';
-import { sleep } from './utils.js';
+import { sleep } from '../../BookReader/utils.js';
 /* global soundManager */
 import 'soundmanager2';
 import 'jquery.browser';

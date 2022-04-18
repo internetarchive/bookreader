@@ -66,31 +66,6 @@ describe('approximateWordCount', () => {
   });
 });
 
-describe('sleep', () => {
-  const { sleep } = utils;
-
-  test('Sleep 0 doest not called immediately', async () => {
-    const spy = sinon.spy();
-    sleep(0).then(spy);
-    expect(spy.callCount).toBe(0);
-    await afterEventLoop();
-    expect(spy.callCount).toBe(1);
-  });
-
-  test('Waits the appropriate ms', async () => {
-    const clock = sinon.useFakeTimers();
-    const spy = sinon.spy();
-    sleep(10).then(spy);
-    expect(spy.callCount).toBe(0);
-    clock.tick(10);
-    expect(spy.callCount).toBe(0);
-    clock.restore();
-
-    await afterEventLoop();
-    expect(spy.callCount).toBe(1);
-  });
-});
-
 describe('toISO6391', () => {
   const { toISO6391 } = utils;
 
