@@ -1,6 +1,7 @@
 /* global br */
 import { isChrome, isFirefox } from '../../util/browserSniffing.js';
-import { sleep, promisifyEvent, isAndroid } from './utils.js';
+import { promisifyEvent, isAndroid } from './utils.js';
+import { sleep } from '../../BookReader/utils.js';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").AbstractTTSSound} AbstractTTSSound */

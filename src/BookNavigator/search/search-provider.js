@@ -1,6 +1,7 @@
 import { html, nothing } from 'lit';
 import '@internetarchive/icon-search/icon-search';
 import './search-results';
+/** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 
 let searchState = {
   query: '',
@@ -28,10 +29,10 @@ export default class SearchProvider {
     this.bindEventListeners = this.bindEventListeners.bind(this);
     this.getMenuDetails = this.getMenuDetails.bind(this);
     this.getComponent = this.getComponent.bind(this);
-    this.advanceToPage = this.advanceToPage.bind(this);
     this.updateMenu = this.updateMenu.bind(this);
 
     this.onProviderChange = onProviderChange;
+    /** @type {import('@/src/BookReader.js').default} */
     this.bookreader = bookreader;
     this.icon = html`<ia-icon-search style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-search>`;
     this.label = 'Search inside';
@@ -174,13 +175,10 @@ export default class SearchProvider {
   `;
   }
 
+  /**
+   * @param {{ detail: {match: SearchInsideMatch} }} param0
+   */
   onSearchResultsClicked({ detail }) {
-    const page = detail.match.par[0].page;
-    this.advanceToPage(page);
-  }
-
-  advanceToPage(leaf) {
-    const page = this.bookreader.leafNumToIndex(leaf);
-    this.bookreader._searchPluginGoToResult(page);
+    this.bookreader._searchPluginGoToResult(detail.match.matchIndex);
   }
 }

@@ -178,6 +178,15 @@ describe('renderBoxesInPageContainerLayer', () => {
     expect(container.querySelectorAll('.foo rect').length).toBe(3);
   });
 
+  test('Adds optional classes', () => {
+    const container = document.createElement('div');
+    const page = { width: 100, height: 200 };
+    const boxes = [{l: 1, r: 2, t: 3, b: 4}, {l: 1, r: 2, t: 3, b: 4}, {l: 1, r: 2, t: 3, b: 4}];
+    renderBoxesInPageContainerLayer('foo', boxes, page, container, ['match-1', 'match-2', 'match-3']);
+    const rects = Array.from(container.querySelectorAll('.foo rect'));
+    expect(rects.map(r => r.getAttribute('class'))).toEqual(['match-1', 'match-2', 'match-3']);
+  });
+
   test('Handles no boxes', () => {
     const container = document.createElement('div');
     const page = { width: 100, height: 200 };

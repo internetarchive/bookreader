@@ -23,21 +23,6 @@ describe('Search Provider', () => {
     expect(provider.menuDetails).to.exist;
     expect(provider.component).to.exist;
   });
-  describe('BR calls', () => {
-    it('`advanceToPage', () => {
-      const provider = new searchProvider({
-        onProviderChange: sinon.fake(),
-        bookreader: {
-          leafNumToIndex: sinon.fake(),
-          _searchPluginGoToResult: sinon.fake()
-        }
-      });
-
-      provider.advanceToPage(1);
-      expect(provider?.bookreader.leafNumToIndex.callCount).to.equal(1);
-      expect(provider?.bookreader._searchPluginGoToResult.callCount).to.equal(1);
-    });
-  });
   describe('Search request life cycles', () => {
     it('Event: catches `BookReader:SearchStarted`', async() => {
       const provider = new searchProvider({
@@ -106,7 +91,6 @@ describe('Search Provider', () => {
           _searchPluginGoToResult: sinon.fake()
         }
       });
-      sinon.spy(provider, 'advanceToPage');
 
       const searchResultStub = {
         match: { par: [{ text: 'foo', page: 3 }] },
@@ -116,7 +100,6 @@ describe('Search Provider', () => {
           { detail: searchResultStub })
       );
 
-      expect(provider.advanceToPage.callCount).to.equal(1);
       expect(provider.bookreader._searchPluginGoToResult.callCount).to.equal(1);
     });
   });

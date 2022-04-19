@@ -31,9 +31,22 @@
     pointer-events: none;
 
     rect {
-      fill: #0000ff;
-      fill-opacity: 0.2;
-      animation: hiliteFadeIn .2s;
+      // Note: Can't use fill-opacity ; safari inexplicably applies that to
+      // the outline as well
+      fill: rgba(0, 0, 255, 0.2);
+    }
+  }
+
+  .searchHiliteLayer rect {
+    animation: highlightFocus 600ms 1 reverse;
+    stroke: blue;
+    stroke-width: 4px;
+
+    // Sass for loop for nth-child animation delay
+    @for $i from 1 through 10 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{($i - 1) * 50}ms;
+      }
     }
   }
 
@@ -207,8 +220,8 @@
   }
 }
 
-@keyframes hiliteFadeIn {
-  from { fill-opacity: 0; }
+@keyframes highlightFocus {
+  to { stroke-width: 20px; }
 }
 
 /* Mid size breakpoint */

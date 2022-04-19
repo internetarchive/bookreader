@@ -103,6 +103,10 @@ export function boxToSVGRect({ l: left, r: right, b: bottom, t: top }) {
   rect.setAttribute("y", top.toString());
   rect.setAttribute("width", (right - left).toString());
   rect.setAttribute("height", (bottom - top).toString());
+
+  // Some style; corner radius 4px. Can't set this in CSS yet
+  rect.setAttribute("rx", "4");
+  rect.setAttribute("ry", "4");
   return rect;
 }
 
@@ -111,8 +115,9 @@ export function boxToSVGRect({ l: left, r: right, b: bottom, t: top }) {
  * @param {Array<{ l: number, r: number, b: number, t: number }>} boxes
  * @param {PageModel} page
  * @param {HTMLElement} containerEl
+ * @param {string[]} [rectClasses] CSS classes to add to the rects
  */
-export function renderBoxesInPageContainerLayer(layerClass, boxes, page, containerEl) {
+export function renderBoxesInPageContainerLayer(layerClass, boxes, page, containerEl, rectClasses = null) {
   const mountedSvg = containerEl.querySelector(`.${layerClass}`);
   // Create the layer if it's not there
   const svg = mountedSvg || createSVGPageLayer(page, layerClass);
@@ -122,5 +127,12 @@ export function renderBoxesInPageContainerLayer(layerClass, boxes, page, contain
     if (imgEl) $(svg).insertAfter(imgEl);
     else $(svg).prependTo(containerEl);
   }
-  boxes.forEach(box => svg.appendChild(boxToSVGRect(box)));
+
+  for (const [i, box] of boxes.entries()) {
+    const rect = boxToSVGRect(box);
+    if (rectClasses) {
+      rect.setAttribute('class', rectClasses[i]);
+    }
+    svg.appendChild(rect);
+  }
 }
