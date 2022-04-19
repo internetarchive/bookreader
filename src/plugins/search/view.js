@@ -230,9 +230,7 @@ class SearchView {
     matches.forEach((match) => {
       const queryString = match.text;
       const pageIndex = this.br.leafNumToIndex(match.par[0].page);
-      const pageNumber = this.br.getPageNum(pageIndex);
       const uiStringSearch = "Search result"; // i18n
-      const uiStringPage = "Page"; // i18n
 
       const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br.getNumLeafs() - 1);
 
@@ -257,7 +255,7 @@ class SearchView {
         .append(`
           <div class="BRquery">
             <div>${queryStringWithBTruncated || queryStringWithB}</div>
-            <div>${uiStringPage} ${pageNumber}</div>
+            <div>Page ${match.displayPageNumber}</div>
           </div>
         `)
         .appendTo(this.br.$('.BRnavline'))

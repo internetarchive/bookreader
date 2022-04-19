@@ -257,6 +257,7 @@ BookReader.prototype.cancelSearchRequest = function () {
 /**
  * @typedef {object} SearchInsideMatch
  * @property {number} matchIndex This is a fake field! Not part of the API response. It is added by the JS.
+ * @property {string} displayPageNumber (fake field) The page number as it should be displayed in the UI.
  * @property {string} text
  * @property {Array<{ page: number, boxes: SearchInsideMatchBox[] }>} par
  */
@@ -279,6 +280,7 @@ BookReader.prototype.BRSearchCallback = function(results, options) {
   // an active/selected match
   for (const [index, match] of results.matches.entries()) {
     match.matchIndex = index;
+    match.displayPageNumber = this.getPageNum(this.leafNumToIndex(match.par[0].page));
     for (const par of match.par) {
       for (const box of par.boxes) {
         box.matchIndex = index;

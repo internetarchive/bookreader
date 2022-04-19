@@ -5,7 +5,6 @@ import {
   oneEvent,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../../src/BookReader.js';
 import { IABookSearchResults } from '../../../../src/BookNavigator/search/search-results.js';
 
 const container = (results = [], query = '') => (
@@ -18,6 +17,7 @@ const results = [{
   text: `In the drawing of caricatures and cartoons\u2014or any other com' mercial art, for that matter\u2014the artist should know something about the processes of reproduction for that particular form of art work. For pen and ink work the engraving is made on a sine printing plate. It is not necessary, however, to know all about these processes of reproduction. The artist should know that all work intended for line rqproducttons should be made on white paper or {{{${searchQuery}}}} Board with black drawing ink. The drawing to be reproduced is photographed on a chemically treated sine plate, which is then treated with acid. This acid eats away the surface of the sine, except the photographed' lines, which are left in relief, somewhat like printing type. Colored inks do not photograph well; neither does black ink on colored paper.`,
   cover: '//placehold.it/30x44',
   title: 'Book title',
+  displayPageNumber: 'Page 24',
   par: [{
     boxes: [{
       r: 2672, b: 792, t: 689, page: 24, l: 2424,
@@ -32,6 +32,7 @@ const results = [{
   }],
 }, {
   text: `Drawings intended for sale should be made on a good grade of {{{${searchQuery}}}} Board, and a margin left all the way around the drawings. They should be mailed flat, and'require first class postage. Enclose postage for the return of the drawings. Only send good drawings of a reason- able quantity. Enclose a neat and terse letter to the one you are sending the drawings to, written with pen and ink or typewriter if possible, on`,
+  displayPageNumber: 'Page 86',
   par: [{
     boxes: [{
       r: 698, b: 4460, t: 4324, page: 86, l: 450,

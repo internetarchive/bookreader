@@ -38,15 +38,12 @@ export class BookSearchResult extends LitElement {
   render() {
     /** @type {SearchInsideMatch} */
     const match = this.match;
-    // TODO: Make this not use the global br instance
-    const pageIndex = window.br.leafNumToIndex(match.par[0].page);
-    const pageNumber = window.br.getPageNum(pageIndex);
     const coverImage = html`<img src="${match.cover}" />`;
     return html`
       <li @click=${this.resultSelected}>
         ${match.cover ? coverImage : nothing}
         <h4>${match.title || nothing}</h4>
-        <p class="page-num">Page ${pageNumber}</p>
+        <p class="page-num">Page ${match.displayPageNumber}</p>
         ${this.highlightedHit(match.text)}
       </li>
     `;
