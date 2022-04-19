@@ -1,3 +1,8 @@
+# 5.0.0-40
+Fix: Better search highlights @cdrini
+Dev: update lit 2 components @iisa
+Dev: update lit @renovate
+
 # 5.0.0-39
 Fix: Performance improvements to scroll/zooming when text layer is larger @cdrini
 Fix: Update zoom in/out icons to match iconochive glyphs @pezvi

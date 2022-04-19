@@ -1494,9 +1494,42 @@ i.BRicon {
   pointer-events: none;
 }
 .BookReader .searchHiliteLayer rect, .BookReader .ttsHiliteLayer rect, .BRmobileMenu .searchHiliteLayer rect, .BRmobileMenu .ttsHiliteLayer rect, .BRfloat .searchHiliteLayer rect, .BRfloat .ttsHiliteLayer rect {
-  fill: #0000ff;
-  fill-opacity: 0.2;
-  animation: hiliteFadeIn 0.2s;
+  fill: rgba(0, 0, 255, 0.2);
+}
+.BookReader .searchHiliteLayer rect, .BRmobileMenu .searchHiliteLayer rect, .BRfloat .searchHiliteLayer rect {
+  animation: highlightFocus 600ms 1 reverse;
+  stroke: blue;
+  stroke-width: 4px;
+}
+.BookReader .searchHiliteLayer rect:nth-child(1), .BRmobileMenu .searchHiliteLayer rect:nth-child(1), .BRfloat .searchHiliteLayer rect:nth-child(1) {
+  animation-delay: 0ms;
+}
+.BookReader .searchHiliteLayer rect:nth-child(2), .BRmobileMenu .searchHiliteLayer rect:nth-child(2), .BRfloat .searchHiliteLayer rect:nth-child(2) {
+  animation-delay: 50ms;
+}
+.BookReader .searchHiliteLayer rect:nth-child(3), .BRmobileMenu .searchHiliteLayer rect:nth-child(3), .BRfloat .searchHiliteLayer rect:nth-child(3) {
+  animation-delay: 100ms;
+}
+.BookReader .searchHiliteLayer rect:nth-child(4), .BRmobileMenu .searchHiliteLayer rect:nth-child(4), .BRfloat .searchHiliteLayer rect:nth-child(4) {
+  animation-delay: 150ms;
+}
+.BookReader .searchHiliteLayer rect:nth-child(5), .BRmobileMenu .searchHiliteLayer rect:nth-child(5), .BRfloat .searchHiliteLayer rect:nth-child(5) {
+  animation-delay: 200ms;
+}
+.BookReader .searchHiliteLayer rect:nth-child(6), .BRmobileMenu .searchHiliteLayer rect:nth-child(6), .BRfloat .searchHiliteLayer rect:nth-child(6) {
+  animation-delay: 250ms;
+}
+.BookReader .searchHiliteLayer rect:nth-child(7), .BRmobileMenu .searchHiliteLayer rect:nth-child(7), .BRfloat .searchHiliteLayer rect:nth-child(7) {
+  animation-delay: 300ms;
+}
+.BookReader .searchHiliteLayer rect:nth-child(8), .BRmobileMenu .searchHiliteLayer rect:nth-child(8), .BRfloat .searchHiliteLayer rect:nth-child(8) {
+  animation-delay: 350ms;
+}
+.BookReader .searchHiliteLayer rect:nth-child(9), .BRmobileMenu .searchHiliteLayer rect:nth-child(9), .BRfloat .searchHiliteLayer rect:nth-child(9) {
+  animation-delay: 400ms;
+}
+.BookReader .searchHiliteLayer rect:nth-child(10), .BRmobileMenu .searchHiliteLayer rect:nth-child(10), .BRfloat .searchHiliteLayer rect:nth-child(10) {
+  animation-delay: 450ms;
 }
 .BookReader .BRchapter, .BookReader .BRsearch, .BRmobileMenu .BRchapter, .BRmobileMenu .BRsearch, .BRfloat .BRchapter, .BRfloat .BRsearch {
   position: absolute;
@@ -1648,9 +1681,9 @@ i.BRicon {
   display: none;
 }
 
-@keyframes hiliteFadeIn {
-  from {
-    fill-opacity: 0;
+@keyframes highlightFocus {
+  to {
+    stroke-width: 20px;
   }
 }
 /* Mid size breakpoint */
