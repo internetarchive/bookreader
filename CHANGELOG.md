@@ -1,3 +1,7 @@
+# 5.0.0-42
+Dev: update testing dependencies @renovate
+Dev: update `<ia-item-navigator>` @iisa
+
 # 5.0.0-40
 Fix: Better search highlights @cdrini
 Dev: update lit 2 components @iisa
