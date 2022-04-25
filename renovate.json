@@ -38,6 +38,11 @@
     {
       "matchPackagePatterns": ["*"],
       "rangeStrategy": "bump"
+    },
+    {
+      "matchDatasources": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "automerge": true
     }
   ]
 }
