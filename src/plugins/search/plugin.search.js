@@ -29,6 +29,8 @@ import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.
 import SearchView from './view.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
+/** @typedef {import('../../BookReader/BookModel').LeafNum} LeafNum */
+/** @typedef {import('../../BookReader/BookModel').PageNumString} PageNumString */
 
 jQuery.extend(BookReader.defaultOptions, {
   server: 'ia600609.us.archive.org',
@@ -257,6 +259,7 @@ BookReader.prototype.cancelSearchRequest = function () {
 /**
  * @typedef {object} SearchInsideMatch
  * @property {number} matchIndex This is a fake field! Not part of the API response. It is added by the JS.
+ * @property {string} displayPageNumber (fake field) The page number as it should be displayed in the UI.
  * @property {string} text
  * @property {Array<{ page: number, boxes: SearchInsideMatchBox[] }>} par
  */
@@ -269,22 +272,32 @@ BookReader.prototype.cancelSearchRequest = function () {
  */
 
 /**
- * Search Results return handler
+ * Attach some fields to search inside results
  * @param {SearchInsideResults} results
- * @param {object} options
- * @param {boolean} options.goToFirstResult
+ * @param {(pageNum: LeafNum) => PageNumString} displayPageNumberFn
  */
-BookReader.prototype.BRSearchCallback = function(results, options) {
+export function marshallSearchResults(results, displayPageNumberFn) {
   // Attach matchIndex to a few things to make it easier to identify
   // an active/selected match
   for (const [index, match] of results.matches.entries()) {
     match.matchIndex = index;
+    match.displayPageNumber = displayPageNumberFn(match.par[0].page);
     for (const par of match.par) {
       for (const box of par.boxes) {
         box.matchIndex = index;
       }
     }
   }
+}
+
+/**
+ * Search Results return handler
+ * @param {SearchInsideResults} results
+ * @param {object} options
+ * @param {boolean} options.goToFirstResult
+ */
+BookReader.prototype.BRSearchCallback = function(results, options) {
+  marshallSearchResults(results, pageNum => this.getPageNum(this.leafNumToIndex(pageNum)));
   this.searchResults = results || [];
 
   this.updateSearchHilites();
