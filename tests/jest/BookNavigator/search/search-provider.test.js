@@ -1,6 +1,6 @@
-import { expect, fixtureCleanup, fixtureSync } from '@open-wc/testing';
+import { fixtureCleanup, fixtureSync } from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import searchProvider from '../../../../src/BookNavigator/search/search-provider';
+import searchProvider from '@/src/BookNavigator/search/search-provider';
 
 afterEach(() => {
   sinon.restore();
@@ -14,26 +14,26 @@ describe('Search Provider', () => {
       bookreader: {}
     });
 
-    expect(provider.bookreader).to.exist;
-    expect(provider.onProviderChange).to.exist;
-    expect(provider.id).to.equal('search');
-    expect(provider.icon).to.exist;
-    expect(fixtureSync(provider.icon).tagName).to.equal('IA-ICON-SEARCH');
-    expect(provider.label).to.equal('Search inside');
-    expect(provider.menuDetails).to.exist;
-    expect(provider.component).to.exist;
+    expect(provider.bookreader).toBeDefined();
+    expect(provider.onProviderChange).toBeDefined();
+    expect(provider.id).toEqual('search');
+    expect(provider.icon).toBeDefined();
+    expect(fixtureSync(provider.icon).tagName).toEqual('IA-ICON-SEARCH');
+    expect(provider.label).toEqual('Search inside');
+    expect(provider.menuDetails).toBeDefined();
+    expect(provider.component).toBeDefined();
   });
   describe('Search request life cycles', () => {
-    it('Event: catches `BookReader:SearchStarted`', async() => {
+    test('Event: catches `BookReader:SearchStarted`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
         bookreader: {}
       });
       sinon.spy(provider, 'updateMenu');
       window.dispatchEvent(new CustomEvent('BookReader:SearchStarted', { detail: { props: { term: 'foo' }}}));
-      expect(provider.updateMenu.callCount).to.equal(1);
+      expect(provider.updateMenu.callCount).toEqual(1);
     });
-    it('Event: catches `BookReader:SearchCallback`', async() => {
+    test('Event: catches `BookReader:SearchCallback`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
         bookreader: {}
@@ -41,10 +41,10 @@ describe('Search Provider', () => {
       sinon.spy(provider, 'updateMenu');
       const brStub = {};
       window.dispatchEvent(new CustomEvent('BookReader:SearchCallback', { detail: { props: { instance: brStub, results: { matches: []} }}}));
-      expect(provider.updateMenu.callCount).to.equal(1);
-      expect(provider.bookreader).to.equal(brStub);
+      expect(provider.updateMenu.callCount).toEqual(1);
+      expect(provider.bookreader).toEqual(brStub);
     });
-    it('Event: catches `BookReader:SearchCallbackEmpty`', async() => {
+    test('Event: catches `BookReader:SearchCallbackEmpty`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
         bookreader: {}
@@ -53,11 +53,11 @@ describe('Search Provider', () => {
       sinon.spy(provider, 'updateMenu');
       const brStub = {};
       window.dispatchEvent(new CustomEvent('BookReader:SearchCallbackEmpty', { detail: { props: { instance: brStub }}}));
-      expect(provider.onSearchRequestError.getCall(0).args[1]).to.equal('noResults');
-      expect(provider.updateMenu.callCount).to.equal(1);
-      expect(provider.bookreader).to.equal(brStub);
+      expect(provider.onSearchRequestError.getCall(0).args[1]).toEqual('noResults');
+      expect(provider.updateMenu.callCount).toEqual(1);
+      expect(provider.bookreader).toEqual(brStub);
     });
-    it('Event: catches `BookReader:SearchCallbackNotIndexed`', async() => {
+    test('Event: catches `BookReader:SearchCallbackNotIndexed`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
         bookreader: {}
@@ -66,11 +66,11 @@ describe('Search Provider', () => {
       sinon.spy(provider, 'onSearchRequestError');
       sinon.spy(provider, 'updateMenu');
       window.dispatchEvent(new CustomEvent('BookReader:SearchCallbackNotIndexed', { detail: { props: { instance: brStub }}}));
-      expect(provider.onSearchRequestError.getCall(0).args[1]).to.equal('notIndexed');
-      expect(provider.updateMenu.callCount).to.equal(1);
-      expect(provider.bookreader).to.equal(brStub);
+      expect(provider.onSearchRequestError.getCall(0).args[1]).toEqual('notIndexed');
+      expect(provider.updateMenu.callCount).toEqual(1);
+      expect(provider.bookreader).toEqual(brStub);
     });
-    it('Event: catches `BookReader:SearchCallbackError`', async() => {
+    test('Event: catches `BookReader:SearchCallbackError`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
         bookreader: {}
@@ -79,11 +79,11 @@ describe('Search Provider', () => {
       sinon.spy(provider, 'updateMenu');
       const brStub = {};
       window.dispatchEvent(new CustomEvent('BookReader:SearchCallbackError', { detail: { props: { instance: brStub }}}));
-      expect(provider.onSearchRequestError.getCall(0).args[1]).to.equal(undefined);
-      expect(provider.updateMenu.callCount).to.equal(1);
-      expect(provider.bookreader).to.equal(brStub);
+      expect(provider.onSearchRequestError.getCall(0).args[1]).toEqual(undefined);
+      expect(provider.updateMenu.callCount).toEqual(1);
+      expect(provider.bookreader).toEqual(brStub);
     });
-    it('Event: catches `component@resultSelected` - user clicks result in side panel - & turns page', async() => {
+    test('Event: catches `component@resultSelected` - user clicks result in side panel - & turns page', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
         bookreader: {
@@ -100,7 +100,7 @@ describe('Search Provider', () => {
           { detail: searchResultStub })
       );
 
-      expect(provider.bookreader._searchPluginGoToResult.callCount).to.equal(1);
+      expect(provider.bookreader._searchPluginGoToResult.callCount).toEqual(1);
     });
   });
 });
