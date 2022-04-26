@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
       with:
         node-version: 16.x
     - name: Cache node_modules
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: cache
       with:
         # Caching node_modules isn't recommended because it can break across
@@ -36,18 +36,18 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
       with:
         node-version: 16.x
     - name: Load node_modules from cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # Use node_modules from previous jobs
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - name: Cache BookReader/
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: build-cache
       with:
         # Cache the build files so we don't have to build twice for e2e tests
@@ -60,12 +60,12 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
       with:
         node-version: 16.x
     - name: Load node_modules from cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # Use node_modules from previous jobs
         path: 'node_modules'
@@ -78,18 +78,18 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
       with:
         node-version: 16.x
     - name: Load node_modules from cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # Use node_modules from previous jobs
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - name: Load BookReader/ from cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # Cache the build files so we don't have to build twice for e2e tests
         path: 'BookReader'
