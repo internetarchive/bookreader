@@ -41,7 +41,7 @@
       "rangeStrategy": "bump"
     },
     {
-      "matchDatasources": ["github-actions"],
+      "matchPackagePatterns": ["^actions/"],
       "groupName": "GitHub Actions",
       "automerge": true
     }
