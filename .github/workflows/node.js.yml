@@ -19,7 +19,7 @@ jobs:
       with:
         node-version: 16.x
     - name: Cache node_modules
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: cache
       with:
         # Caching node_modules isn't recommended because it can break across
@@ -41,13 +41,13 @@ jobs:
       with:
         node-version: 16.x
     - name: Load node_modules from cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # Use node_modules from previous jobs
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - name: Cache BookReader/
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: build-cache
       with:
         # Cache the build files so we don't have to build twice for e2e tests
@@ -65,7 +65,7 @@ jobs:
       with:
         node-version: 16.x
     - name: Load node_modules from cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # Use node_modules from previous jobs
         path: 'node_modules'
@@ -83,13 +83,13 @@ jobs:
       with:
         node-version: 16.x
     - name: Load node_modules from cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # Use node_modules from previous jobs
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - name: Load BookReader/ from cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         # Cache the build files so we don't have to build twice for e2e tests
         path: 'BookReader'
