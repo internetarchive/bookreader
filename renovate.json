@@ -14,6 +14,7 @@
         "eslint-plugin-no-jquery",
         "eslint-plugin-testcafe",
         "jest",
+        "jest-environment-jsdom",
         "karma-coverage",
         "sinon",
         "testcafe"
