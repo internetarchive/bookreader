@@ -1,11 +1,10 @@
 import {
   html,
   fixture,
-  expect,
   oneEvent,
-} from '@open-wc/testing';
+} from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import { IABookSearchResults } from '../../../../src/BookNavigator/search/search-results.js';
+import { IABookSearchResults } from '@/src/BookNavigator/search/search-results.js';
 
 const container = (results = [], query = '') => (
   html`<ia-book-search-results .results=${results} .query=${query}></ia-book-search-results>`
@@ -52,64 +51,64 @@ describe('<ia-book-search-results>', () => {
     sinon.restore();
   });
 
-  it('sets default properties', async () => {
+  test('sets default properties', async () => {
     const query = 'bristol';
     const el = await fixture(container(results, query));
 
-    expect(el.results).to.equal(results);
-    expect(el.query).to.equal(query);
+    expect(el.results).toEqual(results);
+    expect(el.query).toEqual(query);
   });
 
-  it('sets results when passed in via event object', async () => {
+  test('sets results when passed in via event object', async () => {
     const el = await fixture(container());
 
     el.setResults({ detail: { results } });
-    expect(el.results).to.equal(results);
+    expect(el.results).toEqual(results);
   });
 
-  it('listens for a custom search callback event on the document', async () => {
+  test('listens for a custom search callback event on the document', async () => {
     IABookSearchResults.prototype.setResults = sinon.fake();
     const el = await fixture(container());
     const event = new Event('BookReader:SearchCallback');
 
     event.detail = { results };
     document.dispatchEvent(event);
-    expect(el.setResults.callCount).to.equal(1);
-    expect(el.setResults.firstArg).to.equal(event);
+    expect(el.setResults.callCount).toEqual(1);
+    expect(el.setResults.firstArg).toEqual(event);
   });
 
-  it('renders results that contain the book title', async () => {
+  test('renders results that contain the book title', async () => {
     sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
     const el = await fixture(container(results));
 
-    expect(el.innerHTML).to.include(`${results[0].title}`);
+    expect(el.innerHTML).toContain(`${results[0].title}`);
   });
 
-  it('renders results that contain a highlighted match', async () => {
+  test('renders results that contain a highlighted match', async () => {
     sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
     const el = await fixture(container(results));
 
-    expect(el.innerHTML).to.include(`<mark>${searchQuery}</mark>`);
+    expect(el.innerHTML).toContain(`<mark>${searchQuery}</mark>`);
   });
 
-  it('renders results that contain an optional cover image', async () => {
+  test('renders results that contain an optional cover image', async () => {
     sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
     const el = await fixture(container(results));
 
-    expect(el.innerHTML).to.include(`<img src="${results[0].cover}">`);
+    expect(el.innerHTML).toContain(`<img src="${results[0].cover}">`);
   });
 
-  it('sets a query prop when search input receives input', async () => {
+  test('sets a query prop when search input receives input', async () => {
     const el = await fixture(container(results));
     const searchInput = el.shadowRoot.querySelector('[name="query"]');
 
     searchInput.value = searchQuery;
     searchInput.dispatchEvent(new Event('keyup'));
 
-    expect(el.query).to.equal(searchQuery);
+    expect(el.query).toEqual(searchQuery);
   });
 
-  it('emits a custom event when search form submitted when input is populated', async () => {
+  test('emits a custom event when search form submitted when input is populated', async () => {
     const el = await fixture(container(results));
 
     setTimeout(() => {
@@ -119,35 +118,35 @@ describe('<ia-book-search-results>', () => {
     });
     const response = await oneEvent(el, 'bookSearchInitiated');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('uses a singular noun when one result given', async () => {
+  test('uses a singular noun when one result given', async () => {
     const el = await fixture(container([results[0]]));
     const resultsCount = await fixture(el.resultsCount);
 
-    expect(resultsCount.innerHTML).to.include('1 result');
+    expect(resultsCount.innerHTML).toContain('1 result');
   });
 
-  it('can render header with active options count', async () => {
+  test('can render header with active options count', async () => {
     const el = await fixture(container(results));
     el.renderHeader = true;
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('header p').innerText).to.include('2');
+    expect(el.shadowRoot.querySelector('header p').textContent).toContain('2');
   });
 
-  it('renders search all files checkbox when enabled', async () => {
+  test('renders search all files checkbox when enabled', async () => {
     const el = await fixture(container(results));
     el.renderSearchAllFiles = true;
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('[name="all_files"]')).to.not.be.null;
+    expect(el.shadowRoot.querySelector('[name="all_files"]')).not.toBeNull();
   });
 
-  it('emits a resultSelected event when a search result is clicked', async () => {
+  test('emits a resultSelected event when a search result is clicked', async () => {
     const el = await fixture(container(results));
 
     setTimeout(() => (
@@ -155,10 +154,10 @@ describe('<ia-book-search-results>', () => {
     ));
     const response = await oneEvent(el, 'resultSelected');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('emits a closeMenu event when a search result is clicked', async () => {
+  test('emits a closeMenu event when a search result is clicked', async () => {
     const el = await fixture(container(results));
 
     setTimeout(() => (
@@ -166,75 +165,75 @@ describe('<ia-book-search-results>', () => {
     ));
     const response = await oneEvent(el, 'closeMenu');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
   describe('Search results placeholders', () => {
-    it('renders a loading state when queryInProgress is true', async () => {
+    test('renders a loading state when queryInProgress is true', async () => {
       const el = await fixture(container(results));
 
       el.queryInProgress = true;
       await el.updateComplete;
 
-      expect(el.shadowRoot.querySelector('.loading')).to.not.be.null;
+      expect(el.shadowRoot.querySelector('.loading')).not.toBeNull();
     });
-    it('renders an error message when provided', async () => {
+    test('renders an error message when provided', async () => {
       const el = await fixture(container([]));
       const message = 'Sample error message';
       el.errorMessage = message;
       await el.updateComplete;
 
-      expect(el.shadowRoot.querySelector('.error-message')).to.exist;
-      expect(el.shadowRoot.querySelector('.search-cta')).to.be.null;
+      expect(el.shadowRoot.querySelector('.error-message')).toBeDefined();
+      expect(el.shadowRoot.querySelector('.search-cta')).toBeNull();
     });
-    it('displays call to search when no results or search errors are showing', async () => {
+    test('displays call to search when no results or search errors are showing', async () => {
       const el = await fixture(container([]));
 
-      expect(el.shadowRoot.querySelector('.search-cta')).to.exist;
-      expect(el.shadowRoot.querySelector('.error-message')).to.be.null;
-      expect(el.shadowRoot.querySelector('.results')).to.be.null;
+      expect(el.shadowRoot.querySelector('.search-cta')).toBeDefined();
+      expect(el.shadowRoot.querySelector('.error-message')).toBeNull();
+      expect(el.shadowRoot.querySelector('.results')).toBeNull();
     });
   });
 
-  it('displays results images when told to', async () => {
+  test('displays results images when told to', async () => {
     const el = await fixture(container(results));
     el.displayResultImages = true;
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('.results.show-image')).to.exist;
+    expect(el.shadowRoot.querySelector('.results.show-image')).toBeDefined();
   });
 
   describe('search input focus', () => {
-    it('will always try to re-focus once the component updates', async () => {
+    test('will always try to re-focus once the component updates', async () => {
       const el = await fixture(container(results));
       el.focusOnInputIfNecessary = sinon.fake();
       // update any property to fire lifecycle
       el.results = [];
       await el.updateComplete;
 
-      expect(el.focusOnInputIfNecessary.callCount).to.equal(1);
+      expect(el.focusOnInputIfNecessary.callCount).toEqual(1);
     });
-    it('refocuses on input when results are empty', async () => {
+    test('refocuses on input when results are empty', async () => {
       const el = await fixture(container(results));
       el.results = [];
       await el.updateComplete;
 
       const searchInputField = el.shadowRoot.querySelector('input[type=\'search\']');
-      expect(searchInputField).to.equal(el.shadowRoot.activeElement);
+      expect(searchInputField).toEqual(el.shadowRoot.activeElement);
     });
   });
 
-  // it("emits a bookSearchCanceled event when loading state's cancel action clicked", async () => {
-  //   const el = await fixture(container(results));
+  test("emits a bookSearchCanceled event when loading state's cancel action clicked", async () => {
+    const el = await fixture(container(results));
 
-  //   el.queryInProgress = true;
-  //   await el.updateComplete;
+    el.queryInProgress = true;
+    await el.updateComplete;
 
-  //   setTimeout(() => (
-  //     el.shadowRoot.querySelector('button').click()
-  //   ));
-  //   const response = await oneEvent(el, 'bookSearchCanceled');
+    setTimeout(() => (
+      el.shadowRoot.querySelector('button').click()
+    ));
+    const response = await oneEvent(el, 'bookSearchCanceled');
 
-  //   expect(response).to.exist;
-  // });
+    expect(response).toBeDefined();
+  });
 });
