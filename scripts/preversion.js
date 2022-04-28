@@ -4,7 +4,6 @@ const OLD_RELEASE_URL = `https://api.github.com/repos/internetarchive/bookreader
 async function main() {
     const {default: fetch} = await import('node-fetch');
 
-    console.log(fetch);
     const {created_at} = await fetch(OLD_RELEASE_URL).then(r => r.json());
     const today = new Date().toISOString().slice(0, -5);
     const searchUrl = 'https://github.com/internetarchive/bookreader/pulls?' + new URLSearchParams({
