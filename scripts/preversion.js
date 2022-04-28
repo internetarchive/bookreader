@@ -1,8 +1,10 @@
 const { version: OLD_VERSION } = require('../package.json');
-const fetch = require('node-fetch');
 const OLD_RELEASE_URL = `https://api.github.com/repos/internetarchive/bookreader/releases/tags/v${OLD_VERSION}`;
 
 async function main() {
+    const {default: fetch} = await import('node-fetch');
+
+    console.log(fetch);
     const {created_at} = await fetch(OLD_RELEASE_URL).then(r => r.json());
     const today = new Date().toISOString().slice(0, -5);
     const searchUrl = 'https://github.com/internetarchive/bookreader/pulls?' + new URLSearchParams({
