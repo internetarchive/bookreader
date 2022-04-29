@@ -1,3 +1,8 @@
+# 5.0.0-43
+Fix: search results panel display asserted page numbers @cdrini
+Dev: dependency updates @renovate
+Dev: node-fetch update @cdrini
+
 # 5.0.0-42
 Dev: update testing dependencies @renovate
 Dev: update `<ia-item-navigator>` @iisa
