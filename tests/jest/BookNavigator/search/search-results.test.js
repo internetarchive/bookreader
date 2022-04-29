@@ -81,21 +81,21 @@ describe('<ia-book-search-results>', () => {
     sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
     const el = await fixture(container(results));
 
-    expect(el.innerHTML).toContain(`${results[0].title}`);
+    expect(el.innerHTML).toInclude(`${results[0].title}`);
   });
 
   test('renders results that contain a highlighted match', async () => {
     sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
     const el = await fixture(container(results));
 
-    expect(el.innerHTML).toContain(`<mark>${searchQuery}</mark>`);
+    expect(el.innerHTML).toInclude(`<mark>${searchQuery}</mark>`);
   });
 
   test('renders results that contain an optional cover image', async () => {
     sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
     const el = await fixture(container(results));
 
-    expect(el.innerHTML).toContain(`<img src="${results[0].cover}">`);
+    expect(el.innerHTML).toInclude(`<img src="${results[0].cover}">`);
   });
 
   test('sets a query prop when search input receives input', async () => {
@@ -125,7 +125,7 @@ describe('<ia-book-search-results>', () => {
     const el = await fixture(container([results[0]]));
     const resultsCount = await fixture(el.resultsCount);
 
-    expect(resultsCount.innerHTML).toContain('1 result');
+    expect(resultsCount.innerHTML).toInclude('1 result');
   });
 
   test('can render header with active options count', async () => {
@@ -134,7 +134,7 @@ describe('<ia-book-search-results>', () => {
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('header p').textContent).toContain('2');
+    expect(el.shadowRoot.querySelector('header p').textContent).toInclude('2');
   });
 
   test('renders search all files checkbox when enabled', async () => {
@@ -143,7 +143,7 @@ describe('<ia-book-search-results>', () => {
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('[name="all_files"]')).not.toBeNull();
+    expect(el.shadowRoot.querySelector('[name="all_files"]')).to.not.be.null;
   });
 
   test('emits a resultSelected event when a search result is clicked', async () => {
@@ -175,8 +175,7 @@ describe('<ia-book-search-results>', () => {
       el.queryInProgress = true;
       await el.updateComplete;
 
-      expect(el.shadowRoot.querySelector('.loading')).not.toBeNull();
-    });
+      expect(el.shadowRoot.querySelector('.loading')).not.toBeNull()
     test('renders an error message when provided', async () => {
       const el = await fixture(container([]));
       const message = 'Sample error message';
@@ -223,17 +222,17 @@ describe('<ia-book-search-results>', () => {
     });
   });
 
-  test("emits a bookSearchCanceled event when loading state's cancel action clicked", async () => {
-    const el = await fixture(container(results));
+  // it("emits a bookSearchCanceled event when loading state's cancel action clicked", async () => {
+  //   const el = await fixture(container(results));
 
-    el.queryInProgress = true;
-    await el.updateComplete;
+  //   el.queryInProgress = true;
+  //   await el.updateComplete;
 
-    setTimeout(() => (
-      el.shadowRoot.querySelector('button').click()
-    ));
-    const response = await oneEvent(el, 'bookSearchCanceled');
+  //   setTimeout(() => (
+  //     el.shadowRoot.querySelector('button').click()
+  //   ));
+  //   const response = await oneEvent(el, 'bookSearchCanceled');
 
-    expect(response).toBeDefined();
-  });
+  //   expect(response).toBeDefined();
+  // });
 });
