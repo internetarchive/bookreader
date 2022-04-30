@@ -1,6 +1,6 @@
 import { fixtureSync } from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import SharingProvider from '@src/BookNavigator/sharing.js';
+import SharingProvider from '@/src/BookNavigator/sharing.js';
 
 afterEach(() => {
   sinon.restore();
