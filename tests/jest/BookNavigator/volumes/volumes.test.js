@@ -67,7 +67,7 @@ describe('<viewable-files>', () => {
     expect(el.viewableFiles.length).toEqual(3);
     expect(el.shadowRoot.querySelectorAll("ul li").length).toEqual(3);
 
-    expect(el.shadowRoot.querySelector(".item-title").textContent).toInclude(`${viewableFiles[0].title}`);
+    expect(el.shadowRoot.querySelector(".item-title").textContent).toContain(`${viewableFiles[0].title}`);
   });
 
   test('render empty volumes', async () => {

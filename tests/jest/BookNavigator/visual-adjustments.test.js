@@ -60,7 +60,7 @@ describe('<ia-book-visual-adjustments>', () => {
   test('can render header with active options count', async () => {
     const renderHeader = true;
     const el = await fixture(container(renderHeader));
-    expect(el.shadowRoot.querySelector('header p').textContent).toInclude('1');
+    expect(el.shadowRoot.querySelector('header p').textContent).toContain('1');
   });
 
   test('does not render active options count element when none are selected', async () => {
