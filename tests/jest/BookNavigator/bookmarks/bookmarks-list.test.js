@@ -141,7 +141,7 @@ describe('<ia-bookmarks-list>', () => {
     await el.updateComplete;
 
     expect(el.editedBookmark).not.toEqual(bookmarks[0]);
-    expect(el.editedBookmark).not.toHaveProperty((['page', 'thumbnail', 'id']);
+    expect(el.editedBookmark).not.toHaveProperty(('page', 'thumbnail', 'id');
   });
 
   test('resets editedBookmark when deleteBookmark callback called', async () => {
@@ -153,7 +153,7 @@ describe('<ia-bookmarks-list>', () => {
     await el.updateComplete;
 
     expect(el.editedBookmark).not.toEqual(bookmarks[0]);
-    expect(el.editedBookmark).not.toHaveProperty(['page', 'thumbnail', 'id']);
+    expect(el.editedBookmark).not.toHaveProperty('page', 'thumbnail', 'id');
   });
 
   test('renders the bookmarks count', async () => {
