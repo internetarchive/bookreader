@@ -222,17 +222,17 @@ describe('<ia-book-search-results>', () => {
     });
   });
 
-  // it("emits a bookSearchCanceled event when loading state's cancel action clicked", async () => {
-  //   const el = await fixture(container(results));
+// it("emits a bookSearchCanceled event when loading state's cancel action clicked", async () => {
+//   const el = await fixture(container(results));
 
-  //   el.queryInProgress = true;
-  //   await el.updateComplete;
+//   el.queryInProgress = true;
+//   await el.updateComplete;
 
-  //   setTimeout(() => (
-  //     el.shadowRoot.querySelector('button').click()
-  //   ));
-  //   const response = await oneEvent(el, 'bookSearchCanceled');
+//   setTimeout(() => (
+//     el.shadowRoot.querySelector('button').click()
+//   ));
+//   const response = await oneEvent(el, 'bookSearchCanceled');
 
-  //   expect(response).toBeDefined();
-  // });
-});
+//   expect(response).toBeDefined();
+// });
+//});
