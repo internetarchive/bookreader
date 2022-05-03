@@ -143,7 +143,7 @@ describe('<ia-book-search-results>', () => {
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('[name="all_files"]')).to.not.be.null;
+    expect(el.shadowRoot.querySelector('[name="all_files"]')).not.toBeNull();
   });
 
   test('emits a resultSelected event when a search result is clicked', async () => {
@@ -175,7 +175,8 @@ describe('<ia-book-search-results>', () => {
       el.queryInProgress = true;
       await el.updateComplete;
 
-      expect(el.shadowRoot.querySelector('.loading')).not.toBeNull()
+      expect(el.shadowRoot.querySelector('.loading')).not.toBeNull();
+    });
     test('renders an error message when provided', async () => {
       const el = await fixture(container([]));
       const message = 'Sample error message';
@@ -222,17 +223,17 @@ describe('<ia-book-search-results>', () => {
     });
   });
 
- test("emits a bookSearchCanceled event when loading state's cancel action clicked", async () => {
-   const el = await fixture(container(results));
+  test("emits a bookSearchCanceled event when loading state's cancel action clicked", async () => {
+    const el = await fixture(container(results));
 
-   el.queryInProgress = true;
-   await el.updateComplete;
+    el.queryInProgress = true;
+    await el.updateComplete;
 
-   setTimeout(() => (
-     el.shadowRoot.querySelector('button').click()
-   ));
-   const response = await oneEvent(el, 'bookSearchCanceled');
+    setTimeout(() => (
+      el.shadowRoot.querySelector('button').click()
+    ));
+    const response = await oneEvent(el, 'bookSearchCanceled');
 
-   expect(response).toBeDefined();
- });
+    expect(response).toBeDefined();
+  });
 });
