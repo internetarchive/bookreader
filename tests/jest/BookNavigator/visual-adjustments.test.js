@@ -69,7 +69,7 @@ describe('<ia-book-visual-adjustments>', () => {
     el.options = [options[1]];
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('header p')).not.toBeDefined();
+    expect(el.shadowRoot.querySelector('header p')).toBe(null);;
   });
 
   test('changes option\'s active state when input changed', async () => {
@@ -94,8 +94,8 @@ describe('<ia-book-visual-adjustments>', () => {
     el.showZoomControls = false;
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('.zoom_out')).not.toBeDefined();
-    expect(el.shadowRoot.querySelector('.zoom_in')).not.toBeDefined();
+    expect(el.shadowRoot.querySelector('.zoom_out')).toBe(null);
+    expect(el.shadowRoot.querySelector('.zoom_in')).toBe(null);
   });
 
   describe('Custom events', () => {

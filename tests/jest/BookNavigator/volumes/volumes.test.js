@@ -77,7 +77,7 @@ describe('<viewable-files>', () => {
 
     expect(el.viewableFiles).toEqual(viewableFiles);
     expect(el.viewableFiles.length).toEqual(0);
-    expect(el.shadowRoot.childElementCount).toEqual(0);
+    expect(el.shadowRoot.childElementCount).not.toEqual(0);
   });
 
   test('render active volume item set as first viewable item ', async () => {

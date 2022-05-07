@@ -46,7 +46,7 @@ describe('<ia-bookmark-edit>', () => {
     const el = await fixture(container(bookmark));
 
     expect(el.shadowRoot.querySelector('img').getAttribute('src')).toEqual(bookmark.thumbnail);
-    expect(el.shadowRoot.querySelector('h4').innerText).toEqual(`Page ${bookmark.page}`);
+    expect(el.shadowRoot.querySelector('h4').textContent).toEqual(`Page ${bookmark.page}`);
   });
 
   test('renders an optional header section', async () => {
@@ -66,8 +66,8 @@ describe('<ia-bookmark-edit>', () => {
     el.showBookmark = false;
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('img')).not.toBeDefined();
-    expect(el.shadowRoot.querySelector('h4')).not.toBeDefined();
+    expect(el.shadowRoot.querySelector('img')).toBe(null);
+    expect(el.shadowRoot.querySelector('h4')).toBe(null);
   });
 
   test('emits a custom event when the bookmark color is changed', async () => {
