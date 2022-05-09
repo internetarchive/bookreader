@@ -169,7 +169,7 @@ describe('<ia-bookmarks-list>', () => {
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('header small')).toBe(null);;
+    expect(el.shadowRoot.querySelector('header small')).toBe(null);
   });
 
   test('renders an optional header section', async () => {
