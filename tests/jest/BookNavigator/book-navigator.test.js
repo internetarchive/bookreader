@@ -40,6 +40,12 @@ const container = (sharedObserver = null) => {
   `;
 };
 
+window.ResizeObserver = class ResizeObserver {
+  observe = sinon.fake()
+  unobserve = sinon.fake()
+  disconnect = sinon.fake()
+};
+
 afterEach(() => {
   window.br = null;
   fixtureCleanup();
@@ -64,7 +70,8 @@ describe('<book-navigator>', () => {
           currentIndex: sinon.fake(),
           jumpToIndex: sinon.fake(),
           options: { enableMultipleBooks: false }, // for multipleBooks
-          el: '#BookReader'
+          el: '#BookReader',
+          refs: {}
         };
 
         const sharedObserver = new SharedResizeObserver();
@@ -146,7 +153,7 @@ describe('<book-navigator>', () => {
         expect(defaultMenus).toContain('visualAdjustments');
         expect(el.menuProviders.visualAdjustments).toBeInstanceOf(VisualAdjustmentsProvider);
       });
-      describe('Loading Sub Menus By Plugin Flags', async() => {
+      describe('Loading Sub Menus By Plugin Flags', () => {
         test('Search: uses `enableSearch` flag', async() => {
           const el = fixtureSync(container());
           const $brContainer = document.createElement('div');
@@ -238,7 +245,8 @@ describe('<book-navigator>', () => {
               resize: sinon.fake(),
               currentIndex: sinon.fake(),
               jumpToIndex: sinon.fake(),
-              options: { enableMultipleBooks: true }
+              options: { enableMultipleBooks: true },
+              refs: {},
             };
             el.bookreader = brStub;
             await elementUpdated(el);
@@ -261,7 +269,8 @@ describe('<book-navigator>', () => {
               resize: sinon.fake(),
               currentIndex: sinon.fake(),
               jumpToIndex: sinon.fake(),
-              options: { enableMultipleBooks: true }
+              options: { enableMultipleBooks: true },
+              refs: {},
             };
             el.bookreader = brStub;
             await elementUpdated(el);
@@ -295,7 +304,8 @@ describe('<book-navigator>', () => {
               resize: sinon.fake(),
               currentIndex: sinon.fake(),
               jumpToIndex: sinon.fake(),
-              options: { enableMultipleBooks: true }
+              options: { enableMultipleBooks: true },
+              refs: {},
             };
             el.bookreader = brStub;
             await elementUpdated(el);
@@ -384,7 +394,8 @@ describe('<book-navigator>', () => {
         resize: sinon.fake(),
         currentIndex: sinon.fake(),
         jumpToIndex: sinon.fake(),
-        options: { enableMultipleBooks: true }
+        options: { enableMultipleBooks: true },
+        refs: {},
       };
 
       el.bookreader = brStub;
@@ -403,7 +414,8 @@ describe('<book-navigator>', () => {
         isFullscreen: () => true,
         options: {
           enableFSLogoShortcut: false,
-        }
+        },
+        refs: {},
       };
 
       el.bookreader = brStub;
@@ -420,7 +432,8 @@ describe('<book-navigator>', () => {
         isFullscreen: () => true,
         options: {
           enableFSLogoShortcut: true,
-        }
+        },
+        refs: {},
       };
 
       el.bookreader = brStub;
@@ -440,7 +453,8 @@ describe('<book-navigator>', () => {
         isFullscreen: () => true,
         options: {
           enableFSLogoShortcut: true,
-        }
+        },
+        refs: {},
       };
 
       el.bookreader = brStub;
@@ -462,7 +476,8 @@ describe('<book-navigator>', () => {
         isFullscreen: () => false,
         options: {
           enableFSLogoShortcut: true,
-        }
+        },
+        refs: {},
       };
 
       el.bookreader = brStub;
@@ -483,7 +498,8 @@ describe('<book-navigator>', () => {
         jumpToIndex: sinon.fake(),
         options: {
           enableFSLogoShortcut: true,
-        }
+        },
+        refs: {},
       };
       el.bookreader = brStub;
       el.manageFullScreenBehavior = sinon.fake();
