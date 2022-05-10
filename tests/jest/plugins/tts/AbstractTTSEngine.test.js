@@ -20,7 +20,7 @@ describe.skip('AbstractTTSEngine', () => {
   });
 });
 
-for (const dummyVoice of [dummyVoice, dummyVoiceUnderscores]) {
+for (const dummyVoice of [dummyVoiceHyphens, dummyVoiceUnderscores]) {
   describe(`getBestBookVoice with BCP47 ${dummyVoice == dummyVoiceUnderscores ? '+' : '-'} underscores`, () => {
     const { getBestBookVoice } = AbstractTTSEngine;
 
@@ -130,7 +130,7 @@ export const DUMMY_TTS_ENGINE_OPTS = {
  * @param {SpeechSynthesisVoice}
  * @return {SpeechSynthesisVoice}
  **/
-function dummyVoice(overrides) {
+function dummyVoiceHyphens(overrides) {
   return Object.assign({
     default: false,
     lang: "en-US",
@@ -147,7 +147,7 @@ function dummyVoice(overrides) {
  * @return {SpeechSynthesisVoice}
  **/
 function dummyVoiceUnderscores(overrides) {
-  const voice = dummyVoice(overrides);
+  const voice = dummyVoiceHyphens(overrides);
   voice.lang = voice.lang.replace('-', '_');
   return voice;
 }
