@@ -1,10 +1,9 @@
 import {
   html,
   fixture,
-  expect,
   oneEvent,
-} from '@open-wc/testing';
-import '../../../../src/BookNavigator/bookmarks/bookmarks-list.js';
+} from '@open-wc/testing-helpers';
+import '@/src/BookNavigator/bookmarks/bookmarks-list.js';
 
 const bookmarks = [{
   id: 1,
@@ -41,24 +40,24 @@ describe('<ia-bookmarks-list>', () => {
   it('sets default properties', async () => {
     const el = await fixture(container(bookmarks));
 
-    expect(el.bookmarks).to.equal(bookmarks);
-    expect(el.activeBookmarkID).to.be.undefined;
-    expect(el.renderHeader).to.be.false;
+    expect(el.bookmarks).toEqual(bookmarks);
+    expect(el.activeBookmarkID).toBeUndefined();
+    expect(el.renderHeader).toBeFalsy();
   });
 
-  it('renders bookmarks that contain page numbers', async () => {
+  test('renders bookmarks that contain page numbers', async () => {
     const el = await fixture(container(bookmarks));
 
-    expect(el.shadowRoot.textContent).to.include(`Page ${bookmarks[0].page}`);
+    expect(el.shadowRoot.textContent).toContain(`Page ${bookmarks[0].page}`);
   });
 
-  it('renders bookmarks that contain an optional note', async () => {
+  test('renders bookmarks that contain an optional note', async () => {
     const el = await fixture(container(bookmarks));
 
-    expect(el.shadowRoot.innerHTML).to.include(bookmarks[1].note);
+    expect(el.shadowRoot.innerHTML).toContain(bookmarks[1].note);
   });
 
-  it('emits a custom event when a bookmark is clicked', async () => {
+  test('emits a custom event when a bookmark is clicked', async () => {
     const el = await fixture(container(bookmarks));
 
     setTimeout(() => (
@@ -66,10 +65,10 @@ describe('<ia-bookmarks-list>', () => {
     ));
     const response = await oneEvent(el, 'bookmarkSelected');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('emits a custom event when an edit button is clicked', async () => {
+  test('emits a custom event when an edit button is clicked', async () => {
     const el = await fixture(container(bookmarks));
 
     setTimeout(() => (
@@ -77,10 +76,10 @@ describe('<ia-bookmarks-list>', () => {
     ));
     const response = await oneEvent(el, 'bookmarkEdited');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('emits a saveBookmark event', async () => {
+  test('emits a saveBookmark event', async () => {
     const el = await fixture(container(bookmarks));
 
     setTimeout(() => (
@@ -88,10 +87,10 @@ describe('<ia-bookmarks-list>', () => {
     ));
     const response = await oneEvent(el, 'saveBookmark');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('emits a deleteBookmark event', async () => {
+  test('emits a deleteBookmark event', async () => {
     const el = await fixture(container(bookmarks));
 
     setTimeout(() => (
@@ -99,10 +98,10 @@ describe('<ia-bookmarks-list>', () => {
     ));
     const response = await oneEvent(el, 'deleteBookmark');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('emits a bookmarkColorChanged event', async () => {
+  test('emits a bookmarkColorChanged event', async () => {
     const el = await fixture(container(bookmarks));
 
     setTimeout(() => (
@@ -110,18 +109,18 @@ describe('<ia-bookmarks-list>', () => {
     ));
     const response = await oneEvent(el, 'bookmarkColorChanged');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('sets editedBookmark when an edit button is clicked', async () => {
+  test('sets editedBookmark when an edit button is clicked', async () => {
     const el = await fixture(container(bookmarks));
     let prevState = el.editedBookmark;
 
     el.shadowRoot.querySelector('li button').click();
     await el.updateComplete;
 
-    expect(el.editedBookmark).not.to.equal(prevState);
-    expect(el.editedBookmark.page).to.equal(bookmarks[0].page);
+    expect(el.editedBookmark).not.toEqual(prevState);
+    expect(el.editedBookmark.page).toEqual(bookmarks[0].page);
 
     // When clicking the same edit button while in edit mode, should toggle
     // edit mode off and remove editedBookmark pointer
@@ -129,11 +128,11 @@ describe('<ia-bookmarks-list>', () => {
     el.shadowRoot.querySelector('li button').click();
     await el.updateComplete;
 
-    expect(el.editedBookmark).not.to.equal(prevState);
-    expect(el.editedBookmark.page).not.to.equal(bookmarks[0].page);
+    expect(el.editedBookmark).not.toEqual(prevState);
+    expect(el.editedBookmark.page).not.toEqual(bookmarks[0].page);
   });
 
-  it('resets editedBookmark when saveBookmark callback called', async () => {
+  test('resets editedBookmark when saveBookmark callback called', async () => {
     const el = await fixture(container(bookmarks));
 
     [el.editedBookmark] = bookmarks;
@@ -141,11 +140,11 @@ describe('<ia-bookmarks-list>', () => {
     el.saveBookmark({ detail: { bookmark: bookmarks[0] } });
     await el.updateComplete;
 
-    expect(el.editedBookmark).not.to.equal(bookmarks[0]);
-    expect(el.editedBookmark).not.to.have.keys(['page', 'thumbnail', 'id']);
+    expect(el.editedBookmark).not.toEqual(bookmarks[0]);
+    expect(el.editedBookmark).not.toHaveProperty('page', 'thumbnail', 'id');
   });
 
-  it('resets editedBookmark when deleteBookmark callback called', async () => {
+  test('resets editedBookmark when deleteBookmark callback called', async () => {
     const el = await fixture(container(bookmarks));
 
     [el.editedBookmark] = bookmarks;
@@ -153,33 +152,33 @@ describe('<ia-bookmarks-list>', () => {
     el.deleteBookmark({ detail: { id: bookmarks[0].id } });
     await el.updateComplete;
 
-    expect(el.editedBookmark).not.to.equal(bookmarks[0]);
-    expect(el.editedBookmark).not.to.have.keys(['page', 'thumbnail', 'id']);
+    expect(el.editedBookmark).not.toEqual(bookmarks[0]);
+    expect(el.editedBookmark).not.toHaveProperty('page', 'thumbnail', 'id');
   });
 
-  it('renders the bookmarks count', async () => {
+  test('renders the bookmarks count', async () => {
     const el = await fixture(container([bookmarks[0]]));
     const bookmarksCount = await fixture(el.bookmarksCount);
 
-    expect(bookmarksCount.textContent).to.include('(1)');
+    expect(bookmarksCount.textContent).toContain('(1)');
   });
 
-  it('does not render the bookmarks count when no bookmarks present', async () => {
+  test('does not render the bookmarks count when no bookmarks present', async () => {
     const el = await fixture(container());
     el.renderHeader = true;
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('header small')).not.to.exist;
+    expect(el.shadowRoot.querySelector('header small')).toBe(null);
   });
 
-  it('renders an optional header section', async () => {
+  test('renders an optional header section', async () => {
     const el = await fixture(container(bookmarks));
     el.renderHeader = true;
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('header')).to.exist;
+    expect(el.shadowRoot.querySelector('header')).toBeDefined();
   });
 
   // skipped:
@@ -192,7 +191,7 @@ describe('<ia-bookmarks-list>', () => {
     ));
     const response = await oneEvent(el, 'addBookmark');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
   // skipped:
@@ -200,23 +199,23 @@ describe('<ia-bookmarks-list>', () => {
   xit('renders an optional add bookmark button', async () => {
     const el = await fixture(container(bookmarks));
 
-    expect(el.shadowRoot.querySelector('.add-bookmark')).to.exist;
+    expect(el.shadowRoot.querySelector('.add-bookmark')).toBeDefined();
 
     el.renderAddBookmarkButton = false;
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('.add-bookmark')).not.to.exist;
+    expect(el.shadowRoot.querySelector('.add-bookmark')).not.toBeDefined();
   });
 
   // skipped:
   // TypeError: Cannot read property 'getAttribute' of null
   xit('can toggle disable behavior of add bookmark button', async () => {
     const el = await fixture(container(bookmarks));
-    expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.be.null;
+    expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).toBeNull();
 
     el.disableAddBookmarkButton = true;
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).to.equal('disabled');
+    expect(el.shadowRoot.querySelector('.add-bookmark').getAttribute('disabled')).toEqual('disabled');
   });
 });

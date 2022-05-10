@@ -1,6 +1,6 @@
-import { expect, fixture, fixtureCleanup, fixtureSync } from '@open-wc/testing';
+import { fixture, fixtureCleanup, fixtureSync } from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import volumesProvider from '../../../../src/BookNavigator/volumes/volumes-provider';
+import volumesProvider from '@/src/BookNavigator/volumes/volumes-provider';
 
 const brOptions = {
   "options": {
@@ -39,7 +39,7 @@ afterEach(() => {
 });
 
 describe('Volumes Provider', () => {
-  it('constructor', () => {
+  test('constructor', () => {
     const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
     const provider = new volumesProvider({
@@ -51,20 +51,20 @@ describe('Volumes Provider', () => {
     const files = brOptions.options.multipleBooksList.by_subprefix;
     const volumeCount = Object.keys(files).length;
 
-    expect(provider.onProviderChange).to.equal(onProviderChange);
-    expect(provider.id).to.equal('volumes');
-    expect(provider.icon).to.exist;
-    expect(fixtureSync(provider.icon).tagName).to.equal('svg');
-    expect(provider.label).to.equal(`Viewable files (${volumeCount})`);
-    expect(provider.viewableFiles).to.exist;
-    expect(provider.viewableFiles.length).to.equal(3);
+    expect(provider.onProviderChange).toEqual(onProviderChange);
+    expect(provider.id).toEqual('volumes');
+    expect(provider.icon).toBeDefined();
+    expect(fixtureSync(provider.icon).tagName).toEqual('svg');
+    expect(provider.label).toEqual(`Viewable files (${volumeCount})`);
+    expect(provider.viewableFiles).toBeDefined();
+    expect(provider.viewableFiles.length).toEqual(3);
 
-    expect(provider.component.hostUrl).to.exist;
-    expect(provider.component.hostUrl).to.equal(baseHost);
-    expect(provider.component).to.exist;
+    expect(provider.component.hostUrl).toBeDefined();
+    expect(provider.component.hostUrl).toEqual(baseHost);
+    expect(provider.component).toBeDefined();
   });
 
-  it('sorting cycles - render sort actionButton', async () => {
+  test('sorting cycles - render sort actionButton', async () => {
     const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
     const provider = new volumesProvider({
@@ -73,22 +73,22 @@ describe('Volumes Provider', () => {
       onProviderChange
     });
 
-    expect(provider.sortOrderBy).to.equal("default");
+    expect(provider.sortOrderBy).toEqual("default");
 
     provider.sortVolumes("title_asc");
-    expect(provider.sortOrderBy).to.equal("title_asc");
-    expect(fixtureSync(provider.sortButton).outerHTML).includes("sort-by asc-icon");
+    expect(provider.sortOrderBy).toEqual("title_asc");
+    expect(fixtureSync(provider.sortButton).outerHTML).toContain("sort-by asc-icon");
 
     provider.sortVolumes("title_desc");
-    expect(provider.sortOrderBy).to.equal("title_desc");
-    expect(fixtureSync(provider.sortButton).outerHTML).includes("sort-by desc-icon");
+    expect(provider.sortOrderBy).toEqual("title_desc");
+    expect(fixtureSync(provider.sortButton).outerHTML).toContain("sort-by desc-icon");
 
     provider.sortVolumes("default");
-    expect(provider.sortOrderBy).to.equal("default");
-    expect(fixtureSync(provider.sortButton).outerHTML).includes("sort-by neutral-icon");
+    expect(provider.sortOrderBy).toEqual("default");
+    expect(fixtureSync(provider.sortButton).outerHTML).toContain("sort-by neutral-icon");
   });
 
-  it('sort volumes in initial order', async () => {
+  test('sort volumes in initial order', async () => {
     const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
     const provider = new volumesProvider({
@@ -103,15 +103,15 @@ describe('Volumes Provider', () => {
 
     provider.sortVolumes("default");
 
-    expect(provider.sortOrderBy).to.equal("default");
-    expect(provider.actionButton).to.exist;
+    expect(provider.sortOrderBy).toEqual("default");
+    expect(provider.actionButton).toBeDefined();
 
     const providerFileTitles = provider.viewableFiles.map(item => item.title);
     // use `.eql` for "lose equality" in order to deeply compare values.
-    expect(providerFileTitles).to.eql([...origSortTitles]);
+    expect(providerFileTitles).toEqual([...origSortTitles]);
   });
 
-  it('sort volumes in ascending title order', async () => {
+  test('sort volumes in ascending title order', async () => {
     const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
     const provider = new volumesProvider({
@@ -126,15 +126,15 @@ describe('Volumes Provider', () => {
 
     provider.sortVolumes("title_asc");
 
-    expect(provider.sortOrderBy).to.equal("title_asc");
-    expect(provider.actionButton).to.exist;
+    expect(provider.sortOrderBy).toEqual("title_asc");
+    expect(provider.actionButton).toBeDefined();
 
     const providerFileTitles = provider.viewableFiles.map(item => item.title);
     // use `.eql` for "lose equality" in order to deeply compare values.
-    expect(providerFileTitles).to.eql([...ascendingTitles]);
+    expect(providerFileTitles).toEqual([...ascendingTitles]);
   });
 
-  it('sort volumes in descending title order', async () => {
+  test('sort volumes in descending title order', async () => {
     const onProviderChange = sinon.fake();
     const baseHost = "https://archive.org";
     const provider = new volumesProvider({
@@ -150,16 +150,16 @@ describe('Volumes Provider', () => {
 
     provider.sortVolumes("title_desc");
 
-    expect(provider.sortOrderBy).to.equals("title_desc");
-    expect(provider.actionButton).to.exist;
+    expect(provider.sortOrderBy).toEqual("title_desc");
+    expect(provider.actionButton).toBeDefined();
 
     const providerFileTitles = provider.viewableFiles.map(item => item.title);
     // use `.eql` for "lose equality" in order to deeply compare values.
-    expect(providerFileTitles).to.eql([...descendingTitles]);
+    expect(providerFileTitles).toEqual([...descendingTitles]);
   });
 
   describe('Sorting icons', () => {
-    it('has 3 icons', async () => {
+    test('has 3 icons', async () => {
       const onProviderChange = sinon.fake();
       const baseHost = "https://archive.org";
       const provider = new volumesProvider({
@@ -170,15 +170,15 @@ describe('Volumes Provider', () => {
       provider.sortOrderBy = 'default';
 
       const origSortButton = await fixture(provider.sortButton);
-      expect(origSortButton.classList.contains('neutral-icon')).to.be.true;
+      expect(origSortButton.classList.contains('neutral-icon')).toBeTruthy();
 
       provider.sortOrderBy = 'title_asc';
       const ascButton = await fixture(provider.sortButton);
-      expect(ascButton.classList.contains('asc-icon')).to.be.true;
+      expect(ascButton.classList.contains('asc-icon')).toBeTruthy();
 
       provider.sortOrderBy = 'title_desc';
       const descButton = await fixture(provider.sortButton);
-      expect(descButton.classList.contains('desc-icon')).to.be.true;
+      expect(descButton.classList.contains('desc-icon')).toBeTruthy();
     });
   });
 });

@@ -1,6 +1,6 @@
-import { expect, fixtureCleanup, fixtureSync } from '@open-wc/testing';
+import { fixtureCleanup, fixtureSync } from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import DownloadsProvider from '../../../../src/BookNavigator/downloads/downloads-provider';
+import DownloadsProvider from '@/src/BookNavigator/downloads/downloads-provider';
 
 const downloadableTypes = [
   ["PDF", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.pdf"],
@@ -29,39 +29,39 @@ afterEach(() => {
 });
 
 describe('Downloads Provider', () => {
-  it('constructor - initial setup', () => {
+  test('constructor - initial setup', () => {
     const isBookProtected = false;
     const provider = new DownloadsProvider(isBookProtected);
 
-    expect(provider.id).to.equal('downloads');
-    expect(provider.icon).to.exist;
-    expect(fixtureSync(provider.icon).tagName).to.equal('IA-ICON-DL');
-    expect(provider.label).to.equal('Downloadable files');
-    expect(provider.menuDetails).to.exist;
-    expect(provider.component).to.exist;
+    expect(provider.id).toEqual('downloads');
+    expect(provider.icon).toBeDefined();
+    expect(fixtureSync(provider.icon).tagName).toEqual('IA-ICON-DL');
+    expect(provider.label).toEqual('Downloadable files');
+    expect(provider.menuDetails).toBeDefined();
+    expect(provider.component).toBeDefined();
 
     provider.update(downloadableTypes);
 
-    expect(provider.isBookProtected).to.equal(false);
+    expect(provider.isBookProtected).toEqual(false);
 
-    expect(provider.downloads[0].type).to.equals("PDF");
-    expect(provider.downloads[1].type).to.equals("ePub");
+    expect(provider.downloads[0].type).toEqual("PDF");
+    expect(provider.downloads[1].type).toEqual("ePub");
 
-    expect(provider.menuDetails).to.equal(`(${downloads.length} formats)`);
+    expect(provider.menuDetails).toEqual(`(${downloads.length} formats)`);
   });
 
-  it('render view if book is protected', () => {
+  test('render view if book is protected', () => {
     const provider = new DownloadsProvider({
       bookreader: { options: { isProtected: true } }
     });
 
-    expect(provider.isBookProtected).to.equal(true);
+    expect(provider.isBookProtected).toEqual(true);
 
     provider.update(downloadableTypes);
 
-    expect(provider.downloads[0].type).to.equals("Encrypted Adobe PDF");
-    expect(provider.downloads[1].type).to.equals("Encrypted Adobe ePub");
+    expect(provider.downloads[0].type).toEqual("Encrypted Adobe PDF");
+    expect(provider.downloads[1].type).toEqual("Encrypted Adobe ePub");
 
-    expect(provider.downloads.length).to.equals(downloads.length);
+    expect(provider.downloads.length).toEqual(downloads.length);
   });
 });

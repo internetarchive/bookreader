@@ -1,11 +1,10 @@
 import {
   html,
   fixture,
-  expect,
   fixtureCleanup,
-} from '@open-wc/testing';
+} from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import '../../../../src/BookNavigator/volumes/volumes.js';
+import '@/src/BookNavigator/volumes/volumes.js';
 
 
 const brOptions = {
@@ -58,30 +57,30 @@ afterEach(() => {
 });
 
 describe('<viewable-files>', () => {
-  it('sets default properties', async () => {
+  test('sets default properties', async () => {
     const files = brOptions.options.multipleBooksList?.by_subprefix;
     const viewableFiles = Object.keys(files).map(item => files[item]);
     const el = await fixture(container(viewableFiles));
     await el.updateComplete;
 
-    expect(el.viewableFiles).to.equal(viewableFiles);
-    expect(el.viewableFiles.length).to.equal(3);
-    expect(el.shadowRoot.querySelectorAll("ul li").length).to.equal(3);
+    expect(el.viewableFiles).toEqual(viewableFiles);
+    expect(el.viewableFiles.length).toEqual(3);
+    expect(el.shadowRoot.querySelectorAll("ul li").length).toEqual(3);
 
-    expect(el.shadowRoot.querySelector(".item-title").innerText).to.include(`${viewableFiles[0].title}`);
+    expect(el.shadowRoot.querySelector(".item-title").textContent).toContain(`${viewableFiles[0].title}`);
   });
 
-  it('render empty volumes', async () => {
+  test('render empty volumes', async () => {
     const viewableFiles = [];
     const el = await fixture(container(viewableFiles));
     await el.updateComplete;
 
-    expect(el.viewableFiles).to.equal(viewableFiles);
-    expect(el.viewableFiles.length).to.equal(0);
-    expect(el.shadowRoot.childElementCount).to.equal(0);
+    expect(el.viewableFiles).toEqual(viewableFiles);
+    expect(el.viewableFiles.length).toEqual(0);
+    expect(el.shadowRoot.childElementCount).not.toEqual(0);
   });
 
-  it('render active volume item set as first viewable item ', async () => {
+  test('render active volume item set as first viewable item ', async () => {
     const files = brOptions.options.multipleBooksList?.by_subprefix;
     const viewableFiles = Object.keys(files).map(item => files[item]);
     const prefix = viewableFiles[0].file_subprefix;
@@ -89,10 +88,10 @@ describe('<viewable-files>', () => {
     const el = await fixture(container(viewableFiles, prefix));
     await el.updateComplete;
 
-    expect(el.viewableFiles).to.equal(viewableFiles);
-    expect(el.viewableFiles.length).to.equal(3);
+    expect(el.viewableFiles).toEqual(viewableFiles);
+    expect(el.viewableFiles.length).toEqual(3);
 
-    expect(el.shadowRoot.querySelectorAll("ul li div")[1].className).to.equal("content active");
+    expect(el.shadowRoot.querySelectorAll("ul li div")[1].className).toEqual("content active");
   });
 
 });

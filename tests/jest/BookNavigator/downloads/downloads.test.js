@@ -1,11 +1,10 @@
 import {
   html,
   fixture,
-  expect,
   fixtureCleanup,
-} from '@open-wc/testing';
+} from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import '../../../../src/BookNavigator/downloads/downloads';
+import '@/src/BookNavigator/downloads/downloads';
 
 
 const downloads = [
@@ -41,14 +40,14 @@ afterEach(() => {
 });
 
 describe('<ia-book-downloads>', () => {
-  it('sets default properties', async () => {
+  test('sets default properties', async () => {
     const el = await fixture(container(downloads));
     await el.updateComplete;
 
-    expect(el.downloads.length).to.equal(2);
-    expect(el.shadowRoot.querySelector("ul").childElementCount).to.equal(2);
-    expect(el.isBookProtected).to.equal(false);
+    expect(el.downloads.length).toEqual(2);
+    expect(el.shadowRoot.querySelector("ul").childElementCount).toEqual(2);
+    expect(el.isBookProtected).toEqual(false);
 
-    expect(el.shadowRoot.querySelector("ul li a").textContent).to.include("Get PDF");
+    expect(el.shadowRoot.querySelector("ul li a").textContent).toContain("Get PDF");
   });
 });

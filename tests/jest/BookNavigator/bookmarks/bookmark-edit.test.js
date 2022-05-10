@@ -1,10 +1,9 @@
 import {
   html,
   fixture,
-  expect,
   oneEvent,
-} from '@open-wc/testing';
-import '../../../../src/BookNavigator/bookmarks/bookmark-edit.js';
+} from '@open-wc/testing-helpers';
+import '@/src/BookNavigator/bookmarks/bookmark-edit.js';
 
 const bookmarkColors = [{
   id: 0,
@@ -36,42 +35,42 @@ const bookmark = {
 };
 
 describe('<ia-bookmark-edit>', () => {
-  it('sets default properties', async () => {
+  test('sets default properties', async () => {
     const el = await fixture(container(bookmark));
 
-    expect(el.bookmark).to.equal(bookmark);
-    expect(el.renderHeader).to.be.false;
+    expect(el.bookmark).toEqual(bookmark);
+    expect(el.renderHeader).toBeFalsy();
   });
 
-  it('renders bookmark thumb and page number', async () => {
+  test('renders bookmark thumb and page number', async () => {
     const el = await fixture(container(bookmark));
 
-    expect(el.shadowRoot.querySelector('img').getAttribute('src')).to.equal(bookmark.thumbnail);
-    expect(el.shadowRoot.querySelector('h4').innerText).to.equal(`Page ${bookmark.page}`);
+    expect(el.shadowRoot.querySelector('img').getAttribute('src')).toEqual(bookmark.thumbnail);
+    expect(el.shadowRoot.querySelector('h4').textContent).toEqual(`Page ${bookmark.page}`);
   });
 
-  it('renders an optional header section', async () => {
+  test('renders an optional header section', async () => {
     const el = await fixture(container(bookmark));
     el.renderHeader = true;
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('header')).to.exist;
+    expect(el.shadowRoot.querySelector('header')).toBeDefined();
   });
 
-  it('toggles rendering of the bookmark thumbnail and page number', async () => {
+  test('toggles rendering of the bookmark thumbnail and page number', async () => {
     const el = await fixture(container(bookmark));
-    expect(el.shadowRoot.querySelector('img')).to.exist;
-    expect(el.shadowRoot.querySelector('h4')).to.exist;
+    expect(el.shadowRoot.querySelector('img')).toBeDefined();
+    expect(el.shadowRoot.querySelector('h4')).toBeDefined();
 
     el.showBookmark = false;
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('img')).to.not.exist;
-    expect(el.shadowRoot.querySelector('h4')).to.not.exist;
+    expect(el.shadowRoot.querySelector('img')).toBe(null);
+    expect(el.shadowRoot.querySelector('h4')).toBe(null);
   });
 
-  it('emits a custom event when the bookmark color is changed', async () => {
+  test('emits a custom event when the bookmark color is changed', async () => {
     const el = await fixture(container(bookmark));
 
     setTimeout(() => (
@@ -79,10 +78,10 @@ describe('<ia-bookmark-edit>', () => {
     ));
     const response = await oneEvent(el, 'bookmarkColorChanged');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('emits a custom event when the edit form is submitted', async () => {
+  test('emits a custom event when the edit form is submitted', async () => {
     const el = await fixture(container(bookmark));
 
     setTimeout(() => (
@@ -90,10 +89,10 @@ describe('<ia-bookmark-edit>', () => {
     ));
     const response = await oneEvent(el, 'saveBookmark');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('emits a custom event when the delete button is clicked', async () => {
+  test('emits a custom event when the delete button is clicked', async () => {
     const el = await fixture(container(bookmark));
 
     setTimeout(() => (
@@ -101,10 +100,10 @@ describe('<ia-bookmark-edit>', () => {
     ));
     const response = await oneEvent(el, 'deleteBookmark');
 
-    expect(response).to.exist;
+    expect(response).toBeDefined();
   });
 
-  it('updates bookmark color when a color input changed', async () => {
+  test('updates bookmark color when a color input changed', async () => {
     const el = await fixture(container(bookmark));
 
     setTimeout(() => (
@@ -112,10 +111,10 @@ describe('<ia-bookmark-edit>', () => {
     ));
     await oneEvent(el, 'bookmarkColorChanged');
 
-    expect(el.bookmark.color).to.equal(2);
+    expect(el.bookmark.color).toEqual(2);
   });
 
-  it('updates bookmark note when the note textarea changed', async () => {
+  test('updates bookmark note when the note textarea changed', async () => {
     const el = await fixture(container(bookmark));
     const textarea = el.shadowRoot.querySelector('textarea');
     const updatedNote = 'New note';
@@ -128,6 +127,6 @@ describe('<ia-bookmark-edit>', () => {
 
     await oneEvent(textarea, 'change');
 
-    expect(el.bookmark.note).to.contain(updatedNote);
+    expect(el.bookmark.note).toContain(updatedNote);
   });
 });

@@ -1,6 +1,6 @@
-import { expect, fixtureSync } from '@open-wc/testing';
+import { fixtureSync } from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import SharingProvider from '../../../../src/BookNavigator/sharing.js';
+import SharingProvider from '@/src/BookNavigator/sharing.js';
 
 afterEach(() => {
   sinon.restore();
@@ -27,14 +27,14 @@ describe('Sharing Provider', () => {
       }
     });
 
-    expect(provider.id).to.equal('share');
-    expect(provider.icon).to.exist;
-    expect(provider.label).to.equal('Share this book');
-    expect(fixtureSync(provider.component).tagName).to.contains('IA-SHARING-OPTIONS');
+    expect(provider.id).toEqual('share');
+    expect(provider.icon).toBeDefined();
+    expect(provider.label).toEqual('Share this book');
+    expect(fixtureSync(provider.component).tagName).toContain('IA-SHARING-OPTIONS');
   });
 
   describe('Handles being a sub file/volume', () => {
-    it('encodes the subprefix if it has one', async () => {
+    test('encodes the subprefix if it has one', async () => {
       const provider = new SharingProvider({
         item,
         baseHost,
@@ -43,7 +43,7 @@ describe('Sharing Provider', () => {
         }
       });
 
-      expect(fixtureSync(provider.component).fileSubPrefix).to.equal(subPrefix);
+      expect(fixtureSync(provider.component).fileSubPrefix).toEqual(subPrefix);
     });
   });
 });
