@@ -44,8 +44,8 @@ describe('Downloads Provider', () => {
 
     expect(provider.isBookProtected).toEqual(false);
 
-    expect(provider.downloads[0].type).toEqual("PDF");  //.to.equals( )
-    expect(provider.downloads[1].type).toEqual("ePub"); //.to.equals( )
+    expect(provider.downloads[0].type).toEqual("PDF");
+    expect(provider.downloads[1].type).toEqual("ePub");
 
     expect(provider.menuDetails).toEqual(`(${downloads.length} formats)`);
   });
@@ -59,9 +59,9 @@ describe('Downloads Provider', () => {
 
     provider.update(downloadableTypes);
 
-    expect(provider.downloads[0].type).toEqual("Encrypted Adobe PDF");  //.to.equals( )
-    expect(provider.downloads[1].type).toEqual("Encrypted Adobe ePub"); //.to.equals( )
+    expect(provider.downloads[0].type).toEqual("Encrypted Adobe PDF");
+    expect(provider.downloads[1].type).toEqual("Encrypted Adobe ePub");
 
-    expect(provider.downloads.length).toEqual(downloads.length); //.to.equals( )
+    expect(provider.downloads.length).toEqual(downloads.length);
   });
 });
