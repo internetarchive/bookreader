@@ -46,8 +46,7 @@
     "@babel/plugin-proposal-class-properties": "7.16.7",
     "@babel/plugin-proposal-decorators": "7.17.9",
     "@babel/preset-env": "7.16.11",
-    "@open-wc/testing": "^3.1.4",
-    "@open-wc/testing-karma": "^4.0.9",
+    "@open-wc/testing-helpers": "^2.1.2",
     "@types/jest": "^27.5.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "babel-loader": "8.2.5",
@@ -69,7 +68,6 @@
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "jquery.mmenu": "5.6.5",
-    "karma-coverage": "^2.1.0",
     "live-server": "1.2.2",
     "node-fetch": "3.2.4",
     "regenerator-runtime": "0.13.9",
@@ -96,8 +94,7 @@
     "roots": [
       "<rootDir>/src/",
       "<rootDir>/tests/jest/"
-    ],
-    "coverageDirectory": "<rootDir>/coverage-jest"
+    ]
   },
   "scripts": {
     "preversion": "npm run test && node scripts/preversion.js",
@@ -116,15 +113,12 @@
     "serve": "npx http-server . --port 8000",
     "serve-live": "npx live-server . --port 8000 --watch=index.html,BookReader,BookReaderDemo",
     "serve-dev": "npm run build-css && npx concurrently --kill-others npm:serve-live npm:build-*:watch",
-    "test": "npm run test-jest",
+    "test": "npx jest --coverage --colors",
+    "test:watch": "npx jest --watch",
     "test:e2e": "npm run build && npx testcafe",
     "test:e2e:dev": "npx testcafe --live --dev",
-    "test-jest:watch": "npx jest --watch",
-    "test-jest": "npx jest --coverage --colors",
-    "test-karma": "npx karma start --coverage",
-    "test-karma:watch": "npx karma start --auto-watch=true --single-run=false",
     "DOCS:update:test-deps": "If CI succeeds, these should be good to update",
-    "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing@latest @open-wc/testing-karma@latest @types/jest@latest codecov@latest eslint@latest eslint-plugin-testcafe@latest jest@latest karma-coverage@latest sinon@latest testcafe@latest",
+    "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing-helpers@latest @types/jest@latest codecov@latest eslint@latest eslint-plugin-testcafe@latest jest@latest sinon@latest testcafe@latest",
     "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
     "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
     "codecov": "npx codecov"

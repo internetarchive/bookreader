@@ -6,8 +6,7 @@
     {
       "matchPackageNames": [
         "@babel/eslint-parser",
-        "@open-wc/testing",
-        "@open-wc/testing-karma",
+        "@open-wc/testing-helpers",
         "@types/jest",
         "codecov",
         "eslint",
@@ -15,7 +14,6 @@
         "eslint-plugin-testcafe",
         "jest",
         "jest-environment-jsdom",
-        "karma-coverage",
         "sinon",
         "testcafe"
       ],
