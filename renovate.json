@@ -1,6 +1,7 @@
 {
   "extends": [
-    "config:base"
+    "config:base",
+    "schedule:monthly"
   ],
   "packageRules": [
     {
@@ -42,6 +43,10 @@
       "matchPackagePatterns": ["^actions/"],
       "groupName": "GitHub Actions",
       "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["^@internetarchive"],
+      "schedule": ["at any time"]
     }
   ]
 }
