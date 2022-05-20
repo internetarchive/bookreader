@@ -163,19 +163,23 @@ BookReader.prototype.initNavbar = (function (super_) {
           `<option value="${voice.voiceURI}">${voice.lang} - ${voice.name}</option>`).join('');
       };
 
-      const sortedOrder = () => {
-        return (a,b) => `${a.lang} - ${a.name}`.localeCompare(`${b.lang} - ${b.name}`);
-      };
+      const voiceSortOrder = (a,b) => `${a.lang} - ${a.name}`.localeCompare(`${b.lang} - ${b.name}`);
 
       const renderVoicesMenu = (voicesMenu) => {
         voicesMenu.empty();
         const bookLanguage = this.ttsEngine.opts.bookLanguage;
-        const bookLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(bookLanguage)).sort(sortedOrder());
-        const otherLanguages = this.ttsEngine.getVoices().filter(v => !v.lang.startsWith(bookLanguage)).sort(sortedOrder());
+        const bookLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(bookLanguage)).sort(voiceSortOrder);
+        const otherLanguages = this.ttsEngine.getVoices().filter(v => !v.lang.startsWith(bookLanguage)).sort(voiceSortOrder);
 
         if (this.ttsEngine.getVoices().length > 1) {
-          voicesMenu.append($(`<optgroup label="Book Language (en)"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
-          voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages)} </optgroup>`));
+          if (bookLanguages.length > 1) {
+            voicesMenu.append($(`<optgroup label="Book Language (${bookLanguage})"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
+          }
+
+          if (otherLanguages.length > 1) {
+            voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages)} </optgroup>`));
+          }
+
           voicesMenu.val(this.ttsEngine.voice.voiceURI);
           voicesMenu.show();
         } else {
