@@ -164,7 +164,7 @@ BookReader.prototype.initNavbar = (function (super_) {
       };
 
       const sortedOrder = () => {
-        return (a,b) => a.lang.localeCompare(b.name);
+        return (a,b) => `${a.lang} - ${a.name}`.localeCompare(`${b.lang} - ${b.name}`);
       };
 
       const renderVoicesMenu = (voicesMenu) => {
