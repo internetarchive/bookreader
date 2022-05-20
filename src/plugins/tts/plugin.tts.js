@@ -158,18 +158,35 @@ BookReader.prototype.initNavbar = (function (super_) {
 
       $el.find('.BRcontrols').prepend(this.refs.$BRReadAloudToolbar);
 
+      const renderVoiceOption = (language) => {
+        return language.map(voice =>
+          `<option value="${voice.voiceURI}">${voice.lang} - ${voice.name}</option>`);
+      };
+
       const renderVoicesMenu = (voicesMenu) => {
         voicesMenu.empty();
+
+        const bookLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith('en')).sort((a,b) => {
+          if (a.lang > b.lang) return 1;
+          if (a.lang < b.lang) return -1;
+          return 0;
+        });
+        const otherLanguages = this.ttsEngine.getVoices().filter(v => !v.lang.startsWith('en')).sort((a, b) => {
+          if (a.lang > b.lang) return 1;
+          if (a.lang < b.lang) return -1;
+          return 0;
+        });
+
         if (this.ttsEngine.getVoices().length > 1) {
-          voicesMenu.append(this.ttsEngine.getVoices().map(
-            voice =>
-              $(`<option value="${voice.voiceURI}">${voice.lang} - ${voice.name}</option>`)));
+          voicesMenu.append($(`<optgroup label="English (Book Language)"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
+          voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages)} </optgroup>`));
           voicesMenu.val(this.ttsEngine.voice.voiceURI);
           voicesMenu.show();
         } else {
           voicesMenu.hide();
         }
       };
+
       const voicesMenu = this.refs.$BRReadAloudToolbar.find('[name=playback-voice]');
       renderVoicesMenu(voicesMenu);
       voicesMenu.on("change", ev => this.ttsEngine.setVoice(voicesMenu.val()));
