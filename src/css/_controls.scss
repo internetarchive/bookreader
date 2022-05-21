@@ -34,12 +34,11 @@
     -webkit-appearance: none;
     appearance: none;
     font-size: 10px;
-    text-align: center;
     text-align-last: center;
     color: $controlsText;
     border: none;
     cursor: pointer;
-    option {
+    option, optgroup {
       background: $controlsBG;
     }
   }
