@@ -172,11 +172,11 @@ BookReader.prototype.initNavbar = (function (super_) {
         const otherLanguages = this.ttsEngine.getVoices().filter(v => !v.lang.startsWith(bookLanguage)).sort(voiceSortOrder);
 
         if (this.ttsEngine.getVoices().length > 1) {
-          if (bookLanguages.length > 1) {
+          if (bookLanguages.length) {
             voicesMenu.append($(`<optgroup label="Book Language (${bookLanguage})"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
           }
 
-          if (otherLanguages.length > 1) {
+          if (otherLanguages.length) {
             voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages)} </optgroup>`));
           }
 
