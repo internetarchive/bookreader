@@ -66,9 +66,11 @@ export class IABookDownloads extends LitElement {
   get installSimplyEAldikoThoriumMsg() {
     return html`
     <p>For LCP downloads, make sure you have SimplyE or Aldiko Next installed on mobile or Thorium on desktop.</p>
-    <a class="ia-button external primary" href="https://librarysimplified.org/simplye/" rel="noopener noreferrer" target="_blank">Install SimplyE</a>
-    <a class="ia-button external primary" href="https://www.demarque.com/en-aldiko" rel="noopener noreferrer" target="_blank">Install Aldiko</a>
-    <a class="ia-button external primary" href="https://www.edrlab.org/software/thorium-reader/" rel="noopener noreferrer" target="_blank">Install Thorium</a>
+    <ul>
+      <li><a href="https://librarysimplified.org/simplye/" rel="noopener noreferrer" target="_blank">Install SimplyE</a></li>
+      <li><a href="https://www.demarque.com/en-aldiko" rel="noopener noreferrer" target="_blank">Install Aldiko</a></li>
+      <li><a href="https://www.edrlab.org/software/thorium-reader/" rel="noopener noreferrer" target="_blank">Install Thorium</a></li>
+    </ul>
   `;
   }
 
