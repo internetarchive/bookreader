@@ -106,6 +106,10 @@ export class BookNavigator extends LitElement {
       this.loadSharedObserver();
       this.initializeBookSubmenus();
     }
+
+    if (changed.has('downloadableTypes')) {
+      this.initializeBookSubmenus();
+    }
   }
 
   /**
