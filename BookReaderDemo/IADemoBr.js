@@ -78,6 +78,21 @@ const initializeBookReader = (brManifest) => {
 
 window.initializeBookReader = initializeBookReader;
 
+const showLCP = document.querySelector('#show-lcp');
+showLCP.addEventListener('click', async () => {
+  const iaBr = document.querySelector('ia-bookreader');
+  const bookNav = iaBr.shadowRoot.querySelector('book-navigator');
+
+  const lcpStub = ['lcp', 'archive.org/detials/ux-team-books'];
+  const newList = [lcpStub, ...bookNav.downloadableTypes];
+
+  bookNav.downloadableTypes = newList;
+
+  bookNav.requestUpdate();
+  iaBr.requestUpdate();
+  await iaBr.updateComplete;
+});
+
 const multiVolume = document.querySelector('#multi-volume');
 multiVolume.addEventListener('click', () => {
   // remove everything

@@ -65,7 +65,7 @@ export class IABookDownloads extends LitElement {
 
   get installSimplyEAldikoThoriumMsg() {
     return html`
-    <p>LCP ePubs: Download SimplyE or Aldiko Next if on mobile or Thorium on desktop for best experience</p>
+    <p>LCP ePubs: Download SimplyE or Aldiko Next if on mobile or Thorium on desktop for a good reading experience</p>
     <a class="ia-button external primary" href="https://librarysimplified.org/simplye/" rel="noopener noreferrer" target="_blank">Install SimplyE</a>
     <a class="ia-button external primary" href="https://www.demarque.com/en-aldiko" rel="noopener noreferrer" target="_blank">Install Aldiko</a>
     <a class="ia-button external primary" href="https://www.edrlab.org/software/thorium-reader/" rel="noopener noreferrer" target="_blank">Install Thorium</a>
