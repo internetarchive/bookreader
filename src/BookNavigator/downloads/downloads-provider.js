@@ -16,7 +16,7 @@ const menuBase = {
   lcpepub: {
     type: 'Get LCP ePub',
     url: '#',
-    note: 'LCP files are smaller in size, but may contain errors.',
+    note: 'ePub files are smaller in size, but may contain errors.',
   },
   epub: {
     type: 'Encrypted Adobe ePub',
