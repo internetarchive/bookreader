@@ -14,6 +14,25 @@ const searchTerm = urlParams.get('q');
 
 const iaBookReader = document.querySelector('ia-bookreader');
 
+const downloadListWithLCP = [
+  [
+    "PDF",
+    "regular pdf link"
+  ],
+  [
+    "lcpPDF",
+    "link to lcp pdf"
+  ],
+  [
+    "ePub",
+    "link to epub"
+  ],
+  [
+    "lcpEPUB",
+    "link to lcp epub"
+  ]
+];
+
 if (openFullImmersionTheater) {
   $(document.body).addClass('BRfullscreenActive');
   iaBookReader.fullscreen = openFullImmersionTheater;
@@ -83,14 +102,10 @@ showLCP.addEventListener('click', async () => {
   const iaBr = document.querySelector('ia-bookreader');
   const bookNav = iaBr.shadowRoot.querySelector('book-navigator');
 
-  const lcpStub = ['lcp', 'archive.org/detials/ux-team-books'];
-  const newList = [lcpStub, ...bookNav.downloadableTypes];
+  bookNav.downloadableTypes = downloadListWithLCP;
 
-  bookNav.downloadableTypes = newList;
-
-  bookNav.requestUpdate();
-  iaBr.requestUpdate();
-  await iaBr.updateComplete;
+  bookNav.updateMenuContents();
+  await bookNav.updateComplete;
 });
 
 const multiVolume = document.querySelector('#multi-volume');

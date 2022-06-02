@@ -301,13 +301,13 @@ export class BookNavigator extends LitElement {
   /**
    * Sets order of menu and emits custom event when done
    */
-  updateMenuContents(sendEventOnly = false) {
+  updateMenuContents() {
     const {
       search, downloads, visualAdjustments, share, bookmarks, volumes
     } = this.menuProviders;
     const availableMenus = [volumes, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
 
-    if (!sendEventOnly && this.shouldShowDownloadsMenu()) {
+    if (this.shouldShowDownloadsMenu()) {
       downloads?.update(this.downloadableTypes);
       availableMenus.splice(1, 0, downloads);
     }
