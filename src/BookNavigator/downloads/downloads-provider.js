@@ -8,16 +8,28 @@ const menuBase = {
     url: '#',
     note: 'PDF files contain high quality images of pages.',
   },
+  lcppdf: {
+    type: 'Get LCP PDF',
+    url: '#',
+    note: 'PDF files contain high quality images of pages.',
+  },
+  lcpepub: {
+    type: 'Get LCP ePub',
+    url: '#',
+    note: 'ePub files are smaller in size, but may contain errors.',
+  },
   epub: {
     type: 'Encrypted Adobe ePub',
     url: '#',
     note: 'ePub files are smaller in size, but may contain errors.',
-  }
+  },
 };
 
 const publicMenuBase = {
   pdf: "PDF",
-  epub: "ePub"
+  epub: "ePub",
+  lcppdf: "LCP PDF",
+  lcpepub: "LCP ePub",
 };
 
 export default class DownloadsProvider {
@@ -30,9 +42,6 @@ export default class DownloadsProvider {
     this.id = 'downloads';
     this.component = '';
     this.isBookProtected = bookreader?.options?.isProtected || false;
-
-    this.computeAvailableTypes = this.computeAvailableTypes.bind(this);
-    this.update = this.update.bind(this);
   }
 
   update(downloadTypes) {

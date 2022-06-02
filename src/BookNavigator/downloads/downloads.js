@@ -40,6 +40,16 @@ export class IABookDownloads extends LitElement {
     ));
   }
 
+  /**
+   * checks if downloads list contains an LCP option
+   * @return {boolean}
+   */
+  get hasLCPOption() {
+    const regex = /^(LCP)/g;
+    const lcpAvailable = this.downloads.some(option => option.type?.match(regex));
+    return lcpAvailable;
+  }
+
   get header() {
     if (!this.renderHeader) {
       return nothing;
@@ -59,12 +69,26 @@ export class IABookDownloads extends LitElement {
     `;
   }
 
+  get installSimplyEAldikoThoriumMsg() {
+    return html`
+    <p>For LCP downloads, make sure you have SimplyE or Aldiko Next installed on mobile or Thorium on desktop.</p>
+    <ul>
+      <li><a href="https://librarysimplified.org/simplye/" rel="noopener noreferrer nofollow" target="_blank">Install SimplyE</a></li>
+      <li><a href="https://www.demarque.com/en-aldiko" rel="noopener noreferrer nofollow" target="_blank">Install Aldiko</a></li>
+      <li><a href="https://www.edrlab.org/software/thorium-reader/" rel="noopener noreferrer nofollow" target="_blank">Install Thorium</a></li>
+    </ul>
+  `;
+  }
+
   render() {
     return html`
       ${this.header}
       ${this.loanExpiryMessage}
       <ul>${this.renderDownloadOptions()}</ul>
-      ${this.isBookProtected ? this.accessProtectedBook : nothing}
+      ${this.hasLCPOption
+      ? this.installSimplyEAldikoThoriumMsg
+      : (this.isBookProtected ? this.accessProtectedBook : nothing)
+      }
     `;
   }
 

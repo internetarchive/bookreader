@@ -14,6 +14,17 @@ const searchTerm = urlParams.get('q');
 
 const iaBookReader = document.querySelector('ia-bookreader');
 
+const downloadListWithLCP = [
+  [
+    "lcpPDF",
+    "link to lcp pdf"
+  ],
+  [
+    "lcpEPUB",
+    "link to lcp epub"
+  ]
+];
+
 if (openFullImmersionTheater) {
   $(document.body).addClass('BRfullscreenActive');
   iaBookReader.fullscreen = openFullImmersionTheater;
@@ -77,6 +88,17 @@ const initializeBookReader = (brManifest) => {
 };
 
 window.initializeBookReader = initializeBookReader;
+
+const showLCP = document.querySelector('#show-lcp');
+showLCP.addEventListener('click', async () => {
+  const iaBr = document.querySelector('ia-bookreader');
+  const bookNav = iaBr.shadowRoot.querySelector('book-navigator');
+
+  bookNav.downloadableTypes = downloadListWithLCP;
+
+  bookNav.updateMenuContents();
+  await bookNav.updateComplete;
+});
 
 const multiVolume = document.querySelector('#multi-volume');
 multiVolume.addEventListener('click', () => {
