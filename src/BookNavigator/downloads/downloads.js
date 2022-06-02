@@ -40,8 +40,14 @@ export class IABookDownloads extends LitElement {
     ));
   }
 
+  /**
+   * checks if downloads list contains an LCP option
+   * @return {boolean}
+   */
   get hasLCPOption() {
-    return this.downloads.some(option => option.type === 'LCP');
+    const regex = /^(LCP)/g;
+    const lcpAvailable = this.downloads.some(option => option.type?.match(regex));
+    return lcpAvailable;
   }
 
   get header() {
