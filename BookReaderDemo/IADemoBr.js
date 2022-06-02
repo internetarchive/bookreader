@@ -16,16 +16,8 @@ const iaBookReader = document.querySelector('ia-bookreader');
 
 const downloadListWithLCP = [
   [
-    "PDF",
-    "regular pdf link"
-  ],
-  [
     "lcpPDF",
     "link to lcp pdf"
-  ],
-  [
-    "ePub",
-    "link to epub"
   ],
   [
     "lcpEPUB",
