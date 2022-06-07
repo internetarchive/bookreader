@@ -317,6 +317,11 @@ export class Mode1UpLit extends LitElement {
     const clientWidth = this.htmlDimensionsCacher.clientWidth;
     const clientHeight = this.htmlDimensionsCacher.clientHeight;
 
+    // Called before rendering finished
+    if (clientWidth === 0 && clientHeight === 0) {
+      return;
+    }
+
     // Note: scrollTop, and clientWidth all are in visible space;
     // i.e. they are affects by the CSS transforms.
 
