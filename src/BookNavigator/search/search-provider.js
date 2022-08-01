@@ -146,6 +146,7 @@ export default class SearchProvider {
     };
     this.updateMenu({ openMenu: false });
     this.bookreader?.searchView?.clearSearchFieldAndResults(false);
+    this.bookreader?.urlPlugin?.removeUrlParam('q');
   }
 
   /**
