@@ -150,8 +150,9 @@ export default class SearchProvider {
     };
     this.updateMenu({ openMenu: false });
     this.bookreader?.searchView?.clearSearchFieldAndResults(false);
-    this.bookreader?.urlPlugin?.pullFromAddressBar();
-    this.bookreader?.urlPlugin?.removeUrlParam('q');
+    if (this.bookreader.urlPlugin) {
+      this.updateSearchInUrl();
+    }
   }
 
   /** update URL `q=<term>` query param in URL */

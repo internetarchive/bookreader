@@ -102,7 +102,7 @@ describe('Search Provider', () => {
 
       expect(provider.bookreader._searchPluginGoToResult.callCount).toEqual(1);
     });
-    test('update url when search is cancelled', async() => {
+    test('update url when search is cancelled or input cleared', async() => {
       const urlPluginMock = {
         pullFromAddressBar: sinon.fake(),
         removeUrlParam: sinon.fake()
@@ -121,6 +121,12 @@ describe('Search Provider', () => {
 
       expect(urlPluginMock.pullFromAddressBar.callCount).toEqual(1);
       expect(urlPluginMock.removeUrlParam.callCount).toEqual(1);
+
+      provider.onSearchCanceled();
+      await provider.updateComplete;
+
+      expect(urlPluginMock.pullFromAddressBar.callCount).toEqual(2);
+      expect(urlPluginMock.removeUrlParam.callCount).toEqual(2);
     });
   });
 });
