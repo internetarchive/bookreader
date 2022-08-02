@@ -75,6 +75,10 @@ export default class SearchProvider {
       searchCanceled: true
     };
     this.updateMenu(updateMenuFor);
+
+    if (this.bookreader.urlPlugin) {
+      this.updateSearchInUrl();
+    }
   }
 
   onSearchStarted(e) {
@@ -146,7 +150,20 @@ export default class SearchProvider {
     };
     this.updateMenu({ openMenu: false });
     this.bookreader?.searchView?.clearSearchFieldAndResults(false);
+    this.bookreader?.urlPlugin?.pullFromAddressBar();
     this.bookreader?.urlPlugin?.removeUrlParam('q');
+  }
+
+  /** update URL `q=<term>` query param in URL */
+  updateSearchInUrl() {
+    if (this.bookreader.urlPlugin) {
+      this.bookreader.urlPlugin.pullFromAddressBar();
+      if (searchState.query) {
+        this.bookreader.urlPlugin.setUrlParam('q', searchState.query);
+      } else {
+        this.bookreader.urlPlugin.removeUrlParam('q');
+      }
+    }
   }
 
   /**

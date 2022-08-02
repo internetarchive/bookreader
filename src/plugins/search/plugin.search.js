@@ -217,12 +217,6 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
     cache: true,
     beforeSend: xhr => { this.searchXHR = xhr; },
   }));
-
-  if (!this.searchTerm) {
-    this.bookreader?.urlPlugin?.removeUrlParam('q');
-  } else {
-    this.bookreader?.urlPlugin?.setUrlParam('q', this.searchTerm);
-  }
 };
 
 /**
@@ -236,7 +230,6 @@ BookReader.prototype._cancelSearch = function () {
   this.searchXHR = null;
   this.searchCancelled = true;
   this.searchResults = [];
-  this.bookreader?.urlPlugin?.removeUrlParam('q');
 };
 
 /**
@@ -250,7 +243,6 @@ BookReader.prototype.cancelSearchRequest = function () {
     this.searchView.toggleSearchPending();
     this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
   }
-  this?.urlPlugin?.removeUrlParam('q');
 };
 
 /**

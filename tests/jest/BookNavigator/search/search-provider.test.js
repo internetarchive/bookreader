@@ -102,5 +102,25 @@ describe('Search Provider', () => {
 
       expect(provider.bookreader._searchPluginGoToResult.callCount).toEqual(1);
     });
+    test('update url when search is cancelled', async() => {
+      const urlPluginMock = {
+        pullFromAddressBar: sinon.fake(),
+        removeUrlParam: sinon.fake()
+      };
+      const provider = new searchProvider({
+        onProviderChange: sinon.fake(),
+        bookreader: {
+          leafNumToIndex: sinon.fake(),
+          _searchPluginGoToResult: sinon.fake(),
+          urlPlugin: urlPluginMock
+        }
+      });
+
+      provider.onSearchCanceled();
+      await provider.updateComplete;
+
+      expect(urlPluginMock.pullFromAddressBar.callCount).toEqual(1);
+      expect(urlPluginMock.removeUrlParam.callCount).toEqual(1);
+    });
   });
 });
