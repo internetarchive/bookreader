@@ -128,5 +128,40 @@ describe('Search Provider', () => {
       expect(urlPluginMock.pullFromAddressBar.callCount).toEqual(2);
       expect(urlPluginMock.removeUrlParam.callCount).toEqual(2);
     });
+    it('updateSearchInUrl', async () => {
+      let fieldToSet;
+      let valueOfFieldToSet;
+      let setUrlParamCalled = false;
+      const urlPluginMock = {
+        pullFromAddressBar: sinon.fake(),
+        removeUrlParam: sinon.fake(),
+        setUrlParam: (field, val) => {
+          fieldToSet = field;
+          valueOfFieldToSet = val;
+          setUrlParamCalled = true;
+        }
+      };
+      const provider = new searchProvider({
+        onProviderChange: sinon.fake(),
+        bookreader: {
+          leafNumToIndex: sinon.fake(),
+          _searchPluginGoToResult: sinon.fake(),
+          urlPlugin: urlPluginMock,
+          search: sinon.fake()
+        }
+      });
+
+      const searchInitiatedEvent = new CustomEvent('bookSearchInitiated', { detail: { query: 'foobar' } });
+      // set initial seachState with a query
+      provider.onBookSearchInitiated(searchInitiatedEvent);
+      await provider.updateComplete;
+      // checking this fn:
+      provider.updateSearchInUrl();
+      await provider.updateComplete;
+
+      expect(fieldToSet).toEqual('q');
+      expect(valueOfFieldToSet).toEqual('foobar');
+      expect(setUrlParamCalled).toBe(true);
+    });
   });
 });
