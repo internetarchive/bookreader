@@ -250,7 +250,7 @@ BookReader.prototype.cancelSearchRequest = function () {
     this.searchView.toggleSearchPending();
     this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
   }
-  this.bookreader?.urlPlugin?.removeUrlParam('q');
+  this?.urlPlugin?.removeUrlParam('q');
 };
 
 /**
