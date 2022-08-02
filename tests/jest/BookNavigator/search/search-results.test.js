@@ -245,7 +245,7 @@ describe('<ia-book-search-results>', () => {
     const searchInput = el.shadowRoot.querySelector('[name="query"]');
 
     searchInput.value = '';
-    searchInput.dispatchEvent(new Event('keyup'));
+    searchInput.dispatchEvent(new Event('search'));
 
     expect(el.cancelSearch.callCount).toEqual(1);
   });
