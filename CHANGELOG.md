@@ -1,3 +1,4 @@
+# 5.0.0-45
 # 5.0.0-44
 Fix: dynamic `q=<term>` url parameter @iisa
 Dev: dependency updates @renovate
