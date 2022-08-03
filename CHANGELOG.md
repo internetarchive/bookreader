@@ -1,3 +1,7 @@
+# 5.0.0-44
+Fix: dynamic `q=<term>` url parameter @iisa
+Dev: dependency updates @renovate
+
 # 5.0.0-43
 Fix: search results panel display asserted page numbers @cdrini
 Dev: dependency updates @renovate

@@ -2700,13 +2700,12 @@ li.BRtable-contents-el .BRTOCElementPage {
   -webkit-appearance: none;
   appearance: none;
   font-size: 10px;
-  text-align: center;
   text-align-last: center;
   color: #fff;
   border: none;
   cursor: pointer;
 }
-.BRcontrols select.playback-speed option, .BRcontrols select.playback-voices option {
+.BRcontrols select.playback-speed option, .BRcontrols select.playback-speed optgroup, .BRcontrols select.playback-voices option, .BRcontrols select.playback-voices optgroup {
   background: #333;
 }
 .BRcontrols select.playback-speed {
