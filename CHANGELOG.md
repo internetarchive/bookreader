@@ -50,12 +50,12 @@ Dev: Re-enable testcafe tests in GH action @iisa
 Fix: Search results bar clears and closes properly @iisa
 
 # 5.0.0-35
-Fix: global syle leak specify colorbox styles @iisa
+Fix: global style leak specify colorbox styles @iisa
 Fix: br menu reinits with shared ro load @iisa
 Fix: url plugin does not rewrite with multiple slashes @iisa
 
 # 5.0.0-34
-Dev: udpate test dependencies @cdrini
+Dev: update test dependencies @cdrini
 Fix: Update hyphen stitching regex to include dangling "¬" @cdrini
 Fix: pop open multiple files menu at proper width @iisa
 
