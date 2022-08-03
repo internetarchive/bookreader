@@ -236,4 +236,17 @@ describe('<ia-book-search-results>', () => {
 
     expect(response).toBeDefined();
   });
+  it('cancels search when input is cleared', async () => {
+    const el = await fixture(container(results));
+
+    el.cancelSearch = sinon.fake();
+    await el.updateComplete;
+
+    const searchInput = el.shadowRoot.querySelector('[name="query"]');
+
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('search'));
+
+    expect(el.cancelSearch.callCount).toEqual(1);
+  });
 });

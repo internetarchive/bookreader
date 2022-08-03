@@ -60,6 +60,9 @@ export class IABookSearchResults extends LitElement {
 
   setQuery(e) {
     this.query = e.currentTarget.value;
+    if (!this.query) {
+      this.cancelSearch();
+    }
   }
 
   performSearch(e) {
@@ -148,6 +151,7 @@ export class IABookSearchResults extends LitElement {
             name="query"
             alt="Search inside this book."
             @keyup=${this.setQuery}
+            @search=${this.setQuery}
             .value=${this.query}
           />
         </fieldset>
