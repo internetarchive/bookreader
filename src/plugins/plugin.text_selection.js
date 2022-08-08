@@ -89,19 +89,87 @@ export class TextSelectionPlugin {
   }
 
   async loadEntities() {
-    const resp = await $.ajax({
-      url: 'https://spreadsheets.google.com/feeds/cells/1SeAttSDh3SoXW9dZLi9OruWavV3m4GIVfEiwxGbvIKg/od6/public/values?alt=json-in-script',
-      dataType: 'jsonp',
-      cache: true,
-    })
-    const rows = resp.feed.entry.reduce((acc, cur) => {
-      const isNewRow = cur.gs$cell.row != acc.length;
-      if (isNewRow) {
-        acc.push([]);
-      }
-      acc[acc.length - 1].push(cur.gs$cell.$t);
-      return acc;
-    }, []);
+    // From https://docs.google.com/spreadsheets/d/1SeAttSDh3SoXW9dZLi9OruWavV3m4GIVfEiwxGbvIKg/edit#gid=0
+    // The API we were using has been discontinued by Google :(
+    const rows = `
+      Name	Wikidata QID	Type (Person, Place, Temporal, URL, Book)
+      Socrates	Q913	Person
+      Socr	Q913	Person
+      Aristophanes	Q43353	Person
+      Anytus	Q2082582	Person
+      Gorgias the Leontine	Q179785	Person
+      Prodicus the Cean	Q297402	Person
+      Gorgias	Q179785	Person
+      Gorg	Q179785	Person
+      Prodicus	Q297402	Person
+      Hippias the Elean	Q210573	Person
+      Callias	Q2436238	Person
+      Hippias	Q210573	Person
+      Plato	Q859	Person
+      Melitus	Q1175697	Person
+      Anaxagoras	Q83041	Person
+      Clazomene	Q3134255	Person
+      Clazomenae	Q3134255	Person
+      Hermotimus	Q3134255	Person
+      Meletus	Q1175697	Person
+      Mel	Q1175697	Person
+      Delos	Q173148	Place
+      Island of Delos	Q173148	Place
+      Worcester College, Oxford	Q780745	Place
+      Lycon	Q2920534	Person
+      Any t us	Q2082582	Person
+      London	Q84	Place
+      HENRY G. BOHN	Q5580808	Person
+      BOHN	Q5580808	Person
+      BOHN'S	Q5580808	Person
+      MDCCCXLVIII	Q7647	Temporal
+      1848	Q7647	Temporal
+      LIBRARY OF THE UNIVERSITY OF CALIFORNIA LOS ANGELES	Q7895173	Place
+      Taylor	Q509187	Person
+      Tay- lor	Q509187	Person
+      Floyer Sydenham	Q5462596	Person
+      Sydenham	Q5462596	Person
+      Trinity College, Cambridge	Q332342	Place
+      Troy	Q22647	Place
+      Hector	Q186271	Person
+      Patroclus	Q186271	Person
+      Thetis	Q184437	Person
+      Stallbaum	Q110875	Person
+      Iliad	Q8275	Book
+      Ast	Q77636	Person
+      crito	Q267634	book
+      Internet Archive	Q461	Place
+      The Apology of Socrates	Q273668	Book
+      Bekker	Q77606	Person
+      Oxford	Q34217	Place
+      Henry Cary	Q5719221	Person
+      Henry Gary	Q5719221	Person
+      H\. C	Q5719221	Person
+      callicles	Q553801	Person
+      Lysis	Q924977	Book
+      Polus	Q372798	Person
+      Pol	Q372798	Person
+      Androtion	Q514262	Person
+      Tisander	Q27963635	Person
+      Macedonia	Q83958	Place
+      Scythians	Q131802	Place
+      Xerxes	Q129165	Person
+      Greece	Q11772	Place
+      Delphi	Q75459	Place
+      Zethus	Q23015791	Person
+      Amphion	Q23015791	Person
+      Hades	Q41410	Person
+      Simmias	Q928470	Person
+      Cebes	Q965144	Person
+      Odysseus	Q47231	Person
+      Odyssey	Q35160	Book
+      Ulysses	Q47231	Person
+      Homer	Q6691	Person
+      theban	Q29223	Place
+      cadmus	Q27613	Person
+    `.trim()
+      .split('\n')
+      .map(line => line.trim().split('\t'));
     return rows.slice(1)
       .map(([name, wikidata, type]) => ({
         re: new RegExp(`\\b${name}\\b`, 'ig'),
