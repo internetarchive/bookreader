@@ -843,6 +843,13 @@ export class Mode2Up {
     this.pageContainers[this.br.twoPage.currentIndexR].$container.animate({width: '0px'}, speed, 'easeInSine', () => {
       this.br.$('BRgutter').css({left: `${gutter - this.br.twoPage.bookSpineDivWidth * 0.5}px`});
       $(this.br.leafEdgeTmp).animate({left: `${gutter - newWidthL - leafEdgeTmpW}px`}, speed, 'easeOutSine');
+
+      // Ensure the new left leaf is right-positioned before animating its width.
+      // Otherwise, it animates in the wrong direction.
+      this.pageContainers[newIndexL].$container.css({
+        right: `${newWidthL}px`,
+        left: ''
+      });
       this.pageContainers[newIndexL].$container.animate({width: `${newWidthL}px`}, speed, 'easeOutSine', () => {
         this.pageContainers[newIndexR].$container.css('zIndex', 2);
 
