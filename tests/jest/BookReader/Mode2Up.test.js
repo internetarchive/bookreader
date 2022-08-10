@@ -54,7 +54,7 @@ describe('page flip directions', () => {
 
     const fake = sinon.fake();
     const fakeAnimWithCB = sinon.fake.yields();
-    const fakeAnim = sinon.fake((...args) => 
+    const fakeAnim = sinon.fake((...args) =>
       typeof args[args.length - 1] === 'function' ? fakeAnimWithCB(...args) : fake
     );
     sinon.replace(jQuery.prototype, 'animate', fakeAnim);
@@ -62,7 +62,7 @@ describe('page flip directions', () => {
     const fakeCSS = sinon.spy(jQuery.prototype, 'css');
 
     br.next();
-    
+
     expect(fakeAnimWithCB.callCount).toBe(2);
     // Find the call to .css() immediately preceding the second animation with a callback (i.e., the left page animation)
     const preSecondAnimCssCallIndex = fakeCSS.getCalls().findIndex(call => call.calledAfter(fakeAnimWithCB.getCall(1))) - 1;
