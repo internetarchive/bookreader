@@ -47,6 +47,29 @@ describe('zoom', () => {
   });
 });
 
+describe('page flip directions', () => {
+  test('animates the left page in the correct direction', () => {
+    const br = new BookReader({ data: SAMPLE_DATA });
+    br.init();
+
+    const fake = sinon.fake();
+    const fakeAnimWithCB = sinon.fake.yields();
+    const fakeAnim = sinon.fake((...args) => 
+      typeof args[args.length - 1] === 'function' ? fakeAnimWithCB(...args) : fake
+    );
+    sinon.replace(jQuery.prototype, 'animate', fakeAnim);
+
+    const fakeCSS = sinon.spy(jQuery.prototype, 'css');
+
+    br.next();
+    
+    expect(fakeAnimWithCB.callCount).toBe(2);
+    // Find the call to .css() immediately preceding the second animation with a callback (i.e., the left page animation)
+    const preSecondAnimCssCallIndex = fakeCSS.getCalls().findIndex(call => call.calledAfter(fakeAnimWithCB.getCall(1))) - 1;
+    expect(fakeCSS.getCall(preSecondAnimCssCallIndex).args[0].left).toBe('');
+  });
+});
+
 describe('prefetch', () => {
   test('loads nearby pages', () => {
     const br = new BookReader({ data: SAMPLE_DATA });
