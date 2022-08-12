@@ -847,7 +847,7 @@ export class Mode2Up {
       // Ensure the new left leaf is right-positioned before animating its width.
       // Otherwise, it animates in the wrong direction.
       this.pageContainers[newIndexL].$container.css({
-        right: `${newWidthL}px`,
+        right: `${$twoPageViewEl.prop('clientWidth') - gutter}px`,
         left: ''
       });
       this.pageContainers[newIndexL].$container.animate({width: `${newWidthL}px`}, speed, 'easeOutSine', () => {
