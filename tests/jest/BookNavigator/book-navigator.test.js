@@ -591,5 +591,40 @@ describe('<book-navigator>', () => {
         expect(preventDefaultSpy.called).toEqual(true);
       });
     });
+    it('Allows unrestricted books access to context menu', async () => {
+      window.archive_analytics = { send_event_no_sampling: sinon.fake() };
+
+      const el = fixtureSync(container());
+      const brStub = {
+        options: { restricted: false },
+      };
+
+      el.bookreader = brStub;
+      el.bookIsRestricted = false;
+
+      await el.elementUpdated;
+
+      expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
+        false
+      );
+
+      const body = document.querySelector('body');
+      // const element stub for img.BRpageimage
+      const imgBRpageimage = document.createElement('img');
+      imgBRpageimage.classList.add('not-targeted-element');
+      body.appendChild(imgBRpageimage);
+      const contextMenuEvent = new Event('contextmenu', { bubbles: true });
+
+      // Set spy on contextMenuEvent to check if `preventDefault` is called
+      const preventDefaultSpy = sinon.spy(contextMenuEvent, 'preventDefault');
+      expect(preventDefaultSpy.called).toEqual(false);
+
+      imgBRpageimage.dispatchEvent(contextMenuEvent);
+
+      // analytics fires
+      expect(window.archive_analytics.send_event_no_sampling.called).toEqual(true);
+      // we do not prevent default
+      expect(preventDefaultSpy.called).toEqual(false);
+    });
   });
 });
