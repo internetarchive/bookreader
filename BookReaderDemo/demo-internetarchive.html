@@ -126,6 +126,11 @@
       const placeholder = document.querySelector('#placeholder');
       placeholder.innerHTML = 'Dependencies are complete, bookreader has loaded';
     });
+
+    // analytics stub
+    window.archive_analytics = {
+      send_event_no_sampling: (category, action, label) => console.log('~~~ NO SAMPLE EVENT CALLED: ', { category, action, label }),
+    }
   </script>
 
   <!-- IA fetch demo -->
