@@ -186,7 +186,7 @@ To run all local unit tests, run command: `npm run test`
 
 ## Ways to contribute
 
-We can always use a hand building BookReader.  Check out the issues and see what interests you.  If you have an idea for an improvement, open an issue.
+We can always use a hand building BookReader.  Check out the [issues](https://github.com/internetarchive/bookreader/issues) and see what interests you.  If you have an idea for an improvement, [open an issue](https://github.com/internetarchive/bookreader/issues/new/choose) . Please see the [Contributing guide](https://github.com/internetarchive/bookreader/blob/master/CONTRIBUTING.md) for more information. 
 
 ## More info
 
@@ -212,7 +212,7 @@ See [CHANGELOG.md](CHANGELOG.md) for history of the project.
 
 
 ## License
-The source code license is AGPL v3, as described in the LICENSE file.
+The source code license is [AGPL v3](https://github.com/internetarchive/bookreader/blob/master/LICENSE) , as described in the [LICENSE file](https://github.com/internetarchive/bookreader/blob/master/LICENSE) .
 
 ## Other credits
 The ability to test on multiple devices is provided courtesy of [Browser Stack](https://www.browserstack.com).
