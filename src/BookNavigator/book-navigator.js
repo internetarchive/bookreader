@@ -443,6 +443,26 @@ export class BookNavigator extends LitElement {
       this.downloadableTypes = downloadURLs;
       this.bookIsRestricted = isRestricted;
     });
+    document.addEventListener('contextmenu', (e) => {
+      if (window.archive_analytics) {
+        window.archive_analytics?.send_event_no_sampling(
+          'BookReader',
+          `contextmenu-${this.bookIsRestricted ? 'restricted' : 'unrestricted'}`,
+          e.target.classList.value
+        );
+      }
+      if (!this.bookIsRestricted) {
+        return;
+      }
+
+      const imagePane = e.target.classList.value.match(/BRscreen|BRpageimage/g);
+      if (!imagePane) {
+        return;
+      }
+
+      e.preventDefault();
+      return false;
+    }, { capture: true });
   }
 
   loadSharedObserver() {
