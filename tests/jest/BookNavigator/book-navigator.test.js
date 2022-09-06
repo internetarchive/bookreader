@@ -513,4 +513,118 @@ describe('<book-navigator>', () => {
       expect(el.manageFullScreenBehavior.callCount).toEqual(1);
     });
   });
+  describe('Handles Restricted Books', () => {
+    describe('contextMenu is prevented when book is restricted', () => {
+      it('watches on `div.BRscreen`', async () => {
+        window.archive_analytics = { send_event_no_sampling: sinon.fake() };
+
+        const el = fixtureSync(container());
+        const brStub = {
+          options: { restricted: true },
+        };
+
+        el.bookreader = brStub;
+        el.bookIsRestricted = true;
+
+        const elSpy = sinon.spy(el.manageContextMenuVisibility);
+        await el.elementUpdated;
+
+        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
+          false
+        );
+        expect(elSpy.called).toEqual(false);
+
+        const body = document.querySelector('body');
+
+        const divBRscreen = document.createElement('div');
+        divBRscreen.classList.add('BRscreen');
+        body.appendChild(divBRscreen);
+
+        const contextMenuEvent = new Event('contextmenu', { bubbles: true });
+
+        // Set spy on contextMenuEvent to check if `preventDefault` is called
+        const preventDefaultSpy = sinon.spy(contextMenuEvent, 'preventDefault');
+        expect(preventDefaultSpy.called).toEqual(false);
+
+        divBRscreen.dispatchEvent(contextMenuEvent);
+
+        // analytics fires
+        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
+          true
+        );
+        // we prevent default
+        expect(preventDefaultSpy.called).toEqual(true);
+      });
+      it('watches on `img.BRpageimage`', async () => {
+        window.archive_analytics = { send_event_no_sampling: sinon.fake() };
+
+        const el = fixtureSync(container());
+        const brStub = {
+          options: { restricted: true },
+        };
+
+        el.bookreader = brStub;
+        el.bookIsRestricted = true;
+
+        await el.elementUpdated;
+
+        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
+          false
+        );
+
+        const body = document.querySelector('body');
+        // const element stub for img.BRpageimage
+        const imgBRpageimage = document.createElement('img');
+        imgBRpageimage.classList.add('BRpageimage');
+        body.appendChild(imgBRpageimage);
+        const contextMenuEvent = new Event('contextmenu', { bubbles: true });
+
+        // Set spy on contextMenuEvent to check if `preventDefault` is called
+        const preventDefaultSpy = sinon.spy(contextMenuEvent, 'preventDefault');
+        expect(preventDefaultSpy.called).toEqual(false);
+
+        imgBRpageimage.dispatchEvent(contextMenuEvent);
+
+        // analytics fires
+        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(true);
+        // we prevent default
+        expect(preventDefaultSpy.called).toEqual(true);
+      });
+    });
+    it('Allows unrestricted books access to context menu', async () => {
+      window.archive_analytics = { send_event_no_sampling: sinon.fake() };
+
+      const el = fixtureSync(container());
+      const brStub = {
+        options: { restricted: false },
+      };
+
+      el.bookreader = brStub;
+      el.bookIsRestricted = false;
+
+      await el.elementUpdated;
+
+      expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
+        false
+      );
+
+      const body = document.querySelector('body');
+      // const element stub for img.BRpageimage
+      const imgBRpageimage = document.createElement('img');
+      imgBRpageimage.classList.add('not-targeted-element');
+      body.appendChild(imgBRpageimage);
+      const contextMenuEvent = new Event('contextmenu', { bubbles: true });
+
+      // Set spy on contextMenuEvent to check if `preventDefault` is called
+      const preventDefaultSpy = sinon.spy(contextMenuEvent, 'preventDefault');
+      expect(preventDefaultSpy.called).toEqual(false);
+
+      imgBRpageimage.dispatchEvent(contextMenuEvent);
+
+      // analytics fires
+      expect(window.archive_analytics.send_event_no_sampling.called).toEqual(true);
+      // we do not prevent default
+      expect(preventDefaultSpy.called).toEqual(false);
+    });
+  });
 });

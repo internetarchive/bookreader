@@ -1,3 +1,8 @@
+# 5.0.0-46
+Fix: Leaf positioning during RTL fliip animation @latonv
+Dev: dependency updates @renovate
+Fix: Disable contextmenu for restricted books @iisa
+
 # 5.0.0-45
 # 5.0.0-44
 Fix: dynamic `q=<term>` url parameter @iisa
