@@ -62,7 +62,7 @@
     "iso-language-codes": "1.1.0",
     "jest": "^29.0.3",
     "jest-environment-jsdom": "^29.0.3",
-    "jquery": "1.12.4",
+    "jquery": "3.6.1",
     "jquery-colorbox": "1.6.4",
     "jquery-ui": "1.12.1",
     "jquery-ui-touch-punch": "0.2.3",
