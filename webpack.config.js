@@ -86,7 +86,7 @@ module.exports = [
     ...shared,
 
     entry: {
-      'jquery-1.10.1.js': { import: './src/jquery-wrapper.js' },
+      'jquery-3.js': { import: './src/jquery-wrapper.js' },
     },
   },
 ];
