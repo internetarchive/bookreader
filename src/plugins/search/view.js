@@ -245,9 +245,8 @@ class SearchView {
         queryStringWithBTruncated = queryString.replace(/^(.{100}[^\s]*).*/, "$1");
 
         // If truncating, we must escape *after* truncation occurs (but before wrapping in <b>)
-        queryStringWithBTruncated = escapeHTML(queryStringWithBTruncated);
-
-        queryStringWithBTruncated = queryStringWithBTruncated.replace(this.matcher, '<b>$1</b>')
+        queryStringWithBTruncated = escapeHTML(queryStringWithBTruncated)
+          .replace(this.matcher, '<b>$1</b>')
           + '...';
       }
 
