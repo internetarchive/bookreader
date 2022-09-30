@@ -1,3 +1,5 @@
+import { escapeHTML } from "../../BookReader/utils.js";
+
 class SearchView {
   /**
    * @param {object} params
@@ -13,7 +15,7 @@ class SearchView {
     // Search results are returned as a text blob with the hits wrapped in
     // triple mustaches. Hits occasionally include text beyond the search
     // term, so everything within the staches is captured and wrapped.
-    this.matcher = new RegExp('{{{(.+?)}}}', 'g');
+    this.matcher = new RegExp('{{{(.+?)}}}', 'gs');
     this.matches = [];
     this.cacheDOMElements();
     this.bindEvents();
@@ -234,15 +236,18 @@ class SearchView {
 
       const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br.getNumLeafs() - 1);
 
-      const queryStringWithB = queryString.replace(this.matcher, '<b>$1</b>');
+      const escapedQueryString = escapeHTML(queryString);
+      const queryStringWithB = escapedQueryString.replace(this.matcher, '<b>$1</b>');
 
       let queryStringWithBTruncated = '';
 
       if (queryString.length > 100) {
-        queryStringWithBTruncated = queryString
-          .replace(/^(.{100}[^\s]*).*/, "$1")
+        queryStringWithBTruncated = queryString.replace(/^(.{100}[^\s]*).*/, "$1");
+
+        // If truncating, we must escape *after* truncation occurs (but before wrapping in <b>)
+        queryStringWithBTruncated = escapeHTML(queryStringWithBTruncated)
           .replace(this.matcher, '<b>$1</b>')
-                + '...';
+          + '...';
       }
 
       // draw marker
