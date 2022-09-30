@@ -46,6 +46,25 @@ const results = [{
   }],
 }];
 
+const resultWithScript = [{
+  text: `foo bar <script>const msg = 'test' + ' failure'; document.write(msg);</script> {{{${searchQuery}}}} baz`,
+  cover: '//placehold.it/30x44',
+  title: 'Book title',
+  displayPageNumber: 'Page 24',
+  par: [{
+    boxes: [{
+      r: 2672, b: 792, t: 689, page: 24, l: 2424,
+    }],
+    b: 1371,
+    t: 689,
+    page_width: 3658,
+    r: 3192,
+    l: 428,
+    page_height: 5357,
+    page: 24,
+  }],
+}];
+
 describe('<ia-book-search-results>', () => {
   afterEach(() => {
     sinon.restore();
@@ -88,7 +107,20 @@ describe('<ia-book-search-results>', () => {
     sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
     const el = await fixture(container(results));
 
-    expect(el.innerHTML).toContain(`<mark>${searchQuery}</mark>`);
+    // Lit inserts HTML comments that inhibit searching for exact innerHTML matches.
+    // So query the DOM for the match instead.
+    const match = el.querySelector('book-search-result mark');
+    expect(match?.textContent).toEqual(searchQuery);
+  });
+
+  test('renders results that contain sanitized HTML tags', async () => {
+    sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
+    // A result whose text contains a <script> tag that will insert 'test failure' into the element if not sanitized
+    const el = await fixture(container(resultWithScript));
+
+    const match = el.querySelector('book-search-result mark');
+    expect(match?.textContent).toEqual(searchQuery);
+    expect(el.innerHTML).not.toContain('test failure');
   });
 
   test('renders results that contain an optional cover image', async () => {
