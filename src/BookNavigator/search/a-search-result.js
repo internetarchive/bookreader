@@ -1,4 +1,6 @@
+import { escapeHTML } from '../../BookReader/utils';
 import { html, LitElement, nothing } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 
 export class BookSearchResult extends LitElement {
@@ -26,29 +28,9 @@ export class BookSearchResult extends LitElement {
    * in the snippets intact (as inert text), rather than stripping them away with DOMPurify.
    */
   highlightedHit(hit) {
-    const matches = hit.matchAll(this.matchRegex);
-    const templates = [];
-
-    // Convert each match into an HTML template that includes:
-    //  - Everything from the end of the previous match (or the beginning of the
-    //      string) up to the current match, as raw text.
-    //  - The current match (excluding the curly braces) wrapped in a `<mark>` tag.
-    let index = 0;
-    for (const match of matches) {
-      if (match.index != null) {
-        templates.push(html`
-          ${hit.slice(index, match.index)}
-          <mark>${match[1]}</mark>
-        `);
-        index = match.index + match[0].length;
-      }
-    }
-
-    // Include any text from the last match to the end
-    templates.push(html`${hit.slice(index)}`);
-
-    // Squash everything into a single p template
-    return html`<p>${templates}</p>`;
+    return html`<p>
+      ${unsafeHTML(escapeHTML(hit).replace(this.matchRegex, '<mark>$1</mark>'))}
+    </p>`;
   }
 
   resultSelected() {
