@@ -114,19 +114,23 @@ const fetchBookManifestAndInitializeBookreader = async (iaMetadata) => {
   document.querySelector('input[name="itemMD"]').checked = true;
   iaBookReader.item = iaMetadata;
 
-  const {
-    metadata: {
-      identifier
-    },
-  } = iaMetadata;
+  const jsiaParams = {
+    format: 'jsonp',
+    itemPath: iaMetadata.dir,
+    id: iaMetadata.metadata.identifier,
+    server: iaMetadata.server,
+  };
 
-  const locator = `https://archive.org/bookreader/BookReaderJSLocate.php?format=json&subPrefix=&id=${identifier}`;
-  // Todo: move from `locator` to create `iaManifestUrl` url from `iaMetadata`
-  // so we can support multiple volumes
-  // const iaManifestUrl = `https://${server}/BookReader/BookReaderJSIA.php?format=jsonp&itemPath=${dir}&id=${identifier}`;
+  const jp2File = iaMetadata.files.find(f => f.name.endsWith('_jp2.zip'))
+  if (jp2File) {
+    jsiaParams.subPrefix = jp2File.name.replace('_jp2.zip', '');
+  }
 
-  const manifest = await fetch(locator)
-    .then(response => response.json());
+  const iaManifestUrl = `https://${iaMetadata.server}/BookReader/BookReaderJSIA.php?${
+    new URLSearchParams(jsiaParams)
+  }`;
+
+  const manifest = await fetch(iaManifestUrl).then(response => response.json());
   document.querySelector('input[name="bookManifest"]').checked = true;
 
   initializeBookReader(manifest);
