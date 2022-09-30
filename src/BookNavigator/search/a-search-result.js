@@ -1,4 +1,4 @@
-import { escapeHTML } from '../../BookReader/utils';
+import { escapeHTML } from '../../BookReader/utils.js';
 import { html, LitElement, nothing } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
