@@ -27,6 +27,27 @@ const results = {
     }]
   }]
 };
+const resultWithScript = {
+  ia: "adventuresofoli00dick",
+  q: "child",
+  indexed: true,
+  page_count: 644,
+  body_length: 666,
+  leaf0_missing: false,
+  matches: [{
+    text: 'foo bar <script>alert(1);</script> {{{keyword}}} baz',
+    par: [{
+      boxes: [{r: 1221, b: 2121, t: 2075, page: 37, l: 1107}],
+      b: 2535,
+      t: 1942,
+      page_width: 1790,
+      r: 1598,
+      l: 50,
+      page_height: 2940,
+      page: 37
+    }]
+  }]
+};
 beforeEach(() => {
   $.ajax = jest.fn().mockImplementation(() => {
     // return from:
@@ -80,6 +101,14 @@ describe('View: Plugin: Search', () => {
       expect(searchResultsNav.querySelector('.toggle-sidebar')).toBeDefined();
       expect(searchResultsNav.querySelector('.prev')).toBeDefined();
       expect(searchResultsNav.querySelector('.next')).toBeDefined();
+    });
+    test('disallows xss from search results', () => {
+      br.init();
+      const event = new CustomEvent(`${namespace}SearchCallback`);
+      const options = { goToFirstResult: false };
+      br.searchView.handleSearchCallback(event, { results: resultWithScript, options });
+
+      expect(br.searchView.dom.searchNavigation.parent().html()).not.toContain('<script>alert(1);</script>');
     });
 
     describe('Click events handlers', () => {
