@@ -1,5 +1,6 @@
 import { css, html, LitElement, nothing } from 'lit';
 import buttonStyles from '../assets/button-base.js';
+
 export class IABookDownloads extends LitElement {
   static get properties() {
     return {
@@ -18,6 +19,26 @@ export class IABookDownloads extends LitElement {
     this.isBookProtected = false;
   }
 
+  render() {
+    return html`
+      ${this.header}
+      ${this.loanExpiryMessage}
+      ${this.renderDownloadOptions()}
+    `;
+  }
+
+  get header() {
+    if (!this.renderHeader) {
+      return nothing;
+    }
+    return html`
+      <header>
+        <h3>Read offline</h3>
+        ${this.formatsCount}
+      </header>
+    `;
+  }
+
   get formatsCount() {
     const count = this.downloads.length;
     return count ? html`<p>${count} format${count > 1 ? 's' : ''}</p>` : html``;
@@ -30,65 +51,80 @@ export class IABookDownloads extends LitElement {
   }
 
   renderDownloadOptions() {
-    return this.downloads.map(option => (
-      html`
+    const downloadOptions = [];
+    ['pdf', 'epub', 'lcppdf', 'lcpepub', 'adobepdf', 'adobeepub'].forEach(format => {
+      if (this.downloads[format]) {
+        downloadOptions.push(this.downloadOption(format, this.downloads[format]));
+      }
+    });
+    return html`
+      <ul>
+        ${downloadOptions}
+      </ul>
+    `;
+  }
+
+  downloadOption(format, link) {
+    if (/^adobe/.test(format)) {
+      return html`
         <li>
-          <a class="ia-button link primary" href="${option.url}">Get ${option.type}</a>
-          ${option.note ? html`<p>${option.note}</p>` : html``}
+          <a
+            href="${link}"
+            data-event-click-tracking="BookReader|Download-${format}"
+          >${this.menuText[format].linkText}</a>
+          ${this.menuText[format].message ?? nothing}
         </li>
-      `
-    ));
-  }
-
-  /**
-   * checks if downloads list contains an LCP option
-   * @return {boolean}
-   */
-  get hasLCPOption() {
-    const regex = /^(LCP)/g;
-    const lcpAvailable = this.downloads.some(option => option.type?.match(regex));
-    return lcpAvailable;
-  }
-
-  get header() {
-    if (!this.renderHeader) {
-      return nothing;
+      `;
     }
     return html`
-      <header>
-        <h3>Downloadable files</h3>
-        ${this.formatsCount}
-      </header>
+      <li>
+        <a class="ia-button link primary"
+          href="${link}"
+          data-event-click-tracking="BookReader|Download-${format}"
+        >${this.menuText[format].linkText}</a>
+        ${this.menuText[format].message ? html`<p>${this.menuText[format].message}</p>` : nothing}
+      </li>
     `;
   }
 
-  get accessProtectedBook() {
+  get menuText() {
+    return {
+      pdf: {
+        linkText: 'Get high-resolution PDF',
+        message: html``,
+      },
+      epub: {
+        linkText: 'Get text-based ebook',
+        message: html`Smaller size. May contain some errors.`,
+      },
+      lcppdf: {
+        linkText: 'Get high-resolution PDF',
+        message: this.lcpNote,
+      },
+      lcpepub: {
+        linkText: 'Get text-based ebook',
+        message: html`Smaller size. May contain some errors. ${this.lcpNote}`,
+      },
+      adobepdf: {
+        linkText:'Get legacy Adobe DRM PDF version here.',
+        message: this.adobeNote,
+      },
+      adobeepub: {
+        linkText: 'Get legacy Adobe DRM EPUB version here.',
+        message: this.adobeNote,
+      },
+    };
+  };
+  
+  get lcpNote() {
     return html`
-      <p>To access downloaded books, you need Adobe-compliant software on your device. The Internet Archive will administer this loan, but Adobe may also collect some information.</p>
-      <a class="ia-button external primary" href="https://www.adobe.com/solutions/ebook/digital-editions/download.html" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
+      Requires having an LCP-compatible e-reader installed like Aldiko Next (<a href="https://apps.apple.com/us/app/aldiko-next/id1476410111">iOS</a>, <a href="https://play.google.com/store/apps/details?id=com.aldiko.android">Android</a>) or <a href="https://www.edrlab.org/software/thorium-reader/">Thorium</a>.
     `;
   }
 
-  get installSimplyEAldikoThoriumMsg() {
+  get adobeNote() {
     return html`
-    <p>For LCP downloads, make sure you have SimplyE or Aldiko Next installed on mobile or Thorium on desktop.</p>
-    <ul>
-      <li><a href="https://librarysimplified.org/simplye/" rel="noopener noreferrer nofollow" target="_blank">Install SimplyE</a></li>
-      <li><a href="https://www.demarque.com/en-aldiko" rel="noopener noreferrer nofollow" target="_blank">Install Aldiko</a></li>
-      <li><a href="https://www.edrlab.org/software/thorium-reader/" rel="noopener noreferrer nofollow" target="_blank">Install Thorium</a></li>
-    </ul>
-  `;
-  }
-
-  render() {
-    return html`
-      ${this.header}
-      ${this.loanExpiryMessage}
-      <ul>${this.renderDownloadOptions()}</ul>
-      ${this.hasLCPOption
-      ? this.installSimplyEAldikoThoriumMsg
-      : (this.isBookProtected ? this.accessProtectedBook : nothing)
-      }
+      Requires a compatible e-reader like <a hef="https://www.adobe.com/solutions/ebook/digital-editions.html">Adobe Digital Editions</a>.
     `;
   }
 

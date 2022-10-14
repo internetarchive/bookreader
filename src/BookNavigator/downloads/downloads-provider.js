@@ -2,41 +2,11 @@ import { html } from 'lit';
 import '@internetarchive/icon-dl/icon-dl';
 import './downloads';
 
-const menuBase = {
-  pdf: {
-    type: 'Encrypted Adobe PDF',
-    url: '#',
-    note: 'PDF files contain high quality images of pages.',
-  },
-  lcppdf: {
-    type: 'Get LCP PDF',
-    url: '#',
-    note: 'PDF files contain high quality images of pages.',
-  },
-  lcpepub: {
-    type: 'Get LCP ePub',
-    url: '#',
-    note: 'ePub files are smaller in size, but may contain errors.',
-  },
-  epub: {
-    type: 'Encrypted Adobe ePub',
-    url: '#',
-    note: 'ePub files are smaller in size, but may contain errors.',
-  },
-};
-
-const publicMenuBase = {
-  pdf: "PDF",
-  epub: "ePub",
-  lcppdf: "LCP PDF",
-  lcpepub: "LCP ePub",
-};
-
 export default class DownloadsProvider {
 
   constructor({ bookreader }) {
     this.icon = html`<ia-icon-dl style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-dl>`;
-    this.label = 'Downloadable files';
+    this.label = 'Read offline';
     this.menuDetails = '';
     this.downloads = [];
     this.id = 'downloads';
@@ -54,23 +24,21 @@ export default class DownloadsProvider {
   }
 
   /**
-   * Generates Download Menu Info for available types
-   * sets global `downloads`
+   * Restructures available download type data for the renderer
+   * Sets global `downloads`
    * @param  availableTypes
    */
   computeAvailableTypes(availableTypes = []) {
     const menuData = availableTypes.reduce((found, incoming = []) => {
       const [ type = '', link = '' ] = incoming;
-      const formattedType = type.toLowerCase();
-      const downloadOption = menuBase[formattedType] || null;
-
-      if (downloadOption) {
-        const menuButtonText = this.isBookProtected ? menuBase[formattedType].type : publicMenuBase[formattedType];
-        const menuInfo = Object.assign({}, downloadOption, { url: link,  type: menuButtonText});
-        found.push(menuInfo);
+      if (!type) return found;
+      let formattedType = type.toLowerCase();
+      if ((formattedType === 'pdf' || formattedType === 'epub') && this.isbookProtected) {
+        formattedType = `adobe${formattedType}`;
       }
+      found[formattedType] = link;
       return found;
-    }, []);
+    }, {});
 
     this.downloads = menuData;
   }
