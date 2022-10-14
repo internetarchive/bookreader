@@ -158,6 +158,38 @@ export class Mode1UpLit extends LitElement {
   /************** INTERNAL STUFF **************/
   /********************************************/
 
+  /**
+   *
+   * @param {PageModel[]} pages
+   * @returns {PageModel[]}
+   */
+  _adjustPageDimension(pages) {
+    const clientWidth = this.htmlDimensionsCacher.clientWidth;
+    const clientHeight = this.htmlDimensionsCacher.clientHeight;
+    return pages.map((p) => {
+      const autofitMode = this.br.onePage.autofit;
+      if (
+        (autofitMode == "auto" || autofitMode == "height") &&
+        p.height !== clientHeight
+      ) {
+        p.width *= clientHeight / p.height;
+        p.height = clientHeight;
+      }
+      if (
+        ((autofitMode == "auto" && p.height !== clientHeight) ||
+          autofitMode == "width") &&
+        p.width > clientWidth
+      ) {
+        p.height *= clientWidth / p.width;
+        p.width = clientWidth;
+      }
+      p.widthInches = p.width / p.ppi;
+      p.heightInches = p.height / p.ppi;
+
+      return p;
+    });
+  }
+
   /************** LIFE CYCLE **************/
 
   /**
@@ -192,7 +224,11 @@ export class Mode1UpLit extends LitElement {
     // this.X is the new value
     // changedProps.get('X') is the old value
     if (changedProps.has('book')) {
-      this.pages = genToArray(this.book.pagesIterator({ combineConsecutiveUnviewables: true }));
+      this.pages = this._adjustPageDimension(
+        genToArray(
+          this.book.pagesIterator({ combineConsecutiveUnviewables: true })
+        )
+      );
     }
     if (changedProps.has('pages')) {
       this.worldDimensions = this.computeWorldDimensions();
@@ -347,7 +383,9 @@ export class Mode1UpLit extends LitElement {
   }
 
   throttledUpdateRenderedPages = throttle(() => {
-    this.renderedPages = this.computeRenderedPages();
+    this.renderedPages = this._adjustPageDimension(
+      this.computeRenderedPages()
+    );
     this.requestUpdate();
   }, 100, null)
 
