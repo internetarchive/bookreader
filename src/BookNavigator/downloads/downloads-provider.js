@@ -11,7 +11,7 @@ export default class DownloadsProvider {
     this.downloads = [];
     this.id = 'downloads';
     this.component = '';
-    this.isBookProtected = bookreader?.options?.isProtected || false;
+    this.isBookProtected = bookreader?.options?.protected ?? false;
   }
 
   update(downloadTypes) {
