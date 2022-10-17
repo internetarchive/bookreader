@@ -33,7 +33,7 @@ export default class DownloadsProvider {
       const [ type = '', link = '' ] = incoming;
       if (!type) return found;
       let formattedType = type.toLowerCase();
-      if ((formattedType === 'pdf' || formattedType === 'epub') && this.isbookProtected) {
+      if ((formattedType === 'pdf' || formattedType === 'epub') && this.isBookProtected) {
         formattedType = `adobe${formattedType}`;
       }
       found[formattedType] = link;
