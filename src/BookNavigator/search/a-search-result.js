@@ -1,3 +1,4 @@
+import { escapeHTML } from '../../BookReader/utils.js';
 import { html, LitElement, nothing } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
@@ -12,17 +13,24 @@ export class BookSearchResult extends LitElement {
   constructor() {
     super();
 
-    this.matchRegex = new RegExp('{{{(.+?)}}}', 'g');
+    this.matchRegex = new RegExp('{{{(.+?)}}}', 'gs');
   }
 
   createRenderRoot() {
     return this;
   }
 
+  /**
+   * Converts the search hit to a `<p>` template containing the full search result with all of
+   * its `{{{triple-brace-delimited}}}` matches replaced by `<mark>HTML mark tags</mark>`.
+   *
+   * This approach safely avoids the use of `unsafeHTML` and leaves any existing HTML tags
+   * in the snippets intact (as inert text), rather than stripping them away with DOMPurify.
+   */
   highlightedHit(hit) {
-    return html`
-      <p>${unsafeHTML(hit.replace(this.matchRegex, '<mark>$1</mark>'))}</p>
-    `;
+    return html`<p>
+      ${unsafeHTML(escapeHTML(hit).replace(this.matchRegex, '<mark>$1</mark>'))}
+    </p>`;
   }
 
   resultSelected() {

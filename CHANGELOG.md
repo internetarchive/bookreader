@@ -1,3 +1,10 @@
+# 5.0.0-47
+- Fix: XSS vulnerability in search results @latonv
+- Dev: Update jQuery to v3 **BREAKING** @cdrini
+    - If you were importing `BookReader/jquery-1.10.1.js` you will need to change it to `BookReader/jquery-3.js`
+    - Also ensure if other code was using this jquery that it works with jQuery 3!
+- Dev: Update testing dependencies (jest, testcafe) @renovate
+
 # 5.0.0-46
 Fix: Leaf positioning during RTL fliip animation @latonv
 Dev: dependency updates @renovate
