@@ -57,29 +57,41 @@
     user-select: none;
 }
 
-@keyframes slide-up {
-    from {
-        transform: translateY(3px);
-        opacity: 0;
-    }
-    to {}
+@keyframes slide-in {
+    0% { opacity: 0; transform: scale(1.2); filter: blur(10px); }
+    70% { opacity: 0; transform: scale(1.2); filter: blur(10px); }
+    100% { opacity: 1; }
 }
 
 #jit-context {
     display: none;
+
     width: 370px;
     position: fixed;
-    background-color: #eee;
-    z-index: 999;
     bottom: 40px;
     right: 8px;
-    border-radius: 3px;
-    color: #000;
+
+    z-index: 999;
+
     overflow: hidden;
     overflow: clip;
+
     border: 1px solid rgba(255,255,255,0.1);
 
-    animation: slide-up 0.2s;
+    color: #222;
+    font-family: system-ui;
+    font-size: 0.95em;
+
+    animation: slide-in .6s;
+
+    border-radius: 10px;
+    background-color: #ffffff8f;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2), 0 0 10px rgba(0,0,0,0.3), 0 0 1000px 5px white inset;
+    backdrop-filter: blur(50px);
+
+    p:first-child {
+        margin-top: 0;
+    }
 
     & > section {
         position: relative;
@@ -87,11 +99,12 @@
 
         & > a {
             position: absolute;
-            bottom: 0;
+            bottom: 7px;
             right: 0;
-            padding: 10px;
-            background: #eee;
-            border-radius: 4px;
+            padding: 8px 10px;
+            background: #f7f7f76e;
+            backdrop-filter: blur(4px);
+            border-radius: 9px;
             border: 1px solid #eee;
             transition: background-color 0.2s;
             &:hover {
@@ -115,9 +128,14 @@
         }
         & > .extract {
 	        overflow: auto;
-            padding: 0 8px;
+            padding: 20px;
             margin-top: -4px;
             height: inherit;
+            padding: 20px;
+            scrollbar-width: thin;
+        }
+        & > img ~ .extract {
+            padding: 20px 10px;
         }
         & > a {
             right: 15px;
@@ -173,7 +191,7 @@
             color: #333;
             font-size: 1em;
             margin: 0;
-            padding: 5px 10px;
+            padding: 10px;
         }
     }
 }
