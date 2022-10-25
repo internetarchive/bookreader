@@ -30,7 +30,7 @@ import 'jquery-ui-touch-punch';
 import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
-import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
+import { Navbar } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
@@ -537,7 +537,7 @@ BookReader.prototype.init = function() {
   }
 
   // Switch navbar controls on mobile/desktop
-  this.switchNavbarControls();
+  this._components.navbar.switchNavbarControls();
 
   this.resizeBRcontainer();
   this.updateFromParams(params);
@@ -621,7 +621,7 @@ BookReader.prototype.resize = function() {
   this.resizeBRcontainer();
 
   // Switch navbar controls on mobile/desktop
-  this.switchNavbarControls();
+  this._components.navbar.switchNavbarControls();
 
   if (this.constMode1up == this.mode) {
     if (this.onePage.autofit != 'none') {
@@ -1262,7 +1262,7 @@ BookReader.prototype.updateFirstIndex = function(
     this.suppressFragmentChange = false;
   }
   this.trigger('pageChanged');
-  this.updateNavIndexThrottled(index);
+  this._components.navbar.updateNavIndexThrottled(index);
 };
 
 /**
@@ -1453,27 +1453,9 @@ function exposeOverrideableMethod(Class, classKey, method, brMethod = method) {
 /***********************/
 /** Navbar extensions **/
 /***********************/
+/** This cannot be removed yet because plugin.tts.js overrides it */
 BookReader.prototype.initNavbar = Navbar.prototype.init;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'init', 'initNavbar');
-BookReader.prototype.switchNavbarControls = Navbar.prototype.switchNavbarControls;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'switchNavbarControls');
-BookReader.prototype.updateViewModeButton = Navbar.prototype.updateViewModeButton;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'updateViewModeButton');
-BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'getNavPageNumString');
-/** @deprecated unused */
-BookReader.prototype.getNavPageNumHtml = getNavPageNumHtml;
-/** @deprecated unused outside this file */
-BookReader.prototype.updateNavPageNum = Navbar.prototype.updateNavPageNum;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'updateNavPageNum');
-/** @deprecated unused outside this file */
-BookReader.prototype.updateNavIndex = Navbar.prototype.updateNavIndex;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'updateNavIndex');
-/** @deprecated unused outside this file */
-BookReader.prototype.updateNavIndexThrottled = utils.throttle(BookReader.prototype.updateNavIndex, 250, false);
-/** @deprecated unused */
-BookReader.prototype.updateNavIndexDebounced = utils.debounce(BookReader.prototype.updateNavIndex, 500, false);
-
 
 /************************/
 /** Toolbar extensions **/
