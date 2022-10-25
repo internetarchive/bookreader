@@ -297,7 +297,7 @@ export function marshallSearchResults(results, displayPageNumberFn) {
  * @param {boolean} options.goToFirstResult
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
-  marshallSearchResults(results, pageNum => this.getPageNum(this.leafNumToIndex(pageNum)));
+  marshallSearchResults(results, pageNum => this._models.book.getPageNum(this._models.book.leafNumToIndex(pageNum)));
   this.searchResults = results || [];
 
   this.updateSearchHilites();
@@ -357,7 +357,7 @@ BookReader.prototype.updateSearchHilites = function() {
   // Group by pageIndex
   for (const match of matches) {
     for (const box of match.par[0].boxes) {
-      const pageIndex = this.leafNumToIndex(box.page);
+      const pageIndex = this._models.book.leafNumToIndex(box.page);
       const pageBoxes = boxesByIndex[pageIndex] || (boxesByIndex[pageIndex] = []);
       pageBoxes.push(box);
     }
@@ -392,8 +392,8 @@ BookReader.prototype.removeSearchHilites = function() {
  */
 BookReader.prototype._searchPluginGoToResult = async function (matchIndex) {
   const match = this.searchResults?.matches[matchIndex];
-  const pageIndex = this.leafNumToIndex(match.par[0].page);
   const { book } = this._models;
+  const pageIndex = book.leafNumToIndex(match.par[0].page);
   const page = book.getPage(pageIndex);
   const onNearbyPage = Math.abs(this.currentIndex() - pageIndex) < 3;
   let makeUnviewableAtEnd = false;
@@ -478,7 +478,7 @@ BookReader.prototype.searchHighlightVisible = function() {
 
   results.matches.some(match => {
     return match.par[0].boxes.some(box => {
-      const pageIndex = this.leafNumToIndex(box.page);
+      const pageIndex = this._models.book.leafNumToIndex(box.page);
       if (jQuery.inArray(pageIndex, visiblePages) >= 0) {
         return true;
       }

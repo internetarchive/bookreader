@@ -53,7 +53,7 @@ BookReader.prototype.init = (function(super_) {
  */
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
   const uiStringPage = 'Page'; // i18n
-  const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
+  const percentThrough = BookReader.util.cssPercentage(pageIndex, this._models.book.getNumLeafs() - 1);
   const jumpToChapter = (event) => {
     this.jumpToIndex($(event.delegateTarget).data('pageIndex'));
     $('.current-chapter').removeClass('current-chapter');
@@ -151,7 +151,7 @@ BookReader.prototype.updateTOC = function(tocEntries) {
  * @param {TocEntry} tocEntryObject
  */
 BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-  tocEntryObject.pageIndex = this.getPageIndex(tocEntryObject['pagenum']);
+  tocEntryObject.pageIndex = this._models.book.getPageIndex(tocEntryObject['pagenum']);
   //creates a string with non-void tocEntryObject.label and tocEntryObject.title
   const chapterStr = [tocEntryObject.label, tocEntryObject.title]
     .filter(x => x)

@@ -224,7 +224,7 @@ BookReader.prototype.ttsStart = function (startTTSEngine = true) {
   this.$('.BRicon.read').addClass('unread active');
   this.ttsSendAnalyticsEvent('Start');
   if (startTTSEngine)
-    this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
+    this.ttsEngine.start(this.currentIndex(), this._models.book.getNumLeafs());
 };
 
 BookReader.prototype.ttsJumpForward = function () {

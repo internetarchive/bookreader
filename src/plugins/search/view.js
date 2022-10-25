@@ -231,10 +231,10 @@ class SearchView {
   renderPins(matches) {
     matches.forEach((match) => {
       const queryString = match.text;
-      const pageIndex = this.br.leafNumToIndex(match.par[0].page);
+      const pageIndex = this.br._models.book.leafNumToIndex(match.par[0].page);
       const uiStringSearch = "Search result"; // i18n
 
-      const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br.getNumLeafs() - 1);
+      const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br._models.book.getNumLeafs() - 1);
 
       const escapedQueryString = escapeHTML(queryString);
       const queryStringWithB = escapedQueryString.replace(this.matcher, '<b>$1</b>');

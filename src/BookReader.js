@@ -211,15 +211,6 @@ BookReader.prototype.setup = function(options) {
 
   // Assign the data methods
   this.data = options.data;
-  if (options.getNumLeafs) BookReader.prototype.getNumLeafs = options.getNumLeafs;
-  if (options.getPageWidth) BookReader.prototype.getPageWidth = options.getPageWidth;
-  if (options.getPageHeight) BookReader.prototype.getPageHeight = options.getPageHeight;
-  if (options.getPageURI) BookReader.prototype.getPageURI = options.getPageURI;
-  if (options.getPageSide) BookReader.prototype.getPageSide = options.getPageSide;
-  if (options.getPageNum) BookReader.prototype.getPageNum = options.getPageNum;
-  if (options.getPageProp) BookReader.prototype.getPageProp = options.getPageProp;
-  if (options.getSpreadIndices) BookReader.prototype.getSpreadIndices = options.getSpreadIndices;
-  if (options.leafNumToIndex) BookReader.prototype.leafNumToIndex = options.leafNumToIndex;
 
   /** @type {{[name: string]: JQuery}} */
   this.refs = {};
@@ -231,6 +222,15 @@ BookReader.prototype.setup = function(options) {
   this._models = {
     book: new BookModel(this),
   };
+  if (options.getNumLeafs) this._models.book.getNumLeafs = options.getNumLeafs.bind(this);
+  if (options.getPageWidth) this._models.book.getPageWidth = options.getPageWidth.bind(this);
+  if (options.getPageHeight) this._models.book.getPageHeight = options.getPageHeight.bind(this);
+  if (options.getPageURI) this._models.book.getPageURI = options.getPageURI.bind(this);
+  if (options.getPageSide) this._models.book.getPageSide = options.getPageSide.bind(this);
+  if (options.getPageNum) this._models.book.getPageNum = options.getPageNum.bind(this);
+  if (options.getPageProp) this._models.book.getPageProp = options.getPageProp.bind(this);
+  if (options.getSpreadIndices) this._models.book.getSpreadIndices = options.getSpreadIndices.bind(this);
+  if (options.leafNumToIndex) this._models.book.leafNumToIndex = options.leafNumToIndex.bind(this);
 
   /**
    * @private Components are 'subchunks' of bookreader functionality, usually UI related
@@ -1944,46 +1944,11 @@ BookReader.prototype.lastDisplayableIndex = function() {
 /**************************/
 /** BookModel extensions **/
 /**************************/
-/** @deprecated not used outside */
-BookReader.prototype.getMedianPageSize = BookModel.prototype.getMedianPageSize;
-exposeOverrideableMethod(BookModel, '_models.book', 'getMedianPageSize');
-BookReader.prototype._getPageWidth = BookModel.prototype._getPageWidth;
-exposeOverrideableMethod(BookModel, '_models.book', '_getPageWidth');
-BookReader.prototype._getPageHeight = BookModel.prototype._getPageHeight;
-exposeOverrideableMethod(BookModel, '_models.book', '_getPageHeight');
-BookReader.prototype.getPageIndex = BookModel.prototype.getPageIndex;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageIndex');
-/** @deprecated not used outside */
-BookReader.prototype.getPageIndices = BookModel.prototype.getPageIndices;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageIndices');
-BookReader.prototype.getPageName = BookModel.prototype.getPageName;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageName');
-BookReader.prototype.getNumLeafs = BookModel.prototype.getNumLeafs;
-exposeOverrideableMethod(BookModel, '_models.book', 'getNumLeafs');
-BookReader.prototype.getPageWidth = BookModel.prototype.getPageWidth;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageWidth');
-BookReader.prototype.getPageHeight = BookModel.prototype.getPageHeight;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageHeight');
+// Must modify petabox extension, which expects this on the prototype
+// before removing.
 BookReader.prototype.getPageURI = BookModel.prototype.getPageURI;
 exposeOverrideableMethod(BookModel, '_models.book', 'getPageURI');
-BookReader.prototype.getPageSide = BookModel.prototype.getPageSide;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageSide');
-BookReader.prototype.getPageNum = BookModel.prototype.getPageNum;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageNum');
-BookReader.prototype.getPageProp = BookModel.prototype.getPageProp;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageProp');
-BookReader.prototype.getSpreadIndices = BookModel.prototype.getSpreadIndices;
-exposeOverrideableMethod(BookModel, '_models.book', 'getSpreadIndices');
-BookReader.prototype.leafNumToIndex = BookModel.prototype.leafNumToIndex;
-exposeOverrideableMethod(BookModel, '_models.book', 'leafNumToIndex');
-BookReader.prototype.parsePageString = BookModel.prototype.parsePageString;
-exposeOverrideableMethod(BookModel, '_models.book', 'parsePageString');
-/** @deprecated unused */
-BookReader.prototype._getDataFlattened = BookModel.prototype._getDataFlattened;
-exposeOverrideableMethod(BookModel, '_models.book', '_getDataFlattened');
-/** @deprecated unused */
-BookReader.prototype._getDataProp = BookModel.prototype._getDataProp;
-exposeOverrideableMethod(BookModel, '_models.book', '_getDataProp');
+
 
 // Parameter related functions
 
