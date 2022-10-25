@@ -81,7 +81,7 @@ BookReader.prototype.autoToggle = function(overrides) {
   }
 
   // Change to autofit if book is too large
-  if (this.reduce < this.twoPageGetAutofitReduce()) {
+  if (this.reduce < this._modes.mode2Up.getAutofitReduce()) {
     this.zoom('auto');
   }
 
@@ -94,7 +94,7 @@ BookReader.prototype.autoToggle = function(overrides) {
       // don't flip immediately -- wait until timer fires
     } else {
       // flip immediately
-      this.flipFwdToIndex();
+      this.next({ triggerStop: false });
     }
 
     this.$('.play').hide();
@@ -103,9 +103,9 @@ BookReader.prototype.autoToggle = function(overrides) {
       if (this.animating) return;
 
       if (Math.max(this.twoPage.currentIndexL, this.twoPage.currentIndexR) >= this.lastDisplayableIndex()) {
-        this.flipBackToIndex(1); // $$$ really what we want?
+        this.prev({ triggerStop: false }); // $$$ really what we want?
       } else {
-        this.flipFwdToIndex();
+        this.next({ triggerStop: false });
       }
     }, this.flipDelay);
   } else {

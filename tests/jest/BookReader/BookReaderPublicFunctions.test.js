@@ -140,14 +140,14 @@ describe('`BookReader.prototype.prev`', () => {
   const br = new BookReader();
   global.br = br;
   br.trigger = sinon.fake();
-  br.flipBackToIndex = sinon.fake();
+  br._modes.mode2Up.flipBackToIndex = sinon.fake();
   br.jumpToIndex = sinon.fake();
 
   test('does not take action if user is on front page', () => {
     br.firstIndex = 0;
     br.prev();
     expect(br.trigger.callCount).toBe(0);
-    expect(br.flipBackToIndex.callCount).toBe(0);
+    expect(br._modes.mode2Up.flipBackToIndex.callCount).toBe(0);
     expect(br.jumpToIndex.callCount).toBe(0);
   });
 
@@ -158,7 +158,7 @@ describe('`BookReader.prototype.prev`', () => {
       br.prev();
       expect(br.jumpToIndex.callCount).toBe(0); // <--  does not get called
       expect(br.trigger.callCount).toBe(1);
-      expect(br.flipBackToIndex.callCount).toBe(1);
+      expect(br._modes.mode2Up.flipBackToIndex.callCount).toBe(1);
     });
   });
 
@@ -169,7 +169,7 @@ describe('`BookReader.prototype.prev`', () => {
       br.prev();
       expect(br.jumpToIndex.callCount).toBe(1);  // <--  gets called
       expect(br.trigger.callCount).toBe(1); // <-- gets called by `jumpToIndex` internally
-      expect(br.flipBackToIndex.callCount).toBe(1); // <-- gets called by `jumpToIndex` internally
+      expect(br._modes.mode2Up.flipBackToIndex.callCount).toBe(1); // <-- gets called by `jumpToIndex` internally
     });
   });
 });

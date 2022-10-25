@@ -145,13 +145,13 @@ describe('2up Container sizing', () => {
   test('baseLeafCss', () => {
     const br = new BookReader({ data: SAMPLE_DATA });
     br.init();
-    br.calculateSpreadSize();
+    br._modes.mode2Up.calculateSpreadSize();
     expect(Object.keys(br._modes.mode2Up.baseLeafCss)).toEqual(['position', 'right', 'top', 'zIndex']);
   });
   test('heightCss', () => {
     const br = new BookReader({ data: SAMPLE_DATA });
     br.init();
-    br.calculateSpreadSize();
+    br._modes.mode2Up.calculateSpreadSize();
     const heightStub = 1000;
     br.twoPage.height = heightStub;
     expect(Object.keys(br._modes.mode2Up.heightCss)).toEqual(['height']);
@@ -160,7 +160,7 @@ describe('2up Container sizing', () => {
   describe('left side', () => {
     const br = new BookReader({ data: SAMPLE_DATA });
     br.init();
-    br.calculateSpreadSize();
+    br._modes.mode2Up.calculateSpreadSize();
 
     test('leftLeafCss', () => {
       expect(Object.keys(br._modes.mode2Up.leftLeafCss)).toEqual([
@@ -186,7 +186,7 @@ describe('2up Container sizing', () => {
   describe('right side', () => {
     const br = new BookReader({ data: SAMPLE_DATA });
     br.init();
-    br.calculateSpreadSize();
+    br._modes.mode2Up.calculateSpreadSize();
 
     test('rightLeafCss', () => {
       expect(Object.keys(br._modes.mode2Up.rightLeafCss)).toEqual([
@@ -213,20 +213,20 @@ describe('2up Container sizing', () => {
     test('mainContainerCss', () => {
       const br = new BookReader({ data: SAMPLE_DATA });
       br.init();
-      br.calculateSpreadSize();
+      br._modes.mode2Up.calculateSpreadSize();
 
       expect(Object.keys(br._modes.mode2Up.mainContainerCss)).toEqual(['height', 'width', 'position']);
     });
     test('spreadCoverCss', () => {
       const br = new BookReader({ data: SAMPLE_DATA });
       br.init();
-      br.calculateSpreadSize();
+      br._modes.mode2Up.calculateSpreadSize();
       expect(Object.keys(br._modes.mode2Up.spreadCoverCss)).toEqual(['width', 'height', 'visibility']);
     });
     test('spineCss', () => {
       const br = new BookReader({ data: SAMPLE_DATA });
       br.init();
-      br.calculateSpreadSize();
+      br._modes.mode2Up.calculateSpreadSize();
       expect(Object.keys(br._modes.mode2Up.spineCss)).toEqual(['width', 'height', 'left', 'top']);
     });
   });
@@ -247,7 +247,7 @@ describe('prepareTwoPageView', () => {
       const preparePopUp = sinon.spy(mode2Up, 'preparePopUp');
       const updateBrClasses = sinon.spy(br, 'updateBrClasses');
 
-      br.prepareTwoPageView(undefined, undefined, true);
+      mode2Up.prepare(undefined, undefined, true);
       expect(prefetch.callCount).toBe(1);
 
       expect(resizeSpread.callCount).toBe(0);
