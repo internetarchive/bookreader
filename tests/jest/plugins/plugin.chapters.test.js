@@ -98,7 +98,7 @@ describe('updateTOCState', () => {
 
   beforeEach(() => {
     window.HTMLElement.prototype.scrollIntoView = sinon.stub();
-    br._models.book.getPageIndex = (str) => parseFloat(str);
+    br.book.getPageIndex = (str) => parseFloat(str);
     br.init();
   });
 

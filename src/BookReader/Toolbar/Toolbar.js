@@ -189,7 +189,7 @@ export class Toolbar {
       const params = {};
       params.mode = $(form.find('.fieldset-embed input[name=pages]:checked')).val();
       if (form.find('.fieldset-embed input[name=thispage]').prop('checked')) {
-        params.page = br._models.book.getPageNum(br.currentIndex());
+        params.page = br.book.getPageNum(br.currentIndex());
       }
 
       if (br.getEmbedCode) {
