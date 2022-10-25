@@ -37,12 +37,7 @@ import { DEFAULT_OPTIONS } from './BookReader/options.js';
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
 import { EVENTS } from './BookReader/events.js';
 import { DebugConsole } from './BookReader/DebugConsole.js';
-import {
-  Toolbar,
-  blankInfoDiv,
-  blankShareDiv,
-  createPopup,
-} from './BookReader/Toolbar/Toolbar.js';
+import { Toolbar } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
@@ -157,12 +152,7 @@ BookReader.prototype.setup = function(options) {
   this.thumbMaxLoading = options.thumbMaxLoading;
   this.thumbPadding = options.thumbPadding;
   this.displayedRows = [];
-
   this.displayedIndices = [];
-  /** @deprecated Unused; will be remove in v5 */
-  this.imgs = {};
-  /** @deprecated No longer used; will be remove in v5 */
-  this.prefetchedImgs = {}; //an object with numeric keys corresponding to page index, reduce
 
   this.animating = false;
   this.flipSpeed = options.flipSpeed;
@@ -1395,20 +1385,6 @@ BookReader.prototype._scrollAmount = function() {
 };
 
 /**
- * @deprecated No longer used; will be remove in v5
- */
-BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
-  console.warn('Call to deprecated function: BookReader.prefetchImg. No-op.');
-};
-
-/**
- * @deprecated No longer used; will be remove in v5
- */
-BookReader.prototype.pruneUnusedImgs = function() {
-  console.warn('Call to deprecated function: BookReader.pruneUnused. No-op.');
-};
-
-/**
  * Immediately stop flip animations.  Callbacks are triggered.
  */
 BookReader.prototype.stopFlipAnimations = function() {
@@ -1470,15 +1446,6 @@ BookReader.prototype.buildInfoDiv = Toolbar.prototype.buildInfoDiv;
 exposeOverrideableMethod(Toolbar, '_components.toolbar', 'buildInfoDiv');
 BookReader.prototype.getToolBarHeight = Toolbar.prototype.getToolBarHeight;
 exposeOverrideableMethod(Toolbar, '_components.toolbar', 'getToolBarHeight');
-/** @deprecated zoom no longer in toolbar */
-BookReader.prototype.updateToolbarZoom = Toolbar.prototype.updateToolbarZoom;
-exposeOverrideableMethod(Toolbar, '_components.toolbar', 'updateToolbarZoom');
-/** @deprecated unused */
-BookReader.prototype.blankInfoDiv = blankInfoDiv;
-/** @deprecated unused */
-BookReader.prototype.blankShareDiv = blankShareDiv;
-/** @deprecated unused */
-BookReader.prototype.createPopup = createPopup;
 
 /**
  * Bind navigation handlers
@@ -2021,31 +1988,6 @@ BookReader.prototype.canSwitchToMode = function(mode) {
   return true;
 };
 
-
-/**
- * @deprecated. Use PageModel.getURISrcSet. Slated for removal in v5.
- * Returns the srcset with correct URIs or void string if out of range
- * Also makes the reduce argument optional
- * @param {number} index
- * @param {number} [reduce]
- * @param {number} [rotate]
- * @return {string}
- */
-BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
-  const page = this._models.book.getPage(index, false);
-  // Synthesize page
-  if (!page) return "";
-
-  // reduce not passed in
-  // $$$ this probably won't work for thumbnail mode
-  if ('undefined' == typeof(reduce)) {
-    reduce = page.height / this.twoPage.height;
-  }
-
-  return page.getURISrcSet(reduce, rotate);
-};
-
-
 /**
  * Returns the page URI or transparent image if out of range
  * Also makes the reduce argument optional
@@ -2384,13 +2326,6 @@ BookReader.prototype.queryStringFromParams = function(
  */
 BookReader.prototype.$ = function(selector) {
   return this.refs.$br.find(selector);
-};
-
-/**
- * Polyfill for deprecated method
- */
-jQuery.curCSS = function(element, prop, val) {
-  return jQuery(element).css(prop, val);
 };
 
 window.BookReader = BookReader;

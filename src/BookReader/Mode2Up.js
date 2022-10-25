@@ -90,7 +90,6 @@ export class Mode2Up {
 
     this.displayedIndices = [this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR];
     this.br.displayedIndices = this.displayedIndices;
-    this.br.updateToolbarZoom(this.br.reduce);
     this.br.trigger('pageChanged');
   }
 
@@ -241,7 +240,6 @@ export class Mode2Up {
     this.br.displayedIndices = [];
 
     this.drawLeafs();
-    this.br.updateToolbarZoom(this.br.reduce);
     this.br.updateBrClasses();
 
     this.smoothZoomer = this.smoothZoomer || new ModeSmoothZoom(this);
@@ -561,7 +559,7 @@ export class Mode2Up {
       if (prev.pageSide == 'R') index--;
     }
 
-    this.br.updateNavIndexThrottled(index);
+    this.br._components.navbar.updateNavIndexThrottled(index);
 
     const previousIndices = this.book.getSpreadIndices(index);
 
@@ -759,7 +757,7 @@ export class Mode2Up {
     }
     if (index > this.br.lastDisplayableIndex()) return;
 
-    this.br.updateNavIndexThrottled(index);
+    this.br._components.navbar.updateNavIndexThrottled(index);
 
     this.br.animating = true;
 

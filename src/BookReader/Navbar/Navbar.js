@@ -4,6 +4,7 @@ import 'jquery-ui/ui/widget.js';
 import 'jquery-ui/ui/widgets/mouse.js';
 import 'jquery-ui/ui/widgets/slider.js';
 import { EVENTS } from '../events.js';
+import { throttle } from '../utils.js';
 
 export class Navbar {
   /**
@@ -27,6 +28,8 @@ export class Navbar {
     this.maximumControls = [
       'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb'
     ];
+
+    this.updateNavIndexThrottled = throttle(this.updateNavIndex.bind(this), 250, false);
   }
 
   controlFor(controlName) {
@@ -213,7 +216,7 @@ export class Navbar {
     const $slider = this.$root.find('.BRpager').slider({
       animate: true,
       min: 0,
-      max: br.getNumLeafs() - 1,
+      max: br._models.book.getNumLeafs() - 1,
       value: br.currentIndex(),
       range: "min"
     });
@@ -248,16 +251,16 @@ export class Navbar {
   getNavPageNumString(index) {
     const { br } = this;
     // Accessible index starts at 0 (alas) so we add 1 to make human
-    const pageNum = br.getPageNum(index);
-    const pageType = br.getPageProp(index, 'pageType');
-    const numLeafs = br.getNumLeafs();
+    const pageNum = br._models.book.getPageNum(index);
+    const pageType = br._models.book.getPageProp(index, 'pageType');
+    const numLeafs = br._models.book.getNumLeafs();
 
     if (!this.maxPageNum) {
       // Calculate Max page num (used for pagination display)
       let maxPageNum = 0;
       let pageNumVal;
       for (let i = 0; i < numLeafs; i++) {
-        pageNumVal = br.getPageNum(i);
+        pageNumVal = br._models.book.getPageNum(i);
         if (!isNaN(pageNumVal) && pageNumVal > maxPageNum) {
           maxPageNum = pageNumVal;
         }
