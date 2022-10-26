@@ -125,27 +125,6 @@ if (!isMobile()) {
       }
     }
   };
-
-  /** @deprecated */
-  BookReader.util.isMobile = isMobile;
-
-  /** @deprecated */
-  BookReader.util.getFullscreenElement = getFullscreenElement;
-
-  /** @deprecated */
-  BookReader.util.bindFullscreenChangeListener = bindFullscreenChangeListener;
-
-  /** @deprecated */
-  BookReader.util.fullscreenAllowed = fullscreenAllowed;
-
-  /** @deprecated */
-  BookReader.util.requestFullscreen = requestFullscreen;
-
-  /** @deprecated */
-  BookReader.util.exitFullscreen = exitFullscreen;
-
-  /** @deprecated */
-  BookReader.util.isFullscreenActive = isFullscreenActive;
 }
 
 

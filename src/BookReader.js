@@ -322,12 +322,6 @@ Object.defineProperty(BookReader.prototype, 'leafEdgeR', {
 });
 
 /**
- * BookReader.util are static library functions
- * At top of file so they can be used below
- */
-BookReader.util = utils;
-
-/**
  * Helper to merge in params in to a params object.
  * It normalizes "page" into the "index" field to disambiguate and prevent concflicts
  * @private

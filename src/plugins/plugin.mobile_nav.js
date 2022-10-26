@@ -3,7 +3,7 @@
  * Adds mobile navigation at responsive breakpoint
  */
 
-import * as utils from '../BookReader/utils.js';
+import { debounce, escapeHTML } from '../BookReader/utils.js';
 import 'jquery.mmenu/dist/js/jquery.mmenu.min.js';
 import 'jquery.mmenu/dist/addons/navbars/jquery.mmenu.navbars.min.js';
 
@@ -134,7 +134,7 @@ BookReader.prototype.initToolbar = (function (super_) {
         }
       };
 
-      window.addEventListener('resize', utils.debounce(closeMobileMenu, 900));
+      window.addEventListener('resize', debounce(closeMobileMenu, 900));
     }
   };
 })(BookReader.prototype.initToolbar);
@@ -144,7 +144,7 @@ BookReader.prototype.buildToolbarElement = (function (super_) {
   return function () {
     const $el = super_.call(this);
     if (this.enableMobileNav) {
-      const escapedTitle = BookReader.util.escapeHTML(this.bookTitle);
+      const escapedTitle = escapeHTML(this.bookTitle);
       const toolbar = `
         <span class="BRmobileHamburgerWrapper">
           <button class="BRmobileHamburger"></button>
