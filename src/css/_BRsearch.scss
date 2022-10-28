@@ -65,8 +65,8 @@
     color: #666;
     height: 8px;
     width: 4px;
-    bottom: -13px;
-    margin-left: -12px; /* Center icon */
+    bottom: -22px;
+    margin-left: -2px;
     > div {
       @extend %timeline-tooltip;
     }
@@ -83,7 +83,8 @@
   .BRsearch {
     width: 9px;
     height: 6px;
-    margin-left: -10px;
+    top: 6px;
+    margin-left: -3px;
     &:before {
       position: absolute;
       left: calc(50% - 2px);

@@ -1,5 +1,4 @@
-import { escapeHTML } from "../../BookReader/utils.js";
-
+import { escapeHTML, rangeSliderOffset } from "../../BookReader/utils.js";
 class SearchView {
   /**
    * @param {object} params
@@ -255,6 +254,7 @@ class SearchView {
         .addClass('BRsearch')
         .css({
           left: percentThrough,
+          transform: `translateX(${rangeSliderOffset(pageIndex / (this.br.book.getNumLeafs() - 1))}px)`,
         })
         .attr('title', uiStringSearch)
         .append(`
