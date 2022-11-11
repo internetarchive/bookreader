@@ -485,9 +485,8 @@ BookReader.prototype.getInitialMode = function(params) {
   let nextMode;
   if ('undefined' != typeof(params.mode)) {
     nextMode = params.mode;
-  } else if (this.ui == 'full'
-          && this.isFullscreenActive
-          && windowWidth <= this.onePageMinBreakpoint
+  } else if ((this.ui == 'full' && this.isFullscreenActive)
+    || (windowWidth <= this.onePageMinBreakpoint)
   ) {
     // In full mode, we set the default based on width
     nextMode = this.constMode1up;
@@ -498,6 +497,12 @@ BookReader.prototype.getInitialMode = function(params) {
   if (!this.canSwitchToMode(nextMode)) {
     nextMode = this.constMode1up;
   }
+
+  // override defaults mode via `bookreader-defaults` metadata
+  if (null != this.options.defaults) {
+    nextMode = this.options.defaults === 'mode/1up' ? this.constMode1up : this.constMode2up;
+  }
+
   return nextMode;
 };
 
@@ -2540,6 +2545,7 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
     }
   }
 
+  console.log(fragments)
   // search
   if (params.search && urlMode === 'hash') {
     fragments.push('search', params.search);
