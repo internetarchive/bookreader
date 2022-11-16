@@ -550,7 +550,7 @@ describe('<book-navigator>', () => {
 
         // analytics fires
         expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
-          true
+          false
         );
         // we prevent default
         expect(preventDefaultSpy.called).toEqual(true);
@@ -622,7 +622,7 @@ describe('<book-navigator>', () => {
       imgBRpageimage.dispatchEvent(contextMenuEvent);
 
       // analytics fires
-      expect(window.archive_analytics.send_event_no_sampling.called).toEqual(true);
+      expect(window.archive_analytics.send_event_no_sampling.called).toEqual(false);
       // we do not prevent default
       expect(preventDefaultSpy.called).toEqual(false);
     });
