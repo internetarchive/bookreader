@@ -452,7 +452,7 @@ export class BookNavigator extends LitElement {
       window.archive_analytics?.send_event(
         'BookReader',
         `contextmenu-${this.bookIsRestricted ? 'restricted' : 'unrestricted'}`,
-        e.target.classList.value
+        e.target?.classList?.value
       );
     }
     if (!this.bookIsRestricted) {
