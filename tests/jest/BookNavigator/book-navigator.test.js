@@ -51,7 +51,7 @@ beforeEach(() => {
     send_event_no_sampling: sinon.fake(),
     send_event: sinon.fake()
   };
-})
+});
 
 afterEach(() => {
   window.br = null;
