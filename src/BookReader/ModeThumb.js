@@ -1,5 +1,5 @@
 // @ts-check
-import { notInArray, clamp } from './utils.js';
+import { clamp } from './utils.js';
 import { EVENTS } from './events.js';
 import { DragScrollable } from './DragScrollable.js';
 /** @typedef {import('../BookREader.js').default} BookReader */
@@ -136,7 +136,7 @@ export class ModeThumb {
 
     // Create the thumbnail divs and images (lazy loaded)
     for (const row of rowsToDisplay) {
-      if (notInArray(row, this.br.displayedRows)) {
+      if (!this.br.displayedRows.includes(row)) {
         if (!leafMap[row]) { continue; }
         for (const { num: leaf, left: leafLeft } of leafMap[row].leafs) {
           const leafWidth = this.br.thumbWidth;
@@ -190,7 +190,7 @@ export class ModeThumb {
 
     // Remove thumbnails that are not to be displayed
     for (const row of this.br.displayedRows) {
-      if (notInArray(row, rowsToDisplay)) {
+      if (!rowsToDisplay.includes(row)) {
         for (const { num: index } of leafMap[row]?.leafs) {
           if (!imagesToDisplay?.includes(index)) {
             this.br.$(`.pagediv${index}`)?.remove();
@@ -291,9 +291,6 @@ export class ModeThumb {
 
     this.br.bindGestures(this.br.refs.$brContainer);
 
-    // $$$ keep select enabled for now since disabling it breaks keyboard
-    //     nav in FF 3.6 (https://bugs.edge.launchpad.net/bookreader/+bug/544666)
-    // disableSelect(this.br.$('#BRpageview'));
     this.br.thumbWidth = this.getThumbnailWidth(this.br.thumbColumns);
     this.br.reduce = this.book.getPageWidth(0) / this.br.thumbWidth;
     this.br.displayedRows = [];

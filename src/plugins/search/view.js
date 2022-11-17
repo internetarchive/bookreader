@@ -1,4 +1,4 @@
-import { escapeHTML } from "../../BookReader/utils.js";
+import { cssPercentage, escapeHTML } from "../../BookReader/utils.js";
 
 class SearchView {
   /**
@@ -234,7 +234,7 @@ class SearchView {
       const pageIndex = this.br.leafNumToIndex(match.par[0].page);
       const uiStringSearch = "Search result"; // i18n
 
-      const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br.getNumLeafs() - 1);
+      const percentThrough = cssPercentage(pageIndex, this.br.getNumLeafs() - 1);
 
       const escapedQueryString = escapeHTML(queryString);
       const queryStringWithB = escapedQueryString.replace(this.matcher, '<b>$1</b>');

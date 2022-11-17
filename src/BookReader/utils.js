@@ -1,17 +1,4 @@
 /**
- * Bind mouse handlers
- * Disable mouse click to avoid selected/highlighted page images
- * @param {JQuery} jObject
- */
-export function disableSelect(jObject) {
-  // $$$ check here for right-click and don't disable.  Also use jQuery style
-  //     for stopping propagation. See https://bugs.edge.launchpad.net/gnubook/+bug/362626
-  jObject.bind('mousedown', () => false);
-  // Special hack for IE7
-  jObject[0].onselectstart = () => false;
-}
-
-/**
  * @param {number} value
  * @param {number} min
  * @param {number} max
@@ -32,15 +19,6 @@ export function cssPercentage(value, max) {
 }
 
 /**
- * @param {*} value
- * @param {Array} array
- * @return {boolean}
- */
-export function notInArray(value, array) {
-  return !array.includes(value);
-}
-
-/**
  * Determines the active element, going into shadow doms.
  * @return {Element}
  */
@@ -56,16 +34,6 @@ export function getActiveElement(doc = document, recurseShadowDom = true) {
 export function isInputActive(doc = document) {
   const activeEl = getActiveElement(doc);
   return activeEl?.tagName == "INPUT" || activeEl?.tagName == "TEXTAREA";
-}
-
-/**
- * @param {HTMLIFrameElement} iframe
- * @return {Document}
- */
-export function getIFrameDocument(iframe) {
-// Adapted from http://xkr.us/articles/dom/iframe-document/
-  const outer = iframe.contentWindow || iframe.contentDocument;
-  return outer.document || outer;
 }
 
 /**

@@ -3,6 +3,7 @@
  * Plugin for chapter markers in BookReader. Fetches from openlibrary.org
  * Could be forked, or extended to alter behavior
  */
+import { cssPercentage } from '../../BookReader/utils.js';
 
 jQuery.extend(BookReader.defaultOptions, {
   olHost: 'https://openlibrary.org',
@@ -53,7 +54,7 @@ BookReader.prototype.init = (function(super_) {
  */
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
   const uiStringPage = 'Page'; // i18n
-  const percentThrough = BookReader.util.cssPercentage(pageIndex, this.getNumLeafs() - 1);
+  const percentThrough = cssPercentage(pageIndex, this.getNumLeafs() - 1);
   const jumpToChapter = (event) => {
     this.jumpToIndex($(event.delegateTarget).data('pageIndex'));
     $('.current-chapter').removeClass('current-chapter');
