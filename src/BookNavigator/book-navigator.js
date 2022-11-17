@@ -449,10 +449,10 @@ export class BookNavigator extends LitElement {
   /** Display an element's context menu */
   manageContextMenuVisibility(e) {
     if (window.archive_analytics) {
-      window.archive_analytics?.send_event_no_sampling(
+      window.archive_analytics?.send_event(
         'BookReader',
         `contextmenu-${this.bookIsRestricted ? 'restricted' : 'unrestricted'}`,
-        e.target.classList.value
+        e.target?.classList?.value
       );
     }
     if (!this.bookIsRestricted) {

@@ -104,7 +104,7 @@ export default class VolumesProvider {
     if (!window.archive_analytics) {
       return;
     }
-    window.archive_analytics?.send_event_no_sampling(
+    window.archive_analytics?.send_event(
       'BookReader',
       `VolumesSort|${orderBy}`,
       window.location.path,
