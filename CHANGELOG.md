@@ -1,3 +1,7 @@
+# 5.0.0-48
+- Fix: move analytics to sample bucket @iisa
+- Dev: update dependencies (concurrently, jest) @renovate
+
 # 5.0.0-47
 - Fix: XSS vulnerability in search results @latonv
 - Dev: Update jQuery to v3 **BREAKING** @cdrini
