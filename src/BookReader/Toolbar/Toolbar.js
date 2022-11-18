@@ -75,8 +75,6 @@ export class Toolbar {
     br.$('.BRnavCntl').addClass('BRup');
     br.$('.pause').hide();
 
-    this.updateToolbarZoom(br.reduce); // Pretty format
-
     // We build in mode 2
     br.refs.$BRtoolbar.append();
 
@@ -125,31 +123,6 @@ export class Toolbar {
         br.trigger(EVENTS.stop);
       }
     });
-  }
-
-  /**
-   * @deprecated
-   * @todo .BRzoom doesn't exist anywhere, so this is likely dead code
-   * Update the displayed zoom factor based on reduction factor
-   * @param {number} reduce
-   */
-  updateToolbarZoom(reduce) {
-    const { br } = this;
-    // $$$ TODO preserve zoom/fit for each mode
-    const autofit = br.mode == br.constMode2up ? br.twoPage.autofit : br.onePage.autofit;
-    /** @type {string} */
-    let value;
-    if (autofit) {
-      value = autofit.slice(0,1).toUpperCase() + autofit.slice(1);
-    } else {
-      value = (100 / reduce)
-        .toFixed(2)
-        // Strip trailing zeroes and decimal if all zeroes
-        .replace(/0+$/,'')
-        .replace(/\.$/,'')
-        + '%';
-    }
-    br.$('.BRzoom').text(value);
   }
 
   /**
@@ -216,7 +189,7 @@ export class Toolbar {
       const params = {};
       params.mode = $(form.find('.fieldset-embed input[name=pages]:checked')).val();
       if (form.find('.fieldset-embed input[name=thispage]').prop('checked')) {
-        params.page = br.getPageNum(br.currentIndex());
+        params.page = br.book.getPageNum(br.currentIndex());
       }
 
       if (br.getEmbedCode) {
@@ -331,7 +304,7 @@ export class Toolbar {
   }
 }
 
-export function blankInfoDiv() {
+function blankInfoDiv() {
   return $(`
     <div class="BRfloat BRinfo">
       <div class="BRfloatHead">About this book
@@ -351,7 +324,7 @@ export function blankInfoDiv() {
     </div>`);
 }
 
-export function blankShareDiv() {
+function blankShareDiv() {
   return $(`
     <div class="BRfloat BRshare">
       <div class="BRfloatHead">
