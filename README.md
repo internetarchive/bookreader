@@ -22,7 +22,7 @@ See live examples:
 
 ## Demos
 
-See `BookReaderDemo` directory. These can be tested by building the source files (make sure [Node.js is installed](https://nodejs.org/en/download/)):
+See `BookReaderDemo` directory. These can be tested by building the source files (make sure [Node.js](https://nodejs.org/en/download/) is installed):
 
 ```bash
 npm run build
