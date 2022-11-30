@@ -28,7 +28,7 @@ export default class PageChunk {
     let chunks = [];
     // try 3 times
     if (retryCount === 3) {
-      return chunks; //empty chunks
+      return PageChunk._fromTextWrapperResponse(leafIndex, chunks); //empty chunks
     }
     if (retryCount > 0) {
       await sleep(700);
