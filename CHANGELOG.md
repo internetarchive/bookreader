@@ -1,3 +1,8 @@
+# 5.0.0-49
+- Dev: remove class shims, v5 deprecations @cdrini
+- Dev: update dependency (@open-wc/testing-helpers) @renovate
+- Dev: e2e - remove ia test + export DesktopNav for external usage @iisa
+
 # 5.0.0-48
 - Fix: move analytics to sample bucket @iisa
 - Dev: update dependencies (concurrently, jest) @renovate
