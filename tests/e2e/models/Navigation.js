@@ -17,7 +17,7 @@ export default class Navigation {
  * @class
  * @classdesc defines DesktopNav base elements
  */
-class DesktopNav {
+export class DesktopNav {
   /**
    * @param {Selector} bottomToolbar
    * @param {Selector} itemNav
