@@ -13,7 +13,7 @@ export class BookSearchResult extends LitElement {
   constructor() {
     super();
 
-    this.matchRegex = new RegExp('{{{(.+?)}}}', 'gs');
+    this.matchRegex = new RegExp('{{{([^]+?)}}}', 'g'); // [^] matches any character, including line breaks
   }
 
   createRenderRoot() {

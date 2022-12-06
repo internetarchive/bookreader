@@ -15,7 +15,7 @@ class SearchView {
     // Search results are returned as a text blob with the hits wrapped in
     // triple mustaches. Hits occasionally include text beyond the search
     // term, so everything within the staches is captured and wrapped.
-    this.matcher = new RegExp('{{{(.+?)}}}', 'gs');
+    this.matcher = new RegExp('{{{([^]+?)}}}', 'g'); // [^] matches any character, including line breaks
     this.matches = [];
     this.cacheDOMElements();
     this.bindEvents();
