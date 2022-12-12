@@ -1,3 +1,6 @@
+# 5.0.0-50
+Fix: Search results display @latonv
+
 # 5.0.0-49
 - Dev: remove class shims, v5 deprecations @cdrini
 - Dev: update dependency (@open-wc/testing-helpers) @renovate
