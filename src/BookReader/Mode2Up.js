@@ -90,7 +90,6 @@ export class Mode2Up {
 
     this.displayedIndices = [this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR];
     this.br.displayedIndices = this.displayedIndices;
-    this.br.updateToolbarZoom(this.br.reduce);
     this.br.trigger('pageChanged');
   }
 
@@ -118,7 +117,7 @@ export class Mode2Up {
 
     // Prepare view with new center to minimize visual glitches
     const drawNewSpread = true;
-    this.prepareTwoPageView(oldCenter.percentageX, oldCenter.percentageY, drawNewSpread);
+    this.prepare(oldCenter.percentageX, oldCenter.percentageY, drawNewSpread);
   }
 
   /**
@@ -150,7 +149,7 @@ export class Mode2Up {
    * @param {number} centerPercentageY
    * @param {Boolean} drawNewSpread
    */
-  prepareTwoPageView(centerPercentageX, centerPercentageY, drawNewSpread = false) {
+  prepare(centerPercentageX, centerPercentageY, drawNewSpread = false) {
     // Some decisions about two page view:
     //
     // Both pages will be displayed at the same height, even if they were different physical/scanned
@@ -241,7 +240,6 @@ export class Mode2Up {
     this.br.displayedIndices = [];
 
     this.drawLeafs();
-    this.br.updateToolbarZoom(this.br.reduce);
     this.br.updateBrClasses();
 
     this.smoothZoomer = this.smoothZoomer || new ModeSmoothZoom(this);
@@ -391,7 +389,7 @@ export class Mode2Up {
 
     // Leaf edges
     this.br.twoPage.edgeWidth = spreadSize.totalLeafEdgeWidth; // The combined width of both edges
-    this.br.twoPage.leafEdgeWidthL = this.br.leafEdgeWidth(this.br.twoPage.currentIndexL);
+    this.br.twoPage.leafEdgeWidthL = this.leafEdgeWidth(this.br.twoPage.currentIndexL);
     this.br.twoPage.leafEdgeWidthR = this.br.twoPage.edgeWidth - this.br.twoPage.leafEdgeWidthL;
 
 
@@ -528,21 +526,6 @@ export class Mode2Up {
     return spreadSize.reduce;
   }
 
-  /**
-   * Returns true if the pages extend past the edge of the view
-   * @deprecated slated for deprecation by v5.0.0
-   * @return {boolean}
-   */
-  isZoomedIn() {
-    let isZoomedIn = false;
-    if (this.br.twoPage.autofit != 'auto') {
-      if (this.br.reduce < this.getAutofitReduce()) {
-        isZoomedIn = true;
-      }
-    }
-    return isZoomedIn;
-  }
-
   calculateReductionFactors() {
     this.br.twoPage.reductionFactors = this.br.reductionFactors.concat([
       {
@@ -551,14 +534,6 @@ export class Mode2Up {
       }
     ]);
     this.br.twoPage.reductionFactors.sort(this.br._reduceSort);
-  }
-
-  /**
-   * Set the cursor for two page view
-   * @deprecated Since version 4.3.3. Will be deleted in version 5.0
-   */
-  setCursor() {
-    console.warn('Call to deprecated method, Mode2Up.setCursor. No-op.');
   }
 
   /**
@@ -584,7 +559,7 @@ export class Mode2Up {
       if (prev.pageSide == 'R') index--;
     }
 
-    this.br.updateNavIndexThrottled(index);
+    this.br._components.navbar.updateNavIndexThrottled(index);
 
     const previousIndices = this.book.getSpreadIndices(index);
 
@@ -614,8 +589,8 @@ export class Mode2Up {
     this.br.refs.$brContainer.addClass("BRpageFlipping");
     const leftLeaf = this.br.twoPage.currentIndexL;
 
-    const oldLeafEdgeWidthL = this.br.leafEdgeWidth(this.br.twoPage.currentIndexL);
-    const newLeafEdgeWidthL = this.br.leafEdgeWidth(newIndexL);
+    const oldLeafEdgeWidthL = this.leafEdgeWidth(this.br.twoPage.currentIndexL);
+    const newLeafEdgeWidthL = this.leafEdgeWidth(newIndexL);
     const leafEdgeTmpW = oldLeafEdgeWidthL - newLeafEdgeWidthL;
 
     const currWidthL   = this.getPageWidth(leftLeaf);
@@ -782,7 +757,7 @@ export class Mode2Up {
     }
     if (index > this.br.lastDisplayableIndex()) return;
 
-    this.br.updateNavIndexThrottled(index);
+    this.br._components.navbar.updateNavIndexThrottled(index);
 
     this.br.animating = true;
 
@@ -808,9 +783,9 @@ export class Mode2Up {
   flipRightToLeft(newIndexL, newIndexR) {
     this.br.refs.$brContainer.addClass("BRpageFlipping");
 
-    const oldLeafEdgeWidthL = this.br.leafEdgeWidth(this.br.twoPage.currentIndexL);
+    const oldLeafEdgeWidthL = this.leafEdgeWidth(this.br.twoPage.currentIndexL);
     const oldLeafEdgeWidthR = this.br.twoPage.edgeWidth - oldLeafEdgeWidthL;
-    const newLeafEdgeWidthL = this.br.leafEdgeWidth(newIndexL);
+    const newLeafEdgeWidthL = this.leafEdgeWidth(newIndexL);
     const newLeafEdgeWidthR = this.br.twoPage.edgeWidth - newLeafEdgeWidthL;
 
     const leafEdgeTmpW = oldLeafEdgeWidthR - newLeafEdgeWidthR;

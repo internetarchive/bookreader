@@ -46,6 +46,13 @@ window.ResizeObserver = class ResizeObserver {
   disconnect = sinon.fake()
 };
 
+beforeEach(() => {
+  window.archive_analytics = {
+    send_event_no_sampling: sinon.fake(),
+    send_event: sinon.fake()
+  };
+});
+
 afterEach(() => {
   window.br = null;
   fixtureCleanup();
@@ -516,8 +523,6 @@ describe('<book-navigator>', () => {
   describe('Handles Restricted Books', () => {
     describe('contextMenu is prevented when book is restricted', () => {
       it('watches on `div.BRscreen`', async () => {
-        window.archive_analytics = { send_event_no_sampling: sinon.fake() };
-
         const el = fixtureSync(container());
         const brStub = {
           options: { restricted: true },
@@ -529,9 +534,8 @@ describe('<book-navigator>', () => {
         const elSpy = sinon.spy(el.manageContextMenuVisibility);
         await el.elementUpdated;
 
-        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
-          false
-        );
+        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(false);
+        expect(window.archive_analytics.send_event.called).toEqual(false);
         expect(elSpy.called).toEqual(false);
 
         const body = document.querySelector('body');
@@ -550,14 +554,13 @@ describe('<book-navigator>', () => {
 
         // analytics fires
         expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
-          true
+          false
         );
+        expect(window.archive_analytics.send_event.called).toEqual(true);
         // we prevent default
         expect(preventDefaultSpy.called).toEqual(true);
       });
       it('watches on `img.BRpageimage`', async () => {
-        window.archive_analytics = { send_event_no_sampling: sinon.fake() };
-
         const el = fixtureSync(container());
         const brStub = {
           options: { restricted: true },
@@ -568,9 +571,8 @@ describe('<book-navigator>', () => {
 
         await el.elementUpdated;
 
-        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
-          false
-        );
+        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(false);
+        expect(window.archive_analytics.send_event.called).toEqual(false);
 
         const body = document.querySelector('body');
         // const element stub for img.BRpageimage
@@ -586,14 +588,13 @@ describe('<book-navigator>', () => {
         imgBRpageimage.dispatchEvent(contextMenuEvent);
 
         // analytics fires
-        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(true);
+        expect(window.archive_analytics.send_event_no_sampling.called).toEqual(false);
+        expect(window.archive_analytics.send_event.called).toEqual(true);
         // we prevent default
         expect(preventDefaultSpy.called).toEqual(true);
       });
     });
     it('Allows unrestricted books access to context menu', async () => {
-      window.archive_analytics = { send_event_no_sampling: sinon.fake() };
-
       const el = fixtureSync(container());
       const brStub = {
         options: { restricted: false },
@@ -607,6 +608,8 @@ describe('<book-navigator>', () => {
       expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
         false
       );
+      expect(window.archive_analytics.send_event.called).toEqual(false);
+
 
       const body = document.querySelector('body');
       // const element stub for img.BRpageimage
@@ -622,7 +625,8 @@ describe('<book-navigator>', () => {
       imgBRpageimage.dispatchEvent(contextMenuEvent);
 
       // analytics fires
-      expect(window.archive_analytics.send_event_no_sampling.called).toEqual(true);
+      expect(window.archive_analytics.send_event_no_sampling.called).toEqual(false);
+      expect(window.archive_analytics.send_event.called).toEqual(true);
       // we do not prevent default
       expect(preventDefaultSpy.called).toEqual(false);
     });

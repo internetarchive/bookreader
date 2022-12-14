@@ -13,7 +13,7 @@ export class BookSearchResult extends LitElement {
   constructor() {
     super();
 
-    this.matchRegex = new RegExp('{{{(.+?)}}}', 'gs');
+    this.matchRegex = new RegExp('{{{([^]+?)}}}', 'g'); // [^] matches any character, including line breaks
   }
 
   createRenderRoot() {
@@ -23,9 +23,6 @@ export class BookSearchResult extends LitElement {
   /**
    * Converts the search hit to a `<p>` template containing the full search result with all of
    * its `{{{triple-brace-delimited}}}` matches replaced by `<mark>HTML mark tags</mark>`.
-   *
-   * This approach safely avoids the use of `unsafeHTML` and leaves any existing HTML tags
-   * in the snippets intact (as inert text), rather than stripping them away with DOMPurify.
    */
   highlightedHit(hit) {
     return html`<p>

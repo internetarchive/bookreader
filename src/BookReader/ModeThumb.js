@@ -177,7 +177,7 @@ export class ModeThumb {
             // shift viewModeOrder after clicking on thumbsnail leaf
             const nextModeID = this.br.viewModeOrder.shift();
             this.br.viewModeOrder.push(nextModeID);
-            this.br.updateViewModeButton($('.viewmode'), 'twopg', 'Two-page view');
+            this.br._components.navbar.updateViewModeButton($('.viewmode'), 'twopg', 'Two-page view');
 
             this.br.trigger(EVENTS.fragmentChange);
             event.stopPropagation();
@@ -215,8 +215,6 @@ export class ModeThumb {
 
     // highlight current page
     this.br.$('.pagediv' + this.br.currentIndex()).addClass('BRpagedivthumb_highlight');
-
-    this.br.updateToolbarZoom(this.br.reduce);
   }
 
   /**

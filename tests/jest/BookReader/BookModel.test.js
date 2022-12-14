@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import { deepCopy } from '../utils.js';
 import { BookModel } from '@/src/BookReader/BookModel.js';
+import { NAMED_REDUCE_SETS } from '@/src/BookReader/ReduceSet.js';
 /** @typedef {import('@/src/BookReader/options.js').BookReaderOptions} BookReaderOptions */
 
 afterEach(() => {
@@ -21,10 +22,10 @@ const SAMPLE_DATA = [
   ],
 ];
 
-describe('getMedianPageSize', () => {
+describe('getMedianPageSizeInches', () => {
   test('handles single page data', () => {
-    const bm = new BookModel({ data: SAMPLE_DATA.slice(0, 1) });
-    expect(bm.getMedianPageSize()).toEqual({ width: 123, height: 123 });
+    const bm = new BookModel({ data: SAMPLE_DATA.slice(0, 1), options: {ppi: 1} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 123, height: 123 });
   });
 
   test('handles odd pages data', () => {
@@ -38,8 +39,8 @@ describe('getMedianPageSize', () => {
     Object.assign(data[0][0], sizes[0]);
     Object.assign(data[1][0], sizes[1]);
     Object.assign(data[1][1], sizes[2]);
-    const bm = new BookModel({ data });
-    expect(bm.getMedianPageSize()).toEqual({ width: 200, height: 2200 });
+    const bm = new BookModel({ data, options: {ppi: 1} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 200, height: 2200 });
   });
 
 
@@ -55,16 +56,16 @@ describe('getMedianPageSize', () => {
     Object.assign(data[1][0], sizes[1]);
     Object.assign(data[1][1], sizes[2]);
     Object.assign(data[2][0], sizes[3]);
-    const bm = new BookModel({ data });
-    expect(bm.getMedianPageSize()).toEqual({ width: 300, height: 2300 });
+    const bm = new BookModel({ data, options: {ppi: 1} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 300, height: 2300 });
   });
 
   test('caches result', () => {
     const bm = new BookModel({ data: SAMPLE_DATA });
-    const firstResult = bm.getMedianPageSize();
-    expect(bm.getMedianPageSize()).toBe(firstResult);
-    expect(bm.getMedianPageSize()).toBe(firstResult);
-    expect(bm.getMedianPageSize()).toBe(firstResult);
+    const firstResult = bm.getMedianPageSizeInches();
+    expect(bm.getMedianPageSizeInches()).toBe(firstResult);
+    expect(bm.getMedianPageSizeInches()).toBe(firstResult);
+    expect(bm.getMedianPageSizeInches()).toBe(firstResult);
   });
 });
 
@@ -307,6 +308,25 @@ describe('PageModel', () => {
 
     test('at start is undefined', () => {
       expect(bm.getPage(0).findPrev({ combineConsecutiveUnviewables: true })).toBeUndefined();
+    });
+  });
+
+  describe('getURISrcSet', () => {
+    const data = deepCopy(SAMPLE_DATA);
+    const bm = new BookModel({ data, reduceSet: NAMED_REDUCE_SETS.pow2 });
+    bm.getPageURI = (index, scale, rotate) => `correctURL.png?scale=${scale}`;
+    const page = bm.getPage(0);
+
+    test('with 0 elements in srcset', () => {
+      expect(page.getURISrcSet(1)).toBe("");
+    });
+
+    test('with 2 elements in srcset', () => {
+      expect(page.getURISrcSet(5)).toBe("correctURL.png?scale=2 2x, correctURL.png?scale=1 4x");
+    });
+
+    test('with the most elements in srcset', () => {
+      expect(page.getURISrcSet(35)).toBe("correctURL.png?scale=16 2x, correctURL.png?scale=8 4x, correctURL.png?scale=4 8x, correctURL.png?scale=2 16x, correctURL.png?scale=1 32x");
     });
   });
 });
