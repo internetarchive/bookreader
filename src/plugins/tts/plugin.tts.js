@@ -224,7 +224,7 @@ BookReader.prototype.ttsStart = function (startTTSEngine = true) {
   this.$('.BRicon.read').addClass('unread active');
   this.ttsSendAnalyticsEvent('Start');
   if (startTTSEngine)
-    this.ttsEngine.start(this.currentIndex(), this.getNumLeafs());
+    this.ttsEngine.start(this.currentIndex(), this.book.getNumLeafs());
 };
 
 BookReader.prototype.ttsJumpForward = function () {
@@ -326,7 +326,7 @@ BookReader.prototype.ttsHighlightChunk = function(chunk) {
   // update any already created pages
   for (const [pageIndexString, boxes] of Object.entries(this._ttsBoxesByIndex)) {
     const pageIndex = parseFloat(pageIndexString);
-    const page = this._models.book.getPage(pageIndex);
+    const page = this.book.getPage(pageIndex);
     const pageContainers = this.getActivePageContainerElementsForIndex(pageIndex);
     pageContainers.forEach(container => renderBoxesInPageContainerLayer('ttsHiliteLayer', boxes, page, container));
   }

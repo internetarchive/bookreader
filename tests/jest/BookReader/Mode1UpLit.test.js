@@ -22,7 +22,11 @@ const SAMPLE_DATA = [
 function make_dummy_br(overrides = {}) {
   return Object.assign({
     updateFirstIndex() {},
-    updateNavIndexThrottled() {},
+    _components: {
+      navbar: {
+        updateNavIndexThrottled() {},
+      }
+    },
     data: []
   }, overrides);
 }

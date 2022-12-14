@@ -213,8 +213,8 @@ class IABookmarks extends LitElement {
       color: this.getBookmarkColor(color) ? color : this.defaultColor.id,
     };
 
-    const page = IABookmarks.formatPage(this.bookreader.getPageNum(leafNum));
-    const thumbnail = this.bookreader.getPageURI(`${leafNum}`.replace(/\D/g, ''), 32); // Request thumbnail 1/32 the size of original image
+    const page = IABookmarks.formatPage(this.bookreader.book.getPageNum(leafNum));
+    const thumbnail = this.bookreader.book.getPageURI(`${leafNum}`.replace(/\D/g, ''), 32); // Request thumbnail 1/32 the size of original image
     const bookmark = {
       ...nomalizedParams,
       id: leafNum,
@@ -297,7 +297,7 @@ class IABookmarks extends LitElement {
       const pageBookmark = this.getBookmark(pageID);
       const bookmarkState = pageBookmark ? 'filled' : 'hollow';
       // eslint-disable-next-line
-      const pageData = this.bookreader._models.book.getPage(pageID);
+      const pageData = this.bookreader.book.getPage(pageID);
       const { isViewable } = pageData;
 
       if (!isViewable) { return; }
@@ -417,7 +417,7 @@ class IABookmarks extends LitElement {
 
   bookmarkSelected({ detail }) {
     const { leafNum } = detail.bookmark;
-    this.bookreader.jumpToPage(`${this.bookreader.getPageNum(`${leafNum}`.replace(/\D/g, ''))}`);
+    this.bookreader.jumpToPage(`${this.bookreader.book.getPageNum(`${leafNum}`.replace(/\D/g, ''))}`);
     this.activeBookmarkID = leafNum;
   }
 

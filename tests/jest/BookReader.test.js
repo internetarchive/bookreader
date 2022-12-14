@@ -157,41 +157,6 @@ test('does not add q= term to urlMode=hash query string', () => {
   )).toBe('?name=value');
 });
 
-test('_getPageURISrcset with 0 page book', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 0);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(5, undefined, undefined)).toBe("");
-});
-
-test('_getPageURISrcset with negative index', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 0);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(-7, undefined, undefined)).toBe("");
-});
-
-test('_getPageURISrcset with 0 elements in srcset', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 30);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(5, 1, undefined)).toBe("");
-});
-
-test('_getPageURISrcset with 2 elements in srcset', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 30);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(5, 5, undefined)).toBe("correctURL.png&scale=2 2x, correctURL.png&scale=1 4x");
-});
-
-test('_getPageURISrcset with the most elements in srcset', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 30);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(5, 35, undefined)).toBe("correctURL.png&scale=16 2x, correctURL.png&scale=8 4x, correctURL.png&scale=4 8x, correctURL.png&scale=2 16x, correctURL.png&scale=1 32x");
-});
-
 describe('Navigation Bars', () => {
   test('Standard navigation is being used by default', () => {
     br.initNavbar = jest.fn();

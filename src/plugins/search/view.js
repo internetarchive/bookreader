@@ -15,7 +15,7 @@ class SearchView {
     // Search results are returned as a text blob with the hits wrapped in
     // triple mustaches. Hits occasionally include text beyond the search
     // term, so everything within the staches is captured and wrapped.
-    this.matcher = new RegExp('{{{(.+?)}}}', 'gs');
+    this.matcher = new RegExp('{{{([^]+?)}}}', 'g'); // [^] matches any character, including line breaks
     this.matches = [];
     this.cacheDOMElements();
     this.bindEvents();
@@ -231,10 +231,10 @@ class SearchView {
   renderPins(matches) {
     matches.forEach((match) => {
       const queryString = match.text;
-      const pageIndex = this.br.leafNumToIndex(match.par[0].page);
+      const pageIndex = this.br.book.leafNumToIndex(match.par[0].page);
       const uiStringSearch = "Search result"; // i18n
 
-      const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br.getNumLeafs() - 1);
+      const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br.book.getNumLeafs() - 1);
 
       const escapedQueryString = escapeHTML(queryString);
       const queryStringWithB = escapedQueryString.replace(this.matcher, '<b>$1</b>');
