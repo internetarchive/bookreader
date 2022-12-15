@@ -476,9 +476,21 @@ BookReader.prototype.getInitialMode = function(params) {
     nextMode = this.constMode1up;
   }
 
-  // override defaults mode via `bookreader-defaults` metadata
-  if (null != this.options.defaults) {
-    nextMode = this.options.defaults === 'mode/1up' ? this.constMode1up : this.constMode2up;
+  // override defaults mode via `options.defaults` metadata
+  if (this.options.defaults) {
+    switch(this.options.defaults) {
+      case 'mode/1up':
+        nextMode = this.constMode1up;
+        break;
+      case 'mode/2up':
+        nextMode = this.constMode2up;
+        break;
+      case 'mode/thumb':
+        nextMode = this.constModeThumb;
+        break;
+      default:
+        break
+    }
   }
 
   return nextMode;
