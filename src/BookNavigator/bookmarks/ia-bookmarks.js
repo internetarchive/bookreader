@@ -137,12 +137,25 @@ class IABookmarks extends LitElement {
   }
 
   setup() {
-    this.api.identifier = this.bookreader.bookId;
+    this.api.identifier = this.getIdentifier();
     if (this.displayMode === 'login') {
       return;
     }
     this.fetchUserBookmarks();
     this.setBREventListeners();
+  }
+
+  /**
+   * get identifier for current book including sub-files
+   *
+   * @returns Identifer
+   */
+  getIdentifier() {
+    if (this.bookreader.bookId !== this.bookreader.subPrefix) {
+      return `${this.bookreader.bookId}/${this.bookreader.subPrefix}`;
+    }
+
+    return this.bookreader.bookId;
   }
 
   updateDisplay() {
