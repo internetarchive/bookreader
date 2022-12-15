@@ -455,16 +455,18 @@ BookReader.prototype.readQueryString = function() {
  * @return {number} the mode
  */
 BookReader.prototype.getInitialMode = function(params) {
-  // Use params or browser width to set view mode
-  const windowWidth = $(window).width();
   let nextMode;
+
+  // if mobile breakpoint, we always show this.constMode1up mode
+  const ifMobileBreakpoint = () => {
+    // Use params or browser width to set view mode
+    const windowWidth = $(window).width();
+    return windowWidth && windowWidth <= this.onePageMinBreakpoint;
+  };
   if ('undefined' != typeof(params.mode)) {
     nextMode = params.mode;
-  } else if (this.ui == 'full'
-          && this.isFullscreenActive
-          && windowWidth <= this.onePageMinBreakpoint
-  ) {
-    // In full mode, we set the default based on width
+  } else if ((this.ui == 'full' && this.isFullscreenActive) || ifMobileBreakpoint()) {
+    // In full mode OR device width, we set the default based on width
     nextMode = this.constMode1up;
   } else {
     nextMode = this.constMode2up;
@@ -473,6 +475,36 @@ BookReader.prototype.getInitialMode = function(params) {
   if (!this.canSwitchToMode(nextMode)) {
     nextMode = this.constMode1up;
   }
+
+  // override defaults mode via `options.defaults` metadata
+  if (this.options.defaults) {
+    nextMode = this.overridesBookMode();
+  }
+
+  return nextMode;
+};
+
+/**
+ * Overrides book mode using options.defaults param
+ * @return {number} the mode
+ */
+BookReader.prototype.overridesBookMode = function() {
+  let nextMode = 2; // set default 2 (mode/2up)
+
+  switch (this.options.defaults) {
+  case 'mode/1up':
+    nextMode = this.constMode1up;
+    break;
+  case 'mode/2up':
+    nextMode = this.constMode2up;
+    break;
+  case 'mode/thumb':
+    nextMode = this.constModeThumb;
+    break;
+  default:
+    break;
+  }
+
   return nextMode;
 };
 
