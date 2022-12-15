@@ -283,21 +283,21 @@ describe('nextReduce', () => {
   describe('Override book page mode using options.default param', () => {
     test('replace current mode with options.default is set mode/1up', () => {
       br.options.defaults = 'mode/1up';
-    
+
       const nextModeNumber = br.overridesBookMode();
       expect(nextModeNumber).toBe(1);
     });
 
     test('replace current mode with options.default is set mode/2up', () => {
       br.options.defaults = 'mode/2up';
-    
+
       const nextModeNumber = br.overridesBookMode();
       expect(nextModeNumber).toBe(2);
     });
 
     test('replace current mode with options.default is set mode/thumb', () => {
       br.options.defaults = 'mode/thumb';
-    
+
       const nextModeNumber = br.overridesBookMode();
       expect(nextModeNumber).toBe(3);
     });
