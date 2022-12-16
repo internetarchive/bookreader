@@ -1,3 +1,7 @@
+# 5.0.0-51
+- Fix: Bookmark with subfiles was broken
+- Feature: Default 1up mode and options.defaults mode override exiting mode
+
 # 5.0.0-50
 Fix: Search results display @latonv
 
