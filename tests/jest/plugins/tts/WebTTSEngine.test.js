@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { WebTTSSound } from '@/src/plugins/tts/WebTTSEngine.js';
+import WebTTSEngine, { WebTTSSound } from '@/src/plugins/tts/WebTTSEngine.js';
 import { afterEventLoop, eventTargetMixin } from '../../utils.js';
 
 beforeEach(() => {
@@ -8,6 +8,7 @@ beforeEach(() => {
     speak: sinon.stub(),
     pause: sinon.stub(),
     resume: sinon.stub(),
+
     ...eventTargetMixin(),
   };
   window.SpeechSynthesisUtterance = function (text) {
@@ -21,6 +22,51 @@ afterEach(() => {
   delete window.SpeechSynthesisUtterance;
 });
 
+describe('WebTTSEngine', () => {
+  test('getVoices should include default voice when no actual default', () => {
+    // iOS devices set all the voices to default -_-
+    speechSynthesis.getVoices = () => [
+      {
+        default: true,
+        lang: "ar-001",
+        localService: true,
+        name: "Majed",
+        voiceURI: "com.apple.voice.compact.ar-001.Maged",
+      },
+      {
+        default: true,
+        lang: "bg-BG",
+        localService: true,
+        name: "Daria",
+        voiceURI: "com.apple.voice.compact.bg-BG.Daria",
+      }
+    ];
+    const voices = WebTTSEngine.prototype.getVoices(null);
+    expect(voices.length).toBe(3);
+    expect(voices[0].voiceURI).toBe('bookreader.SystemDefault');
+  });
+
+  test('getVoices should not include default voice when there is a default', () => {
+    speechSynthesis.getVoices = () => [
+      {
+        default: true,
+        lang: "ar-001",
+        localService: true,
+        name: "Majed",
+        voiceURI: "com.apple.voice.compact.ar-001.Maged",
+      },
+      {
+        default: false,
+        lang: "bg-BG",
+        localService: true,
+        name: "Daria",
+        voiceURI: "com.apple.voice.compact.bg-BG.Daria",
+      }
+    ];
+    const voices = WebTTSEngine.prototype.getVoices(null);
+    expect(voices.length).toBe(2);
+  });
+});
 
 describe('WebTTSSound', () => {
   describe('setPlaybackRate', () => {
