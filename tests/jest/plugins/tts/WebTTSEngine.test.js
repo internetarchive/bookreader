@@ -41,7 +41,7 @@ describe('WebTTSEngine', () => {
         voiceURI: "com.apple.voice.compact.bg-BG.Daria",
       }
     ];
-    const voices = WebTTSEngine.prototype.getVoices(null);
+    const voices = WebTTSEngine.prototype.getVoices();
     expect(voices.length).toBe(3);
     expect(voices[0].voiceURI).toBe('bookreader.SystemDefault');
   });
@@ -63,7 +63,7 @@ describe('WebTTSEngine', () => {
         voiceURI: "com.apple.voice.compact.bg-BG.Daria",
       }
     ];
-    const voices = WebTTSEngine.prototype.getVoices(null);
+    const voices = WebTTSEngine.prototype.getVoices();
     expect(voices.length).toBe(2);
   });
 });
