@@ -71,7 +71,22 @@ export default class WebTTSEngine extends AbstractTTSEngine {
   }
 
   /** @override */
-  getVoices() { return speechSynthesis.getVoices(); }
+  getVoices() {
+    const voices = speechSynthesis.getVoices();
+    if (voices.filter(v => v.default).length != 1) {
+      // iOS bug where the default system voice is sometimes
+      // missing from the list
+      voices.unshift({
+        voiceURI: 'bookreader.SystemDefault',
+        name: 'System Default',
+        // Not necessarily true, but very likely
+        lang: navigator.language,
+        default: true,
+        localService: true,
+      });
+    }
+    return voices;
+  }
 
   /** @override */
   createSound(chunk) {
@@ -122,7 +137,11 @@ export class WebTTSSound {
     this.started = false;
 
     this.utterance = new SpeechSynthesisUtterance(this.text.slice(this._charIndex));
-    this.utterance.voice = this.voice;
+    // iOS bug where the default system voice is sometimes
+    // missing from the list
+    if (this.voice?.voiceURI !== 'bookreader.SystemDefault') {
+      this.utterance.voice = this.voice;
+    }
     // Need to also set lang (for some reason); won't set voice on Chrome@Android otherwise
     if (this.voice) this.utterance.lang = this.voice.lang;
     this.utterance.rate = this.rate;
