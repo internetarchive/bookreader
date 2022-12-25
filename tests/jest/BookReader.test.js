@@ -157,41 +157,6 @@ test('does not add q= term to urlMode=hash query string', () => {
   )).toBe('?name=value');
 });
 
-test('_getPageURISrcset with 0 page book', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 0);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(5, undefined, undefined)).toBe("");
-});
-
-test('_getPageURISrcset with negative index', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 0);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(-7, undefined, undefined)).toBe("");
-});
-
-test('_getPageURISrcset with 0 elements in srcset', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 30);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(5, 1, undefined)).toBe("");
-});
-
-test('_getPageURISrcset with 2 elements in srcset', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 30);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(5, 5, undefined)).toBe("correctURL.png&scale=2 2x, correctURL.png&scale=1 4x");
-});
-
-test('_getPageURISrcset with the most elements in srcset', () => {
-  br._models.book.getNumLeafs = jest.fn(() => 30);
-  br._models.book.getPageURI = jest.fn((index, scale, rotate) => "correctURL.png&scale=" + scale);
-  br.init();
-  expect(br._getPageURISrcset(5, 35, undefined)).toBe("correctURL.png&scale=16 2x, correctURL.png&scale=8 4x, correctURL.png&scale=4 8x, correctURL.png&scale=2 16x, correctURL.png&scale=1 32x");
-});
-
 describe('Navigation Bars', () => {
   test('Standard navigation is being used by default', () => {
     br.initNavbar = jest.fn();
@@ -312,6 +277,37 @@ describe('nextReduce', () => {
       expect(nextReduce(2, 'width', SAMPLE_FACTORS).reduce).toBe(0.5);
       expect(nextReduce(2, 'height', SAMPLE_FACTORS).reduce).toBe(0.5);
       expect(nextReduce(2, 'auto', SAMPLE_FACTORS).reduce).toBe(0.5);
+    });
+  });
+
+  describe('Override book page mode using options.default param', () => {
+    test('replace current mode with options.default is set mode/1up', () => {
+      br.options.defaults = 'mode/1up';
+
+      const nextModeNumber = br.overridesBookMode();
+      expect(nextModeNumber).toBe(1);
+    });
+
+    test('replace current mode with options.default is set mode/2up', () => {
+      br.options.defaults = 'mode/2up';
+
+      const nextModeNumber = br.overridesBookMode();
+      expect(nextModeNumber).toBe(2);
+    });
+
+    test('replace current mode with options.default is set mode/thumb', () => {
+      br.options.defaults = 'mode/thumb';
+
+      const nextModeNumber = br.overridesBookMode();
+      expect(nextModeNumber).toBe(3);
+    });
+
+    test('test if options.default is NOT set', () => {
+      br.options.defaults = null;
+
+      // use mode/2up as default when no options.default metadata found
+      const nextModeNumber = br.overridesBookMode();
+      expect(nextModeNumber).toBe(2);
     });
   });
 });

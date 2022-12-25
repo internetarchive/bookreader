@@ -30,19 +30,14 @@ import 'jquery-ui-touch-punch';
 import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
-import { Navbar, getNavPageNumHtml } from './BookReader/Navbar/Navbar.js';
+import { Navbar } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
 import { EVENTS } from './BookReader/events.js';
 import { DebugConsole } from './BookReader/DebugConsole.js';
-import {
-  Toolbar,
-  blankInfoDiv,
-  blankShareDiv,
-  createPopup,
-} from './BookReader/Toolbar/Toolbar.js';
+import { Toolbar } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
@@ -151,18 +146,13 @@ BookReader.prototype.setup = function(options) {
   this.ui = options.ui;
   this.uiAutoHide = options.uiAutoHide;
 
-  this.thumbWidth = 100; // will be overridden during prepareThumbnailView
+  this.thumbWidth = 100; // will be overridden during this._modes.modeThumb.prepare();
   this.thumbRowBuffer = options.thumbRowBuffer;
   this.thumbColumns = options.thumbColumns;
   this.thumbMaxLoading = options.thumbMaxLoading;
   this.thumbPadding = options.thumbPadding;
   this.displayedRows = [];
-
   this.displayedIndices = [];
-  /** @deprecated Unused; will be remove in v5 */
-  this.imgs = {};
-  /** @deprecated No longer used; will be remove in v5 */
-  this.prefetchedImgs = {}; //an object with numeric keys corresponding to page index, reduce
 
   this.animating = false;
   this.flipSpeed = options.flipSpeed;
@@ -211,26 +201,22 @@ BookReader.prototype.setup = function(options) {
 
   // Assign the data methods
   this.data = options.data;
-  if (options.getNumLeafs) BookReader.prototype.getNumLeafs = options.getNumLeafs;
-  if (options.getPageWidth) BookReader.prototype.getPageWidth = options.getPageWidth;
-  if (options.getPageHeight) BookReader.prototype.getPageHeight = options.getPageHeight;
-  if (options.getPageURI) BookReader.prototype.getPageURI = options.getPageURI;
-  if (options.getPageSide) BookReader.prototype.getPageSide = options.getPageSide;
-  if (options.getPageNum) BookReader.prototype.getPageNum = options.getPageNum;
-  if (options.getPageProp) BookReader.prototype.getPageProp = options.getPageProp;
-  if (options.getSpreadIndices) BookReader.prototype.getSpreadIndices = options.getSpreadIndices;
-  if (options.leafNumToIndex) BookReader.prototype.leafNumToIndex = options.leafNumToIndex;
 
   /** @type {{[name: string]: JQuery}} */
   this.refs = {};
 
-  /**
-   * @private (for now) Models are largely state storing classes. This might be too much
-   * granularity, but time will tell!
-   */
-  this._models = {
-    book: new BookModel(this),
-  };
+  /** The book being displayed in BookReader*/
+  this.book = new BookModel(this);
+
+  if (options.getNumLeafs) this.book.getNumLeafs = options.getNumLeafs.bind(this);
+  if (options.getPageWidth) this.book.getPageWidth = options.getPageWidth.bind(this);
+  if (options.getPageHeight) this.book.getPageHeight = options.getPageHeight.bind(this);
+  if (options.getPageURI) this.book.getPageURI = options.getPageURI.bind(this);
+  if (options.getPageSide) this.book.getPageSide = options.getPageSide.bind(this);
+  if (options.getPageNum) this.book.getPageNum = options.getPageNum.bind(this);
+  if (options.getPageProp) this.book.getPageProp = options.getPageProp.bind(this);
+  if (options.getSpreadIndices) this.book.getSpreadIndices = options.getSpreadIndices.bind(this);
+  if (options.leafNumToIndex) this.book.leafNumToIndex = options.leafNumToIndex.bind(this);
 
   /**
    * @private Components are 'subchunks' of bookreader functionality, usually UI related
@@ -244,14 +230,14 @@ BookReader.prototype.setup = function(options) {
   };
 
   this._modes = {
-    mode1Up: new Mode1Up(this, this._models.book),
-    mode2Up: new Mode2Up(this, this._models.book),
-    modeThumb: new ModeThumb(this, this._models.book),
+    mode1Up: new Mode1Up(this, this.book),
+    mode2Up: new Mode2Up(this, this.book),
+    modeThumb: new ModeThumb(this, this.book),
   };
 
   /** Stores classes which we want to expose (selectively) some methods as overridable */
   this._overrideable = {
-    '_models.book': this._models.book,
+    'book': this.book,
     '_components.navbar': this._components.navbar,
     '_components.toolbar': this._components.toolbar,
     '_modes.mode1Up': this._modes.mode1Up,
@@ -260,7 +246,7 @@ BookReader.prototype.setup = function(options) {
   };
 
   /** Image cache for general image fetching */
-  this.imageCache = new ImageCache(this._models.book, {
+  this.imageCache = new ImageCache(this.book, {
     useSrcSet: this.options.useSrcSet,
     reduceSet: this.reduceSet,
   });
@@ -310,17 +296,6 @@ Object.defineProperty(BookReader.prototype, 'activeMode', {
   }[this.mode]; },
 });
 
-/** @deprecated unused outside Mode2Up */
-Object.defineProperty(BookReader.prototype, 'leafEdgeL', {
-  get() { return this._modes.mode2Up.leafEdgeL; },
-  set(newVal) { this._modes.mode2Up.leafEdgeL = newVal; }
-});
-/** @deprecated unused outside Mode2Up */
-Object.defineProperty(BookReader.prototype, 'leafEdgeR', {
-  get() { return this._modes.mode2Up.leafEdgeR; },
-  set(newVal) { this._modes.mode2Up.leafEdgeR = newVal; }
-});
-
 /**
  * BookReader.util are static library functions
  * At top of file so they can be used below
@@ -335,7 +310,7 @@ BookReader.util = utils;
 BookReader.prototype.extendParams = function(params, newParams) {
   const modifiedNewParams = $.extend({}, newParams);
   if ('undefined' != typeof(modifiedNewParams.page)) {
-    const pageIndex = this._models.book.parsePageString(modifiedNewParams.page);
+    const pageIndex = this.book.parsePageString(modifiedNewParams.page);
     if (!isNaN(pageIndex))
       modifiedNewParams.index = pageIndex;
     delete modifiedNewParams.page;
@@ -366,8 +341,8 @@ BookReader.prototype.initParams = function() {
 
   // If we have a title leaf, use that as the default instead of index 0,
   // but only use as default if book has a few pages
-  if ('undefined' != typeof(this.titleLeaf) && this._models.book.getNumLeafs() > 2) {
-    params.index = this._models.book.leafNumToIndex(this.titleLeaf);
+  if ('undefined' != typeof(this.titleLeaf) && this.book.getNumLeafs() > 2) {
+    params.index = this.book.leafNumToIndex(this.titleLeaf);
   } else {
     params.index = 0;
   }
@@ -480,16 +455,18 @@ BookReader.prototype.readQueryString = function() {
  * @return {number} the mode
  */
 BookReader.prototype.getInitialMode = function(params) {
-  // Use params or browser width to set view mode
-  const windowWidth = $(window).width();
   let nextMode;
+
+  // if mobile breakpoint, we always show this.constMode1up mode
+  const ifMobileBreakpoint = () => {
+    // Use params or browser width to set view mode
+    const windowWidth = $(window).width();
+    return windowWidth && windowWidth <= this.onePageMinBreakpoint;
+  };
   if ('undefined' != typeof(params.mode)) {
     nextMode = params.mode;
-  } else if (this.ui == 'full'
-          && this.isFullscreenActive
-          && windowWidth <= this.onePageMinBreakpoint
-  ) {
-    // In full mode, we set the default based on width
+  } else if ((this.ui == 'full' && this.isFullscreenActive) || ifMobileBreakpoint()) {
+    // In full mode OR device width, we set the default based on width
     nextMode = this.constMode1up;
   } else {
     nextMode = this.constMode2up;
@@ -498,6 +475,36 @@ BookReader.prototype.getInitialMode = function(params) {
   if (!this.canSwitchToMode(nextMode)) {
     nextMode = this.constMode1up;
   }
+
+  // override defaults mode via `options.defaults` metadata
+  if (this.options.defaults) {
+    nextMode = this.overridesBookMode();
+  }
+
+  return nextMode;
+};
+
+/**
+ * Overrides book mode using options.defaults param
+ * @return {number} the mode
+ */
+BookReader.prototype.overridesBookMode = function() {
+  let nextMode = 2; // set default 2 (mode/2up)
+
+  switch (this.options.defaults) {
+  case 'mode/1up':
+    nextMode = this.constMode1up;
+    break;
+  case 'mode/2up':
+    nextMode = this.constMode2up;
+    break;
+  case 'mode/thumb':
+    nextMode = this.constModeThumb;
+    break;
+  default:
+    break;
+  }
+
   return nextMode;
 };
 
@@ -548,7 +555,7 @@ BookReader.prototype.init = function() {
   }
 
   // Switch navbar controls on mobile/desktop
-  this.switchNavbarControls();
+  this._components.navbar.switchNavbarControls();
 
   this.resizeBRcontainer();
   this.updateFromParams(params);
@@ -632,11 +639,11 @@ BookReader.prototype.resize = function() {
   this.resizeBRcontainer();
 
   // Switch navbar controls on mobile/desktop
-  this.switchNavbarControls();
+  this._components.navbar.switchNavbarControls();
 
   if (this.constMode1up == this.mode) {
     if (this.onePage.autofit != 'none') {
-      this.resizePageView1up();
+      this._modes.mode1Up.resizePageView();
       this.centerPageView();
     } else {
       this.centerPageView();
@@ -644,12 +651,12 @@ BookReader.prototype.resize = function() {
       this.drawLeafsThrottled();
     }
   } else if (this.constModeThumb == this.mode) {
-    this.prepareThumbnailView();
+    this._modes.modeThumb.prepare();
   } else {
     // We only need to prepare again in autofit (size of spread changes)
     if (this.twoPage.autofit) {
       // most common path, esp. for archive.org books
-      this.prepareTwoPageView();
+      this._modes.mode2Up.prepare();
     } else {
       // used when zoomed in
       // Re-center if the scrollbars have disappeared
@@ -664,7 +671,7 @@ BookReader.prototype.resize = function() {
         doRecenter = true;
       }
       if (doRecenter) {
-        this.twoPageCenterView(center.percentageX, center.percentageY);
+        this._modes.mode2Up.centerView(center.percentageX, center.percentageY);
       }
     }
   }
@@ -790,10 +797,9 @@ BookReader.prototype.setupKeyListeners = function () {
 BookReader.prototype.drawLeafs = function() {
   if (this.constMode1up == this.mode) {
     // Not needed for Mode1Up anymore
-  } else if (this.constModeThumb == this.mode) {
-    this.drawLeafsThumbnail();
+    return;
   } else {
-    this.drawLeafsTwoPage();
+    this.activeMode.drawLeafs();
   }
 };
 
@@ -802,7 +808,7 @@ BookReader.prototype.drawLeafs = function() {
  * @param {PageIndex} index
  */
 BookReader.prototype._createPageContainer = function(index) {
-  return new PageContainer(this._models.book.getPage(index, false), {
+  return new PageContainer(this.book.getPage(index, false), {
     isProtected: this.protected,
     imageCache: this.imageCache,
     loadingImage: this.imagesBaseURL + 'loading.gif',
@@ -837,24 +843,6 @@ BookReader.prototype.bindGestures = function(jElement) {
     }
   });
 };
-
-/** @deprecated Not used outside ModeThumb */
-BookReader.prototype.drawLeafsThumbnail = ModeThumb.prototype.drawLeafs;
-exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'drawLeafs', 'drawLeafsThumbnail');
-/** @deprecated Not used outside ModeThumb */
-BookReader.prototype.lazyLoadThumbnails = ModeThumb.prototype.lazyLoadThumbnails;
-exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'lazyLoadThumbnails', 'lazyLoadThumbnails');
-BookReader.prototype.lazyLoadImage = ModeThumb.prototype.lazyLoadImage;
-exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'lazyLoadImage', 'lazyLoadImage');
-/** @deprecated Internal use only */
-BookReader.prototype.zoomThumb = ModeThumb.prototype.zoom;
-exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'zoom', 'zoomThumb');
-/** @deprecated Not used outside ModeThumb */
-BookReader.prototype.getThumbnailWidth = ModeThumb.prototype.getThumbnailWidth;
-exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'getThumbnailWidth', 'getThumbnailWidth');
-/** @deprecated Not used outside ModeThumb */
-BookReader.prototype.prepareThumbnailView = ModeThumb.prototype.prepare;
-exposeOverrideableMethod(ModeThumb, '_modes.modeThumb', 'prepare', 'prepareThumbnailView');
 
 /**
  * A throttled version of drawLeafs
@@ -990,7 +978,7 @@ BookReader.prototype._reduceSort = (a, b) => a.reduce - b.reduce;
  * @return {boolean} Returns true if page could be found, false otherwise.
  */
 BookReader.prototype.jumpToPage = function(pageNum) {
-  const pageIndex = this._models.book.parsePageString(pageNum);
+  const pageIndex = this.book.parsePageString(pageNum);
 
   if ('undefined' != typeof(pageIndex)) {
     this.jumpToIndex(pageIndex);
@@ -1019,7 +1007,7 @@ BookReader.prototype._isIndexDisplayed = function(index) {
  */
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
   // Don't jump into specific unviewable page
-  const page = this._models.book.getPage(index);
+  const page = this.book.getPage(index);
   if (!page.isViewable && page.unviewablesStart != page.index) {
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
@@ -1041,7 +1029,6 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
 /**
  * Return mode or 1up if initial thumb
  * @param {number}
- * @see BookReader.prototype.drawLeafsThumbnail
  */
 BookReader.prototype.getPrevReadMode = function(mode) {
   if (mode === BookReader.constMode1up || mode === BookReader.constMode2up) {
@@ -1097,21 +1084,21 @@ BookReader.prototype.switchMode = function(
 
   // XXX maybe better to preserve zoom in each mode
   if (this.constMode1up == mode) {
-    this.prepareOnePageView();
+    this._modes.mode1Up.prepare();
   } else if (this.constModeThumb == mode) {
     this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
-    this.prepareThumbnailView();
+    this._modes.modeThumb.prepare();
   } else {
     // $$$ why don't we save autofit?
     // this.twoPage.autofit = null; // Take zoom level from other mode
     // spread indices not set, so let's set them
     if (init || !pageFound) {
-      this.setSpreadIndices();
+      this._modes.mode2Up.setSpreadIndices();
     }
 
-    this.twoPageCalculateReductionFactors(); // this sets this.twoPage && this.reduce
-    this.prepareTwoPageView();
-    this.twoPageCenterView(0.5, 0.5); // $$$ TODO preserve center
+    this._modes.mode2Up.calculateReductionFactors(); // this sets this.twoPage && this.reduce
+    this._modes.mode2Up.prepare();
+    this._modes.mode2Up.centerView(0.5, 0.5); // $$$ TODO preserve center
   }
 
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
@@ -1188,7 +1175,7 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   this.animating = true;
   await new Promise(res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res));
   if (this.activeMode instanceof Mode1Up) {
-    this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(currentIndex));
+    this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this.book.getPage(currentIndex));
     // Need the new scale to be applied before calling jumpToIndex
     this.activeMode.mode1UpLit.requestUpdate();
     await this.activeMode.mode1UpLit.updateComplete;
@@ -1239,7 +1226,7 @@ BookReader.prototype.exitFullScreen = async function () {
   this.resize();
 
   if (this.activeMode instanceof Mode1Up) {
-    this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this._models.book.getPage(this.currentIndex()));
+    this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this.book.getPage(this.currentIndex()));
     this.activeMode.mode1UpLit.requestUpdate();
     await this.activeMode.mode1UpLit.updateComplete;
   }
@@ -1262,7 +1249,7 @@ BookReader.prototype.currentIndex = function() {
     return this.firstIndex; // $$$ TODO page in center of view would be better
   } else if (this.mode == this.constMode2up) {
     // Only allow indices that are actually present in book
-    return utils.clamp(this.firstIndex, 0, this._models.book.getNumLeafs() - 1);
+    return utils.clamp(this.firstIndex, 0, this.book.getNumLeafs() - 1);
   } else {
     throw 'currentIndex called for unimplemented mode ' + this.mode;
   }
@@ -1293,7 +1280,7 @@ BookReader.prototype.updateFirstIndex = function(
     this.suppressFragmentChange = false;
   }
   this.trigger('pageChanged');
-  this.updateNavIndexThrottled(index);
+  this._components.navbar.updateNavIndexThrottled(index);
 };
 
 /**
@@ -1340,10 +1327,10 @@ BookReader.prototype.leftmost = function() {
   }
 };
 
-BookReader.prototype.next = function() {
+BookReader.prototype.next = function({triggerStop = true} = {}) {
   if (this.constMode2up == this.mode) {
-    this.trigger(BookReader.eventNames.stop);
-    this.flipFwdToIndex(null);
+    if (triggerStop) this.trigger(BookReader.eventNames.stop);
+    this._modes.mode2Up.flipFwdToIndex(null);
   } else {
     if (this.firstIndex < this.lastDisplayableIndex()) {
       this.jumpToIndex(this.firstIndex + 1);
@@ -1351,13 +1338,13 @@ BookReader.prototype.next = function() {
   }
 };
 
-BookReader.prototype.prev = function() {
+BookReader.prototype.prev = function({triggerStop = true} = {}) {
   const isOnFrontPage = this.firstIndex < 1;
   if (isOnFrontPage) return;
 
   if (this.constMode2up == this.mode) {
-    this.trigger(BookReader.eventNames.stop);
-    this.flipBackToIndex(null);
+    if (triggerStop) this.trigger(BookReader.eventNames.stop);
+    this._modes.mode2Up.flipBackToIndex(null);
   } else {
     if (this.firstIndex >= 1) {
       this.jumpToIndex(this.firstIndex - 1);
@@ -1419,146 +1406,12 @@ BookReader.prototype.scrollUp = function() {
 BookReader.prototype._scrollAmount = function() {
   if (this.constMode1up == this.mode) {
     // Overlap by % of page size
-    return parseInt(this.refs.$brContainer.prop('clientHeight') - this._models.book.getPageHeight(this.currentIndex()) / this.reduce * 0.03);
+    return parseInt(this.refs.$brContainer.prop('clientHeight') - this.book.getPageHeight(this.currentIndex()) / this.reduce * 0.03);
   }
 
   return parseInt(0.9 * this.refs.$brContainer.prop('clientHeight'));
 };
 
-/**
- * @deprecated No longer used; will be remove in v5
- */
-BookReader.prototype.prefetchImg = async function(index, fetchNow = false) {
-  console.warn('Call to deprecated function: BookReader.prefetchImg. No-op.');
-};
-
-/**
- * @deprecated No longer used; will be remove in v5
- */
-BookReader.prototype.pruneUnusedImgs = function() {
-  console.warn('Call to deprecated function: BookReader.pruneUnused. No-op.');
-};
-
-/************************/
-/** Mode1Up extensions **/
-/************************/
-/** @deprecated not used outside BookReader */
-BookReader.prototype.prepareOnePageView = Mode1Up.prototype.prepare;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'prepare', 'prepareOnePageView');
-/** @deprecated not used outside BookReader */
-BookReader.prototype.zoom1up = Mode1Up.prototype.zoom;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'zoom', 'zoom1up');
-/** @deprecated not used outside Mode1Up, BookReader */
-BookReader.prototype.resizePageView1up = Mode1Up.prototype.resizePageView;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'resizePageView', 'resizePageView1up');
-/** @deprecated not used outside Mode1Up */
-BookReader.prototype.onePageCalculateViewDimensions = Mode1Up.prototype.calculateViewDimensions;
-exposeOverrideableMethod(Mode1Up, '_modes.mode1Up', 'calculateViewDimensions', 'onePageCalculateViewDimensions');
-
-/************************/
-/** Mode2Up extensions **/
-/************************/
-/** @deprecated not used outside Mode2Up */
-BookReader.prototype.zoom2up = Mode2Up.prototype.zoom;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'zoom', 'zoom2up');
-BookReader.prototype.twoPageGetAutofitReduce = Mode2Up.prototype.getAutofitReduce;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'getAutofitReduce', 'twoPageGetAutofitReduce');
-BookReader.prototype.flipBackToIndex = Mode2Up.prototype.flipBackToIndex;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipBackToIndex', 'flipBackToIndex');
-BookReader.prototype.flipFwdToIndex = Mode2Up.prototype.flipFwdToIndex;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipFwdToIndex', 'flipFwdToIndex');
-BookReader.prototype.setHilightCss2UP = Mode2Up.prototype.setHilightCss;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setHilightCss', 'setHilightCss2UP');
-/** @deprecated not used outside Mode2Up */
-BookReader.prototype.drawLeafsTwoPage = Mode2Up.prototype.drawLeafs;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'drawLeafs', 'drawLeafsTwoPage');
-/** @deprecated not used outside BookReader */
-BookReader.prototype.prepareTwoPageView = Mode2Up.prototype.prepareTwoPageView;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'prepareTwoPageView', 'prepareTwoPageView');
-/** @deprecated not used outside Mode2Up */
-BookReader.prototype.prepareTwoPagePopUp = Mode2Up.prototype.preparePopUp;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'preparePopUp', 'prepareTwoPagePopUp');
-/** @deprecated not used outside BookReader, Mode2Up */
-BookReader.prototype.calculateSpreadSize = Mode2Up.prototype.calculateSpreadSize;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'calculateSpreadSize', 'calculateSpreadSize');
-/** @deprecated not used outside BookReader, Mode2Up */
-BookReader.prototype.getIdealSpreadSize = Mode2Up.prototype.getIdealSpreadSize;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'getIdealSpreadSize', 'getIdealSpreadSize');
-/** @deprecated not used outside BookReader, Mode2Up */
-BookReader.prototype.getSpreadSizeFromReduce = Mode2Up.prototype.getSpreadSizeFromReduce;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'getSpreadSizeFromReduce', 'getSpreadSizeFromReduce');
-/** @deprecated unused */
-BookReader.prototype.twoPageIsZoomedIn = Mode2Up.prototype.isZoomedIn;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'isZoomedIn', 'twoPageIsZoomedIn');
-/** @deprecated not used outside BookReader */
-BookReader.prototype.twoPageCalculateReductionFactors = Mode2Up.prototype.calculateReductionFactors;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'calculateReductionFactors', 'twoPageCalculateReductionFactors');
-/** @deprecated unused */
-BookReader.prototype.twoPageSetCursor = Mode2Up.prototype.setCursor;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setCursor', 'twoPageSetCursor');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.flipLeftToRight = Mode2Up.prototype.flipLeftToRight;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipLeftToRight', 'flipLeftToRight');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.flipRightToLeft = Mode2Up.prototype.flipRightToLeft;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipRightToLeft', 'flipRightToLeft');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.prepareFlipLeftToRight = Mode2Up.prototype.prepareFlipLeftToRight;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'prepareFlipLeftToRight', 'prepareFlipLeftToRight');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.prepareFlipRightToLeft = Mode2Up.prototype.prepareFlipRightToLeft;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'prepareFlipRightToLeft', 'prepareFlipRightToLeft');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.getPageWidth2UP = Mode2Up.prototype.getPageWidth;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'getPageWidth', 'getPageWidth2UP');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.twoPageGutter = Mode2Up.prototype.gutter;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'gutter', 'twoPageGutter');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.twoPageTop = Mode2Up.prototype.top;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'top', 'twoPageTop');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.twoPageCoverWidth = Mode2Up.prototype.coverWidth;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'coverWidth', 'twoPageCoverWidth');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.twoPageGetViewCenter = Mode2Up.prototype.getViewCenter;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'getViewCenter', 'twoPageGetViewCenter');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.twoPageCenterView = Mode2Up.prototype.centerView;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'centerView', 'twoPageCenterView');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.twoPageFlipAreaHeight = Mode2Up.prototype.flipAreaHeight;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipAreaHeight', 'twoPageFlipAreaHeight');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.twoPageFlipAreaWidth = Mode2Up.prototype.flipAreaWidth;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipAreaWidth', 'twoPageFlipAreaWidth');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.twoPageFlipAreaTop = Mode2Up.prototype.flipAreaTop;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'flipAreaTop', 'twoPageFlipAreaTop');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.twoPageLeftFlipAreaLeft = Mode2Up.prototype.leftFlipAreaLeft;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'leftFlipAreaLeft', 'twoPageLeftFlipAreaLeft');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.twoPageRightFlipAreaLeft = Mode2Up.prototype.rightFlipAreaLeft;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'rightFlipAreaLeft', 'twoPageRightFlipAreaLeft');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.gutterOffsetForIndex = Mode2Up.prototype.gutterOffsetForIndex;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'gutterOffsetForIndex', 'gutterOffsetForIndex');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.leafEdgeWidth = Mode2Up.prototype.leafEdgeWidth;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'leafEdgeWidth', 'leafEdgeWidth');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.jumpIndexForLeftEdgePageX = Mode2Up.prototype.jumpIndexForLeftEdgePageX;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'jumpIndexForLeftEdgePageX', 'jumpIndexForLeftEdgePageX');
-/** @deprecated unused outside BookReader, Mode2Up */
-BookReader.prototype.jumpIndexForRightEdgePageX = Mode2Up.prototype.jumpIndexForRightEdgePageX;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'jumpIndexForRightEdgePageX', 'jumpIndexForRightEdgePageX');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.prefetch = Mode2Up.prototype.prefetch;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'prefetch', 'prefetch');
-/** @deprecated unused outside Mode2Up */
-BookReader.prototype.setSpreadIndices = Mode2Up.prototype.setSpreadIndices;
-exposeOverrideableMethod(Mode2Up, '_modes.mode2Up', 'setSpreadIndices', 'setSpreadIndices');
 /**
  * Immediately stop flip animations.  Callbacks are triggered.
  */
@@ -1604,27 +1457,9 @@ function exposeOverrideableMethod(Class, classKey, method, brMethod = method) {
 /***********************/
 /** Navbar extensions **/
 /***********************/
+/** This cannot be removed yet because plugin.tts.js overrides it */
 BookReader.prototype.initNavbar = Navbar.prototype.init;
 exposeOverrideableMethod(Navbar, '_components.navbar', 'init', 'initNavbar');
-BookReader.prototype.switchNavbarControls = Navbar.prototype.switchNavbarControls;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'switchNavbarControls');
-BookReader.prototype.updateViewModeButton = Navbar.prototype.updateViewModeButton;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'updateViewModeButton');
-BookReader.prototype.getNavPageNumString = Navbar.prototype.getNavPageNumString;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'getNavPageNumString');
-/** @deprecated unused */
-BookReader.prototype.getNavPageNumHtml = getNavPageNumHtml;
-/** @deprecated unused outside this file */
-BookReader.prototype.updateNavPageNum = Navbar.prototype.updateNavPageNum;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'updateNavPageNum');
-/** @deprecated unused outside this file */
-BookReader.prototype.updateNavIndex = Navbar.prototype.updateNavIndex;
-exposeOverrideableMethod(Navbar, '_components.navbar', 'updateNavIndex');
-/** @deprecated unused outside this file */
-BookReader.prototype.updateNavIndexThrottled = utils.throttle(BookReader.prototype.updateNavIndex, 250, false);
-/** @deprecated unused */
-BookReader.prototype.updateNavIndexDebounced = utils.debounce(BookReader.prototype.updateNavIndex, 500, false);
-
 
 /************************/
 /** Toolbar extensions **/
@@ -1639,15 +1474,6 @@ BookReader.prototype.buildInfoDiv = Toolbar.prototype.buildInfoDiv;
 exposeOverrideableMethod(Toolbar, '_components.toolbar', 'buildInfoDiv');
 BookReader.prototype.getToolBarHeight = Toolbar.prototype.getToolBarHeight;
 exposeOverrideableMethod(Toolbar, '_components.toolbar', 'getToolBarHeight');
-/** @deprecated zoom no longer in toolbar */
-BookReader.prototype.updateToolbarZoom = Toolbar.prototype.updateToolbarZoom;
-exposeOverrideableMethod(Toolbar, '_components.toolbar', 'updateToolbarZoom');
-/** @deprecated unused */
-BookReader.prototype.blankInfoDiv = blankInfoDiv;
-/** @deprecated unused */
-BookReader.prototype.blankShareDiv = blankShareDiv;
-/** @deprecated unused */
-BookReader.prototype.createPopup = createPopup;
 
 /**
  * Bind navigation handlers
@@ -2063,14 +1889,14 @@ BookReader.prototype.firstDisplayableIndex = function() {
 
   if ('rl' != this.pageProgression) {
     // LTR
-    if (this._models.book.getPageSide(0) == 'L') {
+    if (this.book.getPageSide(0) == 'L') {
       return 0;
     } else {
       return -1;
     }
   } else {
     // RTL
-    if (this._models.book.getPageSide(0) == 'R') {
+    if (this.book.getPageSide(0) == 'R') {
       return 0;
     } else {
       return -1;
@@ -2086,7 +1912,7 @@ BookReader.prototype.firstDisplayableIndex = function() {
  */
 BookReader.prototype.lastDisplayableIndex = function() {
 
-  const lastIndex = this._models.book.getNumLeafs() - 1;
+  const lastIndex = this.book.getNumLeafs() - 1;
 
   if (this.mode != this.constMode2up) {
     return lastIndex;
@@ -2094,14 +1920,14 @@ BookReader.prototype.lastDisplayableIndex = function() {
 
   if ('rl' != this.pageProgression) {
     // LTR
-    if (this._models.book.getPageSide(lastIndex) == 'R') {
+    if (this.book.getPageSide(lastIndex) == 'R') {
       return lastIndex;
     } else {
       return lastIndex + 1;
     }
   } else {
     // RTL
-    if (this._models.book.getPageSide(lastIndex) == 'L') {
+    if (this.book.getPageSide(lastIndex) == 'L') {
       return lastIndex;
     } else {
       return lastIndex + 1;
@@ -2113,46 +1939,11 @@ BookReader.prototype.lastDisplayableIndex = function() {
 /**************************/
 /** BookModel extensions **/
 /**************************/
-/** @deprecated not used outside */
-BookReader.prototype.getMedianPageSize = BookModel.prototype.getMedianPageSize;
-exposeOverrideableMethod(BookModel, '_models.book', 'getMedianPageSize');
-BookReader.prototype._getPageWidth = BookModel.prototype._getPageWidth;
-exposeOverrideableMethod(BookModel, '_models.book', '_getPageWidth');
-BookReader.prototype._getPageHeight = BookModel.prototype._getPageHeight;
-exposeOverrideableMethod(BookModel, '_models.book', '_getPageHeight');
-BookReader.prototype.getPageIndex = BookModel.prototype.getPageIndex;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageIndex');
-/** @deprecated not used outside */
-BookReader.prototype.getPageIndices = BookModel.prototype.getPageIndices;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageIndices');
-BookReader.prototype.getPageName = BookModel.prototype.getPageName;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageName');
-BookReader.prototype.getNumLeafs = BookModel.prototype.getNumLeafs;
-exposeOverrideableMethod(BookModel, '_models.book', 'getNumLeafs');
-BookReader.prototype.getPageWidth = BookModel.prototype.getPageWidth;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageWidth');
-BookReader.prototype.getPageHeight = BookModel.prototype.getPageHeight;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageHeight');
+// Must modify petabox extension, which expects this on the prototype
+// before removing.
 BookReader.prototype.getPageURI = BookModel.prototype.getPageURI;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageURI');
-BookReader.prototype.getPageSide = BookModel.prototype.getPageSide;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageSide');
-BookReader.prototype.getPageNum = BookModel.prototype.getPageNum;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageNum');
-BookReader.prototype.getPageProp = BookModel.prototype.getPageProp;
-exposeOverrideableMethod(BookModel, '_models.book', 'getPageProp');
-BookReader.prototype.getSpreadIndices = BookModel.prototype.getSpreadIndices;
-exposeOverrideableMethod(BookModel, '_models.book', 'getSpreadIndices');
-BookReader.prototype.leafNumToIndex = BookModel.prototype.leafNumToIndex;
-exposeOverrideableMethod(BookModel, '_models.book', 'leafNumToIndex');
-BookReader.prototype.parsePageString = BookModel.prototype.parsePageString;
-exposeOverrideableMethod(BookModel, '_models.book', 'parsePageString');
-/** @deprecated unused */
-BookReader.prototype._getDataFlattened = BookModel.prototype._getDataFlattened;
-exposeOverrideableMethod(BookModel, '_models.book', '_getDataFlattened');
-/** @deprecated unused */
-BookReader.prototype._getDataProp = BookModel.prototype._getDataProp;
-exposeOverrideableMethod(BookModel, '_models.book', '_getDataProp');
+exposeOverrideableMethod(BookModel, 'book', 'getPageURI');
+
 
 // Parameter related functions
 
@@ -2183,7 +1974,7 @@ BookReader.prototype.updateFromParams = function(params) {
     }
   } else if ('undefined' != typeof(params.page)) {
     // $$$ this assumes page numbers are unique
-    if (params.page != this._models.book.getPageNum(this.currentIndex())) {
+    if (params.page != this.book.getPageNum(this.currentIndex())) {
       this.jumpToPage(params.page);
     }
   }
@@ -2217,38 +2008,13 @@ BookReader.prototype.canSwitchToMode = function(mode) {
     // check there are enough pages to display
     // $$$ this is a workaround for the mis-feature that we can't display
     //     short books in 2up mode
-    if (this._models.book.getNumLeafs() < 2) {
+    if (this.book.getNumLeafs() < 2) {
       return false;
     }
   }
 
   return true;
 };
-
-
-/**
- * @deprecated. Use PageModel.getURISrcSet. Slated for removal in v5.
- * Returns the srcset with correct URIs or void string if out of range
- * Also makes the reduce argument optional
- * @param {number} index
- * @param {number} [reduce]
- * @param {number} [rotate]
- * @return {string}
- */
-BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
-  const page = this._models.book.getPage(index, false);
-  // Synthesize page
-  if (!page) return "";
-
-  // reduce not passed in
-  // $$$ this probably won't work for thumbnail mode
-  if ('undefined' == typeof(reduce)) {
-    reduce = page.height / this.twoPage.height;
-  }
-
-  return page.getURISrcSet(reduce, rotate);
-};
-
 
 /**
  * Returns the page URI or transparent image if out of range
@@ -2259,7 +2025,7 @@ BookReader.prototype._getPageURISrcset = function(index, reduce, rotate) {
  * @return {string}
  */
 BookReader.prototype._getPageURI = function(index, reduce, rotate) {
-  const page = this._models.book.getPage(index, false);
+  const page = this.book.getPage(index, false);
   // Synthesize page
   if (!page) return this.imagesBaseURL + "transparent.png";
 
@@ -2405,7 +2171,7 @@ BookReader.prototype.paramsFromCurrent = function() {
 
   // Path params
   const index = this.currentIndex();
-  const pageNum = this._models.book.getPageNum(index);
+  const pageNum = this.book.getPageNum(index);
   if ((pageNum === 0) || pageNum) {
     params.page = pageNum;
   }
@@ -2588,13 +2354,6 @@ BookReader.prototype.queryStringFromParams = function(
  */
 BookReader.prototype.$ = function(selector) {
   return this.refs.$br.find(selector);
-};
-
-/**
- * Polyfill for deprecated method
- */
-jQuery.curCSS = function(element, prop, val) {
-  return jQuery(element).css(prop, val);
 };
 
 window.BookReader = BookReader;

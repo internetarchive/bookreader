@@ -26,37 +26,8 @@ export class BookModel {
 
     /** @type {{width: number, height: number}} memoize storage */
     this._medianPageSize = null;
-    /** @deprecated @type {{width: number, height: number}} memoize storage */
-    this._medianPageSizePixels = null;
     /** @type {[PageData[], number]} */
     this._getDataFlattenedCached = null;
-  }
-
-  /**
-   * @deprecated Use getMedianPageSizeInches
-   * Memoized
-   * @return {{width: number, height: number}}
-   */
-  getMedianPageSize() {
-    if (this._medianPageSizePixels) {
-      return this._medianPageSizePixels;
-    }
-
-    // A little expensive but we just do it once
-    const widths = [];
-    const heights = [];
-    for (let i = 0; i < this.getNumLeafs(); i++) {
-      widths.push(this.getPageWidth(i));
-      heights.push(this.getPageHeight(i));
-    }
-
-    widths.sort();
-    heights.sort();
-    this._medianPageSizePixels = {
-      width: widths[Math.floor(widths.length / 2)],
-      height: heights[Math.floor(heights.length / 2)]
-    };
-    return this._medianPageSizePixels;
   }
 
   /** Get median width/height of page in inches. Memoized for performance. */

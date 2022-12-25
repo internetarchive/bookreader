@@ -38,12 +38,12 @@ describe('Plugin: Menu Toggle', () => {
   });
   test('autoplay will run without `flipSpeed` parameters', () => {
     const initialAutoTimer = br.autoTimer;
-    br.flipFwdToIndex = jest.fn();
+    br.next = jest.fn();
     br.autoStop = jest.fn();
     br.init();
     br.autoToggle();
     // internally referenced functions that fire
-    expect(br.flipFwdToIndex).toHaveBeenCalledTimes(1);
+    expect(br.next).toHaveBeenCalledTimes(1);
 
     expect(initialAutoTimer).toBeFalsy();
     // br.autoTimer changes when autoToggle turns on

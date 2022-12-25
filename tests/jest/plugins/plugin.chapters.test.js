@@ -55,6 +55,7 @@ const SAMPLE_TOC_UNDEF = [
   }
 ];
 
+/** @type {BookReader} */
 let br;
 beforeEach(() => {
   $.ajax = jest.fn().mockImplementation((args) => {
@@ -97,9 +98,7 @@ describe('updateTOCState', () => {
 
   beforeEach(() => {
     window.HTMLElement.prototype.scrollIntoView = sinon.stub();
-    //Sinon is not used because this function is imported from BookModel with exposeOverrideableMethod()
-    //which has a getter and setter
-    br.getPageIndex = (str) => parseFloat(str);
+    br.book.getPageIndex = (str) => parseFloat(str);
     br.init();
   });
 

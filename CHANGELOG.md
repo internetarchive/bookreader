@@ -1,3 +1,19 @@
+# 5.0.0-51
+- Fix: Bookmark with subfiles was broken @nsharma123
+- Feature: Default 1up mode and options.defaults mode override exiting mode @nsharma123
+
+# 5.0.0-50
+Fix: Search results display @latonv
+
+# 5.0.0-49
+- Dev: remove class shims, v5 deprecations @cdrini
+- Dev: update dependency (@open-wc/testing-helpers) @renovate
+- Dev: e2e - remove ia test + export DesktopNav for external usage @iisa
+
+# 5.0.0-48
+- Fix: move analytics to sample bucket @iisa
+- Dev: update dependencies (concurrently, jest) @renovate
+
 # 5.0.0-47
 - Fix: XSS vulnerability in search results @latonv
 - Dev: Update jQuery to v3 **BREAKING** @cdrini
