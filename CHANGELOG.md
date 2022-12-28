@@ -1,3 +1,4 @@
+# 5.0.0-52
 # 5.0.0-51
 - Fix: Bookmark with subfiles was broken @nsharma123
 - Feature: Default 1up mode and options.defaults mode override exiting mode @nsharma123
