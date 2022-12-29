@@ -5,9 +5,8 @@ import './ia-bookmarks.js';
 
 import './bookmark-edit.js';
 import './bookmarks-list.js';
-import { IAIconBookmark } from '@internetarchive/icon-bookmark';
+import '@internetarchive/icon-bookmark';
 
-customElements.define('icon-bookmark', IAIconBookmark);
 
 export default class BookmarksProvider {
   constructor(options) {
