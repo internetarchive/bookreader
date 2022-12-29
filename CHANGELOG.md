@@ -1,3 +1,6 @@
+# 5.0.0-53
+- Dev: update icons & lit versions to help a.o build @iisa
+
 # 5.0.0-52
 # 5.0.0-51
 - Fix: Bookmark with subfiles was broken @nsharma123
