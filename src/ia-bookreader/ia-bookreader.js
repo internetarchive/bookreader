@@ -41,15 +41,28 @@ export class IaBookReader extends LitElement {
     this.menuShortcuts = [];
     this.menuContents = [];
     this.openMenuName = '';
+
+    this.options = undefined;
+    this.pages = undefined;
+    this.downloadUrls = []; // * @param {Array} postInitOptions.downloadURLs
+    this.isRestricted = false; // * @param {Boolean} postInitOptions.isRestricted
   }
 
-  updated() {
+  updated(changed) {
     if (!this.modal) {
       this.setModalManager();
     }
 
     if (!this.sharedObserver) {
       this.sharedObserver = new SharedResizeObserver();
+    }
+
+    if (changed.hash('pages') && this.pages) {
+      // repaint bookreader, keep options
+    }
+
+    if (changed.has('options') && this.options) {
+      // restart bookreader with new options
     }
   }
 
@@ -108,6 +121,42 @@ export class IaBookReader extends LitElement {
     }
   }
 
+  bindEventListeners() {
+    // manage here so core code can independently run
+    window.addEventListener('BookReader:PostInit', (e) => {
+      this.bookreader = e.detail.props;
+      this.bookReaderLoaded = true;
+      this.bookReaderCannotLoad = false;
+      this.emitLoadingStatusUpdate(true);
+      this.loadSharedObserver();
+      setTimeout(() => {
+        this.bookreader.resize();
+      }, 0);
+    });
+
+    // move to properties
+    window.addEventListener('LendingFlow:PostInit', ({ detail }) => {
+      const {
+        downloadTypesAvailable, lendingStatus, isAdmin, previewType,
+      } = detail;
+      this.lendingInitialized = true;
+      this.downloadableTypes = downloadTypesAvailable;
+      this.lendingStatus = lendingStatus;
+      this.isAdmin = isAdmin;
+      this.bookReaderCannotLoad = previewType === 'singlePagePreview';
+      this.emitLoadingStatusUpdate(true);
+    });
+
+    // move to properties
+    window.addEventListener('BRJSIA:PostInit', ({ detail }) => {
+      const { isRestricted, downloadURLs } = detail;
+      this.bookReaderLoaded = true;
+      this.downloadableTypes = downloadURLs;
+      this.bookIsRestricted = isRestricted;
+    });
+
+  }
+
   render() {
     return html`
       <div class="main-component">
@@ -128,6 +177,7 @@ export class IaBookReader extends LitElement {
           </div>
           <div slot="main">
             <book-navigator
+              .bookreader=${this.bookreader}
               .modal=${this.modal}
               .baseHost=${this.baseHost}
               .itemMD=${this.item}

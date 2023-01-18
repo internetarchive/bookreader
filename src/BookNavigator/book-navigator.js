@@ -110,6 +110,8 @@ export class BookNavigator extends LitElement {
     if (changed.has('downloadableTypes')) {
       this.initializeBookSubmenus();
     }
+
+    
   }
 
   /**
@@ -404,16 +406,16 @@ export class BookNavigator extends LitElement {
    * Please update Book Navigator's instance reference of it to keep it current
    */
   bindEventListeners() {
-    window.addEventListener('BookReader:PostInit', (e) => {
-      this.bookreader = e.detail.props;
-      this.bookReaderLoaded = true;
-      this.bookReaderCannotLoad = false;
-      this.emitLoadingStatusUpdate(true);
-      this.loadSharedObserver();
-      setTimeout(() => {
-        this.bookreader.resize();
-      }, 0);
-    });
+    // window.addEventListener('BookReader:PostInit', (e) => {
+    //   this.bookreader = e.detail.props;
+    //   this.bookReaderLoaded = true;
+    //   this.bookReaderCannotLoad = false;
+    //   this.emitLoadingStatusUpdate(true);
+    //   this.loadSharedObserver();
+    //   setTimeout(() => {
+    //     this.bookreader.resize();
+    //   }, 0);
+    // });
     window.addEventListener('BookReader:fullscreenToggled', (event) => {
       const { detail: { props: brInstance = null } } = event;
       if (brInstance) {
@@ -425,23 +427,6 @@ export class BookNavigator extends LitElement {
       this.dispatchEvent(new CustomEvent(events.updateSideMenu, {
         detail: { menuId: 'search', action: 'toggle' },
       }));
-    });
-    window.addEventListener('LendingFlow:PostInit', ({ detail }) => {
-      const {
-        downloadTypesAvailable, lendingStatus, isAdmin, previewType,
-      } = detail;
-      this.lendingInitialized = true;
-      this.downloadableTypes = downloadTypesAvailable;
-      this.lendingStatus = lendingStatus;
-      this.isAdmin = isAdmin;
-      this.bookReaderCannotLoad = previewType === 'singlePagePreview';
-      this.emitLoadingStatusUpdate(true);
-    });
-    window.addEventListener('BRJSIA:PostInit', ({ detail }) => {
-      const { isRestricted, downloadURLs } = detail;
-      this.bookReaderLoaded = true;
-      this.downloadableTypes = downloadURLs;
-      this.bookIsRestricted = isRestricted;
     });
     window.addEventListener('contextmenu', (e) => this.manageContextMenuVisibility(e), { capture: true });
   }
