@@ -1,0 +1,5 @@
+[[headers]]
+  # Define which paths this specific [[headers]] block will cover.
+  for = "/BookReader/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"

@@ -1,4 +1,6 @@
 .textSelectionSVG {
+    z-index: 2;
+
     // Make it so right-clicking on "blank" part of svg sends events to the image (for saving)
     pointer-events: none;
     .BRwordElement { pointer-events: all; }
