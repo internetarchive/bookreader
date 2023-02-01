@@ -3,6 +3,7 @@ export const EVENTS = {
   /** Indicates that the fragment (a serialization of the reader
    * state) has changed. */
   fragmentChange: 'fragmentChange',
+  pageChanged: 'pageChanged',
   PostInit: 'PostInit',
   stop: 'stop',
   resize: 'resize',
