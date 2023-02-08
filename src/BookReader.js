@@ -1280,7 +1280,10 @@ BookReader.prototype.updateFirstIndex = function(
     this.suppressFragmentChange = false;
   }
 
-  this.trigger(BookReader.eventNames.pageChanged, { hasPageChanged: true });
+  this.trigger(BookReader.eventNames.pageChanged);
+
+  // - specific event to know if user is reading book
+  this.trigger(BookReader.eventNames.userAction)
   this._components.navbar.updateNavIndexThrottled(index);
 };
 
@@ -1540,6 +1543,11 @@ BookReader.prototype.bindNavigationHandlers = function() {
       }
     },
   };
+
+  // custom event for auto-loan-renew in ia-book-actions to know if user is active
+  this.$('nav.BRcontrols li button').on('click', () => {
+    this.trigger(BookReader.eventNames.userAction);
+  });
 
   jIcons.filter('.fit').bind('fit', function() {
     // XXXmang implement autofit zoom
