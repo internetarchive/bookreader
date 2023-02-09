@@ -1,22 +1,6 @@
 import langs from 'iso-language-codes/js/data.js';
 
 /**
- * Convert a EventTarget style event into a promise
- * @param {EventTarget} target
- * @param {string} eventType
- * @return {Promise<Event>}
- */
-export function promisifyEvent(target, eventType) {
-  return new Promise(res => {
-    const resolver = ev => {
-      target.removeEventListener(eventType, resolver);
-      res(ev);
-    };
-    target.addEventListener(eventType, resolver);
-  });
-}
-
-/**
  * Use regex to approximate word count in a string
  * @param {string} text
  * @return {number}

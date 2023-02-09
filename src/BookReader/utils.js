@@ -262,3 +262,19 @@ export async function poll(fn, { step = 50, timeout = 500, until = val => Boolea
     await _sleep(step);
   }
 }
+
+/**
+ * Convert a EventTarget style event into a promise
+ * @param {EventTarget} target
+ * @param {string} eventType
+ * @return {Promise<Event>}
+ */
+export function promisifyEvent(target, eventType) {
+  return new Promise(res => {
+    const resolver = ev => {
+      target.removeEventListener(eventType, resolver);
+      res(ev);
+    };
+    target.addEventListener(eventType, resolver);
+  });
+}
