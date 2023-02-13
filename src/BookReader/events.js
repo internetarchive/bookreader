@@ -7,7 +7,7 @@ export const EVENTS = {
   PostInit: 'PostInit',
   stop: 'stop',
   resize: 'resize',
-  userAction: 'userAction',
+  userAction: 'userAction', // event to know if user is actively reading
   // nav events:
   navToggled: 'navToggled',
   // menu click events
