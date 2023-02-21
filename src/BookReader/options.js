@@ -328,3 +328,9 @@ export const DEFAULT_OPTIONS = {
 
 /** @typedef {typeof DEFAULT_OPTIONS} BookReaderOptions */
 
+/**
+ * Thrown when an error occurs while parsing options.
+ * Potentially recoverable and non-halting.
+ */
+export class OptionsParseError extends Error {
+}

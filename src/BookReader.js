@@ -31,7 +31,7 @@ import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar } from './BookReader/Navbar/Navbar.js';
-import { DEFAULT_OPTIONS } from './BookReader/options.js';
+import { DEFAULT_OPTIONS, OptionsParseError } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
@@ -452,60 +452,56 @@ BookReader.prototype.readQueryString = function() {
  * Determines the initial mode for starting if a mode is not already
  * present in the params argument
  * @param {object} params
- * @return {number} the mode
+ * @return {1 | 2 | 3} the initial mode
  */
 BookReader.prototype.getInitialMode = function(params) {
-  // Use params or browser width to set view mode
-  let nextMode;
-
   // if mobile breakpoint, we always show this.constMode1up mode
-  const ifMobileBreakpoint = () => {
-    const windowWidth = $(window).width();
-    return windowWidth && windowWidth <= this.onePageMinBreakpoint;
-  };
-  if ('undefined' != typeof(params.mode)) {
-    nextMode = params.mode;
-  } else if (ifMobileBreakpoint()) {
-    nextMode = this.constMode1up;
+  const windowWidth = $(window).width();
+  const isMobile = windowWidth && windowWidth <= this.onePageMinBreakpoint;
+
+  let initialMode;
+  if (params.mode) {
+    initialMode = params.mode;
+  } else if (isMobile) {
+    initialMode = this.constMode1up;
   } else {
-    nextMode = this.constMode2up;
+    initialMode = this.constMode2up;
   }
 
-  if (!this.canSwitchToMode(nextMode)) {
-    nextMode = this.constMode1up;
+  if (!this.canSwitchToMode(initialMode)) {
+    initialMode = this.constMode1up;
   }
 
   // override defaults mode via `options.defaults` metadata
   if (this.options.defaults) {
-    nextMode = this.overridesBookMode();
+    try {
+      initialMode = _modeStringToNumber(this.options.defaults);
+    } catch (e) {
+      // Can ignore this error
+    }
   }
 
-  return nextMode;
+  return initialMode;
 };
 
 /**
- * Overrides book mode using options.defaults param
- * @return {number} the mode
+ * Converts a mode string to a the mode numeric constant
+ * @param {'mode/1up'|'mode/2up'|'mode/thumb'} modeString
+ * @return {1 | 2 | 3}
  */
-BookReader.prototype.overridesBookMode = function() {
-  let nextMode = 2; // set default 2 (mode/2up)
+export function _modeStringToNumber(modeString) {
+  const MAPPING = {
+    'mode/1up': 1,
+    'mode/2up': 2,
+    'mode/thumb': 3,
+  };
 
-  switch (this.options.defaults) {
-  case 'mode/1up':
-    nextMode = this.constMode1up;
-    break;
-  case 'mode/2up':
-    nextMode = this.constMode2up;
-    break;
-  case 'mode/thumb':
-    nextMode = this.constModeThumb;
-    break;
-  default:
-    break;
+  if (!(modeString in MAPPING)) {
+    throw new OptionsParseError(`Invalid mode string: ${modeString}`);
   }
 
-  return nextMode;
-};
+  return MAPPING[modeString];
+}
 
 /**
  * This is called by the client to initialize BookReader.
