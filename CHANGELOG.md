@@ -1,3 +1,6 @@
+# 5.0.0-54
+- Dev: Dispatch custom event from bookreader for ia-book-actions @nsharma123
+
 # 5.0.0-53
 - Dev: update icons & lit versions to help a.o build @iisa
 
