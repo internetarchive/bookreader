@@ -1279,7 +1279,11 @@ BookReader.prototype.updateFirstIndex = function(
   if (this.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
-  this.trigger('pageChanged');
+
+  this.trigger(BookReader.eventNames.pageChanged);
+
+  // event to know if user is actively reading
+  this.trigger(BookReader.eventNames.userAction);
   this._components.navbar.updateNavIndexThrottled(index);
 };
 
@@ -1539,6 +1543,12 @@ BookReader.prototype.bindNavigationHandlers = function() {
       }
     },
   };
+
+  // custom event for auto-loan-renew in ia-book-actions
+  // - to know if user is actively reading
+  this.$('nav.BRcontrols li button').on('click', () => {
+    this.trigger(BookReader.eventNames.userAction);
+  });
 
   jIcons.filter('.fit').bind('fit', function() {
     // XXXmang implement autofit zoom
