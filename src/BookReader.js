@@ -31,7 +31,7 @@ import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar } from './BookReader/Navbar/Navbar.js';
-import { DEFAULT_OPTIONS } from './BookReader/options.js';
+import { DEFAULT_OPTIONS, OptionsParseError } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
@@ -452,35 +452,36 @@ BookReader.prototype.readQueryString = function() {
  * Determines the initial mode for starting if a mode is not already
  * present in the params argument
  * @param {object} params
- * @return {number} the mode
+ * @return {1 | 2 | 3} the initial mode
  */
 BookReader.prototype.getInitialMode = function(params) {
-  // Use params or browser width to set view mode
-  let nextMode;
-
   // if mobile breakpoint, we always show this.constMode1up mode
-  const ifMobileBreakpoint = () => {
-    const windowWidth = $(window).width();
-    return windowWidth && windowWidth <= this.onePageMinBreakpoint;
-  };
-  if ('undefined' != typeof(params.mode)) {
-    nextMode = params.mode;
-  } else if (ifMobileBreakpoint()) {
-    nextMode = this.constMode1up;
+  const windowWidth = $(window).width();
+  const isMobileBreakpoint = windowWidth && windowWidth <= this.onePageMinBreakpoint;
+
+  let initialMode;
+  if (params.mode) {
+    initialMode = params.mode;
+  } else if (isMobileBreakpoint) {
+    initialMode = this.constMode1up;
   } else {
-    nextMode = this.constMode2up;
+    initialMode = this.constMode2up;
   }
 
-  if (!this.canSwitchToMode(nextMode)) {
-    nextMode = this.constMode1up;
+  if (!this.canSwitchToMode(initialMode)) {
+    initialMode = this.constMode1up;
   }
 
   // override defaults mode via `options.defaults` metadata
   if (this.options.defaults) {
-    nextMode = _modeStringToNumber(this.options.defaults);
+    try {
+      initialMode = _modeStringToNumber(this.options.defaults);
+    } catch (e) {
+      // Can ignore this error
+    }
   }
 
-  return nextMode;
+  return initialMode;
 };
 
 /**
@@ -496,7 +497,7 @@ export function _modeStringToNumber(modeString) {
   };
 
   if (!(modeString in MAPPING)) {
-    throw new Error(`Invalid mode string: ${modeString}`);
+    throw new OptionsParseError(`Invalid mode string: ${modeString}`);
   }
 
   return MAPPING[modeString];
