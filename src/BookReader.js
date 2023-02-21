@@ -465,8 +465,8 @@ BookReader.prototype.getInitialMode = function(params) {
   };
   if ('undefined' != typeof(params.mode)) {
     nextMode = params.mode;
-  } else if ((this.ui == 'full' && this.isFullscreenActive) || ifMobileBreakpoint()) {
-    // In full mode OR device width, we set the default based on width
+  } else if (this.ui == 'full' && this.isFullscreenActive && ifMobileBreakpoint()) {
+    // In full mode, we set the default based on width
     nextMode = this.constMode1up;
   } else {
     nextMode = this.constMode2up;
