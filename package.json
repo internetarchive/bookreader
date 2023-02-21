@@ -72,7 +72,7 @@
     "node-fetch": "3.2.10",
     "regenerator-runtime": "0.13.9",
     "sass": "1.52.1",
-    "sinon": "^14.0.0",
+    "sinon": "^14.0.2",
     "soundmanager2": "2.97.20170602",
     "svgo": "2.8.0",
     "testcafe": "^2.0.1",
