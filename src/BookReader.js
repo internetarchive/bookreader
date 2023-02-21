@@ -455,18 +455,17 @@ BookReader.prototype.readQueryString = function() {
  * @return {number} the mode
  */
 BookReader.prototype.getInitialMode = function(params) {
+  // Use params or browser width to set view mode
   let nextMode;
 
   // if mobile breakpoint, we always show this.constMode1up mode
   const ifMobileBreakpoint = () => {
-    // Use params or browser width to set view mode
     const windowWidth = $(window).width();
     return windowWidth && windowWidth <= this.onePageMinBreakpoint;
   };
   if ('undefined' != typeof(params.mode)) {
     nextMode = params.mode;
-  } else if ((this.ui == 'full' && this.isFullscreenActive) || ifMobileBreakpoint()) {
-    // In full mode OR device width, we set the default based on width
+  } else if (ifMobileBreakpoint()) {
     nextMode = this.constMode1up;
   } else {
     nextMode = this.constMode2up;
