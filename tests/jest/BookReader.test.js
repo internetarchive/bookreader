@@ -1,5 +1,5 @@
 
-import BookReader from '@/src/BookReader.js';
+import BookReader, {_modeStringToNumber} from '@/src/BookReader.js';
 import '@/src/plugins/plugin.resume.js';
 import '@/src/plugins/url/plugin.url.js';
 
@@ -279,35 +279,12 @@ describe('nextReduce', () => {
       expect(nextReduce(2, 'auto', SAMPLE_FACTORS).reduce).toBe(0.5);
     });
   });
+});
 
-  describe('Override book page mode using options.default param', () => {
-    test('replace current mode with options.default is set mode/1up', () => {
-      br.options.defaults = 'mode/1up';
-
-      const nextModeNumber = br.overridesBookMode();
-      expect(nextModeNumber).toBe(1);
-    });
-
-    test('replace current mode with options.default is set mode/2up', () => {
-      br.options.defaults = 'mode/2up';
-
-      const nextModeNumber = br.overridesBookMode();
-      expect(nextModeNumber).toBe(2);
-    });
-
-    test('replace current mode with options.default is set mode/thumb', () => {
-      br.options.defaults = 'mode/thumb';
-
-      const nextModeNumber = br.overridesBookMode();
-      expect(nextModeNumber).toBe(3);
-    });
-
-    test('test if options.default is NOT set', () => {
-      br.options.defaults = null;
-
-      // use mode/2up as default when no options.default metadata found
-      const nextModeNumber = br.overridesBookMode();
-      expect(nextModeNumber).toBe(2);
-    });
+describe('_modeStringToNumber', () => {
+  test('Returns correct number', () => {
+    expect(_modeStringToNumber('mode/1up')).toBe(1);
+    expect(_modeStringToNumber('mode/2up')).toBe(2);
+    expect(_modeStringToNumber('mode/thumb')).toBe(3);
   });
 });

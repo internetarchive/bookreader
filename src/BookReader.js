@@ -477,35 +477,30 @@ BookReader.prototype.getInitialMode = function(params) {
 
   // override defaults mode via `options.defaults` metadata
   if (this.options.defaults) {
-    nextMode = this.overridesBookMode();
+    nextMode = _modeStringToNumber(this.options.defaults);
   }
 
   return nextMode;
 };
 
 /**
- * Overrides book mode using options.defaults param
- * @return {number} the mode
+ * Converts a mode string to a the mode numeric constant
+ * @param {'mode/1up'|'mode/2up'|'mode/thumb'} modeString
+ * @return {1 | 2 | 3}
  */
-BookReader.prototype.overridesBookMode = function() {
-  let nextMode = 2; // set default 2 (mode/2up)
+export function _modeStringToNumber(modeString) {
+  const MAPPING = {
+    'mode/1up': 1,
+    'mode/2up': 2,
+    'mode/thumb': 3,
+  };
 
-  switch (this.options.defaults) {
-  case 'mode/1up':
-    nextMode = this.constMode1up;
-    break;
-  case 'mode/2up':
-    nextMode = this.constMode2up;
-    break;
-  case 'mode/thumb':
-    nextMode = this.constModeThumb;
-    break;
-  default:
-    break;
+  if (!(modeString in MAPPING)) {
+    throw new Error(`Invalid mode string: ${modeString}`);
   }
 
-  return nextMode;
-};
+  return MAPPING[modeString];
+}
 
 /**
  * This is called by the client to initialize BookReader.
