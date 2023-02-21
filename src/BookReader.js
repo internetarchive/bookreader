@@ -457,12 +457,12 @@ BookReader.prototype.readQueryString = function() {
 BookReader.prototype.getInitialMode = function(params) {
   // if mobile breakpoint, we always show this.constMode1up mode
   const windowWidth = $(window).width();
-  const isMobileBreakpoint = windowWidth && windowWidth <= this.onePageMinBreakpoint;
+  const isMobile = windowWidth && windowWidth <= this.onePageMinBreakpoint;
 
   let initialMode;
   if (params.mode) {
     initialMode = params.mode;
-  } else if (isMobileBreakpoint) {
+  } else if (isMobile) {
     initialMode = this.constMode1up;
   } else {
     initialMode = this.constMode2up;
