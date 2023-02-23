@@ -1084,16 +1084,7 @@ BookReader.prototype.switchMode = function(
     this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
     this._modes.modeThumb.prepare();
   } else {
-    // $$$ why don't we save autofit?
-    // this.twoPage.autofit = null; // Take zoom level from other mode
-    // spread indices not set, so let's set them
-    if (init || !pageFound) {
-      this._modes.mode2Up.setSpreadIndices();
-    }
-
-    this._modes.mode2Up.calculateReductionFactors(); // this sets this.twoPage && this.reduce
     this._modes.mode2Up.prepare();
-    this._modes.mode2Up.centerView(0.5, 0.5); // $$$ TODO preserve center
   }
 
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
@@ -1329,7 +1320,7 @@ BookReader.prototype.leftmost = function() {
 BookReader.prototype.next = function({triggerStop = true} = {}) {
   if (this.constMode2up == this.mode) {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    this._modes.mode2Up.flipFwdToIndex(null);
+    this._modes.mode2Up.mode2UpLit.flipAnimation(this.pageProgression === 'lr' ? 'right' : 'left');
   } else {
     if (this.firstIndex < this.lastDisplayableIndex()) {
       this.jumpToIndex(this.firstIndex + 1);
@@ -1343,7 +1334,7 @@ BookReader.prototype.prev = function({triggerStop = true} = {}) {
 
   if (this.constMode2up == this.mode) {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    this._modes.mode2Up.flipBackToIndex(null);
+    this._modes.mode2Up.mode2UpLit.flipAnimation(this.pageProgression === 'lr' ? 'left' : 'right');
   } else {
     if (this.firstIndex >= 1) {
       this.jumpToIndex(this.firstIndex - 1);

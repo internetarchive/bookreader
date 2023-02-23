@@ -83,57 +83,79 @@ svg.BRPageLayer {
   display: none;
 }
 
-.BRbookcover {
-  position: absolute;
-  background-image: none;
-  box-shadow: 1px 0 10px #111;
-}
-.BRPreview .BRpageimage {
-  background-color: #eee;
-  -webkit-filter: grayscale(100%);
-  filter: grayscale(100%);
+.br-mode-2up__root {
+  display: block;
+  overflow: auto;
+  width: 100%;
+  height: 100%;
 }
 
-.BRleafEdgeR {
-  border-style: solid solid solid none;
-  border-color: rgb(51, 51, 34);
-  border-width: 1px 1px 1px 0px;
+.br-mode-2up__book {
+  position: relative;
+  transform-origin: 0 0;
+}
 
+
+.BRmode2up .BRpagecontainer {
+  backface-visibility: hidden;
+  &:not(.BRpage-visible) {
+    display: none;
+  }
+}
+
+.br-mode-2up__leafs {
   background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
   position: absolute;
   cursor: pointer;
+  top: 0;
 }
 
-.BRleafEdgeL {
-  /* border-style: solid none solid solid;
-  border-color: rgb(51, 51, 34);
-  border-width: 1px 0px 1px 1px; */
-  background: transparent url(images/back_pages.png) repeat scroll 0% 0%; /* XXXmang replace file */
-  position: absolute;
-  cursor: pointer;
+.br-mode-2up--flipping-left {
+  .BRpage-entering[data-side=R] {
+    z-index: 10;
+    animation: flipRightToLeft .6s ease-in;
+    transform-origin: left;
+    transform: rotateY(0deg);
+  }
+
+  .BRpage-exiting[data-side=L] {
+    z-index: 10;
+    animation: flipLeftToRight .6s ease-in;
+    transform-origin: right;
+    transform: rotateY(90deg);
+  }
+
+  .BRpage-exiting[data-side=R] {
+    z-index: 9;
+  }
 }
 
-.BRleafEdgeTmp {
-  /* border-style: solid none solid solid;
-  border-color: rgb(51, 51, 34);
-  border-width: 1px 0px 1px 1px; */
-  background: transparent url(images/back_pages.png) repeat scroll 0% 0%; /* XXXmang replace file */
-  position: absolute;
+.br-mode-2up--flipping-right {
+  .BRpage-entering[data-side=L] {
+    z-index: 10;
+    animation: flipLeftToRight .6s ease-in reverse;
+    transform-origin: right;
+    transform: rotateY(0deg);
+  }
+
+  .BRpage-exiting[data-side=R] {
+    z-index: 10;
+    animation: flipRightToLeft .6s ease-in reverse;
+    transform-origin: left;
+    transform: rotateY(-180deg);
+  }
+
+  .BRpage-exiting[data-side=L] {
+    z-index: 9;
+  }
 }
 
-.BRgutter {
-  /* border: 1px solid rgb(68, 25, 17); */
-  position: absolute;
-  background: transparent url(images/booksplit.png) repeat scroll 0% 0%;
+@keyframes flipLeftToRight {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(180deg); }
 }
 
-.BRtwoPagePopUp {
-  padding: 6px;
-  position: absolute;
-  font-size: $brFontSizeSmaller;
-  color: white;
-  background-color: #9A9B9D;
-  opacity: 0.85;
-  border-radius: 4px;
-  white-space: nowrap;
+@keyframes flipRightToLeft {
+  0% { transform: rotateY(-180deg); }
+  100% { transform: rotateY(0deg); }
 }
