@@ -2893,6 +2893,7 @@ li.BRtable-contents-el .BRTOCElementPage {
 }
 
 .textSelectionSVG {
+  z-index: 2;
   pointer-events: none;
 }
 .textSelectionSVG .BRwordElement {
