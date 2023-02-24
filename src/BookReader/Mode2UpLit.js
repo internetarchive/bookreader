@@ -93,18 +93,29 @@ export class Mode2UpLit extends LitElement {
     return this.computePositions(this.pageLeft, this.pageRight);
   }
 
+  /** @param {PageModel} page */
+  computePageHeight(page) {
+    return this.book.getMedianPageSizeInches().height;
+  }
+
+  /** @param {PageModel} page */
+  computePageWidth(page) {
+    return page.widthInches * this.computePageHeight(page) / page.heightInches;
+  }
+
   /**
    * @param {PageModel | null} pageLeft
    * @param {PageModel | null} pageRight
    */
   computePositions(pageLeft, pageRight) {
+    const computePageWidth = this.computePageWidth.bind(this);
     const leafEdgesLeftStart = 0;
     const leafEdgesLeftWidth = !pageLeft ? 0 : Math.ceil(pageLeft.index / 2) * this.PAGE_THICKNESS_IN;
     const leafEdgesLeftEnd = leafEdgesLeftStart + leafEdgesLeftWidth;
     const pageLeftStart = leafEdgesLeftEnd;
-    const pageLeftEnd = !pageLeft ? pageLeftStart + pageRight.right.widthInches : pageLeftStart + pageLeft.widthInches;
+    const pageLeftEnd = !pageLeft ? pageLeftStart + computePageWidth(pageRight.right) : pageLeftStart + computePageWidth(pageLeft);
     const pageRightStart = pageLeftEnd;
-    const pageRightEnd = !pageRight ? pageRightStart : pageRightStart + pageRight.widthInches;
+    const pageRightEnd = !pageRight ? pageRightStart : pageRightStart + computePageWidth(pageRight);
     const leafEdgesRightStart = pageRightEnd;
     const leafEdgesRightWidth = !pageRight ? 0 : Math.ceil((this.book.getNumLeafs() - pageRight.index) / 2) * this.PAGE_THICKNESS_IN;
     const leafEdgesRightEnd = leafEdgesRightStart + leafEdgesRightWidth;
@@ -305,7 +316,7 @@ export class Mode2UpLit extends LitElement {
     const wToR = this.worldUnitsToRenderedPixels;
     const width = wToR(side == 'left' ? this.positions.leafEdgesLeftWidth : this.positions.leafEdgesRightWidth);
     if (!width) return html``;
-    const height = wToR(this.visiblePages[0].heightInches);
+    const height = wToR(this.computePageHeight(this.visiblePages[0]));
     const left = wToR(side == 'left' ? this.positions.leafEdgesLeftStart : this.positions.leafEdgesRightStart);
     return html`
       <div
@@ -320,8 +331,8 @@ export class Mode2UpLit extends LitElement {
     const wToR = this.worldUnitsToRenderedPixels;
     const wToV = this.worldUnitsToVisiblePixels;
 
-    const width = wToR(page.widthInches);
-    const height = wToR(page.heightInches);
+    const width = wToR(this.computePageWidth(page));
+    const height = wToR(this.computePageHeight(page));
     const isVisible = this.visiblePages.map(p => p.index).includes(page.index);
     const positions = this.computePositions(page.spread.left, page.spread.right);
 
@@ -334,7 +345,7 @@ export class Mode2UpLit extends LitElement {
           top: 0,
           left: wToR(page.pageSide == 'L' ? positions.pageLeftStart : positions.pageLeftEnd),
         },
-        reduce: page.width / wToV(page.widthInches),
+        reduce: page.width / wToV(this.computePageWidth(page)),
       }).$container[0];
 
     // pageContainerEl.style.transform = transform;
@@ -369,7 +380,7 @@ export class Mode2UpLit extends LitElement {
   computeDefaultScale(page) {
     // Default to real size if it fits, otherwise default to full height
     const containerHeightIn = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientHeight);
-    return Math.min(1, containerHeightIn / (page.heightInches + .1)) || 1;
+    return Math.min(1, containerHeightIn / (this.computePageHeight(page) + .1)) || 1;
   }
 
   /**
