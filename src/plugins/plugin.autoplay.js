@@ -102,7 +102,7 @@ BookReader.prototype.autoToggle = function(overrides) {
     this.autoTimer = setInterval(() => {
       if (this.animating) return;
 
-      if (Math.max(this.twoPage.currentIndexL, this.twoPage.currentIndexR) >= this.lastDisplayableIndex()) {
+      if (Math.max(this.twoPage.currentIndexL, this.twoPage.currentIndexR) >= this.book.getNumLeafs() - 1) {
         this.prev({ triggerStop: false }); // $$$ really what we want?
       } else {
         this.next({ triggerStop: false });

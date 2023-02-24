@@ -60,10 +60,12 @@ export class Mode2UpLit extends LitElement {
   @property({ type: Array, hasChanged: arrChanged })
   visiblePages = [];
 
+  /** @type {PageModel | null} */
   get pageLeft() {
     return this.visiblePages.find(p => p.pageSide == 'L');
   }
 
+  /** @type {PageModel | null} */
   get pageRight() {
     return this.visiblePages.find(p => p.pageSide == 'R');
   }
@@ -92,20 +94,19 @@ export class Mode2UpLit extends LitElement {
   }
 
   /**
-   * @param {PageModel} pageLeft
-   * @param {PageModel} pageRight
+   * @param {PageModel | null} pageLeft
+   * @param {PageModel | null} pageRight
    */
   computePositions(pageLeft, pageRight) {
     const leafEdgesLeftStart = 0;
-    const leafEdgesLeftWidth = Math.ceil(pageLeft.index / 2) * this.PAGE_THICKNESS_IN;
+    const leafEdgesLeftWidth = !pageLeft ? 0 : Math.ceil(pageLeft.index / 2) * this.PAGE_THICKNESS_IN;
     const leafEdgesLeftEnd = leafEdgesLeftStart + leafEdgesLeftWidth;
     const pageLeftStart = leafEdgesLeftEnd;
-    const pageLeftEnd = pageLeftStart + pageLeft.widthInches;
-    const gutter = pageLeftEnd;
-    const pageRightStart = gutter;
-    const pageRightEnd = pageRightStart + pageRight.widthInches;
+    const pageLeftEnd = !pageLeft ? pageLeftStart + pageRight.right.widthInches : pageLeftStart + pageLeft.widthInches;
+    const pageRightStart = pageLeftEnd;
+    const pageRightEnd = !pageRight ? pageRightStart : pageRightStart + pageRight.widthInches;
     const leafEdgesRightStart = pageRightEnd;
-    const leafEdgesRightWidth = Math.ceil((this.book.getNumLeafs() - pageRight.index) / 2) * this.PAGE_THICKNESS_IN;
+    const leafEdgesRightWidth = !pageRight ? 0 : Math.ceil((this.book.getNumLeafs() - pageRight.index) / 2) * this.PAGE_THICKNESS_IN;
     const leafEdgesRightEnd = leafEdgesRightStart + leafEdgesRightWidth;
     const bookWidth = leafEdgesRightEnd;
     return {
@@ -114,7 +115,6 @@ export class Mode2UpLit extends LitElement {
       leafEdgesLeftEnd,
       pageLeftStart,
       pageLeftEnd,
-      gutter,
       pageRightStart,
       pageRightEnd,
       leafEdgesRightStart,
@@ -304,6 +304,7 @@ export class Mode2UpLit extends LitElement {
     if (!this.visiblePages.length) return html``;
     const wToR = this.worldUnitsToRenderedPixels;
     const width = wToR(side == 'left' ? this.positions.leafEdgesLeftWidth : this.positions.leafEdgesRightWidth);
+    if (!width) return html``;
     const height = wToR(this.visiblePages[0].heightInches);
     const left = wToR(side == 'left' ? this.positions.leafEdgesLeftStart : this.positions.leafEdgesRightStart);
     return html`
@@ -381,15 +382,18 @@ export class Mode2UpLit extends LitElement {
       nextSpread = this.book.pageProgression == 'lr' ? 'left' : 'right';
     }
 
+    const curSpread = (this.pageLeft || this.pageRight).spread;
+
     if (nextSpread == 'left') {
-      nextSpread = this.pageLeft.spread.left.left.spread;
+      nextSpread = curSpread.left.left.spread;
     } else if (nextSpread == 'right') {
-      nextSpread = this.pageRight.spread.right.right.spread;
+      nextSpread = curSpread.right.right.spread;
     }
 
-    const curSpread = this.pageLeft.spread;
     const curLeftIndex = curSpread.left?.index ?? -1;
     const nextLeftIndex = nextSpread.left?.index ?? -1;
+    if (curLeftIndex == nextLeftIndex) return;
+
     const progression = this.book.pageProgression;
     // This table is used to determine the direction of the flip animation:
     //    | < | >
@@ -399,14 +403,16 @@ export class Mode2UpLit extends LitElement {
 
     this.classList.add(`br-mode-2up--flipping-${direction}`);
     this.classList.add(`BRpageFlipping`);
-    const nextPageRightContainer = this.createPageContainer(nextSpread.right);
-    const nextPageLeftContainer = this.createPageContainer(nextSpread.left);
+
     const renderedIndices = this.renderedPages.map(p => p.index);
-    if (!renderedIndices.includes(nextSpread.left.index)) {
-      this.renderedPages.push(nextSpread.left);
-    }
-    if (!renderedIndices.includes(nextSpread.right.index)) {
-      this.renderedPages.push(nextSpread.right);
+    /** @type {PageContainer[]} */
+    const nextPageContainers = [];
+    for (const page of [nextSpread.left, nextSpread.right]) {
+      if (!page) continue;
+      nextPageContainers.push(this.createPageContainer(page));
+      if (!renderedIndices.includes(page.index)) {
+        this.renderedPages.push(page);
+      }
     }
 
     // Wait for lit update cycle to finish
@@ -416,13 +422,12 @@ export class Mode2UpLit extends LitElement {
     this.visiblePages
       .map(p => this.pageContainerCache[p.index].$container)
       .forEach($c => $c.addClass('BRpage-exiting'));
-    nextPageRightContainer.$container.addClass('BRpage-visible BRpage-entering');
-    nextPageLeftContainer.$container.addClass('BRpage-visible BRpage-entering');
+
+    nextPageContainers.forEach(c => c.$container.addClass('BRpage-visible BRpage-entering'));
 
     await Promise.race([
-      promisifyEvent(nextPageRightContainer.$container[0], 'animationend'),
-      promisifyEvent(nextPageLeftContainer.$container[0], 'animationend'),
-      sleep(3500), // Fallback for browsers that don't support animationend
+      ...nextPageContainers.map(c => promisifyEvent(c.$container[0], 'animationend')),
+      sleep(800), // Fallback for browsers that don't support animationend
     ]);
     console.log('flip ended');
 
@@ -431,8 +436,7 @@ export class Mode2UpLit extends LitElement {
     this.visiblePages
       .map(p => this.pageContainerCache[p.index].$container)
       .forEach($c => $c.removeClass('BRpage-exiting BRpage-visible'));
-    nextPageRightContainer.$container.removeClass('BRpage-entering');
-    nextPageLeftContainer.$container.removeClass('BRpage-entering');
+    nextPageContainers.forEach(c => c.$container.removeClass('BRpage-entering'));
 
     this.visiblePages = [nextSpread.left, nextSpread.right].filter(x => x);
   }

@@ -167,7 +167,6 @@ BookReader.prototype.setup = function(options) {
      * @property {number|null} firstIndex
      */
   this.firstIndex = null;
-  this.lastDisplayableIndex2up = null;
   this.isFullscreenActive = options.startFullscreen || false;
   this.lastScroll = null;
 
@@ -1322,7 +1321,7 @@ BookReader.prototype.next = function({triggerStop = true} = {}) {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
     this._modes.mode2Up.mode2UpLit.flipAnimation('next');
   } else {
-    if (this.firstIndex < this.lastDisplayableIndex()) {
+    if (this.firstIndex < this.book.getNumLeafs() - 1) {
       this.jumpToIndex(this.firstIndex + 1);
     }
   }
@@ -1343,11 +1342,11 @@ BookReader.prototype.prev = function({triggerStop = true} = {}) {
 };
 
 BookReader.prototype.first = function() {
-  this.jumpToIndex(this.firstDisplayableIndex());
+  this.jumpToIndex(0);
 };
 
 BookReader.prototype.last = function() {
-  this.jumpToIndex(this.lastDisplayableIndex());
+  this.jumpToIndex(this.book.getNumLeafs() - 1);
 };
 
 /**
@@ -1872,64 +1871,6 @@ BookReader.prototype.showNavigation = function() {
   }
 };
 
-/**
- * Returns the index of the first visible page, dependent on the mode.
- * $$$ Currently we cannot display the front/back cover in 2-up and will need to update
- * this function when we can as part of https://bugs.launchpad.net/gnubook/+bug/296788
- * @return {number}
- */
-BookReader.prototype.firstDisplayableIndex = function() {
-  if (this.mode != this.constMode2up) {
-    return 0;
-  }
-
-  if ('rl' != this.pageProgression) {
-    // LTR
-    if (this.book.getPageSide(0) == 'L') {
-      return 0;
-    } else {
-      return -1;
-    }
-  } else {
-    // RTL
-    if (this.book.getPageSide(0) == 'R') {
-      return 0;
-    } else {
-      return -1;
-    }
-  }
-};
-
-/**
- * Returns the index of the last visible page, dependent on the mode.
- * $$$ Currently we cannot display the front/back cover in 2-up and will need to update
- * this function when we can as part of https://bugs.launchpad.net/gnubook/+bug/296788
- * @return {number}
- */
-BookReader.prototype.lastDisplayableIndex = function() {
-
-  const lastIndex = this.book.getNumLeafs() - 1;
-
-  if (this.mode != this.constMode2up) {
-    return lastIndex;
-  }
-
-  if ('rl' != this.pageProgression) {
-    // LTR
-    if (this.book.getPageSide(lastIndex) == 'R') {
-      return lastIndex;
-    } else {
-      return lastIndex + 1;
-    }
-  } else {
-    // RTL
-    if (this.book.getPageSide(lastIndex) == 'L') {
-      return lastIndex;
-    } else {
-      return lastIndex + 1;
-    }
-  }
-};
 
 
 /**************************/
