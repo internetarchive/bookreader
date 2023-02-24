@@ -249,3 +249,17 @@ body.BRfullscreenActive {
   .BRpagediv1up { background-color: white; }
   .BRpagedivthumb { background-color: white; }  
 }
+
+.BRfullscreenAnimation .br-mode-2up__book {
+  transition: transform .2s ease-in-out;
+}
+
+.fullscreenActive.BRmodeThumb .BRcontainer,
+.fullscreenActive.BRmode1up .BRcontainer {
+  animation: flash 0.3s ease-in-out;
+}
+
+@keyframes flash {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
