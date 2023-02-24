@@ -3,7 +3,7 @@ import { customElement, property, query } from 'lit/decorators.js';
 import {LitElement, html} from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
-import { arrChanged, calcScreenDPI, genToArray, promisifyEvent, sleep, throttle } from './utils';
+import { arrChanged, calcScreenDPI, genToArray, promisifyEvent, sleep } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
@@ -145,9 +145,10 @@ export class Mode2UpLit extends LitElement {
 
   /**
    * @param {PageIndex} index
+   * TODO Remove smooth option from everywhere.
    */
-  jumpToIndex(index, { smooth = false } = {}) {
-
+  async jumpToIndex(index, { smooth = false } = {}) {
+    await this.flipAnimation(this.book.getPage(index).spread);
   }
 
   zoomIn() {
@@ -204,7 +205,7 @@ export class Mode2UpLit extends LitElement {
       this.pages = genToArray(this.book.pagesIterator({ combineConsecutiveUnviewables: true }));
     }
     if (changedProps.has('visiblePages')) {
-      this.throttledUpdateRenderedPages();
+      this.renderedPages = this.computeRenderedPages();
       this.br.displayedIndices = this.visiblePages.map(p => p.index);
       this.br.updateFirstIndex(this.br.displayedIndices[0]);
       this.br._components.navbar.updateNavIndexThrottled();
@@ -360,11 +361,6 @@ export class Mode2UpLit extends LitElement {
       .slice(0, 10);
   }
 
-  throttledUpdateRenderedPages = throttle(() => {
-    this.renderedPages = this.computeRenderedPages();
-    this.requestUpdate();
-  }, 100, null)
-
   /**
    * @param {PageModel} page
    * @returns {number}
@@ -376,19 +372,46 @@ export class Mode2UpLit extends LitElement {
   }
 
   /**
-   * @param {'left' | 'right'} direction
+   * @param {'left' | 'right' | 'next' | 'prev' | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
-  async flipAnimation(direction) {
-    if (!this.$pageLeft) return;
+  async flipAnimation(nextSpread) {
+    if (nextSpread == 'next') {
+      nextSpread = this.book.pageProgression == 'lr' ? 'right' : 'left';
+    } else if (nextSpread == 'prev') {
+      nextSpread = this.book.pageProgression == 'lr' ? 'left' : 'right';
+    }
 
-    // reveal the to be uncovered pages
+    if (nextSpread == 'left') {
+      nextSpread = this.pageLeft.spread.left.left.spread;
+    } else if (nextSpread == 'right') {
+      nextSpread = this.pageRight.spread.right.right.spread;
+    }
+
     const curSpread = this.pageLeft.spread;
-    const nextSpread = direction == 'left' ? curSpread.left.left.spread : curSpread.right.right.spread;
+    const curLeftIndex = curSpread.left?.index ?? -1;
+    const nextLeftIndex = nextSpread.left?.index ?? -1;
+    const progression = this.book.pageProgression;
+    // This table is used to determine the direction of the flip animation:
+    //    | < | >
+    // lr | L | R
+    // rl | R | L
+    const direction = progression == 'lr' ? (nextLeftIndex > curLeftIndex ? 'right' : 'left') : (nextLeftIndex > curLeftIndex ? 'left' : 'right');
 
     this.classList.add(`br-mode-2up--flipping-${direction}`);
     this.classList.add(`BRpageFlipping`);
     const nextPageRightContainer = this.createPageContainer(nextSpread.right);
     const nextPageLeftContainer = this.createPageContainer(nextSpread.left);
+    const renderedIndices = this.renderedPages.map(p => p.index);
+    if (!renderedIndices.includes(nextSpread.left.index)) {
+      this.renderedPages.push(nextSpread.left);
+    }
+    if (!renderedIndices.includes(nextSpread.right.index)) {
+      this.renderedPages.push(nextSpread.right);
+    }
+
+    // Wait for lit update cycle to finish
+    this.requestUpdate();
+    await this.updateComplete;
 
     this.visiblePages
       .map(p => this.pageContainerCache[p.index].$container)

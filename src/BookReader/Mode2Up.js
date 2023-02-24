@@ -49,7 +49,7 @@ export class Mode2Up {
         this.everShown = true;
         this.mode2UpLit.requestUpdate();
         await this.mode2UpLit.updateComplete;
-        console.log('Mode2Up.prepare: init drag');
+
         new DragScrollable(this.mode2UpLit, {
           preventDefault: true,
           dragSelector: '.br-mode-2up__book',
@@ -59,7 +59,6 @@ export class Mode2Up {
           dragend: 'mouseup',
         });
       }
-      this.mode2UpLit.jumpToIndex(startLeaf);
     });
     this.br.updateBrClasses();
   }
@@ -72,10 +71,7 @@ export class Mode2Up {
    * @param {boolean} [noAnimate]
    */
   jumpToIndex(index, pageX, pageY, noAnimate) {
-    // Only smooth for small distances
-    const distance = Math.abs(this.br.currentIndex() - index);
-    const smooth = !noAnimate && distance <= 4;
-    this.mode2UpLit.jumpToIndex(index, { smooth });
+    this.mode2UpLit.jumpToIndex(index);
   }
 
   /**

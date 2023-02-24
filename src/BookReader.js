@@ -1320,7 +1320,7 @@ BookReader.prototype.leftmost = function() {
 BookReader.prototype.next = function({triggerStop = true} = {}) {
   if (this.constMode2up == this.mode) {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    this._modes.mode2Up.mode2UpLit.flipAnimation(this.pageProgression === 'lr' ? 'right' : 'left');
+    this._modes.mode2Up.mode2UpLit.flipAnimation('next');
   } else {
     if (this.firstIndex < this.lastDisplayableIndex()) {
       this.jumpToIndex(this.firstIndex + 1);
@@ -1334,7 +1334,7 @@ BookReader.prototype.prev = function({triggerStop = true} = {}) {
 
   if (this.constMode2up == this.mode) {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    this._modes.mode2Up.mode2UpLit.flipAnimation(this.pageProgression === 'lr' ? 'left' : 'right');
+    this._modes.mode2Up.mode2UpLit.flipAnimation('prev');
   } else {
     if (this.firstIndex >= 1) {
       this.jumpToIndex(this.firstIndex - 1);
