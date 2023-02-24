@@ -17,6 +17,7 @@ export class Mode2Up {
 
     /** @private */
     this.$el = $(this.mode2UpLit)
+      .attr('autoFit', this.br.options.twoPage.autofit)
       // We CANNOT use `br-mode-2up` as a class, because it's the same
       // as the name of the web component, and the webcomponents polyfill
       // uses the name of component as a class for style scoping 😒
@@ -90,12 +91,11 @@ export class Mode2Up {
     }
   }
 
-  /**
-   * Resize the current one page view
-   * Note this calls drawLeafs
-   */
-  resizePageView() {
+  async resizePageView() {
     this.mode2UpLit.htmlDimensionsCacher.updateClientSizes();
+    if (this.mode2UpLit.autoFit != 'none') {
+      this.mode2UpLit.resizeViaAutofit();
+    }
     this.mode2UpLit.requestUpdate();
   }
 }

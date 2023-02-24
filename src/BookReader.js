@@ -647,27 +647,7 @@ BookReader.prototype.resize = function() {
   } else if (this.constModeThumb == this.mode) {
     this._modes.modeThumb.prepare();
   } else {
-    // We only need to prepare again in autofit (size of spread changes)
-    if (this.twoPage.autofit) {
-      // most common path, esp. for archive.org books
-      this._modes.mode2Up.prepare();
-    } else {
-      // used when zoomed in
-      // Re-center if the scrollbars have disappeared
-      const center = this.twoPageGetViewCenter();
-      let doRecenter = false;
-      if (this.twoPage.totalWidth < this.refs.$brContainer.prop('clientWidth')) {
-        center.percentageX = 0.5;
-        doRecenter = true;
-      }
-      if (this.twoPage.totalHeight < this.refs.$brContainer.prop('clientHeight')) {
-        center.percentageY = 0.5;
-        doRecenter = true;
-      }
-      if (doRecenter) {
-        this._modes.mode2Up.centerView(center.percentageX, center.percentageY);
-      }
-    }
+    this._modes.mode2Up.resizePageView();
   }
   this.trigger(BookReader.eventNames.resize);
 };

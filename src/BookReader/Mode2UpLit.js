@@ -50,9 +50,16 @@ export class Mode2UpLit extends LitElement {
 
   @property({ type: Number })
   scale = 1;
+
   /** Position (in unit-less, [0, 1] coordinates) in client to scale around */
   @property({ type: Object })
   scaleCenter = { x: 0.5, y: 0.5 };
+
+  bookTranslate = { x: 0, y: 0 };
+
+  /** @type {import('./options').AutoFitValues} */
+  @property({ type: String })
+  autoFit = 'auto';
 
   /************** VIRTUAL-SCROLLING PROPERTIES **************/
 
@@ -205,7 +212,7 @@ export class Mode2UpLit extends LitElement {
       page.pageSide === 'R' ? page.left : page.right,
     ].filter(p => p);
     this.htmlDimensionsCacher.updateClientSizes();
-    this.scale = this.computeDefaultScale(page);
+    this.resizeViaAutofit(page);
   }
 
   /** @override */
@@ -221,11 +228,25 @@ export class Mode2UpLit extends LitElement {
       this.br.updateFirstIndex(this.br.displayedIndices[0]);
       this.br._components.navbar.updateNavIndexThrottled();
     }
+    if (changedProps.has('autoFit')) {
+      if (this.autoFit != 'none') {
+        this.style.overflow = 'hidden';
+      } else {
+        this.style.overflow = 'auto';
+        this.resizeViaAutofit();
+      }
+    }
     if (changedProps.has('scale')) {
       const oldVal = changedProps.get('scale');
-      this.$book.style.transform = `scale(${this.scale})`;
+      this.$book.style.transform = `translate(${this.bookTranslate.x}px, ${this.bookTranslate.y}px) scale(${this.scale})`;
       this.updateViewportOnZoom(this.scale, oldVal);
     }
+  }
+
+  resizeViaAutofit(page = this.visiblePages[0]) {
+    const {scale, translate} = this.computeDefaultTransform(page, this.autoFit);
+    this.scale = scale;
+    this.bookTranslate = translate;
   }
 
   /** @override */
@@ -375,12 +396,42 @@ export class Mode2UpLit extends LitElement {
 
   /**
    * @param {PageModel} page
-   * @returns {number}
+   * @param {import('./options').AutoFitValues} autoFit
    */
-  computeDefaultScale(page) {
+  computeDefaultTransform(page, autoFit) {
+    // debugger;
+    const spread = page.spread;
     // Default to real size if it fits, otherwise default to full height
-    const containerHeightIn = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientHeight);
-    return Math.min(1, containerHeightIn / (this.computePageHeight(page) + .1)) || 1;
+    const bookWidth = this.computePositions(spread.left, spread.right).bookWidth;
+    const bookHeight = this.computePageHeight(spread.left || spread.right);
+    const BOOK_PADDING_PX = 10;
+    const curScale = this.scale;
+    this.scale = 1; // Need this temporarily
+    const widthScale = this.renderedPixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth - 2 * BOOK_PADDING_PX) / bookWidth;
+    const heightScale = this.renderedPixelsToWorldUnits(this.htmlDimensionsCacher.clientHeight - 2 * BOOK_PADDING_PX) / bookHeight;
+    this.scale = curScale;
+    const realScale = 1;
+
+    let scale = realScale;
+    if (autoFit == 'width') {
+      scale = Math.min(widthScale, 1);
+    } else if (autoFit == 'height') {
+      scale = Math.min(heightScale, 1);
+    } else if (autoFit == 'auto') {
+      scale = Math.min(widthScale, heightScale, 1);
+    } else if (autoFit == 'none') {
+      scale = this.scale;
+    } else {
+      // Should be impossible
+      throw new Error(`Invalid autoFit value: ${autoFit}`);
+    }
+
+    const visibleBookWidth = this.worldUnitsToRenderedPixels(bookWidth) * scale;
+    const visibleBookHeight = this.worldUnitsToRenderedPixels(bookHeight) * scale;
+    const translateX = (this.htmlDimensionsCacher.clientWidth - visibleBookWidth) / 2;
+    const translateY = (this.htmlDimensionsCacher.clientHeight - visibleBookHeight) / 2;
+
+    return { scale, translate: { x: translateX, y: translateY } };
   }
 
   /**

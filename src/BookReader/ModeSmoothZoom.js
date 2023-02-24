@@ -6,6 +6,7 @@ import Hammer from "hammerjs";
  * @typedef {object} SmoothZoomable
  * @property {HTMLElement} $container
  * @property {HTMLElement} $visibleWorld
+ * @property {import("./options.js").AutoFitValues} autoFit
  * @property {number} scale
  * @property {{ x: number, y: number }} scaleCenter
  * @property {HTMLDimensionsCacher} htmlDimensionsCacher
@@ -91,6 +92,7 @@ export class ModeSmoothZoom {
     this.oldScale = 1;
     this.mode.$visibleWorld.classList.add("BRsmooth-zooming");
     this.mode.$visibleWorld.style.willChange = "transform";
+    this.mode.autoFit = "none";
     this.detachCtrlZoom();
     this.mode.detachScrollListeners?.();
   }
@@ -161,6 +163,7 @@ export class ModeSmoothZoom {
 
     // Zoom around the cursor
     this.updateScaleCenter(ev);
+    this.mode.autoFit = "none";
     this.mode.scale *= 1 - Math.sign(ev.deltaY) * zoomMultiplier;
   }
 
