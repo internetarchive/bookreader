@@ -108,6 +108,46 @@ svg.BRPageLayer {
   position: absolute;
   cursor: pointer;
   top: 0;
+  
+  &[side=left] {
+    border-radius: 4px 0 0 4px;
+    .br-leaf-edges__label {
+      padding-right: 10px;
+      border-radius: 4px 0 0 4px;
+    }
+  }
+  &[side=right] {
+    border-radius: 0 4px 4px 0;
+    .br-leaf-edges__label {
+      padding-left: 20px;
+      border-radius: 0 4px 4px 0;
+    }
+  }
+
+  .br-leaf-edges__bar {
+    display: none;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    min-width: 1px;
+    background-color: #9A9B9D;
+    opacity: 0.85;
+    transform: translateX(-50%);
+  }
+  
+  .br-leaf-edges__label {
+    display: none;
+    pointer-events: none;
+    z-index: 1000;
+    position: absolute;
+    padding: 6px;
+    color: white;
+    background-color: #9A9B9D;
+    opacity: 0.85;
+    white-space: nowrap;
+    transform: translateY(-10px);
+  }
 }
 
 .br-mode-2up--flipping-left {

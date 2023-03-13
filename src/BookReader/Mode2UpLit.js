@@ -339,11 +339,22 @@ export class Mode2UpLit extends LitElement {
     if (!width) return html``;
     const height = wToR(this.computePageHeight(this.visiblePages[0]));
     const left = wToR(side == 'left' ? this.positions.leafEdgesLeftStart : this.positions.leafEdgesRightStart);
+    const prog = this.book.pageProgression;
+    let range = [];
+    if (side == 'left' && prog == 'lr' || side == 'right' && prog == 'rl') {
+      range = [0, Math.min(...this.visiblePages.map(p => p.index))];
+    } else {
+      range = [Math.max(...this.visiblePages.map(p => p.index)), this.book.getNumLeafs() - 1];
+    }
     return html`
-      <div
+      <br-leaf-edges
+        start=${range[0]}
+        end=${range[1]}
+        .book=${this.book}
+        side=${side}
         class="br-mode-2up__leafs br-mode-2up__leafs--${side}"
         style=${styleMap({width: `${width}px`, height: `${height}px`, left: `${left}px`})}
-      ></div>
+      ></br-leaf-edges>
     `;
   }
 
@@ -531,5 +542,84 @@ export class Mode2UpLit extends LitElement {
     };
     container.scrollTop = newCenter.y - YPOS * H;
     container.scrollLeft = newCenter.x - XPOS * W;
+  }
+}
+
+@customElement('br-leaf-edges')
+export class LeafEdges extends LitElement {
+  @property({ type: Number }) start = 0;
+  @property({ type: Number }) end = 0;
+  /** @type {'left' | 'right'} */
+  @property({ type: String }) side = 'left';
+
+  /** @type {BookModel} */
+  @property({attribute: false})
+  book = null;
+
+  @query('.br-leaf-edges__bar') $hoverBar;
+  @query('.br-leaf-edges__label') $hoverLabel;
+
+  get pageWidthPercent() {
+    return 100 * 1 / (this.end - this.start + 1);
+  }
+
+  render() {
+    return html`
+      <div
+        class="br-leaf-edges__bar"
+        style="${styleMap({width: `${this.pageWidthPercent}%`})}"
+      ></div>
+      <div class="br-leaf-edges__label">Page</div>`;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('mouseenter', this.onMouseEnter);
+    this.addEventListener('mouseleave', this.onMouseLeave);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.addEventListener('mouseenter', this.onMouseEnter);
+    this.removeEventListener('mousemove', this.onMouseMove);
+    this.removeEventListener('mouseleave', this.onMouseLeave);
+  }
+
+  /** @override */
+  createRenderRoot() {
+    // Disable shadow DOM; that would require a huge rejiggering of CSS
+    return this;
+  }
+
+  /**
+   * @param {MouseEvent} e
+   */
+  onMouseEnter = (e) => {
+    this.addEventListener('mousemove', this.onMouseMove);
+    this.$hoverBar.style.display = 'block';
+    this.$hoverLabel.style.display = 'block';
+  }
+
+  /**
+   * @param {MouseEvent} e
+   */
+  onMouseMove = (e) => {
+    this.$hoverBar.style.left = `${e.offsetX}px`;
+    if (this.side == 'right') {
+      this.$hoverLabel.style.left = `${e.offsetX}px`;
+    } else {
+      this.$hoverLabel.style.right = `${this.offsetWidth - e.offsetX}px`;
+    }
+    this.$hoverLabel.style.top = `${e.offsetY}px`;
+    const index = Math.floor(this.start + (e.offsetX / this.offsetWidth) * (this.end - this.start + 1));
+    this.$hoverLabel.textContent = this.book.getPageName(index);
+  }
+
+  /**
+   * @param {MouseEvent} e
+   */
+  onMouseLeave = (e) => {
+    this.removeEventListener('mousemove', this.onMouseMove);
+    this.$hoverBar.style.display = 'none';
+    this.$hoverLabel.style.display = 'none';
   }
 }
