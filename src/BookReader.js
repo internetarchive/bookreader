@@ -19,9 +19,6 @@ This file is part of BookReader.
     The BookReader source is hosted at http://github.com/internetarchive/bookreader/
 
 */
-// effect.js gives acces to extra easing function (e.g. easeInOutExpo)
-import 'jquery-ui/ui/effect.js';
-
 // Needed by touch-punch
 import 'jquery-ui/ui/widget.js';
 import 'jquery-ui/ui/widgets/mouse.js';
@@ -1322,57 +1319,6 @@ BookReader.prototype.last = function() {
   this.jumpToIndex(this.book.getNumLeafs() - 1);
 };
 
-/**
- * Scrolls down one screen view
- */
-BookReader.prototype.scrollDown = function() {
-  if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
-    if ( this.mode == this.constMode1up && (this.reduce >= this.onePageGetAutofitHeight()) ) {
-      // Whole pages are visible, scroll whole page only
-      return this.next();
-    }
-
-    this.refs.$brContainer.stop(true).animate(
-      { scrollTop: '+=' + this._scrollAmount() + 'px'},
-      400, 'easeInOutExpo'
-    );
-    return true;
-  } else {
-    return false;
-  }
-};
-
-/**
- * Scrolls up one screen view
- */
-BookReader.prototype.scrollUp = function() {
-  if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
-    if ( this.mode == this.constMode1up && (this.reduce >= this.onePageGetAutofitHeight()) ) {
-      // Whole pages are visible, scroll whole page only
-      return this.prev();
-    }
-
-    this.refs.$brContainer.stop(true).animate(
-      { scrollTop: '-=' + this._scrollAmount() + 'px'},
-      400, 'easeInOutExpo'
-    );
-    return true;
-  } else {
-    return false;
-  }
-};
-
-/**
- * The amount to scroll vertically in integer pixels
- */
-BookReader.prototype._scrollAmount = function() {
-  if (this.constMode1up == this.mode) {
-    // Overlap by % of page size
-    return parseInt(this.refs.$brContainer.prop('clientHeight') - this.book.getPageHeight(this.currentIndex()) / this.reduce * 0.03);
-  }
-
-  return parseInt(0.9 * this.refs.$brContainer.prop('clientHeight'));
-};
 
 /**
  * Immediately stop flip animations.  Callbacks are triggered.
@@ -1454,20 +1400,6 @@ BookReader.prototype.bindNavigationHandlers = function() {
     book_right: () => {
       this.trigger(BookReader.eventNames.stop);
       this.right();
-    },
-    book_up: () => {
-      if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
-        this.scrollUp();
-      } else {
-        this.prev();
-      }
-    },
-    book_down: () => {
-      if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
-        this.scrollDown();
-      } else {
-        this.next();
-      }
     },
     book_top: this.first.bind(this),
     book_bottom: this.last.bind(this),
@@ -2017,8 +1949,6 @@ BookReader.prototype.initUIStrings = function() {
     '.full': 'Toggle fullscreen',
     '.book_left': 'Flip left',
     '.book_right': 'Flip right',
-    '.book_up': 'Page up',
-    '.book_down': 'Page down',
     '.play': 'Play',
     '.pause': 'Pause',
     '.BRdn': 'Show/hide nav bar', // Would have to keep updating on state change to have just "Hide nav bar"
