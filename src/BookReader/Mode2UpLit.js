@@ -351,6 +351,7 @@ export class Mode2UpLit extends LitElement {
         start=${range[0]}
         end=${range[1]}
         .book=${this.book}
+        .pageClickHandler=${(index) => this.jumpToIndex(index)}
         side=${side}
         class="br-mode-2up__leafs br-mode-2up__leafs--${side}"
         style=${styleMap({width: `${width}px`, height: `${height}px`, left: `${left}px`})}
@@ -556,6 +557,10 @@ export class LeafEdges extends LitElement {
   @property({attribute: false})
   book = null;
 
+  /** @type {(index: PageIndex) => void} */
+  @property({attribute: false, type: Function})
+  pageClickHandler = null;
+
   @query('.br-leaf-edges__bar') $hoverBar;
   @query('.br-leaf-edges__label') $hoverLabel;
 
@@ -576,6 +581,7 @@ export class LeafEdges extends LitElement {
     super.connectedCallback();
     this.addEventListener('mouseenter', this.onMouseEnter);
     this.addEventListener('mouseleave', this.onMouseLeave);
+    this.addEventListener('click', this.onClick);
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -610,7 +616,7 @@ export class LeafEdges extends LitElement {
       this.$hoverLabel.style.right = `${this.offsetWidth - e.offsetX}px`;
     }
     this.$hoverLabel.style.top = `${e.offsetY}px`;
-    const index = Math.floor(this.start + (e.offsetX / this.offsetWidth) * (this.end - this.start + 1));
+    const index = this.mouseEventToPageIndex(e);
     this.$hoverLabel.textContent = this.book.getPageName(index);
   }
 
@@ -621,5 +627,20 @@ export class LeafEdges extends LitElement {
     this.removeEventListener('mousemove', this.onMouseMove);
     this.$hoverBar.style.display = 'none';
     this.$hoverLabel.style.display = 'none';
+  }
+
+  /**
+   * @param {MouseEvent} e
+   */
+  onClick = (e) => {
+    this.pageClickHandler(this.mouseEventToPageIndex(e));
+  }
+
+  /**
+   * @param {MouseEvent} e
+   * @returns {PageIndex}
+   */
+  mouseEventToPageIndex(e) {
+    return Math.floor(this.start + (e.offsetX / this.offsetWidth) * (this.end - this.start + 1));
   }
 }
