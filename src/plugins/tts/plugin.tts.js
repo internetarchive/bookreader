@@ -286,27 +286,13 @@ BookReader.prototype.ttsSendChunkFinishedAnalyticsEvent = function(chunk) {
 /**
  * Flip the page if the provided leaf index is not visible
  * @param {Number} leafIndex
- * @return {PromiseLike<void>} resolves once the flip animation has completed
  */
-BookReader.prototype.ttsMaybeFlipToIndex = function (leafIndex) {
-  const in2PageMode = this.constMode2up == this.mode;
-  let resolve = null;
-  const promise = new Promise(res => resolve = res);
-
-  if (!in2PageMode) {
+BookReader.prototype.ttsMaybeFlipToIndex = async function (leafIndex) {
+  if (this.constMode2up != this.mode) {
     this.jumpToIndex(leafIndex);
-    resolve();
   } else {
-    const leafVisible = leafIndex == this.twoPage.currentIndexR || leafIndex == this.twoPage.currentIndexL;
-    if (leafVisible) {
-      resolve();
-    } else {
-      this.animationFinishedCallback = resolve;
-      this.jumpToIndex(leafIndex);
-    }
+    await this._modes.mode2Up.mode2UpLit.jumpToIndex(leafIndex);
   }
-
-  return promise;
 };
 
 /**

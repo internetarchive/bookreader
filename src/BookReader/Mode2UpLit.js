@@ -169,7 +169,7 @@ export class Mode2UpLit extends LitElement {
    * TODO Remove smooth option from everywhere.
    */
   async jumpToIndex(index, { smooth = false } = {}) {
-    await this.flipAnimation(this.book.getPage(index).spread);
+    await this.flipAnimation(index);
   }
 
   zoomIn() {
@@ -463,7 +463,7 @@ export class Mode2UpLit extends LitElement {
   }
 
   /**
-   * @param {'left' | 'right' | 'next' | 'prev' | {left: PageModel | null, right: PageModel | null}} nextSpread
+   * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
   async flipAnimation(nextSpread) {
     if (nextSpread == 'next') {
@@ -478,6 +478,10 @@ export class Mode2UpLit extends LitElement {
       nextSpread = curSpread.left.left.spread;
     } else if (nextSpread == 'right') {
       nextSpread = curSpread.right.right.spread;
+    }
+
+    if (typeof(nextSpread) == 'number') {
+      nextSpread = this.book.getPage(nextSpread).spread;
     }
 
     const curLeftIndex = curSpread.left?.index ?? -1;
