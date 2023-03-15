@@ -154,8 +154,6 @@ BookReader.prototype.setup = function(options) {
   this.animating = false;
   this.flipSpeed = options.flipSpeed;
   this.flipDelay = options.flipDelay;
-  this.twoPagePopUp = null;
-  this.leafEdgeTmp  = null;
 
   /**
      * Represents the first displayed index
@@ -988,13 +986,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
 
   this.trigger(BookReader.eventNames.stop);
 
-  if (this.constMode2up == this.mode) {
-    this._modes.mode2Up.jumpToIndex(index);
-  } else if (this.constModeThumb == this.mode) {
-    this._modes.modeThumb.jumpToIndex(index);
-  } else { // 1up
-    this._modes.mode1Up.jumpToIndex(index, pageX, pageY, noAnimate);
-  }
+  this.activeMode.jumpToIndex(index, pageX, pageY, noAnimate);
 };
 
 /**
@@ -1319,29 +1311,6 @@ BookReader.prototype.last = function() {
   this.jumpToIndex(this.book.getNumLeafs() - 1);
 };
 
-
-/**
- * Immediately stop flip animations.  Callbacks are triggered.
- */
-BookReader.prototype.stopFlipAnimations = function() {
-  this.trigger(BookReader.eventNames.stop);
-
-  // Stop animation, clear queue, trigger callbacks
-  if (this.leafEdgeTmp) {
-    $(this.leafEdgeTmp).stop(false, true);
-  }
-  jQuery.each(this._modes.mode2Up.pageContainers, function() {
-    $(this.$container).stop(false, true);
-  });
-
-  // And again since animations also queued in callbacks
-  if (this.leafEdgeTmp) {
-    $(this.leafEdgeTmp).stop(false, true);
-  }
-  jQuery.each(this._modes.mode2Up.pageContainers, function() {
-    $(this.$container).stop(false, true);
-  });
-};
 
 /**
  * @template TClass extends { br: BookReader }

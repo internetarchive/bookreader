@@ -31,22 +31,6 @@ const SAMPLE_DATA = [
 ];
 
 
-describe('zoom', () => {
-  const br = new BookReader({ data: SAMPLE_DATA });
-  br.init();
-
-  const stopAnim = sinon.spy(br, 'stopFlipAnimations');
-  const resizeSpread = sinon.spy(br._modes.mode2Up, 'resizeSpread');
-  br._modes.mode2Up.zoom('in');
-
-  test('stops animations when zooming', () => {
-    expect(stopAnim.callCount).toBe(1);
-  });
-  test('always redraws when zooming', () => {
-    expect(resizeSpread.callCount).toBe(0);
-  });
-});
-
 describe('page flip directions', () => {
   test('animates the left page in the correct direction', () => {
     const br = new BookReader({ data: SAMPLE_DATA });
