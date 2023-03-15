@@ -116,15 +116,18 @@ export class Mode2UpLit extends LitElement {
    */
   computePositions(pageLeft, pageRight) {
     const computePageWidth = this.computePageWidth.bind(this);
+    const numLeafs = this.book.getNumLeafs();
     const leafEdgesLeftStart = 0;
-    const leafEdgesLeftWidth = !pageLeft ? 0 : Math.ceil(pageLeft.index / 2) * this.PAGE_THICKNESS_IN;
+    const leftPagesCount = this.book.pageProgression == 'lr' ? (pageLeft?.index ?? 0) : (!pageLeft ? 0 : numLeafs - pageLeft.index);
+    const leafEdgesLeftWidth = Math.ceil(leftPagesCount / 2) * this.PAGE_THICKNESS_IN;
     const leafEdgesLeftEnd = leafEdgesLeftStart + leafEdgesLeftWidth;
     const pageLeftStart = leafEdgesLeftEnd;
     const pageLeftEnd = !pageLeft ? pageLeftStart + computePageWidth(pageRight.right) : pageLeftStart + computePageWidth(pageLeft);
     const pageRightStart = pageLeftEnd;
     const pageRightEnd = !pageRight ? pageRightStart : pageRightStart + computePageWidth(pageRight);
     const leafEdgesRightStart = pageRightEnd;
-    const leafEdgesRightWidth = !pageRight ? 0 : Math.ceil((this.book.getNumLeafs() - pageRight.index) / 2) * this.PAGE_THICKNESS_IN;
+    const rightPagesCount = this.book.pageProgression == 'lr' ? (!pageRight ? 0 : numLeafs - pageRight.index) : (pageRight?.index ?? 0);
+    const leafEdgesRightWidth = Math.ceil(rightPagesCount / 2) * this.PAGE_THICKNESS_IN;
     const leafEdgesRightEnd = leafEdgesRightStart + leafEdgesRightWidth;
     const bookWidth = leafEdgesRightEnd;
     return {
@@ -340,16 +343,29 @@ export class Mode2UpLit extends LitElement {
     const height = wToR(this.computePageHeight(this.visiblePages[0]));
     const left = wToR(side == 'left' ? this.positions.leafEdgesLeftStart : this.positions.leafEdgesRightStart);
     const prog = this.book.pageProgression;
+    const pair = `${prog}, ${side}`;
     let range = [];
-    if (side == 'left' && prog == 'lr' || side == 'right' && prog == 'rl') {
-      range = [0, Math.min(...this.visiblePages.map(p => p.index))];
-    } else {
-      range = [Math.max(...this.visiblePages.map(p => p.index)), this.book.getNumLeafs() - 1];
+    switch (pair) {
+    case 'lr, left':
+      range = [0, this.pageLeft.index];
+      break;
+    case 'lr, right':
+      range = [this.pageRight.index, this.book.getNumLeafs() - 1];
+      break;
+    case 'rl, left':
+      range = [this.book.getNumLeafs() - 1, this.pageLeft.index];
+      break;
+    case 'rl, right':
+      range = [this.pageRight.index, 0];
+      break;
+    default:
+      throw new Error(`Unexpected pair: ${pair}`);
     }
+
     return html`
       <br-leaf-edges
-        start=${range[0]}
-        end=${range[1]}
+        leftIndex=${range[0]}
+        rightIndex=${range[1]}
         .book=${this.book}
         .pageClickHandler=${(index) => this.jumpToIndex(index)}
         side=${side}
@@ -548,8 +564,8 @@ export class Mode2UpLit extends LitElement {
 
 @customElement('br-leaf-edges')
 export class LeafEdges extends LitElement {
-  @property({ type: Number }) start = 0;
-  @property({ type: Number }) end = 0;
+  @property({ type: Number }) leftIndex = 0;
+  @property({ type: Number }) rightIndex = 0;
   /** @type {'left' | 'right'} */
   @property({ type: String }) side = 'left';
 
@@ -565,7 +581,7 @@ export class LeafEdges extends LitElement {
   @query('.br-leaf-edges__label') $hoverLabel;
 
   get pageWidthPercent() {
-    return 100 * 1 / (this.end - this.start + 1);
+    return 100 * 1 / (this.rightIndex - this.leftIndex + 1);
   }
 
   render() {
@@ -641,6 +657,6 @@ export class LeafEdges extends LitElement {
    * @returns {PageIndex}
    */
   mouseEventToPageIndex(e) {
-    return Math.floor(this.start + (e.offsetX / this.offsetWidth) * (this.end - this.start + 1));
+    return Math.floor(this.leftIndex + (e.offsetX / this.offsetWidth) * (this.rightIndex - this.leftIndex + 1));
   }
 }
