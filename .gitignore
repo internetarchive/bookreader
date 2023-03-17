@@ -2,5 +2,5 @@ BookReaderDev
 node_modules/
 .DS_Store
 coverage*/
-
+/BookReader/BookReader.css
 .vscode
