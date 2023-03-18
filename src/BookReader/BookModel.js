@@ -431,6 +431,22 @@ export class PageModel {
   }
 
   /**
+   * @param {number} pages
+   */
+  goLeft(pages) {
+    const newIndex = this.book.pageProgression === 'lr' ? this.index - pages : this.index + pages;
+    return this.book.getPage(newIndex);
+  }
+
+  /**
+   * @param {number} pages
+   */
+  goRight(pages) {
+    const newIndex = this.book.pageProgression === 'lr' ? this.index + pages : this.index - pages;
+    return this.book.getPage(newIndex);
+  }
+
+  /**
    * @param {number} reduce
    * @param {number} rotate
    */

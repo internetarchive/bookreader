@@ -104,10 +104,10 @@ svg.BRPageLayer {
 }
 
 .br-mode-2up__leafs {
-  background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
   position: absolute;
   cursor: pointer;
   top: 0;
+  transform-style: preserve-3d;
   
   &[side=left] {
     border-radius: 4px 0 0 4px;
@@ -122,6 +122,27 @@ svg.BRPageLayer {
       padding-left: 20px;
       border-radius: 0 4px 4px 0;
     }
+  }
+  &.br-mode-2up__leafs--flipping {
+    z-index: 200000;
+    transition: transform 5s;
+    transition-timing-function: ease-in-out;
+    border-radius: 0;
+
+    // Have a copy of the background at a perpendicular angle,
+    // so that during the rotation, it's always visible.
+    &:before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      transform: rotateY(-90deg);
+    }
+  }
+
+  &, &.br-mode-2up__leafs--flipping::before {
+    background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
   }
 
   .br-leaf-edges__bar {
@@ -153,16 +174,13 @@ svg.BRPageLayer {
 .br-mode-2up--flipping-left {
   .BRpage-entering[data-side=R] {
     z-index: 10;
-    animation: flipRightToLeft .6s ease-in;
     transform-origin: left;
     transform: rotateY(0deg);
   }
 
   .BRpage-exiting[data-side=L] {
     z-index: 10;
-    animation: flipLeftToRight .6s ease-in;
     transform-origin: right;
-    transform: rotateY(90deg);
   }
 
   .BRpage-exiting[data-side=R] {
@@ -173,29 +191,15 @@ svg.BRPageLayer {
 .br-mode-2up--flipping-right {
   .BRpage-entering[data-side=L] {
     z-index: 10;
-    animation: flipLeftToRight .6s ease-in reverse;
     transform-origin: right;
-    transform: rotateY(0deg);
   }
 
   .BRpage-exiting[data-side=R] {
     z-index: 10;
-    animation: flipRightToLeft .6s ease-in reverse;
     transform-origin: left;
-    transform: rotateY(-180deg);
   }
 
   .BRpage-exiting[data-side=L] {
     z-index: 9;
   }
-}
-
-@keyframes flipLeftToRight {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(180deg); }
-}
-
-@keyframes flipRightToLeft {
-  0% { transform: rotateY(-180deg); }
-  100% { transform: rotateY(0deg); }
 }

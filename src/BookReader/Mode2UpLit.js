@@ -61,7 +61,9 @@ export class Mode2UpLit extends LitElement {
   @property({ type: String })
   autoFit = 'auto';
 
-  /************** VIRTUAL-SCROLLING PROPERTIES **************/
+  /************** VIRTUAL-FLIPPING PROPERTIES **************/
+
+  @query('.br-mode-2up__leafs--flipping') $flippingEdges;
 
   /** @type {PageModel[]} */
   @property({ type: Array, hasChanged: arrChanged })
@@ -83,6 +85,9 @@ export class Mode2UpLit extends LitElement {
 
   /** @type {Record<PageIndex, PageContainer>} position in inches */
   pageContainerCache = {};
+
+  /** @type {{ direction: 'left' | 'right', pagesFlipping: [PageIndex, PageIndex], pagesFlippingCount: number }} */
+  activeFlip = null;
 
   /************** DOM-RELATED PROPERTIES **************/
 
@@ -117,30 +122,56 @@ export class Mode2UpLit extends LitElement {
   computePositions(pageLeft, pageRight) {
     const computePageWidth = this.computePageWidth.bind(this);
     const numLeafs = this.book.getNumLeafs();
+    const movingPagesWidth = this.activeFlip ? Math.ceil(this.activeFlip.pagesFlippingCount / 2) * this.PAGE_THICKNESS_IN : 0;
+
     const leafEdgesLeftStart = 0;
     const leftPagesCount = this.book.pageProgression == 'lr' ? (pageLeft?.index ?? 0) : (!pageLeft ? 0 : numLeafs - pageLeft.index);
-    const leafEdgesLeftWidth = Math.ceil(leftPagesCount / 2) * this.PAGE_THICKNESS_IN;
-    const leafEdgesLeftEnd = leafEdgesLeftStart + leafEdgesLeftWidth;
+    const leafEdgesLeftMovingWidth = this.activeFlip?.direction != 'left' ? 0 : movingPagesWidth;
+    const leafEdgesLeftMainWidth = Math.ceil(leftPagesCount / 2) * this.PAGE_THICKNESS_IN - leafEdgesLeftMovingWidth;
+    const leafEdgesLeftMovingStart = leafEdgesLeftStart + leafEdgesLeftMainWidth;
+    const leafEdgesLeftFullWidth = leafEdgesLeftMovingWidth + leafEdgesLeftMainWidth;
+    const leafEdgesLeftEnd = leafEdgesLeftStart + leafEdgesLeftMainWidth + leafEdgesLeftMovingWidth;
+
     const pageLeftStart = leafEdgesLeftEnd;
-    const pageLeftEnd = !pageLeft ? pageLeftStart + computePageWidth(pageRight.right) : pageLeftStart + computePageWidth(pageLeft);
+    const pageLeftWidth = !pageLeft ? computePageWidth(pageRight.right) : computePageWidth(pageLeft);
+    const pageLeftEnd = pageLeftStart + pageLeftWidth;
     const pageRightStart = pageLeftEnd;
-    const pageRightEnd = !pageRight ? pageRightStart : pageRightStart + computePageWidth(pageRight);
-    const leafEdgesRightStart = pageRightEnd;
+    const pageRightWidth = !pageRight ? 0 : computePageWidth(pageRight);
+    const pageRightEnd = pageRightStart + pageRightWidth;
+
     const rightPagesCount = this.book.pageProgression == 'lr' ? (!pageRight ? 0 : numLeafs - pageRight.index) : (pageRight?.index ?? 0);
-    const leafEdgesRightWidth = Math.ceil(rightPagesCount / 2) * this.PAGE_THICKNESS_IN;
-    const leafEdgesRightEnd = leafEdgesRightStart + leafEdgesRightWidth;
+    const leafEdgesRightStart = pageRightEnd;
+    const leafEdgesRightMovingWidth = this.activeFlip?.direction != 'right' ? 0 : movingPagesWidth;
+    const leafEdgesRightMainStart = leafEdgesRightStart + leafEdgesRightMovingWidth;
+    const leafEdgesRightMainWidth = Math.ceil(rightPagesCount / 2) * this.PAGE_THICKNESS_IN - leafEdgesRightMovingWidth;
+    const leafEdgesRightEnd = leafEdgesRightStart + leafEdgesRightMainWidth + leafEdgesRightMovingWidth;
+    const leafEdgesRightFullWidth = leafEdgesRightMovingWidth + leafEdgesRightMainWidth;
+
+    const spreadWidth = pageRightEnd - pageLeftStart;
     const bookWidth = leafEdgesRightEnd;
     return {
       leafEdgesLeftStart,
-      leafEdgesLeftWidth,
+      leafEdgesLeftMainWidth,
+      leafEdgesLeftMovingStart,
+      leafEdgesLeftMovingWidth,
       leafEdgesLeftEnd,
+      leafEdgesLeftFullWidth,
+
       pageLeftStart,
+      pageLeftWidth,
       pageLeftEnd,
       pageRightStart,
+      pageRightWidth,
       pageRightEnd,
+
       leafEdgesRightStart,
-      leafEdgesRightWidth,
+      leafEdgesRightMovingWidth,
+      leafEdgesRightMainStart,
+      leafEdgesRightMainWidth,
       leafEdgesRightEnd,
+      leafEdgesRightFullWidth,
+
+      spreadWidth,
       bookWidth,
     };
   }
@@ -337,32 +368,21 @@ export class Mode2UpLit extends LitElement {
    **/
   renderLeafEdges = (side) => {
     if (!this.visiblePages.length) return html``;
-    const wToR = this.worldUnitsToRenderedPixels;
-    const width = wToR(side == 'left' ? this.positions.leafEdgesLeftWidth : this.positions.leafEdgesRightWidth);
-    if (!width) return html``;
-    const height = wToR(this.computePageHeight(this.visiblePages[0]));
-    const left = wToR(side == 'left' ? this.positions.leafEdgesLeftStart : this.positions.leafEdgesRightStart);
-    const prog = this.book.pageProgression;
-    const pair = `${prog}, ${side}`;
-    let range = [];
-    switch (pair) {
-    case 'lr, left':
-      range = [0, this.pageLeft.index];
-      break;
-    case 'lr, right':
-      range = [this.pageRight.index, this.book.getNumLeafs() - 1];
-      break;
-    case 'rl, left':
-      range = [this.book.getNumLeafs() - 1, this.pageLeft.index];
-      break;
-    case 'rl, right':
-      range = [this.pageRight.index, 0];
-      break;
-    default:
-      throw new Error(`Unexpected pair: ${pair}`);
-    }
+    const fullWidthIn = side == 'left' ? this.positions.leafEdgesLeftFullWidth : this.positions.leafEdgesRightFullWidth;
+    if (!fullWidthIn) return html``;
 
-    return html`
+    const wToR = this.worldUnitsToRenderedPixels;
+    const height = wToR(this.computePageHeight(this.visiblePages[0]));
+    const hasMovingPages = this.activeFlip?.direction == side;
+
+    const leftmostPage = this.book.getPage(this.book.pageProgression == 'lr' ? 0 : this.book.getNumLeafs() - 1);
+    const rightmostPage = this.book.getPage(this.book.pageProgression == 'lr' ? this.book.getNumLeafs() - 1 : 0);
+    const numPagesFlipping = hasMovingPages ? this.activeFlip.pagesFlippingCount : 0;
+    const range = side == 'left' ?
+      [leftmostPage.index, this.pageLeft.goLeft(numPagesFlipping).index] :
+      [this.pageRight.goRight(numPagesFlipping).index, rightmostPage.index];
+
+    const mainEdges = html`
       <br-leaf-edges
         leftIndex=${range[0]}
         rightIndex=${range[1]}
@@ -370,9 +390,38 @@ export class Mode2UpLit extends LitElement {
         .pageClickHandler=${(index) => this.jumpToIndex(index)}
         side=${side}
         class="br-mode-2up__leafs br-mode-2up__leafs--${side}"
-        style=${styleMap({width: `${width}px`, height: `${height}px`, left: `${left}px`})}
+        style=${styleMap({
+          width: `${wToR(side == 'left' ? this.positions.leafEdgesLeftMainWidth : this.positions.leafEdgesRightMainWidth)}px`,
+          height: `${height}px`,
+          left: `${wToR(side == 'left' ? this.positions.leafEdgesLeftStart : this.positions.leafEdgesRightMainStart)}px`,
+        })}
       ></br-leaf-edges>
     `;
+
+    if (hasMovingPages) {
+      const width = wToR(side == 'left' ? this.positions.leafEdgesLeftMovingWidth : this.positions.leafEdgesRightMovingWidth);
+      const movingEdges = html`
+        <br-leaf-edges
+          leftIndex=${this.activeFlip.pagesFlipping[0]}
+          rightIndex=${this.activeFlip.pagesFlipping[1]}
+          .book=${this.book}
+          .pageClickHandler=${(index) => this.jumpToIndex(index)}
+          side=${side}
+          class="br-mode-2up__leafs br-mode-2up__leafs--${side} br-mode-2up__leafs--flipping"
+          style=${styleMap({
+            width: `${width}px`,
+            height: `${height}px`,
+            left: `${wToR(side == 'left' ? this.positions.leafEdgesLeftMovingStart : this.positions.leafEdgesRightStart)}px`,
+            pointerEvents: 'none',
+            transformOrigin: `${wToR(side == 'left' ? this.positions.pageLeftWidth : -this.positions.pageRightWidth) + width / 2}px 0`,
+          })}
+        ></br-leaf-edges>
+      `;
+
+      return side == 'left' ? html`${mainEdges}${movingEdges}` : html`${movingEdges}${mainEdges}`;
+    } else {
+      return mainEdges;
+    }
   }
 
   /** @param {PageModel} page */
@@ -509,6 +558,12 @@ export class Mode2UpLit extends LitElement {
       }
     }
 
+    this.activeFlip = {
+      direction,
+      pagesFlipping: [curLeftIndex, nextLeftIndex],
+      pagesFlippingCount: Math.abs(nextLeftIndex - curLeftIndex),
+    };
+
     // Wait for lit update cycle to finish
     this.requestUpdate();
     await this.updateComplete;
@@ -519,11 +574,50 @@ export class Mode2UpLit extends LitElement {
 
     nextPageContainers.forEach(c => c.$container.addClass('BRpage-visible BRpage-entering'));
 
-    await Promise.race([
-      ...nextPageContainers.map(c => promisifyEvent(c.$container[0], 'animationend')),
-      sleep(800), // Fallback for browsers that don't support animationend
-    ]);
-    console.log('flip ended');
+    // Check if animation api supported
+    if ('animate' in Element.prototype) {
+      /** @type {KeyframeAnimationOptions} */
+      const animationStyle = {
+        duration: 550 + this.activeFlip.pagesFlippingCount * 2,
+        easing: 'ease-in',
+        fill: 'forwards',
+      };
+      // play the animation
+      const edgeTranslationAnimation = this.$flippingEdges.animate([
+        { transform: `rotateY(0deg)` },
+        {
+          transform: direction == 'left' ? `rotateY(-180deg)` : `rotateY(180deg)`,
+        },
+      ], animationStyle);
+
+      const exitingPageAnimation = direction == 'left' ?
+        this.querySelector('.BRpage-exiting[data-side=L]').animate([
+          { transform: `rotateY(0deg)` },
+          { transform: `rotateY(180deg)` },
+        ], animationStyle) : this.querySelector('.BRpage-exiting[data-side=R]').animate([
+          { transform: `rotateY(0deg)` },
+          { transform: `rotateY(-180deg)` },
+        ], animationStyle);
+
+      const enteringPageAnimation = direction == 'left' ?
+        this.querySelector('.BRpage-entering[data-side=R]').animate([
+          { transform: `rotateY(-180deg)` },
+          { transform: `rotateY(0deg)` },
+        ], animationStyle) : this.querySelector('.BRpage-entering[data-side=L]').animate([
+          { transform: `rotateY(180deg)` },
+          { transform: `rotateY(0deg)` },
+        ], animationStyle);
+
+      edgeTranslationAnimation.play();
+      exitingPageAnimation.play();
+      enteringPageAnimation.play();
+
+      await Promise.race([
+        new Promise(resolve => edgeTranslationAnimation.onfinish = resolve),
+        new Promise(resolve => exitingPageAnimation.onfinish = resolve),
+        new Promise(resolve => enteringPageAnimation.onfinish = resolve),
+      ]);
+    }
 
     this.classList.remove(`br-mode-2up--flipping-${direction}`);
     this.classList.remove(`BRpageFlipping`);
@@ -533,6 +627,7 @@ export class Mode2UpLit extends LitElement {
     nextPageContainers.forEach(c => c.$container.removeClass('BRpage-entering'));
 
     this.visiblePages = [nextSpread.left, nextSpread.right].filter(x => x);
+    this.activeFlip = null;
   }
 
   /************** ZOOMING LOGIC **************/
