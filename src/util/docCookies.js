@@ -10,6 +10,22 @@
  */
 
 /**
+ * Check to see if the browser has cookies enabled.
+ * Accessing document.cookies errors if eg iframe with sandbox enabled.
+ * @returns {boolean}
+ */
+export function areCookiesBlocked(doc = document) {
+  try {
+    doc.cookie;
+    return false;
+  } catch (e) {
+    return true;
+  }
+}
+
+const COOKIES_BLOCKED = areCookiesBlocked();
+
+/**
  * Get specific key's value stored in cookie
  *
  * @param {string} sKey
@@ -17,7 +33,7 @@
  * @returns {string|null}
  */
 export function getItem(sKey) {
-  if (!sKey) return null;
+  if (COOKIES_BLOCKED || !sKey) return null;
 
   return decodeURIComponent(
     // eslint-disable-next-line no-useless-escape
@@ -34,9 +50,11 @@ export function getItem(sKey) {
  * @param {string} [sDomain] domain name
  * @param {boolean} [bSecure]
  *
- * @returns {true}
+ * @returns {boolean}
  */
 export function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+  if (COOKIES_BLOCKED) return false;
+
   document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue)
   + (vEnd ? `; expires=${vEnd.toUTCString()}` : '')
   + (sDomain ? `; domain=${sDomain}` : '')
@@ -56,6 +74,7 @@ export function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
  * @returns {boolean}
  */
 export function removeItem(sKey, sPath, sDomain) {
+  if (COOKIES_BLOCKED) return false;
   // eslint-disable-next-line
   if (!hasItem(sKey)) return false;
 
