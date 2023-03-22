@@ -3,7 +3,7 @@ import { customElement, property, query } from 'lit/decorators.js';
 import {LitElement, html} from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
-import { arrChanged, calcScreenDPI, genToArray, promisifyEvent, sleep } from './utils';
+import { arrChanged, calcScreenDPI, genToArray } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
@@ -13,7 +13,7 @@ import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
 /** @typedef {import('../BookReader').default} BookReader */
 
 // I _have_ to make this globally public, otherwise it won't let me call
-// it's constructor :/
+// its constructor :/
 /** @implements {SmoothZoomable} */
 @customElement('br-mode-2up')
 export class Mode2UpLit extends LitElement {
@@ -523,6 +523,7 @@ export class Mode2UpLit extends LitElement {
    * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
   async flipAnimation(nextSpread) {
+    if (this.activeFlip) return;
     if (nextSpread == 'next') {
       nextSpread = this.book.pageProgression == 'lr' ? 'right' : 'left';
     } else if (nextSpread == 'prev') {
