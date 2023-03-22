@@ -55,8 +55,6 @@ export class Mode2UpLit extends LitElement {
   @property({ type: Object })
   scaleCenter = { x: 0.5, y: 0.5 };
 
-  bookTranslate = { x: 0, y: 0 };
-
   /** @type {import('./options').AutoFitValues} */
   @property({ type: String })
   autoFit = 'auto';
@@ -272,15 +270,14 @@ export class Mode2UpLit extends LitElement {
     }
     if (changedProps.has('scale')) {
       const oldVal = changedProps.get('scale');
-      this.$book.style.transform = `translate(${this.bookTranslate.x}px, ${this.bookTranslate.y}px) scale(${this.scale})`;
-      this.updateViewportOnZoom(this.scale, oldVal);
+      const translate = this.computeTranslate(this.visiblePages[0], this.scale);
+      this.$book.style.transform = `translateX(${translate.x}px) translateY(${translate.y}px) scale(${this.scale})`;
+      this.updateViewportOnZoom(this.scale, oldVal, translate);
     }
   }
 
   resizeViaAutofit(page = this.visiblePages[0]) {
-    const {scale, translate} = this.computeDefaultTransform(page, this.autoFit);
-    this.scale = scale;
-    this.bookTranslate = translate;
+    this.scale = this.computeScale(page, this.autoFit);
   }
 
   /** @override */
@@ -475,8 +472,7 @@ export class Mode2UpLit extends LitElement {
    * @param {PageModel} page
    * @param {import('./options').AutoFitValues} autoFit
    */
-  computeDefaultTransform(page, autoFit) {
-    // debugger;
+  computeScale(page, autoFit) {
     const spread = page.spread;
     // Default to real size if it fits, otherwise default to full height
     const bookWidth = this.computePositions(spread.left, spread.right).bookWidth;
@@ -503,12 +499,24 @@ export class Mode2UpLit extends LitElement {
       throw new Error(`Invalid autoFit value: ${autoFit}`);
     }
 
+    return scale;
+  }
+
+  /**
+   * @param {PageModel} page
+   * @param {number} scale
+   * @returns {{x: number, y: number}}
+   */
+  computeTranslate(page, scale = this.scale) {
+    const spread = page.spread;
+    // Default to real size if it fits, otherwise default to full height
+    const bookWidth = this.computePositions(spread.left, spread.right).bookWidth;
+    const bookHeight = this.computePageHeight(spread.left || spread.right);
     const visibleBookWidth = this.worldUnitsToRenderedPixels(bookWidth) * scale;
     const visibleBookHeight = this.worldUnitsToRenderedPixels(bookHeight) * scale;
     const translateX = (this.htmlDimensionsCacher.clientWidth - visibleBookWidth) / 2;
     const translateY = (this.htmlDimensionsCacher.clientHeight - visibleBookHeight) / 2;
-
-    return { scale, translate: { x: translateX, y: translateY } };
+    return { x: Math.max(0, translateX), y: Math.max(0, translateY) };
   }
 
   /**
@@ -635,8 +643,9 @@ export class Mode2UpLit extends LitElement {
   /**
    * @param {number} newScale
    * @param {number} oldScale
+   * @param {{x: number, y: number}} translate
    */
-  updateViewportOnZoom(newScale, oldScale) {
+  updateViewportOnZoom(newScale, oldScale, translate) {
     const container = this;
     const { scrollTop: T, scrollLeft: L } = container;
     const W = this.htmlDimensionsCacher.clientWidth;
@@ -656,8 +665,8 @@ export class Mode2UpLit extends LitElement {
       x: F * oldCenter.x,
       y: F * oldCenter.y,
     };
-    container.scrollTop = newCenter.y - YPOS * H;
-    container.scrollLeft = newCenter.x - XPOS * W;
+    container.scrollTop = newCenter.y - YPOS * H - translate.y;
+    container.scrollLeft = newCenter.x - XPOS * W - translate.x;
   }
 }
 
