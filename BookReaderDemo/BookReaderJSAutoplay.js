@@ -8,6 +8,7 @@ function instantiateBookReader(selector, extraOptions) {
   selector = selector || '#BookReader';
   extraOptions = extraOptions || {};
   var options = {
+    ppi: 100,
     data: [
       [
         { width: 800, height: 1200,

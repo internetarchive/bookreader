@@ -152,7 +152,10 @@ BookReader.prototype.setup = function(options) {
   this.displayedIndices = [];
 
   this.animating = false;
-  this.flipSpeed = options.flipSpeed;
+  this.flipSpeed = typeof options.flipSpeed === 'number' ? options.flipSpeed : {
+    'fast': 200,
+    'slow': 600,
+  }[options.flipSpeed] || 400;
   this.flipDelay = options.flipDelay;
 
   /**

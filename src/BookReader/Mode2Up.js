@@ -14,6 +14,7 @@ export class Mode2Up {
     this.br = br;
     this.book = bookModel;
     this.mode2UpLit = new Mode2UpLit(bookModel, br);
+    this.mode2UpLit.flipSpeed = br.flipSpeed;
 
     /** @private */
     this.$el = $(this.mode2UpLit)

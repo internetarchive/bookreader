@@ -80,11 +80,6 @@ BookReader.prototype.autoToggle = function(overrides) {
     this.switchMode(this.constMode2up);
   }
 
-  // Change to autofit if book is too large
-  if (this.reduce < this._modes.mode2Up.getAutofitReduce()) {
-    this.zoom('auto');
-  }
-
   if (null == this.autoTimer) {
     // $$$ Draw events currently cause layout problems when they occur during animation.
     //     There is a specific problem when changing from 1-up immediately to autoplay in RTL so

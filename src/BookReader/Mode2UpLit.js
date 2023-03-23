@@ -59,6 +59,9 @@ export class Mode2UpLit extends LitElement {
   @property({ type: String })
   autoFit = 'auto';
 
+  /** ms for flip animation */
+  flipSpeed = 400;
+
   translation = { x: 0, y: 0 };
 
   /************** VIRTUAL-FLIPPING PROPERTIES **************/
@@ -536,14 +539,16 @@ export class Mode2UpLit extends LitElement {
     const curSpread = (this.pageLeft || this.pageRight).spread;
 
     if (nextSpread == 'left') {
-      nextSpread = curSpread.left.left.spread;
+      nextSpread = curSpread.left?.left?.spread;
     } else if (nextSpread == 'right') {
-      nextSpread = curSpread.right.right.spread;
+      nextSpread = curSpread.right?.right?.spread;
     }
 
     if (typeof(nextSpread) == 'number') {
       nextSpread = this.book.getPage(nextSpread).spread;
     }
+
+    if (!nextSpread) return;
 
     const progression = this.book.pageProgression;
     const curLeftIndex = curSpread.left?.index ?? (progression == 'lr' ? -1 : this.book.getNumLeafs());
@@ -591,7 +596,7 @@ export class Mode2UpLit extends LitElement {
     if ('animate' in Element.prototype) {
       /** @type {KeyframeAnimationOptions} */
       const animationStyle = {
-        duration: 400 + this.activeFlip.pagesFlippingCount,
+        duration: this.flipSpeed + this.activeFlip.pagesFlippingCount,
         easing: 'ease-in',
         fill: 'none',
       };

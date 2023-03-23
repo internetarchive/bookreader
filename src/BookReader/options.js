@@ -31,7 +31,7 @@ export const DEFAULT_OPTIONS = {
   thumbMaxZoomColumns: 8,
 
   /** @type {number | 'fast' | 'slow'} speed for flip animation */
-  flipSpeed: 'fast',
+  flipSpeed: 400,
 
   showToolbar: true,
   showNavbar: true,
