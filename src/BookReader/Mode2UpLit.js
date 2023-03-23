@@ -277,15 +277,6 @@ export class Mode2UpLit extends LitElement {
     }
   }
 
-  resizeViaAutofit(page = this.visiblePages[0]) {
-    this.scale = this.computeScale(page, this.autoFit);
-  }
-
-  recenter(page = this.visiblePages[0]) {
-    this.worldOffset = this.computeTranslate(page, this.scale);
-    this.$book.style.transform = `translateX(${this.worldOffset.x}px) translateY(${this.worldOffset.y}px) scale(${this.scale})`;
-  }
-
   /** @override */
   connectedCallback() {
     super.connectedCallback();
@@ -298,6 +289,15 @@ export class Mode2UpLit extends LitElement {
     this.htmlDimensionsCacher.detachResizeListener();
     this.smoothZoomer.detach();
     super.disconnectedCallback();
+  }
+
+  resizeViaAutofit(page = this.visiblePages[0]) {
+    this.scale = this.computeScale(page, this.autoFit);
+  }
+
+  recenter(page = this.visiblePages[0]) {
+    this.worldOffset = this.computeTranslate(page, this.scale);
+    this.$book.style.transform = `translateX(${this.worldOffset.x}px) translateY(${this.worldOffset.y}px) scale(${this.scale})`;
   }
 
   /************** LIT CONFIGS **************/
@@ -339,23 +339,6 @@ export class Mode2UpLit extends LitElement {
       </div>`;
   }
 
-  /**
-   * @param {MouseEvent} ev
-   */
-  handlePageClick = (ev) => {
-    // right click
-    if (ev.which == 3 && this.br.protected) {
-      return false;
-    }
-
-    if (ev.which != 1) return;
-
-    const $page = $(ev.target).closest('.BRpagecontainer');
-    if (!$page.length) return;
-    if ($page.data('side') == 'L') this.flipAnimation('left');
-    else if ($page.data('side') == 'R') this.flipAnimation('right');
-  }
-
   /** @param {PageModel} page */
   createPageContainer = (page) => {
     return this.pageContainerCache[page.index] || (
@@ -364,6 +347,31 @@ export class Mode2UpLit extends LitElement {
         this.br._createPageContainer(page.index)
       )
     );
+  }
+
+  /** @param {PageModel} page */
+  renderPage = (page) => {
+    const wToR = this.worldUnitsToRenderedPixels;
+    const wToV = this.worldUnitsToVisiblePixels;
+
+    const width = wToR(this.computePageWidth(page));
+    const height = wToR(this.computePageHeight(page));
+    const isVisible = this.visiblePages.map(p => p.index).includes(page.index);
+    const positions = this.computePositions(page.spread.left, page.spread.right);
+
+    const pageContainerEl = this.createPageContainer(page)
+      .update({
+        dimensions: {
+          width,
+          height,
+          top: 0,
+          left: wToR(page.pageSide == 'L' ? positions.pageLeftStart : positions.pageLeftEnd),
+        },
+        reduce: page.width / wToV(this.computePageWidth(page)),
+      }).$container[0];
+
+    pageContainerEl.classList.toggle('BRpage-visible', isVisible);
+    return pageContainerEl;
   }
 
   /**
@@ -428,31 +436,6 @@ export class Mode2UpLit extends LitElement {
     } else {
       return mainEdges;
     }
-  }
-
-  /** @param {PageModel} page */
-  renderPage = (page) => {
-    const wToR = this.worldUnitsToRenderedPixels;
-    const wToV = this.worldUnitsToVisiblePixels;
-
-    const width = wToR(this.computePageWidth(page));
-    const height = wToR(this.computePageHeight(page));
-    const isVisible = this.visiblePages.map(p => p.index).includes(page.index);
-    const positions = this.computePositions(page.spread.left, page.spread.right);
-
-    const pageContainerEl = this.createPageContainer(page)
-      .update({
-        dimensions: {
-          width,
-          height,
-          top: 0,
-          left: wToR(page.pageSide == 'L' ? positions.pageLeftStart : positions.pageLeftEnd),
-        },
-        reduce: page.width / wToV(this.computePageWidth(page)),
-      }).$container[0];
-
-    pageContainerEl.classList.toggle('BRpage-visible', isVisible);
-    return pageContainerEl;
   }
 
   /************** VIRTUAL FLIPPING LOGIC **************/
@@ -658,6 +641,25 @@ export class Mode2UpLit extends LitElement {
       progression == 'lr' ? [nextSpread.left, nextSpread.right] : [nextSpread.right, nextSpread.left]
     ).filter(x => x);
     this.activeFlip = null;
+  }
+
+  /************** INPUT HANDLERS **************/
+
+  /**
+   * @param {MouseEvent} ev
+   */
+  handlePageClick = (ev) => {
+    // right click
+    if (ev.which == 3 && this.br.protected) {
+      return false;
+    }
+
+    if (ev.which != 1) return;
+
+    const $page = $(ev.target).closest('.BRpagecontainer');
+    if (!$page.length) return;
+    if ($page.data('side') == 'L') this.flipAnimation('left');
+    else if ($page.data('side') == 'R') this.flipAnimation('right');
   }
 }
 
