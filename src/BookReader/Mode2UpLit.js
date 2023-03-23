@@ -470,6 +470,7 @@ export class Mode2UpLit extends LitElement {
    * @param {import('./options').AutoFitValues} autoFit
    */
   computeScale(page, autoFit) {
+    if (!page) return 1;
     const spread = page.spread;
     // Default to real size if it fits, otherwise default to full height
     const bookWidth = this.computePositions(spread.left, spread.right).bookWidth;
@@ -505,6 +506,7 @@ export class Mode2UpLit extends LitElement {
    * @returns {{x: number, y: number}}
    */
   computeTranslate(page, scale = this.scale) {
+    if (!page) return { x: 0, y: 0 };
     const spread = page.spread;
     // Default to real size if it fits, otherwise default to full height
     const bookWidth = this.computePositions(spread.left, spread.right).bookWidth;
@@ -539,11 +541,11 @@ export class Mode2UpLit extends LitElement {
       nextSpread = this.book.getPage(nextSpread).spread;
     }
 
-    const curLeftIndex = curSpread.left?.index ?? -1;
-    const nextLeftIndex = nextSpread.left?.index ?? -1;
+    const progression = this.book.pageProgression;
+    const curLeftIndex = curSpread.left?.index ?? (progression == 'lr' ? -1 : this.book.getNumLeafs());
+    const nextLeftIndex = nextSpread.left?.index ?? (progression == 'lr' ? -1 : this.book.getNumLeafs());
     if (curLeftIndex == nextLeftIndex) return;
 
-    const progression = this.book.pageProgression;
     // This table is used to determine the direction of the flip animation:
     //    | < | >
     // lr | L | R
