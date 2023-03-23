@@ -507,6 +507,26 @@ export class PageModel {
       return new PageModel(this.book, this.index - 1);
     }
   }
+
+  /**
+   * @param {object} [arg0]
+   * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
+   * of a series of unviewable pages instead of each page
+   * @return {PageModel|void}
+   */
+  findLeft({ combineConsecutiveUnviewables = false } = {}) {
+    return this.book.pageProgression === 'lr' ? this.findPrev({ combineConsecutiveUnviewables }) : this.findNext({ combineConsecutiveUnviewables });
+  }
+
+  /**
+   * @param {object} [arg0]
+   * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
+   * of a series of unviewable pages instead of each page
+   * @return {PageModel|void}
+   */
+  findRight({ combineConsecutiveUnviewables = false } = {}) {
+    return this.book.pageProgression === 'lr' ? this.findNext({ combineConsecutiveUnviewables }) : this.findPrev({ combineConsecutiveUnviewables });
+  }
 }
 
 // There are a few main ways we can reference a specific page in a book:

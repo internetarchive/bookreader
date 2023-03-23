@@ -5,9 +5,9 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
 import { arrChanged, calcScreenDPI, genToArray } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
+import { PageModel } from './BookModel';
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
-/** @typedef {import('./BookModel').PageModel} PageModel */
 /** @typedef {import('./ModeSmoothZoom').SmoothZoomable} SmoothZoomable */
 /** @typedef {import('./PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../BookReader').default} BookReader */
@@ -403,7 +403,7 @@ export class Mode2UpLit extends LitElement {
         leftIndex=${range[0]}
         rightIndex=${range[1]}
         .book=${this.book}
-        .pageClickHandler=${(index) => this.jumpToIndex(index)}
+        .pageClickHandler=${(index) => this.br.jumpToIndex(index)}
         side=${side}
         class="br-mode-2up__leafs br-mode-2up__leafs--${side}"
         style=${styleMap(mainEdgesStyle)}
@@ -425,7 +425,6 @@ export class Mode2UpLit extends LitElement {
           leftIndex=${this.activeFlip.pagesFlipping[0]}
           rightIndex=${this.activeFlip.pagesFlipping[1]}
           .book=${this.book}
-          .pageClickHandler=${(index) => this.jumpToIndex(index)}
           side=${side}
           class="br-mode-2up__leafs br-mode-2up__leafs--${side} br-mode-2up__leafs--flipping"
           style=${styleMap(style)}
@@ -512,7 +511,7 @@ export class Mode2UpLit extends LitElement {
   }
 
   /**
-   * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | {left: PageModel | null, right: PageModel | null}} nextSpread
+   * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | PageModel | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
   async flipAnimation(nextSpread) {
     if (this.activeFlip) return;
@@ -532,6 +531,10 @@ export class Mode2UpLit extends LitElement {
 
     if (typeof(nextSpread) == 'number') {
       nextSpread = this.book.getPage(nextSpread).spread;
+    }
+
+    if (nextSpread instanceof PageModel) {
+      nextSpread = nextSpread.spread;
     }
 
     if (!nextSpread) return;
@@ -658,8 +661,11 @@ export class Mode2UpLit extends LitElement {
 
     const $page = $(ev.target).closest('.BRpagecontainer');
     if (!$page.length) return;
-    if ($page.data('side') == 'L') this.flipAnimation('left');
-    else if ($page.data('side') == 'R') this.flipAnimation('right');
+    if ($page.data('side') == 'L') {
+      this.flipAnimation(this.pageLeft.findLeft({ combineConsecutiveUnviewables: true }));
+    } else if ($page.data('side') == 'R') {
+      this.flipAnimation(this.pageRight.findRight({ combineConsecutiveUnviewables: true }));
+    }
   }
 }
 
