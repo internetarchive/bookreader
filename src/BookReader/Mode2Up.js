@@ -94,7 +94,7 @@ export class Mode2Up {
 
   async resizePageView() {
     this.mode2UpLit.htmlDimensionsCacher.updateClientSizes();
-    const translation = this.mode2UpLit.translation;
+    const translation = this.mode2UpLit.worldOffset;
     const hasTranslation = translation.x || translation.y;
     if (hasTranslation && this.mode2UpLit.autoFit == 'none') {
       this.mode2UpLit.autoFit = 'auto';

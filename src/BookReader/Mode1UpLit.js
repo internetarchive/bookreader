@@ -59,6 +59,9 @@ export class Mode1UpLit extends LitElement {
   @property({ type: Object })
   scaleCenter = { x: 0.5, y: 0.5 };
 
+  // Needed for ModeSmoothZoom
+  worldOffset = { x: 0, y: 0 };
+
   /************** VIRTUAL-SCROLLING PROPERTIES **************/
 
   /** in world coordinates (inches) */
@@ -214,7 +217,8 @@ export class Mode1UpLit extends LitElement {
       const oldVal = changedProps.get('scale');
       // Need to set this scale to actually scale the pages
       this.$visibleWorld.style.transform = `scale(${this.scale})`;
-      this.updateViewportOnZoom(this.scale, oldVal);
+      this.smoothZoomer.updateViewportOnZoom(this.scale, oldVal);
+      this.updateVisibleRegion();
       // Need to set this scale to update the world size, so the scrollbar gets the correct size
       this.$world.style.transform = `scale(${this.scale})`;
     }
@@ -397,37 +401,6 @@ export class Mode1UpLit extends LitElement {
       const VB = VT + this.visibleRegion.height;
       return PT <= VB && PB >= VT;
     });
-  }
-
-  /************** ZOOMING LOGIC **************/
-
-  /**
-   * @param {number} newScale
-   * @param {number} oldScale
-   */
-  updateViewportOnZoom(newScale, oldScale) {
-    const container = this;
-    const { scrollTop: T, scrollLeft: L } = container;
-    const W = this.htmlDimensionsCacher.clientWidth;
-    const H = this.htmlDimensionsCacher.clientHeight;
-
-    // Scale factor change
-    const F = newScale / oldScale;
-
-    // Where in the viewport the zoom is centered on
-    const XPOS = this.scaleCenter.x;
-    const YPOS = this.scaleCenter.y;
-    const oldCenter = {
-      x: L + XPOS * W,
-      y: T + YPOS * H,
-    };
-    const newCenter = {
-      x: F * oldCenter.x,
-      y: F * oldCenter.y,
-    };
-    container.scrollTop = newCenter.y - YPOS * H;
-    container.scrollLeft = newCenter.x - XPOS * W;
-    this.updateVisibleRegion();
   }
 
   /************** INPUT HANDLERS **************/

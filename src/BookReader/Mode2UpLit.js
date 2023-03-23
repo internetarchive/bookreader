@@ -59,12 +59,12 @@ export class Mode2UpLit extends LitElement {
   @property({ type: String })
   autoFit = 'auto';
 
-  /** ms for flip animation */
-  flipSpeed = 400;
-
-  translation = { x: 0, y: 0 };
+  worldOffset = { x: 0, y: 0 };
 
   /************** VIRTUAL-FLIPPING PROPERTIES **************/
+
+  /** ms for flip animation */
+  flipSpeed = 400;
 
   @query('.br-mode-2up__leafs--flipping') $flippingEdges;
 
@@ -273,7 +273,7 @@ export class Mode2UpLit extends LitElement {
     if (changedProps.has('scale')) {
       const oldVal = changedProps.get('scale');
       this.recenter();
-      this.updateViewportOnZoom(this.scale, oldVal);
+      this.smoothZoomer.updateViewportOnZoom(this.scale, oldVal);
     }
   }
 
@@ -282,8 +282,8 @@ export class Mode2UpLit extends LitElement {
   }
 
   recenter(page = this.visiblePages[0]) {
-    this.translation = this.computeTranslate(page, this.scale);
-    this.$book.style.transform = `translateX(${this.translation.x}px) translateY(${this.translation.y}px) scale(${this.scale})`;
+    this.worldOffset = this.computeTranslate(page, this.scale);
+    this.$book.style.transform = `translateX(${this.worldOffset.x}px) translateY(${this.worldOffset.y}px) scale(${this.scale})`;
   }
 
   /** @override */
@@ -385,6 +385,11 @@ export class Mode2UpLit extends LitElement {
       [leftmostPage.index, this.pageLeft.goLeft(numPagesFlipping).index] :
       [this.pageRight.goRight(numPagesFlipping).index, rightmostPage.index];
 
+    const mainEdgesStyle = {
+      width: `${wToR(side == 'left' ? this.positions.leafEdgesLeftMainWidth : this.positions.leafEdgesRightMainWidth)}px`,
+      height: `${height}px`,
+      left: `${wToR(side == 'left' ? this.positions.leafEdgesLeftStart : this.positions.leafEdgesRightMainStart)}px`,
+    };
     const mainEdges = html`
       <br-leaf-edges
         leftIndex=${range[0]}
@@ -393,16 +398,20 @@ export class Mode2UpLit extends LitElement {
         .pageClickHandler=${(index) => this.jumpToIndex(index)}
         side=${side}
         class="br-mode-2up__leafs br-mode-2up__leafs--${side}"
-        style=${styleMap({
-          width: `${wToR(side == 'left' ? this.positions.leafEdgesLeftMainWidth : this.positions.leafEdgesRightMainWidth)}px`,
-          height: `${height}px`,
-          left: `${wToR(side == 'left' ? this.positions.leafEdgesLeftStart : this.positions.leafEdgesRightMainStart)}px`,
-        })}
+        style=${styleMap(mainEdgesStyle)}
       ></br-leaf-edges>
     `;
 
     if (hasMovingPages) {
       const width = wToR(side == 'left' ? this.positions.leafEdgesLeftMovingWidth : this.positions.leafEdgesRightMovingWidth);
+      const style = {
+        width: `${width}px`,
+        height: `${height}px`,
+        left: `${wToR(side == 'left' ? this.positions.leafEdgesLeftMovingStart : this.positions.leafEdgesRightStart)}px`,
+        pointerEvents: 'none',
+        transformOrigin: `${wToR(side == 'left' ? this.positions.pageLeftWidth : -this.positions.pageRightWidth) + width / 2}px 0`,
+      };
+
       const movingEdges = html`
         <br-leaf-edges
           leftIndex=${this.activeFlip.pagesFlipping[0]}
@@ -411,13 +420,7 @@ export class Mode2UpLit extends LitElement {
           .pageClickHandler=${(index) => this.jumpToIndex(index)}
           side=${side}
           class="br-mode-2up__leafs br-mode-2up__leafs--${side} br-mode-2up__leafs--flipping"
-          style=${styleMap({
-            width: `${width}px`,
-            height: `${height}px`,
-            left: `${wToR(side == 'left' ? this.positions.leafEdgesLeftMovingStart : this.positions.leafEdgesRightStart)}px`,
-            pointerEvents: 'none',
-            transformOrigin: `${wToR(side == 'left' ? this.positions.pageLeftWidth : -this.positions.pageRightWidth) + width / 2}px 0`,
-          })}
+          style=${styleMap(style)}
         ></br-leaf-edges>
       `;
 
@@ -655,36 +658,6 @@ export class Mode2UpLit extends LitElement {
       progression == 'lr' ? [nextSpread.left, nextSpread.right] : [nextSpread.right, nextSpread.left]
     ).filter(x => x);
     this.activeFlip = null;
-  }
-
-  /************** ZOOMING LOGIC **************/
-
-  /**
-   * @param {number} newScale
-   * @param {number} oldScale
-   */
-  updateViewportOnZoom(newScale, oldScale) {
-    const container = this;
-    const { scrollTop: T, scrollLeft: L } = container;
-    const W = this.htmlDimensionsCacher.clientWidth;
-    const H = this.htmlDimensionsCacher.clientHeight;
-
-    // Scale factor change
-    const F = newScale / oldScale;
-
-    // Where in the viewport the zoom is centered on
-    const XPOS = this.scaleCenter.x;
-    const YPOS = this.scaleCenter.y;
-    const oldCenter = {
-      x: L + XPOS * W,
-      y: T + YPOS * H,
-    };
-    const newCenter = {
-      x: F * oldCenter.x,
-      y: F * oldCenter.y,
-    };
-    container.scrollTop = newCenter.y - YPOS * H - this.translation.y;
-    container.scrollLeft = newCenter.x - XPOS * W - this.translation.x;
   }
 }
 

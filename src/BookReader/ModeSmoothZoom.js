@@ -9,6 +9,7 @@ import Hammer from "hammerjs";
  * @property {import("./options.js").AutoFitValues} autoFit
  * @property {number} scale
  * @property {{ x: number, y: number }} scaleCenter
+ * @property {{ x: number, y: number }} worldOffset
  * @property {HTMLDimensionsCacher} htmlDimensionsCacher
  * @property {function(): void} [attachScrollListeners]
  * @property {function(): void} [detachScrollListeners]
@@ -178,5 +179,34 @@ export class ModeSmoothZoom {
       x: (clientX - bc.left) / this.mode.htmlDimensionsCacher.clientWidth,
       y: (clientY - bc.top) / this.mode.htmlDimensionsCacher.clientHeight,
     };
+  }
+
+  /**
+   * @param {number} newScale
+   * @param {number} oldScale
+   */
+  updateViewportOnZoom(newScale, oldScale) {
+    const container = this.mode.$container;
+    const { scrollTop: T, scrollLeft: L } = container;
+    const W = this.mode.htmlDimensionsCacher.clientWidth;
+    const H = this.mode.htmlDimensionsCacher.clientHeight;
+
+    // Scale factor change
+    const F = newScale / oldScale;
+
+    // Where in the viewport the zoom is centered on
+    const XPOS = this.mode.scaleCenter.x;
+    const YPOS = this.mode.scaleCenter.y;
+    const oldCenter = {
+      x: L + XPOS * W,
+      y: T + YPOS * H,
+    };
+    const newCenter = {
+      x: F * oldCenter.x,
+      y: F * oldCenter.y,
+    };
+
+    container.scrollTop = newCenter.y - YPOS * H - this.mode.worldOffset.y;
+    container.scrollLeft = newCenter.x - XPOS * W - this.mode.worldOffset.x;
   }
 }
