@@ -93,9 +93,14 @@ export class Mode2Up {
 
   async resizePageView() {
     this.mode2UpLit.htmlDimensionsCacher.updateClientSizes();
+    const translation = this.mode2UpLit.translation;
+    const hasTranslation = translation.x || translation.y;
+    if (hasTranslation && this.mode2UpLit.autoFit == 'none') {
+      this.mode2UpLit.autoFit = 'auto';
+    }
     if (this.mode2UpLit.autoFit != 'none') {
       this.mode2UpLit.resizeViaAutofit();
     }
-    this.mode2UpLit.requestUpdate();
+    this.mode2UpLit.recenter();
   }
 }

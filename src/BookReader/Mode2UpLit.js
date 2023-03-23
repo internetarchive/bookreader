@@ -59,6 +59,8 @@ export class Mode2UpLit extends LitElement {
   @property({ type: String })
   autoFit = 'auto';
 
+  translation = { x: 0, y: 0 };
+
   /************** VIRTUAL-FLIPPING PROPERTIES **************/
 
   @query('.br-mode-2up__leafs--flipping') $flippingEdges;
@@ -261,20 +263,24 @@ export class Mode2UpLit extends LitElement {
       this.br._components.navbar.updateNavIndexThrottled();
     }
     if (changedProps.has('autoFit')) {
-      if (this.autoFit == 'none') {
+      if (this.autoFit != 'none') {
         this.resizeViaAutofit();
       }
     }
     if (changedProps.has('scale')) {
       const oldVal = changedProps.get('scale');
-      const translate = this.computeTranslate(this.visiblePages[0], this.scale);
-      this.$book.style.transform = `translateX(${translate.x}px) translateY(${translate.y}px) scale(${this.scale})`;
-      this.updateViewportOnZoom(this.scale, oldVal, translate);
+      this.recenter();
+      this.updateViewportOnZoom(this.scale, oldVal);
     }
   }
 
   resizeViaAutofit(page = this.visiblePages[0]) {
     this.scale = this.computeScale(page, this.autoFit);
+  }
+
+  recenter(page = this.visiblePages[0]) {
+    this.translation = this.computeTranslate(page, this.scale);
+    this.$book.style.transform = `translateX(${this.translation.x}px) translateY(${this.translation.y}px) scale(${this.scale})`;
   }
 
   /** @override */
@@ -428,7 +434,6 @@ export class Mode2UpLit extends LitElement {
     const isVisible = this.visiblePages.map(p => p.index).includes(page.index);
     const positions = this.computePositions(page.spread.left, page.spread.right);
 
-    // const transform = `translate(${wToR(left)}px, ${wToR(top)}px)`;
     const pageContainerEl = this.createPageContainer(page)
       .update({
         dimensions: {
@@ -440,7 +445,6 @@ export class Mode2UpLit extends LitElement {
         reduce: page.width / wToV(this.computePageWidth(page)),
       }).$container[0];
 
-    // pageContainerEl.style.transform = transform;
     pageContainerEl.classList.toggle('BRpage-visible', isVisible);
     return pageContainerEl;
   }
@@ -642,7 +646,9 @@ export class Mode2UpLit extends LitElement {
       .forEach($c => $c.removeClass('BRpage-exiting BRpage-visible'));
     nextPageContainers.forEach(c => c.$container.removeClass('BRpage-entering'));
 
-    this.visiblePages = [nextSpread.left, nextSpread.right].filter(x => x);
+    this.visiblePages = (
+      progression == 'lr' ? [nextSpread.left, nextSpread.right] : [nextSpread.right, nextSpread.left]
+    ).filter(x => x);
     this.activeFlip = null;
   }
 
@@ -651,9 +657,8 @@ export class Mode2UpLit extends LitElement {
   /**
    * @param {number} newScale
    * @param {number} oldScale
-   * @param {{x: number, y: number}} translate
    */
-  updateViewportOnZoom(newScale, oldScale, translate) {
+  updateViewportOnZoom(newScale, oldScale) {
     const container = this;
     const { scrollTop: T, scrollLeft: L } = container;
     const W = this.htmlDimensionsCacher.clientWidth;
@@ -673,8 +678,8 @@ export class Mode2UpLit extends LitElement {
       x: F * oldCenter.x,
       y: F * oldCenter.y,
     };
-    container.scrollTop = newCenter.y - YPOS * H - translate.y;
-    container.scrollLeft = newCenter.x - XPOS * W - translate.x;
+    container.scrollTop = newCenter.y - YPOS * H - this.translation.y;
+    container.scrollLeft = newCenter.x - XPOS * W - this.translation.x;
   }
 }
 
