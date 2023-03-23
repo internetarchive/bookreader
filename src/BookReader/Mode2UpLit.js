@@ -261,10 +261,7 @@ export class Mode2UpLit extends LitElement {
       this.br._components.navbar.updateNavIndexThrottled();
     }
     if (changedProps.has('autoFit')) {
-      if (this.autoFit != 'none') {
-        this.style.overflow = 'hidden';
-      } else {
-        this.style.overflow = 'auto';
+      if (this.autoFit == 'none') {
         this.resizeViaAutofit();
       }
     }
@@ -552,6 +549,11 @@ export class Mode2UpLit extends LitElement {
     // lr | L | R
     // rl | R | L
     const direction = progression == 'lr' ? (nextLeftIndex > curLeftIndex ? 'right' : 'left') : (nextLeftIndex > curLeftIndex ? 'left' : 'right');
+    this.activeFlip = {
+      direction,
+      pagesFlipping: [curLeftIndex, nextLeftIndex],
+      pagesFlippingCount: Math.abs(nextLeftIndex - curLeftIndex),
+    };
 
     this.classList.add(`br-mode-2up--flipping-${direction}`);
     this.classList.add(`BRpageFlipping`);
@@ -567,12 +569,6 @@ export class Mode2UpLit extends LitElement {
       }
     }
 
-    this.activeFlip = {
-      direction,
-      pagesFlipping: [curLeftIndex, nextLeftIndex],
-      pagesFlippingCount: Math.abs(nextLeftIndex - curLeftIndex),
-    };
-
     // Wait for lit update cycle to finish
     this.requestUpdate();
     await this.updateComplete;
@@ -582,16 +578,22 @@ export class Mode2UpLit extends LitElement {
       .forEach($c => $c.addClass('BRpage-exiting'));
 
     nextPageContainers.forEach(c => c.$container.addClass('BRpage-visible BRpage-entering'));
+    const nextTranslate = this.computeTranslate(nextSpread.left || nextSpread.right, this.scale);
+    const newTransform = `translate(${nextTranslate.x}px, ${nextTranslate.y}px) scale(${this.scale})`;
 
     // Check if animation api supported
     if ('animate' in Element.prototype) {
       /** @type {KeyframeAnimationOptions} */
       const animationStyle = {
-        duration: 550 + this.activeFlip.pagesFlippingCount * 2,
+        duration: 400 + this.activeFlip.pagesFlippingCount,
         easing: 'ease-in',
-        fill: 'forwards',
+        fill: 'none',
       };
-      // play the animation
+
+      const bookCenteringAnimation = this.$book.animate([
+        { transform: newTransform },
+      ], animationStyle);
+
       const edgeTranslationAnimation = this.$flippingEdges.animate([
         { transform: `rotateY(0deg)` },
         {
@@ -617,17 +619,20 @@ export class Mode2UpLit extends LitElement {
           { transform: `rotateY(0deg)` },
         ], animationStyle);
 
+      bookCenteringAnimation.play();
       edgeTranslationAnimation.play();
       exitingPageAnimation.play();
       enteringPageAnimation.play();
 
       await Promise.race([
+        new Promise(resolve => bookCenteringAnimation.onfinish = resolve),
         new Promise(resolve => edgeTranslationAnimation.onfinish = resolve),
         new Promise(resolve => exitingPageAnimation.onfinish = resolve),
         new Promise(resolve => enteringPageAnimation.onfinish = resolve),
       ]);
     }
 
+    this.$book.style.transform = newTransform;
     this.classList.remove(`br-mode-2up--flipping-${direction}`);
     this.classList.remove(`BRpageFlipping`);
     this.visiblePages
