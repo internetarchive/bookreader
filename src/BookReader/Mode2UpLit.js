@@ -514,41 +514,14 @@ export class Mode2UpLit extends LitElement {
    * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | PageModel | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
   async flipAnimation(nextSpread, { animate = true } = {}) {
-    if (this.activeFlip) return;
-    if (nextSpread == 'next') {
-      nextSpread = this.book.pageProgression == 'lr' ? 'right' : 'left';
-    } else if (nextSpread == 'prev') {
-      nextSpread = this.book.pageProgression == 'lr' ? 'left' : 'right';
-    }
-
     const curSpread = (this.pageLeft || this.pageRight).spread;
-
-    if (nextSpread == 'left') {
-      nextSpread = curSpread.left?.left?.spread;
-    } else if (nextSpread == 'right') {
-      nextSpread = curSpread.right?.right?.spread;
-    }
-
-    if (typeof(nextSpread) == 'number') {
-      nextSpread = this.book.getPage(nextSpread).spread;
-    }
-
-    if (nextSpread instanceof PageModel) {
-      nextSpread = nextSpread.spread;
-    }
-
-    if (!nextSpread) return;
+    nextSpread = this.parseNextSpread(nextSpread);
+    if (this.activeFlip || !nextSpread) return;
 
     const progression = this.book.pageProgression;
     const curLeftIndex = curSpread.left?.index ?? (progression == 'lr' ? -1 : this.book.getNumLeafs());
     const nextLeftIndex = nextSpread.left?.index ?? (progression == 'lr' ? -1 : this.book.getNumLeafs());
     if (curLeftIndex == nextLeftIndex) return;
-
-    // This table is used to determine the direction of the flip animation:
-    //    | < | >
-    // lr | L | R
-    // rl | R | L
-    const direction = progression == 'lr' ? (nextLeftIndex > curLeftIndex ? 'right' : 'left') : (nextLeftIndex > curLeftIndex ? 'left' : 'right');
 
     const renderedIndices = this.renderedPages.map(p => p.index);
     /** @type {PageContainer[]} */
@@ -564,8 +537,13 @@ export class Mode2UpLit extends LitElement {
     const nextTranslate = this.computeTranslate(nextSpread.left || nextSpread.right, this.scale);
     const newTransform = `translate(${nextTranslate.x}px, ${nextTranslate.y}px) scale(${this.scale})`;
 
-    // Check if animation api supported
     if (animate && 'animate' in Element.prototype) {
+      // This table is used to determine the direction of the flip animation:
+      //    | < | >
+      // lr | L | R
+      // rl | R | L
+      const direction = progression == 'lr' ? (nextLeftIndex > curLeftIndex ? 'right' : 'left') : (nextLeftIndex > curLeftIndex ? 'left' : 'right');
+
       this.activeFlip = {
         direction,
         pagesFlipping: [curLeftIndex, nextLeftIndex],
@@ -647,6 +625,36 @@ export class Mode2UpLit extends LitElement {
     this.visiblePages = (
       progression == 'lr' ? [nextSpread.left, nextSpread.right] : [nextSpread.right, nextSpread.left]
     ).filter(x => x);
+  }
+
+  /**
+   * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | PageModel | {left: PageModel | null, right: PageModel | null}} nextSpread
+   * @returns {{left: PageModel | null, right: PageModel | null}}
+   */
+  parseNextSpread(nextSpread) {
+    if (nextSpread == 'next') {
+      nextSpread = this.book.pageProgression == 'lr' ? 'right' : 'left';
+    } else if (nextSpread == 'prev') {
+      nextSpread = this.book.pageProgression == 'lr' ? 'left' : 'right';
+    }
+
+    const curSpread = (this.pageLeft || this.pageRight).spread;
+
+    if (nextSpread == 'left') {
+      nextSpread = curSpread.left?.left?.spread;
+    } else if (nextSpread == 'right') {
+      nextSpread = curSpread.right?.right?.spread;
+    }
+
+    if (typeof(nextSpread) == 'number') {
+      nextSpread = this.book.getPage(nextSpread).spread;
+    }
+
+    if (nextSpread instanceof PageModel) {
+      nextSpread = nextSpread.spread;
+    }
+
+    return nextSpread;
   }
 
   /************** INPUT HANDLERS **************/
