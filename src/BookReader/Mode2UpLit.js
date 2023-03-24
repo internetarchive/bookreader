@@ -202,8 +202,8 @@ export class Mode2UpLit extends LitElement {
    * @param {PageIndex} index
    * TODO Remove smooth option from everywhere.
    */
-  async jumpToIndex(index, { smooth = false } = {}) {
-    await this.flipAnimation(index);
+  async jumpToIndex(index, { smooth = true } = {}) {
+    await this.flipAnimation(index, { animate: smooth });
   }
 
   zoomIn() {
@@ -513,7 +513,7 @@ export class Mode2UpLit extends LitElement {
   /**
    * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | PageModel | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
-  async flipAnimation(nextSpread) {
+  async flipAnimation(nextSpread, { animate = true } = {}) {
     if (this.activeFlip) return;
     if (nextSpread == 'next') {
       nextSpread = this.book.pageProgression == 'lr' ? 'right' : 'left';
@@ -549,14 +549,6 @@ export class Mode2UpLit extends LitElement {
     // lr | L | R
     // rl | R | L
     const direction = progression == 'lr' ? (nextLeftIndex > curLeftIndex ? 'right' : 'left') : (nextLeftIndex > curLeftIndex ? 'left' : 'right');
-    this.activeFlip = {
-      direction,
-      pagesFlipping: [curLeftIndex, nextLeftIndex],
-      pagesFlippingCount: Math.abs(nextLeftIndex - curLeftIndex),
-    };
-
-    this.classList.add(`br-mode-2up--flipping-${direction}`);
-    this.classList.add(`BRpageFlipping`);
 
     const renderedIndices = this.renderedPages.map(p => p.index);
     /** @type {PageContainer[]} */
@@ -569,20 +561,30 @@ export class Mode2UpLit extends LitElement {
       }
     }
 
-    // Wait for lit update cycle to finish
-    this.requestUpdate();
-    await this.updateComplete;
-
-    this.visiblePages
-      .map(p => this.pageContainerCache[p.index].$container)
-      .forEach($c => $c.addClass('BRpage-exiting'));
-
-    nextPageContainers.forEach(c => c.$container.addClass('BRpage-visible BRpage-entering'));
     const nextTranslate = this.computeTranslate(nextSpread.left || nextSpread.right, this.scale);
     const newTransform = `translate(${nextTranslate.x}px, ${nextTranslate.y}px) scale(${this.scale})`;
 
     // Check if animation api supported
-    if ('animate' in Element.prototype) {
+    if (animate && 'animate' in Element.prototype) {
+      this.activeFlip = {
+        direction,
+        pagesFlipping: [curLeftIndex, nextLeftIndex],
+        pagesFlippingCount: Math.abs(nextLeftIndex - curLeftIndex),
+      };
+
+      this.classList.add(`br-mode-2up--flipping-${direction}`);
+      this.classList.add(`BRpageFlipping`);
+
+      // Wait for lit update cycle to finish
+      this.requestUpdate();
+      await this.updateComplete;
+
+      this.visiblePages
+        .map(p => this.pageContainerCache[p.index].$container)
+        .forEach($c => $c.addClass('BRpage-exiting'));
+
+      nextPageContainers.forEach(c => c.$container.addClass('BRpage-visible BRpage-entering'));
+
       /** @type {KeyframeAnimationOptions} */
       const animationStyle = {
         duration: this.flipSpeed + this.activeFlip.pagesFlippingCount,
@@ -630,20 +632,21 @@ export class Mode2UpLit extends LitElement {
         new Promise(resolve => exitingPageAnimation.onfinish = resolve),
         new Promise(resolve => enteringPageAnimation.onfinish = resolve),
       ]);
+
+      this.classList.remove(`br-mode-2up--flipping-${direction}`);
+      this.classList.remove(`BRpageFlipping`);
+
+      this.visiblePages
+        .map(p => this.pageContainerCache[p.index].$container)
+        .forEach($c => $c.removeClass('BRpage-exiting BRpage-visible'));
+      nextPageContainers.forEach(c => c.$container.removeClass('BRpage-entering'));
+      this.activeFlip = null;
     }
 
     this.$book.style.transform = newTransform;
-    this.classList.remove(`br-mode-2up--flipping-${direction}`);
-    this.classList.remove(`BRpageFlipping`);
-    this.visiblePages
-      .map(p => this.pageContainerCache[p.index].$container)
-      .forEach($c => $c.removeClass('BRpage-exiting BRpage-visible'));
-    nextPageContainers.forEach(c => c.$container.removeClass('BRpage-entering'));
-
     this.visiblePages = (
       progression == 'lr' ? [nextSpread.left, nextSpread.right] : [nextSpread.right, nextSpread.left]
     ).filter(x => x);
-    this.activeFlip = null;
   }
 
   /************** INPUT HANDLERS **************/

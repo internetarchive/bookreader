@@ -33,15 +33,15 @@ export class Mode2Up {
   get $brContainer() { return this.br.refs.$brContainer; }
 
   /**
-   * This is called when we switch to one page view
+   * This is called when we switch into this mode
    */
   prepare() {
     const startLeaf = this.br.currentIndex();
-    console.log('Mode2Up.prepare', startLeaf);
     this.$brContainer
       .empty()
       .css({ overflow: 'hidden' })
       .append(this.$el);
+    this.mode2UpLit.style.opacity = '0';
 
     // Need this in a setTimeout so that it happens after the browser has _actually_
     // appended the element to the DOM
@@ -60,7 +60,10 @@ export class Mode2Up {
           dragcontinue: 'mousemove',
           dragend: 'mouseup',
         });
+      } else {
+        await this.mode2UpLit.jumpToIndex(startLeaf, { smooth: false });
       }
+      this.mode2UpLit.style.opacity = '1';
     });
     this.br.updateBrClasses();
   }

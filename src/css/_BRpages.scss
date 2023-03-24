@@ -97,6 +97,10 @@ svg.BRPageLayer {
   height: 0px;
 }
 
+.BRmode2up {
+  // Used while loading stuff
+  transition: opacity 0.2s;
+}
 
 .BRmode2up .BRpagecontainer {
   backface-visibility: hidden;
