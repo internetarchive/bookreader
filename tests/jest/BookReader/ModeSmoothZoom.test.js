@@ -146,4 +146,30 @@ describe('ModeSmoothZoom', () => {
       expect(mode.scale).not.toBe(1);
     });
   });
+
+  describe("updateViewportOnZoom", () => {
+    test("adjusts scroll position when zooming in", () => {
+      const mode = dummy_mode();
+      const msz = new ModeSmoothZoom(mode);
+      mode.$container.scrollTop = 100;
+      mode.$container.scrollLeft = 100;
+
+      msz.updateViewportOnZoom(2, 1);
+
+      expect(mode.$container.scrollTop).toBeGreaterThan(100);
+      expect(mode.$container.scrollLeft).toBeGreaterThan(100);
+    });
+
+    test("updates scroll position when zooming out", () => {
+      const mode = dummy_mode();
+      const msz = new ModeSmoothZoom(mode);
+      mode.$container.scrollTop = 100;
+      mode.$container.scrollLeft = 100;
+
+      msz.updateViewportOnZoom(0.5, 1);
+
+      expect(mode.$container.scrollTop).toBeLessThan(100);
+      expect(mode.$container.scrollLeft).toBeLessThan(100);
+    });
+  });
 });
