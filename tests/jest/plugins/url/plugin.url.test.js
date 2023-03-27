@@ -114,6 +114,26 @@ describe('Plugin: URL controller', () => {
     expect(window.history.replaceState).toHaveBeenCalled();
   });
 
+  test('switches to hashMode if replaceState errors', () => {
+    window.history.replaceState = jest.fn(() => {
+      throw new Error('foo');
+    });
+    BookReader.prototype.currentIndex = jest.fn(() => 1);
+    BookReader.prototype.urlReadFragment = jest.fn(() => '');
+    BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
+      index: 1,
+      mode: 2,
+      view: 'theater'
+    }));
+    BookReader.prototype.search = jest.fn();
+    br.options.urlMode = 'history';
+    br.init();
+    br.urlUpdateFragment();
+
+    expect(window.history.replaceState).toHaveBeenCalled();
+    expect(br.options.urlMode).toEqual('hash');
+  });
+
   test('does not update URL when search in query string', () => {
     window.history.replaceState = jest.fn();
     BookReader.prototype.currentIndex = jest.fn(() => 1);
