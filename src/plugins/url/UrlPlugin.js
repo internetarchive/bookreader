@@ -139,11 +139,20 @@ export class UrlPlugin {
     const urlStrPath = this.urlStateToUrlString(this.urlState);
     const concatenatedPath = urlStrPath !== '/' ? urlStrPath : '';
     if (this.urlMode == 'history') {
-      if (window.history && window.history.replaceState) {
+      if (!window.history || !window.history.replaceState) {
+        this.options.urlMode = 'hash';
+      } else {
         const newUrlPath = `${this.urlHistoryBasePath}${concatenatedPath}`.trim().replace(/(\/+)/g, '/');
-        window.history.replaceState({}, null, newUrlPath);
+        try {
+          window.history.replaceState({}, null, newUrlPath);
+        } catch (e) {
+          // DOMException on Chrome when in sandboxed iframe
+          this.urlMode = 'hash';
+        }
       }
-    } else {
+    }
+
+    if (this.urlMode == 'hash') {
       window.location.replace('#' + concatenatedPath);
     }
     this.oldLocationHash = urlStrPath;

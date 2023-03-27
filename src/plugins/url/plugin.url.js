@@ -124,7 +124,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
  */
 BookReader.prototype.urlUpdateFragment = function() {
   const allParams = this.paramsFromCurrent();
-  const { urlMode, urlTrackIndex0, urlTrackedParams } = this.options;
+  const { urlTrackIndex0, urlTrackedParams } = this.options;
 
   if (!urlTrackIndex0
       && (typeof(allParams.index) !== 'undefined')
@@ -140,29 +140,36 @@ BookReader.prototype.urlUpdateFragment = function() {
     return validParams;
   }, {});
 
-  const newFragment = this.fragmentFromParams(params, urlMode);
+  const newFragment = this.fragmentFromParams(params, this.options.urlMode);
   const currFragment = this.urlReadFragment();
   const currQueryString = this.getLocationSearch();
-  const newQueryString = this.queryStringFromParams(params, currQueryString, urlMode);
+  const newQueryString = this.queryStringFromParams(params, currQueryString, this.options.urlMode);
   if (currFragment === newFragment && currQueryString === newQueryString) {
     return;
   }
 
-  if (urlMode === 'history') {
-    if (window.history && window.history.replaceState) {
+  if (this.options.urlMode === 'history') {
+    if (!window.history || !window.history.replaceState) {
+      this.options.urlMode = 'hash';
+    } else {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
       const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
 
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
-      window.history.replaceState({}, null, newUrlPath);
-      this.oldLocationHash = newFragment + newQueryString;
-
+      try {
+        window.history.replaceState({}, null, newUrlPath);
+        this.oldLocationHash = newFragment + newQueryString;
+      } catch (e) {
+        // DOMException on Chrome when in sandboxed iframe
+        this.options.urlMode = 'hash';
+      }
     }
-  } else {
+  }
+
+  if (this.options.urlMode === 'hash')  {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
     window.location.replace('#' + newFragment + newQueryStringSearch);
     this.oldLocationHash = newFragment + newQueryStringSearch;
-
   }
 };
 
