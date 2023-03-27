@@ -1,3 +1,8 @@
+# 5.0.0-55
+- Fix BookReader going to 1up in fullscreen on desktop @mheiman
+- Support BookReader running in sandboxed (cookie-less) iframe @cdrini
+- Update IA dependencies to avoid duplicate dependencies @cdrini
+
 # 5.0.0-54
 - Dev: Dispatch custom event from bookreader for ia-book-actions @nsharma123
 
