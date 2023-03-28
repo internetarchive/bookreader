@@ -28,16 +28,12 @@ export class Mode2Up {
     this.everShown = false;
   }
 
-  // TODO: Might not need this anymore? Might want to delete.
-  /** @private */
-  get $brContainer() { return this.br.refs.$brContainer; }
-
   /**
    * This is called when we switch into this mode
    */
   prepare() {
     const startLeaf = this.br.currentIndex();
-    this.$brContainer
+    this.br.refs.$brContainer
       .empty()
       .css({ overflow: 'hidden' })
       .append(this.$el);
@@ -95,7 +91,7 @@ export class Mode2Up {
     }
   }
 
-  async resizePageView() {
+  resizePageView() {
     this.mode2UpLit.htmlDimensionsCacher.updateClientSizes();
     const translation = this.mode2UpLit.worldOffset;
     const hasTranslation = translation.x || translation.y;
