@@ -45,7 +45,7 @@ beforeEach(() => {
 
   $.fn.trigger = jest.fn();
   document.body.innerHTML = '<div id="BookReader">';
-  br = new BookReader();
+  br = new BookReader({ enableSearch: true });
   br.initToolbar = jest.fn();
   br.showProgressPopup = jest.fn();
   br.searchXHR = jest.fn();
@@ -53,11 +53,19 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.clearAllMocks();
+  br = undefined;
 });
 
 describe('Plugin: Search', () => {
   test('has option flag', () => {
     expect(BookReader.defaultOptions.enableSearch).toEqual(true);
+  });
+
+  test('Can turn off option by config even though plugin script has loaded', () => {
+    expect(BookReader.defaultOptions.enableSearch).toEqual(true);
+
+    br = new BookReader({ enableSearch: false });
+    expect(br.options.enableSearch).toEqual(false);
   });
 
   test('has added BR property: server', () => {
