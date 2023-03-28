@@ -161,29 +161,53 @@ describe('<book-navigator>', () => {
         expect(el.menuProviders.visualAdjustments).toBeInstanceOf(VisualAdjustmentsProvider);
       });
       describe('Loading Sub Menus By Plugin Flags', () => {
-        test('Search: uses `enableSearch` flag', async() => {
-          const el = fixtureSync(container());
-          const $brContainer = document.createElement('div');
-          const brStub = {
-            resize: sinon.fake(),
-            currentIndex: sinon.fake(),
-            jumpToIndex: sinon.fake(),
-            options: { enableSearch: true },
-            refs: {
-              $brContainer
-            }
-          };
-          el.bookreader = brStub;
-          await el.elementUpdated;
+        describe('Search Panel', () => {
+          test('Search: uses `enableSearch` flag', async() => {
+            const el = fixtureSync(container());
+            const $brContainer = document.createElement('div');
+            const brStub = {
+              resize: sinon.fake(),
+              currentIndex: sinon.fake(),
+              jumpToIndex: sinon.fake(),
+              options: { enableSearch: true },
+              refs: {
+                $brContainer
+              }
+            };
+            el.bookreader = brStub;
+            await el.elementUpdated;
 
-          el.initializeBookSubmenus();
-          await el.elementUpdated;
+            el.initializeBookSubmenus();
+            await el.elementUpdated;
 
-          expect(el.menuProviders.search).toBeDefined();
-          expect(el.menuProviders.search).toBeInstanceOf(SearchProvider);
+            expect(el.menuProviders.search).toBeDefined();
+            expect(el.menuProviders.search).toBeInstanceOf(SearchProvider);
 
-          // also adds a menu shortcut
-          expect(el.menuShortcuts.find(m => m.id === 'search')).toBeDefined();
+            // also adds a menu shortcut
+            expect(el.menuShortcuts.find(m => m.id === 'search')).toBeDefined();
+          });
+          test('Search: does not display when `enableSearch: false`', async() => {
+            const el = fixtureSync(container());
+            const $brContainer = document.createElement('div');
+            const brStub = {
+              resize: sinon.fake(),
+              currentIndex: sinon.fake(),
+              jumpToIndex: sinon.fake(),
+              options: { enableSearch: false },
+              refs: {
+                $brContainer
+              }
+            };
+            el.bookreader = brStub;
+            await el.elementUpdated;
+
+            el.initializeBookSubmenus();
+            await el.elementUpdated;
+
+            expect(el.menuProviders.search).toBeUndefined();
+            // also adds a menu shortcut
+            expect(el.menuShortcuts.find(m => m.id === 'search')).toBeUndefined();
+          });
         });
         test('Volumes/Multiple Books: uses `enableMultipleBooks` flag', async() => {
           const el = fixtureSync(container());
