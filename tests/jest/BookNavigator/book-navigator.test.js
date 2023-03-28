@@ -205,7 +205,6 @@ describe('<book-navigator>', () => {
             await el.elementUpdated;
 
             expect(el.menuProviders.search).toBeUndefined();
-            // also adds a menu shortcut
             expect(el.menuShortcuts.find(m => m.id === 'search')).toBeUndefined();
           });
         });
