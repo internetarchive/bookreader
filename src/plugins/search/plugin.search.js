@@ -45,6 +45,13 @@ jQuery.extend(BookReader.defaultOptions, {
 /** @override */
 BookReader.prototype.setup = (function (super_) {
   return function (options) {
+    // override with config
+    if (options.enableSearch === false) {
+      jQuery.extend(BookReader.defaultOptions, {
+        enableSearch: false
+      });
+    }
+
     super_.call(this, options);
 
     this.searchTerm = '';

@@ -237,7 +237,11 @@ export class BookNavigator extends LitElement {
     }
 
     this.menuProviders = providers;
-    this.addMenuShortcut('search');
+    if (this.bookreader.options.enableSearch) {
+      this.addMenuShortcut('search');
+    } else {
+      this.removeMenuShortcut('search');
+    }
     this.addMenuShortcut('volumes');
     this.updateMenuContents();
   }
