@@ -164,7 +164,6 @@ export class BookNavigator extends LitElement {
    */
   initializeBookSubmenus() {
     const providers = {
-      downloads: new DownloadProvider(this.baseProviderConfig),
       share: new SharingProvider(this.baseProviderConfig),
       visualAdjustments: new VisualAdjustmentProvider({
         ...this.baseProviderConfig,
@@ -174,6 +173,10 @@ export class BookNavigator extends LitElement {
         },
       }),
     };
+
+    if (this.shouldShowDownloadsMenu()) {
+      providers.downloads = new DownloadProvider(this.baseProviderConfig);
+    }
 
     if (this.bookreader.options.enableSearch) {
       providers.search = new SearchProvider({
@@ -325,6 +328,7 @@ export class BookNavigator extends LitElement {
    * @returns {bool}
    */
   shouldShowDownloadsMenu() {
+    if (!this.downloadableTypes.length) { return false; }
     if (this.bookIsRestricted === false) { return true; }
     if (this.isAdmin) { return true; }
     const { user_loan_record = {} } = this.lendingStatus;
