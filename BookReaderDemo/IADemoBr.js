@@ -36,7 +36,7 @@ iaBookReader.modal = modal;
 // Override options coming from IA
 BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
-const initializeBookReader = (brManifest) => {
+const initializeBookReader = (brManifest, extraOptions = {}) => {
   console.log('initializeBookReader', brManifest);
   const br = new BookReader();
 
@@ -79,8 +79,13 @@ const initializeBookReader = (brManifest) => {
     options.ui = 'embed';
   }
 
+  const allOptions = {
+    ...options,
+    ...extraOptions,
+  }
+
   // we expect this at the global level
-  BookReaderJSIAinit(brManifest.data, options);
+  BookReaderJSIAinit(brManifest.data, allOptions);
 
   const isRestricted = brManifest.data.isRestricted;
   window.dispatchEvent(new CustomEvent('contextmenu', { detail: { isRestricted } }));
@@ -112,7 +117,18 @@ multiVolume.addEventListener('click', () => {
 });
 
 
-const fetchBookManifestAndInitializeBookreader = async (iaMetadata) => {
+const removeSearchPanel = document.querySelector('#remove-search-panel');
+removeSearchPanel.addEventListener('click', () => {
+  // remove everything
+  $('#BookReader').empty();
+  delete window.br;
+  // and re-mount with a new book
+  fetch(`https://archive.org/metadata/${ocaid}`)
+  .then(response => response.json())
+  .then(iaMetadata => fetchBookManifestAndInitializeBookreader(iaMetadata, { enableSearch: false }));
+});
+
+const fetchBookManifestAndInitializeBookreader = async (iaMetadata, extraOptions = {}) => {
   document.querySelector('input[name="itemMD"]').checked = true;
   iaBookReader.item = iaMetadata;
 
@@ -135,7 +151,7 @@ const fetchBookManifestAndInitializeBookreader = async (iaMetadata) => {
   const manifest = await fetch(iaManifestUrl).then(response => response.json());
   document.querySelector('input[name="bookManifest"]').checked = true;
 
-  initializeBookReader(manifest);
+  initializeBookReader(manifest, extraOptions);
 };
 
 // Temp; Circumvent bug in BookReaderJSIA code
