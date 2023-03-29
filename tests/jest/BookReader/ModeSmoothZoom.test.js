@@ -18,6 +18,7 @@ function dummy_mode(overrides = {}) {
       boundingClientRect: { left: 0, top: 0 },
     },
     scaleCenter: {x: 0.5, y: 0.5},
+    worldOffset: {x: 0, y: 0},
     ...overrides
   };
 }
