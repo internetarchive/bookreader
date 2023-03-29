@@ -91,17 +91,6 @@ const initializeBookReader = (brManifest) => {
 
 window.initializeBookReader = initializeBookReader;
 
-const downloadPanel = document.querySelector('#toggle-downloads-panel');
-downloadPanel.addEventListener('click', async () => {
-  const iaBr = document.querySelector('ia-bookreader');
-  const bookNav = iaBr.shadowRoot.querySelector('book-navigator');
-
-  bookNav.downloadableTypes = [];
-
-  bookNav.updateMenuContents();
-  await bookNav.updateComplete;
-});
-
 const showLCP = document.querySelector('#show-lcp');
 showLCP.addEventListener('click', async () => {
   const iaBr = document.querySelector('ia-bookreader');
