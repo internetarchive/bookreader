@@ -1,3 +1,6 @@
+# 5.0.0-56
+- Fix DOMException in sandboxed iframe in chrome @cdrini
+
 # 5.0.0-55
 - Fix BookReader going to 1up in fullscreen on desktop @mheiman
 - Support BookReader running in sandboxed (cookie-less) iframe @cdrini
