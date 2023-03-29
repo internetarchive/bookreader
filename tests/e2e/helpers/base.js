@@ -182,10 +182,11 @@ export function runBaseTests (br) {
     await t.expect(isModeInUrl('2up')).eql(true);
   });
 
-  test('Clicking `2 page view` brings up 2 pages at a time', async t => {
+  test('Clicking `2 page view` brings up cur page + caching', async t => {
     const { nav } = br;
     await t.click(nav.desktop.mode2Up);
-    await t.expect(Selector('.BRpagecontainer').count).eql(2);
+    await t.expect(Selector('.BRpagecontainer.BRpage-visible').count).eql(1);
+    await t.expect(Selector('.BRpagecontainer').count).eql(3);
   });
 
   test('Clicking `1 page view` brings up 1 at a time', async t => {
@@ -207,41 +208,40 @@ export function runBaseTests (br) {
   });
 
   test('Clicking `zoom out` makes book smaller', async t => {
-    const { nav, BRcontainer } = br;
-    const book = BRcontainer.child(0);
+    const { nav } = br;
+    const page = Selector('.BRpagecontainer.BRpage-visible');
 
     await t.expect(br.BRcontainer.visible).ok();
-    await t.expect(book.visible).ok();
+    await t.expect(page.visible).ok();
     await t.expect(nav.desktop.zoomOut.visible).ok();
 
-    const initialBookHeight = await book.getBoundingClientRectProperty('height');
-    const initialBookWidth = await book.getBoundingClientRectProperty('width');
+    const initialBookHeight = await page.getBoundingClientRectProperty('height');
+    const initialBookWidth = await page.getBoundingClientRectProperty('width');
 
     await t.click(nav.desktop.zoomOut);
 
-    const zoomOutBookHeight = await book.getBoundingClientRectProperty('height');
-    const zoomOutBookWidth = await book.getBoundingClientRectProperty('width');
+    const zoomOutBookHeight = await page.getBoundingClientRectProperty('height');
+    const zoomOutBookWidth = await page.getBoundingClientRectProperty('width');
 
-    await t.expect(zoomOutBookHeight).lte(initialBookHeight);
-    await t.expect(zoomOutBookWidth).lte(initialBookWidth);
+    await t.expect(zoomOutBookHeight).lt(initialBookHeight);
+    await t.expect(zoomOutBookWidth).lt(initialBookWidth);
   });
 
   test('Clicking `zoom in` makes book larger', async t => {
-    const { nav, BRcontainer } = br;
+    const { nav } = br;
+    const page = Selector('.BRpagecontainer.BRpage-visible');
 
-    const book = await BRcontainer.child(0);
-
-    await t.expect(BRcontainer.visible).ok();
-    await t.expect(book.visible).ok();
+    await t.expect(br.BRcontainer.visible).ok();
+    await t.expect(page.visible).ok();
     await t.expect(nav.desktop.zoomIn.visible).ok();
 
-    const initialBookHeight = await book.getBoundingClientRectProperty('height');
-    const initialBookWidth = await book.getBoundingClientRectProperty('width');
+    const initialBookHeight = await page.getBoundingClientRectProperty('height');
+    const initialBookWidth = await page.getBoundingClientRectProperty('width');
 
     await t.click(nav.desktop.zoomIn);
 
-    const zoomInBookHeight = await book.getBoundingClientRectProperty('height');
-    const zoomIntBookWidth = await book.getBoundingClientRectProperty('width');
+    const zoomInBookHeight = await page.getBoundingClientRectProperty('height');
+    const zoomIntBookWidth = await page.getBoundingClientRectProperty('width');
 
     await t.expect(zoomInBookHeight).gt(initialBookHeight);
     await t.expect(zoomIntBookWidth).gt(initialBookWidth);

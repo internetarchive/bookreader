@@ -53,5 +53,7 @@ function instantiateBookReader(selector, extraOptions) {
   $.extend(options, extraOptions);
   var br = new BookReader(options);
   br.init();
-  br.autoToggle(options);
+  setTimeout(function() {
+    br.autoToggle(options);
+  }, 0);
 }

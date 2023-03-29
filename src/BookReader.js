@@ -1070,11 +1070,11 @@ BookReader.prototype.switchMode = function(
 BookReader.prototype.updateBrClasses = function() {
   const modeToClass = {};
   modeToClass[this.constMode1up] = 'BRmode1up';
-  modeToClass[this.constMode2up] = 'BRmode2Up';
+  modeToClass[this.constMode2up] = 'BRmode2up';
   modeToClass[this.constModeThumb] = 'BRmodeThumb';
 
   this.refs.$br
-    .removeClass('BRmode1up BRmode2Up BRmodeThumb')
+    .removeClass('BRmode1up BRmode2up BRmodeThumb')
     .addClass(modeToClass[this.mode]);
 
   if (this.isFullscreen()) {

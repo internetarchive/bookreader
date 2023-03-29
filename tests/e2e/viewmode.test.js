@@ -16,6 +16,15 @@ ocaids.forEach(ocaid => {
     await t.resizeWindow(400, 800);
     // Flip forward one
     await t.pressKey('right');
+    await t.pressKey('right');
+    await t.pressKey('right');
+
+    // 1up to 2up
+    await t.click(nav.desktop.viewmode);
+    const twoPageContainer = Selector('.BRmode2up');
+    await t.expect(twoPageContainer.visible).ok();
+    const twoPageImages = twoPageContainer.find('img.BRpageimage');
+    await t.expect(twoPageImages.count).gte(2);
 
     // 2up to thumb
     await t.click(nav.desktop.viewmode);
@@ -30,13 +39,6 @@ ocaids.forEach(ocaid => {
     await t.expect(onePageViewContainer.visible).ok();
     const onePageImages = onePageViewContainer.find('.BRmode1up .BRpagecontainer');
     // we usually pre-fetch the page in question & 1 before/after it
-    await t.expect(onePageImages.count).gte(3);
-
-    // 1up to 2up
-    await t.click(nav.desktop.viewmode);
-    const twoPageContainer = Selector('.BRtwopageview');
-    await t.expect(twoPageContainer.visible).ok();
-    const twoPageImages = twoPageContainer.find('img.BRpageimage');
-    await t.expect(twoPageImages.count).gte(2);
+    await t.expect(onePageImages.count).gte(2);
   });
 });

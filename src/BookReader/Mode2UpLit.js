@@ -244,10 +244,10 @@ export class Mode2UpLit extends LitElement {
    */
   initFirstRender(startIndex) {
     const page = this.book.getPage(startIndex);
-    this.visiblePages = [
-      page,
-      page.pageSide === 'R' ? page.left : page.right,
-    ].filter(p => p);
+    const spread = page.spread;
+    this.visiblePages = (
+      this.book.pageProgression == 'lr' ? [spread.left, spread.right] : [spread.right, spread.left]
+    ).filter(p => p);
     this.htmlDimensionsCacher.updateClientSizes();
     this.resizeViaAutofit(page);
   }
