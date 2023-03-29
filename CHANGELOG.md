@@ -1,3 +1,6 @@
+# 5.0.0-57
+- Fix - do not show Download pane when there aren't any available @iisa
+
 # 5.0.0-56
 - Fix DOMException in sandboxed iframe in chrome @cdrini
 
