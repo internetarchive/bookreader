@@ -148,6 +148,9 @@ describe('<book-navigator>', () => {
         el.bookreader = brStub;
         await el.elementUpdated;
 
+        el.downloadableTypes = ['foo/bar'];
+        await el.elementUpdated;
+
         el.initializeBookSubmenus();
         await el.elementUpdated;
         const defaultMenus = Object.keys(el.menuProviders);
@@ -228,6 +231,27 @@ describe('<book-navigator>', () => {
         expect(baseConfigKeys).toContain('signedIn');
         expect(baseConfigKeys).toContain('isAdmin');
         expect(baseConfigKeys).toContain('onProviderChange');
+      });
+
+      test('Downloads panel - does not show if no available `downloadableTypes`', async () => {
+        const el = fixtureSync(container());
+        const $brContainer = document.createElement('div');
+        const brStub = {
+          resize: sinon.fake(),
+          currentIndex: sinon.fake(),
+          jumpToIndex: sinon.fake(),
+          options: {},
+          refs: {
+            $brContainer
+          }
+        };
+        el.bookreader = brStub;
+        await el.elementUpdated;
+
+        el.initializeBookSubmenus();
+        await el.elementUpdated;
+        const defaultMenus = Object.keys(el.menuProviders);
+        expect(defaultMenus.find(menu => menu === 'downloads')).toBeUndefined;
       });
     });
 
