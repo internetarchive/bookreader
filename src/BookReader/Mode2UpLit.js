@@ -641,9 +641,9 @@ export class Mode2UpLit extends LitElement {
     const curSpread = (this.pageLeft || this.pageRight).spread;
 
     if (nextSpread == 'left') {
-      nextSpread = curSpread.left?.left?.spread;
+      nextSpread = curSpread.left?.findLeft({ combineConsecutiveUnviewables: true })?.spread;
     } else if (nextSpread == 'right') {
-      nextSpread = curSpread.right?.right?.spread;
+      nextSpread = curSpread.right?.findRight({ combineConsecutiveUnviewables: true })?.spread;
     }
 
     if (typeof(nextSpread) == 'number') {
@@ -673,9 +673,9 @@ export class Mode2UpLit extends LitElement {
     const $page = $(ev.target).closest('.BRpagecontainer');
     if (!$page.length) return;
     if ($page.data('side') == 'L') {
-      this.flipAnimation(this.pageLeft.findLeft({ combineConsecutiveUnviewables: true }));
+      this.flipAnimation('left');
     } else if ($page.data('side') == 'R') {
-      this.flipAnimation(this.pageRight.findRight({ combineConsecutiveUnviewables: true }));
+      this.flipAnimation('right');
     }
   }
 }
