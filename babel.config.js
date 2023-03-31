@@ -2,8 +2,11 @@ module.exports = {
   presets: [
     [
       "@babel/preset-env",
-      process.env.NODE_ENV == 'test' ? { targets: {esmodules: true} } : {
-        targets: "> 2%, ie 11, edge 14, samsung > 9, OperaMini all, UCAndroid > 12, Safari >= 9",
+      {
+        targets: (
+          process.env.NODE_ENV == 'test' ? {node: process.version} :
+            "> 2%, ie 11, edge 14, samsung > 9, OperaMini all, UCAndroid > 12, Safari >= 9"
+        ),
         useBuiltIns: "usage",
         corejs: 3
       }
