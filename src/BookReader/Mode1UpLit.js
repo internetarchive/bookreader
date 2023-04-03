@@ -203,9 +203,12 @@ export class Mode1UpLit extends LitElement {
     }
     if (changedProps.has('visiblePages')) {
       this.throttledUpdateRenderedPages();
-      this.br.displayedIndices = this.visiblePages.map(p => p.index);
-      this.br.updateFirstIndex(this.br.displayedIndices[0]);
-      this.br._components.navbar.updateNavIndexThrottled();
+      if (this.visiblePages.length) {
+        // unclear why this is ever really happening
+        this.br.displayedIndices = this.visiblePages.map(p => p.index);
+        this.br.updateFirstIndex(this.br.displayedIndices[0]);
+        this.br._components.navbar.updateNavIndexThrottled();
+      }
     }
     if (changedProps.has('scale')) {
       const oldVal = changedProps.get('scale');
