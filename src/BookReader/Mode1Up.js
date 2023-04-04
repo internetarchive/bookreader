@@ -58,9 +58,11 @@ export class Mode1Up {
         });
       }
       this.mode1UpLit.jumpToIndex(startLeaf);
-      // Must explicitly call updateVisibleRegion, since no
-      // scroll event seems to fire.
-      this.mode1UpLit.updateVisibleRegion();
+      setTimeout(() => {
+        // Must explicitly call updateVisibleRegion, since no
+        // scroll event seems to fire.
+        this.mode1UpLit.updateVisibleRegion();
+      });
     });
     this.br.updateBrClasses();
   }
