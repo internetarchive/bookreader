@@ -1,3 +1,7 @@
+[build.environment]
+  # Keep in sync with CI in .github/workflows/node.js.yml
+  NODE_VERSION = "16"
+
 [[headers]]
   # Define which paths this specific [[headers]] block will cover.
   for = "/BookReader/*"
