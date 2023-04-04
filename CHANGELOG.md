@@ -1,3 +1,7 @@
+# 5.0.0-58
+- Fix BookReader sometimes failing to load when starting in Mode1Up @cdrini
+- Update testing dependencies @cdrini
+
 # 5.0.0-57
 - Fix - do not show Download pane when there aren't any available @iisa
 
