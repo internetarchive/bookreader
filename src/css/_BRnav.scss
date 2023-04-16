@@ -18,13 +18,6 @@
 
   .BRpager {
     background-color: $brColorDarkBorder;
-    .ui-slider-handle {
-      background: white;
-      border: none;
-    }
-    .ui-slider-range {
-      background: rgba(255, 255, 255, 0.59);
-    }
   }
 
   .BRpage {
@@ -47,17 +40,6 @@
 
 @mixin brNavLight {
   @include brLightControls;
-
-  .BRpager.ui-slider {
-    background: #B7B7B7;
-    .ui-slider-handle {
-      background: $brColorThemeblue;
-    }
-    .ui-slider-range {
-      background: rgba($brColorThemeblue, .25);
-    }
-  }
-
   .BRpage {
     .BRicon { border-left: 1px solid $brColorLightBorder; }
     .BRicon.activated { background-color: rgba($brColorThemeblue,0.4); }
@@ -231,67 +213,19 @@
   }
 }
 
-.BRnavpos {
-  position: relative;
-  margin-right: 10px;
-  margin-left: 10px;
-  float: left;
-  flex: 1 auto;
-}
-.BRpager.ui-slider  {
-  position: relative;
-  height: 8px;
-  top: math.div($brNavHeightDesktop, 2) - 4px;
-  box-sizing: content-box;
-  border-radius: 10px;
-  cursor: pointer;
-
-  &.ui-widget.ui-widget-content {
-    border: none;
-  }
-
-  .ui-slider-horizontal .ui-slider-handle,
-  .ui-slider-handle {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius:50%;
-    top: -5px;
-    margin-left: -9px; /* Center icon */
-    z-index: $brZindexBase + 5;
-    border: none;
-  }
-  .ui-slider-range {
-    height: 100%;
-    border-radius: 10px;
-  }
-
-  /* handle active state for touch */
-  .touch & .ui-slider-handle.ui-state-active {
-    width: 24px;
-    height: 24px;
-    top: -4px;
-    margin-left: -11px;
-  }
-}
-
 /* BRnavlin is where chapters/search are appended */
 .BRnavline {
-  position: relative;
+  position: absolute;
   height: 1px;
-  width: auto;
   top: -1px;
-  margin: 0 10px;
   width: 100%;
 }
 .BRcurrentpage {
-  display: inline-block;
   text-align: center;
-  padding: 0 0 0 0;
   font-size: $brFontSizeSmaller;
-  margin-left: 5px;
-  margin-right: 10px;
+  margin: 0 10px;
   line-height: 1;
+  white-space: nowrap;
 }
 .BRnavTitle {
   position: relative;
@@ -340,10 +274,6 @@
 
   .BRnavCntlBtm {
     bottom: $brNavHeightMobile;
-  }
-  .BRpager.ui-slider {
-    height: 10px;
-    top: math.div($brNavHeightMobile, 2) - 5px;
   }
 }
 

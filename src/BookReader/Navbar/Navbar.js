@@ -1,8 +1,4 @@
 /** @typedef {import("../../BookReader.js").default} BookReader */
-
-import 'jquery-ui/ui/widget.js';
-import 'jquery-ui/ui/widgets/mouse.js';
-import 'jquery-ui/ui/widgets/slider.js';
 import { EVENTS } from '../events.js';
 import { throttle } from '../utils.js';
 
@@ -199,12 +195,10 @@ export class Navbar {
           <nav class="BRcontrols">
             <ul class="controls">
               <li class="scrubber">
-                <div class="BRnavpos">
-                  <div class="BRpager"></div>
-                  <div class="BRnavline"></div>
-                </div>
-                <p><span class='BRcurrentpage'></span></p>
+                <input class="BRpager" type="range">
+                <div class="BRnavline"></div>
               </li>
+              <li class="BRcurrentpage"></li>
               ${this._renderControls()}
             </ul>
           </nav>
@@ -213,27 +207,20 @@ export class Navbar {
     this.$root.append(this.$nav);
     br.refs.$br.append(this.$root);
 
-    const $slider = this.$root.find('.BRpager').slider({
-      animate: true,
+    const $slider = this.$root.find('.BRpager').attr({
       min: 0,
       max: br.book.getNumLeafs() - 1,
       value: br.currentIndex(),
-      range: "min"
     });
 
-    $slider.on('slide', (event, ui) => {
-      this.updateNavPageNum(ui.value);
+    $slider.on('input', () => {
+      this.updateNavPageNum(parseFloat($slider.val()));
       return true;
     });
 
-    $slider.on('slidechange', (event, ui) => {
-      this.updateNavPageNum(ui.value);
-      // recursion prevention for jumpToIndex
-      if ($slider.data('swallowchange')) {
-        $slider.data('swallowchange', false);
-      } else {
-        br.jumpToIndex(ui.value);
-      }
+    $slider.on('change', () => {
+      this.updateNavPageNum(parseFloat($slider.val()));
+      br.jumpToIndex(parseFloat($slider.val()));
       return true;
     });
 
@@ -287,7 +274,8 @@ export class Navbar {
     // We want to update the value, but normally moving the slider
     // triggers jumpToIndex which triggers this method
     index = index !== undefined ? index : this.br.currentIndex();
-    this.$root.find('.BRpager').data('swallowchange', true).slider('value', index);
+    this.$root.find('.BRpager').val(index);
+    this.updateNavPageNum(index);
   }
 }
 

@@ -69,12 +69,28 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
     .appendTo(this.$('.table-contents-list'))
     .data({ pageIndex });
 
+  // The thumb on the native range slider shifts around from left to right
+  // so that it is always in the track. Eg:
+  // [[ ]-------] 0%
+  // [||||||||||]
+  //  ^-- But this is the 0% position! The thumb will like like it isn't
+  //      at the 0% position.
+  //
+  // In order to make the chapter markers line up with the pages, we need
+  // to shift them proportionally to the thumb's position.
+  const percent = pageIndex / (this.book.getNumLeafs() - 1);
+  const THUMB_WIDTH = 16;
+  const offset = -1 * THUMB_WIDTH * (percent - 0.5);
+
   //adds .BRchapters to the slider only if pageIndex exists
   if (pageIndex != undefined) {
     $(`<div></div>`)
       .append($('<div />').text(title + pageStr))
       .addClass('BRchapter')
-      .css({ left: percentThrough })
+      .css({
+        left: percentThrough,
+        transform: `translateX(${offset}px)`,
+      })
       .appendTo(this.$('.BRnavline'))
       .data({ pageIndex })
       .on("mouseenter", event => {
@@ -105,7 +121,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
  * Remove all chapters.
  */
 BookReader.prototype.removeChapters = function() {
-  this.$('.BRnavpos .BRchapter').remove();
+  this.$('.BRnavline .BRchapter').remove();
 };
 
 /**
