@@ -3,9 +3,10 @@ import { customElement, property, query } from 'lit/decorators.js';
 import {LitElement, html} from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
-import { arrChanged, calcScreenDPI, promisifyEvent } from './utils';
+import { arrChanged, promisifyEvent } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
 import { PageModel } from './BookModel';
+import { ModeCoordinateSpace } from './ModeCoordinateSpace';
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./ModeSmoothZoom').SmoothZoomable} SmoothZoomable */
@@ -32,8 +33,8 @@ export class Mode2UpLit extends LitElement {
 
   /************** SCALE-RELATED PROPERTIES **************/
 
-  /** @private */
-  screenDPI = calcScreenDPI();
+  /** @type {ModeCoordinateSpace} Manage conversion between coordinates */
+  coordSpace = new ModeCoordinateSpace(this);
 
   @property({ type: Number })
   scale = 1;
@@ -283,25 +284,6 @@ export class Mode2UpLit extends LitElement {
     return this;
   }
 
-  /************** COORDINATE SPACE CONVERTERS **************/
-  /**
-   * There are a few different "coordinate spaces" at play in BR:
-   * (1) World units: i.e. inches. Unless otherwise stated, all computations
-   *     are done in world units.
-   * (2) Rendered Pixels: i.e. img.width = '300'. Note this does _not_ take
-   *     into account zoom scaling.
-   * (3) Visible Pixels: Just rendered pixels, but taking into account scaling.
-   */
-
-  worldUnitsToRenderedPixels = (/** @type {number} */inches) => inches * this.screenDPI;
-  renderedPixelsToWorldUnits = (/** @type {number} */px) => px / this.screenDPI;
-
-  renderedPixelsToVisiblePixels = (/** @type {number} */px) => px * this.scale;
-  visiblePixelsToRenderedPixels = (/** @type {number} */px) => px / this.scale;
-
-  worldUnitsToVisiblePixels = (/** @type {number} */px) => this.renderedPixelsToVisiblePixels(this.worldUnitsToRenderedPixels(px));
-  visiblePixelsToWorldUnits = (/** @type {number} */px) => this.renderedPixelsToWorldUnits(this.visiblePixelsToRenderedPixels(px));
-
   /************** RENDERING **************/
 
   /** @override */
@@ -339,8 +321,8 @@ export class Mode2UpLit extends LitElement {
 
   /** @param {PageModel} page */
   renderPage = (page) => {
-    const wToR = this.worldUnitsToRenderedPixels;
-    const wToV = this.worldUnitsToVisiblePixels;
+    const wToR = this.coordSpace.worldUnitsToRenderedPixels;
+    const wToV = this.coordSpace.worldUnitsToVisiblePixels;
 
     const width = wToR(this.computePageWidth(page));
     const height = wToR(this.computePageHeight(page));
@@ -373,7 +355,7 @@ export class Mode2UpLit extends LitElement {
     const fullWidthIn = side == 'left' ? this.positions.leafEdgesLeftFullWidth : this.positions.leafEdgesRightFullWidth;
     if (!fullWidthIn) return html``;
 
-    const wToR = this.worldUnitsToRenderedPixels;
+    const wToR = this.coordSpace.worldUnitsToRenderedPixels;
     const height = wToR(this.computePageHeight(this.visiblePages[0]));
     const hasMovingPages = this.activeFlip?.direction == side;
 
@@ -468,8 +450,8 @@ export class Mode2UpLit extends LitElement {
     const BOOK_PADDING_PX = 10;
     const curScale = this.scale;
     this.scale = 1; // Need this temporarily
-    const widthScale = this.renderedPixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth - 2 * BOOK_PADDING_PX) / bookWidth;
-    const heightScale = this.renderedPixelsToWorldUnits(this.htmlDimensionsCacher.clientHeight - 2 * BOOK_PADDING_PX) / bookHeight;
+    const widthScale = this.coordSpace.renderedPixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth - 2 * BOOK_PADDING_PX) / bookWidth;
+    const heightScale = this.coordSpace.renderedPixelsToWorldUnits(this.htmlDimensionsCacher.clientHeight - 2 * BOOK_PADDING_PX) / bookHeight;
     this.scale = curScale;
     const realScale = 1;
 
@@ -502,9 +484,9 @@ export class Mode2UpLit extends LitElement {
     const positions = this.computePositions(spread.left, spread.right);
     const bookWidth = positions.bookWidth;
     const bookHeight = this.computePageHeight(spread.left || spread.right);
-    const visibleBookWidth = this.worldUnitsToRenderedPixels(bookWidth) * scale;
-    const visibleBookHeight = this.worldUnitsToRenderedPixels(bookHeight) * scale;
-    const leftOffset = this.worldUnitsToRenderedPixels(-positions.leafEdgesLeftStart) * scale;
+    const visibleBookWidth = this.coordSpace.worldUnitsToRenderedPixels(bookWidth) * scale;
+    const visibleBookHeight = this.coordSpace.worldUnitsToRenderedPixels(bookHeight) * scale;
+    const leftOffset = this.coordSpace.worldUnitsToRenderedPixels(-positions.leafEdgesLeftStart) * scale;
     const translateX = (this.htmlDimensionsCacher.clientWidth - visibleBookWidth) / 2 + leftOffset;
     const translateY = (this.htmlDimensionsCacher.clientHeight - visibleBookHeight) / 2;
     return { x: Math.max(leftOffset, translateX), y: Math.max(0, translateY) };
