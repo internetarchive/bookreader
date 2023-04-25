@@ -35,15 +35,6 @@ export class Mode2UpLit extends LitElement {
   /** @private */
   screenDPI = calcScreenDPI();
 
-  /**
-   * How much smaller the rendered pages are than the real-world item
-   *
-   * Mode1Up doesn't use the br.reduce because it is DPI aware. The reduction factor
-   * of a given leaf can change (since leaves can have different DPIs), but the real-world
-   * reduction is constant throughout.
-   */
-  realWorldReduce = 1;
-
   @property({ type: Number })
   scale = 1;
 
@@ -302,8 +293,8 @@ export class Mode2UpLit extends LitElement {
    * (3) Visible Pixels: Just rendered pixels, but taking into account scaling.
    */
 
-  worldUnitsToRenderedPixels = (/** @type {number} */inches) => inches * this.screenDPI / this.realWorldReduce;
-  renderedPixelsToWorldUnits = (/** @type {number} */px) => px * this.realWorldReduce / this.screenDPI;
+  worldUnitsToRenderedPixels = (/** @type {number} */inches) => inches * this.screenDPI;
+  renderedPixelsToWorldUnits = (/** @type {number} */px) => px / this.screenDPI;
 
   renderedPixelsToVisiblePixels = (/** @type {number} */px) => px * this.scale;
   visiblePixelsToRenderedPixels = (/** @type {number} */px) => px / this.scale;
