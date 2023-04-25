@@ -239,17 +239,18 @@ export class Mode2UpLit extends LitElement {
     this.smoothZoomer.attach();
   }
 
-  /**
-   * @param {PageIndex} startIndex
-   */
-  initFirstRender(startIndex) {
-    const page = this.book.getPage(startIndex);
-    const spread = page.spread;
-    this.visiblePages = (
-      this.book.pageProgression == 'lr' ? [spread.left, spread.right] : [spread.right, spread.left]
-    ).filter(p => p);
-    this.htmlDimensionsCacher.updateClientSizes();
-    this.resizeViaAutofit(page);
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+    this.htmlDimensionsCacher.attachResizeListener();
+    this.smoothZoomer.attach();
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    this.htmlDimensionsCacher.detachResizeListener();
+    this.smoothZoomer.detach();
+    super.disconnectedCallback();
   }
 
   /** @override */
@@ -275,29 +276,6 @@ export class Mode2UpLit extends LitElement {
       this.recenter();
       this.smoothZoomer.updateViewportOnZoom(this.scale, oldVal);
     }
-  }
-
-  /** @override */
-  connectedCallback() {
-    super.connectedCallback();
-    this.htmlDimensionsCacher.attachResizeListener();
-    this.smoothZoomer.attach();
-  }
-
-  /** @override */
-  disconnectedCallback() {
-    this.htmlDimensionsCacher.detachResizeListener();
-    this.smoothZoomer.detach();
-    super.disconnectedCallback();
-  }
-
-  resizeViaAutofit(page = this.visiblePages[0]) {
-    this.scale = this.computeScale(page, this.autoFit);
-  }
-
-  recenter(page = this.visiblePages[0]) {
-    this.worldOffset = this.computeTranslate(page, this.scale);
-    this.$book.style.transform = `translateX(${this.worldOffset.x}px) translateY(${this.worldOffset.y}px) scale(${this.scale})`;
   }
 
   /************** LIT CONFIGS **************/
@@ -347,6 +325,19 @@ export class Mode2UpLit extends LitElement {
         this.br._createPageContainer(page.index)
       )
     );
+  }
+
+  /**
+   * @param {PageIndex} startIndex
+   */
+  initFirstRender(startIndex) {
+    const page = this.book.getPage(startIndex);
+    const spread = page.spread;
+    this.visiblePages = (
+      this.book.pageProgression == 'lr' ? [spread.left, spread.right] : [spread.right, spread.left]
+    ).filter(p => p);
+    this.htmlDimensionsCacher.updateClientSizes();
+    this.resizeViaAutofit(page);
   }
 
   /** @param {PageModel} page */
@@ -437,7 +428,14 @@ export class Mode2UpLit extends LitElement {
     }
   }
 
-  /************** VIRTUAL FLIPPING LOGIC **************/
+  resizeViaAutofit(page = this.visiblePages[0]) {
+    this.scale = this.computeScale(page, this.autoFit);
+  }
+
+  recenter(page = this.visiblePages[0]) {
+    this.worldOffset = this.computeTranslate(page, this.scale);
+    this.$book.style.transform = `translateX(${this.worldOffset.x}px) translateY(${this.worldOffset.y}px) scale(${this.scale})`;
+  }
 
   /**
    * @returns {PageModel[]}
@@ -509,6 +507,8 @@ export class Mode2UpLit extends LitElement {
     const translateY = (this.htmlDimensionsCacher.clientHeight - visibleBookHeight) / 2;
     return { x: Math.max(0, translateX), y: Math.max(0, translateY) };
   }
+
+  /************** VIRTUAL FLIPPING LOGIC **************/
 
   /**
    * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | PageModel | {left: PageModel | null, right: PageModel | null}} nextSpread
