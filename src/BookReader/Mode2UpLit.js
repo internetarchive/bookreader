@@ -3,7 +3,7 @@ import { customElement, property, query } from 'lit/decorators.js';
 import {LitElement, html} from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
-import { arrChanged, calcScreenDPI, genToArray, promisifyEvent } from './utils';
+import { arrChanged, calcScreenDPI, promisifyEvent } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
 import { PageModel } from './BookModel';
 /** @typedef {import('./BookModel').BookModel} BookModel */
@@ -29,10 +29,6 @@ export class Mode2UpLit extends LitElement {
   /** @type {BookModel} */
   @property({ type: Object })
   book;
-
-  /** @type {PageModel[]} */
-  @property({ type: Array })
-  pages = [];
 
   /************** SCALE-RELATED PROPERTIES **************/
 
@@ -269,7 +265,6 @@ export class Mode2UpLit extends LitElement {
     // changedProps.get('X') is the old value
     if (changedProps.has('book')) {
       this._leftCoverWidth = this.computePageWidth(this.book.getPage(this.book.pageProgression == 'lr' ? 0 : -1));
-      this.pages = genToArray(this.book.pagesIterator({ combineConsecutiveUnviewables: true }));
     }
     if (changedProps.has('visiblePages')) {
       this.renderedPages = this.computeRenderedPages();
