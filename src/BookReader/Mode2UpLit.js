@@ -92,6 +92,9 @@ export class Mode2UpLit extends LitElement {
   /** @type {{ direction: 'left' | 'right', pagesFlipping: [PageIndex, PageIndex], pagesFlippingCount: number }} */
   activeFlip = null;
 
+  /** @private cache this value */
+  _leftCoverWidth = 0;
+
   /************** DOM-RELATED PROPERTIES **************/
 
   /** @type {HTMLElement} */
@@ -126,19 +129,23 @@ export class Mode2UpLit extends LitElement {
     const computePageWidth = this.computePageWidth.bind(this);
     const numLeafs = this.book.getNumLeafs();
     const movingPagesWidth = this.activeFlip ? Math.ceil(this.activeFlip.pagesFlippingCount / 2) * this.PAGE_THICKNESS_IN : 0;
-
-    const leafEdgesLeftStart = 0;
     const leftPagesCount = this.book.pageProgression == 'lr' ? (pageLeft?.index ?? 0) : (!pageLeft ? 0 : numLeafs - pageLeft.index);
+
+    // Everything is relative to the gutter
+    const gutter = this._leftCoverWidth + leftPagesCount * this.PAGE_THICKNESS_IN;
+
+    const pageLeftEnd = gutter;
+    const pageLeftWidth = !pageLeft ? computePageWidth(pageRight.right) : computePageWidth(pageLeft);
+    const pageLeftStart = gutter - pageLeftWidth;
+
+    const leafEdgesLeftEnd = pageLeftStart; // leafEdgesLeftStart + leafEdgesLeftMainWidth + leafEdgesLeftMovingWidth;
     const leafEdgesLeftMovingWidth = this.activeFlip?.direction != 'left' ? 0 : movingPagesWidth;
     const leafEdgesLeftMainWidth = Math.ceil(leftPagesCount / 2) * this.PAGE_THICKNESS_IN - leafEdgesLeftMovingWidth;
-    const leafEdgesLeftMovingStart = leafEdgesLeftStart + leafEdgesLeftMainWidth;
     const leafEdgesLeftFullWidth = leafEdgesLeftMovingWidth + leafEdgesLeftMainWidth;
-    const leafEdgesLeftEnd = leafEdgesLeftStart + leafEdgesLeftMainWidth + leafEdgesLeftMovingWidth;
+    const leafEdgesLeftMovingStart = leafEdgesLeftEnd - leafEdgesLeftMovingWidth;
+    const leafEdgesLeftStart = leafEdgesLeftMovingStart - leafEdgesLeftMainWidth;
 
-    const pageLeftStart = leafEdgesLeftEnd;
-    const pageLeftWidth = !pageLeft ? computePageWidth(pageRight.right) : computePageWidth(pageLeft);
-    const pageLeftEnd = pageLeftStart + pageLeftWidth;
-    const pageRightStart = pageLeftEnd;
+    const pageRightStart = gutter;
     const pageRightWidth = !pageRight ? 0 : computePageWidth(pageRight);
     const pageRightEnd = pageRightStart + pageRightWidth;
 
@@ -151,7 +158,7 @@ export class Mode2UpLit extends LitElement {
     const leafEdgesRightFullWidth = leafEdgesRightMovingWidth + leafEdgesRightMainWidth;
 
     const spreadWidth = pageRightEnd - pageLeftStart;
-    const bookWidth = leafEdgesRightEnd;
+    const bookWidth = leafEdgesRightEnd - leafEdgesLeftStart;
     return {
       leafEdgesLeftStart,
       leafEdgesLeftMainWidth,
@@ -163,6 +170,9 @@ export class Mode2UpLit extends LitElement {
       pageLeftStart,
       pageLeftWidth,
       pageLeftEnd,
+
+      gutter,
+
       pageRightStart,
       pageRightWidth,
       pageRightEnd,
@@ -258,6 +268,7 @@ export class Mode2UpLit extends LitElement {
     // this.X is the new value
     // changedProps.get('X') is the old value
     if (changedProps.has('book')) {
+      this._leftCoverWidth = this.computePageWidth(this.book.getPage(this.book.pageProgression == 'lr' ? 0 : -1));
       this.pages = genToArray(this.book.pagesIterator({ combineConsecutiveUnviewables: true }));
     }
     if (changedProps.has('visiblePages')) {
@@ -502,13 +513,15 @@ export class Mode2UpLit extends LitElement {
     if (!page) return { x: 0, y: 0 };
     const spread = page.spread;
     // Default to real size if it fits, otherwise default to full height
-    const bookWidth = this.computePositions(spread.left, spread.right).bookWidth;
+    const positions = this.computePositions(spread.left, spread.right);
+    const bookWidth = positions.bookWidth;
     const bookHeight = this.computePageHeight(spread.left || spread.right);
     const visibleBookWidth = this.worldUnitsToRenderedPixels(bookWidth) * scale;
     const visibleBookHeight = this.worldUnitsToRenderedPixels(bookHeight) * scale;
-    const translateX = (this.htmlDimensionsCacher.clientWidth - visibleBookWidth) / 2;
+    const leftOffset = this.worldUnitsToRenderedPixels(-positions.leafEdgesLeftStart) * scale;
+    const translateX = (this.htmlDimensionsCacher.clientWidth - visibleBookWidth) / 2 + leftOffset;
     const translateY = (this.htmlDimensionsCacher.clientHeight - visibleBookHeight) / 2;
-    return { x: Math.max(0, translateX), y: Math.max(0, translateY) };
+    return { x: Math.max(leftOffset, translateX), y: Math.max(0, translateY) };
   }
 
   /************** VIRTUAL FLIPPING LOGIC **************/
