@@ -537,8 +537,17 @@ export class Mode2UpLit extends LitElement {
       }
     }
 
-    const nextTranslate = this.computeTranslate(nextSpread.left || nextSpread.right, this.scale);
-    const newTransform = `translate(${nextTranslate.x}px, ${nextTranslate.y}px) scale(${this.scale})`;
+    const curTranslate = this.computeTranslate(curSpread.left || curSpread.right, this.scale);
+    const idealNextTranslate = this.computeTranslate(nextSpread.left || nextSpread.right, this.scale);
+    const translateDiff = Math.sqrt((idealNextTranslate.x - curTranslate.x) ** 2 + (idealNextTranslate.y - curTranslate.y) ** 2);
+    let nextTranslate = `translate(${idealNextTranslate.x}px, ${idealNextTranslate.y}px)`;
+    if (translateDiff < 50) {
+      const activeTranslate = this.$book.style.transform.match(/translate\([^)]+\)/)?.[0];
+      if (activeTranslate) {
+        nextTranslate = activeTranslate;
+      }
+    }
+    const newTransform = `${nextTranslate} scale(${this.scale})`;
 
     if (animate && 'animate' in Element.prototype) {
       // This table is used to determine the direction of the flip animation:
