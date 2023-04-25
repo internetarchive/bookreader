@@ -3,7 +3,7 @@ import { customElement, property, query } from 'lit/decorators.js';
 import {LitElement, html} from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
-import { arrChanged, calcScreenDPI, genToArray } from './utils';
+import { arrChanged, calcScreenDPI, genToArray, promisifyEvent } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
 import { PageModel } from './BookModel';
 /** @typedef {import('./BookModel').BookModel} BookModel */
@@ -367,6 +367,9 @@ export class Mode2UpLit extends LitElement {
 
   /**
    * @param {'left' | 'right'} side
+   * Renders the current leaf edges, as well as any "moving" leaf edges,
+   * i.e. leaf edges that are currently being flipped. Uses a custom element
+   * to render br-leaf-edges.
    **/
   renderLeafEdges = (side) => {
     if (!this.visiblePages.length) return html``;
@@ -605,10 +608,10 @@ export class Mode2UpLit extends LitElement {
       enteringPageAnimation.play();
 
       await Promise.race([
-        new Promise(resolve => bookCenteringAnimation.onfinish = resolve),
-        new Promise(resolve => edgeTranslationAnimation.onfinish = resolve),
-        new Promise(resolve => exitingPageAnimation.onfinish = resolve),
-        new Promise(resolve => enteringPageAnimation.onfinish = resolve),
+        promisifyEvent(bookCenteringAnimation, 'finish'),
+        promisifyEvent(edgeTranslationAnimation, 'finish'),
+        promisifyEvent(exitingPageAnimation, 'finish'),
+        promisifyEvent(enteringPageAnimation, 'finish'),
       ]);
 
       this.classList.remove(`br-mode-2up--flipping-${direction}`);
