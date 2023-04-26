@@ -80,15 +80,13 @@ describe('Mode2Up', () => {
       const resizeViaAutofitSpy = sinon.spy(mode2Up.mode2UpLit, 'resizeViaAutofit');
       const recenterStub = sinon.stub(mode2Up.mode2UpLit, 'recenter');
 
-      mode2Up.worldOffset = { x: 0, y: 0 };
       mode2Up.resizePageView();
-
       expect(updateClientSizesSpy.called).toBe(true);
       expect(resizeViaAutofitSpy.called).toBe(true);
       expect(recenterStub.called).toBe(true);
 
-      // // Test with translation and autoFit as 'none'
-      mode2Up.mode2UpLit.worldOffset = { x: 10, y: 10 };
+      // Test with scale and autoFit as 'none'
+      mode2Up.mode2UpLit.scale = 0.1;
       mode2Up.mode2UpLit.autoFit = 'none';
       mode2Up.resizePageView();
 

@@ -58,6 +58,7 @@ export class Mode2Up {
         });
       } else {
         await this.mode2UpLit.jumpToIndex(startLeaf, { smooth: false });
+        this.resizePageView();
       }
       this.mode2UpLit.style.opacity = '1';
     });
@@ -93,9 +94,7 @@ export class Mode2Up {
 
   resizePageView() {
     this.mode2UpLit.htmlDimensionsCacher.updateClientSizes();
-    const translation = this.mode2UpLit.worldOffset;
-    const hasTranslation = translation.x || translation.y;
-    if (hasTranslation && this.mode2UpLit.autoFit == 'none') {
+    if (this.mode2UpLit.scale < this.mode2UpLit.initialScale && this.mode2UpLit.autoFit == 'none') {
       this.mode2UpLit.autoFit = 'auto';
     }
     if (this.mode2UpLit.autoFit != 'none') {

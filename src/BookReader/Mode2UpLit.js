@@ -39,6 +39,8 @@ export class Mode2UpLit extends LitElement {
   @property({ type: Number })
   scale = 1;
 
+  initialScale = 1;
+
   /** Position (in unit-less, [0, 1] coordinates) in client to scale around */
   @property({ type: Object })
   scaleCenter = { x: 0.5, y: 0.5 };
@@ -317,6 +319,7 @@ export class Mode2UpLit extends LitElement {
     ).filter(p => p);
     this.htmlDimensionsCacher.updateClientSizes();
     this.resizeViaAutofit(page);
+    this.initialScale = this.scale;
   }
 
   /** @param {PageModel} page */
