@@ -311,6 +311,31 @@ describe('PageModel', () => {
     });
   });
 
+  describe('findLeft/findRight', () => {
+    const data = deepCopy(SAMPLE_DATA);
+
+    test('Calls findNext/findPrev based on progression', () => {
+      const bm = new BookModel({ data });
+      const page = bm.getPage(0);
+      const findNextStub = sinon.stub(page, 'findNext');
+      const findPrevStub = sinon.stub(page, 'findPrev');
+      bm.pageProgression = 'lr';
+      page.findLeft();
+      expect(findPrevStub.callCount).toBe(1);
+      expect(findNextStub.callCount).toBe(0);
+      page.findRight();
+      expect(findPrevStub.callCount).toBe(1);
+      expect(findNextStub.callCount).toBe(1);
+      bm.pageProgression = 'rl';
+      page.findLeft();
+      expect(findPrevStub.callCount).toBe(1);
+      expect(findNextStub.callCount).toBe(2);
+      page.findRight();
+      expect(findPrevStub.callCount).toBe(2);
+      expect(findNextStub.callCount).toBe(2);
+    });
+  });
+
   describe('getURISrcSet', () => {
     const data = deepCopy(SAMPLE_DATA);
     const bm = new BookModel({ data, reduceSet: NAMED_REDUCE_SETS.pow2 });

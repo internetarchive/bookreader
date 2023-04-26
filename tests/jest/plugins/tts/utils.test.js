@@ -1,38 +1,4 @@
-import sinon from 'sinon';
-import { afterEventLoop, eventTargetMixin } from '../../utils.js';
 import * as utils from '@/src/plugins/tts/utils.js';
-
-describe('promisifyEvent', () => {
-  const { promisifyEvent } = utils;
-
-  test('Resolves once event fires', async () => {
-    const fakeTarget = eventTargetMixin();
-    const resolveSpy = sinon.spy();
-    promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
-
-    await afterEventLoop();
-    expect(resolveSpy.callCount).toBe(0);
-    fakeTarget.dispatchEvent('pause', {});
-    await afterEventLoop();
-    expect(resolveSpy.callCount).toBe(1);
-  });
-
-  test('Only resolves once', async () => {
-    const fakeTarget = eventTargetMixin();
-    const resolveSpy = sinon.spy();
-    promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
-
-    await afterEventLoop();
-    expect(resolveSpy.callCount).toBe(0);
-    fakeTarget.dispatchEvent('pause', {});
-    fakeTarget.dispatchEvent('pause', {});
-    fakeTarget.dispatchEvent('pause', {});
-    fakeTarget.dispatchEvent('pause', {});
-
-    await afterEventLoop();
-    expect(resolveSpy.callCount).toBe(1);
-  });
-});
 
 describe('approximateWordCount', () => {
   const { approximateWordCount } = utils;

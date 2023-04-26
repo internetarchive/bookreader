@@ -23,6 +23,8 @@ export class BookModel {
     this.br = br;
     this.reduceSet = br.reduceSet;
     this.ppi = br.options?.ppi ?? DEFAULT_OPTIONS.ppi;
+    /** @type {'lr' | 'rl'} Page progression */
+    this.pageProgression = br.options?.pageProgression ?? DEFAULT_OPTIONS.pageProgression;
 
     /** @type {{width: number, height: number}} memoize storage */
     this._medianPageSize = null;
@@ -197,7 +199,7 @@ export class BookModel {
    * @return {[PageIndex, PageIndex]} eg [0, 1]
    */
   getSpreadIndices(pindex) {
-    if (this.br.pageProgression == 'rl') {
+    if (this.pageProgression == 'rl') {
       return this.getPageSide(pindex) == 'R' ? [pindex + 1, pindex] : [pindex, pindex - 1];
     } else {
       return this.getPageSide(pindex) == 'L' ? [pindex, pindex + 1] : [pindex - 1, pindex];
@@ -408,6 +410,42 @@ export class PageModel {
     return this.findNext();
   }
 
+  /** @type {PageModel | null} */
+  get left() {
+    return this.book.pageProgression === 'lr' ? this.prev : this.next;
+  }
+
+  /** @type {PageModel | null} */
+  get right() {
+    return this.book.pageProgression === 'lr' ? this.next : this.prev;
+  }
+
+  /**
+   * @type {{left: PageModel | null, right: PageModel | null}}
+   */
+  get spread() {
+    return {
+      left: this.pageSide === 'L' ? this : this.left,
+      right: this.pageSide === 'R' ? this : this.right,
+    };
+  }
+
+  /**
+   * @param {number} pages
+   */
+  goLeft(pages) {
+    const newIndex = this.book.pageProgression === 'lr' ? this.index - pages : this.index + pages;
+    return this.book.getPage(newIndex);
+  }
+
+  /**
+   * @param {number} pages
+   */
+  goRight(pages) {
+    const newIndex = this.book.pageProgression === 'lr' ? this.index + pages : this.index - pages;
+    return this.book.getPage(newIndex);
+  }
+
   /**
    * @param {number} reduce
    * @param {number} rotate
@@ -468,6 +506,26 @@ export class PageModel {
     } else {
       return new PageModel(this.book, this.index - 1);
     }
+  }
+
+  /**
+   * @param {object} [arg0]
+   * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
+   * of a series of unviewable pages instead of each page
+   * @return {PageModel|void}
+   */
+  findLeft({ combineConsecutiveUnviewables = false } = {}) {
+    return this.book.pageProgression === 'lr' ? this.findPrev({ combineConsecutiveUnviewables }) : this.findNext({ combineConsecutiveUnviewables });
+  }
+
+  /**
+   * @param {object} [arg0]
+   * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
+   * of a series of unviewable pages instead of each page
+   * @return {PageModel|void}
+   */
+  findRight({ combineConsecutiveUnviewables = false } = {}) {
+    return this.book.pageProgression === 'lr' ? this.findNext({ combineConsecutiveUnviewables }) : this.findPrev({ combineConsecutiveUnviewables });
   }
 }
 

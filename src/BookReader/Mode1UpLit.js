@@ -3,9 +3,10 @@ import { customElement, property, query } from 'lit/decorators.js';
 import {LitElement, html} from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom';
-import { arrChanged, calcScreenDPI, genToArray, sum, throttle } from './utils';
+import { arrChanged, genToArray, sum, throttle } from './utils';
 import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
 import { ScrollClassAdder } from './utils/ScrollClassAdder';
+import { ModeCoordinateSpace } from './ModeCoordinateSpace';
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */
@@ -41,17 +42,8 @@ export class Mode1UpLit extends LitElement {
 
   /************** SCALE-RELATED PROPERTIES **************/
 
-  /** @private */
-  screenDPI = calcScreenDPI();
-
-  /**
-   * How much smaller the rendered pages are than the real-world item
-   *
-   * Mode1Up doesn't use the br.reduce because it is DPI aware. The reduction factor
-   * of a given leaf can change (since leaves can have different DPIs), but the real-world
-   * reduction is constant throughout.
-   */
-  realWorldReduce = 1;
+  /** @type {ModeCoordinateSpace} Manage conversion between coordinates */
+  coordSpace = new ModeCoordinateSpace(this);
 
   @property({ type: Number })
   scale = 1;
@@ -95,7 +87,7 @@ export class Mode1UpLit extends LitElement {
   worldDimensions = { width: 100, height: 100 };
 
   get worldStyle() {
-    const wToR = this.worldUnitsToRenderedPixels;
+    const wToR = this.coordSpace.worldUnitsToRenderedPixels;
     return {
       width: wToR(this.worldDimensions.width) + "px",
       height: wToR(this.worldDimensions.height) + "px",
@@ -139,7 +131,7 @@ export class Mode1UpLit extends LitElement {
     if (smooth) {
       this.style.scrollBehavior = 'smooth';
     }
-    this.scrollTop = this.worldUnitsToVisiblePixels(this.pageTops[index] - this.SPACING_IN / 2);
+    this.scrollTop = this.coordSpace.worldUnitsToVisiblePixels(this.pageTops[index] - this.SPACING_IN / 2);
     // TODO: Also h center?
     if (smooth) {
       setTimeout(() => this.style.scrollBehavior = '', 100);
@@ -214,7 +206,8 @@ export class Mode1UpLit extends LitElement {
       const oldVal = changedProps.get('scale');
       // Need to set this scale to actually scale the pages
       this.$visibleWorld.style.transform = `scale(${this.scale})`;
-      this.updateViewportOnZoom(this.scale, oldVal);
+      this.smoothZoomer.updateViewportOnZoom(this.scale, oldVal);
+      this.updateVisibleRegion();
       // Need to set this scale to update the world size, so the scrollbar gets the correct size
       this.$world.style.transform = `scale(${this.scale})`;
     }
@@ -244,25 +237,6 @@ export class Mode1UpLit extends LitElement {
     return this;
   }
 
-  /************** COORDINATE SPACE CONVERTERS **************/
-  /**
-   * There are a few different "coordinate spaces" at play in BR:
-   * (1) World units: i.e. inches. Unless otherwise stated, all computations
-   *     are done in world units.
-   * (2) Rendered Pixels: i.e. img.width = '300'. Note this does _not_ take
-   *     into account zoom scaling.
-   * (3) Visible Pixels: Just rendered pixels, but taking into account scaling.
-   */
-
-  worldUnitsToRenderedPixels = (/** @type {number} */inches) => inches * this.screenDPI / this.realWorldReduce;
-  renderedPixelsToWorldUnits = (/** @type {number} */px) => px * this.realWorldReduce / this.screenDPI;
-
-  renderedPixelsToVisiblePixels = (/** @type {number} */px) => px * this.scale;
-  visiblePixelsToRenderedPixels = (/** @type {number} */px) => px / this.scale;
-
-  worldUnitsToVisiblePixels = (/** @type {number} */px) => this.renderedPixelsToVisiblePixels(this.worldUnitsToRenderedPixels(px));
-  visiblePixelsToWorldUnits = (/** @type {number} */px) => this.renderedPixelsToWorldUnits(this.visiblePixelsToRenderedPixels(px));
-
   /************** RENDERING **************/
 
   /** @override */
@@ -286,9 +260,9 @@ export class Mode1UpLit extends LitElement {
 
   /** @param {PageModel} page */
   renderPage = (page) => {
-    const wToR = this.worldUnitsToRenderedPixels;
-    const wToV = this.worldUnitsToVisiblePixels;
-    const containerWidth = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
+    const wToR = this.coordSpace.worldUnitsToRenderedPixels;
+    const wToV = this.coordSpace.worldUnitsToVisiblePixels;
+    const containerWidth = this.coordSpace.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
 
     const width = wToR(page.widthInches);
     const height = wToR(page.heightInches);
@@ -323,7 +297,7 @@ export class Mode1UpLit extends LitElement {
     // Note: scrollTop, and clientWidth all are in visible space;
     // i.e. they are affects by the CSS transforms.
 
-    const vToW = this.visiblePixelsToWorldUnits;
+    const vToW = this.coordSpace.visiblePixelsToWorldUnits;
     this.visibleRegion = {
       top: vToW(scrollTop),
       height: vToW(clientHeight),
@@ -375,7 +349,7 @@ export class Mode1UpLit extends LitElement {
    */
   computeDefaultScale(page) {
     // Default to real size if it fits, otherwise default to full width
-    const containerWidthIn = this.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
+    const containerWidthIn = this.coordSpace.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
     return Math.min(1, containerWidthIn / (page.widthInches + 2 * this.SPACING_IN)) || 1;
   }
 
@@ -397,37 +371,6 @@ export class Mode1UpLit extends LitElement {
       const VB = VT + this.visibleRegion.height;
       return PT <= VB && PB >= VT;
     });
-  }
-
-  /************** ZOOMING LOGIC **************/
-
-  /**
-   * @param {number} newScale
-   * @param {number} oldScale
-   */
-  updateViewportOnZoom(newScale, oldScale) {
-    const container = this;
-    const { scrollTop: T, scrollLeft: L } = container;
-    const W = this.htmlDimensionsCacher.clientWidth;
-    const H = this.htmlDimensionsCacher.clientHeight;
-
-    // Scale factor change
-    const F = newScale / oldScale;
-
-    // Where in the viewport the zoom is centered on
-    const XPOS = this.scaleCenter.x;
-    const YPOS = this.scaleCenter.y;
-    const oldCenter = {
-      x: L + XPOS * W,
-      y: T + YPOS * H,
-    };
-    const newCenter = {
-      x: F * oldCenter.x,
-      y: F * oldCenter.y,
-    };
-    container.scrollTop = newCenter.y - YPOS * H;
-    container.scrollLeft = newCenter.x - XPOS * W;
-    this.updateVisibleRegion();
   }
 
   /************** INPUT HANDLERS **************/

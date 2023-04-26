@@ -28,6 +28,7 @@ describe('BookReader.prototype.toggleFullscreen', ()  => {
     br.trigger = sinon.fake();
     br.switchMode = sinon.fake();
     br.updateBrClasses = sinon.fake();
+    br.jumpToIndex = sinon.fake();
     br.refs.$brContainer = {
       css: sinon.fake(),
       animate: (options, speed, style, callback) => callback()
@@ -70,9 +71,10 @@ describe('BookReader.prototype.enterFullscreen', ()  => {
     br.mode = br.constMode1up;
     br.switchMode = sinon.fake();
     br.updateBrClasses = sinon.fake();
-    br.refs.$brContainer = {
+    br.refs.$br = {
       css: sinon.fake(),
       animate: sinon.fake(),
+      addClass: sinon.fake(),
     };
     expect(br._fullscreenCloseHandler).toBeUndefined();
 
@@ -88,9 +90,13 @@ describe('BookReader.prototype.enterFullscreen', ()  => {
     br.trigger = sinon.fake();
     br.resize = sinon.fake();
     br.jumpToIndex = sinon.fake();
+    br.refs.$br = {
+      addClass: sinon.fake(),
+      removeClass: sinon.fake(),
+    };
     br.refs.$brContainer = {
       css: sinon.fake(),
-      animate: (options, speed, style, callback) => callback()
+      animate: (options, speed, style, callback) => callback(),
     };
 
     await br.enterFullscreen();
@@ -112,6 +118,10 @@ describe('BookReader.prototype.exitFullScreen', () => {
     br.updateBrClasses = sinon.fake();
     br.trigger = sinon.fake();
     br.resize = sinon.fake();
+    br.refs.$br = {
+      addClass: sinon.fake(),
+      removeClass: sinon.fake(),
+    };
     br.refs.$brContainer = {
       css: sinon.fake(),
       animate: (options, speed, style, callback) => callback()
@@ -137,17 +147,25 @@ describe('BookReader.prototype.trigger', () => {
 });
 
 describe('`BookReader.prototype.prev`', () => {
-  const br = new BookReader();
-  global.br = br;
-  br.trigger = sinon.fake();
-  br._modes.mode2Up.flipBackToIndex = sinon.fake();
-  br.jumpToIndex = sinon.fake();
+  let br;
+  let flipAnimationStub;
+  beforeEach(() => {
+    br = new BookReader();
+    global.br = br;
+    br.trigger = sinon.fake();
+    br.jumpToIndex = sinon.fake();
+    flipAnimationStub = sinon.stub(br._modes.mode2Up.mode2UpLit, 'flipAnimation');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
 
   test('does not take action if user is on front page', () => {
     br.firstIndex = 0;
     br.prev();
     expect(br.trigger.callCount).toBe(0);
-    expect(br._modes.mode2Up.flipBackToIndex.callCount).toBe(0);
+    expect(flipAnimationStub.callCount).toBe(0);
     expect(br.jumpToIndex.callCount).toBe(0);
   });
 
@@ -158,7 +176,7 @@ describe('`BookReader.prototype.prev`', () => {
       br.prev();
       expect(br.jumpToIndex.callCount).toBe(0); // <--  does not get called
       expect(br.trigger.callCount).toBe(1);
-      expect(br._modes.mode2Up.flipBackToIndex.callCount).toBe(1);
+      expect(flipAnimationStub.callCount).toBe(1);
     });
   });
 
@@ -168,8 +186,7 @@ describe('`BookReader.prototype.prev`', () => {
       br.mode = br.constMode1up;
       br.prev();
       expect(br.jumpToIndex.callCount).toBe(1);  // <--  gets called
-      expect(br.trigger.callCount).toBe(1); // <-- gets called by `jumpToIndex` internally
-      expect(br._modes.mode2Up.flipBackToIndex.callCount).toBe(1); // <-- gets called by `jumpToIndex` internally
+      expect(flipAnimationStub.callCount).toBe(0); // <-- gets called by `jumpToIndex` internally
     });
   });
 });

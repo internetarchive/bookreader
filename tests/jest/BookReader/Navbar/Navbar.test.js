@@ -63,14 +63,14 @@ describe('Navbar slider', () => {
 
   test('on slide change, actual page changes', () => {
     const $slider = navbar.$root.find('.BRpager');
-    const jumpToIndexSpy = sinon.spy(br, 'jumpToIndex');
+    const jumpToIndexStub = sinon.stub(br, 'jumpToIndex');
     expect(br.currentIndex()).toBe(0);
 
     $slider.trigger('slidechange', { value: 3 });
 
     expect(navbar.$root.find('.BRcurrentpage').text().includes('3'));
-    expect(jumpToIndexSpy.callCount).toBe(1);
-    expect(jumpToIndexSpy.args[0][0]).toBe(3);
+    expect(jumpToIndexStub.callCount).toBe(1);
+    expect(jumpToIndexStub.args[0][0]).toBe(3);
   });
 });
 

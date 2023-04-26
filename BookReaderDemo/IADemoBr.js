@@ -38,7 +38,6 @@ BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
 const initializeBookReader = (brManifest) => {
   console.log('initializeBookReader', brManifest);
-  const br = new BookReader();
 
   const customAutoflipParams = {
     autoflip: !!autoflip,
@@ -85,7 +84,7 @@ const initializeBookReader = (brManifest) => {
   const isRestricted = brManifest.data.isRestricted;
   window.dispatchEvent(new CustomEvent('contextmenu', { detail: { isRestricted } }));
   if (customAutoflipParams.autoflip) {
-    br.autoToggle(customAutoflipParams);
+    window.br.autoToggle(customAutoflipParams);
   }
 };
 

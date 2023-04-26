@@ -6,6 +6,7 @@ import Hammer from "hammerjs";
  * @typedef {object} SmoothZoomable
  * @property {HTMLElement} $container
  * @property {HTMLElement} $visibleWorld
+ * @property {import("./options.js").AutoFitValues} autoFit
  * @property {number} scale
  * @property {{ x: number, y: number }} scaleCenter
  * @property {HTMLDimensionsCacher} htmlDimensionsCacher
@@ -91,6 +92,7 @@ export class ModeSmoothZoom {
     this.oldScale = 1;
     this.mode.$visibleWorld.classList.add("BRsmooth-zooming");
     this.mode.$visibleWorld.style.willChange = "transform";
+    this.mode.autoFit = "none";
     this.detachCtrlZoom();
     this.mode.detachScrollListeners?.();
   }
@@ -161,6 +163,7 @@ export class ModeSmoothZoom {
 
     // Zoom around the cursor
     this.updateScaleCenter(ev);
+    this.mode.autoFit = "none";
     this.mode.scale *= 1 - Math.sign(ev.deltaY) * zoomMultiplier;
   }
 
@@ -175,5 +178,34 @@ export class ModeSmoothZoom {
       x: (clientX - bc.left) / this.mode.htmlDimensionsCacher.clientWidth,
       y: (clientY - bc.top) / this.mode.htmlDimensionsCacher.clientHeight,
     };
+  }
+
+  /**
+   * @param {number} newScale
+   * @param {number} oldScale
+   */
+  updateViewportOnZoom(newScale, oldScale) {
+    const container = this.mode.$container;
+    const { scrollTop: T, scrollLeft: L } = container;
+    const W = this.mode.htmlDimensionsCacher.clientWidth;
+    const H = this.mode.htmlDimensionsCacher.clientHeight;
+
+    // Scale factor change
+    const F = newScale / oldScale;
+
+    // Where in the viewport the zoom is centered on
+    const XPOS = this.mode.scaleCenter.x;
+    const YPOS = this.mode.scaleCenter.y;
+    const oldCenter = {
+      x: L + XPOS * W,
+      y: T + YPOS * H,
+    };
+    const newCenter = {
+      x: F * oldCenter.x,
+      y: F * oldCenter.y,
+    };
+
+    container.scrollTop = newCenter.y - YPOS * H;
+    container.scrollLeft = newCenter.x - XPOS * W;
   }
 }
