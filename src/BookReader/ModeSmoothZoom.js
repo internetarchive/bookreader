@@ -9,7 +9,6 @@ import Hammer from "hammerjs";
  * @property {import("./options.js").AutoFitValues} autoFit
  * @property {number} scale
  * @property {{ x: number, y: number }} scaleCenter
- * @property {{ x: number, y: number }} worldOffset
  * @property {HTMLDimensionsCacher} htmlDimensionsCacher
  * @property {function(): void} [attachScrollListeners]
  * @property {function(): void} [detachScrollListeners]
@@ -206,7 +205,7 @@ export class ModeSmoothZoom {
       y: F * oldCenter.y,
     };
 
-    container.scrollTop = newCenter.y - YPOS * H - this.mode.worldOffset.y;
-    container.scrollLeft = newCenter.x - XPOS * W - this.mode.worldOffset.x;
+    container.scrollTop = newCenter.y - YPOS * H;
+    container.scrollLeft = newCenter.x - XPOS * W;
   }
 }

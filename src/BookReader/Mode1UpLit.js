@@ -51,9 +51,6 @@ export class Mode1UpLit extends LitElement {
   @property({ type: Object })
   scaleCenter = { x: 0.5, y: 0.5 };
 
-  // Needed for ModeSmoothZoom
-  worldOffset = { x: 0, y: 0 };
-
   /************** VIRTUAL-SCROLLING PROPERTIES **************/
 
   /** in world coordinates (inches) */

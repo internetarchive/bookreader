@@ -49,8 +49,6 @@ export class Mode2UpLit extends LitElement {
   @property({ type: String })
   autoFit = 'auto';
 
-  worldOffset = { x: 0, y: 0 };
-
   /************** VIRTUAL-FLIPPING PROPERTIES **************/
 
   /** ms for flip animation */
@@ -418,8 +416,8 @@ export class Mode2UpLit extends LitElement {
   }
 
   recenter(page = this.visiblePages[0]) {
-    this.worldOffset = this.computeTranslate(page, this.scale);
-    this.$book.style.transform = `translateX(${this.worldOffset.x}px) translateY(${this.worldOffset.y}px) scale(${this.scale})`;
+    const translate = this.computeTranslate(page, this.scale);
+    this.$book.style.transform = `translateX(${translate.x}px) translateY(${translate.y}px) scale(${this.scale})`;
   }
 
   /**
