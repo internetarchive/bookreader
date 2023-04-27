@@ -442,6 +442,23 @@ body.BRfullscreenActive .mm-menu {
   background-color: white;
 }
 
+.BRfullscreenAnimation .br-mode-2up__book {
+  transition: transform 0.2s ease-in-out;
+}
+
+.fullscreenActive.BRmodeThumb .BRcontainer,
+.fullscreenActive.BRmode1up .BRcontainer {
+  animation: flash 0.3s ease-in-out;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
 .BRpageview {
   position: relative;
   margin: auto;
@@ -454,7 +471,7 @@ body.BRfullscreenActive .mm-menu {
   border: 0;
 }
 
-.BRmodeThumb .BRpagecontainer, .BRmode2Up .BRpagecontainer {
+.BRmodeThumb .BRpagecontainer, .BRmode2up .BRpagecontainer {
   cursor: pointer;
 }
 
@@ -521,61 +538,115 @@ svg.BRPageLayer {
   display: none;
 }
 
-.BRbookcover {
-  position: absolute;
-  background-image: none;
-  box-shadow: 1px 0 10px #111;
+.br-mode-2up__root {
+  display: block;
+  overflow: auto;
+  width: 100%;
+  height: 100%;
 }
 
-.BRPreview .BRpageimage {
-  background-color: #eee;
-  -webkit-filter: grayscale(100%);
-  filter: grayscale(100%);
+.br-mode-2up__book {
+  position: relative;
+  transform-origin: 0 0;
+  width: 0px;
+  height: 0px;
 }
 
-.BRleafEdgeR {
-  border-style: solid solid solid none;
-  border-color: rgb(51, 51, 34);
-  border-width: 1px 1px 1px 0px;
-  background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
+.BRmode2up {
+  transition: opacity 0.2s;
+}
+
+.BRmode2up .BRpagecontainer {
+  backface-visibility: hidden;
+}
+.BRmode2up .BRpagecontainer:not(.BRpage-visible) {
+  display: none;
+}
+
+.br-mode-2up__leafs {
   position: absolute;
   cursor: pointer;
+  top: 0;
+  transform-style: preserve-3d;
 }
-
-.BRleafEdgeL {
-  /* border-style: solid none solid solid;
-  border-color: rgb(51, 51, 34);
-  border-width: 1px 0px 1px 1px; */
+.br-mode-2up__leafs[side=left] {
+  border-radius: 4px 0 0 4px;
+}
+.br-mode-2up__leafs[side=left] .br-leaf-edges__label {
+  padding-right: 10px;
+  border-radius: 4px 0 0 4px;
+}
+.br-mode-2up__leafs[side=right] {
+  border-radius: 0 4px 4px 0;
+}
+.br-mode-2up__leafs[side=right] .br-leaf-edges__label {
+  padding-left: 20px;
+  border-radius: 0 4px 4px 0;
+}
+.br-mode-2up__leafs.br-mode-2up__leafs--flipping {
+  z-index: 200000;
+  transition: transform 5s;
+  transition-timing-function: ease-in-out;
+  border-radius: 0;
+}
+.br-mode-2up__leafs.br-mode-2up__leafs--flipping:before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform: rotateY(-90deg);
+}
+.br-mode-2up__leafs, .br-mode-2up__leafs.br-mode-2up__leafs--flipping::before {
   background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
-  /* XXXmang replace file */
-  position: absolute;
-  cursor: pointer;
 }
-
-.BRleafEdgeTmp {
-  /* border-style: solid none solid solid;
-  border-color: rgb(51, 51, 34);
-  border-width: 1px 0px 1px 1px; */
-  background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
-  /* XXXmang replace file */
+.br-mode-2up__leafs .br-leaf-edges__bar {
+  display: none;
+  pointer-events: none;
   position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 1px;
+  background-color: #9A9B9D;
+  opacity: 0.85;
+  transform: translateX(-50%);
 }
-
-.BRgutter {
-  /* border: 1px solid rgb(68, 25, 17); */
+.br-mode-2up__leafs .br-leaf-edges__label {
+  display: none;
+  pointer-events: none;
+  z-index: 1000;
   position: absolute;
-  background: transparent url(images/booksplit.png) repeat scroll 0% 0%;
-}
-
-.BRtwoPagePopUp {
   padding: 6px;
-  position: absolute;
-  font-size: 12px;
   color: white;
   background-color: #9A9B9D;
   opacity: 0.85;
-  border-radius: 4px;
   white-space: nowrap;
+  transform: translateY(-10px);
+}
+
+.br-mode-2up--flipping-left .BRpage-entering[data-side=R] {
+  z-index: 10;
+  transform-origin: left;
+  transform: rotateY(0deg);
+}
+.br-mode-2up--flipping-left .BRpage-exiting[data-side=L] {
+  z-index: 10;
+  transform-origin: right;
+}
+.br-mode-2up--flipping-left .BRpage-exiting[data-side=R] {
+  z-index: 9;
+}
+
+.br-mode-2up--flipping-right .BRpage-entering[data-side=L] {
+  z-index: 10;
+  transform-origin: right;
+}
+.br-mode-2up--flipping-right .BRpage-exiting[data-side=R] {
+  z-index: 10;
+  transform-origin: left;
+}
+.br-mode-2up--flipping-right .BRpage-exiting[data-side=L] {
+  z-index: 9;
 }
 
 .BRToolbarButton, .BRicon {
@@ -2954,7 +3025,7 @@ modal-manager[mode=closed] {
   opacity: 0;
 }
 
-.BRtwopageview .BRpagecontainer[data-side=L] .bookmark-button {
+.BRmode2up .BRpagecontainer[data-side=L] .bookmark-button {
   right: auto;
   left: 0;
 }
