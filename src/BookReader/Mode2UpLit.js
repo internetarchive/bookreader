@@ -499,7 +499,12 @@ export class Mode2UpLit extends LitElement {
    * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | PageModel | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
   async flipAnimation(nextSpread, { animate = true } = {}) {
-    const curSpread = (this.pageLeft || this.pageRight).spread;
+    const curSpread = (this.pageLeft || this.pageRight)?.spread;
+    if (!curSpread) {
+      // Nothings been actually rendered yet! Will be corrected during initFirstRender
+      return;
+    }
+
     nextSpread = this.parseNextSpread(nextSpread);
     if (this.activeFlip || !nextSpread) return;
 
