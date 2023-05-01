@@ -200,6 +200,7 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
     const hasCustomSuccess = typeof options.success === 'function';
 
     if (responseHasError) {
+      console.error('Search Inside Response Error', searchInsideResults.error || 'matches.length == 0');
       hasCustomError
         ? options.error.call(this, searchInsideResults, options)
         : this.BRSearchCallbackError(searchInsideResults, options);
