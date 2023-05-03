@@ -415,6 +415,10 @@ BookReader.prototype._searchPluginGoToResult = async function (matchIndex) {
       book.getPage(pageIndex).makeViewable();
       makeUnviewableAtEnd = true;
     }
+
+    // Trigger an update of book
+    this._modes.mode1Up.mode1UpLit.updatePages();
+    await this._modes.mode1Up.mode1UpLit.updateComplete;
   }
   /* this updates the URL */
   if (!this._isIndexDisplayed(pageIndex)) {
