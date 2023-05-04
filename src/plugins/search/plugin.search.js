@@ -418,7 +418,9 @@ BookReader.prototype._searchPluginGoToResult = async function (matchIndex) {
 
     // Trigger an update of book
     this._modes.mode1Up.mode1UpLit.updatePages();
-    await this._modes.mode1Up.mode1UpLit.updateComplete;
+    if (this.activeMode == this._modes.mode1Up) {
+      await this._modes.mode1Up.mode1UpLit.updateComplete;
+    }
   }
   /* this updates the URL */
   if (!this._isIndexDisplayed(pageIndex)) {
