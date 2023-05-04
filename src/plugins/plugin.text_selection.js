@@ -1,5 +1,6 @@
 //@ts-check
 import { createSVGPageLayer } from '../BookReader/PageContainer.js';
+import { SelectionStartedObserver } from '../BookReader/utils/SelectionStartedObserver.js';
 import { isFirefox, isSafari } from '../util/browserSniffing.js';
 import { applyVariables } from '../util/strings.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
@@ -273,7 +274,20 @@ export class BookreaderWithTextSelection extends BookReader {
       // contains a reference to it.
       this.options.plugins.textSelection = options;
       this.textSelectionPlugin.init();
+
+      // Track how often selection is used
+      const sso = new SelectionStartedObserver('.textSelectionSVG', () => {
+        // Don't assume the order of the plugins ; the analytics plugin could
+        // have been added later. But at this point we should know for certain.
+        if (!this.archiveAnalyticsSendEvent) {
+          sso.detach();
+        } else {
+          this.archiveAnalyticsSendEvent('BookReader', 'SelectStart');
+        }
+      });
+      sso.attach();
     }
+
     super.init();
   }
 
