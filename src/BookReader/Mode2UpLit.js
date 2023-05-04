@@ -499,7 +499,12 @@ export class Mode2UpLit extends LitElement {
    * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | PageModel | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
   async flipAnimation(nextSpread, { animate = true } = {}) {
-    const curSpread = (this.pageLeft || this.pageRight).spread;
+    const curSpread = (this.pageLeft || this.pageRight)?.spread;
+    if (!curSpread) {
+      // Nothings been actually rendered yet! Will be corrected during initFirstRender
+      return;
+    }
+
     nextSpread = this.parseNextSpread(nextSpread);
     if (this.activeFlip || !nextSpread) return;
 
@@ -547,7 +552,7 @@ export class Mode2UpLit extends LitElement {
       this.classList.add(`br-mode-2up--flipping-${direction}`);
       this.classList.add(`BRpageFlipping`);
 
-      // Wait for lit update cycle to finish
+      // Wait for lit update cycle to finish so that entering pages are rendered
       this.requestUpdate();
       await this.updateComplete;
 
@@ -555,7 +560,7 @@ export class Mode2UpLit extends LitElement {
         .map(p => this.pageContainerCache[p.index].$container)
         .forEach($c => $c.addClass('BRpage-exiting'));
 
-      nextPageContainers.forEach(c => c.$container.addClass('BRpage-visible BRpage-entering'));
+      nextPageContainers.forEach(c => c.$container.addClass('BRpage-entering'));
 
       /** @type {KeyframeAnimationOptions} */
       const animationStyle = {
@@ -597,6 +602,8 @@ export class Mode2UpLit extends LitElement {
       edgeTranslationAnimation.play();
       exitingPageAnimation.play();
       enteringPageAnimation.play();
+
+      nextPageContainers.forEach(c => c.$container.addClass('BRpage-visible'));
 
       await Promise.race([
         promisifyEvent(bookCenteringAnimation, 'finish'),

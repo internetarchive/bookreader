@@ -1,4 +1,4 @@
-/* global BookReader, archive_analytics */
+/* global BookReader */
 /**
  * Plugin for Archive.org analytics
  */
@@ -50,13 +50,13 @@ BookReader.prototype.archiveAnalyticsSendFragmentChange = function() {
     // avoids embed cross site exceptions -- but on (+) side, means it is and keeps marked offite!
 
     // Send bookreader ping
-    archive_analytics.send_ping(values, null, "augment_for_ao_site");
+    window.archive_analytics.send_ping(values, null, "augment_for_ao_site");
 
     // Also send tracking event ping
     const additionalEventParams = this.options.lendingInfo && this.options.lendingInfo.loanId
       ? { loanId: this.options.lendingInfo.loanId }
       : {};
-    archive_analytics.send_event('BookReader', 'UserChangedView', window.location.pathname, additionalEventParams);
+    window.archive_analytics.send_event('BookReader', 'UserChangedView', window.location.pathname, additionalEventParams);
 
     this.archiveAnalyticsSendFragmentChange.prevFragment = newFragment;
   }

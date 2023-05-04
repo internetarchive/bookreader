@@ -101,9 +101,6 @@ export default class VolumesProvider {
    * @param {'default' | 'title_asc' | 'title_desc'} orderBy
    */
   multipleFilesClicked(orderBy) {
-    if (!window.archive_analytics) {
-      return;
-    }
     window.archive_analytics?.send_event(
       'BookReader',
       `VolumesSort|${orderBy}`,

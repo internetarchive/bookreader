@@ -54,12 +54,10 @@ export default class BookmarksProvider {
   }
 
   bookmarksLoginClicked() {
-    if (window.archive_analytics) {
-      window.archive_analytics?.send_event_no_sampling(
-        'BookReader',
-        `BookmarksLogin`,
-        window.location.path,
-      );
-    }
+    window.archive_analytics?.send_event_no_sampling(
+      'BookReader',
+      `BookmarksLogin`,
+      window.location.path,
+    );
   }
 }

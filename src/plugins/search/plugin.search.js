@@ -200,6 +200,7 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
     const hasCustomSuccess = typeof options.success === 'function';
 
     if (responseHasError) {
+      console.error('Search Inside Response Error', searchInsideResults.error || 'matches.length == 0');
       hasCustomError
         ? options.error.call(this, searchInsideResults, options)
         : this.BRSearchCallbackError(searchInsideResults, options);
@@ -414,6 +415,10 @@ BookReader.prototype._searchPluginGoToResult = async function (matchIndex) {
       book.getPage(pageIndex).makeViewable();
       makeUnviewableAtEnd = true;
     }
+
+    // Trigger an update of book
+    this._modes.mode1Up.mode1UpLit.updatePages();
+    await this._modes.mode1Up.mode1UpLit.updateComplete;
   }
   /* this updates the URL */
   if (!this._isIndexDisplayed(pageIndex)) {

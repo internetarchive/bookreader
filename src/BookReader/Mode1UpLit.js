@@ -184,7 +184,7 @@ export class Mode1UpLit extends LitElement {
     // this.X is the new value
     // changedProps.get('X') is the old value
     if (changedProps.has('book')) {
-      this.pages = genToArray(this.book.pagesIterator({ combineConsecutiveUnviewables: true }));
+      this.updatePages();
     }
     if (changedProps.has('pages')) {
       this.worldDimensions = this.computeWorldDimensions();
@@ -211,6 +211,10 @@ export class Mode1UpLit extends LitElement {
       // Need to set this scale to update the world size, so the scrollbar gets the correct size
       this.$world.style.transform = `scale(${this.scale})`;
     }
+  }
+
+  updatePages() {
+    this.pages = genToArray(this.book.pagesIterator({ combineConsecutiveUnviewables: true }));
   }
 
   /** @override */
