@@ -278,11 +278,11 @@ export class BookreaderWithTextSelection extends BookReader {
       // Track how often selection is used
       const sso = new SelectionStartedObserver('.textSelectionSVG', () => {
         // Don't assume the order of the plugins ; the analytics plugin could
-        // have been added later. But at this point we should no for certain.
+        // have been added later. But at this point we should know for certain.
         if (!this.archiveAnalyticsSendEvent) {
           sso.detach();
         } else {
-          this.archiveAnalyticsSendEvent?.('BookReader', 'SelectStart');
+          this.archiveAnalyticsSendEvent('BookReader', 'SelectStart');
         }
       });
       sso.attach();
