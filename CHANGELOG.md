@@ -1,3 +1,7 @@
+# 5.0.0-61
+- Fix: Mode2up preview pages hanging on first click @cdrini
+- Dev: Add analytics event for text layer page selection @cdrini
+
 # 5.0.0-60
 - Fix: Update modal manager to fix duplicate definitions warnings on IA @cdrini
 - Fix: Common Sentry error `.spread` undefined @cdrini
