@@ -1,3 +1,14 @@
+# 5.0.0-60
+- Fix: Update modal manager to fix duplicate definitions warnings on IA @cdrini
+- Fix: Common Sentry error `.spread` undefined @cdrini
+- Fix: entering page appearing early in flip anim @cdrini
+- Fix: preview pages not working in 1up @cdrini
+- Dev: Make serve-dev not do full production babeling (This makes it waaaay easier/faster to debug things like promises) @cdrini
+- Dev: Log an error if search inside fails for sentry @cdrini
+- Dev: Make dev server support CORS to allow testing via ngrok @cdrini
+- Refactor: Rm redundant archive_analytics checks @cdrini
+- Refactor: Dissolve a-search-result.js component @cdrini
+
 # 5.0.0-59
 - Rewrite 2up view to use css transforms and lit @cdrini
     - Pretty substantial change. Lots of breaking changes to public methods.
