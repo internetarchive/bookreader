@@ -258,7 +258,9 @@ export class TextSelectionPlugin {
           wordEl.classList.add('BRwordElement--hyphen');
         }
 
-        if (!hasHyphen && !(isLastLineOfParagraph && isLastWordOfLine)) {
+        if ((isLastLineOfParagraph && isLastWordOfLine) || (isLastWordOfLine && hasHyphen)) {
+          // Don't add a space
+        } else {
           const space = document.createElement('span');
           space.classList.add('BRspace');
           space.textContent = ' ';

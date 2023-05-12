@@ -40,6 +40,7 @@ const FAKE_XML_MULT_LINES = `
       <WORD coords="320,2039,433,2002" x-confidence="28">false </WORD>
       <WORD coords="433,2051,658,2003" x-confidence="29">judgment </WORD>
       <WORD coords="658,2039,728,2002" x-confidence="30">be </WORD>
+      <WORD coords="658,2039,728,2002" x-confidence="30">-</WORD>
       <WORD coords="728,2039,939,2001" x-confidence="29">formed. </WORD>
       <WORD coords="939,2039,1087,2001" x-confidence="29">There </WORD>
       <WORD coords="1087,2039,1187,2002" x-confidence="29">still </WORD>
