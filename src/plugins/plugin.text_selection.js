@@ -1,7 +1,7 @@
 //@ts-check
-import { createSVGPageLayer } from '../BookReader/PageContainer.js';
+import zip from 'lodash/zip';
+import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { SelectionStartedObserver } from '../BookReader/utils/SelectionStartedObserver.js';
-import { isFirefox, isSafari } from '../util/browserSniffing.js';
 import { applyVariables } from '../util/strings.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
@@ -14,6 +14,8 @@ export const DEFAULT_OPTIONS = {
   fullDjvuXmlUrl: null,
   /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
   singlePageDjvuXmlUrl: null,
+  /** @type {'djvu' | 'hocr'} */
+  format: 'djvu',
   /** Whether to fetch the XML as a jsonp */
   jsonp: false,
 };
@@ -42,24 +44,11 @@ export class Cache {
 
 export class TextSelectionPlugin {
 
-  constructor(options = DEFAULT_OPTIONS, optionVariables, avoidTspans = isFirefox(), pointerEventsOnParagraph = isSafari()) {
+  constructor(options = DEFAULT_OPTIONS, optionVariables) {
     this.options = options;
     this.optionVariables = optionVariables;
     /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
     this.djvuPagesPromise = null;
-    // Using text elements instead of tspans for words because Firefox does not allow svg tspan stretch.
-    // Tspans are necessary on Chrome because they prevent newline character after every word when copying
-    this.svgParagraphElement = "text";
-    this.svgWordElement = "tspan";
-    this.insertNewlines = avoidTspans;
-    // Safari has a bug where `pointer-events` doesn't work on `<tspans>`. So
-    // there we will set `pointer-events: all` on the paragraph element. We don't
-    // do this everywhere, because it's a worse experience. Thanks Safari :/
-    this.pointerEventsOnParagraph = pointerEventsOnParagraph;
-    if (avoidTspans) {
-      this.svgParagraphElement = "g";
-      this.svgWordElement = "text";
-    }
 
     /** @type {Cache<{index: number, response: any}>} */
     this.pageTextCache = new Cache();
@@ -135,53 +124,53 @@ export class TextSelectionPlugin {
 
   /**
    * Applies mouse events when in default mode
-   * @param {SVGElement} svg
+   * @param {HTMLElement} textLayer
    */
-  defaultMode(svg) {
-    svg.classList.remove("selectingSVG");
-    $(svg).on("mousedown.textSelectPluginHandler", (event) => {
+  defaultMode(textLayer) {
+    textLayer.classList.remove("BRtextLayer--selecting");
+    $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       if (!$(event.target).is(".BRwordElement")) return;
       event.stopPropagation();
-      svg.classList.add("selectingSVG");
-      $(svg).one("mouseup.textSelectPluginHandler", (event) => {
+      textLayer.classList.add("BRtextLayer--selecting");
+      $(textLayer).one("mouseup.textSelectPluginHandler", (event) => {
         if (window.getSelection().toString() != "") {
           event.stopPropagation();
-          $(svg).off(".textSelectPluginHandler");
-          this.textSelectingMode(svg);
+          $(textLayer).off(".textSelectPluginHandler");
+          this.textSelectingMode(textLayer);
         }
-        else svg.classList.remove("selectingSVG");
+        else textLayer.classList.remove("BRtextLayer--selecting");
       });
     });
   }
 
   /**
    * Applies mouse events when in textSelecting mode
-   * @param {SVGElement} svg
+   * @param {HTMLElement} textLayer
    */
-  textSelectingMode(svg) {
-    $(svg).on('mousedown.textSelectPluginHandler', (event) => {
+  textSelectingMode(textLayer) {
+    $(textLayer).on('mousedown.textSelectPluginHandler', (event) => {
       if (!$(event.target).is(".BRwordElement")) {
         if (window.getSelection().toString() != "") window.getSelection().removeAllRanges();
       }
       event.stopPropagation();
     });
-    $(svg).on('mouseup.textSelectPluginHandler', (event) => {
+    $(textLayer).on('mouseup.textSelectPluginHandler', (event) => {
       event.stopPropagation();
       if (window.getSelection().toString() == "") {
-        $(svg).off(".textSelectPluginHandler");
-        this.defaultMode(svg);      }
+        $(textLayer).off(".textSelectPluginHandler");
+        this.defaultMode(textLayer);      }
     });
   }
 
   /**
-   * Initializes text selection modes if there is an svg on the page
+   * Initializes text selection modes if there is a text layer on the page
    * @param {JQuery} $container
    */
   stopPageFlip($container) {
-    /** @type {JQuery<SVGElement>} */
-    const $svg = $container.find('svg.textSelectionSVG');
-    if (!$svg.length) return;
-    $svg.each((i, s) => this.defaultMode(s));
+    /** @type {JQuery<HTMLElement>} */
+    const $textLayer = $container.find('.BRtextLayer');
+    if (!$textLayer.length) return;
+    $textLayer.each((i, s) => this.defaultMode(s));
     this.interceptCopy($container);
   }
 
@@ -191,8 +180,8 @@ export class TextSelectionPlugin {
   async createTextLayer(pageContainer) {
     const pageIndex = pageContainer.page.index;
     const $container = pageContainer.$container;
-    const $svgLayers = $container.find('.textSelectionSVG');
-    if ($svgLayers.length) return;
+    const $textLayers = $container.find('.BRtextLayer');
+    if ($textLayers.length) return;
     const XMLpage = await this.getPageText(pageIndex);
     if (!XMLpage) return;
 
@@ -202,66 +191,146 @@ export class TextSelectionPlugin {
       return;
     }
 
-    const svg = createSVGPageLayer(pageContainer.page, 'textSelectionSVG');
-    $container.append(svg);
+    const textLayer = createDIVPageLayer(pageContainer.page, 'BRtextLayer');
+    const ratioW = parseFloat(pageContainer.$container[0].style.width) / pageContainer.page.width;
+    const ratioH = parseFloat(pageContainer.$container[0].style.height) / pageContainer.page.height;
+    textLayer.style.transform = `scale(${ratioW}, ${ratioH})`;
+    $container.append(textLayer);
 
-    $(XMLpage).find("PARAGRAPH").each((i, paragraph) => {
-      // Adding text element for each paragraph in the page
-      const words = $(paragraph).find("WORD");
-      if (!words.length) return;
-      const paragSvg = document.createElementNS("http://www.w3.org/2000/svg", this.svgParagraphElement);
-      paragSvg.setAttribute("class", "BRparagElement");
-      if (this.pointerEventsOnParagraph) {
-        paragSvg.style.pointerEvents = "all";
-      }
+    for (const ocrParagraph of $(XMLpage).find("PARAGRAPH")) {
+      textLayer.appendChild(this.renderParagraph(ocrParagraph));
+    }
+    this.stopPageFlip($container);
+  }
 
-      const wordHeightArr = [];
+  /**
+   * @param {HTMLElement} ocrParagraph
+   * @returns {HTMLParagraphElement}
+   */
+  renderParagraph(ocrParagraph) {
+    const paragEl = document.createElement('p');
+    paragEl.classList.add('BRparagraphElement');
+    const wordHeightArr = [];
+    const lines = $(ocrParagraph).find("LINE").toArray();
+    if (!lines.length) return paragEl;
 
-      for (let i = 0; i < words.length; i++) {
-        // Adding tspan for each word in paragraph
-        const currWord = words[i];
+    let paragLeft = Infinity;
+    let paragTop = Infinity;
+    let paragRight = 0;
+    let paragBottom = 0;
+
+    for (const [prevLine, line, nextLine] of lookAroundWindow(genMap(lines, augmentLine))) {
+      const isLastLineOfParagraph = line.ocrElement == lines[lines.length - 1];
+      const lineEl = document.createElement('span');
+      lineEl.classList.add('BRlineElement');
+
+      for (const [wordIndex, currWord] of line.words.entries()) {
+        const isLastWordOfLine = currWord === line.words[line.words.length - 1];
         // eslint-disable-next-line no-unused-vars
         const [left, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
+        paragLeft = Math.min(paragLeft, left);
+        paragTop = Math.min(paragTop, top);
+        paragRight = Math.max(paragRight, right);
+        paragBottom = Math.max(paragBottom, bottom);
         const wordHeight = bottom - top;
         wordHeightArr.push(wordHeight);
 
-        const wordTspan = document.createElementNS("http://www.w3.org/2000/svg", this.svgWordElement);
-        wordTspan.setAttribute("class", "BRwordElement");
-        wordTspan.setAttribute("x", left.toString());
-        wordTspan.setAttribute("y", bottom.toString());
-        wordTspan.setAttribute("textLength", (right - left).toString());
-        wordTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
-        wordTspan.textContent = currWord.textContent;
-        paragSvg.appendChild(wordTspan);
-
-        // Adding spaces after words except at the end of the paragraph
-        // TODO: assumes left-to-right text
-        if (i < words.length - 1) {
-          const nextWord = words[i + 1];
-          // eslint-disable-next-line no-unused-vars
-          const [leftNext, bottomNext, rightNext, topNext] = $(nextWord).attr("coords").split(',').map(parseFloat);
-          const spaceTspan = document.createElementNS("http://www.w3.org/2000/svg", this.svgWordElement);
-          spaceTspan.setAttribute("class", "BRwordElement");
-          spaceTspan.setAttribute("x", right.toString());
-          spaceTspan.setAttribute("y", bottom.toString());
-          if ((leftNext - right) > 0) spaceTspan.setAttribute("textLength", (leftNext - right).toString());
-          spaceTspan.setAttribute("lengthAdjust", "spacingAndGlyphs");
-          spaceTspan.textContent = " ";
-          paragSvg.appendChild(spaceTspan);
+        if (wordIndex == 0 && prevLine?.lastWord.textContent.trim().endsWith('-')) {
+          // ideally prefer the next line to determine the left position,
+          // since the previous line could be the first line of the paragraph
+          // and hence have an incorrectly indented first word.
+          // E.g. https://archive.org/details/driitaleofdaring00bachuoft/page/360/mode/2up
+          const [newLeft, , , ] = $((nextLine || prevLine).firstWord).attr("coords").split(',').map(parseFloat);
+          $(currWord).attr("coords", `${newLeft},${bottom},${right},${top}`);
         }
 
-        // Adds newline at the end of paragraph on Firefox
-        if ((i ==  words.length - 1 && (this.insertNewlines))) {
-          paragSvg.appendChild(document.createTextNode("\n"));
+        const wordEl = document.createElement('span');
+        wordEl.setAttribute("class", "BRwordElement");
+        wordEl.style.width = `${right - left}px`;
+        wordEl.style.height = `${wordHeight}px`;
+
+        // wordEl.setAttribute("title", currWord.outerHTML);
+        wordEl.textContent = currWord.textContent.trim();
+
+        const hasHyphen = currWord.textContent.trim().endsWith('-');
+        lineEl.appendChild(wordEl);
+        if (isLastWordOfLine && !isLastLineOfParagraph && hasHyphen) {
+          wordEl.textContent = wordEl.textContent.trim().slice(0, -1);
+          wordEl.classList.add('BRwordElement--hyphen');
+        }
+
+        if (!hasHyphen && !(isLastLineOfParagraph && isLastWordOfLine)) {
+          const space = document.createElement('span');
+          space.classList.add('BRspace');
+          space.textContent = ' ';
+          lineEl.append(space);
         }
       }
 
-      wordHeightArr.sort();
-      const paragWordHeight = wordHeightArr[Math.floor(wordHeightArr.length * 0.85)];
-      paragSvg.setAttribute("font-size", paragWordHeight.toString());
-      svg.appendChild(paragSvg);
-    });
-    this.stopPageFlip($container);
+      paragEl.appendChild(lineEl);
+    }
+
+    wordHeightArr.sort();
+    const paragWordHeight = wordHeightArr[Math.floor(wordHeightArr.length * 0.85)] + 4;
+    paragEl.style.left = `${paragLeft}px`;
+    paragEl.style.top = `${paragTop}px`;
+    paragEl.style.width = `${paragRight - paragLeft}px`;
+    paragEl.style.height = `${paragBottom - paragTop}px`;
+    paragEl.style.lineHeight = `${paragWordHeight}px`;
+    paragEl.style.fontSize = `${paragWordHeight}px`;
+
+    // Fix up sizes - stretch/crush words as necessary using letter spacing
+    let wordRects = determineRealRects(paragEl, '.BRwordElement');
+    const ocrWords = $(ocrParagraph).find("WORD").toArray();
+    const wordEls = paragEl.querySelectorAll('.BRwordElement');
+    for (const [ocrWord, wordEl] of zip(ocrWords, wordEls)) {
+      const realRect = wordRects.get(wordEl);
+      const [left, , right ] = $(ocrWord).attr("coords").split(',').map(parseFloat);
+      const ocrWidth = right - left;
+      const diff = ocrWidth - realRect.width;
+      wordEl.style.letterSpacing = `${diff / (ocrWord.textContent.length - 1)}px`;
+    }
+
+    // Stretch/crush lines as necessary using line spacing
+    // Recompute rects after letter spacing
+    wordRects = determineRealRects(paragEl, '.BRwordElement');
+    const spaceRects = determineRealRects(paragEl, '.BRspace');
+
+    const ocrLines = $(ocrParagraph).find("LINE").toArray();
+    const lineEls = Array.from(paragEl.querySelectorAll('.BRlineElement'));
+
+    let ySoFar = paragTop;
+    for (const [ocrLine, lineEl] of zip(ocrLines, lineEls)) {
+      // shift words using marginLeft to align with the correct x position
+      const words = $(ocrLine).find("WORD").toArray();
+      // const ocrLineLeft = Math.min(...words.map(w => parseFloat($(w).attr("coords").split(',')[0])));
+      let xSoFar = paragLeft;
+      for (const [ocrWord, wordEl] of zip(words, lineEl.querySelectorAll('.BRwordElement'))) {
+        const wordRect = wordRects.get(wordEl);
+        let diff = wordRect.left - xSoFar;
+        // start of line, need to compute the offset relative to the OCR words
+        const [ocrLeft, , , ] = $(ocrWord).attr("coords").split(',').map(parseFloat);
+        diff = ocrLeft - xSoFar;
+        xSoFar += diff;
+        if (wordEl.previousElementSibling) {
+          const space = wordEl.previousElementSibling;
+          space.style.letterSpacing = `${diff - spaceRects.get(space).width}px`;
+        } else {
+          wordEl.style.marginLeft = `${diff}px`;
+        }
+        xSoFar += wordRect.width;
+      }
+      // And also fix y position
+      const ocrLineTop = Math.min(...words.map(w => parseFloat($(w).attr("coords").split(',')[3])));
+      const diff = ocrLineTop - ySoFar;
+      if (lineEl.previousElementSibling) {
+        lineEl.previousElementSibling.style.lineHeight = `${diff}px`;
+        ySoFar += diff;
+      }
+    }
+
+    paragEl.appendChild(document.createElement('br'));
+    return paragEl;
   }
 }
 
@@ -276,7 +345,7 @@ export class BookreaderWithTextSelection extends BookReader {
       this.textSelectionPlugin.init();
 
       // Track how often selection is used
-      const sso = new SelectionStartedObserver('.textSelectionSVG', () => {
+      const sso = new SelectionStartedObserver('.BRtextLayer', () => {
         // Don't assume the order of the plugins ; the analytics plugin could
         // have been added later. But at this point we should know for certain.
         if (!this.archiveAnalyticsSendEvent) {
@@ -306,3 +375,73 @@ export class BookreaderWithTextSelection extends BookReader {
 }
 window.BookReader = BookreaderWithTextSelection;
 export default BookreaderWithTextSelection;
+
+
+/**
+ * @param {HTMLElement} parentEl
+ * @param {string} selector
+ * @returns {Map<Element, DOMRect>}
+ */
+function determineRealRects(parentEl, selector) {
+  parentEl.style.position = 'absolute';
+  parentEl.style.visibility = 'hidden';
+  document.body.appendChild(parentEl);
+  const rects = new Map(
+    Array.from(parentEl.querySelectorAll(selector))
+      .map(wordEl => [wordEl, wordEl.getBoundingClientRect()])
+  );
+  document.body.removeChild(parentEl);
+  parentEl.style.position = '';
+  parentEl.style.visibility = '';
+  return rects;
+}
+
+/**
+ * @param {HTMLElement} line
+ */
+function augmentLine(line) {
+  const words = $(line).find("WORD").toArray();
+  return {
+    ocrElement: line,
+    words,
+    firstWord: words[0],
+    lastWord: words[words.length - 1],
+  };
+}
+
+/**
+ * @template TFrom, TTo
+ * Generator version of map
+ * @param {Iterable<TFrom>} gen
+ * @param {function(TFrom): TTo} fn
+ * @returns {Iterable<TTo>}
+ */
+export function* genMap(gen, fn) {
+  for (const x of gen) yield fn(x);
+}
+
+/**
+ * @template T
+ * Generator that provides a sliding window of 3 elements,
+ * prev, current, and next.
+ * @param {Iterable<T>} gen
+ * @returns {Iterable<[T | undefined, T, T | undefined]>}
+ */
+export function* lookAroundWindow(gen) {
+  let prev = undefined;
+  let cur = undefined;
+  let next = undefined;
+  for (const x of gen) {
+    if (typeof cur !== 'undefined') {
+      next = x;
+      yield [prev, cur, next];
+    }
+    prev = cur;
+    cur = x;
+    next = undefined;
+  }
+
+  if (typeof cur !== 'undefined') {
+    yield [prev, cur, next];
+  }
+}

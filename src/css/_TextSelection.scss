@@ -1,41 +1,70 @@
-.textSelectionSVG {
+.BRtextLayer {
     z-index: 2;
-
-    // Make it so right-clicking on "blank" part of svg sends events to the image (for saving)
+    position: relative;
+    color: transparent;
+    transform-origin: 0 0;
+    // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
     pointer-events: none;
-    .BRwordElement { pointer-events: all; }
-    &.selectingSVG { 
+
+    &.BRtextLayer--selecting { 
         pointer-events: auto; 
         cursor: text;
     }
-   
-    // Highlight colors for text selection layer ( these 2 properties do not work if joined)
-    .BRwordElement::selection {
-        background: hsla(210, 74%, 62%, 0.4);
+}
+
+.BRparagraphElement {
+    margin: 0;
+    cursor: text;
+    font-family: Georgia, serif;
+    position: absolute;
+}
+
+.BRlineElement {
+    // position: absolute;
+    display: inline-block;
+    transform-origin: 0 0;
+    white-space: pre;
+}
+
+.BRwordElement {
+    pointer-events: all;
+    transform-origin: 0 0;
+}
+
+.BRlineElement, .BRwordElement, .BRparagraphElement {
+    transition: background-color .2s;
+    &:hover {
+        background-color: hsla(210, 74%, 62%, 0.1);
     }
-    .BRwordElement::-moz-selection {
+}
+
+// Highlight colors for text selection layer
+.BRwordElement, .BRspace, .BRparagraphElement, .BRparagraphElement br {
+    // these 2 properties do not work if joined
+    &::selection {
         background: hsla(210, 74%, 62%, 0.4);
-        color: transparent;
     }
 
-    .BRparagElement {
-        fill: transparent;
-        cursor: text;
-        white-space: pre;
-        font-family: Georgia, serif;
+    &::-moz-selection {
+        background: hsla(210, 74%, 62%, 0.4);
+        color:transparent;
     }
+}
+
+.BRwordElement--hyphen::after {
+    content: "-";
 }
 
 // Hide text layer for performance during zooming & scrolling
 .BRsmooth-zooming, .BRscrolling-active {
-    .textSelectionSVG {
+    .BRtextLayer {
         display: none;
     }
 }
 
 // Hide text selection layers of off-screen pages, and only display
 // 2 text layers regardless of zoom level
-.BRmode1up .BRpagecontainer:not(.BRpage-visible) .textSelectionSVG {
+.BRmode1up .BRpagecontainer:not(.BRpage-visible) .BRtextLayer {
     display: none;
 }
 
