@@ -1,5 +1,4 @@
 //@ts-check
-import zip from 'lodash/zip';
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { SelectionStartedObserver } from '../BookReader/utils/SelectionStartedObserver.js';
 import { applyVariables } from '../util/strings.js';
@@ -443,5 +442,29 @@ export function* lookAroundWindow(gen) {
 
   if (typeof cur !== 'undefined') {
     yield [prev, cur, next];
+  }
+}
+
+/**
+ * @template T1, T2
+ * Lazy zip implementation to avoid importing lodash
+ * Expects iterators to be of the same length
+ * @param {Iterable<T1>} gen1
+ * @param {Iterable<T2>} gen2
+ * @returns {Iterable<[T1, T2]>}
+ */
+export function* zip(gen1, gen2) {
+  const it1 = gen1[Symbol.iterator]();
+  const it2 = gen2[Symbol.iterator]();
+  while (true) {
+    const r1 = it1.next();
+    const r2 = it2.next();
+    if (r1.done && r2.done) {
+      return;
+    }
+    if (r1.done || r2.done) {
+      throw new Error('zip: one of the iterators is done');
+    }
+    yield [r1.value, r2.value];
   }
 }

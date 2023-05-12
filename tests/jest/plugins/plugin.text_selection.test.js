@@ -1,7 +1,13 @@
 import sinon from 'sinon';
 
 import '@/src/BookReader.js';
-import { BookreaderWithTextSelection, Cache, genMap, lookAroundWindow } from '@/src/plugins/plugin.text_selection.js';
+import {
+  BookreaderWithTextSelection,
+  Cache,
+  genMap,
+  lookAroundWindow,
+  zip,
+} from '@/src/plugins/plugin.text_selection.js';
 
 
 /** @type {BookReader} */
@@ -291,5 +297,19 @@ describe('lookAroundWindow', () => {
       [2, 3, 4],
       [3, 4, undefined],
     ]);
+  });
+});
+
+describe('zip', () => {
+  test('handles empty', () => {
+    expect(Array.from(zip([], []))).toEqual([]);
+  });
+
+  test('uneven throws error', () => {
+    expect(() => Array.from(zip([1], [2, 3]))).toThrow();
+  });
+
+  test('handles even', () => {
+    expect(Array.from(zip([1, 2], [3, 4]))).toEqual([[1, 3], [2, 4]]);
   });
 });
