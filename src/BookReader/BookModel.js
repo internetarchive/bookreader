@@ -45,8 +45,8 @@ export class BookModel {
       heights.push(page.heightInches);
     }
 
-    widths.sort();
-    heights.sort();
+    widths.sort((a, b) => a - b);
+    heights.sort((a, b) => a - b);
 
     this._medianPageSize = {
       width: widths[Math.floor(widths.length / 2)],

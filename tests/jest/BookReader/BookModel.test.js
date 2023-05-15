@@ -60,6 +60,21 @@ describe('getMedianPageSizeInches', () => {
     expect(bm.getMedianPageSizeInches()).toEqual({ width: 300, height: 2300 });
   });
 
+  test('does not lexicographic sort for median', () => {
+    const sizes = [
+      {width: 100, height: 100},
+      {width: 20, height: 20},
+      {width: 30, height: 30},
+    ];
+    const data = deepCopy(SAMPLE_DATA);
+    delete data[2];
+    Object.assign(data[0][0], sizes[0]);
+    Object.assign(data[1][0], sizes[1]);
+    Object.assign(data[1][1], sizes[2]);
+    const bm = new BookModel({ data, options: {ppi: 1} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 30, height: 30 });
+  });
+
   test('caches result', () => {
     const bm = new BookModel({ data: SAMPLE_DATA });
     const firstResult = bm.getMedianPageSizeInches();

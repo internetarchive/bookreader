@@ -132,7 +132,7 @@ export class ModeThumb {
     for (let i = 1; i < this.br.thumbRowBuffer; i++) {
       if (firstRow - i >= 0) { rowsToDisplay.push(firstRow - i); }
     }
-    rowsToDisplay.sort();
+    rowsToDisplay.sort((a, b) => a - b);
 
     // Create the thumbnail divs and images (lazy loaded)
     for (const row of rowsToDisplay) {
