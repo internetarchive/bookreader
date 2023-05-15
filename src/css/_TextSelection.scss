@@ -1,6 +1,8 @@
 .BRtextLayer {
     z-index: 2;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     color: transparent;
     transform-origin: 0 0;
     // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
@@ -13,7 +15,6 @@
     margin: 0;
     cursor: text;
     font-family: Georgia, serif;
-    position: absolute;
     line-height: 0;
 }
 

@@ -243,11 +243,30 @@ export class TextSelectionPlugin {
     const ratioW = parseFloat(pageContainer.$container[0].style.width) / pageContainer.page.width;
     const ratioH = parseFloat(pageContainer.$container[0].style.height) / pageContainer.page.height;
     textLayer.style.transform = `scale(${ratioW}, ${ratioH})`;
-    $container.append(textLayer);
 
-    for (const ocrParagraph of $(XMLpage).find("PARAGRAPH")) {
-      textLayer.appendChild(this.renderParagraph(ocrParagraph));
+    const ocrParagraphs = $(XMLpage).find("PARAGRAPH").toArray();
+    const paragEls = ocrParagraphs.map(p => {
+      const el = this.renderParagraph(p);
+      textLayer.appendChild(el);
+      return el;
+    });
+
+    // Fix up paragraph positions
+    const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement');
+    let yAdded = 0;
+    for (const [ocrParagraph, paragEl] of zip(ocrParagraphs, paragEls)) {
+      const ocrParagBounds = determineBounds($(ocrParagraph).find('[coords]').toArray().map(p => $(p).attr("coords").split(',').map(parseFloat)));
+      const realRect = paragraphRects.get(paragEl);
+      const [ocrLeft, , , ocrTop] = ocrParagBounds;
+      const newLeft = ocrLeft - realRect.left;
+      const newTop = ocrTop - (realRect.top + yAdded);
+      // debugger;
+      paragEl.style.marginLeft = `${newLeft}px`;
+      paragEl.style.marginTop = `${newTop}px`;
+      yAdded += newTop;
+      textLayer.appendChild(paragEl);
     }
+    $container.append(textLayer);
     this.stopPageFlip($container);
   }
 
@@ -273,8 +292,6 @@ export class TextSelectionPlugin {
       lineEl.classList.add('BRlineElement');
 
       for (const [wordIndex, currWord] of line.words.entries()) {
-        const isLastWordOfLine = currWord === line.words[line.words.length - 1];
-        // eslint-disable-next-line no-unused-vars
         const [left, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
         paragLeft = Math.min(paragLeft, left);
         paragTop = Math.min(paragTop, top);
@@ -298,24 +315,32 @@ export class TextSelectionPlugin {
         // wordEl.setAttribute("title", currWord.outerHTML);
         wordEl.textContent = currWord.textContent.trim();
 
-        const hasHyphen = currWord.textContent.trim().endsWith('-');
-        lineEl.appendChild(wordEl);
-        if (isLastWordOfLine && !isLastLineOfParagraph && hasHyphen) {
-          wordEl.textContent = wordEl.textContent.trim().slice(0, -1);
-          wordEl.classList.add('BRwordElement--hyphen');
-        }
-
-        if ((isLastLineOfParagraph && isLastWordOfLine) || (isLastWordOfLine && hasHyphen)) {
-          // Don't add a space
-        } else {
+        if (wordIndex > 0) {
           const space = document.createElement('span');
           space.classList.add('BRspace');
           space.textContent = ' ';
           lineEl.append(space);
+
+          // Edge ignores empty elements (like BRspace), so add another
+          // space to ensure Edge's ReadAloud works correctly.
+          lineEl.appendChild(document.createTextNode(' '));
         }
+
+        lineEl.appendChild(wordEl);
+      }
+
+      const hasHyphen = line.lastWord.textContent.trim().endsWith('-');
+      const lastWordEl = lineEl.children[lineEl.children.length - 1];
+      if (hasHyphen && !isLastLineOfParagraph) {
+        lastWordEl.textContent = lastWordEl.textContent.trim().slice(0, -1);
+        lastWordEl.classList.add('BRwordElement--hyphen');
       }
 
       paragEl.appendChild(lineEl);
+      if (!isLastLineOfParagraph && !hasHyphen) {
+        // Edge does not correctly have spaces between the lines.
+        paragEl.appendChild(document.createTextNode(' '));
+      }
     }
 
     wordHeightArr.sort((a, b) => a - b);
@@ -379,6 +404,7 @@ export class TextSelectionPlugin {
     // The last line will have a line height subtracting from the paragraph height
     lineEls[lineEls.length - 1].style.lineHeight = `${paragBottom - ySoFar}px`;
 
+    // Edge does not include a newline for some reason when copying/pasting the <p> els
     paragEl.appendChild(document.createElement('br'));
     return paragEl;
   }
@@ -432,16 +458,25 @@ export default BookreaderWithTextSelection;
  * @returns {Map<Element, DOMRect>}
  */
 function determineRealRects(parentEl, selector) {
+  const initals = {
+    position: parentEl.style.position,
+    visibility: parentEl.style.visibility,
+    top: parentEl.style.top,
+    left: parentEl.style.left,
+    transform: parentEl.style.transform,
+  };
   parentEl.style.position = 'absolute';
   parentEl.style.visibility = 'hidden';
+  parentEl.style.top = '0';
+  parentEl.style.left = '0';
+  parentEl.style.transform = 'none';
   document.body.appendChild(parentEl);
   const rects = new Map(
     Array.from(parentEl.querySelectorAll(selector))
       .map(wordEl => [wordEl, wordEl.getBoundingClientRect()])
   );
   document.body.removeChild(parentEl);
-  parentEl.style.position = '';
-  parentEl.style.visibility = '';
+  Object.assign(parentEl.style, initals);
   return rects;
 }
 
@@ -517,4 +552,25 @@ export function* zip(gen1, gen2) {
     }
     yield [r1.value, r2.value];
   }
+}
+
+/**
+ * [left, bottom, right, top]
+ * @param {Array<[number, number, number, number]>} bounds
+ * @returns {[number, number, number, number]}
+ */
+function determineBounds(bounds) {
+  let leftMost = Infinity;
+  let bottomMost = -Infinity;
+  let rightMost = -Infinity;
+  let topMost = Infinity;
+
+  for (const [left, bottom, right, top] of bounds) {
+    leftMost = Math.min(leftMost, left);
+    bottomMost = Math.max(bottomMost, bottom);
+    rightMost = Math.max(rightMost, right);
+    topMost = Math.min(topMost, top);
+  }
+
+  return [leftMost, bottomMost, rightMost, topMost];
 }
