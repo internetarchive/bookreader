@@ -5,11 +5,11 @@
     transform-origin: 0 0;
     // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
     pointer-events: none;
+    cursor: text;
+}
 
-    &.BRtextLayer--selecting { 
-        pointer-events: auto; 
-        cursor: text;
-    }
+.BRpagecontainer--selecting .BRtextLayer {
+    pointer-events: auto;
 }
 
 .BRparagraphElement {
@@ -17,18 +17,13 @@
     cursor: text;
     font-family: Georgia, serif;
     position: absolute;
+    line-height: 0;
 }
 
 .BRlineElement {
-    // position: absolute;
+    white-space: nowrap;
     display: inline-block;
-    transform-origin: 0 0;
-    white-space: pre;
-}
-
-.BRwordElement {
     pointer-events: all;
-    transform-origin: 0 0;
 }
 
 .BRlineElement, .BRwordElement, .BRparagraphElement {
@@ -51,19 +46,20 @@
     }
 }
 
+// Use CSS pseudo-elements to render the hyphens. This makes them
+// not selectable, so copy/pasting text doesn't include them.
 .BRwordElement--hyphen::after {
     content: "-";
 }
 
 // Hide text layer for performance during zooming & scrolling
 .BRsmooth-zooming, .BRscrolling-active {
-    .BRtextLayer {
+    .BRtextLayer:not(.BRtextLayer--hasSelection) {
         display: none;
     }
 }
 
-// Hide text selection layers of off-screen pages, and only display
-// 2 text layers regardless of zoom level
+// Hide text selection layers of off-screen pages
 .BRmode1up .BRpagecontainer:not(.BRpage-visible) .BRtextLayer {
     display: none;
 }
@@ -73,4 +69,12 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
+}
+
+// Disable long-press on image while selecting text.
+// Makes the experience janky on Chrome Android.
+.BRpagecontainer.BRpagecontainer--selecting, .BRpagecontainer.BRpagecontainer--hasSelection {
+    img {
+        pointer-events: none;
+    }
 }

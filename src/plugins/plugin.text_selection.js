@@ -126,18 +126,20 @@ export class TextSelectionPlugin {
    * @param {HTMLElement} textLayer
    */
   defaultMode(textLayer) {
-    textLayer.classList.remove("BRtextLayer--selecting");
+    const $pageContainer = $(textLayer).closest('.BRpagecontainer');
+    $pageContainer.removeClass("BRpagecontainer--selecting");
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       if (!$(event.target).is(".BRwordElement")) return;
       event.stopPropagation();
-      textLayer.classList.add("BRtextLayer--selecting");
+      $pageContainer.addClass("BRpagecontainer--selecting");
       $(textLayer).one("mouseup.textSelectPluginHandler", (event) => {
         if (window.getSelection().toString() != "") {
           event.stopPropagation();
           $(textLayer).off(".textSelectPluginHandler");
           this.textSelectingMode(textLayer);
+        } else {
+          $pageContainer.removeClass("BRpagecontainer--selecting");
         }
-        else textLayer.classList.remove("BRtextLayer--selecting");
       });
     });
   }
@@ -245,8 +247,6 @@ export class TextSelectionPlugin {
 
         const wordEl = document.createElement('span');
         wordEl.setAttribute("class", "BRwordElement");
-        wordEl.style.width = `${right - left}px`;
-        wordEl.style.height = `${wordHeight}px`;
 
         // wordEl.setAttribute("title", currWord.outerHTML);
         wordEl.textContent = currWord.textContent.trim();
@@ -271,13 +271,12 @@ export class TextSelectionPlugin {
       paragEl.appendChild(lineEl);
     }
 
-    wordHeightArr.sort();
+    wordHeightArr.sort((a, b) => a - b);
     const paragWordHeight = wordHeightArr[Math.floor(wordHeightArr.length * 0.85)] + 4;
     paragEl.style.left = `${paragLeft}px`;
     paragEl.style.top = `${paragTop}px`;
     paragEl.style.width = `${paragRight - paragLeft}px`;
     paragEl.style.height = `${paragBottom - paragTop}px`;
-    paragEl.style.lineHeight = `${paragWordHeight}px`;
     paragEl.style.fontSize = `${paragWordHeight}px`;
 
     // Fix up sizes - stretch/crush words as necessary using letter spacing
@@ -330,6 +329,9 @@ export class TextSelectionPlugin {
       }
     }
 
+    // The last line will have a line height subtracting from the paragraph height
+    lineEls[lineEls.length - 1].style.lineHeight = `${paragBottom - ySoFar}px`;
+
     paragEl.appendChild(document.createElement('br'));
     return paragEl;
   }
@@ -345,17 +347,14 @@ export class BookreaderWithTextSelection extends BookReader {
       this.options.plugins.textSelection = options;
       this.textSelectionPlugin.init();
 
-      // Track how often selection is used
-      const sso = new SelectionStartedObserver('.BRtextLayer', () => {
-        // Don't assume the order of the plugins ; the analytics plugin could
-        // have been added later. But at this point we should know for certain.
-        if (!this.archiveAnalyticsSendEvent) {
-          sso.detach();
-        } else {
-          this.archiveAnalyticsSendEvent('BookReader', 'SelectStart');
-        }
-      });
-      sso.attach();
+      new SelectionStartedObserver('.BRtextLayer', () => {
+        // Track how often selection is used
+        this.archiveAnalyticsSendEvent?.('BookReader', 'SelectStart');
+
+        // Set a class on the page to avoid hiding it when zooming/etc
+        this.refs.$br.find('.BRtextLayer--hasSelection').removeClass('BRpagecontainer--hasSelection');
+        $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
+      }).attach();
     }
 
     super.init();
