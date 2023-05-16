@@ -383,14 +383,6 @@ class SearchView {
     }
   }
 
-  /**
-   * @param {Event} e
-   */
-  handleNavToggledCallback(e) {
-    const is_visible = this.br.navigationIsVisible();
-    this.togglePinsFor(is_visible);
-  }
-
   handleSearchStarted() {
     this.emptyMatches();
     this.br.removeSearchHilites();
@@ -425,7 +417,6 @@ class SearchView {
 
     window.addEventListener(`${namespace}SearchCallbackError`, this.handleSearchCallbackError.bind(this));
     $(document).on(`${namespace}SearchCallback`, this.handleSearchCallback.bind(this))
-      .on(`${namespace}navToggled`, this.handleNavToggledCallback.bind(this))
       .on(`${namespace}SearchStarted`, this.handleSearchStarted.bind(this))
       .on(`${namespace}SearchCallbackBookNotIndexed`, this.handleSearchCallbackBookNotIndexed.bind(this))
       .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this))
