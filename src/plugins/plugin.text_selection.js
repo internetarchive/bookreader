@@ -1,6 +1,6 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
-import { SelectionStartedObserver } from '../BookReader/utils/SelectionStartedObserver.js';
+import { SelectionObserver } from '../BookReader/utils/SelectionObserver.js';
 import { applyVariables } from '../util/strings.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
@@ -57,9 +57,29 @@ export class TextSelectionPlugin {
      * unusable. For now don't render text layer for pages with too many words.
      */
     this.maxWordRendered = 2500;
+
+    this.selectionObserver = new SelectionObserver('.BRtextLayer', this._onSelectionChange);
+  }
+
+  /**
+   * @param {'started' | 'cleared'} type
+   * @param {HTMLElement} target
+   */
+  _onSelectionChange = (type, target) => {
+    if (type === 'started') {
+      console.log('selection started', target);
+      this.textSelectingMode(target);
+    } else if (type === 'cleared') {
+      console.log('selection cleared', target);
+      this.defaultMode(target);
+    } else {
+      throw new Error(`Unknown type ${type}`);
+    }
   }
 
   init() {
+    this.selectionObserver.attach();
+
     // Only fetch the full djvu xml if the single page url isn't there
     if (this.options.singlePageDjvuXmlUrl) return;
     this.djvuPagesPromise = $.ajax({
@@ -126,40 +146,67 @@ export class TextSelectionPlugin {
    * @param {HTMLElement} textLayer
    */
   defaultMode(textLayer) {
+    console.log("defaultMode");
     const $pageContainer = $(textLayer).closest('.BRpagecontainer');
-    $pageContainer.removeClass("BRpagecontainer--selecting");
+    textLayer.style.pointerEvents = "none";
+    $pageContainer.find("img").css("pointer-events", "auto");
+
+    $(textLayer).off(".textSelectPluginHandler");
+    const startedMouseDown = this.mouseIsDown;
+    let skipNextMouseup = this.mouseIsDown;
+    if (startedMouseDown) {
+      textLayer.style.pointerEvents = "auto";
+    }
+
+    // Need to stop propagation to prevent DragScrollable from
+    // blocking selection
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
-      if (!$(event.target).is(".BRwordElement")) return;
-      event.stopPropagation();
-      $pageContainer.addClass("BRpagecontainer--selecting");
-      $(textLayer).one("mouseup.textSelectPluginHandler", (event) => {
-        if (window.getSelection().toString() != "") {
-          event.stopPropagation();
-          $(textLayer).off(".textSelectPluginHandler");
-          this.textSelectingMode(textLayer);
-        } else {
-          $pageContainer.removeClass("BRpagecontainer--selecting");
-        }
-      });
+      this.mouseIsDown = true;
+      console.log("DM: mousedown.textSelectPluginHandler");
+      if ($(event.target).is(".BRwordElement")) {
+        event.stopPropagation();
+      }
+    });
+
+    $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
+      this.mouseIsDown = false;
+      console.log("DM: mouseup.textSelectPluginHandler");
+      textLayer.style.pointerEvents = "none";
+      if (skipNextMouseup) {
+        skipNextMouseup = false;
+        event.stopPropagation();
+      }
     });
   }
 
   /**
-   * Applies mouse events when in textSelecting mode
+   * This mode is active while there is a selection on the given textLayer
    * @param {HTMLElement} textLayer
    */
   textSelectingMode(textLayer) {
+    console.log("textSelectingMode", textLayer);
+    const $pageContainer = $(textLayer).closest('.BRpagecontainer');
+    // Make text layer consume all events
+    textLayer.style.pointerEvents = "all";
+    // Block img from getting long-press to save while selecting
+    $pageContainer.find("img").css("pointer-events", "none");
+
+    $(textLayer).off(".textSelectPluginHandler");
+
     $(textLayer).on('mousedown.textSelectPluginHandler', (event) => {
-      if (!$(event.target).is(".BRwordElement")) {
-        if (window.getSelection().toString() != "") window.getSelection().removeAllRanges();
-      }
+      this.mouseIsDown = true;
+      console.log("SM: mousedown.textSelectPluginHandler");
       event.stopPropagation();
+      // if (!$(event.target).is(".BRwordElement")) {
+      //   window.getSelection().removeAllRanges();
+      // }
     });
+
+    // Prevent page flip on click
     $(textLayer).on('mouseup.textSelectPluginHandler', (event) => {
+      this.mouseIsDown = false;
+      console.log("SM: mouseup.textSelectPluginHandler");
       event.stopPropagation();
-      if (window.getSelection().toString() == "") {
-        $(textLayer).off(".textSelectPluginHandler");
-        this.defaultMode(textLayer);      }
     });
   }
 
@@ -347,13 +394,15 @@ export class BookreaderWithTextSelection extends BookReader {
       this.options.plugins.textSelection = options;
       this.textSelectionPlugin.init();
 
-      new SelectionStartedObserver('.BRtextLayer', () => {
+      new SelectionObserver('.BRtextLayer', (selectEvent) => {
         // Track how often selection is used
-        this.archiveAnalyticsSendEvent?.('BookReader', 'SelectStart');
+        if (selectEvent == 'started') {
+          this.archiveAnalyticsSendEvent?.('BookReader', 'SelectStart');
 
-        // Set a class on the page to avoid hiding it when zooming/etc
-        this.refs.$br.find('.BRtextLayer--hasSelection').removeClass('BRpagecontainer--hasSelection');
-        $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
+          // Set a class on the page to avoid hiding it when zooming/etc
+          this.refs.$br.find('.BRtextLayer--hasSelection').removeClass('BRpagecontainer--hasSelection');
+          $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
+        }
       }).attach();
     }
 

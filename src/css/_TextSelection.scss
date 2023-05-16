@@ -8,9 +8,6 @@
     cursor: text;
 }
 
-.BRpagecontainer--selecting .BRtextLayer {
-    pointer-events: auto;
-}
 
 .BRparagraphElement {
     margin: 0;
@@ -21,9 +18,9 @@
 }
 
 .BRlineElement {
+    pointer-events: all;
     white-space: nowrap;
     display: inline-block;
-    pointer-events: all;
 }
 
 .BRlineElement, .BRwordElement, .BRparagraphElement {
@@ -46,6 +43,10 @@
     }
 }
 
+.BRparagraphElement br {
+    visibility: hidden;
+}
+
 // Use CSS pseudo-elements to render the hyphens. This makes them
 // not selectable, so copy/pasting text doesn't include them.
 .BRwordElement--hyphen::after {
@@ -54,7 +55,7 @@
 
 // Hide text layer for performance during zooming & scrolling
 .BRsmooth-zooming, .BRscrolling-active {
-    .BRtextLayer:not(.BRtextLayer--hasSelection) {
+    .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer {
         display: none;
     }
 }
@@ -69,12 +70,4 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
-}
-
-// Disable long-press on image while selecting text.
-// Makes the experience janky on Chrome Android.
-.BRpagecontainer.BRpagecontainer--selecting, .BRpagecontainer.BRpagecontainer--hasSelection {
-    img {
-        pointer-events: none;
-    }
 }
