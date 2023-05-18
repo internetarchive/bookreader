@@ -10,7 +10,6 @@
     cursor: text;
 }
 
-
 .BRparagraphElement {
     margin: 0;
     cursor: text;
@@ -24,7 +23,7 @@
     display: inline-block;
 }
 
-.BRlineElement, .BRwordElement, .BRparagraphElement {
+.BRlineElement, .BRwordElement, .BRparagraphElement, .BRcolumnElement {
     transition: background-color .2s;
     &:hover {
         background-color: hsla(210, 74%, 62%, 0.1);
@@ -71,4 +70,36 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
+}
+
+
+// These are Microsoft Edge specific fixed to make some of the
+// browsers features work well. These are for the in-place
+// translation.
+.BRwordElement, .BRspace {
+    &[_istranslated="1"], &[_msttexthash] {
+        background-color: #e4dccd;
+        color: black;
+        letter-spacing: unset !important;
+        background: #ccbfa7;
+    }
+}
+
+.BRlineElement font[_mstmutation="1"] {
+    background: #ccbfa7;
+}
+
+.BRlineElement:has([_istranslated="1"], [_msttexthash]) {
+    background-color: #e4dccd;
+    color: black;
+    text-align: justify;
+    width: inherit;
+    &:not(:nth-last-child(2)) {
+        text-align-last: justify;
+    }
+}
+
+.BRlineElement[_msttexthash] {
+    background: #ccbfa7;
+    word-spacing: unset !important;
 }
