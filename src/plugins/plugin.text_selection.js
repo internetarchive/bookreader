@@ -232,6 +232,7 @@ export class TextSelectionPlugin {
     if ($textLayers.length) return;
     const XMLpage = await this.getPageText(pageIndex);
     if (!XMLpage) return;
+    recursivelyAddCoords(XMLpage);
 
     const totalWords = $(XMLpage).find("WORD").length;
     if (totalWords > this.maxWordRendered) {
@@ -244,7 +245,7 @@ export class TextSelectionPlugin {
     const ratioH = parseFloat(pageContainer.$container[0].style.height) / pageContainer.page.height;
     textLayer.style.transform = `scale(${ratioW}, ${ratioH})`;
 
-    const ocrParagraphs = $(XMLpage).find("PARAGRAPH").toArray();
+    const ocrParagraphs = $(XMLpage).find("PARAGRAPH[coords]").toArray();
     const paragEls = ocrParagraphs.map(p => {
       const el = this.renderParagraph(p);
       textLayer.appendChild(el);
@@ -255,7 +256,7 @@ export class TextSelectionPlugin {
     const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement');
     let yAdded = 0;
     for (const [ocrParagraph, paragEl] of zip(ocrParagraphs, paragEls)) {
-      const ocrParagBounds = determineBounds($(ocrParagraph).find('[coords]').toArray().map(p => $(p).attr("coords").split(',').map(parseFloat)));
+      const ocrParagBounds = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
       const realRect = paragraphRects.get(paragEl);
       const [ocrLeft, , , ocrTop] = ocrParagBounds;
       const newLeft = ocrLeft - realRect.left;
@@ -581,4 +582,33 @@ function determineBounds(bounds) {
   }
 
   return [leftMost, bottomMost, rightMost, topMost];
+}
+
+/**
+ * Recursively traverses the XML tree and adds coords
+ * which are the bounding box of all child coords
+ * @param {Element} xmlEl
+ */
+function recursivelyAddCoords(xmlEl) {
+  if ($(xmlEl).attr('coords')) {
+    return;
+  }
+
+  const children = Array.from(xmlEl.children);
+  if (children.length === 0) {
+    return;
+  }
+
+  for (const child of children) {
+    recursivelyAddCoords(child);
+  }
+
+  const childCoords = [];
+
+  for (const child of children) {
+    if (!$(child).attr('coords')) continue;
+    childCoords.push($(child).attr('coords').split(',').map(parseFloat));
+  }
+
+  $(xmlEl).attr('coords', determineBounds(childCoords).join(','));
 }
