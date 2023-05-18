@@ -590,11 +590,11 @@ function determineBounds(bounds) {
  * @param {Element} xmlEl
  */
 function recursivelyAddCoords(xmlEl) {
-  if ($(xmlEl).attr('coords')) {
+  if ($(xmlEl).attr('coords') || !xmlEl.children) {
     return;
   }
 
-  const children = Array.from(xmlEl.children);
+  const children = $(xmlEl).children().toArray();
   if (children.length === 0) {
     return;
   }
