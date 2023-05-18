@@ -358,7 +358,15 @@ export class TextSelectionPlugin {
     for (const [ocrWord, wordEl] of zip(ocrWords, wordEls)) {
       const realRect = wordRects.get(wordEl);
       const [left, , right ] = $(ocrWord).attr("coords").split(',').map(parseFloat);
-      const ocrWidth = right - left;
+      let ocrWidth = right - left;
+      // Some books (eg theworksofplato01platiala) have a space _inside_ the <WORD>
+      // element. That makes it impossible to determine the correct positining
+      // of everything, but to avoid the BRspace's being width 0, which makes selection
+      // janky on Chrome Android, assume the space is the same width as one of the
+      // letters.
+      if (ocrWord.textContent.endsWith(' ')) {
+        ocrWidth = ocrWidth * (ocrWord.textContent.length - 1) / ocrWord.textContent.length;
+      }
       const diff = ocrWidth - realRect.width;
       wordEl.style.letterSpacing = `${diff / (ocrWord.textContent.length - 1)}px`;
     }
