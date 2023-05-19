@@ -482,7 +482,15 @@ function determineRealRects(parentEl, selector) {
   document.body.appendChild(parentEl);
   const rects = new Map(
     Array.from(parentEl.querySelectorAll(selector))
-      .map(wordEl => [wordEl, wordEl.getBoundingClientRect()])
+      .map(wordEl => {
+        const origRect = wordEl.getBoundingClientRect();
+        return [wordEl, new DOMRect(
+          origRect.left + window.scrollX,
+          origRect.top + window.scrollY,
+          origRect.width,
+          origRect.height,
+        )];
+      })
   );
   document.body.removeChild(parentEl);
   Object.assign(parentEl.style, initals);
