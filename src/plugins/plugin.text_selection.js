@@ -42,12 +42,18 @@ export class Cache {
 }
 
 export class TextSelectionPlugin {
-
-  constructor(options = DEFAULT_OPTIONS, optionVariables) {
+  /**
+   * @param {'lr' | 'rl'} pageProgression In the future this should be in the ocr file
+   * since a book being right to left doesn't mean the ocr is right to left. But for
+   * now we do make that assumption.
+   */
+  constructor(options = DEFAULT_OPTIONS, optionVariables, pageProgression = 'lr') {
     this.options = options;
     this.optionVariables = optionVariables;
     /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
     this.djvuPagesPromise = null;
+    /** Whether the book is right-to-left */
+    this.rtl = pageProgression === 'rl';
 
     /** @type {Cache<{index: number, response: any}>} */
     this.pageTextCache = new Cache();
@@ -233,6 +239,7 @@ export class TextSelectionPlugin {
     const ratioW = parseFloat(pageContainer.$container[0].style.width) / pageContainer.page.width;
     const ratioH = parseFloat(pageContainer.$container[0].style.height) / pageContainer.page.height;
     textLayer.style.transform = `scale(${ratioW}, ${ratioH})`;
+    textLayer.setAttribute("dir", this.rtl ? "rtl" : "ltr");
 
     const ocrParagraphs = $(XMLpage).find("PARAGRAPH[coords]").toArray();
     const paragEls = ocrParagraphs.map(p => {
@@ -247,11 +254,11 @@ export class TextSelectionPlugin {
     for (const [ocrParagraph, paragEl] of zip(ocrParagraphs, paragEls)) {
       const ocrParagBounds = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
       const realRect = paragraphRects.get(paragEl);
-      const [ocrLeft, , , ocrTop] = ocrParagBounds;
-      const newLeft = ocrLeft - realRect.left;
+      const [ocrLeft, , ocrRight, ocrTop] = ocrParagBounds;
+      const newStartMargin = this.rtl ? (realRect.right - ocrRight) : (ocrLeft - realRect.left);
       const newTop = ocrTop - (realRect.top + yAdded);
 
-      paragEl.style.marginLeft = `${newLeft}px`;
+      paragEl.style[this.rtl ? 'marginRight' : 'marginLeft'] = `${newStartMargin}px`;
       paragEl.style.marginTop = `${newTop}px`;
       yAdded += newTop;
       textLayer.appendChild(paragEl);
@@ -269,7 +276,7 @@ export class TextSelectionPlugin {
     paragEl.classList.add('BRparagraphElement');
     const [paragLeft, paragBottom, paragRight, paragTop] = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
     const wordHeightArr = [];
-    const lines = $(ocrParagraph).find("LINE").toArray();
+    const lines = $(ocrParagraph).find("LINE[coords]").toArray();
     if (!lines.length) return paragEl;
 
 
@@ -359,7 +366,7 @@ export class TextSelectionPlugin {
     wordRects = determineRealRects(paragEl, '.BRwordElement');
     const spaceRects = determineRealRects(paragEl, '.BRspace');
 
-    const ocrLines = $(ocrParagraph).find("LINE").toArray();
+    const ocrLines = $(ocrParagraph).find("LINE[coords]").toArray();
     const lineEls = Array.from(paragEl.querySelectorAll('.BRlineElement'));
 
     let ySoFar = paragTop;
@@ -367,21 +374,21 @@ export class TextSelectionPlugin {
       // shift words using marginLeft to align with the correct x position
       const words = $(ocrLine).find("WORD").toArray();
       // const ocrLineLeft = Math.min(...words.map(w => parseFloat($(w).attr("coords").split(',')[0])));
-      let xSoFar = paragLeft;
+      let xSoFar = this.rtl ? paragRight : paragLeft;
       for (const [ocrWord, wordEl] of zip(words, lineEl.querySelectorAll('.BRwordElement'))) {
-        const wordRect = wordRects.get(wordEl);
-        let diff = wordRect.left - xSoFar;
         // start of line, need to compute the offset relative to the OCR words
-        const [ocrLeft, , , ] = $(ocrWord).attr("coords").split(',').map(parseFloat);
-        diff = ocrLeft - xSoFar;
-        xSoFar += diff;
+        const wordRect = wordRects.get(wordEl);
+        const [ocrLeft, , ocrRight ] = $(ocrWord).attr("coords").split(',').map(parseFloat);
+        const diff = (this.rtl ? -(ocrRight - xSoFar) : ocrLeft - xSoFar);
+
         if (wordEl.previousElementSibling) {
           const space = wordEl.previousElementSibling;
           space.style.letterSpacing = `${diff - spaceRects.get(space).width}px`;
         } else {
-          wordEl.style.marginLeft = `${diff}px`;
+          wordEl.style[this.rtl ? 'marginRight' : 'marginLeft'] = `${diff}px`;
         }
-        xSoFar += wordRect.width;
+        if (this.rtl) xSoFar -= diff + wordRect.width;
+        else xSoFar += diff + wordRect.width;
       }
       // And also fix y position
       const ocrLineTop = Math.min(...words.map(w => parseFloat($(w).attr("coords").split(',')[3])));
@@ -405,7 +412,7 @@ export class BookreaderWithTextSelection extends BookReader {
   init() {
     const options = Object.assign({}, DEFAULT_OPTIONS, this.options.plugins.textSelection);
     if (options.enabled) {
-      this.textSelectionPlugin = new TextSelectionPlugin(options, this.options.vars);
+      this.textSelectionPlugin = new TextSelectionPlugin(options, this.options.vars, this.pageProgression);
       // Write this back; this way the plugin is the source of truth, and BR just
       // contains a reference to it.
       this.options.plugins.textSelection = options;
@@ -600,5 +607,8 @@ function recursivelyAddCoords(xmlEl) {
     childCoords.push($(child).attr('coords').split(',').map(parseFloat));
   }
 
-  $(xmlEl).attr('coords', determineBounds(childCoords).join(','));
+  const boundingCoords = determineBounds(childCoords);
+  if (Math.abs(boundingCoords[0]) != Infinity) {
+    $(xmlEl).attr('coords', boundingCoords.join(','));
+  }
 }

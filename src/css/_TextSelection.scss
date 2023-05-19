@@ -29,7 +29,8 @@
     // the right of each line, forcing things to wrap.
     // See eg https://www-drini.archive.org/details/countofmontecris00duma_7/page/261/mode/2up
     // Page 261, second last line on the page.
-    margin-right: 100%;
+    .BRtextLayer[dir=ltr] & { margin-right: 100%; }
+    .BRtextLayer[dir=rtl] & { margin-left: 100%; }
 }
 
 // Highlight colors for text selection layer
