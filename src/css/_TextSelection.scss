@@ -21,6 +21,15 @@
     pointer-events: all;
     white-space: nowrap;
     display: inline-block;
+
+    // We use display: inline-block, otherwise this causes every line
+    // to have newlines at the end in safari. BUT, since they're inline,
+    // if the OCR has to short line in the same paragraph, they can wrap
+    // and one can go onto the other. This adds an arbitrary margin to
+    // the right of each line, forcing things to wrap.
+    // See eg https://www-drini.archive.org/details/countofmontecris00duma_7/page/261/mode/2up
+    // Page 261, second last line on the page.
+    margin-right: 100%;
 }
 
 .BRlineElement, .BRwordElement, .BRparagraphElement, .BRcolumnElement {
