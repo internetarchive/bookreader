@@ -165,7 +165,7 @@ export class TextSelectionPlugin {
     // blocking selection
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       this.mouseIsDown = true;
-      if ($(event.target).is(".BRwordElement")) {
+      if ($(event.target).is(".BRwordElement, .BRspace")) {
         event.stopPropagation();
       }
     });
@@ -385,7 +385,7 @@ export class TextSelectionPlugin {
           const space = wordEl.previousElementSibling;
           space.style.letterSpacing = `${diff - spaceRects.get(space).width}px`;
         } else {
-          wordEl.style[this.rtl ? 'marginRight' : 'marginLeft'] = `${diff}px`;
+          wordEl.style[this.rtl ? 'paddingRight' : 'paddingLeft'] = `${diff}px`;
         }
         if (this.rtl) xSoFar -= diff + wordRect.width;
         else xSoFar += diff + wordRect.width;
