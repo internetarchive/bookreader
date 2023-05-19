@@ -67,10 +67,8 @@ export class TextSelectionPlugin {
    */
   _onSelectionChange = (type, target) => {
     if (type === 'started') {
-      console.log('selection started', target);
       this.textSelectingMode(target);
     } else if (type === 'cleared') {
-      console.log('selection cleared', target);
       this.defaultMode(target);
     } else {
       throw new Error(`Unknown type ${type}`);
@@ -146,7 +144,6 @@ export class TextSelectionPlugin {
    * @param {HTMLElement} textLayer
    */
   defaultMode(textLayer) {
-    console.log("defaultMode");
     const $pageContainer = $(textLayer).closest('.BRpagecontainer');
     textLayer.style.pointerEvents = "none";
     $pageContainer.find("img").css("pointer-events", "auto");
@@ -162,7 +159,6 @@ export class TextSelectionPlugin {
     // blocking selection
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       this.mouseIsDown = true;
-      console.log("DM: mousedown.textSelectPluginHandler");
       if ($(event.target).is(".BRwordElement")) {
         event.stopPropagation();
       }
@@ -170,7 +166,6 @@ export class TextSelectionPlugin {
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
       this.mouseIsDown = false;
-      console.log("DM: mouseup.textSelectPluginHandler");
       textLayer.style.pointerEvents = "none";
       if (skipNextMouseup) {
         skipNextMouseup = false;
@@ -184,7 +179,6 @@ export class TextSelectionPlugin {
    * @param {HTMLElement} textLayer
    */
   textSelectingMode(textLayer) {
-    console.log("textSelectingMode", textLayer);
     const $pageContainer = $(textLayer).closest('.BRpagecontainer');
     // Make text layer consume all events
     textLayer.style.pointerEvents = "all";
@@ -195,17 +189,12 @@ export class TextSelectionPlugin {
 
     $(textLayer).on('mousedown.textSelectPluginHandler', (event) => {
       this.mouseIsDown = true;
-      console.log("SM: mousedown.textSelectPluginHandler");
       event.stopPropagation();
-      // if (!$(event.target).is(".BRwordElement")) {
-      //   window.getSelection().removeAllRanges();
-      // }
     });
 
     // Prevent page flip on click
     $(textLayer).on('mouseup.textSelectPluginHandler', (event) => {
       this.mouseIsDown = false;
-      console.log("SM: mouseup.textSelectPluginHandler");
       event.stopPropagation();
     });
   }
@@ -261,7 +250,7 @@ export class TextSelectionPlugin {
       const [ocrLeft, , , ocrTop] = ocrParagBounds;
       const newLeft = ocrLeft - realRect.left;
       const newTop = ocrTop - (realRect.top + yAdded);
-      // debugger;
+
       paragEl.style.marginLeft = `${newLeft}px`;
       paragEl.style.marginTop = `${newTop}px`;
       yAdded += newTop;
@@ -278,14 +267,11 @@ export class TextSelectionPlugin {
   renderParagraph(ocrParagraph) {
     const paragEl = document.createElement('p');
     paragEl.classList.add('BRparagraphElement');
+    const [paragLeft, paragBottom, paragRight, paragTop] = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
     const wordHeightArr = [];
     const lines = $(ocrParagraph).find("LINE").toArray();
     if (!lines.length) return paragEl;
 
-    let paragLeft = Infinity;
-    let paragTop = Infinity;
-    let paragRight = 0;
-    let paragBottom = 0;
 
     for (const [prevLine, line, nextLine] of lookAroundWindow(genMap(lines, augmentLine))) {
       const isLastLineOfParagraph = line.ocrElement == lines[lines.length - 1];
@@ -293,11 +279,7 @@ export class TextSelectionPlugin {
       lineEl.classList.add('BRlineElement');
 
       for (const [wordIndex, currWord] of line.words.entries()) {
-        const [left, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
-        paragLeft = Math.min(paragLeft, left);
-        paragTop = Math.min(paragTop, top);
-        paragRight = Math.max(paragRight, right);
-        paragBottom = Math.max(paragBottom, bottom);
+        const [, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
         const wordHeight = bottom - top;
         wordHeightArr.push(wordHeight);
 

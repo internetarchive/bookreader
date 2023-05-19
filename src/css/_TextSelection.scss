@@ -32,13 +32,6 @@
     margin-right: 100%;
 }
 
-.BRlineElement, .BRwordElement, .BRparagraphElement, .BRcolumnElement {
-    transition: background-color .2s;
-    &:hover {
-        background-color: hsla(210, 74%, 62%, 0.1);
-    }
-}
-
 // Highlight colors for text selection layer
 .BRwordElement, .BRspace, .BRparagraphElement, .BRparagraphElement br {
     // these 2 properties do not work if joined
