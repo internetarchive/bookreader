@@ -13,8 +13,6 @@ export const DEFAULT_OPTIONS = {
   fullDjvuXmlUrl: null,
   /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
   singlePageDjvuXmlUrl: null,
-  /** @type {'djvu' | 'hocr'} */
-  format: 'djvu',
   /** Whether to fetch the XML as a jsonp */
   jsonp: false,
 };
