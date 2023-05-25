@@ -453,7 +453,7 @@ export default BookreaderWithTextSelection;
 /**
  * @param {HTMLElement} parentEl
  * @param {string} selector
- * @returns {Map<Element, DOMRect>}
+ * @returns {Map<Element, Rect>}
  */
 function determineRealRects(parentEl, selector) {
   const initals = {
@@ -473,7 +473,7 @@ function determineRealRects(parentEl, selector) {
     Array.from(parentEl.querySelectorAll(selector))
       .map(wordEl => {
         const origRect = wordEl.getBoundingClientRect();
-        return [wordEl, new DOMRect(
+        return [wordEl, new Rect(
           origRect.left + window.scrollX,
           origRect.top + window.scrollY,
           origRect.width,
@@ -611,4 +611,27 @@ function recursivelyAddCoords(xmlEl) {
   if (Math.abs(boundingCoords[0]) != Infinity) {
     $(xmlEl).attr('coords', boundingCoords.join(','));
   }
+}
+
+/**
+ * Basically a polyfill for the native DOMRect class
+ */
+class Rect {
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {number} width
+   * @param {number} height
+   */
+  constructor(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
+
+  get right() { return this.x + this.width; }
+  get bottom() { return this.y + this.height; }
+  get top() { return this.y; }
+  get left() { return this.x; }
 }
