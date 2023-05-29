@@ -299,8 +299,6 @@ export class TextSelectionPlugin {
 
         const wordEl = document.createElement('span');
         wordEl.setAttribute("class", "BRwordElement");
-
-        // wordEl.setAttribute("title", currWord.outerHTML);
         wordEl.textContent = currWord.textContent.trim();
 
         if (wordIndex > 0) {
@@ -422,7 +420,7 @@ export class BookreaderWithTextSelection extends BookReader {
           this.archiveAnalyticsSendEvent?.('BookReader', 'SelectStart');
 
           // Set a class on the page to avoid hiding it when zooming/etc
-          this.refs.$br.find('.BRtextLayer--hasSelection').removeClass('BRpagecontainer--hasSelection');
+          this.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
           $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
         }
       }).attach();

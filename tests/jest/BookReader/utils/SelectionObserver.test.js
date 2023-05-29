@@ -6,14 +6,12 @@ afterEach(() => {
   sinon.restore();
 });
 
-describe("SelectionStartedObserver", () => {
+describe("SelectionObserver", () => {
   test("_onSelectionChange", () => {
     const handler = sinon.spy();
     const observer = new SelectionObserver(".text-layer", handler);
-    const ev = new Event("selectstart", {});
     const target = document.createElement("div");
     target.classList.add("text-layer");
-    Object.defineProperty(ev, "target", { get: () => target });
 
     // stub window.getSelection
     const getSelectionStub = sinon.stub(window, "getSelection");
