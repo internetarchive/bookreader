@@ -500,6 +500,8 @@ body.BRfullscreenActive .mm-menu {
   position: relative;
   overflow: hidden;
   background: #FEFDEB;
+  overflow: hidden;
+  overflow: clip;
 }
 .BRpagecontainer img {
   position: absolute;
@@ -2963,36 +2965,57 @@ li.BRtable-contents-el .BRTOCElementPage {
   background-color: #ccc;
 }
 
-.textSelectionSVG {
+.BRtextLayer {
   z-index: 2;
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: transparent;
+  transform-origin: 0 0;
   pointer-events: none;
-}
-.textSelectionSVG .BRwordElement {
-  pointer-events: all;
-}
-.textSelectionSVG.selectingSVG {
-  pointer-events: auto;
   cursor: text;
 }
-.textSelectionSVG .BRwordElement::selection {
+
+.BRparagraphElement {
+  margin: 0;
+  cursor: text;
+  font-family: Georgia, serif;
+  line-height: 0;
+}
+
+.BRlineElement {
+  pointer-events: all;
+  white-space: nowrap;
+  display: inline-block;
+}
+.BRtextLayer[dir=ltr] .BRlineElement {
+  margin-right: 100%;
+}
+.BRtextLayer[dir=rtl] .BRlineElement {
+  margin-left: 100%;
+}
+
+.BRwordElement::selection, .BRspace::selection, .BRparagraphElement::selection, .BRparagraphElement br::selection {
   background: hsla(210deg, 74%, 62%, 0.4);
 }
-.textSelectionSVG .BRwordElement::-moz-selection {
+.BRwordElement::-moz-selection, .BRspace::-moz-selection, .BRparagraphElement::-moz-selection, .BRparagraphElement br::-moz-selection {
   background: hsla(210deg, 74%, 62%, 0.4);
   color: transparent;
 }
-.textSelectionSVG .BRparagElement {
-  fill: transparent;
-  cursor: text;
-  white-space: pre;
-  font-family: Georgia, serif;
+
+.BRparagraphElement br {
+  visibility: hidden;
 }
 
-.BRsmooth-zooming .textSelectionSVG, .BRscrolling-active .textSelectionSVG {
+.BRwordElement--hyphen::after {
+  content: "-";
+}
+
+.BRsmooth-zooming .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer, .BRscrolling-active .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer {
   display: none;
 }
 
-.BRmode1up .BRpagecontainer:not(.BRpage-visible) .textSelectionSVG {
+.BRmode1up .BRpagecontainer:not(.BRpage-visible) .BRtextLayer {
   display: none;
 }
 
@@ -3000,6 +3023,32 @@ li.BRtable-contents-el .BRTOCElementPage {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
+}
+
+.BRwordElement[_istranslated="1"], .BRwordElement[_msttexthash], .BRspace[_istranslated="1"], .BRspace[_msttexthash] {
+  background-color: #e4dccd;
+  color: black;
+  letter-spacing: unset !important;
+  background: #ccbfa7;
+}
+
+.BRlineElement font[_mstmutation="1"] {
+  background: #ccbfa7;
+}
+
+.BRlineElement:has([_istranslated="1"], [_msttexthash]) {
+  background-color: #e4dccd;
+  color: black;
+  text-align: justify;
+  width: inherit;
+}
+.BRlineElement:has([_istranslated="1"], [_msttexthash]):not(:nth-last-child(2)) {
+  text-align-last: justify;
+}
+
+.BRlineElement[_msttexthash] {
+  background: #ccbfa7;
+  word-spacing: unset !important;
 }
 
 /**

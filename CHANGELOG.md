@@ -1,3 +1,8 @@
+# 5.0.0-62
+- Fix: Make text selection work in Safari 15.4+ @cdrini
+- Fix: Rewrite/improvements to text selection UX @cdrini
+    - Switches from SVG text layer to HTML text layer
+
 # 5.0.0-61
 - Fix: Mode2up preview pages hanging on first click @cdrini
 - Dev: Add analytics event for text layer page selection @cdrini
