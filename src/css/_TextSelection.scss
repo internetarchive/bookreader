@@ -1,41 +1,70 @@
-.textSelectionSVG {
+.BRtextLayer {
     z-index: 2;
-
-    // Make it so right-clicking on "blank" part of svg sends events to the image (for saving)
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: transparent;
+    transform-origin: 0 0;
+    // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
     pointer-events: none;
-    .BRwordElement { pointer-events: all; }
-    &.selectingSVG { 
-        pointer-events: auto; 
-        cursor: text;
-    }
-   
-    // Highlight colors for text selection layer ( these 2 properties do not work if joined)
-    .BRwordElement::selection {
+    cursor: text;
+}
+
+.BRparagraphElement {
+    margin: 0;
+    cursor: text;
+    font-family: Georgia, serif;
+    line-height: 0;
+}
+
+.BRlineElement {
+    pointer-events: all;
+    white-space: nowrap;
+    display: inline-block;
+
+    // We use display: inline-block, otherwise this causes every line
+    // to have newlines at the end in safari. BUT, since they're inline,
+    // if the OCR has to short line in the same paragraph, they can wrap
+    // and one can go onto the other. This adds an arbitrary margin to
+    // the right of each line, forcing things to wrap.
+    // See eg https://www-drini.archive.org/details/countofmontecris00duma_7/page/261/mode/2up
+    // Page 261, second last line on the page.
+    .BRtextLayer[dir=ltr] & { margin-right: 100%; }
+    .BRtextLayer[dir=rtl] & { margin-left: 100%; }
+}
+
+// Highlight colors for text selection layer
+.BRwordElement, .BRspace, .BRparagraphElement, .BRparagraphElement br {
+    // these 2 properties do not work if joined
+    &::selection {
         background: hsla(210, 74%, 62%, 0.4);
-    }
-    .BRwordElement::-moz-selection {
-        background: hsla(210, 74%, 62%, 0.4);
-        color: transparent;
     }
 
-    .BRparagElement {
-        fill: transparent;
-        cursor: text;
-        white-space: pre;
-        font-family: Georgia, serif;
+    &::-moz-selection {
+        background: hsla(210, 74%, 62%, 0.4);
+        color:transparent;
     }
+}
+
+.BRparagraphElement br {
+    visibility: hidden;
+}
+
+// Use CSS pseudo-elements to render the hyphens. This makes them
+// not selectable, so copy/pasting text doesn't include them.
+.BRwordElement--hyphen::after {
+    content: "-";
 }
 
 // Hide text layer for performance during zooming & scrolling
 .BRsmooth-zooming, .BRscrolling-active {
-    .textSelectionSVG {
+    .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer {
         display: none;
     }
 }
 
-// Hide text selection layers of off-screen pages, and only display
-// 2 text layers regardless of zoom level
-.BRmode1up .BRpagecontainer:not(.BRpage-visible) .textSelectionSVG {
+// Hide text selection layers of off-screen pages
+.BRmode1up .BRpagecontainer:not(.BRpage-visible) .BRtextLayer {
     display: none;
 }
 
@@ -44,4 +73,36 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
+}
+
+
+// These are Microsoft Edge specific fixed to make some of the
+// browsers features work well. These are for the in-place
+// translation.
+.BRwordElement, .BRspace {
+    &[_istranslated="1"], &[_msttexthash] {
+        background-color: #e4dccd;
+        color: black;
+        letter-spacing: unset !important;
+        background: #ccbfa7;
+    }
+}
+
+.BRlineElement font[_mstmutation="1"] {
+    background: #ccbfa7;
+}
+
+.BRlineElement:has([_istranslated="1"], [_msttexthash]) {
+    background-color: #e4dccd;
+    color: black;
+    text-align: justify;
+    width: inherit;
+    &:not(:nth-last-child(2)) {
+        text-align-last: justify;
+    }
+}
+
+.BRlineElement[_msttexthash] {
+    background: #ccbfa7;
+    word-spacing: unset !important;
 }

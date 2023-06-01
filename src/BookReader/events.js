@@ -8,8 +8,6 @@ export const EVENTS = {
   stop: 'stop',
   resize: 'resize',
   userAction: 'userAction', // event to know if user is actively reading
-  // nav events:
-  navToggled: 'navToggled',
   // menu click events
   fullscreenToggled: 'fullscreenToggled',
   zoomOut: 'zoomOut',

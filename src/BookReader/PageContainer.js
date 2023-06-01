@@ -95,6 +95,18 @@ export function createSVGPageLayer(page, className) {
 }
 
 /**
+ * @param {PageModel} page
+ * @param {string} className
+ */
+export function createDIVPageLayer(page, className) {
+  const div = document.createElement("div");
+  div.style.width = `${page.width}px`;
+  div.style.height = `${page.height}px`;
+  div.setAttribute('class', `BRPageLayer ${className}`);
+  return div;
+}
+
+/**
  * @param {{ l: number, r: number, b: number, t: number }} box
  */
 export function boxToSVGRect({ l: left, r: right, b: bottom, t: top }) {

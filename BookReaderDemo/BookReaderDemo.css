@@ -2,11 +2,13 @@
  * Custom overrides for BookReader Demo.
  */
 html {
+    /** This must be set because the nav menu uses rem and sets the fonts really big? */
     font-size: 10px;
     font-family: sans-serif;
 }
 
 body {
+    font-size: 16px;
     background-color: #939598;
     margin: 0px;
 }
