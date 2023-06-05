@@ -445,7 +445,6 @@ export class Mode2UpLit extends LitElement {
   computeScale(page, autoFit) {
     if (!page) return 1;
     const spread = page.spread;
-    // Default to real size if it fits, otherwise default to full height
     const bookWidth = this.computePositions(spread.left, spread.right).bookWidth;
     const bookHeight = this.computePageHeight(spread.left || spread.right);
     const BOOK_PADDING_PX = 10;
@@ -458,11 +457,11 @@ export class Mode2UpLit extends LitElement {
 
     let scale = realScale;
     if (autoFit == 'width') {
-      scale = Math.min(widthScale, 1);
+      scale = widthScale;
     } else if (autoFit == 'height') {
-      scale = Math.min(heightScale, 1);
+      scale = heightScale;
     } else if (autoFit == 'auto') {
-      scale = Math.min(widthScale, heightScale, 1);
+      scale = Math.min(widthScale, heightScale);
     } else if (autoFit == 'none') {
       scale = this.scale;
     } else {
