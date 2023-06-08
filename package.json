@@ -77,7 +77,7 @@
     "svgo": "2.8.0",
     "testcafe": "2.6.2",
     "testcafe-browser-provider-browserstack": "^1.13.2-alpha.1",
-    "webpack": "5.51.1",
+    "webpack": "5.76.0",
     "webpack-cli": "4.9.2"
   },
   "jest": {
