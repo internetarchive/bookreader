@@ -43,8 +43,8 @@
   "devDependencies": {
     "@babel/core": "7.22.5",
     "@babel/eslint-parser": "7.21.8",
-    "@babel/plugin-proposal-class-properties": "7.16.7",
-    "@babel/plugin-proposal-decorators": "7.17.9",
+    "@babel/plugin-proposal-class-properties": "7.18.6",
+    "@babel/plugin-proposal-decorators": "7.22.5",
     "@babel/preset-env": "7.22.5",
     "@open-wc/testing-helpers": "^2.2.1",
     "@types/jest": "29.5.2",
@@ -121,7 +121,7 @@
     "DOCS:update:test-deps": "If CI succeeds, these should be good to update",
     "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing-helpers@latest @types/jest@latest codecov@latest eslint@7 eslint-plugin-testcafe@latest jest@latest sinon@latest testcafe@latest",
     "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
-    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
+    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest @babel/plugin-proposal-class-properties@latest @babel/plugin-proposal-decorators@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
     "codecov": "npx codecov"
   }
 }
