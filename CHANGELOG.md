@@ -1,3 +1,7 @@
+# 5.0.0-63
+Fix: Don't limit autoFit zoom to real world size @cdrini
+Dev: Update test deps @cdrini
+
 # 5.0.0-62
 - Fix: Make text selection work in Safari 15.4+ @cdrini
 - Fix: Rewrite/improvements to text selection UX @cdrini
