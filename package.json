@@ -41,18 +41,18 @@
     "lit": "^2.5.0"
   },
   "devDependencies": {
-    "@babel/core": "7.17.9",
+    "@babel/core": "7.22.5",
     "@babel/eslint-parser": "7.21.8",
-    "@babel/plugin-proposal-class-properties": "7.16.7",
-    "@babel/plugin-proposal-decorators": "7.17.9",
-    "@babel/preset-env": "7.16.11",
+    "@babel/plugin-proposal-class-properties": "7.18.6",
+    "@babel/plugin-proposal-decorators": "7.22.5",
+    "@babel/preset-env": "7.22.5",
     "@open-wc/testing-helpers": "^2.2.1",
     "@types/jest": "29.5.2",
     "@webcomponents/webcomponentsjs": "^2.6.0",
-    "babel-loader": "8.2.5",
+    "babel-loader": "9.1.2",
     "codecov": "^3.8.3",
     "concurrently": "7.4.0",
-    "core-js": "3.22.3",
+    "core-js": "3.30.2",
     "cpx2": "4.2.0",
     "eslint": "^7.32.0",
     "eslint-plugin-no-jquery": "^2.7.0",
@@ -70,15 +70,15 @@
     "jquery.mmenu": "5.6.5",
     "live-server": "1.2.2",
     "node-fetch": "3.2.10",
-    "regenerator-runtime": "0.13.9",
-    "sass": "1.52.1",
+    "regenerator-runtime": "0.13.11",
+    "sass": "1.63.2",
     "sinon": "15.1.0",
     "soundmanager2": "2.97.20170602",
-    "svgo": "2.8.0",
+    "svgo": "3.0.2",
     "testcafe": "2.6.2",
     "testcafe-browser-provider-browserstack": "^1.13.2-alpha.1",
-    "webpack": "5.51.1",
-    "webpack-cli": "4.9.2"
+    "webpack": "5.86.0",
+    "webpack-cli": "5.1.4"
   },
   "jest": {
     "testEnvironment": "jsdom",
@@ -121,7 +121,7 @@
     "DOCS:update:test-deps": "If CI succeeds, these should be good to update",
     "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing-helpers@latest @types/jest@latest codecov@latest eslint@7 eslint-plugin-testcafe@latest jest@latest sinon@latest testcafe@latest",
     "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
-    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
+    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest @babel/plugin-proposal-class-properties@latest @babel/plugin-proposal-decorators@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
     "codecov": "npx codecov"
   }
 }
