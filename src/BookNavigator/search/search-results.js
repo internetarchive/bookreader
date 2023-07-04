@@ -1,5 +1,4 @@
 /* eslint-disable class-methods-use-this */
-import { escapeHTML } from '../../BookReader/utils.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { css, html, LitElement, nothing } from 'lit';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
@@ -146,12 +145,7 @@ export class IABookSearchResults extends LitElement {
               ${match.cover ? html`<img src="${match.cover}" />` : nothing}
               <h4>${match.title || nothing}</h4>
               <p class="page-num">Page ${match.displayPageNumber}</p>
-              <p>
-                ${
-                  // [^] matches any character, including line breaks
-                  unsafeHTML(escapeHTML(match.text).replace(/{{{([^]+?)}}}/g, '<mark>$1</mark>'))
-                }
-              </p>
+              <p>${unsafeHTML(match.html)}</p>
             </li>
           `)}
       </ul>

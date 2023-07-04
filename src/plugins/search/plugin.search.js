@@ -24,7 +24,7 @@
  * @event BookReader:SearchCanceled - When no results found. Receives
  *   `instance`
  */
-import { poll } from '../../BookReader/utils.js';
+import { escapeHTML, escapeRegExp, poll } from '../../BookReader/utils.js';
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
 import SearchView from './view.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
@@ -39,6 +39,8 @@ jQuery.extend(BookReader.defaultOptions, {
   bookPath: '',
   enableSearch: true,
   searchInsideUrl: '/fulltext/inside.php',
+  searchInsidePreTag: '{{{',
+  searchInsidePostTag: '}}}',
   initialSearchTerm: null,
 });
 
@@ -184,6 +186,8 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
     doc: this.subPrefix,
     path,
     q: term,
+    pre_tag: this.options.searchInsidePreTag,
+    post_tag: this.options.searchInsidePostTag,
   };
 
   // NOTE that the API does not expect / (slashes) to be encoded. (%2F) won't work
@@ -261,6 +265,7 @@ BookReader.prototype.cancelSearchRequest = function () {
  * @typedef {object} SearchInsideMatch
  * @property {number} matchIndex This is a fake field! Not part of the API response. It is added by the JS.
  * @property {string} displayPageNumber (fake field) The page number as it should be displayed in the UI.
+ * @property {string} html (computed field) The html-escaped raw html to display in the UI.
  * @property {string} text
  * @property {Array<{ page: number, boxes: SearchInsideMatchBox[] }>} par
  */
@@ -273,16 +278,39 @@ BookReader.prototype.cancelSearchRequest = function () {
  */
 
 /**
+ * @param {string} match
+ * @param {string} preTag
+ * @param {string} postTag
+ * @returns {string}
+ */
+export function renderMatch(match, preTag, postTag) {
+  // Search results are returned as a text blob with the hits wrapped in
+  // triple mustaches. Hits occasionally include text beyond the search
+  // term, so everything within the staches is captured and wrapped.
+  const preTagRe = escapeRegExp(preTag);
+  const postTagRe = escapeRegExp(postTag);
+  // [^] matches any character, including line breaks
+  const regex = new RegExp(`${preTagRe}([^]+?)${postTagRe}`, 'g');
+  return escapeHTML(match)
+    .replace(regex, '<mark>$1</mark>')
+    // Fix trailing hyphens. This over-corrects but is net useful.
+    .replace(/(\b)- /g, '$1');
+}
+
+/**
  * Attach some fields to search inside results
  * @param {SearchInsideResults} results
  * @param {(pageNum: LeafNum) => PageNumString} displayPageNumberFn
+ * @param {string} preTag
+ * @param {string} postTag
  */
-export function marshallSearchResults(results, displayPageNumberFn) {
+export function marshallSearchResults(results, displayPageNumberFn, preTag, postTag) {
   // Attach matchIndex to a few things to make it easier to identify
   // an active/selected match
   for (const [index, match] of results.matches.entries()) {
     match.matchIndex = index;
     match.displayPageNumber = displayPageNumberFn(match.par[0].page);
+    match.html = renderMatch(match.text, preTag, postTag);
     for (const par of match.par) {
       for (const box of par.boxes) {
         box.matchIndex = index;
@@ -298,7 +326,12 @@ export function marshallSearchResults(results, displayPageNumberFn) {
  * @param {boolean} options.goToFirstResult
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
-  marshallSearchResults(results, pageNum => this.book.getPageNum(this.book.leafNumToIndex(pageNum)));
+  marshallSearchResults(
+    results,
+    pageNum => this.book.getPageNum(this.book.leafNumToIndex(pageNum)),
+    this.options.searchInsidePreTag,
+    this.options.searchInsidePostTag,
+  );
   this.searchResults = results || [];
 
   this.updateSearchHilites();
