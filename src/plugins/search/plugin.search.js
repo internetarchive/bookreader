@@ -38,6 +38,7 @@ jQuery.extend(BookReader.defaultOptions, {
   subPrefix: '',
   bookPath: '',
   enableSearch: true,
+  searchInsideProtocol: 'https',
   searchInsideUrl: '/fulltext/inside.php',
   searchInsidePreTag: '{{{',
   searchInsidePostTag: '}}}',
@@ -172,7 +173,7 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
 
   // Remove the port and userdir
   const serverPath = this.server.replace(/:.+/, '');
-  const baseUrl = `https://${serverPath}${this.searchInsideUrl}?`;
+  const baseUrl = `${this.options.searchInsideProtocol}://${serverPath}${this.searchInsideUrl}?`;
 
   // Remove subPrefix from end of path
   let path = this.bookPath;
