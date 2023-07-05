@@ -29,8 +29,8 @@ export function runDesktopSearchTests(br) {
       await t.pressKey('enter');
 
       await t.expect(nav.desktop.searchPin.exists).ok();
-      await t.expect(nav.desktop.searchPin.child('.BRquery').child('div').exists).ok();
-      await t.expect(nav.desktop.searchPin.child('.BRquery').child('div').innerText).contains(TEST_TEXT_FOUND);
+      await t.expect(nav.desktop.searchPin.child('.BRquery').child('main').exists).ok();
+      await t.expect(nav.desktop.searchPin.child('.BRquery').child('main').innerText).contains(TEST_TEXT_FOUND);
       await t.expect(nav.desktop.searchNavigation.exists).ok();
       await t.expect(nav.desktop.searchNavigation.find('[data-id="resultsCount"]').exists).ok();
       await t.expect(nav.desktop.searchNavigation.find('[data-id="resultsCount"]').innerText).contains(SEARCH_MATCHES_LENGTH);
@@ -63,7 +63,7 @@ export function runDesktopSearchTests(br) {
       // FIXME: Why is it only typing every other letter?!?!
       await t.typeText(nav.desktop.searchBox, TEST_TEXT_NOT_FOUND.split('').join('_'));
       await t.pressKey('enter');
-      await t.expect(nav.desktop.searchPin.child('.BRquery').child('div').withText(TEST_TEXT_NOT_FOUND).exists).notOk();
+      await t.expect(nav.desktop.searchPin.child('.BRquery').child('main').withText(TEST_TEXT_NOT_FOUND).exists).notOk();
 
       const getPageUrl = ClientFunction(() => window.location.href.toString());
       await t.expect(getPageUrl()).contains(TEST_TEXT_NOT_FOUND);
