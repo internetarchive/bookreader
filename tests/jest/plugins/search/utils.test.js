@@ -1,6 +1,17 @@
-import { marshallSearchResults } from '@/src/plugins/search/utils.js';
+import { marshallSearchResults, renderMatch } from '@/src/plugins/search/utils.js';
 import { deepCopy } from '@/tests/jest/utils.js';
 import { DUMMY_RESULTS } from './utils.js';
+
+describe('renderMatch', () => {
+  test('Supports custom pre/post tags', () => {
+    const matchText = DUMMY_RESULTS.matches[0].text
+      .replace(/\{\{\{/g, '<IA_FTS_MATCH>')
+      .replace(/\}\}\}/g, '</IA_FTS_MATCH>');
+    const html = renderMatch(matchText, '<IA_FTS_MATCH>', '</IA_FTS_MATCH>');
+    expect(html).toContain('<mark>');
+    expect(html).toContain('</mark>');
+  });
+});
 
 describe('marshallSearchResults', () => {
   test('Adds match index', () => {
