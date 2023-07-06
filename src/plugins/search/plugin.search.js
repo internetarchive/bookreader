@@ -27,6 +27,7 @@
 import { poll } from '../../BookReader/utils.js';
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
 import SearchView from './view.js';
+import { marshallSearchResults } from './utils.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
 /** @typedef {import('../../BookReader/BookModel').LeafNum} LeafNum */
@@ -38,7 +39,10 @@ jQuery.extend(BookReader.defaultOptions, {
   subPrefix: '',
   bookPath: '',
   enableSearch: true,
+  searchInsideProtocol: 'https',
   searchInsideUrl: '/fulltext/inside.php',
+  searchInsidePreTag: '{{{',
+  searchInsidePostTag: '}}}',
   initialSearchTerm: null,
 });
 
@@ -170,7 +174,7 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
 
   // Remove the port and userdir
   const serverPath = this.server.replace(/:.+/, '');
-  const baseUrl = `https://${serverPath}${this.searchInsideUrl}?`;
+  const baseUrl = `${this.options.searchInsideProtocol}://${serverPath}${this.searchInsideUrl}?`;
 
   // Remove subPrefix from end of path
   let path = this.bookPath;
@@ -184,6 +188,8 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
     doc: this.subPrefix,
     path,
     q: term,
+    pre_tag: this.options.searchInsidePreTag,
+    post_tag: this.options.searchInsidePostTag,
   };
 
   // NOTE that the API does not expect / (slashes) to be encoded. (%2F) won't work
@@ -261,6 +267,7 @@ BookReader.prototype.cancelSearchRequest = function () {
  * @typedef {object} SearchInsideMatch
  * @property {number} matchIndex This is a fake field! Not part of the API response. It is added by the JS.
  * @property {string} displayPageNumber (fake field) The page number as it should be displayed in the UI.
+ * @property {string} html (computed field) The html-escaped raw html to display in the UI.
  * @property {string} text
  * @property {Array<{ page: number, boxes: SearchInsideMatchBox[] }>} par
  */
@@ -273,32 +280,18 @@ BookReader.prototype.cancelSearchRequest = function () {
  */
 
 /**
- * Attach some fields to search inside results
- * @param {SearchInsideResults} results
- * @param {(pageNum: LeafNum) => PageNumString} displayPageNumberFn
- */
-export function marshallSearchResults(results, displayPageNumberFn) {
-  // Attach matchIndex to a few things to make it easier to identify
-  // an active/selected match
-  for (const [index, match] of results.matches.entries()) {
-    match.matchIndex = index;
-    match.displayPageNumber = displayPageNumberFn(match.par[0].page);
-    for (const par of match.par) {
-      for (const box of par.boxes) {
-        box.matchIndex = index;
-      }
-    }
-  }
-}
-
-/**
  * Search Results return handler
  * @param {SearchInsideResults} results
  * @param {object} options
  * @param {boolean} options.goToFirstResult
  */
 BookReader.prototype.BRSearchCallback = function(results, options) {
-  marshallSearchResults(results, pageNum => this.book.getPageNum(this.book.leafNumToIndex(pageNum)));
+  marshallSearchResults(
+    results,
+    pageNum => this.book.getPageNum(this.book.leafNumToIndex(pageNum)),
+    this.options.searchInsidePreTag,
+    this.options.searchInsidePostTag,
+  );
   this.searchResults = results || [];
 
   this.updateSearchHilites();

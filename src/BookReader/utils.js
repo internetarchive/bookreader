@@ -278,3 +278,13 @@ export function promisifyEvent(target, eventType) {
     target.addEventListener(eventType, resolver);
   });
 }
+
+/**
+ * Escapes regex special characters in a string. Allows for safe usage in regexes.
+ * Src: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions
+ * @param {string} string
+ * @returns {string}
+ */
+export function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}

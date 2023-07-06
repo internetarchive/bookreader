@@ -7,6 +7,7 @@ import {
   decodeURIComponentPlus,
   encodeURIComponentPlus,
   escapeHTML,
+  escapeRegExp,
   getActiveElement,
   isInputActive,
   poll,
@@ -213,5 +214,16 @@ describe('promisifyEvent', () => {
 
     await afterEventLoop();
     expect(resolveSpy.callCount).toBe(1);
+  });
+});
+
+describe('escapeRegex', () => {
+  test('Escapes regex', () => {
+    expect(escapeRegExp('.*')).toBe('\\.\\*');
+    expect(escapeRegExp('foo')).toBe('foo');
+    expect(escapeRegExp('foo.bar')).toBe('foo\\.bar');
+    expect(escapeRegExp('{{{')).toBe('\\{\\{\\{');
+    expect(escapeRegExp('')).toBe('');
+    expect(escapeRegExp('https://example.com')).toBe('https://example\\.com');
   });
 });

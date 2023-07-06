@@ -5,6 +5,7 @@ import {
 } from '@open-wc/testing-helpers';
 import sinon from 'sinon';
 import { IABookSearchResults } from '@/src/BookNavigator/search/search-results.js';
+import { marshallSearchResults } from '@/src/plugins/search/utils.js';
 
 const container = (results = [], query = '') => (
   html`<ia-book-search-results .results=${results} .query=${query}></ia-book-search-results>`
@@ -43,8 +44,10 @@ const results = [{
     l: 432,
     page_height: 5357,
     page: 86,
-  }],
+  }]
 }];
+
+marshallSearchResults({ matches: results }, () => '', '{{{', '}}}');
 
 const resultWithScript = [{
   text: `foo bar <script>const msg = 'test' + ' failure'; document.write(msg);</script> {{{${searchQuery}}}} baz`,
@@ -64,6 +67,8 @@ const resultWithScript = [{
     page: 24,
   }],
 }];
+
+marshallSearchResults({ matches: resultWithScript }, () => '', '{{{', '}}}');
 
 describe('<ia-book-search-results>', () => {
   afterEach(() => {
