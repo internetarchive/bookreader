@@ -33,7 +33,6 @@ import { DEFAULT_OPTIONS, OptionsParseError } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
 import { EVENTS } from './BookReader/events.js';
-import { DebugConsole } from './BookReader/DebugConsole.js';
 import { Toolbar } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
@@ -42,10 +41,6 @@ import { ModeThumb } from './BookReader/ModeThumb';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet';
-
-if (location.toString().indexOf('_debugShowConsole=true') != -1) {
-  $(() => new DebugConsole().init());
-}
 
 /**
  * BookReader
