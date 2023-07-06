@@ -1,3 +1,8 @@
+# 5.0.0-64
+- Dev: update dependencies @renovate
+- Dev: update build step @cdrini
+- Fix: Search inside option for {{{/}}} + http support @cdrini
+
 # 5.0.0-63
 Fix: Don't limit autoFit zoom to real world size @cdrini
 Dev: Update test deps @cdrini

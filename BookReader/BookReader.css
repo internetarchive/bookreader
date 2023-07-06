@@ -1,5 +1,4 @@
-/* Variables */
-/* COLORBOX POP-UP */
+/* Variables */ /* COLORBOX POP-UP */
 #colorbox, #cboxOverlay, #cboxWrapper {
   position: absolute;
   top: 0;
@@ -323,47 +322,38 @@ body.BRfullscreenActive .mm-menu {
   .BRinfoLeftCol {
     font-size: 14px;
   }
-
   .BRimageW {
     text-align: center;
     margin-bottom: 10px;
   }
-
   .BRimageW img {
     height: 200px;
     width: auto;
   }
-
   .BRinfoValue.larger {
     font-size: 16px;
   }
-
   .BRinfoMoreInfoWrapper a {
     font-size: inherit;
     color: white;
     text-decoration: none;
   }
-
   .BRinfoOtherFormatsFormat {
     margin-bottom: 6px;
   }
-
   .BRinfoFooter {
     margin-bottom: 10px;
     text-align: left;
   }
-
   .BRinfoFooter a {
     display: block;
   }
-
   .BRfloatFoot.BRinfoFooter {
     margin: initial;
     padding: initial;
     border: initial;
     font-size: inherit;
   }
-
   .BookReader .fieldset-embed, .BRmobileMenu .fieldset-embed, .BRfloat .fieldset-embed {
     display: none;
   }
@@ -380,56 +370,46 @@ body.BRfullscreenActive .mm-menu {
     position: relative;
     padding: 15px;
   }
-
   .BRinfoLeftCol {
     float: left;
     width: 40%;
     min-height: 1px;
   }
-
   .BRinfoRightCol {
     float: left;
     width: 58%;
   }
-
   .BRimageW {
     text-align: center;
     margin-bottom: 10px;
     margin-right: 26px;
   }
-
   .BRimageW img {
     height: auto;
     width: 100%;
   }
-
   .BRinfoValue.larger {
     font-size: 20px;
     line-height: 1.2;
   }
-
   .BRinfoMoreInfoWrapper a {
     font-size: 14px;
     color: white;
     text-decoration: none;
     font-weight: bold;
   }
-
   .BRinfoOtherFormatsFormat {
     display: inline;
     margin-right: 10px;
   }
-
   .BRinfoFooter {
     font-size: 1em;
     clear: both;
   }
-
   .BRinfoFooter a {
     display: inline;
     margin-right: 10px;
   }
-
   .BookReader .BRaction, .BRmobileMenu .BRaction, .BRfloat .BRaction {
     padding: 8px 16px;
   }
@@ -984,14 +964,13 @@ i.BRicon {
 /* Desktop Only */
 @media (min-width: 801px) {
   .BRfloat .message,
-.BRfloatBody {
+  .BRfloatBody {
     padding: 10px 15px 10px 15px;
     font-size: 16px;
     line-height: normal;
     margin-top: 0;
     margin-bottom: 0px;
   }
-
   .BRfloatHead {
     box-sizing: border-box;
     line-height: normal;
@@ -1001,7 +980,6 @@ i.BRicon {
     text-align: center;
     border-bottom: 1px solid rgb(216, 216, 216);
   }
-
   .BRfloatFoot {
     padding: 10px;
     margin-bottom: 10px;
@@ -1012,10 +990,9 @@ i.BRicon {
   .BRfloatBody {
     padding: 10px 10px;
   }
-
   .BRfloat .message,
-.BRfloatBody,
-.BRfloatHead {
+  .BRfloatBody,
+  .BRfloatHead {
     box-sizing: border-box;
     line-height: normal;
     border-bottom: 1px solid rgb(216, 216, 216);
@@ -1025,12 +1002,10 @@ i.BRicon {
     font-weight: 700;
     text-align: center;
   }
-
   .BRfloatFoot {
     padding: 10px 10px 0 10px;
     border-top: 1px solid #ccc;
   }
-
   .BRfloatFoot .BRaction {
     margin-bottom: 10px;
   }
@@ -1040,7 +1015,6 @@ i.BRicon {
     max-width: initial;
     width: 455px;
   }
-
   .BRfloat.wide {
     max-width: initial;
     width: 555px;
@@ -1064,11 +1038,11 @@ i.BRicon {
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    translate: 0 10px;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    translate: 0 0;
   }
 }
 .BRfooter {
@@ -1240,8 +1214,7 @@ i.BRicon {
   appearance: none;
   border: 0;
   text-align: center;
-  text-align-last: center;
-  /* Chrome */
+  text-align-last: center; /* Chrome */
   padding-top: 60%;
   padding-left: 10%;
   padding-right: 10%;
@@ -1340,8 +1313,7 @@ i.BRicon {
   height: 20px;
   border-radius: 50%;
   top: -5px;
-  margin-left: -9px;
-  /* Center icon */
+  margin-left: -9px; /* Center icon */
   z-index: 6;
   border: none;
 }
@@ -1425,11 +1397,9 @@ i.BRicon {
   .BRnavline .BRchapter {
     display: none;
   }
-
   .BRnavCntlBtm {
     bottom: 34px;
   }
-
   .BRpager.ui-slider {
     height: 10px;
     top: 12px;
@@ -1543,24 +1513,31 @@ i.BRicon {
   bottom: calc(100% + 5px);
   left: 50%;
   transform: translateX(-50%);
-  width: 230px;
+  width: 350px;
+  max-width: 100vw;
   padding: 12px 14px;
+  padding-bottom: 10px;
   color: #fff;
-  font-weight: bold;
   background: #333;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  animation: fadeUp 0.2s;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }
 .BookReader .BRquery:after, .BRmobileMenu .BRquery:after, .BRfloat .BRquery:after, .BookReader .BRchapter > div:after, .BRmobileMenu .BRchapter > div:after, .BRfloat .BRchapter > div:after {
-  display: none;
   position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
   content: "";
-  border: 7px solid transparent;
-  border-width: 7px 4px;
-  border-bottom: none;
-  border-top-color: #333;
+  bottom: -9px;
+  left: 50%;
+  margin-left: -1px;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 10px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
 .BookReader .searchHiliteLayer, .BookReader .ttsHiliteLayer, .BRmobileMenu .searchHiliteLayer, .BRmobileMenu .ttsHiliteLayer, .BRfloat .searchHiliteLayer, .BRfloat .ttsHiliteLayer {
@@ -1606,8 +1583,7 @@ i.BRicon {
 }
 .BookReader .BRchapter, .BookReader .BRsearch, .BRmobileMenu .BRchapter, .BRmobileMenu .BRsearch, .BRfloat .BRchapter, .BRfloat .BRsearch {
   position: absolute;
-  bottom: 0;
-  /* Relative to nav line */
+  bottom: 0; /* Relative to nav line */
   cursor: pointer;
   z-index: 3;
   background-color: transparent;
@@ -1620,8 +1596,7 @@ i.BRicon {
   height: 8px;
   width: 4px;
   bottom: -13px;
-  margin-left: -12px;
-  /* Center icon */
+  margin-left: -12px; /* Center icon */
 }
 .BookReader .BRchapter:hover > div, .BRmobileMenu .BRchapter:hover > div, .BRfloat .BRchapter:hover > div {
   display: block;
@@ -1650,7 +1625,19 @@ i.BRicon {
 .BookReader .BRsearch .BRquery, .BRmobileMenu .BRsearch .BRquery, .BRfloat .BRsearch .BRquery {
   display: none;
 }
-.BookReader .BRquery b, .BRmobileMenu .BRquery b, .BRfloat .BRquery b {
+.BookReader .BRquery main, .BRmobileMenu .BRquery main, .BRfloat .BRquery main {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.BookReader .BRquery footer, .BRmobileMenu .BRquery footer, .BRfloat .BRquery footer {
+  text-align: center;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.BookReader .BRquery mark, .BRmobileMenu .BRquery mark, .BRfloat .BRquery mark {
   color: #adaedc;
   font-weight: bold;
   background-color: #272958;
@@ -2535,7 +2522,7 @@ html.mm-background .BookReader {
 /* Mobile Only */
 @media (max-width: 800px) {
   .BRbodyMobileNavEnabled .BRtoolbar.responsive,
-.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive {
+  .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive {
     display: block;
     height: 40px;
     box-sizing: border-box;
@@ -2544,15 +2531,15 @@ html.mm-background .BookReader {
     background: #333;
   }
   .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRtoolbarbuttons,
-.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRtoolbarbuttons {
+  .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRtoolbarbuttons {
     display: none;
   }
   .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRmobileHamburgerWrapper,
-.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRmobileHamburgerWrapper {
+  .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRmobileHamburgerWrapper {
     display: block;
   }
   .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRmobileMenu,
-.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRmobileMenu {
+  .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRmobileMenu {
     display: block;
   }
 }
@@ -2996,10 +2983,10 @@ li.BRtable-contents-el .BRTOCElementPage {
 }
 
 .BRwordElement::selection, .BRspace::selection, .BRparagraphElement::selection, .BRparagraphElement br::selection {
-  background: hsla(210deg, 74%, 62%, 0.4);
+  background: hsla(210, 74%, 62%, 0.4);
 }
 .BRwordElement::-moz-selection, .BRspace::-moz-selection, .BRparagraphElement::-moz-selection, .BRparagraphElement br::-moz-selection {
-  background: hsla(210deg, 74%, 62%, 0.4);
+  background: hsla(210, 74%, 62%, 0.4);
   color: transparent;
 }
 
