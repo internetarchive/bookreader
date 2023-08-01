@@ -75,7 +75,7 @@
     "sinon": "^15.1.0",
     "soundmanager2": "2.97.20170602",
     "svgo": "3.0.2",
-    "testcafe": "3.1.0",
+    "testcafe": "2.6.2",
     "testcafe-browser-provider-browserstack": "^1.13.2-alpha.1",
     "webpack": "5.88.2",
     "webpack-cli": "5.1.4"
