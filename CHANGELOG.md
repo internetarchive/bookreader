@@ -1,3 +1,8 @@
+# 5.0.0-65
+- Dev: Remove Debug console dev helper @cdrini
+- Dev: Fix deno esm.sh esbuild erroring @cdrini
+- Dev: Update test/build deps @cdrini
+
 # 5.0.0-64
 - Dev: update dependencies @renovate
 - Dev: update build step @cdrini
