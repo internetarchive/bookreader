@@ -47,9 +47,6 @@ export class Mode1UpLit extends LitElement {
 
   @property({ type: Number })
   scale = 1;
-  /** Position (in unit-less, [0, 1] coordinates) in client to scale around */
-  @property({ type: Object })
-  scaleCenter = { x: 0.5, y: 0.5 };
 
   /************** VIRTUAL-SCROLLING PROPERTIES **************/
 
