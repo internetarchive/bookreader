@@ -92,12 +92,15 @@ export class ModeSmoothZoom {
 
     // GestureEvents work only on Safari; they interfere with Hammer,
     // so block them.
-    this.mode.$container.removeEventListener('gesturestart', this._preventEvent);
+    this.mode.$container.removeEventListener('gesturestart', this._pinchStart);
     this.mode.$container.removeEventListener('gesturechange', this._preventEvent);
-    this.mode.$container.removeEventListener('gestureend', this._preventEvent);
+    this.mode.$container.removeEventListener('gestureend', this._pinchEnd);
+
+    this.touchesMonitor?.detach?.();
 
     // The pinch listeners
     this.interact.unset();
+    interact.removeDocument(document);
 
     this.attached = false;
   }
