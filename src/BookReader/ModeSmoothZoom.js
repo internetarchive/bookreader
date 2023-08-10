@@ -1,6 +1,6 @@
 // @ts-check
 import interact from 'interactjs';
-import { isIOS } from '../util/browserSniffing.js';
+import { isIOS, isSamsungInternet } from '../util/browserSniffing.js';
 import { sleep } from './utils.js';
 /** @typedef {import('./utils/HTMLDimensionsCacher.js').HTMLDimensionsCacher} HTMLDimensionsCacher */
 
@@ -67,6 +67,22 @@ export class ModeSmoothZoom {
         end: this._pinchEnd,
       }
     });
+    if (isSamsungInternet()) {
+      // Samsung internet pinch-zoom will not work unless we disable
+      // all touch actions. So use interact.js' built-in drag support
+      // to handle moving on that browser.
+      this.mode.$container.style.touchAction = "none";
+      this.interact
+        .draggable({
+          inertia: {
+            resistance: 2,
+            minSpeed: 100,
+            allowResume: true,
+          },
+          listeners: { move: this._dragMove }
+        });
+    }
+
 
     this.attached = true;
   }
@@ -182,6 +198,14 @@ export class ModeSmoothZoom {
     this.mode.$container.style.overflow = "auto";
     this.oldScale = this.lastEvent.scale;
     this.pinchMoveFrame = null;
+  }
+
+  _dragMove = async (e) => {
+    if (this.pinching) {
+      await this._pinchEnd();
+    }
+    this.mode.$container.scrollTop -= e.dy;
+    this.mode.$container.scrollLeft -= e.dx;
   }
 
   /** @private */

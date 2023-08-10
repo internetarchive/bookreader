@@ -38,3 +38,13 @@ export function isSafari(userAgent = navigator.userAgent) {
 export function isIOS(userAgent = navigator.userAgent) {
   return /\b(iPad|iPhone|iPod)\b/.test(userAgent) && /WebKit/.test(userAgent);
 }
+
+/**
+ * Checks whether the current browser is Samsung Internet
+ * https://stackoverflow.com/a/40684162/2317712
+ * @param {string} [userAgent]
+ * @return {boolean}
+ */
+export function isSamsungInternet(userAgent = navigator.userAgent) {
+  return /SamsungBrowser/i.test(userAgent);
+}
