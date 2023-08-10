@@ -31,12 +31,14 @@ export function isSafari(userAgent = navigator.userAgent) {
 
 /**
  * Checks whether the current browser is iOS (and hence iOS webkit)
- * https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent#os
- * @param {string} [userAgent]
  * @return {boolean}
  */
-export function isIOS(userAgent = navigator.userAgent) {
-  return /\b(iPad|iPhone|iPod)\b/.test(userAgent) && /WebKit/.test(userAgent);
+export function isIOS() {
+  // We can't just check the userAgent because as of iOS 13,
+  // the userAgent is the same as desktop Safari because
+  // they wanted iPad's to be served the same version of websites
+  // as desktops.
+  return 'ongesturestart' in window && navigator.maxTouchPoints > 0;
 }
 
 /**
