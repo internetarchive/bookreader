@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import interact from 'interactjs';
 import { EventTargetSpy, afterEventLoop } from '../utils.js';
-import { ModeSmoothZoom } from '@/src/BookReader/ModeSmoothZoom.js';
+import { ModeSmoothZoom, TouchesMonitor } from '@/src/BookReader/ModeSmoothZoom.js';
 /** @typedef {import('@/src/BookReader/ModeSmoothZoom.js').SmoothZoomable} SmoothZoomable */
 
 /**
@@ -171,5 +171,48 @@ describe('ModeSmoothZoom', () => {
       expect(mode.$container.scrollTop).toBeLessThan(100);
       expect(mode.$container.scrollLeft).toBeLessThan(100);
     });
+  });
+});
+
+
+describe("TouchesMonitor", () => {
+  /** @type {HTMLElement} */
+  let container;
+  /** @type {TouchesMonitor} */
+  let monitor;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    monitor = new TouchesMonitor(container);
+  });
+
+  afterEach(() => {
+    monitor.detach();
+  });
+
+  test("should start with 0 touches", () => {
+    expect(monitor.touches).toBe(0);
+  });
+
+  test("should update touch count on touch events", () => {
+    monitor.attach();
+    container.dispatchEvent(new TouchEvent("touchstart", { touches: [{}] }));
+    expect(monitor.touches).toBe(1);
+
+    container.dispatchEvent(new TouchEvent("touchstart", { touches: [{}, {}] }));
+    expect(monitor.touches).toBe(2);
+
+    container.dispatchEvent(new TouchEvent("touchend", { touches: [{}] }));
+    expect(monitor.touches).toBe(1);
+
+    container.dispatchEvent(new TouchEvent("touchend", { touches: [] }));
+  });
+
+  test("should detach all listeners", () => {
+    const spy = EventTargetSpy.wrap(container);
+    monitor.attach();
+    expect(spy._totalListenerCount).toBeGreaterThan(0);
+    monitor.detach();
+    expect(spy._totalListenerCount).toBe(0);
   });
 });

@@ -283,7 +283,7 @@ export class ModeSmoothZoom {
   }
 }
 
-class TouchesMonitor {
+export class TouchesMonitor {
   /**
    * @param {HTMLElement} container
    */
