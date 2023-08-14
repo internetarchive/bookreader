@@ -1,3 +1,6 @@
+# 5.0.0-66
+- Fix: Pinch zooming on iPad/iPhone, Samsung Internet @cdrini
+
 # 5.0.0-65
 - Dev: Remove Debug console dev helper @cdrini
 - Dev: Fix deno esm.sh esbuild erroring @cdrini
