@@ -51,7 +51,7 @@ export class Mode1Up {
         new DragScrollable(this.mode1UpLit, {
           preventDefault: true,
           dragSelector: '.br-mode-1up__visible-world',
-          // Only handle mouse events; let browser/HammerJS handle touch
+          // Only handle mouse events; let browser/interact.js handle touch
           dragstart: 'mousedown',
           dragcontinue: 'mousemove',
           dragend: 'mouseup',

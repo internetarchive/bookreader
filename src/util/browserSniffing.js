@@ -28,3 +28,25 @@ export function isFirefox(userAgent = navigator.userAgent) {
 export function isSafari(userAgent = navigator.userAgent) {
   return /safari/i.test(userAgent) && !/chrome|chromium/i.test(userAgent);
 }
+
+/**
+ * Checks whether the current browser is iOS (and hence iOS webkit)
+ * @return {boolean}
+ */
+export function isIOS() {
+  // We can't just check the userAgent because as of iOS 13,
+  // the userAgent is the same as desktop Safari because
+  // they wanted iPad's to be served the same version of websites
+  // as desktops.
+  return 'ongesturestart' in window && navigator.maxTouchPoints > 0;
+}
+
+/**
+ * Checks whether the current browser is Samsung Internet
+ * https://stackoverflow.com/a/40684162/2317712
+ * @param {string} [userAgent]
+ * @return {boolean}
+ */
+export function isSamsungInternet(userAgent = navigator.userAgent) {
+  return /SamsungBrowser/i.test(userAgent);
+}
