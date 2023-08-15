@@ -41,7 +41,7 @@ export class Navbar {
     return `<li>
       <button class="BRicon ${option.className}" title="${option.label}">
         <div class="icon icon-${option.iconClassName}"></div>
-        <span class="tooltip">${option.label}</span>
+        <span class="BRtooltip">${option.label}</span>
       </button>
     </li>`;
   }
@@ -130,7 +130,7 @@ export class Navbar {
       .removeClass()
       .addClass(`icon icon-${iconClass}`)
       .end()
-      .find('.tooltip')
+      .find('.BRtooltip')
       .text(tooltipText);
   }
 
