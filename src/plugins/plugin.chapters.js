@@ -15,29 +15,18 @@ jQuery.extend(BookReader.defaultOptions, {
   bookId: '',
 });
 
-/** @override Extend the constructor to add search properties */
-BookReader.prototype.setup = (function (super_) {
-  return function (options) {
-    super_.call(this, options);
-
-    this.olHost = options.olHost;
-    this.enableChaptersPlugin = options.enableChaptersPlugin;
-    this.bookId = options.bookId;
-  };
-})(BookReader.prototype.setup);
-
 /** @override Extend to call Open Library for TOC */
 BookReader.prototype.init = (function(super_) {
   return function() {
     super_.call(this);
-    if (this.enableChaptersPlugin && this.ui !== 'embed') {
-      this.getOpenLibraryRecord().then((olEdition) => {
+    if (this.options.enableChaptersPlugin && this.ui !== 'embed') {
+      this.getOpenLibraryRecord(this.options.olHost, this.options.bookId).then((olEdition) => {
         if (olEdition?.table_of_contents?.length) {
           this._tocEntries = olEdition.table_of_contents.map(rawTOCEntry => (
             Object.assign({}, rawTOCEntry, {pageIndex: this.book.getPageIndex(rawTOCEntry.pagenum)})
           ));
           this._chaptersRender(this._tocEntries);
-          this.bind(BookReader.eventNames.pageChanged, () => this.updateTOCState());
+          this.bind(BookReader.eventNames.pageChanged, () => this._chaptersUpdateCurrent());
         }
       });
     }
@@ -45,58 +34,9 @@ BookReader.prototype.init = (function(super_) {
 })(BookReader.prototype.init);
 
 /**
- * Adds chapter marker to navigation scrubber
- *
- * @param {string} chapterTitle
- * @param {string} pageNumber
- * @param {number} pageIndex
- */
-BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
-  const percentThrough = BookReader.util.cssPercentage(pageIndex, this.book.getNumLeafs() - 1);
-
-  //adds .BRchapters to the slider only if pageIndex exists
-  if (pageIndex != undefined) {
-    $(`<div></div>`)
-      .append(
-        $('<div />')
-          .text(chapterTitle)
-          .append($('<div class="BRchapterPage" />').text(`Page ${pageNumber}`))
-      )
-      .addClass('BRchapter')
-      .css({ left: percentThrough })
-      .appendTo(this.$('.BRnavline'))
-      .data({ pageIndex })
-      .on("mouseenter", event => {
-        // remove hover effect from other markers then turn on just for this
-        const marker = event.currentTarget;
-        const tooltip = marker.querySelector('div');
-        const tooltipOffset = tooltip.getBoundingClientRect();
-        const targetOffset = marker.getBoundingClientRect();
-        const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
-        if (tooltipOffset.x - boxSizeAdjust < 0) {
-          tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
-        }
-        this.$('.BRsearch,.BRchapter').removeClass('front');
-        $(event.target).addClass('front');
-      })
-      .on("mouseleave", event => $(event.target).removeClass('front'))
-      .on('click', this.jumpToIndex.bind(this, pageIndex));
-  }
-
-};
-
-/*
- * Remove all chapters.
- */
-BookReader.prototype.removeChapters = function() {
-  this.$('.BRnavpos .BRchapter').remove();
-};
-
-/**
  * Update the table of contents based on array of TOC entries.
  */
 BookReader.prototype._chaptersRender = function() {
-  this.removeChapters();
   const shell = /** @type {BookNavigator} */(this.shell);
   shell.menuProviders['chapters'] = {
     id: 'chapters',
@@ -104,16 +44,19 @@ BookReader.prototype._chaptersRender = function() {
     label: 'Table of Contents',
     component: html`<br-chapters-panel
       .contents="${this._tocEntries}"
-      .jumpToPage="${this.jumpToIndex.bind(this)}"
+      .jumpToPage="${(pageIndex) => {
+      this._chaptersUpdateCurrent(pageIndex);
+      this.jumpToIndex(pageIndex);
+    }}"
       @connected="${(e) => {
       this._chaptersPanel = e.target;
-      this.updateTOCState();
+      this._chaptersUpdateCurrent();
     }}"
     />`,
   };
   shell.updateMenuContents();
-  for (let i = 0; i < this._tocEntries.length; i++) {
-    this.addChapterFromEntry(this._tocEntries[i]);
+  for (const tocEntry of this._tocEntries) {
+    this._chaptersRenderMarker(tocEntry);
   }
 };
 
@@ -135,14 +78,42 @@ BookReader.prototype._chaptersRender = function() {
  */
 
 /**
- * @param {TocEntry} tocEntryObject
+ * @param {TocEntry} tocEntry
  */
-BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-  //creates a string with non-void tocEntryObject.label and tocEntryObject.title
-  const chapterStr = [tocEntryObject.label, tocEntryObject.title]
+BookReader.prototype._chaptersRenderMarker = function(tocEntry) {
+  if (tocEntry.pageIndex == undefined) return;
+
+  //creates a string with non-void tocEntry.label and tocEntry.title
+  const chapterStr = [tocEntry.label, tocEntry.title]
     .filter(x => x)
     .join(' ');
-  this.addChapter(chapterStr, tocEntryObject['pagenum'], tocEntryObject.pageIndex);
+
+  const percentThrough = BookReader.util.cssPercentage(tocEntry.pageIndex, this.book.getNumLeafs() - 1);
+  $(`<div></div>`)
+    .append(
+      $('<div />')
+        .text(chapterStr)
+        .append($('<div class="BRchapterPage" />').text(`Page ${tocEntry.pagenum}`))
+    )
+    .addClass('BRchapter')
+    .css({ left: percentThrough })
+    .appendTo(this.$('.BRnavline'))
+    .on("mouseenter", event => {
+      // remove hover effect from other markers then turn on just for this
+      const marker = event.currentTarget;
+      const tooltip = marker.querySelector('div');
+      const tooltipOffset = tooltip.getBoundingClientRect();
+      const targetOffset = marker.getBoundingClientRect();
+      const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
+      if (tooltipOffset.x - boxSizeAdjust < 0) {
+        tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
+      }
+      this.$('.BRsearch,.BRchapter').removeClass('front');
+      $(event.target).addClass('front');
+    })
+    .on("mouseleave", event => $(event.target).removeClass('front'))
+    .on('click', this.jumpToIndex.bind(this, tocEntry.pageIndex));
+
   this.$('.BRchapter, .BRsearch').each((i, el) => {
     const $el = $(el);
     $el
@@ -154,30 +125,34 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 /**
  * This makes a call to OL API and calls the given callback function with the
  * response from the API.
+ *
+ * @param {string} olHost
+ * @param {string} ocaid
  */
-BookReader.prototype.getOpenLibraryRecord = async function () {
+BookReader.prototype.getOpenLibraryRecord = async function (olHost, ocaid) {
   // Try looking up by ocaid first, then by source_record
-  const baseURL = `${this.olHost}/query.json?type=/type/edition&*=`;
-  const fetchUrlByBookId = `${baseURL}&ocaid=${this.bookId}`;
+  const baseURL = `${olHost}/query.json?type=/type/edition&*=`;
+  const fetchUrlByBookId = `${baseURL}&ocaid=${ocaid}`;
 
   let data = await $.ajax({ url: fetchUrlByBookId, dataType: 'jsonp' });
 
   if (!data || !data.length) {
     // try sourceid
-    data = await $.ajax({ url: `${baseURL}&source_records=ia:${this.bookId}`, dataType: 'jsonp' });
+    data = await $.ajax({ url: `${baseURL}&source_records=ia:${ocaid}`, dataType: 'jsonp' });
   }
 
   return data?.[0];
 };
 
 /**
- * highlights the current chapter based on current page
  * @private
- * @param {number} tocEntries
+ * Highlights the current chapter based on current page
+ * @param {PageIndex} curIndex
  */
-BookReader.prototype.updateTOCState = function() {
+BookReader.prototype._chaptersUpdateCurrent = function(
+  curIndex = (this.mode == 2 ? Math.max(...this.displayedIndices) : this.firstIndex)
+) {
   const tocEntriesIndexed = this._tocEntries.filter((el) => el.pageIndex != undefined).reverse();
-  const curIndex = this.mode == 2 ? Math.max(...this.displayedIndices) : this.firstIndex;
   const currChapter = tocEntriesIndexed[
     // subtract one so that 2up shows the right label
     tocEntriesIndexed.findIndex((chapter) => chapter.pageIndex <= curIndex)
@@ -188,7 +163,7 @@ BookReader.prototype.updateTOCState = function() {
 };
 
 @customElement('br-chapters-panel')
-class BRChaptersPanel extends LitElement {
+export class BRChaptersPanel extends LitElement {
   /** @type {TocEntry[]} */
   @property({ type: Array })
   contents = [];
