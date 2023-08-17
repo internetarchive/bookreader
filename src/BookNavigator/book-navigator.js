@@ -239,7 +239,7 @@ export class BookNavigator extends LitElement {
       });
     }
 
-    this.menuProviders = providers;
+    Object.assign(this.menuProviders, providers);
     this.addMenuShortcut('search');
     this.addMenuShortcut('volumes');
     this.updateMenuContents();
@@ -306,9 +306,9 @@ export class BookNavigator extends LitElement {
    */
   updateMenuContents() {
     const {
-      search, downloads, visualAdjustments, share, bookmarks, volumes
+      search, downloads, visualAdjustments, share, bookmarks, volumes, chapters
     } = this.menuProviders;
-    const availableMenus = [volumes, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
+    const availableMenus = [volumes, chapters, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
 
     if (this.shouldShowDownloadsMenu()) {
       downloads?.update(this.downloadableTypes);
@@ -410,6 +410,7 @@ export class BookNavigator extends LitElement {
   bindEventListeners() {
     window.addEventListener('BookReader:PostInit', (e) => {
       this.bookreader = e.detail.props;
+      this.bookreader.shell = this;
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
       this.emitLoadingStatusUpdate(true);

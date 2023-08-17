@@ -1,4 +1,9 @@
 /* global BookReader */
+import { css, html, LitElement } from "lit";
+import { customElement, property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+/** @typedef {import('@/src/BookNavigator/book-navigator.js').BookNavigator} BookNavigator */
+
 /**
  * Plugin for chapter markers in BookReader. Fetches from openlibrary.org
  * Could be forked, or extended to alter behavior
@@ -26,19 +31,14 @@ BookReader.prototype.init = (function(super_) {
   return function() {
     super_.call(this);
     if (this.enableChaptersPlugin && this.ui !== 'embed') {
-      this.getOpenLibraryRecord();
-    }
-    if (this.enableMobileNav) {
-      this.bind(BookReader.eventNames.mobileNavOpen,
-        () => {
-          this.updateTOCState(this.firstIndex, this._tocEntries);
-          if ($('table-contents-list').parent().hasClass('mm-opened')) {
-            this.updateTOCState(this.firstIndex, this._tocEntries);
-          }
+      this.getOpenLibraryRecord().then((olEdition) => {
+        if (olEdition?.table_of_contents?.length) {
+          this._tocEntries = olEdition.table_of_contents.map(rawTOCEntry => (
+            Object.assign({}, rawTOCEntry, {pageIndex: this.book.getPageIndex(rawTOCEntry.pagenum)})
+          ));
+          this._chaptersRender(this._tocEntries);
+          this.bind(BookReader.eventNames.pageChanged, () => this.updateTOCState());
         }
-      );
-      $(".BRmobileMenu__tableContents").on("click", () => {
-        this.updateTOCState(this.firstIndex, this._tocEntries);
       });
     }
   };
@@ -52,27 +52,16 @@ BookReader.prototype.init = (function(super_) {
  * @param {number} pageIndex
  */
 BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) {
-  const uiStringPage = 'Page'; // i18n
   const percentThrough = BookReader.util.cssPercentage(pageIndex, this.book.getNumLeafs() - 1);
-  const jumpToChapter = (event) => {
-    this.jumpToIndex($(event.delegateTarget).data('pageIndex'));
-    $('.current-chapter').removeClass('current-chapter');
-    $(event.delegateTarget).addClass('current-chapter');
-  };
-  const title = `${chapterTitle} | `;
-  const pageStr = `${uiStringPage} ${pageNumber}`;
-
-  //adding items to mobile table of contents
-  const mobileChapter = $(`<li></li>`).append($(`<span class='BRTOCElementTitle'></span>`).text(title))
-    .append($(`<span class='BRTOCElementPage'></span>`).text(pageStr));
-  mobileChapter.addClass('BRtable-contents-el')
-    .appendTo(this.$('.table-contents-list'))
-    .data({ pageIndex });
 
   //adds .BRchapters to the slider only if pageIndex exists
   if (pageIndex != undefined) {
     $(`<div></div>`)
-      .append($('<div />').text(title + pageStr))
+      .append(
+        $('<div />')
+          .text(chapterTitle)
+          .append($('<div class="BRchapterPage" />').text(`Page ${pageNumber}`))
+      )
       .addClass('BRchapter')
       .css({ left: percentThrough })
       .appendTo(this.$('.BRnavline'))
@@ -91,12 +80,7 @@ BookReader.prototype.addChapter = function(chapterTitle, pageNumber, pageIndex) 
         $(event.target).addClass('front');
       })
       .on("mouseleave", event => $(event.target).removeClass('front'))
-      .on('click', jumpToChapter);
-
-    //adding clickable properties to mobile chapters
-    mobileChapter.bind('click', jumpToChapter)
-      .addClass('chapter-clickable')
-      .attr("data-event-click-tracking","BRTOCPanel|GoToChapter");
+      .on('click', this.jumpToIndex.bind(this, pageIndex));
   }
 
 };
@@ -110,39 +94,42 @@ BookReader.prototype.removeChapters = function() {
 
 /**
  * Update the table of contents based on array of TOC entries.
- * @param {TocEntry[]} tocEntries
  */
-BookReader.prototype.updateTOC = function(tocEntries) {
+BookReader.prototype._chaptersRender = function() {
   this.removeChapters();
-  if (this.enableMobileNav && tocEntries.length > 0) {
-    this.$(".BRmobileMenu__tableContents").show();
+  const shell = /** @type {BookNavigator} */(this.shell);
+  shell.menuProviders['chapters'] = {
+    id: 'chapters',
+    icon: html`X`,
+    label: 'Table of Contents',
+    component: html`<br-chapters-panel
+      .contents="${this._tocEntries}"
+      .jumpToPage="${this.jumpToIndex.bind(this)}"
+      @connected="${(e) => {
+      this._chaptersPanel = e.target;
+      this.updateTOCState();
+    }}"
+    />`,
+  };
+  shell.updateMenuContents();
+  for (let i = 0; i < this._tocEntries.length; i++) {
+    this.addChapterFromEntry(this._tocEntries[i]);
   }
-  for (let i = 0; i < tocEntries.length; i++) {
-    this.addChapterFromEntry(tocEntries[i]);
-  }
-  this._tocEntries = tocEntries;
-  $('.table-contents-list').children().each((i, el) => {
-    tocEntries[i].mobileHTML = el;
-  });
 };
 
 /**
  * @typedef {Object} TocEntry
- * Table of contents entry as defined -- format is defined by Open Library
+ * Table of contents entry as defined by Open Library, with some extra values for internal use
  * @property {string} pagenum
  * @property {number} level
  * @property {string} label
- * @property {{type: '/type/toc_item'}} type
  * @property {string} title
- * @property {HTMLElement} mobileHTML
- * @property {number} pageIndex
-
+ * @property {number} pageIndex - Added
  *
  * @example {
  *   "pagenum": "17",
  *   "level": 1,
  *   "label": "CHAPTER I",
- *   "type": {"key": "/type/toc_item"},
  *   "title": "THE COUNTRY AND THE MISSION"
  * }
  */
@@ -151,7 +138,6 @@ BookReader.prototype.updateTOC = function(tocEntries) {
  * @param {TocEntry} tocEntryObject
  */
 BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
-  tocEntryObject.pageIndex = this.book.getPageIndex(tocEntryObject['pagenum']);
   //creates a string with non-void tocEntryObject.label and tocEntryObject.title
   const chapterStr = [tocEntryObject.label, tocEntryObject.title]
     .filter(x => x)
@@ -166,11 +152,6 @@ BookReader.prototype.addChapterFromEntry = function(tocEntryObject) {
 };
 
 /**
- * getOpenLibraryRecord
- *
- * The bookreader is designed to call openlibrary API and constructs the
- * "Return book" button using the response.
- *
  * This makes a call to OL API and calls the given callback function with the
  * response from the API.
  */
@@ -179,17 +160,6 @@ BookReader.prototype.getOpenLibraryRecord = async function () {
   const baseURL = `${this.olHost}/query.json?type=/type/edition&*=`;
   const fetchUrlByBookId = `${baseURL}&ocaid=${this.bookId}`;
 
-  /*
-  * Update Chapter markers based on received record from Open Library.
-  * Notes that Open Library record is used for extra metadata, and also for lending
-  */
-  const setUpChapterMarkers = (olObject) => {
-    if (olObject && olObject.table_of_contents) {
-      // XXX check here that TOC is valid
-      this.updateTOC(olObject.table_of_contents);
-    }
-  };
-
   let data = await $.ajax({ url: fetchUrlByBookId, dataType: 'jsonp' });
 
   if (!data || !data.length) {
@@ -197,48 +167,124 @@ BookReader.prototype.getOpenLibraryRecord = async function () {
     data = await $.ajax({ url: `${baseURL}&source_records=ia:${this.bookId}`, dataType: 'jsonp' });
   }
 
-  if (data && data.length > 0) {
-    setUpChapterMarkers(data[0]);
-  }
+  return data?.[0];
 };
-
-// Extend buildMobileDrawerElement with table of contents list
-BookReader.prototype.buildMobileDrawerElement = (function (super_) {
-  return function () {
-    const $el = super_.call(this);
-    if (this.enableMobileNav && this.options.enableChaptersPlugin) {
-      $el.find('.BRmobileMenu__moreInfoRow').after($(`
-        <li class="BRmobileMenu__tableContents" data-event-click-tracking="BRSidebar|TOCPanel">
-            <span>
-                <span class="DrawerIconWrapper">
-                  <img class="DrawerIcon" src="${this.imagesBaseURL}icon_toc.svg" alt="toc-icon"/>
-                </span>
-                Table of Contents
-            </span>
-            <div>
-                <ol class="table-contents-list">
-                </ol>
-            </div>
-        </li>`).hide());
-    }
-    return $el;
-  };
-})(BookReader.prototype.buildMobileDrawerElement);
 
 /**
  * highlights the current chapter based on current page
  * @private
- * @param {TocEntry[]} tocEntries
  * @param {number} tocEntries
  */
-BookReader.prototype.updateTOCState = function(currIndex, tocEntries) {
-  //this function won't have any effects if called before OpenLibrary request is finished
-  if (!tocEntries) {return;}
-  $('.current-chapter').removeClass('current-chapter');
-  const tocEntriesIndexed = tocEntries.filter((el) => el.pageIndex != undefined).reverse();
-  const currChapter = tocEntriesIndexed[tocEntriesIndexed.findIndex(
-    (el) => el.pageIndex <= currIndex)];
-  if (currChapter != undefined) {
-    $(currChapter.mobileHTML).addClass('current-chapter');
+BookReader.prototype.updateTOCState = function() {
+  const tocEntriesIndexed = this._tocEntries.filter((el) => el.pageIndex != undefined).reverse();
+  const curIndex = this.mode == 2 ? Math.max(...this.displayedIndices) : this.firstIndex;
+  const currChapter = tocEntriesIndexed[
+    // subtract one so that 2up shows the right label
+    tocEntriesIndexed.findIndex((chapter) => chapter.pageIndex <= curIndex)
+  ];
+  if (this._chaptersPanel) {
+    this._chaptersPanel.currentChapter = currChapter;
   }
 };
+
+@customElement('br-chapters-panel')
+class BRChaptersPanel extends LitElement {
+  /** @type {TocEntry[]} */
+  @property({ type: Array })
+  contents = [];
+
+  /** @type {TocEntry?} */
+  @property({ type: Object })
+  currentChapter = {};
+
+  /** @type {(pageIndex: PageIndex) => void} */
+  jumpToPage = () => {};
+
+  /**
+   * @param {TocEntry[]} contents
+   */
+  constructor(contents) {
+    super();
+    this.contents = contents;
+  }
+
+  render() {
+    return html`
+    <ol>
+      ${this.contents.map(tocEntry => this.renderTOCEntry(tocEntry))}
+    </ol>
+    `;
+  }
+
+  /**
+   * @param {TocEntry} tocEntry
+   */
+  renderTOCEntry(tocEntry) {
+    const chapterTitle = [tocEntry.label, tocEntry.title]
+      .filter(x => x)
+      .join(' ');
+    const clickable = tocEntry.pageIndex != undefined;
+    // note the click-tracking won't work...
+    return html`
+    <li
+      class="
+        BRtable-contents-el
+        ${clickable ? 'clickable' : ''}
+        ${tocEntry == this.currentChapter ? 'current' : ''}
+      "
+      data-event-click-tracking="${ifDefined(clickable ? "BRTOCPanel|GoToChapter" : undefined)}"
+      @click="${() => this.jumpToPage(tocEntry.pageIndex)}"
+    >
+      ${chapterTitle}
+      <br />
+      <span class="BRTOCElementPage">Page ${tocEntry.pagenum}</span>
+    </li>`;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.dispatchEvent(new CustomEvent('connected'));
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('currentChapter')) {
+      this.shadowRoot.querySelector('li.current')?.scrollIntoView({
+        block: 'nearest',
+        behavior: 'smooth',
+      });
+    }
+  }
+
+  static get styles() {
+    return css`
+      ol {
+        padding: 0;
+        margin: 0;
+        margin-right: 5px;
+      }
+      li {
+        padding: 10px;
+        overflow: hidden;
+        border-radius: 4px;
+      }
+      li.clickable {
+        font-weight: normal;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      li.clickable:not(.current):hover {
+        background-color: rgba(255,255,255, 0.05);
+      }
+
+      li.current {
+        background-color: rgba(255,255,255,0.9);
+        color: #333;
+      }
+
+      .BRTOCElementPage {
+        font-size: 0.85em;
+        opacity: .8;
+      }`;
+  }
+}
