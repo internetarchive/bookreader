@@ -104,8 +104,11 @@
     border-radius: 2px;
     background: transparent;
     outline: none;
-    &:hover .tooltip {
-      display: block;
+    @media (hover: hover) {
+      /* styles to apply on devices that support hover */
+      &:hover .BRtooltip {
+        display: block;
+      }
     }
     &.hide {
       display: none;

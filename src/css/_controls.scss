@@ -1,7 +1,7 @@
 .BRcontrols {
   width: 100%;
 
-  .tooltip {
+  .BRtooltip {
     display: none;
     position: absolute;
     width: auto;
@@ -14,9 +14,10 @@
     color: $controlsText;
     border-radius: 3px;
     background: $tooltipBG;
+    pointer-events: none;
   }
 
-  .full .tooltip {
+  .full .BRtooltip {
     left: auto;
     right: 0;
     transform: translateX(0);
