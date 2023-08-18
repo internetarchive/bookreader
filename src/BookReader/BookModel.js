@@ -30,6 +30,18 @@ export class BookModel {
     this._medianPageSize = null;
     /** @type {[PageData[], number]} */
     this._getDataFlattenedCached = null;
+
+    // Heal missing first page number assertion
+    const pages = this._getDataFlattened();
+    const firstNumberedPageIndex = pages.findIndex(page => page.pageNum != undefined);
+    if (firstNumberedPageIndex != -1) {
+      const pageNum = parseFloat(pages[firstNumberedPageIndex].pageNum);
+      if (!isNaN(pageNum)) {
+        const page = new PageModel(this, firstNumberedPageIndex);
+        const prevPageIndex = page.prev?.index;
+        pages[prevPageIndex].pageNum = pageNum - 1;
+      }
+    }
   }
 
   /** Get median width/height of page in inches. Memoized for performance. */
