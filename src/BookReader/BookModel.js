@@ -33,13 +33,13 @@ export class BookModel {
 
     // Heal missing first page number assertion
     const pages = this._getDataFlattened();
-    const firstNumberedPageIndex = pages.findIndex(page => page.pageNum != undefined);
-    if (firstNumberedPageIndex != -1) {
+    const firstNumberedPageIndex = pages.findIndex(page => page.pageNum != undefined && !isNaN(parseFloat(page.pageNum)));
+    if (firstNumberedPageIndex != -1 && firstNumberedPageIndex > 0) {
       const pageNum = parseFloat(pages[firstNumberedPageIndex].pageNum);
       if (!isNaN(pageNum)) {
-        const page = new PageModel(this, firstNumberedPageIndex);
-        const prevPageIndex = page.prev?.index;
-        pages[prevPageIndex].pageNum = pageNum - 1;
+        // Note: Since the pages are always sorted in increasing pageNum/index
+        // order, this will work for both left-to-right and right-to-left books
+        pages[firstNumberedPageIndex - 1].pageNum = pageNum - 1;
       }
     }
   }

@@ -1,7 +1,8 @@
 /* global BookReader */
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, nothing } from "lit";
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import '@internetarchive/icon-toc/icon-toc';
 /** @typedef {import('@/src/BookNavigator/book-navigator.js').BookNavigator} BookNavigator */
 
@@ -211,12 +212,15 @@ export class BRChaptersPanel extends LitElement {
         ${clickable ? 'clickable' : ''}
         ${tocEntry == this.currentChapter ? 'current' : ''}
       "
+      style="${styleMap({marginLeft: (tocEntry.level - 1) * 10 + 'px'})}"
       data-event-click-tracking="${ifDefined(clickable ? "BRTOCPanel|GoToChapter" : undefined)}"
       @click="${() => this.jumpToPage(tocEntry.pageIndex)}"
     >
       ${chapterTitle}
-      <br />
-      <span class="BRTOCElementPage">Page ${tocEntry.pagenum}</span>
+      ${tocEntry.pagenum ? html`
+        <br />
+        <span class="BRTOCElementPage">Page ${tocEntry.pagenum}</span>
+      ` : nothing}
     </li>`;
   }
 
