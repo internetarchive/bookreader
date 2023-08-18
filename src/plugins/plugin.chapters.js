@@ -2,6 +2,7 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import '@internetarchive/icon-toc/icon-toc';
 /** @typedef {import('@/src/BookNavigator/book-navigator.js').BookNavigator} BookNavigator */
 
 /**
@@ -40,7 +41,7 @@ BookReader.prototype._chaptersRender = function() {
   const shell = /** @type {BookNavigator} */(this.shell);
   shell.menuProviders['chapters'] = {
     id: 'chapters',
-    icon: html`X`,
+    icon: html`<ia-icon-toc style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-toc>`,
     label: 'Table of Contents',
     component: html`<br-chapters-panel
       .contents="${this._tocEntries}"
