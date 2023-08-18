@@ -113,7 +113,10 @@ BookReader.prototype._chaptersRenderMarker = function(tocEntry) {
       $(event.target).addClass('front');
     })
     .on("mouseleave", event => $(event.target).removeClass('front'))
-    .on('click', this.jumpToIndex.bind(this, tocEntry.pageIndex));
+    .on('click', () => {
+      this._chaptersUpdateCurrent(tocEntry.pageIndex);
+      this.jumpToIndex(tocEntry.pageIndex);
+    });
 
   this.$('.BRchapter, .BRsearch').each((i, el) => {
     const $el = $(el);
