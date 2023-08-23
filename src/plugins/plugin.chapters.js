@@ -22,18 +22,21 @@ BookReader.prototype.init = (function(super_) {
   return function() {
     super_.call(this);
     if (this.options.enableChaptersPlugin && this.ui !== 'embed') {
-      this.getOpenLibraryRecord(this.options.olHost, this.options.bookId).then((olEdition) => {
-        if (olEdition?.table_of_contents?.length) {
-          this._tocEntries = olEdition.table_of_contents.map(rawTOCEntry => (
-            Object.assign({}, rawTOCEntry, {pageIndex: this.book.getPageIndex(rawTOCEntry.pagenum)})
-          ));
-          this._chaptersRender(this._tocEntries);
-          this.bind(BookReader.eventNames.pageChanged, () => this._chaptersUpdateCurrent());
-        }
-      });
+      this._chapterInit();
     }
   };
 })(BookReader.prototype.init);
+
+BookReader.prototype._chapterInit = async function() {
+  const olEdition = await this.getOpenLibraryRecord(this.options.olHost, this.options.bookId);
+  if (olEdition?.table_of_contents?.length) {
+    this._tocEntries = olEdition.table_of_contents.map(rawTOCEntry => (
+      Object.assign({}, rawTOCEntry, {pageIndex: this.book.getPageIndex(rawTOCEntry.pagenum)})
+    ));
+    this._chaptersRender(this._tocEntries);
+    this.bind(BookReader.eventNames.pageChanged, () => this._chaptersUpdateCurrent());
+  }
+};
 
 /**
  * Update the table of contents based on array of TOC entries.
