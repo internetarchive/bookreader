@@ -1,6 +1,6 @@
 import { runBaseTests } from './helpers/base';
 import BookReader from './models/BookReader';
-import { runDesktopSearchTests } from './helpers/desktopSearch';
+import { runSearchTests } from './helpers/search';
 import params from './helpers/params';
 
 const ocaids = params.ocaids || [
@@ -21,7 +21,7 @@ ocaids.forEach(ocaid => {
   runBaseTests(new BookReader());
 
 
-  fixture `Desktop Search Tests for: ${ocaid}`
+  fixture `Search Tests for: ${ocaid}`
     .page `${url}`;
-  runDesktopSearchTests(new BookReader());
+  runSearchTests(new BookReader());
 });
