@@ -3,7 +3,7 @@ import { SEARCH_INSIDE_URL_RE , mockResponseFound, mockResponseNotFound,
   TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND, PAGE_FIRST_RESULT, SEARCH_MATCHES_LENGTH } from './mockSearch';
 
 
-export function runDesktopSearchTests(br) {
+export function runSearchTests(br) {
   //building mock response  for successful and unsuccessful search
   const mockFound = RequestMock()
     .onRequestTo(SEARCH_INSIDE_URL_RE )
@@ -15,7 +15,7 @@ export function runDesktopSearchTests(br) {
 
 
   test
-    .requestHooks(mockFound)('Desktop search - successful search', async t => {
+    .requestHooks(mockFound)('Search - successful search', async t => {
       const nav = br.nav;
 
       //assuring that the search bar is enabled
@@ -51,7 +51,7 @@ export function runDesktopSearchTests(br) {
 
 
   test
-    .requestHooks(mockNotFound)('Desktop search - unsuccessful search', async t => {
+    .requestHooks(mockNotFound)('Search - unsuccessful search', async t => {
       const nav = br.nav;
 
       //assuring that the search bar is enabled
