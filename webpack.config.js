@@ -46,7 +46,6 @@ module.exports = [
       'plugins/plugin.autoplay.js': { import: './src/plugins/plugin.autoplay.js', dependOn: 'BookReader.js' },
       'plugins/plugin.chapters.js': { import: './src/plugins/plugin.chapters.js', dependOn: 'BookReader.js' },
       'plugins/plugin.iframe.js': { import: './src/plugins/plugin.iframe.js', dependOn: 'BookReader.js' },
-      'plugins/plugin.mobile_nav.js': { import: './src/plugins/plugin.mobile_nav.js', dependOn: 'BookReader.js' },
       'plugins/plugin.resume.js': { import: './src/plugins/plugin.resume.js', dependOn: 'BookReader.js' },
       'plugins/plugin.search.js': { import: './src/plugins/search/plugin.search.js', dependOn: 'BookReader.js' },
       'plugins/plugin.text_selection.js': { import: './src/plugins/plugin.text_selection.js', dependOn: 'BookReader.js' },

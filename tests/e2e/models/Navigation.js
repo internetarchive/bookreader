@@ -5,10 +5,8 @@ export default class Navigation {
   constructor() {
     this.topNavShell = new Selector('.BRtoolbar');
     this.bottomNavShell = new Selector('.BRfooter');
-    this.mobileMenu = new Selector('.BRmobileMenu');
     this.itemNav = Selector('ia-bookreader').shadowRoot().find('ia-item-navigator').shadowRoot();
     this.desktop = new DesktopNav(this.bottomNavShell, this.itemNav);
-    this.mobile = new MobileNav(this.mobileMenu, this.topNavShell);
   }
 }
 
@@ -51,15 +49,5 @@ export class DesktopNav {
     // other
     this.fullScreen = bottomToolbar.find('.BRicon.full');
     this.sliderRange = bottomToolbar.find('.ui-slider-range');
-  }
-}
-
-class MobileNav {
-  constructor(mobileMenu, topToolbar) {
-    this.hamburgerButton = topToolbar.find('.BRmobileHamburger');
-    this.menuSearchButton = mobileMenu.find('.BRmobileMenu__search');
-    this.searchBox = mobileMenu.find('#BRsearch_tray');
-    this.searchResults = mobileMenu.find('[data-id="results"]');
-    this.searchResultText = this.searchResults.child(0).find('p');
   }
 }

@@ -1,7 +1,6 @@
 import { runBaseTests } from './helpers/base';
 import BookReader from './models/BookReader';
 import { runDesktopSearchTests } from './helpers/desktopSearch';
-// import { runMobileSearchTests } from './helpers/mobileSearch';
 import params from './helpers/params';
 
 const ocaids = params.ocaids || [
@@ -25,11 +24,4 @@ ocaids.forEach(ocaid => {
   fixture `Desktop Search Tests for: ${ocaid}`
     .page `${url}`;
   runDesktopSearchTests(new BookReader());
-
-  // Todo: deprecated, will remove once mmenu is removed.
-  // fixture `Mobile Search Tests for: ${ocaid}`
-  //   .page `${url}`
-  // runMobileSearchTests(new BookReader());
-
-
 });

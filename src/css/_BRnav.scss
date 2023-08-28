@@ -130,14 +130,6 @@
   // Default
   @include brNavDark;
 
-  /* Full mobile styles */
-  @media (max-width: $brBreakPointMobile) {
-    .BRbodyMobileNavEnabled &,
-    .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive & {
-      @include brNavLight;
-    }
-  }
-
   &--controls {
     display: flex;
   }

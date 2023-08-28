@@ -2,9 +2,6 @@
 /* global BookReader */
 /**
  * Plugin for Archive.org book search
- * NOTE: This script must be loaded AFTER `plugin.mobile_nav.js`
- * as it mutates mobile nav drawer
- *
  * Events fired at various points throughout search processing are published
  * on the document DOM element. These can be subscribed to using jQuery's event
  * binding method `$.fn.on`. All of the events are prefixed with a BookReader

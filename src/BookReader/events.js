@@ -16,5 +16,4 @@ export const EVENTS = {
   '2PageViewSelected': '2PageViewSelected',
   /* currently 3 represents thumbnail view */
   '3PageViewSelected': '3PageViewSelected',
-  mobileNavOpen: 'mobileNavOpen',
 };
