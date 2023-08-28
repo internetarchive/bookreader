@@ -98,6 +98,10 @@
       // background-image: url(images/marker_chap-on.svg);
       background-color: blue;
     }
+    .BRchapterPage {
+      font-size: 0.85em;
+      opacity: .8;
+    }
   }
   .BRsearch {
     width: 9px;
@@ -130,8 +134,8 @@
     }
     footer {
       text-align: center;
-      font-weight: bold;
-      font-size: 0.9em;
+      font-size: 0.85em;
+      opacity: .8;
     }
     mark {
       color: $searchResultText;

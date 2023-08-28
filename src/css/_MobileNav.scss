@@ -166,29 +166,3 @@ html.mm-background .BookReader {
 @media (min-width: ($brBreakPointMobile + 1)) {
   .BRtoolbar.responsive { display: block; }
 }
-
-li.BRtable-contents-el {
-  line-height: 150%;
-  padding: 10px 10px 10px 20px;
-  overflow: hidden;
-  color: $controlsText;
-
-  &.chapter-clickable {
-    font-weight: normal;
-  }
-
-  &.current-chapter {
-    background-color: lightblue;
-  }
-  //resetting mmenu styling for span inside .table-contents-el
-  > span {
-    display: inline;
-    padding: 0;
-    white-space: normal;
-  }
-
-  .BRTOCElementPage {
-    font-size: 0.85em;
-    opacity: .8;
-  }
-}
