@@ -1,3 +1,8 @@
+# 5.0.0-67
+- Feature: Re-enable chapters plugin + migrate off mmenu @cdrini
+- Fix: Disable tooltips on touchscreens + fix on IA @cdrini
+- Dev: Remove core-js update block; issue resolved in core-js @cdrini
+
 # 5.0.0-66
 - Fix: Pinch zooming on iPad/iPhone, Samsung Internet @cdrini
 

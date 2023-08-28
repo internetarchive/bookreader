@@ -1069,8 +1069,13 @@ i.BRicon {
   background: transparent;
   outline: none;
 }
-.BRfooter button:hover .tooltip {
-  display: block;
+@media (hover: hover) {
+  .BRfooter button {
+    /* styles to apply on devices that support hover */
+  }
+  .BRfooter button:hover .BRtooltip {
+    display: block;
+  }
 }
 .BRfooter button.hide {
   display: none;
@@ -1605,6 +1610,10 @@ i.BRicon {
 .BookReader .BRchapter.front, .BRmobileMenu .BRchapter.front, .BRfloat .BRchapter.front {
   background-color: blue;
 }
+.BookReader .BRchapter .BRchapterPage, .BRmobileMenu .BRchapter .BRchapterPage, .BRfloat .BRchapter .BRchapterPage {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
 .BookReader .BRsearch, .BRmobileMenu .BRsearch, .BRfloat .BRsearch {
   width: 9px;
   height: 6px;
@@ -1635,8 +1644,8 @@ i.BRicon {
 }
 .BookReader .BRquery footer, .BRmobileMenu .BRquery footer, .BRfloat .BRquery footer {
   text-align: center;
-  font-weight: bold;
-  font-size: 0.9em;
+  font-size: 0.85em;
+  opacity: 0.8;
 }
 .BookReader .BRquery mark, .BRmobileMenu .BRquery mark, .BRfloat .BRquery mark {
   color: #adaedc;
@@ -2555,28 +2564,6 @@ html.mm-background .BookReader {
     display: block;
   }
 }
-li.BRtable-contents-el {
-  line-height: 150%;
-  padding: 10px 10px 10px 20px;
-  overflow: hidden;
-  color: #fff;
-}
-li.BRtable-contents-el.chapter-clickable {
-  font-weight: normal;
-}
-li.BRtable-contents-el.current-chapter {
-  background-color: lightblue;
-}
-li.BRtable-contents-el > span {
-  display: inline;
-  padding: 0;
-  white-space: normal;
-}
-li.BRtable-contents-el .BRTOCElementPage {
-  font-size: 0.85em;
-  opacity: 0.8;
-}
-
 /****************** Excerpt from jquery-ui *********************/
 .ui-helper-hidden {
   display: none;
@@ -2733,7 +2720,7 @@ li.BRtable-contents-el .BRTOCElementPage {
   width: 100%;
   /* BookReader defaults overrides */
 }
-.BRcontrols .tooltip {
+.BRcontrols .BRtooltip {
   display: none;
   position: absolute;
   width: auto;
@@ -2746,8 +2733,9 @@ li.BRtable-contents-el .BRTOCElementPage {
   color: #fff;
   border-radius: 3px;
   background: #333;
+  pointer-events: none;
 }
-.BRcontrols .full .tooltip {
+.BRcontrols .full .BRtooltip {
   left: auto;
   right: 0;
   transform: translateX(0);
