@@ -5,61 +5,35 @@ export default class Navigation {
   constructor() {
     this.topNavShell = new Selector('.BRtoolbar');
     this.bottomNavShell = new Selector('.BRfooter');
-    this.mobileMenu = new Selector('.BRmobileMenu');
     this.itemNav = Selector('ia-bookreader').shadowRoot().find('ia-item-navigator').shadowRoot();
-    this.desktop = new DesktopNav(this.bottomNavShell, this.itemNav);
-    this.mobile = new MobileNav(this.mobileMenu, this.topNavShell);
-  }
-}
 
-/**
- * DesktopNav Model
- * @class
- * @classdesc defines DesktopNav base elements
- */
-export class DesktopNav {
-  /**
-   * @param {Selector} bottomToolbar
-   * @param {Selector} itemNav
-   */
-  constructor(bottomToolbar, itemNav) {
     // flipping
-    this.goLeft = bottomToolbar.find('.BRicon.book_left');
-    this.goRight = bottomToolbar.find('.BRicon.book_right');
-    this.goNext = bottomToolbar.find('.BRicon.book_flip_next');
-    this.goPrev = bottomToolbar.find('.BRicon.book_flip_prev');
+    this.goLeft = this.bottomNavShell.find('.BRicon.book_left');
+    this.goRight = this.bottomNavShell.find('.BRicon.book_right');
+    this.goNext = this.bottomNavShell.find('.BRicon.book_flip_next');
+    this.goPrev = this.bottomNavShell.find('.BRicon.book_flip_prev');
 
     // mode switching
-    this.mode1Up = bottomToolbar.find('.BRicon.onepg');
-    this.mode2Up = bottomToolbar.find('.BRicon.twopg');
-    this.modeThumb = bottomToolbar.find('.BRicon.thumb');
-    this.viewmode = bottomToolbar.find('.BRicon.viewmode');
+    this.mode1Up = this.bottomNavShell.find('.BRicon.onepg');
+    this.mode2Up = this.bottomNavShell.find('.BRicon.twopg');
+    this.modeThumb = this.bottomNavShell.find('.BRicon.thumb');
+    this.viewmode = this.bottomNavShell.find('.BRicon.viewmode');
 
     // zoom
-    this.zoomIn = bottomToolbar.find('.BRicon.zoom_in');
-    this.zoomOut = bottomToolbar.find('.BRicon.zoom_out');
+    this.zoomIn = this.bottomNavShell.find('.BRicon.zoom_in');
+    this.zoomOut = this.bottomNavShell.find('.BRicon.zoom_out');
 
     // search
-    this.searchIcon = itemNav.find('button.shortcut.search');
-    this.searchBox = itemNav
+    this.searchIcon = this.itemNav.find('button.shortcut.search');
+    this.searchBox = this.itemNav
       .find('ia-menu-slider').shadowRoot()
       .find('ia-book-search-results').shadowRoot()
       .find('input[name=query]');
-    this.searchPin = bottomToolbar.find('.BRsearch');
-    this.searchNavigation = bottomToolbar.find('.BRsearch-navigation');
+    this.searchPin = this.bottomNavShell.find('.BRsearch');
+    this.searchNavigation = this.bottomNavShell.find('.BRsearch-navigation');
 
     // other
-    this.fullScreen = bottomToolbar.find('.BRicon.full');
-    this.sliderRange = bottomToolbar.find('.ui-slider-range');
-  }
-}
-
-class MobileNav {
-  constructor(mobileMenu, topToolbar) {
-    this.hamburgerButton = topToolbar.find('.BRmobileHamburger');
-    this.menuSearchButton = mobileMenu.find('.BRmobileMenu__search');
-    this.searchBox = mobileMenu.find('#BRsearch_tray');
-    this.searchResults = mobileMenu.find('[data-id="results"]');
-    this.searchResultText = this.searchResults.child(0).find('p');
+    this.fullScreen = this.bottomNavShell.find('.BRicon.full');
+    this.sliderRange = this.bottomNavShell.find('.ui-slider-range');
   }
 }

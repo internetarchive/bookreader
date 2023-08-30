@@ -92,9 +92,6 @@ var options = {
     {label: 'Author', value: 'Internet Archive'},
     {label: 'Demo Info', value: 'This demo shows how one could use BookReader with their own content.'},
   ],
-  // This toggles the mobile drawer (not shown in 'embed' mode)
-  enableMobileNav: false,
-  mobileNavTitle: 'BookReader demo',
 
   // Override the path used to find UI images
   imagesBaseURL: '../BookReader/images/',

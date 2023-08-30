@@ -41,8 +41,7 @@ BookReader.prototype.bindNavigationHandlers = (function(super_) {
 
     if (!this.options.enableAutoPlayPlugin) return;
 
-    // Note the mobile plugin attaches itself to body, so we need to select outside
-    const jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
+    const jIcons = this.$('.BRicon');
 
     jIcons.filter('.play').click(() => {
       this.autoToggle();

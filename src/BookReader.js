@@ -1355,9 +1355,8 @@ exposeOverrideableMethod(Toolbar, '_components.toolbar', 'getToolBarHeight');
  */
 BookReader.prototype.bindNavigationHandlers = function() {
   const self = this;
+  const jIcons = this.$('.BRicon');
 
-  // Note the mobile plugin attaches itself to body, so we need to select outside
-  const jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
   // Map of jIcon class -> click handler
   const navigationControls = {
     book_left: () => {

@@ -36,21 +36,3 @@ ia-bookreader{
     overflow: hidden;
     margin: 0 auto;
 }
-
-@media only screen and (max-width: 799px) {
-    body.BRbodyMobileNavEnabled {
-        margin: 0;
-        width: 100%;
-        overflow: hidden;
-    }
-    .BRbodyMobileNavEnabled .BookReader {
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        position: absolute;
-        height: 100%;
-        margin: 0;
-        width: 100%;
-    }
-  }
