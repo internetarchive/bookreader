@@ -350,7 +350,7 @@ export class Mode1UpLit extends LitElement {
    */
   computeDefaultScale(page) {
     // Default to real size if it fits, otherwise default to full width
-    const containerWidthIn = this.coordSpace.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
+    const containerWidthIn = this.coordSpace.renderedPixelsToWorldUnits(this.clientWidth);
     return Math.min(1, containerWidthIn / (page.widthInches + 2 * this.SPACING_IN)) || 1;
   }
 
