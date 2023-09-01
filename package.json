@@ -69,7 +69,7 @@
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "live-server": "1.2.2",
-    "node-fetch": "3.2.10",
+    "node-fetch": "3.3.2",
     "regenerator-runtime": "0.13.11",
     "sass": "1.64.2",
     "sinon": "^15.1.0",
