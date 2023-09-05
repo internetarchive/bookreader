@@ -30,18 +30,6 @@ export class BookModel {
     this._medianPageSize = null;
     /** @type {[PageData[], number]} */
     this._getDataFlattenedCached = null;
-
-    // Heal missing first page number assertion
-    const pages = this._getDataFlattened();
-    const firstNumberedPageIndex = pages.findIndex(page => page.pageNum != undefined && !isNaN(parseFloat(page.pageNum)));
-    if (firstNumberedPageIndex != -1 && firstNumberedPageIndex > 0) {
-      const pageNum = parseFloat(pages[firstNumberedPageIndex].pageNum);
-      if (!isNaN(pageNum)) {
-        // Note: Since the pages are always sorted in increasing pageNum/index
-        // order, this will work for both left-to-right and right-to-left books
-        pages[firstNumberedPageIndex - 1].pageNum = pageNum - 1;
-      }
-    }
   }
 
   /** Get median width/height of page in inches. Memoized for performance. */
