@@ -1,5 +1,5 @@
 /*! For license information please see plugin.chapters.js.LICENSE.txt */
-"use strict";(self.webpackChunk_internetarchive_bookreader=self.webpackChunk_internetarchive_bookreader||[]).push([[529],{4775:function(e,t,r){r(2526),r(1817),r(2165),r(6992),r(8783),r(3948),r(2443),r(3680),r(3706),r(2703),r(489),r(4747),r(8309),r(7042),r(3371),r(9714),r(1038),r(4916),r(4819),r(5003),r(6649),r(6078),r(9653),r(561),r(9826),r(2419),r(1249),r(9601),r(9600),r(7327),r(1539),r(1058),r(2222),r(5069),r(4553),r(8674);var n=r(871),o=r(9089),i=r(4817),a=r(1312),c=n.dy`
+"use strict";(self.webpackChunk_internetarchive_bookreader=self.webpackChunk_internetarchive_bookreader||[]).push([[529],{4775:function(e,t,r){r(2526),r(1817),r(2165),r(6992),r(8783),r(3948),r(2443),r(3680),r(3706),r(2703),r(489),r(4747),r(8309),r(7042),r(3371),r(9714),r(1038),r(4916),r(4819),r(5003),r(6649),r(6078),r(9653),r(561),r(9826),r(2419),r(1249),r(9601),r(9600),r(7327),r(1539),r(1058),r(2222),r(5069),r(4553),r(8674);var n=r(8318),o=r(9089),i=r(4817),a=r(1312),c=n.dy`
 <svg
   viewBox="0 0 24 24"
   xmlns="http://www.w3.org/2000/svg"
