@@ -1788,7 +1788,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
   // Index and page
   if ('undefined' != typeof(urlHash['page'])) {
     // page was set -- may not be int
-    params.page = urlHash['page'];
+    params.page = decodeURIComponent(urlHash['page']);
   }
 
   // $$$ process /region
@@ -1820,11 +1820,10 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
  * @return {string}
  */
 BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
-  const separator = '/';
   const fragments = [];
 
   if ('undefined' != typeof(params.page)) {
-    fragments.push('page', params.page);
+    fragments.push('page', encodeURIComponent(params.page));
   } else {
     if ('undefined' != typeof(params.index)) {
       // Don't have page numbering but we do have the index
@@ -1850,10 +1849,10 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
 
   // search
   if (params.search && urlMode === 'hash') {
-    fragments.push('search', params.search);
+    fragments.push('search', utils.encodeURIComponentPlus(params.search));
   }
 
-  return utils.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+  return fragments.join('/');
 };
 
 /**
