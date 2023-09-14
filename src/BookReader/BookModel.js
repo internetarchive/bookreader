@@ -352,8 +352,8 @@ export class PageModel {
    * @param {PageIndex} index
    */
   constructor(book, index) {
-    // TODO: Get default from config
-    this.ppi = book._getDataProp(index, 'ppi', book.ppi);
+    // Values less than 10 cause the UI to not work correctly
+    this.ppi = Math.max(book._getDataProp(index, 'ppi', book.ppi), 10);
     this.book = book;
     this.index = index;
     this.width = book.getPageWidth(index);
