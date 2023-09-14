@@ -353,7 +353,8 @@ export class PageModel {
    */
   constructor(book, index) {
     // Values less than 10 cause the UI to not work correctly
-    this.ppi = Math.max(book._getDataProp(index, 'ppi', book.ppi), 10);
+    const pagePPI = book._getDataProp(index, 'ppi', book.ppi);
+    this.ppi = Math.max(pagePPI < 10 ? book.ppi : pagePPI, 10);
     this.book = book;
     this.index = index;
     this.width = book.getPageWidth(index);
