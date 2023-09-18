@@ -142,6 +142,7 @@ export default class AbstractTTSEngine {
     // MS Edge fires voices changed randomly very often
     this.events.off('voiceschanged', this.updateBestVoice);
     this.voice = this.getVoices().find(voice => voice.voiceURI === voiceURI);
+    localStorage.setItem('BRplayback-voice', this.voice.voiceURI);
     if (this.activeSound) this.activeSound.setVoice(this.voice);
   }
 
@@ -221,15 +222,29 @@ export default class AbstractTTSEngine {
     // user languages that match the book language
     const matchingUserLangs = userLanguages.filter(lang => lang.startsWith(bookLanguage));
 
-    // Try to find voices that intersect these two sets
-    return AbstractTTSEngine.getMatchingVoice(matchingUserLangs, bookLangVoices) ||
+    // First find the last chosen voice from localStorage
+    return AbstractTTSEngine.getMatchingStoredVoice(bookLangVoices)
+        // Try to find voices that intersect these two sets
+        || AbstractTTSEngine.getMatchingVoice(matchingUserLangs, bookLangVoices)
         // no user languages match the books; let's return the best voice for the book language
-        (bookLangVoices.find(v => v.default) || bookLangVoices[0])
+        || (bookLangVoices.find(v => v.default) || bookLangVoices[0])
         // No voices match the book language? let's find a voice in the user's language
         // and ignore book lang
         || AbstractTTSEngine.getMatchingVoice(userLanguages, voices)
         // C'mon! Ok, just read with whatever we got!
         || (voices.find(v => v.default) || voices[0]);
+  }
+
+  /**
+   * @private
+   * Get the voice string last selected by the user from localStorage.
+   * Returns undefined if no language is stored or found.
+   * @param {SpeechSynthesisVoice[]} voices  browser voices to choose from
+   * @return {string | undefined}
+   */
+  static getMatchingStoredVoice(voices) {
+    const storedVoice = localStorage.getItem('BRplayback-voice');
+    return (storedVoice ? voices.find(v => v.voiceURI === storedVoice) : undefined);
   }
 
   /**
