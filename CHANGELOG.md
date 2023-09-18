@@ -1,3 +1,6 @@
+# 5.0.0-69
+- Fix: Handle ppi incorrectly set to one @cdrini
+
 # 5.0.0-68
 - Fix: 1up zoom wrong on start/entering full screen @cdrini
 - Dev: BREAKING: delete `plugin.mobile_nav.js` no longer used @cdrini
