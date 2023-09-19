@@ -58,15 +58,24 @@ export default class VolumesProvider {
     const { sortType, sortedFiles } = event.detail;
 
     this.viewableFiles = sortedFiles;
-    this.sortType = sortType;
+    this.sortOrderBy = sortType;
 
     // update the component
     this.component.fileList = [...this.viewableFiles];
     await this.component.updateComplete;
 
+    if (this.bookreader.urlPlugin) {
+      this.bookreader.urlPlugin.pullFromAddressBar();
+      if (this.sortOrderBy !== sortType.default) {
+        this.bookreader.urlPlugin.setUrlParam('sort', this.sortOrderBy);
+      } else {
+        this.bookreader.urlPlugin.removeUrlParam('sort');
+      }
+    }
+
     this.onProviderChange(this.bookreader);
 
-    this.multipleFilesClicked(sortType);
+    this.multipleFilesClicked(this.sortOrderBy);
   }
 
   /**
