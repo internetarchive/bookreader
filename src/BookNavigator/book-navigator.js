@@ -309,6 +309,7 @@ export class BookNavigator extends LitElement {
       search, downloads, visualAdjustments, share, bookmarks, volumes, chapters
     } = this.menuProviders;
     const availableMenus = [volumes, chapters, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
+    debugger;
 
     if (this.shouldShowDownloadsMenu()) {
       downloads?.update(this.downloadableTypes);

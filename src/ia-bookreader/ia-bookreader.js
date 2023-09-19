@@ -54,7 +54,7 @@ export class IaBookReader extends LitElement {
   }
 
   get itemNav() {
-    return this.shadowRoot.querySelector('ia-item-navigator');
+    return this.shadowRoot.querySelector('iaux-item-navigator');
   }
 
   /** Creates modal DOM & attaches to `<body>` */
@@ -111,7 +111,7 @@ export class IaBookReader extends LitElement {
   render() {
     return html`
       <div class="main-component">
-        <ia-item-navigator
+        <iaux-item-navigator
           ?viewportInFullscreen=${this.fullscreen}
           .basehost=${this.baseHost}
           .item=${this.item}
@@ -145,7 +145,7 @@ export class IaBookReader extends LitElement {
               </div>
             </book-navigator>
           </div>
-        </ia-item-navigator>
+        </iaux-item-navigator>
       </div>
     `;
   }
@@ -169,7 +169,7 @@ export class IaBookReader extends LitElement {
       }
 
       :host([fullscreen]),
-      ia-item-navigator[viewportinfullscreen] {
+      iaux-item-navigator[viewportinfullscreen] {
         position: fixed;
         inset: 0;
         height: 100%;
@@ -193,7 +193,7 @@ export class IaBookReader extends LitElement {
         flex: 1;
       }
 
-      ia-item-navigator {
+      iaux-item-navigator {
         min-height: var(--br-height, inherit);
         height: var(--br-height, inherit);
         display: block;

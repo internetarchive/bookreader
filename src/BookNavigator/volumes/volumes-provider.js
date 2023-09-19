@@ -1,11 +1,7 @@
 import { html } from 'lit';
 
-import sortDescIcon from '../assets/icon_sort_desc.js';
-import sortAscIcon from '../assets/icon_sort_asc.js';
-import sortNeutralIcon from '../assets/icon_sort_neutral.js';
-import volumesIcon from '../assets/icon_volumes.js';
-
-import './volumes.js';
+import { viewableFilesIcon  } from '@internetarchive/ia-item-navigator';
+import '@internetarchive/ia-item-navigator';
 
 const sortType = {
   title_asc: 'title_asc',
@@ -17,25 +13,30 @@ export default class VolumesProvider {
    * @param {import('../../BookReader').default} bookreader
    */
   constructor({ baseHost, bookreader, onProviderChange }) {
+    /** @type {import('../../BookReader').default} */
+    this.bookreader = bookreader;
     this.onProviderChange = onProviderChange;
-    this.component = document.createElement("viewable-files");
+    this.baseHost = baseHost;
 
     const files = bookreader.options.multipleBooksList.by_subprefix;
     this.viewableFiles = Object.keys(files).map(item => files[item]);
     this.volumeCount = Object.keys(files).length;
 
-    /** @type {import('../../BookReader').default} */
-    this.bookreader = bookreader;
-
-    this.component.subPrefix = bookreader.options.subPrefix || "";
-    this.component.hostUrl = baseHost;
-    this.component.viewableFiles = this.viewableFiles;
-
     this.id = "volumes";
     this.label = `Viewable files (${this.volumeCount})`;
-    this.icon = html`${volumesIcon}`;
-
+    this.icon = html`${viewableFilesIcon}`;
     this.sortOrderBy = sortType.default;
+
+    this.component = document.createElement("iaux-viewable-files");
+    this.component.addSortToUrl = true;
+    this.component.subPrefix = bookreader.options.subPrefix || "";
+    this.component.baseHost = baseHost;
+    this.component.fileList = [...this.viewableFiles];
+
+    this.sortFilesComponent = document.createElement("iaux-sort-viewable-files");
+    this.sortFilesComponent.fileListRaw = this.viewableFiles;
+    this.sortFilesComponent.addEventListener('fileListSorted', (e) => this.handleFileListSorted(e));
+    this.actionButton = this.sortFilesComponent;
 
     // get sort state from query param
     if (this.bookreader.urlPlugin) {
@@ -46,55 +47,26 @@ export default class VolumesProvider {
         this.sortOrderBy = urlSortValue;
       }
     }
-    this.sortVolumes(this.sortOrderBy);
-  }
 
-  get sortButton() {
-    const sortIcons = {
-      default: html`
-        <button class="sort-by neutral-icon" aria-label="Sort volumes in initial order" @click=${() => this.sortVolumes("title_asc")}>${sortNeutralIcon}</button>
-      `,
-      title_asc: html`
-        <button class="sort-by asc-icon" aria-label="Sort volumes in ascending order" @click=${() => this.sortVolumes("title_desc")}>${sortAscIcon}</button>
-      `,
-      title_desc: html`
-        <button class="sort-by desc-icon" aria-label="Sort volumes in descending order" @click=${() => this.sortVolumes("default")}>${sortDescIcon}</button>
-      `,
-    };
-
-    return sortIcons[this.sortOrderBy];
+    this.sortFilesComponent.sortVolumes(this.sortOrderBy);
   }
 
   /**
    * @param {'default' | 'title_asc' | 'title_desc'} sortByType
    */
-  sortVolumes(sortByType) {
-    let sortedFiles = [];
+  async handleFileListSorted(event) {
+    const { sortType, sortedFiles } = event.detail;
 
-    const files = this.viewableFiles;
-    sortedFiles = files.sort((a, b) => {
-      if (sortByType === sortType.title_asc) return a.title.localeCompare(b.title);
-      else if (sortByType === sortType.title_desc) return b.title.localeCompare(a.title);
-      else return a.orig_sort - b.orig_sort;
-    });
+    this.viewableFiles = sortedFiles;
+    this.sortType = sortType;
 
-    this.sortOrderBy = sortByType;
-    this.component.sortOrderBy = sortByType;
-    this.component.viewableFiles  = [...sortedFiles];
-    this.actionButton = this.sortButton;
-
-    if (this.bookreader.urlPlugin) {
-      this.bookreader.urlPlugin.pullFromAddressBar();
-      if (this.sortOrderBy !== sortType.default) {
-        this.bookreader.urlPlugin.setUrlParam('sort', sortByType);
-      } else {
-        this.bookreader.urlPlugin.removeUrlParam('sort');
-      }
-    }
+    // update the component
+    this.component.fileList = [...this.viewableFiles];
+    await this.component.updateComplete;
 
     this.onProviderChange(this.bookreader);
 
-    this.multipleFilesClicked(sortByType);
+    this.multipleFilesClicked(sortType);
   }
 
   /**
