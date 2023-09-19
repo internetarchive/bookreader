@@ -3,7 +3,7 @@ import { html } from 'lit';
 import { viewableFilesIcon  } from '@internetarchive/ia-item-navigator';
 import '@internetarchive/ia-item-navigator';
 
-const sortType = {
+const sortOptions = {
   title_asc: 'title_asc',
   title_desc: 'title_desc',
   default: 'default'
@@ -25,7 +25,7 @@ export default class VolumesProvider {
     this.id = "volumes";
     this.label = `Viewable files (${this.volumeCount})`;
     this.icon = html`${viewableFilesIcon}`;
-    this.sortOrderBy = sortType.default;
+    this.sortOrderBy = sortOptions.default;
 
     this.component = document.createElement("iaux-viewable-files");
     this.component.addSortToUrl = true;
@@ -43,7 +43,7 @@ export default class VolumesProvider {
       this.bookreader.urlPlugin.pullFromAddressBar();
 
       const urlSortValue = this.bookreader.urlPlugin.getUrlParam('sort');
-      if (urlSortValue === sortType.title_asc || urlSortValue === sortType.title_desc) {
+      if (urlSortValue === sortOptions.title_asc || urlSortValue === sortOptions.title_desc) {
         this.sortOrderBy = urlSortValue;
       }
     }
@@ -64,9 +64,10 @@ export default class VolumesProvider {
     this.component.fileList = [...this.viewableFiles];
     await this.component.updateComplete;
 
+    debugger;
     if (this.bookreader.urlPlugin) {
       this.bookreader.urlPlugin.pullFromAddressBar();
-      if (this.sortOrderBy !== sortType.default) {
+      if (this.sortOrderBy !== sortOptions.default) {
         this.bookreader.urlPlugin.setUrlParam('sort', this.sortOrderBy);
       } else {
         this.bookreader.urlPlugin.removeUrlParam('sort');
