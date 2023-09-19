@@ -49,6 +49,8 @@ export default class VolumesProvider {
     }
 
     this.sortFilesComponent.sortVolumes(this.sortOrderBy);
+
+    this.onProviderChange(this.bookreader);
   }
 
   /**
