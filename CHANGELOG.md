@@ -1,3 +1,11 @@
+# 5.0.0-69
+- Fix: Handle ppi incorrectly set to one @cdrini
+
+# 5.0.0-68
+- Fix: 1up zoom wrong on start/entering full screen @cdrini
+- Dev: BREAKING: delete `plugin.mobile_nav.js` no longer used @cdrini
+- Dev: Move page 1 label correction logic to BookReaderJSIA @cdrini
+
 # 5.0.0-67
 - Feature: Re-enable chapters plugin + migrate off mmenu @cdrini
 - Fix: Disable tooltips on touchscreens + fix on IA @cdrini

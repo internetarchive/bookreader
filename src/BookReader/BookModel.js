@@ -30,18 +30,6 @@ export class BookModel {
     this._medianPageSize = null;
     /** @type {[PageData[], number]} */
     this._getDataFlattenedCached = null;
-
-    // Heal missing first page number assertion
-    const pages = this._getDataFlattened();
-    const firstNumberedPageIndex = pages.findIndex(page => page.pageNum != undefined && !isNaN(parseFloat(page.pageNum)));
-    if (firstNumberedPageIndex != -1 && firstNumberedPageIndex > 0) {
-      const pageNum = parseFloat(pages[firstNumberedPageIndex].pageNum);
-      if (!isNaN(pageNum)) {
-        // Note: Since the pages are always sorted in increasing pageNum/index
-        // order, this will work for both left-to-right and right-to-left books
-        pages[firstNumberedPageIndex - 1].pageNum = pageNum - 1;
-      }
-    }
   }
 
   /** Get median width/height of page in inches. Memoized for performance. */
@@ -364,8 +352,9 @@ export class PageModel {
    * @param {PageIndex} index
    */
   constructor(book, index) {
-    // TODO: Get default from config
-    this.ppi = book._getDataProp(index, 'ppi', book.ppi);
+    // Values less than 10 cause the UI to not work correctly
+    const pagePPI = book._getDataProp(index, 'ppi', book.ppi);
+    this.ppi = Math.max(pagePPI < 10 ? book.ppi : pagePPI, 10);
     this.book = book;
     this.index = index;
     this.width = book.getPageWidth(index);

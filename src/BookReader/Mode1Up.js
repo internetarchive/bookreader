@@ -77,7 +77,7 @@ export class Mode1Up {
   jumpToIndex(index, pageX, pageY, noAnimate) {
     // Only smooth for small distances
     const distance = Math.abs(this.br.currentIndex() - index);
-    const smooth = !noAnimate && distance <= 4;
+    const smooth = !noAnimate && distance > 0 && distance <= 4;
     this.mode1UpLit.jumpToIndex(index, { smooth });
   }
 

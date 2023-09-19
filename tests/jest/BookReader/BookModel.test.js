@@ -24,8 +24,8 @@ const SAMPLE_DATA = [
 
 describe('getMedianPageSizeInches', () => {
   test('handles single page data', () => {
-    const bm = new BookModel({ data: SAMPLE_DATA.slice(0, 1), options: {ppi: 1} });
-    expect(bm.getMedianPageSizeInches()).toEqual({ width: 123, height: 123 });
+    const bm = new BookModel({ data: SAMPLE_DATA.slice(0, 1), options: {ppi: 10} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 12.3, height: 12.3 });
   });
 
   test('handles odd pages data', () => {
@@ -39,8 +39,8 @@ describe('getMedianPageSizeInches', () => {
     Object.assign(data[0][0], sizes[0]);
     Object.assign(data[1][0], sizes[1]);
     Object.assign(data[1][1], sizes[2]);
-    const bm = new BookModel({ data, options: {ppi: 1} });
-    expect(bm.getMedianPageSizeInches()).toEqual({ width: 200, height: 2200 });
+    const bm = new BookModel({ data, options: {ppi: 10} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 20, height: 220 });
   });
 
 
@@ -56,8 +56,8 @@ describe('getMedianPageSizeInches', () => {
     Object.assign(data[1][0], sizes[1]);
     Object.assign(data[1][1], sizes[2]);
     Object.assign(data[2][0], sizes[3]);
-    const bm = new BookModel({ data, options: {ppi: 1} });
-    expect(bm.getMedianPageSizeInches()).toEqual({ width: 300, height: 2300 });
+    const bm = new BookModel({ data, options: {ppi: 10} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 30, height: 230 });
   });
 
   test('does not lexicographic sort for median', () => {
@@ -71,8 +71,8 @@ describe('getMedianPageSizeInches', () => {
     Object.assign(data[0][0], sizes[0]);
     Object.assign(data[1][0], sizes[1]);
     Object.assign(data[1][1], sizes[2]);
-    const bm = new BookModel({ data, options: {ppi: 1} });
-    expect(bm.getMedianPageSizeInches()).toEqual({ width: 30, height: 30 });
+    const bm = new BookModel({ data, options: {ppi: 10} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 3, height: 3 });
   });
 
   test('caches result', () => {
