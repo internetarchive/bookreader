@@ -64,7 +64,6 @@ export default class VolumesProvider {
     this.component.fileList = [...this.viewableFiles];
     await this.component.updateComplete;
 
-    debugger;
     if (this.bookreader.urlPlugin) {
       this.bookreader.urlPlugin.pullFromAddressBar();
       if (this.sortOrderBy !== sortOptions.default) {
