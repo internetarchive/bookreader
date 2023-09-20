@@ -19,6 +19,10 @@ describe('UrlPlugin tests', () => {
       expect(urlPlugin.urlStateToUrlString(urlStateWithQueries)).toBe(expectedUrlFromStateWithQueries);
     });
 
+    test('encodes page number', () => {
+      expect(urlPlugin.urlStateToUrlString({ page: '12/46' })).toBe(`page/12%2F46`);
+    });
+
     test('urlStateToUrlString with unknown states in schema', () => {
       const urlState = { page: 'n7', mode: '1up' };
       const urlStateWithQueries = { page: 'n7', mode: '1up', q: 'hello', viewer: 'theater', sortBy: 'title_asc' };
@@ -45,6 +49,10 @@ describe('UrlPlugin tests', () => {
 
       expect(urlPlugin.urlStringToUrlState(url)).toEqual({page: 'n7', mode: '2up'});
       expect(urlPlugin.urlStringToUrlState(url1)).toEqual({page: 'n7', mode: '1up'});
+    });
+
+    test('decodes page number', () => {
+      expect(urlPlugin.urlStringToUrlState('/page/12%2F46')).toStrictEqual({ page: '12/46' });
     });
 
     test('urlStringToUrlState with deprecated_for', () => {
