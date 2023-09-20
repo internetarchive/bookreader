@@ -3,7 +3,10 @@ import { html } from 'lit';
 import { viewableFilesIcon  } from '@internetarchive/ia-item-navigator';
 import '@internetarchive/ia-item-navigator';
 
-const sortOptions = {
+/**
+ * * @typedef { 'title_asc' | 'title_desc' | 'default'} SortTypesT
+ */
+const sortTypes = {
   title_asc: 'title_asc',
   title_desc: 'title_desc',
   default: 'default'
@@ -25,7 +28,7 @@ export default class VolumesProvider {
     this.id = "volumes";
     this.label = `Viewable files (${this.volumeCount})`;
     this.icon = html`${viewableFilesIcon}`;
-    this.sortOrderBy = sortOptions.default;
+    this.sortOrderBy = sortTypes.default;
 
     this.component = document.createElement("iaux-viewable-files");
     this.component.addSortToUrl = true;
@@ -43,7 +46,7 @@ export default class VolumesProvider {
       this.bookreader.urlPlugin.pullFromAddressBar();
 
       const urlSortValue = this.bookreader.urlPlugin.getUrlParam('sort');
-      if (urlSortValue === sortOptions.title_asc || urlSortValue === sortOptions.title_desc) {
+      if (urlSortValue === sortTypes.title_asc || urlSortValue === sortTypes.title_desc) {
         this.sortOrderBy = urlSortValue;
       }
     }
@@ -53,9 +56,7 @@ export default class VolumesProvider {
     this.onProviderChange(this.bookreader);
   }
 
-  /**
-   * @param {'default' | 'title_asc' | 'title_desc'} sortByType
-   */
+  /** @param { SortTypesT } sortType */
   async handleFileListSorted(event) {
     const { sortType, sortedFiles } = event.detail;
 
@@ -68,7 +69,7 @@ export default class VolumesProvider {
 
     if (this.bookreader.urlPlugin) {
       this.bookreader.urlPlugin.pullFromAddressBar();
-      if (this.sortOrderBy !== sortOptions.default) {
+      if (this.sortOrderBy !== sortTypes.default) {
         this.bookreader.urlPlugin.setUrlParam('sort', this.sortOrderBy);
       } else {
         this.bookreader.urlPlugin.removeUrlParam('sort');
@@ -81,7 +82,7 @@ export default class VolumesProvider {
   }
 
   /**
-   * @param {'default' | 'title_asc' | 'title_desc'} orderBy
+   * @param { SortTypesT } orderBy
    */
   multipleFilesClicked(orderBy) {
     window.archive_analytics?.send_event(
