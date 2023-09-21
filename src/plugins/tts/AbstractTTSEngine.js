@@ -144,7 +144,7 @@ export default class AbstractTTSEngine {
     this.voice = this.getVoices().find(voice => voice.voiceURI === voiceURI);
     // if the current book has a language set, store the selected voice with the book language as a suffix
     if (this.opts.bookLanguage) {
-      localStorage.setItem('BRplayback-voice-' + this.opts.bookLanguage, this.voice.voiceURI);
+      localStorage.setItem(`BRtts-voice-${this.opts.bookLanguage}`, this.voice.voiceURI);
     }
     if (this.activeSound) this.activeSound.setVoice(this.voice);
   }
@@ -247,7 +247,7 @@ export default class AbstractTTSEngine {
    * @return {SpeechSynthesisVoice | undefined}
    */
   static getMatchingStoredVoice(voices, bookLanguage) {
-    const storedVoice = localStorage.getItem('BRplayback-voice-' + bookLanguage);
+    const storedVoice = localStorage.getItem(`BRtts-voice-${bookLanguage}`);
     return (storedVoice ? voices.find(v => v.voiceURI === storedVoice) : undefined);
   }
 
