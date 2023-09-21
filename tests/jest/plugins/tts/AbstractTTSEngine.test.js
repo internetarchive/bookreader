@@ -115,12 +115,12 @@ for (const dummyVoice of [dummyVoiceHyphens, dummyVoiceUnderscores]) {
     test('choose stored language from localStorage', () => {
       const voices = [
         dummyVoice({lang: "en-US", voiceURI: "English US", default: true}),
-        dummyVoice({lang: "en-GB", voiceURI: "English GB",}),
-        dummyVoice({lang: "en-CA", voiceURI: "English CA",}),
+        dummyVoice({lang: "en-GB", voiceURI: "English GB"}),
+        dummyVoice({lang: "en-CA", voiceURI: "English CA"}),
       ];
       class DummyEngine extends AbstractTTSEngine {
         getVoices() { return voices; }
-      };
+      }
       const ttsEngine = new DummyEngine({...DUMMY_TTS_ENGINE_OPTS, bookLanguage: 'en'});
       // simulates setting default voice on tts startup
       ttsEngine.updateBestVoice();
