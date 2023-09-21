@@ -111,6 +111,26 @@ for (const dummyVoice of [dummyVoiceHyphens, dummyVoiceUnderscores]) {
 
       expect(getBestBookVoice(voices, 'en', ['en-CA', 'en'])).toBe(voices[0]);
     });
+
+    test('choose stored language from localStorage', () => {
+      const voices = [
+        dummyVoice({lang: "en-US", voiceURI: "English US", default: true}),
+        dummyVoice({lang: "en-GB", voiceURI: "English GB",}),
+        dummyVoice({lang: "en-CA", voiceURI: "English CA",}),
+      ];
+      class DummyEngine extends AbstractTTSEngine {
+        getVoices() { return voices; }
+      };
+      const ttsEngine = new DummyEngine({...DUMMY_TTS_ENGINE_OPTS, bookLanguage: 'en'});
+      // simulates setting default voice on tts startup
+      ttsEngine.updateBestVoice();
+      // simulates user choosing a voice that matches the bookLanguage
+      // voice will be stored in localStorage
+      ttsEngine.setVoice(voices[2].voiceURI);
+
+      // expecting the voice to be selected by getMatchingStoredVoice and returned as best voice
+      expect(getBestBookVoice(voices, 'en', [])).toBe(voices[2]);
+    });
   });
 }
 

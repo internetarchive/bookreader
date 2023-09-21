@@ -240,11 +240,11 @@ export default class AbstractTTSEngine {
 
   /**
    * @private
-   * Get the voice string last selected by the user for the book language from localStorage.
+   * Get the voice last selected by the user for the book language from localStorage.
    * Returns undefined if no voice is stored or found.
    * @param {SpeechSynthesisVoice[]} voices  browser voices to choose from
    * @param {ISO6391} bookLanguage  book language to look for
-   * @return {string | undefined}
+   * @return {SpeechSynthesisVoice | undefined}
    */
   static getMatchingStoredVoice(voices, bookLanguage) {
     const storedVoice = localStorage.getItem('BRplayback-voice-' + bookLanguage);
