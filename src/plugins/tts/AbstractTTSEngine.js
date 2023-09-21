@@ -142,7 +142,10 @@ export default class AbstractTTSEngine {
     // MS Edge fires voices changed randomly very often
     this.events.off('voiceschanged', this.updateBestVoice);
     this.voice = this.getVoices().find(voice => voice.voiceURI === voiceURI);
-    localStorage.setItem('BRplayback-voice', this.voice.voiceURI);
+    // if the current book has a language set, store the selected voice with the book language as a suffix
+    if (this.opts.bookLanguage) {
+      localStorage.setItem('BRplayback-voice-' + this.opts.bookLanguage, this.voice.voiceURI);
+    }
     if (this.activeSound) this.activeSound.setVoice(this.voice);
   }
 
@@ -222,8 +225,8 @@ export default class AbstractTTSEngine {
     // user languages that match the book language
     const matchingUserLangs = userLanguages.filter(lang => lang.startsWith(bookLanguage));
 
-    // First find the last chosen voice from localStorage
-    return AbstractTTSEngine.getMatchingStoredVoice(bookLangVoices)
+    // First try to find the last chosen voice from localStorage for the current book language
+    return AbstractTTSEngine.getMatchingStoredVoice(bookLangVoices, bookLanguage)
         // Try to find voices that intersect these two sets
         || AbstractTTSEngine.getMatchingVoice(matchingUserLangs, bookLangVoices)
         // no user languages match the books; let's return the best voice for the book language
@@ -237,13 +240,14 @@ export default class AbstractTTSEngine {
 
   /**
    * @private
-   * Get the voice string last selected by the user from localStorage.
-   * Returns undefined if no language is stored or found.
+   * Get the voice string last selected by the user for the book language from localStorage.
+   * Returns undefined if no voice is stored or found.
    * @param {SpeechSynthesisVoice[]} voices  browser voices to choose from
+   * @param {ISO6391} bookLanguage  book language to look for
    * @return {string | undefined}
    */
-  static getMatchingStoredVoice(voices) {
-    const storedVoice = localStorage.getItem('BRplayback-voice');
+  static getMatchingStoredVoice(voices, bookLanguage) {
+    const storedVoice = localStorage.getItem('BRplayback-voice-' + bookLanguage);
     return (storedVoice ? voices.find(v => v.voiceURI === storedVoice) : undefined);
   }
 
