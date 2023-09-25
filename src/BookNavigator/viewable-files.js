@@ -1,7 +1,7 @@
 import { html } from 'lit';
 
-import { viewableFilesIcon  } from '@internetarchive/ia-item-navigator';
-import '@internetarchive/ia-item-navigator';
+import { viewableFilesIcon  } from '@internetarchive/ia-item-navigator/dist/src/menus/viewable-files';
+import '@internetarchive/ia-item-navigator/dist/src/menus/viewable-files';
 
 /**
  * * @typedef { 'title_asc' | 'title_desc' | 'default'} SortTypesT
@@ -11,12 +11,12 @@ const sortTypes = {
   title_desc: 'title_desc',
   default: 'default'
 };
-export default class VolumesProvider {
+export default class ViewableFilesProvider {
   /**
-   * @param {import('../../BookReader').default} bookreader
+   * @param {import('../BookReader').default} bookreader
    */
   constructor({ baseHost, bookreader, onProviderChange }) {
-    /** @type {import('../../BookReader').default} */
+    /** @type {import('../BookReader').default} */
     this.bookreader = bookreader;
     this.onProviderChange = onProviderChange;
     this.baseHost = baseHost;
@@ -30,13 +30,13 @@ export default class VolumesProvider {
     this.icon = html`${viewableFilesIcon}`;
     this.sortOrderBy = sortTypes.default;
 
-    this.component = document.createElement("iaux-viewable-files");
+    this.component = document.createElement("iaux-in-viewable-files-panel");
     this.component.addSortToUrl = true;
     this.component.subPrefix = bookreader.options.subPrefix || "";
     this.component.baseHost = baseHost;
     this.component.fileList = [...this.viewableFiles];
 
-    this.sortFilesComponent = document.createElement("iaux-sort-viewable-files");
+    this.sortFilesComponent = document.createElement("iaux-in-sort-files-button");
     this.sortFilesComponent.fileListRaw = this.viewableFiles;
     this.sortFilesComponent.addEventListener('fileListSorted', (e) => this.handleFileListSorted(e));
     this.actionButton = this.sortFilesComponent;

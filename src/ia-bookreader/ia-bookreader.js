@@ -30,7 +30,7 @@ export class IaBookReader extends LitElement {
     super();
     this.item = undefined;
     this.bookreader = undefined;
-    this.baseHost = 'https://archive.org';
+    this.baseHost = 'archive.org';
     this.fullscreen = false;
     this.signedIn = false;
     /** @type {ModalManager} */

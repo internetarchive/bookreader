@@ -1,6 +1,6 @@
 import { fixtureCleanup, fixtureSync } from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import volumesProvider from '@/src/BookNavigator/volumes/volumes-provider';
+import ViewableFilesProvider from '@/src/BookNavigator/viewable-files';
 
 const brOptions = {
   "options": {
@@ -44,7 +44,7 @@ describe('Volumes Provider', () => {
     const onProviderChange = sinon.fake();
 
     const baseHost = "https://archive.org";
-    const provider = new volumesProvider({
+    const provider = new ViewableFilesProvider({
       baseHost,
       bookreader: brOptions,
       onProviderChange

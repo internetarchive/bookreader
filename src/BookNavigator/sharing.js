@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import { iauxShareIcon } from '@internetarchive/ia-item-navigator';
-import '@internetarchive/ia-item-navigator';
+import { iauxShareIcon } from '@internetarchive/ia-item-navigator/dist/src/menus/share-panel';
+import '@internetarchive/ia-item-navigator/dist/src/menus/share-panel';
 
 export default class SharingProvider {
   constructor({
@@ -15,13 +15,13 @@ export default class SharingProvider {
     this.icon = html`${iauxShareIcon}`;
     this.label = label;
     this.id = 'share';
-    this.component = html`<iaux-sharing-options
+    this.component = html`<iaux-in-share-panel
       .identifier=${identifier}
       .type=${`book`}
       .creator=${creatorToUse}
       .description=${title}
       .baseHost=${baseHost}
       .fileSubPrefix=${subPrefix}
-    ></iaux-sharing-options>`;
+    ></iaux-in-share-panel>`;
   }
 }

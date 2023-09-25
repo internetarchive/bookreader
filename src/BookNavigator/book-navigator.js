@@ -8,7 +8,7 @@ import DownloadProvider from './downloads/downloads-provider.js';
 import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
 import BookmarksProvider from './bookmarks/bookmarks-provider.js';
 import SharingProvider from './sharing.js';
-import VolumesProvider from './volumes/volumes-provider.js';
+import ViewableFilesProvider from './viewable-files.js';
 import iaLogo from './assets/ia-logo.js';
 
 const events = {
@@ -221,7 +221,7 @@ export class BookNavigator extends LitElement {
 
     // add shortcut for volumes if multipleBooksList exists
     if (this.bookreader.options.enableMultipleBooks) {
-      providers.volumes = new VolumesProvider({
+      providers.volumes = new ViewableFilesProvider({
         ...this.baseProviderConfig,
         onProviderChange: (brInstance = null, volumesUpdates = {}) => {
           if (brInstance) {
