@@ -251,7 +251,7 @@ BookReader.prototype.ttsPlayPause = function() {
     this.ttsToggle();
   } else {
     this.ttsEngine.togglePlayPause();
-    this.ttsUpdateState(this.ttsEngine.paused);
+    this.ttsUpdateState();
   }
 };
 

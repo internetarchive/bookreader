@@ -80,6 +80,7 @@ export default class AbstractTTSEngine {
    */
   start(leafIndex, numLeafs) {
     this.playing = true;
+    this.paused = false;
     this.opts.onLoadingStart();
 
     this._chunkIterator = new PageChunkIterator(numLeafs, leafIndex, {
@@ -95,6 +96,7 @@ export default class AbstractTTSEngine {
   stop() {
     if (this.activeSound) this.activeSound.stop();
     this.playing = false;
+    this.paused = true;
     this._chunkIterator = null;
     this.activeSound = null;
     this.events.trigger('stop');
