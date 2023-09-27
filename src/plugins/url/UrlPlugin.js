@@ -45,7 +45,7 @@ export class UrlPlugin {
 
     const strPathParams = this.urlSchema
       .filter(s => s.position == 'path')
-      .map(schema => pathParams[schema.name] ? `${schema.name}/${pathParams[schema.name]}` : '')
+      .map(schema => pathParams[schema.name] ? `${schema.name}/${encodeURIComponent(pathParams[schema.name])}` : '')
       .join('/');
 
     // replace consecutive slashes with a single slash + remove trailing slashes
@@ -83,15 +83,13 @@ export class UrlPlugin {
         const hasPropertyKey = doesKeyExists(urlStrSplitSlashObj, schema.name);
         const hasDeprecatedKey = doesKeyExists(schema, 'deprecated_for') && hasPropertyKey;
 
-        if (hasDeprecatedKey) {
-          urlState[schema.deprecated_for] = urlStrSplitSlashObj[schema.name];
+        // Not in the URL
+        if (!hasPropertyKey && !hasDeprecatedKey) {
           return;
         }
 
-        if (hasPropertyKey) {
-          urlState[schema.name] = urlStrSplitSlashObj[schema.name];
-          return;
-        }
+        const urlStateParam = hasDeprecatedKey ? schema.deprecated_for : schema.name;
+        urlState[urlStateParam] = decodeURIComponent(urlStrSplitSlashObj[schema.name]);
       });
 
     // Add searchParams to urlState

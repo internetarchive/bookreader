@@ -1,3 +1,7 @@
+# 5.0.0-70
+- Feature: Remember ReadAloud voice selection @sbwhitt
+- Fix: Support page numbers that require url encoding @cdrini
+
 # 5.0.0-69
 - Fix: Handle ppi incorrectly set to one @cdrini
 
