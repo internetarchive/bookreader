@@ -5,7 +5,7 @@ export default class Navigation {
   constructor() {
     this.topNavShell = new Selector('.BRtoolbar');
     this.bottomNavShell = new Selector('.BRfooter');
-    this.itemNav = Selector('ia-bookreader').shadowRoot().find('ia-item-navigator').shadowRoot();
+    this.itemNav = Selector('ia-bookreader').shadowRoot().find('iaux-item-navigator').shadowRoot();
 
     // flipping
     this.goLeft = this.bottomNavShell.find('.BRicon.book_left');
