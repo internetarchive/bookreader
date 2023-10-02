@@ -1,3 +1,7 @@
+# 5.0.0-71
+- Dev: update jest monorepo @renovate
+- Fix: Share & Mutliple View menu panel refactor @iisa
+
 # 5.0.0-70
 - Feature: Remember ReadAloud voice selection @sbwhitt
 - Fix: Support page numbers that require url encoding @cdrini
