@@ -11,7 +11,6 @@ var br = new BookReader({
 
     // Override the path used to find UI images
     imagesBaseURL: '../BookReader/images/',
-    enableMobileNav: false,
 });
 
 br.IIIF({

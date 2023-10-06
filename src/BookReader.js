@@ -19,9 +19,6 @@ This file is part of BookReader.
     The BookReader source is hosted at http://github.com/internetarchive/bookreader/
 
 */
-// effect.js gives acces to extra easing function (e.g. easeInOutExpo)
-import 'jquery-ui/ui/effect.js';
-
 // Needed by touch-punch
 import 'jquery-ui/ui/widget.js';
 import 'jquery-ui/ui/widgets/mouse.js';
@@ -31,12 +28,11 @@ import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar } from './BookReader/Navbar/Navbar.js';
-import { DEFAULT_OPTIONS } from './BookReader/options.js';
+import { DEFAULT_OPTIONS, OptionsParseError } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
 import { EVENTS } from './BookReader/events.js';
-import { DebugConsole } from './BookReader/DebugConsole.js';
 import { Toolbar } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
@@ -45,10 +41,6 @@ import { ModeThumb } from './BookReader/ModeThumb';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet';
-
-if (location.toString().indexOf('_debugShowConsole=true') != -1) {
-  $(() => new DebugConsole().init());
-}
 
 /**
  * BookReader
@@ -155,10 +147,11 @@ BookReader.prototype.setup = function(options) {
   this.displayedIndices = [];
 
   this.animating = false;
-  this.flipSpeed = options.flipSpeed;
+  this.flipSpeed = typeof options.flipSpeed === 'number' ? options.flipSpeed : {
+    'fast': 200,
+    'slow': 600,
+  }[options.flipSpeed] || 400;
   this.flipDelay = options.flipDelay;
-  this.twoPagePopUp = null;
-  this.leafEdgeTmp  = null;
 
   /**
      * Represents the first displayed index
@@ -167,7 +160,6 @@ BookReader.prototype.setup = function(options) {
      * @property {number|null} firstIndex
      */
   this.firstIndex = null;
-  this.lastDisplayableIndex2up = null;
   this.isFullscreenActive = options.startFullscreen || false;
   this.lastScroll = null;
 
@@ -266,7 +258,7 @@ BookReader.prototype.setup = function(options) {
  * Includes cached elements which might be rendered again.
  */
 BookReader.prototype.getActivePageContainerElements = function() {
-  let containerEls = Object.values(this._modes.mode2Up.pageContainers).map(pc => pc.$container[0])
+  let containerEls = Object.values(this._modes.mode2Up.mode2UpLit.pageContainerCache).map(pc => pc.$container[0])
     .concat(Object.values(this._modes.mode1Up.mode1UpLit.pageContainerCache).map(pc => pc.$container[0]));
   if (this.mode == this.constModeThumb) {
     containerEls = containerEls.concat(this.$('.BRpagecontainer').toArray());
@@ -281,7 +273,7 @@ BookReader.prototype.getActivePageContainerElements = function() {
  */
 BookReader.prototype.getActivePageContainerElementsForIndex = function(pageIndex) {
   return [
-    this._modes.mode2Up.pageContainers[pageIndex]?.$container?.[0],
+    this._modes.mode2Up.mode2UpLit.pageContainerCache[pageIndex]?.$container?.[0],
     this._modes.mode1Up.mode1UpLit.pageContainerCache[pageIndex]?.$container?.[0],
     ...(this.mode == this.constModeThumb ? this.$(`.pagediv${pageIndex}`).toArray() : [])
   ].filter(x => x);
@@ -452,61 +444,56 @@ BookReader.prototype.readQueryString = function() {
  * Determines the initial mode for starting if a mode is not already
  * present in the params argument
  * @param {object} params
- * @return {number} the mode
+ * @return {1 | 2 | 3} the initial mode
  */
 BookReader.prototype.getInitialMode = function(params) {
-  let nextMode;
-
   // if mobile breakpoint, we always show this.constMode1up mode
-  const ifMobileBreakpoint = () => {
-    // Use params or browser width to set view mode
-    const windowWidth = $(window).width();
-    return windowWidth && windowWidth <= this.onePageMinBreakpoint;
-  };
-  if ('undefined' != typeof(params.mode)) {
-    nextMode = params.mode;
-  } else if ((this.ui == 'full' && this.isFullscreenActive) || ifMobileBreakpoint()) {
-    // In full mode OR device width, we set the default based on width
-    nextMode = this.constMode1up;
+  const windowWidth = $(window).width();
+  const isMobile = windowWidth && windowWidth <= this.onePageMinBreakpoint;
+
+  let initialMode;
+  if (params.mode) {
+    initialMode = params.mode;
+  } else if (isMobile) {
+    initialMode = this.constMode1up;
   } else {
-    nextMode = this.constMode2up;
+    initialMode = this.constMode2up;
   }
 
-  if (!this.canSwitchToMode(nextMode)) {
-    nextMode = this.constMode1up;
+  if (!this.canSwitchToMode(initialMode)) {
+    initialMode = this.constMode1up;
   }
 
   // override defaults mode via `options.defaults` metadata
   if (this.options.defaults) {
-    nextMode = this.overridesBookMode();
+    try {
+      initialMode = _modeStringToNumber(this.options.defaults);
+    } catch (e) {
+      // Can ignore this error
+    }
   }
 
-  return nextMode;
+  return initialMode;
 };
 
 /**
- * Overrides book mode using options.defaults param
- * @return {number} the mode
+ * Converts a mode string to a the mode numeric constant
+ * @param {'mode/1up'|'mode/2up'|'mode/thumb'} modeString
+ * @return {1 | 2 | 3}
  */
-BookReader.prototype.overridesBookMode = function() {
-  let nextMode = 2; // set default 2 (mode/2up)
+export function _modeStringToNumber(modeString) {
+  const MAPPING = {
+    'mode/1up': 1,
+    'mode/2up': 2,
+    'mode/thumb': 3,
+  };
 
-  switch (this.options.defaults) {
-  case 'mode/1up':
-    nextMode = this.constMode1up;
-    break;
-  case 'mode/2up':
-    nextMode = this.constMode2up;
-    break;
-  case 'mode/thumb':
-    nextMode = this.constModeThumb;
-    break;
-  default:
-    break;
+  if (!(modeString in MAPPING)) {
+    throw new OptionsParseError(`Invalid mode string: ${modeString}`);
   }
 
-  return nextMode;
-};
+  return MAPPING[modeString];
+}
 
 /**
  * This is called by the client to initialize BookReader.
@@ -653,27 +640,7 @@ BookReader.prototype.resize = function() {
   } else if (this.constModeThumb == this.mode) {
     this._modes.modeThumb.prepare();
   } else {
-    // We only need to prepare again in autofit (size of spread changes)
-    if (this.twoPage.autofit) {
-      // most common path, esp. for archive.org books
-      this._modes.mode2Up.prepare();
-    } else {
-      // used when zoomed in
-      // Re-center if the scrollbars have disappeared
-      const center = this.twoPageGetViewCenter();
-      let doRecenter = false;
-      if (this.twoPage.totalWidth < this.refs.$brContainer.prop('clientWidth')) {
-        center.percentageX = 0.5;
-        doRecenter = true;
-      }
-      if (this.twoPage.totalHeight < this.refs.$brContainer.prop('clientHeight')) {
-        center.percentageY = 0.5;
-        doRecenter = true;
-      }
-      if (doRecenter) {
-        this._modes.mode2Up.centerView(center.percentageX, center.percentageY);
-      }
-    }
+    this._modes.mode2Up.resizePageView();
   }
   this.trigger(BookReader.eventNames.resize);
 };
@@ -1017,13 +984,7 @@ BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
 
   this.trigger(BookReader.eventNames.stop);
 
-  if (this.constMode2up == this.mode) {
-    this._modes.mode2Up.jumpToIndex(index);
-  } else if (this.constModeThumb == this.mode) {
-    this._modes.modeThumb.jumpToIndex(index);
-  } else { // 1up
-    this._modes.mode1Up.jumpToIndex(index, pageX, pageY, noAnimate);
-  }
+  this.activeMode.jumpToIndex(index, pageX, pageY, noAnimate);
 };
 
 /**
@@ -1089,16 +1050,7 @@ BookReader.prototype.switchMode = function(
     this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
     this._modes.modeThumb.prepare();
   } else {
-    // $$$ why don't we save autofit?
-    // this.twoPage.autofit = null; // Take zoom level from other mode
-    // spread indices not set, so let's set them
-    if (init || !pageFound) {
-      this._modes.mode2Up.setSpreadIndices();
-    }
-
-    this._modes.mode2Up.calculateReductionFactors(); // this sets this.twoPage && this.reduce
     this._modes.mode2Up.prepare();
-    this._modes.mode2Up.centerView(0.5, 0.5); // $$$ TODO preserve center
   }
 
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
@@ -1113,11 +1065,11 @@ BookReader.prototype.switchMode = function(
 BookReader.prototype.updateBrClasses = function() {
   const modeToClass = {};
   modeToClass[this.constMode1up] = 'BRmode1up';
-  modeToClass[this.constMode2up] = 'BRmode2Up';
+  modeToClass[this.constMode2up] = 'BRmode2up';
   modeToClass[this.constModeThumb] = 'BRmodeThumb';
 
   this.refs.$br
-    .removeClass('BRmode1up BRmode2Up BRmodeThumb')
+    .removeClass('BRmode1up BRmode2up BRmodeThumb')
     .addClass(modeToClass[this.mode]);
 
   if (this.isFullscreen()) {
@@ -1148,14 +1100,13 @@ BookReader.prototype.toggleFullscreen = async function(bindKeyboardControls = tr
 /**
  * Enters fullscreen
  * including:
- * - animation
  * - binds keyboard controls
  * - fires custom event
  * @param { boolean } bindKeyboardControls
  */
 BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = true) {
+  this.refs.$br.addClass('BRfullscreenAnimation');
   const currentIndex = this.currentIndex();
-  this.refs.$brContainer.css('opacity', 0);
 
   if (bindKeyboardControls) {
     this._fullscreenCloseHandler = (e) => {
@@ -1172,8 +1123,6 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   this.isFullscreenActive = true;
   // prioritize class updates so CSS can propagate
   this.updateBrClasses();
-  this.animating = true;
-  await new Promise(res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res));
   if (this.activeMode instanceof Mode1Up) {
     this.activeMode.mode1UpLit.scale = this.activeMode.mode1UpLit.computeDefaultScale(this.book.getPage(currentIndex));
     // Need the new scale to be applied before calling jumpToIndex
@@ -1181,7 +1130,6 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
     await this.activeMode.mode1UpLit.updateComplete;
   }
   this.jumpToIndex(currentIndex);
-  this.animating = false;
 
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   // Add "?view=theater"
@@ -1190,10 +1138,11 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   // class updates happen before book-nav relays to web components
   this.trigger(BookReader.eventNames.fullscreenToggled);
 
-  setTimeout(() => {
-    // resize book after all events & css updates
-    this.resize();
-  }, 0);
+  // resize book after all events & css updates
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  this.resize();
+  this.refs.$br.removeClass('BRfullscreenAnimation');
 };
 
 /**
@@ -1204,12 +1153,10 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
  * @param { boolean } bindKeyboardControls
  */
 BookReader.prototype.exitFullScreen = async function () {
-  this.refs.$brContainer.css('opacity', 0);
-
+  this.refs.$br.addClass('BRfullscreenAnimation');
   $(document).off('keyup', this._fullscreenCloseHandler);
 
   const windowWidth = $(window).width();
-
   const canShow2up = this.options.controls.twoPage.visible;
   if (canShow2up && (windowWidth <= this.onePageMinBreakpoint)) {
     this.switchMode(this.constMode2up);
@@ -1221,8 +1168,7 @@ BookReader.prototype.exitFullScreen = async function () {
   this.trigger(BookReader.eventNames.fullscreenToggled);
 
   this.updateBrClasses();
-  this.animating = true;
-  await new Promise((res => this.refs.$brContainer.animate({opacity: 1}, 'fast', 'linear', res)));
+  await new Promise(resolve => setTimeout(resolve, 0));
   this.resize();
 
   if (this.activeMode instanceof Mode1Up) {
@@ -1231,11 +1177,10 @@ BookReader.prototype.exitFullScreen = async function () {
     await this.activeMode.mode1UpLit.updateComplete;
   }
 
-  this.animating = false;
-
   this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
   // Remove "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
+  this.refs.$br.removeClass('BRfullscreenAnimation');
 };
 
 /**
@@ -1279,7 +1224,11 @@ BookReader.prototype.updateFirstIndex = function(
   if (this.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
-  this.trigger('pageChanged');
+
+  this.trigger(BookReader.eventNames.pageChanged);
+
+  // event to know if user is actively reading
+  this.trigger(BookReader.eventNames.userAction);
   this._components.navbar.updateNavIndexThrottled(index);
 };
 
@@ -1330,9 +1279,9 @@ BookReader.prototype.leftmost = function() {
 BookReader.prototype.next = function({triggerStop = true} = {}) {
   if (this.constMode2up == this.mode) {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    this._modes.mode2Up.flipFwdToIndex(null);
+    this._modes.mode2Up.mode2UpLit.flipAnimation('next');
   } else {
-    if (this.firstIndex < this.lastDisplayableIndex()) {
+    if (this.firstIndex < this.book.getNumLeafs() - 1) {
       this.jumpToIndex(this.firstIndex + 1);
     }
   }
@@ -1344,7 +1293,7 @@ BookReader.prototype.prev = function({triggerStop = true} = {}) {
 
   if (this.constMode2up == this.mode) {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    this._modes.mode2Up.flipBackToIndex(null);
+    this._modes.mode2Up.mode2UpLit.flipAnimation('prev');
   } else {
     if (this.firstIndex >= 1) {
       this.jumpToIndex(this.firstIndex - 1);
@@ -1353,87 +1302,13 @@ BookReader.prototype.prev = function({triggerStop = true} = {}) {
 };
 
 BookReader.prototype.first = function() {
-  this.jumpToIndex(this.firstDisplayableIndex());
+  this.jumpToIndex(0);
 };
 
 BookReader.prototype.last = function() {
-  this.jumpToIndex(this.lastDisplayableIndex());
+  this.jumpToIndex(this.book.getNumLeafs() - 1);
 };
 
-/**
- * Scrolls down one screen view
- */
-BookReader.prototype.scrollDown = function() {
-  if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
-    if ( this.mode == this.constMode1up && (this.reduce >= this.onePageGetAutofitHeight()) ) {
-      // Whole pages are visible, scroll whole page only
-      return this.next();
-    }
-
-    this.refs.$brContainer.stop(true).animate(
-      { scrollTop: '+=' + this._scrollAmount() + 'px'},
-      400, 'easeInOutExpo'
-    );
-    return true;
-  } else {
-    return false;
-  }
-};
-
-/**
- * Scrolls up one screen view
- */
-BookReader.prototype.scrollUp = function() {
-  if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
-    if ( this.mode == this.constMode1up && (this.reduce >= this.onePageGetAutofitHeight()) ) {
-      // Whole pages are visible, scroll whole page only
-      return this.prev();
-    }
-
-    this.refs.$brContainer.stop(true).animate(
-      { scrollTop: '-=' + this._scrollAmount() + 'px'},
-      400, 'easeInOutExpo'
-    );
-    return true;
-  } else {
-    return false;
-  }
-};
-
-/**
- * The amount to scroll vertically in integer pixels
- */
-BookReader.prototype._scrollAmount = function() {
-  if (this.constMode1up == this.mode) {
-    // Overlap by % of page size
-    return parseInt(this.refs.$brContainer.prop('clientHeight') - this.book.getPageHeight(this.currentIndex()) / this.reduce * 0.03);
-  }
-
-  return parseInt(0.9 * this.refs.$brContainer.prop('clientHeight'));
-};
-
-/**
- * Immediately stop flip animations.  Callbacks are triggered.
- */
-BookReader.prototype.stopFlipAnimations = function() {
-  this.trigger(BookReader.eventNames.stop);
-
-  // Stop animation, clear queue, trigger callbacks
-  if (this.leafEdgeTmp) {
-    $(this.leafEdgeTmp).stop(false, true);
-  }
-  jQuery.each(this._modes.mode2Up.pageContainers, function() {
-    $(this.$container).stop(false, true);
-  });
-
-  // And again since animations also queued in callbacks
-  if (this.leafEdgeTmp) {
-    $(this.leafEdgeTmp).stop(false, true);
-  }
-  jQuery.each(this._modes.mode2Up.pageContainers, function() {
-    $(this.$container).stop(false, true);
-  });
-};
 
 /**
  * @template TClass extends { br: BookReader }
@@ -1480,9 +1355,8 @@ exposeOverrideableMethod(Toolbar, '_components.toolbar', 'getToolBarHeight');
  */
 BookReader.prototype.bindNavigationHandlers = function() {
   const self = this;
+  const jIcons = this.$('.BRicon');
 
-  // Note the mobile plugin attaches itself to body, so we need to select outside
-  const jIcons = this.$('.BRicon').add('.BRmobileMenu .BRicon');
   // Map of jIcon class -> click handler
   const navigationControls = {
     book_left: () => {
@@ -1492,20 +1366,6 @@ BookReader.prototype.bindNavigationHandlers = function() {
     book_right: () => {
       this.trigger(BookReader.eventNames.stop);
       this.right();
-    },
-    book_up: () => {
-      if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
-        this.scrollUp();
-      } else {
-        this.prev();
-      }
-    },
-    book_down: () => {
-      if ($.inArray(this.mode, [this.constMode1up, this.constModeThumb]) >= 0) {
-        this.scrollDown();
-      } else {
-        this.next();
-      }
     },
     book_top: this.first.bind(this),
     book_bottom: this.last.bind(this),
@@ -1540,8 +1400,10 @@ BookReader.prototype.bindNavigationHandlers = function() {
     },
   };
 
-  jIcons.filter('.fit').bind('fit', function() {
-    // XXXmang implement autofit zoom
+  // custom event for auto-loan-renew in ia-book-actions
+  // - to know if user is actively reading
+  this.$('nav.BRcontrols li button').on('click', () => {
+    this.trigger(BookReader.eventNames.userAction);
   });
 
   for (const control in navigationControls) {
@@ -1616,325 +1478,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
         self.$('.BRnavCntl').animate({opacity:.75},250);
       }
     });
-
-  this.initSwipeData();
-
-  $(document).off('mousemove.navigation', this.el);
-  $(document).on(
-    'mousemove.navigation',
-    this.el,
-    { 'br': this },
-    this.navigationMousemoveHandler
-  );
-
-  $(document).off('mousedown.swipe', '.BRpageimage');
-  $(document).on(
-    'mousedown.swipe',
-    '.BRpageimage',
-    { 'br': this },
-    this.swipeMousedownHandler
-  );
-
-  this.bindMozTouchHandlers();
 };
-
-/**
- * Unbind navigation handlers
- */
-BookReader.prototype.unbindNavigationHandlers = function() {
-  $(document).off('mousemove.navigation', this.el);
-};
-
-/**
- * Handle mousemove related to navigation.  Bind at #BookReader level to allow autohide.
- */
-BookReader.prototype.navigationMousemoveHandler = function(event) {
-  // $$$ possibly not great to be calling this for every mousemove
-  if (event.data['br'].uiAutoHide) {
-    // 77px is an approximate height of the Internet Archive Top Nav
-    // 75 & 76 (pixels) provide used in this context is checked against the IA top nav height
-    const navkey = $(document).height() - 75;
-    if ((event.pageY < 76) || (event.pageY > navkey)) {
-      // inside or near navigation elements
-      event.data['br'].hideNavigation();
-    } else {
-      event.data['br'].showNavigation();
-    }
-  }
-};
-
-BookReader.prototype.initSwipeData = function(clientX, clientY) {
-  /*
-     * Based on the really quite awesome "Today's Guardian" at http://guardian.gyford.com/
-     */
-  this._swipe = {
-    mightBeSwiping: false,
-    didSwipe: false,
-    mightBeDraggin: false,
-    didDrag: false,
-    startTime: (new Date).getTime(),
-    startX: clientX,
-    startY: clientY,
-    lastX: clientX,
-    lastY: clientY,
-    deltaX: 0,
-    deltaY: 0,
-    deltaT: 0
-  };
-};
-
-BookReader.prototype.swipeMousedownHandler = function(event) {
-  const self = event.data['br'];
-
-  // We should be the last bubble point for the page images
-  // Disable image drag and select, but keep right-click
-  if (event.which == 3) {
-    return !self.protected;
-  }
-
-  $(event.target).on('mouseout.swipe',
-    { 'br': self},
-    self.swipeMouseupHandler
-  ).on('mouseup.swipe',
-    { 'br': self},
-    self.swipeMouseupHandler
-  ).on('mousemove.swipe',
-    { 'br': self },
-    self.swipeMousemoveHandler
-  );
-
-  self.initSwipeData(event.clientX, event.clientY);
-  self._swipe.mightBeSwiping = true;
-  self._swipe.mightBeDragging = true;
-
-  event.preventDefault();
-  event.returnValue  = false;
-  event.cancelBubble = true;
-  return false;
-};
-
-BookReader.prototype.swipeMousemoveHandler = function(event) {
-  const self = event.data['br'];
-  const _swipe = self._swipe;
-  if (! _swipe.mightBeSwiping) {
-    return;
-  }
-
-  // Update swipe data
-  _swipe.deltaX = event.clientX - _swipe.startX;
-  _swipe.deltaY = event.clientY - _swipe.startY;
-  _swipe.deltaT = (new Date).getTime() - _swipe.startTime;
-
-  const absX = Math.abs(_swipe.deltaX);
-  const absY = Math.abs(_swipe.deltaY);
-
-  // Minimum distance in the amount of tim to trigger the swipe
-  const minSwipeLength = Math.min(self.refs.$br.width() / 5, 80);
-  const maxSwipeTime = 400;
-
-  // Check for horizontal swipe
-  if (absX > absY && (absX > minSwipeLength) && _swipe.deltaT < maxSwipeTime) {
-    _swipe.mightBeSwiping = false; // only trigger once
-    _swipe.didSwipe = true;
-    if (self.mode == self.constMode2up) {
-      if (_swipe.deltaX < 0) {
-        self.right();
-      } else {
-        self.left();
-      }
-    }
-  }
-
-  if ( _swipe.deltaT > maxSwipeTime && !_swipe.didSwipe) {
-    if (_swipe.mightBeDragging) {
-      // Dragging
-      _swipe.didDrag = true;
-      self.refs.$brContainer
-        .scrollTop(self.refs.$brContainer.scrollTop() - event.clientY + _swipe.lastY)
-        .scrollLeft(self.refs.$brContainer.scrollLeft() - event.clientX + _swipe.lastX);
-    }
-  }
-  _swipe.lastX = event.clientX;
-  _swipe.lastY = event.clientY;
-
-  event.preventDefault();
-  event.returnValue  = false;
-  event.cancelBubble = true;
-  return false;
-};
-
-BookReader.prototype.swipeMouseupHandler = function(event) {
-  const _swipe = event.data['br']._swipe;
-  _swipe.mightBeSwiping = false;
-  _swipe.mightBeDragging = false;
-
-  $(event.target).off('mouseout.swipe').off('mouseup.swipe').off('mousemove.swipe');
-
-  if (_swipe.didSwipe || _swipe.didDrag) {
-    // Swallow event if completed swipe gesture
-    event.preventDefault();
-    event.returnValue  = false;
-    event.cancelBubble = true;
-    return false;
-  }
-  return true;
-};
-
-BookReader.prototype.bindMozTouchHandlers = function() {
-  const self = this;
-
-  // Currently only want touch handlers in 2up
-  this.refs.$br
-    .on('MozTouchDown', function(event) {
-      if (this.mode == self.constMode2up) {
-        event.preventDefault();
-      }
-    })
-    .on('MozTouchMove', function(event) {
-      if (this.mode == self.constMode2up) {
-        event.preventDefault();
-      }
-    })
-    .on('MozTouchUp', function(event) {
-      if (this.mode == self.constMode2up) {
-        event.preventDefault();
-      }
-    });
-};
-
-/**
- * Returns true if the navigation elements are currently visible
- * @return {boolean}
- */
-BookReader.prototype.navigationIsVisible = function() {
-  // $$$ doesn't account for transitioning states, nav must be fully visible to return true
-  const toolpos = this.refs.$BRtoolbar.position();
-  const tooltop = toolpos.top;
-  return tooltop == 0;
-};
-
-/**
- * Main controller that sets navigation into view.
- * Defaults to SHOW the navigation chrome
- */
-BookReader.prototype.setNavigationView = function brSetNavigationView(hide) {
-  const animationLength = this.constNavAnimationDuration;
-  const animationType = 'linear';
-  const resizePageContainer = function resizePageContainer () {
-    /* main page container fills whole container */
-    if (this.constMode2up !== this.mode) {
-      const animate = true;
-      this.resizeBRcontainer(animate);
-    }
-    this.trigger(BookReader.eventNames.navToggled);
-  }.bind(this);
-
-  let toolbarHeight = 0;
-  let navbarHeight = 0;
-  if (hide) {
-    toolbarHeight = this.getToolBarHeight() * -1;
-    navbarHeight = this.getFooterHeight() * -1;
-
-    this.refs.$BRtoolbar.addClass('js-menu-hide');
-    this.refs.$BRfooter.addClass('js-menu-hide');
-  } else {
-    this.refs.$BRtoolbar.removeClass('js-menu-hide');
-    this.refs.$BRfooter.removeClass('js-menu-hide');
-  }
-
-  this.refs.$BRtoolbar.animate(
-    { top: toolbarHeight },
-    animationLength,
-    animationType,
-    resizePageContainer
-  );
-  this.refs.$BRfooter.animate(
-    { bottom: navbarHeight },
-    animationLength,
-    animationType,
-    resizePageContainer
-  );
-};
-/**
- * Hide navigation elements, if visible
- */
-BookReader.prototype.hideNavigation = function() {
-  // Check if navigation is showing
-  if (this.navigationIsVisible()) {
-    const hide = true;
-    this.setNavigationView(hide);
-  }
-};
-
-/**
- * Show navigation elements
- */
-BookReader.prototype.showNavigation = function() {
-  // Check if navigation is hidden
-  if (!this.navigationIsVisible()) {
-    this.setNavigationView();
-  }
-};
-
-/**
- * Returns the index of the first visible page, dependent on the mode.
- * $$$ Currently we cannot display the front/back cover in 2-up and will need to update
- * this function when we can as part of https://bugs.launchpad.net/gnubook/+bug/296788
- * @return {number}
- */
-BookReader.prototype.firstDisplayableIndex = function() {
-  if (this.mode != this.constMode2up) {
-    return 0;
-  }
-
-  if ('rl' != this.pageProgression) {
-    // LTR
-    if (this.book.getPageSide(0) == 'L') {
-      return 0;
-    } else {
-      return -1;
-    }
-  } else {
-    // RTL
-    if (this.book.getPageSide(0) == 'R') {
-      return 0;
-    } else {
-      return -1;
-    }
-  }
-};
-
-/**
- * Returns the index of the last visible page, dependent on the mode.
- * $$$ Currently we cannot display the front/back cover in 2-up and will need to update
- * this function when we can as part of https://bugs.launchpad.net/gnubook/+bug/296788
- * @return {number}
- */
-BookReader.prototype.lastDisplayableIndex = function() {
-
-  const lastIndex = this.book.getNumLeafs() - 1;
-
-  if (this.mode != this.constMode2up) {
-    return lastIndex;
-  }
-
-  if ('rl' != this.pageProgression) {
-    // LTR
-    if (this.book.getPageSide(lastIndex) == 'R') {
-      return lastIndex;
-    } else {
-      return lastIndex + 1;
-    }
-  } else {
-    // RTL
-    if (this.book.getPageSide(lastIndex) == 'L') {
-      return lastIndex;
-    } else {
-      return lastIndex + 1;
-    }
-  }
-};
-
 
 /**************************/
 /** BookModel extensions **/
@@ -2107,8 +1651,6 @@ BookReader.prototype.initUIStrings = function() {
     '.full': 'Toggle fullscreen',
     '.book_left': 'Flip left',
     '.book_right': 'Flip right',
-    '.book_up': 'Page up',
-    '.book_down': 'Page down',
     '.play': 'Play',
     '.pause': 'Pause',
     '.BRdn': 'Show/hide nav bar', // Would have to keep updating on state change to have just "Hide nav bar"
@@ -2246,7 +1788,7 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
   // Index and page
   if ('undefined' != typeof(urlHash['page'])) {
     // page was set -- may not be int
-    params.page = urlHash['page'];
+    params.page = decodeURIComponent(urlHash['page']);
   }
 
   // $$$ process /region
@@ -2278,11 +1820,10 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
  * @return {string}
  */
 BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
-  const separator = '/';
   const fragments = [];
 
   if ('undefined' != typeof(params.page)) {
-    fragments.push('page', params.page);
+    fragments.push('page', encodeURIComponent(params.page));
   } else {
     if ('undefined' != typeof(params.index)) {
       // Don't have page numbering but we do have the index
@@ -2308,10 +1849,10 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
 
   // search
   if (params.search && urlMode === 'hash') {
-    fragments.push('search', params.search);
+    fragments.push('search', utils.encodeURIComponentPlus(params.search));
   }
 
-  return utils.encodeURIComponentPlus(fragments.join(separator)).replace(/%2F/g, '/');
+  return fragments.join('/');
 };
 
 /**

@@ -71,22 +71,3 @@ describe('pageTops', () => {
     ]);
   });
 });
-
-describe('worldUnitsToRenderedPixels', () => {
-  test('0 case', () => {
-    const mode = new Mode1UpLit(null, null);
-    expect(mode.worldUnitsToRenderedPixels(0)).toBe(0);
-  });
-  test('Misc cases', () => {
-    const mode = new Mode1UpLit(null, null);
-    mode.screenDPI = 100;
-    mode.realWorldReduce = 1;
-    expect(mode.worldUnitsToRenderedPixels(1)).toBe(100);
-    mode.screenDPI = 100;
-    mode.realWorldReduce = 2;
-    expect(mode.worldUnitsToRenderedPixels(1)).toBe(50);
-    mode.screenDPI = 78;
-    mode.realWorldReduce = 1;
-    expect(mode.worldUnitsToRenderedPixels(1)).toBe(78);
-  });
-});

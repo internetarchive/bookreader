@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { afterEventLoop } from '../utils.js';
+import { afterEventLoop, eventTargetMixin } from '../utils.js';
 import {
   clamp,
   cssPercentage,
@@ -7,11 +7,13 @@ import {
   decodeURIComponentPlus,
   encodeURIComponentPlus,
   escapeHTML,
+  escapeRegExp,
   getActiveElement,
   isInputActive,
   poll,
   polyfillCustomEvent,
   PolyfilledCustomEvent,
+  promisifyEvent,
   sleep,
 } from '@/src/BookReader/utils.js';
 
@@ -182,5 +184,46 @@ describe('sleep', () => {
 
     await afterEventLoop();
     expect(spy.callCount).toBe(1);
+  });
+});
+
+describe('promisifyEvent', () => {
+  test('Resolves once event fires', async () => {
+    const fakeTarget = eventTargetMixin();
+    const resolveSpy = sinon.spy();
+    promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
+
+    await afterEventLoop();
+    expect(resolveSpy.callCount).toBe(0);
+    fakeTarget.dispatchEvent('pause', {});
+    await afterEventLoop();
+    expect(resolveSpy.callCount).toBe(1);
+  });
+
+  test('Only resolves once', async () => {
+    const fakeTarget = eventTargetMixin();
+    const resolveSpy = sinon.spy();
+    promisifyEvent(fakeTarget, 'pause').then(resolveSpy);
+
+    await afterEventLoop();
+    expect(resolveSpy.callCount).toBe(0);
+    fakeTarget.dispatchEvent('pause', {});
+    fakeTarget.dispatchEvent('pause', {});
+    fakeTarget.dispatchEvent('pause', {});
+    fakeTarget.dispatchEvent('pause', {});
+
+    await afterEventLoop();
+    expect(resolveSpy.callCount).toBe(1);
+  });
+});
+
+describe('escapeRegex', () => {
+  test('Escapes regex', () => {
+    expect(escapeRegExp('.*')).toBe('\\.\\*');
+    expect(escapeRegExp('foo')).toBe('foo');
+    expect(escapeRegExp('foo.bar')).toBe('foo\\.bar');
+    expect(escapeRegExp('{{{')).toBe('\\{\\{\\{');
+    expect(escapeRegExp('')).toBe('');
+    expect(escapeRegExp('https://example.com')).toBe('https://example\\.com');
   });
 });

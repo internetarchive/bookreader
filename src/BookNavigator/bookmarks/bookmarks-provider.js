@@ -5,9 +5,8 @@ import './ia-bookmarks.js';
 
 import './bookmark-edit.js';
 import './bookmarks-list.js';
-import { IAIconBookmark } from '@internetarchive/icon-bookmark';
+import '@internetarchive/icon-bookmark';
 
-customElements.define('icon-bookmark', IAIconBookmark);
 
 export default class BookmarksProvider {
   constructor(options) {
@@ -55,12 +54,10 @@ export default class BookmarksProvider {
   }
 
   bookmarksLoginClicked() {
-    if (window.archive_analytics) {
-      window.archive_analytics?.send_event_no_sampling(
-        'BookReader',
-        `BookmarksLogin`,
-        window.location.path,
-      );
-    }
+    window.archive_analytics?.send_event_no_sampling(
+      'BookReader',
+      `BookmarksLogin`,
+      window.location.path,
+    );
   }
 }

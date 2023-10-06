@@ -1,11 +1,11 @@
 /* eslint-disable class-methods-use-this */
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { css, html, LitElement, nothing } from 'lit';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
-import './a-search-result.js';
 import checkmarkIcon from '../assets/icon_checkmark.js';
 import closeIcon from '../assets/icon_close.js';
 import buttonCSS from '../assets/button-base.js';
-
+/** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 
 export class IABookSearchResults extends LitElement {
   static get properties() {
@@ -23,6 +23,7 @@ export class IABookSearchResults extends LitElement {
   constructor() {
     super();
 
+    /** @type {SearchInsideMatch[]} */
     this.results = [];
     this.query = '';
     this.queryInProgress = false;
@@ -80,7 +81,15 @@ export class IABookSearchResults extends LitElement {
     }));
   }
 
-  selectResult() {
+  /**
+   * @param {SearchInsideMatch} match
+   */
+  selectResult(match) {
+    this.dispatchEvent(new CustomEvent('resultSelected', {
+      bubbles: true,
+      composed: true,
+      detail: { match },
+    }));
     this.dispatchEvent(new CustomEvent('closeMenu', {
       bubbles: true,
       composed: true,
@@ -132,10 +141,12 @@ export class IABookSearchResults extends LitElement {
     return html`
       <ul class="results ${resultsClass}">
         ${this.results.map(match => html`
-            <book-search-result
-              .match=${match}
-              @resultSelected=${this.selectResult}
-            ></book-search-result>
+            <li @click=${this.selectResult.bind(this, match)}>
+              ${match.cover ? html`<img src="${match.cover}" />` : nothing}
+              <h4>${match.title || nothing}</h4>
+              <p class="page-num">Page ${match.displayPageNumber}</p>
+              <p>${unsafeHTML(match.html)}</p>
+            </li>
           `)}
       </ul>
     `;

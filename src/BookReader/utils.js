@@ -262,3 +262,29 @@ export async function poll(fn, { step = 50, timeout = 500, until = val => Boolea
     await _sleep(step);
   }
 }
+
+/**
+ * Convert a EventTarget style event into a promise
+ * @param {EventTarget} target
+ * @param {string} eventType
+ * @return {Promise<Event>}
+ */
+export function promisifyEvent(target, eventType) {
+  return new Promise(res => {
+    const resolver = ev => {
+      target.removeEventListener(eventType, resolver);
+      res(ev);
+    };
+    target.addEventListener(eventType, resolver);
+  });
+}
+
+/**
+ * Escapes regex special characters in a string. Allows for safe usage in regexes.
+ * Src: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions
+ * @param {string} string
+ * @returns {string}
+ */
+export function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}

@@ -1,5 +1,3 @@
-import { escapeHTML } from "../../BookReader/utils.js";
-
 class SearchView {
   /**
    * @param {object} params
@@ -11,11 +9,6 @@ class SearchView {
    */
   constructor({ br, searchCancelledCallback = () => {} }) {
     this.br = br;
-
-    // Search results are returned as a text blob with the hits wrapped in
-    // triple mustaches. Hits occasionally include text beyond the search
-    // term, so everything within the staches is captured and wrapped.
-    this.matcher = new RegExp('{{{([^]+?)}}}', 'g'); // [^] matches any character, including line breaks
     this.matches = [];
     this.cacheDOMElements();
     this.bindEvents();
@@ -230,26 +223,20 @@ class SearchView {
    */
   renderPins(matches) {
     matches.forEach((match) => {
-      const queryString = match.text;
       const pageIndex = this.br.book.leafNumToIndex(match.par[0].page);
       const uiStringSearch = "Search result"; // i18n
-
       const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br.book.getNumLeafs() - 1);
 
-      const escapedQueryString = escapeHTML(queryString);
-      const queryStringWithB = escapedQueryString.replace(this.matcher, '<b>$1</b>');
-
-      let queryStringWithBTruncated = '';
-
-      if (queryString.length > 100) {
-        queryStringWithBTruncated = queryString.replace(/^(.{100}[^\s]*).*/, "$1");
-
-        // If truncating, we must escape *after* truncation occurs (but before wrapping in <b>)
-        queryStringWithBTruncated = escapeHTML(queryStringWithBTruncated)
-          .replace(this.matcher, '<b>$1</b>')
-          + '...';
+      let html = match.html;
+      if (html.length > 200) {
+        const start = Math.max(0, html.indexOf('<mark>') - 100);
+        if (start != 0) {
+          html = '…' + match.html
+            .substring(start)
+            // Make sure at word boundary though
+            .replace(/^\S+/, '');
+        }
       }
-
       // draw marker
       $('<div>')
         .addClass('BRsearch')
@@ -259,8 +246,8 @@ class SearchView {
         .attr('title', uiStringSearch)
         .append(`
           <div class="BRquery">
-            <div>${queryStringWithBTruncated || queryStringWithB}</div>
-            <div>Page ${match.displayPageNumber}</div>
+            <main>${html}</main>
+            <footer>Page ${match.displayPageNumber}</footer>
           </div>
         `)
         .appendTo(this.br.$('.BRnavline'))
@@ -383,14 +370,6 @@ class SearchView {
     }
   }
 
-  /**
-   * @param {Event} e
-   */
-  handleNavToggledCallback(e) {
-    const is_visible = this.br.navigationIsVisible();
-    this.togglePinsFor(is_visible);
-  }
-
   handleSearchStarted() {
     this.emptyMatches();
     this.br.removeSearchHilites();
@@ -425,7 +404,6 @@ class SearchView {
 
     window.addEventListener(`${namespace}SearchCallbackError`, this.handleSearchCallbackError.bind(this));
     $(document).on(`${namespace}SearchCallback`, this.handleSearchCallback.bind(this))
-      .on(`${namespace}navToggled`, this.handleNavToggledCallback.bind(this))
       .on(`${namespace}SearchStarted`, this.handleSearchStarted.bind(this))
       .on(`${namespace}SearchCallbackBookNotIndexed`, this.handleSearchCallbackBookNotIndexed.bind(this))
       .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this))

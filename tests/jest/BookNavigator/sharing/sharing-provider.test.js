@@ -30,7 +30,7 @@ describe('Sharing Provider', () => {
     expect(provider.id).toEqual('share');
     expect(provider.icon).toBeDefined();
     expect(provider.label).toEqual('Share this book');
-    expect(fixtureSync(provider.component).tagName).toContain('IA-SHARING-OPTIONS');
+    expect(fixtureSync(provider.component).tagName).toContain('IAUX-IN-SHARE-PANEL');
   });
 
   describe('Handles being a sub file/volume', () => {

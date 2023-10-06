@@ -81,7 +81,7 @@
   left: -10000px !important;
 }
 
-.BookReader, .BRmobileMenu, .BRfloat {
+.BookReader, .BRfloat {
   /* Shared root element rules */
   font-family: "Helvetica Neue", Arial, Verdana, sans-serif;
   font-size: 14px;
@@ -91,27 +91,27 @@
   /* Desktop-only */
   /* Element-level rules */
 }
-.BookReader .larger, .BRmobileMenu .larger, .BRfloat .larger {
+.BookReader .larger, .BRfloat .larger {
   font-size: 1.2em;
 }
 @media (min-width: 801px) {
-  .BookReader .mv20-lg, .BRmobileMenu .mv20-lg, .BRfloat .mv20-lg {
+  .BookReader .mv20-lg, .BRfloat .mv20-lg {
     margin-top: 20px;
     margin-bottom: 20px;
   }
 }
-.BookReader h3, .BRmobileMenu h3, .BRfloat h3 {
+.BookReader h3, .BRfloat h3 {
   font-size: 20px;
   font-weight: 700;
   color: #dedede;
 }
-.BookReader a, .BRmobileMenu a, .BRfloat a {
+.BookReader a, .BRfloat a {
   outline: none;
 }
-.BookReader button, .BRmobileMenu button, .BRfloat button {
+.BookReader button, .BRfloat button {
   cursor: pointer;
 }
-.BookReader a.logo, .BRmobileMenu a.logo, .BRfloat a.logo {
+.BookReader a.logo, .BRfloat a.logo {
   display: inline-block;
   width: auto;
   height: 100%;
@@ -323,51 +323,42 @@ body.BRfullscreenActive .mm-menu {
   .BRinfoLeftCol {
     font-size: 14px;
   }
-
   .BRimageW {
     text-align: center;
     margin-bottom: 10px;
   }
-
   .BRimageW img {
     height: 200px;
     width: auto;
   }
-
   .BRinfoValue.larger {
     font-size: 16px;
   }
-
   .BRinfoMoreInfoWrapper a {
     font-size: inherit;
     color: white;
     text-decoration: none;
   }
-
   .BRinfoOtherFormatsFormat {
     margin-bottom: 6px;
   }
-
   .BRinfoFooter {
     margin-bottom: 10px;
     text-align: left;
   }
-
   .BRinfoFooter a {
     display: block;
   }
-
   .BRfloatFoot.BRinfoFooter {
     margin: initial;
     padding: initial;
     border: initial;
     font-size: inherit;
   }
-
-  .BookReader .fieldset-embed, .BRmobileMenu .fieldset-embed, .BRfloat .fieldset-embed {
+  .BookReader .fieldset-embed, .BRfloat .fieldset-embed {
     display: none;
   }
-  .BookReader .BRaction, .BRmobileMenu .BRaction, .BRfloat .BRaction {
+  .BookReader .BRaction, .BRfloat .BRaction {
     padding: 8px 10px;
     margin-left: 0;
     margin-bottom: 10px;
@@ -380,57 +371,47 @@ body.BRfullscreenActive .mm-menu {
     position: relative;
     padding: 15px;
   }
-
   .BRinfoLeftCol {
     float: left;
     width: 40%;
     min-height: 1px;
   }
-
   .BRinfoRightCol {
     float: left;
     width: 58%;
   }
-
   .BRimageW {
     text-align: center;
     margin-bottom: 10px;
     margin-right: 26px;
   }
-
   .BRimageW img {
     height: auto;
     width: 100%;
   }
-
   .BRinfoValue.larger {
     font-size: 20px;
     line-height: 1.2;
   }
-
   .BRinfoMoreInfoWrapper a {
     font-size: 14px;
     color: white;
     text-decoration: none;
     font-weight: bold;
   }
-
   .BRinfoOtherFormatsFormat {
     display: inline;
     margin-right: 10px;
   }
-
   .BRinfoFooter {
     font-size: 1em;
     clear: both;
   }
-
   .BRinfoFooter a {
     display: inline;
     margin-right: 10px;
   }
-
-  .BookReader .BRaction, .BRmobileMenu .BRaction, .BRfloat .BRaction {
+  .BookReader .BRaction, .BRfloat .BRaction {
     padding: 8px 16px;
   }
 }
@@ -442,6 +423,23 @@ body.BRfullscreenActive .mm-menu {
   background-color: white;
 }
 
+.BRfullscreenAnimation .br-mode-2up__book {
+  transition: transform 0.2s ease-in-out;
+}
+
+.fullscreenActive.BRmodeThumb .BRcontainer,
+.fullscreenActive.BRmode1up .BRcontainer {
+  animation: flash 0.3s ease-in-out;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
 .BRpageview {
   position: relative;
   margin: auto;
@@ -454,7 +452,7 @@ body.BRfullscreenActive .mm-menu {
   border: 0;
 }
 
-.BRmodeThumb .BRpagecontainer, .BRmode2Up .BRpagecontainer {
+.BRmodeThumb .BRpagecontainer, .BRmode2up .BRpagecontainer {
   cursor: pointer;
 }
 
@@ -483,6 +481,8 @@ body.BRfullscreenActive .mm-menu {
   position: relative;
   overflow: hidden;
   background: #FEFDEB;
+  overflow: hidden;
+  overflow: clip;
 }
 .BRpagecontainer img {
   position: absolute;
@@ -521,61 +521,115 @@ svg.BRPageLayer {
   display: none;
 }
 
-.BRbookcover {
-  position: absolute;
-  background-image: none;
-  box-shadow: 1px 0 10px #111;
+.br-mode-2up__root {
+  display: block;
+  overflow: auto;
+  width: 100%;
+  height: 100%;
 }
 
-.BRPreview .BRpageimage {
-  background-color: #eee;
-  -webkit-filter: grayscale(100%);
-  filter: grayscale(100%);
+.br-mode-2up__book {
+  position: relative;
+  transform-origin: 0 0;
+  width: 0px;
+  height: 0px;
 }
 
-.BRleafEdgeR {
-  border-style: solid solid solid none;
-  border-color: rgb(51, 51, 34);
-  border-width: 1px 1px 1px 0px;
-  background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
+.BRmode2up {
+  transition: opacity 0.2s;
+}
+
+.BRmode2up .BRpagecontainer {
+  backface-visibility: hidden;
+}
+.BRmode2up .BRpagecontainer:not(.BRpage-visible) {
+  display: none;
+}
+
+.br-mode-2up__leafs {
   position: absolute;
   cursor: pointer;
+  top: 0;
+  transform-style: preserve-3d;
 }
-
-.BRleafEdgeL {
-  /* border-style: solid none solid solid;
-  border-color: rgb(51, 51, 34);
-  border-width: 1px 0px 1px 1px; */
+.br-mode-2up__leafs[side=left] {
+  border-radius: 4px 0 0 4px;
+}
+.br-mode-2up__leafs[side=left] .br-leaf-edges__label {
+  padding-right: 10px;
+  border-radius: 4px 0 0 4px;
+}
+.br-mode-2up__leafs[side=right] {
+  border-radius: 0 4px 4px 0;
+}
+.br-mode-2up__leafs[side=right] .br-leaf-edges__label {
+  padding-left: 20px;
+  border-radius: 0 4px 4px 0;
+}
+.br-mode-2up__leafs.br-mode-2up__leafs--flipping {
+  z-index: 200000;
+  transition: transform 5s;
+  transition-timing-function: ease-in-out;
+  border-radius: 0;
+}
+.br-mode-2up__leafs.br-mode-2up__leafs--flipping:before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform: rotateY(-90deg);
+}
+.br-mode-2up__leafs, .br-mode-2up__leafs.br-mode-2up__leafs--flipping::before {
   background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
-  /* XXXmang replace file */
-  position: absolute;
-  cursor: pointer;
 }
-
-.BRleafEdgeTmp {
-  /* border-style: solid none solid solid;
-  border-color: rgb(51, 51, 34);
-  border-width: 1px 0px 1px 1px; */
-  background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
-  /* XXXmang replace file */
+.br-mode-2up__leafs .br-leaf-edges__bar {
+  display: none;
+  pointer-events: none;
   position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 1px;
+  background-color: #9A9B9D;
+  opacity: 0.85;
+  transform: translateX(-50%);
 }
-
-.BRgutter {
-  /* border: 1px solid rgb(68, 25, 17); */
+.br-mode-2up__leafs .br-leaf-edges__label {
+  display: none;
+  pointer-events: none;
+  z-index: 1000;
   position: absolute;
-  background: transparent url(images/booksplit.png) repeat scroll 0% 0%;
-}
-
-.BRtwoPagePopUp {
   padding: 6px;
-  position: absolute;
-  font-size: 12px;
   color: white;
   background-color: #9A9B9D;
   opacity: 0.85;
-  border-radius: 4px;
   white-space: nowrap;
+  transform: translateY(-10px);
+}
+
+.br-mode-2up--flipping-left .BRpage-entering[data-side=R] {
+  z-index: 10;
+  transform-origin: left;
+  transform: rotateY(0deg);
+}
+.br-mode-2up--flipping-left .BRpage-exiting[data-side=L] {
+  z-index: 10;
+  transform-origin: right;
+}
+.br-mode-2up--flipping-left .BRpage-exiting[data-side=R] {
+  z-index: 9;
+}
+
+.br-mode-2up--flipping-right .BRpage-entering[data-side=L] {
+  z-index: 10;
+  transform-origin: right;
+}
+.br-mode-2up--flipping-right .BRpage-exiting[data-side=R] {
+  z-index: 10;
+  transform-origin: left;
+}
+.br-mode-2up--flipping-right .BRpage-exiting[data-side=L] {
+  z-index: 9;
 }
 
 .BRToolbarButton, .BRicon {
@@ -911,14 +965,13 @@ i.BRicon {
 /* Desktop Only */
 @media (min-width: 801px) {
   .BRfloat .message,
-.BRfloatBody {
+  .BRfloatBody {
     padding: 10px 15px 10px 15px;
     font-size: 16px;
     line-height: normal;
     margin-top: 0;
     margin-bottom: 0px;
   }
-
   .BRfloatHead {
     box-sizing: border-box;
     line-height: normal;
@@ -928,7 +981,6 @@ i.BRicon {
     text-align: center;
     border-bottom: 1px solid rgb(216, 216, 216);
   }
-
   .BRfloatFoot {
     padding: 10px;
     margin-bottom: 10px;
@@ -939,10 +991,9 @@ i.BRicon {
   .BRfloatBody {
     padding: 10px 10px;
   }
-
   .BRfloat .message,
-.BRfloatBody,
-.BRfloatHead {
+  .BRfloatBody,
+  .BRfloatHead {
     box-sizing: border-box;
     line-height: normal;
     border-bottom: 1px solid rgb(216, 216, 216);
@@ -952,12 +1003,10 @@ i.BRicon {
     font-weight: 700;
     text-align: center;
   }
-
   .BRfloatFoot {
     padding: 10px 10px 0 10px;
     border-top: 1px solid #ccc;
   }
-
   .BRfloatFoot .BRaction {
     margin-bottom: 10px;
   }
@@ -967,7 +1016,6 @@ i.BRicon {
     max-width: initial;
     width: 455px;
   }
-
   .BRfloat.wide {
     max-width: initial;
     width: 555px;
@@ -991,11 +1039,11 @@ i.BRicon {
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    translate: 0 10px;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    translate: 0 0;
   }
 }
 .BRfooter {
@@ -1021,8 +1069,13 @@ i.BRicon {
   background: transparent;
   outline: none;
 }
-.BRfooter button:hover .tooltip {
-  display: block;
+@media (hover: hover) {
+  .BRfooter button {
+    /* styles to apply on devices that support hover */
+  }
+  .BRfooter button:hover .BRtooltip {
+    display: block;
+  }
 }
 .BRfooter button.hide {
   display: none;
@@ -1039,7 +1092,6 @@ i.BRicon {
   animation: fadeUp 0.2s;
   background-color: #333;
   color: white;
-  /* Full mobile styles */
 }
 .BRReadAloudToolbar a {
   color: white;
@@ -1076,46 +1128,6 @@ i.BRicon {
 }
 .BRReadAloudToolbar .BRnavCntlBtm:hover {
   background-color: #0074D1;
-}
-@media (max-width: 800px) {
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar {
-    background-color: white;
-    color: black;
-  }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar a, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar a {
-    color: black;
-  }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager.ui-slider, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager.ui-slider {
-    background: #B7B7B7;
-  }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager.ui-slider .ui-slider-handle, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager.ui-slider .ui-slider-handle {
-    background: #0074D1;
-  }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpager.ui-slider .ui-slider-range, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpager.ui-slider .ui-slider-range {
-    background: rgba(0, 116, 209, 0.25);
-  }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpage .BRicon, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpage .BRicon {
-    border-left: 1px solid #979797;
-  }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpage .BRicon.activated, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpage .BRicon.activated {
-    background-color: rgba(0, 116, 209, 0.4);
-  }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRpage .BRicon.activated:before, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRpage .BRicon.activated:before {
-    content: "";
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    display: block;
-    border: 3px solid rgba(0, 116, 209, 0.3);
-  }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRnavCntl, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRnavCntl {
-    background-color: #979797;
-  }
-  .BRbodyMobileNavEnabled .BRReadAloudToolbar .BRnavCntlBtm:hover, .BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRReadAloudToolbar .BRnavCntlBtm:hover {
-    background-color: #0074D1;
-  }
 }
 .BRReadAloudToolbar--controls {
   display: flex;
@@ -1167,8 +1179,7 @@ i.BRicon {
   appearance: none;
   border: 0;
   text-align: center;
-  text-align-last: center;
-  /* Chrome */
+  text-align-last: center; /* Chrome */
   padding-top: 60%;
   padding-left: 10%;
   padding-right: 10%;
@@ -1267,8 +1278,7 @@ i.BRicon {
   height: 20px;
   border-radius: 50%;
   top: -5px;
-  margin-left: -9px;
-  /* Center icon */
+  margin-left: -9px; /* Center icon */
   z-index: 6;
   border: none;
 }
@@ -1352,11 +1362,9 @@ i.BRicon {
   .BRnavline .BRchapter {
     display: none;
   }
-
   .BRnavCntlBtm {
     bottom: 34px;
   }
-
   .BRpager.ui-slider {
     height: 10px;
     top: 12px;
@@ -1464,104 +1472,113 @@ i.BRicon {
     box-shadow: 0px 1px 3px 0px rgba(102, 102, 102, 0.25);
   }
 }
-.BookReader .BRquery, .BRmobileMenu .BRquery, .BRfloat .BRquery, .BookReader .BRchapter > div, .BRmobileMenu .BRchapter > div, .BRfloat .BRchapter > div {
+.BookReader .BRquery, .BRfloat .BRquery, .BookReader .BRchapter > div, .BRfloat .BRchapter > div {
   display: none;
   position: absolute;
   bottom: calc(100% + 5px);
   left: 50%;
   transform: translateX(-50%);
-  width: 230px;
+  width: 350px;
+  max-width: 100vw;
   padding: 12px 14px;
+  padding-bottom: 10px;
   color: #fff;
-  font-weight: bold;
   background: #333;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  animation: fadeUp 0.2s;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }
-.BookReader .BRquery:after, .BRmobileMenu .BRquery:after, .BRfloat .BRquery:after, .BookReader .BRchapter > div:after, .BRmobileMenu .BRchapter > div:after, .BRfloat .BRchapter > div:after {
-  display: none;
+.BookReader .BRquery:after, .BRfloat .BRquery:after, .BookReader .BRchapter > div:after, .BRfloat .BRchapter > div:after {
   position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
   content: "";
-  border: 7px solid transparent;
-  border-width: 7px 4px;
-  border-bottom: none;
-  border-top-color: #333;
+  bottom: -9px;
+  left: 50%;
+  margin-left: -1px;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 10px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
-.BookReader .searchHiliteLayer, .BookReader .ttsHiliteLayer, .BRmobileMenu .searchHiliteLayer, .BRmobileMenu .ttsHiliteLayer, .BRfloat .searchHiliteLayer, .BRfloat .ttsHiliteLayer {
+.BookReader .searchHiliteLayer, .BookReader .ttsHiliteLayer, .BRfloat .searchHiliteLayer, .BRfloat .ttsHiliteLayer {
   pointer-events: none;
 }
-.BookReader .searchHiliteLayer rect, .BookReader .ttsHiliteLayer rect, .BRmobileMenu .searchHiliteLayer rect, .BRmobileMenu .ttsHiliteLayer rect, .BRfloat .searchHiliteLayer rect, .BRfloat .ttsHiliteLayer rect {
+.BookReader .searchHiliteLayer rect, .BookReader .ttsHiliteLayer rect, .BRfloat .searchHiliteLayer rect, .BRfloat .ttsHiliteLayer rect {
   fill: rgba(0, 0, 255, 0.2);
 }
-.BookReader .searchHiliteLayer rect, .BRmobileMenu .searchHiliteLayer rect, .BRfloat .searchHiliteLayer rect {
+.BookReader .searchHiliteLayer rect, .BRfloat .searchHiliteLayer rect {
   animation: highlightFocus 600ms 1 reverse;
   stroke: blue;
   stroke-width: 4px;
 }
-.BookReader .searchHiliteLayer rect:nth-child(1), .BRmobileMenu .searchHiliteLayer rect:nth-child(1), .BRfloat .searchHiliteLayer rect:nth-child(1) {
+.BookReader .searchHiliteLayer rect:nth-child(1), .BRfloat .searchHiliteLayer rect:nth-child(1) {
   animation-delay: 0ms;
 }
-.BookReader .searchHiliteLayer rect:nth-child(2), .BRmobileMenu .searchHiliteLayer rect:nth-child(2), .BRfloat .searchHiliteLayer rect:nth-child(2) {
+.BookReader .searchHiliteLayer rect:nth-child(2), .BRfloat .searchHiliteLayer rect:nth-child(2) {
   animation-delay: 50ms;
 }
-.BookReader .searchHiliteLayer rect:nth-child(3), .BRmobileMenu .searchHiliteLayer rect:nth-child(3), .BRfloat .searchHiliteLayer rect:nth-child(3) {
+.BookReader .searchHiliteLayer rect:nth-child(3), .BRfloat .searchHiliteLayer rect:nth-child(3) {
   animation-delay: 100ms;
 }
-.BookReader .searchHiliteLayer rect:nth-child(4), .BRmobileMenu .searchHiliteLayer rect:nth-child(4), .BRfloat .searchHiliteLayer rect:nth-child(4) {
+.BookReader .searchHiliteLayer rect:nth-child(4), .BRfloat .searchHiliteLayer rect:nth-child(4) {
   animation-delay: 150ms;
 }
-.BookReader .searchHiliteLayer rect:nth-child(5), .BRmobileMenu .searchHiliteLayer rect:nth-child(5), .BRfloat .searchHiliteLayer rect:nth-child(5) {
+.BookReader .searchHiliteLayer rect:nth-child(5), .BRfloat .searchHiliteLayer rect:nth-child(5) {
   animation-delay: 200ms;
 }
-.BookReader .searchHiliteLayer rect:nth-child(6), .BRmobileMenu .searchHiliteLayer rect:nth-child(6), .BRfloat .searchHiliteLayer rect:nth-child(6) {
+.BookReader .searchHiliteLayer rect:nth-child(6), .BRfloat .searchHiliteLayer rect:nth-child(6) {
   animation-delay: 250ms;
 }
-.BookReader .searchHiliteLayer rect:nth-child(7), .BRmobileMenu .searchHiliteLayer rect:nth-child(7), .BRfloat .searchHiliteLayer rect:nth-child(7) {
+.BookReader .searchHiliteLayer rect:nth-child(7), .BRfloat .searchHiliteLayer rect:nth-child(7) {
   animation-delay: 300ms;
 }
-.BookReader .searchHiliteLayer rect:nth-child(8), .BRmobileMenu .searchHiliteLayer rect:nth-child(8), .BRfloat .searchHiliteLayer rect:nth-child(8) {
+.BookReader .searchHiliteLayer rect:nth-child(8), .BRfloat .searchHiliteLayer rect:nth-child(8) {
   animation-delay: 350ms;
 }
-.BookReader .searchHiliteLayer rect:nth-child(9), .BRmobileMenu .searchHiliteLayer rect:nth-child(9), .BRfloat .searchHiliteLayer rect:nth-child(9) {
+.BookReader .searchHiliteLayer rect:nth-child(9), .BRfloat .searchHiliteLayer rect:nth-child(9) {
   animation-delay: 400ms;
 }
-.BookReader .searchHiliteLayer rect:nth-child(10), .BRmobileMenu .searchHiliteLayer rect:nth-child(10), .BRfloat .searchHiliteLayer rect:nth-child(10) {
+.BookReader .searchHiliteLayer rect:nth-child(10), .BRfloat .searchHiliteLayer rect:nth-child(10) {
   animation-delay: 450ms;
 }
-.BookReader .BRchapter, .BookReader .BRsearch, .BRmobileMenu .BRchapter, .BRmobileMenu .BRsearch, .BRfloat .BRchapter, .BRfloat .BRsearch {
+.BookReader .BRchapter, .BookReader .BRsearch, .BRfloat .BRchapter, .BRfloat .BRsearch {
   position: absolute;
-  bottom: 0;
-  /* Relative to nav line */
+  bottom: 0; /* Relative to nav line */
   cursor: pointer;
   z-index: 3;
   background-color: transparent;
   background-repeat: no-repeat;
   font-weight: normal;
 }
-.BookReader .BRchapter, .BRmobileMenu .BRchapter, .BRfloat .BRchapter {
+.BookReader .BRchapter, .BRfloat .BRchapter {
   background-color: white;
   color: #666;
   height: 8px;
   width: 4px;
   bottom: -13px;
-  margin-left: -12px;
-  /* Center icon */
+  margin-left: -12px; /* Center icon */
 }
-.BookReader .BRchapter:hover > div, .BRmobileMenu .BRchapter:hover > div, .BRfloat .BRchapter:hover > div {
+.BookReader .BRchapter:hover > div, .BRfloat .BRchapter:hover > div {
   display: block;
 }
-.BookReader .BRchapter.front, .BRmobileMenu .BRchapter.front, .BRfloat .BRchapter.front {
+.BookReader .BRchapter.front, .BRfloat .BRchapter.front {
   background-color: blue;
 }
-.BookReader .BRsearch, .BRmobileMenu .BRsearch, .BRfloat .BRsearch {
+.BookReader .BRchapter .BRchapterPage, .BRfloat .BRchapter .BRchapterPage {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+.BookReader .BRsearch, .BRfloat .BRsearch {
   width: 9px;
   height: 6px;
   margin-left: -10px;
 }
-.BookReader .BRsearch:before, .BRmobileMenu .BRsearch:before, .BRfloat .BRsearch:before {
+.BookReader .BRsearch:before, .BRfloat .BRsearch:before {
   position: absolute;
   left: calc(50% - 2px);
   transform: translateX(-50%);
@@ -1571,22 +1588,34 @@ i.BRicon {
   background: #428bca;
   border-radius: 2px;
 }
-.BookReader .BRsearch:hover .BRquery, .BRmobileMenu .BRsearch:hover .BRquery, .BRfloat .BRsearch:hover .BRquery {
+.BookReader .BRsearch:hover .BRquery, .BRfloat .BRsearch:hover .BRquery {
   display: block;
 }
-.BookReader .BRsearch .BRquery, .BRmobileMenu .BRsearch .BRquery, .BRfloat .BRsearch .BRquery {
+.BookReader .BRsearch .BRquery, .BRfloat .BRsearch .BRquery {
   display: none;
 }
-.BookReader .BRquery b, .BRmobileMenu .BRquery b, .BRfloat .BRquery b {
+.BookReader .BRquery main, .BRfloat .BRquery main {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.BookReader .BRquery footer, .BRfloat .BRquery footer {
+  text-align: center;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+.BookReader .BRquery mark, .BRfloat .BRquery mark {
   color: #adaedc;
   font-weight: bold;
   background-color: #272958;
 }
-.BookReader .BRbooksearch, .BRmobileMenu .BRbooksearch, .BRfloat .BRbooksearch {
+.BookReader .BRbooksearch, .BRfloat .BRbooksearch {
   position: relative;
   box-sizing: border-box;
 }
-.BookReader .BRbooksearch.desktop, .BRmobileMenu .BRbooksearch.desktop, .BRfloat .BRbooksearch.desktop {
+.BookReader .BRbooksearch.desktop, .BRfloat .BRbooksearch.desktop {
   position: relative;
   height: 30px;
   border: 1px solid white;
@@ -1597,7 +1626,7 @@ i.BRicon {
   margin-top: 0;
   margin-bottom: 0;
 }
-.BookReader .BRbooksearch.desktop .BRsearchInput, .BRmobileMenu .BRbooksearch.desktop .BRsearchInput, .BRfloat .BRbooksearch.desktop .BRsearchInput {
+.BookReader .BRbooksearch.desktop .BRsearchInput, .BRfloat .BRbooksearch.desktop .BRsearchInput {
   -webkit-appearance: none;
   position: relative;
   width: 130px;
@@ -1615,7 +1644,7 @@ i.BRicon {
   font-size: 14px;
   line-height: 1.2;
 }
-.BookReader .BRbooksearch.desktop .BRsearchSubmit, .BRmobileMenu .BRbooksearch.desktop .BRsearchSubmit, .BRfloat .BRbooksearch.desktop .BRsearchSubmit {
+.BookReader .BRbooksearch.desktop .BRsearchSubmit, .BRfloat .BRbooksearch.desktop .BRsearchSubmit {
   width: auto;
   height: 100%;
   border: none;
@@ -1628,7 +1657,7 @@ i.BRicon {
   float: left;
   cursor: pointer;
 }
-.BookReader .BRsearch-navigation, .BRmobileMenu .BRsearch-navigation, .BRfloat .BRsearch-navigation {
+.BookReader .BRsearch-navigation, .BRfloat .BRsearch-navigation {
   position: relative;
   z-index: 1;
   display: flex;
@@ -1638,46 +1667,46 @@ i.BRicon {
   background-color: #333;
   padding: 5px 0;
 }
-.BookReader .BRsearch-navigation button.toggle-sidebar, .BRmobileMenu .BRsearch-navigation button.toggle-sidebar, .BRfloat .BRsearch-navigation button.toggle-sidebar {
+.BookReader .BRsearch-navigation button.toggle-sidebar, .BRfloat .BRsearch-navigation button.toggle-sidebar {
   width: unset;
   padding: 0 10px;
 }
-.BookReader .BRsearch-navigation button.toggle-sidebar h4, .BRmobileMenu .BRsearch-navigation button.toggle-sidebar h4, .BRfloat .BRsearch-navigation button.toggle-sidebar h4 {
+.BookReader .BRsearch-navigation button.toggle-sidebar h4, .BRfloat .BRsearch-navigation button.toggle-sidebar h4 {
   padding: 0;
   margin: 0;
   font-size: 15px;
   font-weight: normal;
   color: #fff;
 }
-.BookReader .BRsearch-navigation button.toggle-sidebar h4 span, .BRmobileMenu .BRsearch-navigation button.toggle-sidebar h4 span, .BRfloat .BRsearch-navigation button.toggle-sidebar h4 span {
+.BookReader .BRsearch-navigation button.toggle-sidebar h4 span, .BRfloat .BRsearch-navigation button.toggle-sidebar h4 span {
   vertical-align: middle;
 }
-.BookReader .BRsearch-navigation .pagination, .BRmobileMenu .BRsearch-navigation .pagination, .BRfloat .BRsearch-navigation .pagination {
+.BookReader .BRsearch-navigation .pagination, .BRfloat .BRsearch-navigation .pagination {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   margin: 0;
 }
-.BookReader .BRsearch-navigation .pagination span, .BRmobileMenu .BRsearch-navigation .pagination span, .BRfloat .BRsearch-navigation .pagination span {
+.BookReader .BRsearch-navigation .pagination span, .BRfloat .BRsearch-navigation .pagination span {
   display: inline-block;
   padding: 0 5px;
 }
-.BookReader .BRsearch-navigation .pagination button[disabled], .BRmobileMenu .BRsearch-navigation .pagination button[disabled], .BRfloat .BRsearch-navigation .pagination button[disabled] {
+.BookReader .BRsearch-navigation .pagination button[disabled], .BRfloat .BRsearch-navigation .pagination button[disabled] {
   opacity: 0.3;
   cursor: default;
 }
-.BookReader .BRsearch-navigation .pagination button span, .BRmobileMenu .BRsearch-navigation .pagination button span, .BRfloat .BRsearch-navigation .pagination button span {
+.BookReader .BRsearch-navigation .pagination button span, .BRfloat .BRsearch-navigation .pagination button span {
   width: 8px;
   height: 13px;
   padding: 0;
   background-size: 100% auto;
 }
-.BookReader .BRsearch-navigation .clear span, .BRmobileMenu .BRsearch-navigation .clear span, .BRfloat .BRsearch-navigation .clear span {
+.BookReader .BRsearch-navigation .clear span, .BRfloat .BRsearch-navigation .clear span {
   width: 18px;
   height: 18px;
 }
-.BookReader .BRsearch-navigation + .BRnav .BRnavCntl, .BRmobileMenu .BRsearch-navigation + .BRnav .BRnavCntl, .BRfloat .BRsearch-navigation + .BRnav .BRnavCntl {
+.BookReader .BRsearch-navigation + .BRnav .BRnavCntl, .BRfloat .BRsearch-navigation + .BRnav .BRnavCntl {
   display: none;
 }
 
@@ -1688,834 +1717,15 @@ i.BRicon {
 }
 /* Mid size breakpoint */
 @media (max-width: 1050px) {
-  .BookReader .BRbooksearch .BRsearchInput, .BRmobileMenu .BRbooksearch .BRsearchInput, .BRfloat .BRbooksearch .BRsearchInput {
+  .BookReader .BRbooksearch .BRsearchInput, .BRfloat .BRbooksearch .BRsearchInput {
     padding: 0 0 0 8px;
     width: 110px;
     min-width: 110px;
   }
-  .BookReader .BRbooksearch .BRsearchSubmit, .BRmobileMenu .BRbooksearch .BRsearchSubmit, .BRfloat .BRbooksearch .BRsearchSubmit {
+  .BookReader .BRbooksearch .BRsearchSubmit, .BRfloat .BRbooksearch .BRsearchSubmit {
     float: left;
   }
 }
-.mm-menu, .mm-panels, .mm-panels > .mm-panel {
-  margin: 0;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 0;
-  box-sizing: border-box;
-}
-
-.mm-btn, .mm-menu {
-  box-sizing: border-box;
-}
-
-.mm-listview a, .mm-listview a:hover, .mm-navbar a, .mm-navbar a:hover {
-  text-decoration: none;
-}
-
-.mm-hidden {
-  display: none !important;
-}
-
-.mm-menu, .mm-panels > .mm-panel:not(.mm-hidden) {
-  display: block;
-}
-
-.mm-wrapper {
-  overflow-x: hidden;
-  position: relative;
-}
-
-.mm-menu {
-  padding: 0;
-  position: absolute;
-}
-
-.mm-panels, .mm-panels > .mm-panel {
-  background: inherit;
-  border-color: inherit;
-  position: absolute;
-}
-
-.mm-btn, .mm-panel.mm-highest {
-  z-index: 1;
-}
-
-.mm-panels {
-  overflow: hidden;
-}
-
-.mm-panel {
-  -webkit-transition: -webkit-transform 0.4s ease;
-  transition: -webkit-transform 0.4s ease;
-  transition: transform 0.4s ease;
-  transition: transform 0.4s ease, -webkit-transform 0.4s ease;
-  -webkit-transform: translate3d(100%, 0, 0);
-  transform: translate3d(100%, 0, 0);
-}
-
-.mm-panel.mm-opened {
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-}
-
-.mm-panel.mm-subopened {
-  -webkit-transform: translate3d(-30%, 0, 0);
-  transform: translate3d(-30%, 0, 0);
-}
-
-.mm-panels > .mm-panel {
-  -webkit-overflow-scrolling: touch;
-  overflow: scroll;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 0 20px;
-}
-
-.mm-listview .mm-divider, .mm-listview > li > a, .mm-listview > li > span, .mm-navbar .mm-title {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.mm-panels > .mm-panel.mm-hasnavbar {
-  padding-top: 40px;
-}
-
-.mm-panels > .mm-panel:after, .mm-panels > .mm-panel:before {
-  content: "";
-  display: block;
-  height: 20px;
-}
-
-.mm-vertical .mm-panel {
-  -webkit-transform: none !important;
-  -ms-transform: none !important;
-  transform: none !important;
-}
-
-.mm-listview .mm-vertical .mm-panel, .mm-vertical .mm-listview .mm-panel {
-  display: none;
-  padding: 10px 0 10px 10px;
-}
-
-.mm-listview .mm-vertical .mm-panel .mm-listview > li:last-child:after, .mm-vertical .mm-listview .mm-panel .mm-listview > li:last-child:after {
-  border-color: transparent;
-}
-
-.mm-vertical li.mm-opened > .mm-panel, li.mm-vertical.mm-opened > .mm-panel {
-  display: block;
-}
-
-.mm-listview > li.mm-vertical > .mm-next, .mm-vertical .mm-listview > li > .mm-next {
-  height: 40px;
-  bottom: auto;
-}
-
-.mm-listview > li.mm-vertical > .mm-next:after, .mm-vertical .mm-listview > li > .mm-next:after {
-  top: 16px;
-  bottom: auto;
-}
-
-.mm-listview > li.mm-vertical.mm-opened > .mm-next:after, .mm-vertical .mm-listview > li.mm-opened > .mm-next:after {
-  -webkit-transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
-  transform: rotate(45deg);
-  right: 19px;
-}
-
-.mm-btn {
-  width: 40px;
-  height: 40px;
-  position: absolute;
-  top: 0;
-}
-
-.mm-clear:after, .mm-clear:before, .mm-close:after, .mm-close:before {
-  content: "";
-  border: 2px solid transparent;
-  display: block;
-  width: 5px;
-  height: 5px;
-  margin: auto;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  -webkit-transform: rotate(-45deg);
-  -ms-transform: rotate(-45deg);
-  transform: rotate(-45deg);
-}
-
-.mm-clear:before, .mm-close:before {
-  border-right: none;
-  border-bottom: none;
-  right: 18px;
-}
-
-.mm-clear:after, .mm-close:after {
-  border-left: none;
-  border-top: none;
-  right: 25px;
-}
-
-.mm-arrow:after, .mm-next:after, .mm-prev:before {
-  content: "";
-  border: 2px solid transparent;
-  display: block;
-  width: 8px;
-  height: 8px;
-  margin: auto;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  -webkit-transform: rotate(-45deg);
-  -ms-transform: rotate(-45deg);
-  transform: rotate(-45deg);
-}
-
-.mm-prev:before {
-  border-right: none;
-  border-bottom: none;
-  left: 23px;
-}
-
-.mm-arrow:after, .mm-next:after {
-  border-top: none;
-  border-left: none;
-  right: 23px;
-}
-
-.mm-navbar {
-  border-bottom: 1px solid;
-  border-color: inherit;
-  text-align: center;
-  line-height: 20px;
-  height: 40px;
-  padding: 0 40px;
-  margin: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
-.mm-navbar > * {
-  display: block;
-  padding: 10px 0;
-}
-
-.mm-navbar .mm-btn:first-child {
-  padding-left: 20px;
-  left: 0;
-}
-
-.mm-navbar .mm-btn:last-child {
-  text-align: right;
-  padding-right: 20px;
-  right: 0;
-}
-
-.mm-panel .mm-navbar {
-  display: none;
-}
-
-.mm-panel.mm-hasnavbar .mm-navbar {
-  display: block;
-}
-
-.mm-listview, .mm-listview > li {
-  list-style: none;
-  display: block;
-  padding: 0;
-  margin: 0;
-}
-
-.mm-listview {
-  font: inherit;
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.mm-listview > li {
-  position: relative;
-}
-
-.mm-listview > li, .mm-listview > li .mm-next, .mm-listview > li .mm-next:before, .mm-listview > li:after {
-  border-color: inherit;
-}
-
-.mm-listview > li > a, .mm-listview > li > span {
-  color: inherit;
-  display: block;
-  padding: 10px 10px 10px 20px;
-  margin: 0;
-}
-
-.mm-listview > li > a.mm-arrow, .mm-listview > li > span.mm-arrow {
-  padding-right: 50px;
-}
-
-.mm-listview > li:not(.mm-divider):after {
-  content: "";
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  display: block;
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 20px;
-}
-
-.mm-listview .mm-next {
-  background: rgba(3, 2, 1, 0);
-  width: 50px;
-  padding: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 2;
-}
-
-.mm-listview .mm-next:before {
-  content: "";
-  border-left-width: 1px;
-  border-left-style: solid;
-  display: block;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-}
-
-.mm-listview .mm-next + a, .mm-listview .mm-next + span {
-  margin-right: 50px;
-}
-
-.mm-listview .mm-next.mm-fullsubopen {
-  width: 100%;
-}
-
-.mm-listview .mm-next.mm-fullsubopen:before {
-  border-left: none;
-}
-
-.mm-listview .mm-next.mm-fullsubopen + a, .mm-listview .mm-next.mm-fullsubopen + span {
-  padding-right: 50px;
-  margin-right: 0;
-}
-
-.mm-panels > .mm-panel > .mm-listview {
-  margin: 20px -20px;
-}
-
-.mm-panels > .mm-panel > .mm-listview:first-child, .mm-panels > .mm-panel > .mm-navbar + .mm-listview {
-  margin-top: -20px;
-}
-
-.mm-listview .mm-inset {
-  list-style: disc inside;
-  padding: 0 10px 15px 40px;
-  margin: 0;
-}
-
-.mm-listview .mm-inset > li {
-  padding: 5px 0;
-}
-
-.mm-listview .mm-divider {
-  font-size: 10px;
-  text-transform: uppercase;
-  text-indent: 20px;
-  line-height: 25px;
-}
-
-.mm-listview .mm-spacer {
-  padding-top: 40px;
-}
-
-.mm-listview .mm-spacer > .mm-next {
-  top: 40px;
-}
-
-.mm-listview .mm-spacer.mm-divider {
-  padding-top: 25px;
-}
-
-.mm-menu {
-  background: #f3f3f3;
-  border-color: rgba(0, 0, 0, 0.1);
-  color: rgba(0, 0, 0, 0.7);
-}
-
-.mm-menu .mm-navbar a, .mm-menu .mm-navbar > * {
-  color: rgba(0, 0, 0, 0.3);
-}
-
-.mm-menu .mm-btn:after, .mm-menu .mm-btn:before {
-  border-color: rgba(0, 0, 0, 0.3);
-}
-
-.mm-menu .mm-listview {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.mm-menu .mm-listview > li .mm-arrow:after, .mm-menu .mm-listview > li .mm-next:after {
-  border-color: rgba(0, 0, 0, 0.3);
-}
-
-.mm-menu .mm-listview > li a:not(.mm-next) {
-  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.5);
-  tap-highlight-color: rgba(255, 255, 255, 0.5);
-}
-
-.mm-menu .mm-listview > li.mm-selected > a:not(.mm-next), .mm-menu .mm-listview > li.mm-selected > span {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.mm-menu .mm-divider, .mm-menu .mm-listview > li.mm-opened.mm-vertical > .mm-panel, .mm-menu .mm-listview > li.mm-opened.mm-vertical > a.mm-next, .mm-menu.mm-vertical .mm-listview > li.mm-opened > .mm-panel, .mm-menu.mm-vertical .mm-listview > li.mm-opened > a.mm-next {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.mm-page {
-  box-sizing: border-box;
-  position: relative;
-}
-
-.mm-slideout {
-  -webkit-transition: -webkit-transform 0.4s ease;
-  transition: -webkit-transform 0.4s ease;
-  transition: transform 0.4s ease;
-  transition: transform 0.4s ease, -webkit-transform 0.4s ease;
-  z-index: 1;
-}
-
-html.mm-opened {
-  overflow-x: hidden;
-  position: relative;
-}
-
-html.mm-blocking, html.mm-blocking body {
-  overflow: hidden;
-}
-
-html.mm-background .mm-page {
-  background: inherit;
-}
-
-#mm-blocker {
-  background: rgba(3, 2, 1, 0);
-  display: none;
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 2;
-}
-
-html.mm-blocking #mm-blocker {
-  display: block;
-}
-
-.mm-menu.mm-offcanvas {
-  z-index: 0;
-  display: none;
-  position: fixed;
-  width: 80%;
-  min-width: 140px;
-  max-width: 440px;
-}
-
-.mm-menu.mm-offcanvas.mm-current {
-  display: block;
-}
-
-html.mm-opening .mm-slideout {
-  -webkit-transform: translate3d(80%, 0, 0);
-  transform: translate3d(80%, 0, 0);
-}
-
-@media all and (max-width: 175px) {
-  html.mm-opening .mm-slideout {
-    -webkit-transform: translate3d(140px, 0, 0);
-    transform: translate3d(140px, 0, 0);
-  }
-}
-@media all and (min-width: 550px) {
-  html.mm-opening .mm-slideout {
-    -webkit-transform: translate3d(440px, 0, 0);
-    transform: translate3d(440px, 0, 0);
-  }
-}
-.mm-navbar-bottom, .mm-navbar-top ~ .mm-navbar-top {
-  border-bottom: none;
-}
-
-.mm-menu > .mm-navbar {
-  background: inherit;
-  padding: 0;
-  z-index: 3;
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-}
-
-.mm-navbar-bottom {
-  border-top-width: 1px;
-  border-top-style: solid;
-  top: auto;
-  bottom: 0;
-}
-
-.mm-navbar-bottom ~ .mm-navbar-bottom {
-  border-top: none;
-}
-
-.mm-navbar.mm-hasbtns {
-  padding: 0 40px;
-}
-
-.mm-navbar[class*=mm-navbar-content-] > * {
-  box-sizing: border-box;
-  display: block;
-  float: left;
-}
-
-.mm-navbar .mm-breadcrumbs {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  -webkit-overflow-scrolling: touch;
-  overflow-x: auto;
-  text-align: left;
-  padding: 0 0 0 17px;
-}
-
-.mm-navbar .mm-breadcrumbs > * {
-  display: inline-block;
-  padding: 10px 3px;
-}
-
-.mm-navbar .mm-breadcrumbs > a {
-  text-decoration: underline;
-}
-
-.mm-navbar.mm-hasbtns .mm-breadcrumbs {
-  margin-left: -40px;
-}
-
-.mm-navbar.mm-hasbtns .mm-btn:not(.mm-hidden) + .mm-breadcrumbs {
-  margin-left: 0;
-  padding-left: 0;
-}
-
-.mm-navbar-top-1 {
-  top: 0;
-}
-
-.mm-hasnavbar-top-1 .mm-panels, .mm-navbar-top-2 {
-  top: 40px;
-}
-
-.mm-hasnavbar-top-2 .mm-panels, .mm-navbar-top-3 {
-  top: 80px;
-}
-
-.mm-hasnavbar-top-3 .mm-panels, .mm-navbar-top-4 {
-  top: 120px;
-}
-
-.mm-hasnavbar-top-4 .mm-panels {
-  top: 160px;
-}
-
-.mm-navbar-bottom-1 {
-  bottom: 0;
-}
-
-.mm-hasnavbar-bottom-1 .mm-panels, .mm-navbar-bottom-2 {
-  bottom: 40px;
-}
-
-.mm-hasnavbar-bottom-2 .mm-panels, .mm-navbar-bottom-3 {
-  bottom: 80px;
-}
-
-.mm-hasnavbar-bottom-3 .mm-panels, .mm-navbar-bottom-4 {
-  bottom: 120px;
-}
-
-.mm-hasnavbar-bottom-4 .mm-panels {
-  bottom: 160px;
-}
-
-.mm-navbar-size-2 {
-  height: 80px;
-}
-
-.mm-navbar-size-3 {
-  height: 120px;
-}
-
-.mm-navbar-size-4 {
-  height: 160px;
-}
-
-.mm-navbar-content-2 > * {
-  width: 50%;
-}
-
-.mm-navbar-content-3 > * {
-  width: 33.33%;
-}
-
-.mm-navbar-content-4 > * {
-  width: 25%;
-}
-
-.mm-navbar-content-5 > * {
-  width: 20%;
-}
-
-.mm-navbar-content-6 > * {
-  width: 16.67%;
-}
-
-.mm-menu .mm-navbar a, .mm-menu .mm-navbar > * {
-  color: #fff;
-  font-size: 14px;
-}
-
-.mm-menu {
-  color: #fff;
-  background: #151515;
-}
-.mm-menu > .mm-navbar {
-  background: #333;
-}
-
-.mm-panel {
-  font-size: 12px;
-}
-
-#mm-blocker {
-  z-index: 2002;
-}
-
-.mm-panel h1 {
-  margin-top: 0;
-  color: rgb(36, 94, 131);
-  font-size: 14px;
-}
-
-.mm-menu .mm-listview > li .mm-next,
-.mm-menu .mm-listview > li .mm-next:before, .mm-menu .mm-listview > li:after,
-.mm-menu .mm-listview > li .mm-arrow:after,
-.mm-menu .mm-listview > li .mm-next:after {
-  border-color: #fff;
-}
-
-.mm-menu .mm-btn:after,
-.mm-menu .mm-btn:before {
-  border-color: #fff;
-}
-
-/* Needed to override mmenu style */
-html.mm-background .BookReader {
-  background-color: black;
-}
-
-.BRmobileMenu button {
-  -webkit-appearance: initial;
-}
-.BRmobileMenu .BRaction {
-  display: block;
-  width: 100%;
-}
-.BRmobileMenu div.share-social button {
-  padding: 0 5px;
-  height: 40px;
-  text-align: left;
-}
-.BRmobileMenu a {
-  color: inherit;
-}
-
-.BRtoolbarMobileTitle {
-  overflow: hidden;
-  width: 100%;
-  white-space: nowrap;
-  text-align: center;
-  font-size: 14px;
-  line-height: 40px;
-  display: block;
-  margin-right: 10px;
-}
-
-.BRmobileHamburgerWrapper {
-  display: block;
-  padding: 0 30px 0 50px;
-}
-
-.BRmobileHamburger {
-  background: transparent url("icons/hamburger.svg") 50% 50% no-repeat;
-  display: block;
-  width: 40px;
-  height: 40px;
-  position: absolute;
-  top: 0;
-  left: 10px;
-  border: none;
-  outline: none;
-}
-
-.DrawerIconWrapper {
-  display: block;
-  float: left;
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  text-align: center;
-  position: relative;
-}
-
-.DrawerIcon {
-  height: 18px;
-  width: auto;
-  position: absolute;
-  left: 0;
-  top: 1px;
-}
-
-.DrawerSettingsTitle {
-  color: #fff;
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.DrawerSettingsLayoutWrapper {
-  text-align: center;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
-.DrawerLayoutButton {
-  border: none;
-  background: none;
-  color: #fff;
-  line-height: 18px;
-}
-
-.DrawerLayoutButton:active {
-  color: grey;
-}
-
-.BRmobileShare div.share-title {
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 1.5;
-}
-.BRmobileShare div.share-social {
-  margin: 10px 0 20px 0;
-}
-.BRmobileShare p {
-  font-weight: bold;
-}
-.BRmobileShare fieldset {
-  padding: 0;
-  border: 0;
-  margin-bottom: 30px;
-}
-.BRmobileShare fieldset label {
-  display: block;
-}
-.BRmobileShare fieldset input[type=text] {
-  width: 95%;
-}
-.BRmobileShare button.share-finished {
-  display: none;
-}
-.BRmobileShare div.share-embed {
-  border: 1px solid #ccc;
-  padding: 0 10px;
-}
-.BRmobileShare .open-to-this-page {
-  display: block;
-  margin: 10px 0;
-}
-
-.BRmobileHamburgerWrapper {
-  display: none;
-}
-
-.BRmobileMenu {
-  display: none;
-}
-
-.BRtoolbar.responsive {
-  display: none;
-}
-
-/* Mobile Only */
-@media (max-width: 800px) {
-  .BRbodyMobileNavEnabled .BRtoolbar.responsive,
-.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive {
-    display: block;
-    height: 40px;
-    box-sizing: border-box;
-    width: 100%;
-    color: #fff;
-    background: #333;
-  }
-  .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRtoolbarbuttons,
-.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRtoolbarbuttons {
-    display: none;
-  }
-  .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRmobileHamburgerWrapper,
-.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRmobileHamburgerWrapper {
-    display: block;
-  }
-  .BRbodyMobileNavEnabled .BRtoolbar.responsive .BRmobileMenu,
-.BRbodyMobileNavEnabledFullscreen.BRfullscreenActive .BRtoolbar.responsive .BRmobileMenu {
-    display: block;
-  }
-}
-.BRcheckbox-label-filters {
-  position: relative;
-  bottom: 2px;
-}
-
-/* Desktop Only */
-@media (min-width: 801px) {
-  .BRtoolbar.responsive {
-    display: block;
-  }
-}
-li.BRtable-contents-el {
-  line-height: 150%;
-  padding: 10px 10px 10px 20px;
-  overflow: hidden;
-  color: #fff;
-}
-li.BRtable-contents-el.chapter-clickable {
-  font-weight: normal;
-}
-li.BRtable-contents-el.current-chapter {
-  background-color: lightblue;
-}
-li.BRtable-contents-el > span {
-  display: inline;
-  padding: 0;
-  white-space: normal;
-}
-li.BRtable-contents-el .BRTOCElementPage {
-  font-size: 0.85em;
-  opacity: 0.8;
-}
-
 /****************** Excerpt from jquery-ui *********************/
 .ui-helper-hidden {
   display: none;
@@ -2585,7 +1795,7 @@ li.BRtable-contents-el .BRTOCElementPage {
 }
 
 .icon-fullscreen-exit {
-  background-image: url("icons/fullscreen-exit.svg");
+  background-image: url("icons/fullscreen_exit.svg");
 }
 
 .icon-thumb {
@@ -2672,7 +1882,7 @@ li.BRtable-contents-el .BRTOCElementPage {
   width: 100%;
   /* BookReader defaults overrides */
 }
-.BRcontrols .tooltip {
+.BRcontrols .BRtooltip {
   display: none;
   position: absolute;
   width: auto;
@@ -2685,8 +1895,9 @@ li.BRtable-contents-el .BRTOCElementPage {
   color: #fff;
   border-radius: 3px;
   background: #333;
+  pointer-events: none;
 }
-.BRcontrols .full .tooltip {
+.BRcontrols .full .BRtooltip {
   left: auto;
   right: 0;
   transform: translateX(0);
@@ -2892,35 +2103,57 @@ li.BRtable-contents-el .BRTOCElementPage {
   background-color: #ccc;
 }
 
-.textSelectionSVG {
-  pointer-events: none;
-}
-.textSelectionSVG .BRwordElement {
-  pointer-events: all;
-}
-.textSelectionSVG.selectingSVG {
-  pointer-events: auto;
-  cursor: text;
-}
-.textSelectionSVG .BRwordElement::selection {
-  background: hsla(210deg, 74%, 62%, 0.4);
-}
-.textSelectionSVG .BRwordElement::-moz-selection {
-  background: hsla(210deg, 74%, 62%, 0.4);
+.BRtextLayer {
+  z-index: 2;
+  position: absolute;
+  top: 0;
+  left: 0;
   color: transparent;
-}
-.textSelectionSVG .BRparagElement {
-  fill: transparent;
+  transform-origin: 0 0;
+  pointer-events: none;
   cursor: text;
-  white-space: pre;
-  font-family: Georgia, serif;
 }
 
-.BRsmooth-zooming .textSelectionSVG, .BRscrolling-active .textSelectionSVG {
+.BRparagraphElement {
+  margin: 0;
+  cursor: text;
+  font-family: Georgia, serif;
+  line-height: 0;
+}
+
+.BRlineElement {
+  pointer-events: all;
+  white-space: nowrap;
+  display: inline-block;
+}
+.BRtextLayer[dir=ltr] .BRlineElement {
+  margin-right: 100%;
+}
+.BRtextLayer[dir=rtl] .BRlineElement {
+  margin-left: 100%;
+}
+
+.BRwordElement::selection, .BRspace::selection, .BRparagraphElement::selection, .BRparagraphElement br::selection {
+  background: hsla(210, 74%, 62%, 0.4);
+}
+.BRwordElement::-moz-selection, .BRspace::-moz-selection, .BRparagraphElement::-moz-selection, .BRparagraphElement br::-moz-selection {
+  background: hsla(210, 74%, 62%, 0.4);
+  color: transparent;
+}
+
+.BRparagraphElement br {
+  visibility: hidden;
+}
+
+.BRwordElement--hyphen::after {
+  content: "-";
+}
+
+.BRsmooth-zooming .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer, .BRscrolling-active .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer {
   display: none;
 }
 
-.BRmode1up .BRpagecontainer:not(.BRpage-visible) .textSelectionSVG {
+.BRmode1up .BRpagecontainer:not(.BRpage-visible) .BRtextLayer {
   display: none;
 }
 
@@ -2928,6 +2161,32 @@ li.BRtable-contents-el .BRTOCElementPage {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
+}
+
+.BRwordElement[_istranslated="1"], .BRwordElement[_msttexthash], .BRspace[_istranslated="1"], .BRspace[_msttexthash] {
+  background-color: #e4dccd;
+  color: black;
+  letter-spacing: unset !important;
+  background: #ccbfa7;
+}
+
+.BRlineElement font[_mstmutation="1"] {
+  background: #ccbfa7;
+}
+
+.BRlineElement:has([_istranslated="1"], [_msttexthash]) {
+  background-color: #e4dccd;
+  color: black;
+  text-align: justify;
+  width: inherit;
+}
+.BRlineElement:has([_istranslated="1"], [_msttexthash]):not(:nth-last-child(2)) {
+  text-align-last: justify;
+}
+
+.BRlineElement[_msttexthash] {
+  background: #ccbfa7;
+  word-spacing: unset !important;
 }
 
 /**
@@ -2953,7 +2212,7 @@ modal-manager[mode=closed] {
   opacity: 0;
 }
 
-.BRtwopageview .BRpagecontainer[data-side=L] .bookmark-button {
+.BRmode2up .BRpagecontainer[data-side=L] .bookmark-button {
   right: auto;
   left: 0;
 }

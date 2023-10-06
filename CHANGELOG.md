@@ -1,3 +1,87 @@
+# 5.0.0-71
+- Dev: update jest monorepo @renovate
+- Fix: Share & Mutliple View menu panel refactor @iisa
+
+# 5.0.0-70
+- Feature: Remember ReadAloud voice selection @sbwhitt
+- Fix: Support page numbers that require url encoding @cdrini
+
+# 5.0.0-69
+- Fix: Handle ppi incorrectly set to one @cdrini
+
+# 5.0.0-68
+- Fix: 1up zoom wrong on start/entering full screen @cdrini
+- Dev: BREAKING: delete `plugin.mobile_nav.js` no longer used @cdrini
+- Dev: Move page 1 label correction logic to BookReaderJSIA @cdrini
+
+# 5.0.0-67
+- Feature: Re-enable chapters plugin + migrate off mmenu @cdrini
+- Fix: Disable tooltips on touchscreens + fix on IA @cdrini
+- Dev: Remove core-js update block; issue resolved in core-js @cdrini
+
+# 5.0.0-66
+- Fix: Pinch zooming on iPad/iPhone, Samsung Internet @cdrini
+
+# 5.0.0-65
+- Dev: Remove Debug console dev helper @cdrini
+- Dev: Fix deno esm.sh esbuild erroring @cdrini
+- Dev: Update test/build deps @cdrini
+
+# 5.0.0-64
+- Dev: update dependencies @renovate
+- Dev: update build step @cdrini
+- Fix: Search inside option for {{{/}}} + http support @cdrini
+
+# 5.0.0-63
+Fix: Don't limit autoFit zoom to real world size @cdrini
+Dev: Update test deps @cdrini
+
+# 5.0.0-62
+- Fix: Make text selection work in Safari 15.4+ @cdrini
+- Fix: Rewrite/improvements to text selection UX @cdrini
+    - Switches from SVG text layer to HTML text layer
+
+# 5.0.0-61
+- Fix: Mode2up preview pages hanging on first click @cdrini
+- Dev: Add analytics event for text layer page selection @cdrini
+
+# 5.0.0-60
+- Fix: Update modal manager to fix duplicate definitions warnings on IA @cdrini
+- Fix: Common Sentry error `.spread` undefined @cdrini
+- Fix: entering page appearing early in flip anim @cdrini
+- Fix: preview pages not working in 1up @cdrini
+- Dev: Make serve-dev not do full production babeling (This makes it waaaay easier/faster to debug things like promises) @cdrini
+- Dev: Log an error if search inside fails for sentry @cdrini
+- Dev: Make dev server support CORS to allow testing via ngrok @cdrini
+- Refactor: Rm redundant archive_analytics checks @cdrini
+- Refactor: Dissolve a-search-result.js component @cdrini
+
+# 5.0.0-59
+- Rewrite 2up view to use css transforms and lit @cdrini
+    - Pretty substantial change. Lots of breaking changes to public methods.
+
+# 5.0.0-58
+- Fix BookReader sometimes failing to load when starting in Mode1Up @cdrini
+- Update testing dependencies @cdrini
+
+# 5.0.0-57
+- Fix - do not show Download pane when there aren't any available @iisa
+
+# 5.0.0-56
+- Fix DOMException in sandboxed iframe in chrome @cdrini
+
+# 5.0.0-55
+- Fix BookReader going to 1up in fullscreen on desktop @mheiman
+- Support BookReader running in sandboxed (cookie-less) iframe @cdrini
+- Update IA dependencies to avoid duplicate dependencies @cdrini
+
+# 5.0.0-54
+- Dev: Dispatch custom event from bookreader for ia-book-actions @nsharma123
+
+# 5.0.0-53
+- Dev: update icons & lit versions to help a.o build @iisa
+
+# 5.0.0-52
 # 5.0.0-51
 - Fix: Bookmark with subfiles was broken @nsharma123
 - Feature: Default 1up mode and options.defaults mode override exiting mode @nsharma123

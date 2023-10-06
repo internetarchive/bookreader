@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import '@internetarchive/icon-share/icon-share';
-import '@internetarchive/ia-sharing-options';
+import { iauxShareIcon } from '@internetarchive/ia-item-navigator/dist/src/menus/share-panel';
+import '@internetarchive/ia-item-navigator/dist/src/menus/share-panel';
 
 export default class SharingProvider {
   constructor({
@@ -12,16 +12,16 @@ export default class SharingProvider {
     const creatorToUse = Array.isArray(creator) ? creator[0] : creator;
     const subPrefix = bookreader.options.subPrefix || '';
     const label = `Share this book`;
-    this.icon = html`<ia-icon-share style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-share>`;
+    this.icon = html`${iauxShareIcon}`;
     this.label = label;
     this.id = 'share';
-    this.component = html`<ia-sharing-options
+    this.component = html`<iaux-in-share-panel
       .identifier=${identifier}
       .type=${`book`}
       .creator=${creatorToUse}
       .description=${title}
       .baseHost=${baseHost}
       .fileSubPrefix=${subPrefix}
-    ></ia-sharing-options>`;
+    ></iaux-in-share-panel>`;
   }
 }

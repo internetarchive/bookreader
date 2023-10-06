@@ -1,3 +1,3 @@
-<svg width="21" height="19" xmlns="http://www.w3.org/2000/svg" aria-labelledby="reviewTitleID reviewDescID"><g fill="none" fill-rule="evenodd"><path stroke="#fff" stroke-width="2" stroke-linejoin="round" d="M14.367 16.667h5.555V3.333H5.478"/><path fill="#fff" d="M5.478 0v6.667L1.033 3.333z"/><text font-family="HelveticaNeue, Helvetica Neue, sans-serif" font-size="10" fill="#fff" transform="translate(-.078)">
+<svg xmlns="http://www.w3.org/2000/svg" width="21" height="19" aria-labelledby="reviewTitleID reviewDescID"><g fill="none" fill-rule="evenodd"><path stroke="#fff" stroke-linejoin="round" stroke-width="2" d="M14.367 16.667h5.555V3.333H5.478"/><path fill="#fff" d="M5.478 0v6.667L1.033 3.333z"/><text fill="#fff" font-family="HelveticaNeue, Helvetica Neue, sans-serif" font-size="10" transform="translate(-.078)">
           <tspan x="0" y="17.333">10</tspan>
         </text></g></svg>

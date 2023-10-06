@@ -7,7 +7,6 @@ $brFontFamily: "Helvetica Neue", Arial, Verdana, sans-serif;
 $brColorThemeblue: #0074D1;
 $brColorThemeBlue2: #4990E2;
 $brColorThemeBlue3: rgb(74,144,226);
-$brColorThemeBlueDarker: rgb(36,94,131);
 $brColorDarkGreyBg: #333;
 $brColorMainBg: black;
 
@@ -44,13 +43,11 @@ $mediumBlue: #428bca;
 $lightBlue: #adaedc;
 $controlsText: $white;
 $controlsBG: $gray20;
-$iconStroke: $white;
 $tooltipBG: $gray20;
 $activeButtonBG: $white;
 $controlsBorder: $gray13;
 $trackColor: $gray40;
 $trackFillColor: $gray80;
-$mobileMenuBG: #151515;
 
 $tooltipBG: $gray20;
 $tooltipText: $white;
@@ -70,7 +67,7 @@ $searchResultBG: $darkBlue;
 }
 
 // These are the main root elements in BookReader
-$brScope: ".BookReader, .BRmobileMenu, .BRfloat";
+$brScope: ".BookReader, .BRfloat";
 
 @import 'colorbox';
 @import 'BRmain';
@@ -80,7 +77,6 @@ $brScope: ".BookReader, .BRmobileMenu, .BRfloat";
 @import 'BRnav';
 @import 'BRtoolbar';
 @import 'BRsearch';
-@import 'MobileNav';
 @import 'BRvendor';
 @import 'icons';
 @import 'controls';

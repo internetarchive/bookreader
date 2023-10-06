@@ -8,7 +8,7 @@ import DownloadProvider from './downloads/downloads-provider.js';
 import VisualAdjustmentProvider from './visual-adjustments/visual-adjustments-provider.js';
 import BookmarksProvider from './bookmarks/bookmarks-provider.js';
 import SharingProvider from './sharing.js';
-import VolumesProvider from './volumes/volumes-provider.js';
+import ViewableFilesProvider from './viewable-files.js';
 import iaLogo from './assets/ia-logo.js';
 
 const events = {
@@ -164,7 +164,6 @@ export class BookNavigator extends LitElement {
    */
   initializeBookSubmenus() {
     const providers = {
-      downloads: new DownloadProvider(this.baseProviderConfig),
       share: new SharingProvider(this.baseProviderConfig),
       visualAdjustments: new VisualAdjustmentProvider({
         ...this.baseProviderConfig,
@@ -174,6 +173,10 @@ export class BookNavigator extends LitElement {
         },
       }),
     };
+
+    if (this.shouldShowDownloadsMenu()) {
+      providers.downloads = new DownloadProvider(this.baseProviderConfig);
+    }
 
     if (this.bookreader.options.enableSearch) {
       providers.search = new SearchProvider({
@@ -218,7 +221,7 @@ export class BookNavigator extends LitElement {
 
     // add shortcut for volumes if multipleBooksList exists
     if (this.bookreader.options.enableMultipleBooks) {
-      providers.volumes = new VolumesProvider({
+      providers.volumes = new ViewableFilesProvider({
         ...this.baseProviderConfig,
         onProviderChange: (brInstance = null, volumesUpdates = {}) => {
           if (brInstance) {
@@ -236,7 +239,7 @@ export class BookNavigator extends LitElement {
       });
     }
 
-    this.menuProviders = providers;
+    Object.assign(this.menuProviders, providers);
     this.addMenuShortcut('search');
     this.addMenuShortcut('volumes');
     this.updateMenuContents();
@@ -303,9 +306,9 @@ export class BookNavigator extends LitElement {
    */
   updateMenuContents() {
     const {
-      search, downloads, visualAdjustments, share, bookmarks, volumes
+      search, downloads, visualAdjustments, share, bookmarks, volumes, chapters
     } = this.menuProviders;
-    const availableMenus = [volumes, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
+    const availableMenus = [volumes, chapters, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
 
     if (this.shouldShowDownloadsMenu()) {
       downloads?.update(this.downloadableTypes);
@@ -325,6 +328,7 @@ export class BookNavigator extends LitElement {
    * @returns {bool}
    */
   shouldShowDownloadsMenu() {
+    if (!this.downloadableTypes.length) { return false; }
     if (this.bookIsRestricted === false) { return true; }
     if (this.isAdmin) { return true; }
     const { user_loan_record = {} } = this.lendingStatus;
@@ -406,6 +410,7 @@ export class BookNavigator extends LitElement {
   bindEventListeners() {
     window.addEventListener('BookReader:PostInit', (e) => {
       this.bookreader = e.detail.props;
+      this.bookreader.shell = this;
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
       this.emitLoadingStatusUpdate(true);
@@ -448,13 +453,11 @@ export class BookNavigator extends LitElement {
 
   /** Display an element's context menu */
   manageContextMenuVisibility(e) {
-    if (window.archive_analytics) {
-      window.archive_analytics?.send_event(
-        'BookReader',
-        `contextmenu-${this.bookIsRestricted ? 'restricted' : 'unrestricted'}`,
-        e.target?.classList?.value
-      );
-    }
+    window.archive_analytics?.send_event(
+      'BookReader',
+      `contextmenu-${this.bookIsRestricted ? 'restricted' : 'unrestricted'}`,
+      e.target?.classList?.value
+    );
     if (!this.bookIsRestricted) {
       return;
     }

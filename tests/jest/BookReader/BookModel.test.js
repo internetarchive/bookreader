@@ -24,8 +24,8 @@ const SAMPLE_DATA = [
 
 describe('getMedianPageSizeInches', () => {
   test('handles single page data', () => {
-    const bm = new BookModel({ data: SAMPLE_DATA.slice(0, 1), options: {ppi: 1} });
-    expect(bm.getMedianPageSizeInches()).toEqual({ width: 123, height: 123 });
+    const bm = new BookModel({ data: SAMPLE_DATA.slice(0, 1), options: {ppi: 10} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 12.3, height: 12.3 });
   });
 
   test('handles odd pages data', () => {
@@ -39,8 +39,8 @@ describe('getMedianPageSizeInches', () => {
     Object.assign(data[0][0], sizes[0]);
     Object.assign(data[1][0], sizes[1]);
     Object.assign(data[1][1], sizes[2]);
-    const bm = new BookModel({ data, options: {ppi: 1} });
-    expect(bm.getMedianPageSizeInches()).toEqual({ width: 200, height: 2200 });
+    const bm = new BookModel({ data, options: {ppi: 10} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 20, height: 220 });
   });
 
 
@@ -56,8 +56,23 @@ describe('getMedianPageSizeInches', () => {
     Object.assign(data[1][0], sizes[1]);
     Object.assign(data[1][1], sizes[2]);
     Object.assign(data[2][0], sizes[3]);
-    const bm = new BookModel({ data, options: {ppi: 1} });
-    expect(bm.getMedianPageSizeInches()).toEqual({ width: 300, height: 2300 });
+    const bm = new BookModel({ data, options: {ppi: 10} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 30, height: 230 });
+  });
+
+  test('does not lexicographic sort for median', () => {
+    const sizes = [
+      {width: 100, height: 100},
+      {width: 20, height: 20},
+      {width: 30, height: 30},
+    ];
+    const data = deepCopy(SAMPLE_DATA);
+    delete data[2];
+    Object.assign(data[0][0], sizes[0]);
+    Object.assign(data[1][0], sizes[1]);
+    Object.assign(data[1][1], sizes[2]);
+    const bm = new BookModel({ data, options: {ppi: 10} });
+    expect(bm.getMedianPageSizeInches()).toEqual({ width: 3, height: 3 });
   });
 
   test('caches result', () => {
@@ -308,6 +323,31 @@ describe('PageModel', () => {
 
     test('at start is undefined', () => {
       expect(bm.getPage(0).findPrev({ combineConsecutiveUnviewables: true })).toBeUndefined();
+    });
+  });
+
+  describe('findLeft/findRight', () => {
+    const data = deepCopy(SAMPLE_DATA);
+
+    test('Calls findNext/findPrev based on progression', () => {
+      const bm = new BookModel({ data });
+      const page = bm.getPage(0);
+      const findNextStub = sinon.stub(page, 'findNext');
+      const findPrevStub = sinon.stub(page, 'findPrev');
+      bm.pageProgression = 'lr';
+      page.findLeft();
+      expect(findPrevStub.callCount).toBe(1);
+      expect(findNextStub.callCount).toBe(0);
+      page.findRight();
+      expect(findPrevStub.callCount).toBe(1);
+      expect(findNextStub.callCount).toBe(1);
+      bm.pageProgression = 'rl';
+      page.findLeft();
+      expect(findPrevStub.callCount).toBe(1);
+      expect(findNextStub.callCount).toBe(2);
+      page.findRight();
+      expect(findPrevStub.callCount).toBe(2);
+      expect(findNextStub.callCount).toBe(2);
     });
   });
 

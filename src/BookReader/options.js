@@ -31,7 +31,7 @@ export const DEFAULT_OPTIONS = {
   thumbMaxZoomColumns: 8,
 
   /** @type {number | 'fast' | 'slow'} speed for flip animation */
-  flipSpeed: 'fast',
+  flipSpeed: 400,
 
   showToolbar: true,
   showNavbar: true,
@@ -300,7 +300,13 @@ export const DEFAULT_OPTIONS = {
   useSrcSet: false,
 };
 
-/** @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues */
+/**
+ * @typedef {'width' | 'height' | 'auto' | 'none'} AutoFitValues
+ * - width: fill the width of the container
+ * - height: fill the height of the container
+ * - auto: fill the width or height of the container, whichever is smaller
+ * - none: do not autofit
+ **/
 
 /**
  * @typedef {object} ReductionFactor
@@ -328,3 +334,9 @@ export const DEFAULT_OPTIONS = {
 
 /** @typedef {typeof DEFAULT_OPTIONS} BookReaderOptions */
 
+/**
+ * Thrown when an error occurs while parsing options.
+ * Potentially recoverable and non-halting.
+ */
+export class OptionsParseError extends Error {
+}

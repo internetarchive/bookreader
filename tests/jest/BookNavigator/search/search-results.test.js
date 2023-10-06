@@ -5,6 +5,7 @@ import {
 } from '@open-wc/testing-helpers';
 import sinon from 'sinon';
 import { IABookSearchResults } from '@/src/BookNavigator/search/search-results.js';
+import { marshallSearchResults } from '@/src/plugins/search/utils.js';
 
 const container = (results = [], query = '') => (
   html`<ia-book-search-results .results=${results} .query=${query}></ia-book-search-results>`
@@ -43,8 +44,10 @@ const results = [{
     l: 432,
     page_height: 5357,
     page: 86,
-  }],
+  }]
 }];
+
+marshallSearchResults({ matches: results }, () => '', '{{{', '}}}');
 
 const resultWithScript = [{
   text: `foo bar <script>const msg = 'test' + ' failure'; document.write(msg);</script> {{{${searchQuery}}}} baz`,
@@ -64,6 +67,8 @@ const resultWithScript = [{
     page: 24,
   }],
 }];
+
+marshallSearchResults({ matches: resultWithScript }, () => '', '{{{', '}}}');
 
 describe('<ia-book-search-results>', () => {
   afterEach(() => {
@@ -109,7 +114,7 @@ describe('<ia-book-search-results>', () => {
 
     // Lit inserts HTML comments that inhibit searching for exact innerHTML matches.
     // So query the DOM for the match instead.
-    const match = el.querySelector('book-search-result mark');
+    const match = el.querySelector('mark');
     expect(match?.textContent).toEqual(searchQuery);
   });
 
@@ -118,7 +123,7 @@ describe('<ia-book-search-results>', () => {
     // A result whose text contains a <script> tag that will insert 'test failure' into the element if not sanitized
     const el = await fixture(container(resultWithScript));
 
-    const match = el.querySelector('book-search-result mark');
+    const match = el.querySelector('mark');
     expect(match?.textContent).toEqual(searchQuery);
     expect(el.innerHTML).not.toContain('test failure');
   });
@@ -182,7 +187,7 @@ describe('<ia-book-search-results>', () => {
     const el = await fixture(container(results));
 
     setTimeout(() => (
-      el.shadowRoot.querySelector('book-search-result').querySelector('li').click()
+      el.shadowRoot.querySelector('li').click()
     ));
     const response = await oneEvent(el, 'resultSelected');
 
@@ -193,7 +198,7 @@ describe('<ia-book-search-results>', () => {
     const el = await fixture(container(results));
 
     setTimeout(() => (
-      el.shadowRoot.querySelector('book-search-result').querySelector('li').click()
+      el.shadowRoot.querySelector('li').click()
     ));
     const response = await oneEvent(el, 'closeMenu');
 

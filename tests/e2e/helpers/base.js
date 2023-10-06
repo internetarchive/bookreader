@@ -53,14 +53,14 @@ export function runBaseTests (br) {
   test('nav menu displays properly', async t => {
     const { nav } = br;
 
-    await t.expect(nav.desktop.goLeft.visible).ok();
-    await t.expect(nav.desktop.goRight.visible).ok();
-    await t.expect(nav.desktop.mode1Up.visible).ok();
-    await t.expect(nav.desktop.mode2Up.visible).ok();
-    await t.expect(nav.desktop.modeThumb.visible).ok();
-    await t.expect(nav.desktop.zoomIn.visible).ok();
-    await t.expect(nav.desktop.zoomOut.visible).ok();
-    await t.expect(nav.desktop.fullScreen.visible).ok();
+    await t.expect(nav.goLeft.visible).ok();
+    await t.expect(nav.goRight.visible).ok();
+    await t.expect(nav.mode1Up.visible).ok();
+    await t.expect(nav.mode2Up.visible).ok();
+    await t.expect(nav.modeThumb.visible).ok();
+    await t.expect(nav.zoomIn.visible).ok();
+    await t.expect(nav.zoomOut.visible).ok();
+    await t.expect(nav.fullScreen.visible).ok();
   });
 
   test("Canonical URL has no initial parameters", async t => {
@@ -87,7 +87,7 @@ export function runBaseTests (br) {
     const initialUrl = await getUrl();
 
     // Set Cookie by page navigation, wait for cookie
-    await t.click(nav.desktop.goNext);
+    await t.click(nav.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME);
 
     // reload canonical URL, wait for URL change
@@ -109,9 +109,9 @@ export function runBaseTests (br) {
     const { nav, BRcontainer} = br;
 
     // Go to next page, so we can go previous if at front cover
-    await t.click(nav.desktop.goNext);
+    await t.click(nav.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME);
-    await t.click(nav.desktop.goNext);
+    await t.click(nav.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME);
 
     const onLoadBrState = BRcontainer.child(0);
@@ -119,7 +119,7 @@ export function runBaseTests (br) {
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
-    await t.click(nav.desktop.goPrev);
+    await t.click(nav.goPrev);
     await t.wait(PAGE_FLIP_WAIT_TIME);
 
     const nextBrState = Selector('.BRcontainer').child(0);
@@ -144,7 +144,7 @@ export function runBaseTests (br) {
     // Note: this will fail on a R to L book if at front cover
     const { nav, BRcontainer} = br;
     // Flip away from cover
-    await t.click(nav.desktop.goNext);
+    await t.click(nav.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME);
 
     const onLoadBrState = BRcontainer.child(0);
@@ -152,7 +152,7 @@ export function runBaseTests (br) {
     const origImg1Src = await initialImages.nth(0).getAttribute('src');
     const origImg2Src = await initialImages.nth(-1).getAttribute('src');
 
-    await t.click(nav.desktop.goNext);
+    await t.click(nav.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME);
 
     const nextBrState = Selector('.BRcontainer').child(0);
@@ -173,27 +173,28 @@ export function runBaseTests (br) {
   test('Clicking `page flip buttons` updates location', async t => {
     const { nav } = br;
     // Page navigation creates params
-    await t.click(nav.desktop.goNext);
+    await t.click(nav.goNext);
     await t.expect(isPageInUrl()).eql(true);
     await t.expect(isModeInUrl('2up')).eql(true);
 
-    await t.click(nav.desktop.goPrev);
+    await t.click(nav.goPrev);
     await t.expect(isPageInUrl()).eql(true);
     await t.expect(isModeInUrl('2up')).eql(true);
   });
 
-  test('Clicking `2 page view` brings up 2 pages at a time', async t => {
+  test('Clicking `2 page view` brings up cur page + caching', async t => {
     const { nav } = br;
-    await t.click(nav.desktop.mode2Up);
-    await t.expect(Selector('.BRpagecontainer').count).eql(2);
+    await t.click(nav.mode2Up);
+    await t.expect(Selector('.BRpagecontainer.BRpage-visible').count).eql(1);
+    await t.expect(Selector('.BRpagecontainer').count).eql(3);
   });
 
   test('Clicking `1 page view` brings up 1 at a time', async t => {
     const { nav } = br;
-    await t.click(nav.desktop.mode1Up);
+    await t.click(nav.mode1Up);
 
     // Flip away from cover
-    await t.click(nav.desktop.goNext);
+    await t.click(nav.goNext);
     await t.wait(PAGE_FLIP_WAIT_TIME);
 
     // we usually pre-fetch the page in question & the 2 after it
@@ -202,46 +203,45 @@ export function runBaseTests (br) {
 
   test('Clicking `thumbnail view` brings up all of the page thumbnails', async t => {
     const { nav } = br;
-    await t.click(nav.desktop.modeThumb);
+    await t.click(nav.modeThumb);
     await t.expect(Selector('.BRpagecontainer').count).gte(3);
   });
 
   test('Clicking `zoom out` makes book smaller', async t => {
-    const { nav, BRcontainer } = br;
-    const book = BRcontainer.child(0);
+    const { nav } = br;
+    const page = Selector('.BRpagecontainer.BRpage-visible');
 
     await t.expect(br.BRcontainer.visible).ok();
-    await t.expect(book.visible).ok();
-    await t.expect(nav.desktop.zoomOut.visible).ok();
+    await t.expect(page.visible).ok();
+    await t.expect(nav.zoomOut.visible).ok();
 
-    const initialBookHeight = await book.getBoundingClientRectProperty('height');
-    const initialBookWidth = await book.getBoundingClientRectProperty('width');
+    const initialBookHeight = await page.getBoundingClientRectProperty('height');
+    const initialBookWidth = await page.getBoundingClientRectProperty('width');
 
-    await t.click(nav.desktop.zoomOut);
+    await t.click(nav.zoomOut);
 
-    const zoomOutBookHeight = await book.getBoundingClientRectProperty('height');
-    const zoomOutBookWidth = await book.getBoundingClientRectProperty('width');
+    const zoomOutBookHeight = await page.getBoundingClientRectProperty('height');
+    const zoomOutBookWidth = await page.getBoundingClientRectProperty('width');
 
-    await t.expect(zoomOutBookHeight).lte(initialBookHeight);
-    await t.expect(zoomOutBookWidth).lte(initialBookWidth);
+    await t.expect(zoomOutBookHeight).lt(initialBookHeight);
+    await t.expect(zoomOutBookWidth).lt(initialBookWidth);
   });
 
   test('Clicking `zoom in` makes book larger', async t => {
-    const { nav, BRcontainer } = br;
+    const { nav } = br;
+    const page = Selector('.BRpagecontainer.BRpage-visible');
 
-    const book = await BRcontainer.child(0);
+    await t.expect(br.BRcontainer.visible).ok();
+    await t.expect(page.visible).ok();
+    await t.expect(nav.zoomIn.visible).ok();
 
-    await t.expect(BRcontainer.visible).ok();
-    await t.expect(book.visible).ok();
-    await t.expect(nav.desktop.zoomIn.visible).ok();
+    const initialBookHeight = await page.getBoundingClientRectProperty('height');
+    const initialBookWidth = await page.getBoundingClientRectProperty('width');
 
-    const initialBookHeight = await book.getBoundingClientRectProperty('height');
-    const initialBookWidth = await book.getBoundingClientRectProperty('width');
+    await t.click(nav.zoomIn);
 
-    await t.click(nav.desktop.zoomIn);
-
-    const zoomInBookHeight = await book.getBoundingClientRectProperty('height');
-    const zoomIntBookWidth = await book.getBoundingClientRectProperty('width');
+    const zoomInBookHeight = await page.getBoundingClientRectProperty('height');
+    const zoomIntBookWidth = await page.getBoundingClientRectProperty('width');
 
     await t.expect(zoomInBookHeight).gt(initialBookHeight);
     await t.expect(zoomIntBookWidth).gt(initialBookWidth);
@@ -253,10 +253,10 @@ export function runBaseTests (br) {
 
     // initial in-page
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);
-    await t.click(nav.desktop.fullScreen);
+    await t.click(nav.fullScreen);
     // full screen
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).eql(windowWidth);
-    await t.click(nav.desktop.fullScreen);
+    await t.click(nav.fullScreen);
     // in-page
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);
   });

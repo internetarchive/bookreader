@@ -9,7 +9,7 @@ import DownloadsProvider from '@/src/BookNavigator/downloads/downloads-provider.
 import SearchProvider from '@/src/BookNavigator/search/search-provider.js';
 import SharingProvider from '@/src/BookNavigator/sharing.js';
 import VisualAdjustmentsProvider from '@/src/BookNavigator/visual-adjustments/visual-adjustments-provider.js';
-import VolumesProvider from '@/src/BookNavigator/volumes/volumes-provider.js';
+import ViewableFilesProvider from '@/src/BookNavigator/viewable-files.js';
 import { ModalManager } from '@internetarchive/modal-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import '@/src/BookNavigator/book-navigator.js';
@@ -148,6 +148,9 @@ describe('<book-navigator>', () => {
         el.bookreader = brStub;
         await el.elementUpdated;
 
+        el.downloadableTypes = ['foo/bar'];
+        await el.elementUpdated;
+
         el.initializeBookSubmenus();
         await el.elementUpdated;
         const defaultMenus = Object.keys(el.menuProviders);
@@ -211,7 +214,7 @@ describe('<book-navigator>', () => {
           await el.elementUpdated;
 
           expect(el.menuProviders.volumes).toBeDefined();
-          expect(el.menuProviders.volumes).toBeInstanceOf(VolumesProvider);
+          expect(el.menuProviders.volumes).toBeInstanceOf(ViewableFilesProvider);
 
           // also adds a menu shortcut
           expect(el.menuShortcuts.find(m => m.id === 'volumes')).toBeDefined();
@@ -228,6 +231,27 @@ describe('<book-navigator>', () => {
         expect(baseConfigKeys).toContain('signedIn');
         expect(baseConfigKeys).toContain('isAdmin');
         expect(baseConfigKeys).toContain('onProviderChange');
+      });
+
+      test('Downloads panel - does not show if no available `downloadableTypes`', async () => {
+        const el = fixtureSync(container());
+        const $brContainer = document.createElement('div');
+        const brStub = {
+          resize: sinon.fake(),
+          currentIndex: sinon.fake(),
+          jumpToIndex: sinon.fake(),
+          options: {},
+          refs: {
+            $brContainer
+          }
+        };
+        el.bookreader = brStub;
+        await el.elementUpdated;
+
+        el.initializeBookSubmenus();
+        await el.elementUpdated;
+        const defaultMenus = Object.keys(el.menuProviders);
+        expect(defaultMenus.find(menu => menu === 'downloads')).toBeUndefined;
       });
     });
 

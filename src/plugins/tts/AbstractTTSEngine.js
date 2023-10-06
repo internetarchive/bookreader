@@ -80,6 +80,7 @@ export default class AbstractTTSEngine {
    */
   start(leafIndex, numLeafs) {
     this.playing = true;
+    this.paused = false;
     this.opts.onLoadingStart();
 
     this._chunkIterator = new PageChunkIterator(numLeafs, leafIndex, {
@@ -95,6 +96,7 @@ export default class AbstractTTSEngine {
   stop() {
     if (this.activeSound) this.activeSound.stop();
     this.playing = false;
+    this.paused = true;
     this._chunkIterator = null;
     this.activeSound = null;
     this.events.trigger('stop');
@@ -142,6 +144,10 @@ export default class AbstractTTSEngine {
     // MS Edge fires voices changed randomly very often
     this.events.off('voiceschanged', this.updateBestVoice);
     this.voice = this.getVoices().find(voice => voice.voiceURI === voiceURI);
+    // if the current book has a language set, store the selected voice with the book language as a suffix
+    if (this.opts.bookLanguage) {
+      localStorage.setItem(`BRtts-voice-${this.opts.bookLanguage}`, this.voice.voiceURI);
+    }
     if (this.activeSound) this.activeSound.setVoice(this.voice);
   }
 
@@ -221,15 +227,30 @@ export default class AbstractTTSEngine {
     // user languages that match the book language
     const matchingUserLangs = userLanguages.filter(lang => lang.startsWith(bookLanguage));
 
-    // Try to find voices that intersect these two sets
-    return AbstractTTSEngine.getMatchingVoice(matchingUserLangs, bookLangVoices) ||
+    // First try to find the last chosen voice from localStorage for the current book language
+    return AbstractTTSEngine.getMatchingStoredVoice(bookLangVoices, bookLanguage)
+        // Try to find voices that intersect these two sets
+        || AbstractTTSEngine.getMatchingVoice(matchingUserLangs, bookLangVoices)
         // no user languages match the books; let's return the best voice for the book language
-        (bookLangVoices.find(v => v.default) || bookLangVoices[0])
+        || (bookLangVoices.find(v => v.default) || bookLangVoices[0])
         // No voices match the book language? let's find a voice in the user's language
         // and ignore book lang
         || AbstractTTSEngine.getMatchingVoice(userLanguages, voices)
         // C'mon! Ok, just read with whatever we got!
         || (voices.find(v => v.default) || voices[0]);
+  }
+
+  /**
+   * @private
+   * Get the voice last selected by the user for the book language from localStorage.
+   * Returns undefined if no voice is stored or found.
+   * @param {SpeechSynthesisVoice[]} voices  browser voices to choose from
+   * @param {ISO6391} bookLanguage  book language to look for
+   * @return {SpeechSynthesisVoice | undefined}
+   */
+  static getMatchingStoredVoice(voices, bookLanguage) {
+    const storedVoice = localStorage.getItem(`BRtts-voice-${bookLanguage}`);
+    return (storedVoice ? voices.find(v => v.voiceURI === storedVoice) : undefined);
   }
 
   /**

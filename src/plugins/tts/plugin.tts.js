@@ -195,7 +195,7 @@ BookReader.prototype.initNavbar = (function (super_) {
       $(`<li>
           <button class="BRicon read js-tooltip" title="${tooltips.readAloud}">
             <div class="icon icon-read-aloud"></div>
-            <span class="tooltip">${tooltips.readAloud}</span>
+            <span class="BRtooltip">${tooltips.readAloud}</span>
           </button>
         </li>`).insertBefore($el.find('.BRcontrols .BRicon.zoom_out').closest('li'));
     }
@@ -251,7 +251,7 @@ BookReader.prototype.ttsPlayPause = function() {
     this.ttsToggle();
   } else {
     this.ttsEngine.togglePlayPause();
-    this.ttsUpdateState(this.ttsEngine.paused);
+    this.ttsUpdateState();
   }
 };
 
@@ -286,27 +286,13 @@ BookReader.prototype.ttsSendChunkFinishedAnalyticsEvent = function(chunk) {
 /**
  * Flip the page if the provided leaf index is not visible
  * @param {Number} leafIndex
- * @return {PromiseLike<void>} resolves once the flip animation has completed
  */
-BookReader.prototype.ttsMaybeFlipToIndex = function (leafIndex) {
-  const in2PageMode = this.constMode2up == this.mode;
-  let resolve = null;
-  const promise = new Promise(res => resolve = res);
-
-  if (!in2PageMode) {
+BookReader.prototype.ttsMaybeFlipToIndex = async function (leafIndex) {
+  if (this.constMode2up != this.mode) {
     this.jumpToIndex(leafIndex);
-    resolve();
   } else {
-    const leafVisible = leafIndex == this.twoPage.currentIndexR || leafIndex == this.twoPage.currentIndexL;
-    if (leafVisible) {
-      resolve();
-    } else {
-      this.animationFinishedCallback = resolve;
-      this.jumpToIndex(leafIndex);
-    }
+    await this._modes.mode2Up.mode2UpLit.jumpToIndex(leafIndex);
   }
-
-  return promise;
 };
 
 /**
