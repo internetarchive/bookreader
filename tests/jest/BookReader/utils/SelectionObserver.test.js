@@ -40,4 +40,18 @@ describe("SelectionObserver", () => {
     observer._onSelectionChange();
     expect(handler.callCount).toBe(2);
   });
+
+  test('Only fires when selection started in selector', () => {
+    const handler = sinon.spy();
+    const observer = new SelectionObserver(".text-layer", handler);
+    const target = document.createElement("div");
+    target.classList.add("text-layer");
+
+    // stub window.getSelection
+    const getSelectionStub = sinon.stub(window, "getSelection");
+    getSelectionStub.returns({ toString: () => "test", anchorNode: document.body });
+    observer._onSelectionChange();
+    expect(handler.callCount).toBe(0);
+    expect(observer.selecting).toBe(false);
+  });
 });

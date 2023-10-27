@@ -30,8 +30,10 @@ export class SelectionObserver {
     const sel = window.getSelection();
 
     if (!this.selecting && sel.toString()) {
+      const target = $(sel.anchorNode).closest(this.selector)[0];
+      if (!target) return;
+      this.target = target;
       this.selecting = true;
-      this.target = $(sel.anchorNode).closest(this.selector)[0];
       this.handler('started', this.target);
     }
 
