@@ -31,7 +31,7 @@ jobs:
         path: 'node_modules'
         key: ${{ runner.os }}-node-16-${{ hashFiles('package*.json') }}
     - if: steps.cache.outputs.cache-hit != 'true'
-      run: npm install
+      run: npm install --no-audit
 
   build:
     needs: install
