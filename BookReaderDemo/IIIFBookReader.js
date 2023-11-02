@@ -95,7 +95,7 @@
 
         function load(config) {
 
-            endpointUrl = config.url,
+            let endpointUrl = config.url,
             sequenceId = config.sequenceId;
 
             jQuery.ajax({
