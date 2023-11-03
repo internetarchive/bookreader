@@ -1,3 +1,9 @@
+# 5.0.0-72
+- Fix: Play/pause button out of sync with ReadAloud @sbwhitt
+- Fix: BookReader not loading in sandboxed iframe @cdrini
+- Dev: Fix noisy sentry error firing on any selection @cdrini
+- Dev: Update to Node 20 @cdrini
+
 # 5.0.0-71
 - Dev: update jest monorepo @renovate
 - Fix: Share & Mutliple View menu panel refactor @iisa
