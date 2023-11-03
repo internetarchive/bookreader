@@ -64,3 +64,18 @@ function searchForISO6391(language, columnsToSearch) {
   }
   return null;
 }
+
+/**
+ * Checks whether the current browser supports localStorage or
+ * if the current context has access to it.
+ * @return {boolean}
+ */
+export function hasLocalStorage() {
+  try {
+    return !!window.localStorage;
+  } catch (e) {
+    // Will throw in sandboxed iframe
+    // DOMException: Window.localStorage getter: Forbidden in a sandboxed document without the 'allow-same-origin' flag.
+    return false;
+  }
+}

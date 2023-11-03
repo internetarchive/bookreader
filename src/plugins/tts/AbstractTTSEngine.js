@@ -1,4 +1,5 @@
 import PageChunkIterator from './PageChunkIterator.js';
+import { hasLocalStorage } from './utils.js';
 /** @typedef {import('./utils.js').ISO6391} ISO6391 */
 /** @typedef {import('./PageChunk.js')} PageChunk */
 
@@ -145,7 +146,7 @@ export default class AbstractTTSEngine {
     this.events.off('voiceschanged', this.updateBestVoice);
     this.voice = this.getVoices().find(voice => voice.voiceURI === voiceURI);
     // if the current book has a language set, store the selected voice with the book language as a suffix
-    if (this.opts.bookLanguage) {
+    if (this.opts.bookLanguage && hasLocalStorage()) {
       localStorage.setItem(`BRtts-voice-${this.opts.bookLanguage}`, this.voice.voiceURI);
     }
     if (this.activeSound) this.activeSound.setVoice(this.voice);
@@ -249,7 +250,7 @@ export default class AbstractTTSEngine {
    * @return {SpeechSynthesisVoice | undefined}
    */
   static getMatchingStoredVoice(voices, bookLanguage) {
-    const storedVoice = localStorage.getItem(`BRtts-voice-${bookLanguage}`);
+    const storedVoice = hasLocalStorage() && localStorage.getItem(`BRtts-voice-${bookLanguage}`);
     return (storedVoice ? voices.find(v => v.voiceURI === storedVoice) : undefined);
   }
 
