@@ -132,6 +132,19 @@
         }
       }
     }
+
+    .engine.selected {
+      font-weight: bold;
+      text-decoration: none;
+      pointer-events: none;
+    }
+
+    .engine:not(:last-child)::after {
+      content: "|";
+      text-decoration: none;
+      display: inline-block;
+      padding: 0 0.5ch;
+    }
   }
 
   .scrubber {
