@@ -300,7 +300,16 @@ export default class AbstractTTSEngine {
       // Chrome Android was returning voice languages like `en_US` instead of `en-US`
       const matchingVoices = voices.filter(v => v.lang.replace('_', '-').startsWith(lang));
       if (matchingVoices.length) {
-        return matchingVoices.find(v => v.default) || matchingVoices[0];
+        return (
+          // Prefer Microsoft 'Natural' voices
+          matchingVoices.find(v => v.voiceURI.match(/Microsoft.*\(Natural\)/g))
+          // Prefer Google voices
+          || matchingVoices.find(v => v.voiceURI.match(/Google/g))
+          // Prefer default if one is specified. This seems to be kind of random though,
+          // and is usually one of the lower quality voices.
+          || matchingVoices.find(v => v.default)
+          || matchingVoices[0]
+        );
       }
     }
   }
