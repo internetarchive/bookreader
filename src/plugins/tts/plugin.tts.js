@@ -130,7 +130,7 @@ BookReader.prototype.initNavbar = (function (super_) {
         url.searchParams.set('_forceTTSEngine', engine.constructor.name == 'FestivalTTSEngine' ? 'openai' : 'browser');
         return {
           selected: engine === this.ttsEngine,
-          name: engine.constructor.name == 'FestivalTTSEngine' ? 'OpenAI' : 'Browser',
+          name: engine instanceof FestivalTTSEngine ? 'OpenAI' : 'Browser',
           url,
         };
       });
