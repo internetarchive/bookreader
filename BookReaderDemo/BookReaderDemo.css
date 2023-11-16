@@ -32,7 +32,10 @@ ia-bookreader{
 }
 
 .BookReader {
+    --br-height: calc(100vh - 100px);
+    --new-height: calc(var(--br-height) - 20px); 
     height: var(--br-height);
     overflow: hidden;
     margin: 0 auto;
 }
+
