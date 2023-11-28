@@ -180,6 +180,9 @@ export const DEFAULT_OPTIONS = {
    */
   data: [],
 
+  /** @type {import('../plugins/plugin.chapters.js').TocEntry[]} */
+  table_of_contents: null,
+
   /** Advanced methods for page rendering */
   /** @type {() => number} */
   getNumLeafs: null,

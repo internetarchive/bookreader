@@ -14,8 +14,6 @@ import '@internetarchive/icon-toc/icon-toc';
 jQuery.extend(BookReader.defaultOptions, {
   olHost: 'https://openlibrary.org',
   enableChaptersPlugin: true,
-  /** @type {TocEntry[]} */
-  table_of_contents: null,
   bookId: '',
 });
 
@@ -47,8 +45,8 @@ BookReader.prototype._chapterInit = async function() {
     this._tocEntries = rawTableOfContents
       .map(rawTOCEntry => (Object.assign({}, rawTOCEntry, {
         pageIndex: (
-          rawTOCEntry.pagenum ? this.book.getPageIndex(rawTOCEntry.pagenum) :
-            rawTOCEntry.leaf ? this.book.leafNumToIndex(rawTOCEntry.leaf) :
+          typeof(rawTOCEntry.leaf) == 'number' ? this.book.leafNumToIndex(rawTOCEntry.leaf) :
+            rawTOCEntry.pagenum ? this.book.getPageIndex(rawTOCEntry.pagenum) :
               undefined
         ),
       })));
