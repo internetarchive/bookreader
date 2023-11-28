@@ -4,7 +4,9 @@ import BookReader from "@/src/BookReader.js";
 import "@/src/plugins/plugin.chapters.js";
 import { BookModel } from "@/src/BookReader/BookModel";
 import { deepCopy } from "../utils";
+/** @typedef {import('@/src/plugins/plugin.chapters').TocEntry} TocEntry  */
 
+/** @type {TocEntry[]} */
 const SAMPLE_TOC = [{
   "pagenum": "3",
   "level": 1,
@@ -34,19 +36,30 @@ const SAMPLE_TOC = [{
   "pageIndex": 40,
 }];
 
+/** @type {TocEntry[]} */
 const SAMPLE_TOC_UNDEF = [
   {
-    "pagenum": "undefined",
     "level": 1,
     "label": "CHAPTER I",
     "type": { "key": "/type/toc_item" },
     "title": "THE COUNTRY AND THE MISSION 1",
   },
   {
-    "pagenum": "undefined",
     "level": 1,
     "label": "CHAPTER II",
     "type": { "key": "/type/toc_item" },
+    "title": "THE COUNTRY AND THE MISSION 2",
+  },
+];
+
+/** @type {TocEntry[]} */
+const SAMPLE_TOC_OPTION = [
+  {
+    "level": 1,
+    "title": "THE COUNTRY AND THE MISSION 1",
+  },
+  {
+    "level": 1,
     "title": "THE COUNTRY AND THE MISSION 2",
   },
 ];
@@ -92,13 +105,48 @@ describe("BRChaptersPlugin", () => {
         },
         getOpenLibraryRecord: async () => ({
           "title": "The Adventures of Sherlock Holmes",
-          "table_of_contents": deepCopy(SAMPLE_TOC_UNDEF),
+          "table_of_contents": deepCopy(SAMPLE_TOC_OPTION),
           "ocaid": "adventureofsherl0000unse",
         }),
         _chaptersRender: sinon.stub(),
       };
       await BookReader.prototype._chapterInit.call(fakeBR);
       expect(fakeBR._chaptersRender.callCount).toBe(1);
+    });
+
+    test("does not fetch open library record if table of contents in options", async () => {
+      const fakeBR = {
+        options: {
+          table_of_contents: deepCopy(SAMPLE_TOC_UNDEF),
+        },
+        bind: sinon.stub(),
+        getOpenLibraryRecord: sinon.stub(),
+        _chaptersRender: sinon.stub(),
+      };
+      await BookReader.prototype._chapterInit.call(fakeBR);
+      expect(fakeBR.getOpenLibraryRecord.callCount).toBe(0);
+      expect(fakeBR._chaptersRender.callCount).toBe(1);
+    });
+
+    test("converts leafs and pagenums to page index", async () => {
+      const table_of_contents = deepCopy(SAMPLE_TOC_UNDEF);
+      table_of_contents[0].leaf = 0;
+      table_of_contents[1].pagenum = '17';
+      const fakeBR = {
+        options: {
+          table_of_contents,
+        },
+        bind: sinon.stub(),
+        book: {
+          leafNumToIndex: (leaf) => leaf + 1,
+          getPageIndex: (str) => parseFloat(str),
+        },
+        _chaptersRender: sinon.stub(),
+      };
+      await BookReader.prototype._chapterInit.call(fakeBR);
+      expect(fakeBR._chaptersRender.callCount).toBe(1);
+      expect(fakeBR._tocEntries[0].pageIndex).toBe(1);
+      expect(fakeBR._tocEntries[1].pageIndex).toBe(17);
     });
   });
 

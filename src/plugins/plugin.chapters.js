@@ -28,11 +28,28 @@ BookReader.prototype.init = (function(super_) {
 })(BookReader.prototype.init);
 
 BookReader.prototype._chapterInit = async function() {
-  const olEdition = await this.getOpenLibraryRecord(this.options.olHost, this.options.bookId);
-  if (olEdition?.table_of_contents?.length) {
-    this._tocEntries = olEdition.table_of_contents.map(rawTOCEntry => (
-      Object.assign({}, rawTOCEntry, {pageIndex: this.book.getPageIndex(rawTOCEntry.pagenum)})
-    ));
+  let rawTableOfContents = null;
+  // Prefer IA TOC for now, until we update the second half to check for
+  // `openlibrary_edition` on the IA metadata instead of making a bunch of
+  // requests to OL.
+  if (this.options.table_of_contents?.length) {
+    rawTableOfContents = this.options.table_of_contents;
+  } else {
+    const olEdition = await this.getOpenLibraryRecord(this.options.olHost, this.options.bookId);
+    if (olEdition?.table_of_contents?.length) {
+      rawTableOfContents = olEdition.table_of_contents;
+    }
+  }
+
+  if (rawTableOfContents) {
+    this._tocEntries = rawTableOfContents
+      .map(rawTOCEntry => (Object.assign({}, rawTOCEntry, {
+        pageIndex: (
+          typeof(rawTOCEntry.leaf) == 'number' ? this.book.leafNumToIndex(rawTOCEntry.leaf) :
+            rawTOCEntry.pagenum ? this.book.getPageIndex(rawTOCEntry.pagenum) :
+              undefined
+        ),
+      })));
     this._chaptersRender(this._tocEntries);
     this.bind(BookReader.eventNames.pageChanged, () => this._chaptersUpdateCurrent());
   }
@@ -60,19 +77,18 @@ BookReader.prototype._chaptersRender = function() {
     />`,
   };
   shell.updateMenuContents();
-  for (const tocEntry of this._tocEntries) {
-    this._chaptersRenderMarker(tocEntry);
-  }
+  this._tocEntries.forEach((tocEntry, i) => this._chaptersRenderMarker(tocEntry, i));
 };
 
 /**
  * @typedef {Object} TocEntry
  * Table of contents entry as defined by Open Library, with some extra values for internal use
- * @property {string} pagenum
- * @property {number} level
- * @property {string} label
- * @property {string} title
- * @property {number} pageIndex - Added
+ * @property {number} [level]
+ * @property {string} [label]
+ * @property {string} [title]
+ * @property {PageString} [pagenum]
+ * @property {LeafNum} [leaf]
+ * @property {number} [pageIndex] - Added
  *
  * @example {
  *   "pagenum": "17",
@@ -84,21 +100,25 @@ BookReader.prototype._chaptersRender = function() {
 
 /**
  * @param {TocEntry} tocEntry
+ * @param {number} entryIndex
  */
-BookReader.prototype._chaptersRenderMarker = function(tocEntry) {
+BookReader.prototype._chaptersRenderMarker = function(tocEntry, entryIndex) {
   if (tocEntry.pageIndex == undefined) return;
 
   //creates a string with non-void tocEntry.label and tocEntry.title
   const chapterStr = [tocEntry.label, tocEntry.title]
     .filter(x => x)
-    .join(' ');
+    .join(' ') || `Chapter ${entryIndex + 1}`;
 
   const percentThrough = BookReader.util.cssPercentage(tocEntry.pageIndex, this.book.getNumLeafs() - 1);
   $(`<div></div>`)
     .append(
       $('<div />')
         .text(chapterStr)
-        .append($('<div class="BRchapterPage" />').text(`Page ${tocEntry.pagenum}`))
+        .append(
+          $('<div class="BRchapterPage" />')
+            .text(this.book.getPageName(tocEntry.pageIndex))
+        )
     )
     .addClass('BRchapter')
     .css({ left: percentThrough })
