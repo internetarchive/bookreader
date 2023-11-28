@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /* Variables */
 /* COLORBOX POP-UP */
 #colorbox, #cboxOverlay, #cboxWrapper {
@@ -1476,8 +1477,7 @@ i.BRicon {
   display: none;
   position: absolute;
   bottom: calc(100% + 5px);
-  left: 50%;
-  transform: translateX(-50%);
+  left: -14px;
   width: 350px;
   max-width: 100vw;
   padding: 12px 14px;
@@ -1497,9 +1497,7 @@ i.BRicon {
   position: absolute;
   content: "";
   bottom: -9px;
-  left: 50%;
-  margin-left: -1px;
-  transform: translateX(-50%);
+  left: 0;
   width: 30px;
   height: 10px;
   clip-path: polygon(0 0, 100% 0, 50% 100%);
@@ -1601,8 +1599,13 @@ i.BRicon {
   overflow: hidden;
   margin-bottom: 6px;
 }
+.BookReader .BRquery main:before, .BRfloat .BRquery main:before {
+  content: "“";
+}
+.BookReader .BRquery main:after, .BRfloat .BRquery main:after {
+  content: "”";
+}
 .BookReader .BRquery footer, .BRfloat .BRquery footer {
-  text-align: center;
   font-size: 0.85em;
   opacity: 0.8;
 }

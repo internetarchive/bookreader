@@ -1,3 +1,8 @@
+# 5.0.0-73
+- Feature: Add `table_of_contents` option to work with chapters plugin @cdrini
+- Fix: Simple demos not working @xonx4l
+- Dev: Update test/build dependencies @cdrini
+
 # 5.0.0-72
 - Fix: Play/pause button out of sync with ReadAloud @sbwhitt
 - Fix: BookReader not loading in sandboxed iframe @cdrini

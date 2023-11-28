@@ -1,3 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="21" height="19" aria-labelledby="advanceTitleID advanceDescID"><g fill="none" fill-rule="evenodd"><path stroke="#fff" stroke-linejoin="round" stroke-width="2" d="M7.478 16.667H1.922V3.333h14.445"/><path fill="#fff" d="M16.367 0v6.667l4.444-3.334z"/><text fill="#fff" font-family="HelveticaNeue, Helvetica Neue, sans-serif" font-size="10" transform="translate(8.589)">
+<svg xmlns="http://www.w3.org/2000/svg" width="21" height="19" aria-labelledby="advanceTitleID advanceDescID"><desc>An arrow pointing in a forward direction</desc><g fill="none" fill-rule="evenodd"><path stroke="#fff" stroke-linejoin="round" stroke-width="2" d="M7.478 16.667H1.922V3.333h14.445"/><path fill="#fff" d="M16.367 0v6.667l4.444-3.334z"/><text fill="#fff" font-family="HelveticaNeue, Helvetica Neue, sans-serif" font-size="10" transform="translate(8.589)">
               <tspan x="0" y="17.333">10</tspan>
             </text></g></svg>
