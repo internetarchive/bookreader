@@ -652,7 +652,7 @@ be no observable changes, but note this was a big change.
 
 # 4.2.5
 - Large refactor of plugin.tts.js
-- ES6 compliation step
+- ES6 compilation step
 - Known bug: Clicking on page while TTS is playing won't stop the playback
 
 # 4.2.4
