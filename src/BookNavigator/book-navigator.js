@@ -67,6 +67,7 @@ export class BookNavigator extends LitElement {
        * sets exit FS button (`this.fullscreenBranding1)
        * when `br.options.enableFSLogoShortcut`
        */
+      'chapters',
       'fullscreen',
       'volumes',
       'search',
@@ -359,7 +360,6 @@ export class BookNavigator extends LitElement {
     }
 
     this.menuShortcuts.push(this.menuProviders[menuId]);
-
     this.sortMenuShortcuts();
     this.emitMenuShortcutsUpdated();
   }
