@@ -76,6 +76,7 @@ BookReader.prototype._chaptersRender = function() {
     }}"
     />`,
   };
+  shell.addMenuShortcut('chapters');
   shell.updateMenuContents();
   this._tocEntries.forEach((tocEntry, i) => this._chaptersRenderMarker(tocEntry, i));
 };

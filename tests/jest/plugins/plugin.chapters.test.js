@@ -157,11 +157,13 @@ describe("BRChaptersPlugin", () => {
         _chaptersRenderMarker: sinon.stub(),
         shell: {
           menuProviders: {},
+          addMenuShortcut: sinon.stub(),
           updateMenuContents: sinon.stub(),
         }
       };
       BookReader.prototype._chaptersRender.call(fakeBR);
       expect(fakeBR.shell.menuProviders['chapters']).toBeTruthy();
+      expect(fakeBR.shell.addMenuShortcut.callCount).toBe(1);
       expect(fakeBR.shell.updateMenuContents.callCount).toBe(1);
       expect(fakeBR._chaptersRenderMarker.callCount).toBeGreaterThan(1);
     });
