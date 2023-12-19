@@ -1,8 +1,11 @@
-# 5.0.0-74
+# 5.0.0-75
 - Dev: Update deps via renovatebot
 - Dev: Add .env file in .gitignore
 - Dev: Update CHANGELOG.md @eltociear
 - Feature: Add ToC icon if enableChapterPlugin @dualcnhq
+
+# 5.0.0-74
+- See 5.0.0-75
 
 # 5.0.0-73
 - Feature: Add `table_of_contents` option to work with chapters plugin @cdrini
