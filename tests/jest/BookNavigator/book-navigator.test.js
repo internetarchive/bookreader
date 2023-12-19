@@ -320,10 +320,13 @@ describe('<book-navigator>', () => {
       describe('Shortcuts', () => {
         test('has specific order of menu shortcuts to show', () => {
           const el = fixtureSync(container());
-          expect(el.shortcutOrder[0]).toEqual('fullscreen');
-          expect(el.shortcutOrder[1]).toEqual('volumes');
-          expect(el.shortcutOrder[2]).toEqual('search');
-          expect(el.shortcutOrder[3]).toEqual('bookmarks');
+          expect(el.shortcutOrder).toEqual([
+            'chapters',
+            'fullscreen',
+            'volumes',
+            'search',
+            'bookmarks'
+          ]);
         });
       });
 
