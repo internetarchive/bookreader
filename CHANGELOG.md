@@ -1,3 +1,6 @@
+# 5.0.0-76
+Feature: Update bookNav shortcut menu ordering
+
 # 5.0.0-75
 - Dev: Update deps via renovatebot
 - Dev: Add .env file in .gitignore
