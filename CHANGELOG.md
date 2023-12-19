@@ -1,5 +1,5 @@
 # 5.0.0-76
-Feature: Update bookNav shortcut menu ordering
+- Fix: Update bookNavigator shortcut menu ordering @dualcnhq
 
 # 5.0.0-75
 - Dev: Update deps via renovatebot
