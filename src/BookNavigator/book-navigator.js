@@ -67,9 +67,9 @@ export class BookNavigator extends LitElement {
        * sets exit FS button (`this.fullscreenBranding1)
        * when `br.options.enableFSLogoShortcut`
        */
-      'chapters',
       'fullscreen',
       'volumes',
+      'chapters',
       'search',
       'bookmarks'
     ];

@@ -321,9 +321,9 @@ describe('<book-navigator>', () => {
         test('has specific order of menu shortcuts to show', () => {
           const el = fixtureSync(container());
           expect(el.shortcutOrder).toEqual([
-            'chapters',
             'fullscreen',
             'volumes',
+            'chapters',
             'search',
             'bookmarks'
           ]);
