@@ -1,3 +1,6 @@
+# 5.0.0-77
+- Fix: side panels - show downloads before visual adjustments @iisa
+
 # 5.0.0-76
 - Fix: Update bookNavigator shortcut menu ordering @dualcnhq
 
