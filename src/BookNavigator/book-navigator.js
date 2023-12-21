@@ -71,7 +71,10 @@ export class BookNavigator extends LitElement {
       'volumes',
       'chapters',
       'search',
-      'bookmarks'
+      'downloads',
+      'bookmarks',
+      'visualAdjustments',
+      'share'
     ];
   }
 
@@ -258,7 +261,7 @@ export class BookNavigator extends LitElement {
       id: 'fullscreen',
     };
     this.menuShortcuts.push(closeFS);
-    this.sortMenuShortcuts();
+    this.menuShortcuts = this.sortMenuShortcuts(this.menuShortcuts);
     this.emitMenuShortcutsUpdated();
   }
 
@@ -267,7 +270,7 @@ export class BookNavigator extends LitElement {
       return id !== 'fullscreen';
     });
     this.menuShortcuts = updatedShortcuts;
-    this.sortMenuShortcuts();
+    this.menuShortcuts = this.sortMenuShortcuts(this.menuShortcuts);
     this.emitMenuShortcutsUpdated();
   }
 
@@ -316,9 +319,10 @@ export class BookNavigator extends LitElement {
       availableMenus.splice(1, 0, downloads);
     }
 
+    const arrangedMenus = this.sortMenuShortcuts(availableMenus);
     const event = new CustomEvent(
       events.menuUpdated, {
-        detail: availableMenus,
+        detail: arrangedMenus,
       },
     );
     this.dispatchEvent(event);
@@ -360,7 +364,7 @@ export class BookNavigator extends LitElement {
     }
 
     this.menuShortcuts.push(this.menuProviders[menuId]);
-    this.sortMenuShortcuts();
+    this.menuShortcuts = this.sortMenuShortcuts(this.menuShortcuts);
     this.emitMenuShortcutsUpdated();
   }
 
@@ -379,12 +383,13 @@ export class BookNavigator extends LitElement {
    * Sorts the menuShortcuts property by comparing each provider's id to
    * the id in each iteration over the shortcutOrder array.
    */
-  sortMenuShortcuts() {
-    this.menuShortcuts = this.shortcutOrder.reduce((shortcuts, id) => {
-      const menu = this.menuShortcuts.find((m) => m.id === id);
+  sortMenuShortcuts(menuShortcuts) {
+    const sortedMenu = this.shortcutOrder.reduce((shortcuts, id) => {
+      const menu = menuShortcuts.find((m) => m.id === id);
       if (menu) { shortcuts.push(menu); }
       return shortcuts;
     }, []);
+    return sortedMenu;
   }
 
   emitMenuShortcutsUpdated() {

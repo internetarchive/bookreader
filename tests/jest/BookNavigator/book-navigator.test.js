@@ -325,7 +325,10 @@ describe('<book-navigator>', () => {
             'volumes',
             'chapters',
             'search',
-            'bookmarks'
+            'downloads',
+            'bookmarks',
+            'visualAdjustments',
+            'share'
           ]);
         });
       });
