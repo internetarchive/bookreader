@@ -313,7 +313,7 @@ export class BookNavigator extends LitElement {
 
     if (this.shouldShowDownloadsMenu()) {
       downloads?.update(this.downloadableTypes);
-      availableMenus.splice(1, 0, downloads);
+      availableMenus.splice(-2, 0, downloads);
     }
 
     const event = new CustomEvent(
