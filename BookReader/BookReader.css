@@ -106,9 +106,6 @@
   font-weight: 700;
   color: #dedede;
 }
-.BookReader a, .BRfloat a {
-  outline: none;
-}
 .BookReader button, .BRfloat button {
   cursor: pointer;
 }
@@ -1068,7 +1065,6 @@ i.BRicon {
   border: none;
   border-radius: 2px;
   background: transparent;
-  outline: none;
 }
 @media (hover: hover) {
   .BRfooter button {
@@ -1636,7 +1632,6 @@ i.BRicon {
   max-width: 160px;
   height: 100%;
   color: white;
-  outline: none;
   border: none;
   padding: 3px 0px 3px 10px;
   margin: 0;
