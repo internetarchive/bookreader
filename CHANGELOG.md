@@ -1,3 +1,6 @@
+# 5.0.0-78
+- Fix: Add button outline to some of the controls @cdrini
+
 # 5.0.0-77
 - Fix: side panels - show downloads before visual adjustments @iisa
 
