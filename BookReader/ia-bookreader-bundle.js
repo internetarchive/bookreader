@@ -1037,7 +1037,7 @@
         --iconWidth: var(--menuSliderHeaderIconWidth);
         --iconHeight: var(--menuSliderHeaderIconHeight);
       }
-    `}};o([(0,s.Cb)({type:Array})],Ze.prototype,"fileListRaw",void 0),o([(0,s.Cb)({type:Array})],Ze.prototype,"fileListSorted",void 0),o([(0,s.Cb)({type:String,reflect:!0})],Ze.prototype,"sortOrderBy",void 0),Ze=o([(0,s.Mo)("iaux-in-sort-files-button")],Ze);let We=class extends r.oi{constructor(){super(...arguments),this.baseHost="archive.org",this.sortOrderBy="default",this.subPrefix="",this.fileList=[],this.addSortToUrl=!1}firstUpdated(){const e=this.shadowRoot.querySelector(".content.active");setTimeout((()=>{null==e||e.scrollIntoViewIfNeeded(!0)}),350)}volumeItemWithImageTitle(e){const t=this.fileUrl(e);return r.dy`
+    `}};o([(0,s.Cb)({type:Array})],Ze.prototype,"fileListRaw",void 0),o([(0,s.Cb)({type:Array})],Ze.prototype,"fileListSorted",void 0),o([(0,s.Cb)({type:String,reflect:!0})],Ze.prototype,"sortOrderBy",void 0),Ze=o([(0,s.Mo)("iaux-in-sort-files-button")],Ze);let We=class extends r.oi{constructor(){super(...arguments),this.baseHost="archive.org",this.sortOrderBy="default",this.subPrefix="",this.fileList=[],this.addSortToUrl=!1}firstUpdated(){const e=this.shadowRoot.querySelector(".content.active");setTimeout((()=>{(null==e?void 0:e.scrollIntoViewIfNeeded)?null==e||e.scrollIntoViewIfNeeded(!0):null==e||e.scrollIntoView({behavior:"smooth",block:"nearest",inline:"nearest"})}),350)}volumeItemWithImageTitle(e){const t=this.fileUrl(e);return r.dy`
       <li class="content active">
         <div class="separator"></div>
         <a class="container" href="${t}">
