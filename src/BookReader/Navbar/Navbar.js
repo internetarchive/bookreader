@@ -255,6 +255,9 @@ export class Navbar {
     const pageType = br.book.getPageProp(index, 'pageType');
     const numLeafs = br.book.getNumLeafs();
 
+    const cohort = new URL(location).searchParams.get("cohort") || "A";
+    console.log("Cohort: " + cohort);
+
     if (!this.maxPageNum) {
       // Calculate Max page num (used for pagination display)
       let maxPageNum = 0;
@@ -267,7 +270,7 @@ export class Navbar {
       }
       this.maxPageNum = maxPageNum;
     }
-
+    // return "String-foo";
     return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum);
   }
 
@@ -301,13 +304,10 @@ export class Navbar {
  * @return {string}
  */
 export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
-  const pageIsAsserted = pageNum[0] != 'n';
-
-  if (!pageIsAsserted) {
-    const pageIndex = index + 1;
-    return `(${pageIndex} of ${numLeafs})`; // Page (8 of 10)
-  }
-
+  const pageIndex = index + 1;
   const bookLengthLabel = maxPageNum ? ` of ${maxPageNum}` : '';
-  return `${pageNum}${bookLengthLabel}`;
+
+  //return `(${pageIndex} of ${numLeafs})`; // Page (8 of 10)
+
+  return `${pageIndex} / ${numLeafs} (${pageNum}${bookLengthLabel})`;
 }
