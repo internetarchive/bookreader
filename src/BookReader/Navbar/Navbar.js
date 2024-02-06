@@ -298,6 +298,7 @@ export class Navbar {
  * @param {number|string} pageNum
  * @param {*} pageType @deprecated
  * @param {number} maxPageNum
+ * @param {string} cohort
  * @return {string}
  */
 export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum, cohort) {
@@ -305,16 +306,16 @@ export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum
   const pageIndex = index + 1;
 
   switch (cohort) {
-  case "A": // 123 / 456 (Page 122)
-    if (!pageIsAsserted) {
-      pageNum = `—`;
-    }
-    return `<b>${pageIndex} / ${numLeafs}</b> (Page ${pageNum})`;
-  case "B": // Legacy behavior --> (8 of 10) || 8 of 10
+  case "A": // Legacy behavior --> (8 of 10) || 8 of 10
     if (!pageIsAsserted) {
       return `<b>(${pageIndex} of ${numLeafs})</b>`; // (8 of 10)
     }
     return `<b>${pageNum} of ${maxPageNum}</b>`; // 8 of 10
+  case "B": // 123 / 456 (Page 122)
+    if (!pageIsAsserted) {
+      pageNum = `—`;
+    }
+    return `<b>${pageIndex} / ${numLeafs}</b> (Page ${pageNum})`;
   case "C": // Page 122 (123 / 456)
     if (!pageIsAsserted) {
       pageNum = `—`;
