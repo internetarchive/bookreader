@@ -254,9 +254,7 @@ export class Navbar {
     const pageNum = br.book.getPageNum(index);
     const pageType = br.book.getPageProp(index, 'pageType');
     const numLeafs = br.book.getNumLeafs();
-
     const cohort = new URL(location).searchParams.get("cohort") || "A";
-    console.log("Cohort: " + cohort);
 
     if (!this.maxPageNum) {
       // Calculate Max page num (used for pagination display)
@@ -270,8 +268,7 @@ export class Navbar {
       }
       this.maxPageNum = maxPageNum;
     }
-    // return "String-foo";
-    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum);
+    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum, cohort);
   }
 
   /**
@@ -303,11 +300,34 @@ export class Navbar {
  * @param {number} maxPageNum
  * @return {string}
  */
-export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
+export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum, cohort) {
+  const pageIsAsserted = pageNum[0] != 'n';
   const pageIndex = index + 1;
-  const bookLengthLabel = maxPageNum ? ` of ${maxPageNum}` : '';
 
-  //return `(${pageIndex} of ${numLeafs})`; // Page (8 of 10)
-
-  return `${pageIndex} / ${numLeafs} (${pageNum}${bookLengthLabel})`;
+  switch (cohort) {
+  case "A": // 123 / 456 (Page 122)
+    if (!pageIsAsserted) {
+      pageNum = `—`;
+    }
+    return `<b>${pageIndex} / ${numLeafs}</b> (Page ${pageNum})`;
+  case "B": // Legacy behavior --> (8 of 10) || 8 of 10
+    if (!pageIsAsserted) {
+      return `<b>(${pageIndex} of ${numLeafs})</b>`; // (8 of 10)
+    }
+    return `<b>${pageNum} of ${maxPageNum}</b>`; // 8 of 10
+  case "C": // Page 122 (123 / 456)
+    if (!pageIsAsserted) {
+      pageNum = `—`;
+    }
+    return `<b>Page ${pageNum}</b> (${pageIndex} / ${numLeafs})`;
+  case "D": // Page 122
+    console.log("Case D");
+    if (!pageIsAsserted) {
+      pageNum = `—`;
+    }
+    return `<b>Page ${pageNum}</b>`;
+  case "E": // 123 / 456
+    console.log("Case E");
+    return `<b>${pageIndex} / ${numLeafs}</b>`;
+  }
 }

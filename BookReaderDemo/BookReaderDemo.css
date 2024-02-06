@@ -13,6 +13,10 @@ body {
     margin: 0px;
 }
 
+.BRcurrentpage {
+    font-weight: 400;
+}
+
 /* Hide print and embed functionality */
 .BRtoolbar .embed, .print {
     display: none;
