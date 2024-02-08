@@ -39,3 +39,6 @@ ia-bookreader{
     margin: 0 auto;
 }
 
+body > section {
+    padding: 0 10px;
+}
