@@ -38,7 +38,3 @@ ia-bookreader{
     overflow: hidden;
     margin: 0 auto;
 }
-
-body > section {
-    padding: 0 10px;
-}
