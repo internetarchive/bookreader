@@ -254,6 +254,7 @@ export class Navbar {
     const pageNum = br.book.getPageNum(index);
     const pageType = br.book.getPageProp(index, 'pageType');
     const numLeafs = br.book.getNumLeafs();
+    const cohort = new URL(location).searchParams.get("cohort") || "A";
 
     if (!this.maxPageNum) {
       // Calculate Max page num (used for pagination display)
@@ -267,8 +268,7 @@ export class Navbar {
       }
       this.maxPageNum = maxPageNum;
     }
-
-    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum);
+    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum, cohort);
   }
 
   /**
@@ -298,16 +298,37 @@ export class Navbar {
  * @param {number|string} pageNum
  * @param {*} pageType @deprecated
  * @param {number} maxPageNum
+ * @param {string} cohort
  * @return {string}
  */
-export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
+export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum, cohort) {
   const pageIsAsserted = pageNum[0] != 'n';
+  const pageIndex = index + 1;
 
-  if (!pageIsAsserted) {
-    const pageIndex = index + 1;
-    return `(${pageIndex} of ${numLeafs})`; // Page (8 of 10)
+  switch (cohort) {
+  case "A": // Legacy behavior --> (8 of 10) || 8 of 10
+    if (!pageIsAsserted) {
+      return `<b>(${pageIndex} of ${numLeafs})</b>`; // (8 of 10)
+    }
+    return `<b>${pageNum} of ${maxPageNum}</b>`; // 8 of 10
+  case "B": // 123 / 456 (Page 122)
+    if (!pageIsAsserted) {
+      pageNum = `—`;
+    }
+    return `<b>${pageIndex} / ${numLeafs}</b> (Page ${pageNum})`;
+  case "C": // Page 122 (123 / 456)
+    if (!pageIsAsserted) {
+      pageNum = `—`;
+    }
+    return `<b>Page ${pageNum}</b> (${pageIndex} / ${numLeafs})`;
+  case "D": // Page 122
+    console.log("Case D");
+    if (!pageIsAsserted) {
+      pageNum = `—`;
+    }
+    return `<b>Page ${pageNum}</b>`;
+  case "E": // 123 / 456
+    console.log("Case E");
+    return `<b>${pageIndex} / ${numLeafs}</b>`;
   }
-
-  const bookLengthLabel = maxPageNum ? ` of ${maxPageNum}` : '';
-  return `${pageNum}${bookLengthLabel}`;
 }
