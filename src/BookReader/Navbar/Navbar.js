@@ -260,7 +260,7 @@ export class Navbar {
       let maxPageNum = 0;
       let pageNumVal;
       for (let i = 0; i < numLeafs; i++) {
-        pageNumVal = br.book.getPageNum(i);
+        pageNumVal = parseFloat(br.book.getPageNum(i));
         if (!isNaN(pageNumVal) && pageNumVal > maxPageNum) {
           maxPageNum = pageNumVal;
         }
@@ -296,7 +296,7 @@ export class Navbar {
  * @param {number} index
  * @param {number} numLeafs
  * @param {number|string} pageNum
- * @param {*} pageType @deprecated
+ * @param {*} pageType - Deprecated
  * @param {number} maxPageNum
  * @return {string}
  */
@@ -308,6 +308,6 @@ export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum
     return `(${pageIndex} of ${numLeafs})`; // Page (8 of 10)
   }
 
-  const bookLengthLabel = maxPageNum ? ` of ${maxPageNum}` : '';
+  const bookLengthLabel = (maxPageNum && parseFloat(pageNum)) ? ` of ${maxPageNum}` : '';
   return `${pageNum}${bookLengthLabel}`;
 }

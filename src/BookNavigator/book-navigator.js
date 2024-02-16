@@ -165,7 +165,6 @@ export class BookNavigator extends LitElement {
    */
   initializeBookSubmenus() {
     const providers = {
-      share: new SharingProvider(this.baseProviderConfig),
       visualAdjustments: new VisualAdjustmentProvider({
         ...this.baseProviderConfig,
         /** Update menu contents */
@@ -174,6 +173,11 @@ export class BookNavigator extends LitElement {
         },
       }),
     };
+
+    if (this.baseProviderConfig.item) {
+      // Share options currently rely on IA item metadata
+      providers.share = new SharingProvider(this.baseProviderConfig);
+    }
 
     if (this.shouldShowDownloadsMenu()) {
       providers.downloads = new DownloadProvider(this.baseProviderConfig);

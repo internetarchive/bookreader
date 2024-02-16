@@ -34,8 +34,6 @@
 }
 .BRtoolbarbuttons {
   white-space: nowrap;
-  text-align: right;
-  border-spacing: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -65,13 +63,11 @@
   display: none;
 }
 .BRtoolbarLeft {
-  text-align: left;
   flex: 1 auto;
   overflow-y: hidden;
 }
 // .BRtoolbarSectionTitle {}
 .BRtoolbarRight {
-  text-align: right;
   flex: none;
 }
 
@@ -81,4 +77,8 @@
     padding: 0;
     box-shadow: 0px 1px 3px 0px rgba(#666, .25);
   }
+}
+
+ia-bookreader .BRtoolbar {
+  padding-left: 50px;
 }
