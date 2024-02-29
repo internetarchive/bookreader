@@ -1,3 +1,7 @@
+# 5.0.0-80
+- Dev: Fix/modernize IIIF demo @cdrini
+- Dev: Fix sharing panel erroring when no IA item metadata specified @cdrini
+
 # 5.0.0-79
 
 - Fix: Firefox not scrolling to selected volume in the volume side panel @nsharma123

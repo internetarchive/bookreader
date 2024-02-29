@@ -1418,8 +1418,6 @@ i.BRicon {
 
 .BRtoolbarbuttons {
   white-space: nowrap;
-  text-align: right;
-  border-spacing: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -1452,13 +1450,11 @@ i.BRicon {
 }
 
 .BRtoolbarLeft {
-  text-align: left;
   flex: 1 auto;
   overflow-y: hidden;
 }
 
 .BRtoolbarRight {
-  text-align: right;
   flex: none;
 }
 
@@ -1469,6 +1465,10 @@ i.BRicon {
     box-shadow: 0px 1px 3px 0px rgba(102, 102, 102, 0.25);
   }
 }
+ia-bookreader .BRtoolbar {
+  padding-left: 50px;
+}
+
 .BookReader .BRquery, .BRfloat .BRquery, .BookReader .BRchapter > div, .BRfloat .BRchapter > div {
   display: none;
   position: absolute;
