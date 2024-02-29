@@ -69,7 +69,7 @@
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "live-server": "1.2.2",
-    "regenerator-runtime": "0.14.0",
+    "regenerator-runtime": "0.14.1",
     "sass": "1.69.5",
     "sinon": "17.0.1",
     "soundmanager2": "2.97.20170602",
