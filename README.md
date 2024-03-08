@@ -79,55 +79,50 @@ Here is an example.
 </ia-bookreader>
 
 <script>
-  // Create the BookReader object
-  var options = {
-    data: [
-      [
-        {
-          width: 800, height: 1200,
-          uri: 'https://archive.org/download/BookReader/img/page001.jpg'
-        },
-      ],
-      [
-        {
-          width: 800, height: 1200,
-          uri: 'https://archive.org/download/BookReader/img/page002.jpg'
-        },
-        {
-          width: 800, height: 1200,
-          uri: 'https://archive.org/download/BookReader/img/page003.jpg'
-        },
-      ],
-      [
-        {
-          width: 800, height: 1200,
-          uri: 'https://archive.org/download/BookReader/img/page004.jpg'
-        },
-        {
-          width: 800, height: 1200,
-          uri: 'https://archive.org/download/BookReader/img/page005.jpg'
-        },
-      ]
-    ],
-
-    bookTitle: 'Simple BookReader Presentation',
-
-    // thumbnail is optional, but it is used in the info dialog
-    thumbnail: 'https://archive.org/download/BookReader/img/page014.jpg',
-
-    // Metadata is optional, but it is used in the info dialog
-    metadata: [
-      { label: 'Title', value: 'Open Library BookReader Presentation' },
-      { label: 'Author', value: 'Internet Archive' },
-      { label: 'Demo Info', value: 'This demo shows how one could use BookReader with their own content.' },
-    ],
-
-    ui: 'full', // embed, full (responsive)
-
-  };
-
-  var br = new BookReader(options);
   document.addEventListener('DOMContentLoaded', function () {
+    var br = new BookReader({
+      el: '#BookReader',
+
+      bookTitle: 'Simple BookReader Presentation',
+
+      data: [
+        [
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page001.jpg'
+          },
+        ],
+        [
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page002.jpg'
+          },
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page003.jpg'
+          },
+        ],
+        [
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page004.jpg'
+          },
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page005.jpg'
+          },
+        ]
+      ],
+
+      // These are optional, but it is used in the info dialog
+      thumbnail: 'https://archive.org/download/BookReader/img/page014.jpg',
+      metadata: [
+        { label: 'Title', value: 'Open Library BookReader Presentation' },
+        { label: 'Author', value: 'Internet Archive' },
+        { label: 'Demo Info', value: 'This demo shows how one could use BookReader with their own content.' },
+      ],
+    });
+
     // Let's go!
     br.init();
   });
