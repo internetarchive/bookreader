@@ -13,6 +13,12 @@ async function main() {
     }
     execSync('git add CHANGELOG.md');
 
+    // Update readme
+    const old_readme = fs.readFileSync('README.md').toString();
+    const new_readme = old_readme.replace(/@internetarchive\/bookreader@[\d.-]+/g, `@internetarchive/bookreader@${NEW_VERSION}`);
+    fs.writeFileSync('README.md', new_readme);
+    execSync('git add README.md');
+
     // npm install to make sure deps are correct
     execSync('npm install', { stdio: "inherit" });
 
