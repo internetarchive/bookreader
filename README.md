@@ -68,33 +68,14 @@ Here is an example.
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
 
-  body.BRfullscreenActive section.theater {
-    height: 100vh;
-  }
-
-  ia-bookreader[fullscreen] {
-    height: unset;
-  }
-
-  ia-bookreader {
-    --br-height: calc(100vh - 100px);
-    display: block;
-    height: var(--br-height);
-  }
-
-  .BookReader {
-    --br-height: calc(100vh - 100px);
-    --new-height: calc(var(--br-height) - 20px);
-    height: var(--br-height);
-    overflow: hidden;
-    margin: 0 auto;
+  ia-bookreader, .BookReader {
+    /** Set the size you want bookreader to be */
+    height: calc(100vh - 100px);
   }
 </style>
 
 <ia-bookreader>
-  <div id="IABookReaderWrapper" slot="main">
-    <div id="BookReader" class="BookReader"></div>
-  </div>
+  <div id="BookReader" class="BookReader" slot="main"></div>
 </ia-bookreader>
 
 <script>
