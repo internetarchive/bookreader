@@ -13,7 +13,7 @@ import '@internetarchive/icon-toc/icon-toc';
 
 jQuery.extend(BookReader.defaultOptions, {
   olHost: 'https://openlibrary.org',
-  enableChaptersPlugin: true,
+  enableChaptersPlugin: false,
   bookId: '',
 });
 
