@@ -301,6 +301,15 @@ export const DEFAULT_OPTIONS = {
    * On init, by default, we want to use srcSet for images
    */
   useSrcSet: false,
+
+  /**
+   * @type {string}
+   * Path to the image to display when a page is unviewable (i.e. when
+   * displaying a preview of a book).
+   *
+   * Relative to the imagesBaseURL if a relative path is specified.
+   */
+  unviewablePageURI: './unviewable_page.png',
 };
 
 /**
