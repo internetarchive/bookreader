@@ -311,24 +311,24 @@ export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum
       return `<b>(${pageIndex} of ${numLeafs})</b>`; // (8 of 10)
     }
     return `<b>${pageNum} of ${maxPageNum}</b>`; // 8 of 10
-  case "B": // 123 / 456 (Page 122)
-    if (!pageIsAsserted) {
-      pageNum = `—`;
-    }
-    return `<b>${pageIndex} / ${numLeafs}</b> (Page ${pageNum})`;
-  case "C": // Page 122 (123 / 456)
+  case "B": // Page 122 (123 / 456)
     if (!pageIsAsserted) {
       pageNum = `—`;
     }
     return `<b>Page ${pageNum}</b> (${pageIndex} / ${numLeafs})`;
+  case "C": // 123 / 456
+    console.log("Case E");
+    return `<b>${pageIndex} / ${numLeafs}</b>`;
   case "D": // Page 122
     console.log("Case D");
     if (!pageIsAsserted) {
       pageNum = `—`;
     }
     return `<b>Page ${pageNum}</b>`;
-  case "E": // 123 / 456
-    console.log("Case E");
-    return `<b>${pageIndex} / ${numLeafs}</b>`;
+  case "E": // 123 / 456 (Page 122)
+    if (!pageIsAsserted) {
+      pageNum = `—`;
+    }
+    return `<b>${pageIndex} / ${numLeafs}</b> (Page ${pageNum})`;
   }
 }
