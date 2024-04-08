@@ -7,7 +7,60 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
   </head>
   <body>
-    <ul>
+    <section id="temp-demo">
+      <style>
+        form {
+          /* display: flex; */
+        }
+        label, input {
+          display: block;
+          margin: 5px 0;
+        }
+        input {
+          min-width: 250px;
+          min-height: 20px;
+          border: 1px solid;
+          padding: 0 10px;
+        }
+      </style>
+      <h2>Book</h2>
+      <form id="item-link" style="">
+        <label for="item-id-field">a certain item identifier:</label>
+        <input type="text" id="item-id-field" value="whatdoesyourhand0000nady">
+        <label for="item-leaf-page-field">a certain leaf or page number:</label>
+        <input type="text" id="item-leaf-page-field" value="n49">
+        <button type="submit">Submit</button>
+      </form>
+      <script>
+        const form = document.getElementById('item-link');
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const form = document.getElementById('item-link');
+          const newid = form.querySelector('input#item-id-field')?.value;
+          const newLeafOrPageNum = form.querySelector('input#item-leaf-page-field')?.value;
+
+          console.log({
+            form,
+            newid,
+          });
+          if (!newid) return;
+  
+          const pageInfo = newLeafOrPageNum ? `/page/${newLeafOrPageNum}` : '';
+          const url = new URL(`/details/${newid}${pageInfo}`, `http://www-isa.archive.org`);
+          window.location.href = url.href;
+        });
+       </script>
+
+       <ul>
+        <li><a href="https://www-isa.archive.org/details/twelveblackflori0000neyl/page/n22/mode/2upp">twelveblackflori0000neyl - leaf n22</a></li>
+        <li><a href="https://www-isa.archive.org/details/ilovemyselfwheni0000hurs/page/n142/mode/2upp">ilovemyselfwheni0000hurs - leaf n142</a></li>
+        <li><a href="https://www-isa.archive.org/details/newplaysforblack00king/page/n222/mode/2upp">newplaysforblack00king - leaf n222</a></li>
+        <li><a href="https://www-isa.archive.org/details/zoranealehurston0000mcki_p4z4/page/16/mode/2upp">zoranealehurston0000mcki_p4z4 - page 16</a></li>
+       </ul>
+     </section>
+     <br>
+     <br>
+    <!-- <ul>
       <li><a href="BookReaderDemo/demo-simple.html">Simple</a></li>
       <li><a href="BookReaderDemo/view_mode.html">Set initial view mode</a></li>
       <li><a href="BookReaderDemo/toggle_controls.html">Toggle and override individual controls</a></li>
@@ -29,7 +82,6 @@
       <!-- plugin.search.js -->
       <li><a href="BookReaderDemo/immersion-1up.html">Start in immersion mode on 1up default item</a></li>
       <li><a href="BookReaderDemo/viewmode-cycle.html">Replace view mode buttons with view mode cycler</a></li>
-     </ul>
-     <li><a href="https://www-isa.archive.org/details/theprogressive0077unse/page/4/mode/2up">Replace view mode buttons with view mode cycler</a></li>
+     </ul> -->
   </body>
 </html>
