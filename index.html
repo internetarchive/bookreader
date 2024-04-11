@@ -39,7 +39,8 @@
           const newid = form.querySelector('input#item-id-field')?.value;
           const newLeafOrPageNum = form.querySelector('input#item-leaf-page-field')?.value;
           const pageInfo = newLeafOrPageNum ? `/page/${newLeafOrPageNum}` : '';
-          const url = new URL(`/details/${newid}${pageInfo}`, `http://archive.org`);
+          const str = `http://archive.org/details/${newid}${pageInfo}`;
+          const url = new URL(str);
 
           console.log({
             form,
@@ -47,6 +48,8 @@
             newLeafOrPageNum,
             pageInfo,
             url,
+            href: url.href,
+            str
           });
           if (!newid) return;
   
