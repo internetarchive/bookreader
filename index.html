@@ -39,16 +39,17 @@
           const newid = form.querySelector('input#item-id-field')?.value;
           const newLeafOrPageNum = form.querySelector('input#item-leaf-page-field')?.value;
           const pageInfo = newLeafOrPageNum ? `/page/${newLeafOrPageNum}` : '';
+          const url = new URL(`/details/${newid}${pageInfo}`, `http://archive.org`);
 
           console.log({
             form,
             newid,
             newLeafOrPageNum,
-            pageInfo
+            pageInfo,
+            url,
           });
           if (!newid) return;
   
-          const url = new URL(`/details/${newid}${pageInfo}`, `http://archive.org`);
           window.location.href = url.href;
         });
        </script>
