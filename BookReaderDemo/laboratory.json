@@ -1,0 +1,31 @@
+{
+  "bookTitle": "BookReader Demo",
+  "bookUrlText": "Back to Demos",
+  "bookUrlTitle": "This is the book URL title",
+  "metadata": [
+                {"label": "Title", "value": "Open Library BookReader Presentation"},
+                {"label": "Author", "value": "Internet Archive"},
+                {"label": "Demo Info", "value": "This demo shows how one could use BookReader with their own content."}
+  ],
+  "ppi": 300,
+  "bookUrl": "../index.html",
+  "imagesBaseURL": "../BookReader/images/",
+  "thumbnail": "//archive.org/download/BookReader/img/page014.jpg",
+  "data": [
+            [
+              { "width": 2550, "height": 3300,  "uri": "//fapestniegd.xen.prgmr.com/strategic_review/Strv101/0.png" },
+              { "width": 2550, "height": 3300, "uri": "//fapestniegd.xen.prgmr.com/strategic_review/Strv101/1.png" }
+            ],
+            [
+              { "width": 2550, "height": 3300, "uri": "//fapestniegd.xen.prgmr.com/strategic_review/Strv101/2.png" },
+              { "width": 2550, "height": 3300,
+                    "uri": "//fapestniegd.xen.prgmr.com/strategic_review/Strv101/3.png" }
+            ],
+            [
+              { "width": 2550, "height": 3300, "uri": "//fapestniegd.xen.prgmr.com/strategic_review/Strv101/4.png" },
+              { "width": 2550, "height": 3300, "uri": "//fapestniegd.xen.prgmr.com/strategic_review/Strv101/5.png" }
+            ]
+   ],
+  "ui": "full",
+  "el": "selector"
+}
