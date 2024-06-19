@@ -12,7 +12,7 @@ import AbstractTTSEngine from './AbstractTTSEngine.js';
  * TTS using Web Speech APIs
  **/
 export default class WebTTSEngine extends AbstractTTSEngine {
-  static isSupported() {
+  isSupported() {
     return typeof(window.speechSynthesis) !== 'undefined' && !/samsungbrowser/i.test(navigator.userAgent);
   }
 
@@ -27,7 +27,18 @@ export default class WebTTSEngine extends AbstractTTSEngine {
   }
 
   /** @override */
-  start(leafIndex, numLeafs) {
+  init() {
+    super.init();
+
+    // Stop the audio before the user navigates away
+    window.addEventListener('beforeunload', () => {
+      // Chrome just keeps going :P
+      if (this.isPlaying) this.stop();
+    });
+  }
+
+  /** @override */
+  start(leafIndex, numLeafs, chunkIterator = null) {
     // Need to run in this function to capture user intent to start playing audio
     if ('mediaSession' in navigator) {
       const audio = new Audio(SILENCE_6S_MP3);
@@ -67,7 +78,7 @@ export default class WebTTSEngine extends AbstractTTSEngine {
       });
     }
 
-    return super.start(leafIndex, numLeafs);
+    return super.start(leafIndex, numLeafs, chunkIterator);
   }
 
   /** @override */
