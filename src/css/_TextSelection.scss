@@ -8,6 +8,7 @@
     // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
     pointer-events: none;
     cursor: text;
+    mix-blend-mode: multiply;
 }
 
 .BRparagraphElement {
@@ -59,6 +60,11 @@
 // Hide text layer for performance during zooming & scrolling
 .BRsmooth-zooming, .BRscrolling-active {
     .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer {
+        display: none;
+    }
+
+    // If the text layer has an annotation, don't hide it
+    .BRpagecontainer:not(:has(hypothesis-highlight)) .BRtextLayer {
         display: none;
     }
 }

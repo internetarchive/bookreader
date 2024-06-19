@@ -98,6 +98,11 @@ export const DEFAULT_OPTIONS = {
   bookUrlTitle: null,
   enableBookTitleLink: true,
   /**
+   * @type {string} A globally unique URI for the book. This is used to
+   * save data like annotations the user makes to the book.
+   */
+  bookUri: null,
+  /**
    * @type {string} language in ISO 639-1 (PRIVATE: Will also
    * handle language name in English, native name, 639-2/T, or 639-2/B . (archive.org books
    * appear to use 639-2/B ? But I don't think that's a guarantee). See
