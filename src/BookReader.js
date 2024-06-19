@@ -702,12 +702,26 @@ BookReader.prototype.trigger = function(name, props = this) {
   $(document).trigger(eventName, props);
 };
 
-BookReader.prototype.bind = function(name, callback) {
+BookReader.prototype.on = function(name, callback) {
   $(document).on('BookReader:' + name, callback);
 };
 
-BookReader.prototype.unbind = function(name, callback) {
+BookReader.prototype.off = function(name, callback) {
   $(document).off('BookReader:' + name, callback);
+};
+
+/**
+ * @deprecated Use .on and .off instead
+ */
+BookReader.prototype.bind = function(name, callback) {
+  return this.on(name, callback);
+};
+
+/**
+ * @deprecated Use .on and .off instead
+ */
+BookReader.prototype.unbind = function(name, callback) {
+  return this.off(name, callback);
 };
 
 /**
