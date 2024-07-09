@@ -47,14 +47,15 @@ export class PageContainer {
     const nextBestLoadedReduce = !alreadyLoaded && this.imageCache.getBestLoadedReduce(this.page.index, reduce);
 
     // Create high res image
-    const $newImg = this.imageCache.image(this.page.index, reduce);
+    const newImageURI = this.page.getURI(this.imageCache.getFinalReduce(this.page.index, reduce), 0);
 
     // Avoid removing/re-adding the image if it's already there
     // This can be called quite a bit, so we need to be fast
-    if (this.$img?.[0].src == $newImg[0].src) {
+    if (this.$img?.data('src') == newImageURI) {
       return this;
     }
 
+    const $newImg = this.imageCache.image(this.page.index, reduce);
     this.$img?.remove();
     this.$img = $newImg.prependTo(this.$container);
 

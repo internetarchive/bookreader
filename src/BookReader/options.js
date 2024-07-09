@@ -194,15 +194,28 @@ export const DEFAULT_OPTIONS = {
   /** @type {import('../plugins/plugin.chapters.js').TocEntry[]} */
   table_of_contents: null,
 
-  /** Advanced methods for page rendering */
+  /**
+   * Advanced methods for page rendering.
+   * All option functions have their `this` object set to the BookReader instance.
+   **/
+
   /** @type {() => number} */
   getNumLeafs: null,
   /** @type {(index: number) => number} */
   getPageWidth: null,
   /** @type {(index: number) => number} */
   getPageHeight: null,
-  /** @type {(index: number, reduce: number, rotate: number) => *} */
+  /** @type {(index: number, reduce: number, rotate: number) => string} */
   getPageURI: null,
+
+  /**
+   * @type {(img: HTMLImageElement, uri: string) => Promise<void>}
+   * Render the page URI into the image element. Perform any necessary preloading,
+   * authentication, etc.
+   */
+  renderPageURI(img, uri) {
+    img.src = uri;
+  },
 
   /**
    * @type {(index: number) => 'L' | 'R'}
