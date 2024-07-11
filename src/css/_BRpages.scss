@@ -63,6 +63,7 @@
   &.BRpageloading img {
     // Don't show the alt text while loading
     color: transparent;
+    background: url("images/loading.gif") center/20px no-repeat;
   }
   &.BRemptypage {
     background: transparent;

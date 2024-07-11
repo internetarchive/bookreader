@@ -43,11 +43,12 @@ export class PageContainer {
       return;
     }
 
-    const alreadyLoaded = this.imageCache.imageLoaded(this.page.index, reduce);
-    const nextBestLoadedReduce = !alreadyLoaded && this.imageCache.getBestLoadedReduce(this.page.index, reduce);
+    const finalReduce = this.imageCache.getFinalReduce(this.page.index, reduce);
+    const newImageURI = this.page.getURI(finalReduce, 0);
 
-    // Create high res image
-    const newImageURI = this.page.getURI(this.imageCache.getFinalReduce(this.page.index, reduce), 0);
+    // Note: These must be computed _before_ we call .image()
+    const alreadyLoaded = this.imageCache.imageLoaded(this.page.index, finalReduce);
+    const nextBestLoadedReduce = this.imageCache.getBestLoadedReduce(this.page.index, reduce);
 
     // Avoid removing/re-adding the image if it's already there
     // This can be called quite a bit, so we need to be fast
@@ -55,26 +56,45 @@ export class PageContainer {
       return this;
     }
 
-    const $newImg = this.imageCache.image(this.page.index, reduce);
-    this.$img?.remove();
-    this.$img = $newImg.prependTo(this.$container);
+    let $oldImg = this.$img;
+    this.$img = this.imageCache.image(this.page.index, finalReduce);
+    if ($oldImg) {
+      this.$img.insertAfter($oldImg);
+    } else {
+      this.$img.prependTo(this.$container);
+    }
 
-    const backgroundLayers = [];
     if (!alreadyLoaded) {
       this.$container.addClass('BRpageloading');
-      backgroundLayers.push(`url("${this.loadingImage}") center/20px no-repeat`);
-    }
-    if (nextBestLoadedReduce) {
-      backgroundLayers.push(`url("${this.page.getURI(nextBestLoadedReduce, 0)}") center/100% 100% no-repeat`);
-    }
 
-    if (!alreadyLoaded) {
+      // If we have a slightly lower quality image loaded, use that as the background
+      // while the higher res one loads
+      
+      if (nextBestLoadedReduce) {
+        const nextBestUri = this.page.getURI(nextBestLoadedReduce, 0);
+        if ($oldImg) {
+          if ($oldImg.data('src') == nextBestUri) {
+            // Do nothing! It's already showing the right thing
+          } else {
+            // We have a different src, need to update the src
+            this.imageCache.image(this.page.index, nextBestLoadedReduce, $oldImg[0]);
+          }
+        } else {
+          // We don't have an old image, so we need to create a new one
+          $oldImg = this.imageCache.image(this.page.index, nextBestLoadedReduce);
+          $oldImg.prependTo(this.$container);
+        }
+      } else {
+        $oldImg?.remove();
+      }
+
       this.$img
-        .css('background', backgroundLayers.join(','))
-        .one('loadend', async (ev) => {
-          $(ev.target).css({ 'background': '' });
-          $(ev.target).parent().removeClass('BRpageloading');
+        .one('load', (ev) => {
+          $oldImg?.remove();
+          this.$container.removeClass('BRpageloading');
         });
+    } else {
+      $oldImg?.remove();
     }
 
     return this;

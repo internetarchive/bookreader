@@ -49,10 +49,11 @@ export class ImageCache {
    *
    * @param {PageIndex} index
    * @param {Number} reduce
+   * @param {HTMLImageElement?} [img]
    */
-  image(index, reduce) {
+  image(index, reduce, img = null) {
     const finalReduce = this.getFinalReduce(index, reduce);
-    return this._serveImageElement(index, finalReduce);
+    return this._serveImageElement(index, finalReduce, img);
   }
 
   /**
@@ -118,9 +119,10 @@ export class ImageCache {
    *
    * @param {PageIndex} index
    * @param {number} reduce
+   * @param {HTMLImageElement?} [img]
    * @returns {JQuery<HTMLImageElement>} with base image classes
    */
-  _serveImageElement(index, reduce) {
+  _serveImageElement(index, reduce, img = null) {
     let cacheEntry = this.cache[index]?.find(e => e.reduce == reduce);
     if (!cacheEntry) {
       cacheEntry = { reduce, loaded: false };
@@ -130,7 +132,7 @@ export class ImageCache {
     const page = this.book.getPage(index);
 
     const uri = page.getURI(reduce, 0);
-    const $img = $(document.createElement('img'))
+    const $img = $(img || document.createElement('img'))
       .addClass('BRpageimage')
       .attr('alt', 'Book page image')
       .data('reduce', reduce)
