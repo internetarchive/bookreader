@@ -2,6 +2,8 @@
 /** @typedef {import('./BookModel.js').PageModel} PageModel */
 /** @typedef {import('./ImageCache.js').ImageCache} ImageCache */
 
+import { sleep } from './utils.js';
+
 
 export class PageContainer {
   /**
@@ -66,36 +68,34 @@ export class PageContainer {
 
     if (!alreadyLoaded) {
       this.$container.addClass('BRpageloading');
+    }
 
+    if (!alreadyLoaded && nextBestLoadedReduce) {
       // If we have a slightly lower quality image loaded, use that as the background
       // while the higher res one loads
-      
-      if (nextBestLoadedReduce) {
-        const nextBestUri = this.page.getURI(nextBestLoadedReduce, 0);
-        if ($oldImg) {
-          if ($oldImg.data('src') == nextBestUri) {
-            // Do nothing! It's already showing the right thing
-          } else {
-            // We have a different src, need to update the src
-            this.imageCache.image(this.page.index, nextBestLoadedReduce, $oldImg[0]);
-          }
+      const nextBestUri = this.page.getURI(nextBestLoadedReduce, 0);
+      if ($oldImg) {
+        if ($oldImg.data('src') == nextBestUri) {
+          // Do nothing! It's already showing the right thing
         } else {
-          // We don't have an old image, so we need to create a new one
-          $oldImg = this.imageCache.image(this.page.index, nextBestLoadedReduce);
-          $oldImg.prependTo(this.$container);
+          // We have a different src, need to update the src
+          this.imageCache.image(this.page.index, nextBestLoadedReduce, $oldImg[0]);
         }
       } else {
-        $oldImg?.remove();
+        // We don't have an old <img>, so we need to create a new one
+        $oldImg = this.imageCache.image(this.page.index, nextBestLoadedReduce);
+        $oldImg.prependTo(this.$container);
       }
-
-      this.$img
-        .one('load', (ev) => {
-          $oldImg?.remove();
-          this.$container.removeClass('BRpageloading');
-        });
-    } else {
-      $oldImg?.remove();
     }
+
+    this.$img
+      .one('load', async (ev) => {
+        this.$container.removeClass('BRpageloading');
+        // `load` can fire a little early, so wait a spell before removing the old image
+        // to avoid flicker
+        await sleep(100);
+        $oldImg?.remove();
+      });
 
     return this;
   }
