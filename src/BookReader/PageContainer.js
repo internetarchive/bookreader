@@ -11,12 +11,10 @@ export class PageContainer {
    * @param {object} opts
    * @param {boolean} opts.isProtected Whether we're in a protected book
    * @param {ImageCache} opts.imageCache
-   * @param {string} opts.loadingImage
    */
-  constructor(page, {isProtected, imageCache, loadingImage}) {
+  constructor(page, {isProtected, imageCache}) {
     this.page = page;
     this.imageCache = imageCache;
-    this.loadingImage = loadingImage;
     this.$container = $('<div />', {
       'class': `BRpagecontainer ${page ? `pagediv${page.index}` : 'BRemptypage'}`,
       css: { position: 'absolute' },
