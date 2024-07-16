@@ -1225,7 +1225,7 @@ BookReader.prototype.updateFirstIndex = function(
     this.suppressFragmentChange = false;
   }
 
-  this.trigger(BookReader.eventNames.pageChanged);
+  this.trigger(BookReader.eventNames.EVENTS.pageChanged);
 
   // event to know if user is actively reading
   this.trigger(BookReader.eventNames.userAction);
