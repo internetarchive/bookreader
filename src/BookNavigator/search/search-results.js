@@ -28,7 +28,7 @@ export class IABookSearchResults extends LitElement {
     this.query = '';
     this.queryInProgress = false;
     this.renderHeader = false;
-    this.renderSearchAllFields = false;
+    this.renderSearchAllFiles = false;
     this.displayResultImages = false;
     this.errorMessage = '';
 
