@@ -20,11 +20,11 @@ const visualAdjustmentOptions = [{
   value: 100,
 }, {
   id: 'invert',
-  name: 'Inverted colors (dark mode)',
+  name: 'Invert colors (dark mode)',
   active: false,
 }, {
   id: 'grayscale',
-  name: 'Grayscale',
+  name: 'Convert to grayscale',
   active: false,
 }];
 
