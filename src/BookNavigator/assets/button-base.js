@@ -12,6 +12,7 @@ export default css`
     text-align: center;
     vertical-align: middle;
     font-size: 1.4rem;
+    font-family: inherit;
     display: inline-block;
     padding: .6rem 1.2rem;
     border: 1px solid transparent;
