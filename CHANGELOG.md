@@ -1,3 +1,9 @@
+# 5.0.0-81
+- Dev: Update test dependencies @cdrini
+- Dev: Update build dependencies @cdrini
+- Fix: BookReader buttons inherit font @rebecca-shoptaw
+- Fix: Better visual adjustment text @rebecca-shoptaw
+
 # 5.0.0-80
 - Dev: Fix/modernize IIIF demo @cdrini
 - Dev: Fix sharing panel erroring when no IA item metadata specified @cdrini
