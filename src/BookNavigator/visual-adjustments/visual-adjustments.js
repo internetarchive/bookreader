@@ -157,7 +157,7 @@ export class IABookVisualAdjustments extends LitElement {
 
   get zoomControls() {
     return html`
-      <h4>Zoom</h4>
+      <h4>Adjust zoom</h4>
       <button class="zoom_out" @click=${this.emitZoomOut} title="zoom out">
         <ia-icon-magnify-minus></ia-icon-magnify-minus>
       </button>

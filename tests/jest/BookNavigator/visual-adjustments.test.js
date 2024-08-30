@@ -16,7 +16,7 @@ const options = [{
   value: 100,
 }, {
   id: 'invert',
-  name: 'Invert colors',
+  name: 'Invert colors (dark mode)',
   active: false,
 }, {
   id: 'brightness',
