@@ -4,11 +4,6 @@ import { clamp } from './utils.js';
 /** @typedef {import('./options.js').PageData} PageData */
 /** @typedef {import('../BookReader.js').default} BookReader */
 
-// URI to display when a page is not viewable.
-// TODO Render configurable html for the user instead.
-// FIXME Don't reference files on archive.org
-const UNVIEWABLE_PAGE_URI = '/bookreader/static/preview-default.png';
-
 /**
  * Contains information about the Book/Document independent of the way it is
  * being rendering. Nothing here should reference e.g. the mode, zoom, etc.
@@ -160,7 +155,17 @@ export class BookModel {
    */
   // eslint-disable-next-line no-unused-vars
   getPageURI(index, reduce, rotate) {
-    return !this.getPageProp(index, 'viewable', true) ? UNVIEWABLE_PAGE_URI : this.getPageProp(index, 'uri');
+    if (!this.getPageProp(index, 'viewable', true)) {
+      const uri = this.br.options.unviewablePageURI;
+      if (uri.startsWith('.')) {
+        // It's a relative path, so make it relative to the images path
+        return this.br.options.imagesBaseURL + uri;
+      } else {
+        return uri;
+      }
+    } else {
+      return this.getPageProp(index, 'uri');
+    }
   }
 
   /**
