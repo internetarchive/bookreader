@@ -37,12 +37,18 @@ export class ModeTextLit extends Mode1UpLit {
     }
     if (changedProps.has('renderedPages')) {
       // debugger;
-      this.updateComplete
-        .then(() => Promise.all(this.visiblePages.map(p => this.pageContainerCache[p.index].textSelectionLoadingComplete)))
-        .then(() => {
-          // Note the exact tops of the rendered pages
-          this.updateActualPositions(this.visiblePages);
-        });
+      (async () => {
+        const allDone = await this.updateComplete;
+        if (!allDone) return;
+        await sleep(0);
+
+        await Promise.all(
+          this.renderedPages
+            .filter(p => this.pageContainerCache[p.index])
+            .map(p => this.pageContainerCache[p.index].textSelectionLoadingComplete)
+        );
+        this.updateActualPositions(this.renderedPages);
+      })();
     }
 
     super.updated(changedProps);
