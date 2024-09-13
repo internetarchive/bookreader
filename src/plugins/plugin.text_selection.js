@@ -1,6 +1,7 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
+import { median } from '../BookReader/utils.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
@@ -77,7 +78,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // Disable if thumb mode; it's too janky
     // .page can be null for "pre-cover" region
     if (this.br.mode !== this.br.constModeThumb && pageContainer.page) {
-      this.createTextLayer(pageContainer);
+      pageContainer.textSelectionLoadingComplete = this.createTextLayer(pageContainer);
     }
     return pageContainer;
   }
@@ -185,6 +186,31 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       return el;
     });
 
+    // Try to detect centered paragraphs
+    const medianLeft = median(
+      $(XMLpage).find("LINE").toArray()
+        .map(l => parseFloat($(l).attr("coords")?.split(',')?.[0]))
+        .filter(x => !isNaN(x))
+    );
+    const medianRightDist = pageContainer.page.width - median(
+      $(XMLpage).find("LINE").toArray()
+        .map(l => parseFloat($(l).attr("coords")?.split(',')?.[2]))
+        .filter(x => !isNaN(x))
+    )
+
+    for (const paragEl of paragEls) {
+      const lines = Array.from(paragEl.querySelectorAll('.BRlineElement'));
+      const isCentered = lines.length >= 1 && lines.every(line => {
+        const left = parseFloat(paragEl.style.left);
+        const right = parseFloat(paragEl.style.left) + parseFloat(paragEl.style.width);
+        const rightDist = pageContainer.page.width - right;
+        return (left > medianLeft * 1.8 && rightDist > medianRightDist * 1.8) && left < pageContainer.page.width / 2;
+      });
+      if (isCentered) {
+        paragEl.classList.add('BRcentered');
+      }
+    }
+
     // Fix up paragraph positions
     const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement');
     let yAdded = 0;
@@ -252,6 +278,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
         const wordEl = document.createElement('span');
         wordEl.setAttribute("class", "BRwordElement");
+        // Set confidence for potential styling
+        const confidence = parseFloat($(currWord).attr("x-confidence"));
+        wordEl.setAttribute("style", `--br-conf: ${confidence}%`);
         wordEl.textContent = currWord.textContent.trim();
 
         if (wordIndex > 0) {
@@ -271,7 +300,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         lineEl.appendChild(wordEl);
       }
 
-      const hasHyphen = line.lastWord.textContent.trim().endsWith('-');
+      const hasHyphen = line.lastWord.textContent.trim().endsWith('-') || line.lastWord.textContent.trim().endsWith('¬');
       const lastWordEl = lineEl.children[lineEl.children.length - 1];
       if (hasHyphen && !isLastLineOfParagraph) {
         lastWordEl.textContent = lastWordEl.textContent.trim().slice(0, -1);
