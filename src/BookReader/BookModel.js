@@ -491,6 +491,15 @@ export class PageModel {
       .next().value;
   }
 
+  /** Gets the next `count` pages */
+  *iterNext({ combineConsecutiveUnviewables = false, count = 1 } = {}) {
+    for (const page of this.book.pagesIterator({ start: this.index + 1, combineConsecutiveUnviewables })) {
+      if (count <= 0) return;
+      yield page;
+      count--;
+    }
+  }
+
   /**
    * @param {object} [arg0]
    * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
@@ -511,6 +520,16 @@ export class PageModel {
       }
     } else {
       return new PageModel(this.book, this.index - 1);
+    }
+  }
+
+  /** Get the `count` previous pages */
+  *iterPrev({ combineConsecutiveUnviewables = false, count = 1 } = {}) {
+    let page = this;
+    for (let i = 0; i < count; i++) {
+      page = page.findPrev({ combineConsecutiveUnviewables });
+      if (!page) return;
+      yield page;
     }
   }
 
