@@ -1,3 +1,6 @@
+# 5.0.0-82
+- Feature: New option to control unviewable page image: `unviewablePageURI` @cdrini
+
 # 5.0.0-81
 - Dev: Update test dependencies @cdrini
 - Dev: Update build dependencies @cdrini
