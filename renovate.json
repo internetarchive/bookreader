@@ -9,7 +9,7 @@
         "@babel/eslint-parser",
         "@open-wc/testing-helpers",
         "@types/jest",
-        "codecov",
+        "codecov/codecov-action",
         "eslint",
         "eslint-plugin-no-jquery",
         "eslint-plugin-testcafe",

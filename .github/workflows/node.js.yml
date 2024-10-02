@@ -73,7 +73,9 @@ jobs:
         key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
     - run: npm run lint
     - run: npm run test
-    - run: npm run codecov
+    - uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
     
   e2e-tests:
     needs: build
