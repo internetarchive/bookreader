@@ -66,7 +66,17 @@ BookReader.prototype.setup = (function (super_) {
     /** @type { {[pageIndex: number]: SearchInsideMatchBox[]} } */
     this._searchBoxesByIndex = {};
 
-    this.searchView = undefined;
+    if (this.enableSearch) {
+      this.searchView = new SearchView({
+        br: this,
+        searchCancelledCallback: () => {
+          this._cancelSearch();
+          this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
+        }
+      });
+    } else {
+      this.searchView = null;
+    }
   };
 })(BookReader.prototype.setup);
 
@@ -74,15 +84,10 @@ BookReader.prototype.setup = (function (super_) {
 BookReader.prototype.init = (function (super_) {
   return function () {
     super_.call(this);
-    // give SearchView the most complete bookreader state
-    this.searchView = new SearchView({
-      br: this,
-      searchCancelledCallback: () => {
-        this._cancelSearch();
-        this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
-      }
-    });
-    if (this.options.enableSearch && this.options.initialSearchTerm) {
+    if (!this.enableSearch) return;
+
+    this.searchView.init();
+    if (this.options.initialSearchTerm) {
       /**
        * this.search() take two parameter
        * 1. this.options.initialSearchTerm - search term
