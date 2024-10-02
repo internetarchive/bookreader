@@ -109,6 +109,9 @@ export class Mode1UpLit extends LitElement {
 
   /************** CONSTANT PROPERTIES **************/
 
+  /** Number of pages to render around the visible pages */
+  BUFFER_AROUND = 2;
+
   /** Vertical space between/around the pages in inches */
   SPACING_IN = 0.2;
 
@@ -187,8 +190,9 @@ export class Mode1UpLit extends LitElement {
       this.worldDimensions = this.computeWorldDimensions();
       this.pageTops = this.computePageTops(this.pages, this.SPACING_IN);
     }
-    if (changedProps.has('visibleRegion')) {
-      this.visiblePages = this.computeVisiblePages();
+    // FIXME: `actualPositions` should be only in ModeTextLit
+    if (changedProps.has('visibleRegion') || changedProps.has('actualPositions')) {
+      this.visiblePages = this.pages.filter(page => this.isPageVisible(page));
     }
     if (changedProps.has('visiblePages')) {
       this.throttledUpdateRenderedPages();
@@ -260,29 +264,32 @@ export class Mode1UpLit extends LitElement {
   }
 
   /** @param {PageModel} page */
-  renderPage = (page) => {
+  getPageTransform(page) {
     const wToR = this.coordSpace.worldUnitsToRenderedPixels;
-    const wToV = this.coordSpace.worldUnitsToVisiblePixels;
-    const containerWidth = this.coordSpace.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
 
-    const width = wToR(page.widthInches);
-    const height = wToR(page.heightInches);
+    const containerWidth = this.coordSpace.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientWidth);
     const left = Math.max(this.SPACING_IN, (containerWidth - page.widthInches) / 2);
     const top = this.pageTops[page.index];
+    return `translate(${wToR(left)}px, ${wToR(top)}px)`;
+  }
 
-    const transform = `translate(${wToR(left)}px, ${wToR(top)}px)`;
+  /** @param {PageModel} page */
+  renderPage(page) {
+    const wToR = this.coordSpace.worldUnitsToRenderedPixels;
+    const wToV = this.coordSpace.worldUnitsToVisiblePixels;
+
     const pageContainerEl = this.createPageContainer(page)
       .update({
         dimensions: {
-          width,
-          height,
+          width: wToR(page.widthInches),
+          height: wToR(page.heightInches),
           top: 0,
           left: 0,
         },
         reduce: page.width / wToV(page.widthInches),
       }).$container[0];
 
-    pageContainerEl.style.transform = transform;
+    pageContainerEl.style.transform = this.getPageTransform(page);
     pageContainerEl.classList.toggle('BRpage-visible', this.visiblePages.includes(page));
     return pageContainerEl;
   }
@@ -314,10 +321,12 @@ export class Mode1UpLit extends LitElement {
   computeRenderedPages() {
     // Also render 1 page before/after
     // @ts-ignore TS doesn't understand the filtering out of null values
+    const first = this.visiblePages[0];
+    const last = this.visiblePages[this.visiblePages.length - 1];
     return [
-      this.visiblePages[0]?.prev,
+      ...(first?.iterPrev({ combineConsecutiveUnviewables: true, count: this.BUFFER_AROUND }) ?? []),
       ...this.visiblePages,
-      this.visiblePages[this.visiblePages.length - 1]?.next,
+      ...(last?.iterNext({ combineConsecutiveUnviewables: true, count: this.BUFFER_AROUND }) ?? []),
     ]
       .filter(p => p)
       // Never render more than 10 pages! Usually means something is wrong
@@ -332,11 +341,13 @@ export class Mode1UpLit extends LitElement {
   /**
    * @param {PageModel[]} pages
    * @param {number} spacing
+   * @param {number} [initialTop]
+   * @param {Record<PageIndex, number>} [inPlace]
    */
-  computePageTops(pages, spacing) {
+  computePageTops(pages, spacing, initialTop = spacing, inPlace = null) {
     /** @type {{ [pageIndex: string]: number }} */
-    const result = {};
-    let top = spacing;
+    const result = inPlace || {};
+    let top = initialTop;
     for (const page of pages) {
       result[page.index] = top;
       top += page.heightInches + spacing;
@@ -363,15 +374,16 @@ export class Mode1UpLit extends LitElement {
     };
   }
 
-  computeVisiblePages() {
-    return this.pages.filter(page => {
-      const PT = this.pageTops[page.index];
-      const PB = PT + page.heightInches;
+  /**
+   * @param {PageModel} page
+   */
+  isPageVisible(page) {
+    const PT = this.pageTops[page.index];
+    const PB = PT + page.heightInches;
 
-      const VT = this.visibleRegion.top;
-      const VB = VT + this.visibleRegion.height;
-      return PT <= VB && PB >= VT;
-    });
+    const VT = this.visibleRegion.top;
+    const VB = VT + this.visibleRegion.height;
+    return PT <= VB && PB >= VT;
   }
 
   /************** INPUT HANDLERS **************/

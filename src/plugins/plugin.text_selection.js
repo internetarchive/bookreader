@@ -1,5 +1,6 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
+import { median } from '../BookReader/utils.js';
 import { SelectionObserver } from '../BookReader/utils/SelectionObserver.js';
 import { applyVariables } from '../util/strings.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
@@ -246,6 +247,31 @@ export class TextSelectionPlugin {
       return el;
     });
 
+    // Try to detect centered paragraphs
+    const medianLeft = median(
+      $(XMLpage).find("LINE").toArray()
+        .map(l => parseFloat($(l).attr("coords")?.split(',')?.[0]))
+        .filter(x => !isNaN(x))
+    );
+    const medianRightDist = pageContainer.page.width - median(
+      $(XMLpage).find("LINE").toArray()
+        .map(l => parseFloat($(l).attr("coords")?.split(',')?.[2]))
+        .filter(x => !isNaN(x))
+    )
+
+    for (const paragEl of paragEls) {
+      const lines = Array.from(paragEl.querySelectorAll('.BRlineElement'));
+      const isCentered = lines.length >= 1 && lines.every(line => {
+        const left = parseFloat(paragEl.style.left);
+        const right = parseFloat(paragEl.style.left) + parseFloat(paragEl.style.width);
+        const rightDist = pageContainer.page.width - right;
+        return (left > medianLeft * 1.8 && rightDist > medianRightDist * 1.8) && left < pageContainer.page.width / 2;
+      });
+      if (isCentered) {
+        paragEl.classList.add('BRcentered');
+      }
+    }
+
     // Fix up paragraph positions
     const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement');
     let yAdded = 0;
@@ -299,6 +325,9 @@ export class TextSelectionPlugin {
 
         const wordEl = document.createElement('span');
         wordEl.setAttribute("class", "BRwordElement");
+        // Set confidence for potential styling
+        const confidence = parseFloat($(currWord).attr("x-confidence"));
+        wordEl.setAttribute("style", `--br-conf: ${confidence}%`);
         wordEl.textContent = currWord.textContent.trim();
 
         if (wordIndex > 0) {
@@ -315,7 +344,7 @@ export class TextSelectionPlugin {
         lineEl.appendChild(wordEl);
       }
 
-      const hasHyphen = line.lastWord.textContent.trim().endsWith('-');
+      const hasHyphen = line.lastWord.textContent.trim().endsWith('-') || line.lastWord.textContent.trim().endsWith('¬');
       const lastWordEl = lineEl.children[lineEl.children.length - 1];
       if (hasHyphen && !isLastLineOfParagraph) {
         lastWordEl.textContent = lastWordEl.textContent.trim().slice(0, -1);
@@ -437,7 +466,7 @@ export class BookreaderWithTextSelection extends BookReader {
     // Disable if thumb mode; it's too janky
     // .page can be null for "pre-cover" region
     if (this.mode !== this.constModeThumb && pageContainer.page) {
-      this.textSelectionPlugin?.createTextLayer(pageContainer);
+      pageContainer.textSelectionLoadingComplete = this.textSelectionPlugin?.createTextLayer(pageContainer);
     }
     return pageContainer;
   }

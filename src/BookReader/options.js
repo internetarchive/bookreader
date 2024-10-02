@@ -251,6 +251,12 @@ export const DEFAULT_OPTIONS = {
       className: 'thumb',
       iconClassName: 'thumb'
     },
+    text: {
+      visible: true,
+      label: 'Text view (experimental)',
+      className: 'textpg',
+      iconClassName: 'textpg'
+    },
     viewmode: {
       visible: true,
       className: 'viewmode',
