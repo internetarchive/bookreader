@@ -45,6 +45,14 @@ const initializeBookReader = (brManifest) => {
     flipDelay: urlParams.flipDelay || 5000
   };
 
+  function getFromUrl(name, def) {
+    if (urlParams.has(name)) {
+      return urlParams.get(name);
+    } else {
+      return def;
+    }
+  }
+
   const options = {
     el: '#BookReader',
     /* Url plugin - IA uses History mode for URL */
@@ -62,7 +70,7 @@ const initializeBookReader = (brManifest) => {
     initialSearchTerm: searchTerm ? searchTerm : '',
     // leaving this option commented out bc we change given user agent on archive.org
     // onePage: { autofit: <?=json_encode($this->ios ? 'width' : 'auto')?> },
-    showToolbar: false,
+    showToolbar: getFromUrl('options.showToolbar', 'false') === 'true',
     /* Multiple volumes */
     // To show multiple volumes:
     enableMultipleBooks: false, // turn this on
