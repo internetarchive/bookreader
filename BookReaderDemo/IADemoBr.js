@@ -5,6 +5,13 @@ import { extraVolOptions, custvolumesManifest } from './ia-multiple-volumes-mani
  * This is how Internet Archive loads bookreader
  */
 const urlParams = new URLSearchParams(window.location.search);
+function getFromUrl(name, def) {
+  if (urlParams.has(name)) {
+    return urlParams.get(name);
+  } else {
+    return def;
+  }
+}
 
 const ocaid = urlParams.get('ocaid');
 const openFullImmersionTheater = urlParams.get('view') === 'theater';
@@ -41,17 +48,9 @@ const initializeBookReader = (brManifest) => {
 
   const customAutoflipParams = {
     autoflip: !!autoflip,
-    flipSpeed: urlParams.flipSpeed || 2000,
-    flipDelay: urlParams.flipDelay || 5000
+    flipSpeed: parseFloat(getFromUrl('flipSpeed', '2000')),
+    flipDelay: parseFloat(getFromUrl('flipDelay', '5000')),
   };
-
-  function getFromUrl(name, def) {
-    if (urlParams.has(name)) {
-      return urlParams.get(name);
-    } else {
-      return def;
-    }
-  }
 
   const options = {
     el: '#BookReader',
