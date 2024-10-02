@@ -51,7 +51,6 @@
     "@types/jest": "29.5.12",
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "babel-loader": "9.1.3",
-    "codecov": "^3.8.3",
     "concurrently": "8.2.2",
     "core-js": "3.37.1",
     "cpx2": "4.2.3",
@@ -118,9 +117,8 @@
     "test:e2e": "npm run build && npx testcafe",
     "test:e2e:dev": "npx testcafe --live --dev",
     "DOCS:update:test-deps": "If CI succeeds, these should be good to update",
-    "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing-helpers@latest @types/jest@latest codecov@latest eslint@7 eslint-plugin-testcafe@latest jest@latest sinon@latest testcafe@latest",
+    "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing-helpers@latest @types/jest@latest eslint@7 eslint-plugin-testcafe@latest jest@latest sinon@latest testcafe@latest",
     "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
-    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest @babel/plugin-proposal-class-properties@latest @babel/plugin-proposal-decorators@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
-    "codecov": "npx codecov"
+    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest @babel/plugin-proposal-class-properties@latest @babel/plugin-proposal-decorators@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest"
   }
 }
