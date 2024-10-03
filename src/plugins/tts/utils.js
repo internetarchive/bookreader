@@ -30,7 +30,7 @@ const COLUMN_TO_LANG_INDEX = {
   'Endonym': 1,
   'ISO 639-1': 2,
   'ISO 639-2/T': 3,
-  'ISO 639-2/B': 4
+  'ISO 639-2/B': 4,
 };
 
 /**

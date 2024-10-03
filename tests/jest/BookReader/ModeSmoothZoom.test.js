@@ -19,7 +19,7 @@ function dummy_mode(overrides = {}) {
       boundingClientRect: { left: 0, top: 0 },
     },
     scaleCenter: {x: 0.5, y: 0.5},
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -75,9 +75,9 @@ describe('ModeSmoothZoom', () => {
         clientHeight: 100,
         boundingClientRect: {
           left: 5,
-          top: 50
-        }
-      }
+          top: 50,
+        },
+      },
     });
     const msz = new ModeSmoothZoom(mode);
     expect(msz.scaleCenter).toEqual({ x: 0.5, y: 0.5 });

@@ -66,10 +66,10 @@ describe('UrlPlugin tests', () => {
       const url1 = '/mode/2up?ref=ol&ui=embed&wrapper=false&view=theater';
 
       expect(urlPlugin.urlStringToUrlState(url)).toEqual(
-        {page: 'n7', mode: '2up', q: 'hello', view: 'theather', foo: 'bar', sort: 'title_asc'}
+        {page: 'n7', mode: '2up', q: 'hello', view: 'theather', foo: 'bar', sort: 'title_asc'},
       );
       expect(urlPlugin.urlStringToUrlState(url1)).toEqual(
-        {mode: '2up', ref: 'ol', ui: 'embed', wrapper: 'false', view: 'theater'}
+        {mode: '2up', ref: 'ol', ui: 'embed', wrapper: 'false', view: 'theater'},
       );
     });
 

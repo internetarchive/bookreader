@@ -29,7 +29,7 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
   /** @override */
   getVoices() {
     return [
-      { default: true, lang: "en-US", localService: false, name: "Festival - English (US)", voiceURI: null }
+      { default: true, lang: "en-US", localService: false, name: "Festival - English (US)", voiceURI: null },
     ];
   }
 
@@ -45,7 +45,7 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
       url: '/bookreader/BookReader/soundmanager/swf',
       useHTML5Audio: true,
       //flash 8 version of swf is buggy when calling play() on a sound that is still loading
-      flashVersion: 9
+      flashVersion: 9,
     });
   }
 
@@ -125,7 +125,7 @@ class FestivalTTSSound {
       onresume: async () => {
         await sleep(25);
         if (this.rate != 1) this.sound.setPlaybackRate(this.rate);
-      }
+      },
     });
     return this.sound.load();
   }

@@ -11,7 +11,7 @@ describe('Search Provider', () => {
   describe('constructor', () => {
     const provider = new searchProvider({
       onProviderChange: sinon.fake(),
-      bookreader: {}
+      bookreader: {},
     });
 
     expect(provider.bookreader).toBeDefined();
@@ -27,7 +27,7 @@ describe('Search Provider', () => {
     test('Event: catches `BookReader:SearchStarted`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
-        bookreader: {}
+        bookreader: {},
       });
       sinon.spy(provider, 'updateMenu');
       window.dispatchEvent(new CustomEvent('BookReader:SearchStarted', { detail: { props: { term: 'foo' }}}));
@@ -36,7 +36,7 @@ describe('Search Provider', () => {
     test('Event: catches `BookReader:SearchCallback`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
-        bookreader: {}
+        bookreader: {},
       });
       sinon.spy(provider, 'updateMenu');
       const brStub = {};
@@ -47,7 +47,7 @@ describe('Search Provider', () => {
     test('Event: catches `BookReader:SearchCallbackEmpty`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
-        bookreader: {}
+        bookreader: {},
       });
       sinon.spy(provider, 'onSearchRequestError');
       sinon.spy(provider, 'updateMenu');
@@ -60,7 +60,7 @@ describe('Search Provider', () => {
     test('Event: catches `BookReader:SearchCallbackNotIndexed`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
-        bookreader: {}
+        bookreader: {},
       });
       const brStub = {};
       sinon.spy(provider, 'onSearchRequestError');
@@ -73,7 +73,7 @@ describe('Search Provider', () => {
     test('Event: catches `BookReader:SearchCallbackError`', async() => {
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
-        bookreader: {}
+        bookreader: {},
       });
       sinon.spy(provider, 'onSearchRequestError');
       sinon.spy(provider, 'updateMenu');
@@ -88,8 +88,8 @@ describe('Search Provider', () => {
         onProviderChange: sinon.fake(),
         bookreader: {
           leafNumToIndex: sinon.fake(),
-          _searchPluginGoToResult: sinon.fake()
-        }
+          _searchPluginGoToResult: sinon.fake(),
+        },
       });
 
       const searchResultStub = {
@@ -97,7 +97,7 @@ describe('Search Provider', () => {
       };
       fixtureSync(provider.component).dispatchEvent(
         new CustomEvent('resultSelected',
-          { detail: searchResultStub })
+          { detail: searchResultStub }),
       );
 
       expect(provider.bookreader._searchPluginGoToResult.callCount).toEqual(1);
@@ -105,15 +105,15 @@ describe('Search Provider', () => {
     test('update url when search is cancelled or input cleared', async() => {
       const urlPluginMock = {
         pullFromAddressBar: sinon.fake(),
-        removeUrlParam: sinon.fake()
+        removeUrlParam: sinon.fake(),
       };
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
         bookreader: {
           leafNumToIndex: sinon.fake(),
           _searchPluginGoToResult: sinon.fake(),
-          urlPlugin: urlPluginMock
-        }
+          urlPlugin: urlPluginMock,
+        },
       });
 
       provider.onSearchCanceled();
@@ -139,7 +139,7 @@ describe('Search Provider', () => {
           fieldToSet = field;
           valueOfFieldToSet = val;
           setUrlParamCalled = true;
-        }
+        },
       };
       const provider = new searchProvider({
         onProviderChange: sinon.fake(),
@@ -147,8 +147,8 @@ describe('Search Provider', () => {
           leafNumToIndex: sinon.fake(),
           _searchPluginGoToResult: sinon.fake(),
           urlPlugin: urlPluginMock,
-          search: sinon.fake()
-        }
+          search: sinon.fake(),
+        },
       });
 
       const searchInitiatedEvent = new CustomEvent('bookSearchInitiated', { detail: { query: 'foobar' } });

@@ -39,7 +39,7 @@ describe('WebTTSEngine', () => {
         localService: true,
         name: "Daria",
         voiceURI: "com.apple.voice.compact.bg-BG.Daria",
-      }
+      },
     ];
     const voices = WebTTSEngine.prototype.getVoices();
     expect(voices.length).toBe(3);
@@ -61,7 +61,7 @@ describe('WebTTSEngine', () => {
         localService: true,
         name: "Daria",
         voiceURI: "com.apple.voice.compact.bg-BG.Daria",
-      }
+      },
     ];
     const voices = WebTTSEngine.prototype.getVoices();
     expect(voices.length).toBe(2);

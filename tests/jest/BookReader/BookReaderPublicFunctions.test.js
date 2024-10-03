@@ -31,14 +31,14 @@ describe('BookReader.prototype.toggleFullscreen', ()  => {
     br.jumpToIndex = sinon.fake();
     br.refs.$brContainer = {
       css: sinon.fake(),
-      animate: (options, speed, style, callback) => callback()
+      animate: (options, speed, style, callback) => callback(),
     };
     br.refs.$br = {
       updateBrClasses: sinon.fake(),
       removeClass: sinon.fake(),
       addClass: sinon.fake(),
       css: sinon.fake(),
-      animate: (options, speed, style, callback) => callback()
+      animate: (options, speed, style, callback) => callback(),
     };
 
     await br.toggleFullscreen();
@@ -124,7 +124,7 @@ describe('BookReader.prototype.exitFullScreen', () => {
     };
     br.refs.$brContainer = {
       css: sinon.fake(),
-      animate: (options, speed, style, callback) => callback()
+      animate: (options, speed, style, callback) => callback(),
     };
     await br.exitFullScreen();
     expect(br.switchMode.callCount).toEqual(1);

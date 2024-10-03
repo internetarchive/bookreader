@@ -71,7 +71,7 @@ afterEach(() => {
 describe("BRChaptersPlugin", () => {
   beforeEach(() => {
     sinon.stub(BookModel.prototype, "getPageIndex").callsFake((str) =>
-      parseFloat(str)
+      parseFloat(str),
     );
   });
 
@@ -159,7 +159,7 @@ describe("BRChaptersPlugin", () => {
           menuProviders: {},
           addMenuShortcut: sinon.stub(),
           updateMenuContents: sinon.stub(),
-        }
+        },
       };
       BookReader.prototype._chaptersRender.call(fakeBR);
       expect(fakeBR.shell.menuProviders['chapters']).toBeTruthy();
@@ -178,7 +178,7 @@ describe("BRChaptersPlugin", () => {
         _tocEntries: SAMPLE_TOC,
         _chaptersPanel: {
           currentChapter: null,
-        }
+        },
       };
       BookReader.prototype._chaptersUpdateCurrent.call(fakeBR);
       expect(fakeBR._chaptersPanel.currentChapter).toEqual(SAMPLE_TOC[1]);

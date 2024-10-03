@@ -4,7 +4,7 @@
  * Plugin which adds an autoplay feature. Useful for kiosk situations.
  */
 jQuery.extend(BookReader.defaultOptions, {
-  enableAutoPlayPlugin: true
+  enableAutoPlayPlugin: true,
 });
 
 /**
@@ -66,7 +66,7 @@ BookReader.prototype.autoToggle = function(overrides) {
 
   const options = $.extend({
     flipSpeed: this.flipSpeed,
-    flipDelay: this.flipDelay
+    flipDelay: this.flipDelay,
   }, overrides);
 
   this.flipSpeed = typeof options.flipSpeed === "number" ? options.flipSpeed : this.flipSpeed;

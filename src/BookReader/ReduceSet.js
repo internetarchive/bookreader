@@ -7,7 +7,7 @@
 /** @type {ReduceSet} */
 export const IntegerReduceSet = {
   floor: Math.floor,
-  decr(n) { return n - 1; }
+  decr(n) { return n - 1; },
 };
 
 /** @type {ReduceSet} */
@@ -17,7 +17,7 @@ export const Pow2ReduceSet = {
   },
   decr(n) {
     return 2 ** (Math.log2(n) - 1);
-  }
+  },
 };
 
 export const NAMED_REDUCE_SETS = {

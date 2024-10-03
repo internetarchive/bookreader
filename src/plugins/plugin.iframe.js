@@ -33,7 +33,7 @@ export function _attachEventListeners(br, parent = window.parent) {
 
     parent.postMessage(
       { type: MESSAGE_TYPE_FRAGMENT_CHANGE, fragment },
-      '*'
+      '*',
     );
   });
 

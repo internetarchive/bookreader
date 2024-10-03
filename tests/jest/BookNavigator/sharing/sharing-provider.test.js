@@ -11,7 +11,7 @@ const item = {
     identifier: 'stubby-id',
     creator: 'mr. big',
     title: 'Stubby title',
-  }
+  },
 };
 
 const baseHost = 'foo.org';
@@ -23,8 +23,8 @@ describe('Sharing Provider', () => {
       item,
       baseHost,
       bookreader: {
-        options: { subPrefix }
-      }
+        options: { subPrefix },
+      },
     });
 
     expect(provider.id).toEqual('share');
@@ -39,8 +39,8 @@ describe('Sharing Provider', () => {
         item,
         baseHost,
         bookreader: {
-          options: { subPrefix }
-        }
+          options: { subPrefix },
+        },
       });
 
       expect(fixtureSync(provider.component).fileSubPrefix).toEqual(subPrefix);

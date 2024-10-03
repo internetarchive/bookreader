@@ -116,7 +116,7 @@ describe("computePositions", () => {
     leafEdgesRightEnd: 0.252,
     leafEdgesRightFullWidth: 0.006,
     spreadWidth: 0.492,
-    bookWidth: 0.498
+    bookWidth: 0.498,
   };
   const SPREAD_EXPECTED = {
     leafEdgesLeftStart: -0.246,
@@ -139,7 +139,7 @@ describe("computePositions", () => {
     leafEdgesRightEnd: 0.252,
     leafEdgesRightFullWidth: 0.004,
     spreadWidth: 0.492,
-    bookWidth: 0.498
+    bookWidth: 0.498,
   };
   const RIGHT_COVER_EXPECTED = {
     leafEdgesLeftStart: -0.242,
@@ -162,7 +162,7 @@ describe("computePositions", () => {
     leafEdgesRightEnd: 0.01,
     leafEdgesRightFullWidth: 0,
     spreadWidth: 0.246,
-    bookWidth: 0.252
+    bookWidth: 0.252,
   };
 
   test("left cover page", () => {

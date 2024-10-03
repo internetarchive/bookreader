@@ -17,7 +17,7 @@ afterEach(() => {
 test('Initialzation enables IntersectionObserver and defaults', () => {
   const observe = jest.fn();
   window.IntersectionObserver = jest.fn(() => ({
-    observe
+    observe,
   }));
   br.init();
   expect(br.hasKeyFocus).toBe(true);

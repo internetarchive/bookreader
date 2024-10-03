@@ -35,8 +35,8 @@ test('updates params when window receives a message', () => {
   window.dispatchEvent(new MessageEvent('message', {
     data: {
       type: 'bookReaderFragmentChange',
-      fragment: ''
-    }
+      fragment: '',
+    },
   }));
   expect(br.updateFromParams.callCount).toBe(1);
 });

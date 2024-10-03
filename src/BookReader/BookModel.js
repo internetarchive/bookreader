@@ -45,7 +45,7 @@ export class BookModel {
 
     this._medianPageSize = {
       width: widths[Math.floor(widths.length / 2)],
-      height: heights[Math.floor(heights.length / 2)]
+      height: heights[Math.floor(heights.length / 2)],
     };
     return this._medianPageSize;
   }
