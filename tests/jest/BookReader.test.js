@@ -137,7 +137,7 @@ test('adds q= term to urlMode=history query string', () => {
   expect(br.queryStringFromParams(
     { search: 'test value' },
     'name=value',
-    'history'
+    'history',
   )).toBe('?name=value&q=test+value');
 });
 
@@ -145,7 +145,7 @@ test('replaces q= term in urlMode=history query string', () => {
   expect(br.queryStringFromParams(
     { search: 'test+value' },
     'q=foo&a=1&b=2&c=3',
-    'history'
+    'history',
   )).toBe('?q=test%2Bvalue&a=1&b=2&c=3');
 });
 
@@ -153,7 +153,7 @@ test('does not add q= term to urlMode=hash query string', () => {
   expect(br.queryStringFromParams(
     { search: 'test value' },
     'name=value',
-    'hash'
+    'hash',
   )).toBe('?name=value');
 });
 
@@ -228,7 +228,7 @@ describe('nextReduce', () => {
       // auto doesn't get read by nextReduce (bug)
       // It looks like width/height are set for 1up, and auto is set for 2up,
       // and neither is set for thumb
-      { reduce: 6.2, autofit: "auto" }
+      { reduce: 6.2, autofit: "auto" },
     ];
 
     const currentReduces = [

@@ -11,13 +11,13 @@ const downloads = [
   {
     type: "PDF",
     url: "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.pdf",
-    note: "PDF files contain high quality images of pages."
+    note: "PDF files contain high quality images of pages.",
   },
   {
     type: "ePub",
     url: "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.epub",
-    note: "ePub files are smaller in size, but may contain errors."
-  }
+    note: "ePub files are smaller in size, but may contain errors.",
+  },
 ];
 
 

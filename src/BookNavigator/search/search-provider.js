@@ -13,7 +13,7 @@ let searchState = {
 export default class SearchProvider {
   constructor({
     onProviderChange,
-    bookreader
+    bookreader,
   }) {
     /* search menu events */
     this.onBookSearchInitiated = this.onBookSearchInitiated.bind(this);
@@ -72,7 +72,7 @@ export default class SearchProvider {
       errorMessage: '',
     };
     const updateMenuFor = {
-      searchCanceled: true
+      searchCanceled: true,
     };
     this.updateMenu(updateMenuFor);
 

@@ -62,7 +62,7 @@ export class IaBookReader extends LitElement {
     let modalManager = document.querySelector('modal-manager');
     if (!modalManager) {
       modalManager = document.createElement(
-        'modal-manager'
+        'modal-manager',
       );
       document.body.appendChild(modalManager);
     }

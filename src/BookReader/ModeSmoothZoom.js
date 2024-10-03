@@ -65,7 +65,7 @@ export class ModeSmoothZoom {
       listeners: {
         start: this._pinchStart,
         end: this._pinchEnd,
-      }
+      },
     });
     if (isSamsungInternet()) {
       // Samsung internet pinch-zoom will not work unless we disable
@@ -79,7 +79,7 @@ export class ModeSmoothZoom {
             minSpeed: 100,
             allowResume: true,
           },
-          listeners: { move: this._dragMove }
+          listeners: { move: this._dragMove },
         });
     }
 
@@ -134,7 +134,7 @@ export class ModeSmoothZoom {
         start: this._pinchStart,
         move: this._pinchMove,
         end: this._pinchEnd,
-      }
+      },
     });
   }
 
@@ -159,7 +159,7 @@ export class ModeSmoothZoom {
       listeners: {
         start: this._pinchStart,
         end: this._pinchEnd,
-      }
+      },
     });
     // Want this to happen after the pinchMoveFrame,
     // if one is in progress; otherwise setting oldScale
@@ -185,7 +185,7 @@ export class ModeSmoothZoom {
     this.mode.$container.style.overflow = "hidden";
     this.pinchMoveFramePromiseRes = null;
     this.pinchMoveFramePromise = new Promise(
-      (res) => (this.pinchMoveFramePromiseRes = res)
+      (res) => (this.pinchMoveFramePromiseRes = res),
     );
     this.updateScaleCenter({
       clientX: this.lastEvent.clientX,

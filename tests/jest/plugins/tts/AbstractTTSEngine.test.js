@@ -106,7 +106,7 @@ for (const dummyVoice of [dummyVoiceHyphens, dummyVoiceUnderscores]) {
         { default: false, lang: "ru-RU", name: "Google русский", localService: false, voiceURI: "Google русский" },
         { default: false, lang: "zh-CN", name: "Google 普通话（中国大陆）", localService: false, voiceURI: "Google 普通话（中国大陆）" },
         { default: false, lang: "zh-HK", name: "Google 粤語（香港）", localService: false, voiceURI: "Google 粤語（香港）" },
-        { default: false, lang: "zh-TW", name: "Google 國語（臺灣）", localService: false, voiceURI: "Google 國語（臺灣）" }
+        { default: false, lang: "zh-TW", name: "Google 國語（臺灣）", localService: false, voiceURI: "Google 國語（臺灣）" },
       ];
 
       expect(getBestBookVoice(voices, 'en', ['en-CA', 'en'])).toBe(voices[0]);

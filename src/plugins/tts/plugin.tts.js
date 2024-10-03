@@ -306,7 +306,7 @@ BookReader.prototype.ttsHighlightChunk = function(chunk) {
 
   // group by index; currently only possible to have chunks on one page :/
   this._ttsBoxesByIndex = {
-    [pageIndex]: chunk.lineRects.map(([l, b, r, t]) => ({l, r, b, t}))
+    [pageIndex]: chunk.lineRects.map(([l, b, r, t]) => ({l, r, b, t})),
   };
 
   // update any already created pages

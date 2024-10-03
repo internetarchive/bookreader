@@ -71,14 +71,14 @@ export class BookNavigator extends LitElement {
       'volumes',
       'chapters',
       'search',
-      'bookmarks'
+      'bookmarks',
     ];
   }
 
   disconnectedCallback() {
     this.sharedObserver.removeObserver({
       target: this.mainBRContainer,
-      handler: this.sharedObserverHandler
+      handler: this.sharedObserverHandler,
     });
   }
 
@@ -148,7 +148,7 @@ export class BookNavigator extends LitElement {
       item: this.itemMD,
       signedIn: this.signedIn,
       isAdmin: this.isAdmin,
-      onProviderChange: () => {}
+      onProviderChange: () => {},
     };
   }
 
@@ -220,7 +220,7 @@ export class BookNavigator extends LitElement {
           const method = Object.keys(bookmarks).length ? 'add' : 'remove';
           this[`${method}MenuShortcut`]('bookmarks');
           this.updateMenuContents();
-        }
+        },
       });
     }
 
@@ -240,7 +240,7 @@ export class BookNavigator extends LitElement {
               this.updateSideMenu('volumes', 'open');
             });
           }
-        }
+        },
       });
     }
 
@@ -311,7 +311,7 @@ export class BookNavigator extends LitElement {
    */
   updateMenuContents() {
     const {
-      search, downloads, visualAdjustments, share, bookmarks, volumes, chapters
+      search, downloads, visualAdjustments, share, bookmarks, volumes, chapters,
     } = this.menuProviders;
     const availableMenus = [volumes, chapters, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
 
@@ -460,7 +460,7 @@ export class BookNavigator extends LitElement {
     window.archive_analytics?.send_event(
       'BookReader',
       `contextmenu-${this.bookIsRestricted ? 'restricted' : 'unrestricted'}`,
-      e.target?.classList?.value
+      e.target?.classList?.value,
     );
     if (!this.bookIsRestricted) {
       return;
@@ -479,7 +479,7 @@ export class BookNavigator extends LitElement {
     this.sharedObserverHandler = { handleResize: this.handleResize.bind(this) };
     this.sharedObserver?.addObserver({
       target: this.mainBRContainer,
-      handler: this.sharedObserverHandler
+      handler: this.sharedObserverHandler,
     });
   }
 

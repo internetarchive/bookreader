@@ -53,7 +53,7 @@ export class Toolbar {
         $('<a>')
           .attr({href: br.bookUrl, title: br.bookUrlTitle})
           .addClass('BRreturn')
-          .html(br.bookUrlText || br.bookTitle)
+          .html(br.bookUrlText || br.bookTitle),
       );
     } else if (br.bookTitle) {
       $titleSectionEl.append(br.bookUrlText || br.bookTitle);
@@ -113,7 +113,7 @@ export class Toolbar {
       onLoad: () => {
         br.trigger(EVENTS.stop);
         br.$('.BRpageviewValue').val(window.location.href);
-      }
+      },
     });
     br.$('.info').colorbox({
       inline: true,
@@ -121,7 +121,7 @@ export class Toolbar {
       href: br.$('.BRinfo'),
       onLoad: () => {
         br.trigger(EVENTS.stop);
-      }
+      },
     });
   }
 
@@ -213,7 +213,7 @@ export class Toolbar {
     $form.find('.twitter-share-button').on("click", () => {
       const params = $.param({
         url: this._getSocialShareUrl(),
-        text: br.bookTitle
+        text: br.bookTitle,
       });
       const url = 'https://twitter.com/intent/tweet?' + params;
       createPopup(url, 600, 400, 'Share');

@@ -7,20 +7,20 @@ const downloadableTypes = [
   ["ePub", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.epub"],
   ["Plain Text", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala_djvu.txt"],
   ["DAISY", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala_daisy.zip"],
-  ["Kindle", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.mobi"]
+  ["Kindle", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.mobi"],
 ];
 
 const downloads = [
   {
     type: "PDF",
     url: "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.pdf",
-    note: "PDF files contain high quality images of pages."
+    note: "PDF files contain high quality images of pages.",
   },
   {
     type: "ePub",
     url: "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.epub",
-    note: "ePub files are smaller in size, but may contain errors."
-  }
+    note: "ePub files are smaller in size, but may contain errors.",
+  },
 ];
 
 afterEach(() => {
@@ -52,7 +52,7 @@ describe('Downloads Provider', () => {
 
   test('render view if book is protected', () => {
     const provider = new DownloadsProvider({
-      bookreader: { options: { isProtected: true } }
+      bookreader: { options: { isProtected: true } },
     });
 
     expect(provider.isBookProtected).toEqual(true);

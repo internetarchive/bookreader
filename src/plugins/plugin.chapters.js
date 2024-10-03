@@ -118,8 +118,8 @@ BookReader.prototype._chaptersRenderMarker = function(tocEntry, entryIndex) {
         .text(chapterStr)
         .append(
           $('<div class="BRchapterPage" />')
-            .text(this.book.getPageName(tocEntry.pageIndex))
-        )
+            .text(this.book.getPageName(tocEntry.pageIndex)),
+        ),
     )
     .addClass('BRchapter')
     .css({ left: percentThrough })
@@ -179,7 +179,7 @@ BookReader.prototype.getOpenLibraryRecord = async function (olHost, ocaid) {
  * @param {PageIndex} curIndex
  */
 BookReader.prototype._chaptersUpdateCurrent = function(
-  curIndex = (this.mode == 2 ? Math.max(...this.displayedIndices) : this.firstIndex)
+  curIndex = (this.mode == 2 ? Math.max(...this.displayedIndices) : this.firstIndex),
 ) {
   const tocEntriesIndexed = this._tocEntries.filter((el) => el.pageIndex != undefined).reverse();
   const currChapter = tocEntriesIndexed[

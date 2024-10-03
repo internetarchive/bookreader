@@ -252,7 +252,7 @@ export class ModeThumb {
     this.br.thumbColumns = clamp(
       this.br.thumbColumns,
       this.br.options.thumbMinZoomColumns,
-      this.br.options.thumbMaxZoomColumns
+      this.br.options.thumbMaxZoomColumns,
     );
 
     if (this.br.thumbColumns != oldColumns) {
@@ -280,7 +280,7 @@ export class ModeThumb {
     this.br.refs.$brContainer.empty();
     this.br.refs.$brContainer.css({
       overflowY: 'scroll',
-      overflowX: 'auto'
+      overflowX: 'auto',
     });
 
     this.br.refs.$brPageViewEl = $("<div class='BRpageview'></div>");

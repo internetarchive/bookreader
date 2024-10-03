@@ -20,7 +20,7 @@ describe('createPopup', () => {
     expect(openStub.args[0]).toEqual([
       'openlibrary.org',
       'Open Library',
-      'status=1,width=100,height=100,top=334,left=462'
+      'status=1,width=100,height=100,top=334,left=462',
     ]);
   });
 });

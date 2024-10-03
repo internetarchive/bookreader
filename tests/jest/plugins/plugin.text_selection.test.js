@@ -104,7 +104,7 @@ describe("Generic tests", () => {
           uri: '//archive.org/download/BookReader/img/page004.jpg' },
         { width: 800, height: 1200,
           uri: '//archive.org/download/BookReader/img/page005.jpg' },
-      ]
+      ],
     ],
   });
   br.init();

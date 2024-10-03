@@ -40,7 +40,7 @@ beforeEach(() => {
           uri: '//archive.org/download/BookReader/img/page004.jpg' },
         { width: 800, height: 1200,
           uri: '//archive.org/download/BookReader/img/page005.jpg' },
-      ]
+      ],
     ],
   });
   br.init();
@@ -89,8 +89,8 @@ describe('Navbar controls overrides', () => {
           visible: true,
           className: 'viewmode',
           excludedModes: [1],
-        }
-      }
+        },
+      },
     };
     createBRWithOverrides(overrides);
 
@@ -107,9 +107,9 @@ describe('Navbar controls overrides', () => {
     const overrides = {
       controls: {
         onePage: {
-          visible: false
-        }
-      }
+          visible: false,
+        },
+      },
     };
     createBRWithOverrides(overrides);
 
@@ -122,9 +122,9 @@ describe('Navbar controls overrides', () => {
     const overrides = {
       controls: {
         onePage: {
-          className: 'foo'
-        }
-      }
+          className: 'foo',
+        },
+      },
     };
     createBRWithOverrides(overrides);
 
@@ -139,9 +139,9 @@ describe('Navbar controls overrides', () => {
         onePage: {
           template: () => (
             '<button id="foo"></button>'
-          )
-        }
-      }
+          ),
+        },
+      },
     };
     createBRWithOverrides(overrides);
 
@@ -154,12 +154,12 @@ describe('Navbar controls overrides', () => {
     const overrides = {
       controls: {
         viewmode: {
-          visible: true
+          visible: true,
         },
         onePage: {
-          visible: false
-        }
-      }
+          visible: false,
+        },
+      },
     };
     createBRWithOverrides(overrides);
 

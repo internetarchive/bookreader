@@ -29,8 +29,8 @@ export default class PageChunk {
       cache: true,
       data: {
         path: `${bookPath}_djvu.xml`,
-        page: leafIndex
-      }
+        page: leafIndex,
+      },
     });
     return PageChunk._fromTextWrapperResponse(leafIndex, chunks);
   }

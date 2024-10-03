@@ -51,7 +51,7 @@ class IIIFPlugin {
         const body = bodyArr instanceof Array ? bodyArr[0] : bodyArr;
         const uri = body.service[0].id;
         return `${uri}/full/pct:${percent}/0/default.jpg`;
-      }
+      },
     };
 
     if (manifest.viewingDirection == "top-to-bottom" || manifest.viewingDirection == "bottom-to-top") {
@@ -100,7 +100,7 @@ class IIIFPlugin {
         const percent = Math.floor(100 * 1 / reduce);
         const uri = manifest.sequences[0].canvases[pageIndex].images[0].resource.service['@id'];
         return `${uri}/full/pct:${percent}/0/default.jpg`;
-      }
+      },
     };
 
     let spread = [];

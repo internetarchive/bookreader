@@ -23,9 +23,9 @@ const results = {
       r: 1598,
       l: 50,
       page_height: 2940,
-      page: 37
-    }]
-  }]
+      page: 37,
+    }],
+  }],
 };
 
 marshallSearchResults(results, () => '', '{{{', '}}}');
@@ -46,9 +46,9 @@ const resultWithScript = {
       r: 1598,
       l: 50,
       page_height: 2940,
-      page: 37
-    }]
-  }]
+      page: 37,
+    }],
+  }],
 };
 
 marshallSearchResults(resultWithScript, () => '', '{{{', '}}}');

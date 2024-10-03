@@ -25,9 +25,9 @@ function make_dummy_br(overrides = {}) {
     _components: {
       navbar: {
         updateNavIndexThrottled() {},
-      }
+      },
     },
-    data: []
+    data: [],
   }, overrides);
 }
 

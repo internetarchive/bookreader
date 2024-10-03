@@ -6,7 +6,7 @@ export default class SharingProvider {
   constructor({
     item,
     baseHost,
-    bookreader
+    bookreader,
   }) {
     const { identifier, creator, title } = item?.metadata;
     const creatorToUse = Array.isArray(creator) ? creator[0] : creator;
