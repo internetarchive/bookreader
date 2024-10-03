@@ -7,7 +7,7 @@ const shared = {
   mode: 'production',
 
   watchOptions: {
-    ignored: ['BookReader/**', 'node_modules/**', 'tests/**']
+    ignored: ['BookReader/**', 'node_modules/**', 'tests/**'],
   },
 
   target: ['web', 'es5'],
@@ -18,8 +18,8 @@ const shared = {
         test: /\.js$/,
         exclude: /node_modules[/\\](?!(lit-element|lit-html|lit|@lit)[/\\]).*/,
         loader: "babel-loader",
-      }
-    ]
+      },
+    ],
   },
 
   output: {
@@ -53,7 +53,7 @@ module.exports = [
       'plugins/plugin.tts.js': { import: './src/plugins/tts/plugin.tts.js', dependOn: 'BookReader.js' },
       'plugins/plugin.url.js': { import: './src/plugins/url/plugin.url.js', dependOn: 'BookReader.js' },
       'plugins/plugin.vendor-fullscreen.js': { import: './src/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' },
-      'ia-bookreader-bundle.js': { import: './src/ia-bookreader/ia-bookreader.js', dependOn: 'BookReader.js' }
+      'ia-bookreader-bundle.js': { import: './src/ia-bookreader/ia-bookreader.js', dependOn: 'BookReader.js' },
     },
 
     externals: {
@@ -66,7 +66,7 @@ module.exports = [
         // Make $ and jQuery available without importing
         $: 'jquery',
         jQuery: 'jquery',
-      })
+      }),
     ],
 
     output: {
@@ -77,7 +77,7 @@ module.exports = [
     // Accurate source maps at the expense of build time.
     // The source map is intentionally exposed
     // to users via sourceMapFilename for prod debugging.
-    devtool: 'source-map'
+    devtool: 'source-map',
   },
 
   // jQuery gets its own build, so that it can be used as an "external" in

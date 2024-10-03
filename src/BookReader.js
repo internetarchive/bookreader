@@ -275,7 +275,7 @@ BookReader.prototype.getActivePageContainerElementsForIndex = function(pageIndex
   return [
     this._modes.mode2Up.mode2UpLit.pageContainerCache[pageIndex]?.$container?.[0],
     this._modes.mode1Up.mode1UpLit.pageContainerCache[pageIndex]?.$container?.[0],
-    ...(this.mode == this.constModeThumb ? this.$(`.pagediv${pageIndex}`).toArray() : [])
+    ...(this.mode == this.constModeThumb ? this.$(`.pagediv${pageIndex}`).toArray() : []),
   ].filter(x => x);
 };
 
@@ -816,7 +816,7 @@ BookReader.prototype.bindGestures = function(jElement) {
  */
 BookReader.prototype.drawLeafsThrottled = utils.throttle(
   BookReader.prototype.drawLeafs,
-  250 // 250 ms gives quick feedback, but doesn't eat cpu
+  250, // 250 ms gives quick feedback, but doesn't eat cpu
 );
 
 /**
@@ -845,12 +845,12 @@ BookReader.prototype.resizeBRcontainer = function(animate) {
   if (animate) {
     this.refs.$brContainer.animate({
       top: this.getToolBarHeight(),
-      bottom: this.getFooterHeight()
+      bottom: this.getFooterHeight(),
     }, this.constResizeAnimationDuration, 'linear');
   } else {
     this.refs.$brContainer.css({
       top: this.getToolBarHeight(),
-      bottom: this.getFooterHeight()
+      bottom: this.getFooterHeight(),
     });
   }
 };
@@ -1012,8 +1012,8 @@ BookReader.prototype.switchMode = function(
   {
     suppressFragmentChange = false,
     init = false,
-    pageFound = false
-  } = {}
+    pageFound = false,
+  } = {},
 ) {
   // Skip checks before init() complete
   if (this.init.initComplete) {
@@ -1209,7 +1209,7 @@ BookReader.prototype.currentIndex = function() {
  */
 BookReader.prototype.updateFirstIndex = function(
   index,
-  { suppressFragmentChange = false } = {}
+  { suppressFragmentChange = false } = {},
 ) {
   // If there's no change, do nothing
   if (this.firstIndex === index) return;
@@ -1424,7 +1424,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
       if ($brNavCntlBtmEl.hasClass('BRdn')) {
         if (self.refs.$BRtoolbar)
           promises.push(self.refs.$BRtoolbar.animate(
-            {top: self.getToolBarHeight() * -1}
+            {top: self.getToolBarHeight() * -1},
           ).promise());
         promises.push(self.$('.BRfooter').animate({bottom: self.getFooterHeight() * -1}).promise());
         $brNavCntlBtmEl.addClass('BRup').removeClass('BRdn');
@@ -1454,7 +1454,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
           self.resizeBRcontainer();
         }
       });
-    }
+    },
   );
   $brNavCntlBtmEl
     .on("mouseover", function() {
@@ -1506,7 +1506,7 @@ BookReader.prototype.updateFromParams = function(params) {
   if (mode) {
     this.switchMode(
       mode,
-      { init: init, suppressFragmentChange: !fragmentChange }
+      { init: init, suppressFragmentChange: !fragmentChange },
     );
   }
 
@@ -1608,7 +1608,7 @@ BookReader.prototype.showProgressPopup = function(msg, onCloseCallback) {
 
   const bar = document.createElement("div");
   $(bar).css({
-    height:   '20px'
+    height:   '20px',
   }).prop('className', 'BRprogressbar');
   $(this.popup).append(bar);
 
@@ -1869,7 +1869,7 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
 BookReader.prototype.queryStringFromParams = function(
   params,
   currQueryString,
-  urlMode = 'hash'
+  urlMode = 'hash',
 ) {
   const newParams = new URLSearchParams(currQueryString);
 

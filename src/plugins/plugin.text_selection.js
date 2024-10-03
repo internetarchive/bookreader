@@ -89,7 +89,7 @@ export class TextSelectionPlugin {
       url: applyVariables(this.options.fullDjvuXmlUrl, this.optionVariables),
       dataType: this.options.jsonp ? "jsonp" : "html",
       cache: true,
-      error: (e) => undefined
+      error: (e) => undefined,
     }).then((res) => {
       try {
         const xmlMap = $.parseXML(res);
@@ -475,7 +475,7 @@ function determineRealRects(parentEl, selector) {
           origRect.width,
           origRect.height,
         )];
-      })
+      }),
   );
   document.body.removeChild(parentEl);
   Object.assign(parentEl.style, initals);

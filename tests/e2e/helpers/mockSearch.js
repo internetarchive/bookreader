@@ -30,7 +30,7 @@ const MOCKED_RESPONSE_NOT_FOUND = {
   "page_count": 1,
   "body_length": 666,
   "leaf0_missing": true,
-  "matches": []
+  "matches": [],
 };
 
 const MOCKED_RESPONSE_FOUND = {
@@ -51,8 +51,8 @@ const MOCKED_RESPONSE_FOUND = {
               "b": 811,
               "t": 753,
               "page": PAGE_FIRST_RESULT_ADJUSTED,
-              "l": 894
-            }
+              "l": 894,
+            },
           ],
           "b": 1935,
           "t": 686,
@@ -60,9 +60,9 @@ const MOCKED_RESPONSE_FOUND = {
           "r": 1704,
           "l": 148,
           "page_height": 2940,
-          "page": PAGE_FIRST_RESULT_ADJUSTED
-        }
-      ]
+          "page": PAGE_FIRST_RESULT_ADJUSTED,
+        },
+      ],
     },
     {
       "text": "That when the Dodger, and his accomplished friend Master Bates, joined in the hue-and-cry which was raised at Oliver's heels, in consequence of their executing an illegal conveyance of Mr. Brownlow's personal property, as has been already described, they were actuated by a very laudable and becoming regard for themselves ; and forasmuch as the freedom of the subject and the liberty of the individual are among the first and proudest boasts of a true-hearted Englishman, so, I need hardly beg the reader to observe, that this action should tend to exalt them in the opinion of all jniblic and patriotic men, in almost as great a degree as this strong proof of their anxiety for their own preservation and safety goes to corroborate and confirm the little code of laws which certain profound and sound-judging philosophers have laid down as the mainsprings of all Nature's deeds and actions : the said philosophers very wisely reducing the good lady's proceedings to matters of maxim and {{{" + TEST_TEXT_FOUND + "}}} : and, by a very neat and pretty compliment   to   her   exalted   wisdom   and   understanding,   putting entirely out of sight any considerations of heart, or generous impulse and feeling. For, these are matters totally beneath a female who is acknowledged by universal admission to be far above the numerous little foibles and weaknesses of her sex.",
@@ -74,8 +74,8 @@ const MOCKED_RESPONSE_FOUND = {
               "b": 2567,
               "t": 2507,
               "page": 162,
-              "l": 441
-            }
+              "l": 441,
+            },
           ],
           "b": 2631,
           "t": 1439,
@@ -83,11 +83,11 @@ const MOCKED_RESPONSE_FOUND = {
           "r": 1620,
           "l": 56,
           "page_height": 2940,
-          "page": 162
-        }
-      ]
-    }
-  ]
+          "page": 162,
+        },
+      ],
+    },
+  ],
 };
 
 export const SEARCH_MATCHES_LENGTH = MOCKED_RESPONSE_FOUND.matches.length;

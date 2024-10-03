@@ -33,7 +33,7 @@ BookReader.prototype.archiveAnalyticsSendFragmentChange = function() {
     const values = {
       bookreader: "user_changed_view",
       itemid: this.bookId,
-      cache_bust: Math.random()
+      cache_bust: Math.random(),
     };
     // EEK!  offsite embedding and /details/ page books look the same in analytics, otherwise!
     values.offsite = 1;

@@ -62,7 +62,7 @@ class IABookmarks extends LitElement {
       editedBookmark: { type: Object },
       deleteModalConfig: { type: Object},
       modal: { attribute: false },
-      loginOptions: { type: Object, attribute: false }
+      loginOptions: { type: Object, attribute: false },
     };
   }
 

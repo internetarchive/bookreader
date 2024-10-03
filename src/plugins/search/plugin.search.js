@@ -72,7 +72,7 @@ BookReader.prototype.setup = (function (super_) {
         searchCancelledCallback: () => {
           this._cancelSearch();
           this.trigger('SearchCanceled', { term: this.searchTerm, instance: this });
-        }
+        },
       });
     } else {
       this.searchView = null;
@@ -98,7 +98,7 @@ BookReader.prototype.init = (function (super_) {
        */
       this.search(
         this.options.initialSearchTerm,
-        { goToFirstResult: this.options.goToFirstResult, suppressFragmentChange: false }
+        { goToFirstResult: this.options.goToFirstResult, suppressFragmentChange: false },
       );
     }
   };

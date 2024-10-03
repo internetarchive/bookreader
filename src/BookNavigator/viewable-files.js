@@ -9,7 +9,7 @@ import '@internetarchive/ia-item-navigator/dist/src/menus/viewable-files';
 const sortTypes = {
   title_asc: 'title_asc',
   title_desc: 'title_desc',
-  default: 'default'
+  default: 'default',
 };
 export default class ViewableFilesProvider {
   /**

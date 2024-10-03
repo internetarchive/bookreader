@@ -8,7 +8,7 @@ if (!isMobile()) {
 
   jQuery.extend(BookReader.defaultOptions, {
     /** @type {boolean} */
-    enableVendorFullscreenPlugin: true
+    enableVendorFullscreenPlugin: true,
   });
 
   /** @override */
@@ -225,13 +225,13 @@ export function fullscreenAllowed() {
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/fullscreenchange_event
  */
 export function bindFullscreenChangeListener(
-  data, fullscreenchangeListener
+  data, fullscreenchangeListener,
 ) {
   const event = 'fullscreenchange ';
   const vendor_prefixes = [
     'webkit',
     'moz',
-    'ms'
+    'ms',
   ];
   const all_events = (event + vendor_prefixes.join(event) + event).trim();
   $(document).on(all_events, data, fullscreenchangeListener);

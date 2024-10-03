@@ -4,7 +4,7 @@ import buttonStyles from '../assets/button-base.js';
 class BookmarksLogin extends LitElement {
   static get properties() {
     return {
-      url: { type: String }
+      url: { type: String },
     };
   }
 

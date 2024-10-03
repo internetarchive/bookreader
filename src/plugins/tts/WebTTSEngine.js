@@ -45,7 +45,7 @@ export default class WebTTSEngine extends AbstractTTSEngine {
           // album: 'The Ultimate Collection (Remastered)',
           artwork: [
             { src: br.options.thumbnail, type: 'image/jpg' },
-          ]
+          ],
         });
 
         navigator.mediaSession.setActionHandler('play', () => {

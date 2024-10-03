@@ -44,7 +44,7 @@ const results = [{
     l: 432,
     page_height: 5357,
     page: 86,
-  }]
+  }],
 }];
 
 marshallSearchResults({ matches: results }, () => '', '{{{', '}}}');

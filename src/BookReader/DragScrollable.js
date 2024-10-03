@@ -179,7 +179,7 @@ export class DragScrollable {
     // How much did the mouse move?
     const delta = {
       left: (lt.left - this.lastCoord.left),
-      top: (lt.top - this.lastCoord.top)
+      top: (lt.top - this.lastCoord.top),
     };
 
     const scrollTarget = this.settings.scrollWindow ? $(window) : this.handling_element;
@@ -218,7 +218,7 @@ export class DragScrollable {
     // How much did the mouse move total?
     const delta = {
       left: Math.abs(this.lastCoord.left - this.firstCoord.left),
-      top: Math.abs(this.lastCoord.top - this.firstCoord.top)
+      top: Math.abs(this.lastCoord.top - this.firstCoord.top),
     };
     const distance = Math.max(delta.left, delta.top);
 
