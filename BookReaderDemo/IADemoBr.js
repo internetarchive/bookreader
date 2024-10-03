@@ -5,6 +5,13 @@ import { extraVolOptions, custvolumesManifest } from './ia-multiple-volumes-mani
  * This is how Internet Archive loads bookreader
  */
 const urlParams = new URLSearchParams(window.location.search);
+function getFromUrl(name, def) {
+  if (urlParams.has(name)) {
+    return urlParams.get(name);
+  } else {
+    return def;
+  }
+}
 
 const ocaid = urlParams.get('ocaid');
 const openFullImmersionTheater = urlParams.get('view') === 'theater';
@@ -41,8 +48,8 @@ const initializeBookReader = (brManifest) => {
 
   const customAutoflipParams = {
     autoflip: !!autoflip,
-    flipSpeed: urlParams.flipSpeed || 2000,
-    flipDelay: urlParams.flipDelay || 5000
+    flipSpeed: parseFloat(getFromUrl('flipSpeed', '2000')),
+    flipDelay: parseFloat(getFromUrl('flipDelay', '5000')),
   };
 
   const options = {
@@ -62,7 +69,7 @@ const initializeBookReader = (brManifest) => {
     initialSearchTerm: searchTerm ? searchTerm : '',
     // leaving this option commented out bc we change given user agent on archive.org
     // onePage: { autofit: <?=json_encode($this->ios ? 'width' : 'auto')?> },
-    showToolbar: false,
+    showToolbar: getFromUrl('options.showToolbar', 'false') === 'true',
     /* Multiple volumes */
     // To show multiple volumes:
     enableMultipleBooks: false, // turn this on

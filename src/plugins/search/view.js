@@ -11,8 +11,11 @@ class SearchView {
     this.br = br;
     this.matches = [];
     this.cacheDOMElements();
-    this.bindEvents();
     this.cancelSearch = searchCancelledCallback;
+  }
+
+  init() {
+    this.bindEvents();
   }
 
   cacheDOMElements() {
