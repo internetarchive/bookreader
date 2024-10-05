@@ -1,4 +1,37 @@
 import {PageContainer, boxToSVGRect, createSVGPageLayer, renderBoxesInPageContainerLayer} from '@/src/BookReader/PageContainer.js';
+import {ImageCache} from '@/src/BookReader/ImageCache.js';
+import {BookModel} from '@/src/BookReader/BookModel.js';
+import { afterEventLoop } from '../utils.js';
+import sinon from 'sinon';
+/** @typedef {import('@/src/BookReader/options.js').BookReaderOptions} BookReaderOptions */
+
+const SAMPLE_BOOK = new BookModel(
+  {
+    data: [
+      [
+        { width: 123, height: 123, uri: 'https://archive.org/image0.jpg', pageNum: '1' },
+      ],
+      [
+        { width: 123, height: 123, uri: 'https://archive.org/image1.jpg', pageNum: '2' },
+        { width: 123, height: 123, uri: 'https://archive.org/image2.jpg', pageNum: '3' },
+      ],
+      [
+        { width: 123, height: 123, uri: 'https://archive.org/image3.jpg', pageNum: '4' },
+        { width: 123, height: 123, uri: 'https://archive.org/image4.jpg', pageNum: '5' },
+      ],
+      [
+        { width: 123, height: 123, uri: 'https://archive.org/image5.jpg', pageNum: '6' },
+      ],
+    ]
+  }
+);
+
+const realGetPageURI = SAMPLE_BOOK.getPageURI;
+SAMPLE_BOOK.getPageURI = function (index, reduce, rotate) {
+  // Need to add a reduce url parameter, since the src is used
+  // for caching
+  return realGetPageURI.call(SAMPLE_BOOK, index, reduce, rotate) + `?reduce=${reduce}`;
+};
 
 describe('constructor', () => {
   test('protected books', () => {
@@ -33,13 +66,15 @@ describe('constructor', () => {
 
 describe('update', () => {
   test('dimensions sets CSS', () => {
-    const pc = new PageContainer(null, {});
+    const imageCache = new ImageCache(SAMPLE_BOOK);
+    const pc = new PageContainer(null, {imageCache});
     pc.update({ dimensions: { left: 20 } });
     expect(pc.$container[0].style.left).toBe('20px');
   });
 
   test('does not create image if empty page', () => {
-    const pc = new PageContainer(null, {});
+    const imageCache = new ImageCache(SAMPLE_BOOK);
+    const pc = new PageContainer(null, {imageCache});
     pc.update({ reduce: null });
     expect(pc.$img).toBeNull();
     pc.update({ reduce: 7 });
@@ -47,71 +82,77 @@ describe('update', () => {
   });
 
   test('does not create image if no reduce', () => {
-    const pc = new PageContainer({index: 17}, {});
+    const imageCache = new ImageCache(SAMPLE_BOOK);
+    const pc = new PageContainer(SAMPLE_BOOK.getPage(3), {imageCache});
     pc.update({ reduce: null });
     expect(pc.$img).toBeNull();
   });
 
-  test('does not set background image if already loaded', () => {
-    const fakeImageCache = {
-      imageLoaded: () => true,
-      image: () => $('<img/>'),
-    };
-    const pc = new PageContainer({index: 12}, {imageCache: fakeImageCache});
-    pc.update({ reduce: 7 });
-    expect(pc.$img[0].style.background).toBe('');
-  });
-
-  test('removes image between updates only if changed', () => {
-    const fakeImageCache = {
-      imageLoaded: () => true,
-      image: (index, reduce) => $(`<img src="page${index}-${reduce}.jpg" />`),
-    };
-    const pc = new PageContainer({index: 12}, {imageCache: fakeImageCache});
-    pc.update({ reduce: 7 });
-    const $im1 = pc.$img;
-    pc.update({ reduce: 7 });
-    expect(pc.$img).toBe($im1);
-    pc.update({ reduce: 16 });
-    expect(pc.$img).not.toBe($im1);
-    expect($im1.parent().length).toBe(0);
-  });
-
-  test('adds/removes loading indicators while loading', () => {
-    const fakeImageCache = {
-      imageLoaded: () => false,
-      image: () => $('<img/>'),
-      getBestLoadedReduce: () => undefined,
-    };
-    const pc = new PageContainer({index: 12}, {imageCache: fakeImageCache, loadingImage: 'loading.gif'});
-    pc.update({ reduce: 7 });
+  test('loads image on initial load', () => {
+    const imageCache = new ImageCache(SAMPLE_BOOK);
+    const pc = new PageContainer(SAMPLE_BOOK.getPage(3), {imageCache});
+    pc.update({ reduce: 7 }); // This will load reduce=8 into memory
     expect(pc.$container.hasClass('BRpageloading')).toBe(true);
-    // See https://github.com/jsdom/jsdom/issues/3169
-    // expect(pc.$img.css('background')).toBeTruthy();
-    // expect(pc.$img.css('background').includes('loading.gif')).toBe(true);
-    // expect(pc.$img.css('background').includes(',')).toBe(false);
-
-    pc.$img.trigger('loadend');
+    expect(pc.$container.children('.BRpageimage').length).toBe(1);
+    pc.$img.trigger('load');
     expect(pc.$container.hasClass('BRpageloading')).toBe(false);
-    expect(pc.$img.css('background')).toBeFalsy();
+    expect(pc.$container.children('.BRpageimage').length).toBe(1);
+  });
+
+  test('does not set loading class if already loaded', () => {
+    const imageCache = new ImageCache(SAMPLE_BOOK);
+    const pc = new PageContainer(SAMPLE_BOOK.getPage(3), {imageCache});
+    pc.update({ reduce: 7 }); // This will load reduce=8 into memory
+    pc.$img.trigger('load');
+    pc.update({ reduce: 6 }); // This will still load reduce=8
+    expect(pc.$container.hasClass('BRpageloading')).toBe(false);
+    expect(pc.$container.children('.BRpageimage').length).toBe(1);
+  });
+
+  test('removes image between updates only if changed', async () => {
+    const clock = sinon.useFakeTimers();
+    const imageCache = new ImageCache(SAMPLE_BOOK);
+    const pc = new PageContainer(SAMPLE_BOOK.getPage(3), {imageCache});
+
+    // load reduce=8
+    pc.update({ reduce: 7 });
+    pc.$img.trigger('load');
+    const img1 = pc.$img[0];
+
+    // Should not create a new image; same final reduce
+    pc.update({ reduce: 6 });
+    expect(pc.$img[0]).toBe(img1);
+    expect(pc.$container.children('.BRpageimage').length).toBe(1);
+
+    // Should create a new image; different reduce
+    pc.update({ reduce: 3 });
+    expect(pc.$img[0]).not.toBe(img1);
+    expect(pc.$container.children('.BRpageimage').length).toBe(2);
+
+    pc.$img.trigger('load');
+    // After loading we remove the old image; but not immediately!
+    expect(pc.$container.children('.BRpageimage').length).toBe(2);
+    expect(pc.$container.hasClass('BRpageloading')).toBe(false);
+    // increment time clock 100ms
+    clock.tick(100);
+    // wait for promises to resolve
+    clock.restore();
+    await afterEventLoop();
+    // NOW we remove the old image
+    expect(pc.$container.children('.BRpageimage').length).toBe(1);
   });
 
   test('shows lower res image while loading if one available', () => {
-    const fakeImageCache = {
-      imageLoaded: () => false,
-      image: () => $('<img/>'),
-      getBestLoadedReduce: () => 3,
-    };
-    const fakePage = {
-      index: 12,
-      getURI: () => 'page12.jpg',
-    };
-    const pc = new PageContainer(fakePage, {imageCache: fakeImageCache, loadingImage: 'loading.gif'});
+    const imageCache = new ImageCache(SAMPLE_BOOK);
+    const pc = new PageContainer(SAMPLE_BOOK.getPage(3), {imageCache});
     pc.update({ reduce: 7 });
-    // See https://github.com/jsdom/jsdom/issues/3169
-    // expect(pc.$img.css('background').includes('page12.jpg')).toBe(true);
-    pc.$img.trigger('loadend');
-    expect(pc.$img.css('background')).toBeFalsy();
+    pc.$img.trigger('load');
+
+    pc.update({reduce: 2});
+    expect(pc.$container.hasClass('BRpageloading')).toBe(true);
+    expect(pc.$container.children('.BRpageimage').length).toBe(2);
+    expect(pc.$container.children('.BRpageimage')[0].src).toContain('reduce=4');
+    expect(pc.$img[0].src).toContain('reduce=2');
   });
 });
 
