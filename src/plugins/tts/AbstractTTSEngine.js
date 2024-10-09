@@ -51,16 +51,17 @@ export default class AbstractTTSEngine {
     this.events = $({});
     /** @type {SpeechSynthesisVoice} */
     this.voice = null;
+    this.preloadNext = true;
     // Listen for voice changes (fired by subclasses)
     this.events.on('voiceschanged', this.updateBestVoice);
-    this.events.trigger('voiceschanged');
+    setTimeout(() => this.events.trigger('voiceschanged'), 0);
   }
 
   /**
    * @abstract
    * @return {boolean}
    */
-  static isSupported() { throw new Error("Unimplemented abstract class"); }
+  isSupported() { throw new Error("Unimplemented abstract class"); }
 
   /**
    * @abstract
@@ -78,13 +79,14 @@ export default class AbstractTTSEngine {
   /**
    * @param {number} leafIndex
    * @param {number} numLeafs total number of leafs in the current book
+   * @param {PageChunkIterator} chunkIterator
    */
-  start(leafIndex, numLeafs) {
+  start(leafIndex, numLeafs, chunkIterator = null) {
     this.playing = true;
     this.paused = false;
     this.opts.onLoadingStart();
 
-    this._chunkIterator = new PageChunkIterator(numLeafs, leafIndex, {
+    this._chunkIterator = chunkIterator ?? new PageChunkIterator(numLeafs, leafIndex, {
       server: this.opts.server,
       bookPath: this.opts.bookPath,
       pageBufferSize: 5,
@@ -140,7 +142,7 @@ export default class AbstractTTSEngine {
   }
 
   /** @param {string} voiceURI */
-  setVoice(voiceURI) {
+  async setVoice(voiceURI) {
     // if the user actively selects a voice, don't re-choose best voice anymore
     // MS Edge fires voices changed randomly very often
     this.events.off('voiceschanged', this.updateBestVoice);
@@ -149,7 +151,15 @@ export default class AbstractTTSEngine {
     if (this.opts.bookLanguage && hasLocalStorage()) {
       localStorage.setItem(`BRtts-voice-${this.opts.bookLanguage}`, this.voice.voiceURI);
     }
-    if (this.activeSound) this.activeSound.setVoice(this.voice);
+    if (this.activeSound) {
+      if (this.nextStepPromise) {
+        this._chunkIterator.decrement();
+        this.nextStepPromise = this.loadNextStep();
+      }
+      this.opts.onLoadingStart();
+      await this.activeSound.setVoice(this.voice);
+      this.opts.onLoadingComplete();
+    }
   }
 
   /** @param {number} newRate */
@@ -158,29 +168,53 @@ export default class AbstractTTSEngine {
     if (this.activeSound) this.activeSound.setPlaybackRate(newRate);
   }
 
+  async loadNextStep() {
+    const chunk = await  this._chunkIterator.next();
+    if (chunk == PageChunkIterator.AT_END) {
+      return { chunk };
+    }
+
+    const sound = this.createSound(chunk);
+    sound.chunk = chunk;
+    sound.rate = this.playbackRate;
+    sound.voice = this.voice;
+    await sound.load(() => this.opts.onLoadingComplete());
+    return {
+      chunk,
+      sound,
+    };
+  }
+
   /** @private */
   async step() {
-    const chunk = await  this._chunkIterator.next();
+    const loadPromise = this.nextStepPromise ? this.nextStepPromise : this.loadNextStep();
+    if (!this.nextStepPromise) this.opts.onLoadingStart();
+    else {
+      const raceResolve = await Promise.race([
+        loadPromise,
+        new Promise(resolve => setTimeout(() => resolve('timeout'), 100)),
+      ]);
+
+      if (raceResolve === 'timeout') {
+        this.opts.onLoadingStart();
+      }
+    }
+    const {chunk, sound} = await loadPromise;
     if (chunk == PageChunkIterator.AT_END) {
       this.stop();
       this.opts.onDone();
       return;
     }
-    this.opts.onLoadingStart();
-    const sound = this.createSound(chunk);
-    sound.chunk = chunk;
-    sound.rate = this.playbackRate;
-    sound.voice = this.voice;
-    sound.load(() => this.opts.onLoadingComplete());
-
-    this.opts.onLoadingComplete();
-
+    // this.opts.onLoadingComplete();
     await this.opts.beforeChunkPlay(chunk);
 
     if (!this.playing) return;
 
-    const playPromise = await this.playSound(sound)
+    const playPromise = this.playSound(sound)
       .then(()=> this.opts.afterChunkPlay(sound.chunk));
+    if (this.preloadNext) {
+      this.nextStepPromise = this.loadNextStep();
+    }
 
     if (this.paused) this.pause();
     await playPromise;
@@ -266,7 +300,16 @@ export default class AbstractTTSEngine {
       // Chrome Android was returning voice languages like `en_US` instead of `en-US`
       const matchingVoices = voices.filter(v => v.lang.replace('_', '-').startsWith(lang));
       if (matchingVoices.length) {
-        return matchingVoices.find(v => v.default) || matchingVoices[0];
+        return (
+          // Prefer Microsoft 'Natural' voices
+          matchingVoices.find(v => v.voiceURI.match(/Microsoft.*\(Natural\)/g))
+          // Prefer Google voices
+          || matchingVoices.find(v => v.voiceURI.match(/Google/g))
+          // Prefer default if one is specified. This seems to be kind of random though,
+          // and is usually one of the lower quality voices.
+          || matchingVoices.find(v => v.default)
+          || matchingVoices[0]
+        );
       }
     }
   }

@@ -1,7 +1,5 @@
 import AbstractTTSEngine from './AbstractTTSEngine.js';
-import { sleep } from '../../BookReader/utils.js';
-/* global soundManager */
-import 'soundmanager2';
+import { promisifyEvent } from '../../BookReader/utils.js';
 import 'jquery.browser';
 
 /** @typedef {import("./AbstractTTSEngine.js").TTSEngineOptions} TTSEngineOptions */
@@ -13,8 +11,8 @@ import 'jquery.browser';
  **/
 export default class FestivalTTSEngine extends AbstractTTSEngine {
   /** @override */
-  static isSupported() {
-    return typeof(soundManager) !== 'undefined' && soundManager.supported();
+  isSupported() {
+    return true; //typeof(soundManager) !== 'undefined' && soundManager.supported();
   }
 
   /** @param {TTSEngineOptions} options */
@@ -29,32 +27,40 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
   /** @override */
   getVoices() {
     return [
-      { default: true, lang: "en-US", localService: false, name: "Festival - English (US)", voiceURI: null }
+      { default: true, lang: "en-US", localService: false, name: "OpenAI alloy", voiceURI: 'OpenAI - alloy', openaiVoice: 'alloy', openaiModel: 'tts-1' },
+      { default: true, lang: "en-US", localService: false, name: "OpenAI echo", voiceURI: 'OpenAI - echo', openaiVoice: 'echo', openaiModel: 'tts-1' },
+      { default: true, lang: "en-US", localService: false, name: "OpenAI fable", voiceURI: 'OpenAI - fable', openaiVoice: 'fable', openaiModel: 'tts-1' },
+      { default: true, lang: "en-US", localService: false, name: "OpenAI onyx", voiceURI: 'OpenAI - onyx', openaiVoice: 'onyx', openaiModel: 'tts-1' },
+      { default: true, lang: "en-US", localService: false, name: "OpenAI nova", voiceURI: 'OpenAI - nova', openaiVoice: 'nova', openaiModel: 'tts-1' },
+      { default: true, lang: "en-US", localService: false, name: "OpenAI shimmer", voiceURI: 'OpenAI - shimmer', openaiVoice: 'shimmer', openaiModel: 'tts-1' },
+      // { default: true, lang: "en-US", localService: false, name: "OpenAI alloy HD", voiceURI: 'OpenAI - alloy HD', openaiVoice: 'alloy', openaiModel: 'tts-1-hd' },
+      // { default: true, lang: "en-US", localService: false, name: "OpenAI echo HD", voiceURI: 'OpenAI - echo HD', openaiVoice: 'echo', openaiModel: 'tts-1-hd' },
+      // { default: true, lang: "en-US", localService: false, name: "OpenAI fable HD", voiceURI: 'OpenAI - fable HD', openaiVoice: 'fable', openaiModel: 'tts-1-hd' },
+      // { default: true, lang: "en-US", localService: false, name: "OpenAI onyx HD", voiceURI: 'OpenAI - onyx HD', openaiVoice: 'onyx', openaiModel: 'tts-1-hd' },
+      // { default: true, lang: "en-US", localService: false, name: "OpenAI nova HD", voiceURI: 'OpenAI - nova HD', openaiVoice: 'nova', openaiModel: 'tts-1-hd' },
+      // { default: true, lang: "en-US", localService: false, name: "OpenAI shimmer HD", voiceURI: 'OpenAI - shimmer HD', openaiVoice: 'shimmer', openaiModel: 'tts-1-hd' },
     ];
   }
 
   /** @override */
   init() {
+    super.init();
     // setup sound manager
-    soundManager.setup({
-      debugMode: false,
-      // Note, there's a bug in Chrome regarding range requests.
-      // Flash is used as a workaround.
-      // See https://bugs.chromium.org/p/chromium/issues/detail?id=505707
-      preferFlash: true,
-      url: '/bookreader/BookReader/soundmanager/swf',
-      useHTML5Audio: true,
-      //flash 8 version of swf is buggy when calling play() on a sound that is still loading
-      flashVersion: 9
-    });
+    // soundManager.setup({
+    //   debugMode: false,
+    //   useHTML5Audio: true,
+    //   //flash 8 version of swf is buggy when calling play() on a sound that is still loading
+    //   flashVersion: 9
+    // });
   }
 
   /**
    * @override
    * @param {number} leafIndex
    * @param {number} numLeafs total number of leafs in the current book
+   * @param {PageChunkIterator} chunkIterator
    */
-  start(leafIndex, numLeafs) {
+  start(leafIndex, numLeafs, chunkIterator = null) {
     let promise = null;
 
     // Hack for iOS
@@ -63,12 +69,12 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     }
 
     promise = promise || Promise.resolve();
-    promise.then(() => super.start(leafIndex, numLeafs));
+    promise.then(() => super.start(leafIndex, numLeafs, chunkIterator));
   }
 
   /** @override */
   createSound(chunk) {
-    return new FestivalTTSSound(this.getSoundUrl(chunk.text));
+    return new FestivalTTSSound(this.getSoundUrl(chunk.text), this.voice);
   }
 
   /**
@@ -78,9 +84,13 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
    * @return {String} url
    */
   getSoundUrl(dataString) {
-    return 'https://' + this.opts.server + '/BookReader/BookReaderGetTTS.php?string='
-                  + encodeURIComponent(dataString)
-                  + '&format=.' + this.audioFormat;
+    return `https://${this.opts.server}/BookReader/BookReaderGetTTS.php?${
+      new URLSearchParams({
+        string: dataString,
+        format: this.audioFormat,
+        // voice: this.voice.name,
+      })
+    }}`;
   }
 
   /**
@@ -92,18 +102,20 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
    * @return {PromiseLike}
    */
   async iOSCaptureUserIntentHack() {
-    const sound = soundManager.createSound({ url: SILENCE_1MS[this.audioFormat] });
-    await new Promise(res => sound.play({onfinish: res}));
-    sound.destruct();
+    const sound = new Audio(SILENCE_1MS[this.audioFormat]);
+    const endedPromise = promisifyEvent(sound, 'ended');
+    await sound.play();
+    await endedPromise;
   }
 }
 
 /** @extends AbstractTTSSound */
 class FestivalTTSSound {
   /** @param {string} soundUrl **/
-  constructor(soundUrl) {
+  constructor(soundUrl, voice) {
     this.soundUrl = soundUrl;
-    /** @type {SMSound} */
+    this.voice = voice;
+    /** @type {HTMLAudioElement} */
     this.sound = null;
     this.rate = 1;
     /** @type {function} calling this resolves the "play" promise */
@@ -111,52 +123,79 @@ class FestivalTTSSound {
   }
 
   get loaded() {
-    return this.sound && this.sound.loaded;
+    return !!this.sound;
   }
 
-  load(onload) {
-    this.sound = soundManager.createSound({
-      url: this.soundUrl,
-      // API recommended, but only fires once play started on safari
-      onload: () => {
-        if (this.rate != 1) this.sound.setPlaybackRate(this.rate);
-        onload();
+  /** @param {SpeechSynthesisVoice} voice */
+  async setVoice(voice) {
+    if (voice == this.voice) return;
+    this.voice = voice;
+    if (!this.sound?.paused && !this.sound?.ended) {
+      this.sound.pause();
+      const timeOffset = this.sound.currentTime;
+      const url = await this.fetchBlobUrl();
+      this.sound.src = url;
+      this.sound.play();
+      this.sound.currentTime = Math.max(0, timeOffset - 5);
+    }
+  }
+
+  async preload() {
+    if (!this.sound) await this.load();
+  }
+
+  async fetchBlobUrl() {
+    const text = new URL(this.soundUrl).searchParams.get('string');
+    const resp = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + (window.OPEN_API_KEY ||= prompt('OPEN_API_KEY')),
+        'Content-Type': 'application/json'
       },
-      onresume: async () => {
-        await sleep(25);
-        if (this.rate != 1) this.sound.setPlaybackRate(this.rate);
-      }
+      body: JSON.stringify({
+        model: this.voice.openaiModel,
+        input: text,
+        voice: this.voice.openaiVoice,
+      }),
     });
-    return this.sound.load();
+    // const resp = await fetch(this.soundUrl);
+    return URL.createObjectURL(await resp.blob());
+  }
+
+  async load(onload) {
+    this.sound = new Audio(await this.fetchBlobUrl());
+    onload?.();
+    return;
   }
 
   async play() {
     await new Promise(res => {
       this._finishResolver = res;
-      this.sound.play({ onfinish: res });
+      this.sound.play();
+      promisifyEvent(this.sound, 'ended').then(res);
     });
-    this.sound.destruct();
+    // this.sound.destruct();
   }
 
   /** @override */
   stop() {
-    this.sound.stop();
+    this.sound.pause();
     return Promise.resolve();
   }
 
   /** @override */
   pause() { this.sound.pause(); }
   /** @override */
-  resume() { this.sound.resume(); }
+  resume() { this.sound.play(); }
   /** @override */
   setPlaybackRate(rate) {
     this.rate = rate;
-    this.sound.setPlaybackRate(rate);
+    this.sound.playbackRate = rate;
   }
 
   /** @override */
   finish() {
-    this.sound.stop();
+    this.sound.pause();
     this._finishResolver();
   }
 }
