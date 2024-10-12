@@ -79,7 +79,9 @@ class IIIFPlugin {
         spread = [];
       }
     });
-
+    if (spread.length > 0) {
+      book.data.push(spread);
+    }
     return book;
   }
 
@@ -119,7 +121,9 @@ class IIIFPlugin {
         spread = [];
       }
     });
-
+    if (spread.length > 0) {
+      book.data.push(spread);
+    }
     return book;
   }
 }
