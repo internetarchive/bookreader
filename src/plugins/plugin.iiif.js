@@ -35,7 +35,7 @@ class IIIFPlugin {
       bookTitle: resolveInternationalString(manifest.label),
       pageProgression: manifest.viewingDirection == "right-to-left" ? "rl" : "lr",
       // numLeafs: manifest.items.length,
-      metadata: manifest.metadata.map((metadata) => {
+      metadata: (manifest.metadata || []).map((metadata) => {
         return {
           label: resolveInternationalString(metadata.label),
           value: resolveInternationalString(metadata.value),
@@ -76,7 +76,9 @@ class IIIFPlugin {
         spread = [];
       }
     });
-
+    if (spread.length > 0) {
+      book.data.push(spread);
+    }
     return book;
   }
 
@@ -116,7 +118,9 @@ class IIIFPlugin {
         spread = [];
       }
     });
-
+    if (spread.length > 0) {
+      book.data.push(spread);
+    }
     return book;
   }
 }
