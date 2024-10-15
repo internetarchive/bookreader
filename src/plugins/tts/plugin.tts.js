@@ -4,6 +4,7 @@
  */
 import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
+// import CompositeTTSEngine from './CompositeTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
 import { en as tooltips } from './tooltip_dict.js';
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
@@ -26,27 +27,32 @@ BookReader.prototype.setup = (function (super_) {
       /** @type { {[pageIndex: number]: Array<{ l: number, r: number, t: number, b: number }>} } */
       this._ttsBoxesByIndex = {};
 
-      let TTSEngine = WebTTSEngine.isSupported() ? WebTTSEngine :
-        FestivalTTSEngine.isSupported() ? FestivalTTSEngine :
-          null;
+      const engineOptions = {
+        server: options.server,
+        bookPath: options.bookPath,
+        bookLanguage: toISO6391(options.bookLanguage),
+        onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
+        onLoadingComplete: this.removeProgressPopup.bind(this),
+        onDone: this.ttsStop.bind(this),
+        beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this),
+        afterChunkPlay: this.ttsSendChunkFinishedAnalyticsEvent.bind(this),
+      };
 
-      if (/_forceTTSEngine=(festival|web)/.test(location.toString())) {
-        const engineName = location.toString().match(/_forceTTSEngine=(festival|web)/)[1];
-        TTSEngine = { festival: FestivalTTSEngine, web: WebTTSEngine }[engineName];
+      /** @type {AbstractTTSEngine[]} */
+      this.ttsEnginesAll = [
+        new FestivalTTSEngine(engineOptions),
+        new WebTTSEngine(engineOptions),
+      ];
+      let ttsEngine = this.ttsEnginesAll.find(engine => engine.isSupported());
+
+      if (/_forceTTSEngine=(openai|browser)/.test(location.toString())) {
+        const engineName = location.toString().match(/_forceTTSEngine=(openai|browser)/)[1];
+        ttsEngine = { openai: this.ttsEnginesAll[0], browser: this.ttsEnginesAll[1] }[engineName];
       }
 
-      if (TTSEngine) {
+      if (ttsEngine) {
         /** @type {AbstractTTSEngine} */
-        this.ttsEngine = new TTSEngine({
-          server: options.server,
-          bookPath: options.bookPath,
-          bookLanguage: toISO6391(options.bookLanguage),
-          onLoadingStart: this.showProgressPopup.bind(this, 'Loading audio...'),
-          onLoadingComplete: this.removeProgressPopup.bind(this),
-          onDone: this.ttsStop.bind(this),
-          beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this),
-          afterChunkPlay: this.ttsSendChunkFinishedAnalyticsEvent.bind(this),
-        });
+        this.ttsEngine = ttsEngine;
       }
     }
   };
@@ -119,6 +125,16 @@ BookReader.prototype.initNavbar = (function (super_) {
   return function () {
     const $el = super_.call(this);
     if (this.options.enableTtsPlugin && this.ttsEngine) {
+      const engines = this.ttsEnginesAll.map(engine => {
+        const url = new URL(location.toString());
+        url.searchParams.set('_forceTTSEngine', engine.constructor.name == 'FestivalTTSEngine' ? 'openai' : 'browser');
+        return {
+          selected: engine === this.ttsEngine,
+          name: engine instanceof FestivalTTSEngine ? 'OpenAI' : 'Browser',
+          url,
+        };
+      });
+
       this.refs.$BRReadAloudToolbar = $(`
         <ul class="read-aloud">
           <li>
@@ -152,6 +168,11 @@ BookReader.prototype.initNavbar = (function (super_) {
           <li>
             <select class="playback-voices" name="playback-voice" style="display: none" title="Change read aloud voices">
             </select>
+          </li>
+          <li>
+            ${engines.map(({ selected, name, url }) => `
+              <a href="${url}" class="engine ${selected ? 'selected' : ''}">${name}</a>
+            `).join('')}
           </li>
         </ul>
       `);
