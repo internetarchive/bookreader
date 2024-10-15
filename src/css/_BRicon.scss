@@ -38,8 +38,14 @@ i.BRicon { display: inline-block; }
 .BRicon.info { @include sprite-offet(1); }
 .BRicon.share { @include sprite-offet(3); }
 // We can only transition these because they are adjacent
-.BRicon.read { @include sprite-offet(5); transition-property: background-color, border, background-position; }
-.BRicon.unread { @include sprite-offet(7); transition-property: background-color, border, background-position; }
+.BRicon.read {
+  transition-property: background-color, border, background-position;
+  @include sprite-offet(5); 
+}
+.BRicon.unread {
+  transition-property: background-color, border, background-position;
+  @include sprite-offet(7); 
+}
 .BRicon.fit { @include sprite-offet(9); }
 .BRicon.download { @include sprite-offet(38); }
 .BRicon.return { @include sprite-offet(26); }
