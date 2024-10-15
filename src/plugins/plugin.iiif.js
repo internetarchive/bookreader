@@ -35,7 +35,12 @@ class IIIFPlugin {
       bookTitle: resolveInternationalString(manifest.label),
       pageProgression: manifest.viewingDirection == "right-to-left" ? "rl" : "lr",
       // numLeafs: manifest.items.length,
-      metadata: [],
+      metadata: (manifest.metadata || []).map((metadata) => {
+        return {
+          label: resolveInternationalString(metadata.label),
+          value: resolveInternationalString(metadata.value),
+        };
+      })
       data: [],
       /**
        * @this {import('../BookReader.js').default}
@@ -48,14 +53,6 @@ class IIIFPlugin {
         return `${uri}/full/pct:${percent}/0/default.jpg`;
       }
     };
-    if (manifest.metadata) {
-      book.metadata = manifest.metadata.map((metadata) => {
-        return {
-          label: resolveInternationalString(metadata.label),
-          value: resolveInternationalString(metadata.value),
-        };
-      })
-    }
 
     if (manifest.viewingDirection == "top-to-bottom" || manifest.viewingDirection == "bottom-to-top") {
       console.warn("Unsupported viewingDirection", manifest.viewingDirection);
