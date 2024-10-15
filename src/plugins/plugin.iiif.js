@@ -40,7 +40,7 @@ class IIIFPlugin {
           label: resolveInternationalString(metadata.label),
           value: resolveInternationalString(metadata.value),
         };
-      })
+      }),
       data: [],
       /**
        * @this {import('../BookReader.js').default}
