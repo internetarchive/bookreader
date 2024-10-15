@@ -26,7 +26,7 @@ export class Navbar {
     ];
     /** @type {Object} controls will be switch over "this.minimumControls" */
     this.maximumControls = [
-      'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb'
+      'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb', 'textpg',
     ];
 
     this.updateNavIndexThrottled = throttle(this.updateNavIndex.bind(this), 250, false);
@@ -54,6 +54,7 @@ export class Navbar {
       'onePage',
       'twoPage',
       'thumbnail',
+      'text',
       'viewmode',
       'zoomOut',
       'zoomIn',
@@ -79,7 +80,12 @@ export class Navbar {
       mode: br.constModeThumb,
       className: 'thumb',
       title: 'Thumbnail view',
-    }].filter((mode) => (
+    },{
+      mode: br.constModeText,
+      className: 'textpg',
+      title: 'Text view',
+    }
+  ].filter((mode) => (
       !viewModeOptions.excludedModes.includes(mode.mode)
     ));
     const viewModeOrder = viewModes.map((m) => m.mode);

@@ -4,7 +4,6 @@
 }
 
 .BRmode1up .BRpagecontainer, .BRmodeThumb .BRpagecontainer {
-  box-shadow: 1px 1px 2px #333;
   img {
     border: 0;
   }
@@ -36,6 +35,99 @@
   .br-mode-1up__visible-world {
     position: absolute;
     transform-origin: 0 0;
+  }
+}
+
+.br-mode-text__root {
+  // Useful for debugging
+  // .BRwordElement {
+  //   background: rgba(255, 0, 0, calc(calc(100% - var(--br-conf)) / 3));
+  // }
+
+  // Core structural changes
+  .br-mode-1up__visible-world {
+    position: static;
+  }
+
+  .BRpagecontainer {
+    margin-top: 0px !important;
+    border-top: 1px dashed rgba(65, 30, 4, 0.4);
+    min-height: 50px;
+    background: #E6DFC7;
+    background: linear-gradient(
+      to right,
+      #BBAB8A,
+      #E6DFC7 calc(calc(100% - 750px) / 2),
+      #E6DFC7 calc(750px + calc(100% - 750px) / 2),
+      #BBAB8A
+    );
+  }
+
+  .BRpagecontainer, .BRPageLayer.BRtextLayer {
+    width: 100% !important;
+    height: unset !important;
+  }
+
+  .BRpageimage {
+    display: none;
+  }
+ 
+  // Don't hide text layer when zooming or scrolling
+  &.BRsmooth-zooming, &.BRscrolling-active {
+      .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer {
+          display: block;
+      }
+  }
+
+  // Text Layer changes
+  .BRPageLayer.BRtextLayer {
+    color: #39313d;
+    text-shadow: 0.5px 1px 0.5px #b2a7b8;
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+
+  .BRcentered {
+    text-align: center !important;
+  }
+
+  .BRwordElement--hyphen::after {
+    content: '';
+  }
+
+  .BRPageLayer.BRtextLayer {
+    position: static !important;
+    transform: unset !important;
+    max-width: 750px;
+    margin: 0 auto;
+
+    span {
+      letter-spacing: unset !important;
+      padding-left: 0 !important;
+    }
+
+    .BRlineElement {
+      display: inline;
+      margin-right: 0;
+      white-space: unset;
+      line-height: 1.5em !important;
+    }
+    
+    p {
+      margin: 0 !important;
+      margin-top: 4px !important;
+      text-indent: 15px;
+      width: unset !important;
+      height: unset !important;
+
+      font-size: 18px !important;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+      text-align: justify;
+    }
+  }
+  
+  .BRscrolling-active .BRtextLayer {
+    display: block !important;
   }
 }
 
