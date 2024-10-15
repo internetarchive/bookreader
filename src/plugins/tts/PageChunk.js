@@ -1,3 +1,5 @@
+import { sleep } from "@/src/BookReader/utils";
+
 /**
  * Class to manage a 'chunk' (approximately a paragraph) of text on a page.
  */
@@ -19,19 +21,38 @@ export default class PageChunk {
    * @param {string} server
    * @param {string} bookPath
    * @param {number} leafIndex
+   * @param {number} retryCount
    * @return {Promise<PageChunk[]>}
    */
-  static async fetch(server, bookPath, leafIndex) {
-    const chunks = await $.ajax({
-      type: 'GET',
-      url: `https://${server}/BookReader/BookReaderGetTextWrapper.php`,
-      dataType:'jsonp',
-      cache: true,
-      data: {
-        path: `${bookPath}_djvu.xml`,
-        page: leafIndex
+  static async fetch(server, bookPath, leafIndex, retryCount = 0) {
+    let chunks = [];
+    // try 3 times
+    if (retryCount === 3) {
+      return PageChunk._fromTextWrapperResponse(leafIndex, chunks); //empty chunks
+    }
+    if (retryCount > 0) {
+      await sleep(700);
+    }
+
+    try {
+      chunks = await $.ajax({
+        type: 'GET',
+        url: `https://${server}/BookReader/BookReaderGetTextWrapper.php`,
+        dataType:'jsonp',
+        cache: true,
+        data: {
+          path: `${bookPath}_djvu.xml`,
+          page: leafIndex
+        }
+      });
+    } catch (e) {
+      const newRetryCount = retryCount + 1;
+      if (window.Sentry) {
+        window.Sentry?.captureException(e);
       }
-    });
+      return PageChunk.fetch(server, bookPath, leafIndex, newRetryCount);
+    }
+
     return PageChunk._fromTextWrapperResponse(leafIndex, chunks);
   }
 
