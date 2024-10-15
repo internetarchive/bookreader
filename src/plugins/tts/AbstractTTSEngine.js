@@ -134,7 +134,7 @@ export default class AbstractTTSEngine {
     await Promise.all([
       this.activeSound.stop(),
       this._chunkIterator.decrement()
-        .then(() => this._chunkIterator.decrement())
+        .then(() => this._chunkIterator.decrement()),
     ]);
     this.step();
   }

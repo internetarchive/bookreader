@@ -21,7 +21,7 @@ describe('BookReader options', () => {
   describe('`startFullscreen`', () => {
     it('initializes BookReader to fullscreen', () => {
       const br = new BookReader({
-        startFullscreen: true
+        startFullscreen: true,
       });
       br.init();
 

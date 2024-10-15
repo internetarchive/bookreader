@@ -22,11 +22,11 @@ export class Navbar {
 
     /** @type {Object} controls will be switch over "this.maximumControls" */
     this.minimumControls = [
-      'viewmode'
+      'viewmode',
     ];
     /** @type {Object} controls will be switch over "this.minimumControls" */
     this.maximumControls = [
-      'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb'
+      'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb',
     ];
 
     this.updateNavIndexThrottled = throttle(this.updateNavIndex.bind(this), 250, false);
@@ -115,7 +115,7 @@ export class Navbar {
       this.updateViewModeButton(
         $button,
         currentViewModeButton.className,
-        currentViewModeButton.title
+        currentViewModeButton.title,
       );
     });
   }
@@ -218,7 +218,7 @@ export class Navbar {
       min: 0,
       max: br.book.getNumLeafs() - 1,
       value: br.currentIndex(),
-      range: "min"
+      range: "min",
     });
 
     $slider.on('slide', (event, ui) => {

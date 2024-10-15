@@ -61,7 +61,7 @@ BookReader.prototype.init = (function(super_) {
       });
 
       this.bind(BookReader.eventNames.fragmentChange,
-        this.urlUpdateFragment.bind(this)
+        this.urlUpdateFragment.bind(this),
       );
     }
     super_.call(this);

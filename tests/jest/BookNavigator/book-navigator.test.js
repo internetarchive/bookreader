@@ -22,7 +22,7 @@ const container = (sharedObserver = null) => {
       identifier: 'foo',
       creator: 'bar',
       title: 'baz',
-    }
+    },
   };
   const modalMgr = new ModalManager();
   return html`
@@ -49,7 +49,7 @@ window.ResizeObserver = class ResizeObserver {
 beforeEach(() => {
   window.archive_analytics = {
     send_event_no_sampling: sinon.fake(),
-    send_event: sinon.fake()
+    send_event: sinon.fake(),
   };
 });
 
@@ -78,7 +78,7 @@ describe('<book-navigator>', () => {
           jumpToIndex: sinon.fake(),
           options: { enableMultipleBooks: false }, // for multipleBooks
           el: '#BookReader',
-          refs: {}
+          refs: {},
         };
 
         const sharedObserver = new SharedResizeObserver();
@@ -93,7 +93,7 @@ describe('<book-navigator>', () => {
         expect(brStub.resize.callCount).toEqual(0);
 
         window.dispatchEvent(new CustomEvent('BookReader:PostInit', {
-          detail: { props: brStub }
+          detail: { props: brStub },
         }));
         await elementUpdated(el);
 
@@ -142,8 +142,8 @@ describe('<book-navigator>', () => {
           jumpToIndex: sinon.fake(),
           options: {},
           refs: {
-            $brContainer
-          }
+            $brContainer,
+          },
         };
         el.bookreader = brStub;
         await el.elementUpdated;
@@ -173,8 +173,8 @@ describe('<book-navigator>', () => {
             jumpToIndex: sinon.fake(),
             options: { enableSearch: true },
             refs: {
-              $brContainer
-            }
+              $brContainer,
+            },
           };
           el.bookreader = brStub;
           await el.elementUpdated;
@@ -199,13 +199,13 @@ describe('<book-navigator>', () => {
               enableMultipleBooks: true,
               multipleBooksList: {
                 by_subprefix: {
-                  fooSubprefix: 'beep'
-                }
-              }
+                  fooSubprefix: 'beep',
+                },
+              },
             },
             refs: {
-              $brContainer
-            }
+              $brContainer,
+            },
           };
           el.bookreader = brStub;
           await el.elementUpdated;
@@ -242,8 +242,8 @@ describe('<book-navigator>', () => {
           jumpToIndex: sinon.fake(),
           options: {},
           refs: {
-            $brContainer
-          }
+            $brContainer,
+          },
         };
         el.bookreader = brStub;
         await el.elementUpdated;
@@ -325,7 +325,7 @@ describe('<book-navigator>', () => {
             'volumes',
             'chapters',
             'search',
-            'bookmarks'
+            'bookmarks',
           ]);
         });
       });
@@ -368,8 +368,8 @@ describe('<book-navigator>', () => {
         resize: sinon.fake(),
         options: {},
         refs: {
-          $brContainer: document.createElement('div')
-        }
+          $brContainer: document.createElement('div'),
+        },
       };
       el.bookreader = brStub;
       await elementUpdated(el);
@@ -379,9 +379,9 @@ describe('<book-navigator>', () => {
       const mockResizeEvent = {
         contentRect: {
           height: 500,
-          width: 900
+          width: 900,
         },
-        target: el.mainBRContainer
+        target: el.mainBRContainer,
       };
       el.handleResize(mockResizeEvent);
 
@@ -398,8 +398,8 @@ describe('<book-navigator>', () => {
         resize: sinon.fake(),
         options: {},
         refs: {
-          $brContainer: document.createElement('div')
-        }
+          $brContainer: document.createElement('div'),
+        },
       };
 
       el.bookreader = brStub;
@@ -410,9 +410,9 @@ describe('<book-navigator>', () => {
       const mockResizeEvent = {
         contentRect: {
           height: 500,
-          width: 900
+          width: 900,
         },
-        target: el.mainBRContainer
+        target: el.mainBRContainer,
       };
       el.handleResize(mockResizeEvent);
 
@@ -540,7 +540,7 @@ describe('<book-navigator>', () => {
       await elementUpdated(el);
 
       window.dispatchEvent(new CustomEvent('BookReader:fullscreenToggled', {
-        detail: { props: brStub }
+        detail: { props: brStub },
       }));
       await elementUpdated(el);
 
@@ -581,7 +581,7 @@ describe('<book-navigator>', () => {
 
         // analytics fires
         expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
-          false
+          false,
         );
         expect(window.archive_analytics.send_event.called).toEqual(true);
         // we prevent default
@@ -633,7 +633,7 @@ describe('<book-navigator>', () => {
       await el.elementUpdated;
 
       expect(window.archive_analytics.send_event_no_sampling.called).toEqual(
-        false
+        false,
       );
       expect(window.archive_analytics.send_event.called).toEqual(false);
 

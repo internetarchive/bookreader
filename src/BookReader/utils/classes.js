@@ -31,6 +31,6 @@ export function exposeOverrideable(FromClass, fromMethod, fromTransform, ToClass
         return overrideFn.apply(newThis, arguments);
       };
       wrapper = overrideFn;
-    }
+    },
   });
 }

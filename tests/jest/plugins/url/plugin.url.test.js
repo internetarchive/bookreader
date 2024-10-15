@@ -55,7 +55,7 @@ describe('Plugin: URL controller', () => {
     BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
       index: 88,
       mode: 1,
-      search: ''
+      search: '',
     }));
     br.options.urlMode = 'history';
     br.init();
@@ -71,7 +71,7 @@ describe('Plugin: URL controller', () => {
     BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
       index: 2,
       mode: 2,
-      search: ''
+      search: '',
     }));
     br.options.urlMode = 'history';
     br.init();
@@ -87,7 +87,7 @@ describe('Plugin: URL controller', () => {
     BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
       index: 1,
       mode: 2,
-      search: 'foo'
+      search: 'foo',
     }));
     BookReader.prototype.search = jest.fn();
     br.options.urlMode = 'history';
@@ -104,7 +104,7 @@ describe('Plugin: URL controller', () => {
     BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
       index: 1,
       mode: 2,
-      view: 'theater'
+      view: 'theater',
     }));
     BookReader.prototype.search = jest.fn();
     br.options.urlMode = 'history';
@@ -123,7 +123,7 @@ describe('Plugin: URL controller', () => {
     BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
       index: 1,
       mode: 2,
-      view: 'theater'
+      view: 'theater',
     }));
     BookReader.prototype.search = jest.fn();
     br.options.urlMode = 'history';
@@ -142,7 +142,7 @@ describe('Plugin: URL controller', () => {
     BookReader.prototype.paramsFromCurrent = jest.fn(() => ({
       index: 1,
       mode: 2,
-      search: 'foo'
+      search: 'foo',
     }));
     BookReader.prototype.search = jest.fn();
     br.options.initialSearchTerm = 'foo';

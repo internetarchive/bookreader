@@ -65,7 +65,7 @@ export const DEFAULT_OPTIONS = {
     {reduce: 2, autofit: null},
     {reduce: 3, autofit: null},
     {reduce: 4, autofit: null},
-    {reduce: 6, autofit: null}
+    {reduce: 6, autofit: null},
   ],
 
   /** Object to hold parameters related to 1up mode */
@@ -83,7 +83,7 @@ export const DEFAULT_OPTIONS = {
     /** Width of book spine  $$$ consider sizing based on book length */
     bookSpineDivWidth: 64,
     /** @type {AutoFitValues} */
-    autofit: 'auto'
+    autofit: 'auto',
   },
 
   onePageMinBreakpoint: 800,
@@ -225,31 +225,31 @@ export const DEFAULT_OPTIONS = {
       visible: true,
       label: 'Flip left',
       className: 'book_left',
-      iconClassName: 'left-arrow'
+      iconClassName: 'left-arrow',
     },
     bookRight: {
       visible: true,
       label: 'Flip right',
       className: 'book_right',
-      iconClassName: 'left-arrow hflip'
+      iconClassName: 'left-arrow hflip',
     },
     onePage: {
       visible: true,
       label: 'One-page view',
       className: 'onepg',
-      iconClassName: 'onepg'
+      iconClassName: 'onepg',
     },
     twoPage: {
       visible: true,
       label: 'Two-page view',
       className: 'twopg',
-      iconClassName: 'twopg'
+      iconClassName: 'twopg',
     },
     thumbnail: {
       visible: true,
       label: 'Thumbnail view',
       className: 'thumb',
-      iconClassName: 'thumb'
+      iconClassName: 'thumb',
     },
     viewmode: {
       visible: true,
@@ -260,19 +260,19 @@ export const DEFAULT_OPTIONS = {
       visible: true,
       label: 'Zoom out',
       className: 'zoom_out',
-      iconClassName: 'magnify'
+      iconClassName: 'magnify',
     },
     zoomIn: {
       visible: true,
       label: 'Zoom in',
       className: 'zoom_in',
-      iconClassName: 'magnify plus'
+      iconClassName: 'magnify plus',
     },
     fullScreen: {
       visible: true,
       label: 'Toggle fullscreen',
       className: 'full',
-      iconClassName: 'fullscreen'
+      iconClassName: 'fullscreen',
     },
   },
 

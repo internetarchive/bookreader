@@ -27,7 +27,7 @@ export default class BookmarksProvider {
     this.component.modal = modal;
     this.component.loginOptions = {
       loginClicked: this.bookmarksLoginClicked,
-      loginUrl
+      loginUrl,
     };
     this.bindEvents();
 

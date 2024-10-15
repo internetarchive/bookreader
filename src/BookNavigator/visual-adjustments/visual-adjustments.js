@@ -43,7 +43,7 @@ export class IABookVisualAdjustments extends LitElement {
   get activeOptions() {
     return this.options.reduce(
       (results, option) => (option.active ? [...results, option.id] : results),
-      []
+      [],
     );
   }
 
@@ -71,7 +71,7 @@ export class IABookVisualAdjustments extends LitElement {
         bubbles: true,
         composed: true,
         detail,
-      })
+      }),
     );
   }
 
@@ -93,7 +93,7 @@ export class IABookVisualAdjustments extends LitElement {
   changeActiveStateFor(optionName) {
     const updatedOptions = [...this.options];
     const checkedOption = updatedOptions.find(
-      (option) => option.id === optionName
+      (option) => option.id === optionName,
     );
     checkedOption.active = !checkedOption.active;
     this.options = updatedOptions;

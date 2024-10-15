@@ -17,9 +17,9 @@ export const DUMMY_RESULTS = {
       r: 1598,
       l: 50,
       page_height: 2940,
-      page: 37
-    }]
-  }]
+      page: 37,
+    }],
+  }],
 };
 
 marshallSearchResults(DUMMY_RESULTS, () => '', '{{{', '}}}');
