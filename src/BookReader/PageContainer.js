@@ -2,6 +2,8 @@
 /** @typedef {import('./BookModel.js').PageModel} PageModel */
 /** @typedef {import('./ImageCache.js').ImageCache} ImageCache */
 
+import { sleep } from './utils.js';
+
 
 export class PageContainer {
   /**
@@ -9,12 +11,10 @@ export class PageContainer {
    * @param {object} opts
    * @param {boolean} opts.isProtected Whether we're in a protected book
    * @param {ImageCache} opts.imageCache
-   * @param {string} opts.loadingImage
    */
-  constructor(page, {isProtected, imageCache, loadingImage}) {
+  constructor(page, {isProtected, imageCache}) {
     this.page = page;
     this.imageCache = imageCache;
-    this.loadingImage = loadingImage;
     this.$container = $('<div />', {
       'class': `BRpagecontainer ${page ? `pagediv${page.index}` : 'BRemptypage'}`,
       css: { position: 'absolute' },
@@ -43,38 +43,57 @@ export class PageContainer {
       return;
     }
 
-    const alreadyLoaded = this.imageCache.imageLoaded(this.page.index, reduce);
-    const nextBestLoadedReduce = !alreadyLoaded && this.imageCache.getBestLoadedReduce(this.page.index, reduce);
+    const finalReduce = this.imageCache.getFinalReduce(this.page.index, reduce);
+    const newImageURI = this.page.getURI(finalReduce, 0);
 
-    // Create high res image
-    const $newImg = this.imageCache.image(this.page.index, reduce);
+    // Note: These must be computed _before_ we call .image()
+    const alreadyLoaded = this.imageCache.imageLoaded(this.page.index, finalReduce);
+    const nextBestLoadedReduce = this.imageCache.getBestLoadedReduce(this.page.index, reduce);
 
     // Avoid removing/re-adding the image if it's already there
     // This can be called quite a bit, so we need to be fast
-    if (this.$img?.[0].src == $newImg[0].src) {
+    if (this.$img?.data('src') == newImageURI) {
       return this;
     }
 
-    this.$img?.remove();
-    this.$img = $newImg.prependTo(this.$container);
+    let $oldImg = this.$img;
+    this.$img = this.imageCache.image(this.page.index, finalReduce);
+    if ($oldImg) {
+      this.$img.insertAfter($oldImg);
+    } else {
+      this.$img.prependTo(this.$container);
+    }
 
-    const backgroundLayers = [];
     if (!alreadyLoaded) {
       this.$container.addClass('BRpageloading');
-      backgroundLayers.push(`url("${this.loadingImage}") center/20px no-repeat`);
-    }
-    if (nextBestLoadedReduce) {
-      backgroundLayers.push(`url("${this.page.getURI(nextBestLoadedReduce, 0)}") center/100% 100% no-repeat`);
     }
 
-    if (!alreadyLoaded) {
-      this.$img
-        .css('background', backgroundLayers.join(','))
-        .one('loadend', async (ev) => {
-          $(ev.target).css({ 'background': '' });
-          $(ev.target).parent().removeClass('BRpageloading');
-        });
+    if (!alreadyLoaded && nextBestLoadedReduce) {
+      // If we have a slightly lower quality image loaded, use that as the background
+      // while the higher res one loads
+      const nextBestUri = this.page.getURI(nextBestLoadedReduce, 0);
+      if ($oldImg) {
+        if ($oldImg.data('src') == nextBestUri) {
+          // Do nothing! It's already showing the right thing
+        } else {
+          // We have a different src, need to update the src
+          this.imageCache.image(this.page.index, nextBestLoadedReduce, $oldImg[0]);
+        }
+      } else {
+        // We don't have an old <img>, so we need to create a new one
+        $oldImg = this.imageCache.image(this.page.index, nextBestLoadedReduce);
+        $oldImg.prependTo(this.$container);
+      }
     }
+
+    this.$img
+      .one('load', async (ev) => {
+        this.$container.removeClass('BRpageloading');
+        // `load` can fire a little early, so wait a spell before removing the old image
+        // to avoid flicker
+        await sleep(100);
+        $oldImg?.remove();
+      });
 
     return this;
   }
