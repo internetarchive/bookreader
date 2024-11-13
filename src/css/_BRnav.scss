@@ -233,6 +233,28 @@
   float: left;
   flex: 1 auto;
 }
+
+.BRnavPageNum {
+  color: white;
+  background-color: transparent;
+  border: 2px solid;
+  width: 50px;
+  font-size: $brFontSizeSmaller;
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+
+.BRnavTooltip {
+  position: absolute;
+  padding: 10px;
+  border: 1px solid;
+  border-radius: 4px;
+  white-space: nowrap;
+  transform: translateY(-120%);
+  font-size: $brFontSizeSmaller;
+  z-index: 1000;
+}
+
 .BRpager.ui-slider  {
   position: relative;
   height: 8px;
@@ -270,7 +292,7 @@
   }
 }
 
-/* BRnavlin is where chapters/search are appended */
+/* BRnavline is where chapters/search are appended */
 .BRnavline {
   position: relative;
   height: 1px;
@@ -326,7 +348,6 @@
   background-image: url("images/nav_control-up.png");
   background-repeat: no-repeat;
 }
-
 
 /* Mobile Only */
 @media (max-width: $brBreakPointMobile) {
