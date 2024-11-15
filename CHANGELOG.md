@@ -1,3 +1,15 @@
+# 5.0.0-83
+- Fix: Fix typo in search-results.js @sahalbelam
+- Dev: Bump cache action to v4 @williamtheaker
+- Fix: Fix toolbar requiring SearchView.init having already been called @cdrini
+- Dev: Replace deprecated codecov npm package with github action @cdrini
+- Dev: Add eslint trailing comma rule @cdrini
+- Fix: Fix IIIF plugin missing last page + error when metadata unspecified @glorieux-f
+- Fix: Remove polyfill.io from demo files @cdrini
+- Dev: Update build dependencies @cdrini
+- Dev: Update some dev deps @cdrini
+- Fix: Switch to new Thorium URL @rebecca-shoptaw
+
 # 5.0.0-82
 - Feature: New option to control unviewable page image: `unviewablePageURI` @cdrini
 
