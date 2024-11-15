@@ -698,10 +698,10 @@ i.BRicon {
 }
 
 .BRicon.read {
+  transition-property: background-color, border, background-position;
   width: 34px;
   height: 34px;
   background-position: -203px center;
-  transition-property: background-color, border, background-position;
 }
 @media (max-width: 800px) {
   .BRicon.read {
@@ -712,10 +712,10 @@ i.BRicon {
 }
 
 .BRicon.unread {
+  transition-property: background-color, border, background-position;
   width: 34px;
   height: 34px;
   background-position: -283px center;
-  transition-property: background-color, border, background-position;
 }
 @media (max-width: 800px) {
   .BRicon.unread {
