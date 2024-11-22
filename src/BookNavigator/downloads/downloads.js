@@ -75,7 +75,7 @@ export class IABookDownloads extends LitElement {
     <ul>
       <li><a href="https://librarysimplified.org/simplye/" rel="noopener noreferrer nofollow" target="_blank">Install SimplyE</a></li>
       <li><a href="https://www.demarque.com/en-aldiko" rel="noopener noreferrer nofollow" target="_blank">Install Aldiko</a></li>
-      <li><a href="https://www.edrlab.org/software/thorium-reader/" rel="noopener noreferrer nofollow" target="_blank">Install Thorium</a></li>
+      <li><a href="https://thorium.edrlab.org/" rel="noopener noreferrer nofollow" target="_blank">Install Thorium</a></li>
     </ul>
   `;
   }
