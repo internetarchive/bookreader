@@ -62,21 +62,9 @@ export class IABookDownloads extends LitElement {
     `;
   }
 
-  get accessProtectedBook() {
+  get installLCPSoftwareMsg() {
     return html`
-      <p>To access downloaded books, you need Adobe-compliant software on your device. The Internet Archive will administer this loan, but Adobe may also collect some information.</p>
-      <a class="ia-button external primary" href="https://www.adobe.com/solutions/ebook/digital-editions/download.html" rel="noopener noreferrer" target="_blank">Install Adobe Digital Editions</a>
-    `;
-  }
-
-  get installSimplyEAldikoThoriumMsg() {
-    return html`
-    <p>For LCP downloads, make sure you have SimplyE or Aldiko Next installed on mobile or Thorium on desktop.</p>
-    <ul>
-      <li><a href="https://librarysimplified.org/simplye/" rel="noopener noreferrer nofollow" target="_blank">Install SimplyE</a></li>
-      <li><a href="https://www.demarque.com/en-aldiko" rel="noopener noreferrer nofollow" target="_blank">Install Aldiko</a></li>
-      <li><a href="https://thorium.edrlab.org/" rel="noopener noreferrer nofollow" target="_blank">Install Thorium</a></li>
-    </ul>
+    <p>For LCP downloads, make sure you have LCP software such as <a href="https://thorium.edrlab.org/" rel="noopener noreferrer nofollow" target="_blank">Thorium</a> installed on your device.</p>
   `;
   }
 
@@ -86,8 +74,8 @@ export class IABookDownloads extends LitElement {
       ${this.loanExpiryMessage}
       <ul>${this.renderDownloadOptions()}</ul>
       ${this.hasLCPOption
-      ? this.installSimplyEAldikoThoriumMsg
-      : (this.isBookProtected ? this.accessProtectedBook : nothing)
+      ? this.installLCPSoftwareMsg
+      : nothing
       }
     `;
   }
