@@ -64,7 +64,7 @@ export class IABookDownloads extends LitElement {
 
   get installLCPSoftwareMsg() {
     return html`
-    <p>For LCP downloads, make sure you have LCP software such as <a href="https://thorium.edrlab.org/" rel="noopener noreferrer nofollow" target="_blank">Thorium</a> for desktop, or <a href="https://apps.apple.com/us/app/cantook-by-aldiko/id1476410111" target="_blank">Cantook iOS</a> or <a href="https://play.google.com/store/apps/details?id=com.aldiko.android">Cantook Android</a> for mobile installed on your device.</p>
+    <p>For LCP downloads, make sure you have LCP software such as <a href="https://thorium.edrlab.org/" rel="noopener noreferrer nofollow" target="_blank">Thorium (desktop)</a>, <a href="https://apps.apple.com/us/app/cantook-by-aldiko/id1476410111" target="_blank">Cantook (iOS)</a> or <a href="https://play.google.com/store/apps/details?id=com.aldiko.android">Cantook (Android)</a> installed on your device.</p>
   `;
   }
 
