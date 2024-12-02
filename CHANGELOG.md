@@ -1,3 +1,6 @@
+# 5.0.0-84
+- Fix: Improve/update wording for downloads @rebecca-shoptaw
+
 # 5.0.0-83
 - Fix: Fix typo in search-results.js @sahalbelam
 - Dev: Bump cache action to v4 @williamtheaker
