@@ -163,11 +163,11 @@ BookReader.prototype.getOpenLibraryRecord = async function (olHost, ocaid) {
   const baseURL = `${olHost}/query.json?type=/type/edition&*=`;
   const fetchUrlByBookId = `${baseURL}&ocaid=${ocaid}`;
 
-  let data = await $.ajax({ url: fetchUrlByBookId, dataType: 'jsonp' });
+  let data = await $.ajax({ url: fetchUrlByBookId });
 
   if (!data || !data.length) {
     // try sourceid
-    data = await $.ajax({ url: `${baseURL}&source_records=ia:${ocaid}`, dataType: 'jsonp' });
+    data = await $.ajax({ url: `${baseURL}&source_records=ia:${ocaid}` });
   }
 
   return data?.[0];
