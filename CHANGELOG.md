@@ -1,3 +1,6 @@
+# 5.0.0-85
+- Dev: Disable JSONP requests to archive.org to make BR CSP-compatible @cdrini
+
 # 5.0.0-84
 - Fix: Improve/update wording for downloads @rebecca-shoptaw
 
