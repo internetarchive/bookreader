@@ -26,6 +26,9 @@ export default class PageChunk {
       type: 'GET',
       url: `https://${server}/BookReader/BookReaderGetTextWrapper.php`,
       cache: true,
+      xhrFields: {
+        withCredentials: window.br.protected,
+      },
       data: {
         path: `${bookPath}_djvu.xml`,
         page: leafIndex,

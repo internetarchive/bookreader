@@ -87,7 +87,7 @@ const FAKE_XML_EMPTY = '';
 
 describe("Generic tests", () => {
   document.body.innerHTML = '<div id="BookReader">';
-  const br = new BookreaderWithTextSelection({
+  const br = window.br = new BookreaderWithTextSelection({
     data: [
       [
         { width: 800, height: 1200,
