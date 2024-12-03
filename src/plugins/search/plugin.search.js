@@ -223,6 +223,9 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
   callSearchResultsCallback(await $.ajax({
     url: url,
     cache: true,
+    xhrFields: {
+      withCredentials: this.protected,
+    },
     beforeSend: xhr => { this.searchXHR = xhr; },
   }));
 };
