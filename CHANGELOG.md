@@ -1,3 +1,6 @@
+# 5.0.0-86
+- Fix: Make JSON requests with cookies for protected books @cdrini
+
 # 5.0.0-85
 - Dev: Disable JSONP requests to archive.org to make BR CSP-compatible @cdrini
 
