@@ -60,9 +60,28 @@
     left: 0;
     z-index: 1;
   }
-  &.BRpageloading img {
+  &.BRpageloading {
     // Don't show the alt text while loading
-    color: transparent;
+    img {
+      color: transparent;
+    }
+
+    // src can be set async, so hide the image if it's not set
+    img:not([src]) {
+      display: none;
+    }
+
+    &::after {
+      display: block;
+      content: "";
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: url("images/loading.gif") center/20px no-repeat;
+    }
   }
   &.BRemptypage {
     background: transparent;
