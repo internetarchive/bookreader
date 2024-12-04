@@ -15,6 +15,8 @@ export const DEFAULT_OPTIONS = {
   singlePageDjvuXmlUrl: null,
   /** Whether to fetch the XML as a jsonp */
   jsonp: false,
+  /** Whether the book is a protected book */
+  protected: false,
 };
 /** @typedef {typeof DEFAULT_OPTIONS} TextSelectionPluginOptions */
 
@@ -82,6 +84,22 @@ export class TextSelectionPlugin {
   init() {
     this.selectionObserver.attach();
 
+    if (this.options.protected) {
+      // Prevent right clicking when selected text
+      $(document.body).on('contextmenu dragstart copy', (e) => {
+        const selection = document.getSelection();
+        if (selection && selection.toString()) {
+          const intersectsTextLayer = $('.textSelectionSVG')
+            .toArray()
+            .some(el => selection.containsNode(el, true));
+          if (intersectsTextLayer) {
+            e.preventDefault();
+            return false;
+          }
+        }
+      });
+    }
+
     // Only fetch the full djvu xml if the single page url isn't there
     if (this.options.singlePageDjvuXmlUrl) return;
     this.djvuPagesPromise = $.ajax({
@@ -143,6 +161,10 @@ export class TextSelectionPlugin {
    */
   interceptCopy($container) {
     $container[0].addEventListener('copy', (event) => {
+      if (this.options.protected) {
+        event.preventDefault();
+        return false;
+      }
       const selection = document.getSelection();
       event.clipboardData.setData('text/plain', selection.toString());
       event.preventDefault();
@@ -412,7 +434,8 @@ export class TextSelectionPlugin {
 
 export class BookreaderWithTextSelection extends BookReader {
   init() {
-    const options = Object.assign({}, DEFAULT_OPTIONS, this.options.plugins.textSelection);
+    const inheritedOptions = 'protected' in this.options ? { protected: this.options.protected } : {};
+    const options = Object.assign({}, DEFAULT_OPTIONS, inheritedOptions, this.options.plugins.textSelection);
     if (options.enabled) {
       this.textSelectionPlugin = new TextSelectionPlugin(options, this.options.vars, this.pageProgression);
       // Write this back; this way the plugin is the source of truth, and BR just
