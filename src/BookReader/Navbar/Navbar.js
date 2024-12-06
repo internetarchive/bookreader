@@ -252,23 +252,29 @@ export class Navbar {
     const { br } = this;
     // Accessible index starts at 0 (alas) so we add 1 to make human
     const pageNum = br.book.getPageNum(index);
-    const pageType = br.book.getPageProp(index, 'pageType');
     const numLeafs = br.book.getNumLeafs();
 
     if (!this.maxPageNum) {
       // Calculate Max page num (used for pagination display)
       let maxPageNum = 0;
       let pageNumVal;
-      for (let i = 0; i < numLeafs; i++) {
+      for (let i = numLeafs - 1; i >= 0; i--) {
         pageNumVal = parseFloat(br.book.getPageNum(i));
-        if (!isNaN(pageNumVal) && pageNumVal > maxPageNum) {
+        if (!isNaN(pageNumVal)) {
           maxPageNum = pageNumVal;
+          break;
         }
       }
       this.maxPageNum = maxPageNum;
     }
-
-    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum);
+    const [pageIndex, bookLength] = getIndexAndLength(index, numLeafs, pageNum, this.maxPageNum);
+    const navPageNumHtml = getNavPageNumHtml(pageIndex, bookLength);
+    navPageNumHtml.filter('.BRnavPageNum')
+      .on('blur', (e) => this.handlePageNumChange(e, bookLength))
+      .on('keydown', (e) => {
+        if (e.key === 'Enter') this.handlePageNumChange(e, bookLength);
+      });
+    return navPageNumHtml;
   }
 
   /**
@@ -289,25 +295,55 @@ export class Navbar {
     index = index !== undefined ? index : this.br.currentIndex();
     this.$root.find('.BRpager').data('swallowchange', true).slider('value', index);
   }
+
+  /**
+   * Event handler for input changes in the page number field.
+   * @param {Event} e The input event.
+   * @param {number} bookLength Length of the book.
+   */
+  handlePageNumChange(e, bookLength) {
+    const input = e.target;
+    const pageNum = parseInt(input.value, 10);
+    $(input).prev('.BRnavTooltip').remove();
+    if (isNaN(pageNum) || pageNum < 1 || pageNum > bookLength) {
+      $(input).before($(`<div class="BRnavTooltip">Please enter a valid page number (1-${bookLength}).</div>`));
+    } else {
+      this.br.jumpToIndex(pageNum);
+    }
+  }
+}
+
+/**
+ * Retrieves the page index and length of the book
+ * @param {number} index
+ * @param {number} numLeafs
+ * @param {number|string} pageNum
+ * @param {number} maxPageNum
+ * @return {[number|string, number|string]}
+ */
+export function getIndexAndLength(index, numLeafs, pageNum, maxPageNum) {
+  if (pageNum[0] != 'n') {
+    return [pageNum, (maxPageNum && parseFloat(pageNum)) ? maxPageNum : ''];
+  }
+  return [index + 1, numLeafs];
 }
 
 /**
  * Renders the html for the page string
- * @param {number} index
- * @param {number} numLeafs
- * @param {number|string} pageNum
- * @param {*} pageType - Deprecated
- * @param {number} maxPageNum
+ * @param {number} pageIndex
+ * @param {number} bookLength
  * @return {string}
  */
-export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
-  const pageIsAsserted = pageNum[0] != 'n';
-
-  if (!pageIsAsserted) {
-    const pageIndex = index + 1;
-    return `(${pageIndex} of ${numLeafs})`; // Page (8 of 10)
-  }
-
-  const bookLengthLabel = (maxPageNum && parseFloat(pageNum)) ? ` of ${maxPageNum}` : '';
-  return `${pageNum}${bookLengthLabel}`;
+export function getNavPageNumHtml(pageIndex, bookLength) {
+  return $(`
+    <input 
+      type="number" 
+      name="pageNum" 
+      class="BRnavPageNum"
+      value="${pageIndex}" 
+      min="1" 
+      max="${bookLength}"
+    />
+    <span> of ${bookLength}</span>
+  `);
 }
