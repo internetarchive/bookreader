@@ -1,3 +1,12 @@
+# 5.0.0-86
+- Fix: Make JSON requests with cookies for protected books @cdrini
+
+# 5.0.0-85
+- Dev: Disable JSONP requests to archive.org to make BR CSP-compatible @cdrini
+
+# 5.0.0-84
+- Fix: Improve/update wording for downloads @rebecca-shoptaw
+
 # 5.0.0-83
 - Fix: Fix typo in search-results.js @sahalbelam
 - Dev: Bump cache action to v4 @williamtheaker

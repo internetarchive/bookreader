@@ -25,11 +25,14 @@ export default class PageChunk {
     const chunks = await $.ajax({
       type: 'GET',
       url: `https://${server}/BookReader/BookReaderGetTextWrapper.php`,
-      dataType:'jsonp',
       cache: true,
+      xhrFields: {
+        withCredentials: window.br.protected,
+      },
       data: {
         path: `${bookPath}_djvu.xml`,
         page: leafIndex,
+        callback: 'false',
       },
     });
     return PageChunk._fromTextWrapperResponse(leafIndex, chunks);

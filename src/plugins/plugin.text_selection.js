@@ -89,6 +89,9 @@ export class TextSelectionPlugin {
       url: applyVariables(this.options.fullDjvuXmlUrl, this.optionVariables),
       dataType: this.options.jsonp ? "jsonp" : "html",
       cache: true,
+      xhrFields: {
+        withCredentials: window.br.protected,
+      },
       error: (e) => undefined,
     }).then((res) => {
       try {
@@ -115,6 +118,9 @@ export class TextSelectionPlugin {
         url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
         dataType: this.options.jsonp ? "jsonp" : "html",
         cache: true,
+        xhrFields: {
+          withCredentials: window.br.protected,
+        },
         error: (e) => undefined,
       });
       try {

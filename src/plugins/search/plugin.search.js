@@ -222,8 +222,10 @@ BookReader.prototype.search = async function(term = '', overrides = {}) {
   this.trigger('SearchStarted', { term: this.searchTerm, instance: this });
   callSearchResultsCallback(await $.ajax({
     url: url,
-    dataType: 'jsonp',
     cache: true,
+    xhrFields: {
+      withCredentials: this.protected,
+    },
     beforeSend: xhr => { this.searchXHR = xhr; },
   }));
 };
