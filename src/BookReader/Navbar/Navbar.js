@@ -302,12 +302,14 @@ export class Navbar {
  */
 export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
   const pageIsAsserted = pageNum[0] != 'n';
+  const pageIndex = index + 1;
 
   if (!pageIsAsserted) {
-    const pageIndex = index + 1;
-    return `(${pageIndex} of ${numLeafs})`; // Page (8 of 10)
+    pageNum = `—`;
+    return `Page ${pageNum} (${pageIndex}/${numLeafs})`;
   }
 
   const bookLengthLabel = (maxPageNum && parseFloat(pageNum)) ? ` of ${maxPageNum}` : '';
-  return `${pageNum}${bookLengthLabel}`;
+  //return `${pageNum}${bookLengthLabel}`;
+  return `Page ${pageNum} (${pageIndex}/${numLeafs})`;
 }
