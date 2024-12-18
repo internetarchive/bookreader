@@ -142,10 +142,34 @@ export class Navbar {
     if (this.br.options.bookType !== 'linerNotes') {
       if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
         this.showMinimumNavbarControls();
+        this.showMinimumNavPageNum();
       } else {
         this.showMaximumNavbarControls();
+        this.showMaximumNavPageNum();
       }
     }
+  }
+
+  /**
+   * Switch Book Nav page number display to minimum/mobile
+   */
+  showMinimumNavPageNum() {
+    const minElement = document.querySelector('.BRcurrentpage.BRmin');
+    const maxElement = document.querySelector('.BRcurrentpage.BRmax');
+
+    if (minElement) minElement.classList.remove('hide');
+    if (maxElement) maxElement.classList.add('hide');
+  }
+
+  /**
+   * Switch Book Nav page number display to maximum/desktop
+   */
+  showMaximumNavPageNum() {
+    const minElement = document.querySelector('.BRcurrentpage.BRmin');
+    const maxElement = document.querySelector('.BRcurrentpage.BRmax');
+
+    if (minElement) minElement.classList.add('hide');
+    if (maxElement) maxElement.classList.remove('hide');
   }
 
   /**
@@ -203,7 +227,10 @@ export class Navbar {
                   <div class="BRpager"></div>
                   <div class="BRnavline"></div>
                 </div>
-                <p><span class='BRcurrentpage'></span></p>
+                <p>
+                  <span class="BRcurrentpage BRmax"></span>
+                  <span class="BRcurrentpage BRmin"></span>
+                </p>
               </li>
               ${this._renderControls()}
             </ul>
@@ -246,9 +273,10 @@ export class Navbar {
   /**
   * Returns the textual representation of the current page for the navbar
   * @param {number} index
+  * @param {boolean} useMaxFormat
   * @return {string}
   */
-  getNavPageNumString(index) {
+  getNavPageNumString(index, useMaxFormat) {
     const { br } = this;
     // Accessible index starts at 0 (alas) so we add 1 to make human
     const pageNum = br.book.getPageNum(index);
@@ -268,7 +296,8 @@ export class Navbar {
       this.maxPageNum = maxPageNum;
     }
 
-    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum);
+    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum, useMaxFormat);
+
   }
 
   /**
@@ -276,7 +305,8 @@ export class Navbar {
    * @param {number} index
    */
   updateNavPageNum(index) {
-    this.$root.find('.BRcurrentpage').html(this.getNavPageNumString(index));
+    this.$root.find('.BRcurrentpage.BRmax').html(this.getNavPageNumString(index, true));
+    this.$root.find('.BRcurrentpage.BRmin').html(this.getNavPageNumString(index));
   }
 
   /**
@@ -298,14 +328,23 @@ export class Navbar {
  * @param {number|string} pageNum
  * @param {*} pageType - Deprecated
  * @param {number} maxPageNum
+ * @param {boolean} [useMaxFormat = false]
  * @return {string}
  */
-export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
+export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum, useMaxFormat = false) {
   const pageIsAsserted = pageNum[0] != 'n';
+  const pageIndex = index + 1;
 
   if (!pageIsAsserted) {
-    const pageIndex = index + 1;
-    return `(${pageIndex} of ${numLeafs})`; // Page (8 of 10)
+    pageNum = '—';
+  }
+
+  if (useMaxFormat === true) {
+    return `Page ${pageNum} (${pageIndex}/${numLeafs})`;
+  }
+
+  if (!pageIsAsserted) {
+    return `(${pageIndex} of ${numLeafs})`;
   }
 
   const bookLengthLabel = (maxPageNum && parseFloat(pageNum)) ? ` of ${maxPageNum}` : '';
