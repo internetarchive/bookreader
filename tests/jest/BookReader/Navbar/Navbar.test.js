@@ -4,16 +4,29 @@ import BookReader from '@/src/BookReader.js';
 
 describe('getNavPageNumHtml', () => {
   const f = getNavPageNumHtml;
-  test('handle n-prefixed page numbers', () => {
-    expect(f(3, 40, 'n3', '', 40)).toBe('(4 of 40)');
+
+  test('handle n-prefixed page numbers-min format', () => {
+    expect(f(3, 40, 'n3', '', 40, 'min')).toBe('(4 of 40)');
   });
 
-  test('handle regular page numbers', () => {
-    expect(f(3, 40, '14', '', 40)).toBe('14 of 40');
+  test('handle regular page numbers-min format', () => {
+    expect(f(3, 40, '14', '', 40, 'min')).toBe('14 of 40');
   });
 
-  test('handle no max page', () => {
-    expect(f(3, 40, '14', '', null)).toBe('14');
+  test('handle no max page-min format', () => {
+    expect(f(3, 40, '14', '', null, 'min')).toBe('14');
+  });
+
+  test('handle n-prefixed page numbers-max format', () => {
+    expect(f(3, 40, 'n3', '', 40, 'max')).toBe('Page — (4/40)');
+  });
+
+  test('handle regular page numbers-max format', () => {
+    expect(f(3, 40, '14', '', 40, 'max')).toBe('Page 14 (4/40)');
+  });
+
+  test('handle no max page-max format', () => {
+    expect(f(3, 40, '14', '', null, 'max')).toBe('Page 14 (4/40)');
   });
 });
 
