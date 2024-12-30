@@ -14,7 +14,6 @@ BookReader.prototype.setup = (function(super_) {
   return function (options) {
     super_.call(this, options);
 
-    this.auto      = false;
     this.autoTimer = null;
     this.flipDelay = 5000;
   };

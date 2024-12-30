@@ -18,10 +18,6 @@ describe('Plugin: Menu Toggle', () => {
   test('has option flag', () => {
     expect(BookReader.defaultOptions.enableAutoPlayPlugin).toEqual(true);
   });
-  test('has added BR property: auto', () => {
-    expect(br).toHaveProperty('auto');
-    expect(br.auto).toEqual(false);
-  });
   test('has added BR property: autoTimer', () => {
     expect(br).toHaveProperty('autoTimer');
     expect(br.autoTimer).toEqual(null);
