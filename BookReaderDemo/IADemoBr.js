@@ -16,7 +16,6 @@ function getFromUrl(name, def) {
 const ocaid = urlParams.get('ocaid');
 const openFullImmersionTheater = urlParams.get('view') === 'theater';
 const ui = urlParams.get('ui');
-const autoflip = urlParams.get('autoflip');
 const searchTerm = urlParams.get('q');
 
 const iaBookReader = document.querySelector('ia-bookreader');
@@ -45,12 +44,6 @@ BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
 const initializeBookReader = (brManifest) => {
   console.log('initializeBookReader', brManifest);
-
-  const customAutoflipParams = {
-    autoflip: !!autoflip,
-    flipSpeed: parseFloat(getFromUrl('flipSpeed', '2000')),
-    flipDelay: parseFloat(getFromUrl('flipDelay', '5000')),
-  };
 
   const options = {
     el: '#BookReader',
@@ -90,9 +83,6 @@ const initializeBookReader = (brManifest) => {
 
   const isRestricted = brManifest.data.isRestricted;
   window.dispatchEvent(new CustomEvent('contextmenu', { detail: { isRestricted } }));
-  if (customAutoflipParams.autoflip) {
-    window.br.autoToggle(customAutoflipParams);
-  }
 };
 
 window.initializeBookReader = initializeBookReader;

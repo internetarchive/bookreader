@@ -14,7 +14,6 @@ BookReader.prototype.setup = (function(super_) {
   return function (options) {
     super_.call(this, options);
 
-    this.auto      = false;
     this.autoTimer = null;
     this.flipDelay = 5000;
   };
@@ -28,7 +27,13 @@ BookReader.prototype.init = (function(super_) {
     super_.call(this, options);
 
     if (!this.options.enableAutoPlayPlugin) return;
+
     this.bind(BookReader.eventNames.stop, () => this.autoStop());
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('autoflip') === '1') {
+      this.autoToggle();
+    }
   };
 })(BookReader.prototype.init);
 
