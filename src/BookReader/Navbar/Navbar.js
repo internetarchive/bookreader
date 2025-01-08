@@ -273,10 +273,10 @@ export class Navbar {
   /**
   * Returns the textual representation of the current page for the navbar
   * @param {number} index
-  * @param {boolean} useMaxFormat
+  * @param {boolean} [useMaxFormat = false]
   * @return {string}
   */
-  getNavPageNumString(index, useMaxFormat) {
+  getNavPageNumString(index, useMaxFormat = false) {
     const { br } = this;
     // Accessible index starts at 0 (alas) so we add 1 to make human
     const pageNum = br.book.getPageNum(index);
