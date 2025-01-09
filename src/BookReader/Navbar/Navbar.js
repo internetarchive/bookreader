@@ -138,14 +138,17 @@ export class Navbar {
    * Switch navbar controls on mobile and desktop
    */
   switchNavbarControls() {
-    // we don't want navbar controls switching with liner-notes
-    if (this.br.options.bookType !== 'linerNotes') {
-      if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
+    if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
+      this.showMinimumNavPageNum();
+      // we don't want navbar controls switching with liner-notes
+      if (this.br.options.bookType !== 'linerNotes') {
         this.showMinimumNavbarControls();
-        this.showMinimumNavPageNum();
-      } else {
+      }
+    } else {
+      this.showMaximumNavPageNum();
+      // we don't want navbar controls switching with liner-notes
+      if (this.br.options.bookType !== 'linerNotes') {
         this.showMaximumNavbarControls();
-        this.showMaximumNavPageNum();
       }
     }
   }
