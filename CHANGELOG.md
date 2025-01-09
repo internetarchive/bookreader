@@ -1,3 +1,6 @@
+# 5.0.0-87
+- Fix: turn on autoplay option @cdrini
+
 # 5.0.0-86
 - Fix: Make JSON requests with cookies for protected books @cdrini
 
