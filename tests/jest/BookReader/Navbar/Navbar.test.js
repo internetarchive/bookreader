@@ -1,19 +1,40 @@
 import sinon from 'sinon';
-import { getNavPageNumHtml } from '@/src/BookReader/Navbar/Navbar.js';
+import { getIndexAndLength, getNavPageNumHtml } from '@/src/BookReader/Navbar/Navbar.js';
 import BookReader from '@/src/BookReader.js';
 
-describe('getNavPageNumHtml', () => {
-  const f = getNavPageNumHtml;
+describe('getIndexAndLength', () => {
+  const f = getIndexAndLength;
   test('handle n-prefixed page numbers', () => {
-    expect(f(3, 40, 'n3', '', 40)).toBe('(4 of 40)');
+    expect(f(3, 40, 'n3', 40)).toEqual([4, 40]);
   });
 
   test('handle regular page numbers', () => {
-    expect(f(3, 40, '14', '', 40)).toBe('14 of 40');
+    expect(f(3, 40, '14', 40)).toEqual(['14', 40]);
   });
 
   test('handle no max page', () => {
-    expect(f(3, 40, '14', '', null)).toBe('14');
+    expect(f(3, 40, '14', null)).toEqual(['14', '']);
+  });
+});
+
+describe('getNavPageNumHtml', () => {
+  const f = getNavPageNumHtml;
+  test('renders HTML with correct attributes and values', () => {
+    const pageIndex = 4;
+    const bookLength = 40;
+
+    const result = f(pageIndex, bookLength);
+
+    expect(result).toBeInstanceOf(jQuery);
+    const html = result.map((_, el) => el.outerHTML).get().join('');
+
+    expect(html).toContain(`type="number"`);
+    expect(html).toContain(`name="pageNum"`);
+    expect(html).toContain(`class="BRnavPageNum"`);
+    expect(html).toContain(`value="${pageIndex}"`);
+    expect(html).toContain(`min="1"`);
+    expect(html).toContain(`max="${bookLength}"`);
+    expect(html).toContain(`of ${bookLength}`);
   });
 });
 
