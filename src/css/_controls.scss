@@ -160,13 +160,14 @@
   }
 
   .scrubber input[type=range] {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    width: 100%;
-    background-color: transparent;
-    -webkit-appearance: none;
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      width: 100%;
+      background-color: transparent;
+      -webkit-appearance: none;
+      appearance: none;
   }
 
   .scrubber input[type=range]:focus {
