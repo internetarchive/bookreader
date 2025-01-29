@@ -352,10 +352,10 @@ BookReader.prototype.ttsRemoveHilites = function () {
  * @param {number} [value]
  */
 BookReader.prototype.ttsSendAnalyticsEvent = function(action, value) {
-  if (this.archiveAnalyticsSendEvent) {
+  if (this._plugins.archiveAnalytics) {
     const extraValues = {};
     const mediaLanguage = this.ttsEngine.opts.bookLanguage;
     if (mediaLanguage) extraValues.mediaLanguage = mediaLanguage;
-    this.archiveAnalyticsSendEvent('BRReadAloud', action, value, extraValues);
+    this._plugins.archiveAnalytics.archiveAnalyticsSendEvent('BRReadAloud', action, value, extraValues);
   }
 };

@@ -62,6 +62,25 @@ BookReader.constMode1up = 1;
 BookReader.constMode2up = 2;
 /** thumbnails view */
 BookReader.constModeThumb = 3;
+
+// Although this can actualy have any BookReaderPlugin subclass as value, we
+// hardcode the known plugins here for type checking
+BookReader.PLUGINS = {
+  /** @type {typeof import('./plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin | null}*/
+  archiveAnalytics: null,
+};
+
+/**
+ * @param {string} pluginName
+ * @param {typeof import('./BookReaderPlugin.js').BookReaderPlugin} plugin
+ */
+BookReader.registerPlugin = function(pluginName, plugin) {
+  if (BookReader.PLUGINS[pluginName]) {
+    console.warn(`Plugin ${pluginName} already registered. Overwriting.`);
+  }
+  BookReader.PLUGINS[pluginName] = plugin;
+};
+
 /** image cache */
 BookReader.imageCache = null;
 
@@ -236,6 +255,26 @@ BookReader.prototype.setup = function(options) {
     '_modes.mode2Up': this._modes.mode2Up,
     '_modes.modeThumb': this._modes.modeThumb,
   };
+
+  // Construct the usual suspects first to get type hints
+  this._plugins = {
+    archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
+  };
+
+  // Now construct the rest of the plugins
+  for (const [pluginName, PluginClass] of Object.entries(BookReader.PLUGINS)) {
+    if (this._plugins[pluginName] || !PluginClass) continue;
+    this._plugins[pluginName] = new PluginClass(this);
+  }
+
+  // And call setup on them
+  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
+    try {
+      plugin.setup();
+    } catch (e) {
+      console.error(`Error setting up plugin ${pluginName}`, e);
+    }
+  }
 
   /** Image cache for general image fetching */
   this.imageCache = new ImageCache(this.book, {
@@ -583,6 +622,16 @@ BookReader.prototype.init = function() {
 
   if (this.options.startFullscreen) {
     this.enterFullscreen(true);
+  }
+
+  // Init plugins
+  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
+    try {
+      plugin.init();
+    }
+    catch (e) {
+      console.error(`Error initializing plugin ${pluginName}`, e);
+    }
   }
 
   this.init.initComplete = true;

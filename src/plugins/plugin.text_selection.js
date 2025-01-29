@@ -423,7 +423,7 @@ export class BookreaderWithTextSelection extends BookReader {
       new SelectionObserver('.BRtextLayer', (selectEvent) => {
         // Track how often selection is used
         if (selectEvent == 'started') {
-          this.archiveAnalyticsSendEvent?.('BookReader', 'SelectStart');
+          this._plugins.archiveAnalytics?.archiveAnalyticsSendEvent('BookReader', 'SelectStart');
 
           // Set a class on the page to avoid hiding it when zooming/etc
           this.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
