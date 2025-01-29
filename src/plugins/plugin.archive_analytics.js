@@ -11,6 +11,9 @@ export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
     debug: false,
   }
 
+  /** @type {string} */
+  _prevFragment = null;
+
   /** @override */
   init() {
     if (this.options.enabled) {
@@ -24,7 +27,7 @@ export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
       return;
     }
 
-    const prevFragment = this.sendFragmentChange.prevFragment;
+    const prevFragment = this._prevFragment;
 
     const params = this.br.paramsFromCurrent();
     const newFragment = this.br.fragmentFromParams(params);
@@ -58,7 +61,7 @@ export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
         : {};
       window.archive_analytics.send_event('BookReader', 'UserChangedView', window.location.pathname, additionalEventParams);
 
-      this.sendFragmentChange.prevFragment = newFragment;
+      this._prevFragment = newFragment;
     }
   }
 
