@@ -270,7 +270,7 @@ BookReader.prototype.setup = function(options) {
   // And call setup on them
   for (const [pluginName, plugin] of Object.entries(this._plugins)) {
     try {
-      plugin.setup();
+      plugin.setup(this.options.plugins?.[plugin.constructor.name] ?? {});
     } catch (e) {
       console.error(`Error setting up plugin ${pluginName}`, e);
     }

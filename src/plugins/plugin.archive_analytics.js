@@ -3,19 +3,17 @@ import { BookReaderPlugin } from "../BookReaderPlugin.js";
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
-/**
- * Plugin for Archive.org analytics
- */
-jQuery.extend(BookReader.defaultOptions, {
-  enableArchiveAnalytics: true,
-  /** Provide a means of debugging, cause otherwise it's impossible to test locally */
-  debugArchiveAnalytics: false,
-});
 
 export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
+  options = {
+    enabled: true,
+    /** Provide a means of debugging, cause otherwise it's impossible to test locally */
+    debug: false,
+  }
+
   /** @override */
   init() {
-    if (this.br.enableArchiveAnalytics) {
+    if (this.options.enabled) {
       this.br.bind(BookReader.eventNames.fragmentChange, () => this.sendFragmentChange());
     }
   }
@@ -72,9 +70,9 @@ export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
    * @param {Object} [additionalEventParams]
    */
   sendEvent(category, action, value, additionalEventParams) {
-    if (!this.br.options.enableArchiveAnalytics) return;
+    if (!this.options.enabled) return;
 
-    if (this.br.options.debugArchiveAnalytics) {
+    if (this.options.debug) {
       console.log("archiveAnalyticsSendEvent", arguments, window.archive_analytics);
     }
 
@@ -88,4 +86,4 @@ export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
   }
 }
 
-BookReader.registerPlugin('archiveAnalytics', ArchiveAnalyticsPlugin);
+BookReader?.registerPlugin('archiveAnalytics', ArchiveAnalyticsPlugin);

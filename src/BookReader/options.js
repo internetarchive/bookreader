@@ -1,3 +1,4 @@
+// @ts-check
 /** @typedef {import('./BookModel.js').PageNumString} PageNumString */
 /** @typedef {import('./BookModel.js').LeafNum} LeafNum */
 
@@ -140,6 +141,8 @@ export const DEFAULT_OPTIONS = {
    * but going forward we'll keep them here.
    **/
   plugins: {
+    /** @type {import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options']}*/
+    archiveAnalytics: null,
     /** @type {import('../plugins/plugin.text_selection.js').TextSelectionPluginOptions} */
     textSelection: null,
   },
