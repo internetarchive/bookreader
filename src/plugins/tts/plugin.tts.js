@@ -356,6 +356,6 @@ BookReader.prototype.ttsSendAnalyticsEvent = function(action, value) {
     const extraValues = {};
     const mediaLanguage = this.ttsEngine.opts.bookLanguage;
     if (mediaLanguage) extraValues.mediaLanguage = mediaLanguage;
-    this._plugins.archiveAnalytics.archiveAnalyticsSendEvent('BRReadAloud', action, value, extraValues);
+    this._plugins.archiveAnalytics.sendEvent('BRReadAloud', action, value, extraValues);
   }
 };

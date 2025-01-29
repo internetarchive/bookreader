@@ -9,24 +9,24 @@ const BookReader = /** @type {typeof import('../BookReader').default} */(window.
 jQuery.extend(BookReader.defaultOptions, {
   enableArchiveAnalytics: true,
   /** Provide a means of debugging, cause otherwise it's impossible to test locally */
-  debugArchiveAnaltyics: false,
+  debugArchiveAnalytics: false,
 });
 
 export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
   /** @override */
   init() {
     if (this.br.enableArchiveAnalytics) {
-      this.br.bind(BookReader.eventNames.fragmentChange, () => this.archiveAnalyticsSendFragmentChange());
+      this.br.bind(BookReader.eventNames.fragmentChange, () => this.sendFragmentChange());
     }
   }
 
   /** @private */
-  archiveAnalyticsSendFragmentChange() {
+  sendFragmentChange() {
     if (!window.archive_analytics) {
       return;
     }
 
-    const prevFragment = this.archiveAnalyticsSendFragmentChange.prevFragment;
+    const prevFragment = this.sendFragmentChange.prevFragment;
 
     const params = this.br.paramsFromCurrent();
     const newFragment = this.br.fragmentFromParams(params);
@@ -60,7 +60,7 @@ export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
         : {};
       window.archive_analytics.send_event('BookReader', 'UserChangedView', window.location.pathname, additionalEventParams);
 
-      this.archiveAnalyticsSendFragmentChange.prevFragment = newFragment;
+      this.sendFragmentChange.prevFragment = newFragment;
     }
   }
 
@@ -71,10 +71,10 @@ export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
    * @param {number} [value] (must be an int)
    * @param {Object} [additionalEventParams]
    */
-  archiveAnalyticsSendEvent(category, action, value, additionalEventParams) {
+  sendEvent(category, action, value, additionalEventParams) {
     if (!this.br.options.enableArchiveAnalytics) return;
 
-    if (this.br.options.debugArchiveAnaltyics) {
+    if (this.br.options.debugArchiveAnalytics) {
       console.log("archiveAnalyticsSendEvent", arguments, window.archive_analytics);
     }
 
