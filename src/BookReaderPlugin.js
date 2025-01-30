@@ -25,4 +25,12 @@ export class BookReaderPlugin {
 
   /** @abstract */
   init() {}
+
+  /**
+   * @abstract
+   * @protected
+   * @param {import ("./BookReader/PageContainer.js").PageContainer} pageContainer
+   */
+  _configurePageContainer(pageContainer) {
+  }
 }

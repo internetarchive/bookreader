@@ -68,6 +68,8 @@ BookReader.constModeThumb = 3;
 BookReader.PLUGINS = {
   /** @type {typeof import('./plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin | null}*/
   archiveAnalytics: null,
+  /** @type {typeof import('./plugins/plugin.text_selection.js').TextSelectionPlugin | null}*/
+  textSelection: null,
 };
 
 /**
@@ -259,7 +261,13 @@ BookReader.prototype.setup = function(options) {
   // Construct the usual suspects first to get type hints
   this._plugins = {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
+    textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
   };
+
+  // Delete anything that's null
+  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
+    if (!plugin) delete this._plugins[pluginName];
+  }
 
   // Now construct the rest of the plugins
   for (const [pluginName, PluginClass] of Object.entries(BookReader.PLUGINS)) {
@@ -271,6 +279,9 @@ BookReader.prototype.setup = function(options) {
   for (const [pluginName, plugin] of Object.entries(this._plugins)) {
     try {
       plugin.setup(this.options.plugins?.[pluginName] ?? {});
+      // Write the options back; this way the plugin is the source of truth,
+      // and BR just contains a reference to it.
+      this.options.plugins[pluginName] = plugin.options;
     } catch (e) {
       console.error(`Error setting up plugin ${pluginName}`, e);
     }
@@ -824,11 +835,18 @@ BookReader.prototype.drawLeafs = function() {
  * @param {PageIndex} index
  */
 BookReader.prototype._createPageContainer = function(index) {
-  return new PageContainer(this.book.getPage(index, false), {
+  const pageContainer = new PageContainer(this.book.getPage(index, false), {
     isProtected: this.protected,
     imageCache: this.imageCache,
     loadingImage: this.imagesBaseURL + 'loading.gif',
   });
+
+  // Call plugin handlers
+  for (const plugin of Object.values(this._plugins)) {
+    plugin._configurePageContainer(pageContainer);
+  }
+
+  return pageContainer;
 };
 
 BookReader.prototype.bindGestures = function(jElement) {
@@ -877,7 +895,7 @@ BookReader.prototype.zoom = function(direction) {
   } else {
     this.activeMode.zoom('out');
   }
-  this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
+  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
   return;
 };
 
@@ -1108,7 +1126,7 @@ BookReader.prototype.switchMode = function(
   const eventName = mode + 'PageViewSelected';
   this.trigger(BookReader.eventNames[eventName]);
 
-  this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
+  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -1180,7 +1198,7 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   }
   this.jumpToIndex(currentIndex);
 
-  this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
+  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
   // Add "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
   // trigger event here, so that animations,
@@ -1226,7 +1244,7 @@ BookReader.prototype.exitFullScreen = async function () {
     await this.activeMode.mode1UpLit.updateComplete;
   }
 
-  this.textSelectionPlugin?.stopPageFlip(this.refs.$brContainer);
+  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
   // Remove "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
   this.refs.$br.removeClass('BRfullscreenAnimation');
