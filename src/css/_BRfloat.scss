@@ -165,10 +165,10 @@
 
 /* Mobile Only (with some responsiveness) */
 @media (max-width: $brBreakPointMobile) {
-  .BRfloatBody, { padding: 10px 10px; }
+  .BRfloatBody { padding: 10px 10px; }
   .BRfloat .message,
   .BRfloatBody,
-  .BRfloatHead, {
+  .BRfloatHead {
       box-sizing: border-box;
       line-height: normal;
       border-bottom:1px solid rgb(216,216,216);
