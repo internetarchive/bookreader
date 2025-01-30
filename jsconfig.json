@@ -9,6 +9,8 @@
     }
   },
   "include": [
+    "index.js",
+    "index.d.ts",
     "src/**/*.js",
     "tests/**/*.js",
   ],

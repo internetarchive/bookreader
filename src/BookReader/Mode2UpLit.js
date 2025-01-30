@@ -16,7 +16,6 @@ import { ModeCoordinateSpace } from './ModeCoordinateSpace';
 // I _have_ to make this globally public, otherwise it won't let me call
 // its constructor :/
 /** @implements {SmoothZoomable} */
-@customElement('br-mode-2up')
 export class Mode2UpLit extends LitElement {
   /****************************************/
   /************** PROPERTIES **************/
@@ -676,7 +675,6 @@ export class Mode2UpLit extends LitElement {
   }
 }
 
-@customElement('br-leaf-edges')
 export class LeafEdges extends LitElement {
   @property({ type: Number }) leftIndex = 0;
   @property({ type: Number }) rightIndex = 0;
@@ -774,3 +772,6 @@ export class LeafEdges extends LitElement {
     return Math.floor(this.leftIndex + (e.offsetX / this.offsetWidth) * (this.rightIndex - this.leftIndex + 1));
   }
 }
+
+customElements.define('br-mode-2up', Mode2UpLit);
+customElements.define('br-leaf-edges', LeafEdges);

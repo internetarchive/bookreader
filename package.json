@@ -9,7 +9,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "module": "src/ia-bookreader/ia-bookreader.js",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
   "keywords": [
     "online",
     "bookreader",
@@ -25,8 +27,8 @@
   "homepage": "https://github.com/internetarchive/bookreader#readme",
   "private": false,
   "dependencies": {
-    "@internetarchive/ia-activity-indicator": "^0.0.4",
-    "@internetarchive/ia-item-navigator": "^2.1.2",
+    "@internetarchive/ia-activity-indicator": "^0.0.6",
+    "@internetarchive/ia-item-navigator": "^2.1.3-alpha.1",
     "@internetarchive/icon-bookmark": "^1.3.4",
     "@internetarchive/icon-dl": "^1.3.4",
     "@internetarchive/icon-edit-pencil": "^1.3.4",
@@ -35,9 +37,15 @@
     "@internetarchive/icon-search": "^1.3.4",
     "@internetarchive/icon-toc": "^1.3.4",
     "@internetarchive/icon-visual-adjustment": "^1.3.4",
-    "@internetarchive/modal-manager": "^0.2.12",
+    "@internetarchive/modal-manager": "^2.0.1",
     "@internetarchive/shared-resize-observer": "^0.2.0",
-    "lit": "^2.5.0"
+    "interactjs": "^1.10.18",
+    "jquery": "3.6.1",
+    "jquery-colorbox": "1.6.4",
+    "jquery-ui": "^1.12.1",
+    "jquery-ui-touch-punch": "0.2.3",
+    "jquery.browser": "0.1.0",
+    "lit": "^2.8.0"
   },
   "devDependencies": {
     "@babel/core": "7.25.8",
@@ -58,15 +66,9 @@
     "eslint-plugin-no-jquery": "^2.7.0",
     "eslint-plugin-testcafe": "^0.2.1",
     "http-server": "14.1.1",
-    "interactjs": "^1.10.18",
     "iso-language-codes": "1.1.0",
     "jest": "29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "jquery": "3.6.1",
-    "jquery-colorbox": "1.6.4",
-    "jquery-ui": "1.12.1",
-    "jquery-ui-touch-punch": "0.2.3",
-    "jquery.browser": "0.1.0",
     "live-server": "1.2.2",
     "regenerator-runtime": "0.14.1",
     "sass": "1.79.5",

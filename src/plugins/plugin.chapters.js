@@ -191,7 +191,6 @@ BookReader.prototype._chaptersUpdateCurrent = function(
   }
 };
 
-@customElement('br-chapters-panel')
 export class BRChaptersPanel extends LitElement {
   /** @type {TocEntry[]} */
   @property({ type: Array })
@@ -214,9 +213,9 @@ export class BRChaptersPanel extends LitElement {
 
   render() {
     return html`
-    <ol>
-      ${this.contents.map(tocEntry => this.renderTOCEntry(tocEntry))}
-    </ol>
+      <ol>
+        ${this.contents.map((tocEntry) => this.renderTOCEntry(tocEntry))}
+      </ol>
     `;
   }
 
@@ -225,26 +224,29 @@ export class BRChaptersPanel extends LitElement {
    */
   renderTOCEntry(tocEntry) {
     const chapterTitle = [tocEntry.label, tocEntry.title]
-      .filter(x => x)
+      .filter((x) => x)
       .join(' ');
     const clickable = tocEntry.pageIndex != undefined;
     // note the click-tracking won't work...
-    return html`
-    <li
+    return html` <li
       class="
         BRtable-contents-el
         ${clickable ? 'clickable' : ''}
         ${tocEntry == this.currentChapter ? 'current' : ''}
       "
-      style="${styleMap({marginLeft: (tocEntry.level - 1) * 10 + 'px'})}"
-      data-event-click-tracking="${ifDefined(clickable ? "BRTOCPanel|GoToChapter" : undefined)}"
+      style="${styleMap({ marginLeft: (tocEntry.level - 1) * 10 + 'px' })}"
+      data-event-click-tracking="${ifDefined(
+        clickable ? 'BRTOCPanel|GoToChapter' : undefined,
+      )}"
       @click="${() => this.jumpToPage(tocEntry.pageIndex)}"
     >
       ${chapterTitle}
-      ${tocEntry.pagenum ? html`
-        <br />
-        <span class="BRTOCElementPage">Page ${tocEntry.pagenum}</span>
-      ` : nothing}
+      ${tocEntry.pagenum
+        ? html`
+            <br />
+            <span class="BRTOCElementPage">Page ${tocEntry.pagenum}</span>
+          `
+        : nothing}
     </li>`;
   }
 
@@ -281,17 +283,20 @@ export class BRChaptersPanel extends LitElement {
       }
 
       li.clickable:not(.current):hover {
-        background-color: rgba(255,255,255, 0.05);
+        background-color: rgba(255, 255, 255, 0.05);
       }
 
       li.current {
-        background-color: rgba(255,255,255,0.9);
+        background-color: rgba(255, 255, 255, 0.9);
         color: #333;
       }
 
       .BRTOCElementPage {
         font-size: 0.85em;
-        opacity: .8;
-      }`;
+        opacity: 0.8;
+      }
+    `;
   }
 }
+
+customElements.define('br-chapters-panel', BRChaptersPanel);
