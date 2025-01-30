@@ -21,13 +21,13 @@ export class AutoplayPlugin extends BookReaderPlugin {
     urlParams: true,
   }
 
-  autoTimer = null;
+  timer = null;
 
   /** @override */
   init() {
     if (!this.options.enabled) return;
 
-    this.br.bind(EVENTS.stop, () => this.autoStop());
+    this.br.bind(EVENTS.stop, () => this.stop());
 
     if (this.options.urlParams) {
       const urlParams = new URLSearchParams(window.location.search);
@@ -38,7 +38,7 @@ export class AutoplayPlugin extends BookReaderPlugin {
         this.options.flipDelay = parseAnimationSpeed(urlParams.get('flipDelay')) || this.options.flipDelay;
       }
       if (urlParams.get('autoflip') === '1') {
-        this.autoToggle();
+        this.toggle();
       }
     }
   }
@@ -50,12 +50,12 @@ export class AutoplayPlugin extends BookReaderPlugin {
     const jIcons = this.br.$('.BRicon');
 
     jIcons.filter('.play').on('click', () => {
-      this.autoToggle();
+      this.toggle();
       return false;
     });
 
     jIcons.filter('.pause').on('click', () => {
-      this.autoToggle();
+      this.toggle();
       return false;
     });
   }
@@ -66,7 +66,7 @@ export class AutoplayPlugin extends BookReaderPlugin {
    * @param {number} overrides.flipSpeed
    * @param {number} overrides.flipDelay
    */
-  autoToggle(overrides = null) {
+  toggle(overrides = null) {
     if (!this.options.enabled) return;
 
     Object.assign(this.options, overrides);
@@ -78,7 +78,7 @@ export class AutoplayPlugin extends BookReaderPlugin {
       this.br.switchMode(this.br.constMode2up);
     }
 
-    if (null == this.autoTimer) {
+    if (null == this.timer) {
       // $$$ Draw events currently cause layout problems when they occur during animation.
       //     There is a specific problem when changing from 1-up immediately to autoplay in RTL so
       //     we workaround for now by not triggering immediate animation in that case.
@@ -92,7 +92,7 @@ export class AutoplayPlugin extends BookReaderPlugin {
 
       this.br.$('.play').hide();
       this.br.$('.pause').show();
-      this.autoTimer = setInterval(() => {
+      this.timer = setInterval(() => {
         if (this.br.animating) return;
 
         if (Math.max(this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR) >= this.br.book.getNumLeafs() - 1) {
@@ -102,21 +102,21 @@ export class AutoplayPlugin extends BookReaderPlugin {
         }
       }, parseAnimationSpeed(this.options.flipDelay));
     } else {
-      this.autoStop();
+      this.stop();
     }
   }
 
   /**
    * Stop autoplay mode, allowing animations to finish
    */
-  autoStop() {
+  stop() {
     if (!this.options.enabled) return;
 
-    if (null != this.autoTimer) {
-      clearInterval(this.autoTimer);
+    if (null != this.timer) {
+      clearInterval(this.timer);
       this.br.$('.pause').hide();
       this.br.$('.play').show();
-      this.autoTimer = null;
+      this.timer = null;
     }
   }
 }

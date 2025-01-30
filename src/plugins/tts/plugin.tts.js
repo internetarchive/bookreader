@@ -206,7 +206,7 @@ BookReader.prototype.initNavbar = (function (super_) {
 // ttsToggle()
 //______________________________________________________________________________
 BookReader.prototype.ttsToggle = function () {
-  this._plugins.autoplay?.autoStop();
+  this._plugins.autoplay?.stop();
   if (this.ttsEngine.playing) {
     this.ttsStop();
   } else {
