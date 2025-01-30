@@ -106,7 +106,7 @@ BookReader.prototype.urlStartLocationPolling = function() {
     this.trigger(BookReader.eventNames.stop);
     if (this.animating) {
       // Queue change if animating
-      if (this.autoStop) this.autoStop();
+      this._plugins.autoplay?.autoStop();
       this.animationFinishedCallback = updateParams;
     } else {
       // update immediately

@@ -33,4 +33,7 @@ export class BookReaderPlugin {
    */
   _configurePageContainer(pageContainer) {
   }
+
+  /** @abstract @protected */
+  _bindNavigationHandlers() {}
 }
