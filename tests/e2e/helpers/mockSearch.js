@@ -4,21 +4,18 @@ export const PAGE_FIRST_RESULT = 30;
 
 export const SEARCH_INSIDE_URL_RE  = /https:\/\/ia[0-9]+\.us\.archive\.org\/fulltext\/inside\.php\?item_id=.*/;
 
-//adding jQueryxxxxxxxx-xxxxxxxx (semi-random numbers) from request url to returned search request object
 /** Mock response for a matching search term. */
 export function mockResponseFound(req, res) {
-  const requestUrl = new URL(req.url);
-  const jqueryUrl = requestUrl.searchParams.get("callback");
-  const wholeString = jqueryUrl + '(' + JSON.stringify(MOCKED_RESPONSE_FOUND) + ')';
-  res.setBody(wholeString);
+  res.headers['Access-Control-Allow-Origin'] = '*';
+  res.headers['Content-Type'] = 'application/json';
+  res.setBody(JSON.stringify(MOCKED_RESPONSE_FOUND));
 }
 
 /** Mock response for a matching search term. */
 export function mockResponseNotFound(req, res) {
-  const requestUrl = new URL(req.url);
-  const jqueryUrl = requestUrl.searchParams.get("callback");
-  const wholeString = jqueryUrl + '(' + JSON.stringify(MOCKED_RESPONSE_NOT_FOUND) + ')';
-  res.setBody(wholeString);
+  res.headers['Access-Control-Allow-Origin'] = '*';
+  res.headers['Content-Type'] = 'application/json';
+  res.setBody(JSON.stringify(MOCKED_RESPONSE_NOT_FOUND));
 }
 
 const PAGE_FIRST_RESULT_ADJUSTED = PAGE_FIRST_RESULT + 12;
