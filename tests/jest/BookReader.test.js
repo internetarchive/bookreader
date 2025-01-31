@@ -47,7 +47,7 @@ test('checks cookie when initParams called', () => {
 test('does not check cookie when initParams called', () => {
   br._plugins.resume.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => '');
-  br.options.enablePageResume = false;
+  br.options.plugins.resume.enabled = false;
 
   const params = br.initParams();
   expect(br._plugins.resume.getResumeValue).toHaveBeenCalledTimes(0);
@@ -59,7 +59,7 @@ test('does not check cookie when initParams called', () => {
 test('gets index from fragment when both fragment and cookie when InitParams called', () => {
   br._plugins.resume.getResumeValue = jest.fn(() => 15);
   br.urlReadFragment = jest.fn(() => 'page/n4');
-  br.options.enablePageResume = true;
+  br.options.plugins.resume.enabled = true;
 
   const params = br.initParams();
   expect(br._plugins.resume.getResumeValue).toHaveBeenCalledTimes(1);

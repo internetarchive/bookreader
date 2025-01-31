@@ -401,7 +401,7 @@ BookReader.prototype.initParams = function() {
   }
 
   // Check for Resume plugin
-  if (this.options.enablePageResume) {
+  if (this._plugins.resume?.options.enabled) {
     // Check cookies
     const val = this._plugins.resume.getResumeValue();
     if (val !== null) {
