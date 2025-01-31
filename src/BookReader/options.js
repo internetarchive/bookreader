@@ -147,6 +147,8 @@ export const DEFAULT_OPTIONS = {
     autoplay: null,
     /** @type {import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']} */
     textSelection: null,
+    /** @type {import('../plugins/tts/plugin.tts.js').TtsPlugin['options']} */
+    tts: null,
   },
 
   /**
