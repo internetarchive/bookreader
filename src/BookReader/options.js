@@ -145,6 +145,8 @@ export const DEFAULT_OPTIONS = {
     archiveAnalytics: null,
     /** @type {import('../plugins/plugin.autoplay.js').AutoplayPlugin['options']}*/
     autoplay: null,
+    /** @type {import('../plugins/plugin.resume.js').ResumePlugin['options']} */
+    resume: null,
     /** @type {import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']} */
     textSelection: null,
   },
