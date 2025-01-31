@@ -12,14 +12,14 @@ BookReader.docCookies = docCookies;
  */
 export class ResumePlugin extends BookReaderPlugin {
   options = {
-    enablePageResume: true,
+    enabled: true,
     /** @type {string|null} eg '/', '/details/id' */
-    resumeCookiePath: null,
+    cookiePath: null,
   }
 
   /** @override */
   init() {
-    if (this.options.enablePageResume) {
+    if (this.options.enabled) {
       this.br.bind(EVENTS.fragmentChange, () => {
         const params = this.br.paramsFromCurrent();
         this.updateResumeValue(params.index);
@@ -60,9 +60,9 @@ export class ResumePlugin extends BookReaderPlugin {
    */
   updateResumeValue(index, cookieName) {
     const ttl = new Date(+new Date + 12096e5); // 2 weeks
-    // For multiple files in item, leave resumeCookiePath blank
-    // It's likely we can remove resumeCookiePath using getCookiePath()
-    const path = this.options.resumeCookiePath
+    // For multiple files in item, leave cookiePath blank
+    // It's likely we can remove cookiePath using getCookiePath()
+    const path = this.options.cookiePath
       || this.getCookiePath(window.location.pathname);
     BookReader.docCookies.setItem(cookieName || 'br-resume', index, ttl, path, null, false);
   }

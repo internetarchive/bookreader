@@ -36,7 +36,7 @@ describe('updateResumeValue', () => {
 
   test('handles cookieName=null', () => {
     const p = new ResumePlugin(null);
-    p.setup({ resumeCookiePath: '/details/goody' });
+    p.setup({ cookiePath: '/details/goody' });
     const setItemSpy = sinon.spy(docCookies, 'setItem');
 
     p.updateResumeValue(16);
@@ -45,7 +45,7 @@ describe('updateResumeValue', () => {
     expect(setItemSpy.args[0][3]).toEqual('/details/goody');
   });
 
-  test('handles resumeCookiePath not set', () => {
+  test('handles cookiePath not set', () => {
     const setItemSpy = sinon.spy(docCookies, 'setItem');
     // Save function
     const saveFn = br._plugins.resume.getCookiePath;
