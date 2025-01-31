@@ -70,6 +70,8 @@ BookReader.PLUGINS = {
   archiveAnalytics: null,
   /** @type {typeof import('./plugins/plugin.autoplay.js').AutoplayPlugin | null}*/
   autoplay: null,
+  /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
+  resume: null,
   /** @type {typeof import('./plugins/plugin.text_selection.js').TextSelectionPlugin | null}*/
   textSelection: null,
 };
@@ -260,6 +262,7 @@ BookReader.prototype.setup = function(options) {
   this._plugins = {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
+    resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
   };
 
@@ -400,7 +403,7 @@ BookReader.prototype.initParams = function() {
   // Check for Resume plugin
   if (this.options.enablePageResume) {
     // Check cookies
-    const val = this.getResumeValue();
+    const val = this._plugins.resume.getResumeValue();
     if (val !== null) {
       // If page index different from default
       if (params.index !== val) {
