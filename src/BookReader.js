@@ -593,7 +593,12 @@ BookReader.prototype.init = function() {
     this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
   }
   if (this.options.showNavbar) { // default navigation
-    this.initNavbar();
+    const $navBar = this.initNavbar();
+
+    // extend navbar with plugins
+    for (const plugin of Object.values(this._plugins)) {
+      plugin.extendNavBar($navBar);
+    }
   }
 
   // Switch navbar controls on mobile/desktop
