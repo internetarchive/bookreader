@@ -54,9 +54,9 @@ export class TtsPlugin extends BookReaderPlugin {
         bookLanguage: toISO6391(this.br.options.bookLanguage),
         onLoadingStart: this.br.showProgressPopup.bind(this.br, 'Loading audio...'),
         onLoadingComplete: this.br.removeProgressPopup.bind(this.br),
-        onDone: this.ttsStop.bind(this),
-        beforeChunkPlay: this.ttsBeforeChunkPlay.bind(this),
-        afterChunkPlay: this.ttsSendChunkFinishedAnalyticsEvent.bind(this),
+        onDone: this.stop.bind(this),
+        beforeChunkPlay: this.beforeChunkPlay.bind(this),
+        afterChunkPlay: this.sendChunkFinishedAnalyticsEvent.bind(this),
       });
     }
   }
@@ -67,13 +67,13 @@ export class TtsPlugin extends BookReaderPlugin {
 
     this.br.bind(BookReader.eventNames.PostInit, () => {
       this.br.$('.BRicon.read').click(() => {
-        this.ttsToggle();
+        this.toggle();
         return false;
       });
       if (this.ttsEngine) {
         this.ttsEngine.init();
         if (/[?&]_autoReadAloud=show/.test(location.toString())) {
-          this.ttsStart(false); // false flag is to initiate read aloud controls
+          this.start(false); // false flag is to initiate read aloud controls
         }
       }
     });
@@ -96,61 +96,61 @@ export class TtsPlugin extends BookReaderPlugin {
     }
   }
 
-  ttsToggle() {
+  toggle() {
     this.br._plugins.autoplay?.stop();
     if (this.ttsEngine.playing) {
-      this.ttsStop();
+      this.stop();
     } else {
-      this.ttsStart();
+      this.start();
     }
   }
 
-  ttsStart(startTTSEngine = true) {
+  start(startTTSEngine = true) {
     if (this.br.constModeThumb == this.br.mode)
       this.br.switchMode(this.br.constMode1up);
 
     this.br.refs.$BRReadAloudToolbar.addClass('visible');
     this.br.$('.BRicon.read').addClass('unread active');
-    this.ttsSendAnalyticsEvent('Start');
+    this.sendAnalyticsEvent('Start');
     if (startTTSEngine)
       this.ttsEngine.start(this.br.currentIndex(), this.br.book.getNumLeafs());
   }
 
-  ttsJumpForward() {
+  jumpForward() {
     if (this.ttsEngine.paused) {
       this.ttsEngine.resume();
     }
     this.ttsEngine.jumpForward();
   }
 
-  ttsJumpBackward() {
+  jumpBackward() {
     if (this.ttsEngine.paused) {
       this.ttsEngine.resume();
     }
     this.ttsEngine.jumpBackward();
   }
 
-  ttsUpdateState() {
+  updateState() {
     const isPlaying = !(this.ttsEngine.paused || !this.ttsEngine.playing);
     this.br.$('.read-aloud [name=play]').toggleClass('playing', isPlaying);
   }
 
-  ttsPlayPause() {
+  playPause() {
     if (!this.ttsEngine.playing) {
-      this.ttsToggle();
+      this.toggle();
     } else {
       this.ttsEngine.togglePlayPause();
-      this.ttsUpdateState();
+      this.updateState();
     }
   }
 
 
-  ttsStop() {
+  stop() {
     this.br.refs.$BRReadAloudToolbar.removeClass('visible');
     this.br.$('.BRicon.read').removeClass('unread active');
-    this.ttsSendAnalyticsEvent('Stop');
+    this.sendAnalyticsEvent('Stop');
     this.ttsEngine.stop();
-    this.ttsRemoveHilites();
+    this.removeHilites();
     this.br.removeProgressPopup();
   }
 
@@ -158,24 +158,24 @@ export class TtsPlugin extends BookReaderPlugin {
    * @param {PageChunk} chunk
    * Returns once the flip is done
    */
-  async ttsBeforeChunkPlay(chunk) {
-    await this.ttsMaybeFlipToIndex(chunk.leafIndex);
-    this.ttsHighlightChunk(chunk);
-    this.ttsScrollToChunk(chunk);
+  async beforeChunkPlay(chunk) {
+    await this.maybeFlipToIndex(chunk.leafIndex);
+    this.highlightChunk(chunk);
+    this.scrollToChunk(chunk);
   }
 
   /**
    * @param {PageChunk} chunk
    */
-  ttsSendChunkFinishedAnalyticsEvent(chunk) {
-    this.ttsSendAnalyticsEvent('ChunkFinished-Words', approximateWordCount(chunk.text));
+  sendChunkFinishedAnalyticsEvent(chunk) {
+    this.sendAnalyticsEvent('ChunkFinished-Words', approximateWordCount(chunk.text));
   }
 
   /**
    * Flip the page if the provided leaf index is not visible
    * @param {Number} leafIndex
    */
-  async ttsMaybeFlipToIndex(leafIndex) {
+  async maybeFlipToIndex(leafIndex) {
     if (this.br.constMode2up != this.br.mode) {
       this.br.jumpToIndex(leafIndex);
     } else {
@@ -186,11 +186,11 @@ export class TtsPlugin extends BookReaderPlugin {
   /**
    * @param {PageChunk} chunk
    */
-  ttsHighlightChunk(chunk) {
+  highlightChunk(chunk) {
     // The poorly-named variable leafIndex
     const pageIndex = chunk.leafIndex;
 
-    this.ttsRemoveHilites();
+    this.removeHilites();
 
     // group by index; currently only possible to have chunks on one page :/
     this._ttsBoxesByIndex = {
@@ -209,7 +209,7 @@ export class TtsPlugin extends BookReaderPlugin {
   /**
    * @param {PageChunk} chunk
    */
-  ttsScrollToChunk(chunk) {
+  scrollToChunk(chunk) {
     // It behaves weird if used in thumb mode
     if (this.br.constModeThumb == this.br.mode) return;
 
@@ -226,7 +226,7 @@ export class TtsPlugin extends BookReaderPlugin {
     });
   }
 
-  ttsRemoveHilites() {
+  removeHilites() {
     $(this.br.getActivePageContainerElements()).find('.ttsHiliteLayer').remove();
     this._ttsBoxesByIndex = {};
   }
@@ -237,7 +237,7 @@ export class TtsPlugin extends BookReaderPlugin {
    * @param {string} action
    * @param {number} [value]
    */
-  ttsSendAnalyticsEvent(action, value) {
+  sendAnalyticsEvent(action, value) {
     if (this.br._plugins.archiveAnalytics) {
       const extraValues = {};
       const mediaLanguage = this.ttsEngine.opts.bookLanguage;
@@ -322,11 +322,11 @@ BookReader.prototype.initNavbar = (function (super_) {
       const voicesMenu = this.refs.$BRReadAloudToolbar.find('[name=playback-voice]');
       renderVoicesMenu(voicesMenu);
       voicesMenu.on("change", ev => ttsPlugin.ttsEngine.setVoice(voicesMenu.val()));
-      ttsPlugin.ttsEngine.events.on('pause resume start', () => ttsPlugin.ttsUpdateState());
+      ttsPlugin.ttsEngine.events.on('pause resume start', () => ttsPlugin.updateState());
       ttsPlugin.ttsEngine.events.on('voiceschanged', () => renderVoicesMenu(voicesMenu));
-      this.refs.$BRReadAloudToolbar.find('[name=play]').on("click", ttsPlugin.ttsPlayPause.bind(ttsPlugin));
-      this.refs.$BRReadAloudToolbar.find('[name=advance]').on("click", ttsPlugin.ttsJumpForward.bind(ttsPlugin));
-      this.refs.$BRReadAloudToolbar.find('[name=review]').on("click", ttsPlugin.ttsJumpBackward.bind(ttsPlugin));
+      this.refs.$BRReadAloudToolbar.find('[name=play]').on("click", ttsPlugin.playPause.bind(ttsPlugin));
+      this.refs.$BRReadAloudToolbar.find('[name=advance]').on("click", ttsPlugin.jumpForward.bind(ttsPlugin));
+      this.refs.$BRReadAloudToolbar.find('[name=review]').on("click", ttsPlugin.jumpBackward.bind(ttsPlugin));
       const $rateSelector = this.refs.$BRReadAloudToolbar.find('select[name="playback-speed"]');
       $rateSelector.on("change", ev => ttsPlugin.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
       $(`<li>
