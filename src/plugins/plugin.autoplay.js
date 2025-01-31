@@ -12,9 +12,8 @@ export class AutoplayPlugin extends BookReaderPlugin {
     /**
      * @type {number | 'fast' | 'slow'}
      * How quickly the flip animation should run.
-     * Defaults to global BookReader flipSpeed option if unspecified
      **/
-    flipSpeed: null,
+    flipSpeed: 1500,
     /** How long to pause on each page between flips */
     flipDelay: 5000,
     /** Allow controlling the autoflip/speed/delay from the url */
