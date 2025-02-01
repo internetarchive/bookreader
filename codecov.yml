@@ -5,7 +5,7 @@ codecov:
     project:
       default:
         # Allow small drops in coverage
-        threshold: 0.005  # .5 %
+        threshold: 0.5  # 0.5%
         if_not_found: failure
 
 coverage:

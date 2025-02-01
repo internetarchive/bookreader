@@ -33,4 +33,12 @@ export class BookReaderPlugin {
    */
   _configurePageContainer(pageContainer) {
   }
+
+  /** @abstract @protected */
+  _bindNavigationHandlers() {}
+
+  /**
+   * @param {JQuery<HTMLElement>} $navBar
+   */
+  extendNavBar($navBar) {}
 }

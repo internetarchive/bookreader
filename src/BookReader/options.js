@@ -143,8 +143,12 @@ export const DEFAULT_OPTIONS = {
   plugins: {
     /** @type {import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options']}*/
     archiveAnalytics: null,
+    /** @type {import('../plugins/plugin.autoplay.js').AutoplayPlugin['options']}*/
+    autoplay: null,
     /** @type {import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']} */
     textSelection: null,
+    /** @type {import('../plugins/tts/plugin.tts.js').TtsPlugin['options']} */
+    tts: null,
   },
 
   /**
