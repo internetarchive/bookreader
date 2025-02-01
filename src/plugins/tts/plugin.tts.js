@@ -6,6 +6,7 @@ import { toISO6391, approximateWordCount } from './utils.js';
 import { en as tooltips } from './tooltip_dict.js';
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
+import { applyVariables } from '../../util/strings.js';
 /** @typedef {import('./PageChunk.js').default} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").default} AbstractTTSEngine */
 
@@ -17,8 +18,11 @@ const BookReader = /** @type {typeof import('../../BookReader').default} */(wind
 export class TtsPlugin extends BookReaderPlugin {
   options = {
     enabled: true,
-    server: 'ia600609.us.archive.org',
-    bookPath: '',
+    /**
+     * @type {import('@/src/util/strings.js').StringWithVars}
+     * The URL where to get PageChunk objects for a given page. Expects a var `pageIndex`
+     **/
+    pageChunkUrl: 'https://{{server}}/BookReader/BookReaderGetTextWrapper.php?path={{bookPath|urlencode}}_djvu.xml&page={{pageIndex}}&callback=false',
   }
 
   /**
@@ -49,8 +53,7 @@ export class TtsPlugin extends BookReaderPlugin {
     if (TTSEngine) {
       /** @type {AbstractTTSEngine} */
       this.ttsEngine = new TTSEngine({
-        server: this.options.server,
-        bookPath: this.options.bookPath,
+        pageChunkUrl: applyVariables(this.options.pageChunkUrl, this.br.options.vars),
         bookLanguage: toISO6391(this.br.options.bookLanguage),
         onLoadingStart: this.br.showProgressPopup.bind(this.br, 'Loading audio...'),
         onLoadingComplete: this.br.removeProgressPopup.bind(this.br),

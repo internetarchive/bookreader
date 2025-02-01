@@ -138,7 +138,7 @@ export default class PageChunkIterator {
    * @param {number} index
    */
   _fetchPageChunksDirect(index) {
-    return PageChunk.fetch(this.opts.server, this.opts.bookPath, index);
+    return PageChunk.fetch(this.opts.pageChunkUrl, index);
   }
 }
 
@@ -146,14 +146,12 @@ PageChunkIterator.AT_END = "__PageChunkIterator.AT_END__";
 
 /** @type {PageChunkIteratorOptions} */
 const DEFAULT_OPTS = {
-  server: null,
-  bookPath: null,
+  pageChunkUrl: null,
   pageBufferSize: 2,
 };
 
 /**
  * @typedef {Object} PageChunkIteratorOptions
- * @property {string} server
- * @property {string} bookPath
+ * @property {import('@/src/util/strings.js').StringWithVars} pageChunkUrl
  * @property {number} [pageBufferSize] number of pages to buffer before/after the current page
  */
