@@ -288,3 +288,13 @@ export function promisifyEvent(target, eventType) {
 export function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
+
+/**
+ * @param {number | 'fast' | 'slow' | string} speed
+ * Parsing of the jquery animation speed; see https://api.jquery.com/animate/
+ */
+export function parseAnimationSpeed(speed) {
+  if (speed === 'slow') return 600;
+  if (speed === 'fast') return 200;
+  return parseInt(speed, 10);
+}
