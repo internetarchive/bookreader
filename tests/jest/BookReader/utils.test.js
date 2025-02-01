@@ -10,6 +10,7 @@ import {
   escapeRegExp,
   getActiveElement,
   isInputActive,
+  parseAnimationSpeed,
   poll,
   polyfillCustomEvent,
   PolyfilledCustomEvent,
@@ -225,5 +226,25 @@ describe('escapeRegex', () => {
     expect(escapeRegExp('{{{')).toBe('\\{\\{\\{');
     expect(escapeRegExp('')).toBe('');
     expect(escapeRegExp('https://example.com')).toBe('https://example\\.com');
+  });
+});
+
+describe('parseAnimationSpeed', () => {
+  test('Parses numbers', () => {
+    expect(parseAnimationSpeed(100)).toBe(100);
+    expect(parseAnimationSpeed(0)).toBe(0);
+    expect(parseAnimationSpeed(1000)).toBe(1000);
+  });
+
+  test('Parses strings', () => {
+    expect(parseAnimationSpeed('slow')).toBe(600);
+    expect(parseAnimationSpeed('fast')).toBe(200);
+    expect(parseAnimationSpeed('100')).toBe(100);
+  });
+
+  test('Handles invalid input', () => {
+    expect(parseAnimationSpeed('foo')).toBeFalsy();
+    expect(parseAnimationSpeed('')).toBeFalsy();
+    expect(parseAnimationSpeed(null)).toBeFalsy();
   });
 });
