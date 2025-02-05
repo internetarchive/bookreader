@@ -308,15 +308,12 @@ body.BRfullscreenActive .mm-menu {
 }
 .BRaction.facebook-share-button {
   background-color: #3a5998;
-  margin: 5px;
 }
 .BRaction.twitter-share-button {
   background-color: #429aff;
-  margin: 5px;
 }
 .BRaction.email-share-button {
   background-color: #c1c1c1;
-  margin: 5px;
 }
 
 /* Mobile Only */
@@ -646,46 +643,165 @@ svg.BRPageLayer {
   background-color: rgba(50, 50, 50, 0.4);
 }
 
-/* Default icon styles */
 .BRicon {
-  width: 34px;
-  height: 34px;
+  padding: 0;
+  margin: 0;
+  vertical-align: middle;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  background-image: url(images/BRicons.svg);
   background-repeat: no-repeat;
-  transition: background-color 0.3s, border 0.3s, background-position 0.3s;
 }
 
-/* Responsive styles */
+i.BRicon {
+  display: inline-block;
+}
+
+.BRicon.logo {
+  width: 34px;
+  height: 34px;
+  background-position: -3px center;
+}
 @media (max-width: 800px) {
-  .BRicon {
+  .BRicon.logo {
     width: 40px;
     height: 40px;
+    background-position: 0px center;
   }
 }
 
-/* Individual icon positions */
-.BRicon.share { background-position: -123px center; }
-.BRicon.read { background-position: -203px center; }
-.BRicon.unread { background-position: -283px center; }
-.BRicon.fit { background-position: -363px center; }
-.BRicon.download { background-position: -1523px center; }
-.BRicon.return { background-position: -1043px center; }
-.BRicon.fb { background-position: -1603px center; }
-.BRicon.twitter { background-position: -1643px center; }
-.BRicon.email { background-position: -1683px center; }
-
-/* Adjust background positions in media query */
+.BRicon.info {
+  width: 34px;
+  height: 34px;
+  background-position: -43px center;
+}
 @media (max-width: 800px) {
-  .BRicon.share { background-position: -120px center; }
-  .BRicon.read { background-position: -200px center; }
-  .BRicon.unread { background-position: -280px center; }
-  .BRicon.fit { background-position: -360px center; }
-  .BRicon.download { background-position: -1520px center; }
-  .BRicon.return { background-position: -1040px center; }
-  .BRicon.fb { background-position: -1600px center; }
-  .BRicon.twitter { background-position: -1640px center; }
-  .BRicon.email { background-position: -1680px center; }
+  .BRicon.info {
+    width: 40px;
+    height: 40px;
+    background-position: -40px center;
+  }
 }
 
+.BRicon.share {
+  width: 34px;
+  height: 34px;
+  background-position: -123px center;
+}
+@media (max-width: 800px) {
+  .BRicon.share {
+    width: 40px;
+    height: 40px;
+    background-position: -120px center;
+  }
+}
+
+.BRicon.read {
+  transition-property: background-color, border, background-position;
+  width: 34px;
+  height: 34px;
+  background-position: -203px center;
+}
+@media (max-width: 800px) {
+  .BRicon.read {
+    width: 40px;
+    height: 40px;
+    background-position: -200px center;
+  }
+}
+
+.BRicon.unread {
+  transition-property: background-color, border, background-position;
+  width: 34px;
+  height: 34px;
+  background-position: -283px center;
+}
+@media (max-width: 800px) {
+  .BRicon.unread {
+    width: 40px;
+    height: 40px;
+    background-position: -280px center;
+  }
+}
+
+.BRicon.fit {
+  width: 34px;
+  height: 34px;
+  background-position: -363px center;
+}
+@media (max-width: 800px) {
+  .BRicon.fit {
+    width: 40px;
+    height: 40px;
+    background-position: -360px center;
+  }
+}
+
+.BRicon.download {
+  width: 34px;
+  height: 34px;
+  background-position: -1523px center;
+}
+@media (max-width: 800px) {
+  .BRicon.download {
+    width: 40px;
+    height: 40px;
+    background-position: -1520px center;
+  }
+}
+
+.BRicon.return {
+  width: 34px;
+  height: 34px;
+  background-position: -1043px center;
+}
+@media (max-width: 800px) {
+  .BRicon.return {
+    width: 40px;
+    height: 40px;
+    background-position: -1040px center;
+  }
+}
+
+.BRicon.fb {
+  width: 34px;
+  height: 34px;
+  background-position: -1603px center;
+}
+@media (max-width: 800px) {
+  .BRicon.fb {
+    width: 40px;
+    height: 40px;
+    background-position: -1600px center;
+  }
+}
+
+.BRicon.twitter {
+  width: 34px;
+  height: 34px;
+  background-position: -1643px center;
+}
+@media (max-width: 800px) {
+  .BRicon.twitter {
+    width: 40px;
+    height: 40px;
+    background-position: -1640px center;
+  }
+}
+
+.BRicon.email {
+  width: 34px;
+  height: 34px;
+  background-position: -1683px center;
+}
+@media (max-width: 800px) {
+  .BRicon.email {
+    width: 40px;
+    height: 40px;
+    background-position: -1680px center;
+  }
+}
 
 /**
  * BRfloat is the modal popup used in bookreader
