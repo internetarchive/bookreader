@@ -174,41 +174,168 @@
 /* Share dialog */
 .BRshare.BRfloat {
   width: 600px;
+  padding: 20px;
+  box-sizing: border-box;
 }
+
 .BRshare .share-title {
-  margin: 15px 15px 0;
+  margin: 0 0 20px 0;
   font-weight: bold;
   font-size: 18px;
   line-height: 22px;
+  color: var(--primaryTextColor, #fff);
 }
+
 .BRshare .share-social {
-  margin: 15px 15px 0;
+  margin: 0 0 20px 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
+
 .BRshare .share-social button {
-  padding: 0 5px;
-  height: 40px;
+  flex: 1;
+  min-width: 120px;
+  height: 44px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: left;
+  border-radius: 4px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
   color: white;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
 }
+
+.BRshare .share-social button:hover {
+  opacity: 0.9;
+}
+
 .BRshare .share-social button > i {
-  margin-right: 5px;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  flex-shrink: 0;
 }
-.BRshare .share-social > div {
-  display: inline;
+
+.BRshare .share-social button.facebook-share-button {
+  background-color: #1877f2;
 }
+
+.BRshare .share-social button.twitter-share-button {
+  background-color: #1da1f2;
+}
+
+.BRshare .share-social button.email-share-button {
+  background-color: #757575;
+}
+
 .BRshare .share-embed {
-  margin-top: 20px;
+  margin: 20px 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-.BRshare label.sub.open-to-this-page {
+
+.BRshare .share-embed-prompt {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  color: var(--primaryTextColor, #fff);
+}
+
+.BRshare fieldset {
+  margin: 0 0 15px 0;
+  padding: 0;
+  border: none;
+}
+
+.BRshare fieldset label {
   display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primaryTextColor, #fff);
 }
+
+.BRshare fieldset.sub {
+  margin: 10px 0;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.BRshare fieldset.sub label {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 16px 0 0;
+  font-weight: normal;
+}
+
+.BRshare fieldset input[type="text"],
+.BRshare fieldset textarea {
+  width: 100%;
+  padding: 8px 12px;
+  margin: 0;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--primaryTextColor, #fff);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.BRshare fieldset textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
 .BRshare button[type=button].share-finished {
+  width: 100%;
+  height: 44px;
+  margin: 20px 0 0 0;
+  padding: 0 24px;
   background-color: rgb(74, 144, 226);
-  border: 0;
+  border: none;
+  border-radius: 4px;
   color: white;
-  border-radius: 3px;
-  padding: 10px 25px;
   font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.BRshare button[type=button].share-finished:hover {
+  background-color: rgb(61, 135, 221);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 800px) {
+  .BRshare.BRfloat {
+    width: 100%;
+    max-width: 400px;
+    padding: 15px;
+  }
+
+  .BRshare .share-social {
+    flex-direction: column;
+  }
+
+  .BRshare .share-social button {
+    width: 100%;
+  }
+
+  .BRshare fieldset.sub label {
+    display: block;
+    margin: 0 0 8px 0;
+  }
+
+  .BRshare fieldset.sub label:last-child {
+    margin-bottom: 0;
+  }
 }
 
 /* Info dialog */

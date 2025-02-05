@@ -92,31 +92,92 @@
 
 /* Share dialog */
 .BRshare {
-  &.BRfloat { width: 600px; }
+  &.BRfloat { 
+    width: 600px;
+    background: var(--secondaryBGColor, #222);
+    border-radius: 8px;
+    color: var(--primaryTextColor, #fff);
+  }
 
-  .share-title { margin: 15px 15px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
-  .share-social { margin: 15px 15px 0;}
+  .share-title { 
+    margin: 20px 20px 15px;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .share-social { 
+    margin: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
   .share-social button {
-    padding: 0 5px;
-    height: 40px;
-    text-align: left;
-    color: white;
-  }
-  .share-social button > i { margin-right: 5px; }
-  .share-social > div { display: inline; }
-  .share-embed { margin-top: 20px; }
-
-  label.sub.open-to-this-page {
-    display: block;
-  }
-
-  button[type=button].share-finished {
-    background-color: rgb(74,144,226);
-    border: 0;
-    color: white;
-    border-radius: 3px;
-    padding: 10px 25px;
+    width: 100%;
+    padding: 12px;
+    height: auto;
+    border-radius: 6px;
     font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    i {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+    }
+  }
+
+  .share-embed {
+    margin: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--secondaryCTABorder, #999);
+  }
+
+  .share-embed-prompt {
+    font-size: 15px;
+    margin-bottom: 15px;
+  }
+
+  fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--secondaryCTABorder, #999);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--secondaryCTABorder, #999);
+      background: var(--tertiaryBGColor, #333);
+      color: var(--primaryTextColor, #fff);
+      font-size: 14px;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primaryCTAFill, #194880);
+      }
+    }
+  }
+
+  .share-finished {
+    margin: 20px;
+    width: calc(100% - 40px);
   }
 }
 
@@ -219,6 +280,32 @@ body.BRfullscreenActive {
     .BRaction {
       padding: 8px 10px;
       margin-left: 0; margin-bottom: 10px;
+    }
+  }
+
+  .BRshare {
+    &.BRfloat {
+      width: 100%;
+      max-width: 400px;
+      margin: 15px;
+    }
+
+    .share-social {
+      grid-template-columns: 1fr;
+    }
+
+    .share-title {
+      font-size: 20px;
+      margin: 15px;
+    }
+
+    .share-embed {
+      margin: 15px;
+    }
+
+    .share-finished {
+      margin: 15px;
+      width: calc(100% - 30px);
     }
   }
 }

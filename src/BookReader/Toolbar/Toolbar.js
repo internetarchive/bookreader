@@ -166,22 +166,24 @@ export class Toolbar {
         </form>
       </div>`;
 
-    const $form = $(`
-      <div class="share-title">Share this book</div>
-      <div class="share-social">
-        <label class="sub open-to-this-page">
-          <input class="thispage-social" type="checkbox" />
-          Open to this page?
-        </label>
-        <div><button class="BRaction share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>
-        <div><button class="BRaction share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>
-        <div><button class="BRaction share email-share-button"><i class="BRicon email" /> Email</button></div>
-      </div>
-      ${embedHtml}
-      <div class="BRfloatFoot">
-        <button class="share-finished" type="button" onclick="$.fn.colorbox.close();">Finished</button>
-      </div>`);
-
+      const $form = $(`
+        <div class="share-title">Share this book</div>
+        <div class="share-social">
+          <button class="BRaction share facebook-share-button">
+            <i class="BRicon fb"></i>Facebook
+          </button>
+          <button class="BRaction share twitter-share-button">
+            <i class="BRicon twitter"></i>Twitter
+          </button>
+          <button class="BRaction share email-share-button">
+            <i class="BRicon email"></i>Email
+          </button>
+        </div>
+        ${embedHtml}
+        <button class="BRaction primary share-finished" type="button" onclick="$.fn.colorbox.close();">
+          Done
+        </button>`);
+  
     $form.appendTo($shareDiv);
 
     $form.find('.fieldset-embed input').on('change', event => {
