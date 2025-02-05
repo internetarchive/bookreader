@@ -173,14 +173,24 @@ export class Toolbar {
           <input class="thispage-social" type="checkbox" />
           Open to this page?
         </label>
-        <div><button class="BRaction share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>
-        <div><button class="BRaction share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>
-        <div><button class="BRaction share email-share-button"><i class="BRicon email" /> Email</button></div>
+        <button class="BRaction share facebook-share-button">
+          <i class="BRicon fb"></i>Facebook
+        </button>
+        <button class="BRaction share twitter-share-button">
+          <i class="BRicon twitter"></i>Twitter
+        </button>
+        <button class="BRaction share email-share-button">
+          <i class="BRicon email"></i>Email
+        </button>
       </div>
       ${embedHtml}
       <div class="BRfloatFoot">
-        <button class="share-finished" type="button" onclick="$.fn.colorbox.close();">Finished</button>
-      </div>`);
+        <button class="share-finished" type="button" onclick="$.fn.colorbox.close();">
+          Finished
+        </button>
+      </div>
+    `);
+    
 
     $form.appendTo($shareDiv);
 
