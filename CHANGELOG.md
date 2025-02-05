@@ -1,3 +1,10 @@
+# 5.0.0-88
+- Fix: Switch to new page number display format @pezvi
+- Fix: Introduce BookReaderPlugin abstraction and apply to ArchiveAnalyticsPlugin @cdrini
+
+# 5.0.0-87
+- Fix: turn on autoplay option @cdrini
+
 # 5.0.0-86
 - Fix: Make JSON requests with cookies for protected books @cdrini
 

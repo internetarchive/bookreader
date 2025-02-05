@@ -1074,9 +1074,6 @@ i.BRicon {
     display: block;
   }
 }
-.BRfooter button.hide {
-  display: none;
-}
 
 .BRReadAloudToolbar {
   display: flex;
@@ -1949,6 +1946,9 @@ ia-bookreader .BRtoolbar {
 .BRcontrols .controls button {
   width: 30px;
   height: 30px;
+}
+.BRcontrols .controls .hide {
+  display: none;
 }
 @keyframes slideUp {
   from {

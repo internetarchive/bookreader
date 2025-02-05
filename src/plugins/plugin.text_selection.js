@@ -1,22 +1,12 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { SelectionObserver } from '../BookReader/utils/SelectionObserver.js';
+import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
-
-export const DEFAULT_OPTIONS = {
-  enabled: true,
-  /** @type {StringWithVars} The URL to fetch the entire DJVU xml. Supports options.vars */
-  fullDjvuXmlUrl: null,
-  /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
-  singlePageDjvuXmlUrl: null,
-  /** Whether to fetch the XML as a jsonp */
-  jsonp: false,
-};
-/** @typedef {typeof DEFAULT_OPTIONS} TextSelectionPluginOptions */
 
 /**
  * @template T
@@ -39,30 +29,73 @@ export class Cache {
   }
 }
 
-export class TextSelectionPlugin {
+export class TextSelectionPlugin extends BookReaderPlugin {
+  options = {
+    enabled: true,
+    /** @type {StringWithVars} The URL to fetch the entire DJVU xml. Supports options.vars */
+    fullDjvuXmlUrl: null,
+    /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
+    singlePageDjvuXmlUrl: null,
+    /** Whether to fetch the XML as a jsonp */
+    jsonp: false,
+  }
+
+  /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
+  djvuPagesPromise = null;
+
+  /** @type {Cache<{index: number, response: any}>} */
+  pageTextCache = new Cache();
+
   /**
-   * @param {'lr' | 'rl'} pageProgression In the future this should be in the ocr file
-   * since a book being right to left doesn't mean the ocr is right to left. But for
-   * now we do make that assumption.
+   * Sometimes there are too many words on a page, and the browser becomes near
+   * unusable. For now don't render text layer for pages with too many words.
    */
-  constructor(options = DEFAULT_OPTIONS, optionVariables, pageProgression = 'lr') {
-    this.options = options;
-    this.optionVariables = optionVariables;
-    /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
-    this.djvuPagesPromise = null;
+  maxWordRendered = 2500;
+
+  /**
+   * @param {import('../BookReader.js').default} br
+   */
+  constructor(br) {
+    super(br);
+    // In the future this should be in the ocr file
+    // since a book being right to left doesn't mean the ocr is right to left. But for
+    // now we do make that assumption.
     /** Whether the book is right-to-left */
-    this.rtl = pageProgression === 'rl';
-
-    /** @type {Cache<{index: number, response: any}>} */
-    this.pageTextCache = new Cache();
-
-    /**
-     * Sometimes there are too many words on a page, and the browser becomes near
-     * unusable. For now don't render text layer for pages with too many words.
-     */
-    this.maxWordRendered = 2500;
-
+    this.rtl = this.br.pageProgression === 'rl';
     this.selectionObserver = new SelectionObserver('.BRtextLayer', this._onSelectionChange);
+  }
+
+  /** @override */
+  init() {
+    if (!this.options.enabled) return;
+
+    this.loadData();
+
+    this.selectionObserver.attach();
+    new SelectionObserver('.BRtextLayer', (selectEvent) => {
+      // Track how often selection is used
+      if (selectEvent == 'started') {
+        this.br._plugins.archiveAnalytics?.sendEvent('BookReader', 'SelectStart');
+
+        // Set a class on the page to avoid hiding it when zooming/etc
+        this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
+        $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
+      }
+    }).attach();
+  }
+
+  /**
+   * @override
+   * @param {PageContainer} pageContainer
+   * @returns {PageContainer}
+   */
+  _configurePageContainer(pageContainer) {
+    // Disable if thumb mode; it's too janky
+    // .page can be null for "pre-cover" region
+    if (this.br.mode !== this.br.constModeThumb && pageContainer.page) {
+      this.createTextLayer(pageContainer);
+    }
+    return pageContainer;
   }
 
   /**
@@ -79,18 +112,16 @@ export class TextSelectionPlugin {
     }
   }
 
-  init() {
-    this.selectionObserver.attach();
-
+  loadData() {
     // Only fetch the full djvu xml if the single page url isn't there
     if (this.options.singlePageDjvuXmlUrl) return;
     this.djvuPagesPromise = $.ajax({
       type: "GET",
-      url: applyVariables(this.options.fullDjvuXmlUrl, this.optionVariables),
+      url: applyVariables(this.options.fullDjvuXmlUrl, this.br.options.vars),
       dataType: this.options.jsonp ? "jsonp" : "html",
       cache: true,
       xhrFields: {
-        withCredentials: window.br.protected,
+        withCredentials: this.br.protected,
       },
       error: (e) => undefined,
     }).then((res) => {
@@ -115,11 +146,11 @@ export class TextSelectionPlugin {
       }
       const res = await $.ajax({
         type: "GET",
-        url: applyVariables(this.options.singlePageDjvuXmlUrl, this.optionVariables, { pageIndex: index }),
+        url: applyVariables(this.options.singlePageDjvuXmlUrl, this.br.options.vars, { pageIndex: index }),
         dataType: this.options.jsonp ? "jsonp" : "html",
         cache: true,
         xhrFields: {
-          withCredentials: window.br.protected,
+          withCredentials: this.br.protected,
         },
         error: (e) => undefined,
       });
@@ -410,46 +441,7 @@ export class TextSelectionPlugin {
   }
 }
 
-export class BookreaderWithTextSelection extends BookReader {
-  init() {
-    const options = Object.assign({}, DEFAULT_OPTIONS, this.options.plugins.textSelection);
-    if (options.enabled) {
-      this.textSelectionPlugin = new TextSelectionPlugin(options, this.options.vars, this.pageProgression);
-      // Write this back; this way the plugin is the source of truth, and BR just
-      // contains a reference to it.
-      this.options.plugins.textSelection = options;
-      this.textSelectionPlugin.init();
-
-      new SelectionObserver('.BRtextLayer', (selectEvent) => {
-        // Track how often selection is used
-        if (selectEvent == 'started') {
-          this.archiveAnalyticsSendEvent?.('BookReader', 'SelectStart');
-
-          // Set a class on the page to avoid hiding it when zooming/etc
-          this.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
-          $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
-        }
-      }).attach();
-    }
-
-    super.init();
-  }
-
-  /**
-   * @param {number} index
-   */
-  _createPageContainer(index) {
-    const pageContainer = super._createPageContainer(index);
-    // Disable if thumb mode; it's too janky
-    // .page can be null for "pre-cover" region
-    if (this.mode !== this.constModeThumb && pageContainer.page) {
-      this.textSelectionPlugin?.createTextLayer(pageContainer);
-    }
-    return pageContainer;
-  }
-}
-window.BookReader = BookreaderWithTextSelection;
-export default BookreaderWithTextSelection;
+BookReader?.registerPlugin('textSelection', TextSelectionPlugin);
 
 
 /**
