@@ -95,15 +95,19 @@
   &.BRfloat { width: 600px; }
 
   .share-title { margin: 15px 15px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
-  .share-social { margin: 15px 15px 0;}
+  .share-social { display: flex; flex-direction: column; gap: 10px; margin: 15px;}
   .share-social button {
-    padding: 0 5px;
+    width: 100%;
+    padding: 10px 15px;
     height: 40px;
     text-align: left;
     color: white;
+    display: flex;
+    align-items: center;
+    gap: 1%;
   }
   .share-social button > i { margin-right: 5px; }
-  .share-social > div { display: inline; }
+  .share-social > div { display: block; width: 100%;}
   .share-embed { margin-top: 20px; }
 
   label.sub.open-to-this-page {
@@ -117,6 +121,8 @@
     border-radius: 3px;
     padding: 10px 25px;
     font-size: 15px;
+    margin-top: 15px;
+    width: auto;
   }
 }
 
