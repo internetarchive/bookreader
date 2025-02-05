@@ -95,42 +95,19 @@
   &.BRfloat { width: 600px; }
 
   .share-title { margin: 15px 15px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
-  .share-social {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 15px;
-  }
-  
+  .share-social { margin: 15px 15px 0;}
   .share-social button {
-    width: 100%;
-    padding: 8px 16px;
+    padding: 0 5px;
     height: 40px;
     text-align: left;
     color: white;
-    display: flex;
-    align-items: center;
-    gap: 8px;
   }
-  
   .share-social button > i { margin-right: 5px; }
   .share-social > div { display: inline; }
-  
-  .BRshare .share-finished {
-    margin-top: 15px;
-    width: auto;
-    min-width: 100px;
-  }
-  
-  .BRshare .share-social > div {
-    display: block;
-    width: 100%;
-  }
   .share-embed { margin-top: 20px; }
 
-  .BRshare label.sub.open-to-this-page {
+  label.sub.open-to-this-page {
     display: block;
-    margin-bottom: 15px;
   }
 
   button[type=button].share-finished {
