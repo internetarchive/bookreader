@@ -1,0 +1,103 @@
+* {
+    box-sizing: border-box;
+  }
+  
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    font-size: 18px;
+    font-family: Optima, Helvetica, Arial;
+  }
+  
+  body {
+    padding: 1rem;
+  }
+  
+  .app {
+    padding: 1rem;
+    display: grid;
+    grid: "from swap to" 1fr "status status status" auto / 1fr auto 1fr;
+    grid-gap: 1rem;
+    overflow: hidden;
+    min-height: 400px;
+    max-width: 1024px;
+    margin: 1em auto;
+  }
+  
+  @media screen and (max-width: 640px) {
+    .app {
+      grid: "from from" auto "status swap" auto "to to" auto / 1fr;
+    }
+  }
+  
+  .panel {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-gap: 1rem;
+  }
+  
+  label {
+    padding: 0 0.5em;
+    display: flex;
+    align-items: center;
+  }
+  
+  .lang-select {
+    padding: 0.25rem 0.5rem;
+    margin-left: 1rem;
+    background: #f4f4f4;
+    font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    cursor: pointer;
+  }
+  
+  .panel--from {
+    grid-area: from;
+  }
+  
+  .panel--to {
+    grid-area: to;
+  }
+  
+  .swap {
+    align-self: center;
+    grid-area: swap;
+    font-size: 1.1rem;
+  }
+  
+  #status {
+    grid-area: status;
+    text-align: center;
+    align-self: center;
+  }
+  
+  #versionBlock {
+    text-align: right;
+  }
+  
+  textarea {
+    padding: 1rem;
+    font-family: sans-serif;
+    font-size: 1rem;
+    resize: none;
+    border-radius: 2px;
+    border: 1px solid #ccc;
+  }
+  
+  button {
+    cursor: pointer;
+    border: 1px solid #88c;
+    border-radius: 4px;
+    background: #eef;
+    padding: 0;
+    padding: 0.25rem 0.5rem;
+  }
+  button:hover {
+    background: #cce;
+  }
+  
+  #output {
+    background-color: #f4f4f4;
+  }

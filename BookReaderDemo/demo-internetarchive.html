@@ -15,11 +15,11 @@
     <!-- JS dependencies -->
     <script src="../BookReader/webcomponents-bundle.js"></script>
     <script src="../BookReader/jquery-3.js"></script>
-
-
+    
     <!-- Bookreader -->
     <script src="../BookReader/BookReader.js"></script>
     <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+    <link rel="stylesheet" href="css/index.css" />
 
     <!-- plugins needed for archive.org, in same order as archive.org -->
     <script src="../BookReader/plugins/plugin.search.js"></script>
@@ -61,6 +61,28 @@
       </div>
     </ia-bookreader>
   </section>
+
+        <div class="app">
+      <div class="panel panel--from">
+        <label>
+          From
+          <select id="lang-from" name="from" class="lang-select"></select>
+        </label>
+        <textarea id="input" name="input"></textarea>
+      </div>
+      <button class="swap" title="swap">↔️</button>
+      <div class="panel panel--to">
+        <label>
+          To
+          <select id="lang-to" name="to" class="lang-select"></select>
+        </label>
+        <textarea id="output" name="output" readonly></textarea>
+      </div>
+      <div class="footer" id="status"></div>
+    </div>
+    <div id="versionBlock">Version: <span id="version"></span></div>
+  <script src="js/index.js"></script>
+
   <style>
     .demos {
       height: 800px;
@@ -264,7 +286,7 @@
       send_ping: (category, action, label) => {}, //console.log('~~~ send_ping SAMPLE EVENT CALLED: ', { category, action, label }),
     }
   </script>
-
+    
   <!-- IA fetch demo -->
   <script type="module" src="IADemoBr.js"></script>
 </body>
