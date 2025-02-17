@@ -131,6 +131,7 @@ BookReader.prototype.initNavbar = (function (super_) {
               <option value="1.5">1.5x</option>
               <option value="1.75">1.75x</option>
               <option value="2">2x</option>
+              <option value="custom">Custom</option>
             </select>
           </li>
           <li>
@@ -198,6 +199,43 @@ BookReader.prototype.initNavbar = (function (super_) {
             <span class="BRtooltip">${tooltips.readAloud}</span>
           </button>
         </li>`).insertBefore($el.find('.BRcontrols .BRicon.zoom_out').closest('li'));
+
+      this.refs.$BRReadAloudToolbar.find('.playback-speed').parent().after(`
+        <li>
+          <input type="number" class="custom-speed-input" min="0.01" max="5" step="0.01" pattern="^[1-5](\\.\\d{1,2})?$" style="display: none" placeholder="Enter speed (e.g., 1.1)" />
+          <button type="button" class="confirm-speed-btn" style="display: none">Confirm</button>
+          <span class="custom-speed-label" style="display: none">Custom</span>
+        </li>
+      `);
+
+      const $customSpeedInput = this.refs.$BRReadAloudToolbar.find('.custom-speed-input');
+      const $confirmSpeedBtn = this.refs.$BRReadAloudToolbar.find('.confirm-speed-btn');
+      const $customSpeedLabel = this.refs.$BRReadAloudToolbar.find('.custom-speed-label');
+      const $playbackSpeedDropdown = this.refs.$BRReadAloudToolbar.find('.playback-speed');
+
+      $playbackSpeedDropdown.on('change', function() {
+        if ($(this).val() === 'custom') {
+          $customSpeedInput.show();
+          $confirmSpeedBtn.show();
+        } else {
+          $customSpeedInput.hide();
+          $confirmSpeedBtn.hide();
+          $customSpeedLabel.hide();
+        }
+      });
+
+      $confirmSpeedBtn.on('click', function() {
+        const customSpeed = parseFloat($customSpeedInput.val());
+        const isValid = $customSpeedInput[0].checkValidity();
+        if (isValid && !isNaN(customSpeed) && customSpeed >= 0.01 && customSpeed <= 5) {
+          this.ttsEngine.setPlaybackRate(customSpeed);
+          $customSpeedLabel.text(`${customSpeed}x`).show();
+          $customSpeedInput.hide();
+          $confirmSpeedBtn.hide();
+        } else {
+          alert('Please enter a valid speed value between 0 and 5 with up to two decimal places.');
+        }
+      }.bind(this));
     }
     return $el;
   };
