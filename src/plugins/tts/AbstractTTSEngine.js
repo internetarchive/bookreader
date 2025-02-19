@@ -6,8 +6,7 @@ import { hasLocalStorage } from './utils.js';
 /**
  * @export
  * @typedef {Object} TTSEngineOptions
- * @property {String} server
- * @property {String} bookPath
+ * @property {import('@/src/util/strings.js').StringWithVars} pageChunkUrl
  * @property {ISO6391} bookLanguage
  * @property {Function} onLoadingStart
  * @property {Function} onLoadingComplete
@@ -85,8 +84,7 @@ export default class AbstractTTSEngine {
     this.opts.onLoadingStart();
 
     this._chunkIterator = new PageChunkIterator(numLeafs, leafIndex, {
-      server: this.opts.server,
-      bookPath: this.opts.bookPath,
+      pageChunkUrl: this.opts.pageChunkUrl,
       pageBufferSize: 5,
     });
 

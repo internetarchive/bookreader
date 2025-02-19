@@ -74,6 +74,8 @@ BookReader.PLUGINS = {
   resume: null,
   /** @type {typeof import('./plugins/plugin.text_selection.js').TextSelectionPlugin | null}*/
   textSelection: null,
+  /** @type {typeof import('./plugins/tts/plugin.tts.js').TtsPlugin | null}*/
+  tts: null,
 };
 
 /**
@@ -264,6 +266,7 @@ BookReader.prototype.setup = function(options) {
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
+    tts: BookReader.PLUGINS.tts ? new BookReader.PLUGINS.tts(this) : null,
   };
 
   // Delete anything that's null
@@ -590,7 +593,12 @@ BookReader.prototype.init = function() {
     this.initToolbar(this.mode, this.ui); // Build inside of toolbar div
   }
   if (this.options.showNavbar) { // default navigation
-    this.initNavbar();
+    const $navBar = this.initNavbar();
+
+    // extend navbar with plugins
+    for (const plugin of Object.values(this._plugins)) {
+      plugin.extendNavBar($navBar);
+    }
   }
 
   // Switch navbar controls on mobile/desktop

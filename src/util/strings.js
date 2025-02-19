@@ -9,6 +9,7 @@
  * @param {StringWithVars|String} template
  * @param { {[varName: string]: { toString: () => string} } } vars
  * @param { {[varName: string]: { toString: () => string} } } [overrides]
+ * @returns {StringWithVars|string}
  */
 export function applyVariables(template, vars, overrides = {}, possibleFilters = APPLY_FILTERS) {
   return template?.replace(/\{\{([^}]*?)\}\}/g, ($0, $1) => {

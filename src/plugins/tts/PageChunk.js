@@ -1,3 +1,5 @@
+import { applyVariables } from "../../util/strings.js";
+
 /**
  * Class to manage a 'chunk' (approximately a paragraph) of text on a page.
  */
@@ -16,23 +18,17 @@ export default class PageChunk {
   }
 
   /**
-   * @param {string} server
-   * @param {string} bookPath
+   * @param {import('@/src/util/strings.js').StringWithVars} pageChunkUrl
    * @param {number} leafIndex
    * @return {Promise<PageChunk[]>}
    */
-  static async fetch(server, bookPath, leafIndex) {
+  static async fetch(pageChunkUrl, leafIndex) {
     const chunks = await $.ajax({
       type: 'GET',
-      url: `https://${server}/BookReader/BookReaderGetTextWrapper.php`,
+      url: applyVariables(pageChunkUrl, { pageIndex: leafIndex }),
       cache: true,
       xhrFields: {
         withCredentials: window.br.protected,
-      },
-      data: {
-        path: `${bookPath}_djvu.xml`,
-        page: leafIndex,
-        callback: 'false',
       },
     });
     return PageChunk._fromTextWrapperResponse(leafIndex, chunks);
