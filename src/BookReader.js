@@ -68,6 +68,8 @@ BookReader.constModeThumb = 3;
 BookReader.PLUGINS = {
   /** @type {typeof import('./plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin | null}*/
   archiveAnalytics: null,
+  /** @type {typeof import('./plugins/plugin.autoplay.js').AutoplayPlugin | null}*/
+  autoplay: null,
   /** @type {typeof import('./plugins/plugin.text_selection.js').TextSelectionPlugin | null}*/
   textSelection: null,
 };
@@ -168,11 +170,7 @@ BookReader.prototype.setup = function(options) {
   this.displayedIndices = [];
 
   this.animating = false;
-  this.flipSpeed = typeof options.flipSpeed === 'number' ? options.flipSpeed : {
-    'fast': 200,
-    'slow': 600,
-  }[options.flipSpeed] || 400;
-  this.flipDelay = options.flipDelay;
+  this.flipSpeed = utils.parseAnimationSpeed(options.flipSpeed) || 400;
 
   /**
      * Represents the first displayed index
@@ -261,6 +259,7 @@ BookReader.prototype.setup = function(options) {
   // Construct the usual suspects first to get type hints
   this._plugins = {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
+    autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
   };
 
@@ -1343,10 +1342,19 @@ BookReader.prototype.leftmost = function() {
   }
 };
 
-BookReader.prototype.next = function({triggerStop = true} = {}) {
+/**
+ * @param {object} options
+ * @param {boolean} [options.triggerStop = true]
+ * @param {number | 'fast' | 'slow'} [options.flipSpeed]
+ */
+BookReader.prototype.next = function({
+  triggerStop = true,
+  flipSpeed = null,
+} = {}) {
   if (this.constMode2up == this.mode) {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    this._modes.mode2Up.mode2UpLit.flipAnimation('next');
+    flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
+    this._modes.mode2Up.mode2UpLit.flipAnimation('next', {flipSpeed});
   } else {
     if (this.firstIndex < this.book.getNumLeafs() - 1) {
       this.jumpToIndex(this.firstIndex + 1);
@@ -1354,13 +1362,22 @@ BookReader.prototype.next = function({triggerStop = true} = {}) {
   }
 };
 
-BookReader.prototype.prev = function({triggerStop = true} = {}) {
+/**
+ * @param {object} options
+ * @param {boolean} [options.triggerStop = true]
+ * @param {number | 'fast' | 'slow'} [options.flipSpeed]
+ */
+BookReader.prototype.prev = function({
+  triggerStop = true,
+  flipSpeed = null,
+} = {}) {
   const isOnFrontPage = this.firstIndex < 1;
   if (isOnFrontPage) return;
 
   if (this.constMode2up == this.mode) {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    this._modes.mode2Up.mode2UpLit.flipAnimation('prev');
+    flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
+    this._modes.mode2Up.mode2UpLit.flipAnimation('prev', {flipSpeed});
   } else {
     if (this.firstIndex >= 1) {
       this.jumpToIndex(this.firstIndex - 1);
@@ -1545,6 +1562,11 @@ BookReader.prototype.bindNavigationHandlers = function() {
         self.$('.BRnavCntl').animate({opacity:.75},250);
       }
     });
+
+  // Call _bindNavigationHandlers on the plugins
+  for (const plugin of Object.values(this._plugins)) {
+    plugin._bindNavigationHandlers();
+  }
 };
 
 /**************************/
