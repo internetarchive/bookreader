@@ -20,7 +20,7 @@ const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(w
 export class ChaptersPlugin extends BookReaderPlugin {
   options = {
     olHost: 'https://openlibrary.org',
-    enableChaptersPlugin: true,
+    enabled: true,
     /** @type {import('@/src/util/strings.js').StringWithVars} */
     bookId: '{{bookId}}',
   }
@@ -32,13 +32,11 @@ export class ChaptersPlugin extends BookReaderPlugin {
   _chaptersPanel;
 
   /** @override Extend to call Open Library for TOC */
-  init() {
-    if (this.options.enableChaptersPlugin && this.br.ui !== 'embed') {
-      this._chapterInit();
+  async init() {
+    if (!this.options.enabled || this.br.ui === 'embed') {
+      return;
     }
-  }
 
-  async _chapterInit() {
     let rawTableOfContents = null;
     // Prefer IA TOC for now, until we update the second half to check for
     // `openlibrary_edition` on the IA metadata instead of making a bunch of
@@ -62,15 +60,15 @@ export class ChaptersPlugin extends BookReaderPlugin {
                 undefined
           ),
         })));
-      this._chaptersRender();
-      this.br.bind(BookReader.eventNames.pageChanged, () => this._chaptersUpdateCurrent());
+      this._render();
+      this.br.bind(BookReader.eventNames.pageChanged, () => this._updateCurrent());
     }
   }
 
   /**
    * Update the table of contents based on array of TOC entries.
    */
-  _chaptersRender() {
+  _render() {
     this.br.shell.menuProviders['chapters'] = {
       id: 'chapters',
       icon: html`<ia-icon-toc style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-toc>`,
@@ -78,25 +76,25 @@ export class ChaptersPlugin extends BookReaderPlugin {
       component: html`<br-chapters-panel
         .contents="${this._tocEntries}"
         .jumpToPage="${(pageIndex) => {
-        this._chaptersUpdateCurrent(pageIndex);
+        this._updateCurrent(pageIndex);
         this.br.jumpToIndex(pageIndex);
       }}"
         @connected="${(e) => {
         this._chaptersPanel = e.target;
-        this._chaptersUpdateCurrent();
+        this._updateCurrent();
       }}"
       />`,
     };
     this.br.shell.addMenuShortcut('chapters');
     this.br.shell.updateMenuContents();
-    this._tocEntries.forEach((tocEntry, i) => this._chaptersRenderMarker(tocEntry, i));
+    this._tocEntries.forEach((tocEntry, i) => this._renderMarker(tocEntry, i));
   }
 
   /**
    * @param {TocEntry} tocEntry
    * @param {number} entryIndex
    */
-  _chaptersRenderMarker(tocEntry, entryIndex) {
+  _renderMarker(tocEntry, entryIndex) {
     if (tocEntry.pageIndex == undefined) return;
 
     //creates a string with non-void tocEntry.label and tocEntry.title
@@ -132,7 +130,7 @@ export class ChaptersPlugin extends BookReaderPlugin {
       })
       .on("mouseleave", event => $(event.target).removeClass('front'))
       .on('click', () => {
-        this._chaptersUpdateCurrent(tocEntry.pageIndex);
+        this._updateCurrent(tocEntry.pageIndex);
         this.br.jumpToIndex(tocEntry.pageIndex);
       });
 
@@ -171,7 +169,7 @@ export class ChaptersPlugin extends BookReaderPlugin {
    * Highlights the current chapter based on current page
    * @param {PageIndex} curIndex
    */
-  _chaptersUpdateCurrent(
+  _updateCurrent(
     curIndex = (this.br.mode == 2 ? Math.max(...this.br.displayedIndices) : this.br.firstIndex),
   ) {
     const tocEntriesIndexed = this._tocEntries.filter((el) => el.pageIndex != undefined).reverse();

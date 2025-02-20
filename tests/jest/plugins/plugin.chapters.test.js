@@ -75,21 +75,21 @@ describe("ChaptersPlugin", () => {
     );
   });
 
-  describe("_chapterInit", () => {
+  describe("init", () => {
     test("does not render when open library has no record", async () => {
       const p = new ChaptersPlugin({ options: { vars: {} } });
       sinon.stub(p, "getOpenLibraryRecord").resolves(null);
-      sinon.spy(p, "_chaptersRender");
-      await p._chapterInit();
-      expect(p._chaptersRender.callCount).toBe(0);
+      sinon.spy(p, "_render");
+      await p.init();
+      expect(p._render.callCount).toBe(0);
     });
 
     test("does not render when open library record has no TOC", async () => {
       const p = new ChaptersPlugin({ options: { vars: {} } });
       sinon.stub(p, "getOpenLibraryRecord").resolves({ key: "/books/OL1M" });
-      sinon.spy(p, "_chaptersRender");
-      await p._chapterInit();
-      expect(p._chaptersRender.callCount).toBe(0);
+      sinon.spy(p, "_render");
+      await p.init();
+      expect(p._render.callCount).toBe(0);
     });
 
     test("renders if valid TOC on open library", async () => {
@@ -103,9 +103,9 @@ describe("ChaptersPlugin", () => {
         "table_of_contents": deepCopy(SAMPLE_TOC_OPTION),
         "ocaid": "adventureofsherl0000unse",
       });
-      sinon.stub(p, "_chaptersRender");
-      await p._chapterInit();
-      expect(p._chaptersRender.callCount).toBe(1);
+      sinon.stub(p, "_render");
+      await p.init();
+      expect(p._render.callCount).toBe(1);
     });
 
     test("does not fetch open library record if table of contents in options", async () => {
@@ -117,10 +117,10 @@ describe("ChaptersPlugin", () => {
       };
       const p = new ChaptersPlugin(fakeBR);
       sinon.stub(p, "getOpenLibraryRecord");
-      sinon.stub(p, "_chaptersRender");
-      await p._chapterInit();
+      sinon.stub(p, "_render");
+      await p.init();
       expect(p.getOpenLibraryRecord.callCount).toBe(0);
-      expect(p._chaptersRender.callCount).toBe(1);
+      expect(p._render.callCount).toBe(1);
     });
 
     test("converts leafs and pagenums to page index", async () => {
@@ -138,15 +138,15 @@ describe("ChaptersPlugin", () => {
         },
       };
       const p = new ChaptersPlugin(fakeBR);
-      sinon.stub(p, "_chaptersRender");
-      await p._chapterInit();
-      expect(p._chaptersRender.callCount).toBe(1);
+      sinon.stub(p, "_render");
+      await p.init();
+      expect(p._render.callCount).toBe(1);
       expect(p._tocEntries[0].pageIndex).toBe(1);
       expect(p._tocEntries[1].pageIndex).toBe(17);
     });
   });
 
-  describe('_chaptersRender', () => {
+  describe('_render', () => {
     test('renders markers and panel', () => {
       const fakeBR = {
         shell: {
@@ -156,17 +156,17 @@ describe("ChaptersPlugin", () => {
         },
       };
       const p = new ChaptersPlugin(fakeBR);
-      sinon.stub(p, '_chaptersRenderMarker');
+      sinon.stub(p, '_renderMarker');
       p._tocEntries = deepCopy(SAMPLE_TOC);
-      p._chaptersRender();
+      p._render();
       expect(fakeBR.shell.menuProviders['chapters']).toBeTruthy();
       expect(fakeBR.shell.addMenuShortcut.callCount).toBe(1);
       expect(fakeBR.shell.updateMenuContents.callCount).toBe(1);
-      expect(p._chaptersRenderMarker.callCount).toBeGreaterThan(1);
+      expect(p._renderMarker.callCount).toBeGreaterThan(1);
     });
   });
 
-  describe('_chaptersUpdateCurrent', () => {
+  describe('_updateCurrent', () => {
     test('highlights the current chapter', () => {
       const fakeBR = {
         mode: 2,
@@ -178,15 +178,15 @@ describe("ChaptersPlugin", () => {
       p._chaptersPanel = {
         currentChapter: null,
       };
-      p._chaptersUpdateCurrent();
+      p._updateCurrent();
       expect(p._chaptersPanel.currentChapter).toEqual(SAMPLE_TOC[1]);
 
       fakeBR.mode = 1;
-      p._chaptersUpdateCurrent();
+      p._updateCurrent();
       expect(p._chaptersPanel.currentChapter).toEqual(SAMPLE_TOC[0]);
 
       fakeBR.firstIndex = 0;
-      p._chaptersUpdateCurrent();
+      p._updateCurrent();
       expect(p._chaptersPanel.currentChapter).toBeUndefined();
     });
   });
