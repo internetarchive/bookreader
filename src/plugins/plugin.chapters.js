@@ -1,85 +1,190 @@
-/* global BookReader */
+// @ts-check
 import { css, html, LitElement, nothing } from "lit";
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import '@internetarchive/icon-toc/icon-toc';
-/** @typedef {import('@/src/BookNavigator/book-navigator.js').BookNavigator} BookNavigator */
+import { BookReaderPlugin } from "../BookReaderPlugin";
+import { applyVariables } from "../util/strings.js";
+/** @typedef {import('@/src/BookReader/BookModel.js').PageIndex} PageIndex */
+/** @typedef {import('@/src/BookReader/BookModel.js').PageString} PageString */
+/** @typedef {import('@/src/BookReader/BookModel.js').LeafNum} LeafNum */
+
+// @ts-ignore
+const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
 
 /**
  * Plugin for chapter markers in BookReader. Fetches from openlibrary.org
  * Could be forked, or extended to alter behavior
  */
+export class ChaptersPlugin extends BookReaderPlugin {
+  options = {
+    olHost: 'https://openlibrary.org',
+    enableChaptersPlugin: true,
+    /** @type {import('@/src/util/strings.js').StringWithVars} */
+    bookId: '{{bookId}}',
+  }
 
-jQuery.extend(BookReader.defaultOptions, {
-  olHost: 'https://openlibrary.org',
-  enableChaptersPlugin: true,
-  bookId: '',
-});
+  /** @type {TocEntry[]} */
+  _tocEntries;
 
-/** @override Extend to call Open Library for TOC */
-BookReader.prototype.init = (function(super_) {
-  return function() {
-    super_.call(this);
-    if (this.options.enableChaptersPlugin && this.ui !== 'embed') {
+  /** @type {BRChaptersPanel} */
+  _chaptersPanel;
+
+  /** @override Extend to call Open Library for TOC */
+  init() {
+    if (this.options.enableChaptersPlugin && this.br.ui !== 'embed') {
       this._chapterInit();
     }
-  };
-})(BookReader.prototype.init);
+  }
 
-BookReader.prototype._chapterInit = async function() {
-  let rawTableOfContents = null;
-  // Prefer IA TOC for now, until we update the second half to check for
-  // `openlibrary_edition` on the IA metadata instead of making a bunch of
-  // requests to OL.
-  if (this.options.table_of_contents?.length) {
-    rawTableOfContents = this.options.table_of_contents;
-  } else {
-    const olEdition = await this.getOpenLibraryRecord(this.options.olHost, this.options.bookId);
-    if (olEdition?.table_of_contents?.length) {
-      rawTableOfContents = olEdition.table_of_contents;
+  async _chapterInit() {
+    let rawTableOfContents = null;
+    // Prefer IA TOC for now, until we update the second half to check for
+    // `openlibrary_edition` on the IA metadata instead of making a bunch of
+    // requests to OL.
+    if (this.br.options.table_of_contents?.length) {
+      rawTableOfContents = this.br.options.table_of_contents;
+    } else {
+      const bookId = applyVariables(this.options.bookId, this.br.options.vars);
+      const olEdition = await this.getOpenLibraryRecord(this.options.olHost, bookId);
+      if (olEdition?.table_of_contents?.length) {
+        rawTableOfContents = olEdition.table_of_contents;
+      }
+    }
+
+    if (rawTableOfContents) {
+      this._tocEntries = rawTableOfContents
+        .map(rawTOCEntry => (Object.assign({}, rawTOCEntry, {
+          pageIndex: (
+            typeof(rawTOCEntry.leaf) == 'number' ? this.br.book.leafNumToIndex(rawTOCEntry.leaf) :
+              rawTOCEntry.pagenum ? this.br.book.getPageIndex(rawTOCEntry.pagenum) :
+                undefined
+          ),
+        })));
+      this._chaptersRender();
+      this.br.bind(BookReader.eventNames.pageChanged, () => this._chaptersUpdateCurrent());
     }
   }
 
-  if (rawTableOfContents) {
-    this._tocEntries = rawTableOfContents
-      .map(rawTOCEntry => (Object.assign({}, rawTOCEntry, {
-        pageIndex: (
-          typeof(rawTOCEntry.leaf) == 'number' ? this.book.leafNumToIndex(rawTOCEntry.leaf) :
-            rawTOCEntry.pagenum ? this.book.getPageIndex(rawTOCEntry.pagenum) :
-              undefined
-        ),
-      })));
-    this._chaptersRender(this._tocEntries);
-    this.bind(BookReader.eventNames.pageChanged, () => this._chaptersUpdateCurrent());
+  /**
+   * Update the table of contents based on array of TOC entries.
+   */
+  _chaptersRender() {
+    this.br.shell.menuProviders['chapters'] = {
+      id: 'chapters',
+      icon: html`<ia-icon-toc style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-toc>`,
+      label: 'Table of Contents',
+      component: html`<br-chapters-panel
+        .contents="${this._tocEntries}"
+        .jumpToPage="${(pageIndex) => {
+        this._chaptersUpdateCurrent(pageIndex);
+        this.br.jumpToIndex(pageIndex);
+      }}"
+        @connected="${(e) => {
+        this._chaptersPanel = e.target;
+        this._chaptersUpdateCurrent();
+      }}"
+      />`,
+    };
+    this.br.shell.addMenuShortcut('chapters');
+    this.br.shell.updateMenuContents();
+    this._tocEntries.forEach((tocEntry, i) => this._chaptersRenderMarker(tocEntry, i));
   }
-};
 
-/**
- * Update the table of contents based on array of TOC entries.
- */
-BookReader.prototype._chaptersRender = function() {
-  const shell = /** @type {BookNavigator} */(this.shell);
-  shell.menuProviders['chapters'] = {
-    id: 'chapters',
-    icon: html`<ia-icon-toc style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-toc>`,
-    label: 'Table of Contents',
-    component: html`<br-chapters-panel
-      .contents="${this._tocEntries}"
-      .jumpToPage="${(pageIndex) => {
-      this._chaptersUpdateCurrent(pageIndex);
-      this.jumpToIndex(pageIndex);
-    }}"
-      @connected="${(e) => {
-      this._chaptersPanel = e.target;
-      this._chaptersUpdateCurrent();
-    }}"
-    />`,
-  };
-  shell.addMenuShortcut('chapters');
-  shell.updateMenuContents();
-  this._tocEntries.forEach((tocEntry, i) => this._chaptersRenderMarker(tocEntry, i));
-};
+  /**
+   * @param {TocEntry} tocEntry
+   * @param {number} entryIndex
+   */
+  _chaptersRenderMarker(tocEntry, entryIndex) {
+    if (tocEntry.pageIndex == undefined) return;
+
+    //creates a string with non-void tocEntry.label and tocEntry.title
+    const chapterStr = [tocEntry.label, tocEntry.title]
+      .filter(x => x)
+      .join(' ') || `Chapter ${entryIndex + 1}`;
+
+    const percentThrough = BookReader.util.cssPercentage(tocEntry.pageIndex, this.br.book.getNumLeafs() - 1);
+    $(`<div></div>`)
+      .append(
+        $('<div />')
+          .text(chapterStr)
+          .append(
+            $('<div class="BRchapterPage" />')
+              .text(this.br.book.getPageName(tocEntry.pageIndex)),
+          ),
+      )
+      .addClass('BRchapter')
+      .css({ left: percentThrough })
+      .appendTo(this.br.$('.BRnavline'))
+      .on("mouseenter", event => {
+        // remove hover effect from other markers then turn on just for this
+        const marker = event.currentTarget;
+        const tooltip = marker.querySelector('div');
+        const tooltipOffset = tooltip.getBoundingClientRect();
+        const targetOffset = marker.getBoundingClientRect();
+        const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
+        if (tooltipOffset.x - boxSizeAdjust < 0) {
+          tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
+        }
+        this.br.$('.BRsearch,.BRchapter').removeClass('front');
+        $(event.target).addClass('front');
+      })
+      .on("mouseleave", event => $(event.target).removeClass('front'))
+      .on('click', () => {
+        this._chaptersUpdateCurrent(tocEntry.pageIndex);
+        this.br.jumpToIndex(tocEntry.pageIndex);
+      });
+
+    this.br.$('.BRchapter, .BRsearch').each((i, el) => {
+      const $el = $(el);
+      $el
+        .on("mouseenter", () => $el.addClass('front'))
+        .on("mouseleave", () => $el.removeClass('front'));
+    });
+  }
+
+  /**
+   * This makes a call to OL API and calls the given callback function with the
+   * response from the API.
+   *
+   * @param {string} olHost
+   * @param {string} ocaid
+   */
+  async getOpenLibraryRecord(olHost, ocaid) {
+    // Try looking up by ocaid first, then by source_record
+    const baseURL = `${olHost}/query.json?type=/type/edition&*=`;
+    const fetchUrlByBookId = `${baseURL}&ocaid=${ocaid}`;
+
+    let data = await $.ajax({ url: fetchUrlByBookId });
+
+    if (!data || !data.length) {
+      // try sourceid
+      data = await $.ajax({ url: `${baseURL}&source_records=ia:${ocaid}` });
+    }
+
+    return data?.[0];
+  }
+
+  /**
+   * @private
+   * Highlights the current chapter based on current page
+   * @param {PageIndex} curIndex
+   */
+  _chaptersUpdateCurrent(
+    curIndex = (this.br.mode == 2 ? Math.max(...this.br.displayedIndices) : this.br.firstIndex),
+  ) {
+    const tocEntriesIndexed = this._tocEntries.filter((el) => el.pageIndex != undefined).reverse();
+    const currChapter = tocEntriesIndexed[
+      // subtract one so that 2up shows the right label
+      tocEntriesIndexed.findIndex((chapter) => chapter.pageIndex <= curIndex)
+    ];
+    if (this._chaptersPanel) {
+      this._chaptersPanel.currentChapter = currChapter;
+    }
+  }
+}
+BookReader?.registerPlugin('chapters', ChaptersPlugin);
 
 /**
  * @typedef {Object} TocEntry
@@ -98,98 +203,6 @@ BookReader.prototype._chaptersRender = function() {
  *   "title": "THE COUNTRY AND THE MISSION"
  * }
  */
-
-/**
- * @param {TocEntry} tocEntry
- * @param {number} entryIndex
- */
-BookReader.prototype._chaptersRenderMarker = function(tocEntry, entryIndex) {
-  if (tocEntry.pageIndex == undefined) return;
-
-  //creates a string with non-void tocEntry.label and tocEntry.title
-  const chapterStr = [tocEntry.label, tocEntry.title]
-    .filter(x => x)
-    .join(' ') || `Chapter ${entryIndex + 1}`;
-
-  const percentThrough = BookReader.util.cssPercentage(tocEntry.pageIndex, this.book.getNumLeafs() - 1);
-  $(`<div></div>`)
-    .append(
-      $('<div />')
-        .text(chapterStr)
-        .append(
-          $('<div class="BRchapterPage" />')
-            .text(this.book.getPageName(tocEntry.pageIndex)),
-        ),
-    )
-    .addClass('BRchapter')
-    .css({ left: percentThrough })
-    .appendTo(this.$('.BRnavline'))
-    .on("mouseenter", event => {
-      // remove hover effect from other markers then turn on just for this
-      const marker = event.currentTarget;
-      const tooltip = marker.querySelector('div');
-      const tooltipOffset = tooltip.getBoundingClientRect();
-      const targetOffset = marker.getBoundingClientRect();
-      const boxSizeAdjust = parseInt(getComputedStyle(tooltip).paddingLeft) * 2;
-      if (tooltipOffset.x - boxSizeAdjust < 0) {
-        tooltip.style.setProperty('transform', `translateX(-${targetOffset.left - boxSizeAdjust}px)`);
-      }
-      this.$('.BRsearch,.BRchapter').removeClass('front');
-      $(event.target).addClass('front');
-    })
-    .on("mouseleave", event => $(event.target).removeClass('front'))
-    .on('click', () => {
-      this._chaptersUpdateCurrent(tocEntry.pageIndex);
-      this.jumpToIndex(tocEntry.pageIndex);
-    });
-
-  this.$('.BRchapter, .BRsearch').each((i, el) => {
-    const $el = $(el);
-    $el
-      .on("mouseenter", () => $el.addClass('front'))
-      .on("mouseleave", () => $el.removeClass('front'));
-  });
-};
-
-/**
- * This makes a call to OL API and calls the given callback function with the
- * response from the API.
- *
- * @param {string} olHost
- * @param {string} ocaid
- */
-BookReader.prototype.getOpenLibraryRecord = async function (olHost, ocaid) {
-  // Try looking up by ocaid first, then by source_record
-  const baseURL = `${olHost}/query.json?type=/type/edition&*=`;
-  const fetchUrlByBookId = `${baseURL}&ocaid=${ocaid}`;
-
-  let data = await $.ajax({ url: fetchUrlByBookId });
-
-  if (!data || !data.length) {
-    // try sourceid
-    data = await $.ajax({ url: `${baseURL}&source_records=ia:${ocaid}` });
-  }
-
-  return data?.[0];
-};
-
-/**
- * @private
- * Highlights the current chapter based on current page
- * @param {PageIndex} curIndex
- */
-BookReader.prototype._chaptersUpdateCurrent = function(
-  curIndex = (this.mode == 2 ? Math.max(...this.displayedIndices) : this.firstIndex),
-) {
-  const tocEntriesIndexed = this._tocEntries.filter((el) => el.pageIndex != undefined).reverse();
-  const currChapter = tocEntriesIndexed[
-    // subtract one so that 2up shows the right label
-    tocEntriesIndexed.findIndex((chapter) => chapter.pageIndex <= curIndex)
-  ];
-  if (this._chaptersPanel) {
-    this._chaptersPanel.currentChapter = currChapter;
-  }
-};
 
 @customElement('br-chapters-panel')
 export class BRChaptersPanel extends LitElement {
