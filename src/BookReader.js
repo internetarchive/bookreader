@@ -116,6 +116,38 @@ BookReader.prototype.setup = function(options) {
   // Store the options used to setup bookreader
   this.options = options;
 
+  // Construct the usual plugins first to get type hints
+  this._plugins = {
+    archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
+    autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
+    resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
+    textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
+    tts: BookReader.PLUGINS.tts ? new BookReader.PLUGINS.tts(this) : null,
+  };
+
+  // Delete anything that's null
+  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
+    if (!plugin) delete this._plugins[pluginName];
+  }
+
+  // Now construct the rest of the plugins
+  for (const [pluginName, PluginClass] of Object.entries(BookReader.PLUGINS)) {
+    if (this._plugins[pluginName] || !PluginClass) continue;
+    this._plugins[pluginName] = new PluginClass(this);
+  }
+
+  // And call setup on them
+  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
+    try {
+      plugin.setup(this.options.plugins?.[pluginName] ?? {});
+      // Write the options back; this way the plugin is the source of truth,
+      // and BR just contains a reference to it.
+      this.options.plugins[pluginName] = plugin.options;
+    } catch (e) {
+      console.error(`Error setting up plugin ${pluginName}`, e);
+    }
+  }
+
   /** @type {number} @deprecated some past iterations set this */
   this.numLeafs = undefined;
 
@@ -259,38 +291,6 @@ BookReader.prototype.setup = function(options) {
     '_modes.mode2Up': this._modes.mode2Up,
     '_modes.modeThumb': this._modes.modeThumb,
   };
-
-  // Construct the usual suspects first to get type hints
-  this._plugins = {
-    archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
-    autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
-    resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
-    textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
-    tts: BookReader.PLUGINS.tts ? new BookReader.PLUGINS.tts(this) : null,
-  };
-
-  // Delete anything that's null
-  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
-    if (!plugin) delete this._plugins[pluginName];
-  }
-
-  // Now construct the rest of the plugins
-  for (const [pluginName, PluginClass] of Object.entries(BookReader.PLUGINS)) {
-    if (this._plugins[pluginName] || !PluginClass) continue;
-    this._plugins[pluginName] = new PluginClass(this);
-  }
-
-  // And call setup on them
-  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
-    try {
-      plugin.setup(this.options.plugins?.[pluginName] ?? {});
-      // Write the options back; this way the plugin is the source of truth,
-      // and BR just contains a reference to it.
-      this.options.plugins[pluginName] = plugin.options;
-    } catch (e) {
-      console.error(`Error setting up plugin ${pluginName}`, e);
-    }
-  }
 
   /** Image cache for general image fetching */
   this.imageCache = new ImageCache(this.book, {
