@@ -296,6 +296,7 @@ BookReader.prototype.setup = function(options) {
   this.imageCache = new ImageCache(this.book, {
     useSrcSet: this.options.useSrcSet,
     reduceSet: this.reduceSet,
+    renderPageURI: options.renderPageURI.bind(this),
   });
 
   /**
@@ -848,7 +849,6 @@ BookReader.prototype._createPageContainer = function(index) {
   const pageContainer = new PageContainer(this.book.getPage(index, false), {
     isProtected: this.protected,
     imageCache: this.imageCache,
-    loadingImage: this.imagesBaseURL + 'loading.gif',
   });
 
   // Call plugin handlers
