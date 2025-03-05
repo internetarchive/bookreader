@@ -1,3 +1,6 @@
+# 5.0.0-90
+- Fix: Festival TTS not working @cdrini
+
 # 5.0.0-89
 - Refactor: Migrate TextSelection, Autoplay, Resume, IIIF, and TTS to new BookReaderPlugin system @cdrini
   - Breaking changes:
