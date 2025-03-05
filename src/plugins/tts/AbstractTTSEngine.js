@@ -40,6 +40,7 @@ export default class AbstractTTSEngine {
   constructor(options) {
     this.playing = false;
     this.paused = false;
+    /** @type {TTSEngineOptions} */
     this.opts = options;
     /** @type {PageChunkIterator} */
     this._chunkIterator = null;
