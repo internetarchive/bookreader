@@ -70,6 +70,8 @@ BookReader.PLUGINS = {
   archiveAnalytics: null,
   /** @type {typeof import('./plugins/plugin.autoplay.js').AutoplayPlugin | null}*/
   autoplay: null,
+  /** @type {typeof import('./plugins/plugin.chapters.js').ChaptersPlugin | null}*/
+  chapters: null,
   /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
   resume: null,
   /** @type {typeof import('./plugins/plugin.text_selection.js').TextSelectionPlugin | null}*/
@@ -80,7 +82,7 @@ BookReader.PLUGINS = {
 
 /**
  * @param {string} pluginName
- * @param {typeof import('./BookReaderPlugin.js').BookReaderPlugin} plugin
+ * @param {new (...args: any[]) => import('./BookReaderPlugin.js').BookReaderPlugin} plugin
  */
 BookReader.registerPlugin = function(pluginName, plugin) {
   if (BookReader.PLUGINS[pluginName]) {
@@ -116,10 +118,14 @@ BookReader.prototype.setup = function(options) {
   // Store the options used to setup bookreader
   this.options = options;
 
+  /** @type {import('@/src/BookNavigator/book-navigator.js').BookNavigator} */
+  this.shell;
+
   // Construct the usual plugins first to get type hints
   this._plugins = {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
+    chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
     tts: BookReader.PLUGINS.tts ? new BookReader.PLUGINS.tts(this) : null,
