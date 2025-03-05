@@ -1,3 +1,13 @@
+# 5.0.0-89
+- Refactor: Migrate TextSelection, Autoplay, Resume, IIIF, and TTS to new BookReaderPlugin system @cdrini
+  - Breaking changes:
+    - Options related to these plugins are now in the `plugins` object
+    - Methods related to these plugins are now nested, eg `br.ttsToggle` is now `br._plugins.tts.toggle`
+    - See https://github.com/internetarchive/bookreader/pull/1374 and https://github.com/internetarchive/bookreader/pull/1376 for examples.
+- Feature: Add autoplay url parameter for `flipSpeed` and `flipDelay`
+- Feature: Add new renderPageURI option + improve image caching @cdrini
+- Dev: Fix failing E2E tests @cdrini
+
 # 5.0.0-88
 - Fix: Switch to new page number display format @pezvi
 - Fix: Introduce BookReaderPlugin abstraction and apply to ArchiveAnalyticsPlugin @cdrini
