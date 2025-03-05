@@ -1,5 +1,6 @@
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 import { sleep } from '../../BookReader/utils.js';
+import { applyVariables } from '../../util/strings.js';
 /* global soundManager */
 import 'soundmanager2';
 import 'jquery.browser';
@@ -17,13 +18,15 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
     return typeof(soundManager) !== 'undefined' && soundManager.supported();
   }
 
-  /** @param {TTSEngineOptions} options */
+  /** @param {TTSEngineOptions | { festivalUrl: import('@/src/util/strings.js').StringWithVars }} options */
   constructor(options) {
     super(options);
     // $.browsers is sometimes undefined on some Android browsers :/
     // Likely related to when $.browser was moved to npm
     /** @type {'mp3' | 'ogg'} format of audio to get */
     this.audioFormat = $.browser?.mozilla ? 'ogg' : 'mp3'; //eslint-disable-line no-jquery/no-browser
+    /** @type {import('@/src/util/strings.js').StringWithVars} */
+    this.festivalUrl = options.festivalUrl;
   }
 
   /** @override */
@@ -68,19 +71,7 @@ export default class FestivalTTSEngine extends AbstractTTSEngine {
 
   /** @override */
   createSound(chunk) {
-    return new FestivalTTSSound(this.getSoundUrl(chunk.text));
-  }
-
-  /**
-   * @private
-   * Get URL for audio that says this text
-   * @param {String} dataString the thing to say
-   * @return {String} url
-   */
-  getSoundUrl(dataString) {
-    return 'https://' + this.opts.server + '/BookReader/BookReaderGetTTS.php?string='
-                  + encodeURIComponent(dataString)
-                  + '&format=.' + this.audioFormat;
+    return new FestivalTTSSound(applyVariables(this.festivalUrl, { text: chunk.text, format: this.audioFormat }));
   }
 
   /**

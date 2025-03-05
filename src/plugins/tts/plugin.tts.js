@@ -23,6 +23,14 @@ export class TtsPlugin extends BookReaderPlugin {
      * The URL where to get PageChunk objects for a given page. Expects a var `pageIndex`
      **/
     pageChunkUrl: 'https://{{server}}/BookReader/BookReaderGetTextWrapper.php?path={{bookPath|urlencode}}_djvu.xml&page={{pageIndex}}&callback=false',
+    /**
+     * @type {import('@/src/util/strings.js').StringWithVars}
+     * The URL for converting text to audio if the web SpeechSynthesis API is not supported.
+     * Provided variables:
+     *  - `text` -- the text to convert to audio
+     *  - `format` -- the format of the audio, 'mp3' or 'ogg';
+     */
+    remoteTtsUrl: 'https://{{server}}/BookReader/BookReaderGetTTS.php?string={{text|urlencode}}&format={{format}}',
   }
 
   /**
@@ -60,6 +68,9 @@ export class TtsPlugin extends BookReaderPlugin {
         onDone: this.stop.bind(this),
         beforeChunkPlay: this.beforeChunkPlay.bind(this),
         afterChunkPlay: this.sendChunkFinishedAnalyticsEvent.bind(this),
+        ...(TTSEngine === FestivalTTSEngine ? {
+          festivalUrl: applyVariables(this.options.remoteTtsUrl, this.br.options.vars),
+        } : {}),
       });
     }
   }
