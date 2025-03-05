@@ -26,7 +26,7 @@ export class ImageCache {
       useSrcSet = false,
       reduceSet = Pow2ReduceSet,
       renderPageURI = DEFAULT_OPTIONS.renderPageURI,
-    } = {}
+    } = {},
   ) {
     /** @type {BookModel} */
     this.book = book;

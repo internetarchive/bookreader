@@ -22,8 +22,8 @@ const SAMPLE_BOOK = new BookModel(
       [
         { width: 123, height: 123, uri: 'https://archive.org/image5.jpg', pageNum: '6' },
       ],
-    ]
-  }
+    ],
+  },
 );
 
 const realGetPageURI = SAMPLE_BOOK.getPageURI;
