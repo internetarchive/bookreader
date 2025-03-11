@@ -1197,6 +1197,15 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
     this.switchMode(this.constMode1up);
   }
 
+  // Attach globally when entering full screen; prevents accidental
+  // pinch-zoom of UI
+  for (const litMode of [this._modes.mode1Up.mode1UpLit, this._modes.mode2Up.mode2UpLit]) {
+    if (litMode.smoothZoomer.attached) {
+      litMode.smoothZoomer.detach();
+      litMode.smoothZoomer.attach(true);
+    }
+  }
+
   this.isFullscreenActive = true;
   // prioritize class updates so CSS can propagate
   this.updateBrClasses();
@@ -1237,6 +1246,14 @@ BookReader.prototype.exitFullScreen = async function () {
   const canShow2up = this.options.controls.twoPage.visible;
   if (canShow2up && (windowWidth <= this.onePageMinBreakpoint)) {
     this.switchMode(this.constMode2up);
+  }
+
+  // Don't attach globally if not full screen
+  for (const litMode of [this._modes.mode1Up.mode1UpLit, this._modes.mode2Up.mode2UpLit]) {
+    if (litMode.smoothZoomer.attached) {
+      litMode.smoothZoomer.detach();
+      litMode.smoothZoomer.attach(false);
+    }
   }
 
   this.isFullscreenActive = false;
