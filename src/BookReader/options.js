@@ -151,6 +151,8 @@ export const DEFAULT_OPTIONS = {
     iiif: null,
     /** @type {import('../plugins/plugin.resume.js').ResumePlugin['options']} */
     resume: null,
+    /** @type {import('../plugins/search/plugin.search.js').SearchPlugin['options']} */
+    search: null,
     /** @type {import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']} */
     textSelection: null,
     /** @type {import('../plugins/tts/plugin.tts.js').TtsPlugin['options']} */
