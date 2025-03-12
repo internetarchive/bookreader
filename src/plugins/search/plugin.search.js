@@ -227,7 +227,7 @@ export class SearchPlugin extends BookReaderPlugin {
     this.searchTerm = '';
     this.searchXHR = null;
     this.searchCancelled = true;
-    this.searchResults = [];
+    this.searchResults = null;
   }
 
   /**
@@ -256,7 +256,7 @@ export class SearchPlugin extends BookReaderPlugin {
       this.options.searchInsidePreTag,
       this.options.searchInsidePostTag,
     );
-    this.searchResults = results || [];
+    this.searchResults = results || null;
 
     this.updateSearchHilites();
     this.br.removeProgressPopup();
