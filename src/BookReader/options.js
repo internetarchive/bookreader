@@ -141,21 +141,21 @@ export const DEFAULT_OPTIONS = {
    * but going forward we'll keep them here.
    **/
   plugins: {
-    /** @type {import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options']}*/
+    /** @type {Partial<import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options'>]}*/
     archiveAnalytics: null,
-    /** @type {import('../plugins/plugin.autoplay.js').AutoplayPlugin['options']}*/
+    /** @type {Partial<import('../plugins/plugin.autoplay.js').AutoplayPlugin['options'>]}*/
     autoplay: null,
-    /** @type {import('../plugins/plugin.chapters.js').ChaptersPlugin['options']} */
+    /** @type {Partial<import('../plugins/plugin.chapters.js').ChaptersPlugin['options']>} */
     chapters: null,
-    /** @type {import('../plugins/plugin.iiif.js').IiifPlugin['options']} */
+    /** @type {Partial<import('../plugins/plugin.iiif.js').IiifPlugin['options']>} */
     iiif: null,
-    /** @type {import('../plugins/plugin.resume.js').ResumePlugin['options']} */
+    /** @type {Partial<import('../plugins/plugin.resume.js').ResumePlugin['options']>} */
     resume: null,
-    /** @type {import('../plugins/search/plugin.search.js').SearchPlugin['options']} */
+    /** @type {Partial<import('../plugins/search/plugin.search.js').SearchPlugin['options']>} */
     search: null,
-    /** @type {import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']} */
+    /** @type {Partial<import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']>} */
     textSelection: null,
-    /** @type {import('../plugins/tts/plugin.tts.js').TtsPlugin['options']} */
+    /** @type {Partial<import('../plugins/tts/plugin.tts.js').TtsPlugin['options']>} */
     tts: null,
   },
 
