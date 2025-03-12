@@ -167,7 +167,7 @@ BookReader.prototype.setup = function(options) {
     }
   }
 
-  if (this._plugins.search?.options.enableSearch) {
+  if (this._plugins.search?.options.enabled) {
     // Expose the search method for convenience / backward compat
     this.search = this._plugins.search.search.bind(this._plugins.search);
   }
@@ -462,7 +462,7 @@ BookReader.prototype.initParams = function() {
   }
 
   // Check for Search plugin
-  if (this._plugins.search?.options.enableSearch) {
+  if (this._plugins.search?.options.enabled) {
     const sp = this._plugins.search;
     // Go to first result only if no default or URL page
     sp.options.goToFirstResult = !params.pageFound;
@@ -1653,7 +1653,7 @@ BookReader.prototype.updateFromParams = function(params) {
   // process /search
   // @deprecated for urlMode 'history'
   // Continues to work for urlMode 'hash'
-  if (this._plugins.search?.enableSearch && 'undefined' != typeof(params.search)) {
+  if (this._plugins.search?.enabled && 'undefined' != typeof(params.search)) {
     if (this._plugins.search.searchTerm !== params.search) {
       this.$('.BRsearchInput').val(params.search);
     }
@@ -1858,7 +1858,7 @@ BookReader.prototype.paramsFromCurrent = function() {
     params.view = fullscreenView;
   }
   // Search
-  if (this._plugins.search?.enableSearch) {
+  if (this._plugins.search?.enabled) {
     params.search = this._plugins.search.searchTerm;
   }
 
