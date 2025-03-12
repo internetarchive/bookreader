@@ -25,6 +25,7 @@ import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.
 import SearchView from './view.js';
 import { marshallSearchResults } from './utils.js';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
+import { applyVariables } from '../../util/strings.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
 /** @typedef {import('../../BookReader/BookModel').LeafNum} LeafNum */
@@ -36,10 +37,20 @@ const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(w
 export class SearchPlugin extends BookReaderPlugin {
   options = {
     enabled: true,
-    searchInsideProtocol: 'https',
-    searchInsideUrl: '/fulltext/inside.php',
-    searchInsidePreTag: '{{{',
-    searchInsidePostTag: '}}}',
+    preTag: '{{{',
+    postTag: '}}}',
+    /**
+     * @type {import('@/src/util/strings.js').StringWithVars}
+     * Provides the variables: `query`, `preTag`, and `postTag` (from these options)
+     */
+    searchInsideUrl: '//{{server}}/fulltext/inside.php?' + [
+      'item_id={{bookId|urlencode}}',
+      'doc={{subPrefix|urlencode}}',
+      'q={{query|urlencode}}',
+      'path={{bookPath|urlencode}}',
+      'pre_tag={{preTag|urlencode}}',
+      'post_tag={{postTag|urlencode}}',
+    ].join('&'),
     /** @type {string} */
     initialSearchTerm: null,
     goToFirstResult: false,
@@ -161,30 +172,11 @@ export class SearchPlugin extends BookReaderPlugin {
     // term = term.replace(/['"]+/g, '');
     // term = '"' + term + '"';
 
-    // Remove the port and userdir
-    const serverPath = this.br.server.replace(/:.+/, '');
-    const baseUrl = `${this.options.searchInsideProtocol}://${serverPath}${this.searchInsideUrl}?`;
-
-    // Remove subPrefix from end of path
-    let path = this.br.bookPath;
-    const subPrefixWithSlash = `/${this.br.subPrefix}`;
-    if (this.br.bookPath.length - this.br.bookPath.lastIndexOf(subPrefixWithSlash) == subPrefixWithSlash.length) {
-      path = this.br.bookPath.substr(0, this.br.bookPath.length - subPrefixWithSlash.length);
-    }
-
-    const urlParams = {
-      item_id: this.br.bookId,
-      doc: this.br.subPrefix,
-      path,
-      q: term,
-      pre_tag: this.options.searchInsidePreTag,
-      post_tag: this.options.searchInsidePostTag,
-    };
-
-    // NOTE that the API does not expect / (slashes) to be encoded. (%2F) won't work
-    const paramStr = $.param(urlParams).replace(/%2F/g, '/');
-
-    const url = `${baseUrl}${paramStr}`;
+    const url = applyVariables(this.options.searchInsideUrl, this.br.options.vars, {
+      query: term,
+      preTag: this.options.preTag,
+      postTag: this.options.postTag,
+    });
 
     const callSearchResultsCallback = (searchInsideResults) => {
       if (this.searchCancelled) {
@@ -253,8 +245,8 @@ export class SearchPlugin extends BookReaderPlugin {
     marshallSearchResults(
       results,
       pageNum => this.br.book.getPageNum(this.br.book.leafNumToIndex(pageNum)),
-      this.options.searchInsidePreTag,
-      this.options.searchInsidePostTag,
+      this.options.preTag,
+      this.options.postTag,
     );
     this.searchResults = results || null;
 
