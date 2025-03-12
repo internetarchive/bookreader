@@ -10,7 +10,7 @@ export default class SharingProvider {
   }) {
     const { identifier, creator, title } = item?.metadata;
     const creatorToUse = Array.isArray(creator) ? creator[0] : creator;
-    const subPrefix = bookreader.options.subPrefix || '';
+    const subPrefix = bookreader.subPrefix || '';
     const label = `Share this book`;
     this.icon = html`${iauxShareIcon}`;
     this.label = label;

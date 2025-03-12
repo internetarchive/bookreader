@@ -59,7 +59,6 @@ const initializeBookReader = (brManifest) => {
     enableBookTitleLink: false,
     bookUrlText: null,
     startFullscreen: openFullImmersionTheater,
-    initialSearchTerm: searchTerm ? searchTerm : '',
     // leaving this option commented out bc we change given user agent on archive.org
     // onePage: { autofit: <?=json_encode($this->ios ? 'width' : 'auto')?> },
     showToolbar: getFromUrl('options.showToolbar', 'false') === 'true',
@@ -70,6 +69,17 @@ const initializeBookReader = (brManifest) => {
     /* End multiple volumes */
     enableBookmarks: true, // turn this on
     enableFSLogoShortcut: true,
+
+    plugins: {
+      search: {
+        enableSearch: true,
+        initialSearchTerm: searchTerm ? searchTerm : '',
+        searchInsideProtocol: brManifest.data.brOptions.searchInsideProtocol,
+        searchInsideUrl: '/fulltext/inside.php',
+        searchInsidePreTag: brManifest.data.brOptions.searchInsidePreTag,
+        searchInsidePostTag: brManifest.data.brOptions.searchInsidePostTag,
+      },
+    },
   };
 
   // we want to show item as embedded when ?ui=embed is in URI

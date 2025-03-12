@@ -88,7 +88,11 @@ describe('Search Provider', () => {
         onProviderChange: sinon.fake(),
         bookreader: {
           leafNumToIndex: sinon.fake(),
-          _searchPluginGoToResult: sinon.fake(),
+          _plugins: {
+            search: {
+              _searchPluginGoToResult: sinon.fake(),
+            },
+          },
         },
       });
 
@@ -100,7 +104,7 @@ describe('Search Provider', () => {
           { detail: searchResultStub }),
       );
 
-      expect(provider.bookreader._searchPluginGoToResult.callCount).toEqual(1);
+      expect(provider.bookreader._plugins.search._searchPluginGoToResult.callCount).toEqual(1);
     });
     test('update url when search is cancelled or input cleared', async() => {
       const urlPluginMock = {
@@ -111,7 +115,11 @@ describe('Search Provider', () => {
         onProviderChange: sinon.fake(),
         bookreader: {
           leafNumToIndex: sinon.fake(),
-          _searchPluginGoToResult: sinon.fake(),
+          _plugins: {
+            search: {
+              _searchPluginGoToResult: sinon.fake(),
+            },
+          },
           urlPlugin: urlPluginMock,
         },
       });
@@ -145,7 +153,11 @@ describe('Search Provider', () => {
         onProviderChange: sinon.fake(),
         bookreader: {
           leafNumToIndex: sinon.fake(),
-          _searchPluginGoToResult: sinon.fake(),
+          _plugins: {
+            search: {
+              _searchPluginGoToResult: sinon.fake(),
+            },
+          },
           urlPlugin: urlPluginMock,
           search: sinon.fake(),
         },

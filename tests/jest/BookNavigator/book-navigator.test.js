@@ -171,7 +171,13 @@ describe('<book-navigator>', () => {
             resize: sinon.fake(),
             currentIndex: sinon.fake(),
             jumpToIndex: sinon.fake(),
-            options: { enableSearch: true },
+            options: {
+              plugins: {
+                search: {
+                  enableSearch: true,
+                },
+              },
+            },
             refs: {
               $brContainer,
             },
@@ -346,7 +352,6 @@ describe('<book-navigator>', () => {
 
             let sidePanelConfig = {};
             el.addEventListener('updateSideMenu', (e) => {
-              console.log();
               sidePanelConfig = e.detail;
             });
             const toggleSearchMenuEvent = new Event('BookReader:ToggleSearchMenu');
