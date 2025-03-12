@@ -35,7 +35,7 @@ const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(w
 
 export class SearchPlugin extends BookReaderPlugin {
   options = {
-    enableSearch: true,
+    enabled: true,
     searchInsideProtocol: 'https',
     searchInsideUrl: '/fulltext/inside.php',
     searchInsidePreTag: '{{{',
@@ -56,13 +56,13 @@ export class SearchPlugin extends BookReaderPlugin {
     /** @type {SearchInsideResults | null} */
     this.searchResults = null;
     this.searchInsideUrl = this.options.searchInsideUrl;
-    this.enableSearch = this.options.enableSearch;
+    this.enabled = this.options.enabled;
     this.searchXHR = null;
 
     /** @type { {[pageIndex: number]: SearchInsideMatchBox[]} } */
     this._searchBoxesByIndex = {};
 
-    if (this.enableSearch) {
+    if (this.enabled) {
       this.searchView = new SearchView({
         br: this.br,
         searchCancelledCallback: () => {
@@ -79,7 +79,7 @@ export class SearchPlugin extends BookReaderPlugin {
   init() {
     super.init();
 
-    if (!this.enableSearch) return;
+    if (!this.enabled) return;
 
     this.searchView.init();
     if (this.options.initialSearchTerm) {
@@ -104,7 +104,7 @@ export class SearchPlugin extends BookReaderPlugin {
    * @param {JQuery<HTMLElement>} $toolbarElement
    */
   _configureToolbar($toolbarElement) {
-    if (!this.enableSearch) { return; }
+    if (!this.enabled) { return; }
     if (this.searchView.dom.toolbarSearch) {
       $toolbarElement.find('.BRtoolbarSectionInfo').after(this.searchView.dom.toolbarSearch);
     }
@@ -116,7 +116,7 @@ export class SearchPlugin extends BookReaderPlugin {
    * @param {import ("@/src/BookReader/PageContainer.js").PageContainer} pageContainer
    */
   _configurePageContainer(pageContainer) {
-    if (this.enableSearch && pageContainer.page && pageContainer.page.index in this._searchBoxesByIndex) {
+    if (this.enabled && pageContainer.page && pageContainer.page.index in this._searchBoxesByIndex) {
       const pageIndex = pageContainer.page.index;
       const boxes = this._searchBoxesByIndex[pageIndex];
       renderBoxesInPageContainerLayer(
@@ -261,7 +261,7 @@ export class SearchPlugin extends BookReaderPlugin {
     this.updateSearchHilites();
     this.br.removeProgressPopup();
     if (options.goToFirstResult) {
-      this._searchPluginGoToResult(0);
+      this.jumpToMatch(0);
     }
     this.br.trigger('SearchCallback', { results, options, instance: this.br });
   }
@@ -343,7 +343,7 @@ export class SearchPlugin extends BookReaderPlugin {
    * or at least more configurable.
    * @param {number} matchIndex
    */
-  async _searchPluginGoToResult(matchIndex) {
+  async jumpToMatch(matchIndex) {
     const match = this.searchResults?.matches[matchIndex];
     const book = this.br.book;
     const pageIndex = book.leafNumToIndex(match.par[0].page);
@@ -416,35 +416,6 @@ export class SearchPlugin extends BookReaderPlugin {
     if (!suppressFragmentChange) {
       this.br.trigger(BookReader.eventNames.fragmentChange);
     }
-  }
-
-  /**
-   * Returns true if a search highlight is currently being displayed
-   * @returns {boolean}
-   */
-  searchHighlightVisible() {
-    const results = this.searchResults;
-    let visiblePages = [];
-    if (null == results) return false;
-
-    if (this.br.constMode2up == this.br.mode) {
-      visiblePages = [this.br.twoPage.currentIndexL, this.br.twoPage.currentIndexR];
-    } else if (this.br.constMode1up == this.br.mode) {
-      visiblePages = [this.br.currentIndex()];
-    } else {
-      return false;
-    }
-
-    results.matches.some(match => {
-      return match.par[0].boxes.some(box => {
-        const pageIndex = this.br.book.leafNumToIndex(box.page);
-        if (jQuery.inArray(pageIndex, visiblePages) >= 0) {
-          return true;
-        }
-      });
-    });
-
-    return false;
   }
 }
 BookReader?.registerPlugin('search', SearchPlugin);

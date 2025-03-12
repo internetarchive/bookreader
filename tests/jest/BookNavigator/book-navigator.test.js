@@ -164,7 +164,7 @@ describe('<book-navigator>', () => {
         expect(el.menuProviders.visualAdjustments).toBeInstanceOf(VisualAdjustmentsProvider);
       });
       describe('Loading Sub Menus By Plugin Flags', () => {
-        test('Search: uses `enableSearch` flag', async() => {
+        test('Search: uses `enabled` flag', async() => {
           const el = fixtureSync(container());
           const $brContainer = document.createElement('div');
           const brStub = {
@@ -174,7 +174,7 @@ describe('<book-navigator>', () => {
             options: {
               plugins: {
                 search: {
-                  enableSearch: true,
+                  enabled: true,
                 },
               },
             },

@@ -90,7 +90,7 @@ describe('Search Provider', () => {
           leafNumToIndex: sinon.fake(),
           _plugins: {
             search: {
-              _searchPluginGoToResult: sinon.fake(),
+              jumpToMatch: sinon.fake(),
             },
           },
         },
@@ -104,7 +104,7 @@ describe('Search Provider', () => {
           { detail: searchResultStub }),
       );
 
-      expect(provider.bookreader._plugins.search._searchPluginGoToResult.callCount).toEqual(1);
+      expect(provider.bookreader._plugins.search.jumpToMatch.callCount).toEqual(1);
     });
     test('update url when search is cancelled or input cleared', async() => {
       const urlPluginMock = {
@@ -117,7 +117,7 @@ describe('Search Provider', () => {
           leafNumToIndex: sinon.fake(),
           _plugins: {
             search: {
-              _searchPluginGoToResult: sinon.fake(),
+              jumpToMatch: sinon.fake(),
             },
           },
           urlPlugin: urlPluginMock,
@@ -155,7 +155,7 @@ describe('Search Provider', () => {
           leafNumToIndex: sinon.fake(),
           _plugins: {
             search: {
-              _searchPluginGoToResult: sinon.fake(),
+              jumpToMatch: sinon.fake(),
             },
           },
           urlPlugin: urlPluginMock,

@@ -186,7 +186,7 @@ export class BookNavigator extends LitElement {
 
     // Note plugins will never be null-ish in runtime, but some of the unit tests
     // stub BR with a nullish value there.
-    if (this.bookreader.options.plugins?.search?.enableSearch) {
+    if (this.bookreader.options.plugins?.search?.enabled) {
       providers.search = new SearchProvider({
         ...this.baseProviderConfig,
         /**

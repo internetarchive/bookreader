@@ -204,6 +204,6 @@ export default class SearchProvider {
    * @param {{ detail: {match: SearchInsideMatch} }} param0
    */
   onSearchResultsClicked({ detail }) {
-    this.bookreader._plugins.search._searchPluginGoToResult(detail.match.matchIndex);
+    this.bookreader._plugins.search.jumpToMatch(detail.match.matchIndex);
   }
 }

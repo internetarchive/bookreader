@@ -70,9 +70,11 @@ const initializeBookReader = (brManifest) => {
     enableBookmarks: true, // turn this on
     enableFSLogoShortcut: true,
 
+    // TMP: To be replaced once BookReaderJSIA is updated to provide
+    // these in the right spot.
     plugins: {
       search: {
-        enableSearch: true,
+        enabled: true,
         initialSearchTerm: searchTerm ? searchTerm : '',
         searchInsideProtocol: brManifest.data.brOptions.searchInsideProtocol,
         searchInsideUrl: '/fulltext/inside.php',

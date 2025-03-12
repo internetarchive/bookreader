@@ -273,7 +273,7 @@ class SearchView {
           $(event.target).addClass('front');
         })
         .on("mouseleave", (event) => $(event.target).removeClass('front'))
-        .on("click", () => { this.br._plugins.search._searchPluginGoToResult(match.matchIndex); });
+        .on("click", () => { this.br._plugins.search.jumpToMatch(match.matchIndex); });
     });
   }
 
