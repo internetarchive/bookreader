@@ -43,11 +43,8 @@ export class SearchPlugin extends BookReaderPlugin {
      * @type {import('@/src/util/strings.js').StringWithVars}
      * Provides the variables: `query`, `preTag`, and `postTag` (from these options)
      */
-    searchInsideUrl: '//{{server}}/fulltext/inside.php?' + [
-      'item_id={{bookId|urlencode}}',
-      'doc={{subPrefix|urlencode}}',
+    searchInsideUrl: '/fulltext/inside.php?' + [
       'q={{query|urlencode}}',
-      'path={{bookPath|urlencode}}',
       'pre_tag={{preTag|urlencode}}',
       'post_tag={{postTag|urlencode}}',
     ].join('&'),
