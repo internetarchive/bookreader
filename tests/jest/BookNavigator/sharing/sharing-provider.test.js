@@ -39,7 +39,7 @@ describe('Sharing Provider', () => {
         item,
         baseHost,
         bookreader: {
-          options: { subPrefix },
+          subPrefix,
         },
       });
 
