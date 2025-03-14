@@ -274,6 +274,7 @@ export class BookModel {
    * @param {number} [arg0.end] exclusive
    * @param {boolean} [arg0.combineConsecutiveUnviewables] Yield only first unviewable
    * of a chunk of unviewable pages instead of each page
+   * @return {Generator<PageModel>}
    */
   * pagesIterator({ start = 0, end = Infinity, combineConsecutiveUnviewables = false } = {}) {
     start = Math.max(0, start);
@@ -483,7 +484,7 @@ export class PageModel {
    * @param {object} [arg0]
    * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
    * of a series of unviewable pages instead of each page
-   * @return {PageModel|void}
+   * @return {PageModel|undefined}
    */
   findNext({ combineConsecutiveUnviewables = false } = {}) {
     return this.book
@@ -495,7 +496,7 @@ export class PageModel {
    * @param {object} [arg0]
    * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
    * of a series of unviewable pages instead of each page
-   * @return {PageModel|void}
+   * @return {PageModel|undefined}
    */
   findPrev({ combineConsecutiveUnviewables = false } = {}) {
     if (this.index == 0) return undefined;
@@ -518,7 +519,7 @@ export class PageModel {
    * @param {object} [arg0]
    * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
    * of a series of unviewable pages instead of each page
-   * @return {PageModel|void}
+   * @return {PageModel|undefined}
    */
   findLeft({ combineConsecutiveUnviewables = false } = {}) {
     return this.book.pageProgression === 'lr' ? this.findPrev({ combineConsecutiveUnviewables }) : this.findNext({ combineConsecutiveUnviewables });
@@ -528,7 +529,7 @@ export class PageModel {
    * @param {object} [arg0]
    * @param {boolean} [arg0.combineConsecutiveUnviewables] Whether to only yield the first page
    * of a series of unviewable pages instead of each page
-   * @return {PageModel|void}
+   * @return {PageModel|undefined}
    */
   findRight({ combineConsecutiveUnviewables = false } = {}) {
     return this.book.pageProgression === 'lr' ? this.findNext({ combineConsecutiveUnviewables }) : this.findPrev({ combineConsecutiveUnviewables });

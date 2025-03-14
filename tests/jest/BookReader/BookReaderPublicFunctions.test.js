@@ -191,3 +191,73 @@ describe('`BookReader.prototype.prev`', () => {
   });
 });
 
+describe('`BookReader.prototype.jumpToIndex`', () => {
+  /**
+   * @param {Partial<BookReaderOptions>} overrides
+   */
+  function makeFakeBr(overrides = {}) {
+    const br = new BookReader({
+      data: [
+        [
+          { index: 0, viewable: true },
+        ],
+        [
+          { index: 1, viewable: false },
+          { index: 2, viewable: false },
+        ],
+        [
+          { index: 3, viewable: false },
+          { index: 4, viewable: false },
+        ],
+        [
+          { index: 5, viewable: true },
+        ],
+      ],
+      ...overrides,
+    });
+    br.init();
+
+    br._modes.mode2Up.jumpToIndex = sinon.fake();
+
+    expect(br.firstIndex).toBe(0);
+    expect(br.mode).toBe(br.constMode2up);
+
+    return br;
+  }
+
+  test('Jumping into an unviewables range will go to start of range', () => {
+    const br = makeFakeBr();
+    br.jumpToIndex(3, 0, 0, true);
+    expect(br._modes.mode2Up.jumpToIndex.callCount).toBe(1);
+    expect(br._modes.mode2Up.jumpToIndex.args[0][0]).toBe(1);
+  });
+
+  test('Trying to jump into unviewables range while in that range, will jump forward', () => {
+    const br = makeFakeBr();
+    br.displayedIndices = [1, 2];
+    br.jumpToIndex(3, 0, 0, true);
+    expect(br._modes.mode2Up.jumpToIndex.callCount).toBe(1);
+    expect(br._modes.mode2Up.jumpToIndex.args[0][0]).toBe(5);
+  });
+
+  test('Trying to jump into unviewables range while in that range, will do nothing if cannot jump forward', () => {
+    const br = makeFakeBr({
+      data: [
+        [
+          { index: 0, viewable: true },
+        ],
+        [
+          { index: 1, viewable: false },
+          { index: 2, viewable: false },
+        ],
+        [
+          { index: 3, viewable: false },
+          { index: 4, viewable: false },
+        ],
+      ],
+    });
+    br.displayedIndices = [1, 2];
+    br.jumpToIndex(3, 0, 0, true);
+    expect(br._modes.mode2Up.jumpToIndex.callCount).toBe(0);
+  });
+});
