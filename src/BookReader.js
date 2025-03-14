@@ -44,7 +44,7 @@ import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet';
 
 /**
  * BookReader
- * @param {BookReaderOptions} options
+ * @param {Partial<BookReaderOptions>} overrides
  * TODO document all options properties
  * @constructor
  */
@@ -1052,16 +1052,20 @@ BookReader.prototype._isIndexDisplayed = function(index) {
 BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
   // Don't jump into specific unviewable page
   const page = this.book.getPage(index);
+
   if (!page.isViewable && page.unviewablesStart != page.index) {
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
-    const newIndex = alreadyInPreview ? page.findNext({ combineConsecutiveUnviewables: true }).index : page.unviewablesStart;
-    return this.jumpToIndex(newIndex, pageX, pageY, noAnimate);
+    const newIndex = alreadyInPreview ? page.findNext({ combineConsecutiveUnviewables: true })?.index : page.unviewablesStart;
+    // Rare, but a book can end on an unviewable page, so this could be undefined
+    if (typeof newIndex !== 'undefined') {
+      this.jumpToIndex(newIndex, pageX, pageY, noAnimate);
+    }
+  } else {
+    this.trigger(BookReader.eventNames.stop);
+
+    this.activeMode.jumpToIndex(index, pageX, pageY, noAnimate);
   }
-
-  this.trigger(BookReader.eventNames.stop);
-
-  this.activeMode.jumpToIndex(index, pageX, pageY, noAnimate);
 };
 
 /**
