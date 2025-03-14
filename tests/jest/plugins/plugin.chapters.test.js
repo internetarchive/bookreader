@@ -1,7 +1,7 @@
 import sinon from "sinon";
 
-import BookReader from "@/src/BookReader.js";
-import "@/src/plugins/plugin.chapters.js";
+import "@/src/BookReader.js";
+import {ChaptersPlugin} from "@/src/plugins/plugin.chapters.js";
 import { BookModel } from "@/src/BookReader/BookModel";
 import { deepCopy } from "../utils";
 /** @typedef {import('@/src/plugins/plugin.chapters').TocEntry} TocEntry  */
@@ -68,50 +68,44 @@ afterEach(() => {
   sinon.restore();
 });
 
-describe("BRChaptersPlugin", () => {
+describe("ChaptersPlugin", () => {
   beforeEach(() => {
     sinon.stub(BookModel.prototype, "getPageIndex").callsFake((str) =>
       parseFloat(str),
     );
   });
 
-  describe("_chaptersInit", () => {
-    test("does not render when no open library record", async () => {
-      const fakeBR = {
-        options: {},
-        getOpenLibraryRecord: async () => null,
-        _chaptersRender: sinon.stub(),
-      };
-      await BookReader.prototype._chapterInit.call(fakeBR);
-      expect(fakeBR._chaptersRender.callCount).toBe(0);
+  describe("init", () => {
+    test("does not render when open library has no record", async () => {
+      const p = new ChaptersPlugin({ options: { vars: {} } });
+      sinon.stub(p, "getOpenLibraryRecord").resolves(null);
+      sinon.spy(p, "_render");
+      await p.init();
+      expect(p._render.callCount).toBe(0);
     });
 
-    test("does not render when open library record with no TOC", async () => {
-      const fakeBR = {
-        options: {},
-        getOpenLibraryRecord: async () => ({ key: "/books/OL1M" }),
-        _chaptersRender: sinon.stub(),
-      };
-      await BookReader.prototype._chapterInit.call(fakeBR);
-      expect(fakeBR._chaptersRender.callCount).toBe(0);
+    test("does not render when open library record has no TOC", async () => {
+      const p = new ChaptersPlugin({ options: { vars: {} } });
+      sinon.stub(p, "getOpenLibraryRecord").resolves({ key: "/books/OL1M" });
+      sinon.spy(p, "_render");
+      await p.init();
+      expect(p._render.callCount).toBe(0);
     });
 
     test("renders if valid TOC on open library", async () => {
       const fakeBR = {
-        options: {},
+        options: { vars: {} },
         bind: sinon.stub(),
-        book: {
-          getPageIndex: (str) => parseFloat(str),
-        },
-        getOpenLibraryRecord: async () => ({
-          "title": "The Adventures of Sherlock Holmes",
-          "table_of_contents": deepCopy(SAMPLE_TOC_OPTION),
-          "ocaid": "adventureofsherl0000unse",
-        }),
-        _chaptersRender: sinon.stub(),
       };
-      await BookReader.prototype._chapterInit.call(fakeBR);
-      expect(fakeBR._chaptersRender.callCount).toBe(1);
+      const p = new ChaptersPlugin(fakeBR);
+      sinon.stub(p, "getOpenLibraryRecord").resolves({
+        "title": "The Adventures of Sherlock Holmes",
+        "table_of_contents": deepCopy(SAMPLE_TOC_OPTION),
+        "ocaid": "adventureofsherl0000unse",
+      });
+      sinon.stub(p, "_render");
+      await p.init();
+      expect(p._render.callCount).toBe(1);
     });
 
     test("does not fetch open library record if table of contents in options", async () => {
@@ -120,12 +114,13 @@ describe("BRChaptersPlugin", () => {
           table_of_contents: deepCopy(SAMPLE_TOC_UNDEF),
         },
         bind: sinon.stub(),
-        getOpenLibraryRecord: sinon.stub(),
-        _chaptersRender: sinon.stub(),
       };
-      await BookReader.prototype._chapterInit.call(fakeBR);
-      expect(fakeBR.getOpenLibraryRecord.callCount).toBe(0);
-      expect(fakeBR._chaptersRender.callCount).toBe(1);
+      const p = new ChaptersPlugin(fakeBR);
+      sinon.stub(p, "getOpenLibraryRecord");
+      sinon.stub(p, "_render");
+      await p.init();
+      expect(p.getOpenLibraryRecord.callCount).toBe(0);
+      expect(p._render.callCount).toBe(1);
     });
 
     test("converts leafs and pagenums to page index", async () => {
@@ -141,55 +136,58 @@ describe("BRChaptersPlugin", () => {
           leafNumToIndex: (leaf) => leaf + 1,
           getPageIndex: (str) => parseFloat(str),
         },
-        _chaptersRender: sinon.stub(),
       };
-      await BookReader.prototype._chapterInit.call(fakeBR);
-      expect(fakeBR._chaptersRender.callCount).toBe(1);
-      expect(fakeBR._tocEntries[0].pageIndex).toBe(1);
-      expect(fakeBR._tocEntries[1].pageIndex).toBe(17);
+      const p = new ChaptersPlugin(fakeBR);
+      sinon.stub(p, "_render");
+      await p.init();
+      expect(p._render.callCount).toBe(1);
+      expect(p._tocEntries[0].pageIndex).toBe(1);
+      expect(p._tocEntries[1].pageIndex).toBe(17);
     });
   });
 
-  describe('_chaptersRender', () => {
+  describe('_render', () => {
     test('renders markers and panel', () => {
       const fakeBR = {
-        _tocEntries: SAMPLE_TOC,
-        _chaptersRenderMarker: sinon.stub(),
         shell: {
           menuProviders: {},
           addMenuShortcut: sinon.stub(),
           updateMenuContents: sinon.stub(),
         },
       };
-      BookReader.prototype._chaptersRender.call(fakeBR);
+      const p = new ChaptersPlugin(fakeBR);
+      sinon.stub(p, '_renderMarker');
+      p._tocEntries = deepCopy(SAMPLE_TOC);
+      p._render();
       expect(fakeBR.shell.menuProviders['chapters']).toBeTruthy();
       expect(fakeBR.shell.addMenuShortcut.callCount).toBe(1);
       expect(fakeBR.shell.updateMenuContents.callCount).toBe(1);
-      expect(fakeBR._chaptersRenderMarker.callCount).toBeGreaterThan(1);
+      expect(p._renderMarker.callCount).toBeGreaterThan(1);
     });
   });
 
-  describe('_chaptersUpdateCurrent', () => {
+  describe('_updateCurrent', () => {
     test('highlights the current chapter', () => {
       const fakeBR = {
         mode: 2,
         firstIndex: 16,
         displayedIndices: [16, 17],
-        _tocEntries: SAMPLE_TOC,
-        _chaptersPanel: {
-          currentChapter: null,
-        },
       };
-      BookReader.prototype._chaptersUpdateCurrent.call(fakeBR);
-      expect(fakeBR._chaptersPanel.currentChapter).toEqual(SAMPLE_TOC[1]);
+      const p = new ChaptersPlugin(fakeBR);
+      p._tocEntries = deepCopy(SAMPLE_TOC);
+      p._chaptersPanel = {
+        currentChapter: null,
+      };
+      p._updateCurrent();
+      expect(p._chaptersPanel.currentChapter).toEqual(SAMPLE_TOC[1]);
 
       fakeBR.mode = 1;
-      BookReader.prototype._chaptersUpdateCurrent.call(fakeBR);
-      expect(fakeBR._chaptersPanel.currentChapter).toEqual(SAMPLE_TOC[0]);
+      p._updateCurrent();
+      expect(p._chaptersPanel.currentChapter).toEqual(SAMPLE_TOC[0]);
 
       fakeBR.firstIndex = 0;
-      BookReader.prototype._chaptersUpdateCurrent.call(fakeBR);
-      expect(fakeBR._chaptersPanel.currentChapter).toBeUndefined();
+      p._updateCurrent();
+      expect(p._chaptersPanel.currentChapter).toBeUndefined();
     });
   });
 });
