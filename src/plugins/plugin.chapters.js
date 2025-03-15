@@ -19,9 +19,43 @@ const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(w
  */
 export class ChaptersPlugin extends BookReaderPlugin {
   options = {
-    olHost: 'https://openlibrary.org',
     enabled: true,
-    /** @type {import('@/src/util/strings.js').StringWithVars} */
+
+    /**
+     * The Open Library host to fetch/query Open Library.
+     * @type {import('@/src/util/strings.js').StringWithVars}
+     */
+    openLibraryHost: 'https://openlibrary.org',
+
+    /**
+     * The Open Library edition to fetch the table of contents from.
+     * E.g. 'OL12345M'
+     *
+     * @type {import('@/src/util/strings.js').StringWithVars}
+     */
+    openLibraryId: '',
+
+    /**
+     * The Internet Archive identifier to fetch the Open Library table
+     * of contents from.
+     * E.g. 'goody'
+     *
+     * @type {import('@/src/util/strings.js').StringWithVars}
+     */
+    internetArchiveId: '',
+
+    /**
+     * @deprecated
+     * Old name for openLibraryHost
+     * @type {import('@/src/util/strings.js').StringWithVars}
+     */
+    olHost: 'https://openlibrary.org',
+
+    /**
+     * @deprecated
+     * Old name for internetArchiveId
+     * @type {import('@/src/util/strings.js').StringWithVars}
+     */
     bookId: '{{bookId}}',
   }
 
@@ -31,6 +65,13 @@ export class ChaptersPlugin extends BookReaderPlugin {
   /** @type {BRChaptersPanel} */
   _chaptersPanel;
 
+  /** @override */
+  setup(options) {
+    super.setup(options);
+    this.options.internetArchiveId = this.options.internetArchiveId || this.options.bookId;
+    this.options.openLibraryHost = this.options.openLibraryHost || this.options.olHost;
+  }
+
   /** @override Extend to call Open Library for TOC */
   async init() {
     if (!this.options.enabled || this.br.ui === 'embed') {
@@ -38,14 +79,12 @@ export class ChaptersPlugin extends BookReaderPlugin {
     }
 
     let rawTableOfContents = null;
-    // Prefer IA TOC for now, until we update the second half to check for
-    // `openlibrary_edition` on the IA metadata instead of making a bunch of
-    // requests to OL.
+    // Prefer explicit TOC if specified
     if (this.br.options.table_of_contents?.length) {
       rawTableOfContents = this.br.options.table_of_contents;
     } else {
-      const bookId = applyVariables(this.options.bookId, this.br.options.vars);
-      const olEdition = await this.getOpenLibraryRecord(this.options.olHost, bookId);
+      // Otherwise fetch from OL
+      const olEdition = await this.getOpenLibraryRecord();
       if (olEdition?.table_of_contents?.length) {
         rawTableOfContents = olEdition.table_of_contents;
       }
@@ -145,23 +184,36 @@ export class ChaptersPlugin extends BookReaderPlugin {
   /**
    * This makes a call to OL API and calls the given callback function with the
    * response from the API.
-   *
-   * @param {string} olHost
-   * @param {string} ocaid
    */
-  async getOpenLibraryRecord(olHost, ocaid) {
-    // Try looking up by ocaid first, then by source_record
-    const baseURL = `${olHost}/query.json?type=/type/edition&*=`;
-    const fetchUrlByBookId = `${baseURL}&ocaid=${ocaid}`;
+  async getOpenLibraryRecord() {
+    const olHost = applyVariables(this.options.openLibraryHost, this.br.options.vars);
 
-    let data = await $.ajax({ url: fetchUrlByBookId });
-
-    if (!data || !data.length) {
-      // try sourceid
-      data = await $.ajax({ url: `${baseURL}&source_records=ia:${ocaid}` });
+    if (this.options.openLibraryId) {
+      const openLibraryId = applyVariables(this.options.openLibraryId, this.br.options.vars);
+      return await $.ajax({ url: `${olHost}/books/${openLibraryId}.json` });
     }
 
-    return data?.[0];
+    if (this.options.internetArchiveId) {
+      const ocaid = applyVariables(this.options.internetArchiveId, this.br.options.vars);
+
+      // Try looking up by ocaid first, then by source_record
+      const baseQueryUrl = `${olHost}/query.json?type=/type/edition&*=&`;
+
+      let data = await $.ajax({
+        url: baseQueryUrl + new URLSearchParams({ ocaid, limit: '1' }),
+      });
+
+      if (!data || !data.length) {
+        // try source_records
+        data = await $.ajax({
+          url: baseQueryUrl + new URLSearchParams({ source_records: `ia:${ocaid}`, limit: '1' }),
+        });
+      }
+
+      return data?.[0];
+    }
+
+    return null;
   }
 
   /**
