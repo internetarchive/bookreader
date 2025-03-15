@@ -2,6 +2,7 @@
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { SelectionObserver } from '../BookReader/utils/SelectionObserver.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
+import { ManyToOne } from '../util/debouncer.js';
 import { applyVariables } from '../util/strings.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
@@ -36,6 +37,10 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     fullDjvuXmlUrl: null,
     /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
     singlePageDjvuXmlUrl: null,
+    /** Whether `singlePageDjvuXmlUrl` supports being given multiple `pageIndex` as a comma-separate list */
+    supportsBatches: false,
+    /** Max number of pages to fetch in one go, if batches are supported */
+    maxBatchSize: 6, // 3 spreads
     /** Whether to fetch the XML as a jsonp */
     jsonp: false,
   }
@@ -63,6 +68,25 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     /** Whether the book is right-to-left */
     this.rtl = this.br.pageProgression === 'rl';
     this.selectionObserver = new SelectionObserver('.BRtextLayer', this._onSelectionChange);
+  }
+
+  /** @override */
+  setup(options) {
+    super.setup(options);
+
+    /** @type {ManyToOne<number, HTMLElement>} */
+    this.fetchManyToOne = new ManyToOne(
+      this.fetchPageTextMany.bind(this),
+      {
+        batchSize: this.options.supportsBatches ? this.options.maxBatchSize : 1,
+        getFromCache: (index) => {
+          return this.pageTextCache.entries
+            .find(x => x.index == index)
+            ?.response;
+        },
+      },
+    );
+    this.fetchPageText = this.fetchManyToOne.fetchOne;
   }
 
   /** @override */
@@ -140,32 +164,49 @@ export class TextSelectionPlugin extends BookReaderPlugin {
    */
   async getPageText(index) {
     if (this.options.singlePageDjvuXmlUrl) {
-      const cachedEntry = this.pageTextCache.entries.find(x => x.index == index);
-      if (cachedEntry) {
-        return cachedEntry.response;
-      }
-      const res = await $.ajax({
-        type: "GET",
-        url: applyVariables(this.options.singlePageDjvuXmlUrl, this.br.options.vars, { pageIndex: index }),
-        dataType: this.options.jsonp ? "jsonp" : "html",
-        cache: true,
-        xhrFields: {
-          withCredentials: this.br.protected,
-        },
-        error: (e) => undefined,
-      });
-      try {
-        const xmlDoc = $.parseXML(res);
-        const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
-        this.pageTextCache.add({ index, response: result });
-        return result;
-      } catch (e) {
-        return undefined;
-      }
+      return await this.fetchPageText(index);
     } else {
       const XMLpagesArr = await this.djvuPagesPromise;
       if (XMLpagesArr) return XMLpagesArr[index];
     }
+  }
+
+  /**
+   * @param {number[]} indices Indices to fetch ; assumes they are unique and sorted
+   * @returns {Promise<Record<number, HTMLElement>>}
+   */
+  async fetchPageTextMany(indices) {
+    /** @type {Record<number, HTMLElement>} */
+    const results = {};
+    for (const index of indices) {
+      const cachedEntry = this.pageTextCache.entries.find(x => x.index == index);
+      if (cachedEntry) {
+        results[index] = cachedEntry.response;
+      }
+    }
+
+    const indicesToFetch = indices.filter(i => !(i in results));
+    if (!indicesToFetch.length) return results;
+
+    const res = await $.ajax({
+      type: "GET",
+      url: applyVariables(this.options.singlePageDjvuXmlUrl, this.br.options.vars, { pageIndex: indices.join(',') }),
+      dataType: this.options.jsonp ? "jsonp" : "html",
+      cache: true,
+      xhrFields: {
+        withCredentials: this.br.protected,
+      },
+      error: (e) => undefined,
+    });
+
+    const xmlDoc = $.parseXML(res);
+    if (xmlDoc) {
+      for (const [index, xmlObject] of zip(indices, $(xmlDoc).find("OBJECT").toArray())) {
+        this.pageTextCache.add({ index, response: xmlObject });
+        results[index] = xmlObject;
+      }
+    }
+    return results;
   }
 
   /**
