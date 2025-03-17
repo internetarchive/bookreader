@@ -151,6 +151,14 @@ export class TtsPlugin extends BookReaderPlugin {
           <select class="playback-voices" name="playback-voice" style="display: none" title="Change read aloud voices">
           </select>
         </li>
+        <li class="volume-control">
+          <button type="button" name="volume" title="Adjust volume">
+            <div class="icon icon-volume"></div>
+          </button>
+          <div class="volume-slider-container" style="display: none;">
+            <input type="range" min="0" max="1" step="0.1" value="1" class="volume-slider" title="Volume">
+          </div>
+        </li>
       </ul>
     `);
 
@@ -188,6 +196,35 @@ export class TtsPlugin extends BookReaderPlugin {
     this.br.refs.$BRReadAloudToolbar.find('[name=play]').on("click", this.playPause.bind(this));
     this.br.refs.$BRReadAloudToolbar.find('[name=advance]').on("click", this.jumpForward.bind(this));
     this.br.refs.$BRReadAloudToolbar.find('[name=review]').on("click", this.jumpBackward.bind(this));
+    
+    // Volume control setup
+    const $volumeButton = this.br.refs.$BRReadAloudToolbar.find('[name=volume]');
+    const $volumeSliderContainer = this.br.refs.$BRReadAloudToolbar.find('.volume-slider-container');
+    const $volumeSlider = this.br.refs.$BRReadAloudToolbar.find('.volume-slider');
+    
+    // Toggle volume slider visibility
+    $volumeButton.on("click", () => {
+      $volumeSliderContainer.toggle();
+    });
+    
+    // Hide volume slider when clicking outside
+    $(document).on("click", (e) => {
+      if (!$(e.target).closest('.volume-control').length) {
+        $volumeSliderContainer.hide();
+      }
+    });
+    
+    // Set volume when slider is changed
+    $volumeSlider.on("input change", () => {
+      const volume = parseFloat($volumeSlider.val());
+      this.setVolume(volume);
+    });
+    
+    // Initialize volume
+    if (this.ttsEngine.setVolume) {
+      $volumeSlider.val(this.ttsEngine.volume || 1);
+    }
+    
     const $rateSelector = this.br.refs.$BRReadAloudToolbar.find('select[name="playback-speed"]');
     $rateSelector.on("change", ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
     $(`<li>
@@ -196,6 +233,24 @@ export class TtsPlugin extends BookReaderPlugin {
           <span class="BRtooltip">${tooltips.readAloud}</span>
         </button>
       </li>`).insertBefore($navBar.find('.BRcontrols .BRicon.zoom_out').closest('li'));
+  }
+
+  /**
+   * Sets the volume for the TTS engine
+   * @param {number} volume - Volume level between 0 and 1
+   */
+  setVolume(volume) {
+    if (this.ttsEngine && typeof this.ttsEngine.setVolume === 'function') {
+      this.ttsEngine.setVolume(volume);
+    } else if (this.ttsEngine && typeof SpeechSynthesisUtterance !== 'undefined') {
+      // For web speech API, we'll need to set volume on the current utterance
+      if (!this.ttsEngine.volume) {
+        this.ttsEngine.volume = volume;
+      } else {
+        this.ttsEngine.volume = volume;
+      }
+    }
+    this.sendAnalyticsEvent('VolumeChange', Math.round(volume * 100));
   }
 
   toggle() {
