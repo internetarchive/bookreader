@@ -260,20 +260,21 @@ export class WebTTSSound {
     // 2. Pause doesn't work and doesn't fire
     // 3. Pause works but doesn't fire
     const pauseMightNotWork = (isFirefox() && isAndroid());
-    const pauseMightNotFire = isChrome() || pauseMightNotWork;
 
-    if (pauseMightNotFire) {
-      // wait for it just in case
-      const timeoutPromise = sleep(100).then(() => 'timeout');
-      const result = await Promise.race([pausePromise, timeoutPromise]);
-      // We got our pause event; nothing to do!
-      if (result != 'timeout') return;
+    // Pause sometimes works, but doesn't fire the event, so wait to see if it fires
+    const winner = await Promise.race([pausePromise, sleep(100).then(() => 'timeout')]);
 
-      this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
+    // We got our pause event; nothing to do!
+    if (winner != 'timeout') return;
 
-      // if pause might not work, then we'll stop entirely and restart later
-      if (pauseMightNotWork) this.stop();
+    if (DEBUG_READ_ALOUD) {
+      console.log('TTS: Firing pause event manually');
     }
+
+    this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
+
+    // if pause might not work, then we'll stop entirely and restart later
+    if (pauseMightNotWork) this.stop();
   }
 
   async resume() {
@@ -293,22 +294,24 @@ export class WebTTSSound {
     // 2. Resume works + doesn't fire (Chrome Desktop)
     // 3. Resume doesn't work + doesn't fire (Chrome/FF Android)
     const resumeMightNotWork = (isChrome() && isAndroid()) || (isFirefox() && isAndroid());
-    const resumeMightNotFire = isChrome() || resumeMightNotWork;
 
     // Try resume
     const resumePromise = promisifyEvent(this.utterance, 'resume');
     speechSynthesis.resume();
 
-    if (resumeMightNotFire) {
-      const result = await Promise.race([resumePromise, sleep(100).then(() => 'timeout')]);
+    const winner = await Promise.race([resumePromise, sleep(100).then(() => 'timeout')]);
+    // We got resume! All is good
+    if (winner != 'timeout') return;
 
-      if (result != 'timeout') return;
+    if (DEBUG_READ_ALOUD) {
+      console.log('TTS: Firing resume event manually');
+    }
 
-      this.utterance.dispatchEvent(new CustomEvent('resume', {}));
-      if (resumeMightNotWork) {
-        await this.reload();
-        this.play();
-      }
+    // Fake it
+    this.utterance.dispatchEvent(new CustomEvent('resume', {}));
+    if (resumeMightNotWork) {
+      await this.reload();
+      this.play();
     }
   }
 

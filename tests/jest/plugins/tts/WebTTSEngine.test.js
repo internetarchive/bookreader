@@ -143,8 +143,6 @@ describe('WebTTSSound', () => {
 
   test('fire pause if browser does not do it', async () => {
     const clock = sinon.useFakeTimers();
-    const languageGetter = jest.spyOn(window.navigator, 'userAgent', 'get');
-    languageGetter.mockReturnValue('firefox android');
     const sound = new WebTTSSound('foo bah');
     sound.load();
     sound.play();
