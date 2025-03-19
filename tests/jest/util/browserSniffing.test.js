@@ -22,6 +22,12 @@ const TESTS = [
     machingFn: null,
   },
   {
+    name: 'Edge on Windows 11',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0',
+    vendor: 'Google Inc.',
+    machingFn: null,
+  },
+  {
     name: 'IE11 on Windows 10',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; Tablet PC 2.0; Zoom 3.6.0; rv:11.0) like Gecko',
     vendor: '',

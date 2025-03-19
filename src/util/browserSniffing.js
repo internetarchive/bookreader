@@ -7,7 +7,7 @@
  * @return {boolean}
  */
 export function isChrome(userAgent = navigator.userAgent, vendor = navigator.vendor) {
-  return /chrome/i.test(userAgent) && /google inc/i.test(vendor);
+  return /chrome/i.test(userAgent) && /google inc/i.test(vendor) && !/\bedg\b/i.test(userAgent);
 }
 
 /**

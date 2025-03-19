@@ -152,7 +152,7 @@ export class WebTTSSound {
       this.utterance.addEventListener('resume', () => console.log('resume'));
       this.utterance.addEventListener('start', () => console.log('start'));
       this.utterance.addEventListener('end', () => console.log('end'));
-      this.utterance.addEventListener('error', () => console.log('error'));
+      this.utterance.addEventListener('error', ev => console.log('error', ev));
       this.utterance.addEventListener('boundary', () => console.log('boundary'));
       this.utterance.addEventListener('mark', () => console.log('mark'));
       this.utterance.addEventListener('finish', () => console.log('finish'));
