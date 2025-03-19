@@ -1,6 +1,6 @@
 /* global br */
 import { isChrome, isFirefox } from '../../util/browserSniffing.js';
-import { isAndroid } from './utils.js';
+import { isAndroid, DEBUG_READ_ALOUD } from './utils.js';
 import { promisifyEvent, sleep } from '../../BookReader/utils.js';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
@@ -147,7 +147,7 @@ export class WebTTSSound {
     this.utterance.rate = this.rate;
 
     // Useful for debugging things
-    if (location.toString().indexOf('_debugReadAloud=true') != -1) {
+    if (DEBUG_READ_ALOUD) {
       this.utterance.addEventListener('pause', () => console.log('pause'));
       this.utterance.addEventListener('resume', () => console.log('resume'));
       this.utterance.addEventListener('start', () => console.log('start'));
@@ -277,6 +277,10 @@ export class WebTTSSound {
   }
 
   async resume() {
+    if (this._chromeTimedOutWhilePaused) {
+      await this.reload();
+    }
+
     if (!this.started) {
       this.play();
       return;
@@ -326,37 +330,57 @@ export class WebTTSSound {
    * by pausing after 14 seconds and ~instantly resuming.
    */
   async _chromePausingBugFix() {
-    const timeoutPromise = sleep(14000).then(() => 'timeout');
-    const pausePromise = promisifyEvent(this.utterance, 'pause').then(() => 'paused');
-    const endPromise = promisifyEvent(this.utterance, 'end').then(() => 'ended');
-    const result = await Promise.race([timeoutPromise, pausePromise, endPromise]);
-    if (location.toString().indexOf('_debugReadAloud=true') != -1) {
+    if (DEBUG_READ_ALOUD) {
+      console.log('CHROME-PAUSE-HACK: starting');
+    }
+
+    this._chromeTimedOutWhilePaused = false;
+    const result = await Promise.race([
+      sleep(14000).then(() => 'timeout'),
+      promisifyEvent(this.utterance, 'pause').then(() => 'pause'),
+      promisifyEvent(this.utterance, 'end').then(() => 'end'),
+      // Some browsers (Edge) trigger error when the utterance is interrupted/stopped
+      promisifyEvent(this.utterance, 'error').then(() => 'error'),
+    ]);
+
+    if (DEBUG_READ_ALOUD) {
       console.log(`CHROME-PAUSE-HACK: ${result}`);
     }
-    switch (result) {
-    case 'ended':
+    if (result == 'end' || result == 'error') {
       // audio was stopped/finished; nothing to do
-      break;
-    case 'paused':
+      if (DEBUG_READ_ALOUD) {
+        console.log('CHROME-PAUSE-HACK: stopped (end/error)');
+      }
+    } else if (result == 'pause') {
       // audio was paused; wait for resume
       // Chrome won't let you resume the audio if 14s have passed 🤷‍
       // We could do the same as before (but resume+pause instead of pause+resume),
       // but that means we'd _constantly_ be running in the background. So in that
       // case, let's just restart the chunk
-      await Promise.race([
-        promisifyEvent(this.utterance, 'resume'),
+      const result2 = await Promise.race([
+        promisifyEvent(this.utterance, 'resume').then(() => 'resume'),
         sleep(14000).then(() => 'timeout'),
       ]);
-      result == 'timeout' ? this.reload() : this._chromePausingBugFix();
-      break;
-    case 'timeout':
-      // We hit Chrome's secret cut off time. Pause/resume
-      // to be able to keep TTS-ing
+      if (result2 == 'timeout') {
+        if (DEBUG_READ_ALOUD) {
+          console.log('CHROME-PAUSE-HACK: stopped (timed out while paused)');
+        }
+        // We hit Chrome's secret cut off time while paused, note as such
+        // so we can reload when the user tries to resume.
+        this._chromeTimedOutWhilePaused = true;
+      } else {
+        // The user resumed before the cut off! Continue as normal
+        this._chromePausingBugFix();
+      }
+    } else if (result == 'timeout') {
+      // We hit Chrome's secret cut off time while playing.
+      // To be able to keep TTS-ing, quickly pause/resume.
       speechSynthesis.pause();
       await sleep(25);
       speechSynthesis.resume();
+
+      // Listen for more
       this._chromePausingBugFix();
-      break;
     }
   }
 }

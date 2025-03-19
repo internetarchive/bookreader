@@ -79,3 +79,5 @@ export function hasLocalStorage() {
     return false;
   }
 }
+
+export const DEBUG_READ_ALOUD = location.toString().indexOf('_debugReadAloud=true') != -1;
