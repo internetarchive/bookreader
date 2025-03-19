@@ -282,7 +282,7 @@ export class WebTTSSound {
       await this.reload();
     }
 
-    if (!this.started) {
+    if (!this.started || this.stopped) {
       this.play();
       return;
     }
