@@ -13,7 +13,7 @@ import AbstractTTSEngine from './AbstractTTSEngine.js';
  **/
 export default class WebTTSEngine extends AbstractTTSEngine {
   static isSupported() {
-    return typeof(window.speechSynthesis) !== 'undefined' && !/samsungbrowser/i.test(navigator.userAgent);
+    return typeof(window.speechSynthesis) !== 'undefined';
   }
 
   /** @param {TTSEngineOptions} options */
