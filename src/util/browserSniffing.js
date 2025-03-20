@@ -7,7 +7,17 @@
  * @return {boolean}
  */
 export function isChrome(userAgent = navigator.userAgent, vendor = navigator.vendor) {
-  return /chrome/i.test(userAgent) && /google inc/i.test(vendor) && !/\bedg\b/i.test(userAgent);
+  return /chrome/i.test(userAgent) && /google inc/i.test(vendor) && !isEdge(userAgent);
+}
+
+/**
+ * Checks whether the current browser is a Edge browser
+ * See https://learn.microsoft.com/en-us/microsoft-edge/web-platform/user-agent-guidance
+ * @param {string} [userAgent]
+ * @return {boolean}
+ */
+export function isEdge(userAgent = navigator.userAgent) {
+  return /chrome/i.test(userAgent) && /\bEdg(e|A|iOS)?\b/i.test(userAgent);
 }
 
 /**

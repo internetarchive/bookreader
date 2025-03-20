@@ -1,5 +1,5 @@
 import {
-  isChrome, isFirefox, isSafari,
+  isChrome, isEdge, isFirefox, isSafari,
 } from '@/src/util/browserSniffing.js';
 
 const TESTS = [
@@ -19,13 +19,13 @@ const TESTS = [
     name: 'Edge on Windows 10',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; ServiceUI 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.18362',
     vendor: '',
-    machingFn: null,
+    machingFn: isEdge,
   },
   {
     name: 'Edge on Windows 11',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0',
     vendor: 'Google Inc.',
-    machingFn: null,
+    machingFn: isEdge,
   },
   {
     name: 'IE11 on Windows 10',
@@ -53,7 +53,7 @@ const TESTS = [
   },
 ];
 
-for (const fn of [isChrome, isFirefox, isSafari]) {
+for (const fn of [isChrome, isEdge, isFirefox, isSafari]) {
   describe(fn.name, () => {
     for (const { name, userAgent, vendor, machingFn } of TESTS) {
       test(name, () => expect(fn(userAgent, vendor)).toBe(machingFn == fn));
