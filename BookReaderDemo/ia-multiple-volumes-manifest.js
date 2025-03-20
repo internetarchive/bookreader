@@ -5,7 +5,6 @@ const extraVolOptions = {
   "enableBookTitleLink": false,
   "bookUrlText": null,
   "startFullscreen": false,
-  "initialSearchTerm": null,
   "onePage": {
     "autofit": "auto"
   },

@@ -74,6 +74,8 @@ BookReader.PLUGINS = {
   chapters: null,
   /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
   resume: null,
+  /** @type {typeof import('./plugins/search/plugin.search.js').SearchPlugin | null}*/
+  search: null,
   /** @type {typeof import('./plugins/plugin.text_selection.js').TextSelectionPlugin | null}*/
   textSelection: null,
   /** @type {typeof import('./plugins/tts/plugin.tts.js').TtsPlugin | null}*/
@@ -121,11 +123,22 @@ BookReader.prototype.setup = function(options) {
   /** @type {import('@/src/BookNavigator/book-navigator.js').BookNavigator} */
   this.shell;
 
+  // Base server used by some api calls
+  /** @deprecated */
+  this.bookId = options.bookId;
+  /** @deprecated */
+  this.server = options.server;
+  /** @deprecated */
+  this.subPrefix = options.subPrefix;
+  /** @deprecated */
+  this.bookPath = options.bookPath;
+
   // Construct the usual plugins first to get type hints
   this._plugins = {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,
+    search: BookReader.PLUGINS.search ? new BookReader.PLUGINS.search(this) : null,
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
     tts: BookReader.PLUGINS.tts ? new BookReader.PLUGINS.tts(this) : null,
@@ -154,11 +167,13 @@ BookReader.prototype.setup = function(options) {
     }
   }
 
+  if (this._plugins.search?.options.enabled) {
+    // Expose the search method for convenience / backward compat
+    this.search = this._plugins.search.search.bind(this._plugins.search);
+  }
+
   /** @type {number} @deprecated some past iterations set this */
   this.numLeafs = undefined;
-
-  /** Overridden by plugin.search.js */
-  this.enableSearch = false;
 
   /**
    * Store viewModeOrder states
@@ -447,23 +462,24 @@ BookReader.prototype.initParams = function() {
   }
 
   // Check for Search plugin
-  if (this.options.enableSearch) {
+  if (this._plugins.search?.options.enabled) {
+    const sp = this._plugins.search;
     // Go to first result only if no default or URL page
-    this.options.goToFirstResult = !params.pageFound;
+    sp.options.goToFirstResult = !params.pageFound;
 
     // If initialSearchTerm not set
-    if (!this.options.initialSearchTerm) {
+    if (!sp.initialSearchTerm) {
       // Look for any term in URL
       if (params.search) {
         // Old style: /search/[term]
-        this.options.initialSearchTerm = params.search;
-        this.searchTerm = params.search;
+        sp.options.initialSearchTerm = params.search;
+        sp.searchTerm = params.search;
       } else {
         // If we have a query string: q=[term]
         const searchParams = new URLSearchParams(this.readQueryString());
         const searchTerm = searchParams.get('q');
         if (searchTerm) {
-          this.options.initialSearchTerm = utils.decodeURIComponentPlus(searchTerm);
+          sp.options.initialSearchTerm = utils.decodeURIComponentPlus(searchTerm);
         }
       }
     }
@@ -644,7 +660,7 @@ BookReader.prototype.init = function() {
   }
 
   // If not searching, set to allow on-going fragment changes
-  if (!this.options.initialSearchTerm) {
+  if (!this._plugins.search?.options.initialSearchTerm) {
     this.suppressFragmentChange = false;
   }
 
@@ -1308,7 +1324,7 @@ BookReader.prototype.updateFirstIndex = function(
   // If there's an initial search we stop suppressing global URL changes
   // when local suppression ends
   // This seems to correctly handle multiple calls during mode/1up
-  if (this.options.initialSearchTerm && !suppressFragmentChange) {
+  if (this._plugins.search.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
 
@@ -1637,8 +1653,8 @@ BookReader.prototype.updateFromParams = function(params) {
   // process /search
   // @deprecated for urlMode 'history'
   // Continues to work for urlMode 'hash'
-  if (this.enableSearch && 'undefined' != typeof(params.search)) {
-    if (this.searchTerm !== params.search) {
+  if (this._plugins.search?.enabled && 'undefined' != typeof(params.search)) {
+    if (this._plugins.search.searchTerm !== params.search) {
       this.$('.BRsearchInput').val(params.search);
     }
   }
@@ -1842,8 +1858,8 @@ BookReader.prototype.paramsFromCurrent = function() {
     params.view = fullscreenView;
   }
   // Search
-  if (this.enableSearch) {
-    params.search = this.searchTerm;
+  if (this._plugins.search?.enabled) {
+    params.search = this._plugins.search.searchTerm;
   }
 
   return params;
