@@ -79,3 +79,16 @@ export function hasLocalStorage() {
     return false;
   }
 }
+
+export const DEBUG_READ_ALOUD = location.toString().indexOf('_debugReadAloud=true') != -1;
+
+export async function checkIfFiresPause() {
+  // Pick some random text so that if it accidentally speaks, it's not too annoying
+  const u = new SpeechSynthesisUtterance("Loading");
+  let calledPause = false;
+  u.addEventListener('pause', () => calledPause = true);
+  speechSynthesis.speak(u);
+  await new Promise(res => setTimeout(res, 10));
+  speechSynthesis.pause();
+  return calledPause;
+}
