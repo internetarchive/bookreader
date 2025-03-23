@@ -327,10 +327,8 @@ export class TtsPlugin extends BookReaderPlugin {
    * @param {Number} leafIndex
    */
   async maybeFlipToIndex(leafIndex) {
-    if (this.br.constMode2up != this.br.mode) {
+    if (!this.br._isIndexDisplayed(leafIndex)) {
       this.br.jumpToIndex(leafIndex);
-    } else {
-      await this.br._modes.mode2Up.mode2UpLit.jumpToIndex(leafIndex);
     }
   }
 
