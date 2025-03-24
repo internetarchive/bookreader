@@ -48,6 +48,10 @@ export default class WebTTSEngine extends AbstractTTSEngine {
           ],
         });
 
+        navigator.mediaSession.setPositionState({
+          duration: Infinity,
+        });
+
         navigator.mediaSession.setActionHandler('play', () => {
           audio.play();
           this.resume();
