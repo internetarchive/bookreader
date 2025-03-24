@@ -126,10 +126,11 @@ describe('WebTTSSound', () => {
       expect(speechSynthesis.pause.callCount).toBe(1);
     });
 
-    test('on pause reloads if timed out', async () => {
+    test('on pause, stops sound if timed out', async () => {
       const sound = new WebTTSSound('foo bah');
       sound.load();
       sound.play();
+      sound.stop = sinon.stub();
       sound._chromePausingBugFix();
       clock.tick(5000);
       sound.utterance.dispatchEvent('pause', {});
@@ -137,7 +138,7 @@ describe('WebTTSSound', () => {
       clock.tick(15000);
 
       await afterEventLoop();
-      expect(sound._chromeTimedOutWhilePaused).toBe(true);
+      expect(sound.stop.callCount).toBe(1);
     });
   });
 

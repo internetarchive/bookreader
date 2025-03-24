@@ -278,10 +278,6 @@ export class WebTTSSound {
   }
 
   async resume() {
-    if (this._chromeTimedOutWhilePaused) {
-      await this.reload();
-    }
-
     if (!this.started || this.stopped) {
       this.play();
       return;
@@ -337,7 +333,6 @@ export class WebTTSSound {
       console.log('CHROME-PAUSE-HACK: starting');
     }
 
-    this._chromeTimedOutWhilePaused = false;
     const result = await Promise.race([
       sleep(14000).then(() => 'timeout'),
       promisifyEvent(this.utterance, 'pause').then(() => 'pause'),
@@ -368,9 +363,9 @@ export class WebTTSSound {
         if (DEBUG_READ_ALOUD) {
           console.log('CHROME-PAUSE-HACK: stopped (timed out while paused)');
         }
-        // We hit Chrome's secret cut off time while paused, note as such
-        // so we can reload when the user tries to resume.
-        this._chromeTimedOutWhilePaused = true;
+        // We hit Chrome's secret cut off time while paused, and
+        // won't be able to resume normally, so trigger a stop.
+        this.stop();
       } else {
         // The user resumed before the cut off! Continue as normal
         this._chromePausingBugFix();
