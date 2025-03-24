@@ -1,6 +1,6 @@
 /* global br */
 import { isChrome, isFirefox } from '../../util/browserSniffing.js';
-import { isAndroid } from './utils.js';
+import { isAndroid, DEBUG_READ_ALOUD } from './utils.js';
 import { promisifyEvent, sleep } from '../../BookReader/utils.js';
 import AbstractTTSEngine from './AbstractTTSEngine.js';
 /** @typedef {import("./AbstractTTSEngine.js").PageChunk} PageChunk */
@@ -13,7 +13,7 @@ import AbstractTTSEngine from './AbstractTTSEngine.js';
  **/
 export default class WebTTSEngine extends AbstractTTSEngine {
   static isSupported() {
-    return typeof(window.speechSynthesis) !== 'undefined' && !/samsungbrowser/i.test(navigator.userAgent);
+    return typeof(window.speechSynthesis) !== 'undefined';
   }
 
   /** @param {TTSEngineOptions} options */
@@ -46,6 +46,10 @@ export default class WebTTSEngine extends AbstractTTSEngine {
           artwork: [
             { src: br.options.thumbnail, type: 'image/jpg' },
           ],
+        });
+
+        navigator.mediaSession.setPositionState({
+          duration: Infinity,
         });
 
         navigator.mediaSession.setActionHandler('play', () => {
@@ -147,12 +151,12 @@ export class WebTTSSound {
     this.utterance.rate = this.rate;
 
     // Useful for debugging things
-    if (location.toString().indexOf('_debugReadAloud=true') != -1) {
+    if (DEBUG_READ_ALOUD) {
       this.utterance.addEventListener('pause', () => console.log('pause'));
       this.utterance.addEventListener('resume', () => console.log('resume'));
       this.utterance.addEventListener('start', () => console.log('start'));
       this.utterance.addEventListener('end', () => console.log('end'));
-      this.utterance.addEventListener('error', () => console.log('error'));
+      this.utterance.addEventListener('error', ev => console.log('error', ev));
       this.utterance.addEventListener('boundary', () => console.log('boundary'));
       this.utterance.addEventListener('mark', () => console.log('mark'));
       this.utterance.addEventListener('finish', () => console.log('finish'));
@@ -260,24 +264,25 @@ export class WebTTSSound {
     // 2. Pause doesn't work and doesn't fire
     // 3. Pause works but doesn't fire
     const pauseMightNotWork = (isFirefox() && isAndroid());
-    const pauseMightNotFire = isChrome() || pauseMightNotWork;
 
-    if (pauseMightNotFire) {
-      // wait for it just in case
-      const timeoutPromise = sleep(100).then(() => 'timeout');
-      const result = await Promise.race([pausePromise, timeoutPromise]);
-      // We got our pause event; nothing to do!
-      if (result != 'timeout') return;
+    // Pause sometimes works, but doesn't fire the event, so wait to see if it fires
+    const winner = await Promise.race([pausePromise, sleep(100).then(() => 'timeout')]);
 
-      this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
+    // We got our pause event; nothing to do!
+    if (winner != 'timeout') return;
 
-      // if pause might not work, then we'll stop entirely and restart later
-      if (pauseMightNotWork) this.stop();
+    if (DEBUG_READ_ALOUD) {
+      console.log('TTS: Firing pause event manually');
     }
+
+    this.utterance.dispatchEvent(new CustomEvent('pause', this._lastEvents.start));
+
+    // if pause might not work, then we'll stop entirely and restart later
+    if (pauseMightNotWork) this.stop();
   }
 
   async resume() {
-    if (!this.started) {
+    if (!this.started || this.stopped) {
       this.play();
       return;
     }
@@ -289,22 +294,24 @@ export class WebTTSSound {
     // 2. Resume works + doesn't fire (Chrome Desktop)
     // 3. Resume doesn't work + doesn't fire (Chrome/FF Android)
     const resumeMightNotWork = (isChrome() && isAndroid()) || (isFirefox() && isAndroid());
-    const resumeMightNotFire = isChrome() || resumeMightNotWork;
 
     // Try resume
     const resumePromise = promisifyEvent(this.utterance, 'resume');
     speechSynthesis.resume();
 
-    if (resumeMightNotFire) {
-      const result = await Promise.race([resumePromise, sleep(100).then(() => 'timeout')]);
+    const winner = await Promise.race([resumePromise, sleep(100).then(() => 'timeout')]);
+    // We got resume! All is good
+    if (winner != 'timeout') return;
 
-      if (result != 'timeout') return;
+    if (DEBUG_READ_ALOUD) {
+      console.log('TTS: Firing resume event manually');
+    }
 
-      this.utterance.dispatchEvent(new CustomEvent('resume', {}));
-      if (resumeMightNotWork) {
-        await this.reload();
-        this.play();
-      }
+    // Fake it
+    this.utterance.dispatchEvent(new CustomEvent('resume', {}));
+    if (resumeMightNotWork) {
+      await this.reload();
+      this.play();
     }
   }
 
@@ -326,37 +333,56 @@ export class WebTTSSound {
    * by pausing after 14 seconds and ~instantly resuming.
    */
   async _chromePausingBugFix() {
-    const timeoutPromise = sleep(14000).then(() => 'timeout');
-    const pausePromise = promisifyEvent(this.utterance, 'pause').then(() => 'paused');
-    const endPromise = promisifyEvent(this.utterance, 'end').then(() => 'ended');
-    const result = await Promise.race([timeoutPromise, pausePromise, endPromise]);
-    if (location.toString().indexOf('_debugReadAloud=true') != -1) {
+    if (DEBUG_READ_ALOUD) {
+      console.log('CHROME-PAUSE-HACK: starting');
+    }
+
+    const result = await Promise.race([
+      sleep(14000).then(() => 'timeout'),
+      promisifyEvent(this.utterance, 'pause').then(() => 'pause'),
+      promisifyEvent(this.utterance, 'end').then(() => 'end'),
+      // Some browsers (Edge) trigger error when the utterance is interrupted/stopped
+      promisifyEvent(this.utterance, 'error').then(() => 'error'),
+    ]);
+
+    if (DEBUG_READ_ALOUD) {
       console.log(`CHROME-PAUSE-HACK: ${result}`);
     }
-    switch (result) {
-    case 'ended':
+    if (result == 'end' || result == 'error') {
       // audio was stopped/finished; nothing to do
-      break;
-    case 'paused':
+      if (DEBUG_READ_ALOUD) {
+        console.log('CHROME-PAUSE-HACK: stopped (end/error)');
+      }
+    } else if (result == 'pause') {
       // audio was paused; wait for resume
       // Chrome won't let you resume the audio if 14s have passed 🤷‍
       // We could do the same as before (but resume+pause instead of pause+resume),
       // but that means we'd _constantly_ be running in the background. So in that
       // case, let's just restart the chunk
-      await Promise.race([
-        promisifyEvent(this.utterance, 'resume'),
+      const result2 = await Promise.race([
+        promisifyEvent(this.utterance, 'resume').then(() => 'resume'),
         sleep(14000).then(() => 'timeout'),
       ]);
-      result == 'timeout' ? this.reload() : this._chromePausingBugFix();
-      break;
-    case 'timeout':
-      // We hit Chrome's secret cut off time. Pause/resume
-      // to be able to keep TTS-ing
+      if (result2 == 'timeout') {
+        if (DEBUG_READ_ALOUD) {
+          console.log('CHROME-PAUSE-HACK: stopped (timed out while paused)');
+        }
+        // We hit Chrome's secret cut off time while paused, and
+        // won't be able to resume normally, so trigger a stop.
+        this.stop();
+      } else {
+        // The user resumed before the cut off! Continue as normal
+        this._chromePausingBugFix();
+      }
+    } else if (result == 'timeout') {
+      // We hit Chrome's secret cut off time while playing.
+      // To be able to keep TTS-ing, quickly pause/resume.
       speechSynthesis.pause();
       await sleep(25);
       speechSynthesis.resume();
+
+      // Listen for more
       this._chromePausingBugFix();
-      break;
     }
   }
 }
