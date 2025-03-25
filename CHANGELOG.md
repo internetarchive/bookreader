@@ -1,3 +1,19 @@
+# 5.0.0-91
+- Refactor: Migrate ChaptersPlugin to BookReaderPlugin system @cdrini
+  - Breaking changes:
+    - Options moved:
+        - `options.olHost` → `options.plugins.chapters.olHost`
+        - `options.enableChaptersPlugin` → `options.plugins.chapters.enabled`
+        - Note `table_of_contents` _did not_ move; that is still root-level
+    - All chapters state/methods moved from `BookReader` to `BookReader.plugins.chapters`. Full list:
+        - eg `BookReader._chapters*` has been moved to `BookReader.plugins.chapters._*`
+  - See https://github.com/internetarchive/bookreader/pull/1381
+- Feature: TextSelectionPlugin now supports `protected` option @cdrini
+- Feature: New option for ChaptersPlugin for explicit `openLibraryId` @cdrini
+- Fix: No longer error when book ends on unviewable page @cdrini
+- Fix: ReadAloud no longer jumps to top of page every time it scrolls @cdrini
+- Fix: Fix various ReadAloud issues -- ReadAloud stuttering, not stopping, getting stuck, etc. @cdrini
+
 # 5.0.0-90
 - Fix: Festival TTS not working @cdrini
 
