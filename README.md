@@ -2,7 +2,7 @@
 
 ![Build Status](https://github.com/internetarchive/bookreader/actions/workflows/node.js.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/internetarchive/bookreader/branch/master/graph/badge.svg)](https://codecov.io/gh/internetarchive/bookreader)
 
-**Disclaimer: BookReader v5 is currently in beta. It's stable enough for production use (and is what is being used on archive.org), but there will be some breaking changes in the next ~month or so to public BookReader APIs.**
+**Disclaimer: BookReader v5 is currently in beta. It is stable enough for production use and is actively deployed on archive.org. Future updates while in v5 beta may introduce breaking changes to public BookReader APIs, although these will be noted in the CHANGELOG.**
 
 
 <p align="center">
