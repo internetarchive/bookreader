@@ -7,7 +7,12 @@ import '@/src/plugins/url/plugin.url.js';
 let br;
 beforeAll(() => {
   document.body.innerHTML = '<div id="BookReader">';
-  br = new BookReader();
+  br = new BookReader({
+    server: '',
+    bookId: '',
+    subPrefix: '',
+    bookPath: '',
+  });
 });
 
 afterEach(() => {
@@ -89,6 +94,26 @@ test('calls switchMode with init option when init called', () => {
   br.init();
   expect(br.switchMode.mock.calls[0][1])
     .toHaveProperty('init', true);
+});
+
+test('has added BR property: server', () => {
+  expect(br).toHaveProperty('server');
+  expect(br.server).toBeDefined();
+});
+
+test('has added BR property: bookId', () => {
+  expect(br).toHaveProperty('bookId');
+  expect(br.bookId).toBeDefined();
+});
+
+test('has added BR property: subPrefix', () => {
+  expect(br).toHaveProperty('subPrefix');
+  expect(br.subPrefix).toBeDefined();
+});
+
+test('has added BR property: bookPath', () => {
+  expect(br).toHaveProperty('bookPath');
+  expect(br.bookPath).toBeDefined();
 });
 
 test('has suppressFragmentChange true when init with no input', () => {
