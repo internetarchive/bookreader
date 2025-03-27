@@ -265,7 +265,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const $textLayer = $container.find('.BRtextLayer');
     if (!$textLayer.length) return;
     $textLayer.each((i, s) => this.defaultMode(s));
-    this.interceptCopy($container);
+    if (!this.br.protected) {
+      this.interceptCopy($container);
+    }
   }
 
   /**
