@@ -157,6 +157,8 @@ export const DEFAULT_OPTIONS = {
     textSelection: null,
     /** @type {Partial<import('../plugins/tts/plugin.tts.js').TtsPlugin['options']>} */
     tts: null,
+    /** @type {Partial<import('../plugins/url/plugin.url.js').UrlPlugin['options']>} */
+    url: null,
   },
 
   /**
