@@ -1,11 +1,11 @@
-import { UrlPlugin } from '@/src/plugins/url/UrlPlugin';
+import { UrlPluginV2 } from '@/src/plugins/url/UrlPlugin';
 
 afterEach(() => {
   jest.clearAllMocks();
 });
 
 describe('UrlPlugin tests', () => {
-  const urlPlugin = new UrlPlugin();
+  const urlPlugin = new UrlPluginV2();
 
   describe('urlStateToUrlString tests', () => {
     test('urlStateToUrlString with known states in schema', () => {
@@ -180,7 +180,7 @@ describe('UrlPlugin tests', () => {
     });
 
     test('strips leading slash of incoming path name for no double slash', () => {
-      const urlPlugin = new UrlPlugin();
+      const urlPlugin = new UrlPluginV2();
       urlPlugin.urlMode = 'history';
 
       urlPlugin.urlHistoryBasePath = '/details/SubBookTest/book1/GPORFP/';

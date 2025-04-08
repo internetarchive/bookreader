@@ -80,6 +80,8 @@ BookReader.PLUGINS = {
   textSelection: null,
   /** @type {typeof import('./plugins/tts/plugin.tts.js').TtsPlugin | null}*/
   tts: null,
+  /** @type {typeof import('./plugins/url/plugin.url.js').UrlPlugin | null}*/
+  url: null,
 };
 
 /**
@@ -142,6 +144,7 @@ BookReader.prototype.setup = function(options) {
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
     tts: BookReader.PLUGINS.tts ? new BookReader.PLUGINS.tts(this) : null,
+    url: BookReader.PLUGINS.url ? new BookReader.PLUGINS.url(this) : null,
   };
 
   // Delete anything that's null
@@ -440,14 +443,14 @@ BookReader.prototype.initParams = function() {
   }
 
   // Check for URL plugin
-  if (this.options.enableUrlPlugin) {
+  if (this._plugins.url?.options.enabled) {
     // Params explicitly set in URL take precedence over all other methods
-    let urlParams = this.paramsFromFragment(this.urlReadFragment());
+    let urlParams = this.paramsFromFragment(this._plugins.url.urlReadFragment());
 
     // Get params if hash fragment available with 'history' urlMode
-    const hasHashURL = !Object.keys(urlParams).length && this.urlReadHashFragment();
-    if (hasHashURL && (this.options.urlMode === 'history')) {
-      urlParams = this.paramsFromFragment(this.urlReadHashFragment());
+    const hasHashURL = !Object.keys(urlParams).length && this._plugins.url.urlReadHashFragment();
+    if (hasHashURL && (this._plugins.url?.options.urlMode === 'history')) {
+      urlParams = this.paramsFromFragment(this._plugins.url.urlReadHashFragment());
     }
 
     // If there were any parameters

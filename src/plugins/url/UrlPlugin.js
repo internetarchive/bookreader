@@ -1,4 +1,4 @@
-export class UrlPlugin {
+export class UrlPluginV2 {
   constructor(options = {}) {
     this.bookReaderOptions = options;
 
