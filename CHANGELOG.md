@@ -1,3 +1,15 @@
+# 5.0.0-92
+- Refactor: Migrate search plugin to BookReaderPlugin system @cdrini
+  - Breaking changes:
+    - Search options are now nested under the plugin (eg `searchInsideUrl` → `options.plugins.search.searchInsideUrl`), and mostly no longer include the `search` prefix; specifically:
+      - `searchInsidePreTag`, `searchInsidePostTag` → `options.plugins.search.preTag` and `postTag`
+      - `searchInsideUrl` is now a `StringWithVars` and supports including `vars` from the root options, e.g. `searchInsideUrl: "https://{{server}}/search_endpoint?q={{query|urlencode}}"` . It also has access to the `preTag` and `postTag` from the options. Note this allows the search inside URL to now be fully customizable from the options, and is no longer hard-coded internally to Internet Archive specific logic. 
+      - `initialSearchTerm` → `options.plugins.search.initialSearchTerm`
+      - `searchInsideProtocol` → deprecated in favour of variables in `searchInsideUrl`
+  - Internal search related methods/properties are now nested in the `SearchPlugin` and no longer accessible from the root bookreader object. Notable exception: `br.search` is still made available for convenience.
+      - Moved: `searchResults`, `searchXHR`, `searchView`, `cancelSearchRequest`, `BRSearchCallback`, `updateSearchHilites`, `removeSearchResults`, `removeSearchHilites`, `searchHighlightVisible`
+
+
 # 5.0.0-91
 - Refactor: Migrate ChaptersPlugin to BookReaderPlugin system @cdrini
   - Breaking changes:
