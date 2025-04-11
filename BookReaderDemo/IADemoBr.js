@@ -45,23 +45,6 @@ BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 const initializeBookReader = (brManifest) => {
   console.log('initializeBookReader', brManifest);
 
-  const {bookPath, subPrefix} = brManifest.data.brOptions;
-  let path = bookPath;
-  const subPrefixWithSlash = `/${subPrefix}`;
-  if (bookPath.length - bookPath.lastIndexOf(subPrefixWithSlash) == subPrefixWithSlash.length) {
-    path = bookPath.substr(0, bookPath.length - subPrefixWithSlash.length);
-  }
-
-  const searchInsideUrl = '//{{server}}/fulltext/inside.php?' + [
-    'item_id={{bookId|urlencode}}',
-    'doc={{subPrefix|urlencode}}',
-    'q={{query|urlencode}}',
-    // This endpoint doesn't expect the path to be url encoded
-    `path=${encodeURIComponent(path).replace(/%2F/g, '/')}`,
-    'pre_tag={{preTag|urlencode}}',
-    'post_tag={{postTag|urlencode}}',
-  ].join('&');
-
   const options = {
     el: '#BookReader',
     /* Url plugin - IA uses History mode for URL */
@@ -86,16 +69,9 @@ const initializeBookReader = (brManifest) => {
     /* End multiple volumes */
     enableBookmarks: true, // turn this on
     enableFSLogoShortcut: true,
-
-    // TMP: To be replaced once BookReaderJSIA is updated to provide
-    // these in the right spot.
     plugins: {
       search: {
-        enabled: true,
         initialSearchTerm: searchTerm ? searchTerm : '',
-        searchInsideUrl,
-        preTag: brManifest.data.brOptions.searchInsidePreTag,
-        postTag: brManifest.data.brOptions.searchInsidePostTag,
       },
     },
   };
