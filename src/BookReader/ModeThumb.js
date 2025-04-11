@@ -9,6 +9,8 @@ import { DragScrollable } from './DragScrollable.js';
 /** @typedef {JQuery} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce */
 
 export class ModeThumb {
+  name = 'thumb'
+
   /**
    * @param {BookReader} br
    * @param {BookModel} bookModel
