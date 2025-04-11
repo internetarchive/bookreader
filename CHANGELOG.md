@@ -1,3 +1,6 @@
+# 5.0.0-93
+- Fix: Clicking on search result not making request_page requst correctly @cdrini
+
 # 5.0.0-92
 - Refactor: Migrate search plugin to BookReaderPlugin system @cdrini
   - Breaking changes:
