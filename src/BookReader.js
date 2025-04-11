@@ -1119,7 +1119,7 @@ BookReader.prototype.getPrevReadMode = function(mode) {
 
 /**
  * Switches the mode (eg 1up 2up thumb)
- * @param {number}
+ * @param {number|'1up' | '2up' | 'thumb'}
  * @param {object} [options]
  * @param {boolean} [options.suppressFragmentChange = false]
  * @param {boolean} [options.onInit = false] - this
@@ -1132,6 +1132,18 @@ BookReader.prototype.switchMode = function(
     pageFound = false,
   } = {},
 ) {
+  if (typeof mode === 'string') {
+    mode = {
+      '1up': this.constMode1up,
+      '2up': this.constMode2up,
+      'thumb': this.constModeThumb,
+    }[mode];
+  }
+
+  if (!mode) {
+    throw new Error(`Invalid mode: ${mode}`);
+  }
+
   // Skip checks before init() complete
   if (this.init.initComplete) {
     if (mode === this.mode) {
@@ -1338,7 +1350,7 @@ BookReader.prototype.updateFirstIndex = function(
   // If there's an initial search we stop suppressing global URL changes
   // when local suppression ends
   // This seems to correctly handle multiple calls during mode/1up
-  if (this.plugins.search.options.initialSearchTerm && !suppressFragmentChange) {
+  if (this.plugins.search?.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
 
