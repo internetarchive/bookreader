@@ -341,8 +341,8 @@ export class SearchPlugin extends BookReaderPlugin {
     let makeUnviewableAtEnd = false;
     if (!page.isViewable) {
       const resp = await fetch('/services/bookreader/request_page?' + new URLSearchParams({
-        id: this.options.bookId,
-        subprefix: this.options.subPrefix,
+        id: this.br.options.bookId,
+        subprefix: this.br.options.subPrefix,
         leafNum: page.leafNum,
       })).then(r => r.json());
 
