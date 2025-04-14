@@ -493,13 +493,14 @@ export class Mode2UpLit extends LitElement {
   /**
    * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | PageModel | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
-  async flipAnimation(nextSpread, { animate = true } = {}) {
+  async flipAnimation(nextSpread, { animate = true, flipSpeed = this.flipSpeed } = {}) {
     const curSpread = (this.pageLeft || this.pageRight)?.spread;
     if (!curSpread) {
       // Nothings been actually rendered yet! Will be corrected during initFirstRender
       return;
     }
 
+    flipSpeed = flipSpeed || this.flipSpeed; // Handle null
     nextSpread = this.parseNextSpread(nextSpread);
     if (this.activeFlip || !nextSpread) return;
 
@@ -559,7 +560,7 @@ export class Mode2UpLit extends LitElement {
 
       /** @type {KeyframeAnimationOptions} */
       const animationStyle = {
-        duration: this.flipSpeed + this.activeFlip.pagesFlippingCount,
+        duration: flipSpeed + this.activeFlip.pagesFlippingCount,
         easing: 'ease-in',
         fill: 'none',
       };

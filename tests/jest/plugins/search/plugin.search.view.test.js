@@ -1,9 +1,10 @@
-
+// @ts-check
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/search/plugin.search.js';
 import { marshallSearchResults } from '@/src/plugins/search/utils.js';
 import '@/src/plugins/search/view.js';
 
+/** @type {BookReader} */
 let br;
 const namespace = 'BookReader:';
 const results = {
@@ -71,31 +72,22 @@ afterEach(() => {
 });
 
 describe('View: Plugin: Search', () => {
-  test('When search runs, the view gets created.', () => {
-    br.search = jest.fn();
-    br.options.initialSearchTerm = 'foo';
-    br.init();
-
-    expect(br.searchView).toBeDefined();
-    expect(br.searchView.handleSearchCallback).toBeDefined();
-  });
-
   describe("Search results navigation bar", () => {
     test('Search Results callback creates the results nav', () => {
       br.init();
       const event = new CustomEvent(`${namespace}SearchCallback`);
       const options = { goToFirstResult: false };
 
-      expect(br.searchView.dom.searchNavigation).toBeUndefined();
+      expect(br._plugins.search.searchView.dom.searchNavigation).toBeUndefined();
 
-      br.searchView.handleSearchCallback(event, { results, options});
-      expect(br.searchView.dom.searchNavigation).toBeDefined();
+      br._plugins.search.searchView.handleSearchCallback(event, { results, options});
+      expect(br._plugins.search.searchView.dom.searchNavigation).toBeDefined();
     });
     test('has controls', () => {
       br.init();
       const event = new CustomEvent(`${namespace}SearchCallback`);
       const options = { goToFirstResult: false };
-      br.searchView.handleSearchCallback(event, { results, options});
+      br._plugins.search.searchView.handleSearchCallback(event, { results, options});
 
       const searchResultsNav = document.querySelector('.BRsearch-navigation');
       expect(searchResultsNav).toBeDefined();
@@ -110,9 +102,9 @@ describe('View: Plugin: Search', () => {
       br.init();
       const event = new CustomEvent(`${namespace}SearchCallback`);
       const options = { goToFirstResult: false };
-      br.searchView.handleSearchCallback(event, { results: resultWithScript, options });
+      br._plugins.search.searchView.handleSearchCallback(event, { results: resultWithScript, options });
 
-      expect(br.searchView.dom.searchNavigation.parent().html()).not.toContain('<script>alert(1);</script>');
+      expect(br._plugins.search.searchView.dom.searchNavigation.parent().html()).not.toContain('<script>alert(1);</script>');
     });
 
     describe('Click events handlers', () => {
@@ -122,7 +114,7 @@ describe('View: Plugin: Search', () => {
         br.trigger = (eventName) => eventNameTriggered = eventName;
 
         expect(eventNameTriggered).toBeFalsy();
-        br.searchView.toggleSidebar();
+        br._plugins.search.searchView.toggleSidebar();
         expect(eventNameTriggered).toEqual('ToggleSearchMenu');
       });
       it('triggers custom event when closing navbar', () => {
@@ -131,7 +123,7 @@ describe('View: Plugin: Search', () => {
         br.trigger = (eventName) => eventNameTriggered = eventName;
 
         expect(eventNameTriggered).toBeFalsy();
-        br.searchView.clearSearchFieldAndResults();
+        br._plugins.search.searchView.clearSearchFieldAndResults();
         expect(eventNameTriggered).toEqual('SearchResultsCleared');
       });
     });

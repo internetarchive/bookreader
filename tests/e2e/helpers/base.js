@@ -78,8 +78,8 @@ export function runBaseTests (br) {
 
     // Check if uses plugin.resume.js
     const usesResume = ClientFunction(() => {
-      const hasResumePlugin = typeof(br.getResumeValue) !== "undefined";
-      const hasResumeValue = hasResumePlugin ? br.getResumeValue() : false;
+      const hasResumePlugin = typeof(br._plugins.resume) !== "undefined";
+      const hasResumeValue = hasResumePlugin ? br._plugins.resume.getResumeValue() : false;
       return hasResumeValue;
     });
 

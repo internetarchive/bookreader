@@ -1,17 +1,22 @@
 // @ts-check
+import { BookReaderPlugin } from '../BookReaderPlugin';
+
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
-export const DEFAULT_OPTIONS = {
-  enabled: true,
-  /** @type {import('@iiif/presentation-3').Manifest | import('@iiif/presentation-2').Manifest} */
-  manifest: null,
-};
+export class IiifPlugin extends BookReaderPlugin {
+  options = {
+    enabled: true,
+    /** @type {import('@iiif/presentation-3').Manifest | import('@iiif/presentation-2').Manifest} */
+    manifest: null,
+  }
 
-class IIIFPlugin {
-  constructor(options = DEFAULT_OPTIONS, optionVariables) {
-    this.options = options;
-    this.optionVariables = optionVariables;
-    this.manifest = options.manifest;
+  setup(options) {
+    super.setup(options);
+    this.manifest = this.options.manifest;
+
+    if (this.options.enabled) {
+      Object.assign(this.br.options, this.load());
+    }
   }
 
   load() {
@@ -133,23 +138,4 @@ function resolveInternationalString(internationalString) {
   return (internationalString[navigator.language] || internationalString[anyLang])[0];
 }
 
-export class BookReaderWithIIIFPlugin extends BookReader {
-  setup(options) {
-    const pluginOpts = Object.assign(
-      {},
-      DEFAULT_OPTIONS,
-      options.plugins.iiif,
-    );
-
-    if (pluginOpts.enabled) {
-      this.iiifPlugin = new IIIFPlugin(pluginOpts, options.vars);
-      // Write this back; this way the plugin is the source of truth, and BR just
-      // contains a reference to it.
-      options.plugins.iiif = this.iiifPlugin.options;
-      Object.assign(options, this.iiifPlugin.load());
-    }
-    return super.setup(options);
-  }
-}
-window.BookReader = BookReaderWithIIIFPlugin;
-export default BookReaderWithIIIFPlugin;
+BookReader?.registerPlugin('iiif', IiifPlugin);

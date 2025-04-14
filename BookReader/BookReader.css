@@ -500,6 +500,20 @@ body.BRfullscreenActive .mm-menu {
 .BRpagecontainer.BRpageloading img {
   color: transparent;
 }
+.BRpagecontainer.BRpageloading img:not([src]) {
+  display: none;
+}
+.BRpagecontainer.BRpageloading::after {
+  display: block;
+  content: "";
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: url("images/loading.gif") center/20px no-repeat;
+}
 .BRpagecontainer.BRemptypage {
   background: transparent;
 }

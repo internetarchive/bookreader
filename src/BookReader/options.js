@@ -141,10 +141,22 @@ export const DEFAULT_OPTIONS = {
    * but going forward we'll keep them here.
    **/
   plugins: {
-    /** @type {import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options']}*/
+    /** @type {Partial<import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options'>]}*/
     archiveAnalytics: null,
-    /** @type {import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']} */
+    /** @type {Partial<import('../plugins/plugin.autoplay.js').AutoplayPlugin['options'>]}*/
+    autoplay: null,
+    /** @type {Partial<import('../plugins/plugin.chapters.js').ChaptersPlugin['options']>} */
+    chapters: null,
+    /** @type {Partial<import('../plugins/plugin.iiif.js').IiifPlugin['options']>} */
+    iiif: null,
+    /** @type {Partial<import('../plugins/plugin.resume.js').ResumePlugin['options']>} */
+    resume: null,
+    /** @type {Partial<import('../plugins/search/plugin.search.js').SearchPlugin['options']>} */
+    search: null,
+    /** @type {Partial<import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']>} */
     textSelection: null,
+    /** @type {Partial<import('../plugins/tts/plugin.tts.js').TtsPlugin['options']>} */
+    tts: null,
   },
 
   /**
@@ -186,15 +198,28 @@ export const DEFAULT_OPTIONS = {
   /** @type {import('../plugins/plugin.chapters.js').TocEntry[]} */
   table_of_contents: null,
 
-  /** Advanced methods for page rendering */
+  /**
+   * Advanced methods for page rendering.
+   * All option functions have their `this` object set to the BookReader instance.
+   **/
+
   /** @type {() => number} */
   getNumLeafs: null,
   /** @type {(index: number) => number} */
   getPageWidth: null,
   /** @type {(index: number) => number} */
   getPageHeight: null,
-  /** @type {(index: number, reduce: number, rotate: number) => *} */
+  /** @type {(index: number, reduce: number, rotate: number) => string} */
   getPageURI: null,
+
+  /**
+   * @type {(img: HTMLImageElement, uri: string) => Promise<void>}
+   * Render the page URI into the image element. Perform any necessary preloading,
+   * authentication, etc.
+   */
+  renderPageURI(img, uri) {
+    img.src = uri;
+  },
 
   /**
    * @type {(index: number) => 'L' | 'R'}

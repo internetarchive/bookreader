@@ -1,7 +1,10 @@
+// @ts-check
 import { html, nothing } from 'lit';
 import '@internetarchive/icon-search/icon-search';
 import './search-results';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
+/** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideResults} SearchInsideResults */
+/** @typedef {import('@/src/BookReader.js').default} BookReader */
 
 let searchState = {
   query: '',
@@ -99,11 +102,14 @@ export default class SearchProvider {
     this.bookreader.search(searchState.query);
   }
 
+  /**
+   * @param {CustomEvent<{props: {instance: BookReader, results: SearchInsideResults}}>} event
+   */
   onSearchRequestError(event, errorType = 'default') {
-    const { detail: { props = {} } } = event;
-    const { instance = null } = props;
+    const { detail: { props } } = event;
+    const { instance, results } = props;
     if (instance) {
-      /* keep bookreader instance reference up-to-date */
+      /** @type {BookReader} keep bookreader instance reference up-to-date */
       this.bookreader = instance;
     }
     const errorMessages = {
@@ -114,7 +120,7 @@ export default class SearchProvider {
     };
 
     const messageToShow = errorMessages[errorType] ?? errorMessages.default;
-    searchState.query = instance?.searchResults?.q || '';
+    searchState.query = results?.q || '';
     searchState.results = [];
     searchState.resultsCount = 0;
     searchState.queryInProgress = false;
@@ -137,7 +143,7 @@ export default class SearchProvider {
   }
 
   searchCanceledInMenu() {
-    this.bookreader?.cancelSearchRequest();
+    this.bookreader._plugins.search.cancelSearchRequest();
   }
 
   onSearchResultsCleared() {
@@ -149,7 +155,7 @@ export default class SearchProvider {
       errorMessage: '',
     };
     this.updateMenu({ openMenu: false });
-    this.bookreader?.searchView?.clearSearchFieldAndResults(false);
+    this.bookreader._plugins.search.searchView.clearSearchFieldAndResults(false);
     if (this.bookreader.urlPlugin) {
       this.updateSearchInUrl();
     }
@@ -198,6 +204,6 @@ export default class SearchProvider {
    * @param {{ detail: {match: SearchInsideMatch} }} param0
    */
   onSearchResultsClicked({ detail }) {
-    this.bookreader._searchPluginGoToResult(detail.match.matchIndex);
+    this.bookreader._plugins.search.jumpToMatch(detail.match.matchIndex);
   }
 }

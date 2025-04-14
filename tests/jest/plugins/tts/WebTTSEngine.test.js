@@ -93,51 +93,57 @@ describe('WebTTSSound', () => {
   });
 
   describe('_chromePausingBugFix', () => {
+    /** @type {sinon.SinonFakeTimers} */
+    let clock = null;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+
     test('if speech less than 15s, nothing special', async () => {
-      const clock = sinon.useFakeTimers();
       const sound = new WebTTSSound('hello world foo bar');
       sound.load();
       sound.play();
       sound._chromePausingBugFix();
       clock.tick(10000);
       sound.utterance.dispatchEvent('end', {});
-      clock.restore();
       await afterEventLoop();
       expect(speechSynthesis.pause.callCount).toBe(0);
     });
 
     test('if speech greater than 15s, pause called', async () => {
-      const clock = sinon.useFakeTimers();
       const sound = new WebTTSSound('foo bah');
       sound.load();
       sound.play();
       sound._chromePausingBugFix();
       clock.tick(20000);
-      clock.restore();
 
       await afterEventLoop();
       expect(speechSynthesis.pause.callCount).toBe(1);
     });
 
-    test('on pause reloads if timed out', async () => {
-      const clock = sinon.useFakeTimers();
+    test('on pause, stops sound if timed out', async () => {
       const sound = new WebTTSSound('foo bah');
       sound.load();
       sound.play();
+      sound.stop = sinon.stub();
       sound._chromePausingBugFix();
-      sound.pause();
-      clock.tick(2000);
-      clock.restore();
+      clock.tick(5000);
+      sound.utterance.dispatchEvent('pause', {});
+      await afterEventLoop();
+      clock.tick(15000);
 
       await afterEventLoop();
-      expect(speechSynthesis.cancel.callCount).toBe(1);
+      expect(sound.stop.callCount).toBe(1);
     });
   });
 
   test('fire pause if browser does not do it', async () => {
     const clock = sinon.useFakeTimers();
-    const languageGetter = jest.spyOn(window.navigator, 'userAgent', 'get');
-    languageGetter.mockReturnValue('firefox android');
     const sound = new WebTTSSound('foo bah');
     sound.load();
     sound.play();

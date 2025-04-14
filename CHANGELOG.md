@@ -1,3 +1,47 @@
+# 5.0.0-93
+- Fix: Clicking on search result not making request_page requst correctly @cdrini
+
+# 5.0.0-92
+- Refactor: Migrate search plugin to BookReaderPlugin system @cdrini
+  - Breaking changes:
+    - Search options are now nested under the plugin (eg `searchInsideUrl` → `options.plugins.search.searchInsideUrl`), and mostly no longer include the `search` prefix; specifically:
+      - `searchInsidePreTag`, `searchInsidePostTag` → `options.plugins.search.preTag` and `postTag`
+      - `searchInsideUrl` is now a `StringWithVars` and supports including `vars` from the root options, e.g. `searchInsideUrl: "https://{{server}}/search_endpoint?q={{query|urlencode}}"` . It also has access to the `preTag` and `postTag` from the options. Note this allows the search inside URL to now be fully customizable from the options, and is no longer hard-coded internally to Internet Archive specific logic. 
+      - `initialSearchTerm` → `options.plugins.search.initialSearchTerm`
+      - `searchInsideProtocol` → deprecated in favour of variables in `searchInsideUrl`
+  - Internal search related methods/properties are now nested in the `SearchPlugin` and no longer accessible from the root bookreader object. Notable exception: `br.search` is still made available for convenience.
+      - Moved: `searchResults`, `searchXHR`, `searchView`, `cancelSearchRequest`, `BRSearchCallback`, `updateSearchHilites`, `removeSearchResults`, `removeSearchHilites`, `searchHighlightVisible`
+
+
+# 5.0.0-91
+- Refactor: Migrate ChaptersPlugin to BookReaderPlugin system @cdrini
+  - Breaking changes:
+    - Options moved:
+        - `options.olHost` → `options.plugins.chapters.olHost`
+        - `options.enableChaptersPlugin` → `options.plugins.chapters.enabled`
+        - Note `table_of_contents` _did not_ move; that is still root-level
+    - All chapters state/methods moved from `BookReader` to `BookReader.plugins.chapters`. Full list:
+        - eg `BookReader._chapters*` has been moved to `BookReader.plugins.chapters._*`
+  - See https://github.com/internetarchive/bookreader/pull/1381
+- Feature: TextSelectionPlugin now supports `protected` option @cdrini
+- Feature: New option for ChaptersPlugin for explicit `openLibraryId` @cdrini
+- Fix: No longer error when book ends on unviewable page @cdrini
+- Fix: ReadAloud no longer jumps to top of page every time it scrolls @cdrini
+- Fix: Fix various ReadAloud issues -- ReadAloud stuttering, not stopping, getting stuck, etc. @cdrini
+
+# 5.0.0-90
+- Fix: Festival TTS not working @cdrini
+
+# 5.0.0-89
+- Refactor: Migrate TextSelection, Autoplay, Resume, IIIF, and TTS to new BookReaderPlugin system @cdrini
+  - Breaking changes:
+    - Options related to these plugins are now in the `plugins` object
+    - Methods related to these plugins are now nested, eg `br.ttsToggle` is now `br._plugins.tts.toggle`
+    - See https://github.com/internetarchive/bookreader/pull/1374 and https://github.com/internetarchive/bookreader/pull/1376 for examples.
+- Feature: Add autoplay url parameter for `flipSpeed` and `flipDelay`
+- Feature: Add new renderPageURI option + improve image caching @cdrini
+- Dev: Fix failing E2E tests @cdrini
+
 # 5.0.0-88
 - Fix: Switch to new page number display format @pezvi
 - Fix: Introduce BookReaderPlugin abstraction and apply to ArchiveAnalyticsPlugin @cdrini

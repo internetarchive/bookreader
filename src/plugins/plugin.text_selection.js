@@ -82,6 +82,22 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
       }
     }).attach();
+
+    if (this.br.protected) {
+      // Prevent right clicking when selected text
+      $(document.body).on('contextmenu dragstart copy', (e) => {
+        const selection = document.getSelection();
+        if (selection?.toString()) {
+          const intersectsTextLayer = $('.BRtextLayer')
+            .toArray()
+            .some(el => selection.containsNode(el, true));
+          if (intersectsTextLayer) {
+            e.preventDefault();
+            return false;
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -249,7 +265,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const $textLayer = $container.find('.BRtextLayer');
     if (!$textLayer.length) return;
     $textLayer.each((i, s) => this.defaultMode(s));
-    this.interceptCopy($container);
+    if (!this.br.protected) {
+      this.interceptCopy($container);
+    }
   }
 
   /**
