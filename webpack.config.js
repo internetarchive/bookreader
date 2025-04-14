@@ -1,6 +1,10 @@
 // @ts-check
-const path = require('path');
-const webpack = require('webpack');
+import path from 'path';
+import webpack from 'webpack';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /** @type {webpack.Configuration} */
 const shared = {
@@ -29,7 +33,7 @@ const shared = {
 };
 
 /** @type {webpack.Configuration[]} */
-module.exports = [
+export default [
   {
     ...shared,
 

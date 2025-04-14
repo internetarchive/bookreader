@@ -1,8 +1,8 @@
-import { runBaseTests } from './helpers/base';
-import { runRightToLeftTests } from './helpers/rightToLeft';
-import params from './helpers/params';
+import { runBaseTests } from './helpers/base.js';
+import { runRightToLeftTests } from './helpers/rightToLeft.js';
+import params from './helpers/params.js';
 
-import BookReader from './models/BookReader';
+import BookReader from './models/BookReader.js';
 
 const ocaids = params.ocaids || [
   'gendaitankashu00meijuoft', // Right to Left book

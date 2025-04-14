@@ -1,5 +1,5 @@
 // @ts-check
-import { BookReaderPlugin } from '../BookReaderPlugin';
+import { BookReaderPlugin } from '../BookReaderPlugin.js';
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 

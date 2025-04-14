@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import { iauxShareIcon } from '@internetarchive/ia-item-navigator/dist/src/menus/share-panel';
-import '@internetarchive/ia-item-navigator/dist/src/menus/share-panel';
+import { iauxShareIcon } from '@internetarchive/ia-item-navigator/dist/src/menus/share-panel.js';
+import '@internetarchive/ia-item-navigator/dist/src/menus/share-panel.js';
 
 export default class SharingProvider {
   constructor({

@@ -1,7 +1,7 @@
 // @ts-check
 import { html, nothing } from 'lit';
-import '@internetarchive/icon-search/icon-search';
-import './search-results';
+import '@internetarchive/icon-search/icon-search.js';
+import './search-results.js';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideResults} SearchInsideResults */
 /** @typedef {import('@/src/BookReader.js').default} BookReader */

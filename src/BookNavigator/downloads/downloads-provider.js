@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import '@internetarchive/icon-dl/icon-dl';
-import './downloads';
+import '@internetarchive/icon-dl/icon-dl.js';
+import './downloads.js';
 
 const menuBase = {
   pdf: {

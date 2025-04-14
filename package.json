@@ -2,6 +2,7 @@
   "name": "@internetarchive/bookreader",
   "version": "5.0.0-93",
   "description": "The Internet Archive BookReader.",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/internetarchive/bookreader.git"
@@ -107,8 +108,8 @@
     "build-css": "npx sass --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "build-css:watch": "npx sass --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "clean": "rm -r BookReader/ || true",
-    "lint": "npx eslint src/ tests/ *.js",
-    "lint:fix": "npx eslint --fix src/ tests/ *.js",
+    "lint": "npx eslint src/ tests/ *.js *.cjs",
+    "lint:fix": "npx eslint --fix src/ tests/ *.js *.cjs",
     "serve": "npx http-server . --port=8000",
     "serve-live": "npx live-server . --cors --port=8000 --watch=index.html,BookReader,BookReaderDemo",
     "serve-dev": "env NODE_ENV='development' npm run build-css && env NODE_ENV='development' npx concurrently --kill-others npm:serve-live npm:build-*:watch",

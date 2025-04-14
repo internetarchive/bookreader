@@ -1,4 +1,4 @@
-import { marshallSearchResults } from "@/src/plugins/search/utils";
+import { marshallSearchResults } from "@/src/plugins/search/utils.js";
 
 export const DUMMY_RESULTS = {
   ia: "adventuresofoli00dick",

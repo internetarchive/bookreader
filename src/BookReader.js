@@ -37,10 +37,10 @@ import { Toolbar } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
-import { ModeThumb } from './BookReader/ModeThumb';
+import { ModeThumb } from './BookReader/ModeThumb.js';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
-import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet';
+import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
 
 /**
  * BookReader

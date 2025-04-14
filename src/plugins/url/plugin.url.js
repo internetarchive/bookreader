@@ -1,6 +1,6 @@
 /* global BookReader */
 
-import { UrlPlugin } from "./UrlPlugin";
+import { UrlPlugin } from "./UrlPlugin.js";
 
 /**
  * Plugin for URL management in BookReader

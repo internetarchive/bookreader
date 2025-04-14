@@ -1,6 +1,6 @@
 // @ts-check
 import sinon from "sinon";
-import { SelectionObserver } from "@/src/BookReader/utils/SelectionObserver";
+import { SelectionObserver } from "@/src/BookReader/utils/SelectionObserver.js";
 
 afterEach(() => {
   sinon.restore();
