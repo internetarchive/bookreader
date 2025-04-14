@@ -1,5 +1,5 @@
 // @ts-check
-import { debounce } from '../utils';
+import { debounce } from '../utils.js';
 
 /**
  * Computing these things repeatedly is expensive (the browser needs to

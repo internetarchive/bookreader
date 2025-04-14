@@ -1,7 +1,7 @@
 // @ts-check
-import { EVENTS } from "../BookReader/events";
-import { parseAnimationSpeed } from "../BookReader/utils";
-import { BookReaderPlugin } from "../BookReaderPlugin";
+import { EVENTS } from "../BookReader/events.js";
+import { parseAnimationSpeed } from "../BookReader/utils.js";
+import { BookReaderPlugin } from "../BookReaderPlugin.js";
 
 /**
  * Plugin which adds an autoplay feature. Useful for kiosk situations.

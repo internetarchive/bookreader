@@ -1,4 +1,6 @@
-const { version: OLD_VERSION } = require('../package.json');
+import PACKAGE_JSON from '../package.json' assert { type: 'json' };
+
+const OLD_VERSION = PACKAGE_JSON.version;
 const OLD_RELEASE_URL = `https://api.github.com/repos/internetarchive/bookreader/releases/tags/v${OLD_VERSION}`;
 
 async function main() {

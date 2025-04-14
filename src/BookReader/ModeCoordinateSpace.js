@@ -1,4 +1,4 @@
-import { calcScreenDPI } from './utils';
+import { calcScreenDPI } from './utils.js';
 
 /**
  * There are a few different "coordinate spaces" at play in BR:

@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe';
-import BookReader from './models/BookReader';
-import params from './helpers/params';
+import BookReader from './models/BookReader.js';
+import params from './helpers/params.js';
 
 const ocaids = params.ocaids || ['goody'];
 

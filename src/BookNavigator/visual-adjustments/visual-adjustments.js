@@ -2,8 +2,8 @@ import { css, html, LitElement } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { nothing } from "lit";
 import checkmarkIcon from '../assets/icon_checkmark.js';
-import "@internetarchive/icon-magnify-minus/icon-magnify-minus";
-import "@internetarchive/icon-magnify-plus/icon-magnify-plus";
+import "@internetarchive/icon-magnify-minus/icon-magnify-minus.js";
+import "@internetarchive/icon-magnify-plus/icon-magnify-plus.js";
 
 const namespacedEvent = (eventName) => `visualAdjustment${eventName}`;
 

@@ -1,5 +1,6 @@
-const fs = require('fs');
-const { version: NEW_VERSION } = require('../package.json');
+import fs from 'fs';
+import PACKAGE_JSON from '../package.json' assert { type: 'json' };
+const NEW_VERSION = PACKAGE_JSON.version;
 
 const tag = `v${NEW_VERSION}`;
 const releaseBody = fs.readFileSync('CHANGELOG.md').toString()

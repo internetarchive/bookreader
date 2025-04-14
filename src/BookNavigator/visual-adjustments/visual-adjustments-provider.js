@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import '@internetarchive/icon-visual-adjustment/icon-visual-adjustment';
-import './visual-adjustments';
+import '@internetarchive/icon-visual-adjustment/icon-visual-adjustment.js';
+import './visual-adjustments.js';
 
 const visualAdjustmentOptions = [{
   id: 'brightness',

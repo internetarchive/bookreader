@@ -1,7 +1,7 @@
-import { runBaseTests } from './helpers/base';
-import BookReader from './models/BookReader';
-import { runSearchTests } from './helpers/search';
-import params from './helpers/params';
+import { runBaseTests } from './helpers/base.js';
+import BookReader from './models/BookReader.js';
+import { runSearchTests } from './helpers/search.js';
+import params from './helpers/params.js';
 
 const ocaids = params.ocaids || [
   'theworksofplato01platiala',

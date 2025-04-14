@@ -2,11 +2,11 @@
 import { customElement, property, query } from 'lit/decorators.js';
 import {LitElement, html} from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import { ModeSmoothZoom } from './ModeSmoothZoom';
-import { arrChanged, genToArray, sum, throttle } from './utils';
-import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
-import { ScrollClassAdder } from './utils/ScrollClassAdder';
-import { ModeCoordinateSpace } from './ModeCoordinateSpace';
+import { ModeSmoothZoom } from './ModeSmoothZoom.js';
+import { arrChanged, genToArray, sum, throttle } from './utils.js';
+import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher.js";
+import { ScrollClassAdder } from './utils/ScrollClassAdder.js';
+import { ModeCoordinateSpace } from './ModeCoordinateSpace.js';
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */

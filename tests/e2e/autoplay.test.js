@@ -1,5 +1,5 @@
 import { ClientFunction } from 'testcafe';
-import params from './helpers/params';
+import params from './helpers/params.js';
 
 const getLocationHref = ClientFunction(() => window.location.href.toString());
 const FLIP_SPEED = 200;

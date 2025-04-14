@@ -9,8 +9,8 @@
 /** @typedef {import("./ReduceSet").ReduceSet} ReduceSet */
 /** @typedef {import("./options").BookReaderOptions} BookReaderOptions */
 
-import { Pow2ReduceSet } from "./ReduceSet";
-import { DEFAULT_OPTIONS } from "./options";
+import { Pow2ReduceSet } from "./ReduceSet.js";
+import { DEFAULT_OPTIONS } from "./options.js";
 
 export class ImageCache {
   /**
