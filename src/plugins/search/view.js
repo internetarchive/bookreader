@@ -218,7 +218,7 @@ class SearchView {
       <form class="BRbooksearch desktop">
         <input type="search" name="query" class="BRsearchInput" value="" placeholder="Search inside"/>
         <button type="submit" class="BRsearchSubmit">
-          <img src="${this.br.imagesBaseURL}icon_search_button.svg" />
+          <img src="${this.br.options.imagesBaseURL}icon_search_button.svg" />
         </button>
       </form>
     `;
