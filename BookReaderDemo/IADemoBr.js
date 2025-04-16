@@ -57,6 +57,7 @@ const initializeBookReader = (brManifest) => {
     // urlTrackedParams: ['page', 'search', 'mode'],
     /* End url plugin */
     enableBookTitleLink: false,
+    bookUri: `https://archive.org/details/${ocaid}`,
     bookUrlText: null,
     startFullscreen: openFullImmersionTheater,
     // leaving this option commented out bc we change given user agent on archive.org

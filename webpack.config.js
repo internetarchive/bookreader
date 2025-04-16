@@ -49,6 +49,7 @@ export default [
       'plugins/plugin.archive_analytics.js': { import: './src/plugins/plugin.archive_analytics.js', dependOn: 'BookReader.js' },
       'plugins/plugin.autoplay.js': { import: './src/plugins/plugin.autoplay.js', dependOn: 'BookReader.js' },
       'plugins/plugin.chapters.js': { import: './src/plugins/plugin.chapters.js', dependOn: 'BookReader.js' },
+      'plugins/plugin.experiments.js': { import: './src/plugins/plugin.experiments.js', dependOn: 'BookReader.js' },
       'plugins/plugin.iframe.js': { import: './src/plugins/plugin.iframe.js', dependOn: 'BookReader.js' },
       'plugins/plugin.iiif.js': { import: './src/plugins/plugin.iiif.js', dependOn: 'BookReader.js' },
       'plugins/plugin.resume.js': { import: './src/plugins/plugin.resume.js', dependOn: 'BookReader.js' },

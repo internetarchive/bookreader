@@ -6,6 +6,8 @@ import { DragScrollable } from './DragScrollable.js';
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 
 export class Mode1Up {
+  name = '1up'
+
   /**
    * @param {BookReader} br
    * @param {BookModel} bookModel
