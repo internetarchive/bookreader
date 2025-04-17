@@ -38,6 +38,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     singlePageDjvuXmlUrl: null,
     /** Whether to fetch the XML as a jsonp */
     jsonp: false,
+    /** Mox words tha can be selected when the text layer is protected */
+    maxProtectedWords: 200,
   }
 
   /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
@@ -84,6 +86,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     }).attach();
 
     if (this.br.protected) {
+      document.addEventListener('selectionchange', this._limitSelection);
       // Prevent right clicking when selected text
       $(document.body).on('contextmenu dragstart copy', (e) => {
         const selection = document.getSelection();
@@ -99,6 +102,41 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       });
     }
   }
+
+  _limitSelection = () => {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+
+    // Check if range.startContainer is inside the sub-tree of .BRContainer
+    const startInBr = !!range.startContainer.parentElement.closest('.BRcontainer');
+    const endInBr = !!range.endContainer.parentElement.closest('.BRcontainer');
+    if (!startInBr && !endInBr) return;
+    if (!startInBr || !endInBr) {
+      // weird case, just clear the selection
+      selection.removeAllRanges();
+      return;
+    }
+
+    // Find the last allowed word in the selection
+    const lastAllowedWord = genAt(
+      genFilter(
+        walkBetweenNodes(range.startContainer, range.endContainer),
+        (node) => node.classList?.contains('BRwordElement'),
+      ),
+      this.options.maxProtectedWords - 1,
+    );
+
+    if (!lastAllowedWord || range.endContainer.parentNode == lastAllowedWord) return;
+
+    const newRange = document.createRange();
+    newRange.setStart(range.startContainer, range.startOffset);
+    newRange.setEnd(lastAllowedWord.firstChild, lastAllowedWord.textContent.length);
+
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+  };
 
   /**
    * @override
@@ -512,6 +550,33 @@ function augmentLine(line) {
 }
 
 /**
+ * @template T
+ * Get the i-th element of an iterable
+ * @param {Iterable<T>} iterable
+ * @param {number} index
+ */
+export function genAt(iterable, index) {
+  let i = 0;
+  for (const x of iterable) {
+    if (i == index) return x;
+    i++;
+  }
+  return undefined;
+}
+
+/**
+ * @template T
+ * Generator version of filter
+ * @param {Iterable<T>} iterable
+ * @param {function(T): boolean} fn
+ */
+export function* genFilter(iterable, fn) {
+  for (const x of iterable) {
+    if (fn(x)) yield x;
+  }
+}
+
+/**
  * @template TFrom, TTo
  * Generator version of map
  * @param {Iterable<TFrom>} gen
@@ -646,4 +711,50 @@ class Rect {
   get bottom() { return this.y + this.height; }
   get top() { return this.y; }
   get left() { return this.x; }
+}
+
+/**
+ * Depth traverse the DOM tree starting at `start`, and ending at `end`.
+ * @param {Node} start
+ * @param {Node} end
+ * @returns {Generator<Node>}
+ */
+export function* walkBetweenNodes(start, end) {
+  let done = false;
+
+  /**
+   * @param {Node} node
+   */
+  function* walk(node, {children = true, parents = true, siblings = true} = {}) {
+    if (node === end) {
+      done = true;
+      yield node;
+      return;
+    }
+
+    // yield self
+    yield node;
+
+    // First iterate children (depth-first traversal)
+    if (children && node.firstChild) {
+      yield* walk(node.firstChild, {children: true, parents: false, siblings: true});
+      if (done) return;
+    }
+
+    // Then iterate siblings
+    if (siblings) {
+      for (let sib = node.nextSibling; sib; sib = sib.nextSibling) {
+        yield* walk(sib, {children: true, parents: false, siblings: false});
+        if (done) return;
+      }
+    }
+
+    // Finally, move up the tree
+    if (parents && node.parentNode) {
+      yield* walk(node.parentNode, {children: false, parents: true, siblings: true});
+      if (done) return;
+    }
+  }
+
+  yield* walk(start);
 }
