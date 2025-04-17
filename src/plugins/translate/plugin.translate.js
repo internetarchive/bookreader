@@ -1,0 +1,313 @@
+// @ts-check
+import { html, LitElement } from 'lit';
+import { BookReaderPlugin } from '../../BookReaderPlugin.js';
+import { customElement, property } from 'lit/decorators.js';
+import { toISO6391 } from '../tts/utils.js';
+
+// @ts-ignore
+const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
+
+const qs = selector => document.querySelector(selector);
+const status = message => (console.log(message));
+
+const langs = {
+  "bg": "Bulgarian",
+  "ca": "Catalan",
+  "cs": "Czech",
+  "nl": "Dutch",
+  "en": "English",
+  "et": "Estonian",
+  "de": "German",
+  "fr": "French",
+  "is": "Icelandic",
+  "it": "Italian",
+  "nb": "Norwegian Bokmål",
+  "nn": "Norwegian Nynorsk",
+  "fa": "Persian",
+  "pl": "Polish",
+  "pt": "Portuguese",
+  "ru": "Russian",
+  "es": "Spanish",
+  "uk": "Ukrainian",
+};
+
+export class TranslatePlugin extends BookReaderPlugin {
+
+  options = {
+    enabled: true,
+  }
+
+  worker;
+  modelRegistry;
+  version;
+
+  supportedFromCodes = {};
+  supportedToCodes = {};
+
+  fromLanguages = [];
+  toLanguages = [];
+  langFromCode;
+  langToCode;
+  /**
+   * @type {BrTranslatePanel} _panel - Represents a panel used in the plugin.
+   * The specific type and purpose of this panel should be defined based on its usage.
+   */
+  _panel;
+
+  async init() {
+    const self = this;
+
+    if (!this.options.enabled) {
+      return;
+    }
+    await Promise.resolve();
+    this._render();
+
+    if (window.Worker) {
+      this.worker = new Worker("/BookReader/translate/worker.js");
+      this.worker.postMessage(["import"]);
+    }
+
+    // This needs to be updates to change #output
+    this.worker.onmessage = (e) => {
+      const [cmd, ...rest] = e.data;
+      if (cmd === "translate_reply" && rest[0]) {
+        const [translation, selector] = rest;
+        console.log(translation.join("\n\n"));
+        const el = document.querySelector(selector);
+        if (el) {
+          el.innerHTML = translation.join("<br><br>");
+        }
+      } else if (cmd === "load_model_reply" && e.data[1]) {
+        status(e.data[1]);
+        //this.translateCall();
+      } else if (cmd === "import_reply" && e.data[1]) {
+        this.modelRegistry = e.data[1];
+        this.version = e.data[2];
+        this.initWorker();
+      }
+    };
+
+    // Any time an action occurs, get the text
+    const next = BookReader.prototype.next;
+    BookReader.prototype.next = function (...args) {
+      console.log("BookReader.prototype.next triggered", args);
+      const r = next.apply(this, args);
+
+      $('.BRpagecontainer .BRtextLayer').each((index, el) => {
+        if (el.textContent) {
+          const sel = "." + el.closest(".BRpagecontainer").getAttribute("class").match(/pagediv\d+/) + " .BRtextLayer";
+          self.worker.postMessage(["translate", self.langFromCode, self.langToCode, [el.textContent], sel]);
+        }
+      });
+      return r;
+    };
+  }
+
+  /**
+   * @protected
+   * @param {import ("../../BookReader/PageContainer.js").PageContainer} pageContainer
+   */
+  _configurePageContainer(pageContainer) {
+    // fetch each page
+    // break each page into paragraphs
+    // call translate and give ...
+    return pageContainer;
+  }
+
+  initWorker = () => {
+    // parse supported languages and model types (prod or dev)
+    this.supportedFromCodes["en"] = "prod";
+    this.supportedToCodes["en"] = "prod";
+    for (const [langPair, value] of Object.entries(this.modelRegistry)) {
+      const firstLang = langPair.substring(0, 2);
+      const secondLang = langPair.substring(2, 4);
+      if (firstLang !== "en") this.supportedFromCodes[firstLang] = value.model.modelType;
+      if (secondLang !== "en") this.supportedToCodes[secondLang] = value.model.modelType;
+    }
+
+    // try to guess input language from user agent
+    const bookLanguage = "en"; //toISO6391(this.br.options.bookLanguage);
+    let readersLanguage = navigator.language;
+
+    // initialize everything as book language
+    this.langFromCode = this.langToCode = bookLanguage;
+
+    // use reader's language, if we know it and it's available
+    if (readersLanguage) {
+      readersLanguage = readersLanguage.split("-")[0];
+      if (readersLanguage in this.supportedToCodes) {
+        console.log("guessing input language is", readersLanguage);
+        this.langToCode = readersLanguage;
+      }
+    }
+
+    this.fromLanguages = this.formatLangs(this.supportedFromCodes);
+    // find first output lang that *isn't* input language
+
+    this.toLanguages = this.formatLangs(this.supportedToCodes);
+    this.langToCode = this.findFirstSupportedTo();
+
+    // load this model
+    this.loadModel();
+  }
+
+  handleFromLangChange = (e) => {
+    const setToCode = (this.langToCode !== e.detail.value)
+      ? this.langToCode
+      : this.findFirstSupportedTo();
+    this._panel.toLanguages = this.formatLangs(this.supportedToCodes, setToCode, e.detail.value);
+    this.loadModel();
+  }
+
+  handleToLangChange = (e) => {
+    this.langToCode = e.detail.value;
+    this.loadModel();
+  }
+
+  isSupported = (lngFrom, lngTo) => {
+    return (`${lngFrom}${lngTo}` in this.modelRegistry) ||
+      ((`${lngFrom}en` in this.modelRegistry) && (`en${lngTo}` in this.modelRegistry));
+  }
+
+  switchLanguage() {
+    const prevLangFromCode = this.langFromCode;
+    this.langFromCode = this.langToCode;
+
+    if (prevLangFromCode in this.supportedToCodes) {
+      this._panel.toLanguages = this.formatLangs(this.supportedToCodes, prevLangFromCode, this.langFromCode);
+    }
+    else {
+      this.langToCode = null;
+    }
+
+    this.loadModel();
+  }
+
+  findFirstSupportedTo = () => {
+    return Object.entries(this.supportedToCodes).find(([code]) => code !== this.langFromCode)[0];
+  }
+
+  loadModel = () => {
+    const fromCode = this.langFromCode;
+    const toCode = this.langToCode;
+    if (fromCode !== toCode) {
+      if (!this.isSupported(fromCode, toCode)) {
+        status("Language pair is not supported");
+        return;
+      }
+
+      status(`Installing model...`);
+      console.log(`Loading model '${fromCode}${toCode}'`);
+      this.worker.postMessage(["load_model", fromCode, toCode]);
+    }
+  };
+
+  translateCall = (paragraphs) => {
+    this.worker.postMessage(["translate", this.langFromCode, this.langToCode, paragraphs, '#output']);
+
+  };
+
+  formatLangs = (langsToSet, value, exclude) => {
+    const prop = [];
+    for (const [code, type] of Object.entries(langsToSet)) {
+      if (code === exclude) continue;
+      let name = langs[code];
+      if (type === "dev") name += " (Beta)";
+      prop.push({code, name});
+    }
+    return prop;
+  }
+
+  /**
+  * Update the table of contents based on array of TOC entries.
+  */
+  _render() {
+    this.br.shell.menuProviders['translate'] = {
+      id: 'translate',
+      icon: html`
+        <svg xmlns="http://www.w3.org/2000/svg" width="34" viewBox="0 0 24 24"><path fill="currentColor" d="M10 5.75h1.25v2.5H9.5c-.41 0-.75.34-.75.75s.34.75.75.75h.25v1.96A5.72 5.72 0 0 0 6.25 17c0 3.17 2.58 5.75 5.75 5.75s5.75-2.58 5.75-5.75c0-2.33-1.39-4.4-3.5-5.29V9.75h.25c.41 0 .75-.34.75-.75s-.34-.75-.75-.75h-1.75v-1.5H14c1.52 0 2.75-1.23 2.75-2.75V3c0-.41-.34-.75-.75-.75h-2c-.579 0-1.115.178-1.558.483A2.75 2.75 0 0 0 10 1.25H8c-.41 0-.75.34-.75.75v1c0 1.52 1.23 2.75 2.75 2.75m2.75-.5V5c0-.69.56-1.25 1.25-1.25h1.25V4c0 .69-.56 1.25-1.25 1.25zm-1.5 6.98V9.75h1.5v2.48c0 .33.22.62.53.72c1.77.56 2.97 2.19 2.97 4.06A4.26 4.26 0 0 1 12 21.26a4.26 4.26 0 0 1-4.25-4.25c0-1.87 1.19-3.5 2.97-4.06c.32-.1.53-.39.53-.72m-2.5-9.48H10c.69 0 1.25.56 1.25 1.25v.25H10c-.69 0-1.25-.56-1.25-1.25z" color="currentColor"/></svg>
+      `,
+      label: 'Translate',
+      component: html`<br-translate-panel
+        @connected="${e => {
+        this._panel = e.target;
+        this._panel.fromLanguages = this.fromLanguages;
+        this._panel.toLanguages = this.toLanguages;
+      }
+      }"
+        @langFromChanged="${this.handleFromLangChange}"
+        @langToChanged="${this.handleToLangChange}"
+        .fromLanguages="${this.fromLanguages}"
+        .toLanguages="${this.toLanguages}"
+        .version="${this.version}"
+        class="translate-panel"
+      />`,
+    };
+    this.br.shell.addMenuShortcut('translate');
+    this.br.shell.updateMenuContents();
+  }
+}
+BookReader?.registerPlugin('translate', TranslatePlugin);
+
+@customElement('br-translate-panel')
+export class BrTranslatePanel extends LitElement {
+  @property({ type: Array }) fromLanguages = [];
+  @property({ type: Array }) toLanguages = [];
+  @property({ type: String }) version = '';
+
+  /** @override */
+  createRenderRoot() {
+    // Disable shadow DOM; that would require a huge rejiggering of CSS
+    return this;
+  }
+
+  render() {
+    return html`<div class="app">
+      <div class="panel panel--from">
+      <label>
+        From
+        <select id="lang-from" name="from" class="lang-select" @change="${this._onLangFromChange}">
+        ${this.fromLanguages.map(
+      lang => html`<option value="${lang.code}">${lang.name}</option>`,
+    )}
+        </select>
+      </label>
+      </div>
+      <div class="panel panel--to">
+      <label>
+        To
+        <select id="lang-to" name="to" class="lang-select" @change="${this._onLangToChange}">
+        ${this.toLanguages.map(
+      lang => html`<option value="${lang.code}">${lang.name}</option>`,
+    )}
+        </select>
+      </label>
+      </div>
+      <div class="footer" id="status"></div>
+    </div>`;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.dispatchEvent(new CustomEvent('connected'));
+  }
+
+  _onLangFromChange(event) {
+    const langFromChangedEvent = new CustomEvent('langFromChanged', {
+      detail: { value: event.target.value },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(langFromChangedEvent);
+  }
+
+  _onLangToChange(event) {
+    const langToChangedEvent = new CustomEvent('langToChanged', {
+      detail: { value: event.target.value },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(langToChangedEvent);
+  }
+}
