@@ -80,6 +80,7 @@ export class TranslatePlugin extends BookReaderPlugin {
         }
       } else if (cmd === "load_model_reply" && e.data[1]) {
         status(e.data[1]);
+
         //this.translateCall();
       } else if (cmd === "import_reply" && e.data[1]) {
         this.modelRegistry = e.data[1];
@@ -92,15 +93,16 @@ export class TranslatePlugin extends BookReaderPlugin {
     const next = BookReader.prototype.next;
     BookReader.prototype.next = function (...args) {
       console.log("BookReader.prototype.next triggered", args);
+      const pages = self.getVisiblePages();
       let r = next.apply(this, args);
 
-      $('.BRpagecontainer .BRtextLayer').each((index, el) => {
+      pages.forEach((el) => {
         if (el.textContent) {
           const sel = "." + el.closest(".BRpagecontainer").getAttribute("class").match(/pagediv\d+/) + " .BRtextLayer";
           self.worker.postMessage(["translate", self.langFromCode, self.langToCode, [el.textContent], sel]);
         }
       });
-      return r
+      return r;
     };
   }
 
@@ -152,6 +154,12 @@ export class TranslatePlugin extends BookReaderPlugin {
     this.loadModel();
   }
 
+  getVisiblePages = () => {
+    return Array.from(document.querySelectorAll('.BRpage-visible')).filter(el =>
+      Array.from(el.classList).some(cls => /^pagediv\d+$/.test(cls))
+    );
+  }
+
   handleFromLangChange = (e) => {
     const setToCode = (this.langToCode !== e.detail.value)
     ? this.langToCode
@@ -185,7 +193,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   };
 
   findFirstSupportedTo = () => {
-    return Object.entries(this.supportedToCodes).find(([code,]) => code !== this.langFromCode)[0]
+    return Object.entries(this.supportedToCodes).find(([code,]) => code !== this.langFromCode)[0];
   }
 
   loadModel = () => {
@@ -205,7 +213,6 @@ export class TranslatePlugin extends BookReaderPlugin {
 
   translateCall = (paragraphs) => {
     this.worker.postMessage(["translate", this.langFromCode, this.langToCode, paragraphs, '#output']);
-
   };
 
   formatLangs = (langsToSet, value, exclude) => {
@@ -252,9 +259,10 @@ BookReader?.registerPlugin('translate', TranslatePlugin);
 
 @customElement('br-translate-panel')
 export class BrTranslatePanel extends LitElement {
-  @property({ type: Array }) fromLanguages = [];
-  @property({ type: Array }) toLanguages = [];
+  @property({ type: Array }) fromLanguages = []; // List of obj {code, name}
+  @property({ type: Array }) toLanguages = []; // List of obj {code, name}
   @property({ type: String }) version = '';
+  @property({ type: String }) prevSelectedLang = ''; // Tracks the previous selected language for the "To" dropdown
 
   /** @override */
   createRenderRoot() {
@@ -262,35 +270,44 @@ export class BrTranslatePanel extends LitElement {
     return this;
   }
 
-  render() {
-    return html`<div class="app">
-      <div class="panel panel--from">
-      <label>
-        From
-        <select id="lang-from" name="from" class="lang-select" @change="${this._onLangFromChange}">
-        ${this.fromLanguages.map(
-          lang => html`<option value="${lang.code}">${lang.name}</option>`
-        )}
-        </select>
-      </label>
-      </div>
-      <div class="panel panel--to">
-      <label>
-        To
-        <select id="lang-to" name="to" class="lang-select" @change="${this._onLangToChange}">
-        ${this.toLanguages.map(
-          lang => html`<option value="${lang.code}">${lang.name}</option>`
-        )}
-        </select>
-      </label>
-      </div>
-      <div class="footer" id="status"></div>
-    </div>`;
-  }
-
   connectedCallback() {
     super.connectedCallback();
     this.dispatchEvent(new CustomEvent('connected'));
+  }
+
+  render() {
+    const showPrevLangButton =
+      this.prevSelectedLang &&
+      (this.prevSelectedLang !== this._getSelectedLang('to') || this._getSelectedLang('from') === this._getSelectedLang('to'));
+
+    return html`<div class="app">
+      <div class="panel panel--from">
+        <label>
+          From
+          <select id="lang-from" name="from" class="lang-select" @change="${this._onLangFromChange}">
+            ${this.fromLanguages.map(
+              lang => html`<option value="${lang.code}">${lang.name}</option>`
+            )}
+          </select>
+        </label>
+      </div>
+      <div class="panel panel--to">
+        <label>
+          To
+          <select id="lang-to" name="to" class="lang-select" @change="${this._onLangToChange}">
+            ${this.toLanguages.map(
+              lang => html`<option value="${lang.code}">${lang.name}</option>`
+            )}
+          </select>
+        </label>
+        ${showPrevLangButton
+          ? html`<button class="prev-lang-btn" @click="${this._onPrevLangClick}">
+              ${this._getLangName(this.prevSelectedLang)}
+            </button>`
+          : ''}
+      </div>
+      <div class="footer" id="status"></div>
+    </div>`;
   }
 
   _onLangFromChange(event) {
@@ -300,6 +317,11 @@ export class BrTranslatePanel extends LitElement {
       composed: true,
     });
     this.dispatchEvent(langFromChangedEvent);
+
+    // Update the prevSelectedLang if "To" is different from "From"
+    if (this._getSelectedLang('to') !== event.target.value) {
+      this.prevSelectedLang = this._getSelectedLang('to');
+    }
   }
 
   _onLangToChange(event) {
@@ -309,5 +331,37 @@ export class BrTranslatePanel extends LitElement {
       composed: true,
     });
     this.dispatchEvent(langToChangedEvent);
+
+    // Update the prevSelectedLang if "To" is different from "From"
+    if (this._getSelectedLang('from') !== event.target.value) {
+      this.prevSelectedLang = this._getSelectedLang('from');
+    }
+  }
+
+  _onPrevLangClick() {
+    const prevLang = this.prevSelectedLang;
+    this.prevSelectedLang = this._getSelectedLang('to'); // Update prevSelectedLang to current "To" value
+    const langToChangedEvent = new CustomEvent('langToChanged', {
+      detail: { value: prevLang },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(langToChangedEvent);
+
+    // Update the "To" dropdown to the previous language
+    const toDropdown = this.querySelector('#lang-to');
+    if (toDropdown) {
+      toDropdown.value = prevLang;
+    }
+  }
+
+  _getSelectedLang(type) {
+    const dropdown = this.querySelector(`#lang-${type}`);
+    return dropdown ? dropdown.value : '';
+  }
+
+  _getLangName(code) {
+    const lang = [...this.fromLanguages, ...this.toLanguages].find(lang => lang.code === code);
+    return lang ? lang.name : '';
   }
 }
