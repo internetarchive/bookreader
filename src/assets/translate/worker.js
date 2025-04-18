@@ -3,8 +3,9 @@ var translationService, responseOptions, input = undefined;
 // A map of language-pair to TranslationModel object
 var translationModels = new Map();
 
-const BERGAMOT_TRANSLATOR_MODULE = "bergamot-translator-worker.js";
-const MODEL_REGISTRY = "registry.json";
+// "https://cors.archive.org/download/mozilla-translate-models/";
+const BERGAMOT_TRANSLATOR_MODULE = "/BookReader/translate/bergamot-translator-worker.js";
+const MODEL_REGISTRY = "https://cors.archive.org/download/mozilla-translate-models/registry.json"; // "/BookReader/translate/registry.json";
 const rootURL = "";
 let version = null;
 let modelRegistry = null;
@@ -21,7 +22,7 @@ var Module = {
   }],
   onRuntimeInitialized: async function() {
     log(`Wasm Runtime initialized Successfully (preRun -> onRuntimeInitialized) in ${(Date.now() - moduleLoadStart) / 1000} secs`);
-    resp = await fetch(`${rootURL}/${MODEL_REGISTRY}`);
+    resp = await fetch(MODEL_REGISTRY);
     modelRegistry = await resp.json();
     postMessage([`import_reply`, modelRegistry, version]);
   }
