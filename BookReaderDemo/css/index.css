@@ -60,31 +60,14 @@
   .panel--to {
     grid-area: to;
   }
-  
-  .swap {
-    align-self: center;
-    grid-area: swap;
-    font-size: 1.1rem;
-  }
-  
+   
   #status {
     grid-area: status;
     text-align: center;
     align-self: center;
   }
   
-  #versionBlock {
-    text-align: right;
-  }
-  
-  textarea {
-    padding: 1rem;
-    font-family: sans-serif;
-    font-size: 1rem;
-    resize: none;
-    border-radius: 2px;
-    border: 1px solid #ccc;
-  }
+
   
   button {
     cursor: pointer;
@@ -98,6 +81,15 @@
     background: #cce;
   }
   
-  #output {
-    background-color: #f4f4f4;
+  .translation {
+    color: black;
+    z-index: 9999;
+    font-size: 2.85em;
+    height: 95%;
+    margin: 50px;
+    padding: 25px;
+    background-color: #f8edc0;
+    border-radius: 8px;
+    box-shadow: 0 0 50px 50px #f8edc0ff;
+    overflow-y: scroll;
   }
