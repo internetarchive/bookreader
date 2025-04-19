@@ -15,15 +15,16 @@
     <!-- JS dependencies -->
     <script src="../BookReader/webcomponents-bundle.js"></script>
     <script src="../BookReader/jquery-3.js"></script>
-
-
+    
     <!-- Bookreader -->
     <script src="../BookReader/BookReader.js"></script>
     <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+    <link rel="stylesheet" href="css/index.css" />
 
     <!-- plugins needed for archive.org, in same order as archive.org -->
     <script src="../BookReader/plugins/plugin.search.js"></script>
     <script src="../BookReader/plugins/plugin.chapters.js"></script>
+    <script src="../BookReader/plugins/plugin.translate.js"></script>
     <script src="../BookReader/plugins/plugin.tts.js"></script>
     <script src="../BookReader/plugins/plugin.url.js"></script>
     <script src="../BookReader/plugins/plugin.autoplay.js"></script>
@@ -60,6 +61,9 @@
       </div>
     </ia-bookreader>
   </section>
+
+       
+
   <style>
     .demos {
       height: 800px;
@@ -263,7 +267,7 @@
       send_ping: (category, action, label) => {}, //console.log('~~~ send_ping SAMPLE EVENT CALLED: ', { category, action, label }),
     }
   </script>
-
+    
   <!-- IA fetch demo -->
   <script type="module" src="IADemoBr.js"></script>
 </body>
