@@ -74,14 +74,16 @@ export class TranslatePlugin extends BookReaderPlugin {
       if (cmd === "translate_reply" && rest[0]) {
         const [translation, selector] = rest;
         console.log(translation.join("\n\n"));
+        console.log(selector);
         const el = document.querySelector(selector);
         if (el) {
-          el.innerHTML = translation.join("<br><br>");
+          document.querySelector(selector).innerHTML = translation.join("<br><br>");
         }
       } else if (cmd === "load_model_reply" && e.data[1]) {
         status(e.data[1]);
-
-        //this.translateCall();
+        if (this.langFromCode !== this.langToCode) {
+          this.translateVisiblePages();
+        }
       } else if (cmd === "import_reply" && e.data[1]) {
         this.modelRegistry = e.data[1];
         this.version = e.data[2];
@@ -92,19 +94,71 @@ export class TranslatePlugin extends BookReaderPlugin {
     // Any time an action occurs, get the text
     const next = BookReader.prototype.next;
     BookReader.prototype.next = function (...args) {
-      console.log("BookReader.prototype.next triggered", args);
-      const pages = self.getVisiblePages();
       const r = next.apply(this, args);
-
-      pages.forEach((el) => {
-        if (el.textContent) {
-          const sel = "." + el.closest(".BRpagecontainer").getAttribute("class").match(/pagediv\d+/) + " .BRtextLayer";
-          self.worker.postMessage(["translate", self.langFromCode, self.langToCode, [el.textContent], sel]);
+      console.log("BookReader.prototype.next triggered", args);
+      setTimeout(() => {
+        self.clearTranslations();
+        if (self.langFromCode !== self.langToCode) {
+          self.translateVisiblePages();
         }
-      });
+      }, 0);
       return r;
     };
   }
+
+  *getVisiblePages() {
+    for (const el of document.querySelectorAll('.BRpage-visible')) {
+      if ([...el.classList].some(cls => /^pagediv\d+$/.test(cls))) {
+        const textLayer = el.querySelector(".BRtextLayer");
+        if (textLayer) yield textLayer;
+      }
+    }
+  }
+
+  getParagraphsOnPage = (page) => {
+    return page ? Array.from(page.querySelectorAll(".BRparagraphElement")) : [];
+  }
+
+  translateVisiblePages = () => {
+    this.clearTranslations();
+    let gidx = 0;
+    for (const page of this.getVisiblePages()) {
+      const paragraphs = this.getParagraphsOnPage(page);
+
+      // Create the translation layer for all paragraphs on the page
+      const pageTranslationLayer = document.createElement('div');
+      pageTranslationLayer.className = 'translation';
+      page.insertBefore(pageTranslationLayer, page.firstChild);
+
+      paragraphs.forEach((paragraph) => {
+        // set data-index on the paragraph
+        paragraph.setAttribute('data-index', gidx.toString());
+
+        const translationPlaceholder = document.createElement('p');
+        // set data-translate-index on the placeholder
+        translationPlaceholder.setAttribute('data-translate-index', gidx.toString());
+        pageTranslationLayer.appendChild(translationPlaceholder);
+
+        const selector = `.${page.className.split(' ').join('.')} .translation p[data-translate-index="${gidx}"]`;
+
+        if (paragraph.textContent) {
+          this.worker.postMessage([
+            "translate",
+            this.langFromCode,
+            this.langToCode,
+            [paragraph.textContent],
+            selector,
+          ]);
+        }
+        gidx++;
+      });
+    }
+  }
+
+  clearTranslations = () => {
+    document.querySelectorAll('.translation').forEach(el => el.remove());
+  };
+
 
   /**
    * @protected
@@ -154,27 +208,37 @@ export class TranslatePlugin extends BookReaderPlugin {
     this.loadModel();
   }
 
-  getVisiblePages = () => {
-    return Array.from(document.querySelectorAll('.BRpage-visible')).filter(el =>
-      Array.from(el.classList).some(cls => /^pagediv\d+$/.test(cls)),
-    );
-  }
-
   handleFromLangChange = (e) => {
-    const setToCode = (this.langToCode !== e.detail.value)
-      ? this.langToCode
-      : this.findFirstSupportedTo();
-    this._panel.toLanguages = this.formatLangs(this.supportedToCodes, setToCode, e.detail.value);
-    this.loadModel();
+    this.clearTranslations();
+    const selectedLangFrom = e.detail.value;
+
+    // Update the from language
+    this.langFromCode = selectedLangFrom;
+
+    const setToCode = this.langToCode !== selectedLangFrom ? this.langToCode : this.findFirstSupportedTo();
+
+    // Add 'From' language to 'To' list if not already present
+    if (!this.toLanguages.some(lang => lang.code === selectedLangFrom)) {
+      this.toLanguages.push({ code: selectedLangFrom, name: langs[selectedLangFrom] });
+    }
+
+    // Update the 'To' languages list and set the correct 'To' language
+    this._panel.toLanguages = this.formatLangs(this.supportedToCodes, setToCode, selectedLangFrom);
+
+    console.log(this.langFromCode, this.langToCode);
+    if (this.langFromCode !== this.langToCode) {
+      this.loadModel();
+    }
   }
 
   handleToLangChange = (e) => {
+    this.clearTranslations();
     this.langToCode = e.detail.value;
     this.loadModel();
   }
 
   isSupported = (lngFrom, lngTo) => {
-    return (`${lngFrom}${lngTo}` in this.modelRegistry) ||
+    return (`${lngFrom}${lngTo}` in this.modelRegistry) || lngFrom === lngTo ||
       ((`${lngFrom}en` in this.modelRegistry) && (`en${lngTo}` in this.modelRegistry));
   }
 
@@ -193,7 +257,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   findFirstSupportedTo = () => {
-    return Object.entries(this.supportedToCodes).find(([code]) => code !== this.langFromCode)[0];
+    return Object.keys(this.supportedToCodes)[0];
   }
 
   loadModel = () => {
@@ -218,9 +282,9 @@ export class TranslatePlugin extends BookReaderPlugin {
   formatLangs = (langsToSet, value, exclude) => {
     const prop = [];
     for (const [code, type] of Object.entries(langsToSet)) {
-      if (code === exclude) continue;
+      //if (code === exclude) continue;
       let name = langs[code];
-      if (type === "dev") name += " (Beta)";
+      if (type === "dev") name += " (βeta)";
       prop.push({code, name});
     }
     return prop;
@@ -319,8 +383,8 @@ export class BrTranslatePanel extends LitElement {
     this.dispatchEvent(langFromChangedEvent);
 
     // Update the prevSelectedLang if "To" is different from "From"
-    if (this._getSelectedLang('to') !== event.target.value) {
-      this.prevSelectedLang = this._getSelectedLang('to');
+    if (this._getSelectedLang('to') !== this._getSelectedLang('from')) {
+      this.prevSelectedLang = this._getSelectedLang('from');
     }
   }
 
@@ -365,3 +429,4 @@ export class BrTranslatePanel extends LitElement {
     return lang ? lang.name : '';
   }
 }
+
