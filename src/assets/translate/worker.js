@@ -180,7 +180,7 @@ quiet-translation: true
 gemm-precision: int8shiftAll
 `;
 
-  const commonPath = `${rootURL}/models`;
+  const commonPath = "https://cors.archive.org/cors/mozilla-translate-models";
   const modelFile = `${commonPath}/${modelRegistry[languagePair]["model"].name}`;
   const modelFileFallback = `https://cors.archive.org/cors/mozilla-translate-models/${modelRegistry[languagePair]["model"].name}`;
 
