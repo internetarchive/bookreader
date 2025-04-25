@@ -175,7 +175,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       dataType: this.options.jsonp ? "jsonp" : "html",
       cache: true,
       xhrFields: {
-        withCredentials: this.br.protected,
+        withCredentials: false,
       },
       error: (e) => undefined,
     }).then((res) => {
@@ -204,7 +204,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         dataType: this.options.jsonp ? "jsonp" : "html",
         cache: true,
         xhrFields: {
-          withCredentials: this.br.protected,
+          withCredentials: false,
         },
         error: (e) => undefined,
       });

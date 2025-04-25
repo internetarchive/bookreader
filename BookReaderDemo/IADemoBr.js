@@ -69,6 +69,7 @@ const initializeBookReader = (brManifest) => {
     /* End multiple volumes */
     enableBookmarks: true, // turn this on
     enableFSLogoShortcut: true,
+    protected: urlParams.get('protected') === 'true',
     plugins: {
       search: {
         initialSearchTerm: searchTerm ? searchTerm : '',
