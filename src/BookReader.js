@@ -1494,12 +1494,15 @@ BookReader.prototype.bindNavigationHandlers = function() {
     book_rightmost: this.rightmost.bind(this),
     onepg: () => {
       this.switchMode(self.constMode1up);
+      this.saveModePreference('1up');
     },
     thumb: () => {
       this.switchMode(self.constModeThumb);
+      this.saveModePreference('thumb');
     },
     twopg: () => {
       this.switchMode(self.constMode2up);
+      this.saveModePreference('2up');
     },
     zoom_in: () => {
       this.trigger(BookReader.eventNames.stop);
@@ -1521,8 +1524,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
     },
   };
 
-  // custom event for auto-loan-renew in ia-book-actions
-  // - to know if user is actively reading
+  // Custom event for auto-loan-renew in ia-book-actions
   this.$('nav.BRcontrols li button').on('click', () => {
     this.trigger(BookReader.eventNames.userAction);
   });
@@ -1533,77 +1535,28 @@ BookReader.prototype.bindNavigationHandlers = function() {
       return false;
     });
   }
+};
 
-  const $brNavCntlBtmEl = this.$('.BRnavCntlBtm');
-  const $brNavCntlTopEl = this.$('.BRnavCntlTop');
+// Ensure mode=2up is respected inside an iframe
+BookReader.prototype.initializeMode = function() {
+  // Check if mode is provided in URL, otherwise use stored preference
+  this.mode = this.getParam('mode') || localStorage.getItem('BR_lastMode') || '2up';
 
-  this.$('.BRnavCntl').click(
-    function() {
-      const promises = [];
-      // TODO don't use magic constants
-      // TODO move this to a function
-      if ($brNavCntlBtmEl.hasClass('BRdn')) {
-        if (self.refs.$BRtoolbar)
-          promises.push(self.refs.$BRtoolbar.animate(
-            {top: self.getToolBarHeight() * -1},
-          ).promise());
-        promises.push(self.$('.BRfooter').animate({bottom: self.getFooterHeight() * -1}).promise());
-        $brNavCntlBtmEl.addClass('BRup').removeClass('BRdn');
-        $brNavCntlTopEl.addClass('BRdn').removeClass('BRup');
-        self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
-        self.$('.BRnavCntl').delay(1000).animate({opacity:.75}, 1000);
-      } else {
-        if (self.refs.$BRtoolbar)
-          promises.push(self.refs.$BRtoolbar.animate({top:0}).promise());
-        promises.push(self.$('.BRfooter').animate({bottom:0}).promise());
-        $brNavCntlBtmEl.addClass('BRdn').removeClass('BRup');
-        $brNavCntlTopEl.addClass('BRup').removeClass('BRdn');
-        self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
-        self.$('.BRvavCntl').animate({opacity:1});
-      }
-      $.when.apply($, promises).done(function() {
-        // Only do full resize in auto mode and need to recalc. size
-        if (self.mode == self.constMode2up && self.twoPage.autofit != null
-                    && self.twoPage.autofit != 'none'
-        ) {
-          self.resize();
-        } else if (self.mode == self.constMode1up && self.onePage.autofit != null
-                           && self.onePage.autofit != 'none') {
-          self.resize();
-        } else {
-          // Don't do a full resize to avoid redrawing images
-          self.resizeBRcontainer();
-        }
-      });
-    },
-  );
-  $brNavCntlBtmEl
-    .on("mouseover", function() {
-      if ($(this).hasClass('BRup')) {
-        self.$('.BRnavCntl').animate({opacity:1},250);
-      }
-    })
-    .on("mouseleave", function() {
-      if ($(this).hasClass('BRup')) {
-        self.$('.BRnavCntl').animate({opacity:.75},250);
-      }
-    });
-  $brNavCntlTopEl
-    .on("mouseover", function() {
-      if ($(this).hasClass('BRdn')) {
-        self.$('.BRnavCntl').animate({opacity:1},250);
-      }
-    })
-    .on("mouseleave", function() {
-      if ($(this).hasClass('BRdn')) {
-        self.$('.BRnavCntl').animate({opacity:.75},250);
-      }
-    });
-
-  // Call _bindNavigationHandlers on the plugins
-  for (const plugin of Object.values(this._plugins)) {
-    plugin._bindNavigationHandlers();
+  // If it's embedded and no mode is explicitly set, use stored preference or default to 2up
+  if (this.ui === 'embed' && !this.getParam('mode')) {
+    this.mode = localStorage.getItem('BR_lastMode') || '2up';
   }
+};
+
+// Function to get URL parameters
+BookReader.prototype.getParam = function(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+};
+
+// Save mode preference so it persists after reload
+BookReader.prototype.saveModePreference = function(mode) {
+  localStorage.setItem('BR_lastMode', mode);
 };
 
 /**************************/
