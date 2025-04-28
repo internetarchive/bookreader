@@ -21,7 +21,7 @@ export class PageContainer {
     })
       .attr('data-side', page?.pageSide)
       .attr('data-index', page?.index)
-      .attr('data-label', page?.getPageNum());
+      .attr('data-page-num', page?.getPageNum());
 
     if (isProtected) {
       this.$container.append($('<div class="BRscreen" />'));
