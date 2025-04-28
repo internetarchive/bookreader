@@ -31,7 +31,7 @@ beforeEach(() => {
   });
   br.initToolbar = jest.fn();
   br.showProgressPopup = jest.fn();
-  br._plugins.search.searchXHR = jest.fn();
+  br.plugins.search.searchXHR = jest.fn();
 });
 
 afterEach(() => {
@@ -45,18 +45,18 @@ describe('Plugin: Search', () => {
   });
 
   test('Constructs SearchView', () => {
-    expect(br._plugins.search.searchView).toBeDefined();
+    expect(br.plugins.search.searchView).toBeDefined();
   });
 
   test('On init, it will run a search if given `options.initialSearchTerm`', () => {
-    br._plugins.search.search = jest.fn();
+    br.plugins.search.search = jest.fn();
     br.options.plugins.search.initialSearchTerm = 'foo';
     br.init();
 
-    expect(br._plugins.search.search).toHaveBeenCalled();
-    expect(br._plugins.search.search.mock.calls[0][1])
+    expect(br.plugins.search.search).toHaveBeenCalled();
+    expect(br.plugins.search.search.mock.calls[0][1])
       .toHaveProperty('goToFirstResult', true);
-    expect(br._plugins.search.search.mock.calls[0][1])
+    expect(br.plugins.search.search.mock.calls[0][1])
       .toHaveProperty('suppressFragmentChange', false);
   });
 
@@ -75,7 +75,7 @@ describe('Plugin: Search', () => {
   test('SearchStarted event fires and should go to first result', () => {
     br.init();
     br.search('foo', { goToFirstResult: true});
-    expect(br._plugins.search.options.goToFirstResult).toBeTruthy();
+    expect(br.plugins.search.options.goToFirstResult).toBeTruthy();
   });
 
   test('SearchCallback event fires when AJAX search returns results', async () => {

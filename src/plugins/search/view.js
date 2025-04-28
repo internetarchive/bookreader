@@ -44,7 +44,7 @@ class SearchView {
   }
 
   clearSearchFieldAndResults(dispatchEventWhenComplete = true) {
-    this.br._plugins.search.removeSearchResults();
+    this.br.plugins.search.removeSearchResults();
     this.removeResultPins();
     this.emptyMatches();
     this.setQuery('');
@@ -273,7 +273,7 @@ class SearchView {
           $(event.target).addClass('front');
         })
         .on("mouseleave", (event) => $(event.target).removeClass('front'))
-        .on("click", () => { this.br._plugins.search.jumpToMatch(match.matchIndex); });
+        .on("click", () => { this.br.plugins.search.jumpToMatch(match.matchIndex); });
     });
   }
 
@@ -379,11 +379,11 @@ class SearchView {
 
   handleSearchStarted() {
     this.emptyMatches();
-    this.br._plugins.search.removeSearchHilites();
+    this.br.plugins.search.removeSearchHilites();
     this.removeResultPins();
     this.toggleSearchPending(true);
     this.teardownSearchNavigation();
-    this.setQuery(this.br._plugins.search.searchTerm);
+    this.setQuery(this.br.plugins.search.searchTerm);
   }
 
   /**

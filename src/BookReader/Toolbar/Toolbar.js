@@ -60,7 +60,7 @@ export class Toolbar {
     }
 
     // Call _bindNavigationHandlers on the plugins
-    for (const plugin of Object.values(br._plugins)) {
+    for (const plugin of Object.values(br.plugins)) {
       plugin._configureToolbar(br.refs.$BRtoolbar);
     }
 

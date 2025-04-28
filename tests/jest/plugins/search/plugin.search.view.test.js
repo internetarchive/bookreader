@@ -78,16 +78,16 @@ describe('View: Plugin: Search', () => {
       const event = new CustomEvent(`${namespace}SearchCallback`);
       const options = { goToFirstResult: false };
 
-      expect(br._plugins.search.searchView.dom.searchNavigation).toBeUndefined();
+      expect(br.plugins.search.searchView.dom.searchNavigation).toBeUndefined();
 
-      br._plugins.search.searchView.handleSearchCallback(event, { results, options});
-      expect(br._plugins.search.searchView.dom.searchNavigation).toBeDefined();
+      br.plugins.search.searchView.handleSearchCallback(event, { results, options});
+      expect(br.plugins.search.searchView.dom.searchNavigation).toBeDefined();
     });
     test('has controls', () => {
       br.init();
       const event = new CustomEvent(`${namespace}SearchCallback`);
       const options = { goToFirstResult: false };
-      br._plugins.search.searchView.handleSearchCallback(event, { results, options});
+      br.plugins.search.searchView.handleSearchCallback(event, { results, options});
 
       const searchResultsNav = document.querySelector('.BRsearch-navigation');
       expect(searchResultsNav).toBeDefined();
@@ -102,9 +102,9 @@ describe('View: Plugin: Search', () => {
       br.init();
       const event = new CustomEvent(`${namespace}SearchCallback`);
       const options = { goToFirstResult: false };
-      br._plugins.search.searchView.handleSearchCallback(event, { results: resultWithScript, options });
+      br.plugins.search.searchView.handleSearchCallback(event, { results: resultWithScript, options });
 
-      expect(br._plugins.search.searchView.dom.searchNavigation.parent().html()).not.toContain('<script>alert(1);</script>');
+      expect(br.plugins.search.searchView.dom.searchNavigation.parent().html()).not.toContain('<script>alert(1);</script>');
     });
 
     describe('Click events handlers', () => {
@@ -114,7 +114,7 @@ describe('View: Plugin: Search', () => {
         br.trigger = (eventName) => eventNameTriggered = eventName;
 
         expect(eventNameTriggered).toBeFalsy();
-        br._plugins.search.searchView.toggleSidebar();
+        br.plugins.search.searchView.toggleSidebar();
         expect(eventNameTriggered).toEqual('ToggleSearchMenu');
       });
       it('triggers custom event when closing navbar', () => {
@@ -123,7 +123,7 @@ describe('View: Plugin: Search', () => {
         br.trigger = (eventName) => eventNameTriggered = eventName;
 
         expect(eventNameTriggered).toBeFalsy();
-        br._plugins.search.searchView.clearSearchFieldAndResults();
+        br.plugins.search.searchView.clearSearchFieldAndResults();
         expect(eventNameTriggered).toEqual('SearchResultsCleared');
       });
     });
