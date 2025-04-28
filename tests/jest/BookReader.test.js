@@ -39,35 +39,35 @@ test('has registered fullscreen toggle event', () => {
 });
 
 test('checks cookie when initParams called', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => 15);
+  br.plugins.resume.getResumeValue = jest.fn(() => 15);
   br.urlReadFragment = jest.fn(() => '');
 
   const params = br.initParams();
-  expect(br._plugins.resume.getResumeValue).toHaveBeenCalledTimes(1);
+  expect(br.plugins.resume.getResumeValue).toHaveBeenCalledTimes(1);
   expect(params.init).toBe(true);
   expect(params.index).toBe(15);
   expect(params.fragmentChange).toBe(true);
 });
 
 test('does not check cookie when initParams called', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => null);
+  br.plugins.resume.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => '');
   br.options.plugins.resume.enabled = false;
 
   const params = br.initParams();
-  expect(br._plugins.resume.getResumeValue).toHaveBeenCalledTimes(0);
+  expect(br.plugins.resume.getResumeValue).toHaveBeenCalledTimes(0);
   expect(params.init).toBe(true);
   expect(params.index).toBe(0);
   expect(params.fragmentChange).toBe(false);
 });
 
 test('gets index from fragment when both fragment and cookie when InitParams called', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => 15);
+  br.plugins.resume.getResumeValue = jest.fn(() => 15);
   br.urlReadFragment = jest.fn(() => 'page/n4');
   br.options.plugins.resume.enabled = true;
 
   const params = br.initParams();
-  expect(br._plugins.resume.getResumeValue).toHaveBeenCalledTimes(1);
+  expect(br.plugins.resume.getResumeValue).toHaveBeenCalledTimes(1);
   expect(params.init).toBe(true);
   expect(params.index).toBe(4);
   expect(params.fragmentChange).toBe(true);
@@ -117,7 +117,7 @@ test('has added BR property: bookPath', () => {
 });
 
 test('has suppressFragmentChange true when init with no input', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => null);
+  br.plugins.resume.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => '');
   br.urlReadHashFragment = jest.fn(() => '');
   br.switchMode = jest.fn();
@@ -128,7 +128,7 @@ test('has suppressFragmentChange true when init with no input', () => {
 });
 
 test('has suppressFragmentChange false when init with cookie', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => 5);
+  br.plugins.resume.getResumeValue = jest.fn(() => 5);
   br.urlReadFragment = jest.fn(() => '');
   br.switchMode = jest.fn();
 
@@ -138,7 +138,7 @@ test('has suppressFragmentChange false when init with cookie', () => {
 });
 
 test('has suppressFragmentChange false when init with fragment', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => null);
+  br.plugins.resume.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => 'mode/1up');
   br.switchMode = jest.fn();
 
@@ -148,7 +148,7 @@ test('has suppressFragmentChange false when init with fragment', () => {
 });
 
 test('has suppressFragmentChange false when init with hash fragment', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => null);
+  br.plugins.resume.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => '');
   br.urlReadHashFragment = jest.fn(() => 'mode/1up');
   br.switchMode = jest.fn();

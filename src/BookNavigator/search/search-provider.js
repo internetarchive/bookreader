@@ -143,7 +143,7 @@ export default class SearchProvider {
   }
 
   searchCanceledInMenu() {
-    this.bookreader._plugins.search.cancelSearchRequest();
+    this.bookreader.plugins.search.cancelSearchRequest();
   }
 
   onSearchResultsCleared() {
@@ -155,7 +155,7 @@ export default class SearchProvider {
       errorMessage: '',
     };
     this.updateMenu({ openMenu: false });
-    this.bookreader._plugins.search.searchView.clearSearchFieldAndResults(false);
+    this.bookreader.plugins.search.searchView.clearSearchFieldAndResults(false);
     if (this.bookreader.urlPlugin) {
       this.updateSearchInUrl();
     }
@@ -204,6 +204,6 @@ export default class SearchProvider {
    * @param {{ detail: {match: SearchInsideMatch} }} param0
    */
   onSearchResultsClicked({ detail }) {
-    this.bookreader._plugins.search.jumpToMatch(detail.match.matchIndex);
+    this.bookreader.plugins.search.jumpToMatch(detail.match.matchIndex);
   }
 }

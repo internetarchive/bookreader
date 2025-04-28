@@ -114,8 +114,8 @@ describe("Generic tests", () => {
   });
 
   test("_createPageContainer overridden function still creates a BRpagecontainer element", () => {
-    const spy = sinon.spy(br._plugins.textSelection, 'createTextLayer');
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    const spy = sinon.spy(br.plugins.textSelection, 'createTextLayer');
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
     const container = br._createPageContainer(1, {});
     expect(container).toBeTruthy();
@@ -124,24 +124,24 @@ describe("Generic tests", () => {
 
   // test loading first object from sample data
   test("_createPageContainer handles index 0", () => {
-    const spy = sinon.spy(br._plugins.textSelection, 'createTextLayer');
+    const spy = sinon.spy(br.plugins.textSelection, 'createTextLayer');
     br._createPageContainer(0, {});
     expect(spy.callCount).toBe(1);
   });
 
   // test loading last object from sample data
   test("_createPageContainer handles index -1", () => {
-    const spy = sinon.spy(br._plugins.textSelection, 'createTextLayer');
+    const spy = sinon.spy(br.plugins.textSelection, 'createTextLayer');
     br._createPageContainer(-1, {});
     expect(spy.callCount).toBe(0);
   });
 
   test("createTextLayer will render the last page and create text layer properly", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
     const pageIndex = br.data.length - 1;
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: pageIndex, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: pageIndex, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
   });
@@ -149,9 +149,9 @@ describe("Generic tests", () => {
   test("createTextLayer will not create text layer if there are too many words", async () => {
     const $container = br.refs.$brContainer;
     const xml = FAKE_XML_1WORD.replace(/<WORD.*<\/WORD>/, FAKE_XML_1WORD.match(/<WORD.*<\/WORD>/)[0].repeat(3000));
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(xml, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 0, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 0, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(0);
     expect($container.find("p").length).toBe(0);
     expect($container.find(".BRwordElement").length).toBe(0);
@@ -159,9 +159,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer creates text layer with paragraph with 1 word element", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 1, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 1, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(1);
@@ -170,9 +170,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer creates text layer with paragraph with multiple word elements", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_WORDS, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 2, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 2, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(3);
@@ -181,9 +181,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer creates text layer with paragraph with word with 5 params coordinates", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_5COORDS, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(1);
@@ -191,9 +191,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer handles multiple lines", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
     expect($container.find(".BRlineElement").length).toBe(3);
@@ -206,9 +206,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer repairs trailing hyphens", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
 
     expect($container.find(".BRwordElement--hyphen").length).toBe(1);
     expect($container.find(".BRwordElement--hyphen").closest(".BRlineElement").text().endsWith(' ')).toBe(false);
@@ -217,9 +217,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer can handle empty xml", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_EMPTY, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 4, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 4, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(0);
     expect($container.find(".BRwordElement").length).toBe(0);
@@ -228,7 +228,7 @@ describe("Generic tests", () => {
   const LONG_PRESS_DURATION = 500;
   test("calling stopPageFlip does not allow long click to flip the page", () => {
     const $container = br.refs.$brContainer;
-    br._plugins.textSelection.stopPageFlip($container);
+    br.plugins.textSelection.stopPageFlip($container);
     const currIndex = br.currentIndex();
     $container.find("BRwordElement").trigger("mousedown");
     // Waits for long press

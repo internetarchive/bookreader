@@ -134,7 +134,7 @@ BookReader.prototype.setup = function(options) {
   this.bookPath = options.bookPath;
 
   // Construct the usual plugins first to get type hints
-  this._plugins = {
+  this.plugins = {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,
@@ -145,18 +145,18 @@ BookReader.prototype.setup = function(options) {
   };
 
   // Delete anything that's null
-  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
-    if (!plugin) delete this._plugins[pluginName];
+  for (const [pluginName, plugin] of Object.entries(this.plugins)) {
+    if (!plugin) delete this.plugins[pluginName];
   }
 
   // Now construct the rest of the plugins
   for (const [pluginName, PluginClass] of Object.entries(BookReader.PLUGINS)) {
-    if (this._plugins[pluginName] || !PluginClass) continue;
-    this._plugins[pluginName] = new PluginClass(this);
+    if (this.plugins[pluginName] || !PluginClass) continue;
+    this.plugins[pluginName] = new PluginClass(this);
   }
 
   // And call setup on them
-  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
+  for (const [pluginName, plugin] of Object.entries(this.plugins)) {
     try {
       plugin.setup(this.options.plugins?.[pluginName] ?? {});
       // Write the options back; this way the plugin is the source of truth,
@@ -167,9 +167,9 @@ BookReader.prototype.setup = function(options) {
     }
   }
 
-  if (this._plugins.search?.options.enabled) {
+  if (this.plugins.search?.options.enabled) {
     // Expose the search method for convenience / backward compat
-    this.search = this._plugins.search.search.bind(this._plugins.search);
+    this.search = this.plugins.search.search.bind(this.plugins.search);
   }
 
   /** @type {number} @deprecated some past iterations set this */
@@ -426,9 +426,9 @@ BookReader.prototype.initParams = function() {
   }
 
   // Check for Resume plugin
-  if (this._plugins.resume?.options.enabled) {
+  if (this.plugins.resume?.options.enabled) {
     // Check cookies
-    const val = this._plugins.resume.getResumeValue();
+    const val = this.plugins.resume.getResumeValue();
     if (val !== null) {
       // If page index different from default
       if (params.index !== val) {
@@ -462,8 +462,8 @@ BookReader.prototype.initParams = function() {
   }
 
   // Check for Search plugin
-  if (this._plugins.search?.options.enabled) {
-    const sp = this._plugins.search;
+  if (this.plugins.search?.options.enabled) {
+    const sp = this.plugins.search;
     // Go to first result only if no default or URL page
     sp.options.goToFirstResult = !params.pageFound;
 
@@ -619,7 +619,7 @@ BookReader.prototype.init = function() {
     const $navBar = this.initNavbar();
 
     // extend navbar with plugins
-    for (const plugin of Object.values(this._plugins)) {
+    for (const plugin of Object.values(this.plugins)) {
       plugin.extendNavBar($navBar);
     }
   }
@@ -660,7 +660,7 @@ BookReader.prototype.init = function() {
   }
 
   // If not searching, set to allow on-going fragment changes
-  if (!this._plugins.search?.options.initialSearchTerm) {
+  if (!this.plugins.search?.options.initialSearchTerm) {
     this.suppressFragmentChange = false;
   }
 
@@ -669,7 +669,7 @@ BookReader.prototype.init = function() {
   }
 
   // Init plugins
-  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
+  for (const [pluginName, plugin] of Object.entries(this.plugins)) {
     try {
       plugin.init();
     }
@@ -874,7 +874,7 @@ BookReader.prototype._createPageContainer = function(index) {
   });
 
   // Call plugin handlers
-  for (const plugin of Object.values(this._plugins)) {
+  for (const plugin of Object.values(this.plugins)) {
     plugin._configurePageContainer(pageContainer);
   }
 
@@ -927,7 +927,7 @@ BookReader.prototype.zoom = function(direction) {
   } else {
     this.activeMode.zoom('out');
   }
-  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
   return;
 };
 
@@ -1162,7 +1162,7 @@ BookReader.prototype.switchMode = function(
   const eventName = mode + 'PageViewSelected';
   this.trigger(BookReader.eventNames[eventName]);
 
-  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -1234,7 +1234,7 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   }
   this.jumpToIndex(currentIndex);
 
-  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
   // Add "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
   // trigger event here, so that animations,
@@ -1280,7 +1280,7 @@ BookReader.prototype.exitFullScreen = async function () {
     await this.activeMode.mode1UpLit.updateComplete;
   }
 
-  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
   // Remove "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
   this.refs.$br.removeClass('BRfullscreenAnimation');
@@ -1324,7 +1324,7 @@ BookReader.prototype.updateFirstIndex = function(
   // If there's an initial search we stop suppressing global URL changes
   // when local suppression ends
   // This seems to correctly handle multiple calls during mode/1up
-  if (this._plugins.search.options.initialSearchTerm && !suppressFragmentChange) {
+  if (this.plugins.search.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
 
@@ -1601,7 +1601,7 @@ BookReader.prototype.bindNavigationHandlers = function() {
     });
 
   // Call _bindNavigationHandlers on the plugins
-  for (const plugin of Object.values(this._plugins)) {
+  for (const plugin of Object.values(this.plugins)) {
     plugin._bindNavigationHandlers();
   }
 };
@@ -1653,8 +1653,8 @@ BookReader.prototype.updateFromParams = function(params) {
   // process /search
   // @deprecated for urlMode 'history'
   // Continues to work for urlMode 'hash'
-  if (this._plugins.search?.enabled && 'undefined' != typeof(params.search)) {
-    if (this._plugins.search.searchTerm !== params.search) {
+  if (this.plugins.search?.enabled && 'undefined' != typeof(params.search)) {
+    if (this.plugins.search.searchTerm !== params.search) {
       this.$('.BRsearchInput').val(params.search);
     }
   }
@@ -1858,8 +1858,8 @@ BookReader.prototype.paramsFromCurrent = function() {
     params.view = fullscreenView;
   }
   // Search
-  if (this._plugins.search?.enabled) {
-    params.search = this._plugins.search.searchTerm;
+  if (this.plugins.search?.enabled) {
+    params.search = this.plugins.search.searchTerm;
   }
 
   return params;
