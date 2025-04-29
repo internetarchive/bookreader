@@ -1,10 +1,27 @@
 // @ts-check
-import { html, LitElement } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
+import { sleep } from '../BookReader/utils.js';
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
+
+class ExperimentModel {
+  /** @type {string} */
+  name;
+  /** @type {string} */
+  description;
+  /** @type {string} */
+  icon;
+  /** @type {boolean} */
+  enabled;
+
+  enabledLoading = false;
+
+  async enable() { }
+  async disable() { }
+}
 
 export class ExperimentsPlugin extends BookReaderPlugin {
   options = {
@@ -12,35 +29,27 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
     /** Where the state of this plugin is saved in localStorage */
     localStorageKey: 'BrExperiments',
-
-
   }
 
+  /** @type {ExperimentModel[]} */
   experiments = [
-    {
-      name: 'Hypothes.is',
-      description: 'A tool for collaborative annotation and discussion of web content.',
-      icon: 'https://web.hypothes.is/favicon.ico',
-      enabled: false,
-      async onEnabled() {
-        console.log('Hypothesis integration is now enabled.');
-        // Create script tag for "https://hypothes.is/embed.js"
-        const script = document.createElement('script');
-        // script.src = 'https://hypothes.is/embed.js';
-        script.src = 'http://localhost:3001/hypothesis';
-        script.async = true;
-        const p = new Promise((resolve, reject) => {
-          script.onload = resolve;
-          script.onerror = reject;
-        });
-        document.head.appendChild(script);
-        await p;
-      },
-      async onDisable() {
+    new class extends ExperimentModel {
+      name = 'Hypothes.is';
+      description = `Publicly or privately annotate books and the web. Requires a Hypothes.is account.`;
+      icon = 'https://web.hypothes.is/favicon.ico';
+      enabled = false;
+
+      async enable() {
+        return importAsScript('https://hypothes.is/embed.js');
+        // For testing
+        // return importAsScript('http://localhost:3001/hypothesis');
+      }
+
+      async disable() {
         // need to reload to remove the Hypothesis script
         window.location.reload();
-      },
-    },
+      }
+    }(),
   ]
 
   async init() {
@@ -57,24 +66,20 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     this.experiments.forEach(experiment => {
       if (savedStates[experiment.name] !== undefined) {
         experiment.enabled = savedStates[experiment.name];
-        if (experiment.enabled && experiment.onEnabled) {
-          experiment.onEnabled();
+        if (experiment.enabled) {
+          experiment.enable();
         }
       }
     });
   }
 
   _saveExperimentStates() {
-    const states = this.experiments.reduce((acc, experiment) => {
-      acc[experiment.name] = experiment.enabled;
-      return acc;
-    }, {});
+    const states = Object.fromEntries(
+      this.experiments.map(experiment => [experiment.name, experiment.enabled]),
+    );
     localStorage.setItem(this.options.localStorageKey, JSON.stringify(states));
   }
 
-  /**
-   * Update the table of contents based on array of TOC entries.
-   */
   _render() {
     this.br.shell.menuProviders['experiments'] = {
       id: 'experiments',
@@ -95,6 +100,8 @@ BookReader?.registerPlugin('experiments', ExperimentsPlugin);
 
 @customElement('br-experiments-panel')
 export class BrExperimentsPanel extends LitElement {
+
+  /** @type {ExperimentModel[]} */
   @property({ type: Array }) experiments = [];
 
   render() {
@@ -107,6 +114,7 @@ export class BrExperimentsPanel extends LitElement {
           .title="${experiment.name}"
           .description="${experiment.description}"
           .enabled="${experiment.enabled}"
+          .loading="${experiment.enabledLoading}"
           @toggle="${e => this._onToggleExperiment(e, experiment)}"
         ></br-experiment-toggle>
       `,
@@ -115,16 +123,24 @@ export class BrExperimentsPanel extends LitElement {
     `;
   }
 
+  /**
+   * @param {CustomEvent<{ enabled: boolean }>} event
+   * @param {ExperimentModel} experiment
+   */
   async _onToggleExperiment(event, experiment) {
     const { enabled } = event.detail;
-    console.log(`${experiment.name} integration is now ${enabled ? 'enabled' : 'disabled'}.`);
+    experiment.enabledLoading = true;
+    this.requestUpdate();
+
     if (enabled) {
-      await experiment.onEnabled?.();
+      await experiment.enable();
     } else {
-      await experiment.onDisable?.();
+      await experiment.disable();
     }
+    experiment.enabledLoading = false;
     experiment.enabled = enabled;
     this.dispatchEvent(new CustomEvent('updated'));
+    this.requestUpdate();
   }
 
   connectedCallback() {
@@ -139,38 +155,79 @@ export class BrExperimentToggle extends LitElement {
   @property({ type: String }) title = '';
   @property({ type: String }) description = '';
   @property({ type: Boolean }) enabled = false;
+  @property({ type: Boolean }) loading = false;
+
+  /**
+   * We want to disable the button immediately if loading, but only display
+   * the loading indicator after 200ms.
+   */
+  @state() _longLoading = false;
+
+  /** @override */
+  update(changedProperties) {
+    super.update(changedProperties);
+    if (changedProperties.has('loading')) {
+      if (this.loading) {
+        sleep(200).then(() => {
+          if (this.loading) {
+            this._longLoading = true;
+            this.requestUpdate();
+          }
+        });
+      } else {
+        this._longLoading = false;
+      }
+    }
+  }
 
   render() {
     return html`
-      <style>
-        .experiment-card {
-          border-radius: 8px;
-          background-color: #fff2;
-          padding: 10px;
-        }
-      </style>
-      <div class="experiment-card" style="display: flex; flex-direction: column; gap: 10px">
+      <div class="experiment-card">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div>
-            <img src="${this.icon}" style="width: 20px; height: 20px;" alt="" />
-          </div>
-          <div style="flex-grow: 1;">
-            <div style="font-weight: bold;">${this.title}</div>
-            <div style="font-size: 0.9em; opacity: 0.9">${this.description}</div>
-          </div>
+          <img src="${this.icon}" style="width: 20px; height: 20px;" alt="" />
+          <div style="flex-grow: 1; font-weight: bold;">${this.title}</div>
         </div>
+        <p style="font-size: 0.95em; opacity: 0.9">${this.description}</p>
         <div style="display: flex">
           <div style="flex-grow: 1;"></div>
-          <button @click="${this._toggleEnabled}">
-            ${this.enabled ? 'Disable' : 'Enable'}
+          <button @click="${this._toggleEnabled}" .disabled="${this.loading}">
+            ${this._longLoading ? 'Loading…' : this.enabled ? 'Disable' : 'Enable'}
           </button>
         </div>
       </div>
     `;
   }
 
-  _toggleEnabled() {
-    this.enabled = !this.enabled;
-    this.dispatchEvent(new CustomEvent('toggle', { detail: { enabled: this.enabled } }));
+  static get styles() {
+    return css`
+      .experiment-card {
+        border-radius: 8px;
+        background-color: #fff2;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .experiment-card p {
+        margin: 6px 0;
+      }
+    `;
   }
+
+  _toggleEnabled() {
+    this.dispatchEvent(new CustomEvent('toggle', { detail: { enabled: !this.enabled } }));
+  }
+}
+
+/**
+ * @param {string} url
+ */
+async function importAsScript(url) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = url;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script: ${url}`));
+    document.head.appendChild(script);
+  });
 }

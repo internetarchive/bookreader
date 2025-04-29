@@ -347,7 +347,6 @@ export class BookNavigator extends LitElement {
       this.menuProviders.downloads?.update(this.downloadableTypes);
     }
 
-    console.log('availableMenus', availableMenus);
     const event = new CustomEvent(
       events.menuUpdated, {
         detail: availableMenus,
