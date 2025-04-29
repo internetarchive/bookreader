@@ -98,6 +98,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
    */
   async _toggleExperiment(experiment, enabled) {
     experiment.enabledLoading = true;
+    this.br.plugins.archiveAnalytics?.sendEvent(`BRExperiment-${experiment.name}`, enabled ? 'Enable' : 'Disable');
     this._panel.requestUpdate();
 
     if (enabled) {
