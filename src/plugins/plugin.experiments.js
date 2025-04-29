@@ -11,6 +11,8 @@ class ExperimentModel {
   /** @type {string} test */
   name;
   /** @type {string} */
+  title;
+  /** @type {string} */
   description;
   /** @type {string} */
   icon;
@@ -36,7 +38,8 @@ export class ExperimentsPlugin extends BookReaderPlugin {
   /** @type {ExperimentModel[]} */
   experiments = [
     new class extends ExperimentModel {
-      name = 'Hypothes.is';
+      name = 'hypothesis';
+      title = 'Hypothes.is';
       description = 'Create public, collaborative, or fully private annotations on books and the web.';
       learnMore = 'https://web.hypothes.is/about/';
       icon = 'https://web.hypothes.is/favicon.ico';
@@ -50,10 +53,16 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
       async disable() {
         // need to reload to remove the Hypothesis script
-        window.location.reload();
+        // Sleep so that the event loop can finish processing before the reload
+        sleep(0).then(() => {
+          window.location.reload();
+        });
       }
     }(),
   ]
+
+  /** @type {BrExperimentsPanel} */
+  _panel;
 
   async init() {
     if (!this.options.enabled) {
@@ -83,6 +92,24 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorage.setItem(this.options.localStorageKey, JSON.stringify(states));
   }
 
+  /**
+   * @param {ExperimentModel} experiment
+   * @param {boolean} enabled
+   */
+  async _toggleExperiment(experiment, enabled) {
+    experiment.enabledLoading = true;
+    this._panel.requestUpdate();
+
+    if (enabled) {
+      await experiment.enable();
+    } else {
+      await experiment.disable();
+    }
+    experiment.enabledLoading = false;
+    experiment.enabled = enabled;
+    this._panel.requestUpdate();
+  }
+
   _render() {
     this.br.shell.menuProviders['experiments'] = {
       id: 'experiments',
@@ -94,7 +121,10 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       component: html`<br-experiments-panel
         .experiments="${this.experiments}"
         @connected="${e => this._panel = e.target}"
-        @updated="${this._saveExperimentStates.bind(this)}"
+        @toggle="${async e => {
+        await this._toggleExperiment(e.detail.experiment, e.detail.enabled);
+        this._saveExperimentStates();
+      }}"
       />`,
     };
     this.br.shell.updateMenuContents();
@@ -115,12 +145,12 @@ export class BrExperimentsPanel extends LitElement {
       experiment => html`
         <br-experiment-toggle
           .icon="${experiment.icon}"
-          .title="${experiment.name}"
+          .title="${experiment.title}"
           .description="${experiment.description}"
           .enabled="${experiment.enabled}"
           .loading="${experiment.enabledLoading}"
           .learnMore="${experiment.learnMore}"
-          @toggle="${e => this._onToggleExperiment(e, experiment)}"
+          @toggle="${e => this._dispatchToggle(experiment, e.detail.enabled)}"
         ></br-experiment-toggle>
       `,
     )}
@@ -129,23 +159,13 @@ export class BrExperimentsPanel extends LitElement {
   }
 
   /**
-   * @param {CustomEvent<{ enabled: boolean }>} event
    * @param {ExperimentModel} experiment
+   * @param {boolean} enabled
    */
-  async _onToggleExperiment(event, experiment) {
-    const { enabled } = event.detail;
-    experiment.enabledLoading = true;
-    this.requestUpdate();
-
-    if (enabled) {
-      await experiment.enable();
-    } else {
-      await experiment.disable();
-    }
-    experiment.enabledLoading = false;
-    experiment.enabled = enabled;
-    this.dispatchEvent(new CustomEvent('updated'));
-    this.requestUpdate();
+  async _dispatchToggle(experiment, enabled) {
+    this.dispatchEvent(new CustomEvent('toggle', {
+      detail: { experiment, enabled },
+    }));
   }
 
   connectedCallback() {
@@ -174,7 +194,7 @@ export class BrExperimentToggle extends LitElement {
     super.update(changedProperties);
     if (changedProperties.has('loading')) {
       if (this.loading) {
-        sleep(200).then(() => {
+        sleep(500).then(() => {
           if (this.loading) {
             this._longLoading = true;
             this.requestUpdate();
@@ -199,7 +219,7 @@ export class BrExperimentToggle extends LitElement {
         </p>
         <div style="display: flex">
           <div style="flex-grow: 1;"></div>
-          <button @click="${this._toggleEnabled}" .disabled="${this.loading}">
+          <button @click="${this._dispatchToggle}" .disabled="${this.loading}">
             ${this._longLoading ? 'Loading…' : this.enabled ? 'Disable' : 'Enable'}
           </button>
         </div>
@@ -223,7 +243,7 @@ export class BrExperimentToggle extends LitElement {
     `;
   }
 
-  _toggleEnabled() {
+  _dispatchToggle() {
     this.dispatchEvent(new CustomEvent('toggle', { detail: { enabled: !this.enabled } }));
   }
 }
