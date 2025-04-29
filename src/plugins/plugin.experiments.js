@@ -42,7 +42,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       title = 'Hypothes.is';
       description = 'Create public, collaborative, or fully private annotations on books and the web.';
       learnMore = 'https://web.hypothes.is/about/';
-      icon = 'https://web.hypothes.is/favicon.ico';
+      icon = 'hypothesis.ico';
       enabled = false;
 
       async enable() {
@@ -68,6 +68,11 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     if (!this.options.enabled) {
       return;
     }
+
+    for (const experiment of this.experiments) {
+      experiment.icon = this.br.options.imagesBaseURL + experiment.icon;
+    }
+
     this._loadExperimentStates();
     await Promise.resolve();
     this._render();
