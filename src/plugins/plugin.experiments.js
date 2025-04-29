@@ -23,7 +23,11 @@ class ExperimentModel {
 
   enabledLoading = false;
 
-  async enable() { }
+  /**
+   * @param {object} param0
+   * @param {boolean} param0.manual Whether the experiment was enabled manually
+   */
+  async enable({ manual }) { }
   async disable() { }
 }
 
@@ -45,7 +49,15 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       icon = 'hypothesis.ico';
       enabled = false;
 
-      async enable() {
+      async enable({ manual = false }) {
+        if (manual) {
+          // Open the sidebar if this is the first time enabling
+          window.hypothesisConfig = function () {
+            return {
+              openSidebar: true,
+            };
+          };
+        }
         return importAsScript('https://hypothes.is/embed.js');
         // For testing
         // return importAsScript('http://localhost:3001/hypothesis');
@@ -84,7 +96,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       if (savedStates[experiment.name] !== undefined) {
         experiment.enabled = savedStates[experiment.name];
         if (experiment.enabled) {
-          experiment.enable();
+          experiment.enable({ manual: false });
         }
       }
     });
@@ -107,7 +119,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     this._panel.requestUpdate();
 
     if (enabled) {
-      await experiment.enable();
+      await experiment.enable({ manual: true });
     } else {
       await experiment.disable();
     }
