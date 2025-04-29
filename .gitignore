@@ -4,4 +4,7 @@ node_modules/
 coverage*/
 .env
 
+# Eventually ignore this directory entirely
+BookReader/hypothesis
+
 .vscode

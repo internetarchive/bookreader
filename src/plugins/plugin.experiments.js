@@ -21,7 +21,16 @@ class ExperimentModel {
   /** @type {string} */
   learnMore;
 
+  assetRoot = '/BookReader/';
+
   enabledLoading = false;
+
+  /**
+   * @param {string} path
+   */
+  buildAssetPath(path) {
+    return `${this.assetRoot}${path}`;
+  }
 
   /**
    * @param {object} param0
@@ -46,19 +55,22 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       title = 'Hypothes.is';
       description = 'Create public, collaborative, or fully private annotations on books and the web.';
       learnMore = 'https://web.hypothes.is/about/';
-      icon = 'hypothesis.ico';
+      icon = 'images/hypothesis.ico';
       enabled = false;
 
       async enable({ manual = false }) {
-        if (manual) {
+        // Hypothesis configs ; see https://h.readthedocs.io/projects/client/en/latest/publishers/config.html
+        const configScript = document.createElement('script');
+        configScript.type = 'application/json';
+        configScript.className = 'js-hypothesis-config';
+        configScript.textContent = JSON.stringify({
           // Open the sidebar if this is the first time enabling
-          window.hypothesisConfig = function () {
-            return {
-              openSidebar: true,
-            };
-          };
-        }
-        return importAsScript('https://hypothes.is/embed.js');
+          openSidebar: manual,
+          assetRoot: this.buildAssetPath('hypothesis/'),
+        });
+
+        document.head.appendChild(configScript);
+        return importAsScript(this.buildAssetPath('hypothesis/build/boot.js'));
         // For testing
         // return importAsScript('http://localhost:3001/hypothesis');
       }
@@ -82,7 +94,9 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     }
 
     for (const experiment of this.experiments) {
-      experiment.icon = this.br.options.imagesBaseURL + experiment.icon;
+      // TODO: imagesBaseURL should be replaced with assetRoot everywhere
+      experiment.assetRoot = this.br.options.imagesBaseURL.replace(/images\/$/, '');
+      experiment.icon = experiment.buildAssetPath(experiment.icon);
     }
 
     this._loadExperimentStates();
