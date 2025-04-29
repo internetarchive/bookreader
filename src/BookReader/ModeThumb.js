@@ -2,7 +2,7 @@
 import { notInArray, clamp } from './utils.js';
 import { EVENTS } from './events.js';
 import { DragScrollable } from './DragScrollable.js';
-/** @typedef {import('../BookREader.js').default} BookReader */
+/** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 
@@ -201,10 +201,14 @@ export class ModeThumb {
 
     // Update which page is considered current to make sure a visible page is the current one
     const currentIndex = this.br.currentIndex();
-    if (currentIndex < leastVisible) {
-      this.br.updateFirstIndex(leastVisible);
-    } else if (currentIndex > mostVisible) {
-      this.br.updateFirstIndex(mostVisible);
+
+    // prevent the page from jumping when animating
+    if (!this.br.animating) {
+      if (currentIndex < leastVisible) {
+        this.br.updateFirstIndex(leastVisible);
+      } else if (currentIndex > mostVisible) {
+        this.br.updateFirstIndex(mostVisible);
+      }
     }
 
     // remember what rows are displayed
@@ -332,11 +336,14 @@ export class ModeThumb {
     }
     this.br.updateFirstIndex(index);
     if (this.br.refs.$brContainer.prop('scrollTop') == leafTop) {
-      this.br.drawLeafs();
+      this.drawLeafs(index);
     } else {
       this.br.animating = true;
       this.br.refs.$brContainer.stop(true)
-        .animate({ scrollTop: leafTop }, 'fast', () => { this.br.animating = false; });
+        .animate({ scrollTop: leafTop }, 'fast', () => {
+          this.br.animating = false;
+          this.drawLeafs(index);
+      });
     }
   }
 }
