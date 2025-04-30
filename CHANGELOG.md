@@ -1,4 +1,9 @@
+# 5.0.0-96
+- Fix: BookReader/ missing from npm package! @cdrini
+  - Also exclude other non-essential files, like tests, etc from the npm package.
+
 # 5.0.0-95
+- **Note:** Use 5.0.0-96 instead of this version. This version was missing the BookReader/ directory from the npm package.
 - Breaking change: Remove BookReader/ build directory from repo @cdrini
   - This pattern has become increasingly rare (even jQuery is no longer doing this). If someone was relying on this somehow, you should be able to achieve the same effect using unpkg, or jsdelivr, or similar, eg:
     - https://unpkg.com/@internetarchive/bookreader@5.0.0-94/BookReader/BookReader.js
