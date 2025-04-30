@@ -19,9 +19,6 @@ async function main() {
 
     // build
     execSync('npm run build', { stdio: "inherit" });
-
-    // Add build files
-    execSync('git add ./BookReader');
 }
 
 main().then(() => process.exit());
