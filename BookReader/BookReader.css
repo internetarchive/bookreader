@@ -2124,6 +2124,7 @@ ia-bookreader .BRtoolbar {
   transform-origin: 0 0;
   pointer-events: none;
   cursor: text;
+  mix-blend-mode: multiply;
 }
 
 .BRparagraphElement {
@@ -2161,7 +2162,7 @@ ia-bookreader .BRtoolbar {
   content: "-";
 }
 
-.BRsmooth-zooming .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer, .BRscrolling-active .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer {
+.BRsmooth-zooming .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)) .BRtextLayer, .BRscrolling-active .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)) .BRtextLayer {
   display: none;
 }
 

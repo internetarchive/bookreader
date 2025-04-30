@@ -1,5 +1,16 @@
+# 5.0.0-94
+- Refactor: Make bookreader package type: module @cdrini
+- Fix: Search icon being fetched from wrong path @cdrini
+- Refactor: Move BookReader._plugins -> BookReader.plugins , making it public @cdrini
+- Feature: Add length restrictions for protected text selection @cdrini
+- Extend BR to work correctly with Hypothesis @cdrini
+  - Creates new experiments plugin, with a Hypothesis experiment
+  - Adds no `bookUri` option for saving Hypothesis annotations
+  - Adds new public HTML attributes to the PageContainer DOM, `data-index` for `PageIndex`, and `data-page-num` for `PageNumString`
+  - Improves some of BookReader's public APIs. BookReader.bind/unbind are now deprecated in favor of BookReader.on/off
+
 # 5.0.0-93
-- Fix: Clicking on search result not making request_page requst correctly @cdrini
+- Fix: Clicking on search result not making request_page request correctly @cdrini
 
 # 5.0.0-92
 - Refactor: Migrate search plugin to BookReaderPlugin system @cdrini
