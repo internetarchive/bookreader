@@ -1,3 +1,10 @@
+# 5.0.0-95
+- Breaking change: Remove BookReader/ build directory from repo @cdrini
+  - This pattern has become increasingly rare (even jQuery is no longer doing this). If someone was relying on this somehow, you should be able to achieve the same effect using unpkg, or jsdelivr, or similar, eg:
+    - https://unpkg.com/@internetarchive/bookreader@5.0.0-94/BookReader/BookReader.js
+    - https://cdn.jsdelivr.net/npm/@internetarchive/bookreader@5.0.0-94/BookReader/BookReader.js
+    - And so on.
+
 # 5.0.0-94
 - Refactor: Make bookreader package type: module @cdrini
 - Fix: Search icon being fetched from wrong path @cdrini
