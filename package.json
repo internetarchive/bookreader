@@ -3,6 +3,11 @@
   "version": "5.0.0-95",
   "description": "The Internet Archive BookReader.",
   "type": "module",
+  "files": [
+    "BookReader/",
+    "src/",
+    "jsconfig.json"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/internetarchive/bookreader.git"
