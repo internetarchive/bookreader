@@ -702,12 +702,26 @@ BookReader.prototype.trigger = function(name, props = this) {
   $(document).trigger(eventName, props);
 };
 
-BookReader.prototype.bind = function(name, callback) {
+BookReader.prototype.on = function(name, callback) {
   $(document).on('BookReader:' + name, callback);
 };
 
-BookReader.prototype.unbind = function(name, callback) {
+BookReader.prototype.off = function(name, callback) {
   $(document).off('BookReader:' + name, callback);
+};
+
+/**
+ * @deprecated Use .on and .off instead
+ */
+BookReader.prototype.bind = function(name, callback) {
+  return this.on(name, callback);
+};
+
+/**
+ * @deprecated Use .on and .off instead
+ */
+BookReader.prototype.unbind = function(name, callback) {
+  return this.off(name, callback);
 };
 
 /**
@@ -1105,7 +1119,7 @@ BookReader.prototype.getPrevReadMode = function(mode) {
 
 /**
  * Switches the mode (eg 1up 2up thumb)
- * @param {number}
+ * @param {number|'1up' | '2up' | 'thumb'}
  * @param {object} [options]
  * @param {boolean} [options.suppressFragmentChange = false]
  * @param {boolean} [options.onInit = false] - this
@@ -1118,6 +1132,18 @@ BookReader.prototype.switchMode = function(
     pageFound = false,
   } = {},
 ) {
+  if (typeof mode === 'string') {
+    mode = {
+      '1up': this.constMode1up,
+      '2up': this.constMode2up,
+      'thumb': this.constModeThumb,
+    }[mode];
+  }
+
+  if (!mode) {
+    throw new Error(`Invalid mode: ${mode}`);
+  }
+
   // Skip checks before init() complete
   if (this.init.initComplete) {
     if (mode === this.mode) {
@@ -1324,7 +1350,7 @@ BookReader.prototype.updateFirstIndex = function(
   // If there's an initial search we stop suppressing global URL changes
   // when local suppression ends
   // This seems to correctly handle multiple calls during mode/1up
-  if (this.plugins.search.options.initialSearchTerm && !suppressFragmentChange) {
+  if (this.plugins.search?.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
 

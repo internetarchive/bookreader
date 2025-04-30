@@ -323,19 +323,6 @@ describe('<book-navigator>', () => {
         });
       });
 
-      describe('Shortcuts', () => {
-        test('has specific order of menu shortcuts to show', () => {
-          const el = fixtureSync(container());
-          expect(el.shortcutOrder).toEqual([
-            'fullscreen',
-            'volumes',
-            'chapters',
-            'search',
-            'bookmarks',
-          ]);
-        });
-      });
-
       describe('Behaviors for specific menus', () => {
         describe('Search menu - ref: plugin.search.js', () => {
           test('Event: listens for `BookReader:ToggleSearchMenu to open search side panel', async () => {

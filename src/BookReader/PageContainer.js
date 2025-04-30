@@ -18,7 +18,10 @@ export class PageContainer {
     this.$container = $('<div />', {
       'class': `BRpagecontainer ${page ? `pagediv${page.index}` : 'BRemptypage'}`,
       css: { position: 'absolute' },
-    }).attr('data-side', page?.pageSide);
+    })
+      .attr('data-side', page?.pageSide)
+      .attr('data-index', page?.index)
+      .attr('data-page-num', page?.getPageNum());
 
     if (isProtected) {
       this.$container.append($('<div class="BRscreen" />'));
