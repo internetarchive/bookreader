@@ -10,7 +10,7 @@ const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(w
 const qs = selector => document.querySelector(selector);
 const status = message => (console.log(message));
 
-const langs = {
+const langs = /** @type {{[lang: string]: string}} */ {
   "bg": "Bulgarian",
   "ca": "Catalan",
   "cs": "Czech",
@@ -36,17 +36,38 @@ export class TranslatePlugin extends BookReaderPlugin {
   options = {
     enabled: true,
   }
+  /**
+   * @typedef {Object} genericModelInfo
+   * @property {string} name
+   * @property {number} size
+   * @property {number} estimatedCompressedSize
+   * @property {qualityModelInfo} [qualityModel]
+   * @property {string} [expectedSha256Hash]
+   * @property {string} [modelType]
+   */
 
+  /** @type {Worker}*/
   worker;
+  /**
+   * @type { {[langPair: string] : {model: genericModelInfo, lex: genericModelInfo, vocab: genericModelInfo, quality?: genericModelInfo}} }
+   */
   modelRegistry;
+
+  /** @type {?number}*/
   version;
 
+  /** @type {{[lang: string]: string}} */
   supportedFromCodes = {};
+  /** @type {{[lang:string]: string}} */
   supportedToCodes = {};
 
+  /** @type {string[]} */
   fromLanguages = [];
+  /** @type {string[]} */
   toLanguages = [];
+  /** @type {!string} */
   langFromCode;
+  /** @type {!string} */
   langToCode;
   /**
    * @type {BrTranslatePanel} _panel - Represents a panel used in the plugin.
@@ -114,7 +135,7 @@ export class TranslatePlugin extends BookReaderPlugin {
       }
     }
   }
-
+  /** @param {JQuery<HTMLElement>} page*/
   getParagraphsOnPage = (page) => {
     return page ? Array.from(page.querySelectorAll(".BRparagraphElement")) : [];
   }
