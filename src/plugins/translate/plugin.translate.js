@@ -28,7 +28,7 @@ const langs = /** @type {{[lang: string]: string}} */ {
   "pt": "Portuguese",
   "ru": "Russian",
   "es": "Spanish",
-  "uk": "Ukrainian"
+  "uk": "Ukrainian",
 };
 
 export class TranslatePlugin extends BookReaderPlugin {
@@ -94,11 +94,21 @@ export class TranslatePlugin extends BookReaderPlugin {
       const [cmd, ...rest] = e.data;
       if (cmd === "translate_reply" && rest[0]) {
         const [translation, selector] = rest;
+        // Use '.' as delimiter and keep within translated text
+        const translationChunks = translation[0].split('(.)');
         console.log(translation.join("\n\n"));
         console.log(selector);
         const el = document.querySelector(selector);
         if (el) {
-          document.querySelector(selector).innerHTML = translation.join("<br><br>");
+          for (const sentence of translationChunks) {
+            if (!sentence.length) { // skip empty strings
+              continue;
+            }
+            const translationSpan = document.createElement('span');
+            translationSpan.className = 'trSentence';
+            translationSpan.textContent = sentence;
+            document.querySelector(selector).appendChild(translationSpan);
+          }
         }
       } else if (cmd === "load_model_reply" && e.data[1]) {
         status(e.data[1]);
@@ -142,6 +152,7 @@ export class TranslatePlugin extends BookReaderPlugin {
 
   translateVisiblePages = () => {
     this.clearTranslations();
+    /** @type {number} - Tracks the current paragraph for html tag*/
     let gidx = 0;
     for (const page of this.getVisiblePages()) {
       const paragraphs = this.getParagraphsOnPage(page);
@@ -151,13 +162,29 @@ export class TranslatePlugin extends BookReaderPlugin {
       pageTranslationLayer.className = 'translation';
       page.insertBefore(pageTranslationLayer, page.firstChild);
 
-      paragraphs.forEach((paragraph) => {
+      paragraphs.forEach((paragraph, pidx) => {
         // set data-index on the paragraph
         paragraph.setAttribute('data-index', gidx.toString());
 
         const translationPlaceholder = document.createElement('p');
         // set data-translate-index on the placeholder
         translationPlaceholder.setAttribute('data-translate-index', gidx.toString());
+        translationPlaceholder.className = 'trParagraph';
+        const originalParagraphStyle = paragraphs[pidx];
+
+        const marginLeft = $(originalParagraphStyle).css("margin-left");
+        const marginTop = $(originalParagraphStyle).css("margin-top");
+        const fontSize = $(originalParagraphStyle).css("font-size");
+        const height = $(originalParagraphStyle).css("height");
+        const top = $(originalParagraphStyle).css("top");
+
+        translationPlaceholder.style.marginTop = marginTop;
+        translationPlaceholder.style.marginLeft = marginLeft;
+        // normal font size from transparent layer sometimes too big
+        translationPlaceholder.style.fontSize = `${parseInt(fontSize) - 5}px`;
+        translationPlaceholder.style.top = top;
+        translationPlaceholder.style.height = height;
+
         pageTranslationLayer.appendChild(translationPlaceholder);
 
         const selector = `.${page.className.split(' ').join('.')} .translation p[data-translate-index="${gidx}"]`;
@@ -168,7 +195,7 @@ export class TranslatePlugin extends BookReaderPlugin {
             this.langFromCode,
             this.langToCode,
             [paragraph.textContent],
-            selector
+            selector,
           ]);
         }
         gidx++;
@@ -181,7 +208,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   };
 
 
-    /**
+  /**
    * @protected
    * @param {import ("../../BookReader/PageContainer.js").PageContainer} pageContainer
    */
@@ -260,7 +287,7 @@ export class TranslatePlugin extends BookReaderPlugin {
 
   isSupported = (lngFrom, lngTo) => {
     return (`${lngFrom}${lngTo}` in this.modelRegistry) || lngFrom === lngTo ||
-      ((`${lngFrom}en` in this.modelRegistry) && (`en${lngTo}` in this.modelRegistry))
+      ((`${lngFrom}en` in this.modelRegistry) && (`en${lngTo}` in this.modelRegistry));
   }
 
   switchLanguage() {
@@ -275,11 +302,11 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
 
     this.loadModel();
-  };
+  }
 
   findFirstSupportedTo = () => {
     return Object.keys(this.supportedToCodes)[0];
-}
+  }
 
   loadModel = () => {
     const fromCode = this.langFromCode;
@@ -296,6 +323,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
   };
 
+  // From an older version of the code? no more #output element
   translateCall = (paragraphs) => {
     this.worker.postMessage(["translate", this.langFromCode, this.langToCode, paragraphs, '#output']);
   };
@@ -323,10 +351,10 @@ export class TranslatePlugin extends BookReaderPlugin {
       label: 'Translate',
       component: html`<br-translate-panel
         @connected="${e => {
-          this._panel = e.target;
-          this._panel.fromLanguages = this.fromLanguages;
-          this._panel.toLanguages = this.toLanguages;
-        }
+        this._panel = e.target;
+        this._panel.fromLanguages = this.fromLanguages;
+        this._panel.toLanguages = this.toLanguages;
+      }
       }"
         @langFromChanged="${this.handleFromLangChange}"
         @langToChanged="${this.handleToLangChange}"
@@ -371,7 +399,7 @@ export class BrTranslatePanel extends LitElement {
           From
           <select id="lang-from" name="from" class="lang-select" @change="${this._onLangFromChange}">
             ${this.fromLanguages.map(
-              lang => html`<option value="${lang.code}">${lang.name}</option>`
+              lang => html`<option value="${lang.code}">${lang.name}</option>`,
             )}
           </select>
         </label>
@@ -381,7 +409,7 @@ export class BrTranslatePanel extends LitElement {
           To
           <select id="lang-to" name="to" class="lang-select" @change="${this._onLangToChange}">
             ${this.toLanguages.map(
-              lang => html`<option value="${lang.code}">${lang.name}</option>`
+              lang => html`<option value="${lang.code}">${lang.name}</option>`,
             )}
           </select>
         </label>
