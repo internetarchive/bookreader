@@ -85,11 +85,22 @@
     color: black;
     z-index: 9999;
     font-size: 2.85em;
-    height: 95%;
-    margin: 50px;
-    padding: 25px;
-    background-color: #f8edc0;
+    height: 100%;
     border-radius: 8px;
     box-shadow: 0 0 50px 50px #f8edc0ff;
     overflow-y: scroll;
+  }
+
+  .translation .trParagraph {
+    pointer-events: all;
+    overflow-y: auto;
+    font-family: "Helvetica Neue", Arial, Verdana, sans-serif;
+    margin-bottom: 0;
+  }
+
+  .translation .trParagraph .trSentence {
+    white-space: preserve-spaces;
+    display: inline-block;
+    background: #f8edc0;
+    line-height: normal;
   }
