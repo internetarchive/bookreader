@@ -86,6 +86,7 @@ export class BookNavigator extends LitElement {
       'volumes',
       'chapters',
       'search',
+      'translate',
       'bookmarks',
       'downloads',
       'visualAdjustments',
