@@ -53,9 +53,6 @@ export class TranslatePlugin extends BookReaderPlugin {
    */
   modelRegistry;
 
-  /** @type {?number}*/
-  version;
-
   /** @type {{[lang: string]: string}} */
   supportedFromCodes = {};
   /** @type {{[lang:string]: string}} */
@@ -105,7 +102,7 @@ export class TranslatePlugin extends BookReaderPlugin {
               continue;
             }
             const translationSpan = document.createElement('span');
-            translationSpan.className = 'trSentence';
+            translationSpan.className = 'BRlineElement';
             translationSpan.textContent = sentence;
             document.querySelector(selector).appendChild(translationSpan);
           }
@@ -117,7 +114,6 @@ export class TranslatePlugin extends BookReaderPlugin {
         }
       } else if (cmd === "import_reply" && e.data[1]) {
         this.modelRegistry = e.data[1];
-        this.version = e.data[2];
         this.initWorker();
       }
     };
@@ -159,8 +155,16 @@ export class TranslatePlugin extends BookReaderPlugin {
 
       // Create the translation layer for all paragraphs on the page
       const pageTranslationLayer = document.createElement('div');
-      pageTranslationLayer.className = 'translation';
-      page.insertBefore(pageTranslationLayer, page.firstChild);
+      pageTranslationLayer.classList.add('BRPageLayer', 'BRtranslateLayer');
+
+      $(pageTranslationLayer).css({
+        "width": $(page).css("width"),
+        "height": $(page).css("height"),
+        "transform": $(page).css("transform"),
+        "pointer-events": $(page).css("pointer-events"),
+        "z-index": 3,
+      });
+      page.insertAdjacentElement('beforebegin', pageTranslationLayer);
 
       paragraphs.forEach((paragraph, pidx) => {
         // set data-index on the paragraph
@@ -169,25 +173,21 @@ export class TranslatePlugin extends BookReaderPlugin {
         const translationPlaceholder = document.createElement('p');
         // set data-translate-index on the placeholder
         translationPlaceholder.setAttribute('data-translate-index', gidx.toString());
-        translationPlaceholder.className = 'trParagraph';
+        translationPlaceholder.className = 'BRparagraphElement';
         const originalParagraphStyle = paragraphs[pidx];
 
-        const marginLeft = $(originalParagraphStyle).css("margin-left");
-        const marginTop = $(originalParagraphStyle).css("margin-top");
-        const fontSize = $(originalParagraphStyle).css("font-size");
-        const height = $(originalParagraphStyle).css("height");
-        const top = $(originalParagraphStyle).css("top");
-
-        translationPlaceholder.style.marginTop = marginTop;
-        translationPlaceholder.style.marginLeft = marginLeft;
-        // normal font size from transparent layer sometimes too big
-        translationPlaceholder.style.fontSize = `${parseInt(fontSize) - 5}px`;
-        translationPlaceholder.style.top = top;
-        translationPlaceholder.style.height = height;
+        $(translationPlaceholder).css({
+          "margin-left": $(originalParagraphStyle).css("margin-left"),
+          "margin-top": $(originalParagraphStyle).css("margin-top"),
+          "top": $(originalParagraphStyle).css("top"),
+          "height": $(originalParagraphStyle).css("height"),
+          "font-size": `${parseInt($(originalParagraphStyle).css("font-size")) - 3}px`,
+          "width": $(originalParagraphStyle).css("width"),
+        });
 
         pageTranslationLayer.appendChild(translationPlaceholder);
 
-        const selector = `.${page.className.split(' ').join('.')} .translation p[data-translate-index="${gidx}"]`;
+        const selector = `.${pageTranslationLayer.className.split(' ').join('.')} p[data-translate-index="${gidx}"]`;
 
         if (paragraph.textContent) {
           this.worker.postMessage([
@@ -204,7 +204,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   clearTranslations = () => {
-    document.querySelectorAll('.translation').forEach(el => el.remove());
+    document.querySelectorAll('.BRtranslateLayer').forEach(el => el.remove());
   };
 
 
@@ -360,7 +360,6 @@ export class TranslatePlugin extends BookReaderPlugin {
         @langToChanged="${this.handleToLangChange}"
         .fromLanguages="${this.fromLanguages}"
         .toLanguages="${this.toLanguages}"
-        .version="${this.version}"
         class="translate-panel"
       />`,
     };
@@ -374,7 +373,6 @@ BookReader?.registerPlugin('translate', TranslatePlugin);
 export class BrTranslatePanel extends LitElement {
   @property({ type: Array }) fromLanguages = []; // List of obj {code, name}
   @property({ type: Array }) toLanguages = []; // List of obj {code, name}
-  @property({ type: String }) version = '';
   @property({ type: String }) prevSelectedLang = ''; // Tracks the previous selected language for the "To" dropdown
 
   /** @override */
