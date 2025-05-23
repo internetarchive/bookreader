@@ -10,7 +10,7 @@ const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(w
 const qs = selector => document.querySelector(selector);
 const status = message => (console.log(message));
 
-const langs = {
+const langs = /** @type {{[lang: string]: string}} */ {
   "bg": "Bulgarian",
   "ca": "Catalan",
   "cs": "Czech",
@@ -28,7 +28,7 @@ const langs = {
   "pt": "Portuguese",
   "ru": "Russian",
   "es": "Spanish",
-  "uk": "Ukrainian"
+  "uk": "Ukrainian",
 };
 
 export class TranslatePlugin extends BookReaderPlugin {
@@ -36,20 +36,38 @@ export class TranslatePlugin extends BookReaderPlugin {
   options = {
     enabled: true,
   }
+  /**
+   * @typedef {Object} genericModelInfo
+   * @property {string} name
+   * @property {number} size
+   * @property {number} estimatedCompressedSize
+   * @property {qualityModelInfo} [qualityModel]
+   * @property {string} [expectedSha256Hash]
+   * @property {string} [modelType]
+   */
 
+  /** @type {Worker}*/
   worker;
+  /**
+   * @type { {[langPair: string] : {model: genericModelInfo, lex: genericModelInfo, vocab: genericModelInfo, quality?: genericModelInfo}} }
+   */
   modelRegistry;
-  version;
 
+  /** @type {{[lang: string]: string}} */
   supportedFromCodes = {};
+  /** @type {{[lang:string]: string}} */
   supportedToCodes = {};
 
+  /** @type {string[]} */
   fromLanguages = [];
+  /** @type {string[]} */
   toLanguages = [];
+  /** @type {!string} */
   langFromCode;
+  /** @type {!string} */
   langToCode;
   /**
-   * @type {BrTranslatePanel} _panel - Represents a panel used in the plugin. 
+   * @type {BrTranslatePanel} _panel - Represents a panel used in the plugin.
    * The specific type and purpose of this panel should be defined based on its usage.
    */
   _panel;
@@ -73,11 +91,21 @@ export class TranslatePlugin extends BookReaderPlugin {
       const [cmd, ...rest] = e.data;
       if (cmd === "translate_reply" && rest[0]) {
         const [translation, selector] = rest;
+        // Use '.' as delimiter and keep within translated text
+        const translationChunks = translation[0].split('(.)');
         console.log(translation.join("\n\n"));
         console.log(selector);
         const el = document.querySelector(selector);
         if (el) {
-          document.querySelector(selector).innerHTML = translation.join("<br><br>");
+          for (const sentence of translationChunks) {
+            if (!sentence.length) { // skip empty strings
+              continue;
+            }
+            const translationSpan = document.createElement('span');
+            translationSpan.className = 'BRlineElement';
+            translationSpan.textContent = sentence;
+            document.querySelector(selector).appendChild(translationSpan);
+          }
         }
       } else if (cmd === "load_model_reply" && e.data[1]) {
         status(e.data[1]);
@@ -86,11 +114,10 @@ export class TranslatePlugin extends BookReaderPlugin {
         }
       } else if (cmd === "import_reply" && e.data[1]) {
         this.modelRegistry = e.data[1];
-        this.version = e.data[2];
         this.initWorker();
       }
     };
-    
+
     // Any time an action occurs, get the text
     const next = BookReader.prototype.next;
     BookReader.prototype.next = function (...args) {
@@ -105,7 +132,7 @@ export class TranslatePlugin extends BookReaderPlugin {
       return r;
     };
   }
- 
+
   *getVisiblePages() {
     for (const el of document.querySelectorAll('.BRpage-visible')) {
       if ([...el.classList].some(cls => /^pagediv\d+$/.test(cls))) {
@@ -114,32 +141,53 @@ export class TranslatePlugin extends BookReaderPlugin {
       }
     }
   }
-  
+  /** @param {JQuery<HTMLElement>} page*/
   getParagraphsOnPage = (page) => {
     return page ? Array.from(page.querySelectorAll(".BRparagraphElement")) : [];
   }
-  
+
   translateVisiblePages = () => {
     this.clearTranslations();
+    /** @type {number} - Tracks the current paragraph for html tag*/
     let gidx = 0;
-    for (const page of this.getVisiblePages()) {      
+    for (const page of this.getVisiblePages()) {
       const paragraphs = this.getParagraphsOnPage(page);
 
       // Create the translation layer for all paragraphs on the page
       const pageTranslationLayer = document.createElement('div');
-      pageTranslationLayer.className = 'translation';
-      page.insertBefore(pageTranslationLayer, page.firstChild);
+      pageTranslationLayer.classList.add('BRPageLayer', 'BRtranslateLayer');
 
-      paragraphs.forEach((paragraph) => {
+      $(pageTranslationLayer).css({
+        "width": $(page).css("width"),
+        "height": $(page).css("height"),
+        "transform": $(page).css("transform"),
+        "pointer-events": $(page).css("pointer-events"),
+        "z-index": 3,
+      });
+      page.insertAdjacentElement('beforebegin', pageTranslationLayer);
+
+      paragraphs.forEach((paragraph, pidx) => {
         // set data-index on the paragraph
         paragraph.setAttribute('data-index', gidx.toString());
 
         const translationPlaceholder = document.createElement('p');
         // set data-translate-index on the placeholder
         translationPlaceholder.setAttribute('data-translate-index', gidx.toString());
+        translationPlaceholder.className = 'BRparagraphElement';
+        const originalParagraphStyle = paragraphs[pidx];
+
+        $(translationPlaceholder).css({
+          "margin-left": $(originalParagraphStyle).css("margin-left"),
+          "margin-top": $(originalParagraphStyle).css("margin-top"),
+          "top": $(originalParagraphStyle).css("top"),
+          "height": $(originalParagraphStyle).css("height"),
+          "font-size": `${parseInt($(originalParagraphStyle).css("font-size")) - 3}px`,
+          "width": $(originalParagraphStyle).css("width"),
+        });
+
         pageTranslationLayer.appendChild(translationPlaceholder);
 
-        const selector = `.${page.className.split(' ').join('.')} .translation p[data-translate-index="${gidx}"]`;
+        const selector = `.${pageTranslationLayer.className.split(' ').join('.')} p[data-translate-index="${gidx}"]`;
 
         if (paragraph.textContent) {
           this.worker.postMessage([
@@ -147,7 +195,7 @@ export class TranslatePlugin extends BookReaderPlugin {
             this.langFromCode,
             this.langToCode,
             [paragraph.textContent],
-            selector
+            selector,
           ]);
         }
         gidx++;
@@ -156,18 +204,18 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   clearTranslations = () => {
-    document.querySelectorAll('.translation').forEach(el => el.remove());
+    document.querySelectorAll('.BRtranslateLayer').forEach(el => el.remove());
   };
- 
 
-    /**
+
+  /**
    * @protected
    * @param {import ("../../BookReader/PageContainer.js").PageContainer} pageContainer
    */
   _configurePageContainer(pageContainer) {
     // fetch each page
     // break each page into paragraphs
-    // call translate and give ... 
+    // call translate and give ...
     return pageContainer;
   }
 
@@ -211,7 +259,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   handleFromLangChange = (e) => {
     this.clearTranslations();
     const selectedLangFrom = e.detail.value;
-    
+
     // Update the from language
     this.langFromCode = selectedLangFrom;
 
@@ -239,7 +287,7 @@ export class TranslatePlugin extends BookReaderPlugin {
 
   isSupported = (lngFrom, lngTo) => {
     return (`${lngFrom}${lngTo}` in this.modelRegistry) || lngFrom === lngTo ||
-      ((`${lngFrom}en` in this.modelRegistry) && (`en${lngTo}` in this.modelRegistry))
+      ((`${lngFrom}en` in this.modelRegistry) && (`en${lngTo}` in this.modelRegistry));
   }
 
   switchLanguage() {
@@ -254,11 +302,11 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
 
     this.loadModel();
-  };
+  }
 
   findFirstSupportedTo = () => {
     return Object.keys(this.supportedToCodes)[0];
-}
+  }
 
   loadModel = () => {
     const fromCode = this.langFromCode;
@@ -275,6 +323,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
   };
 
+  // From an older version of the code? no more #output element
   translateCall = (paragraphs) => {
     this.worker.postMessage(["translate", this.langFromCode, this.langToCode, paragraphs, '#output']);
   };
@@ -302,16 +351,15 @@ export class TranslatePlugin extends BookReaderPlugin {
       label: 'Translate',
       component: html`<br-translate-panel
         @connected="${e => {
-          this._panel = e.target;
-          this._panel.fromLanguages = this.fromLanguages;
-          this._panel.toLanguages = this.toLanguages;
-        }
+        this._panel = e.target;
+        this._panel.fromLanguages = this.fromLanguages;
+        this._panel.toLanguages = this.toLanguages;
+      }
       }"
         @langFromChanged="${this.handleFromLangChange}"
         @langToChanged="${this.handleToLangChange}"
         .fromLanguages="${this.fromLanguages}"
         .toLanguages="${this.toLanguages}"
-        .version="${this.version}"
         class="translate-panel"
       />`,
     };
@@ -325,7 +373,6 @@ BookReader?.registerPlugin('translate', TranslatePlugin);
 export class BrTranslatePanel extends LitElement {
   @property({ type: Array }) fromLanguages = []; // List of obj {code, name}
   @property({ type: Array }) toLanguages = []; // List of obj {code, name}
-  @property({ type: String }) version = '';
   @property({ type: String }) prevSelectedLang = ''; // Tracks the previous selected language for the "To" dropdown
 
   /** @override */
@@ -350,7 +397,7 @@ export class BrTranslatePanel extends LitElement {
           From
           <select id="lang-from" name="from" class="lang-select" @change="${this._onLangFromChange}">
             ${this.fromLanguages.map(
-              lang => html`<option value="${lang.code}">${lang.name}</option>`
+              lang => html`<option value="${lang.code}">${lang.name}</option>`,
             )}
           </select>
         </label>
@@ -360,7 +407,7 @@ export class BrTranslatePanel extends LitElement {
           To
           <select id="lang-to" name="to" class="lang-select" @change="${this._onLangToChange}">
             ${this.toLanguages.map(
-              lang => html`<option value="${lang.code}">${lang.name}</option>`
+              lang => html`<option value="${lang.code}">${lang.name}</option>`,
             )}
           </select>
         </label>
