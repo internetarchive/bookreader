@@ -632,8 +632,10 @@ BookReader.prototype.init = function() {
   this.initUIStrings();
 
   // Bind to events
-
-  this.bindNavigationHandlers();
+  this._components.navbar.bindControlClickHandlers();
+  for (const plugin of Object.values(this.plugins)) {
+    plugin._bindNavigationHandlers();
+  }
   this.setupKeyListeners();
 
   this.lastScroll = (new Date().getTime());
@@ -1497,141 +1499,6 @@ exposeOverrideableMethod(Toolbar, '_components.toolbar', 'buildInfoDiv');
 BookReader.prototype.getToolBarHeight = Toolbar.prototype.getToolBarHeight;
 exposeOverrideableMethod(Toolbar, '_components.toolbar', 'getToolBarHeight');
 
-/**
- * Bind navigation handlers
- */
-BookReader.prototype.bindNavigationHandlers = function() {
-  const self = this;
-  const jIcons = this.$('.BRicon');
-
-  // Map of jIcon class -> click handler
-  const navigationControls = {
-    book_left: () => {
-      this.trigger(BookReader.eventNames.stop);
-      this.left();
-    },
-    book_right: () => {
-      this.trigger(BookReader.eventNames.stop);
-      this.right();
-    },
-    book_top: this.first.bind(this),
-    book_bottom: this.last.bind(this),
-    book_leftmost: this.leftmost.bind(this),
-    book_rightmost: this.rightmost.bind(this),
-    onepg: () => {
-      this.switchMode(self.constMode1up);
-    },
-    thumb: () => {
-      this.switchMode(self.constModeThumb);
-    },
-    twopg: () => {
-      this.switchMode(self.constMode2up);
-    },
-    zoom_in: () => {
-      this.trigger(BookReader.eventNames.stop);
-      this.zoom(1);
-      this.trigger(BookReader.eventNames.zoomIn);
-    },
-    zoom_out: () => {
-      this.trigger(BookReader.eventNames.stop);
-      this.zoom(-1);
-      this.trigger(BookReader.eventNames.zoomOut);
-    },
-    full: () => {
-      if (this.ui == 'embed') {
-        const url = this.$('.BRembedreturn a').attr('href');
-        window.open(url);
-      } else {
-        this.toggleFullscreen();
-      }
-    },
-  };
-
-  // custom event for auto-loan-renew in ia-book-actions
-  // - to know if user is actively reading
-  this.$('nav.BRcontrols li button').on('click', () => {
-    this.trigger(BookReader.eventNames.userAction);
-  });
-
-  for (const control in navigationControls) {
-    jIcons.filter(`.${control}`).on('click.bindNavigationHandlers', () => {
-      navigationControls[control]();
-      return false;
-    });
-  }
-
-  const $brNavCntlBtmEl = this.$('.BRnavCntlBtm');
-  const $brNavCntlTopEl = this.$('.BRnavCntlTop');
-
-  this.$('.BRnavCntl').click(
-    function() {
-      const promises = [];
-      // TODO don't use magic constants
-      // TODO move this to a function
-      if ($brNavCntlBtmEl.hasClass('BRdn')) {
-        if (self.refs.$BRtoolbar)
-          promises.push(self.refs.$BRtoolbar.animate(
-            {top: self.getToolBarHeight() * -1},
-          ).promise());
-        promises.push(self.$('.BRfooter').animate({bottom: self.getFooterHeight() * -1}).promise());
-        $brNavCntlBtmEl.addClass('BRup').removeClass('BRdn');
-        $brNavCntlTopEl.addClass('BRdn').removeClass('BRup');
-        self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
-        self.$('.BRnavCntl').delay(1000).animate({opacity:.75}, 1000);
-      } else {
-        if (self.refs.$BRtoolbar)
-          promises.push(self.refs.$BRtoolbar.animate({top:0}).promise());
-        promises.push(self.$('.BRfooter').animate({bottom:0}).promise());
-        $brNavCntlBtmEl.addClass('BRdn').removeClass('BRup');
-        $brNavCntlTopEl.addClass('BRup').removeClass('BRdn');
-        self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
-        self.$('.BRvavCntl').animate({opacity:1});
-      }
-      $.when.apply($, promises).done(function() {
-        // Only do full resize in auto mode and need to recalc. size
-        if (self.mode == self.constMode2up && self.twoPage.autofit != null
-                    && self.twoPage.autofit != 'none'
-        ) {
-          self.resize();
-        } else if (self.mode == self.constMode1up && self.onePage.autofit != null
-                           && self.onePage.autofit != 'none') {
-          self.resize();
-        } else {
-          // Don't do a full resize to avoid redrawing images
-          self.resizeBRcontainer();
-        }
-      });
-    },
-  );
-  $brNavCntlBtmEl
-    .on("mouseover", function() {
-      if ($(this).hasClass('BRup')) {
-        self.$('.BRnavCntl').animate({opacity:1},250);
-      }
-    })
-    .on("mouseleave", function() {
-      if ($(this).hasClass('BRup')) {
-        self.$('.BRnavCntl').animate({opacity:.75},250);
-      }
-    });
-  $brNavCntlTopEl
-    .on("mouseover", function() {
-      if ($(this).hasClass('BRdn')) {
-        self.$('.BRnavCntl').animate({opacity:1},250);
-      }
-    })
-    .on("mouseleave", function() {
-      if ($(this).hasClass('BRdn')) {
-        self.$('.BRnavCntl').animate({opacity:.75},250);
-      }
-    });
-
-  // Call _bindNavigationHandlers on the plugins
-  for (const plugin of Object.values(this.plugins)) {
-    plugin._bindNavigationHandlers();
-  }
-};
-
 /**************************/
 /** BookModel extensions **/
 /**************************/
@@ -1805,8 +1672,6 @@ BookReader.prototype.initUIStrings = function() {
     '.book_right': 'Flip right',
     '.play': 'Play',
     '.pause': 'Pause',
-    '.BRdn': 'Show/hide nav bar', // Would have to keep updating on state change to have just "Hide nav bar"
-    '.BRup': 'Show/hide nav bar',
     '.book_top': 'First page',
     '.book_bottom': 'Last page',
     '.book_leftmost': 'First page',

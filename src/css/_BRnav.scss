@@ -35,14 +35,6 @@
       border: 3px solid rgba(255,255,255,0.3);
     }
   }
-
-  .BRnavCntl {
-    z-index: $brZindexBase + 5;
-    background-color: $brColorDarkBorder;
-  }
-  .BRnavCntlBtm:hover {
-    background-color: $brColorThemeblue;
-  }
 }
 
 @mixin brNavLight {
@@ -65,14 +57,6 @@
       @include pseudoElementLayer;
       border: 3px solid rgba($brColorThemeblue,0.3);
     }
-  }
-
-  .BRnavCntl {
-    background-color: $brColorLightBorder;
-  }
-
-  .BRnavCntlBtm:hover {
-    background-color: $brColorThemeblue;
   }
 }
 
@@ -319,20 +303,12 @@
   font-size: .8em;
   vertical-align: top;
 }
-.BRup {
-  background-image: url("images/nav_control-up.png");
-  background-repeat: no-repeat;
-}
-
 
 /* Mobile Only */
 @media (max-width: $brBreakPointMobile) {
   /* hide navline chapters and search in mobile */
   .BRnavline .BRchapter { display: none; }
 
-  .BRnavCntlBtm {
-    bottom: $brNavHeightMobile;
-  }
   .BRpager.ui-slider {
     height: 10px;
     top: math.div($brNavHeightMobile, 2) - 5px;

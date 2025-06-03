@@ -1,3 +1,4 @@
+// @ts-check
 /** @typedef {import("../../BookReader.js").default} BookReader */
 
 import 'jquery-ui/ui/widget.js';
@@ -118,6 +119,66 @@ export class Navbar {
         currentViewModeButton.title,
       );
     });
+  }
+
+  bindControlClickHandlers() {
+    const jIcons = this.$nav.find('.BRicon');
+
+    // Map of jIcon class -> click handler
+    const navigationControls = {
+      book_left: () => {
+        this.br.trigger(EVENTS.stop);
+        this.br.left();
+      },
+      book_right: () => {
+        this.br.trigger(EVENTS.stop);
+        this.br.right();
+      },
+      book_top: this.br.first.bind(this.br),
+      book_bottom: this.br.last.bind(this.br),
+      book_leftmost: this.br.leftmost.bind(this.br),
+      book_rightmost: this.br.rightmost.bind(this.br),
+      onepg: () => {
+        this.br.switchMode('1up');
+      },
+      thumb: () => {
+        this.br.switchMode('thumb');
+      },
+      twopg: () => {
+        this.br.switchMode('2up');
+      },
+      zoom_in: () => {
+        this.br.trigger(EVENTS.stop);
+        this.br.zoom(1);
+        this.br.trigger(EVENTS.zoomIn);
+      },
+      zoom_out: () => {
+        this.br.trigger(EVENTS.stop);
+        this.br.zoom(-1);
+        this.br.trigger(EVENTS.zoomOut);
+      },
+      full: () => {
+        if (this.br.ui == 'embed') {
+          const url = this.br.$('.BRembedreturn a').attr('href');
+          window.open(url);
+        } else {
+          this.br.toggleFullscreen();
+        }
+      },
+    };
+
+    // custom event for auto-loan-renew in ia-book-actions
+    // - to know if user is actively reading
+    this.$nav.find('nav.BRcontrols li button').on('click', () => {
+      this.br.trigger(EVENTS.userAction);
+    });
+
+    for (const control in navigationControls) {
+      jIcons.filter(`.${control}`).on('click.bindNavigationHandlers', () => {
+        navigationControls[control]();
+        return false;
+      });
+    }
   }
 
   /**
