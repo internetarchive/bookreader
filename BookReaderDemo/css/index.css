@@ -85,10 +85,7 @@
     color: black;
     z-index: 9999;
     font-size: 2.85em;
-    height: 95%;
-    margin: 50px;
-    padding: 25px;
-    background-color: #f8edc0;
+    height: 100%;
     border-radius: 8px;
     box-shadow: 0 0 50px 50px #f8edc0ff;
     overflow-y: scroll;
