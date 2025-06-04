@@ -8,7 +8,7 @@
     // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
     pointer-events: none;
     cursor: text;
-    mix-blend-mode: multiply;
+    // mix-blend-mode: multiply;
 }
 
 .BRparagraphElement {
