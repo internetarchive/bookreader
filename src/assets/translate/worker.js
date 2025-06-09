@@ -59,7 +59,7 @@ onmessage = async function(e) {
         result = "Model loading failed";
       }
       log(`'${command}' command done, Posting message back to main script`);
-      postMessage([`${command}_reply`, result]);
+      postMessage([`${command}_reply`, result, from, to]);
   } else if (command === 'translate') {
       const from = e.data[1];
       const to = e.data[2];
