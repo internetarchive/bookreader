@@ -64,7 +64,7 @@ onmessage = async function(e) {
       const from = e.data[1];
       const to = e.data[2];
       const inputParagraphs = e.data[3];
-      const selector = e.data[4];
+      const cacheKey = e.data[4];
       let inputWordCount = 0;
       inputParagraphs.forEach(sentence => {
         inputWordCount += sentence.trim().split(" ").filter(word => word.trim() !== "").length;
@@ -78,7 +78,7 @@ onmessage = async function(e) {
         log(`Error: ${error.message}`);
       }
       log(`'${command}' command done, Posting message back to main script`);
-      postMessage([`${command}_reply`, result, selector]);
+      postMessage([`${command}_reply`, result, cacheKey]);
   }
 }
 

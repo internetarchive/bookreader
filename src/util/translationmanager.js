@@ -1,7 +1,7 @@
 // @ts-check
 import { Cache } from './cache.js';
 
-const langs = /** @type {{[lang: string]: string}} */ {
+export const langs = /** @type {{[lang: string]: string}} */ {
   "bg": "Bulgarian",
   "ca": "Catalan",
   "cs": "Czech",
@@ -24,14 +24,32 @@ const langs = /** @type {{[lang: string]: string}} */ {
 const status = message => (console.log(message));
 
 export class TranslationManager {
-  /** @type {Cache<{index: string, response: any}>} */
-  alreadyTranslated = new Cache();
+  /** @type {Cache<{index: string, response: string}>} */
+  alreadyTranslated = new Cache(100);
+  
+  /**
+  * @typedef {Object} genericModelInfo
+  * @property {string} name
+  * @property {number} size
+  * @property {number} estimatedCompressedSize
+  * @property {any} [qualityModel]
+  * @property {string} [expectedSha256Hash]
+  * @property {string} [modelType]
+  */
+  /**
+  * @type { {[langPair: string] : {model: genericModelInfo, lex: genericModelInfo, vocab: genericModelInfo, quality?: genericModelInfo}} }
+  */
   modelRegistry = {};
 
   /** @type {Record<key, {promise: Promise<string>, resolve: function, reject: function}>} */
   currentlyTranslating = {}
   /** @type {Record<key, {promise: Promise<string>, resolve: function, reject: function}>} */
   _modelPromises = {};
+  /** 
+   * @type {string} 
+   * e.g. 'ende' 'encz'
+  */
+  currentModel = '';
 
   /** @type {Record<string, string>[]} */
   fromLanguages = [];
@@ -40,6 +58,7 @@ export class TranslationManager {
 
 
   constructor() {
+    //TODO Should default to the book language as the first element
     const enModel = {code: "en", name: "English", type: "prod"};
     this.fromLanguages.push(enModel);
     this.toLanguages.push(enModel);
@@ -47,12 +66,12 @@ export class TranslationManager {
 
 
   async initWorker() {
+    if (this.initPromise) return this.initPromise;
+
     if (window.Worker) {
       this.worker = new Worker("/BookReader/translate/worker.js");
       this.worker.postMessage(["import"]);
     }
-
-    if (this.initPromise) return this.initPromise;
 
     this.initPromise = new Promise((resolve, reject) => {
       this._initResolve = resolve;
@@ -64,8 +83,7 @@ export class TranslationManager {
       if (cmd === "translate_reply" && rest[0]) {
         const [translation, key] = rest;
         if (translation.length) {
-          const translationChunks = translation[0].split('(.)');
-          this.currentlyTranslating[key].resolve(translationChunks);
+          this.currentlyTranslating[key].resolve(translation[0]);
           this.alreadyTranslated.add({index: key, response: translation})
           delete this.currentlyTranslating[key];
         }
@@ -73,6 +91,8 @@ export class TranslationManager {
         status(e.data[1]);
         const [result, from, to] = rest;
         this._modelPromises[`${from}${to}`].resolve(result);
+        // keep as source of truth
+        this.currentModel = `${from}${to}`;
       } else if (cmd === "import_reply" && e.data[1]) {
         this.modelRegistry = e.data[1];
         for (const [langPair, value] of Object.entries(this.modelRegistry)) {
@@ -82,7 +102,6 @@ export class TranslationManager {
           if (firstLang !== "en") {
             const fromModelType = value.model.modelType !== "dev" ? langs[firstLang] : langs[firstLang] + " (βeta)";
             this.fromLanguages.push({code: firstLang, name: fromModelType, type: value.model.modelType});
-
           }
           if (secondLang !== "en") {
             const toModelType = value.model.modelType !== "dev" ? langs[secondLang] : langs[secondLang] + " (βeta)";
@@ -93,7 +112,7 @@ export class TranslationManager {
         this._initResolve([this.modelRegistry]);
         
       } else {
-        console.log("Unrecognized cmd:" + cmd + " \n Or invalid data:" + e);
+        console.log("Unrecognized cmd:" + cmd + " \n Or invalid data:", e);
       }
     }
     return this.initPromise;
@@ -111,7 +130,7 @@ export class TranslationManager {
     }
 
     const key = `${fromCode}${toCode}`;
-    if (key in this._modelPromises) {
+    if (key in this._modelPromises && this.currentModel == key) {
       return this._modelPromises[key].promise;
     }
     status(`Installing model...`);
@@ -130,7 +149,7 @@ export class TranslationManager {
       resolve: _resolve,
       reject: _reject,
     }
-
+    this.currentModel = key;
     this.worker.postMessage(["load_model", fromCode, toCode]);
     return promise;
   };
@@ -180,7 +199,6 @@ export class TranslationManager {
       this.currentlyTranslating[key].reject("No text was provided");
       return promise
     }
-
     this.loadModel(fromLang, toLang).then(() => {
       this.worker.postMessage([
         "translate",
@@ -195,4 +213,9 @@ export class TranslationManager {
 
     return promise;
   }
+  // TODO name better, maybe not needed?
+  checkModel = (fromLang, toLang) => {
+    const key = `${fromLang}${toLang}`;
+    return key in this._modelPromises;
+  };
 }
