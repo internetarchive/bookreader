@@ -2,7 +2,7 @@
 import { html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property } from 'lit/decorators.js';
-import { langs, TranslationManager } from "../../util/translationmanager.js";
+import { langs, TranslationManager } from "./TranslationManager.js";
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);

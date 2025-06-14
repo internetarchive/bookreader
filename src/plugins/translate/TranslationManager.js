@@ -1,5 +1,5 @@
 // @ts-check
-import { Cache } from './cache.js';
+import { Cache } from '../../util/cache.js';
 
 export const langs = /** @type {{[lang: string]: string}} */ {
   "bg": "Bulgarian",
