@@ -3,31 +3,12 @@ import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { SelectionObserver } from '../BookReader/utils/SelectionObserver.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
+import { Cache } from '../util/cache.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
-/**
- * @template T
- */
-export class Cache {
-  constructor(maxSize = 10) {
-    this.maxSize = maxSize;
-    /** @type {T[]} */
-    this.entries = [];
-  }
-
-  /**
-   * @param {T} entry
-   */
-  add(entry) {
-    if (this.entries.length >= this.maxSize) {
-      this.entries.shift();
-    }
-    this.entries.push(entry);
-  }
-}
 
 export class TextSelectionPlugin extends BookReaderPlugin {
   options = {
@@ -356,6 +337,10 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     }
     $container.append(textLayer);
     this.stopPageFlip($container);
+    this.br.trigger('textLayerRendered', {
+      pageIndex,
+      pageContainer,
+    });
   }
 
   /**
