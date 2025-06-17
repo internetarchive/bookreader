@@ -1,4 +1,4 @@
-.BRtextLayer {
+.BRtextLayer, .BRtranslateLayer {
     z-index: 2;
     position: absolute;
     top: 0;
@@ -8,7 +8,7 @@
     // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
     pointer-events: none;
     cursor: text;
-    mix-blend-mode: multiply;
+    // mix-blend-mode: multiply;
 }
 
 .BRparagraphElement {
@@ -107,4 +107,21 @@
 .BRlineElement[_msttexthash] {
     background: #ccbfa7;
     word-spacing: unset !important;
+}
+
+.BRtranslateLayer .BRparagraphElement {
+    pointer-events: all;
+    overflow-y: auto;
+    font-family: "Helvetica Neue", Arial, Verdana, sans-serif;
+    margin-bottom: 0;
+    background: #f8edc0;
+    color:black;
+}
+
+.BRtranslateLayer .BRparagraphElement .BRlineElement {
+    white-space: preserve-spaces;
+    display: inline-block;
+    background: #f8edc0;
+    line-height: normal;
+    pointer-events: all;
 }
