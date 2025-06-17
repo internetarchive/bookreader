@@ -108,3 +108,18 @@
     background: #ccbfa7;
     word-spacing: unset !important;
 }
+
+.BRlinkElement {
+  outline: 8px solid currentColor;
+  border-radius: 22px;
+  text-decoration: none;
+  background-color: color-mix(in srgb, currentColor, transparent 80%);
+  transition: background-color 0.2s;
+  &:hover {
+    background-color: color-mix(in srgb, currentColor, transparent 50%);
+  }
+
+  & span {
+    color: transparent;
+  }
+}
