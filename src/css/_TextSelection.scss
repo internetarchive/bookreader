@@ -110,13 +110,17 @@
 }
 
 .BRlinkElement {
-  outline: 8px solid currentColor;
-  border-radius: 22px;
-  text-decoration: none;
-  background-color: color-mix(in srgb, currentColor, transparent 80%);
+  background-color: color-mix(in srgb, currentColor, transparent 85%);
   transition: background-color 0.2s;
-  &:hover {
-    background-color: color-mix(in srgb, currentColor, transparent 50%);
+
+  &:hover,
+  // Hack to make links that wrap to the next line change color together.
+  // Can remove when/if we can remove the line elements, and have the wrap
+  // natively...
+  .BRlineElement:has(&:last-child:hover) + .BRlineElement > &:first-child,
+  // Opposite direction
+  .BRlineElement:has(+ .BRlineElement &:first-child:hover) &:last-child {
+    background-color: color-mix(in srgb, currentColor, transparent 75%);
   }
 
   & span {

@@ -496,12 +496,13 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         const wordRect = wordRects.get(wordEl);
         const [ocrLeft, , ocrRight ] = $(ocrWord).attr("coords").split(',').map(parseFloat);
         const diff = (this.rtl ? -(ocrRight - xSoFar) : ocrLeft - xSoFar);
+        const parentAnchor = wordEl.closest('a');
+        const prevSpaceEl = wordEl.previousElementSibling || parentAnchor?.previousElementSibling;
 
-        if (wordEl.previousElementSibling) {
-          const space = wordEl.previousElementSibling;
-          space.style.letterSpacing = `${diff - spaceRects.get(space).width}px`;
+        if (prevSpaceEl) {
+          prevSpaceEl.style.letterSpacing = `${diff - spaceRects.get(prevSpaceEl).width}px`;
         } else {
-          wordEl.style[this.rtl ? 'paddingRight' : 'paddingLeft'] = `${diff}px`;
+          lineEl.style[this.rtl ? 'paddingRight' : 'paddingLeft'] = `${diff}px`;
         }
         if (this.rtl) xSoFar -= diff + wordRect.width;
         else xSoFar += diff + wordRect.width;
