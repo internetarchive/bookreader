@@ -75,7 +75,7 @@
 // Hide text layer for performance during zooming & scrolling
 .BRsmooth-zooming, .BRscrolling-active {
     // If the text layer has an annotation, don't hide it
-    .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)):not(:has(.BRhighlight)) .BRtextLayer {
+    .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)):not(:has(.BRhighlight)):not(:has(.BRlinkElement)) .BRtextLayer {
         display: none;
     }
 }
@@ -215,4 +215,19 @@
     // Similar colour to the default one used in Safari, Firefox. Note Chrome uses a purple colour
     background-color: hsla(45, 80%, 66%, 0.6);
     color: transparent;
+}
+
+.BRlinkElement {
+  outline: 8px solid currentColor;
+  border-radius: 22px;
+  text-decoration: none;
+  background-color: color-mix(in srgb, currentColor, transparent 80%);
+  transition: background-color 0.2s;
+  &:hover {
+    background-color: color-mix(in srgb, currentColor, transparent 50%);
+  }
+
+  & span {
+    color: transparent;
+  }
 }
