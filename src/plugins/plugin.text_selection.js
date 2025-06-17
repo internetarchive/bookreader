@@ -5,6 +5,7 @@ import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
+import SAMPLE_TEXT_ANNOTATIONS from './sample_text_annotations.json';
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
@@ -257,6 +258,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       if ($(event.target).is(".BRwordElement, .BRspace")) {
         event.stopPropagation();
       }
+      if ($(event.target).closest('a').length) {
+        skipNextMouseup = true;
+      }
     });
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
@@ -334,7 +338,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
     const ocrParagraphs = $(XMLpage).find("PARAGRAPH[coords]").toArray();
     const paragEls = ocrParagraphs.map(p => {
-      const el = this.renderParagraph(p);
+      const el = this.renderParagraph(pageContainer.page, p);
       textLayer.appendChild(el);
       return el;
     });
@@ -359,10 +363,11 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   }
 
   /**
+   * @param {import('../BookReader/BookModel.js').PageModel} page
    * @param {HTMLElement} ocrParagraph
    * @returns {HTMLParagraphElement}
    */
-  renderParagraph(ocrParagraph) {
+  renderParagraph(page, ocrParagraph) {
     const paragEl = document.createElement('p');
     paragEl.classList.add('BRparagraphElement');
     const [paragLeft, paragBottom, paragRight, paragTop] = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
@@ -375,6 +380,11 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       const isLastLineOfParagraph = line.ocrElement == lines[lines.length - 1];
       const lineEl = document.createElement('span');
       lineEl.classList.add('BRlineElement');
+
+      /** @type {HTMLAnchorElement|null} */
+      let activeAnchor = null;
+      /** @type {{ leaf: string, boxdjvu: Array<{text: string, coords: import('./tts/PageChunk.js').DJVURect}}} */
+      let activeClickable = null;
 
       for (const [wordIndex, currWord] of line.words.entries()) {
         const [, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
@@ -394,18 +404,35 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         wordEl.setAttribute("class", "BRwordElement");
         wordEl.textContent = currWord.textContent.trim();
 
+        const clickable = this.getClickable(page.leafNum, currWord);
+        if (!clickable || clickable !== activeClickable) {
+          activeAnchor = null;
+        }
+        activeClickable = clickable;
+
         if (wordIndex > 0) {
           const space = document.createElement('span');
           space.classList.add('BRspace');
           space.textContent = ' ';
-          lineEl.append(space);
+          (activeAnchor || lineEl).append(space);
 
           // Edge ignores empty elements (like BRspace), so add another
           // space to ensure Edge's ReadAloud works correctly.
-          lineEl.appendChild(document.createTextNode(' '));
+          (activeAnchor || lineEl).appendChild(document.createTextNode(' '));
         }
 
-        lineEl.appendChild(wordEl);
+        if (clickable && !activeAnchor) {
+          activeAnchor = document.createElement('a');
+          activeAnchor.classList.add('BRlinkElement');
+          if (clickable.iaurlpage) {
+            activeAnchor.setAttribute('href', clickable.iaurlpage.replace(/.*\/page/, '#page'));
+          } else {
+            activeAnchor.setAttribute('href', clickable.iaurltitle);
+          }
+          lineEl.appendChild(activeAnchor);
+        }
+
+        (activeAnchor || lineEl).appendChild(wordEl);
       }
 
       const hasHyphen = line.lastWord.textContent.trim().endsWith('-');
@@ -469,12 +496,13 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         const wordRect = wordRects.get(wordEl);
         const [ocrLeft, , ocrRight ] = $(ocrWord).attr("coords").split(',').map(parseFloat);
         const diff = (this.rtl ? -(ocrRight - xSoFar) : ocrLeft - xSoFar);
+        const parentAnchor = wordEl.closest('a');
+        const prevSpaceEl = wordEl.previousElementSibling || parentAnchor?.previousElementSibling;
 
-        if (wordEl.previousElementSibling) {
-          const space = wordEl.previousElementSibling;
-          space.style.letterSpacing = `${diff - spaceRects.get(space).width}px`;
+        if (prevSpaceEl) {
+          prevSpaceEl.style.letterSpacing = `${diff - spaceRects.get(prevSpaceEl).width}px`;
         } else {
-          wordEl.style[this.rtl ? 'paddingRight' : 'paddingLeft'] = `${diff}px`;
+          lineEl.style[this.rtl ? 'paddingRight' : 'paddingLeft'] = `${diff}px`;
         }
         if (this.rtl) xSoFar -= diff + wordRect.width;
         else xSoFar += diff + wordRect.width;
@@ -494,6 +522,28 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // Edge does not include a newline for some reason when copying/pasting the <p> els
     paragEl.appendChild(document.createElement('br'));
     return paragEl;
+  }
+
+  /**
+   * @param {number} leafIndex
+   * @param {Element} ocrWord
+   */
+  getClickable(leafIndex, ocrWord) {
+    for (const citation of SAMPLE_TEXT_ANNOTATIONS.citations) {
+      if (citation.leaf != leafIndex) continue;
+      const ocrWordRect = Rect.fromLBRT(...$(ocrWord).attr("coords").split(',').map(parseFloat));
+      if (!citation.boxdjvu || !citation.boxdjvu.length) {
+        continue;
+      }
+      for (const box of citation.boxdjvu) {
+        const citationRect = Rect.fromLBRT(...box.coords);
+        const intersection = ocrWordRect.intersect(citationRect);
+        const intersectionRatio = intersection ? intersection.area / ocrWordRect.area : 0;
+        if (intersectionRatio > 0.5) {
+          return citation;
+        }
+      }
+    }
   }
 }
 
@@ -711,6 +761,34 @@ class Rect {
   get bottom() { return this.y + this.height; }
   get top() { return this.y; }
   get left() { return this.x; }
+  get area() { return this.width * this.height; }
+
+  /**
+   * @param {number} left
+   * @param {number} bottom
+   * @param {number} right
+   * @param {number} top
+   */
+  static fromLBRT(left, bottom, right, top) {
+    return new Rect(left, top, right - left, bottom - top);
+  }
+
+  /**
+   * Returns the rectangle that is the intersection of this rectangle and another rectangle.
+   * @param {Rect} other
+   * @return {Rect|null} Returns null if there is no intersection.
+   */
+  intersect(other) {
+    const left = Math.max(this.left, other.left);
+    const right = Math.min(this.right, other.right);
+    const top = Math.max(this.top, other.top);
+    const bottom = Math.min(this.bottom, other.bottom);
+
+    if (left < right && top < bottom) {
+      return new Rect(left, top, right - left, bottom - top);
+    }
+    return null;
+  }
 }
 
 /**
