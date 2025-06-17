@@ -2,34 +2,10 @@
 import { html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property } from 'lit/decorators.js';
-import { toISO6391 } from '../tts/utils.js';
+import { langs, TranslationManager } from "./TranslationManager.js";
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
-
-const qs = selector => document.querySelector(selector);
-const status = message => (console.log(message));
-
-const langs = {
-  "bg": "Bulgarian",
-  "ca": "Catalan",
-  "cs": "Czech",
-  "nl": "Dutch",
-  "en": "English",
-  "et": "Estonian",
-  "de": "German",
-  "fr": "French",
-  "is": "Icelandic",
-  "it": "Italian",
-  "nb": "Norwegian Bokmål",
-  "nn": "Norwegian Nynorsk",
-  "fa": "Persian",
-  "pl": "Polish",
-  "pt": "Portuguese",
-  "ru": "Russian",
-  "es": "Spanish",
-  "uk": "Ukrainian",
-};
 
 export class TranslatePlugin extends BookReaderPlugin {
 
@@ -37,16 +13,28 @@ export class TranslatePlugin extends BookReaderPlugin {
     enabled: true,
   }
 
+  /** @type {TranslationManager} */
+  translationManager = new TranslationManager();
+
+  /** @type {Worker}*/
   worker;
-  modelRegistry;
-  version;
 
-  supportedFromCodes = {};
-  supportedToCodes = {};
-
-  fromLanguages = [];
+  /**
+   * Contains the list of languages available to translate to
+   * @type {string[]}
+   */
   toLanguages = [];
-  langFromCode;
+
+  /**
+   * Current language code that is being translated From
+   * @type {!string}
+   */
+  langFromCode = "en";
+
+  /**
+   * Current language code that is being translated To
+   * @type {!string}
+   */
   langToCode;
   /**
    * @type {BrTranslatePanel} _panel - Represents a panel used in the plugin.
@@ -55,240 +43,146 @@ export class TranslatePlugin extends BookReaderPlugin {
   _panel;
 
   async init() {
-    const self = this;
 
     if (!this.options.enabled) {
       return;
     }
-    await Promise.resolve();
+
+    /**
+     * @param {*} ev
+     * @param {object} eventProps
+    */
+    this.br.on('textLayerRendered', async (_, {pageIndex, pageContainer}) => {
+      // Stops invalid models from running, also prevents translation on page load
+      // TODO check if model has finished loading or if it exists
+      if (!this.translationManager.checkModel(this.langFromCode, this.langToCode)) {
+        return;
+      }
+
+      const pageElement = pageContainer.$container[0];
+      this.translateRenderedLayer(pageElement);
+    });
+    await this.translationManager.initWorker();
+    // Note await above lets _render function properly, since it gives the browser
+    // time to render the rest of bookreader, which _render depends on
     this._render();
 
-    if (window.Worker) {
-      this.worker = new Worker("/BookReader/translate/worker.js");
-      this.worker.postMessage(["import"]);
-    }
+    this.langToCode = this.translationManager.toLanguages[0].code;
 
-    // This needs to be updates to change #output
-    this.worker.onmessage = (e) => {
-      const [cmd, ...rest] = e.data;
-      if (cmd === "translate_reply" && rest[0]) {
-        const [translation, selector] = rest;
-        console.log(translation.join("\n\n"));
-        console.log(selector);
-        const el = document.querySelector(selector);
-        if (el) {
-          document.querySelector(selector).innerHTML = translation.join("<br><br>");
-        }
-      } else if (cmd === "load_model_reply" && e.data[1]) {
-        status(e.data[1]);
-        if (this.langFromCode !== this.langToCode) {
-          this.translateVisiblePages();
-        }
-      } else if (cmd === "import_reply" && e.data[1]) {
-        this.modelRegistry = e.data[1];
-        this.version = e.data[2];
-        this.initWorker();
-      }
-    };
-
-    // Any time an action occurs, get the text
-    const next = BookReader.prototype.next;
-    BookReader.prototype.next = function (...args) {
-      const r = next.apply(this, args);
-      console.log("BookReader.prototype.next triggered", args);
-      setTimeout(() => {
-        self.clearTranslations();
-        if (self.langFromCode !== self.langToCode) {
-          self.translateVisiblePages();
-        }
-      }, 0);
-      return r;
-    };
   }
 
-  *getVisiblePages() {
-    for (const el of document.querySelectorAll('.BRpage-visible')) {
-      if ([...el.classList].some(cls => /^pagediv\d+$/.test(cls))) {
-        const textLayer = el.querySelector(".BRtextLayer");
-        if (textLayer) yield textLayer;
-      }
-    }
-  }
-
+  /** @param {HTMLElement} page*/
   getParagraphsOnPage = (page) => {
-    return page ? Array.from(page.querySelectorAll(".BRparagraphElement")) : [];
+    return page ? Array.from(page.querySelectorAll(".BRtextLayer > .BRparagraphElement")) : [];
   }
 
-  translateVisiblePages = () => {
-    this.clearTranslations();
-    let gidx = 0;
-    for (const page of this.getVisiblePages()) {
-      const paragraphs = this.getParagraphsOnPage(page);
+  translateActivePageContainerElements() {
+    const currentlyActiveContainers = this.br.getActivePageContainerElements();
+    const visiblePageContainers = currentlyActiveContainers.filter((element) => {
+      return element.classList.contains('BRpage-visible');
+    });
+    const hiddenPageContainers = currentlyActiveContainers.filter((element) => {
+      return !element.classList.contains('BRpage-visible');
+    });
 
-      // Create the translation layer for all paragraphs on the page
-      const pageTranslationLayer = document.createElement('div');
-      pageTranslationLayer.className = 'translation';
-      page.insertBefore(pageTranslationLayer, page.firstChild);
+    for (const page of visiblePageContainers) {
+      this.translateRenderedLayer(page);
+    }
+    for (const loadingPage of hiddenPageContainers) {
+      this.translateRenderedLayer(loadingPage);
+    }
+  }
 
-      paragraphs.forEach((paragraph) => {
-        // set data-index on the paragraph
-        paragraph.setAttribute('data-index', gidx.toString());
+  /** @param {HTMLElement} page */
+  async translateRenderedLayer(page) {
+    if (this.br.mode == this.br.constModeThumb) {
+      return;
+    }
 
-        const translationPlaceholder = document.createElement('p');
+    const pageIndex = page.dataset.index;
+    let pageTranslationLayer;
+    if (!page.querySelector('.BRPageLayer.BRtranslateLayer')) {
+      pageTranslationLayer = document.createElement('div');
+      pageTranslationLayer.classList.add('BRPageLayer', 'BRtranslateLayer');
+      page.prepend(pageTranslationLayer);
+    } else {
+      pageTranslationLayer = page.querySelector('.BRPageLayer.BRtranslateLayer');
+    }
+
+    const textLayerElement = page.querySelector('.BRtextLayer');
+    $(pageTranslationLayer).css({
+      "width": $(textLayerElement).css("width"),
+      "height": $(textLayerElement).css("height"),
+      "transform": $(textLayerElement).css("transform"),
+      "pointer-events": $(textLayerElement).css("pointer-events"),
+      "z-index": 3,
+    });
+    const paragraphs = this.getParagraphsOnPage(page);
+
+    paragraphs.forEach(async (paragraph, pidx) => {
+      let translatedParagraph = page.querySelector(`[data-translate-index='${pageIndex}-${pidx}']`);
+      if (!translatedParagraph) {
+        translatedParagraph = document.createElement('p');
         // set data-translate-index on the placeholder
-        translationPlaceholder.setAttribute('data-translate-index', gidx.toString());
-        pageTranslationLayer.appendChild(translationPlaceholder);
+        translatedParagraph.setAttribute('data-translate-index', `${pageIndex}-${pidx}`);
+        translatedParagraph.className = 'BRparagraphElement';
+        const originalParagraphStyle = paragraphs[pidx];
 
-        const selector = `.${page.className.split(' ').join('.')} .translation p[data-translate-index="${gidx}"]`;
+        $(translatedParagraph).css({
+          "margin-left": $(originalParagraphStyle).css("margin-left"),
+          "margin-top": $(originalParagraphStyle).css("margin-top"),
+          "top": $(originalParagraphStyle).css("top"),
+          "height": $(originalParagraphStyle).css("height"),
+          "font-size": `${parseInt($(originalParagraphStyle).css("font-size")) - 3}px`,
+          "width": $(originalParagraphStyle).css("width"),
+        });
 
-        if (paragraph.textContent) {
-          this.worker.postMessage([
-            "translate",
-            this.langFromCode,
-            this.langToCode,
-            [paragraph.textContent],
-            selector,
-          ]);
-        }
-        gidx++;
-      });
-    }
-  }
-
-  clearTranslations = () => {
-    document.querySelectorAll('.translation').forEach(el => el.remove());
-  };
-
-
-  /**
-   * @protected
-   * @param {import ("../../BookReader/PageContainer.js").PageContainer} pageContainer
-   */
-  _configurePageContainer(pageContainer) {
-    // fetch each page
-    // break each page into paragraphs
-    // call translate and give ...
-    return pageContainer;
-  }
-
-  initWorker = () => {
-    // parse supported languages and model types (prod or dev)
-    this.supportedFromCodes["en"] = "prod";
-    this.supportedToCodes["en"] = "prod";
-    for (const [langPair, value] of Object.entries(this.modelRegistry)) {
-      const firstLang = langPair.substring(0, 2);
-      const secondLang = langPair.substring(2, 4);
-      if (firstLang !== "en") this.supportedFromCodes[firstLang] = value.model.modelType;
-      if (secondLang !== "en") this.supportedToCodes[secondLang] = value.model.modelType;
-    }
-
-    // try to guess input language from user agent
-    const bookLanguage = "en"; //toISO6391(this.br.options.bookLanguage);
-    let readersLanguage = navigator.language;
-
-    // initialize everything as book language
-    this.langFromCode = this.langToCode = bookLanguage;
-
-    // use reader's language, if we know it and it's available
-    if (readersLanguage) {
-      readersLanguage = readersLanguage.split("-")[0];
-      if (readersLanguage in this.supportedToCodes) {
-        console.log("guessing input language is", readersLanguage);
-        this.langToCode = readersLanguage;
+        pageTranslationLayer.append(translatedParagraph);
       }
-    }
 
-    this.fromLanguages = this.formatLangs(this.supportedFromCodes);
-    // find first output lang that *isn't* input language
-
-    this.toLanguages = this.formatLangs(this.supportedToCodes);
-    this.langToCode = this.findFirstSupportedTo();
-
-    // load this model
-    this.loadModel();
+      if (paragraph.textContent.length !== 0) {
+        const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent);
+        // prevent duplicate spans from appearing if exists
+        translatedParagraph.firstElementChild?.remove();
+        const createSpan = document.createElement('span');
+        createSpan.className = 'BRlineElement';
+        createSpan.textContent = translatedText;
+        translatedParagraph.appendChild(createSpan);
+      }
+    });
   }
 
-  handleFromLangChange = (e) => {
-    this.clearTranslations();
+  clearAllTranslations() {
+    document.querySelectorAll('.BRtranslateLayer').forEach(el => el.remove());
+  }
+
+  handleFromLangChange = async (e) => {
+    this.clearAllTranslations();
     const selectedLangFrom = e.detail.value;
 
     // Update the from language
     this.langFromCode = selectedLangFrom;
 
-    const setToCode = this.langToCode !== selectedLangFrom ? this.langToCode : this.findFirstSupportedTo();
-
     // Add 'From' language to 'To' list if not already present
-    if (!this.toLanguages.some(lang => lang.code === selectedLangFrom)) {
-      this.toLanguages.push({ code: selectedLangFrom, name: langs[selectedLangFrom] });
+    if (!this.translationManager.toLanguages.some(lang => lang.code === selectedLangFrom)) {
+      this.translationManager.toLanguages.push({ code: selectedLangFrom, name: langs[selectedLangFrom] });
     }
 
     // Update the 'To' languages list and set the correct 'To' language
-    this._panel.toLanguages = this.formatLangs(this.supportedToCodes, setToCode, selectedLangFrom);
+    this._panel.toLanguages = this.translationManager.toLanguages;
 
     console.log(this.langFromCode, this.langToCode);
     if (this.langFromCode !== this.langToCode) {
-      this.loadModel();
+      this.translateActivePageContainerElements();
     }
   }
 
-  handleToLangChange = (e) => {
-    this.clearTranslations();
+  handleToLangChange = async (e) => {
+    this.clearAllTranslations();
     this.langToCode = e.detail.value;
-    this.loadModel();
+    this.translateActivePageContainerElements();
   }
 
-  isSupported = (lngFrom, lngTo) => {
-    return (`${lngFrom}${lngTo}` in this.modelRegistry) || lngFrom === lngTo ||
-      ((`${lngFrom}en` in this.modelRegistry) && (`en${lngTo}` in this.modelRegistry));
-  }
-
-  switchLanguage() {
-    const prevLangFromCode = this.langFromCode;
-    this.langFromCode = this.langToCode;
-
-    if (prevLangFromCode in this.supportedToCodes) {
-      this._panel.toLanguages = this.formatLangs(this.supportedToCodes, prevLangFromCode, this.langFromCode);
-    }
-    else {
-      this.langToCode = null;
-    }
-
-    this.loadModel();
-  }
-
-  findFirstSupportedTo = () => {
-    return Object.keys(this.supportedToCodes)[0];
-  }
-
-  loadModel = () => {
-    const fromCode = this.langFromCode;
-    const toCode = this.langToCode;
-    if (fromCode !== toCode) {
-      if (!this.isSupported(fromCode, toCode)) {
-        status("Language pair is not supported");
-        return;
-      }
-
-      status(`Installing model...`);
-      console.log(`Loading model '${fromCode}${toCode}'`);
-      this.worker.postMessage(["load_model", fromCode, toCode]);
-    }
-  };
-
-  translateCall = (paragraphs) => {
-    this.worker.postMessage(["translate", this.langFromCode, this.langToCode, paragraphs, '#output']);
-  };
-
-  formatLangs = (langsToSet, value, exclude) => {
-    const prop = [];
-    for (const [code, type] of Object.entries(langsToSet)) {
-      //if (code === exclude) continue;
-      let name = langs[code];
-      if (type === "dev") name += " (βeta)";
-      prop.push({code, name});
-    }
-    return prop;
-  }
 
   /**
   * Update the table of contents based on array of TOC entries.
@@ -303,15 +197,14 @@ export class TranslatePlugin extends BookReaderPlugin {
       component: html`<br-translate-panel
         @connected="${e => {
         this._panel = e.target;
-        this._panel.fromLanguages = this.fromLanguages;
-        this._panel.toLanguages = this.toLanguages;
+        this._panel.fromLanguages = this.translationManager.fromLanguages;
+        this._panel.toLanguages = this.translationManager.toLanguages;
       }
       }"
         @langFromChanged="${this.handleFromLangChange}"
         @langToChanged="${this.handleToLangChange}"
-        .fromLanguages="${this.fromLanguages}"
-        .toLanguages="${this.toLanguages}"
-        .version="${this.version}"
+        .fromLanguages="${this.translationManager.fromLanguages}"
+        .toLanguages="${this.translationManager.toLanguages}"
         class="translate-panel"
       />`,
     };
@@ -325,7 +218,6 @@ BookReader?.registerPlugin('translate', TranslatePlugin);
 export class BrTranslatePanel extends LitElement {
   @property({ type: Array }) fromLanguages = []; // List of obj {code, name}
   @property({ type: Array }) toLanguages = []; // List of obj {code, name}
-  @property({ type: String }) version = '';
   @property({ type: String }) prevSelectedLang = ''; // Tracks the previous selected language for the "To" dropdown
 
   /** @override */
@@ -404,6 +296,10 @@ export class BrTranslatePanel extends LitElement {
 
   _onPrevLangClick() {
     const prevLang = this.prevSelectedLang;
+    if (prevLang == this._getSelectedLang('from')) {
+      console.log("_onPrevLangClick: will not change since prevLang is the same as the current 'To' language code");
+      return;
+    }
     this.prevSelectedLang = this._getSelectedLang('to'); // Update prevSelectedLang to current "To" value
     const langToChangedEvent = new CustomEvent('langToChanged', {
       detail: { value: prevLang },
