@@ -55,8 +55,9 @@ export class TranslatePlugin extends BookReaderPlugin {
     this.br.on('textLayerRendered', async (_, {pageIndex, pageContainer}) => {
       // Stops invalid models from running, also prevents translation on page load
       // TODO check if model has finished loading or if it exists
-      if (!this.translationManager.checkModel(this.langFromCode, this.langToCode)) {
-        return;
+      if (this.translationManager.active) {
+        const pageElement = pageContainer.$container[0];
+        this.translateRenderedLayer(pageElement);
       }
 
       const pageElement = pageContainer.$container[0];
@@ -99,20 +100,21 @@ export class TranslatePlugin extends BookReaderPlugin {
     });
 
     for (const page of visiblePageContainers) {
-      this.translateRenderedLayer(page);
+      this.translateRenderedLayer(page, 0);
     }
     for (const loadingPage of hiddenPageContainers) {
-      this.translateRenderedLayer(loadingPage);
+      this.translateRenderedLayer(loadingPage, 1000);
     }
   }
 
   /** @param {HTMLElement} page */
-  async translateRenderedLayer(page) {
+  async translateRenderedLayer(page, priority) {
     if (this.br.mode == this.br.constModeThumb) {
       return;
     }
 
     const pageIndex = page.dataset.index;
+    const pagePriority = parseInt(pageIndex) + priority;
     let pageTranslationLayer;
     if (!page.querySelector('.BRPageLayer.BRtranslateLayer')) {
       pageTranslationLayer = document.createElement('div');
@@ -172,7 +174,7 @@ export class TranslatePlugin extends BookReaderPlugin {
       }
 
       if (paragraph.textContent.length !== 0) {
-        const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent);
+        const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent, pagePriority);
         // prevent duplicate spans from appearing if exists
         translatedParagraph.firstElementChild?.remove();
 
