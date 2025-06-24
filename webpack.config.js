@@ -77,6 +77,7 @@ export default [
 
     output: {
       filename: '[name]',
+      chunkFilename: '[id].js',
       path: path.resolve(__dirname, 'BookReader'),
     },
 
