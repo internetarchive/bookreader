@@ -8,7 +8,14 @@
     // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
     pointer-events: none;
     cursor: text;
-    // mix-blend-mode: multiply;
+}
+
+.BRtextLayer {
+    mix-blend-mode: multiply;
+}
+
+.BRtranslateLayer {
+    hyphens: auto;
 }
 
 .BRparagraphElement {
@@ -109,19 +116,45 @@
     word-spacing: unset !important;
 }
 
+// Add this .BRpagecontainer--showingTranslation to class when translation active
+.BRpagecontainer--showingTranslation .BRtextLayer {
+    display: none;
+}
+
 .BRtranslateLayer .BRparagraphElement {
-    pointer-events: all;
+    pointer-events: auto; 
     overflow-y: auto;
-    font-family: "Helvetica Neue", Arial, Verdana, sans-serif;
+    font-family: "Georgia, serif"; 
     margin-bottom: 0;
-    background: #f8edc0;
+    background: rgba(248, 237, 192, 0.5);
+    backdrop-filter: blur(8px);
     color:black;
+    container: pElement / size;
+    opacity: 1;
+    transition: opacity 0.15s linear;
+    z-index: 3;
+    --webkit-user-drag: none;
+    user-select: text;
+    
+}
+
+.BRtranslateLayer .BRparagraphElementHover {
+    opacity: 0;
+    transition-delay: 1s;
+}
+
+.BRparagraphElement::selection {
+    background: hsla(210, 74%, 62%, 0.4);
+}
+.BRparagraphElement::-moz-selection {
+    background: hsla(210, 74%, 62%, 0.4);
+    color:transparent;
 }
 
 .BRtranslateLayer .BRparagraphElement .BRlineElement {
     white-space: preserve-spaces;
     display: inline-block;
-    background: #f8edc0;
-    line-height: normal;
+    line-height: 1em;
     pointer-events: all;
+    backdrop-filter: none;
 }

@@ -283,7 +283,12 @@ export class Mode1UpLit extends LitElement {
       }).$container[0];
 
     pageContainerEl.style.transform = transform;
-    pageContainerEl.classList.toggle('BRpage-visible', this.visiblePages.includes(page));
+    const visibleStatus = pageContainerEl.classList.toggle('BRpage-visible', this.visiblePages.includes(page));
+    if (visibleStatus) {
+      this.br.trigger('pagevisible', {
+        pageContainerEl
+      })
+    }
     return pageContainerEl;
   }
 

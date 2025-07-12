@@ -60,8 +60,25 @@ export class TranslatePlugin extends BookReaderPlugin {
       }
 
       const pageElement = pageContainer.$container[0];
-      this.translateRenderedLayer(pageElement);
+      await this.translateRenderedLayer(pageElement);
     });
+
+    /**
+     * @param {*} ev
+     * @param {object} eventProps
+    */
+    this.br.on('pagevisible', (_, {pageContainerEl}) => {
+      const translationLayerEl = Array.from(pageContainerEl.childNodes).filter((ele) => {
+        return ele.classList.contains('BRtranslateLayer');
+      });
+      if (translationLayerEl) {
+        const translatedParagraphs = this.getTranslatedParagraphsOnPage(pageContainerEl);
+        for (const ele of translatedParagraphs) {
+          this.fitVisiblePage(ele);
+        }
+      }
+    });
+
     await this.translationManager.initWorker();
     // Note await above lets _render function properly, since it gives the browser
     // time to render the rest of bookreader, which _render depends on
@@ -74,6 +91,11 @@ export class TranslatePlugin extends BookReaderPlugin {
   /** @param {HTMLElement} page*/
   getParagraphsOnPage = (page) => {
     return page ? Array.from(page.querySelectorAll(".BRtextLayer > .BRparagraphElement")) : [];
+  }
+
+  /** @param {HTMLElement} page */
+  getTranslatedParagraphsOnPage = (page) => {
+    return page ? Array.from(page.querySelectorAll(".BRtranslateLayer > .BRparagraphElement")) : [];
   }
 
   translateActivePageContainerElements() {
@@ -104,6 +126,11 @@ export class TranslatePlugin extends BookReaderPlugin {
     if (!page.querySelector('.BRPageLayer.BRtranslateLayer')) {
       pageTranslationLayer = document.createElement('div');
       pageTranslationLayer.classList.add('BRPageLayer', 'BRtranslateLayer');
+      pageTranslationLayer.setAttribute('lang', `${this.langToCode}`);
+      pageTranslationLayer.addEventListener('mousedown', (e) => {
+        e.stopImmediatePropagation();
+        e.stopPropagation();
+      });
       page.prepend(pageTranslationLayer);
     } else {
       pageTranslationLayer = page.querySelector('.BRPageLayer.BRtranslateLayer');
@@ -127,16 +154,50 @@ export class TranslatePlugin extends BookReaderPlugin {
         translatedParagraph.setAttribute('data-translate-index', `${pageIndex}-${pidx}`);
         translatedParagraph.className = 'BRparagraphElement';
         const originalParagraphStyle = paragraphs[pidx];
-  
+        
+        const lineHeightAvg = [];
+        let paragraphSpans = Array.from(originalParagraphStyle.childNodes).filter((ele) => {
+          return ele.tagName === 'SPAN';
+        })
+        for (const ele of paragraphSpans) {
+          lineHeightAvg.push(parseInt(ele.style["line-height"]));
+        }
+        const lineHeightCalc = lineHeightAvg.reduce((acc, curr) => acc + curr, 0) / lineHeightAvg.length;
+        const fontSize = `${parseInt($(originalParagraphStyle).css("font-size"))}px`;
+
         $(translatedParagraph).css({
           "margin-left": $(originalParagraphStyle).css("margin-left"),
           "margin-top": $(originalParagraphStyle).css("margin-top"),
           "top": $(originalParagraphStyle).css("top"),
           "height": $(originalParagraphStyle).css("height"),
-          "font-size": `${parseInt($(originalParagraphStyle).css("font-size")) - 3}px`,
           "width": $(originalParagraphStyle).css("width"),
+          "font-size": fontSize,
+          "line-height": `${lineHeightCalc}px`,
         });
-  
+
+        translatedParagraph.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          translatedParagraph.classList.remove('BRparagraphElementHover');
+          e.stopImmediatePropagation();
+        });
+
+        translatedParagraph.addEventListener('mouseup', (e) => {
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        })
+
+
+        // Hovering over translated text elements causes a class change to change the opacity to 0
+        translatedParagraph.addEventListener('mouseenter', () => {
+          translatedParagraph.classList.add('BRparagraphElementHover');
+        });
+        translatedParagraph.addEventListener('mouseleave', () => {
+          translatedParagraph.classList.remove('BRparagraphElementHover');
+        });
+
+        translatedParagraph.addEventListener('dragstart', (e) =>{
+          e.preventDefault();
+        })
         pageTranslationLayer.append(translatedParagraph);
       }
 
@@ -144,10 +205,20 @@ export class TranslatePlugin extends BookReaderPlugin {
         const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent);
         // prevent duplicate spans from appearing if exists
         translatedParagraph.firstElementChild?.remove();
+
+        const firstWordSpacing = paragraphs[pidx]?.firstChild?.firstChild;
         const createSpan = document.createElement('span');
         createSpan.className = 'BRlineElement';
+        createSpan.classList.add('BRtranslateElement');
         createSpan.textContent = translatedText;
         translatedParagraph.appendChild(createSpan);
+
+        $(createSpan).css({
+          "text-indent": $(firstWordSpacing).css('padding-left'),
+        })
+        if (page.classList.contains('BRpage-visible')) {
+          this.fitVisiblePage(translatedParagraph);
+        }
       }
     })
   };
@@ -155,6 +226,21 @@ export class TranslatePlugin extends BookReaderPlugin {
   clearAllTranslations() {
     document.querySelectorAll('.BRtranslateLayer').forEach(el => el.remove());
   };
+
+  /**
+   * @param {Element} ele 
+   */
+  fitVisiblePage(ele) {
+    const originalFontSize = parseInt($(ele).css("font-size"));
+    let adjustedFontSize = `${originalFontSize - 1}px`;
+      while (ele.clientHeight < ele.scrollHeight) {
+        const currentFontSize = parseInt($(ele).css("font-size"));
+        adjustedFontSize = `${currentFontSize - 1}px`;
+        $(ele).css({
+          "font-size": adjustedFontSize,
+        });
+    }
+  }
 
   handleFromLangChange = async (e) => {
     this.clearAllTranslations();

@@ -337,7 +337,12 @@ export class Mode2UpLit extends LitElement {
         reduce: page.width / wToV(this.computePageWidth(page)),
       }).$container[0];
 
-    pageContainerEl.classList.toggle('BRpage-visible', isVisible);
+    const visibleStatus = pageContainerEl.classList.toggle('BRpage-visible', isVisible);
+    if (visibleStatus) {
+      this.br.trigger('pagevisible', {
+        pageContainerEl,
+      });
+    }
     return pageContainerEl;
   }
 
