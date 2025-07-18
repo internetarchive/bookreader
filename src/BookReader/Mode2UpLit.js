@@ -336,10 +336,12 @@ export class Mode2UpLit extends LitElement {
         },
         reduce: page.width / wToV(this.computePageWidth(page)),
       }).$container[0];
-
+    
+    // Should keep for initial render of the page
+    const wasVisible = pageContainerEl.classList.contains('BRpage-visible');
     const visibleStatus = pageContainerEl.classList.toggle('BRpage-visible', isVisible);
-    if (visibleStatus) {
-      this.br.trigger('pagevisible', {
+    if (visibleStatus && !wasVisible) {
+      this.br.trigger('pageVisible', {
         pageContainerEl,
       });
     }
@@ -604,7 +606,10 @@ export class Mode2UpLit extends LitElement {
       exitingPageAnimation.play();
       enteringPageAnimation.play();
 
-      nextPageContainers.forEach(c => c.$container.addClass('BRpage-visible'));
+      nextPageContainers.forEach(c => {
+        c.$container.addClass('BRpage-visible')
+
+      });
 
       await Promise.race([
         promisifyEvent(bookCenteringAnimation, 'finish'),
@@ -627,6 +632,11 @@ export class Mode2UpLit extends LitElement {
     this.visiblePages = (
       progression == 'lr' ? [nextSpread.left, nextSpread.right] : [nextSpread.right, nextSpread.left]
     ).filter(x => x);
+    nextPageContainers.forEach(c => {
+      this.br.trigger('pageVisible', {
+        pageContainerEl: c.$container[0]
+       });
+    });
   }
 
   /**

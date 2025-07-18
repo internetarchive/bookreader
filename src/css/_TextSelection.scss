@@ -135,26 +135,12 @@
     z-index: 3;
     --webkit-user-drag: none;
     user-select: text;
-    
-}
-
-.BRtranslateLayer .BRparagraphElementHover {
-    opacity: 0;
-    transition-delay: 1s;
-}
-
-.BRparagraphElement::selection {
-    background: hsla(210, 74%, 62%, 0.4);
-}
-.BRparagraphElement::-moz-selection {
-    background: hsla(210, 74%, 62%, 0.4);
-    color:transparent;
+    line-height: 1em;
+    text-align: justify;
 }
 
 .BRtranslateLayer .BRparagraphElement .BRlineElement {
-    white-space: preserve-spaces;
+    white-space: break-spaces;
     display: inline-block;
-    line-height: 1em;
     pointer-events: all;
-    backdrop-filter: none;
 }

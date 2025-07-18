@@ -67,14 +67,10 @@ export class TranslatePlugin extends BookReaderPlugin {
      * @param {*} ev
      * @param {object} eventProps
     */
-    this.br.on('pagevisible', (_, {pageContainerEl}) => {
-      const translationLayerEl = Array.from(pageContainerEl.childNodes).filter((ele) => {
-        return ele.classList.contains('BRtranslateLayer');
-      });
-      if (translationLayerEl) {
-        const translatedParagraphs = this.getTranslatedParagraphsOnPage(pageContainerEl);
-        for (const ele of translatedParagraphs) {
-          this.fitVisiblePage(ele);
+    this.br.on('pageVisible', (_, {pageContainerEl}) => {
+      for (const paragraphEl of pageContainerEl.querySelectorAll('.BRtranslateLayer > .BRparagraphElement')) {
+        if (paragraphEl.textContent) {
+          this.fitVisiblePage(paragraphEl);
         }
       }
     });
@@ -154,15 +150,6 @@ export class TranslatePlugin extends BookReaderPlugin {
         translatedParagraph.setAttribute('data-translate-index', `${pageIndex}-${pidx}`);
         translatedParagraph.className = 'BRparagraphElement';
         const originalParagraphStyle = paragraphs[pidx];
-        
-        const lineHeightAvg = [];
-        let paragraphSpans = Array.from(originalParagraphStyle.childNodes).filter((ele) => {
-          return ele.tagName === 'SPAN';
-        })
-        for (const ele of paragraphSpans) {
-          lineHeightAvg.push(parseInt(ele.style["line-height"]));
-        }
-        const lineHeightCalc = lineHeightAvg.reduce((acc, curr) => acc + curr, 0) / lineHeightAvg.length;
         const fontSize = `${parseInt($(originalParagraphStyle).css("font-size"))}px`;
 
         $(translatedParagraph).css({
@@ -172,12 +159,10 @@ export class TranslatePlugin extends BookReaderPlugin {
           "height": $(originalParagraphStyle).css("height"),
           "width": $(originalParagraphStyle).css("width"),
           "font-size": fontSize,
-          "line-height": `${lineHeightCalc}px`,
         });
 
         translatedParagraph.addEventListener('mousedown', (e) => {
           e.stopPropagation();
-          translatedParagraph.classList.remove('BRparagraphElementHover');
           e.stopImmediatePropagation();
         });
 
@@ -185,15 +170,6 @@ export class TranslatePlugin extends BookReaderPlugin {
           e.stopPropagation();
           e.stopImmediatePropagation();
         })
-
-
-        // Hovering over translated text elements causes a class change to change the opacity to 0
-        translatedParagraph.addEventListener('mouseenter', () => {
-          translatedParagraph.classList.add('BRparagraphElementHover');
-        });
-        translatedParagraph.addEventListener('mouseleave', () => {
-          translatedParagraph.classList.remove('BRparagraphElementHover');
-        });
 
         translatedParagraph.addEventListener('dragstart', (e) =>{
           e.preventDefault();
@@ -209,7 +185,6 @@ export class TranslatePlugin extends BookReaderPlugin {
         const firstWordSpacing = paragraphs[pidx]?.firstChild?.firstChild;
         const createSpan = document.createElement('span');
         createSpan.className = 'BRlineElement';
-        createSpan.classList.add('BRtranslateElement');
         createSpan.textContent = translatedText;
         translatedParagraph.appendChild(createSpan);
 
@@ -232,14 +207,18 @@ export class TranslatePlugin extends BookReaderPlugin {
    */
   fitVisiblePage(ele) {
     const originalFontSize = parseInt($(ele).css("font-size"));
-    let adjustedFontSize = `${originalFontSize - 1}px`;
-      while (ele.clientHeight < ele.scrollHeight) {
-        const currentFontSize = parseInt($(ele).css("font-size"));
-        adjustedFontSize = `${currentFontSize - 1}px`;
-        $(ele).css({
-          "font-size": adjustedFontSize,
-        });
+    let adjustedFontSize = originalFontSize;
+      while (ele.clientHeight < ele.scrollHeight && adjustedFontSize > 0) {
+        adjustedFontSize--;
+        $(ele).css({ "font-size": `${adjustedFontSize}px` });
     }
+
+    const textHeight = ele.clientHeight;
+    const lines = textHeight / adjustedFontSize;
+    const scrollHeight = ele.scrollHeight;
+    // Line heights for smaller paragraphs occasionally need a minor adjustment
+    const newLineHeight = (scrollHeight / (lines ? lines : 1)) - 0.5;
+    $(ele).css({ "line-height" : `${newLineHeight}px` });
   }
 
   handleFromLangChange = async (e) => {
