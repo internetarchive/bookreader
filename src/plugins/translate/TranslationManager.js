@@ -1,6 +1,6 @@
 // @ts-check
 import { Cache } from '../../util/cache.js';
-import { BatchTranslator } from '../../../BookReader/@browsermt/bergamot-translator/translator.js';
+import { BatchTranslator } from '@browsermt/bergamot-translator/translator.js';
 
 export const langs = /** @type {{[lang: string]: string}} */ {
   "bg": "Bulgarian",
@@ -71,24 +71,25 @@ export class TranslationManager {
 
   async initWorker() {
     if (this.initPromise) return this.initPromise;
+    this.initPromise = new Promise((resolve, reject) => {
+      this._initResolve = resolve;
+      this._initReject = reject;
+    });
+    const registryJson = await fetch("https://cors.archive.org/cors/mozilla-translate-models/registry.json").then(r => r.json());
+    for (const language of Object.values(registryJson)) {
+      for (const file of Object.values(language)) {
+        file.name = "https://cors.archive.org/cors/mozilla-translate-models/" + file.name;
+      }
+    }
 
     /** @type {BatchTranslator} */
     // BatchTranslator workerUrl option currently not used in code :(
     // Arbitrary setting for number of workers, 1 is already quite fast
     this.translator = new BatchTranslator({
-      // workerUrl: "/BookReader/@browsermt/worker/translator-worker.js",
+      registryUrl: `data:application/json,${encodeURIComponent(JSON.stringify(registryJson))}`,
       workers: 2,
     });
 
-    if (window.Worker) {
-      // this.worker = new Worker("/BookReader/translate/worker.js");
-      // this.worker.postMessage(["import"])
-    }
-
-    this.initPromise = new Promise((resolve, reject) => {
-      this._initResolve = resolve;
-      this._initReject = reject;
-    });
     const modelType = await this.translator.backing.registry;
     const arr = {}; // unsure if we need to keep track of the files
     for (const obj of Object.values(modelType)) {
@@ -106,49 +107,6 @@ export class TranslationManager {
         this.toLanguages.push({code: secondLang, name:langs[secondLang], type: "prod"});
       }
     }
-
-    // this.worker.onmessage = (e) => {
-    //   const [cmd, ...rest] = e.data;
-    //   if (cmd === "translate_reply" && rest[0]) {
-    //     const [translation, key] = rest;
-    //     if (translation.length) {
-    //       this.currentlyTranslating[key].resolve(translation[0]);
-    //       this.alreadyTranslated.add({index: key, response: translation})
-    //       delete this.currentlyTranslating[key];
-    //     }
-    //   } else if (cmd === "load_model_reply" && e.data[1]) {
-    //     status(e.data[1]);
-    //     const [result, from, to] = rest;
-    //     this._modelPromises[`${from}${to}`].resolve(result);
-    //     // keep as source of truth
-    //     this.currentModel = `${from}${to}`;
-    //   } else if (cmd === "import_reply" && e.data[1]) {
-    //     this.modelRegistry = e.data[1];
-    //     for (const [langPair, value] of Object.entries(this.modelRegistry)) {
-    //       // const firstLang = langPair.substring(0, 2);
-    //       // const secondLang = langPair.substring(2, 4);
-
-    //       // if (firstLang !== "en") {
-    //       //   const fromModelType = value.model.modelType !== "dev" ? langs[firstLang] : langs[firstLang] + " (βeta)";
-    //       //   this.fromLanguages.push({code: firstLang, name: fromModelType, type: value.model.modelType});
-    //       // }
-    //       // if (secondLang !== "en") {
-    //       //   const toModelType = value.model.modelType !== "dev" ? langs[secondLang] : langs[secondLang] + " (βeta)";
-    //       //   this.toLanguages.push({code: secondLang, name: toModelType, type: value.model.modelType});
-    //       // }
-    //     }
-    //     console.log("this is the modelRegistry", this.modelRegistry);
-    //     console.log("this.fromLanguages", this.fromLanguages);
-    //     console.log("this.toLanguages", this.toLanguages);
-    //     // const mrSet =  new Set(Object.keys(this.modelRegistry));
-    //     // const arrSet = new Set(Object.keys(arr));
-    //     // console.log("what does the npm package have", arrSet.difference(mrSet));
-    //     this._initResolve([this.modelRegistry]);
-
-    //   } else {
-    //     console.log("Unrecognized cmd:" + cmd + " \n Or invalid data:", e);
-    //   }
-    // }
     this._initResolve([this.modelRegistry]);
     return this.initPromise;
   }
@@ -209,8 +167,8 @@ export class TranslationManager {
     this.active = true;
     const key = `${fromLang}${toLang}-${pageIndex}:${paragraphIndex}`;
     const cachedEntry = this.alreadyTranslated.entries.find(x => x.index == key);
-    const translationPriority = priority ? priority : 0;
-    console.log("translating page", pageIndex, "with priority", translationPriority);
+    // Attempt to enforce ordered translation using priority pageIndex + paragraphIndex
+    const translationPriority = (priority ? priority : 0) + paragraphIndex;
     if (cachedEntry) {
       return cachedEntry.response;
     }
@@ -225,7 +183,6 @@ export class TranslationManager {
       _resolve = res;
       _reject = rej;
     });
-
 
     this.currentlyTranslating[key] = {
       promise,
@@ -247,23 +204,7 @@ export class TranslationManager {
       const response = resp;
       this.currentlyTranslating[key].resolve(response.target.text);
     });
-    // this.loadModel(fromLang, toLang).then(() => {
-    //   this.worker.postMessage([
-    //     "translate",
-    //     fromLang,
-    //     toLang,
-    //     [text],
-    //     key,
-    //     paragraphIndex
-    //   ])
-    // })
-    // .catch(e => _reject(e));
 
     return promise;
   }
-  // TODO name better, maybe not needed?
-  checkModel = (fromLang, toLang) => {
-    const key = `${fromLang}${toLang}`;
-    return key in this._modelPromises;
-  };
 }
