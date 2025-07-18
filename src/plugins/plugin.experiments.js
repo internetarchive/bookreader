@@ -21,6 +21,9 @@ class ExperimentModel {
   /** @type {string} */
   learnMore;
 
+  /** @type {import("@/src/BookReader.js").default} */
+  br;
+
   assetRoot = '/BookReader/';
 
   enabledLoading = false;
@@ -50,6 +53,27 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
   /** @type {ExperimentModel[]} */
   experiments = [
+    new class extends ExperimentModel {
+      name = 'translate';
+      title = 'Translate Text';
+      description = 'Translate item text into other languages.';
+      learnMore = '';
+      icon = 'images/language-icon.svg';
+      enabled = false;
+      async enable({ manual = false}) {
+        await importAsScript(`..${this.buildAssetPath('plugins/plugin.translate.js')}`);
+        this.br.constructPlugin('translate');
+        this.br.setupPlugin('translate');
+        this.br.initializePlugin('translate');
+      }
+      async disable() {
+        // need to reload to remove translate plugin script
+        // Sleep so that the event loop can finish processing before the reload
+        sleep(0).then(() => {
+          window.location.reload();
+        });
+      }
+    }(),
     new class extends ExperimentModel {
       name = 'hypothesis';
       title = 'Hypothes.is';
@@ -97,6 +121,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       // TODO: imagesBaseURL should be replaced with assetRoot everywhere
       experiment.assetRoot = this.br.options.imagesBaseURL.replace(/images\/$/, '');
       experiment.icon = experiment.buildAssetPath(experiment.icon);
+      experiment.br = this.br;
     }
 
     this._loadExperimentStates();
@@ -240,14 +265,14 @@ export class BrExperimentToggle extends LitElement {
 
   render() {
     return html`
-      <div class="experiment-card">
+      <div class="experiment-card" style="margin-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <img src="${this.icon}" style="width: 20px; height: 20px;" alt="" />
           <div style="flex-grow: 1; font-weight: bold;">${this.title}</div>
         </div>
         <p style="opacity: 0.9">
           ${this.description}
-          <a href="${this.learnMore}" target="_blank">Learn more</a>.
+          ${this.learnMore ? html`<a href="${this.learnMore} target="_blank">Learn more</a>.`: ''}
         </p>
         <div style="display: flex">
           <div style="flex-grow: 1;"></div>
