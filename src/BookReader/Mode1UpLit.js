@@ -283,7 +283,14 @@ export class Mode1UpLit extends LitElement {
       }).$container[0];
 
     pageContainerEl.style.transform = transform;
-    pageContainerEl.classList.toggle('BRpage-visible', this.visiblePages.includes(page));
+    // Prevent trigger pageVisible when scrolling outside of BookReader
+    const wasVisible = pageContainerEl.classList.contains('BRpage-visible');
+    const visibleStatus = pageContainerEl.classList.toggle('BRpage-visible', this.visiblePages.includes(page));
+    if (visibleStatus && !wasVisible) {
+      this.br.trigger('pageVisible', {
+        pageContainerEl
+      });
+    }
     return pageContainerEl;
   }
 
