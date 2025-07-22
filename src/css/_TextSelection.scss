@@ -116,25 +116,13 @@
     word-spacing: unset !important;
 }
 
-// Add this .BRpagecontainer--showingTranslation to class when translation active
-.BRpagecontainer--showingTranslation .BRtextLayer {
-    display: none;
-}
-
 .BRtranslateLayer .BRparagraphElement {
-    pointer-events: auto; 
+    pointer-events: auto;
     overflow-y: auto;
-    font-family: "Georgia, serif"; 
-    margin-bottom: 0;
+    font-family: "Georgia, serif";
     background: rgba(248, 237, 192, 0.5);
     backdrop-filter: blur(8px);
     color:black;
-    container: pElement / size;
-    opacity: 1;
-    transition: opacity 0.15s linear;
-    z-index: 3;
-    --webkit-user-drag: none;
-    user-select: text;
     line-height: 1em;
     text-align: justify;
 }
@@ -142,5 +130,4 @@
 .BRtranslateLayer .BRparagraphElement .BRlineElement {
     white-space: break-spaces;
     display: inline-block;
-    pointer-events: all;
 }

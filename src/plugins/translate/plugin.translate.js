@@ -89,11 +89,6 @@ export class TranslatePlugin extends BookReaderPlugin {
     return page ? Array.from(page.querySelectorAll(".BRtextLayer > .BRparagraphElement")) : [];
   }
 
-  /** @param {HTMLElement} page */
-  getTranslatedParagraphsOnPage = (page) => {
-    return page ? Array.from(page.querySelectorAll(".BRtranslateLayer > .BRparagraphElement")) : [];
-  }
-
   translateActivePageContainerElements() {
     const currentlyActiveContainers = this.br.getActivePageContainerElements();
     const visiblePageContainers = currentlyActiveContainers.filter((element) => {
@@ -123,10 +118,6 @@ export class TranslatePlugin extends BookReaderPlugin {
       pageTranslationLayer = document.createElement('div');
       pageTranslationLayer.classList.add('BRPageLayer', 'BRtranslateLayer');
       pageTranslationLayer.setAttribute('lang', `${this.langToCode}`);
-      pageTranslationLayer.addEventListener('mousedown', (e) => {
-        e.stopImmediatePropagation();
-        e.stopPropagation();
-      });
       page.prepend(pageTranslationLayer);
     } else {
       pageTranslationLayer = page.querySelector('.BRPageLayer.BRtranslateLayer');
@@ -161,6 +152,9 @@ export class TranslatePlugin extends BookReaderPlugin {
           "font-size": fontSize,
         });
 
+        // Note: We'll likely want to switch to using the same logic as
+        // TextSelectionPlugin's selection, which allows for e.g. click-to-flip
+        // to work simultaneously with text selection.
         translatedParagraph.addEventListener('mousedown', (e) => {
           e.stopPropagation();
           e.stopImmediatePropagation();
@@ -213,12 +207,18 @@ export class TranslatePlugin extends BookReaderPlugin {
         $(ele).css({ "font-size": `${adjustedFontSize}px` });
     }
 
-    const textHeight = ele.clientHeight;
-    const lines = textHeight / adjustedFontSize;
+    const textHeight = ele.firstElementChild.clientHeight;
     const scrollHeight = ele.scrollHeight;
-    // Line heights for smaller paragraphs occasionally need a minor adjustment
-    const newLineHeight = (scrollHeight / (lines ? lines : 1)) - 0.5;
-    $(ele).css({ "line-height" : `${newLineHeight}px` });
+    const fits = textHeight < scrollHeight;
+    if (fits) {
+      const lines = textHeight / adjustedFontSize;
+      // Line heights for smaller paragraphs occasionally need a minor adjustment
+      const newLineHeight = scrollHeight / lines;
+      $(ele).css({
+        "line-height" : `${newLineHeight}px`,
+        "overflow": "visible",
+      });
+    }
   }
 
   handleFromLangChange = async (e) => {
