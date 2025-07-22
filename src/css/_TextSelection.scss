@@ -8,7 +8,14 @@
     // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
     pointer-events: none;
     cursor: text;
-    // mix-blend-mode: multiply;
+}
+
+.BRtextLayer {
+    mix-blend-mode: multiply;
+}
+
+.BRtranslateLayer {
+    hyphens: auto;
 }
 
 .BRparagraphElement {
@@ -110,18 +117,17 @@
 }
 
 .BRtranslateLayer .BRparagraphElement {
-    pointer-events: all;
+    pointer-events: auto;
     overflow-y: auto;
-    font-family: "Helvetica Neue", Arial, Verdana, sans-serif;
-    margin-bottom: 0;
-    background: #f8edc0;
+    font-family: "Georgia, serif";
+    background: rgba(248, 237, 192, 0.5);
+    backdrop-filter: blur(8px);
     color:black;
+    line-height: 1em;
+    text-align: justify;
 }
 
 .BRtranslateLayer .BRparagraphElement .BRlineElement {
-    white-space: preserve-spaces;
+    white-space: break-spaces;
     display: inline-block;
-    background: #f8edc0;
-    line-height: normal;
-    pointer-events: all;
 }

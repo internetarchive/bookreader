@@ -60,8 +60,21 @@ export class TranslatePlugin extends BookReaderPlugin {
       }
 
       const pageElement = pageContainer.$container[0];
-      this.translateRenderedLayer(pageElement);
+      await this.translateRenderedLayer(pageElement);
     });
+
+    /**
+     * @param {*} ev
+     * @param {object} eventProps
+    */
+    this.br.on('pageVisible', (_, {pageContainerEl}) => {
+      for (const paragraphEl of pageContainerEl.querySelectorAll('.BRtranslateLayer > .BRparagraphElement')) {
+        if (paragraphEl.textContent) {
+          this.fitVisiblePage(paragraphEl);
+        }
+      }
+    });
+
     await this.translationManager.initWorker();
     // Note await above lets _render function properly, since it gives the browser
     // time to render the rest of bookreader, which _render depends on
@@ -104,6 +117,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     if (!page.querySelector('.BRPageLayer.BRtranslateLayer')) {
       pageTranslationLayer = document.createElement('div');
       pageTranslationLayer.classList.add('BRPageLayer', 'BRtranslateLayer');
+      pageTranslationLayer.setAttribute('lang', `${this.langToCode}`);
       page.prepend(pageTranslationLayer);
     } else {
       pageTranslationLayer = page.querySelector('.BRPageLayer.BRtranslateLayer');
@@ -127,16 +141,33 @@ export class TranslatePlugin extends BookReaderPlugin {
         translatedParagraph.setAttribute('data-translate-index', `${pageIndex}-${pidx}`);
         translatedParagraph.className = 'BRparagraphElement';
         const originalParagraphStyle = paragraphs[pidx];
+        const fontSize = `${parseInt($(originalParagraphStyle).css("font-size"))}px`;
 
         $(translatedParagraph).css({
           "margin-left": $(originalParagraphStyle).css("margin-left"),
           "margin-top": $(originalParagraphStyle).css("margin-top"),
           "top": $(originalParagraphStyle).css("top"),
           "height": $(originalParagraphStyle).css("height"),
-          "font-size": `${parseInt($(originalParagraphStyle).css("font-size")) - 3}px`,
           "width": $(originalParagraphStyle).css("width"),
+          "font-size": fontSize,
         });
 
+        // Note: We'll likely want to switch to using the same logic as
+        // TextSelectionPlugin's selection, which allows for e.g. click-to-flip
+        // to work simultaneously with text selection.
+        translatedParagraph.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        });
+
+        translatedParagraph.addEventListener('mouseup', (e) => {
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        });
+
+        translatedParagraph.addEventListener('dragstart', (e) =>{
+          e.preventDefault();
+        });
         pageTranslationLayer.append(translatedParagraph);
       }
 
@@ -144,16 +175,50 @@ export class TranslatePlugin extends BookReaderPlugin {
         const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent);
         // prevent duplicate spans from appearing if exists
         translatedParagraph.firstElementChild?.remove();
+
+        const firstWordSpacing = paragraphs[pidx]?.firstChild?.firstChild;
         const createSpan = document.createElement('span');
         createSpan.className = 'BRlineElement';
         createSpan.textContent = translatedText;
         translatedParagraph.appendChild(createSpan);
+
+        $(createSpan).css({
+          "text-indent": $(firstWordSpacing).css('padding-left'),
+        });
+        if (page.classList.contains('BRpage-visible')) {
+          this.fitVisiblePage(translatedParagraph);
+        }
       }
     });
   }
 
   clearAllTranslations() {
     document.querySelectorAll('.BRtranslateLayer').forEach(el => el.remove());
+  }
+
+  /**
+   * @param {Element} ele
+   */
+  fitVisiblePage(ele) {
+    const originalFontSize = parseInt($(ele).css("font-size"));
+    let adjustedFontSize = originalFontSize;
+    while (ele.clientHeight < ele.scrollHeight && adjustedFontSize > 0) {
+      adjustedFontSize--;
+      $(ele).css({ "font-size": `${adjustedFontSize}px` });
+    }
+
+    const textHeight = ele.firstElementChild.clientHeight;
+    const scrollHeight = ele.scrollHeight;
+    const fits = textHeight < scrollHeight;
+    if (fits) {
+      const lines = textHeight / adjustedFontSize;
+      // Line heights for smaller paragraphs occasionally need a minor adjustment
+      const newLineHeight = scrollHeight / lines;
+      $(ele).css({
+        "line-height" : `${newLineHeight}px`,
+        "overflow": "visible",
+      });
+    }
   }
 
   handleFromLangChange = async (e) => {
