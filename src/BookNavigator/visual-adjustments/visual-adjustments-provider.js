@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import '@internetarchive/icon-visual-adjustment/icon-visual-adjustment';
-import './visual-adjustments';
+import '@internetarchive/icon-visual-adjustment/icon-visual-adjustment.js';
+import './visual-adjustments.js';
 
 const visualAdjustmentOptions = [{
   id: 'brightness',
@@ -45,7 +45,7 @@ export default class VisualAdjustmentsProvider {
     this.icon = html`<ia-icon-visual-adjustment style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-visual-adjustment>`;
     this.label = 'Visual Adjustments';
     this.menuDetails = this.updateOptionsCount();
-    this.id = 'adjustment';
+    this.id = 'visualAdjustments';
     this.component = html`
       <ia-book-visual-adjustments
         .options=${visualAdjustmentOptions}

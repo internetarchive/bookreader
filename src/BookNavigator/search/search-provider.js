@@ -1,7 +1,7 @@
 // @ts-check
 import { html, nothing } from 'lit';
-import '@internetarchive/icon-search/icon-search';
-import './search-results';
+import '@internetarchive/icon-search/icon-search.js';
+import './search-results.js';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideResults} SearchInsideResults */
 /** @typedef {import('@/src/BookReader.js').default} BookReader */
@@ -143,7 +143,7 @@ export default class SearchProvider {
   }
 
   searchCanceledInMenu() {
-    this.bookreader._plugins.search.cancelSearchRequest();
+    this.bookreader.plugins.search.cancelSearchRequest();
   }
 
   onSearchResultsCleared() {
@@ -155,7 +155,7 @@ export default class SearchProvider {
       errorMessage: '',
     };
     this.updateMenu({ openMenu: false });
-    this.bookreader._plugins.search.searchView.clearSearchFieldAndResults(false);
+    this.bookreader.plugins.search.searchView.clearSearchFieldAndResults(false);
     if (this.bookreader.urlPlugin) {
       this.updateSearchInUrl();
     }
@@ -204,6 +204,6 @@ export default class SearchProvider {
    * @param {{ detail: {match: SearchInsideMatch} }} param0
    */
   onSearchResultsClicked({ detail }) {
-    this.bookreader._plugins.search.jumpToMatch(detail.match.matchIndex);
+    this.bookreader.plugins.search.jumpToMatch(detail.match.matchIndex);
   }
 }

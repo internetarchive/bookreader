@@ -3,8 +3,8 @@ import { css, html, LitElement, nothing } from "lit";
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import '@internetarchive/icon-toc/icon-toc';
-import { BookReaderPlugin } from "../BookReaderPlugin";
+import '@internetarchive/icon-toc/icon-toc.js';
+import { BookReaderPlugin } from "../BookReaderPlugin.js";
 import { applyVariables } from "../util/strings.js";
 /** @typedef {import('@/src/BookReader/BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('@/src/BookReader/BookModel.js').PageString} PageString */

@@ -1,6 +1,7 @@
-const fs = require('fs');
-const { execSync } = require('child_process');
-const { version: NEW_VERSION } = require('../package.json');
+import fs from 'fs';
+import { execSync } from 'child_process';
+import PACKAGE_JSON from '../package.json' assert { type: 'json' };
+const NEW_VERSION = PACKAGE_JSON.version;
 
 async function main() {
     // Update the changelog
@@ -18,9 +19,6 @@ async function main() {
 
     // build
     execSync('npm run build', { stdio: "inherit" });
-
-    // Add build files
-    execSync('git add ./BookReader');
 }
 
 main().then(() => process.exit());

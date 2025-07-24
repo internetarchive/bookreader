@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { css, html, LitElement, nothing } from 'lit';
-import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
+import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
 import checkmarkIcon from '../assets/icon_checkmark.js';
 import closeIcon from '../assets/icon_close.js';
 import buttonCSS from '../assets/button-base.js';

@@ -199,7 +199,7 @@ export class TtsPlugin extends BookReaderPlugin {
   }
 
   toggle() {
-    this.br._plugins.autoplay?.stop();
+    this.br.plugins.autoplay?.stop();
     if (this.ttsEngine.playing) {
       this.stop();
     } else {
@@ -338,11 +338,11 @@ export class TtsPlugin extends BookReaderPlugin {
    * @param {number} [value]
    */
   sendAnalyticsEvent(action, value) {
-    if (this.br._plugins.archiveAnalytics) {
+    if (this.br.plugins.archiveAnalytics) {
       const extraValues = {};
       const mediaLanguage = this.ttsEngine.opts.bookLanguage;
       if (mediaLanguage) extraValues.mediaLanguage = mediaLanguage;
-      this.br._plugins.archiveAnalytics.sendEvent('BRReadAloud', action, value, extraValues);
+      this.br.plugins.archiveAnalytics.sendEvent('BRReadAloud', action, value, extraValues);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { ModeCoordinateSpace } from "@/src/BookReader/ModeCoordinateSpace";
+import { ModeCoordinateSpace } from "@/src/BookReader/ModeCoordinateSpace.js";
 
 describe("worldUnitsToRenderedPixels", () => {
   test("0 case", () => {

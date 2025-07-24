@@ -1,5 +1,28 @@
+# 5.0.0-96
+- Fix: BookReader/ missing from npm package! @cdrini
+  - Also exclude other non-essential files, like tests, etc from the npm package.
+
+# 5.0.0-95
+- **Note:** Use 5.0.0-96 instead of this version. This version was missing the BookReader/ directory from the npm package.
+- Breaking change: Remove BookReader/ build directory from repo @cdrini
+  - This pattern has become increasingly rare (even jQuery is no longer doing this). If someone was relying on this somehow, you should be able to achieve the same effect using unpkg, or jsdelivr, or similar, eg:
+    - https://unpkg.com/@internetarchive/bookreader@5.0.0-94/BookReader/BookReader.js
+    - https://cdn.jsdelivr.net/npm/@internetarchive/bookreader@5.0.0-94/BookReader/BookReader.js
+    - And so on.
+
+# 5.0.0-94
+- Refactor: Make bookreader package type: module @cdrini
+- Fix: Search icon being fetched from wrong path @cdrini
+- Refactor: Move BookReader._plugins -> BookReader.plugins , making it public @cdrini
+- Feature: Add length restrictions for protected text selection @cdrini
+- Extend BR to work correctly with Hypothesis @cdrini
+  - Creates new experiments plugin, with a Hypothesis experiment
+  - Adds no `bookUri` option for saving Hypothesis annotations
+  - Adds new public HTML attributes to the PageContainer DOM, `data-index` for `PageIndex`, and `data-page-num` for `PageNumString`
+  - Improves some of BookReader's public APIs. BookReader.bind/unbind are now deprecated in favor of BookReader.on/off
+
 # 5.0.0-93
-- Fix: Clicking on search result not making request_page requst correctly @cdrini
+- Fix: Clicking on search result not making request_page request correctly @cdrini
 
 # 5.0.0-92
 - Refactor: Migrate search plugin to BookReaderPlugin system @cdrini

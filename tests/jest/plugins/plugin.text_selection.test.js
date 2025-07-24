@@ -3,13 +3,13 @@ import sinon from 'sinon';
 import BookReader from '@/src/BookReader.js';
 import {
   Cache,
+  genAt,
+  genFilter,
   genMap,
   lookAroundWindow,
+  walkBetweenNodes,
   zip,
 } from '@/src/plugins/plugin.text_selection.js';
-
-
-/** @type {BookReader} */
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_1WORD = `
@@ -113,9 +113,56 @@ describe("Generic tests", () => {
     $('.BRtextLayer').remove();
   });
 
+  test("_limitSelection handles short selection", async () => {
+    const $container = br.refs.$brContainer;
+    br.options.plugins.textSelection.maxProtectedWords = 5;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
+
+    const rangeBefore = document.createRange();
+    rangeBefore.setStart($container.find(".BRwordElement")[0].firstChild, 0);
+    rangeBefore.setEnd($container.find(".BRwordElement")[4].firstChild, 1);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(rangeBefore);
+
+    br.plugins.textSelection._limitSelection();
+
+    const rangeAfter = window.getSelection().getRangeAt(0);
+    expect(rangeAfter.startContainer).toBe(rangeBefore.startContainer);
+    expect(rangeAfter.startOffset).toBe(0);
+    expect(rangeAfter.endContainer).toBe(rangeBefore.endContainer);
+    expect(rangeAfter.endOffset).toBe(1);
+
+    window.getSelection().removeAllRanges();
+  });
+
+  test("_limitSelection shrinks selection", async () => {
+    const $container = br.refs.$brContainer;
+    br.options.plugins.textSelection.maxProtectedWords = 5;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
+
+    const rangeBefore = document.createRange();
+    rangeBefore.setStart($container.find(".BRwordElement")[0].firstChild, 0);
+    rangeBefore.setEnd($container.find(".BRwordElement")[12].firstChild, 1);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(rangeBefore);
+
+    br.plugins.textSelection._limitSelection();
+
+    const rangeAfter = window.getSelection().getRangeAt(0);
+    expect(rangeAfter.startContainer).toBe(rangeBefore.startContainer);
+    expect(rangeAfter.endContainer).toBe($container.find(".BRwordElement")[4].firstChild);
+  });
+
   test("_createPageContainer overridden function still creates a BRpagecontainer element", () => {
-    const spy = sinon.spy(br._plugins.textSelection, 'createTextLayer');
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    const spy = sinon.spy(br.plugins.textSelection, 'createTextLayer');
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
     const container = br._createPageContainer(1, {});
     expect(container).toBeTruthy();
@@ -124,24 +171,24 @@ describe("Generic tests", () => {
 
   // test loading first object from sample data
   test("_createPageContainer handles index 0", () => {
-    const spy = sinon.spy(br._plugins.textSelection, 'createTextLayer');
+    const spy = sinon.spy(br.plugins.textSelection, 'createTextLayer');
     br._createPageContainer(0, {});
     expect(spy.callCount).toBe(1);
   });
 
   // test loading last object from sample data
   test("_createPageContainer handles index -1", () => {
-    const spy = sinon.spy(br._plugins.textSelection, 'createTextLayer');
+    const spy = sinon.spy(br.plugins.textSelection, 'createTextLayer');
     br._createPageContainer(-1, {});
     expect(spy.callCount).toBe(0);
   });
 
   test("createTextLayer will render the last page and create text layer properly", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
     const pageIndex = br.data.length - 1;
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: pageIndex, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: pageIndex, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
   });
@@ -149,9 +196,9 @@ describe("Generic tests", () => {
   test("createTextLayer will not create text layer if there are too many words", async () => {
     const $container = br.refs.$brContainer;
     const xml = FAKE_XML_1WORD.replace(/<WORD.*<\/WORD>/, FAKE_XML_1WORD.match(/<WORD.*<\/WORD>/)[0].repeat(3000));
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(xml, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 0, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 0, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(0);
     expect($container.find("p").length).toBe(0);
     expect($container.find(".BRwordElement").length).toBe(0);
@@ -159,9 +206,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer creates text layer with paragraph with 1 word element", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 1, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 1, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(1);
@@ -170,9 +217,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer creates text layer with paragraph with multiple word elements", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_WORDS, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 2, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 2, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(3);
@@ -181,9 +228,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer creates text layer with paragraph with word with 5 params coordinates", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_5COORDS, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
     expect($container.find(".BRwordElement").length).toBe(1);
@@ -191,9 +238,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer handles multiple lines", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
     expect($container.find(".BRlineElement").length).toBe(3);
@@ -206,9 +253,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer repairs trailing hyphens", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
 
     expect($container.find(".BRwordElement--hyphen").length).toBe(1);
     expect($container.find(".BRwordElement--hyphen").closest(".BRlineElement").text().endsWith(' ')).toBe(false);
@@ -217,9 +264,9 @@ describe("Generic tests", () => {
 
   test("createTextLayer can handle empty xml", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br._plugins.textSelection, "getPageText")
+    sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_EMPTY, "text/xml")));
-    await br._plugins.textSelection.createTextLayer({ $container, page: { index: 4, width: 100, height: 100 }});
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 4, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(0);
     expect($container.find(".BRwordElement").length).toBe(0);
@@ -228,7 +275,7 @@ describe("Generic tests", () => {
   const LONG_PRESS_DURATION = 500;
   test("calling stopPageFlip does not allow long click to flip the page", () => {
     const $container = br.refs.$brContainer;
-    br._plugins.textSelection.stopPageFlip($container);
+    br.plugins.textSelection.stopPageFlip($container);
     const currIndex = br.currentIndex();
     $container.find("BRwordElement").trigger("mousedown");
     // Waits for long press
@@ -267,6 +314,38 @@ describe("Cache", () => {
     c.add(12);
     c.add(10);
     expect(c.entries).toEqual([12, 10]);
+  });
+});
+
+describe('genAt', () => {
+  test('handles empty', () => {
+    expect(genAt(genRange(-1), 0)).toBeUndefined();
+  });
+
+  test('handles non-empty', () => {
+    expect(genAt(genRange(3), 0)).toBe(0);
+    expect(genAt(genRange(3), 1)).toBe(1);
+    expect(genAt(genRange(3), 2)).toBe(2);
+  });
+
+  test('handles out of bounds', () => {
+    expect(genAt(genRange(3), 4)).toBeUndefined();
+    expect(genAt(genRange(3), -1)).toBeUndefined();
+  });
+});
+
+describe('genFilter', () => {
+  test('handles empty', () => {
+    expect(Array.from(genFilter(genRange(0), x => x > 0))).toEqual([]);
+  });
+
+  test('handles non-empty', () => {
+    expect(Array.from(genFilter(genRange(3), x => x > 1))).toEqual([2, 3]);
+    expect(Array.from(genFilter(genRange(3), x => x < 1))).toEqual([0]);
+  });
+
+  test('handles all false', () => {
+    expect(Array.from(genFilter(genRange(3), x => x > 3))).toEqual([]);
   });
 });
 
@@ -314,3 +393,55 @@ describe('zip', () => {
     expect(Array.from(zip([1, 2], [3, 4]))).toEqual([[1, 3], [2, 4]]);
   });
 });
+
+describe('walkBetweenNodes', () => {
+  const tree = $(FAKE_XML_MULT_LINES);
+
+  test('handles empty', () => {
+    const result = Array.from(walkBetweenNodes(tree[0], tree[0]));
+    expect(result).toHaveLength(1);
+    expect(result[0]).toBe(tree[0]);
+  });
+
+  test('Words on same line', () => {
+    const start = tree.find('WORD')[2];
+    const end = start.nextElementSibling;
+    // Use first child so we hit the text nodes
+    const result = Array.from(walkBetweenNodes(start.firstChild, end.firstChild));
+    expect(result).toHaveLength(5);
+    expect(result[0].nodeType).toBe(Node.TEXT_NODE);
+    expect(result[0].textContent).toBe('false ');
+    expect(result[1]).toBe(start);
+    // Whitespace
+    expect(result[2].nodeType).toBe(Node.TEXT_NODE);
+    expect(result[2].textContent).toMatch(/^\s*$/);
+    expect(result[3]).toBe(end);
+    expect(result[4].nodeType).toBe(Node.TEXT_NODE);
+    expect(result[4].textContent).toBe('judgment ');
+  });
+
+  test('Words on different lines', () => {
+    const start = tree.find('WORD')[2];
+    const end = tree.find('WORD')[19];
+    const result = Array.from(walkBetweenNodes(start.firstChild, end.firstChild));
+    // Expect two LINES in result
+    expect(result.filter(x => x.nodeName == 'LINE')).toHaveLength(2);
+    // Expect 18 WORDs in result
+    expect(result.filter(x => x.nodeName == 'WORD')).toHaveLength(18);
+    // First word should be the start word
+    expect(result[0].parentElement).toBe(start);
+    expect(result[0].textContent).toBe('false ');
+    // Last word should be the end word
+    expect(result[result.length - 1].parentElement).toBe(end);
+    expect(result[result.length - 1].textContent).toBe('Suppose');
+  });
+});
+
+/**
+ * @param {number} n
+ */
+function* genRange(n) {
+  for (let i = 0; i <= n; i++) {
+    yield i;
+  }
+}

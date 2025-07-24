@@ -1,5 +1,5 @@
 import { Selector } from 'testcafe';
-import Nav from './Navigation';
+import Nav from './Navigation.js';
 
 /** Model defining BookReader base elements */
 export default class BookReader {

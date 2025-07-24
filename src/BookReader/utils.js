@@ -298,3 +298,16 @@ export function parseAnimationSpeed(speed) {
   if (speed === 'fast') return 200;
   return parseInt(speed, 10);
 }
+
+/**
+ * @template T
+ * @param {T[]} array
+ * @param {function(T): number} [valueFn]
+ */
+export function sortBy(array, valueFn) {
+  return array.sort((a, b) => {
+    const aValue = valueFn ? valueFn(a) : a;
+    const bValue = valueFn ? valueFn(b) : b;
+    return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+  });
+}

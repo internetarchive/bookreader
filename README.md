@@ -147,8 +147,6 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 
 The source JavaScript is written in ES6 (located in the `src/js` directory) and in ES5 (located in `BookReader`). `npm run serve-dev` starts an auto-reloading dev server, that builds js/css that has been edited at `localhost:8000`.
 
-Until the next major version bump, we have to store the build files inside the repo to maintain backwards compatibility. Please _DO NOT_ include these files in your PR. Anything in the `BookReader/` directory should not be committed.
-
 ### Developing icons
 To see local icon package changes in bookreader, you'll need to install core-js into the icon package and link into bookreader.
 

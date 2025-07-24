@@ -2,8 +2,8 @@ import sinon from "sinon";
 
 import "@/src/BookReader.js";
 import {ChaptersPlugin} from "@/src/plugins/plugin.chapters.js";
-import { BookModel } from "@/src/BookReader/BookModel";
-import { deepCopy } from "../utils";
+import { BookModel } from "@/src/BookReader/BookModel.js";
+import { deepCopy } from "../utils.js";
 /** @typedef {import('@/src/plugins/plugin.chapters').TocEntry} TocEntry  */
 
 /** @type {TocEntry[]} */
