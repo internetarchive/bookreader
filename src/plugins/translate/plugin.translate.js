@@ -114,7 +114,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
 
     const pageIndex = page.dataset.index;
-    const pagePriority = parseInt(pageIndex) + priority;
+
     let pageTranslationLayer;
     if (!page.querySelector('.BRPageLayer.BRtranslateLayer')) {
       pageTranslationLayer = document.createElement('div');
@@ -174,6 +174,7 @@ export class TranslatePlugin extends BookReaderPlugin {
       }
 
       if (paragraph.textContent.length !== 0) {
+        const pagePriority = parseFloat(pageIndex) + priority + pidx
         const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent, pagePriority);
         // prevent duplicate spans from appearing if exists
         translatedParagraph.firstElementChild?.remove();

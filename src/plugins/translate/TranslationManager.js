@@ -75,10 +75,11 @@ export class TranslationManager {
       this._initResolve = resolve;
       this._initReject = reject;
     });
-    const registryJson = await fetch("https://cors.archive.org/cors/mozilla-translate-models/registry.json").then(r => r.json());
+    const registryUrl = "https://cors.archive.org/cors/mozilla-translate-models/";
+    const registryJson = await fetch(registryUrl + "registry.json").then(r => r.json());
     for (const language of Object.values(registryJson)) {
       for (const file of Object.values(language)) {
-        file.name = "https://cors.archive.org/cors/mozilla-translate-models/" + file.name;
+        file.name = registryUrl.replace('/[^\/]+$/', '/') + file.name
       }
     }
 
@@ -143,7 +144,6 @@ export class TranslationManager {
       reject: _reject,
     }
     this.currentModel = key;
-    // this.worker.postMessage(["load_model", fromCode, toCode]);
     return promise;
   };
 
@@ -153,13 +153,13 @@ export class TranslationManager {
   }
 
   /**
-   * Targets the page and paragraph of a text layer to create a translation from the "fromLang" to the "toLang". A priority can be 
+   * Targets the page and paragraph of a text layer to create a translation from the "fromLang" to the "toLang". Tries to force order in translation by using the pageIndex (+1000 if the current page is not visible) and paragraphIndex 
    * @param {string} fromLang
    * @param {string} toLang
    * @param {string} pageIndex
    * @param {number} paragraphIndex
    * @param {string} text
-   * @param {number} [priority]
+   * @param {number} priority
    * @return {Promise<string>} translated text
    */
 
@@ -167,8 +167,7 @@ export class TranslationManager {
     this.active = true;
     const key = `${fromLang}${toLang}-${pageIndex}:${paragraphIndex}`;
     const cachedEntry = this.alreadyTranslated.entries.find(x => x.index == key);
-    // Attempt to enforce ordered translation using priority pageIndex + paragraphIndex
-    const translationPriority = (priority ? priority : 0) + paragraphIndex;
+
     if (cachedEntry) {
       return cachedEntry.response;
     }
@@ -199,7 +198,7 @@ export class TranslationManager {
       from: fromLang,
       text: text,
       html: false,
-      priority: translationPriority
+      priority: priority,
     }).then((resp) => {
       const response = resp;
       this.currentlyTranslating[key].resolve(response.target.text);
