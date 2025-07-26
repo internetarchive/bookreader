@@ -287,9 +287,7 @@ export class Mode1UpLit extends LitElement {
     const wasVisible = pageContainerEl.classList.contains('BRpage-visible');
     const visibleStatus = pageContainerEl.classList.toggle('BRpage-visible', this.visiblePages.includes(page));
     if (visibleStatus && !wasVisible) {
-      this.br.trigger('pageVisible', {
-        pageContainerEl,
-      });
+      this.br.trigger('pageVisible', { pageContainerEl });
     }
     return pageContainerEl;
   }

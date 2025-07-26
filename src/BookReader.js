@@ -331,18 +331,21 @@ BookReader.prototype.setup = function(options) {
 };
 
 BookReader.prototype.initializePlugin = function(pluginName) {
-  this.plugins[pluginName] = new BookReader.PLUGINS[pluginName](this);
+  const plugin = new BookReader.PLUGINS[pluginName](this);
+  this.plugins[pluginName] = plugin;
   try {
-    this.plugins.setup(this.options.plugins?.[pluginName] ?? {});
+    plugin.setup(this.options.plugins?.[pluginName] ?? {});
     this.options.plugins[pluginName] = plugin.options;
   } catch (e) {
     console.error(`Error setting up plugin ${pluginName} outside of regular cycle`, e);
+    throw e;
   }
 
   try {
-    this.plugins[pluginName].init();
+    plugin.init();
   } catch (e) {
     console.error(`Error initializing plugin ${pluginName} outside of regular cycle`, e);
+    throw e;
   }
 };
 /**

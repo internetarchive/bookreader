@@ -79,7 +79,7 @@ export class TranslationManager {
     const registryJson = await fetch(registryUrl + "registry.json").then(r => r.json());
     for (const language of Object.values(registryJson)) {
       for (const file of Object.values(language)) {
-        file.name = registryUrl.replace('/[^\/]+$/', '/') + file.name;
+        file.name = registryUrl + file.name;
       }
     }
 
