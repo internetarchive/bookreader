@@ -330,6 +330,24 @@ BookReader.prototype.setup = function(options) {
   this.hasKeyFocus = true;
 };
 
+BookReader.prototype.initializePlugin = function(pluginName) {
+  const plugin = new BookReader.PLUGINS[pluginName](this);
+  this.plugins[pluginName] = plugin;
+  try {
+    plugin.setup(this.options.plugins?.[pluginName] ?? {});
+    this.options.plugins[pluginName] = plugin.options;
+  } catch (e) {
+    console.error(`Error setting up plugin ${pluginName} outside of regular cycle`, e);
+    throw e;
+  }
+
+  try {
+    plugin.init();
+  } catch (e) {
+    console.error(`Error initializing plugin ${pluginName} outside of regular cycle`, e);
+    throw e;
+  }
+};
 /**
  * Get all the HTML Elements that are being/can be rendered.
  * Includes cached elements which might be rendered again.
