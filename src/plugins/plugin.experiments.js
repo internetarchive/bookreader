@@ -49,19 +49,22 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
     /** Where the state of this plugin is saved in localStorage */
     localStorageKey: 'BrExperiments',
+
+    /** The experiments that should be shown in the experiments panel */
+    enabledExperiments: ['translate'],
   }
 
   /** @type {ExperimentModel[]} */
-  experiments = [
+  allExperiments = [
     new class extends ExperimentModel {
       name = 'translate';
-      title = 'Translate Text';
-      description = 'Translate item text into other languages.';
-      learnMore = '';
+      title = 'Translate Plugin';
+      description = "Translate books directly in your browser.";
+      learnMore = 'https://mozilla.github.io/translations/';
       icon = 'images/language-icon.svg';
       enabled = false;
       async enable({ manual = false}) {
-        await importAsScript(`..${this.buildAssetPath('plugins/plugin.translate.js')}`);
+        await importAsScript(this.buildAssetPath('plugins/plugin.translate.js'));
         this.br.initializePlugin('translate');
       }
       async disable() {
@@ -115,7 +118,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       return;
     }
 
-    for (const experiment of this.experiments) {
+    for (const experiment of this.allExperiments) {
       // TODO: imagesBaseURL should be replaced with assetRoot everywhere
       experiment.assetRoot = this.br.options.imagesBaseURL.replace(/images\/$/, '');
       experiment.icon = experiment.buildAssetPath(experiment.icon);
@@ -129,7 +132,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
   _loadExperimentStates() {
     const savedStates = JSON.parse(localStorage.getItem(this.options.localStorageKey) || '{}');
-    this.experiments.forEach(experiment => {
+    this.allExperiments.forEach(experiment => {
       if (savedStates[experiment.name] !== undefined) {
         experiment.enabled = savedStates[experiment.name];
         if (experiment.enabled) {
@@ -141,7 +144,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
   _saveExperimentStates() {
     const states = Object.fromEntries(
-      this.experiments.map(experiment => [experiment.name, experiment.enabled]),
+      this.allExperiments.map(experiment => [experiment.name, experiment.enabled]),
     );
     localStorage.setItem(this.options.localStorageKey, JSON.stringify(states));
   }
@@ -174,7 +177,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       `,
       label: 'Experiments',
       component: html`<br-experiments-panel
-        .experiments="${this.experiments}"
+        .experiments="${this.allExperiments.filter(experiment => this.options.enabledExperiments.includes(experiment.name))}"
         @connected="${e => this._panel = e.target}"
         @toggle="${async e => {
         await this._toggleExperiment(e.detail.experiment, e.detail.enabled);
@@ -270,7 +273,7 @@ export class BrExperimentToggle extends LitElement {
         </div>
         <p style="opacity: 0.9">
           ${this.description}
-          ${this.learnMore ? html`<a href="${this.learnMore} target="_blank">Learn more</a>.` : ''}
+          ${this.learnMore ? html`<a href="${this.learnMore}" target="_blank">Learn more</a>.` : ''}
         </p>
         <div style="display: flex">
           <div style="flex-grow: 1;"></div>
