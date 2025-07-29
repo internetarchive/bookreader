@@ -49,19 +49,22 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
     /** Where the state of this plugin is saved in localStorage */
     localStorageKey: 'BrExperiments',
+
+    /** The experiments that should be shown in the experiments panel */
+    enabledExperiments: ['translate'],
   }
 
   /** @type {ExperimentModel[]} */
-  experiments = [
+  allExperiments = [
     new class extends ExperimentModel {
       name = 'translate';
-      title = 'Translate Text';
-      description = 'Translate item text into other languages.';
-      learnMore = '';
+      title = 'Translate Plugin';
+      description = "Translate books directly in your browser.";
+      learnMore = 'https://mozilla.github.io/translations/';
       icon = 'images/language-icon.svg';
       enabled = false;
       async enable({ manual = false}) {
-        await importAsScript(`..${this.buildAssetPath('plugins/plugin.translate.js')}`);
+        await importAsScript(this.buildAssetPath('plugins/plugin.translate.js'));
         this.br.initializePlugin('translate');
       }
       async disable() {
@@ -115,7 +118,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       return;
     }
 
-    for (const experiment of this.experiments) {
+    for (const experiment of this.allExperiments) {
       // TODO: imagesBaseURL should be replaced with assetRoot everywhere
       experiment.assetRoot = this.br.options.imagesBaseURL.replace(/images\/$/, '');
       experiment.icon = experiment.buildAssetPath(experiment.icon);
@@ -129,7 +132,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
   _loadExperimentStates() {
     const savedStates = JSON.parse(localStorage.getItem(this.options.localStorageKey) || '{}');
-    this.experiments.forEach(experiment => {
+    this.allExperiments.forEach(experiment => {
       if (savedStates[experiment.name] !== undefined) {
         experiment.enabled = savedStates[experiment.name];
         if (experiment.enabled) {
@@ -141,7 +144,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
   _saveExperimentStates() {
     const states = Object.fromEntries(
-      this.experiments.map(experiment => [experiment.name, experiment.enabled]),
+      this.allExperiments.map(experiment => [experiment.name, experiment.enabled]),
     );
     localStorage.setItem(this.options.localStorageKey, JSON.stringify(states));
   }
@@ -168,13 +171,12 @@ export class ExperimentsPlugin extends BookReaderPlugin {
   _render() {
     this.br.shell.menuProviders['experiments'] = {
       id: 'experiments',
-      // https://icon-sets.iconify.design/hugeicons/?icon-filter=eco-lab-02&query=lab
       icon: html`
-        <svg xmlns="http://www.w3.org/2000/svg" width="34" viewBox="0 0 24 24"><path fill="currentColor" d="M10 5.75h1.25v2.5H9.5c-.41 0-.75.34-.75.75s.34.75.75.75h.25v1.96A5.72 5.72 0 0 0 6.25 17c0 3.17 2.58 5.75 5.75 5.75s5.75-2.58 5.75-5.75c0-2.33-1.39-4.4-3.5-5.29V9.75h.25c.41 0 .75-.34.75-.75s-.34-.75-.75-.75h-1.75v-1.5H14c1.52 0 2.75-1.23 2.75-2.75V3c0-.41-.34-.75-.75-.75h-2c-.579 0-1.115.178-1.558.483A2.75 2.75 0 0 0 10 1.25H8c-.41 0-.75.34-.75.75v1c0 1.52 1.23 2.75 2.75 2.75m2.75-.5V5c0-.69.56-1.25 1.25-1.25h1.25V4c0 .69-.56 1.25-1.25 1.25zm-1.5 6.98V9.75h1.5v2.48c0 .33.22.62.53.72c1.77.56 2.97 2.19 2.97 4.06A4.26 4.26 0 0 1 12 21.26a4.26 4.26 0 0 1-4.25-4.25c0-1.87 1.19-3.5 2.97-4.06c.32-.1.53-.39.53-.72m-2.5-9.48H10c.69 0 1.25.56 1.25 1.25v.25H10c-.69 0-1.25-.56-1.25-1.25z" color="currentColor"/></svg>
+        <img src="${this.br.options.imagesBaseURL}/icon_experiment.svg" width="26"/>
       `,
       label: 'Experiments',
       component: html`<br-experiments-panel
-        .experiments="${this.experiments}"
+        .experiments="${this.allExperiments.filter(experiment => this.options.enabledExperiments.includes(experiment.name))}"
         @connected="${e => this._panel = e.target}"
         @toggle="${async e => {
         await this._toggleExperiment(e.detail.experiment, e.detail.enabled);
@@ -270,7 +272,7 @@ export class BrExperimentToggle extends LitElement {
         </div>
         <p style="opacity: 0.9">
           ${this.description}
-          ${this.learnMore ? html`<a href="${this.learnMore} target="_blank">Learn more</a>.` : ''}
+          ${this.learnMore ? html`<a href="${this.learnMore}" target="_blank">Learn more</a>.` : ''}
         </p>
         <div style="display: flex">
           <div style="flex-grow: 1;"></div>

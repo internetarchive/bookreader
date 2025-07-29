@@ -258,7 +258,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   _render() {
     this.br.shell.menuProviders['translate'] = {
       id: 'translate',
-      icon: html`<img src='${this.br.options.imagesBaseURL}/language-icon.svg' width="34"/>
+      icon: html`<img src='${this.br.options.imagesBaseURL}/language-icon.svg' width="26"/>
       `,
       label: 'Translate',
       component: html`<br-translate-panel
