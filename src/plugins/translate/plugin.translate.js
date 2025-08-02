@@ -126,6 +126,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
 
     const textLayerElement = page.querySelector('.BRtextLayer');
+    textLayerElement.classList.add('showingTranslation');
     $(pageTranslationLayer).css({
       "width": $(textLayerElement).css("width"),
       "height": $(textLayerElement).css("height"),
