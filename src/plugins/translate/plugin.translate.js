@@ -216,7 +216,7 @@ export class TranslatePlugin extends BookReaderPlugin {
       const pageNumber = paragEl.getAttribute('data-translate-index').split('-')[0];
       /** @type {HTMLElement} selectionTransform */
       const textLayerEl = document.querySelector(`[data-index='${pageNumber}'] .BRtextLayer`);
-      $(translateLayerEl).css({'transform': textLayerEl.style.transform}); 
+      $(translateLayerEl).css({'transform': textLayerEl.style.transform});
     }
 
     const originalFontSize = parseInt($(paragEl).css("font-size"));
