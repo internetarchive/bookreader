@@ -84,11 +84,12 @@ export class TranslationManager {
     }
 
     /** @type {BatchTranslator} */
-    // BatchTranslator workerUrl option currently not used in code :(
     // Arbitrary setting for number of workers, 1 is already quite fast
+    // batchSize from 8 -> 4 for improved performance
     this.translator = new BatchTranslator({
       registryUrl: `data:application/json,${encodeURIComponent(JSON.stringify(registryJson))}`,
       workers: 2,
+      batchSize: 4,
     });
 
     const modelType = await this.translator.backing.registry;
