@@ -308,6 +308,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     }
 
     const textLayer = createDIVPageLayer(pageContainer.page, 'BRtextLayer');
+    // Have to wait to make sure the page container is actually rendered,
+    // otherwise width/height are unset after a mode change.
+    await Promise.resolve();
     const ratioW = parseFloat(pageContainer.$container[0].style.width) / pageContainer.page.width;
     const ratioH = parseFloat(pageContainer.$container[0].style.height) / pageContainer.page.height;
     textLayer.style.transform = `scale(${ratioW}, ${ratioH})`;
