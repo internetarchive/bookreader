@@ -202,24 +202,35 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   /**
-   * @param {Element} ele
+   * @param {Element} paragEl
    */
-  fitVisiblePage(ele) {
-    const originalFontSize = parseInt($(ele).css("font-size"));
-    let adjustedFontSize = originalFontSize;
-    while (ele.clientHeight < ele.scrollHeight && adjustedFontSize > 0) {
-      adjustedFontSize--;
-      $(ele).css({ "font-size": `${adjustedFontSize}px` });
+  fitVisiblePage(paragEl) {
+    // For some reason, Chrome does not detect the transform property for the translation + text layers
+    // Could not get it to fetch the transform value using $().css method
+    // Oddly enough the value is retrieved if using .style.transform instead?
+    const translateLayerEl = paragEl.parentElement;
+    if ($(translateLayerEl).css('transform') == 'none') {
+      const pageNumber = paragEl.getAttribute('data-translate-index').split('-')[0];
+      /** @type {HTMLElement} selectionTransform */
+      const textLayerEl = document.querySelector(`[data-index='${pageNumber}'] .BRtextLayer`);
+      $(translateLayerEl).css({'transform': textLayerEl.style.transform}); 
     }
 
-    const textHeight = ele.firstElementChild.clientHeight;
-    const scrollHeight = ele.scrollHeight;
+    const originalFontSize = parseInt($(paragEl).css("font-size"));
+    let adjustedFontSize = originalFontSize;
+    while (paragEl.clientHeight < paragEl.scrollHeight && adjustedFontSize > 0) {
+      adjustedFontSize--;
+      $(paragEl).css({ "font-size": `${adjustedFontSize}px` });
+    }
+
+    const textHeight = paragEl.firstElementChild.clientHeight;
+    const scrollHeight = paragEl.scrollHeight;
     const fits = textHeight < scrollHeight;
     if (fits) {
       const lines = textHeight / adjustedFontSize;
       // Line heights for smaller paragraphs occasionally need a minor adjustment
       const newLineHeight = scrollHeight / lines;
-      $(ele).css({
+      $(paragEl).css({
         "line-height" : `${newLineHeight}px`,
         "overflow": "visible",
       });
