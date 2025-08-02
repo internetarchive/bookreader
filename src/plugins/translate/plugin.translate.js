@@ -11,6 +11,7 @@ export class TranslatePlugin extends BookReaderPlugin {
 
   options = {
     enabled: true,
+    panelDisclaimerText: "Translations are in alpha",
   }
 
   /** @type {TranslationManager} */
@@ -273,6 +274,7 @@ export class TranslatePlugin extends BookReaderPlugin {
         @langToChanged="${this.handleToLangChange}"
         .fromLanguages="${this.translationManager.fromLanguages}"
         .toLanguages="${this.translationManager.toLanguages}"
+        .disclaimerMessage="${this.options.panelDisclaimerText}"
         class="translate-panel"
       />`,
     };
@@ -287,6 +289,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Array }) fromLanguages = []; // List of obj {code, name}
   @property({ type: Array }) toLanguages = []; // List of obj {code, name}
   @property({ type: String }) prevSelectedLang = ''; // Tracks the previous selected language for the "To" dropdown
+  @property({ type: String }) disclaimerMessage = '';
 
   /** @override */
   createRenderRoot() {
@@ -331,6 +334,8 @@ export class BrTranslatePanel extends LitElement {
       : ''}
       </div>
       <div class="footer" id="status"></div>
+      <br/>
+      <div class="disclaimer" id="disclaimerMessage"> ${this.disclaimerMessage} </div>
     </div>`;
   }
 
