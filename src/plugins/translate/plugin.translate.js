@@ -56,13 +56,13 @@ export class TranslatePlugin extends BookReaderPlugin {
     this.br.on('textLayerRendered', async (_, {pageIndex, pageContainer}) => {
       // Stops invalid models from running, also prevents translation on page load
       // TODO check if model has finished loading or if it exists
+      if (!this.translationManager) {
+        return;
+      }
       if (this.translationManager.active) {
         const pageElement = pageContainer.$container[0];
         this.translateRenderedLayer(pageElement);
       }
-
-      const pageElement = pageContainer.$container[0];
-      await this.translateRenderedLayer(pageElement);
     });
 
     /**
@@ -70,6 +70,9 @@ export class TranslatePlugin extends BookReaderPlugin {
      * @param {object} eventProps
     */
     this.br.on('pageVisible', (_, {pageContainerEl}) => {
+      if (!this.translationManager.active) {
+        return;
+      }
       for (const paragraphEl of pageContainerEl.querySelectorAll('.BRtranslateLayer > .BRparagraphElement')) {
         if (paragraphEl.textContent) {
           this.fitVisiblePage(paragraphEl);

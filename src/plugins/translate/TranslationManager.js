@@ -165,6 +165,9 @@ export class TranslationManager {
 
   getTranslation = async (fromLang, toLang, pageIndex, paragraphIndex, text, priority) => {
     this.active = true;
+    if (fromLang == toLang || !fromLang || !toLang) {
+      return;
+    }
     const key = `${fromLang}${toLang}-${pageIndex}:${paragraphIndex}`;
     const cachedEntry = this.alreadyTranslated.entries.find(x => x.index == key);
 
