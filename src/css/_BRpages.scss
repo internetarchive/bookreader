@@ -1,0 +1,232 @@
+.BRpageview {
+  position: relative;
+  margin: auto;
+}
+
+.BRmode1up .BRpagecontainer, .BRmodeThumb .BRpagecontainer {
+  box-shadow: 1px 1px 2px #333;
+  img {
+    border: 0;
+  }
+}
+
+.BRmodeThumb .BRpagecontainer, .BRmode2up .BRpagecontainer {
+  cursor: pointer;
+}
+.BRpagecontainer.BRemptypage {
+  cursor: unset;
+}
+
+.br-mode-1up__root {
+  display: block;
+  overflow: auto;
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  // This is a performance optimization that basically tells the browser "the size
+  // of this element doesn't depend on the size of its children".
+  contain: strict;
+
+  .br-mode-1up__world {
+    position: absolute;
+    transform-origin: 0 0;
+  }
+  
+  .br-mode-1up__visible-world {
+    position: absolute;
+    transform-origin: 0 0;
+  }
+}
+
+.BRpagecontainer {
+  position: relative;
+  overflow: hidden;
+  background: $brColorPlaceholderBg;
+  overflow: hidden;
+  overflow: clip;
+  img {
+    position: absolute;
+    background: transparent;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .BRscreen {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+  }
+  &.BRpageloading {
+    // Don't show the alt text while loading
+    img {
+      color: transparent;
+    }
+
+    // src can be set async, so hide the image if it's not set
+    img:not([src]) {
+      display: none;
+    }
+
+    &::after {
+      display: block;
+      content: "";
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: url("images/loading.gif") center/20px no-repeat;
+    }
+  }
+  &.BRemptypage {
+    background: transparent;
+    img {
+      background-image: none;
+    }
+  }
+}
+
+svg.BRPageLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+// Hides page layers during page flip animation
+.BRpageFlipping .BRPageLayer {
+  display: none;
+}
+
+.br-mode-2up__root {
+  display: block;
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.br-mode-2up__book {
+  position: relative;
+  transform-origin: 0 0;
+  width: 0px;
+  height: 0px;
+}
+
+.BRmode2up {
+  // Used while loading stuff
+  transition: opacity 0.2s;
+}
+
+.BRmode2up .BRpagecontainer {
+  backface-visibility: hidden;
+  &:not(.BRpage-visible) {
+    display: none;
+  }
+}
+
+.br-mode-2up__leafs {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  transform-style: preserve-3d;
+  
+  &[side=left] {
+    border-radius: 4px 0 0 4px;
+    .br-leaf-edges__label {
+      padding-right: 10px;
+      border-radius: 4px 0 0 4px;
+    }
+  }
+  &[side=right] {
+    border-radius: 0 4px 4px 0;
+    .br-leaf-edges__label {
+      padding-left: 20px;
+      border-radius: 0 4px 4px 0;
+    }
+  }
+  &.br-mode-2up__leafs--flipping {
+    z-index: 200000;
+    transition: transform 5s;
+    transition-timing-function: ease-in-out;
+    border-radius: 0;
+
+    // Have a copy of the background at a perpendicular angle,
+    // so that during the rotation, it's always visible.
+    &:before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      transform: rotateY(-90deg);
+    }
+  }
+
+  &, &.br-mode-2up__leafs--flipping::before {
+    background: transparent url(images/back_pages.png) repeat scroll 0% 0%;
+  }
+
+  .br-leaf-edges__bar {
+    display: none;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    min-width: 1px;
+    background-color: #9A9B9D;
+    opacity: 0.85;
+    transform: translateX(-50%);
+  }
+  
+  .br-leaf-edges__label {
+    display: none;
+    pointer-events: none;
+    z-index: 1000;
+    position: absolute;
+    padding: 6px;
+    color: white;
+    background-color: #9A9B9D;
+    opacity: 0.85;
+    white-space: nowrap;
+    transform: translateY(-10px);
+  }
+}
+
+.br-mode-2up--flipping-left {
+  .BRpage-entering[data-side=R] {
+    z-index: 10;
+    transform-origin: left;
+    transform: rotateY(0deg);
+  }
+
+  .BRpage-exiting[data-side=L] {
+    z-index: 10;
+    transform-origin: right;
+  }
+
+  .BRpage-exiting[data-side=R] {
+    z-index: 9;
+  }
+}
+
+.br-mode-2up--flipping-right {
+  .BRpage-entering[data-side=L] {
+    z-index: 10;
+    transform-origin: right;
+  }
+
+  .BRpage-exiting[data-side=R] {
+    z-index: 10;
+    transform-origin: left;
+  }
+
+  .BRpage-exiting[data-side=L] {
+    z-index: 9;
+  }
+}

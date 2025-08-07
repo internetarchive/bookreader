@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Start in immersion mode</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/webcomponents-bundle.js"></script>
+    <script src="../BookReader/jquery-3.js"></script>
+
+
+    <!-- BookReader and plugins -->
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+    <script src="../BookReader/BookReader.js"></script>
+
+    <!-- URL-changing plugin -->
+    <script src="../BookReader/plugins/plugin.url.js"></script>
+
+    <!-- Custom CSS overrides -->
+    <link rel="stylesheet" href="BookReaderDemo.css"/>
+</head>
+<body>
+  <div id="BookReader"></div>
+  <script type="text/javascript" src="BookReaderJSSimple.js"></script>
+  <script>
+    instantiateBookReader('#BookReader', {
+      startFullscreen: true
+    });
+  </script>
+</body>
+</html>

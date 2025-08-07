@@ -1,0 +1,102 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        # Keep in sync with netlify.toml
+        node-version: 20.x
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      id: cache
+      with:
+        # Caching node_modules isn't recommended because it can break across
+        # Node versions and won't work with npm ci (See https://github.com/actions/cache/blob/main/examples.md#node---npm )
+        # But we pin the node version, and we don't update it that often anyways. And
+        # we don't use `npm ci` specifically to try to get faster CI flows. So caching
+        # `node_modules` directly.
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      run: npm install
+
+  build:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+    - name: Load node_modules from cache
+      uses: actions/cache@v4
+      with:
+        # Use node_modules from previous jobs
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
+    - name: Cache BookReader/
+      uses: actions/cache@v4
+      id: build-cache
+      with:
+        # Cache the build files so we don't have to build twice for e2e tests
+        path: 'BookReader'
+        key: ${{ runner.os }}-${{ github.sha }}
+    - if: steps.build-cache.outputs.cache-hit != 'true'
+      run: npm run build
+
+  tests:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+    - name: Load node_modules from cache
+      uses: actions/cache@v4
+      with:
+        # Use node_modules from previous jobs
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
+    - run: npm run lint
+    - run: npm run test
+    - uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+    
+  e2e-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+    - name: Load node_modules from cache
+      uses: actions/cache@v4
+      with:
+        # Use node_modules from previous jobs
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-20-${{ hashFiles('package*.json') }}
+    - name: Load BookReader/ from cache
+      uses: actions/cache@v4
+      with:
+        # Cache the build files so we don't have to build twice for e2e tests
+        path: 'BookReader'
+        key: ${{ runner.os }}-${{ github.sha }}
+    # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )
+    # Quarantine mode (sigh) to catch unstable tests (see https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode )
+    - run: npx testcafe --concurrency 2 --quarantine-mode

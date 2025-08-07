@@ -1,0 +1,12 @@
+<svg
+  width="11"
+  height="19"
+  viewBox="0 0 11 19"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-labelledby="1upTitleID 1upDescID"
+>
+  <title id="1upTitleID">One-page mode</title>
+  <desc id="1upDescID">An illustration of a rectangle representing a book page</desc>
+  <path d="m9.77194068 1c.10796015 0 .19839954.08352773.2220361.19570997l.00602322.05822495v16.49213018c0 .1202095-.07501651.22091-.17576747.2472283l-.05229185.0067066h-8.54388136c-.10796015 0-.19839954-.0835277-.2220361-.19571l-.00602322-.0582249v-16.49213018c0-.12020948.07501651-.22091.17576747-.24722832l.05229185-.0067066z" fill="none" stroke="#fff" stroke-width="1.5" />
+</svg>

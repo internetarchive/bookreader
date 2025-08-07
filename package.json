@@ -1,0 +1,136 @@
+{
+  "name": "@internetarchive/bookreader",
+  "version": "5.0.0-96",
+  "description": "The Internet Archive BookReader.",
+  "type": "module",
+  "files": [
+    "BookReader/",
+    "src/",
+    "jsconfig.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/internetarchive/bookreader.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "module": "src/ia-bookreader/ia-bookreader.js",
+  "keywords": [
+    "online",
+    "bookreader",
+    "interface",
+    "ebooks",
+    "internet archive"
+  ],
+  "author": "Internet Archive",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/internetarchive/bookreader/issues"
+  },
+  "homepage": "https://github.com/internetarchive/bookreader#readme",
+  "private": false,
+  "dependencies": {
+    "@browsermt/bergamot-translator": "^0.4.9",
+    "@internetarchive/ia-activity-indicator": "^0.0.4",
+    "@internetarchive/ia-item-navigator": "^2.1.2",
+    "@internetarchive/icon-bookmark": "^1.3.4",
+    "@internetarchive/icon-dl": "^1.3.4",
+    "@internetarchive/icon-edit-pencil": "^1.3.4",
+    "@internetarchive/icon-magnify-minus": "^1.3.4",
+    "@internetarchive/icon-magnify-plus": "^1.3.4",
+    "@internetarchive/icon-search": "^1.3.4",
+    "@internetarchive/icon-toc": "^1.3.4",
+    "@internetarchive/icon-visual-adjustment": "^1.3.4",
+    "@internetarchive/modal-manager": "^0.2.12",
+    "@internetarchive/shared-resize-observer": "^0.2.0",
+    "lit": "^2.5.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.25.8",
+    "@babel/eslint-parser": "7.25.7",
+    "@babel/plugin-proposal-class-properties": "7.18.6",
+    "@babel/plugin-proposal-decorators": "7.25.7",
+    "@babel/preset-env": "7.25.8",
+    "@iiif/presentation-2": "^1.0.4",
+    "@iiif/presentation-3": "^2.1.3",
+    "@open-wc/testing-helpers": "3.0.1",
+    "@types/jest": "29.5.14",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
+    "babel-loader": "9.2.1",
+    "concurrently": "9.0.1",
+    "core-js": "3.38.1",
+    "cpx2": "8.0.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-no-jquery": "^2.7.0",
+    "eslint-plugin-testcafe": "^0.2.1",
+    "http-server": "14.1.1",
+    "hypothesis": "^1.1627.0",
+    "interactjs": "^1.10.18",
+    "iso-language-codes": "2.0.0",
+    "jest": "29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jquery": "3.6.1",
+    "jquery-colorbox": "1.6.4",
+    "jquery-ui": "1.12.1",
+    "jquery-ui-touch-punch": "0.2.3",
+    "jquery.browser": "0.1.0",
+    "live-server": "1.2.2",
+    "regenerator-runtime": "0.14.1",
+    "sass": "1.79.5",
+    "sinon": "19.0.2",
+    "soundmanager2": "2.97.20170602",
+    "svgo": "3.3.2",
+    "testcafe": "3.6.2",
+    "testcafe-browser-provider-browserstack": "^1.13.2-alpha.1",
+    "webpack": "5.95.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(sinon|lit-html|lit-element|lit|@lit|@internetarchive|@open-wc)/)"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    },
+    "setupFiles": [
+      "./src/jquery-wrapper.js",
+      "./tests/jest/setup.js"
+    ],
+    "roots": [
+      "<rootDir>/src/",
+      "<rootDir>/tests/jest/"
+    ]
+  },
+  "scripts": {
+    "preversion": "npm run test && node scripts/preversion.js",
+    "version": "node scripts/version.js",
+    "postversion": "node scripts/postversion.js",
+    "build": "npm run clean && npx concurrently --group npm:build-js npm:build-css npm:build-assets npm:build-hypothesis npm:build-bergamot",
+    "build-assets": "npx cpx \"src/assets/**/*\" BookReader && npx svgo -f BookReader/icons && npx svgo -f BookReader/images",
+    "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
+    "build-bergamot": "npx cpx \"node_modules/@browsermt/bergamot-translator/worker/*\" BookReader/",
+    "build-bergamot:watch": "npx cpx --watch \"node_modules/@browsermt/bergamot-translator/worker/*\" BookReader/",
+    "build-hypothesis": "npx cpx \"node_modules/hypothesis/**/*\" BookReader/hypothesis",
+    "build-hypothesis:watch": "npx cpx --watch --verbose \"node_modules/hypothesis/**/*\" BookReader/hypothesis",
+    "build-js": "npx webpack",
+    "build-js:watch": "npx webpack --mode=development --watch",
+    "build-css": "npx sass --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
+    "build-css:watch": "npx sass --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
+    "clean": "rm -r BookReader/ || true",
+    "lint": "npx eslint src/ tests/ *.js *.cjs",
+    "lint:fix": "npx eslint --fix src/ tests/ *.js *.cjs",
+    "serve": "npx http-server . --port=8000",
+    "serve-live": "npx live-server . --cors --port=8000 --watch=index.html,BookReader,BookReaderDemo",
+    "serve-dev": "env NODE_ENV='development' npm run build-css && env NODE_ENV='development' npx concurrently --kill-others npm:serve-live npm:build-*:watch",
+    "test": "npx jest --coverage --colors",
+    "test:watch": "npx jest --watch",
+    "test:e2e": "npm run build && npx testcafe",
+    "test:e2e:dev": "npx testcafe --live --dev",
+    "DOCS:update:test-deps": "If CI succeeds, these should be good to update",
+    "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing-helpers@latest @types/jest@latest eslint@7 eslint-plugin-testcafe@latest jest@latest sinon@latest testcafe@latest",
+    "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
+    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest @babel/plugin-proposal-class-properties@latest @babel/plugin-proposal-decorators@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest"
+  }
+}

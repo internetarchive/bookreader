@@ -1,0 +1,263 @@
+@mixin ellipsis-lines($lines: 4) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+%timeline-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: -14px;
+  width: 350px;
+  max-width: 100vw;
+  padding: 12px 14px;
+  padding-bottom: 10px;
+  color: $tooltipText;
+  background: $tooltipBG;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .5);
+  border-radius: 4px;
+  animation: fadeUp 0.2s;
+
+  // Disable text selection
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+
+  // Create a triangle under the tooltip using clip-path
+  // This makes it possible to move the mouse onto the tooltip
+  &:after {
+    position: absolute;
+    content: "";
+    bottom: -9px;
+    left: 0;
+    width: 30px;
+    height: 10px;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+}
+
+#{$brScope} {
+  // FIXME: .ttsHiliteLayer should probably not be in this file,
+  // but they appear the same in the UI.
+  .searchHiliteLayer, .ttsHiliteLayer {
+    pointer-events: none;
+
+    rect {
+      // Note: Can't use fill-opacity ; safari inexplicably applies that to
+      // the outline as well
+      fill: rgba(0, 0, 255, 0.2);
+    }
+  }
+
+  .searchHiliteLayer rect {
+    animation: highlightFocus 600ms 1 reverse;
+    stroke: blue;
+    stroke-width: 4px;
+
+    // Sass for loop for nth-child animation delay
+    @for $i from 1 through 10 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{($i - 1) * 50}ms;
+      }
+    }
+  }
+
+  .BRchapter, .BRsearch {
+    position: absolute;
+    bottom: 0;  /* Relative to nav line */
+    cursor: pointer;
+    z-index: $brZindexBase + 2;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    font-weight: normal;
+  }
+  .BRchapter {
+    // background-image: url(images/marker_chap-off.svg);
+    background-color: white;
+    color: #666;
+    height: 8px;
+    width: 4px;
+    bottom: -13px;
+    margin-left: -12px; /* Center icon */
+    > div {
+      @extend %timeline-tooltip;
+    }
+    &:hover {
+      > div {
+        display: block;
+      }
+    }
+    &.front {
+      // background-image: url(images/marker_chap-on.svg);
+      background-color: blue;
+    }
+    .BRchapterPage {
+      font-size: 0.85em;
+      opacity: .8;
+    }
+  }
+  .BRsearch {
+    width: 9px;
+    height: 6px;
+    margin-left: -10px;
+    &:before {
+      position: absolute;
+      left: calc(50% - 2px);
+      transform: translateX(-50%);
+      width: 2px;
+      height: 6px;
+      content: "";
+      background: $searchMarkerBG;
+      border-radius: 2px;
+    }
+    &:hover {
+      .BRquery {
+        display: block;
+      }
+    }
+  }
+  .BRsearch .BRquery {
+    display: none;
+  }
+  .BRquery {
+    @extend %timeline-tooltip;
+    main {
+      @include ellipsis-lines(4);
+      margin-bottom: 6px;
+      &:before { content: "“"; }
+      &:after { content: "”"; }
+    }
+    footer {
+      font-size: 0.85em;
+      opacity: .8;
+    }
+    mark {
+      color: $searchResultText;
+      font-weight: bold;
+      background-color: $searchResultBG;
+    }
+  }
+
+  .BRbooksearch {
+    position:relative;
+    box-sizing: border-box;
+  }
+  .BRbooksearch.desktop {
+    position: relative;
+    height: 30px;
+    border: 1px solid white;
+    border-radius: 20px;
+    display: inline-block;
+    line-height:0;
+    vertical-align: top;
+    margin-top: 0;
+    margin-bottom: 0;
+
+    .BRsearchInput {
+      -webkit-appearance: none;
+      position: relative;
+      width: 130px;
+      max-width: 160px;
+      height: 100%;
+      color: white;
+      border: none;
+      padding: 3px 0px 3px 10px;
+      margin: 0;
+      box-sizing: border-box;
+      background: transparent;
+      display: block;
+      float: left;
+      font-size: $brFontSizeBase;
+      line-height: 1.2;
+    }
+    .BRsearchSubmit {
+      width: auto;
+      height: 100%;
+      border: none;
+      text-align: center;
+      color: #fff;
+      overflow: hidden;
+      box-sizing:boder-box;
+      display: block;
+      background: transparent;
+      float: left;
+      cursor: pointer;
+    }
+  }
+
+  .BRsearch-navigation {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: $white;
+    background-color: $brColorDarkGreyBg;
+    padding: 5px 0;
+    button.toggle-sidebar {
+      width: unset;
+      padding: 0 10px;
+      h4 {
+        padding: 0;
+        margin: 0;
+        font-size: 15px;
+        font-weight: normal;
+        color: $white;
+        span {
+          vertical-align: middle;
+        }
+      }
+    }
+    .pagination {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      span {
+        display: inline-block;
+        padding: 0 5px;
+      }
+      button {
+        &[disabled] {
+          opacity: .3;
+          cursor: default;
+        }
+        span {
+          width: 8px;
+          height: 13px;
+          padding: 0;
+          background-size: 100% auto;
+        }
+      }
+    }
+    .clear {
+      span {
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+}
+
+@keyframes highlightFocus {
+  to { stroke-width: 20px; }
+}
+
+/* Mid size breakpoint */
+@media (max-width: $brBreakPointMid) {
+  #{$brScope} {
+    .BRbooksearch .BRsearchInput {
+      padding: 0 0 0 8px;
+      width: 110px;
+      min-width: 110px;
+    }
+    .BRbooksearch .BRsearchSubmit {
+      float: left;
+    }
+  }
+}

@@ -1,0 +1,85 @@
+/* Variables */
+$brFontSizeBase: 14px;
+$brFontSizeLarger: 16px;
+$brFontSizeSmaller: 12px;
+$brFontFamily: "Helvetica Neue", Arial, Verdana, sans-serif;
+
+$brColorThemeblue: #0074D1;
+$brColorThemeBlue2: #4990E2;
+$brColorThemeBlue3: rgb(74,144,226);
+$brColorDarkGreyBg: #333;
+$brColorMainBg: black;
+
+$brColorBirdBook: #FEFDEB;
+$brColorPlaceholderBg: $brColorBirdBook;
+
+// "Controls" are the navbar and toolbar
+
+$brColorControlsLightBg: white;
+$brColorLightBorder: #979797;
+$brColorDarkBorder: #4D4D4D;
+
+$brNavHeightDesktop: 34px; //40px; //34px;
+$brNavHeightMobile: $brNavHeightDesktop;
+
+$brBreakPointMobile: 800px;
+$brBreakPointMid: 1050px;
+
+$brIconSpriteWidth: 40px;
+$brIconWidthDesktop: 34px;
+$brIconWidthMobile: 40px; //34px;
+
+$brZindexBase: 1;
+$brZindexPopup: 3000;
+$brZindexFullscreen: 2000;
+
+$gray13: #222;
+$gray20: #333;
+$gray40: #666;
+$gray80: #ccc;
+$white: #fff;
+$darkBlue: #272958;
+$mediumBlue: #428bca;
+$lightBlue: #adaedc;
+$controlsText: $white;
+$controlsBG: $gray20;
+$tooltipBG: $gray20;
+$activeButtonBG: $white;
+$controlsBorder: $gray13;
+$trackColor: $gray40;
+$trackFillColor: $gray80;
+
+$tooltipBG: $gray20;
+$tooltipText: $white;
+$searchMarkerBG: $mediumBlue;
+$searchResultText: $lightBlue;
+$searchResultBG: $darkBlue;
+
+@mixin brDarkControls {
+    background-color: $brColorDarkGreyBg;
+    color: white;
+    a { color: white; }
+}
+@mixin brLightControls {
+    background-color: $brColorControlsLightBg;
+    color: black;
+    a { color: black; }
+}
+
+// These are the main root elements in BookReader
+$brScope: ".BookReader, .BRfloat";
+
+@import 'colorbox';
+@import 'BRmain';
+@import 'BRpages';
+@import 'BRicon';
+@import 'BRfloat';
+@import 'BRnav';
+@import 'BRtoolbar';
+@import 'BRsearch';
+@import 'BRvendor';
+@import 'icons';
+@import 'controls';
+@import 'TextSelection';
+@import 'BRComponent';
+@import 'BRBookmarks';

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/webcomponents-bundle.js"></script>
+    <script src="../BookReader/jquery-3.js"></script>
+
+
+    <!-- Bookreader -->
+    <script src="../BookReader/BookReader.js"></script>
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+
+    <!-- plugins needed for archive.org, in same order as archive.org -->
+    <script src="../BookReader/plugins/plugin.search.js"></script>
+    <script src="../BookReader/plugins/plugin.chapters.js"></script>
+    <script src="../BookReader/plugins/plugin.tts.js"></script>
+    <script src="../BookReader/plugins/plugin.url.js"></script>
+    <script src="../BookReader/plugins/plugin.autoplay.js"></script>
+    <script src="../BookReader/plugins/plugin.resume.js"></script>
+    <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
+
+    <link rel="stylesheet" href="BookReaderDemo.css"/>
+</head>
+<body>
+
+<div id="BookReader">
+    Internet Archive BookReader Demo - Chapters, Mobile Nav<br/>
+    <noscript>
+    <p>
+        The BookReader requires JavaScript to be enabled. Please check that your browser supports JavaScript and that it is enabled in the browser settings.  You can also try one of the <a href="https://archive.org/details/ramalan-ronggo-warsito-ramalan-jayabaya-ramalan-sabdopalon-nayagenggong"> other formats of the book</a>.
+    </p>
+    </noscript>
+</div>
+
+<script>
+// Override options coming from IA
+BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
+BookReader.optionOverrides.urlMode = 'history';
+BookReader.optionOverrides.urlHistoryBasePath = `${window.location.pathname}/`;
+BookReader.optionOverrides.startFullscreen = true;
+</script>
+<script>
+$(function() {
+  var s1Promise = $.getScript('//archive.org/bookreader/BookReaderHelpers.js');
+  var s2Promise = $.getScript('//archive.org/bookreader/BookReaderJSIA.js');
+  $.when(s1Promise, s2Promise).done(function(s1Result, s2Result) {
+    $.ajax({
+      url: '//ia803108.us.archive.org/BookReader/BookReaderJSIA.php?id=ramalan-ronggo-warsito-ramalan-jayabaya-ramalan-sabdopalon-nayagenggong&itemPath=/16/items/ramalan-ronggo-warsito-ramalan-jayabaya-ramalan-sabdopalon-nayagenggong&server=ia803108.us.archive.org&format=jsonp&subPrefix=ramalan-ronggo-warsito-ramalan-jayabaya-ramalan-sabdopalon-nayagenggong-300ppi',
+      type: 'GET',
+      dataType: 'jsonp',
+    }).then(function(response) {
+      BookReaderJSIAinit(response.data);
+    });
+  }).fail(function() {
+    console.log('Error initializing bookreader');
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+/**
+ * BRtoolbar is the top control bar (eg header)
+ */
+
+.BRtoolbar {
+  position: relative;
+  top: 0;
+  left: 0;
+  padding: 10px 10px 4px 10px;
+  width: 100%;
+  background-color: transparent;
+  box-sizing: border-box;
+  width: 100%;
+  color: white;
+  font-size: $brFontSizeBase;
+  /* ensure that this displays over book */
+  z-index: 3;
+}
+.BRtoolbar .label {
+  font-size: $brFontSizeSmaller;
+  color: #ccc;
+}
+.BRtoolbar a {
+  text-decoration: none;
+  color: white;
+  &:hover {
+    color: white;
+    text-decoration: underline;
+  }
+}
+/* desktop header */
+.BRtoolbarSection > *  {
+  margin-left: 6px;
+}
+.BRtoolbarbuttons {
+  white-space: nowrap;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+}
+.BRtoolbarbuttons .BRpill {
+  border: 1px solid white;
+  background: transparent;
+  padding: 5px 10px;
+  height: 30px;
+  border-radius: 20px;
+  color: white;
+  line-height: 0;
+  vertical-align: middle;
+  font-size: $brFontSizeSmaller;
+  cursor: pointer;
+  &.BRtoolbarHamburger {
+      border: none;
+      border-radius: none;
+  }
+}
+
+.BRtoolbarSection {
+  white-space: nowrap;
+}
+.BRtoolbarSectionLogo {
+  text-align: center;
+  display: none;
+}
+.BRtoolbarLeft {
+  flex: 1 auto;
+  overflow-y: hidden;
+}
+// .BRtoolbarSectionTitle {}
+.BRtoolbarRight {
+  flex: none;
+}
+
+@media (max-width: $brBreakPointMobile) {
+  .BRtoolbar {
+    height: $brNavHeightMobile;
+    padding: 0;
+    box-shadow: 0px 1px 3px 0px rgba(#666, .25);
+  }
+}
+
+ia-bookreader .BRtoolbar {
+  padding-left: 50px;
+}

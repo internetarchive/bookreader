@@ -1,0 +1,121 @@
+.icon {
+  display: inline-block;
+  background: transparent 50% 50% no-repeat;
+}
+
+.icon.hflip {
+  transform: scaleX(-1);
+}
+
+.active .icon {
+  filter: brightness(.2);
+}
+
+.icon-read-aloud {
+  width: 20px;
+  height: 16px;
+  background-image: url("icons/read-aloud.svg");
+}
+
+.icon-onepg {
+  width: 11px;
+  height: 19px;
+  background-image: url("icons/1up.svg");
+}
+
+.icon-twopg {
+  width: 20px;
+  height: 19px;
+  background-image: url("icons/2up.svg");
+}
+
+.icon-fullscreen,
+.icon-fullscreen-exit {
+  width: 18px;
+  height: 18px;
+  background-image: url("icons/fullscreen.svg");
+}
+
+.icon-fullscreen-exit {
+  background-image: url("icons/fullscreen_exit.svg");
+}
+
+.icon-thumb {
+  width: 17px;
+  height: 19px;
+  background-image: url("icons/thumbnails.svg");
+}
+
+.icon-playback-speed {
+  width: 24px;
+  height: 32px;
+  background-image: url("icons/playback-speed.svg");
+}
+
+.icon-review,
+.icon-advance {
+  width: 21px;
+  height: 19px;
+  background-image: url("icons/review.svg");
+}
+
+.icon-advance {
+  background-image: url("icons/advance.svg");
+}
+
+.icon-volume-full {
+  width: 23px;
+  height: 22px;
+  background-image: url("icons/volume-full.svg");
+}
+
+.icon-play,
+.icon-pause {
+  width: 40px;
+  height: 40px;
+  background-image: url("icons/play.svg");
+}
+
+.icon-pause {
+  background-image: url("icons/pause.svg");
+}
+
+.icon-left-arrow {
+  width: 12px;
+  height: 14px;
+  background-image: url("icons/left-arrow.svg");
+}
+
+.icon-magnify {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  background-image: url("icons/magnify-minus.svg");
+  &.plus{
+    background-image: url("icons/magnify-plus.svg");
+  }
+}
+
+.icon-search {
+  width: 19px;
+  height: 19px;
+  background-image: url("images/icon_search_button.svg");
+}
+
+.icon-chevron {
+  width: 5px;
+  height: 8px;
+  background-image: url("icons/chevron-right.svg");
+}
+
+.icon-close {
+  width: 12px;
+  height: 12px;
+  background-image: url("icons/close-circle.svg");
+}
+
+.icon-close-dark {
+  width: 12px;
+  height: 12px;
+  background-image: url("icons/close-circle-dark.svg");
+}

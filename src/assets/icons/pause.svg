@@ -1,0 +1,23 @@
+<svg
+  width="40"
+  height="40"
+  viewBox="0 0 40 40"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-labelledby="pauseTitleID pauseDescID"
+>
+  <title id="pauseTitleID">Pause button</title>
+  <desc id="pauseDescID">A circle with two rectangles in its center</desc>
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g transform="translate(-141.000000, -5.000000)">
+      <g transform="translate(56.922243, 5.000000)">
+        <g transform="translate(84.000000, 0.000000)">
+          <circle fill="#fff" cx="20" cy="20" r="20"></circle>
+          <g transform="translate(14.666667, 12.000000)" fill="#333">
+            <path d="M10.6666667,0 L10.6666667,16.6666667 L6.66666667,16.6666667 L6.66666667,0 L10.6666667,0 Z M4,0 L4,16.6666667 L0,16.6666667 L0,0 L4,0 Z"></path>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,261 @@
+.BRcontrols {
+  width: 100%;
+
+  .BRtooltip {
+    display: none;
+    position: absolute;
+    width: auto;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: $controlsText;
+    border-radius: 3px;
+    background: $tooltipBG;
+    pointer-events: none;
+  }
+
+  .full .BRtooltip {
+    left: auto;
+    right: 0;
+    transform: translateX(0);
+  }
+
+  .BRfullscreenActive & {
+    .icon-fullscreen {
+      background-image: url("icons/fullscreen_exit.svg");
+    }
+  }
+
+  select.playback-speed, select.playback-voices {
+    padding-top: 18px;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    font-size: 10px;
+    text-align-last: center;
+    color: $controlsText;
+    border: none;
+    cursor: pointer;
+    option, optgroup {
+      background: $controlsBG;
+    }
+  }
+
+  select.playback-speed {
+      width: 30px;
+      background: transparent url("icons/playback-speed.svg") 50% 0 no-repeat;
+  }
+
+  select.playback-voices {
+      width: 30px;
+      background: transparent url("icons/voice.svg") 50% 0 no-repeat;
+      background-size: 18px;
+  }
+
+  .active {
+    background: $activeButtonBG;
+  }
+
+  li {
+    position: relative;
+  }
+
+  .controls {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    padding: 2px 10px;
+    margin: 0;
+    list-style: none;
+    background: $controlsBG;
+    @media (max-width: $brBreakPointMobile) {
+      padding-left: 0;
+    }
+  }
+
+  .controls button {
+    width: 30px;
+    height: 30px;
+  }
+
+  .controls .hide {
+    display: none;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .read-aloud {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    padding: 5px 0;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    list-style: none;
+    background: $controlsBG;
+
+    &.visible {
+      display: flex;
+      animation: slideUp 0.2s;
+      button {
+        width: unset;
+        height: unset;
+      }
+    }
+
+    li {
+      padding: 0 10px;
+    }
+
+    [name="play"] {
+      .icon-pause {
+        display: none;
+      }
+      &.playing {
+        .icon-play {
+          display: none;
+        }
+        .icon-pause {
+          display: inline-block;
+        }
+      }
+    }
+  }
+
+  .scrubber {
+    display: flex;
+    width: 100%;
+    height: 30px;
+  }
+
+  .frame {
+    position: relative;
+    width: 100%;
+  }
+
+  .color-fill {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    height: 8px;
+    border-radius: 8px;
+  }
+
+  .scrubber input[type=range] {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    background-color: transparent;
+    -webkit-appearance: none;
+  }
+
+  .scrubber input[type=range]:focus {
+    outline: none;
+  }
+
+  .scrubber input[type=range]::-webkit-slider-runnable-track {
+    background: transparent;
+    border: 0px solid rgba(204, 204, 204, 0);
+    border: 0;
+    border-radius: 8px;
+    width: 100%;
+    height: 8px;
+    cursor: pointer;
+  }
+
+  .scrubber input[type=range]::-webkit-slider-thumb {
+    margin-top: -4px;
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    border: 0px solid rgba(0, 0, 0, 0);
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    -webkit-appearance: none;
+  }
+
+  .scrubber input[type=range]::-moz-range-track {
+    background: #666666;
+    border: 0px solid rgba(204, 204, 204, 0);
+    border: 0;
+    border-radius: 8px;
+    width: 100%;
+    height: 8px;
+    cursor: pointer;
+  }
+
+  .scrubber input[type=range]::-moz-range-progress {
+    height: 8px;
+    background: #ccc;
+  }
+
+  .scrubber input[type=range]::-ms-track {
+    border: none;
+    color: transparent;
+    background: #666;
+  }
+
+  .scrubber input[type=range]::-ms-fill-lower {
+    background: #ccc;
+  }
+
+  .scrubber input[type=range]::-ms-tooltip {
+    display: none;
+  }
+
+  .scrubber input[type=range]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    border: 0px solid rgba(0, 0, 0, 0);
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .scrubber p {
+    padding: 0 20px 0 13px;
+    margin: 0;
+    align-self: stretch;
+    font-weight: 700;
+    line-height: 26px;
+    color: $controlsText;
+    @media (max-width: $brBreakPointMobile) {
+      padding: 0;
+    }
+  }
+
+  /* BookReader defaults overrides */
+  .BRnavline {
+    top: -4px;
+  }
+
+  .scrubber .BRpager.ui-slider {
+    top: 10px;
+    background-color: $trackColor;
+  }
+  .scrubber .BRpager.ui-slider .ui-slider-range {
+    background-color: $trackFillColor;
+  }
+}

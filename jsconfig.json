@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["jest", "node"]
+  },
+  "include": [
+    "src/**/*.js",
+    "tests/**/*.js",
+  ],
+  "exclude": [
+    "node_modules",
+    "BookReader"
+  ]
+}

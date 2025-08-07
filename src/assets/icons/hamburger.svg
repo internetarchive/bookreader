@@ -1,0 +1,15 @@
+<svg
+  width="30px"
+  height="24px"
+  viewBox="0 0 30 24"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-labelledby="hamburgerTitle hamburgerDescription">
+  <title id="hamburgerTitle">Menu icon</title>
+  <desc id="hamburgerDescription">Three parallel horizontal lines in a vertical column</desc>
+  <g stroke="none" stroke-width="3" fill="none" fill-rule="evenodd" stroke-linecap="round">
+    <path d="M2,2 L28,2" stroke="#fff"></path>
+    <path d="M2,12 L28,12" stroke="#fff"></path>
+    <path d="M2,22 L28,22" stroke="#fff"></path>
+  </g>
+</svg>

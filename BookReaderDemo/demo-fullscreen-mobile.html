@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BookReader fullscreen demo</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/webcomponents-bundle.js"></script>
+    <script src="../BookReader/jquery-3.js"></script>
+
+
+    <!-- BookReader and plugins -->
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+    <script src="../BookReader/BookReader.js"></script>
+
+    <!-- URL-changing plugin -->
+    <script src="../BookReader/plugins/plugin.url.js"></script>
+
+    <style>
+html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: grey; }
+.BookReader { width: 100vw; height: 100vw; }
+    </style>
+</head>
+<body>
+    <h1>My page with a bookreader</h1>
+  <div id="BookReader"></div>
+  <script type="text/javascript" src="BookReaderJSSimple.js"></script>
+  <script>
+    instantiateBookReader('#BookReader');
+</script>
+</body>
+</html>

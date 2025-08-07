@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- WC dependencies -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es2015%2Ces5%2CglobalThis"></script>
+    <script type="text/javascript" src="https://unpkg.com/lit@2.1.2/polyfill-support.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/@webcomponents/webcomponentsjs@2.2.10/webcomponents-bundle.js"></script>
+
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/webcomponents-bundle.js"></script>
+    <script src="../BookReader/jquery-3.js"></script>
+
+
+    <!-- BookReader -->
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+    <script src="../BookReader/BookReader.js"></script>
+    <script src="../BookReader/plugins/plugin.iiif.js"></script>
+    <script src="../BookReader/plugins/plugin.url.js"></script>
+
+    <script type="module" src="../BookReader/ia-bookreader-bundle.js"></script>
+
+    <!-- Custom CSS overrides -->
+    <link rel="stylesheet" href="BookReaderDemo.css"/>
+
+    <style>
+        body > section { padding: 0 10px; }
+    </style>
+</head>
+<body>
+
+    <ia-bookreader>
+      <div id="IABookReaderWrapper" slot="main">
+        <div id="BookReader" class="BookReader"></div>
+      </div>
+      <div>
+        Internet Archive BookReader Demo<br />
+        <noscript>
+          <p>
+            The BookReader requires JavaScript to be enabled. Please check that
+            your browser supports JavaScript and that it is enabled in the
+            browser settings.
+          </p>
+        </noscript>
+      </div>
+    </ia-bookreader>
+
+<hr />
+
+<section>
+    <form id="manifestForm">
+        Try another manifest: <input type="url" id="manifest"
+            value="https://view.nls.uk/manifest/2423/3907/242339078/manifest.json" size="60">
+        <input type="submit" value="Go">
+    </form>
+
+    <details open>
+        <summary>Test books</summary>
+        <ul>
+            <li>
+                Version 2.0 of the IIIF Presentation API
+                <ul>
+                    <li>
+                        <a
+                            href="/BookReaderDemo/demo-iiif.html?manifest=https%3A%2F%2Fview.nls.uk%2Fmanifest%2F2423%2F3907%2F242339078%2Fmanifest.json">
+                            https://view.nls.uk/manifest/2423/3907/242339078/manifest.json
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                Version 3.0 of the IIIF Presentation API
+                <ul>
+                    <li>
+                        <a
+                            href="/BookReaderDemo/demo-iiif.html?manifest=https%3A%2F%2Fiiif.archive.org%2Fiiif%2F3%2Fplatowithenglish04platuoft%2Fmanifest.json">
+                            https://iiif.archive.org/iiif/3/platowithenglish04platuoft/manifest.json
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="https://iiif.io/guides/finding_resources/">Find more books at iiif.io</a>
+            </li>
+        </ul>
+    </details>
+</section>
+
+<script>
+    const manifestInForm = document.getElementById('manifest').value;
+    const manifestInUrl = new URL(window.location.href).searchParams.get('manifest');
+    if (manifestInUrl) {
+        document.getElementById('manifest').value = manifestInUrl;
+    }
+
+    document.getElementById('manifestForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        window.location.search = `?manifest=${encodeURIComponent(document.getElementById('manifest').value)}`;
+    });
+
+    fetch(manifestInUrl || manifestInForm)
+        .then(response => response.json())
+        .then(manifest => {
+            window.br = new BookReader({
+                plugins: {
+                    iiif: {
+                        manifest: manifest
+                    }
+                }
+            });
+
+            // Let's go!
+            br.init();
+        });
+</script>
+
+</body>
+</html>

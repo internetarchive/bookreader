@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<!-- This demo mirrors, as far as possible, the archive.org BookReader configuration and functionality
+   please keep up to date as BookReader evolves -->
+<html>
+<head>
+  <title>bookreader demo internetArchive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- WC dependencies -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es2015%2Ces5%2CglobalThis"></script>
+    <script type="text/javascript" src="https://unpkg.com/lit@2.1.2/polyfill-support.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/@webcomponents/webcomponentsjs@2.2.10/webcomponents-bundle.js"></script>
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/webcomponents-bundle.js"></script>
+    <script src="../BookReader/jquery-3.js"></script>
+    
+    <!-- Bookreader -->
+    <script src="../BookReader/BookReader.js"></script>
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+
+    <!-- plugins needed for archive.org, in same order as archive.org -->
+    <script src="../BookReader/plugins/plugin.search.js"></script>
+    <script src="../BookReader/plugins/plugin.chapters.js"></script>
+    <script src="../BookReader/plugins/plugin.tts.js"></script>
+    <script src="../BookReader/plugins/plugin.url.js"></script>
+    <script src="../BookReader/plugins/plugin.autoplay.js"></script>
+    <script src="../BookReader/plugins/plugin.resume.js"></script>
+    <script src="../BookReader/plugins/plugin.archive_analytics.js"></script>
+    <script src="../BookReader/plugins/plugin.text_selection.js"></script>
+    <script src="../BookReader/plugins/plugin.experiments.js"></script>
+
+    <script type="module" src="../BookReader/ia-bookreader-bundle.js"></script>
+
+    <link rel="stylesheet" href="BookReaderDemo.css"/>
+
+    <!-- IA scripts -->
+    <script src="https://archive.org/bookreader/BookReaderJSIA.js"></script>
+
+  </head>
+
+<body>
+  <section class="theater" style="width: 100%; overflow: hidden; background-color: black;">
+    <ia-bookreader
+      baseHost="archive.org"
+    >
+      <div id="IABookReaderWrapper" slot="main">
+        <div id="BookReader" class="BookReader"></div>
+      </div>
+      <div>
+        Internet Archive BookReader Demo<br />
+        <noscript>
+          <p>
+            The BookReader requires JavaScript to be enabled. Please check that
+            your browser supports JavaScript and that it is enabled in the
+            browser settings.
+          </p>
+        </noscript>
+      </div>
+    </ia-bookreader>
+  </section>
+
+  <style>
+    .demos {
+      height: 800px;
+      width: inherit;
+      padding: 10px;
+    }
+    .demo {
+      border: 1px solid white;
+      padding: 10px;
+    }
+  </style>
+  <section class="demos">
+    <details class="demo">
+      <summary>Test books</summary>
+      <ul>
+        <li>
+          Misc English book
+          <ul>
+            <li>
+              <a href="/BookReaderDemo/demo-internetarchive.html?ocaid=countofmontecris00duma_7">
+                <i>The Count of Monte-Cristo</i> by Alexandre Dumas
+              </a>
+            </li>
+            <li>
+              <a href="/BookReaderDemo/demo-internetarchive.html?ocaid=driitaleofdaring00bachuoft">
+                <i>D’ri and I</i> by Irving Bacheller
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Misc non-English book (<a href="https://archive.org/search?query=%21language%3Aeng&sort=-week&and%5B%5D=lending%3A%22is_readable%22&and%5B%5D=mediatype%3A%22texts%22">Search for more</a>)
+          <ul>
+            <li>
+              French: <a href="/BookReaderDemo/demo-internetarchive.html?ocaid=lecomtedemontecr01dumauoft">
+                <i>Le Comte de Monte-Cristo</i> by Alexandre Dumas
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Right-to-left book (<a href="https://archive.org/search?query=page-progression%3Arl&sort=-week&and%5B%5D=lending%3A%22is_readable%22&and%5B%5D=mediatype%3A%22texts%22">Search for more</a>)
+          <ul>
+            <li>
+              <a href="/BookReaderDemo/demo-internetarchive.html?ocaid=gendaitankashu00meijuoft">
+                <i>Gendai tanka shu</i> by Meiji, Emperor of Japan
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Newspaper with columns
+          <ul>
+            <li>
+              <a href="/BookReaderDemo/demo-internetarchive.html?ocaid=Crusader-Vol_28_Nos_1-20_Sept_1986-April_1987">
+                Crusader-Vol_28_Nos_1-20_Sept_1986-April_1987
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Text Selection
+          <ul>
+            <li>
+              OCR with spaces inside each <code>&lt;WORD&gt;</code> element
+              <ul>
+                <li><a href="/BookReaderDemo/demo-internetarchive.html?ocaid=theworksofplato01platiala">
+                  <i>The Works of Plato</i> by Plato
+                </a></li>
+              </ul>
+            </li>
+            <li>
+              Weird font-sizes/indents
+              <ul>
+                <li><a href="/BookReaderDemo/demo-internetarchive.html?ocaid=cihm_58393#page/n3">
+                  Microfilm poster thing
+                </a></li>
+              </ul>
+            </li>
+            <li>
+              Book with short lines
+              <ul>
+                <li>
+                  <a href="/BookReaderDemo/demo-internetarchive.html?ocaid=countofmontecris00duma_7#page/261/mode/2up">
+                    <i>The Count of Monte-Cristo</i>, p.261, second last line
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              Book with double-spaced lines
+              <ul>
+                <li>
+                  <a href="/BookReaderDemo/demo-internetarchive.html?ocaid=calnevpipelineex02unit#page/n93/mode/2up">
+                    calnevpipelineex02unit
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Chapters
+          <ul>
+            <li>
+              Normal book with chapters
+              <ul>
+                <li><a href="/BookReaderDemo/demo-internetarchive.html?ocaid=adventureofsherl0000unse">
+                  <i>The Adventures of Sherlock Holmes</i> by Arthur Conan Doyle
+                </a></li>
+                <li><a href="/BookReaderDemo/demo-internetarchive.html?ocaid=jalna00dela">
+                  <i>Jalna</i> by Mazo de la Roche
+                </a></li>
+              </ul>
+            </li>
+            <li>
+              Book preview
+              <ul>
+                <li><a href="/BookReaderDemo/demo-internetarchive.html?ocaid=peoplewareproduc00dema_0">
+                  <i>Peopleware</i> by Tom DeMarco and Timothy Lister
+                </a></li>
+                <li><a href="/BookReaderDemo/demo-internetarchive.html?ocaid=passionforbooksb00rabi">
+                  <i>A Passion for Books</i>
+                </a></li>
+              </ul>
+            </li>
+            <li>
+              Book with levelled chapters
+              <ul>
+                <li><a href="/BookReaderDemo/demo-internetarchive.html?ocaid=notredamedepar01hugo">
+                  <i>Notre-Dame de Paris: Tome Premier</i> par Victor Hugo
+                </a></li>
+                <li><a href="/BookReaderDemo/demo-internetarchive.html?ocaid=alanturingenigma0000hodg">
+                  <i>Alan Turing: The Enigma</i> by Andrew Hodges
+                </a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </details>
+    <div class="demo">
+      <button id="toggle-loggedin">Toggle Logged in view</button>
+      <p>Features behind signed in gate: Bookmarks</p>
+      <p>Logged In Status: <span id="logged-in-status">Logged Out</span></p>
+    </div>
+    <div class="demo">
+      <button id="show-lcp">LCP Download option</button>
+    </div>
+    <div class="demo">
+      <button id="multi-volume">Multiple books</button>
+    </div>
+    <div class="demo">
+      <button id="start-fs">Start at Fullscreen</button>
+    </div>
+    <div class="demo">
+      <h3 id="placeholder">please wait as we are fetching the following: </h3>
+      <input type='checkbox' class='group1' name='itemMD' disabled>Item metadata</input><br>
+      <input type='checkbox' class='group1' name='bookManifest' disabled> Book manifest</input><br>
+    </div>
+  </section>
+  <div class="demo">
+    <h3>Placeholder div to allow scrolling</h3>
+  </div>
+
+  <!-- Certain features, like Bookmarks, use modal-manager to draw their interface -->
+  <modal-manager></modal-manager>
+  <script >
+    // Set up demo things
+    const iaBR = document.querySelector('ia-bookreader');
+    const toggleLoginBtn = document.querySelector('#toggle-loggedin');
+    toggleLoginBtn.addEventListener('click', () => {
+      const currLoggedIn = iaBR.signedIn;
+      iaBR.signedIn = !currLoggedIn;
+
+      document.querySelector('#logged-in-status').innerText = iaBR.signedIn ? 'Logged In' : 'Logged Out';
+      console.log("Toggled SignedIn state", iaBR.signedIn, { currLoggedIn })
+    });
+
+    const startFSBtn = document.querySelector('#start-fs');
+    startFSBtn.addEventListener('click', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('view')) {
+        const url = new URL(window.location);
+        url.searchParams.delete('view');
+        window.history.pushState({}, '', url);
+      }
+      urlParams.set('view', 'theater');
+      window.location.search = urlParams.toString();
+    });
+
+    window.addEventListener('BookReader:PostInit', () => {
+      const placeholder = document.querySelector('#placeholder');
+      placeholder.innerHTML = 'Dependencies are complete, bookreader has loaded';
+    });
+
+    // analytics stub
+    window.archive_analytics = {
+      send_event_no_sampling: (category, action, label) => {}, //console.log('~~~ NO SAMPLE EVENT CALLED: ', { category, action, label }),
+      send_event: (category, action, label) => {}, //console.log('~~~ send_event SAMPLE EVENT CALLED: ', { category, action, label }),
+      send_ping: (category, action, label) => {}, //console.log('~~~ send_ping SAMPLE EVENT CALLED: ', { category, action, label }),
+    }
+  </script>
+
+  <!-- IA fetch demo -->
+  <script type="module" src="IADemoBr.js"></script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+/**
+ * BRnav is the bottom control bar (eg footer)
+ */
+@use "sass:math";
+
+@mixin pseudoElementLayer {
+  content: "";
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: block;
+}
+
+@mixin brNavDark {
+  @include brDarkControls;
+
+  .BRpager {
+    background-color: $brColorDarkBorder;
+    .ui-slider-handle {
+      background: white;
+      border: none;
+    }
+    .ui-slider-range {
+      background: rgba(255, 255, 255, 0.59);
+    }
+  }
+
+  .BRpage {
+    .BRicon { border-left: 1px solid $brColorDarkBorder; }
+    .BRicon.activated { background-color: rgba(255,255,255,0.4); }
+    .BRicon.activated:before {
+      @include pseudoElementLayer;
+      border: 3px solid rgba(255,255,255,0.3);
+    }
+  }
+}
+
+@mixin brNavLight {
+  @include brLightControls;
+
+  .BRpager.ui-slider {
+    background: #B7B7B7;
+    .ui-slider-handle {
+      background: $brColorThemeblue;
+    }
+    .ui-slider-range {
+      background: rgba($brColorThemeblue, .25);
+    }
+  }
+
+  .BRpage {
+    .BRicon { border-left: 1px solid $brColorLightBorder; }
+    .BRicon.activated { background-color: rgba($brColorThemeblue,0.4); }
+    .BRicon.activated:before {
+      @include pseudoElementLayer;
+      border: 3px solid rgba($brColorThemeblue,0.3);
+    }
+  }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; translate: 0 10px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+.BRfooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  /* important so it overlays over the book pages when showing */
+  z-index: 3;
+
+  button {
+    width: 30px;
+    height: 30px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 0;
+    cursor: pointer;
+    border: none;
+    border-radius: 2px;
+    background: transparent;
+
+    @media (hover: hover) {
+      /* styles to apply on devices that support hover */
+      &:hover .BRtooltip {
+        display: block;
+      }
+    }
+  }
+}
+
+.BRReadAloudToolbar {
+  $toolbarHeight: $brNavHeightMobile;
+  display: flex;
+  justify-content: center;
+  margin: 5px;
+  padding: 0 math.div($brNavHeightMobile, 4);
+  border-radius: 4px;
+  align-self: center;
+  height: $toolbarHeight;
+  animation: fadeUp .2s;
+
+  // Default
+  @include brNavDark;
+
+  &--controls {
+    display: flex;
+  }
+  &--controls > * {
+    height: 100%;
+  }
+
+
+  .BRToolbarButton {
+    .icon {
+      width: $toolbarHeight;
+      height: $toolbarHeight;
+      box-sizing: border-box;
+    }
+
+    &.jumpForward .icon, &.jumpBackward .icon { padding: 9px; }
+  }
+
+  button {
+    padding: 0;
+    margin: 0;
+    border: 0px none;
+    box-sizing: border-box;
+    background: transparent none repeat scroll 0% 0%;
+    display: block;
+  }
+
+  .playback-rate-container {
+    width: $toolbarHeight;
+    height: $toolbarHeight;
+    position: relative;
+
+    .icon {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 6px;
+      box-sizing: border-box;
+      padding-bottom: 1em;
+    }
+
+    select {
+      cursor: pointer;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      font-size: 0.8em;
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      appearance: none;
+      border: 0;
+      text-align: center;
+      text-align-last: center; /* Chrome */
+      padding-top: 60%;
+      padding-left: 10%;
+      padding-right: 10%;
+      color: #333;
+      background: transparent;
+
+      /* IE */
+      &::-ms-expand { display: none; }
+    }
+  }
+
+  button:hover, .playback-rate-container:hover {
+    background: rgba(50, 50, 50, 0.2);
+  }
+}
+
+.BRnav {
+  box-sizing: border-box;
+  height: $brNavHeightDesktop;
+  padding-top: 0;
+  overflow: visible;
+
+  display: block;
+  display: flex;
+  flex-direction: row;
+  border-top: 1px solid $controlsBorder;
+
+  /* Theming */
+
+  // Default
+  @include brNavDark;
+
+  /* Full mobile styles */
+  @media (max-width: $brBreakPointMobile) {
+    height: $brNavHeightMobile;
+    box-shadow: 0px -1px 3px 0px rgba(#666, .25);
+  }
+}
+
+.BRnavpos {
+  position: relative;
+  margin-right: 10px;
+  margin-left: 10px;
+  float: left;
+  flex: 1 auto;
+}
+.BRpager.ui-slider  {
+  position: relative;
+  height: 8px;
+  top: math.div($brNavHeightDesktop, 2) - 4px;
+  box-sizing: content-box;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &.ui-widget.ui-widget-content {
+    border: none;
+  }
+
+  .ui-slider-horizontal .ui-slider-handle,
+  .ui-slider-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius:50%;
+    top: -5px;
+    margin-left: -9px; /* Center icon */
+    z-index: $brZindexBase + 5;
+    border: none;
+  }
+  .ui-slider-range {
+    height: 100%;
+    border-radius: 10px;
+  }
+
+  /* handle active state for touch */
+  .touch & .ui-slider-handle.ui-state-active {
+    width: 24px;
+    height: 24px;
+    top: -4px;
+    margin-left: -11px;
+  }
+}
+
+/* BRnavlin is where chapters/search are appended */
+.BRnavline {
+  position: relative;
+  height: 1px;
+  width: auto;
+  top: -1px;
+  margin: 0 10px;
+  width: 100%;
+}
+.BRcurrentpage {
+  display: inline-block;
+  text-align: center;
+  padding: 0 0 0 0;
+  font-size: $brFontSizeSmaller;
+  margin-left: 5px;
+  margin-right: 10px;
+  line-height: 1;
+}
+.BRnavTitle {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 0 0 0;
+  font-size: $brFontSizeSmaller;
+  margin-left: 10px;
+  margin-right: 5px;
+  line-height: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  letter-spacing: 0.5px;
+  font-style: italic;
+}
+.BRpage {
+  height: 100%;
+  overflow: hidden;
+  padding-left: 0;
+  text-align: right;
+  white-space: nowrap;
+  float: left;
+  flex: none;
+}
+.BRpageLparan {
+  margin-right: 1px;
+  font-size: .8em;
+  vertical-align: top;
+}
+.BRpageRparan {
+  margin-left: 1px;
+  font-size: .8em;
+  vertical-align: top;
+}
+
+/* Mobile Only */
+@media (max-width: $brBreakPointMobile) {
+  /* hide navline chapters and search in mobile */
+  .BRnavline .BRchapter { display: none; }
+
+  .BRpager.ui-slider {
+    height: 10px;
+    top: math.div($brNavHeightMobile, 2) - 5px;
+  }
+}
+
+/* Mobile nav zoom buttons */
+.DrawerSettingsWrapper [class*="zoom"] {
+  width: 40px;
+  height: 40px;
+  background-position: -1224px center;
+  background-size: 3440px auto;
+}
+.DrawerSettingsWrapper .zoom_in {
+  background-position: -1384px center;
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="6px" height="16px" viewBox="0 0 6 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.1 (57501) - http://www.bohemiancoding.com/sketch -->
+    <title>Hamburger Slim</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="theatre-hamburger" transform="translate(-22.000000, -11.000000)" fill="#F9F9F9">
+            <g transform="translate(0.480469, 0.050781)" id="Hamburger-Slim">
+                <g transform="translate(22.000000, 11.000000)">
+                    <g>
+                        <ellipse id="Oval-2" cx="2.5" cy="2" rx="2.5" ry="2"></ellipse>
+                        <ellipse id="Oval-2-Copy" cx="2.5" cy="8" rx="2.5" ry="2"></ellipse>
+                        <ellipse id="Oval-2-Copy-2" cx="2.5" cy="14" rx="2.5" ry="2"></ellipse>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

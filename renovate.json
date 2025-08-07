@@ -1,0 +1,52 @@
+{
+  "extends": [
+    "config:base",
+    "schedule:monthly"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "@babel/eslint-parser",
+        "@open-wc/testing-helpers",
+        "@types/jest",
+        "codecov/codecov-action",
+        "eslint",
+        "eslint-plugin-no-jquery",
+        "eslint-plugin-testcafe",
+        "jest",
+        "jest-environment-jsdom",
+        "sinon",
+        "testcafe"
+      ],
+      "automerge": true
+    },
+    {
+      "matchPackageNames": [
+        "concurrently",
+        "http-server",
+        "live-server",
+        "node-fetch"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["^@internetarchive/icon-"],
+      "groupName": "@internetarchive icons",
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchPackagePatterns": ["*"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchPackagePatterns": ["^actions/"],
+      "groupName": "GitHub Actions",
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["^@internetarchive"],
+      "schedule": ["at any time"]
+    }
+  ]
+}
