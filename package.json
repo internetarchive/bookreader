@@ -84,7 +84,7 @@
     "testcafe": "3.6.2",
     "testcafe-browser-provider-browserstack": "^1.13.2-alpha.1",
     "webpack": "5.95.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "5.1.4"
   },
   "jest": {
     "testEnvironment": "jsdom",
@@ -118,7 +118,7 @@
     "build-js:watch": "npx webpack --mode=development --watch",
     "build-css": "npx sass --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "build-css:watch": "npx sass --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
-    "clean": "rm -r BookReader/ || true",
+    "clean": "if exist BookReader rmdir /s /q BookReader || exit 0",
     "lint": "npx eslint src/ tests/ *.js *.cjs",
     "lint:fix": "npx eslint --fix src/ tests/ *.js *.cjs",
     "serve": "npx http-server . --port=8000",
