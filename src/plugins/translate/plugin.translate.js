@@ -292,7 +292,6 @@ export class TranslatePlugin extends BookReaderPlugin {
         class="translate-panel"
       />`,
     };
-    this.br.shell.addMenuShortcut('translate');
     this.br.shell.updateMenuContents();
   }
 }
