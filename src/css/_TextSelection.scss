@@ -130,3 +130,12 @@
     white-space: break-spaces;
     display: inline-block;
 }
+
+.BRtextLayer.showingTranslation {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.BRtranslateLayer .BRparagraphElement.BRtranslateHidden {
+    display: none;
+}

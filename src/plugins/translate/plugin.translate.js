@@ -11,6 +11,7 @@ export class TranslatePlugin extends BookReaderPlugin {
 
   options = {
     enabled: true,
+    panelDisclaimerText: "Translations are in alpha",
   }
 
   /** @type {TranslationManager} */
@@ -55,13 +56,13 @@ export class TranslatePlugin extends BookReaderPlugin {
     this.br.on('textLayerRendered', async (_, {pageIndex, pageContainer}) => {
       // Stops invalid models from running, also prevents translation on page load
       // TODO check if model has finished loading or if it exists
+      if (!this.translationManager) {
+        return;
+      }
       if (this.translationManager.active) {
         const pageElement = pageContainer.$container[0];
         this.translateRenderedLayer(pageElement);
       }
-
-      const pageElement = pageContainer.$container[0];
-      await this.translateRenderedLayer(pageElement);
     });
 
     /**
@@ -69,6 +70,9 @@ export class TranslatePlugin extends BookReaderPlugin {
      * @param {object} eventProps
     */
     this.br.on('pageVisible', (_, {pageContainerEl}) => {
+      if (!this.translationManager.active) {
+        return;
+      }
       for (const paragraphEl of pageContainerEl.querySelectorAll('.BRtranslateLayer > .BRparagraphElement')) {
         if (paragraphEl.textContent) {
           this.fitVisiblePage(paragraphEl);
@@ -126,6 +130,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
 
     const textLayerElement = page.querySelector('.BRtextLayer');
+    textLayerElement.classList.add('showingTranslation');
     $(pageTranslationLayer).css({
       "width": $(textLayerElement).css("width"),
       "height": $(textLayerElement).css("height"),
@@ -200,24 +205,35 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   /**
-   * @param {Element} ele
+   * @param {Element} paragEl
    */
-  fitVisiblePage(ele) {
-    const originalFontSize = parseInt($(ele).css("font-size"));
-    let adjustedFontSize = originalFontSize;
-    while (ele.clientHeight < ele.scrollHeight && adjustedFontSize > 0) {
-      adjustedFontSize--;
-      $(ele).css({ "font-size": `${adjustedFontSize}px` });
+  fitVisiblePage(paragEl) {
+    // For some reason, Chrome does not detect the transform property for the translation + text layers
+    // Could not get it to fetch the transform value using $().css method
+    // Oddly enough the value is retrieved if using .style.transform instead?
+    const translateLayerEl = paragEl.parentElement;
+    if ($(translateLayerEl).css('transform') == 'none') {
+      const pageNumber = paragEl.getAttribute('data-translate-index').split('-')[0];
+      /** @type {HTMLElement} selectionTransform */
+      const textLayerEl = document.querySelector(`[data-index='${pageNumber}'] .BRtextLayer`);
+      $(translateLayerEl).css({'transform': textLayerEl.style.transform});
     }
 
-    const textHeight = ele.firstElementChild.clientHeight;
-    const scrollHeight = ele.scrollHeight;
+    const originalFontSize = parseInt($(paragEl).css("font-size"));
+    let adjustedFontSize = originalFontSize;
+    while (paragEl.clientHeight < paragEl.scrollHeight && adjustedFontSize > 0) {
+      adjustedFontSize--;
+      $(paragEl).css({ "font-size": `${adjustedFontSize}px` });
+    }
+
+    const textHeight = paragEl.firstElementChild.clientHeight;
+    const scrollHeight = paragEl.scrollHeight;
     const fits = textHeight < scrollHeight;
     if (fits) {
       const lines = textHeight / adjustedFontSize;
       // Line heights for smaller paragraphs occasionally need a minor adjustment
       const newLineHeight = scrollHeight / lines;
-      $(ele).css({
+      $(paragEl).css({
         "line-height" : `${newLineHeight}px`,
         "overflow": "visible",
       });
@@ -272,10 +288,10 @@ export class TranslatePlugin extends BookReaderPlugin {
         @langToChanged="${this.handleToLangChange}"
         .fromLanguages="${this.translationManager.fromLanguages}"
         .toLanguages="${this.translationManager.toLanguages}"
+        .disclaimerMessage="${this.options.panelDisclaimerText}"
         class="translate-panel"
       />`,
     };
-    this.br.shell.addMenuShortcut('translate');
     this.br.shell.updateMenuContents();
   }
 }
@@ -286,6 +302,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Array }) fromLanguages = []; // List of obj {code, name}
   @property({ type: Array }) toLanguages = []; // List of obj {code, name}
   @property({ type: String }) prevSelectedLang = ''; // Tracks the previous selected language for the "To" dropdown
+  @property({ type: String }) disclaimerMessage = '';
 
   /** @override */
   createRenderRoot() {
@@ -330,6 +347,8 @@ export class BrTranslatePanel extends LitElement {
       : ''}
       </div>
       <div class="footer" id="status"></div>
+      <br/>
+      <div class="disclaimer" id="disclaimerMessage"> ${this.disclaimerMessage} </div>
     </div>`;
   }
 

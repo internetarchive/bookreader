@@ -84,11 +84,12 @@ export class TranslationManager {
     }
 
     /** @type {BatchTranslator} */
-    // BatchTranslator workerUrl option currently not used in code :(
     // Arbitrary setting for number of workers, 1 is already quite fast
+    // batchSize from 8 -> 4 for improved performance
     this.translator = new BatchTranslator({
       registryUrl: `data:application/json,${encodeURIComponent(JSON.stringify(registryJson))}`,
       workers: 2,
+      batchSize: 4,
     });
 
     const modelType = await this.translator.backing.registry;
@@ -165,6 +166,9 @@ export class TranslationManager {
 
   getTranslation = async (fromLang, toLang, pageIndex, paragraphIndex, text, priority) => {
     this.active = true;
+    if (fromLang == toLang || !fromLang || !toLang) {
+      return;
+    }
     const key = `${fromLang}${toLang}-${pageIndex}:${paragraphIndex}`;
     const cachedEntry = this.alreadyTranslated.entries.find(x => x.index == key);
 
