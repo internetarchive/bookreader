@@ -44,10 +44,11 @@ export class TranslatePlugin extends BookReaderPlugin {
   _panel;
 
   async init() {
-
     if (!this.options.enabled) {
       return;
     }
+
+    this.translationManager.publicPath = this.br.options.imagesBaseURL.replace(/\/+$/, '') + '/..';
 
     /**
      * @param {*} ev

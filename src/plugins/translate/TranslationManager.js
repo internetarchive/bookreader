@@ -1,6 +1,6 @@
 // @ts-check
 import { Cache } from '../../util/cache.js';
-import { BatchTranslator } from '@browsermt/bergamot-translator/translator.js';
+import { BatchTranslator } from '@internetarchive/bergamot-translator/translator.js';
 
 export const langs = /** @type {{[lang: string]: string}} */ {
   "bg": "Bulgarian",
@@ -60,6 +60,7 @@ export class TranslationManager {
   /** @type {boolean} */
   active = false;
 
+  publicPath = '';
 
   constructor() {
     //TODO Should default to the book language as the first element
@@ -90,6 +91,7 @@ export class TranslationManager {
       registryUrl: `data:application/json,${encodeURIComponent(JSON.stringify(registryJson))}`,
       workers: 2,
       batchSize: 4,
+      workerUrl: this.publicPath + '/translator-worker.js',
     });
 
     const modelType = await this.translator.backing.registry;
@@ -99,7 +101,7 @@ export class TranslationManager {
       const secondLang = obj['to'];
       const fromModelType = obj['files'];
       arr[`${firstLang}${secondLang}`] = fromModelType;
-      // Assuming that all of the languages loaded from the registryUrl inside @browsermt/bergamot-translator/translator.js are prod
+      // Assuming that all of the languages loaded from the registryUrl inside @internetarchive/bergamot-translator/translator.js are prod
       // List of dev models found here https://github.com/mozilla/firefox-translations-models/tree/main/models/base
       // There are also differences between the model types in the repo above here: https://github.com/mozilla/firefox-translations-models?tab=readme-ov-file#firefox-translations-models
       if (firstLang !== "en") {
