@@ -22,7 +22,6 @@ export const langs = /** @type {{[lang: string]: string}} */ {
   "es": "Spanish",
   "uk": "Ukrainian",
 };
-const status = message => (console.log(message));
 
 export class TranslationManager {
   /** @type {Cache<{index: string, response: string}>} */
@@ -44,13 +43,6 @@ export class TranslationManager {
 
   /** @type {Record<key, {promise: Promise<string>, resolve: function, reject: function}>} */
   currentlyTranslating = {}
-  /** @type {Record<key, {promise: Promise<string>, resolve: function, reject: function}>} */
-  _modelPromises = {};
-  /**
-   * @type {string}
-   * e.g. 'ende' 'encz'
-  */
-  currentModel = '';
 
   /** @type {Record<string, string>[]} */
   fromLanguages = [];
@@ -113,46 +105,6 @@ export class TranslationManager {
     }
     this._initResolve([this.modelRegistry]);
     return this.initPromise;
-  }
-
-  /**
-   * @param {string} fromCode
-   * @param {string} toCode
-   * @returns {Promise<string>} Promise result
-   */
-  loadModel = async (fromCode, toCode) => {
-    if (fromCode === toCode || !this.isSupported(fromCode, toCode)) {
-      status("Language pair is not supported");
-      return;
-    }
-
-    const key = `${fromCode}${toCode}`;
-    if (key in this._modelPromises && this.currentModel == key) {
-      return this._modelPromises[key].promise;
-    }
-    status(`Installing model...`);
-    console.log(`Loading model '${fromCode}${toCode}'`);
-
-    let _resolve = null;
-    let _reject = null;
-
-    const promise = new Promise((res, rej) => {
-      _resolve = res;
-      _reject = rej;
-    });
-
-    this._modelPromises[key] = {
-      promise,
-      resolve: _resolve,
-      reject: _reject,
-    };
-    this.currentModel = key;
-    return promise;
-  };
-
-  isSupported = (lngFrom, lngTo) => {
-    return (`${lngFrom}${lngTo}` in this.modelRegistry) || lngFrom === lngTo ||
-      ((`${lngFrom}en` in this.modelRegistry) && (`en${lngTo}` in this.modelRegistry));
   }
 
   /**
