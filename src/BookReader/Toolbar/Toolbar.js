@@ -1,6 +1,7 @@
 import 'jquery-colorbox';
 import { escapeHTML } from '../utils.js';
 import { EVENTS } from '../events.js';
+import { i18n } from '../../i18n/index.js';
 /** @typedef {import("../../BookReader.js").default} BookReader */
 
 export class Toolbar {
@@ -33,8 +34,8 @@ export class Toolbar {
           </div>
           <div class="BRtoolbarRight">
             <span class="BRtoolbarSection BRtoolbarSectionInfo">
-              <button class="BRpill info js-tooltip">Info</button>
-              <button class="BRpill share js-tooltip">Share</button>
+              <button class="BRpill info js-tooltip">${i18n.t('toolbar.info')}</button>
+              <button class="BRpill share js-tooltip">${i18n.t('toolbar.share')}</button>
             </span>
           </div>
         </div>
@@ -140,30 +141,30 @@ export class Toolbar {
 
     const embedHtml = !br.getEmbedCode ? '' : `
       <div class="share-embed">
-        <p class="share-embed-prompt">Copy and paste one of these options to share this book elsewhere.</p>
+        <p class="share-embed-prompt">${i18n.t('share.copyAndPasteOptions')}</p>
         <form method="post" action="">
           <fieldset class="fieldset-share-pageview">
-            <label for="pageview">Link to this page view</label>
+            <label for="pageview">${i18n.t('share.linkToThisPage')}</label>
             <input type="text" name="pageview" class="BRpageviewValue" value="${pageView}"/>
           </fieldset>
           <fieldset class="fieldset-share-book-link">
-            <label for="booklink">Link to the book</label>
+            <label for="booklink">${i18n.t('share.linkToTheBook')}</label>
             <input type="text" name="booklink" class="booklink" value="${bookView}"/>
           </fieldset>
           <fieldset class="fieldset-embed">
-            <label for="iframe">Embed a mini Book Reader</label>
+            <label for="iframe">${i18n.t('share.embedMiniBookReader')}</label>
             <fieldset class="sub">
               <label class="sub">
                 <input type="radio" name="pages" value="${br.constMode1up}" checked="checked"/>
-                1 page
+                ${i18n.t('share.onePage')}
               </label>
               <label class="sub">
                 <input type="radio" name="pages" value="${br.constMode2up}"/>
-                2 pages
+                ${i18n.t('share.twoPages')}
               </label>
               <label class="sub">
                 <input type="checkbox" name="thispage" value="thispage"/>
-                Open to this page?
+                ${i18n.t('share.openToThisPage')}
               </label>
             </fieldset>
             <textarea cols="30" rows="4" name="iframe" class="BRframeEmbed"></textarea>
@@ -172,19 +173,19 @@ export class Toolbar {
       </div>`;
 
     const $form = $(`
-      <div class="share-title">Share this book</div>
+      <div class="share-title">${i18n.t('share.shareThisBook')}</div>
       <div class="share-social">
         <label class="sub open-to-this-page">
           <input class="thispage-social" type="checkbox" />
-          Open to this page?
+          ${i18n.t('share.openToThisPage')}
         </label>
-        <div><button class="BRaction share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>
-        <div><button class="BRaction share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>
-        <div><button class="BRaction share email-share-button"><i class="BRicon email" /> Email</button></div>
+        <div><button class="BRaction share facebook-share-button"><i class="BRicon fb" /> ${i18n.t('share.facebook')}</button></div>
+        <div><button class="BRaction share twitter-share-button"><i class="BRicon twitter" /> ${i18n.t('share.twitter')}</button></div>
+        <div><button class="BRaction share email-share-button"><i class="BRicon email" /> ${i18n.t('share.email')}</button></div>
       </div>
       ${embedHtml}
       <div class="BRfloatFoot">
-        <button class="share-finished" type="button" onclick="$.fn.colorbox.close();">Finished</button>
+        <button class="share-finished" type="button" onclick="$.fn.colorbox.close();">${i18n.t('share.finished')}</button>
       </div>`);
 
     $form.appendTo($shareDiv);

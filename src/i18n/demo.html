@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookReader i18n Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .language-switcher {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .code-block {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        .example {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .feature-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>BookReader Internationalization (i18n) Demo</h1>
+    
+    <div class="demo-section">
+        <h2>Overview</h2>
+        <p>This demo showcases the new internationalization system for BookReader, which provides:</p>
+        <ul class="feature-list">
+            <li>Multi-language support for all UI text</li>
+            <li>Automatic language detection</li>
+            <li>Language switching with persistent preferences</li>
+            <li>Comprehensive translation coverage</li>
+            <li>Easy addition of new languages</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h2>Language Switcher</h2>
+        <div class="language-switcher">
+            <p><strong>Current Language:</strong> <span id="current-language">English</span></p>
+            <button onclick="switchLanguage('en')">Switch to English</button>
+            <button onclick="switchLanguage('de')">Switch to German</button>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Translation Examples</h2>
+        <div class="example">
+            <h3>Navigation Controls</h3>
+            <p><strong>English:</strong> <span id="nav-example-en">Flip left</span></p>
+            <p><strong>German:</strong> <span id="nav-example-de">Nach links blättern</span></p>
+        </div>
+        
+        <div class="example">
+            <h3>Search Functionality</h3>
+            <p><strong>English:</strong> <span id="search-example-en">Search inside</span></p>
+            <p><strong>German:</strong> <span id="search-example-de">Im Buch suchen</span></p>
+        </div>
+        
+        <div class="example">
+            <h3>Share Dialog</h3>
+            <p><strong>English:</strong> <span id="share-example-en">Share this book</span></p>
+            <p><strong>German:</strong> <span id="share-example-de">Dieses Buch teilen</span></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Usage Examples</h2>
+        
+        <h3>1. Basic Translation</h3>
+        <div class="code-block">
+import { i18n } from './i18n/index.js';
+
+// Simple translation
+const text = i18n.t('nav.flipLeft');
+// Returns: "Flip left" (English) or "Nach links blättern" (German)
+        </div>
+
+        <h3>2. Translation with Variables</h3>
+        <div class="code-block">
+// Translation with interpolation
+const text = i18n.t('search.resultsPosition', { 
+    current: 5, 
+    total: 20 
+});
+// Returns: "5 / 20" in current language
+        </div>
+
+        <h3>3. Language Switching</h3>
+        <div class="code-block">
+// Change language
+i18n.setLanguage('de');
+
+// Get available languages
+const languages = i18n.getAvailableLanguages();
+// Returns: { en: {...}, de: {...} }
+        </div>
+
+        <h3>4. Integration with BookReader</h3>
+        <div class="code-block">
+// In BookReader options
+const options = {
+    enableI18n: true,
+    interfaceLanguage: 'de', // or 'en'
+    // ... other options
+};
+
+const br = new BookReader(options);
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Adding New Languages</h2>
+        <p>To add a new language (e.g., French):</p>
+        <ol>
+            <li>Create <code>src/i18n/languages/fr.js</code></li>
+            <li>Add French translations to the dictionary</li>
+            <li>Import and register in <code>src/i18n/index.js</code></li>
+            <li>Update the <code>LANGUAGES</code> object</li>
+        </ol>
+        
+        <div class="code-block">
+// Example: src/i18n/languages/fr.js
+export const fr = {
+    'nav.flipLeft': 'Tourner à gauche',
+    'nav.flipRight': 'Tourner à droite',
+    // ... more translations
+};
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Features</h2>
+        <ul class="feature-list">
+            <li><strong>Automatic Language Detection:</strong> Detects browser language and falls back to English</li>
+            <li><strong>Persistent Preferences:</strong> Remembers user's language choice in localStorage</li>
+            <li><strong>Fallback Support:</strong> Shows English text if translation is missing</li>
+            <li><strong>Variable Interpolation:</strong> Supports dynamic content in translations</li>
+            <li><strong>Accessibility:</strong> Proper ARIA labels and keyboard navigation</li>
+            <li><strong>Responsive Design:</strong> Works on all screen sizes</li>
+            <li><strong>Dark Mode Support:</strong> Adapts to user's color scheme preference</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h2>Supported Languages</h2>
+        <ul>
+            <li><strong>English (en):</strong> Default language with full coverage</li>
+            <li><strong>German (de):</strong> Complete German translation</li>
+            <li><strong>Future:</strong> Easy to add more languages</li>
+        </ul>
+    </div>
+
+    <script type="module">
+        import { i18n, LANGUAGES } from './index.js';
+        
+        // Initialize language switcher
+        function switchLanguage(langCode) {
+            if (i18n.setLanguage(langCode)) {
+                updateDisplay();
+                // Store preference
+                localStorage.setItem('BookReader:language', langCode);
+            }
+        }
+        
+        function updateDisplay() {
+            const currentLang = i18n.getLanguage();
+            const langInfo = LANGUAGES[currentLang];
+            
+            // Update current language display
+            document.getElementById('current-language').textContent = langInfo.nativeName;
+            
+            // Update examples
+            document.getElementById('nav-example-en').textContent = i18n.t('nav.flipLeft');
+            document.getElementById('nav-example-de').textContent = i18n.t('nav.flipLeft');
+            
+            document.getElementById('search-example-en').textContent = i18n.t('toolbar.searchPlaceholder');
+            document.getElementById('search-example-de').textContent = i18n.t('toolbar.searchPlaceholder');
+            
+            document.getElementById('share-example-en').textContent = i18n.t('share.shareThisBook');
+            document.getElementById('share-example-de').textContent = i18n.t('share.shareThisBook');
+        }
+        
+        // Initialize display
+        updateDisplay();
+        
+        // Make functions globally available
+        window.switchLanguage = switchLanguage;
+    </script>
+</body>
+</html>
+

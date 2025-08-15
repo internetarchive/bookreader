@@ -94,7 +94,9 @@ export default class WebTTSEngine extends AbstractTTSEngine {
 
   /** @override */
   createSound(chunk) {
-    return new WebTTSSound(chunk.text);
+    const sound = new WebTTSSound(chunk.text);
+    sound.chunk = chunk;
+    return sound;
   }
 }
 
@@ -103,6 +105,7 @@ export class WebTTSSound {
   /** @param {string} text **/
   constructor(text) {
     this.text = text;
+    this.chunk = null; // Add missing chunk property
     this.loaded = false;
     this.paused = false;
     this.started = false;
