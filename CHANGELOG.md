@@ -1,3 +1,7 @@
+# 5.0.0-97
+- Feature: Add experimental translation plugin @schu96 @mekarpeles @pezvi @cdrini
+- Fix: Default language not selected correctly for ReadAloud @schu96
+
 # 5.0.0-96
 - Fix: BookReader/ missing from npm package! @cdrini
   - Also exclude other non-essential files, like tests, etc from the npm package.
