@@ -6,6 +6,7 @@ import 'jquery-ui/ui/widgets/mouse.js';
 import 'jquery-ui/ui/widgets/slider.js';
 import { EVENTS } from '../events.js';
 import { throttle } from '../utils.js';
+import { i18n } from '../../i18n/index.js';
 
 export class Navbar {
   /**
@@ -39,10 +40,14 @@ export class Navbar {
     if (option.template) {
       return `<li>${option.template(this.br)}</li>`;
     }
+    
+    // Use i18n for labels if they are i18n keys
+    const label = option.label.startsWith('nav.') ? i18n.t(option.label) : option.label;
+    
     return `<li>
-      <button class="BRicon ${option.className}" title="${option.label}">
+      <button class="BRicon ${option.className}" title="${label}">
         <div class="icon icon-${option.iconClassName}"></div>
-        <span class="BRtooltip">${option.label}</span>
+        <span class="BRtooltip">${label}</span>
       </button>
     </li>`;
   }
@@ -71,15 +76,15 @@ export class Navbar {
     const viewModes = [{
       mode: br.constMode1up,
       className: 'onepg',
-      title: 'One-page view',
+      title: i18n.t('viewmode.onePage'),
     }, {
       mode: br.constMode2up,
       className: 'twopg',
-      title: 'Two-page view',
+      title: i18n.t('viewmode.twoPage'),
     }, {
       mode: br.constModeThumb,
       className: 'thumb',
-      title: 'Thumbnail view',
+      title: i18n.t('viewmode.thumbnail'),
     }].filter((mode) => (
       !viewModeOptions.excludedModes.includes(mode.mode)
     ));
@@ -304,7 +309,7 @@ export class Navbar {
     this.$root.append(this.$nav);
     br.refs.$br.append(this.$root);
 
-    const $slider = this.$root.find('.BRpager').slider({
+    const $slider = /** @type {any} */ (this.$root.find('.BRpager')).slider({
       animate: true,
       min: 0,
       max: br.book.getNumLeafs() - 1,
@@ -344,7 +349,7 @@ export class Navbar {
     const { br } = this;
     // Accessible index starts at 0 (alas) so we add 1 to make human
     const pageNum = br.book.getPageNum(index);
-    const pageType = br.book.getPageProp(index, 'pageType');
+    const pageType = br.book.getPageProp(index, /** @type {any} */ ('pageType'));
     const numLeafs = br.book.getNumLeafs();
 
     if (!this.maxPageNum) {
@@ -381,7 +386,7 @@ export class Navbar {
     // We want to update the value, but normally moving the slider
     // triggers jumpToIndex which triggers this method
     index = index !== undefined ? index : this.br.currentIndex();
-    this.$root.find('.BRpager').data('swallowchange', true).slider('value', index);
+    /** @type {any} */ (this.$root.find('.BRpager')).data('swallowchange', true).slider('value', index);
   }
 }
 
@@ -396,7 +401,8 @@ export class Navbar {
  * @return {string}
  */
 export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum, useMaxFormat = false) {
-  const pageIsAsserted = pageNum[0] != 'n';
+  const pageNumStr = String(pageNum);
+  const pageIsAsserted = pageNumStr[0] != 'n';
   const pageIndex = index + 1;
 
   if (!pageIsAsserted) {
@@ -411,6 +417,6 @@ export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum
     return `(${pageIndex} of ${numLeafs})`;
   }
 
-  const bookLengthLabel = (maxPageNum && parseFloat(pageNum)) ? ` of ${maxPageNum}` : '';
+  const bookLengthLabel = (maxPageNum && parseFloat(String(pageNum))) ? ` of ${maxPageNum}` : '';
   return `${pageNum}${bookLengthLabel}`;
 }

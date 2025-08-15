@@ -1,0 +1,310 @@
+/**
+ * Language Switcher Styles for BookReader
+ * 
+ * These styles provide a clean, accessible design for the language switcher
+ * component that integrates well with the existing BookReader interface.
+ */
+
+.BRlanguageSwitcher {
+  position: relative;
+  display: inline-block;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.BRlanguageSelector {
+  position: relative;
+}
+
+.BRlanguageButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.BRlanguageButton:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #212529;
+}
+
+.BRlanguageButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: #007bff;
+}
+
+.BRlanguageButton[aria-expanded="true"] {
+  background: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.BRlanguageButton[aria-expanded="true"]:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+.BRlanguageIcon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.BRlanguageText {
+  font-weight: 500;
+}
+
+.BRlanguageArrow {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.BRlanguageButton[aria-expanded="true"] .BRlanguageArrow {
+  transform: rotate(180deg);
+}
+
+.BRlanguageDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.BRlanguageList {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.BRlanguageItem {
+  margin: 0;
+}
+
+.BRlanguageOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  color: #495057;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.BRlanguageOption:hover {
+  background: #f8f9fa;
+  color: #212529;
+}
+
+.BRlanguageOption:focus {
+  outline: none;
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.BRlanguageItem--selected .BRlanguageOption {
+  background: #e3f2fd;
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.BRlanguageName {
+  flex: 1;
+}
+
+.BRlanguageCheck {
+  color: #28a745;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .BRlanguageSwitcher {
+    font-size: 13px;
+  }
+  
+  .BRlanguageButton {
+    padding: 6px 10px;
+    min-height: 32px;
+  }
+  
+  .BRlanguageDropdown {
+    min-width: 180px;
+    max-height: 250px;
+  }
+  
+  .BRlanguageOption {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .BRlanguageButton {
+    border-width: 2px;
+  }
+  
+  .BRlanguageButton:focus {
+    box-shadow: 0 0 0 3px currentColor;
+  }
+  
+  .BRlanguageDropdown {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .BRlanguageButton,
+  .BRlanguageArrow,
+  .BRlanguageOption {
+    transition: none;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .BRlanguageButton {
+    background: #343a40;
+    border-color: #495057;
+    color: #f8f9fa;
+  }
+  
+  .BRlanguageButton:hover {
+    background: #495057;
+    border-color: #6c757d;
+    color: white;
+  }
+  
+  .BRlanguageButton:focus {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+  }
+  
+  .BRlanguageDropdown {
+    background: #343a40;
+    border-color: #495057;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  
+  .BRlanguageOption {
+    color: #f8f9fa;
+  }
+  
+  .BRlanguageOption:hover {
+    background: #495057;
+    color: white;
+  }
+  
+  .BRlanguageOption:focus {
+    background: #495057;
+    color: white;
+  }
+  
+  .BRlanguageItem--selected .BRlanguageOption {
+    background: #495057;
+    color: white;
+  }
+}
+
+/* Integration with BookReader toolbar */
+.BRtoolbar .BRlanguageSwitcher {
+  margin-left: 8px;
+}
+
+.BRtoolbar .BRlanguageButton {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.BRtoolbar .BRlanguageButton:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Integration with BookReader navbar */
+.BRnav .BRlanguageSwitcher {
+  margin-right: 8px;
+}
+
+.BRnav .BRlanguageButton {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.BRnav .BRlanguageButton:hover {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Fullscreen mode adjustments */
+.BRfullscreenActive .BRlanguageSwitcher {
+  z-index: 1001;
+}
+
+.BRfullscreenActive .BRlanguageDropdown {
+  z-index: 1002;
+}
+
+/* Accessibility improvements */
+.BRlanguageButton[aria-expanded="true"] {
+  position: relative;
+}
+
+.BRlanguageButton[aria-expanded="true"]::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+/* Focus visible support for browsers that support it */
+.BRlanguageButton:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.BRlanguageOption:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: -2px;
+}
+
+/* Print styles */
+@media print {
+  .BRlanguageSwitcher {
+    display: none;
+  }
+}
+
