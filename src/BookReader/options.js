@@ -110,6 +110,18 @@ export const DEFAULT_OPTIONS = {
   bookLanguage: null,
 
   /**
+   * @type {string} Interface language for BookReader UI
+   * Defaults to 'en' (English). Supported languages: 'en', 'de'
+   */
+  interfaceLanguage: 'en',
+
+  /**
+   * @type {boolean} Whether to enable internationalization (i18n) support
+   * Defaults to true. Set to false to disable i18n features.
+   */
+  enableI18n: true,
+
+  /**
    * @type {Array<{label: string, value: *, extraValueClass: string?}>}
    * Fields used to populate the info window
    * @example [
@@ -146,9 +158,9 @@ export const DEFAULT_OPTIONS = {
    * but going forward we'll keep them here.
    **/
   plugins: {
-    /** @type {Partial<import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options'>]}*/
+    /** @type {Partial<import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options']>} */
     archiveAnalytics: null,
-    /** @type {Partial<import('../plugins/plugin.autoplay.js').AutoplayPlugin['options'>]}*/
+    /** @type {Partial<import('../plugins/plugin.autoplay.js').AutoplayPlugin['options']>} */
     autoplay: null,
     /** @type {Partial<import('../plugins/plugin.chapters.js').ChaptersPlugin['options']>} */
     chapters: null,
@@ -218,7 +230,7 @@ export const DEFAULT_OPTIONS = {
   getPageURI: null,
 
   /**
-   * @type {(img: HTMLImageElement, uri: string) => Promise<void>}
+   * @type {(img: HTMLImageElement, uri: string) => void}
    * Render the page URI into the image element. Perform any necessary preloading,
    * authentication, etc.
    */
@@ -256,31 +268,31 @@ export const DEFAULT_OPTIONS = {
   controls: {
     bookLeft: {
       visible: true,
-      label: 'Flip left',
+      label: 'nav.flipLeft',
       className: 'book_left',
       iconClassName: 'left-arrow',
     },
     bookRight: {
       visible: true,
-      label: 'Flip right',
+      label: 'nav.flipRight',
       className: 'book_right',
       iconClassName: 'left-arrow hflip',
     },
     onePage: {
       visible: true,
-      label: 'One-page view',
+      label: 'nav.onePageView',
       className: 'onepg',
       iconClassName: 'onepg',
     },
     twoPage: {
       visible: true,
-      label: 'Two-page view',
+      label: 'nav.twoPageView',
       className: 'twopg',
       iconClassName: 'twopg',
     },
     thumbnail: {
       visible: true,
-      label: 'Thumbnail view',
+      label: 'nav.thumbnailView',
       className: 'thumb',
       iconClassName: 'thumb',
     },
@@ -291,19 +303,19 @@ export const DEFAULT_OPTIONS = {
     },
     zoomOut: {
       visible: true,
-      label: 'Zoom out',
+      label: 'nav.zoomOut',
       className: 'zoom_out',
       iconClassName: 'magnify',
     },
     zoomIn: {
       visible: true,
-      label: 'Zoom in',
+      label: 'nav.zoomIn',
       className: 'zoom_in',
       iconClassName: 'magnify plus',
     },
     fullScreen: {
       visible: true,
-      label: 'Toggle fullscreen',
+      label: 'nav.toggleFullscreen',
       className: 'full',
       iconClassName: 'fullscreen',
     },

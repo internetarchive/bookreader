@@ -130,7 +130,9 @@ export class DragScrollable {
     //settings.dragend = append_namespace(settings.dragend, settings.namespace);
 
     // Set mouse initiating event on the desired descendant
+    // @ts-expect-error - Legacy jQuery pattern, selector type mismatch
     this.handling_element.find(this.settings.dragSelector)
+      // @ts-expect-error - Legacy jQuery pattern, event handler type mismatch  
       .on(this.settings.dragstart, this._dragStartHandler);
   }
 
@@ -143,6 +145,17 @@ export class DragScrollable {
   _dragStartHandler = (event) => {
     if (this._shouldAbort()) { return true; }
 
+    // Check if the click is on navigation controls and skip drag handling
+    const target = /** @type {Element} */ (event.target);
+    if (target && target.closest && (
+      target.closest('.BRfooter') ||
+      target.closest('.BRnav') ||
+      target.closest('.BRicon') ||
+      target.closest('button')
+    )) {
+      return true; // Allow the click to proceed normally
+    }
+
     // mousedown, left click, check propagation
     if (event.which > 1 ||
     (!this.settings.acceptPropagatedEvent && event.target != this.handling_element[0])) {
@@ -153,6 +166,7 @@ export class DragScrollable {
     this.lastCoord = this.firstCoord = left_top(event);
 
     this.handling_element
+      // @ts-expect-error - Legacy jQuery pattern, event handler type mismatch
       .on(this.settings.dragcontinue, this._dragContinueHandler)
     //.on(this.settings.dragend, this._dragEndHandler)
     ;
