@@ -19,6 +19,8 @@ import { ModeCoordinateSpace } from './ModeCoordinateSpace.js';
 /** @implements {SmoothZoomable} */
 @customElement('br-mode-1up')
 export class Mode1UpLit extends LitElement {
+  /** @type {'width' | 'height' | 'auto' | 'none'} */
+  autoFit = 'auto';
   /****************************************/
   /************** PROPERTIES **************/
   /****************************************/
@@ -125,22 +127,80 @@ export class Mode1UpLit extends LitElement {
    * @param {PageIndex} index
    */
   jumpToIndex(index, { smooth = false } = {}) {
-    if (smooth) {
-      this.style.scrollBehavior = 'smooth';
+    const currentScale = this.scale;
+    
+    console.log(`🔍 SIMPLE JUMP: Going to page ${index}, scale: ${currentScale}`);
+    
+    // Make sure we have page positions
+    if (!this.pageTops[index]) {
+      this.pageTops = this.computePageTops(this.pages, this.SPACING_IN);
     }
-    this.scrollTop = this.coordSpace.worldUnitsToVisiblePixels(this.pageTops[index] - this.SPACING_IN / 2);
-    // TODO: Also h center?
-    if (smooth) {
-      setTimeout(() => this.style.scrollBehavior = '', 100);
+    
+    // For HIGH ZOOM (> 2.0): Go to center of target page
+    if (currentScale > 2.0) {
+      console.log(`🎯 HIGH ZOOM: Centering page ${index}`);
+      
+      const targetPage = this.pages.find(p => p.index === index);
+      if (!targetPage) {
+        console.error(`❌ Page ${index} not found!`);
+        return;
+      }
+      
+      // Calculate center of the TARGET page
+      const pageTop = this.pageTops[index];
+      const pageHeight = targetPage.heightInches;
+      const pageCenterY = pageTop + (pageHeight / 2);
+      
+      // Calculate scroll position to center the page
+      const viewportHeight = this.coordSpace.visiblePixelsToWorldUnits(this.htmlDimensionsCacher.clientHeight);
+      const targetScrollTop = this.coordSpace.worldUnitsToVisiblePixels(pageCenterY - (viewportHeight / 2));
+      
+      console.log(`📍 Scrolling to center: ${targetScrollTop}`);
+      
+      // Navigate to center
+      this.scrollTop = Math.max(0, targetScrollTop);
+      
+    } else {
+      // NORMAL ZOOM: Go to top of page
+      console.log(`📄 NORMAL ZOOM: Going to top of page ${index}`);
+      
+      const targetScrollTop = this.coordSpace.worldUnitsToVisiblePixels(this.pageTops[index] - this.SPACING_IN / 2);
+      this.scrollTop = targetScrollTop;
     }
+    
+    // Force update after any navigation
+    setTimeout(() => {
+      this.updateVisibleRegion();
+      this.throttledUpdateRenderedPages();
+      console.log(`✅ Navigation to page ${index} COMPLETE`);
+    }, 100);
   }
 
   zoomIn() {
-    this.scale *= this.ZOOM_FACTOR;
+    const newScale = this.scale * 1.1; // Same zoom factor as two-page mode (NO LIMIT)
+    if (newScale !== this.scale) {
+      this.scale = newScale;
+      this.requestUpdate();
+      // Force update visible region to prevent black screen issues
+      setTimeout(() => {
+        this.updateVisibleRegion();
+        this.throttledUpdateRenderedPages();
+      }, 50);
+    }
   }
 
   zoomOut() {
-    this.scale *= 1 / this.ZOOM_FACTOR;
+    const newScale = this.scale / 1.1; // Same zoom factor as two-page mode
+    if (newScale !== this.scale) {
+      this.scale = newScale;
+      this.requestUpdate();
+      // Force update visible region to prevent black screen issues
+      setTimeout(() => {
+        this.updateVisibleRegion();
+        this.throttledUpdateRenderedPages();
+        // Ensure proper centering after zoom - removed scrollIntoView as it causes navigation issues
+      }, 50);
+    }
   }
 
   /********************************************/
@@ -196,7 +256,8 @@ export class Mode1UpLit extends LitElement {
         // unclear why this is ever really happening
         this.br.displayedIndices = this.visiblePages.map(p => p.index);
         this.br.updateFirstIndex(this.br.displayedIndices[0]);
-        this.br._components.navbar.updateNavIndexThrottled();
+        // Trigger an event to update the navbar instead of accessing private property
+        this.br.trigger('pageVisible', { pageContainerEl: null });
       }
     }
     if (changedProps.has('scale')) {
@@ -390,4 +451,5 @@ export class Mode1UpLit extends LitElement {
     this.removeEventListener("scroll", this.updateVisibleRegion);
     this.scrollClassAdder.detach();
   }
+
 }
