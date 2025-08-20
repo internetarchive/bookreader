@@ -51,7 +51,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   userToggleTranslate;
 
   async init() {
-    const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""));
+    const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
     this.langFromCode = currentLanguage ?? "en";
 
     if (!this.options.enabled) {
@@ -331,7 +331,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Array }) toLanguages = []; // List of obj {code, name}
   @property({ type: String }) prevSelectedLang = ''; // Tracks the previous selected language for the "To" dropdown
   @property({ type: String }) disclaimerMessage = '';
-  @property({ type: Boolean }) userTranslationActive = false; 
+  @property({ type: Boolean }) userTranslationActive = false;
   @property({ type: String }) detectedFromLang = '';
 
 
@@ -353,11 +353,11 @@ export class BrTranslatePanel extends LitElement {
           From
           <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}">
             ${this.fromLanguages.map((lang) => {
-              return html`<option
+      return html`<option
                 value="${lang.code}"
                 ?selected=${lang.code == this.detectedFromLang}
-              >${lang.name}</option>`
-            }
+              >${lang.name}</option>`;
+    },
     )}
           </select>
         </label>
