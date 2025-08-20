@@ -160,6 +160,8 @@ export class TranslationManager {
     }).then((resp) => {
       const response = resp;
       this.currentlyTranslating[key].resolve(response.target.text);
+      this.alreadyTranslated.add({index: key, response: response.target.text});
+      delete this.currentlyTranslating[key];
     });
 
     return promise;
