@@ -56,6 +56,7 @@ export default [
       'plugins/plugin.search.js': { import: './src/plugins/search/plugin.search.js', dependOn: 'BookReader.js' },
       'plugins/plugin.text_selection.js': { import: './src/plugins/plugin.text_selection.js', dependOn: 'BookReader.js' },
       'plugins/plugin.translate.js': { import: './src/plugins/translate/plugin.translate.js', dependOn: 'BookReader.js' },
+      'plugins/translator-worker.js': { import: '@internetarchive/bergamot-translator/worker/translator-worker.js' },
       'plugins/plugin.tts.js': { import: './src/plugins/tts/plugin.tts.js', dependOn: 'BookReader.js' },
       'plugins/plugin.url.js': { import: './src/plugins/url/plugin.url.js', dependOn: 'BookReader.js' },
       'plugins/plugin.vendor-fullscreen.js': { import: './src/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' },

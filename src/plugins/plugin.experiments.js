@@ -61,7 +61,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       title = 'Translate Plugin';
       description = "Translate books directly in your browser.";
       learnMore = 'https://mozilla.github.io/translations/';
-      icon = 'images/language-icon.svg';
+      icon = 'images/translate.svg';
       enabled = false;
       async enable({ manual = false}) {
         await importAsScript(this.buildAssetPath('plugins/plugin.translate.js'));
