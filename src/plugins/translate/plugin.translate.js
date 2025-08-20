@@ -3,6 +3,7 @@ import { html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property } from 'lit/decorators.js';
 import { langs, TranslationManager } from "./TranslationManager.js";
+import { toISO6391 } from '../tts/utils.js';
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
@@ -27,10 +28,10 @@ export class TranslatePlugin extends BookReaderPlugin {
   toLanguages = [];
 
   /**
-   * Current language code that is being translated From
+   * Current language code that is being translated From. Defaults to EN currently
    * @type {!string}
    */
-  langFromCode = "en";
+  langFromCode
 
   /**
    * Current language code that is being translated To
@@ -43,7 +44,15 @@ export class TranslatePlugin extends BookReaderPlugin {
    */
   _panel;
 
+  /**
+   * @type {boolean} userToggleTranslate - Checks if user has initiated translation
+   * Should synchronize with the state of TranslationManager's active state
+   */
+  userToggleTranslate;
+
   async init() {
+    const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""));
+    this.langFromCode = currentLanguage ?? "en";
 
     if (!this.options.enabled) {
       return;
@@ -113,7 +122,12 @@ export class TranslatePlugin extends BookReaderPlugin {
 
   /** @param {HTMLElement} page */
   async translateRenderedLayer(page, priority) {
-    if (this.br.mode == this.br.constModeThumb) {
+    // Do not run translation if in thumbnail mode or if user did not initiate transations
+    if (this.br.mode == this.br.constModeThumb || !this.userToggleTranslate) {
+      return;
+    }
+    if (!page.querySelector('.BRtextLayer')) {
+      console.log("there is no selection layer here", page.dataset.index);
       return;
     }
 
@@ -122,7 +136,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     let pageTranslationLayer;
     if (!page.querySelector('.BRPageLayer.BRtranslateLayer')) {
       pageTranslationLayer = document.createElement('div');
-      pageTranslationLayer.classList.add('BRPageLayer', 'BRtranslateLayer');
+      pageTranslationLayer.classList.add('BRPageLayer', 'BRtranslateLayer', 'BRtranslateLayerLoading');
       pageTranslationLayer.setAttribute('lang', `${this.langToCode}`);
       page.prepend(pageTranslationLayer);
     } else {
@@ -267,6 +281,17 @@ export class TranslatePlugin extends BookReaderPlugin {
     this.translateActivePageContainerElements();
   }
 
+  handleToggleTranslation = async () => {
+    this.userToggleTranslate = !this.userToggleTranslate;
+    this.translationManager.active = this.userToggleTranslate;
+    if (!this.userToggleTranslate) {
+      this.clearAllTranslations();
+      this.br.trigger('translationDisabled', { });
+    } else {
+      this.br.trigger('translationEnabled', { });
+      this.translateActivePageContainerElements();
+    }
+  }
 
   /**
   * Update the table of contents based on array of TOC entries.
@@ -286,9 +311,12 @@ export class TranslatePlugin extends BookReaderPlugin {
       }"
         @langFromChanged="${this.handleFromLangChange}"
         @langToChanged="${this.handleToLangChange}"
+        @toggleTranslation="${this.handleToggleTranslation}"
         .fromLanguages="${this.translationManager.fromLanguages}"
         .toLanguages="${this.translationManager.toLanguages}"
         .disclaimerMessage="${this.options.panelDisclaimerText}"
+        .userTranslationActive=${false}
+        .detectedFromLang=${this.langFromCode}
         class="translate-panel"
       />`,
     };
@@ -303,6 +331,9 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Array }) toLanguages = []; // List of obj {code, name}
   @property({ type: String }) prevSelectedLang = ''; // Tracks the previous selected language for the "To" dropdown
   @property({ type: String }) disclaimerMessage = '';
+  @property({ type: Boolean }) userTranslationActive = false; 
+  @property({ type: String }) detectedFromLang = '';
+
 
   /** @override */
   createRenderRoot() {
@@ -316,17 +347,17 @@ export class BrTranslatePanel extends LitElement {
   }
 
   render() {
-    const showPrevLangButton =
-      this.prevSelectedLang &&
-      (this.prevSelectedLang !== this._getSelectedLang('to') || this._getSelectedLang('from') === this._getSelectedLang('to'));
-
     return html`<div class="app">
       <div class="panel panel--from">
         <label>
           From
-          <select id="lang-from" name="from" class="lang-select" @change="${this._onLangFromChange}">
-            ${this.fromLanguages.map(
-      lang => html`<option value="${lang.code}">${lang.name}</option>`,
+          <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}">
+            ${this.fromLanguages.map((lang) => {
+              return html`<option
+                value="${lang.code}"
+                ?selected=${lang.code == this.detectedFromLang}
+              >${lang.name}</option>`
+            }
     )}
           </select>
         </label>
@@ -340,11 +371,14 @@ export class BrTranslatePanel extends LitElement {
     )}
           </select>
         </label>
-        ${showPrevLangButton
-      ? html`<button class="prev-lang-btn" @click="${this._onPrevLangClick}">
-              ${this._getLangName(this.prevSelectedLang)}
-            </button>`
-      : ''}
+      </div>
+      <div class="panel panel--start">
+        <label>
+          Toggle Translation
+            <button class="start-translation-brn" @click="${this._toggleTranslation}">
+              ${this.userTranslationActive ? "Disable" : "Enable"}
+            </button>
+        </label>
       </div>
       <div class="footer" id="status"></div>
       <br/>
@@ -409,6 +443,16 @@ export class BrTranslatePanel extends LitElement {
   _getLangName(code) {
     const lang = [...this.fromLanguages, ...this.toLanguages].find(lang => lang.code === code);
     return lang ? lang.name : '';
+  }
+
+  _toggleTranslation(event) {
+    const toggleTranslateEvent = new CustomEvent('toggleTranslation', {
+      detail: {value: event.target.value},
+      bubbles: true,
+      composed:true,
+    });
+    this.userTranslationActive = !this.userTranslationActive;
+    this.dispatchEvent(toggleTranslateEvent);
   }
 }
 
