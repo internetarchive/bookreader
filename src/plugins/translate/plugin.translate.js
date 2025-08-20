@@ -128,11 +128,8 @@ export class TranslatePlugin extends BookReaderPlugin {
     if (this.br.mode == this.br.constModeThumb || !this.userToggleTranslate) {
       return;
     }
-    if (!page.querySelector('.BRtextLayer')) {
-      console.log("there is no selection layer here", page.dataset.index);
-      return;
-    }
 
+    // this.br.trigger('translationEnabled', { }); // fires too often? 
     const pageIndex = page.dataset.index;
 
     let pageTranslationLayer;
@@ -156,7 +153,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     });
     const paragraphs = this.getParagraphsOnPage(page);
 
-    paragraphs.forEach(async (paragraph, pidx) => {
+    const paragraphTranslationPromises = paragraphs.map(async (paragraph, pidx) => {
       let translatedParagraph = page.querySelector(`[data-translate-index='${pageIndex}-${pidx}']`);
       if (!translatedParagraph) {
         translatedParagraph = document.createElement('p');
@@ -214,6 +211,33 @@ export class TranslatePlugin extends BookReaderPlugin {
         }
       }
     });
+    await Promise.all(paragraphTranslationPromises);
+    console.log('called getTranslation for this page', pageIndex);
+    this.br.trigger('translateLayerRendered', { pageTranslationLayer });
+  }
+
+  async getTranslateLayer(leafIndex) {
+    let translateLayer = document.querySelector(`[data-index='${leafIndex}'] > .BRtranslateLayer`);
+    if (translateLayer) return translateLayer;
+    // console.log("this is translateLayer", translateLayer);
+    let selectLayer = document.querySelector(`[data-index='${leafIndex}'] > .BRtextLayer`);
+    // console.log("this is selectLayer", selectLayer);
+    return new Promise((res, rej) => {
+      // console.log("within the promise of getTranslateLayer", leafIndex);
+      const foo = async ev => {
+        console.log("translateLayerRendered fired with", ev);
+        if (ev.leafIndex == leafIndex) {
+          this.br.off('translateLayerRendered', foo); // remember to detach translateLayer
+          res(ev.translateLayer);
+        }
+      }
+      this.br.on('translateLayerRendered', foo);
+      setTimeout(() => {
+        const getTranslateLayerAgain = document.querySelector(`[data-index='${leafIndex}'] > .BRtranslateLayer`);
+        this.br.off('translateLayerRendered', foo);
+        res(getTranslateLayerAgain);
+      }, 1000)
+    })
   }
 
   clearAllTranslations() {
@@ -386,7 +410,6 @@ export class BrTranslatePanel extends LitElement {
       <div class="disclaimer" id="disclaimerMessage"> ${this.disclaimerMessage} </div>
     </div>`;
   }
-
   _onLangFromChange(event) {
     const langFromChangedEvent = new CustomEvent('langFromChanged', {
       detail: { value: event.target.value },

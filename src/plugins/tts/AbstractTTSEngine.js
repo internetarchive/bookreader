@@ -86,9 +86,9 @@ export default class AbstractTTSEngine {
 
     this._chunkIterator = new PageChunkIterator(numLeafs, leafIndex, {
       pageChunkUrl: this.opts.pageChunkUrl,
-      pageBufferSize: 5,
+      pageBufferSize: 1,
     });
-
+    console.log("assigning this._chunkIterator", this._chunkIterator);
     this.step();
     this.events.trigger('start');
   }
