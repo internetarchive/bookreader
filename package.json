@@ -1,6 +1,6 @@
 {
   "name": "@internetarchive/bookreader",
-  "version": "5.0.0-96",
+  "version": "5.0.0-97",
   "description": "The Internet Archive BookReader.",
   "type": "module",
   "files": [
@@ -31,7 +31,7 @@
   "homepage": "https://github.com/internetarchive/bookreader#readme",
   "private": false,
   "dependencies": {
-    "@browsermt/bergamot-translator": "^0.4.9",
+    "@internetarchive/bergamot-translator": "0.4.9-ia.0",
     "@internetarchive/ia-activity-indicator": "^0.0.4",
     "@internetarchive/ia-item-navigator": "^2.1.2",
     "@internetarchive/icon-bookmark": "^1.3.4",
@@ -110,8 +110,8 @@
     "build": "npm run clean && npx concurrently --group npm:build-js npm:build-css npm:build-assets npm:build-hypothesis npm:build-bergamot",
     "build-assets": "npx cpx \"src/assets/**/*\" BookReader && npx svgo -f BookReader/icons && npx svgo -f BookReader/images",
     "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
-    "build-bergamot": "npx cpx \"node_modules/@browsermt/bergamot-translator/worker/*\" BookReader/",
-    "build-bergamot:watch": "npx cpx --watch \"node_modules/@browsermt/bergamot-translator/worker/*\" BookReader/",
+    "build-bergamot": "npx cpx \"node_modules/@internetarchive/bergamot-translator/worker/*\" BookReader/",
+    "build-bergamot:watch": "npx cpx --watch \"node_modules/@internetarchive/bergamot-translator/worker/*\" BookReader/",
     "build-hypothesis": "npx cpx \"node_modules/hypothesis/**/*\" BookReader/hypothesis",
     "build-hypothesis:watch": "npx cpx --watch --verbose \"node_modules/hypothesis/**/*\" BookReader/hypothesis",
     "build-js": "npx webpack",

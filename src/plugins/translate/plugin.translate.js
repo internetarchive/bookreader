@@ -58,6 +58,8 @@ export class TranslatePlugin extends BookReaderPlugin {
       return;
     }
 
+    this.translationManager.publicPath = this.br.options.imagesBaseURL.replace(/\/+$/, '') + '/..';
+
     /**
      * @param {*} ev
      * @param {object} eventProps
@@ -299,8 +301,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   _render() {
     this.br.shell.menuProviders['translate'] = {
       id: 'translate',
-      icon: html`<img src='${this.br.options.imagesBaseURL}/language-icon.svg' width="26"/>
-      `,
+      icon: html`<img src='${this.br.options.imagesBaseURL}/translate.svg' width="26"/>`,
       label: 'Translate',
       component: html`<br-translate-panel
         @connected="${e => {
