@@ -1,5 +1,6 @@
 // @ts-check
 /** @typedef {import('@/src/BookReader.js').default} BookReader */
+import { i18n } from '../../i18n/index.js';
 
 class SearchView {
   /**
@@ -64,15 +65,15 @@ class SearchView {
       <div class="${selector}">
         <button class="toggle-sidebar">
           <h4>
-            <span class="icon icon-search"></span> Results
+            <span class="icon icon-search"></span> ${i18n.t('search.results')}
           </h4>
         </button>
         <div class="pagination">
-          <button class="prev" title="Previous result"><span class="icon icon-chevron hflip"></span></button>
+          <button class="prev" title="${i18n.t('search.previousResult')}"><span class="icon icon-chevron hflip"></span></button>
           <span data-id="resultsCount">${this.resultsPosition()}</span>
-          <button class="next" title="Next result"><span class="icon icon-chevron"></button>
+          <button class="next" title="${i18n.t('search.nextResult')}"><span class="icon icon-chevron"></button>
         </div>
-        <button class="clear" title="Clear search results">
+        <button class="clear" title="${i18n.t('search.clearResults')}">
           <span class="icon icon-close"></span>
         </button>
       </div>
@@ -81,9 +82,12 @@ class SearchView {
   }
 
   resultsPosition() {
-    let positionMessage = `${this.matches.length} result${this.matches.length === 1 ? '' : 's'}`;
+    let positionMessage = i18n.t('search.resultsCount', { count: this.matches.length });
     if (~this.currentMatchIndex) {
-      positionMessage = `${this.currentMatchIndex + 1} / ${this.matches.length}`;
+      positionMessage = i18n.t('search.resultsPosition', { 
+        current: this.currentMatchIndex + 1, 
+        total: this.matches.length 
+      });
     }
     return positionMessage;
   }
@@ -216,7 +220,7 @@ class SearchView {
     toolbarSearch.classList.add('BRtoolbarSection', 'BRtoolbarSectionSearch');
     toolbarSearch.innerHTML = `
       <form class="BRbooksearch desktop">
-        <input type="search" name="query" class="BRsearchInput" value="" placeholder="Search inside"/>
+        <input type="search" name="query" class="BRsearchInput" value="" placeholder="${i18n.t('toolbar.searchPlaceholder')}"/>
         <button type="submit" class="BRsearchSubmit">
           <img src="${this.br.options.imagesBaseURL}icon_search_button.svg" />
         </button>
@@ -231,7 +235,7 @@ class SearchView {
   renderPins(matches) {
     matches.forEach((match) => {
       const pageIndex = this.br.book.leafNumToIndex(match.par[0].page);
-      const uiStringSearch = "Search result"; // i18n
+      const uiStringSearch = i18n.t('search.searchResult');
       const percentThrough = this.br.constructor.util.cssPercentage(pageIndex, this.br.book.getNumLeafs() - 1);
 
       let html = match.html;
@@ -254,7 +258,7 @@ class SearchView {
         .append(`
           <div class="BRquery">
             <main>${html}</main>
-            <footer>Page ${match.displayPageNumber}</footer>
+            <footer>${i18n.t('search.page')} ${match.displayPageNumber}</footer>
           </div>
         `)
         .appendTo(this.br.$('.BRnavline'))
@@ -282,7 +286,7 @@ class SearchView {
    */
   toggleSearchPending(show = false) {
     if (show) {
-      this.br.showProgressPopup("Search results will appear below...", () => this.progressPopupClosed());
+      this.br.showProgressPopup(i18n.t('search.searchResultsWillAppear'), () => this.progressPopupClosed());
     }
     else {
       this.br.removeProgressPopup();
@@ -298,9 +302,9 @@ class SearchView {
   }
 
   renderErrorModal(textIsProcessing = false) {
-    const errorDetails = `${!textIsProcessing ? 'The text may still be processing. ' : ''}Please try again.`;
+    const errorDetails = textIsProcessing ? '' : i18n.t('search.textMayStillProcessing');
     this.renderModalMessage(`
-      Sorry, there was an error with your search.
+      ${i18n.t('search.errorOccurred')}
       <br />
       ${errorDetails}
     `);
@@ -310,17 +314,14 @@ class SearchView {
   renderBookNotIndexedModal() {
     this.renderModalMessage(`
       <p>
-         This book hasn't been indexed for searching yet.
-         We've just started indexing it, so search should be available soon.
-         <br />
-         Please try again later. Thanks!
+         ${i18n.t('search.bookNotIndexed')}
       </p>
     `);
     this.delayModalRemovalFor(5000);
   }
 
   renderResultsEmptyModal() {
-    this.renderModalMessage('No matches were found.');
+    this.renderModalMessage(i18n.t('search.noMatchesFound'));
     this.delayModalRemovalFor(2000);
   }
 

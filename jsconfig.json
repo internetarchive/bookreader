@@ -6,11 +6,16 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["jest", "node"]
   },
   "include": [
     "src/**/*.js",
-    "tests/**/*.js",
+    "tests/**/*.js"
   ],
   "exclude": [
     "node_modules",

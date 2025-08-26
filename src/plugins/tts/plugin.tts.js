@@ -3,14 +3,14 @@
 import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391, approximateWordCount } from './utils.js';
-import { en as tooltips } from './tooltip_dict.js';
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { applyVariables } from '../../util/strings.js';
+import { i18n } from '../../i18n/index.js';
 /** @typedef {import('./PageChunk.js').default} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").default} AbstractTTSEngine */
 
-const BookReader = /** @type {typeof import('../../BookReader').default} */(window.BookReader);
+const BookReader = /** @type {any} */(window.BookReader);
 
 /**
  * Plugin for Text to Speech in BookReader
@@ -59,11 +59,10 @@ export class TtsPlugin extends BookReaderPlugin {
     }
 
     if (TTSEngine) {
-      /** @type {AbstractTTSEngine} */
-      this.ttsEngine = new TTSEngine({
+      this.ttsEngine = /** @type {any} */ (new TTSEngine({
         pageChunkUrl: applyVariables(this.options.pageChunkUrl, this.br.options.vars),
         bookLanguage: toISO6391(this.br.options.bookLanguage),
-        onLoadingStart: this.br.showProgressPopup.bind(this.br, 'Loading audio...'),
+        onLoadingStart: this.br.showProgressPopup.bind(this.br, i18n.t('search.loadingAudio')),
         onLoadingComplete: this.br.removeProgressPopup.bind(this.br),
         onDone: this.stop.bind(this),
         beforeChunkPlay: this.beforeChunkPlay.bind(this),
@@ -71,7 +70,7 @@ export class TtsPlugin extends BookReaderPlugin {
         ...(TTSEngine === FestivalTTSEngine ? {
           festivalUrl: applyVariables(this.options.remoteTtsUrl, this.br.options.vars),
         } : {}),
-      });
+      }));
     }
   }
 
@@ -120,7 +119,7 @@ export class TtsPlugin extends BookReaderPlugin {
     this.br.refs.$BRReadAloudToolbar = $(`
       <ul class="read-aloud">
         <li>
-          <select class="playback-speed" name="playback-speed" title="${tooltips.playbackSpeed}">
+          <select class="playback-speed" name="playback-speed" title="${i18n.t('tts.playbackSpeed')}">
             <option value="0.25">0.25x</option>
             <option value="0.5">0.5x</option>
             <option value="0.75">0.75x</option>
@@ -132,23 +131,23 @@ export class TtsPlugin extends BookReaderPlugin {
           </select>
         </li>
         <li>
-          <button type="button" name="review" title="${tooltips.review}">
+          <button type="button" name="review" title="${i18n.t('tts.review')}">
             <div class="icon icon-review"></div>
           </button>
         </li>
         <li>
-          <button type="button" name="play" title="${tooltips.play}">
+          <button type="button" name="play" title="${i18n.t('tts.play')}">
             <div class="icon icon-play"></div>
             <div class="icon icon-pause"></div>
           </button>
         </li>
         <li>
-          <button type="button" name="advance" title="${tooltips.advance}">
+          <button type="button" name="advance" title="${i18n.t('tts.advance')}">
             <div class="icon icon-advance"></div>
           </button>
         </li>
         <li>
-          <select class="playback-voices" name="playback-voice" style="display: none" title="Change read aloud voices">
+          <select class="playback-voices" name="playback-voice" style="display: none" title="${i18n.t('tts.changeReadAloudVoices')}">
           </select>
         </li>
       </ul>
@@ -170,8 +169,8 @@ export class TtsPlugin extends BookReaderPlugin {
       const otherLanguages = this.ttsEngine.getVoices().filter(v => !v.lang.startsWith(bookLanguage)).sort(voiceSortOrder);
 
       if (this.ttsEngine.getVoices().length > 1) {
-        voicesMenu.append($(`<optgroup label="Book Language (${bookLanguage})"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
-        voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages)} </optgroup>`));
+        voicesMenu.append($(`<optgroup label="${i18n.t('tts.bookLanguage', { language: bookLanguage })}"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
+        voicesMenu.append($(`<optgroup label="${i18n.t('tts.otherLanguages')}"> ${renderVoiceOption(otherLanguages)} </optgroup>`));
 
         voicesMenu.val(this.ttsEngine.voice.voiceURI);
         voicesMenu.show();
@@ -182,18 +181,18 @@ export class TtsPlugin extends BookReaderPlugin {
 
     const voicesMenu = this.br.refs.$BRReadAloudToolbar.find('[name=playback-voice]');
     renderVoicesMenu(voicesMenu);
-    voicesMenu.on("change", ev => this.ttsEngine.setVoice(voicesMenu.val()));
+    voicesMenu.on("change", ev => this.ttsEngine.setVoice(String(voicesMenu.val())));
     this.ttsEngine.events.on('pause resume start', () => this.updateState());
     this.ttsEngine.events.on('voiceschanged', () => renderVoicesMenu(voicesMenu));
     this.br.refs.$BRReadAloudToolbar.find('[name=play]').on("click", this.playPause.bind(this));
     this.br.refs.$BRReadAloudToolbar.find('[name=advance]').on("click", this.jumpForward.bind(this));
     this.br.refs.$BRReadAloudToolbar.find('[name=review]').on("click", this.jumpBackward.bind(this));
     const $rateSelector = this.br.refs.$BRReadAloudToolbar.find('select[name="playback-speed"]');
-    $rateSelector.on("change", ev => this.ttsEngine.setPlaybackRate(parseFloat($rateSelector.val())));
+    $rateSelector.on("change", ev => this.ttsEngine.setPlaybackRate(parseFloat(String($rateSelector.val()))));
     $(`<li>
-        <button class="BRicon read js-tooltip" title="${tooltips.readAloud}">
+        <button class="BRicon read js-tooltip" title="${i18n.t('tts.readAloud')}">
           <div class="icon icon-read-aloud"></div>
-          <span class="BRtooltip">${tooltips.readAloud}</span>
+          <span class="BRtooltip">${i18n.t('tts.readAloud')}</span>
         </button>
       </li>`).insertBefore($navBar.find('.BRcontrols .BRicon.zoom_out').closest('li'));
   }

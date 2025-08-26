@@ -29,6 +29,7 @@ import * as utils from './BookReader/utils.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS, OptionsParseError } from './BookReader/options.js';
+import { i18n, initializeLanguage } from './i18n/index.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
@@ -328,6 +329,19 @@ BookReader.prototype.setup = function(options) {
    * - BookReader scrolled into view
    */
   this.hasKeyFocus = true;
+
+  // Initialize internationalization
+  if (this.options.enableI18n) {
+    // Set interface language from options or initialize from browser/localStorage
+    if (this.options.interfaceLanguage) {
+      i18n.setLanguage(this.options.interfaceLanguage);
+    } else {
+      initializeLanguage();
+    }
+    
+    // Store reference to i18n instance for use throughout BookReader
+    this.i18n = i18n;
+  }
 };
 
 BookReader.prototype.initializePlugin = function(pluginName) {
