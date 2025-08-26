@@ -25,46 +25,15 @@ export default class PageChunk {
   static async fetch(pageChunkUrl, leafIndex) {
     console.log('PageChunk.fetch', leafIndex);
     if (br.plugins.translate?.translationManager.active) {
-      const pageChunks = [];
+      const translateLayers = await br.plugins.translate.getTranslateLayers(leafIndex);
+      const paragraphs = Array.from(translateLayers[0].childNodes);
 
-      let textLayer = document.querySelector(`[data-index='${leafIndex}']`);
-      // console.log("this is textLayer", textLayer, leafIndex);
-      // if (textLayer && !textLayer.textContent) {
-      //   console.log("no textContent here will return a placeholderChunk", leafIndex);
-      //   const placeholderChunk = new PageChunk(leafIndex, 0, "", []);
-      //   return [placeholderChunk, placeholderChunk];
-      // }
-      const translateLayer = await br.plugins.translate.getTranslateLayer(leafIndex);
-      // Check if the translateLayer has no textContent, might not need to do anything
-      if (!translateLayer) {
-        console.log("inserting placeholder chunk here");
-        const placeholderChunk = new PageChunk(leafIndex, 0, "", []);
-        pageChunks.push(placeholderChunk);
-        return pageChunks;
-      }
-      // console.log("should have finished waiting for translateLayer", leafIndex, translateLayer);
-      let paragraphs = Array.from(translateLayer.childNodes);
+      const pageChunks = [];
       for (const [idx, item] of paragraphs.entries()) {
         const translatedChunk = new PageChunk(leafIndex, idx, item.textContent, []);
         pageChunks.push(translatedChunk);
       }
-      if (!pageChunks.length) {
-        console.log("creating a placeholder PageChunk here", translateLayer);
-        return [];
-      }
-      // console.log("will return pageChunks now", pageChunks);
-      return pageChunks
-    // if (br.plugins.translate?.active) {
-    //   const translateLayer = (something).querySelector(something);
-
-    // } else if (br.plugins.textSelection) {
-    //   // DO SOMETHING
-    //   // Get the text layer of this leaf index
-    //   const textLayer = (something).querySelector(something);
-
-    //   // split the DOM textLayer up into paragraphs
-    //     // find the bounding boxes of the lines, and output a format identical to
-    //     // https://ia800501.us.archive.org/BookReader/BookReaderGetTextWrapper.php?path=%2F17%2Fitems%2Ftheworksofplato01platiala%2Ftheworksofplato01platiala_djvu.xml&page=68&callback=false
+      return pageChunks;
     } else {
       const chunks = await $.ajax({
         type: 'GET',

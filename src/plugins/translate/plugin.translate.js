@@ -213,31 +213,32 @@ export class TranslatePlugin extends BookReaderPlugin {
     });
     await Promise.all(paragraphTranslationPromises);
     console.log('called getTranslation for this page', pageIndex);
-    this.br.trigger('translateLayerRendered', { pageTranslationLayer });
+    this.br.trigger('translateLayerRendered', {
+      leafIndex: pageIndex,
+      translateLayer: pageTranslationLayer,
+    });
   }
 
-  async getTranslateLayer(leafIndex) {
-    let translateLayer = document.querySelector(`[data-index='${leafIndex}'] > .BRtranslateLayer`);
-    if (translateLayer) return translateLayer;
-    // console.log("this is translateLayer", translateLayer);
-    let selectLayer = document.querySelector(`[data-index='${leafIndex}'] > .BRtextLayer`);
-    // console.log("this is selectLayer", selectLayer);
+  /**
+   * Get the translation layers for a specific leaf index.
+   * @param {number} leafIndex
+   * @returns {Promise<HTMLElement[]>}
+   */
+  async getTranslateLayers(leafIndex) {
+    const pageContainerElements = this.br.getActivePageContainerElementsForIndex(leafIndex);
+    const translateLayer = $(pageContainerElements).filter(`[data-index='${leafIndex}']`).find('.BRtranslateLayer');
+    if (translateLayer.length) return translateLayer.toArray();
+
     return new Promise((res, rej) => {
-      // console.log("within the promise of getTranslateLayer", leafIndex);
-      const foo = async ev => {
-        console.log("translateLayerRendered fired with", ev);
-        if (ev.leafIndex == leafIndex) {
-          this.br.off('translateLayerRendered', foo); // remember to detach translateLayer
-          res(ev.translateLayer);
+      const handler = async (ev, extraParams) => {
+        console.log("translateLayerRendered fired with", extraParams);
+        if (extraParams.leafIndex == leafIndex) {
+          this.br.off('translateLayerRendered', handler); // remember to detach translateLayer
+          res([extraParams.translateLayer]);
         }
-      }
-      this.br.on('translateLayerRendered', foo);
-      setTimeout(() => {
-        const getTranslateLayerAgain = document.querySelector(`[data-index='${leafIndex}'] > .BRtranslateLayer`);
-        this.br.off('translateLayerRendered', foo);
-        res(getTranslateLayerAgain);
-      }, 1000)
-    })
+      };
+      this.br.on('translateLayerRendered', handler);
+    });
   }
 
   clearAllTranslations() {
