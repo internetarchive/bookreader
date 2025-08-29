@@ -129,7 +129,7 @@ export class TranslatePlugin extends BookReaderPlugin {
       return;
     }
 
-    // this.br.trigger('translationEnabled', { }); // fires too often? 
+    // this.br.trigger('translationEnabled', { }); // fires too often?
     const pageIndex = page.dataset.index;
 
     let pageTranslationLayer;
@@ -212,7 +212,6 @@ export class TranslatePlugin extends BookReaderPlugin {
       }
     });
     await Promise.all(paragraphTranslationPromises);
-    console.log('called getTranslation for this page', pageIndex);
     this.br.trigger('translateLayerRendered', {
       leafIndex: pageIndex,
       translateLayer: pageTranslationLayer,
@@ -230,8 +229,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     if (translateLayer.length) return translateLayer.toArray();
 
     return new Promise((res, rej) => {
-      const handler = async (ev, extraParams) => {
-        console.log("translateLayerRendered fired with", extraParams);
+      const handler = async (_, extraParams) => {
         if (extraParams.leafIndex == leafIndex) {
           this.br.off('translateLayerRendered', handler); // remember to detach translateLayer
           res([extraParams.translateLayer]);

@@ -23,9 +23,8 @@ export default class PageChunk {
    * @return {Promise<PageChunk[]>}
    */
   static async fetch(pageChunkUrl, leafIndex) {
-    console.log('PageChunk.fetch', leafIndex);
-    if (br.plugins.translate?.translationManager.active) {
-      const translateLayers = await br.plugins.translate.getTranslateLayers(leafIndex);
+    if (window.br.plugins.translate?.translationManager.active) {
+      const translateLayers = await window.br.plugins.translate.getTranslateLayers(leafIndex);
       const paragraphs = Array.from(translateLayers[0].childNodes);
 
       const pageChunks = [];

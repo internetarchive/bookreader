@@ -167,11 +167,11 @@ export class TtsPlugin extends BookReaderPlugin {
       voicesMenu.empty();
       let bookLanguage = this.ttsEngine.opts.bookLanguage;
       let translatedLanguages;
-      let toLang; 
+      let toLang;
       if (this.br.plugins.translate?.translationManager?.active) {
         bookLanguage = this.br.plugins.translate.langFromCode;
         toLang = this.br.plugins.translate.langToCode;
-        translatedLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(toLang)).sort(voiceSortOrder)
+        translatedLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(toLang)).sort(voiceSortOrder);
       }
 
       const bookLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(bookLanguage)).sort(voiceSortOrder);
@@ -181,8 +181,8 @@ export class TtsPlugin extends BookReaderPlugin {
         if (this.br.plugins.translate?.translationManager?.active) {
           // Separate out Other Languages when translation active, not sure if too much / unwieldy
           voicesMenu.append($(`<optgroup label="Book Language, Translated From (${bookLanguage})"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
-          voicesMenu.append($(`<optgroup label="Book Language, Translated To (${toLang})"> ${renderVoiceOption(translatedLanguages)} </optgroup>`))
-          voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages.filter(v => !v.lang.startsWith(toLang)).sort(voiceSortOrder))}`))
+          voicesMenu.append($(`<optgroup label="Book Language, Translated To (${toLang})"> ${renderVoiceOption(translatedLanguages)} </optgroup>`));
+          voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages.filter(v => !v.lang.startsWith(toLang)).sort(voiceSortOrder))}`));
         } else {
           voicesMenu.append($(`<optgroup label="Book Language (${bookLanguage})"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
           voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages)} </optgroup>`));
@@ -326,11 +326,11 @@ export class TtsPlugin extends BookReaderPlugin {
       pageContainers.forEach(container => {
         const translateElement = container.querySelector('.BRtranslateLayer');
         const containerChildren = Array.from(translateElement.childNodes);
-        let paragraphEle = containerChildren[paragraphIndex];
-        if (!paragraphEle) { return };
-        let [pOffHeight, pOffTop, pOffWidth, pOffLeft] = [paragraphEle.offsetHeight, paragraphEle.offsetTop, paragraphEle.offsetWidth, paragraphEle.offsetLeft]; 
-        let boxes = {pageIndex: [
-          {l: pOffLeft, r: pOffLeft + pOffWidth, b: pOffTop + pOffHeight, t: pOffTop}
+        const paragraphEle = containerChildren[paragraphIndex];
+        if (!paragraphEle) { return; }
+        const [pOffHeight, pOffTop, pOffWidth, pOffLeft] = [paragraphEle.offsetHeight, paragraphEle.offsetTop, paragraphEle.offsetWidth, paragraphEle.offsetLeft];
+        const boxes = {pageIndex: [
+          {l: pOffLeft, r: pOffLeft + pOffWidth, b: pOffTop + pOffHeight, t: pOffTop},
         ]};
         renderBoxesInPageContainerLayer('ttsHiliteLayer', boxes.pageIndex, this.br.book.getPage(pageIndex), translateElement);
       });
