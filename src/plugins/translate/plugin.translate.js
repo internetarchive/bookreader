@@ -127,7 +127,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   /** @param {HTMLElement} page */
   async translateRenderedLayer(page, priority) {
     // Do not run translation if in thumbnail mode or if user did not initiate transations
-    if (this.br.mode == this.br.constModeThumb || !this.userToggleTranslate) {
+    if (this.br.mode == this.br.constModeThumb || !this.userToggleTranslate || this.langFromCode == this.langToCode) {
       return;
     }
 
@@ -372,31 +372,18 @@ export class BrTranslatePanel extends LitElement {
   }
 
   render() {
-    return html`<div class="app">
-      <div class="panel panel--from">
-        <label>
-          From
-          <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}">
-            ${this.fromLanguages.map((lang) => {
-      return html`<option
-                value="${lang.code}"
-                ?selected=${lang.code == this.detectedFromLang}
-              >${lang.name}</option>`;
-    },
-    )}
-          </select>
-        </label>
-      </div>
+    return html`<div class="app" style="margin-top: 5%">
       <div class="panel panel--to">
         <label>
-          To
-          <select id="lang-to" name="to" class="lang-select" @change="${this._onLangToChange}">
+          Translate To
+          <select id="lang-to" name="to" class="lang-select" style="display:block; width:65%;" @change="${this._onLangToChange}">
             ${this.toLanguages.map(
       lang => html`<option value="${lang.code}">${lang.name}</option>`,
     )}
           </select>
         </label>
       </div>
+      <br/>
       <div class="panel panel--start">
         <label>
           Toggle Translation
@@ -405,9 +392,32 @@ export class BrTranslatePanel extends LitElement {
             </button>
         </label>
       </div>
-      <div class="footer" id="status"></div>
-      <br/>
       <div class="disclaimer" id="disclaimerMessage"> ${this.disclaimerMessage} </div>
+      <br/>
+      <br/>
+      <div class="panel panel--from">
+        <label>
+          <i>
+            Source: ${this._getLangName(this.detectedFromLang)} ${this.prevSelectedLang ? "" : "(detected)"}
+          </i>
+        </label>
+          <div class="change-from-lang" @click="${this._visibilityFromLang}" style="text-decoration: underline white; cursor:pointer; width:fit-content; display:inline-block;">
+            Change
+          </div>
+          <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}" style="visibility:hidden; width:65%">
+            ${this.fromLanguages.map((lang) => {
+      return html`<option
+                value="${lang.code}"
+                ?selected=${lang.code == this.detectedFromLang}
+                >${lang.name}</option>`;
+    },
+    )}
+          </select>
+      </div>
+      <br/>
+      <div class="footer" id="status" style="padding-right:20%">
+      ${this._statusWarning()}
+      </div>
     </div>`;
   }
   _onLangFromChange(event) {
@@ -422,6 +432,8 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('to') !== this._getSelectedLang('from')) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
+    this._visibilityFromLang();
+    this.detectedFromLang = event.target.value;
   }
 
   _onLangToChange(event) {
@@ -438,28 +450,8 @@ export class BrTranslatePanel extends LitElement {
     }
   }
 
-  _onPrevLangClick() {
-    const prevLang = this.prevSelectedLang;
-    if (prevLang == this._getSelectedLang('from')) {
-      console.log("_onPrevLangClick: will not change since prevLang is the same as the current 'To' language code");
-      return;
-    }
-    this.prevSelectedLang = this._getSelectedLang('to'); // Update prevSelectedLang to current "To" value
-    const langToChangedEvent = new CustomEvent('langToChanged', {
-      detail: { value: prevLang },
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(langToChangedEvent);
-
-    // Update the "To" dropdown to the previous language
-    const toDropdown = this.querySelector('#lang-to');
-    if (toDropdown) {
-      toDropdown.value = prevLang;
-    }
-  }
-
   _getSelectedLang(type) {
+    /** @type HTMLSelectElement */
     const dropdown = this.querySelector(`#lang-${type}`);
     return dropdown ? dropdown.value : '';
   }
@@ -477,6 +469,26 @@ export class BrTranslatePanel extends LitElement {
     });
     this.userTranslationActive = !this.userTranslationActive;
     this.dispatchEvent(toggleTranslateEvent);
+  }
+
+  _visibilityFromLang() {
+    /** @type HTMLElement */
+    const dropdown = this.querySelector("#lang-from");
+    const currentVisibility = dropdown.style.visibility;
+    if (!currentVisibility) {
+      dropdown.style.visibility = "hidden";
+    } else {
+      dropdown.style.visibility = "";
+    }
+    return;
+  }
+
+  // TODO: Hardcoded warning message for now but should add more statuses
+  _statusWarning() {
+    if (this._getSelectedLang("to") == this._getSelectedLang("from")) {
+      return "Translate To language is the same as the Source language";
+    }
+    return "";
   }
 }
 
