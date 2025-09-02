@@ -23,15 +23,31 @@ export default class PageChunk {
    * @return {Promise<PageChunk[]>}
    */
   static async fetch(pageChunkUrl, leafIndex) {
-    const chunks = await $.ajax({
-      type: 'GET',
-      url: applyVariables(pageChunkUrl, { pageIndex: leafIndex }),
-      cache: true,
-      xhrFields: {
-        withCredentials: window.br.protected,
-      },
-    });
-    return PageChunk._fromTextWrapperResponse(leafIndex, chunks);
+    if (window.br.plugins.translate?.translationManager.active) {
+      const translateLayers = await window.br.plugins.translate.getTranslateLayers(leafIndex);
+      const paragraphs = Array.from(translateLayers[0].childNodes);
+
+      const pageChunks = [];
+      for (const [idx, item] of paragraphs.entries()) {
+        const translatedChunk = new PageChunk(leafIndex, idx, item.textContent, []);
+        pageChunks.push(translatedChunk);
+      }
+      if (pageChunks.length === 0) {
+        const placeholder = new PageChunk(leafIndex, 0, "", []);
+        pageChunks.push(placeholder);
+      }
+      return pageChunks;
+    } else {
+      const chunks = await $.ajax({
+        type: 'GET',
+        url: applyVariables(pageChunkUrl, { pageIndex: leafIndex }),
+        cache: true,
+        xhrFields: {
+          withCredentials: window.br.protected,
+        },
+      });
+      return PageChunk._fromTextWrapperResponse(leafIndex, chunks);
+    }
   }
 
   /**

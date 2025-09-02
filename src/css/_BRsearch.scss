@@ -45,6 +45,7 @@
   // but they appear the same in the UI.
   .searchHiliteLayer, .ttsHiliteLayer {
     pointer-events: none;
+    z-index: 4;
 
     rect {
       // Note: Can't use fill-opacity ; safari inexplicably applies that to

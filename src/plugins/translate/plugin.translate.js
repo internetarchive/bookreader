@@ -128,10 +128,6 @@ export class TranslatePlugin extends BookReaderPlugin {
     if (this.br.mode == this.br.constModeThumb || !this.userToggleTranslate) {
       return;
     }
-    if (!page.querySelector('.BRtextLayer')) {
-      console.log("there is no selection layer here", page.dataset.index);
-      return;
-    }
 
     const pageIndex = page.dataset.index;
 
@@ -156,7 +152,7 @@ export class TranslatePlugin extends BookReaderPlugin {
     });
     const paragraphs = this.getParagraphsOnPage(page);
 
-    paragraphs.forEach(async (paragraph, pidx) => {
+    const paragraphTranslationPromises = paragraphs.map(async (paragraph, pidx) => {
       let translatedParagraph = page.querySelector(`[data-translate-index='${pageIndex}-${pidx}']`);
       if (!translatedParagraph) {
         translatedParagraph = document.createElement('p');
@@ -213,6 +209,32 @@ export class TranslatePlugin extends BookReaderPlugin {
           this.fitVisiblePage(translatedParagraph);
         }
       }
+    });
+    await Promise.all(paragraphTranslationPromises);
+    this.br.trigger('translateLayerRendered', {
+      leafIndex: pageIndex,
+      translateLayer: pageTranslationLayer,
+    });
+  }
+
+  /**
+   * Get the translation layers for a specific leaf index.
+   * @param {number} leafIndex
+   * @returns {Promise<HTMLElement[]>}
+   */
+  async getTranslateLayers(leafIndex) {
+    const pageContainerElements = this.br.getActivePageContainerElementsForIndex(leafIndex);
+    const translateLayer = $(pageContainerElements).filter(`[data-index='${leafIndex}']`).find('.BRtranslateLayer');
+    if (translateLayer.length) return translateLayer.toArray();
+
+    return new Promise((res, rej) => {
+      const handler = async (_, extraParams) => {
+        if (extraParams.leafIndex == leafIndex) {
+          this.br.off('translateLayerRendered', handler); // remember to detach translateLayer
+          res([extraParams.translateLayer]);
+        }
+      };
+      this.br.on('translateLayerRendered', handler);
     });
   }
 
@@ -386,7 +408,6 @@ export class BrTranslatePanel extends LitElement {
       <div class="disclaimer" id="disclaimerMessage"> ${this.disclaimerMessage} </div>
     </div>`;
   }
-
   _onLangFromChange(event) {
     const langFromChangedEvent = new CustomEvent('langFromChanged', {
       detail: { value: event.target.value },
