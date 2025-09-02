@@ -129,7 +129,6 @@ export class TranslatePlugin extends BookReaderPlugin {
       return;
     }
 
-    // this.br.trigger('translationEnabled', { }); // fires too often?
     const pageIndex = page.dataset.index;
 
     let pageTranslationLayer;

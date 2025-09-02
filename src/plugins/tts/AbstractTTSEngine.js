@@ -86,7 +86,7 @@ export default class AbstractTTSEngine {
 
     this._chunkIterator = new PageChunkIterator(numLeafs, leafIndex, {
       pageChunkUrl: this.opts.pageChunkUrl,
-      pageBufferSize: 1,
+      pageBufferSize: 3,
     });
     this.step();
     this.events.trigger('start');
@@ -204,8 +204,8 @@ export default class AbstractTTSEngine {
   }
 
   /** Convenience wrapper for {@see AbstractTTSEngine.getBestVoice} */
-  getBestVoice() {
-    return AbstractTTSEngine.getBestBookVoice(this.getVoices(), this.opts.bookLanguage);
+  getBestVoice(languageOverride) {
+    return AbstractTTSEngine.getBestBookVoice(this.getVoices(), languageOverride || this.opts.bookLanguage);
   }
 
   /**

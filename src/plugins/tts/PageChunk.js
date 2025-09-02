@@ -32,6 +32,10 @@ export default class PageChunk {
         const translatedChunk = new PageChunk(leafIndex, idx, item.textContent, []);
         pageChunks.push(translatedChunk);
       }
+      if (pageChunks.length === 0) {
+        const placeholder = new PageChunk(leafIndex, 0, "", []);
+        pageChunks.push(placeholder);
+      }
       return pageChunks;
     } else {
       const chunks = await $.ajax({

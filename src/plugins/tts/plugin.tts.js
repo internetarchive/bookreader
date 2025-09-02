@@ -166,12 +166,8 @@ export class TtsPlugin extends BookReaderPlugin {
     const renderVoicesMenu = (voicesMenu) => {
       voicesMenu.empty();
       let bookLanguage = this.ttsEngine.opts.bookLanguage;
-      let translatedLanguages;
-      let toLang;
       if (this.br.plugins.translate?.translationManager?.active) {
         bookLanguage = this.br.plugins.translate.langFromCode;
-        toLang = this.br.plugins.translate.langToCode;
-        translatedLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(toLang)).sort(voiceSortOrder);
       }
 
       const bookLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(bookLanguage)).sort(voiceSortOrder);
@@ -180,6 +176,8 @@ export class TtsPlugin extends BookReaderPlugin {
       if (this.ttsEngine.getVoices().length > 1) {
         if (this.br.plugins.translate?.translationManager?.active) {
           // Separate out Other Languages when translation active, not sure if too much / unwieldy
+          const toLang = this.br.plugins.translate.langToCode;
+          const translatedLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(toLang)).sort(voiceSortOrder);
           voicesMenu.append($(`<optgroup label="Book Language, Translated From (${bookLanguage})"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
           voicesMenu.append($(`<optgroup label="Book Language, Translated To (${toLang})"> ${renderVoiceOption(translatedLanguages)} </optgroup>`));
           voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages.filter(v => !v.lang.startsWith(toLang)).sort(voiceSortOrder))}`));
@@ -225,18 +223,12 @@ export class TtsPlugin extends BookReaderPlugin {
   }
 
   start(startTTSEngine = true) {
-    if (this.br.plugins.translate?.translationManager?.active) {
-      const toLangISO = toISO6391(this.br.plugins.translate.langToCode);
-      const toLanguageVoice = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(toLangISO));
-      this.ttsEngine.setVoice(toLanguageVoice[0].voiceURI); // arbitrarily pick 1st choice if possible
-      const voicesMenu = this.br.refs.$BRReadAloudToolbar.find('[name=playback-voice]');
-      voicesMenu.val(toLanguageVoice[0].voiceURI);
-    } else {
-      const bookVoice = this.ttsEngine.getBestVoice();
-      const voicesMenu = this.br.refs.$BRReadAloudToolbar.find('[name=playback-voice');
-      this.ttsEngine.setVoice(bookVoice.voiceURI);
-      voicesMenu.val(bookVoice.voiceURI);
-    }
+    const checkVoice = this.br.plugins.translate?.translationManager?.active ? toISO6391(this.br.plugins.translate.langToCode) : "";
+    const bookVoice = this.ttsEngine.getBestVoice(checkVoice);
+
+    const voicesMenu = this.br.refs.$BRReadAloudToolbar.find('[name=playback-voice');
+    this.ttsEngine.setVoice(bookVoice.voiceURI);
+    voicesMenu.val(bookVoice.voiceURI);
     if (this.br.constModeThumb == this.br.mode)
       this.br.switchMode(this.br.constMode1up);
 
