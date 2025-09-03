@@ -4,6 +4,7 @@ import { SelectionObserver } from '../BookReader/utils/SelectionObserver.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
+import { toISO6391 } from './tts/utils.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
@@ -314,6 +315,10 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const ratioW = parseFloat(pageContainer.$container[0].style.width) / pageContainer.page.width;
     const ratioH = parseFloat(pageContainer.$container[0].style.height) / pageContainer.page.height;
     textLayer.style.transform = `scale(${ratioW}, ${ratioH})`;
+    const bookLangCode = toISO6391(this.br.options.bookLanguage);
+    if (bookLangCode) {
+      textLayer.setAttribute("lang", bookLangCode);
+    }
     textLayer.setAttribute("dir", this.rtl ? "rtl" : "ltr");
 
     const ocrParagraphs = $(XMLpage).find("PARAGRAPH[coords]").toArray();

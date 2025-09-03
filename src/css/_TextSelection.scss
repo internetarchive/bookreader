@@ -88,21 +88,20 @@
 // These are Microsoft Edge specific fixed to make some of the
 // browsers features work well. These are for the in-place
 // translation.
+.BRtextLayer:has([_istranslated="1"], msreadoutspan) {
+    mix-blend-mode: normal;
+}
+
 .BRwordElement, .BRspace {
     &[_istranslated="1"], &[_msttexthash] {
-        background-color: #e4dccd;
         color: black;
         letter-spacing: unset !important;
-        background: #ccbfa7;
     }
 }
 
-.BRlineElement font[_mstmutation="1"] {
-    background: #ccbfa7;
-}
-
 .BRlineElement:has([_istranslated="1"], [_msttexthash]) {
-    background-color: #e4dccd;
+    background: rgba(248, 237, 192, 0.8);
+    backdrop-filter: blur(8px);
     color: black;
     text-align: justify;
     width: inherit;
@@ -112,14 +111,13 @@
 }
 
 .BRlineElement[_msttexthash] {
-    background: #ccbfa7;
     word-spacing: unset !important;
 }
 
 .BRtranslateLayer .BRparagraphElement {
     pointer-events: auto;
     overflow-y: auto;
-    background: rgba(248, 237, 192, 0.5);
+    background: rgba(248, 237, 192, 0.8);
     backdrop-filter: blur(8px);
     color:black;
     line-height: 1em;
