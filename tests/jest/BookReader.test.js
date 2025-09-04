@@ -314,3 +314,131 @@ describe('_modeStringToNumber', () => {
     expect(_modeStringToNumber('mode/thumb')).toBe(3);
   });
 });
+
+describe('extendOptions', () => {
+  test('returns the single option when only one option is provided', () => {
+    const singleOption = { foo: 'bar' };
+    const result = BookReader.extendOptions(singleOption);
+    expect(result).toBe(singleOption);
+  });
+
+  test('returns undefined when no options are provided', () => {
+    const result = BookReader.extendOptions();
+    expect(result).toBeUndefined();
+  });
+
+  test('performs shallow merge of non-plugin options', () => {
+    const option1 = { foo: 'bar', shared: 'first' };
+    const option2 = { baz: 'qux', shared: 'second' };
+    const result = BookReader.extendOptions(option1, option2);
+
+    expect(result).toEqual({
+      foo: 'bar',
+      baz: 'qux',
+      shared: 'second',
+    });
+  });
+
+  test('individually merges plugin options', () => {
+    const option1 = {
+      plugins: {
+        search: { enabled: true, option1: 'value1' },
+        tts: { enabled: false },
+      },
+    };
+    const option2 = {
+      plugins: {
+        search: { option2: 'value2', option1: 'overridden' },
+        resume: { enabled: true },
+      },
+    };
+
+    const result = BookReader.extendOptions(option1, option2);
+
+    expect(result.plugins.search).toEqual({
+      enabled: true,
+      option1: 'overridden',
+      option2: 'value2',
+    });
+    expect(result.plugins.tts).toEqual({ enabled: false });
+    expect(result.plugins.resume).toEqual({ enabled: true });
+  });
+
+  test('handles case where first option has no plugins but second does', () => {
+    const option1 = { foo: 'bar' };
+    const option2 = {
+      plugins: {
+        search: { enabled: true },
+      },
+    };
+
+    const result = BookReader.extendOptions(option1, option2);
+
+    expect(result.foo).toBe('bar');
+    expect(result.plugins.search).toEqual({ enabled: true });
+  });
+
+  test('handles case where first option has plugins but second does not', () => {
+    const option1 = {
+      plugins: {
+        search: { enabled: true },
+      },
+    };
+    const option2 = { foo: 'bar' };
+
+    const result = BookReader.extendOptions(option1, option2);
+
+    expect(result.foo).toBe('bar');
+    expect(result.plugins.search).toEqual({ enabled: true });
+  });
+
+  test('preserves original plugin options object after merge', () => {
+    const option1 = {};
+    const option2 = {
+      plugins: {
+        search: { enabled: true },
+      },
+    };
+
+    const originalPlugins = option2.plugins;
+    BookReader.extendOptions(option1, option2);
+
+    // The plugins object should be restored on option2
+    expect(option2.plugins).toBe(originalPlugins);
+    expect(option2.plugins.search).toEqual({ enabled: true });
+  });
+
+  test('merges multiple options with plugins', () => {
+    const option1 = {
+      plugins: {
+        search: { enabled: true, feature1: 'a' },
+      },
+      globalOption: 'first',
+    };
+    const option2 = {
+      plugins: {
+        search: { feature2: 'b' },
+        tts: { enabled: false },
+      },
+      globalOption: 'second',
+    };
+    const option3 = {
+      plugins: {
+        search: { feature1: 'overridden' },
+        resume: { enabled: true },
+      },
+      globalOption: 'third',
+    };
+
+    const result = BookReader.extendOptions(option1, option2, option3);
+
+    expect(result.plugins.search).toEqual({
+      enabled: true,
+      feature1: 'overridden',
+      feature2: 'b',
+    });
+    expect(result.plugins.tts).toEqual({ enabled: false });
+    expect(result.plugins.resume).toEqual({ enabled: true });
+    expect(result.globalOption).toBe('third');
+  });
+});

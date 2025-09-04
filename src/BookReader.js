@@ -49,9 +49,57 @@ import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
  * @constructor
  */
 export default function BookReader(overrides = {}) {
-  const options = jQuery.extend(true, {}, BookReader.defaultOptions, overrides, BookReader.optionOverrides);
+  const options = BookReader.extendOptions({}, BookReader.defaultOptions, overrides, BookReader.optionOverrides);
   this.setup(options);
 }
+
+/**
+ * Extend the default options for BookReader
+ * Accepts any number of option objects and merges them in order.
+ *
+ * Does a shallow merge of everything except plugin options. These are individually merged.
+ * @param {...Partial<BookReaderOptions>} newOptions
+ */
+BookReader.extendOptions = function(...newOptions) {
+  if (newOptions.length <= 1) {
+    return newOptions[0];
+  }
+  const result = newOptions.shift();
+  for (const opts of newOptions) {
+    // Extend the plugins individually
+    const pluginOptions = opts.plugins;
+    if (pluginOptions) {
+      result.plugins ||= {};
+      for (const pluginName in pluginOptions) {
+        result.plugins[pluginName] ||= {};
+        jQuery.extend(result.plugins[pluginName], pluginOptions[pluginName]);
+      }
+
+      // Temporarily delete to avoid next `extend` call overwriting the plugins
+      delete opts.plugins;
+    }
+
+    const originalControls = opts.controls;
+    if (originalControls) {
+      result.controls ||= {};
+      // These are deep for legacy reasons
+      jQuery.extend(true, result.controls, originalControls);
+      delete opts.controls;
+    }
+
+    jQuery.extend(result, opts);
+
+    if (pluginOptions) {
+      opts.plugins = pluginOptions;
+    }
+
+    if (originalControls) {
+      opts.controls = originalControls;
+    }
+  }
+
+  return result;
+};
 
 BookReader.version = PACKAGE_JSON.version;
 

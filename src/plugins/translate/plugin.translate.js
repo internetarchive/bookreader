@@ -12,6 +12,8 @@ export class TranslatePlugin extends BookReaderPlugin {
 
   options = {
     enabled: true,
+
+    /** @type {string | import('lit').TemplateResult} */
     panelDisclaimerText: "Translations are in alpha",
   }
 
