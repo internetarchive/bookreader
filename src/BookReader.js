@@ -109,12 +109,16 @@ BookReader.PLUGINS = {
   autoplay: null,
   /** @type {typeof import('./plugins/plugin.chapters.js').ChaptersPlugin | null}*/
   chapters: null,
+  /** @type {typeof import('./plugins/plugin.experiments.js').ExperimentsPlugin | null}*/
+  experiments: null,
   /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
   resume: null,
   /** @type {typeof import('./plugins/search/plugin.search.js').SearchPlugin | null}*/
   search: null,
   /** @type {typeof import('./plugins/plugin.text_selection.js').TextSelectionPlugin | null}*/
   textSelection: null,
+  /** @type {typeof import('./plugins/translate/plugin.translate.js').TranslatePlugin | null}*/
+  translate: null,
   /** @type {typeof import('./plugins/tts/plugin.tts.js').TtsPlugin | null}*/
   tts: null,
 };
@@ -175,9 +179,11 @@ BookReader.prototype.setup = function(options) {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,
+    experiments: BookReader.PLUGINS.experiments ? new BookReader.PLUGINS.experiments(this) : null,
     search: BookReader.PLUGINS.search ? new BookReader.PLUGINS.search(this) : null,
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
+    translate: BookReader.PLUGINS.translate ? new BookReader.PLUGINS.translate(this) : null,
     tts: BookReader.PLUGINS.tts ? new BookReader.PLUGINS.tts(this) : null,
   };
 
