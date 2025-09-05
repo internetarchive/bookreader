@@ -147,21 +147,21 @@ export const DEFAULT_OPTIONS = {
    **/
   plugins: {
     /** @type {Partial<import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options'>]}*/
-    archiveAnalytics: null,
+    archiveAnalytics: {},
     /** @type {Partial<import('../plugins/plugin.autoplay.js').AutoplayPlugin['options'>]}*/
-    autoplay: null,
+    autoplay: {},
     /** @type {Partial<import('../plugins/plugin.chapters.js').ChaptersPlugin['options']>} */
-    chapters: null,
+    chapters: {},
     /** @type {Partial<import('../plugins/plugin.iiif.js').IiifPlugin['options']>} */
-    iiif: null,
+    iiif: {},
     /** @type {Partial<import('../plugins/plugin.resume.js').ResumePlugin['options']>} */
-    resume: null,
+    resume: {},
     /** @type {Partial<import('../plugins/search/plugin.search.js').SearchPlugin['options']>} */
-    search: null,
+    search: {},
     /** @type {Partial<import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']>} */
-    textSelection: null,
+    textSelection: {},
     /** @type {Partial<import('../plugins/tts/plugin.tts.js').TtsPlugin['options']>} */
-    tts: null,
+    tts: {},
   },
 
   /**

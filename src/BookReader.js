@@ -64,37 +64,26 @@ BookReader.extendOptions = function(...newOptions) {
   if (newOptions.length <= 1) {
     return newOptions[0];
   }
+  /** @type {Array<keyof BookReaderOptions>} */
+  const shallowOverrides = ['onePage', 'twoPage', 'vars'];
+  /** @type {Array<keyof BookReaderOptions>} */
+  const mapOverrides = ['plugins', 'controls'];
+
   const result = newOptions.shift();
   for (const opts of newOptions) {
-    // Extend the plugins individually
-    const pluginOptions = opts.plugins;
-    if (pluginOptions) {
-      result.plugins ||= {};
-      for (const pluginName in pluginOptions) {
-        result.plugins[pluginName] ||= {};
-        jQuery.extend(result.plugins[pluginName], pluginOptions[pluginName]);
+    for (const [key, value] of Object.entries(opts)) {
+      if (shallowOverrides.includes(key)) {
+        result[key] ||= {};
+        result[key] = Object.assign(result[key], value);
+      } else if (mapOverrides.includes(key)) {
+        result[key] ||= {};
+        for (const [name, mapValue] of Object.entries(value)) {
+          result[key][name] ||= {};
+          Object.assign(result[key][name], mapValue);
+        }
+      } else {
+        result[key] = value;
       }
-
-      // Temporarily delete to avoid next `extend` call overwriting the plugins
-      delete opts.plugins;
-    }
-
-    const originalControls = opts.controls;
-    if (originalControls) {
-      result.controls ||= {};
-      // These are deep for legacy reasons
-      jQuery.extend(true, result.controls, originalControls);
-      delete opts.controls;
-    }
-
-    jQuery.extend(result, opts);
-
-    if (pluginOptions) {
-      opts.plugins = pluginOptions;
-    }
-
-    if (originalControls) {
-      opts.controls = originalControls;
     }
   }
 

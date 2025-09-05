@@ -2,6 +2,8 @@
 import BookReader, {_modeStringToNumber} from '@/src/BookReader.js';
 import '@/src/plugins/plugin.resume.js';
 import '@/src/plugins/url/plugin.url.js';
+import {DEFAULT_OPTIONS} from '@/src/BookReader/options.js';
+import { html } from 'lit';
 
 /** @type {import('@/src/BookReader.js').default} */
 let br;
@@ -392,53 +394,39 @@ describe('extendOptions', () => {
     expect(result.plugins.search).toEqual({ enabled: true });
   });
 
-  test('preserves original plugin options object after merge', () => {
-    const option1 = {};
-    const option2 = {
+  for (const [key, value] of Object.entries(DEFAULT_OPTIONS)) {
+    if (isObject(value)) {
+      const firstKey = Object.keys(value)[0];
+      const isDeep = isObject(value[firstKey]);
+      if (isDeep) {
+        test(`shallow merges complex map option: ${key}`, () => {
+          const result = BookReader.extendOptions({}, DEFAULT_OPTIONS, { [key]: { [firstKey]: { newProp: 'new' } } });
+          expect(result[key][firstKey]).toHaveProperty('newProp', 'new');
+        });
+      } else {
+        test(`shallow merges complex option: ${key}`, () => {
+          const result = BookReader.extendOptions({}, DEFAULT_OPTIONS, { [key]: { newProp: 'new' } });
+          expect(result[key]).toHaveProperty('newProp', 'new');
+        });
+      }
+    }
+  }
+
+  test('Handles TemplateResult plugin options', () => {
+    const templateResult = html`<span>Test</span>`;
+    const options = {
       plugins: {
-        search: { enabled: true },
+        translate: { panelDisclaimerText: templateResult },
       },
     };
 
-    const originalPlugins = option2.plugins;
-    BookReader.extendOptions(option1, option2);
-
-    // The plugins object should be restored on option2
-    expect(option2.plugins).toBe(originalPlugins);
-    expect(option2.plugins.search).toEqual({ enabled: true });
-  });
-
-  test('merges multiple options with plugins', () => {
-    const option1 = {
-      plugins: {
-        search: { enabled: true, feature1: 'a' },
-      },
-      globalOption: 'first',
-    };
-    const option2 = {
-      plugins: {
-        search: { feature2: 'b' },
-        tts: { enabled: false },
-      },
-      globalOption: 'second',
-    };
-    const option3 = {
-      plugins: {
-        search: { feature1: 'overridden' },
-        resume: { enabled: true },
-      },
-      globalOption: 'third',
-    };
-
-    const result = BookReader.extendOptions(option1, option2, option3);
-
-    expect(result.plugins.search).toEqual({
-      enabled: true,
-      feature1: 'overridden',
-      feature2: 'b',
-    });
-    expect(result.plugins.tts).toEqual({ enabled: false });
-    expect(result.plugins.resume).toEqual({ enabled: true });
-    expect(result.globalOption).toBe('third');
+    const result = BookReader.extendOptions({}, DEFAULT_OPTIONS, options);
+    expect(result.plugins.translate.panelDisclaimerText).toBe(templateResult);
+    // This is what caused it to break before
+    expect(result.plugins.translate.panelDisclaimerText.strings).toHaveProperty('raw');
   });
 });
+
+function isObject(item) {
+  return item && typeof item === 'object' && !Array.isArray(item);
+}
