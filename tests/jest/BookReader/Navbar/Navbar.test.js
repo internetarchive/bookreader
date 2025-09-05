@@ -89,7 +89,7 @@ describe('Navbar slider', () => {
 
 describe('Navbar controls overrides', () => {
   const createBRWithOverrides = (overrides) => {
-    br = new BookReader($.extend(true, br.options, overrides));
+    br = new BookReader(BookReader.extendOptions(br.options, overrides));
     br.init();
     navbar = br._components.navbar;
   };

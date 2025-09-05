@@ -49,9 +49,46 @@ import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
  * @constructor
  */
 export default function BookReader(overrides = {}) {
-  const options = jQuery.extend(true, {}, BookReader.defaultOptions, overrides, BookReader.optionOverrides);
+  const options = BookReader.extendOptions({}, BookReader.defaultOptions, overrides, BookReader.optionOverrides);
   this.setup(options);
 }
+
+/**
+ * Extend the default options for BookReader
+ * Accepts any number of option objects and merges them in order.
+ *
+ * Does a shallow merge of everything except plugin options. These are individually merged.
+ * @param {...Partial<BookReaderOptions>} newOptions
+ */
+BookReader.extendOptions = function(...newOptions) {
+  if (newOptions.length <= 1) {
+    return newOptions[0];
+  }
+  /** @type {Array<keyof BookReaderOptions>} */
+  const shallowOverrides = ['onePage', 'twoPage', 'vars'];
+  /** @type {Array<keyof BookReaderOptions>} */
+  const mapOverrides = ['plugins', 'controls'];
+
+  const result = newOptions.shift();
+  for (const opts of newOptions) {
+    for (const [key, value] of Object.entries(opts)) {
+      if (shallowOverrides.includes(key)) {
+        result[key] ||= {};
+        result[key] = Object.assign(result[key], value);
+      } else if (mapOverrides.includes(key)) {
+        result[key] ||= {};
+        for (const [name, mapValue] of Object.entries(value)) {
+          result[key][name] ||= {};
+          Object.assign(result[key][name], mapValue);
+        }
+      } else {
+        result[key] = value;
+      }
+    }
+  }
+
+  return result;
+};
 
 BookReader.version = PACKAGE_JSON.version;
 
@@ -72,12 +109,16 @@ BookReader.PLUGINS = {
   autoplay: null,
   /** @type {typeof import('./plugins/plugin.chapters.js').ChaptersPlugin | null}*/
   chapters: null,
+  /** @type {typeof import('./plugins/plugin.experiments.js').ExperimentsPlugin | null}*/
+  experiments: null,
   /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
   resume: null,
   /** @type {typeof import('./plugins/search/plugin.search.js').SearchPlugin | null}*/
   search: null,
   /** @type {typeof import('./plugins/plugin.text_selection.js').TextSelectionPlugin | null}*/
   textSelection: null,
+  /** @type {typeof import('./plugins/translate/plugin.translate.js').TranslatePlugin | null}*/
+  translate: null,
   /** @type {typeof import('./plugins/tts/plugin.tts.js').TtsPlugin | null}*/
   tts: null,
 };
@@ -138,9 +179,11 @@ BookReader.prototype.setup = function(options) {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,
+    experiments: BookReader.PLUGINS.experiments ? new BookReader.PLUGINS.experiments(this) : null,
     search: BookReader.PLUGINS.search ? new BookReader.PLUGINS.search(this) : null,
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
+    translate: BookReader.PLUGINS.translate ? new BookReader.PLUGINS.translate(this) : null,
     tts: BookReader.PLUGINS.tts ? new BookReader.PLUGINS.tts(this) : null,
   };
 
