@@ -4,6 +4,7 @@ import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property } from 'lit/decorators.js';
 import { langs, TranslationManager } from "./TranslationManager.js";
 import { toISO6391 } from '../tts/utils.js';
+import { sortBy } from '../../../src/BookReader/utils.js';
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
@@ -52,6 +53,8 @@ export class TranslatePlugin extends BookReaderPlugin {
    */
   userToggleTranslate;
 
+  modelStatus = false;
+
   async init() {
     const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
     this.langFromCode = currentLanguage ?? "en";
@@ -96,10 +99,8 @@ export class TranslatePlugin extends BookReaderPlugin {
     await this.translationManager.initWorker();
     // Note await above lets _render function properly, since it gives the browser
     // time to render the rest of bookreader, which _render depends on
-    this._render();
-
     this.langToCode = this.translationManager.toLanguages[0].code;
-
+    this._render();
   }
 
   /** @param {HTMLElement} page*/
@@ -342,6 +343,7 @@ export class TranslatePlugin extends BookReaderPlugin {
         .disclaimerMessage="${this.options.panelDisclaimerText}"
         .userTranslationActive=${false}
         .detectedFromLang=${this.langFromCode}
+        .detectedToLang=${this.langToCode}
         class="translate-panel"
       />`,
     };
@@ -358,7 +360,8 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: String }) disclaimerMessage = '';
   @property({ type: Boolean }) userTranslationActive = false;
   @property({ type: String }) detectedFromLang = '';
-
+  @property({ type: String }) detectedToLang = '';
+  @property({ type: Boolean }) modelStatus;
 
   /** @override */
   createRenderRoot() {
@@ -372,50 +375,52 @@ export class BrTranslatePanel extends LitElement {
   }
 
   render() {
-    return html`<div class="app" style="margin-top: 5%">
-      <div class="panel panel--to">
+    return html`<div class="app" style="margin-top: 5%;padding-right: 5px;">
+      <div
+        class="disclaimer"
+        id="disclaimerMessage"
+        style="background-color: rgba(255,255,255,0.1);padding: 10px;border-radius: 8px;font-size: 12px;margin-bottom: 10px;color: rgba(255,255,255, 0.9);"
+      >${this.disclaimerMessage}</div>
+
+      <div class="panel panel--to" style="padding: 0 10px;">
         <label>
-          Translate To
-          <select id="lang-to" name="to" class="lang-select" style="display:block; width:65%;" @change="${this._onLangToChange}">
-            ${this.toLanguages.map(
-      lang => html`<option value="${lang.code}">${lang.name}</option>`,
-    )}
+          <span style="font-size: 12px;color: #ccc;">Translate To</span>
+          <select id="lang-to" name="to" class="lang-select" style="display:block; width:100%;" @change="${this._onLangToChange}">
+          ${sortBy(this.toLanguages, ((lang) => [...lang.name].reduce((a, char) => a + char.charCodeAt() - 96 , 0)
+    )).map((lang) => {
+      return html`<option value="${lang.code}" 
+                        ?selected=${lang.code == this.detectedToLang}
+                        > ${lang.name ? lang.name : lang.code} </option>`;
+    })
+          }
           </select>
         </label>
       </div>
-      <br/>
-      <div class="panel panel--start">
-        <label>
-          Toggle Translation
+
+      <div class="panel panel--start" style="text-align: right;padding: 0 10px;/*! font-size: 18px; */margin-top: 10px;">
             <button class="start-translation-brn" @click="${this._toggleTranslation}">
-              ${this.userTranslationActive ? "Disable" : "Enable"}
+              ${this.userTranslationActive ? "Stop Translating" : "Translate"}
             </button>
-        </label>
       </div>
-      <div class="disclaimer" id="disclaimerMessage"> ${this.disclaimerMessage} </div>
-      <br/>
-      <br/>
-      <div class="panel panel--from">
-        <label>
-          <i>
-            Source: ${this._getLangName(this.detectedFromLang)} ${this.prevSelectedLang ? "" : "(detected)"}
-          </i>
-        </label>
-          <div class="change-from-lang" @click="${this._visibilityFromLang}" style="text-decoration: underline white; cursor:pointer; width:fit-content; display:inline-block;">
-            Change
-          </div>
-          <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}" style="visibility:hidden; width:65%">
-            ${this.fromLanguages.map((lang) => {
-      return html`<option
-                value="${lang.code}"
-                ?selected=${lang.code == this.detectedFromLang}
-                >${lang.name}</option>`;
-    },
-    )}
+
+      <div class="panel panel--from" style="font-size: 12px;color: #ccc;text-align: center;padding: 8px 10px;">
+        <details style="display: contents">
+          <summary style="text-decoration: underline white; cursor:pointer; display:inline-block"> 
+            <i>
+              Source: ${this._getLangName(this.detectedFromLang)} ${this.prevSelectedLang ? "" : "(detected)"} 
+            </i> Change 
+          </summary>
+          <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}" style="width:65%; margin-top: 3%; margin-bottom: 3%">
+          ${sortBy(this.fromLanguages, ((lang) => [...lang.name].reduce((a, char) => a + char.charCodeAt() - 96, 0)
+          )).map((lang) => {
+            return html`<option value="${lang.code}"
+                      ?selected=${lang.code == this.detectedFromLang}
+                      >${lang.name ? lang.name : lang.code} </option`;
+          })
+          }
           </select>
-      </div>
-      <br/>
-      <div class="footer" id="status" style="padding-right:20%">
+      </details>
+      <div class="footer" id="status" style="margin-top:5%">
       ${this._statusWarning()}
       </div>
     </div>`;
@@ -432,7 +437,6 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('to') !== this._getSelectedLang('from')) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
-    this._visibilityFromLang();
     this.detectedFromLang = event.target.value;
   }
 
