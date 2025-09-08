@@ -321,7 +321,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   /**
-  * Update the table of contents based on array of TOC entries.
+  * Update translation side menu
   */
   _render() {
     this.br.shell.menuProviders['translate'] = {
@@ -452,6 +452,7 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('from') !== event.target.value) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
+    this.detectedToLang = event.target.value;
   }
 
   _getSelectedLang(type) {
@@ -489,7 +490,7 @@ export class BrTranslatePanel extends LitElement {
 
   // TODO: Hardcoded warning message for now but should add more statuses
   _statusWarning() {
-    if (this._getSelectedLang("to") == this._getSelectedLang("from")) {
+    if (this.detectedFromLang == this.detectedToLang) {
       return "Translate To language is the same as the Source language";
     }
     return "";
