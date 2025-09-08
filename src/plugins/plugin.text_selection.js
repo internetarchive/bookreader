@@ -358,6 +358,10 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   renderParagraph(ocrParagraph) {
     const paragEl = document.createElement('p');
     paragEl.classList.add('BRparagraphElement');
+    if (ocrParagraph.getAttribute("x-role")) {
+      paragEl.classList.add('ocr-role-header-footer');
+      paragEl.ariaHidden = "true";
+    }
     const [paragLeft, paragBottom, paragRight, paragTop] = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
     const wordHeightArr = [];
     const lines = $(ocrParagraph).find("LINE[coords]").toArray();
