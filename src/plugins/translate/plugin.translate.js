@@ -162,6 +162,11 @@ export class TranslatePlugin extends BookReaderPlugin {
         translatedParagraph.setAttribute('data-translate-index', `${pageIndex}-${pidx}`);
         translatedParagraph.className = 'BRparagraphElement';
         const originalParagraphStyle = paragraphs[pidx];
+        // check text selection paragraphs for header/footer roles
+        if (paragraph.classList.contains('ocr-role-header-footer')) {
+          translatedParagraph.ariaHidden = "true";
+          translatedParagraph.classList.add('ocr-role-header-footer');
+        }
         const fontSize = `${parseInt($(originalParagraphStyle).css("font-size"))}px`;
 
         $(translatedParagraph).css({

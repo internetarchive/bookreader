@@ -29,8 +29,11 @@ export default class PageChunk {
 
       const pageChunks = [];
       for (const [idx, item] of paragraphs.entries()) {
-        const translatedChunk = new PageChunk(leafIndex, idx, item.textContent, []);
-        pageChunks.push(translatedChunk);
+        // Should not read paragraphs w/ header or footer roles
+        if (!item.classList.contains('ocr-role-header-footer')) {
+          const translatedChunk = new PageChunk(leafIndex, idx, item.textContent, []);
+          pageChunks.push(translatedChunk);
+        }
       }
       if (pageChunks.length === 0) {
         const placeholder = new PageChunk(leafIndex, 0, "", []);
