@@ -386,7 +386,7 @@ export class BrTranslatePanel extends LitElement {
         <label>
           <span style="font-size: 12px;color: #ccc;">Translate To</span>
           <select id="lang-to" name="to" class="lang-select" style="display:block; width:100%;" @change="${this._onLangToChange}">
-          ${sortBy(this.toLanguages, ((lang) => [...lang.name].reduce((a, char) => a + char.charCodeAt() - 96 , 0)
+          ${sortBy(this.toLanguages, ((lang) => lang.name.toLowerCase()
     )).map((lang) => {
       return html`<option value="${lang.code}" 
                         ?selected=${lang.code == this.detectedToLang}
@@ -411,7 +411,7 @@ export class BrTranslatePanel extends LitElement {
             </i> Change 
           </summary>
           <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}" style="width:65%; margin-top: 3%; margin-bottom: 3%">
-          ${sortBy(this.fromLanguages, ((lang) => [...lang.name].reduce((a, char) => a + char.charCodeAt() - 96, 0)
+          ${sortBy(this.fromLanguages, ((lang) => lang.name.toLowerCase()
           )).map((lang) => {
             return html`<option value="${lang.code}"
                       ?selected=${lang.code == this.detectedFromLang}
