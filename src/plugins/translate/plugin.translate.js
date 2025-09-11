@@ -198,6 +198,10 @@ export class TranslatePlugin extends BookReaderPlugin {
 
       if (paragraph.textContent.length !== 0) {
         const pagePriority = parseFloat(pageIndex) + priority + pidx;
+        this.translationManager.checkModels(this.langFromCode, this.langToCode).then((resp) => {
+          this.langDownloadCompleted = resp;
+          this._render();
+        });
         const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent, pagePriority);
         // prevent duplicate spans from appearing if exists
         translatedParagraph.firstElementChild?.remove();
@@ -300,6 +304,8 @@ export class TranslatePlugin extends BookReaderPlugin {
     this._panel.toLanguages = this.translationManager.toLanguages;
 
     console.log(this.langFromCode, this.langToCode);
+    this.langDownloadCompleted = false;
+    this._render();
     if (this.langFromCode !== this.langToCode) {
       this.translateActivePageContainerElements();
     }
@@ -308,6 +314,8 @@ export class TranslatePlugin extends BookReaderPlugin {
   handleToLangChange = async (e) => {
     this.clearAllTranslations();
     this.langToCode = e.detail.value;
+    this.langDownloadCompleted = false;
+    this._render();
     this.translateActivePageContainerElements();
   }
 
@@ -347,6 +355,8 @@ export class TranslatePlugin extends BookReaderPlugin {
         .userTranslationActive=${false}
         .detectedFromLang=${this.langFromCode}
         .detectedToLang=${this.langToCode}
+        .langDownloadCompleted=${this.langDownloadCompleted}
+        .loadingBar=${this.loadingBar}
         class="translate-panel"
       />`,
     };
@@ -424,6 +434,13 @@ export class BrTranslatePanel extends LitElement {
       </details>
       <div class="footer" id="status" style="margin-top:5%">
       ${this._statusWarning()}
+      </div>
+
+      <div class="lang-models-loading"> 
+      ${this.userTranslationActive ?
+            this.langDownloadCompleted ? `Language model loaded` :
+              html`Downloading language models <img src="${this.loadingBar}"/>`
+            : ""}
       </div>
     </div>`;
   }

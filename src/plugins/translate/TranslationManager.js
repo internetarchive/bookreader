@@ -167,4 +167,17 @@ export class TranslationManager {
 
     return promise;
   }
+
+  /**
+   * Checks and updates the status of a model that is currently being retreived from IA
+   * @param {string} fromLanguage
+   * @param {string} toLanguage
+   * @returns {Promise<boolean>}
+   */
+  checkModels = async(fromLanguage, toLanguage) => {
+    return this.translator.backing.getTranslationModel({from: fromLanguage, to: toLanguage}).then(() => {
+      // TODO check what happens if the download fails somehow (i.e. invalid SHA hash, download connection failed, etc)
+      return true;
+    });
+  }
 }
