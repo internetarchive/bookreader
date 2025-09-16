@@ -4,6 +4,7 @@ import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property } from 'lit/decorators.js';
 import { langs, TranslationManager } from "./TranslationManager.js";
 import { toISO6391 } from '../tts/utils.js';
+import { sortBy } from '../../../src/BookReader/utils.js';
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
@@ -96,10 +97,8 @@ export class TranslatePlugin extends BookReaderPlugin {
     await this.translationManager.initWorker();
     // Note await above lets _render function properly, since it gives the browser
     // time to render the rest of bookreader, which _render depends on
-    this._render();
-
     this.langToCode = this.translationManager.toLanguages[0].code;
-
+    this._render();
   }
 
   /** @param {HTMLElement} page*/
@@ -127,7 +126,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   /** @param {HTMLElement} page */
   async translateRenderedLayer(page, priority) {
     // Do not run translation if in thumbnail mode or if user did not initiate transations
-    if (this.br.mode == this.br.constModeThumb || !this.userToggleTranslate) {
+    if (this.br.mode == this.br.constModeThumb || !this.userToggleTranslate || this.langFromCode == this.langToCode) {
       return;
     }
 
@@ -325,7 +324,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   /**
-  * Update the table of contents based on array of TOC entries.
+  * Update translation side menu
   */
   _render() {
     this.br.shell.menuProviders['translate'] = {
@@ -347,6 +346,7 @@ export class TranslatePlugin extends BookReaderPlugin {
         .disclaimerMessage="${this.options.panelDisclaimerText}"
         .userTranslationActive=${false}
         .detectedFromLang=${this.langFromCode}
+        .detectedToLang=${this.langToCode}
         class="translate-panel"
       />`,
     };
@@ -363,7 +363,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: String }) disclaimerMessage = '';
   @property({ type: Boolean }) userTranslationActive = false;
   @property({ type: String }) detectedFromLang = '';
-
+  @property({ type: String }) detectedToLang = '';
 
   /** @override */
   createRenderRoot() {
@@ -377,42 +377,54 @@ export class BrTranslatePanel extends LitElement {
   }
 
   render() {
-    return html`<div class="app">
-      <div class="panel panel--from">
+    return html`<div class="app" style="margin-top: 5%;padding-right: 5px;">
+      <div
+        class="disclaimer"
+        id="disclaimerMessage"
+        style="background-color: rgba(255,255,255,0.1);padding: 10px;border-radius: 8px;font-size: 12px;margin-bottom: 10px;color: rgba(255,255,255, 0.9);"
+      >${this.disclaimerMessage}</div>
+
+      <div class="panel panel--to" style="padding: 0 10px;">
         <label>
-          From
-          <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}">
-            ${this.fromLanguages.map((lang) => {
-      return html`<option
-                value="${lang.code}"
-                ?selected=${lang.code == this.detectedFromLang}
-              >${lang.name}</option>`;
-    },
-    )}
+          <span style="font-size: 12px;color: #ccc;">Translate To</span>
+          <select id="lang-to" name="to" class="lang-select" style="display:block; width:100%;" @change="${this._onLangToChange}">
+          ${sortBy(this.toLanguages, ((lang) => lang.name.toLowerCase()
+    )).map((lang) => {
+      return html`<option value="${lang.code}" 
+                        ?selected=${lang.code == this.detectedToLang}
+                        > ${lang.name ? lang.name : lang.code} </option>`;
+    })
+          }
           </select>
         </label>
       </div>
-      <div class="panel panel--to">
-        <label>
-          To
-          <select id="lang-to" name="to" class="lang-select" @change="${this._onLangToChange}">
-            ${this.toLanguages.map(
-      lang => html`<option value="${lang.code}">${lang.name}</option>`,
-    )}
-          </select>
-        </label>
-      </div>
-      <div class="panel panel--start">
-        <label>
-          Toggle Translation
+
+      <div class="panel panel--start" style="text-align: right;padding: 0 10px;/*! font-size: 18px; */margin-top: 10px;">
             <button class="start-translation-brn" @click="${this._toggleTranslation}">
-              ${this.userTranslationActive ? "Disable" : "Enable"}
+              ${this.userTranslationActive ? "Stop Translating" : "Translate"}
             </button>
-        </label>
       </div>
-      <div class="footer" id="status"></div>
-      <br/>
-      <div class="disclaimer" id="disclaimerMessage"> ${this.disclaimerMessage} </div>
+
+      <div class="panel panel--from" style="font-size: 12px;color: #ccc;text-align: center;padding: 8px 10px;">
+        <details style="display: contents">
+          <summary style="text-decoration: underline white; cursor:pointer; display:inline-block"> 
+            <i>
+              Source: ${this._getLangName(this.detectedFromLang)} ${this.prevSelectedLang ? "" : "(detected)"} 
+            </i> Change 
+          </summary>
+          <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}" style="width:65%; margin-top: 3%; margin-bottom: 3%">
+          ${sortBy(this.fromLanguages, ((lang) => lang.name.toLowerCase()
+          )).map((lang) => {
+            return html`<option value="${lang.code}"
+                      ?selected=${lang.code == this.detectedFromLang}
+                      >${lang.name ? lang.name : lang.code} </option>`;
+          })
+          }
+          </select>
+      </details>
+      <div class="footer" id="status" style="margin-top:5%">
+      ${this._statusWarning()}
+      </div>
     </div>`;
   }
   _onLangFromChange(event) {
@@ -427,6 +439,7 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('to') !== this._getSelectedLang('from')) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
+    this.detectedFromLang = event.target.value;
   }
 
   _onLangToChange(event) {
@@ -441,30 +454,11 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('from') !== event.target.value) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
-  }
-
-  _onPrevLangClick() {
-    const prevLang = this.prevSelectedLang;
-    if (prevLang == this._getSelectedLang('from')) {
-      console.log("_onPrevLangClick: will not change since prevLang is the same as the current 'To' language code");
-      return;
-    }
-    this.prevSelectedLang = this._getSelectedLang('to'); // Update prevSelectedLang to current "To" value
-    const langToChangedEvent = new CustomEvent('langToChanged', {
-      detail: { value: prevLang },
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(langToChangedEvent);
-
-    // Update the "To" dropdown to the previous language
-    const toDropdown = this.querySelector('#lang-to');
-    if (toDropdown) {
-      toDropdown.value = prevLang;
-    }
+    this.detectedToLang = event.target.value;
   }
 
   _getSelectedLang(type) {
+    /** @type {HTMLSelectElement} */
     const dropdown = this.querySelector(`#lang-${type}`);
     return dropdown ? dropdown.value : '';
   }
@@ -482,6 +476,14 @@ export class BrTranslatePanel extends LitElement {
     });
     this.userTranslationActive = !this.userTranslationActive;
     this.dispatchEvent(toggleTranslateEvent);
+  }
+
+  // TODO: Hardcoded warning message for now but should add more statuses
+  _statusWarning() {
+    if (this.detectedFromLang == this.detectedToLang) {
+      return "Translate To language is the same as the Source language";
+    }
+    return "";
   }
 }
 

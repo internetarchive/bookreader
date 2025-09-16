@@ -19,38 +19,48 @@ export function isAndroid(userAgent = navigator.userAgent) {
   return /android/i.test(userAgent);
 }
 
+/** @type {{[lang: string]: string}} */
+// Handle odd one-off language pairs that might show up over time
+const specialLangs =  {
+  "zh-hans": "中文 (Zhōngwén)",
+};
 /**
  * @typedef {string} ISO6391
  * Language code in ISO 639-1 format. e.g. en, fr, zh
+ * Can also retrieve language native name + ISO 639-1 code
  **/
 
 /**
  * @param {string} language in some format
+ * @param {boolean?} getName gets Native Name + language code if true
  * @return {ISO6391?}
  */
-export function toISO6391(language) {
+export function toISO6391(language, getName = false) {
   if (!language) return null;
   language = language.toLowerCase();
 
-  return searchForISO6391(language, ['iso639_1']) ||
-    searchForISO6391(language, ['iso639_2T']) ||
-    searchForISO6391(language, ['iso639_2B', 'nativeName', 'name']);
+  return searchForISO6391(language, ['iso639_1'], getName) ||
+    searchForISO6391(language, ['iso639_2T'], getName) ||
+    searchForISO6391(language, ['iso639_2B', 'nativeName', 'name'], getName);
 }
 
 /**
  * Searches for the given long in the given columns.
  * @param {string} language
  * @param {Array<keyof import('iso-language-codes').Code>} columnsToSearch
+ * @param {boolean?} getName
  * @return {ISO6391?}
  */
-function searchForISO6391(language, columnsToSearch) {
+function searchForISO6391(language, columnsToSearch, getName) {
   for (const lang of langs) {
     for (const colName of columnsToSearch) {
       if (lang[colName].split(', ').map(x => x.toLowerCase()).indexOf(language) != -1) {
+        if (getName) return `${lang.nativeName.split(", ")[0]} (${lang.iso639_1})`;
         return lang.iso639_1;
       }
     }
   }
+  if (specialLangs[language]) return `${specialLangs[language]} (${language})`;
   return null;
 }
 
