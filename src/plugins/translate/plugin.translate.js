@@ -53,8 +53,6 @@ export class TranslatePlugin extends BookReaderPlugin {
    */
   userToggleTranslate;
 
-  modelStatus = false;
-
   async init() {
     const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
     this.langFromCode = currentLanguage ?? "en";
@@ -361,7 +359,6 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Boolean }) userTranslationActive = false;
   @property({ type: String }) detectedFromLang = '';
   @property({ type: String }) detectedToLang = '';
-  @property({ type: Boolean }) modelStatus;
 
   /** @override */
   createRenderRoot() {
@@ -415,7 +412,7 @@ export class BrTranslatePanel extends LitElement {
           )).map((lang) => {
             return html`<option value="${lang.code}"
                       ?selected=${lang.code == this.detectedFromLang}
-                      >${lang.name ? lang.name : lang.code} </option`;
+                      >${lang.name ? lang.name : lang.code} </option>`;
           })
           }
           </select>
@@ -456,7 +453,7 @@ export class BrTranslatePanel extends LitElement {
   }
 
   _getSelectedLang(type) {
-    /** @type HTMLSelectElement */
+    /** @type {HTMLSelectElement} */
     const dropdown = this.querySelector(`#lang-${type}`);
     return dropdown ? dropdown.value : '';
   }
@@ -474,18 +471,6 @@ export class BrTranslatePanel extends LitElement {
     });
     this.userTranslationActive = !this.userTranslationActive;
     this.dispatchEvent(toggleTranslateEvent);
-  }
-
-  _visibilityFromLang() {
-    /** @type HTMLElement */
-    const dropdown = this.querySelector("#lang-from");
-    const currentVisibility = dropdown.style.visibility;
-    if (!currentVisibility) {
-      dropdown.style.visibility = "hidden";
-    } else {
-      dropdown.style.visibility = "";
-    }
-    return;
   }
 
   // TODO: Hardcoded warning message for now but should add more statuses
