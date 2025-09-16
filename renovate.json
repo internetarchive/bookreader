@@ -18,7 +18,7 @@
         "sinon",
         "testcafe"
       ],
-      "automerge": true
+      "automerge": false
     },
     {
       "matchPackageNames": [
@@ -28,7 +28,7 @@
         "node-fetch"
       ],
       "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
+      "automerge": false
     },
     {
       "matchPackagePatterns": ["^@internetarchive/icon-"],
@@ -42,7 +42,7 @@
     {
       "matchPackagePatterns": ["^actions/"],
       "groupName": "GitHub Actions",
-      "automerge": true
+      "automerge": false
     },
     {
       "matchPackagePatterns": ["^@internetarchive"],
