@@ -5,6 +5,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { langs, TranslationManager } from "./TranslationManager.js";
 import { toISO6391 } from '../tts/utils.js';
 import { sortBy } from '../../../src/BookReader/utils.js';
+import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
@@ -52,6 +53,12 @@ export class TranslatePlugin extends BookReaderPlugin {
    * Should synchronize with the state of TranslationManager's active state
    */
   userToggleTranslate;
+
+  /**
+   * @type {boolean} langDownloadCompleted - Updates to true when language
+   * model pairs are successfully downloaded from IA
+   */
+  langDownloadCompleted = false;
 
   async init() {
     const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
@@ -356,7 +363,6 @@ export class TranslatePlugin extends BookReaderPlugin {
         .detectedFromLang=${this.langFromCode}
         .detectedToLang=${this.langToCode}
         .langDownloadCompleted=${this.langDownloadCompleted}
-        .loadingBar=${this.loadingBar}
         class="translate-panel"
       />`,
     };
@@ -374,6 +380,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Boolean }) userTranslationActive = false;
   @property({ type: String }) detectedFromLang = '';
   @property({ type: String }) detectedToLang = '';
+  @property({ type: Boolean }) langDownloadCompleted;
 
   /** @override */
   createRenderRoot() {
@@ -437,10 +444,7 @@ export class BrTranslatePanel extends LitElement {
       </div>
 
       <div class="lang-models-loading"> 
-      ${this.userTranslationActive ?
-            this.langDownloadCompleted ? `Language model loaded` :
-              html`Downloading language models <img src="${this.loadingBar}"/>`
-            : ""}
+      ${this._languageModelStatus()}
       </div>
     </div>`;
   }
@@ -499,6 +503,19 @@ export class BrTranslatePanel extends LitElement {
   _statusWarning() {
     if (this.detectedFromLang == this.detectedToLang) {
       return "Translate To language is the same as the Source language";
+    }
+    return "";
+  }
+
+  _languageModelStatus() {
+    if (this.userTranslationActive) {
+      if (!this.langDownloadCompleted) {
+        return html`
+          <p>Downloading language model</p>
+          <ia-activity-indicator mode="processing" style="display:block; width: 40px; height: 40px; margin: 0 auto;"></ia-activity-indicator>
+        `;
+      }
+      return html`<p>Language model loaded</p>`;
     }
     return "";
   }
