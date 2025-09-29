@@ -1,3 +1,10 @@
+# 5.0.0-98
+- Feature: Integrate ReadAloud with translation plugin @schu96
+- Fix: Blend mode in Microsoft Edge @cdrini
+- Refactor: Use a semi-shallow merge for BookReader options @cdrini
+- Feature: Redesign translation plugin panel @schu96
+- Fix: Media session panel not showing on some browsers @cdrini
+
 # 5.0.0-97
 - Feature: Add experimental translation plugin @schu96 @mekarpeles @pezvi @cdrini
 - Fix: Default language not selected correctly for ReadAloud @schu96
