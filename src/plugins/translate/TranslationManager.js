@@ -3,27 +3,6 @@ import { Cache } from '../../util/cache.js';
 import { BatchTranslator } from '@internetarchive/bergamot-translator/translator.js';
 import { toISO6391 } from '../tts/utils.js';
 
-export const langs = /** @type {{[lang: string]: string}} */ {
-  "bg": "Bulgarian",
-  "ca": "Catalan",
-  "cs": "Czech",
-  "nl": "Dutch",
-  "en": "English",
-  "et": "Estonian",
-  "de": "German",
-  "fr": "French",
-  "is": "Icelandic",
-  "it": "Italian",
-  "nb": "Norwegian Bokmål",
-  "nn": "Norwegian Nynorsk",
-  "fa": "Persian",
-  "pl": "Polish",
-  "pt": "Portuguese",
-  "ru": "Russian",
-  "es": "Spanish",
-  "uk": "Ukrainian",
-};
-
 export class TranslationManager {
   /** @type {Cache<{index: string, response: string}>} */
   alreadyTranslated = new Cache(100);
@@ -174,7 +153,7 @@ export class TranslationManager {
    * @param {string} toLanguage
    * @returns {Promise<boolean>}
    */
-  checkModels = async(fromLanguage, toLanguage) => {
+  getTranslationModel = async(fromLanguage, toLanguage) => {
     return this.translator.backing.getTranslationModel({from: fromLanguage, to: toLanguage}).then(() => {
       // TODO check what happens if the download fails somehow (i.e. invalid SHA hash, download connection failed, etc)
       return true;

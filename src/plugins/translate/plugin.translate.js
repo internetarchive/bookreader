@@ -2,7 +2,7 @@
 import { html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property } from 'lit/decorators.js';
-import { langs, TranslationManager } from "./TranslationManager.js";
+import { TranslationManager } from "./TranslationManager.js";
 import { toISO6391 } from '../tts/utils.js';
 import { sortBy } from '../../../src/BookReader/utils.js';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
@@ -54,11 +54,6 @@ export class TranslatePlugin extends BookReaderPlugin {
    */
   userToggleTranslate;
 
-  /**
-   * @type {boolean} langDownloadCompleted - Updates to true when language
-   * model pairs are successfully downloaded from IA
-   */
-  langDownloadCompleted = false;
 
   async init() {
     const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
@@ -205,9 +200,8 @@ export class TranslatePlugin extends BookReaderPlugin {
 
       if (paragraph.textContent.length !== 0) {
         const pagePriority = parseFloat(pageIndex) + priority + pidx;
-        this.translationManager.checkModels(this.langFromCode, this.langToCode).then((resp) => {
-          this.langDownloadCompleted = resp;
-          this._render();
+        this.translationManager.getTranslationModel(this.langFromCode, this.langToCode).then((resp) => {
+          this._panel.loadingModel = resp;
         });
         const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent, pagePriority);
         // prevent duplicate spans from appearing if exists
@@ -304,14 +298,16 @@ export class TranslatePlugin extends BookReaderPlugin {
 
     // Add 'From' language to 'To' list if not already present
     if (!this.translationManager.toLanguages.some(lang => lang.code === selectedLangFrom)) {
-      this.translationManager.toLanguages.push({ code: selectedLangFrom, name: langs[selectedLangFrom] });
+      this.translationManager.toLanguages.push({
+        code: selectedLangFrom,
+        name: this.translationManager.fromLanguages.find((entry) => entry.code == selectedLangFrom).name,
+      });
     }
 
     // Update the 'To' languages list and set the correct 'To' language
     this._panel.toLanguages = this.translationManager.toLanguages;
 
     console.log(this.langFromCode, this.langToCode);
-    this.langDownloadCompleted = false;
     this._render();
     if (this.langFromCode !== this.langToCode) {
       this.translateActivePageContainerElements();
@@ -321,7 +317,6 @@ export class TranslatePlugin extends BookReaderPlugin {
   handleToLangChange = async (e) => {
     this.clearAllTranslations();
     this.langToCode = e.detail.value;
-    this.langDownloadCompleted = false;
     this._render();
     this.translateActivePageContainerElements();
   }
@@ -362,7 +357,6 @@ export class TranslatePlugin extends BookReaderPlugin {
         .userTranslationActive=${false}
         .detectedFromLang=${this.langFromCode}
         .detectedToLang=${this.langToCode}
-        .langDownloadCompleted=${this.langDownloadCompleted}
         class="translate-panel"
       />`,
     };
@@ -380,7 +374,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Boolean }) userTranslationActive = false;
   @property({ type: String }) detectedFromLang = '';
   @property({ type: String }) detectedToLang = '';
-  @property({ type: Boolean }) langDownloadCompleted;
+  @property({ type: Boolean }) loadingModel = false;
 
   /** @override */
   createRenderRoot() {
@@ -460,6 +454,7 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('to') !== this._getSelectedLang('from')) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
+    this.loadingModel = false;
     this.detectedFromLang = event.target.value;
   }
 
@@ -475,6 +470,7 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('from') !== event.target.value) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
+    this.loadingModel = false;
     this.detectedToLang = event.target.value;
   }
 
@@ -509,10 +505,10 @@ export class BrTranslatePanel extends LitElement {
 
   _languageModelStatus() {
     if (this.userTranslationActive) {
-      if (!this.langDownloadCompleted) {
+      if (!this.loadingModel) {
         return html`
-          <p>Downloading language model</p>
-          <ia-activity-indicator mode="processing" style="display:block; width: 40px; height: 40px; margin: 0 auto;"></ia-activity-indicator>
+        <ia-activity-indicator mode="processing" style="display:block; width: 40px; height: 40px; margin: 0 auto;"></ia-activity-indicator>
+        <p>Downloading language model</p>
         `;
       }
       return html`<p>Language model loaded</p>`;
@@ -521,3 +517,4 @@ export class BrTranslatePanel extends LitElement {
   }
 }
 
+// TODO - Shqip (sq) breaks?
