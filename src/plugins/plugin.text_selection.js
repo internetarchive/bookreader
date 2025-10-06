@@ -1,10 +1,10 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
-import { SelectionObserver } from '../BookReader/utils/SelectionObserver.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
+import { TextSelectionManager } from '../util/TextSelectionManager.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
@@ -20,7 +20,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     singlePageDjvuXmlUrl: null,
     /** Whether to fetch the XML as a jsonp */
     jsonp: false,
-    /** Mox words tha can be selected when the text layer is protected */
+    /** Mox words that can be selected when the text layer is protected */
     maxProtectedWords: 200,
   }
 
@@ -46,7 +46,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // now we do make that assumption.
     /** Whether the book is right-to-left */
     this.rtl = this.br.pageProgression === 'rl';
-    this.selectionObserver = new SelectionObserver('.BRtextLayer', this._onSelectionChange);
+    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace']}, this.options.maxProtectedWords);
   }
 
   /** @override */
@@ -54,71 +54,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     if (!this.options.enabled) return;
 
     this.loadData();
-
-    this.selectionObserver.attach();
-    new SelectionObserver('.BRtextLayer', (selectEvent) => {
-      // Track how often selection is used
-      if (selectEvent == 'started') {
-        this.br.plugins.archiveAnalytics?.sendEvent('BookReader', 'SelectStart');
-
-        // Set a class on the page to avoid hiding it when zooming/etc
-        this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
-        $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
-      }
-    }).attach();
-
-    if (this.br.protected) {
-      document.addEventListener('selectionchange', this._limitSelection);
-      // Prevent right clicking when selected text
-      $(document.body).on('contextmenu dragstart copy', (e) => {
-        const selection = document.getSelection();
-        if (selection?.toString()) {
-          const intersectsTextLayer = $('.BRtextLayer')
-            .toArray()
-            .some(el => selection.containsNode(el, true));
-          if (intersectsTextLayer) {
-            e.preventDefault();
-            return false;
-          }
-        }
-      });
-    }
+    this.textSelectionManager.init();
   }
-
-  _limitSelection = () => {
-    const selection = window.getSelection();
-    if (!selection.rangeCount) return;
-
-    const range = selection.getRangeAt(0);
-
-    // Check if range.startContainer is inside the sub-tree of .BRContainer
-    const startInBr = !!range.startContainer.parentElement.closest('.BRcontainer');
-    const endInBr = !!range.endContainer.parentElement.closest('.BRcontainer');
-    if (!startInBr && !endInBr) return;
-    if (!startInBr || !endInBr) {
-      // weird case, just clear the selection
-      selection.removeAllRanges();
-      return;
-    }
-
-    // Find the last allowed word in the selection
-    const lastAllowedWord = genAt(
-      genFilter(
-        walkBetweenNodes(range.startContainer, range.endContainer),
-        (node) => node.classList?.contains('BRwordElement'),
-      ),
-      this.options.maxProtectedWords - 1,
-    );
-
-    if (!lastAllowedWord || range.endContainer.parentNode == lastAllowedWord) return;
-
-    const newRange = document.createRange();
-    newRange.setStart(range.startContainer, range.startOffset);
-    newRange.setEnd(lastAllowedWord.firstChild, lastAllowedWord.textContent.length);
-
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-  };
 
   /**
    * @override
@@ -132,20 +69,6 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       this.createTextLayer(pageContainer);
     }
     return pageContainer;
-  }
-
-  /**
-   * @param {'started' | 'cleared'} type
-   * @param {HTMLElement} target
-   */
-  _onSelectionChange = (type, target) => {
-    if (type === 'started') {
-      this.textSelectingMode(target);
-    } else if (type === 'cleared') {
-      this.defaultMode(target);
-    } else {
-      throw new Error(`Unknown type ${type}`);
-    }
   }
 
   loadData() {
@@ -205,78 +128,6 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   }
 
   /**
-   * Intercept copied text to remove any styling applied to it
-   * @param {JQuery} $container
-   */
-  interceptCopy($container) {
-    $container[0].addEventListener('copy', (event) => {
-      const selection = document.getSelection();
-      event.clipboardData.setData('text/plain', selection.toString());
-      event.preventDefault();
-    });
-  }
-
-  /**
-   * Applies mouse events when in default mode
-   * @param {HTMLElement} textLayer
-   */
-  defaultMode(textLayer) {
-    const $pageContainer = $(textLayer).closest('.BRpagecontainer');
-    textLayer.style.pointerEvents = "none";
-    $pageContainer.find("img").css("pointer-events", "auto");
-
-    $(textLayer).off(".textSelectPluginHandler");
-    const startedMouseDown = this.mouseIsDown;
-    let skipNextMouseup = this.mouseIsDown;
-    if (startedMouseDown) {
-      textLayer.style.pointerEvents = "auto";
-    }
-
-    // Need to stop propagation to prevent DragScrollable from
-    // blocking selection
-    $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
-      this.mouseIsDown = true;
-      if ($(event.target).is(".BRwordElement, .BRspace")) {
-        event.stopPropagation();
-      }
-    });
-
-    $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
-      this.mouseIsDown = false;
-      textLayer.style.pointerEvents = "none";
-      if (skipNextMouseup) {
-        skipNextMouseup = false;
-        event.stopPropagation();
-      }
-    });
-  }
-
-  /**
-   * This mode is active while there is a selection on the given textLayer
-   * @param {HTMLElement} textLayer
-   */
-  textSelectingMode(textLayer) {
-    const $pageContainer = $(textLayer).closest('.BRpagecontainer');
-    // Make text layer consume all events
-    textLayer.style.pointerEvents = "all";
-    // Block img from getting long-press to save while selecting
-    $pageContainer.find("img").css("pointer-events", "none");
-
-    $(textLayer).off(".textSelectPluginHandler");
-
-    $(textLayer).on('mousedown.textSelectPluginHandler', (event) => {
-      this.mouseIsDown = true;
-      event.stopPropagation();
-    });
-
-    // Prevent page flip on click
-    $(textLayer).on('mouseup.textSelectPluginHandler', (event) => {
-      this.mouseIsDown = false;
-      event.stopPropagation();
-    });
-  }
-
-  /**
    * Initializes text selection modes if there is a text layer on the page
    * @param {JQuery} $container
    */
@@ -284,9 +135,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     /** @type {JQuery<HTMLElement>} */
     const $textLayer = $container.find('.BRtextLayer');
     if (!$textLayer.length) return;
-    $textLayer.each((i, s) => this.defaultMode(s));
+    $textLayer.each((i, s) => this.textSelectionManager.defaultMode(s));
     if (!this.br.protected) {
-      this.interceptCopy($container);
+      this.textSelectionManager.interceptCopy($container);
     }
   }
 

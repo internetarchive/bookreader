@@ -5,6 +5,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { TranslationManager } from "./TranslationManager.js";
 import { toISO6391 } from '../tts/utils.js';
 import { sortBy } from '../../../src/BookReader/utils.js';
+import { TextSelectionManager } from '../../../src/util/TextSelectionManager.js';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
 
 // @ts-ignore
@@ -257,6 +258,7 @@ export class TranslatePlugin extends BookReaderPlugin {
 
   clearAllTranslations() {
     document.querySelectorAll('.BRtranslateLayer').forEach(el => el.remove());
+    document.querySelectorAll('.showingTranslation').forEach(el => el.classList.remove('showingTranslation'));
   }
 
   /**
@@ -331,13 +333,20 @@ export class TranslatePlugin extends BookReaderPlugin {
   handleToggleTranslation = async () => {
     this.userToggleTranslate = !this.userToggleTranslate;
     this.translationManager.active = this.userToggleTranslate;
+    // Init textSelectionManager only after the translation is active
+    if (!this.textSelectionManager) {
+      this.textSelectionManager = new TextSelectionManager('.BRtranslateLayer', this.br, {selectionElement: [".BRlineElement"]}, 1);
+      this.textSelectionManager.init();
+    }
     this._render();
     if (!this.userToggleTranslate) {
       this.clearAllTranslations();
       this.br.trigger('translationDisabled', { });
+      this.textSelectionManager.detach();
     } else {
       this.br.trigger('translationEnabled', { });
       this.translateActivePageContainerElements();
+      this.textSelectionManager.attach();
     }
   }
 
