@@ -35,7 +35,7 @@ export class TranslatePlugin extends BookReaderPlugin {
    * Current language code that is being translated From. Defaults to EN currently
    * @type {!string}
    */
-  langFromCode
+  langFromCode;
 
   /**
    * Current language code that is being translated To
@@ -200,8 +200,8 @@ export class TranslatePlugin extends BookReaderPlugin {
 
       if (paragraph.textContent.length !== 0) {
         const pagePriority = parseFloat(pageIndex) + priority + pidx;
-        this.translationManager.getTranslationModel(this.langFromCode, this.langToCode).then((resp) => {
-          this._panel.loadingModel = resp;
+        this.translationManager.getTranslationModel(this.langFromCode, this.langToCode).then(() => {
+          this._panel.loadingModel = false;
         });
         const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent, pagePriority);
         // prevent duplicate spans from appearing if exists
@@ -295,6 +295,8 @@ export class TranslatePlugin extends BookReaderPlugin {
 
     // Update the from language
     this.langFromCode = selectedLangFrom;
+    console.log("this is langFromCode", this.langFromCode, selectedLangFrom);
+    this._panel.requestUpdate();
 
     // Add 'From' language to 'To' list if not already present
     if (!this.translationManager.toLanguages.some(lang => lang.code === selectedLangFrom)) {
@@ -324,6 +326,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   handleToggleTranslation = async () => {
     this.userToggleTranslate = !this.userToggleTranslate;
     this.translationManager.active = this.userToggleTranslate;
+    this._render();
     if (!this.userToggleTranslate) {
       this.clearAllTranslations();
       this.br.trigger('translationDisabled', { });
@@ -354,7 +357,7 @@ export class TranslatePlugin extends BookReaderPlugin {
         .fromLanguages="${this.translationManager.fromLanguages}"
         .toLanguages="${this.translationManager.toLanguages}"
         .disclaimerMessage="${this.options.panelDisclaimerText}"
-        .userTranslationActive=${false}
+        .userTranslationActive=${this.userToggleTranslate}
         .detectedFromLang=${this.langFromCode}
         .detectedToLang=${this.langToCode}
         class="translate-panel"
@@ -374,7 +377,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Boolean }) userTranslationActive = false;
   @property({ type: String }) detectedFromLang = '';
   @property({ type: String }) detectedToLang = '';
-  @property({ type: Boolean }) loadingModel = false;
+  @property({ type: Boolean }) loadingModel = true;
 
   /** @override */
   createRenderRoot() {
@@ -454,7 +457,7 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('to') !== this._getSelectedLang('from')) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
-    this.loadingModel = false;
+    this.loadingModel = true;
     this.detectedFromLang = event.target.value;
   }
 
@@ -470,7 +473,7 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('from') !== event.target.value) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
-    this.loadingModel = false;
+    this.loadingModel = true;
     this.detectedToLang = event.target.value;
   }
 
@@ -505,7 +508,7 @@ export class BrTranslatePanel extends LitElement {
 
   _languageModelStatus() {
     if (this.userTranslationActive) {
-      if (!this.loadingModel) {
+      if (this.loadingModel) {
         return html`
         <ia-activity-indicator mode="processing" style="display:block; width: 40px; height: 40px; margin: 0 auto;"></ia-activity-indicator>
         <p>Downloading language model</p>
@@ -516,5 +519,3 @@ export class BrTranslatePanel extends LitElement {
     return "";
   }
 }
-
-// TODO - Shqip (sq) breaks?
