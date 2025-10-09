@@ -54,6 +54,11 @@ export class TranslatePlugin extends BookReaderPlugin {
    */
   userToggleTranslate;
 
+  /**
+   * @type {boolean} loadingModel - Shows loading animation while downloading lang model
+   */
+  loadingModel = true;
+
 
   async init() {
     const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
@@ -202,6 +207,7 @@ export class TranslatePlugin extends BookReaderPlugin {
         const pagePriority = parseFloat(pageIndex) + priority + pidx;
         this.translationManager.getTranslationModel(this.langFromCode, this.langToCode).then(() => {
           this._panel.loadingModel = false;
+          this.loadingModel = false;
         });
         const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent, pagePriority);
         // prevent duplicate spans from appearing if exists
@@ -349,6 +355,10 @@ export class TranslatePlugin extends BookReaderPlugin {
         this._panel = e.target;
         this._panel.fromLanguages = this.translationManager.fromLanguages;
         this._panel.toLanguages = this.translationManager.toLanguages;
+        this._panel.userTranslationActive = this.userToggleTranslate;
+        this._panel.detectedToLang = this.langToCode;
+        this._panel.detectedFromLang = this.langFromCode;
+        this._panel.loadingModel = this.loadingModel;
       }
       }"
         @langFromChanged="${this.handleFromLangChange}"
@@ -360,6 +370,7 @@ export class TranslatePlugin extends BookReaderPlugin {
         .userTranslationActive=${this.userToggleTranslate}
         .detectedFromLang=${this.langFromCode}
         .detectedToLang=${this.langToCode}
+        .loadingModel=${this.loadingModel}
         class="translate-panel"
       />`,
     };
@@ -377,7 +388,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Boolean }) userTranslationActive = false;
   @property({ type: String }) detectedFromLang = '';
   @property({ type: String }) detectedToLang = '';
-  @property({ type: Boolean }) loadingModel = true;
+  @property({ type: Boolean }) loadingModel;
 
   /** @override */
   createRenderRoot() {
