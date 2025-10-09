@@ -301,7 +301,6 @@ export class TranslatePlugin extends BookReaderPlugin {
 
     // Update the from language
     this.langFromCode = selectedLangFrom;
-    console.log("this is langFromCode", this.langFromCode, selectedLangFrom);
     this._panel.requestUpdate();
 
     // Add 'From' language to 'To' list if not already present
