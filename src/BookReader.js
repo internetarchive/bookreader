@@ -1381,6 +1381,17 @@ BookReader.prototype.exitFullScreen = async function () {
 };
 
 /**
+ * Toggles the mobile slider and page controls
+ */
+BookReader.prototype.toggleSlider = function () {
+  const toggleButton = this.refs.$BRnav.find('.toggle_slider');
+  const mobileControls = this.refs.$br.find('.BRnavMobile');
+
+  toggleButton.toggleClass('active');
+  mobileControls.toggleClass('docked');
+};
+
+/**
  * Returns the currently active index
  * @return {number}
  * @throws
@@ -1734,6 +1745,7 @@ BookReader.prototype.initUIStrings = function() {
     '.share': 'Share this book',
     '.info': 'About this book',
     '.full': 'Toggle fullscreen',
+    '.toggle_slider': 'Toggle page controls',
     '.book_left': 'Flip left',
     '.book_right': 'Flip right',
     '.play': 'Play',

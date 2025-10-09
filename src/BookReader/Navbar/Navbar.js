@@ -23,11 +23,11 @@ export class Navbar {
 
     /** @type {Object} controls will be switch over "this.maximumControls" */
     this.minimumControls = [
-      'viewmode',
+      'toggle_slider', 'viewmode',
     ];
     /** @type {Object} controls will be switch over "this.minimumControls" */
     this.maximumControls = [
-      'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb',
+      'BRnavpos', 'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb',
     ];
 
     this.updateNavIndexThrottled = throttle(this.updateNavIndex.bind(this), 250, false);
@@ -50,6 +50,7 @@ export class Navbar {
   /** @private */
   _renderControls() {
     return [
+      'toggleSlider',
       'bookLeft',
       'bookRight',
       'onePage',
@@ -126,6 +127,9 @@ export class Navbar {
 
     // Map of jIcon class -> click handler
     const navigationControls = {
+      toggle_slider: () => {
+        this.br.toggleSlider();
+      },
       book_left: () => {
         this.br.trigger(EVENTS.stop);
         this.br.left();
@@ -199,71 +203,48 @@ export class Navbar {
    * Switch navbar controls on mobile and desktop
    */
   switchNavbarControls() {
-    if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
-      this.showMinimumNavPageNum();
-      // we don't want navbar controls switching with liner-notes
-      if (this.br.options.bookType !== 'linerNotes') {
-        this.showMinimumNavbarControls();
-      }
-    } else {
-      this.showMaximumNavPageNum();
-      // we don't want navbar controls switching with liner-notes
-      if (this.br.options.bookType !== 'linerNotes') {
-        this.showMaximumNavbarControls();
+    // we don't want navbar controls switching with liner-notes
+    if (this.br.options.bookType !== 'linerNotes') {
+      if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
+        this.showMobileControls();
+      } else {
+        this.showDesktopControls();
       }
     }
   }
 
   /**
-   * Switch Book Nav page number display to minimum/mobile
+   * Switch Book controls to mobile mode
+   * NOTE: `this.minimumControls`, `this.maximumControls`, and .BRnavMobile switch on resize
    */
-  showMinimumNavPageNum() {
-    const minElement = document.querySelector('.BRcurrentpage.BRmin');
-    const maxElement = document.querySelector('.BRcurrentpage.BRmax');
-
-    if (minElement) minElement.classList.remove('hide');
-    if (maxElement) maxElement.classList.add('hide');
-  }
-
-  /**
-   * Switch Book Nav page number display to maximum/desktop
-   */
-  showMaximumNavPageNum() {
-    const minElement = document.querySelector('.BRcurrentpage.BRmin');
-    const maxElement = document.querySelector('.BRcurrentpage.BRmax');
-
-    if (minElement) minElement.classList.add('hide');
-    if (maxElement) maxElement.classList.remove('hide');
-  }
-
-  /**
-   * Switch Book Navbar controls to minimised
-   * NOTE: only `this.minimumControls` and `this.maximumControls` switch on resize
-   */
-  showMinimumNavbarControls() {
+  showMobileControls() {
     this.minimumControls.forEach((control) => {
-      const element = document.querySelector(`.controls .${control}`);
+      const element = document.querySelector(`.BRnavMain .controls .${control}`);
       if (element) element.classList.remove('hide');
     });
     this.maximumControls.forEach((control) => {
-      const element = document.querySelector(`.controls .${control}`);
+      const element = document.querySelector(`.BRnavMain .controls .${control}`);
       if (element) element.classList.add('hide');
     });
+    const mobileNav = document.querySelector(`.BRnavMobile`);
+    if (mobileNav) mobileNav.classList.remove('hide');
   }
 
   /**
-   * Switch Book Navbar controls to maximized
-   * NOTE: only `this.minimumControls` and `this.maximumControls` switch on resize
+   * Switch Book controls to desktop mode
+   * NOTE: `this.minimumControls`, `this.maximumControls`, and .BRnavMobile switch on resize
    */
-  showMaximumNavbarControls() {
+  showDesktopControls() {
     this.maximumControls.forEach((control) => {
-      const element = document.querySelector(`.controls .${control}`);
+      const element = document.querySelector(`.BRnavMain .controls .${control}`);
       if (element) element.classList.remove('hide');
     });
     this.minimumControls.forEach((control) => {
-      const element = document.querySelector(`.controls .${control}`);
+      const element = document.querySelector(`.BRnavMain .controls .${control}`);
       if (element) element.classList.add('hide');
     });
+    const mobileNav = document.querySelector(`.BRnavMobile`);
+    if (mobileNav) mobileNav.classList.add('hide');
   }
 
   /**
@@ -282,7 +263,7 @@ export class Navbar {
 
     br.refs.$BRfooter = this.$root = $(`<div class="BRfooter"></div>`);
     br.refs.$BRnav = this.$nav = $(
-      `<div class="BRnav BRnavDesktop">
+      `<div class="BRnav BRnavMobile docked">
           ${title ? `<div class="BRnavTitle">${title}</div>` : ''}
           <nav class="BRcontrols">
             <ul class="controls">
@@ -291,10 +272,24 @@ export class Navbar {
                   <div class="BRpager"></div>
                   <div class="BRnavline"></div>
                 </div>
+              </li>
+              ${this.controlFor('bookLeft')}
+              ${this.controlFor('bookRight')}
+            </ul>
+          </nav>
+        </div>
+        <div class="BRnav BRnavMain">
+          ${title ? `<div class="BRnavTitle">${title}</div>` : ''}
+          <nav class="BRcontrols">
+            <ul class="controls">
+              <li class="scrubber">
                 <p>
-                  <span class="BRcurrentpage BRmax"></span>
-                  <span class="BRcurrentpage BRmin"></span>
+                  <span class="BRcurrentpage"></span>
                 </p>
+                <div class="BRnavpos">
+                  <div class="BRpager"></div>
+                  <div class="BRnavline"></div>
+                </div>
               </li>
               ${this._renderControls()}
             </ul>
@@ -304,7 +299,8 @@ export class Navbar {
     this.$root.append(this.$nav);
     br.refs.$br.append(this.$root);
 
-    const $slider = this.$root.find('.BRpager').slider({
+    /** @type {JQuery} sliders */
+    const $sliders = this.$root.find('.BRpager').slider({
       animate: true,
       min: 0,
       max: br.book.getNumLeafs() - 1,
@@ -312,16 +308,16 @@ export class Navbar {
       range: "min",
     });
 
-    $slider.on('slide', (event, ui) => {
+    $sliders.on('slide', (event, ui) => {
       this.updateNavPageNum(ui.value);
       return true;
     });
 
-    $slider.on('slidechange', (event, ui) => {
+    $sliders.on('slidechange', (event, ui) => {
       this.updateNavPageNum(ui.value);
       // recursion prevention for jumpToIndex
-      if ($slider.data('swallowchange')) {
-        $slider.data('swallowchange', false);
+      if ($(event.currentTarget).data('swallowchange')) {
+        $(event.currentTarget).data('swallowchange', false);
       } else {
         br.jumpToIndex(ui.value);
       }
@@ -337,10 +333,9 @@ export class Navbar {
   /**
   * Returns the textual representation of the current page for the navbar
   * @param {number} index
-  * @param {boolean} [useMaxFormat = false]
   * @return {string}
   */
-  getNavPageNumString(index, useMaxFormat = false) {
+  getNavPageNumString(index) {
     const { br } = this;
     // Accessible index starts at 0 (alas) so we add 1 to make human
     const pageNum = br.book.getPageNum(index);
@@ -360,7 +355,7 @@ export class Navbar {
       this.maxPageNum = maxPageNum;
     }
 
-    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum, useMaxFormat);
+    return getNavPageNumHtml(index, numLeafs, pageNum, pageType, this.maxPageNum);
 
   }
 
@@ -369,8 +364,7 @@ export class Navbar {
    * @param {number} index
    */
   updateNavPageNum(index) {
-    this.$root.find('.BRcurrentpage.BRmax').html(this.getNavPageNumString(index, true));
-    this.$root.find('.BRcurrentpage.BRmin').html(this.getNavPageNumString(index));
+    this.$root.find('.BRcurrentpage').html(this.getNavPageNumString(index, true));
   }
 
   /**
@@ -392,25 +386,14 @@ export class Navbar {
  * @param {number|string} pageNum
  * @param {*} pageType - Deprecated
  * @param {number} maxPageNum
- * @param {boolean} [useMaxFormat = false]
  * @return {string}
  */
-export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum, useMaxFormat = false) {
+export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
   const pageIsAsserted = pageNum[0] != 'n';
   const pageIndex = index + 1;
 
   if (!pageIsAsserted) {
     pageNum = '—';
   }
-
-  if (useMaxFormat === true) {
-    return `Page ${pageNum} (${pageIndex}/${numLeafs})`;
-  }
-
-  if (!pageIsAsserted) {
-    return `(${pageIndex} of ${numLeafs})`;
-  }
-
-  const bookLengthLabel = (maxPageNum && parseFloat(pageNum)) ? ` of ${maxPageNum}` : '';
-  return `${pageNum}${bookLengthLabel}`;
+  return `Page ${pageNum} (${pageIndex}/${numLeafs})`;
 }

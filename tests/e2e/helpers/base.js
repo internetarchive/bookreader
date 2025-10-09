@@ -55,6 +55,8 @@ export function runBaseTests (br) {
 
     await t.expect(nav.goLeft.visible).ok();
     await t.expect(nav.goRight.visible).ok();
+    await t.expect(nav.goLeftMobile.visible).notOk();
+    await t.expect(nav.goRightMobile.visible).notOk();
     await t.expect(nav.mode1Up.visible).ok();
     await t.expect(nav.mode2Up.visible).ok();
     await t.expect(nav.modeThumb.visible).ok();

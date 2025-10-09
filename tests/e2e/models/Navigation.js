@@ -4,7 +4,9 @@ import { Selector } from 'testcafe';
 export default class Navigation {
   constructor() {
     this.topNavShell = new Selector('.BRtoolbar');
-    this.bottomNavShell = new Selector('.BRfooter');
+    this.navFooter = new Selector('.BRfooter');
+    this.bottomNavShell = new Selector('.BRnavMain');
+    this.bottomNavShellMobile = new Selector('.BRnavMobile');
     this.itemNav = Selector('ia-bookreader').shadowRoot().find('iaux-item-navigator').shadowRoot();
 
     // flipping
@@ -12,6 +14,10 @@ export default class Navigation {
     this.goRight = this.bottomNavShell.find('.BRicon.book_right');
     this.goNext = this.bottomNavShell.find('.BRicon.book_flip_next');
     this.goPrev = this.bottomNavShell.find('.BRicon.book_flip_prev');
+    this.goLeftMobile = this.bottomNavShellMobile.find('.BRicon.book_left');
+    this.goRightMobile = this.bottomNavShellMobile.find('.BRicon.book_right');
+    this.goNextMobile = this.bottomNavShellMobile.find('.BRicon.book_flip_next');
+    this.goPrevMobile = this.bottomNavShellMobile.find('.BRicon.book_flip_prev');
 
     // mode switching
     this.mode1Up = this.bottomNavShell.find('.BRicon.onepg');
@@ -30,7 +36,7 @@ export default class Navigation {
       .find('ia-book-search-results').shadowRoot()
       .find('input[name=query]');
     this.searchPin = this.bottomNavShell.find('.BRsearch');
-    this.searchNavigation = this.bottomNavShell.find('.BRsearch-navigation');
+    this.searchNavigation = this.navFooter.find('.BRsearch-navigation');
 
     // other
     this.fullScreen = this.bottomNavShell.find('.BRicon.full');

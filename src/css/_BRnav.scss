@@ -118,7 +118,6 @@
     height: 100%;
   }
 
-
   .BRToolbarButton {
     .icon {
       width: $toolbarHeight;
@@ -226,6 +225,12 @@
     border: none;
   }
 
+  &.ui-slider-docked {
+    height: 1px;
+    width: 100%;
+    margin: 0px;
+  }
+
   .ui-slider-horizontal .ui-slider-handle,
   .ui-slider-handle {
     position: absolute;
@@ -262,10 +267,10 @@
 }
 .BRcurrentpage {
   display: inline-block;
-  text-align: center;
+  text-align: left;
   padding: 0 0 0 0;
   font-size: $brFontSizeSmaller;
-  margin-left: 5px;
+  margin-left: 15px;
   margin-right: 10px;
   line-height: 1;
 }
@@ -310,7 +315,6 @@
   .BRnavline .BRchapter { display: none; }
 
   .BRpager.ui-slider {
-    height: 10px;
     top: math.div($brNavHeightMobile, 2) - 5px;
   }
 }
@@ -324,4 +328,53 @@
 }
 .DrawerSettingsWrapper .zoom_in {
   background-position: -1384px center;
+}
+
+.BRnavMobile {
+  box-sizing: content-box;
+}
+
+.BRnavMobile.docked {
+  height: 0px;
+  border: none;
+  .BRcontrols .scrubber .BRpager.ui-slider {
+    top: 0px;
+  }
+
+  .ui-slider,
+  .ui-slider-range {
+    height: 2px;
+    border-radius: 0px;
+  }
+
+  .BRnavpos {
+    margin: 0px;
+  }
+
+  .scrubber {
+    margin: 0px;
+    padding: 0px;
+    height: 0px;
+  }
+
+  .controls {
+    padding: 0px;
+    background-color: transparent;
+  }
+
+  .BRnavline {
+    display: none;
+  }
+
+  .ui-slider-handle {
+    display: none;
+  }
+
+  button {
+    display: none;
+  }
+}
+
+.BRnavMobile.hide {
+  display: none;
 }
