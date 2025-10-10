@@ -156,8 +156,7 @@ export class TranslationManager {
   getTranslationModel = async(fromLanguage, toLanguage) => {
     return this.translator.backing.getTranslationModel({from: fromLanguage, to: toLanguage})
       .catch((err) => {
-      console.error(`An error occurred while trying to retreive the ${fromLanguage}-${toLanguage} model`);
-    })
-    ;
+        console.error(`An error occurred while trying to retreive the ${fromLanguage}-${toLanguage} model`);
+      });
   }
 }
