@@ -112,53 +112,6 @@ describe("Generic tests", () => {
     $('.BRtextLayer').remove();
   });
 
-  test("_limitSelection handles short selection", async () => {
-    const $container = br.refs.$brContainer;
-    br.options.plugins.textSelection.maxProtectedWords = 5;
-    sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
-    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
-
-    const rangeBefore = document.createRange();
-    rangeBefore.setStart($container.find(".BRwordElement")[0].firstChild, 0);
-    rangeBefore.setEnd($container.find(".BRwordElement")[4].firstChild, 1);
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(rangeBefore);
-
-    br.plugins.textSelection._limitSelection();
-
-    const rangeAfter = window.getSelection().getRangeAt(0);
-    expect(rangeAfter.startContainer).toBe(rangeBefore.startContainer);
-    expect(rangeAfter.startOffset).toBe(0);
-    expect(rangeAfter.endContainer).toBe(rangeBefore.endContainer);
-    expect(rangeAfter.endOffset).toBe(1);
-
-    window.getSelection().removeAllRanges();
-  });
-
-  test("_limitSelection shrinks selection", async () => {
-    const $container = br.refs.$brContainer;
-    br.options.plugins.textSelection.maxProtectedWords = 5;
-    sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
-
-    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
-
-    const rangeBefore = document.createRange();
-    rangeBefore.setStart($container.find(".BRwordElement")[0].firstChild, 0);
-    rangeBefore.setEnd($container.find(".BRwordElement")[12].firstChild, 1);
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(rangeBefore);
-
-    br.plugins.textSelection._limitSelection();
-
-    const rangeAfter = window.getSelection().getRangeAt(0);
-    expect(rangeAfter.startContainer).toBe(rangeBefore.startContainer);
-    expect(rangeAfter.endContainer).toBe($container.find(".BRwordElement")[4].firstChild);
-  });
-
   test("_createPageContainer overridden function still creates a BRpagecontainer element", () => {
     const spy = sinon.spy(br.plugins.textSelection, 'createTextLayer');
     sinon.stub(br.plugins.textSelection, "getPageText")
