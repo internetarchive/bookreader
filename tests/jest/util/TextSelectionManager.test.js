@@ -1,14 +1,7 @@
 import sinon from 'sinon';
 
 import BookReader from '@/src/BookReader.js';
-import {
-  genAt,
-  genFilter,
-  genMap,
-  lookAroundWindow,
-  walkBetweenNodes,
-  zip,
-} from '@/src/plugins/plugin.text_selection.js';
+import '@/src/plugins/plugin.text_selection.js';
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `
@@ -109,7 +102,6 @@ describe("Generic tests", () => {
 
     window.getSelection().removeAllRanges();
   });
-  
   test("_limitSelection shrinks selection", async () => {
     const $container = br.refs.$brContainer;
     br.plugins.textSelection.textSelectionManager.options.maxProtectedWords = 5;
