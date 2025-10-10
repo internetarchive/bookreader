@@ -2,9 +2,10 @@
 import { html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property } from 'lit/decorators.js';
-import { langs, TranslationManager } from "./TranslationManager.js";
+import { TranslationManager } from "./TranslationManager.js";
 import { toISO6391 } from '../tts/utils.js';
 import { sortBy } from '../../../src/BookReader/utils.js';
+import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
@@ -34,7 +35,7 @@ export class TranslatePlugin extends BookReaderPlugin {
    * Current language code that is being translated From. Defaults to EN currently
    * @type {!string}
    */
-  langFromCode
+  langFromCode;
 
   /**
    * Current language code that is being translated To
@@ -52,6 +53,12 @@ export class TranslatePlugin extends BookReaderPlugin {
    * Should synchronize with the state of TranslationManager's active state
    */
   userToggleTranslate;
+
+  /**
+   * @type {boolean} loadingModel - Shows loading animation while downloading lang model
+   */
+  loadingModel = true;
+
 
   async init() {
     const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
@@ -198,6 +205,10 @@ export class TranslatePlugin extends BookReaderPlugin {
 
       if (paragraph.textContent.length !== 0) {
         const pagePriority = parseFloat(pageIndex) + priority + pidx;
+        this.translationManager.getTranslationModel(this.langFromCode, this.langToCode).then(() => {
+          this._panel.loadingModel = false;
+          this.loadingModel = false;
+        });
         const translatedText = await this.translationManager.getTranslation(this.langFromCode, this.langToCode, pageIndex, pidx, paragraph.textContent, pagePriority);
         // prevent duplicate spans from appearing if exists
         translatedParagraph.firstElementChild?.remove();
@@ -290,16 +301,21 @@ export class TranslatePlugin extends BookReaderPlugin {
 
     // Update the from language
     this.langFromCode = selectedLangFrom;
+    this._panel.requestUpdate();
 
     // Add 'From' language to 'To' list if not already present
     if (!this.translationManager.toLanguages.some(lang => lang.code === selectedLangFrom)) {
-      this.translationManager.toLanguages.push({ code: selectedLangFrom, name: langs[selectedLangFrom] });
+      this.translationManager.toLanguages.push({
+        code: selectedLangFrom,
+        name: this.translationManager.fromLanguages.find((entry) => entry.code == selectedLangFrom).name,
+      });
     }
 
     // Update the 'To' languages list and set the correct 'To' language
     this._panel.toLanguages = this.translationManager.toLanguages;
 
     console.log(this.langFromCode, this.langToCode);
+    this._render();
     if (this.langFromCode !== this.langToCode) {
       this.translateActivePageContainerElements();
     }
@@ -308,12 +324,14 @@ export class TranslatePlugin extends BookReaderPlugin {
   handleToLangChange = async (e) => {
     this.clearAllTranslations();
     this.langToCode = e.detail.value;
+    this._render();
     this.translateActivePageContainerElements();
   }
 
   handleToggleTranslation = async () => {
     this.userToggleTranslate = !this.userToggleTranslate;
     this.translationManager.active = this.userToggleTranslate;
+    this._render();
     if (!this.userToggleTranslate) {
       this.clearAllTranslations();
       this.br.trigger('translationDisabled', { });
@@ -336,6 +354,10 @@ export class TranslatePlugin extends BookReaderPlugin {
         this._panel = e.target;
         this._panel.fromLanguages = this.translationManager.fromLanguages;
         this._panel.toLanguages = this.translationManager.toLanguages;
+        this._panel.userTranslationActive = this.userToggleTranslate;
+        this._panel.detectedToLang = this.langToCode;
+        this._panel.detectedFromLang = this.langFromCode;
+        this._panel.loadingModel = this.loadingModel;
       }
       }"
         @langFromChanged="${this.handleFromLangChange}"
@@ -344,9 +366,10 @@ export class TranslatePlugin extends BookReaderPlugin {
         .fromLanguages="${this.translationManager.fromLanguages}"
         .toLanguages="${this.translationManager.toLanguages}"
         .disclaimerMessage="${this.options.panelDisclaimerText}"
-        .userTranslationActive=${false}
+        .userTranslationActive=${this.userToggleTranslate}
         .detectedFromLang=${this.langFromCode}
         .detectedToLang=${this.langToCode}
+        .loadingModel=${this.loadingModel}
         class="translate-panel"
       />`,
     };
@@ -364,6 +387,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Boolean }) userTranslationActive = false;
   @property({ type: String }) detectedFromLang = '';
   @property({ type: String }) detectedToLang = '';
+  @property({ type: Boolean }) loadingModel;
 
   /** @override */
   createRenderRoot() {
@@ -425,6 +449,10 @@ export class BrTranslatePanel extends LitElement {
       <div class="footer" id="status" style="margin-top:5%">
       ${this._statusWarning()}
       </div>
+
+      <div class="lang-models-loading"> 
+      ${this._languageModelStatus()}
+      </div>
     </div>`;
   }
   _onLangFromChange(event) {
@@ -439,6 +467,7 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('to') !== this._getSelectedLang('from')) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
+    this.loadingModel = true;
     this.detectedFromLang = event.target.value;
   }
 
@@ -454,6 +483,7 @@ export class BrTranslatePanel extends LitElement {
     if (this._getSelectedLang('from') !== event.target.value) {
       this.prevSelectedLang = this._getSelectedLang('from');
     }
+    this.loadingModel = true;
     this.detectedToLang = event.target.value;
   }
 
@@ -485,5 +515,17 @@ export class BrTranslatePanel extends LitElement {
     }
     return "";
   }
-}
 
+  _languageModelStatus() {
+    if (this.userTranslationActive) {
+      if (this.loadingModel) {
+        return html`
+        <ia-activity-indicator mode="processing" style="display:block; width: 40px; height: 40px; margin: 0 auto;"></ia-activity-indicator>
+        <p>Downloading language model</p>
+        `;
+      }
+      return html`<p>Language model loaded</p>`;
+    }
+    return "";
+  }
+}

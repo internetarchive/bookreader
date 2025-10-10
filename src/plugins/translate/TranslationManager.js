@@ -3,27 +3,6 @@ import { Cache } from '../../util/cache.js';
 import { BatchTranslator } from '@internetarchive/bergamot-translator/translator.js';
 import { toISO6391 } from '../tts/utils.js';
 
-export const langs = /** @type {{[lang: string]: string}} */ {
-  "bg": "Bulgarian",
-  "ca": "Catalan",
-  "cs": "Czech",
-  "nl": "Dutch",
-  "en": "English",
-  "et": "Estonian",
-  "de": "German",
-  "fr": "French",
-  "is": "Icelandic",
-  "it": "Italian",
-  "nb": "Norwegian Bokmål",
-  "nn": "Norwegian Nynorsk",
-  "fa": "Persian",
-  "pl": "Polish",
-  "pt": "Portuguese",
-  "ru": "Russian",
-  "es": "Spanish",
-  "uk": "Ukrainian",
-};
-
 export class TranslationManager {
   /** @type {Cache<{index: string, response: string}>} */
   alreadyTranslated = new Cache(100);
@@ -166,5 +145,18 @@ export class TranslationManager {
     });
 
     return promise;
+  }
+
+  /**
+   * Checks and updates the status of a model that is currently being retreived from IA
+   * @param {string} fromLanguage
+   * @param {string} toLanguage
+   * @returns {Promise<boolean>}
+   */
+  getTranslationModel = async(fromLanguage, toLanguage) => {
+    return this.translator.backing.getTranslationModel({from: fromLanguage, to: toLanguage})
+      .catch((err) => {
+        console.error(`An error occurred while trying to retreive the ${fromLanguage}-${toLanguage} model`);
+      });
   }
 }
