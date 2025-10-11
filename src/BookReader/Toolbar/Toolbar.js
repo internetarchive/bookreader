@@ -178,9 +178,9 @@ export class Toolbar {
           <input class="thispage-social" type="checkbox" />
           Open to this page?
         </label>
-        <div><button class="BRaction share facebook-share-button"><i class="BRicon fb" /> Facebook</button></div>
-        <div><button class="BRaction share twitter-share-button"><i class="BRicon twitter" /> Twitter</button></div>
-        <div><button class="BRaction share email-share-button"><i class="BRicon email" /> Email</button></div>
+        <div><button class="BRaction share facebook-share-button"><i class="BRicon fb"></i>Facebook</button></div>
+        <div><button class="BRaction share twitter-share-button"><i class="BRicon twitter"></i>Twitter</button></div>
+        <div><button class="BRaction share email-share-button"><i class="BRicon email"></i>Email</button></div>
       </div>
       ${embedHtml}
       <div class="BRfloatFoot">
