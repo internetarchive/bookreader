@@ -91,16 +91,8 @@
   }
 }
 
-svg.BRPageLayer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-
 // Hides page layers during page flip animation
-.BRpageFlipping .BRPageLayer {
+.BRpageFlipping .BRtextLayer {
   display: none;
 }
 

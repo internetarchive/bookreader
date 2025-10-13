@@ -61,6 +61,14 @@
     color: transparent;
 }
 
+.BRtranslateLayer ::selection {
+    background: hsla(210, 74%, 62%, 0.4);
+}
+
+.BRtranslateLayer ::-moz-selection {
+    background: hsla(210, 74%, 62%, 0.4);
+}
+
 .BRparagraphElement br {
     visibility: hidden;
 }
@@ -137,8 +145,7 @@
 }
 
 .BRtextLayer.showingTranslation {
-    visibility: hidden;
-    pointer-events: none;
+    display: none;
 }
 
 .BRtranslateLayer .BRparagraphElement.BRtranslateHidden {

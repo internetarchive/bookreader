@@ -223,22 +223,6 @@ describe("Generic tests", () => {
     expect($container.find("p").length).toBe(0);
     expect($container.find(".BRwordElement").length).toBe(0);
   });
-
-  const LONG_PRESS_DURATION = 500;
-  test("calling stopPageFlip does not allow long click to flip the page", () => {
-    const $container = br.refs.$brContainer;
-    br.plugins.textSelection.stopPageFlip($container);
-    const currIndex = br.currentIndex();
-    $container.find("BRwordElement").trigger("mousedown");
-    // Waits for long press
-    setTimeout(() => {
-      $container.find("BRwordElement").trigger("mousedown");
-      // Waits for flipping animation
-      setTimeout(() => {
-        expect(br.currentIndex()).toBe(currIndex);
-      }, 2000);
-    }, LONG_PRESS_DURATION);
-  });
 });
 
 describe('genAt', () => {

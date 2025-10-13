@@ -124,4 +124,20 @@ describe("Generic tests", () => {
     expect(rangeAfter.startContainer).toBe(rangeBefore.startContainer);
     expect(rangeAfter.endContainer).toBe($container.find(".BRwordElement")[4].firstChild);
   });
+
+  const LONG_PRESS_DURATION = 500;
+  test("calling stopPageFlip does not allow long click to flip the page", () => {
+    const $container = br.refs.$brContainer;
+    br.plugins.textSelection.textSelectionManager.stopPageFlip($container);
+    const currIndex = br.currentIndex();
+    $container.find(".BRwordElement").trigger("mousedown");
+    // Waits for long press
+    setTimeout(() => {
+      $container.find(".BRwordElement").trigger("mousedown");
+      // Waits for flipping animation
+      setTimeout(() => {
+        expect(br.currentIndex()).toBe(currIndex);
+      }, 2000);
+    }, LONG_PRESS_DURATION);
+  });
 });

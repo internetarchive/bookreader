@@ -184,23 +184,6 @@ export class TranslatePlugin extends BookReaderPlugin {
           "width": $(originalParagraphStyle).css("width"),
           "font-size": fontSize,
         });
-
-        // Note: We'll likely want to switch to using the same logic as
-        // TextSelectionPlugin's selection, which allows for e.g. click-to-flip
-        // to work simultaneously with text selection.
-        translatedParagraph.addEventListener('mousedown', (e) => {
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-        });
-
-        translatedParagraph.addEventListener('mouseup', (e) => {
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-        });
-
-        translatedParagraph.addEventListener('dragstart', (e) =>{
-          e.preventDefault();
-        });
         pageTranslationLayer.append(translatedParagraph);
       }
 
@@ -228,6 +211,8 @@ export class TranslatePlugin extends BookReaderPlugin {
         }
       }
     });
+
+    this.textSelectionManager?.stopPageFlip(this.br.refs.$brContainer);
     await Promise.all(paragraphTranslationPromises);
     this.br.trigger('translateLayerRendered', {
       leafIndex: pageIndex,

@@ -128,20 +128,6 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   }
 
   /**
-   * Initializes text selection modes if there is a text layer on the page
-   * @param {JQuery} $container
-   */
-  stopPageFlip($container) {
-    /** @type {JQuery<HTMLElement>} */
-    const $textLayer = $container.find('.BRtextLayer');
-    if (!$textLayer.length) return;
-    $textLayer.each((i, s) => this.textSelectionManager.defaultMode(s));
-    if (!this.br.protected) {
-      this.textSelectionManager.interceptCopy($container);
-    }
-  }
-
-  /**
    * @param {PageContainer} pageContainer
    */
   async createTextLayer(pageContainer) {
@@ -195,7 +181,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       textLayer.appendChild(paragEl);
     }
     $container.append(textLayer);
-    this.stopPageFlip($container);
+    this.textSelectionManager.stopPageFlip($container);
     this.br.trigger('textLayerRendered', {
       pageIndex,
       pageContainer,

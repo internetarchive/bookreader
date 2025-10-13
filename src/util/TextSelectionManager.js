@@ -1,3 +1,4 @@
+// @ts-check
 import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
 
 export class TextSelectionManager {
@@ -6,10 +7,20 @@ export class TextSelectionManager {
     maxProtectedWords: 200,
   }
 
+  /**
+   * @param {string} layer Selector for the text layer to manage
+   * @param {import('../BookReader.js').default} br
+   * @param {Object} options
+   * @param {string[]} options.selectionElement CSS selector for elements that count as "words" for selection limiting
+   * @param {number} [maxWords] Maximum number of words allowed to be selected
+   */
   constructor (layer, br, { selectionElement }, maxWords) {
+    /** @type {string} */
     this.layer = layer;
-    this.selectionElement = selectionElement;
+    /** @type {import('../BookReader.js').default} */
     this.br = br;
+    /** @type {string[]} */
+    this.selectionElement = selectionElement;
     this.selectionObserver = new SelectionObserver(this.layer, this._onSelectionChange);
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
   }
@@ -80,6 +91,20 @@ export class TextSelectionManager {
       event.clipboardData.setData('text/plain', selection.toString());
       event.preventDefault();
     });
+  }
+
+  /**
+   * Initializes text selection modes if there is a text layer on the page
+   * @param {JQuery} $container
+   */
+  stopPageFlip($container) {
+    /** @type {JQuery<HTMLElement>} */
+    const $textLayer = $container.find(this.layer);
+    if (!$textLayer.length) return;
+    $textLayer.each((i, s) => this.defaultMode(s));
+    if (!this.br.protected) {
+      this.interceptCopy($container);
+    }
   }
 
   /**
