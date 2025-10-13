@@ -1,3 +1,8 @@
+# 5.0.0-99
+- Feature: Show loading indicator while downloading translation model @schu96
+- Fix: Improve styling of URI text fragments @cdrini
+- Fix: Make click behavior of translation layer consistent with text layer @schu96
+
 # 5.0.0-98
 - Feature: Integrate ReadAloud with translation plugin @schu96
 - Fix: Blend mode in Microsoft Edge @cdrini
