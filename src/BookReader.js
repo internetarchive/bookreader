@@ -1005,7 +1005,8 @@ BookReader.prototype.zoom = function(direction) {
   } else {
     this.activeMode.zoom('out');
   }
-  this.plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
+  this.plugins.translate?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
   return;
 };
 
@@ -1252,7 +1253,8 @@ BookReader.prototype.switchMode = function(
   const eventName = mode + 'PageViewSelected';
   this.trigger(BookReader.eventNames[eventName]);
 
-  this.plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
+  this.plugins.translate?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -1324,7 +1326,8 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   }
   this.jumpToIndex(currentIndex);
 
-  this.plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
+  this.plugins.translate?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
   // Add "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
   // trigger event here, so that animations,
@@ -1370,7 +1373,8 @@ BookReader.prototype.exitFullScreen = async function () {
     await this.activeMode.mode1UpLit.updateComplete;
   }
 
-  this.plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
+  this.plugins.translate?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
   // Remove "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
   this.refs.$br.removeClass('BRfullscreenAnimation');
