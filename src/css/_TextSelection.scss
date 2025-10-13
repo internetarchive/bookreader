@@ -54,6 +54,13 @@
     }
 }
 
+// Style URI TextFragments, eg #:~:text=example
+.BRtextLayer ::target-text {
+    // Similar colour to the default one used in Safari, Firefox. Note Chrome uses a purple colour
+    background-color: hsla(45, 80%, 66%, 0.6);
+    color: transparent;
+}
+
 .BRparagraphElement br {
     visibility: hidden;
 }
