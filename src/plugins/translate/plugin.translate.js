@@ -60,10 +60,12 @@ export class TranslatePlugin extends BookReaderPlugin {
    */
   loadingModel = true;
 
+  textSelectionManager = new TextSelectionManager('.BRtranslateLayer', this.br, {selectionElement: [".BRlineElement"]}, 1);
 
   async init() {
     const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
     this.langFromCode = currentLanguage ?? "en";
+    this.textSelectionManager.init();
 
     if (!this.options.enabled) {
       return;
@@ -318,11 +320,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   handleToggleTranslation = async () => {
     this.userToggleTranslate = !this.userToggleTranslate;
     this.translationManager.active = this.userToggleTranslate;
-    // Init textSelectionManager only after the translation is active
-    if (!this.textSelectionManager) {
-      this.textSelectionManager = new TextSelectionManager('.BRtranslateLayer', this.br, {selectionElement: [".BRlineElement"]}, 1);
-      this.textSelectionManager.init();
-    }
+
     this._render();
     if (!this.userToggleTranslate) {
       this.clearAllTranslations();
