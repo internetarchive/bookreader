@@ -1,3 +1,6 @@
+# 5.0.0-100
+- Fix: Initialization bug with translation plugin @cdrini
+
 # 5.0.0-99
 - Feature: Show loading indicator while downloading translation model @schu96
 - Fix: Improve styling of URI text fragments @cdrini
