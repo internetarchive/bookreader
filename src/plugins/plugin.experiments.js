@@ -64,6 +64,8 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       icon = 'images/translate.svg';
       enabled = false;
       async enable({ manual = false}) {
+        if (BookReader.PLUGINS.translate) return;
+
         await importAsScript(this.buildAssetPath('plugins/plugin.translate.js'));
         this.br.initializePlugin('translate');
       }
