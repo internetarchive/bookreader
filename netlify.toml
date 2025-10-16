@@ -1,3 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = "."
+
+[dev]
+  publish = "."
+  port = 8888
+
 [build.environment]
   # Keep in sync with CI in .github/workflows/node.js.yml
   NODE_VERSION = "20"
