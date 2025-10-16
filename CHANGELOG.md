@@ -1,3 +1,6 @@
+# 5.0.0-101
+- Fix: Regression with search results not highlighting correctly @cdrini
+
 # 5.0.0-100
 - Fix: Initialization bug with translation plugin @cdrini
 

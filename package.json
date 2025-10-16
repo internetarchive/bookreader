@@ -1,6 +1,6 @@
 {
   "name": "@internetarchive/bookreader",
-  "version": "5.0.0-100",
+  "version": "5.0.0-101",
   "description": "The Internet Archive BookReader.",
   "type": "module",
   "files": [
