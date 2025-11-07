@@ -60,8 +60,7 @@ export function runSearchTests(br) {
 
       //testing search for a word not found in the book
       await t.selectText(nav.searchBox).pressKey('delete');
-      // FIXME: Why is it only typing every other letter?!?!
-      await t.typeText(nav.searchBox, TEST_TEXT_NOT_FOUND.split('').join('_'));
+      await t.typeText(nav.searchBox, TEST_TEXT_NOT_FOUND);
       await t.pressKey('enter');
       await t.expect(nav.searchPin.child('.BRquery').child('main').withText(TEST_TEXT_NOT_FOUND).exists).notOk();
 

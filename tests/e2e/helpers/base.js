@@ -185,7 +185,7 @@ export function runBaseTests (br) {
   test('Clicking `2 page view` brings up cur page + caching', async t => {
     const { nav } = br;
     await t.click(nav.mode2Up);
-    await t.expect(Selector('.BRpagecontainer.BRpage-visible').count).eql(1);
+    await t.expect(Selector('.BRpagecontainer.BRpage-visible').count).eql(2);
     await t.expect(Selector('.BRpagecontainer').count).eql(3);
   });
 

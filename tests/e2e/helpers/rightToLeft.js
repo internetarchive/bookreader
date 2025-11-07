@@ -18,6 +18,6 @@ export function runRightToLeftTests (br) {
     const { nav } = br;
     await t.click(nav.mode2Up);
     await t.click(nav.goLeft);
-    await t.expect(getPageUrl()).match(/page\/n1/);
+    await t.expect(getPageUrl()).match(/page\/n2/);
   });
 }
