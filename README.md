@@ -39,7 +39,7 @@ And then open `http://localhost:8000/BookReaderDemo/demo-simple.html`.
 
 ## Usage
 
-Here is a short example.
+Here is a short example:
 
 ```js
 // Create the BookReader object
@@ -84,6 +84,7 @@ var br = new BookReader(options);
 br.init();
 
 ```
+
 ## Architecture Overview
 Starting at v5, BookReader introduces hybrid architecture that merges the core code written in jQuery closer to its evolution as a web component.  As we march toward the future of BookReader as a web component, we are taking an Event Driven approach to connect the two together.
 
@@ -164,10 +165,10 @@ Let's use `icon-share` as an example.
 
 To version bump the repo and prepare a release, run `npm version major|minor|patch` (following [semver](https://semver.org/)), then (something like) `git push origin HEAD --tags`. It'll automatically update the version number where it appears, build the files, and ask you to update the CHANGELOG.
 
-We release BookReader [in-repo as tags](https://github.com/internetarchive/bookreader/releases) & also as a node module [@internetarchive/bookreader](https://www.npmjs.com/package/@internetarchive/bookreader)
+We release BookReader [in-repo as tags](https://github.com/internetarchive/bookreader/releases) & also as a node module [@internetarchive/bookreader](https://www.npmjs.com/package/@internetarchive/bookreader).
 
 ## Tests
-We would like to get to 100% test coverage and are tracking our progress in this project: [BookReader Fidelity](https://github.com/internetarchive/bookreader/projects/5)
+We would like to get to 100% test coverage and are tracking our progress in this project: [BookReader Fidelity](https://github.com/internetarchive/bookreader/projects/5).
 
 ### End to end tests
 We also have end to end tests using [Testcafe](https://devexpress.github.io/testcafe/documentation/getting-started/).  We write tests for the repo itself and also for our use on archive.org. You can read about them in [here](./tests/e2e/README.md). These are relatively easy to do, and a fantastic way of getting introduced to the wonders of BookReader.  Check the project board for open tickets to work on.  And if you don't see a test for something you spotted, feel free to make an issue.
