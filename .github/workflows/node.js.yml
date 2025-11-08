@@ -97,6 +97,6 @@ jobs:
         # Cache the build files so we don't have to build twice for e2e tests
         path: 'BookReader'
         key: ${{ runner.os }}-${{ github.sha }}
-    # Travis machines usually have 2 cores (see https://docs.travis-ci.com/user/reference/overview/#virtualisation-environment-vs-operating-system )
+    # GitHub Actions machines usually have 4 cores (see https://docs.github.com/en/actions/reference/runners/github-hosted-runners )
     # Quarantine mode (sigh) to catch unstable tests (see https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode )
-    - run: npx testcafe --concurrency 2 --quarantine-mode
+    - run: npx testcafe --concurrency 4 --quarantine-mode
