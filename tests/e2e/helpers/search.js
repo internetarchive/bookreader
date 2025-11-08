@@ -24,8 +24,7 @@ export function runSearchTests(br) {
 
       //testing search for a word found in the book
       await t.selectText(nav.searchBox).pressKey('delete');
-      // FIXME: Why is it only typing every other letter?!?!
-      await t.typeText(nav.searchBox, TEST_TEXT_FOUND.split('').join('_'));
+      await t.typeText(nav.searchBox, TEST_TEXT_FOUND);
       await t.pressKey('enter');
 
       await t.expect(nav.searchPin.exists).ok();
