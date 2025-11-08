@@ -3,6 +3,9 @@ import { SEARCH_INSIDE_URL_RE , mockResponseFound, mockResponseNotFound,
   TEST_TEXT_FOUND, TEST_TEXT_NOT_FOUND, PAGE_FIRST_RESULT, SEARCH_MATCHES_LENGTH } from './mockSearch';
 
 
+/**
+ * @param { import('../models/BookReader').default } br - Model
+ */
 export function runSearchTests(br) {
   //building mock response  for successful and unsuccessful search
   const mockFound = RequestMock()
@@ -19,8 +22,10 @@ export function runSearchTests(br) {
       const nav = br.nav;
 
       //assuring that the search bar is enabled
+      await t.expect(nav.searchBox.visible).notOk();
       await t.expect(nav.searchIcon.visible).ok();
       await t.click(nav.searchIcon);
+      // await t.expect(nav.searchBox.visible).ok();
 
       //testing search for a word found in the book
       await t.selectText(nav.searchBox).pressKey('delete');
@@ -54,8 +59,10 @@ export function runSearchTests(br) {
       const nav = br.nav;
 
       //assuring that the search bar is enabled
+      await t.expect(nav.searchBox.visible).notOk();
       await t.expect(nav.searchIcon.visible).ok();
       await t.click(nav.searchIcon);
+      await t.expect(nav.searchBox.visible).ok();
 
       //testing search for a word not found in the book
       await t.selectText(nav.searchBox).pressKey('delete');
