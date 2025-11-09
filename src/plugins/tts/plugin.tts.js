@@ -173,13 +173,26 @@ export class TtsPlugin extends BookReaderPlugin {
 
     const renderVoicesMenu = (voicesMenu) => {
       voicesMenu.empty();
-      const bookLanguage = this.ttsEngine.opts.bookLanguage;
+      let bookLanguage = this.ttsEngine.opts.bookLanguage;
+      if (this.br.plugins.translate?.translationManager?.active) {
+        bookLanguage = this.br.plugins.translate.langFromCode;
+      }
+
       const bookLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(bookLanguage)).sort(voiceSortOrder);
       const otherLanguages = this.ttsEngine.getVoices().filter(v => !v.lang.startsWith(bookLanguage)).sort(voiceSortOrder);
 
       if (this.ttsEngine.getVoices().length > 1) {
-        voicesMenu.append($(`<optgroup label="Book Language (${bookLanguage})"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
-        voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages)} </optgroup>`));
+        if (this.br.plugins.translate?.translationManager?.active) {
+          // Separate out Other Languages when translation active, not sure if too much / unwieldy
+          const toLang = this.br.plugins.translate.langToCode;
+          const translatedLanguages = this.ttsEngine.getVoices().filter(v => v.lang.startsWith(toLang)).sort(voiceSortOrder);
+          voicesMenu.append($(`<optgroup label="Book Language, Translated From (${bookLanguage})"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
+          voicesMenu.append($(`<optgroup label="Book Language, Translated To (${toLang})"> ${renderVoiceOption(translatedLanguages)} </optgroup>`));
+          voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages.filter(v => !v.lang.startsWith(toLang)).sort(voiceSortOrder))}`));
+        } else {
+          voicesMenu.append($(`<optgroup label="Book Language (${bookLanguage})"> ${renderVoiceOption(bookLanguages)} </optgroup>`));
+          voicesMenu.append($(`<optgroup label="Other Languages"> ${renderVoiceOption(otherLanguages)} </optgroup>`));
+        }
 
         voicesMenu.val(this.ttsEngine.voice.voiceURI);
         voicesMenu.show();
@@ -193,6 +206,8 @@ export class TtsPlugin extends BookReaderPlugin {
     voicesMenu.on("change", ev => this.ttsEngine.setVoice(voicesMenu.val()));
     this.ttsEngine.events.on('pause resume start', () => this.updateState());
     this.ttsEngine.events.on('voiceschanged', () => renderVoicesMenu(voicesMenu));
+    this.br.on('translationEnabled', () => renderVoicesMenu(voicesMenu));
+    this.br.on('translationDisabled', () => renderVoicesMenu(voicesMenu));
     this.br.refs.$BRReadAloudToolbar.find('[name=play]').on("click", this.playPause.bind(this));
     this.br.refs.$BRReadAloudToolbar.find('[name=advance]').on("click", this.jumpForward.bind(this));
     this.br.refs.$BRReadAloudToolbar.find('[name=review]').on("click", this.jumpBackward.bind(this));
@@ -248,7 +263,7 @@ export class TtsPlugin extends BookReaderPlugin {
   }
 
   toggle() {
-    this.br._plugins.autoplay?.stop();
+    this.br.plugins.autoplay?.stop();
     if (this.ttsEngine.playing) {
       this.stop();
     } else {
@@ -257,6 +272,12 @@ export class TtsPlugin extends BookReaderPlugin {
   }
 
   start(startTTSEngine = true) {
+    const checkVoice = this.br.plugins.translate?.translationManager?.active ? toISO6391(this.br.plugins.translate.langToCode) : "";
+    const bookVoice = this.ttsEngine.getBestVoice(checkVoice);
+
+    const voicesMenu = this.br.refs.$BRReadAloudToolbar.find('[name=playback-voice');
+    this.ttsEngine.setVoice(bookVoice.voiceURI);
+    voicesMenu.val(bookVoice.voiceURI);
     if (this.br.constModeThumb == this.br.mode)
       this.br.switchMode(this.br.constMode1up);
 
@@ -340,7 +361,22 @@ export class TtsPlugin extends BookReaderPlugin {
     const pageIndex = chunk.leafIndex;
 
     this.removeHilites();
-
+    if (this.br.plugins.translate?.translationManager.active) {
+      const pageContainers = this.br.getActivePageContainerElementsForIndex(pageIndex);
+      const paragraphIndex = chunk.chunkIndex;
+      pageContainers.forEach(container => {
+        const translateElement = container.querySelector('.BRtranslateLayer');
+        const containerChildren = Array.from(translateElement.childNodes);
+        const paragraphEle = containerChildren[paragraphIndex];
+        if (!paragraphEle) { return; }
+        const [pOffHeight, pOffTop, pOffWidth, pOffLeft] = [paragraphEle.offsetHeight, paragraphEle.offsetTop, paragraphEle.offsetWidth, paragraphEle.offsetLeft];
+        const boxes = {pageIndex: [
+          {l: pOffLeft, r: pOffLeft + pOffWidth, b: pOffTop + pOffHeight, t: pOffTop},
+        ]};
+        renderBoxesInPageContainerLayer('ttsHiliteLayer', boxes.pageIndex, this.br.book.getPage(pageIndex), translateElement);
+      });
+      return;
+    }
     // group by index; currently only possible to have chunks on one page :/
     this._ttsBoxesByIndex = {
       [pageIndex]: chunk.lineRects.map(([l, b, r, t]) => ({l, r, b, t})),
@@ -387,11 +423,11 @@ export class TtsPlugin extends BookReaderPlugin {
    * @param {number} [value]
    */
   sendAnalyticsEvent(action, value) {
-    if (this.br._plugins.archiveAnalytics) {
+    if (this.br.plugins.archiveAnalytics) {
       const extraValues = {};
       const mediaLanguage = this.ttsEngine.opts.bookLanguage;
       if (mediaLanguage) extraValues.mediaLanguage = mediaLanguage;
-      this.br._plugins.archiveAnalytics.sendEvent('BRReadAloud', action, value, extraValues);
+      this.br.plugins.archiveAnalytics.sendEvent('BRReadAloud', action, value, extraValues);
     }
   }
 }

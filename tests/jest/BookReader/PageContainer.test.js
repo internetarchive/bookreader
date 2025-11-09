@@ -52,15 +52,26 @@ describe('constructor', () => {
   });
 
   test('non-empty page', () => {
-    const pc = new PageContainer({index: 7}, {isProtected: false});
+    const page = {
+      index: 7,
+      getPageNum: () => '8',
+    };
+    const pc = new PageContainer(page, {isProtected: false});
     expect(pc.$container.hasClass('BRemptypage')).toBe(false);
     expect(pc.$container.hasClass('pagediv7')).toBe(true);
   });
 
-  test('adds side attribute', () => {
-    const pc = new PageContainer({index: 7, pageSide: 'R'}, {isProtected: false});
+  test('adds attributes', () => {
+    const page = {
+      index: 7,
+      pageSide: 'R',
+      getPageNum: () => '8',
+    };
+    const pc = new PageContainer(page, {isProtected: false});
     expect(pc.$container.hasClass('BRemptypage')).toBe(false);
     expect(pc.$container.attr('data-side')).toBe('R');
+    expect(pc.$container.attr('data-index')).toBe('7');
+    expect(pc.$container.attr('data-page-num')).toBe('8');
   });
 });
 

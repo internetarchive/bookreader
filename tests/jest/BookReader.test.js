@@ -2,12 +2,19 @@
 import BookReader, {_modeStringToNumber} from '@/src/BookReader.js';
 import '@/src/plugins/plugin.resume.js';
 import '@/src/plugins/url/plugin.url.js';
+import {DEFAULT_OPTIONS} from '@/src/BookReader/options.js';
+import { html } from 'lit';
 
 /** @type {import('@/src/BookReader.js').default} */
 let br;
 beforeAll(() => {
   document.body.innerHTML = '<div id="BookReader">';
-  br = new BookReader();
+  br = new BookReader({
+    server: '',
+    bookId: '',
+    subPrefix: '',
+    bookPath: '',
+  });
 });
 
 afterEach(() => {
@@ -34,35 +41,35 @@ test('has registered fullscreen toggle event', () => {
 });
 
 test('checks cookie when initParams called', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => 15);
+  br.plugins.resume.getResumeValue = jest.fn(() => 15);
   br.urlReadFragment = jest.fn(() => '');
 
   const params = br.initParams();
-  expect(br._plugins.resume.getResumeValue).toHaveBeenCalledTimes(1);
+  expect(br.plugins.resume.getResumeValue).toHaveBeenCalledTimes(1);
   expect(params.init).toBe(true);
   expect(params.index).toBe(15);
   expect(params.fragmentChange).toBe(true);
 });
 
 test('does not check cookie when initParams called', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => null);
+  br.plugins.resume.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => '');
   br.options.plugins.resume.enabled = false;
 
   const params = br.initParams();
-  expect(br._plugins.resume.getResumeValue).toHaveBeenCalledTimes(0);
+  expect(br.plugins.resume.getResumeValue).toHaveBeenCalledTimes(0);
   expect(params.init).toBe(true);
   expect(params.index).toBe(0);
   expect(params.fragmentChange).toBe(false);
 });
 
 test('gets index from fragment when both fragment and cookie when InitParams called', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => 15);
+  br.plugins.resume.getResumeValue = jest.fn(() => 15);
   br.urlReadFragment = jest.fn(() => 'page/n4');
   br.options.plugins.resume.enabled = true;
 
   const params = br.initParams();
-  expect(br._plugins.resume.getResumeValue).toHaveBeenCalledTimes(1);
+  expect(br.plugins.resume.getResumeValue).toHaveBeenCalledTimes(1);
   expect(params.init).toBe(true);
   expect(params.index).toBe(4);
   expect(params.fragmentChange).toBe(true);
@@ -91,8 +98,28 @@ test('calls switchMode with init option when init called', () => {
     .toHaveProperty('init', true);
 });
 
+test('has added BR property: server', () => {
+  expect(br).toHaveProperty('server');
+  expect(br.server).toBeDefined();
+});
+
+test('has added BR property: bookId', () => {
+  expect(br).toHaveProperty('bookId');
+  expect(br.bookId).toBeDefined();
+});
+
+test('has added BR property: subPrefix', () => {
+  expect(br).toHaveProperty('subPrefix');
+  expect(br.subPrefix).toBeDefined();
+});
+
+test('has added BR property: bookPath', () => {
+  expect(br).toHaveProperty('bookPath');
+  expect(br.bookPath).toBeDefined();
+});
+
 test('has suppressFragmentChange true when init with no input', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => null);
+  br.plugins.resume.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => '');
   br.urlReadHashFragment = jest.fn(() => '');
   br.switchMode = jest.fn();
@@ -103,7 +130,7 @@ test('has suppressFragmentChange true when init with no input', () => {
 });
 
 test('has suppressFragmentChange false when init with cookie', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => 5);
+  br.plugins.resume.getResumeValue = jest.fn(() => 5);
   br.urlReadFragment = jest.fn(() => '');
   br.switchMode = jest.fn();
 
@@ -113,7 +140,7 @@ test('has suppressFragmentChange false when init with cookie', () => {
 });
 
 test('has suppressFragmentChange false when init with fragment', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => null);
+  br.plugins.resume.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => 'mode/1up');
   br.switchMode = jest.fn();
 
@@ -123,7 +150,7 @@ test('has suppressFragmentChange false when init with fragment', () => {
 });
 
 test('has suppressFragmentChange false when init with hash fragment', () => {
-  br._plugins.resume.getResumeValue = jest.fn(() => null);
+  br.plugins.resume.getResumeValue = jest.fn(() => null);
   br.urlReadFragment = jest.fn(() => '');
   br.urlReadHashFragment = jest.fn(() => 'mode/1up');
   br.switchMode = jest.fn();
@@ -289,3 +316,117 @@ describe('_modeStringToNumber', () => {
     expect(_modeStringToNumber('mode/thumb')).toBe(3);
   });
 });
+
+describe('extendOptions', () => {
+  test('returns the single option when only one option is provided', () => {
+    const singleOption = { foo: 'bar' };
+    const result = BookReader.extendOptions(singleOption);
+    expect(result).toBe(singleOption);
+  });
+
+  test('returns undefined when no options are provided', () => {
+    const result = BookReader.extendOptions();
+    expect(result).toBeUndefined();
+  });
+
+  test('performs shallow merge of non-plugin options', () => {
+    const option1 = { foo: 'bar', shared: 'first' };
+    const option2 = { baz: 'qux', shared: 'second' };
+    const result = BookReader.extendOptions(option1, option2);
+
+    expect(result).toEqual({
+      foo: 'bar',
+      baz: 'qux',
+      shared: 'second',
+    });
+  });
+
+  test('individually merges plugin options', () => {
+    const option1 = {
+      plugins: {
+        search: { enabled: true, option1: 'value1' },
+        tts: { enabled: false },
+      },
+    };
+    const option2 = {
+      plugins: {
+        search: { option2: 'value2', option1: 'overridden' },
+        resume: { enabled: true },
+      },
+    };
+
+    const result = BookReader.extendOptions(option1, option2);
+
+    expect(result.plugins.search).toEqual({
+      enabled: true,
+      option1: 'overridden',
+      option2: 'value2',
+    });
+    expect(result.plugins.tts).toEqual({ enabled: false });
+    expect(result.plugins.resume).toEqual({ enabled: true });
+  });
+
+  test('handles case where first option has no plugins but second does', () => {
+    const option1 = { foo: 'bar' };
+    const option2 = {
+      plugins: {
+        search: { enabled: true },
+      },
+    };
+
+    const result = BookReader.extendOptions(option1, option2);
+
+    expect(result.foo).toBe('bar');
+    expect(result.plugins.search).toEqual({ enabled: true });
+  });
+
+  test('handles case where first option has plugins but second does not', () => {
+    const option1 = {
+      plugins: {
+        search: { enabled: true },
+      },
+    };
+    const option2 = { foo: 'bar' };
+
+    const result = BookReader.extendOptions(option1, option2);
+
+    expect(result.foo).toBe('bar');
+    expect(result.plugins.search).toEqual({ enabled: true });
+  });
+
+  for (const [key, value] of Object.entries(DEFAULT_OPTIONS)) {
+    if (isObject(value)) {
+      const firstKey = Object.keys(value)[0];
+      const isDeep = isObject(value[firstKey]);
+      if (isDeep) {
+        test(`shallow merges complex map option: ${key}`, () => {
+          const result = BookReader.extendOptions({}, DEFAULT_OPTIONS, { [key]: { [firstKey]: { newProp: 'new' } } });
+          expect(result[key][firstKey]).toHaveProperty('newProp', 'new');
+        });
+      } else {
+        test(`shallow merges complex option: ${key}`, () => {
+          const result = BookReader.extendOptions({}, DEFAULT_OPTIONS, { [key]: { newProp: 'new' } });
+          expect(result[key]).toHaveProperty('newProp', 'new');
+        });
+      }
+    }
+  }
+
+  test('Handles TemplateResult plugin options', () => {
+    const templateResult = html`<span>Test</span>`;
+    const options = {
+      plugins: {
+        translate: { panelDisclaimerText: templateResult },
+      },
+    };
+
+    const result = BookReader.extendOptions({}, DEFAULT_OPTIONS, options);
+    expect(result.plugins.translate.panelDisclaimerText).toBe(templateResult);
+    // This is what caused it to break before
+    expect(result.plugins.translate.panelDisclaimerText.strings).toHaveProperty('raw');
+  });
+});
+
+function isObject(item) {
+  return item && typeof item === 'object' && !Array.isArray(item);
+}

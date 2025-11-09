@@ -1,6 +1,6 @@
 import { fixtureCleanup, fixtureSync } from '@open-wc/testing-helpers';
 import sinon from 'sinon';
-import DownloadsProvider from '@/src/BookNavigator/downloads/downloads-provider';
+import DownloadsProvider from '@/src/BookNavigator/downloads/downloads-provider.js';
 
 const downloadableTypes = [
   ["PDF", "//archive.org/download/theworksofplato01platiala/theworksofplato01platiala.pdf"],

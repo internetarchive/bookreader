@@ -462,6 +462,15 @@ export class PageModel {
   }
 
   /**
+   * Return the asserted page number for this page, or, if one is not
+   * present, the n-prefixed page index.
+   * @returns {PageNumString}
+   */
+  getPageNum() {
+    return this.book.getPageNum(this.index);
+  }
+
+  /**
    * Returns the srcset with correct URIs or void string if out of range
    * @param {number} reduce
    * @param {number} [rotate]
@@ -539,12 +548,13 @@ export class PageModel {
 // There are a few main ways we can reference a specific page in a book:
 /**
  * @typedef {string} PageNumString
- * Possible values: /^n?\d+$/. Example: 'n7', '18'
- * Not necessarily unique
+ * The way page numbers are usually displayed in the UI. Either
+ * an asserted page number if the book has one (e.g. '18', or 'A-1'),
+ * or the n-prefixed 0-based index (e.g. 'n7')
  */
 /**
  * @typedef {number} LeafNum
- * No clue if 0 or 1 indexed or consecutive; generally from IA book info.
+ * Internal number to IA scans. Can be 0 or 1 indexed. Unclear it it's consecutive.
  */
 /**
  * @typedef {string} PageString

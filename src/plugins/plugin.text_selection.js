@@ -1,33 +1,15 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
-import { SelectionObserver } from '../BookReader/utils/SelectionObserver.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
+import { Cache } from '../util/cache.js';
+import { toISO6391 } from './tts/utils.js';
+import { TextSelectionManager } from '../util/TextSelectionManager.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
-/**
- * @template T
- */
-export class Cache {
-  constructor(maxSize = 10) {
-    this.maxSize = maxSize;
-    /** @type {T[]} */
-    this.entries = [];
-  }
-
-  /**
-   * @param {T} entry
-   */
-  add(entry) {
-    if (this.entries.length >= this.maxSize) {
-      this.entries.shift();
-    }
-    this.entries.push(entry);
-  }
-}
 
 export class TextSelectionPlugin extends BookReaderPlugin {
   options = {
@@ -38,6 +20,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     singlePageDjvuXmlUrl: null,
     /** Whether to fetch the XML as a jsonp */
     jsonp: false,
+    /** Mox words that can be selected when the text layer is protected */
+    maxProtectedWords: 200,
   }
 
   /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
@@ -62,7 +46,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // now we do make that assumption.
     /** Whether the book is right-to-left */
     this.rtl = this.br.pageProgression === 'rl';
-    this.selectionObserver = new SelectionObserver('.BRtextLayer', this._onSelectionChange);
+    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace']}, this.options.maxProtectedWords);
   }
 
   /** @override */
@@ -70,34 +54,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     if (!this.options.enabled) return;
 
     this.loadData();
-
-    this.selectionObserver.attach();
-    new SelectionObserver('.BRtextLayer', (selectEvent) => {
-      // Track how often selection is used
-      if (selectEvent == 'started') {
-        this.br._plugins.archiveAnalytics?.sendEvent('BookReader', 'SelectStart');
-
-        // Set a class on the page to avoid hiding it when zooming/etc
-        this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
-        $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
-      }
-    }).attach();
-
-    if (this.br.protected) {
-      // Prevent right clicking when selected text
-      $(document.body).on('contextmenu dragstart copy', (e) => {
-        const selection = document.getSelection();
-        if (selection?.toString()) {
-          const intersectsTextLayer = $('.BRtextLayer')
-            .toArray()
-            .some(el => selection.containsNode(el, true));
-          if (intersectsTextLayer) {
-            e.preventDefault();
-            return false;
-          }
-        }
-      });
-    }
+    this.textSelectionManager.init();
   }
 
   /**
@@ -112,20 +69,6 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       this.createTextLayer(pageContainer);
     }
     return pageContainer;
-  }
-
-  /**
-   * @param {'started' | 'cleared'} type
-   * @param {HTMLElement} target
-   */
-  _onSelectionChange = (type, target) => {
-    if (type === 'started') {
-      this.textSelectingMode(target);
-    } else if (type === 'cleared') {
-      this.defaultMode(target);
-    } else {
-      throw new Error(`Unknown type ${type}`);
-    }
   }
 
   loadData() {
@@ -185,90 +128,6 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   }
 
   /**
-   * Intercept copied text to remove any styling applied to it
-   * @param {JQuery} $container
-   */
-  interceptCopy($container) {
-    $container[0].addEventListener('copy', (event) => {
-      const selection = document.getSelection();
-      event.clipboardData.setData('text/plain', selection.toString());
-      event.preventDefault();
-    });
-  }
-
-  /**
-   * Applies mouse events when in default mode
-   * @param {HTMLElement} textLayer
-   */
-  defaultMode(textLayer) {
-    const $pageContainer = $(textLayer).closest('.BRpagecontainer');
-    textLayer.style.pointerEvents = "none";
-    $pageContainer.find("img").css("pointer-events", "auto");
-
-    $(textLayer).off(".textSelectPluginHandler");
-    const startedMouseDown = this.mouseIsDown;
-    let skipNextMouseup = this.mouseIsDown;
-    if (startedMouseDown) {
-      textLayer.style.pointerEvents = "auto";
-    }
-
-    // Need to stop propagation to prevent DragScrollable from
-    // blocking selection
-    $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
-      this.mouseIsDown = true;
-      if ($(event.target).is(".BRwordElement, .BRspace")) {
-        event.stopPropagation();
-      }
-    });
-
-    $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
-      this.mouseIsDown = false;
-      textLayer.style.pointerEvents = "none";
-      if (skipNextMouseup) {
-        skipNextMouseup = false;
-        event.stopPropagation();
-      }
-    });
-  }
-
-  /**
-   * This mode is active while there is a selection on the given textLayer
-   * @param {HTMLElement} textLayer
-   */
-  textSelectingMode(textLayer) {
-    const $pageContainer = $(textLayer).closest('.BRpagecontainer');
-    // Make text layer consume all events
-    textLayer.style.pointerEvents = "all";
-    // Block img from getting long-press to save while selecting
-    $pageContainer.find("img").css("pointer-events", "none");
-
-    $(textLayer).off(".textSelectPluginHandler");
-
-    $(textLayer).on('mousedown.textSelectPluginHandler', (event) => {
-      this.mouseIsDown = true;
-      event.stopPropagation();
-    });
-
-    // Prevent page flip on click
-    $(textLayer).on('mouseup.textSelectPluginHandler', (event) => {
-      this.mouseIsDown = false;
-      event.stopPropagation();
-    });
-  }
-
-  /**
-   * Initializes text selection modes if there is a text layer on the page
-   * @param {JQuery} $container
-   */
-  stopPageFlip($container) {
-    /** @type {JQuery<HTMLElement>} */
-    const $textLayer = $container.find('.BRtextLayer');
-    if (!$textLayer.length) return;
-    $textLayer.each((i, s) => this.defaultMode(s));
-    this.interceptCopy($container);
-  }
-
-  /**
    * @param {PageContainer} pageContainer
    */
   async createTextLayer(pageContainer) {
@@ -287,9 +146,16 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     }
 
     const textLayer = createDIVPageLayer(pageContainer.page, 'BRtextLayer');
+    // Have to wait to make sure the page container is actually rendered,
+    // otherwise width/height are unset after a mode change.
+    await Promise.resolve();
     const ratioW = parseFloat(pageContainer.$container[0].style.width) / pageContainer.page.width;
     const ratioH = parseFloat(pageContainer.$container[0].style.height) / pageContainer.page.height;
     textLayer.style.transform = `scale(${ratioW}, ${ratioH})`;
+    const bookLangCode = toISO6391(this.br.options.bookLanguage);
+    if (bookLangCode) {
+      textLayer.setAttribute("lang", bookLangCode);
+    }
     textLayer.setAttribute("dir", this.rtl ? "rtl" : "ltr");
 
     const ocrParagraphs = $(XMLpage).find("PARAGRAPH[coords]").toArray();
@@ -315,7 +181,11 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       textLayer.appendChild(paragEl);
     }
     $container.append(textLayer);
-    this.stopPageFlip($container);
+    this.textSelectionManager.stopPageFlip($container);
+    this.br.trigger('textLayerRendered', {
+      pageIndex,
+      pageContainer,
+    });
   }
 
   /**
@@ -325,6 +195,10 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   renderParagraph(ocrParagraph) {
     const paragEl = document.createElement('p');
     paragEl.classList.add('BRparagraphElement');
+    if (ocrParagraph.getAttribute("x-role")) {
+      paragEl.classList.add('ocr-role-header-footer');
+      paragEl.ariaHidden = "true";
+    }
     const [paragLeft, paragBottom, paragRight, paragTop] = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
     const wordHeightArr = [];
     const lines = $(ocrParagraph).find("LINE[coords]").toArray();
@@ -510,6 +384,33 @@ function augmentLine(line) {
 }
 
 /**
+ * @template T
+ * Get the i-th element of an iterable
+ * @param {Iterable<T>} iterable
+ * @param {number} index
+ */
+export function genAt(iterable, index) {
+  let i = 0;
+  for (const x of iterable) {
+    if (i == index) return x;
+    i++;
+  }
+  return undefined;
+}
+
+/**
+ * @template T
+ * Generator version of filter
+ * @param {Iterable<T>} iterable
+ * @param {function(T): boolean} fn
+ */
+export function* genFilter(iterable, fn) {
+  for (const x of iterable) {
+    if (fn(x)) yield x;
+  }
+}
+
+/**
  * @template TFrom, TTo
  * Generator version of map
  * @param {Iterable<TFrom>} gen
@@ -644,4 +545,50 @@ class Rect {
   get bottom() { return this.y + this.height; }
   get top() { return this.y; }
   get left() { return this.x; }
+}
+
+/**
+ * Depth traverse the DOM tree starting at `start`, and ending at `end`.
+ * @param {Node} start
+ * @param {Node} end
+ * @returns {Generator<Node>}
+ */
+export function* walkBetweenNodes(start, end) {
+  let done = false;
+
+  /**
+   * @param {Node} node
+   */
+  function* walk(node, {children = true, parents = true, siblings = true} = {}) {
+    if (node === end) {
+      done = true;
+      yield node;
+      return;
+    }
+
+    // yield self
+    yield node;
+
+    // First iterate children (depth-first traversal)
+    if (children && node.firstChild) {
+      yield* walk(node.firstChild, {children: true, parents: false, siblings: true});
+      if (done) return;
+    }
+
+    // Then iterate siblings
+    if (siblings) {
+      for (let sib = node.nextSibling; sib; sib = sib.nextSibling) {
+        yield* walk(sib, {children: true, parents: false, siblings: false});
+        if (done) return;
+      }
+    }
+
+    // Finally, move up the tree
+    if (parents && node.parentNode) {
+      yield* walk(node.parentNode, {children: false, parents: true, siblings: true});
+      if (done) return;
+    }
+  }
+
+  yield* walk(start);
 }

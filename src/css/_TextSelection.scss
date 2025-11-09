@@ -1,4 +1,4 @@
-.BRtextLayer {
+.BRtextLayer, .BRtranslateLayer {
     z-index: 2;
     position: absolute;
     top: 0;
@@ -8,6 +8,14 @@
     // Make it so right-clicking on "blank" part of text layer sends events to the image (for saving)
     pointer-events: none;
     cursor: text;
+}
+
+.BRtextLayer {
+    mix-blend-mode: multiply;
+}
+
+.BRtranslateLayer {
+    hyphens: auto;
 }
 
 .BRparagraphElement {
@@ -46,6 +54,21 @@
     }
 }
 
+// Style URI TextFragments, eg #:~:text=example
+.BRtextLayer ::target-text {
+    // Similar colour to the default one used in Safari, Firefox. Note Chrome uses a purple colour
+    background-color: hsla(45, 80%, 66%, 0.6);
+    color: transparent;
+}
+
+.BRtranslateLayer ::selection {
+    background: hsla(210, 74%, 62%, 0.4);
+}
+
+.BRtranslateLayer ::-moz-selection {
+    background: hsla(210, 74%, 62%, 0.4);
+}
+
 .BRparagraphElement br {
     visibility: hidden;
 }
@@ -58,7 +81,8 @@
 
 // Hide text layer for performance during zooming & scrolling
 .BRsmooth-zooming, .BRscrolling-active {
-    .BRpagecontainer:not(.BRpagecontainer--hasSelection) .BRtextLayer {
+    // If the text layer has an annotation, don't hide it
+    .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)) .BRtextLayer {
         display: none;
     }
 }
@@ -79,21 +103,20 @@
 // These are Microsoft Edge specific fixed to make some of the
 // browsers features work well. These are for the in-place
 // translation.
+.BRtextLayer:has([_istranslated="1"], msreadoutspan) {
+    mix-blend-mode: normal;
+}
+
 .BRwordElement, .BRspace {
     &[_istranslated="1"], &[_msttexthash] {
-        background-color: #e4dccd;
         color: black;
         letter-spacing: unset !important;
-        background: #ccbfa7;
     }
 }
 
-.BRlineElement font[_mstmutation="1"] {
-    background: #ccbfa7;
-}
-
 .BRlineElement:has([_istranslated="1"], [_msttexthash]) {
-    background-color: #e4dccd;
+    background: rgba(248, 237, 192, 0.8);
+    backdrop-filter: blur(8px);
     color: black;
     text-align: justify;
     width: inherit;
@@ -103,6 +126,28 @@
 }
 
 .BRlineElement[_msttexthash] {
-    background: #ccbfa7;
     word-spacing: unset !important;
+}
+
+.BRtranslateLayer .BRparagraphElement {
+    pointer-events: auto;
+    overflow-y: auto;
+    background: rgba(248, 237, 192, 0.8);
+    backdrop-filter: blur(8px);
+    color:black;
+    line-height: 1em;
+    text-align: justify;
+}
+
+.BRtranslateLayer .BRparagraphElement .BRlineElement {
+    white-space: break-spaces;
+    display: inline-block;
+}
+
+.BRtextLayer.showingTranslation {
+    display: none;
+}
+
+.BRtranslateLayer .BRparagraphElement.BRtranslateHidden {
+    display: none;
 }

@@ -1,4 +1,4 @@
-import { UrlPlugin } from '@/src/plugins/url/UrlPlugin';
+import { UrlPlugin } from '@/src/plugins/url/UrlPlugin.js';
 
 afterEach(() => {
   jest.clearAllMocks();

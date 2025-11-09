@@ -145,7 +145,7 @@ describe('Plugin: URL controller', () => {
       search: 'foo',
     }));
     BookReader.prototype.search = jest.fn();
-    br.options.initialSearchTerm = 'foo';
+    br.options.plugins.search = { initialSearchTerm: 'foo' };
     br.options.urlMode = 'history';
     br.init();
     br.urlUpdateFragment();

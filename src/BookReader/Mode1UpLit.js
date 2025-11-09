@@ -2,11 +2,11 @@
 import { customElement, property, query } from 'lit/decorators.js';
 import {LitElement, html} from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import { ModeSmoothZoom } from './ModeSmoothZoom';
-import { arrChanged, genToArray, sum, throttle } from './utils';
-import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher";
-import { ScrollClassAdder } from './utils/ScrollClassAdder';
-import { ModeCoordinateSpace } from './ModeCoordinateSpace';
+import { ModeSmoothZoom } from './ModeSmoothZoom.js';
+import { arrChanged, genToArray, sum, throttle } from './utils.js';
+import { HTMLDimensionsCacher } from "./utils/HTMLDimensionsCacher.js";
+import { ScrollClassAdder } from './utils/ScrollClassAdder.js';
+import { ModeCoordinateSpace } from './ModeCoordinateSpace.js';
 /** @typedef {import('./BookModel').BookModel} BookModel */
 /** @typedef {import('./BookModel').PageIndex} PageIndex */
 /** @typedef {import('./BookModel').PageModel} PageModel */
@@ -283,7 +283,12 @@ export class Mode1UpLit extends LitElement {
       }).$container[0];
 
     pageContainerEl.style.transform = transform;
-    pageContainerEl.classList.toggle('BRpage-visible', this.visiblePages.includes(page));
+    // Prevent trigger pageVisible when scrolling outside of BookReader
+    const wasVisible = pageContainerEl.classList.contains('BRpage-visible');
+    const visibleStatus = pageContainerEl.classList.toggle('BRpage-visible', this.visiblePages.includes(page));
+    if (visibleStatus && !wasVisible) {
+      this.br.trigger('pageVisible', { pageContainerEl });
+    }
     return pageContainerEl;
   }
 

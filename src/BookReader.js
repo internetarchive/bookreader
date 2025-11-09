@@ -37,10 +37,10 @@ import { Toolbar } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
-import { ModeThumb } from './BookReader/ModeThumb';
+import { ModeThumb } from './BookReader/ModeThumb.js';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
-import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet';
+import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
 
 /**
  * BookReader
@@ -49,9 +49,46 @@ import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet';
  * @constructor
  */
 export default function BookReader(overrides = {}) {
-  const options = jQuery.extend(true, {}, BookReader.defaultOptions, overrides, BookReader.optionOverrides);
+  const options = BookReader.extendOptions({}, BookReader.defaultOptions, overrides, BookReader.optionOverrides);
   this.setup(options);
 }
+
+/**
+ * Extend the default options for BookReader
+ * Accepts any number of option objects and merges them in order.
+ *
+ * Does a shallow merge of everything except plugin options. These are individually merged.
+ * @param {...Partial<BookReaderOptions>} newOptions
+ */
+BookReader.extendOptions = function(...newOptions) {
+  if (newOptions.length <= 1) {
+    return newOptions[0];
+  }
+  /** @type {Array<keyof BookReaderOptions>} */
+  const shallowOverrides = ['onePage', 'twoPage', 'vars'];
+  /** @type {Array<keyof BookReaderOptions>} */
+  const mapOverrides = ['plugins', 'controls'];
+
+  const result = newOptions.shift();
+  for (const opts of newOptions) {
+    for (const [key, value] of Object.entries(opts)) {
+      if (shallowOverrides.includes(key)) {
+        result[key] ||= {};
+        result[key] = Object.assign(result[key], value);
+      } else if (mapOverrides.includes(key)) {
+        result[key] ||= {};
+        for (const [name, mapValue] of Object.entries(value)) {
+          result[key][name] ||= {};
+          Object.assign(result[key][name], mapValue);
+        }
+      } else {
+        result[key] = value;
+      }
+    }
+  }
+
+  return result;
+};
 
 BookReader.version = PACKAGE_JSON.version;
 
@@ -72,10 +109,16 @@ BookReader.PLUGINS = {
   autoplay: null,
   /** @type {typeof import('./plugins/plugin.chapters.js').ChaptersPlugin | null}*/
   chapters: null,
+  /** @type {typeof import('./plugins/plugin.experiments.js').ExperimentsPlugin | null}*/
+  experiments: null,
   /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
   resume: null,
+  /** @type {typeof import('./plugins/search/plugin.search.js').SearchPlugin | null}*/
+  search: null,
   /** @type {typeof import('./plugins/plugin.text_selection.js').TextSelectionPlugin | null}*/
   textSelection: null,
+  /** @type {typeof import('./plugins/translate/plugin.translate.js').TranslatePlugin | null}*/
+  translate: null,
   /** @type {typeof import('./plugins/tts/plugin.tts.js').TtsPlugin | null}*/
   tts: null,
 };
@@ -121,29 +164,42 @@ BookReader.prototype.setup = function(options) {
   /** @type {import('@/src/BookNavigator/book-navigator.js').BookNavigator} */
   this.shell;
 
+  // Base server used by some api calls
+  /** @deprecated */
+  this.bookId = options.bookId;
+  /** @deprecated */
+  this.server = options.server;
+  /** @deprecated */
+  this.subPrefix = options.subPrefix;
+  /** @deprecated */
+  this.bookPath = options.bookPath;
+
   // Construct the usual plugins first to get type hints
-  this._plugins = {
+  this.plugins = {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,
+    experiments: BookReader.PLUGINS.experiments ? new BookReader.PLUGINS.experiments(this) : null,
+    search: BookReader.PLUGINS.search ? new BookReader.PLUGINS.search(this) : null,
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
+    translate: BookReader.PLUGINS.translate ? new BookReader.PLUGINS.translate(this) : null,
     tts: BookReader.PLUGINS.tts ? new BookReader.PLUGINS.tts(this) : null,
   };
 
   // Delete anything that's null
-  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
-    if (!plugin) delete this._plugins[pluginName];
+  for (const [pluginName, plugin] of Object.entries(this.plugins)) {
+    if (!plugin) delete this.plugins[pluginName];
   }
 
   // Now construct the rest of the plugins
   for (const [pluginName, PluginClass] of Object.entries(BookReader.PLUGINS)) {
-    if (this._plugins[pluginName] || !PluginClass) continue;
-    this._plugins[pluginName] = new PluginClass(this);
+    if (this.plugins[pluginName] || !PluginClass) continue;
+    this.plugins[pluginName] = new PluginClass(this);
   }
 
   // And call setup on them
-  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
+  for (const [pluginName, plugin] of Object.entries(this.plugins)) {
     try {
       plugin.setup(this.options.plugins?.[pluginName] ?? {});
       // Write the options back; this way the plugin is the source of truth,
@@ -154,11 +210,13 @@ BookReader.prototype.setup = function(options) {
     }
   }
 
+  if (this.plugins.search?.options.enabled) {
+    // Expose the search method for convenience / backward compat
+    this.search = this.plugins.search.search.bind(this.plugins.search);
+  }
+
   /** @type {number} @deprecated some past iterations set this */
   this.numLeafs = undefined;
-
-  /** Overridden by plugin.search.js */
-  this.enableSearch = false;
 
   /**
    * Store viewModeOrder states
@@ -315,6 +373,24 @@ BookReader.prototype.setup = function(options) {
   this.hasKeyFocus = true;
 };
 
+BookReader.prototype.initializePlugin = function(pluginName) {
+  const plugin = new BookReader.PLUGINS[pluginName](this);
+  this.plugins[pluginName] = plugin;
+  try {
+    plugin.setup(this.options.plugins?.[pluginName] ?? {});
+    this.options.plugins[pluginName] = plugin.options;
+  } catch (e) {
+    console.error(`Error setting up plugin ${pluginName} outside of regular cycle`, e);
+    throw e;
+  }
+
+  try {
+    plugin.init();
+  } catch (e) {
+    console.error(`Error initializing plugin ${pluginName} outside of regular cycle`, e);
+    throw e;
+  }
+};
 /**
  * Get all the HTML Elements that are being/can be rendered.
  * Includes cached elements which might be rendered again.
@@ -332,6 +408,7 @@ BookReader.prototype.getActivePageContainerElements = function() {
  * Get the HTML Elements for the rendered page. Note there can be more than one, since
  * (at least as of writing) different modes can maintain different caches.
  * @param {PageIndex} pageIndex
+ * @returns {HTMLElement[]}
  */
 BookReader.prototype.getActivePageContainerElementsForIndex = function(pageIndex) {
   return [
@@ -411,9 +488,9 @@ BookReader.prototype.initParams = function() {
   }
 
   // Check for Resume plugin
-  if (this._plugins.resume?.options.enabled) {
+  if (this.plugins.resume?.options.enabled) {
     // Check cookies
-    const val = this._plugins.resume.getResumeValue();
+    const val = this.plugins.resume.getResumeValue();
     if (val !== null) {
       // If page index different from default
       if (params.index !== val) {
@@ -447,23 +524,24 @@ BookReader.prototype.initParams = function() {
   }
 
   // Check for Search plugin
-  if (this.options.enableSearch) {
+  if (this.plugins.search?.options.enabled) {
+    const sp = this.plugins.search;
     // Go to first result only if no default or URL page
-    this.options.goToFirstResult = !params.pageFound;
+    sp.options.goToFirstResult = !params.pageFound;
 
     // If initialSearchTerm not set
-    if (!this.options.initialSearchTerm) {
+    if (!sp.initialSearchTerm) {
       // Look for any term in URL
       if (params.search) {
         // Old style: /search/[term]
-        this.options.initialSearchTerm = params.search;
-        this.searchTerm = params.search;
+        sp.options.initialSearchTerm = params.search;
+        sp.searchTerm = params.search;
       } else {
         // If we have a query string: q=[term]
         const searchParams = new URLSearchParams(this.readQueryString());
         const searchTerm = searchParams.get('q');
         if (searchTerm) {
-          this.options.initialSearchTerm = utils.decodeURIComponentPlus(searchTerm);
+          sp.options.initialSearchTerm = utils.decodeURIComponentPlus(searchTerm);
         }
       }
     }
@@ -603,7 +681,7 @@ BookReader.prototype.init = function() {
     const $navBar = this.initNavbar();
 
     // extend navbar with plugins
-    for (const plugin of Object.values(this._plugins)) {
+    for (const plugin of Object.values(this.plugins)) {
       plugin.extendNavBar($navBar);
     }
   }
@@ -616,8 +694,10 @@ BookReader.prototype.init = function() {
   this.initUIStrings();
 
   // Bind to events
-
-  this.bindNavigationHandlers();
+  this._components.navbar.bindControlClickHandlers();
+  for (const plugin of Object.values(this.plugins)) {
+    plugin._bindNavigationHandlers();
+  }
   this.setupKeyListeners();
 
   this.lastScroll = (new Date().getTime());
@@ -644,7 +724,7 @@ BookReader.prototype.init = function() {
   }
 
   // If not searching, set to allow on-going fragment changes
-  if (!this.options.initialSearchTerm) {
+  if (!this.plugins.search?.options.initialSearchTerm) {
     this.suppressFragmentChange = false;
   }
 
@@ -653,7 +733,7 @@ BookReader.prototype.init = function() {
   }
 
   // Init plugins
-  for (const [pluginName, plugin] of Object.entries(this._plugins)) {
+  for (const [pluginName, plugin] of Object.entries(this.plugins)) {
     try {
       plugin.init();
     }
@@ -686,12 +766,26 @@ BookReader.prototype.trigger = function(name, props = this) {
   $(document).trigger(eventName, props);
 };
 
-BookReader.prototype.bind = function(name, callback) {
+BookReader.prototype.on = function(name, callback) {
   $(document).on('BookReader:' + name, callback);
 };
 
-BookReader.prototype.unbind = function(name, callback) {
+BookReader.prototype.off = function(name, callback) {
   $(document).off('BookReader:' + name, callback);
+};
+
+/**
+ * @deprecated Use .on and .off instead
+ */
+BookReader.prototype.bind = function(name, callback) {
+  return this.on(name, callback);
+};
+
+/**
+ * @deprecated Use .on and .off instead
+ */
+BookReader.prototype.unbind = function(name, callback) {
+  return this.off(name, callback);
 };
 
 /**
@@ -858,7 +952,7 @@ BookReader.prototype._createPageContainer = function(index) {
   });
 
   // Call plugin handlers
-  for (const plugin of Object.values(this._plugins)) {
+  for (const plugin of Object.values(this.plugins)) {
     plugin._configurePageContainer(pageContainer);
   }
 
@@ -911,7 +1005,8 @@ BookReader.prototype.zoom = function(direction) {
   } else {
     this.activeMode.zoom('out');
   }
-  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
+  this.plugins.translate?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
   return;
 };
 
@@ -1089,7 +1184,7 @@ BookReader.prototype.getPrevReadMode = function(mode) {
 
 /**
  * Switches the mode (eg 1up 2up thumb)
- * @param {number}
+ * @param {number|'1up' | '2up' | 'thumb'}
  * @param {object} [options]
  * @param {boolean} [options.suppressFragmentChange = false]
  * @param {boolean} [options.onInit = false] - this
@@ -1102,6 +1197,18 @@ BookReader.prototype.switchMode = function(
     pageFound = false,
   } = {},
 ) {
+  if (typeof mode === 'string') {
+    mode = {
+      '1up': this.constMode1up,
+      '2up': this.constMode2up,
+      'thumb': this.constModeThumb,
+    }[mode];
+  }
+
+  if (!mode) {
+    throw new Error(`Invalid mode: ${mode}`);
+  }
+
   // Skip checks before init() complete
   if (this.init.initComplete) {
     if (mode === this.mode) {
@@ -1146,7 +1253,8 @@ BookReader.prototype.switchMode = function(
   const eventName = mode + 'PageViewSelected';
   this.trigger(BookReader.eventNames[eventName]);
 
-  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
+  this.plugins.translate?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
 };
 
 BookReader.prototype.updateBrClasses = function() {
@@ -1218,7 +1326,8 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   }
   this.jumpToIndex(currentIndex);
 
-  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
+  this.plugins.translate?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
   // Add "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
   // trigger event here, so that animations,
@@ -1264,7 +1373,8 @@ BookReader.prototype.exitFullScreen = async function () {
     await this.activeMode.mode1UpLit.updateComplete;
   }
 
-  this._plugins.textSelection?.stopPageFlip(this.refs.$brContainer);
+  this.plugins.textSelection?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
+  this.plugins.translate?.textSelectionManager.stopPageFlip(this.refs.$brContainer);
   // Remove "?view=theater"
   this.trigger(BookReader.eventNames.fragmentChange);
   this.refs.$br.removeClass('BRfullscreenAnimation');
@@ -1308,7 +1418,7 @@ BookReader.prototype.updateFirstIndex = function(
   // If there's an initial search we stop suppressing global URL changes
   // when local suppression ends
   // This seems to correctly handle multiple calls during mode/1up
-  if (this.options.initialSearchTerm && !suppressFragmentChange) {
+  if (this.plugins.search?.options.initialSearchTerm && !suppressFragmentChange) {
     this.suppressFragmentChange = false;
   }
 
@@ -1455,141 +1565,6 @@ exposeOverrideableMethod(Toolbar, '_components.toolbar', 'buildInfoDiv');
 BookReader.prototype.getToolBarHeight = Toolbar.prototype.getToolBarHeight;
 exposeOverrideableMethod(Toolbar, '_components.toolbar', 'getToolBarHeight');
 
-/**
- * Bind navigation handlers
- */
-BookReader.prototype.bindNavigationHandlers = function() {
-  const self = this;
-  const jIcons = this.$('.BRicon');
-
-  // Map of jIcon class -> click handler
-  const navigationControls = {
-    book_left: () => {
-      this.trigger(BookReader.eventNames.stop);
-      this.left();
-    },
-    book_right: () => {
-      this.trigger(BookReader.eventNames.stop);
-      this.right();
-    },
-    book_top: this.first.bind(this),
-    book_bottom: this.last.bind(this),
-    book_leftmost: this.leftmost.bind(this),
-    book_rightmost: this.rightmost.bind(this),
-    onepg: () => {
-      this.switchMode(self.constMode1up);
-    },
-    thumb: () => {
-      this.switchMode(self.constModeThumb);
-    },
-    twopg: () => {
-      this.switchMode(self.constMode2up);
-    },
-    zoom_in: () => {
-      this.trigger(BookReader.eventNames.stop);
-      this.zoom(1);
-      this.trigger(BookReader.eventNames.zoomIn);
-    },
-    zoom_out: () => {
-      this.trigger(BookReader.eventNames.stop);
-      this.zoom(-1);
-      this.trigger(BookReader.eventNames.zoomOut);
-    },
-    full: () => {
-      if (this.ui == 'embed') {
-        const url = this.$('.BRembedreturn a').attr('href');
-        window.open(url);
-      } else {
-        this.toggleFullscreen();
-      }
-    },
-  };
-
-  // custom event for auto-loan-renew in ia-book-actions
-  // - to know if user is actively reading
-  this.$('nav.BRcontrols li button').on('click', () => {
-    this.trigger(BookReader.eventNames.userAction);
-  });
-
-  for (const control in navigationControls) {
-    jIcons.filter(`.${control}`).on('click.bindNavigationHandlers', () => {
-      navigationControls[control]();
-      return false;
-    });
-  }
-
-  const $brNavCntlBtmEl = this.$('.BRnavCntlBtm');
-  const $brNavCntlTopEl = this.$('.BRnavCntlTop');
-
-  this.$('.BRnavCntl').click(
-    function() {
-      const promises = [];
-      // TODO don't use magic constants
-      // TODO move this to a function
-      if ($brNavCntlBtmEl.hasClass('BRdn')) {
-        if (self.refs.$BRtoolbar)
-          promises.push(self.refs.$BRtoolbar.animate(
-            {top: self.getToolBarHeight() * -1},
-          ).promise());
-        promises.push(self.$('.BRfooter').animate({bottom: self.getFooterHeight() * -1}).promise());
-        $brNavCntlBtmEl.addClass('BRup').removeClass('BRdn');
-        $brNavCntlTopEl.addClass('BRdn').removeClass('BRup');
-        self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'45px'});
-        self.$('.BRnavCntl').delay(1000).animate({opacity:.75}, 1000);
-      } else {
-        if (self.refs.$BRtoolbar)
-          promises.push(self.refs.$BRtoolbar.animate({top:0}).promise());
-        promises.push(self.$('.BRfooter').animate({bottom:0}).promise());
-        $brNavCntlBtmEl.addClass('BRdn').removeClass('BRup');
-        $brNavCntlTopEl.addClass('BRup').removeClass('BRdn');
-        self.$('.BRnavCntlBtm.BRnavCntl').animate({height:'30px'});
-        self.$('.BRvavCntl').animate({opacity:1});
-      }
-      $.when.apply($, promises).done(function() {
-        // Only do full resize in auto mode and need to recalc. size
-        if (self.mode == self.constMode2up && self.twoPage.autofit != null
-                    && self.twoPage.autofit != 'none'
-        ) {
-          self.resize();
-        } else if (self.mode == self.constMode1up && self.onePage.autofit != null
-                           && self.onePage.autofit != 'none') {
-          self.resize();
-        } else {
-          // Don't do a full resize to avoid redrawing images
-          self.resizeBRcontainer();
-        }
-      });
-    },
-  );
-  $brNavCntlBtmEl
-    .on("mouseover", function() {
-      if ($(this).hasClass('BRup')) {
-        self.$('.BRnavCntl').animate({opacity:1},250);
-      }
-    })
-    .on("mouseleave", function() {
-      if ($(this).hasClass('BRup')) {
-        self.$('.BRnavCntl').animate({opacity:.75},250);
-      }
-    });
-  $brNavCntlTopEl
-    .on("mouseover", function() {
-      if ($(this).hasClass('BRdn')) {
-        self.$('.BRnavCntl').animate({opacity:1},250);
-      }
-    })
-    .on("mouseleave", function() {
-      if ($(this).hasClass('BRdn')) {
-        self.$('.BRnavCntl').animate({opacity:.75},250);
-      }
-    });
-
-  // Call _bindNavigationHandlers on the plugins
-  for (const plugin of Object.values(this._plugins)) {
-    plugin._bindNavigationHandlers();
-  }
-};
-
 /**************************/
 /** BookModel extensions **/
 /**************************/
@@ -1637,8 +1612,8 @@ BookReader.prototype.updateFromParams = function(params) {
   // process /search
   // @deprecated for urlMode 'history'
   // Continues to work for urlMode 'hash'
-  if (this.enableSearch && 'undefined' != typeof(params.search)) {
-    if (this.searchTerm !== params.search) {
+  if (this.plugins.search?.enabled && 'undefined' != typeof(params.search)) {
+    if (this.plugins.search.searchTerm !== params.search) {
       this.$('.BRsearchInput').val(params.search);
     }
   }
@@ -1763,8 +1738,6 @@ BookReader.prototype.initUIStrings = function() {
     '.book_right': 'Flip right',
     '.play': 'Play',
     '.pause': 'Pause',
-    '.BRdn': 'Show/hide nav bar', // Would have to keep updating on state change to have just "Hide nav bar"
-    '.BRup': 'Show/hide nav bar',
     '.book_top': 'First page',
     '.book_bottom': 'Last page',
     '.book_leftmost': 'First page',
@@ -1842,8 +1815,8 @@ BookReader.prototype.paramsFromCurrent = function() {
     params.view = fullscreenView;
   }
   // Search
-  if (this.enableSearch) {
-    params.search = this.searchTerm;
+  if (this.plugins.search?.enabled) {
+    params.search = this.plugins.search.searchTerm;
   }
 
   return params;

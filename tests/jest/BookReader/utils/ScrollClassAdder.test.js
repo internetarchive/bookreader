@@ -1,6 +1,6 @@
 // @ts-check
 import  sinon from 'sinon';
-import { ScrollClassAdder } from '@/src/BookReader/utils/ScrollClassAdder';
+import { ScrollClassAdder } from '@/src/BookReader/utils/ScrollClassAdder.js';
 
 describe('ScrollClassAdder', () => {
   test('Does not attach during construction', () => {

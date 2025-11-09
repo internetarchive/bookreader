@@ -164,14 +164,20 @@ describe('<book-navigator>', () => {
         expect(el.menuProviders.visualAdjustments).toBeInstanceOf(VisualAdjustmentsProvider);
       });
       describe('Loading Sub Menus By Plugin Flags', () => {
-        test('Search: uses `enableSearch` flag', async() => {
+        test('Search: uses `enabled` flag', async() => {
           const el = fixtureSync(container());
           const $brContainer = document.createElement('div');
           const brStub = {
             resize: sinon.fake(),
             currentIndex: sinon.fake(),
             jumpToIndex: sinon.fake(),
-            options: { enableSearch: true },
+            options: {
+              plugins: {
+                search: {
+                  enabled: true,
+                },
+              },
+            },
             refs: {
               $brContainer,
             },
@@ -317,19 +323,6 @@ describe('<book-navigator>', () => {
         });
       });
 
-      describe('Shortcuts', () => {
-        test('has specific order of menu shortcuts to show', () => {
-          const el = fixtureSync(container());
-          expect(el.shortcutOrder).toEqual([
-            'fullscreen',
-            'volumes',
-            'chapters',
-            'search',
-            'bookmarks',
-          ]);
-        });
-      });
-
       describe('Behaviors for specific menus', () => {
         describe('Search menu - ref: plugin.search.js', () => {
           test('Event: listens for `BookReader:ToggleSearchMenu to open search side panel', async () => {
@@ -346,7 +339,6 @@ describe('<book-navigator>', () => {
 
             let sidePanelConfig = {};
             el.addEventListener('updateSideMenu', (e) => {
-              console.log();
               sidePanelConfig = e.detail;
             });
             const toggleSearchMenuEvent = new Event('BookReader:ToggleSearchMenu');

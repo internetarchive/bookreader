@@ -2,7 +2,7 @@
 
 ![Build Status](https://github.com/internetarchive/bookreader/actions/workflows/node.js.yml/badge.svg?branch=master) [![codecov](https://codecov.io/gh/internetarchive/bookreader/branch/master/graph/badge.svg)](https://codecov.io/gh/internetarchive/bookreader)
 
-**Disclaimer: BookReader v5 is currently in beta. It's stable enough for production use (and is what is being used on archive.org), but there will be some breaking changes in the next ~month or so to public BookReader APIs.**
+**Disclaimer: BookReader v5 is currently in beta. It is stable enough for production use and is actively deployed on archive.org. Future updates while in v5 beta may introduce breaking changes to public BookReader APIs, although these will be noted in the CHANGELOG.**
 
 
 <p align="center">
@@ -146,8 +146,6 @@ The Fragment Change message is sent to the parent window when the embedded BookR
 (updates?)
 
 The source JavaScript is written in ES6 (located in the `src/js` directory) and in ES5 (located in `BookReader`). `npm run serve-dev` starts an auto-reloading dev server, that builds js/css that has been edited at `localhost:8000`.
-
-Until the next major version bump, we have to store the build files inside the repo to maintain backwards compatibility. Please _DO NOT_ include these files in your PR. Anything in the `BookReader/` directory should not be committed.
 
 ### Developing icons
 To see local icon package changes in bookreader, you'll need to install core-js into the icon package and link into bookreader.

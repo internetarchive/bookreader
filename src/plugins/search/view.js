@@ -1,13 +1,17 @@
+// @ts-check
+/** @typedef {import('@/src/BookReader.js').default} BookReader */
+
 class SearchView {
   /**
    * @param {object} params
-   * @param {object} params.br The BookReader instance
-   * @param {function} params.cancelSearch callback when a user wants to cancel search
+   * @param {BookReader} params.br The BookReader instance
+   * @param {function} params.searchCancelledCallback callback when a user wants to cancel search
    *
    * @event BookReader:SearchResultsCleared - when the search results nav gets cleared
    * @event BookReader:ToggleSearchMenu - when search results menu should toggle
    */
   constructor({ br, searchCancelledCallback = () => {} }) {
+    /** @type {BookReader} */
     this.br = br;
     this.matches = [];
     this.cacheDOMElements();
@@ -40,7 +44,7 @@ class SearchView {
   }
 
   clearSearchFieldAndResults(dispatchEventWhenComplete = true) {
-    this.br.removeSearchResults();
+    this.br.plugins.search.removeSearchResults();
     this.removeResultPins();
     this.emptyMatches();
     this.setQuery('');
@@ -214,7 +218,7 @@ class SearchView {
       <form class="BRbooksearch desktop">
         <input type="search" name="query" class="BRsearchInput" value="" placeholder="Search inside"/>
         <button type="submit" class="BRsearchSubmit">
-          <img src="${this.br.imagesBaseURL}icon_search_button.svg" />
+          <img src="${this.br.options.imagesBaseURL}icon_search_button.svg" />
         </button>
       </form>
     `;
@@ -269,15 +273,15 @@ class SearchView {
           $(event.target).addClass('front');
         })
         .on("mouseleave", (event) => $(event.target).removeClass('front'))
-        .on("click", () => { this.br._searchPluginGoToResult(match.matchIndex); });
+        .on("click", () => { this.br.plugins.search.jumpToMatch(match.matchIndex); });
     });
   }
 
   /**
-   * @param {boolean} bool
+   * @param {boolean} show
    */
-  toggleSearchPending(bool) {
-    if (bool) {
+  toggleSearchPending(show = false) {
+    if (show) {
       this.br.showProgressPopup("Search results will appear below...", () => this.progressPopupClosed());
     }
     else {
@@ -375,11 +379,11 @@ class SearchView {
 
   handleSearchStarted() {
     this.emptyMatches();
-    this.br.removeSearchHilites();
+    this.br.plugins.search.removeSearchHilites();
     this.removeResultPins();
     this.toggleSearchPending(true);
     this.teardownSearchNavigation();
-    this.setQuery(this.br.searchTerm);
+    this.setQuery(this.br.plugins.search.searchTerm);
   }
 
   /**

@@ -1,4 +1,4 @@
-import BookReader from '@/src/BookReader';
+import BookReader from '@/src/BookReader.js';
 import { sleep } from '@/src/BookReader/utils.js';
 import sinon from 'sinon';
 

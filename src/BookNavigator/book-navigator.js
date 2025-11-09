@@ -10,6 +10,8 @@ import BookmarksProvider from './bookmarks/bookmarks-provider.js';
 import SharingProvider from './sharing.js';
 import ViewableFilesProvider from './viewable-files.js';
 import iaLogo from './assets/ia-logo.js';
+import { sortBy } from '../BookReader/utils.js';
+/** @typedef {import('@/src/BookReader.js').default} BookReader */
 
 const events = {
   menuUpdated: 'menuUpdated',
@@ -50,7 +52,20 @@ export class BookNavigator extends LitElement {
     this.isAdmin = false;
     this.lendingInitialized = false;
     this.lendingStatus = {};
-    this.menuProviders = {};
+    this.menuProviders = {
+      /** @type {BookmarksProvider} */
+      bookmarks: null,
+      /** @type {SearchProvider} */
+      search: null,
+      /** @type {DownloadProvider} */
+      downloads: null,
+      /** @type {VisualAdjustmentProvider} */
+      visualAdjustments: null,
+      /** @type {SharingProvider} */
+      share: null,
+      /** @type {ViewableFilesProvider} */
+      volumes: null,
+    };
     this.menuShortcuts = [];
     this.signedIn = false;
     /** @type {ModalManager} */
@@ -71,7 +86,12 @@ export class BookNavigator extends LitElement {
       'volumes',
       'chapters',
       'search',
+      'translate',
       'bookmarks',
+      'downloads',
+      'visualAdjustments',
+      'share',
+      'experiments',
     ];
   }
 
@@ -183,7 +203,9 @@ export class BookNavigator extends LitElement {
       providers.downloads = new DownloadProvider(this.baseProviderConfig);
     }
 
-    if (this.bookreader.options.enableSearch) {
+    // Note plugins will never be null-ish in runtime, but some of the unit tests
+    // stub BR with a nullish value there.
+    if (this.bookreader.options.plugins?.search?.enabled) {
       providers.search = new SearchProvider({
         ...this.baseProviderConfig,
         /**
@@ -193,7 +215,7 @@ export class BookNavigator extends LitElement {
          */
         onProviderChange: (brInstance = null, searchUpdates = {}) => {
           if (brInstance) {
-            /* refresh br instance reference */
+            /** @type {BookReader} refresh br instance reference */
             this.bookreader = brInstance;
           }
 
@@ -310,14 +332,20 @@ export class BookNavigator extends LitElement {
    * Sets order of menu and emits custom event when done
    */
   updateMenuContents() {
-    const {
-      search, downloads, visualAdjustments, share, bookmarks, volumes, chapters,
-    } = this.menuProviders;
-    const availableMenus = [volumes, chapters, search, bookmarks, visualAdjustments, share].filter((menu) => !!menu);
+    const availableMenus = sortBy(
+      Object.entries(this.menuProviders)
+        .filter(([id, menu]) => !!menu)
+        .filter(([id, menu]) => {
+          return id === 'downloads' ? this.shouldShowDownloadsMenu() : true;
+        }),
+      ([id, menu]) => {
+        const index = this.shortcutOrder.indexOf(id);
+        return index === -1 ? this.shortcutOrder.length : index;
+      },
+    ).map(([id, menu]) => menu);
 
     if (this.shouldShowDownloadsMenu()) {
-      downloads?.update(this.downloadableTypes);
-      availableMenus.splice(-2, 0, downloads);
+      this.menuProviders.downloads?.update(this.downloadableTypes);
     }
 
     const event = new CustomEvent(
@@ -384,11 +412,13 @@ export class BookNavigator extends LitElement {
    * the id in each iteration over the shortcutOrder array.
    */
   sortMenuShortcuts() {
-    this.menuShortcuts = this.shortcutOrder.reduce((shortcuts, id) => {
-      const menu = this.menuShortcuts.find((m) => m.id === id);
-      if (menu) { shortcuts.push(menu); }
-      return shortcuts;
-    }, []);
+    this.menuShortcuts = sortBy(
+      this.menuShortcuts,
+      (shortcut) => {
+        const index = this.shortcutOrder.indexOf(shortcut.id);
+        return index === -1 ? this.shortcutOrder.length : index;
+      },
+    );
   }
 
   emitMenuShortcutsUpdated() {

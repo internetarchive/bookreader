@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { Mode2Up } from '@/src/BookReader/Mode2Up.js';
 import BookReader from '@/src/BookReader.js';
 import { BookModel } from '@/src/BookReader/BookModel.js';
-import { afterEventLoop } from '../utils';
+import { afterEventLoop } from '../utils.js';
 /** @typedef {import('@/src/BookReader/options.js').BookReaderOptions} BookReaderOptions */
 
 beforeAll(() => {

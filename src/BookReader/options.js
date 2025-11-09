@@ -98,6 +98,11 @@ export const DEFAULT_OPTIONS = {
   bookUrlTitle: null,
   enableBookTitleLink: true,
   /**
+   * @type {string} A globally unique URI for the book. This is used to
+   * save data like annotations the user makes to the book.
+   */
+  bookUri: null,
+  /**
    * @type {string} language in ISO 639-1 (PRIVATE: Will also
    * handle language name in English, native name, 639-2/T, or 639-2/B . (archive.org books
    * appear to use 639-2/B ? But I don't think that's a guarantee). See
@@ -141,20 +146,26 @@ export const DEFAULT_OPTIONS = {
    * but going forward we'll keep them here.
    **/
   plugins: {
-    /** @type {import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options']}*/
-    archiveAnalytics: null,
-    /** @type {import('../plugins/plugin.autoplay.js').AutoplayPlugin['options']}*/
-    autoplay: null,
-    /** @type {import('../plugins/plugin.chapters.js').ChaptersPlugin['options']} */
-    chapters: null,
-    /** @type {import('../plugins/plugin.iiif.js').IiifPlugin['options']} */
-    iiif: null,
-    /** @type {import('../plugins/plugin.resume.js').ResumePlugin['options']} */
-    resume: null,
-    /** @type {import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']} */
-    textSelection: null,
-    /** @type {import('../plugins/tts/plugin.tts.js').TtsPlugin['options']} */
-    tts: null,
+    /** @type {Partial<import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options'>]}*/
+    archiveAnalytics: {},
+    /** @type {Partial<import('../plugins/plugin.autoplay.js').AutoplayPlugin['options'>]}*/
+    autoplay: {},
+    /** @type {Partial<import('../plugins/plugin.chapters.js').ChaptersPlugin['options']>} */
+    chapters: {},
+    /** @type {Partial<import('../plugins/plugin.experiments.js').ExperimentsPlugin['options']>} */
+    experiments: {},
+    /** @type {Partial<import('../plugins/plugin.iiif.js').IiifPlugin['options']>} */
+    iiif: {},
+    /** @type {Partial<import('../plugins/plugin.resume.js').ResumePlugin['options']>} */
+    resume: {},
+    /** @type {Partial<import('../plugins/search/plugin.search.js').SearchPlugin['options']>} */
+    search: {},
+    /** @type {Partial<import('../plugins/plugin.text_selection.js').TextSelectionPlugin['options']>} */
+    textSelection: {},
+    /** @type {Partial<import('../plugins/translate/plugin.translate.js').TranslatePlugin['options']>} */
+    translate: {},
+    /** @type {Partial<import('../plugins/tts/plugin.tts.js').TtsPlugin['options']>} */
+    tts: {},
   },
 
   /**

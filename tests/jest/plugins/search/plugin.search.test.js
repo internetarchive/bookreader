@@ -5,6 +5,7 @@ import { DUMMY_RESULTS } from './utils.js';
 
 jest.mock('@/src/plugins/search/view.js');
 
+/** @type {BookReader} */
 let br;
 const namespace = 'BookReader:';
 const triggeredEvents = () => {
@@ -23,10 +24,14 @@ beforeEach(() => {
 
   $.fn.trigger = jest.fn();
   document.body.innerHTML = '<div id="BookReader">';
-  br = new BookReader();
+  br = new BookReader({
+    server: 'foo.bar.com',
+    bookPath: '/13/items/foo/foobar',
+    subPrefix: '/foobar',
+  });
   br.initToolbar = jest.fn();
   br.showProgressPopup = jest.fn();
-  br.searchXHR = jest.fn();
+  br.plugins.search.searchXHR = jest.fn();
 });
 
 afterEach(() => {
@@ -34,54 +39,24 @@ afterEach(() => {
 });
 
 describe('Plugin: Search', () => {
-  test('has option flag', () => {
-    expect(BookReader.defaultOptions.enableSearch).toEqual(true);
-  });
-
-  test('has added BR property: server', () => {
-    expect(br).toHaveProperty('server');
-    expect(br.server).toBeTruthy();
-  });
-
-  test('has added BR property: bookId', () => {
-    expect(br).toHaveProperty('bookId');
-    expect(br.bookId).toBeFalsy();
-  });
-
-  test('has added BR property: subPrefix', () => {
-    expect(br).toHaveProperty('subPrefix');
-    expect(br.subPrefix).toBeFalsy();
-  });
-
-  test('has added BR property: bookPath', () => {
-    expect(br).toHaveProperty('bookPath');
-    expect(br.bookPath).toBeFalsy();
-  });
-
-  test('has added BR property: searchInsideUrl', () => {
-    expect(br).toHaveProperty('searchInsideUrl');
-    expect(br.searchInsideUrl).toBeTruthy();
-  });
-
-  test('has added BR property: initialSearchTerm', () => {
-    expect(br.options).toHaveProperty('initialSearchTerm');
-    expect(br.options.initialSearchTerm).toBeFalsy();
-  });
-
   test('On init, it loads the toolbar', () => {
     br.init();
     expect(br.initToolbar).toHaveBeenCalled();
   });
 
+  test('Constructs SearchView', () => {
+    expect(br.plugins.search.searchView).toBeDefined();
+  });
+
   test('On init, it will run a search if given `options.initialSearchTerm`', () => {
-    br.search = jest.fn();
-    br.options.initialSearchTerm = 'foo';
+    br.plugins.search.search = jest.fn();
+    br.options.plugins.search.initialSearchTerm = 'foo';
     br.init();
 
-    expect(br.search).toHaveBeenCalled();
-    expect(br.search.mock.calls[0][1])
+    expect(br.plugins.search.search).toHaveBeenCalled();
+    expect(br.plugins.search.search.mock.calls[0][1])
       .toHaveProperty('goToFirstResult', true);
-    expect(br.search.mock.calls[0][1])
+    expect(br.plugins.search.search.mock.calls[0][1])
       .toHaveProperty('suppressFragmentChange', false);
   });
 
@@ -100,7 +75,7 @@ describe('Plugin: Search', () => {
   test('SearchStarted event fires and should go to first result', () => {
     br.init();
     br.search('foo', { goToFirstResult: true});
-    expect(br.options.goToFirstResult).toBeTruthy();
+    expect(br.plugins.search.options.goToFirstResult).toBeTruthy();
   });
 
   test('SearchCallback event fires when AJAX search returns results', async () => {

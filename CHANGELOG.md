@@ -1,3 +1,63 @@
+# 5.0.0-101
+- Fix: Regression with search results not highlighting correctly @cdrini
+
+# 5.0.0-100
+- Fix: Initialization bug with translation plugin @cdrini
+
+# 5.0.0-99
+- Feature: Show loading indicator while downloading translation model @schu96
+- Fix: Improve styling of URI text fragments @cdrini
+- Fix: Make click behavior of translation layer consistent with text layer @schu96
+
+# 5.0.0-98
+- Feature: Integrate ReadAloud with translation plugin @schu96
+- Fix: Blend mode in Microsoft Edge @cdrini
+- Refactor: Use a semi-shallow merge for BookReader options @cdrini
+- Feature: Redesign translation plugin panel @schu96
+- Fix: Media session panel not showing on some browsers @cdrini
+
+# 5.0.0-97
+- Feature: Add experimental translation plugin @schu96 @mekarpeles @pezvi @cdrini
+- Fix: Default language not selected correctly for ReadAloud @schu96
+
+# 5.0.0-96
+- Fix: BookReader/ missing from npm package! @cdrini
+  - Also exclude other non-essential files, like tests, etc from the npm package.
+
+# 5.0.0-95
+- **Note:** Use 5.0.0-96 instead of this version. This version was missing the BookReader/ directory from the npm package.
+- Breaking change: Remove BookReader/ build directory from repo @cdrini
+  - This pattern has become increasingly rare (even jQuery is no longer doing this). If someone was relying on this somehow, you should be able to achieve the same effect using unpkg, or jsdelivr, or similar, eg:
+    - https://unpkg.com/@internetarchive/bookreader@5.0.0-94/BookReader/BookReader.js
+    - https://cdn.jsdelivr.net/npm/@internetarchive/bookreader@5.0.0-94/BookReader/BookReader.js
+    - And so on.
+
+# 5.0.0-94
+- Refactor: Make bookreader package type: module @cdrini
+- Fix: Search icon being fetched from wrong path @cdrini
+- Refactor: Move BookReader._plugins -> BookReader.plugins , making it public @cdrini
+- Feature: Add length restrictions for protected text selection @cdrini
+- Extend BR to work correctly with Hypothesis @cdrini
+  - Creates new experiments plugin, with a Hypothesis experiment
+  - Adds no `bookUri` option for saving Hypothesis annotations
+  - Adds new public HTML attributes to the PageContainer DOM, `data-index` for `PageIndex`, and `data-page-num` for `PageNumString`
+  - Improves some of BookReader's public APIs. BookReader.bind/unbind are now deprecated in favor of BookReader.on/off
+
+# 5.0.0-93
+- Fix: Clicking on search result not making request_page request correctly @cdrini
+
+# 5.0.0-92
+- Refactor: Migrate search plugin to BookReaderPlugin system @cdrini
+  - Breaking changes:
+    - Search options are now nested under the plugin (eg `searchInsideUrl` → `options.plugins.search.searchInsideUrl`), and mostly no longer include the `search` prefix; specifically:
+      - `searchInsidePreTag`, `searchInsidePostTag` → `options.plugins.search.preTag` and `postTag`
+      - `searchInsideUrl` is now a `StringWithVars` and supports including `vars` from the root options, e.g. `searchInsideUrl: "https://{{server}}/search_endpoint?q={{query|urlencode}}"` . It also has access to the `preTag` and `postTag` from the options. Note this allows the search inside URL to now be fully customizable from the options, and is no longer hard-coded internally to Internet Archive specific logic. 
+      - `initialSearchTerm` → `options.plugins.search.initialSearchTerm`
+      - `searchInsideProtocol` → deprecated in favour of variables in `searchInsideUrl`
+  - Internal search related methods/properties are now nested in the `SearchPlugin` and no longer accessible from the root bookreader object. Notable exception: `br.search` is still made available for convenience.
+      - Moved: `searchResults`, `searchXHR`, `searchView`, `cancelSearchRequest`, `BRSearchCallback`, `updateSearchHilites`, `removeSearchResults`, `removeSearchHilites`, `searchHighlightVisible`
+
+
 # 5.0.0-91
 - Refactor: Migrate ChaptersPlugin to BookReaderPlugin system @cdrini
   - Breaking changes:

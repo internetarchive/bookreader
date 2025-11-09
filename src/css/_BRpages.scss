@@ -91,6 +91,7 @@
   }
 }
 
+// Used for search result rectangles
 svg.BRPageLayer {
   position: absolute;
   top: 0;
@@ -100,7 +101,7 @@ svg.BRPageLayer {
 }
 
 // Hides page layers during page flip animation
-.BRpageFlipping .BRPageLayer {
+.BRpageFlipping .BRtextLayer {
   display: none;
 }
 

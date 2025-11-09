@@ -1,7 +1,7 @@
 import { html } from 'lit';
 
-import { viewableFilesIcon  } from '@internetarchive/ia-item-navigator/dist/src/menus/viewable-files';
-import '@internetarchive/ia-item-navigator/dist/src/menus/viewable-files';
+import { viewableFilesIcon  } from '@internetarchive/ia-item-navigator/dist/src/menus/viewable-files.js';
+import '@internetarchive/ia-item-navigator/dist/src/menus/viewable-files.js';
 
 /**
  * * @typedef { 'title_asc' | 'title_desc' | 'default'} SortTypesT

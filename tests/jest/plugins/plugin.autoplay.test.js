@@ -15,21 +15,21 @@ afterEach(() => {
 
 describe('Plugin: Menu Toggle', () => {
   test('autoplay does not start when BookReaderInitializes', () => {
-    br._plugins.autoplay.toggle = jest.fn();
+    br.plugins.autoplay.toggle = jest.fn();
     br.init();
-    expect(br._plugins.autoplay.toggle).toHaveBeenCalledTimes(0);
+    expect(br.plugins.autoplay.toggle).toHaveBeenCalledTimes(0);
   });
   test('autoplay will run without `flipSpeed` parameters', () => {
-    const initialTimer = br._plugins.autoplay.timer;
+    const initialTimer = br.plugins.autoplay.timer;
     br.next = jest.fn();
-    br._plugins.autoplay.stop = jest.fn();
+    br.plugins.autoplay.stop = jest.fn();
     br.init();
-    br._plugins.autoplay.toggle();
+    br.plugins.autoplay.toggle();
     // internally referenced functions that fire
     expect(br.next).toHaveBeenCalledTimes(1);
 
     expect(initialTimer).toBeFalsy();
     // timer changes when autoplay turns on
-    expect(br._plugins.autoplay.timer).toBeTruthy();
+    expect(br.plugins.autoplay.timer).toBeTruthy();
   });
 });

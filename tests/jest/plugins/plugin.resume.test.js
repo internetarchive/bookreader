@@ -29,9 +29,9 @@ describe('updateResumeValue', () => {
     In this branch .toHaveBeenCalledTimes() === 1
   */
   test.skip('starts when BookReaderInit is called', () => {
-    br._plugins.resume.updateResumeValue = jest.fn();
+    br.plugins.resume.updateResumeValue = jest.fn();
     br.init();
-    expect(br._plugins.resume.updateResumeValue).toHaveBeenCalledTimes(2);
+    expect(br.plugins.resume.updateResumeValue).toHaveBeenCalledTimes(2);
   });
 
   test('handles cookieName=null', () => {
@@ -48,38 +48,38 @@ describe('updateResumeValue', () => {
   test('handles cookiePath not set', () => {
     const setItemSpy = sinon.spy(docCookies, 'setItem');
     // Save function
-    const saveFn = br._plugins.resume.getCookiePath;
-    br._plugins.resume.getCookiePath = jest.fn(() => '/details/foo');
-    br._plugins.resume.updateResumeValue(16);
+    const saveFn = br.plugins.resume.getCookiePath;
+    br.plugins.resume.getCookiePath = jest.fn(() => '/details/foo');
+    br.plugins.resume.updateResumeValue(16);
     expect(setItemSpy.args[0][3]).toEqual('/details/foo');
     // Restore function
-    br._plugins.resume.getCookiePath = saveFn;
+    br.plugins.resume.getCookiePath = saveFn;
   });
 
   test('handles cookie path from URL with decoration', () => {
     const complexPathWithPage = '/details/2008ELMValidityStudyFinalReportRevised/Executive%20Summary%20for%20the%20EPT%26ELM%20Validity%20Studie_20100603%20-%20Copy/page/n1/mode/2up';
     const complexPath = '/details/2008ELMValidityStudyFinalReportRevised/Executive%20Summary%20for%20the%20EPT%26ELM%20Validity%20Studie_20100603%20-%20Copy';
-    expect(br._plugins.resume.getCookiePath(complexPathWithPage))
+    expect(br.plugins.resume.getCookiePath(complexPathWithPage))
       .toEqual(complexPath);
 
-    expect(br._plugins.resume.getCookiePath('/details/item/mode/1up'))
+    expect(br.plugins.resume.getCookiePath('/details/item/mode/1up'))
       .toEqual('/details/item');
 
-    expect(br._plugins.resume.getCookiePath('/details/item/inside/a/long/path/model/is/used'))
+    expect(br.plugins.resume.getCookiePath('/details/item/inside/a/long/path/model/is/used'))
       .toEqual('/details/item/inside/a/long/path/model/is/used');
 
-    expect(br._plugins.resume.getCookiePath('/details/item/inside/a/long/path/mode/is/used'))
+    expect(br.plugins.resume.getCookiePath('/details/item/inside/a/long/path/mode/is/used'))
       .toEqual('/details/item/inside/a/long/path');
   });
 
   test('handles cookie path from URL with no decoration', () => {
-    expect(br._plugins.resume.getCookiePath('/details/item'))
+    expect(br.plugins.resume.getCookiePath('/details/item'))
       .toEqual('/details/item');
 
-    expect(br._plugins.resume.getCookiePath('/details/item/'))
+    expect(br.plugins.resume.getCookiePath('/details/item/'))
       .toEqual('/details/item/');
 
-    expect(br._plugins.resume.getCookiePath('/details/item/almost/any/kind/of/long/path'))
+    expect(br.plugins.resume.getCookiePath('/details/item/almost/any/kind/of/long/path'))
       .toEqual('/details/item/almost/any/kind/of/long/path');
   });
 });

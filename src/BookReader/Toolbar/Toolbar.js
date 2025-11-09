@@ -59,6 +59,11 @@ export class Toolbar {
       $titleSectionEl.append(br.bookUrlText || br.bookTitle);
     }
 
+    // Call _bindNavigationHandlers on the plugins
+    for (const plugin of Object.values(br.plugins)) {
+      plugin._configureToolbar(br.refs.$BRtoolbar);
+    }
+
     // const $hamburger = br.refs.$BRtoolbar.find('BRtoolbarHamburger');
     return br.refs.$BRtoolbar;
   }
