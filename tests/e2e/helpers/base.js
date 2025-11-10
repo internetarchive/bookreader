@@ -185,10 +185,8 @@ export function runBaseTests (br) {
   test('Clicking `2 page view` brings up cur page + caching', async t => {
     const { nav } = br;
     await t.click(nav.mode2Up);
-    // Temporarily disable: There's a bug in the RtL book which needs to be fixed
-    // on the IA-side.
-    // await t.expect(Selector('.BRpagecontainer.BRpage-visible').count).eql(1);
-    // await t.expect(Selector('.BRpagecontainer').count).eql(3);
+    await t.expect(Selector('.BRpagecontainer.BRpage-visible').count).eql(1);
+    await t.expect(Selector('.BRpagecontainer').count).eql(3);
   });
 
   test('Clicking `1 page view` brings up 1 at a time', async t => {

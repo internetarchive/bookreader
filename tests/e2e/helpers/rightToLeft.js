@@ -18,7 +18,6 @@ export function runRightToLeftTests (br) {
     const { nav } = br;
     await t.click(nav.mode2Up);
     await t.click(nav.goLeft);
-    // Temporary; should be n1, but there's a bug server-side
-    await t.expect(getPageUrl()).match(/page\/n2/);
+    await t.expect(getPageUrl()).match(/page\/n1/);
   });
 }
