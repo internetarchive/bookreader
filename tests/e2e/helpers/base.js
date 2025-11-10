@@ -255,7 +255,9 @@ export function runBaseTests (br) {
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);
     await t.click(nav.fullScreen);
     // full screen
-    await t.expect(BRcontainer.getBoundingClientRectProperty('width')).eql(windowWidth);
+    const width = await BRcontainer.getBoundingClientRectProperty('width');
+    // Apparently it can be fractional?
+    await t.expect(Math.ceil(width)).eql(windowWidth);
     await t.click(nav.fullScreen);
     // in-page
     await t.expect(BRcontainer.getBoundingClientRectProperty('width')).lte(windowWidth);

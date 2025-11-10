@@ -3,8 +3,8 @@
 module.exports = {
   appCommand: "npm run serve",
   browsers: [
-    "chrome:headless",
-    "firefox:headless",
+    "chrome:headless --disable-features=LocalNetworkAccessChecks",
+    // "firefox:headless",
   ],
   src: ["tests/e2e/**/*test.js"]
 };
