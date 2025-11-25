@@ -60,7 +60,7 @@ class SearchView {
 
   renderSearchNavigation() {
     const selector = 'BRsearch-navigation';
-    $('.BRnav').before(`
+    $('.BRnav.BRnavMain').before(`
       <div class="${selector}">
         <button class="toggle-sidebar">
           <h4>

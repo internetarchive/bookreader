@@ -258,6 +258,12 @@ export const DEFAULT_OPTIONS = {
   getEmbedCode: null,
 
   controls: {
+    toggleSlider: {
+      visible: true,
+      label: 'Toggle page controls',
+      className: 'toggle_slider',
+      iconClassName: 'toggle-slider',
+    },
     bookLeft: {
       visible: true,
       label: 'Flip left',
