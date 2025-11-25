@@ -131,7 +131,6 @@
 
 .BRtranslateLayer .BRparagraphElement {
     pointer-events: auto;
-    overflow-y: auto;
     background: rgba(248, 237, 192, 0.8);
     backdrop-filter: blur(8px);
     color:black;
@@ -139,9 +138,13 @@
     text-align: justify;
 }
 
-.BRtranslateLayer .BRparagraphElement .BRlineElement {
+.BRparagraphElement .BRlineElement {
     white-space: break-spaces;
-    display: inline-block;
+    display: contents;
+    width: 100%;
+    text-wrap-mode: nowrap;
+    .BRtranslateLayer[dir=ltr] & { margin-right: 100%; }
+    .BRtranslateLayer[dir=rtl] & { margin-left: 100%; }
 }
 
 .BRtextLayer.showingTranslation {
