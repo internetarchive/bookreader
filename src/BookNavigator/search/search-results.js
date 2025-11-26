@@ -5,6 +5,7 @@ import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
 import checkmarkIcon from '../assets/icon_checkmark.js';
 import closeIcon from '../assets/icon_close.js';
 import buttonCSS from '../assets/button-base.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 
 export class IABookSearchResults extends LitElement {
@@ -152,7 +153,7 @@ export class IABookSearchResults extends LitElement {
         ${this.results.map(match => html`
             <li>
               <button class="result-item" @click=${this.selectResult.bind(this, match)}>
-                <p><span class="page-num">Page ${match.displayPageNumber}</span> — ${unsafeHTML(match.html)}</p>
+                <span class="page-num">Page ${match.displayPageNumber}</span> — <span lang=${ifDefined(match.lang)}>${unsafeHTML(match.html)}</span>
               </button>
             </li>
           `)}
@@ -341,13 +342,14 @@ export class IABookSearchResults extends LitElement {
 
       .result-item {
         cursor: pointer;
+        margin-top: 12px;
+        font-size: 12px;
         /* Reset button styles */
         background: none;
         border: none;
         padding: 0;
         text-align: left;
         font-family: inherit;
-        font-size: 12px;
       }
 
       .loading {
