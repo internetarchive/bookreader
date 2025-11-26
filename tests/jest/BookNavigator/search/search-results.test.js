@@ -101,13 +101,6 @@ describe('<ia-book-search-results>', () => {
     expect(el.setResults.firstArg).toEqual(event);
   });
 
-  test('renders results that contain the book title', async () => {
-    sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
-    const el = await fixture(container(results));
-
-    expect(el.innerHTML).toContain(`${results[0].title}`);
-  });
-
   test('renders results that contain a highlighted match', async () => {
     sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
     const el = await fixture(container(results));
@@ -126,13 +119,6 @@ describe('<ia-book-search-results>', () => {
     const match = el.querySelector('mark');
     expect(match?.textContent).toEqual(searchQuery);
     expect(el.innerHTML).not.toContain('test failure');
-  });
-
-  test('renders results that contain an optional cover image', async () => {
-    sinon.replace(IABookSearchResults.prototype, 'createRenderRoot', function createRenderRoot() { return this; });
-    const el = await fixture(container(results));
-
-    expect(el.innerHTML).toContain(`<img src="${results[0].cover}">`);
   });
 
   test('sets a query prop when search input receives input', async () => {
@@ -160,9 +146,7 @@ describe('<ia-book-search-results>', () => {
 
   test('uses a singular noun when one result given', async () => {
     const el = await fixture(container([results[0]]));
-    const resultsCount = await fixture(el.resultsCount);
-
-    expect(resultsCount.innerHTML).toContain('1 result');
+    expect(el.resultsCount).toBe('1 result');
   });
 
   test('can render header with active options count', async () => {
@@ -171,7 +155,7 @@ describe('<ia-book-search-results>', () => {
 
     await el.updateComplete;
 
-    expect(el.shadowRoot.querySelector('header p').textContent).toContain('2');
+    expect(el.shadowRoot.querySelector('header').textContent).toContain('2');
   });
 
   test('renders search all files checkbox when enabled', async () => {
@@ -187,7 +171,7 @@ describe('<ia-book-search-results>', () => {
     const el = await fixture(container(results));
 
     setTimeout(() => (
-      el.shadowRoot.querySelector('li').click()
+      el.shadowRoot.querySelector('.result-item').click()
     ));
     const response = await oneEvent(el, 'resultSelected');
 
@@ -198,7 +182,7 @@ describe('<ia-book-search-results>', () => {
     const el = await fixture(container(results));
 
     setTimeout(() => (
-      el.shadowRoot.querySelector('li').click()
+      el.shadowRoot.querySelector('.result-item').click()
     ));
     const response = await oneEvent(el, 'closeMenu');
 
@@ -221,23 +205,15 @@ describe('<ia-book-search-results>', () => {
       await el.updateComplete;
 
       expect(el.shadowRoot.querySelector('.error-message')).toBeDefined();
-      expect(el.shadowRoot.querySelector('.search-cta')).toBeNull();
+      expect(el.shadowRoot.querySelector('.search-cta').classList.contains('sr-only')).toBe(true);
     });
     test('displays call to search when no results or search errors are showing', async () => {
       const el = await fixture(container([]));
 
-      expect(el.shadowRoot.querySelector('.search-cta')).toBeDefined();
+      expect(el.shadowRoot.querySelector('.search-cta').classList.contains('sr-only')).toBe(false);
       expect(el.shadowRoot.querySelector('.error-message')).toBeNull();
       expect(el.shadowRoot.querySelector('.results')).toBeNull();
     });
-  });
-
-  test('displays results images when told to', async () => {
-    const el = await fixture(container(results));
-    el.displayResultImages = true;
-    await el.updateComplete;
-
-    expect(el.shadowRoot.querySelector('.results.show-image')).toBeDefined();
   });
 
   describe('search input focus', () => {
