@@ -342,14 +342,22 @@ export class IABookSearchResults extends LitElement {
 
       .result-item {
         cursor: pointer;
-        margin-top: 12px;
+        margin-top: 8px;
         font-size: 12px;
+        padding: 5px;
+        border-radius: 4px;
+        display: block;
+        width: 100%;
         /* Reset button styles */
         background: none;
         border: none;
-        padding: 0;
         text-align: left;
         font-family: inherit;
+        transition: background-color 0.2s;
+      }
+
+      .result-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
       }
 
       .loading {
