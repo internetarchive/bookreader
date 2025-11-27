@@ -5,6 +5,7 @@ import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
 import checkmarkIcon from '../assets/icon_checkmark.js';
 import closeIcon from '../assets/icon_close.js';
 import buttonCSS from '../assets/button-base.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 
 export class IABookSearchResults extends LitElement {
@@ -15,7 +16,6 @@ export class IABookSearchResults extends LitElement {
       queryInProgress: { type: Boolean },
       renderHeader: { type: Boolean },
       renderSearchAllFiles: { type: Boolean },
-      displayResultImages: { type: Boolean },
       errorMessage: { type: String },
     };
   }
@@ -29,7 +29,6 @@ export class IABookSearchResults extends LitElement {
     this.queryInProgress = false;
     this.renderHeader = false;
     this.renderSearchAllFiles = false;
-    this.displayResultImages = false;
     this.errorMessage = '';
 
     this.bindBookReaderListeners();
@@ -107,13 +106,13 @@ export class IABookSearchResults extends LitElement {
 
   get resultsCount() {
     const count = this.results.length;
-    return count ? html`<p>(${count} result${count > 1 ? 's' : ''})</p>` : nothing;
+    return count ? `${count} result${count > 1 ? 's' : ''}` : nothing;
   }
 
   get headerSection() {
     const header = html`<header>
       <h3>Search inside</h3>
-      ${this.resultsCount}
+      ${this.resultsCount ? html`(${this.resultsCount})` : nothing}
     </header>`;
     return this.renderHeader ? header : nothing;
   }
@@ -129,7 +128,7 @@ export class IABookSearchResults extends LitElement {
   get loadingIndicator() {
     return html`
       <div class="loading">
-        <ia-activity-indicator mode="processing"></ia-activity-indicator>
+        <ia-activity-indicator mode="processing" aria-hidden="true" role="presentation"></ia-activity-indicator>
         <p>Searching</p>
         <button class="ia-button external cancel-search" @click=${this.cancelSearch}>Cancel</button>
       </div>
@@ -137,36 +136,37 @@ export class IABookSearchResults extends LitElement {
   }
 
   get resultsSet() {
-    const resultsClass = this.displayResultImages ? 'show-image' : '';
     return html`
-      <ul class="results ${resultsClass}">
+    <nav aria-label="Search results">
+      <div>
+        ${this.resultsCount}
+        <a
+          href="#"
+          class="skip-link"
+          @click=${(e) => {
+      e.preventDefault();
+      this.shadowRoot.querySelector('.results li:last-child .result-item').focus();
+    }}
+        >Skip to last result</a>
+      </div>
+      <ul class="results">
         ${this.results.map(match => html`
-            <li @click=${this.selectResult.bind(this, match)}>
-              ${match.cover ? html`<img src="${match.cover}" />` : nothing}
-              <h4>${match.title || nothing}</h4>
-              <p class="page-num">Page ${match.displayPageNumber}</p>
-              <p>${unsafeHTML(match.html)}</p>
+            <li>
+              <button class="result-item" @click=${this.selectResult.bind(this, match)}>
+                <span class="page-num">Page ${match.displayPageNumber}</span> — <span lang=${ifDefined(match.lang)}>${unsafeHTML(match.html)}</span>
+              </button>
             </li>
           `)}
       </ul>
-    `;
-  }
-
-  get searchForm() {
-    return html`
-      <form action="" method="get" @submit=${this.performSearch}>
-        <fieldset>
-          ${this.searchMultipleControls}
-          <input
-            type="search"
-            name="query"
-            alt="Search inside this book."
-            @keyup=${this.setQuery}
-            @search=${this.setQuery}
-            .value=${this.query}
-          />
-        </fieldset>
-      </form>
+        <a
+          href="#"
+          class="skip-link"
+          @click=${(e) => {
+      e.preventDefault();
+      this.shadowRoot.querySelector('.results li:first-child .result-item').focus();
+    }}
+        >Skip to first result</a>
+    </nav>
     `;
   }
 
@@ -176,21 +176,29 @@ export class IABookSearchResults extends LitElement {
     `;
   }
 
-  get searchCTA() {
-    return html`<p class="search-cta"><em>Please enter text to search for</em></p>`;
-  }
-
   render() {
     const showSearchCTA = (!this.queryInProgress && !this.errorMessage)
     && (!this.queryInProgress && !this.results.length);
     return html`
       ${this.headerSection}
-      ${this.searchForm}
-      <div class="results-container">
+      <form action="" method="get" @submit=${this.performSearch}>
+        ${this.searchMultipleControls}
+        <input
+          type="search"
+          name="query"
+          id="br-search-input"
+          @keyup=${this.setQuery}
+          @search=${this.setQuery}
+          .value=${this.query}
+        />
+        <label class="search-cta ${showSearchCTA ? '' : 'sr-only'}" for="br-search-input">
+          Please enter text to search for
+        </label>
+      </form>
+      <div class="results-container" aria-live="polite">
         ${this.queryInProgress ? this.loadingIndicator : nothing}
         ${this.errorMessage ? this.setErrorMessage : nothing}
         ${this.results.length ? this.resultsSet : nothing}
-        ${showSearchCTA ? this.searchCTA : nothing}
       </div>
     `;
   }
@@ -209,6 +217,15 @@ export class IABookSearchResults extends LitElement {
         overflow-y: auto;
         font-size: 1.4rem;
         box-sizing: border-box;
+      }
+
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+      }
+      .skip-link:focus {
+        position: static;
+        left: auto;
       }
 
       mark {
@@ -238,9 +255,8 @@ export class IABookSearchResults extends LitElement {
         font-style: italic;
       }
 
-      fieldset {
+      form {
         padding: 0 0 1rem 0;
-        border: none;
       }
 
       [type="checkbox"] {
@@ -303,13 +319,15 @@ export class IABookSearchResults extends LitElement {
         background: #fff;
       }
 
-      p.page-num {
+      .page-num {
         font-weight: bold;
         padding-bottom: 0;
       }
 
-      p.search-cta {
+      .search-cta {
+        padding: 10px 0;
         text-align: center;
+        font-style: italic;
       }
 
       .results-container {
@@ -322,33 +340,24 @@ export class IABookSearchResults extends LitElement {
         list-style: none;
       }
 
-      ul.show-image li {
-        display: grid;
-      }
-
-      li {
+      .result-item {
         cursor: pointer;
-        grid-template-columns: 30px 1fr;
-        grid-gap: 0 .5rem;
-      }
-
-      li img {
+        margin-top: 8px;
+        font-size: 12px;
+        padding: 5px;
+        border-radius: 4px;
         display: block;
         width: 100%;
+        /* Reset button styles */
+        background: none;
+        border: none;
+        text-align: left;
+        font-family: inherit;
+        transition: background-color 0.2s;
       }
 
-      li h4 {
-        grid-column: 2 / 3;
-        padding: 0 0 2rem 0;
-        margin: 0;
-        font-weight: normal;
-      }
-
-      li p {
-        grid-column: 2 / 3;
-        padding: 0 0 1.5rem 0;
-        margin: 0;
-        font-size: 1.2rem;
+      .result-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
       }
 
       .loading {
@@ -366,6 +375,18 @@ export class IABookSearchResults extends LitElement {
         width: 40px;
         height: 40px;
         margin: 0 auto;
+      }
+
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0 0 0 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
       }
     `;
     return [buttonCSS, mainCSS];
