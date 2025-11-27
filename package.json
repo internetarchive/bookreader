@@ -82,7 +82,7 @@
     "soundmanager2": "2.97.20170602",
     "svgo": "4.0.0",
     "testcafe": "3.7.2",
-    "testcafe-browser-provider-browserstack": "^1.13.2-alpha.1",
+    "testcafe-browser-provider-browserstack": "^1.15.2",
     "webpack": "5.102.1",
     "webpack-cli": "6.0.1"
   },
