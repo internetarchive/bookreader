@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!-- This demo mirrors, as far as possible, the archive.org BookReader configuration and functionality
    please keep up to date as BookReader evolves -->
-<html>
+<html lang="en">
 <head>
   <title>bookreader demo internetArchive</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <!-- WC dependencies -->
@@ -218,8 +218,14 @@
     </div>
     <div class="demo">
       <h3 id="placeholder">please wait as we are fetching the following: </h3>
-      <input type='checkbox' class='group1' name='itemMD' disabled>Item metadata</input><br>
-      <input type='checkbox' class='group1' name='bookManifest' disabled> Book manifest</input><br>
+      <label>
+        <input type='checkbox' class='group1' name='itemMD' disabled>Item metadata</input>
+      </label>
+      <br>
+      <label>
+        <input type='checkbox' class='group1' name='bookManifest' disabled> Book manifest</input>
+      </label>
+      <br>
     </div>
   </section>
   <div class="demo">
