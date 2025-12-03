@@ -137,6 +137,14 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     if ($textLayers.length) return;
     const XMLpage = await this.getPageText(pageIndex);
     if (!XMLpage) return;
+    // Seeing some 0 left and 0 top coordinates in ToC, remove it entirely to prevent odd rendering
+    $(XMLpage).find("WORD").filter((_, ele) => {
+      const [left, , , top] = ele.getAttribute('coords').split(",").map(parseFloat);
+      if (left != 0 || top != 0) {
+        return false;
+      }
+      return true;
+    }).remove();
     recursivelyAddCoords(XMLpage);
 
     const totalWords = $(XMLpage).find("WORD").length;
