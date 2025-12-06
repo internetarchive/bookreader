@@ -36,7 +36,7 @@ export class TranslationManager {
 
   constructor() {
     //TODO Should default to the book language as the first element
-    const enModel = {code: "en", name: "English", type: "prod"};
+    const enModel = {code: "en", name: "English (en)", type: "prod"};
     this.fromLanguages.push(enModel);
     this.toLanguages.push(enModel);
   }
