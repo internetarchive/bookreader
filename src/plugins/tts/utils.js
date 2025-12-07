@@ -24,43 +24,56 @@ export function isAndroid(userAgent = navigator.userAgent) {
 const specialLangs =  {
   "zh-hans": "中文 (Zhōngwén)",
 };
+
 /**
  * @typedef {string} ISO6391
  * Language code in ISO 639-1 format. e.g. en, fr, zh
- * Can also retrieve language native name + ISO 639-1 code
  **/
 
 /**
  * @param {string} language in some format
- * @param {boolean?} getName gets Native Name + language code if true
  * @return {ISO6391?}
  */
-export function toISO6391(language, getName = false) {
-  if (!language) return null;
-  language = language.toLowerCase();
-
-  return searchForISO6391(language, ['iso639_1'], getName) ||
-    searchForISO6391(language, ['iso639_2T'], getName) ||
-    searchForISO6391(language, ['iso639_2B', 'nativeName', 'name'], getName);
+export function toISO6391(language) {
+  language = language.toLocaleLowerCase();
+  if (specialLangs[language]) {
+    return language;
+  }
+  return findLanguage(language)?.iso639_1;
 }
 
 /**
- * Searches for the given long in the given columns.
+ *
  * @param {string} language
- * @param {Array<keyof import('iso-language-codes').Code>} columnsToSearch
- * @param {boolean?} getName
- * @return {ISO6391?}
+ * @returns {string}
  */
-function searchForISO6391(language, columnsToSearch, getName) {
+export function toNativeName(language) {
+  language = language.toLocaleLowerCase();
+  if (specialLangs[language]) {
+    return specialLangs[language];
+  }
+  const nativeName = findLanguage(language)?.nativeName;
+  if (nativeName) {
+    return nativeName.split(", ")[0];
+  }
+}
+
+/** @typedef {import('iso-language-codes').Code} Code */
+
+/**
+ * @param {string} language
+ * @returns {Code | null}
+ */
+function findLanguage(language) {
+  if (!language) return null;
+  language = language.toLocaleLowerCase();
   for (const lang of langs) {
-    for (const colName of columnsToSearch) {
-      if (lang[colName].split(', ').map(x => x.toLowerCase()).indexOf(language) != -1) {
-        if (getName) return `${lang.nativeName.split(", ")[0]} (${lang.iso639_1})`;
-        return lang.iso639_1;
-      }
+    if (lang.name.toLowerCase() == language || lang.nativeName.toLocaleLowerCase() == language) {
+      return lang;
+    } else if (lang.iso639_1 == language || lang.iso639_2B == language || lang.iso639_2T == language) {
+      return lang;
     }
   }
-  if (specialLangs[language]) return `${specialLangs[language]} (${language})`;
   return null;
 }
 
