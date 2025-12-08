@@ -1,6 +1,6 @@
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, nothing } from "lit";
+import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from "lit/directives/repeat.js";
-import { nothing } from "lit";
 import "@internetarchive/icon-magnify-minus/icon-magnify-minus.js";
 import "@internetarchive/icon-magnify-plus/icon-magnify-plus.js";
 
@@ -136,7 +136,8 @@ export class IABookVisualAdjustments extends LitElement {
 
   adjustmentCheckbox(option) {
     return html`
-      <div class="adjustment-option ${option.active ? 'active' : ''} ${option.value !== undefined ? 'has-range' : ''}">
+      <div
+        class="adjustment-option ${classMap({active: option.active, 'has-range': option.value !== undefined})}">
         <label class="checkbox-label">
           ${option.name}
           <input
