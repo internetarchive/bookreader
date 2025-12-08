@@ -35,11 +35,14 @@ const specialLangs =  {
  * @return {ISO6391?}
  */
 export function toISO6391(language) {
+  if (!language) return null;
   language = language.toLocaleLowerCase();
   if (specialLangs[language]) {
     return language;
   }
-  return findLanguage(language)?.iso639_1;
+  const langCode = findLanguage(language);
+  if (langCode) return langCode.iso639_1;
+  return null;
 }
 
 /**
@@ -48,6 +51,7 @@ export function toISO6391(language) {
  * @returns {string}
  */
 export function toNativeName(language) {
+  if (!language) return null;
   language = language.toLocaleLowerCase();
   if (specialLangs[language]) {
     return specialLangs[language];
@@ -68,9 +72,11 @@ function findLanguage(language) {
   if (!language) return null;
   language = language.toLocaleLowerCase();
   for (const lang of langs) {
-    if (lang.name.toLowerCase() == language || lang.nativeName.toLocaleLowerCase() == language) {
+    if (lang.iso639_1 == language || lang.iso639_2B == language || lang.iso639_2T == language) {
       return lang;
-    } else if (lang.iso639_1 == language || lang.iso639_2B == language || lang.iso639_2T == language) {
+    } else if (lang.name.toLowerCase().split(", ").includes(language)) {
+      return lang;
+    } else if (lang.nativeName.toLowerCase().split(", ").includes(language)) {
       return lang;
     }
   }
