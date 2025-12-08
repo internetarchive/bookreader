@@ -26,6 +26,7 @@ import SearchView from './view.js';
 import { marshallSearchResults } from './utils.js';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { applyVariables } from '../../util/strings.js';
+import { toISO6391 } from '../tts/utils.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
 /** @typedef {import('../../BookReader/BookModel').LeafNum} LeafNum */
@@ -239,11 +240,13 @@ export class SearchPlugin extends BookReaderPlugin {
    * @param {boolean} options.goToFirstResult
    */
   BRSearchCallback(results, options) {
+    const bookLangCode = toISO6391(this.br.options.bookLanguage);
     marshallSearchResults(
       results,
       pageNum => this.br.book.getPageNum(this.br.book.leafNumToIndex(pageNum)),
       this.options.preTag,
       this.options.postTag,
+      bookLangCode,
     );
     this.searchResults = results || null;
 
@@ -435,6 +438,7 @@ BookReader?.registerPlugin('search', SearchPlugin);
  * @property {string} displayPageNumber (fake field) The page number as it should be displayed in the UI.
  * @property {string} html (computed field) The html-escaped raw html to display in the UI.
  * @property {string} text
+ * @property {string} lang (fake field) The ISO 639-1 language code of the book
  * @property {Array<{ page: number, boxes: SearchInsideMatchBox[] }>} par
  */
 
