@@ -142,8 +142,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     $(XMLpage).find("WORD").filter((_, ele) => {
       const [left, , , top] = ele.getAttribute('coords').split(",").map(parseFloat);
       if (left == 0 && top == 0) {
-          console.error("Found invalid ocr word coordinates");
-          return true;
+        console.error("Found invalid ocr word coordinates");
+        return true;
       }
     }).remove();
     recursivelyAddCoords(XMLpage);
