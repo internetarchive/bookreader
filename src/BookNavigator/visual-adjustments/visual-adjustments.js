@@ -1,7 +1,6 @@
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, nothing } from "lit";
+import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from "lit/directives/repeat.js";
-import { nothing } from "lit";
-import checkmarkIcon from '../assets/icon_checkmark.js';
 import "@internetarchive/icon-magnify-minus/icon-magnify-minus.js";
 import "@internetarchive/icon-magnify-plus/icon-magnify-plus.js";
 
@@ -99,6 +98,13 @@ export class IABookVisualAdjustments extends LitElement {
     this.options = updatedOptions;
     this.activeCount = this.activeOptions.length;
     this.emitOptionChangedEvent(checkedOption.id);
+    if (checkedOption.active && checkedOption.value !== undefined) {
+      // move focus to the range input
+      const rangeInput = this.shadowRoot.querySelector(`input[name="${checkedOption.id}_range"]`);
+      requestAnimationFrame(() => {
+        rangeInput?.focus();
+      });
+    }
   }
 
   setRangeValue(id, value) {
@@ -110,7 +116,8 @@ export class IABookVisualAdjustments extends LitElement {
   /* render */
   rangeSlider(option) {
     return html`
-      <div class=${`range${option.active ? " visible" : ""}`}>
+      <label class=${`range${option.active ? " visible" : ""}`}>
+        <span class="sr-only">${option.name}</span>
         <input
           type="range"
           name="${option.id}_range"
@@ -118,30 +125,30 @@ export class IABookVisualAdjustments extends LitElement {
           max=${option.max || 100}
           step=${option.step || 1}
           .value=${option.value}
+          aria-valuetext=${`${option.value}%`}
           @input=${(e) => this.setRangeValue(option.id, e.target.value)}
           @change=${() => this.emitOptionChangedEvent()}
         />
-        <p>${option.value}%</p>
-      </div>
+        <span aria-hidden="true">${option.value}%</span>
+      </label>
     `;
   }
 
   adjustmentCheckbox(option) {
-    const formID = `adjustment_${option.id}`;
-    return html`<li>
-      <label for="${formID}">
-        <span class="name">${option.name}</span>
-        <input
-          type="checkbox"
-          name="${formID}"
-          id="${formID}"
-          @change=${() => this.changeActiveStateFor(option.id)}
-          ?checked=${option.active}
-        />
-        <span class="icon"></span>
-      </label>
-      ${option.value !== undefined ? this.rangeSlider(option) : nothing}
-    </li>`;
+    return html`
+      <div
+        class="adjustment-option ${classMap({active: option.active, 'has-range': option.value !== undefined})}">
+        <label class="checkbox-label">
+          ${option.name}
+          <input
+            type="checkbox"
+            @change=${() => this.changeActiveStateFor(option.id)}
+            ?checked=${option.active}
+          />
+        </label>
+        ${option.value !== undefined ? this.rangeSlider(option) : nothing}
+      </div>
+    `;
   }
 
   get headerSection() {
@@ -158,11 +165,11 @@ export class IABookVisualAdjustments extends LitElement {
   get zoomControls() {
     return html`
       <h4>Adjust zoom</h4>
-      <button class="zoom_out" @click=${this.emitZoomOut} title="zoom out">
-        <ia-icon-magnify-minus></ia-icon-magnify-minus>
+      <button class="zoom_out" @click=${this.emitZoomOut} title="Zoom out" aria-label="Zoom out">
+        <ia-icon-magnify-minus aria-hidden="true" role="presentation"></ia-icon-magnify-minus>
       </button>
-      <button class="zoom_in" @click=${this.emitZoomIn} title="zoom in">
-        <ia-icon-magnify-plus></ia-icon-magnify-plus>
+      <button class="zoom_in" @click=${this.emitZoomIn} title="Zoom in" aria-label="Zoom in">
+        <ia-icon-magnify-plus aria-hidden="true" role="presentation"></ia-icon-magnify-plus>
       </button>
     `;
   }
@@ -171,9 +178,7 @@ export class IABookVisualAdjustments extends LitElement {
   render() {
     return html`
       ${this.headerSection}
-      <ul>
-        ${repeat(this.options, (option) => option.id, this.adjustmentCheckbox.bind(this))}
-      </ul>
+      ${repeat(this.options, (option) => option.id, this.adjustmentCheckbox.bind(this))}
       ${this.showZoomControls ? this.zoomControls : nothing}
     `;
   }
@@ -186,6 +191,7 @@ export class IABookVisualAdjustments extends LitElement {
       overflow-y: auto;
       font-size: 1.4rem;
       box-sizing: border-box;
+      padding: 10px 10px 0 0;
     }
 
     header {
@@ -207,49 +213,48 @@ export class IABookVisualAdjustments extends LitElement {
       font-style: italic;
     }
 
-    ul {
-      padding: 1rem 2rem 0 0;
-      list-style: none;
-      margin-top: 0;
+    .adjustment-option {
+      border: 2px solid transparent;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+    .adjustment-option.has-range.active {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .checkbox-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 6px 8px;
+      transition: background-color 0.2s;
+      border-radius: inherit;
+    }
+    .checkbox-label:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .adjustment-option.has-range.active > .checkbox-label {
+      border-radius: 4px 4px 0 0;
     }
 
     [type="checkbox"] {
-      display: none;
-    }
-
-    label {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      font-size: 1.4rem;
-      font-weight: bold;
-      line-height: 150%;
-      vertical-align: middle;
-    }
-
-    .icon {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      margin-left: .7rem;
-      border: 1px solid var(--primaryTextColor);
-      border-radius: 2px;
-      background: var(--activeButtonBg) 50% 50% no-repeat;
-    }
-    :checked + .icon {
-      background-image: url('${checkmarkIcon}');
+      transform: scale(1.5);
     }
 
     .range {
       display: none;
-      padding-top: .5rem;
+      padding: 10px;
+      align-items: center;
+      gap: 10px;
     }
     .range.visible {
       display: flex;
     }
-
-    .range p {
-      margin-left: 1rem;
+    .range input[type="range"] {
+      flex: 1;
     }
 
     h4 {
@@ -262,19 +267,32 @@ export class IABookVisualAdjustments extends LitElement {
       -webkit-appearance: none;
       appearance: none;
       border: none;
-      border-radius: 0;
       background: transparent;
-      outline: none;
       cursor: pointer;
       --iconFillColor: var(--primaryTextColor);
       --iconStrokeColor: var(--primaryTextColor);
       height: 4rem;
       width: 4rem;
+      transition: background-color 0.2s;
+      border-radius: 4px;
     }
 
-    button * {
-      display: inline-block;
-    }`;
+    button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0 0 0 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+`;
   }
 }
 customElements.define('ia-book-visual-adjustments', IABookVisualAdjustments);

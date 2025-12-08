@@ -51,9 +51,8 @@ describe('<ia-book-visual-adjustments>', () => {
     await el.updateComplete;
 
     const label = el.shadowRoot.querySelector('label');
-    const name = label.querySelector('.name');
     const checkbox = label.querySelector('input');
-    expect(name.textContent).toEqual(options[0].name);
+    expect(label.textContent.trim()).toEqual(options[0].name);
     expect(checkbox.checked).toEqual(true);
   });
 
@@ -75,7 +74,7 @@ describe('<ia-book-visual-adjustments>', () => {
   test('changes option\'s active state when input changed', async () => {
     const el = await fixture(container());
 
-    el.shadowRoot.querySelector('li input').dispatchEvent(new Event('change'));
+    el.shadowRoot.querySelector('.checkbox-label input').dispatchEvent(new Event('change'));
     await el.updateComplete;
 
     expect(el.options[0].active).toEqual(false);
@@ -132,7 +131,7 @@ describe('<ia-book-visual-adjustments>', () => {
 
       expect(el.emitOptionChangedEvent.callCount).toEqual(1); // firstUpdate fire
 
-      el.shadowRoot.querySelector('li input').dispatchEvent(new Event('change'));
+      el.shadowRoot.querySelector('.checkbox-label input').dispatchEvent(new Event('change'));
       expect(el.emitOptionChangedEvent.callCount).toEqual(2);
     });
 
