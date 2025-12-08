@@ -1,3 +1,11 @@
+# 5.0.0-102
+- Feature: Add dockable slider for mobile @pezvi
+- Feature: Improve accessibility of search inside panel @cdrini
+- Feature: Improve accessibility of visual adjustments panel @cdrini
+- Fix: Better handle invalid OCR coordinates in text layer @schu96
+- Dev: Make e2e more reliable @cdrini
+- Dev: Update test/build dependencies @cdrini
+
 # 5.0.0-101
 - Fix: Regression with search results not highlighting correctly @cdrini
 
