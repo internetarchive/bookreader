@@ -42,7 +42,7 @@ export default class VisualAdjustmentsProvider {
     this.onZoomOut = this.onZoomOut.bind(this);
 
     this.activeCount = 0;
-    this.icon = html`<ia-icon-visual-adjustment style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-visual-adjustment>`;
+    this.icon = html`<ia-icon-visual-adjustment aria-hidden="true" role="presentation" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-visual-adjustment>`;
     this.label = 'Visual Adjustments';
     this.menuDetails = this.updateOptionsCount();
     this.id = 'visualAdjustments';

@@ -35,7 +35,7 @@ const publicMenuBase = {
 export default class DownloadsProvider {
 
   constructor({ bookreader }) {
-    this.icon = html`<ia-icon-dl style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-dl>`;
+    this.icon = html`<ia-icon-dl aria-hidden="true" role="presentation" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-dl>`;
     this.label = 'Downloadable files';
     this.menuDetails = '';
     this.downloads = [];

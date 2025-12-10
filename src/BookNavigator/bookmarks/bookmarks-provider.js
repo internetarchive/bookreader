@@ -31,7 +31,7 @@ export default class BookmarksProvider {
     };
     this.bindEvents();
 
-    this.icon = html`<icon-bookmark state="hollow" style="--iconWidth: 16px; --iconHeight: 24px;"></icon-bookmark>`;
+    this.icon = html`<icon-bookmark aria-hidden="true" role="presentation" state="hollow" style="--iconWidth: 16px; --iconHeight: 24px;"></icon-bookmark>`;
     this.label = 'Bookmarks';
     this.id = 'bookmarks';
     this.onProviderChange = onProviderChange;

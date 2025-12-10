@@ -110,7 +110,7 @@ export class ChaptersPlugin extends BookReaderPlugin {
   _render() {
     this.br.shell.menuProviders['chapters'] = {
       id: 'chapters',
-      icon: html`<ia-icon-toc style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-toc>`,
+      icon: html`<ia-icon-toc aria-hidden="true" role="presentation" style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-toc>`,
       label: 'Table of Contents',
       component: html`<br-chapters-panel
         .contents="${this._tocEntries}"
