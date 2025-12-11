@@ -4,7 +4,6 @@ export default css`
   .ia-button {
     min-height: 3rem;
     border: none;
-    outline: none;
     cursor: pointer;
     color: var(--primaryTextColor);
     line-height: normal;
