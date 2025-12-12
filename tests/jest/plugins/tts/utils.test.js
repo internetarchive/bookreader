@@ -71,4 +71,51 @@ describe('toISO6391', () => {
     expect(toISO6391(null)).toBe(null);
     expect(toISO6391('')).toBe(null);
   });
+
+});
+
+describe('toNativeName', () => {
+  const { toNativeName } = utils;
+
+  test('ISO 639-1', () => {
+    expect(toNativeName('en')).toBe('English');
+    expect(toNativeName('sR')).toBe('српски језик');
+    expect(toNativeName('Hi')).toBe('हिन्दी');
+  });
+
+  test('ISO 639-2/T', () => {
+    expect(toNativeName('amh')).toBe('አማርኛ');
+    expect(toNativeName('uKr')).toBe('Українська');
+  });
+
+  test('ISO 639-2/B', () => {
+    expect(toNativeName('BAQ')).toBe('euskara');
+    expect(toNativeName('chi')).toBe('中文 (Zhōngwén)');
+  });
+
+  test('Name', () => {
+    expect(toNativeName('eNgLiSh')).toBe('English');
+    expect(toNativeName('Nyanja')).toBe('chiCheŵa');
+    expect(toNativeName('Flemish')).toBe('Nederlands');
+  });
+
+  test('Endonym', () => {
+    expect(toNativeName('FrançaiS')).toBe('français');
+    expect(toNativeName("lenga d'òc")).toBe('occitan');
+    expect(toNativeName('český jazyk')).toBe('čeština');
+  });
+
+  test('Mismatch', () => {
+    expect(toNativeName('Parseltongue')).toBe(null);
+    expect(toNativeName('Pig Latin')).toBe(null);
+  });
+
+  test('Falsey inputs', () => {
+    expect(toNativeName(null)).toBe(null);
+    expect(toNativeName('')).toBe(null);
+  });
+
+  test('Special langs', () => {
+    expect(toNativeName('zh-hans')).toBe('中文 (Zhōngwén)');
+  });
 });

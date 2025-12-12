@@ -40,8 +40,8 @@ export function toISO6391(language) {
   if (specialLangs[language]) {
     return language;
   }
-  const langCode = findLanguage(language);
-  if (langCode) return langCode.iso639_1;
+  const codeObj = findLanguage(language, 'iso639_1') || findLanguage(language, 'iso639_2T') || findLanguage(language, 'iso639_2B');
+  if (codeObj) return codeObj.iso639_1;
   return null;
 }
 
@@ -56,10 +56,9 @@ export function toNativeName(language) {
   if (specialLangs[language]) {
     return specialLangs[language];
   }
-  const nativeName = findLanguage(language)?.nativeName;
-  if (nativeName) {
-    return nativeName.split(", ")[0];
-  }
+  const codeObj = findLanguage(language, 'iso639_1') || findLanguage(language, 'iso639_2T') || findLanguage(language, 'iso639_2B');
+  if (codeObj?.nativeName) return codeObj.nativeName.split(", ")[0];
+  return null;
 }
 
 /** @typedef {import('iso-language-codes').Code} Code */
@@ -68,11 +67,11 @@ export function toNativeName(language) {
  * @param {string} language
  * @returns {Code | null}
  */
-function findLanguage(language) {
+function findLanguage(language, codeType) {
   if (!language) return null;
-  language = language.toLocaleLowerCase();
+  language = language.toLowerCase();
   for (const lang of langs) {
-    if (lang.iso639_1 == language || lang.iso639_2B == language || lang.iso639_2T == language) {
+    if (lang[codeType].toLowerCase().split(", ").includes(language)) {
       return lang;
     } else if (lang.name.toLowerCase().split(", ").includes(language)) {
       return lang;
