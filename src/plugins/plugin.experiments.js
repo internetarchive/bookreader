@@ -174,7 +174,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     this.br.shell.menuProviders['experiments'] = {
       id: 'experiments',
       icon: html`
-        <img src="${this.br.options.imagesBaseURL}/icon_experiment.svg" width="26"/>
+        <img src="${this.br.options.imagesBaseURL}/icon_experiment.svg" alt="" width="26"/>
       `,
       label: 'Experiments',
       component: html`<br-experiments-panel

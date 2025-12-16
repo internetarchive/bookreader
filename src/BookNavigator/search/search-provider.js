@@ -37,7 +37,11 @@ export default class SearchProvider {
     this.onProviderChange = onProviderChange;
     /** @type {import('@/src/BookReader.js').default} */
     this.bookreader = bookreader;
-    this.icon = html`<ia-icon-search style="width: var(--iconWidth); height: var(--iconHeight);"></ia-icon-search>`;
+    this.icon = html`
+      <ia-icon-search
+        aria-hidden="true" role="presentation"
+        style="width: var(--iconWidth); height: var(--iconHeight);"
+      ></ia-icon-search>`;
     this.label = 'Search inside';
     this.menuDetails = this.getMenuDetails();
     this.id = 'search';
