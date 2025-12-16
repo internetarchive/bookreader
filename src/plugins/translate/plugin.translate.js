@@ -1,5 +1,6 @@
 // @ts-check
 import { html, LitElement } from 'lit';
+import { passageToLines } from './utils.js';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property } from 'lit/decorators.js';
 import { TranslationManager } from "./TranslationManager.js";
@@ -59,8 +60,7 @@ export class TranslatePlugin extends BookReaderPlugin {
    * @type {boolean} loadingModel - Shows loading animation while downloading lang model
    */
   loadingModel = true;
-
-  textSelectionManager = new TextSelectionManager('.BRtranslateLayer', this.br, {selectionElement: [".BRlineElement"]}, 1);
+  textSelectionManager = new TextSelectionManager('.BRtranslateLayer', this.br, {selectionElement: [".BRlineElement"]}, 10);
 
   async init() {
     const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
@@ -154,6 +154,7 @@ export class TranslatePlugin extends BookReaderPlugin {
 
     const textLayerElement = page.querySelector('.BRtextLayer');
     textLayerElement.classList.add('showingTranslation');
+    pageTranslationLayer.setAttribute("dir", textLayerElement.getAttribute("dir"));
     $(pageTranslationLayer).css({
       "width": $(textLayerElement).css("width"),
       "height": $(textLayerElement).css("height"),
@@ -202,12 +203,22 @@ export class TranslatePlugin extends BookReaderPlugin {
         const firstWordSpacing = paragraphs[pidx]?.firstChild?.firstChild;
         const createSpan = document.createElement('span');
         createSpan.className = 'BRlineElement';
-        createSpan.textContent = translatedText;
-        translatedParagraph.appendChild(createSpan);
+        const paragraphsToLines = translatedText.split(' ');
+        const chunks = passageToLines(paragraphsToLines);
+        for (const chunk of chunks) {
+          const sentenceSpan = document.createElement('span');
+          sentenceSpan.className = 'BRlineElement';
+          sentenceSpan.textContent = chunk;
+          translatedParagraph.appendChild(sentenceSpan);
 
-        $(createSpan).css({
-          "text-indent": $(firstWordSpacing).css('padding-left'),
-        });
+          const spaceSpan = document.createElement('span');
+          spaceSpan.classList.add('BRspace');
+          spaceSpan.textContent = ' ';
+          translatedParagraph.appendChild(spaceSpan);
+          $(sentenceSpan).css({
+            "text-index": $(firstWordSpacing).css('padding-left'),
+          });
+        }
         if (page.classList.contains('BRpage-visible')) {
           this.fitVisiblePage(translatedParagraph);
         }
@@ -270,7 +281,7 @@ export class TranslatePlugin extends BookReaderPlugin {
       $(paragEl).css({ "font-size": `${adjustedFontSize}px` });
     }
 
-    const textHeight = paragEl.firstElementChild.clientHeight;
+    const textHeight = paragEl.clientHeight;
     const scrollHeight = paragEl.scrollHeight;
     const fits = textHeight < scrollHeight;
     if (fits) {
