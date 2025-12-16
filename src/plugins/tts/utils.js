@@ -1,3 +1,4 @@
+// @ts-check
 import langs from 'iso-language-codes';
 
 /**
@@ -40,7 +41,11 @@ export function toISO6391(language) {
   if (specialLangs[language]) {
     return language;
   }
-  const codeObj = findLanguage(language, 'iso639_1') || findLanguage(language, 'iso639_2T') || findLanguage(language, 'iso639_2B');
+  const codeObj = (
+    findLanguage(language, ['iso639_1']) ||
+    findLanguage(language, ['iso639_2T']) ||
+    findLanguage(language, ['iso639_2B', 'name', 'nativeName'])
+  );
   if (codeObj) return codeObj.iso639_1;
   return null;
 }
@@ -56,7 +61,11 @@ export function toNativeName(language) {
   if (specialLangs[language]) {
     return specialLangs[language];
   }
-  const codeObj = findLanguage(language, 'iso639_1') || findLanguage(language, 'iso639_2T') || findLanguage(language, 'iso639_2B');
+  const codeObj = (
+    findLanguage(language, ['iso639_1']) ||
+    findLanguage(language, ['iso639_2T']) ||
+    findLanguage(language, ['iso639_2B', 'name', 'nativeName'])
+  );
   if (codeObj?.nativeName) return codeObj.nativeName.split(", ")[0];
   return null;
 }
@@ -65,18 +74,17 @@ export function toNativeName(language) {
 
 /**
  * @param {string} language
+ * @param {Array<'iso639_1' | 'iso639_2T' | 'iso639_2B' | 'nativeName' | 'name'>} fields
  * @returns {Code | null}
  */
-function findLanguage(language, codeType) {
+function findLanguage(language, fields) {
   if (!language) return null;
   language = language.toLowerCase();
   for (const lang of langs) {
-    if (lang[codeType].toLowerCase().split(", ").includes(language)) {
-      return lang;
-    } else if (lang.name.toLowerCase().split(", ").includes(language)) {
-      return lang;
-    } else if (lang.nativeName.toLowerCase().split(", ").includes(language)) {
-      return lang;
+    for (const codeType of fields) {
+      if (lang[codeType]?.toLowerCase().split(", ").includes(language)) {
+        return lang;
+      }
     }
   }
   return null;
