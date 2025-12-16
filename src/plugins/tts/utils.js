@@ -1,3 +1,4 @@
+// @ts-check
 import langs from 'iso-language-codes';
 
 /**
@@ -24,43 +25,68 @@ export function isAndroid(userAgent = navigator.userAgent) {
 const specialLangs =  {
   "zh-hans": "中文 (Zhōngwén)",
 };
+
 /**
  * @typedef {string} ISO6391
  * Language code in ISO 639-1 format. e.g. en, fr, zh
- * Can also retrieve language native name + ISO 639-1 code
  **/
 
 /**
  * @param {string} language in some format
- * @param {boolean?} getName gets Native Name + language code if true
  * @return {ISO6391?}
  */
-export function toISO6391(language, getName = false) {
+export function toISO6391(language) {
   if (!language) return null;
-  language = language.toLowerCase();
-
-  return searchForISO6391(language, ['iso639_1'], getName) ||
-    searchForISO6391(language, ['iso639_2T'], getName) ||
-    searchForISO6391(language, ['iso639_2B', 'nativeName', 'name'], getName);
+  language = language.toLocaleLowerCase();
+  if (specialLangs[language]) {
+    return language;
+  }
+  const codeObj = (
+    findLanguage(language, ['iso639_1']) ||
+    findLanguage(language, ['iso639_2T']) ||
+    findLanguage(language, ['iso639_2B', 'name', 'nativeName'])
+  );
+  if (codeObj) return codeObj.iso639_1;
+  return null;
 }
 
 /**
- * Searches for the given long in the given columns.
+ *
  * @param {string} language
- * @param {Array<keyof import('iso-language-codes').Code>} columnsToSearch
- * @param {boolean?} getName
- * @return {ISO6391?}
+ * @returns {string}
  */
-function searchForISO6391(language, columnsToSearch, getName) {
+export function toNativeName(language) {
+  if (!language) return null;
+  language = language.toLocaleLowerCase();
+  if (specialLangs[language]) {
+    return specialLangs[language];
+  }
+  const codeObj = (
+    findLanguage(language, ['iso639_1']) ||
+    findLanguage(language, ['iso639_2T']) ||
+    findLanguage(language, ['iso639_2B', 'name', 'nativeName'])
+  );
+  if (codeObj?.nativeName) return codeObj.nativeName.split(", ")[0];
+  return null;
+}
+
+/** @typedef {import('iso-language-codes').Code} Code */
+
+/**
+ * @param {string} language
+ * @param {Array<'iso639_1' | 'iso639_2T' | 'iso639_2B' | 'nativeName' | 'name'>} fields
+ * @returns {Code | null}
+ */
+function findLanguage(language, fields) {
+  if (!language) return null;
+  language = language.toLowerCase();
   for (const lang of langs) {
-    for (const colName of columnsToSearch) {
-      if (lang[colName].split(', ').map(x => x.toLowerCase()).indexOf(language) != -1) {
-        if (getName) return `${lang.nativeName.split(", ")[0]} (${lang.iso639_1})`;
-        return lang.iso639_1;
+    for (const codeType of fields) {
+      if (lang[codeType]?.toLowerCase().split(", ").includes(language)) {
+        return lang;
       }
     }
   }
-  if (specialLangs[language]) return `${specialLangs[language]} (${language})`;
   return null;
 }
 

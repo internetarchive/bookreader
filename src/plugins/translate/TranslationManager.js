@@ -1,7 +1,7 @@
 // @ts-check
 import { Cache } from '../../util/cache.js';
 import { BatchTranslator } from '@internetarchive/bergamot-translator/translator.js';
-import { toISO6391 } from '../tts/utils.js';
+import { toISO6391, toNativeName } from '../tts/utils.js';
 
 export class TranslationManager {
   /** @type {Cache<{index: string, response: string}>} */
@@ -36,7 +36,7 @@ export class TranslationManager {
 
   constructor() {
     //TODO Should default to the book language as the first element
-    const enModel = {code: "en", name: "English", type: "prod"};
+    const enModel = {code: "en", name: "English (en)", type: "prod"};
     this.fromLanguages.push(enModel);
     this.toLanguages.push(enModel);
   }
@@ -77,10 +77,12 @@ export class TranslationManager {
       // List of dev models found here https://github.com/mozilla/firefox-translations-models/tree/main/models/base
       // There are also differences between the model types in the repo above here: https://github.com/mozilla/firefox-translations-models?tab=readme-ov-file#firefox-translations-models
       if (firstLang !== "en") {
-        this.fromLanguages.push({code: firstLang, name: toISO6391(firstLang, true), type: "prod"});
+        const name = `${toNativeName(firstLang)} (${toISO6391(firstLang)})`;
+        this.fromLanguages.push({code: firstLang, name: name, type: "prod"});
       }
       if (secondLang !== "en") {
-        this.toLanguages.push({code: secondLang, name: toISO6391(secondLang, true), type: "prod"});
+        const name = `${toNativeName(secondLang)} (${toISO6391(secondLang)})`;
+        this.toLanguages.push({code: secondLang, name: name, type: "prod"});
       }
     }
     this._initResolve([this.modelRegistry]);
