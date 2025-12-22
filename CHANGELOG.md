@@ -1,3 +1,7 @@
+# 5.0.0-103
+- Fix: Improve accessibility of side panel @cdrini
+- Fix: BookReader usage with liner notes @pezvi
+
 # 5.0.0-102
 - Feature: Add dockable slider for mobile @pezvi
 - Feature: Improve accessibility of search inside panel @cdrini
