@@ -33,11 +33,14 @@ export class Navbar {
     this.updateNavIndexThrottled = throttle(this.updateNavIndex.bind(this), 250, false);
   }
 
-  controlFor(controlName, optionOverrides) {
+  /**
+   * @param {string} controlName
+   * @param {Object} optionOverrides
+   */
+  controlFor(controlName, optionOverrides = null) {
     const brOption = this.br.options.controls[controlName];
     const option = Object.assign({},brOption, optionOverrides);
-    console.log("Option—",option);
-    if ((!option.visible)) { return ''; }
+    if (!option.visible) { return ''; }
     if (option.template) {
       return `<li>${option.template(this.br)}</li>`;
     }
@@ -275,8 +278,8 @@ export class Navbar {
                   <div class="BRnavline"></div>
                 </div>
               </li>
-              ${this.controlFor('bookLeft', {visible: 'true'})}
-              ${this.controlFor('bookRight', {visible: 'true'})}
+              ${this.controlFor('bookLeft', {visible: true})}
+              ${this.controlFor('bookRight', {visible: true})}
             </ul>
           </nav>
         </div>
