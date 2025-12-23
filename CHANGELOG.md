@@ -1,3 +1,6 @@
+# 5.0.0-104
+- Dev: Update to node 24 + tweak publish flow @cdrini
+
 # 5.0.0-103
 - Fix: Improve accessibility of side panel @cdrini
 - Fix: BookReader usage with liner notes @pezvi
