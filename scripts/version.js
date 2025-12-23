@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { execSync } from 'child_process';
-import PACKAGE_JSON from '../package.json' assert { type: 'json' };
+import PACKAGE_JSON from '../package.json' with { type: 'json' };
 const NEW_VERSION = PACKAGE_JSON.version;
 
 async function main() {

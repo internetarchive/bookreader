@@ -1,5 +1,5 @@
 import fs from 'fs';
-import PACKAGE_JSON from '../package.json' assert { type: 'json' };
+import PACKAGE_JSON from '../package.json' with { type: 'json' };
 const NEW_VERSION = PACKAGE_JSON.version;
 
 const tag = `v${NEW_VERSION}`;
