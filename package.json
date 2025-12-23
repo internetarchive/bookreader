@@ -66,7 +66,7 @@
     "eslint-plugin-testcafe": "0.2.1",
     "http-server": "14.1.1",
     "hypothesis": "^1.1627.0",
-    "interactjs": "^1.10.18",
+    "interactjs": "^1.10.27",
     "iso-language-codes": "2.0.0",
     "jest": "30.2.0",
     "jest-environment-jsdom": "^29.7.0",
