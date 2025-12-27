@@ -213,6 +213,7 @@
   float: left;
   flex: 1 auto;
 }
+
 .BRpager.ui-slider  {
   position: relative;
   height: 8px;
@@ -242,6 +243,7 @@
     z-index: $brZindexBase + 5;
     border: none;
   }
+  
   .ui-slider-range {
     height: 100%;
     border-radius: 10px;
@@ -265,6 +267,7 @@
   margin: 0 10px;
   width: 100%;
 }
+
 .BRcurrentpage {
   display: inline-block;
   text-align: left;
@@ -274,6 +277,7 @@
   margin-right: 10px;
   line-height: 1;
 }
+
 .BRnavTitle {
   position: relative;
   z-index: 2;
@@ -289,6 +293,7 @@
   letter-spacing: 0.5px;
   font-style: italic;
 }
+
 .BRpage {
   height: 100%;
   overflow: hidden;
@@ -298,11 +303,13 @@
   float: left;
   flex: none;
 }
+
 .BRpageLparan {
   margin-right: 1px;
   font-size: .8em;
   vertical-align: top;
 }
+
 .BRpageRparan {
   margin-left: 1px;
   font-size: .8em;
@@ -326,6 +333,7 @@
   background-position: -1224px center;
   background-size: 3440px auto;
 }
+
 .DrawerSettingsWrapper .zoom_in {
   background-position: -1384px center;
 }
@@ -337,6 +345,7 @@
 .BRnavMobile.docked {
   height: 0px;
   border: none;
+  
   .BRcontrols .scrubber .BRpager.ui-slider {
     top: -1px;
   }
@@ -377,4 +386,394 @@
 
 .BRnavMobile.hide {
   display: none;
+}
+
+/* Dictionary button styles */
+.dictionary-button {
+  min-width: 140px;
+  margin-right: 15px;
+  align-self: center;
+  cursor: pointer;
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    user-select: none;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 0.8;
+    }
+    
+    span {
+      white-space: nowrap;
+    }
+  }
+}
+
+.dictionary-checkbox {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+/* Dictionary Mode - Active State */
+.dictionary-mode-active {
+  cursor: text !important;
+  
+  // Enable text selection on text layers
+  .BRtextLayer {
+    pointer-events: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    z-index: 10 !important;
+    cursor: text;
+    
+    // Make words selectable and hoverable
+    .BRwordElement {
+      cursor: pointer;
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      transition: background-color 0.15s ease;
+      
+      &:hover {
+        background-color: rgba(255, 255, 0, 0.3);
+        border-radius: 2px;
+      }
+    }
+    
+    .BRlineElement {
+      cursor: text;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+  }
+  
+  // Disable pointer events on page images
+  .BRpageimage {
+    pointer-events: none !important;
+  }
+}
+
+/* Dictionary Mode Overlay Message */
+.dictionary-mode-overlay {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  animation: slideDown 0.3s ease-out;
+  
+  .dictionary-mode-message {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    
+    strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    
+    .dictionary-mode-hint {
+      font-size: 13px;
+      opacity: 0.9;
+      color: #ffd700;
+    }
+  }
+}
+
+/* Dictionary Popup */
+.dictionary-popup {
+  position: fixed;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 0;
+  max-width: 400px;
+  min-width: 300px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 10001;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  animation: popupFadeIn 0.2s ease-in-out;
+  
+  &-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-bottom: 1px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 6px 6px 0 0;
+    
+    strong {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .phonetic {
+      margin-left: 10px;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 14px;
+      font-style: italic;
+    }
+    
+    .close-popup {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: white;
+      padding: 2px 8px;
+      width: auto;
+      height: auto;
+      line-height: 1;
+      border-radius: 4px;
+      transition: background 0.2s;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    }
+  }
+  
+  &-body {
+    padding: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+    
+    .part-of-speech {
+      color: #667eea;
+      font-style: italic;
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 14px;
+      text-transform: lowercase;
+    }
+    
+    .definition {
+      color: #333;
+      line-height: 1.6;
+      margin-bottom: 12px;
+      font-size: 15px;
+    }
+    
+    .example {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 12px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-left: 3px solid #667eea;
+      border-radius: 4px;
+      
+      em {
+        font-style: normal;
+      }
+    }
+    
+    .synonyms {
+      font-size: 13px;
+      color: #555;
+      margin-top: 12px;
+      padding: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      
+      strong {
+        color: #333;
+      }
+    }
+    
+    .translation {
+      margin-top: 12px;
+      padding: 12px;
+      background: linear-gradient(135deg, #e8f4f8 0%, #d4e7f1 100%);
+      border-radius: 6px;
+      font-size: 14px;
+      border: 1px solid #b8d4e3;
+      
+      strong {
+        color: #2c5aa0;
+        display: block;
+        margin-bottom: 5px;
+      }
+    }
+  }
+  
+  &-footer {
+    padding: 12px;
+    background: #f9f9f9;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+    border-radius: 0 0 6px 6px;
+    
+    button {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      width: auto;
+      height: auto;
+      transition: all 0.2s;
+      
+      &:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-1px);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        
+        &:hover {
+          background: white;
+          color: inherit;
+          border-color: #ddd;
+          transform: none;
+        }
+      }
+    }
+  }
+}
+
+/* Animations */
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .dictionary-button {
+    min-width: 120px;
+    
+    label {
+      font-size: 12px;
+      gap: 6px;
+    }
+  }
+  
+  .dictionary-popup {
+    max-width: 90vw;
+    min-width: 280px;
+    left: 5vw !important;
+    right: 5vw;
+    transform: none;
+    
+    &-header strong {
+      font-size: 18px;
+    }
+    
+    &-body {
+      padding: 12px;
+      max-height: 250px;
+    }
+    
+    &-footer {
+      flex-direction: column;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+  
+  .dictionary-mode-overlay {
+    top: 60px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    
+    .dictionary-mode-message {
+      padding: 12px 20px;
+      
+      strong {
+        font-size: 14px;
+      }
+      
+      .dictionary-mode-hint {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .dictionary-popup {
+    background: #2a2a2a;
+    border-color: #555;
+    color: #e0e0e0;
+    
+    &-body {
+      .definition {
+        color: #e0e0e0;
+      }
+      
+      .example {
+        background: #333;
+        color: #ccc;
+      }
+      
+      .synonyms {
+        background: #333;
+        color: #ccc;
+      }
+    }
+    
+    &-footer {
+      background: #333;
+      border-top-color: #555;
+      
+      button {
+        background: #3a3a3a;
+        border-color: #555;
+        color: #e0e0e0;
+        
+        &:hover {
+          background: #667eea;
+          color: white;
+        }
+      }
+    }
+  }
 }
