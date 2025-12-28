@@ -50,7 +50,7 @@ export const DEFAULT_OPTIONS = {
    */
   imagesBaseURL: '/BookReader/images/',
 
-  /** @type {'pow2' | 'integer'} What reduces are valid for getURI. */
+  /** @type {'pow2' | 'integer' | import('./ReduceSet.js').ReduceSet} What reduces are valid for getURI. */
   reduceSet: 'pow2',
 
   /**
