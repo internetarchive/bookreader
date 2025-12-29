@@ -241,6 +241,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
           const space = document.createElement('span');
           space.classList.add('BRspace');
           space.textContent = ' ';
+          // Hack to make screen readers (eg NVDA) read spaces correctly;
+          // otherwise they ignore elements with just whitespace.
+          space.setAttribute('aria-label', '\u00A0');
           lineEl.append(space);
 
           // Edge ignores empty elements (like BRspace), so add another
