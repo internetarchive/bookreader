@@ -1316,6 +1316,11 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   }
 
   this.isFullscreenActive = true;
+
+  // Change tooltip of fullscreen button
+  this.$('.BRnav .BRicon.full').attr('title', 'Exit fullscreen');
+  this.$('.BRnav .BRicon.full .BRtooltip').text('Exit fullscreen');
+
   // prioritize class updates so CSS can propagate
   this.updateBrClasses();
   if (this.activeMode instanceof Mode1Up) {
@@ -1359,6 +1364,10 @@ BookReader.prototype.exitFullScreen = async function () {
   }
 
   this.isFullscreenActive = false;
+
+  this.$('.BRnav .BRicon.full').attr('title', 'Go fullscreen');
+  this.$('.BRnav .BRicon.full .BRtooltip').text('Go fullscreen');
+
   // Trigger fullscreen event immediately
   // so that book-nav can relay to web components
   this.trigger(BookReader.eventNames.fullscreenToggled);
@@ -1744,7 +1753,7 @@ BookReader.prototype.initUIStrings = function() {
     '.bookmark': 'Bookmark this page',
     '.share': 'Share this book',
     '.info': 'About this book',
-    '.full': 'Toggle fullscreen',
+    '.full': 'Go fullscreen',
     '.toggle_slider': 'Toggle page controls',
     '.book_left': 'Flip left',
     '.book_right': 'Flip right',
