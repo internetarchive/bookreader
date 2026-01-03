@@ -101,7 +101,7 @@ svg.BRPageLayer {
 }
 
 // Hides page layers during page flip animation
-.BRpageFlipping .BRtextLayer {
+.BRpageFlipping .BRtextLayer, .BRpageFlipping .BRtranslateLayer {
   display: none;
 }
 
