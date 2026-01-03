@@ -153,7 +153,6 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
 
     const textLayerElement = page.querySelector('.BRtextLayer');
-    textLayerElement.classList.add('showingTranslation');
     $(pageTranslationLayer).css({
       "width": $(textLayerElement).css("width"),
       "height": $(textLayerElement).css("height"),
@@ -161,6 +160,7 @@ export class TranslatePlugin extends BookReaderPlugin {
       "pointer-events": $(textLayerElement).css("pointer-events"),
       "z-index": 3,
     });
+    textLayerElement.classList.add('showingTranslation');
     const paragraphs = this.getParagraphsOnPage(page);
 
     const paragraphTranslationPromises = paragraphs.map(async (paragraph, pidx) => {
