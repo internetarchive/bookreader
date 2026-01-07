@@ -196,7 +196,6 @@ export class Mode1UpLit extends LitElement {
         // unclear why this is ever really happening
         this.br.displayedIndices = this.visiblePages.map(p => p.index);
         this.br.updateFirstIndex(this.br.displayedIndices[0]);
-        this.br._components.navbar.updateNavIndexThrottled();
       }
     }
     if (changedProps.has('scale')) {

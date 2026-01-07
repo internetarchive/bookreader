@@ -1446,7 +1446,6 @@ BookReader.prototype.updateFirstIndex = function(
 
   // event to know if user is actively reading
   this.trigger(BookReader.eventNames.userAction);
-  this._components.navbar.updateNavIndexThrottled(index);
 };
 
 /**

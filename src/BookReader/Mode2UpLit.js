@@ -258,7 +258,6 @@ export class Mode2UpLit extends LitElement {
       this.renderedPages = this.computeRenderedPages();
       this.br.displayedIndices = this.visiblePages.map(p => p.index);
       this.br.updateFirstIndex(this.br.displayedIndices[0]);
-      this.br._components.navbar.updateNavIndexThrottled();
     }
     if (changedProps.has('autoFit')) {
       if (this.autoFit != 'none') {

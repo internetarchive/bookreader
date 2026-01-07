@@ -313,22 +313,27 @@ export class Navbar {
       range: "min",
     });
 
-    $sliders.on('slide', (event, ui) => {
-      this.updateNavPageNum(ui.value);
-      return true;
+    // The jQuery UI slider handles the keyboard shortcuts on the slider's
+    // handle, so need the aria labels there.
+    $sliders.find('.ui-slider-handle').attr({
+      'role': 'slider',
+      'aria-label': 'Page navigation slider',
+      'aria-valuemin': 1,
+      'aria-valuemax': br.book.getNumLeafs(),
     });
 
+    $sliders.on('slide', (event, ui) => this.updateNavPageNum(ui.value));
+
     $sliders.on('slidechange', (event, ui) => {
-      this.updateNavPageNum(ui.value);
       // recursion prevention for jumpToIndex
-      if ($(event.currentTarget).data('swallowchange')) {
-        $(event.currentTarget).data('swallowchange', false);
+      if (this.swallowchange) {
+        this.swallowchange = false;
       } else {
         br.jumpToIndex(ui.value);
       }
-      return true;
     });
 
+    this.br.on(EVENTS.pageChanged, () => this.updateNavIndexThrottled());
     br.options.controls.viewmode.visible && this._bindViewModeButton();
     this.updateNavPageNum(br.currentIndex());
 
@@ -369,7 +374,11 @@ export class Navbar {
    * @param {number} index
    */
   updateNavPageNum(index) {
-    this.$root.find('.BRcurrentpage').html(this.getNavPageNumString(index, true));
+    this.$root.find('.BRcurrentpage').html(this.getNavPageNumString(index));
+    this.$root.find('.ui-slider-handle').attr({
+      'aria-valuenow': index + 1,
+      'aria-valuetext': this.getNavPageNumString(index),
+    });
   }
 
   /**
@@ -380,7 +389,9 @@ export class Navbar {
     // We want to update the value, but normally moving the slider
     // triggers jumpToIndex which triggers this method
     index = index !== undefined ? index : this.br.currentIndex();
-    this.$root.find('.BRpager').data('swallowchange', true).slider('value', index);
+    this.swallowchange = true;
+    this.$root.find('.BRpager').slider('value', index);
+    this.updateNavPageNum(index);
   }
 }
 
