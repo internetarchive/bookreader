@@ -876,18 +876,14 @@ BookReader.prototype.setupKeyListeners = function () {
       e.preventDefault();
       this.last();
       break;
-    case "ArrowDown":
     case "PageDown":
-    case "Down": // hack for IE and old Gecko
       // In 1up and thumb mode page scrolling handled by browser
       if (this.constMode2up === this.mode) {
         e.preventDefault();
         this.next();
       }
       break;
-    case "ArrowUp":
     case "PageUp":
-    case "Up": // hack for IE and old Gecko
       // In 1up and thumb mode page scrolling handled by browser
       if (this.constMode2up === this.mode) {
         e.preventDefault();
@@ -1119,14 +1115,16 @@ BookReader.prototype._reduceSort = (a, b) => a.reduce - b.reduce;
 
 /**
  * Attempts to jump to page
- * @param {string}
+ * @param {string} pageNum
+ * @param {object} options
+ * @param {boolean} [options.ariaLive = false]
  * @return {boolean} Returns true if page could be found, false otherwise.
  */
-BookReader.prototype.jumpToPage = function(pageNum) {
+BookReader.prototype.jumpToPage = function(pageNum, {ariaLive = false} = {}) {
   const pageIndex = this.book.parsePageString(pageNum);
 
   if ('undefined' != typeof(pageIndex)) {
-    this.jumpToIndex(pageIndex);
+    this.jumpToIndex(pageIndex, { ariaLive });
     return true;
   }
 
@@ -1145,27 +1143,35 @@ BookReader.prototype._isIndexDisplayed = function(index) {
 
 /**
  * Changes the current page
- * @param {PageIndex} index
- * @param {number} [pageX]
- * @param {number} [pageY]
- * @param {boolean} [noAnimate]
+ * @param {PageIndex | 'left' | 'right' | 'next' | 'prev'} indexOrDirection
+ * @param {object} options
+ * @param {number} [options.pageX] Position on page ; not implemented
+ * @param {number} [options.pageY] Position on page ; not implemented
+ * @param {boolean} [options.noAnimate]
+ * @param {number | 'fast' | 'slow'} [options.flipSpeed]
+ * @param {boolean} [options.ariaLive]
+ * @param {boolean} [options.triggerStop] - whether to trigger the stop event; default true; maybe deprecated?
  */
-BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
-  // Don't jump into specific unviewable page
-  const page = this.book.getPage(index);
+BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY = 0, noAnimate = false, flipSpeed = null, ariaLive = false, triggerStop = true} = {}) {
+  const page = this.activeMode.parsePageSpecifier(indexOrDirection);
+  flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
+  if (!page || page.index == this.currentIndex()) {
+    return;
+  }
 
+  // Don't jump into specific unviewable page
   if (!page.isViewable && page.unviewablesStart != page.index) {
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
     const newIndex = alreadyInPreview ? page.findNext({ combineConsecutiveUnviewables: true })?.index : page.unviewablesStart;
     // Rare, but a book can end on an unviewable page, so this could be undefined
     if (typeof newIndex !== 'undefined') {
-      this.jumpToIndex(newIndex, pageX, pageY, noAnimate);
+      this.jumpToIndex(newIndex, { pageX, pageY, noAnimate, flipSpeed, ariaLive });
     }
   } else {
-    this.trigger(BookReader.eventNames.stop);
-
-    this.activeMode.jumpToIndex(index, pageX, pageY, noAnimate);
+    if (triggerStop) this.trigger(BookReader.eventNames.stop);
+    this.trigger(BookReader.eventNames.beforePageChanged, { index: page.index, ariaLive });
+    this.activeMode.jumpToIndex(page.index, { pageX, pageY, noAnimate, flipSpeed, ariaLive });
   }
 };
 
@@ -1316,6 +1322,11 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
   }
 
   this.isFullscreenActive = true;
+
+  // Change tooltip of fullscreen button
+  this.$('.BRnav .BRicon.full').attr('title', 'Exit fullscreen');
+  this.$('.BRnav .BRicon.full .BRtooltip').text('Exit fullscreen');
+
   // prioritize class updates so CSS can propagate
   this.updateBrClasses();
   if (this.activeMode instanceof Mode1Up) {
@@ -1359,6 +1370,10 @@ BookReader.prototype.exitFullScreen = async function () {
   }
 
   this.isFullscreenActive = false;
+
+  this.$('.BRnav .BRicon.full').attr('title', 'Go fullscreen');
+  this.$('.BRnav .BRicon.full .BRtooltip').text('Go fullscreen');
+
   // Trigger fullscreen event immediately
   // so that book-nav can relay to web components
   this.trigger(BookReader.eventNames.fullscreenToggled);
@@ -1437,18 +1452,13 @@ BookReader.prototype.updateFirstIndex = function(
 
   // event to know if user is actively reading
   this.trigger(BookReader.eventNames.userAction);
-  this._components.navbar.updateNavIndexThrottled(index);
 };
 
 /**
  * Flip the right page over onto the left
  */
-BookReader.prototype.right = function() {
-  if ('rl' != this.pageProgression) {
-    this.next();
-  } else {
-    this.prev();
-  }
+BookReader.prototype.right = function({ ariaLive = true, triggerStop = true } = {}) {
+  this.jumpToIndex('right', { ariaLive, triggerStop });
 };
 
 /**
@@ -1465,12 +1475,8 @@ BookReader.prototype.rightmost = function() {
 /**
  * Flip the left page over onto the right
  */
-BookReader.prototype.left = function() {
-  if ('rl' != this.pageProgression) {
-    this.prev();
-  } else {
-    this.next();
-  }
+BookReader.prototype.left = function({ ariaLive = true, triggerStop = true } = {}) {
+  this.jumpToIndex('left', { ariaLive, triggerStop });
 };
 
 /**
@@ -1488,51 +1494,36 @@ BookReader.prototype.leftmost = function() {
  * @param {object} options
  * @param {boolean} [options.triggerStop = true]
  * @param {number | 'fast' | 'slow'} [options.flipSpeed]
+ * @param {boolean} [options.ariaLive = true]
  */
 BookReader.prototype.next = function({
   triggerStop = true,
   flipSpeed = null,
+  ariaLive = true,
 } = {}) {
-  if (this.constMode2up == this.mode) {
-    if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
-    this._modes.mode2Up.mode2UpLit.flipAnimation('next', {flipSpeed});
-  } else {
-    if (this.firstIndex < this.book.getNumLeafs() - 1) {
-      this.jumpToIndex(this.firstIndex + 1);
-    }
-  }
+  this.jumpToIndex('next', { ariaLive, flipSpeed, triggerStop });
 };
 
 /**
  * @param {object} options
  * @param {boolean} [options.triggerStop = true]
  * @param {number | 'fast' | 'slow'} [options.flipSpeed]
+ * @param {boolean} [options.ariaLive = true]
  */
 BookReader.prototype.prev = function({
   triggerStop = true,
   flipSpeed = null,
+  ariaLive = true,
 } = {}) {
-  const isOnFrontPage = this.firstIndex < 1;
-  if (isOnFrontPage) return;
-
-  if (this.constMode2up == this.mode) {
-    if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
-    this._modes.mode2Up.mode2UpLit.flipAnimation('prev', {flipSpeed});
-  } else {
-    if (this.firstIndex >= 1) {
-      this.jumpToIndex(this.firstIndex - 1);
-    }
-  }
+  this.jumpToIndex('prev', { ariaLive, flipSpeed, triggerStop });
 };
 
-BookReader.prototype.first = function() {
-  this.jumpToIndex(0);
+BookReader.prototype.first = function({ ariaLive = true, triggerStop = false } = {}) {
+  this.jumpToIndex(0, { ariaLive, triggerStop });
 };
 
-BookReader.prototype.last = function() {
-  this.jumpToIndex(this.book.getNumLeafs() - 1);
+BookReader.prototype.last = function({ ariaLive = true, triggerStop = false } = {}) {
+  this.jumpToIndex(this.book.getNumLeafs() - 1, { ariaLive, triggerStop });
 };
 
 
@@ -1744,7 +1735,7 @@ BookReader.prototype.initUIStrings = function() {
     '.bookmark': 'Bookmark this page',
     '.share': 'Share this book',
     '.info': 'About this book',
-    '.full': 'Toggle fullscreen',
+    '.full': 'Go fullscreen',
     '.toggle_slider': 'Toggle page controls',
     '.book_left': 'Flip left',
     '.book_right': 'Flip right',

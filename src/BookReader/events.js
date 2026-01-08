@@ -4,6 +4,7 @@ export const EVENTS = {
    * state) has changed. */
   fragmentChange: 'fragmentChange',
   pageChanged: 'pageChanged',
+  beforePageChanged: 'beforePageChanged',
   PostInit: 'PostInit',
   stop: 'stop',
   resize: 'resize',

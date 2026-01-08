@@ -116,7 +116,7 @@ export class ChaptersPlugin extends BookReaderPlugin {
         .contents="${this._tocEntries}"
         .jumpToPage="${(pageIndex) => {
         this._updateCurrent(pageIndex);
-        this.br.jumpToIndex(pageIndex);
+        this.br.jumpToIndex(pageIndex, { ariaLive: true });
       }}"
         @connected="${(e) => {
         this._chaptersPanel = e.target;
@@ -170,7 +170,7 @@ export class ChaptersPlugin extends BookReaderPlugin {
       .on("mouseleave", event => $(event.target).removeClass('front'))
       .on('click', () => {
         this._updateCurrent(tocEntry.pageIndex);
-        this.br.jumpToIndex(tocEntry.pageIndex);
+        this.br.jumpToIndex(tocEntry.pageIndex, { ariaLive: true });
       });
 
     this.br.$('.BRchapter, .BRsearch').each((i, el) => {
