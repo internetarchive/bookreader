@@ -328,6 +328,23 @@ export class Navbar {
       'aria-valuemax': br.book.getNumLeafs(),
     });
 
+    // Ignore up/down arrow keys and page up/down keys, since they're confusingly different
+    // between slider movement and page movement. Down decreases slider value, which would move
+    // the scroll _up_ in 1up.
+    $sliders.find('.ui-slider-handle').off('keydown').on('keydown', function (event) {
+      switch (event.keyCode || event.which) {
+      case $.ui.keyCode.UP:
+      case $.ui.keyCode.DOWN:
+      case $.ui.keyCode.PAGE_UP:
+      case $.ui.keyCode.PAGE_DOWN:
+        return;
+      default:
+        // Forward along to the default handler for other keys
+        $.ui.slider.prototype._handleEvents.keydown.call($(this).parent().data('ui-slider'), event);
+        return;
+      }
+    });
+
     $sliders.on('slide', (event, ui) => this.updateNavPageNum(ui.value));
 
     $sliders.on('slidechange', (event, ui) => {

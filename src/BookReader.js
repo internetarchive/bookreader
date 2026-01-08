@@ -876,18 +876,14 @@ BookReader.prototype.setupKeyListeners = function () {
       e.preventDefault();
       this.last();
       break;
-    case "ArrowDown":
     case "PageDown":
-    case "Down": // hack for IE and old Gecko
       // In 1up and thumb mode page scrolling handled by browser
       if (this.constMode2up === this.mode) {
         e.preventDefault();
         this.next();
       }
       break;
-    case "ArrowUp":
     case "PageUp":
-    case "Up": // hack for IE and old Gecko
       // In 1up and thumb mode page scrolling handled by browser
       if (this.constMode2up === this.mode) {
         e.preventDefault();
