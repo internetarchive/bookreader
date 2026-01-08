@@ -135,14 +135,8 @@ export class Navbar {
       toggle_slider: () => {
         this.br.toggleSlider();
       },
-      book_left: () => {
-        this.br.trigger(EVENTS.stop);
-        this.br.left();
-      },
-      book_right: () => {
-        this.br.trigger(EVENTS.stop);
-        this.br.right();
-      },
+      book_left: this.br.left.bind(this.br),
+      book_right: this.br.right.bind(this.br),
       book_top: this.br.first.bind(this.br),
       book_bottom: this.br.last.bind(this.br),
       book_leftmost: this.br.leftmost.bind(this.br),

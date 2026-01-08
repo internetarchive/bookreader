@@ -645,7 +645,8 @@ export class Mode2UpLit extends LitElement {
       nextSpread = this.book.pageProgression == 'lr' ? 'left' : 'right';
     }
 
-    const curSpread = (this.pageLeft || this.pageRight).spread;
+    const curPage = this.book.getPage(this.br.currentIndex());
+    const curSpread = curPage.spread;
 
     if (nextSpread == 'left') {
       nextSpread = curSpread.left?.findLeft({ combineConsecutiveUnviewables: true })?.spread;

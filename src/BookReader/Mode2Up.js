@@ -87,9 +87,9 @@ export class Mode2Up extends ModeAbstract {
    * @return {import('./BookModel.js').PageModel}
    */
   parsePageSpecifier(indexOrDirection) {
-    const nextSpread = this.mode2UpLit.parseNextSpread(indexOrDirection);
     const isRTL = this.book.pageProgression == 'rl';
-    const nextLeftIndex = nextSpread.left?.index ?? (isRTL ? -1 : this.book.getNumLeafs());
+    const nextSpread = this.mode2UpLit.parseNextSpread(indexOrDirection);
+    const nextLeftIndex = nextSpread?.left?.index ?? (isRTL ? -1 : this.book.getNumLeafs());
     return this.book.getPage(nextLeftIndex);
   }
 

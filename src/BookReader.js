@@ -1147,15 +1147,16 @@ BookReader.prototype._isIndexDisplayed = function(index) {
 
 /**
  * Changes the current page
- * @param {PageIndex | 'left' | 'right' | 'next' | 'prev'} index
+ * @param {PageIndex | 'left' | 'right' | 'next' | 'prev'} indexOrDirection
  * @param {object} options
- * @param {number} [options.pageX]
- * @param {number} [options.pageY]
+ * @param {number} [options.pageX] Position on page ; not implemented
+ * @param {number} [options.pageY] Position on page ; not implemented
  * @param {boolean} [options.noAnimate]
  * @param {number | 'fast' | 'slow'} [options.flipSpeed]
  * @param {boolean} [options.ariaLive]
+ * @param {boolean} [options.triggerStop] - whether to trigger the stop event; default true; maybe deprecated?
  */
-BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY = 0, noAnimate = false, flipSpeed = null, ariaLive = false} = {}) {
+BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY = 0, noAnimate = false, flipSpeed = null, ariaLive = false, triggerStop = true} = {}) {
   const page = this.activeMode.parsePageSpecifier(indexOrDirection);
   flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
   if (!page || page.index == this.currentIndex()) {
@@ -1172,7 +1173,7 @@ BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY 
       this.jumpToIndex(newIndex, { pageX, pageY, noAnimate, flipSpeed, ariaLive });
     }
   } else {
-    this.trigger(BookReader.eventNames.stop);
+    if (triggerStop) this.trigger(BookReader.eventNames.stop);
     this.trigger(BookReader.eventNames.beforePageChanged, { index: page.index, ariaLive });
     this.activeMode.jumpToIndex(page.index, { pageX, pageY, noAnimate, flipSpeed, ariaLive });
   }
@@ -1460,12 +1461,8 @@ BookReader.prototype.updateFirstIndex = function(
 /**
  * Flip the right page over onto the left
  */
-BookReader.prototype.right = function() {
-  if ('rl' != this.pageProgression) {
-    this.next();
-  } else {
-    this.prev();
-  }
+BookReader.prototype.right = function({ ariaLive = true, triggerStop = true } = {}) {
+  this.jumpToIndex('right', { ariaLive, triggerStop });
 };
 
 /**
@@ -1482,12 +1479,8 @@ BookReader.prototype.rightmost = function() {
 /**
  * Flip the left page over onto the right
  */
-BookReader.prototype.left = function() {
-  if ('rl' != this.pageProgression) {
-    this.prev();
-  } else {
-    this.next();
-  }
+BookReader.prototype.left = function({ ariaLive = true, triggerStop = true } = {}) {
+  this.jumpToIndex('left', { ariaLive, triggerStop });
 };
 
 /**
@@ -1512,8 +1505,7 @@ BookReader.prototype.next = function({
   flipSpeed = null,
   ariaLive = true,
 } = {}) {
-  if (triggerStop) this.trigger(BookReader.eventNames.stop);
-  this.jumpToIndex('next', { ariaLive, flipSpeed });
+  this.jumpToIndex('next', { ariaLive, flipSpeed, triggerStop });
 };
 
 /**
@@ -1527,16 +1519,15 @@ BookReader.prototype.prev = function({
   flipSpeed = null,
   ariaLive = true,
 } = {}) {
-  if (triggerStop) this.trigger(BookReader.eventNames.stop);
-  this.jumpToIndex('prev', { ariaLive, flipSpeed });
+  this.jumpToIndex('prev', { ariaLive, flipSpeed, triggerStop });
 };
 
-BookReader.prototype.first = function({ ariaLive = true } = {}) {
-  this.jumpToIndex(0, { ariaLive });
+BookReader.prototype.first = function({ ariaLive = true, triggerStop = false } = {}) {
+  this.jumpToIndex(0, { ariaLive, triggerStop });
 };
 
-BookReader.prototype.last = function({ ariaLive = true } = {}) {
-  this.jumpToIndex(this.book.getNumLeafs() - 1, { ariaLive });
+BookReader.prototype.last = function({ ariaLive = true, triggerStop = false } = {}) {
+  this.jumpToIndex(this.book.getNumLeafs() - 1, { ariaLive, triggerStop });
 };
 
 
