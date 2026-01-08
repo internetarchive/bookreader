@@ -197,7 +197,7 @@ export class Mode2UpLit extends LitElement {
    * TODO Remove smooth option from everywhere.
    */
   async jumpToIndex(index, { smooth = true } = {}) {
-    await this.flipAnimation(index, { animate: smooth });
+    await this._flipAnimation(index, { animate: smooth });
   }
 
   zoomIn() {
@@ -377,7 +377,7 @@ export class Mode2UpLit extends LitElement {
         leftIndex=${range[0]}
         rightIndex=${range[1]}
         .book=${this.book}
-        .pageClickHandler=${(index) => this.br.jumpToIndex(index)}
+        .pageClickHandler=${(index) => this.br.jumpToIndex(index, { ariaLive: true })}
         side=${side}
         class="br-mode-2up__leafs br-mode-2up__leafs--${side}"
         style=${styleMap(mainEdgesStyle)}
@@ -495,9 +495,10 @@ export class Mode2UpLit extends LitElement {
   /************** VIRTUAL FLIPPING LOGIC **************/
 
   /**
+   * @private
    * @param {'left' | 'right' | 'next' | 'prev' | PageIndex | PageModel | {left: PageModel | null, right: PageModel | null}} nextSpread
    */
-  async flipAnimation(nextSpread, { animate = true, flipSpeed = this.flipSpeed } = {}) {
+  async _flipAnimation(nextSpread, { animate = true, flipSpeed = this.flipSpeed } = {}) {
     const curSpread = (this.pageLeft || this.pageRight)?.spread;
     if (!curSpread) {
       // Nothings been actually rendered yet! Will be corrected during initFirstRender
@@ -679,9 +680,9 @@ export class Mode2UpLit extends LitElement {
     const $page = $(ev.target).closest('.BRpagecontainer');
     if (!$page.length) return;
     if ($page.data('side') == 'L') {
-      this.flipAnimation('left');
+      this.br.left();
     } else if ($page.data('side') == 'R') {
-      this.flipAnimation('right');
+      this.br.right();
     }
   }
 }

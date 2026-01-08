@@ -304,6 +304,18 @@ export class Navbar {
     this.$root.append(this.$nav);
     br.refs.$br.append(this.$root);
 
+    this.br.on(EVENTS.beforePageChanged, (ev, { ariaLive }) => {
+      if (ariaLive) {
+        // So screen readers read out change
+        this.$root.find('.BRcurrentpage').attr('role', 'status');
+      } else {
+        this.$root.find('.BRcurrentpage').removeAttr('role');
+      }
+    });
+    this.br.on(EVENTS.pageChanged, (ev, { index }) => this.updateNavIndexThrottled(index));
+    br.options.controls.viewmode.visible && this._bindViewModeButton();
+    this.updateNavPageNum(br.currentIndex());
+
     /** @type {JQuery} sliders */
     const $sliders = this.$root.find('.BRpager').slider({
       animate: true,
@@ -329,13 +341,10 @@ export class Navbar {
       if (this.swallowchange) {
         this.swallowchange = false;
       } else {
-        br.jumpToIndex(ui.value);
+        // Don't want this to be aria-live since the slider already announces the value
+        br.jumpToIndex(ui.value, {ariaLive: false});
       }
     });
-
-    this.br.on(EVENTS.pageChanged, () => this.updateNavIndexThrottled());
-    br.options.controls.viewmode.visible && this._bindViewModeButton();
-    this.updateNavPageNum(br.currentIndex());
 
     return this.$nav;
   }

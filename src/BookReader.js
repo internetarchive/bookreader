@@ -1119,14 +1119,16 @@ BookReader.prototype._reduceSort = (a, b) => a.reduce - b.reduce;
 
 /**
  * Attempts to jump to page
- * @param {string}
+ * @param {string} pageNum
+ * @param {object} options
+ * @param {boolean} [options.ariaLive = false]
  * @return {boolean} Returns true if page could be found, false otherwise.
  */
-BookReader.prototype.jumpToPage = function(pageNum) {
+BookReader.prototype.jumpToPage = function(pageNum, {ariaLive = false} = {}) {
   const pageIndex = this.book.parsePageString(pageNum);
 
   if ('undefined' != typeof(pageIndex)) {
-    this.jumpToIndex(pageIndex);
+    this.jumpToIndex(pageIndex, { ariaLive });
     return true;
   }
 
@@ -1145,27 +1147,34 @@ BookReader.prototype._isIndexDisplayed = function(index) {
 
 /**
  * Changes the current page
- * @param {PageIndex} index
- * @param {number} [pageX]
- * @param {number} [pageY]
- * @param {boolean} [noAnimate]
+ * @param {PageIndex | 'left' | 'right' | 'next' | 'prev'} index
+ * @param {object} options
+ * @param {number} [options.pageX]
+ * @param {number} [options.pageY]
+ * @param {boolean} [options.noAnimate]
+ * @param {number | 'fast' | 'slow'} [options.flipSpeed]
+ * @param {boolean} [options.ariaLive]
  */
-BookReader.prototype.jumpToIndex = function(index, pageX, pageY, noAnimate) {
-  // Don't jump into specific unviewable page
-  const page = this.book.getPage(index);
+BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY = 0, noAnimate = false, flipSpeed = null, ariaLive = false} = {}) {
+  const page = this.activeMode.parsePageSpecifier(indexOrDirection);
+  flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
+  if (!page || page.index == this.currentIndex()) {
+    return;
+  }
 
+  // Don't jump into specific unviewable page
   if (!page.isViewable && page.unviewablesStart != page.index) {
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
     const newIndex = alreadyInPreview ? page.findNext({ combineConsecutiveUnviewables: true })?.index : page.unviewablesStart;
     // Rare, but a book can end on an unviewable page, so this could be undefined
     if (typeof newIndex !== 'undefined') {
-      this.jumpToIndex(newIndex, pageX, pageY, noAnimate);
+      this.jumpToIndex(newIndex, { pageX, pageY, noAnimate, flipSpeed, ariaLive });
     }
   } else {
     this.trigger(BookReader.eventNames.stop);
-
-    this.activeMode.jumpToIndex(index, pageX, pageY, noAnimate);
+    this.trigger(BookReader.eventNames.beforePageChanged, { index: page.index, ariaLive });
+    this.activeMode.jumpToIndex(page.index, { pageX, pageY, noAnimate, flipSpeed, ariaLive });
   }
 };
 
@@ -1496,51 +1505,38 @@ BookReader.prototype.leftmost = function() {
  * @param {object} options
  * @param {boolean} [options.triggerStop = true]
  * @param {number | 'fast' | 'slow'} [options.flipSpeed]
+ * @param {boolean} [options.ariaLive = true]
  */
 BookReader.prototype.next = function({
   triggerStop = true,
   flipSpeed = null,
+  ariaLive = true,
 } = {}) {
-  if (this.constMode2up == this.mode) {
-    if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
-    this._modes.mode2Up.mode2UpLit.flipAnimation('next', {flipSpeed});
-  } else {
-    if (this.firstIndex < this.book.getNumLeafs() - 1) {
-      this.jumpToIndex(this.firstIndex + 1);
-    }
-  }
+  if (triggerStop) this.trigger(BookReader.eventNames.stop);
+  this.jumpToIndex('next', { ariaLive, flipSpeed });
 };
 
 /**
  * @param {object} options
  * @param {boolean} [options.triggerStop = true]
  * @param {number | 'fast' | 'slow'} [options.flipSpeed]
+ * @param {boolean} [options.ariaLive = true]
  */
 BookReader.prototype.prev = function({
   triggerStop = true,
   flipSpeed = null,
+  ariaLive = true,
 } = {}) {
-  const isOnFrontPage = this.firstIndex < 1;
-  if (isOnFrontPage) return;
-
-  if (this.constMode2up == this.mode) {
-    if (triggerStop) this.trigger(BookReader.eventNames.stop);
-    flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
-    this._modes.mode2Up.mode2UpLit.flipAnimation('prev', {flipSpeed});
-  } else {
-    if (this.firstIndex >= 1) {
-      this.jumpToIndex(this.firstIndex - 1);
-    }
-  }
+  if (triggerStop) this.trigger(BookReader.eventNames.stop);
+  this.jumpToIndex('prev', { ariaLive, flipSpeed });
 };
 
-BookReader.prototype.first = function() {
-  this.jumpToIndex(0);
+BookReader.prototype.first = function({ ariaLive = true } = {}) {
+  this.jumpToIndex(0, { ariaLive });
 };
 
-BookReader.prototype.last = function() {
-  this.jumpToIndex(this.book.getNumLeafs() - 1);
+BookReader.prototype.last = function({ ariaLive = true } = {}) {
+  this.jumpToIndex(this.book.getNumLeafs() - 1, { ariaLive });
 };
 
 
