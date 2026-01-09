@@ -40,11 +40,12 @@
 
   </head>
 
-<body>
+<body data-variant="attached">
   <section class="theater" style="width: 100%; overflow: hidden; background-color: black;">
     <ia-bookreader
       baseHost="archive.org"
     >
+      <!-- <div id="IABookReaderMessageWrapper" style="height: 55px" slot="header">Borrow Bar</div> -->
       <div id="IABookReaderWrapper" slot="main">
         <div id="BookReader" class="BookReader"></div>
       </div>
@@ -203,6 +204,15 @@
       </ul>
     </details>
     <div class="demo">
+      Variant:
+      <label>
+        <input type="radio" name="variant" value="floating"> Floating
+      </label>
+      <label>
+        <input type="radio" name="variant" value="attached" checked> Attached
+      </label>
+    </div>
+    <div class="demo">
       <button id="toggle-loggedin">Toggle Logged in view</button>
       <p>Features behind signed in gate: Bookmarks</p>
       <p>Logged In Status: <span id="logged-in-status">Logged Out</span></p>
@@ -235,6 +245,11 @@
   <!-- Certain features, like Bookmarks, use modal-manager to draw their interface -->
   <modal-manager></modal-manager>
   <script >
+    // Variant toggle
+    $('input[name="variant"]').on('change', (e) => {
+      const variant = e.target.value;
+      document.body.setAttribute('data-variant', variant);
+    });
     // Set up demo things
     const iaBR = document.querySelector('ia-bookreader');
     const toggleLoginBtn = document.querySelector('#toggle-loggedin');

@@ -53,7 +53,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorageKey: 'BrExperiments',
 
     /** @type {ExperimentName[]} Experiments shown in the experiments panel */
-    availableExperiments: ['translate', 'copyLinkToHighlight'],
+    availableExperiments: ['translate', 'copyLinkToHighlight', 'hideable-chrome'],
 
     /** @type {ExperimentName[]} Experiments enabled by default */
     autoEnabledExperiments: [],
@@ -114,6 +114,20 @@ export class ExperimentsPlugin extends BookReaderPlugin {
         });
       }
     }(),
+
+    new class extends ExperimentModel {
+      name = 'hideable-chrome';
+      title = 'Hideable Chrome';
+      description = "Automatically hide the BookReader interface when reading.";
+      enabled = false;
+      async enable({ manual = false }) {
+        if (manual) sleep(0).then(() => window.location.reload());
+      }
+      async disable() {
+        sleep(0).then(() => window.location.reload());
+      }
+    }(),
+
     new class extends ExperimentModel {
       name = 'hypothesis';
       title = 'Hypothes.is';
@@ -203,6 +217,11 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       this.allExperiments.map(experiment => [experiment.name, experiment.enabled]),
     );
     localStorage.setItem(this.options.localStorageKey, JSON.stringify(states));
+  }
+
+  isExperimentEnabled(experimentName) {
+    const experiment = this.allExperiments.find(exp => exp.name === experimentName);
+    return experiment ? experiment.enabled : false;
   }
 
   /**
