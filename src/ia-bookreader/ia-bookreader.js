@@ -112,6 +112,7 @@ export class IaBookReader extends LitElement {
     return html`
       <div class="main-component">
         <iaux-item-navigator
+          exportparts="minimized-menu"
           ?viewportInFullscreen=${this.fullscreen}
           .basehost=${this.baseHost}
           .item=${this.item}
