@@ -300,7 +300,8 @@ export class TtsPlugin extends BookReaderPlugin {
    */
   async maybeFlipToIndex(leafIndex) {
     if (!this.br._isIndexDisplayed(leafIndex)) {
-      this.br.jumpToIndex(leafIndex);
+      // Don't interrupt the read aloud with the page flip update?
+      this.br.jumpToIndex(leafIndex, { ariaLive: false });
     }
   }
 

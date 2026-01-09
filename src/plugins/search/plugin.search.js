@@ -369,7 +369,7 @@ export class SearchPlugin extends BookReaderPlugin {
     /* this updates the URL */
     if (!this.br._isIndexDisplayed(pageIndex)) {
       this.suppressFragmentChange = false;
-      this.br.jumpToIndex(pageIndex);
+      this.br.jumpToIndex(pageIndex, { ariaLive: true });
     }
 
     // Reset it to unviewable if it wasn't resolved

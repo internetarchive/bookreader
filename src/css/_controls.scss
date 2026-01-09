@@ -70,7 +70,16 @@
     padding: 2px 10px;
     margin: 0;
     list-style: none;
-    background: $controlsBG;
+
+  body[data-variant="floating"] & {
+    border-radius: 4px;
+  }
+
+  body[data-variant="attached"] & {
+    border-radius: 0;
+  }
+    
+    @include brDarkControls;
     @media (max-width: $brBreakPointMobile) {
       padding-left: 0;
     }
@@ -100,15 +109,23 @@
     display: none;
     position: absolute;
     bottom: 100%;
+    margin-bottom: 2px;
     right: 0;
-    left: 0;
+    border-radius: 4px;
+
+    body[data-variant="attached"] & {
+      left: 0;
+      margin: 0;
+      border-radius: 0;
+    }
+
     z-index: 1;
     padding: 5px 0;
-    margin: 0;
     align-items: center;
     justify-content: center;
     list-style: none;
-    background: $controlsBG;
+    
+    @include brDarkControls;
 
     &.visible {
       display: flex;

@@ -2,20 +2,26 @@
 import { notInArray, clamp } from './utils.js';
 import { EVENTS } from './events.js';
 import { DragScrollable } from './DragScrollable.js';
-/** @typedef {import('../BookREader.js').default} BookReader */
+import { ModeAbstract } from './ModeAbstract.js';
+/** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 
 /** @typedef {JQuery} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce */
 
-export class ModeThumb {
+export class ModeThumb extends ModeAbstract {
   name = 'thumb'
+
+  get scrollContainer() {
+    return this.br.refs.$brContainer[0];
+  }
 
   /**
    * @param {BookReader} br
    * @param {BookModel} bookModel
    */
   constructor(br, bookModel) {
+    super();
     this.br = br;
     this.book = bookModel;
   }
@@ -304,8 +310,12 @@ export class ModeThumb {
 
   /**
    * @param {PageIndex} index
+   * @param {object} options
+   * @param {number} [options.pageX] x position on the page (in pixels) to center on
+   * @param {number} [options.pageY] y position on the page (in pixels) to center on
+   * @param {boolean} [options.noAnimate]
    */
-  jumpToIndex(index) {
+  jumpToIndex(index, { pageX = 0, pageY = 0, noAnimate = false } = {}) {
     const { floor } = Math;
     const { book } = this;
     const viewWidth = this.br.refs.$brContainer.prop('scrollWidth') - 20; // width minus buffer

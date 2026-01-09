@@ -1,11 +1,13 @@
 // @ts-check
 import { Mode1UpLit } from './Mode1UpLit.js';
 import { DragScrollable } from './DragScrollable.js';
+import { ModeAbstract } from './ModeAbstract.js';
+import { onScrollUp } from './utils.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 
-export class Mode1Up {
+export class Mode1Up extends ModeAbstract {
   name = '1up'
 
   /**
@@ -13,6 +15,7 @@ export class Mode1Up {
    * @param {BookModel} bookModel
    */
   constructor(br, bookModel) {
+    super();
     this.br = br;
     this.book = bookModel;
     this.mode1UpLit = new Mode1UpLit(bookModel, br);
@@ -22,7 +25,8 @@ export class Mode1Up {
       // We CANNOT use `br-mode-1up` as a class, because it's the same
       // as the name of the web component, and the webcomponents polyfill
       // uses the name of component as a class for style scoping 😒
-      .addClass('br-mode-1up__root BRmode1up');
+      .addClass('br-mode-1up__root BRmode1up')
+      .on('scroll', onScrollUp(this.br.fader));
 
     /** Has mode1up ever been rendered before? */
     this.everShown = false;
@@ -31,6 +35,10 @@ export class Mode1Up {
   // TODO: Might not need this anymore? Might want to delete.
   /** @private */
   get $brContainer() { return this.br.refs.$brContainer; }
+
+  get scrollContainer() {
+    return this.mode1UpLit;
+  }
 
   /**
    * This is called when we switch to one page view
@@ -72,11 +80,12 @@ export class Mode1Up {
   /**
    * BREAKING CHANGE: No longer supports pageX/pageY
    * @param {PageIndex} index
-   * @param {number} [pageX] x position on the page (in pixels) to center on
-   * @param {number} [pageY] y position on the page (in pixels) to center on
-   * @param {boolean} [noAnimate]
+   * @param {object} options
+   * @param {number} [options.pageX] x position on the page (in pixels) to center on
+   * @param {number} [options.pageY] y position on the page (in pixels) to center on
+   * @param {boolean} [options.noAnimate]
    */
-  jumpToIndex(index, pageX, pageY, noAnimate) {
+  jumpToIndex(index, {pageX = 0, pageY = 0, noAnimate = false} = {}) {
     // Only smooth for small distances
     const distance = Math.abs(this.br.currentIndex() - index);
     const smooth = !noAnimate && distance > 0 && distance <= 4;
