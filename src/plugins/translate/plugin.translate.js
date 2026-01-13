@@ -141,7 +141,6 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
 
     const pageIndex = page.dataset.index;
-
     let pageTranslationLayer;
     if (!page.querySelector('.BRPageLayer.BRtranslateLayer')) {
       pageTranslationLayer = document.createElement('div');
@@ -151,16 +150,17 @@ export class TranslatePlugin extends BookReaderPlugin {
     } else {
       pageTranslationLayer = page.querySelector('.BRPageLayer.BRtranslateLayer');
     }
-
+    /** @type {HTMLElement} textLayerElement */
     const textLayerElement = page.querySelector('.BRtextLayer');
-    textLayerElement.classList.add('showingTranslation');
+    // Should use native DOM element.style method instead of $().css method, specific issue with rendering / style calculation in Chrome
     $(pageTranslationLayer).css({
-      "width": $(textLayerElement).css("width"),
-      "height": $(textLayerElement).css("height"),
-      "transform": $(textLayerElement).css("transform"),
-      "pointer-events": $(textLayerElement).css("pointer-events"),
+      "width": textLayerElement.style.width,
+      "height": textLayerElement.style.height,
+      "transform": textLayerElement.style.transform,
+      "pointer-events": textLayerElement.style.pointerEvents,
       "z-index": 3,
     });
+    textLayerElement.classList.add('showingTranslation');
     const paragraphs = this.getParagraphsOnPage(page);
 
     const paragraphTranslationPromises = paragraphs.map(async (paragraph, pidx) => {
@@ -252,17 +252,6 @@ export class TranslatePlugin extends BookReaderPlugin {
    * @param {Element} paragEl
    */
   fitVisiblePage(paragEl) {
-    // For some reason, Chrome does not detect the transform property for the translation + text layers
-    // Could not get it to fetch the transform value using $().css method
-    // Oddly enough the value is retrieved if using .style.transform instead?
-    const translateLayerEl = paragEl.parentElement;
-    if ($(translateLayerEl).css('transform') == 'none') {
-      const pageNumber = paragEl.getAttribute('data-translate-index').split('-')[0];
-      /** @type {HTMLElement} selectionTransform */
-      const textLayerEl = document.querySelector(`[data-index='${pageNumber}'] .BRtextLayer`);
-      $(translateLayerEl).css({'transform': textLayerEl.style.transform});
-    }
-
     const originalFontSize = parseInt($(paragEl).css("font-size"));
     let adjustedFontSize = originalFontSize;
     while (paragEl.clientHeight < paragEl.scrollHeight && adjustedFontSize > 0) {
