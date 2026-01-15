@@ -107,7 +107,18 @@ export class TranslatePlugin extends BookReaderPlugin {
     await this.translationManager.initWorker();
     // Note await above lets _render function properly, since it gives the browser
     // time to render the rest of bookreader, which _render depends on
-    this.langToCode = this.translationManager.toLanguages[0].code;
+
+    // Detect browser language and use as default "To" language if available
+    const browserLang = navigator.language;
+    const browserLangCode = toISO6391(browserLang);
+    const browserLangAvailable = browserLangCode &&
+      this.translationManager.toLanguages.some(lang => lang.code === browserLangCode);
+
+    // Set browser language as default if available, otherwise fallback to English
+    this.langToCode = browserLangAvailable
+      ? browserLangCode
+      : this.translationManager.toLanguages[0].code;
+
     this._render();
   }
 
