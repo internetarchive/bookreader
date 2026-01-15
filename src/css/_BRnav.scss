@@ -14,8 +14,6 @@
 }
 
 @mixin brNavDark {
-  @include brDarkControls;
-
   .BRpager {
     background-color: $brColorDarkBorder;
     .ui-slider-handle {
@@ -65,16 +63,28 @@
   to { opacity: 1; translate: 0 0; }
 }
 
+ 
+
 .BRfooter {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+
+  body[data-variant="floating"] & {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  body[data-variant="attached"] & {
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
 
   display: flex;
   flex-direction: column;
   /* important so it overlays over the book pages when showing */
   z-index: 3;
+  transition: opacity 0.2s, translate 0.2s;
 
   button {
     width: 30px;
@@ -97,106 +107,30 @@
   }
 }
 
-.BRReadAloudToolbar {
-  $toolbarHeight: $brNavHeightMobile;
-  display: flex;
-  justify-content: center;
-  margin: 5px;
-  padding: 0 math.div($brNavHeightMobile, 4);
-  border-radius: 4px;
-  align-self: center;
-  height: $toolbarHeight;
-  animation: fadeUp .2s;
+ia-bookreader::part(minimized-menu) {
+  transition: opacity 0.2s, translate 0.2s;
+}
 
-  // Default
-  @include brNavDark;
-
-  &--controls {
-    display: flex;
+.faded {
+  .BRfooter:not(:focus-within):not(:hover) {
+    opacity: 0;
   }
-  &--controls > * {
-    height: 100%;
-  }
-
-  .BRToolbarButton {
-    .icon {
-      width: $toolbarHeight;
-      height: $toolbarHeight;
-      box-sizing: border-box;
-    }
-
-    &.jumpForward .icon, &.jumpBackward .icon { padding: 9px; }
-  }
-
-  button {
-    padding: 0;
-    margin: 0;
-    border: 0px none;
-    box-sizing: border-box;
-    background: transparent none repeat scroll 0% 0%;
-    display: block;
-  }
-
-  .playback-rate-container {
-    width: $toolbarHeight;
-    height: $toolbarHeight;
-    position: relative;
-
-    .icon {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding: 6px;
-      box-sizing: border-box;
-      padding-bottom: 1em;
-    }
-
-    select {
-      cursor: pointer;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      font-size: 0.8em;
-      -moz-appearance: none;
-      -webkit-appearance: none;
-      appearance: none;
-      border: 0;
-      text-align: center;
-      text-align-last: center; /* Chrome */
-      padding-top: 60%;
-      padding-left: 10%;
-      padding-right: 10%;
-      color: #333;
-      background: transparent;
-
-      /* IE */
-      &::-ms-expand { display: none; }
-    }
-  }
-
-  button:hover, .playback-rate-container:hover {
-    background: rgba(50, 50, 50, 0.2);
+  ia-bookreader::part(minimized-menu) {
+    opacity: 0;
   }
 }
+
 
 .BRnav {
   box-sizing: border-box;
   height: $brNavHeightDesktop;
-  padding-top: 0;
   overflow: visible;
 
   display: block;
   display: flex;
   flex-direction: row;
-  border-top: 1px solid $controlsBorder;
 
   /* Theming */
-
-  // Default
   @include brNavDark;
 
   /* Full mobile styles */
@@ -334,16 +268,28 @@
   box-sizing: content-box;
 }
 
+body[data-variant="floating"] {
+  .BRnavMobile.docked .controls {
+    border-radius: 4px 4px 0 0;
+    overflow: clip;
+  }
+  .BRnavMobile.docked:not(.hide) + .BRnavMain .controls {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
 .BRnavMobile.docked {
-  height: 0px;
+  height: 4px;
   border: none;
+
   .BRcontrols .scrubber .BRpager.ui-slider {
     top: -1px;
   }
 
   .ui-slider,
   .ui-slider-range {
-    height: 2px;
+    height: 4px;
     border-radius: 0px;
   }
 
@@ -355,11 +301,6 @@
     margin: 0px;
     padding: 0px;
     height: 0px;
-  }
-
-  .controls {
-    padding: 0px;
-    background-color: transparent;
   }
 
   .BRnavline {

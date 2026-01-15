@@ -107,7 +107,9 @@ export function encodeURIComponentPlus(value) {
  *
  * @param {T} func
  * @param {number} wait
- * @param {boolean} immediate
+ * @param {boolean | function} immediate If true, calls func on the leading edge. If a
+ * function is provided, that function is called on the leading edge instead of `func`.
+ * `func` is still called on the trailing edge.
  * @return {T}
  */
 export function debounce(func, wait, immediate) {
@@ -117,12 +119,18 @@ export function debounce(func, wait, immediate) {
     const args = arguments;
     const later = () => {
       timeout = null;
-      if (!immediate) func.apply(context, args);
+      if (!immediate || typeof immediate === 'function') func.apply(context, args);
     };
     const callNow = immediate && !timeout;
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
-    if (callNow) func.apply(context, args);
+    if (callNow) {
+      if (typeof immediate === 'function') {
+        immediate.apply(context, args);
+      } else {
+        func.apply(context, args);
+      }
+    }
   };
 }
 
@@ -310,4 +318,26 @@ export function sortBy(array, valueFn) {
     const bValue = valueFn ? valueFn(b) : b;
     return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
   });
+}
+
+/**
+ * @param {Function} callback
+ * @param {Object} options
+ * @param {number} [options.scrollDelay=20] How many pixels to scroll before triggering
+ * @returns {function(): void}
+ */
+export function onScrollUp(callback, {scrollDelay = 20} = {}) {
+  let lastScrollTop = 0;
+  let accumulatedScroll = 0;
+  return function() {
+    const st = this.scrollTop;
+    if (st < lastScrollTop) {
+      accumulatedScroll += lastScrollTop - st;
+      if (accumulatedScroll >= scrollDelay) {
+        callback();
+        accumulatedScroll = 0;
+      }
+    }
+    lastScrollTop = st;
+  };
 }

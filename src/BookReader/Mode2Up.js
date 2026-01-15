@@ -2,12 +2,17 @@
 import { Mode2UpLit } from './Mode2UpLit.js';
 import { DragScrollable } from './DragScrollable.js';
 import { ModeAbstract } from './ModeAbstract.js';
+import { onScrollUp } from './utils.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 
 export class Mode2Up extends ModeAbstract {
   name = '2up';
+
+  get scrollContainer() {
+    return this.mode2UpLit;
+  }
 
   /**
    * @param {BookReader} br
@@ -26,7 +31,8 @@ export class Mode2Up extends ModeAbstract {
       // We CANNOT use `br-mode-2up` as a class, because it's the same
       // as the name of the web component, and the webcomponents polyfill
       // uses the name of component as a class for style scoping 😒
-      .addClass('br-mode-2up__root BRmode2up');
+      .addClass('br-mode-2up__root BRmode2up')
+      .on('scroll', onScrollUp(this.br.fader));
 
     /** Has mode2up ever been rendered before? */
     this.everShown = false;

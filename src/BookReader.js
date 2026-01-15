@@ -173,6 +173,11 @@ BookReader.prototype.setup = function(options) {
   this.subPrefix = options.subPrefix;
   /** @deprecated */
   this.bookPath = options.bookPath;
+  this.fader = utils.debounce(
+    () => $(document.body).addClass('faded'),
+    2000,
+    () => $(document.body).removeClass('faded'),
+  );
 
   // Construct the usual plugins first to get type hints
   this.plugins = {
@@ -742,6 +747,9 @@ BookReader.prototype.init = function() {
     }
   }
 
+  this.refs.$br.on('mousemove', this.fader);
+  this.refs.$brContainer.on('scroll', utils.onScrollUp(this.fader));
+
   this.init.initComplete = true;
   this.trigger(BookReader.eventNames.PostInit);
 
@@ -1019,12 +1027,12 @@ BookReader.prototype.resizeBRcontainer = function(animate) {
   if (animate) {
     this.refs.$brContainer.animate({
       top: this.getToolBarHeight(),
-      bottom: this.getFooterHeight(),
+      // bottom: this.getFooterHeight(),
     }, this.constResizeAnimationDuration, 'linear');
   } else {
     this.refs.$brContainer.css({
       top: this.getToolBarHeight(),
-      bottom: this.getFooterHeight(),
+      // bottom: this.getFooterHeight(),
     });
   }
 };
