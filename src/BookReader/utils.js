@@ -55,7 +55,7 @@ export function getActiveElement(doc = document, recurseShadowDom = true) {
 /** Check if an input field/textarea is active. Also checks shadow DOMs. */
 export function isInputActive(doc = document) {
   const activeEl = getActiveElement(doc);
-  return activeEl?.tagName == "INPUT" || activeEl?.tagName == "TEXTAREA" || activeEl?.getAttribute('role') == 'slider';
+  return activeEl?.tagName == "INPUT" || activeEl?.tagName == "TEXTAREA";
 }
 
 /**
