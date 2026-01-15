@@ -72,7 +72,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "jquery": "3.6.1",
     "jquery-colorbox": "1.6.4",
-    "jquery-ui": "1.12.1",
+    "jquery-ui": "1.13.2",
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "live-server": "1.2.2",
