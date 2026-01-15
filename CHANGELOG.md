@@ -1,3 +1,11 @@
+# 5.0.0-105
+- Fix: Translation layer briefly appearing too large on Chrome @schu96
+- Feature: Various accessibility improvements @cdrini
+  - NVDA reading of text layer
+  - Labelling of toggle buttons to match state
+  - Correct aria-labelling of slider
+  - Fix keyboard handling in slider
+
 # 5.0.0-104
 - Dev: Update to node 24 + tweak publish flow @cdrini
 
