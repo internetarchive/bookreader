@@ -1,3 +1,6 @@
+# 5.0.0-106
+- Fix: Slider in 2up left/right only jumping one page @cdrini
+
 # 5.0.0-105
 - Fix: Translation layer briefly appearing too large on Chrome @schu96
 - Feature: Various accessibility improvements @cdrini
