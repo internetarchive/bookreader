@@ -313,7 +313,7 @@ export const DEFAULT_OPTIONS = {
     },
     fullScreen: {
       visible: true,
-      label: 'Toggle fullscreen',
+      label: 'Go fullscreen',
       className: 'full',
       iconClassName: 'fullscreen',
     },

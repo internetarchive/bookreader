@@ -135,14 +135,8 @@ export class Navbar {
       toggle_slider: () => {
         this.br.toggleSlider();
       },
-      book_left: () => {
-        this.br.trigger(EVENTS.stop);
-        this.br.left();
-      },
-      book_right: () => {
-        this.br.trigger(EVENTS.stop);
-        this.br.right();
-      },
+      book_left: this.br.left.bind(this.br),
+      book_right: this.br.right.bind(this.br),
       book_top: this.br.first.bind(this.br),
       book_bottom: this.br.last.bind(this.br),
       book_leftmost: this.br.leftmost.bind(this.br),
@@ -304,6 +298,18 @@ export class Navbar {
     this.$root.append(this.$nav);
     br.refs.$br.append(this.$root);
 
+    this.br.on(EVENTS.beforePageChanged, (ev, { ariaLive }) => {
+      if (ariaLive) {
+        // So screen readers read out change
+        this.$root.find('.BRcurrentpage').attr('role', 'status');
+      } else {
+        this.$root.find('.BRcurrentpage').removeAttr('role');
+      }
+    });
+    this.br.on(EVENTS.pageChanged, (ev, { index }) => this.updateNavIndexThrottled(index));
+    br.options.controls.viewmode.visible && this._bindViewModeButton();
+    this.updateNavPageNum(br.currentIndex());
+
     /** @type {JQuery} sliders */
     const $sliders = this.$root.find('.BRpager').slider({
       animate: true,
@@ -313,24 +319,43 @@ export class Navbar {
       range: "min",
     });
 
-    $sliders.on('slide', (event, ui) => {
-      this.updateNavPageNum(ui.value);
-      return true;
+    // The jQuery UI slider handles the keyboard shortcuts on the slider's
+    // handle, so need the aria labels there.
+    $sliders.find('.ui-slider-handle').attr({
+      'role': 'slider',
+      'aria-label': 'Page navigation slider',
+      'aria-valuemin': 1,
+      'aria-valuemax': br.book.getNumLeafs(),
     });
+
+    // Ignore up/down arrow keys and page up/down keys, since they're confusingly different
+    // between slider movement and page movement. Down decreases slider value, which would move
+    // the scroll _up_ in 1up.
+    $sliders.find('.ui-slider-handle').off('keydown').on('keydown', function (event) {
+      switch (event.keyCode || event.which) {
+      case $.ui.keyCode.UP:
+      case $.ui.keyCode.DOWN:
+      case $.ui.keyCode.PAGE_UP:
+      case $.ui.keyCode.PAGE_DOWN:
+        return;
+      default:
+        // Forward along to the default handler for other keys
+        $.ui.slider.prototype._handleEvents.keydown.call($(this).parent().data('ui-slider'), event);
+        return;
+      }
+    });
+
+    $sliders.on('slide', (event, ui) => this.updateNavPageNum(ui.value));
 
     $sliders.on('slidechange', (event, ui) => {
-      this.updateNavPageNum(ui.value);
       // recursion prevention for jumpToIndex
-      if ($(event.currentTarget).data('swallowchange')) {
-        $(event.currentTarget).data('swallowchange', false);
+      if (this.swallowchange) {
+        this.swallowchange = false;
       } else {
-        br.jumpToIndex(ui.value);
+        // Don't want this to be aria-live since the slider already announces the value
+        br.jumpToIndex(ui.value, {ariaLive: false});
       }
-      return true;
     });
-
-    br.options.controls.viewmode.visible && this._bindViewModeButton();
-    this.updateNavPageNum(br.currentIndex());
 
     return this.$nav;
   }
@@ -369,7 +394,11 @@ export class Navbar {
    * @param {number} index
    */
   updateNavPageNum(index) {
-    this.$root.find('.BRcurrentpage').html(this.getNavPageNumString(index, true));
+    this.$root.find('.BRcurrentpage').html(this.getNavPageNumString(index));
+    this.$root.find('.ui-slider-handle').attr({
+      'aria-valuenow': index + 1,
+      'aria-valuetext': this.getNavPageNumString(index),
+    });
   }
 
   /**
@@ -380,7 +409,9 @@ export class Navbar {
     // We want to update the value, but normally moving the slider
     // triggers jumpToIndex which triggers this method
     index = index !== undefined ? index : this.br.currentIndex();
-    this.$root.find('.BRpager').data('swallowchange', true).slider('value', index);
+    this.swallowchange = true;
+    this.$root.find('.BRpager').slider('value', index);
+    this.updateNavPageNum(index);
   }
 }
 

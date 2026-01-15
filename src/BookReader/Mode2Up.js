@@ -1,11 +1,12 @@
 // @ts-check
 import { Mode2UpLit } from './Mode2UpLit.js';
 import { DragScrollable } from './DragScrollable.js';
+import { ModeAbstract } from './ModeAbstract.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 
-export class Mode2Up {
+export class Mode2Up extends ModeAbstract {
   name = '2up';
 
   /**
@@ -13,6 +14,7 @@ export class Mode2Up {
    * @param {BookModel} bookModel
    */
   constructor(br, bookModel) {
+    super();
     this.br = br;
     this.book = bookModel;
     this.mode2UpLit = new Mode2UpLit(bookModel, br);
@@ -70,12 +72,25 @@ export class Mode2Up {
   /**
    * BREAKING CHANGE: No longer supports pageX/pageY
    * @param {PageIndex} index
-   * @param {number} [pageX] x position on the page (in pixels) to center on
-   * @param {number} [pageY] y position on the page (in pixels) to center on
-   * @param {boolean} [noAnimate]
+   * @param {object} options
+   * @param {number} [options.pageX] x position on the page (in pixels) to center on
+   * @param {number} [options.pageY] y position on the page (in pixels) to center on
+   * @param {boolean} [options.noAnimate]
    */
-  jumpToIndex(index, pageX, pageY, noAnimate) {
+  jumpToIndex(index, {pageX = 0, pageY = 0, noAnimate = false} = {}) {
     this.mode2UpLit.jumpToIndex(index);
+  }
+
+  /**
+   * @override
+   * @param {PageIndex | 'left' | 'right' | 'next' | 'prev'} indexOrDirection
+   * @return {import('./BookModel.js').PageModel}
+   */
+  parsePageSpecifier(indexOrDirection) {
+    const isRTL = this.book.pageProgression == 'rl';
+    const nextSpread = this.mode2UpLit.parseNextSpread(indexOrDirection);
+    const nextLeftIndex = nextSpread?.left?.index ?? (isRTL ? -1 : this.book.getNumLeafs());
+    return this.book.getPage(nextLeftIndex);
   }
 
   /**

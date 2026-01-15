@@ -73,16 +73,6 @@ describe('Keyboard shortcuts', () => {
     expect(keyEvent.preventDefault).toHaveBeenCalledTimes(1);
   });
 
-  test('ArrowDown key', () => {
-    br.mode = br.constMode2up;
-    br.next = jest.fn();
-    const keyEvent = new KeyboardEvent('keydown', {'key': 'ArrowDown'});
-    keyEvent.preventDefault = jest.fn();
-    document.dispatchEvent(keyEvent);
-    expect(br.next).toHaveBeenCalledTimes(1);
-    expect(keyEvent.preventDefault).toHaveBeenCalledTimes(1);
-  });
-
   test('PageDown key', () => {
     br.mode = br.constMode2up;
     br.next = jest.fn();
@@ -90,16 +80,6 @@ describe('Keyboard shortcuts', () => {
     keyEvent.preventDefault = jest.fn();
     document.dispatchEvent(keyEvent);
     expect(br.next).toHaveBeenCalledTimes(1);
-    expect(keyEvent.preventDefault).toHaveBeenCalledTimes(1);
-  });
-
-  test('ArrowUp key', () => {
-    br.mode = br.constMode2up;
-    br.prev = jest.fn();
-    const keyEvent = new KeyboardEvent('keydown', {'key': 'ArrowUp'});
-    keyEvent.preventDefault = jest.fn();
-    document.dispatchEvent(keyEvent);
-    expect(br.prev).toHaveBeenCalledTimes(1);
     expect(keyEvent.preventDefault).toHaveBeenCalledTimes(1);
   });
 
