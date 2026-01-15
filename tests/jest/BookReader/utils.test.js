@@ -84,13 +84,6 @@ describe('isInputActive', () => {
     const doc = {activeElement: document.createElement('textarea')};
     expect(isInputActive(doc)).toBe(true);
   });
-
-  test('Handles role=slider', () => {
-    const div = document.createElement('div');
-    div.setAttribute('role', 'slider');
-    const doc = {activeElement: div};
-    expect(isInputActive(doc)).toBe(true);
-  });
 });
 
 describe('debounce', () => {

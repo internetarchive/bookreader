@@ -331,30 +331,59 @@ export class Navbar {
     // Ignore up/down arrow keys and page up/down keys, since they're confusingly different
     // between slider movement and page movement. Down decreases slider value, which would move
     // the scroll _up_ in 1up.
-    $sliders.find('.ui-slider-handle').off('keydown').on('keydown', function (event) {
+    $sliders.find('.ui-slider-handle').off('keydown').on('keydown', (event) => {
       switch (event.keyCode || event.which) {
-      case $.ui.keyCode.UP:
-      case $.ui.keyCode.DOWN:
-      case $.ui.keyCode.PAGE_UP:
-      case $.ui.keyCode.PAGE_DOWN:
-        return;
+      case $.ui.keyCode.LEFT:
+      case $.ui.keyCode.RIGHT:
+        // Forward along to the default handler
+        if (isRTL) {
+          // Swap left/right for RTL
+          if (event.keyCode === $.ui.keyCode.LEFT) {
+            event.keyCode = $.ui.keyCode.RIGHT;
+          } else {
+            event.keyCode = $.ui.keyCode.LEFT;
+          }
+        }
+        $.ui.slider.prototype._handleEvents.keydown.call($(event.target).parent().data('ui-slider'), event);
+        event.stopPropagation();
+        break;
       default:
-        // Forward along to the default handler for other keys
-        $.ui.slider.prototype._handleEvents.keydown.call($(this).parent().data('ui-slider'), event);
         return;
       }
     });
 
-    $sliders.on('slide', (event, ui) => this.updateNavPageNum(ui.value));
+    $sliders.on('slide', (event, ui) => {
+      if (this.br.mode === this.br.constMode2up) {
+        // in 2up, need to go to nearest page that is left page
+        const movingForward = ui.value > br.currentIndex();
+        const newPage = this.br.book.getPage(ui.value);
+        if (isRTL ? newPage.pageSide === 'L' : newPage.pageSide === 'R') {
+          ui.value += movingForward ? 1 : -1;
+          ui.value = Math.max(0, Math.min(ui.value, br.book.getNumLeafs() - 1));
+        }
+      }
+      this.updateNavPageNum(ui.value);
+    });
 
     $sliders.on('slidechange', (event, ui) => {
       // recursion prevention for jumpToIndex
-      if (this.swallowchange) {
-        this.swallowchange = false;
-      } else {
-        // Don't want this to be aria-live since the slider already announces the value
-        br.jumpToIndex(ui.value, {ariaLive: false});
+      if ($(event.target).data('swallowchange')) {
+        $(event.target).data('swallowchange', false);
+        return;
       }
+
+      if (this.br.mode === this.br.constMode2up) {
+        // in 2up, need to go to nearest page that is left page
+        const movingForward = ui.value > br.currentIndex();
+        const newPage = this.br.book.getPage(ui.value);
+        if (isRTL ? newPage.pageSide === 'L' : newPage.pageSide === 'R') {
+          ui.value += movingForward ? 1 : -1;
+          ui.value = Math.max(0, Math.min(ui.value, br.book.getNumLeafs() - 1));
+        }
+      }
+
+      // Don't want this to be aria-live since the slider already announces the value
+      this.br.jumpToIndex(ui.value, {ariaLive: false});
     });
 
     return this.$nav;
@@ -409,7 +438,7 @@ export class Navbar {
     // We want to update the value, but normally moving the slider
     // triggers jumpToIndex which triggers this method
     index = index !== undefined ? index : this.br.currentIndex();
-    this.swallowchange = true;
+    this.$root.find('.BRpager').data('swallowchange', true);
     this.$root.find('.BRpager').slider('value', index);
     this.updateNavPageNum(index);
   }
