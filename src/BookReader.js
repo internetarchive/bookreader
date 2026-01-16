@@ -174,9 +174,35 @@ BookReader.prototype.setup = function(options) {
   /** @deprecated */
   this.bookPath = options.bookPath;
   this.fader = utils.debounce(
-    () => $(document.body).addClass('faded'),
+    (source) => {
+      console.log('Fading UI');
+      $(document.body)
+        .addClass('faded')
+        .toggleClass('faded--scroll', source === 'scroll');
+      // const animation = this.$('.BRfooter')[0].getAnimations()[0];
+      // if (!animation) return;
+      // if (source === 'scroll') animation.pause();
+      // animation.currentTime = 0;
+    },
     2000,
-    () => $(document.body).removeClass('faded'),
+    (source) => {
+      console.log('Show UI');
+      $(document.body)
+        .removeClass('faded')
+        .toggleClass('faded--scroll', source === 'scroll');
+    },
+    {
+      tap: (source) => {
+        console.log('Show UI ...', source);
+        // if (source === 'scroll') {
+        //   const animation = this.$('.BRfooter')[0].getAnimations()[0];
+        //   if (animation) {
+        //     // const max = animation.effect.getComputedTiming().duration;
+        //     animation.currentTime += 1;
+        //   }
+        // }
+      },
+    },
   );
 
   // Construct the usual plugins first to get type hints
@@ -747,8 +773,8 @@ BookReader.prototype.init = function() {
     }
   }
 
-  this.refs.$br.on('mousemove', this.fader);
-  this.refs.$brContainer.on('scroll', utils.onScrollUp(this.fader));
+  this.refs.$br.on('mousemove', () => this.fader('mousemove'));
+  this.refs.$brContainer[0].addEventListener('scroll', utils.eventFilterScrollUp(() => this.fader('scroll')), { passive: true });
 
   this.init.initComplete = true;
   this.trigger(BookReader.eventNames.PostInit);
@@ -1986,6 +2012,7 @@ BookReader.prototype.queryStringFromParams = function(
 
 /**
  * Helper to select within instance's elements
+ * @returns {JQuery<HTMLElement>}
  */
 BookReader.prototype.$ = function(selector) {
   return this.refs.$br.find(selector);

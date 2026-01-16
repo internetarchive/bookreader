@@ -110,9 +110,11 @@ export function encodeURIComponentPlus(value) {
  * @param {boolean | function} immediate If true, calls func on the leading edge. If a
  * function is provided, that function is called on the leading edge instead of `func`.
  * `func` is still called on the trailing edge.
+ * @param {Object} [options]
+ * @param {function | null} [options.tap] Function to tap the event stream -- eg not debounced
  * @return {T}
  */
-export function debounce(func, wait, immediate) {
+export function debounce(func, wait, immediate, {tap = null} = {}) {
   let timeout;
   return function() {
     const context = this;
@@ -130,6 +132,10 @@ export function debounce(func, wait, immediate) {
       } else {
         func.apply(context, args);
       }
+    }
+
+    if (tap) {
+      tap.apply(context, args);
     }
   };
 }
@@ -326,7 +332,7 @@ export function sortBy(array, valueFn) {
  * @param {number} [options.scrollDelay=20] How many pixels to scroll before triggering
  * @returns {function(): void}
  */
-export function onScrollUp(callback, {scrollDelay = 20} = {}) {
+export function eventFilterScrollUp(callback, {scrollDelay = 20} = {}) {
   let lastScrollTop = 0;
   let accumulatedScroll = 0;
   return function() {

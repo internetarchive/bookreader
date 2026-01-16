@@ -120,6 +120,14 @@ ia-bookreader::part(minimized-menu) {
   }
 }
 
+.faded--scroll {
+  .BRfooter:not(:focus-within):not(:hover) {
+    translate: 0 20px;
+  }
+  ia-bookreader::part(minimized-menu) {
+    translate: 0 20px;
+  }
+}
 
 .BRnav {
   box-sizing: border-box;

@@ -2,7 +2,7 @@
 import { Mode1UpLit } from './Mode1UpLit.js';
 import { DragScrollable } from './DragScrollable.js';
 import { ModeAbstract } from './ModeAbstract.js';
-import { onScrollUp } from './utils.js';
+import { eventFilterScrollUp } from './utils.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
@@ -25,8 +25,8 @@ export class Mode1Up extends ModeAbstract {
       // We CANNOT use `br-mode-1up` as a class, because it's the same
       // as the name of the web component, and the webcomponents polyfill
       // uses the name of component as a class for style scoping 😒
-      .addClass('br-mode-1up__root BRmode1up')
-      .on('scroll', onScrollUp(this.br.fader));
+      .addClass('br-mode-1up__root BRmode1up');
+    this.$el[0].addEventListener('scroll', eventFilterScrollUp(() => this.br.fader('scroll')), { passive: true });
 
     /** Has mode1up ever been rendered before? */
     this.everShown = false;
