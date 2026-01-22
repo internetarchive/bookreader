@@ -335,15 +335,64 @@ export function sortBy(array, valueFn) {
 export function eventFilterScrollUp(callback, {scrollDelay = 20} = {}) {
   let lastScrollTop = 0;
   let accumulatedScroll = 0;
-  return function() {
+  return function(event) {
     const st = this.scrollTop;
     if (st < lastScrollTop) {
       accumulatedScroll += lastScrollTop - st;
       if (accumulatedScroll >= scrollDelay) {
-        callback();
+        callback(event);
         accumulatedScroll = 0;
       }
     }
     lastScrollTop = st;
+  };
+}
+
+/**
+ * Filters mousemove events to only call callback when the mouse has moved
+ * more than minDistance pixels.
+ * @param {Function} callback
+ * @param {Object} options
+ * @param {number} [options.minDistance=10]
+ */
+export function eventFilterMouseMove(callback, {minDistance = 10} = {}) {
+  let startX = null;
+  let startY = null;
+
+  // debounce resetting startX/startY to avoid issues with small jitters
+  const resetStart = debounce(() => {
+    startX = null;
+    startY = null;
+  }, 100);
+
+  return function(event) {
+    if (startX === null || startY === null) {
+      startX = event.clientX;
+      startY = event.clientY;
+      return;
+    }
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    if (distance >= minDistance) {
+      callback(event);
+      startX = event.clientX;
+      startY = event.clientY;
+    }
+    resetStart();
+  };
+};
+
+/**
+ * Filters event if the target element is the same as the element the event is bound to.
+ * Useful for avoiding handling events from child elements.
+ * @param {Function} callback
+ * @returns {function(Event): void}
+ */
+export function eventFilterSameElement(callback) {
+  return function(event) {
+    if (event.target === event.currentTarget) {
+      callback(event);
+    }
   };
 }

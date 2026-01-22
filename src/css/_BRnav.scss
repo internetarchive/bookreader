@@ -111,21 +111,10 @@ ia-bookreader::part(minimized-menu) {
   transition: opacity 0.2s, translate 0.2s;
 }
 
-.faded {
-  .BRfooter:not(:focus-within):not(:hover) {
+.BRfaded {
+  .BookReader:not(.BRmodeThumb) .BRfooter:not(:has(:focus-visible)):not(:hover), ia-bookreader::part(minimized-menu) {
     opacity: 0;
-  }
-  ia-bookreader::part(minimized-menu) {
-    opacity: 0;
-  }
-}
-
-.faded--scroll {
-  .BRfooter:not(:focus-within):not(:hover) {
-    translate: 0 20px;
-  }
-  ia-bookreader::part(minimized-menu) {
-    translate: 0 20px;
+    pointer-events: none;
   }
 }
 

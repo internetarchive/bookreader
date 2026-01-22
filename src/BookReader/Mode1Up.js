@@ -26,7 +26,6 @@ export class Mode1Up extends ModeAbstract {
       // as the name of the web component, and the webcomponents polyfill
       // uses the name of component as a class for style scoping 😒
       .addClass('br-mode-1up__root BRmode1up');
-    this.$el[0].addEventListener('scroll', eventFilterScrollUp(() => this.br.fader('scroll')), { passive: true });
 
     /** Has mode1up ever been rendered before? */
     this.everShown = false;
@@ -38,6 +37,13 @@ export class Mode1Up extends ModeAbstract {
 
   get scrollContainer() {
     return this.mode1UpLit;
+  }
+
+  init() {
+    if (this.br.plugins.experiments?.isExperimentEnabled('hideable-chrome')) {
+      this.$el[0].addEventListener('scroll', eventFilterScrollUp(() => this.br.fader('scroll')), { passive: true });
+      this.$el[0].addEventListener('click', () => this.br.fader('click'), { passive: true });
+    }
   }
 
   /**
