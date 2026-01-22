@@ -51,7 +51,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorageKey: 'BrExperiments',
 
     /** The experiments that should be shown in the experiments panel */
-    enabledExperiments: ['translate'],
+    enabledExperiments: ['translate', 'hideable-chrome'],
   }
 
   /** @type {ExperimentModel[]} */
@@ -77,6 +77,20 @@ export class ExperimentsPlugin extends BookReaderPlugin {
         });
       }
     }(),
+
+    new class extends ExperimentModel {
+      name = 'hideable-chrome';
+      title = 'Hideable Chrome';
+      description = "Automatically hide the BookReader interface when reading.";
+      enabled = false;
+      async enable({ manual = false }) {
+        if (manual) sleep(0).then(() => window.location.reload());
+      }
+      async disable() {
+        sleep(0).then(() => window.location.reload());
+      }
+    }(),
+
     new class extends ExperimentModel {
       name = 'hypothesis';
       title = 'Hypothes.is';
@@ -123,7 +137,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     for (const experiment of this.allExperiments) {
       // TODO: imagesBaseURL should be replaced with assetRoot everywhere
       experiment.assetRoot = this.br.options.imagesBaseURL.replace(/images\/$/, '');
-      experiment.icon = experiment.buildAssetPath(experiment.icon);
+      experiment.icon = experiment.icon ? experiment.buildAssetPath(experiment.icon) : null;
       experiment.br = this.br;
     }
 
@@ -149,6 +163,11 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       this.allExperiments.map(experiment => [experiment.name, experiment.enabled]),
     );
     localStorage.setItem(this.options.localStorageKey, JSON.stringify(states));
+  }
+
+  isExperimentEnabled(experimentName) {
+    const experiment = this.allExperiments.find(exp => exp.name === experimentName);
+    return experiment ? experiment.enabled : false;
   }
 
   /**
@@ -269,7 +288,7 @@ export class BrExperimentToggle extends LitElement {
     return html`
       <div class="experiment-card" style="margin-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <img src="${this.icon}" style="width: 20px; height: 20px;" alt="" />
+          ${this.icon ? html`<img src="${this.icon}" style="width: 20px; height: 20px;" alt="" />` : ''}
           <div style="flex-grow: 1; font-weight: bold;">${this.title}</div>
         </div>
         <p style="opacity: 0.9">

@@ -12,6 +12,10 @@ import { ModeAbstract } from './ModeAbstract.js';
 export class ModeThumb extends ModeAbstract {
   name = 'thumb'
 
+  get scrollContainer() {
+    return this.br.refs.$brContainer[0];
+  }
+
   /**
    * @param {BookReader} br
    * @param {BookModel} bookModel

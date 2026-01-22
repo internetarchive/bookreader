@@ -173,6 +173,32 @@ BookReader.prototype.setup = function(options) {
   this.subPrefix = options.subPrefix;
   /** @deprecated */
   this.bookPath = options.bookPath;
+  this.fader = utils.debounce(
+    (source) => this.fader.hide(source),
+    2000,
+    (source) => this.fader.show(source),
+    {
+      tap: (source) => {
+        console.log('Show UI ...', source);
+      },
+    },
+  );
+  this.fader.show = (source) => {
+    console.log('Show UI');
+    $(document.body).removeClass('BRfaded');
+  };
+  this.fader.hide = (source) => {
+    console.log('Hide UI');
+    $(document.body).addClass('BRfaded');
+  };
+  this.fader.toggle = (source) => {
+    if ($(document.body).hasClass('BRfaded')) {
+      this.fader.show(source);
+      this.fader(source);
+    } else {
+      this.fader.hide(source);
+    }
+  };
 
   // Construct the usual plugins first to get type hints
   this.plugins = {
@@ -742,6 +768,17 @@ BookReader.prototype.init = function() {
     }
   }
 
+  // Init modes
+  for (const mode of Object.values(this._modes)) {
+    mode.init();
+  }
+
+  if (this.plugins.experiments?.isExperimentEnabled('hideable-chrome')) {
+    this.refs.$br.on('pointermove', utils.eventFilterMouseMove(ev => ev.pointerType != 'touch' && this.fader('pointermove')));
+    this.refs.$brContainer[0].addEventListener('scroll', utils.eventFilterScrollUp(() => this.fader('scroll')), { passive: true });
+    this.refs.$brContainer[0].addEventListener('touchstart', utils.eventFilterSameElement(() => this.fader('touchstart')), { passive: true });
+  }
+
   this.init.initComplete = true;
   this.trigger(BookReader.eventNames.PostInit);
 
@@ -1016,16 +1053,12 @@ BookReader.prototype.zoom = function(direction) {
  * So resize isn't perceived sharp/jerky
  */
 BookReader.prototype.resizeBRcontainer = function(animate) {
+  const top = this.getToolBarHeight();
+  const bottom = this.plugins.experiments?.isExperimentEnabled('hideable-chrome') ? 0 : this.getFooterHeight();
   if (animate) {
-    this.refs.$brContainer.animate({
-      top: this.getToolBarHeight(),
-      bottom: this.getFooterHeight(),
-    }, this.constResizeAnimationDuration, 'linear');
+    this.refs.$brContainer.animate({ top, bottom }, this.constResizeAnimationDuration, 'linear');
   } else {
-    this.refs.$brContainer.css({
-      top: this.getToolBarHeight(),
-      bottom: this.getFooterHeight(),
-    });
+    this.refs.$brContainer.css({ top, bottom });
   }
 };
 
@@ -1978,6 +2011,7 @@ BookReader.prototype.queryStringFromParams = function(
 
 /**
  * Helper to select within instance's elements
+ * @returns {JQuery<HTMLElement>}
  */
 BookReader.prototype.$ = function(selector) {
   return this.refs.$br.find(selector);
