@@ -74,7 +74,7 @@
     right: 10px;
   }
 
-  body[data-variant="attached"] & {
+  body[data-variant="attached"] &, body:not([data-variant]) & {
     bottom: 0;
     left: 0;
     right: 0;

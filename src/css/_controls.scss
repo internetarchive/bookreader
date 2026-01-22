@@ -75,7 +75,7 @@
     border-radius: 4px;
   }
 
-  body[data-variant="attached"] & {
+  body[data-variant="attached"] &, body:not([data-variant]) & {
     border-radius: 0;
   }
     
@@ -113,7 +113,7 @@
     right: 0;
     border-radius: 4px;
 
-    body[data-variant="attached"] & {
+    body[data-variant="attached"] &, body:not([data-variant]) & {
       left: 0;
       margin: 0;
       border-radius: 0;
