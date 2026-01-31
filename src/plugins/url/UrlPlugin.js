@@ -156,12 +156,20 @@ export class UrlPlugin {
     this.oldLocationHash = urlStrPath;
   }
 
+    getHash = () => {
+      const text = window.location.search.match(/(?<=[&?]text=)[^&]*/);
+      if (text) {
+        return `${window.location.hash.slice(1)}:~:text=${text[0]}`;
+      }
+      return window.location.hash.slice(1);
+    }
+
   /**
    * Get the url and check if it has changed
    * If it was changeed, update the urlState
    */
   listenForHashChanges() {
-    this.oldLocationHash = window.location.hash.substr(1);
+    this.oldLocationHash = this.getHash();
     if (this.urlLocationPollId) {
       clearInterval(this.urlLocationPollId);
       this.urlLocationPollId = null;
@@ -169,7 +177,7 @@ export class UrlPlugin {
 
     // check if the URL changes
     const updateHash = () => {
-      const newFragment = window.location.hash.substr(1);
+      const newFragment = this.getHash();
       const hasFragmentChange = newFragment != this.oldLocationHash;
 
       if (!hasFragmentChange) { return; }
