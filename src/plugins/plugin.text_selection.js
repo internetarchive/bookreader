@@ -188,6 +188,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       paragEl.style.marginTop = `${newTop}px`;
       yAdded += newTop;
       textLayer.appendChild(paragEl);
+      textLayer.appendChild(document.createTextNode('\n'));
     }
     $container.append(textLayer);
     this.textSelectionManager.stopPageFlip($container);

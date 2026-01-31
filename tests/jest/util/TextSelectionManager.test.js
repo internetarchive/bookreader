@@ -2,6 +2,7 @@ import sinon from 'sinon';
 
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
+import {createParam, TextFragment} from '@/src/util/TextSelectionManager.js';
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `
@@ -91,9 +92,11 @@ describe("Generic tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
-
+    console.log($container.find(".BRwordElement")[0].firstChild.textContent);
     br.plugins.textSelection.textSelectionManager._limitSelection();
-
+    console.log("trying to check this:", selection.toString())
+    console.log(window.getSelection().getRangeAt(0));
+    console.log("does this show?");
     const rangeAfter = window.getSelection().getRangeAt(0);
     expect(rangeAfter.startContainer).toBe(rangeBefore.startContainer);
     expect(rangeAfter.startOffset).toBe(0);
@@ -141,3 +144,90 @@ describe("Generic tests", () => {
     }, LONG_PRESS_DURATION);
   });
 });
+
+
+
+describe("TextFragment", () => {
+  document.body.innerHTML = '<div id="BookReader">';
+  const br = window.br = new BookReader({
+    data: [
+      [
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page001.jpg' },
+      ],
+      [
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page002.jpg' },
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page003.jpg' },
+      ],
+      [
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page004.jpg' },
+        { width: 800, height: 1200,
+          uri: '//archive.org/download/BookReader/img/page005.jpg' },
+      ],
+    ],
+  });
+  br.init();
+  // test("fromString", () => {
+  //   const tf = TextFragment.fromString("hello world");
+  //   expect(tf.toString()).toBe("hello world");
+
+  //   const tf2 = TextFragment.fromString("some prefix-,hello world");
+  //   expect(tf2.toString()).toBe("some prefix-,hello world");
+  // });
+
+  // test("", () => {
+  //   const tf = TextFragment.fromSelection(TEST_TEXT_CONTENT, 1263, 1336, { prefixWords: 3, suffixWords: 3  });
+  //   expect(tf.toString()).toBe(`%E2%80%9CYes%2C%20%20from%20%20Horsham.%E2%80%9D-,%E2%80%9CThat%20%20clay%20%20and%20%20chalk%20%20mixture%20%20which%20%20I%20%20see%20%20upon%20%20your%20%20toe%20caps%20%20is,-quite%20%20distinctive.%E2%80%9D%0A%E2%80%9CT`);
+  //   // Test multiple matches of exact quote (eg That is)
+  //   // Test quote that contains end multiple times? (Eg That.*?is)
+  //   // Test quote spans lines
+  //   // Test quote spans paragraphs
+  // });
+
+  // test("Forward Selection Params", async () => {
+  //   const $container = br.refs.$brContainer;
+
+  //   sinon.stub(br.plugins.textSelection, "getPageText")
+  //     .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+    
+  //   await br.plugins.textSelection.createTextLayer({ $container, page: {index: 3, width: 100, height: 100 }});
+  
+  //   const rangeBefore = document.createRange();
+  //   rangeBefore.setStart($container.find(".BRwordElement")[0].firstChild, 0);
+  //   rangeBefore.setEnd($container.find(".BRwordElement")[4].firstChild, 1);
+
+  //   const selection = window.getSelection()
+  //   selection.removeAllRanges();
+  //   selection.addRange(rangeBefore);
+  //   // const highlightedTest = createParam();
+  //   console.log("this is selection", selection.toString());
+  //   expect(0).toBe(0);
+  // });
+});
+// 1263-1268 -That
+// 1334-1336 -is
+
+// const TEST_TEXT_CONTENT = `
+// 106  ADVENTURES  OF  SHERLOCK  HOLMES
+// there  came  a  step  in  the  passage  and  a  tapping  at  the  door,
+// He  stretched  out  his  long  arm  to  turn  the  lamp  away  from’ himself  and  towards  the  vacant  chair  upon  which  a  new-comer
+// must  sit.  ‘Come  in!”  said  he.
+// The  man  who  entered  was  young,  some  two-and-twenty  at the  outside,  well-groomed  and  trimly  clad,  with  something  of refinement  and  delicacy  in  his  bearing.  The  steaming  umbrella  which  he  held  in  his  hand,  and  his  long  shining  waterproof  told  of  the  fierce  weather  through  which  he  had  come. He  looked  about  him  anxiously  in  the  glare  of  the  lamp,  and I  could  see  that  his  face  was  pale  and  his  eyes  heavy,  like those  of  a  man  who  is  weighed  down  with  some  great  anxiety,
+// “T  owe  you  an  apology,”  he  said,  raising  his  golden  pincenez  to  his  eyes.  “I  trust  that  I  am  not  intruding.  I  fear that  I  have  brought  some  traces  of  the  storm  and  rain  into your  snug  chamber.”
+// “Give  me  your  coat  and  umbrella,”  said  Holmes.  “They may  rest  here  on  the  hook,  and  will  be  dry  presently.  You have  come  up  from  the  south-west,  I  see.”
+// “Yes,  from  Horsham.”
+// “That  clay  and  chalk  mixture  which  I  see  upon  your  toe caps  is  quite  distinctive.”
+// “T  have  come  for  advice.”
+// “That  is  easily  got.”
+// “  And  help.”
+// “That  is  not  always  so  easy.”
+// “TI  have  heard  of  you,  Mr.  Holmes.  I  heard  from  Major Prendergast  how  you  saved  him  in  the  Tankerville  Club Scandal.”
+// “Ah,  of  course.  He  was  wrongfully  accused  of  cheating  at cards.”
+// “He  said  that  you  could  solve  anything.”
+// “He  said  too  much.”
+// “That  you  are  never  beaten.”
+// “T  have  been  beaten  four  times—three  times  by  men,  and once  by  a  woman.”
+// `;
