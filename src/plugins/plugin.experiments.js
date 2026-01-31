@@ -51,7 +51,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorageKey: 'BrExperiments',
 
     /** The experiments that should be shown in the experiments panel */
-    enabledExperiments: ['translate'],
+    enabledExperiments: ['translate', 'hypothesis'],
   }
 
   /** @type {ExperimentModel[]} */
