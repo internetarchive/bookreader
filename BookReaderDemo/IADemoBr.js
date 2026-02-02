@@ -95,12 +95,9 @@ window.initializeBookReader = initializeBookReader;
 const showLCP = document.querySelector('#show-lcp');
 showLCP.addEventListener('click', async () => {
   const iaBr = document.querySelector('ia-bookreader');
-  const bookNav = iaBr.shadowRoot.querySelector('book-navigator');
-
-  bookNav.downloadableTypes = downloadListWithLCP;
-
-  bookNav.updateMenuContents();
-  await bookNav.updateComplete;
+  iaBr.downloadableTypes = downloadListWithLCP;
+  iaBr.updateMenuContents();
+  await iaBr.updateComplete;
 });
 
 const multiVolume = document.querySelector('#multi-volume');

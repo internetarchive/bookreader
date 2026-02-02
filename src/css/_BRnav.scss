@@ -375,6 +375,11 @@
   }
 }
 
+.ui-slider:focus-within {
+  outline: 2px solid #BBB;
+  outline-offset: 1px;
+}
+
 .BRnavMobile.hide {
   display: none;
 }

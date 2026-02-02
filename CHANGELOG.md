@@ -1,3 +1,21 @@
+# 5.0.0-106
+- Fix: Slider in 2up left/right only jumping one page @cdrini
+
+# 5.0.0-105
+- Fix: Translation layer briefly appearing too large on Chrome @schu96
+- Feature: Various accessibility improvements @cdrini
+  - NVDA reading of text layer
+  - Labelling of toggle buttons to match state
+  - Correct aria-labelling of slider
+  - Fix keyboard handling in slider
+
+# 5.0.0-104
+- Dev: Update to node 24 + tweak publish flow @cdrini
+
+# 5.0.0-103
+- Fix: Improve accessibility of side panel @cdrini
+- Fix: BookReader usage with liner notes @pezvi
+
 # 5.0.0-102
 - Feature: Add dockable slider for mobile @pezvi
 - Feature: Improve accessibility of search inside panel @cdrini

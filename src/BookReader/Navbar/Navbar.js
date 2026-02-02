@@ -33,8 +33,13 @@ export class Navbar {
     this.updateNavIndexThrottled = throttle(this.updateNavIndex.bind(this), 250, false);
   }
 
-  controlFor(controlName) {
-    const option = this.br.options.controls[controlName];
+  /**
+   * @param {string} controlName
+   * @param {Object} optionOverrides
+   */
+  controlFor(controlName, optionOverrides = null) {
+    const brOption = this.br.options.controls[controlName];
+    const option = Object.assign({},brOption, optionOverrides);
     if (!option.visible) { return ''; }
     if (option.template) {
       return `<li>${option.template(this.br)}</li>`;
@@ -130,14 +135,8 @@ export class Navbar {
       toggle_slider: () => {
         this.br.toggleSlider();
       },
-      book_left: () => {
-        this.br.trigger(EVENTS.stop);
-        this.br.left();
-      },
-      book_right: () => {
-        this.br.trigger(EVENTS.stop);
-        this.br.right();
-      },
+      book_left: this.br.left.bind(this.br),
+      book_right: this.br.right.bind(this.br),
       book_top: this.br.first.bind(this.br),
       book_bottom: this.br.last.bind(this.br),
       book_leftmost: this.br.leftmost.bind(this.br),
@@ -273,8 +272,8 @@ export class Navbar {
                   <div class="BRnavline"></div>
                 </div>
               </li>
-              ${this.controlFor('bookLeft')}
-              ${this.controlFor('bookRight')}
+              ${this.controlFor('bookLeft', {visible: true})}
+              ${this.controlFor('bookRight', {visible: true})}
             </ul>
           </nav>
         </div>
@@ -286,7 +285,7 @@ export class Navbar {
                 <p>
                   <span class="BRcurrentpage"></span>
                 </p>
-                <div class="BRnavpos">
+                <div class="BRnavpos hide">
                   <div class="BRpager"></div>
                   <div class="BRnavline"></div>
                 </div>
@@ -299,6 +298,18 @@ export class Navbar {
     this.$root.append(this.$nav);
     br.refs.$br.append(this.$root);
 
+    this.br.on(EVENTS.beforePageChanged, (ev, { ariaLive }) => {
+      if (ariaLive) {
+        // So screen readers read out change
+        this.$root.find('.BRcurrentpage').attr('role', 'status');
+      } else {
+        this.$root.find('.BRcurrentpage').removeAttr('role');
+      }
+    });
+    this.br.on(EVENTS.pageChanged, (ev, { index }) => this.updateNavIndexThrottled(index));
+    br.options.controls.viewmode.visible && this._bindViewModeButton();
+    this.updateNavPageNum(br.currentIndex());
+
     /** @type {JQuery} sliders */
     const $sliders = this.$root.find('.BRpager').slider({
       animate: true,
@@ -308,24 +319,72 @@ export class Navbar {
       range: "min",
     });
 
+    // The jQuery UI slider handles the keyboard shortcuts on the slider's
+    // handle, so need the aria labels there.
+    $sliders.find('.ui-slider-handle').attr({
+      'role': 'slider',
+      'aria-label': 'Page navigation slider',
+      'aria-valuemin': 1,
+      'aria-valuemax': br.book.getNumLeafs(),
+    });
+
+    // Ignore up/down arrow keys and page up/down keys, since they're confusingly different
+    // between slider movement and page movement. Down decreases slider value, which would move
+    // the scroll _up_ in 1up.
+    $sliders.find('.ui-slider-handle').off('keydown').on('keydown', (event) => {
+      switch (event.keyCode || event.which) {
+      case $.ui.keyCode.LEFT:
+      case $.ui.keyCode.RIGHT:
+        // Forward along to the default handler
+        if (isRTL) {
+          // Swap left/right for RTL
+          if (event.keyCode === $.ui.keyCode.LEFT) {
+            event.keyCode = $.ui.keyCode.RIGHT;
+          } else {
+            event.keyCode = $.ui.keyCode.LEFT;
+          }
+        }
+        $.ui.slider.prototype._handleEvents.keydown.call($(event.target).parent().data('ui-slider'), event);
+        event.stopPropagation();
+        break;
+      default:
+        return;
+      }
+    });
+
     $sliders.on('slide', (event, ui) => {
+      if (this.br.mode === this.br.constMode2up) {
+        // in 2up, need to go to nearest page that is left page
+        const movingForward = ui.value > br.currentIndex();
+        const newPage = this.br.book.getPage(ui.value);
+        if (isRTL ? newPage.pageSide === 'L' : newPage.pageSide === 'R') {
+          ui.value += movingForward ? 1 : -1;
+          ui.value = Math.max(0, Math.min(ui.value, br.book.getNumLeafs() - 1));
+        }
+      }
       this.updateNavPageNum(ui.value);
-      return true;
     });
 
     $sliders.on('slidechange', (event, ui) => {
-      this.updateNavPageNum(ui.value);
       // recursion prevention for jumpToIndex
-      if ($(event.currentTarget).data('swallowchange')) {
-        $(event.currentTarget).data('swallowchange', false);
-      } else {
-        br.jumpToIndex(ui.value);
+      if ($(event.target).data('swallowchange')) {
+        $(event.target).data('swallowchange', false);
+        return;
       }
-      return true;
-    });
 
-    br.options.controls.viewmode.visible && this._bindViewModeButton();
-    this.updateNavPageNum(br.currentIndex());
+      if (this.br.mode === this.br.constMode2up) {
+        // in 2up, need to go to nearest page that is left page
+        const movingForward = ui.value > br.currentIndex();
+        const newPage = this.br.book.getPage(ui.value);
+        if (isRTL ? newPage.pageSide === 'L' : newPage.pageSide === 'R') {
+          ui.value += movingForward ? 1 : -1;
+          ui.value = Math.max(0, Math.min(ui.value, br.book.getNumLeafs() - 1));
+        }
+      }
+
+      // Don't want this to be aria-live since the slider already announces the value
+      this.br.jumpToIndex(ui.value, {ariaLive: false});
+    });
 
     return this.$nav;
   }
@@ -364,7 +423,11 @@ export class Navbar {
    * @param {number} index
    */
   updateNavPageNum(index) {
-    this.$root.find('.BRcurrentpage').html(this.getNavPageNumString(index, true));
+    this.$root.find('.BRcurrentpage').html(this.getNavPageNumString(index));
+    this.$root.find('.ui-slider-handle').attr({
+      'aria-valuenow': index + 1,
+      'aria-valuetext': this.getNavPageNumString(index),
+    });
   }
 
   /**
@@ -375,7 +438,9 @@ export class Navbar {
     // We want to update the value, but normally moving the slider
     // triggers jumpToIndex which triggers this method
     index = index !== undefined ? index : this.br.currentIndex();
-    this.$root.find('.BRpager').data('swallowchange', true).slider('value', index);
+    this.$root.find('.BRpager').data('swallowchange', true);
+    this.$root.find('.BRpager').slider('value', index);
+    this.updateNavPageNum(index);
   }
 }
 

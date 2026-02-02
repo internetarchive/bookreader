@@ -71,17 +71,17 @@ describe('isInputActive', () => {
   });
 
   test('Handles deep input activeElement', () => {
-    const doc = {activeElement: { shadowRoot: {activeElement: { tagName: 'INPUT' }}}};
+    const doc = {activeElement: { shadowRoot: {activeElement: document.createElement('input') }}};
     expect(isInputActive(doc)).toBe(true);
   });
 
   test('Handles deep non-input activeElement', () => {
-    const doc = {activeElement: { shadowRoot: {activeElement: { tagName: 'A' }}}};
+    const doc = {activeElement: { shadowRoot: {activeElement: document.createElement('a') }}};
     expect(isInputActive(doc)).toBe(false);
   });
 
   test('Handles textarea activeElement', () => {
-    const doc = {activeElement: { tagName: 'TEXTAREA' }};
+    const doc = {activeElement: document.createElement('textarea')};
     expect(isInputActive(doc)).toBe(true);
   });
 });
