@@ -42,6 +42,7 @@ describe('Plugin: URL controller', () => {
   });
 
   test('initializes polling for url changes if using hash', () => {
+    BookReader.prototype.urlReadFragment = jest.fn(() => '/page/2/mode/1up');
     BookReader.prototype.urlStartLocationPolling = jest.fn();
     br.init();
 

@@ -88,7 +88,6 @@ BookReader.prototype.shortTitle = function(maximumCharacters) {
  */
 BookReader.prototype.urlStartLocationPolling = function() {
   this.oldLocationHash = this.urlReadFragment();
-  console.log("BookReader.urlStartLocationPolling this.oldLocationHash", this.oldLocationHash);
 
   if (this.locationPollId) {
     clearInterval(this.locationPollId);
@@ -161,7 +160,6 @@ BookReader.prototype.urlUpdateFragment = function() {
       try {
         window.history.replaceState({}, null, newUrlPath);
         this.oldLocationHash = newFragment + newQueryString;
-        console.log("changed oldLocationHash in BookReader.setup", this.oldLocationHash);
       } catch (e) {
         // DOMException on Chrome when in sandboxed iframe
         this.options.urlMode = 'hash';
@@ -170,17 +168,9 @@ BookReader.prototype.urlUpdateFragment = function() {
   }
 
   if (this.options.urlMode === 'hash')  {
-    let newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
-    // console.log("checking the newQueryStringSearch", newQueryStringSearch, typeof newQueryStringSearch);
-    // if (newQueryStringSearch.indexOf(":~:") != -1) {
-    //   // if (newQueryStringSearch.includes("-,") || newQueryStringSearch.includes(",-")){
-    //   //   console.log("actively replacing commas w/ URI encoded components");
-    //   //   newQueryStringSearch = newQueryStringSearch.replaceAll(/(?<!-),(?!-)/g, "%2C");
-    //   // }
-    // }
+    const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
     window.location.replace('#' + newFragment + newQueryStringSearch);
     this.oldLocationHash = newFragment + newQueryStringSearch;
-    console.log("changed oldLocationHash here", this.oldLocationHash);
   }
 };
 
@@ -194,13 +184,11 @@ BookReader.prototype.urlUpdateFragment = function() {
 
 // testing with this URL http://127.0.0.1:8000/BookReaderDemo/demo-internetarchive.html?ocaid=adventureofsherl0000unse&text=Well%2C I found my plans very seriously menaced.&q=breaking the law#page/18/mode/2up
 BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
-  console.log("this is input, plugin.url.js", url)
-  const text = url.match(/(?<=[&?]text=)[^&]*/);
+  const text = url.match(/(?<=&text=)[^&]*/);
   const params = new URLSearchParams(url);
   let output = '';
-  output += params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}&` : ''
+  output += params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
   output += text ? `:~:text=${text[0]}` : '';
-  console.log("this is output, plugin.url.js", output)
   return output;
 };
 
@@ -235,15 +223,8 @@ export class BookreaderUrlPlugin extends BookReader {
         const textFragment = `${extractText}`;
         this.options.shareHighlight = textFragment;
         this.on('textLayerRendered', (_, {pageIndex, container}) => {
-          console.log("this.oldLocationHash", this.oldLocationHash);
-          // if (this.oldLocationHash.indexOf(":~:") != -1) {
-          //   if (this.oldLocationHash.includes("-,") || this.oldLocationHash.includes(",-")) {
-          //     // console.log("Replacing commas w/ URI encoded components");
-          //     this.oldLocationHash = this.oldLocationHash.replaceAll(/(?<!-),(?!-)/g, "%2C");
-          //   }
-          // }
-          window.location.replace(`#${this.oldLocationHash}`)
-        })
+          window.location.replace(`#${this.oldLocationHash}`);
+        });
       }
       this.bind(BookReader.eventNames.PostInit, () => {
         const { urlMode } = this.options;
