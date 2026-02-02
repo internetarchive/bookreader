@@ -2,7 +2,7 @@ import sinon from 'sinon';
 
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
-import {createParam, TextFragment} from '@/src/util/TextSelectionManager.js';
+import {createParam} from '@/src/util/TextSelectionManager.js';
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `
@@ -50,6 +50,95 @@ const FAKE_XML_MULT_LINES = `
     </PARAGRAPH>
   </OBJECT>`;
 
+const MULTIPLE_REPEAT_LINES = `
+  <OBJECT data="file://localhost/var/tmp/autoclean/derive/adventureofsherl0000unse/adventureofsherl0000unse.djvu" height="2559" type="image/x.djvu" usemap="adventureofsherl0000unse_0120.djvu" width="1587">
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="180,1412,313,1378" x-confidence="82">“That</WORD>
+        <WORD coords="331,1425,412,1378" x-confidence="96">clay</WORD>
+        <WORD coords="431,1413,505,1378" x-confidence="96">and</WORD>
+        <WORD coords="526,1413,637,1378" x-confidence="96">chalk</WORD>
+        <WORD coords="657,1414,814,1378" x-confidence="96">mixture</WORD>
+        <WORD coords="836,1414,957,1378" x-confidence="96">which</WORD>
+        <WORD coords="976,1414,994,1380" x-confidence="96">I</WORD>
+        <WORD coords="1017,1414,1080,1390" x-confidence="96">see</WORD>
+        <WORD coords="1102,1426,1204,1391" x-confidence="96">upon</WORD>
+        <WORD coords="1231,1425,1325,1391" x-confidence="96">your</WORD>
+        <WORD coords="1349,1417,1418,1385" x-confidence="96">toe</WORD>
+      </LINE>
+      <LINE>
+        <WORD coords="130,1482,218,1447" x-confidence="96">caps</WORD>
+        <WORD coords="237,1472,267,1437" x-confidence="96">is</WORD>
+        <WORD coords="287,1483,389,1438" x-confidence="96">quite</WORD>
+        <WORD coords="408,1474,654,1437" x-confidence="96">distinctive.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="177,1591,308,1556" x-confidence="84">“That</WORD>
+        <WORD coords="327,1592,359,1556" x-confidence="96">is</WORD>
+        <WORD coords="376,1604,493,1556" x-confidence="96">easily</WORD>
+        <WORD coords="509,1603,610,1557" x-confidence="96">got.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="178,1711,308,1676" x-confidence="93">“That</WORD>
+        <WORD coords="326,1711,357,1676" x-confidence="96">is</WORD>
+        <WORD coords="375,1712,441,1683" x-confidence="96">not</WORD>
+        <WORD coords="459,1724,594,1677" x-confidence="96">always</WORD>
+        <WORD coords="613,1713,655,1689" x-confidence="95">so</WORD>
+        <WORD coords="673,1726,798,1679" x-confidence="95">easy.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+  </OBJECT>`;
+
+const FAKE_DIALOGUE = `
+  <OBJECT data="file://localhost/var/tmp/autoclean/derive/adventureofsherl0000unse/adventureofsherl0000unse.djvu" type="image/x.djvu" usemap="adventureofsherl0000unse_0021.djvu" width="1587" height="2559">
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="149,1891,348,1855" x-confidence="69">“Stolen.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="181,1962,249,1916" x-confidence="96">“My</WORD>
+        <WORD coords="266,1951,348,1928" x-confidence="95">own</WORD>
+        <WORD coords="367,1953,481,1917" x-confidence="76">seal.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="180,2013,393,1976" x-confidence="41">“Imitated.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="143,2084,243,2037" x-confidence="88">“My</WORD>
+        <WORD coords="255,2086,530,2038" x-confidence="86">photograph.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="175,2145,358,2098" x-confidence="96">“Bought.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="143,2084,243,2037" x-confidence="88">“My</WORD>
+        <WORD coords="255,2086,530,2038" x-confidence="86">photograph.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="181,1962,249,1916" x-confidence="96">“My</WORD>
+        <WORD coords="266,1951,348,1928" x-confidence="95">own</WORD>
+        <WORD coords="367,1953,481,1917" x-confidence="76">seal.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+  </OBJECT>
+`;
+
 describe("Generic tests", () => {
   document.body.innerHTML = '<div id="BookReader">';
   const br = window.br = new BookReader({
@@ -92,11 +181,9 @@ describe("Generic tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
-    console.log($container.find(".BRwordElement")[0].firstChild.textContent);
+
     br.plugins.textSelection.textSelectionManager._limitSelection();
-    console.log("trying to check this:", selection.toString())
-    console.log(window.getSelection().getRangeAt(0));
-    console.log("does this show?");
+
     const rangeAfter = window.getSelection().getRangeAt(0);
     expect(rangeAfter.startContainer).toBe(rangeBefore.startContainer);
     expect(rangeAfter.startOffset).toBe(0);
@@ -147,87 +234,155 @@ describe("Generic tests", () => {
 
 
 
-describe("TextFragment", () => {
-  document.body.innerHTML = '<div id="BookReader">';
-  const br = window.br = new BookReader({
-    data: [
-      [
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page001.jpg' },
-      ],
-      [
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page002.jpg' },
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page003.jpg' },
-      ],
-      [
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page004.jpg' },
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page005.jpg' },
-      ],
-    ],
+describe("TextFragment tests", () => {
+  afterEach(() => {
+    sinon.restore();
+    $('.BRtextLayer').remove();
+    window.getSelection().direction = null;
   });
-  br.init();
-  // test("fromString", () => {
-  //   const tf = TextFragment.fromString("hello world");
-  //   expect(tf.toString()).toBe("hello world");
 
-  //   const tf2 = TextFragment.fromString("some prefix-,hello world");
-  //   expect(tf2.toString()).toBe("some prefix-,hello world");
-  // });
+  test("Forward and Backward selection without prefix", async () => {
+    const $container = br.refs.$brContainer;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 3, width: 100, height: 100 }});
 
-  // test("", () => {
-  //   const tf = TextFragment.fromSelection(TEST_TEXT_CONTENT, 1263, 1336, { prefixWords: 3, suffixWords: 3  });
-  //   expect(tf.toString()).toBe(`%E2%80%9CYes%2C%20%20from%20%20Horsham.%E2%80%9D-,%E2%80%9CThat%20%20clay%20%20and%20%20chalk%20%20mixture%20%20which%20%20I%20%20see%20%20upon%20%20your%20%20toe%20caps%20%20is,-quite%20%20distinctive.%E2%80%9D%0A%E2%80%9CT`);
-  //   // Test multiple matches of exact quote (eg That is)
-  //   // Test quote that contains end multiple times? (Eg That.*?is)
-  //   // Test quote spans lines
-  //   // Test quote spans paragraphs
-  // });
+    const forwardRange = document.createRange();
+    forwardRange.setStart($container.find(".BRwordElement")[0].firstChild, 0);
+    forwardRange.setEnd($container.find(".BRwordElement")[2].firstChild, 1);
+    const backwardRange = document.createRange();
+    backwardRange.setStart($container.find(".BRwordElement")[2].firstChild, 0);
+    backwardRange.setEnd($container.find(".BRwordElement")[2].firstChild, 5);
 
-  // test("Forward Selection Params", async () => {
-  //   const $container = br.refs.$brContainer;
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(forwardRange);
+    const forwardTest = createParam(selection, document.querySelector('.BRtextLayer'));
 
-  //   sinon.stub(br.plugins.textSelection, "getPageText")
-  //     .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
-    
-  //   await br.plugins.textSelection.createTextLayer({ $container, page: {index: 3, width: 100, height: 100 }});
-  
-  //   const rangeBefore = document.createRange();
-  //   rangeBefore.setStart($container.find(".BRwordElement")[0].firstChild, 0);
-  //   rangeBefore.setEnd($container.find(".BRwordElement")[4].firstChild, 1);
+    selection.removeAllRanges();
+    backwardRange.collapse(false);
+    selection.addRange(backwardRange);
+    selection.extend(forwardRange.startContainer, 0);
+    window.getSelection().direction = 'backward';
+    const backwardTest = createParam(selection, document.querySelector('.BRtextLayer'));
 
-  //   const selection = window.getSelection()
-  //   selection.removeAllRanges();
-  //   selection.addRange(rangeBefore);
-  //   // const highlightedTest = createParam();
-  //   console.log("this is selection", selection.toString());
-  //   expect(0).toBe(0);
-  // });
+    expect(forwardTest).toMatch("text=way,false");
+    expect(backwardTest).toMatch(forwardTest);
+  });
+
+  test("Forward and Backward selection without suffix", async () => {
+    const $container = br.refs.$brContainer;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 3, width: 100, height: 100 }});
+
+    const forwardRange = document.createRange();
+    forwardRange.setStart($container.find(".BRwordElement")[30].firstChild, 0);
+    forwardRange.setEnd($container.find(".BRwordElement")[32].firstChild, 1);
+    const backwardRange = document.createRange();
+    backwardRange.setStart($container.find(".BRwordElement")[32].firstChild, 0);
+    backwardRange.setEnd($container.find(".BRwordElement")[32].firstChild, 1);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(forwardRange);
+    const forwardTest = createParam(selection, document.querySelector('.BRtextLayer'));
+    selection.removeAllRanges();
+    backwardRange.collapse(false);
+    selection.addRange(backwardRange);
+    selection.extend(forwardRange.startContainer, 0);
+    window.getSelection().direction = 'backward';
+
+    const backwardTest = createParam(selection, document.querySelector('.BRtextLayer'));
+
+    expect(forwardTest).toMatch("text=various,lastWord");
+    expect(backwardTest).toMatch(forwardTest);
+  });
+
+  test("Should be able to differentiate overlapping matches", async () => {
+    const $container = br.refs.$brContainer;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(MULTIPLE_REPEAT_LINES, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
+
+    const rangeBefore = document.createRange();
+    rangeBefore.setStart($($container.find('.BRparagraphElement')[1]).find(".BRwordElement")[0].firstChild, 0);
+    rangeBefore.setEnd($($container.find('.BRparagraphElement')[1]).find(".BRwordElement")[1].firstChild, 2);
+
+    const sameKeyHighlightRange = document.createRange();
+    sameKeyHighlightRange.setStart($($container.find('.BRparagraphElement')[0]).find(".BRwordElement")[0].firstChild, 0);
+    sameKeyHighlightRange.setEnd($($container.find('.BRparagraphElement')[0]).find(".BRwordElement")[12].firstChild, 2);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(rangeBefore);
+    const multipleHighlights = createParam(selection, document.querySelector('.BRtextLayer'));
+
+    selection.removeAllRanges();
+    selection.addRange(sameKeyHighlightRange);
+    const similarHighlight = createParam(selection, document.querySelector('.BRtextLayer'));
+
+    expect(multipleHighlights).toBe(`text=is%20quite%20distinctive.%E2%80%9D-,%E2%80%9CThat%20is,-easily%20got.%E2%80%9D`);
+    expect(multipleHighlights).not.toBe(similarHighlight);
+  });
+
+  test("Create text fragment without spanning multiple new lines", async () => {
+    const $container = br.refs.$brContainer;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
+
+    const rangeBefore = document.createRange();
+
+    rangeBefore.setStart($($container.find(".BRparagraphElement")[1]).find(".BRwordElement")[0].firstChild, 0);
+    rangeBefore.setEnd($($container.find(".BRparagraphElement")[1]).find(".BRwordElement")[2].firstChild, 6);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(rangeBefore);
+
+    const multiLineBehavior = createParam(selection, document.querySelector('.BRtextLayer'));
+    // “Stolen.”-,“My own seal.”,-“Imitated.”
+    expect(multiLineBehavior).toMatch("text=%E2%80%9CStolen.%E2%80%9D-,%E2%80%9CMy%20own%20seal.%E2%80%9D,-%E2%80%9CImitated.%E2%80%9D");
+  });
+
+  test("Prefix/suffix exists even with < 3 words", async () => {
+    const $container = br.refs.$brContainer;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
+
+    const rangeBefore = document.createRange();
+    rangeBefore.setStart($($container.find(".BRparagraphElement")[3]).find(".BRwordElement")[0].firstChild, 0);
+    rangeBefore.setEnd($($container.find(".BRparagraphElement")[3]).find(".BRwordElement")[1].firstChild, 12);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(rangeBefore);
+
+    // “Imitated.”-, “My photograph.”,-“Bought.”
+    const endShortSuffix = createParam(selection, document.querySelector('.BRtextLayer'));
+
+    expect(endShortSuffix).toMatch("text=%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy%20photograph.%E2%80%9D,-%E2%80%9CBought.%E2%80%9D");
+  });
+
+  test("Able to match one non-unique highlighted word", async() => {
+    const $container = br.refs.$brContainer;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
+
+    const rangeBefore = document.createRange();
+    rangeBefore.setStart($($container.find(".BRparagraphElement")[3]).find(".BRwordElement")[0].firstChild, 0);
+    rangeBefore.setEnd($($container.find(".BRparagraphElement")[3]).find(".BRwordElement")[0].firstChild, 3);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(rangeBefore);
+
+    // “Imitated.”-, “My,-photograph.”
+    const singleTextFragment = createParam(selection, document.querySelector('.BRtextLayer'));
+
+    expect(singleTextFragment).toMatch("text=%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy,-photograph.%E2%80%9D");
+  });
 });
-// 1263-1268 -That
-// 1334-1336 -is
-
-// const TEST_TEXT_CONTENT = `
-// 106  ADVENTURES  OF  SHERLOCK  HOLMES
-// there  came  a  step  in  the  passage  and  a  tapping  at  the  door,
-// He  stretched  out  his  long  arm  to  turn  the  lamp  away  from’ himself  and  towards  the  vacant  chair  upon  which  a  new-comer
-// must  sit.  ‘Come  in!”  said  he.
-// The  man  who  entered  was  young,  some  two-and-twenty  at the  outside,  well-groomed  and  trimly  clad,  with  something  of refinement  and  delicacy  in  his  bearing.  The  steaming  umbrella  which  he  held  in  his  hand,  and  his  long  shining  waterproof  told  of  the  fierce  weather  through  which  he  had  come. He  looked  about  him  anxiously  in  the  glare  of  the  lamp,  and I  could  see  that  his  face  was  pale  and  his  eyes  heavy,  like those  of  a  man  who  is  weighed  down  with  some  great  anxiety,
-// “T  owe  you  an  apology,”  he  said,  raising  his  golden  pincenez  to  his  eyes.  “I  trust  that  I  am  not  intruding.  I  fear that  I  have  brought  some  traces  of  the  storm  and  rain  into your  snug  chamber.”
-// “Give  me  your  coat  and  umbrella,”  said  Holmes.  “They may  rest  here  on  the  hook,  and  will  be  dry  presently.  You have  come  up  from  the  south-west,  I  see.”
-// “Yes,  from  Horsham.”
-// “That  clay  and  chalk  mixture  which  I  see  upon  your  toe caps  is  quite  distinctive.”
-// “T  have  come  for  advice.”
-// “That  is  easily  got.”
-// “  And  help.”
-// “That  is  not  always  so  easy.”
-// “TI  have  heard  of  you,  Mr.  Holmes.  I  heard  from  Major Prendergast  how  you  saved  him  in  the  Tankerville  Club Scandal.”
-// “Ah,  of  course.  He  was  wrongfully  accused  of  cheating  at cards.”
-// “He  said  that  you  could  solve  anything.”
-// “He  said  too  much.”
-// “That  you  are  never  beaten.”
-// “T  have  been  beaten  four  times—three  times  by  men,  and once  by  a  woman.”
-// `;

@@ -161,7 +161,7 @@ export class TextSelectionManager {
       this.mouseIsDown = true;
       if (this.hlightBarEl) {
         this.hlightBarEl.remove();
-        window.getSelection().empty(); // selection is checked at mouseup, need to clear it here to prevent button from lingering
+        window.getSelection().empty(); // selection is checked at mouseup, cleared here to prevent button from lingering
       }
       event.stopPropagation();
     });
@@ -178,7 +178,7 @@ export class TextSelectionManager {
         this.hlightBarEl?.remove();
       }
     });
-    
+
     $(document.body).on('mouseup', (_) => {
       this.hlightBarEl?.remove();
     });
@@ -186,27 +186,26 @@ export class TextSelectionManager {
 
   highlightToolbar(_) {
     const hlButton = document.createElement('button');
-    
+
     if (this.hlightBarEl) {
       this.hlightBarEl.remove();
     }
     this.hlightBarEl = hlButton;
     const currentSelection = window.getSelection();
-    const start = currentSelection.anchorNode.parentElement
-    const end = currentSelection.focusNode.parentElement // will always be a text node
-    const selectionTextLayer = start.closest('.BRtextLayer'); 
-    const endBoundingRect = end.getBoundingClientRect();
-    const width = 60;
+    const start = currentSelection.anchorNode.parentElement;
+    const end = currentSelection.focusNode.parentElement; // will always be a text node
     const height = 30;
-    let hlButtonTop = endBoundingRect.top;
-    let hlButtonLeft = endBoundingRect.left;
+    const width = 60;
+    const selectionTextLayer = start.closest('.BRtextLayer');
+    const startBoundingRect = start.getBoundingClientRect();
+    const endBoundingRect = end.getBoundingClientRect();
+    let hlButtonTop = startBoundingRect.top - height;
+    let hlButtonLeft = startBoundingRect.left - width;
     if (currentSelection.direction == 'backward') {
-      hlButtonTop -= (height + start.getBoundingClientRect().height);
-    } else {
-      hlButtonTop += (height / 2);
-      hlButtonLeft += (width / 2);
+      hlButtonTop = endBoundingRect.top - height;
+      hlButtonLeft = endBoundingRect.left - width;
     }
-    hlButton.className = "FINDME";
+    hlButton.className = "textFragmentCopy";
 
     $(hlButton).css({
       'top': `${hlButtonTop}px`,
@@ -219,11 +218,11 @@ export class TextSelectionManager {
       'background-position': 'center',
       'background-repeat': 'no-repeat',
       'background-color': 'darksalmon',
-    })
+    });
     $(hlButton).on('mousedown', (event) => {
       event.stopPropagation();
-      let currentUrl = window.location;
-      const textContentParams = document.getSelection()
+      const currentUrl = window.location;
+      const textContentParams = document.getSelection();
       let currentParams = this.br.readQueryString();
       if (currentParams.includes('text')) {
         currentParams = currentParams.replace(/(text=)[\w\W\d%]+/, createParam(textContentParams, selectionTextLayer));
@@ -235,7 +234,7 @@ export class TextSelectionManager {
 
     $(hlButton).on('mouseup', (event) => {
       event.stopPropagation();
-    })
+    });
     document.body.append(hlButton);
   }
 
@@ -277,14 +276,14 @@ export class TextSelectionManager {
   };
 }
 
-/** TODO -> 
- * Can import something that handles this more gracefully? see - https://web.dev/articles/text-fragments#:~:text=In%20its%20simplest%20form%2C%20the%20syntax%20of,percent%2Dencoded%20text%20I%20want%20to%20link%20to. 
+/** TODO ->
+ * Can import something that handles this more gracefully? see - https://web.dev/articles/text-fragments#:~:text=In%20its%20simplest%20form%2C%20the%20syntax%20of,percent%2Dencoded%20text%20I%20want%20to%20link%20to.
  */
 /**
- * 
- * @param {*} text - document.getSelection() 
+ *
+ * @param {*} text - document.getSelection()
  * @param {*} pageLayer - anchorNode.parentElement.closest('.BRtextLayer')
- * @returns 
+ * @returns
  */
 export function createParam(text, pageLayer = null) {
   const highlightedText = text.toString().replaceAll(/[\s]+/g, " ").trim().split(" ");
@@ -292,204 +291,102 @@ export function createParam(text, pageLayer = null) {
   const focusWord = text.focusNode.textContent;
   let textStart, textEnd; // :~:text=[prefix-,]textStart[,textEnd][,-suffix]
   const direction = text.direction;
-  function findContext(startLine, endLine) {
-    if (window.getSelection().direction == 'backward') {
-      const tempWords = startLine;
-      startLine = endLine;
-      endLine = tempWords;
-    }
-    const surroundingStart = text.anchorNode.parentElement.closest(".BRlineElement");
-    const surroundingEnd = text.focusNode.parentElement.closest(".BRlineElement");
-    /** if (surroundingStart === surroundingEnd) {
-    //   // If the selection has the same line
-    //   const parentLineArray = surroundingStart.textContent.split(/[\s]+/);
-    //   let startIdx = parentLineArray.indexOf(startLine);
-    //   let endIdx = parentLineArray.indexOf(endLine);
-    //   let beforeStart, afterEnd;
 
-    //   if (window.getSelection().direction == 'backward') {
-    //     beforeStart = startIdx + 3 >= parentLineArray.length ? parentLineArray.length : startIdx + 3;
-    //     afterEnd = endIdx - 2 < 0 ? endIdx : endIdx - 2;
-    //   } else {
-    //     beforeStart = startIdx - 2 < 0 ? startIdx : startIdx - 2;
-    //     afterEnd = endIdx + 3 >= parentLineArray.length ? parentLineArray.length : endIdx + 3;
-    //   }
-    //   const beforeStartWords = parentLineArray.slice(beforeStart, startIdx).join(" ");
-    //   const afterEndWords = parentLineArray.slice(endIdx + 1, afterEnd).join(" ");
-
-    //   const prefixURI = beforeStartWords ? `${encodeURIComponent(beforeStartWords)}-,` : ""
-    //   const suffixURI = afterEndWords ? `,-${encodeURIComponent(afterEndWords)}` : ""
-    //   return `text=${prefixURI}${encodeURIComponent(removeNewLine.join(" "))}${suffixURI}`
-      } else { 
-    */
-      // If the selection is across multiple lines
-      let parentStartLineArray = surroundingStart.textContent.split(/[\s]+/);
-      let parentEndLineArray = surroundingEnd.textContent.split(/[\s]+/);
-      // console.log("parentStartLineArray", parentStartLineArray);
-      let startIdx = parentStartLineArray.indexOf(startLine);
-      let endIdx = parentEndLineArray.indexOf(endLine);
-      // console.log("this is the start and end", startIdx, endIdx, parentEndLineArray);
-      if (startIdx == 0) {
-        if (!surroundingStart.previousElementSibling) {
-          let previousParagraph = Array.from(surroundingStart.parentElement.previousElementSibling.childNodes).filter((ele) => ele.className == 'BRlineElement');
-          parentStartLineArray = previousParagraph.slice(-1)[0].textContent.split(/[\s]+/);
-        } else {
-          parentStartLineArray = surroundingStart.previousElementSibling.textContent.split(/[\s]+/);
-        }
-        startIdx = parentStartLineArray.length + 1;
-      }
-      if (endIdx + 1 == parentEndLineArray.length) { // Need to check the next line
-        if (surroundingEnd.nextSibling.className != 'BRlineElement') {
-          let nextParagraph = Array.from(surroundingEnd.parentElement.nextSibling.childNodes).filter((ele) => ele.className == 'BRlineElement');
-          parentEndLineArray = nextParagraph.slice(0)[0].textContent.split(/[\s]+/);
-        } else {
-          parentEndLineArray = surroundingEnd.nextSibling.textContent.split(/[\s]+/);
-        }
-        endIdx = -1;
-      }
-      // console.log("this is parentStartLineArray", parentStartLineArray);
-      let beforeStart = startIdx - 2 <= 0 ? 0 : startIdx - 2;
-      let afterEnd = endIdx + 3 >= parentEndLineArray.length ? parentEndLineArray.length : endIdx + 3;
-      if (window.getSelection().direction == "backward") {
-        beforeStart = endIdx - 2 <= 0 ? 0 : endIdx - 2;
-        afterEnd = startIdx + 3 >= parentStartLineArray.length ? parentStartLineArray.length : startIdx + 3;
-        // console.log("reversing the indexes", 
-        //   `beforeStart: ${beforeStart},
-        //   afterEnd: ${afterEnd},
-        //   startIdx: ${startIdx}, ${parentStartLineArray[startIdx]},
-        //   endIdx: ${endIdx}, ${parentEndLineArray[endIdx]},
-        //   preStartWords = ${parentStartLineArray.slice(beforeStart, startIdx)},
-        //   ${parentStartLineArray};
-        //   `);
-      }
-      const preStartWords = parentStartLineArray.slice(beforeStart, startIdx).join (" ");
-      const postEndWords = parentEndLineArray.slice(endIdx + 1, afterEnd).join(" ");
-      // console.log("removeNewLine", highlightedText);
-      // console.log("beforeStart, afterEnd", beforeStart, afterEnd);
-      // console.log("should show quote", parentStartLineArray, beforeStart, startIdx);
-
-      // console.log("highlighted text", highlightedText);
-      const prefixURI = preStartWords ? `${encodeURIComponent(preStartWords)}-,` : "";
-      const suffixURI = postEndWords ? `,-${encodeURIComponent(postEndWords)}` : ""
-      return `text=${prefixURI}${encodeURIComponent(highlightedText.join(" "))}${suffixURI}`;
-    // }
-    
+  // Duplicated spaces in pageLayer.textContent for some reason
+  const wholePageText = pageLayer.textContent.replaceAll("  ", " ");
+  if (direction == 'backward') {
+    textStart = focusWord.replaceAll(/[\s]+/g, "") ? focusWord : highlightedText[0];
+    textEnd = anchorWord.replaceAll(/[\s]+/g, "") ? anchorWord : highlightedText[highlightedText.length - 1];
+  } else {
+    textStart = anchorWord.replaceAll(/[\s]+/g, "") ? anchorWord : highlightedText[0];
+    textEnd = focusWord.replaceAll(/[\s]+/g, "") ? focusWord : highlightedText[highlightedText.length - 1];
   }
-  if (pageLayer) {
-    // Duplicated spaces in pageLayer.textContent for some reason
-    const wholePageText = pageLayer.textContent.replaceAll("  ", " ");
-    if (direction == 'backward') {
-      textStart = focusWord.replaceAll(/[\s]+/g, "") ? focusWord: highlightedText[0]
-      textEnd = anchorWord.replaceAll(/[\s]+/g, "") ? anchorWord : highlightedText[highlightedText.length - 1];
+
+  const escapedStart = RegExp.escape(textStart);
+  const escapedEnd = RegExp.escape(textEnd);
+  const testRegExp = new RegExp(String.raw`(?=(${escapedStart}).*?(?:(${escapedEnd})))`, "gi");
+
+  const foundMatches = wholePageText.matchAll(testRegExp).toArray();
+  if (foundMatches.length == 1) {
+    return `text=${textStart},${textEnd}`;
+  }
+  const preStartRange = document.createRange();
+  const postEndRange = document.createRange();
+  if (direction == 'backward') {
+    preStartRange.setStart(pageLayer.firstElementChild, 0);
+    preStartRange.setEnd(text.focusNode, 0);
+
+    postEndRange.setStart(text.anchorNode, text.anchorNode.textContent.length);
+    postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
+
+  } else {
+    preStartRange.setStart(pageLayer.firstElementChild, 0);
+    preStartRange.setEnd(text.anchorNode, 0);
+
+    postEndRange.setStart(text.focusNode, text.focusNode.textContent.length);
+    postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
+  }
+
+  const startRegex = new RegExp(String.raw`(\s+\S+){1,3}\s*?$`);
+  const endRegex = new RegExp(String.raw`^\S*?(\s+\S+){1,3}`);
+  // prefixes/suffixes cannot contain paragraph breaks
+  const textFragmentArr = [];
+  let [prefixes, suffixes] = ["", ""];
+  if (preStartRange.toString().length !== 0) {
+    if (!preStartRange.toString().match(startRegex)) {
+      prefixes = `${preStartRange.toString()
+        .replace(/[ ]+/g, " ")
+        .trim()
+        .replace(/^[^\n]*\n/gm, "")}-`;
     } else {
-      textStart = anchorWord.replaceAll(/[\s]+/g, "")? anchorWord : highlightedText[0]
-      textEnd = focusWord.replaceAll(/[\s]+/g, "") ? focusWord : highlightedText[highlightedText.length - 1];
-    }
-    const escapedStart = RegExp.escape(textStart);
-    const escapedEnd = RegExp.escape(textEnd);
-    const testRegExp = new RegExp(String.raw`(?=(${escapedStart}).*?(?:(${escapedEnd})))`, "gi")
-    // const testRegExp = new RegExp(String.raw`(\S+\s+){3}${escapedStart}[\s\S]*?${escapedEnd}(\s+\S+){3}`, "gi");
-    /** otherRegExp probably doesn't work; textContent doesn't preserve newlines and innerText jumbles lines within paragraphs
-     * const otherRegExp = new RegExp(String.raw`(\S+\s){3}${escapedStart}.*?${escapedEnd}(\s\S+){3}`, "gi")
-     * console.log("otherRegExp", otherRegExp);
-     * const surroundingFoundMatches = pageLayer.innerText.replaceAll(/[\s+]/g, " ").matchAll(otherRegExp).toArray();
-     * console.log("surroundingFoundMatches", surroundingFoundMatches);
-    */
-    // const foundMatches = wholePageText.matchAll(testRegExp).toArray();
-    // console.log("this is foundMatches", foundMatches, textStart, textEnd);
-    // if (foundMatches.length == 1) {
-      // should be safe to use the match that was found here
-      // console.log("found a unique match from just the page");
-      // return `text=${textStart},${textEnd}`;
-    // } else {
-      let preStartRange = document.createRange();
-      let postEndRange = document.createRange();
-      if (direction == 'backward') {
-        // preStartRange.setStart(text.focusNode, text.focusNode.textContent.length);
-        // preStartRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild);
-
-        // postEndRange.setEnd(text.anchorNode, 0);
-        // postEndRange.setStart(pageLayer.firstElementChild, 0);
-        preStartRange.setStart(pageLayer.firstElementChild, 0);
-        preStartRange.setEnd(text.focusNode, 0);
-
-        postEndRange.setStart(text.anchorNode, text.anchorNode.textContent.length);
-        postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount)
-
-      } else {
-        preStartRange.setStart(pageLayer.firstElementChild, 0);
-        preStartRange.setEnd(text.anchorNode, 0);
-
-        postEndRange.setStart(text.focusNode, text.focusNode.textContent.length);
-        postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
-      }
-      console.log("preStartRange", preStartRange.toString());
-      console.log("postEndRange", postEndRange.toString());
-      
-      let startRegex = new RegExp(String.raw`(\s+\S+){3}\s*?$`)
-      let endRegex = new RegExp(String.raw`^\S*?(\s+\S+){3}`);
-      // prefixes/suffixes cannot contain paragraph breaks
-      let prefixes = preStartRange.toString().match(startRegex)[0]
+      prefixes = `${preStartRange.toString().match(startRegex)[0]
         .replace(/[ ]+/g, " ")
         .trim()
-        .replace(/^[^\n]*\n/gm, "");
-      console.log(postEndRange.toString().match(endRegex));
-      let suffixes = postEndRange.toString().match(endRegex)[0]
+        .replace(/^[^\n]*\n/gm, "")}-`;
+    }
+    textFragmentArr.push(prefixes);
+  }
+  if (postEndRange.toString().length !== 0) {
+    if (!postEndRange.toString().match(endRegex)) {
+      suffixes = `-${postEndRange.toString()
         .replace(/[ ]+/g, " ")
         .trim()
-        .replace(/\n[^\n]*$/gm, "");
-      // console.log("prefixes", prefixes);
-      // console.log("suffixes", suffixes);
-
-      // console.log(textStart, textEnd);
-      if (textStart === textEnd) {
-        console.log("these are the same things");
-        textEnd = "";
-      }
-
-      const selection = window.getSelection();
-      let constructHighlight = selection.toString().replace(/[\s]+/g, " ").split(/[ ]+/g);
-      console.log({constructHighlight});
-      if (direction == 'backward') {
-        constructHighlight[0] = selection.focusNode.textContent;
-        constructHighlight[constructHighlight.length - 1] = selection.anchorNode.textContent;
-      } else {
-        constructHighlight[0] = selection.anchorNode.textContent;
-        constructHighlight[constructHighlight.length - 1] = selection.focusNode.textContent;
-      }
-      const fullHighlight = constructHighlight.join(" ").trim().split(" ");
-      console.log({fullHighlight});
-      let quote = [fullHighlight.join(" ")];
-      if (fullHighlight.length > 6) {
-        console.log("this is fullHighlight.length", fullHighlight.length, direction);
-        if (direction == 'backward') {
-          console.log("why is this not showing in the console")
-          console.log("this is backwards", fullHighlight.slice(-3).join(' '));
-          console.log("other backwards half", fullHighlight.slice(0, 3).join(" "));
-          quote = [fullHighlight.slice(0, 3).join(" "), fullHighlight.slice(-3).join(" ")];
-        } else {
-          console.log(fullHighlight.slice(0, 3).join(" "))
-          console.log("negative slice", fullHighlight.slice(-3), fullHighlight.slice(-1), fullHighlight.slice(-2));
-          quote = [fullHighlight.slice(0, 3).join(" "), fullHighlight.slice(-3).join(" ")];
-        }
-      }
-      console.log({prefixes, quote, suffixes});
-      
-      // highlight can also not contain newline characters
-      console.log(fullHighlight.join(' '));
-      return `text=${[
-        `${prefixes}-`,
-        ...quote,
-        `-${suffixes}`,
-      ].map(encodeURIComponent).join(',')}`;
-    // }
-    return findContext(textStart, textEnd);
+        .replace(/^[^\n]*\n/gm, "")}`;
+    } else {
+      suffixes = `-${postEndRange.toString().match(endRegex)[0]
+        .replace(/[ ]+/g, " ")
+        .trim()
+        .replace(/\n[^\n]*$/gm, "")}`;
     }
+  }
 
-    return findContext(textStart, textEnd);
-  // }
-  console.log("Last case scenario: Attempt to use whole line", `${highlightedText.join(" ")}`);
-  return `text=${encodeURIComponent(highlightedText.join(" "))}`
+  if (textStart === textEnd) {
+    textEnd = "";
+  }
+
+  const selection = window.getSelection();
+  const constructHighlight = selection.toString().replace(/[\s]+/g, " ").split(/[ ]+/g);
+  if (direction == 'backward') {
+    constructHighlight[0] = selection.focusNode.textContent;
+    constructHighlight[constructHighlight.length - 1] = selection.anchorNode.textContent;
+  } else {
+    constructHighlight[0] = selection.anchorNode.textContent;
+    constructHighlight[constructHighlight.length - 1] = selection.focusNode.textContent;
+  }
+  const fullHighlight = constructHighlight.join(" ").trim().split(" ");
+  let quote = [fullHighlight.join(" ")];
+  if (fullHighlight.length > 6) {
+    if (direction == 'backward') {
+      quote = [fullHighlight.slice(0, 3).join(" "), fullHighlight.slice(-3).join(" ")];
+    } else {
+      quote = [fullHighlight.slice(0, 3).join(" "), fullHighlight.slice(-3).join(" ")];
+    }
+  }
+  textFragmentArr.push(...quote);
+  if (suffixes.length != 0) {
+    textFragmentArr.push(suffixes);
+  }
+  return `text=${textFragmentArr.map(encodeURIComponent).join(',')}`;
 }
 /**
  * @template T
@@ -596,6 +493,6 @@ export class TextFragment {
 
 /**
  * Prefix “That is easily-,
- * textstart %20 got.” “ And%20 
+ * textstart %20 got.” “ And%20
  * Suffix - help.”“That is
 */
