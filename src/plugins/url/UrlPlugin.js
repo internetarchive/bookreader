@@ -164,36 +164,36 @@ export class UrlPlugin {
       return window.location.hash.slice(1);
     }
 
-    /**
+  /**
    * Get the url and check if it has changed
    * If it was changeed, update the urlState
    */
-    listenForHashChanges() {
-      this.oldLocationHash = this.getHash();
-      if (this.urlLocationPollId) {
-        clearInterval(this.urlLocationPollId);
-        this.urlLocationPollId = null;
-      }
-
-      // check if the URL changes
-      const updateHash = () => {
-        const newFragment = this.getHash();
-        const hasFragmentChange = newFragment != this.oldLocationHash;
-
-        if (!hasFragmentChange) { return; }
-
-        this.urlState = this.urlStringToUrlState(newFragment);
-      };
-      this.urlLocationPollId = setInterval(updateHash, 500);
+  listenForHashChanges() {
+    this.oldLocationHash = this.getHash();
+    if (this.urlLocationPollId) {
+      clearInterval(this.urlLocationPollId);
+      this.urlLocationPollId = null;
     }
 
-    /**
+    // check if the URL changes
+    const updateHash = () => {
+      const newFragment = this.getHash();
+      const hasFragmentChange = newFragment != this.oldLocationHash;
+
+      if (!hasFragmentChange) { return; }
+
+      this.urlState = this.urlStringToUrlState(newFragment);
+    };
+    this.urlLocationPollId = setInterval(updateHash, 500);
+  }
+
+  /**
    * Will read either the hash or URL and return the bookreader fragment
    */
-    pullFromAddressBar (location = window.location) {
-      const path = this.urlMode === 'history'
-        ? (location.pathname.substr(this.urlHistoryBasePath.length) + location.search)
-        : location.hash.substr(1);
-      this.urlState = this.urlStringToUrlState(path);
-    }
+  pullFromAddressBar (location = window.location) {
+    const path = this.urlMode === 'history'
+      ? (location.pathname.substr(this.urlHistoryBasePath.length) + location.search)
+      : location.hash.substr(1);
+    this.urlState = this.urlStringToUrlState(path);
+  }
 }
