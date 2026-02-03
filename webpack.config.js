@@ -21,7 +21,11 @@ const shared = {
       {
         test: /\.js$/,
         exclude: /node_modules[/\\](?!(lit-element|lit-html|lit|@lit)[/\\]).*/,
-        loader: "babel-loader",
+        loader: 'babel-loader',
+      },
+      {
+        test: /\.svg$/,
+        loader: 'svg-inline-loader',
       },
     ],
   },

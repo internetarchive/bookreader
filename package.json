@@ -83,6 +83,7 @@
     "sass": "1.93.2",
     "sinon": "21.0.0",
     "soundmanager2": "2.97.20170602",
+    "svg-inline-loader": "0.8.2",
     "svgo": "4.0.0",
     "testcafe": "3.7.2",
     "testcafe-browser-provider-browserstack": "^1.13.2-alpha.1",
