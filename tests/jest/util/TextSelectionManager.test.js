@@ -138,30 +138,30 @@ const FAKE_DIALOGUE = `
     </PARAGRAPH>
   </OBJECT>
 `;
+document.body.innerHTML = '<div id="BookReader">';
+const br = window.br = new BookReader({
+  data: [
+    [
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page001.jpg' },
+    ],
+    [
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page002.jpg' },
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page003.jpg' },
+    ],
+    [
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page004.jpg' },
+      { width: 800, height: 1200,
+        uri: '//archive.org/download/BookReader/img/page005.jpg' },
+    ],
+  ],
+});
+br.init();
 
 describe("Generic tests", () => {
-  document.body.innerHTML = '<div id="BookReader">';
-  const br = window.br = new BookReader({
-    data: [
-      [
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page001.jpg' },
-      ],
-      [
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page002.jpg' },
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page003.jpg' },
-      ],
-      [
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page004.jpg' },
-        { width: 800, height: 1200,
-          uri: '//archive.org/download/BookReader/img/page005.jpg' },
-      ],
-    ],
-  });
-  br.init();
 
   afterEach(() => {
     sinon.restore();
@@ -235,6 +235,7 @@ describe("Generic tests", () => {
 
 
 describe("TextFragment tests", () => {
+
   afterEach(() => {
     sinon.restore();
     $('.BRtextLayer').remove();
