@@ -25,7 +25,7 @@ const shared = {
       },
       {
         test: /\.svg/,
-        type: 'asset/inline',
+        type: 'asset/resource',
       },
     ],
   },
