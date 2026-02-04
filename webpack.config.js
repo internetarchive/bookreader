@@ -24,8 +24,8 @@ const shared = {
         loader: 'babel-loader',
       },
       {
-        test: /\.svg$/,
-        loader: 'svg-inline-loader',
+        test: /\.svg/,
+        type: 'asset/inline',
       },
     ],
   },
