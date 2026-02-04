@@ -96,6 +96,7 @@
       "node_modules/(?!(sinon|lit-html|lit-element|lit|@lit|@lit-labs|@internetarchive|@open-wc)/)"
     ],
     "moduleNameMapper": {
+      "\\.svg$": "<rootDir>/tests/jest/mocks/svg.js",
       "^@/(.*)$": "<rootDir>/$1"
     },
     "setupFiles": [
