@@ -76,6 +76,7 @@ test('gets index from fragment when both fragment and cookie when InitParams cal
 });
 
 test('sets prevReadMode when init called', () => {
+  BookReader.prototype.urlParamsFiltersOnlySearch = jest.fn();
   br.init();
   expect(br.prevReadMode).toBeTruthy();
 });
@@ -85,7 +86,7 @@ test('sets prevReadMode when init called', () => {
 //   BookReader.prototype.getPrevReadMode
 test('sets prevPageMode if initial mode is thumb', () => {
   br.urlReadFragment = jest.fn(() => 'page/n4/mode/thumb');
-
+  BookReader.prototype.urlParamsFiltersOnlySearch = jest.fn();
   br.init();
   expect(br.prevReadMode).toBe(BookReader.constMode1up);
 });

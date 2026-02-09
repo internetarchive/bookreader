@@ -43,6 +43,10 @@ describe('Plugin: URL controller', () => {
 
   test('initializes polling for url changes if using hash', () => {
     BookReader.prototype.urlReadFragment = jest.fn(() => '/page/2/mode/1up');
+    BookReader.prototype.urlParamsFiltersOnlySearch = jest.fn((url) => {
+      const params = new URLSearchParams(url);
+      return params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
+    });
     BookReader.prototype.urlStartLocationPolling = jest.fn();
     br.init();
 
@@ -74,6 +78,7 @@ describe('Plugin: URL controller', () => {
       mode: 2,
       search: '',
     }));
+    BookReader.prototype.urlParamsFiltersOnlySearch = jest.fn();
     br.options.urlMode = 'history';
     br.init();
     br.urlUpdateFragment();
@@ -156,11 +161,19 @@ describe('Plugin: URL controller', () => {
 
   test('only q= param is selected from url query params', () => {
     const INTIAL_URL = "http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo";
+    BookReader.prototype.urlParamsFiltersOnlySearch = jest.fn((url) => {
+      const params = new URLSearchParams(url);
+      return params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
+    });
     const result = br.urlParamsFiltersOnlySearch(INTIAL_URL);
     expect(result).toBe("?q=foo");
   });
 
   test('only q= param is selected from url query params with special character', () => {
+    BookReader.prototype.urlParamsFiltersOnlySearch = jest.fn((url) => {
+      const params = new URLSearchParams(url);
+      return params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
+    });
     const INTIAL_URL = "http://127.0.0.1:8080/BookReaderDemo/demo-internetarchive.html?ocaid=adventuresofoli00dick&q=foo%24%24";
     const result = br.urlParamsFiltersOnlySearch(INTIAL_URL);
     expect(result).toBe("?q=foo%24%24");

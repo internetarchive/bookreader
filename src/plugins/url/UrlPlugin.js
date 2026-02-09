@@ -155,45 +155,52 @@ export class UrlPlugin {
     }
     this.oldLocationHash = urlStrPath;
   }
-
+  /**
+   * Get the hash out of the current URL. Also augments it with the text
+   * from the main part of the URL, since that is not readable by JS
+   * from the actual hash
+   * @returns
+   */
     getHash = () => {
-      const text = window.location.search.match(/(?<=[&?]text=)[^&]*/);
-      if (text) {
-        return `${window.location.hash.slice(1)}:~:text=${text[0]}`;
-      }
-      return window.location.hash.slice(1);
+      const text = this.retrieveTextFragment(window.location.search);
+      const textFragment = text ? `:~:text=${text[0]}` : '';
+      return `${window.location.hash.slice(1)}${textFragment}`;
     }
 
-  /**
+    /**
    * Get the url and check if it has changed
    * If it was changeed, update the urlState
    */
-  listenForHashChanges() {
-    this.oldLocationHash = this.getHash();
-    if (this.urlLocationPollId) {
-      clearInterval(this.urlLocationPollId);
-      this.urlLocationPollId = null;
+    listenForHashChanges() {
+      this.oldLocationHash = this.getHash();
+      if (this.urlLocationPollId) {
+        clearInterval(this.urlLocationPollId);
+        this.urlLocationPollId = null;
+      }
+
+      // check if the URL changes
+      const updateHash = () => {
+        const newFragment = this.getHash();
+        const hasFragmentChange = newFragment != this.oldLocationHash;
+
+        if (!hasFragmentChange) { return; }
+
+        this.urlState = this.urlStringToUrlState(newFragment);
+      };
+      this.urlLocationPollId = setInterval(updateHash, 500);
     }
 
-    // check if the URL changes
-    const updateHash = () => {
-      const newFragment = this.getHash();
-      const hasFragmentChange = newFragment != this.oldLocationHash;
-
-      if (!hasFragmentChange) { return; }
-
-      this.urlState = this.urlStringToUrlState(newFragment);
-    };
-    this.urlLocationPollId = setInterval(updateHash, 500);
-  }
-
-  /**
+    /**
    * Will read either the hash or URL and return the bookreader fragment
    */
-  pullFromAddressBar (location = window.location) {
-    const path = this.urlMode === 'history'
-      ? (location.pathname.substr(this.urlHistoryBasePath.length) + location.search)
-      : location.hash.substr(1);
-    this.urlState = this.urlStringToUrlState(path);
-  }
+    pullFromAddressBar (location = window.location) {
+      const path = this.urlMode === 'history'
+        ? (location.pathname.substr(this.urlHistoryBasePath.length) + location.search)
+        : location.hash.substr(1);
+      this.urlState = this.urlStringToUrlState(path);
+    }
+
+    retrieveTextFragment (urlString) {
+      return urlString.match(/(?<=&text=)[^&]*/);
+    }
 }
