@@ -29,7 +29,6 @@ jQuery.extend(BookReader.defaultOptions, {
 
   /** If true, don't update the URL when `page == n0 (eg "/page/n0")` */
   urlTrackIndex0: false,
-  shareHighlight: null,
 });
 
 /** @override */
@@ -184,7 +183,7 @@ BookReader.prototype.urlUpdateFragment = function() {
 
 // testing with this URL http://127.0.0.1:8000/BookReaderDemo/demo-internetarchive.html?ocaid=adventureofsherl0000unse&text=Well%2C I found my plans very seriously menaced.&q=breaking the law#page/18/mode/2up
 BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
-  const text = url.match(/(?<=&text=)[^&]*/);
+  const text = this.urlPlugin.retrieveTextFragment(url);
   const params = new URLSearchParams(url);
   let output = '';
   output += params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
@@ -219,9 +218,6 @@ export class BookreaderUrlPlugin extends BookReader {
       this.urlPlugin = new UrlPlugin(this.options);
       const location = this.getLocationSearch();
       if (location.includes("text=")) {
-        const extractText = location.match(/(text=[\w\d\W]*)/);
-        const textFragment = `${extractText}`;
-        this.options.shareHighlight = textFragment;
         this.on('textLayerRendered', (_, {pageIndex, container}) => {
           window.location.replace(`#${this.oldLocationHash}`);
         });

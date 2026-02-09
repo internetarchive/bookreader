@@ -1,8 +1,11 @@
 // @ts-check
 import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
+import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
 export class TextSelectionManager {
-  hlightBarEl;
+  /** @type {brHighlightBar} */
+  highlightBar;
   options = {
     // Current Translation plugin implementation does not have words, will limit to one BRlineElement for now
     maxProtectedWords: 200,
@@ -24,6 +27,8 @@ export class TextSelectionManager {
     this.selectionElement = selectionElement;
     this.selectionObserver = new SelectionObserver(this.layer, this._onSelectionChange);
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
+    this.highlightBar = new brHighlightBar(br);
+    this.highlightBar.className = "textFragmentBar";
   }
 
   init() {
@@ -36,6 +41,16 @@ export class TextSelectionManager {
         // Set a class on the page to avoid hiding it when zooming/etc
         this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
         $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
+        this.highlightBar.addHighlightButtonStyling();
+      }
+
+      if (selectEvent == 'focusChanged') {
+        // hide the button as user changes their selection
+        if (this.mouseIsDown) {
+          this.highlightBar.hideHighlightStyle();
+        } else {
+          this.highlightBar.addHighlightButtonStyling();
+        }
       }
     }).attach();
   }
@@ -43,6 +58,9 @@ export class TextSelectionManager {
   // Need attach + detach methods to toggle w/ Translation plugin
   attach() {
     this.selectionObserver.attach();
+    if (!this.br.plugins.translate) {
+      document.body.append(this.highlightBar);
+    }
     if (this.br.protected) {
       document.addEventListener('selectionchange', this._limitSelection);
       // Prevent right clicking when selected text
@@ -69,11 +87,11 @@ export class TextSelectionManager {
   }
 
   /**
-   * @param {'started' | 'cleared'} type
+   * @param {'started' | 'cleared' | 'focusChanged'} type
    * @param {HTMLElement} target
    */
   _onSelectionChange = (type, target) => {
-    if (type === 'started') {
+    if (type === 'started' || type === 'focusChanged') {
       this.textSelectingMode(target);
     } else if (type === 'cleared') {
       this.defaultMode(target);
@@ -135,6 +153,7 @@ export class TextSelectionManager {
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
       this.mouseIsDown = false;
+      this.highlightBar.hideHighlightStyle();
       textLayer.style.pointerEvents = "none";
       if (skipNextMouseup) {
         skipNextMouseup = false;
@@ -159,83 +178,16 @@ export class TextSelectionManager {
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       if (event.which != 1) return;
       this.mouseIsDown = true;
-      if (this.hlightBarEl) {
-        this.hlightBarEl.remove();
-        window.getSelection().empty(); // selection is checked at mouseup, cleared here to prevent button from lingering
-      }
       event.stopPropagation();
     });
 
     // Prevent page flip on click
     $(textLayer).on('mouseup.textSelectPluginHandler', (event) => {
       this.mouseIsDown = false;
-      event.stopPropagation();
       if (event.which != 1) return;
-      this.hlightBarEl?.remove();
-      if (window.getSelection().toString()) {
-        this.highlightToolbar(event);
-      } else {
-        this.hlightBarEl?.remove();
-      }
-    });
-
-    $(document.body).on('mouseup', (_) => {
-      this.hlightBarEl?.remove();
-    });
-  }
-
-  highlightToolbar(_) {
-    const hlButton = document.createElement('button');
-
-    if (this.hlightBarEl) {
-      this.hlightBarEl.remove();
-    }
-    this.hlightBarEl = hlButton;
-    const currentSelection = window.getSelection();
-    const start = currentSelection.anchorNode.parentElement;
-    const end = currentSelection.focusNode.parentElement; // will always be a text node
-    const height = 30;
-    const width = 60;
-    const selectionTextLayer = start.closest('.BRtextLayer');
-    const startBoundingRect = start.getBoundingClientRect();
-    const endBoundingRect = end.getBoundingClientRect();
-    let hlButtonTop = startBoundingRect.top - height;
-    let hlButtonLeft = startBoundingRect.left - width;
-    if (currentSelection.direction == 'backward') {
-      hlButtonTop = endBoundingRect.top - height;
-      hlButtonLeft = endBoundingRect.left - width;
-    }
-    hlButton.className = "textFragmentCopy";
-
-    $(hlButton).css({
-      'top': `${hlButtonTop}px`,
-      'left': `${hlButtonLeft}px`,
-      'width': `${width}px`,
-      'height': `${height}px`,
-      'position': 'absolute',
-      'z-index': 1,
-      'background': `url(..${this.br.imagesBaseURL}translate.svg)`,
-      'background-position': 'center',
-      'background-repeat': 'no-repeat',
-      'background-color': 'darksalmon',
-    });
-    $(hlButton).on('mousedown', (event) => {
       event.stopPropagation();
-      const currentUrl = window.location;
-      const textContentParams = document.getSelection();
-      let currentParams = this.br.readQueryString();
-      if (currentParams.includes('text')) {
-        currentParams = currentParams.replace(/(text=)[\w\W\d%]+/, createParam(textContentParams, selectionTextLayer));
-      } else {
-        currentParams = `${currentParams}&${createParam(document.getSelection(), selectionTextLayer)}`;
-      }
-      navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}${currentUrl?.hash}`);
+      this.highlightBar.addHighlightButtonStyling();
     });
-
-    $(hlButton).on('mouseup', (event) => {
-      event.stopPropagation();
-    });
-    document.body.append(hlButton);
   }
 
   _limitSelection = () => {
@@ -280,26 +232,27 @@ export class TextSelectionManager {
  * Can import something that handles this more gracefully? see - https://web.dev/articles/text-fragments#:~:text=In%20its%20simplest%20form%2C%20the%20syntax%20of,percent%2Dencoded%20text%20I%20want%20to%20link%20to.
  */
 /**
- *
- * @param {*} text - document.getSelection()
- * @param {*} pageLayer - anchorNode.parentElement.closest('.BRtextLayer')
+ * Builds a string in the format of a TextFragment.
+ * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
+ * @param {Selection} selection - document.getSelection()
+ * @param {HTMLElement} pageLayer - anchorNode.parentElement.closest('.BRtextLayer')
  * @returns
  */
-export function createParam(text, pageLayer = null) {
-  const highlightedText = text.toString().replaceAll(/[\s]+/g, " ").trim().split(" ");
-  const anchorWord = text.anchorNode.textContent;
-  const focusWord = text.focusNode.textContent;
+export function createParam(selection, pageLayer) {
+  const highlightedText = selection.toString().replace(/[\s]+/g, " ").trim().split(" ");
+  const anchorWord = selection.anchorNode.textContent;
+  const focusWord = selection.focusNode.textContent;
   let textStart, textEnd; // :~:text=[prefix-,]textStart[,textEnd][,-suffix]
-  const direction = text.direction;
+  const direction = selection.direction;
 
   // Duplicated spaces in pageLayer.textContent for some reason
   const wholePageText = pageLayer.textContent.replaceAll("  ", " ");
   if (direction == 'backward') {
-    textStart = focusWord.replaceAll(/[\s]+/g, "") ? focusWord : highlightedText[0];
-    textEnd = anchorWord.replaceAll(/[\s]+/g, "") ? anchorWord : highlightedText[highlightedText.length - 1];
+    textStart = focusWord.replace(/[\s]+/g, "") ? focusWord : highlightedText[0];
+    textEnd = anchorWord.replace(/[\s]+/g, "") ? anchorWord : highlightedText[highlightedText.length - 1];
   } else {
-    textStart = anchorWord.replaceAll(/[\s]+/g, "") ? anchorWord : highlightedText[0];
-    textEnd = focusWord.replaceAll(/[\s]+/g, "") ? focusWord : highlightedText[highlightedText.length - 1];
+    textStart = anchorWord.replace(/[\s]+/g, "") ? anchorWord : highlightedText[0];
+    textEnd = focusWord.replace(/[\s]+/g, "") ? focusWord : highlightedText[highlightedText.length - 1];
   }
 
   const escapedStart = RegExp.escape(textStart);
@@ -314,16 +267,16 @@ export function createParam(text, pageLayer = null) {
   const postEndRange = document.createRange();
   if (direction == 'backward') {
     preStartRange.setStart(pageLayer.firstElementChild, 0);
-    preStartRange.setEnd(text.focusNode, 0);
+    preStartRange.setEnd(selection.focusNode, 0);
 
-    postEndRange.setStart(text.anchorNode, text.anchorNode.textContent.length);
+    postEndRange.setStart(selection.anchorNode, selection.anchorNode.textContent.length);
     postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
 
   } else {
     preStartRange.setStart(pageLayer.firstElementChild, 0);
-    preStartRange.setEnd(text.anchorNode, 0);
+    preStartRange.setEnd(selection.anchorNode, 0);
 
-    postEndRange.setStart(text.focusNode, text.focusNode.textContent.length);
+    postEndRange.setStart(selection.focusNode, selection.focusNode.textContent.length);
     postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
   }
 
@@ -364,7 +317,6 @@ export function createParam(text, pageLayer = null) {
     textEnd = "";
   }
 
-  const selection = window.getSelection();
   const constructHighlight = selection.toString().replace(/[\s]+/g, " ").split(/[ ]+/g);
   if (direction == 'backward') {
     constructHighlight[0] = selection.focusNode.textContent;
@@ -463,36 +415,84 @@ export function* walkBetweenNodes(start, end) {
   yield* walk(start);
 }
 
+@customElement('br-highlight-bar')
+class brHighlightBar extends LitElement {
+  /** @type {import('../BookReader.js').default} */
+  br;
 
-export class TextFragment {
-  /** @type {string | null} */
-  prefix
-  /** @type {string} */
-  textStart
-  /** @type {string | null} */
-  textEnd
-  /** @type {string | null} */
-  suffix
+  constructor(br) {
+    super();
+    this.br = br;
+  }
 
-  /** @returns {string} */
-  toString() {}
+  /** @override */
+  createRenderRoot() {
+    // Disable shadow DOM; that would require a huge rejiggering of CSS
+    return this;
+  }
 
-  /**
-   * @param {string} urlString
-   * @returns {TextFragment}
-   **/
-  static fromString(urlString) {}
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+    this.dispatchEvent(new CustomEvent('showingHighlightBar'));
+  }
 
-  /**
-   * @param {Selection} selection
-   * @returns {TextFragment}
-   */
-  static fromSelection(selection) {}
+  /** @override */
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.dispatchEvent(new CustomEvent('hidingHighlightBar'));
+  }
+
+  render() {
+    return html`
+      <button @click=${this.handleClick} class="textFragmentButton">
+      </button>
+    `;
+  }
+
+  handleClick(e) {
+    e.preventDefault();
+    this.dispatchEvent(new CustomEvent('textFragmentButtonClicked'));
+    const currentUrl = window.location;
+    let currentParams = this.br.readQueryString();
+    const currentSelection = window.getSelection();
+    /** @type {HTMLElement} */
+    const textLayer = currentSelection.anchorNode.parentElement.closest('.BRtextLayer');
+    if (currentParams.includes('text')) {
+      currentParams = currentParams.replace(/(text=)[\w\W\d%]+/, createParam(currentSelection, textLayer));
+    } else {
+      currentParams = `${currentParams}&${createParam(currentSelection, textLayer)}`;
+    }
+    navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}${currentUrl?.hash}`);
+  }
+
+  addHighlightButtonStyling() {
+    const currentSelection = window.getSelection();
+    const start = currentSelection.anchorNode.parentElement;
+    const end = currentSelection.focusNode.parentElement; // will always be a text node
+    const height = 30;
+    const width = 60;
+    const startBoundingRect = start.getBoundingClientRect();
+    const endBoundingRect = end.getBoundingClientRect();
+    let hlButtonTop = startBoundingRect.top - height;
+    let hlButtonLeft = startBoundingRect.left - width;
+    if (currentSelection.direction == 'backward') {
+      hlButtonTop = endBoundingRect.top - height;
+      hlButtonLeft = endBoundingRect.left - width;
+    }
+    this.style.top = `${hlButtonTop}px`;
+    this.style.left = `${hlButtonLeft}px`;
+    this.style.zIndex = '1';
+    this.style.position = 'absolute';
+    this.style.display = 'inline';
+  }
+
+  attachSelectionListeners = () => {
+    return;
+  }
+
+  hideHighlightStyle = () => {
+    this.style.display = 'none';
+    return;
+  }
 }
-
-
-/**
- * Prefix “That is easily-,
- * textstart %20 got.” “ And%20
- * Suffix - help.”“That is
-*/

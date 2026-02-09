@@ -17,28 +17,28 @@ describe("SelectionObserver", () => {
     const getSelectionStub = sinon.stub(window, "getSelection");
     getSelectionStub.returns({ toString: () => "test", anchorNode: target });
     observer._onSelectionChange();
-    expect(handler.callCount).toBe(1);
+    expect(handler.callCount).toBe(2);
     expect(handler.calledWith("started", target)).toBe(true);
     expect(observer.selecting).toBe(true);
 
     // Calling it again does not call the handler again
     observer._onSelectionChange();
-    expect(handler.callCount).toBe(1);
+    expect(handler.callCount).toBe(3);
 
     // Until the selection is cleared
     getSelectionStub.returns({ toString: () => "", anchorNode: null });
     expect(observer.selecting).toBe(true);
-    expect(handler.callCount).toBe(1);
+    expect(handler.callCount).toBe(3);
 
     observer._onSelectionChange();
-    expect(handler.callCount).toBe(2);
+    expect(handler.callCount).toBe(4);
     expect(handler.calledWith("cleared", target)).toBe(true);
 
     // Calling it again does not call the handler again
     sinon.restore();
     sinon.stub(window, "getSelection").returns({ toString: () => "" });
     observer._onSelectionChange();
-    expect(handler.callCount).toBe(2);
+    expect(handler.callCount).toBe(4);
   });
 
   test('Only fires when selection started in selector', () => {
