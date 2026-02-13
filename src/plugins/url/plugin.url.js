@@ -144,7 +144,8 @@ BookReader.prototype.urlUpdateFragment = function() {
   const currFragment = this.urlReadFragment();
   const currQueryString = this.getLocationSearch();
   const newQueryString = this.queryStringFromParams(params, currQueryString, this.options.urlMode);
-  if (currFragment === newFragment && currQueryString === newQueryString) {
+  const hasTextParam = currQueryString.includes("text");
+  if (currFragment === newFragment && currQueryString === newQueryString && !hasTextParam) {
     return;
   }
 
@@ -154,11 +155,21 @@ BookReader.prototype.urlUpdateFragment = function() {
     } else {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
       const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
-
+      let textFragment = ""
+      if (this.urlPlugin.retrieveTextFragment(newQueryString)) {
+        textFragment = this.urlParamsFiltersOnlySearch(this.readQueryString());
+        // newQueryString = newQueryString.replace(this.urlPlugin.retrieveTextFragment(newQueryString)[0], "").replace(/(\?text=)/, "")
+      }
+      console.log("this is newQueryString", newQueryString);
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
+      console.log("this is newURLPath", newUrlPath);
       try {
         window.history.replaceState({}, null, newUrlPath);
         this.oldLocationHash = newFragment + newQueryString;
+        if (textFragment) {
+          window.location.replace('#' + textFragment);
+          this.oldLocationHash = textFragment;
+        }
       } catch (e) {
         // DOMException on Chrome when in sandboxed iframe
         this.options.urlMode = 'hash';
@@ -199,6 +210,7 @@ BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
 BookReader.prototype.urlReadFragment = function() {
   const { urlMode, urlHistoryBasePath } = this.options;
   if (urlMode === 'history') {
+    console.log("within plugin.url", window.location);
     return window.location.pathname.substr(urlHistoryBasePath.length);
   } else {
     return this.urlPlugin.getHash();
@@ -219,6 +231,7 @@ export class BookreaderUrlPlugin extends BookReader {
       const location = this.getLocationSearch();
       if (location.includes("text=")) {
         this.on('textLayerRendered', (_, {pageIndex, container}) => {
+          console.log("line 235 plugin.url.js window.location.replace", `#${this.oldLocationHash}`);
           window.location.replace(`#${this.oldLocationHash}`);
         });
       }

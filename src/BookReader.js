@@ -1958,7 +1958,7 @@ BookReader.prototype.queryStringFromParams = function(
   urlMode = 'hash',
 ) {
   const newParams = new URLSearchParams(currQueryString);
-
+  let textFragmentParam = '';
   if (params.view) {
     // Set ?view=theater when fullscreen
     newParams.set('view', params.view);
@@ -1970,9 +1970,13 @@ BookReader.prototype.queryStringFromParams = function(
   if (params.search && urlMode === 'history') {
     newParams.set('q', params.search);
   }
+  if (newParams.get('text')) {
+    newParams.delete('text');
+    textFragmentParam = `text=${currQueryString.match(/(?<=&?text=)[^&]*/)}`;
+  }
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
   // Note: This method returns the query string without the question mark.
-  const result = newParams.toString();
+  const result = textFragmentParam ? newParams.toString() + textFragmentParam : newParams.toString();
   return result ? '?' + result : '';
 };
 

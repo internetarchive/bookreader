@@ -201,6 +201,6 @@ export class UrlPlugin {
     }
 
     retrieveTextFragment (urlString) {
-      return urlString.match(/(?<=&text=)[^&]*/);
+      return urlString.match(/(?<=&?text=)[^&]*/);
     }
 }

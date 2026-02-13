@@ -461,9 +461,18 @@ class brHighlightBar extends LitElement {
     if (currentParams.includes('text')) {
       currentParams = currentParams.replace(/(text=)[\w\W\d%]+/, createParam(currentSelection, textLayer));
     } else {
-      currentParams = `${currentParams}&${createParam(currentSelection, textLayer)}`;
+      if (this.br.options.urlMode === 'history') {
+        currentParams = `?${createParam(currentSelection, textLayer)}`
+      } else {
+        currentParams = `${currentParams}&${createParam(currentSelection, textLayer)}`;
+      }
     }
-    navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}${currentUrl?.hash}`);
+    console.log("this is after copying", currentParams, currentUrl.pathname);
+    if (this.br.options.urlMode === 'history') {
+      navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}`)
+    } else {
+      navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}${currentUrl?.hash}`);
+    }
   }
 
   addHighlightButtonStyling() {
