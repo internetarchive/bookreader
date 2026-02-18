@@ -108,10 +108,12 @@ export class TextSelectionManager {
    * @param {HTMLElement} target
    */
   _onSelectionChange = (type, target) => {
-    if (type === 'started' || type === 'focusChanged') {
+    if (type === 'started') {
       this.textSelectingMode(target);
     } else if (type === 'cleared') {
       this.defaultMode(target);
+    } else if (type === 'focusChanged') {
+      // do nothing, just wait for the mouseup to trigger the styling change
     } else {
       throw new Error(`Unknown type ${type}`);
     }
