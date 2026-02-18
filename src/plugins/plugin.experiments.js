@@ -51,11 +51,27 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorageKey: 'BrExperiments',
 
     /** The experiments that should be shown in the experiments panel */
-    enabledExperiments: ['translate'],
+    enabledExperiments: ['translate', 'highlightUrl'],
   }
 
   /** @type {ExperimentModel[]} */
   allExperiments = [
+    new class extends ExperimentModel {
+      name = 'highlightUrl';
+      title = 'URL Link to Highlight';
+      description = 'Share highlighted content via URL';
+      learnMore = 'none';
+      icon = 'images/translate.svg';
+      enabled = false;
+      async enable ({ manual = false }) {
+        this.br.plugins.textSelection.enableExperiment();
+      }
+      async disable() {
+        sleep(0).then(() => {
+          window.location.reload();
+        });
+      }
+    }(),
     new class extends ExperimentModel {
       name = 'translate';
       title = 'Translate Plugin';
