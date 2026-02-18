@@ -39,7 +39,7 @@ export class SelectionObserver {
       this.handler('started', this.target);
     }
 
-    if (this.selecting && (this.lastKnownFocusNode != sel.focusNode || sel.toString())) {
+    if (this.selecting && (this.lastKnownFocusNode != sel.focusNode || sel.toString() && !sel.isCollapsed)) {
       this.lastKnownFocusNode = sel.focusNode;
       this.handler('focusChanged', this.target);
     }

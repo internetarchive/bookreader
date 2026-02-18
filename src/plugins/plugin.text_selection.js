@@ -57,6 +57,12 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     this.textSelectionManager.init();
   }
 
+  enableExperiment() {
+    if (!this.textSelectionManager) return;
+    this.textSelectionManager.highlightEnabled = true;
+    this.textSelectionManager.addHighlightBar();
+  }
+
   /**
    * @override
    * @param {PageContainer} pageContainer

@@ -6,6 +6,7 @@ import { customElement } from 'lit/decorators.js';
 export class TextSelectionManager {
   /** @type {brHighlightBar} */
   highlightBar;
+  highlightEnabled;
   options = {
     // Current Translation plugin implementation does not have words, will limit to one BRlineElement for now
     maxProtectedWords: 200,
@@ -28,6 +29,7 @@ export class TextSelectionManager {
     this.selectionObserver = new SelectionObserver(this.layer, this._onSelectionChange);
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
     this.highlightBar = new brHighlightBar(br);
+
     this.highlightBar.className = "textFragmentBar";
   }
 
@@ -42,15 +44,24 @@ export class TextSelectionManager {
         this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
         $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
         this.highlightBar.addHighlightButtonStyling();
+
       }
 
       if (selectEvent == 'focusChanged') {
         // hide the button as user changes their selection
         if (this.mouseIsDown) {
           this.highlightBar.hideHighlightStyle();
+
         } else {
-          this.highlightBar.addHighlightButtonStyling();
+          if (window.getSelection().toString().length != 0) {
+            this.highlightBar.addHighlightButtonStyling();
+
+          }
         }
+      }
+
+      if (selectEvent == 'cleared') {
+        this.highlightBar.hideHighlightStyle();
       }
     }).attach();
   }
@@ -58,7 +69,7 @@ export class TextSelectionManager {
   // Need attach + detach methods to toggle w/ Translation plugin
   attach() {
     this.selectionObserver.attach();
-    if (!this.br.plugins.translate) {
+    if (!this.br.plugins.translate && this.highlightEnabled) {
       document.body.append(this.highlightBar);
     }
     if (this.br.protected) {
@@ -86,6 +97,12 @@ export class TextSelectionManager {
     }
   }
 
+  addHighlightBar() {
+    if (document.querySelector('.textFragmentBar')) return;
+    if (this.highlightEnabled && !this.br.plugins.translate) {
+      document.body.append(this.highlightBar);
+    }
+  }
   /**
    * @param {'started' | 'cleared' | 'focusChanged'} type
    * @param {HTMLElement} target
@@ -146,6 +163,7 @@ export class TextSelectionManager {
     // blocking selection
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       this.mouseIsDown = true;
+      this.highlightBar.hideHighlightStyle();
       if ($(event.target).is(this.selectionElement.join(", "))) {
         event.stopPropagation();
       }
@@ -179,6 +197,7 @@ export class TextSelectionManager {
       if (event.which != 1) return;
       this.mouseIsDown = true;
       event.stopPropagation();
+      this.highlightBar.hideHighlightStyle();
     });
 
     // Prevent page flip on click
@@ -462,14 +481,13 @@ class brHighlightBar extends LitElement {
       currentParams = currentParams.replace(/(text=)[\w\W\d%]+/, createParam(currentSelection, textLayer));
     } else {
       if (this.br.options.urlMode === 'history') {
-        currentParams = `?${createParam(currentSelection, textLayer)}`
+        currentParams = `?${createParam(currentSelection, textLayer)}`;
       } else {
         currentParams = `${currentParams}&${createParam(currentSelection, textLayer)}`;
       }
     }
-    console.log("this is after copying", currentParams, currentUrl.pathname);
     if (this.br.options.urlMode === 'history') {
-      navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}`)
+      navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}`);
     } else {
       navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}${currentUrl?.hash}`);
     }
