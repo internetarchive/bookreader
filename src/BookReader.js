@@ -1958,7 +1958,7 @@ BookReader.prototype.queryStringFromParams = function(
   urlMode = 'hash',
 ) {
   const newParams = new URLSearchParams(currQueryString);
-  let textFragmentParam = '';
+
   if (params.view) {
     // Set ?view=theater when fullscreen
     newParams.set('view', params.view);
@@ -1970,14 +1970,25 @@ BookReader.prototype.queryStringFromParams = function(
   if (params.search && urlMode === 'history') {
     newParams.set('q', params.search);
   }
+
+  let textFragmentParam = '';
+  // Need to pull out text separately to avoid the spaces becoming encoded as +, which
+  // the browser seems not to handle with the text fragment
   if (newParams.get('text')) {
     newParams.delete('text');
-    textFragmentParam = `text=${currQueryString.match(/(?<=&?text=)[^&]*/)}`;
+    textFragmentParam = `text=${this.urlPlugin.retrieveTextFragment(currQueryString)}`;
   }
+
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
   // Note: This method returns the query string without the question mark.
-  const result = textFragmentParam ? newParams.toString() + textFragmentParam : newParams.toString();
-  return result ? '?' + result : '';
+  let result = newParams.toString();
+  if (textFragmentParam) {
+    if (result) result += '&';
+    result += textFragmentParam;
+  }
+  if (result) result = '?' + result;
+
+  return result;
 };
 
 /**

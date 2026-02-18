@@ -4,6 +4,7 @@ export class SelectionObserver {
   startedInSelector = false;
   /** @type {HTMLElement} */
   target = null;
+  /** @type {Node} */
   lastKnownFocusNode = null;
 
   /**
