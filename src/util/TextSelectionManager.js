@@ -25,19 +25,10 @@ export class TextSelectionManager {
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
   }
 
-  init() {
-    this.attach();
-    new SelectionObserver(this.layer, (selectEvent) => {
-      // Track how often selection is used
-      if (selectEvent == 'started') {
-        this.br.plugins.archiveAnalytics?.sendEvent('BookReader', 'SelectStart');
+ init() {
+  this.attach();
+}
 
-        // Set a class on the page to avoid hiding it when zooming/etc
-        this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
-        $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
-      }
-    }).attach();
-  }
 
   // Need attach + detach methods to toggle w/ Translation plugin
   attach() {
@@ -71,15 +62,35 @@ export class TextSelectionManager {
    * @param {'started' | 'cleared'} type
    * @param {HTMLElement} target
    */
-  _onSelectionChange = (type, target) => {
-    if (type === 'started') {
-      this.textSelectingMode(target);
-    } else if (type === 'cleared') {
-      this.defaultMode(target);
-    } else {
-      throw new Error(`Unknown type ${type}`);
-    }
+ _onSelectionChange = (type, target) => {
+  if (type === 'started') {
+
+    // analytics (moved from second observer)
+    this.br.plugins.archiveAnalytics?.sendEvent(
+      'BookReader',
+      'SelectStart'
+    );
+
+    // page container class handling (moved from second observer)
+    this.br.refs.$br
+      .find('.BRpagecontainer--hasSelection')
+      .removeClass('BRpagecontainer--hasSelection');
+
+    $(window.getSelection().anchorNode)
+      .closest('.BRpagecontainer')
+      .addClass('BRpagecontainer--hasSelection');
+
+    // existing behavior
+    this.textSelectingMode(target);
+
+  } else if (type === 'cleared') {
+
+    this.defaultMode(target);
+
+  } else {
+    throw new Error(`Unknown type ${type}`);
   }
+};
 
   /**
    * Intercept copied text to remove any styling applied to it
@@ -188,9 +199,12 @@ export class TextSelectionManager {
     const lastAllowedWord = genAt(
       genFilter(
         walkBetweenNodes(range.startContainer, range.endContainer),
-        (node) => node.classList?.contains(
-          this.selectionElement[0].replace(".", ""),
-        ),
+       (node) =>
+  node instanceof Element &&
+  node.classList.contains(
+    this.selectionElement[0].replace(".", "")
+  ),
+
       ),
       this.options.maxProtectedWords - 1,
     );
