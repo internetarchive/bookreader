@@ -257,11 +257,13 @@ export function createParam(selection, pageLayer) {
 
   const escapedStart = RegExp.escape(textStart);
   const escapedEnd = RegExp.escape(textEnd);
-  const testRegExp = new RegExp(String.raw`(?=(${escapedStart}).*?(?:(${escapedEnd})))`, "gi");
+
+  // added 's' regex modifier to ensure that the matchAll actually captures instances where the escaped start / end words have whitespace
+  const testRegExp = new RegExp(String.raw`(?=(${escapedStart}).*?(?:(${escapedEnd})))`, "gis");
 
   const foundMatches = wholePageText.matchAll(testRegExp).toArray();
   if (foundMatches.length == 1) {
-    return `text=${textStart},${textEnd}`;
+    return `text=${encodeURIComponent(textStart)},${encodeURIComponent(textEnd)}`;
   }
   const preStartRange = document.createRange();
   const postEndRange = document.createRange();
