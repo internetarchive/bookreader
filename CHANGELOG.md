@@ -1,3 +1,8 @@
+# 5.0.0-107
+- Feature: Improve accessibility of bookmarks panel @cdrini
+- Refactor: Combine book-navigator and ia-bookreader web components @cdrini
+  - This features a number of changes to the DOM structure of the ia-bookreader web component, and could result in breaking changes. The book-navigator web component now also no longer exists.
+
 # 5.0.0-106
 - Fix: Slider in 2up left/right only jumping one page @cdrini
 
