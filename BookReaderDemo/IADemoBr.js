@@ -13,10 +13,23 @@ function getFromUrl(name, def) {
   }
 }
 
-const ocaid = urlParams.get('ocaid');
+const isDetailsPage = window.location.pathname.startsWith('/details/');
+const ocaid = isDetailsPage ? window.location.pathname.split('/')[2] : urlParams.get('ocaid');
 const openFullImmersionTheater = urlParams.get('view') === 'theater';
 const ui = urlParams.get('ui');
 const searchTerm = urlParams.get('q');
+
+if (isDetailsPage) {
+  /** @type {NodeListOf<HTMLAnchorElement>} */
+  const links = document.querySelectorAll(`a[href^="/BookReaderDemo/demo-internetarchive.html"]`);
+  links.forEach(anchor => {
+    const url = new URL(anchor.href);
+    const anchorOcaid = url.searchParams.get('ocaid');
+    url.searchParams.delete('ocaid');
+    const paramsString = url.searchParams.toString();
+    anchor.href = `/details/${anchorOcaid}` + (paramsString ? '?' + paramsString : '');
+  });
+}
 
 const iaBookReader = document.querySelector('ia-bookreader');
 
@@ -48,14 +61,13 @@ const initializeBookReader = (brManifest) => {
   const options = {
     el: '#BookReader',
     /* Url plugin - IA uses History mode for URL */
-    // commenting these out as demo uses hash mode
-    // keeping them here for reference
-    // urlHistoryBasePath: `/details/{$ocaid}/`,
-    // resumeCookiePath: `/details/{$ocaid}/`,
-    // urlMode: 'history',
-    // Only reflect these params onto the URL
-    // urlTrackedParams: ['page', 'search', 'mode'],
-    /* End url plugin */
+    ...(isDetailsPage ? {
+      urlHistoryBasePath: `/details/${ocaid}/`,
+      urlMode: 'history',
+      resumeCookiePath: `/details/${ocaid}/`,
+      // Only reflect these params onto the URL
+      urlTrackedParams: ['page', 'search', 'mode'],
+    } : {}),
     enableBookTitleLink: false,
     bookUri: `https://archive.org/details/${ocaid}`,
     bookUrlText: null,
