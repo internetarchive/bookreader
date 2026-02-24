@@ -1,0 +1,22 @@
+<svg
+  width="21"
+  height="19"
+  viewBox="0 0 21 19"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-labelledby="reviewTitleID reviewDescID"
+>
+  <title id="reviewTitleID">Review</title>
+  <desc id="reviewDescID">An arrow pointing in a backward direction</desc>
+  <g transform="translate(-100.000000, -15.000000)" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g transform="translate(56.922243, 5.000000)">
+      <g transform="translate(43.000000, 10.000000)">
+        <polyline stroke="#fff" stroke-width="2" stroke-linejoin="round" points="14.4444444 16.6666667 20 16.6666667 20 3.33333333 5.55555556 3.33333333"></polyline>
+        <polygon fill="#fff" points="5.55555556 0 5.55555556 6.66666667 1.11111111 3.33333333"></polygon>
+        <text font-family="HelveticaNeue, Helvetica Neue, sans-serif" font-size="10" font-weight="normal" fill="#fff">
+          <tspan x="0" y="17.3333333">10</tspan>
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>

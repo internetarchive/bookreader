@@ -1,0 +1,197 @@
+/**
+ * BRfloat is the modal popup used in bookreader
+ */
+.BRfloat {
+  color: rgb(52,52,52);;
+}
+.BRfloat a.title {
+  text-decoration: none;
+}
+
+.BRfloat .floatShut {
+  position:absolute;
+  top: 4px;
+  right: 8px;
+  display:block;
+  width:32px;
+  height:32px;
+  border: none;
+  background-color: transparent;
+  background-image:url("images/icon_close-pop.png");
+  background-position:0 0;
+  background-repeat:no-repeat;
+}
+.BRfloat .floatShut:hover {
+  background-position:0 -32px;
+}
+.BRfloat fieldset {
+  padding: 10px 15px;
+  border: none;
+}
+.BRfloat fieldset.sub {
+  margin-top: 0px;
+  padding: 10px;
+}
+.BRfloat fieldset.center {
+  text-align: center;
+  padding: 10px 20px 30px;
+}
+.BRfloat label {
+  display: block;
+  font-weight: 700;
+  font-size: 1em;
+  margin: 5px 0;
+}
+.BRfloat label.sub {
+  display: inline;
+  padding: 10px 30px 10px 0;
+  font-weight: normal;
+  font-size: 1em;
+  color: #666;
+}
+.BRfloat input[type=text],
+.BRfloat textarea {
+  display: block;
+  margin-top: 10px;
+  width: 100%;
+  padding: 3px;
+  border: 2px inset;
+  font-family: "Lucida Grande", "Verdana", "Arial", sans-serif;
+  font-size: .8em;
+  line-height: 1.25;
+  font-weight: normal;
+}
+.BRfloat textarea {
+  height: 55px;
+}
+
+.BRfloat p {
+  margin: 15px 15px 0;
+}
+.BRfloat p.meta {
+  font-size: 1.1em;
+  color: #748d36;
+  margin: 10px 0 0;
+}
+
+.BRfloatCover {
+  float: left;
+  padding: 0 20px 30px 0;
+}
+
+.BRfloatHead {
+  font-size: 1.2em;
+}
+.BRfloatHead h2 {
+  display: inline;
+  font-size: 1.3em;
+}
+.BRfloatMeta p {
+  margin: 0;
+  padding: 0;
+  font-size: 1.1em;
+  line-height: 1.5em;
+}
+.BRfloatMeta p.moreInfo {
+  line-height: 15px;
+  margin-top: 30px;
+}
+.BRfloatMeta p.moreInfo span {
+  background: url("images/icon_OL-logo-xs.png") no-repeat;
+  display: block;
+  float: left;
+  width: 26px;
+  height: 15px;
+}
+.BRfloatMeta h3 {
+  font-size: 1.1em;
+  font-weight: 700;
+  line-height: 1.5em;
+  margin-top: 30px;
+  color: #333;
+}
+.BRfloatMeta ul.links {
+  float: left;
+  clear: right;
+}
+.BRfloatMeta ul.links li {
+  list-style-type: none;
+  display: block;
+  float: left;
+  font-size: 1.1em;
+  line-height: 1.5em;
+}
+.BRfloatMeta ul.links li span {
+  padding: 0 10px;
+}
+.BRfloatFoot a.problem, a.problem-icon {
+  background: url("images/icon_alert-xs.png") no-repeat;
+  padding-left: 20px;
+}
+
+.BRfloatHead,
+.BRfloatBody {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+
+/* Desktop Only */
+@media (min-width: ($brBreakPointMobile + 1)) {
+  .BRfloat .message,
+  .BRfloatBody {
+      padding: 10px 15px 10px 15px;
+      font-size: $brFontSizeLarger;
+      line-height: normal;
+      margin-top: 0;
+      margin-bottom: 0px;
+  }
+  .BRfloatHead {
+      box-sizing: border-box;
+      line-height: normal;
+      padding: 10px;
+      font-size: $brFontSizeLarger;
+      font-weight: 700;
+      text-align: center;
+      border-bottom:1px solid rgb(216,216,216);
+  }
+  .BRfloatFoot {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+}
+
+
+/* Mobile Only (with some responsiveness) */
+@media (max-width: $brBreakPointMobile) {
+  .BRfloatBody, { padding: 10px 10px; }
+  .BRfloat .message,
+  .BRfloatBody,
+  .BRfloatHead, {
+      box-sizing: border-box;
+      line-height: normal;
+      border-bottom:1px solid rgb(216,216,216);
+      padding: 10px;
+      min-height: initial;
+      font-size: $brFontSizeBase;
+      font-weight: 700;
+      text-align: center;
+  }
+  .BRfloatFoot {
+    padding: 10px 10px 0 10px;
+    border-top: 1px solid #ccc;
+  }
+  .BRfloatFoot .BRaction { margin-bottom: 10px; }
+}
+
+@media (min-width: ($brBreakPointMobile + 1)) {
+  .BRfloat { max-width: initial; width:455px; }
+  .BRfloat.wide { max-width: initial; width:555px; }
+}
+@media (max-width: $brBreakPointMobile) and (min-width: 341px) {
+  .BRfloat { max-width: initial; width:340px; }
+}
+@media (max-width: 340px) {
+  .BRfloat { max-width: 95%; width:95%; }
+}

@@ -1,0 +1,22 @@
+<svg
+  width="23"
+  height="22"
+  viewBox="0 0 23 22"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-labelledby="volume-fullTitleID volume-fullDescID"
+>
+  <title>button/volume - full</title>
+  <desc>Created with Sketch.</desc>
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g transform="translate(-241.000000, -14.000000)" stroke="#fff" stroke-width="2">
+      <g transform="translate(56.922243, 5.000000)">
+        <g transform="translate(185.000000, 9.000000)">
+          <path d="M14,3 C16,5.05128205 17,7.71794872 17,11 C17,14.2820513 16,16.9487179 14,19" stroke-linecap="round"></path>
+          <path d="M18,1 C20,3.56410256 21,6.8974359 21,11 C21,15.1025641 20,18.4358974 18,21" stroke-linecap="round"></path>
+          <polygon fill="#fff" fill-rule="evenodd" stroke-linejoin="round" points="10 3.5 6 7.30952381 1 7.30952381 1 15.6904762 6 15.6904762 10 19.5"></polygon>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="25px" viewBox="0 0 20 25" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.1 (57501) - http://www.bohemiancoding.com/sketch -->
+    <title>pin icon copy</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="pin-icon-copy" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M10,0.500000134 C14.9705627,0.500000134 18.9999999,4.5294373 19,9.5 C19,15.5 10,24.5 10,24.5 C10,24.5 1,15.5 1,9.5 C1.00000007,4.5294373 5.0294373,0.500000134 10,0.500000134 Z" id="pin" stroke="#898989" fill="#B8B8B8" fill-rule="nonzero"></path>
+        <path d="M10,13.25 C12.0710678,13.25 13.75,11.5710678 13.75,9.5 C13.75,7.42893219 12.0710678,5.75 10,5.75 C7.92893219,5.75 6.25,7.42893219 6.25,9.5 C6.25,11.5710678 7.92893219,13.25 10,13.25 Z" id="Path" fill="#FFFFFF"></path>
+    </g>
+</svg>

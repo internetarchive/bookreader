@@ -1,0 +1,54 @@
+@mixin sprite-offet($index) {
+  width: $brIconWidthDesktop;
+  height: $brIconWidthDesktop;
+  background-position: (-1 * $index) * $brIconSpriteWidth - (($brIconSpriteWidth - $brIconWidthDesktop) * .5) center;
+
+  @media (max-width: $brBreakPointMobile) {
+    width: $brIconWidthMobile;
+    height: $brIconWidthMobile;
+    background-position: (-1 * $index) * $brIconSpriteWidth - (($brIconSpriteWidth - $brIconWidthMobile) * .5) center;
+  }
+}
+
+.BRToolbarButton, .BRicon {
+  position: relative;
+  transition-duration: .2s;
+  transition-property: background-color, border;
+  &:hover {
+    background-color: rgba(50,50,50,.2);
+  }
+  &:active {
+    background-color: rgba(255,255,255,.2);
+    background-color: rgba(50,50,50,.4);
+  }
+}
+
+.BRicon {
+  padding: 0;
+  margin: 0;
+  vertical-align: middle;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  background-image: url(images/BRicons.svg);
+  background-repeat: no-repeat;
+}
+i.BRicon { display: inline-block; }
+.BRicon.logo { @include sprite-offet(0); }
+.BRicon.info { @include sprite-offet(1); }
+.BRicon.share { @include sprite-offet(3); }
+// We can only transition these because they are adjacent
+.BRicon.read {
+  transition-property: background-color, border, background-position;
+  @include sprite-offet(5); 
+}
+.BRicon.unread {
+  transition-property: background-color, border, background-position;
+  @include sprite-offet(7); 
+}
+.BRicon.fit { @include sprite-offet(9); }
+.BRicon.download { @include sprite-offet(38); }
+.BRicon.return { @include sprite-offet(26); }
+.BRicon.fb { @include sprite-offet(40); }
+.BRicon.twitter { @include sprite-offet(41); }
+.BRicon.email { @include sprite-offet(42); }
