@@ -101,13 +101,16 @@ export class TranslationManager {
    */
 
   getTranslation = async (fromLang, toLang, pageIndex, paragraphIndex, text, priority) => {
+    if (!this.translator) {          //Ensure translator is initialized before use
+        await this.initWorker();
+}
      if (fromLang == toLang || !fromLang || !toLang) {
       return "";
-    }
-    this.active = true;
+    }   
+    this.active = true;                          //Moved active = true after validation to avoid setting active when no translation is performed (prevents infinite loading state).
    
     const key = `${fromLang}${toLang}-${pageIndex}:${paragraphIndex}`;
-    const cachedEntry = this.alreadyTranslated.entries.find(x => x.index == key);
+    const cachedEntry = this.alreadyTranslated.entries.find(x => x.index == key);  //If Cache supports .get() method, better use that.
 
     if (cachedEntry) {
       return cachedEntry.response;
@@ -130,10 +133,11 @@ export class TranslationManager {
       reject: _reject,
     };
 
-    if (!text) {
+    if (!text) {         //Handle empty text safely
       this.currentlyTranslating[key].reject("No text was provided");
+      delete this.currentlyTranslating[key];
       return promise;
-    }
+}
     this.translator.translate({
       to: toLang,
       from: fromLang,
@@ -144,7 +148,15 @@ export class TranslationManager {
       const response = resp;
       this.currentlyTranslating[key].resolve(response.target.text);
       this.alreadyTranslated.add({index: key, response: response.target.text});
-      delete this.currentlyTranslating[key];
+    }).catch((error) => {
+          console.error("Translation failed:", error);
+          this.currentlyTranslating[key].reject(error);
+    })
+      .finally(() => {           //Proper cleanup after translation completes
+          delete this.currentlyTranslating[key];
+           if (Object.keys(this.currentlyTranslating).length === 0) {
+              this.active = false;
+  }
     });
 
     return promise;
