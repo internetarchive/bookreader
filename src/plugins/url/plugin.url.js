@@ -42,6 +42,10 @@ BookReader.prototype.setup = (function(super_) {
     this.locationPollId = null;
     this.oldLocationHash = null;
     this.oldUserHash = null;
+    // Should include the :~:text= prefix
+    this.textFragment = null;
+    // Tracks the original textFragment page num when first loaded
+    this.textFragmentPage = null;
   };
 })(BookReader.prototype.setup);
 
@@ -167,6 +171,14 @@ BookReader.prototype.urlUpdateFragment = function() {
       const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
       const textFragment = this.urlPlugin.retrieveTextFragment(newQueryString);
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
+      let extractedPage = newFragmentWithSlash.match(/(?<=\/)n?\d+(?=\/)/);
+      if (extractedPage) {
+        extractedPage = extractedPage[0];
+      }
+      if (!this.textFragmentPage && textFragment) {
+        this.textFragmentPage =  extractedPage ? extractedPage : null;
+        this.textFragment = `:~:text=${textFragment}`;
+      }
       try {
         window.history.replaceState({}, null, newUrlPath);
         this.oldLocationHash = newFragment + newQueryString;
@@ -183,8 +195,20 @@ BookReader.prototype.urlUpdateFragment = function() {
   if (this.options.urlMode === 'hash')  {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
     let textFragment = this.urlPlugin.retrieveTextFragment(this.readQueryString());
+    let extractedPage = newFragment.match(/(?<=\/)n?\d+(?=\/)/);
+    if (extractedPage) {
+      extractedPage = extractedPage[0];
+    }
     if (textFragment) {
       textFragment = `:~:text=${textFragment[0]}`;
+    } else {
+      textFragment = '';
+    }
+    if (!this.textFragmentPage && textFragment) {
+      this.textFragmentPage = extractedPage ? extractedPage : null;
+      this.textFragment = textFragment;
+    } else if (this.textFragmentPage && extractedPage != this.textFragmentPage) {
+      textFragment = '';
     }
     window.location.replace('#' + newFragment + newQueryStringSearch + textFragment);
     this.oldLocationHash = newFragment + newQueryStringSearch + textFragment;
@@ -234,15 +258,17 @@ export class BookreaderUrlPlugin extends BookReader {
       this.urlPlugin = new UrlPlugin(this.options);
       const location = this.getLocationSearch();
       if (location.includes("text=")) {
-        this.on('textLayerRendered', (_, {pageIndex, container}) => {
+        this.on('textLayerVisible', async (_, {pageContainerEl}) => {
+          const visiblePageNum = pageContainerEl.getAttribute('data-page-num');
+          await new Promise(resolve => setTimeout(resolve, 100));
           if (this.options.urlMode === 'history') {
-            // only want the text fragment forwarded
-            if (this.oldLocationHash.includes(':~:')) {
-              const newHash = this.oldLocationHash.split(':~:')[1];
-              window.location.replace(`#:~:${newHash}`);
+            if (this.textFragment && this.textFragmentPage == visiblePageNum) {
+              window.location.replace(`#${this.textFragment}`);
             }
           } else {
-            window.location.replace(`#${this.oldLocationHash}`);
+            if (this.textFragment && this.textFragmentPage == visiblePageNum) {
+              window.location.replace(`#${this.oldLocationHash}`);
+            }
           }
         });
       }
