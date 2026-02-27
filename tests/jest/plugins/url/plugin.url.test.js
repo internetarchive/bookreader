@@ -6,6 +6,10 @@ let br;
 beforeAll(() => {
   document.body.innerHTML = '<div id="BookReader">';
   br = new BookReader();
+  const urlPluginMock = {
+    retrieveTextFragment: sinon.fake(),
+  };
+  br.urlPlugin = urlPluginMock;
 });
 
 afterEach(() => {

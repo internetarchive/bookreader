@@ -628,9 +628,7 @@ export class Mode2UpLit extends LitElement {
       progression == 'lr' ? [nextSpread.left, nextSpread.right] : [nextSpread.right, nextSpread.left]
     ).filter(x => x);
     nextPageContainers.forEach(c => {
-      this.br.trigger('pageVisible', {
-        pageContainerEl: c.$container[0],
-      });
+      this.br.trigger('pageVisible', {pageContainerEl: c.$container[0]});
     });
   }
 
