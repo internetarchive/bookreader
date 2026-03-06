@@ -171,10 +171,7 @@ BookReader.prototype.urlUpdateFragment = function() {
       const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
       const textFragment = this.urlPlugin.retrieveTextFragment(newQueryString);
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
-      let extractedPage = newFragmentWithSlash.match(/(?<=\/)n?\d+(?=\/)/);
-      if (extractedPage) {
-        extractedPage = extractedPage[0];
-      }
+      const extractedPage = this.urlPlugin.urlStringToUrlState(newFragmentWithSlash)?.page;
       if (!this.textFragmentPage && textFragment) {
         this.textFragmentPage =  extractedPage ? extractedPage : null;
         this.textFragment = `:~:text=${textFragment}`;
@@ -261,14 +258,13 @@ export class BookreaderUrlPlugin extends BookReader {
         this.on('textLayerVisible', async (_, {pageContainerEl}) => {
           const visiblePageNum = pageContainerEl.getAttribute('data-page-num');
           await new Promise(resolve => setTimeout(resolve, 100));
+          // No textFragment found or the textFragment stored doesn't match current visible page loaded
+          if (!this.textFragment || this.textFragmentPage !== visiblePageNum) return;
           if (this.options.urlMode === 'history') {
-            if (this.textFragment && this.textFragmentPage == visiblePageNum) {
-              window.location.replace(`#${this.textFragment}`);
-            }
+            window.location.replace(`#${this.textFragment}`);
           } else {
-            if (this.textFragment && this.textFragmentPage == visiblePageNum) {
-              window.location.replace(`#${this.oldLocationHash}`);
-            }
+            // for urlMode hash, textFragment is stored in oldLocationHash already
+            window.location.replace(`#${this.oldLocationHash}`);
           }
         });
       }

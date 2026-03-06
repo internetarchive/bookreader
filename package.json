@@ -42,6 +42,7 @@
     "@internetarchive/icon-magnify-minus": "^1.4.0",
     "@internetarchive/icon-magnify-plus": "^1.4.0",
     "@internetarchive/icon-search": "^1.4.0",
+    "@internetarchive/icon-share": "1.4.0",
     "@internetarchive/icon-toc": "^1.4.0",
     "@internetarchive/icon-visual-adjustment": "^1.4.0",
     "@internetarchive/modal-manager": "2.0.5",

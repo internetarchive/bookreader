@@ -8,6 +8,7 @@ beforeAll(() => {
   br = new BookReader();
   const urlPluginMock = {
     retrieveTextFragment: sinon.fake(),
+    urlStringToUrlState: sinon.fake(),
   };
   br.urlPlugin = urlPluginMock;
 });
