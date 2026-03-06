@@ -2,7 +2,7 @@ import sinon from 'sinon';
 
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
-import {createParam} from '@/src/util/TextSelectionManager.js';
+import {createTextFragmentUrlParam} from '@/src/util/TextSelectionManager.js';
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `
@@ -258,14 +258,14 @@ describe("TextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(forwardRange);
-    const forwardTest = createParam(selection, document.querySelector('.BRtextLayer'));
+    const forwardTest = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
 
     selection.removeAllRanges();
     backwardRange.collapse(false);
     selection.addRange(backwardRange);
     selection.extend(forwardRange.startContainer, 0);
     window.getSelection().direction = 'backward';
-    const backwardTest = createParam(selection, document.querySelector('.BRtextLayer'));
+    const backwardTest = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
 
     expect(forwardTest).toMatch("text=way,false");
     expect(backwardTest).toMatch(forwardTest);
@@ -287,14 +287,14 @@ describe("TextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(forwardRange);
-    const forwardTest = createParam(selection, document.querySelector('.BRtextLayer'));
+    const forwardTest = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
     selection.removeAllRanges();
     backwardRange.collapse(false);
     selection.addRange(backwardRange);
     selection.extend(forwardRange.startContainer, 0);
     window.getSelection().direction = 'backward';
 
-    const backwardTest = createParam(selection, document.querySelector('.BRtextLayer'));
+    const backwardTest = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
 
     expect(forwardTest).toMatch("text=various,lastWord");
     expect(backwardTest).toMatch(forwardTest);
@@ -317,11 +317,11 @@ describe("TextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
-    const multipleHighlights = createParam(selection, document.querySelector('.BRtextLayer'));
+    const multipleHighlights = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
 
     selection.removeAllRanges();
     selection.addRange(sameKeyHighlightRange);
-    const similarHighlight = createParam(selection, document.querySelector('.BRtextLayer'));
+    const similarHighlight = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
 
     expect(multipleHighlights).toBe(`text=is%20quite%20distinctive.%E2%80%9D-,%E2%80%9CThat%20is,-easily%20got.%E2%80%9D`);
     expect(multipleHighlights).not.toBe(similarHighlight);
@@ -342,7 +342,7 @@ describe("TextFragment tests", () => {
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
 
-    const multiLineBehavior = createParam(selection, document.querySelector('.BRtextLayer'));
+    const multiLineBehavior = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
     // “Stolen.”-,“My own seal.”,-“Imitated.”
     expect(multiLineBehavior).toMatch("text=%E2%80%9CStolen.%E2%80%9D-,%E2%80%9CMy%20own%20seal.%E2%80%9D,-%E2%80%9CImitated.%E2%80%9D");
   });
@@ -362,7 +362,7 @@ describe("TextFragment tests", () => {
     selection.addRange(rangeBefore);
 
     // “Imitated.”-, “My photograph.”,-“Bought.”
-    const endShortSuffix = createParam(selection, document.querySelector('.BRtextLayer'));
+    const endShortSuffix = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
 
     expect(endShortSuffix).toMatch("text=%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy%20photograph.%E2%80%9D,-%E2%80%9CBought.%E2%80%9D");
   });
@@ -382,7 +382,7 @@ describe("TextFragment tests", () => {
     selection.addRange(rangeBefore);
 
     // “Imitated.”-, “My,-photograph.”
-    const singleTextFragment = createParam(selection, document.querySelector('.BRtextLayer'));
+    const singleTextFragment = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
 
     expect(singleTextFragment).toMatch("text=%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy,-photograph.%E2%80%9D");
   });

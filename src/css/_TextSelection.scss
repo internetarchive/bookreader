@@ -152,17 +152,61 @@
     display: none;
 }
 
-.textFragmentButton {
-    background: inherit;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: darksalmon;
-    width: 60px;
-    height: 30px;
-    top: inherit;
-    left: inherit;
+.br-selection-menu__root {
+  display: none;
+  border-radius: 20px;
+  background-color: #333;
+  color-scheme: dark;
+  padding: 2px;
+  overflow: hidden;
+  transition: border-radius 0.2s;
+}
+.br-selection-menu__root:hover {
+  border-radius: 8px;
 }
 
-.textFragmentButtonBar {
-    display: none;
+.br-selection-menu__root:hover .textFragmentButton {
+  border-radius: 6px;
+}
+
+.textFragmentButton {
+  --iconWidth: 15px;
+  --iconHeight: 15px;
+  --iconFillColor: currentColor;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  border-radius: 20px;
+  font-family: inherit;
+  border: 0;
+  transition: background-color 0.2s, border-radius 0.2s;
+  cursor: pointer;
+  text-wrap: nowrap;
+  padding: 4px;
+}
+
+.textFragmentButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.textFragmentButton ia-icon-share {
+  display: block;
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+}
+
+.menuOptionTitle {
+  width: 0px;
+  opacity: 0;
+  interpolate-size: allow-keywords;
+  transition: width 0.2s;
+  font-size: 12px;
+}
+
+
+.br-selection-menu__root:hover .menuOptionTitle {
+  width: auto;
+  margin-left: 4px;
+  opacity: 1;
 }

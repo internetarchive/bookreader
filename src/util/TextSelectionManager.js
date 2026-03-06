@@ -2,11 +2,12 @@
 import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import '@internetarchive/icon-share';
 
 export class TextSelectionManager {
-  /** @type {brHighlightBar} */
+  /** @type {BRSelectionMenu} */
   highlightBar;
-  highlightEnabled;
+  selectionMenuEnabled;
   options = {
     // Current Translation plugin implementation does not have words, will limit to one BRlineElement for now
     maxProtectedWords: 200,
@@ -28,9 +29,9 @@ export class TextSelectionManager {
     this.selectionElement = selectionElement;
     this.selectionObserver = new SelectionObserver(this.layer, this._onSelectionChange);
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
-    this.highlightBar = new brHighlightBar(br);
+    this.highlightBar = new BRSelectionMenu(br);
 
-    this.highlightBar.className = "textFragmentBar";
+    this.highlightBar.className = "br-selection-menu__root";
   }
 
   init() {
@@ -43,25 +44,21 @@ export class TextSelectionManager {
         // Set a class on the page to avoid hiding it when zooming/etc
         this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
         $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
-        this.highlightBar.addHighlightButtonStyling();
+        this.highlightBar.showMenu();
 
       }
 
       if (selectEvent == 'focusChanged') {
         // hide the button as user changes their selection
         if (this.mouseIsDown) {
-          this.highlightBar.hideHighlightStyle();
-
-        } else {
-          if (window.getSelection().toString().length != 0) {
-            this.highlightBar.addHighlightButtonStyling();
-
-          }
+          this.highlightBar.hideMenu();
+        } else if (window.getSelection().toString()) {
+          this.highlightBar.showMenu();
         }
       }
 
       if (selectEvent == 'cleared') {
-        this.highlightBar.hideHighlightStyle();
+        this.highlightBar.hideMenu();
       }
     }).attach();
   }
@@ -69,9 +66,7 @@ export class TextSelectionManager {
   // Need attach + detach methods to toggle w/ Translation plugin
   attach() {
     this.selectionObserver.attach();
-    if (!this.br.plugins.translate && this.highlightEnabled) {
-      document.body.append(this.highlightBar);
-    }
+    this.renderSelectionMenu();
     if (this.br.protected) {
       document.addEventListener('selectionchange', this._limitSelection);
       // Prevent right clicking when selected text
@@ -97,9 +92,9 @@ export class TextSelectionManager {
     }
   }
 
-  addHighlightBar() {
+  renderSelectionMenu() {
     if (document.querySelector('.textFragmentBar')) return;
-    if (this.highlightEnabled && !this.br.plugins.translate) {
+    if (this.selectionMenuEnabled) {
       document.body.append(this.highlightBar);
     }
   }
@@ -165,7 +160,7 @@ export class TextSelectionManager {
     // blocking selection
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       this.mouseIsDown = true;
-      this.highlightBar.hideHighlightStyle();
+      this.highlightBar.hideMenu();
       if ($(event.target).is(this.selectionElement.join(", "))) {
         event.stopPropagation();
       }
@@ -173,7 +168,7 @@ export class TextSelectionManager {
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
       this.mouseIsDown = false;
-      this.highlightBar.hideHighlightStyle();
+      this.highlightBar.hideMenu();
       textLayer.style.pointerEvents = "none";
       if (skipNextMouseup) {
         skipNextMouseup = false;
@@ -199,7 +194,7 @@ export class TextSelectionManager {
       if (event.which != 1) return;
       this.mouseIsDown = true;
       event.stopPropagation();
-      this.highlightBar.hideHighlightStyle();
+      this.highlightBar.hideMenu();
     });
 
     // Prevent page flip on click
@@ -207,7 +202,7 @@ export class TextSelectionManager {
       this.mouseIsDown = false;
       if (event.which != 1) return;
       event.stopPropagation();
-      this.highlightBar.addHighlightButtonStyling();
+      this.highlightBar.showMenu();
     });
   }
 
@@ -253,39 +248,36 @@ export class TextSelectionManager {
  * Can import something that handles this more gracefully? see - https://web.dev/articles/text-fragments#:~:text=In%20its%20simplest%20form%2C%20the%20syntax%20of,percent%2Dencoded%20text%20I%20want%20to%20link%20to.
  */
 /**
- * Builds a string in the format of a TextFragment.
+ * Builds a URL string in the format of a TextFragment within the URL params, which differs from browser "Copy to link to highlighted text" format
+ * Does not include the fragment directive (`:~:`) and is not after the URL hash
  * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
  * @param {Selection} selection - document.getSelection()
  * @param {HTMLElement} pageLayer - anchorNode.parentElement.closest('.BRtextLayer')
- * @returns
+ * @returns {string} - i.e. http://127.0.0.1:8000/BookReaderDemo/demo-internetarchive.html?ocaid=adventureofsherl0000unse&text=undefined,undefined#page/10/mode/2up
  */
-export function createParam(selection, pageLayer) {
+export function createTextFragmentUrlParam(selection, pageLayer) {
   const highlightedText = selection.toString().replace(/[\s]+/g, " ").trim().split(" ");
-  const anchorWord = selection.anchorNode.textContent;
-  const focusWord = selection.focusNode.textContent;
   let textStart, textEnd; // :~:text=[prefix-,]textStart[,textEnd][,-suffix]
   const direction = selection.direction;
+  const startNode = direction == 'backward' ? selection.focusNode : selection.anchorNode;
+  const endNode = direction == 'backward' ? selection.anchorNode : selection.focusNode;
+  // If text selection begins or ends with a space, we look for the next eligible word to serve as the start or end word
+  const startWord = startNode.textContent.replace(/[\s]+/g, "") ? startNode.textContent : highlightedText[0];
+  const endWord = endNode.textContent.replace(/[\s]+/g, "") ? endNode.textContent : highlightedText[highlightedText.length - 1];
 
+  const textStartRe = RegExp.escape(startWord);
+  const textEndRe = RegExp.escape(endWord);
+
+  // 's' regex modifier ensures the `.` also captures newline characters
+  const phraseMatchRe = new RegExp(String.raw`(?=(${textStartRe}).*?(?:(${textEndRe})))`, "gis");
   // Duplicated spaces in pageLayer.textContent for some reason
   const wholePageText = pageLayer.textContent.replaceAll("  ", " ");
-  if (direction == 'backward') {
-    textStart = focusWord.replace(/[\s]+/g, "") ? focusWord : highlightedText[0];
-    textEnd = anchorWord.replace(/[\s]+/g, "") ? anchorWord : highlightedText[highlightedText.length - 1];
-  } else {
-    textStart = anchorWord.replace(/[\s]+/g, "") ? anchorWord : highlightedText[0];
-    textEnd = focusWord.replace(/[\s]+/g, "") ? focusWord : highlightedText[highlightedText.length - 1];
-  }
-
-  const escapedStart = RegExp.escape(textStart);
-  const escapedEnd = RegExp.escape(textEnd);
-
-  // added 's' regex modifier to ensure that the matchAll actually captures instances where the escaped start / end words have whitespace
-  const testRegExp = new RegExp(String.raw`(?=(${escapedStart}).*?(?:(${escapedEnd})))`, "gis");
-
-  const foundMatches = wholePageText.matchAll(testRegExp).toArray();
+  const foundMatches = wholePageText.matchAll(phraseMatchRe).toArray();
   if (foundMatches.length == 1) {
-    return `text=${encodeURIComponent(textStart)},${encodeURIComponent(textEnd)}`;
+    // If `startWord...endWord` quote is unambiguous and only occurs once, no prefix-/-suffix is needed for the URL param
+    return `text=${encodeURIComponent(startWord)},${encodeURIComponent(endWord)}`;
   }
+  // Need to add some additional context to `startWord...endWord` by including surrounding words before and after the keywords
   const preStartRange = document.createRange();
   const postEndRange = document.createRange();
   if (direction == 'backward') {
@@ -303,43 +295,40 @@ export function createParam(selection, pageLayer) {
     postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
   }
 
-  const startRegex = new RegExp(String.raw`(\s+\S+){1,3}\s*?$`);
-  const endRegex = new RegExp(String.raw`^\S*?(\s+\S+){1,3}`);
-  // prefixes/suffixes cannot contain paragraph breaks
+  // prefixes/suffixes cannot contain paragraph breaks, words that are from more than one line break away should not be included
+  const prefixRe = new RegExp(String.raw`(\s+\S+){1,3}\s*?$`);
+  const suffixRe = new RegExp(String.raw`^\S*?(\s+\S+){1,3}`);
+
   const textFragmentArr = [];
-  let [prefixes, suffixes] = ["", ""];
-  if (preStartRange.toString().length !== 0) {
-    if (!preStartRange.toString().match(startRegex)) {
-      prefixes = `${preStartRange.toString()
-        .replace(/[ ]+/g, " ")
-        .trim()
-        .replace(/^[^\n]*\n/gm, "")}-`;
+  let [prefixes, suffixes] = "";
+  const getFirstWords = (sentence, patternRe) => {
+    if (sentence.toString().match(patternRe)) {
+      return sentence.toString().match(patternRe)[0];
     } else {
-      prefixes = `${preStartRange.toString().match(startRegex)[0]
-        .replace(/[ ]+/g, " ")
-        .trim()
-        .replace(/^[^\n]*\n/gm, "")}-`;
+      return sentence.toString();
     }
-    textFragmentArr.push(prefixes);
+  };
+
+  if (getFirstWords(preStartRange, prefixRe)) {
+    prefixes = `${getFirstWords(preStartRange.toString(), prefixRe)
+      .replace(/[ ]+/g, " ")
+      .trim()
+      .replace(/^[^\n]*\n/gm, "")}-`;
   }
-  if (postEndRange.toString().length !== 0) {
-    if (!postEndRange.toString().match(endRegex)) {
-      suffixes = `-${postEndRange.toString()
-        .replace(/[ ]+/g, " ")
-        .trim()
-        .replace(/^[^\n]*\n/gm, "")}`;
-    } else {
-      suffixes = `-${postEndRange.toString().match(endRegex)[0]
-        .replace(/[ ]+/g, " ")
-        .trim()
-        .replace(/\n[^\n]*$/gm, "")}`;
-    }
+  if (getFirstWords(postEndRange, suffixRe)) {
+    suffixes = `-${postEndRange.toString().match(suffixRe)[0]
+      .replace(/[ ]+/g, " ")
+      .trim()
+      .replace(/\n[^\n]*$/gm, "")}`;
   }
 
   if (textStart === textEnd) {
+    // if just one word ("Holmes") is selected, the browser API for text fragment will try to look for matches for strings like "Holmes, Holmes"
+    // providing the prefix and suffix should be enough to locate it on the page
     textEnd = "";
   }
 
+  // Partially selected words need to be captured completely
   const constructHighlight = selection.toString().replace(/[\s]+/g, " ").split(/[ ]+/g);
   if (direction == 'backward') {
     constructHighlight[0] = selection.focusNode.textContent;
@@ -351,15 +340,12 @@ export function createParam(selection, pageLayer) {
   const fullHighlight = constructHighlight.join(" ").trim().split(" ");
   let quote = [fullHighlight.join(" ")];
   if (fullHighlight.length > 6) {
-    if (direction == 'backward') {
-      quote = [fullHighlight.slice(0, 3).join(" "), fullHighlight.slice(-3).join(" ")];
-    } else {
-      quote = [fullHighlight.slice(0, 3).join(" "), fullHighlight.slice(-3).join(" ")];
-    }
+    quote = [fullHighlight.slice(0, 3).join(" "), fullHighlight.slice(-3).join(" ")];
   }
+  if (prefixes) textFragmentArr.push(prefixes);
   textFragmentArr.push(...quote);
   if (suffixes.length != 0) {
-    textFragmentArr.push(suffixes);
+    textFragmentArr.push(suffixes ? suffixes : "");
   }
   return `text=${textFragmentArr.map(encodeURIComponent).join(',')}`;
 }
@@ -439,7 +425,7 @@ export function* walkBetweenNodes(start, end) {
 }
 
 @customElement('br-highlight-bar')
-class brHighlightBar extends LitElement {
+class BRSelectionMenu extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
 
@@ -454,40 +440,29 @@ class brHighlightBar extends LitElement {
     return this;
   }
 
-  /** @override */
-  connectedCallback() {
-    super.connectedCallback();
-    this.dispatchEvent(new CustomEvent('showingHighlightBar'));
-  }
-
-  /** @override */
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.dispatchEvent(new CustomEvent('hidingHighlightBar'));
-  }
-
   render() {
     return html`
-      <button @click=${this.handleClick} class="textFragmentButton">
+      <button @click=${this.handleCopyLinkToHighlight} class="textFragmentButton">
+        <ia-icon-share aria-hidden="true"></ia-icon-share>
+        <span class="menuOptionTitle">Copy Link to Highlight</span>
       </button>
     `;
   }
 
-  handleClick(e) {
+  handleCopyLinkToHighlight(e) {
     e.preventDefault();
-    this.dispatchEvent(new CustomEvent('textFragmentButtonClicked'));
     const currentUrl = window.location;
     let currentParams = this.br.readQueryString();
     const currentSelection = window.getSelection();
     /** @type {HTMLElement} */
     const textLayer = currentSelection.anchorNode.parentElement.closest('.BRtextLayer');
-    if (currentParams.includes('text')) {
-      currentParams = currentParams.replace(/(text=)[\w\W\d%]+/, createParam(currentSelection, textLayer));
+    if (currentParams.includes('text=')) {
+      currentParams = currentParams.replace(/(text=)[\w\W\d%]+/, createTextFragmentUrlParam(currentSelection, textLayer));
     } else {
       if (this.br.options.urlMode === 'history') {
-        currentParams = `?${createParam(currentSelection, textLayer)}`;
+        currentParams = `?${createTextFragmentUrlParam(currentSelection, textLayer)}`;
       } else {
-        currentParams = `${currentParams}&${createParam(currentSelection, textLayer)}`;
+        currentParams = `${currentParams}&${createTextFragmentUrlParam(currentSelection, textLayer)}`;
       }
     }
     if (this.br.options.urlMode === 'history') {
@@ -497,7 +472,8 @@ class brHighlightBar extends LitElement {
     }
   }
 
-  addHighlightButtonStyling() {
+  showMenu() {
+    if (this.br.plugins.translate) return;
     const currentSelection = window.getSelection();
     const start = currentSelection.anchorNode.parentElement;
     const end = currentSelection.focusNode.parentElement; // will always be a text node
@@ -518,11 +494,7 @@ class brHighlightBar extends LitElement {
     this.style.display = 'inline';
   }
 
-  attachSelectionListeners = () => {
-    return;
-  }
-
-  hideHighlightStyle = () => {
+  hideMenu = () => {
     this.style.display = 'none';
     return;
   }
