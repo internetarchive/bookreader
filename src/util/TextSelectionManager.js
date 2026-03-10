@@ -269,7 +269,7 @@ export function createTextFragmentUrlParam(selection, pageLayer) {
   const textEndRe = RegExp.escape(endWord);
 
   // 's' regex modifier ensures the `.` also captures newline characters
-  const phraseMatchRe = new RegExp(String.raw`(?=(${textStartRe}).*?(?:(${textEndRe})))`, "gis");
+  const phraseMatchRe = new RegExp(String.raw`(?<=(${textStartRe}).*?)(${textEndRe})`, "gis");
   // Duplicated spaces in pageLayer.textContent for some reason
   const wholePageText = pageLayer.textContent.replaceAll("  ", " ");
   const foundMatches = wholePageText.matchAll(phraseMatchRe).toArray();

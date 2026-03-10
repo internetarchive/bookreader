@@ -267,7 +267,7 @@ describe("TextFragment tests", () => {
     window.getSelection().direction = 'backward';
     const backwardTest = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
 
-    expect(forwardTest).toMatch("text=way,false");
+    expect(forwardTest).toMatch("text=way%20can%20false,-judgment%20be%20-");
     expect(backwardTest).toMatch(forwardTest);
   });
 
