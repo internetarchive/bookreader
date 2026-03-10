@@ -2,7 +2,7 @@ import sinon from 'sinon';
 
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
-import {createTextFragmentUrlParam} from '@/src/util/TextSelectionManager.js';
+import {createTextFragmentUrlParam, getFirstWords, getLastWords} from '@/src/util/TextSelectionManager.js';
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `
@@ -385,5 +385,28 @@ describe("TextFragment tests", () => {
     const singleTextFragment = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
 
     expect(singleTextFragment).toMatch("text=%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy,-photograph.%E2%80%9D");
+  });
+});
+
+
+describe("getFirstWords and getLastWords tests", () => {
+  test("Handles empty string", () => {
+    expect(getFirstWords(3, "")).toBe("");
+    expect(getLastWords(3, "")).toBe("");
+  });
+
+  test("Handles string with less than 3 words", () => {
+    expect(getFirstWords(3, "Hello world")).toBe("Hello world");
+    expect(getLastWords(3, "Hello world")).toBe("Hello world");
+  });
+
+  test("Handles string with more than 3 words", () => {
+    expect(getFirstWords(3, "Hello world this is a test")).toBe("Hello world this");
+    expect(getLastWords(3, "Hello world this is a test")).toBe("is a test");
+  });
+
+  test("Handles string with punctuation", () => {
+    expect(getFirstWords(3, "Hello, world! This is a test.")).toBe("Hello, world! This");
+    expect(getLastWords(3, "Hello, world! This is a test.")).toBe("is a test.");
   });
 });

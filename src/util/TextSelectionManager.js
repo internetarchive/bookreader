@@ -5,8 +5,8 @@ import { customElement } from 'lit/decorators.js';
 import '@internetarchive/icon-share';
 
 export class TextSelectionManager {
-  /** @type {BRSelectionMenu} */
-  highlightBar;
+  /** @type {BRSelectMenu} */
+  selectMenu;
   selectionMenuEnabled;
   options = {
     // Current Translation plugin implementation does not have words, will limit to one BRlineElement for now
@@ -29,9 +29,9 @@ export class TextSelectionManager {
     this.selectionElement = selectionElement;
     this.selectionObserver = new SelectionObserver(this.layer, this._onSelectionChange);
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
-    this.highlightBar = new BRSelectionMenu(br);
+    this.selectMenu = new BRSelectMenu(br);
 
-    this.highlightBar.className = "br-selection-menu__root";
+    this.selectMenu.className = "br-select-menu__root";
   }
 
   init() {
@@ -44,21 +44,21 @@ export class TextSelectionManager {
         // Set a class on the page to avoid hiding it when zooming/etc
         this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
         $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
-        this.highlightBar.showMenu();
+        this.selectMenu.showMenu();
 
       }
 
       if (selectEvent == 'focusChanged') {
         // hide the button as user changes their selection
         if (this.mouseIsDown) {
-          this.highlightBar.hideMenu();
+          this.selectMenu.hideMenu();
         } else if (window.getSelection().toString()) {
-          this.highlightBar.showMenu();
+          this.selectMenu.showMenu();
         }
       }
 
       if (selectEvent == 'cleared') {
-        this.highlightBar.hideMenu();
+        this.selectMenu.hideMenu();
       }
     }).attach();
   }
@@ -93,9 +93,9 @@ export class TextSelectionManager {
   }
 
   renderSelectionMenu() {
-    if (document.querySelector('.textFragmentBar')) return;
+    if (document.querySelector('.br-select-menu__option')) return;
     if (this.selectionMenuEnabled) {
-      document.body.append(this.highlightBar);
+      document.body.append(this.selectMenu);
     }
   }
   /**
@@ -160,7 +160,7 @@ export class TextSelectionManager {
     // blocking selection
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       this.mouseIsDown = true;
-      this.highlightBar.hideMenu();
+      this.selectMenu.hideMenu();
       if ($(event.target).is(this.selectionElement.join(", "))) {
         event.stopPropagation();
       }
@@ -168,7 +168,7 @@ export class TextSelectionManager {
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
       this.mouseIsDown = false;
-      this.highlightBar.hideMenu();
+      this.selectMenu.hideMenu();
       textLayer.style.pointerEvents = "none";
       if (skipNextMouseup) {
         skipNextMouseup = false;
@@ -194,7 +194,7 @@ export class TextSelectionManager {
       if (event.which != 1) return;
       this.mouseIsDown = true;
       event.stopPropagation();
-      this.highlightBar.hideMenu();
+      this.selectMenu.hideMenu();
     });
 
     // Prevent page flip on click
@@ -202,7 +202,7 @@ export class TextSelectionManager {
       this.mouseIsDown = false;
       if (event.which != 1) return;
       event.stopPropagation();
-      this.highlightBar.showMenu();
+      this.selectMenu.showMenu();
     });
   }
 
@@ -256,8 +256,8 @@ export class TextSelectionManager {
  * @returns {string} - i.e. http://127.0.0.1:8000/BookReaderDemo/demo-internetarchive.html?ocaid=adventureofsherl0000unse&text=undefined,undefined#page/10/mode/2up
  */
 export function createTextFragmentUrlParam(selection, pageLayer) {
+  // :~:text=[prefix-,]textStart[,textEnd][,-suffix]
   const highlightedText = selection.toString().replace(/[\s]+/g, " ").trim().split(" ");
-  let textStart, textEnd; // :~:text=[prefix-,]textStart[,textEnd][,-suffix]
   const direction = selection.direction;
   const startNode = direction == 'backward' ? selection.focusNode : selection.anchorNode;
   const endNode = direction == 'backward' ? selection.anchorNode : selection.focusNode;
@@ -269,86 +269,55 @@ export function createTextFragmentUrlParam(selection, pageLayer) {
   const textEndRe = RegExp.escape(endWord);
 
   // 's' regex modifier ensures the `.` also captures newline characters
-  const phraseMatchRe = new RegExp(String.raw`(?<=(${textStartRe}).*?)(${textEndRe})`, "gis");
+  // Need to use lookahead/lookbehind assertions to allow for overlapping quotes (i.e. multiple "Holmes" on the same page)
+  const startPhraseMatchRe = new RegExp(String.raw`(?<=(${textStartRe}).*?)(${textEndRe})`, "gis");
+  const endPhraseMatchRe = new RegExp(String.raw`(${textStartRe})(?=.*?(${textEndRe}))`, "gis");
+
   // Duplicated spaces in pageLayer.textContent for some reason
-  const wholePageText = pageLayer.textContent.replaceAll("  ", " ");
-  const foundMatches = wholePageText.matchAll(phraseMatchRe).toArray();
-  if (foundMatches.length == 1) {
+  const wholePageText = pageLayer.textContent.replace(/\s+/g, " ");
+  const startPhraseFoundMatches = wholePageText.matchAll(startPhraseMatchRe).toArray();
+  const endPhraseFoundMatches = wholePageText.matchAll(endPhraseMatchRe).toArray();
+  if (startPhraseFoundMatches.length == 1 && endPhraseFoundMatches.length == 1) {
     // If `startWord...endWord` quote is unambiguous and only occurs once, no prefix-/-suffix is needed for the URL param
     return `text=${encodeURIComponent(startWord)},${encodeURIComponent(endWord)}`;
   }
+
   // Need to add some additional context to `startWord...endWord` by including surrounding words before and after the keywords
   const preStartRange = document.createRange();
+  preStartRange.setStart(pageLayer.firstElementChild, 0);
+  preStartRange.setEnd(startNode, 0);
   const postEndRange = document.createRange();
-  if (direction == 'backward') {
-    preStartRange.setStart(pageLayer.firstElementChild, 0);
-    preStartRange.setEnd(selection.focusNode, 0);
-
-    postEndRange.setStart(selection.anchorNode, selection.anchorNode.textContent.length);
-    postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
-
-  } else {
-    preStartRange.setStart(pageLayer.firstElementChild, 0);
-    preStartRange.setEnd(selection.anchorNode, 0);
-
-    postEndRange.setStart(selection.focusNode, selection.focusNode.textContent.length);
-    postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
-  }
+  postEndRange.setStart(endNode, endNode.textContent.length);
+  postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
 
   // prefixes/suffixes cannot contain paragraph breaks, words that are from more than one line break away should not be included
-  const prefixRe = new RegExp(String.raw`(\s+\S+){1,3}\s*?$`);
-  const suffixRe = new RegExp(String.raw`^\S*?(\s+\S+){1,3}`);
-
-  const textFragmentArr = [];
-  let [prefixes, suffixes] = "";
-  const getFirstWords = (sentence, patternRe) => {
-    if (sentence.toString().match(patternRe)) {
-      return sentence.toString().match(patternRe)[0];
-    } else {
-      return sentence.toString();
-    }
-  };
-
-  if (getFirstWords(preStartRange, prefixRe)) {
-    prefixes = `${getFirstWords(preStartRange.toString(), prefixRe)
-      .replace(/[ ]+/g, " ")
-      .trim()
-      .replace(/^[^\n]*\n/gm, "")}-`;
-  }
-  if (getFirstWords(postEndRange, suffixRe)) {
-    suffixes = `-${postEndRange.toString().match(suffixRe)[0]
-      .replace(/[ ]+/g, " ")
-      .trim()
-      .replace(/\n[^\n]*$/gm, "")}`;
-  }
-
-  if (textStart === textEnd) {
-    // if just one word ("Holmes") is selected, the browser API for text fragment will try to look for matches for strings like "Holmes, Holmes"
-    // providing the prefix and suffix should be enough to locate it on the page
-    textEnd = "";
-  }
+  const prefix = getLastWords(3, preStartRange.toString())
+    .replace(/[ ]+/g, " ")
+    .trim()
+    .replace(/^[^\n]*\n/gm, "");
+  const suffix = getFirstWords(3, postEndRange.toString())
+    .replace(/[ ]+/g, " ")
+    .trim()
+    .replace(/\n[^\n]*$/gm, "");
 
   // Partially selected words need to be captured completely
-  const constructHighlight = selection.toString().replace(/[\s]+/g, " ").split(/[ ]+/g);
-  if (direction == 'backward') {
-    constructHighlight[0] = selection.focusNode.textContent;
-    constructHighlight[constructHighlight.length - 1] = selection.anchorNode.textContent;
-  } else {
-    constructHighlight[0] = selection.anchorNode.textContent;
-    constructHighlight[constructHighlight.length - 1] = selection.focusNode.textContent;
-  }
-  const fullHighlight = constructHighlight.join(" ").trim().split(" ");
+  const fullHighlight = selection.toString().replace(/\s+/g, " ").trim().split(/\s/g);
+  fullHighlight[0] = startNode.textContent;
+  fullHighlight[fullHighlight.length - 1] = endNode.textContent;
+
   let quote = [fullHighlight.join(" ")];
   if (fullHighlight.length > 6) {
     quote = [fullHighlight.slice(0, 3).join(" "), fullHighlight.slice(-3).join(" ")];
   }
-  if (prefixes) textFragmentArr.push(prefixes);
+
+  const textFragmentArr = [];
+  if (prefix) textFragmentArr.push(`${prefix}-`);
   textFragmentArr.push(...quote);
-  if (suffixes.length != 0) {
-    textFragmentArr.push(suffixes ? suffixes : "");
-  }
+  if (suffix) textFragmentArr.push(`-${suffix}`);
+
   return `text=${textFragmentArr.map(encodeURIComponent).join(',')}`;
 }
+
 /**
  * @template T
  * Get the i-th element of an iterable
@@ -424,8 +393,8 @@ export function* walkBetweenNodes(start, end) {
   yield* walk(start);
 }
 
-@customElement('br-highlight-bar')
-class BRSelectionMenu extends LitElement {
+@customElement('br-select-menu')
+class BRSelectMenu extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
 
@@ -442,9 +411,9 @@ class BRSelectionMenu extends LitElement {
 
   render() {
     return html`
-      <button @click=${this.handleCopyLinkToHighlight} class="textFragmentButton">
-        <ia-icon-share aria-hidden="true"></ia-icon-share>
-        <span class="menuOptionTitle">Copy Link to Highlight</span>
+      <button @click=${this.handleCopyLinkToHighlight} class="br-select-menu__option">
+        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
+        <span class="br-select-menu__label">Copy Link to Highlight</span>
       </button>
     `;
   }
@@ -498,4 +467,28 @@ class BRSelectionMenu extends LitElement {
     this.style.display = 'none';
     return;
   }
+}
+
+/**
+ * @param {number} numWords
+ * @param {string} text
+ * @return {string}
+ */
+export function getFirstWords(numWords, text) {
+  text = text.trim();
+  const re = new RegExp(String.raw`^(\S+(\s+|$)){1,${numWords}}`);
+  const m = text.match(re);
+  return m ? m[0].trim() : "";
+}
+
+/**
+ * @param {number} numWords
+ * @param {string} text
+ * @return {string}
+ */
+export function getLastWords(numWords, text) {
+  text = text.trim();
+  const re = new RegExp(String.raw`((^|\s+)\S+){1,${numWords}}\s*?$`);
+  const m = text.match(re);
+  return m ? m[0].trim() : "";
 }

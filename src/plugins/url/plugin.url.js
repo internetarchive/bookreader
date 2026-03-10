@@ -147,6 +147,7 @@ BookReader.prototype.urlUpdateFragment = function() {
   // eg 'page/3/mode/2up'; no query params (in hash mode, it might have /search/term)
   // Does NOT have the :~:text fragment
   const newFragment = this.fragmentFromParams(params, this.options.urlMode);
+  const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
   // eg 'page/3/mode/2up'; no query params
   // WILL CONTAIN the :~:text fragment in hash mode (!)
   const currFragment = this.urlReadFragment();
@@ -168,7 +169,6 @@ BookReader.prototype.urlUpdateFragment = function() {
       this.options.urlMode = 'hash';
     } else {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
-      const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
       const textFragment = this.urlPlugin.retrieveTextFragment(newQueryString);
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
       const extractedPage = this.urlPlugin.urlStringToUrlState(newFragmentWithSlash)?.page;
@@ -192,10 +192,8 @@ BookReader.prototype.urlUpdateFragment = function() {
   if (this.options.urlMode === 'hash')  {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
     let textFragment = this.urlPlugin.retrieveTextFragment(this.readQueryString());
-    let extractedPage = newFragment.match(/(?<=\/)n?\d+(?=\/)/);
-    if (extractedPage) {
-      extractedPage = extractedPage[0];
-    }
+    const extractedPage = this.urlPlugin.urlStringToUrlState(newFragmentWithSlash)?.page;
+
     if (textFragment) {
       textFragment = `:~:text=${textFragment[0]}`;
     } else {
