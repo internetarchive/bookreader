@@ -152,7 +152,7 @@
     display: none;
 }
 
-.br-selection-menu__root {
+.br-select-menu__root {
   display: none;
   border-radius: 20px;
   background-color: #333;
@@ -161,15 +161,15 @@
   overflow: hidden;
   transition: border-radius 0.2s;
 }
-.br-selection-menu__root:hover {
+.br-select-menu__root:hover {
   border-radius: 8px;
 }
 
-.br-selection-menu__root:hover .textFragmentButton {
+.br-select-menu__root:hover .br-select-menu__option {
   border-radius: 6px;
 }
 
-.textFragmentButton {
+.br-select-menu__option {
   --iconWidth: 15px;
   --iconHeight: 15px;
   --iconFillColor: currentColor;
@@ -185,18 +185,18 @@
   padding: 4px;
 }
 
-.textFragmentButton:hover {
+.br-select-menu__option:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.textFragmentButton ia-icon-share {
+.br-select-menu__icon {
   display: block;
   flex-shrink: 0;
   width: 17px;
   height: 17px;
 }
 
-.menuOptionTitle {
+.br-select-menu__label {
   width: 0px;
   opacity: 0;
   interpolate-size: allow-keywords;
@@ -205,7 +205,7 @@
 }
 
 
-.br-selection-menu__root:hover .menuOptionTitle {
+.br-select-menu__root:hover .br-select-menu__label {
   width: auto;
   margin-left: 4px;
   opacity: 1;

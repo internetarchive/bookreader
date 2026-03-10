@@ -139,7 +139,9 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     for (const experiment of this.allExperiments) {
       // TODO: imagesBaseURL should be replaced with assetRoot everywhere
       experiment.assetRoot = this.br.options.imagesBaseURL.replace(/images\/$/, '');
-      experiment.icon = experiment.buildAssetPath(experiment.icon);
+      if (experiment.icon) {
+        experiment.icon = experiment.buildAssetPath(experiment.icon);
+      }
       experiment.br = this.br;
     }
 
@@ -285,7 +287,7 @@ export class BrExperimentToggle extends LitElement {
     return html`
       <div class="experiment-card" style="margin-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <img src="${this.icon}" style="width: 20px; height: 20px;" alt="" />
+          ${this.icon ? html`<img src="${this.icon}" style="width: 20px; height: 20px;" alt="" />` : ''}
           <div style="flex-grow: 1; font-weight: bold;">${this.title}</div>
         </div>
         <p style="opacity: 0.9">
