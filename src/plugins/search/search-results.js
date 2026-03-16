@@ -1,13 +1,13 @@
 /* eslint-disable class-methods-use-this */
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { css, html, LitElement, nothing } from 'lit';
-import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
-import checkmarkIconTemplate from '../../css/icon_checkmark.js';
-import closeIconTemplate from '@internetarchive/icon-close/index.js';
-import buttonCSS from '../../css/button-base.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { sharedStyles } from '../../css/sharedStyles.js';
-import { svgToDataUrl } from '../../util/lit.js';
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { css, html, LitElement, nothing } from "lit";
+import "@internetarchive/ia-activity-indicator/ia-activity-indicator.js";
+import checkmarkIconTemplate from "../../css/icon_checkmark.js";
+import closeIconTemplate from "@internetarchive/icon-close/index.js";
+import buttonCSS from "../../css/button-base.js";
+import { ifDefined } from "lit/directives/if-defined.js";
+import { sharedStyles } from "../../css/sharedStyles.js";
+import { svgToDataUrl } from "../../util/lit.js";
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 
 const checkmarkIconData = svgToDataUrl(checkmarkIconTemplate.strings[0]);
@@ -30,11 +30,11 @@ export class IABookSearchResults extends LitElement {
 
     /** @type {SearchInsideMatch[]} */
     this.results = [];
-    this.query = '';
+    this.query = "";
     this.queryInProgress = false;
     this.renderHeader = false;
     this.renderSearchAllFiles = false;
-    this.errorMessage = '';
+    this.errorMessage = "";
 
     this.bindBookReaderListeners();
   }
@@ -45,7 +45,10 @@ export class IABookSearchResults extends LitElement {
   }
 
   bindBookReaderListeners() {
-    document.addEventListener('BookReader:SearchCallback', this.setResults.bind(this));
+    document.addEventListener(
+      "BookReader:SearchCallback",
+      this.setResults.bind(this),
+    );
   }
 
   /**
@@ -55,7 +58,7 @@ export class IABookSearchResults extends LitElement {
     if (this.results.length) {
       return;
     }
-    const searchInput = this.shadowRoot.querySelector('input[type=\'search\']');
+    const searchInput = this.shadowRoot.querySelector("input[type='search']");
     searchInput.focus();
   }
 
@@ -76,28 +79,34 @@ export class IABookSearchResults extends LitElement {
     if (!input || !input.value) {
       return;
     }
-    this.dispatchEvent(new CustomEvent('bookSearchInitiated', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        query: this.query,
-      },
-    }));
+    this.dispatchEvent(
+      new CustomEvent("bookSearchInitiated", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          query: this.query,
+        },
+      }),
+    );
   }
 
   /**
    * @param {SearchInsideMatch} match
    */
   selectResult(match) {
-    this.dispatchEvent(new CustomEvent('resultSelected', {
-      bubbles: true,
-      composed: true,
-      detail: { match },
-    }));
-    this.dispatchEvent(new CustomEvent('closeMenu', {
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent("resultSelected", {
+        bubbles: true,
+        composed: true,
+        detail: { match },
+      }),
+    );
+    this.dispatchEvent(
+      new CustomEvent("closeMenu", {
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   cancelSearch() {
@@ -106,12 +115,12 @@ export class IABookSearchResults extends LitElement {
   }
 
   dispatchSearchCanceled() {
-    this.dispatchEvent(new Event('bookSearchCanceled'));
+    this.dispatchEvent(new Event("bookSearchCanceled"));
   }
 
   get resultsCount() {
     const count = this.results.length;
-    return count ? `${count} result${count > 1 ? 's' : ''}` : nothing;
+    return count ? `${count} result${count > 1 ? "s" : ""}` : nothing;
   }
 
   get headerSection() {
@@ -133,57 +142,82 @@ export class IABookSearchResults extends LitElement {
   get loadingIndicator() {
     return html`
       <div class="loading">
-        <ia-activity-indicator mode="processing" aria-hidden="true" role="presentation"></ia-activity-indicator>
+        <ia-activity-indicator
+          mode="processing"
+          aria-hidden="true"
+          role="presentation"
+        ></ia-activity-indicator>
         <p>Searching</p>
-        <button class="ia-button external cancel-search" @click=${this.cancelSearch}>Cancel</button>
+        <button
+          class="ia-button external cancel-search"
+          @click=${this.cancelSearch}
+        >
+          Cancel
+        </button>
       </div>
     `;
   }
 
   get resultsSet() {
     return html`
-    <nav aria-label="Search results">
-      <div>
-        ${this.resultsCount}
+      <nav aria-label="Search results">
+        <div>
+          ${this.resultsCount}
+          <a
+            href="#"
+            class="skip-link"
+            @click=${(e) => {
+              e.preventDefault();
+              this.shadowRoot
+                .querySelector(".results li:last-child .result-item")
+                .focus();
+            }}
+            >Skip to last result</a
+          >
+        </div>
+        <ul class="results">
+          ${this.results.map(
+            (match) => html`
+              <li>
+                <button
+                  class="result-item"
+                  @click=${this.selectResult.bind(this, match)}
+                >
+                  <span class="page-num">Page ${match.displayPageNumber}</span>
+                  —
+                  <span lang=${ifDefined(match.lang)}
+                    >${unsafeHTML(match.html)}</span
+                  >
+                </button>
+              </li>
+            `,
+          )}
+        </ul>
         <a
           href="#"
           class="skip-link"
           @click=${(e) => {
-      e.preventDefault();
-      this.shadowRoot.querySelector('.results li:last-child .result-item').focus();
-    }}
-        >Skip to last result</a>
-      </div>
-      <ul class="results">
-        ${this.results.map(match => html`
-            <li>
-              <button class="result-item" @click=${this.selectResult.bind(this, match)}>
-                <span class="page-num">Page ${match.displayPageNumber}</span> — <span lang=${ifDefined(match.lang)}>${unsafeHTML(match.html)}</span>
-              </button>
-            </li>
-          `)}
-      </ul>
-        <a
-          href="#"
-          class="skip-link"
-          @click=${(e) => {
-      e.preventDefault();
-      this.shadowRoot.querySelector('.results li:first-child .result-item').focus();
-    }}
-        >Skip to first result</a>
-    </nav>
+            e.preventDefault();
+            this.shadowRoot
+              .querySelector(".results li:first-child .result-item")
+              .focus();
+          }}
+          >Skip to first result</a
+        >
+      </nav>
     `;
   }
 
   get setErrorMessage() {
-    return html`
-      <p class="error-message">${this.errorMessage}</p>
-    `;
+    return html` <p class="error-message">${this.errorMessage}</p> `;
   }
 
   render() {
-    const showSearchCTA = (!this.queryInProgress && !this.errorMessage)
-    && (!this.queryInProgress && !this.results.length);
+    const showSearchCTA =
+      !this.queryInProgress &&
+      !this.errorMessage &&
+      !this.queryInProgress &&
+      !this.results.length;
     return html`
       ${this.headerSection}
       <form action="" method="get" @submit=${this.performSearch}>
@@ -196,7 +230,10 @@ export class IABookSearchResults extends LitElement {
           @search=${this.setQuery}
           .value=${this.query}
         />
-        <label class="search-cta ${showSearchCTA ? '' : 'sr-only'}" for="br-search-input">
+        <label
+          class="search-cta ${showSearchCTA ? "" : "sr-only"}"
+          for="br-search-input"
+        >
           Please enter text to search for
         </label>
       </form>
@@ -234,7 +271,7 @@ export class IABookSearchResults extends LitElement {
       }
 
       mark {
-        padding: 0 .2rem;
+        padding: 0 0.2rem;
         color: ${searchResultText};
         background: ${searchResultBg};
         border: 1px solid ${searchResultBorder};
@@ -274,7 +311,7 @@ export class IABookSearchResults extends LitElement {
       }
 
       label.checkbox {
-        padding-bottom: .5rem;
+        padding-bottom: 0.5rem;
         font-size: 1.6rem;
         line-height: 150%;
         vertical-align: middle;
@@ -284,12 +321,12 @@ export class IABookSearchResults extends LitElement {
         display: inline-block;
         width: 14px;
         height: 14px;
-        margin-left: .7rem;
+        margin-left: 0.7rem;
         content: "";
         border-radius: 2px;
       }
       :checked + label.checkbox:after {
-        background-image: url('${checkmarkIconData}');
+        background-image: url("${checkmarkIconData}");
       }
 
       label.checkbox[for="all_files"]:after {
@@ -305,7 +342,11 @@ export class IABookSearchResults extends LitElement {
         height: 3rem;
         padding: 0 10px;
         box-sizing: border-box;
-        font: normal 1.6rem "Helvetica qNeue", Helvetica, Arial, sans-serif;
+        font:
+          normal 1.6rem "Helvetica qNeue",
+          Helvetica,
+          Arial,
+          sans-serif;
         border-radius: 1.5rem;
         background: transparent;
       }
@@ -318,8 +359,8 @@ export class IABookSearchResults extends LitElement {
         margin-right: -5px;
         -webkit-appearance: none;
         appearance: none;
-        -webkit-mask: url('${closeIconData}') 0 0 no-repeat;
-        mask: url('${closeIconData}') 0 0 no-repeat;
+        -webkit-mask: url("${closeIconData}") 0 0 no-repeat;
+        mask: url("${closeIconData}") 0 0 no-repeat;
         -webkit-mask-size: 100%;
         mask-size: 100%;
         background: #fff;
@@ -360,6 +401,12 @@ export class IABookSearchResults extends LitElement {
         text-align: left;
         font-family: inherit;
         transition: background-color 0.2s;
+        /* Allow users to select and copy search snippet text inside result buttons. */
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        -o-user-select: text;
+        user-select: text;
       }
 
       .result-item:hover {
@@ -386,4 +433,4 @@ export class IABookSearchResults extends LitElement {
     return [sharedStyles, buttonCSS, mainCSS];
   }
 }
-customElements.define('ia-book-search-results', IABookSearchResults);
+customElements.define("ia-book-search-results", IABookSearchResults);
