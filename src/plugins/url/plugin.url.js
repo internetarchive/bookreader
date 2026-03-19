@@ -168,7 +168,10 @@ BookReader.prototype.urlUpdateFragment = function() {
 
   if (this.options.urlMode === 'hash')  {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
-    window.location.replace('#' + newFragment + newQueryStringSearch);
+    // Use location.hash instead of location.replace('#...') to preserve
+    // the current pathname. location.replace('#foo') is a relative URL
+    // that can wipe the path in SPA contexts.
+    window.location.hash = newFragment + newQueryStringSearch;
     this.oldLocationHash = newFragment + newQueryStringSearch;
   }
 };
