@@ -206,7 +206,10 @@ BookReader.prototype.urlUpdateFragment = function() {
     } else if (this.textFragmentPage && extractedPage != this.textFragmentPage) {
       textFragment = '';
     }
-    window.location.replace('#' + newFragment + newQueryStringSearch + textFragment);
+    // Use location.hash instead of location.replace('#...') to preserve
+    // the current pathname. location.replace('#foo') is a relative URL
+    // that can wipe the path in SPA contexts.
+    window.location.hash = newFragment + newQueryStringSearch + textFragment;
     this.oldLocationHash = newFragment + newQueryStringSearch + textFragment;
   }
 };
