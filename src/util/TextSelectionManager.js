@@ -274,7 +274,10 @@ export function createTextFragmentUrlParam(selection, pageLayer) {
   const endPhraseMatchRe = new RegExp(String.raw`(${textStartRe})(?=.*?(${textEndRe}))`, "gis");
 
   // Duplicated spaces in pageLayer.textContent for some reason
-  const wholePageText = pageLayer.textContent.replace(/\s+/g, " ");
+  const wholePageText = Array.from(document.querySelectorAll('.BRpage-visible'))
+    .map((item) => item.textContent)
+    .join(' ')
+    .replace(/\s+/g, " ") || pageLayer.textContent.replace(/\s+/g, " ");
   const startPhraseFoundMatches = wholePageText.matchAll(startPhraseMatchRe).toArray();
   const endPhraseFoundMatches = wholePageText.matchAll(endPhraseMatchRe).toArray();
   if (startPhraseFoundMatches.length == 1 && endPhraseFoundMatches.length == 1) {
@@ -284,12 +287,24 @@ export function createTextFragmentUrlParam(selection, pageLayer) {
 
   // Need to add some additional context to `startWord...endWord` by including surrounding words before and after the keywords
   const preStartRange = document.createRange();
-  preStartRange.setStart(pageLayer.firstElementChild, 0);
+
+  const previousPageContainer = pageLayer.parentElement?.previousElementSibling;
+  if (previousPageContainer?.classList.contains("BRpage-visible")) {
+    preStartRange.setStart(previousPageContainer, 0);
+  } else {
+    preStartRange.setStart(pageLayer.firstElementChild, 0);
+  }
   preStartRange.setEnd(startNode, 0);
   const postEndRange = document.createRange();
   postEndRange.setStart(endNode, endNode.textContent.length);
-  postEndRange.setEnd(pageLayer.lastElementChild, pageLayer.lastElementChild.childElementCount);
-
+  const nextPageContainer = pageLayer.parentElement.nextElementSibling;
+  if (nextPageContainer?.classList.contains("BRpage-visible")) {
+    const nextPageLastWord = getLastestElement(nextPageContainer);
+    postEndRange.setEnd(nextPageLastWord, Math.max(0, nextPageLastWord.textContent.length - 1));
+  } else {
+    const lastWordOfPageEl = getLastestElement(pageLayer);
+    postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
+  }
   // prefixes/suffixes cannot contain paragraph breaks, words that are from more than one line break away should not be included
   const prefix = getLastWords(3, preStartRange.toString())
     .replace(/[ ]+/g, " ")
@@ -301,9 +316,22 @@ export function createTextFragmentUrlParam(selection, pageLayer) {
     .replace(/\n[^\n]*$/gm, "");
 
   // Partially selected words need to be captured completely
+  // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
   const fullHighlight = selection.toString().replace(/\s+/g, " ").trim().split(/\s/g);
-  fullHighlight[0] = startNode.textContent;
-  fullHighlight[fullHighlight.length - 1] = endNode.textContent;
+  // Capture start/end words that may be partially highlighted
+  if (startNode.textContent.trim().length != 0) {
+    if (!startNode.textContent.includes(fullHighlight[0])) {
+      fullHighlight.unshift(startNode.textContent);
+    } else {
+      fullHighlight[0] = startNode.textContent;
+    }
+  }
+  if (endNode.textContent.trim().length != 0) {
+    if (!endNode.textContent.includes(fullHighlight[fullHighlight.length - 1])) {
+      fullHighlight.push(endNode.textContent);
+    }
+    fullHighlight[fullHighlight.length - 1] = endNode.textContent;
+  }
 
   let quote = [fullHighlight.join(" ")];
   if (fullHighlight.length > 6) {
@@ -491,4 +519,15 @@ export function getLastWords(numWords, text) {
   const re = new RegExp(String.raw`((^|\s+)\S+){1,${numWords}}\s*?$`);
   const m = text.match(re);
   return m ? m[0].trim() : "";
+}
+
+/**
+ * @param {HTMLElement | Element} parent
+ * @returns {Node}
+ */
+export function getLastestElement(parent) {
+  while (parent.lastElementChild) {
+    parent = parent.lastElementChild;
+  }
+  return parent;
 }

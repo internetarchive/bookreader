@@ -10,12 +10,12 @@ const FAKE_XML_MULT_LINES = `
     <PARAGRAPH>
       <LINE>
         <WORD coords="119,2050,230,2014" x-confidence="29">way </WORD>
-        <WORD coords="230,2038,320,2002" x-confidence="30">can </WORD>
+        <WORD coords="230,2038,320,2002" x-confidence="30">can  </WORD>
         <WORD coords="320,2039,433,2002" x-confidence="28">false </WORD>
         <WORD coords="433,2051,658,2003" x-confidence="29">judgment </WORD>
         <WORD coords="658,2039,728,2002" x-confidence="30">be </WORD>
         <WORD coords="658,2039,728,2002" x-confidence="30">-</WORD>
-        <WORD coords="728,2039,939,2001" x-confidence="29">formed. </WORD>
+        <WORD coords="728,2039,939,2001" x-confidence="29"> formed. </WORD>
         <WORD coords="939,2039,1087,2001" x-confidence="29">There </WORD>
         <WORD coords="1087,2039,1187,2002" x-confidence="29">still </WORD>
         <WORD coords="1187,2038,1370,2003" x-confidence="29">remains </WORD>
@@ -58,7 +58,7 @@ const MULTIPLE_REPEAT_LINES = `
         <WORD coords="331,1425,412,1378" x-confidence="96">clay</WORD>
         <WORD coords="431,1413,505,1378" x-confidence="96">and</WORD>
         <WORD coords="526,1413,637,1378" x-confidence="96">chalk</WORD>
-        <WORD coords="657,1414,814,1378" x-confidence="96">mixture</WORD>
+        <WORD coords="657,1414,814,1378" x-confidence="96">mixture,</WORD>
         <WORD coords="836,1414,957,1378" x-confidence="96">which</WORD>
         <WORD coords="976,1414,994,1380" x-confidence="96">I</WORD>
         <WORD coords="1017,1414,1080,1390" x-confidence="96">see</WORD>
@@ -134,6 +134,46 @@ const FAKE_DIALOGUE = `
         <WORD coords="181,1962,249,1916" x-confidence="96">“My</WORD>
         <WORD coords="266,1951,348,1928" x-confidence="95">own</WORD>
         <WORD coords="367,1953,481,1917" x-confidence="76">seal.”</WORD>
+      </LINE>
+    </PARAGRAPH>
+  </OBJECT>
+`;
+const PAGE_ONE = `
+  <OBJECT>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="177,1591,308,1556" x-confidence="84">Book</WORD>
+        <WORD coords="327,1592,359,1556" x-confidence="96">header</WORD>
+        <WORD coords="376,1604,493,1556" x-confidence="96">test</WORD>
+        <WORD coords="509,1603,610,1557" x-confidence="96">replica</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="177,1591,308,1556" x-confidence="84">This</WORD>
+        <WORD coords="327,1592,359,1556" x-confidence="96">is</WORD>
+        <WORD coords="376,1604,493,1556" x-confidence="96">page</WORD>
+        <WORD coords="509,1603,610,1557" x-confidence="96">one</WORD>
+      </LINE>
+    </PARAGRAPH>
+  </OBJECT>
+`;
+const PAGE_TWO = `
+  <OBJECT>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="177,1591,308,1556" x-confidence="84">Book</WORD>
+        <WORD coords="327,1592,359,1556" x-confidence="96">header</WORD>
+        <WORD coords="376,1604,493,1556" x-confidence="96">test</WORD>
+        <WORD coords="509,1603,610,1557" x-confidence="96">replica</WORD>
+      </LINE>
+    </PARAGRAPH>
+    <PARAGRAPH>
+      <LINE>
+        <WORD coords="177,1591,308,1556" x-confidence="84">Currently</WORD>
+        <WORD coords="327,1592,359,1556" x-confidence="96">on</WORD>
+        <WORD coords="376,1604,493,1556" x-confidence="96">page</WORD>
+        <WORD coords="509,1603,610,1557" x-confidence="96">two</WORD>
       </LINE>
     </PARAGRAPH>
   </OBJECT>
@@ -239,7 +279,48 @@ describe("TextFragment tests", () => {
   afterEach(() => {
     sinon.restore();
     $('.BRtextLayer').remove();
+    $('.BRpage').remove();
     window.getSelection().direction = null;
+  });
+
+  test("Text fragment generation accounts for text at the end of the first page/beginning of second page", async () => {
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(PAGE_ONE, "text/xml")));
+    const $pageContainer1 = $("<div class='BRpage'></div>").appendTo(br.refs.$brContainer);
+    await br.plugins.textSelection.createTextLayer({ $container: $pageContainer1, page: {index: 1, width: 100, height: 100 }});
+
+    sinon.restore();
+
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(PAGE_TWO, "text/xml")));
+    const $pageContainer2 = $("<div class='BRpage'></div>").appendTo(br.refs.$brContainer);
+    await br.plugins.textSelection.createTextLayer({ $container: $pageContainer2, page: {index: 2, width: 100, height: 100 }});
+
+    Array.from($(br.refs.$brContainer).find(".BRtextLayer")).forEach((layer) => {
+      layer.parentElement.classList.add("BRpage-visible");
+    });
+
+    const rangePageOne = document.createRange();
+    rangePageOne.setStart($(br.refs.$brContainer).find(".BRtextLayer").find(".BRparagraphElement").find(".BRwordElement")[0].firstChild, 0);
+    rangePageOne.setEnd($(br.refs.$brContainer).find(".BRtextLayer").find(".BRparagraphElement").find(".BRwordElement")[3].firstChild, 7);
+
+    const selectionPageOne = window.getSelection();
+    selectionPageOne.removeAllRanges();
+    selectionPageOne.addRange(rangePageOne);
+
+    const pageOneUrlParam = createTextFragmentUrlParam(selectionPageOne, br.refs.$brContainer.find(".BRtextLayer")[0]);
+
+    const rangePageTwo = document.createRange();
+    rangePageTwo.setStart($($(br.refs.$brContainer).find(".BRtextLayer")[1]).find(".BRparagraphElement").find(".BRwordElement")[0].firstChild, 0);
+    rangePageTwo.setEnd($($(br.refs.$brContainer).find(".BRtextLayer")[1]).find(".BRparagraphElement").find(".BRwordElement")[3].firstChild, 6);
+    const selectionPageTwo = window.getSelection();
+    selectionPageTwo.removeAllRanges();
+    selectionPageTwo.addRange(rangePageTwo);
+
+    const pageTwoUrlParam = createTextFragmentUrlParam(selectionPageTwo, br.refs.$brContainer.find(".BRtextLayer")[1]);
+
+    expect(pageOneUrlParam).toMatch("text=Book%20header%20test%20replica,-This%20is%20page");
+    expect(pageTwoUrlParam).toMatch("text=is%20page%20one-,Book%20header%20test%20replica,-Currently%20on%20page");
   });
 
   test("Forward and Backward selection without prefix", async () => {
@@ -298,6 +379,54 @@ describe("TextFragment tests", () => {
 
     expect(forwardTest).toMatch("text=various,lastWord");
     expect(backwardTest).toMatch(forwardTest);
+  });
+
+  test("Handle start/end word with space before/after meaningful text content", async () => {
+    const $container = br.refs.$brContainer;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
+
+    const startWordRange = document.createRange();
+    startWordRange.setStart($container.find(".BRwordElement")[1].firstChild, 3);
+    startWordRange.setEnd($container.find(".BRwordElement")[6].firstChild, 4);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(startWordRange);
+    const startingSpaceTextFragmentUrl = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+
+    expect(startingSpaceTextFragmentUrl).toBe(`text=way-,can%20false%20judgment%20be%20-%20formed.,-There%20still%20remains`);
+
+    const endWordRange = document.createRange();
+    endWordRange.setStart($container.find(".BRwordElement")[1].firstChild, 0);
+    endWordRange.setEnd($container.find(".BRwordElement")[6].firstChild, 0);
+
+    selection.removeAllRanges();
+    selection.addRange(endWordRange);
+    const endingSpaceTextFragmentUrl = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+
+    expect(endingSpaceTextFragmentUrl).toBe(startingSpaceTextFragmentUrl);
+  });
+
+  test("Quote and comma included in text selection should be URI encoded", async () => {
+    const $container = br.refs.$brContainer;
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(MULTIPLE_REPEAT_LINES, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
+
+    const rangeIncludesComma = document.createRange();
+    rangeIncludesComma.setStart(
+      $($container.find('.BRparagraphElement')[0]).find(".BRwordElement")[0].firstChild, 0);
+    rangeIncludesComma.setEnd($($container.find('.BRparagraphElement')[0]).find(".BRwordElement")[4].firstChild, 0);
+
+    const commaSelection = window.getSelection();
+    commaSelection.removeAllRanges();
+    commaSelection.addRange(rangeIncludesComma);
+    const commaTextFragmentUrl = createTextFragmentUrlParam(commaSelection, document.querySelector('.BRtextLayer'));
+
+    expect(commaTextFragmentUrl.includes("“")).toBeFalsy();
+    expect(commaTextFragmentUrl).toBe("text=%E2%80%9CThat,mixture%2C");
   });
 
   test("Should be able to differentiate overlapping matches", async () => {
