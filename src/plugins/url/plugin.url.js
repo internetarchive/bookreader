@@ -255,7 +255,12 @@ export class BookreaderUrlPlugin extends BookReader {
       if (location.includes("text=")) {
         this.on('textLayerVisible', async (_, {pageContainerEl}) => {
           const visiblePageNum = pageContainerEl.getAttribute('data-page-num');
-          await new Promise(resolve => setTimeout(resolve, 100));
+          let renderPageDelay = 100;
+          if (this.mode === 1) {
+            // maybe add some more time to have the page "settle down" from user scrolling
+            renderPageDelay = 900;
+          }
+          await new Promise(resolve => setTimeout(resolve, renderPageDelay));
           // No textFragment found or the textFragment stored doesn't match current visible page loaded
           if (!this.textFragment || this.textFragmentPage !== visiblePageNum) return;
           if (this.options.urlMode === 'history') {

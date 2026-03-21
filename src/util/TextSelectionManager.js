@@ -453,6 +453,8 @@ class BRSelectMenu extends LitElement {
     const currentSelection = window.getSelection();
     /** @type {HTMLElement} */
     const textLayer = currentSelection.anchorNode.parentElement.closest('.BRtextLayer');
+    // To do - updateResumeValue + getCookiePath in plugin.resume.js overrides the adjustedUrlPageNumPath, check how to workaround this
+    const adjustedUrlPageNumPath = currentUrl.pathname.toString().replace(/(?<=\/page\/)\d+(?=\/)/, textLayer.parentElement.getAttribute('data-page-num'));
     if (currentParams.includes('text=')) {
       currentParams = currentParams.replace(/(text=)[\w\W\d%]+/, createTextFragmentUrlParam(currentSelection, textLayer));
     } else {
@@ -463,9 +465,9 @@ class BRSelectMenu extends LitElement {
       }
     }
     if (this.br.options.urlMode === 'history') {
-      navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}`);
+      navigator.clipboard.writeText(`${currentUrl.origin}${adjustedUrlPageNumPath}${currentParams}`);
     } else {
-      navigator.clipboard.writeText(`${currentUrl.origin}${currentUrl.pathname}${currentParams}${currentUrl?.hash}`);
+      navigator.clipboard.writeText(`${currentUrl.origin}${adjustedUrlPageNumPath}${currentParams}${currentUrl?.hash}`);
     }
   }
 
