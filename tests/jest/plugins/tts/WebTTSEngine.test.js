@@ -15,11 +15,13 @@ beforeEach(() => {
     this.text = text;
     Object.assign(this, eventTargetMixin());
   };
+  // mockSomeConstantValueGetter.mockReturnValue(false);
 });
 
 afterEach(() => {
   delete window.speechSynthesis;
   delete window.SpeechSynthesisUtterance;
+  // mockSomeConstantValueGetter.mockReset();
 });
 
 describe('WebTTSEngine', () => {
@@ -90,6 +92,17 @@ describe('WebTTSSound', () => {
       await afterEventLoop();
       expect(finishSpy.callCount).toBe(0);
     });
+  });
+
+  test('reloading should store the charIndex for the sound', async () => {
+    const sound = new WebTTSSound('hello world');
+    sound.load();
+    sound.play();
+    sound.utterance.dispatchEvent('pause', {target: {text: 'hello world'}});
+    await afterEventLoop();
+    sound.reload();
+    await afterEventLoop();
+    expect(sound._charIndex).not.toBe(0);
   });
 
   describe('_chromePausingBugFix', () => {
@@ -167,12 +180,69 @@ describe('WebTTSSound', () => {
     sound.started = true;
     sound.paused = true;
     const dispatchSpy = sinon.spy(sound.utterance, 'dispatchEvent');
+    sound.play = sinon.stub();
     sound.resume();
     clock.tick(1000);
+    sound.stop = sinon.stub();
     clock.restore();
 
     await afterEventLoop();
     expect(dispatchSpy.callCount).toBe(1);
+    expect(sound.play.callCount).toBe(1);
     expect(dispatchSpy.args[0][0].type).toBe('resume');
+  });
+
+  test('resume continues playing if not started or stopped', async() => {
+    const sound = new WebTTSSound('hello world');
+    sound.load();
+    sound.play = sinon.stub();
+    sound.resume();
+    await afterEventLoop();
+    expect(sound.play.callCount).toBe(1);
+  });
+
+  test('fire finish event', async () => {
+    const sound = new WebTTSSound('hello world');
+    sound.load();
+    const dispatchSpy = sinon.spy(sound.utterance, 'dispatchEvent');
+    sound.play();
+    sound.stop = sinon.stub();
+    sound.finish();
+    await afterEventLoop();
+    expect(dispatchSpy.args[0][0].type).toBe('finish');
+  });
+
+  test('pause immediately fails if already in paused state', async() => {
+    const sound = new WebTTSSound('pausing on a pause');
+    sound.load();
+    sound.play();
+    const checkSpeech = jest.spyOn(speechSynthesis, 'pause');
+    sound.paused = true;
+    sound.pause();
+    expect(checkSpeech).toHaveBeenCalledTimes(0);
+  });
+});
+
+const mockSomeConstantValueGetter = jest.fn();
+jest.mock('../../../../src/plugins/tts/utils', () => ({
+  ...jest.requireActual('../../../../src/plugins/tts/utils'),
+  get DEBUG_READ_ALOUD() {
+    return mockSomeConstantValueGetter;
+  },
+}));
+
+describe('DEBUG_READ_ALOUD', () => {
+  test('debug listeners should be added', async () => {
+    mockSomeConstantValueGetter.mockReturnValue(true);
+    const sound = new WebTTSSound('debug world');
+    console.log = sinon.stub();
+    expect(console.log.callCount).toBe(0);
+    sound.load();
+    const EVENTS = ['pause', 'resume', 'start', 'end', 'error', 'boundary', 'mark', 'finish'];
+
+    EVENTS.forEach((event) => {
+      sound.utterance.dispatchEvent(event);
+    });
+    expect(console.log.callCount).toBe(EVENTS.length);
   });
 });
