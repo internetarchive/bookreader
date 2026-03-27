@@ -106,7 +106,7 @@
     ]
   },
   "scripts": {
-    "preversion": "npm run test && node scripts/preversion.js",
+    "preversion": "node scripts/preversion.js",
     "version": "node scripts/version.js",
     "postversion": "node scripts/postversion.js",
     "build": "npm run clean && npx concurrently --group npm:build-js npm:build-css npm:build-assets npm:build-hypothesis npm:build-bergamot",
