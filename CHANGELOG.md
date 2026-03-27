@@ -1,3 +1,6 @@
+# 5.0.0-109
+- Fix: Loading error with different builds/versions of lit @cdrini
+
 # 5.0.0-108
 - Fix: Loading error with different builds/versions of lit @cdrini
 
