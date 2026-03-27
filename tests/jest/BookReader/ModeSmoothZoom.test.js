@@ -27,7 +27,7 @@ afterEach(() => {
   sinon.restore();
   try {
     interact.removeDocument(document);
-  } catch (e) {}
+  } catch {}
 });
 
 describe('ModeSmoothZoom', () => {

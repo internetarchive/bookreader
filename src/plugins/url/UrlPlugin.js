@@ -143,7 +143,7 @@ export class UrlPlugin {
         const newUrlPath = `${this.urlHistoryBasePath}${concatenatedPath}`.trim().replace(/(\/+)/g, '/');
         try {
           window.history.replaceState({}, null, newUrlPath);
-        } catch (e) {
+        } catch {
           // DOMException on Chrome when in sandboxed iframe
           this.urlMode = 'hash';
         }

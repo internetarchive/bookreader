@@ -167,7 +167,7 @@ export class DragScrollable {
       event.preventDefault();
       return false;
     }
-  }
+  };
 
   /** @param {MouseEvent} event */
   _dragContinueHandler = (event) => { // User is dragging
@@ -195,7 +195,7 @@ export class DragScrollable {
       event.preventDefault();
       return false;
     }
-  }
+  };
 
   /** @param {MouseEvent} event */
   _dragEndHandler = (event) => { // Stop scrolling
@@ -229,5 +229,5 @@ export class DragScrollable {
       event.stopPropagation();
       return false;
     }
-  }
+  };
 }

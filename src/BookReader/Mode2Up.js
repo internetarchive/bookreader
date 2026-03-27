@@ -98,14 +98,14 @@ export class Mode2Up extends ModeAbstract {
    */
   zoom(direction) {
     switch (direction) {
-    case 'in':
-      this.mode2UpLit.zoomIn();
-      break;
-    case 'out':
-      this.mode2UpLit.zoomOut();
-      break;
-    default:
-      console.error(`Unsupported direction: ${direction}`);
+      case 'in':
+        this.mode2UpLit.zoomIn();
+        break;
+      case 'out':
+        this.mode2UpLit.zoomOut();
+        break;
+      default:
+        console.error(`Unsupported direction: ${direction}`);
     }
   }
 

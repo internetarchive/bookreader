@@ -52,7 +52,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
 
     /** The experiments that should be shown in the experiments panel */
     enabledExperiments: ['translate'],
-  }
+  };
 
   /** @type {ExperimentModel[]} */
   allExperiments = [
@@ -110,7 +110,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
         });
       }
     }(),
-  ]
+  ];
 
   /** @type {BrExperimentsPanel} */
   _panel;

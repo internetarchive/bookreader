@@ -18,7 +18,7 @@ export class AutoplayPlugin extends BookReaderPlugin {
     flipDelay: 5000,
     /** Allow controlling the autoflip/speed/delay from the url */
     urlParams: true,
-  }
+  };
 
   timer = null;
 

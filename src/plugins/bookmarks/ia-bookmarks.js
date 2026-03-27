@@ -119,7 +119,7 @@ class IABookmarks extends LitElement {
       className: 'green',
     }];
 
-    // eslint-disable-next-line
+
     this.defaultColor = this.bookmarkColors[0];
     this.api = api;
     this.deleteModalConfig = new ModalConfig({
@@ -310,7 +310,7 @@ class IABookmarks extends LitElement {
       const pageID = +pageEl.classList.value.match(/pagediv\d+/)[0].replace(/\D/g, '');
       const pageBookmark = this.getBookmark(pageID);
       const bookmarkState = pageBookmark ? 'filled' : 'hollow';
-      // eslint-disable-next-line
+
       const pageData = this.bookreader.book.getPage(pageID);
       const { isViewable } = pageData;
 

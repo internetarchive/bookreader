@@ -73,7 +73,7 @@ export default class AbstractTTSEngine {
 
   updateBestVoice = () => {
     this.voice = AbstractTTSEngine.getBestBookVoice(this.getVoices(), this.opts.bookLanguage);
-  }
+  };
 
   /**
    * @param {number} leafIndex

@@ -5,7 +5,7 @@ export class TextSelectionManager {
   options = {
     // Current Translation plugin implementation does not have words, will limit to one BRlineElement for now
     maxProtectedWords: 200,
-  }
+  };
 
   /**
    * @param {string} layer Selector for the text layer to manage
@@ -79,7 +79,7 @@ export class TextSelectionManager {
     } else {
       throw new Error(`Unknown type ${type}`);
     }
-  }
+  };
 
   /**
    * Intercept copied text to remove any styling applied to it

@@ -52,7 +52,7 @@ export class SearchPlugin extends BookReaderPlugin {
     /** @type {string} */
     initialSearchTerm: null,
     goToFirstResult: false,
-  }
+  };
 
   /**
    * @override

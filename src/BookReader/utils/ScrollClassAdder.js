@@ -27,5 +27,5 @@ export class ScrollClassAdder {
     this.timeout = setTimeout(() => {
       this.element.classList.remove(this.className);
     }, 600);
-  }
+  };
 }

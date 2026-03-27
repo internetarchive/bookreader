@@ -22,7 +22,7 @@ export class TranslationManager {
   modelRegistry = {};
 
   /** @type {Record<key, {promise: Promise<string>, resolve: function, reject: function}>} */
-  currentlyTranslating = {}
+  currentlyTranslating = {};
 
   /** @type {Record<string, string>[]} */
   fromLanguages = [];
@@ -147,7 +147,7 @@ export class TranslationManager {
     });
 
     return promise;
-  }
+  };
 
   /**
    * Checks and updates the status of a model that is currently being retreived from IA
@@ -160,5 +160,5 @@ export class TranslationManager {
       .catch((err) => {
         console.error(`An error occurred while trying to retreive the ${fromLanguage}-${toLanguage} model`);
       });
-  }
+  };
 }

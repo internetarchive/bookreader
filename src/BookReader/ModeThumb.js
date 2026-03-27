@@ -10,7 +10,7 @@ import { ModeAbstract } from './ModeAbstract.js';
 /** @typedef {JQuery} $lazyLoadImgPlaceholder * jQuery element with data attributes: leaf, reduce */
 
 export class ModeThumb extends ModeAbstract {
-  name = 'thumb'
+  name = 'thumb';
 
   /**
    * @param {BookReader} br
@@ -195,7 +195,7 @@ export class ModeThumb extends ModeAbstract {
     // Remove thumbnails that are not to be displayed
     for (const row of this.br.displayedRows) {
       if (notInArray(row, rowsToDisplay)) {
-        for (const { num: index } of leafMap[row]?.leafs) {
+        for (const { num: index } of leafMap[row]?.leafs ?? []) {
           if (!imagesToDisplay?.includes(index)) {
             this.br.$(`.pagediv${index}`)?.remove();
           }
@@ -242,14 +242,14 @@ export class ModeThumb extends ModeAbstract {
   zoom(direction) {
     const oldColumns = this.br.thumbColumns;
     switch (direction) {
-    case 'in':
-      this.br.thumbColumns -= 1;
-      break;
-    case 'out':
-      this.br.thumbColumns += 1;
-      break;
-    default:
-      console.error(`Unsupported direction: ${direction}`);
+      case 'in':
+        this.br.thumbColumns -= 1;
+        break;
+      case 'out':
+        this.br.thumbColumns += 1;
+        break;
+      default:
+        console.error(`Unsupported direction: ${direction}`);
     }
 
     // Limit zoom in/out columns

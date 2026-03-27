@@ -299,7 +299,7 @@ export class Mode2UpLit extends LitElement {
         this.br._createPageContainer(page.index)
       )
     );
-  }
+  };
 
   /**
    * @param {PageIndex} startIndex
@@ -343,7 +343,7 @@ export class Mode2UpLit extends LitElement {
       this.br.trigger('pageVisible', { pageContainerEl });
     }
     return pageContainerEl;
-  }
+  };
 
   /**
    * @param {'left' | 'right'} side
@@ -409,7 +409,7 @@ export class Mode2UpLit extends LitElement {
     } else {
       return mainEdges;
     }
-  }
+  };
 
   resizeViaAutofit(page = this.visiblePages[0]) {
     this.scale = this.computeScale(page, this.autoFit);
@@ -685,7 +685,7 @@ export class Mode2UpLit extends LitElement {
     } else if ($page.data('side') == 'R') {
       this.br.right();
     }
-  }
+  };
 }
 
 @customElement('br-leaf-edges')
@@ -745,7 +745,7 @@ export class LeafEdges extends LitElement {
     this.addEventListener('mousemove', this.onMouseMove);
     this.$hoverBar.style.display = 'block';
     this.$hoverLabel.style.display = 'block';
-  }
+  };
 
   /**
    * @param {MouseEvent} e
@@ -760,7 +760,7 @@ export class LeafEdges extends LitElement {
     this.$hoverLabel.style.top = `${e.offsetY}px`;
     const index = this.mouseEventToPageIndex(e);
     this.$hoverLabel.textContent = this.book.getPageName(index);
-  }
+  };
 
   /**
    * @param {MouseEvent} e
@@ -769,14 +769,14 @@ export class LeafEdges extends LitElement {
     this.removeEventListener('mousemove', this.onMouseMove);
     this.$hoverBar.style.display = 'none';
     this.$hoverLabel.style.display = 'none';
-  }
+  };
 
   /**
    * @param {MouseEvent} e
    */
   onClick = (e) => {
     this.pageClickHandler(this.mouseEventToPageIndex(e));
-  }
+  };
 
   /**
    * @param {MouseEvent} e

@@ -9,7 +9,7 @@ export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
     enabled: true,
     /** Provide a means of debugging, cause otherwise it's impossible to test locally */
     debug: false,
-  }
+  };
 
   /** @type {string} */
   _prevFragment = null;
@@ -49,7 +49,7 @@ export class ArchiveAnalyticsPlugin extends BookReaderPlugin {
           !values.offsite && window.top.location.pathname.match(/^\/details\//)
             ? 1
             : 0;
-      } catch (e) { }
+      } catch { }
       // avoids embed cross site exceptions -- but on (+) side, means it is and keeps marked offite!
 
       // Send bookreader ping

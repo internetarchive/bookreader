@@ -608,7 +608,7 @@ BookReader.prototype.getInitialMode = function(params) {
   if (this.options.defaults) {
     try {
       initialMode = _modeStringToNumber(this.options.defaults);
-    } catch (e) {
+    } catch {
       // Can ignore this error
     }
   }
@@ -867,63 +867,63 @@ BookReader.prototype.setupKeyListeners = function () {
     //   https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values
     switch (e.key) {
 
-    // Page navigation
-    case "Home":
-      e.preventDefault();
-      this.first();
-      break;
-    case "End":
-      e.preventDefault();
-      this.last();
-      break;
-    case "PageDown":
+      // Page navigation
+      case "Home":
+        e.preventDefault();
+        this.first();
+        break;
+      case "End":
+        e.preventDefault();
+        this.last();
+        break;
+      case "PageDown":
       // In 1up and thumb mode page scrolling handled by browser
-      if (this.constMode2up === this.mode) {
-        e.preventDefault();
-        this.next();
-      }
-      break;
-    case "PageUp":
+        if (this.constMode2up === this.mode) {
+          e.preventDefault();
+          this.next();
+        }
+        break;
+      case "PageUp":
       // In 1up and thumb mode page scrolling handled by browser
-      if (this.constMode2up === this.mode) {
-        e.preventDefault();
-        this.prev();
-      }
-      break;
-    case "ArrowLeft":
-    case "Left": // hack for IE and old Gecko
+        if (this.constMode2up === this.mode) {
+          e.preventDefault();
+          this.prev();
+        }
+        break;
+      case "ArrowLeft":
+      case "Left": // hack for IE and old Gecko
       // No y-scrolling in thumb mode
-      if (this.constModeThumb != this.mode) {
-        e.preventDefault();
-        this.left();
-      }
-      break;
-    case "ArrowRight":
-    case "Right": // hack for IE and old Gecko
+        if (this.constModeThumb != this.mode) {
+          e.preventDefault();
+          this.left();
+        }
+        break;
+      case "ArrowRight":
+      case "Right": // hack for IE and old Gecko
       // No y-scrolling in thumb mode
-      if (this.constModeThumb != this.mode) {
+        if (this.constModeThumb != this.mode) {
+          e.preventDefault();
+          this.right();
+        }
+        break;
+        // Zoom
+      case '-':
+      case 'Subtract':
         e.preventDefault();
-        this.right();
-      }
-      break;
-    // Zoom
-    case '-':
-    case 'Subtract':
-      e.preventDefault();
-      this.zoom(-1);
-      break;
-    case '+':
-    case '=':
-    case 'Add':
-      e.preventDefault();
-      this.zoom(1);
-      break;
-    // Fullscreen
-    case 'F':
-    case 'f':
-      e.preventDefault();
-      this.toggleFullscreen();
-      break;
+        this.zoom(-1);
+        break;
+      case '+':
+      case '=':
+      case 'Add':
+        e.preventDefault();
+        this.zoom(1);
+        break;
+        // Fullscreen
+      case 'F':
+      case 'f':
+        e.preventDefault();
+        this.toggleFullscreen();
+        break;
     }
   });
 };

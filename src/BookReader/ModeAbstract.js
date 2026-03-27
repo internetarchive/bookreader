@@ -22,22 +22,22 @@ export class ModeAbstract {
   parsePageSpecifier(indexOrDirection) {
     const isRTL = this.book.pageProgression == 'rl';
     switch (indexOrDirection) {
-    case 'left':
-      return isRTL ? this.parsePageSpecifier('next') : this.parsePageSpecifier('prev');
-    case 'right':
-      return isRTL ? this.parsePageSpecifier('prev') : this.parsePageSpecifier('next');
-    case 'next':
-      if (this.br.firstIndex < this.book.getNumLeafs() - 1) {
-        return this.book.getPage(this.br.firstIndex + 1);
-      }
-      return undefined;
-    case 'prev':
-      if (this.br.firstIndex >= 1) {
-        return this.book.getPage(this.br.firstIndex - 1);
-      }
-      return undefined;
-    default:
-      return this.book.getPage(indexOrDirection);
+      case 'left':
+        return isRTL ? this.parsePageSpecifier('next') : this.parsePageSpecifier('prev');
+      case 'right':
+        return isRTL ? this.parsePageSpecifier('prev') : this.parsePageSpecifier('next');
+      case 'next':
+        if (this.br.firstIndex < this.book.getNumLeafs() - 1) {
+          return this.book.getPage(this.br.firstIndex + 1);
+        }
+        return undefined;
+      case 'prev':
+        if (this.br.firstIndex >= 1) {
+          return this.book.getPage(this.br.firstIndex - 1);
+        }
+        return undefined;
+      default:
+        return this.book.getPage(indexOrDirection);
     }
   }
 }

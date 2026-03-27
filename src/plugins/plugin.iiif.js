@@ -8,7 +8,7 @@ export class IiifPlugin extends BookReaderPlugin {
     enabled: true,
     /** @type {import('@iiif/presentation-3').Manifest | import('@iiif/presentation-2').Manifest} */
     manifest: null,
-  }
+  };
 
   setup(options) {
     super.setup(options);

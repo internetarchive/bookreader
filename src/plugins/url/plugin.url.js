@@ -159,7 +159,7 @@ BookReader.prototype.urlUpdateFragment = function() {
       try {
         window.history.replaceState({}, null, newUrlPath);
         this.oldLocationHash = newFragment + newQueryString;
-      } catch (e) {
+      } catch {
         // DOMException on Chrome when in sandboxed iframe
         this.options.urlMode = 'hash';
       }

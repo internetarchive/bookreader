@@ -29,7 +29,7 @@ export class HTMLDimensionsCacher {
     this.clientHeight = this.element.clientHeight;
     this.boundingClientRect.top = bc.top;
     this.boundingClientRect.left = bc.left;
-  }
+  };
   debouncedUpdateClientSizes = debounce(this.updateClientSizes, 150, false);
 
   /** @param {EventTarget} win */
