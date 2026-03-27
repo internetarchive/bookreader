@@ -109,7 +109,7 @@ export class ModeSmoothZoom {
   _preventEvent = (ev) => {
     ev.preventDefault();
     return false;
-  }
+  };
 
   _pinchStart = async () => {
     // Safari calls gesturestart twice!
@@ -136,7 +136,7 @@ export class ModeSmoothZoom {
         end: this._pinchEnd,
       },
     });
-  }
+  };
 
   /** @param {{ scale: number, clientX: number, clientY: number }}} e */
   _pinchMove = async (e) => {
@@ -150,7 +150,7 @@ export class ModeSmoothZoom {
       // Buffer these events; only update the scale when request animation fires
       this.pinchMoveFrame = this.bufferFn(this._drawPinchZoomFrame);
     }
-  }
+  };
 
   _pinchEnd = async () => {
     if (!this.pinching) return;
@@ -171,7 +171,7 @@ export class ModeSmoothZoom {
     this.mode.$visibleWorld.style.willChange = "auto";
     this.attachCtrlZoom();
     this.mode.attachScrollListeners?.();
-  }
+  };
 
   _drawPinchZoomFrame = async () => {
     // Because of the buffering/various timing locks,
@@ -201,7 +201,7 @@ export class ModeSmoothZoom {
     this.mode.$container.style.overflow = "auto";
     this.oldScale = this.lastEvent.scale;
     this.pinchMoveFrame = null;
-  }
+  };
 
   _dragMove = async (e) => {
     if (this.pinching) {
@@ -209,7 +209,7 @@ export class ModeSmoothZoom {
     }
     this.mode.$container.scrollTop -= e.dy;
     this.mode.$container.scrollLeft -= e.dx;
-  }
+  };
 
   /** @private */
   attachCtrlZoom() {
@@ -226,18 +226,18 @@ export class ModeSmoothZoom {
     if (!ev.ctrlKey) return;
     ev.preventDefault();
     const zoomMultiplier =
-        // Zooming on macs was painfully slow; likely due to their better
-        // trackpads. Give them a higher zoom rate.
-        /Mac/i.test(navigator.platform)
-          ? 0.045
-          : // This worked well for me on Windows
-          0.03;
+    // Zooming on macs was painfully slow; likely due to their better
+    // trackpads. Give them a higher zoom rate.
+      /Mac/i.test(navigator.platform)
+        ? 0.045
+        : // This worked well for me on Windows
+        0.03;
 
     // Zoom around the cursor
     this.updateScaleCenter(ev);
     this.mode.autoFit = "none";
     this.mode.scale *= 1 - Math.sign(ev.deltaY) * zoomMultiplier;
-  }
+  };
 
   /**
    * @param {object} param0
@@ -308,5 +308,5 @@ export class TouchesMonitor {
    */
   _updateTouchCount = (ev) => {
     this.touches = ev.touches.length;
-  }
+  };
 }

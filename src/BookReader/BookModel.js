@@ -98,7 +98,7 @@ export class BookModel {
         const pageIndex = parseInt(pageIntStr);
         indices.push(pageIndex);
         return indices;
-      } catch (err) {
+      } catch {
         // Do nothing... will run through page names and see if one matches
       }
     }
@@ -153,7 +153,7 @@ export class BookModel {
    * @param  {number} rotate - not used in default implementation
    * @return {string|undefined}
    */
-  // eslint-disable-next-line no-unused-vars
+
   getPageURI(index, reduce, rotate) {
     if (!this.getPageProp(index, 'viewable', true)) {
       const uri = this.br.options.unviewablePageURI;

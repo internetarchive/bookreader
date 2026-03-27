@@ -1,4 +1,4 @@
-/* eslint-disable class-methods-use-this */
+
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { css, html, LitElement, nothing } from 'lit';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';

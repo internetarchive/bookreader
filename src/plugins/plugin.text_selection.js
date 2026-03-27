@@ -22,7 +22,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     jsonp: false,
     /** Mox words that can be selected when the text layer is protected */
     maxProtectedWords: 200,
-  }
+  };
 
   /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
   djvuPagesPromise = null;
@@ -87,7 +87,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       try {
         const xmlMap = $.parseXML(res);
         return xmlMap && $(xmlMap).find("OBJECT");
-      } catch (e) {
+      } catch {
         return undefined;
       }
     });
@@ -118,7 +118,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
         this.pageTextCache.add({ index, response: result });
         return result;
-      } catch (e) {
+      } catch {
         return undefined;
       }
     } else {

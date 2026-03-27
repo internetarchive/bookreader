@@ -57,7 +57,7 @@ export class ChaptersPlugin extends BookReaderPlugin {
      * @type {import('@/src/util/strings.js').StringWithVars}
      */
     bookId: '{{bookId}}',
-  }
+  };
 
   /** @type {TocEntry[]} */
   _tocEntries;

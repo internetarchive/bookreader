@@ -7,7 +7,7 @@ import { ModeAbstract } from './ModeAbstract.js';
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 
 export class Mode1Up extends ModeAbstract {
-  name = '1up'
+  name = '1up';
 
   /**
    * @param {BookReader} br
@@ -91,14 +91,14 @@ export class Mode1Up extends ModeAbstract {
    */
   zoom(direction) {
     switch (direction) {
-    case 'in':
-      this.mode1UpLit.zoomIn();
-      break;
-    case 'out':
-      this.mode1UpLit.zoomOut();
-      break;
-    default:
-      console.error(`Unsupported direction: ${direction}`);
+      case 'in':
+        this.mode1UpLit.zoomIn();
+        break;
+      case 'out':
+        this.mode1UpLit.zoomOut();
+        break;
+      default:
+        console.error(`Unsupported direction: ${direction}`);
     }
   }
 

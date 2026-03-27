@@ -37,7 +37,7 @@ export function eventTargetMixin() {
 /** @implements {EventTarget} */
 export class EventTargetSpy {
   /** @type {Record<string, Function[]} */
-  _listeners = {}
+  _listeners = {};
   get _totalListenerCount() {
     return Object.values(this._listeners)
       .map(a => a.length)

@@ -41,9 +41,9 @@ const container = (sharedObserver = null) => {
 };
 
 window.ResizeObserver = class ResizeObserver {
-  observe = sinon.fake()
-  unobserve = sinon.fake()
-  disconnect = sinon.fake()
+  observe = sinon.fake();
+  unobserve = sinon.fake();
+  disconnect = sinon.fake();
 };
 
 beforeEach(() => {

@@ -18,7 +18,7 @@ export class TranslatePlugin extends BookReaderPlugin {
 
     /** @type {string | import('lit').TemplateResult} */
     panelDisclaimerText: "Translations are in alpha",
-  }
+  };
 
   /** @type {TranslationManager} */
   translationManager = new TranslationManager();
@@ -114,7 +114,7 @@ export class TranslatePlugin extends BookReaderPlugin {
   /** @param {HTMLElement} page*/
   getParagraphsOnPage = (page) => {
     return page ? Array.from(page.querySelectorAll(".BRtextLayer > .BRparagraphElement")) : [];
-  }
+  };
 
   translateActivePageContainerElements() {
     const currentlyActiveContainers = this.br.getActivePageContainerElements();
@@ -297,14 +297,14 @@ export class TranslatePlugin extends BookReaderPlugin {
     if (this.langFromCode !== this.langToCode) {
       this.translateActivePageContainerElements();
     }
-  }
+  };
 
   handleToLangChange = async (e) => {
     this.clearAllTranslations();
     this.langToCode = e.detail.value;
     this._render();
     this.translateActivePageContainerElements();
-  }
+  };
 
   handleToggleTranslation = async () => {
     this.userToggleTranslate = !this.userToggleTranslate;
@@ -320,7 +320,7 @@ export class TranslatePlugin extends BookReaderPlugin {
       this.translateActivePageContainerElements();
       this.textSelectionManager.attach();
     }
-  }
+  };
 
   /**
   * Update translation side menu

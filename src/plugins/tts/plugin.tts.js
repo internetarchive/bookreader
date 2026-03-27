@@ -31,7 +31,7 @@ export class TtsPlugin extends BookReaderPlugin {
      *  - `format` -- the format of the audio, 'mp3' or 'ogg';
      */
     remoteTtsUrl: 'https://{{server}}/BookReader/BookReaderGetTTS.php?string={{text|urlencode}}&format={{format}}',
-  }
+  };
 
   /**
    * @override

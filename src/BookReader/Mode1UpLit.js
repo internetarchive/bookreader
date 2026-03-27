@@ -256,7 +256,7 @@ export class Mode1UpLit extends LitElement {
         this.br._createPageContainer(page.index)
       )
     );
-  }
+  };
 
   /** @param {PageModel} page */
   renderPage = (page) => {
@@ -289,7 +289,7 @@ export class Mode1UpLit extends LitElement {
       this.br.trigger('pageVisible', { pageContainerEl });
     }
     return pageContainerEl;
-  }
+  };
 
   /************** VIRTUAL SCROLLING LOGIC **************/
 
@@ -310,7 +310,7 @@ export class Mode1UpLit extends LitElement {
       left: vToW(scrollLeft),
       width: vToW(clientWidth),
     };
-  }
+  };
 
   /**
    * @returns {PageModel[]}
@@ -331,7 +331,7 @@ export class Mode1UpLit extends LitElement {
   throttledUpdateRenderedPages = throttle(() => {
     this.renderedPages = this.computeRenderedPages();
     this.requestUpdate();
-  }, 100, null)
+  }, 100, null);
 
   /**
    * @param {PageModel[]} pages
@@ -383,10 +383,10 @@ export class Mode1UpLit extends LitElement {
   attachScrollListeners = () => {
     this.addEventListener("scroll", this.updateVisibleRegion);
     this.scrollClassAdder.attach();
-  }
+  };
 
   detachScrollListeners = () => {
     this.removeEventListener("scroll", this.updateVisibleRegion);
     this.scrollClassAdder.detach();
-  }
+  };
 }

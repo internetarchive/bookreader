@@ -333,22 +333,22 @@ export class Navbar {
     // the scroll _up_ in 1up.
     $sliders.find('.ui-slider-handle').off('keydown').on('keydown', (event) => {
       switch (event.keyCode || event.which) {
-      case $.ui.keyCode.LEFT:
-      case $.ui.keyCode.RIGHT:
+        case $.ui.keyCode.LEFT:
+        case $.ui.keyCode.RIGHT:
         // Forward along to the default handler
-        if (isRTL) {
+          if (isRTL) {
           // Swap left/right for RTL
-          if (event.keyCode === $.ui.keyCode.LEFT) {
-            event.keyCode = $.ui.keyCode.RIGHT;
-          } else {
-            event.keyCode = $.ui.keyCode.LEFT;
+            if (event.keyCode === $.ui.keyCode.LEFT) {
+              event.keyCode = $.ui.keyCode.RIGHT;
+            } else {
+              event.keyCode = $.ui.keyCode.LEFT;
+            }
           }
-        }
-        $.ui.slider.prototype._handleEvents.keydown.call($(event.target).parent().data('ui-slider'), event);
-        event.stopPropagation();
-        break;
-      default:
-        return;
+          $.ui.slider.prototype._handleEvents.keydown.call($(event.target).parent().data('ui-slider'), event);
+          event.stopPropagation();
+          break;
+        default:
+          return;
       }
     });
 

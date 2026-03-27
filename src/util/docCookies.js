@@ -18,7 +18,7 @@ export function areCookiesBlocked(doc = document) {
   try {
     doc.cookie;
     return false;
-  } catch (e) {
+  } catch {
     return true;
   }
 }

@@ -15,7 +15,7 @@ export class ResumePlugin extends BookReaderPlugin {
     enabled: true,
     /** @type {string|null} eg '/', '/details/id' */
     cookiePath: null,
-  }
+  };
 
   /** @override */
   init() {
