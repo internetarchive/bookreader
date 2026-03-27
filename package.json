@@ -46,7 +46,7 @@
     "@internetarchive/icon-visual-adjustment": "^1.4.0",
     "@internetarchive/modal-manager": "2.0.5",
     "@internetarchive/shared-resize-observer": "^0.2.0",
-    "interactjs": "^1.10.18",
+    "interactjs": "^1.10.27",
     "iso-language-codes": "2.0.0",
     "jquery": "3.6.1",
     "jquery-colorbox": "1.6.4",
