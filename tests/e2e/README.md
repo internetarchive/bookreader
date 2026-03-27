@@ -71,7 +71,8 @@ OCAIDS='gendaitankashu00meijuoft' BASE_URL='https://archive.org' npx testcafe te
 
 Note these can only test a public url, so you either need to create a draft PR and use the netlify link, or use ngrok to publish your dev server's port.
 
-Note: Windows users, there is a bug that prevents spaces in the browser field when using `npx`, so you'll need to have `testcafe` globally installed, and run it without `npx`. (See https://github.com/DevExpress/testcafe/issues/6600 ). Or, you can add browserstack browsers the `.testcaferc.js` file.
+Note: This is not compatible with Windows. You will need to run it inside a WSL environment.
+
 
 ```sh
 # Set auth; find yours at https://www.browserstack.com/accounts/settings
