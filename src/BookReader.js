@@ -789,6 +789,24 @@ BookReader.prototype.unbind = function(name, callback) {
 };
 
 /**
+ * Resolves `this.el` to a DOM Element, whether it was provided as an
+ * Element reference or a CSS selector string.
+ *
+ * This is needed because some consumers (e.g. apps using shadow DOM)
+ * must pass a DOM element directly — `document.querySelector` cannot
+ * cross shadow boundaries. jQuery's `$()` already handles both forms,
+ * but code that calls `document.querySelector(br.el)` will fail when
+ * `el` is an Element or when the target is inside a shadow root.
+ *
+ * @returns {Element|null}
+ */
+BookReader.prototype.resolveEl = function() {
+  if (this.el instanceof Element) return this.el;
+  if (typeof this.el === 'string') return document.querySelector(this.el);
+  return null;
+};
+
+/**
  * Resizes based on the container width and height
  */
 BookReader.prototype.resize = function() {
