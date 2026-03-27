@@ -53,8 +53,19 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   init() {
     if (!this.options.enabled) return;
 
+    this.br.on('pageVisible', (_, {pageContainerEl}) => {
+      if (pageContainerEl.querySelector('.BRtextLayer')) {
+        this.br.trigger('textLayerVisible', {pageContainerEl});
+      }
+    });
+
     this.loadData();
     this.textSelectionManager.init();
+  }
+
+  enableExperiment() {
+    this.textSelectionManager.selectionMenuEnabled = true;
+    this.textSelectionManager.renderSelectionMenu();
   }
 
   /**
@@ -188,6 +199,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       paragEl.style.marginTop = `${newTop}px`;
       yAdded += newTop;
       textLayer.appendChild(paragEl);
+      textLayer.appendChild(document.createTextNode('\n'));
     }
     $container.append(textLayer);
     this.textSelectionManager.stopPageFlip($container);
@@ -195,6 +207,11 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       pageIndex,
       pageContainer,
     });
+
+    // Check if page is visible
+    if ($container.hasClass('BRpage-visible')) {
+      this.br.trigger('textLayerVisible', {pageContainerEl: $container[0]});
+    }
   }
 
   /**

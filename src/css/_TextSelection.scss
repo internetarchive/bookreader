@@ -151,3 +151,62 @@
 .BRtranslateLayer .BRparagraphElement.BRtranslateHidden {
     display: none;
 }
+
+.br-select-menu__root {
+  display: none;
+  border-radius: 20px;
+  background-color: #333;
+  color-scheme: dark;
+  padding: 2px;
+  overflow: hidden;
+  transition: border-radius 0.2s;
+}
+.br-select-menu__root:hover {
+  border-radius: 8px;
+}
+
+.br-select-menu__root:hover .br-select-menu__option {
+  border-radius: 6px;
+}
+
+.br-select-menu__option {
+  --iconWidth: 15px;
+  --iconHeight: 15px;
+  --iconFillColor: currentColor;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  border-radius: 20px;
+  font-family: inherit;
+  border: 0;
+  transition: background-color 0.2s, border-radius 0.2s;
+  cursor: pointer;
+  text-wrap: nowrap;
+  padding: 4px;
+}
+
+.br-select-menu__option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.br-select-menu__icon {
+  display: block;
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+}
+
+.br-select-menu__label {
+  width: 0px;
+  opacity: 0;
+  interpolate-size: allow-keywords;
+  transition: width 0.2s;
+  font-size: 12px;
+}
+
+
+.br-select-menu__root:hover .br-select-menu__label {
+  width: auto;
+  margin-left: 4px;
+  opacity: 1;
+}
