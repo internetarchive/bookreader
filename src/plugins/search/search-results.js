@@ -10,8 +10,8 @@ import { sharedStyles } from '../../css/sharedStyles.js';
 import { svgToDataUrl } from '../../util/lit.js';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 
-const checkmarkIconData = svgToDataUrl(checkmarkIconTemplate.strings[0]);
-const closeIconData = svgToDataUrl(closeIconTemplate.strings[0]);
+const checkmarkIconData = svgToDataUrl(checkmarkIconTemplate);
+const closeIconData = svgToDataUrl(closeIconTemplate);
 
 export class IABookSearchResults extends LitElement {
   static get properties() {
