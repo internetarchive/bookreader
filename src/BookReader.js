@@ -42,6 +42,9 @@ import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
 
+import '@internetarchive/elements/ia-status-indicator/ia-status-indicator';
+import '@internetarchive/elements/ia-combo-box/ia-combo-box';
+
 /**
  * BookReader
  * @param {Partial<BookReaderOptions>} overrides
