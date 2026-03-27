@@ -33,7 +33,7 @@
   "dependencies": {
     "@internetarchive/bergamot-translator": "^0.4.9-ia.1",
     "@internetarchive/ia-activity-indicator": "0.0.6",
-    "@internetarchive/ia-item-navigator": "2.2.2",
+    "@internetarchive/ia-item-navigator": "2.2.3",
     "@internetarchive/icon-bookmark": "^1.4.0",
     "@internetarchive/icon-close": "1.4.0",
     "@internetarchive/icon-dl": "^1.4.0",
