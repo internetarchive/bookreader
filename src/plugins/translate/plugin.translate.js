@@ -6,7 +6,7 @@ import { TranslationManager } from "./TranslationManager.js";
 import { toISO6391 } from '../tts/utils.js';
 import { sortBy } from '../../../src/BookReader/utils.js';
 import { TextSelectionManager } from '../../../src/util/TextSelectionManager.js';
-import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
+import '@internetarchive/ia-activity-indicator';
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
