@@ -46,7 +46,7 @@
     "@internetarchive/icon-visual-adjustment": "^1.4.0",
     "@internetarchive/modal-manager": "^0.2.12",
     "@internetarchive/shared-resize-observer": "^0.2.0",
-    "lit": "^2.5.0"
+    "lit": "^2.8.0"
   },
   "devDependencies": {
     "@babel/core": "7.28.4",
