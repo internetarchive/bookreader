@@ -307,6 +307,19 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   handleToggleTranslation = async () => {
+    // If enabling translation, check if languages are the same
+    if (!this.userToggleTranslate) {
+      // Check if from and to languages are the same
+      if (this.langFromCode === this.langToCode) {
+        alert("You cannot translate to/from the same language.");
+        // Keep translation disabled
+        this.userToggleTranslate = false;
+        this.translationManager.active = false;
+        this._render();
+        return;
+      }
+    }
+    
     this.userToggleTranslate = !this.userToggleTranslate;
     this.translationManager.active = this.userToggleTranslate;
 
@@ -427,9 +440,6 @@ export class BrTranslatePanel extends LitElement {
           }
           </select>
       </details>
-      <div class="footer" id="status" style="margin-top:5%">
-      ${this._statusWarning()}
-      </div>
 
       <div class="lang-models-loading"> 
       ${this._languageModelStatus()}
@@ -485,16 +495,7 @@ export class BrTranslatePanel extends LitElement {
       bubbles: true,
       composed:true,
     });
-    this.userTranslationActive = !this.userTranslationActive;
     this.dispatchEvent(toggleTranslateEvent);
-  }
-
-  // TODO: Hardcoded warning message for now but should add more statuses
-  _statusWarning() {
-    if (this.detectedFromLang == this.detectedToLang) {
-      return "Translate To language is the same as the Source language";
-    }
-    return "";
   }
 
   _languageModelStatus() {
