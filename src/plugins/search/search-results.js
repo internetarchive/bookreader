@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { css, html, LitElement, nothing } from 'lit';
-import '@internetarchive/ia-activity-indicator/ia-activity-indicator.js';
+import '@internetarchive/ia-activity-indicator';
 import checkmarkIconTemplate from '../../css/icon_checkmark.js';
 import closeIconTemplate from '@internetarchive/icon-close/index.js';
 import buttonCSS from '../../css/button-base.js';
@@ -10,8 +10,8 @@ import { sharedStyles } from '../../css/sharedStyles.js';
 import { svgToDataUrl } from '../../util/lit.js';
 /** @typedef {import('@/src/plugins/search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 
-const checkmarkIconData = svgToDataUrl(checkmarkIconTemplate.strings[0]);
-const closeIconData = svgToDataUrl(closeIconTemplate.strings[0]);
+const checkmarkIconData = svgToDataUrl(checkmarkIconTemplate);
+const closeIconData = svgToDataUrl(closeIconTemplate);
 
 export class IABookSearchResults extends LitElement {
   static get properties() {

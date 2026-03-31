@@ -1,3 +1,14 @@
+# 5.0.0-110
+- Dev: Add dependencies necessary for esm-import to package.json/dependencies @cdrini
+- Dev: Update various testing and build dependencies @cdrini
+- Fix: ia-activity-indicator getting registered multiple times and causing errors @cdrini
+
+# 5.0.0-109
+- Fix: Loading error with different builds/versions of lit @cdrini
+
+# 5.0.0-108
+- Fix: Loading error with different builds/versions of lit @cdrini
+
 # 5.0.0-107
 - Feature: Improve accessibility of bookmarks panel @cdrini
 - Refactor: Combine book-navigator and ia-bookreader web components @cdrini
