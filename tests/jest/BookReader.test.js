@@ -76,6 +76,7 @@ test('gets index from fragment when both fragment and cookie when InitParams cal
 });
 
 test('sets prevReadMode when init called', () => {
+  BookReader.prototype.urlUpdateFragment = jest.fn();
   br.init();
   expect(br.prevReadMode).toBeTruthy();
 });
