@@ -1,6 +1,7 @@
 /* global BookReader */
 
 import { UrlPlugin } from "./UrlPlugin.js";
+import { sleep } from "../../BookReader/utils.js";
 
 /**
  * Plugin for URL management in BookReader
@@ -217,13 +218,9 @@ BookReader.prototype.urlUpdateFragment = function() {
  * @param {string} url
  * @return {string}
  * */
-
-// testing with this URL http://127.0.0.1:8000/BookReaderDemo/demo-internetarchive.html?ocaid=adventureofsherl0000unse&text=Well%2C I found my plans very seriously menaced.&q=breaking the law#page/18/mode/2up
 BookReader.prototype.urlParamsFiltersOnlySearch = function(url) {
   const params = new URLSearchParams(url);
-  let output = '';
-  output += params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
-  return output;
+  return params.has('q') ? `?${new URLSearchParams({ q: params.get('q') })}` : '';
 };
 
 
@@ -255,12 +252,10 @@ export class BookreaderUrlPlugin extends BookReader {
       if (location.includes("text=")) {
         this.on('textLayerVisible', async (_, {pageContainerEl}) => {
           const visiblePageNum = pageContainerEl.getAttribute('data-page-num');
-          let renderPageDelay = 100;
-          if (this.mode === 1) {
-            // maybe add some more time to have the page "settle down" from user scrolling
-            renderPageDelay = 900;
-          }
-          await new Promise(resolve => setTimeout(resolve, renderPageDelay));
+
+          // Hack: More time mode 1up page "settle down" from user scrolling
+          await sleep(this.mode === 1 ? 900 : 100);
+
           // No textFragment found or the textFragment stored doesn't match current visible page loaded
           if (!this.textFragment || this.textFragmentPage !== visiblePageNum) return;
           if (this.options.urlMode === 'history') {

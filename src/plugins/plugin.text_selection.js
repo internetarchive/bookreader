@@ -63,7 +63,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     this.textSelectionManager.init();
   }
 
-  enableExperiment() {
+  enableSelectionMenu() {
     this.textSelectionManager.selectionMenuEnabled = true;
     this.textSelectionManager.renderSelectionMenu();
   }

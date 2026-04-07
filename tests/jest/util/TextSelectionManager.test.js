@@ -308,7 +308,7 @@ describe("TextFragment tests", () => {
     selectionPageOne.removeAllRanges();
     selectionPageOne.addRange(rangePageOne);
 
-    const pageOneUrlParam = createTextFragmentUrlParam(selectionPageOne, br.refs.$brContainer.find(".BRtextLayer")[0]);
+    const pageOneUrlParam = createTextFragmentUrlParam(selectionPageOne, Array.from(br.refs.$brContainer.find(".BRtextLayer")));
 
     const rangePageTwo = document.createRange();
     rangePageTwo.setStart($($(br.refs.$brContainer).find(".BRtextLayer")[1]).find(".BRparagraphElement").find(".BRwordElement")[0].firstChild, 0);
@@ -317,7 +317,7 @@ describe("TextFragment tests", () => {
     selectionPageTwo.removeAllRanges();
     selectionPageTwo.addRange(rangePageTwo);
 
-    const pageTwoUrlParam = createTextFragmentUrlParam(selectionPageTwo, br.refs.$brContainer.find(".BRtextLayer")[1]);
+    const pageTwoUrlParam = createTextFragmentUrlParam(selectionPageTwo, Array.from(br.refs.$brContainer.find(".BRtextLayer")));
 
     expect(pageOneUrlParam).toMatch("text=Book%20header%20test%20replica,-This%20is%20page");
     expect(pageTwoUrlParam).toMatch("text=is%20page%20one-,Book%20header%20test%20replica,-Currently%20on%20page");
@@ -339,14 +339,14 @@ describe("TextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(forwardRange);
-    const forwardTest = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const forwardTest = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     selection.removeAllRanges();
     backwardRange.collapse(false);
     selection.addRange(backwardRange);
     selection.extend(forwardRange.startContainer, 0);
     window.getSelection().direction = 'backward';
-    const backwardTest = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const backwardTest = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(forwardTest).toMatch("text=way%20can%20false,-judgment%20be%20-");
     expect(backwardTest).toMatch(forwardTest);
@@ -368,14 +368,14 @@ describe("TextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(forwardRange);
-    const forwardTest = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const forwardTest = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
     selection.removeAllRanges();
     backwardRange.collapse(false);
     selection.addRange(backwardRange);
     selection.extend(forwardRange.startContainer, 0);
     window.getSelection().direction = 'backward';
 
-    const backwardTest = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const backwardTest = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(forwardTest).toMatch("text=various,lastWord");
     expect(backwardTest).toMatch(forwardTest);
@@ -394,7 +394,7 @@ describe("TextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(startWordRange);
-    const startingSpaceTextFragmentUrl = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const startingSpaceTextFragmentUrl = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(startingSpaceTextFragmentUrl).toBe(`text=way-,can%20false%20judgment%20be%20-%20formed.,-There%20still%20remains`);
 
@@ -404,7 +404,7 @@ describe("TextFragment tests", () => {
 
     selection.removeAllRanges();
     selection.addRange(endWordRange);
-    const endingSpaceTextFragmentUrl = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const endingSpaceTextFragmentUrl = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(endingSpaceTextFragmentUrl).toBe(startingSpaceTextFragmentUrl);
   });
@@ -423,7 +423,7 @@ describe("TextFragment tests", () => {
     const commaSelection = window.getSelection();
     commaSelection.removeAllRanges();
     commaSelection.addRange(rangeIncludesComma);
-    const commaTextFragmentUrl = createTextFragmentUrlParam(commaSelection, document.querySelector('.BRtextLayer'));
+    const commaTextFragmentUrl = createTextFragmentUrlParam(commaSelection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(commaTextFragmentUrl.includes("“")).toBeFalsy();
     expect(commaTextFragmentUrl).toBe("text=%E2%80%9CThat,mixture%2C");
@@ -446,11 +446,11 @@ describe("TextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
-    const multipleHighlights = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const multipleHighlights = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     selection.removeAllRanges();
     selection.addRange(sameKeyHighlightRange);
-    const similarHighlight = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const similarHighlight = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(multipleHighlights).toBe(`text=is%20quite%20distinctive.%E2%80%9D-,%E2%80%9CThat%20is,-easily%20got.%E2%80%9D`);
     expect(multipleHighlights).not.toBe(similarHighlight);
@@ -471,7 +471,7 @@ describe("TextFragment tests", () => {
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
 
-    const multiLineBehavior = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const multiLineBehavior = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
     // “Stolen.”-,“My own seal.”,-“Imitated.”
     expect(multiLineBehavior).toMatch("text=%E2%80%9CStolen.%E2%80%9D-,%E2%80%9CMy%20own%20seal.%E2%80%9D,-%E2%80%9CImitated.%E2%80%9D");
   });
@@ -491,7 +491,7 @@ describe("TextFragment tests", () => {
     selection.addRange(rangeBefore);
 
     // “Imitated.”-, “My photograph.”,-“Bought.”
-    const endShortSuffix = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const endShortSuffix = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(endShortSuffix).toMatch("text=%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy%20photograph.%E2%80%9D,-%E2%80%9CBought.%E2%80%9D");
   });
@@ -511,7 +511,7 @@ describe("TextFragment tests", () => {
     selection.addRange(rangeBefore);
 
     // “Imitated.”-, “My,-photograph.”
-    const singleTextFragment = createTextFragmentUrlParam(selection, document.querySelector('.BRtextLayer'));
+    const singleTextFragment = createTextFragmentUrlParam(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(singleTextFragment).toMatch("text=%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy,-photograph.%E2%80%9D");
   });

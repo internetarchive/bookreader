@@ -5,13 +5,15 @@ import { customElement } from 'lit/decorators.js';
 import '@internetarchive/icon-share';
 
 export class TextSelectionManager {
-  /** @type {BRSelectMenu} */
-  selectMenu;
-  selectionMenuEnabled;
   options = {
     // Current Translation plugin implementation does not have words, will limit to one BRlineElement for now
     maxProtectedWords: 200,
   }
+
+  /** @type {BRSelectMenu} */
+  selectMenu;
+  /** @type {boolean} */
+  selectionMenuEnabled = false;
 
   /**
    * @param {string} layer Selector for the text layer to manage
@@ -29,8 +31,8 @@ export class TextSelectionManager {
     this.selectionElement = selectionElement;
     this.selectionObserver = new SelectionObserver(this.layer, this._onSelectionChange);
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
-    this.selectMenu = new BRSelectMenu(br);
 
+    this.selectMenu = new BRSelectMenu(br);
     this.selectMenu.className = "br-select-menu__root";
   }
 
@@ -66,7 +68,9 @@ export class TextSelectionManager {
   // Need attach + detach methods to toggle w/ Translation plugin
   attach() {
     this.selectionObserver.attach();
-    this.renderSelectionMenu();
+    if (this.selectionMenuEnabled) {
+      this.renderSelectionMenu();
+    }
     if (this.br.protected) {
       document.addEventListener('selectionchange', this._limitSelection);
       // Prevent right clicking when selected text
@@ -94,9 +98,7 @@ export class TextSelectionManager {
 
   renderSelectionMenu() {
     if (document.querySelector('.br-select-menu__option')) return;
-    if (this.selectionMenuEnabled) {
-      document.body.append(this.selectMenu);
-    }
+    document.body.append(this.selectMenu);
   }
   /**
    * @param {'started' | 'cleared' | 'focusChanged'} type
@@ -244,18 +246,18 @@ export class TextSelectionManager {
   };
 }
 
-/** TODO ->
- * Can import something that handles this more gracefully? see - https://web.dev/articles/text-fragments#:~:text=In%20its%20simplest%20form%2C%20the%20syntax%20of,percent%2Dencoded%20text%20I%20want%20to%20link%20to.
- */
 /**
- * Builds a URL string in the format of a TextFragment within the URL params, which differs from browser "Copy to link to highlighted text" format
- * Does not include the fragment directive (`:~:`) and is not after the URL hash
+ * Builds a TextFragment string from a given text selection.
+ * Note does not include the fragment directive `:~:` or # symbol
  * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
- * @param {Selection} selection - document.getSelection()
- * @param {HTMLElement} pageLayer - anchorNode.parentElement.closest('.BRtextLayer')
- * @returns {string} - i.e. http://127.0.0.1:8000/BookReaderDemo/demo-internetarchive.html?ocaid=adventureofsherl0000unse&text=undefined,undefined#page/10/mode/2up
+ * @param {Selection} selection currently selected text, eg `document.getSelection()`
+ * @param {HTMLElement[]} contextElements elements providing context for the selection
+ * @returns {string}
  */
-export function createTextFragmentUrlParam(selection, pageLayer) {
+export function createTextFragmentUrlParam(selection, contextElements) {
+  // TODO: Can import something that handles this more gracefully? see -
+  // https://web.dev/articles/text-fragments#:~:text=In%20its%20simplest%20form%2C%20the%20syntax%20of,percent%2Dencoded%20text%20I%20want%20to%20link%20to.
+
   // :~:text=[prefix-,]textStart[,textEnd][,-suffix]
   const highlightedText = selection.toString().replace(/[\s]+/g, " ").trim().split(" ");
   const direction = selection.direction;
@@ -274,12 +276,12 @@ export function createTextFragmentUrlParam(selection, pageLayer) {
   const endPhraseMatchRe = new RegExp(String.raw`(${textStartRe})(?=.*?(${textEndRe}))`, "gis");
 
   // Duplicated spaces in pageLayer.textContent for some reason
-  const wholePageText = Array.from(document.querySelectorAll('.BRpage-visible'))
-    .map((item) => item.textContent)
+  const selectionContext = contextElements
+    .map((el) => el.textContent)
     .join(' ')
-    .replace(/\s+/g, " ") || pageLayer.textContent.replace(/\s+/g, " ");
-  const startPhraseFoundMatches = wholePageText.matchAll(startPhraseMatchRe).toArray();
-  const endPhraseFoundMatches = wholePageText.matchAll(endPhraseMatchRe).toArray();
+    .replace(/\s+/g, " ");
+  const startPhraseFoundMatches = selectionContext.matchAll(startPhraseMatchRe).toArray();
+  const endPhraseFoundMatches = selectionContext.matchAll(endPhraseMatchRe).toArray();
   if (startPhraseFoundMatches.length == 1 && endPhraseFoundMatches.length == 1) {
     // If `startWord...endWord` quote is unambiguous and only occurs once, no prefix-/-suffix is needed for the URL param
     return `text=${encodeURIComponent(startWord)},${encodeURIComponent(endWord)}`;
@@ -287,24 +289,14 @@ export function createTextFragmentUrlParam(selection, pageLayer) {
 
   // Need to add some additional context to `startWord...endWord` by including surrounding words before and after the keywords
   const preStartRange = document.createRange();
-
-  const previousPageContainer = pageLayer.parentElement?.previousElementSibling;
-  if (previousPageContainer?.classList.contains("BRpage-visible")) {
-    preStartRange.setStart(previousPageContainer, 0);
-  } else {
-    preStartRange.setStart(pageLayer.firstElementChild, 0);
-  }
+  preStartRange.setStart(contextElements[0].firstElementChild, 0);
   preStartRange.setEnd(startNode, 0);
+
   const postEndRange = document.createRange();
   postEndRange.setStart(endNode, endNode.textContent.length);
-  const nextPageContainer = pageLayer.parentElement.nextElementSibling;
-  if (nextPageContainer?.classList.contains("BRpage-visible")) {
-    const nextPageLastWord = getLastestElement(nextPageContainer);
-    postEndRange.setEnd(nextPageLastWord, Math.max(0, nextPageLastWord.textContent.length - 1));
-  } else {
-    const lastWordOfPageEl = getLastestElement(pageLayer);
-    postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
-  }
+  const lastWordOfPageEl = getLastMostElement(contextElements[contextElements.length - 1]);
+  postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
+
   // prefixes/suffixes cannot contain paragraph breaks, words that are from more than one line break away should not be included
   const prefix = getLastWords(3, preStartRange.toString())
     .replace(/[ ]+/g, " ")
@@ -446,33 +438,38 @@ class BRSelectMenu extends LitElement {
     `;
   }
 
+  /**
+   * @param {MouseEvent} e
+   */
   handleCopyLinkToHighlight(e) {
     e.preventDefault();
-    const currentUrl = window.location;
-    let currentParams = this.br.readQueryString();
+
+    const currentParams = this.br.readQueryString();
     const currentSelection = window.getSelection();
     /** @type {HTMLElement} */
     const textLayer = currentSelection.anchorNode.parentElement.closest('.BRtextLayer');
-    // To do - updateResumeValue + getCookiePath in plugin.resume.js overrides the adjustedUrlPageNumPath, check how to workaround this
-    const adjustedUrlPageNumPath = currentUrl.pathname.toString().replace(/(?<=\/page\/)\d+(?=\/)/, textLayer.parentElement.getAttribute('data-page-num'));
+    const textFragmentUrlParam = createTextFragmentUrlParam(currentSelection, Array.from(document.querySelectorAll('.BRpage-visible')));
+
+    // Note: Have to do a param construction to avoid url-encoding of commas in the text fragment param
+    let linkToHighlightParams = currentParams;
     if (currentParams.includes('text=')) {
-      currentParams = currentParams.replace(/(text=)[\w\W\d%]+/, createTextFragmentUrlParam(currentSelection, textLayer));
+      linkToHighlightParams = currentParams.replace(/(text=)[\w\W\d%]+/, textFragmentUrlParam);
     } else {
-      if (this.br.options.urlMode === 'history') {
-        currentParams = `?${createTextFragmentUrlParam(currentSelection, textLayer)}`;
-      } else {
-        currentParams = `${currentParams}&${createTextFragmentUrlParam(currentSelection, textLayer)}`;
-      }
+      const sep = linkToHighlightParams ? '&' : '?';
+      linkToHighlightParams += `${sep}${textFragmentUrlParam}`;
     }
-    if (this.br.options.urlMode === 'history') {
-      navigator.clipboard.writeText(`${currentUrl.origin}${adjustedUrlPageNumPath}${currentParams}`);
-    } else {
-      navigator.clipboard.writeText(`${currentUrl.origin}${adjustedUrlPageNumPath}${currentParams}${currentUrl?.hash}`);
-    }
+
+    const currentUrl = window.location;
+    // TODO - updateResumeValue + getCookiePath in plugin.resume.js overrides the adjustedUrlPageNumPath, check how to workaround this
+    // TODO - won't work with hash mode
+    const adjustedUrlPageNumPath = currentUrl.pathname.toString().replace(/(?<=\/page\/)\d+(?=\/)/, textLayer.parentElement.getAttribute('data-page-num'));
+
+    const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}${linkToHighlightParams}${currentUrl?.hash || ''}`;
+    navigator.clipboard.writeText(linkToHighlight);
   }
 
   showMenu() {
-    if (this.br.plugins.translate) return;
+    if (this.br.plugins.translate?.userToggleTranslate) return;
     const currentSelection = window.getSelection();
     const start = currentSelection.anchorNode.parentElement;
     const end = currentSelection.focusNode.parentElement; // will always be a text node
@@ -490,7 +487,7 @@ class BRSelectMenu extends LitElement {
     this.style.left = `${hlButtonLeft}px`;
     this.style.zIndex = '1';
     this.style.position = 'absolute';
-    this.style.display = 'inline';
+    this.style.display = 'block';
   }
 
   hideMenu = () => {
@@ -527,7 +524,7 @@ export function getLastWords(numWords, text) {
  * @param {HTMLElement | Element} parent
  * @returns {Node}
  */
-export function getLastestElement(parent) {
+export function getLastMostElement(parent) {
   while (parent.lastElementChild) {
     parent = parent.lastElementChild;
   }
