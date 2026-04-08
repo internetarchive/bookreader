@@ -1164,10 +1164,17 @@ BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY 
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
     const newIndex = alreadyInPreview ? page.findNext({ combineConsecutiveUnviewables: true })?.index : page.unviewablesStart;
-    // Rare, but a book can end on an unviewable page, so this could be undefined
-    if (typeof newIndex !== 'undefined') {
-      this.jumpToIndex(newIndex, { pageX, pageY, noAnimate, flipSpeed, ariaLive });
-    }
+    
+    // FIX: Use setTimeout to break the recursion stack
+      // This prevents "Maximum call stack size exceeded" by making the jump asynchronous
+      if (typeof newIndex !== 'undefined' && newIndex !== page.index) {
+        setTimeout(() => {
+            this.jumpToIndex(newIndex, { pageX, pageY, noAnimate, flipSpeed, ariaLive });
+        }, 0);
+      } else {
+        console.warn('Prevented infinite recursion in jumpToIndex', page.index);
+      }
+
   } else {
     if (triggerStop) this.trigger(BookReader.eventNames.stop);
     this.trigger(BookReader.eventNames.beforePageChanged, { index: page.index, ariaLive });
@@ -1834,7 +1841,7 @@ BookReader.prototype.paramsFromCurrent = function() {
  * @see http://openlibrary.org/dev/docs/bookurls for fragment syntax
  *
  * @param {string} fragment initial # is allowed for backwards compatibility
- *                          but is deprecated
+ * but is deprecated
  * @return {Object}
  */
 BookReader.prototype.paramsFromFragment = function(fragment) {
@@ -1945,8 +1952,8 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
  * Create, update querystring from the params object
  *
  * Handles:
- *  view=
- *  q=
+ * view=
+ * q=
  * @param {Object} params
  * @param {string} currQueryString
  * @param {string} [urlMode]
