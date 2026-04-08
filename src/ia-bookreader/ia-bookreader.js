@@ -663,4 +663,6 @@ export class IaBookReader extends LitElement {
   }
 }
 
-window.customElements.define("ia-bookreader", IaBookReader);
+if (!customElements.get('ia-bookreader')) {
+  window.customElements.define("ia-bookreader", IaBookReader);
+}
