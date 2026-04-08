@@ -39,50 +39,94 @@ And then open `http://localhost:8000/BookReaderDemo/demo-simple.html`.
 
 ## Usage
 
-Here is a short example.
+Here is an example.
 
-```js
-// Create the BookReader object
-var options = {
-  data: [
-    [
-      { width: 800, height: 1200,
-        uri: '//archive.org/download/BookReader/img/page001.jpg' },
-    ],
-    [
-      { width: 800, height: 1200,
-        uri: '//archive.org/download/BookReader/img/page002.jpg' },
-      { width: 800, height: 1200,
-        uri: '//archive.org/download/BookReader/img/page003.jpg' },
-    ],
-    [
-      { width: 800, height: 1200,
-        uri: '//archive.org/download/BookReader/img/page004.jpg' },
-      { width: 800, height: 1200,
-        uri: '//archive.org/download/BookReader/img/page005.jpg' },
-    ]
-  ],
+```html
+<!-- WC dependencies/polyfills -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es2015%2Ces5%2CglobalThis"></script>
+<script type="text/javascript" src="https://unpkg.com/lit@2.1.2/polyfill-support.js"></script>
+<script type="text/javascript"
+  src="https://unpkg.com/@webcomponents/webcomponentsjs@2.2.10/webcomponents-bundle.js"></script>
 
-  bookTitle: 'Simple BookReader Presentation',
+<!-- JS dependencies -->
+<script src="https://unpkg.com/@internetarchive/bookreader@5.0.0-80/BookReader/webcomponents-bundle.js"></script>
+<script src="https://unpkg.com/@internetarchive/bookreader@5.0.0-80/BookReader/jquery-3.js"></script>
 
-  // thumbnail is optional, but it is used in the info dialog
-  thumbnail: '//archive.org/download/BookReader/img/page014.jpg',
+<!-- BookReader and any plugins -->
+<link rel="stylesheet" href="https://unpkg.com/@internetarchive/bookreader@5.0.0-80/BookReader/BookReader.css" />
+<script src="https://unpkg.com/@internetarchive/bookreader@5.0.0-80/BookReader/BookReader.js"></script>
+<script src="https://unpkg.com/@internetarchive/bookreader@5.0.0-80/BookReader/plugins/plugin.url.js"></script>
 
-  // Metadata is optional, but it is used in the info dialog
-  metadata: [
-    {label: 'Title', value: 'Open Library BookReader Presentation'},
-    {label: 'Author', value: 'Internet Archive'},
-    {label: 'Demo Info', value: 'This demo shows how one could use BookReader with their own content.'},
-  ],
+<!-- BookReader wrapper web component -->
+<script type="module"
+  src="https://unpkg.com/@internetarchive/bookreader@5.0.0-80/BookReader/ia-bookreader-bundle.js"></script>
 
-  ui: 'full', // embed, full (responsive)
+<style>
+  html {
+    /** This must be set because the nav menu uses rem and sets the fonts really big? */
+    font-size: 10px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
 
-};
-var br = new BookReader(options);
+  ia-bookreader, .BookReader {
+    /** Set the size you want bookreader to be */
+    height: calc(100vh - 100px);
+  }
+</style>
 
-// Let's go!
-br.init();
+<ia-bookreader>
+  <div id="BookReader" class="BookReader" slot="main"></div>
+</ia-bookreader>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var br = new BookReader({
+      el: '#BookReader',
+
+      bookTitle: 'Simple BookReader Presentation',
+
+      data: [
+        [
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page001.jpg'
+          },
+        ],
+        [
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page002.jpg'
+          },
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page003.jpg'
+          },
+        ],
+        [
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page004.jpg'
+          },
+          {
+            width: 800, height: 1200,
+            uri: 'https://archive.org/download/BookReader/img/page005.jpg'
+          },
+        ]
+      ],
+
+      // These are optional, but it is used in the info dialog
+      thumbnail: 'https://archive.org/download/BookReader/img/page014.jpg',
+      metadata: [
+        { label: 'Title', value: 'Open Library BookReader Presentation' },
+        { label: 'Author', value: 'Internet Archive' },
+        { label: 'Demo Info', value: 'This demo shows how one could use BookReader with their own content.' },
+      ],
+    });
+
+    // Let's go!
+    br.init();
+  });
+</script>
 ```
 ## Architecture Overview
 Starting at v5, BookReader introduces hybrid architecture that merges the core code written in jQuery closer to its evolution as a web component.  As we march toward the future of BookReader as a web component, we are taking an Event Driven approach to connect the two together.
