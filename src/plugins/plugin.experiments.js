@@ -51,7 +51,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorageKey: 'BrExperiments',
 
     /** The experiments that should be shown in the experiments panel */
-    enabledExperiments: ['translate', 'copyLinkToHighlight'],
+    enabledExperiments: ['translate', 'copyLinkToHighlight', 'textMode']
   }
 
   /** @type {ExperimentModel[]} */
@@ -93,6 +93,30 @@ export class ExperimentsPlugin extends BookReaderPlugin {
         });
       }
     }(),
+
+    new class extends ExperimentModel {
+      name = 'textMode';
+      title = 'Text Mode';
+      description = "View books in a continuous text format.";
+      learnMore = null;
+      icon = 'icons/text.svg';
+      enabled = false;
+      async enable({ manual = false}) {
+        if (manual) {
+          sleep(0).then(() => {
+            window.location.reload();
+          });
+        }
+      }
+      async disable() {
+        // need to reload to remove translate plugin script
+        // Sleep so that the event loop can finish processing before the reload
+        sleep(0).then(() => {
+          window.location.reload();
+        });
+      }
+    }(),
+
     new class extends ExperimentModel {
       name = 'hypothesis';
       title = 'Hypothes.is';
@@ -148,6 +172,15 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     this._loadExperimentStates();
     await Promise.resolve();
     this._render();
+  }
+
+  /**
+   * @param {string} experimentName
+   */
+  isEnabled(experimentName) {
+    this._loadExperimentStates();
+    const experiment = this.allExperiments.find(e => e.name === experimentName);
+    return experiment?.enabled;
   }
 
   _loadExperimentStates() {

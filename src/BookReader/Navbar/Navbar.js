@@ -44,8 +44,10 @@ export class Navbar {
     if (option.template) {
       return `<li>${option.template(this.br)}</li>`;
     }
+    const hidden = !this.br.plugins.experiments.isEnabled('textMode') && controlName === 'text';
+
     return `<li>
-      <button class="BRicon ${option.className}" title="${option.label}">
+      <button class="BRicon ${option.className}" title="${option.label}" ${hidden ? 'style="display:none"' : ''}>
         <div class="icon icon-${option.iconClassName}"></div>
         <span class="BRtooltip">${option.label}</span>
       </button>
