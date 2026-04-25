@@ -197,13 +197,13 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const medianLeft = median(
       $(XMLpage).find("LINE").toArray()
         .map(l => parseFloat($(l).attr("coords")?.split(',')?.[0]))
-        .filter(x => !isNaN(x))
+        .filter(x => !isNaN(x)),
     );
     const medianRightDist = pageContainer.page.width - median(
       $(XMLpage).find("LINE").toArray()
         .map(l => parseFloat($(l).attr("coords")?.split(',')?.[2]))
-        .filter(x => !isNaN(x))
-    )
+        .filter(x => !isNaN(x)),
+    );
 
     for (const paragEl of paragEls) {
       const lines = Array.from(paragEl.querySelectorAll('.BRlineElement'));

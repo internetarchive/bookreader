@@ -298,7 +298,7 @@ export const DEFAULT_OPTIONS = {
       visible: true,
       label: 'Text view (experimental)',
       className: 'textpg',
-      iconClassName: 'textpg'
+      iconClassName: 'textpg',
     },
     viewmode: {
       visible: true,

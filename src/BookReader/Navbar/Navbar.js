@@ -93,8 +93,8 @@ export class Navbar {
       mode: br.constModeText,
       className: 'textpg',
       title: 'Text view',
-    }
-  ].filter((mode) => (
+    },
+    ].filter((mode) => (
       !viewModeOptions.excludedModes.includes(mode.mode)
     ));
     const viewModeOrder = viewModes.map((m) => m.mode);
