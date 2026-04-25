@@ -1198,7 +1198,7 @@ BookReader.prototype.getPrevReadMode = function(mode) {
 
 /**
  * Switches the mode (eg 1up 2up thumb)
- * @param {number|'1up' | '2up' | 'thumb'}
+ * @param {number|'1up' | '2up' | 'thumb' | 'text'}
  * @param {object} [options]
  * @param {boolean} [options.suppressFragmentChange = false]
  * @param {boolean} [options.onInit = false] - this
@@ -1216,6 +1216,7 @@ BookReader.prototype.switchMode = function(
       '1up': this.constMode1up,
       '2up': this.constMode2up,
       'thumb': this.constModeThumb,
+      'text': this.constModeText,
     }[mode];
   }
 
@@ -1272,9 +1273,10 @@ BookReader.prototype.updateBrClasses = function() {
   modeToClass[this.constMode1up] = 'BRmode1up';
   modeToClass[this.constMode2up] = 'BRmode2up';
   modeToClass[this.constModeThumb] = 'BRmodeThumb';
+  modeToClass[this.constModeText] = 'BRmodeText';
 
   this.refs.$br
-    .removeClass('BRmode1up BRmode2up BRmodeThumb')
+    .removeClass('BRmode1up BRmode2up BRmodeThumb BRmodeText')
     .addClass(modeToClass[this.mode]);
 
   if (this.isFullscreen()) {

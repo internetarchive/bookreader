@@ -80,7 +80,10 @@
 }
 
 // Hide text layer for performance during zooming & scrolling
-.BRsmooth-zooming, .BRscrolling-active {
+.BRmode1up .BRsmooth-zooming,
+.BRmode2up .BRsmooth-zooming,
+.BRmode1up .BRscrolling-active,
+.BRmode2up .BRscrolling-active {
     // If the text layer has an annotation, don't hide it
     .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)) .BRtextLayer {
         display: none;

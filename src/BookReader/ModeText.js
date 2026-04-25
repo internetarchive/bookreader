@@ -1,40 +1,38 @@
 // @ts-check
+import { ModeAbstract } from './ModeAbstract.js';
 import { ModeTextLit } from './ModeTextLit.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 
-export class ModeText {
+export class ModeText extends ModeAbstract {
   /**
    * @param {BookReader} br
    * @param {BookModel} bookModel
    */
   constructor(br, bookModel) {
+    super();
     this.br = br;
     this.book = bookModel;
     this.modeTextLit = new ModeTextLit(bookModel, br);
 
     /** @private */
     this.$el = $(this.modeTextLit)
-      // We CANNOT use `br-mode-1up` as a class, because it's the same
+      // We CANNOT use the tag name as a class, because it's the same
       // as the name of the web component, and the webcomponents polyfill
       // uses the name of component as a class for style scoping 😒
-      .addClass('br-mode-1up__root BRmode1up br-mode-text__root BRmodeTextLit');
+      .addClass('br-mode-text__root BRmodeText');
 
-    /** Has mode1up ever been rendered before? */
+    /** Has this mode ever been rendered before? */
     this.everShown = false;
   }
 
-  // TODO: Might not need this anymore? Might want to delete.
-  /** @private */
-  get $brContainer() { return this.br.refs.$brContainer; }
-
   /**
-   * This is called when we switch to one page view
+   * This is called when we switch to this mode
    */
   prepare() {
     const startLeaf = this.br.currentIndex();
-    this.$brContainer
+    this.br.refs.$brContainer
       .empty()
       .css({ overflow: 'hidden' })
       .append(this.$el);
@@ -43,23 +41,19 @@ export class ModeText {
     // appended the element to the DOM
     setTimeout(async () => {
       if (!this.everShown) {
-        this.modeTextLit.initFirstRender(startLeaf);
         this.everShown = true;
         this.modeTextLit.requestUpdate();
         await this.modeTextLit.updateComplete;
       }
       this.modeTextLit.jumpToIndex(startLeaf);
-      setTimeout(() => {
-        // Must explicitly call updateVisibleRegion, since no
-        // scroll event seems to fire.
-        this.modeTextLit.updateVisibleRegion();
-      });
-    });
+      console.log('Jumping to index', startLeaf);
+    // Not sure why we need this fudge-factor here ; without it, it fails to jumpToIndex
+    // on first render
+    }, 200);
     this.br.updateBrClasses();
   }
 
   /**
-   * BREAKING CHANGE: No longer supports pageX/pageY
    * @param {PageIndex} index
    * @param {number} [pageX] x position on the page (in pixels) to center on
    * @param {number} [pageY] y position on the page (in pixels) to center on
@@ -87,14 +81,5 @@ export class ModeText {
     default:
       console.error(`Unsupported direction: ${direction}`);
     }
-  }
-
-  /**
-   * Resize the current one page view
-   * Note this calls drawLeafs
-   */
-  resizePageView() {
-    this.modeTextLit.htmlDimensionsCacher.updateClientSizes();
-    this.modeTextLit.requestUpdate();
   }
 }

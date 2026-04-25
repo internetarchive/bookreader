@@ -147,8 +147,13 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const $container = pageContainer.$container;
     const $textLayers = $container.find('.BRtextLayer');
     if ($textLayers.length) return;
+    $container.addClass('BRtextLayerLoading');
     const XMLpage = await this.getPageText(pageIndex);
-    if (!XMLpage) return;
+    if (!XMLpage) {
+      $container.removeClass('BRtextLayerLoading');
+      $container.addClass('BRtextLayerEmpty');
+      return;
+    }
     // Seeing some 0 left and 0 top coordinates in OCR, remove it entirely to prevent odd rendering
     // eg https://archive.org/details/illustratedbooko00robe/page/n11/mode/2up
     $(XMLpage).find("WORD").filter((_, ele) => {
@@ -163,6 +168,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const totalWords = $(XMLpage).find("WORD").length;
     if (totalWords > this.maxWordRendered) {
       console.log(`Page ${pageIndex} has too many words (${totalWords} > ${this.maxWordRendered}). Not rendering text layer.`);
+      $container.removeClass('BRtextLayerLoading');
+      $container.addClass('BRtextLayerError');
       return;
     }
 
@@ -200,11 +207,20 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
     for (const paragEl of paragEls) {
       const lines = Array.from(paragEl.querySelectorAll('.BRlineElement'));
-      const isCentered = lines.length >= 1 && lines.every(line => {
-        const left = parseFloat(paragEl.style.left);
-        const right = parseFloat(paragEl.style.left) + parseFloat(paragEl.style.width);
-        const rightDist = pageContainer.page.width - right;
-        return (left > medianLeft * 1.8 && rightDist > medianRightDist * 1.8) && left < pageContainer.page.width / 2;
+      const paragLeft = parseFloat(paragEl.style.left);
+      const paragRight = paragLeft + parseFloat(paragEl.style.width);
+      const isCentered = lines.every(line => {
+        /** @type {HTMLElement} */
+        const firstWord = line.querySelector('.BRwordElement');
+        const lineLeft = firstWord.style.paddingLeft ? parseFloat(firstWord.style.paddingLeft) : 0;
+        const leftDist = paragLeft + lineLeft;
+        const rightDist = pageContainer.page.width - paragRight;
+        return (
+          leftDist > medianLeft * 1.8 &&
+          rightDist > medianRightDist * 1.8 &&
+          leftDist < pageContainer.page.width / 2 &&
+          withinTolerance(leftDist, rightDist, pageContainer.page.width * 0.1)
+        );
       });
       if (isCentered) {
         paragEl.classList.add('BRcentered');
@@ -228,6 +244,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       textLayer.appendChild(document.createTextNode('\n'));
     }
     $container.append(textLayer);
+    $container.removeClass('BRtextLayerLoading');
     this.textSelectionManager.stopPageFlip($container);
     this.br.trigger('textLayerRendered', {
       pageIndex,
@@ -391,6 +408,17 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
 BookReader?.registerPlugin('textSelection', TextSelectionPlugin);
 
+
+/**
+ * Checks if a and b are within a certain tolerance of each other
+ * @param {number} a
+ * @param {number} b
+ * @param {number} tolerance
+ * @returns {boolean}
+ */
+function withinTolerance(a, b, tolerance) {
+  return Math.abs(a - b) <= tolerance;
+}
 
 /**
  * @param {HTMLElement} parentEl
