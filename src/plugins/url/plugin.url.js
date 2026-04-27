@@ -2,7 +2,7 @@
 
 import { UrlPlugin } from "./UrlPlugin.js";
 import { sleep } from "../../BookReader/utils.js";
-
+import { convertRangeToDOMSelection } from "../../util/TextSelectionManager.js";
 /**
  * Plugin for URL management in BookReader
  * Note read more about the url "fragment" here:
@@ -171,8 +171,10 @@ BookReader.prototype.urlUpdateFragment = function() {
     } else {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
       const textFragment = this.urlPlugin.retrieveTextFragment(newQueryString);
+      this.highlightObject = this.urlPlugin.convertParamToHighlight(newQueryString);
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
       const extractedPage = this.urlPlugin.urlStringToUrlState(newFragmentWithSlash)?.page;
+
       if (!this.textFragmentPage && textFragment) {
         this.textFragmentPage =  extractedPage ? extractedPage : null;
         this.textFragment = `:~:text=${textFragment}`;
@@ -194,6 +196,7 @@ BookReader.prototype.urlUpdateFragment = function() {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
     let textFragment = this.urlPlugin.retrieveTextFragment(this.readQueryString());
     const extractedPage = this.urlPlugin.urlStringToUrlState(newFragmentWithSlash)?.page;
+    this.highlightObject = this.urlPlugin.convertParamToHighlight(this.readQueryString());
 
     if (textFragment) {
       textFragment = `:~:text=${textFragment[0]}`;
@@ -252,18 +255,16 @@ export class BookreaderUrlPlugin extends BookReader {
       if (location.includes("text=")) {
         this.on('textLayerVisible', async (_, {pageContainerEl}) => {
           const visiblePageNum = pageContainerEl.getAttribute('data-page-num');
-
+          const foundPageNum = document.querySelector(`[data-index='${this.highlightObject['dIndex']}']`);
+          if (!this.highlightObject['dPageNum'] && foundPageNum) {
+            this.highlightObject['dPageNum'] = foundPageNum.getAttribute('data-page-num');
+          }
           // Hack: More time mode 1up page "settle down" from user scrolling
-          await sleep(this.mode === 1 ? 900 : 100);
+          await sleep(this.mode === 1 ? 900 : 200);
 
           // No textFragment found or the textFragment stored doesn't match current visible page loaded
           if (!this.textFragment || this.textFragmentPage !== visiblePageNum) return;
-          if (this.options.urlMode === 'history') {
-            window.location.replace(`#${this.textFragment}`);
-          } else {
-            // for urlMode hash, textFragment is stored in oldLocationHash already
-            window.location.replace(`#${this.oldLocationHash}`);
-          }
+          convertRangeToDOMSelection(this.highlightObject);
         });
       }
       this.bind(BookReader.eventNames.PostInit, () => {

@@ -208,4 +208,31 @@ export class UrlPlugin {
   retrieveTextFragment(urlString) {
     return urlString.match(/(?<=[&?]?text=)[^&]*/);
   }
+
+  /**
+   * @param {string} urlString
+   * @param {string} type
+   * @returns {string}
+   */
+
+  retrieveHighlightContext(urlString, type) {
+    const regexString = new RegExp(String.raw`(?<=[&?]?${type}=)[^&]*`, "gis");
+    return urlString.match(regexString);
+  }
+
+  /**
+   * @param {string} urlString
+   * @returns {object}
+   */
+  convertParamToHighlight(urlString) {
+    let quote = urlString.match(/(?<=[&?]?text=)[^&]*/);
+    let prefix = urlString.match(/(?<=[&?]?prefix=)[^&]*/);
+    let suffix = urlString.match(/(?<=[&?]?suffix=)[^&]*/);
+    let dIndex = urlString.match(/(?<=[&?]?dIndex=)[^&]*/);
+    if (quote) quote = decodeURIComponent(quote[0]);
+    if (prefix) prefix = decodeURIComponent(prefix[0]);
+    if (suffix) suffix = decodeURIComponent(suffix[0]);
+    if (dIndex) dIndex = decodeURIComponent(dIndex[0]);
+    return {prefix, quote, suffix, dIndex};
+  }
 }
