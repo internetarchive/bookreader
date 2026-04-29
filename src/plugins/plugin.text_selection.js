@@ -68,6 +68,11 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     this.textSelectionManager.renderSelectionMenu();
   }
 
+  enableHighlightMenu() {
+    this.textSelectionManager.highlightAnnotationEnabled = true;
+    this.textSelectionManager.renderHighlightMenu();
+  }
+
   /**
    * @override
    * @param {PageContainer} pageContainer

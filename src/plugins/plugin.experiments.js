@@ -60,11 +60,25 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       name = 'copyLinkToHighlight';
       title = 'Copy to Selection URL';
       description = 'Share text selection via URL';
-      learnMore = 'none';
       icon = null;
       enabled = false;
       async enable ({ manual = false }) {
         this.br.plugins.textSelection.enableSelectionMenu();
+      }
+      async disable() {
+        sleep(0).then(() => {
+          window.location.reload();
+        });
+      }
+    }(),
+    new class extends ExperimentModel {
+      name = 'annotateHighlight';
+      title = 'Highlight and annotate';
+      description = 'Create private highlights and annotations for this book';
+      icon = null;
+      enabled = false;
+      async enable ({ manual = false }) {
+        this.br.plugins.textSelection.enableHighlightMenu();
       }
       async disable() {
         sleep(0).then(() => {

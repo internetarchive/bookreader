@@ -14,7 +14,7 @@ export class TextSelectionManager {
   selectMenu;
   /** @type {boolean} */
   selectionMenuEnabled = false;
-
+  highlightAnnotationEnabled = false;
   /**
    * @param {string} layer Selector for the text layer to manage
    * @param {import('../BookReader.js').default} br
@@ -32,7 +32,7 @@ export class TextSelectionManager {
     this.selectionObserver = new SelectionObserver(this.layer, this._onSelectionChange);
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
 
-    this.selectMenu = new BRSelectMenu(br, selectionElement);
+    this.selectMenu = new BRSelectMenu(br, selectionElement, this.selectionMenuEnabled, this.highlightAnnotationEnabled);
     this.selectMenu.className = "br-select-menu__root";
   }
 
@@ -87,6 +87,9 @@ export class TextSelectionManager {
         }
       });
     }
+    if (this.highlightAnnotationEnabled) {
+      this.renderHighlightMenu();
+    }
   }
 
   detach() {
@@ -97,8 +100,21 @@ export class TextSelectionManager {
   }
 
   renderSelectionMenu() {
-    if (document.querySelector('.br-select-menu__option')) return;
-    document.body.append(this.selectMenu);
+    this.selectMenu.copyHighlightEnabled = true;
+    if (this.highlightAnnotationEnabled) {
+      this.selectMenu.requestUpdate();
+    } else {
+      document.body.append(this.selectMenu);
+    }
+  }
+
+  renderHighlightMenu() {
+    this.selectMenu.highlightAnnotationEnabled = true;
+    if (this.selectionMenuEnabled) {
+      this.selectMenu.requestUpdate();
+    } else {
+      document.body.append(this.selectMenu);
+    }
   }
   /**
    * @param {'started' | 'cleared' | 'focusChanged'} type
@@ -393,11 +409,15 @@ class BRSelectMenu extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
   selectionElement;
+  copyHighlightEnabled;
+  highlightAnnotationEnabled;
 
-  constructor(br, selectionElement) {
+  constructor(br, selectionElement, copyHighlightEnabled, highlightAnnotationEnabled) {
     super();
     this.br = br;
     this.selectionElement = selectionElement;
+    this.copyHighlightEnabled = copyHighlightEnabled;
+    this.highlightAnnotationEnabled = highlightAnnotationEnabled;
   }
 
   /** @override */
@@ -406,18 +426,22 @@ class BRSelectMenu extends LitElement {
     return this;
   }
 
-  // TODO change the second button to use a different icon
-  render() {
+  addShareHighlightHTML() {
     return html`
       <button @click=${this.handleCopyLinktoHighlight} 
         class="br-select-menu__option">
         <ia-icon-share class="br-select-menu__icon aria-hidden="true"></ia-icon-share>
         <span class="br-select-menu__label">Copy Link to Highlight</span>
       </button>
+    `;
+  }
+
+  addHighlightHTML() {
+    return html`
       <button @click=${this.handleHighlightSelection} 
         .selectionElement=${this.selectionElement}
         class="br-select-menu__option">
-        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
+        <ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>
         <span class="br-select-menu__label">Highlight Selection</span>
       </button>
       <button @click=${this.retrieveHighlightFromLocalStorage} 
@@ -425,11 +449,23 @@ class BRSelectMenu extends LitElement {
         <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
         <span class="br-select-menu__label">Load Highlights</span>
       </button>
+      <button @click=${this.handleAnnotation}
+        class="br-select-menu__option">
+        <ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>
+        <span class="br-select-menu__label">Annotate</span>
+      </button>
       <button @click=${() => {window.localStorage.removeItem("highlightStorage");}}
         class="br-select-menu__option">
         <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
         <span class="br-select-menu__label">Remove Stored Highlights</span>
-      </button>
+      </button>`;
+  }
+
+  // TODO change the second button to use a different icon
+  render() {
+    return html`
+      ${this.copyHighlightEnabled ? this.addShareHighlightHTML() : ''}
+      ${this.highlightAnnotationEnabled ? this.addHighlightHTML() : ''}
     `;
   }
 
@@ -508,6 +544,10 @@ class BRSelectMenu extends LitElement {
     const output = this.createQuoteStorage(currentSelection, [this.getNodeTextLayer(start).parentElement]);
     this.saveToLocalStorage(output);
     changeDOMtoHighlight(start, end, this.selectionElement);
+  }
+
+  handleAnnotation(e) {
+    // TODO
   }
 
   /**
@@ -860,6 +900,18 @@ export function convertRangeToDOMSelection(storageItem) {
   changeDOMtoHighlight(start, end, [".BRwordElement", '.BRspace']);
 
   selection?.removeAllRanges();
+  createAnnotationBox(adjustedNodes);
+}
+
+function createAnnotationBox(nodes) {
+  let firstNode = nodes[0];
+  let lastNode = nodes[nodes.length - 1];
+  if (!firstNode.classList.contains("BRlineElement")) {
+    firstNode = firstNode.closest('.BRlineElement');
+  }
+  if (!lastNode.classList.contains("BRlineElement")) {
+    lastNode = lastNode.closest('.BRlineElement');
+  }
 }
 
 /**
@@ -885,5 +937,5 @@ export function changeDOMtoHighlight(start, end, selectionElement) {
     element.textContent = null;
     element.appendChild(highlightSpan);
   }
-  // const endParent = end.parentElement;
+  createAnnotationBox(nodes);
 }
