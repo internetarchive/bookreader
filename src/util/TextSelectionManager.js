@@ -58,7 +58,7 @@ export class TextSelectionManager {
         } else if (window.getSelection().toString()) {
           this.selectMenu.showMenu();
           const selectedElement = window.getSelection()?.anchorNode;
-          if (selectedElement.classList.contains('BRlocalHighlight')) {
+          if (selectedElement.classList.contains('BRhighlight')) {
             this.getHighlightedNodes(selectedElement);
           }
         }
@@ -926,24 +926,23 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
   return undefined;
 }
 /**
-   * Takes a highlightObject in localStorage which includes data-index and data-page-num
-   * to create a range if the page is visible within the DOM
-   *
-   * Iterate through the range and determine the "start" and "end" nodes
-   * Example of how this is done via polyfill
-   * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/main/src/text-fragment-utils.js#L743
-   * @param {any} storageItem an object that contains the quote, prefix, suffix, dIndex, and dPageNum from a saved highlight
-  */
-
-export function convertRangeToDOMSelection(storageItem) {
+ * Takes a highlightObject from localStorage which includes data-index and data-page-num
+ * to create a range if the page is visible within the DOM
+ *
+ * Iterate through the range and determine the "start" and "end" nodes
+ * Example of how this is done via polyfill
+ * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/main/src/text-fragment-utils.js#L743
+ * @param {import('../plugins/url/UrlPlugin.js').BookReaderSavedHighlight} quote
+ */
+export function convertRangeToDOMSelection(quote) {
   // 1. Extract the page data and check if the page is currently visible
-  const pageClass = `pagediv${storageItem.dIndex}`;
+  const pageClass = `pagediv${quote.dIndex}`;
   const storedPageElement = document.querySelector(`.${pageClass}`);
   if (!storedPageElement) return;
   // 2. Retrieve the text nodes and relevant whitespace elements
   const allWordNodes = Array.from(storedPageElement.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
 
-  // Need to keep the BRlineElement nodes inbetween to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
+  // Need to keep the BRlineElement nodes in between to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
   allWordNodes.splice(0, 1);
   const lastWordNodeIndex = allWordNodes.length - 1;
 
@@ -954,25 +953,23 @@ export function convertRangeToDOMSelection(storageItem) {
 
   // 4. Convert the whole page range into a normalized string, get the index of where the stored string matches the quote
   const convertedString = replaceWhitespace(wholePageAsRange.toString());
-  const convertedQuote = replaceWhitespace(storageItem.quote);
+  const convertedQuote = replaceWhitespace(quote.quote);
   const foundStringIndex = convertedString.indexOf(convertedQuote);
   if (foundStringIndex == -1) return;
-  const fullContext = [storageItem.prefix, storageItem.quote, storageItem.suffix].join(" ");
+  const fullContext = [quote.prefix, quote.quote, quote.suffix].join(" ");
   const convertedFullContext = replaceWhitespace(fullContext);
 
   const relevantRange = deriveRangeFromNodes(convertedFullContext, wholePageAsRange, Array.from(allWordNodes));
 
   const adjustedNodes = [];
   for (const el of walkBetweenNodes(relevantRange?.startContainer, relevantRange?.endContainer)) {
-    if (el.nodeType === 'BR') {
-      adjustedNodes.push(el);
-    } else if (el?.classList?.contains('BRwordElement') || el?.classList?.contains('BRspace') || el?.classList?.contains('BRlineElement')) {
+    if (el?.classList?.contains('BRwordElement') || el?.classList?.contains('BRspace') || el?.classList?.contains('BRlineElement')) {
       adjustedNodes.push(el);
     }
   }
 
   // Range Object returned
-  const output = deriveRangeFromNodes(storageItem.quote, relevantRange, adjustedNodes);
+  const output = deriveRangeFromNodes(quote.quote, relevantRange, adjustedNodes);
 
   const selection = window.getSelection();
   selection?.removeAllRanges();
@@ -980,7 +977,7 @@ export function convertRangeToDOMSelection(storageItem) {
   // Assumes the selection start/ends are the correct BRwordElement / BRspace elements
   const start = selection.anchorNode;
   const end = selection.focusNode;
-  changeDOMtoHighlight(start, end, [".BRwordElement", '.BRspace'], storageItem.uuid);
+  changeDOMtoHighlight(start, end, [".BRwordElement", '.BRspace'], quote.uuid);
 
   selection?.removeAllRanges();
 }
@@ -1021,7 +1018,7 @@ export function changeDOMtoHighlight(start, end, selectionElement, uuid) {
 
   const textLayer = start.parentElement.closest('.BRtextLayer');
   textLayer?.addEventListener('mouseup', (e) => {
-    if (!e.target.classList.contains("BRlocalHighlight")) return;
+    if (!e.target.classList.contains("BRhighlight")) return;
     e.stopPropagation();
     createAnnotationBox(e.target);
     window.br.plugins.textSelection.textSelectionManager.selectMenu.showMenu();
@@ -1029,7 +1026,7 @@ export function changeDOMtoHighlight(start, end, selectionElement, uuid) {
 
   for (const element of nodes) {
     const highlightSpan = document.createElement("span");
-    highlightSpan.className = "BRlocalHighlight";
+    highlightSpan.className = "BRhighlight";
     highlightSpan.classList.add(uuid);
     highlightSpan.textContent = element.textContent;
     element.textContent = null;
