@@ -190,15 +190,10 @@ export class UrlPlugin {
   }
 
   /**
-   * Get the hash out of the current URL. Also augments it with the text
-   * from the main part of the URL, since that is not readable by JS
-   * from the actual hash
-   * @returns
+   * Get the hash out of the current URL
    */
   getHash() {
-    const text = this.retrieveTextFragment(window.location.search);
-    const textFragment = text ? `:~:text=${text[0]}` : '';
-    return `${window.location.hash.slice(1)}${textFragment}`;
+    return window.location.hash.slice(1);
   }
 
   /**
@@ -222,9 +217,9 @@ export class UrlPlugin {
 
   /**
    * @param {string} urlString
-   * @returns {object}
+   * @returns {BookReaderTextFragment}
    */
-  convertParamToHighlight(urlString) {
+  parseToTextFragment(urlString) {
     let quote = urlString.match(/(?<=[&?]?text=)[^&]*/);
     let prefix = urlString.match(/(?<=[&?]?prefix=)[^&]*/);
     let suffix = urlString.match(/(?<=[&?]?suffix=)[^&]*/);
@@ -236,3 +231,20 @@ export class UrlPlugin {
     return {prefix, quote, suffix, dIndex};
   }
 }
+
+/**
+ * @typedef {Object} BookReaderTextFragment
+ * An extension of the fields defined by the browser-native TextFragment;
+ * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
+ *
+ * @property {string} prefix
+ * @property {string} quote
+ * @property {string} suffix
+ * @property {string} dIndex Page index
+ * @property {string} dPageNum Page num ; eg. asserted page number or the n-prefixed page index
+ */
+
+/**
+ * @typedef {BookReaderTextFragment} BookReaderSavedHighlight
+ * @property {string} uuid
+ */

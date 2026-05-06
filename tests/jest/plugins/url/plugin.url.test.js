@@ -9,7 +9,7 @@ beforeAll(() => {
   const urlPluginMock = {
     retrieveTextFragment: sinon.fake(),
     urlStringToUrlState: sinon.fake(),
-    convertParamToHighlight: sinon.fake(),
+    parseToTextFragment: sinon.fake(),
   };
   br.urlPlugin = urlPluginMock;
 });

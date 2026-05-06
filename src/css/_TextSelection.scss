@@ -54,13 +54,6 @@
     }
 }
 
-// Style URI TextFragments, eg #:~:text=example
-.BRtextLayer ::target-text {
-    // Similar colour to the default one used in Safari, Firefox. Note Chrome uses a purple colour
-    background-color: hsla(45, 80%, 66%, 0.6);
-    color: transparent;
-}
-
 .BRtranslateLayer ::selection {
     background: hsla(210, 74%, 62%, 0.4);
 }
@@ -211,7 +204,14 @@
   opacity: 1;
 }
 
-.BRlocalHighlight {
+.BRtextLayer .BRhighlight {
     background-color: yellow;
     pointer-events: all;
+}
+
+// Style URI TextFragments, eg #:~:text=example
+.BRtextLayer .BRhighlight--target-text, .BRtextLayer ::target-text {
+    // Similar colour to the default one used in Safari, Firefox. Note Chrome uses a purple colour
+    background-color: hsla(45, 80%, 66%, 0.6);
+    color: transparent;
 }
