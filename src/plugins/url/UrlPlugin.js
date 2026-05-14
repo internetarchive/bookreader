@@ -204,6 +204,10 @@ export class UrlPlugin {
     return urlString.match(/(?<=[&?]?text=)[^&]*/);
   }
 
+  retrieveDIndex(urlString) {
+    return urlString.match(/(?<=[&?]?dIndex=)[^&]*/);
+  }
+
   /**
    * @param {string} urlString
    * @param {string} type
@@ -215,18 +219,25 @@ export class UrlPlugin {
     return urlString.match(regexString);
   }
 
-  /**
-   * @param {string} urlString
-   * @returns {BookReaderTextFragment}
-   */
-  parseToTextFragment(urlString) {
-    let quote = urlString.match(/(?<=[&?]?text=)[^&]*/);
-    let prefix = urlString.match(/(?<=[&?]?prefix=)[^&]*/);
-    let suffix = urlString.match(/(?<=[&?]?suffix=)[^&]*/);
+  parseToText(urlString) {
+    const quoteMatch = urlString.match(/(?<=[&?]?text=)[^&]*/);
     let dIndex = urlString.match(/(?<=[&?]?dIndex=)[^&]*/);
-    if (quote) quote = decodeURIComponent(quote[0]);
-    if (prefix) prefix = decodeURIComponent(prefix[0]);
-    if (suffix) suffix = decodeURIComponent(suffix[0]);
+    let quote, prefix, suffix;
+    if (quoteMatch) {
+      const prefixMatch = quoteMatch[0].match(/.*?(?=(-,))/);
+      const suffixMatch = quoteMatch[0].match(/(?<=,-).*/);
+      if (prefixMatch) prefix = decodeURIComponent(prefixMatch[0]);
+      if (suffixMatch) suffix = decodeURIComponent(suffixMatch[0]);
+      if (prefixMatch && suffixMatch) {
+        quote = decodeURIComponent(quoteMatch[0].match(/(?<=(-,)).*(?=(,-))/)[0]);
+      } else if (prefixMatch && !suffixMatch) { // Prefix only
+        quote = decodeURIComponent(quoteMatch[0].match(/(?<=-,).*/)[0]);
+      } else if (!prefixMatch && suffixMatch) { // Suffix only
+        quote = decodeURIComponent(quoteMatch[0].match(/.*(?<=,-)/)[0]);
+      } else { // Somehow no prefix or suffix
+        quote = decodeURIComponent(quoteMatch[0]);
+      }
+    }
     if (dIndex) dIndex = decodeURIComponent(dIndex[0]);
     return {prefix, quote, suffix, dIndex};
   }
