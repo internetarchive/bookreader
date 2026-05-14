@@ -1,3 +1,8 @@
+# 5.0.0-111
+- Feature: Add new alpha experiment for copy link to highlight @schu96
+- Feature: Add option to specify `page_index` in table of contents in options @cdrini
+- Fix: Race condition preventing table of contents loading when specified directly in options @cdrini
+
 # 5.0.0-110
 - Dev: Add dependencies necessary for esm-import to package.json/dependencies @cdrini
 - Dev: Update various testing and build dependencies @cdrini
