@@ -6,6 +6,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import '@internetarchive/icon-toc/icon-toc.js';
 import { BookReaderPlugin } from "../BookReaderPlugin.js";
 import { applyVariables } from "../util/strings.js";
+import { promisifyEvent } from "../BookReader/utils.js";
 /** @typedef {import('@/src/BookReader/BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('@/src/BookReader/BookModel.js').PageString} PageString */
 /** @typedef {import('@/src/BookReader/BookModel.js').LeafNum} LeafNum */
@@ -100,6 +101,9 @@ export class ChaptersPlugin extends BookReaderPlugin {
                   undefined
           ),
         })));
+      if (!this.br.shell) {
+        await promisifyEvent(window, 'BookReader:PostInit');
+      }
       this._render();
       this.br.bind(BookReader.eventNames.pageChanged, () => this._updateCurrent());
     }
