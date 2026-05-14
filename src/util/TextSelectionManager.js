@@ -51,7 +51,6 @@ export class TextSelectionManager {
       }
 
       if (selectEvent == 'focusChanged') {
-        console.log("detected focusChanged event", {mouseIsDown: this.mouseIsDown, selection: window.getSelection().toString()});
         // hide the button as user changes their selection
         if (this.mouseIsDown) {
           this.selectMenu.hideMenu();
@@ -134,8 +133,6 @@ export class TextSelectionManager {
       this.defaultMode(target);
     } else if (type === 'focusChanged') {
       // do nothing, just wait for the mouseup to trigger the styling change
-    } else if (type === 'highlightSelected') {
-      this.getHighlightedNodes(target);
     } else {
       throw new Error(`Unknown type ${type}`);
     }
@@ -295,8 +292,9 @@ export function createTextFragmentUrlParam(selection, contextElements) {
   preStartRange.setStart(contextElements[0].firstElementChild, 0);
   preStartRange.setEnd(startNode, 0);
 
+  const endRangeLength = endNode.nodeName.toLowerCase() === 'span' ? 1 : endNode.textContent.length;
   const postEndRange = document.createRange();
-  postEndRange.setStart(endNode, endNode.textContent.length);
+  postEndRange.setStart(endNode, endRangeLength);
   const lastWordOfPageEl = getLastMostElement(contextElements[contextElements.length - 1]);
   postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
 
@@ -328,17 +326,15 @@ export function createTextFragmentUrlParam(selection, contextElements) {
     fullHighlight[fullHighlight.length - 1] = endNode.textContent;
   }
 
-  const quote = [fullHighlight.join(" ")];
+  const quote = encodeURIComponent(fullHighlight.join(" "));
 
-  const textFragmentArr = [];
   let prefixString = '';
   let suffixString = '';
   const pageString = `&dIndex=${startNode.parentElement.closest(".BRpagecontainer").getAttribute('data-index')}`;
 
-  if (prefix) prefixString = `prefix=${encodeURIComponent(prefix)}&`;
-  textFragmentArr.push(...quote);
-  if (suffix) suffixString = `&suffix=${encodeURIComponent(suffix)}`;
-  return `${prefixString}text=${encodeURIComponent(quote)}${suffixString}${pageString}`;
+  if (prefix) prefixString = `${encodeURIComponent(prefix)}-,`;
+  if (suffix) suffixString = `,-${encodeURIComponent(suffix)}`;
+  return `text=${prefixString}${quote}${suffixString}${pageString}`;
 }
 
 /**
@@ -716,10 +712,6 @@ class BRSelectMenu extends LitElement {
 
     const quote = fullHighlight.join("  ");
 
-    const textFragmentArr = [];
-    if (prefix) textFragmentArr.push(`${prefix}-`);
-    textFragmentArr.push(...quote);
-    if (suffix) textFragmentArr.push(`-${suffix}`);
     const uuid = `id-${crypto.randomUUID().split("-")[4]}`;
     return {
       prefix,
@@ -729,19 +721,6 @@ class BRSelectMenu extends LitElement {
       dIndex: contextElements[0].getAttribute("data-index"),
       uuid,
     };
-  }
-
-  showAnnotation(lineElement) {
-    const newSelection = document.createElement("div");
-    newSelection.className = "annotationMenu";
-    newSelection.style.position = "absolute";
-    newSelection.style.backgroundColor = "orange";
-
-    const inputBox = document.createElement("input");
-    inputBox.className = "inputBox";
-    inputBox.style.position = "relative";
-    newSelection.appendChild(inputBox);
-    lineElement.appendChild(newSelection);
   }
 
   showMenu() {
@@ -982,22 +961,6 @@ export function convertRangeToDOMSelection(quote) {
   selection?.removeAllRanges();
 }
 
-function createAnnotationBox(nodes) {
-  const identifier = retrieveUUID(nodes);
-  const quoteNodes = document.querySelectorAll(`.${identifier}`);
-
-  const firstNode = quoteNodes[0];
-  const lastNode = quoteNodes[quoteNodes.length - 1];
-
-  const highlightRange = document.createRange();
-  highlightRange.setStart(firstNode, 0);
-  highlightRange.setEnd(lastNode, 1);
-
-  const selection = window.getSelection();
-  selection.removeAllRanges();
-  selection.addRange(highlightRange);
-}
-
 /**
  *
  * @param {Node} start BRwordElement or BRspace
@@ -1020,7 +983,19 @@ export function changeDOMtoHighlight(start, end, selectionElement, uuid) {
   textLayer?.addEventListener('mouseup', (e) => {
     if (!e.target.classList.contains("BRhighlight")) return;
     e.stopPropagation();
-    createAnnotationBox(e.target);
+    const identifier = retrieveUUID(e.target);
+    const selectedQuoteNodes = document.querySelectorAll(`.${identifier}`);
+
+    const firstNode = selectedQuoteNodes[0];
+    const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
+
+    const highlightRange = document.createRange();
+    highlightRange.setStart(firstNode, 0);
+    highlightRange.setEnd(lastNode, 1);
+
+    const currentSelection = window.getSelection();
+    currentSelection?.removeAllRanges();
+    currentSelection?.addRange(highlightRange);
     window.br.plugins.textSelection.textSelectionManager.selectMenu.showMenu();
   });
 

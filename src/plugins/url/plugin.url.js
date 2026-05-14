@@ -150,8 +150,10 @@ BookReader.prototype.urlUpdateFragment = function() {
   const currQueryString = this.getLocationSearch();
   // Eg ?q=foo&text=bar; only query params, no fragment
   const newQueryString = this.queryStringFromParams(params, currQueryString, this.options.urlMode);
-
-  if (currFragment === newFragment && currQueryString === newQueryString) {
+  // Adding a check to the urlMode for now. Without the check, the highlight does not work if shared and the page is refreshed
+  if (currFragment === newFragment && currQueryString === newQueryString
+    && !newQueryString.includes('search=')
+  ) {
     return;
   }
 
@@ -160,7 +162,7 @@ BookReader.prototype.urlUpdateFragment = function() {
       this.options.urlMode = 'hash';
     } else {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
-      this.targetTextFragment = this.urlPlugin.parseToTextFragment(newQueryString);
+      this.targetTextFragment = this.urlPlugin.parseToText(newQueryString);
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
 
       try {
@@ -175,7 +177,7 @@ BookReader.prototype.urlUpdateFragment = function() {
 
   if (this.options.urlMode === 'hash')  {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
-    this.targetTextFragment = this.urlPlugin.parseToTextFragment(this.readQueryString());
+    this.targetTextFragment = this.urlPlugin.parseToText(this.readQueryString());
     window.location.replace('#' + newFragment + newQueryStringSearch);
     this.oldLocationHash = newFragment + newQueryStringSearch;
   }
