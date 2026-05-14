@@ -94,9 +94,10 @@ export class ChaptersPlugin extends BookReaderPlugin {
       this._tocEntries = rawTableOfContents
         .map(rawTOCEntry => (Object.assign({}, rawTOCEntry, {
           pageIndex: (
-            typeof(rawTOCEntry.leaf) == 'number' ? this.br.book.leafNumToIndex(rawTOCEntry.leaf) :
-              rawTOCEntry.pagenum ? this.br.book.getPageIndex(rawTOCEntry.pagenum) :
-                undefined
+            typeof rawTOCEntry.page_index === 'number' ? rawTOCEntry.page_index :
+              typeof(rawTOCEntry.leaf) == 'number' ? this.br.book.leafNumToIndex(rawTOCEntry.leaf) :
+                rawTOCEntry.pagenum ? this.br.book.getPageIndex(rawTOCEntry.pagenum) :
+                  undefined
           ),
         })));
       this._render();
