@@ -4,7 +4,6 @@
 }
 
 .BRmode1up .BRpagecontainer, .BRmodeThumb .BRpagecontainer {
-  box-shadow: 1px 1px 2px #333;
   img {
     border: 0;
   }
@@ -36,6 +35,103 @@
   .br-mode-1up__visible-world {
     position: absolute;
     transform-origin: 0 0;
+  }
+}
+
+#BookReader.BRmodeText .BRcontainer {
+  background: #E6DFC7;
+  background: linear-gradient(
+    to right,
+    #BBAB8A,
+    #E6DFC7 calc(calc(100% - 750px) / 2),
+    #E6DFC7 calc(750px + calc(100% - 750px) / 2),
+    #BBAB8A
+  );
+}
+
+.br-mode-text__root {
+  // Useful for debugging
+  // .BRwordElement {
+  //   background: rgba(255, 0, 0, calc(calc(100% - var(--br-conf)) / 3));
+  // }
+
+  .BRpagecontainer {
+    margin-top: 0px !important;
+    border-top: 1px dashed rgba(65, 30, 4, 0.4);
+    min-height: 50px;
+    background: transparent;
+    position: static !important;
+  }
+
+  .BRpagecontainer, .BRPageLayer.BRtextLayer {
+    width: 100% !important;
+    height: unset !important;
+  }
+
+  .BRPageLayer.BRtextLayer {
+    position: static;
+    transform: unset;
+    max-width: 810px;
+    margin: 0 auto;
+
+    color: #39313d;
+    text-shadow: 0.5px 1px 0.5px #b2a7b8;
+    padding: 0 35px;
+    box-sizing: border-box;
+
+    .BRparagraphElement {
+      margin: 0 !important;
+      margin-top: 8px !important;
+      text-indent: 15px;
+      width: unset !important;
+      height: unset !important;
+
+      font-size: 18px !important;
+      line-height: 1.3em !important;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+      text-align: justify;
+    }
+
+    .BRlineElement {
+      display: inline;
+      margin-left: 0;
+      margin-right: 0;
+      white-space: unset;
+      line-height: unset !important;
+    }
+
+    .BRwordElement, .BRspace {
+      // override the style attribute set in JS
+      letter-spacing: unset !important;
+      padding-left: 0 !important;
+    }
+
+    .BRwordElement--hyphen::after {
+      content: '';
+    }
+
+    .BRcentered {
+      text-align: center;
+    }
+
+    .ocr-role-header-footer {
+      opacity: 0.5;
+      text-align: center;
+      font-size: 16px !important;
+    }
+  }
+
+  .BRtextLayerLoading::after {
+    display: block;
+    content: "";
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: url("images/loading.gif") center/20px no-repeat;
+    mix-blend-mode: multiply;
   }
 }
 
