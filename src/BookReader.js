@@ -1976,9 +1976,12 @@ BookReader.prototype.queryStringFromParams = function(
   // the browser seems not to handle with the text fragment
   if (newParams.get('text')) {
     newParams.delete('text');
-    textFragmentParam = `text=${this.urlPlugin.retrieveTextFragment(currQueryString)}`;
+    textFragmentParam = `text=${this.urlPlugin.retrieveTextFragment(currQueryString, 'text')}`;
   }
-
+  if (newParams.get('dIndex')) {
+    newParams.delete('dIndex');
+    textFragmentParam += `&dIndex=${this.urlPlugin.retrieveDIndex(currQueryString)}`;
+  }
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
   // Note: This method returns the query string without the question mark.
   let result = newParams.toString();
