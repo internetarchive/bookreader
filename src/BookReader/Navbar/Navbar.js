@@ -445,7 +445,7 @@ export class Navbar {
 
 /**
  * Renders the html for the page string
- * @param {number} index 0-indexed leaf position (0..numLeafs-1)
+ * @param {PageIndex} index 0-indexed page index (0..numLeafs-1)
  * @param {number} numLeafs total number of leaves
  * @param {number|string} pageNum
  * @param {*} pageType - Deprecated
