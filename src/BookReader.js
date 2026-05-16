@@ -247,10 +247,14 @@ BookReader.prototype.setup = function(options) {
   this.defaults = options.defaults;
   this.padding = options.padding;
 
-  this.reduceSet = NAMED_REDUCE_SETS[options.reduceSet];
-  if (!this.reduceSet) {
-    console.warn(`Invalid reduceSet ${options.reduceSet}. Ignoring.`);
-    this.reduceSet = NAMED_REDUCE_SETS[DEFAULT_OPTIONS.reduceSet];
+  if (typeof(options.reduceSet) === 'string') {
+    this.reduceSet = NAMED_REDUCE_SETS[options.reduceSet];
+    if (!this.reduceSet) {
+      console.warn(`Invalid reduceSet ${options.reduceSet}. Ignoring.`);
+      this.reduceSet = NAMED_REDUCE_SETS[DEFAULT_OPTIONS.reduceSet];
+    }
+  } else {
+    this.reduceSet = options.reduceSet;
   }
 
   /** @type {number}
