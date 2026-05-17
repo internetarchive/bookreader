@@ -480,6 +480,11 @@ export class BrTranslatePanel extends LitElement {
   }
 
   _toggleTranslation(event) {
+    // Prevent translating when source and target are identical
+    if (this.detectedFromLang === this.detectedToLang) {
+      alert('You cannot translate to/from the same language');
+      return;
+    }
     const toggleTranslateEvent = new CustomEvent('toggleTranslation', {
       detail: {value: event.target.value},
       bubbles: true,
@@ -491,9 +496,6 @@ export class BrTranslatePanel extends LitElement {
 
   // TODO: Hardcoded warning message for now but should add more statuses
   _statusWarning() {
-    if (this.detectedFromLang == this.detectedToLang) {
-      return "Translate To language is the same as the Source language";
-    }
     return "";
   }
 
