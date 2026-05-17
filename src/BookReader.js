@@ -302,7 +302,6 @@ BookReader.prototype.setup = function(options) {
   this.thumbnail = options.thumbnail;
   this.bookUrlMoreInfo = options.bookUrlMoreInfo;
 
-  this.enableExperimentalControls = options.enableExperimentalControls;
   this.el = options.el;
 
   this.pageProgression = options.pageProgression;
