@@ -174,6 +174,17 @@ BookReader.prototype.setup = function(options) {
   /** @deprecated */
   this.bookPath = options.bookPath;
 
+  if (options.reduceSet && !NAMED_REDUCE_SETS[options.reduceSet]) {
+    console.warn(
+      `Invalid reduceSet "${options.reduceSet}". Falling back to default.`
+    );
+  } 
+  this.reduceSet =NAMED_REDUCE_SETS[options.reduceSet] ||  NAMED_REDUCE_SETS[DEFAULT_OPTIONS.reduceSet];
+  this.pageProgression = options.pageProgression;
+  this.protected = options.protected;
+  this.data = options.data;
+  this.book = new BookModel(this);
+
   // Construct the usual plugins first to get type hints
   this.plugins = {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
@@ -247,12 +258,6 @@ BookReader.prototype.setup = function(options) {
   this.defaults = options.defaults;
   this.padding = options.padding;
 
-  this.reduceSet = NAMED_REDUCE_SETS[options.reduceSet];
-  if (!this.reduceSet) {
-    console.warn(`Invalid reduceSet ${options.reduceSet}. Ignoring.`);
-    this.reduceSet = NAMED_REDUCE_SETS[DEFAULT_OPTIONS.reduceSet];
-  }
-
   /** @type {number}
    * can be 1 or 2 or 3 based on the display mode const value
    */
@@ -305,19 +310,10 @@ BookReader.prototype.setup = function(options) {
   this.enableExperimentalControls = options.enableExperimentalControls;
   this.el = options.el;
 
-  this.pageProgression = options.pageProgression;
-  this.protected = options.protected;
   this.getEmbedCode = options.getEmbedCode;
   this.popup = null;
 
-  // Assign the data methods
-  this.data = options.data;
 
-  /** @type {{[name: string]: JQuery}} */
-  this.refs = {};
-
-  /** The book being displayed in BookReader*/
-  this.book = new BookModel(this);
 
   if (options.getNumLeafs) this.book.getNumLeafs = options.getNumLeafs.bind(this);
   if (options.getPageWidth) this.book.getPageWidth = options.getPageWidth.bind(this);
@@ -328,6 +324,11 @@ BookReader.prototype.setup = function(options) {
   if (options.getPageProp) this.book.getPageProp = options.getPageProp.bind(this);
   if (options.getSpreadIndices) this.book.getSpreadIndices = options.getSpreadIndices.bind(this);
   if (options.leafNumToIndex) this.book.leafNumToIndex = options.leafNumToIndex.bind(this);
+
+
+  /** @type {{[name: string]: JQuery}} */
+  this.refs = {};
+
 
   /**
    * @private Components are 'subchunks' of bookreader functionality, usually UI related
