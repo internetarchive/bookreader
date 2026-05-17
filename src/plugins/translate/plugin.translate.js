@@ -152,6 +152,10 @@ export class TranslatePlugin extends BookReaderPlugin {
     }
     /** @type {HTMLElement} textLayerElement */
     const textLayerElement = page.querySelector('.BRtextLayer');
+    if (!textLayerElement) {
+      console.warn("Translate unavailable: no text layer (preview mode?)");
+      return;
+    }
     // Should use native DOM element.style method instead of $().css method, specific issue with rendering / style calculation in Chrome
     $(pageTranslationLayer).css({
       "width": textLayerElement.style.width,
@@ -307,6 +311,12 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   handleToggleTranslation = async () => {
+    const hasTextLayer = document.querySelector('.BRtextLayer');
+    if (!hasTextLayer) {
+      alert("Please borrow the book to use translation.");
+      return;
+    }
+
     this.userToggleTranslate = !this.userToggleTranslate;
     this.translationManager.active = this.userToggleTranslate;
 
