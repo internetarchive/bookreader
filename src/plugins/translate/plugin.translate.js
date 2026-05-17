@@ -307,21 +307,27 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   handleToggleTranslation = async () => {
+    //  Prevent translating if source and target languages are the same
+    if (this.langFromCode === this.langToCode) {
+      alert("Source and target languages cannot be the same.");
+      return; // Stop here — do NOT enable translation
+    }
+  
     this.userToggleTranslate = !this.userToggleTranslate;
     this.translationManager.active = this.userToggleTranslate;
-
+  
     this._render();
+  
     if (!this.userToggleTranslate) {
       this.clearAllTranslations();
-      this.br.trigger('translationDisabled', { });
+      this.br.trigger('translationDisabled', {});
       this.textSelectionManager.detach();
     } else {
-      this.br.trigger('translationEnabled', { });
+      this.br.trigger('translationEnabled', {});
       this.translateActivePageContainerElements();
       this.textSelectionManager.attach();
     }
-  }
-
+  };
   /**
   * Update translation side menu
   */
@@ -481,21 +487,19 @@ export class BrTranslatePanel extends LitElement {
 
   _toggleTranslation(event) {
     const toggleTranslateEvent = new CustomEvent('toggleTranslation', {
-      detail: {value: event.target.value},
+      detail: {},
       bubbles: true,
-      composed:true,
+      composed: true,
     });
-    this.userTranslationActive = !this.userTranslationActive;
     this.dispatchEvent(toggleTranslateEvent);
   }
+  
 
   // TODO: Hardcoded warning message for now but should add more statuses
-  _statusWarning() {
-    if (this.detectedFromLang == this.detectedToLang) {
-      return "Translate To language is the same as the Source language";
-    }
-    return "";
-  }
+_statusWarning() {
+  return "";
+}
+
 
   _languageModelStatus() {
     if (this.userTranslationActive) {
