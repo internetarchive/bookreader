@@ -2,7 +2,12 @@ import sinon from 'sinon';
 
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
-import {createTextFragmentUrlParam, getFirstWords, getLastWords} from '@/src/util/TextSelectionManager.js';
+import {
+  createTextFragmentUrlParam,
+  getFirstWords,
+  getLastWords,
+  walkBetweenNodes,
+} from '@/src/util/TextSelectionManager.js';
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `
@@ -542,5 +547,49 @@ describe("getFirstWords and getLastWords tests", () => {
   test("Handles string with punctuation", () => {
     expect(getFirstWords(3, "Hello, world! This is a test.")).toBe("Hello, world! This");
     expect(getLastWords(3, "Hello, world! This is a test.")).toBe("is a test.");
+  });
+});
+
+
+describe('walkBetweenNodes', () => {
+  const tree = $(FAKE_XML_MULT_LINES);
+
+  test('handles empty', () => {
+    const result = Array.from(walkBetweenNodes(tree[0], tree[0]));
+    expect(result).toHaveLength(1);
+    expect(result[0]).toBe(tree[0]);
+  });
+
+  test('Words on same line', () => {
+    const start = tree.find('WORD')[2];
+    const end = start.nextElementSibling;
+    // Use first child so we hit the text nodes
+    const result = Array.from(walkBetweenNodes(start.firstChild, end.firstChild));
+    expect(result).toHaveLength(5);
+    expect(result[0].nodeType).toBe(Node.TEXT_NODE);
+    expect(result[0].textContent).toBe('false ');
+    expect(result[1]).toBe(start);
+    // Whitespace
+    expect(result[2].nodeType).toBe(Node.TEXT_NODE);
+    expect(result[2].textContent).toMatch(/^\s*$/);
+    expect(result[3]).toBe(end);
+    expect(result[4].nodeType).toBe(Node.TEXT_NODE);
+    expect(result[4].textContent).toBe('judgment ');
+  });
+
+  test('Words on different lines', () => {
+    const start = tree.find('WORD')[2];
+    const end = tree.find('WORD')[19];
+    const result = Array.from(walkBetweenNodes(start.firstChild, end.firstChild));
+    // Expect two LINES in result
+    expect(result.filter(x => x.nodeName == 'LINE')).toHaveLength(2);
+    // Expect 18 WORDs in result
+    expect(result.filter(x => x.nodeName == 'WORD')).toHaveLength(18);
+    // First word should be the start word
+    expect(result[0].parentElement).toBe(start);
+    expect(result[0].textContent).toBe('false ');
+    // Last word should be the end word
+    expect(result[result.length - 1].parentElement).toBe(end);
+    expect(result[result.length - 1].textContent).toBe('Suppose');
   });
 });
