@@ -3,6 +3,7 @@ import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import '@internetarchive/icon-share';
+import { BookReaderTextFragment } from "../plugins/url/UrlPlugin.js";
 
 export class TextSelectionManager {
   options = {
@@ -281,9 +282,9 @@ export class TextSelectionManager {
  * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
  * @param {Selection} selection currently selected text, eg `document.getSelection()`
  * @param {HTMLElement[]} contextElements elements providing context for the selection
- * @returns {string}
+ * @returns {BookReaderTextFragment}
  */
-export function createTextFragmentUrlParam(selection, contextElements) {
+export function createTextFragment(selection, contextElements) {
   const direction = selection.direction;
   const startNode = direction == 'backward' ? selection.focusNode : selection.anchorNode;
   const endNode = direction == 'backward' ? selection.anchorNode : selection.focusNode;
@@ -326,15 +327,16 @@ export function createTextFragmentUrlParam(selection, contextElements) {
     fullHighlight[fullHighlight.length - 1] = endNode.textContent;
   }
 
-  const quote = encodeURIComponent(fullHighlight.join(" "));
+  const quote = fullHighlight.join(" ");
+  const pageContainerEl = startNode.parentElement.closest(".BRpagecontainer");
 
-  let prefixString = '';
-  let suffixString = '';
-  const pageString = `&dIndex=${startNode.parentElement.closest(".BRpagecontainer").getAttribute('data-index')}`;
-
-  if (prefix) prefixString = `${encodeURIComponent(prefix)}-,`;
-  if (suffix) suffixString = `,-${encodeURIComponent(suffix)}`;
-  return `text=${prefixString}${quote}${suffixString}${pageString}`;
+  return new BookReaderTextFragment({
+    quote,
+    prefix,
+    suffix,
+    pageNumber: pageContainerEl.getAttribute("data-page-num"),
+    pageIndex: parseFloat(pageContainerEl.getAttribute("data-index")),
+  });
 }
 
 /**
@@ -436,7 +438,7 @@ class BRSelectMenu extends LitElement {
 
   addShareHighlightHTML() {
     return html`
-      <button @click=${this.handleCopyLinktoHighlight} 
+      <button @click=${this.handleCopyLinkToHighlight} 
         class="br-select-menu__option">
         <ia-icon-share class="br-select-menu__icon aria-hidden="true"></ia-icon-share>
         <span class="br-select-menu__label">Copy Link to Highlight</span>
@@ -501,26 +503,27 @@ class BRSelectMenu extends LitElement {
   /**
    * @param {MouseEvent} e
   */
-  handleCopyLinktoHighlight(e) {
+  handleCopyLinkToHighlight(e) {
     e.preventDefault();
     const currentParams = this.br.readQueryString();
     const currentSelection = window.getSelection();
-    const textLayer = currentSelection.anchorNode.parentElement.closest('.BRtextLayer');
-    const textFragmentUrlParam = createTextFragmentUrlParam(currentSelection, Array.from(document.querySelectorAll('.BRpage-visible')));
+    const textFragment = createTextFragment(currentSelection, this.br.$('.BRpage-visible').toArray());
 
     // Note: Have to do a param construction to avoid url-encoding of commas in the text fragment param
     let linkToHighlightParams = currentParams;
     if (currentParams.includes('text=')) {
-      linkToHighlightParams = currentParams.replace(/(text=)[\w\W\d%]+/, textFragmentUrlParam);
+      linkToHighlightParams = currentParams.replace(/(text=)[\w\W\d%]+/, `text=${textFragment.toString(false)}`);
     } else {
       const sep = linkToHighlightParams ? '&' : '?';
-      linkToHighlightParams += `${sep}${textFragmentUrlParam}`;
+      linkToHighlightParams += `${sep}text=${textFragment.toString(false)}`;
     }
     const currentUrl = window.location;
     // TODO - updateResumeValue + getCookiePath in plugin.resume.js overrides the adjustedUrlPageNumPath, check how to workaround this
     // TODO - won't work with hash mode
-    const adjustedUrlPageNumPath = currentUrl.pathname.toString().replace(/(?<=\/page\/)\d+(?=\/)/, textLayer.parentElement.getAttribute('data-page-num'));
-    const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}${linkToHighlightParams}${currentUrl?.hash || ''}`;
+    const pageNum = textFragment.pageNumber || `n${textFragment.pageIndex}`;
+    const adjustedUrlPageNumPath = currentUrl.pathname.toString().replace(/(?<=page\/)\d+(?=\/)/, pageNum);
+    const hash = currentUrl.hash ? currentUrl.hash.replace(/(?<=page\/)\d+(?=\/)/, pageNum) : '';
+    const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}${linkToHighlightParams}${hash}`;
 
     navigator.clipboard.writeText(linkToHighlight);
   }
@@ -659,7 +662,8 @@ class BRSelectMenu extends LitElement {
     const stored = this.loadFromLocalStorage("highlightStorage");
     if (!stored) return;
     for (const item of stored) {
-      convertRangeToDOMSelection(item);
+      const pageEl = /** @type {HTMLElement} */ (document.querySelector(`pagediv${item.pageIndex}`));
+      convertRangeToDOMSelection(pageEl, item);
     }
   }
 
@@ -911,15 +915,13 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
  * Iterate through the range and determine the "start" and "end" nodes
  * Example of how this is done via polyfill
  * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/main/src/text-fragment-utils.js#L743
+ *
+ * @param {HTMLElement} containerEl
  * @param {import('../plugins/url/UrlPlugin.js').BookReaderSavedHighlight} quote
  */
-export function convertRangeToDOMSelection(quote) {
-  // 1. Extract the page data and check if the page is currently visible
-  const pageClass = `pagediv${quote.dIndex}`;
-  const storedPageElement = document.querySelector(`.${pageClass}`);
-  if (!storedPageElement) return;
+export function convertRangeToDOMSelection(containerEl, quote) {
   // 2. Retrieve the text nodes and relevant whitespace elements
-  const allWordNodes = Array.from(storedPageElement.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
+  const allWordNodes = Array.from(containerEl.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
 
   // Need to keep the BRlineElement nodes in between to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
   allWordNodes.splice(0, 1);

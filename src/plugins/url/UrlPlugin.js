@@ -195,67 +195,111 @@ export class UrlPlugin {
   getHash() {
     return window.location.hash.slice(1);
   }
+}
+
+/**
+ * An extension of the fields defined by the browser-native TextFragment;
+ * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
+ *
+ * Text fragment string format: `pageNumber:prefix-,quote,-suffix`
+ * Note the ':' and ',' separators must not be encoded, but
+ * the pageNumber, prefix, quote, and suffix text can be encoded.
+ */
+export class BookReaderTextFragment {
+  /**
+   * @param {object} params
+   * @param {string} [params.prefix]
+   * @param {string} [params.quote]
+   * @param {string} [params.suffix]
+   * @param {string} [params.pageNumber] Page number; e.g. asserted page number or the n-prefixed page index
+   * @param {number} [params.pageIndex] Page index; e.g. zero-based index of the page
+   */
+  constructor({ prefix, quote, suffix, pageNumber, pageIndex } = {}) {
+    /** @type {string|undefined} */
+    this.prefix = prefix;
+    /** @type {string} */
+    this.quote = quote;
+    /** @type {string|undefined} */
+    this.suffix = suffix;
+    /** @type {string|undefined} Page number; e.g. asserted page number or the n-prefixed page index */
+    this.pageNumber = pageNumber;
+    /** @type {number} Page index; e.g. zero-based index of the page */
+    this.pageIndex = pageIndex;
+  }
 
   /**
-   * @param {string} urlString
-   * @returns {string}
+   * Parse a text fragment from its string value (the part after `text=`).
+   * Expected format: `pageNumber:prefix-,quote,-suffix`
+   * @param {string} str
+   * @param {import('@/src/BookReader/BookModel.js').BookModel} book
+   * @param {number} fallbackPageIndex A fallback page index to use if the text
+   * fragment does not specify a page number or page index.
+   * @returns {BookReaderTextFragment}
    */
-  retrieveTextFragment(urlString) {
-    return urlString.match(/(?<=[&?]?text=)[^&]*/);
-  }
-
-  retrieveDIndex(urlString) {
-    return urlString.match(/(?<=[&?]?dIndex=)[^&]*/);
-  }
-
-  /**
-   * @param {string} urlString
-   * @param {string} type
-   * @returns {string}
-   */
-
-  retrieveHighlightContext(urlString, type) {
-    const regexString = new RegExp(String.raw`(?<=[&?]?${type}=)[^&]*`, "gis");
-    return urlString.match(regexString);
-  }
-
-  parseToText(urlString) {
-    const quoteMatch = urlString.match(/(?<=[&?]?text=)[^&]*/);
-    let dIndex = urlString.match(/(?<=[&?]?dIndex=)[^&]*/);
-    let quote, prefix, suffix;
-    if (quoteMatch) {
-      const prefixMatch = quoteMatch[0].match(/.*?(?=(-,))/);
-      const suffixMatch = quoteMatch[0].match(/(?<=,-).*/);
-      if (prefixMatch) prefix = decodeURIComponent(prefixMatch[0]);
-      if (suffixMatch) suffix = decodeURIComponent(suffixMatch[0]);
-      if (prefixMatch && suffixMatch) {
-        quote = decodeURIComponent(quoteMatch[0].match(/(?<=(-,)).*(?=(,-))/)[0]);
-      } else if (prefixMatch && !suffixMatch) { // Prefix only
-        quote = decodeURIComponent(quoteMatch[0].match(/(?<=-,).*/)[0]);
-      } else if (!prefixMatch && suffixMatch) { // Suffix only
-        quote = decodeURIComponent(quoteMatch[0].match(/.*(?<=,-)/)[0]);
-      } else { // Somehow no prefix or suffix
-        quote = decodeURIComponent(quoteMatch[0]);
-      }
+  static fromString(str, book, fallbackPageIndex) {
+    let pageNumber;
+    let textFragment;
+    const separatorIdx = str.indexOf(':');
+    if (separatorIdx !== -1) {
+      pageNumber = decodeURIComponent(str.slice(0, separatorIdx)) || undefined;
+      textFragment = str.slice(separatorIdx + 1);
+    } else {
+      textFragment = str;
     }
-    if (dIndex) dIndex = decodeURIComponent(dIndex[0]);
-    return {prefix, quote, suffix, dIndex};
+
+    const pageIndex = pageNumber ? book.getPageIndex(pageNumber) : fallbackPageIndex;
+
+    let quote, prefix, suffix;
+    const prefixMatch = textFragment.match(/^([\s\S]*?)-,/);
+    const suffixMatch = textFragment.match(/,-([\s\S]*)$/);
+
+    if (prefixMatch) prefix = decodeURIComponent(prefixMatch[1]);
+    if (suffixMatch) suffix = decodeURIComponent(suffixMatch[1]);
+
+    if (prefixMatch && suffixMatch) {
+      quote = decodeURIComponent(textFragment.slice(prefixMatch[0].length, textFragment.length - suffixMatch[0].length));
+    } else if (prefixMatch && !suffixMatch) { // Prefix only
+      quote = decodeURIComponent(textFragment.slice(prefixMatch[0].length));
+    } else if (!prefixMatch && suffixMatch) { // Suffix only
+      quote = decodeURIComponent(textFragment.slice(0, textFragment.length - suffixMatch[0].length));
+    } else { // No prefix or suffix
+      quote = decodeURIComponent(textFragment);
+    }
+
+    return new BookReaderTextFragment({ prefix, quote, suffix, pageNumber, pageIndex });
+  }
+
+  /**
+   * Extract and parse a text fragment from a URL string containing a `text=` parameter.
+   * @param {string} urlString
+   * @param {import('@/src/BookReader/BookModel.js').BookModel} book
+   * @param {number} fallbackPageIndex A fallback page index to use if the text
+   * fragment does not specify a page number or page index.
+   * @returns {BookReaderTextFragment|null}
+   */
+  static fromUrl(urlString, book, fallbackPageIndex) {
+    const textMatch = urlString.match(/(?<=[&?#]?text=)[^&]*/);
+    if (!textMatch) return null;
+    return BookReaderTextFragment.fromString(textMatch[0], book, fallbackPageIndex);
+  }
+
+  toString(includePageNumber = true) {
+    let str = '';
+    if (includePageNumber) {
+      str += this.pageNumber ? `${encodeURIComponent(this.pageNumber)}:` : `n${this.pageIndex}:`;
+    }
+
+    if (this.prefix) {
+      str += `${encodeURIComponent(this.prefix)}-,`;
+    }
+    str += encodeURIComponent(this.quote);
+    if (this.suffix) {
+      str += `,-${encodeURIComponent(this.suffix)}`;
+    }
+    return str;
   }
 }
 
 /**
- * @typedef {Object} BookReaderTextFragment
- * An extension of the fields defined by the browser-native TextFragment;
- * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
- *
- * @property {string} prefix
- * @property {string} quote
- * @property {string} suffix
- * @property {string} dIndex Page index
- * @property {string} dPageNum Page num ; eg. asserted page number or the n-prefixed page index
- */
-
-/**
- * @typedef {BookReaderTextFragment} BookReaderSavedHighlight
- * @property {string} uuid
+ * @typedef {BookReaderTextFragment & { uuid: string }} BookReaderSavedHighlight
  */

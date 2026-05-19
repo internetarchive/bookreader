@@ -1,7 +1,6 @@
 /* global BookReader */
 
-import { UrlPlugin } from "./UrlPlugin.js";
-import { sleep } from "../../BookReader/utils.js";
+import { BookReaderTextFragment, UrlPlugin } from "./UrlPlugin.js";
 import { convertRangeToDOMSelection } from "../../util/TextSelectionManager.js";
 /**
  * Plugin for URL management in BookReader
@@ -150,10 +149,8 @@ BookReader.prototype.urlUpdateFragment = function() {
   const currQueryString = this.getLocationSearch();
   // Eg ?q=foo&text=bar; only query params, no fragment
   const newQueryString = this.queryStringFromParams(params, currQueryString, this.options.urlMode);
-  // Adding a check to the urlMode for now. Without the check, the highlight does not work if shared and the page is refreshed
-  if (currFragment === newFragment && currQueryString === newQueryString
-    && !newQueryString.includes('search=')
-  ) {
+  // Avoid infinite loop if there are no changes
+  if (currFragment === newFragment && currQueryString === newQueryString) {
     return;
   }
 
@@ -162,7 +159,7 @@ BookReader.prototype.urlUpdateFragment = function() {
       this.options.urlMode = 'hash';
     } else {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
-      this.targetTextFragment = this.urlPlugin.parseToText(newQueryString);
+      this.targetTextFragment = BookReaderTextFragment.fromUrl(newQueryString, this.book, this.firstParams.index);
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
 
       try {
@@ -177,7 +174,7 @@ BookReader.prototype.urlUpdateFragment = function() {
 
   if (this.options.urlMode === 'hash')  {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
-    this.targetTextFragment = this.urlPlugin.parseToText(this.readQueryString());
+    this.targetTextFragment = BookReaderTextFragment.fromUrl(this.readQueryString(), this.book, this.firstParams.index);
     window.location.replace('#' + newFragment + newQueryStringSearch);
     this.oldLocationHash = newFragment + newQueryStringSearch;
   }
@@ -217,31 +214,25 @@ BookReader.prototype.urlReadHashFragment = function() {
   return window.location.hash.substr(1);
 };
 export class BookreaderUrlPlugin extends BookReader {
-  /** @type {import('./UrlPlugin.js').BookReaderTextFragment} */
+  /** @type {BookReaderTextFragment} */
   targetTextFragment;
 
   init() {
     if (this.options.enableUrlPlugin) {
       this.urlPlugin = new UrlPlugin(this.options);
-      const location = this.getLocationSearch();
-      if (location.includes("text=")) {
-        this.on('textLayerVisible', async (_, {pageContainerEl}) => {
-          const hasTargetText = this.targetTextFragment?.dIndex === pageContainerEl.getAttribute('data-index');
-          if (hasTargetText) {
-            if (!this.targetTextFragment['dPageNum']) {
-              this.targetTextFragment['dPageNum'] = pageContainerEl.getAttribute('data-page-num');
-            }
 
-            // Hack: More time mode 1up page "settle down" from user scrolling
-            await sleep(this.mode === 1 ? 900 : 200);
-            convertRangeToDOMSelection(this.targetTextFragment);
-          }
-        });
-      }
       this.bind(BookReader.eventNames.PostInit, () => {
-        const { urlMode } = this.options;
+        if (this.targetTextFragment) {
+          this.on('textLayerVisible', async (_, {pageContainerEl}) => {
+            const pageIndex = this.targetTextFragment.pageNumber ? this.book.getPageIndex(this.targetTextFragment.pageNumber) : this.firstParams.index;
+            const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
+            if (hasTargetText) {
+              convertRangeToDOMSelection(pageContainerEl, this.targetTextFragment);
+            }
+          });
+        }
 
-        if (urlMode === 'hash') {
+        if (this.options.urlMode === 'hash') {
           this.urlPlugin.listenForHashChanges();
         }
       });

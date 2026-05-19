@@ -41,6 +41,7 @@ import { ModeThumb } from './BookReader/ModeThumb.js';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
+import {BookReaderTextFragment} from './plugins/url/UrlPlugin.js';
 
 /**
  * BookReader
@@ -645,6 +646,8 @@ BookReader.prototype.init = function() {
 
   const params = this.initParams();
 
+  // Make a copy of it
+  this.firstParams = JSON.parse(JSON.stringify(params));
   this.firstIndex = params.index ? params.index : 0;
 
   // Setup Navbars and other UI
@@ -1976,18 +1979,15 @@ BookReader.prototype.queryStringFromParams = function(
   // the browser seems not to handle with the text fragment
   if (newParams.get('text')) {
     newParams.delete('text');
-    textFragmentParam = `text=${this.urlPlugin.retrieveTextFragment(currQueryString, 'text')}`;
+    textFragmentParam = BookReaderTextFragment.fromUrl(currQueryString, this.book, this.firstParams.index);
   }
-  if (newParams.get('dIndex')) {
-    newParams.delete('dIndex');
-    textFragmentParam += `&dIndex=${this.urlPlugin.retrieveDIndex(currQueryString)}`;
-  }
+
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
   // Note: This method returns the query string without the question mark.
   let result = newParams.toString();
   if (textFragmentParam) {
     if (result) result += '&';
-    result += textFragmentParam;
+    result += textFragmentParam.toString();
   }
   if (result) result = '?' + result;
 
