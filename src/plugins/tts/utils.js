@@ -53,7 +53,7 @@ export function toISO6391(language) {
 /**
  *
  * @param {string} language
- * @returns {string}
+ * @returns {string | null}
  */
 export function toNativeName(language) {
   if (!language) return null;

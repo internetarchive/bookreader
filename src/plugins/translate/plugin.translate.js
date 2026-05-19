@@ -1,9 +1,9 @@
 // @ts-check
-import { html, LitElement } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property } from 'lit/decorators.js';
 import { TranslationManager } from "./TranslationManager.js";
-import { toISO6391 } from '../tts/utils.js';
+import { toISO6391, toNativeName } from '../tts/utils.js';
 import { sortBy } from '../../../src/BookReader/utils.js';
 import { TextSelectionManager } from '../../../src/util/TextSelectionManager.js';
 import '@internetarchive/ia-activity-indicator';
@@ -63,14 +63,12 @@ export class TranslatePlugin extends BookReaderPlugin {
   textSelectionManager = new TextSelectionManager('.BRtranslateLayer', this.br, {selectionElement: [".BRlineElement"]}, 1);
 
   async init() {
-    const currentLanguage = toISO6391(this.br.options.bookLanguage.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ""));
+    if (!this.options.enabled) return;
+
+    const bookLanguage = this.br.options.bookLanguage || '';
+    const currentLanguage = toISO6391(bookLanguage);
     this.langFromCode = currentLanguage ?? "en";
     this.textSelectionManager.init();
-
-    if (!this.options.enabled) {
-      return;
-    }
-
     this.translationManager.publicPath = this.br.options.imagesBaseURL.replace(/\/+$/, '') + '/..';
 
     /**
@@ -307,6 +305,14 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   handleToggleTranslation = async () => {
+    const shouldEnableTranslation = !this.userToggleTranslate;
+    if (shouldEnableTranslation && !this.isSourceLanguageSupported()) {
+      this.userToggleTranslate = false;
+      this.translationManager.active = false;
+      this._render();
+      return;
+    }
+
     this.userToggleTranslate = !this.userToggleTranslate;
     this.translationManager.active = this.userToggleTranslate;
 
@@ -325,6 +331,10 @@ export class TranslatePlugin extends BookReaderPlugin {
   /**
   * Update translation side menu
   */
+  isSourceLanguageSupported() {
+    return this.translationManager.fromLanguages.some((lang) => lang.code == this.langFromCode);
+  }
+
   _render() {
     this.br.shell.menuProviders['translate'] = {
       id: 'translate',
@@ -339,6 +349,7 @@ export class TranslatePlugin extends BookReaderPlugin {
         this._panel.detectedToLang = this.langToCode;
         this._panel.detectedFromLang = this.langFromCode;
         this._panel.loadingModel = this.loadingModel;
+        this._panel.sourceLanguageSupported = this.isSourceLanguageSupported();
       }
       }"
         @langFromChanged="${this.handleFromLangChange}"
@@ -351,6 +362,7 @@ export class TranslatePlugin extends BookReaderPlugin {
         .detectedFromLang=${this.langFromCode}
         .detectedToLang=${this.langToCode}
         .loadingModel=${this.loadingModel}
+        .sourceLanguageSupported=${this.isSourceLanguageSupported()}
         class="translate-panel"
       />`,
     };
@@ -369,12 +381,24 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: String }) detectedFromLang = '';
   @property({ type: String }) detectedToLang = '';
   @property({ type: Boolean }) loadingModel;
+  @property({ type: Boolean }) sourceLanguageSupported = true;
 
-  /** @override */
-  createRenderRoot() {
-    // Disable shadow DOM; that would require a huge rejiggering of CSS
-    return this;
-  }
+  static styles = css`
+    .disclaimer {
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin: 0 0 10px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .disclaimer--warning {
+      margin: 10px 0;
+      background-color: rgba(255, 186, 8, 0.18);
+      color: #ffe7a3;
+    }
+  `;
 
   connectedCallback() {
     super.connectedCallback();
@@ -386,7 +410,6 @@ export class BrTranslatePanel extends LitElement {
       <div
         class="disclaimer"
         id="disclaimerMessage"
-        style="background-color: rgba(255,255,255,0.1);padding: 10px;border-radius: 8px;font-size: 12px;margin-bottom: 10px;color: rgba(255,255,255, 0.9);"
       >${this.disclaimerMessage}</div>
 
       <div class="panel panel--to" style="padding: 0 10px;">
@@ -405,7 +428,7 @@ export class BrTranslatePanel extends LitElement {
       </div>
 
       <div class="panel panel--start" style="text-align: right;padding: 0 10px;/*! font-size: 18px; */margin-top: 10px;">
-            <button class="start-translation-brn" @click="${this._toggleTranslation}">
+        <button class="start-translation-brn" @click="${this._toggleTranslation}" ?disabled=${!this.sourceLanguageSupported}>
               ${this.userTranslationActive ? "Stop Translating" : "Translate"}
             </button>
       </div>
@@ -426,9 +449,14 @@ export class BrTranslatePanel extends LitElement {
           })
           }
           </select>
-      </details>
+        </details>
+      </div>
       <div class="footer" id="status" style="margin-top:5%">
-      ${this._statusWarning()}
+        ${
+          this._statusWarning() ? html`
+            <div class="disclaimer disclaimer--warning">${this._statusWarning()}</div>
+          ` : ''
+        }
       </div>
 
       <div class="lang-models-loading"> 
@@ -474,12 +502,23 @@ export class BrTranslatePanel extends LitElement {
     return dropdown ? dropdown.value : '';
   }
 
+  /**
+   * Resolves a human-readable language name for a language code.
+   * Prefers names from loaded translation language lists, then falls back to
+   * ISO language metadata via toNativeName.
+   * @param {string} code
+   * @returns {string}
+   */
   _getLangName(code) {
-    const lang = [...this.fromLanguages, ...this.toLanguages].find(lang => lang.code === code);
-    return lang ? lang.name : '';
+    const lang = [...this.fromLanguages, ...this.toLanguages]
+      .find(lang => lang.code === code);
+    return lang?.name || toNativeName(code) || code;
   }
 
   _toggleTranslation(event) {
+    if (!this.sourceLanguageSupported) {
+      return;
+    }
     const toggleTranslateEvent = new CustomEvent('toggleTranslation', {
       detail: {value: event.target.value},
       bubbles: true,
@@ -491,6 +530,9 @@ export class BrTranslatePanel extends LitElement {
 
   // TODO: Hardcoded warning message for now but should add more statuses
   _statusWarning() {
+    if (!this.sourceLanguageSupported) {
+      return `Translating from ${this._getLangName(this.detectedFromLang)} is not supported`;
+    }
     if (this.detectedFromLang == this.detectedToLang) {
       return "Translate To language is the same as the Source language";
     }
