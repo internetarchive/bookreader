@@ -1,7 +1,7 @@
 // @ts-check
 import { css, html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 import { TranslationManager } from "./TranslationManager.js";
 import { toISO6391, toNativeName } from '../tts/utils.js';
 import { sortBy } from '../../../src/BookReader/utils.js';
@@ -383,6 +383,9 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: Boolean }) loadingModel;
   @property({ type: Boolean }) sourceLanguageSupported = true;
 
+  @query('#lang-from') langFromDropdown;
+  @query('#lang-to') langToDropdown;
+
   static styles = css`
     .disclaimer {
       padding: 10px;
@@ -406,6 +409,8 @@ export class BrTranslatePanel extends LitElement {
   }
 
   render() {
+    const statusWarning = this._statusWarning();
+
     return html`<div class="app" style="margin-top: 5%;padding-right: 5px;">
       <div
         class="disclaimer"
@@ -453,8 +458,8 @@ export class BrTranslatePanel extends LitElement {
       </div>
       <div class="footer" id="status" style="margin-top:5%">
         ${
-          this._statusWarning() ? html`
-            <div class="disclaimer disclaimer--warning">${this._statusWarning()}</div>
+          statusWarning ? html`
+            <div class="disclaimer disclaimer--warning">${statusWarning}</div>
           ` : ''
         }
       </div>
@@ -497,8 +502,7 @@ export class BrTranslatePanel extends LitElement {
   }
 
   _getSelectedLang(type) {
-    /** @type {HTMLSelectElement} */
-    const dropdown = this.querySelector(`#lang-${type}`);
+    const dropdown = type === 'from' ? this.langFromDropdown : this.langToDropdown;
     return dropdown ? dropdown.value : '';
   }
 
