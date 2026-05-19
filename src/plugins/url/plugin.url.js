@@ -1,6 +1,7 @@
 /* global BookReader */
 
-import { BookReaderTextFragment, UrlPlugin } from "./UrlPlugin.js";
+import { UrlPlugin } from "./UrlPlugin.js";
+import { BookReaderTextFragment } from "../../util/TextSelectionManager.js";
 import { convertRangeToDOMSelection } from "../../util/TextSelectionManager.js";
 /**
  * Plugin for URL management in BookReader

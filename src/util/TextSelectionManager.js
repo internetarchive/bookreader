@@ -3,7 +3,6 @@ import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import '@internetarchive/icon-share';
-import { BookReaderTextFragment } from "../plugins/url/UrlPlugin.js";
 
 export class TextSelectionManager {
   options = {
@@ -917,7 +916,7 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
  * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/main/src/text-fragment-utils.js#L743
  *
  * @param {HTMLElement} containerEl
- * @param {import('../plugins/url/UrlPlugin.js').BookReaderSavedHighlight} quote
+ * @param {BookReaderSavedHighlight} quote
  */
 export function convertRangeToDOMSelection(containerEl, quote) {
   // 2. Retrieve the text nodes and relevant whitespace elements
@@ -1028,4 +1027,111 @@ function retrieveUUID(ele) {
   }
   return null;
 }
+
+/**
+ * An extension of the fields defined by the browser-native TextFragment;
+ * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
+ *
+ * Text fragment string format: `pageNumber:prefix-,quote,-suffix`
+ * Note the ':' and ',' separators must not be encoded, but
+ * the pageNumber, prefix, quote, and suffix text can be encoded.
+ */
+export class BookReaderTextFragment {
+  /**
+   * @param {object} params
+   * @param {string} [params.prefix]
+   * @param {string} [params.quote]
+   * @param {string} [params.suffix]
+   * @param {string} [params.pageNumber] Page number; e.g. asserted page number or the n-prefixed page index
+   * @param {number} [params.pageIndex] Page index; e.g. zero-based index of the page
+   */
+  constructor({ prefix, quote, suffix, pageNumber, pageIndex } = {}) {
+    /** @type {string|undefined} */
+    this.prefix = prefix;
+    /** @type {string} */
+    this.quote = quote;
+    /** @type {string|undefined} */
+    this.suffix = suffix;
+    /** @type {string|undefined} Page number; e.g. asserted page number or the n-prefixed page index */
+    this.pageNumber = pageNumber;
+    /** @type {number} Page index; e.g. zero-based index of the page */
+    this.pageIndex = pageIndex;
+  }
+
+  /**
+   * Parse a text fragment from its string value (the part after `text=`).
+   * Expected format: `pageNumber:prefix-,quote,-suffix`
+   * @param {string} str
+   * @param {import('@/src/BookReader/BookModel.js').BookModel} book
+   * @param {number} fallbackPageIndex A fallback page index to use if the text
+   * fragment does not specify a page number or page index.
+   * @returns {BookReaderTextFragment}
+   */
+  static fromString(str, book, fallbackPageIndex) {
+    let pageNumber;
+    let textFragment;
+    const separatorIdx = str.indexOf(':');
+    if (separatorIdx !== -1) {
+      pageNumber = decodeURIComponent(str.slice(0, separatorIdx)) || undefined;
+      textFragment = str.slice(separatorIdx + 1);
+    } else {
+      textFragment = str;
+    }
+
+    const pageIndex = pageNumber ? book.getPageIndex(pageNumber) : fallbackPageIndex;
+
+    let quote, prefix, suffix;
+    const prefixMatch = textFragment.match(/^([\s\S]*?)-,/);
+    const suffixMatch = textFragment.match(/,-([\s\S]*)$/);
+
+    if (prefixMatch) prefix = decodeURIComponent(prefixMatch[1]);
+    if (suffixMatch) suffix = decodeURIComponent(suffixMatch[1]);
+
+    if (prefixMatch && suffixMatch) {
+      quote = decodeURIComponent(textFragment.slice(prefixMatch[0].length, textFragment.length - suffixMatch[0].length));
+    } else if (prefixMatch && !suffixMatch) { // Prefix only
+      quote = decodeURIComponent(textFragment.slice(prefixMatch[0].length));
+    } else if (!prefixMatch && suffixMatch) { // Suffix only
+      quote = decodeURIComponent(textFragment.slice(0, textFragment.length - suffixMatch[0].length));
+    } else { // No prefix or suffix
+      quote = decodeURIComponent(textFragment);
+    }
+
+    return new BookReaderTextFragment({ prefix, quote, suffix, pageNumber, pageIndex });
+  }
+
+  /**
+   * Extract and parse a text fragment from a URL string containing a `text=` parameter.
+   * @param {string} urlString
+   * @param {import('@/src/BookReader/BookModel.js').BookModel} book
+   * @param {number} fallbackPageIndex A fallback page index to use if the text
+   * fragment does not specify a page number or page index.
+   * @returns {BookReaderTextFragment|null}
+   */
+  static fromUrl(urlString, book, fallbackPageIndex) {
+    const textMatch = urlString.match(/(?<=[&?#]?text=)[^&]*/);
+    if (!textMatch) return null;
+    return BookReaderTextFragment.fromString(textMatch[0], book, fallbackPageIndex);
+  }
+
+  toString(includePageNumber = true) {
+    let str = '';
+    if (includePageNumber) {
+      str += this.pageNumber ? `${encodeURIComponent(this.pageNumber)}:` : `n${this.pageIndex}:`;
+    }
+
+    if (this.prefix) {
+      str += `${encodeURIComponent(this.prefix)}-,`;
+    }
+    str += encodeURIComponent(this.quote);
+    if (this.suffix) {
+      str += `,-${encodeURIComponent(this.suffix)}`;
+    }
+    return str;
+  }
+}
+
+/**
+ * @typedef {BookReaderTextFragment & { uuid: string }} BookReaderSavedHighlight
+ */
 

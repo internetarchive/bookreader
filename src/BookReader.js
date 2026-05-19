@@ -41,7 +41,7 @@ import { ModeThumb } from './BookReader/ModeThumb.js';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
-import {BookReaderTextFragment} from './plugins/url/UrlPlugin.js';
+import {BookReaderTextFragment} from './util/TextSelectionManager.js';
 
 /**
  * BookReader
