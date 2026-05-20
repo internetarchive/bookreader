@@ -513,10 +513,10 @@ class BRSelectMenu extends LitElement {
     // Note: Have to do a param construction to avoid url-encoding of commas in the text fragment param
     let linkToHighlightParams = currentParams;
     if (currentParams.includes('text=')) {
-      linkToHighlightParams = currentParams.replace(/(text=)[\w\W\d%]+/, `text=${textFragment.toString(false)}`);
+      linkToHighlightParams = currentParams.replace(/(text=)[\w\W\d%]+/, `text=${textFragment.toUrlString()}`);
     } else {
       const sep = linkToHighlightParams ? '&' : '?';
-      linkToHighlightParams += `${sep}text=${textFragment.toString(false)}`;
+      linkToHighlightParams += `${sep}text=${textFragment.toUrlString()}`;
     }
     const currentUrl = window.location;
     // TODO - updateResumeValue + getCookiePath in plugin.resume.js overrides the adjustedUrlPageNumPath, check how to workaround this
@@ -1114,11 +1114,16 @@ export class BookReaderTextFragment {
     return BookReaderTextFragment.fromString(textMatch[0], book, fallbackPageIndex);
   }
 
-  toString(includePageNumber = true) {
-    let str = '';
-    if (includePageNumber) {
-      str += this.pageNumber ? `${encodeURIComponent(this.pageNumber)}:` : `n${this.pageIndex}:`;
-    }
+  /**
+   * Outputs a url-safe string serialization of the text fragment, that's a variation of the standard
+   * browser TextFragment format to include page information: `pageNumber:prefix-,quote,-suffix`
+    * Note the ':' and ',' separators must not and are not encoded, but
+    * the pageNumber, prefix, quote, and suffix text are encoded.
+   * @returns {string}
+   */
+  toUrlString() {
+    // First the page number or index
+    let str = this.pageNumber ? `${encodeURIComponent(this.pageNumber)}:` : `n${this.pageIndex}:`;
 
     if (this.prefix) {
       str += `${encodeURIComponent(this.prefix)}-,`;
