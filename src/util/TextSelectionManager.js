@@ -4,6 +4,8 @@ import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import '@internetarchive/icon-share';
 
+const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
+
 export class TextSelectionManager {
   options = {
     // Current Translation plugin implementation does not have words, will limit to one BRlineElement for now
@@ -295,7 +297,7 @@ export function createTextFragment(selection, contextElements) {
   const endRangeLength = endNode.nodeName.toLowerCase() === 'span' ? 1 : endNode.textContent.length;
   const postEndRange = document.createRange();
   postEndRange.setStart(endNode, endRangeLength);
-  const lastWordOfPageEl = getLastMostElement(contextElements[contextElements.length - 1]);
+  const lastWordOfPageEl = getLastMostNode(contextElements[contextElements.length - 1]);
   postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
 
   // prefixes/suffixes cannot contain paragraph breaks, words that are from more than one line break away should not be included
@@ -482,7 +484,7 @@ class BRSelectMenu extends LitElement {
         <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
         <span class="br-select-menu__label">Load Highlights</span>
       </button>
-      <button @click=${() => {window.localStorage.removeItem("highlightStorage");}}
+      <button @click=${() => {window.localStorage.removeItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY);}}
         class="br-select-menu__option">
         <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
         <span class="br-select-menu__label">Remove Stored Highlights</span>
@@ -567,20 +569,23 @@ class BRSelectMenu extends LitElement {
    * Retrieves the current selected text on the page and serializes the quote contents + context
    * The selection is also changed in the DOM to highlight the words
    */
-  handleHighlightSave(e) {
+  handleHighlightSave() {
     const currentSelection = window.getSelection();
     const start = currentSelection.direction === 'backward' ? currentSelection.focusNode.parentElement : currentSelection.anchorNode.parentElement;
     const textLayer = this.getNodeTextLayer(start);
-    const highlight = this.createQuoteStorage(currentSelection, [textLayer.parentElement]);
-    this.saveToLocalStorage(highlight);
-    renderHighlight(textLayer, highlight);
+    const highlight = createTextFragment(currentSelection, [textLayer.parentElement]);
+    highlight.uuid = `id-${crypto.randomUUID().split("-")[4]}`;
+    const highlights = this.loadHighlightsFromLocalStorage();
+    highlights.push(highlight);
+    this.saveToLocalStorage(highlights);
+    this.renderSavedHighlights();
   }
 
   handleAnnotation(e) {
     // TODO
   }
 
-  handleDeleteHighlight(e) {
+  handleDeleteHighlight() {
     if (this.nodesForRemoval) {
       const uuid = retrieveUUID(this.nodesForRemoval[0]);
       for (const ele of this.nodesForRemoval) {
@@ -593,7 +598,7 @@ class BRSelectMenu extends LitElement {
           console.log("This element did not match removal criteria:", parent, ele);
         }
       }
-      this.changeToLocalStorage(uuid);
+      this.deleteHighlight(uuid);
       this.clearNodesForRemoval();
     } else {
       console.log("there is nothing to remove");
@@ -601,69 +606,70 @@ class BRSelectMenu extends LitElement {
   }
 
   /**
-   * Saves the highlighted text and context in an array to localStorage
-   * If a 'highlightStorage' object already exists, the content will be appended to the array
-   * @param {BookReaderSavedHighlight} highlight
+   * @param {string} uuid
    */
-  saveToLocalStorage(highlight) {
-    try {
-      const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
-      if (existingHighlightStorage) {
-        const item = JSON.parse(existingHighlightStorage);
-        item.push(highlight);
-        window.localStorage.setItem("highlightStorage", JSON.stringify(item));
-      } else {
-        window.localStorage.setItem("highlightStorage", JSON.stringify([highlight]));
+  deleteHighlight(uuid) {
+    const highlights = this.loadHighlightsFromLocalStorage();
+    for (let idx = 0; idx < highlights.length; idx++) {
+      if (highlights[idx].uuid === uuid) {
+        highlights.splice(idx, 1);
+        this.saveToLocalStorage(highlights);
+        return;
       }
-    } catch (e) {
-      console.error(e);
     }
   }
 
-  changeToLocalStorage(storageId) {
-    try {
-      const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
-      if (existingHighlightStorage) {
-        const storageObject = JSON.parse(existingHighlightStorage);
-        for (const idx in storageObject) {
-          if (storageObject[idx].uuid === storageId) {
-            storageObject.splice(idx, 1);
-            window.localStorage.setItem("highlightStorage", JSON.stringify(storageObject));
-            return;
-          }
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  /**
+   * Saves all the highlights in an array to localStorage
+   * @param {BookReaderSavedHighlight[]} highlights
+   */
+  saveToLocalStorage(highlights) {
+    window.localStorage.setItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY, JSON.stringify(highlights.map(hl => hl.toJSON())));
   }
 
   /**
    * @returns {BookReaderSavedHighlight[]}
    */
   loadHighlightsFromLocalStorage() {
-    return JSON.parse(window.localStorage.getItem("highlightStorage") || "[]")
+    return JSON.parse(window.localStorage.getItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY) || "[]")
       .map(item => BookReaderTextFragment.fromJSON(item));
   }
 
   renderSavedHighlights() {
     for (const hl of this.loadHighlightsFromLocalStorage()) {
-      const pageEl = /** @type {HTMLElement} */ (this.br.$(`.pagediv${hl.pageIndex}`)[0]);
-      if (!pageEl) continue;
-      renderHighlight(pageEl, hl);
+      const textLayer = /** @type {HTMLElement} */ (this.br.$(`.pagediv${hl.pageIndex} .BRtextLayer`)[0]);
+      if (!textLayer) continue;
+      renderHighlight(textLayer, hl);
+      // Attach click behaviour here? Only need one handler per text layer
+      $(textLayer)
+        .off('mouseup.BRHighlightClick')
+        .on('mouseup.BRHighlightClick', (e) => {
+          if (!e.target.classList.contains("BRhighlight")) return;
+          e.stopPropagation();
+          this.handleHighlightClick(e.target);
+        });
     }
   }
 
   /**
- *
- * @param {Selection} selection currently selected text, eg `document.getSelection()`
- * @param {HTMLElement[]} contextElements elements providing context for the selection
- * @returns {BookReaderSavedHighlight}
- */
-  createQuoteStorage(selection, contextElements) {
-    const fragment = createTextFragment(selection, contextElements);
-    fragment.uuid = `id-${crypto.randomUUID().split("-")[4]}`;
-    return fragment;
+   * @param {HTMLElement} target
+   */
+  handleHighlightClick(target) {
+    const textLayer = this.getNodeTextLayer(target);
+    const identifier = retrieveUUID(target);
+    const selectedQuoteNodes = textLayer.querySelectorAll(`.${identifier}`);
+
+    const firstNode = selectedQuoteNodes[0];
+    const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
+
+    const highlightRange = document.createRange();
+    highlightRange.setStart(firstNode, 0);
+    highlightRange.setEnd(lastNode, 1);
+
+    const currentSelection = window.getSelection();
+    currentSelection.removeAllRanges();
+    currentSelection.addRange(highlightRange);
+    this.showMenu();
   }
 
   showMenu() {
@@ -728,12 +734,23 @@ export function getLastWords(numWords, text) {
 }
 
 /**
- * @param {HTMLElement | Element} parent
+ * @param {Node} parent
  * @returns {Node}
  */
-export function getLastMostElement(parent) {
-  while (parent.lastElementChild) {
-    parent = parent.lastElementChild;
+export function getFirstMostNode(parent) {
+  while (parent.firstChild) {
+    parent = parent.firstChild;
+  }
+  return parent;
+}
+
+/**
+ * @param {Node} parent
+ * @returns {Node}
+ */
+export function getLastMostNode(parent) {
+  while (parent.lastChild) {
+    parent = parent.lastChild;
   }
   return parent;
 }
@@ -753,6 +770,9 @@ function replaceWhitespace(string) {
  * @param {Range} range - the range to search in
  * @param {Node[]} textNodes - visible text nodes within the range
  * @returns {Range | undefined} Range that encompasses the quote, or undefined if no match is found
+ *
+ * Lightly adapted from
+ * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/abc6ed408b3f20e91d9cbda9977748459f5e3877/src/text-fragment-utils.js#L765
  */
 export function findRangeForQuote(quote, range, textNodes) {
   const startOffset = textNodes[0] === range.startContainer ?
@@ -855,24 +875,19 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
  * Example of how this is done via polyfill
  * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/main/src/text-fragment-utils.js#L743
  *
- * @param {HTMLElement} containerEl
+ * @param {HTMLElement} textLayer
  * @param {BookReaderTextFragment} quote
  * @param {string | null} cssClassName optional css class to add to the highlight span element
  */
-export function renderHighlight(containerEl, quote, cssClassName = null) {
-  // 2. Retrieve the text nodes and relevant whitespace elements
-  const allWordNodes = Array.from(containerEl.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
-
-  // Need to keep the BRlineElement nodes in between to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
-  allWordNodes.splice(0, 1);
-  const lastWordNodeIndex = allWordNodes.length - 1;
-
-  // 3. Create a range that encompasses the entire text content
+export function renderHighlight(textLayer, quote, cssClassName = null) {
+  // Create a range that encompasses the entire text content
+  const firstPageNode = getFirstMostNode(textLayer);
+  const lastPageNode = getLastMostNode(textLayer);
   const wholePageRange = new Range();
-  wholePageRange.setStart(allWordNodes[0], 0);
-  wholePageRange.setEnd(allWordNodes[lastWordNodeIndex], 0);
+  wholePageRange.setStart(firstPageNode, 0);
+  wholePageRange.setEnd(lastPageNode, lastPageNode.textContent.length);
 
-  // 4. Convert the whole page range into a normalized string, get the index of where the stored string matches the quote
+  // Convert the whole page range into a normalized string, get the index of where the stored string matches the quote
   const convertedString = replaceWhitespace(wholePageRange.toString());
   const convertedQuote = replaceWhitespace(quote.quote);
   const foundStringIndex = convertedString.indexOf(convertedQuote);
@@ -883,39 +898,23 @@ export function renderHighlight(containerEl, quote, cssClassName = null) {
   const fullContext = [quote.prefix, quote.quote, quote.suffix].join(" ");
   const convertedFullContext = replaceWhitespace(fullContext);
 
-  const broadRange = findRangeForQuote(convertedFullContext, wholePageRange, Array.from(allWordNodes));
+  // Retrieve the text nodes and relevant whitespace elements
+  // Need to keep the BRlineElement nodes in between to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
+  const pageWordNodes = Array.from(textLayer.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
+  pageWordNodes.splice(0, 1);
+  const broadRange = findRangeForQuote(convertedFullContext, wholePageRange, pageWordNodes);
 
-  const adjustedNodes = [];
+  const broadRangeWordNodes = [];
   for (const el of walkBetweenNodes(broadRange?.startContainer, broadRange?.endContainer)) {
-    if (el?.classList?.contains('BRwordElement') || el?.classList?.contains('BRspace') || el?.classList?.contains('BRlineElement')) {
-      adjustedNodes.push(el);
+    if (el.classList?.contains('BRwordElement') || el.classList?.contains('BRspace') || el.classList?.contains('BRlineElement')) {
+      broadRangeWordNodes.push(el);
     }
   }
 
   // At which point the quote should now be unambiguous!
-  const exactRange = findRangeForQuote(quote.quote, broadRange, adjustedNodes);
+  const exactRange = findRangeForQuote(quote.quote, broadRange, broadRangeWordNodes);
   const start = exactRange.startContainer;
   const end = exactRange.endContainer;
-
-  const textLayer = start.parentElement.closest('.BRtextLayer');
-  textLayer?.addEventListener('mouseup', (e) => {
-    if (!e.target.classList.contains("BRhighlight")) return;
-    e.stopPropagation();
-    const identifier = retrieveUUID(e.target);
-    const selectedQuoteNodes = document.querySelectorAll(`.${identifier}`);
-
-    const firstNode = selectedQuoteNodes[0];
-    const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
-
-    const highlightRange = document.createRange();
-    highlightRange.setStart(firstNode, 0);
-    highlightRange.setEnd(lastNode, 1);
-
-    const currentSelection = window.getSelection();
-    currentSelection?.removeAllRanges();
-    currentSelection?.addRange(highlightRange);
-    window.br.plugins.textSelection.textSelectionManager.selectMenu.showMenu();
-  });
 
   // markRange requires the range to start and end within text nodes
   const rangeTextNodes = new Range();
@@ -925,6 +924,7 @@ export function renderHighlight(containerEl, quote, cssClassName = null) {
   } else {
     rangeTextNodes.setEnd(end, 0);
   }
+
   markRange(rangeTextNodes, () => {
     const mark = document.createElement("mark");
     mark.classList.add("BRhighlight");
@@ -943,6 +943,8 @@ export function renderHighlight(containerEl, quote, cssClassName = null) {
  * @param {function(): Element} createWrappingElement - a function that creates
  *    the element to wrap text nodes in. This is called once per text node.
  * @return {Element[]} The <mark> nodes that were created.
+ *
+ * Lightly adapted from https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/abc6ed408b3f20e91d9cbda9977748459f5e3877/src/text-fragment-utils.js#L456
  */
 function markRange(
   range,
@@ -1152,4 +1154,3 @@ export class BookReaderTextFragment {
 /**
  * @typedef {BookReaderTextFragment & { uuid: string }} BookReaderSavedHighlight
  */
-

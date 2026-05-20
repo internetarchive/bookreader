@@ -228,7 +228,8 @@ export class BookreaderUrlPlugin extends BookReader {
             const pageIndex = this.targetTextFragment.pageNumber ? this.book.getPageIndex(this.targetTextFragment.pageNumber) : this.firstParams.index;
             const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
             if (hasTargetText) {
-              renderHighlight(pageContainerEl, this.targetTextFragment, 'BRhighlight--target-text');
+              const textLayer = pageContainerEl.querySelector('.BRtextLayer');
+              renderHighlight(textLayer, this.targetTextFragment, 'BRhighlight--target-text');
             }
           });
         }
