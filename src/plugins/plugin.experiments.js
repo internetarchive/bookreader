@@ -51,15 +51,15 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorageKey: 'BrExperiments',
 
     /** The experiments that should be shown in the experiments panel */
-    enabledExperiments: ['translate', 'copyLinkToHighlight', 'annotateHighlight'],
+    enabledExperiments: ['translate', 'copyLinkToHighlight'],
   }
 
   /** @type {ExperimentModel[]} */
   allExperiments = [
     new class extends ExperimentModel {
       name = 'copyLinkToHighlight';
-      title = 'Copy to Selection URL';
-      description = 'Share text selection via URL';
+      title = 'Copy Link to Highlight';
+      description = 'Shareable link to a text selection';
       icon = null;
       enabled = false;
       async enable ({ manual = false }) {
