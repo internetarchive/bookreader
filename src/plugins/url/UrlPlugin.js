@@ -190,15 +190,10 @@ export class UrlPlugin {
   }
 
   /**
-   * Get the hash out of the current URL. Also augments it with the text
-   * from the main part of the URL, since that is not readable by JS
-   * from the actual hash
-   * @returns
+   * Get the hash out of the current URL
    */
   getHash() {
-    const text = this.retrieveTextFragment(window.location.search);
-    const textFragment = text ? `:~:text=${text[0]}` : '';
-    return `${window.location.hash.slice(1)}${textFragment}`;
+    return window.location.hash.slice(1);
   }
 
   /**
@@ -208,4 +203,59 @@ export class UrlPlugin {
   retrieveTextFragment(urlString) {
     return urlString.match(/(?<=[&?]?text=)[^&]*/);
   }
+
+  retrieveDIndex(urlString) {
+    return urlString.match(/(?<=[&?]?dIndex=)[^&]*/);
+  }
+
+  /**
+   * @param {string} urlString
+   * @param {string} type
+   * @returns {string}
+   */
+
+  retrieveHighlightContext(urlString, type) {
+    const regexString = new RegExp(String.raw`(?<=[&?]?${type}=)[^&]*`, "gis");
+    return urlString.match(regexString);
+  }
+
+  parseToText(urlString) {
+    const quoteMatch = urlString.match(/(?<=[&?]?text=)[^&]*/);
+    let dIndex = urlString.match(/(?<=[&?]?dIndex=)[^&]*/);
+    let quote, prefix, suffix;
+    if (quoteMatch) {
+      const prefixMatch = quoteMatch[0].match(/.*?(?=(-,))/);
+      const suffixMatch = quoteMatch[0].match(/(?<=,-).*/);
+      if (prefixMatch) prefix = decodeURIComponent(prefixMatch[0]);
+      if (suffixMatch) suffix = decodeURIComponent(suffixMatch[0]);
+      if (prefixMatch && suffixMatch) {
+        quote = decodeURIComponent(quoteMatch[0].match(/(?<=(-,)).*(?=(,-))/)[0]);
+      } else if (prefixMatch && !suffixMatch) { // Prefix only
+        quote = decodeURIComponent(quoteMatch[0].match(/(?<=-,).*/)[0]);
+      } else if (!prefixMatch && suffixMatch) { // Suffix only
+        quote = decodeURIComponent(quoteMatch[0].match(/.*(?<=,-)/)[0]);
+      } else { // Somehow no prefix or suffix
+        quote = decodeURIComponent(quoteMatch[0]);
+      }
+    }
+    if (dIndex) dIndex = decodeURIComponent(dIndex[0]);
+    return {prefix, quote, suffix, dIndex};
+  }
 }
+
+/**
+ * @typedef {Object} BookReaderTextFragment
+ * An extension of the fields defined by the browser-native TextFragment;
+ * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
+ *
+ * @property {string} prefix
+ * @property {string} quote
+ * @property {string} suffix
+ * @property {string} dIndex Page index
+ * @property {string} dPageNum Page num ; eg. asserted page number or the n-prefixed page index
+ */
+
+/**
+ * @typedef {BookReaderTextFragment} BookReaderSavedHighlight
+ * @property {string} uuid
+ */

@@ -14,7 +14,7 @@ export class TextSelectionManager {
   selectMenu;
   /** @type {boolean} */
   selectionMenuEnabled = false;
-
+  highlightAnnotationEnabled = false;
   /**
    * @param {string} layer Selector for the text layer to manage
    * @param {import('../BookReader.js').default} br
@@ -32,7 +32,7 @@ export class TextSelectionManager {
     this.selectionObserver = new SelectionObserver(this.layer, this._onSelectionChange);
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
 
-    this.selectMenu = new BRSelectMenu(br);
+    this.selectMenu = new BRSelectMenu(br, selectionElement, this.selectionMenuEnabled, this.highlightAnnotationEnabled);
     this.selectMenu.className = "br-select-menu__root";
   }
 
@@ -56,10 +56,15 @@ export class TextSelectionManager {
           this.selectMenu.hideMenu();
         } else if (window.getSelection().toString()) {
           this.selectMenu.showMenu();
+          const selectedElement = window.getSelection()?.anchorNode;
+          if (selectedElement.classList.contains('BRhighlight')) {
+            this.getHighlightedNodes(selectedElement);
+          }
         }
       }
 
       if (selectEvent == 'cleared') {
+        console.log("detected cleared event");
         this.selectMenu.hideMenu();
       }
     }).attach();
@@ -71,6 +76,10 @@ export class TextSelectionManager {
     if (this.selectionMenuEnabled) {
       this.renderSelectionMenu();
     }
+    if (this.highlightAnnotationEnabled) {
+      this.renderHighlightMenu();
+    }
+
     if (this.br.protected) {
       document.addEventListener('selectionchange', this._limitSelection);
       // Prevent right clicking when selected text
@@ -97,8 +106,21 @@ export class TextSelectionManager {
   }
 
   renderSelectionMenu() {
-    if (document.querySelector('.br-select-menu__option')) return;
-    document.body.append(this.selectMenu);
+    this.selectMenu.copyHighlightEnabled = true;
+    if (this.highlightAnnotationEnabled) {
+      this.selectMenu.requestUpdate();
+    } else {
+      document.body.append(this.selectMenu);
+    }
+  }
+
+  renderHighlightMenu() {
+    this.selectMenu.highlightAnnotationEnabled = true;
+    if (this.selectionMenuEnabled) {
+      this.selectMenu.requestUpdate();
+    } else {
+      document.body.append(this.selectMenu);
+    }
   }
   /**
    * @param {'started' | 'cleared' | 'focusChanged'} type
@@ -208,6 +230,13 @@ export class TextSelectionManager {
     });
   }
 
+  getHighlightedNodes(element) {
+    const highlightIdentifier = retrieveUUID(element);
+    const highlightNodes = document.querySelectorAll(`.${highlightIdentifier}`);
+    this.selectMenu.nodesForRemoval = highlightNodes;
+    this.selectMenu.requestUpdate();
+  }
+
   _limitSelection = () => {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
@@ -255,45 +284,17 @@ export class TextSelectionManager {
  * @returns {string}
  */
 export function createTextFragmentUrlParam(selection, contextElements) {
-  // TODO: Can import something that handles this more gracefully? see -
-  // https://web.dev/articles/text-fragments#:~:text=In%20its%20simplest%20form%2C%20the%20syntax%20of,percent%2Dencoded%20text%20I%20want%20to%20link%20to.
-
-  // :~:text=[prefix-,]textStart[,textEnd][,-suffix]
-  const highlightedText = selection.toString().replace(/[\s]+/g, " ").trim().split(" ");
   const direction = selection.direction;
   const startNode = direction == 'backward' ? selection.focusNode : selection.anchorNode;
   const endNode = direction == 'backward' ? selection.anchorNode : selection.focusNode;
-  // If text selection begins or ends with a space, we look for the next eligible word to serve as the start or end word
-  const startWord = startNode.textContent.replace(/[\s]+/g, "") ? startNode.textContent : highlightedText[0];
-  const endWord = endNode.textContent.replace(/[\s]+/g, "") ? endNode.textContent : highlightedText[highlightedText.length - 1];
 
-  const textStartRe = RegExp.escape(startWord);
-  const textEndRe = RegExp.escape(endWord);
-
-  // 's' regex modifier ensures the `.` also captures newline characters
-  // Need to use lookahead/lookbehind assertions to allow for overlapping quotes (i.e. multiple "Holmes" on the same page)
-  const startPhraseMatchRe = new RegExp(String.raw`(?<=(${textStartRe}).*?)(${textEndRe})`, "gis");
-  const endPhraseMatchRe = new RegExp(String.raw`(${textStartRe})(?=.*?(${textEndRe}))`, "gis");
-
-  // Duplicated spaces in pageLayer.textContent for some reason
-  const selectionContext = contextElements
-    .map((el) => el.textContent)
-    .join(' ')
-    .replace(/\s+/g, " ");
-  const startPhraseFoundMatches = selectionContext.matchAll(startPhraseMatchRe).toArray();
-  const endPhraseFoundMatches = selectionContext.matchAll(endPhraseMatchRe).toArray();
-  if (startPhraseFoundMatches.length == 1 && endPhraseFoundMatches.length == 1) {
-    // If `startWord...endWord` quote is unambiguous and only occurs once, no prefix-/-suffix is needed for the URL param
-    return `text=${encodeURIComponent(startWord)},${encodeURIComponent(endWord)}`;
-  }
-
-  // Need to add some additional context to `startWord...endWord` by including surrounding words before and after the keywords
   const preStartRange = document.createRange();
   preStartRange.setStart(contextElements[0].firstElementChild, 0);
   preStartRange.setEnd(startNode, 0);
 
+  const endRangeLength = endNode.nodeName.toLowerCase() === 'span' ? 1 : endNode.textContent.length;
   const postEndRange = document.createRange();
-  postEndRange.setStart(endNode, endNode.textContent.length);
+  postEndRange.setStart(endNode, endRangeLength);
   const lastWordOfPageEl = getLastMostElement(contextElements[contextElements.length - 1]);
   postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
 
@@ -325,17 +326,15 @@ export function createTextFragmentUrlParam(selection, contextElements) {
     fullHighlight[fullHighlight.length - 1] = endNode.textContent;
   }
 
-  let quote = [fullHighlight.join(" ")];
-  if (fullHighlight.length > 6) {
-    quote = [fullHighlight.slice(0, 3).join(" "), fullHighlight.slice(-3).join(" ")];
-  }
+  const quote = encodeURIComponent(fullHighlight.join(" "));
 
-  const textFragmentArr = [];
-  if (prefix) textFragmentArr.push(`${prefix}-`);
-  textFragmentArr.push(...quote);
-  if (suffix) textFragmentArr.push(`-${suffix}`);
+  let prefixString = '';
+  let suffixString = '';
+  const pageString = `&dIndex=${startNode.parentElement.closest(".BRpagecontainer").getAttribute('data-index')}`;
 
-  return `text=${textFragmentArr.map(encodeURIComponent).join(',')}`;
+  if (prefix) prefixString = `${encodeURIComponent(prefix)}-,`;
+  if (suffix) suffixString = `,-${encodeURIComponent(suffix)}`;
+  return `text=${prefixString}${quote}${suffixString}${pageString}`;
 }
 
 /**
@@ -417,10 +416,16 @@ export function* walkBetweenNodes(start, end) {
 class BRSelectMenu extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
+  selectionElement;
+  copyHighlightEnabled;
+  highlightAnnotationEnabled;
 
-  constructor(br) {
+  constructor(br, selectionElement, copyHighlightEnabled, highlightAnnotationEnabled) {
     super();
     this.br = br;
+    this.selectionElement = selectionElement;
+    this.copyHighlightEnabled = copyHighlightEnabled;
+    this.highlightAnnotationEnabled = highlightAnnotationEnabled;
   }
 
   /** @override */
@@ -429,24 +434,77 @@ class BRSelectMenu extends LitElement {
     return this;
   }
 
-  render() {
+  addShareHighlightHTML() {
     return html`
-      <button @click=${this.handleCopyLinkToHighlight} class="br-select-menu__option">
-        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
+      <button @click=${this.handleCopyLinktoHighlight} 
+        class="br-select-menu__option">
+        <ia-icon-share class="br-select-menu__icon aria-hidden="true"></ia-icon-share>
         <span class="br-select-menu__label">Copy Link to Highlight</span>
       </button>
     `;
   }
 
+  addRemovalOption() {
+    return html`
+      <button @click=${this.handleDeleteHighlight}
+        class="br-select-menu__option">
+        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
+        <span class="br-select-menu__label">Delete Highlight and Annotation</span>
+      </button>
+    `;
+  }
+
+  addAnnotationOption() {
+    return html`
+      <button @click=${this.handleAnnotation}
+        class="br-select-menu__option">
+        <ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>
+        <span class="br-select-menu__label">Annotate</span>
+      </button>
+    `;
+  }
+
+  addHighlightOption() {
+    return html`
+      <button @click=${this.handleHighlightSave} 
+        .selectionElement=${this.selectionElement}
+        class="br-select-menu__option">
+        <ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>
+        <span class="br-select-menu__label">Highlight Selection</span>
+      </button>
+    `;
+  }
+  addLocalStorageOption() {
+    return html`
+      <button @click=${this.retrieveHighlightFromLocalStorage} 
+        class="br-select-menu__option">
+        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
+        <span class="br-select-menu__label">Load Highlights</span>
+      </button>
+      <button @click=${() => {window.localStorage.removeItem("highlightStorage");}}
+        class="br-select-menu__option">
+        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
+        <span class="br-select-menu__label">Remove Stored Highlights</span>
+      </button>`;
+  }
+
+  // TODO change the second button to use a different icon
+  render() {
+    return html`
+      ${this.highlightAnnotationEnabled && !this.nodesForRemoval ? this.addHighlightOption() : ''}
+      ${this.highlightAnnotationEnabled ? this.addLocalStorageOption() : ''}
+      ${this.copyHighlightEnabled ? this.addShareHighlightHTML() : ''}
+      ${this.nodesForRemoval ? this.addRemovalOption() : ''}
+    `;
+  }
+
   /**
    * @param {MouseEvent} e
-   */
-  handleCopyLinkToHighlight(e) {
+  */
+  handleCopyLinktoHighlight(e) {
     e.preventDefault();
-
     const currentParams = this.br.readQueryString();
     const currentSelection = window.getSelection();
-    /** @type {HTMLElement} */
     const textLayer = currentSelection.anchorNode.parentElement.closest('.BRtextLayer');
     const textFragmentUrlParam = createTextFragmentUrlParam(currentSelection, Array.from(document.querySelectorAll('.BRpage-visible')));
 
@@ -458,14 +516,211 @@ class BRSelectMenu extends LitElement {
       const sep = linkToHighlightParams ? '&' : '?';
       linkToHighlightParams += `${sep}${textFragmentUrlParam}`;
     }
-
     const currentUrl = window.location;
     // TODO - updateResumeValue + getCookiePath in plugin.resume.js overrides the adjustedUrlPageNumPath, check how to workaround this
     // TODO - won't work with hash mode
     const adjustedUrlPageNumPath = currentUrl.pathname.toString().replace(/(?<=\/page\/)\d+(?=\/)/, textLayer.parentElement.getAttribute('data-page-num'));
-
     const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}${linkToHighlightParams}${currentUrl?.hash || ''}`;
+
     navigator.clipboard.writeText(linkToHighlight);
+  }
+
+  /**
+   * Returns the closest BRtextLayer element on the page that contains the target node
+   * @param {Node} node
+   * @returns {Node | null}
+   */
+  getNodeTextLayer(node) {
+    if (!node) return;
+    const element = 'closest' in node ? node : node.parentElement;
+    return element?.closest('.BRtextLayer') ?? null;
+  }
+
+  /**
+   * Prepare a DOM range for generating selectors and finding the containing text layer
+   * @param {Node} start
+   * @param {Node} end
+   * @returns
+   */
+  getTextLayerForRange(start, end) {
+    const range = new Range();
+    try {
+      range.setStart(start, 0);
+      range.setEnd(end, 1);
+    } catch {
+      throw new Error ('Selection does not contain text');
+    }
+    const startTextLayer = this.getNodeTextLayer(range.startContainer);
+    const endTextLayer = this.getNodeTextLayer(range.endContainer);
+    if (!startTextLayer || !endTextLayer) {
+      throw new Error ('Selection goes beyond the book reader page layers');
+    }
+    if (startTextLayer !== endTextLayer) {
+      throw new Error('Selecting across page breaks is not supported');
+    }
+    return [range, startTextLayer];
+  }
+
+  /**
+   * Retrieves the current selected text on the page and serializes the quote contents + context
+   * The selection is also changed in the DOM to highlight the words
+   */
+  handleHighlightSave(e) {
+    const currentSelection = window.getSelection();
+    const start = currentSelection.direction === 'backward' ? currentSelection.focusNode.parentElement : currentSelection.anchorNode.parentElement;
+    const end = currentSelection.direction === 'backward' ? currentSelection.anchorNode.parentElement : currentSelection.focusNode.parentElement;
+
+    const output = this.createQuoteStorage(currentSelection, [this.getNodeTextLayer(start).parentElement]);
+    this.saveToLocalStorage(output);
+    changeDOMtoHighlight(start, end, this.selectionElement, output.uuid);
+    // this.nodesForRemoval =
+  }
+
+  handleAnnotation(e) {
+    // TODO
+  }
+
+  handleDeleteHighlight(e) {
+    if (this.nodesForRemoval) {
+      const uuid = retrieveUUID(this.nodesForRemoval[0]);
+      for (const ele of this.nodesForRemoval) {
+        const tempText = ele.textContent;
+        const parent = ele.parentElement;
+        if (parent.classList.contains('BRwordElement') || parent.classList.contains('BRspace')) {
+          ele.remove();
+          parent.textContent = tempText;
+        } else {
+          console.log("This element did not match removal criteria:", parent, ele);
+        }
+      }
+      this.changeToLocalStorage(uuid);
+      this.clearNodesForRemoval();
+    } else {
+      console.log("there is nothing to remove");
+    }
+  }
+
+  /**
+   * Saves the highlighted text and context in an array to localStorage
+   * If a 'highlightStorage' object already exists, the content will be appended to the array
+   * @param {any} contents
+   */
+  saveToLocalStorage(contents) {
+    try {
+      const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
+      if (existingHighlightStorage) {
+        const item = JSON.parse(existingHighlightStorage);
+        item.push(contents);
+        window.localStorage.setItem("highlightStorage", JSON.stringify(item));
+      } else {
+        window.localStorage.setItem("highlightStorage", JSON.stringify([contents]));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  changeToLocalStorage(storageId) {
+    try {
+      const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
+      if (existingHighlightStorage) {
+        const storageObject = JSON.parse(existingHighlightStorage);
+        for (const idx in storageObject) {
+          if (storageObject[idx].uuid === storageId) {
+            storageObject.splice(idx, 1);
+            window.localStorage.setItem("highlightStorage", JSON.stringify(storageObject));
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  /**
+   * @param {string} keyName
+   * @returns {any | null | undefined}
+   */
+  loadFromLocalStorage(keyName) {
+    let test;
+    if (window.localStorage.key(0)) {
+      try {
+        test = JSON.parse(window.localStorage.getItem(keyName));
+        return test;
+      } catch (e) {
+        console.error(e);
+        throw new Error("Could not load from localStorage");
+      }
+    }
+  }
+
+  retrieveHighlightFromLocalStorage() {
+    const stored = this.loadFromLocalStorage("highlightStorage");
+    if (!stored) return;
+    for (const item of stored) {
+      convertRangeToDOMSelection(item);
+    }
+  }
+
+  /**
+ *
+ * @param {Selection} selection currently selected text, eg `document.getSelection()`
+ * @param {HTMLElement[]} contextElements elements providing context for the selection
+ * @returns {any}
+ */
+  createQuoteStorage(selection, contextElements) {
+  // https://web.dev/articles/text-fragments#:~:text=In%20its%20simplest%20form%2C%20the%20syntax%20of,percent%2Dencoded%20text%20I%20want%20to%20link%20to.
+    const direction = selection.direction;
+    const startNode = direction == 'backward' ? selection.focusNode : selection.anchorNode;
+    const endNode = direction == 'backward' ? selection.anchorNode : selection.focusNode;
+
+    const preStartRange = document.createRange();
+    preStartRange.setStart(contextElements[0].firstElementChild, 0);
+    preStartRange.setEnd(startNode, 0);
+
+    const postEndRange = document.createRange();
+    postEndRange.setStart(endNode, endNode.textContent.length);
+    const lastWordOfPageEl = getLastMostElement(contextElements[contextElements.length - 1]);
+    postEndRange.setEnd(lastWordOfPageEl, 0);
+
+    const prefix = getLastWords(3, preStartRange.toString())
+      .replace(/[ ]+/g, " ")
+      .trim()
+      .replace(/^[^\n]*\n/gm, "");
+    const suffix = getFirstWords(3, postEndRange.toString())
+      .replace(/[ ]+/g, " ")
+      .trim()
+      .replace(/\n[^\n]*$/gm, "");
+
+    const fullHighlight = selection.toString().replace(/\s+/g, " ").trim().split(/\s/g);
+
+    if (startNode.textContent.trim().length != 0) {
+      if (!startNode.textContent.includes(fullHighlight[0])) {
+        fullHighlight.unshift(startNode.textContent);
+      } else {
+        fullHighlight[0] = startNode.textContent;
+      }
+    }
+    if (endNode.textContent.trim().length != 0) {
+      if (!endNode.textContent.includes(fullHighlight[fullHighlight.length - 1])) {
+        fullHighlight.push(endNode.textContent);
+      } else {
+        fullHighlight[fullHighlight.length - 1] = endNode.textContent;
+      }
+    }
+
+    const quote = fullHighlight.join("  ");
+
+    const uuid = `id-${crypto.randomUUID().split("-")[4]}`;
+    return {
+      prefix,
+      suffix,
+      quote,
+      dPageNum: contextElements[0].getAttribute("data-page-num"),
+      dIndex: contextElements[0].getAttribute("data-index"),
+      uuid,
+    };
   }
 
   showMenu() {
@@ -488,11 +743,20 @@ class BRSelectMenu extends LitElement {
     this.style.zIndex = '1';
     this.style.position = 'absolute';
     this.style.display = 'block';
+    this.clearNodesForRemoval();
   }
 
   hideMenu = () => {
     this.style.display = 'none';
+    this.clearNodesForRemoval();
     return;
+  }
+
+  /** Remove temporary storage for the currently selected highlight and updates selection menu options
+   */
+  clearNodesForRemoval = () => {
+    this.nodesForRemoval = null;
+    this.requestUpdate();
   }
 }
 
@@ -530,3 +794,236 @@ export function getLastMostElement(parent) {
   }
   return parent;
 }
+
+/**
+ * Strips the whitespace to normalize text
+ * @param {String} string
+ * @returns
+ */
+function replaceWhitespace(string) {
+  return string.replace(/\s+/g, " ");
+}
+
+/**
+   * Checks if quote matches the text content and existing range, then identifies the start and end nodes that contain the quote string.
+   * @param {String} quote - The text to find
+   * @param {Range} range - the range to search in
+   * @param {Node[]} textNodes - visible text nodes within the range
+   * @returns
+   */
+export function deriveRangeFromNodes(quote, range, textNodes) {
+  const startOffset = textNodes[0] === range.startContainer ?
+    range.startOffset :
+    0;
+  const normalizedWholePageString = replaceWhitespace(range.toString());
+  const normalizedQuote = replaceWhitespace(quote);
+  let searchStart = 0;
+  let start;
+  let end;
+  while (searchStart < normalizedWholePageString.length) {
+    const matchedIndex = normalizedWholePageString.indexOf(normalizedQuote, searchStart);
+    if (matchedIndex === -1) return undefined;
+    const normalizedStartOffset = replaceWhitespace(textNodes[0].textContent.slice(0, startOffset)).length;
+    start = getBoundaryPointAtIndex(
+      normalizedStartOffset + matchedIndex,
+      textNodes, false);
+    end = getBoundaryPointAtIndex(
+      normalizedStartOffset + matchedIndex + normalizedQuote.length,
+      textNodes, true);
+    if (start != null && end != null) {
+      const foundRange = new Range();
+      foundRange.setStart(start.node, 0);
+      foundRange.setEnd(end.node, 1);
+      return foundRange;
+    }
+    searchStart = matchedIndex + 1;
+  }
+  return undefined;
+}
+
+
+/**
+   * Uses the index that matches the quote string and normalizes the string contents to find the correct node
+   * @param {Number} index
+   * @param {Node[]} nodes
+   * @param {boolean} isEnd
+   */
+export function getBoundaryPointAtIndex(index, nodes, isEnd) {
+  let counted = 0;
+  let normalizedData;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    if (node.className === 'BRlineElement') {
+      // Treat the lineElement as a space for now, will check if the previous node was hyphenated or another lineElement later
+      normalizedData = ' ';
+    } else {
+      if (!normalizedData) normalizedData = replaceWhitespace(node.textContent);
+    }
+    let nodeEnd = counted + normalizedData.length;
+    if (isEnd) nodeEnd += 1;
+    if (nodeEnd > index) {
+      const normalizedOffset = index - counted;
+      let denormalizedOffset = Math.min(index - counted, node.textContent.length);
+
+      const targetSubstring = isEnd ?
+        normalizedData.substring(0, normalizedOffset) :
+        normalizedData.substring(normalizedOffset);
+
+      let candidateSubstring = isEnd ?
+        replaceWhitespace(node.textContent.substring(0, normalizedOffset)) :
+        replaceWhitespace(node.textContent.substring(normalizedOffset));
+
+      const direction = (isEnd ? -1 : 1) * (targetSubstring.length > candidateSubstring.length ? -1 : 1);
+      while (denormalizedOffset >= 0 &&
+               denormalizedOffset <= node.textContent.length) {
+        if (candidateSubstring.length === targetSubstring.length) {
+          return {node : node, offset: denormalizedOffset};
+        }
+        denormalizedOffset += direction;
+
+        candidateSubstring = isEnd ?
+          node.textContent.substring(0, denormalizedOffset) :
+          node.textContent.substring(denormalizedOffset);
+      }
+    }
+    counted += normalizedData.length;
+
+    if (i + 1 < nodes.length) {
+      const nextNormalizedData = replaceWhitespace(nodes[i + 1].textContent);
+      /** Hyphenated words prove to be an issue since spaces are being inserted between BRlineElements
+         * 1st case explicitly check the node class to prevent double counted spaces
+         * 2nd case can happen from node traversal when loading from localStorage
+         */
+      if (nodes[i - 1]?.classList.contains("BRwordElement--hyphen") && node.className === 'BRlineElement') {
+        counted -= 1;
+      } else if (nodes[i - 1]?.className === 'BRlineElement' && node.className === 'BRlineElement') {
+        counted -= 1;
+      }
+      normalizedData = nextNormalizedData;
+    }
+  }
+  return undefined;
+}
+/**
+ * Takes a highlightObject from localStorage which includes data-index and data-page-num
+ * to create a range if the page is visible within the DOM
+ *
+ * Iterate through the range and determine the "start" and "end" nodes
+ * Example of how this is done via polyfill
+ * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/main/src/text-fragment-utils.js#L743
+ * @param {import('../plugins/url/UrlPlugin.js').BookReaderSavedHighlight} quote
+ */
+export function convertRangeToDOMSelection(quote) {
+  // 1. Extract the page data and check if the page is currently visible
+  const pageClass = `pagediv${quote.dIndex}`;
+  const storedPageElement = document.querySelector(`.${pageClass}`);
+  if (!storedPageElement) return;
+  // 2. Retrieve the text nodes and relevant whitespace elements
+  const allWordNodes = Array.from(storedPageElement.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
+
+  // Need to keep the BRlineElement nodes in between to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
+  allWordNodes.splice(0, 1);
+  const lastWordNodeIndex = allWordNodes.length - 1;
+
+  // 3. Create a range that encompasses the entire text content
+  const wholePageAsRange = new Range();
+  wholePageAsRange.setStart(allWordNodes[0], 0);
+  wholePageAsRange.setEnd(allWordNodes[lastWordNodeIndex], 0);
+
+  // 4. Convert the whole page range into a normalized string, get the index of where the stored string matches the quote
+  const convertedString = replaceWhitespace(wholePageAsRange.toString());
+  const convertedQuote = replaceWhitespace(quote.quote);
+  const foundStringIndex = convertedString.indexOf(convertedQuote);
+  if (foundStringIndex == -1) return;
+  const fullContext = [quote.prefix, quote.quote, quote.suffix].join(" ");
+  const convertedFullContext = replaceWhitespace(fullContext);
+
+  const relevantRange = deriveRangeFromNodes(convertedFullContext, wholePageAsRange, Array.from(allWordNodes));
+
+  const adjustedNodes = [];
+  for (const el of walkBetweenNodes(relevantRange?.startContainer, relevantRange?.endContainer)) {
+    if (el?.classList?.contains('BRwordElement') || el?.classList?.contains('BRspace') || el?.classList?.contains('BRlineElement')) {
+      adjustedNodes.push(el);
+    }
+  }
+
+  // Range Object returned
+  const output = deriveRangeFromNodes(quote.quote, relevantRange, adjustedNodes);
+
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(output);
+  // Assumes the selection start/ends are the correct BRwordElement / BRspace elements
+  const start = selection.anchorNode;
+  const end = selection.focusNode;
+  changeDOMtoHighlight(start, end, [".BRwordElement", '.BRspace'], quote.uuid);
+
+  selection?.removeAllRanges();
+}
+
+/**
+ *
+ * @param {Node} start BRwordElement or BRspace
+ * @param {Node} end BRwordElement or BRspace
+ * @param {Array[string]} selectionElement
+ * @param {string} uuid
+ */
+export function changeDOMtoHighlight(start, end, selectionElement, uuid) {
+  const nodes = [];
+  if (start === end) nodes.push(start);
+
+  for (const el of walkBetweenNodes(start, end)) {
+    const validElement =
+      el?.classList?.contains(selectionElement[0].replace(".", "")) ||
+      el?.classList?.contains(selectionElement[1].replace(".", ""));
+    if (validElement) nodes.push(el);
+  }
+
+  const textLayer = start.parentElement.closest('.BRtextLayer');
+  textLayer?.addEventListener('mouseup', (e) => {
+    if (!e.target.classList.contains("BRhighlight")) return;
+    e.stopPropagation();
+    const identifier = retrieveUUID(e.target);
+    const selectedQuoteNodes = document.querySelectorAll(`.${identifier}`);
+
+    const firstNode = selectedQuoteNodes[0];
+    const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
+
+    const highlightRange = document.createRange();
+    highlightRange.setStart(firstNode, 0);
+    highlightRange.setEnd(lastNode, 1);
+
+    const currentSelection = window.getSelection();
+    currentSelection?.removeAllRanges();
+    currentSelection?.addRange(highlightRange);
+    window.br.plugins.textSelection.textSelectionManager.selectMenu.showMenu();
+  });
+
+  for (const element of nodes) {
+    const highlightSpan = document.createElement("span");
+    highlightSpan.className = "BRhighlight";
+    highlightSpan.classList.add(uuid);
+    highlightSpan.textContent = element.textContent;
+    element.textContent = null;
+    element.appendChild(highlightSpan);
+  }
+}
+
+/**
+ * Get UUID assigned to the highlight element from class list
+ * @param {HTMLElement} ele
+ * @returns
+ */
+function retrieveUUID(ele) {
+  if (!ele) return null;
+  const findUUID = Array.from(ele?.classList).filter((name) => {
+    if (name.slice(0, 2).includes('id')) {
+      return name;
+    }
+  });
+  if (findUUID.length) {
+    return findUUID[0];
+  }
+  return null;
+}
+
