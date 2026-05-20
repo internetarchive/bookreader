@@ -903,6 +903,10 @@ export function renderHighlight(textLayer, quote, cssClassName = null) {
   const pageWordNodes = Array.from(textLayer.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
   pageWordNodes.splice(0, 1);
   const broadRange = findRangeForQuote(convertedFullContext, wholePageRange, pageWordNodes);
+  if (!broadRange) {
+    console.warn("Could not find quote with context in page, falling back to finding quote without context:", quote.quote);
+    return;
+  }
 
   const broadRangeWordNodes = [];
   for (const el of walkBetweenNodes(broadRange?.startContainer, broadRange?.endContainer)) {
@@ -913,19 +917,21 @@ export function renderHighlight(textLayer, quote, cssClassName = null) {
 
   // At which point the quote should now be unambiguous!
   const exactRange = findRangeForQuote(quote.quote, broadRange, broadRangeWordNodes);
-  const start = exactRange.startContainer;
-  const end = exactRange.endContainer;
+  const startTextNode = getFirstMostNode(exactRange.startContainer);
+  const endTextNode = getFirstMostNode(exactRange.endContainer);
 
   // markRange requires the range to start and end within text nodes
-  const rangeTextNodes = new Range();
-  rangeTextNodes.setStart(start.firstChild, 0);
-  if (end.firstChild.nodeType === Node.TEXT_NODE) {
-    rangeTextNodes.setEnd(end.firstChild, end.firstChild.textContent.length);
-  } else {
-    rangeTextNodes.setEnd(end, 0);
+  const exactRangeTextNodes = new Range();
+  exactRangeTextNodes.setStart(startTextNode, 0);
+  exactRangeTextNodes.setEnd(endTextNode, endTextNode.textContent.length);
+
+  // Don't mark if already marked
+  if (startTextNode.parentElement.classList.contains("BRhighlight") ||
+      endTextNode.parentElement.classList.contains("BRhighlight")) {
+    return;
   }
 
-  markRange(rangeTextNodes, () => {
+  markRange(exactRangeTextNodes, () => {
     const mark = document.createElement("mark");
     mark.classList.add("BRhighlight");
     if (cssClassName) mark.classList.add(cssClassName);
