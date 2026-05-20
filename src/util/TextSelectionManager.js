@@ -477,7 +477,7 @@ class BRSelectMenu extends LitElement {
   }
   addLocalStorageOption() {
     return html`
-      <button @click=${this.retrieveHighlightFromLocalStorage} 
+      <button @click=${this.renderSavedHighlights} 
         class="br-select-menu__option">
         <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
         <span class="br-select-menu__label">Load Highlights</span>
@@ -530,7 +530,7 @@ class BRSelectMenu extends LitElement {
   /**
    * Returns the closest BRtextLayer element on the page that contains the target node
    * @param {Node} node
-   * @returns {Node | null}
+   * @returns {HTMLElement | null}
    */
   getNodeTextLayer(node) {
     if (!node) return;
@@ -570,12 +570,10 @@ class BRSelectMenu extends LitElement {
   handleHighlightSave(e) {
     const currentSelection = window.getSelection();
     const start = currentSelection.direction === 'backward' ? currentSelection.focusNode.parentElement : currentSelection.anchorNode.parentElement;
-    const end = currentSelection.direction === 'backward' ? currentSelection.anchorNode.parentElement : currentSelection.focusNode.parentElement;
-
-    const output = this.createQuoteStorage(currentSelection, [this.getNodeTextLayer(start).parentElement]);
-    this.saveToLocalStorage(output);
-    changeDOMtoHighlight(start, end, this.selectionElement, output.uuid);
-    // this.nodesForRemoval =
+    const textLayer = this.getNodeTextLayer(start);
+    const highlight = this.createQuoteStorage(currentSelection, [textLayer.parentElement]);
+    this.saveToLocalStorage(highlight);
+    renderHighlight(textLayer, highlight);
   }
 
   handleAnnotation(e) {
@@ -605,17 +603,17 @@ class BRSelectMenu extends LitElement {
   /**
    * Saves the highlighted text and context in an array to localStorage
    * If a 'highlightStorage' object already exists, the content will be appended to the array
-   * @param {any} contents
+   * @param {BookReaderSavedHighlight} highlight
    */
-  saveToLocalStorage(contents) {
+  saveToLocalStorage(highlight) {
     try {
       const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
       if (existingHighlightStorage) {
         const item = JSON.parse(existingHighlightStorage);
-        item.push(contents);
+        item.push(highlight);
         window.localStorage.setItem("highlightStorage", JSON.stringify(item));
       } else {
-        window.localStorage.setItem("highlightStorage", JSON.stringify([contents]));
+        window.localStorage.setItem("highlightStorage", JSON.stringify([highlight]));
       }
     } catch (e) {
       console.error(e);
@@ -641,28 +639,18 @@ class BRSelectMenu extends LitElement {
   }
 
   /**
-   * @param {string} keyName
-   * @returns {any | null | undefined}
+   * @returns {BookReaderSavedHighlight[]}
    */
-  loadFromLocalStorage(keyName) {
-    let test;
-    if (window.localStorage.key(0)) {
-      try {
-        test = JSON.parse(window.localStorage.getItem(keyName));
-        return test;
-      } catch (e) {
-        console.error(e);
-        throw new Error("Could not load from localStorage");
-      }
-    }
+  loadHighlightsFromLocalStorage() {
+    return JSON.parse(window.localStorage.getItem("highlightStorage") || "[]")
+      .map(item => BookReaderTextFragment.fromJSON(item));
   }
 
-  retrieveHighlightFromLocalStorage() {
-    const stored = this.loadFromLocalStorage("highlightStorage");
-    if (!stored) return;
-    for (const item of stored) {
-      const pageEl = /** @type {HTMLElement} */ (document.querySelector(`pagediv${item.pageIndex}`));
-      convertRangeToDOMSelection(pageEl, item);
+  renderSavedHighlights() {
+    for (const hl of this.loadHighlightsFromLocalStorage()) {
+      const pageEl = /** @type {HTMLElement} */ (this.br.$(`.pagediv${hl.pageIndex}`)[0]);
+      if (!pageEl) continue;
+      renderHighlight(pageEl, hl);
     }
   }
 
@@ -670,60 +658,12 @@ class BRSelectMenu extends LitElement {
  *
  * @param {Selection} selection currently selected text, eg `document.getSelection()`
  * @param {HTMLElement[]} contextElements elements providing context for the selection
- * @returns {any}
+ * @returns {BookReaderSavedHighlight}
  */
   createQuoteStorage(selection, contextElements) {
-  // https://web.dev/articles/text-fragments#:~:text=In%20its%20simplest%20form%2C%20the%20syntax%20of,percent%2Dencoded%20text%20I%20want%20to%20link%20to.
-    const direction = selection.direction;
-    const startNode = direction == 'backward' ? selection.focusNode : selection.anchorNode;
-    const endNode = direction == 'backward' ? selection.anchorNode : selection.focusNode;
-
-    const preStartRange = document.createRange();
-    preStartRange.setStart(contextElements[0].firstElementChild, 0);
-    preStartRange.setEnd(startNode, 0);
-
-    const postEndRange = document.createRange();
-    postEndRange.setStart(endNode, endNode.textContent.length);
-    const lastWordOfPageEl = getLastMostElement(contextElements[contextElements.length - 1]);
-    postEndRange.setEnd(lastWordOfPageEl, 0);
-
-    const prefix = getLastWords(3, preStartRange.toString())
-      .replace(/[ ]+/g, " ")
-      .trim()
-      .replace(/^[^\n]*\n/gm, "");
-    const suffix = getFirstWords(3, postEndRange.toString())
-      .replace(/[ ]+/g, " ")
-      .trim()
-      .replace(/\n[^\n]*$/gm, "");
-
-    const fullHighlight = selection.toString().replace(/\s+/g, " ").trim().split(/\s/g);
-
-    if (startNode.textContent.trim().length != 0) {
-      if (!startNode.textContent.includes(fullHighlight[0])) {
-        fullHighlight.unshift(startNode.textContent);
-      } else {
-        fullHighlight[0] = startNode.textContent;
-      }
-    }
-    if (endNode.textContent.trim().length != 0) {
-      if (!endNode.textContent.includes(fullHighlight[fullHighlight.length - 1])) {
-        fullHighlight.push(endNode.textContent);
-      } else {
-        fullHighlight[fullHighlight.length - 1] = endNode.textContent;
-      }
-    }
-
-    const quote = fullHighlight.join("  ");
-
-    const uuid = `id-${crypto.randomUUID().split("-")[4]}`;
-    return {
-      prefix,
-      suffix,
-      quote,
-      dPageNum: contextElements[0].getAttribute("data-page-num"),
-      dIndex: contextElements[0].getAttribute("data-index"),
-      uuid,
-    };
+    const fragment = createTextFragment(selection, contextElements);
+    fragment.uuid = `id-${crypto.randomUUID().split("-")[4]}`;
+    return fragment;
   }
 
   showMenu() {
@@ -808,13 +748,13 @@ function replaceWhitespace(string) {
 }
 
 /**
-   * Checks if quote matches the text content and existing range, then identifies the start and end nodes that contain the quote string.
-   * @param {String} quote - The text to find
-   * @param {Range} range - the range to search in
-   * @param {Node[]} textNodes - visible text nodes within the range
-   * @returns
-   */
-export function deriveRangeFromNodes(quote, range, textNodes) {
+ * Checks if quote matches the text content and existing range, then identifies the start and end nodes that contain the quote string.
+ * @param {String} quote - The text to find
+ * @param {Range} range - the range to search in
+ * @param {Node[]} textNodes - visible text nodes within the range
+ * @returns {Range | undefined} Range that encompasses the quote, or undefined if no match is found
+ */
+export function findRangeForQuote(quote, range, textNodes) {
   const startOffset = textNodes[0] === range.startContainer ?
     range.startOffset :
     0;
@@ -846,11 +786,11 @@ export function deriveRangeFromNodes(quote, range, textNodes) {
 
 
 /**
-   * Uses the index that matches the quote string and normalizes the string contents to find the correct node
-   * @param {Number} index
-   * @param {Node[]} nodes
-   * @param {boolean} isEnd
-   */
+ * Uses the index that matches the quote string and normalizes the string contents to find the correct node
+ * @param {Number} index
+ * @param {Node[]} nodes
+ * @param {boolean} isEnd
+ */
 export function getBoundaryPointAtIndex(index, nodes, isEnd) {
   let counted = 0;
   let normalizedData;
@@ -893,10 +833,9 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
 
     if (i + 1 < nodes.length) {
       const nextNormalizedData = replaceWhitespace(nodes[i + 1].textContent);
-      /** Hyphenated words prove to be an issue since spaces are being inserted between BRlineElements
-         * 1st case explicitly check the node class to prevent double counted spaces
-         * 2nd case can happen from node traversal when loading from localStorage
-         */
+      // Hyphenated words prove to be an issue since spaces are being inserted between BRlineElements
+      // 1st case explicitly check the node class to prevent double counted spaces
+      // 2nd case can happen from node traversal when loading from localStorage
       if (nodes[i - 1]?.classList.contains("BRwordElement--hyphen") && node.className === 'BRlineElement') {
         counted -= 1;
       } else if (nodes[i - 1]?.className === 'BRlineElement' && node.className === 'BRlineElement') {
@@ -907,18 +846,20 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
   }
   return undefined;
 }
+
 /**
- * Takes a highlightObject from localStorage which includes data-index and data-page-num
- * to create a range if the page is visible within the DOM
+ * Takes a text quote object and a container element, and wraps the quote
+ * within the container element in a span to apply highlight-like styling
  *
  * Iterate through the range and determine the "start" and "end" nodes
  * Example of how this is done via polyfill
  * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/main/src/text-fragment-utils.js#L743
  *
  * @param {HTMLElement} containerEl
- * @param {BookReaderSavedHighlight} quote
+ * @param {BookReaderTextFragment} quote
+ * @param {string | null} cssClassName optional css class to add to the highlight span element
  */
-export function convertRangeToDOMSelection(containerEl, quote) {
+export function renderHighlight(containerEl, quote, cssClassName = null) {
   // 2. Retrieve the text nodes and relevant whitespace elements
   const allWordNodes = Array.from(containerEl.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
 
@@ -927,58 +868,34 @@ export function convertRangeToDOMSelection(containerEl, quote) {
   const lastWordNodeIndex = allWordNodes.length - 1;
 
   // 3. Create a range that encompasses the entire text content
-  const wholePageAsRange = new Range();
-  wholePageAsRange.setStart(allWordNodes[0], 0);
-  wholePageAsRange.setEnd(allWordNodes[lastWordNodeIndex], 0);
+  const wholePageRange = new Range();
+  wholePageRange.setStart(allWordNodes[0], 0);
+  wholePageRange.setEnd(allWordNodes[lastWordNodeIndex], 0);
 
   // 4. Convert the whole page range into a normalized string, get the index of where the stored string matches the quote
-  const convertedString = replaceWhitespace(wholePageAsRange.toString());
+  const convertedString = replaceWhitespace(wholePageRange.toString());
   const convertedQuote = replaceWhitespace(quote.quote);
   const foundStringIndex = convertedString.indexOf(convertedQuote);
-  if (foundStringIndex == -1) return;
+  if (foundStringIndex == -1) {
+    console.warn("Could not find quote in page:", quote.quote);
+    return;
+  }
   const fullContext = [quote.prefix, quote.quote, quote.suffix].join(" ");
   const convertedFullContext = replaceWhitespace(fullContext);
 
-  const relevantRange = deriveRangeFromNodes(convertedFullContext, wholePageAsRange, Array.from(allWordNodes));
+  const broadRange = findRangeForQuote(convertedFullContext, wholePageRange, Array.from(allWordNodes));
 
   const adjustedNodes = [];
-  for (const el of walkBetweenNodes(relevantRange?.startContainer, relevantRange?.endContainer)) {
+  for (const el of walkBetweenNodes(broadRange?.startContainer, broadRange?.endContainer)) {
     if (el?.classList?.contains('BRwordElement') || el?.classList?.contains('BRspace') || el?.classList?.contains('BRlineElement')) {
       adjustedNodes.push(el);
     }
   }
 
-  // Range Object returned
-  const output = deriveRangeFromNodes(quote.quote, relevantRange, adjustedNodes);
-
-  const selection = window.getSelection();
-  selection?.removeAllRanges();
-  selection?.addRange(output);
-  // Assumes the selection start/ends are the correct BRwordElement / BRspace elements
-  const start = selection.anchorNode;
-  const end = selection.focusNode;
-  changeDOMtoHighlight(start, end, [".BRwordElement", '.BRspace'], quote.uuid);
-
-  selection?.removeAllRanges();
-}
-
-/**
- *
- * @param {Node} start BRwordElement or BRspace
- * @param {Node} end BRwordElement or BRspace
- * @param {Array[string]} selectionElement
- * @param {string} uuid
- */
-export function changeDOMtoHighlight(start, end, selectionElement, uuid) {
-  const nodes = [];
-  if (start === end) nodes.push(start);
-
-  for (const el of walkBetweenNodes(start, end)) {
-    const validElement =
-      el?.classList?.contains(selectionElement[0].replace(".", "")) ||
-      el?.classList?.contains(selectionElement[1].replace(".", ""));
-    if (validElement) nodes.push(el);
-  }
+  // At which point the quote should now be unambiguous!
+  const exactRange = findRangeForQuote(quote.quote, broadRange, adjustedNodes);
+  const start = exactRange.startContainer;
+  const end = exactRange.endContainer;
 
   const textLayer = start.parentElement.closest('.BRtextLayer');
   textLayer?.addEventListener('mouseup', (e) => {
@@ -1000,14 +917,92 @@ export function changeDOMtoHighlight(start, end, selectionElement, uuid) {
     window.br.plugins.textSelection.textSelectionManager.selectMenu.showMenu();
   });
 
-  for (const element of nodes) {
-    const highlightSpan = document.createElement("span");
-    highlightSpan.className = "BRhighlight";
-    highlightSpan.classList.add(uuid);
-    highlightSpan.textContent = element.textContent;
-    element.textContent = null;
-    element.appendChild(highlightSpan);
+  // markRange requires the range to start and end within text nodes
+  const rangeTextNodes = new Range();
+  rangeTextNodes.setStart(start.firstChild, 0);
+  if (end.firstChild.nodeType === Node.TEXT_NODE) {
+    rangeTextNodes.setEnd(end.firstChild, end.firstChild.textContent.length);
+  } else {
+    rangeTextNodes.setEnd(end, 0);
   }
+  markRange(rangeTextNodes, () => {
+    const mark = document.createElement("mark");
+    mark.classList.add("BRhighlight");
+    if (cssClassName) mark.classList.add(cssClassName);
+    if (quote.uuid) mark.classList.add(quote.uuid);
+    return mark;
+  });
+}
+
+/**
+ * Given a Range, wraps its text contents in one or more <mark> elements.
+ * <mark> elements can't cross block boundaries, so this function walks the
+ * tree to find all the relevant text nodes and wraps them.
+ * @param {Range} range - the range to mark. Must start and end inside of
+ *     text nodes.
+ * @param {function(): Element} createWrappingElement - a function that creates
+ *    the element to wrap text nodes in. This is called once per text node.
+ * @return {Element[]} The <mark> nodes that were created.
+ */
+function markRange(
+  range,
+  createWrappingElement = () => document.createElement("mark"),
+) {
+  if (range.startContainer.nodeType != Node.TEXT_NODE ||
+      range.endContainer.nodeType != Node.TEXT_NODE)
+    return [];
+
+  // If the range is entirely within a single node, just surround it.
+  if (range.startContainer === range.endContainer) {
+    const trivialMark = createWrappingElement();
+    range.surroundContents(trivialMark);
+    return [trivialMark];
+  }
+
+  // Start node -- special case
+  const startNode = range.startContainer;
+  const startNodeSubrange = range.cloneRange();
+  startNodeSubrange.setEndAfter(startNode);
+
+  // End node -- special case
+  const endNode = range.endContainer;
+  const endNodeSubrange = range.cloneRange();
+  endNodeSubrange.setStartBefore(endNode);
+
+  // In between nodes
+  const marks = [];
+  range.setStartAfter(startNode);
+  range.setEndBefore(endNode);
+  const walker = document.createTreeWalker(
+    range.commonAncestorContainer,
+    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: function(node) {
+        if (!range.intersectsNode(node)) return NodeFilter.FILTER_REJECT;
+
+        if (node.nodeType === Node.TEXT_NODE)
+          return NodeFilter.FILTER_ACCEPT;
+        return NodeFilter.FILTER_SKIP;
+      },
+    },
+  );
+  let node = walker.nextNode();
+  while (node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const mark = createWrappingElement();
+      node.parentNode.insertBefore(mark, node);
+      mark.appendChild(node);
+      marks.push(mark);
+    }
+    node = walker.nextNode();
+  }
+
+  const startMark = createWrappingElement();
+  startNodeSubrange.surroundContents(startMark);
+  const endMark = createWrappingElement();
+  endNodeSubrange.surroundContents(endMark);
+
+  return [startMark, ...marks, endMark];
 }
 
 /**
@@ -1044,8 +1039,9 @@ export class BookReaderTextFragment {
    * @param {string} [params.suffix]
    * @param {string} [params.pageNumber] Page number; e.g. asserted page number or the n-prefixed page index
    * @param {number} [params.pageIndex] Page index; e.g. zero-based index of the page
+   * @param {string | null} [params.uuid] UUID for the text fragment if it has one
    */
-  constructor({ prefix, quote, suffix, pageNumber, pageIndex } = {}) {
+  constructor({ prefix, quote, suffix, pageNumber, pageIndex, uuid } = {}) {
     /** @type {string|undefined} */
     this.prefix = prefix;
     /** @type {string} */
@@ -1056,6 +1052,8 @@ export class BookReaderTextFragment {
     this.pageNumber = pageNumber;
     /** @type {number} Page index; e.g. zero-based index of the page */
     this.pageIndex = pageIndex;
+    /** @type {string | null} UUID for the text fragment if it has one */
+    this.uuid = uuid ?? null;
   }
 
   /**
@@ -1128,6 +1126,26 @@ export class BookReaderTextFragment {
       str += `,-${encodeURIComponent(this.suffix)}`;
     }
     return str;
+  }
+
+  toJSON() {
+    return {
+      prefix: this.prefix,
+      quote: this.quote,
+      suffix: this.suffix,
+      pageNumber: this.pageNumber,
+      pageIndex: this.pageIndex,
+      uuid: this.uuid,
+    };
+  }
+
+  /**
+   * Create a BookReaderTextFragment instance from a JSON object.
+   * @param {object} json
+   * @returns {BookReaderTextFragment}
+   */
+  static fromJSON(json) {
+    return new BookReaderTextFragment(json);
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { UrlPlugin } from "./UrlPlugin.js";
 import { BookReaderTextFragment } from "../../util/TextSelectionManager.js";
-import { convertRangeToDOMSelection } from "../../util/TextSelectionManager.js";
+import { renderHighlight } from "../../util/TextSelectionManager.js";
 /**
  * Plugin for URL management in BookReader
  * Note read more about the url "fragment" here:
@@ -228,7 +228,7 @@ export class BookreaderUrlPlugin extends BookReader {
             const pageIndex = this.targetTextFragment.pageNumber ? this.book.getPageIndex(this.targetTextFragment.pageNumber) : this.firstParams.index;
             const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
             if (hasTargetText) {
-              convertRangeToDOMSelection(pageContainerEl, this.targetTextFragment);
+              renderHighlight(pageContainerEl, this.targetTextFragment, 'BRhighlight--target-text');
             }
           });
         }
