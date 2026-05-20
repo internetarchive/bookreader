@@ -151,7 +151,9 @@ export class UrlPlugin {
     }
 
     if (this.urlMode == 'hash') {
-      window.location.replace('#' + concatenatedPath);
+      // Use location.hash instead of location.replace('#...') to preserve
+      // the current pathname in SPA contexts.
+      window.location.hash = concatenatedPath;
     }
     this.oldLocationHash = urlStrPath;
   }
