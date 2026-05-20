@@ -1,3 +1,7 @@
+# 5.0.0-112
+- Feature: Make raw page indices in toolbar 0-based to reflect number in URL and code @pezvi
+- Fix: Make translate plugin gracefully handle unsupported source languages @cdrini
+
 # 5.0.0-111
 - Feature: Add new alpha experiment for copy link to highlight @schu96
 - Feature: Add option to specify `page_index` in table of contents in options @cdrini
