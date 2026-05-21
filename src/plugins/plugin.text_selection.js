@@ -1,6 +1,7 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
+import { median } from '../BookReader/utils.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
@@ -77,7 +78,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // Disable if thumb mode; it's too janky
     // .page can be null for "pre-cover" region
     if (this.br.mode !== this.br.constModeThumb && pageContainer.page) {
-      this.createTextLayer(pageContainer);
+      pageContainer.textSelectionLoadingComplete = this.createTextLayer(pageContainer);
     }
     return pageContainer;
   }
@@ -146,8 +147,13 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const $container = pageContainer.$container;
     const $textLayers = $container.find('.BRtextLayer');
     if ($textLayers.length) return;
+    $container.addClass('BRtextLayerLoading');
     const XMLpage = await this.getPageText(pageIndex);
-    if (!XMLpage) return;
+    if (!XMLpage) {
+      $container.removeClass('BRtextLayerLoading');
+      $container.addClass('BRtextLayerEmpty');
+      return;
+    }
     // Seeing some 0 left and 0 top coordinates in OCR, remove it entirely to prevent odd rendering
     // eg https://archive.org/details/illustratedbooko00robe/page/n11/mode/2up
     $(XMLpage).find("WORD").filter((_, ele) => {
@@ -162,6 +168,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const totalWords = $(XMLpage).find("WORD").length;
     if (totalWords > this.maxWordRendered) {
       console.log(`Page ${pageIndex} has too many words (${totalWords} > ${this.maxWordRendered}). Not rendering text layer.`);
+      $container.removeClass('BRtextLayerLoading');
+      $container.addClass('BRtextLayerError');
       return;
     }
 
@@ -185,6 +193,40 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       return el;
     });
 
+    // Try to detect centered paragraphs
+    const medianLeft = median(
+      $(XMLpage).find("LINE").toArray()
+        .map(l => parseFloat($(l).attr("coords")?.split(',')?.[0]))
+        .filter(x => !isNaN(x)),
+    );
+    const medianRightDist = pageContainer.page.width - median(
+      $(XMLpage).find("LINE").toArray()
+        .map(l => parseFloat($(l).attr("coords")?.split(',')?.[2]))
+        .filter(x => !isNaN(x)),
+    );
+
+    for (const paragEl of paragEls) {
+      const lines = Array.from(paragEl.querySelectorAll('.BRlineElement'));
+      const paragLeft = parseFloat(paragEl.style.left);
+      const paragRight = paragLeft + parseFloat(paragEl.style.width);
+      const isCentered = lines.every(line => {
+        /** @type {HTMLElement} */
+        const firstWord = line.querySelector('.BRwordElement');
+        const lineLeft = firstWord.style.paddingLeft ? parseFloat(firstWord.style.paddingLeft) : 0;
+        const leftDist = paragLeft + lineLeft;
+        const rightDist = pageContainer.page.width - paragRight;
+        return (
+          leftDist > medianLeft * 1.8 &&
+          rightDist > medianRightDist * 1.8 &&
+          leftDist < pageContainer.page.width / 2 &&
+          withinTolerance(leftDist, rightDist, pageContainer.page.width * 0.1)
+        );
+      });
+      if (isCentered) {
+        paragEl.classList.add('BRcentered');
+      }
+    }
+
     // Fix up paragraph positions
     const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement');
     let yAdded = 0;
@@ -202,6 +244,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       textLayer.appendChild(document.createTextNode('\n'));
     }
     $container.append(textLayer);
+    $container.removeClass('BRtextLayerLoading');
     this.textSelectionManager.stopPageFlip($container);
     this.br.trigger('textLayerRendered', {
       pageIndex,
@@ -252,6 +295,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
         const wordEl = document.createElement('span');
         wordEl.setAttribute("class", "BRwordElement");
+        // Set confidence for potential styling
+        const confidence = parseFloat($(currWord).attr("x-confidence"));
+        wordEl.setAttribute("style", `--br-conf: ${confidence}%`);
         wordEl.textContent = currWord.textContent.trim();
 
         if (wordIndex > 0) {
@@ -271,7 +317,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         lineEl.appendChild(wordEl);
       }
 
-      const hasHyphen = line.lastWord.textContent.trim().endsWith('-');
+      const hasHyphen = line.lastWord.textContent.trim().endsWith('-') || line.lastWord.textContent.trim().endsWith('¬');
       const lastWordEl = lineEl.children[lineEl.children.length - 1];
       if (hasHyphen && !isLastLineOfParagraph) {
         lastWordEl.textContent = lastWordEl.textContent.trim().slice(0, -1);
@@ -362,6 +408,17 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
 BookReader?.registerPlugin('textSelection', TextSelectionPlugin);
 
+
+/**
+ * Checks if a and b are within a certain tolerance of each other
+ * @param {number} a
+ * @param {number} b
+ * @param {number} tolerance
+ * @returns {boolean}
+ */
+function withinTolerance(a, b, tolerance) {
+  return Math.abs(a - b) <= tolerance;
+}
 
 /**
  * @param {HTMLElement} parentEl

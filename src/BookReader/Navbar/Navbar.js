@@ -27,7 +27,7 @@ export class Navbar {
     ];
     /** @type {Object} controls will be switch over "this.minimumControls" */
     this.maximumControls = [
-      'BRnavpos', 'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb',
+      'BRnavpos', 'book_left', 'book_right', 'zoom_in', 'zoom_out', 'onepg', 'twopg', 'thumb', 'textpg',
     ];
 
     this.updateNavIndexThrottled = throttle(this.updateNavIndex.bind(this), 250, false);
@@ -44,8 +44,10 @@ export class Navbar {
     if (option.template) {
       return `<li>${option.template(this.br)}</li>`;
     }
+    const hidden = !this.br.plugins.experiments.isEnabled('textMode') && controlName === 'text';
+
     return `<li>
-      <button class="BRicon ${option.className}" title="${option.label}">
+      <button class="BRicon ${option.className}" title="${option.label}" ${hidden ? 'style="display:none"' : ''}>
         <div class="icon icon-${option.iconClassName}"></div>
         <span class="BRtooltip">${option.label}</span>
       </button>
@@ -61,6 +63,7 @@ export class Navbar {
       'onePage',
       'twoPage',
       'thumbnail',
+      'text',
       'viewmode',
       'zoomOut',
       'zoomIn',
@@ -86,7 +89,12 @@ export class Navbar {
       mode: br.constModeThumb,
       className: 'thumb',
       title: 'Thumbnail view',
-    }].filter((mode) => (
+    },{
+      mode: br.constModeText,
+      className: 'textpg',
+      title: 'Text view',
+    },
+    ].filter((mode) => (
       !viewModeOptions.excludedModes.includes(mode.mode)
     ));
     const viewModeOrder = viewModes.map((m) => m.mode);
@@ -149,6 +157,9 @@ export class Navbar {
       },
       twopg: () => {
         this.br.switchMode('2up');
+      },
+      textpg: () => {
+        this.br.switchMode('text');
       },
       zoom_in: () => {
         this.br.trigger(EVENTS.stop);

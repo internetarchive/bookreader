@@ -38,6 +38,7 @@ import { BookModel } from './BookReader/BookModel.js';
 import { Mode1Up } from './BookReader/Mode1Up.js';
 import { Mode2Up } from './BookReader/Mode2Up.js';
 import { ModeThumb } from './BookReader/ModeThumb.js';
+import { ModeText } from './BookReader/ModeText.js';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
@@ -99,6 +100,8 @@ BookReader.constMode1up = 1;
 BookReader.constMode2up = 2;
 /** thumbnails view */
 BookReader.constModeThumb = 3;
+/** text view */
+BookReader.constModeText = 4;
 
 // Although this can actualy have any BookReaderPlugin subclass as value, we
 // hardcode the known plugins here for type checking
@@ -240,6 +243,8 @@ BookReader.prototype.setup = function(options) {
   this.constMode2up = BookReader.constMode2up;
   /** thumbnails view */
   this.constModeThumb = BookReader.constModeThumb;
+  /** text view */
+  this.constModeText = BookReader.constModeText;
 
   // Private properties below. Configuration should be done with options.
   /** @type {number} TODO: Make private */
@@ -344,6 +349,7 @@ BookReader.prototype.setup = function(options) {
     mode1Up: new Mode1Up(this, this.book),
     mode2Up: new Mode2Up(this, this.book),
     modeThumb: new ModeThumb(this, this.book),
+    modeText: new ModeText(this, this.book),
   };
 
   /** Stores classes which we want to expose (selectively) some methods as overridable */
@@ -354,6 +360,7 @@ BookReader.prototype.setup = function(options) {
     '_modes.mode1Up': this._modes.mode1Up,
     '_modes.mode2Up': this._modes.mode2Up,
     '_modes.modeThumb': this._modes.modeThumb,
+    '_modes.modeText': this._modes.modeText,
   };
 
   /** Image cache for general image fetching */
@@ -424,6 +431,7 @@ Object.defineProperty(BookReader.prototype, 'activeMode', {
     1: this._modes.mode1Up,
     2: this._modes.mode2Up,
     3: this._modes.modeThumb,
+    4: this._modes.modeText,
   }[this.mode]; },
 });
 
@@ -584,7 +592,7 @@ BookReader.prototype.readQueryString = function() {
  * Determines the initial mode for starting if a mode is not already
  * present in the params argument
  * @param {object} params
- * @return {1 | 2 | 3} the initial mode
+ * @return {1 | 2 | 3 | 4} the initial mode
  */
 BookReader.prototype.getInitialMode = function(params) {
   // if mobile breakpoint, we always show this.constMode1up mode
@@ -1190,7 +1198,7 @@ BookReader.prototype.getPrevReadMode = function(mode) {
 
 /**
  * Switches the mode (eg 1up 2up thumb)
- * @param {number|'1up' | '2up' | 'thumb'}
+ * @param {number|'1up' | '2up' | 'thumb' | 'text'}
  * @param {object} [options]
  * @param {boolean} [options.suppressFragmentChange = false]
  * @param {boolean} [options.onInit = false] - this
@@ -1208,6 +1216,7 @@ BookReader.prototype.switchMode = function(
       '1up': this.constMode1up,
       '2up': this.constMode2up,
       'thumb': this.constModeThumb,
+      'text': this.constModeText,
     }[mode];
   }
 
@@ -1244,14 +1253,10 @@ BookReader.prototype.switchMode = function(
   //     See https://bugs.edge.launchpad.net/gnubook/+bug/416682
 
   // XXX maybe better to preserve zoom in each mode
-  if (this.constMode1up == mode) {
-    this._modes.mode1Up.prepare();
-  } else if (this.constModeThumb == mode) {
+  if (this.constModeThumb == mode) {
     this.reduce = this.quantizeReduce(this.reduce, this.reductionFactors);
-    this._modes.modeThumb.prepare();
-  } else {
-    this._modes.mode2Up.prepare();
   }
+  this.activeMode.prepare?.();
 
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
@@ -1268,9 +1273,10 @@ BookReader.prototype.updateBrClasses = function() {
   modeToClass[this.constMode1up] = 'BRmode1up';
   modeToClass[this.constMode2up] = 'BRmode2up';
   modeToClass[this.constModeThumb] = 'BRmodeThumb';
+  modeToClass[this.constModeText] = 'BRmodeText';
 
   this.refs.$br
-    .removeClass('BRmode1up BRmode2up BRmodeThumb')
+    .removeClass('BRmode1up BRmode2up BRmodeThumb BRmodeText')
     .addClass(modeToClass[this.mode]);
 
   if (this.isFullscreen()) {
@@ -1413,7 +1419,7 @@ BookReader.prototype.toggleSlider = function () {
  */
 BookReader.prototype.currentIndex = function() {
   // $$$ we should be cleaner with our idea of which index is active in 1up/2up
-  if (this.mode == this.constMode1up || this.mode == this.constModeThumb) {
+  if (this.mode == this.constMode1up || this.mode == this.constModeThumb || this.mode == this.constModeText) {
     return this.firstIndex; // $$$ TODO page in center of view would be better
   } else if (this.mode == this.constMode2up) {
     // Only allow indices that are actually present in book
@@ -1869,6 +1875,8 @@ BookReader.prototype.paramsFromFragment = function(fragment) {
     params.mode = this.constMode2up;
   } else if ('thumb' == urlHash['mode']) {
     params.mode = this.constModeThumb;
+  } else if ('text' == urlHash['mode']) {
+    params.mode = this.constModeText;
   }
 
   // Index and page
@@ -1928,6 +1936,8 @@ BookReader.prototype.fragmentFromParams = function(params, urlMode = 'hash') {
       fragments.push('mode', '2up');
     } else if (params.mode == this.constModeThumb) {
       fragments.push('mode', 'thumb');
+    } else if (params.mode == this.constModeText) {
+      fragments.push('mode', 'text');
     } else {
       throw 'fragmentFromParams called with unknown mode ' + params.mode;
     }

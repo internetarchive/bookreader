@@ -311,3 +311,13 @@ export function sortBy(array, valueFn) {
     return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
   });
 }
+
+/*
+ * @param {number[]} nums
+ * @returns {number}
+ */
+export function median(nums) {
+  const sorted = nums.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
