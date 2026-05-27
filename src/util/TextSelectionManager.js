@@ -1,8 +1,9 @@
 // @ts-check
 import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
 import { html, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import '@internetarchive/icon-share';
+import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 
 const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
 
@@ -14,9 +15,11 @@ export class TextSelectionManager {
 
   /** @type {BRSelectMenu} */
   selectMenu;
-  /** @type {boolean} */
-  selectionMenuEnabled = false;
-  highlightAnnotationEnabled = false;
+
+  get selectMenuEnabled() {
+    return this.br.plugins.experiments.isEnabled('copyLinkToHighlight') || this.br.plugins.experiments.isEnabled('annotateHighlight');
+  }
+
   /**
    * @param {string} layer Selector for the text layer to manage
    * @param {import('../BookReader.js').default} br
@@ -34,7 +37,7 @@ export class TextSelectionManager {
     this.selectionObserver = new SelectionObserver(this.layer, this._onSelectionChange);
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
 
-    this.selectMenu = new BRSelectMenu(br, selectionElement, this.selectionMenuEnabled, this.highlightAnnotationEnabled);
+    this.selectMenu = new BRSelectMenu(br);
     this.selectMenu.className = "br-select-menu__root";
   }
 
@@ -48,26 +51,21 @@ export class TextSelectionManager {
         // Set a class on the page to avoid hiding it when zooming/etc
         this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
         $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
-        this.selectMenu.showMenu();
+        this.showSelectMenu();
 
       }
 
-      if (selectEvent == 'focusChanged') {
+      if (selectEvent == 'changed') {
         // hide the button as user changes their selection
         if (this.mouseIsDown) {
-          this.selectMenu.hideMenu();
-        } else if (window.getSelection().toString()) {
-          this.selectMenu.showMenu();
-          const selectedElement = window.getSelection()?.anchorNode;
-          if (selectedElement.classList.contains('BRhighlight')) {
-            this.getHighlightedNodes(selectedElement);
-          }
+          this.hideSelectMenu();
+        } else if (window.getSelection()?.toString()) {
+          this.showSelectMenu();
         }
       }
 
       if (selectEvent == 'cleared') {
-        console.log("detected cleared event");
-        this.selectMenu.hideMenu();
+        this.hideSelectMenu();
       }
     }).attach();
   }
@@ -75,12 +73,6 @@ export class TextSelectionManager {
   // Need attach + detach methods to toggle w/ Translation plugin
   attach() {
     this.selectionObserver.attach();
-    if (this.selectionMenuEnabled) {
-      this.renderSelectionMenu();
-    }
-    if (this.highlightAnnotationEnabled) {
-      this.renderHighlightMenu();
-    }
 
     if (this.br.protected) {
       document.addEventListener('selectionchange', this._limitSelection);
@@ -107,25 +99,8 @@ export class TextSelectionManager {
     }
   }
 
-  renderSelectionMenu() {
-    this.selectMenu.copyHighlightEnabled = true;
-    if (this.highlightAnnotationEnabled) {
-      this.selectMenu.requestUpdate();
-    } else {
-      document.body.append(this.selectMenu);
-    }
-  }
-
-  renderHighlightMenu() {
-    this.selectMenu.highlightAnnotationEnabled = true;
-    if (this.selectionMenuEnabled) {
-      this.selectMenu.requestUpdate();
-    } else {
-      document.body.append(this.selectMenu);
-    }
-  }
   /**
-   * @param {'started' | 'cleared' | 'focusChanged'} type
+   * @param {'started' | 'cleared' | 'changed'} type
    * @param {HTMLElement} target
    */
   _onSelectionChange = (type, target) => {
@@ -133,7 +108,7 @@ export class TextSelectionManager {
       this.textSelectingMode(target);
     } else if (type === 'cleared') {
       this.defaultMode(target);
-    } else if (type === 'focusChanged') {
+    } else if (type === 'changed') {
       // do nothing, just wait for the mouseup to trigger the styling change
     } else {
       throw new Error(`Unknown type ${type}`);
@@ -186,7 +161,7 @@ export class TextSelectionManager {
     // blocking selection
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       this.mouseIsDown = true;
-      this.selectMenu.hideMenu();
+      this.hideSelectMenu();
       if ($(event.target).is(this.selectionElement.join(", "))) {
         event.stopPropagation();
       }
@@ -194,7 +169,7 @@ export class TextSelectionManager {
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
       this.mouseIsDown = false;
-      this.selectMenu.hideMenu();
+      this.hideSelectMenu();
       textLayer.style.pointerEvents = "none";
       if (skipNextMouseup) {
         skipNextMouseup = false;
@@ -220,7 +195,7 @@ export class TextSelectionManager {
       if (event.which != 1) return;
       this.mouseIsDown = true;
       event.stopPropagation();
-      this.selectMenu.hideMenu();
+      this.hideSelectMenu();
     });
 
     // Prevent page flip on click
@@ -228,15 +203,25 @@ export class TextSelectionManager {
       this.mouseIsDown = false;
       if (event.which != 1) return;
       event.stopPropagation();
-      this.selectMenu.showMenu();
+      this.showSelectMenu();
     });
   }
 
-  getHighlightedNodes(element) {
-    const highlightIdentifier = retrieveUUID(element);
-    const highlightNodes = document.querySelectorAll(`.${highlightIdentifier}`);
-    this.selectMenu.nodesForRemoval = highlightNodes;
-    this.selectMenu.requestUpdate();
+  showSelectMenu() {
+    if (!this.selectMenuEnabled) return;
+
+    this.selectMenu.copyLinkToHighlightEnabled = this.br.plugins.experiments.isEnabled('copyLinkToHighlight');
+    this.selectMenu.highlightAnnotationEnabled = this.br.plugins.experiments.isEnabled('annotateHighlight');
+
+    if (!this.selectMenu.isConnected) {
+      document.body.append(this.selectMenu);
+    }
+
+    this.selectMenu.show();
+  }
+
+  hideSelectMenu() {
+    this.selectMenu.hide();
   }
 
   _limitSelection = () => {
@@ -419,16 +404,19 @@ export function* walkBetweenNodes(start, end) {
 class BRSelectMenu extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
-  selectionElement;
-  copyHighlightEnabled;
-  highlightAnnotationEnabled;
 
-  constructor(br, selectionElement, copyHighlightEnabled, highlightAnnotationEnabled) {
+  @property({type: Boolean})
+  copyLinkToHighlightEnabled = true;
+
+  @property({type: Boolean})
+  highlightAnnotationEnabled = true;
+
+  /**
+   * @param {import('../BookReader.js').default} br
+   */
+  constructor(br) {
     super();
     this.br = br;
-    this.selectionElement = selectionElement;
-    this.copyHighlightEnabled = copyHighlightEnabled;
-    this.highlightAnnotationEnabled = highlightAnnotationEnabled;
   }
 
   /** @override */
@@ -437,7 +425,7 @@ class BRSelectMenu extends LitElement {
     return this;
   }
 
-  addShareHighlightHTML() {
+  renderCopyLinkToHighlightOption() {
     return html`
       <button @click=${this.handleCopyLinkToHighlight} 
         class="br-select-menu__option">
@@ -447,7 +435,7 @@ class BRSelectMenu extends LitElement {
     `;
   }
 
-  addRemovalOption() {
+  renderRemoveOption() {
     return html`
       <button @click=${this.handleDeleteHighlight}
         class="br-select-menu__option">
@@ -467,17 +455,16 @@ class BRSelectMenu extends LitElement {
     `;
   }
 
-  addHighlightOption() {
+  renderHighlightOption() {
     return html`
-      <button @click=${this.handleHighlightSave} 
-        .selectionElement=${this.selectionElement}
+      <button @click=${this.handleHighlightSave}
         class="br-select-menu__option">
         <ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>
         <span class="br-select-menu__label">Highlight Selection</span>
       </button>
     `;
   }
-  addLocalStorageOption() {
+  renderLocalStorageOptions() {
     return html`
       <button @click=${this.renderSavedHighlights} 
         class="br-select-menu__option">
@@ -494,10 +481,10 @@ class BRSelectMenu extends LitElement {
   // TODO change the second button to use a different icon
   render() {
     return html`
-      ${this.highlightAnnotationEnabled && !this.nodesForRemoval ? this.addHighlightOption() : ''}
-      ${this.highlightAnnotationEnabled ? this.addLocalStorageOption() : ''}
-      ${this.copyHighlightEnabled ? this.addShareHighlightHTML() : ''}
-      ${this.nodesForRemoval ? this.addRemovalOption() : ''}
+      ${this.copyLinkToHighlightEnabled ? this.renderCopyLinkToHighlightOption() : ''}
+      ${this.highlightAnnotationEnabled && !this.nodesForRemoval ? this.renderHighlightOption() : ''}
+      ${this.highlightAnnotationEnabled ? this.renderLocalStorageOptions() : ''}
+      ${this.nodesForRemoval ? this.renderRemoveOption() : ''}
     `;
   }
 
@@ -669,10 +656,10 @@ class BRSelectMenu extends LitElement {
     const currentSelection = window.getSelection();
     currentSelection.removeAllRanges();
     currentSelection.addRange(highlightRange);
-    this.showMenu();
+    this.show();
   }
 
-  showMenu() {
+  show() {
     if (this.br.plugins.translate?.userToggleTranslate) return;
     const currentSelection = window.getSelection();
     const start = currentSelection.anchorNode.parentElement;
@@ -695,13 +682,14 @@ class BRSelectMenu extends LitElement {
     this.clearNodesForRemoval();
   }
 
-  hideMenu = () => {
+  hide = () => {
     this.style.display = 'none';
     this.clearNodesForRemoval();
     return;
   }
 
-  /** Remove temporary storage for the currently selected highlight and updates selection menu options
+  /**
+   * Remove temporary storage for the currently selected highlight and updates selection menu options
    */
   clearNodesForRemoval = () => {
     this.nodesForRemoval = null;

@@ -224,11 +224,10 @@ export class BookreaderUrlPlugin extends BookReader {
 
       this.bind(BookReader.eventNames.PostInit, () => {
         if (this.targetTextFragment) {
-          this.on('textLayerVisible', async (_, {pageContainerEl}) => {
+          this.on('textLayerVisible', async (_, {pageContainerEl, textLayer}) => {
             const pageIndex = this.targetTextFragment.pageNumber ? this.book.getPageIndex(this.targetTextFragment.pageNumber) : this.firstParams.index;
             const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
             if (hasTargetText) {
-              const textLayer = pageContainerEl.querySelector('.BRtextLayer');
               renderHighlight(textLayer, this.targetTextFragment, 'BRhighlight--target-text');
             }
           });

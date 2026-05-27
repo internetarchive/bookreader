@@ -54,23 +54,14 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     if (!this.options.enabled) return;
 
     this.br.on('pageVisible', (_, {pageContainerEl}) => {
-      if (pageContainerEl.querySelector('.BRtextLayer')) {
-        this.br.trigger('textLayerVisible', {pageContainerEl});
+      const textLayer = pageContainerEl.querySelector('.BRtextLayer');
+      if (textLayer) {
+        this.br.trigger('textLayerVisible', {pageContainerEl, textLayer});
       }
     });
 
     this.loadData();
     this.textSelectionManager.init();
-  }
-
-  enableSelectionMenu() {
-    this.textSelectionManager.selectionMenuEnabled = true;
-    this.textSelectionManager.renderSelectionMenu();
-  }
-
-  enableHighlightMenu() {
-    this.textSelectionManager.highlightAnnotationEnabled = true;
-    this.textSelectionManager.renderHighlightMenu();
   }
 
   /**
@@ -215,7 +206,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
     // Check if page is visible
     if ($container.hasClass('BRpage-visible')) {
-      this.br.trigger('textLayerVisible', {pageContainerEl: $container[0]});
+      this.br.trigger('textLayerVisible', {pageContainerEl: $container[0], textLayer});
     }
   }
 

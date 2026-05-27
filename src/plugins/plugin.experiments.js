@@ -7,8 +7,10 @@ import { sleep } from '../BookReader/utils.js';
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
 
+/** @typedef {'copyLinkToHighlight' | 'annotateHighlight' | 'translate' | 'hypothesis'} ExperimentName */
+
 class ExperimentModel {
-  /** @type {string} test */
+  /** @type {ExperimentName} */
   name;
   /** @type {string} */
   title;
@@ -63,12 +65,12 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       icon = null;
       enabled = false;
       async enable ({ manual = false }) {
-        this.br.plugins.textSelection.enableSelectionMenu();
+        if (manual) {
+          this.br.plugins.textSelection.textSelectionManager.selectMenu.copyLinkToHighlightEnabled = true;
+        }
       }
       async disable() {
-        sleep(0).then(() => {
-          window.location.reload();
-        });
+        this.br.plugins.textSelection.textSelectionManager.selectMenu.copyLinkToHighlightEnabled = false;
       }
     }(),
     new class extends ExperimentModel {
@@ -78,7 +80,9 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       icon = null;
       enabled = false;
       async enable ({ manual = false }) {
-        this.br.plugins.textSelection.enableHighlightMenu();
+        if (manual) {
+          this.br.plugins.textSelection.textSelectionManager.selectMenu.highlightAnnotationEnabled = true;
+        }
       }
       async disable() {
         sleep(0).then(() => {
@@ -162,6 +166,14 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     this._loadExperimentStates();
     await Promise.resolve();
     this._render();
+  }
+
+  /**
+   * @param {ExperimentName} experimentName
+   */
+  isEnabled(experimentName) {
+    const experiment = this.allExperiments.find(exp => exp.name === experimentName);
+    return experiment?.enabled;
   }
 
   _loadExperimentStates() {

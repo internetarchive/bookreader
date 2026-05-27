@@ -9,7 +9,7 @@ export class SelectionObserver {
 
   /**
    * @param {string} selector
-   * @param {function('started' | 'cleared' | 'focusChanged', HTMLElement): any} handler
+   * @param {function('started' | 'cleared' | 'changed', HTMLElement): any} handler
    */
   constructor(selector, handler) {
     this.selector = selector;
@@ -42,7 +42,7 @@ export class SelectionObserver {
 
     if (this.selecting && (this.lastKnownFocusNode != sel.focusNode || sel.toString() && !sel.isCollapsed)) {
       this.lastKnownFocusNode = sel.focusNode;
-      this.handler('focusChanged', this.target);
+      this.handler('changed', this.target);
     }
 
     if (this.selecting && (sel.isCollapsed || !sel.toString() || !$(sel.anchorNode).closest(this.selector)[0])) {
