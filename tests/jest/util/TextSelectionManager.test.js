@@ -277,13 +277,6 @@ describe("Generic tests", () => {
   });
 });
 
-
-/** TODO
- *  createTextFragment has changed drastically since
- *  we are no longer using the native browser API for text fragments
- *  Skipping the tests for now
- */
-
 describe("createTextFragment tests", () => {
 
   afterEach(() => {
@@ -361,6 +354,11 @@ describe("createTextFragment tests", () => {
     expect(backwardTest.toUrlString()).toMatch(forwardTest.toUrlString());
   });
 
+  /** TODO
+   *  createTextFragment has changed drastically since
+   *  we are no longer using the native browser API for text fragments
+   *  Skipping the tests for now
+   */
   test.skip("Forward and Backward selection without suffix", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")

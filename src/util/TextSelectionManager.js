@@ -17,7 +17,7 @@ export class TextSelectionManager {
   selectMenu;
 
   get selectMenuEnabled() {
-    return this.br.plugins.experiments.isEnabled('copyLinkToHighlight') || this.br.plugins.experiments.isEnabled('annotateHighlight');
+    return this.br.plugins.experiments?.isEnabled('copyLinkToHighlight') || this.br.plugins.experiments?.isEnabled('annotateHighlight');
   }
 
   /**
@@ -509,8 +509,8 @@ class BRSelectMenu extends LitElement {
     // TODO - updateResumeValue + getCookiePath in plugin.resume.js overrides the adjustedUrlPageNumPath, check how to workaround this
     // TODO - won't work with hash mode
     const pageNum = textFragment.pageNumber || `n${textFragment.pageIndex}`;
-    const adjustedUrlPageNumPath = currentUrl.pathname.toString().replace(/(?<=page\/)\d+(?=\/)/, pageNum);
-    const hash = currentUrl.hash ? currentUrl.hash.replace(/(?<=page\/)\d+(?=\/)/, pageNum) : '';
+    const adjustedUrlPageNumPath = currentUrl.pathname.replace(/page\/[^\/]+/, `page/${pageNum}`);
+    const hash = currentUrl.hash ? currentUrl.hash.replace(/page\/[^\/]+/, `page/${pageNum}`) : '';
     const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}${linkToHighlightParams}${hash}`;
 
     navigator.clipboard.writeText(linkToHighlight);

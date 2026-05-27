@@ -1988,7 +1988,7 @@ BookReader.prototype.queryStringFromParams = function(
   let result = newParams.toString();
   if (textFragmentParam) {
     if (result) result += '&';
-    result += textFragmentParam.toUrlString();
+    result += `text=${textFragmentParam.toUrlString()}`;
   }
   if (result) result = '?' + result;
 
