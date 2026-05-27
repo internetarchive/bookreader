@@ -1974,7 +1974,8 @@ BookReader.prototype.queryStringFromParams = function(
     newParams.set('q', params.search);
   }
 
-  let textFragmentParam = '';
+  /** @type {BookReaderTextFragment | null} */
+  let textFragmentParam = null;
   // Need to pull out text separately to avoid the spaces becoming encoded as +, which
   // the browser seems not to handle with the text fragment
   if (newParams.get('text')) {
@@ -1987,7 +1988,7 @@ BookReader.prototype.queryStringFromParams = function(
   let result = newParams.toString();
   if (textFragmentParam) {
     if (result) result += '&';
-    result += textFragmentParam.toString();
+    result += textFragmentParam.toUrlString();
   }
   if (result) result = '?' + result;
 

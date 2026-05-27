@@ -429,7 +429,7 @@ class BRSelectMenu extends LitElement {
     return html`
       <button @click=${this.handleCopyLinkToHighlight} 
         class="br-select-menu__option">
-        <ia-icon-share class="br-select-menu__icon aria-hidden="true"></ia-icon-share>
+        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
         <span class="br-select-menu__label">Copy Link to Highlight</span>
       </button>
     `;
@@ -478,8 +478,8 @@ class BRSelectMenu extends LitElement {
       </button>`;
   }
 
-  // TODO change the second button to use a different icon
   render() {
+    // TODO change the second button to use a different icon
     return html`
       ${this.copyLinkToHighlightEnabled ? this.renderCopyLinkToHighlightOption() : ''}
       ${this.highlightAnnotationEnabled && !this.nodesForRemoval ? this.renderHighlightOption() : ''}
@@ -490,7 +490,7 @@ class BRSelectMenu extends LitElement {
 
   /**
    * @param {MouseEvent} e
-  */
+   */
   handleCopyLinkToHighlight(e) {
     e.preventDefault();
     const currentParams = this.br.readQueryString();
@@ -905,6 +905,9 @@ export function renderHighlight(textLayer, quote, cssClassName = null) {
 
   // At which point the quote should now be unambiguous!
   const exactRange = findRangeForQuote(quote.quote, broadRange, broadRangeWordNodes);
+  if (!exactRange) {
+    throw new Error("Could not find quote in page");
+  }
   const startTextNode = getFirstMostNode(exactRange.startContainer);
   const endTextNode = getFirstMostNode(exactRange.endContainer);
 
