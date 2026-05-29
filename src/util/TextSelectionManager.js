@@ -1080,16 +1080,20 @@ export class BookReaderTextFragment {
    */
   static fromSelection(selection, contextElements) {
     const range = selection.getRangeAt(0);
-    const startNode = range.startContainer;
-    const endNode = range.endContainer;
+
+    // Partially selected words need to be captured completely
+    const fullQuoteRange = new Range();
+    const startTextNode = getLastMostNode(range.startContainer);
+    const endTextNode = getFirstMostNode(range.endContainer);
+    fullQuoteRange.setStart(startTextNode, 0);
+    fullQuoteRange.setEnd(endTextNode, range.endOffset == 0 ? 0 : (endTextNode.textContent?.length ?? 0));
 
     const preStartRange = document.createRange();
-    preStartRange.setStart(contextElements[0].firstElementChild, 0);
-    preStartRange.setEnd(startNode, 0);
+    preStartRange.setStart(getFirstMostNode(contextElements[0]), 0);
+    preStartRange.setEnd(startTextNode, 0);
 
-    const endRangeLength = endNode.nodeName.toLowerCase() === 'span' ? 1 : endNode.textContent.length;
     const postEndRange = document.createRange();
-    postEndRange.setStart(endNode, endRangeLength);
+    postEndRange.setStart(endTextNode, fullQuoteRange.endOffset);
     const lastWordOfPageEl = getLastMostNode(contextElements[contextElements.length - 1]);
     postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
 
@@ -1103,26 +1107,9 @@ export class BookReaderTextFragment {
       .trim()
       .replace(/\n[^\n]*$/gm, "");
 
-    // Partially selected words need to be captured completely
     // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
-    const fullHighlight = selection.toString().replace(/\s+/g, " ").trim().split(/\s/g);
-    // Capture start/end words that may be partially highlighted
-    if (startNode.textContent.trim().length != 0) {
-      if (!startNode.textContent.includes(fullHighlight[0])) {
-        fullHighlight.unshift(startNode.textContent);
-      } else {
-        fullHighlight[0] = startNode.textContent;
-      }
-    }
-    if (endNode.textContent.trim().length != 0) {
-      if (!endNode.textContent.includes(fullHighlight[fullHighlight.length - 1])) {
-        fullHighlight.push(endNode.textContent);
-      }
-      fullHighlight[fullHighlight.length - 1] = endNode.textContent;
-    }
-
-    const quote = fullHighlight.join(" ");
-    const pageContainerEl = startNode.parentElement.closest(".BRpagecontainer");
+    const quote = fullQuoteRange.toString().replace(/\s+/g, " ").trim();
+    const pageContainerEl = startTextNode.parentElement.closest(".BRpagecontainer");
 
     return new BookReaderTextFragment({
       quote,

@@ -402,7 +402,6 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     selection.removeAllRanges();
     selection.addRange(startWordRange);
     const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-
     expect(startingSpaceTextFragmentUrl.toUrlString()).toBe(`12:way-,can%20false%20judgment%20be%20-%20formed.,-There%20still%20remains`);
 
     const endWordRange = document.createRange();
@@ -413,7 +412,24 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     selection.addRange(endWordRange);
     const endingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(endingSpaceTextFragmentUrl.toUrlString()).toBe(startingSpaceTextFragmentUrl.toUrlString());
+    expect(endingSpaceTextFragmentUrl.toUrlString()).toBe("12:way-,can%20false%20judgment%20be%20-,-formed.%20There%20still");
+  });
+
+  test("Handle range end node not text node", async () => {
+    const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
+    sinon.stub(br.plugins.textSelection, "getPageText")
+      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
+
+    const range = document.createRange();
+    range.setStart($container.find(".BRwordElement")[8].firstChild, 0);
+    range.setEnd($container.find(".BRlineElement")[1].firstChild, 0);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe("12:-%20formed.%20There-,still%20remains%20an,-other%20mode%20in");
   });
 
   test("Quote and comma included in text selection should be URI encoded", async () => {
