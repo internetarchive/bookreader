@@ -1,7 +1,8 @@
 // @ts-check
 import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
 import { html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import '@internetarchive/icon-share';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 
@@ -337,22 +338,129 @@ export function* walkBetweenNodes(start, end) {
   yield* walk(start);
 }
 
+@customElement('br-menu-option')
+export class BRSelectMenuOption extends LitElement {
+  @property({type: String})
+  icon = '';
+
+  @property({type: String})
+  label = '';
+
+  /** @type {string | null} */
+  temporaryText = null;
+
+  @property({type: Number, attribute: 'temporary-text-duration'})
+  temporaryTextDuration = 1200;
+
+  @property({type: String, attribute: 'aria-label'})
+  ariaLabel = '';
+
+  @property({type: Boolean, attribute: 'live-label'})
+  liveLabel = false;
+
+  @property({type: Boolean})
+  temporaryTextVisible = false;
+
+  /** @type {number | null} */
+  temporaryTextTimeoutId = null;
+
+  /** @override */
+  createRenderRoot() {
+    // Keep styles from existing stylesheet by opting out of shadow DOM
+    return this;
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    if (this.temporaryTextTimeoutId != null) {
+      window.clearTimeout(this.temporaryTextTimeoutId);
+      this.temporaryTextTimeoutId = null;
+    }
+    super.disconnectedCallback();
+  }
+
+  /**
+   * @param {string} text
+   */
+  showTemporaryText(text) {
+    if (!text?.trim()) return;
+
+    this.temporaryText = text;
+
+    this.temporaryTextVisible = true;
+    if (this.temporaryTextTimeoutId != null) {
+      window.clearTimeout(this.temporaryTextTimeoutId);
+    }
+    this.temporaryTextTimeoutId = window.setTimeout(() => {
+      this.temporaryTextVisible = false;
+      this.temporaryText = null;
+      this.temporaryTextTimeoutId = null;
+    }, this.temporaryTextDuration);
+  }
+
+  renderIcon() {
+    if (this.icon === 'share') {
+      return html`<ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>`;
+    }
+    if (this.icon === 'edit-pencil') {
+      return html`<ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>`;
+    }
+    return '';
+  }
+
+  render() {
+    const baseLabel = this.label ?? '';
+    const hasTemporaryText = !!this.temporaryText;
+    const temporaryLabel = hasTemporaryText ? this.temporaryText : baseLabel;
+    const showTemporaryLabel = hasTemporaryText && this.temporaryTextVisible;
+    const visibleLabel = showTemporaryLabel ? temporaryLabel : baseLabel;
+    const providedAriaLabel = this.ariaLabel?.trim();
+    const accessibleLabel = providedAriaLabel && providedAriaLabel !== visibleLabel.trim() ? providedAriaLabel : undefined;
+    const sizingLabel = baseLabel.length >= temporaryLabel.length ? baseLabel : temporaryLabel;
+
+    return html`
+      <button
+        type="button"
+        class="br-select-menu__option"
+        role="menuitem"
+        aria-label=${ifDefined(accessibleLabel)}
+      >
+        ${this.renderIcon()}
+        ${hasTemporaryText ? html`
+          <span class="br-select-menu__label-wrap" style="display: inline-flex; position: relative; align-items: center;">
+            <span
+              class="br-select-menu__label"
+              style="visibility: hidden;"
+              aria-hidden="true"
+            >${sizingLabel}</span>
+            <span
+              class="br-select-menu__label"
+              style="position: absolute; inset: 0; display: inline-flex; align-items: center;"
+              aria-live=${this.liveLabel ? 'polite' : 'off'}
+            >${showTemporaryLabel ? temporaryLabel : baseLabel}</span>
+          </span>
+        ` : html`
+          <span class="br-select-menu__label" aria-live=${this.liveLabel ? 'polite' : 'off'}>${baseLabel}</span>
+        `}
+      </button>
+    `;
+  }
+}
+
 @customElement('br-select-menu')
 class BRSelectMenu extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
 
-  /** @type {number | null} */
-  copyFeedbackTimeoutId = null;
+  /** @type {BRSelectMenuOption | null} */
+  @query('#copy-link-option')
+  copyLinkOption;
 
   @property({type: Boolean})
   copyLinkToHighlightEnabled = true;
 
   @property({type: Boolean})
   highlightAnnotationEnabled = true;
-
-  @property({type: Boolean})
-  copyLinkCopied = false;
 
   /**
    * @param {import('../BookReader.js').default} br
@@ -363,71 +471,72 @@ class BRSelectMenu extends LitElement {
   }
 
   /** @override */
-  disconnectedCallback() {
-    if (this.copyFeedbackTimeoutId != null) {
-      window.clearTimeout(this.copyFeedbackTimeoutId);
-      this.copyFeedbackTimeoutId = null;
-    }
-    super.disconnectedCallback();
-  }
-
-  /** @override */
   createRenderRoot() {
     // Disable shadow DOM; that would require a huge rejiggering of CSS
     return this;
   }
 
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+    this.setAttribute('role', 'menu');
+    this.setAttribute('aria-label', 'Text selection actions');
+    this.setAttribute('aria-orientation', 'vertical');
+  }
+
   renderCopyLinkToHighlightOption() {
     return html`
-      <button @click=${this.handleCopyLinkToHighlight} 
-        class="br-select-menu__option">
-        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
-        <span class="br-select-menu__label">${this.copyLinkCopied ? 'Copied!' : 'Copy Link to Highlight'}</span>
-      </button>
+      <br-menu-option
+        id="copy-link-option"
+        @click=${this.handleCopyLinkToHighlight}
+        icon="share"
+        label="Copy Link to Highlight"
+        live-label
+      ></br-menu-option>
     `;
   }
 
   renderRemoveOption() {
     return html`
-      <button @click=${this.handleDeleteHighlight}
-        class="br-select-menu__option">
-        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
-        <span class="br-select-menu__label">Delete Highlight and Annotation</span>
-      </button>
+      <br-menu-option
+        @click=${this.handleDeleteHighlight}
+        icon="share"
+        label="Delete Highlight and Annotation"
+      ></br-menu-option>
     `;
   }
 
   renderAddAnnotationOption() {
     return html`
-      <button @click=${this.handleAddAnnotation}
-        class="br-select-menu__option">
-        <ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>
-        <span class="br-select-menu__label">Annotate</span>
-      </button>
+      <br-menu-option
+        @click=${this.handleAddAnnotation}
+        icon="edit-pencil"
+        label="Annotate"
+      ></br-menu-option>
     `;
   }
 
   renderHighlightOption() {
     return html`
-      <button @click=${this.handleHighlightSave}
-        class="br-select-menu__option">
-        <ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>
-        <span class="br-select-menu__label">Highlight Selection</span>
-      </button>
+      <br-menu-option
+        @click=${this.handleHighlightSave}
+        icon="edit-pencil"
+        label="Highlight Selection"
+      ></br-menu-option>
     `;
   }
   renderLocalStorageOptions() {
     return html`
-      <button @click=${this.renderSavedHighlights} 
-        class="br-select-menu__option">
-        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
-        <span class="br-select-menu__label">Load Highlights</span>
-      </button>
-      <button @click=${() => {window.localStorage.removeItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY);}}
-        class="br-select-menu__option">
-        <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
-        <span class="br-select-menu__label">Remove Stored Highlights</span>
-      </button>`;
+      <br-menu-option
+        @click=${this.renderSavedHighlights}
+        icon="share"
+        label="Load Highlights"
+      ></br-menu-option>
+      <br-menu-option
+        @click=${() => {window.localStorage.removeItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY);}}
+        icon="share"
+        label="Remove Stored Highlights"
+      ></br-menu-option>`;
   }
 
   render() {
@@ -443,7 +552,7 @@ class BRSelectMenu extends LitElement {
   /**
    * @param {MouseEvent} e
    */
-  handleCopyLinkToHighlight(e) {
+  async handleCopyLinkToHighlight(e) {
     e.preventDefault();
     const currentParams = this.br.readQueryString();
     const currentSelection = window.getSelection();
@@ -463,16 +572,8 @@ class BRSelectMenu extends LitElement {
     const hash = currentUrl.hash ? currentUrl.hash.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`) : '';
     const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}${linkToHighlightParams}${hash}`;
 
-    navigator.clipboard.writeText(linkToHighlight);
-
-    this.copyLinkCopied = true;
-    if (this.copyFeedbackTimeoutId != null) {
-      window.clearTimeout(this.copyFeedbackTimeoutId);
-    }
-    this.copyFeedbackTimeoutId = window.setTimeout(() => {
-      this.copyLinkCopied = false;
-      this.copyFeedbackTimeoutId = null;
-    }, 1200);
+    await navigator.clipboard.writeText(linkToHighlight);
+    this.copyLinkOption?.showTemporaryText('Copied!');
   }
 
   /**
