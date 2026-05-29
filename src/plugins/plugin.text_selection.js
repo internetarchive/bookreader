@@ -46,7 +46,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // now we do make that assumption.
     /** Whether the book is right-to-left */
     this.rtl = this.br.pageProgression === 'rl';
-    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace']}, this.options.maxProtectedWords);
+    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace', 'mark']}, this.options.maxProtectedWords);
   }
 
   /** @override */
