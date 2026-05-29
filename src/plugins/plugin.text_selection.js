@@ -4,7 +4,7 @@ import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
-import { TextSelectionManager } from '../util/TextSelectionManager.js';
+import { BookReaderTextFragment, renderHighlight, TextSelectionManager } from '../util/TextSelectionManager.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
@@ -62,6 +62,19 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
     this.loadData();
     this.textSelectionManager.init();
+
+    // Init text fragment
+    this.targetTextFragment = BookReaderTextFragment.fromUrl(location.search, this.br.book, this.br.firstIndex);
+    if (this.targetTextFragment) {
+      const targetTextFragment = this.targetTextFragment;
+      this.br.on('textLayerVisible', async (_, {pageContainerEl, textLayer}) => {
+        const pageIndex = targetTextFragment.pageIndex;
+        const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
+        if (hasTargetText) {
+          renderHighlight(textLayer, targetTextFragment, 'BRhighlight--target-text');
+        }
+      });
+    }
   }
 
   /**

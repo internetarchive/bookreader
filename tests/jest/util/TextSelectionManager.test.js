@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
 import {
-  createTextFragment,
+  BookReaderTextFragment,
   getFirstWords,
   getLastWords,
   walkBetweenNodes,
@@ -277,7 +277,7 @@ describe("Generic tests", () => {
   });
 });
 
-describe("createTextFragment tests", () => {
+describe("BookReaderTextFragment.fromSelection tests", () => {
 
   afterEach(() => {
     sinon.restore();
@@ -311,7 +311,7 @@ describe("createTextFragment tests", () => {
     selectionPageOne.removeAllRanges();
     selectionPageOne.addRange(rangePageOne);
 
-    const pageOneUrlParam = createTextFragment(selectionPageOne, Array.from(br.refs.$brContainer.find(".BRtextLayer")));
+    const pageOneUrlParam = BookReaderTextFragment.fromSelection(selectionPageOne, Array.from(br.refs.$brContainer.find(".BRtextLayer")));
     expect(pageOneUrlParam.toUrlString()).toMatch("12:Book%20header%20test%20replica,-This%20is%20page");
 
     const rangePageTwo = document.createRange();
@@ -321,7 +321,7 @@ describe("createTextFragment tests", () => {
     selectionPageTwo.removeAllRanges();
     selectionPageTwo.addRange(rangePageTwo);
 
-    const pageTwoUrlParam = createTextFragment(selectionPageTwo, Array.from(br.refs.$brContainer.find(".BRtextLayer")));
+    const pageTwoUrlParam = BookReaderTextFragment.fromSelection(selectionPageTwo, Array.from(br.refs.$brContainer.find(".BRtextLayer")));
 
     expect(pageTwoUrlParam.toUrlString()).toMatch("13:is%20page%20one-,Book%20header%20test%20replica,-Currently%20on%20page");
   });
@@ -342,7 +342,7 @@ describe("createTextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(forwardRange);
-    const forwardTest = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const forwardTest = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
     expect(forwardTest.toUrlString()).toMatch("way%20can%20false,-judgment%20be%20-");
 
     selection.removeAllRanges();
@@ -350,12 +350,12 @@ describe("createTextFragment tests", () => {
     selection.addRange(backwardRange);
     selection.extend(forwardRange.startContainer, 0);
     window.getSelection().direction = 'backward';
-    const backwardTest = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const backwardTest = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
     expect(backwardTest.toUrlString()).toMatch(forwardTest.toUrlString());
   });
 
   /** TODO
-   *  createTextFragment has changed drastically since
+   *  BookReaderTextFragment.fromSelection has changed drastically since
    *  we are no longer using the native browser API for text fragments
    *  Skipping the tests for now
    */
@@ -375,14 +375,14 @@ describe("createTextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(forwardRange);
-    const forwardTest = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const forwardTest = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
     selection.removeAllRanges();
     backwardRange.collapse(false);
     selection.addRange(backwardRange);
     selection.extend(forwardRange.startContainer, 0);
     window.getSelection().direction = 'backward';
 
-    const backwardTest = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const backwardTest = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(forwardTest.toUrlString()).toMatch("various,lastWord");
     expect(backwardTest.toUrlString()).toMatch(forwardTest.toUrlString());
@@ -401,7 +401,7 @@ describe("createTextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(startWordRange);
-    const startingSpaceTextFragmentUrl = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(startingSpaceTextFragmentUrl.toUrlString()).toBe(`12:way-,can%20false%20judgment%20be%20-%20formed.,-There%20still%20remains`);
 
@@ -411,7 +411,7 @@ describe("createTextFragment tests", () => {
 
     selection.removeAllRanges();
     selection.addRange(endWordRange);
-    const endingSpaceTextFragmentUrl = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const endingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(endingSpaceTextFragmentUrl.toUrlString()).toBe(startingSpaceTextFragmentUrl.toUrlString());
   });
@@ -430,7 +430,7 @@ describe("createTextFragment tests", () => {
     const commaSelection = window.getSelection();
     commaSelection.removeAllRanges();
     commaSelection.addRange(rangeIncludesComma);
-    const commaTextFragmentUrl = createTextFragment(commaSelection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const commaTextFragmentUrl = BookReaderTextFragment.fromSelection(commaSelection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(commaTextFragmentUrl.toUrlString()).not.toContain("“");
   });
@@ -452,11 +452,11 @@ describe("createTextFragment tests", () => {
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
-    const multipleHighlights = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const multipleHighlights = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     selection.removeAllRanges();
     selection.addRange(sameKeyHighlightRange);
-    const similarHighlight = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const similarHighlight = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(multipleHighlights.toUrlString()).toBe(`12:is%20quite%20distinctive.%E2%80%9D-,%E2%80%9CThat%20is,-easily%20got.%E2%80%9D`);
     expect(multipleHighlights.toUrlString()).not.toBe(similarHighlight.toUrlString());
@@ -477,7 +477,7 @@ describe("createTextFragment tests", () => {
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
 
-    const multiLineBehavior = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const multiLineBehavior = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
     // “Stolen.”-,“My own seal.”,-“Imitated.”
     expect(multiLineBehavior.toUrlString()).toMatch("12:%E2%80%9CStolen.%E2%80%9D-,%E2%80%9CMy%20own%20seal.%E2%80%9D,-%E2%80%9CImitated.%E2%80%9D");
   });
@@ -497,7 +497,7 @@ describe("createTextFragment tests", () => {
     selection.addRange(rangeBefore);
 
     // “Imitated.”-, “My photograph.”,-“Bought.”
-    const endShortSuffix = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const endShortSuffix = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(endShortSuffix.toUrlString()).toMatch("12:%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy%20photograph.%E2%80%9D,-%E2%80%9CBought.%E2%80%9D");
   });
@@ -517,7 +517,7 @@ describe("createTextFragment tests", () => {
     selection.addRange(rangeBefore);
 
     // “Imitated.”-, “My,-photograph.”
-    const singleTextFragment = createTextFragment(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
+    const singleTextFragment = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
     expect(singleTextFragment.toUrlString()).toMatch("12:%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy,-photograph.%E2%80%9D");
   });

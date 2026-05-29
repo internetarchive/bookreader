@@ -645,9 +645,6 @@ BookReader.prototype.init = function() {
   this.pageScale = this.reduce; // preserve current reduce
 
   const params = this.initParams();
-
-  // Make a copy of it
-  this.firstParams = JSON.parse(JSON.stringify(params));
   this.firstIndex = params.index ? params.index : 0;
 
   // Setup Navbars and other UI
@@ -1980,7 +1977,7 @@ BookReader.prototype.queryStringFromParams = function(
   // the browser seems not to handle with the text fragment
   if (newParams.get('text')) {
     newParams.delete('text');
-    textFragmentParam = BookReaderTextFragment.fromUrl(currQueryString, this.book, this.firstParams.index);
+    textFragmentParam = BookReaderTextFragment.fromUrl(currQueryString, this.book, this.firstIndex);
   }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString

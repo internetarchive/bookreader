@@ -263,69 +263,6 @@ export class TextSelectionManager {
 }
 
 /**
- * Builds a TextFragment string from a given text selection.
- * Note does not include the fragment directive `:~:` or # symbol
- * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
- * @param {Selection} selection currently selected text, eg `document.getSelection()`
- * @param {HTMLElement[]} contextElements elements providing context for the selection
- * @returns {BookReaderTextFragment}
- */
-export function createTextFragment(selection, contextElements) {
-  const direction = selection.direction;
-  const startNode = direction == 'backward' ? selection.focusNode : selection.anchorNode;
-  const endNode = direction == 'backward' ? selection.anchorNode : selection.focusNode;
-
-  const preStartRange = document.createRange();
-  preStartRange.setStart(contextElements[0].firstElementChild, 0);
-  preStartRange.setEnd(startNode, 0);
-
-  const endRangeLength = endNode.nodeName.toLowerCase() === 'span' ? 1 : endNode.textContent.length;
-  const postEndRange = document.createRange();
-  postEndRange.setStart(endNode, endRangeLength);
-  const lastWordOfPageEl = getLastMostNode(contextElements[contextElements.length - 1]);
-  postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
-
-  // prefixes/suffixes cannot contain paragraph breaks, words that are from more than one line break away should not be included
-  const prefix = getLastWords(3, preStartRange.toString())
-    .replace(/[ ]+/g, " ")
-    .trim()
-    .replace(/^[^\n]*\n/gm, "");
-  const suffix = getFirstWords(3, postEndRange.toString())
-    .replace(/[ ]+/g, " ")
-    .trim()
-    .replace(/\n[^\n]*$/gm, "");
-
-  // Partially selected words need to be captured completely
-  // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
-  const fullHighlight = selection.toString().replace(/\s+/g, " ").trim().split(/\s/g);
-  // Capture start/end words that may be partially highlighted
-  if (startNode.textContent.trim().length != 0) {
-    if (!startNode.textContent.includes(fullHighlight[0])) {
-      fullHighlight.unshift(startNode.textContent);
-    } else {
-      fullHighlight[0] = startNode.textContent;
-    }
-  }
-  if (endNode.textContent.trim().length != 0) {
-    if (!endNode.textContent.includes(fullHighlight[fullHighlight.length - 1])) {
-      fullHighlight.push(endNode.textContent);
-    }
-    fullHighlight[fullHighlight.length - 1] = endNode.textContent;
-  }
-
-  const quote = fullHighlight.join(" ");
-  const pageContainerEl = startNode.parentElement.closest(".BRpagecontainer");
-
-  return new BookReaderTextFragment({
-    quote,
-    prefix,
-    suffix,
-    pageNumber: pageContainerEl.getAttribute("data-page-num"),
-    pageIndex: parseFloat(pageContainerEl.getAttribute("data-index")),
-  });
-}
-
-/**
  * @template T
  * Get the i-th element of an iterable
  * @param {Iterable<T>} iterable
@@ -405,11 +342,17 @@ class BRSelectMenu extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
 
+  /** @type {number | null} */
+  copyFeedbackTimeoutId = null;
+
   @property({type: Boolean})
   copyLinkToHighlightEnabled = true;
 
   @property({type: Boolean})
   highlightAnnotationEnabled = true;
+
+  @property({type: Boolean})
+  copyLinkCopied = false;
 
   /**
    * @param {import('../BookReader.js').default} br
@@ -417,6 +360,15 @@ class BRSelectMenu extends LitElement {
   constructor(br) {
     super();
     this.br = br;
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    if (this.copyFeedbackTimeoutId != null) {
+      window.clearTimeout(this.copyFeedbackTimeoutId);
+      this.copyFeedbackTimeoutId = null;
+    }
+    super.disconnectedCallback();
   }
 
   /** @override */
@@ -430,7 +382,7 @@ class BRSelectMenu extends LitElement {
       <button @click=${this.handleCopyLinkToHighlight} 
         class="br-select-menu__option">
         <ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>
-        <span class="br-select-menu__label">Copy Link to Highlight</span>
+        <span class="br-select-menu__label">${this.copyLinkCopied ? 'Copied!' : 'Copy Link to Highlight'}</span>
       </button>
     `;
   }
@@ -445,9 +397,9 @@ class BRSelectMenu extends LitElement {
     `;
   }
 
-  addAnnotationOption() {
+  renderAddAnnotationOption() {
     return html`
-      <button @click=${this.handleAnnotation}
+      <button @click=${this.handleAddAnnotation}
         class="br-select-menu__option">
         <ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>
         <span class="br-select-menu__label">Annotate</span>
@@ -495,7 +447,7 @@ class BRSelectMenu extends LitElement {
     e.preventDefault();
     const currentParams = this.br.readQueryString();
     const currentSelection = window.getSelection();
-    const textFragment = createTextFragment(currentSelection, this.br.$('.BRpage-visible').toArray());
+    const textFragment = BookReaderTextFragment.fromSelection(currentSelection, this.br.$('.BRpage-visible').toArray());
 
     // Note: Have to do a param construction to avoid url-encoding of commas in the text fragment param
     let linkToHighlightParams = currentParams;
@@ -506,14 +458,21 @@ class BRSelectMenu extends LitElement {
       linkToHighlightParams += `${sep}text=${textFragment.toUrlString()}`;
     }
     const currentUrl = window.location;
-    // TODO - updateResumeValue + getCookiePath in plugin.resume.js overrides the adjustedUrlPageNumPath, check how to workaround this
-    // TODO - won't work with hash mode
     const pageNum = textFragment.pageNumber || `n${textFragment.pageIndex}`;
-    const adjustedUrlPageNumPath = currentUrl.pathname.replace(/page\/[^\/]+/, `page/${pageNum}`);
-    const hash = currentUrl.hash ? currentUrl.hash.replace(/page\/[^\/]+/, `page/${pageNum}`) : '';
+    const adjustedUrlPageNumPath = currentUrl.pathname.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`);
+    const hash = currentUrl.hash ? currentUrl.hash.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`) : '';
     const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}${linkToHighlightParams}${hash}`;
 
     navigator.clipboard.writeText(linkToHighlight);
+
+    this.copyLinkCopied = true;
+    if (this.copyFeedbackTimeoutId != null) {
+      window.clearTimeout(this.copyFeedbackTimeoutId);
+    }
+    this.copyFeedbackTimeoutId = window.setTimeout(() => {
+      this.copyLinkCopied = false;
+      this.copyFeedbackTimeoutId = null;
+    }, 1200);
   }
 
   /**
@@ -528,31 +487,6 @@ class BRSelectMenu extends LitElement {
   }
 
   /**
-   * Prepare a DOM range for generating selectors and finding the containing text layer
-   * @param {Node} start
-   * @param {Node} end
-   * @returns
-   */
-  getTextLayerForRange(start, end) {
-    const range = new Range();
-    try {
-      range.setStart(start, 0);
-      range.setEnd(end, 1);
-    } catch {
-      throw new Error ('Selection does not contain text');
-    }
-    const startTextLayer = this.getNodeTextLayer(range.startContainer);
-    const endTextLayer = this.getNodeTextLayer(range.endContainer);
-    if (!startTextLayer || !endTextLayer) {
-      throw new Error ('Selection goes beyond the book reader page layers');
-    }
-    if (startTextLayer !== endTextLayer) {
-      throw new Error('Selecting across page breaks is not supported');
-    }
-    return [range, startTextLayer];
-  }
-
-  /**
    * Retrieves the current selected text on the page and serializes the quote contents + context
    * The selection is also changed in the DOM to highlight the words
    */
@@ -560,7 +494,7 @@ class BRSelectMenu extends LitElement {
     const currentSelection = window.getSelection();
     const start = currentSelection.direction === 'backward' ? currentSelection.focusNode.parentElement : currentSelection.anchorNode.parentElement;
     const textLayer = this.getNodeTextLayer(start);
-    const highlight = createTextFragment(currentSelection, [textLayer.parentElement]);
+    const highlight = BookReaderTextFragment.fromSelection(currentSelection, [textLayer.parentElement]);
     highlight.uuid = `id-${crypto.randomUUID().split("-")[4]}`;
     const highlights = this.loadHighlightsFromLocalStorage();
     highlights.push(highlight);
@@ -568,7 +502,7 @@ class BRSelectMenu extends LitElement {
     this.renderSavedHighlights();
   }
 
-  handleAnnotation(e) {
+  handleAddAnnotation(e) {
     // TODO
   }
 
@@ -1033,21 +967,21 @@ function retrieveUUID(ele) {
 export class BookReaderTextFragment {
   /**
    * @param {object} params
-   * @param {string} [params.prefix]
-   * @param {string} [params.quote]
-   * @param {string} [params.suffix]
-   * @param {string} [params.pageNumber] Page number; e.g. asserted page number or the n-prefixed page index
-   * @param {number} [params.pageIndex] Page index; e.g. zero-based index of the page
+   * @param {string | null}params.prefix
+   * @param {string} params.quote
+   * @param {string | null} params.suffix
+   * @param {string | null} params.pageNumber Page number; e.g. asserted page number or the n-prefixed page index
+   * @param {number} params.pageIndex Page index; e.g. zero-based index of the page
    * @param {string | null} [params.uuid] UUID for the text fragment if it has one
    */
-  constructor({ prefix, quote, suffix, pageNumber, pageIndex, uuid } = {}) {
-    /** @type {string|undefined} */
+  constructor({ prefix, quote, suffix, pageNumber, pageIndex, uuid }) {
+    /** @type {string|null} */
     this.prefix = prefix;
     /** @type {string} */
     this.quote = quote;
-    /** @type {string|undefined} */
+    /** @type {string|null} */
     this.suffix = suffix;
-    /** @type {string|undefined} Page number; e.g. asserted page number or the n-prefixed page index */
+    /** @type {string|null} Page number; e.g. asserted page number or the n-prefixed page index */
     this.pageNumber = pageNumber;
     /** @type {number} Page index; e.g. zero-based index of the page */
     this.pageIndex = pageIndex;
@@ -1065,33 +999,17 @@ export class BookReaderTextFragment {
    * @returns {BookReaderTextFragment}
    */
   static fromString(str, book, fallbackPageIndex) {
-    let pageNumber;
-    let textFragment;
-    const separatorIdx = str.indexOf(':');
-    if (separatorIdx !== -1) {
-      pageNumber = decodeURIComponent(str.slice(0, separatorIdx)) || undefined;
-      textFragment = str.slice(separatorIdx + 1);
-    } else {
-      textFragment = str;
+    const match = str.match(/^(?:(.*?):)?(?:(.*?)-,)?(.*?)(?:,-(.*))?$/);
+    if (!match) {
+      throw new Error(`Invalid text fragment format: ${str}`);
     }
-
+    const pageNumber = match[1] ? decodeURIComponent(match[1]) : null;
+    const prefix = match[2] ? decodeURIComponent(match[2]) : null;
+    const quote = decodeURIComponent(match[3]);
+    const suffix = match[4] ? decodeURIComponent(match[4]) : null;
     const pageIndex = pageNumber ? book.getPageIndex(pageNumber) : fallbackPageIndex;
-
-    let quote, prefix, suffix;
-    const prefixMatch = textFragment.match(/^([\s\S]*?)-,/);
-    const suffixMatch = textFragment.match(/,-([\s\S]*)$/);
-
-    if (prefixMatch) prefix = decodeURIComponent(prefixMatch[1]);
-    if (suffixMatch) suffix = decodeURIComponent(suffixMatch[1]);
-
-    if (prefixMatch && suffixMatch) {
-      quote = decodeURIComponent(textFragment.slice(prefixMatch[0].length, textFragment.length - suffixMatch[0].length));
-    } else if (prefixMatch && !suffixMatch) { // Prefix only
-      quote = decodeURIComponent(textFragment.slice(prefixMatch[0].length));
-    } else if (!prefixMatch && suffixMatch) { // Suffix only
-      quote = decodeURIComponent(textFragment.slice(0, textFragment.length - suffixMatch[0].length));
-    } else { // No prefix or suffix
-      quote = decodeURIComponent(textFragment);
+    if (typeof pageIndex !== 'number') {
+      throw new Error(`Could not determine page index for text fragment with page number ${pageNumber}`);
     }
 
     return new BookReaderTextFragment({ prefix, quote, suffix, pageNumber, pageIndex });
@@ -1106,9 +1024,11 @@ export class BookReaderTextFragment {
    * @returns {BookReaderTextFragment|null}
    */
   static fromUrl(urlString, book, fallbackPageIndex) {
-    const textMatch = urlString.match(/(?<=[&?#]?text=)[^&]*/);
+    // Can't parse with eg new URLSearchParams since the text fragment format includes unencoded
+    // commas and colons, so need to do a regex match to extract the text fragment string
+    const textMatch = urlString.match(/[&?#]?text=([^&]*)/);
     if (!textMatch) return null;
-    return BookReaderTextFragment.fromString(textMatch[0], book, fallbackPageIndex);
+    return BookReaderTextFragment.fromString(textMatch[1], book, fallbackPageIndex);
   }
 
   /**
@@ -1150,6 +1070,67 @@ export class BookReaderTextFragment {
    */
   static fromJSON(json) {
     return new BookReaderTextFragment(json);
+  }
+
+  /**
+   * Builds a TextFragment string from a given text selection.
+   * @param {Selection} selection currently selected text, eg `document.getSelection()`
+   * @param {HTMLElement[]} contextElements elements providing context for the selection
+   * @returns {BookReaderTextFragment}
+   */
+  static fromSelection(selection, contextElements) {
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+    const endNode = range.endContainer;
+
+    const preStartRange = document.createRange();
+    preStartRange.setStart(contextElements[0].firstElementChild, 0);
+    preStartRange.setEnd(startNode, 0);
+
+    const endRangeLength = endNode.nodeName.toLowerCase() === 'span' ? 1 : endNode.textContent.length;
+    const postEndRange = document.createRange();
+    postEndRange.setStart(endNode, endRangeLength);
+    const lastWordOfPageEl = getLastMostNode(contextElements[contextElements.length - 1]);
+    postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
+
+    // prefixes/suffixes cannot contain paragraph breaks, words that are from more than one line break away should not be included
+    const prefix = getLastWords(3, preStartRange.toString())
+      .replace(/[ ]+/g, " ")
+      .trim()
+      .replace(/^[^\n]*\n/gm, "");
+    const suffix = getFirstWords(3, postEndRange.toString())
+      .replace(/[ ]+/g, " ")
+      .trim()
+      .replace(/\n[^\n]*$/gm, "");
+
+    // Partially selected words need to be captured completely
+    // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
+    const fullHighlight = selection.toString().replace(/\s+/g, " ").trim().split(/\s/g);
+    // Capture start/end words that may be partially highlighted
+    if (startNode.textContent.trim().length != 0) {
+      if (!startNode.textContent.includes(fullHighlight[0])) {
+        fullHighlight.unshift(startNode.textContent);
+      } else {
+        fullHighlight[0] = startNode.textContent;
+      }
+    }
+    if (endNode.textContent.trim().length != 0) {
+      if (!endNode.textContent.includes(fullHighlight[fullHighlight.length - 1])) {
+        fullHighlight.push(endNode.textContent);
+      }
+      fullHighlight[fullHighlight.length - 1] = endNode.textContent;
+    }
+
+    const quote = fullHighlight.join(" ");
+    const pageContainerEl = startNode.parentElement.closest(".BRpagecontainer");
+
+    return new BookReaderTextFragment({
+      quote,
+      prefix,
+      suffix,
+      pageNumber: pageContainerEl.getAttribute("data-page-num"),
+      pageIndex: parseFloat(pageContainerEl.getAttribute("data-index")),
+    });
   }
 }
 

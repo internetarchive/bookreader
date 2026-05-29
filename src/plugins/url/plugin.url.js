@@ -1,8 +1,7 @@
 /* global BookReader */
 
 import { UrlPlugin } from "./UrlPlugin.js";
-import { BookReaderTextFragment } from "../../util/TextSelectionManager.js";
-import { renderHighlight } from "../../util/TextSelectionManager.js";
+
 /**
  * Plugin for URL management in BookReader
  * Note read more about the url "fragment" here:
@@ -160,7 +159,6 @@ BookReader.prototype.urlUpdateFragment = function() {
       this.options.urlMode = 'hash';
     } else {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
-      this.targetTextFragment = BookReaderTextFragment.fromUrl(newQueryString, this.book, this.firstParams.index);
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
 
       try {
@@ -175,7 +173,6 @@ BookReader.prototype.urlUpdateFragment = function() {
 
   if (this.options.urlMode === 'hash')  {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
-    this.targetTextFragment = BookReaderTextFragment.fromUrl(this.readQueryString(), this.book, this.firstParams.index);
     window.location.replace('#' + newFragment + newQueryStringSearch);
     this.oldLocationHash = newFragment + newQueryStringSearch;
   }
@@ -215,24 +212,11 @@ BookReader.prototype.urlReadHashFragment = function() {
   return window.location.hash.substr(1);
 };
 export class BookreaderUrlPlugin extends BookReader {
-  /** @type {BookReaderTextFragment} */
-  targetTextFragment;
-
   init() {
     if (this.options.enableUrlPlugin) {
       this.urlPlugin = new UrlPlugin(this.options);
 
-      this.bind(BookReader.eventNames.PostInit, () => {
-        if (this.targetTextFragment) {
-          this.on('textLayerVisible', async (_, {pageContainerEl, textLayer}) => {
-            const pageIndex = this.targetTextFragment.pageNumber ? this.book.getPageIndex(this.targetTextFragment.pageNumber) : this.firstParams.index;
-            const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
-            if (hasTargetText) {
-              renderHighlight(textLayer, this.targetTextFragment, 'BRhighlight--target-text');
-            }
-          });
-        }
-
+      this.on(BookReader.eventNames.PostInit, () => {
         if (this.options.urlMode === 'hash') {
           this.urlPlugin.listenForHashChanges();
         }
