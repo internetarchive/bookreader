@@ -41,6 +41,7 @@ import { ModeThumb } from './BookReader/ModeThumb.js';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
+import {BookReaderTextFragment} from './util/TextSelectionManager.js';
 
 /**
  * BookReader
@@ -644,7 +645,6 @@ BookReader.prototype.init = function() {
   this.pageScale = this.reduce; // preserve current reduce
 
   const params = this.initParams();
-
   this.firstIndex = params.index ? params.index : 0;
 
   // Setup Navbars and other UI
@@ -1971,12 +1971,13 @@ BookReader.prototype.queryStringFromParams = function(
     newParams.set('q', params.search);
   }
 
-  let textFragmentParam = '';
+  /** @type {BookReaderTextFragment | null} */
+  let textFragmentParam = null;
   // Need to pull out text separately to avoid the spaces becoming encoded as +, which
   // the browser seems not to handle with the text fragment
   if (newParams.get('text')) {
     newParams.delete('text');
-    textFragmentParam = `text=${this.urlPlugin.retrieveTextFragment(currQueryString)}`;
+    textFragmentParam = BookReaderTextFragment.fromUrl(currQueryString, this.book, this.firstIndex);
   }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
@@ -1984,7 +1985,7 @@ BookReader.prototype.queryStringFromParams = function(
   let result = newParams.toString();
   if (textFragmentParam) {
     if (result) result += '&';
-    result += textFragmentParam;
+    result += `text=${textFragmentParam.toUrlString()}`;
   }
   if (result) result = '?' + result;
 

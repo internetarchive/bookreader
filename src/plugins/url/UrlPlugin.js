@@ -190,22 +190,9 @@ export class UrlPlugin {
   }
 
   /**
-   * Get the hash out of the current URL. Also augments it with the text
-   * from the main part of the URL, since that is not readable by JS
-   * from the actual hash
-   * @returns
+   * Get the hash out of the current URL
    */
   getHash() {
-    const text = this.retrieveTextFragment(window.location.search);
-    const textFragment = text ? `:~:text=${text[0]}` : '';
-    return `${window.location.hash.slice(1)}${textFragment}`;
-  }
-
-  /**
-   * @param {string} urlString
-   * @returns {string}
-   */
-  retrieveTextFragment(urlString) {
-    return urlString.match(/(?<=[&?]?text=)[^&]*/);
+    return window.location.hash.slice(1);
   }
 }

@@ -1,7 +1,6 @@
 /* global BookReader */
 
 import { UrlPlugin } from "./UrlPlugin.js";
-import { sleep } from "../../BookReader/utils.js";
 
 /**
  * Plugin for URL management in BookReader
@@ -43,10 +42,6 @@ BookReader.prototype.setup = (function(super_) {
     this.locationPollId = null;
     this.oldLocationHash = null;
     this.oldUserHash = null;
-    // Should include the :~:text= prefix
-    this.textFragment = null;
-    // Tracks the original textFragment page num when first loaded
-    this.textFragmentPage = null;
   };
 })(BookReader.prototype.setup);
 
@@ -146,22 +141,16 @@ BookReader.prototype.urlUpdateFragment = function() {
   }, {});
 
   // eg 'page/3/mode/2up'; no query params (in hash mode, it might have /search/term)
-  // Does NOT have the :~:text fragment
   const newFragment = this.fragmentFromParams(params, this.options.urlMode);
   const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
   // eg 'page/3/mode/2up'; no query params
-  // WILL CONTAIN the :~:text fragment in hash mode (!)
   const currFragment = this.urlReadFragment();
   // This should have both ?q=foo&text=bar (and any other params) as an encoded string
   const currQueryString = this.getLocationSearch();
   // Eg ?q=foo&text=bar; only query params, no fragment
   const newQueryString = this.queryStringFromParams(params, currQueryString, this.options.urlMode);
-
-  // NOTE: If ?text is in the URL, we will fire fragment change events on every render; which is
-  // not desireable, but currently don't have a way to handle re-writing ?text to the hash text
-  // fragment form, :~:text=foo.
-  const hasTextParam = this.urlPlugin.retrieveTextFragment(currQueryString);
-  if (currFragment === newFragment && currQueryString === newQueryString && !hasTextParam) {
+  // Avoid infinite loop if there are no changes
+  if (currFragment === newFragment && currQueryString === newQueryString) {
     return;
   }
 
@@ -170,19 +159,11 @@ BookReader.prototype.urlUpdateFragment = function() {
       this.options.urlMode = 'hash';
     } else {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
-      const textFragment = this.urlPlugin.retrieveTextFragment(newQueryString);
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
-      const extractedPage = this.urlPlugin.urlStringToUrlState(newFragmentWithSlash)?.page;
-      if (!this.textFragmentPage && textFragment) {
-        this.textFragmentPage =  extractedPage ? extractedPage : null;
-        this.textFragment = `:~:text=${textFragment}`;
-      }
+
       try {
         window.history.replaceState({}, null, newUrlPath);
         this.oldLocationHash = newFragment + newQueryString;
-        if (textFragment) {
-          this.oldLocationHash += `:~:text=${textFragment[0]}`;
-        }
       } catch (e) {
         // DOMException on Chrome when in sandboxed iframe
         this.options.urlMode = 'hash';
@@ -192,22 +173,8 @@ BookReader.prototype.urlUpdateFragment = function() {
 
   if (this.options.urlMode === 'hash')  {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
-    let textFragment = this.urlPlugin.retrieveTextFragment(this.readQueryString());
-    const extractedPage = this.urlPlugin.urlStringToUrlState(newFragmentWithSlash)?.page;
-
-    if (textFragment) {
-      textFragment = `:~:text=${textFragment[0]}`;
-    } else {
-      textFragment = '';
-    }
-    if (!this.textFragmentPage && textFragment) {
-      this.textFragmentPage = extractedPage ? extractedPage : null;
-      this.textFragment = textFragment;
-    } else if (this.textFragmentPage && extractedPage != this.textFragmentPage) {
-      textFragment = '';
-    }
-    window.location.replace('#' + newFragment + newQueryStringSearch + textFragment);
-    this.oldLocationHash = newFragment + newQueryStringSearch + textFragment;
+    window.location.replace('#' + newFragment + newQueryStringSearch);
+    this.oldLocationHash = newFragment + newQueryStringSearch;
   }
 };
 
@@ -248,28 +215,9 @@ export class BookreaderUrlPlugin extends BookReader {
   init() {
     if (this.options.enableUrlPlugin) {
       this.urlPlugin = new UrlPlugin(this.options);
-      const location = this.getLocationSearch();
-      if (location.includes("text=")) {
-        this.on('textLayerVisible', async (_, {pageContainerEl}) => {
-          const visiblePageNum = pageContainerEl.getAttribute('data-page-num');
 
-          // Hack: More time mode 1up page "settle down" from user scrolling
-          await sleep(this.mode === 1 ? 900 : 100);
-
-          // No textFragment found or the textFragment stored doesn't match current visible page loaded
-          if (!this.textFragment || this.textFragmentPage !== visiblePageNum) return;
-          if (this.options.urlMode === 'history') {
-            window.location.replace(`#${this.textFragment}`);
-          } else {
-            // for urlMode hash, textFragment is stored in oldLocationHash already
-            window.location.replace(`#${this.oldLocationHash}`);
-          }
-        });
-      }
-      this.bind(BookReader.eventNames.PostInit, () => {
-        const { urlMode } = this.options;
-
-        if (urlMode === 'hash') {
+      this.on(BookReader.eventNames.PostInit, () => {
+        if (this.options.urlMode === 'hash') {
           this.urlPlugin.listenForHashChanges();
         }
       });

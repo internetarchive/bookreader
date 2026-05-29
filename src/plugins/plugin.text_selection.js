@@ -4,7 +4,7 @@ import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
-import { TextSelectionManager } from '../util/TextSelectionManager.js';
+import { BookReaderTextFragment, renderHighlight, TextSelectionManager } from '../util/TextSelectionManager.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
@@ -46,7 +46,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // now we do make that assumption.
     /** Whether the book is right-to-left */
     this.rtl = this.br.pageProgression === 'rl';
-    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace']}, this.options.maxProtectedWords);
+    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace', 'mark']}, this.options.maxProtectedWords);
   }
 
   /** @override */
@@ -54,18 +54,27 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     if (!this.options.enabled) return;
 
     this.br.on('pageVisible', (_, {pageContainerEl}) => {
-      if (pageContainerEl.querySelector('.BRtextLayer')) {
-        this.br.trigger('textLayerVisible', {pageContainerEl});
+      const textLayer = pageContainerEl.querySelector('.BRtextLayer');
+      if (textLayer) {
+        this.br.trigger('textLayerVisible', {pageContainerEl, textLayer});
       }
     });
 
     this.loadData();
     this.textSelectionManager.init();
-  }
 
-  enableSelectionMenu() {
-    this.textSelectionManager.selectionMenuEnabled = true;
-    this.textSelectionManager.renderSelectionMenu();
+    // Init text fragment
+    this.targetTextFragment = BookReaderTextFragment.fromUrl(location.search, this.br.book, this.br.firstIndex);
+    if (this.targetTextFragment) {
+      const targetTextFragment = this.targetTextFragment;
+      this.br.on('textLayerVisible', async (_, {pageContainerEl, textLayer}) => {
+        const pageIndex = targetTextFragment.pageIndex;
+        const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
+        if (hasTargetText) {
+          renderHighlight(textLayer, targetTextFragment, 'BRhighlight--target-text');
+        }
+      });
+    }
   }
 
   /**
@@ -210,7 +219,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
     // Check if page is visible
     if ($container.hasClass('BRpage-visible')) {
-      this.br.trigger('textLayerVisible', {pageContainerEl: $container[0]});
+      this.br.trigger('textLayerVisible', {pageContainerEl: $container[0], textLayer});
     }
   }
 
@@ -574,50 +583,4 @@ class Rect {
   get bottom() { return this.y + this.height; }
   get top() { return this.y; }
   get left() { return this.x; }
-}
-
-/**
- * Depth traverse the DOM tree starting at `start`, and ending at `end`.
- * @param {Node} start
- * @param {Node} end
- * @returns {Generator<Node>}
- */
-export function* walkBetweenNodes(start, end) {
-  let done = false;
-
-  /**
-   * @param {Node} node
-   */
-  function* walk(node, {children = true, parents = true, siblings = true} = {}) {
-    if (node === end) {
-      done = true;
-      yield node;
-      return;
-    }
-
-    // yield self
-    yield node;
-
-    // First iterate children (depth-first traversal)
-    if (children && node.firstChild) {
-      yield* walk(node.firstChild, {children: true, parents: false, siblings: true});
-      if (done) return;
-    }
-
-    // Then iterate siblings
-    if (siblings) {
-      for (let sib = node.nextSibling; sib; sib = sib.nextSibling) {
-        yield* walk(sib, {children: true, parents: false, siblings: false});
-        if (done) return;
-      }
-    }
-
-    // Finally, move up the tree
-    if (parents && node.parentNode) {
-      yield* walk(node.parentNode, {children: false, parents: true, siblings: true});
-      if (done) return;
-    }
-  }
-
-  yield* walk(start);
 }
