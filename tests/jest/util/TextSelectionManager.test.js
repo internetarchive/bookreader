@@ -539,6 +539,50 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
   });
 });
 
+describe('BookReaderTextFragment.fromString', () => {
+  test('parses all fields and decodes encoded values', () => {
+    const book = {
+      getPageIndex: sinon.stub().withArgs('12').returns(42),
+    };
+
+    const fragment = BookReaderTextFragment.fromString(
+      '12:before%20text-,quoted%20text,-after%20text',
+      book,
+      7,
+    );
+
+    expect(fragment.pageNumber).toBe('12');
+    expect(fragment.pageIndex).toBe(42);
+    expect(fragment.prefix).toBe('before text');
+    expect(fragment.quote).toBe('quoted text');
+    expect(fragment.suffix).toBe('after text');
+  });
+
+  test('uses fallback page index when page number is omitted', () => {
+    const book = {
+      getPageIndex: sinon.stub(),
+    };
+
+    const fragment = BookReaderTextFragment.fromString('just%20a%20quote', book, 9);
+
+    expect(book.getPageIndex.called).toBe(false);
+    expect(fragment.pageNumber).toBeNull();
+    expect(fragment.pageIndex).toBe(9);
+    expect(fragment.prefix).toBeNull();
+    expect(fragment.quote).toBe('just a quote');
+    expect(fragment.suffix).toBeNull();
+  });
+
+  test('throws when page number exists but no page index can be resolved', () => {
+    const book = {
+      getPageIndex: sinon.stub().withArgs('missing').returns(undefined),
+    };
+
+    expect(() => BookReaderTextFragment.fromString('missing:quote', book, 3))
+      .toThrow('Could not determine page index for text fragment with page number missing');
+  });
+});
+
 
 describe("getFirstWords and getLastWords tests", () => {
   test("Handles empty string", () => {

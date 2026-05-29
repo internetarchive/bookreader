@@ -999,6 +999,8 @@ export class BookReaderTextFragment {
    * @returns {BookReaderTextFragment}
    */
   static fromString(str, book, fallbackPageIndex) {
+    // Basically matches:
+    // (stuff):(stuff)-,(stuff),-(stuff)
     const match = str.match(/^(?:(.*?):)?(?:(.*?)-,)?(.*?)(?:,-(.*))?$/);
     if (!match) {
       throw new Error(`Invalid text fragment format: ${str}`);
