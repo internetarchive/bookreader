@@ -233,7 +233,7 @@ export class UrlPlugin {
       } else if (prefixMatch && !suffixMatch) { // Prefix only
         quote = decodeURIComponent(quoteMatch[0].match(/(?<=-,).*/)[0]);
       } else if (!prefixMatch && suffixMatch) { // Suffix only
-        quote = decodeURIComponent(quoteMatch[0].match(/.*(?<=,-)/)[0]);
+        quote = decodeURIComponent(quoteMatch[0].match(/^.*?(?=,-)/)[0]);
       } else { // Somehow no prefix or suffix
         quote = decodeURIComponent(quoteMatch[0]);
       }

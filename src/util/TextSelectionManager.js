@@ -33,7 +33,9 @@ export class TextSelectionManager {
     this.options.maxProtectedWords = maxWords ? maxWords : 200;
 
     this.selectMenu = new BRSelectMenu(br, selectionElement, this.selectionMenuEnabled, this.highlightAnnotationEnabled);
+    this.annotationMenu = new BRAnnotationMenu(br);
     this.selectMenu.className = "br-select-menu__root";
+    this.annotationMenu.className = "br-annotate-menu__root";
   }
 
   init() {
@@ -54,17 +56,17 @@ export class TextSelectionManager {
         // hide the button as user changes their selection
         if (this.mouseIsDown) {
           this.selectMenu.hideMenu();
+          this.annotationMenu.hideAnnotationMenu();
         } else if (window.getSelection().toString()) {
           this.selectMenu.showMenu();
           const selectedElement = window.getSelection()?.anchorNode;
-          if (selectedElement.classList.contains('BRhighlight')) {
+          if (selectedElement.classList?.contains('BRhighlight')) {
             this.getHighlightedNodes(selectedElement);
           }
         }
       }
 
       if (selectEvent == 'cleared') {
-        console.log("detected cleared event");
         this.selectMenu.hideMenu();
       }
     }).attach();
@@ -111,6 +113,7 @@ export class TextSelectionManager {
       this.selectMenu.requestUpdate();
     } else {
       document.body.append(this.selectMenu);
+      document.body.append(this.annotationMenu);
     }
   }
 
@@ -120,6 +123,7 @@ export class TextSelectionManager {
       this.selectMenu.requestUpdate();
     } else {
       document.body.append(this.selectMenu);
+      document.body.append(this.annotationMenu);
     }
   }
   /**
@@ -185,6 +189,7 @@ export class TextSelectionManager {
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       this.mouseIsDown = true;
       this.selectMenu.hideMenu();
+      this.annotationMenu.hideAnnotationMenu();
       if ($(event.target).is(this.selectionElement.join(", "))) {
         event.stopPropagation();
       }
@@ -219,6 +224,7 @@ export class TextSelectionManager {
       this.mouseIsDown = true;
       event.stopPropagation();
       this.selectMenu.hideMenu();
+      this.annotationMenu.hideAnnotationMenu();
     });
 
     // Prevent page flip on click
@@ -284,10 +290,11 @@ export class TextSelectionManager {
  * @returns {string}
  */
 export function createTextFragmentUrlParam(selection, contextElements) {
+  console.log("this is the selection", selection, selection.toString());
   const direction = selection.direction;
-  const startNode = direction == 'backward' ? selection.focusNode : selection.anchorNode;
-  const endNode = direction == 'backward' ? selection.anchorNode : selection.focusNode;
-
+  let startNode = direction == 'backward' ? selection.focusNode : selection.anchorNode;
+  let endNode = direction == 'backward' ? selection.anchorNode : selection.focusNode;
+  console.log("this is endNode", endNode.textContent);
   const preStartRange = document.createRange();
   preStartRange.setStart(contextElements[0].firstElementChild, 0);
   preStartRange.setEnd(startNode, 0);
@@ -311,7 +318,30 @@ export function createTextFragmentUrlParam(selection, contextElements) {
   // Partially selected words need to be captured completely
   // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
   const fullHighlight = selection.toString().replace(/\s+/g, " ").trim().split(/\s/g);
+  console.log("this is fullHighlight", fullHighlight);
   // Capture start/end words that may be partially highlighted
+  console.log("startNode.textContent", startNode.textContent);
+  console.log("what is endNode", endNode?.parentElement.classList);
+  if (endNode?.parentElement?.classList.contains("BRwordElement--hyphen")) {
+    // const test = [];
+    // const testRange = selection.getRangeAt(0);
+    // let temp;
+    // for (const el of walkBetweenNodes(testRange.startContainer, testRange.endContainer)) {  
+    //   console.log("Looking at this el", el);
+    //   if (el.nodeType === 'text')
+    //   if (temp) {
+    //     let testString = temp.textContent + el.textContent;
+    //     console.log("this is testString", testString);
+    //     test.push(temp.textContent + el.textContent);
+    //   }
+    //   if (el?.classList.contains("--hyphen")) {
+    //     temp = el;
+    //   } else {
+    //     test.push(el.textContent);
+    //   }
+    // }
+    // do something here
+  }
   if (startNode.textContent.trim().length != 0) {
     if (!startNode.textContent.includes(fullHighlight[0])) {
       fullHighlight.unshift(startNode.textContent);
@@ -319,6 +349,7 @@ export function createTextFragmentUrlParam(selection, contextElements) {
       fullHighlight[0] = startNode.textContent;
     }
   }
+  console.log("endNode.textContent", endNode.textContent);
   if (endNode.textContent.trim().length != 0) {
     if (!endNode.textContent.includes(fullHighlight[fullHighlight.length - 1])) {
       fullHighlight.push(endNode.textContent);
@@ -412,6 +443,177 @@ export function* walkBetweenNodes(start, end) {
   yield* walk(start);
 }
 
+@customElement('br-annotate-menu')
+class BRAnnotationMenu extends LitElement {
+  /** @type {import('../BookReader.js').default} */
+  br;
+  allowAnnotationEditing = false;
+  currentNodes;
+  DEFAULT_HIGHLIGHT_COLOR = "#cab400";
+
+  constructor(br) {
+    super();
+    this.br = br;
+  }
+
+  createRenderRoot() {
+    return this;
+  }
+
+  getAnnotationText() {
+    if (!this.currentNodes) return null;
+    const nodesUUID = retrieveUUID(this.currentNodes[0]);
+    return getEntryLocalStorage(nodesUUID, "annotation");
+  }
+
+  checkAnnotationEditing() {
+    const storedAnnotation = this.getAnnotationText();
+    if (storedAnnotation) {
+      this.allowAnnotationEditing = false;
+    } else {
+      this.allowAnnotationEditing = true;
+    }
+  }
+
+  getHighlightColor() {
+    if (!this.currentNodes) return this.DEFAULT_HIGHLIGHT_COLOR;
+    const nodesUUID = retrieveUUID(this.currentNodes[0]);
+    const highlightColor = getEntryLocalStorage(nodesUUID, "highlightColor");
+    if (highlightColor) {
+      return highlightColor;
+    }
+    return this.DEFAULT_HIGHLIGHT_COLOR;
+  }
+
+  showExistingAnnotation() {
+    return html`
+      <div class="br-annotate-menu__comment" aria-hidden="true">
+        <span class="br-annotate-menu__displayAnnotation">${this.getAnnotationText()}</span>
+      </div>
+      <button @click=${this.handleEditAnnotation}>Edit annotation</button>
+      <button @click=${this.hideAnnotationMenu}>Cancel</button>
+    `;
+  }
+
+  showTextEditArea() {
+    return html`
+      <textarea class="br-annotate-menu__textarea" id="annotateTextArea" @click=${this.handleInputClick}>${this.getAnnotationText()}</textarea>
+      <button @click=${this.handleSaveAnnotation}>Save annotation</button>
+      <button @click=${this.hideAnnotationMenu}>Cancel</button>
+    `;
+  }
+
+  render() {
+    return html`
+      <input type="color"
+        value=${this.getHighlightColor()}
+        id="annotateInputColor"
+        class="br-annotate-menu__color"
+        @change=${this.handleColorChange}
+      />
+      <button @click=${this.handleDeleteHighlight}
+        class="br-annotate-menu__option">
+        <ia-icon-share class="br-annotate-menu__icon" aria-hidden="true"></ia-icon-share>
+        <span class="br-annotate-menu__label">Delete Highlight</span>
+      </button>
+      ${this.allowAnnotationEditing ? this.showTextEditArea() : this.showExistingAnnotation()}
+    `;
+  }
+
+  /**
+   *
+   * @param {} e
+   */
+  handleColorChange(e) {
+    const nodeUUID = retrieveUUID(this.currentNodes[0]);
+    $(`.${nodeUUID}`).css("background-color", `${e.target.value}`);
+    adjustEntryLocalStorage(nodeUUID, "highlightColor", e.target.value);
+  }
+
+  handleDeleteHighlight(e) {
+    if (this.currentNodes) {
+      const uuid = retrieveUUID(this.currentNodes[0]);
+      for (const ele of this.currentNodes) {
+        const tempText = ele.textContent;
+        const parent = ele.parentElement;
+        if (parent.classList.contains('BRwordElement') || parent.classList.contains('BRspace')) {
+          ele.backgroundColor = 'none';
+          ele.remove();
+          parent.textContent = tempText;
+        }
+      }
+      removeEntryLocalStorage(uuid);
+      this.clearCurrentNodes();
+      this.hideAnnotationMenu();
+    }
+  }
+
+  handleEditAnnotation(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    this.allowAnnotationEditing = true;
+    this.requestUpdate();
+  }
+
+  handleSaveAnnotation(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    const inputEle = document.querySelector('#annotateTextArea');
+    if (inputEle.value) {
+      const currentUUID = retrieveUUID(this.currentNodes[0]);
+      adjustEntryLocalStorage(currentUUID, "annotation", inputEle.value);
+      this.hideAnnotationMenu();
+    }
+  }
+
+  handleInputClick(e) {
+    e.stopImmediatePropagation();
+  }
+
+  showAnnotationMenu(nodes) {
+    this.currentNodes = nodes;
+    const identifier = retrieveUUID(nodes[0]);
+    const selectedQuoteNodes = document.querySelectorAll(`.${identifier}`);
+
+    const firstNode = selectedQuoteNodes[0];
+    const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
+
+    const highlightRange = document.createRange();
+    highlightRange.setStart(firstNode, 0);
+    highlightRange.setEnd(lastNode, 1);
+
+    const currentSelection = window.getSelection();
+    currentSelection?.removeAllRanges();
+    currentSelection?.addRange(highlightRange);
+
+    const lastNodeBoundary = lastNode.getBoundingClientRect();
+    const pageContainerBoundary = lastNode.closest(".BRpagecontainer").getBoundingClientRect();
+    this.requestUpdate();
+    const annoButtonWidth = pageContainerBoundary.width - 50;
+    const annoButtonLeft = pageContainerBoundary.left;
+
+
+    this.style.backgroundColor = 'black';
+    this.style.width = `${annoButtonWidth}px`;
+    this.style.height = `${Math.max(pageContainerBoundary.height / 5, 120)}px`;
+    this.style.top = `${lastNodeBoundary.top + lastNodeBoundary.height + 5}px`;
+    this.style.left = `${annoButtonLeft}px`;
+    this.style.display = 'block';
+    this.checkAnnotationEditing();
+    this.requestUpdate();
+  }
+
+  hideAnnotationMenu = () => {
+    this.style.display = 'none';
+    return;
+  }
+
+  clearCurrentNodes = () => {
+    this.currentNodes = null;
+    this.requestUpdate();
+  }
+}
+
 @customElement('br-select-menu')
 class BRSelectMenu extends LitElement {
   /** @type {import('../BookReader.js').default} */
@@ -474,6 +676,7 @@ class BRSelectMenu extends LitElement {
       </button>
     `;
   }
+
   addLocalStorageOption() {
     return html`
       <button @click=${this.retrieveHighlightFromLocalStorage} 
@@ -488,12 +691,12 @@ class BRSelectMenu extends LitElement {
       </button>`;
   }
 
-  // TODO change the second button to use a different icon
   render() {
     return html`
+      ${this.copyHighlightEnabled ? this.addShareHighlightHTML() : ''}
       ${this.highlightAnnotationEnabled && !this.nodesForRemoval ? this.addHighlightOption() : ''}
       ${this.highlightAnnotationEnabled ? this.addLocalStorageOption() : ''}
-      ${this.copyHighlightEnabled ? this.addShareHighlightHTML() : ''}
+      ${this.nodesForRemoval ? this.addAnnotationOption() : ''}
       ${this.nodesForRemoval ? this.addRemovalOption() : ''}
     `;
   }
@@ -521,7 +724,6 @@ class BRSelectMenu extends LitElement {
     // TODO - won't work with hash mode
     const adjustedUrlPageNumPath = currentUrl.pathname.toString().replace(/(?<=\/page\/)\d+(?=\/)/, textLayer.parentElement.getAttribute('data-page-num'));
     const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}${linkToHighlightParams}${currentUrl?.hash || ''}`;
-
     navigator.clipboard.writeText(linkToHighlight);
   }
 
@@ -570,14 +772,18 @@ class BRSelectMenu extends LitElement {
     const start = currentSelection.direction === 'backward' ? currentSelection.focusNode.parentElement : currentSelection.anchorNode.parentElement;
     const end = currentSelection.direction === 'backward' ? currentSelection.anchorNode.parentElement : currentSelection.focusNode.parentElement;
 
-    const output = this.createQuoteStorage(currentSelection, [this.getNodeTextLayer(start).parentElement]);
-    this.saveToLocalStorage(output);
-    changeDOMtoHighlight(start, end, this.selectionElement, output.uuid);
-    // this.nodesForRemoval =
+    const highlightObject = this.createQuoteStorage(currentSelection, [this.getNodeTextLayer(start).parentElement]);
+    saveToLocalStorage(highlightObject);
+    changeDOMtoHighlight(start, end, this.selectionElement, highlightObject.uuid);
+    this.nodesForRemoval = document.querySelectorAll(`.${highlightObject.uuid}`);
+    this.requestUpdate();
   }
 
   handleAnnotation(e) {
-    // TODO
+    if (this.nodesForRemoval) {
+      window.br.plugins.textSelection.textSelectionManager.annotationMenu.showAnnotationMenu(this.nodesForRemoval);
+      window.getSelection()?.empty(); // Remove window selection to hide menu
+    }
   }
 
   handleDeleteHighlight(e) {
@@ -589,46 +795,27 @@ class BRSelectMenu extends LitElement {
         if (parent.classList.contains('BRwordElement') || parent.classList.contains('BRspace')) {
           ele.remove();
           parent.textContent = tempText;
-        } else {
-          console.log("This element did not match removal criteria:", parent, ele);
         }
       }
-      this.changeToLocalStorage(uuid);
+      removeEntryLocalStorage(uuid);
       this.clearNodesForRemoval();
-    } else {
-      console.log("there is nothing to remove");
     }
   }
 
   /**
-   * Saves the highlighted text and context in an array to localStorage
-   * If a 'highlightStorage' object already exists, the content will be appended to the array
-   * @param {any} contents
+   * Removes an entry from the highlightStorage array if exists
+   * @param {string} storageId - UUID of the entry to remove
+   * @returns
    */
-  saveToLocalStorage(contents) {
+  removeEntryLocalStorage(storageId) {
     try {
       const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
       if (existingHighlightStorage) {
-        const item = JSON.parse(existingHighlightStorage);
-        item.push(contents);
-        window.localStorage.setItem("highlightStorage", JSON.stringify(item));
-      } else {
-        window.localStorage.setItem("highlightStorage", JSON.stringify([contents]));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  changeToLocalStorage(storageId) {
-    try {
-      const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
-      if (existingHighlightStorage) {
-        const storageObject = JSON.parse(existingHighlightStorage);
-        for (const idx in storageObject) {
-          if (storageObject[idx].uuid === storageId) {
-            storageObject.splice(idx, 1);
-            window.localStorage.setItem("highlightStorage", JSON.stringify(storageObject));
+        const storageArray = JSON.parse(existingHighlightStorage);
+        for (const idx in storageArray) {
+          if (storageArray[idx].uuid === storageId) {
+            storageArray.splice(idx, 1);
+            window.localStorage.setItem("highlightStorage", JSON.stringify(storageArray));
             return;
           }
         }
@@ -638,28 +825,14 @@ class BRSelectMenu extends LitElement {
     }
   }
 
-  /**
-   * @param {string} keyName
-   * @returns {any | null | undefined}
-   */
-  loadFromLocalStorage(keyName) {
-    let test;
-    if (window.localStorage.key(0)) {
-      try {
-        test = JSON.parse(window.localStorage.getItem(keyName));
-        return test;
-      } catch (e) {
-        console.error(e);
-        throw new Error("Could not load from localStorage");
-      }
-    }
-  }
-
   retrieveHighlightFromLocalStorage() {
-    const stored = this.loadFromLocalStorage("highlightStorage");
+    const stored = loadFromLocalStorage("highlightStorage");
     if (!stored) return;
     for (const item of stored) {
       convertRangeToDOMSelection(item);
+      if (item.highlightColor) {
+        $(`.${item.uuid}`).css("background-color", `${item.highlightColor}`);
+      }
     }
   }
 
@@ -812,16 +985,18 @@ function replaceWhitespace(string) {
    * @returns
    */
 export function deriveRangeFromNodes(quote, range, textNodes) {
+  console.log("this is range", range);
   const startOffset = textNodes[0] === range.startContainer ?
     range.startOffset :
     0;
   const normalizedWholePageString = replaceWhitespace(range.toString());
-  const normalizedQuote = replaceWhitespace(quote);
+  const normalizedQuote = replaceWhitespace(quote).trim();
   let searchStart = 0;
   let start;
   let end;
   while (searchStart < normalizedWholePageString.length) {
     const matchedIndex = normalizedWholePageString.indexOf(normalizedQuote, searchStart);
+    console.log('"'+normalizedQuote+'"');
     if (matchedIndex === -1) return undefined;
     const normalizedStartOffset = replaceWhitespace(textNodes[0].textContent.slice(0, startOffset)).length;
     start = getBoundaryPointAtIndex(
@@ -830,6 +1005,7 @@ export function deriveRangeFromNodes(quote, range, textNodes) {
     end = getBoundaryPointAtIndex(
       normalizedStartOffset + matchedIndex + normalizedQuote.length,
       textNodes, true);
+    console.log("this is start, end", start, end)
     if (start != null && end != null) {
       const foundRange = new Range();
       foundRange.setStart(start.node, 0);
@@ -934,10 +1110,11 @@ export function convertRangeToDOMSelection(quote) {
   const convertedString = replaceWhitespace(wholePageAsRange.toString());
   const convertedQuote = replaceWhitespace(quote.quote);
   const foundStringIndex = convertedString.indexOf(convertedQuote);
+  console.log("checking foundstringindex", foundStringIndex);
   if (foundStringIndex == -1) return;
   const fullContext = [quote.prefix, quote.quote, quote.suffix].join(" ");
   const convertedFullContext = replaceWhitespace(fullContext);
-
+  console.log("checking inputs for relevantRange", convertedFullContext, wholePageAsRange, Array.from(allWordNodes));
   const relevantRange = deriveRangeFromNodes(convertedFullContext, wholePageAsRange, Array.from(allWordNodes));
 
   const adjustedNodes = [];
@@ -946,7 +1123,7 @@ export function convertRangeToDOMSelection(quote) {
       adjustedNodes.push(el);
     }
   }
-
+  console.log("what is relevantRange", relevantRange);
   // Range Object returned
   const output = deriveRangeFromNodes(quote.quote, relevantRange, adjustedNodes);
 
@@ -1027,3 +1204,94 @@ function retrieveUUID(ele) {
   return null;
 }
 
+function adjustEntryLocalStorage(storageId, key, value) {
+  try {
+    const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
+    if (existingHighlightStorage) {
+      const storageArray = JSON.parse(existingHighlightStorage);
+      for (const idx in storageArray) {
+        if (storageArray[idx]["uuid"] == storageId) {
+          storageArray[idx][key] = value;
+          window.localStorage.setItem("highlightStorage", JSON.stringify(storageArray));
+        }
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function getEntryLocalStorage(storageId, key) {
+  try {
+    const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
+    if (existingHighlightStorage) {
+      const storageArray = JSON.parse(existingHighlightStorage);
+      for (const idx in storageArray) {
+        if (storageArray[idx]["uuid"] == storageId) {
+          return storageArray[idx][key];
+        }
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/**
+ * @param {string} keyName
+ * @returns {any | null | undefined}
+ */
+function loadFromLocalStorage(keyName) {
+  let storageObject;
+  if (window.localStorage.key(0)) {
+    try {
+      storageObject = JSON.parse(window.localStorage.getItem(keyName));
+      return storageObject;
+    } catch (e) {
+      console.error(e);
+      throw new Error("Could not load from localStorage");
+    }
+  }
+}
+
+/**
+   * Removes an entry from the highlightStorage array if exists
+   * @param {string} storageId - UUID of the entry to remove
+   * @returns
+   */
+function removeEntryLocalStorage(storageId) {
+  try {
+    const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
+    if (existingHighlightStorage) {
+      const storageArray = JSON.parse(existingHighlightStorage);
+      for (const idx in storageArray) {
+        if (storageArray[idx].uuid === storageId) {
+          storageArray.splice(idx, 1);
+          window.localStorage.setItem("highlightStorage", JSON.stringify(storageArray));
+          return;
+        }
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+  /**
+   * Saves the highlighted text and context in an array to localStorage
+   * If a 'highlightStorage' object already exists, the content will be appended to the array
+   * @param {any} contents
+   */
+function saveToLocalStorage(contents) {
+    try {
+      const existingHighlightStorage = window.localStorage.getItem("highlightStorage");
+      if (existingHighlightStorage) {
+        const item = JSON.parse(existingHighlightStorage);
+        item.push(contents);
+        window.localStorage.setItem("highlightStorage", JSON.stringify(item));
+      } else {
+        window.localStorage.setItem("highlightStorage", JSON.stringify([contents]));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+}
