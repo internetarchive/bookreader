@@ -60,6 +60,15 @@ describe('Plugin: Search', () => {
       .toHaveProperty('suppressFragmentChange', false);
   });
 
+  test('On init with empty initialSearchTerm (""), it opens the search panel without searching', () => {
+    br.plugins.search.search = jest.fn();
+    br.options.plugins.search.initialSearchTerm = '';
+    br.init();
+
+    expect(br.plugins.search.searchView.toggleSidebar).toHaveBeenCalled();
+    expect(br.plugins.search.search).not.toHaveBeenCalled();
+  });
+
   test('calling `search` fires ajax call`', () => {
     br.init();
     br.search('foo');
