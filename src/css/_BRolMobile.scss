@@ -77,7 +77,8 @@ $ol-mobile-action-blue: #005BBB;
 
   .BRolMobileRow2,
   .BRolMobileResults,
-  .BRolMobileResultNav {
+  .BRolMobileResultNav,
+  .BRolMobileBookmarkNav {
     display: none !important;
   }
 }
@@ -426,6 +427,136 @@ $ol-mobile-action-blue: #005BBB;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------
+   Bookmark button: red when current page has a bookmark
+   --------------------------------------------------------------- */
+.BRolMobileBookmarkBtn--active {
+  .BRolMobileBookmarkIcon {
+    stroke: #D9534F;
+    fill: #D9534F;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Bookmark count bubble — between bookmark icon and search icon
+   --------------------------------------------------------------- */
+.BRolMobileBookmarkBubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background-color: $ol-mobile-action-blue;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    background-color: darken($ol-mobile-action-blue, 8%);
+  }
+}
+
+/* ---------------------------------------------------------------
+   Bookmark nav bar (mirrors .BRolMobileResultNav in layout)
+   --------------------------------------------------------------- */
+.BRolMobileBookmarkNav {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 2px;
+  background-color: $ol-mobile-header-bg;
+  border-top: 1px solid $ol-mobile-border;
+  gap: 2px;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.BRolMobileBookmarkNavCenter {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.BRolMobileBookmarkNavPos {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: $ol-mobile-muted;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.BRolMobileBookmarkNoteField {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  background-color: $ol-mobile-input-bg;
+  border: 1px solid $ol-mobile-border;
+  border-radius: 6px;
+  padding: 0 8px;
+  height: 26px;
+  gap: 4px;
+}
+
+.BRolMobileBookmarkNoteInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: $ol-mobile-text;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+
+  &::placeholder {
+    color: #999;
+    font-style: italic;
+  }
+}
+
+.BRolMobileBookmarkNoteClearBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $ol-mobile-muted;
+  flex-shrink: 0;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
 }
 
 /* Status messages: loading / empty / error */

@@ -35,7 +35,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
     olRef: 'ol',
   };
 
-  // ── DOM refs (set during _buildHeader / _buildResultNav) ──────────────────
+  // ── DOM refs (set during _buildHeader / _buildResultNav / _buildBookmarkNav) ──
   /** @type {HTMLElement|null} */      _header = null;
   /** @type {HTMLElement|null} */      _wrapper = null;
   /** @type {HTMLButtonElement|null} */ _chromeHandle = null;
@@ -44,18 +44,29 @@ export class OLMobilePlugin extends BookReaderPlugin {
   /** @type {HTMLInputElement|null} */ _searchInput = null;
   /** @type {HTMLButtonElement|null} */ _clearBtn = null;
   /** @type {HTMLButtonElement|null} */ _searchBtn = null;
-  // Nav bar and its children (cached to avoid per-call querySelector)
+  /** @type {HTMLButtonElement|null} */ _bookmarkBtn = null;
+  /** @type {HTMLElement|null} */       _bookmarkCountBubble = null;
+  // Search result nav bar
   /** @type {HTMLElement|null} */      _navBar = null;
   /** @type {HTMLButtonElement|null} */ _navPrevBtn = null;
   /** @type {HTMLButtonElement|null} */ _navNextBtn = null;
   /** @type {HTMLElement|null} */      _navPosEl = null;
   /** @type {HTMLElement|null} */      _navSnippetEl = null;
+  // Bookmark nav bar
+  /** @type {HTMLElement|null} */       _bmNavBar = null;
+  /** @type {HTMLButtonElement|null} */ _bmNavPrevBtn = null;
+  /** @type {HTMLButtonElement|null} */ _bmNavNextBtn = null;
+  /** @type {HTMLElement|null} */       _bmNavPosEl = null;
+  /** @type {HTMLInputElement|null} */  _bmNavNoteInput = null;
+  /** @type {HTMLButtonElement|null} */ _bmNavNoteClearBtn = null;
 
   // ── State ──────────────────────────────────────────────────────────────────
   /** @type {SearchInsideMatch[]} */ _matches = [];
   /** @type {number} */  _currentMatchIdx = -1;
   /** @type {boolean} */ _active = false;
   /** @type {string} */  _savedQuery = '';
+  /** @type {number[]} */ _bmPageIDs = [];    // sorted page indices of all bookmarks
+  /** @type {number} */   _bmCurrentIdx = -1; // position in _bmPageIDs shown in nav
 
   init() {
     if (!this._shouldActivate()) return;
@@ -146,6 +157,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
 
     this._suppressSidebar();
     this._bindSearchEvents();
+    this._bindBookmarkEvents();
   }
 
   _hideChrome() {
@@ -235,6 +247,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
             <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
           </svg>
         </button>
+        <button class="BRolMobileBookmarkBubble" aria-label="View bookmarks" type="button" hidden>0</button>
         <button class="BRolMobileActionBtn BRolMobileSearchBtn" aria-label="Search inside book" aria-pressed="false" type="button">
           <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -263,15 +276,22 @@ export class OLMobilePlugin extends BookReaderPlugin {
 
     // Bookmark: toggle bookmark for current page.
     // bookmarkButtonClicked() removes the bookmark if it already exists, adds it if not.
-    row1.querySelector('.BRolMobileBookmarkBtn').addEventListener('click', () => {
-      const iaBookmarks = document.querySelector('ia-bookreader')?.menuProviders?.bookmarks?.component;
+    // State refresh happens via the bookmarksChanged event listener in _bindBookmarkEvents.
+    this._bookmarkBtn = /** @type {HTMLButtonElement} */ (row1.querySelector('.BRolMobileBookmarkBtn'));
+    this._bookmarkBtn.addEventListener('click', () => {
+      const iaBookmarks = this._getIaBookmarks();
       if (!iaBookmarks) return;
-      let pageID = this.br.currentIndex();
-      if (this.br.mode === this.br.constMode2up) {
-        const pagesInView = this.br.displayedIndices;
-        pageID = pagesInView[pagesInView.length - 1];
+      iaBookmarks.bookmarkButtonClicked(this._getCurrentPageID());
+    });
+
+    // Count bubble: click to open/close the bookmark nav bar.
+    this._bookmarkCountBubble = /** @type {HTMLElement} */ (row1.querySelector('.BRolMobileBookmarkBubble'));
+    this._bookmarkCountBubble.addEventListener('click', () => {
+      if (this._bmNavBar && !this._bmNavBar.hasAttribute('hidden')) {
+        this._hideBmNav();
+      } else {
+        this._openBmNav();
       }
-      iaBookmarks.bookmarkButtonClicked(pageID);
     });
 
     // Search button: proper toggle open ↔ close (preserves input/results state)
@@ -354,7 +374,8 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._searchInput = input;
 
     this._navBar = this._buildResultNav();
-    header.append(row1, row2, this._navBar);
+    this._bmNavBar = this._buildBookmarkNav();
+    header.append(row1, row2, this._navBar, this._bmNavBar);
     return header;
   }
 
@@ -389,6 +410,60 @@ export class OLMobilePlugin extends BookReaderPlugin {
     });
     this._navNextBtn.addEventListener('click', () => {
       if (this._currentMatchIdx < this._matches.length - 1) this._navigateToMatch(this._currentMatchIdx + 1);
+    });
+
+    return nav;
+  }
+
+  _buildBookmarkNav() {
+    const nav = document.createElement('div');
+    nav.className = 'BRolMobileBookmarkNav';
+    nav.setAttribute('hidden', '');
+    nav.innerHTML = `
+      <button class="BRolMobileResultNavBtn BRolMobileBookmarkNavPrev" aria-label="Previous bookmark" type="button">${CHEVRON_LEFT}</button>
+      <div class="BRolMobileBookmarkNavCenter">
+        <span class="BRolMobileBookmarkNavPos"></span>
+        <div class="BRolMobileBookmarkNoteField">
+          <input class="BRolMobileBookmarkNoteInput" type="text" placeholder="add note" autocomplete="off" autocorrect="off" />
+          <button class="BRolMobileBookmarkNoteClearBtn" aria-label="Clear note" type="button" hidden>
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <button class="BRolMobileResultNavBtn BRolMobileBookmarkNavNext" aria-label="Next bookmark" type="button">${CHEVRON_RIGHT}</button>
+    `;
+
+    this._bmNavPrevBtn = /** @type {HTMLButtonElement} */ (nav.querySelector('.BRolMobileBookmarkNavPrev'));
+    this._bmNavNextBtn = /** @type {HTMLButtonElement} */ (nav.querySelector('.BRolMobileBookmarkNavNext'));
+    this._bmNavPosEl = /** @type {HTMLElement} */ (nav.querySelector('.BRolMobileBookmarkNavPos'));
+    this._bmNavNoteInput = /** @type {HTMLInputElement} */ (nav.querySelector('.BRolMobileBookmarkNoteInput'));
+    this._bmNavNoteClearBtn = /** @type {HTMLButtonElement} */ (nav.querySelector('.BRolMobileBookmarkNoteClearBtn'));
+
+    this._bmNavPrevBtn.addEventListener('click', () => {
+      if (this._bmCurrentIdx > 0) this._navigateToBookmark(this._bmCurrentIdx - 1);
+    });
+    this._bmNavNextBtn.addEventListener('click', () => {
+      if (this._bmCurrentIdx < this._bmPageIDs.length - 1) this._navigateToBookmark(this._bmCurrentIdx + 1);
+    });
+
+    const noteInput = this._bmNavNoteInput;
+    const noteClearBtn = this._bmNavNoteClearBtn;
+    noteInput.addEventListener('input', () => {
+      noteClearBtn.hidden = !noteInput.value;
+    });
+    noteInput.addEventListener('blur', () => {
+      this._saveCurrentBookmarkNote(noteInput.value);
+    });
+    noteInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); noteInput.blur(); }
+    });
+    noteClearBtn.addEventListener('click', () => {
+      noteInput.value = '';
+      noteClearBtn.hidden = true;
+      this._saveCurrentBookmarkNote('');
+      noteInput.focus();
     });
 
     return nav;
@@ -437,6 +512,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
 
   _openSearch() {
     if (!this._searchRow) return;
+    this._hideBmNav();
     this._searchRow.removeAttribute('hidden');
     if (this._searchBtn) {
       this._searchBtn.classList.add('BRolMobileActionBtn--active');
@@ -546,6 +622,124 @@ export class OLMobilePlugin extends BookReaderPlugin {
         this._showResultNav(idx);
       });
     });
+  }
+
+  // ── Bookmark helpers ────────────────────────────────────────────────────────
+
+  _getIaBookmarks() {
+    return document.querySelector('ia-bookreader')?.menuProviders?.bookmarks?.component ?? null;
+  }
+
+  _getCurrentPageID() {
+    if (this.br.mode === this.br.constMode2up) {
+      const pagesInView = this.br.displayedIndices;
+      return pagesInView[pagesInView.length - 1];
+    }
+    return this.br.currentIndex();
+  }
+
+  _refreshBookmarkState() {
+    const iaBookmarks = this._getIaBookmarks();
+    if (!iaBookmarks) return;
+    const allBm = iaBookmarks.bookmarks ?? {};
+    this._bmPageIDs = Object.keys(allBm).map(Number).sort((a, b) => a - b);
+    const count = this._bmPageIDs.length;
+    if (this._bookmarkCountBubble) {
+      this._bookmarkCountBubble.textContent = String(count);
+      this._bookmarkCountBubble.hidden = count === 0;
+    }
+    this._updateBookmarkIcon();
+    if (this._bmNavBar && !this._bmNavBar.hasAttribute('hidden')) {
+      if (count === 0) {
+        this._hideBmNav();
+      } else {
+        // Keep current index in bounds after a deletion
+        this._bmCurrentIdx = Math.min(this._bmCurrentIdx, count - 1);
+        this._updateBmNavDisplay();
+      }
+    }
+  }
+
+  _updateBookmarkIcon() {
+    if (!this._bookmarkBtn) return;
+    const iaBookmarks = this._getIaBookmarks();
+    const hasBm = iaBookmarks && (this._getCurrentPageID() in (iaBookmarks.bookmarks ?? {}));
+    this._bookmarkBtn.classList.toggle('BRolMobileBookmarkBtn--active', !!hasBm);
+  }
+
+  _openBmNav() {
+    if (!this._bmNavBar || this._bmPageIDs.length === 0) return;
+    this._closeSearch();  // collapse search row (preserve state)
+    this._hideResultNav();
+    // Position nav at the bookmark for the current page (or first bookmark)
+    const pageID = this._getCurrentPageID();
+    const idx = this._bmPageIDs.indexOf(pageID);
+    this._bmCurrentIdx = idx >= 0 ? idx : 0;
+    this._bmNavBar.removeAttribute('hidden');
+    this._updateBmNavDisplay();
+  }
+
+  _hideBmNav() {
+    this._bmNavBar?.setAttribute('hidden', '');
+  }
+
+  _updateBmNavDisplay() {
+    const { _bmNavPosEl, _bmNavPrevBtn, _bmNavNextBtn, _bmNavNoteInput, _bmNavNoteClearBtn } = this;
+    if (!_bmNavPosEl || !_bmNavPrevBtn || !_bmNavNextBtn || !_bmNavNoteInput) return;
+    const total = this._bmPageIDs.length;
+    const idx = this._bmCurrentIdx;
+    if (total === 0) { this._hideBmNav(); return; }
+    const pageID = this._bmPageIDs[idx];
+    const bm = this._getIaBookmarks()?.bookmarks?.[pageID];
+    _bmNavPosEl.textContent = `(${idx + 1}/${total})`;
+    _bmNavNoteInput.value = bm?.note ?? '';
+    if (_bmNavNoteClearBtn) _bmNavNoteClearBtn.hidden = !_bmNavNoteInput.value;
+    _bmNavPrevBtn.disabled = idx === 0;
+    _bmNavNextBtn.disabled = idx === total - 1;
+  }
+
+  _navigateToBookmark(idx) {
+    if (idx < 0 || idx >= this._bmPageIDs.length) return;
+    this._bmCurrentIdx = idx;
+    this.br.jumpToIndex(this._bmPageIDs[idx]);
+    this._updateBmNavDisplay();
+  }
+
+  _saveCurrentBookmarkNote(note) {
+    if (this._bmCurrentIdx < 0 || this._bmCurrentIdx >= this._bmPageIDs.length) return;
+    const pageID = this._bmPageIDs[this._bmCurrentIdx];
+    const iaBookmarks = this._getIaBookmarks();
+    if (!iaBookmarks) return;
+    iaBookmarks.saveBookmark({ detail: { bookmark: { id: pageID, note } } });
+  }
+
+  _bindBookmarkEvents() {
+    // Bookmark add/delete: fires as a composed CustomEvent (crosses shadow DOM)
+    document.addEventListener('bookmarksChanged', () => {
+      this._refreshBookmarkState();
+    });
+
+    // Page navigation: update red icon + sync nav position if open
+    $(document).on('BookReader:fragmentChange', () => {
+      if (!this._active) return;
+      this._updateBookmarkIcon();
+      if (this._bmNavBar && !this._bmNavBar.hasAttribute('hidden')) {
+        const pageID = this._getCurrentPageID();
+        const idx = this._bmPageIDs.indexOf(pageID);
+        if (idx >= 0) this._bmCurrentIdx = idx;
+        this._updateBmNavDisplay();
+      }
+    });
+
+    // Initial state — ia-bookmarks component may not be mounted yet
+    const tryRefresh = () => {
+      if (this._getIaBookmarks()) {
+        this._refreshBookmarkState();
+      } else {
+        $(document).one('BookReader:PostInit', () => setTimeout(() => this._refreshBookmarkState(), 300));
+      }
+    };
+    tryRefresh();
   }
 
   _bindSearchEvents() {
