@@ -66,6 +66,7 @@
     "@iiif/presentation-2": "^1.0.4",
     "@iiif/presentation-3": "^2.1.3",
     "@open-wc/testing-helpers": "3.0.1",
+    "@playwright/test": "1.60.0",
     "@types/jest": "30.0.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "babel-loader": "10.1.1",
@@ -134,6 +135,8 @@
     "DOCS:update:test-deps": "If CI succeeds, these should be good to update",
     "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing-helpers@latest @types/jest@latest eslint@7 eslint-plugin-testcafe@latest jest@latest jest-environment-jsdom@latest sinon@latest testcafe@latest",
     "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
-    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest @babel/plugin-proposal-class-properties@latest @babel/plugin-proposal-decorators@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest"
+    "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest @babel/plugin-proposal-class-properties@latest @babel/plugin-proposal-decorators@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
+    "test:playwright": "npx playwright test",
+    "test:playwright:ci": "npm run build && npx playwright test"
   }
 }
