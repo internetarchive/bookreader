@@ -644,3 +644,82 @@ test.describe('Result nav bar — (x/y) strip after result click', () => {
     expect(containerTop).toBeGreaterThanOrEqual(wrapperBottom - 2);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 6. URL pre-fill: ?q= on load opens search bar with pre-filled term
+//
+// BookReader reads ?q= during setup() and stores it in
+// plugins.search.options.initialSearchTerm. The OL mobile plugin reads that
+// value at the end of init() and opens the search UI pre-filled, so the user
+// sees search results immediately without having to tap the search icon first.
+// ---------------------------------------------------------------------------
+
+test.describe('URL pre-fill — ?q= opens search bar on load', () => {
+  const DEMO_PATH_WITH_Q = `/BookReaderDemo/demo-internetarchive.html?ocaid=${OCAID}&ref=ol&q=shoe`;
+
+  test('search row is visible on load when ?q= is in the URL', async ({ page }) => {
+    await page.goto(DEMO_PATH_WITH_Q);
+    await waitForMobileUI(page);
+    await expect(page.locator('.BRolMobileRow2')).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('search input is pre-filled with the URL query term', async ({ page }) => {
+    await page.goto(DEMO_PATH_WITH_Q);
+    await waitForMobileUI(page);
+    await page.locator('.BRolMobileRow2').waitFor({ state: 'visible', timeout: 10_000 });
+    const value = await page.locator('.BRolMobileInput').inputValue();
+    expect(value).toBe('shoe');
+  });
+
+  test('results appear automatically when ?q= is in the URL', async ({ page }) => {
+    await page.goto(DEMO_PATH_WITH_Q);
+    await waitForMobileUI(page);
+    // Search is submitted by BookReader's search plugin on load — results
+    // arrive asynchronously after the network call to archive.org.
+    await expect(page.locator('.BRolMobileResults')).toBeVisible({ timeout: 30_000 });
+  });
+
+  test('search bar stays closed when ?q= is absent', async ({ page }) => {
+    // Regression guard: no pre-fill without ?q=
+    await page.goto(DEMO_PATH);
+    await waitForMobileUI(page);
+    await expect(page.locator('.BRolMobileRow2')).toBeHidden();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 7. Cancel removes in-book search highlights
+//
+// Pressing Cancel should clear not just our UI but also the search pins that
+// BookReader renders on the book pages. This calls
+// br.plugins.search.removeSearchResults() to remove hilite overlays.
+// ---------------------------------------------------------------------------
+
+test.describe('Cancel — removes in-book search highlights', () => {
+  test('Cancel removes search result pins from the book', async ({ page }) => {
+    await page.goto(DEMO_PATH);
+    await waitForMobileUI(page);
+
+    // Perform a search so BookReader renders result pins on book pages
+    await page.locator('.BRolMobileSearchBtn').click();
+    await page.locator('.BRolMobileInput').fill('shoe');
+    await page.locator('.BRolMobileInput').press('Enter');
+    await expect(page.locator('.BRolMobileResults')).toBeVisible({ timeout: 20_000 });
+
+    // Verify BookReader's searchTerm is set (search is active)
+    const termBefore = await page.evaluate(
+      () => /** @type {any} */ (window).br?.plugins?.search?.searchTerm ?? '',
+    );
+    expect(termBefore).toBe('shoe');
+
+    // Cancel
+    await page.locator('.BRolMobileCancelBtn').click();
+    await page.waitForTimeout(300);
+
+    // After cancel, BookReader's searchTerm should be cleared
+    const termAfter = await page.evaluate(
+      () => /** @type {any} */ (window).br?.plugins?.search?.searchTerm ?? '',
+    );
+    expect(termAfter == null || termAfter === '').toBe(true);
+  });
+});

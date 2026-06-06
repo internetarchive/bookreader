@@ -58,6 +58,26 @@ export class OLMobilePlugin extends BookReaderPlugin {
     if (!this._shouldActivate()) return;
     this._active = true;
     this._setupMobileUI();
+    this._prefillFromUrl();
+  }
+
+  /** If ?q= is in the URL, open the search bar and pre-fill it.
+   *  BookReader's search plugin reads ?q= during setup() and stores it in
+   *  plugins.search.options.initialSearchTerm before any plugin init() runs.
+   *  The search itself is already in-flight by the time we read this value,
+   *  so we just need to open the UI and show the loading state. */
+  _prefillFromUrl() {
+    const term = this.br.plugins.search?.options.initialSearchTerm;
+    if (!term) return;
+    this._openSearch();
+    if (this._searchInput) {
+      this._searchInput.value = term;
+      if (this._clearBtn) this._clearBtn.hidden = false;
+    }
+    this._savedQuery = term;
+    // Show loading immediately; SearchCallback will replace it with results.
+    // (SearchStarted may have fired before our event handler was bound.)
+    this._showLoading();
   }
 
   _shouldActivate() {
@@ -434,15 +454,17 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._hideResults();
   }
 
-  /** Cancel: close search + clear all state (input, results, nav, matches). */
+  /** Cancel: close search + clear all state (input, results, nav, matches, book pins). */
   _deactivateSearch() {
     this._savedQuery = '';
     this._closeSearch();
-    this._clearResults(); // also resets _matches, _currentMatchIdx, hides nav
+    this._clearResults(); // resets _matches, _currentMatchIdx, hides nav
     if (this._searchInput) {
       this._searchInput.value = '';
       if (this._clearBtn) this._clearBtn.hidden = true;
     }
+    // Remove search hilite pins from the book pages
+    this.br.plugins.search?.removeSearchResults(/* suppressFragmentChange= */ true);
   }
 
   _submitSearch(query) {
