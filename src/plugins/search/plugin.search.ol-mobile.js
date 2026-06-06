@@ -13,6 +13,9 @@ import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 /** @typedef {import('../../BookReader.js').default} BookReader */
 /** @typedef {import('../search/plugin.search.js').SearchInsideMatch} SearchInsideMatch */
 
+// Grab the global BookReader class set by BookReader.js (same pattern as other plugins)
+const BookReader = /** @type {typeof import('../../BookReader.js').default} */ (window.BookReader);
+
 // ── SVG constants ──────────────────────────────────────────────────────────
 const CHEVRON_UP   = `<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`;
 const CHEVRON_DOWN = `<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
@@ -81,7 +84,9 @@ export class OLMobilePlugin extends BookReaderPlugin {
   }
 
   _shouldActivate() {
-    const params = new URLSearchParams(window.location.search);
+    // Use br.readQueryString() so params in the URL hash (e.g. #?ref=ol) are
+    // also detected — window.location.search misses hash-embedded params.
+    const params = new URLSearchParams(this.br.readQueryString());
     return (
       params.get('ref') === this.options.olRef &&
       window.innerWidth <= this.options.mobileBreakpoint
@@ -469,8 +474,11 @@ export class OLMobilePlugin extends BookReaderPlugin {
 
   _submitSearch(query) {
     if (!query) return;
+    // br.search is conditionally bound only when search plugin is enabled;
+    // use the plugin directly to avoid TypeError when search is disabled.
+    if (!this.br.plugins.search) return;
     this._showLoading();
-    this.br.search(query);
+    this.br.plugins.search.search(query);
   }
 
   _showLoading() {
@@ -541,21 +549,22 @@ export class OLMobilePlugin extends BookReaderPlugin {
   }
 
   _bindSearchEvents() {
+    const br = this.br;
     $(document)
-      .on('BookReader:SearchCallback', (e, { results }) => {
-        if (!this._active) return;
+      .on('BookReader:SearchCallback', (e, { results, instance }) => {
+        if (!this._active || instance !== br) return;
         this._renderResults(results.matches);
       })
-      .on('BookReader:SearchStarted', () => {
-        if (!this._active) return;
+      .on('BookReader:SearchStarted', (e, { instance }) => {
+        if (!this._active || instance !== br) return;
         this._showLoading();
       })
-      .on('BookReader:SearchCallbackEmpty', () => {
-        if (!this._active) return;
+      .on('BookReader:SearchCallbackEmpty', (e, { instance }) => {
+        if (!this._active || instance !== br) return;
         this._renderResults([]);
       })
-      .on('BookReader:SearchCallbackError', () => {
-        if (!this._active) return;
+      .on('BookReader:SearchCallbackError', (e, { instance }) => {
+        if (!this._active || instance !== br) return;
         if (!this._resultsPanel) return;
         this._resultsPanel.removeAttribute('hidden');
         this._resultsPanel.innerHTML = `<div class="BRolMobileStatus BRolMobileStatus--error">Sorry, there was an error with your search. Please try again.</div>`;
