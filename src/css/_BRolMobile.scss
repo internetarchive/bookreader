@@ -1,0 +1,441 @@
+/**
+ * OL Mobile Search UI
+ *
+ * Activated when .BRolMobile is added to the .BookReader root by OLMobilePlugin
+ * (condition: ?ref=ol AND mobile viewport).
+ */
+
+$ol-mobile-bg: #F5F1E9;
+$ol-mobile-border: #D9D3C9;
+$ol-mobile-text: #333;
+$ol-mobile-muted: #777;
+$ol-mobile-header-bg: #F5F1E9;
+$ol-mobile-row-height: 44px;
+$ol-mobile-input-bg: #EBEBEB;
+$ol-mobile-input-radius: 8px;
+$ol-mobile-action-blue: #005BBB;
+
+/* ---------------------------------------------------------------
+   Root: hide conflicting standard chrome
+   --------------------------------------------------------------- */
+.BRolMobile {
+  /* Suppress the standard toolbar (hidden in JS too, belt-and-suspenders) */
+  .BRtoolbar {
+    display: none !important;
+  }
+
+  /* Suppress the standard search navigation strip above the bottom navbar */
+  .BRsearch-navigation {
+    display: none;
+  }
+
+  /* Suppress the desktop toolbar search form */
+  .BRtoolbarSectionSearch {
+    display: none !important;
+  }
+
+  /* Suppress sidebar/menu elements reachable from the BookReader root */
+  ia-menu-slider,
+  .BRsidebar,
+  .BRsideMenu {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Collapsed state: the entire bar visually disappears (transparent bg,
+   no border/shadow). Logo and actions are invisible but preserve their
+   space so the chevron stays in the same horizontal position.
+   Only the down-chevron tab (~25px) remains visible.
+   --------------------------------------------------------------- */
+.BRolMobileWrapper--collapsed {
+  .BRolMobileHeader {
+    background: transparent;
+    border-bottom: none;
+    box-shadow: none;
+  }
+
+  .BRolMobileLogo,
+  .BRolMobileActions {
+    visibility: hidden; /* preserve space so chevron stays in same x position */
+  }
+
+  .BRolMobileRow1 {
+    height: 25px; /* just the chevron tab */
+    overflow: hidden; /* clip invisible logo/actions */
+  }
+
+  .BRolMobileChromeToggle {
+    margin-top: 0; /* fill the full 25px row (align-self:stretch still active) */
+    margin-bottom: 0;
+    background-color: #313131;
+    border-left-color: #666;
+    border-right-color: #666;
+    border-bottom-color: #666;
+    color: #fff;
+  }
+
+  .BRolMobileRow2,
+  .BRolMobileResults,
+  .BRolMobileResultNav {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Header wrapper (rows 1 + 2)
+   --------------------------------------------------------------- */
+.BRolMobileHeader {
+  background-color: $ol-mobile-header-bg;
+  border-bottom: 1px solid $ol-mobile-border;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 4; /* above book pages */
+}
+
+/* ---------------------------------------------------------------
+   Row 1: IA logo + chrome toggle tab + action buttons
+   --------------------------------------------------------------- */
+.BRolMobileRow1 {
+  display: flex;
+  align-items: center;
+  height: $ol-mobile-row-height;
+  padding: 0 12px;
+}
+
+/* Chrome toggle tab: sits right of the IA logo.
+   Expanded: ~40px tall (align-self:stretch fills the 44px row, 2px margin top+bottom).
+   Collapsed: fills the 25px row height (margins overridden by --collapsed modifier).
+   Beige background added in collapsed state via the --collapsed modifier. */
+.BRolMobileChromeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch; /* fills row cross-axis; margin trims it to ~40px */
+  margin: 2px 0 2px 8px;
+  padding: 0 10px;
+  background: none;
+  border: none;
+  border-left: 1px solid $ol-mobile-border;
+  border-right: 1px solid $ol-mobile-border;
+  border-bottom: 1px solid $ol-mobile-border;
+  border-radius: 0 0 8px 8px;
+  cursor: pointer;
+  color: $ol-mobile-muted;
+
+  &:hover,
+  &:focus-visible {
+    background-color: rgba(0, 0, 0, 0.04);
+    outline: none;
+  }
+}
+
+.BRolMobileLogo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  border-radius: 4px;
+  color: #000; /* force SVG fill to black — SVG uses currentColor */
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    outline-offset: 2px;
+  }
+
+  svg {
+    display: block;
+  }
+}
+
+.BRolMobileActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto; /* push actions to the right */
+}
+
+.BRolMobileActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: $ol-mobile-text;
+
+  &:hover,
+  &:focus-visible {
+    background-color: rgba(0, 0, 0, 0.06);
+    outline: none;
+  }
+
+  svg {
+    display: block;
+  }
+
+  &--active {
+    background-color: rgba(0, 0, 0, 0.09);
+  }
+}
+
+/* ---------------------------------------------------------------
+   Row 2: search field + cancel button
+   --------------------------------------------------------------- */
+.BRolMobileRow2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 8px;
+  background-color: $ol-mobile-header-bg;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.BRolMobileSearchField {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  background-color: $ol-mobile-input-bg;
+  border: 1px solid $ol-mobile-border;
+  border-radius: $ol-mobile-input-radius;
+  padding: 0 10px;
+  height: 34px;
+  gap: 6px;
+  min-width: 0; /* prevent flex overflow */
+}
+
+.BRolMobileSearchIcon {
+  flex-shrink: 0;
+  color: $ol-mobile-muted;
+  display: block;
+}
+
+.BRolMobileInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 16px; /* ≥16px prevents iOS auto-zoom on focus */
+  line-height: 1;
+  color: $ol-mobile-text;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+
+  &::placeholder {
+    color: #999;
+  }
+
+  /* Hide browser's built-in clear button; we provide our own */
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+.BRolMobileClearBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $ol-mobile-muted;
+  flex-shrink: 0;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
+}
+
+.BRolMobileCancelBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px 0 4px 4px;
+  font-size: 14px;
+  font-family: inherit;
+  color: $ol-mobile-action-blue;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Results panel
+   --------------------------------------------------------------- */
+.BRolMobileResults {
+  background-color: $ol-mobile-bg;
+  border-bottom: 1px solid $ol-mobile-border;
+  max-height: 55vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  font-size: 14px;
+  color: $ol-mobile-text;
+  position: relative;
+  z-index: 3;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.BRolMobileResultsHeader {
+  padding: 10px 14px 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: $ol-mobile-text;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  position: sticky;
+  top: 0;
+  background-color: $ol-mobile-bg;
+}
+
+.BRolMobileResultsList {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4px;
+}
+
+.BRolMobileResultItem {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.45;
+  color: $ol-mobile-text;
+  font-family: inherit;
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    outline-offset: -2px;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  mark {
+    background-color: rgba(0, 128, 215, 0.18);
+    color: inherit;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+}
+
+.BRolMobileResultPage {
+  font-weight: 600;
+  color: #444;
+}
+
+/* ---------------------------------------------------------------
+   Result navigator bar — appears inside the header after a result is clicked.
+   Shows (x/y) + single-line snippet with prev/next arrow buttons.
+   Lives inside .BRolMobileHeader so ResizeObserver auto-adjusts book offset.
+   --------------------------------------------------------------- */
+.BRolMobileResultNav {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 2px;
+  background-color: $ol-mobile-header-bg;
+  border-top: 1px solid $ol-mobile-border;
+  gap: 2px;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.BRolMobileResultNavBtn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: $ol-mobile-text;
+
+  /* Hidden (not just disabled) when at bounds — opacity:0 preserves layout
+     so the snippet text stays centred regardless of arrow visibility. */
+  &[disabled] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:not([disabled]):hover,
+  &:not([disabled]):focus-visible {
+    background-color: rgba(0, 0, 0, 0.06);
+    outline: none;
+  }
+}
+
+.BRolMobileResultNavCenter {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.BRolMobileResultNavPos {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: $ol-mobile-muted;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.BRolMobileResultNavSnippet {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: $ol-mobile-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Status messages: loading / empty / error */
+.BRolMobileStatus {
+  padding: 14px 14px;
+  color: $ol-mobile-muted;
+  font-style: italic;
+
+  &--error {
+    color: #c0392b;
+    font-style: normal;
+  }
+}

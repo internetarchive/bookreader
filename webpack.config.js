@@ -54,6 +54,7 @@ export default [
       'plugins/plugin.iiif.js': { import: './src/plugins/plugin.iiif.js', dependOn: 'BookReader.js' },
       'plugins/plugin.resume.js': { import: './src/plugins/plugin.resume.js', dependOn: 'BookReader.js' },
       'plugins/plugin.search.js': { import: './src/plugins/search/plugin.search.js', dependOn: 'BookReader.js' },
+      'plugins/plugin.search.ol-mobile.js': { import: './src/plugins/search/plugin.search.ol-mobile.js', dependOn: 'BookReader.js' },
       'plugins/plugin.text_selection.js': { import: './src/plugins/plugin.text_selection.js', dependOn: 'BookReader.js' },
       'plugins/plugin.translate.js': { import: './src/plugins/translate/plugin.translate.js', dependOn: 'BookReader.js' },
       'plugins/translator-worker.js': { import: '@internetarchive/bergamot-translator/worker/translator-worker.js' },
