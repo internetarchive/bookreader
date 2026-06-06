@@ -1,3 +1,6 @@
+# 5.0.0-113
+- Feature: "Copy link to highlight" now public experiment @schu96 + @cdrini
+
 # 5.0.0-112
 - Feature: Make raw page indices in toolbar 0-based to reflect number in URL and code @pezvi
 - Fix: Make translate plugin gracefully handle unsupported source languages @cdrini
