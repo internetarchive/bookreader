@@ -35,38 +35,38 @@ export class OLMobilePlugin extends BookReaderPlugin {
     olRef: 'ol',
   };
 
-  // ── DOM refs (set during _buildHeader / _buildResultNav / _buildBookmarkNav) ──
-  /** @type {HTMLElement|null} */      _header = null;
-  /** @type {HTMLElement|null} */      _wrapper = null;
+  // ── DOM refs ───────────────────────────────────────────────────────────────
+  /** @type {HTMLElement|null} */       _header = null;
+  /** @type {HTMLElement|null} */       _wrapper = null;
   /** @type {HTMLButtonElement|null} */ _chromeHandle = null;
-  /** @type {HTMLElement|null} */      _resultsPanel = null;
-  /** @type {HTMLElement|null} */      _searchRow = null;
-  /** @type {HTMLInputElement|null} */ _searchInput = null;
+  // Search UI
+  /** @type {HTMLElement|null} */       _resultsPanel = null;
+  /** @type {HTMLElement|null} */       _searchRow = null;
+  /** @type {HTMLInputElement|null} */  _searchInput = null;
   /** @type {HTMLButtonElement|null} */ _clearBtn = null;
   /** @type {HTMLButtonElement|null} */ _searchBtn = null;
-  /** @type {HTMLButtonElement|null} */ _bookmarkBtn = null;
-  /** @type {HTMLElement|null} */       _bookmarkCountBubble = null;
   // Search result nav bar
-  /** @type {HTMLElement|null} */      _navBar = null;
+  /** @type {HTMLElement|null} */       _navBar = null;
   /** @type {HTMLButtonElement|null} */ _navPrevBtn = null;
   /** @type {HTMLButtonElement|null} */ _navNextBtn = null;
-  /** @type {HTMLElement|null} */      _navPosEl = null;
-  /** @type {HTMLElement|null} */      _navSnippetEl = null;
-  // Bookmark nav bar
-  /** @type {HTMLElement|null} */       _bmNavBar = null;
-  /** @type {HTMLButtonElement|null} */ _bmNavPrevBtn = null;
-  /** @type {HTMLButtonElement|null} */ _bmNavNextBtn = null;
-  /** @type {HTMLElement|null} */       _bmNavPosEl = null;
-  /** @type {HTMLInputElement|null} */  _bmNavNoteInput = null;
-  /** @type {HTMLButtonElement|null} */ _bmNavNoteClearBtn = null;
+  /** @type {HTMLElement|null} */       _navPosEl = null;
+  /** @type {HTMLElement|null} */       _navSnippetEl = null;
+  // Bookmark UI
+  /** @type {HTMLButtonElement|null} */ _bookmarkBtn = null;
+  /** @type {HTMLElement|null} */       _bookmarkCountBubble = null;
+  /** @type {HTMLElement|null} */       _bmNoteBar = null;
+  /** @type {HTMLInputElement|null} */  _bmNoteInput = null;
+  /** @type {HTMLButtonElement|null} */ _bmSaveBtn = null;
+  /** @type {HTMLElement|null} */       _bmListPanel = null;
 
   // ── State ──────────────────────────────────────────────────────────────────
   /** @type {SearchInsideMatch[]} */ _matches = [];
   /** @type {number} */  _currentMatchIdx = -1;
   /** @type {boolean} */ _active = false;
   /** @type {string} */  _savedQuery = '';
-  /** @type {number[]} */ _bmPageIDs = [];    // sorted page indices of all bookmarks
-  /** @type {number} */   _bmCurrentIdx = -1; // position in _bmPageIDs shown in nav
+  /** @type {number[]} */ _bmPageIDs = [];  // sorted leaf indices of all bookmarks
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   init() {
     if (!this._shouldActivate()) return;
@@ -75,11 +75,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._prefillFromUrl();
   }
 
-  /** If ?q= is in the URL, open the search bar and pre-fill it.
-   *  BookReader's search plugin reads ?q= during setup() and stores it in
-   *  plugins.search.options.initialSearchTerm before any plugin init() runs.
-   *  The search itself is already in-flight by the time we read this value,
-   *  so we just need to open the UI and show the loading state. */
+  /** If ?q= is in the URL, open the search bar and pre-fill it. */
   _prefillFromUrl() {
     const term = this.br.plugins.search?.options.initialSearchTerm;
     if (!term) return;
@@ -89,8 +85,6 @@ export class OLMobilePlugin extends BookReaderPlugin {
       if (this._clearBtn) this._clearBtn.hidden = false;
     }
     this._savedQuery = term;
-    // Show loading immediately; SearchCallback will replace it with results.
-    // (SearchStarted may have fired before our event handler was bound.)
     this._showLoading();
   }
 
@@ -116,8 +110,9 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._wrapper = wrapper;
 
     this._header = this._buildHeader();
-    this._resultsPanel = this._buildResultsPanel();
-    wrapper.append(this._header, this._resultsPanel);
+    this._resultsPanel = this._buildDropPanel('BRolMobileResults');
+    this._bmListPanel = this._buildDropPanel('BRolMobileBookmarkList');
+    wrapper.append(this._header, this._resultsPanel, this._bmListPanel);
 
     const $container = br.refs.$brContainer;
     if ($container?.[0]) {
@@ -126,14 +121,8 @@ export class OLMobilePlugin extends BookReaderPlugin {
       $root[0].prepend(wrapper);
     }
 
-    // Push BRcontainer down so the header doesn't occlude the book.
-    // BRcontainer is position:absolute, so normal-flow siblings don't push it.
-    // We use a MutationObserver to correct the `top` value each time BookReader
-    // overwrites it (BookReader's `element.style.top = value` replaces any prior
-    // declaration in the same CSSStyleDeclaration block, including ones set with
-    // !important via setProperty — last writer wins). The MutationObserver fires
-    // after every style attribute mutation and immediately re-applies our value.
-    // A ResizeObserver tracks wrapper height changes (search row open/close, collapse).
+    // Push BRcontainer down by wrapper height; MutationObserver re-applies
+    // when BookReader overwrites style.top; ResizeObserver tracks height changes.
     if ($container?.[0]) {
       const container = $container[0];
       let desiredTop = '';
@@ -143,12 +132,10 @@ export class OLMobilePlugin extends BookReaderPlugin {
         if (container.style.top !== desiredTop) container.style.top = desiredTop;
       };
 
-      // Correct any BookReader override immediately after it sets style
       new MutationObserver(() => {
         if (container.style.top !== desiredTop) container.style.top = desiredTop;
       }).observe(container, { attributes: true, attributeFilter: ['style'] });
 
-      // Update desired value when wrapper height changes (opens search row, collapses)
       new ResizeObserver(applyOffset).observe(this._wrapper);
 
       $(document).one('BookReader:PostInit', () => requestAnimationFrame(applyOffset));
@@ -159,6 +146,8 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._bindSearchEvents();
     this._bindBookmarkEvents();
   }
+
+  // ── Collapse/expand chrome ─────────────────────────────────────────────────
 
   _hideChrome() {
     const handle = this._chromeHandle;
@@ -178,15 +167,15 @@ export class OLMobilePlugin extends BookReaderPlugin {
     handle.setAttribute('aria-expanded', 'true');
   }
 
+  // ── Sidebar suppression ────────────────────────────────────────────────────
+
   _suppressSidebar() {
     const br = this.br;
 
-    // Intercept native ToggleSearchMenu event before ia-bookreader handles it.
     window.addEventListener('BookReader:ToggleSearchMenu', (e) => {
       e.stopImmediatePropagation();
     }, /* capture= */ true);
 
-    // Monkey-patch SearchView.toggleSidebar as belt-and-suspenders.
     const patchSearchView = () => {
       const sv = br.plugins.search?.searchView;
       if (sv) sv.toggleSidebar = () => {};
@@ -194,10 +183,6 @@ export class OLMobilePlugin extends BookReaderPlugin {
     patchSearchView();
     $(document).one('BookReader:PostInit', patchSearchView);
 
-    // The nav lives in iaux-item-navigator's shadow root (nested inside
-    // ia-bookreader's shadow root — two levels deep). Inject a style that
-    // hides the <nav> element (shortcuts strip + menu slider) while leaving
-    // the #reader (book content) visible.
     const injectNavStyle = () => {
       const itemNav = document.querySelector('ia-bookreader')
         ?.shadowRoot?.querySelector('iaux-item-navigator');
@@ -212,7 +197,6 @@ export class OLMobilePlugin extends BookReaderPlugin {
       return true;
     };
 
-    // Try immediately; if the component hasn't rendered yet, watch for it.
     if (!injectNavStyle()) {
       const observer = new MutationObserver(() => {
         if (injectNavStyle()) observer.disconnect();
@@ -225,6 +209,8 @@ export class OLMobilePlugin extends BookReaderPlugin {
       });
     }
   }
+
+  // ── Header ─────────────────────────────────────────────────────────────────
 
   _buildHeader() {
     const header = document.createElement('div');
@@ -247,7 +233,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
             <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
           </svg>
         </button>
-        <button class="BRolMobileBookmarkBubble" aria-label="View bookmarks" type="button" hidden>0</button>
+        <button class="BRolMobileBookmarkBubble" aria-label="View all bookmarks" type="button" hidden>0</button>
         <button class="BRolMobileActionBtn BRolMobileSearchBtn" aria-label="Search inside book" aria-pressed="false" type="button">
           <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -263,7 +249,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
       </div>
     `;
 
-    // Chrome toggle: hide/show header (chevron tab right of logo)
+    // Chrome toggle
     const chromeToggle = /** @type {HTMLButtonElement} */ (row1.querySelector('.BRolMobileChromeToggle'));
     chromeToggle.addEventListener('click', () => {
       if (this._wrapper?.classList.contains('BRolMobileWrapper--collapsed')) {
@@ -274,40 +260,52 @@ export class OLMobilePlugin extends BookReaderPlugin {
     });
     this._chromeHandle = chromeToggle;
 
-    // Bookmark: toggle bookmark for current page.
-    // bookmarkButtonClicked() removes the bookmark if it already exists, adds it if not.
-    // State refresh happens via the bookmarksChanged event listener in _bindBookmarkEvents.
+    // Bookmark button: add bookmark (or remove with confirmation)
     this._bookmarkBtn = /** @type {HTMLButtonElement} */ (row1.querySelector('.BRolMobileBookmarkBtn'));
     this._bookmarkBtn.addEventListener('click', () => {
       const iaBookmarks = this._getIaBookmarks();
       if (!iaBookmarks) return;
-      iaBookmarks.bookmarkButtonClicked(this._getCurrentPageID());
-      // bookmarksChanged fires after LitElement's async render cycle; refresh eagerly
-      // so the icon turns red without waiting for the event.
+      const pageID = this._getCurrentPageID();
+      const allBm = iaBookmarks.bookmarks;
+      const existing = !Array.isArray(allBm) ? allBm[pageID] : null;
+
+      if (existing) {
+        const note = existing.note?.trim();
+        if (note) {
+          const ok = window.confirm(`Removing this bookmark will also remove note: "${note}"`);
+          if (!ok) return;
+        }
+      }
+
+      iaBookmarks.bookmarkButtonClicked(pageID);
+      // bookmarksChanged fires after LitElement's async render; refresh eagerly
       setTimeout(() => this._refreshBookmarkState(), 50);
     });
 
-    // Count bubble: click to open/close the bookmark nav bar.
+    // Bookmark count bubble: toggle the bookmark list panel
     this._bookmarkCountBubble = /** @type {HTMLElement} */ (row1.querySelector('.BRolMobileBookmarkBubble'));
     this._bookmarkCountBubble.addEventListener('click', () => {
-      if (this._bmNavBar && !this._bmNavBar.hasAttribute('hidden')) {
-        this._hideBmNav();
+      if (this._bmListPanel && !this._bmListPanel.hasAttribute('hidden')) {
+        this._closeBmList();
       } else {
-        this._openBmNav();
+        this._openBmList();
       }
     });
 
-    // Search button: proper toggle open ↔ close (preserves input/results state)
+    // Search button: toggle search row
     this._searchBtn = /** @type {HTMLButtonElement} */ (row1.querySelector('.BRolMobileSearchBtn'));
     this._searchBtn.addEventListener('click', () => {
       if (this._searchRow?.hasAttribute('hidden')) {
         this._openSearch();
       } else {
-        this._closeSearch(); // close but preserve state for next open
+        this._closeSearch();
       }
     });
 
-    // ── Row 2 ────────────────────────────────────────────────────────────────
+    // ── Note bar (shown when current page is bookmarked) ──────────────────
+    this._bmNoteBar = this._buildNoteBar();
+
+    // ── Row 2: search field ───────────────────────────────────────────────
     const row2 = document.createElement('div');
     row2.className = 'BRolMobileRow2';
     row2.setAttribute('hidden', '');
@@ -348,8 +346,6 @@ export class OLMobilePlugin extends BookReaderPlugin {
       }
     });
 
-    // Tapping/focusing the input restores results (hides nav bar first).
-    // Also restores the query in case iOS cleared the type=text input on blur.
     const restoreResults = () => {
       this._hideResultNav();
       if (!input.value && this._savedQuery) {
@@ -366,29 +362,204 @@ export class OLMobilePlugin extends BookReaderPlugin {
     clearBtn.addEventListener('click', () => {
       input.value = '';
       clearBtn.hidden = true;
-      this._clearResults(); // full clear on explicit X
+      this._clearResults();
       input.focus();
     });
 
-    // Cancel closes AND clears everything
     cancelBtn.addEventListener('click', () => this._deactivateSearch());
 
     this._searchRow = row2;
     this._searchInput = input;
 
     this._navBar = this._buildResultNav();
-    this._bmNavBar = this._buildBookmarkNav();
-    header.append(row1, row2, this._navBar, this._bmNavBar);
+    header.append(row1, this._bmNoteBar, row2, this._navBar);
     return header;
   }
 
-  _buildResultsPanel() {
+  // ── Note bar ───────────────────────────────────────────────────────────────
+
+  _buildNoteBar() {
+    const bar = document.createElement('div');
+    bar.className = 'BRolMobileNoteBar';
+    bar.setAttribute('hidden', '');
+    bar.innerHTML = `
+      <input class="BRolMobileNoteInput" type="text" placeholder="Add a note…" autocomplete="off" autocorrect="off" />
+      <button class="BRolMobileSaveBtn" type="button">Save</button>
+    `;
+
+    this._bmNoteInput = /** @type {HTMLInputElement} */ (bar.querySelector('.BRolMobileNoteInput'));
+    this._bmSaveBtn = /** @type {HTMLButtonElement} */ (bar.querySelector('.BRolMobileSaveBtn'));
+
+    this._bmSaveBtn.addEventListener('click', () => this._saveNote());
+    this._bmNoteInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); this._saveNote(); }
+    });
+
+    return bar;
+  }
+
+  _showNoteBar(pageID) {
+    if (!this._bmNoteBar || !this._bmNoteInput) return;
+    const bm = this._getBookmarkForPage(pageID);
+    this._bmNoteInput.value = bm?.note ?? '';
+    this._bmNoteBar.removeAttribute('hidden');
+  }
+
+  _hideNoteBar() {
+    this._bmNoteBar?.setAttribute('hidden', '');
+  }
+
+  _saveNote() {
+    const iaBookmarks = this._getIaBookmarks();
+    if (!iaBookmarks || !this._bmNoteInput) return;
+    const pageID = this._getCurrentPageID();
+    const note = this._bmNoteInput.value;
+    iaBookmarks.saveBookmark({ detail: { bookmark: { id: pageID, note } } });
+    if (this._bmSaveBtn) {
+      this._bmSaveBtn.textContent = 'Saved!';
+      setTimeout(() => { if (this._bmSaveBtn) this._bmSaveBtn.textContent = 'Save'; }, 1500);
+    }
+  }
+
+  // ── Bookmark list panel ────────────────────────────────────────────────────
+
+  /** Creates either the search results or bookmark list drop panel (shared structure). */
+  _buildDropPanel(className) {
     const panel = document.createElement('div');
-    panel.className = 'BRolMobileResults';
+    panel.className = className;
     panel.setAttribute('hidden', '');
     panel.setAttribute('aria-live', 'polite');
     return panel;
   }
+
+  _openBmList() {
+    if (!this._bmListPanel) return;
+    this._closeBmList();
+    this._renderBmList();
+    this._bmListPanel.removeAttribute('hidden');
+  }
+
+  _closeBmList() {
+    this._bmListPanel?.setAttribute('hidden', '');
+  }
+
+  _renderBmList() {
+    if (!this._bmListPanel) return;
+    if (this._bmPageIDs.length === 0) {
+      this._bmListPanel.innerHTML = `<div class="BRolMobileStatus">No bookmarks yet.</div>`;
+      return;
+    }
+
+    const iaBookmarks = this._getIaBookmarks();
+    const allBm = iaBookmarks?.bookmarks;
+    const count = this._bmPageIDs.length;
+
+    const items = this._bmPageIDs.map((pageID) => {
+      const bm = !Array.isArray(allBm) ? allBm?.[pageID] : null;
+      const pageNum = this.br.book?.getPageNum(pageID) ?? (pageID + 1);
+      const note = bm?.note?.trim();
+      const noteSnippet = note ? note.split('\n')[0].substring(0, 60) : '';
+      return `<li>
+        <button class="BRolMobileResultItem BRolMobileBookmarkItem" data-page-id="${pageID}" type="button">
+          <span class="BRolMobileResultPage">Page ${pageNum}</span>${noteSnippet ? `<span class="BRolMobileResultSnippet"> — ${noteSnippet}</span>` : ''}
+        </button>
+      </li>`;
+    }).join('');
+
+    this._bmListPanel.innerHTML = `
+      <div class="BRolMobileResultsHeader">${count} Bookmark${count === 1 ? '' : 's'}</div>
+      <ul class="BRolMobileResultsList" role="list">${items}</ul>
+    `;
+
+    this._bmListPanel.querySelectorAll('.BRolMobileBookmarkItem').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const pageID = parseInt(/** @type {HTMLElement} */ (btn).dataset.pageId, 10);
+        this.br.jumpToIndex(pageID);
+        this._closeBmList();
+        // Note bar + header color will update via BookReader:fragmentChange
+      });
+    });
+  }
+
+  // ── Bookmark state ─────────────────────────────────────────────────────────
+
+  _getIaBookmarks() {
+    return document.querySelector('ia-bookreader')?.menuProviders?.bookmarks?.component ?? null;
+  }
+
+  _getCurrentPageID() {
+    if (this.br.mode === this.br.constMode2up) {
+      const pagesInView = this.br.displayedIndices;
+      return pagesInView[pagesInView.length - 1];
+    }
+    return this.br.currentIndex();
+  }
+
+  _getBookmarkForPage(pageID) {
+    const allBm = this._getIaBookmarks()?.bookmarks;
+    return (!allBm || Array.isArray(allBm)) ? null : (allBm[pageID] ?? null);
+  }
+
+  _refreshBookmarkState() {
+    const iaBookmarks = this._getIaBookmarks();
+    if (!iaBookmarks) return;
+    const allBm = iaBookmarks.bookmarks;
+    const keys = Array.isArray(allBm) ? [] : Object.keys(allBm ?? {});
+    this._bmPageIDs = keys.map(Number).sort((a, b) => a - b);
+
+    const count = this._bmPageIDs.length;
+    if (this._bookmarkCountBubble) {
+      this._bookmarkCountBubble.textContent = String(count);
+      this._bookmarkCountBubble.hidden = count === 0;
+    }
+
+    this._updateBookmarkState();
+  }
+
+  /** Update icon fill, header color, and note bar for the current page. */
+  _updateBookmarkState() {
+    const pageID = this._getCurrentPageID();
+    const bm = this._getBookmarkForPage(pageID);
+
+    if (this._bookmarkBtn) {
+      this._bookmarkBtn.classList.toggle('BRolMobileBookmarkBtn--active', !!bm);
+    }
+    if (this._header) {
+      this._header.classList.toggle('BRolMobileHeader--bookmarked', !!bm);
+    }
+
+    if (bm) {
+      this._showNoteBar(pageID);
+    } else {
+      this._hideNoteBar();
+    }
+  }
+
+  _bindBookmarkEvents() {
+    // ia-bookmarks is created via document.createElement() and may not be connected
+    // to the DOM. Listeners added directly on the element always fire.
+    const bindToComponent = () => {
+      const comp = this._getIaBookmarks();
+      if (!comp) return false;
+      comp.addEventListener('bookmarksChanged', () => this._refreshBookmarkState());
+      this._refreshBookmarkState();
+      return true;
+    };
+
+    if (!bindToComponent()) {
+      $(document).one('BookReader:PostInit', () => {
+        if (!bindToComponent()) setTimeout(bindToComponent, 500);
+      });
+    }
+
+    // Page navigation: update header color + note bar + bubble highlight
+    $(document).on('BookReader:fragmentChange', () => {
+      if (!this._active) return;
+      this._updateBookmarkState();
+    });
+  }
+
+  // ── Search UI ──────────────────────────────────────────────────────────────
 
   _buildResultNav() {
     const nav = document.createElement('div');
@@ -418,61 +589,6 @@ export class OLMobilePlugin extends BookReaderPlugin {
     return nav;
   }
 
-  _buildBookmarkNav() {
-    const nav = document.createElement('div');
-    nav.className = 'BRolMobileBookmarkNav';
-    nav.setAttribute('hidden', '');
-    nav.innerHTML = `
-      <button class="BRolMobileResultNavBtn BRolMobileBookmarkNavPrev" aria-label="Previous bookmark" type="button">${CHEVRON_LEFT}</button>
-      <div class="BRolMobileBookmarkNavCenter">
-        <span class="BRolMobileBookmarkNavPos"></span>
-        <div class="BRolMobileBookmarkNoteField">
-          <input class="BRolMobileBookmarkNoteInput" type="text" placeholder="add note" autocomplete="off" autocorrect="off" />
-          <button class="BRolMobileBookmarkNoteClearBtn" aria-label="Clear note" type="button" hidden>
-            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <button class="BRolMobileResultNavBtn BRolMobileBookmarkNavNext" aria-label="Next bookmark" type="button">${CHEVRON_RIGHT}</button>
-    `;
-
-    this._bmNavPrevBtn = /** @type {HTMLButtonElement} */ (nav.querySelector('.BRolMobileBookmarkNavPrev'));
-    this._bmNavNextBtn = /** @type {HTMLButtonElement} */ (nav.querySelector('.BRolMobileBookmarkNavNext'));
-    this._bmNavPosEl = /** @type {HTMLElement} */ (nav.querySelector('.BRolMobileBookmarkNavPos'));
-    this._bmNavNoteInput = /** @type {HTMLInputElement} */ (nav.querySelector('.BRolMobileBookmarkNoteInput'));
-    this._bmNavNoteClearBtn = /** @type {HTMLButtonElement} */ (nav.querySelector('.BRolMobileBookmarkNoteClearBtn'));
-
-    this._bmNavPrevBtn.addEventListener('click', () => {
-      if (this._bmCurrentIdx > 0) this._navigateToBookmark(this._bmCurrentIdx - 1);
-    });
-    this._bmNavNextBtn.addEventListener('click', () => {
-      if (this._bmCurrentIdx < this._bmPageIDs.length - 1) this._navigateToBookmark(this._bmCurrentIdx + 1);
-    });
-
-    const noteInput = this._bmNavNoteInput;
-    const noteClearBtn = this._bmNavNoteClearBtn;
-    noteInput.addEventListener('input', () => {
-      noteClearBtn.hidden = !noteInput.value;
-    });
-    noteInput.addEventListener('blur', () => {
-      this._saveCurrentBookmarkNote(noteInput.value);
-    });
-    noteInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); noteInput.blur(); }
-    });
-    noteClearBtn.addEventListener('click', () => {
-      noteInput.value = '';
-      noteClearBtn.hidden = true;
-      this._saveCurrentBookmarkNote('');
-      noteInput.focus();
-    });
-
-    return nav;
-  }
-
-  /** Navigate to a match by index (used by result clicks and nav arrows). */
   _navigateToMatch(idx) {
     if (idx < 0 || idx >= this._matches.length) return;
     this._currentMatchIdx = idx;
@@ -480,10 +596,8 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._updateNavDisplay();
   }
 
-  /** Show the result navigator bar for the given match, hiding the results panel. */
   _showResultNav(idx) {
     if (!this._navBar) return;
-    // Preserve query before iOS might clear the input on focus shift
     this._savedQuery = this._searchInput?.value || this._savedQuery;
     this._navigateToMatch(idx);
     this._navBar.removeAttribute('hidden');
@@ -504,7 +618,6 @@ export class OLMobilePlugin extends BookReaderPlugin {
 
     _navPosEl.textContent = `(${idx + 1}/${total})`;
 
-    // Strip HTML tags for a clean single-line plain-text snippet
     const tmp = document.createElement('div');
     tmp.innerHTML = match.html || '';
     _navSnippetEl.textContent = `p. ${match.displayPageNumber} — ${(tmp.textContent || '').trim()}`;
@@ -515,7 +628,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
 
   _openSearch() {
     if (!this._searchRow) return;
-    this._hideBmNav();
+    this._closeBmList();
     this._searchRow.removeAttribute('hidden');
     if (this._searchBtn) {
       this._searchBtn.classList.add('BRolMobileActionBtn--active');
@@ -528,7 +641,6 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._searchInput?.focus();
   }
 
-  /** Close search row + hide results; preserve input value for next open. */
   _closeSearch() {
     this._searchRow?.setAttribute('hidden', '');
     if (this._searchBtn) {
@@ -538,23 +650,19 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._hideResults();
   }
 
-  /** Cancel: close search + clear all state (input, results, nav, matches, book pins). */
   _deactivateSearch() {
     this._savedQuery = '';
     this._closeSearch();
-    this._clearResults(); // resets _matches, _currentMatchIdx, hides nav
+    this._clearResults();
     if (this._searchInput) {
       this._searchInput.value = '';
       if (this._clearBtn) this._clearBtn.hidden = true;
     }
-    // Remove search hilite pins from the book pages
     this.br.plugins.search?.removeSearchResults(/* suppressFragmentChange= */ true);
   }
 
   _submitSearch(query) {
     if (!query) return;
-    // br.search is conditionally bound only when search plugin is enabled;
-    // use the plugin directly to avoid TypeError when search is disabled.
     if (!this.br.plugins.search) return;
     this._showLoading();
     this.br.plugins.search.search(query);
@@ -569,12 +677,10 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._resultsPanel.innerHTML = `<div class="BRolMobileStatus">Searching…</div>`;
   }
 
-  /** Hide panel but keep HTML (restores on next open / input focus). */
   _hideResults() {
     this._resultsPanel?.setAttribute('hidden', '');
   }
 
-  /** Hide and wipe HTML (used by X button). */
   _clearResults() {
     if (!this._resultsPanel) return;
     this._hideResultNav();
@@ -621,134 +727,8 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._resultsPanel.querySelectorAll('.BRolMobileResultItem').forEach((btn) => {
       btn.addEventListener('click', () => {
         const idx = parseInt(/** @type {HTMLElement} */ (btn).dataset.matchIndex, 10);
-        // Navigate + show the single-result nav bar; tap input to return to full list
         this._showResultNav(idx);
       });
-    });
-  }
-
-  // ── Bookmark helpers ────────────────────────────────────────────────────────
-
-  _getIaBookmarks() {
-    return document.querySelector('ia-bookreader')?.menuProviders?.bookmarks?.component ?? null;
-  }
-
-  _getCurrentPageID() {
-    if (this.br.mode === this.br.constMode2up) {
-      const pagesInView = this.br.displayedIndices;
-      return pagesInView[pagesInView.length - 1];
-    }
-    return this.br.currentIndex();
-  }
-
-  _refreshBookmarkState() {
-    const iaBookmarks = this._getIaBookmarks();
-    if (!iaBookmarks) return;
-    const allBm = iaBookmarks.bookmarks;
-    // bookmarks starts as [] (before fetch) then becomes {} keyed by leafNum
-    const keys = Array.isArray(allBm) ? [] : Object.keys(allBm ?? {});
-    this._bmPageIDs = keys.map(Number).sort((a, b) => a - b);
-    const count = this._bmPageIDs.length;
-    if (this._bookmarkCountBubble) {
-      this._bookmarkCountBubble.textContent = String(count);
-      this._bookmarkCountBubble.hidden = count === 0;
-    }
-    this._updateBookmarkIcon();
-    if (this._bmNavBar && !this._bmNavBar.hasAttribute('hidden')) {
-      if (count === 0) {
-        this._hideBmNav();
-      } else {
-        // Keep current index in bounds after a deletion
-        this._bmCurrentIdx = Math.min(this._bmCurrentIdx, count - 1);
-        this._updateBmNavDisplay();
-      }
-    }
-  }
-
-  _updateBookmarkIcon() {
-    if (!this._bookmarkBtn) return;
-    const iaBookmarks = this._getIaBookmarks();
-    const bm = iaBookmarks?.bookmarks;
-    const hasBm = bm && !Array.isArray(bm) && (this._getCurrentPageID() in bm);
-    this._bookmarkBtn.classList.toggle('BRolMobileBookmarkBtn--active', !!hasBm);
-  }
-
-  _openBmNav() {
-    if (!this._bmNavBar || this._bmPageIDs.length === 0) return;
-    this._closeSearch();  // collapse search row (preserve state)
-    this._hideResultNav();
-    // Position nav at the bookmark for the current page (or first bookmark)
-    const pageID = this._getCurrentPageID();
-    const idx = this._bmPageIDs.indexOf(pageID);
-    this._bmCurrentIdx = idx >= 0 ? idx : 0;
-    this._bmNavBar.removeAttribute('hidden');
-    this._updateBmNavDisplay();
-  }
-
-  _hideBmNav() {
-    this._bmNavBar?.setAttribute('hidden', '');
-  }
-
-  _updateBmNavDisplay() {
-    const { _bmNavPosEl, _bmNavPrevBtn, _bmNavNextBtn, _bmNavNoteInput, _bmNavNoteClearBtn } = this;
-    if (!_bmNavPosEl || !_bmNavPrevBtn || !_bmNavNextBtn || !_bmNavNoteInput) return;
-    const total = this._bmPageIDs.length;
-    const idx = this._bmCurrentIdx;
-    if (total === 0) { this._hideBmNav(); return; }
-    const pageID = this._bmPageIDs[idx];
-    const bm = this._getIaBookmarks()?.bookmarks?.[pageID];
-    _bmNavPosEl.textContent = `(${idx + 1}/${total})`;
-    _bmNavNoteInput.value = bm?.note ?? '';
-    if (_bmNavNoteClearBtn) _bmNavNoteClearBtn.hidden = !_bmNavNoteInput.value;
-    _bmNavPrevBtn.disabled = idx === 0;
-    _bmNavNextBtn.disabled = idx === total - 1;
-  }
-
-  _navigateToBookmark(idx) {
-    if (idx < 0 || idx >= this._bmPageIDs.length) return;
-    this._bmCurrentIdx = idx;
-    this.br.jumpToIndex(this._bmPageIDs[idx]);
-    this._updateBmNavDisplay();
-  }
-
-  _saveCurrentBookmarkNote(note) {
-    if (this._bmCurrentIdx < 0 || this._bmCurrentIdx >= this._bmPageIDs.length) return;
-    const pageID = this._bmPageIDs[this._bmCurrentIdx];
-    const iaBookmarks = this._getIaBookmarks();
-    if (!iaBookmarks) return;
-    iaBookmarks.saveBookmark({ detail: { bookmark: { id: pageID, note } } });
-  }
-
-  _bindBookmarkEvents() {
-    // ia-bookmarks is created via document.createElement() by BookmarksProvider but
-    // is not appended to the DOM until the user opens the bookmarks panel.
-    // dispatchEvent() always fires listeners on the element itself regardless of
-    // DOM connection, so we listen on the component directly rather than document.
-    const bindToComponent = () => {
-      const comp = this._getIaBookmarks();
-      if (!comp) return false;
-      comp.addEventListener('bookmarksChanged', () => this._refreshBookmarkState());
-      this._refreshBookmarkState();
-      return true;
-    };
-
-    if (!bindToComponent()) {
-      // Component not ready yet — retry after PostInit
-      $(document).one('BookReader:PostInit', () => {
-        if (!bindToComponent()) setTimeout(bindToComponent, 500);
-      });
-    }
-
-    // Page navigation: update red icon + sync nav position if open
-    $(document).on('BookReader:fragmentChange', () => {
-      if (!this._active) return;
-      this._updateBookmarkIcon();
-      if (this._bmNavBar && !this._bmNavBar.hasAttribute('hidden')) {
-        const pageID = this._getCurrentPageID();
-        const idx = this._bmPageIDs.indexOf(pageID);
-        if (idx >= 0) this._bmCurrentIdx = idx;
-        this._updateBmNavDisplay();
-      }
     });
   }
 
@@ -774,19 +754,20 @@ export class OLMobilePlugin extends BookReaderPlugin {
         this._resultsPanel.innerHTML = `<div class="BRolMobileStatus BRolMobileStatus--error">Sorry, there was an error with your search. Please try again.</div>`;
       });
 
-    // Click outside the search wrapper while results are visible:
-    // collapse results and restore the preview nav bar if a match was selected.
     document.addEventListener('click', (e) => {
       if (!this._active) return;
       const resultsVisible = this._resultsPanel && !this._resultsPanel.hasAttribute('hidden');
-      if (!resultsVisible) return;
+      const bmListVisible = this._bmListPanel && !this._bmListPanel.hasAttribute('hidden');
+      if (!resultsVisible && !bmListVisible) return;
       if (this._wrapper?.contains(/** @type {Node} */ (e.target))) return;
-      // Tap landed on the book (or elsewhere outside the header/results)
-      if (this._currentMatchIdx >= 0) {
-        this._showResultNav(this._currentMatchIdx);
-      } else {
-        this._hideResults();
+      if (resultsVisible) {
+        if (this._currentMatchIdx >= 0) {
+          this._showResultNav(this._currentMatchIdx);
+        } else {
+          this._hideResults();
+        }
       }
+      if (bmListVisible) this._closeBmList();
     }, { capture: false });
   }
 }

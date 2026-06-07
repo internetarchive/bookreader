@@ -14,27 +14,24 @@ $ol-mobile-row-height: 44px;
 $ol-mobile-input-bg: #EBEBEB;
 $ol-mobile-input-radius: 8px;
 $ol-mobile-action-blue: #005BBB;
+$ol-mobile-bookmark-red: #C0392B;
 
 /* ---------------------------------------------------------------
    Root: hide conflicting standard chrome
    --------------------------------------------------------------- */
 .BRolMobile {
-  /* Suppress the standard toolbar (hidden in JS too, belt-and-suspenders) */
   .BRtoolbar {
     display: none !important;
   }
 
-  /* Suppress the standard search navigation strip above the bottom navbar */
   .BRsearch-navigation {
     display: none;
   }
 
-  /* Suppress the desktop toolbar search form */
   .BRtoolbarSectionSearch {
     display: none !important;
   }
 
-  /* Suppress sidebar/menu elements reachable from the BookReader root */
   ia-menu-slider,
   .BRsidebar,
   .BRsideMenu {
@@ -43,10 +40,7 @@ $ol-mobile-action-blue: #005BBB;
 }
 
 /* ---------------------------------------------------------------
-   Collapsed state: the entire bar visually disappears (transparent bg,
-   no border/shadow). Logo and actions are invisible but preserve their
-   space so the chevron stays in the same horizontal position.
-   Only the down-chevron tab (~25px) remains visible.
+   Collapsed state
    --------------------------------------------------------------- */
 .BRolMobileWrapper--collapsed {
   .BRolMobileHeader {
@@ -57,16 +51,16 @@ $ol-mobile-action-blue: #005BBB;
 
   .BRolMobileLogo,
   .BRolMobileActions {
-    visibility: hidden; /* preserve space so chevron stays in same x position */
+    visibility: hidden;
   }
 
   .BRolMobileRow1 {
-    height: 25px; /* just the chevron tab */
-    overflow: hidden; /* clip invisible logo/actions */
+    height: 25px;
+    overflow: hidden;
   }
 
   .BRolMobileChromeToggle {
-    margin-top: 0; /* fill the full 25px row (align-self:stretch still active) */
+    margin-top: 0;
     margin-bottom: 0;
     background-color: #313131;
     border-left-color: #666;
@@ -75,44 +69,70 @@ $ol-mobile-action-blue: #005BBB;
     color: #fff;
   }
 
+  .BRolMobileNoteBar,
   .BRolMobileRow2,
   .BRolMobileResults,
-  .BRolMobileResultNav,
-  .BRolMobileBookmarkNav {
+  .BRolMobileBookmarkList,
+  .BRolMobileResultNav {
     display: none !important;
   }
 }
 
 /* ---------------------------------------------------------------
-   Header wrapper (rows 1 + 2)
+   Header wrapper
    --------------------------------------------------------------- */
 .BRolMobileHeader {
   background-color: $ol-mobile-header-bg;
   border-bottom: 1px solid $ol-mobile-border;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   position: relative;
-  z-index: 4; /* above book pages */
+  z-index: 4;
+  transition: background-color 0.15s ease;
 }
 
 /* ---------------------------------------------------------------
-   Row 1: IA logo + chrome toggle tab + action buttons
+   Row 1: IA logo + chrome toggle + action buttons
    --------------------------------------------------------------- */
 .BRolMobileRow1 {
   display: flex;
   align-items: center;
   height: $ol-mobile-row-height;
   padding: 0 12px;
+  transition: background-color 0.15s ease;
 }
 
-/* Chrome toggle tab: sits right of the IA logo.
-   Expanded: ~40px tall (align-self:stretch fills the 44px row, 2px margin top+bottom).
-   Collapsed: fills the 25px row height (margins overridden by --collapsed modifier).
-   Beige background added in collapsed state via the --collapsed modifier. */
+/* Bookmarked state: entire Row 1 turns red */
+.BRolMobileHeader--bookmarked .BRolMobileRow1 {
+  background-color: $ol-mobile-bookmark-red;
+
+  .BRolMobileLogo,
+  .BRolMobileActionBtn,
+  .BRolMobileChromeToggle {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .BRolMobileChromeToggle {
+    border-left-color: rgba(255, 255, 255, 0.3);
+    border-right-color: rgba(255, 255, 255, 0.3);
+    border-bottom-color: rgba(255, 255, 255, 0.3);
+
+    &:hover,
+    &:focus-visible {
+      background-color: rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  .BRolMobileActionBtn:hover,
+  .BRolMobileActionBtn:focus-visible {
+    background-color: rgba(0, 0, 0, 0.12);
+  }
+}
+
 .BRolMobileChromeToggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: stretch; /* fills row cross-axis; margin trims it to ~40px */
+  align-self: stretch;
   margin: 2px 0 2px 8px;
   padding: 0 10px;
   background: none;
@@ -137,7 +157,7 @@ $ol-mobile-action-blue: #005BBB;
   text-decoration: none;
   flex-shrink: 0;
   border-radius: 4px;
-  color: #000; /* force SVG fill to black — SVG uses currentColor */
+  color: #000;
 
   &:focus-visible {
     outline: 2px solid $ol-mobile-action-blue;
@@ -153,7 +173,7 @@ $ol-mobile-action-blue: #005BBB;
   display: flex;
   align-items: center;
   gap: 2px;
-  margin-left: auto; /* push actions to the right */
+  margin-left: auto;
 }
 
 .BRolMobileActionBtn {
@@ -185,6 +205,106 @@ $ol-mobile-action-blue: #005BBB;
 }
 
 /* ---------------------------------------------------------------
+   Bookmark count bubble (red, between bookmark and search icons)
+   --------------------------------------------------------------- */
+.BRolMobileBookmarkBubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background-color: $ol-mobile-bookmark-red;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    background-color: darken($ol-mobile-bookmark-red, 8%);
+  }
+}
+
+/* ---------------------------------------------------------------
+   Note bar (shown below Row 1 when page is bookmarked)
+   --------------------------------------------------------------- */
+.BRolMobileNoteBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 8px;
+  background-color: $ol-mobile-header-bg;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.BRolMobileNoteInput {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  background-color: $ol-mobile-input-bg;
+  border: 1px solid $ol-mobile-border;
+  border-radius: $ol-mobile-input-radius;
+  font-size: 15px;
+  font-family: inherit;
+  color: $ol-mobile-text;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+
+  &::placeholder {
+    color: #999;
+    font-style: italic;
+  }
+
+  &:focus {
+    border-color: $ol-mobile-action-blue;
+    box-shadow: 0 0 0 2px rgba($ol-mobile-action-blue, 0.18);
+  }
+}
+
+.BRolMobileSaveBtn {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 16px;
+  background-color: $ol-mobile-action-blue;
+  border: none;
+  border-radius: $ol-mobile-input-radius;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: darken($ol-mobile-action-blue, 8%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    outline-offset: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------
    Row 2: search field + cancel button
    --------------------------------------------------------------- */
 .BRolMobileRow2 {
@@ -209,7 +329,7 @@ $ol-mobile-action-blue: #005BBB;
   padding: 0 10px;
   height: 34px;
   gap: 6px;
-  min-width: 0; /* prevent flex overflow */
+  min-width: 0;
 }
 
 .BRolMobileSearchIcon {
@@ -223,7 +343,7 @@ $ol-mobile-action-blue: #005BBB;
   min-width: 0;
   border: none;
   background: transparent;
-  font-size: 16px; /* ≥16px prevents iOS auto-zoom on focus */
+  font-size: 16px;
   line-height: 1;
   color: $ol-mobile-text;
   outline: none;
@@ -235,7 +355,6 @@ $ol-mobile-action-blue: #005BBB;
     color: #999;
   }
 
-  /* Hide browser's built-in clear button; we provide our own */
   &::-webkit-search-cancel-button {
     display: none;
   }
@@ -280,9 +399,10 @@ $ol-mobile-action-blue: #005BBB;
 }
 
 /* ---------------------------------------------------------------
-   Results panel
+   Drop panels: search results + bookmark list (shared layout)
    --------------------------------------------------------------- */
-.BRolMobileResults {
+.BRolMobileResults,
+.BRolMobileBookmarkList {
   background-color: $ol-mobile-bg;
   border-bottom: 1px solid $ol-mobile-border;
   max-height: 55vh;
@@ -356,9 +476,7 @@ $ol-mobile-action-blue: #005BBB;
 }
 
 /* ---------------------------------------------------------------
-   Result navigator bar — appears inside the header after a result is clicked.
-   Shows (x/y) + single-line snippet with prev/next arrow buttons.
-   Lives inside .BRolMobileHeader so ResizeObserver auto-adjusts book offset.
+   Result navigator bar
    --------------------------------------------------------------- */
 .BRolMobileResultNav {
   display: flex;
@@ -388,8 +506,6 @@ $ol-mobile-action-blue: #005BBB;
   cursor: pointer;
   color: $ol-mobile-text;
 
-  /* Hidden (not just disabled) when at bounds — opacity:0 preserves layout
-     so the snippet text stays centred regardless of arrow visibility. */
   &[disabled] {
     opacity: 0;
     pointer-events: none;
@@ -427,136 +543,6 @@ $ol-mobile-action-blue: #005BBB;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* ---------------------------------------------------------------
-   Bookmark button: red when current page has a bookmark
-   --------------------------------------------------------------- */
-.BRolMobileBookmarkBtn--active {
-  .BRolMobileBookmarkIcon {
-    stroke: #D9534F;
-    fill: #D9534F;
-  }
-}
-
-/* ---------------------------------------------------------------
-   Bookmark count bubble — between bookmark icon and search icon
-   --------------------------------------------------------------- */
-.BRolMobileBookmarkBubble {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  background-color: $ol-mobile-action-blue;
-  border: none;
-  border-radius: 10px;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  flex-shrink: 0;
-
-  &[hidden] {
-    display: none;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $ol-mobile-action-blue;
-    outline-offset: 2px;
-  }
-
-  &:hover {
-    background-color: darken($ol-mobile-action-blue, 8%);
-  }
-}
-
-/* ---------------------------------------------------------------
-   Bookmark nav bar (mirrors .BRolMobileResultNav in layout)
-   --------------------------------------------------------------- */
-.BRolMobileBookmarkNav {
-  display: flex;
-  align-items: center;
-  height: 36px;
-  padding: 0 2px;
-  background-color: $ol-mobile-header-bg;
-  border-top: 1px solid $ol-mobile-border;
-  gap: 2px;
-
-  &[hidden] {
-    display: none;
-  }
-}
-
-.BRolMobileBookmarkNavCenter {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  gap: 5px;
-  overflow: hidden;
-}
-
-.BRolMobileBookmarkNavPos {
-  flex-shrink: 0;
-  font-size: 12px;
-  color: $ol-mobile-muted;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.BRolMobileBookmarkNoteField {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  background-color: $ol-mobile-input-bg;
-  border: 1px solid $ol-mobile-border;
-  border-radius: 6px;
-  padding: 0 8px;
-  height: 26px;
-  gap: 4px;
-}
-
-.BRolMobileBookmarkNoteInput {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  background: transparent;
-  font-size: 13px;
-  color: $ol-mobile-text;
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
-  font-family: inherit;
-
-  &::placeholder {
-    color: #999;
-    font-style: italic;
-  }
-}
-
-.BRolMobileBookmarkNoteClearBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: $ol-mobile-muted;
-  flex-shrink: 0;
-
-  &[hidden] {
-    display: none;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $ol-mobile-action-blue;
-    border-radius: 2px;
-  }
 }
 
 /* Status messages: loading / empty / error */
