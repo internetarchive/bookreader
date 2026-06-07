@@ -541,7 +541,7 @@ BookReader.prototype.initParams = function() {
         // If we have a query string: q=[term]
         const searchParams = new URLSearchParams(this.readQueryString());
         const searchTerm = searchParams.get('q');
-        if (searchTerm) {
+        if (searchTerm != null) {
           sp.options.initialSearchTerm = utils.decodeURIComponentPlus(searchTerm);
         }
       }

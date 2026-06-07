@@ -84,7 +84,7 @@ const initializeBookReader = (brManifest) => {
     enableFSLogoShortcut: true,
     plugins: {
       search: {
-        initialSearchTerm: searchTerm ? searchTerm : '',
+        initialSearchTerm: searchTerm,
       },
     },
   };
