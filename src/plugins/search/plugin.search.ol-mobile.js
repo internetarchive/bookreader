@@ -282,6 +282,9 @@ export class OLMobilePlugin extends BookReaderPlugin {
       const iaBookmarks = this._getIaBookmarks();
       if (!iaBookmarks) return;
       iaBookmarks.bookmarkButtonClicked(this._getCurrentPageID());
+      // bookmarksChanged fires after LitElement's async render cycle; refresh eagerly
+      // so the icon turns red without waiting for the event.
+      setTimeout(() => this._refreshBookmarkState(), 50);
     });
 
     // Count bubble: click to open/close the bookmark nav bar.
@@ -641,8 +644,10 @@ export class OLMobilePlugin extends BookReaderPlugin {
   _refreshBookmarkState() {
     const iaBookmarks = this._getIaBookmarks();
     if (!iaBookmarks) return;
-    const allBm = iaBookmarks.bookmarks ?? {};
-    this._bmPageIDs = Object.keys(allBm).map(Number).sort((a, b) => a - b);
+    const allBm = iaBookmarks.bookmarks;
+    // bookmarks starts as [] (before fetch) then becomes {} keyed by leafNum
+    const keys = Array.isArray(allBm) ? [] : Object.keys(allBm ?? {});
+    this._bmPageIDs = keys.map(Number).sort((a, b) => a - b);
     const count = this._bmPageIDs.length;
     if (this._bookmarkCountBubble) {
       this._bookmarkCountBubble.textContent = String(count);
@@ -663,7 +668,8 @@ export class OLMobilePlugin extends BookReaderPlugin {
   _updateBookmarkIcon() {
     if (!this._bookmarkBtn) return;
     const iaBookmarks = this._getIaBookmarks();
-    const hasBm = iaBookmarks && (this._getCurrentPageID() in (iaBookmarks.bookmarks ?? {}));
+    const bm = iaBookmarks?.bookmarks;
+    const hasBm = bm && !Array.isArray(bm) && (this._getCurrentPageID() in bm);
     this._bookmarkBtn.classList.toggle('BRolMobileBookmarkBtn--active', !!hasBm);
   }
 
@@ -714,10 +720,24 @@ export class OLMobilePlugin extends BookReaderPlugin {
   }
 
   _bindBookmarkEvents() {
-    // Bookmark add/delete: fires as a composed CustomEvent (crosses shadow DOM)
-    document.addEventListener('bookmarksChanged', () => {
+    // ia-bookmarks is created via document.createElement() by BookmarksProvider but
+    // is not appended to the DOM until the user opens the bookmarks panel.
+    // dispatchEvent() always fires listeners on the element itself regardless of
+    // DOM connection, so we listen on the component directly rather than document.
+    const bindToComponent = () => {
+      const comp = this._getIaBookmarks();
+      if (!comp) return false;
+      comp.addEventListener('bookmarksChanged', () => this._refreshBookmarkState());
       this._refreshBookmarkState();
-    });
+      return true;
+    };
+
+    if (!bindToComponent()) {
+      // Component not ready yet — retry after PostInit
+      $(document).one('BookReader:PostInit', () => {
+        if (!bindToComponent()) setTimeout(bindToComponent, 500);
+      });
+    }
 
     // Page navigation: update red icon + sync nav position if open
     $(document).on('BookReader:fragmentChange', () => {
@@ -730,16 +750,6 @@ export class OLMobilePlugin extends BookReaderPlugin {
         this._updateBmNavDisplay();
       }
     });
-
-    // Initial state — ia-bookmarks component may not be mounted yet
-    const tryRefresh = () => {
-      if (this._getIaBookmarks()) {
-        this._refreshBookmarkState();
-      } else {
-        $(document).one('BookReader:PostInit', () => setTimeout(() => this._refreshBookmarkState(), 300));
-      }
-    };
-    tryRefresh();
   }
 
   _bindSearchEvents() {
