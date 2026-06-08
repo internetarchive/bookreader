@@ -109,7 +109,6 @@ $ol-mobile-bookmark-red: #C0392B;
   transition: background-color 0.15s ease;
 }
 
-
 .BRolMobileChromeToggle {
   display: flex;
   align-items: center;
@@ -662,7 +661,7 @@ $ol-mobile-bookmark-red: #C0392B;
 
 /* Status messages: loading / empty / error */
 .BRolMobileStatus {
-  padding: 14px 14px;
+  padding: 14px;
   color: $ol-mobile-muted;
   font-style: italic;
 

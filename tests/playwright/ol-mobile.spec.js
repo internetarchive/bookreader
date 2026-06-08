@@ -1492,7 +1492,6 @@ test.describe('Page navigation bar', () => {
       const suffix = document.querySelector('.BRolMobilePageNavSuffix');
       if (!chip || !suffix) return null;
       const chipRect = chip.getBoundingClientRect();
-      const suffixRect = suffix.getBoundingClientRect();
       const suffixStyle = window.getComputedStyle(suffix);
       return {
         chipWidth: chipRect.width,

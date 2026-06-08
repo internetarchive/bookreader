@@ -36,7 +36,6 @@ export class OLMobilePlugin extends BookReaderPlugin {
   };
 
   // ── DOM refs ───────────────────────────────────────────────────────────────
-  /** @type {HTMLElement|null} */       _header = null;
   /** @type {HTMLElement|null} */       _wrapper = null;
   /** @type {HTMLButtonElement|null} */ _chromeHandle = null;
   // Search UI
@@ -111,10 +110,10 @@ export class OLMobilePlugin extends BookReaderPlugin {
     wrapper.className = 'BRolMobileWrapper';
     this._wrapper = wrapper;
 
-    this._header = this._buildHeader();
+    const header = this._buildHeader();
     this._resultsPanel = this._buildDropPanel('BRolMobileResults');
     this._bmListPanel = this._buildDropPanel('BRolMobileBookmarkList');
-    wrapper.append(this._header, this._resultsPanel, this._bmListPanel);
+    wrapper.append(header, this._resultsPanel, this._bmListPanel);
 
     const $container = br.refs.$brContainer;
     if ($container?.[0]) {
