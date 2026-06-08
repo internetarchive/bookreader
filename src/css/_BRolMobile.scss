@@ -1,0 +1,819 @@
+/**
+ * OL Mobile Search UI
+ *
+ * Activated when .BRolMobile is added to the .BookReader root by OLMobilePlugin
+ * (condition: ?ref=ol AND mobile viewport).
+ */
+
+$ol-mobile-bg: #F5F1E9;
+$ol-mobile-border: #D9D3C9;
+$ol-mobile-text: #333;
+$ol-mobile-muted: #777;
+$ol-mobile-header-bg: #F5F1E9;
+$ol-mobile-row-height: 44px;
+$ol-mobile-input-bg: #EBEBEB;
+$ol-mobile-input-radius: 8px;
+$ol-mobile-action-blue: #005BBB;
+$ol-mobile-bookmark-red: #C0392B;
+
+/* ---------------------------------------------------------------
+   Root: hide conflicting standard chrome
+   --------------------------------------------------------------- */
+.BRolMobile {
+  /* Prevent br-mode-1up's overflow-x:auto from making the reader
+     horizontally scrollable when a wide page slightly exceeds the
+     container width. BRcontainer already has overflow:hidden, but
+     clamping here too prevents swipe-scroll inside the Lit element. */
+  br-mode-1up {
+    overflow-x: hidden;
+  }
+
+  .BRtoolbar {
+    display: none !important;
+  }
+
+  .BRsearch-navigation {
+    display: none;
+  }
+
+  .BRtoolbarSectionSearch {
+    display: none !important;
+  }
+
+  ia-menu-slider,
+  .BRsidebar,
+  .BRsideMenu {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Collapsed state
+   --------------------------------------------------------------- */
+.BRolMobileWrapper--collapsed {
+  .BRolMobileHeader {
+    background: transparent;
+    border-bottom: none;
+    box-shadow: none;
+  }
+
+  .BRolMobileLogo,
+  .BRolMobileActions {
+    visibility: hidden;
+  }
+
+  .BRolMobileRow1 {
+    height: 25px;
+    overflow: hidden;
+  }
+
+  .BRolMobileChromeToggle {
+    margin-top: 0;
+    margin-bottom: 0;
+    background-color: #313131;
+    border-left-color: #666;
+    border-right-color: #666;
+    border-bottom-color: #666;
+    color: #fff;
+  }
+
+  .BRolMobileNoteBar,
+  .BRolMobileRow2,
+  .BRolMobileResults,
+  .BRolMobileBookmarkList,
+  .BRolMobileResultNav {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Header wrapper
+   --------------------------------------------------------------- */
+.BRolMobileHeader {
+  background-color: $ol-mobile-header-bg;
+  border-bottom: 1px solid $ol-mobile-border;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 4;
+  transition: background-color 0.15s ease;
+}
+
+/* ---------------------------------------------------------------
+   Row 1: IA logo + chrome toggle + action buttons
+   --------------------------------------------------------------- */
+.BRolMobileRow1 {
+  display: flex;
+  align-items: center;
+  height: $ol-mobile-row-height;
+  padding: 0 12px;
+  transition: background-color 0.15s ease;
+}
+
+.BRolMobileChromeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  margin: 2px 0 2px 8px;
+  padding: 0 10px;
+  background: none;
+  border: none;
+  border-left: 1px solid $ol-mobile-border;
+  border-right: 1px solid $ol-mobile-border;
+  border-bottom: 1px solid $ol-mobile-border;
+  border-radius: 0 0 8px 8px;
+  cursor: pointer;
+  color: $ol-mobile-muted;
+
+  &:hover,
+  &:focus-visible {
+    background-color: rgba(0, 0, 0, 0.04);
+    outline: none;
+  }
+}
+
+.BRolMobileLogo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  border-radius: 4px;
+  color: #000;
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    outline-offset: 2px;
+  }
+
+  svg {
+    display: block;
+  }
+}
+
+.BRolMobileActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.BRolMobileActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: $ol-mobile-text;
+
+  &:hover,
+  &:focus-visible {
+    background-color: rgba(0, 0, 0, 0.06);
+    outline: none;
+  }
+
+  svg {
+    display: block;
+  }
+
+  &--active {
+    background-color: rgba(0, 0, 0, 0.09);
+  }
+}
+
+/* Bookmark icon: outline by default, solid red when the page is bookmarked.
+   fill/stroke are CSS-only (no SVG presentation attributes) so these rules
+   always win without specificity tricks. */
+.BRolMobileBookmarkIcon {
+  fill: none;
+  stroke: currentColor;
+}
+
+.BRolMobileActionBtn.BRolMobileBookmarkBtn--active {
+  color: $ol-mobile-bookmark-red;
+
+  .BRolMobileBookmarkIcon {
+    fill: $ol-mobile-bookmark-red;
+    stroke: $ol-mobile-bookmark-red;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Bookmark count bubble (red, to the left of bookmark icon)
+   --------------------------------------------------------------- */
+.BRolMobileBookmarkBubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background-color: $ol-mobile-bookmark-red;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    background-color: darken($ol-mobile-bookmark-red, 8%);
+  }
+}
+
+/* ---------------------------------------------------------------
+   Bookmark list header:  [ ‹ ]  N Bookmarks  [ › ]   [ ✕ ]
+   The nav center group is flex-centered; dismiss button is pushed
+   to the far right so it never shifts when count changes.
+   --------------------------------------------------------------- */
+.BRolMobileBmListHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Takes all remaining space; keeps count+chevrons centered in it */
+.BRolMobileBmNavCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 2px;
+}
+
+.BRolMobileBmCount {
+  font-size: 15px;
+  font-weight: 600;
+  color: $ol-mobile-text;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.BRolMobileBmNavBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: $ol-mobile-action-blue;
+  cursor: pointer;
+  border-radius: 6px;
+  flex-shrink: 0;
+
+  &[disabled] {
+    color: $ol-mobile-muted;
+    cursor: default;
+  }
+
+  &:not([disabled]):hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
+}
+
+.BRolMobileBmDismissBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  font-size: 14px;
+  line-height: 1;
+  font-family: inherit;
+  color: $ol-mobile-muted;
+  cursor: pointer;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+    color: $ol-mobile-text;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
+}
+
+/* Highlighted entry for the current page — same alpha as BRolMobileActionBtn--active */
+.BRolMobileBookmarkItem--current {
+  background-color: rgba(0, 0, 0, 0.09);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------
+   Note bar (shown below Row 1 when page is bookmarked)
+   --------------------------------------------------------------- */
+.BRolMobileNoteBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 8px;
+  background-color: $ol-mobile-header-bg;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.BRolMobileNoteLabel {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: $ol-mobile-text;
+  white-space: nowrap;
+}
+
+.BRolMobileNoteInput {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  background-color: $ol-mobile-input-bg;
+  border: 1px solid $ol-mobile-border;
+  border-radius: $ol-mobile-input-radius;
+  font-size: 15px;
+  font-family: inherit;
+  color: $ol-mobile-text;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+
+  &::placeholder {
+    color: #999;
+    font-style: italic;
+  }
+
+  &:focus {
+    border-color: $ol-mobile-action-blue;
+    box-shadow: 0 0 0 2px rgba($ol-mobile-action-blue, 0.18);
+  }
+}
+
+.BRolMobileSaveBtn {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 16px;
+  background-color: $ol-mobile-action-blue;
+  border: none;
+  border-radius: $ol-mobile-input-radius;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: darken($ol-mobile-action-blue, 8%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    outline-offset: 2px;
+  }
+}
+
+/* "Hide" button in note bar — matches Cancel in search row */
+.BRolMobileHideNoteBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px 0 4px 4px;
+  font-size: 14px;
+  font-family: inherit;
+  color: $ol-mobile-action-blue;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Row 2: search field + cancel button
+   --------------------------------------------------------------- */
+.BRolMobileRow2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 8px;
+  background-color: $ol-mobile-header-bg;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.BRolMobileSearchField {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  background-color: $ol-mobile-input-bg;
+  border: 1px solid $ol-mobile-border;
+  border-radius: $ol-mobile-input-radius;
+  padding: 0 10px;
+  height: 34px;
+  gap: 6px;
+  min-width: 0;
+}
+
+.BRolMobileSearchIcon {
+  flex-shrink: 0;
+  color: $ol-mobile-muted;
+  display: block;
+}
+
+.BRolMobileInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  color: $ol-mobile-text;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+
+  &::placeholder {
+    color: #999;
+  }
+
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+.BRolMobileClearBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $ol-mobile-muted;
+  flex-shrink: 0;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
+}
+
+.BRolMobileCancelBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px 0 4px 4px;
+  font-size: 14px;
+  font-family: inherit;
+  color: $ol-mobile-action-blue;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Drop panels: search results + bookmark list (shared layout)
+   --------------------------------------------------------------- */
+.BRolMobileResults,
+.BRolMobileBookmarkList {
+  background-color: $ol-mobile-bg;
+  border-bottom: 1px solid $ol-mobile-border;
+  max-height: 55vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  font-size: 14px;
+  color: $ol-mobile-text;
+  position: relative;
+  z-index: 3;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.BRolMobileResultsHeader {
+  padding: 10px 14px 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: $ol-mobile-text;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  position: sticky;
+  top: 0;
+  background-color: $ol-mobile-bg;
+}
+
+.BRolMobileResultsList {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4px;
+}
+
+.BRolMobileResultItem {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.45;
+  color: $ol-mobile-text;
+  font-family: inherit;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.09);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    outline-offset: -2px;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  mark {
+    background-color: rgba(0, 128, 215, 0.18);
+    color: inherit;
+    padding: 0 1px;
+    border-radius: 2px;
+  }
+}
+
+.BRolMobileResultPage {
+  font-weight: 600;
+  color: #444;
+}
+
+/* ---------------------------------------------------------------
+   Result navigator bar
+   --------------------------------------------------------------- */
+.BRolMobileResultNav {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 2px;
+  background-color: $ol-mobile-header-bg;
+  border-top: 1px solid $ol-mobile-border;
+  gap: 2px;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.BRolMobileResultNavBtn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: $ol-mobile-text;
+
+  &[disabled] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:not([disabled]):hover,
+  &:not([disabled]):focus-visible {
+    background-color: rgba(0, 0, 0, 0.06);
+    outline: none;
+  }
+}
+
+.BRolMobileResultNavCenter {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.BRolMobileResultNavPos {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: $ol-mobile-muted;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.BRolMobileResultNavSnippet {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: $ol-mobile-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Status messages: loading / empty / error */
+.BRolMobileStatus {
+  padding: 14px;
+  color: $ol-mobile-muted;
+  font-style: italic;
+
+  &--error {
+    color: #c0392b;
+    font-style: normal;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Scrubber page info row: [‹] X / N — Page Y , Ch Z Title…
+   Injected into .BRnavMain .scrubber after BookReader:PostInit.
+   --------------------------------------------------------------- */
+
+/* BookReader gives .scrubber width:100% which crowds out the controls after it.
+   overflow:hidden on .BRcontrols prevents inner scroll-area width leaking to the page. */
+.BRolMobile .BRnavMain .BRcontrols {
+  overflow: hidden;
+}
+
+.BRolMobile .BRnavMain .BRcontrols .scrubber {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+.BRolMobilePageNav {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 2px;
+  gap: 4px;
+}
+
+/* Position indicator wrapper: ‹ [leaf] › — right border separates from page/section */
+.BRolMobilePageNavPosition {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-shrink: 0;
+  border-right: 2px solid #444;
+  margin-right: 5px;
+}
+
+/* These elements live inside .BRcontrols .controls which has a blanket
+   `button { width:30px; height:30px; padding:0 }` rule (specificity 0,2,1).
+   Use three-class scoping (0,3,0) to beat it without !important. */
+
+.BRcontrols .controls .BRolMobilePageNavBtn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 30px;
+  padding: 0 2px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: inherit;
+
+  &[disabled] {
+    opacity: 0.25;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  &:not([disabled]):hover,
+  &:not([disabled]):focus-visible,
+  &:not([disabled]):active {
+    background: none;
+    outline: none;
+  }
+}
+
+.BRolMobilePageNavSuffix {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex: 1;
+  min-width: 0;
+  padding-right: 5px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-right: 2px solid #444;
+  margin-right: 5px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Clickable chip — leaf position, book page, or chapter. Same subtle treatment
+   for all three so they read as a cohesive group.
+   Three-class scoping (0,3,0) beats `.BRcontrols .controls button` (0,2,1). */
+.BRcontrols .controls .BRolMobilePageNavChip {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: 13px;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.20);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 1px;
+  }
+}
+
+/* Chapter chip stays full-width; the suffix scrolls horizontally when it overflows.
+   margin-right is included in scroll-width, giving 5px air before the border. */
+.BRcontrols .controls .BRolMobilePageNavChapter {
+  flex-shrink: 0;
+  margin-right: 5px;
+}
+
+/* "—" / ":" separators between chips */
+.BRolMobilePageNavSep {
+  flex-shrink: 0;
+  color: inherit;
+  opacity: 0.6;
+  font-size: 13px;
+  padding: 0 1px;
+  user-select: none;
+}
+
+/* Inline edit input — replaces a chip while the patron types a target value */
+.BRolMobilePageNavInput {
+  display: inline-block;
+  width: 8ch;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 13px;
+  font-family: inherit;
+  color: inherit;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
