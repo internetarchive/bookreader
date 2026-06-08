@@ -17,7 +17,10 @@ export default defineConfig({
   projects: [
     {
       name: 'mobile-chrome',
-      use: { ...devices['iPhone 12'] },
+      use: {
+        ...devices['Pixel 5'],  // Chromium-based mobile device
+        browserName: 'chromium',
+      },
     },
   ],
   // Assumes `npm run build && npx http-server -p 8000 -c-1 .` is already running.

@@ -20,6 +20,14 @@ $ol-mobile-bookmark-red: #C0392B;
    Root: hide conflicting standard chrome
    --------------------------------------------------------------- */
 .BRolMobile {
+  /* Prevent br-mode-1up's overflow-x:auto from making the reader
+     horizontally scrollable when a wide page slightly exceeds the
+     container width. BRcontainer already has overflow:hidden, but
+     clamping here too prevents swipe-scroll inside the Lit element. */
+  br-mode-1up {
+    overflow-x: hidden;
+  }
+
   .BRtoolbar {
     display: none !important;
   }
@@ -101,32 +109,6 @@ $ol-mobile-bookmark-red: #C0392B;
   transition: background-color 0.15s ease;
 }
 
-/* Bookmarked state: entire Row 1 turns red */
-.BRolMobileHeader--bookmarked .BRolMobileRow1 {
-  background-color: $ol-mobile-bookmark-red;
-
-  .BRolMobileLogo,
-  .BRolMobileActionBtn,
-  .BRolMobileChromeToggle {
-    color: rgba(255, 255, 255, 0.92);
-  }
-
-  .BRolMobileChromeToggle {
-    border-left-color: rgba(255, 255, 255, 0.3);
-    border-right-color: rgba(255, 255, 255, 0.3);
-    border-bottom-color: rgba(255, 255, 255, 0.3);
-
-    &:hover,
-    &:focus-visible {
-      background-color: rgba(0, 0, 0, 0.12);
-    }
-  }
-
-  .BRolMobileActionBtn:hover,
-  .BRolMobileActionBtn:focus-visible {
-    background-color: rgba(0, 0, 0, 0.12);
-  }
-}
 
 .BRolMobileChromeToggle {
   display: flex;
@@ -204,8 +186,25 @@ $ol-mobile-bookmark-red: #C0392B;
   }
 }
 
+/* Bookmark icon: outline by default, solid red when the page is bookmarked.
+   fill/stroke are CSS-only (no SVG presentation attributes) so these rules
+   always win without specificity tricks. */
+.BRolMobileBookmarkIcon {
+  fill: none;
+  stroke: currentColor;
+}
+
+.BRolMobileActionBtn.BRolMobileBookmarkBtn--active {
+  color: $ol-mobile-bookmark-red;
+
+  .BRolMobileBookmarkIcon {
+    fill: $ol-mobile-bookmark-red;
+    stroke: $ol-mobile-bookmark-red;
+  }
+}
+
 /* ---------------------------------------------------------------
-   Bookmark count bubble (red, between bookmark and search icons)
+   Bookmark count bubble (red, to the left of bookmark icon)
    --------------------------------------------------------------- */
 .BRolMobileBookmarkBubble {
   display: flex;
@@ -239,6 +238,92 @@ $ol-mobile-bookmark-red: #C0392B;
 }
 
 /* ---------------------------------------------------------------
+   Bookmark list header:  [ ‹ ]  N Bookmarks  [ › ]   [ ✕ ]
+   The nav center group is flex-centered; dismiss button is pushed
+   to the far right so it never shifts when count changes.
+   --------------------------------------------------------------- */
+.BRolMobileBmListHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Takes all remaining space; keeps count+chevrons centered in it */
+.BRolMobileBmNavCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 2px;
+}
+
+.BRolMobileBmCount {
+  font-size: 15px;
+  font-weight: 600;
+  color: $ol-mobile-text;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.BRolMobileBmNavBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: $ol-mobile-action-blue;
+  cursor: pointer;
+  border-radius: 6px;
+  flex-shrink: 0;
+
+  &[disabled] {
+    color: $ol-mobile-muted;
+    cursor: default;
+  }
+
+  &:not([disabled]):hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
+}
+
+.BRolMobileBmDismissBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  font-size: 14px;
+  line-height: 1;
+  font-family: inherit;
+  color: $ol-mobile-muted;
+  cursor: pointer;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+    color: $ol-mobile-text;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
+  }
+}
+
+/* Highlighted entry for the current page — same alpha as BRolMobileActionBtn--active */
+.BRolMobileBookmarkItem--current {
+  background-color: rgba(0, 0, 0, 0.09);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------
    Note bar (shown below Row 1 when page is bookmarked)
    --------------------------------------------------------------- */
 .BRolMobileNoteBar {
@@ -252,6 +337,14 @@ $ol-mobile-bookmark-red: #C0392B;
   &[hidden] {
     display: none;
   }
+}
+
+.BRolMobileNoteLabel {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: $ol-mobile-text;
+  white-space: nowrap;
 }
 
 .BRolMobileNoteInput {
@@ -301,6 +394,24 @@ $ol-mobile-bookmark-red: #C0392B;
   &:focus-visible {
     outline: 2px solid $ol-mobile-action-blue;
     outline-offset: 2px;
+  }
+}
+
+/* "Hide" button in note bar — matches Cancel in search row */
+.BRolMobileHideNoteBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px 0 4px 4px;
+  font-size: 14px;
+  font-family: inherit;
+  color: $ol-mobile-action-blue;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid $ol-mobile-action-blue;
+    border-radius: 2px;
   }
 }
 
@@ -449,8 +560,12 @@ $ol-mobile-bookmark-red: #C0392B;
   color: $ol-mobile-text;
   font-family: inherit;
 
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
   &:active {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: rgba(0, 0, 0, 0.09);
   }
 
   &:focus-visible {
@@ -555,4 +670,151 @@ $ol-mobile-bookmark-red: #C0392B;
     color: #c0392b;
     font-style: normal;
   }
+}
+
+/* ---------------------------------------------------------------
+   Scrubber page info row: [‹] X / N — Page Y , Ch Z Title…
+   Injected into .BRnavMain .scrubber after BookReader:PostInit.
+   --------------------------------------------------------------- */
+
+/* BookReader gives .scrubber width:100% which crowds out the controls after it.
+   overflow:hidden on .BRcontrols prevents inner scroll-area width leaking to the page. */
+.BRolMobile .BRnavMain .BRcontrols {
+  overflow: hidden;
+}
+
+.BRolMobile .BRnavMain .BRcontrols .scrubber {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+.BRolMobilePageNav {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 2px;
+  gap: 4px;
+}
+
+/* Position indicator wrapper: ‹ [leaf] › — right border separates from page/section */
+.BRolMobilePageNavPosition {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-shrink: 0;
+  border-right: 2px solid #444;
+  margin-right: 5px;
+}
+
+/* These elements live inside .BRcontrols .controls which has a blanket
+   `button { width:30px; height:30px; padding:0 }` rule (specificity 0,2,1).
+   Use three-class scoping (0,3,0) to beat it without !important. */
+
+.BRcontrols .controls .BRolMobilePageNavBtn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 30px;
+  padding: 0 2px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: inherit;
+
+  &[disabled] {
+    opacity: 0.25;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  &:not([disabled]):hover,
+  &:not([disabled]):focus-visible,
+  &:not([disabled]):active {
+    background: none;
+    outline: none;
+  }
+}
+
+.BRolMobilePageNavSuffix {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex: 1;
+  min-width: 0;
+  padding-right: 5px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-right: 2px solid #444;
+  margin-right: 5px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Clickable chip — leaf position, book page, or chapter. Same subtle treatment
+   for all three so they read as a cohesive group.
+   Three-class scoping (0,3,0) beats `.BRcontrols .controls button` (0,2,1). */
+.BRcontrols .controls .BRolMobilePageNavChip {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: 13px;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.20);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 1px;
+  }
+}
+
+/* Chapter chip stays full-width; the suffix scrolls horizontally when it overflows.
+   margin-right is included in scroll-width, giving 5px air before the border. */
+.BRcontrols .controls .BRolMobilePageNavChapter {
+  flex-shrink: 0;
+  margin-right: 5px;
+}
+
+/* "—" / ":" separators between chips */
+.BRolMobilePageNavSep {
+  flex-shrink: 0;
+  color: inherit;
+  opacity: 0.6;
+  font-size: 13px;
+  padding: 0 1px;
+  user-select: none;
+}
+
+/* Inline edit input — replaces a chip while the patron types a target value */
+.BRolMobilePageNavInput {
+  display: inline-block;
+  width: 8ch;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 13px;
+  font-family: inherit;
+  color: inherit;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
 }

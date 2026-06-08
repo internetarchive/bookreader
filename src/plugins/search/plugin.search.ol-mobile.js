@@ -58,6 +58,8 @@ export class OLMobilePlugin extends BookReaderPlugin {
   /** @type {HTMLInputElement|null} */  _bmNoteInput = null;
   /** @type {HTMLButtonElement|null} */ _bmSaveBtn = null;
   /** @type {HTMLElement|null} */       _bmListPanel = null;
+  // Page nav (injected into BRnavMain scrubber after PostInit)
+  /** @type {HTMLElement|null} */ _pageNavBar = null;
 
   // ── State ──────────────────────────────────────────────────────────────────
   /** @type {SearchInsideMatch[]} */ _matches = [];
@@ -127,6 +129,13 @@ export class OLMobilePlugin extends BookReaderPlugin {
       const container = $container[0];
       let desiredTop = '';
 
+      // Override BookReader's toolbar-height query so resizeBRcontainer() always
+      // uses our wrapper height. This is set here (in plugin.init) rather than
+      // PostInit because BookReader calls resizeBRcontainer() at line 692, before
+      // plugins are initialized. The PostInit resize below corrects the initial
+      // container.style.top that was set while getToolBarHeight still returned 0.
+      this.br.getToolBarHeight = () => this._wrapper?.offsetHeight ?? 0;
+
       const applyOffset = () => {
         desiredTop = this._wrapper.offsetHeight + 'px';
         if (container.style.top !== desiredTop) container.style.top = desiredTop;
@@ -138,7 +147,14 @@ export class OLMobilePlugin extends BookReaderPlugin {
 
       new ResizeObserver(applyOffset).observe(this._wrapper);
 
-      $(document).one('BookReader:PostInit', () => requestAnimationFrame(applyOffset));
+      // Correct the initial container.style.top (set to 0 before plugins init)
+      // synchronously inside PostInit so later handlers see the right layout.
+      // The zoom is width-bound so toolbar height changes don't affect page scale;
+      // only container.style.top needs to be kept in sync.
+      $(document).one('BookReader:PostInit', () => {
+        applyOffset();
+        window.dispatchEvent(new Event('resize'));
+      });
       applyOffset();
     }
 
@@ -191,7 +207,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
       if (!root.querySelector('#ol-mobile-nav-ss')) {
         const s = document.createElement('style');
         s.id = 'ol-mobile-nav-ss';
-        s.textContent = 'nav { display: none !important; }';
+        s.textContent = 'nav .minimized { display: none !important; }';
         root.appendChild(s);
       }
       return true;
@@ -228,22 +244,15 @@ export class OLMobilePlugin extends BookReaderPlugin {
         ${CHEVRON_UP}
       </button>
       <div class="BRolMobileActions">
+        <button class="BRolMobileBookmarkBubble" aria-label="View all bookmarks" type="button" hidden>0</button>
         <button class="BRolMobileActionBtn BRolMobileBookmarkBtn" aria-label="Bookmark this page" type="button">
-          <svg class="BRolMobileBookmarkIcon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="BRolMobileBookmarkIcon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
           </svg>
         </button>
-        <button class="BRolMobileBookmarkBubble" aria-label="View all bookmarks" type="button" hidden>0</button>
         <button class="BRolMobileActionBtn BRolMobileSearchBtn" aria-label="Search inside book" aria-pressed="false" type="button">
           <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </button>
-        <button class="BRolMobileActionBtn BRolMobileMoreBtn" aria-label="More options" type="button">
-          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="5"  cy="12" r="1.5"/>
-            <circle cx="12" cy="12" r="1.5"/>
-            <circle cx="19" cy="12" r="1.5"/>
           </svg>
         </button>
       </div>
@@ -266,8 +275,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
       const iaBookmarks = this._getIaBookmarks();
       if (!iaBookmarks) return;
       const pageID = this._getCurrentPageID();
-      const allBm = iaBookmarks.bookmarks;
-      const existing = !Array.isArray(allBm) ? allBm[pageID] : null;
+      const existing = iaBookmarks.bookmarks?.[pageID] ?? null;
 
       if (existing) {
         const note = existing.note?.trim();
@@ -275,9 +283,11 @@ export class OLMobilePlugin extends BookReaderPlugin {
           const ok = window.confirm(`Removing this bookmark will also remove note: "${note}"`);
           if (!ok) return;
         }
+        // Call deleteBookmark directly — avoids ia-bookmarks' own confirmation modal
+        iaBookmarks.deleteBookmark({ detail: { id: String(pageID) } });
+      } else {
+        iaBookmarks.bookmarkButtonClicked(pageID);
       }
-
-      iaBookmarks.bookmarkButtonClicked(pageID);
       // bookmarksChanged fires after LitElement's async render; refresh eagerly
       setTimeout(() => this._refreshBookmarkState(), 50);
     });
@@ -372,7 +382,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._searchInput = input;
 
     this._navBar = this._buildResultNav();
-    header.append(row1, this._bmNoteBar, row2, this._navBar);
+    header.append(row1, row2, this._navBar, this._bmNoteBar);
     return header;
   }
 
@@ -383,19 +393,191 @@ export class OLMobilePlugin extends BookReaderPlugin {
     bar.className = 'BRolMobileNoteBar';
     bar.setAttribute('hidden', '');
     bar.innerHTML = `
+      <span class="BRolMobileNoteLabel">Page Notes:</span>
       <input class="BRolMobileNoteInput" type="text" placeholder="Add a note…" autocomplete="off" autocorrect="off" />
       <button class="BRolMobileSaveBtn" type="button">Save</button>
+      <button class="BRolMobileHideNoteBtn" type="button">Hide</button>
     `;
 
     this._bmNoteInput = /** @type {HTMLInputElement} */ (bar.querySelector('.BRolMobileNoteInput'));
     this._bmSaveBtn = /** @type {HTMLButtonElement} */ (bar.querySelector('.BRolMobileSaveBtn'));
+    const hideNoteBtn = /** @type {HTMLButtonElement} */ (bar.querySelector('.BRolMobileHideNoteBtn'));
 
     this._bmSaveBtn.addEventListener('click', () => this._saveNote());
     this._bmNoteInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); this._saveNote(); }
     });
+    hideNoteBtn.addEventListener('click', () => this._hideNoteBar());
 
     return bar;
+  }
+
+  // ── Page navigation bar ───────────────────────────────────────────────────
+  // Self-contained: could be extracted to its own PR. No coupling to search
+  // or bookmark state — only BookReader position APIs and fragmentChange.
+
+  _buildPageNav() {
+    const bar = document.createElement('div');
+    bar.className = 'BRolMobilePageNav';
+    // Layout: ‹ [leaf] › [Page X] [: Section ...]
+    // ‹ and › bracket only the leaf chip; page+section follow to the right.
+    bar.innerHTML = `
+      <div class="BRolMobilePageNavPosition">
+        <button class="BRolMobilePageNavBtn BRolMobilePageNavPrev" aria-label="Previous page" type="button">${CHEVRON_LEFT}</button>
+        <button class="BRolMobilePageNavChip BRolMobilePageNavLeaf" type="button" aria-label="Jump to position"></button>
+        <button class="BRolMobilePageNavBtn BRolMobilePageNavNext" aria-label="Next page" type="button">${CHEVRON_RIGHT}</button>
+      </div>
+      <div class="BRolMobilePageNavSuffix"></div>
+    `;
+
+    bar.querySelector('.BRolMobilePageNavPrev')?.addEventListener('click', () => {
+      const idx = this.br.currentIndex();
+      if (idx > 0) this.br.jumpToIndex(idx - 1);
+    });
+    bar.querySelector('.BRolMobilePageNavNext')?.addEventListener('click', () => {
+      const idx = this.br.currentIndex();
+      const numLeafs = this.br.book?.getNumLeafs() ?? 0;
+      if (idx < numLeafs - 1) this.br.jumpToIndex(idx + 1);
+    });
+    bar.querySelector('.BRolMobilePageNavLeaf')?.addEventListener('click', (e) => {
+      this._startLeafEdit(/** @type {HTMLButtonElement} */ (e.currentTarget));
+    });
+
+    this._pageNavBar = bar;
+    return bar;
+  }
+
+  _updatePageNav() {
+    if (!this._pageNavBar) return;
+    const br = this.br;
+    const book = br.book;
+    if (!book) return;
+
+    const idx = br.currentIndex();
+    const numLeafs = book.getNumLeafs();
+    const pageNum = book.getPageNum(idx);
+    // pageNum can be a string ("215") or a number (215); unasserted = "n{idx}"
+    const pageStr = String(pageNum ?? '');
+    const isAsserted = pageStr !== '' && pageStr[0] !== 'n';
+
+    // Update leaf chip text (static element — querySelector returns null while input is shown)
+    const leafChip = /** @type {HTMLButtonElement|null} */ (this._pageNavBar.querySelector('.BRolMobilePageNavLeaf'));
+    if (leafChip) leafChip.textContent = `${idx + 1} / ${numLeafs}`;
+
+    // Update prev/next disabled state
+    const prevBtn = /** @type {HTMLButtonElement|null} */ (this._pageNavBar.querySelector('.BRolMobilePageNavPrev'));
+    const nextBtn = /** @type {HTMLButtonElement|null} */ (this._pageNavBar.querySelector('.BRolMobilePageNavNext'));
+    if (prevBtn) prevBtn.disabled = (idx === 0);
+    if (nextBtn) nextBtn.disabled = (idx >= numLeafs - 1);
+
+    // Chapter lookup (best-effort)
+    let chapterLabel = '';
+    try {
+      const entries = /** @type {any[]} */ (br.plugins?.chapters?._tocEntries ?? []);
+      const sorted = entries.filter(ch => ch.pageIndex != null).reverse();
+      const ch = sorted.find(ch => ch.pageIndex <= idx);
+      if (ch) {
+        chapterLabel = ((ch.label ?? '') + (ch.title ? ' ' + ch.title : '')).trim();
+      }
+    } catch (_) { /* chapters plugin absent */ }
+
+    // Suffix: [Page X] [:] [Section] — colon only when both page AND section present
+    const suffix = this._pageNavBar.querySelector('.BRolMobilePageNavSuffix');
+    if (!suffix) return;
+
+    suffix.innerHTML = `
+      ${isAsserted ? `<button class="BRolMobilePageNavChip BRolMobilePageNavPage" type="button" aria-label="Jump to page">Page ${pageStr}</button>` : ''}
+      ${isAsserted && chapterLabel ? '<span class="BRolMobilePageNavSep">:</span>' : ''}
+      ${chapterLabel ? `<button class="BRolMobilePageNavChip BRolMobilePageNavChapter" type="button" aria-label="Open table of contents">${chapterLabel}</button>` : ''}
+    `;
+
+    suffix.querySelector('.BRolMobilePageNavPage')?.addEventListener('click', (e) => {
+      this._startPageEdit(/** @type {HTMLButtonElement} */ (e.currentTarget));
+    });
+    suffix.querySelector('.BRolMobilePageNavChapter')?.addEventListener('click', () => {
+      const shell = this.br.shell;
+      if (shell?.updateSideMenu) {
+        shell.updateSideMenu('chapters', 'open');
+      } else {
+        // fallback: jump to start of chapter
+        const entries = /** @type {any[]} */ (this.br.plugins?.chapters?._tocEntries ?? []);
+        const sorted = entries.filter(ch => ch.pageIndex != null).reverse();
+        const ch = sorted.find(ch => ch.pageIndex <= idx);
+        if (ch) this.br.jumpToIndex(ch.pageIndex);
+      }
+    });
+  }
+
+  /** Retry _updatePageNav every 2s until chapters data arrives (up to ~20s). */
+  _retryUpdatePageNav(triesLeft = 10) {
+    this._updatePageNav();
+    if (triesLeft > 0 && !this.br.plugins?.chapters?._tocEntries?.length) {
+      setTimeout(() => this._retryUpdatePageNav(triesLeft - 1), 2000);
+    }
+  }
+
+  /** Replace the leaf chip with an inline input; Enter navigates, Escape restores. */
+  _startLeafEdit(chipEl) {
+    const idx = this.br.currentIndex();
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'BRolMobilePageNavInput';
+    input.value = String(idx + 1);
+    input.setAttribute('aria-label', 'Leaf position');
+
+    let restored = false;
+    const restore = () => {
+      if (restored) return;
+      restored = true;
+      if (input.parentNode) input.parentNode.replaceChild(chipEl, input);
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = parseInt(input.value, 10);
+        const numLeafs = this.br.book?.getNumLeafs() ?? 0;
+        if (!isNaN(val) && val >= 1 && val <= numLeafs) this.br.jumpToIndex(val - 1);
+        restore();
+      } else if (e.key === 'Escape') {
+        restore();
+      }
+    });
+    input.addEventListener('blur', () => setTimeout(restore, 150));
+
+    chipEl.parentNode?.replaceChild(input, chipEl);
+    input.select();
+  }
+
+  /** Replace the page chip with an inline input; Enter navigates, Escape restores. */
+  _startPageEdit(chipEl) {
+    const idx = this.br.currentIndex();
+    const pageNum = this.br.book?.getPageNum(idx) ?? '';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'BRolMobilePageNavInput';
+    input.value = String(pageNum);
+    input.setAttribute('aria-label', 'Book page number');
+
+    let restored = false;
+    const restore = () => {
+      if (restored) return;
+      restored = true;
+      if (input.parentNode) input.parentNode.replaceChild(chipEl, input);
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = input.value.trim();
+        if (val) this.br.jumpToPage(val);
+        restore();
+      } else if (e.key === 'Escape') {
+        restore();
+      }
+    });
+    input.addEventListener('blur', () => setTimeout(restore, 150));
+
+    chipEl.parentNode?.replaceChild(input, chipEl);
+    input.select();
   }
 
   _showNoteBar(pageID) {
@@ -419,6 +601,10 @@ export class OLMobilePlugin extends BookReaderPlugin {
       this._bmSaveBtn.textContent = 'Saved!';
       setTimeout(() => { if (this._bmSaveBtn) this._bmSaveBtn.textContent = 'Save'; }, 1500);
     }
+    // If the bookmark list is open, re-render to show updated note
+    if (this._bmListPanel && !this._bmListPanel.hasAttribute('hidden')) {
+      setTimeout(() => this._renderBmList(), 100);
+    }
   }
 
   // ── Bookmark list panel ────────────────────────────────────────────────────
@@ -434,6 +620,8 @@ export class OLMobilePlugin extends BookReaderPlugin {
 
   _openBmList() {
     if (!this._bmListPanel) return;
+    this._closeSearch();
+    this._hideResultNav();
     this._closeBmList();
     this._renderBmList();
     this._bmListPanel.removeAttribute('hidden');
@@ -453,31 +641,91 @@ export class OLMobilePlugin extends BookReaderPlugin {
     const iaBookmarks = this._getIaBookmarks();
     const allBm = iaBookmarks?.bookmarks;
     const count = this._bmPageIDs.length;
+    const currentPageID = this._getCurrentPageID();
+
+    // Header: [ ‹ ]  N Bookmarks  [ › ]              [ ✕ ]
+    const prevBtn = `<button class="BRolMobileBmNavBtn BRolMobileBmNavPrev" aria-label="Previous bookmark" type="button">${CHEVRON_LEFT}</button>`;
+    const nextBtn = `<button class="BRolMobileBmNavBtn BRolMobileBmNavNext" aria-label="Next bookmark" type="button">${CHEVRON_RIGHT}</button>`;
 
     const items = this._bmPageIDs.map((pageID) => {
-      const bm = !Array.isArray(allBm) ? allBm?.[pageID] : null;
+      const bm = allBm?.[pageID] ?? null;
       const pageNum = this.br.book?.getPageNum(pageID) ?? (pageID + 1);
       const note = bm?.note?.trim();
       const noteSnippet = note ? note.split('\n')[0].substring(0, 60) : '';
+      const isCurrent = pageID === currentPageID;
       return `<li>
-        <button class="BRolMobileResultItem BRolMobileBookmarkItem" data-page-id="${pageID}" type="button">
+        <button class="BRolMobileResultItem BRolMobileBookmarkItem${isCurrent ? ' BRolMobileBookmarkItem--current' : ''}" data-page-id="${pageID}" type="button">
           <span class="BRolMobileResultPage">Page ${pageNum}</span>${noteSnippet ? `<span class="BRolMobileResultSnippet"> — ${noteSnippet}</span>` : ''}
         </button>
       </li>`;
     }).join('');
 
     this._bmListPanel.innerHTML = `
-      <div class="BRolMobileResultsHeader">${count} Bookmark${count === 1 ? '' : 's'}</div>
+      <div class="BRolMobileResultsHeader BRolMobileBmListHeader">
+        <div class="BRolMobileBmNavCenter">
+          ${prevBtn}
+          <span class="BRolMobileBmCount">${count} Bookmark${count === 1 ? '' : 's'}</span>
+          ${nextBtn}
+        </div>
+        <button class="BRolMobileBmDismissBtn" aria-label="Close bookmark list" type="button">&#x2715;</button>
+      </div>
       <ul class="BRolMobileResultsList" role="list">${items}</ul>
     `;
+
+    // prev/next: find where current page sits in the sorted bookmark list,
+    // then jump to the neighbouring bookmark
+    const prevEl = /** @type {HTMLButtonElement} */ (this._bmListPanel.querySelector('.BRolMobileBmNavPrev'));
+    const nextEl = /** @type {HTMLButtonElement} */ (this._bmListPanel.querySelector('.BRolMobileBmNavNext'));
+    const dismissEl = /** @type {HTMLButtonElement|null} */ (this._bmListPanel.querySelector('.BRolMobileBmDismissBtn'));
+    dismissEl?.addEventListener('click', () => this._closeBmList());
+
+    const updateNavDisabled = (activePageID) => {
+      const idx = this._bmPageIDs.indexOf(activePageID);
+      if (prevEl) prevEl.disabled = (idx <= 0);
+      if (nextEl) nextEl.disabled = (idx < 0 || idx >= this._bmPageIDs.length - 1);
+    };
+    updateNavDisabled(currentPageID);
+
+    const navigateToBookmark = (pageID) => {
+      this.br.jumpToIndex(pageID);
+      // Update highlight without full re-render
+      this._bmListPanel?.querySelectorAll('.BRolMobileBookmarkItem').forEach((el) => {
+        const pid = parseInt(/** @type {HTMLElement} */ (el).dataset.pageId, 10);
+        el.classList.toggle('BRolMobileBookmarkItem--current', pid === pageID);
+      });
+      updateNavDisabled(pageID);
+    };
+
+    prevEl?.addEventListener('click', () => {
+      const active = /** @type {HTMLElement|null} */ (this._bmListPanel?.querySelector('.BRolMobileBookmarkItem--current'));
+      const activePID = active ? parseInt(active.dataset.pageId, 10) : currentPageID;
+      const idx = this._bmPageIDs.indexOf(activePID);
+      if (idx > 0) navigateToBookmark(this._bmPageIDs[idx - 1]);
+    });
+
+    nextEl?.addEventListener('click', () => {
+      const active = /** @type {HTMLElement|null} */ (this._bmListPanel?.querySelector('.BRolMobileBookmarkItem--current'));
+      const activePID = active ? parseInt(active.dataset.pageId, 10) : currentPageID;
+      const idx = this._bmPageIDs.indexOf(activePID);
+      if (idx >= 0 && idx < this._bmPageIDs.length - 1) navigateToBookmark(this._bmPageIDs[idx + 1]);
+    });
 
     this._bmListPanel.querySelectorAll('.BRolMobileBookmarkItem').forEach((btn) => {
       btn.addEventListener('click', () => {
         const pageID = parseInt(/** @type {HTMLElement} */ (btn).dataset.pageId, 10);
-        this.br.jumpToIndex(pageID);
+        navigateToBookmark(pageID);
         this._closeBmList();
-        // Note bar + header color will update via BookReader:fragmentChange
       });
+    });
+  }
+
+  /** Update the current-page highlight in the list without re-rendering. */
+  _updateBmListHighlight() {
+    if (!this._bmListPanel || this._bmListPanel.hasAttribute('hidden')) return;
+    const pageID = this._getCurrentPageID();
+    this._bmListPanel.querySelectorAll('.BRolMobileBookmarkItem').forEach((el) => {
+      const pid = parseInt(/** @type {HTMLElement} */ (el).dataset.pageId, 10);
+      el.classList.toggle('BRolMobileBookmarkItem--current', pid === pageID);
     });
   }
 
@@ -492,20 +740,43 @@ export class OLMobilePlugin extends BookReaderPlugin {
       const pagesInView = this.br.displayedIndices;
       return pagesInView[pagesInView.length - 1];
     }
+
+    // In 1up mode, BookReader's currentIndex() lags: it still reports the previous
+    // page when a sliver of it is visible at the top of the viewport. Instead, find
+    // the first page whose top edge has entered the viewport — that's the page the
+    // patron is looking at.
+    try {
+      const brContainer = this.br.refs?.$brContainer?.[0] ?? document.querySelector('.BRcontainer');
+      if (brContainer) {
+        const viewH = window.innerHeight;
+        let bestIdx = -1;
+        let bestTop = Infinity;
+        for (const el of brContainer.querySelectorAll('.BRpagecontainer')) {
+          const cls = [...el.classList].find(c => c.startsWith('pagediv'));
+          if (!cls) continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.top >= 0 && rect.top < viewH && rect.top < bestTop) {
+            bestTop = rect.top;
+            bestIdx = parseInt(cls.slice(7), 10);
+          }
+        }
+        if (bestIdx >= 0) return bestIdx;
+      }
+    } catch (_) { /* fall through */ }
     return this.br.currentIndex();
   }
 
   _getBookmarkForPage(pageID) {
-    const allBm = this._getIaBookmarks()?.bookmarks;
-    return (!allBm || Array.isArray(allBm)) ? null : (allBm[pageID] ?? null);
+    return this._getIaBookmarks()?.bookmarks?.[pageID] ?? null;
   }
 
   _refreshBookmarkState() {
     const iaBookmarks = this._getIaBookmarks();
     if (!iaBookmarks) return;
-    const allBm = iaBookmarks.bookmarks;
-    const keys = Array.isArray(allBm) ? [] : Object.keys(allBm ?? {});
-    this._bmPageIDs = keys.map(Number).sort((a, b) => a - b);
+    const allBm = iaBookmarks.bookmarks ?? {};
+    // Object.keys works for both plain objects and arrays-with-numeric-indices
+    const keys = Object.keys(allBm).filter(k => allBm[k] != null);
+    this._bmPageIDs = keys.map(Number).filter(n => !isNaN(n)).sort((a, b) => a - b);
 
     const count = this._bmPageIDs.length;
     if (this._bookmarkCountBubble) {
@@ -516,7 +787,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._updateBookmarkState();
   }
 
-  /** Update icon fill, header color, and note bar for the current page. */
+  /** Update bookmark icon state and note bar for the current page. */
   _updateBookmarkState() {
     const pageID = this._getCurrentPageID();
     const bm = this._getBookmarkForPage(pageID);
@@ -524,15 +795,15 @@ export class OLMobilePlugin extends BookReaderPlugin {
     if (this._bookmarkBtn) {
       this._bookmarkBtn.classList.toggle('BRolMobileBookmarkBtn--active', !!bm);
     }
-    if (this._header) {
-      this._header.classList.toggle('BRolMobileHeader--bookmarked', !!bm);
-    }
 
     if (bm) {
       this._showNoteBar(pageID);
     } else {
       this._hideNoteBar();
     }
+
+    // Keep the open bookmark list in sync with the current page
+    this._updateBmListHighlight();
   }
 
   _bindBookmarkEvents() {
@@ -541,21 +812,67 @@ export class OLMobilePlugin extends BookReaderPlugin {
     const bindToComponent = () => {
       const comp = this._getIaBookmarks();
       if (!comp) return false;
-      comp.addEventListener('bookmarksChanged', () => this._refreshBookmarkState());
+      comp.addEventListener('bookmarksChanged', () => {
+        this._refreshBookmarkState();
+        // Re-render the open list so notes and count stay current
+        if (this._bmListPanel && !this._bmListPanel.hasAttribute('hidden')) {
+          this._renderBmList();
+        }
+      });
+
+      // bookmarkButtonClicked fires at the end of createBookmark() / bookmarkEdited().
+      // createBookmark() mutates bookmarks[] directly (no reactive prop update),
+      // so bookmarksChanged fires asynchronously via LitElement's render cycle.
+      // Listening here ensures the topbar refreshes even if bookmarksChanged is delayed.
+      comp.addEventListener('bookmarkButtonClicked', () => {
+        setTimeout(() => this._refreshBookmarkState(), 50);
+      });
       this._refreshBookmarkState();
+      // Signal to tests (and any external observers) that bookmark state is live.
+      this._wrapper?.setAttribute('data-bookmarks-ready', '');
       return true;
+    };
+
+    const injectPageNav = () => {
+      // Inject page nav into BRnavMain scrubber, replacing the BRcurrentpage display
+      if (!this._pageNavBar) {
+        const scrubber = document.querySelector('.BRnavMain .scrubber');
+        if (scrubber) {
+          const row = this._buildPageNav();
+          scrubber.insertBefore(row, scrubber.firstChild);
+          const p = scrubber.querySelector('p');
+          if (p) /** @type {HTMLElement} */ (p).hidden = true;
+        }
+      }
+      // Hide the duplicate flip buttons in the docked mobile scrubber bar
+      document.querySelectorAll('.BRnavMobile .book_left, .BRnavMobile .book_right')
+        .forEach(el => { /** @type {HTMLElement} */ (el).style.display = 'none'; });
+      // Activate the seek slider by default (toggle_slider starts inactive/docked)
+      const toggleBtn = /** @type {HTMLElement|null} */ (document.querySelector('.BRicon.toggle_slider'));
+      if (toggleBtn && !toggleBtn.classList.contains('active')) toggleBtn.click();
+      this._updatePageNav();
     };
 
     if (!bindToComponent()) {
       $(document).one('BookReader:PostInit', () => {
         if (!bindToComponent()) setTimeout(bindToComponent, 500);
+        injectPageNav();
+        // Chapters plugin fetches TOC async after PostInit — keep retrying until
+        // _tocEntries has data (slow network can take >3s; mobile can take longer).
+        this._retryUpdatePageNav();
+      });
+    } else {
+      $(document).one('BookReader:PostInit', () => {
+        injectPageNav();
+        this._retryUpdatePageNav();
       });
     }
 
-    // Page navigation: update header color + note bar + bubble highlight
+    // Page navigation: update bookmark state + page nav on every page change
     $(document).on('BookReader:fragmentChange', () => {
       if (!this._active) return;
       this._updateBookmarkState();
+      this._updatePageNav();
     });
   }
 
@@ -629,6 +946,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
   _openSearch() {
     if (!this._searchRow) return;
     this._closeBmList();
+    // Note bar stays visible — it sits beneath search row and nav bar
     this._searchRow.removeAttribute('hidden');
     if (this._searchBtn) {
       this._searchBtn.classList.add('BRolMobileActionBtn--active');
