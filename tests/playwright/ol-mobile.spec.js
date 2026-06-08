@@ -1538,3 +1538,70 @@ test.describe('Cancel — removes in-book search highlights', () => {
     expect(termAfter == null || termAfter === '').toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 8. URL-driven search pre-fill (?q= and ?result=N)
+// ---------------------------------------------------------------------------
+
+test.describe('URL-driven search pre-fill', () => {
+  test('?q=TERM opens mobile search UI immediately on load', async ({ page }) => {
+    await mockSearch(page);
+    await page.goto(`${DEMO_PATH}&q=${MOCK_SEARCH_TERM}`);
+    await waitForMobileUI(page);
+
+    // Search row (Row 2) must be visible without the user clicking the search button
+    await expect(page.locator('.BRolMobileRow2')).toBeVisible({ timeout: 5_000 });
+
+    // Search input must be pre-filled with the term
+    const inputVal = await page.locator('.BRolMobileInput').inputValue();
+    expect(inputVal).toBe(MOCK_SEARCH_TERM);
+
+    // Search button must be in the active/pressed state
+    const isPressed = await page.locator('.BRolMobileSearchBtn').getAttribute('aria-pressed');
+    expect(isPressed).toBe('true');
+  });
+
+  test('?q=TERM shows results panel once search completes', async ({ page }) => {
+    await mockSearch(page);
+    await page.goto(`${DEMO_PATH}&q=${MOCK_SEARCH_TERM}`);
+    await waitForMobileUI(page);
+
+    // Results should appear automatically (no user interaction required)
+    await expect(page.locator('.BRolMobileResults')).toBeVisible({ timeout: 10_000 });
+    const headerText = await page.locator('.BRolMobileResultsHeader').textContent();
+    expect(headerText).toMatch(/\d+ Results?/);
+  });
+
+  test('?result=N auto-navigates to the Nth search result', async ({ page }) => {
+    await mockSearch(page);
+    // result=2 → 0-based index 1 → second match
+    await page.goto(`${DEMO_PATH}&q=${MOCK_SEARCH_TERM}&result=2`);
+    await waitForMobileUI(page);
+
+    // Result nav bar should appear (auto-navigated to result 2)
+    await expect(page.locator('.BRolMobileResultNav')).toBeVisible({ timeout: 10_000 });
+
+    // Position indicator should show (2/2) — second of two mock results
+    const posText = await page.locator('.BRolMobileResultNavPos').textContent();
+    expect(posText?.trim()).toBe('(2/2)');
+
+    // Prev button enabled (we're not at result 1)
+    const prevDisabled = await page.locator('.BRolMobileResultNavPrev').getAttribute('disabled');
+    expect(prevDisabled).toBeNull();
+
+    // Next button disabled (we're at the last result)
+    const nextDisabled = await page.locator('.BRolMobileResultNavNext').getAttribute('disabled');
+    expect(nextDisabled).not.toBeNull();
+  });
+
+  test('?result=N out of range clamps to last result', async ({ page }) => {
+    await mockSearch(page);
+    await page.goto(`${DEMO_PATH}&q=${MOCK_SEARCH_TERM}&result=999`);
+    await waitForMobileUI(page);
+
+    await expect(page.locator('.BRolMobileResultNav')).toBeVisible({ timeout: 10_000 });
+    const posText = await page.locator('.BRolMobileResultNavPos').textContent();
+    // Mock has 2 results — should clamp to result 2
+    expect(posText?.trim()).toBe('(2/2)');
+  });
+});

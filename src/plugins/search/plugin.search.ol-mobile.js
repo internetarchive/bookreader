@@ -66,6 +66,7 @@ export class OLMobilePlugin extends BookReaderPlugin {
   /** @type {boolean} */ _active = false;
   /** @type {string} */  _savedQuery = '';
   /** @type {number[]} */ _bmPageIDs = [];  // sorted leaf indices of all bookmarks
+  /** @type {number} */  _targetResultIdx = -1;  // 0-based; set from ?result=N on load
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
@@ -76,17 +77,36 @@ export class OLMobilePlugin extends BookReaderPlugin {
     this._prefillFromUrl();
   }
 
-  /** If ?q= is in the URL, open the search bar and pre-fill it. */
+  /**
+   * If ?q= or #search/ is in the URL, open the search bar and pre-fill it.
+   * If ?result=N (1-based) is also present, auto-navigate to that result once
+   * search results arrive.
+   */
   _prefillFromUrl() {
-    const term = this.br.plugins.search?.options.initialSearchTerm;
-    if (!term) return;
+    const urlParams = new URLSearchParams(this.br.readQueryString());
+
+    // initialSearchTerm is set by BookReader.js from #search/TERM or ?q=TERM
+    // before any plugin init runs. Read ?q= directly too as a belt-and-suspenders
+    // fallback for embedders that set the param after BookReader reads it.
+    const term = this.br.plugins.search?.options.initialSearchTerm
+      ?? (urlParams.has('q') ? urlParams.get('q') : null);
+
+    if (term == null) return;  // neither source present — do nothing
+
+    // ?result=N (1-based) → auto-jump to the Nth result once results arrive
+    const resultParam = parseInt(urlParams.get('result') ?? '', 10);
+    if (!isNaN(resultParam) && resultParam >= 1) {
+      this._targetResultIdx = resultParam - 1;  // store 0-based
+    }
+
     this._openSearch();
-    if (this._searchInput) {
+    if (term && this._searchInput) {
       this._searchInput.value = term;
       if (this._clearBtn) this._clearBtn.hidden = false;
+      this._savedQuery = term;
+      this._showLoading();
     }
-    this._savedQuery = term;
-    this._showLoading();
+    // term === '' : search UI is open for input, no search submitted yet
   }
 
   _shouldActivate() {
@@ -221,6 +241,12 @@ export class OLMobilePlugin extends BookReaderPlugin {
         injectNavStyle();
         setTimeout(injectNavStyle, 500);
         setTimeout(injectNavStyle, 2000);
+        // In OL production, ia-item-navigator may open its "search" panel
+        // automatically when ?q= is present. Close it so our mobile UI is
+        // the primary search surface.
+        if (br.plugins.search?.options.initialSearchTerm != null) {
+          br.shell?.updateSideMenu?.('search', 'close');
+        }
       });
     }
   }
@@ -1047,6 +1073,13 @@ export class OLMobilePlugin extends BookReaderPlugin {
         this._showResultNav(idx);
       });
     });
+
+    // Auto-navigate to ?result=N on initial load (consumed once, then cleared)
+    if (this._targetResultIdx >= 0) {
+      const target = Math.min(this._targetResultIdx, matches.length - 1);
+      this._targetResultIdx = -1;
+      this._showResultNav(target);
+    }
   }
 
   _bindSearchEvents() {
