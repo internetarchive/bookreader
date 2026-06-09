@@ -115,6 +115,12 @@ export class Mode1UpLit extends LitElement {
   /** How much to zoom when zoom button pressed */
   ZOOM_FACTOR = 1.1;
 
+  /** Minimum allowed zoom scale */
+  MIN_SCALE = 0.05;
+
+  /** Maximum allowed zoom scale */
+  MAX_SCALE = 1000.0;
+
   /****************************************/
   /************** PUBLIC API **************/
   /****************************************/
@@ -128,7 +134,7 @@ export class Mode1UpLit extends LitElement {
     if (smooth) {
       this.style.scrollBehavior = 'smooth';
     }
-    this.scrollTop = this.coordSpace.worldUnitsToVisiblePixels(this.pageTops[index] - this.SPACING_IN / 2);
+    this.scrollTop = this.coordSpace.worldUnitsToVisiblePixels(this.pageTops[index]);
     // TODO: Also h center?
     if (smooth) {
       setTimeout(() => this.style.scrollBehavior = '', 100);
@@ -136,11 +142,13 @@ export class Mode1UpLit extends LitElement {
   }
 
   zoomIn() {
-    this.scale *= this.ZOOM_FACTOR;
+    // this.scale *= this.ZOOM_FACTOR;
+    this.scale = Math.min(this.scale * this.ZOOM_FACTOR, this.MAX_SCALE);
   }
 
   zoomOut() {
-    this.scale *= 1 / this.ZOOM_FACTOR;
+    // this.scale *= 1 / this.ZOOM_FACTOR;
+    this.scale = Math.max(this.scale * (1 / this.ZOOM_FACTOR), this.MIN_SCALE);
   }
 
   /********************************************/
