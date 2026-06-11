@@ -4,6 +4,7 @@ import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
 import {
   BookReaderTextFragment,
+  findRangesForQuotes,
   getFirstWords,
   getLastWords,
   walkBetweenNodes,
@@ -581,6 +582,86 @@ describe('BookReaderTextFragment.fromString', () => {
     expect(() => BookReaderTextFragment.fromString('missing:quote', book, 3))
       .toThrow('Could not determine page index for text fragment with page number missing');
   });
+
+  test('parses quoteStart/quoteEnd quote region', () => {
+    const book = {
+      getPageIndex: sinon.stub().withArgs('12').returns(42),
+    };
+
+    const fragment = BookReaderTextFragment.fromString(
+      '12:before%20text-,The%20quick%20brown,the%20lazy%20dog,-after%20text',
+      book,
+      7,
+    );
+
+    expect(fragment.pageNumber).toBe('12');
+    expect(fragment.pageIndex).toBe(42);
+    expect(fragment.prefix).toBe('before text');
+    expect(fragment.quote).toBeNull();
+    expect(fragment.quoteStart).toBe('The quick brown');
+    expect(fragment.quoteEnd).toBe('the lazy dog');
+    expect(fragment.suffix).toBe('after text');
+  });
+
+  test('throws when quote region has more than one separator comma', () => {
+    const book = {
+      getPageIndex: sinon.stub().withArgs('12').returns(42),
+    };
+
+    expect(() => BookReaderTextFragment.fromString('12:a,b,c', book, 7))
+      .toThrow('Invalid text fragment quote format: 12:a,b,c');
+  });
+});
+
+describe('BookReaderTextFragment.toUrlString', () => {
+  test('serializes short quote as full quote', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 5,
+      prefix: 'before text',
+      quote: 'short quote',
+      suffix: 'after text',
+    });
+
+    expect(fragment.toUrlString()).toBe('12:before%20text-,short%20quote,-after%20text');
+  });
+
+  test('serializes long quote as quoteStart/quoteEnd', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 5,
+      prefix: 'before text',
+      quote: 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau',
+      suffix: 'after text',
+    });
+
+    expect(fragment.toUrlString()).toBe('12:before%20text-,alpha%20beta%20gamma,rho%20sigma%20tau,-after%20text');
+  });
+
+  test('serializes long quote with fewer than 6 words as full quote', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 5,
+      prefix: 'before text',
+      quote: 'antidisestablishmentarianism supercalifragilisticexpialidocious pneumonoultramicroscopicsilicovolcanoconiosis hippopotomonstrosesquipedaliophobia floccinaucinihilipilification',
+      suffix: 'after text',
+    });
+
+    expect(fragment.toUrlString()).toBe('12:before%20text-,antidisestablishmentarianism%20supercalifragilisticexpialidocious%20pneumonoultramicroscopicsilicovolcanoconiosis%20hippopotomonstrosesquipedaliophobia%20floccinaucinihilipilification,-after%20text');
+  });
+
+  test('serializes explicit quoteStart/quoteEnd when quote is missing', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 5,
+      prefix: null,
+      quoteStart: 'The quick brown',
+      quoteEnd: 'the lazy dog',
+      suffix: null,
+    });
+
+    expect(fragment.toUrlString()).toBe('12:The%20quick%20brown,the%20lazy%20dog');
+  });
 });
 
 
@@ -647,5 +728,38 @@ describe('walkBetweenNodes', () => {
     // Last word should be the end word
     expect(result[result.length - 1].parentElement).toBe(end);
     expect(result[result.length - 1].textContent).toBe('Suppose');
+  });
+});
+
+describe('findRangesForQuotes', () => {
+  afterEach(() => {
+    sinon.restore();
+    $('.BRtextLayer').remove();
+  });
+
+  test('returns ordered non-overlapping ranges for multiple quote parts', async () => {
+    const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
+    sinon.stub(br.plugins.textSelection, 'getPageText')
+      .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, 'text/xml')));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
+
+    const textLayer = $container.find('.BRtextLayer')[0];
+    const firstPageNode = textLayer;
+    const lastPageNode = textLayer;
+    const wholePageRange = new Range();
+    wholePageRange.setStart(firstPageNode, 0);
+    wholePageRange.setEnd(lastPageNode, lastPageNode.childNodes.length);
+    const textNodes = Array.from(textLayer.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
+    textNodes.splice(0, 1);
+
+    const ranges = findRangesForQuotes([
+      '“My own seal.”',
+      '“My photograph.”',
+    ], wholePageRange, textNodes);
+
+    expect(ranges).toHaveLength(2);
+    expect(ranges[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My own seal.”');
+    expect(ranges[1].toString().replace(/\s+/g, ' ').trim()).toBe('“My photograph.”');
+    expect(ranges[0].compareBoundaryPoints(Range.END_TO_START, ranges[1])).toBeLessThanOrEqual(0);
   });
 });
