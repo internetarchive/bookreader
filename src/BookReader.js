@@ -1776,15 +1776,14 @@ BookReader.prototype.reloadImages = function() {
  * @return {number}
  */
 BookReader.prototype.getFooterHeight = function() {
-  const $heightEl = this.mode == this.constMode2up ? this.refs.$BRfooter : this.refs.$BRnav;
-  if ($heightEl && this.refs.$BRfooter) {
-    const outerHeight = $heightEl.outerHeight();
-    const bottom = parseInt(this.refs.$BRfooter.css('bottom'));
-    if (!isNaN(outerHeight) && !isNaN(bottom)) {
-      return outerHeight + bottom;
-    }
+  const $footer = this.refs.$BRfooter;
+  if (!$footer || !$footer.length) {
+    return 0;
   }
-  return 0;
+  const outerHeight = $footer.outerHeight() || 0;
+  const bottomCss = $footer.css('bottom') || '0';
+  const bottom = parseInt(bottomCss, 10) || 0;
+  return outerHeight + bottom;
 };
 
 // Basic Usage built-in Methods (can be overridden through options)
