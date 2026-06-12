@@ -5,7 +5,7 @@ import PageChunkIterator from '@/src/plugins/tts/PageChunkIterator.js';
 /** @typedef {import('@/src/plugins/tts/AbstractTTSEngine.js').TTSEngineOptions} TTSEngineOptions */
 
 // Skipping because it's flaky. Fix in #672
-describe.skip('AbstractTTSEngine', () => {
+describe('AbstractTTSEngine', () => {
   test('stops playing once done', async () => {
     class DummyEngine extends AbstractTTSEngine {
       getVoices() { return []; }
@@ -18,6 +18,63 @@ describe.skip('AbstractTTSEngine', () => {
     await afterEventLoop();
     expect(stopStub.callCount).toBe(1);
   });
+});
+
+describe('Non Flaky AbstractTTSEngine', () => {
+  let d;
+  beforeEach(() => {
+    class DummyEngine extends AbstractTTSEngine {
+      getVoices() { return []; }
+    }
+    d = new DummyEngine(DUMMY_TTS_ENGINE_OPTS);
+  });
+
+  test('should trigger start event', () => {
+    const triggerStub = sinon.spy(d.events, 'trigger');
+    d._chunkIterator = { next: sinon.stub().resolves(PageChunkIterator.AT_END) };
+    d.start(0, 0);
+    expect(triggerStub.callCount).toBe(1);
+  });
+
+  test('should handle pause and resume events for state changes', () => {
+    const triggerStub = sinon.spy(d.events, 'trigger');
+    d.activeSound = { pause: sinon.stub() };
+
+    d.paused = true;
+    d.pause();
+    expect(triggerStub.callCount).toBe(0);
+
+    d.paused = false;
+    d.pause();
+    expect(triggerStub.callCount).toBe(1);
+    expect(d.paused).toBeTruthy();
+  });
+
+  test('should trigger resume event', () => {
+    const triggerStub = sinon.spy(d.events, 'trigger');
+    d.activeSound = { resume: sinon.stub() };
+
+    d.paused = true;
+    d.resume();
+    expect(triggerStub.callCount).toBe(1);
+    expect(d.paused).toBeFalsy();
+  });
+
+  test('togglePlayPause', () => {
+    const triggerSpy = sinon.spy(d.events, 'trigger');
+    d.activeSound = {
+      resume: sinon.stub(),
+      pause: sinon.stub(),
+    };
+    d.paused = true;
+    d.togglePlayPause();
+    expect(d.paused).toBeFalsy();
+
+    d.togglePlayPause();
+    expect(d.paused).toBeTruthy();
+    expect(triggerSpy.callCount).toBe(2);
+  });
+
 });
 
 for (const dummyVoice of [dummyVoiceHyphens, dummyVoiceUnderscores]) {

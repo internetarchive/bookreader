@@ -40,6 +40,7 @@ describe('toISO6391', () => {
     expect(toISO6391('fr')).toBe('fr');
     expect(toISO6391('SQ')).toBe('sq');
     expect(toISO6391('aa')).toBe('aa');
+    expect(toISO6391('zh-hans')).toBe('zh-hans');
   });
 
   test('ISO 639-2/T', () => {
