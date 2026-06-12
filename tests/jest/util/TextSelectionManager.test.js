@@ -4,7 +4,7 @@ import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
 import {
   BookReaderTextFragment,
-  findRangesForQuotes,
+  findRangeForRegExp,
   getFirstWords,
   getLastWords,
   walkBetweenNodes,
@@ -731,13 +731,33 @@ describe('walkBetweenNodes', () => {
   });
 });
 
-describe('findRangesForQuotes', () => {
+describe('BookReaderTextFragment.toRegExp and findRangeForRegExp', () => {
   afterEach(() => {
     sinon.restore();
     $('.BRtextLayer').remove();
   });
 
-  test('returns ordered non-overlapping ranges for multiple quote parts', async () => {
+  test('includes context text when requested', () => {
+    const quote = new BookReaderTextFragment({
+      prefix: 'Before',
+      quote: 'middle',
+      quoteStart: null,
+      quoteEnd: null,
+      suffix: 'After',
+      pageNumber: null,
+      pageIndex: 0,
+    });
+
+    const nonContextRegex = quote.toRegExp({ context: false });
+    const contextRegex = quote.toRegExp({ context: true });
+
+    expect(nonContextRegex.test('middle')).toBe(true);
+    expect(nonContextRegex.test('Before middle After')).toBe(true);
+    expect(contextRegex.test('Before middle After')).toBe(true);
+    expect(contextRegex.test('middle')).toBe(false);
+  });
+
+  test('finds single quote matches as ranges', async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, 'getPageText')
       .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, 'text/xml')));
@@ -752,14 +772,49 @@ describe('findRangesForQuotes', () => {
     const textNodes = Array.from(textLayer.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
     textNodes.splice(0, 1);
 
-    const ranges = findRangesForQuotes([
-      '“My own seal.”',
-      '“My photograph.”',
-    ], wholePageRange, textNodes);
+    const quoteStart = new BookReaderTextFragment({
+      prefix: null,
+      quote: '“My own seal.”',
+      quoteStart: null,
+      quoteEnd: null,
+      suffix: null,
+      pageNumber: null,
+      pageIndex: 0,
+    });
+    const quoteEnd = new BookReaderTextFragment({
+      prefix: null,
+      quote: '“My photograph.”',
+      quoteStart: null,
+      quoteEnd: null,
+      suffix: null,
+      pageNumber: null,
+      pageIndex: 0,
+    });
 
-    expect(ranges).toHaveLength(2);
-    expect(ranges[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My own seal.”');
-    expect(ranges[1].toString().replace(/\s+/g, ' ').trim()).toBe('“My photograph.”');
-    expect(ranges[0].compareBoundaryPoints(Range.END_TO_START, ranges[1])).toBeLessThanOrEqual(0);
+    const range = findRangeForRegExp(
+      quoteStart.toRegExp({ normalize: (s) => s.replace(/\s+/g, ' ') }),
+      wholePageRange,
+      textNodes,
+      { normalize: (s) => s.replace(/\s+/g, ' ') },
+    );
+    const quoteStartRange = findRangeForRegExp(
+      quoteStart.toRegExp({ normalize: (s) => s.replace(/\s+/g, ' ') }),
+      wholePageRange,
+      textNodes,
+      { normalize: (s) => s.replace(/\s+/g, ' ') },
+    );
+    const quoteEndRange = findRangeForRegExp(
+      quoteEnd.toRegExp({ normalize: (s) => s.replace(/\s+/g, ' ') }),
+      wholePageRange,
+      textNodes,
+      { normalize: (s) => s.replace(/\s+/g, ' ') },
+    );
+
+    expect(range).toBeTruthy();
+    expect(quoteStartRange).toBeTruthy();
+    expect(quoteEndRange).toBeTruthy();
+    expect(range[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My own seal.”');
+    expect(quoteStartRange[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My own seal.”');
+    expect(quoteEndRange[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My photograph.”');
   });
 });

@@ -790,80 +790,62 @@ function replaceWhitespace(string) {
 }
 
 /**
- * Finds ordered, non-overlapping quote matches within a range and returns a Range for each.
- * @param {String[]} quotes - Ordered quote parts to find
+ * Finds all regex matches within a range and returns their ranges.
+ * @param {RegExp} regex
  * @param {Range} range - the range to search in
  * @param {Node[]} textNodes - visible text nodes within the range
- * @returns {Range[] | undefined} Ranges for each quote part, or undefined if no full ordered match is found
- *
- * Adapted from
- * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/abc6ed408b3f20e91d9cbda9977748459f5e3877/src/text-fragment-utils.js#L765
+ * @param {{ normalize?: function(string): string }} [options]
+ * @returns {Range[] | undefined} Range for each match, or undefined if no matches are found
  */
-export function findRangesForQuotes(quotes, range, textNodes) {
-  if (!quotes.length) return undefined;
+export function findRangeForRegExp(regex, range, textNodes, { normalize = (s) => s } = {}) {
+  if (!textNodes.length) return undefined;
 
   const startOffset = textNodes[0] === range.startContainer ?
     range.startOffset :
     0;
-  const normalizedWholePageString = replaceWhitespace(range.toString());
-  const normalizedQuotes = quotes.map(replaceWhitespace);
-  const normalizedStartOffset = replaceWhitespace(textNodes[0].textContent.slice(0, startOffset)).length;
+  const normalizedWholePageString = normalize(range.toString());
+  const normalizedStartOffset = normalize(textNodes[0].textContent.slice(0, startOffset)).length;
+  const matchRegex = new RegExp(regex.source, regex.flags.includes('g') ? regex.flags : `${regex.flags}g`);
 
-  let searchStart = 0;
-  while (searchStart < normalizedWholePageString.length) {
-    let partSearchStart = searchStart;
-    const foundRanges = [];
-    let matchedAllQuotes = true;
+  const matches = Array.from(normalizedWholePageString.matchAll(matchRegex));
+  const resultRanges = matches.map((match) => {
+    const start = getBoundaryPointAtIndex(
+      normalizedStartOffset + match.index,
+      textNodes,
+      false,
+      { normalize },
+    );
+    const end = getBoundaryPointAtIndex(
+      normalizedStartOffset + match.index + match[0].length,
+      textNodes,
+      true,
+      { normalize },
+    );
 
-    for (const normalizedQuote of normalizedQuotes) {
-      const matchedIndex = normalizedWholePageString.indexOf(normalizedQuote, partSearchStart);
-      if (matchedIndex === -1) {
-        matchedAllQuotes = false;
-        break;
-      }
-
-      const start = getBoundaryPointAtIndex(
-        normalizedStartOffset + matchedIndex,
-        textNodes,
-        false,
-      );
-      const end = getBoundaryPointAtIndex(
-        normalizedStartOffset + matchedIndex + normalizedQuote.length,
-        textNodes,
-        true,
-      );
-
-      if (start == null || end == null) {
-        matchedAllQuotes = false;
-        break;
-      }
-
-      const foundRange = new Range();
-      foundRange.setStart(start.node, 0);
-      foundRange.setEnd(end.node, 1);
-      foundRanges.push(foundRange);
-      partSearchStart = matchedIndex + normalizedQuote.length;
+    if (!start || !end) {
+      console.warn("Could not find boundary points for regex match, skipping this match", {match, start, end});
+      return undefined;
     }
 
-    if (matchedAllQuotes) {
-      return foundRanges;
-    }
+    const foundRange = new Range();
+    foundRange.setStart(start.node, 0);
+    foundRange.setEnd(end.node, 1);
+    return foundRange;
+  });
 
-    const firstMatchedIndex = normalizedWholePageString.indexOf(normalizedQuotes[0], searchStart);
-    if (firstMatchedIndex === -1) return undefined;
-    searchStart = firstMatchedIndex + 1;
-  }
-  return undefined;
+  const definedRanges = resultRanges.filter((matchRange) => !!matchRange);
+  if (!definedRanges?.length) return undefined;
+  return definedRanges;
 }
-
 
 /**
  * Uses the index that matches the quote string and normalizes the string contents to find the correct node
  * @param {Number} index
  * @param {Node[]} nodes
  * @param {boolean} isEnd
+ * @param {{ normalize?: function(string): string }} [options]
  */
-export function getBoundaryPointAtIndex(index, nodes, isEnd) {
+export function getBoundaryPointAtIndex(index, nodes, isEnd, { normalize = (s) => s } = {}) {
   let counted = 0;
   let normalizedData;
   for (let i = 0; i < nodes.length; i++) {
@@ -872,7 +854,7 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
       // Treat the lineElement as a space for now, will check if the previous node was hyphenated or another lineElement later
       normalizedData = ' ';
     } else {
-      if (!normalizedData) normalizedData = replaceWhitespace(node.textContent);
+      if (!normalizedData) normalizedData = normalize(node.textContent);
     }
     let nodeEnd = counted + normalizedData.length;
     if (isEnd) nodeEnd += 1;
@@ -885,8 +867,8 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
         normalizedData.substring(normalizedOffset);
 
       let candidateSubstring = isEnd ?
-        replaceWhitespace(node.textContent.substring(0, normalizedOffset)) :
-        replaceWhitespace(node.textContent.substring(normalizedOffset));
+        normalize(node.textContent.substring(0, normalizedOffset)) :
+        normalize(node.textContent.substring(normalizedOffset));
 
       const direction = (isEnd ? -1 : 1) * (targetSubstring.length > candidateSubstring.length ? -1 : 1);
       while (denormalizedOffset >= 0 &&
@@ -928,57 +910,53 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
  * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/main/src/text-fragment-utils.js#L743
  *
  * @param {HTMLElement} textLayer
- * @param {BookReaderTextFragment} quote
+ * @param {BookReaderTextFragment} textFragment
  * @param {string | null} cssClassName optional css class to add to the highlight span element
  */
-export function renderHighlight(textLayer, quote, cssClassName = null) {
+export function renderHighlight(textLayer, textFragment, cssClassName = null) {
   // Create a range that encompasses the entire text content
   const firstPageNode = getFirstMostNode(textLayer);
   const lastPageNode = getLastMostNode(textLayer);
   const wholePageRange = new Range();
   wholePageRange.setStart(firstPageNode, 0);
   wholePageRange.setEnd(lastPageNode, lastPageNode.textContent.length);
-
-  const quoteParts = quote.quote ? [quote.quote] : [quote.quoteStart, quote.quoteEnd];
-  const broadQuoteParts = quote.quote
-    ? [replaceWhitespace([quote.prefix, quote.quote, quote.suffix].filter(Boolean).join(' '))]
-    : [
-      replaceWhitespace([quote.prefix, quote.quoteStart].filter(Boolean).join(' ')),
-      replaceWhitespace([quote.quoteEnd, quote.suffix].filter(Boolean).join(' ')),
-    ];
-
-  if (!quoteParts.length) {
-    console.warn('Could not render text fragment: missing quote or quoteStart/quoteEnd');
-    return;
-  }
+  const normalize = replaceWhitespace;
 
   // Retrieve the text nodes and relevant whitespace elements
   // Need to keep the BRlineElement nodes in between to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
   const pageWordNodes = Array.from(textLayer.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
   pageWordNodes.splice(0, 1);
 
-  const broadRanges = findRangesForQuotes(broadQuoteParts, wholePageRange, pageWordNodes);
-  if (!broadRanges?.length) {
+  const broadRanges = findRangeForRegExp(
+    textFragment.toRegExp({ normalize, context: true }),
+    wholePageRange,
+    pageWordNodes,
+    { normalize },
+  );
+  if (!broadRanges) {
     console.warn("Could not find quote with context in page");
     return;
   }
-  const broadRange = getBoundingRange(broadRanges);
 
   const broadRangeWordNodes = [];
-  for (const el of walkBetweenNodes(broadRange?.startContainer, broadRange?.endContainer)) {
+  for (const el of walkBetweenNodes(broadRanges[0].startContainer, broadRanges[0].endContainer)) {
     if (el.classList?.contains('BRwordElement') || el.classList?.contains('BRspace') || el.classList?.contains('BRlineElement')) {
       broadRangeWordNodes.push(el);
     }
   }
 
   // At which point the quote should now be unambiguous!
-  const exactRanges = findRangesForQuotes(quoteParts, broadRange, broadRangeWordNodes);
-  if (!exactRanges?.length) {
+  const exactRanges = findRangeForRegExp(
+    textFragment.toRegExp({ normalize, context: false }),
+    broadRanges[0],
+    broadRangeWordNodes,
+    { normalize },
+  );
+  if (!exactRanges) {
     throw new Error("Could not find quote in page");
   }
-  const exactRange = getBoundingRange(exactRanges);
-  const startTextNode = getFirstMostNode(exactRange.startContainer);
-  const endTextNode = getFirstMostNode(exactRange.endContainer);
+  const startTextNode = getFirstMostNode(exactRanges[0].startContainer);
+  const endTextNode = getFirstMostNode(exactRanges[0].endContainer);
 
   // markRange requires the range to start and end within text nodes
   const exactRangeTextNodes = new Range();
@@ -995,7 +973,7 @@ export function renderHighlight(textLayer, quote, cssClassName = null) {
     const mark = document.createElement("mark");
     mark.classList.add("BRhighlight");
     if (cssClassName) mark.classList.add(cssClassName);
-    if (quote.uuid) mark.classList.add(quote.uuid);
+    if (textFragment.uuid) mark.classList.add(textFragment.uuid);
     return mark;
   });
 }
@@ -1089,18 +1067,6 @@ function retrieveUUID(ele) {
     return findUUID[0];
   }
   return null;
-}
-
-/**
- * @param {Range[]} ranges
- * @returns {Range}
- */
-function getBoundingRange(ranges) {
-  const boundingRange = new Range();
-  boundingRange.setStart(ranges[0].startContainer, ranges[0].startOffset);
-  const lastRange = ranges[ranges.length - 1];
-  boundingRange.setEnd(lastRange.endContainer, lastRange.endOffset);
-  return boundingRange;
 }
 
 /**
@@ -1256,6 +1222,30 @@ export class BookReaderTextFragment {
       str += `,-${encodeURIComponent(this.suffix)}`;
     }
     return str;
+  }
+
+  /**
+   * Build a regex that matches this quote payload.
+   * @param {{ normalize?: function(string): string, context?: boolean }} [options]
+   * @returns {RegExp}
+   */
+  toRegExp({ normalize = (s) => s, context = false } = {}) {
+    /** @type {[String] | [String, String]} */
+    const quotes = this.quote ? [this.quote] : [this.quoteStart, this.quoteEnd];
+
+    if (context) {
+      if (this.prefix) quotes[0] = this.prefix + ' ' + quotes[0];
+      if (this.suffix) quotes[quotes.length - 1] = quotes[quotes.length - 1] + ' ' + this.suffix;
+    }
+
+    if (quotes.length === 1) {
+      return new RegExp(RegExp.escape(normalize(quotes[0])), 'g');
+    } else {
+      return new RegExp(
+        RegExp.escape(normalize(quotes[0])) + '[\\s\\S]*?' + RegExp.escape(normalize(quotes[1])),
+        'g',
+      );
+    }
   }
 
   toJSON() {
