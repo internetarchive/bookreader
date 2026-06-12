@@ -210,9 +210,14 @@
     color: transparent;
 }
 
-// Style URI TextFragments, eg #:~:text=example
+@keyframes highlightTargetFlash {
+  to { background-color: hsla(45, 80%, 66%, 1); }
+}
+
+// Style URI TextFragments, eg ?text=example
 .BRtextLayer .BRhighlight--target-text, .BRtextLayer ::target-text {
     // Similar colour to the default one used in Safari, Firefox. Note Chrome uses a purple colour
     background-color: hsla(45, 80%, 66%, 0.6);
     color: transparent;
+    animation: highlightTargetFlash 600ms 1 reverse;
 }

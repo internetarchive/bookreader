@@ -901,6 +901,7 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
  * @param {HTMLElement} textLayer
  * @param {BookReaderTextFragment} quote
  * @param {string | null} cssClassName optional css class to add to the highlight span element
+ * @return {Element[]} the elements that were created to highlight the text
  */
 export function renderHighlight(textLayer, quote, cssClassName = null) {
   // Create a range that encompasses the entire text content
@@ -957,7 +958,7 @@ export function renderHighlight(textLayer, quote, cssClassName = null) {
     return;
   }
 
-  markRange(exactRangeTextNodes, () => {
+  return markRange(exactRangeTextNodes, () => {
     const mark = document.createElement("mark");
     mark.classList.add("BRhighlight");
     if (cssClassName) mark.classList.add(cssClassName);

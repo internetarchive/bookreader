@@ -36,6 +36,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
    */
   maxWordRendered = 2500;
 
+  _jumpedToHighlight = false;
+
   /**
    * @param {import('../BookReader.js').default} br
    */
@@ -71,7 +73,12 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         const pageIndex = targetTextFragment.pageIndex;
         const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
         if (hasTargetText) {
-          renderHighlight(textLayer, targetTextFragment, 'BRhighlight--target-text');
+          const markEls = renderHighlight(textLayer, targetTextFragment, 'BRhighlight--target-text');
+          // Only jump once; presumably on first page load.
+          if (!this._jumpedToHighlight) {
+            markEls[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+            this._jumpedToHighlight = true;
+          }
         }
       });
     }
