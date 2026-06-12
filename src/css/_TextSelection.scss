@@ -75,7 +75,7 @@
 // Hide text layer for performance during zooming & scrolling
 .BRsmooth-zooming, .BRscrolling-active {
     // If the text layer has an annotation, don't hide it
-    .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)):not(:has(.BRhighlight)) .BRtextLayer {
+    .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)):not(:has(.BRhighlight)):not(:has(.BRlinkElement)) .BRtextLayer {
         display: none;
     }
 }
@@ -220,4 +220,23 @@
     background-color: hsla(45, 80%, 66%, 0.6);
     color: transparent;
     animation: highlightTargetFlash 600ms 1 reverse;
+}
+
+.BRlinkElement {
+  background-color: color-mix(in srgb, currentColor, transparent 85%);
+  transition: background-color 0.2s;
+
+  &:hover,
+  // Hack to make links that wrap to the next line change color together.
+  // Can remove when/if we can remove the line elements, and have the wrap
+  // natively...
+  .BRlineElement:has(&:last-child:hover) + .BRlineElement > &:first-child,
+  // Opposite direction
+  .BRlineElement:has(+ .BRlineElement &:first-child:hover) &:last-child {
+    background-color: color-mix(in srgb, currentColor, transparent 75%);
+  }
+
+  & span {
+    color: transparent;
+  }
 }
