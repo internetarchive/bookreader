@@ -7,6 +7,8 @@ import '@internetarchive/icon-share';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 
 const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
+const MAX_FULL_QUOTE_URL_CHARS = 80;
+const TRUNCATED_QUOTE_WORD_COUNT = 3;
 
 export class TextSelectionManager {
   options = {
@@ -788,53 +790,62 @@ function replaceWhitespace(string) {
 }
 
 /**
- * Checks if quote matches the text content and existing range, then identifies the start and end nodes that contain the quote string.
- * @param {String} quote - The text to find
+ * Finds all regex matches within a range and returns their ranges.
+ * @param {RegExp} regex
  * @param {Range} range - the range to search in
  * @param {Node[]} textNodes - visible text nodes within the range
- * @returns {Range | undefined} Range that encompasses the quote, or undefined if no match is found
- *
- * Lightly adapted from
- * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/abc6ed408b3f20e91d9cbda9977748459f5e3877/src/text-fragment-utils.js#L765
+ * @param {{ normalize?: function(string): string }} [options]
+ * @returns {Range[] | undefined} Range for each match, or undefined if no matches are found
  */
-export function findRangeForQuote(quote, range, textNodes) {
+export function findRangeForRegExp(regex, range, textNodes, { normalize = (s) => s } = {}) {
+  if (!textNodes.length) return undefined;
+
   const startOffset = textNodes[0] === range.startContainer ?
     range.startOffset :
     0;
-  const normalizedWholePageString = replaceWhitespace(range.toString());
-  const normalizedQuote = replaceWhitespace(quote);
-  let searchStart = 0;
-  let start;
-  let end;
-  while (searchStart < normalizedWholePageString.length) {
-    const matchedIndex = normalizedWholePageString.indexOf(normalizedQuote, searchStart);
-    if (matchedIndex === -1) return undefined;
-    const normalizedStartOffset = replaceWhitespace(textNodes[0].textContent.slice(0, startOffset)).length;
-    start = getBoundaryPointAtIndex(
-      normalizedStartOffset + matchedIndex,
-      textNodes, false);
-    end = getBoundaryPointAtIndex(
-      normalizedStartOffset + matchedIndex + normalizedQuote.length,
-      textNodes, true);
-    if (start != null && end != null) {
-      const foundRange = new Range();
-      foundRange.setStart(start.node, 0);
-      foundRange.setEnd(end.node, 1);
-      return foundRange;
-    }
-    searchStart = matchedIndex + 1;
-  }
-  return undefined;
-}
+  const normalizedWholePageString = normalize(range.toString());
+  const normalizedStartOffset = normalize(textNodes[0].textContent.slice(0, startOffset)).length;
+  const matchRegex = new RegExp(regex.source, regex.flags.includes('g') ? regex.flags : `${regex.flags}g`);
 
+  const matches = Array.from(normalizedWholePageString.matchAll(matchRegex));
+  const resultRanges = matches.map((match) => {
+    const start = getBoundaryPointAtIndex(
+      normalizedStartOffset + match.index,
+      textNodes,
+      false,
+      { normalize },
+    );
+    const end = getBoundaryPointAtIndex(
+      normalizedStartOffset + match.index + match[0].length,
+      textNodes,
+      true,
+      { normalize },
+    );
+
+    if (!start || !end) {
+      console.warn("Could not find boundary points for regex match, skipping this match", {match, start, end});
+      return undefined;
+    }
+
+    const foundRange = new Range();
+    foundRange.setStart(start.node, 0);
+    foundRange.setEnd(end.node, 1);
+    return foundRange;
+  });
+
+  const definedRanges = resultRanges.filter((matchRange) => !!matchRange);
+  if (!definedRanges?.length) return undefined;
+  return definedRanges;
+}
 
 /**
  * Uses the index that matches the quote string and normalizes the string contents to find the correct node
  * @param {Number} index
  * @param {Node[]} nodes
  * @param {boolean} isEnd
+ * @param {{ normalize?: function(string): string }} [options]
  */
-export function getBoundaryPointAtIndex(index, nodes, isEnd) {
+export function getBoundaryPointAtIndex(index, nodes, isEnd, { normalize = (s) => s } = {}) {
   let counted = 0;
   let normalizedData;
   for (let i = 0; i < nodes.length; i++) {
@@ -843,7 +854,7 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
       // Treat the lineElement as a space for now, will check if the previous node was hyphenated or another lineElement later
       normalizedData = ' ';
     } else {
-      if (!normalizedData) normalizedData = replaceWhitespace(node.textContent);
+      if (!normalizedData) normalizedData = normalize(node.textContent);
     }
     let nodeEnd = counted + normalizedData.length;
     if (isEnd) nodeEnd += 1;
@@ -856,8 +867,8 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
         normalizedData.substring(normalizedOffset);
 
       let candidateSubstring = isEnd ?
-        replaceWhitespace(node.textContent.substring(0, normalizedOffset)) :
-        replaceWhitespace(node.textContent.substring(normalizedOffset));
+        normalize(node.textContent.substring(0, normalizedOffset)) :
+        normalize(node.textContent.substring(normalizedOffset));
 
       const direction = (isEnd ? -1 : 1) * (targetSubstring.length > candidateSubstring.length ? -1 : 1);
       while (denormalizedOffset >= 0 &&
@@ -899,53 +910,54 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd) {
  * https://github.com/GoogleChromeLabs/text-fragments-polyfill/blob/main/src/text-fragment-utils.js#L743
  *
  * @param {HTMLElement} textLayer
- * @param {BookReaderTextFragment} quote
+ * @param {BookReaderTextFragment} textFragment
  * @param {string | null} cssClassName optional css class to add to the highlight span element
  * @return {Element[]} the elements that were created to highlight the text
  */
-export function renderHighlight(textLayer, quote, cssClassName = null) {
+export function renderHighlight(textLayer, textFragment, cssClassName = null) {
   // Create a range that encompasses the entire text content
   const firstPageNode = getFirstMostNode(textLayer);
   const lastPageNode = getLastMostNode(textLayer);
   const wholePageRange = new Range();
   wholePageRange.setStart(firstPageNode, 0);
   wholePageRange.setEnd(lastPageNode, lastPageNode.textContent.length);
-
-  // Convert the whole page range into a normalized string, get the index of where the stored string matches the quote
-  const convertedString = replaceWhitespace(wholePageRange.toString());
-  const convertedQuote = replaceWhitespace(quote.quote);
-  const foundStringIndex = convertedString.indexOf(convertedQuote);
-  if (foundStringIndex == -1) {
-    console.warn("Could not find quote in page:", quote.quote);
-    return;
-  }
-  const fullContext = [quote.prefix, quote.quote, quote.suffix].join(" ");
-  const convertedFullContext = replaceWhitespace(fullContext);
+  const normalize = replaceWhitespace;
 
   // Retrieve the text nodes and relevant whitespace elements
   // Need to keep the BRlineElement nodes in between to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
   const pageWordNodes = Array.from(textLayer.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
   pageWordNodes.splice(0, 1);
-  const broadRange = findRangeForQuote(convertedFullContext, wholePageRange, pageWordNodes);
-  if (!broadRange) {
-    console.warn("Could not find quote with context in page, falling back to finding quote without context:", quote.quote);
+
+  const broadRanges = findRangeForRegExp(
+    textFragment.toRegExp({ normalize, context: true }),
+    wholePageRange,
+    pageWordNodes,
+    { normalize },
+  );
+  if (!broadRanges) {
+    console.warn("Could not find quote with context in page");
     return;
   }
 
   const broadRangeWordNodes = [];
-  for (const el of walkBetweenNodes(broadRange?.startContainer, broadRange?.endContainer)) {
+  for (const el of walkBetweenNodes(broadRanges[0].startContainer, broadRanges[0].endContainer)) {
     if (el.classList?.contains('BRwordElement') || el.classList?.contains('BRspace') || el.classList?.contains('BRlineElement')) {
       broadRangeWordNodes.push(el);
     }
   }
 
   // At which point the quote should now be unambiguous!
-  const exactRange = findRangeForQuote(quote.quote, broadRange, broadRangeWordNodes);
-  if (!exactRange) {
+  const exactRanges = findRangeForRegExp(
+    textFragment.toRegExp({ normalize, context: false }),
+    broadRanges[0],
+    broadRangeWordNodes,
+    { normalize },
+  );
+  if (!exactRanges) {
     throw new Error("Could not find quote in page");
   }
-  const startTextNode = getFirstMostNode(exactRange.startContainer);
-  const endTextNode = getFirstMostNode(exactRange.endContainer);
+  const startTextNode = getFirstMostNode(exactRanges[0].startContainer);
+  const endTextNode = getFirstMostNode(exactRanges[0].endContainer);
 
   // markRange requires the range to start and end within text nodes
   const exactRangeTextNodes = new Range();
@@ -962,7 +974,7 @@ export function renderHighlight(textLayer, quote, cssClassName = null) {
     const mark = document.createElement("mark");
     mark.classList.add("BRhighlight");
     if (cssClassName) mark.classList.add(cssClassName);
-    if (quote.uuid) mark.classList.add(quote.uuid);
+    if (textFragment.uuid) mark.classList.add(textFragment.uuid);
     return mark;
   });
 }
@@ -1063,24 +1075,31 @@ function retrieveUUID(ele) {
  * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
  *
  * Text fragment string format: `pageNumber:prefix-,quote,-suffix`
+ * Or for long quotes: `pageNumber:prefix-,quoteStart,quoteEnd,-suffix`
  * Note the ':' and ',' separators must not be encoded, but
- * the pageNumber, prefix, quote, and suffix text can be encoded.
+ * the pageNumber, prefix, quote/quoteStart/quoteEnd, and suffix text can be encoded.
  */
 export class BookReaderTextFragment {
   /**
    * @param {object} params
    * @param {string | null}params.prefix
-   * @param {string} params.quote
+   * @param {string | null} [params.quote]
+   * @param {string | null} [params.quoteStart]
+   * @param {string | null} [params.quoteEnd]
    * @param {string | null} params.suffix
    * @param {string | null} params.pageNumber Page number; e.g. asserted page number or the n-prefixed page index
    * @param {number} params.pageIndex Page index; e.g. zero-based index of the page
    * @param {string | null} [params.uuid] UUID for the text fragment if it has one
    */
-  constructor({ prefix, quote, suffix, pageNumber, pageIndex, uuid }) {
+  constructor({ prefix, quote, quoteStart, quoteEnd, suffix, pageNumber, pageIndex, uuid }) {
     /** @type {string|null} */
     this.prefix = prefix;
-    /** @type {string} */
-    this.quote = quote;
+    /** @type {string | null} */
+    this.quote = quote ?? null;
+    /** @type {string | null} */
+    this.quoteStart = quoteStart ?? null;
+    /** @type {string | null} */
+    this.quoteEnd = quoteEnd ?? null;
     /** @type {string|null} */
     this.suffix = suffix;
     /** @type {string|null} Page number; e.g. asserted page number or the n-prefixed page index */
@@ -1109,14 +1128,40 @@ export class BookReaderTextFragment {
     }
     const pageNumber = match[1] ? decodeURIComponent(match[1]) : null;
     const prefix = match[2] ? decodeURIComponent(match[2]) : null;
-    const quote = decodeURIComponent(match[3]);
+    const quoteRegion = match[3] || '';
+    const quoteParts = quoteRegion.split(',');
+    let quote = null;
+    let quoteStart = null;
+    let quoteEnd = null;
+
+    if (quoteParts.length === 1) {
+      quote = decodeURIComponent(quoteParts[0]);
+    } else if (quoteParts.length === 2) {
+      quoteStart = decodeURIComponent(quoteParts[0]);
+      quoteEnd = decodeURIComponent(quoteParts[1]);
+    } else {
+      throw new Error(`Invalid text fragment quote format: ${str}`);
+    }
+
     const suffix = match[4] ? decodeURIComponent(match[4]) : null;
     const pageIndex = pageNumber ? book.getPageIndex(pageNumber) : fallbackPageIndex;
     if (typeof pageIndex !== 'number') {
       throw new Error(`Could not determine page index for text fragment with page number ${pageNumber}`);
     }
 
-    return new BookReaderTextFragment({ prefix, quote, suffix, pageNumber, pageIndex });
+    if (!quote && (!quoteStart || !quoteEnd)) {
+      throw new Error(`Invalid text fragment quote format: ${str}`);
+    }
+
+    return new BookReaderTextFragment({
+      prefix,
+      quote,
+      quoteStart,
+      quoteEnd,
+      suffix,
+      pageNumber,
+      pageIndex,
+    });
   }
 
   /**
@@ -1138,8 +1183,9 @@ export class BookReaderTextFragment {
   /**
    * Outputs a url-safe string serialization of the text fragment, that's a variation of the standard
    * browser TextFragment format to include page information: `pageNumber:prefix-,quote,-suffix`
+  * If quote text is long enough, it is serialized as `quoteStart,quoteEnd`.
     * Note the ':' and ',' separators must not and are not encoded, but
-    * the pageNumber, prefix, quote, and suffix text are encoded.
+   * the pageNumber, prefix, quote/quoteStart/quoteEnd, and suffix text are encoded.
    * @returns {string}
    */
   toUrlString() {
@@ -1149,17 +1195,66 @@ export class BookReaderTextFragment {
     if (this.prefix) {
       str += `${encodeURIComponent(this.prefix)}-,`;
     }
-    str += encodeURIComponent(this.quote);
+
+    const quote = this.quote?.trim() || null;
+    let shortenedQuoteParts = null;
+    if (quote && quote.length > MAX_FULL_QUOTE_URL_CHARS) {
+      const words = quote.match(/\S+/g) || [];
+      if (words.length >= TRUNCATED_QUOTE_WORD_COUNT * 2) {
+        const quoteStart = getFirstWords(TRUNCATED_QUOTE_WORD_COUNT, quote);
+        const quoteEnd = getLastWords(TRUNCATED_QUOTE_WORD_COUNT, quote);
+        if (quoteStart && quoteEnd) {
+          shortenedQuoteParts = { quoteStart, quoteEnd };
+        }
+      }
+    }
+
+    if (quote && !shortenedQuoteParts) {
+      str += encodeURIComponent(quote);
+    } else if (shortenedQuoteParts) {
+      str += `${encodeURIComponent(shortenedQuoteParts.quoteStart)},${encodeURIComponent(shortenedQuoteParts.quoteEnd)}`;
+    } else if (this.quoteStart && this.quoteEnd) {
+      str += `${encodeURIComponent(this.quoteStart)},${encodeURIComponent(this.quoteEnd)}`;
+    } else {
+      throw new Error('Text fragment requires either a quote or quoteStart/quoteEnd');
+    }
+
     if (this.suffix) {
       str += `,-${encodeURIComponent(this.suffix)}`;
     }
     return str;
   }
 
+  /**
+   * Build a regex that matches this quote payload.
+   * @param {{ normalize?: function(string): string, context?: boolean }} [options]
+   * @returns {RegExp}
+   */
+  toRegExp({ normalize = (s) => s, context = false } = {}) {
+    /** @type {[String] | [String, String]} */
+    const quotes = this.quote ? [this.quote] : [this.quoteStart, this.quoteEnd];
+
+    if (context) {
+      if (this.prefix) quotes[0] = this.prefix + ' ' + quotes[0];
+      if (this.suffix) quotes[quotes.length - 1] = quotes[quotes.length - 1] + ' ' + this.suffix;
+    }
+
+    if (quotes.length === 1) {
+      return new RegExp(RegExp.escape(normalize(quotes[0])), 'g');
+    } else {
+      return new RegExp(
+        RegExp.escape(normalize(quotes[0])) + '[\\s\\S]*?' + RegExp.escape(normalize(quotes[1])),
+        'g',
+      );
+    }
+  }
+
   toJSON() {
     return {
       prefix: this.prefix,
       quote: this.quote,
+      quoteStart: this.quoteStart,
+      quoteEnd: this.quoteEnd,
       suffix: this.suffix,
       pageNumber: this.pageNumber,
       pageIndex: this.pageIndex,
@@ -1210,6 +1305,7 @@ export class BookReaderTextFragment {
       .replace(/[ ]+/g, " ")
       .trim()
       .replace(/\n[^\n]*$/gm, "");
+
 
     // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
     const quote = fullQuoteRange.toString().replace(/\s+/g, " ").trim();

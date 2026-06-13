@@ -4,6 +4,7 @@ import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
 import {
   BookReaderTextFragment,
+  findRangeForRegExp,
   getFirstWords,
   getLastWords,
   walkBetweenNodes,
@@ -581,6 +582,86 @@ describe('BookReaderTextFragment.fromString', () => {
     expect(() => BookReaderTextFragment.fromString('missing:quote', book, 3))
       .toThrow('Could not determine page index for text fragment with page number missing');
   });
+
+  test('parses quoteStart/quoteEnd quote region', () => {
+    const book = {
+      getPageIndex: sinon.stub().withArgs('12').returns(42),
+    };
+
+    const fragment = BookReaderTextFragment.fromString(
+      '12:before%20text-,The%20quick%20brown,the%20lazy%20dog,-after%20text',
+      book,
+      7,
+    );
+
+    expect(fragment.pageNumber).toBe('12');
+    expect(fragment.pageIndex).toBe(42);
+    expect(fragment.prefix).toBe('before text');
+    expect(fragment.quote).toBeNull();
+    expect(fragment.quoteStart).toBe('The quick brown');
+    expect(fragment.quoteEnd).toBe('the lazy dog');
+    expect(fragment.suffix).toBe('after text');
+  });
+
+  test('throws when quote region has more than one separator comma', () => {
+    const book = {
+      getPageIndex: sinon.stub().withArgs('12').returns(42),
+    };
+
+    expect(() => BookReaderTextFragment.fromString('12:a,b,c', book, 7))
+      .toThrow('Invalid text fragment quote format: 12:a,b,c');
+  });
+});
+
+describe('BookReaderTextFragment.toUrlString', () => {
+  test('serializes short quote as full quote', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 5,
+      prefix: 'before text',
+      quote: 'short quote',
+      suffix: 'after text',
+    });
+
+    expect(fragment.toUrlString()).toBe('12:before%20text-,short%20quote,-after%20text');
+  });
+
+  test('serializes long quote as quoteStart/quoteEnd', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 5,
+      prefix: 'before text',
+      quote: 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau',
+      suffix: 'after text',
+    });
+
+    expect(fragment.toUrlString()).toBe('12:before%20text-,alpha%20beta%20gamma,rho%20sigma%20tau,-after%20text');
+  });
+
+  test('serializes long quote with fewer than 6 words as full quote', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 5,
+      prefix: 'before text',
+      quote: 'antidisestablishmentarianism supercalifragilisticexpialidocious pneumonoultramicroscopicsilicovolcanoconiosis hippopotomonstrosesquipedaliophobia floccinaucinihilipilification',
+      suffix: 'after text',
+    });
+
+    expect(fragment.toUrlString()).toBe('12:before%20text-,antidisestablishmentarianism%20supercalifragilisticexpialidocious%20pneumonoultramicroscopicsilicovolcanoconiosis%20hippopotomonstrosesquipedaliophobia%20floccinaucinihilipilification,-after%20text');
+  });
+
+  test('serializes explicit quoteStart/quoteEnd when quote is missing', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 5,
+      prefix: null,
+      quoteStart: 'The quick brown',
+      quoteEnd: 'the lazy dog',
+      suffix: null,
+    });
+
+    expect(fragment.toUrlString()).toBe('12:The%20quick%20brown,the%20lazy%20dog');
+  });
 });
 
 
@@ -647,5 +728,93 @@ describe('walkBetweenNodes', () => {
     // Last word should be the end word
     expect(result[result.length - 1].parentElement).toBe(end);
     expect(result[result.length - 1].textContent).toBe('Suppose');
+  });
+});
+
+describe('BookReaderTextFragment.toRegExp and findRangeForRegExp', () => {
+  afterEach(() => {
+    sinon.restore();
+    $('.BRtextLayer').remove();
+  });
+
+  test('includes context text when requested', () => {
+    const quote = new BookReaderTextFragment({
+      prefix: 'Before',
+      quote: 'middle',
+      quoteStart: null,
+      quoteEnd: null,
+      suffix: 'After',
+      pageNumber: null,
+      pageIndex: 0,
+    });
+
+    const nonContextRegex = quote.toRegExp({ context: false });
+    const contextRegex = quote.toRegExp({ context: true });
+
+    expect(nonContextRegex.test('middle')).toBe(true);
+    expect(nonContextRegex.test('Before middle After')).toBe(true);
+    expect(contextRegex.test('Before middle After')).toBe(true);
+    expect(contextRegex.test('middle')).toBe(false);
+  });
+
+  test('finds single quote matches as ranges', async () => {
+    const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
+    sinon.stub(br.plugins.textSelection, 'getPageText')
+      .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, 'text/xml')));
+    await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
+
+    const textLayer = $container.find('.BRtextLayer')[0];
+    const firstPageNode = textLayer;
+    const lastPageNode = textLayer;
+    const wholePageRange = new Range();
+    wholePageRange.setStart(firstPageNode, 0);
+    wholePageRange.setEnd(lastPageNode, lastPageNode.childNodes.length);
+    const textNodes = Array.from(textLayer.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
+    textNodes.splice(0, 1);
+
+    const quoteStart = new BookReaderTextFragment({
+      prefix: null,
+      quote: '“My own seal.”',
+      quoteStart: null,
+      quoteEnd: null,
+      suffix: null,
+      pageNumber: null,
+      pageIndex: 0,
+    });
+    const quoteEnd = new BookReaderTextFragment({
+      prefix: null,
+      quote: '“My photograph.”',
+      quoteStart: null,
+      quoteEnd: null,
+      suffix: null,
+      pageNumber: null,
+      pageIndex: 0,
+    });
+
+    const range = findRangeForRegExp(
+      quoteStart.toRegExp({ normalize: (s) => s.replace(/\s+/g, ' ') }),
+      wholePageRange,
+      textNodes,
+      { normalize: (s) => s.replace(/\s+/g, ' ') },
+    );
+    const quoteStartRange = findRangeForRegExp(
+      quoteStart.toRegExp({ normalize: (s) => s.replace(/\s+/g, ' ') }),
+      wholePageRange,
+      textNodes,
+      { normalize: (s) => s.replace(/\s+/g, ' ') },
+    );
+    const quoteEndRange = findRangeForRegExp(
+      quoteEnd.toRegExp({ normalize: (s) => s.replace(/\s+/g, ' ') }),
+      wholePageRange,
+      textNodes,
+      { normalize: (s) => s.replace(/\s+/g, ' ') },
+    );
+
+    expect(range).toBeTruthy();
+    expect(quoteStartRange).toBeTruthy();
+    expect(quoteEndRange).toBeTruthy();
+    expect(range[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My own seal.”');
+    expect(quoteStartRange[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My own seal.”');
+    expect(quoteEndRange[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My photograph.”');
   });
 });
