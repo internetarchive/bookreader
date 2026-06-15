@@ -761,6 +761,15 @@ export function getLastWords(numWords, text) {
 }
 
 /**
+ * @param {string} text
+ */
+export function countWords(text) {
+  const re = /\S+/g;
+  const matches = text.match(re);
+  return matches ? matches.length : 0;
+}
+
+/**
  * @param {Node} parent
  * @returns {Node}
  */
@@ -1298,19 +1307,30 @@ export class BookReaderTextFragment {
     const lastWordOfPageEl = getLastMostNode(contextElements[contextElements.length - 1]);
     postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
 
-    // prefixes/suffixes cannot contain paragraph breaks, words that are from more than one line break away should not be included
-    const prefix = getLastWords(3, preStartRange.toString())
-      .replace(/[ ]+/g, " ")
-      .trim()
-      .replace(/^[^\n]*\n/gm, "");
-    const suffix = getFirstWords(3, postEndRange.toString())
-      .replace(/[ ]+/g, " ")
-      .trim()
-      .replace(/\n[^\n]*$/gm, "");
+    const CONTEXT_WORD_COUNT = 3;
 
+    const preStartText = replaceWhitespace(preStartRange.toString());
+    let prefix = getLastWords(CONTEXT_WORD_COUNT, preStartText);
+    let prefixWords = countWords(prefix);
+
+    const postEndText = replaceWhitespace(postEndRange.toString());
+    let suffix = getFirstWords(CONTEXT_WORD_COUNT, postEndText);
+    let suffixWords = countWords(suffix);
+
+    if (prefixWords < CONTEXT_WORD_COUNT) {
+      // Ran out of words! To reduce the risk of ambiguity, try extending suffix
+      suffix = getFirstWords(2 * CONTEXT_WORD_COUNT - prefixWords, postEndText);
+      suffixWords = countWords(suffix);
+    }
+
+    if (suffixWords < CONTEXT_WORD_COUNT) {
+      // Ran out of words on the suffix side as well, try extending prefix
+      prefix = getLastWords(2 * CONTEXT_WORD_COUNT - suffixWords, preStartText);
+      prefixWords = countWords(prefix);
+    }
 
     // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
-    const quote = fullQuoteRange.toString().replace(/\s+/g, " ").trim();
+    const quote = replaceWhitespace(fullQuoteRange.toString()).trim();
     const pageContainerEl = startTextNode.parentElement.closest(".BRpagecontainer");
 
     return new BookReaderTextFragment({

@@ -4,6 +4,7 @@ import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
 import {
   BookReaderTextFragment,
+  countWords,
   findRangeForRegExp,
   getFirstWords,
   getLastWords,
@@ -403,7 +404,7 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     selection.removeAllRanges();
     selection.addRange(startWordRange);
     const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe(`12:way-,can%20false%20judgment%20be%20-%20formed.,-There%20still%20remains`);
+    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe(`12:way-,can%20false%20judgment%20be%20-%20formed.,-There%20still%20remains%20another%20mode`);
 
     const endWordRange = document.createRange();
     endWordRange.setStart($container.find(".BRwordElement")[1].firstChild, 0);
@@ -413,7 +414,7 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     selection.addRange(endWordRange);
     const endingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(endingSpaceTextFragmentUrl.toUrlString()).toBe("12:way-,can%20false%20judgment%20be%20-,-formed.%20There%20still");
+    expect(endingSpaceTextFragmentUrl.toUrlString()).toBe("12:way-,can%20false%20judgment%20be%20-,-formed.%20There%20still%20remains%20another");
   });
 
   test("Handle range end node not text node", async () => {
@@ -475,7 +476,7 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     selection.addRange(sameKeyHighlightRange);
     const similarHighlight = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(multipleHighlights.toUrlString()).toBe(`12:is%20quite%20distinctive.%E2%80%9D-,%E2%80%9CThat%20is,-easily%20got.%E2%80%9D`);
+    expect(multipleHighlights.toUrlString()).toBe(`12:is%20quite%20distinctive.%E2%80%9D-,%E2%80%9CThat%20is,-easily%20got.%E2%80%9D%20%E2%80%9CThat`);
     expect(multipleHighlights.toUrlString()).not.toBe(similarHighlight.toUrlString());
   });
 
@@ -499,24 +500,24 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     expect(multiLineBehavior.toUrlString()).toMatch("12:%E2%80%9CStolen.%E2%80%9D-,%E2%80%9CMy%20own%20seal.%E2%80%9D,-%E2%80%9CImitated.%E2%80%9D");
   });
 
-  test("Prefix/suffix exists even with < 3 words", async () => {
+  test("Prefix extended when < 3 words for suffix", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, "text/xml")));
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
     const rangeBefore = document.createRange();
-    rangeBefore.setStart($($container.find(".BRparagraphElement")[3]).find(".BRwordElement")[0].firstChild, 0);
-    rangeBefore.setEnd($($container.find(".BRparagraphElement")[3]).find(".BRwordElement")[1].firstChild, 12);
+    rangeBefore.setStart($($container.find(".BRparagraphElement")[6]).find(".BRwordElement")[0].firstChild, 0);
+    rangeBefore.setEnd($($container.find(".BRparagraphElement")[6]).find(".BRwordElement")[1].firstChild, 3);
 
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
 
-    // “Imitated.”-, “My photograph.”,-“Bought.”
+    // “My photograph.” “Bought.” “My photograph.”-,“My own,-seal.”
     const endShortSuffix = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(endShortSuffix.toUrlString()).toMatch("12:%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy%20photograph.%E2%80%9D,-%E2%80%9CBought.%E2%80%9D");
+    expect(endShortSuffix.toUrlString()).toMatch("12:%E2%80%9CMy%20photograph.%E2%80%9D%20%E2%80%9CBought.%E2%80%9D%20%E2%80%9CMy%20photograph.%E2%80%9D-,%E2%80%9CMy%20own,-seal.%E2%80%9D");
   });
 
   test("Able to match one non-unique highlighted word", async() => {
@@ -533,10 +534,10 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     selection.removeAllRanges();
     selection.addRange(rangeBefore);
 
-    // “Imitated.”-, “My,-photograph.”
+    // own seal. “Imitated.”-, “My,-photograph.”
     const singleTextFragment = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(singleTextFragment.toUrlString()).toMatch("12:%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy,-photograph.%E2%80%9D");
+    expect(singleTextFragment.toUrlString()).toMatch("12:own%20seal.%E2%80%9D%20%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy,-photograph.%E2%80%9D%20%E2%80%9CBought.%E2%80%9D%20%E2%80%9CMy");
   });
 });
 
@@ -684,6 +685,21 @@ describe("getFirstWords and getLastWords tests", () => {
   test("Handles string with punctuation", () => {
     expect(getFirstWords(3, "Hello, world! This is a test.")).toBe("Hello, world! This");
     expect(getLastWords(3, "Hello, world! This is a test.")).toBe("is a test.");
+  });
+});
+
+describe("countWords tests", () => {
+  test("handles empty or whitespace-only strings", () => {
+    expect(countWords("")).toBe(0);
+    expect(countWords("   \n\t  ")).toBe(0);
+  });
+
+  test("counts words separated by irregular whitespace", () => {
+    expect(countWords("one\n\ntwo\t\tthree   four")).toBe(4);
+  });
+
+  test("counts words with punctuation as words", () => {
+    expect(countWords("Hello, world! This is a test.")).toBe(6);
   });
 });
 
