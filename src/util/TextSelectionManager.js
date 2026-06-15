@@ -1,4 +1,5 @@
 // @ts-check
+import { countWords } from './strings.js';
 import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
@@ -758,15 +759,6 @@ export function getLastWords(numWords, text) {
   const re = new RegExp(String.raw`((^|\s+)\S+){1,${numWords}}\s*?$`);
   const m = text.match(re);
   return m ? m[0].trim() : "";
-}
-
-/**
- * @param {string} text
- */
-export function countWords(text) {
-  const re = /\S+/g;
-  const matches = text.match(re);
-  return matches ? matches.length : 0;
 }
 
 /**

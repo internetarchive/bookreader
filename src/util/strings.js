@@ -6,6 +6,16 @@
  **/
 
 /**
+ * Count whitespace-delimited words in a string.
+ * @param {string} text
+ * @return {number}
+ */
+export function countWords(text) {
+  const matches = text.match(/\S+/g);
+  return matches ? matches.length : 0;
+}
+
+/**
  * @param {StringWithVars|String} template
  * @param { {[varName: string]: { toString: () => string} } } vars
  * @param { {[varName: string]: { toString: () => string} } } [overrides]

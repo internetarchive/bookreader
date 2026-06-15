@@ -2,16 +2,6 @@
 import langs from 'iso-language-codes';
 
 /**
- * Use regex to approximate word count in a string
- * @param {string} text
- * @return {number}
- */
-export function approximateWordCount(text) {
-  const m = text.match(/\S+/g);
-  return m ? m.length : 0;
-}
-
-/**
  * Checks whether the current browser is on android
  * @param {string} [userAgent]
  * @return {boolean}

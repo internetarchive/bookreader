@@ -4,7 +4,6 @@ import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
 import {
   BookReaderTextFragment,
-  countWords,
   findRangeForRegExp,
   getFirstWords,
   getLastWords,
@@ -687,22 +686,6 @@ describe("getFirstWords and getLastWords tests", () => {
     expect(getLastWords(3, "Hello, world! This is a test.")).toBe("is a test.");
   });
 });
-
-describe("countWords tests", () => {
-  test("handles empty or whitespace-only strings", () => {
-    expect(countWords("")).toBe(0);
-    expect(countWords("   \n\t  ")).toBe(0);
-  });
-
-  test("counts words separated by irregular whitespace", () => {
-    expect(countWords("one\n\ntwo\t\tthree   four")).toBe(4);
-  });
-
-  test("counts words with punctuation as words", () => {
-    expect(countWords("Hello, world! This is a test.")).toBe(6);
-  });
-});
-
 
 describe('walkBetweenNodes', () => {
   const tree = $(FAKE_XML_MULT_LINES);

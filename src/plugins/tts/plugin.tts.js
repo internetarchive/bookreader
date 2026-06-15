@@ -2,11 +2,11 @@
 
 import FestivalTTSEngine from './FestivalTTSEngine.js';
 import WebTTSEngine from './WebTTSEngine.js';
-import { toISO6391, approximateWordCount } from './utils.js';
+import { toISO6391 } from './utils.js';
 import { en as tooltips } from './tooltip_dict.js';
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
-import { applyVariables } from '../../util/strings.js';
+import { applyVariables, countWords } from '../../util/strings.js';
 /** @typedef {import('./PageChunk.js').default} PageChunk */
 /** @typedef {import("./AbstractTTSEngine.js").default} AbstractTTSEngine */
 
@@ -291,7 +291,7 @@ export class TtsPlugin extends BookReaderPlugin {
    * @param {PageChunk} chunk
    */
   sendChunkFinishedAnalyticsEvent(chunk) {
-    this.sendAnalyticsEvent('ChunkFinished-Words', approximateWordCount(chunk.text));
+    this.sendAnalyticsEvent('ChunkFinished-Words', countWords(chunk.text));
   }
 
   /**
