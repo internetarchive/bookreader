@@ -1,3 +1,17 @@
+# 5.0.0-114
+- Fix: "Copy link to highlight" now scrolls to highlighted text on page @cdrini
+- Feature: "Copy link to highlight" now creates shorter links by including only the quote start and end in the URL fragment, instead of the full quote @cdrini
+  - Following the [TextFragment spec](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments#syntax)
+- Fix: Error logged in console on BookReader init making Sentry noise @cdrini
+- Fix: Small fixes to "Copy link to highlight" feature @cdrini
+  - Fix CSS bug when deployed to archive.org resulting in select menu having black text on a black background
+  - Add a new experiment option to auto-enable an experiment as we roll this out to internal testing. Will be used on IA during the deploy
+      - BREAKING CHANGE: the experiment plugin's `enabledExperiments` option is now renamed to `availableExperiments`
+  - Fix first/last lines of page not working with Copy Link to Highlight by only including the current selection's text layer when building context
+  - Allow for paragraph break/newlines in prefix/suffix, so we can have more context, and less likely to have an ambiguous fragment
+  - If at start/end of page, extend suffix/prefix respectively to try to always have 6 words of context
+
+
 # 5.0.0-113
 - Feature: "Copy link to highlight" now public experiment @schu96 + @cdrini
 
