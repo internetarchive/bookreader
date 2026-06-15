@@ -1,4 +1,5 @@
 // @ts-check
+import { countWords } from './strings.js';
 import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
@@ -557,8 +558,14 @@ class BRSelectMenu extends LitElement {
   async handleCopyLinkToHighlight(e) {
     e.preventDefault();
     const currentParams = this.br.readQueryString();
-    const currentSelection = window.getSelection();
-    const textFragment = BookReaderTextFragment.fromSelection(currentSelection, this.br.$('.BRpage-visible').toArray());
+    const currentSelection = /** @type {Selection} */ (window.getSelection());
+    const range = currentSelection.getRangeAt(0);
+    const textLayer = this.getNodeTextLayer(range.startContainer);
+    if (!textLayer) {
+      console.warn("No text layer found for selection");
+      return;
+    }
+    const textFragment = BookReaderTextFragment.fromSelection(currentSelection, [textLayer]);
 
     // Note: Have to do a param construction to avoid url-encoding of commas in the text fragment param
     let linkToHighlightParams = currentParams;
@@ -581,11 +588,11 @@ class BRSelectMenu extends LitElement {
   /**
    * Returns the closest BRtextLayer element on the page that contains the target node
    * @param {Node} node
-   * @returns {HTMLElement | null}
+   * @returns {Element | null}
    */
   getNodeTextLayer(node) {
-    if (!node) return;
-    const element = 'closest' in node ? node : node.parentElement;
+    if (!node) return null;
+    const element = node instanceof Element ? node : node.parentElement;
     return element?.closest('.BRtextLayer') ?? null;
   }
 
@@ -1274,7 +1281,7 @@ export class BookReaderTextFragment {
   /**
    * Builds a TextFragment string from a given text selection.
    * @param {Selection} selection currently selected text, eg `document.getSelection()`
-   * @param {HTMLElement[]} contextElements elements providing context for the selection
+   * @param {Element[]} contextElements elements providing context for the selection
    * @returns {BookReaderTextFragment}
    */
   static fromSelection(selection, contextElements) {
@@ -1296,19 +1303,30 @@ export class BookReaderTextFragment {
     const lastWordOfPageEl = getLastMostNode(contextElements[contextElements.length - 1]);
     postEndRange.setEnd(lastWordOfPageEl, Math.max(0, lastWordOfPageEl.textContent.length - 1));
 
-    // prefixes/suffixes cannot contain paragraph breaks, words that are from more than one line break away should not be included
-    const prefix = getLastWords(3, preStartRange.toString())
-      .replace(/[ ]+/g, " ")
-      .trim()
-      .replace(/^[^\n]*\n/gm, "");
-    const suffix = getFirstWords(3, postEndRange.toString())
-      .replace(/[ ]+/g, " ")
-      .trim()
-      .replace(/\n[^\n]*$/gm, "");
+    const CONTEXT_WORD_COUNT = 3;
 
+    const preStartText = replaceWhitespace(preStartRange.toString());
+    let prefix = getLastWords(CONTEXT_WORD_COUNT, preStartText);
+    let prefixWords = countWords(prefix);
+
+    const postEndText = replaceWhitespace(postEndRange.toString());
+    let suffix = getFirstWords(CONTEXT_WORD_COUNT, postEndText);
+    let suffixWords = countWords(suffix);
+
+    if (prefixWords < CONTEXT_WORD_COUNT) {
+      // Ran out of words! To reduce the risk of ambiguity, try extending suffix
+      suffix = getFirstWords(2 * CONTEXT_WORD_COUNT - prefixWords, postEndText);
+      suffixWords = countWords(suffix);
+    }
+
+    if (suffixWords < CONTEXT_WORD_COUNT) {
+      // Ran out of words on the suffix side as well, try extending prefix
+      prefix = getLastWords(2 * CONTEXT_WORD_COUNT - suffixWords, preStartText);
+      prefixWords = countWords(prefix);
+    }
 
     // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
-    const quote = fullQuoteRange.toString().replace(/\s+/g, " ").trim();
+    const quote = replaceWhitespace(fullQuoteRange.toString()).trim();
     const pageContainerEl = startTextNode.parentElement.closest(".BRpagecontainer");
 
     return new BookReaderTextFragment({

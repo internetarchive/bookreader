@@ -52,8 +52,11 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     /** Where the state of this plugin is saved in localStorage */
     localStorageKey: 'BrExperiments',
 
-    /** The experiments that should be shown in the experiments panel */
-    enabledExperiments: ['translate', 'copyLinkToHighlight'],
+    /** @type {ExperimentName[]} Experiments shown in the experiments panel */
+    availableExperiments: ['translate', 'copyLinkToHighlight'],
+
+    /** @type {ExperimentName[]} Experiments enabled by default */
+    autoEnabledExperiments: [],
   }
 
   /** @type {ExperimentModel[]} */
@@ -160,7 +163,14 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       if (experiment.icon) {
         experiment.icon = experiment.buildAssetPath(experiment.icon);
       }
+
       experiment.br = this.br;
+
+      // Enable any experiments that should be automatically enabled
+      if (!experiment.enabled && this.options.autoEnabledExperiments.includes(experiment.name)) {
+        experiment.enabled = true;
+        await experiment.enable({ manual: false });
+      }
     }
 
     this._loadExperimentStates();
@@ -222,7 +232,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       `,
       label: 'Experiments',
       component: html`<br-experiments-panel
-        .experiments="${this.allExperiments.filter(experiment => this.options.enabledExperiments.includes(experiment.name))}"
+        .experiments="${this.allExperiments.filter(experiment => this.options.availableExperiments.includes(experiment.name))}"
         @connected="${e => this._panel = e.target}"
         @toggle="${async e => {
         await this._toggleExperiment(e.detail.experiment, e.detail.enabled);

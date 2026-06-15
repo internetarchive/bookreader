@@ -1,4 +1,35 @@
-import { APPLY_FILTERS, applyVariables } from '@/src/util/strings.js';
+import { APPLY_FILTERS, applyVariables, countWords } from '@/src/util/strings.js';
+
+describe('countWords', () => {
+  test('Empties', () => {
+    expect(countWords('')).toBe(0);
+    expect(countWords('    ')).toBe(0);
+    expect(countWords('   \n\t  ')).toBe(0);
+  });
+
+  test('Spaceless', () => {
+    expect(countWords('supercalifragilisticexpialidocious')).toBe(1);
+  });
+
+  test('Basic', () => {
+    expect(countWords('the quick brown fox jumped over the lazy dog')).toBe(9);
+    expect(countWords('to be or not to be that is the question')).toBe(10);
+  });
+
+  test('Spacing', () => {
+    expect(countWords('   the     quick brown   fox jumped over the lazy dog ')).toBe(9);
+  });
+
+  test('Punctuation not separate word (unless separate)', () => {
+    expect(countWords('the. quick brown. fox. jumped. over the. lazy dog.')).toBe(9);
+    expect(countWords(' . . . . . ')).toBe(5);
+  });
+
+  test('Realword examples', () => {
+    expect(countWords("Albert\u2019s cats had a .large blue dish of milk for breakfast.")).toBe(11);
+    expect(countWords("FARM FOLK O nce upon a time there was a sturdy little boy who lived in Belgium. Every morning after he milked the cows, he gave his cats a large blue dish of milk for breakfast.")).toBe(36);
+  });
+});
 
 describe('applyVariables', () => {
   test('null cases', () => {
