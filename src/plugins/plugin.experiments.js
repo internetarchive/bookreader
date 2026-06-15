@@ -52,10 +52,10 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     /** Where the state of this plugin is saved in localStorage */
     localStorageKey: 'BrExperiments',
 
-    /** @type {ExperimentName[]} The experiments that should be shown in the experiments panel */
+    /** @type {ExperimentName[]} Experiments shown in the experiments panel */
     availableExperiments: ['translate', 'copyLinkToHighlight'],
 
-    /** @type {ExperimentName[]} The experiments that should be automatically enabled for all users */
+    /** @type {ExperimentName[]} Experiments enabled by default */
     autoEnabledExperiments: [],
   }
 

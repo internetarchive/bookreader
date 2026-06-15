@@ -560,7 +560,11 @@ class BRSelectMenu extends LitElement {
     const currentParams = this.br.readQueryString();
     const currentSelection = /** @type {Selection} */ (window.getSelection());
     const range = currentSelection.getRangeAt(0);
-    const textLayer = range.startContainer.parentElement.closest('.BRtextLayer');
+    const textLayer = this.getNodeTextLayer(range.startContainer);
+    if (!textLayer) {
+      console.warn("No text layer found for selection");
+      return;
+    }
     const textFragment = BookReaderTextFragment.fromSelection(currentSelection, [textLayer]);
 
     // Note: Have to do a param construction to avoid url-encoding of commas in the text fragment param
@@ -584,11 +588,11 @@ class BRSelectMenu extends LitElement {
   /**
    * Returns the closest BRtextLayer element on the page that contains the target node
    * @param {Node} node
-   * @returns {HTMLElement | null}
+   * @returns {Element | null}
    */
   getNodeTextLayer(node) {
-    if (!node) return;
-    const element = 'closest' in node ? node : node.parentElement;
+    if (!node) return null;
+    const element = node instanceof Element ? node : node.parentElement;
     return element?.closest('.BRtextLayer') ?? null;
   }
 
@@ -1277,7 +1281,7 @@ export class BookReaderTextFragment {
   /**
    * Builds a TextFragment string from a given text selection.
    * @param {Selection} selection currently selected text, eg `document.getSelection()`
-   * @param {HTMLElement[]} contextElements elements providing context for the selection
+   * @param {Element[]} contextElements elements providing context for the selection
    * @returns {BookReaderTextFragment}
    */
   static fromSelection(selection, contextElements) {
