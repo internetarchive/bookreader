@@ -557,8 +557,10 @@ class BRSelectMenu extends LitElement {
   async handleCopyLinkToHighlight(e) {
     e.preventDefault();
     const currentParams = this.br.readQueryString();
-    const currentSelection = window.getSelection();
-    const textFragment = BookReaderTextFragment.fromSelection(currentSelection, this.br.$('.BRpage-visible').toArray());
+    const currentSelection = /** @type {Selection} */ (window.getSelection());
+    const range = currentSelection.getRangeAt(0);
+    const textLayer = range.startContainer.parentElement.closest('.BRtextLayer');
+    const textFragment = BookReaderTextFragment.fromSelection(currentSelection, [textLayer]);
 
     // Note: Have to do a param construction to avoid url-encoding of commas in the text fragment param
     let linkToHighlightParams = currentParams;
