@@ -507,7 +507,6 @@ class BRSelectMenu extends LitElement {
     this.setAttribute('role', 'menu');
     this.setAttribute('aria-label', 'Text selection actions');
     this.setAttribute('aria-orientation', 'vertical');
-    window.addEventListener('scroll', this._onScroll, { capture: true, passive: true });
   }
 
   /** @override */
@@ -771,6 +770,9 @@ class BRSelectMenu extends LitElement {
     this.style.position = 'absolute';
     this.style.display = 'block';
     this.open = true;
+    this.classList.remove('br-select-menu__root--scrolling');
+    window.removeEventListener('scroll', this._onScroll, { capture: true });
+    window.addEventListener('scroll', this._onScroll, { capture: true, passive: true });
     await this.updateComplete; // ensure Lit has rendered so getBoundingClientRect() returns real width
     this.repositionToSelection();
     this.clearNodesForRemoval();
@@ -779,6 +781,7 @@ class BRSelectMenu extends LitElement {
   hide = () => {
     this.style.display = 'none';
     this.open = false;
+    window.removeEventListener('scroll', this._onScroll, { capture: true });
     this.clearNodesForRemoval();
     return;
   }
