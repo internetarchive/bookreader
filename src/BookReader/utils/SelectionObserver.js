@@ -4,8 +4,8 @@ export class SelectionObserver {
   startedInSelector = false;
   /** @type {HTMLElement} */
   target = null;
-  /** @type {Node} */
-  lastKnownFocusNode = null;
+  /** @type {string} */
+  lastKnownSelectionText = '';
 
   /**
    * @param {string} selector
@@ -30,18 +30,19 @@ export class SelectionObserver {
 
   _onSelectionChange = () => {
     const sel = window.getSelection();
+    if (!sel) return;
 
     if (!this.selecting && sel.toString()) {
       const target = $(sel.anchorNode).closest(this.selector)[0];
       if (!target) return;
       this.target = target;
       this.selecting = true;
-      this.lastKnownFocusNode = sel.focusNode;
+      this.lastKnownSelectionText = sel.toString();
       this.handler('started', this.target);
     }
 
-    if (this.selecting && (this.lastKnownFocusNode != sel.focusNode || sel.toString() && !sel.isCollapsed)) {
-      this.lastKnownFocusNode = sel.focusNode;
+    if (this.selecting && sel.toString() !== this.lastKnownSelectionText) {
+      this.lastKnownSelectionText = sel.toString();
       this.handler('changed', this.target);
     }
 

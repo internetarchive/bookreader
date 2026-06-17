@@ -57,15 +57,12 @@ export class TextSelectionManager {
         // Set a class on the page to avoid hiding it when zooming/etc
         this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
         $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
-        this.showSelectMenu();
-
+        // Don't show while still doing selection
+        if (!this.mouseIsDown) this.showSelectMenu();
       }
 
       if (selectEvent == 'changed') {
-        // hide the button as user changes their selection
-        if (this.mouseIsDown) {
-          this.hideSelectMenu();
-        } else if (window.getSelection()?.toString()) {
+        if (!this.mouseIsDown && window.getSelection()?.toString()) {
           this.showSelectMenu();
         }
       }
@@ -167,7 +164,6 @@ export class TextSelectionManager {
     // blocking selection
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       this.mouseIsDown = true;
-      this.hideSelectMenu();
       if ($(event.target).is(this.selectionElement.join(", "))) {
         event.stopPropagation();
       }
@@ -175,7 +171,6 @@ export class TextSelectionManager {
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
       this.mouseIsDown = false;
-      this.hideSelectMenu();
       textLayer.style.pointerEvents = "none";
       if (skipNextMouseup) {
         skipNextMouseup = false;
@@ -201,7 +196,6 @@ export class TextSelectionManager {
       if (event.which != 1) return;
       this.mouseIsDown = true;
       event.stopPropagation();
-      this.hideSelectMenu();
     });
 
     // Prevent page flip on click
@@ -778,7 +772,8 @@ class BRSelectMenu extends LitElement {
     this.clearNodesForRemoval();
   }
 
-  hide = () => {
+  hide() {
+    if (!this.open) return;
     this.style.display = 'none';
     this.open = false;
     window.removeEventListener('scroll', this._onScroll, { capture: true });
