@@ -151,7 +151,7 @@ BookReader.defaultOptions = DEFAULT_OPTIONS;
  * @type {BookReaderOptions}
  * This is here, just in case you need to absolutely override an option.
  */
-BookReader.optionOverrides = {};
+BookReader.optionOverrides = BookReader.optionOverrides || {};
 
 /**
  * Setup
