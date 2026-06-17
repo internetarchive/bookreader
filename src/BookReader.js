@@ -852,6 +852,7 @@ BookReader.prototype.setupKeyListeners = function () {
 
     // Ignore if modifiers are active.
     if (e.getModifierState('Control') ||
+      e.getModifierState('Shift') ||
       e.getModifierState('Alt') ||
       e.getModifierState('Meta') ||
       e.getModifierState('Win') /* hack for IE */) {
