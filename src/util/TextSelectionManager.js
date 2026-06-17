@@ -1,6 +1,7 @@
 // @ts-check
 import { countWords } from './strings.js';
 import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
+import { clamp } from "../BookReader/utils.js";
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -221,7 +222,11 @@ export class TextSelectionManager {
       document.body.append(this.selectMenu);
     }
 
-    this.selectMenu.show();
+    if (this.selectMenu.open) {
+      this.selectMenu.repositionToSelection();
+    } else {
+      this.selectMenu.show();
+    }
   }
 
   hideSelectMenu() {
@@ -459,6 +464,9 @@ class BRSelectMenu extends LitElement {
   @query('#copy-link-option')
   copyLinkOption;
 
+  @property({type: Boolean, reflect: true})
+  open = false;
+
   @property({type: Boolean})
   copyLinkToHighlightEnabled = true;
 
@@ -479,12 +487,36 @@ class BRSelectMenu extends LitElement {
     return this;
   }
 
+  /** @type {number | null} */
+  _scrollTimeoutId = null;
+
+  _onScroll = () => {
+    this.classList.add('br-select-menu__root--scrolling');
+    if (this._scrollTimeoutId != null) clearTimeout(this._scrollTimeoutId);
+    this._scrollTimeoutId = window.setTimeout(() => {
+      this._scrollTimeoutId = null;
+      this.repositionToSelection();
+      this.classList.remove('br-select-menu__root--scrolling');
+    }, 150);
+  };
+
   /** @override */
   connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'menu');
     this.setAttribute('aria-label', 'Text selection actions');
     this.setAttribute('aria-orientation', 'vertical');
+    window.addEventListener('scroll', this._onScroll, { capture: true, passive: true });
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('scroll', this._onScroll, { capture: true });
+    if (this._scrollTimeoutId != null) {
+      clearTimeout(this._scrollTimeoutId);
+      this._scrollTimeoutId = null;
+    }
   }
 
   renderCopyLinkToHighlightOption() {
@@ -703,31 +735,45 @@ class BRSelectMenu extends LitElement {
     this.show();
   }
 
-  show() {
-    if (this.br.plugins.translate?.userToggleTranslate) return;
-    const currentSelection = window.getSelection();
-    const start = currentSelection.anchorNode.parentElement;
-    const end = currentSelection.focusNode.parentElement; // will always be a text node
-    const height = 30;
-    const width = 60;
-    const startBoundingRect = start.getBoundingClientRect();
-    const endBoundingRect = end.getBoundingClientRect();
-    let hlButtonTop = startBoundingRect.top - height;
-    let hlButtonLeft = startBoundingRect.left - width;
-    if (currentSelection.direction == 'backward') {
-      hlButtonTop = endBoundingRect.top - height;
-      hlButtonLeft = endBoundingRect.left - width;
-    }
+  repositionToSelection() {
+    // This is larger than both the iOS and Android text select menu
+    const OS_BAR_H = 60;
+    const MARGIN = 10;
+    const currentSelection = /** @type {Selection} */ (window.getSelection());
+    const range = currentSelection.getRangeAt(0);
+    const selectionRect = range.getBoundingClientRect();
+
+    const hlButtonTop = (selectionRect.top < OS_BAR_H
+      ? selectionRect.bottom + OS_BAR_H
+      : selectionRect.bottom + 20) + window.scrollY;
+
+    const menuWidth = this.getBoundingClientRect().width;
+    // Excludes scrollbars
+    const windowWidth = document.documentElement.clientWidth;
+    const idealLeft = menuWidth > selectionRect.width
+      ? selectionRect.left + selectionRect.width / 2 - menuWidth / 2
+      : selectionRect.left;
+    const left = clamp(idealLeft, MARGIN, windowWidth - menuWidth - MARGIN) + window.scrollX;
+
     this.style.top = `${hlButtonTop}px`;
-    this.style.left = `${hlButtonLeft}px`;
+    this.style.left = `${left}px`;
+  }
+
+  async show() {
+    if (this.br.plugins.translate?.userToggleTranslate) return;
+
     this.style.zIndex = '1';
     this.style.position = 'absolute';
     this.style.display = 'block';
+    this.open = true;
+    await this.updateComplete; // ensure Lit has rendered so getBoundingClientRect() returns real width
+    this.repositionToSelection();
     this.clearNodesForRemoval();
   }
 
   hide = () => {
     this.style.display = 'none';
+    this.open = false;
     this.clearNodesForRemoval();
     return;
   }
