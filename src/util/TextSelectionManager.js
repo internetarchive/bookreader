@@ -7,6 +7,7 @@ import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import '@internetarchive/icon-share';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
+import { isIOS, isAndroid } from './browserSniffing.js';
 
 const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
 const MAX_FULL_QUOTE_URL_CHARS = 80;
@@ -736,16 +737,20 @@ class BRSelectMenu extends LitElement {
   }
 
   repositionToSelection() {
-    // This is larger than both the iOS and Android text select menu
-    const OS_BAR_H = 60;
-    const MARGIN = 10;
+    const SCREEN_MARGIN = 10;
     const currentSelection = /** @type {Selection} */ (window.getSelection());
     const range = currentSelection.getRangeAt(0);
     const selectionRect = range.getBoundingClientRect();
 
-    const hlButtonTop = (selectionRect.top < OS_BAR_H
+    const isMobile = isIOS() || isAndroid();
+    // Leave room for mobile teardrop selection handles
+    const SELECTION_PADDING = isAndroid() ? 25 : isIOS() ? 15 : 10;
+    // On mobile, avoid the native OS text-selection bar which appears near the top of the screen
+    const OS_BAR_H = isMobile ? 60 : 0;
+    const idealTop = (selectionRect.top < OS_BAR_H
       ? selectionRect.bottom + OS_BAR_H
-      : selectionRect.bottom + 20) + window.scrollY;
+      : selectionRect.bottom) + SELECTION_PADDING;
+    const top = Math.max(SCREEN_MARGIN, idealTop) + window.scrollY;
 
     const menuWidth = this.getBoundingClientRect().width;
     // Excludes scrollbars
@@ -753,9 +758,9 @@ class BRSelectMenu extends LitElement {
     const idealLeft = menuWidth > selectionRect.width
       ? selectionRect.left + selectionRect.width / 2 - menuWidth / 2
       : selectionRect.left;
-    const left = clamp(idealLeft, MARGIN, windowWidth - menuWidth - MARGIN) + window.scrollX;
+    const left = clamp(idealLeft, SCREEN_MARGIN, windowWidth - menuWidth - SCREEN_MARGIN) + window.scrollX;
 
-    this.style.top = `${hlButtonTop}px`;
+    this.style.top = `${top}px`;
     this.style.left = `${left}px`;
   }
 
