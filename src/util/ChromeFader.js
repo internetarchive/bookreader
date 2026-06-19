@@ -17,21 +17,27 @@ export class ChromeFader {
     /** @type {ReturnType<typeof setTimeout> | null} */
     _hideTimeout = null;
 
+    /** @type {(...args: any[]) => void} */
+    log = () => {};
+
     /**
      * @param {HTMLElement} scrollElement
      */
     constructor(scrollElement) {
       this._scrollElement = scrollElement;
       this.isShowing = !document.body.classList.contains('BRfaded');
+      if (new URLSearchParams(location.search).get('debug') === 'true') {
+        this.log = console.log.bind(console);
+      }
     }
 
     attach() {
-      console.log('ScrollFader attach');
+      this.log('ScrollFader attach');
       this.modeAwake();
     }
 
     detach() {
-      console.trace('ScrollFader detach');
+      this.log('ScrollFader detach');
       this._scrollElement.removeEventListener('pointerleave', this._handlePointerLeave);
       document.removeEventListener('pointerdown', this._handleOutsidePointerDown, { capture: true });
       this._scrollElement.removeEventListener('pointermove', this._handlePointerMove);
@@ -61,7 +67,7 @@ export class ChromeFader {
      * this case, leave BookReader, or starts interacting with the chrome itself.
      */
     modeAwake = () => {
-      console.log('ScrollFader modeAwake', this._scrollElement);
+      this.log('ScrollFader modeAwake', this._scrollElement);
       this.detach();
       this.keepShowing('modeAwake');
       this._scrollElement.addEventListener('pointerleave', this._handlePointerLeave);
@@ -73,7 +79,7 @@ export class ChromeFader {
     }
 
     modeInactive = () => {
-      console.log('ScrollFader modeInactive');
+      this.log('ScrollFader modeInactive');
       this.detach();
       this.show('modeInactive');
       this._scrollElement.addEventListener('pointerenter', this.modeAwake, { once: true });
@@ -82,14 +88,14 @@ export class ChromeFader {
     /** @param {PointerEvent} ev */
     _handlePointerLeave = (ev) => {
       if (ev.pointerType === 'touch') return;
-      console.log('ScrollFader pointerleave');
+      this.log('ScrollFader pointerleave');
       this.modeInactive();
     }
 
     /** @param {PointerEvent} ev */
     _handleOutsidePointerDown = (ev) => {
       if (this._scrollElement.contains(/** @type {Node} */ (ev.target))) return;
-      console.log('ScrollFader outside pointerdown');
+      this.log('ScrollFader outside pointerdown');
       this.modeInactive();
     }
     /** @param {PointerEvent} ev */
@@ -109,7 +115,7 @@ export class ChromeFader {
      * @param {string} source debug source of the event that triggered this
      */
     keepShowing = (source) => {
-      console.log('Show UI ...', source);
+      this.log('Show UI ...', source);
       if (!this.isShowing) this.show(source);
       if (this._hideTimeout) clearTimeout(this._hideTimeout);
       this._hideTimeout = setTimeout(() => {
@@ -122,7 +128,7 @@ export class ChromeFader {
      * @param {string} source debug source of the event that triggered this
      */
     show = (source) => {
-      console.log('Show UI ...', source);
+      this.log('Show UI ...', source);
       this.isShowing = true;
       $(document.body).removeClass('BRfaded');
     };
@@ -131,7 +137,7 @@ export class ChromeFader {
      * @param {string} source debug source of the event that triggered this
      */
     hide = (source) => {
-      console.log('Hide UI ...', source);
+      this.log('Hide UI ...', source);
       this.isShowing = false;
       $(document.body).addClass('BRfaded');
     };
