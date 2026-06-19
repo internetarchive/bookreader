@@ -71,14 +71,6 @@
     margin: 0;
     list-style: none;
 
-  body[data-variant="floating"] & {
-    border-radius: 4px;
-  }
-
-  body[data-variant="attached"] &, body:not([data-variant]) & {
-    border-radius: 0;
-  }
-    
     @include brDarkControls;
     @media (max-width: $brBreakPointMobile) {
       padding-left: 0;
@@ -109,15 +101,8 @@
     display: none;
     position: absolute;
     bottom: 100%;
-    margin-bottom: 2px;
+    left: 0;
     right: 0;
-    border-radius: 4px;
-
-    body[data-variant="attached"] &, body:not([data-variant]) & {
-      left: 0;
-      margin: 0;
-      border-radius: 0;
-    }
 
     z-index: 1;
     padding: 5px 0;
