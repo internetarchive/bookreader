@@ -743,7 +743,7 @@ BookReader.prototype.init = function() {
     }
   }
 
-  if (this.plugins.experiments?.isEnabled('hideable-chrome')) {
+  if (this.plugins.experiments?.isEnabled('autoHidingChrome')) {
     this.fader = new ChromeFader(this.activeMode.scrollContainer);
     this.fader.ignoreClickOnSelector = '.BRpageFlipping';
     if (this.isFullscreenActive) this.fader.attach();
