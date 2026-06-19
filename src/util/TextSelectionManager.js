@@ -514,9 +514,11 @@ class BRSelectMenu extends LitElement {
   }
 
   renderCopyLinkToHighlightOption() {
+    // Mousedown needed to prevent selection from being cleared on iOS
     return html`
       <br-menu-option
         id="copy-link-option"
+        @mousedown=${/** @param {MouseEvent} e */ (e) => e.preventDefault()}
         @click=${this.handleCopyLinkToHighlight}
         icon="share"
         label="Copy Link to Highlight"
