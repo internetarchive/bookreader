@@ -103,7 +103,7 @@ ia-bookreader::part(minimized-menu) {
 }
 
 .BRfaded {
-  .BookReader:not(.BRmodeThumb) .BRfooter:not(:has(:focus-visible)):not(:hover), ia-bookreader::part(minimized-menu) {
+  .BookReader:not(.BRmodeThumb) .BRfooter:not(:has(:focus-visible)), ia-bookreader::part(minimized-menu) {
     opacity: 0;
     pointer-events: none;
   }

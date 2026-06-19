@@ -33,11 +33,12 @@ export class ChromeFader {
     detach() {
       console.trace('ScrollFader detach');
       this._scrollElement.removeEventListener('pointerleave', this._handlePointerLeave);
+      document.removeEventListener('pointerdown', this._handleOutsidePointerDown, { capture: true });
       this._scrollElement.removeEventListener('pointermove', this._handlePointerMove);
       this._scrollElement.removeEventListener('scroll', this._handleScroll);
       this._scrollElement.removeEventListener('touchstart', this._handleTouchStart);
       this._scrollElement.removeEventListener('click', this._handleClick);
-      this._scrollElement.removeEventListener('pointerenter', this.modeInactive);
+      this._scrollElement.removeEventListener('pointerenter', this.modeAwake);
 
       if (this._hideTimeout) {
         clearTimeout(this._hideTimeout);
@@ -52,12 +53,20 @@ export class ChromeFader {
       this.attach();
     }
 
+    /**
+     * In this mode, the events are monitored and the UI is auto-hidden when not
+     * interacted with.
+     *
+     * We transition to modeInactive when the user leaves the scrollElement -- in
+     * this case, leave BookReader, or starts interacting with the chrome itself.
+     */
     modeAwake = () => {
       console.log('ScrollFader modeAwake', this._scrollElement);
       this.detach();
       this.keepShowing('modeAwake');
-      this._scrollElement.addEventListener('pointerleave', this._handlePointerLeave, { once: true });
-      this._scrollElement.addEventListener('pointermove', this._handlePointerMove);
+      this._scrollElement.addEventListener('pointerleave', this._handlePointerLeave);
+      document.addEventListener('pointerdown', this._handleOutsidePointerDown, { capture: true, passive: true });
+      this._scrollElement.addEventListener('pointermove', this._handlePointerMove, { passive: true });
       this._scrollElement.addEventListener('scroll', this._handleScroll, { passive: true });
       this._scrollElement.addEventListener('touchstart', this._handleTouchStart, { passive: true });
       this._scrollElement.addEventListener('click', this._handleClick, { passive: true });
@@ -74,6 +83,13 @@ export class ChromeFader {
     _handlePointerLeave = (ev) => {
       if (ev.pointerType === 'touch') return;
       console.log('ScrollFader pointerleave');
+      this.modeInactive();
+    }
+
+    /** @param {PointerEvent} ev */
+    _handleOutsidePointerDown = (ev) => {
+      if (this._scrollElement.contains(/** @type {Node} */ (ev.target))) return;
+      console.log('ScrollFader outside pointerdown');
       this.modeInactive();
     }
     /** @param {PointerEvent} ev */
