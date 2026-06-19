@@ -56,7 +56,6 @@ export class ChromeFader {
     changeScrollElement(el) {
       this.detach();
       this._scrollElement = el;
-      this.attach();
     }
 
     /**
