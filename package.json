@@ -63,15 +63,15 @@
     "@babel/plugin-proposal-class-properties": "7.18.6",
     "@babel/plugin-proposal-decorators": "7.29.7",
     "@babel/preset-env": "7.29.7",
-    "@iiif/presentation-2": "^1.0.4",
-    "@iiif/presentation-3": "^2.1.3",
+    "@iiif/presentation-2": "1.0.4",
+    "@iiif/presentation-3": "2.2.3",
     "@open-wc/testing-helpers": "3.0.1",
     "@types/jest": "30.0.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "babel-loader": "10.1.1",
-    "concurrently": "9.0.1",
+    "concurrently": "10.0.3",
     "core-js": "3.49.0",
-    "cpx2": "8.0.0",
+    "cpx2": "9.0.0",
     "eslint": "7.32.0",
     "eslint-plugin-no-jquery": "^2.7.0",
     "eslint-plugin-testcafe": "0.2.1",
@@ -136,6 +136,8 @@
     "update:test-deps:test": "npm run lint && npm run test && npm run test:e2e",
     "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
     "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest @babel/plugin-proposal-class-properties@latest @babel/plugin-proposal-decorators@latest babel-loader@latest core-js@latest regenerator-runtime@latest sass@latest svgo@latest webpack@latest webpack-cli@latest",
-    "update:build-deps:test": "npm run build"
+    "update:build-deps:test": "npm run build",
+    "DOCS:update:dev-deps": "Packages used for development",
+    "update:dev-deps": "npm i @iiif/presentation-2@latest @iiif/presentation-3@latest concurrently@latest cpx2@latest http-server@latest live-server@latest"
   }
 }
