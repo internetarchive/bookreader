@@ -107,36 +107,22 @@ export function encodeURIComponentPlus(value) {
  *
  * @param {T} func
  * @param {number} wait
- * @param {boolean | function} immediate If true, calls func on the leading edge. If a
- * function is provided, that function is called on the leading edge instead of `func`.
- * `func` is still called on the trailing edge.
- * @param {Object} [options]
- * @param {function | null} [options.tap] Function to tap the event stream -- eg not debounced
+ * @param {boolean} immediate
  * @return {T}
  */
-export function debounce(func, wait, immediate, {tap = null} = {}) {
+export function debounce(func, wait, immediate) {
   let timeout;
   return function() {
     const context = this;
     const args = arguments;
     const later = () => {
       timeout = null;
-      if (!immediate || typeof immediate === 'function') func.apply(context, args);
+      if (!immediate) func.apply(context, args);
     };
     const callNow = immediate && !timeout;
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
-    if (callNow) {
-      if (typeof immediate === 'function') {
-        immediate.apply(context, args);
-      } else {
-        func.apply(context, args);
-      }
-    }
-
-    if (tap) {
-      tap.apply(context, args);
-    }
+    if (callNow) func.apply(context, args);
   };
 }
 
@@ -327,10 +313,10 @@ export function sortBy(array, valueFn) {
 }
 
 /**
- * @param {Function} callback
+ * @param {function(Event): void} callback
  * @param {Object} options
  * @param {number} [options.scrollDelay=20] How many pixels to scroll before triggering
- * @returns {function(): void}
+ * @returns {function(Event): void}
  */
 export function eventFilterScrollUp(callback, {scrollDelay = 20} = {}) {
   let lastScrollTop = 0;
@@ -351,9 +337,10 @@ export function eventFilterScrollUp(callback, {scrollDelay = 20} = {}) {
 /**
  * Filters mousemove events to only call callback when the mouse has moved
  * more than minDistance pixels.
- * @param {Function} callback
+ * @param {function(MouseEvent | PointerEvent): void} callback
  * @param {Object} options
  * @param {number} [options.minDistance=10]
+ * @returns {function(MouseEvent | PointerEvent): void}
  */
 export function eventFilterMouseMove(callback, {minDistance = 10} = {}) {
   let startX = null;
@@ -380,19 +367,5 @@ export function eventFilterMouseMove(callback, {minDistance = 10} = {}) {
       startY = event.clientY;
     }
     resetStart();
-  };
-};
-
-/**
- * Filters event if the target element is the same as the element the event is bound to.
- * Useful for avoiding handling events from child elements.
- * @param {Function} callback
- * @returns {function(Event): void}
- */
-export function eventFilterSameElement(callback) {
-  return function(event) {
-    if (event.target === event.currentTarget) {
-      callback(event);
-    }
   };
 }

@@ -2,7 +2,6 @@
 import { Mode1UpLit } from './Mode1UpLit.js';
 import { DragScrollable } from './DragScrollable.js';
 import { ModeAbstract } from './ModeAbstract.js';
-import { eventFilterScrollUp } from './utils.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
@@ -37,13 +36,6 @@ export class Mode1Up extends ModeAbstract {
 
   get scrollContainer() {
     return this.mode1UpLit;
-  }
-
-  init() {
-    if (this.br.plugins.experiments?.isExperimentEnabled('hideable-chrome')) {
-      this.$el[0].addEventListener('scroll', eventFilterScrollUp(() => this.br.fader('scroll')), { passive: true });
-      this.$el[0].addEventListener('click', () => this.br.fader('click'), { passive: true });
-    }
   }
 
   /**

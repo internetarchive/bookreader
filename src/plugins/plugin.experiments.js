@@ -219,11 +219,6 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorage.setItem(this.options.localStorageKey, JSON.stringify(states));
   }
 
-  isExperimentEnabled(experimentName) {
-    const experiment = this.allExperiments.find(exp => exp.name === experimentName);
-    return experiment ? experiment.enabled : false;
-  }
-
   /**
    * @param {ExperimentModel} experiment
    * @param {boolean} enabled

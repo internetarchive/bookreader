@@ -2,7 +2,6 @@
 import { Mode2UpLit } from './Mode2UpLit.js';
 import { DragScrollable } from './DragScrollable.js';
 import { ModeAbstract } from './ModeAbstract.js';
-import { eventFilterSameElement, eventFilterScrollUp } from './utils.js';
 /** @typedef {import('../BookReader.js').default} BookReader */
 /** @typedef {import('./BookModel.js').BookModel} BookModel */
 /** @typedef {import('./BookModel.js').PageIndex} PageIndex */
@@ -35,17 +34,6 @@ export class Mode2Up extends ModeAbstract {
 
     /** Has mode2up ever been rendered before? */
     this.everShown = false;
-  }
-
-  init() {
-    if (this.br.plugins.experiments?.isExperimentEnabled('hideable-chrome')) {
-      this.$el[0].addEventListener('scroll', eventFilterScrollUp(() => this.br.fader('scroll')), { passive: true });
-      this.$el[0].addEventListener('click', eventFilterSameElement(() => this.br.fader.toggle('click')));
-      this.$el.on('click', '.BRpagecontainer', () => {
-        if (this.$el.hasClass('BRpageFlipping')) return;
-        this.br.fader.toggle('click');
-      });
-    }
   }
 
   /**
