@@ -7,7 +7,7 @@ import { sleep } from '../BookReader/utils.js';
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
 
-/** @typedef {'copyLinkToHighlight' | 'annotateHighlight' | 'translate' | 'hypothesis'} ExperimentName */
+/** @typedef {'copyLinkToHighlight' | 'annotateHighlight' | 'translate' | 'hypothesis' | 'autoHidingChrome'} ExperimentName */
 
 class ExperimentModel {
   /** @type {ExperimentName} */
@@ -53,10 +53,10 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorageKey: 'BrExperiments',
 
     /** @type {ExperimentName[]} Experiments shown in the experiments panel */
-    availableExperiments: ['translate', 'copyLinkToHighlight', 'hideable-chrome'],
+    availableExperiments: ['translate', 'copyLinkToHighlight', 'autoHidingChrome'],
 
     /** @type {ExperimentName[]} Experiments enabled by default */
-    autoEnabledExperiments: [],
+    autoEnabledExperiments: ['autoHidingChrome'],
   }
 
   /** @type {ExperimentModel[]} */
@@ -116,8 +116,8 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     }(),
 
     new class extends ExperimentModel {
-      name = 'hideable-chrome';
-      title = 'Hideable Chrome';
+      name = 'autoHidingChrome';
+      title = 'Auto-Hiding Chrome';
       description = "Automatically hide the BookReader interface when reading.";
       enabled = false;
       async enable({ manual = false }) {
