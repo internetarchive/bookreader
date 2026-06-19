@@ -45,7 +45,4 @@ export class ModeAbstract {
       return this.book.getPage(indexOrDirection);
     }
   }
-
-  /** @abstract */
-  init() {}
 }
