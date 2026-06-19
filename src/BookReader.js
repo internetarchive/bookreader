@@ -750,7 +750,7 @@ BookReader.prototype.init = function() {
   if (this.plugins.experiments?.isEnabled('hideable-chrome')) {
     this.fader = new ChromeFader(this.activeMode.scrollContainer);
     this.fader.ignoreClickOnSelector = '.BRpageFlipping';
-    this.fader.attach();
+    if (this.isFullscreenActive) this.fader.attach();
   }
 
   this.init.initComplete = true;
@@ -1029,7 +1029,7 @@ BookReader.prototype.zoom = function(direction) {
  */
 BookReader.prototype.resizeBRcontainer = function(animate) {
   const top = this.getToolBarHeight();
-  const bottom = this.plugins.experiments?.isEnabled('hideable-chrome') ? 0 : this.getFooterHeight();
+  const bottom = this.fader && this.isFullscreenActive ? 0 : this.getFooterHeight();
   if (animate) {
     this.refs.$brContainer.animate({ top, bottom }, this.constResizeAnimationDuration, 'linear');
   } else {
@@ -1262,6 +1262,7 @@ BookReader.prototype.switchMode = function(
     this._modes.mode2Up.prepare();
   }
   this.fader?.changeScrollElement(this.activeMode.scrollContainer);
+  if (this.isFullscreenActive) this.fader?.attach();
 
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
@@ -1333,6 +1334,8 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
 
   this.isFullscreenActive = true;
 
+  this.fader?.attach();
+
   // Change tooltip of fullscreen button
   this.$('.BRnav .BRicon.full').attr('title', 'Exit fullscreen');
   this.$('.BRnav .BRicon.full .BRtooltip').text('Exit fullscreen');
@@ -1380,6 +1383,8 @@ BookReader.prototype.exitFullScreen = async function () {
   }
 
   this.isFullscreenActive = false;
+
+  this.fader?.detach();
 
   this.$('.BRnav .BRicon.full').attr('title', 'Go fullscreen');
   this.$('.BRnav .BRicon.full .BRtooltip').text('Go fullscreen');
