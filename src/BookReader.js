@@ -42,6 +42,7 @@ import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
 import {BookReaderTextFragment} from './util/TextSelectionManager.js';
+import {ChromeFader} from './util/ChromeFader.js';
 
 /**
  * BookReader
@@ -174,32 +175,6 @@ BookReader.prototype.setup = function(options) {
   this.subPrefix = options.subPrefix;
   /** @deprecated */
   this.bookPath = options.bookPath;
-  this.fader = utils.debounce(
-    (source) => this.fader.hide(source),
-    2000,
-    (source) => this.fader.show(source),
-    {
-      tap: (source) => {
-        console.log('Show UI ...', source);
-      },
-    },
-  );
-  this.fader.show = (source) => {
-    console.log('Show UI');
-    $(document.body).removeClass('BRfaded');
-  };
-  this.fader.hide = (source) => {
-    console.log('Hide UI');
-    $(document.body).addClass('BRfaded');
-  };
-  this.fader.toggle = (source) => {
-    if ($(document.body).hasClass('BRfaded')) {
-      this.fader.show(source);
-      this.fader(source);
-    } else {
-      this.fader.hide(source);
-    }
-  };
 
   // Construct the usual plugins first to get type hints
   this.plugins = {
@@ -768,15 +743,10 @@ BookReader.prototype.init = function() {
     }
   }
 
-  // Init modes
-  for (const mode of Object.values(this._modes)) {
-    mode.init();
-  }
-
-  if (this.plugins.experiments?.isExperimentEnabled('hideable-chrome')) {
-    this.refs.$br.on('pointermove', utils.eventFilterMouseMove(ev => ev.pointerType != 'touch' && this.fader('pointermove')));
-    this.refs.$brContainer[0].addEventListener('scroll', utils.eventFilterScrollUp(() => this.fader('scroll')), { passive: true });
-    this.refs.$brContainer[0].addEventListener('touchstart', utils.eventFilterSameElement(() => this.fader('touchstart')), { passive: true });
+  if (this.plugins.experiments?.isEnabled('hideable-chrome')) {
+    this.fader = new ChromeFader(this.activeMode.scrollContainer);
+    this.fader.ignoreClickOnSelector = '.BRmode2up .BRpagecontainer';
+    this.fader.attach();
   }
 
   this.init.initComplete = true;
@@ -1054,7 +1024,7 @@ BookReader.prototype.zoom = function(direction) {
  */
 BookReader.prototype.resizeBRcontainer = function(animate) {
   const top = this.getToolBarHeight();
-  const bottom = this.plugins.experiments?.isExperimentEnabled('hideable-chrome') ? 0 : this.getFooterHeight();
+  const bottom = this.plugins.experiments?.isEnabled('hideable-chrome') ? 0 : this.getFooterHeight();
   if (animate) {
     this.refs.$brContainer.animate({ top, bottom }, this.constResizeAnimationDuration, 'linear');
   } else {
@@ -1266,6 +1236,7 @@ BookReader.prototype.switchMode = function(
     this.activeMode.unprepare?.();
   }
 
+  this.fader?.detach();
   this.mode = mode;
 
   // reinstate scale if moving from thumbnail view
@@ -1285,6 +1256,7 @@ BookReader.prototype.switchMode = function(
   } else {
     this._modes.mode2Up.prepare();
   }
+  this.fader?.changeScrollElement(this.activeMode.scrollContainer);
 
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
