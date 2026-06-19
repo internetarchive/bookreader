@@ -153,7 +153,12 @@
   color-scheme: dark;
   padding: 2px;
   overflow: hidden;
+  opacity: 1;
   transition: border-radius 0.2s, opacity 0.2s;
+
+  @starting-style {
+    opacity: 0;
+  }
 }
 .br-select-menu__root--scrolling {
   opacity: 0;
