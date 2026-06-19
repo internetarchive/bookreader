@@ -4,8 +4,8 @@ export class SelectionObserver {
   startedInSelector = false;
   /** @type {HTMLElement} */
   target = null;
-  /** @type {string} */
-  lastKnownSelectionText = '';
+  /** @type {Node | null} */
+  lastKnownFocusNode = null;
 
   /**
    * @param {string} selector
@@ -37,17 +37,18 @@ export class SelectionObserver {
       if (!target) return;
       this.target = target;
       this.selecting = true;
-      this.lastKnownSelectionText = sel.toString();
+      this.lastKnownFocusNode = sel.focusNode;
       this.handler('started', this.target);
     }
 
-    if (this.selecting && sel.toString() !== this.lastKnownSelectionText) {
-      this.lastKnownSelectionText = sel.toString();
+    if (this.selecting && this.lastKnownFocusNode != sel.focusNode && sel.toString() && !sel.isCollapsed) {
+      this.lastKnownFocusNode = sel.focusNode;
       this.handler('changed', this.target);
     }
 
     if (this.selecting && (sel.isCollapsed || !sel.toString() || !$(sel.anchorNode).closest(this.selector)[0])) {
       this.selecting = false;
+      this.lastKnownFocusNode = null;
       this.handler('cleared', this.target);
     }
   };
