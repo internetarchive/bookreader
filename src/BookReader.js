@@ -745,7 +745,7 @@ BookReader.prototype.init = function() {
 
   if (this.plugins.experiments?.isEnabled('hideable-chrome')) {
     this.fader = new ChromeFader(this.activeMode.scrollContainer);
-    this.fader.ignoreClickOnSelector = '.BRmode2up .BRpagecontainer';
+    this.fader.ignoreClickOnSelector = '.BRpageFlipping';
     this.fader.attach();
   }
 
