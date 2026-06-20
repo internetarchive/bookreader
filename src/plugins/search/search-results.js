@@ -386,4 +386,6 @@ export class IABookSearchResults extends LitElement {
     return [sharedStyles, buttonCSS, mainCSS];
   }
 }
-customElements.define('ia-book-search-results', IABookSearchResults);
+if (!customElements.get('ia-book-search-results')) {
+  customElements.define('ia-book-search-results', IABookSearchResults);
+}
