@@ -19,9 +19,15 @@ export class TextSelectionManager {
 
   /** @type {BRSelectMenu} */
   selectMenu;
+  /** @type {BRAnnotationMenu} */
+  annotationMenu;
 
   get selectMenuEnabled() {
     return this.br.plugins.experiments?.isEnabled('copyLinkToHighlight') || this.br.plugins.experiments?.isEnabled('annotateHighlight');
+  }
+
+  get annotationsMenuEnabled() {
+    return this.br.plugins.experiments?.isEnabled('annotateHighlight');
   }
 
   /**
@@ -43,6 +49,9 @@ export class TextSelectionManager {
 
     this.selectMenu = new BRSelectMenu(br);
     this.selectMenu.className = "br-select-menu__root";
+
+    this.annotationMenu = new BRAnnotationMenu(br);
+    this.annotationMenu.className = "br-annotate-menu__root";
   }
 
   init() {
@@ -63,6 +72,7 @@ export class TextSelectionManager {
         // hide the button as user changes their selection
         if (this.mouseIsDown) {
           this.hideSelectMenu();
+          this.hideAnnotationMenu();
         } else if (window.getSelection()?.toString()) {
           this.showSelectMenu();
         }
@@ -174,6 +184,7 @@ export class TextSelectionManager {
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
       this.mouseIsDown = false;
       this.hideSelectMenu();
+      this.hideAnnotationMenu();
       textLayer.style.pointerEvents = "none";
       if (skipNextMouseup) {
         skipNextMouseup = false;
@@ -226,6 +237,21 @@ export class TextSelectionManager {
 
   hideSelectMenu() {
     this.selectMenu.hide();
+  }
+
+  showAnnotationMenu(nodes) {
+    if (!this.annotationsMenuEnabled) return;
+    if (!nodes.length) return;
+    this.annotationMenu.highlightAnnotationEnabled = this.br.plugins?.experiments?.isEnabled('annotateHighlight');
+
+    if (!this.annotationMenu.isConnected) {
+      document.body.append(this.annotationMenu);
+    }
+    this.annotationMenu.show(nodes);
+  }
+
+  hideAnnotationMenu() {
+    this.annotationMenu.hide();
   }
 
   _limitSelection = () => {
@@ -546,9 +572,10 @@ class BRSelectMenu extends LitElement {
     // TODO change the second button to use a different icon
     return html`
       ${this.copyLinkToHighlightEnabled ? this.renderCopyLinkToHighlightOption() : ''}
-      ${this.highlightAnnotationEnabled && !this.nodesForRemoval ? this.renderHighlightOption() : ''}
+      ${this.highlightAnnotationEnabled ? this.renderHighlightOption() : ''}
+      ${this.highlightAnnotationEnabled ? this.renderAddAnnotationOption() : ''}
       ${this.highlightAnnotationEnabled ? this.renderLocalStorageOptions() : ''}
-      ${this.nodesForRemoval ? this.renderRemoveOption() : ''}
+      ${this.activeHighlightNodes ? this.renderRemoveOption() : ''}
     `;
   }
 
@@ -605,21 +632,34 @@ class BRSelectMenu extends LitElement {
     const start = currentSelection.direction === 'backward' ? currentSelection.focusNode.parentElement : currentSelection.anchorNode.parentElement;
     const textLayer = this.getNodeTextLayer(start);
     const highlight = BookReaderTextFragment.fromSelection(currentSelection, [textLayer.parentElement]);
+    highlight.highlightColor = this.br.plugins?.textSelection?.textSelectionManager.annotationMenu.lastHighlightColorUsed;
     highlight.uuid = `id-${crypto.randomUUID().split("-")[4]}`;
-    const highlights = this.loadHighlightsFromLocalStorage();
+    const highlights = loadHighlightsFromLocalStorage();
     highlights.push(highlight);
-    this.saveToLocalStorage(highlights);
+    saveToLocalStorage(highlights);
     this.renderSavedHighlights();
+    this.activeHighlightNodes = document.querySelectorAll(`.${highlight.uuid}`);
+    this.requestUpdate();
   }
 
-  handleAddAnnotation(e) {
-    // TODO
+  handleAddAnnotation() {
+    if (this.activeHighlightNodes) { // show the annotation menu
+      this.br.plugins.textSelection.textSelectionManager.showAnnotationMenu(this.activeHighlightNodes);
+      window.getSelection()?.empty();
+      this.clearActiveHighlightNodes();
+    } else { // add a highlight and show the annotation menu
+      this.handleHighlightSave();
+      this.br.plugins?.textSelection?.textSelectionManager.showAnnotationMenu(this.activeHighlightNodes);
+      window.getSelection()?.empty();
+      this.clearActiveHighlightNodes();
+      this.requestUpdate();
+    }
   }
 
   handleDeleteHighlight() {
-    if (this.nodesForRemoval) {
-      const uuid = retrieveUUID(this.nodesForRemoval[0]);
-      for (const ele of this.nodesForRemoval) {
+    if (this.activeHighlightNodes) {
+      const uuid = retrieveUUID(this.activeHighlightNodes[0]);
+      for (const ele of this.activeHighlightNodes) {
         const tempText = ele.textContent;
         const parent = ele.parentElement;
         if (parent.classList.contains('BRwordElement') || parent.classList.contains('BRspace')) {
@@ -630,7 +670,7 @@ class BRSelectMenu extends LitElement {
         }
       }
       this.deleteHighlight(uuid);
-      this.clearNodesForRemoval();
+      this.clearActiveHighlightNodes();
     } else {
       console.log("there is nothing to remove");
     }
@@ -640,34 +680,18 @@ class BRSelectMenu extends LitElement {
    * @param {string} uuid
    */
   deleteHighlight(uuid) {
-    const highlights = this.loadHighlightsFromLocalStorage();
+    const highlights = loadHighlightsFromLocalStorage();
     for (let idx = 0; idx < highlights.length; idx++) {
       if (highlights[idx].uuid === uuid) {
         highlights.splice(idx, 1);
-        this.saveToLocalStorage(highlights);
+        saveToLocalStorage(highlights);
         return;
       }
     }
   }
 
-  /**
-   * Saves all the highlights in an array to localStorage
-   * @param {BookReaderSavedHighlight[]} highlights
-   */
-  saveToLocalStorage(highlights) {
-    window.localStorage.setItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY, JSON.stringify(highlights.map(hl => hl.toJSON())));
-  }
-
-  /**
-   * @returns {BookReaderSavedHighlight[]}
-   */
-  loadHighlightsFromLocalStorage() {
-    return JSON.parse(window.localStorage.getItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY) || "[]")
-      .map(item => BookReaderTextFragment.fromJSON(item));
-  }
-
   renderSavedHighlights() {
-    for (const hl of this.loadHighlightsFromLocalStorage()) {
+    for (const hl of loadHighlightsFromLocalStorage()) {
       const textLayer = /** @type {HTMLElement} */ (this.br.$(`.pagediv${hl.pageIndex} .BRtextLayer`)[0]);
       if (!textLayer) continue;
       renderHighlight(textLayer, hl);
@@ -689,6 +713,7 @@ class BRSelectMenu extends LitElement {
     const textLayer = this.getNodeTextLayer(target);
     const identifier = retrieveUUID(target);
     const selectedQuoteNodes = textLayer.querySelectorAll(`.${identifier}`);
+    this.activeHighlightNodes = selectedQuoteNodes;
 
     const firstNode = selectedQuoteNodes[0];
     const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
@@ -723,21 +748,238 @@ class BRSelectMenu extends LitElement {
     this.style.zIndex = '1';
     this.style.position = 'absolute';
     this.style.display = 'block';
-    this.clearNodesForRemoval();
   }
 
   hide = () => {
     this.style.display = 'none';
-    this.clearNodesForRemoval();
+    // this.clearActiveHighlightNodes();
     return;
   }
 
   /**
    * Remove temporary storage for the currently selected highlight and updates selection menu options
    */
-  clearNodesForRemoval = () => {
-    this.nodesForRemoval = null;
+  clearActiveHighlightNodes = () => {
+    this.activeHighlightNodes = null;
     this.requestUpdate();
+  }
+}
+
+@customElement('br-annotation-menu')
+class BRAnnotationMenu extends LitElement {
+  /** @type {import('../BookReader.js').default} */
+  br;
+
+  @property({type: String})
+  icon = '';
+
+  @property({type: String})
+  label = '';
+
+  @property({type: Boolean})
+  allowAnnotationEditing = false;
+
+  @property({type: String})
+  HIGHLIGHT_YELLOW = "#ffff00";
+  @property({type: String})
+  HIGHLIGHT_PINK = "#ffc0cb";
+  @property({type: String})
+  HIGHLIGHT_ORANGE = "#ffa500";
+  @property({type: String})
+  HIGHLIGHT_GREEN = "#00ff00"
+
+  @property({type: String})
+  lastHighlightColorUsed = this.HIGHLIGHT_YELLOW;
+
+  currentAnnotationNodes;
+
+  /**
+   *
+   * @param {import('../BookReader.js').default} br
+   */
+  constructor(br) {
+    super();
+    this.br = br;
+  }
+
+  /** @override */
+  createRenderRoot() {
+    return this;
+  }
+
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+    this.setAttribute('role', 'menu');
+    this.setAttribute('aria-label', 'Annotation actions');
+  }
+
+  showExistingAnnotation() {
+    return html`
+      <div class="br-annotate-menu__comment" aria-hidden="true">
+        <span class="br-annotate-menu__displayAnnotation">${this.getAnnotationText()}</span>
+      </div>
+      <button @click=${this.handleEditAnnotation}>Edit annotation</button>
+      <button @click=${this.hide}>Cancel</button>
+    `;
+  }
+
+  showTextEditArea() {
+    return html`
+      <textarea class="br-annotate-menu__textarea" id="annotateTextArea" @click=${this.handleInputClick}>${this.getAnnotationText()}</textarea>
+      <button @click=${this.handleSaveAnnotation}>Save annotation</button>
+      <button @click=${this.hide}>Cancel</button>
+    `;
+  }
+
+  render() {
+    return html`
+      <input type="color"
+        id="annotateInputColor"
+        value=${this.getHighlightColor()}
+        class="br-annotate-menu__color"
+        @change=${this.handleColorChange}
+      />
+      <button @click=${this.handleDeleteHighlight}
+        class="br-annotate-menu__option"
+        <ia-icon-share class="br-annotate-menu__icon" aria-hidden="true"></ia-icon-share>
+        <span class="br-annotate-menu__label">Delete Highlight and Annotation</span>
+      </button>
+      ${this.allowAnnotationEditing ? this.showTextEditArea() : this.showExistingAnnotation()}
+    `;
+  }
+
+  handleColorChange(e) {
+    const currentUUID = retrieveUUID(this.currentAnnotationNodes[0]);
+    $(`.${currentUUID}`).css("background-color", `${e.target.value}`);
+    const storage = loadHighlightsFromLocalStorage();
+    this.lastHighlightColorUsed = e.target.value;
+    for (const idx in storage) {
+      if (storage[idx].uuid === currentUUID) {
+        storage[idx].highlightColor = e.target.value;
+        saveToLocalStorage(storage);
+      }
+    }
+  }
+
+  handleDeleteHighlight() {
+    if (this.currentAnnotationNodes) {
+      const currentUUID = retrieveUUID(this.currentAnnotationNodes[0]);
+      const storage = loadHighlightsFromLocalStorage();
+      for (const idx in storage) {
+        if (storage[idx].uuid === currentUUID) {
+          storage.splice(idx, 1);
+          saveToLocalStorage(storage);
+          for (const ele of this.currentAnnotationNodes) {
+            const tempText = ele.textContent;
+            const parent = ele.parentElement;
+            if (parent.classList.contains('BRwordElement') || parent.classList.contains('BRspace')) {
+              ele.backgroundColor = 'none';
+              ele.remove();
+              parent.textContent = tempText;
+            }
+          }
+          this.hide();
+        }
+      }
+    }
+  }
+
+  show(nodes) {
+    if (this.br.plugins.translate?.userToggleTranslate) return;
+    // const currentSelection = window.getSelection();
+    this.currentAnnotationNodes = nodes;
+    const identifier = retrieveUUID(nodes[0]);
+    const selectedQuoteNodes = document.querySelectorAll(`.${identifier}`);
+
+    const firstNode = selectedQuoteNodes[0];
+    const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
+
+    const highlightRange = document.createRange();
+    highlightRange.setStart(firstNode, 0);
+    highlightRange.setEnd(lastNode, 1);
+
+    const currentSelection = window.getSelection();
+    currentSelection?.removeAllRanges();
+    currentSelection?.addRange(highlightRange);
+
+    const lastNodeBoundary = lastNode.getBoundingClientRect();
+    const pageContainerBoundary = lastNode.closest(".BRpagecontainer")?.getBoundingClientRect();
+    this.requestUpdate();
+    const annotationButtonWidth = pageContainerBoundary.width - 50;
+    const annotationButtonLeft = pageContainerBoundary.left;
+    this.style.backgroundColor = 'black';
+    this.style.width = `${annotationButtonWidth}px`;
+    this.style.height = `${Math.max(pageContainerBoundary.height / 5, 120)}px`;
+    this.style.top = `${lastNodeBoundary.top + lastNodeBoundary.height + 5}px`;
+    this.style.left = `${annotationButtonLeft}px`;
+    this.style.display = 'block';
+    this.checkAnnotationEditing();
+    this.requestUpdate();
+  }
+
+  hide() {
+    this.currentAnnotationNodes = null;
+    this.style.display = 'none';
+    return;
+  }
+
+  handleEditAnnotation() {
+    this.allowAnnotationEditing = true;
+    this.requestUpdate();
+  }
+
+  handleSaveAnnotation() {
+    const inputEle = document.querySelector("#annotateTextArea");
+    if (inputEle.value) {
+      const currentUUID = retrieveUUID(this.currentAnnotationNodes[0]);
+      const storage = loadHighlightsFromLocalStorage();
+      for (const idx in storage) {
+        if (storage[idx].uuid === currentUUID) {
+          storage[idx].annotation = inputEle?.value;
+          saveToLocalStorage(storage);
+          this.hide();
+          inputEle.value = "";
+          return;
+        }
+      }
+    }
+    this.hide();
+  }
+
+  getAnnotationText() {
+    if (!this.currentAnnotationNodes) return null;
+    const nodesUUID = retrieveUUID(this.currentAnnotationNodes[0]);
+    const storage = loadHighlightsFromLocalStorage();
+    for (const idx in storage) {
+      if (storage[idx].uuid === nodesUUID) {
+        return storage[idx].annotation;
+      }
+    }
+    return "";
+  }
+
+  checkAnnotationEditing() {
+    const storedAnnotation = this.getAnnotationText();
+    if (storedAnnotation) {
+      this.allowAnnotationEditing = false;
+    } else {
+      this.allowAnnotationEditing = true;
+    }
+    this.requestUpdate();
+  }
+
+  getHighlightColor() {
+    if (!this.currentAnnotationNodes) return this.HIGHLIGHT_YELLOW;
+    const nodesUUID = retrieveUUID(this.currentAnnotationNodes[0]);
+    const storage = loadHighlightsFromLocalStorage();
+    let storageObject;
+    for (const idx in storage) {
+      if (storage[idx].uuid === nodesUUID) {
+        storageObject = storage[idx];
+      }
+    }
+    return storageObject.highlightColor || this.HIGHLIGHT_YELLOW;
   }
 }
 
@@ -982,6 +1224,7 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
     mark.classList.add("BRhighlight");
     if (cssClassName) mark.classList.add(cssClassName);
     if (textFragment.uuid) mark.classList.add(textFragment.uuid);
+    mark.style.backgroundColor = textFragment.highlightColor;
     return mark;
   });
 }
@@ -1078,6 +1321,24 @@ function retrieveUUID(ele) {
 }
 
 /**
+   * Saves all the highlights in an array to localStorage
+   * @param {BookReaderSavedHighlight[]} highlights
+   */
+function saveToLocalStorage(highlights) {
+  window.localStorage.setItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY, JSON.stringify(
+    highlights.map(hl =>hl.toJSON()),
+  ));
+}
+
+/**
+   * @returns {BookReaderSavedHighlight[]}
+   */
+function loadHighlightsFromLocalStorage() {
+  return JSON.parse(window.localStorage.getItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY) || "[]")
+    .map(item => BookReaderTextFragment.fromJSON(item));
+}
+
+/**
  * An extension of the fields defined by the browser-native TextFragment;
  * See https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments
  *
@@ -1097,8 +1358,9 @@ export class BookReaderTextFragment {
    * @param {string | null} params.pageNumber Page number; e.g. asserted page number or the n-prefixed page index
    * @param {number} params.pageIndex Page index; e.g. zero-based index of the page
    * @param {string | null} [params.uuid] UUID for the text fragment if it has one
+   * @param {string | null} [annotation]
    */
-  constructor({ prefix, quote, quoteStart, quoteEnd, suffix, pageNumber, pageIndex, uuid }) {
+  constructor({ prefix, quote, quoteStart, quoteEnd, suffix, pageNumber, pageIndex, uuid, annotation, highlightColor }) {
     /** @type {string|null} */
     this.prefix = prefix;
     /** @type {string | null} */
@@ -1115,6 +1377,10 @@ export class BookReaderTextFragment {
     this.pageIndex = pageIndex;
     /** @type {string | null} UUID for the text fragment if it has one */
     this.uuid = uuid ?? null;
+    /** @type {string | null} */
+    this.annotation = annotation ?? null;
+    /** @type {string | null} */
+    this.highlightColor = highlightColor ?? null;
   }
 
   /**
@@ -1266,6 +1532,8 @@ export class BookReaderTextFragment {
       pageNumber: this.pageNumber,
       pageIndex: this.pageIndex,
       uuid: this.uuid,
+      annotation: this.annotation,
+      highlightColor: this.highlightColor,
     };
   }
 
