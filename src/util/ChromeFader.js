@@ -9,6 +9,9 @@ export class ChromeFader {
     /** @type {string | null} */
     ignoreClickOnSelector = null;
 
+    /** @type {string | null} */
+    ignorePointerLeaveOnSelector = null;
+
     isShowing = true;
 
     /** @type {HTMLElement} */
@@ -87,6 +90,7 @@ export class ChromeFader {
     /** @param {PointerEvent} ev */
     _handlePointerLeave = (ev) => {
       if (ev.pointerType === 'touch') return;
+      if (this.ignorePointerLeaveOnSelector && /** @type {Element} */ (ev.relatedTarget)?.closest(this.ignorePointerLeaveOnSelector)) return;
       this.log('ScrollFader pointerleave');
       this.modeInactive();
     }
@@ -94,6 +98,7 @@ export class ChromeFader {
     /** @param {PointerEvent} ev */
     _handleOutsidePointerDown = (ev) => {
       if (this._scrollElement.contains(/** @type {Node} */ (ev.target))) return;
+      if (this.ignorePointerLeaveOnSelector && ev.target.closest(this.ignorePointerLeaveOnSelector)) return;
       this.log('ScrollFader outside pointerdown');
       this.modeInactive();
     }
@@ -106,6 +111,7 @@ export class ChromeFader {
 
     /** @param {MouseEvent} ev */
     _handleClick = (ev) => {
+      if (window.getSelection()?.toString()) return; // don't toggle when selecting
       if (this.ignoreClickOnSelector && ev.target.closest(this.ignoreClickOnSelector)) return;
       this.keepShowing('click');
     };
