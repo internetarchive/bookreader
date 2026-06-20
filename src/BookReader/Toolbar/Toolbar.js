@@ -49,9 +49,26 @@ export class Toolbar {
 
     const $titleSectionEl = br.refs.$BRtoolbar.find('.BRtoolbarSectionTitle');
     if (br.bookUrl && br.options.enableBookTitleLink) {
+      // Use referrer if available and from same origin, otherwise use bookUrl
+      // This allows returning to the previous BookServer Explorer App page
+      let returnUrl = br.bookUrl;
+      const referrer = document.referrer;
+      
+      if (referrer) {
+        try {
+          const referrerUrl = new URL(referrer);
+          const currentUrl = new URL(window.location.href);
+          if (referrerUrl.origin === currentUrl.origin) {
+            returnUrl = referrer;
+          }
+        } catch (e) {
+          // Fall back to br.bookUrl if URL parsing fails
+        }
+      }
+      
       $titleSectionEl.append(
         $('<a>')
-          .attr({href: br.bookUrl, title: br.bookUrlTitle})
+          .attr({href: returnUrl, title: br.bookUrlTitle})
           .addClass('BRreturn')
           .html(br.bookUrlText || br.bookTitle),
       );
