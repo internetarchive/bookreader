@@ -746,6 +746,7 @@ BookReader.prototype.init = function() {
   if (this.plugins.experiments?.isEnabled('autoHidingChrome')) {
     this.fader = new ChromeFader(this.activeMode.scrollContainer);
     this.fader.ignoreClickOnSelector = '.BRpageFlipping';
+    this.fader.ignorePointerLeaveOnSelector = 'br-select-menu';
     if (this.isFullscreenActive) this.fader.attach();
   }
 
