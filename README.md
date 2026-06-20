@@ -204,7 +204,7 @@ Note that BookReader is a core part of Archive.org's mission of Universal Access
 
 
 ## Areas for improvement
-- Change libraries to be NPM dependencies rather than included in the source code
+- Change libraries to be NPM dependencies rather than included in the source code.
 
 See [CHANGELOG.md](CHANGELOG.md) for history of the project.
 
