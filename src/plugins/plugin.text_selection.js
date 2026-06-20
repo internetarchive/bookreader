@@ -268,7 +268,19 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
         const wordEl = document.createElement('span');
         wordEl.setAttribute("class", "BRwordElement");
-        wordEl.textContent = currWord.textContent.trim();
+        const wordText = currWord.textContent.trim();
+        const urlHref = extractUrl(wordText);
+        if (urlHref) {
+          const a = document.createElement('a');
+          a.href = urlHref;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.classList.add('BRurlLink');
+          a.textContent = wordText;
+          wordEl.appendChild(a);
+        } else {
+          wordEl.textContent = wordText;
+        }
 
         if (wordIndex > 0) {
           const space = document.createElement('span');
@@ -567,6 +579,20 @@ function recursivelyAddCoords(xmlEl) {
   if (Math.abs(boundingCoords[0]) != Infinity) {
     $(xmlEl).attr('coords', boundingCoords.join(','));
   }
+}
+
+/**
+ * If text looks like a URL, return a normalized href; otherwise return null.
+ * Strips trailing punctuation that OCR commonly attaches to URLs.
+ * @param {string} text
+ * @returns {string|null}
+ */
+function extractUrl(text) {
+  const stripped = text.replace(/[.,;:!?)\]]+$/, '');
+  if (stripped.length < 5) return null;
+  if (/^https?:\/\/.{3,}/i.test(stripped)) return stripped;
+  if (/^www\.\w{2,}/i.test(stripped)) return `https://${stripped}`;
+  return null;
 }
 
 /**
