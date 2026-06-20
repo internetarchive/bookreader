@@ -1,5 +1,5 @@
 // @ts-check
-import { eventFilterMouseMove, eventFilterScrollUp } from '../BookReader/utils.js';
+import { eventFilterMouseMove } from '../BookReader/utils.js';
 
 /**
  * Hides the BookReader chrome when the user is not using it; eg when
@@ -10,7 +10,13 @@ export class ChromeFader {
     ignoreClickOnSelector = null;
 
     /** @type {string | null} */
+    ignorePointerMoveOnSelector = null;
+
+    /** @type {string | null} */
     ignorePointerLeaveOnSelector = null;
+
+    /** @type {string | null} */
+    ignoreOutsidePointerDownOnSelector = null;
 
     isShowing = true;
 
@@ -19,6 +25,12 @@ export class ChromeFader {
 
     /** @type {ReturnType<typeof setTimeout> | null} */
     _hideTimeout = null;
+
+    /** Pixels of scroll needed to go from fully hidden↔shown */
+    _scrollShowDistance = 80;
+    _lastScrollTop = 0;
+    _scrollUpAccum = 0;
+    _scrollDownAccum = 0;
 
     /** @type {(...args: any[]) => void} */
     log = () => {};
@@ -53,6 +65,10 @@ export class ChromeFader {
         clearTimeout(this._hideTimeout);
         this._hideTimeout = null;
       }
+
+      $(document.body).removeClass('BRfaded');
+      document.body.style.removeProperty('--br-fade-progress');
+      this.isShowing = true;
     }
 
     /** @param {HTMLElement} el */
@@ -99,13 +115,41 @@ export class ChromeFader {
     _handleOutsidePointerDown = (ev) => {
       if (this._scrollElement.contains(/** @type {Node} */ (ev.target))) return;
       if (this.ignorePointerLeaveOnSelector && ev.target.closest(this.ignorePointerLeaveOnSelector)) return;
+      if (this.ignoreOutsidePointerDownOnSelector && /** @type {Element} */ (ev.target)?.closest(this.ignoreOutsidePointerDownOnSelector)) return;
       this.log('ScrollFader outside pointerdown');
       this.modeInactive();
     }
-    /** @param {PointerEvent} ev */
-    _handlePointerMove = eventFilterMouseMove(ev => ev.pointerType != 'touch' && this.keepShowing('pointermove'))
-    /** @param {Event} ev */
-    _handleScroll = eventFilterScrollUp(() => this.keepShowing('scroll'))
+    _handlePointerMove = (ev) => {
+      const pev = /** @type {PointerEvent} */ (ev);
+      if (pev.pointerType === 'touch') return;
+
+      const distFromBottom = window.innerHeight - pev.clientY;
+      const distFromLeft = pev.clientX;
+      const edgeProgress = Math.max(
+        distFromBottom <= 150 ? Math.min(1, (150 - distFromBottom) / 70) : 0,
+        distFromLeft <= 150 ? Math.min(1, (150 - distFromLeft) / 70) : 0,
+      );
+      if (edgeProgress > 0) {
+        document.body.style.setProperty('--br-fade-progress', String(edgeProgress));
+        if (edgeProgress >= 1) this.keepShowing('pointermove-edge');
+        return;
+      }
+
+      // if (this.ignorePointerMoveOnSelector && /** @type {Element} */ (pev.target)?.closest(this.ignorePointerMoveOnSelector)) return;
+      // this.keepShowing('pointermove');
+    };
+    _handleScroll = () => {
+      const st = this._scrollElement.scrollTop;
+      if (st < this._lastScrollTop) {
+        this._scrollUpAccum += this._lastScrollTop - st;
+        const progress = Math.min(this._scrollUpAccum / this._scrollShowDistance, 1);
+        document.body.style.setProperty('--br-fade-progress', String(progress));
+        if (progress >= 1) this.keepShowing('scroll');
+      } else {
+        this._scrollUpAccum = 0;
+      }
+      this._lastScrollTop = st;
+    }
     /** @param {TouchEvent} ev */
     _handleTouchStart = (ev) => ev.target === ev.currentTarget && this.keepShowing('touchstart');
 
@@ -144,6 +188,9 @@ export class ChromeFader {
     hide = (source) => {
       this.log('Hide UI ...', source);
       this.isShowing = false;
+      this._scrollUpAccum = 0;
+      this._lastScrollTop = this._scrollElement.scrollTop;
+      document.body.style.setProperty('--br-fade-progress', '0');
       $(document.body).addClass('BRfaded');
     };
 }

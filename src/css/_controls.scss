@@ -1,21 +1,21 @@
+.BRtooltip {
+  display: none;
+  position: absolute;
+  width: auto;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  font-weight: bold;
+  white-space: nowrap;
+  color: $controlsText;
+  border-radius: 3px;
+  background: $tooltipBG;
+  pointer-events: none;
+}
+
 .BRcontrols {
   width: 100%;
-
-  .BRtooltip {
-    display: none;
-    position: absolute;
-    width: auto;
-    left: 50%;
-    bottom: calc(100% + 10px);
-    transform: translateX(-50%);
-    padding: 5px 10px;
-    font-weight: bold;
-    white-space: nowrap;
-    color: $controlsText;
-    border-radius: 3px;
-    background: $tooltipBG;
-    pointer-events: none;
-  }
 
   .full .BRtooltip {
     left: auto;
