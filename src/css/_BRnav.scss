@@ -3,6 +3,12 @@
  */
 @use "sass:math";
 
+@property --br-fade-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
 @mixin pseudoElementLayer {
   content: "";
   top: 0;
@@ -75,7 +81,7 @@
   flex-direction: column;
   /* important so it overlays over the book pages when showing */
   z-index: 3;
-  transition: opacity 0.2s, translate 0.2s;
+  transition: opacity 0.15s ease-out, translate 0.15s ease-out;
 
   button {
     width: 30px;
@@ -99,13 +105,55 @@
 }
 
 ia-bookreader::part(minimized-menu) {
-  transition: opacity 0.2s, translate 0.2s;
+  transition: opacity 0.15s ease-out, translate 0.15s ease-out;
+}
+
+.BRfooter .BRchrome-toggle {
+  position: absolute;
+  top: 2px;
+  right: 30px;
+  translate: 0 -100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 0;
+  border-radius: 5px 6px 0 0;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s ease-out, translate 0.15s ease-out, background 0.15s;
+  z-index: 0;
+
+  &:hover { background: rgba(0, 0, 0, 0.75); }
+
+  svg { transition: rotate 0.15s ease-out; }
 }
 
 .BRfaded {
-  .BRfooter:not(:has(:focus-visible)), ia-bookreader::part(minimized-menu) {
-    opacity: 0;
+  .BRnav:not(:has(:focus-visible)), ia-bookreader::part(minimized-menu) {
+    opacity: var(--br-fade-progress, 0);
     pointer-events: none;
+  }
+
+  .BRfooter:not(:has(:focus-visible)) {
+    translate: 0 calc((1 - var(--br-fade-progress, 0)) * 100%);
+  }
+
+  ia-bookreader::part(minimized-menu) {
+    translate: calc((1 - var(--br-fade-progress, 0)) * -100%) 0;
+  }
+
+  .BRchrome-toggle {
+    opacity: 0.6;
+    pointer-events: auto;
+    border: 0;
+    svg { rotate: 180deg; }
+    // translate: 0 -2px;
   }
 }
 
