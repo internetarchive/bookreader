@@ -34,6 +34,10 @@ export class Mode1Up extends ModeAbstract {
   /** @private */
   get $brContainer() { return this.br.refs.$brContainer; }
 
+  get scrollContainer() {
+    return this.mode1UpLit;
+  }
+
   /**
    * This is called when we switch to one page view
    */
