@@ -167,6 +167,9 @@ export class TextSelectionManager {
       if ($(event.target).is(this.selectionElement.join(", "))) {
         event.stopPropagation();
       }
+      if ($(event.target).closest('a').length) {
+        skipNextMouseup = true;
+      }
     });
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
