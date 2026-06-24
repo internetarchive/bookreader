@@ -1,3 +1,7 @@
+# 5.0.0-115
+- Fix: "Copy link to highlight" menu obscured on mobile @cdrini
+- Dev: Update dependencies @cdrini
+
 # 5.0.0-114
 - Fix: "Copy link to highlight" now scrolls to highlighted text on page @cdrini
 - Feature: "Copy link to highlight" now creates shorter links by including only the quote start and end in the URL fragment, instead of the full quote @cdrini
