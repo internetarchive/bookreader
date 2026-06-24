@@ -1,15 +1,6 @@
 // @ts-check
 import langs from 'iso-language-codes';
 
-/**
- * Checks whether the current browser is on android
- * @param {string} [userAgent]
- * @return {boolean}
- */
-export function isAndroid(userAgent = navigator.userAgent) {
-  return /android/i.test(userAgent);
-}
-
 /** @type {{[lang: string]: string}} */
 // Handle odd one-off language pairs that might show up over time
 const specialLangs =  {

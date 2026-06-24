@@ -53,6 +53,7 @@ const modal = document.querySelector('modal-manager');
 iaBookReader.modal = modal;
 
 // Override options coming from IA
+BookReader.optionOverrides = BookReader.optionOverrides || {};
 BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
 const initializeBookReader = (brManifest) => {

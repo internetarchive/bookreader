@@ -1,11 +1,13 @@
 // @ts-check
 import { countWords } from './strings.js';
 import { SelectionObserver } from "../BookReader/utils/SelectionObserver.js";
+import { clamp } from "../BookReader/utils.js";
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import '@internetarchive/icon-share';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
+import { isIOS, isAndroid } from './browserSniffing.js';
 
 const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
 const MAX_FULL_QUOTE_URL_CHARS = 80;
@@ -55,15 +57,12 @@ export class TextSelectionManager {
         // Set a class on the page to avoid hiding it when zooming/etc
         this.br.refs.$br.find('.BRpagecontainer--hasSelection').removeClass('BRpagecontainer--hasSelection');
         $(window.getSelection().anchorNode).closest('.BRpagecontainer').addClass('BRpagecontainer--hasSelection');
-        this.showSelectMenu();
-
+        // Don't show while still doing selection
+        if (!this.mouseIsDown) this.showSelectMenu();
       }
 
       if (selectEvent == 'changed') {
-        // hide the button as user changes their selection
-        if (this.mouseIsDown) {
-          this.hideSelectMenu();
-        } else if (window.getSelection()?.toString()) {
+        if (!this.mouseIsDown && window.getSelection()?.toString()) {
           this.showSelectMenu();
         }
       }
@@ -165,7 +164,6 @@ export class TextSelectionManager {
     // blocking selection
     $(textLayer).on("mousedown.textSelectPluginHandler", (event) => {
       this.mouseIsDown = true;
-      this.hideSelectMenu();
       if ($(event.target).is(this.selectionElement.join(", "))) {
         event.stopPropagation();
       }
@@ -173,7 +171,6 @@ export class TextSelectionManager {
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
       this.mouseIsDown = false;
-      this.hideSelectMenu();
       textLayer.style.pointerEvents = "none";
       if (skipNextMouseup) {
         skipNextMouseup = false;
@@ -199,7 +196,6 @@ export class TextSelectionManager {
       if (event.which != 1) return;
       this.mouseIsDown = true;
       event.stopPropagation();
-      this.hideSelectMenu();
     });
 
     // Prevent page flip on click
@@ -221,7 +217,11 @@ export class TextSelectionManager {
       document.body.append(this.selectMenu);
     }
 
-    this.selectMenu.show();
+    if (this.selectMenu.open) {
+      this.selectMenu.repositionToSelection();
+    } else {
+      this.selectMenu.show();
+    }
   }
 
   hideSelectMenu() {
@@ -459,6 +459,9 @@ class BRSelectMenu extends LitElement {
   @query('#copy-link-option')
   copyLinkOption;
 
+  @property({type: Boolean, reflect: true})
+  open = false;
+
   @property({type: Boolean})
   copyLinkToHighlightEnabled = true;
 
@@ -479,6 +482,19 @@ class BRSelectMenu extends LitElement {
     return this;
   }
 
+  /** @type {number | null} */
+  _scrollTimeoutId = null;
+
+  _onScroll = () => {
+    this.classList.add('br-select-menu__root--scrolling');
+    if (this._scrollTimeoutId != null) clearTimeout(this._scrollTimeoutId);
+    this._scrollTimeoutId = window.setTimeout(() => {
+      this._scrollTimeoutId = null;
+      this.repositionToSelection();
+      this.classList.remove('br-select-menu__root--scrolling');
+    }, 150);
+  };
+
   /** @override */
   connectedCallback() {
     super.connectedCallback();
@@ -487,10 +503,22 @@ class BRSelectMenu extends LitElement {
     this.setAttribute('aria-orientation', 'vertical');
   }
 
+  /** @override */
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('scroll', this._onScroll, { capture: true });
+    if (this._scrollTimeoutId != null) {
+      clearTimeout(this._scrollTimeoutId);
+      this._scrollTimeoutId = null;
+    }
+  }
+
   renderCopyLinkToHighlightOption() {
+    // Mousedown needed to prevent selection from being cleared on iOS
     return html`
       <br-menu-option
         id="copy-link-option"
+        @mousedown=${/** @param {MouseEvent} e */ (e) => e.preventDefault()}
         @click=${this.handleCopyLinkToHighlight}
         icon="share"
         label="Copy Link to Highlight"
@@ -703,31 +731,54 @@ class BRSelectMenu extends LitElement {
     this.show();
   }
 
-  show() {
+  repositionToSelection() {
+    const SCREEN_MARGIN = 10;
+    const currentSelection = /** @type {Selection} */ (window.getSelection());
+    const range = currentSelection.getRangeAt(0);
+    const selectionRect = range.getBoundingClientRect();
+
+    const isMobile = isIOS() || isAndroid();
+    // Leave room for mobile teardrop selection handles
+    const SELECTION_PADDING = isAndroid() ? 25 : isIOS() ? 15 : 10;
+    // On mobile, avoid the native OS text-selection bar which appears near the top of the screen
+    const OS_BAR_H = isMobile ? 60 : 0;
+    const idealTop = (selectionRect.top < OS_BAR_H
+      ? selectionRect.bottom + OS_BAR_H
+      : selectionRect.bottom) + SELECTION_PADDING;
+    const top = Math.max(SCREEN_MARGIN, idealTop) + window.scrollY;
+
+    const menuWidth = this.getBoundingClientRect().width;
+    // Excludes scrollbars
+    const windowWidth = document.documentElement.clientWidth;
+    const idealLeft = menuWidth > selectionRect.width
+      ? selectionRect.left + selectionRect.width / 2 - menuWidth / 2
+      : selectionRect.left;
+    const left = clamp(idealLeft, SCREEN_MARGIN, windowWidth - menuWidth - SCREEN_MARGIN) + window.scrollX;
+
+    this.style.top = `${top}px`;
+    this.style.left = `${left}px`;
+  }
+
+  async show() {
     if (this.br.plugins.translate?.userToggleTranslate) return;
-    const currentSelection = window.getSelection();
-    const start = currentSelection.anchorNode.parentElement;
-    const end = currentSelection.focusNode.parentElement; // will always be a text node
-    const height = 30;
-    const width = 60;
-    const startBoundingRect = start.getBoundingClientRect();
-    const endBoundingRect = end.getBoundingClientRect();
-    let hlButtonTop = startBoundingRect.top - height;
-    let hlButtonLeft = startBoundingRect.left - width;
-    if (currentSelection.direction == 'backward') {
-      hlButtonTop = endBoundingRect.top - height;
-      hlButtonLeft = endBoundingRect.left - width;
-    }
-    this.style.top = `${hlButtonTop}px`;
-    this.style.left = `${hlButtonLeft}px`;
+
     this.style.zIndex = '1';
     this.style.position = 'absolute';
     this.style.display = 'block';
+    this.open = true;
+    this.classList.remove('br-select-menu__root--scrolling');
+    window.removeEventListener('scroll', this._onScroll, { capture: true });
+    window.addEventListener('scroll', this._onScroll, { capture: true, passive: true });
+    await this.updateComplete; // ensure Lit has rendered so getBoundingClientRect() returns real width
+    this.repositionToSelection();
     this.clearNodesForRemoval();
   }
 
-  hide = () => {
+  hide() {
+    if (!this.open) return;
     this.style.display = 'none';
+    this.open = false;
+    window.removeEventListener('scroll', this._onScroll, { capture: true });
     this.clearNodesForRemoval();
     return;
   }
