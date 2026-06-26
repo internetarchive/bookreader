@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx jest *)",
+      "Bash(grep -v \"^$\")",
+      "WebFetch(domain:patch-diff.githubusercontent.com)",
+      "Bash(curl -s \"https://patch-diff.githubusercontent.com/raw/internetarchive/bookreader/pull/1481.diff\")",
+      "Bash(grep -n 'BRfooter\\\\|refs\\\\.\\\\$BR' /workspaces/bookreader/src/BookReader.js)"
+    ]
+  }
+}
