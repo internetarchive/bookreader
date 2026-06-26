@@ -585,7 +585,6 @@ class BRSelectMenu extends LitElement {
    */
   async handleCopyLinkToHighlight(e) {
     e.preventDefault();
-    const currentParams = this.br.readQueryString();
     const currentSelection = /** @type {Selection} */ (window.getSelection());
     const range = currentSelection.getRangeAt(0);
     const textLayer = this.getNodeTextLayer(range.startContainer);
@@ -595,19 +594,18 @@ class BRSelectMenu extends LitElement {
     }
     const textFragment = BookReaderTextFragment.fromSelection(currentSelection, [textLayer]);
 
-    // Note: Have to do a param construction to avoid url-encoding of commas in the text fragment param
-    let linkToHighlightParams = currentParams;
-    if (currentParams.includes('text=')) {
-      linkToHighlightParams = currentParams.replace(/(text=)[\w\W\d%]+/, `text=${textFragment.toUrlString()}`);
-    } else {
-      const sep = linkToHighlightParams ? '&' : '?';
-      linkToHighlightParams += `${sep}text=${textFragment.toUrlString()}`;
-    }
+    const currentParams = new URLSearchParams(this.br.readQueryString());
+    if (currentParams.has('text')) currentParams.delete('text');
+
+    let linkToHighlightParams = currentParams.toString();
+    // Use custom toUrlString, which decodes the delimiters for better readability
+    linkToHighlightParams += (linkToHighlightParams ? '&' : '') + `text=${textFragment.toUrlString()}`;
+
     const currentUrl = window.location;
     const pageNum = textFragment.pageNumber || `n${textFragment.pageIndex}`;
     const adjustedUrlPageNumPath = currentUrl.pathname.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`);
     const hash = currentUrl.hash ? currentUrl.hash.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`) : '';
-    const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}${linkToHighlightParams}${hash}`;
+    const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}?${linkToHighlightParams}${hash}`;
 
     await navigator.clipboard.writeText(linkToHighlight);
     this.copyLinkOption?.showTemporaryText('Copied!');
@@ -839,12 +837,15 @@ export function getLastMostNode(parent) {
 }
 
 /**
- * Strips the whitespace to normalize text
+ * Normalizes text fragment whitespace and removes special delimiter characters
+ * to allow for reliable url encoding/decoding
  * @param {String} string
  * @returns
  */
-function replaceWhitespace(string) {
-  return string.replace(/\s+/g, " ");
+export function normalizeTextFragment(string) {
+  return string
+    .replace(/(:|-,|,-|,)/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 /**
@@ -944,7 +945,7 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd, { normalize = (s) =
     counted += normalizedData.length;
 
     if (i + 1 < nodes.length) {
-      const nextNormalizedData = replaceWhitespace(nodes[i + 1].textContent);
+      const nextNormalizedData = normalizeTextFragment(nodes[i + 1].textContent);
       // Hyphenated words prove to be an issue since spaces are being inserted between BRlineElements
       // 1st case explicitly check the node class to prevent double counted spaces
       // 2nd case can happen from node traversal when loading from localStorage
@@ -979,7 +980,6 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
   const wholePageRange = new Range();
   wholePageRange.setStart(firstPageNode, 0);
   wholePageRange.setEnd(lastPageNode, lastPageNode.textContent.length);
-  const normalize = replaceWhitespace;
 
   // Retrieve the text nodes and relevant whitespace elements
   // Need to keep the BRlineElement nodes in between to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
@@ -987,10 +987,10 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
   pageWordNodes.splice(0, 1);
 
   const broadRanges = findRangeForRegExp(
-    textFragment.toRegExp({ normalize, context: true }),
+    textFragment.toRegExp({ normalize: normalizeTextFragment, context: true }),
     wholePageRange,
     pageWordNodes,
-    { normalize },
+    { normalize: normalizeTextFragment },
   );
   if (!broadRanges) {
     console.warn("Could not find quote with context in page");
@@ -1006,10 +1006,10 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
 
   // At which point the quote should now be unambiguous!
   const exactRanges = findRangeForRegExp(
-    textFragment.toRegExp({ normalize, context: false }),
+    textFragment.toRegExp({ normalize: normalizeTextFragment, context: false }),
     broadRanges[0],
     broadRangeWordNodes,
-    { normalize },
+    { normalize: normalizeTextFragment },
   );
   if (!exactRanges) {
     throw new Error("Could not find quote in page");
@@ -1222,21 +1222,6 @@ export class BookReaderTextFragment {
     });
   }
 
-  /**
-   * Extract and parse a text fragment from a URL string containing a `text=` parameter.
-   * @param {string} urlString
-   * @param {import('@/src/BookReader/BookModel.js').BookModel} book
-   * @param {number} fallbackPageIndex A fallback page index to use if the text
-   * fragment does not specify a page number or page index.
-   * @returns {BookReaderTextFragment|null}
-   */
-  static fromUrl(urlString, book, fallbackPageIndex) {
-    // Can't parse with eg new URLSearchParams since the text fragment format includes unencoded
-    // commas and colons, so need to do a regex match to extract the text fragment string
-    const textMatch = urlString.match(/[&?#]?text=([^&]*)/);
-    if (!textMatch) return null;
-    return BookReaderTextFragment.fromString(textMatch[1], book, fallbackPageIndex);
-  }
 
   /**
    * Outputs a url-safe string serialization of the text fragment, that's a variation of the standard
@@ -1248,13 +1233,15 @@ export class BookReaderTextFragment {
    */
   toUrlString() {
     // First the page number or index
-    let str = this.pageNumber ? `${encodeURIComponent(this.pageNumber)}:` : `n${this.pageIndex}:`;
+    let str = this.pageNumber ? this.pageNumber : `n${this.pageIndex}`;
+    str += ':';
 
     if (this.prefix) {
-      str += `${encodeURIComponent(this.prefix)}-,`;
+      str += normalizeTextFragment(this.prefix).trim();
+      str += '-,';
     }
 
-    const quote = this.quote?.trim() || null;
+    const quote = this.quote ? normalizeTextFragment(this.quote).trim() : null;
     let shortenedQuoteParts = null;
     if (quote && quote.length > MAX_FULL_QUOTE_URL_CHARS) {
       const words = quote.match(/\S+/g) || [];
@@ -1268,19 +1255,25 @@ export class BookReaderTextFragment {
     }
 
     if (quote && !shortenedQuoteParts) {
-      str += encodeURIComponent(quote);
+      str += quote;
     } else if (shortenedQuoteParts) {
-      str += `${encodeURIComponent(shortenedQuoteParts.quoteStart)},${encodeURIComponent(shortenedQuoteParts.quoteEnd)}`;
+      str += `${shortenedQuoteParts.quoteStart},${shortenedQuoteParts.quoteEnd}`;
     } else if (this.quoteStart && this.quoteEnd) {
-      str += `${encodeURIComponent(this.quoteStart)},${encodeURIComponent(this.quoteEnd)}`;
+      str += `${this.quoteStart},${this.quoteEnd}`;
     } else {
       throw new Error('Text fragment requires either a quote or quoteStart/quoteEnd');
     }
 
     if (this.suffix) {
-      str += `,-${encodeURIComponent(this.suffix)}`;
+      str += ',-';
+      str += normalizeTextFragment(this.suffix).trim();
     }
-    return str;
+
+    return encodeURIComponent(str)
+      // Bring back the delimiters so it's easier to read, but note not necessary.
+      // Note hyphens are not encoded by encodeURIComponent, so no need to replace them
+      .replace(/%2C/g, ',')
+      .replace(/%3A/g, ':');
   }
 
   /**
@@ -1356,11 +1349,11 @@ export class BookReaderTextFragment {
 
     const CONTEXT_WORD_COUNT = 3;
 
-    const preStartText = replaceWhitespace(preStartRange.toString());
+    const preStartText = normalizeTextFragment(preStartRange.toString());
     let prefix = getLastWords(CONTEXT_WORD_COUNT, preStartText);
     let prefixWords = countWords(prefix);
 
-    const postEndText = replaceWhitespace(postEndRange.toString());
+    const postEndText = normalizeTextFragment(postEndRange.toString());
     let suffix = getFirstWords(CONTEXT_WORD_COUNT, postEndText);
     let suffixWords = countWords(suffix);
 
@@ -1377,7 +1370,7 @@ export class BookReaderTextFragment {
     }
 
     // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
-    const quote = replaceWhitespace(fullQuoteRange.toString()).trim();
+    const quote = normalizeTextFragment(fullQuoteRange.toString()).trim();
     const pageContainerEl = startTextNode.parentElement.closest(".BRpagecontainer");
 
     return new BookReaderTextFragment({

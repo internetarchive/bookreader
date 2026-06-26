@@ -41,7 +41,6 @@ import { ModeThumb } from './BookReader/ModeThumb.js';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
-import {BookReaderTextFragment} from './util/TextSelectionManager.js';
 
 /**
  * BookReader
@@ -1972,25 +1971,8 @@ BookReader.prototype.queryStringFromParams = function(
     newParams.set('q', params.search);
   }
 
-  /** @type {BookReaderTextFragment | null} */
-  let textFragmentParam = null;
-  // Need to pull out text separately to avoid the spaces becoming encoded as +, which
-  // the browser seems not to handle with the text fragment
-  if (newParams.get('text')) {
-    newParams.delete('text');
-    textFragmentParam = BookReaderTextFragment.fromUrl(currQueryString, this.book, this.firstIndex);
-  }
-
-  // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
-  // Note: This method returns the query string without the question mark.
-  let result = newParams.toString();
-  if (textFragmentParam) {
-    if (result) result += '&';
-    result += `text=${textFragmentParam.toUrlString()}`;
-  }
-  if (result) result = '?' + result;
-
-  return result;
+  const result = newParams.toString();
+  return result ? `?${result}` : '';
 };
 
 /**
