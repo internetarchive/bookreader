@@ -7,6 +7,7 @@ import {
   findRangeForRegExp,
   getFirstWords,
   getLastWords,
+  normalizeTextFragment,
   walkBetweenNodes,
 } from '@/src/util/TextSelectionManager.js';
 
@@ -19,12 +20,12 @@ const FAKE_XML_MULT_LINES = `
         <WORD coords="230,2038,320,2002" x-confidence="30">can  </WORD>
         <WORD coords="320,2039,433,2002" x-confidence="28">false </WORD>
         <WORD coords="433,2051,658,2003" x-confidence="29">judgment </WORD>
-        <WORD coords="658,2039,728,2002" x-confidence="30">be </WORD>
+        <WORD coords="658,2039,728,2002" x-confidence="30">be, </WORD>
         <WORD coords="658,2039,728,2002" x-confidence="30">-</WORD>
         <WORD coords="728,2039,939,2001" x-confidence="29"> formed. </WORD>
         <WORD coords="939,2039,1087,2001" x-confidence="29">There </WORD>
         <WORD coords="1087,2039,1187,2002" x-confidence="29">still </WORD>
-        <WORD coords="1187,2038,1370,2003" x-confidence="29">remains </WORD>
+        <WORD coords="1187,2038,1370,2003" x-confidence="29">remains: </WORD>
         <WORD coords="1370,2037,1433,2014" x-confidence="28">an-</WORD>
       </LINE>
       <LINE>
@@ -727,6 +728,32 @@ describe('walkBetweenNodes', () => {
     // Last word should be the end word
     expect(result[result.length - 1].parentElement).toBe(end);
     expect(result[result.length - 1].textContent).toBe('Suppose');
+  });
+});
+
+describe('normalizeTextFragment', () => {
+  test('replaces colon delimiter with space', () => {
+    expect(normalizeTextFragment('page:text')).toBe('page text');
+  });
+
+  test('replaces -,  and ,- delimiters with spaces', () => {
+    expect(normalizeTextFragment('prefix-,quote,-suffix')).toBe('prefix quote suffix');
+  });
+
+  test('replaces standalone comma delimiter with space', () => {
+    expect(normalizeTextFragment('start,end')).toBe('start end');
+  });
+
+  test('collapses multiple whitespace into a single space', () => {
+    expect(normalizeTextFragment('hello   world')).toBe('hello world');
+  });
+
+  test('returns unchanged string when no delimiters present', () => {
+    expect(normalizeTextFragment('plain text here')).toBe('plain text here');
+  });
+
+  test('handles empty string', () => {
+    expect(normalizeTextFragment('')).toBe('');
   });
 });
 
