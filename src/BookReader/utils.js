@@ -311,3 +311,61 @@ export function sortBy(array, valueFn) {
     return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
   });
 }
+
+/**
+ * @param {function(Event): void} callback
+ * @param {Object} options
+ * @param {number} [options.scrollDelay=20] How many pixels to scroll before triggering
+ * @returns {function(Event): void}
+ */
+export function eventFilterScrollUp(callback, {scrollDelay = 20} = {}) {
+  let lastScrollTop = 0;
+  let accumulatedScroll = 0;
+  return function(event) {
+    const st = this.scrollTop;
+    if (st < lastScrollTop) {
+      accumulatedScroll += lastScrollTop - st;
+      if (accumulatedScroll >= scrollDelay) {
+        callback(event);
+        accumulatedScroll = 0;
+      }
+    }
+    lastScrollTop = st;
+  };
+}
+
+/**
+ * Filters mousemove events to only call callback when the mouse has moved
+ * more than minDistance pixels.
+ * @param {function(MouseEvent | PointerEvent): void} callback
+ * @param {Object} options
+ * @param {number} [options.minDistance=10]
+ * @returns {function(MouseEvent | PointerEvent): void}
+ */
+export function eventFilterMouseMove(callback, {minDistance = 10} = {}) {
+  let startX = null;
+  let startY = null;
+
+  // debounce resetting startX/startY to avoid issues with small jitters
+  const resetStart = debounce(() => {
+    startX = null;
+    startY = null;
+  }, 100);
+
+  return function(event) {
+    if (startX === null || startY === null) {
+      startX = event.clientX;
+      startY = event.clientY;
+      return;
+    }
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    if (distance >= minDistance) {
+      callback(event);
+      startX = event.clientX;
+      startY = event.clientY;
+    }
+    resetStart();
+  };
+}
