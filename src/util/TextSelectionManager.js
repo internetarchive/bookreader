@@ -7,6 +7,7 @@ import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import '@internetarchive/icon-share';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
+import '@internetarchive/icon-ellipses';
 import { isIOS, isAndroid } from './browserSniffing.js';
 
 const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
@@ -408,6 +409,9 @@ export class BRSelectMenuOption extends LitElement {
     if (this.icon === 'edit-pencil') {
       return html`<ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>`;
     }
+    if (this.icon === 'ellipses') {
+      return html`<ia-icon-ellipses class="br-select-menu__icon" aria-hidden="true"></ia-icon-ellipses>`;
+    }
     return '';
   }
 
@@ -454,6 +458,9 @@ export class BRSelectMenuOption extends LitElement {
 class BRSelectMenu extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
+
+  /** @type {boolean} */
+  showExtendedOptions = false;
 
   /** @type {BRSelectMenuOption | null} */
   @query('#copy-link-option')
@@ -521,7 +528,7 @@ class BRSelectMenu extends LitElement {
         @mousedown=${/** @param {MouseEvent} e */ (e) => e.preventDefault()}
         @click=${this.handleCopyLinkToHighlight}
         icon="share"
-        label="Copy Link to Highlight"
+        label="Share"
         live-label
       ></br-menu-option>
     `;
@@ -556,6 +563,19 @@ class BRSelectMenu extends LitElement {
       ></br-menu-option>
     `;
   }
+
+  renderSwitchOptions() {
+    return html`
+      <br-menu-option
+        id="extend-options"
+        @mousedown=${/** @param {MouseEvent} e */ (e) => e.preventDefault()}
+        @click=${this.changeOptions}
+        icon="ellipses"
+        live-label
+      ></br-menu-option>
+    `;
+  }
+
   renderLocalStorageOptions() {
     return html`
       <br-menu-option
@@ -570,13 +590,25 @@ class BRSelectMenu extends LitElement {
       ></br-menu-option>`;
   }
 
+  renderDefaultOptions() {
+    return html`
+      ${this.copyLinkToHighlightEnabled ? this.renderCopyLinkToHighlightOption() : ''} 
+      ${this.highlightAnnotationEnabled && !this.nodesForRemoval ? this.renderHighlightOption() : ''}
+      ${this.nodesForRemoval ? this.renderRemoveOption() : ''}
+    `;
+  }
+
+  renderExtendedOptions() {
+    return html`
+    ${this.renderLocalStorageOptions()}
+    `;
+  }
+
   render() {
     // TODO change the second button to use a different icon
     return html`
-      ${this.copyLinkToHighlightEnabled ? this.renderCopyLinkToHighlightOption() : ''}
-      ${this.highlightAnnotationEnabled && !this.nodesForRemoval ? this.renderHighlightOption() : ''}
-      ${this.highlightAnnotationEnabled ? this.renderLocalStorageOptions() : ''}
-      ${this.nodesForRemoval ? this.renderRemoveOption() : ''}
+      ${this.showExtendedOptions ? this.renderExtendedOptions() : this.renderDefaultOptions()}
+      ${this.renderSwitchOptions()}
     `;
   }
 
@@ -611,6 +643,15 @@ class BRSelectMenu extends LitElement {
 
     await navigator.clipboard.writeText(linkToHighlight);
     this.copyLinkOption?.showTemporaryText('Copied!');
+  }
+
+  /**
+   * @param {MouseEvent} e
+  */
+  changeOptions(e) {
+    e.preventDefault();
+    this.showExtendedOptions = !this.showExtendedOptions;
+    this.requestUpdate();
   }
 
   /**
@@ -764,7 +805,7 @@ class BRSelectMenu extends LitElement {
 
     this.style.zIndex = '1';
     this.style.position = 'absolute';
-    this.style.display = 'block';
+    this.style.display = 'flex';
     this.open = true;
     this.classList.remove('br-select-menu__root--scrolling');
     window.removeEventListener('scroll', this._onScroll, { capture: true });
