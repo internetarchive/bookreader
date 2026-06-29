@@ -148,13 +148,14 @@
 .br-select-menu__root {
   display: none;
   border-radius: 20px;
-  background-color: #333;
+//   background-color: #333;
   color: white;
   color-scheme: dark;
   padding: 2px;
   overflow: hidden;
   opacity: 1;
   transition: border-radius 0.2s, opacity 0.2s;
+  gap: 10px;
 
   @starting-style {
     opacity: 0;
@@ -179,7 +180,7 @@
   background: transparent;
   display: flex;
   align-items: center;
-  border-radius: 20px;
+  border-radius: 12px;
   font-family: inherit;
   color: inherit;
   border: 0;
@@ -187,10 +188,7 @@
   cursor: pointer;
   text-wrap: nowrap;
   padding: 4px;
-}
-
-.br-select-menu__option:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #333;
 }
 
 .br-select-menu__icon {
@@ -198,6 +196,7 @@
   flex-shrink: 0;
   width: 17px;
   height: 17px;
+  padding: 3px;
 }
 
 .br-select-menu__label {
