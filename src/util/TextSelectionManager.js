@@ -871,17 +871,21 @@ export function getLastMostNode(parent) {
 /**
  * Normalizes text fragment whitespace and removes special delimiter characters
  * to allow for reliable url encoding/decoding
+ *
+ * Note: It's very important this *does not* change the length of the string to
+ * ensure matching works smoothly later.
+ *
  * @param {String} string
- * @returns
  */
-export function normalizeTextFragment(string) {
-  let result = string
-    .replace(/(:|-,|,-|,)/g, " ")
-    .replace(/\s+/g, " ");
-  // if the source string didn't have leading whitespace, remove it
-  if (!/^\s/.test(string)) result = result.replace(/^\s/, "");
-  if (!/\s$/.test(string)) result = result.replace(/\s$/, "");
-  return result;
+export function replaceTextFragmentDelimiters(string) {
+  return string.replace(/(:|-,|,-|,|\n)/g, s => s.length === 1 ? ' ' : '  ');
+}
+
+/**
+ * @param {String} s
+ */
+export function collapseWhitespace(s) {
+  return s.replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -898,7 +902,7 @@ export function findRangeForRegExp(regex, range, textNodes, { normalize = (s) =>
   const startOffset = textNodes[0] === range.startContainer ?
     range.startOffset :
     0;
-  const normalizedWholePageString = normalize(range.toString());
+  const normalizedWholePageString = normalize(textLayerRangeToString(range));
   const normalizedStartOffset = normalize(textNodes[0].textContent.slice(0, startOffset)).length;
   const matchRegex = new RegExp(regex.source, regex.flags.includes('g') ? regex.flags : `${regex.flags}g`);
 
@@ -986,6 +990,23 @@ export function getBoundaryPointAtIndex(index, nodes, isEnd, { normalize = (s) =
 }
 
 /**
+ * @param {Range} range
+ */
+export function textLayerRangeToString(range) {
+  const textNodes = Array.from(genFilter(treeWalkRange(range, 'text'), isBRVisibleTextNode));
+  let result = textNodes.map(node => node.textContent).join('');
+  const firstTextNode = textNodes[0];
+  const lastTextNode = textNodes[textNodes.length - 1];
+  if (range.startContainer === firstTextNode) {
+    result = result.substring(range.startOffset);
+  }
+  if (range.endContainer === lastTextNode) {
+    result = result.substring(0, result.length - (lastTextNode.textContent.length - range.endOffset));
+  }
+  return result;
+}
+
+/**
  * Takes a text quote object and a container element, and wraps the quote
  * within the container element in a span to apply highlight-like styling
  *
@@ -1009,10 +1030,10 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
   const pageWordNodes = Array.from(genFilter(treeWalkRange(wholePageRange, 'text'), isBRVisibleTextNode));
 
   const broadRanges = findRangeForRegExp(
-    textFragment.toRegExp({ normalize: normalizeTextFragment, context: true }),
+    textFragment.toRegExp({ context: true }),
     wholePageRange,
     pageWordNodes,
-    { normalize: normalizeTextFragment },
+    { normalize: replaceTextFragmentDelimiters },
   );
   if (!broadRanges) {
     console.warn("Could not find quote with context in page");
@@ -1024,10 +1045,10 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
   // At which point the quote should now be unambiguous!
   // FIXME: Alas no, it is ambiguous ; need to likely extract prefix and suffix separately?
   const exactRanges = findRangeForRegExp(
-    textFragment.toRegExp({ normalize: normalizeTextFragment, context: false }),
+    textFragment.toRegExp({ context: false }),
     broadRanges[0],
     broadRangeWordNodes,
-    { normalize: normalizeTextFragment },
+    { normalize: replaceTextFragmentDelimiters },
   );
   if (!exactRanges) {
     throw new Error("Could not find quote in page");
@@ -1252,22 +1273,29 @@ export class BookReaderTextFragment {
   /**
    * Outputs a url-safe string serialization of the text fragment, that's a variation of the standard
    * browser TextFragment format to include page information: `pageNumber:prefix-,quote,-suffix`
-  * If quote text is long enough, it is serialized as `quoteStart,quoteEnd`.
-    * Note the ':' and ',' separators must not and are not encoded, but
+   *
+   * If quote text is long enough, it is serialized as `quoteStart,quoteEnd`.
+   * Note the ':' and ',' separators must not and are not encoded, but
    * the pageNumber, prefix, quote/quoteStart/quoteEnd, and suffix text are encoded.
+   *
    * @returns {string}
    */
   toUrlString() {
+    // When constructing to url, we can collapse the whitespace since the corresponding
+    // toRegExp method is resilient to multiple whitespace characters.
+    /** @param {string} s */
+    const normalize = s => collapseWhitespace(replaceTextFragmentDelimiters(s).trim());
+
     // First the page number or index
     let str = this.pageNumber ? this.pageNumber : `n${this.pageIndex}`;
     str += ':';
 
     if (this.prefix) {
-      str += normalizeTextFragment(this.prefix).trim();
+      str += normalize(this.prefix);
       str += '-,';
     }
 
-    const quote = this.quote ? normalizeTextFragment(this.quote).trim() : null;
+    const quote = this.quote ? normalize(this.quote) : null;
     let shortenedQuoteParts = null;
     if (quote && quote.length > MAX_FULL_QUOTE_URL_CHARS) {
       const words = quote.match(/\S+/g) || [];
@@ -1292,7 +1320,7 @@ export class BookReaderTextFragment {
 
     if (this.suffix) {
       str += ',-';
-      str += normalizeTextFragment(this.suffix).trim();
+      str += normalize(this.suffix);
     }
 
     return encodeURIComponent(str)
@@ -1304,10 +1332,10 @@ export class BookReaderTextFragment {
 
   /**
    * Build a regex that matches this quote payload.
-   * @param {{ normalize?: function(string): string, context?: boolean }} [options]
+   * @param {{ context?: boolean }} [options]
    * @returns {RegExp}
    */
-  toRegExp({ normalize = (s) => s, context = false } = {}) {
+  toRegExp({ context = false } = {}) {
     /** @type {[String] | [String, String]} */
     const quotes = this.quote ? [this.quote] : [this.quoteStart, this.quoteEnd];
 
@@ -1316,12 +1344,16 @@ export class BookReaderTextFragment {
       if (this.suffix) quotes[quotes.length - 1] = quotes[quotes.length - 1] + ' ' + this.suffix;
     }
 
+    // Make it resilient to extra whitespace
+    /** @param {String} quote */
+    const quoteToRegExpString = (quote) => RegExp.escape(replaceTextFragmentDelimiters(quote)).replace(/(\\x20)+/g, '\\s+');
+
     if (quotes.length === 1) {
-      return new RegExp(RegExp.escape(normalize(quotes[0])), 'g');
+      return new RegExp(quoteToRegExpString(quotes[0]), 'gi');
     } else {
       return new RegExp(
-        RegExp.escape(normalize(quotes[0])) + '[\\s\\S]*?' + RegExp.escape(normalize(quotes[1])),
-        'g',
+        quoteToRegExpString(quotes[0]) + '[\\s\\S]*?' + quoteToRegExpString(quotes[1]),
+        'gi',
       );
     }
   }
@@ -1375,11 +1407,11 @@ export class BookReaderTextFragment {
 
     const CONTEXT_WORD_COUNT = 3;
 
-    const preStartText = normalizeTextFragment(preStartRange.toString());
+    const preStartText = textLayerRangeToString(preStartRange);
     let prefix = getLastWords(CONTEXT_WORD_COUNT, preStartText);
     let prefixWords = countWords(prefix);
 
-    const postEndText = normalizeTextFragment(postEndRange.toString());
+    const postEndText = textLayerRangeToString(postEndRange);
     let suffix = getFirstWords(CONTEXT_WORD_COUNT, postEndText);
     let suffixWords = countWords(suffix);
 
@@ -1395,8 +1427,7 @@ export class BookReaderTextFragment {
       prefixWords = countWords(prefix);
     }
 
-    // Guarantee that all whitespace is replaced with just one space and that the first/last word of the highlight is not a space
-    const quote = normalizeTextFragment(fullQuoteRange.toString()).trim();
+    const quote = textLayerRangeToString(fullQuoteRange);
     const pageContainerEl = startTextNode.parentElement.closest(".BRpagecontainer");
 
     return new BookReaderTextFragment({

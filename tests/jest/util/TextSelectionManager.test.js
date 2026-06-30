@@ -7,7 +7,7 @@ import {
   findRangeForRegExp,
   getFirstWords,
   getLastWords,
-  normalizeTextFragment,
+  replaceTextFragmentDelimiters,
   treeWalkRange,
   genFilter,
   isBRVisibleTextNode,
@@ -15,7 +15,7 @@ import {
   getLastMostNode,
 } from '@/src/util/TextSelectionManager.js';
 
-// djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
+// djvu.xml copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `
   <OBJECT data="file://localhost//tmp/derive/goodytwoshoes00newyiala//goodytwoshoes00newyiala.djvu" height="3192" type="image/x.djvu" usemap="goodytwoshoes00newyiala_0001.djvu" width="2454">
     <PARAGRAPH>
@@ -28,7 +28,7 @@ const FAKE_XML_MULT_LINES = `
         <WORD coords="658,2039,728,2002" x-confidence="30">-</WORD>
         <WORD coords="728,2039,939,2001" x-confidence="29"> formed. </WORD>
         <WORD coords="939,2039,1087,2001" x-confidence="29">There </WORD>
-        <WORD coords="1087,2039,1187,2002" x-confidence="29">still </WORD>
+        <WORD coords="1087,2039,1187,2002" x-confidence="29">: </WORD>
         <WORD coords="1187,2038,1370,2003" x-confidence="29">remains: </WORD>
         <WORD coords="1370,2037,1433,2014" x-confidence="28">an-</WORD>
       </LINE>
@@ -403,7 +403,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selection.removeAllRanges();
     selection.addRange(startWordRange);
     const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe(`12:way-,can%20false%20judgment%20be%20-%20formed.,-There%20still%20remains%20another%20mode`);
+    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe(`12:way-,can%20false%20judgment%20be%20-%20formed.,-There%20remains%20another%20mode`);
 
     const endWordRange = document.createRange();
     endWordRange.setStart($container.find(".BRwordElement")[1].firstChild, 0);
@@ -413,7 +413,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selection.addRange(endWordRange);
     const endingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(endingSpaceTextFragmentUrl.toUrlString()).toBe("12:way-,can%20false%20judgment%20be%20-,-formed.%20There%20still%20remains%20another");
+    expect(endingSpaceTextFragmentUrl.toUrlString()).toBe("12:way-,can%20false%20judgment%20be%20-,-formed.%20There%20remains%20another");
   });
 
   test("Handle range end node not text node", async () => {
@@ -430,7 +430,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selection.removeAllRanges();
     selection.addRange(range);
     const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe("12:-%20formed.%20There-,still%20remains%20an,-other%20mode%20in");
+    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe("12:-%20formed.%20There-,remains%20an,-other%20mode%20in");
   });
 
   test("Quote and comma included in text selection should be URI encoded", async () => {
@@ -768,29 +768,29 @@ describe('treeWalkRange', () => {
   });
 });
 
-describe('normalizeTextFragment', () => {
+describe('replaceTextFragmentDelimiters', () => {
   test('replaces colon delimiter with space', () => {
-    expect(normalizeTextFragment('page:text')).toBe('page text');
+    expect(replaceTextFragmentDelimiters('page:text')).toBe('page text');
   });
 
   test('replaces -,  and ,- delimiters with spaces', () => {
-    expect(normalizeTextFragment('prefix-,quote,-suffix')).toBe('prefix quote suffix');
+    expect(replaceTextFragmentDelimiters('prefix-,quote,-suffix')).toBe('prefix  quote  suffix');
   });
 
   test('replaces standalone comma delimiter with space', () => {
-    expect(normalizeTextFragment('start,end')).toBe('start end');
+    expect(replaceTextFragmentDelimiters('start,end')).toBe('start end');
   });
 
-  test('collapses multiple whitespace into a single space', () => {
-    expect(normalizeTextFragment('hello   world')).toBe('hello world');
+  test('does not collapse multiple whitespace into a single space', () => {
+    expect(replaceTextFragmentDelimiters('hello   world')).toBe('hello   world');
   });
 
   test('returns unchanged string when no delimiters present', () => {
-    expect(normalizeTextFragment('plain text here')).toBe('plain text here');
+    expect(replaceTextFragmentDelimiters('plain text here')).toBe('plain text here');
   });
 
   test('handles empty string', () => {
-    expect(normalizeTextFragment('')).toBe('');
+    expect(replaceTextFragmentDelimiters('')).toBe('');
   });
 });
 
@@ -826,7 +826,7 @@ describe('BookReaderTextFragment.toRegExp and findRangeForRegExp', () => {
       .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, 'text/xml')));
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
-    const normalize = normalizeTextFragment;
+    const normalize = replaceTextFragmentDelimiters;
     const textLayer = $container.find('.BRtextLayer')[0];
 
     // Create a range that encompasses the entire text content
@@ -839,7 +839,7 @@ describe('BookReaderTextFragment.toRegExp and findRangeForRegExp', () => {
     const tf = BookReaderTextFragment.fromString('“My own seal.”', null, 0);
 
     const range = findRangeForRegExp(
-      tf.toRegExp({ normalize }),
+      tf.toRegExp(),
       wholePageRange,
       textNodes,
       { normalize },
