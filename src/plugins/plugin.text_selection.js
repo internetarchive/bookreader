@@ -66,8 +66,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     this.textSelectionManager.init();
 
     // Init text fragment
-    this.targetTextFragment = BookReaderTextFragment.fromUrl(location.search, this.br.book, this.br.firstIndex);
-    if (this.targetTextFragment) {
+    const textParam = new URLSearchParams(location.search).get('text');
+    if (textParam) {
+      this.targetTextFragment = BookReaderTextFragment.fromString(textParam, this.br.book, this.br.firstIndex);
       const targetTextFragment = this.targetTextFragment;
       this.br.on('textLayerVisible', async (_, {pageContainerEl, textLayer}) => {
         const pageIndex = targetTextFragment.pageIndex;
