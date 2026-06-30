@@ -247,8 +247,8 @@ export class TextSelectionManager {
     // Find the last allowed word in the selection
     const lastAllowedWord = genAt(
       genFilter(
-        walkBetweenNodes(range.startContainer, range.endContainer),
-        (node) => node.classList?.contains(
+        treeWalkRange(range, 'element'),
+        (node) => node.classList.contains(
           this.selectionElement[0].replace(".", ""),
         ),
       ),
@@ -296,26 +296,58 @@ export function* genFilter(iterable, fn) {
 }
 
 /**
+ * @overload
+ * @param {Range} range
+ * @param {'text'} filter
+ * @returns {Generator<Text>}
+ */
+/**
+ * @overload
+ * @param {Range} range
+ * @param {'element'} filter
+ * @returns {Generator<Element>}
+ */
+/**
+ * @overload
+ * @param {Range} range
+ * @param {'text+element'} [filter]
+ * @returns {Generator<Text | Element>}
+ */
+/**
  * Depth traverse the DOM tree starting at `start`, and ending at `end`.
- * @param {Node} start
- * @param {Node} end
+ * @param {Range} range
+ * @param {'text' | 'element' | 'text+element'} [filter]
  * @returns {Generator<Node>}
  */
-export function* walkBetweenNodes(start, end) {
+export function* treeWalkRange(range, filter = 'text+element') {
+  const start = range.startContainer;
+  const end = range.endContainer;
   let done = false;
 
   /**
    * @param {Node} node
    */
+  const passesFilter = node => {
+    return (
+      (filter === 'text' && node.nodeType === Node.TEXT_NODE) ||
+      (filter === 'element' && node.nodeType === Node.ELEMENT_NODE) ||
+      (filter === 'text+element')
+    );
+  };
+
+  /**
+   * @param {Node} node
+   * @returns {Generator<Node>}
+   */
   function* walk(node, {children = true, parents = true, siblings = true} = {}) {
     if (node === end) {
       done = true;
-      yield node;
+      if (passesFilter(node)) yield node;
       return;
     }
 
     // yield self
-    yield node;
+    if (passesFilter(node)) yield node;
 
     // First iterate children (depth-first traversal)
     if (children && node.firstChild) {
@@ -843,9 +875,13 @@ export function getLastMostNode(parent) {
  * @returns
  */
 export function normalizeTextFragment(string) {
-  return string
+  let result = string
     .replace(/(:|-,|,-|,)/g, " ")
     .replace(/\s+/g, " ");
+  // if the source string didn't have leading whitespace, remove it
+  if (!/^\s/.test(string)) result = result.replace(/^\s/, "");
+  if (!/\s$/.test(string)) result = result.replace(/\s$/, "");
+  return result;
 }
 
 /**
@@ -887,8 +923,8 @@ export function findRangeForRegExp(regex, range, textNodes, { normalize = (s) =>
     }
 
     const foundRange = new Range();
-    foundRange.setStart(start.node, 0);
-    foundRange.setEnd(end.node, 1);
+    foundRange.setStart(start.node, start.offset);
+    foundRange.setEnd(end.node, end.offset);
     return foundRange;
   });
 
@@ -898,64 +934,53 @@ export function findRangeForRegExp(regex, range, textNodes, { normalize = (s) =>
 }
 
 /**
- * Uses the index that matches the quote string and normalizes the string contents to find the correct node
+ * Maps an index from "normalized-space" (concatenated and normalized text) to a "node-space" index (node + offset).
  * @param {Number} index
  * @param {Node[]} nodes
  * @param {boolean} isEnd
  * @param {{ normalize?: function(string): string }} [options]
  */
 export function getBoundaryPointAtIndex(index, nodes, isEnd, { normalize = (s) => s } = {}) {
-  let counted = 0;
-  let normalizedData;
-  for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i];
-    if (node.className === 'BRlineElement') {
-      // Treat the lineElement as a space for now, will check if the previous node was hyphenated or another lineElement later
-      normalizedData = ' ';
-    } else {
-      if (!normalizedData) normalizedData = normalize(node.textContent);
-    }
-    let nodeEnd = counted + normalizedData.length;
-    if (isEnd) nodeEnd += 1;
-    if (nodeEnd > index) {
-      const normalizedOffset = index - counted;
-      let denormalizedOffset = Math.min(index - counted, node.textContent.length);
+  // Rename to have consistent wording
+  const normalizedTargetIndex = index;
+  /** Characters in node-space counted so far */
+  let normalizedI = 0;
 
-      const targetSubstring = isEnd ?
-        normalizedData.substring(0, normalizedOffset) :
-        normalizedData.substring(normalizedOffset);
+  for (const node of nodes) {
+    const nodeText = node.textContent || '';
+    const normalizedText = normalize(nodeText);
+    const nodeNormalizedStart = normalizedI;
+    const nodeNormalizedEnd = nodeNormalizedStart + normalizedText.length + (isEnd ? 1 : 0);
 
-      let candidateSubstring = isEnd ?
-        normalize(node.textContent.substring(0, normalizedOffset)) :
-        normalize(node.textContent.substring(normalizedOffset));
+    if (nodeNormalizedEnd > normalizedTargetIndex) {
+      // We have found the node that contains the normalizedTargetIndex we are looking for!
+      const normalizedOffset = normalizedTargetIndex - nodeNormalizedStart;
 
-      const direction = (isEnd ? -1 : 1) * (targetSubstring.length > candidateSubstring.length ? -1 : 1);
-      while (denormalizedOffset >= 0 &&
-               denormalizedOffset <= node.textContent.length) {
-        if (candidateSubstring.length === targetSubstring.length) {
-          return {node : node, offset: denormalizedOffset};
+      // But the normalized text could be a shorter length than the node text,
+      // so we try to continually increase the nodeOffset
+      let nodeOffset = Math.min(normalizedOffset, nodeText.length);
+
+      const normalizedSubstring = isEnd ?
+        normalizedText.substring(0, normalizedOffset) :
+        normalizedText.substring(normalizedOffset);
+
+      let nodeSubstring = isEnd ?
+        normalize(nodeText.substring(0, normalizedOffset)) :
+        normalize(nodeText.substring(normalizedOffset));
+
+      const direction = (isEnd ? -1 : 1) * (normalizedSubstring.length > nodeSubstring.length ? -1 : 1);
+      while (nodeOffset >= 0 && nodeOffset <= nodeText.length) {
+        if (nodeSubstring.length === normalizedSubstring.length) {
+          return {node, offset: nodeOffset};
         }
-        denormalizedOffset += direction;
+        nodeOffset += direction;
 
-        candidateSubstring = isEnd ?
-          node.textContent.substring(0, denormalizedOffset) :
-          node.textContent.substring(denormalizedOffset);
+        nodeSubstring = isEnd ?
+          normalize(nodeText.substring(0, nodeOffset)) :
+          normalize(nodeText.substring(nodeOffset));
       }
     }
-    counted += normalizedData.length;
-
-    if (i + 1 < nodes.length) {
-      const nextNormalizedData = normalizeTextFragment(nodes[i + 1].textContent);
-      // Hyphenated words prove to be an issue since spaces are being inserted between BRlineElements
-      // 1st case explicitly check the node class to prevent double counted spaces
-      // 2nd case can happen from node traversal when loading from localStorage
-      if (nodes[i - 1]?.classList.contains("BRwordElement--hyphen") && node.className === 'BRlineElement') {
-        counted -= 1;
-      } else if (nodes[i - 1]?.className === 'BRlineElement' && node.className === 'BRlineElement') {
-        counted -= 1;
-      }
-      normalizedData = nextNormalizedData;
-    }
+    normalizedI += normalizedText.length;
   }
   return undefined;
 }
@@ -981,10 +1006,7 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
   wholePageRange.setStart(firstPageNode, 0);
   wholePageRange.setEnd(lastPageNode, lastPageNode.textContent.length);
 
-  // Retrieve the text nodes and relevant whitespace elements
-  // Need to keep the BRlineElement nodes in between to keep the index count consistent, remove first BRlineElement since text starts from the first real text node
-  const pageWordNodes = Array.from(textLayer.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
-  pageWordNodes.splice(0, 1);
+  const pageWordNodes = Array.from(genFilter(treeWalkRange(wholePageRange, 'text'), isBRVisibleTextNode));
 
   const broadRanges = findRangeForRegExp(
     textFragment.toRegExp({ normalize: normalizeTextFragment, context: true }),
@@ -997,14 +1019,10 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
     return;
   }
 
-  const broadRangeWordNodes = [];
-  for (const el of walkBetweenNodes(broadRanges[0].startContainer, broadRanges[0].endContainer)) {
-    if (el.classList?.contains('BRwordElement') || el.classList?.contains('BRspace') || el.classList?.contains('BRlineElement')) {
-      broadRangeWordNodes.push(el);
-    }
-  }
+  const broadRangeWordNodes = Array.from(genFilter(treeWalkRange(broadRanges[0], 'text'), isBRVisibleTextNode));
 
   // At which point the quote should now be unambiguous!
+  // FIXME: Alas no, it is ambiguous ; need to likely extract prefix and suffix separately?
   const exactRanges = findRangeForRegExp(
     textFragment.toRegExp({ normalize: normalizeTextFragment, context: false }),
     broadRanges[0],
@@ -1035,6 +1053,14 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
     if (textFragment.uuid) mark.classList.add(textFragment.uuid);
     return mark;
   });
+}
+
+/**
+ * @param {Text} node
+ */
+export function isBRVisibleTextNode(node) {
+  // Exclude the duplicated spaces between words for MS Edge
+  return !node.previousElementSibling?.classList.contains("BRspace");
 }
 
 /**
