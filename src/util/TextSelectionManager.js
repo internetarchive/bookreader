@@ -8,6 +8,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import '@internetarchive/icon-share';
 import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 import { isIOS, isAndroid } from './browserSniffing.js';
+import { genAt, genFilter } from './generators.js';
 
 const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
 const MAX_FULL_QUOTE_URL_CHARS = 80;
@@ -264,35 +265,6 @@ export class TextSelectionManager {
     selection.removeAllRanges();
     selection.addRange(newRange);
   };
-}
-
-/**
- * @template T
- * Get the i-th element of an iterable
- * @param {Iterable<T>} iterable
- * @param {number} index
- */
-export function genAt(iterable, index) {
-  let i = 0;
-  for (const x of iterable) {
-    if (i == index) {
-      return x;
-    }
-    i++;
-  }
-  return undefined;
-}
-
-/**
- * @template T
- * Generator version of filter
- * @param {Iterable<T>} iterable
- * @param {function(T): boolean} fn
- */
-export function* genFilter(iterable, fn) {
-  for (const x of iterable) {
-    if (fn(x)) yield x;
-  }
 }
 
 /**
