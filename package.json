@@ -84,7 +84,7 @@
     "sass": "1.100.0",
     "sinon": "22.0.0",
     "svgo": "4.0.1",
-    "testcafe": "3.7.4",
+    "testcafe": "3.7.5",
     "testcafe-browser-provider-browserstack": "1.15.2",
     "webpack": "5.107.2",
     "webpack-cli": "7.0.3"
