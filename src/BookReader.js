@@ -645,6 +645,7 @@ BookReader.prototype.init = function() {
   this.pageScale = this.reduce; // preserve current reduce
 
   const params = this.initParams();
+  this.urlPlugin?.pullFromAddressBar();
   this.firstIndex = params.index ? params.index : 0;
 
   // Setup Navbars and other UI
@@ -1959,6 +1960,10 @@ BookReader.prototype.queryStringFromParams = function(
   urlMode = 'hash',
 ) {
   const newParams = new URLSearchParams(currQueryString);
+
+  // Never write back UI-only params that are consumed on load
+  // TODO: Should ideally stick around until next URL change
+  newParams.delete('focus');
 
   if (params.view) {
     // Set ?view=theater when fullscreen

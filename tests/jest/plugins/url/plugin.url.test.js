@@ -7,6 +7,7 @@ beforeAll(() => {
   document.body.innerHTML = '<div id="BookReader">';
   br = new BookReader();
   const urlPluginMock = {
+    pullFromAddressBar: sinon.fake(),
     retrieveTextFragment: sinon.fake(),
     urlStringToUrlState: sinon.fake(),
     parseToText: sinon.fake(),
