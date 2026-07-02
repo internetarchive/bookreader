@@ -104,8 +104,7 @@ export class SearchPlugin extends BookReaderPlugin {
         this.options.initialSearchTerm,
         { goToFirstResult: this.options.goToFirstResult, suppressFragmentChange: false },
       );
-    } else if (this.options.initialSearchTerm === '') {
-      // ?q= present but empty: open the search panel without running a search
+    } else if (this.br.urlPlugin?.getUrlParam('focus') === 'search') {
       this.searchView.toggleSidebar();
     }
   }
