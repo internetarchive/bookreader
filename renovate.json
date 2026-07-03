@@ -5,11 +5,25 @@
   ],
   "packageRules": [
     {
+      "matchPackagePatterns": ["*"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "automerge": false
+    },
+    {
+      "groupName": "ia deps",
+      "matchPackagePatterns": ["^@internetarchive/"],
+      "automerge": false
+    },
+    {
+      "groupName": "test deps",
       "matchPackageNames": [
         "@babel/eslint-parser",
         "@open-wc/testing-helpers",
         "@types/jest",
-        "codecov/codecov-action",
         "eslint",
         "eslint-plugin-no-jquery",
         "eslint-plugin-testcafe",
@@ -21,32 +35,48 @@
       "automerge": false
     },
     {
+      "groupName": "build deps",
       "matchPackageNames": [
+        "@babel/core",
+        "@babel/plugin-proposal-class-properties",
+        "@babel/plugin-proposal-decorators",
+        "@babel/preset-env",
+        "babel-loader",
+        "core-js",
+        "regenerator-runtime",
+        "sass",
+        "svgo",
+        "webpack",
+        "webpack-cli"
+      ]
+    },
+    {
+      "groupName": "dev deps",
+      "matchPackageNames": [
+        "@iiif/presentation-2",
+        "@iiif/presentation-3",
         "concurrently",
+        "cpx2",
         "http-server",
+        "hypothesis",
         "live-server",
-        "node-fetch"
-      ],
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": false
+        "testcafe-browser-provider-browserstack"
+      ]
     },
     {
-      "matchPackagePatterns": ["^@internetarchive/icon-"],
-      "groupName": "@internetarchive icons",
-      "rangeStrategy": "bump"
-    },
-    {
-      "matchPackagePatterns": ["*"],
-      "rangeStrategy": "bump"
-    },
-    {
-      "matchPackagePatterns": ["^actions/"],
-      "groupName": "GitHub Actions",
-      "automerge": false
-    },
-    {
-      "matchPackagePatterns": ["^@internetarchive"],
-      "schedule": ["at any time"]
+      "groupName": "runtime deps",
+      "matchPackageNames": [
+        "@webcomponents/webcomponentsjs",
+        "interactjs",
+        "iso-language-codes",
+        "jquery",
+        "jquery-colorbox",
+        "jquery-ui",
+        "jquery-ui-touch-punch",
+        "jquery.browser",
+        "lit",
+        "soundmanager2"
+      ]
     }
   ]
 }

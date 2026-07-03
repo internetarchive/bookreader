@@ -9,7 +9,7 @@
   },
   "include": [
     "src/**/*.js",
-    "tests/**/*.js",
+    "tests/jest/**/*.js",
   ],
   "exclude": [
     "node_modules",
