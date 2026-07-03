@@ -9,11 +9,11 @@ import {
   getLastWords,
   replaceTextFragmentDelimiters,
   treeWalkRange,
-  genFilter,
   isBRVisibleTextNode,
   getFirstMostNode,
   getLastMostNode,
 } from '@/src/util/TextSelectionManager.js';
+import { genFilter } from '@/src/util/generators.js';
 
 // djvu.xml copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `

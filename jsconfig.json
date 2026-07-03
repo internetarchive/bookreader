@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     }
