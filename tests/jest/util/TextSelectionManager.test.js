@@ -7,10 +7,15 @@ import {
   findRangeForRegExp,
   getFirstWords,
   getLastWords,
-  walkBetweenNodes,
+  replaceTextFragmentDelimiters,
+  treeWalkRange,
+  genFilter,
+  isBRVisibleTextNode,
+  getFirstMostNode,
+  getLastMostNode,
 } from '@/src/util/TextSelectionManager.js';
 
-// djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
+// djvu.xml copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `
   <OBJECT data="file://localhost//tmp/derive/goodytwoshoes00newyiala//goodytwoshoes00newyiala.djvu" height="3192" type="image/x.djvu" usemap="goodytwoshoes00newyiala_0001.djvu" width="2454">
     <PARAGRAPH>
@@ -19,12 +24,12 @@ const FAKE_XML_MULT_LINES = `
         <WORD coords="230,2038,320,2002" x-confidence="30">can  </WORD>
         <WORD coords="320,2039,433,2002" x-confidence="28">false </WORD>
         <WORD coords="433,2051,658,2003" x-confidence="29">judgment </WORD>
-        <WORD coords="658,2039,728,2002" x-confidence="30">be </WORD>
+        <WORD coords="658,2039,728,2002" x-confidence="30">be, </WORD>
         <WORD coords="658,2039,728,2002" x-confidence="30">-</WORD>
         <WORD coords="728,2039,939,2001" x-confidence="29"> formed. </WORD>
         <WORD coords="939,2039,1087,2001" x-confidence="29">There </WORD>
-        <WORD coords="1087,2039,1187,2002" x-confidence="29">still </WORD>
-        <WORD coords="1187,2038,1370,2003" x-confidence="29">remains </WORD>
+        <WORD coords="1087,2039,1187,2002" x-confidence="29">: </WORD>
+        <WORD coords="1187,2038,1370,2003" x-confidence="29">remains: </WORD>
         <WORD coords="1370,2037,1433,2014" x-confidence="28">an-</WORD>
       </LINE>
       <LINE>
@@ -278,7 +283,7 @@ describe("Generic tests", () => {
   });
 });
 
-describe("BookReaderTextFragment.fromSelection tests", () => {
+describe("BookReaderTextFragment.fromSelection", () => {
 
   afterEach(() => {
     sinon.restore();
@@ -355,12 +360,7 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     expect(backwardTest.toUrlString()).toMatch(forwardTest.toUrlString());
   });
 
-  /** TODO
-   *  BookReaderTextFragment.fromSelection has changed drastically since
-   *  we are no longer using the native browser API for text fragments
-   *  Skipping the tests for now
-   */
-  test.skip("Forward and Backward selection without suffix", async () => {
+  test("Forward and Backward selection without suffix", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
@@ -381,11 +381,11 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     backwardRange.collapse(false);
     selection.addRange(backwardRange);
     selection.extend(forwardRange.startContainer, 0);
-    window.getSelection().direction = 'backward';
+    selection.direction = 'backward';
 
     const backwardTest = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(forwardTest.toUrlString()).toMatch("various,lastWord");
+    expect(forwardTest.toUrlString()).toMatch("12:our%20souls%20a%20waxen%20tablet%20of-,various%20qualities%20lastWord");
     expect(backwardTest.toUrlString()).toMatch(forwardTest.toUrlString());
   });
 
@@ -403,7 +403,7 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     selection.removeAllRanges();
     selection.addRange(startWordRange);
     const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe(`12:way-,can%20false%20judgment%20be%20-%20formed.,-There%20still%20remains%20another%20mode`);
+    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe(`12:way-,can%20false%20judgment%20be%20-%20formed.,-There%20remains%20another%20mode`);
 
     const endWordRange = document.createRange();
     endWordRange.setStart($container.find(".BRwordElement")[1].firstChild, 0);
@@ -413,7 +413,7 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     selection.addRange(endWordRange);
     const endingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(endingSpaceTextFragmentUrl.toUrlString()).toBe("12:way-,can%20false%20judgment%20be%20-,-formed.%20There%20still%20remains%20another");
+    expect(endingSpaceTextFragmentUrl.toUrlString()).toBe("12:way-,can%20false%20judgment%20be%20-,-formed.%20There%20remains%20another");
   });
 
   test("Handle range end node not text node", async () => {
@@ -430,7 +430,7 @@ describe("BookReaderTextFragment.fromSelection tests", () => {
     selection.removeAllRanges();
     selection.addRange(range);
     const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe("12:-%20formed.%20There-,still%20remains%20an,-other%20mode%20in");
+    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe("12:-%20formed.%20There-,remains%20an,-other%20mode%20in");
   });
 
   test("Quote and comma included in text selection should be URI encoded", async () => {
@@ -687,20 +687,26 @@ describe("getFirstWords and getLastWords tests", () => {
   });
 });
 
-describe('walkBetweenNodes', () => {
+describe('treeWalkRange', () => {
   const tree = $(FAKE_XML_MULT_LINES);
 
   test('handles empty', () => {
-    const result = Array.from(walkBetweenNodes(tree[0], tree[0]));
+    const r = new Range();
+    r.setStart(tree[0], 0);
+    r.setEnd(tree[0], 0);
+    const result = Array.from(treeWalkRange(r));
     expect(result).toHaveLength(1);
     expect(result[0]).toBe(tree[0]);
   });
 
   test('Words on same line', () => {
     const start = tree.find('WORD')[2];
-    const end = start.nextElementSibling;
+    const end = tree.find('WORD')[3];
+    const r = new Range();
+    r.setStart(start.firstChild, 0);
+    r.setEnd(end.firstChild, 0);
     // Use first child so we hit the text nodes
-    const result = Array.from(walkBetweenNodes(start.firstChild, end.firstChild));
+    const result = Array.from(treeWalkRange(r));
     expect(result).toHaveLength(5);
     expect(result[0].nodeType).toBe(Node.TEXT_NODE);
     expect(result[0].textContent).toBe('false ');
@@ -716,7 +722,10 @@ describe('walkBetweenNodes', () => {
   test('Words on different lines', () => {
     const start = tree.find('WORD')[2];
     const end = tree.find('WORD')[19];
-    const result = Array.from(walkBetweenNodes(start.firstChild, end.firstChild));
+    const r = new Range();
+    r.setStart(start.firstChild, 0);
+    r.setEnd(end.firstChild, 0);
+    const result = Array.from(treeWalkRange(r));
     // Expect two LINES in result
     expect(result.filter(x => x.nodeName == 'LINE')).toHaveLength(2);
     // Expect 18 WORDs in result
@@ -727,6 +736,61 @@ describe('walkBetweenNodes', () => {
     // Last word should be the end word
     expect(result[result.length - 1].parentElement).toBe(end);
     expect(result[result.length - 1].textContent).toBe('Suppose');
+  });
+
+  test('Handles filter=text', () => {
+    const start = tree.find('WORD')[2];
+    const end = tree.find('WORD')[4];
+    const r = new Range();
+    r.setStart(start, 0);
+    r.setEnd(end, 0);
+    const result = Array.from(treeWalkRange(r, 'text'));
+    expect(result).toHaveLength(4);
+    expect(result.map(r => r.nodeType).every(type => type === Node.TEXT_NODE)).toBe(true);
+    expect(result[0].textContent).toBe('false ');
+    expect(result[1].textContent).toMatch(/^\s*$/);
+    expect(result[2].textContent).toBe('judgment ');
+    expect(result[3].textContent).toMatch(/^\s*$/);
+  });
+
+  test('Handles filter=element', () => {
+    const start = tree.find('WORD')[2];
+    const end = tree.find('WORD')[4];
+    const r = new Range();
+    r.setStart(start, 0);
+    r.setEnd(end, 0);
+    const result = Array.from(treeWalkRange(r, 'element'));
+    expect(result).toHaveLength(3);
+    expect(result.map(r => r.nodeType).every(type => type === Node.ELEMENT_NODE)).toBe(true);
+    expect(result[0].textContent).toBe('false ');
+    expect(result[1].textContent).toMatch('judgment ');
+    expect(result[2].textContent).toMatch('be, ');
+  });
+});
+
+describe('replaceTextFragmentDelimiters', () => {
+  test('replaces colon delimiter with space', () => {
+    expect(replaceTextFragmentDelimiters('page:text')).toBe('page text');
+  });
+
+  test('replaces -,  and ,- delimiters with spaces', () => {
+    expect(replaceTextFragmentDelimiters('prefix-,quote,-suffix')).toBe('prefix  quote  suffix');
+  });
+
+  test('replaces standalone comma delimiter with space', () => {
+    expect(replaceTextFragmentDelimiters('start,end')).toBe('start end');
+  });
+
+  test('does not collapse multiple whitespace into a single space', () => {
+    expect(replaceTextFragmentDelimiters('hello   world')).toBe('hello   world');
+  });
+
+  test('returns unchanged string when no delimiters present', () => {
+    expect(replaceTextFragmentDelimiters('plain text here')).toBe('plain text here');
+  });
+
+  test('handles empty string', () => {
+    expect(replaceTextFragmentDelimiters('')).toBe('');
   });
 });
 
@@ -762,58 +826,26 @@ describe('BookReaderTextFragment.toRegExp and findRangeForRegExp', () => {
       .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, 'text/xml')));
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
+    const normalize = replaceTextFragmentDelimiters;
     const textLayer = $container.find('.BRtextLayer')[0];
-    const firstPageNode = textLayer;
-    const lastPageNode = textLayer;
+
+    // Create a range that encompasses the entire text content
+    const firstPageNode = getFirstMostNode(textLayer);
+    const lastPageNode = getLastMostNode(textLayer);
     const wholePageRange = new Range();
     wholePageRange.setStart(firstPageNode, 0);
-    wholePageRange.setEnd(lastPageNode, lastPageNode.childNodes.length);
-    const textNodes = Array.from(textLayer.querySelectorAll('.BRwordElement, .BRspace, br, .BRlineElement'));
-    textNodes.splice(0, 1);
-
-    const quoteStart = new BookReaderTextFragment({
-      prefix: null,
-      quote: '“My own seal.”',
-      quoteStart: null,
-      quoteEnd: null,
-      suffix: null,
-      pageNumber: null,
-      pageIndex: 0,
-    });
-    const quoteEnd = new BookReaderTextFragment({
-      prefix: null,
-      quote: '“My photograph.”',
-      quoteStart: null,
-      quoteEnd: null,
-      suffix: null,
-      pageNumber: null,
-      pageIndex: 0,
-    });
+    wholePageRange.setEnd(lastPageNode, lastPageNode.textContent.length);
+    const textNodes = Array.from(genFilter(treeWalkRange(wholePageRange, 'text'), isBRVisibleTextNode));
+    const tf = BookReaderTextFragment.fromString('“My own seal.”', null, 0);
 
     const range = findRangeForRegExp(
-      quoteStart.toRegExp({ normalize: (s) => s.replace(/\s+/g, ' ') }),
+      tf.toRegExp(),
       wholePageRange,
       textNodes,
-      { normalize: (s) => s.replace(/\s+/g, ' ') },
-    );
-    const quoteStartRange = findRangeForRegExp(
-      quoteStart.toRegExp({ normalize: (s) => s.replace(/\s+/g, ' ') }),
-      wholePageRange,
-      textNodes,
-      { normalize: (s) => s.replace(/\s+/g, ' ') },
-    );
-    const quoteEndRange = findRangeForRegExp(
-      quoteEnd.toRegExp({ normalize: (s) => s.replace(/\s+/g, ' ') }),
-      wholePageRange,
-      textNodes,
-      { normalize: (s) => s.replace(/\s+/g, ' ') },
+      { normalize },
     );
 
     expect(range).toBeTruthy();
-    expect(quoteStartRange).toBeTruthy();
-    expect(quoteEndRange).toBeTruthy();
     expect(range[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My own seal.”');
-    expect(quoteStartRange[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My own seal.”');
-    expect(quoteEndRange[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My photograph.”');
   });
 });
