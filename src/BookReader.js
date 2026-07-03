@@ -155,6 +155,7 @@ BookReader.optionOverrides = BookReader.optionOverrides || {};
 /**
  * Setup
  * It is separate from the constructor, so plugins can extend.
+ * @constructor
  * @param {BookReaderOptions} options
  */
 BookReader.prototype.setup = function(options) {
