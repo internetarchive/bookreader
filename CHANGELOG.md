@@ -1,3 +1,8 @@
+# 5.0.0-116
+- Fix: Make "Copy link to highlight" url parameter more resilient re-encoding @cdrini
+- Feature: New ?focus=search url parameter to open the search panel and focus the search input @mek @cdrini
+- Dev: Group renovate PRs by dependency type to have fewer PRs @cdrini
+
 # 5.0.0-115
 - Fix: "Copy link to highlight" menu obscured on mobile @cdrini
 - Dev: Update dependencies @cdrini
