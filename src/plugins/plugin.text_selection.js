@@ -83,6 +83,13 @@ export class TextSelectionPlugin extends BookReaderPlugin {
           }
         }
       });
+
+      // Now jump to the page and open a slot if necessary
+      const page = this.br.book.getPage(this.targetTextFragment.pageIndex);
+      if (!page.isViewable) {
+        this.br.tryOpenSlotForPage(page)
+          .then(() => this.br.jumpToIndex(page.index, { ariaLive: true, allowUnviewable: true }));
+      }
     }
   }
 
