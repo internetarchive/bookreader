@@ -237,3 +237,18 @@
     color: transparent;
     animation: highlightTargetFlash 600ms 1 reverse;
 }
+
+// Clickable URLs detected in the OCR text layer
+.BRtextLayer a.BRurlLink {
+    // Text stays transparent (overlaid on the page image); show an underline for discoverability
+    text-decoration: underline;
+    text-decoration-color: hsla(210, 74%, 50%, 0.6);
+    text-decoration-thickness: 1px;
+    pointer-events: all;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration-color: hsla(210, 74%, 40%, 1);
+        text-decoration-thickness: 2px;
+    }
+}
