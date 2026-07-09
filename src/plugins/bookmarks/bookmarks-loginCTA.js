@@ -25,4 +25,6 @@ class BookmarksLogin extends LitElement {
   }
 }
 
-customElements.define('bookmarks-login', BookmarksLogin);
+if (!customElements.get('bookmarks-login')) {
+  customElements.define('bookmarks-login', BookmarksLogin);
+}
