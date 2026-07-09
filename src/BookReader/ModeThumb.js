@@ -329,7 +329,7 @@ export class ModeThumb extends ModeAbstract {
         leafIndex = 0;
       }
 
-      const leafHeight = floor((book.getPageHeight(leafIndex) * this.br.thumbWidth) / book.getPageWidth(leafIndex));
+      const leafHeight = floor((book.getPageHeight(i) * this.br.thumbWidth) / book.getPageWidth(i));
       if (leafHeight > rowHeight) { rowHeight = leafHeight; }
       if (leafIndex == 0) {
         leafTop = bottomPos;
