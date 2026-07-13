@@ -18,7 +18,7 @@ The Internet Archive BookReader is used to view books from the Internet Archive 
 See live examples:
 - On details page: https://archive.org/details/birdbookillustra00reedrich
 - Full window: https://archive.org/details/birdbookillustra00reedrich?view=theater
-- Embedded url for iFrames: https://archive.org/embed/birdbookillustra00reedrich
+- Embedded URL for iFrames: https://archive.org/embed/birdbookillustra00reedrich
 
 ## Demos
 
@@ -85,10 +85,10 @@ br.init();
 
 ```
 ## Architecture Overview
-Starting at v5, BookReader introduces hybrid architecture that merges the core code written in jQuery closer to its evolution as a web component.  As we march toward the future of BookReader as a web component, we are taking an Event Driven approach to connect the two together.
+Starting at v5, BookReader introduces a hybrid architecture that merges the core code written in jQuery closer to its evolution as a web component.  As we march toward the future of BookReader as a web component, we are taking an Event-Driven approach to connect the two together.
 
 Approach:
-- Event driven
+- Event-driven
   - BookReader's (BR) core code emits [custom events](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent), reporting the actions it takes:
     - UI changes
       - Core Events [src/BookReader/events.js](https://github.com/internetarchive/bookreader/tree/master/src/BookReader/events.js)
@@ -106,21 +106,21 @@ BookReader's side navigation is powered by LitElement flavored web components.
 ### Core: jQuery
 BookReader's core functionality is in jQuery.
 This includes:
-- drawing & resizing the book and the various modes (1up, 2 page spread, gallery view)
+- drawing & resizing the book and the various modes (1up, 2-page spread, gallery view)
 - the horizontal navigation
 - search API service
 - plugins
 
-A peek in how to use/extend core functionality:
+A peek at how to use/extend core functionality:
 - Properties
   - TODO (for now see [src/BookReader/options.js](https://github.com/internetarchive/bookreader/tree/master/src/BookReader/options.js))
 - Plugins
   - A basic plugin system is used. See the examples in the plugins directory. The general idea is that they are mixins that augment the BookReader prototype. See the plugins directory for all the included plugins, but here are some examples:
     - plugin.autoplay.js - autoplay mode. Flips pages at set intervals.
     - plugin.chapters.js - render chapter markers
-    - plugin.search.js - add search ui, and callbacks
-    - plugin.tts.js - add tts (read aloud) ui, sound library, and callbacks
-    - plugin.url.js - automatically updates the browser url
+    - plugin.search.js - add search UI and callbacks
+    - plugin.tts.js - add tts (read aloud) UI, sound library, and callbacks
+    - plugin.url.js - automatically updates the browser URL
     - plugin.resume.js - uses cookies to remember the current page
     - plugin.vendor-fullscreen.js - replaces fullscreen mode with vendor native fullscreen
     - see [plugin directory for current plugin files](https://github.com/internetarchive/bookreader/tree/master/src/plugins)
@@ -170,7 +170,7 @@ We release BookReader [in-repo as tags](https://github.com/internetarchive/bookr
 We would like to get to 100% test coverage and are tracking our progress in this project: [BookReader Fidelity](https://github.com/internetarchive/bookreader/projects/5)
 
 ### End to end tests
-We also have end to end tests using [Testcafe](https://devexpress.github.io/testcafe/documentation/getting-started/).  We write tests for the repo itself and also for our use on archive.org. You can read about them in [here](./tests/e2e/README.md). These are relatively easy to do, and a fantastic way of getting introduced to the wonders of BookReader.  Check the project board for open tickets to work on.  And if you don't see a test for something you spotted, feel free to make an issue.
+We also have end-to-end tests using [Testcafe](https://devexpress.github.io/testcafe/documentation/getting-started/).  We write tests for the repo itself and also for our use on archive.org. You can read about them in [here](./tests/e2e/README.md). These are relatively easy to do, and a fantastic way of getting introduced to the wonders of BookReader.  Check the project board for open tickets to work on.  And if you don't see a test for something you spotted, feel free to make an issue.
 
 To run all local end to end tests, run command: `npm run test:e2e`
 
@@ -206,7 +206,7 @@ Note that BookReader is a core part of Archive.org's mission of Universal Access
 ## Areas for improvement
 - Change libraries to be NPM dependencies rather than included in the source code
 
-See [CHANGELOG.md](CHANGELOG.md) for history of the project.
+See [CHANGELOG.md](CHANGELOG.md) for the history of the project.
 
 
 ## License
