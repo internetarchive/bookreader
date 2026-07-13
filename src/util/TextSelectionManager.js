@@ -604,6 +604,7 @@ class BRSelectMenu extends LitElement {
 
   renderExtendedOptions() {
     return html`
+    ${this.renderDefaultOptions()}
     ${this.renderLocalStorageOptions()}
     `;
   }
@@ -653,9 +654,24 @@ class BRSelectMenu extends LitElement {
   changeOptions(e) {
     e.preventDefault();
     this.showExtendedOptions = !this.showExtendedOptions;
+    this.changeContextMenuStyling();
     this.requestUpdate();
   }
 
+  /**
+   * Change styling for highlight menu to show simplified or extended options
+   */
+  changeContextMenuStyling() {
+    if (this.showExtendedOptions) {
+      this.style.display = 'block';
+      this.style.gap = '0px';
+      this.style.backgroundColor = '#333';
+    } else {
+      this.style.display = 'flex';
+      this.style.gap = '10px';
+      this.style.backgroundColor = '';
+    }
+  }
   /**
    * Returns the closest BRtextLayer element on the page that contains the target node
    * @param {Node} node
@@ -802,12 +818,13 @@ class BRSelectMenu extends LitElement {
     this.style.left = `${left}px`;
   }
 
+  // Will always show the simplified menu when rendered after hiding
   async show() {
     if (this.br.plugins.translate?.userToggleTranslate) return;
 
     this.style.zIndex = '1';
     this.style.position = 'absolute';
-    this.style.display = 'flex';
+    this.changeContextMenuStyling();
     this.open = true;
     this.classList.remove('br-select-menu__root--scrolling');
     window.removeEventListener('scroll', this._onScroll, { capture: true });
@@ -820,6 +837,7 @@ class BRSelectMenu extends LitElement {
   hide() {
     if (!this.open) return;
     this.style.display = 'none';
+    this.showExtendedOptions = false;
     this.open = false;
     window.removeEventListener('scroll', this._onScroll, { capture: true });
     this.clearNodesForRemoval();
