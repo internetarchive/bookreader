@@ -145,16 +145,29 @@
     display: none;
 }
 
+
+$select-menu-radius: 25px;
+$select-menu-extended-radius: 10px;
 .br-select-menu__root {
   display: none;
-  border-radius: 20px;
-  background-color: #333;
   color: white;
   color-scheme: dark;
   padding: 2px;
   overflow: hidden;
   opacity: 1;
-  transition: border-radius 0.2s, opacity 0.2s;
+  transition: opacity 0.2s;
+  gap: 5px;
+
+  &[open] {
+    display: flex;
+  }
+
+  &[showextended] {
+    display: block;
+    gap: 0px;
+    background-color: #333;
+    border-radius: $select-menu-extended-radius;
+  }
 
   @starting-style {
     opacity: 0;
@@ -164,13 +177,6 @@
   opacity: 0;
   pointer-events: none;
 }
-.br-select-menu__root:hover {
-  border-radius: 8px;
-}
-
-.br-select-menu__root:hover .br-select-menu__option {
-  border-radius: 6px;
-}
 
 .br-select-menu__option {
   --iconWidth: 15px;
@@ -179,18 +185,40 @@
   background: transparent;
   display: flex;
   align-items: center;
-  border-radius: 20px;
+  border-radius: $select-menu-radius;
   font-family: inherit;
   color: inherit;
   border: 0;
-  transition: background-color 0.2s, border-radius 0.2s;
   cursor: pointer;
   text-wrap: nowrap;
-  padding: 4px;
-}
+  background-color: #333;
+  position: relative;
 
-.br-select-menu__option:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  @media (pointer: coarse) and (hover: none) {
+    padding: 4px 8px;
+    #br-select-more & {
+        padding: 4px;
+    }
+  }
+
+  &:hover:after {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: 2px;
+    bottom: 2px;
+    content: "";
+    pointer-events: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: calc($select-menu-radius - 2px);
+  }
+
+  .br-select-menu__root[showextended] & {
+      width:100%;
+      &:hover:after {
+        border-radius: calc($select-menu-extended-radius - 2px);
+      }
+  }
 }
 
 .br-select-menu__icon {
@@ -198,26 +226,13 @@
   flex-shrink: 0;
   width: 17px;
   height: 17px;
+  padding: 3px;
 }
 
 .br-select-menu__label {
   margin-left: 4px;
   font-size: 12px;
-}
-
-@media (hover: hover) {
-    .br-select-menu__label {
-        width: 0px;
-        margin-left: 0;
-        opacity: 0;
-        interpolate-size: allow-keywords;
-        transition: width 0.2s;
-    }
-    .br-select-menu__root:hover .br-select-menu__label {
-        width: auto;
-        margin-left: 4px;
-        opacity: 1;
-    }
+  margin-right: 4px;
 }
 
 .BRtextLayer .BRhighlight {
