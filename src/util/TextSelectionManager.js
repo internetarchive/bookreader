@@ -437,7 +437,9 @@ export class BRSelectMenuOption extends LitElement {
         aria-label=${ifDefined(accessibleLabel)}
       >
         ${this.renderIcon()}
-        ${hasTemporaryText ? html`
+        ${
+          !hasTemporaryText && !baseLabel ? '' :
+            hasTemporaryText ? html`
           <span class="br-select-menu__label-wrap" style="display: inline-flex; position: relative; align-items: center;">
             <span
               class="br-select-menu__label"
@@ -464,10 +466,11 @@ class BRSelectMenu extends LitElement {
   br;
 
   /** @type {boolean} */
-  showExtendedOptions = false;
+  @property({type: Boolean, reflect: true})
+  showExtended = false;
 
   /** @type {BRSelectMenuOption | null} */
-  @query('#copy-link-option')
+  @query('#br-select-copy-link-option')
   copyLinkOption;
 
   @property({type: Boolean, reflect: true})
@@ -528,11 +531,11 @@ class BRSelectMenu extends LitElement {
     // Mousedown needed to prevent selection from being cleared on iOS
     return html`
       <br-menu-option
-        id="copy-link-option"
+        id="br-select-copy-link-option"
         @mousedown=${/** @param {MouseEvent} e */ (e) => e.preventDefault()}
         @click=${this.handleCopyLinkToHighlight}
         icon="share"
-        label="Share"
+        label="Copy Link to Highlight"
         live-label
       ></br-menu-option>
     `;
@@ -568,14 +571,14 @@ class BRSelectMenu extends LitElement {
     `;
   }
 
-  renderSwitchOptions() {
+  renderShowMoreOption() {
     return html`
       <br-menu-option
-        id="extend-options"
+        id="br-select-more"
         @mousedown=${/** @param {MouseEvent} e */ (e) => e.preventDefault()}
-        @click=${this.changeOptions}
+        @click=${this.toggleExtendedMenu}
         icon="ellipses"
-        live-label
+        aria-label="Show more options"
       ></br-menu-option>
     `;
   }
@@ -596,7 +599,7 @@ class BRSelectMenu extends LitElement {
 
   renderDefaultOptions() {
     return html`
-      ${this.copyLinkToHighlightEnabled ? this.renderCopyLinkToHighlightOption() : ''} 
+      ${this.copyLinkToHighlightEnabled ? this.renderCopyLinkToHighlightOption() : ''}
       ${this.highlightAnnotationEnabled && !this.nodesForRemoval ? this.renderHighlightOption() : ''}
       ${this.nodesForRemoval ? this.renderRemoveOption() : ''}
     `;
@@ -610,10 +613,11 @@ class BRSelectMenu extends LitElement {
   }
 
   render() {
+    const hasMoreOptions = this.br.plugins.experiments?.isEnabled('annotateHighlight');
     // TODO change the second button to use a different icon
     return html`
-      ${this.showExtendedOptions ? this.renderExtendedOptions() : this.renderDefaultOptions()}
-      ${this.renderSwitchOptions()}
+    ${this.showExtended ? this.renderExtendedOptions() : this.renderDefaultOptions()}
+    ${!this.showExtended && hasMoreOptions ? this.renderShowMoreOption() : ""}
     `;
   }
 
@@ -651,27 +655,11 @@ class BRSelectMenu extends LitElement {
   /**
    * @param {MouseEvent} e
   */
-  changeOptions(e) {
+  toggleExtendedMenu(e) {
     e.preventDefault();
-    this.showExtendedOptions = !this.showExtendedOptions;
-    this.changeContextMenuStyling();
-    this.requestUpdate();
+    this.showExtended = !this.showExtended;
   }
 
-  /**
-   * Change styling for highlight menu to show simplified or extended options
-   */
-  changeContextMenuStyling() {
-    if (this.showExtendedOptions) {
-      this.style.display = 'block';
-      this.style.gap = '0px';
-      this.style.backgroundColor = '#333';
-    } else {
-      this.style.display = 'flex';
-      this.style.gap = '10px';
-      this.style.backgroundColor = '';
-    }
-  }
   /**
    * Returns the closest BRtextLayer element on the page that contains the target node
    * @param {Node} node
@@ -824,7 +812,6 @@ class BRSelectMenu extends LitElement {
 
     this.style.zIndex = '1';
     this.style.position = 'absolute';
-    this.changeContextMenuStyling();
     this.open = true;
     this.classList.remove('br-select-menu__root--scrolling');
     window.removeEventListener('scroll', this._onScroll, { capture: true });
@@ -836,8 +823,7 @@ class BRSelectMenu extends LitElement {
 
   hide() {
     if (!this.open) return;
-    this.style.display = 'none';
-    this.showExtendedOptions = false;
+    this.showExtended = false;
     this.open = false;
     window.removeEventListener('scroll', this._onScroll, { capture: true });
     this.clearNodesForRemoval();
