@@ -32,6 +32,7 @@ import { DEFAULT_OPTIONS, OptionsParseError } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
+/** @typedef {import('./BookReader/BookModel.js').PageModel} PageModel */
 import { EVENTS } from './BookReader/events.js';
 import { Toolbar } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
@@ -1147,6 +1148,7 @@ BookReader.prototype._isIndexDisplayed = function(index) {
  * Changes the current page
  * @param {PageIndex | 'left' | 'right' | 'next' | 'prev'} indexOrDirection
  * @param {object} options
+ * @param {boolean} [options.allowUnviewable] - whether to allow jumping to unviewable pages; default false
  * @param {number} [options.pageX] Position on page ; not implemented
  * @param {number} [options.pageY] Position on page ; not implemented
  * @param {boolean} [options.noAnimate]
@@ -1154,7 +1156,7 @@ BookReader.prototype._isIndexDisplayed = function(index) {
  * @param {boolean} [options.ariaLive]
  * @param {boolean} [options.triggerStop] - whether to trigger the stop event; default true; maybe deprecated?
  */
-BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY = 0, noAnimate = false, flipSpeed = null, ariaLive = false, triggerStop = true} = {}) {
+BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY = 0, noAnimate = false, flipSpeed = null, ariaLive = false, triggerStop = true, allowUnviewable = false} = {}) {
   const page = this.activeMode.parsePageSpecifier(indexOrDirection);
   flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
   if (!page || page.index == this.currentIndex()) {
@@ -1162,7 +1164,7 @@ BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY 
   }
 
   // Don't jump into specific unviewable page
-  if (!page.isViewable && page.unviewablesStart != page.index) {
+  if (!allowUnviewable && !page.isViewable && page.unviewablesStart != page.index) {
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
     const newIndex = alreadyInPreview ? page.findNext({ combineConsecutiveUnviewables: true })?.index : page.unviewablesStart;
@@ -1979,6 +1981,29 @@ BookReader.prototype.queryStringFromParams = function(
 
   const result = newParams.toString();
   return result ? `?${result}` : '';
+};
+
+/**
+ * Tries to open the slot for the given page by requesting the server to make it viewable.
+ * @param {PageModel} page
+ */
+BookReader.prototype.tryOpenSlotForPage = async function(page) {
+  if (page.isViewable) return;
+  const resp = await fetch('/services/bookreader/request_page?' + new URLSearchParams({
+    id: this.options.bookId,
+    subprefix: this.options.subPrefix,
+    leafNum: page.leafNum,
+  })).then(r => r.json());
+
+  for (const leafNum of resp.value) {
+    this.book.getPage(this.book.leafNumToIndex(leafNum)).makeViewable();
+  }
+
+  // Trigger an update of book
+  this._modes.mode1Up.mode1UpLit.updatePages();
+  if (this.activeMode == this._modes.mode1Up) {
+    await this._modes.mode1Up.mode1UpLit.updateComplete;
+  }
 };
 
 /**
