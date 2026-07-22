@@ -15,9 +15,9 @@ const BookReader = /** @type {typeof import('../BookReader').default} */(window.
 export class TextSelectionPlugin extends BookReaderPlugin {
   options = {
     enabled: true,
-    /** @type {StringWithVars} The URL to fetch the entire DJVU xml. Supports options.vars */
+    /** @type {StringWithVars | null} The URL to fetch the entire DJVU xml. Supports options.vars */
     fullDjvuXmlUrl: null,
-    /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
+    /** @type {StringWithVars | null} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
     singlePageDjvuXmlUrl: null,
     /** Whether to fetch the XML as a jsonp */
     jsonp: false,
@@ -25,7 +25,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     maxProtectedWords: 200,
   }
 
-  /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
+  /**@type {PromiseLike<JQuery<HTMLElement>|undefined> | null} */
   djvuPagesPromise = null;
 
   /** @type {Cache<{index: number, response: any}>} */

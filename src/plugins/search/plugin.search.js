@@ -104,7 +104,9 @@ export class SearchPlugin extends BookReaderPlugin {
         this.options.initialSearchTerm,
         { goToFirstResult: this.options.goToFirstResult, suppressFragmentChange: false },
       );
-    } else if (this.br.urlPlugin?.getUrlParam('focus') === 'search') {
+    }
+
+    if (this.br.urlPlugin?.getUrlParam('focus') === 'search') {
       this.searchView.toggleSidebar();
     }
   }
@@ -153,10 +155,8 @@ export class SearchPlugin extends BookReaderPlugin {
       goToFirstResult: false, /* jump to the first result (default=false) */
       disablePopup: false,    /* don't show the modal progress (default=false) */
       suppressFragmentChange: false, /* don't change the URL on initial load */
-      error: null,            /* optional error handler (default=null) */
-      success: null,          /* optional success handler (default=null) */
-
     };
+
     const options = jQuery.extend({}, defaultOptions, overrides);
     this.suppressFragmentChange = options.suppressFragmentChange;
     this.searchCancelled = false;
@@ -178,35 +178,26 @@ export class SearchPlugin extends BookReaderPlugin {
       postTag: this.options.postTag,
     });
 
-    const callSearchResultsCallback = (searchInsideResults) => {
-      if (this.searchCancelled) {
-        return;
-      }
-      const responseHasError = searchInsideResults.error || !searchInsideResults.matches.length;
-      const hasCustomError = typeof options.error === 'function';
-      const hasCustomSuccess = typeof options.success === 'function';
-
-      if (responseHasError) {
-        console.error('Search Inside Response Error', searchInsideResults.error || 'matches.length == 0');
-        hasCustomError
-          ? options.error.call(this, searchInsideResults, options)
-          : this.BRSearchCallbackError(searchInsideResults);
-      } else {
-        hasCustomSuccess
-          ? options.success.call(this, searchInsideResults, options)
-          : this.BRSearchCallback(searchInsideResults, options);
-      }
-    };
-
     this.br.trigger('SearchStarted', { term: this.searchTerm, instance: this.br });
-    callSearchResultsCallback(await $.ajax({
+    const searchInsideResults = await $.ajax({
       url: url,
       cache: true,
       xhrFields: {
         withCredentials: this.br.protected,
       },
       beforeSend: xhr => { this.searchXHR = xhr; },
-    }));
+    });
+    if (this.searchCancelled) {
+      return;
+    }
+    const responseHasError = searchInsideResults.error || !searchInsideResults.matches.length;
+
+    if (responseHasError) {
+      console.error('Search Inside Response Error', searchInsideResults.error || 'matches.length == 0');
+      this.BRSearchCallbackError(searchInsideResults);
+    } else {
+      this.BRSearchCallback(searchInsideResults, options);
+    }
   }
 
   /**
@@ -238,8 +229,7 @@ export class SearchPlugin extends BookReaderPlugin {
   /**
    * Search Results return handler
    * @param {SearchInsideResults} results
-   * @param {object} options
-   * @param {boolean} options.goToFirstResult
+   * @param {SearchOptions} options
    */
   BRSearchCallback(results, options) {
     const bookLangCode = toISO6391(this.br.options.bookLanguage);
@@ -261,18 +251,10 @@ export class SearchPlugin extends BookReaderPlugin {
   }
 
   /**
-   * Main search results error handler
+   * Draws search results error
    * @param {SearchInsideResults} results
    */
   BRSearchCallbackError(results) {
-    this._BRSearchCallbackError(results);
-  }
-
-  /**
-   * @private draws search results error
-   * @param {SearchInsideResults} results
-   */
-  _BRSearchCallbackError(results) {
     this.searchResults = results;
     const payload = {
       term: this.searchTerm,
@@ -419,8 +401,6 @@ BookReader?.registerPlugin('search', SearchPlugin);
  * @property {boolean} goToFirstResult
  * @property {boolean} disablePopup
  * @property {boolean} suppressFragmentChange
- * @property {(null|function)} error (deprecated)
- * @property {(null|function)} success (deprecated)
  */
 
 /**
