@@ -111,6 +111,8 @@ BookReader.PLUGINS = {
   chapters: null,
   /** @type {typeof import('./plugins/plugin.experiments.js').ExperimentsPlugin | null}*/
   experiments: null,
+  /** @type {typeof import('./plugins/plugin.iframe.js').IframePlugin | null}*/
+  iframe: null,
   /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
   resume: null,
   /** @type {typeof import('./plugins/search/plugin.search.js').SearchPlugin | null}*/
@@ -181,6 +183,7 @@ BookReader.prototype.setup = function(options) {
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,
     experiments: BookReader.PLUGINS.experiments ? new BookReader.PLUGINS.experiments(this) : null,
+    iframe: BookReader.PLUGINS.iframe ? new BookReader.PLUGINS.iframe(this) : null,
     search: BookReader.PLUGINS.search ? new BookReader.PLUGINS.search(this) : null,
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
