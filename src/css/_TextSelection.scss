@@ -246,8 +246,15 @@
     z-index: 1;
     display: block;
     position: absolute;
-    padding: 10px;
+    // padding: 10px;
+    padding: 2px;
     background-color: black;
+}
+
+.br-annotate-menu__header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
 }
 
 .br-annotate-menu__icon {
@@ -266,29 +273,104 @@
     margin: 0 0 0 5px;
 }
 
+.br-annotate-menu__colorOptions {
+    align-content: center;
+    background-color: #333;
+    border-radius: 10px;
+    height: fit-content;
+    margin-left: 5px;
+    display: flex;
+}
+
+.br-annotate-menu__pipe {
+    color: white;
+    margin-right: 2px;
+    margin-left: -3px;
+}
+
 .br-annotate-menu__color {
-    width: 25px;
+    width: 20px;
     height: 20px;
-    margin: 0 0 0 5px;
+    margin: 0 5px 0 1px;
+    display: block;
+    border-radius: 5px;
+    &.pink {
+        background-color: #ffc0cb;
+    }
+    &.yellow {
+        background-color: #ffff00;
+    }
+    &.orange {
+        background-color: #ffa500;
+    }
+    &.green {
+        background-color: #00ff00;
+    }
+}
+
+.br-annotate-menu__carrot {
+    padding: 0px;
+    margin: auto;
+    border: none;
+    background: none;
+    display: block;
+}
+
+// .br-annotate-menu__editOptions {
+.br-annotate-menu__footer {
+    width: 100%;
+    margin: 5px 5px 5px 0;
+    display:flex;
+    justify-content: space-between;
+    height: 25%;
+    align-items: center;
+}
+
+.br-annotate-menu__option{
+    border-radius: 5px;
+    margin: 0px 2px 0 2px;
+    height: fit-content;
+    &.save, &.edit {
+        background-color: #194880;
+        color: white;
+        margin-right: 4px;
+    }
 }
 
 .br-annotate-menu__comment {
-    margin: 5px 0 5px 0;
+    margin: 5px 5px 5px 0;
     padding: 5px 0 5px 5px;
-    width: 90%;
+    width: 97%;
     height: 50%;
-    max-width: 90%;
+    max-width: 100%;
     background-color: #c8af91;
     font-size: 12px;
     border-radius: 5px;
 }
 
-.br-annotate-menu__textarea {
-    margin: 5px 0 5px 0;
-    width: 90%;
-    height: 50%;
-    max-width: 90%;
+.br-annotate-menu__body {
+    height: 70%;
+    width: 100%;
+}
+
+.br-annotate-menu__textArea {
+    // margin: 5px 5px 5px 0;
+    // width: 98%;
+    width: -moz-available;
+    width: -webkit-fill-available;
+    height: -webkit-fill-available;
+    max-width: 98%;
+    border-radius: 12px;
     resize: none;
+    padding-left: 5px;
+    padding-top: 5px;
+    &::placeholder {
+        font-style: italic;
+    }
+}
+
+.br-annotate-menu__colorDropdown {
+    display: flex;
 }
 
 .br-annotate-menu__displayAnnotation {

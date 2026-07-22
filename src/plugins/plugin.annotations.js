@@ -11,9 +11,6 @@ export class BRAnnotationModal extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
 
-  @property({type: Boolean})
-  allowAnnotationEditing = false;
-
   HIGHLIGHT_YELLOW = "#ffff00";
   HIGHLIGHT_PINK = "#ffc0cb";
   HIGHLIGHT_ORANGE = "#ffa500";
@@ -26,6 +23,10 @@ export class BRAnnotationModal extends LitElement {
   currentAnnotationNodes;
 
   storageService = new AnnotationStorageService({storageMethod: window.localStorage});
+
+  @property({type: Boolean})
+  showColorOptions = false;
+
 
   /**
    *
@@ -48,38 +49,85 @@ export class BRAnnotationModal extends LitElement {
     this.setAttribute('aria-label', 'Annotation actions');
   }
 
-  showExistingAnnotation() {
+  showTextEditArea() {
     return html`
-      <div class="br-annotate-menu__comment" aria-hidden="true">
-        <span class="br-annotate-menu__displayAnnotation">${this.getAnnotationText()}</span>
-      </div>
-      <button @click=${this.handleEditAnnotation}>Edit annotation</button>
-      <button @click=${this.hide}>Cancel</button>
+    <div class="br-annotate-menu__body">
+      <textarea 
+        class="br-annotate-menu__textArea" 
+        id="annotateTextArea" 
+        placeholder="Add note..."
+        >${this.getAnnotationText()}</textarea>
+    </div>
+    <div class="br-annotate-menu__footer">
+        ${this.renderColorOptions()}
+        <div class="br-annotate-menu__editOptions">
+      <button 
+        @click=${this.handleDeleteHighlight}
+        class="br-annotate-menu__option">Delete
+      </button>
+      <button
+      @click=${this.handleSaveAnnotation}
+      class="br-annotate-menu__option save"
+      >Save</button>
+    </div>
     `;
   }
 
-  showTextEditArea() {
+  renderColorOptions() {
+    const colors = {
+      '#00ff00': 'green',
+      '#ffc0cb': 'pink',
+      '#ffff00': 'yellow',
+      '#ffa500': 'orange',
+    };
+    const color = this.getHighlightColor();
     return html`
-      <textarea class="br-annotate-menu__textarea" id="annotateTextArea" @click=${this.handleInputClick}>${this.getAnnotationText()}</textarea>
-      <button @click=${this.handleSaveAnnotation}>Save annotation</button>
-      <button @click=${this.hide}>Cancel</button>
+    <div class="br-annotate-menu__colorOptions">
+      <button
+        @click=${this.handleColorChange}
+        class="br-annotate-menu__color ${colors[color]}"
+        value=${color}
+      >
+      </button>
+      ${this.showColorOptions ? this.renderColorDropdown() : ""}
+      <button class="br-annotate-menu__carot"
+      @click=${this.handleShowColor}>${this.showColorOptions ? '<' : '>'}</button>
+    </div>
+    `;
+  }
+
+  handleShowColor() {
+    this.showColorOptions = !this.showColorOptions;
+  }
+
+  renderColorDropdown() {
+    const colors = {
+      'green': this.HIGHLIGHT_GREEN,
+      'pink' : this.HIGHLIGHT_PINK,
+      'orange' : this.HIGHLIGHT_ORANGE,
+      'yellow': this.HIGHLIGHT_YELLOW,
+    };
+    const currentColor = this.getHighlightColor();
+    const allColorOptions = Array.from(Object.keys(colors)).map((color) => {
+      if (colors[color] === currentColor) return;
+      return html`
+      <button
+        @click=${this.handleColorChange}
+        class="br-annotate-menu__color ${color}"
+        value=${colors[color]}>
+        </button>`;
+    });
+    return html`
+      <div class="br-annotate-menu__pipe">|</div>
+      <div class="br-annotate-menu__colorDropdown">
+        ${allColorOptions}
+      </div>
     `;
   }
 
   render() {
     return html`
-      <input type="color"
-        id="annotateInputColor"
-        value=${this.getHighlightColor()}
-        class="br-annotate-menu__color"
-        @change=${this.handleColorChange}
-      />
-      <button @click=${this.handleDeleteHighlight}
-        class="br-annotate-menu__option"
-        <ia-icon-share class="br-annotate-menu__icon" aria-hidden="true"></ia-icon-share>
-        <span class="br-annotate-menu__label">Delete Highlight and Annotation</span>
-      </button>
-      ${this.allowAnnotationEditing ? this.showTextEditArea() : this.showExistingAnnotation()}
+      ${this.showTextEditArea()}
     `;
   }
 
@@ -133,38 +181,39 @@ export class BRAnnotationModal extends LitElement {
 
     const lastNodeBoundary = lastNode.getBoundingClientRect();
     const pageContainerBoundary = lastNode.closest(".BRpagecontainer")?.getBoundingClientRect();
-    this.requestUpdate();
+
+    this.style.display = 'block';
     const annotationButtonWidth = pageContainerBoundary.width - 50;
     const annotationButtonLeft = pageContainerBoundary.left;
     this.style.backgroundColor = 'black';
-    this.style.width = `${annotationButtonWidth}px`;
+    this.style.width = `${Math.max(annotationButtonWidth, 100)}px`;
     this.style.height = `${Math.max(pageContainerBoundary.height / 5, 120)}px`;
     this.style.top = `${lastNodeBoundary.top + lastNodeBoundary.height + 5}px`;
     this.style.left = `${annotationButtonLeft}px`;
-    this.style.display = 'block';
-    this.checkAnnotationEditing();
+    this.updateTextArea(this.getAnnotationText());
     this.requestUpdate();
   }
 
   hide() {
     this.currentAnnotationNodes = null;
+    this.showColorOptions = false;
     this.style.display = 'none';
     return;
   }
 
-  handleEditAnnotation() {
-    this.allowAnnotationEditing = true;
-    this.requestUpdate();
+  updateTextArea(text) {
+    const inputEle = document.querySelector("#annotateTextArea");
+    if (!inputEle) return;
+    inputEle.value = text;
   }
 
   handleSaveAnnotation() {
     const inputEle = document.querySelector("#annotateTextArea");
+    if (!inputEle || !this.currentAnnotationNodes) return;
     if (inputEle.value) {
       const currentUUID = retrieveUUID(this.currentAnnotationNodes[0]);
       this.storageService.edit(currentUUID, 'annotation', inputEle.value);
-      this.hide();
       inputEle.value = "";
-      return;
     }
     this.hide();
   }
@@ -173,16 +222,6 @@ export class BRAnnotationModal extends LitElement {
     if (!this.currentAnnotationNodes) return null;
     const nodesUUID = retrieveUUID(this.currentAnnotationNodes[0]);
     return this.storageService.findRecordByUUID(nodesUUID)?.annotation || "";
-  }
-
-  checkAnnotationEditing() {
-    const storedAnnotation = this.getAnnotationText();
-    if (storedAnnotation) {
-      this.allowAnnotationEditing = false;
-    } else {
-      this.allowAnnotationEditing = true;
-    }
-    this.requestUpdate();
   }
 
   /**
