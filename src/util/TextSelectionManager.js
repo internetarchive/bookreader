@@ -255,6 +255,8 @@ export class TextSelectionManager {
   }
 
   hideAnnotationModal() {
+    // default behavior to save and hide on close
+    this.annotationModal.handleSaveAnnotation();
     this.annotationModal.hide();
   }
 
