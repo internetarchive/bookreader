@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 
 import BookReader from '@/src/BookReader.js';
-import { _attachEventListeners } from '@/src/plugins/plugin.iframe.js';
+import { IframePlugin } from '@/src/plugins/plugin.iframe.js';
 
 afterEach(() => {
   sinon.restore();
@@ -9,10 +9,11 @@ afterEach(() => {
 
 test('listens for br events if parent', () => {
   const br = new BookReader();
+  const plugin = new IframePlugin(br);
   sinon.spy(br, 'bind');
   sinon.spy(window, 'addEventListener');
 
-  _attachEventListeners(br, window.parent);
+  plugin.init();
   expect(br.bind.callCount).toBe(1);
   expect(window.addEventListener.callCount).toBe(1);
   expect(window.addEventListener.args[0][0]).toBe('message');
@@ -20,18 +21,21 @@ test('listens for br events if parent', () => {
 
 test('does not attach if not in iframe', () => {
   const br = new BookReader();
+  const plugin = new IframePlugin(br);
+  sinon.stub(window, 'parent').value(null);
   sinon.spy(br, 'bind');
   sinon.spy(window, 'addEventListener');
 
-  _attachEventListeners(br, null);
+  plugin.init();
   expect(br.bind.callCount).toBe(0);
   expect(window.addEventListener.callCount).toBe(0);
 });
 
 test('updates params when window receives a message', () => {
   const br = new BookReader();
+  const plugin = new IframePlugin(br);
   sinon.spy(br, 'updateFromParams');
-  _attachEventListeners(br);
+  plugin.init();
   window.dispatchEvent(new MessageEvent('message', {
     data: {
       type: 'bookReaderFragmentChange',
