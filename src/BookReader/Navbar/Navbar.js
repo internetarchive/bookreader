@@ -217,16 +217,25 @@ export class Navbar {
    * NOTE: `this.minimumControls`, `this.maximumControls`, and .BRnavMobile switch on resize
    */
   showMobileControls() {
+    // Scope queries to the navbar's own jQuery-wrapped root instead of
+    // `document`. `document.querySelector` can't cross shadow DOM
+    // boundaries, so when BookReader is hosted inside a shadow tree
+    // (e.g. offshoot's details-page), every lookup here returns null
+    // and no `.hide` toggling happens — leaving both the mobile-only
+    // viewmode button and the three desktop view-mode buttons visible
+    // at the same time.
+    //
+    // `this.$nav` is built from a fragment with two top-level sibling
+    // divs (.BRnavMobile + .BRnavMain), so `.filter()` (not `.find()`)
+    // is required for the outer classes.
+    const $main = this.$nav?.filter('.BRnavMain');
     this.minimumControls.forEach((control) => {
-      const element = document.querySelector(`.BRnavMain .controls .${control}`);
-      if (element) element.classList.remove('hide');
+      $main?.find(`.controls .${control}`).removeClass('hide');
     });
     this.maximumControls.forEach((control) => {
-      const element = document.querySelector(`.BRnavMain .controls .${control}`);
-      if (element) element.classList.add('hide');
+      $main?.find(`.controls .${control}`).addClass('hide');
     });
-    const mobileNav = document.querySelector(`.BRnavMobile`);
-    if (mobileNav) mobileNav.classList.remove('hide');
+    this.$nav?.filter('.BRnavMobile').removeClass('hide');
   }
 
   /**
@@ -234,16 +243,14 @@ export class Navbar {
    * NOTE: `this.minimumControls`, `this.maximumControls`, and .BRnavMobile switch on resize
    */
   showDesktopControls() {
+    const $main = this.$nav?.filter('.BRnavMain');
     this.maximumControls.forEach((control) => {
-      const element = document.querySelector(`.BRnavMain .controls .${control}`);
-      if (element) element.classList.remove('hide');
+      $main?.find(`.controls .${control}`).removeClass('hide');
     });
     this.minimumControls.forEach((control) => {
-      const element = document.querySelector(`.BRnavMain .controls .${control}`);
-      if (element) element.classList.add('hide');
+      $main?.find(`.controls .${control}`).addClass('hide');
     });
-    const mobileNav = document.querySelector(`.BRnavMobile`);
-    if (mobileNav) mobileNav.classList.add('hide');
+    this.$nav?.filter('.BRnavMobile').addClass('hide');
   }
 
   /**
