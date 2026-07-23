@@ -311,25 +311,3 @@ export function sortBy(array, valueFn) {
     return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
   });
 }
-
-/**
- * @param {function(Event): void} callback
- * @param {Object} options
- * @param {number} [options.scrollDelay=20] How many pixels to scroll before triggering
- * @returns {function(Event): void}
- */
-export function eventFilterScrollUp(callback, {scrollDelay = 20} = {}) {
-  let lastScrollTop = 0;
-  let accumulatedScroll = 0;
-  return function(event) {
-    const st = this.scrollTop;
-    if (st < lastScrollTop) {
-      accumulatedScroll += lastScrollTop - st;
-      if (accumulatedScroll >= scrollDelay) {
-        callback(event);
-        accumulatedScroll = 0;
-      }
-    }
-    lastScrollTop = st;
-  };
-}
