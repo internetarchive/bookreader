@@ -2,7 +2,7 @@
 /** @typedef {import("./BookReader.js").default} BookReader */
 
 /**
- * @template TOptions
+ * @template [TOptions={}]
  */
 export class BookReaderPlugin {
   /**
