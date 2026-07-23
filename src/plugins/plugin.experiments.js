@@ -23,6 +23,9 @@ class ExperimentModel {
   /** @type {string} */
   learnMore;
 
+  /** @type {Record<string, boolean>} */
+  options = {};
+
   /** @type {import("@/src/BookReader.js").default} */
   br;
 
@@ -62,6 +65,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
   /** @type {ExperimentModel[]} */
   allExperiments = [
     new class extends ExperimentModel {
+      /** @type {ExperimentName} */
       name = 'copyLinkToHighlight';
       title = 'Copy Link to Highlight';
       description = 'Shareable link to a text selection';
@@ -77,6 +81,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       }
     }(),
     new class extends ExperimentModel {
+      /** @type {ExperimentName} */
       name = 'annotateHighlight';
       title = 'Highlight and annotate';
       description = 'Create private highlights and annotations for this book';
@@ -94,6 +99,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       }
     }(),
     new class extends ExperimentModel {
+      /** @type {ExperimentName} */
       name = 'translate';
       title = 'Translate Plugin';
       description = "Translate books directly in your browser.";
@@ -116,10 +122,16 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     }(),
 
     new class extends ExperimentModel {
+      /** @type {ExperimentName} */
       name = 'autoHidingChrome';
       title = 'Auto-Hiding Chrome';
       description = "Automatically hide the BookReader interface when reading.";
       enabled = false;
+
+      options = {
+        showFullscreenTab: false,
+      };
+
       async enable({ manual = false }) {
         if (manual) sleep(0).then(() => window.location.reload());
       }
@@ -129,6 +141,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     }(),
 
     new class extends ExperimentModel {
+      /** @type {ExperimentName} */
       name = 'hypothesis';
       title = 'Hypothes.is';
       description = 'Create public, collaborative, or fully private annotations on books and the web.';
@@ -196,8 +209,15 @@ export class ExperimentsPlugin extends BookReaderPlugin {
    * @param {ExperimentName} experimentName
    */
   isEnabled(experimentName) {
-    const experiment = this.allExperiments.find(exp => exp.name === experimentName);
-    return experiment?.enabled;
+    return this.getExperiment(experimentName)?.enabled;
+  }
+
+  /**
+   * @param {ExperimentName} experimentName
+   * @returns {ExperimentModel}
+   */
+  getExperiment(experimentName) {
+    return this.allExperiments.find(exp => exp.name === experimentName);
   }
 
   _loadExperimentStates() {
