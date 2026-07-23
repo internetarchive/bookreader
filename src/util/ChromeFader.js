@@ -1,26 +1,33 @@
 // @ts-check
-import { eventFilterMouseMove } from '../BookReader/utils.js';
 
 /**
  * Hides the BookReader chrome when the user is not using it; eg when
  * they are scrolling down through the book, and haven't touched anything in a while.
  */
 export class ChromeFader {
-    /** @type {string | null} */
+    /**
+     * @type {string | null}
+     * Clicks on elements matching this CSS selector will not trigger showing the chrome
+     */
     ignoreClickOnSelector = null;
 
-    /** @type {string | null} */
-    ignorePointerMoveOnSelector = null;
-
-    /** @type {string | null} */
+    /**
+     * @type {string | null}
+     * If the pointer leaves the container onto elements matching this CSS selector, it
+     * will not trigger showing the chrome
+     */
     ignorePointerLeaveOnSelector = null;
 
     /** @type {string | null} */
     ignoreOutsidePointerDownOnSelector = null;
 
+    /** Whether the chrome is currently visible */
     isShowing = true;
 
-    /** @type {HTMLElement} */
+    /**
+     * @type {HTMLElement}
+     * The element we will be monitoring for the scroll-triggered showing/hiding
+     */
     _scrollElement;
 
     /** @type {ReturnType<typeof setTimeout> | null} */
@@ -29,8 +36,8 @@ export class ChromeFader {
     /** Pixels of scroll needed to go from fully hidden↔shown */
     _scrollShowDistance = 80;
     _lastScrollTop = 0;
-    _scrollUpAccum = 0;
-    _scrollDownAccum = 0;
+    /** Current scroll-driven reveal progress, from 0 (hidden) to 1 (shown) */
+    _scrollFadeProgress = 0;
 
     /** @type {(...args: any[]) => void} */
     log = () => {};
@@ -134,21 +141,33 @@ export class ChromeFader {
         if (edgeProgress >= 1) this.keepShowing('pointermove-edge');
         return;
       }
-
-      // if (this.ignorePointerMoveOnSelector && /** @type {Element} */ (pev.target)?.closest(this.ignorePointerMoveOnSelector)) return;
-      // this.keepShowing('pointermove');
     };
+
     _handleScroll = () => {
       const st = this._scrollElement.scrollTop;
-      if (st < this._lastScrollTop) {
-        this._scrollUpAccum += this._lastScrollTop - st;
-        const progress = Math.min(this._scrollUpAccum / this._scrollShowDistance, 1);
-        document.body.style.setProperty('--br-fade-progress', String(progress));
-        if (progress >= 1) this.keepShowing('scroll');
-      } else {
-        this._scrollUpAccum = 0;
-      }
+      const delta = this._lastScrollTop - st; // positive: scrolled up, negative: scrolled down
       this._lastScrollTop = st;
+
+      // Already fully shown; a scroll-up just resets the hide timer, same as before.
+      if (this.isShowing) {
+        if (delta > 0) this.keepShowing('scroll');
+        return;
+      }
+
+      if (delta === 0) return;
+
+      this._scrollFadeProgress = Math.min(1, Math.max(0, this._scrollFadeProgress + delta / this._scrollShowDistance));
+
+      if (this._scrollFadeProgress >= 1) {
+        this.keepShowing('scroll');
+      } else if (this._scrollFadeProgress <= 0) {
+        // Scrolled back down through the whole reveal distance -- hide immediately.
+        this.hide('scroll');
+      } else {
+        document.body.style.setProperty('--br-fade-progress', String(this._scrollFadeProgress));
+        // Left mid-reveal; if nothing else happens, hide on the same timer as a normal hide.
+        this._scheduleHide('scroll');
+      }
     }
     /** @param {TouchEvent} ev */
     _handleTouchStart = (ev) => ev.target === ev.currentTarget && this.keepShowing('touchstart');
@@ -166,6 +185,15 @@ export class ChromeFader {
     keepShowing = (source) => {
       this.log('Show UI ...', source);
       if (!this.isShowing) this.show(source);
+      this._scrollFadeProgress = 1;
+      this._scheduleHide(source);
+    };
+
+    /**
+     * (Re)schedules a hide() after the standard delay, unless something else happens first.
+     * @param {string} source debug source of the event that triggered this
+     */
+    _scheduleHide = (source) => {
       if (this._hideTimeout) clearTimeout(this._hideTimeout);
       this._hideTimeout = setTimeout(() => {
         this._hideTimeout = null;
@@ -188,8 +216,12 @@ export class ChromeFader {
     hide = (source) => {
       this.log('Hide UI ...', source);
       this.isShowing = false;
-      this._scrollUpAccum = 0;
+      this._scrollFadeProgress = 0;
       this._lastScrollTop = this._scrollElement.scrollTop;
+      if (this._hideTimeout) {
+        clearTimeout(this._hideTimeout);
+        this._hideTimeout = null;
+      }
       document.body.style.setProperty('--br-fade-progress', '0');
       $(document.body).addClass('BRfaded');
     };
