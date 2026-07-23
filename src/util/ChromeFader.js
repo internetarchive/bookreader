@@ -64,7 +64,6 @@ export class ChromeFader {
       document.removeEventListener('pointerdown', this._handleOutsidePointerDown, { capture: true });
       this._scrollElement.removeEventListener('pointermove', this._handlePointerMove);
       this._scrollElement.removeEventListener('scroll', this._handleScroll);
-      this._scrollElement.removeEventListener('touchstart', this._handleTouchStart);
       this._scrollElement.removeEventListener('click', this._handleClick);
       this._scrollElement.removeEventListener('pointerenter', this.modeAwake);
 
@@ -99,7 +98,6 @@ export class ChromeFader {
       document.addEventListener('pointerdown', this._handleOutsidePointerDown, { capture: true, passive: true });
       this._scrollElement.addEventListener('pointermove', this._handlePointerMove, { passive: true });
       this._scrollElement.addEventListener('scroll', this._handleScroll, { passive: true });
-      this._scrollElement.addEventListener('touchstart', this._handleTouchStart, { passive: true });
       this._scrollElement.addEventListener('click', this._handleClick, { passive: true });
     }
 
@@ -169,14 +167,16 @@ export class ChromeFader {
         this._scheduleHide('scroll');
       }
     }
-    /** @param {TouchEvent} ev */
-    _handleTouchStart = (ev) => ev.target === ev.currentTarget && this.keepShowing('touchstart');
-
     /** @param {MouseEvent} ev */
     _handleClick = (ev) => {
       if (window.getSelection()?.toString()) return; // don't toggle when selecting
       if (this.ignoreClickOnSelector && ev.target.closest(this.ignoreClickOnSelector)) return;
-      this.keepShowing('click');
+
+      if (this.isShowing) {
+        this.hide('click');
+      } else {
+        this.keepShowing('click');
+      }
     };
 
     /**
