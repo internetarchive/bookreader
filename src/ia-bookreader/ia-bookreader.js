@@ -302,8 +302,11 @@ export class IaBookReader extends LitElement {
       providers.bookmarks = new BookmarksProvider({
         ...this.baseProviderConfig,
         onProviderChange: (bookmarks) => {
-          const method = Object.keys(bookmarks).length ? 'add' : 'remove';
-          this[`${method}MenuShortcut`]('bookmarks');
+          if (Object.keys(bookmarks).length) {
+            this.addMenuShortcut('bookmarks');
+          } else {
+            this.removeMenuShortcut('bookmarks');
+          }
           this.updateMenuContents();
         },
       });
@@ -460,6 +463,14 @@ export class IaBookReader extends LitElement {
     }
 
     this.menuShortcuts.push(this.menuProviders[menuId]);
+    this._sortMenuShortcuts();
+  }
+
+  /**
+   * @param {string} menuId
+   */
+  removeMenuShortcut(menuId) {
+    this.menuShortcuts = this.menuShortcuts.filter((m) => m.id !== menuId);
     this._sortMenuShortcuts();
   }
 

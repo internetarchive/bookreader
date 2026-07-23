@@ -1,3 +1,38 @@
+# 5.0.0-116
+- Fix: Make "Copy link to highlight" url parameter more resilient re-encoding @cdrini
+- Feature: New ?focus=search url parameter to open the search panel and focus the search input @mek @cdrini
+- Dev: Group renovate PRs by dependency type to have fewer PRs @cdrini
+
+# 5.0.0-115
+- Fix: "Copy link to highlight" menu obscured on mobile @cdrini
+- Dev: Update dependencies @cdrini
+
+# 5.0.0-114
+- Fix: "Copy link to highlight" now scrolls to highlighted text on page @cdrini
+- Feature: "Copy link to highlight" now creates shorter links by including only the quote start and end in the URL fragment, instead of the full quote @cdrini
+  - Following the [TextFragment spec](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment/Text_fragments#syntax)
+- Fix: Error logged in console on BookReader init making Sentry noise @cdrini
+- Fix: Small fixes to "Copy link to highlight" feature @cdrini
+  - Fix CSS bug when deployed to archive.org resulting in select menu having black text on a black background
+  - Add a new experiment option to auto-enable an experiment as we roll this out to internal testing. Will be used on IA during the deploy
+      - BREAKING CHANGE: the experiment plugin's `enabledExperiments` option is now renamed to `availableExperiments`
+  - Fix first/last lines of page not working with Copy Link to Highlight by only including the current selection's text layer when building context
+  - Allow for paragraph break/newlines in prefix/suffix, so we can have more context, and less likely to have an ambiguous fragment
+  - If at start/end of page, extend suffix/prefix respectively to try to always have 6 words of context
+
+
+# 5.0.0-113
+- Feature: "Copy link to highlight" now public experiment @schu96 + @cdrini
+
+# 5.0.0-112
+- Feature: Make raw page indices in toolbar 0-based to reflect number in URL and code @pezvi
+- Fix: Make translate plugin gracefully handle unsupported source languages @cdrini
+
+# 5.0.0-111
+- Feature: Add new alpha experiment for copy link to highlight @schu96
+- Feature: Add option to specify `page_index` in table of contents in options @cdrini
+- Fix: Race condition preventing table of contents loading when specified directly in options @cdrini
+
 # 5.0.0-110
 - Dev: Add dependencies necessary for esm-import to package.json/dependencies @cdrini
 - Dev: Update various testing and build dependencies @cdrini

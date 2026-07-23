@@ -111,6 +111,8 @@ BookReader.PLUGINS = {
   chapters: null,
   /** @type {typeof import('./plugins/plugin.experiments.js').ExperimentsPlugin | null}*/
   experiments: null,
+  /** @type {typeof import('./plugins/plugin.iframe.js').IframePlugin | null}*/
+  iframe: null,
   /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
   resume: null,
   /** @type {typeof import('./plugins/search/plugin.search.js').SearchPlugin | null}*/
@@ -150,11 +152,12 @@ BookReader.defaultOptions = DEFAULT_OPTIONS;
  * @type {BookReaderOptions}
  * This is here, just in case you need to absolutely override an option.
  */
-BookReader.optionOverrides = {};
+BookReader.optionOverrides = BookReader.optionOverrides || {};
 
 /**
  * Setup
  * It is separate from the constructor, so plugins can extend.
+ * @constructor
  * @param {BookReaderOptions} options
  */
 BookReader.prototype.setup = function(options) {
@@ -180,6 +183,7 @@ BookReader.prototype.setup = function(options) {
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,
     experiments: BookReader.PLUGINS.experiments ? new BookReader.PLUGINS.experiments(this) : null,
+    iframe: BookReader.PLUGINS.iframe ? new BookReader.PLUGINS.iframe(this) : null,
     search: BookReader.PLUGINS.search ? new BookReader.PLUGINS.search(this) : null,
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
@@ -644,7 +648,7 @@ BookReader.prototype.init = function() {
   this.pageScale = this.reduce; // preserve current reduce
 
   const params = this.initParams();
-
+  this.urlPlugin?.pullFromAddressBar();
   this.firstIndex = params.index ? params.index : 0;
 
   // Setup Navbars and other UI
@@ -852,6 +856,7 @@ BookReader.prototype.setupKeyListeners = function () {
 
     // Ignore if modifiers are active.
     if (e.getModifierState('Control') ||
+      e.getModifierState('Shift') ||
       e.getModifierState('Alt') ||
       e.getModifierState('Meta') ||
       e.getModifierState('Win') /* hack for IE */) {
@@ -1959,6 +1964,10 @@ BookReader.prototype.queryStringFromParams = function(
 ) {
   const newParams = new URLSearchParams(currQueryString);
 
+  // Never write back UI-only params that are consumed on load
+  // TODO: Should ideally stick around until next URL change
+  newParams.delete('focus');
+
   if (params.view) {
     // Set ?view=theater when fullscreen
     newParams.set('view', params.view);
@@ -1970,10 +1979,9 @@ BookReader.prototype.queryStringFromParams = function(
   if (params.search && urlMode === 'history') {
     newParams.set('q', params.search);
   }
-  // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
-  // Note: This method returns the query string without the question mark.
+
   const result = newParams.toString();
-  return result ? '?' + result : '';
+  return result ? `?${result}` : '';
 };
 
 /**

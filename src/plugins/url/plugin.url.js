@@ -25,7 +25,7 @@ jQuery.extend(BookReader.defaultOptions, {
   urlHistoryBasePath: '/',
 
   /** Only these params will be reflected onto the URL */
-  urlTrackedParams: ['page', 'search', 'mode', 'region', 'highlight', 'view'],
+  urlTrackedParams: ['page', 'search', 'mode', 'region', 'highlight', 'view', 'text'],
 
   /** If true, don't update the URL when `page == n0 (eg "/page/n0")` */
   urlTrackIndex0: false,
@@ -140,10 +140,16 @@ BookReader.prototype.urlUpdateFragment = function() {
     return validParams;
   }, {});
 
+  // eg 'page/3/mode/2up'; no query params (in hash mode, it might have /search/term)
   const newFragment = this.fragmentFromParams(params, this.options.urlMode);
+  const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
+  // eg 'page/3/mode/2up'; no query params
   const currFragment = this.urlReadFragment();
+  // This should have both ?q=foo&text=bar (and any other params) as an encoded string
   const currQueryString = this.getLocationSearch();
+  // Eg ?q=foo&text=bar; only query params, no fragment
   const newQueryString = this.queryStringFromParams(params, currQueryString, this.options.urlMode);
+  // Avoid infinite loop if there are no changes
   if (currFragment === newFragment && currQueryString === newQueryString) {
     return;
   }
@@ -153,9 +159,8 @@ BookReader.prototype.urlUpdateFragment = function() {
       this.options.urlMode = 'hash';
     } else {
       const baseWithoutSlash = this.options.urlHistoryBasePath.replace(/\/+$/, '');
-      const newFragmentWithSlash = newFragment === '' ? '' : `/${newFragment}`;
-
       const newUrlPath = `${baseWithoutSlash}${newFragmentWithSlash}${newQueryString}`;
+
       try {
         window.history.replaceState({}, null, newUrlPath);
         this.oldLocationHash = newFragment + newQueryString;
@@ -195,7 +200,7 @@ BookReader.prototype.urlReadFragment = function() {
   if (urlMode === 'history') {
     return window.location.pathname.substr(urlHistoryBasePath.length);
   } else {
-    return window.location.hash.substr(1);
+    return this.urlPlugin.getHash();
   }
 };
 
@@ -210,10 +215,9 @@ export class BookreaderUrlPlugin extends BookReader {
   init() {
     if (this.options.enableUrlPlugin) {
       this.urlPlugin = new UrlPlugin(this.options);
-      this.bind(BookReader.eventNames.PostInit, () => {
-        const { urlMode } = this.options;
 
-        if (urlMode === 'hash') {
+      this.on(BookReader.eventNames.PostInit, () => {
+        if (this.options.urlMode === 'hash') {
           this.urlPlugin.listenForHashChanges();
         }
       });

@@ -95,6 +95,7 @@ describe("ChaptersPlugin", () => {
     test("renders if valid TOC on open library", async () => {
       const fakeBR = {
         options: { vars: {} },
+        shell: {},
         bind: sinon.stub(),
       };
       const p = new ChaptersPlugin(fakeBR);
@@ -113,6 +114,7 @@ describe("ChaptersPlugin", () => {
         options: {
           table_of_contents: deepCopy(SAMPLE_TOC_UNDEF),
         },
+        shell: {},
         bind: sinon.stub(),
       };
       const p = new ChaptersPlugin(fakeBR);
@@ -131,6 +133,7 @@ describe("ChaptersPlugin", () => {
         options: {
           table_of_contents,
         },
+        shell: {},
         bind: sinon.stub(),
         book: {
           leafNumToIndex: (leaf) => leaf + 1,

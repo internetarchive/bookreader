@@ -228,6 +228,28 @@
       <br>
     </div>
   </section>
+  <details class="demo">
+    <summary>Browser details</summary>
+    <dl id="browser-details"></dl>
+  </details>
+  <script>
+    const details = {
+      'navigator.userAgent': navigator.userAgent,
+      'navigator.vendor': navigator.vendor,
+      'navigator.maxTouchPoints': navigator.maxTouchPoints,
+      'navigator.userAgentData.mobile': navigator.userAgentData?.mobile ?? '(unavailable)',
+      'navigator.userAgentData.platform': navigator.userAgentData?.platform ?? '(unavailable)',
+      'window.innerWidth': window.innerWidth,
+      'window.innerHeight': window.innerHeight,
+      'screen.width': screen.width,
+      'screen.height': screen.height,
+      'devicePixelRatio': window.devicePixelRatio,
+    };
+    const dl = document.querySelector('#browser-details');
+    for (const [key, value] of Object.entries(details)) {
+      dl.innerHTML += `<dt><code>${key}</code></dt><dd>${value}</dd>`;
+    }
+  </script>
   <div class="demo">
     <h3>Placeholder div to allow scrolling</h3>
   </div>

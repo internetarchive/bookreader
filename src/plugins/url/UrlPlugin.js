@@ -1,8 +1,18 @@
+/**
+ * @typedef {Object} UrlSchemaEntry
+ * @property {string} name
+ * @property {'path' | 'query_param'} position
+ * @property {string} [default]
+ * @property {string} [deprecated_for]
+ * @property {boolean} [readOnly] - If true, the param is read from the URL but never written back
+ */
+
 export class UrlPlugin {
   constructor(options = {}) {
     this.bookReaderOptions = options;
 
     // the canonical order of elements is important in the path and query string
+    /** @type {UrlSchemaEntry[]} */
     this.urlSchema = [
       { name: 'page', position: 'path', default: 'n0' },
       { name: 'mode', position: 'path', default: '2up' },
@@ -11,6 +21,7 @@ export class UrlPlugin {
       { name: 'sort', position: 'query_param' },
       { name: 'view', position: 'query_param' },
       { name: 'admin', position: 'query_param' },
+      { name: 'focus', position: 'query_param', readOnly: true },
     ];
 
     this.urlState = {};
@@ -36,6 +47,7 @@ export class UrlPlugin {
       if (schema?.deprecated_for) {
         schema = this.urlSchema.find(schemaKey => schemaKey.name === schema.deprecated_for);
       }
+      if (schema?.readOnly) return;
       if (schema?.position == 'path') {
         pathParams[schema?.name] = urlState[key];
       } else {
@@ -161,7 +173,7 @@ export class UrlPlugin {
    * If it was changeed, update the urlState
    */
   listenForHashChanges() {
-    this.oldLocationHash = window.location.hash.substr(1);
+    this.oldLocationHash = this.getHash();
     if (this.urlLocationPollId) {
       clearInterval(this.urlLocationPollId);
       this.urlLocationPollId = null;
@@ -169,7 +181,7 @@ export class UrlPlugin {
 
     // check if the URL changes
     const updateHash = () => {
-      const newFragment = window.location.hash.substr(1);
+      const newFragment = this.getHash();
       const hasFragmentChange = newFragment != this.oldLocationHash;
 
       if (!hasFragmentChange) { return; }
@@ -182,10 +194,17 @@ export class UrlPlugin {
   /**
    * Will read either the hash or URL and return the bookreader fragment
    */
-  pullFromAddressBar (location = window.location) {
+  pullFromAddressBar(location = window.location) {
     const path = this.urlMode === 'history'
       ? (location.pathname.substr(this.urlHistoryBasePath.length) + location.search)
       : location.hash.substr(1);
     this.urlState = this.urlStringToUrlState(path);
+  }
+
+  /**
+   * Get the hash out of the current URL
+   */
+  getHash() {
+    return window.location.hash.slice(1);
   }
 }

@@ -7,8 +7,10 @@ import { sleep } from '../BookReader/utils.js';
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
 
+/** @typedef {'copyLinkToHighlight' | 'annotateHighlight' | 'translate' | 'hypothesis'} ExperimentName */
+
 class ExperimentModel {
-  /** @type {string} test */
+  /** @type {ExperimentName} */
   name;
   /** @type {string} */
   title;
@@ -50,12 +52,47 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     /** Where the state of this plugin is saved in localStorage */
     localStorageKey: 'BrExperiments',
 
-    /** The experiments that should be shown in the experiments panel */
-    enabledExperiments: ['translate'],
+    /** @type {ExperimentName[]} Experiments shown in the experiments panel */
+    availableExperiments: ['translate', 'copyLinkToHighlight'],
+
+    /** @type {ExperimentName[]} Experiments enabled by default */
+    autoEnabledExperiments: [],
   }
 
   /** @type {ExperimentModel[]} */
   allExperiments = [
+    new class extends ExperimentModel {
+      name = 'copyLinkToHighlight';
+      title = 'Copy Link to Highlight';
+      description = 'Shareable link to a text selection';
+      icon = null;
+      enabled = false;
+      async enable ({ manual = false }) {
+        if (manual) {
+          this.br.plugins.textSelection.textSelectionManager.selectMenu.copyLinkToHighlightEnabled = true;
+        }
+      }
+      async disable() {
+        this.br.plugins.textSelection.textSelectionManager.selectMenu.copyLinkToHighlightEnabled = false;
+      }
+    }(),
+    new class extends ExperimentModel {
+      name = 'annotateHighlight';
+      title = 'Highlight and annotate';
+      description = 'Create private highlights and annotations for this book';
+      icon = null;
+      enabled = false;
+      async enable ({ manual = false }) {
+        if (manual) {
+          this.br.plugins.textSelection.textSelectionManager.selectMenu.highlightAnnotationEnabled = true;
+        }
+      }
+      async disable() {
+        sleep(0).then(() => {
+          window.location.reload();
+        });
+      }
+    }(),
     new class extends ExperimentModel {
       name = 'translate';
       title = 'Translate Plugin';
@@ -123,13 +160,30 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     for (const experiment of this.allExperiments) {
       // TODO: imagesBaseURL should be replaced with assetRoot everywhere
       experiment.assetRoot = this.br.options.imagesBaseURL.replace(/images\/$/, '');
-      experiment.icon = experiment.buildAssetPath(experiment.icon);
+      if (experiment.icon) {
+        experiment.icon = experiment.buildAssetPath(experiment.icon);
+      }
+
       experiment.br = this.br;
+
+      // Enable any experiments that should be automatically enabled
+      if (!experiment.enabled && this.options.autoEnabledExperiments.includes(experiment.name)) {
+        experiment.enabled = true;
+        await experiment.enable({ manual: false });
+      }
     }
 
     this._loadExperimentStates();
     await Promise.resolve();
     this._render();
+  }
+
+  /**
+   * @param {ExperimentName} experimentName
+   */
+  isEnabled(experimentName) {
+    const experiment = this.allExperiments.find(exp => exp.name === experimentName);
+    return experiment?.enabled;
   }
 
   _loadExperimentStates() {
@@ -178,7 +232,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       `,
       label: 'Experiments',
       component: html`<br-experiments-panel
-        .experiments="${this.allExperiments.filter(experiment => this.options.enabledExperiments.includes(experiment.name))}"
+        .experiments="${this.allExperiments.filter(experiment => this.options.availableExperiments.includes(experiment.name))}"
         @connected="${e => this._panel = e.target}"
         @toggle="${async e => {
         await this._toggleExperiment(e.detail.experiment, e.detail.enabled);
@@ -269,7 +323,7 @@ export class BrExperimentToggle extends LitElement {
     return html`
       <div class="experiment-card" style="margin-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <img src="${this.icon}" style="width: 20px; height: 20px;" alt="" />
+          ${this.icon ? html`<img src="${this.icon}" style="width: 20px; height: 20px;" alt="" />` : ''}
           <div style="flex-grow: 1; font-weight: bold;">${this.title}</div>
         </div>
         <p style="opacity: 0.9">

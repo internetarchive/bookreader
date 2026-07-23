@@ -4,7 +4,8 @@ import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
-import { TextSelectionManager } from '../util/TextSelectionManager.js';
+import { BookReaderTextFragment, renderHighlight, TextSelectionManager } from '../util/TextSelectionManager.js';
+import { genMap, lookAroundWindow, zip } from '../util/generators.js';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
@@ -36,6 +37,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
    */
   maxWordRendered = 2500;
 
+  _jumpedToHighlight = false;
+
   /**
    * @param {import('../BookReader.js').default} br
    */
@@ -46,15 +49,41 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // now we do make that assumption.
     /** Whether the book is right-to-left */
     this.rtl = this.br.pageProgression === 'rl';
-    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace']}, this.options.maxProtectedWords);
+    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace', 'mark']}, this.options.maxProtectedWords);
   }
 
   /** @override */
   init() {
     if (!this.options.enabled) return;
 
+    this.br.on('pageVisible', (_, {pageContainerEl}) => {
+      const textLayer = pageContainerEl.querySelector('.BRtextLayer');
+      if (textLayer) {
+        this.br.trigger('textLayerVisible', {pageContainerEl, textLayer});
+      }
+    });
+
     this.loadData();
     this.textSelectionManager.init();
+
+    // Init text fragment
+    const textParam = new URLSearchParams(location.search).get('text');
+    if (textParam) {
+      this.targetTextFragment = BookReaderTextFragment.fromString(textParam, this.br.book, this.br.firstIndex);
+      const targetTextFragment = this.targetTextFragment;
+      this.br.on('textLayerVisible', async (_, {pageContainerEl, textLayer}) => {
+        const pageIndex = targetTextFragment.pageIndex;
+        const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
+        if (hasTargetText) {
+          const markEls = renderHighlight(textLayer, targetTextFragment, 'BRhighlight--target-text');
+          // Only jump once; presumably on first page load.
+          if (!this._jumpedToHighlight) {
+            markEls[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+            this._jumpedToHighlight = true;
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -65,7 +94,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   _configurePageContainer(pageContainer) {
     // Disable if thumb mode; it's too janky
     // .page can be null for "pre-cover" region
-    if (this.br.mode !== this.br.constModeThumb && pageContainer.page) {
+    if (this.br.mode !== this.br.constModeThumb && pageContainer.page?.isViewable) {
       this.createTextLayer(pageContainer);
     }
     return pageContainer;
@@ -188,6 +217,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       paragEl.style.marginTop = `${newTop}px`;
       yAdded += newTop;
       textLayer.appendChild(paragEl);
+      textLayer.appendChild(document.createTextNode('\n'));
     }
     $container.append(textLayer);
     this.textSelectionManager.stopPageFlip($container);
@@ -195,6 +225,11 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       pageIndex,
       pageContainer,
     });
+
+    // Check if page is visible
+    if ($container.hasClass('BRpage-visible')) {
+      this.br.trigger('textLayerVisible', {pageContainerEl: $container[0], textLayer});
+    }
   }
 
   /**
@@ -396,94 +431,6 @@ function augmentLine(line) {
 }
 
 /**
- * @template T
- * Get the i-th element of an iterable
- * @param {Iterable<T>} iterable
- * @param {number} index
- */
-export function genAt(iterable, index) {
-  let i = 0;
-  for (const x of iterable) {
-    if (i == index) return x;
-    i++;
-  }
-  return undefined;
-}
-
-/**
- * @template T
- * Generator version of filter
- * @param {Iterable<T>} iterable
- * @param {function(T): boolean} fn
- */
-export function* genFilter(iterable, fn) {
-  for (const x of iterable) {
-    if (fn(x)) yield x;
-  }
-}
-
-/**
- * @template TFrom, TTo
- * Generator version of map
- * @param {Iterable<TFrom>} gen
- * @param {function(TFrom): TTo} fn
- * @returns {Iterable<TTo>}
- */
-export function* genMap(gen, fn) {
-  for (const x of gen) yield fn(x);
-}
-
-/**
- * @template T
- * Generator that provides a sliding window of 3 elements,
- * prev, current, and next.
- * @param {Iterable<T>} gen
- * @returns {Iterable<[T | undefined, T, T | undefined]>}
- */
-export function* lookAroundWindow(gen) {
-  let prev = undefined;
-  let cur = undefined;
-  let next = undefined;
-  for (const x of gen) {
-    if (typeof cur !== 'undefined') {
-      next = x;
-      yield [prev, cur, next];
-    }
-    prev = cur;
-    cur = x;
-    next = undefined;
-  }
-
-  if (typeof cur !== 'undefined') {
-    yield [prev, cur, next];
-  }
-}
-
-/**
- * @template T1, T2
- * Lazy zip implementation to avoid importing lodash
- * Expects iterators to be of the same length
- * @param {Iterable<T1>} gen1
- * @param {Iterable<T2>} gen2
- * @returns {Iterable<[T1, T2]>}
- */
-export function* zip(gen1, gen2) {
-  const it1 = gen1[Symbol.iterator]();
-  const it2 = gen2[Symbol.iterator]();
-  while (true) {
-    const r1 = it1.next();
-    const r2 = it2.next();
-    if (r1.done && r2.done) {
-      return;
-    }
-    if (r1.done || r2.done) {
-      throw new Error('zip: one of the iterators is done');
-    }
-    yield [r1.value, r2.value];
-  }
-}
-
-/**
  * [left, bottom, right, top]
  * @param {Array<[number, number, number, number]>} bounds
  * @returns {[number, number, number, number]}
@@ -557,50 +504,4 @@ class Rect {
   get bottom() { return this.y + this.height; }
   get top() { return this.y; }
   get left() { return this.x; }
-}
-
-/**
- * Depth traverse the DOM tree starting at `start`, and ending at `end`.
- * @param {Node} start
- * @param {Node} end
- * @returns {Generator<Node>}
- */
-export function* walkBetweenNodes(start, end) {
-  let done = false;
-
-  /**
-   * @param {Node} node
-   */
-  function* walk(node, {children = true, parents = true, siblings = true} = {}) {
-    if (node === end) {
-      done = true;
-      yield node;
-      return;
-    }
-
-    // yield self
-    yield node;
-
-    // First iterate children (depth-first traversal)
-    if (children && node.firstChild) {
-      yield* walk(node.firstChild, {children: true, parents: false, siblings: true});
-      if (done) return;
-    }
-
-    // Then iterate siblings
-    if (siblings) {
-      for (let sib = node.nextSibling; sib; sib = sib.nextSibling) {
-        yield* walk(sib, {children: true, parents: false, siblings: false});
-        if (done) return;
-      }
-    }
-
-    // Finally, move up the tree
-    if (parents && node.parentNode) {
-      yield* walk(node.parentNode, {children: false, parents: true, siblings: true});
-      if (done) return;
-    }
-  }
-
-  yield* walk(start);
 }

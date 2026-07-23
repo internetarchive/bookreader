@@ -54,13 +54,6 @@
     }
 }
 
-// Style URI TextFragments, eg #:~:text=example
-.BRtextLayer ::target-text {
-    // Similar colour to the default one used in Safari, Firefox. Note Chrome uses a purple colour
-    background-color: hsla(45, 80%, 66%, 0.6);
-    color: transparent;
-}
-
 .BRtranslateLayer ::selection {
     background: hsla(210, 74%, 62%, 0.4);
 }
@@ -82,7 +75,7 @@
 // Hide text layer for performance during zooming & scrolling
 .BRsmooth-zooming, .BRscrolling-active {
     // If the text layer has an annotation, don't hide it
-    .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)) .BRtextLayer {
+    .BRpagecontainer:not(.BRpagecontainer--hasSelection):not(:has(hypothesis-highlight)):not(:has(.BRhighlight)) .BRtextLayer {
         display: none;
     }
 }
@@ -150,4 +143,112 @@
 
 .BRtranslateLayer .BRparagraphElement.BRtranslateHidden {
     display: none;
+}
+
+
+$select-menu-radius: 25px;
+$select-menu-extended-radius: 10px;
+.br-select-menu__root {
+  display: none;
+  color: white;
+  color-scheme: dark;
+  padding: 2px;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.2s;
+  gap: 5px;
+
+  &[open] {
+    display: flex;
+  }
+
+  &[showextended] {
+    display: block;
+    gap: 0px;
+    background-color: #333;
+    border-radius: $select-menu-extended-radius;
+  }
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+.br-select-menu__root--scrolling {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.br-select-menu__option {
+  --iconWidth: 15px;
+  --iconHeight: 15px;
+  --iconFillColor: currentColor;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  border-radius: $select-menu-radius;
+  font-family: inherit;
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+  text-wrap: nowrap;
+  background-color: #333;
+  position: relative;
+
+  @media (pointer: coarse) and (hover: none) {
+    padding: 4px 8px;
+    #br-select-more & {
+        padding: 4px;
+    }
+  }
+
+  &:hover:after {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: 2px;
+    bottom: 2px;
+    content: "";
+    pointer-events: none;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: calc($select-menu-radius - 2px);
+  }
+
+  .br-select-menu__root[showextended] & {
+      width:100%;
+      &:hover:after {
+        border-radius: calc($select-menu-extended-radius - 2px);
+      }
+  }
+}
+
+.br-select-menu__icon {
+  display: block;
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  padding: 3px;
+}
+
+.br-select-menu__label {
+  margin-left: 4px;
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.BRtextLayer .BRhighlight {
+    background-color: yellow;
+    pointer-events: all;
+    color: transparent;
+}
+
+@keyframes highlightTargetFlash {
+  to { background-color: hsla(45, 80%, 66%, 1); }
+}
+
+// Style URI TextFragments, eg ?text=example
+.BRtextLayer .BRhighlight--target-text, .BRtextLayer ::target-text {
+    // Similar colour to the default one used in Safari, Firefox. Note Chrome uses a purple colour
+    background-color: hsla(45, 80%, 66%, 0.6);
+    color: transparent;
+    animation: highlightTargetFlash 600ms 1 reverse;
 }
