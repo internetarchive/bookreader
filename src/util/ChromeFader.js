@@ -7,9 +7,12 @@
 export class ChromeFader {
     /**
      * @type {string | null}
-     * Clicks on elements matching this CSS selector will not trigger showing the chrome
+     * Selector for clickable elements of the content. Clicking won't
+     * trigger showing the chrome to stay immersive, but clicking will
+     * *hide* the chrome if it is locked into showing -- basically
+     * clicking on these is considered "entering" the content
      */
-    ignoreClickOnSelector = null;
+    clickableContentSelector = null;
 
     /**
      * @type {string | null}
@@ -25,6 +28,13 @@ export class ChromeFader {
     isShowing = true;
 
     /**
+     * If chrome was shown via an explicit click/tap, it should stay shown
+     * until the user taps or scrolls again, instead of auto-hiding on the
+     * usual inactivity timer.
+     */
+    _lockedShowing = false;
+
+    /**
      * @type {HTMLElement}
      * The element we will be monitoring for the scroll-triggered showing/hiding
      */
@@ -38,6 +48,14 @@ export class ChromeFader {
     _lastScrollTop = 0;
     /** Current scroll-driven reveal progress, from 0 (hidden) to 1 (shown) */
     _scrollFadeProgress = 0;
+
+    /**
+     * Whether there was a text selection when the pointer went down. A plain click
+     * collapses any selection on pointerdown, before the click event fires, so by
+     * click time `getSelection()` alone can no longer tell us the user was clicking
+     * to clear a selection rather than to toggle the chrome.
+     */
+    _hadSelectionOnPointerDown = false;
 
     /** @type {(...args: any[]) => void} */
     log = () => {};
@@ -63,6 +81,7 @@ export class ChromeFader {
       this._scrollElement.removeEventListener('pointerleave', this._handlePointerLeave);
       document.removeEventListener('pointerdown', this._handleOutsidePointerDown, { capture: true });
       this._scrollElement.removeEventListener('pointermove', this._handlePointerMove);
+      this._scrollElement.removeEventListener('pointerdown', this._handlePointerDown);
       this._scrollElement.removeEventListener('scroll', this._handleScroll);
       this._scrollElement.removeEventListener('click', this._handleClick);
       this._scrollElement.removeEventListener('pointerenter', this.modeAwake);
@@ -97,6 +116,7 @@ export class ChromeFader {
       this._scrollElement.addEventListener('pointerleave', this._handlePointerLeave);
       document.addEventListener('pointerdown', this._handleOutsidePointerDown, { capture: true, passive: true });
       this._scrollElement.addEventListener('pointermove', this._handlePointerMove, { passive: true });
+      this._scrollElement.addEventListener('pointerdown', this._handlePointerDown, { passive: true });
       this._scrollElement.addEventListener('scroll', this._handleScroll, { passive: true });
       this._scrollElement.addEventListener('click', this._handleClick, { passive: true });
     }
@@ -141,13 +161,25 @@ export class ChromeFader {
       }
     };
 
+    _handlePointerDown = () => {
+      this._hadSelectionOnPointerDown = !!window.getSelection()?.toString();
+    };
+
     _handleScroll = () => {
       const st = this._scrollElement.scrollTop;
       const delta = this._lastScrollTop - st; // positive: scrolled up, negative: scrolled down
       this._lastScrollTop = st;
 
-      // Already fully shown; a scroll-up just resets the hide timer, same as before.
       if (this.isShowing) {
+        if (this._lockedShowing) {
+          // Scroll unlocks it, reverting to normal auto-hide, without hiding immediately.
+          if (delta !== 0) {
+            this._lockedShowing = false;
+            this.keepShowing('scroll');
+          }
+          return;
+        }
+        // Already fully shown; a scroll-up just resets the hide timer, same as before.
         if (delta > 0) this.keepShowing('scroll');
         return;
       }
@@ -169,12 +201,19 @@ export class ChromeFader {
     }
     /** @param {MouseEvent} ev */
     _handleClick = (ev) => {
-      if (window.getSelection()?.toString()) return; // don't toggle when selecting
-      if (this.ignoreClickOnSelector && ev.target.closest(this.ignoreClickOnSelector)) return;
+      const hadSelection = this._hadSelectionOnPointerDown;
+      this._hadSelectionOnPointerDown = false;
+      if (hadSelection || window.getSelection()?.toString()) return; // don't toggle when (clearing a) selection
+      if (
+        !this._lockedShowing &&
+        this.clickableContentSelector &&
+        ev.target.closest(this.clickableContentSelector)
+      ) return;
 
       if (this.isShowing) {
         this.hide('click');
       } else {
+        this._lockedShowing = true;
         this.keepShowing('click');
       }
     };
@@ -186,6 +225,7 @@ export class ChromeFader {
       this.log('Show UI ...', source);
       if (!this.isShowing) this.show(source);
       this._scrollFadeProgress = 1;
+      if (this._lockedShowing) return;
       this._scheduleHide(source);
     };
 
@@ -217,6 +257,7 @@ export class ChromeFader {
       this.log('Hide UI ...', source);
       this.isShowing = false;
       this._scrollFadeProgress = 0;
+      this._lockedShowing = false;
       this._lastScrollTop = this._scrollElement.scrollTop;
       if (this._hideTimeout) {
         clearTimeout(this._hideTimeout);
