@@ -26,6 +26,7 @@ import 'jquery-ui-touch-punch';
 
 import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
+import { singleScrollIntoView } from './util/dom.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS, OptionsParseError } from './BookReader/options.js';
@@ -1032,6 +1033,18 @@ BookReader.prototype.resizeBRcontainer = function(animate) {
       bottom: this.getFooterHeight(),
     });
   }
+};
+
+/**
+ * Scrolls the given element into view within the active mode's scroll container.
+ * @param {Element} el
+ * @param {object} [options]
+ * @param {'auto' | 'smooth'} [options.behavior]
+ * @param {'start' | 'center' | 'end' | 'nearest'} [options.block]
+ * @param {'start' | 'center' | 'end' | 'nearest'} [options.inline]
+ */
+BookReader.prototype.scrollIntoView = function(el, options) {
+  singleScrollIntoView(el, { ...options, scrollContainer: this.activeMode.scrollContainer });
 };
 
 BookReader.prototype.centerPageView = function() {

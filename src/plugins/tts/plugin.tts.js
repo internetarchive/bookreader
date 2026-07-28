@@ -350,14 +350,9 @@ export class TtsPlugin extends BookReaderPlugin {
     // It behaves weird if used in thumb mode
     if (this.br.constModeThumb == this.br.mode) return;
 
-    $(`.pagediv${chunk.leafIndex} .ttsHiliteLayer rect`).last()?.[0]?.scrollIntoView({
-      // Only vertically center the highlight if we're in 1up or in full screen. In
-      // 2up, if we're not fullscreen, the whole body gets scrolled around to try to
-      // center the highlight 🙄 See:
-      // https://stackoverflow.com/questions/11039885/scrollintoview-causing-the-whole-page-to-move/11041376
-      // Note: nearest doesn't quite work great, because the ReadAloud toolbar is now
-      // full-width, and covers up the last line of the highlight.
-      block: this.br.constMode1up == this.br.mode || this.br.isFullscreenActive ? 'center' : 'nearest',
+    const highlightRect = $(`.pagediv${chunk.leafIndex} .ttsHiliteLayer rect`).last()?.[0];
+    this.br.scrollIntoView(highlightRect, {
+      block: 'center',
       inline: 'center',
       behavior: 'smooth',
     });

@@ -99,7 +99,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
           const markEls = renderHighlight(textLayer, targetTextFragment, 'BRhighlight--target-text');
           // Only jump once; presumably on first page load.
           if (!this._jumpedToHighlight) {
-            markEls[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+            this.br.scrollIntoView(markEls[0], {behavior: 'smooth', block: 'center'});
             this._jumpedToHighlight = true;
           }
         }

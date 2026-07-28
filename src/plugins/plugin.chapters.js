@@ -7,6 +7,7 @@ import '@internetarchive/icon-toc/icon-toc.js';
 import { BookReaderPlugin } from "../BookReaderPlugin.js";
 import { applyVariables } from "../util/strings.js";
 import { promisifyEvent } from "../BookReader/utils.js";
+import { singleScrollIntoView } from "../util/dom.js";
 /** @typedef {import('@/src/BookReader/BookModel.js').PageIndex} PageIndex */
 /** @typedef {import('@/src/BookReader/BookModel.js').PageString} PageString */
 /** @typedef {import('@/src/BookReader/BookModel.js').LeafNum} LeafNum */
@@ -323,10 +324,13 @@ export class BRChaptersPanel extends LitElement {
 
   updated(changedProperties) {
     if (changedProperties.has('currentChapter')) {
-      this.shadowRoot.querySelector('li.current')?.scrollIntoView({
-        block: 'nearest',
-        behavior: 'smooth',
-      });
+      const currentEl = this.shadowRoot.querySelector('li.current');
+      if (currentEl) {
+        singleScrollIntoView(currentEl, {
+          block: 'nearest',
+          behavior: 'smooth',
+        });
+      }
     }
   }
 
