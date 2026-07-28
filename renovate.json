@@ -48,8 +48,10 @@
         "@babel/preset-env",
         "babel-loader",
         "core-js",
+        "css-loader",
         "regenerator-runtime",
         "sass",
+        "sass-loader",
         "svgo",
         "webpack",
         "webpack-cli"

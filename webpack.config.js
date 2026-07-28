@@ -23,6 +23,16 @@ const shared = {
         exclude: /node_modules[/\\](?!(lit-element|lit-html|lit|@lit)[/\\]).*/,
         loader: "babel-loader",
       },
+      {
+        // Allow importing scss as plain strings. Only used for text selection plugin,
+        // since it needs to performantly load the CSS in an iframe to determine word
+        // sizings
+        test: /\.scss$/,
+        use: [
+          { loader: 'css-loader', options: { exportType: 'string' } },
+          'sass-loader',
+        ],
+      },
     ],
   },
 

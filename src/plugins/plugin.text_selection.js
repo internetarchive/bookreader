@@ -6,6 +6,7 @@ import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
 import { BookReaderTextFragment, renderHighlight, TextSelectionManager } from '../util/TextSelectionManager.js';
 import { genMap, lookAroundWindow, zip } from '../util/generators.js';
+import textSelectionCss from '../css/_TextSelection.scss';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
@@ -40,6 +41,13 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   _jumpedToHighlight = false;
 
   /**
+   * Isolated document/layout used to performantly measure OCR text-layer
+   * elements.
+   * @type {Document}
+   */
+  _measurementDocument;
+
+  /**
    * @param {import('../BookReader.js').default} br
    */
   constructor(br) {
@@ -55,6 +63,19 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   /** @override */
   init() {
     if (!this.options.enabled) return;
+
+    // Setup measurement iframe for OCR
+    const measurementIframe = document.createElement('iframe');
+    measurementIframe.setAttribute('aria-hidden', 'true');
+    measurementIframe.tabIndex = -1;
+    measurementIframe.style.cssText = 'position:fixed; top:-99999px; left:-99999px; width:2000px; height:4000px; border:0; visibility:hidden;';
+    document.body.appendChild(measurementIframe);
+    this._measurementDocument = measurementIframe.contentDocument;
+    // Injects _TextSelection.scss so measurements match the real
+    // rendering
+    const style = this._measurementDocument.createElement('style');
+    style.textContent = textSelectionCss;
+    this._measurementDocument.head.appendChild(style);
 
     this.br.on('pageVisible', (_, {pageContainerEl}) => {
       const textLayer = pageContainerEl.querySelector('.BRtextLayer');
@@ -94,7 +115,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   _configurePageContainer(pageContainer) {
     // Disable if thumb mode; it's too janky
     // .page can be null for "pre-cover" region
-    if (this.br.mode !== this.br.constModeThumb && pageContainer.page?.isViewable) {
+    if (this.options.enabled && this.br.mode !== this.br.constModeThumb && pageContainer.page?.isViewable) {
       this.createTextLayer(pageContainer);
     }
     return pageContainer;
@@ -204,7 +225,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     });
 
     // Fix up paragraph positions
-    const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement');
+    const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement', this._measurementDocument);
     let yAdded = 0;
     for (const [ocrParagraph, paragEl] of zip(ocrParagraphs, paragEls)) {
       const ocrParagBounds = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
@@ -312,7 +333,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     paragEl.style.fontSize = `${paragWordHeight}px`;
 
     // Fix up sizes - stretch/crush words as necessary using letter spacing
-    let wordRects = determineRealRects(paragEl, '.BRwordElement');
+    let wordRects = determineRealRects(paragEl, '.BRwordElement', this._measurementDocument);
     const ocrWords = $(ocrParagraph).find("WORD").toArray();
     const wordEls = paragEl.querySelectorAll('.BRwordElement');
     for (const [ocrWord, wordEl] of zip(ocrWords, wordEls)) {
@@ -333,8 +354,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
     // Stretch/crush lines as necessary using line spacing
     // Recompute rects after letter spacing
-    wordRects = determineRealRects(paragEl, '.BRwordElement');
-    const spaceRects = determineRealRects(paragEl, '.BRspace');
+    wordRects = determineRealRects(paragEl, '.BRwordElement', this._measurementDocument);
+    const spaceRects = determineRealRects(paragEl, '.BRspace', this._measurementDocument);
 
     const ocrLines = $(ocrParagraph).find("LINE[coords]").toArray();
     const lineEls = Array.from(paragEl.querySelectorAll('.BRlineElement'));
@@ -384,9 +405,11 @@ BookReader?.registerPlugin('textSelection', TextSelectionPlugin);
 /**
  * @param {HTMLElement} parentEl
  * @param {string} selector
+ * @param {Document} measurementDocument Isolated document to measure within
+ *   (see TextSelectionPlugin#_measurementDocument for why).
  * @returns {Map<Element, Rect>}
  */
-function determineRealRects(parentEl, selector) {
+function determineRealRects(parentEl, selector, measurementDocument) {
   const initals = {
     position: parentEl.style.position,
     visibility: parentEl.style.visibility,
@@ -399,21 +422,23 @@ function determineRealRects(parentEl, selector) {
   parentEl.style.top = '0';
   parentEl.style.left = '0';
   parentEl.style.transform = 'none';
-  document.body.appendChild(parentEl);
+  measurementDocument.body.appendChild(parentEl);
   const rects = new Map(
     Array.from(parentEl.querySelectorAll(selector))
       .map(wordEl => {
         const origRect = wordEl.getBoundingClientRect();
         return [wordEl, new Rect(
-          origRect.left + window.scrollX,
-          origRect.top + window.scrollY,
+          origRect.left + measurementDocument.defaultView.scrollX,
+          origRect.top + measurementDocument.defaultView.scrollY,
           origRect.width,
           origRect.height,
         )];
       }),
   );
-  document.body.removeChild(parentEl);
+  measurementDocument.body.removeChild(parentEl);
   Object.assign(parentEl.style, initals);
+  // Need to restore the document to the main window document
+  document.adoptNode(parentEl);
   return rects;
 }
 
