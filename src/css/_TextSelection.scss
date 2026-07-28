@@ -226,13 +226,31 @@ $select-menu-extended-radius: 10px;
   flex-shrink: 0;
   width: 17px;
   height: 17px;
-  padding: 3px;
+  padding: 2px;
 }
 
 .br-select-menu__label {
   margin-left: 4px;
   font-size: 12px;
   margin-right: 4px;
+}
+
+@media (hover: hover) {
+    .br-select-menu__option {
+        padding: 4px;
+    }
+    .br-select-menu__label {
+        width: 0px;
+        margin: 0;
+        opacity: 0;
+        interpolate-size: allow-keywords;
+        transition: width 0.2s;
+    }
+    .br-select-menu__root:hover .br-select-menu__label {
+        width: auto;
+        margin: 0 4px;
+        opacity: 1;
+    }
 }
 
 .BRtextLayer .BRhighlight {
