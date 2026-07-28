@@ -115,7 +115,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   _configurePageContainer(pageContainer) {
     // Disable if thumb mode; it's too janky
     // .page can be null for "pre-cover" region
-    if (this.br.mode !== this.br.constModeThumb && pageContainer.page?.isViewable) {
+    if (this.options.enabled && this.br.mode !== this.br.constModeThumb && pageContainer.page?.isViewable) {
       this.createTextLayer(pageContainer);
     }
     return pageContainer;
