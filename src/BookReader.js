@@ -41,6 +41,7 @@ import { ModeThumb } from './BookReader/ModeThumb.js';
 import { ImageCache } from './BookReader/ImageCache.js';
 import { PageContainer } from './BookReader/PageContainer.js';
 import { NAMED_REDUCE_SETS } from './BookReader/ReduceSet.js';
+import {ChromeFader} from './util/ChromeFader.js';
 
 /**
  * BookReader
@@ -746,6 +747,14 @@ BookReader.prototype.init = function() {
     }
   }
 
+  if (this.plugins.experiments?.isEnabled('autoHidingChrome')) {
+    this.fader = new ChromeFader(this.activeMode.scrollContainer);
+    this.fader.clickableContentSelector = '.BRpageFlipping, br-leaf-edges';
+    this.fader.ignorePointerLeaveOnSelector = 'br-select-menu';
+    this.fader.ignoreOutsidePointerDownOnSelector = '.BRchrome-toggle';
+    if (this.isFullscreenActive) this.fader.attach();
+  }
+
   this.init.initComplete = true;
   this.trigger(BookReader.eventNames.PostInit);
 
@@ -1021,16 +1030,12 @@ BookReader.prototype.zoom = function(direction) {
  * So resize isn't perceived sharp/jerky
  */
 BookReader.prototype.resizeBRcontainer = function(animate) {
+  const top = this.getToolBarHeight();
+  const bottom = this.fader && this.isFullscreenActive ? 0 : this.getFooterHeight();
   if (animate) {
-    this.refs.$brContainer.animate({
-      top: this.getToolBarHeight(),
-      bottom: this.getFooterHeight(),
-    }, this.constResizeAnimationDuration, 'linear');
+    this.refs.$brContainer.animate({ top, bottom }, this.constResizeAnimationDuration, 'linear');
   } else {
-    this.refs.$brContainer.css({
-      top: this.getToolBarHeight(),
-      bottom: this.getFooterHeight(),
-    });
+    this.refs.$brContainer.css({ top, bottom });
   }
 };
 
@@ -1238,6 +1243,7 @@ BookReader.prototype.switchMode = function(
     this.activeMode.unprepare?.();
   }
 
+  this.fader?.detach();
   this.mode = mode;
 
   // reinstate scale if moving from thumbnail view
@@ -1257,6 +1263,8 @@ BookReader.prototype.switchMode = function(
   } else {
     this._modes.mode2Up.prepare();
   }
+  this.fader?.changeScrollElement(this.activeMode.scrollContainer);
+  if (this.isFullscreenActive) this.fader?.attach();
 
   if (!(this.suppressFragmentChange || suppressFragmentChange)) {
     this.trigger(BookReader.eventNames.fragmentChange);
@@ -1328,6 +1336,8 @@ BookReader.prototype.enterFullscreen = async function(bindKeyboardControls = tru
 
   this.isFullscreenActive = true;
 
+  this.fader?.attach();
+
   // Change tooltip of fullscreen button
   this.$('.BRnav .BRicon.full').attr('title', 'Exit fullscreen');
   this.$('.BRnav .BRicon.full .BRtooltip').text('Exit fullscreen');
@@ -1375,6 +1385,8 @@ BookReader.prototype.exitFullScreen = async function () {
   }
 
   this.isFullscreenActive = false;
+
+  this.fader?.detach();
 
   this.$('.BRnav .BRicon.full').attr('title', 'Go fullscreen');
   this.$('.BRnav .BRicon.full .BRtooltip').text('Go fullscreen');
@@ -1986,6 +1998,7 @@ BookReader.prototype.queryStringFromParams = function(
 
 /**
  * Helper to select within instance's elements
+ * @returns {JQuery<HTMLElement>}
  */
 BookReader.prototype.$ = function(selector) {
   return this.refs.$br.find(selector);
