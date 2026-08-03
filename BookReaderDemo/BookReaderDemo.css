@@ -13,28 +13,7 @@ body {
     margin: 0px;
 }
 
-/* Hide print and embed functionality */
-.BRtoolbar .embed, .print {
-    display: none;
-}
-
-body.BRfullscreenActive section.theater {
-    height: 100vh;
-}
-ia-bookreader[fullscreen] {
-    height: unset;
-}
-
-ia-bookreader{
-    --br-height: calc(100vh - 100px);
-    display: block;
-    height: var(--br-height);
-}
-
-.BookReader {
-    --br-height: calc(100vh - 100px);
-    --new-height: calc(var(--br-height) - 20px); 
-    height: var(--br-height);
-    overflow: hidden;
-    margin: 0 auto;
+ia-bookreader, .BookReader {
+    /** Set the size you want bookreader to be */
+    height: calc(100vh - 100px);
 }
