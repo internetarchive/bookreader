@@ -83,14 +83,14 @@
     "jest-environment-jsdom": "30.4.1",
     "live-server": "1.2.2",
     "regenerator-runtime": "0.14.1",
-    "sass": "1.100.0",
+    "sass": "1.101.5",
     "sass-loader": "17.0.0",
     "sinon": "22.1.0",
     "svgo": "4.0.2",
     "testcafe": "3.7.6",
     "testcafe-browser-provider-browserstack": "1.15.2",
-    "webpack": "5.107.2",
-    "webpack-cli": "7.0.3"
+    "webpack": "5.108.4",
+    "webpack-cli": "7.2.1"
   },
   "jest": {
     "testEnvironment": "jsdom",
