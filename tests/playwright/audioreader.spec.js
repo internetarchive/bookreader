@@ -375,8 +375,13 @@ test.describe('steady-state buffering', () => {
  */
 test.describe('PocketTTS in the browser', () => {
   const MODEL_BASE = '/BookReaderDemo/pocket-tts-models';
-  const POCKET_QUERY = `&engine=pocket&debug=1&modelBase=${MODEL_BASE}`
+  // Kept separate from the engine parameter: URLSearchParams.get returns the
+  // *first* value, so a query carrying both engine=pocket and engine=hybrid
+  // silently runs the wrong one.
+  const MODEL_QUERY = `&debug=1&modelBase=${MODEL_BASE}`
     + `&referenceAudio=${MODEL_BASE}/reference_sample.wav`;
+  const POCKET_QUERY = `&engine=pocket${MODEL_QUERY}`;
+  const HYBRID_QUERY = `&engine=hybrid&grace=0${MODEL_QUERY}`;
 
   test.beforeEach(async ({ request }) => {
     const probe = await request.get(`${MODEL_BASE}/flow_lm_main_int8.onnx`, {
@@ -455,6 +460,46 @@ test.describe('PocketTTS in the browser', () => {
     expect(audio.key.endsWith('#0')).toBe(true);
 
     await page.screenshot({ path: `${SHOTS}/13-pocket-playing.png` });
+  });
+
+  test('hybrid mode speaks immediately instead of waiting for PocketTTS', async ({ page }) => {
+    // A grace period of 0 forces the preview path on the first segment, which is
+    // the cold-seek case the hybrid exists for.
+    await openReader(page, HYBRID_QUERY);
+
+    await expect.poll(
+      () => page.evaluate(() => window.audioReader.engine.status),
+      { message: 'the quality engine should finish loading', timeout: 180_000 },
+    ).toBe('ready');
+
+    await reader(page).locator('.play').click();
+
+    // WebSpeech starts talking without waiting on a ~2s synthesis.
+    await expect.poll(
+      () => page.evaluate(() => window.__audioReaderEvents.filter(e => e.type === 'start').length),
+      { message: 'the preview voice should start straight away', timeout: 20_000 },
+    ).toBeGreaterThan(0);
+
+    expect(await page.evaluate(() => window.audioReader.engine.counts.preview))
+      .toBeGreaterThan(0);
+
+    await page.screenshot({ path: `${SHOTS}/14-hybrid-preview.png` });
+
+    // And PocketTTS keeps working behind it, so later segments are high quality.
+    await expect.poll(
+      () => page.evaluate(() => window.audioReader.engine.counts.quality),
+      { message: 'PocketTTS audio should take over once it catches up', timeout: 150_000 },
+    ).toBeGreaterThan(0);
+
+    const counts = await page.evaluate(() => window.audioReader.engine.counts);
+    // eslint-disable-next-line no-console
+    console.log('hybrid split:', JSON.stringify(counts));
+
+    // Real PocketTTS samples reached the device, not just the preview voice.
+    expect(await page.evaluate(() => window.audioReader.engine.quality.stats.samplesPlayed))
+      .toBeGreaterThan(6000);
+
+    await page.screenshot({ path: `${SHOTS}/15-hybrid-quality.png` });
   });
 
   test('delivers PocketTTS samples to the audio device', async ({ page }) => {
