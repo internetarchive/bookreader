@@ -120,6 +120,9 @@ export default [
 
     entry: {
       'audioreader.js': { import: './src/audioreader/index.js' },
+      // PocketTTS runs in a worker: per-frame ONNX inference on the main thread
+      // would stall the transport controls.
+      'pocket-tts-worker.js': { import: './src/audioreader/pocket/pocket-tts-worker.js' },
     },
 
     resolve: {

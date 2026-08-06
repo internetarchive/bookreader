@@ -136,6 +136,34 @@ export class AudioReaderView extends LitElement {
     `;
   }
 
+  /**
+   * PocketTTS has to fetch ~146MB of weights before it can say anything. Silence
+   * with no explanation reads as broken, so show the download.
+   */
+  _renderEngineLoading() {
+    const engine = this.player.engine;
+    if (engine.status !== 'loading' && engine.status !== 'error') return nothing;
+
+    if (engine.status === 'error') {
+      return html`<div class="engine-status error">Voice engine failed: ${engine.error}</div>`;
+    }
+
+    const { loaded = 0, total = 1 } = engine.progress || {};
+    const percent = Math.min(100, Math.round((loaded / Math.max(total, 1)) * 100));
+    const megabytes = bytes => (bytes / 1024 / 1024).toFixed(0);
+
+    return html`
+      <div class="engine-status" role="status">
+        <div class="engine-status-line">
+          Loading ${engine.name} voice — ${megabytes(loaded)} of ${megabytes(total)} MB
+        </div>
+        <span class="buffer-bar">
+          <span class="buffer-fill" style="width:${percent}%"></span>
+        </span>
+      </div>
+    `;
+  }
+
   _renderNowReading() {
     const player = this.player;
     const segments = player.segments;
@@ -144,6 +172,7 @@ export class AudioReaderView extends LitElement {
     return html`
       <div class="now-reading">
         <img class="cover" src=${this.book.coverUrl} alt="Cover of ${this.book.title}" />
+        ${this._renderEngineLoading()}
 
         <div class="paragraph ${waiting ? 'waiting' : ''}">
           ${waiting ? html`<div class="spinner" role="status" aria-label="Loading audio"></div>` : nothing}
@@ -385,6 +414,28 @@ export class AudioReaderView extends LitElement {
     .toc-entry.current { background: #4c8dff26; color: #cfe0ff; }
     .toc-title { flex: 1; }
     .toc-page { color: #8f93a3; font-variant-numeric: tabular-nums; }
+
+
+    .engine-status {
+      flex: none;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.55rem 0.7rem;
+      border-radius: 0.5rem;
+      background: #4c8dff1f;
+      border: 1px solid #4c8dff3d;
+      font-size: 0.75rem;
+      color: #cfe0ff;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .engine-status.error {
+      background: #ff6b6b1f;
+      border-color: #ff6b6b52;
+      color: #ffd9d9;
+    }
+    .engine-status .buffer-bar { width: 100%; }
 
     footer { flex: none; display: flex; flex-direction: column; gap: 0.6rem; }
 

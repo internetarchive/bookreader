@@ -1,6 +1,7 @@
 import IaAudioBook from './IaAudioBook.js';
 import WebSpeechEngine from './engines/WebSpeechEngine.js';
 import SyntheticPcmEngine from './engines/SyntheticPcmEngine.js';
+import PocketTtsEngine from './engines/PocketTtsEngine.js';
 import simulateLatency from './engines/simulateLatency.js';
 import './AudioReaderView.js';
 
@@ -13,7 +14,9 @@ import './AudioReaderView.js';
  *
  * Query parameters:
  *   ocaid       archive.org identifier (required)
- *   engine      `webspeech` (default) or `pcm` (measurable tones, not speech)
+ *   engine      `webspeech` (default), `pocket` (PocketTTS in a worker), or
+ *               `pcm` (measurable tones, not speech)
+ *   modelBase   where to fetch the PocketTTS bundle from (default: HuggingFace)
  *   synthDelay  ms of artificial synthesis latency, to exercise the buffering
  *   lookahead   paragraphs to keep buffered (default 5)
  *   debug       `1` to show the buffer/plan overlay
@@ -28,7 +31,7 @@ const DEFAULT_OCAID = 'theworksofplato01platiala';
  */
 function createEngine(params, bookLanguage) {
   const requested = params.get('engine') || 'webspeech';
-  const engine = buildEngine(requested, bookLanguage);
+  const engine = buildEngine(requested, bookLanguage, params);
   return simulateLatency(engine, Number(params.get('synthDelay')) || 0);
 }
 
@@ -37,7 +40,7 @@ function createEngine(params, bookLanguage) {
  * @param {string} bookLanguage
  * @return {Object}
  */
-function buildEngine(requested, bookLanguage) {
+function buildEngine(requested, bookLanguage, params) {
   if (requested === 'webspeech') {
     if (!WebSpeechEngine.isSupported()) {
       throw new Error('AudioReader: this browser has no speechSynthesis');
@@ -50,6 +53,17 @@ function buildEngine(requested, bookLanguage) {
       throw new Error('AudioReader: this browser has no Web Audio');
     }
     return new SyntheticPcmEngine();
+  }
+
+  if (requested === 'pocket') {
+    if (!PocketTtsEngine.isSupported()) {
+      throw new Error('AudioReader: this browser cannot run PocketTTS (needs Workers, WASM and Web Audio)');
+    }
+    return new PocketTtsEngine({
+      // Point at a local copy to avoid a ~146MB download from HuggingFace.
+      ...(params.get('modelBase') ? { modelBase: params.get('modelBase') } : {}),
+      ...(params.get('referenceAudio') ? { referenceAudioUrl: params.get('referenceAudio') } : {}),
+    });
   }
 
   throw new Error(`AudioReader: unknown engine "${requested}"`);

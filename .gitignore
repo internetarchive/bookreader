@@ -16,3 +16,6 @@ playwright-report/
 # PocketTTS model weights are fetched at runtime, never committed (~146MB)
 *.onnx
 pocket-tts-sample.wav
+
+# Locally-served PocketTTS weights for browser tests (fetched at runtime, ~170MB)
+BookReaderDemo/pocket-tts-models/

@@ -116,7 +116,7 @@
     "preversion": "node scripts/preversion.js",
     "version": "node scripts/version.js",
     "postversion": "node scripts/postversion.js",
-    "build": "npm run clean && npx concurrently --group npm:build-js npm:build-css npm:build-assets npm:build-hypothesis npm:build-bergamot",
+    "build": "npm run clean && npx concurrently --group npm:build-js npm:build-css npm:build-assets npm:build-hypothesis npm:build-bergamot npm:build-ort",
     "build-assets": "npx cpx \"src/assets/**/*\" BookReader && npx svgo -f BookReader/icons && npx svgo -f BookReader/images",
     "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
     "build-bergamot": "npx cpx \"node_modules/@internetarchive/bergamot-translator/worker/*\" BookReader/",
@@ -149,6 +149,8 @@
     "update:runtime-deps": "npm i @webcomponents/webcomponentsjs@latest interactjs@latest iso-language-codes@latest jquery@latest jquery-colorbox@latest jquery-ui@latest jquery-ui-touch-punch@latest jquery.browser@latest lit@latest soundmanager2@latest",
     "update:runtime-deps:test": "npm run build",
     "DOCS:update:ia-deps": "Packages by @internetarchive",
-    "update:ia-deps": "npm i @internetarchive/bergamot-translator@latest @internetarchive/ia-activity-indicator@latest @internetarchive/ia-item-navigator@latest @internetarchive/icon-bookmark@latest @internetarchive/icon-close@latest @internetarchive/icon-dl@latest @internetarchive/icon-edit-pencil@latest @internetarchive/icon-ellipses@latest @internetarchive/icon-ia-logo@latest @internetarchive/icon-magnify-minus@latest @internetarchive/icon-magnify-plus@latest @internetarchive/icon-search@latest @internetarchive/icon-share@latest @internetarchive/icon-toc@latest @internetarchive/icon-visual-adjustment@latest @internetarchive/modal-manager@latest @internetarchive/shared-resize-observer@latest"
+    "update:ia-deps": "npm i @internetarchive/bergamot-translator@latest @internetarchive/ia-activity-indicator@latest @internetarchive/ia-item-navigator@latest @internetarchive/icon-bookmark@latest @internetarchive/icon-close@latest @internetarchive/icon-dl@latest @internetarchive/icon-edit-pencil@latest @internetarchive/icon-ellipses@latest @internetarchive/icon-ia-logo@latest @internetarchive/icon-magnify-minus@latest @internetarchive/icon-magnify-plus@latest @internetarchive/icon-search@latest @internetarchive/icon-share@latest @internetarchive/icon-toc@latest @internetarchive/icon-visual-adjustment@latest @internetarchive/modal-manager@latest @internetarchive/shared-resize-observer@latest",
+    "build-ort": "npx cpx \"node_modules/onnxruntime-web/dist/*.{wasm,mjs}\" BookReader/ort/",
+    "build-ort:watch": "npx cpx --watch \"node_modules/onnxruntime-web/dist/*.{wasm,mjs}\" BookReader/ort/"
   }
 }
