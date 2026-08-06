@@ -8,7 +8,9 @@
  * Protocol (main thread -> worker):
  *   {type: 'init', modelBase, ortBase}   -> 'progress'* then 'ready' | 'error'
  *   {type: 'synthesize', id, text}       -> 'audio' | 'error' (with the same id)
- *   {type: 'cancel', id}                 -> aborts that request
+ *   {type: 'cancel', id}                 -> aborts it, or drops it unrun if queued
+ *
+ * Synthesis requests are queued and run strictly one at a time; see `chain`.
  *
  * Worker -> main thread:
  *   {type: 'progress', file, loaded, total, fromCache}
@@ -24,8 +26,24 @@ import { loadBundleFiles } from './modelStore.js';
 
 /** @type {PocketTtsSynthesizer|null} */
 let synthesizer = null;
-/** @type {Map<string, AbortController>} */
-const inFlight = new Map();
+
+/**
+ * Requests accepted but not yet finished, by id.
+ * @type {Map<string, {controller: AbortController, cancelled: boolean}>}
+ */
+const accepted = new Map();
+
+/**
+ * Synthesis runs strictly one request at a time, chained through this promise.
+ *
+ * A worker message handler is `async`, so without this every queued request
+ * would start the moment its message arrived -- a dozen concurrent generation
+ * loops sharing one set of ONNX sessions. That defeats the deliberate
+ * one-at-a-time discipline (the whole point of a sequential synthesis queue is
+ * not to saturate the CPU) and makes every individual request slower, so audio
+ * arrives later than it needs to.
+ */
+let chain = Promise.resolve();
 
 /**
  * Read a 1-D float32 .npy payload.
@@ -152,22 +170,45 @@ async function init({ modelBase, ortBase, referenceAudioUrl }) {
 }
 
 /**
+ * Accept a synthesis request and queue it behind any earlier ones.
  * @param {{id: string, text: string}} request
  */
-async function synthesize({ id, text }) {
+function enqueueSynthesis({ id, text }) {
   if (!synthesizer) throw new Error('PocketTTS: worker is not initialized');
 
-  const controller = new AbortController();
-  inFlight.set(id, controller);
+  const entry = { controller: new AbortController(), cancelled: false };
+  accepted.set(id, entry);
+
+  chain = chain.then(() => runSynthesis(id, text, entry));
+}
+
+/**
+ * @param {string} id
+ * @param {string} text
+ * @param {{controller: AbortController, cancelled: boolean}} entry
+ * @return {Promise<void>}
+ */
+async function runSynthesis(id, text, entry) {
+  // Cancelled while it sat in the queue: drop it without spending anything. This
+  // is what makes a seek cheap -- the abandoned segments never run at all.
+  if (entry.cancelled) {
+    accepted.delete(id);
+    return;
+  }
 
   try {
     const { samples, sampleRate } = await synthesizer.synthesize(text, {
-      signal: controller.signal,
+      signal: entry.controller.signal,
     });
     // Transfer the buffer rather than copying it; these are megabytes.
     self.postMessage({ type: 'audio', id, samples, sampleRate }, [samples.buffer]);
+  } catch (error) {
+    // An abort is an expected outcome, not a failure worth reporting.
+    if (!entry.controller.signal.aborted) {
+      self.postMessage({ type: 'error', id, message: error.message });
+    }
   } finally {
-    inFlight.delete(id);
+    accepted.delete(id);
   }
 }
 
@@ -175,13 +216,18 @@ self.addEventListener('message', async (event) => {
   const message = event.data;
 
   if (message.type === 'cancel') {
-    inFlight.get(message.id)?.abort();
+    const entry = accepted.get(message.id);
+    if (entry) {
+      // Marks it so it is skipped if still queued, and aborts it if running.
+      entry.cancelled = true;
+      entry.controller.abort();
+    }
     return;
   }
 
   try {
     if (message.type === 'init') await init(message);
-    else if (message.type === 'synthesize') await synthesize(message);
+    else if (message.type === 'synthesize') enqueueSynthesis(message);
     else throw new Error(`PocketTTS: unknown message "${message.type}"`);
   } catch (error) {
     self.postMessage({ type: 'error', id: message.id, message: error.message });
