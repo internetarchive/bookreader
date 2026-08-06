@@ -1,4 +1,4 @@
-import ParagraphSource, { cursorKey, cursorsEqual } from '@/src/audioreader/ParagraphSource.js';
+import ParagraphSource, { cursorKey, cursorsEqual, isSpeakable } from '@/src/audioreader/ParagraphSource.js';
 
 /**
  * Build a source over a fixture of pages. `pages` is an array (indexed by leaf) of
@@ -15,11 +15,11 @@ function makeSource(pages, { onFetch } = {}) {
 }
 
 const PAGES = [
-  [],                        // 0: cover, no text
-  ['p1a', 'p1b'],            // 1
-  [],                        // 2: blank plate
-  ['p3a'],                   // 3
-  ['p4a', 'p4b', 'p4c'],     // 4
+  [],                                            // 0: cover, no text
+  ['one alpha.', 'one beta.'],                   // 1
+  [],                                            // 2: blank plate
+  ['three alpha.'],                              // 3
+  ['four alpha.', 'four beta.', 'four gamma.'],  // 4
 ];
 
 describe('page fetching', () => {
@@ -40,6 +40,13 @@ describe('page fetching', () => {
   test('drops paragraphs that are empty or whitespace-only', async () => {
     const { source } = makeSource([['real text', '   ', '']]);
     expect(await source.page(0)).toHaveLength(1);
+  });
+
+  test('drops the stray-mark chunks scanned pages produce', async () => {
+    // Recorded from the front matter of theworksofplato01platiala.
+    const { source } = makeSource([['.', '•', '12', 'Real prose here.']]);
+    const chunks = await source.page(0);
+    expect(chunks.map(c => c.text)).toEqual(['Real prose here.']);
   });
 
   test('out-of-range leaves return no paragraphs and are not fetched', async () => {
@@ -64,7 +71,7 @@ describe('page fetching', () => {
 describe('walking', () => {
   test('at() resolves a cursor to its paragraph', async () => {
     const { source } = makeSource(PAGES);
-    expect((await source.at({ leafIndex: 1, chunkIndex: 1 })).text).toBe('p1b');
+    expect((await source.at({ leafIndex: 1, chunkIndex: 1 })).text).toBe('one beta.');
     expect(await source.at({ leafIndex: 1, chunkIndex: 9 })).toBeNull();
   });
 
@@ -141,6 +148,65 @@ describe('window', () => {
     const { source } = makeSource(PAGES);
     const window = await source.window({ leafIndex: 4, chunkIndex: 1 }, 5);
     expect(window).toHaveLength(2);
+  });
+});
+
+describe('isSpeakable', () => {
+  test('accepts real prose and short but genuine paragraphs', () => {
+    expect(isSpeakable('The quick brown fox.')).toBe(true);
+    expect(isSpeakable('Yes.')).toBe(true);
+    expect(isSpeakable('II')).toBe(true);
+  });
+
+  test('rejects stray marks, digits and single letters', () => {
+    expect(isSpeakable('.')).toBe(false);
+    expect(isSpeakable('•')).toBe(false);
+    expect(isSpeakable('12')).toBe(false);
+    expect(isSpeakable('- 4 -')).toBe(false);
+    expect(isSpeakable('')).toBe(false);
+    expect(isSpeakable(undefined)).toBe(false);
+  });
+
+  test('accepts non-latin scripts', () => {
+    expect(isSpeakable('こんにちは')).toBe(true);
+    expect(isSpeakable('Привет')).toBe(true);
+  });
+});
+
+describe('firstSubstantial', () => {
+  test('skips front-matter fragments and starts on prose', async () => {
+    const { source } = makeSource([
+      ['.'],                                       // cover
+      ['12'],                                      // flyleaf
+      ['THE WORKS OF PLATO'],                      // title page: real, but not prose
+      ['It was in this manner that the argument began, and it continued for some time.'],
+    ]);
+    expect(await source.firstSubstantial()).toEqual({ leafIndex: 3, chunkIndex: 0 });
+  });
+
+  test('picks the first prose paragraph on a page that starts with a heading', async () => {
+    const { source } = makeSource([
+      ['CHAPTER I', 'Now this is a proper paragraph of prose with plenty of words in it.'],
+    ]);
+    expect(await source.firstSubstantial()).toEqual({ leafIndex: 0, chunkIndex: 1 });
+  });
+
+  test('falls back to any text when a book is all short fragments', async () => {
+    const { source } = makeSource([[], ['Short bit.']]);
+    expect(await source.firstSubstantial()).toEqual({ leafIndex: 1, chunkIndex: 0 });
+  });
+
+  test('returns null for a book with no text at all', async () => {
+    const { source } = makeSource([[], []]);
+    expect(await source.firstSubstantial()).toBeNull();
+  });
+
+  test('does not scan the whole book looking for prose', async () => {
+    const fetched = [];
+    const pages = Array.from({ length: 200 }, () => ['.']);
+    const { source } = makeSource(pages, { onFetch: leaf => fetched.push(leaf) });
+    await source.firstSubstantial({ searchLeafs: 10 });
+    expect(Math.max(...fetched)).toBeLessThan(200);
   });
 });
 
