@@ -322,21 +322,36 @@ test.describe('steady-state buffering', () => {
     expect(await paragraphsInPlan()).toBe(5);
 
     await reader(page).locator('.play').click();
-    const startCursor = await page.evaluate(() => JSON.stringify(window.audioReader.player.cursor));
+    const cursorNow = () => page.evaluate(() => JSON.stringify(window.audioReader.player.cursor));
+    const startCursor = await cursorNow();
 
-    // Sample the buffer repeatedly while playback moves through the book: it must
-    // neither grow past 5 nor be allowed to run down.
+    // Sample the buffer until reading crosses into the next paragraph, which is
+    // when the window actually slides. Poll for the crossing rather than waiting a
+    // fixed time: a paragraph of this book runs ~15s of audio, and a timed loop
+    // would report "not advancing" simply for being too short.
     const observed = new Set();
-    for (let i = 0; i < 12; i++) {
+    let crossed = false;
+    const deadline = Date.now() + 90_000;
+
+    while (Date.now() < deadline) {
       observed.add(await paragraphsInPlan());
-      await page.waitForTimeout(1000);
+      if (await cursorNow() !== startCursor) {
+        crossed = true;
+        // Take a few more samples on the far side of the boundary, so the
+        // rebuilt window is measured too.
+        for (let i = 0; i < 3; i++) {
+          await page.waitForTimeout(400);
+          observed.add(await paragraphsInPlan());
+        }
+        break;
+      }
+      await page.waitForTimeout(500);
     }
 
+    expect(crossed, 'reading should have advanced to the next paragraph').toBe(true);
+    expect(observed.size).toBeGreaterThan(0);
+    // Never grew past 5, never allowed to run down, including across the slide.
     expect([...observed]).toEqual([5]);
-
-    // And this was measured while actually advancing, not while parked.
-    expect(await page.evaluate(() => JSON.stringify(window.audioReader.player.cursor)))
-      .not.toBe(startCursor);
   });
 });
 
