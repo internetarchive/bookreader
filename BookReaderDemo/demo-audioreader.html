@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BookReader — Audio Reader (issue #1580 prototype)</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #0e0f14;
+      color: #f2f2f4;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    ia-audio-reader { display: block; height: 100%; }
+    .audioreader-error {
+      position: fixed;
+      inset: auto 1rem 1rem;
+      margin: 0;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      background: #5c1d1d;
+      color: #ffd9d9;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <!--
+    Audio-first reading mode prototype for
+    https://github.com/internetarchive/bookreader/issues/1580
+
+    Try:
+      ?ocaid=theworksofplato01platiala
+      ?ocaid=adventureofsherl0000unse&debug=1
+      ?synthDelay=1200&debug=1     <- makes the buffering/spinner behaviour visible
+  -->
+  <ia-audio-reader></ia-audio-reader>
+  <script src="/BookReader/audioreader.js"></script>
+</body>
+</html>
