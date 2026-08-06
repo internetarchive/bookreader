@@ -172,6 +172,29 @@ describe('playback', () => {
     expect(player.playing).toBe(false);
   });
 
+  test('resuming after a pause does not double-advance the cursor', async () => {
+    // Pause leaves the playback loop suspended awaiting its sound. If play()
+    // started a second loop, both would advance on that one sound and a segment
+    // would be skipped.
+    const harness = makeEngine({ instantPlay: false });
+    const { player, finishPlay } = makePlayer({ harness });
+    await player.start({ leafIndex: 0, chunkIndex: 0 });
+    await settle();
+    player.play();
+    await settle();
+
+    player.pause();
+    await settle();
+    player.play();
+    await settle();
+
+    expect(player.segmentIndex).toBe(0);
+
+    await finishPlay();
+    await settle();
+    expect(player.segmentIndex).toBe(1);
+  });
+
   test('pause stops the engine but keeps position', async () => {
     const harness = makeEngine({ instantPlay: false });
     const { player, calls } = makePlayer({ harness });
