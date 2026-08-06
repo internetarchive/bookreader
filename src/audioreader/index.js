@@ -2,6 +2,7 @@ import IaAudioBook from './IaAudioBook.js';
 import WebSpeechEngine from './engines/WebSpeechEngine.js';
 import SyntheticPcmEngine from './engines/SyntheticPcmEngine.js';
 import PocketTtsEngine from './engines/PocketTtsEngine.js';
+import HybridTtsEngine from './engines/HybridTtsEngine.js';
 import simulateLatency from './engines/simulateLatency.js';
 import './AudioReaderView.js';
 
@@ -14,8 +15,10 @@ import './AudioReaderView.js';
  *
  * Query parameters:
  *   ocaid       archive.org identifier (required)
- *   engine      `webspeech` (default), `pocket` (PocketTTS in a worker), or
+ *   engine      `webspeech` (default), `pocket` (PocketTTS in a worker),
+ *               `hybrid` (PocketTTS with an instant WebSpeech preview), or
  *               `pcm` (measurable tones, not speech)
+ *   grace       ms to wait for PocketTTS before previewing, in hybrid mode
  *   modelBase   where to fetch the PocketTTS bundle from (default: HuggingFace)
  *   synthDelay  ms of artificial synthesis latency, to exercise the buffering
  *   lookahead   paragraphs to keep buffered (default 5)
@@ -55,18 +58,37 @@ function buildEngine(requested, bookLanguage, params) {
     return new SyntheticPcmEngine();
   }
 
-  if (requested === 'pocket') {
-    if (!PocketTtsEngine.isSupported()) {
-      throw new Error('AudioReader: this browser cannot run PocketTTS (needs Workers, WASM and Web Audio)');
+  if (requested === 'pocket') return buildPocketEngine(params);
+
+  if (requested === 'hybrid') {
+    // The arrangement issue #1580 suggests: PocketTTS for quality, WebSpeech as
+    // an instant preview whenever the buffer has not caught up.
+    if (!WebSpeechEngine.isSupported()) {
+      throw new Error('AudioReader: hybrid mode needs speechSynthesis for the preview voice');
     }
-    return new PocketTtsEngine({
-      // Point at a local copy to avoid a ~146MB download from HuggingFace.
-      ...(params.get('modelBase') ? { modelBase: params.get('modelBase') } : {}),
-      ...(params.get('referenceAudio') ? { referenceAudioUrl: params.get('referenceAudio') } : {}),
+    return new HybridTtsEngine({
+      fast: new WebSpeechEngine({ bookLanguage }),
+      quality: buildPocketEngine(params),
+      ...(params.get('grace') ? { graceMs: Number(params.get('grace')) } : {}),
     });
   }
 
   throw new Error(`AudioReader: unknown engine "${requested}"`);
+}
+
+/**
+ * @param {URLSearchParams} params
+ * @return {PocketTtsEngine}
+ */
+function buildPocketEngine(params) {
+  if (!PocketTtsEngine.isSupported()) {
+    throw new Error('AudioReader: this browser cannot run PocketTTS (needs Workers, WASM and Web Audio)');
+  }
+  return new PocketTtsEngine({
+    // Point at a local copy to avoid a ~146MB download from HuggingFace.
+    ...(params.get('modelBase') ? { modelBase: params.get('modelBase') } : {}),
+    ...(params.get('referenceAudio') ? { referenceAudioUrl: params.get('referenceAudio') } : {}),
+  });
 }
 
 /**
