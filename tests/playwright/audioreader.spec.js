@@ -312,6 +312,157 @@ test.describe('buffering and progressive rendering', () => {
   });
 });
 
+test.describe('steady-state buffering', () => {
+  test('the lookahead stays at 5 paragraphs as reading advances', async ({ page }) => {
+    await openReader(page, '&engine=pcm&debug=1');
+
+    const paragraphsInPlan = () => page.evaluate(
+      () => new Set(window.audioReader.player._plan.map(job => job.key.split('#')[0])).size);
+
+    expect(await paragraphsInPlan()).toBe(5);
+
+    await reader(page).locator('.play').click();
+    const startCursor = await page.evaluate(() => JSON.stringify(window.audioReader.player.cursor));
+
+    // Sample the buffer repeatedly while playback moves through the book: it must
+    // neither grow past 5 nor be allowed to run down.
+    const observed = new Set();
+    for (let i = 0; i < 12; i++) {
+      observed.add(await paragraphsInPlan());
+      await page.waitForTimeout(1000);
+    }
+
+    expect([...observed]).toEqual([5]);
+
+    // And this was measured while actually advancing, not while parked.
+    expect(await page.evaluate(() => JSON.stringify(window.audioReader.player.cursor)))
+      .not.toBe(startCursor);
+  });
+});
+
+/**
+ * PocketTTS end to end in a real browser, against the real weights.
+ *
+ * ~146MB of ONNX models are fetched, so these point `modelBase` at a locally
+ * served copy rather than HuggingFace. Populate it with:
+ *
+ *   mkdir -p BookReaderDemo/pocket-tts-models
+ *   base=https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/main
+ *   for f in bundle.json tokenizer.model bos_before_voice.npy \
+ *            text_conditioner_int8.onnx flow_lm_flow_int8.onnx \
+ *            mimi_decoder_int8.onnx mimi_encoder_int8.onnx flow_lm_main_int8.onnx; do
+ *     curl -sL "$base/onnx/english_2026-04/$f" -o "BookReaderDemo/pocket-tts-models/$f"
+ *   done
+ *   curl -sL "$base/reference_sample.wav" -o BookReaderDemo/pocket-tts-models/reference_sample.wav
+ *
+ * The directory is gitignored. Without it these tests skip rather than fail, so a
+ * clean checkout still runs the rest of the suite.
+ */
+test.describe('PocketTTS in the browser', () => {
+  const MODEL_BASE = '/BookReaderDemo/pocket-tts-models';
+  const POCKET_QUERY = `&engine=pocket&debug=1&modelBase=${MODEL_BASE}`
+    + `&referenceAudio=${MODEL_BASE}/reference_sample.wav`;
+
+  test.beforeEach(async ({ request }) => {
+    const probe = await request.get(`${MODEL_BASE}/flow_lm_main_int8.onnx`, {
+      headers: { Range: 'bytes=0-1' },
+    });
+    test.skip(!probe.ok(), `PocketTTS weights not served at ${MODEL_BASE} — see comment above`);
+  });
+
+  // Model download, five session creations, voice cloning and synthesis.
+  test.setTimeout(240_000);
+
+  test('loads the model bundle, clones a voice, and synthesizes non-silent speech', async ({ page }) => {
+    await openReader(page, POCKET_QUERY);
+
+    await expect(reader(page).locator('.engine-status')).toBeVisible();
+    await page.screenshot({ path: `${SHOTS}/12-pocket-loading.png` });
+
+    await expect.poll(
+      () => page.evaluate(() => window.audioReader.engine.status),
+      { message: 'the worker should finish loading the bundle', timeout: 180_000 },
+    ).toBe('ready');
+
+    // Voice cloned through the mimi encoder, matching the Node verification run.
+    const engine = await page.evaluate(() => ({
+      sampleRate: window.audioReader.engine.sampleRate,
+      voiceFrames: window.audioReader.engine.voiceFrames,
+    }));
+    expect(engine.sampleRate).toBe(24000);
+    expect(engine.voiceFrames).toBeGreaterThan(0);
+
+    await reader(page).locator('.play').click();
+
+    // The buffer holds real PCM produced by the model. Assert on the samples
+    // themselves rather than on playback, so this is evidence of synthesis.
+    const audio = await page.evaluate(async () => {
+      const player = window.audioReader.player;
+      const deadline = Date.now() + 150_000;
+      while (Date.now() < deadline) {
+        const key = player.queue.readyKeys()[0];
+        const sound = key && player.queue.get(key);
+        if (sound?.samples?.length) {
+          let peak = 0;
+          let sumSquares = 0;
+          for (const sample of sound.samples) {
+            peak = Math.max(peak, Math.abs(sample));
+            sumSquares += sample * sample;
+          }
+          return {
+            key,
+            length: sound.samples.length,
+            sampleRate: sound.sampleRate,
+            peak,
+            rms: Math.sqrt(sumSquares / sound.samples.length),
+            text: player._plan.find(job => job.key === key)?.text,
+          };
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      return null;
+    });
+
+    expect(audio, 'PocketTTS should have produced a buffer').not.toBeNull();
+    // eslint-disable-next-line no-console
+    console.log('PocketTTS synthesized:', JSON.stringify(audio));
+
+    expect(audio.sampleRate).toBe(24000);
+    // A quarter second is the floor for anything speakable.
+    expect(audio.length).toBeGreaterThan(6000);
+    // Silence would be exactly 0; near-silence well under this.
+    expect(audio.peak).toBeGreaterThan(0.02);
+    expect(audio.rms).toBeGreaterThan(0.002);
+    // Speech is not a constant tone: RMS sits well below the peak.
+    expect(audio.rms).toBeLessThan(audio.peak * 0.8);
+
+    // The audio corresponds to the landmark segment, in order.
+    expect(audio.key.endsWith('#0')).toBe(true);
+
+    await page.screenshot({ path: `${SHOTS}/13-pocket-playing.png` });
+  });
+
+  test('delivers PocketTTS samples to the audio device', async ({ page }) => {
+    await openReader(page, POCKET_QUERY);
+    await expect.poll(
+      () => page.evaluate(() => window.audioReader.engine.status),
+      { timeout: 180_000 },
+    ).toBe('ready');
+
+    await reader(page).locator('.play').click();
+
+    await expect.poll(
+      () => page.evaluate(() => window.audioReader.engine.stats.samplesPlayed),
+      { message: 'synthesized audio should reach the output', timeout: 150_000 },
+    ).toBeGreaterThan(6000);
+
+    const stats = await page.evaluate(() => window.audioReader.engine.stats);
+    expect(stats.peakAmplitude).toBeGreaterThan(0.02);
+    expect(await page.evaluate(() => window.audioReader.engine.output.context.state))
+      .toBe('running');
+  });
+});
+
 test.describe('seek throttling', () => {
   test('a burst of next presses rebuilds the buffer once, not once per press', async ({ page }) => {
     await openReader(page, '&synthDelay=600&debug=1');
