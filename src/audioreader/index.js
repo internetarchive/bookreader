@@ -23,6 +23,7 @@ import './AudioReaderView.js';
  *   modelBase   where to fetch the PocketTTS bundle from (default: HuggingFace)
  *   synthDelay  ms of artificial synthesis latency, to exercise the buffering
  *   lookahead   paragraphs to keep buffered (default 5)
+ *   text        `1` to show the paragraph being read (not part of the design)
  *   debug       `1` to show the buffer/plan overlay
  */
 
@@ -116,6 +117,7 @@ async function boot() {
   const ocaid = params.get('ocaid') || DEFAULT_OCAID;
   const view = document.querySelector('ia-audio-reader');
   view.debug = params.get('debug') === '1';
+  view.showText = params.get('text') === '1';
 
   instrumentSpeech();
 

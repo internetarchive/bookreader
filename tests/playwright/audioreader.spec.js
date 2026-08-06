@@ -46,13 +46,15 @@ test.describe('minimal audio-first view', () => {
     expect(await cover.evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
 
     await expect(reader(page).locator('.title')).toContainText('works of Plato');
-    await expect(reader(page).locator('.author')).toContainText('Plato');
+    await expect(reader(page).locator('.byline')).toContainText('Plato');
     await expect(reader(page).locator('.play')).toBeVisible();
     await expect(reader(page).locator('.skip')).toHaveCount(2);
-    await expect(reader(page).locator('.toc-toggle')).toBeVisible();
-
-    // The paragraph is rendered from real OCR before anything is played.
-    await expect(reader(page).locator('.segment').first()).not.toBeEmpty();
+    // The design shows chapters as an always-visible card, not behind a toggle.
+    await expect(reader(page).locator('.chapters')).toBeVisible();
+    await expect(reader(page).locator('.chapters h2')).toHaveText('Chapters');
+    await expect(reader(page).locator('.chapter').first()).toBeVisible();
+    // Scrub bar with position labels, per the design.
+    await expect(reader(page).locator('.scrubber .track')).toBeVisible();
 
     // Core requirement of the issue: this mode fetches text only.
     expect(imageRequests).toEqual([]);
@@ -64,8 +66,7 @@ test.describe('minimal audio-first view', () => {
   test('table of contents lists chapters and jumps to them', async ({ page }) => {
     await openReader(page);
 
-    await reader(page).locator('.toc-toggle').click();
-    const entries = reader(page).locator('.toc-entry');
+    const entries = reader(page).locator('.chapter');
     await expect(entries.first()).toBeVisible();
     expect(await entries.count()).toBeGreaterThan(5);
 
@@ -74,13 +75,12 @@ test.describe('minimal audio-first view', () => {
     // that cannot be resolved to a leaf are dropped rather than shown as dead
     // links, so it is legitimately absent here.
     await expect(entries.first()).toContainText('Apology of Socrates');
-    await expect(reader(page).locator('.toc')).toContainText('Crito');
+    await expect(reader(page).locator('.chapters')).toContainText('Crito');
 
     await page.screenshot({ path: `${SHOTS}/02-table-of-contents.png` });
 
     const before = await page.evaluate(() => window.audioReader.player.cursor.leafIndex);
     await entries.nth(2).click();
-    await expect(reader(page).locator('.toc')).toHaveCount(0);
 
     await expect.poll(
       () => page.evaluate(() => window.audioReader.player.cursor.leafIndex),
@@ -117,8 +117,6 @@ test.describe('playback', () => {
     expect(events.some(e => e.type === 'error')).toBe(false);
 
     expect(await page.evaluate(() => speechSynthesis.speaking)).toBe(true);
-    await expect(reader(page).locator('.segment.current')).toBeVisible();
-
     await page.screenshot({ path: `${SHOTS}/04-playing.png` });
   });
 
@@ -300,7 +298,7 @@ test.describe('buffering and progressive rendering', () => {
   });
 
   test('unsynthesized segments are visually distinct from buffered ones', async ({ page }) => {
-    await openReader(page, '&synthDelay=2500&debug=1');
+    await openReader(page, '&synthDelay=2500&debug=1&text=1');
 
     await expect(reader(page).locator('.segment.pending').first()).toBeVisible();
     await expect.poll(
