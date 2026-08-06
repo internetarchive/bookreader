@@ -382,6 +382,12 @@ test.describe('PocketTTS in the browser', () => {
     + `&referenceAudio=${MODEL_BASE}/reference_sample.wav`;
   const POCKET_QUERY = `&engine=pocket${MODEL_QUERY}`;
   const HYBRID_QUERY = `&engine=hybrid&grace=0${MODEL_QUERY}`;
+  // The takeover half of the hybrid cannot be watched with WebSpeech as the
+  // preview voice: a WebSpeech sound never *finishes* in this browser, so
+  // playback parks on the first preview and PocketTTS never gets a turn. The PCM
+  // engine previews measurably and completes, so reading advances and the
+  // handover becomes observable. The hybrid is engine-agnostic by design.
+  const HYBRID_PCM_QUERY = `&engine=hybrid&fast=pcm&grace=0${MODEL_QUERY}`;
 
   test.beforeEach(async ({ request }) => {
     const probe = await request.get(`${MODEL_BASE}/flow_lm_main_int8.onnx`, {
@@ -474,18 +480,46 @@ test.describe('PocketTTS in the browser', () => {
 
     await reader(page).locator('.play').click();
 
-    // WebSpeech starts talking without waiting on a ~2s synthesis.
+    // WebSpeech starts talking without waiting on a multi-second synthesis.
     await expect.poll(
       () => page.evaluate(() => window.__audioReaderEvents.filter(e => e.type === 'start').length),
-      { message: 'the preview voice should start straight away', timeout: 20_000 },
+      { message: 'the preview voice should start straight away', timeout: 30_000 },
     ).toBeGreaterThan(0);
 
-    expect(await page.evaluate(() => window.audioReader.engine.counts.preview))
-      .toBeGreaterThan(0);
+    const counts = await page.evaluate(() => window.audioReader.engine.counts);
+    expect(counts.preview).toBeGreaterThan(0);
+
+    // The preview speaks real text from the paragraph, with a real voice. Which
+    // segment gets previewed is timing-dependent and must not be asserted: when
+    // PocketTTS keeps up, the early segments are upgraded to quality and only a
+    // later, longer one falls back.
+    const spoken = await page.evaluate(
+      () => window.__audioReaderEvents.find(e => e.type === 'speak'));
+    const segments = await page.evaluate(
+      () => window.audioReader.player.segments.map(segment => segment.text));
+    expect(segments).toContain(spoken.text);
+    expect(spoken.voice).toBeTruthy();
 
     await page.screenshot({ path: `${SHOTS}/14-hybrid-preview.png` });
+  });
 
-    // And PocketTTS keeps working behind it, so later segments are high quality.
+  test('PocketTTS takes over from the preview once it catches up', async ({ page }) => {
+    await openReader(page, HYBRID_PCM_QUERY);
+
+    await expect.poll(
+      () => page.evaluate(() => window.audioReader.engine.status),
+      { message: 'the quality engine should finish loading', timeout: 180_000 },
+    ).toBe('ready');
+
+    await reader(page).locator('.play').click();
+
+    // Cold start: nothing is synthesized yet, so the first segment previews.
+    await expect.poll(
+      () => page.evaluate(() => window.audioReader.engine.counts.preview),
+      { message: 'the first segment should preview rather than wait', timeout: 30_000 },
+    ).toBeGreaterThan(0);
+
+    // Then PocketTTS catches up and later segments use it instead.
     await expect.poll(
       () => page.evaluate(() => window.audioReader.engine.counts.quality),
       { message: 'PocketTTS audio should take over once it catches up', timeout: 150_000 },
@@ -495,9 +529,10 @@ test.describe('PocketTTS in the browser', () => {
     // eslint-disable-next-line no-console
     console.log('hybrid split:', JSON.stringify(counts));
 
-    // Real PocketTTS samples reached the device, not just the preview voice.
-    expect(await page.evaluate(() => window.audioReader.engine.quality.stats.samplesPlayed))
-      .toBeGreaterThan(6000);
+    // Real PocketTTS samples reached the device, not only the preview engine's.
+    const qualityStats = await page.evaluate(() => window.audioReader.engine.quality.stats);
+    expect(qualityStats.samplesPlayed).toBeGreaterThan(6000);
+    expect(qualityStats.peakAmplitude).toBeGreaterThan(0.02);
 
     await page.screenshot({ path: `${SHOTS}/15-hybrid-quality.png` });
   });

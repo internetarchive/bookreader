@@ -19,6 +19,7 @@ import './AudioReaderView.js';
  *               `hybrid` (PocketTTS with an instant WebSpeech preview), or
  *               `pcm` (measurable tones, not speech)
  *   grace       ms to wait for PocketTTS before previewing, in hybrid mode
+ *   fast        preview engine for hybrid mode (default `webspeech`)
  *   modelBase   where to fetch the PocketTTS bundle from (default: HuggingFace)
  *   synthDelay  ms of artificial synthesis latency, to exercise the buffering
  *   lookahead   paragraphs to keep buffered (default 5)
@@ -61,13 +62,10 @@ function buildEngine(requested, bookLanguage, params) {
   if (requested === 'pocket') return buildPocketEngine(params);
 
   if (requested === 'hybrid') {
-    // The arrangement issue #1580 suggests: PocketTTS for quality, WebSpeech as
-    // an instant preview whenever the buffer has not caught up.
-    if (!WebSpeechEngine.isSupported()) {
-      throw new Error('AudioReader: hybrid mode needs speechSynthesis for the preview voice');
-    }
+    // The arrangement issue #1580 suggests: PocketTTS for quality, with an
+    // instant preview voice whenever the buffer has not caught up.
     return new HybridTtsEngine({
-      fast: new WebSpeechEngine({ bookLanguage }),
+      fast: buildEngine(params.get('fast') || 'webspeech', bookLanguage, params),
       quality: buildPocketEngine(params),
       ...(params.get('grace') ? { graceMs: Number(params.get('grace')) } : {}),
     });
