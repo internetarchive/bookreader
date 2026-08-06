@@ -12,3 +12,7 @@ CLAUDE.local.md
 tests/playwright/screenshots/
 test-results/
 playwright-report/
+
+# PocketTTS model weights are fetched at runtime, never committed (~146MB)
+*.onnx
+pocket-tts-sample.wav

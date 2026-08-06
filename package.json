@@ -56,6 +56,7 @@
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "lit": "2.8.0",
+    "onnxruntime-web": "1.27.0",
     "soundmanager2": "2.97.20170602"
   },
   "devDependencies": {
