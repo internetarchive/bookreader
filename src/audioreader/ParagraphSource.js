@@ -47,7 +47,7 @@ export default class ParagraphSource {
     const promise = Promise.resolve()
       .then(() => this._fetchPageChunks(leafIndex))
       .then(chunks => {
-        const speakable = (chunks || []).filter(c => c.text && c.text.trim());
+        const speakable = (chunks || []).filter(c => isSpeakable(c.text));
         this._pages.set(leafIndex, speakable);
         this._inFlight.delete(leafIndex);
         return speakable;
@@ -88,6 +88,32 @@ export default class ParagraphSource {
       if (chunks.length) return { leafIndex: leaf, chunkIndex: 0 };
     }
     return null;
+  }
+
+  /**
+   * Where to start reading a book from cold.
+   *
+   * `firstFrom(0)` is the wrong answer: the first leaves of a scan are the cover,
+   * flyleaves and title page, whose OCR is a handful of stray marks. Starting
+   * there means the patron presses play and hears a page number. So look for the
+   * first paragraph that reads like prose, and only fall back to "anything at
+   * all" if the whole book is short fragments.
+   *
+   * @param {Object} [opts]
+   * @param {number} [opts.fromLeaf] leaf to start looking from
+   * @param {number} [opts.minWords] words a paragraph needs to count as prose
+   * @param {number} [opts.searchLeafs] how far in to look before giving up
+   * @return {Promise<ParagraphCursor|null>}
+   */
+  async firstSubstantial({ fromLeaf = 0, minWords = 8, searchLeafs = 40 } = {}) {
+    const start = Math.max(0, Math.min(fromLeaf, this.numLeafs - 1));
+    const limit = Math.min(this.numLeafs, start + searchLeafs);
+    for (let leaf = start; leaf < limit; leaf++) {
+      const chunks = await this.page(leaf);
+      const index = chunks.findIndex(chunk => wordCount(chunk.text) >= minWords);
+      if (index !== -1) return { leafIndex: leaf, chunkIndex: index };
+    }
+    return this.firstFrom(start);
   }
 
   /**
@@ -133,6 +159,34 @@ export default class ParagraphSource {
     }
     return cursors;
   }
+}
+
+/**
+ * Whether a chunk of OCR is worth speaking at all.
+ *
+ * Scanned pages routinely yield chunks that are a single stray mark -- ".", "•",
+ * a bare page number -- from margins, plates and blank leaves. Reading those
+ * aloud sounds like a malfunction, and they make next/previous feel broken
+ * because a press appears to do nothing.
+ *
+ * The bar is one run of two or more letters, which keeps genuinely short but real
+ * paragraphs ("Yes.", a chapter numeral like "II") and drops punctuation and
+ * digit-only fragments.
+ *
+ * @param {string} text
+ * @return {boolean}
+ */
+export function isSpeakable(text) {
+  return !!text && /\p{L}{2}/u.test(text);
+}
+
+/**
+ * @param {string} text
+ * @return {number}
+ */
+function wordCount(text) {
+  const words = (text || '').trim().match(/\p{L}[\p{L}'’-]*/gu);
+  return words ? words.length : 0;
 }
 
 /**

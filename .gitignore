@@ -7,3 +7,8 @@ coverage*/
 
 .vscode
 CLAUDE.local.md
+
+# Playwright (prototype branch)
+tests/playwright/screenshots/
+test-results/
+playwright-report/
