@@ -331,7 +331,8 @@ class SearchView {
     const modal = document.createElement('div');
     modal.classList.add('BRprogresspopup', 'search_modal');
     modal.innerHTML = messageHTML;
-    document.querySelector(this.br.el).append(modal);
+    const container = this.br.resolveEl?.() ?? document.querySelector(this.br.el);
+    container?.append(modal);
   }
 
   /**
