@@ -76,6 +76,8 @@ export default class AudioReaderPlayer {
     this._seekTimer = null;
     /** @type {AbortController|null} controls the currently playing sound */
     this._playbackAbort = null;
+    /** Whether a `_playLoop` is currently running (possibly suspended on a sound). */
+    this._loopAlive = false;
 
     this.queue = new SynthesisQueue({
       synthesize: (text, ctx) => this.engine.synthesize(text, ctx),
@@ -170,7 +172,19 @@ export default class AudioReaderPlayer {
     this.playing = true;
     this._onChange();
     this.engine.resume();
-    await this._playLoop(this._generation);
+
+    // A pause leaves the playback loop suspended on the sound it was awaiting,
+    // and resuming that sound lets the existing loop carry on by itself. Starting
+    // a second loop here would double-advance the cursor -- two loops each
+    // incrementing segmentIndex for the same sound.
+    if (this._loopAlive) return;
+
+    this._loopAlive = true;
+    try {
+      await this._playLoop(this._generation);
+    } finally {
+      this._loopAlive = false;
+    }
   }
 
   /** Pause without losing position. */

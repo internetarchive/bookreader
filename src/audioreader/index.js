@@ -1,5 +1,6 @@
 import IaAudioBook from './IaAudioBook.js';
 import WebSpeechEngine from './engines/WebSpeechEngine.js';
+import SyntheticPcmEngine from './engines/SyntheticPcmEngine.js';
 import simulateLatency from './engines/simulateLatency.js';
 import './AudioReaderView.js';
 
@@ -12,7 +13,7 @@ import './AudioReaderView.js';
  *
  * Query parameters:
  *   ocaid       archive.org identifier (required)
- *   engine      `webspeech` (default)
+ *   engine      `webspeech` (default) or `pcm` (measurable tones, not speech)
  *   synthDelay  ms of artificial synthesis latency, to exercise the buffering
  *   lookahead   paragraphs to keep buffered (default 5)
  *   debug       `1` to show the buffer/plan overlay
@@ -27,16 +28,31 @@ const DEFAULT_OCAID = 'theworksofplato01platiala';
  */
 function createEngine(params, bookLanguage) {
   const requested = params.get('engine') || 'webspeech';
-
-  if (requested !== 'webspeech') {
-    throw new Error(`AudioReader: unknown engine "${requested}"`);
-  }
-  if (!WebSpeechEngine.isSupported()) {
-    throw new Error('AudioReader: this browser has no speechSynthesis');
-  }
-
-  const engine = new WebSpeechEngine({ bookLanguage });
+  const engine = buildEngine(requested, bookLanguage);
   return simulateLatency(engine, Number(params.get('synthDelay')) || 0);
+}
+
+/**
+ * @param {string} requested
+ * @param {string} bookLanguage
+ * @return {Object}
+ */
+function buildEngine(requested, bookLanguage) {
+  if (requested === 'webspeech') {
+    if (!WebSpeechEngine.isSupported()) {
+      throw new Error('AudioReader: this browser has no speechSynthesis');
+    }
+    return new WebSpeechEngine({ bookLanguage });
+  }
+
+  if (requested === 'pcm') {
+    if (!SyntheticPcmEngine.isSupported()) {
+      throw new Error('AudioReader: this browser has no Web Audio');
+    }
+    return new SyntheticPcmEngine();
+  }
+
+  throw new Error(`AudioReader: unknown engine "${requested}"`);
 }
 
 /**
