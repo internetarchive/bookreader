@@ -82,6 +82,7 @@
         "jquery-ui-touch-punch",
         "jquery.browser",
         "lit",
+        "pdfjs-dist",
         "soundmanager2"
       ]
     }
