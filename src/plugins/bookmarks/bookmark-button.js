@@ -62,4 +62,6 @@ export default class BookmarkButton extends LitElement {
   }
 }
 
-customElements.define('bookmark-button', BookmarkButton);
+if (!customElements.get('bookmark-button')) {
+  customElements.define('bookmark-button', BookmarkButton);
+}

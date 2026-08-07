@@ -546,4 +546,6 @@ class IABookmarks extends LitElement {
   }
 }
 
-customElements.define('ia-bookmarks', IABookmarks);
+if (!customElements.get('ia-bookmarks')) {
+  customElements.define('ia-bookmarks', IABookmarks);
+}
