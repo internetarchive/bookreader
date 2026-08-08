@@ -76,7 +76,6 @@ export class TextSelectionManager {
       if (selectEvent == 'changed') {
         if (!this.mouseIsDown && window.getSelection()?.toString()) {
           this.showSelectMenu();
-          this.hideAnnotationModal();
         }
       }
 
@@ -243,7 +242,12 @@ export class TextSelectionManager {
     this.selectMenu.hide();
   }
 
-  showAnnotationModal(nodes) {
+  /**
+   * @param {HTMLElement[]} nodes
+   * @param {HTMLElement} [anchorEl] Element to anchor the annotation popover
+   *  to, e.g. the br-menu-option button that was clicked
+   */
+  showAnnotationModal(nodes, anchorEl) {
     if (!this.annotationsMenuEnabled) return;
     if (!nodes.length) return;
     this.annotationModal.highlightAnnotationEnabled = this.br.plugins?.experiments?.isEnabled('annotateHighlight');
@@ -251,7 +255,7 @@ export class TextSelectionManager {
     if (!this.annotationModal.isConnected) {
       document.body.append(this.annotationModal);
     }
-    this.annotationModal.show(nodes);
+    this.annotationModal.show(nodes, anchorEl);
   }
 
   hideAnnotationModal() {
@@ -565,7 +569,7 @@ class BRSelectMenu extends LitElement {
         @mousedown=${/** @param {MouseEvent} e */ (e) => e.preventDefault()}
         @click=${this.handleCopyLinkToHighlight}
         icon="share"
-        label="Copy Link to Highlight"
+        label="Share"
         live-label
       ></br-menu-option>
     `;
@@ -584,6 +588,7 @@ class BRSelectMenu extends LitElement {
   renderAddAnnotationOption() {
     return html`
       <br-menu-option
+        id="annotate-option"
         @click=${this.handleAddAnnotation}
         icon="edit-pencil"
         label="Annotate"
@@ -596,7 +601,7 @@ class BRSelectMenu extends LitElement {
       <br-menu-option
         @click=${this.handleHighlightSave}
         icon="edit-pencil"
-        label="Highlight Selection"
+        label="Highlight"
       ></br-menu-option>
     `;
   }
@@ -632,14 +637,13 @@ class BRSelectMenu extends LitElement {
       ${this.copyLinkToHighlightEnabled ? this.renderCopyLinkToHighlightOption() : ''}
       ${this.highlightAnnotationEnabled ? this.renderHighlightOption() : ''}
       ${this.highlightAnnotationEnabled ? this.renderAddAnnotationOption() : ''}
-      ${this.highlightAnnotationEnabled ? this.renderLocalStorageOptions() : ''}
-      ${this.activeHighlightNodes ? this.renderRemoveOption() : ''}
     `;
   }
 
   renderExtendedOptions() {
     return html`
     ${this.renderDefaultOptions()}
+    ${this.activeHighlightNodes ? this.renderRemoveOption() : ''}
     ${this.renderLocalStorageOptions()}
     `;
   }
@@ -722,18 +726,17 @@ class BRSelectMenu extends LitElement {
     this.requestUpdate();
   }
 
-  handleAddAnnotation() {
-    if (this.activeHighlightNodes) { // show the annotation menu
-      this.br.plugins.textSelection.textSelectionManager.showAnnotationModal(this.activeHighlightNodes);
-      window.getSelection()?.empty();
-      this.clearActiveHighlightNodes();
-    } else { // add a highlight and show the annotation menu
+  /**
+   * @param {MouseEvent} e
+   */
+  handleAddAnnotation (e) {
+    const anchorEl = /** @type {HTMLElement} */ (e.currentTarget);
+    if (!this.activeHighlightNodes) { // highlight selection if not already done
       this.handleHighlightSave();
-      this.br.plugins?.textSelection?.textSelectionManager.showAnnotationModal(this.activeHighlightNodes);
-      window.getSelection()?.empty();
-      this.clearActiveHighlightNodes();
-      this.requestUpdate();
     }
+    this.br.plugins.textSelection?.textSelectionManager.showAnnotationModal(this.activeHighlightNodes, anchorEl);
+    window.getSelection()?.empty();
+    this.clearActiveHighlightNodes();
   }
 
   handleDeleteHighlight() {
