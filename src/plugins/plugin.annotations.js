@@ -1,7 +1,10 @@
 import { html, LitElement } from "lit";
 import { customElement, property } from 'lit/decorators.js';
+import { live } from "lit/directives/live.js";
 import { BookReaderTextFragment } from "../util/TextSelectionManager.js";
 import '@internetarchive/icon-share';
+// eslint-disable-next-line no-unused-vars
+import { OlPopover } from "../util/OlPopover.js";
 
 const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
 
@@ -22,6 +25,15 @@ export class BRAnnotationModal extends LitElement {
   /** @type {HTMLElement[]} */
   currentAnnotationNodes;
 
+  /** @type {HTMLElement | null} Element the popover anchors to; the br-menu-option that was clicked */
+  @property({attribute: false})
+  anchorEl = null;
+
+  @property({type: Boolean})
+  open = false;
+
+  positionObj = {};
+
   storageService = new AnnotationStorageService({storageMethod: window.localStorage});
 
   @property({type: Boolean})
@@ -38,15 +50,25 @@ export class BRAnnotationModal extends LitElement {
   }
 
   /** @override */
-  createRenderRoot() {
-    return this;
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('ol-popover-open', this.focusTextArea);
   }
 
   /** @override */
-  connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('role', 'alertdialog');
-    this.setAttribute('aria-label', 'Annotation actions');
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('ol-popover-open', this.focusTextArea);
+  }
+
+  focusTextArea() {
+    const textArea = document.querySelector('#annotateTextArea');
+    textArea?.focus();
+  }
+
+  /** @override */
+  createRenderRoot() {
+    return this;
   }
 
   showTextEditArea() {
@@ -127,7 +149,16 @@ export class BRAnnotationModal extends LitElement {
 
   render() {
     return html`
-      ${this.showTextEditArea()}
+      <ol-popover
+        aria-label="Annotation actions"
+        placement="bottom-start"
+        .anchor=${this.anchorEl}
+        .open=${live(this.open)}
+        ._position=${this.positionObj}
+        @ol-popover-close=${this.handleSaveAnnotation}
+      >
+        ${this.showTextEditArea()}
+      </ol-popover>
     `;
   }
 
@@ -139,6 +170,7 @@ export class BRAnnotationModal extends LitElement {
     if (annotationObject) {
       this.storageService.edit(currentUUID, 'highlightColor', e.target.value);
     }
+    this.handleShowColor();
   }
 
   handleDeleteHighlight() {
@@ -161,9 +193,11 @@ export class BRAnnotationModal extends LitElement {
   /**
    *
    * @param {HTMLElement[]} nodes
+   * @param {HTMLElement} [anchorEl] Element to anchor the popover to, e.g. the
+   *  br-menu-option button that was clicked to open the modal
    * @returns
    */
-  show(nodes) {
+  show(nodes, anchorEl) {
     this.currentAnnotationNodes = nodes;
     const identifier = retrieveUUID(nodes[0]);
     const selectedQuoteNodes = document.querySelectorAll(`.${identifier}`);
@@ -179,25 +213,27 @@ export class BRAnnotationModal extends LitElement {
     currentSelection?.removeAllRanges();
     currentSelection?.addRange(highlightRange);
 
+    this.updateTextArea(this.getAnnotationText());
     const lastNodeBoundary = lastNode.getBoundingClientRect();
     const pageContainerBoundary = lastNode.closest(".BRpagecontainer")?.getBoundingClientRect();
+    const annotationButtonWidth = pageContainerBoundary.width * 0.93;
+    const annotationButtonLeft = pageContainerBoundary.left + 5;
 
-    this.style.display = 'block';
-    const annotationButtonWidth = pageContainerBoundary.width - 50;
-    const annotationButtonLeft = pageContainerBoundary.left;
-    this.style.backgroundColor = 'black';
-    this.style.width = `${Math.max(annotationButtonWidth, 100)}px`;
-    this.style.height = `${Math.max(pageContainerBoundary.height / 5, 120)}px`;
-    this.style.top = `${lastNodeBoundary.top + lastNodeBoundary.height + 5}px`;
-    this.style.left = `${annotationButtonLeft}px`;
-    this.updateTextArea(this.getAnnotationText());
+    this.positionObj.top = `${lastNodeBoundary.top + lastNodeBoundary.height + 5}`;
+    this.positionObj.left = `${annotationButtonLeft}`;
+    this.positionObj.width = `${annotationButtonWidth}`;
+    this.positionObj.height = `${Math.max(pageContainerBoundary.height / 7, 80)}`;
+    this.anchorEl = anchorEl ?? lastNode.parentElement;
+    this.open = true;
     this.requestUpdate();
   }
 
   hide() {
     this.currentAnnotationNodes = null;
     this.showColorOptions = false;
-    this.style.display = 'none';
+    this.display = 'none';
+    this.open = false;
+    this.requestUpdate();
     return;
   }
 
