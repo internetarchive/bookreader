@@ -167,7 +167,9 @@ To version bump the repo and prepare a release, run `npm version major|minor|pat
 We release BookReader [in-repo as tags](https://github.com/internetarchive/bookreader/releases) & also as a node module [@internetarchive/bookreader](https://www.npmjs.com/package/@internetarchive/bookreader)
 
 ## Tests
-We would like to get to 100% test coverage and are tracking our progress in this project: [BookReader Fidelity](https://github.com/internetarchive/bookreader/projects/5)
+
+We would like to get to 100% test coverage, and when contributing code, please
+include tests and/or update tests accordingly. [Current code coverage can be tracked here](https://app.codecov.io/gh/internetarchive/bookreader).
 
 ### End to end tests
 We also have end to end tests using [Testcafe](https://devexpress.github.io/testcafe/documentation/getting-started/).  We write tests for the repo itself and also for our use on archive.org. You can read about them in [here](./tests/e2e/README.md). These are relatively easy to do, and a fantastic way of getting introduced to the wonders of BookReader.  Check the project board for open tickets to work on.  And if you don't see a test for something you spotted, feel free to make an issue.
