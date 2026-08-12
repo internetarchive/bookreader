@@ -23,6 +23,24 @@ afterEach(() => {
 });
 
 describe('WebTTSEngine', () => {
+  test('isGoodVoice excludes known macOS joke voices', () => {
+    const voices = [
+      { voiceURI: 'com.apple.speech.synthesis.voice.Bad News', name: 'Bad News' },
+      { voiceURI: 'com.apple.eloquence.Eddy', name: 'Eddy' },
+      { voiceURI: 'com.apple.voice.super-compact.en-US.Samantha', name: 'Samantha (SC)' },
+      { voiceURI: 'com.apple.voice.compact.en-US.Samantha', name: 'Samantha' },
+      { voiceURI: 'urn:moz-tts:sapi:David', name: 'David' },
+      { name: 'No URI Voice' },
+    ];
+
+    const filteredVoices = voices.filter(WebTTSEngine.isGoodVoice);
+
+    expect(filteredVoices).toEqual([
+      { voiceURI: 'com.apple.voice.compact.en-US.Samantha', name: 'Samantha' },
+      { voiceURI: 'urn:moz-tts:sapi:David', name: 'David' },
+    ]);
+  });
+
   test('getVoices should include default voice when no actual default', () => {
     // iOS devices set all the voices to default -_-
     speechSynthesis.getVoices = () => [
