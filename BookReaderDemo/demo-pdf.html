@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- WC dependencies -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es2015%2Ces5%2CglobalThis"></script>
+    <script type="text/javascript" src="https://unpkg.com/lit@2.1.2/polyfill-support.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/@webcomponents/webcomponentsjs@2.2.10/webcomponents-bundle.js"></script>
+
+    <!-- JS dependencies -->
+    <script src="../BookReader/webcomponents-bundle.js"></script>
+    <script src="../BookReader/jquery-3.js"></script>
+
+
+    <!-- BookReader -->
+    <link rel="stylesheet" href="../BookReader/BookReader.css"/>
+    <script src="../BookReader/BookReader.js"></script>
+    <script src="../BookReader/plugins/plugin.pdf.js"></script>
+    <script src="../BookReader/plugins/plugin.url.js"></script>
+
+    <script type="module" src="../BookReader/ia-bookreader-bundle.js"></script>
+
+    <!-- Custom CSS overrides -->
+    <link rel="stylesheet" href="BookReaderDemo.css"/>
+
+    <style>
+        body > section { padding: 0 10px; }
+    </style>
+</head>
+<body>
+
+    <ia-bookreader>
+      <div id="IABookReaderWrapper" slot="main">
+        <div id="BookReader" class="BookReader"></div>
+      </div>
+      <div>
+        Internet Archive BookReader Demo<br />
+        <noscript>
+          <p>
+            The BookReader requires JavaScript to be enabled. Please check that
+            your browser supports JavaScript and that it is enabled in the
+            browser settings.
+          </p>
+        </noscript>
+      </div>
+    </ia-bookreader>
+
+<hr />
+
+<section>
+    <form id="pdfForm">
+        Try another PDF: <input type="url" id="pdfUrl"
+            value="https://cors.archive.org/cors/goodytwoshoes00newyiala/goodytwoshoes00newyiala_bw.pdf" size="60">
+        <input type="submit" value="Go">
+    </form>
+
+    <details open>
+        <summary>Test books</summary>
+        <ul>
+            <li>
+                <a
+                    href="/BookReaderDemo/demo-pdf.html?pdf=https%3A%2F%2Fcors.archive.org%2Fcors%2Fgoodytwoshoes00newyiala%2Fgoodytwoshoes00newyiala_bw.pdf">
+                    Goody Two-Shoes (~1.7 MB)
+                </a>
+            </li>
+            <li>
+                <a
+                    href="/BookReaderDemo/demo-pdf.html?pdf=https%3A%2F%2Fcors.archive.org%2Fcors%2Fbwb_KS-179-237%2Fbwb_KS-179-237.pdf">
+                    bwb_KS-179-237 (~16 MB)
+                </a>
+            </li>
+            <li>
+                <a
+                    href="/BookReaderDemo/demo-pdf.html?pdf=https%3A%2F%2Fmozilla.github.io%2Fpdf.js%2Fweb%2Fcompressed.tracemonkey-pldi-09.pdf">
+                    Sample PDF (tracemonkey paper, from pdf.js)
+                </a>
+            </li>
+        </ul>
+    </details>
+</section>
+
+<script>
+    const pdfUrlInForm = document.getElementById('pdfUrl').value;
+    const pdfUrlInUrl = new URL(window.location.href).searchParams.get('pdf');
+    if (pdfUrlInUrl) {
+        document.getElementById('pdfUrl').value = pdfUrlInUrl;
+    }
+
+    document.getElementById('pdfForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        window.location.search = `?pdf=${encodeURIComponent(document.getElementById('pdfUrl').value)}`;
+    });
+
+    BookReader.PLUGINS.pdf.loadDocument(pdfUrlInUrl || pdfUrlInForm).then(({ pdfDocument, pages }) => {
+        window.br = new BookReader({
+            bookTitle: (pdfUrlInUrl || pdfUrlInForm).split('/').pop(),
+            plugins: {
+                pdf: {
+                    pdfDocument,
+                    pages,
+                }
+            }
+        });
+
+        // Let's go!
+        br.init();
+    });
+</script>
+
+</body>
+</html>
