@@ -124,11 +124,7 @@ export const DEFAULT_OPTIONS = {
   /** @type {string} */
   bookUrlMoreInfo: null,
 
-  /** Experimental Controls (eg b/w) */
-  enableExperimentalControls: false,
-
-  /** CSS selectors */
-  /** Where BookReader mounts to */
+  /** @type {string} CSS selector identifying where BookReader mounts to */
   el: '#BookReader',
 
   /** @type {'lr' | 'rl'} Page progression */
