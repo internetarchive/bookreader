@@ -201,18 +201,6 @@ $select-menu-extended-radius: 10px;
     }
   }
 
-  &:hover:after {
-    position: absolute;
-    left: 2px;
-    right: 2px;
-    top: 2px;
-    bottom: 2px;
-    content: "";
-    pointer-events: none;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: calc($select-menu-radius - 2px);
-  }
-
   .br-select-menu__root[showextended] & {
       width:100%;
       &:hover:after {
@@ -235,24 +223,6 @@ $select-menu-extended-radius: 10px;
   margin-right: 4px;
 }
 
-@media (hover: hover) {
-    .br-select-menu__option {
-        padding: 4px;
-    }
-    .br-select-menu__label {
-        width: 0px;
-        margin: 0;
-        opacity: 0;
-        interpolate-size: allow-keywords;
-        transition: width 0.2s;
-    }
-    .br-select-menu__root:hover .br-select-menu__label {
-        width: auto;
-        margin: 0 4px;
-        opacity: 1;
-    }
-}
-
 .BRtextLayer .BRhighlight {
     background-color: yellow;
     pointer-events: all;
@@ -270,3 +240,149 @@ $select-menu-extended-radius: 10px;
     color: transparent;
     animation: highlightTargetFlash 600ms 1 reverse;
 }
+
+.br-annotate-menu__root {
+    display: contents;
+}
+
+.br-annotate-menu__header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.br-annotate-menu__icon {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+}
+
+.br-annotate-menu__label {
+    width: fit-content;
+    font-size: 12px;
+}
+
+.br-annotate-menu__div {
+    margin: 0 0 0 5px;
+}
+
+.br-annotate-menu__colorOptions {
+    align-content: center;
+    background-color: #333;
+    border-radius: 10px;
+    height: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.br-annotate-menu__pipe {
+    color: white;
+    margin-right: 2px;
+    margin-left: -3px;
+}
+
+.br-annotate-menu__color {
+    width: 20px;
+    height: 20px;
+    margin: 0 5px 0 1px;
+    display: block;
+    border-radius: 5px;
+    &.pink {
+        background-color: #ffc0cb;
+    }
+    &.yellow {
+        background-color: #ffff00;
+    }
+    &.orange {
+        background-color: #ffa500;
+    }
+    &.green {
+        background-color: #00ff00;
+    }
+}
+
+.br-annotate-menu__carrot {
+    padding: 0px;
+    margin: auto;
+    border: none;
+    background: none;
+    display: block;
+}
+
+.br-annotate-menu__footer {
+    width: 100%;
+    margin-top: 5px;
+    display:flex;
+    justify-content: space-between;
+    height: 45%;
+    align-items: center;
+}
+
+.br-annotate-menu__option{
+    border-radius: 5px;
+    margin: 0px 2px 0 2px;
+    height: fit-content;
+    &.save, &.edit {
+        background-color: #194880;
+        color: white;
+        margin-right: 4px;
+    }
+}
+
+.br-annotate-menu__comment {
+    margin: 5px 5px 5px 0;
+    padding: 5px 0 5px 5px;
+    width: 97%;
+    height: 50%;
+    max-width: 100%;
+    background-color: #c8af91;
+    font-size: 12px;
+    border-radius: 5px;
+}
+
+.br-annotate-menu__body {
+    height: 55%;
+}
+
+.br-annotate-menu__textArea {
+    width: 98%;
+    height: 100%;
+    border-radius: 12px;
+    resize: none;
+    padding-left: 5px;
+    padding-top: 3px;
+    &::placeholder {
+        font-style: italic;
+    }
+}
+
+.br-annotate-menu__colorDropdown {
+    display: flex;
+}
+
+.br-annotate-menu__editOptions {
+    display: flex;
+}
+
+.br-annotate-indicator--icon {
+    position: absolute;
+    z-index: 1;
+    opacity: 0.5;
+}
+
+.br-annotate-indicator--scrolling {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.annotationIndicator {
+    z-index: 1;
+    opacity: 0.5;
+    background-color:red;
+    position: absolute; 
+    height: 50px;
+    width: 50px;
+}
+
