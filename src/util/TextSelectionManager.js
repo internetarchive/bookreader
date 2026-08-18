@@ -83,6 +83,10 @@ export class TextSelectionManager {
         this.hideSelectMenu();
       }
     }).attach();
+    // Need to add the BRSelectMenu into the DOM since BRAnnotationIndicator is tied to it and should be ready to load highlights + annotation indicators?
+    if (!this.selectMenu.isConnected) {
+      document.body.append(this.selectMenu);
+    }
   }
 
   // Need attach + detach methods to toggle w/ Translation plugin
@@ -261,7 +265,6 @@ export class TextSelectionManager {
   hideAnnotationModal() {
     // default behavior to save and hide on close
     this.annotationModal.handleSaveAnnotation();
-    this.annotationModal.hide();
   }
 
   _limitSelection = () => {
@@ -777,8 +780,19 @@ class BRSelectMenu extends LitElement {
     for (const hl of loadHighlightsFromLocalStorage()) {
       const textLayer = /** @type {HTMLElement} */ (this.br.$(`.pagediv${hl.pageIndex} .BRtextLayer`)[0]);
       if (!textLayer) continue;
-      renderHighlight(textLayer, hl);
+      const highlightedRange = renderHighlight(textLayer, hl);
+      const hasExistingAnnotation = document.querySelector(`.icon-${hl.uuid}`) ? true : false;
       // Attach click behaviour here? Only need one handler per text layer
+      if (hl.annotation && !hasExistingAnnotation) {
+        const iconLocation = findTopRightMostNode(highlightedRange);
+        const hlParagraph = highlightedRange[0].closest(".BRparagraphElement");
+        const annotationIconEle = document.createElement('ia-icon-edit-pencil');
+        annotationIconEle.classList.add('annotationIndicator', `icon-${hl.uuid}`);
+        annotationIconEle.style.top = `${iconLocation.offsetTop - 30}px`;
+        annotationIconEle.style.left = `${iconLocation.offsetLeft + iconLocation.offsetWidth}px`;
+        hlParagraph?.append(annotationIconEle);
+      }
+
       $(textLayer)
         .off('mouseup.BRHighlightClick')
         .on('mouseup.BRHighlightClick', (e) => {
@@ -868,6 +882,25 @@ class BRSelectMenu extends LitElement {
     this.activeHighlightNodes = null;
     this.requestUpdate();
   }
+}
+
+/**
+ * Find the node that has the top right most position
+ * @param {Element[]} nodes
+ */
+export function findTopRightMostNode(nodes) {
+  let top = Infinity;
+  let right = -Infinity;
+  let bestPositionNode;
+  for (const node of nodes) {
+    const nodePosition = node.getBoundingClientRect();
+    if (nodePosition.top <= top && nodePosition.right > right) {
+      bestPositionNode = node;
+      top = nodePosition.top;
+      right = nodePosition.right;
+    }
+  }
+  return bestPositionNode;
 }
 
 /**
@@ -1112,7 +1145,28 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
   // Don't mark if already marked
   if (startTextNode.parentElement.classList.contains("BRhighlight") ||
       endTextNode.parentElement.classList.contains("BRhighlight")) {
-    return;
+    const existingMarks = [];
+    const walker = document.createTreeWalker(
+      exactRangeTextNodes.commonAncestorContainer,
+      NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function(node) {
+          if (!exactRangeTextNodes.intersectsNode(node)) return NodeFilter.FILTER_REJECT;
+
+          if (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'MARK')
+            return NodeFilter.FILTER_ACCEPT;
+          return NodeFilter.FILTER_SKIP;
+        },
+      },
+    );
+    let node = walker.nextNode();
+    while (node) {
+      if (node.nodeName === 'MARK') {
+        existingMarks.push(node);
+      }
+      node = walker.nextNode();
+    }
+    return existingMarks;
   }
 
   return markRange(exactRangeTextNodes, () => {
