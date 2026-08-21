@@ -1,3 +1,10 @@
+# 5.0.0-117
+- Fix: Scroll left position jitters when fullscreen on mobile @cdrini
+- Fix: ReadAloud/Copy link to highlight "scroll into view" causing body scroll @cdrini
+- Dev: Use caret ranges for pinned @internetarchive/* deps @jbuckner
+- Dev: Update build and test dependencies @cdrini
+- Dev: Remove dead link from README @duggiefresh
+
 # 5.0.0-116
 - Fix: Make "Copy link to highlight" url parameter more resilient re-encoding @cdrini
 - Feature: New ?focus=search url parameter to open the search panel and focus the search input @mek @cdrini

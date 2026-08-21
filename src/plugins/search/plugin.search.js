@@ -383,14 +383,8 @@ export class SearchPlugin extends BookReaderPlugin {
     const $boxes = await poll(() => $(`rect.match-index-${match.matchIndex}`), { until: result => result.length > 0 });
     if ($boxes.length) {
       $boxes.css('animation', 'none');
-      $boxes[0].scrollIntoView({
-        // Only vertically center the highlight if we're in 1up or in full screen. In
-        // 2up, if we're not fullscreen, the whole body gets scrolled around to try to
-        // center the highlight 🙄 See:
-        // https://stackoverflow.com/questions/11039885/scrollintoview-causing-the-whole-page-to-move/11041376
-        // Note: nearest doesn't quite work great, because the ReadAloud toolbar is now
-        // full-width, and covers up the last line of the highlight.
-        block: this.br.constMode1up == this.br.mode || this.br.isFullscreenActive ? 'center' : 'nearest',
+      this.br.scrollIntoView($boxes[0], {
+        block: 'center',
         inline: 'center',
         behavior: onNearbyPage ? 'smooth' : 'auto',
       });
