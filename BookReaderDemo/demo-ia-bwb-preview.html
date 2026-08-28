@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<!-- This demo mirrors, as far as possible, the archive.org BookReader configuration and functionality
+   please keep up to date as BookReader evolves -->
+<html>
+<head>
+  <title>bookreader demo internetArchive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+
+  <style>
+    #main-modal,
+    #dev-modal {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 1050;
+      display: none;
+      overflow: hidden;
+      -webkit-overflow-scrolling: touch;
+      outline: 0;
+    }
+
+    #dev-modal {
+      background-color: salmon;
+    }
+
+    #main-modal {
+      background-color: blanchedalmond;
+    }
+
+    #main-modal.in,
+    #dev-modal.in {
+      display: block;
+    }
+
+    #main-modal > *,
+    #dev-modal > * {
+      height: 500px;
+      width: 70%;
+      margin: auto;
+    }
+
+    .content {
+      border: 1px solid white;
+      margin: auto;
+      width: 100%;
+      height: inherit;
+    }
+  </style>
+    
+</head>
+<body>
+
+<button id='toggle-main'>Toggle Main Modal</button>
+<div id="main-modal">
+  <div>
+    <div>
+      <button id="close-prod">Close Prod Modal</button>
+    </div>
+    <div class='content'>
+      <iframe width="100%" height="100%" src="https://archive.org/stream/isbn_9781607514176?wrapper=false"></iframe>
+    </div>
+  </div>
+</div>
+
+<button id='toggle-dev'>Toggle Dev Modal</button>
+<div id="dev-modal">
+  <div>
+    <div>
+      <button id='close-dev'>Close Dev Modal</button>
+    </div>
+    <div class='content'>
+      <iframe width="100%" height="100%" src="https://www-isa.archive.org/stream/isbn_9781607514176?wrapper=false"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+  const toggleMain = document.querySelector('#toggle-main');
+  const mainModal = document.querySelector('#main-modal');
+  const closeProd = document.querySelector('#close-prod');
+
+  const toggleModal = () => {
+    devModal.classList.toggle('in');
+  };
+  toggleMain.addEventListener('click', (e) => toggleModal());
+  closeProd.addEventListener('click', (e) => toggleModal());
+
+
+  const toggleDev = document.querySelector('#toggle-dev');
+  const devModal = document.querySelector('#dev-modal');
+  const closeDev = document.querySelector('#close-dev');
+
+  toggleDev.addEventListener('click', (e) => toggleModal());
+  closeDev.addEventListener('click', (e) => toggleModal());
+</script>
+
+</body>
+</html>
