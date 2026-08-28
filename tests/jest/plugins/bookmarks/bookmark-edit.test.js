@@ -7,18 +7,23 @@ import '@/src/plugins/bookmarks/bookmark-edit.js';
 
 const bookmarkColors = [{
   id: 0,
+  label: '',
   className: '',
 }, {
   id: 1,
+  label: 'Blue',
   className: 'blue',
 }, {
   id: 2,
+  label: 'Red',
   className: 'red',
 }, {
   id: 3,
+  label: 'Green',
   className: 'green',
 }, {
   id: 4,
+  label: 'Yellow',
   className: 'yellow',
 }];
 
