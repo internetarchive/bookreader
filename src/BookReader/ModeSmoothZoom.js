@@ -38,29 +38,39 @@ export class ModeSmoothZoom {
 
     /** @type {function(function(): void): any} */
     this.bufferFn = window.requestAnimationFrame.bind(window);
+
+    /** Where the events are attached */
+    this.eventContainer = mode.$container;
+    this.previousTouchAction = null;
   }
 
-  attach() {
+  /**
+   * @param {boolean} global Whether to attach to the global document body
+   */
+  attach(global = false) {
     if (this.attached) return;
+
+    this.eventContainer = global ? document.body : this.mode.$container;
 
     this.attachCtrlZoom();
 
     // GestureEvents work only on Safari; they're too glitchy to use
     // fully, but they can sometimes help error correct when interact
     // misses an end/start event on Safari due to Safari bugs.
-    this.mode.$container.addEventListener('gesturestart', this._pinchStart);
-    this.mode.$container.addEventListener('gesturechange', this._preventEvent);
-    this.mode.$container.addEventListener('gestureend', this._pinchEnd);
+    this.eventContainer.addEventListener('gesturestart', this._pinchStart);
+    this.eventContainer.addEventListener('gesturechange', this._preventEvent);
+    this.eventContainer.addEventListener('gestureend', this._pinchEnd);
 
     if (isIOS()) {
-      this.touchesMonitor = new TouchesMonitor(this.mode.$container);
+      this.touchesMonitor = new TouchesMonitor(this.eventContainer);
       this.touchesMonitor.attach();
     }
 
-    this.mode.$container.style.touchAction = "pan-x pan-y";
+    this.previousTouchAction = this.eventContainer.style.touchAction;
+    this.eventContainer.style.touchAction = "pan-x pan-y";
 
     // The pinch listeners
-    this.interact = interact(this.mode.$container);
+    this.interact = interact(this.eventContainer);
     this.interact.gesturable({
       listeners: {
         start: this._pinchStart,
@@ -71,7 +81,7 @@ export class ModeSmoothZoom {
       // Samsung internet pinch-zoom will not work unless we disable
       // all touch actions. So use interact.js' built-in drag support
       // to handle moving on that browser.
-      this.mode.$container.style.touchAction = "none";
+      this.eventContainer.style.touchAction = "none";
       this.interact
         .draggable({
           inertia: {
@@ -92,11 +102,13 @@ export class ModeSmoothZoom {
 
     // GestureEvents work only on Safari; they interfere with Hammer,
     // so block them.
-    this.mode.$container.removeEventListener('gesturestart', this._pinchStart);
-    this.mode.$container.removeEventListener('gesturechange', this._preventEvent);
-    this.mode.$container.removeEventListener('gestureend', this._pinchEnd);
+    this.eventContainer.removeEventListener('gesturestart', this._pinchStart);
+    this.eventContainer.removeEventListener('gesturechange', this._preventEvent);
+    this.eventContainer.removeEventListener('gestureend', this._pinchEnd);
 
     this.touchesMonitor?.detach?.();
+
+    this.eventContainer.style.touchAction = this.previousTouchAction;
 
     // The pinch listeners
     this.interact.unset();
