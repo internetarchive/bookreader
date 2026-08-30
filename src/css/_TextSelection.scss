@@ -275,6 +275,7 @@ $select-menu-extended-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-left: 5px;
 }
 
 .br-annotate-menu__pipe {
@@ -303,12 +304,13 @@ $select-menu-extended-radius: 10px;
     }
 }
 
-.br-annotate-menu__carrot {
-    padding: 0px;
-    margin: auto;
+.br-annotate-menu__carot {
     border: none;
     background: none;
     display: block;
+    background-color: #333;
+    color: white;
+    border-radius: 12px;
 }
 
 .br-annotate-menu__footer {
@@ -316,7 +318,7 @@ $select-menu-extended-radius: 10px;
     margin-top: 5px;
     display:flex;
     justify-content: space-between;
-    height: 45%;
+    height: 30%;
     align-items: center;
 }
 
@@ -324,7 +326,8 @@ $select-menu-extended-radius: 10px;
     border-radius: 5px;
     margin: 0px 2px 0 2px;
     height: fit-content;
-    &.save, &.edit {
+    width: 50%;
+    &.save {
         background-color: #194880;
         color: white;
         margin-right: 4px;
@@ -343,16 +346,17 @@ $select-menu-extended-radius: 10px;
 }
 
 .br-annotate-menu__body {
-    height: 55%;
+    height: 60%;
+    display: flex;
+    justify-content: center;
 }
 
 .br-annotate-menu__textArea {
-    width: 98%;
-    height: 100%;
+    width: 100%;
     border-radius: 12px;
     resize: none;
-    padding-left: 5px;
-    padding-top: 3px;
+    padding: 3px 3px 0px 3px;
+    margin: 3px;
     &::placeholder {
         font-style: italic;
     }
@@ -364,6 +368,8 @@ $select-menu-extended-radius: 10px;
 
 .br-annotate-menu__editOptions {
     display: flex;
+    margin-right: 5px;
+    width: 30%;
 }
 
 .br-annotate-indicator--icon {

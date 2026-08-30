@@ -85,11 +85,12 @@ export class OlPopover extends LitElement {
             position: fixed;
             z-index: 1000;
             background: var(--white);
-            border-radius: var(--border-radius-overlay);
+            border-radius: 12px;
             box-shadow: 0 8px 24px var(--boxshadow-black);
             opacity: 0;
             transform: scale(0.95);
             pointer-events: none;
+            background-color: #222222;
         }
 
         .panel[data-state="preparing"],
@@ -134,7 +135,7 @@ export class OlPopover extends LitElement {
         .backdrop[data-state="entering"],
         .backdrop[data-state="open"] {
             opacity: 1;
-            pointer-events: auto;
+            pointer-events: none;
         }
 
         .backdrop[data-state="entering"] {
@@ -214,7 +215,7 @@ export class OlPopover extends LitElement {
             width: 36px;
             height: 4px;
             border-radius: 2px;
-            background: hsla(0, 0%, 0%, 0.2);
+            background: white;
         }
 
         /* ── Focus sentinel (visually hidden) ── */
@@ -249,7 +250,7 @@ export class OlPopover extends LitElement {
       this.placement = 'bottom-center';
       this.offset = 4;
       this.autoClose = true;
-      this._position = { top: 0, left: 0 };
+      this._position = { top: 0, left: 0, height: 0, width: 0};
       this._transformOrigin = 'top left';
       this._animState = 'closed';
       this._mobile = false;
@@ -295,12 +296,12 @@ export class OlPopover extends LitElement {
                     aria-label="${ifDefined(this.getAttribute('aria-label') || undefined)}"
                     tabindex="-1"
                     style="${this._mobile ? `
-                        height: ${this._position.height}px;
+                        height: ${this._position.height + 50}px;
                     ` : `
                         top: ${this._position.top}px;
                         left: ${this._position.left}px;
                         width: ${this._position.width}px;
-                        height: ${this._position.height}px;
+                        height: ${this._position.height + 20}px;
                         transform-origin: ${this._transformOrigin};
                     `}"
                     @transitionend="${this._onTransitionEnd}"
@@ -423,7 +424,6 @@ export class OlPopover extends LitElement {
         return;
       }
       this._animState = 'exiting';
-      this._animState = 'closed';
     }
 
     _onTransitionEnd(e) {
@@ -502,11 +502,12 @@ export class OlPopover extends LitElement {
      * as needed to keep it within the viewport.
      */
     _computePosition(panelW, panelH) {
-      // const trigger = this._triggerEl;
       const trigger = this._anchorEl;
       if (!trigger) return;
 
       const anchor = trigger.getBoundingClientRect();
+      if (anchor.x == 0 && anchor.y == 0 && anchor.width == 0) return;
+      const pageContainerBoundary = trigger.closest(".BRpagecontainer")?.getBoundingClientRect();
       const gap = this.offset;
       const viewW = window.innerWidth;
       const viewH = window.innerHeight;
@@ -547,7 +548,7 @@ export class OlPopover extends LitElement {
         break;
       case 'start':
       default:
-        left = anchor.left;
+        left = pageContainerBoundary.left + 5;
         break;
       }
 
@@ -560,8 +561,9 @@ export class OlPopover extends LitElement {
       }
 
       // Shift vertically to keep within viewport
-      if (top + panelH > viewH - pad) {
-        top = viewH - pad - panelH;
+      // 130px shift applied to ensure that the popover element stays nicely within the bookreader frame
+      if (top + panelH > viewH - pad - 130) {
+        top = viewH - pad - panelH - 130;
       }
       if (top < pad) {
         top = pad;
@@ -574,8 +576,7 @@ export class OlPopover extends LitElement {
       // Find where the anchor center falls within the panel horizontally
       const anchorCenterInPanel = anchorCenter - left;
       const originX = `${anchorCenterInPanel}px`;
-
-      this._position = { top, left };
+      this._position = { ...this._position, top, left};
       this._transformOrigin = `${originX} ${originY}`;
     }
 
@@ -619,7 +620,8 @@ export class OlPopover extends LitElement {
       }
     }
 
-    _onScrollResize() {
+    _onScrollResize(e) {
+      if (e.target.id === "annotateTextArea") return;
       if (this._rafId) return;
       this._rafId = requestAnimationFrame(() => {
         this._rafId = null;
