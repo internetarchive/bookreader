@@ -7,7 +7,7 @@
 
 import { LitElement, html, css } from 'lit';
 
-import '@internetarchive/ia-item-navigator';
+import '@internetarchive/elements/ia-item-navigator/ia-item-navigator';
 import '@internetarchive/modal-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import '@internetarchive/icon-ia-logo';
@@ -46,9 +46,9 @@ export class IaBookReader extends LitElement {
     };
   }
 
-  /** @type {import('@internetarchive/ia-item-navigator').ItemNavigator} */
+  /** @type {import('@internetarchive/elements/ia-item-navigator/ia-item-navigator').IAItemNavigator} */
   get itemNav() {
-    return this.shadowRoot.querySelector('iaux-item-navigator');
+    return this.shadowRoot.querySelector('ia-item-navigator');
   }
 
   constructor() {
@@ -570,13 +570,11 @@ export class IaBookReader extends LitElement {
 
   render() {
     return html`
-      <iaux-item-navigator
+      <ia-item-navigator
         ?viewportInFullscreen=${this.fullscreen}
-        .basehost=${this.baseHost}
-        .item=${this.item}
-        .modal=${this.modal}
+        .baseHost=${this.baseHost}
+        .identifier=${this.item?.metadata?.identifier}
         .loaded=${this.loaded}
-        .sharedObserver=${this.sharedObserver}
         ?signedIn=${this.signedIn}
         .menuShortcuts=${this.menuShortcuts}
         .menuContents=${this.menuContents}
@@ -588,7 +586,7 @@ export class IaBookReader extends LitElement {
         <div slot="main">
           ${this.bookReaderCannotLoad ? this.placeholder : html`<slot name="main"></slot>`}
         </div>
-      </iaux-item-navigator>
+      </ia-item-navigator>
     `;
   }
 
@@ -611,7 +609,7 @@ export class IaBookReader extends LitElement {
       }
 
       :host([fullscreen]),
-      iaux-item-navigator[viewportinfullscreen] {
+      ia-item-navigator[viewportinfullscreen] {
         position: fixed;
         inset: 0;
         height: 100%;
@@ -646,13 +644,13 @@ export class IaBookReader extends LitElement {
         max-height: 300px;
       }
 
-      iaux-item-navigator {
+      ia-item-navigator {
         display: block;
         width: 100%;
         min-height: var(--br-height, inherit);
         height: var(--br-height, 100%);
         color: var(--primaryTextColor);
-        --menuButtonLabelDisplay: block;
+        --item-navigator-menu-button-label-display: block;
         --menuWidth: 320px;
         --menuSliderBg: var(--secondaryBGColor);
         --activeButtonBg: var(--tertiaryBGColor);
