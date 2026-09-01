@@ -59,6 +59,9 @@ BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 const initializeBookReader = (brManifest) => {
   console.log('initializeBookReader', brManifest);
 
+  // The theater has something to show now, so drop the placeholder.
+  document.querySelector('#demo-loading')?.remove();
+
   const options = {
     el: '#BookReader',
     /* Url plugin - IA uses History mode for URL */
