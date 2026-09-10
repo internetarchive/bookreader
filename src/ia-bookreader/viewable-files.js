@@ -1,7 +1,8 @@
 import { html } from 'lit';
 
-import { viewableFilesIcon  } from '@internetarchive/ia-item-navigator/dist/src/menus/viewable-files.js';
-import '@internetarchive/ia-item-navigator/dist/src/menus/viewable-files.js';
+import { viewableFilesIcon } from '@internetarchive/elements/ia-item-navigator/menus/ia-itemnav-viewable-files-panel';
+import '@internetarchive/elements/ia-item-navigator/menus/ia-itemnav-viewable-files-panel';
+import '@internetarchive/elements/ia-item-navigator/menus/ia-itemnav-sort-files-button';
 
 /**
  * * @typedef { 'title_asc' | 'title_desc' | 'default'} SortTypesT
@@ -33,13 +34,13 @@ export default class ViewableFilesProvider {
     this.icon = html`${viewableFilesIcon}`;
     this.sortOrderBy = sortTypes.default;
 
-    this.component = document.createElement("iaux-in-viewable-files-panel");
+    this.component = document.createElement("ia-itemnav-viewable-files-panel");
     this.component.addSortToUrl = true;
     this.component.subPrefix = bookreader.options.subPrefix || "";
     this.component.baseHost = baseHost;
     this.component.fileList = [...this.viewableFiles];
 
-    this.sortFilesComponent = document.createElement("iaux-in-sort-files-button");
+    this.sortFilesComponent = document.createElement("ia-itemnav-sort-files-button");
     this.sortFilesComponent.fileListRaw = this.viewableFiles;
     this.sortFilesComponent.addEventListener('fileListSorted', (e) => this.handleFileListSorted(e));
     this.actionButton = this.sortFilesComponent;

@@ -24,6 +24,13 @@ const shared = {
         loader: "babel-loader",
       },
       {
+        // @internetarchive/elements imports its glyphs as .svg files for their
+        // URL, so the path data stays out of its JS. Per that package's README,
+        // consumers handle the import themselves.
+        test: /\.svg/,
+        type: 'asset/resource',
+      },
+      {
         // Allow importing scss as plain strings. Only used for text selection plugin,
         // since it needs to performantly load the CSS in an iframe to determine word
         // sizings
