@@ -56,6 +56,7 @@
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "lit": "2.8.0",
+    "pdfjs-dist": "6.1.200",
     "soundmanager2": "2.97.20170602"
   },
   "devDependencies": {
@@ -114,11 +115,13 @@
     "preversion": "node scripts/preversion.js",
     "version": "node scripts/version.js",
     "postversion": "node scripts/postversion.js",
-    "build": "npm run clean && npx concurrently --group npm:build-js npm:build-css npm:build-assets npm:build-hypothesis npm:build-bergamot",
+    "build": "npm run clean && npx concurrently --group npm:build-js npm:build-css npm:build-assets npm:build-hypothesis npm:build-bergamot npm:build-pdfjs",
     "build-assets": "npx cpx \"src/assets/**/*\" BookReader && npx svgo -f BookReader/icons && npx svgo -f BookReader/images",
     "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
     "build-bergamot": "npx cpx \"node_modules/@internetarchive/bergamot-translator/worker/*\" BookReader/",
     "build-bergamot:watch": "npx cpx --watch \"node_modules/@internetarchive/bergamot-translator/worker/*\" BookReader/",
+    "build-pdfjs": "npx cpx \"node_modules/pdfjs-dist/wasm/*\" BookReader/plugins/pdf-wasm",
+    "build-pdfjs:watch": "npx cpx --watch \"node_modules/pdfjs-dist/wasm/*\" BookReader/plugins/pdf-wasm",
     "build-hypothesis": "npx cpx \"node_modules/hypothesis/**/*\" BookReader/hypothesis",
     "build-hypothesis:watch": "npx cpx --watch --verbose \"node_modules/hypothesis/**/*\" BookReader/hypothesis",
     "build-js": "npx webpack",
@@ -144,7 +147,7 @@
     "DOCS:update:dev-deps": "Packages used for development",
     "update:dev-deps": "npm i @iiif/presentation-2@latest @iiif/presentation-3@latest concurrently@latest cpx2@latest http-server@latest hypothesis@latest live-server@latest testcafe-browser-provider-browserstack@latest",
     "DOCS:update:runtime-deps": "Core runtime dependencies; do an npm run build + visual check after updating",
-    "update:runtime-deps": "npm i @webcomponents/webcomponentsjs@latest interactjs@latest iso-language-codes@latest jquery@latest jquery-colorbox@latest jquery-ui@latest jquery-ui-touch-punch@latest jquery.browser@latest lit@latest soundmanager2@latest",
+    "update:runtime-deps": "npm i @webcomponents/webcomponentsjs@latest interactjs@latest iso-language-codes@latest jquery@latest jquery-colorbox@latest jquery-ui@latest jquery-ui-touch-punch@latest jquery.browser@latest lit@latest pdfjs-dist@latest soundmanager2@latest",
     "update:runtime-deps:test": "npm run build",
     "DOCS:update:ia-deps": "Packages by @internetarchive",
     "update:ia-deps": "npm i @internetarchive/bergamot-translator@latest @internetarchive/ia-activity-indicator@latest @internetarchive/ia-item-navigator@latest @internetarchive/icon-bookmark@latest @internetarchive/icon-close@latest @internetarchive/icon-dl@latest @internetarchive/icon-edit-pencil@latest @internetarchive/icon-ellipses@latest @internetarchive/icon-ia-logo@latest @internetarchive/icon-magnify-minus@latest @internetarchive/icon-magnify-plus@latest @internetarchive/icon-search@latest @internetarchive/icon-share@latest @internetarchive/icon-toc@latest @internetarchive/icon-visual-adjustment@latest @internetarchive/modal-manager@latest @internetarchive/shared-resize-observer@latest"

@@ -114,6 +114,8 @@ BookReader.PLUGINS = {
   experiments: null,
   /** @type {typeof import('./plugins/plugin.iframe.js').IframePlugin | null}*/
   iframe: null,
+  /** @type {typeof import('./plugins/plugin.pdf.js').PdfPlugin | null}*/
+  pdf: null,
   /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
   resume: null,
   /** @type {typeof import('./plugins/search/plugin.search.js').SearchPlugin | null}*/
