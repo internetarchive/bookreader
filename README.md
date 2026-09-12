@@ -184,6 +184,13 @@ For mocks, we use Jest's internal mocking mechanism and Sinon to set spies.
 
 To run all local unit tests, run command: `npm run test`
 
+### Linting
+
+The project uses [ESLint](https://eslint.org/), and the rules can be found
+within the [.eslintrc.cjs](./.eslintrc.cjs) file.
+
+To run the linter, run command: `npm run lint`.
+
 ## Ways to contribute
 
 We can always use a hand building BookReader.  Check out the issues and see what interests you.  If you have an idea for an improvement, open an issue.
