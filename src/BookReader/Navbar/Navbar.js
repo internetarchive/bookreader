@@ -260,7 +260,17 @@ export class Navbar {
     this.br.options.controls['bookLeft'].className = `book_left ${bookFlipLeft}`;
     this.br.options.controls['bookRight'].className = `book_right ${bookFlipRight}`;
 
-    br.refs.$BRfooter = this.$root = $(`<div class="BRfooter"></div>`);
+    const autoHidingChromeExperiment = br.plugins.experiments?.getExperiment('autoHidingChrome');
+    const showChromeToggle = autoHidingChromeExperiment?.enabled && autoHidingChromeExperiment?.options.showFullscreenTab;
+
+    br.refs.$BRfooter = this.$root = $(`<div class="BRfooter">
+      ${showChromeToggle ? `<button class="BRchrome-toggle" aria-label="Toggle navigation bar">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 10" width="16" height="10" aria-hidden="true">
+          <polyline points="1,1 8,9 15,1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="BRtooltip">Toggle navigation bar</span>
+      </button>` : ''}
+    </div>`);
     br.refs.$BRnav = this.$nav = $(
       `<div class="BRnav BRnavMobile docked">
           ${title ? `<div class="BRnavTitle">${title}</div>` : ''}
@@ -297,6 +307,13 @@ export class Navbar {
 
     this.$root.append(this.$nav);
     br.refs.$br.append(this.$root);
+
+    this.$root.find('.BRchrome-toggle').on('click', () => {
+      const fader = this.br.fader;
+      if (!fader) return;
+      if (fader.isShowing) fader.hide('toggle');
+      else fader.keepShowing('toggle');
+    });
 
     this.br.on(EVENTS.beforePageChanged, (ev, { ariaLive }) => {
       if (ariaLive) {

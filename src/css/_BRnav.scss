@@ -3,6 +3,12 @@
  */
 @use "sass:math";
 
+@property --br-fade-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
 @mixin pseudoElementLayer {
   content: "";
   top: 0;
@@ -14,8 +20,6 @@
 }
 
 @mixin brNavDark {
-  @include brDarkControls;
-
   .BRpager {
     background-color: $brColorDarkBorder;
     .ui-slider-handle {
@@ -65,16 +69,19 @@
   to { opacity: 1; translate: 0 0; }
 }
 
+ 
+
 .BRfooter {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100%;
+  right: 0;
 
   display: flex;
   flex-direction: column;
   /* important so it overlays over the book pages when showing */
   z-index: 3;
+  transition: opacity 0.15s ease-out, translate 0.15s ease-out;
 
   button {
     width: 30px;
@@ -97,106 +104,69 @@
   }
 }
 
-.BRReadAloudToolbar {
-  $toolbarHeight: $brNavHeightMobile;
+ia-bookreader::part(minimized-menu) {
+  transition: opacity 0.15s ease-out, translate 0.15s ease-out;
+}
+
+.BRfooter .BRchrome-toggle {
+  position: absolute;
+  top: 2px;
+  right: 30px;
+  translate: 0 -100%;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin: 5px;
-  padding: 0 math.div($brNavHeightMobile, 4);
-  border-radius: 4px;
-  align-self: center;
-  height: $toolbarHeight;
-  animation: fadeUp .2s;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 0;
+  border-radius: 5px 6px 0 0;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s ease-out, translate 0.15s ease-out, background 0.15s;
+  z-index: 0;
 
-  // Default
-  @include brNavDark;
+  &:hover { background: rgba(0, 0, 0, 0.75); }
 
-  &--controls {
-    display: flex;
-  }
-  &--controls > * {
-    height: 100%;
-  }
+  svg { transition: rotate 0.15s ease-out; }
+}
 
-  .BRToolbarButton {
-    .icon {
-      width: $toolbarHeight;
-      height: $toolbarHeight;
-      box-sizing: border-box;
-    }
-
-    &.jumpForward .icon, &.jumpBackward .icon { padding: 9px; }
+.BRfaded {
+  .BRnav:not(:has(:focus-visible)), ia-bookreader::part(minimized-menu) {
+    opacity: var(--br-fade-progress, 0);
+    pointer-events: none;
   }
 
-  button {
-    padding: 0;
-    margin: 0;
-    border: 0px none;
-    box-sizing: border-box;
-    background: transparent none repeat scroll 0% 0%;
-    display: block;
+  .BRfooter:not(:has(:focus-visible)) {
+    translate: 0 calc((1 - var(--br-fade-progress, 0)) * 100%);
   }
 
-  .playback-rate-container {
-    width: $toolbarHeight;
-    height: $toolbarHeight;
-    position: relative;
-
-    .icon {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding: 6px;
-      box-sizing: border-box;
-      padding-bottom: 1em;
-    }
-
-    select {
-      cursor: pointer;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      font-size: 0.8em;
-      -moz-appearance: none;
-      -webkit-appearance: none;
-      appearance: none;
-      border: 0;
-      text-align: center;
-      text-align-last: center; /* Chrome */
-      padding-top: 60%;
-      padding-left: 10%;
-      padding-right: 10%;
-      color: #333;
-      background: transparent;
-
-      /* IE */
-      &::-ms-expand { display: none; }
-    }
+  ia-bookreader::part(minimized-menu) {
+    translate: calc((1 - var(--br-fade-progress, 0)) * -100%) 0;
   }
 
-  button:hover, .playback-rate-container:hover {
-    background: rgba(50, 50, 50, 0.2);
+  .BRchrome-toggle {
+    opacity: 0.6;
+    pointer-events: auto;
+    border: 0;
+    svg { rotate: 180deg; }
+    // translate: 0 -2px;
   }
 }
 
 .BRnav {
   box-sizing: border-box;
   height: $brNavHeightDesktop;
-  padding-top: 0;
   overflow: visible;
 
   display: block;
   display: flex;
   flex-direction: row;
-  border-top: 1px solid $controlsBorder;
 
   /* Theming */
-
-  // Default
   @include brNavDark;
 
   /* Full mobile styles */
@@ -334,16 +304,21 @@
   box-sizing: content-box;
 }
 
+$dockedHeight: 16px;
 .BRnavMobile.docked {
-  height: 0px;
+  --br-docked-height: #{$dockedHeight};
+  height: var(--br-docked-height, $dockedHeight);
   border: none;
+  mask-image: linear-gradient(to bottom, transparent calc(var(--br-docked-height) - 4px), black calc(var(--br-docked-height) - 4px));
+  margin-top: calc(0px - var(--br-docked-height) + 4px);
+
   .BRcontrols .scrubber .BRpager.ui-slider {
-    top: -1px;
+    top: 0;
   }
 
   .ui-slider,
   .ui-slider-range {
-    height: 2px;
+    height: var(--br-docked-height, $dockedHeight);
     border-radius: 0px;
   }
 
