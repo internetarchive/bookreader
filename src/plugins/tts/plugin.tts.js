@@ -197,6 +197,9 @@ export class TtsPlugin extends BookReaderPlugin {
     renderVoicesMenu(voicesMenu);
     voicesMenu.on("change", ev => this.ttsEngine.setVoice(voicesMenu.val()));
     this.ttsEngine.events.on('pause resume start', () => this.updateState());
+    // Media session controls (lock screen, notification shade, headset buttons)
+    // have no DOM presence, so BookReader's own listeners cannot see them.
+    this.ttsEngine.events.on('mediaSessionAction', () => this.br.trigger(BookReader.eventNames.userAction));
     this.ttsEngine.events.on('voiceschanged', () => renderVoicesMenu(voicesMenu));
     this.br.on('translationEnabled', () => renderVoicesMenu(voicesMenu));
     this.br.on('translationDisabled', () => renderVoicesMenu(voicesMenu));

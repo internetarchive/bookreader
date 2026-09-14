@@ -57,10 +57,12 @@ export default class WebTTSEngine extends AbstractTTSEngine {
         });
 
         navigator.mediaSession.setActionHandler('play', () => {
+          this.events.trigger('mediaSessionAction');
           audio.play();
           this.resume();
         });
         navigator.mediaSession.setActionHandler('pause', () => {
+          this.events.trigger('mediaSessionAction');
           audio.pause();
           this.pause();
         });
@@ -70,8 +72,14 @@ export default class WebTTSEngine extends AbstractTTSEngine {
         // Some devices only support the previoustrack/nexttrack (e.g. Win10), so show those.
         // Android devices do support the seek actions, but we don't want to show both buttons
         // and have them do the same thing.
-        navigator.mediaSession.setActionHandler('previoustrack', () => this.jumpBackward());
-        navigator.mediaSession.setActionHandler('nexttrack', () => this.jumpForward());
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+          this.events.trigger('mediaSessionAction');
+          this.jumpBackward();
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+          this.events.trigger('mediaSessionAction');
+          this.jumpForward();
+        });
       });
     }
 
